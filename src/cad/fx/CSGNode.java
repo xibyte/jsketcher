@@ -3,10 +3,12 @@ package cad.fx;
 import eu.mihosoft.vrl.v3d.CSG;
 import eu.mihosoft.vrl.v3d.Polygon;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.shape.MeshView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CSGNode extends MeshView {
@@ -17,12 +19,22 @@ public class CSGNode extends MeshView {
     super(mesh);
     this.context = context;
     setMaterial(Utils3D.DEFAULT_MATERIAL);
+    setOnMouseEntered(e -> {
+      context.highlightManger.selectExclusively(this);
+    });
+    setOnMouseExited(e -> {
+      context.highlightManger.getSelection().clear();
+    });
     setOnMouseClicked(e -> {
       context.clickOnNode(this, e);
     });
   }
 
   private void highlight(Polygon poly) {
+    System.out.println(poly);
+  }
+  
+  private void select(Polygon poly) {
     System.out.println(poly);
   }
 
