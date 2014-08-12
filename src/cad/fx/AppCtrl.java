@@ -3,13 +3,11 @@ package cad.fx;
 import cad.fx.viewer.Viewer3D;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
-
-import static java.util.Collections.singletonList;
 
 public class AppCtrl implements Initializable {
 
@@ -23,7 +21,8 @@ public class AppCtrl implements Initializable {
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-    Group content = new Group(getInitObject());
+    Group content = new Group();
+    setInitObject(content);
     viewer.setContent(content);
     beginSketching.setOnAction(event -> {
       cadContext.beginSketching();
@@ -36,12 +35,9 @@ public class AppCtrl implements Initializable {
     });
   }
 
-  private Node getInitObject() {
-
-    Surface square = Utils3D.createSquare(100);
-//    square = square.flip();
-    return new CSGNode(Utils3D.getMesh(singletonList(square)), cadContext);
-
+  private void setInitObject(Group parent) {
+    List<Surface> cube = Utils3D.createCube(100);
+    parent.getChildren().addAll(cadContext.toNodes(cube));
 //
 //    CSG init = new Cube(100).toCSG().difference(new Cylinder(30, 100, 10).toCSG());
 //    return new CSGNode(Utils3D.getFXMesh(init), cadContext);
