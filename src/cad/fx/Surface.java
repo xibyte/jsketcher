@@ -149,16 +149,24 @@ public class Surface {
     Surface lid = source.shift(target).flip();
     surfaces.add(lid);
 
-    for (int i = 1; i < source.shell.size(); i++) {
+    for (int i = 0; i < source.shell.size(); i++) {
       Surface face = new Surface(Arrays.asList(
-          source.shell.get(i - 1),
-          source.shell.get(i),
-          lid.shell.get(i),
-          lid.shell.get(i - 1)
+        get(source.shell, i - 1),
+        get(lid.shell, i - 1),
+        get(lid.shell, i),
+        get(source.shell, i)
       ));
       surfaces.add(face);
     }
     return surfaces;
+  }
+
+  private static <T> T get(List<T> list, int i) {
+    i = i % list.size();
+    if (i < 0) {
+      i = list.size() + i;
+    }
+    return list.get(i);
   }
 
   public Surface shift(Vector target) {
