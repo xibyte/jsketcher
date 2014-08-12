@@ -3,9 +3,11 @@ package cad.fx;
 import cad.math.Vector;
 import eu.mihosoft.vrl.v3d.Vector3d;
 import javafx.geometry.Point3D;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Sphere;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Sketcher {
 
@@ -19,7 +21,8 @@ public class Sketcher {
   }
 
   public void addPoint(Point3D point) {
-    sketch.polygons.get(sketch.polygons.size() - 1).add(new Vector(point.getX(), point.getY(), point.getZ()));
+    List<Vector> poly = sketch.polygons.get(sketch.polygons.size() - 1);
+    poly.add(new Vector(point.getX(), point.getY(), point.getZ()));
     Sphere pt = new Sphere(1);
     pt.setTranslateX(point.getX());
     pt.setTranslateY(point.getY());

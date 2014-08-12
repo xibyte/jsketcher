@@ -15,12 +15,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-public class Cad implements GLEventListener, MouseListener, MouseMotionListener {
+public class Cad implements GLEventListener, com.jogamp.newt.event.MouseListener {
 
 
   static {
       GLProfile.initSingleton();  // The method allows JOGL to prepare some Linux-specific locking optimizations
   }
+
+  private static GLWindow window;
 
   public static void main(String[] args) {
 
@@ -29,11 +31,11 @@ public class Cad implements GLEventListener, MouseListener, MouseMotionListener 
     // Specifies a set of OpenGL capabilities, based on your profile.
     GLCapabilities caps = new GLCapabilities(glp);
     // Create the OpenGL rendering canvas
-    GLWindow window = GLWindow.create(caps);
+    window = GLWindow.create(caps);
 
     // Create a animator that drives canvas' display() at the specified FPS.
     final FPSAnimator animator = new FPSAnimator(window, 60, true);
-//    final Animator animator = new Animator(window);
+////    final Animator animator = new Animator(window);
     window.addWindowListener(new com.jogamp.newt.event.WindowAdapter() {
       @Override
       public void windowDestroyNotify(com.jogamp.newt.event.WindowEvent arg0) {
@@ -44,7 +46,6 @@ public class Cad implements GLEventListener, MouseListener, MouseMotionListener 
           public void run() {
             if (animator.isStarted())
               animator.stop();    // stop the animator loop
-            System.exit(0);
           }
         }.start();
       }
@@ -55,10 +56,25 @@ public class Cad implements GLEventListener, MouseListener, MouseMotionListener 
     window.setSize(640, 480);
     window.setTitle("CAD");
     window.setVisible(true);
+
+
+    new Thread(new Runnable() {
+      public void run() {
+        final Object monitor = new Object();
+        synchronized (monitor) {
+          while (true)
+          try {
+            monitor.wait();
+          } catch (InterruptedException e) {
+          }
+        }
+      }
+    }).start();
+//    animator.start();
   }
 
   private float view_rotx = 20.0f, view_roty = 30.0f, view_rotz = 0.0f;
-  private int gear1, gear2, gear3;
+  private int gear1;
   private float angle = 0.0f;
 
   private int prevMouseX, prevMouseY;
@@ -94,24 +110,13 @@ public class Cad implements GLEventListener, MouseListener, MouseMotionListener 
     gear(gl, 1.0f, 4.0f, 1.0f, 20, 0.7f);
     gl.glEndList();
 
-    gear2 = gl.glGenLists(1);
-    gl.glNewList(gear2, GL2.GL_COMPILE);
-    gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE, green, 0);
-    gear(gl, 0.5f, 2.0f, 2.0f, 10, 0.7f);
-    gl.glEndList();
-
-    gear3 = gl.glGenLists(1);
-    gl.glNewList(gear3, GL2.GL_COMPILE);
-    gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE, blue, 0);
-    gear(gl, 1.3f, 2.0f, 0.5f, 10, 0.7f);
-    gl.glEndList();
-
     gl.glEnable(GL2.GL_NORMALIZE);
 
-    if (drawable instanceof AWTGLAutoDrawable) {
-      AWTGLAutoDrawable awtDrawable = (AWTGLAutoDrawable) drawable;
+
+
+    if (drawable instanceof GLWindow) {
+      GLWindow awtDrawable = (GLWindow) drawable;
       awtDrawable.addMouseListener(this);
-      awtDrawable.addMouseMotionListener(this);
     }
   }
 
@@ -167,19 +172,6 @@ public class Cad implements GLEventListener, MouseListener, MouseMotionListener 
     gl.glCallList(gear1);
     gl.glPopMatrix();
 
-    // Place the second gear and call its display list
-    gl.glPushMatrix();
-    gl.glTranslatef(3.1f, -2.0f, 0.0f);
-    gl.glRotatef(-2.0f * angle - 9.0f, 0.0f, 0.0f, 1.0f);
-    gl.glCallList(gear2);
-    gl.glPopMatrix();
-
-    // Place the third gear and call its display list
-    gl.glPushMatrix();
-    gl.glTranslatef(-3.1f, 4.2f, 0.0f);
-    gl.glRotatef(-2.0f * angle - 25.0f, 0.0f, 0.0f, 1.0f);
-    gl.glCallList(gear3);
-    gl.glPopMatrix();
 
     // Remember that every push needs a pop; this one is paired with
     // rotating the entire gear assembly
@@ -297,14 +289,21 @@ public class Cad implements GLEventListener, MouseListener, MouseMotionListener 
     gl.glEnd();
   }
 
-  // Methods required for the implementation of MouseListener
-  public void mouseEntered(MouseEvent e) {
+
+  @Override
+  public void mouseClicked(com.jogamp.newt.event.MouseEvent e) {
   }
 
-  public void mouseExited(MouseEvent e) {
+  @Override
+  public void mouseEntered(com.jogamp.newt.event.MouseEvent e) {
   }
 
-  public void mousePressed(MouseEvent e) {
+  @Override
+  public void mouseExited(com.jogamp.newt.event.MouseEvent e) {
+  }
+
+  @Override
+  public void mousePressed(com.jogamp.newt.event.MouseEvent e) {
     prevMouseX = e.getX();
     prevMouseY = e.getY();
     if ((e.getModifiers() & e.BUTTON3_MASK) != 0) {
@@ -312,23 +311,28 @@ public class Cad implements GLEventListener, MouseListener, MouseMotionListener 
     }
   }
 
-  public void mouseReleased(MouseEvent e) {
+  @Override
+  public void mouseReleased(com.jogamp.newt.event.MouseEvent e) {
     if ((e.getModifiers() & e.BUTTON3_MASK) != 0) {
       mouseRButtonDown = false;
     }
+
   }
 
-  public void mouseClicked(MouseEvent e) {
+  @Override
+  public void mouseMoved(com.jogamp.newt.event.MouseEvent e) {
   }
 
-  // Methods required for the implementation of MouseMotionListener
-  public void mouseDragged(MouseEvent e) {
+  @Override
+  public void mouseDragged(com.jogamp.newt.event.MouseEvent e) {
     int x = e.getX();
     int y = e.getY();
-    Dimension size = e.getComponent().getSize();
 
-    float thetaY = 360.0f * ((float) (x - prevMouseX) / (float) size.width);
-    float thetaX = 360.0f * ((float) (prevMouseY - y) / (float) size.height);
+    int width = window.getWidth();
+    int height = window.getHeight();
+
+    float thetaY = 360.0f * ((float) (x - prevMouseX) / (float) width);
+    float thetaX = 360.0f * ((float) (prevMouseY - y) / (float) height);
 
     prevMouseX = x;
     prevMouseY = y;
@@ -337,6 +341,7 @@ public class Cad implements GLEventListener, MouseListener, MouseMotionListener 
     view_roty += thetaY;
   }
 
-  public void mouseMoved(MouseEvent e) {
+  @Override
+  public void mouseWheelMoved(com.jogamp.newt.event.MouseEvent e) {
   }
 }

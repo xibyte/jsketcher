@@ -32,7 +32,7 @@ public class Utils3D {
     DEFAULT_MATERIAL.setDiffuseColor(Color.LIGHTSTEELBLUE);
 //    DEFAULT_MATERIAL.setSpecularColor(Color.LIGHTBLUE);
 
-    SELECTED_MATERIAL.setDiffuseColor(Color.LIGHTSEAGREEN);
+    SELECTED_MATERIAL.setDiffuseColor(Color.AZURE);
 //    SELECTED_MATERIAL.setSpecularColor(Color.SEAGREEN); //disable reflection
 
     HIGHLIGHTED_MATERIAL.setDiffuseColor(Color.LIGHTGOLDENRODYELLOW);
