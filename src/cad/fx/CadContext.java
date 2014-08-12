@@ -4,6 +4,7 @@ import cad.math.Vector;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 
+import java.util.Collections;
 import java.util.List;
 
 public class CadContext {
@@ -55,16 +56,17 @@ public class CadContext {
     }
 
     Sketch sketch = selection.csgNode.getSketch(selection.surface);
+    Vector dir = sketch.owner.normal.scale(height);
     for (List<Vector> polygon : sketch.polygons) {
       if (polygon.isEmpty()) {
         continue;
       }
-      Vector dir = sketch.owner.normal.scale(height);
 
-      List<Surface> extruded = Surface.extrude(sketch.owner, dir);
+      Surface surface = new Surface(sketch.owner.normal, polygon, Collections.emptyList());
+      List<Surface> extruded = Surface.extrude(surface, dir);
+      sketch.drawLayer.getChildren().addAll(new CSGNode(Utils3D.getMesh(extruded), this)); // fixme
 
 //      CSG pad = Extrude.points(dir, polygon);
-      sketch.drawLayer.getChildren().addAll(new CSGNode(Utils3D.getMesh(extruded), this)); // fixme
     }
   }
 
