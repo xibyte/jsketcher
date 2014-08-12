@@ -1,9 +1,13 @@
 package cad.fx;
 
 import cad.math.Vector;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.MeshView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,8 +15,58 @@ public class CadContext {
 
   public Sketcher sketcher;
   public Selection selection;
+  public final SelectionManager selectionManger = new SelectionManager();
+  public final SelectionManager highlightManger = new SelectionManager();
+
+  
+  class MaterialChangeListener implements SelectionManager.Listener {
+
+    public final PhongMaterial onSelect;
+    public final PhongMaterial onDeselect;
+    private SelectionManager dependency;
+    
+    MaterialChangeListener(PhongMaterial onSelect, PhongMaterial onDeselect, SelectionManager dependency) {
+      this.onSelect = onSelect;
+      this.onDeselect = onDeselect;
+      this.dependency = dependency;
+    }
+
+    public void added(List<Node> nodes) {
+      if (dependency != null) {
+        nodes = filter(nodes, dependency);
+      }
+      setMaterial(nodes, onSelect);
+    }
+
+    public void removed(List<Node> nodes) {
+      if (dependency != null) {
+        nodes = filter(nodes, dependency);
+      }
+      setMaterial(nodes, onDeselect);
+    }
+    
+    private List<Node> filter(List<Node> nodes, SelectionManager dependency) {
+      nodes = new ArrayList<>(nodes);
+      nodes.removeAll(selectionManger.getSelection());
+      return nodes;
+    }
+  }
+  
+  {
+    selectionManger.addListener(new MaterialChangeListener(Utils3D.SELECTED_MATERIAL, Utils3D.DEFAULT_MATERIAL, null));
+    highlightManger.addListener(new MaterialChangeListener(Utils3D.HIGHLIGHTED_MATERIAL, Utils3D.DEFAULT_MATERIAL, selectionManger));
+  }
+
+  private void setMaterial(List<Node> nodes, PhongMaterial material) {
+    for (Node node : nodes) {
+      if (node instanceof MeshView) {
+        ((MeshView) node).setMaterial(material);
+      }
+    }
+  }
 
   public void clickOnNode(CSGNode csgNode, MouseEvent e) {
+    selectionManger.selectExclusively(csgNode);
     PickResult pickResult = e.getPickResult();
     int face = pickResult.getIntersectedFace();
     CSGMesh csgMesh = (CSGMesh) csgNode.getMesh();
@@ -64,8 +118,10 @@ public class CadContext {
 
       Surface surface = new Surface(sketch.owner.normal, polygon, Collections.emptyList());
       List<Surface> extruded = Surface.extrude(surface, dir);
-      sketch.drawLayer.getChildren().addAll(new CSGNode(Utils3D.getMesh(extruded), this)); // fixme
 
+      for (Surface s : extruded) {
+        sketch.drawLayer.getChildren().addAll(new CSGNode( Utils3D.getMesh(Collections.singletonList(s)), this)); // fixme
+      }
 //      CSG pad = Extrude.points(dir, polygon);
     }
   }
