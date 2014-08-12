@@ -10,6 +10,11 @@ import javafx.scene.shape.MeshView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class CadContext {
 
@@ -120,12 +125,20 @@ public class CadContext {
       List<Surface> extruded = Surface.extrude(surface, dir);
 
       for (Surface s : extruded) {
-        sketch.drawLayer.getChildren().addAll(new CSGNode( Utils3D.getMesh(Collections.singletonList(s)), this)); // fixme
+        sketch.drawLayer.getChildren().addAll(toNodes(extruded));// fixme
       }
 //      CSG pad = Extrude.points(dir, polygon);
     }
   }
 
+  public List<CSGNode> toNodes(List<Surface> extruded) {
+    return extruded.stream().map(this::toNode).collect(toList());
+  }
+
+  public CSGNode toNode(Surface surface) {
+    return new CSGNode(Utils3D.getMesh(Collections.singletonList(surface)), this);
+  }
+  
   public static class Selection {
 
     public final CSGNode csgNode;
