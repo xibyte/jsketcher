@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import cad.fx.viewer.* ?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<VBox xmlns:fx="fx" fx:controller="cad.fx.AppCtrl">
+
+  <ToolBar>
+    <Region styleClass="spacer"/>
+    <HBox styleClass="segmented-button-bar">
+      <Button text="Begin" fx:id="beginSketching"/>
+      <Button text="End" fx:id="endSketching"/>
+      <Button text="Pad" fx:id="pad"/>
+      <Button text="Cut" fx:id="cut"/>
+    </HBox>
+  </ToolBar>
+
+  <Viewer3D fx:id="viewer"/>
+
+</VBox>
