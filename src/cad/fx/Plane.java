@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
-public class Surface {
+public class Plane {
 
   public final Vector normal;
   public final List<Vector> shell;
@@ -23,15 +23,15 @@ public class Surface {
 
   private List<Vector[]> triangles;
 
-  public Surface(List<Vector> shell) {
+  public Plane(List<Vector> shell) {
     this(shell, Collections.emptyList());
   }
 
-  public Surface(List<Vector> shell, List<List<Vector>> holes) {
+  public Plane(List<Vector> shell, List<List<Vector>> holes) {
     this(normalOfCCWSeq(shell.get(0), shell.get(1), shell.get(2)), shell, holes);
   }
 
-  public Surface(Vector normal, List<Vector> shell, List<List<Vector>> holes) {
+  public Plane(Vector normal, List<Vector> shell, List<List<Vector>> holes) {
     this.normal = normal.normalize();
     this.shell = shell;
     this.holes = holes;
@@ -43,11 +43,11 @@ public class Surface {
     }
   }
 
-  public Surface fixCCW() {
+  public Plane fixCCW() {
     if (!normal.slightlyEqualTo(normalOfCCWSeq(shell.get(0), shell.get(1), shell.get(2)))) {
       List<Vector> shell = new ArrayList<>(this.shell);
       Collections.reverse(shell);
-      return new Surface(normal, shell, holes);
+      return new Plane(normal, shell, holes);
     }
     return this;
   }
@@ -128,11 +128,11 @@ public class Surface {
     triangle[2] = first;
   }
 
-  public Surface flip() {
-    return new Surface(normal.negate(), shell, holes);
+  public Plane flip() {
+    return new Plane(normal.negate(), shell, holes);
   }
 
-  public static List<Surface> extrude(Surface source, Vector target) {
+  public static List<Plane> extrude(Plane source, Vector target) {
 
     double dotProduct = target.normalize().dot(source.normal);
     if (dotProduct == 0) {
@@ -143,22 +143,22 @@ public class Surface {
     }
     source = source.fixCCW();
 
-    List<Surface> surfaces = new ArrayList<>();
-    surfaces.add(source);
+    List<Plane> planes = new ArrayList<>();
+    planes.add(source);
 
-    Surface lid = source.shift(target).flip();
-    surfaces.add(lid);
+    Plane lid = source.shift(target).flip();
+    planes.add(lid);
 
     for (int i = 0; i < source.shell.size(); i++) {
-      Surface face = new Surface(Arrays.asList(
+      Plane face = new Plane(Arrays.asList(
         get(source.shell, i - 1),
         get(lid.shell, i - 1),
         get(lid.shell, i),
         get(source.shell, i)
       ));
-      surfaces.add(face);
+      planes.add(face);
     }
-    return surfaces;
+    return planes;
   }
 
   private static <T> T get(List<T> list, int i) {
@@ -169,12 +169,12 @@ public class Surface {
     return list.get(i);
   }
 
-  public Surface shift(Vector target) {
+  public Plane shift(Vector target) {
     List<Vector> shell = this.shell.stream().map(vector -> vector.plus(target)).collect(toList());
     List<List<Vector>> holes = new ArrayList<>();
     for (List<Vector> hole : this.holes) {
       holes.add(hole.stream().map(vector -> vector.plus(target)).collect(toList()));
     }
-    return new Surface(normal, shell, holes);
+    return new Plane(normal, shell, holes);
   }
 }

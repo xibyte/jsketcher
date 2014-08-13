@@ -36,7 +36,7 @@ public class AppCtrl implements Initializable {
   }
 
   private void setInitObject(Group parent) {
-    List<Surface> cube = Utils3D.createCube(100);
+    List<Plane> cube = Utils3D.createCube(100);
     parent.getChildren().addAll(cadContext.toNodes(cube));
 //
 //    CSG init = new Cube(100).toCSG().difference(new Cylinder(30, 100, 10).toCSG());
