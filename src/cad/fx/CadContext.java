@@ -10,9 +10,6 @@ import javafx.scene.shape.MeshView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -75,20 +72,20 @@ public class CadContext {
     PickResult pickResult = e.getPickResult();
     int face = pickResult.getIntersectedFace();
     CSGMesh csgMesh = (CSGMesh) csgNode.getMesh();
-    Surface surface = csgMesh.polygons.get(face);
-    System.out.println(surface);
-    if (surface != null) {
+    Plane plane = csgMesh.polygons.get(face);
+    System.out.println(plane);
+    if (plane != null) {
       if (selection != null) {
-        boolean isSameNode = selection.sameTo(csgNode, surface);
+        boolean isSameNode = selection.sameTo(csgNode, plane);
         if (sketcher == null && !isSameNode) {
-          selection = new Selection(csgNode, surface);
+          selection = new Selection(csgNode, plane);
         }
         if (sketcher != null && isSameNode) {
           sketcher.addPoint(pickResult.getIntersectedPoint());
         }
       } else {
         if (sketcher == null) {
-          selection = new Selection(csgNode, surface);
+          selection = new Selection(csgNode, plane);
         }
       }
     }
@@ -98,7 +95,7 @@ public class CadContext {
     if (sketcher != null || selection == null) {
       return;
     }
-    sketcher = new Sketcher(selection.csgNode.getSketch(selection.surface));
+    sketcher = new Sketcher(selection.csgNode.getSketch(selection.plane));
   }
 
   public void endSketching() {
@@ -114,43 +111,43 @@ public class CadContext {
       return;
     }
 
-    Sketch sketch = selection.csgNode.getSketch(selection.surface);
+    Sketch sketch = selection.csgNode.getSketch(selection.plane);
     Vector dir = sketch.owner.normal.scale(height);
     for (List<Vector> polygon : sketch.polygons) {
       if (polygon.isEmpty()) {
         continue;
       }
 
-      Surface surface = new Surface(sketch.owner.normal, polygon, Collections.emptyList());
-      List<Surface> extruded = Surface.extrude(surface, dir);
+      Plane plane = new Plane(sketch.owner.normal, polygon, Collections.emptyList());
+      List<Plane> extruded = Plane.extrude(plane, dir);
 
-      for (Surface s : extruded) {
+      for (Plane s : extruded) {
         sketch.drawLayer.getChildren().addAll(toNodes(extruded));// fixme
       }
 //      CSG pad = Extrude.points(dir, polygon);
     }
   }
 
-  public List<CSGNode> toNodes(List<Surface> extruded) {
+  public List<CSGNode> toNodes(List<Plane> extruded) {
     return extruded.stream().map(this::toNode).collect(toList());
   }
 
-  public CSGNode toNode(Surface surface) {
-    return new CSGNode(Utils3D.getMesh(Collections.singletonList(surface)), this);
+  public CSGNode toNode(Plane plane) {
+    return new CSGNode(Utils3D.getMesh(Collections.singletonList(plane)), this);
   }
   
   public static class Selection {
 
     public final CSGNode csgNode;
-    public final Surface surface;
+    public final Plane plane;
 
-    public Selection(CSGNode csgNode, Surface surface) {
+    public Selection(CSGNode csgNode, Plane plane) {
       this.csgNode = csgNode;
-      this.surface = surface;
+      this.plane = plane;
     }
 
-    public boolean sameTo(CSGNode csgNode, Surface surface) {
-      return this.csgNode.equals(csgNode) && this.surface.equals(surface);
+    public boolean sameTo(CSGNode csgNode, Plane plane) {
+      return this.csgNode.equals(csgNode) && this.plane.equals(plane);
     }
   }
 }

@@ -1,18 +1,8 @@
 package cad.fx;
 
 import cad.math.Vector;
-import eu.mihosoft.vrl.v3d.CSG;
-import eu.mihosoft.vrl.v3d.MeshContainer;
-import eu.mihosoft.vrl.v3d.Polygon;
-import eu.mihosoft.vrl.v3d.Vector3d;
-import eu.mihosoft.vrl.v3d.Vertex;
-import eu.mihosoft.vrl.v3d.ext.org.poly2tri.PolygonUtil;
-import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.TriangleMesh;
-import org.poly2tri.Poly2Tri;
-import org.poly2tri.geometry.polygon.PolygonPoint;
 import org.poly2tri.triangulation.TriangulationPoint;
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 
@@ -42,16 +32,16 @@ public class Utils3D {
   }
 
 
-  public static CSGMesh getMesh(List<Surface> surfaces) {
+  public static CSGMesh getMesh(List<Plane> planes) {
 
     CSGMesh mesh = new CSGMesh();
 
     int faceCounter = 0;
 
-    for (Surface surface : surfaces) {
+    for (Plane plane : planes) {
 
 
-      for (Vector[] triangle : surface.getTriangles()) {
+      for (Vector[] triangle : plane.getTriangles()) {
 
 
         mesh.getPoints().addAll(
@@ -92,7 +82,7 @@ public class Utils3D {
                 counter + 2, // third vertex
                 0 // texture (not covered)
         );
-        mesh.polygons.put(faceCounter, surface);
+        mesh.polygons.put(faceCounter, plane);
         ++faceCounter;
 
       } // end if #verts >= 3
@@ -157,12 +147,12 @@ public class Utils3D {
     return mesh;
   }
 
-  public static List<Surface> createCube(double width) {
-    Surface square = createSquare(width);
-    return Surface.extrude(square, square.normal.scale(width)); 
+  public static List<Plane> createCube(double width) {
+    Plane square = createSquare(width);
+    return Plane.extrude(square, square.normal.scale(width)); 
   }
 
-  public static Surface createSquare(double width) {
+  public static Plane createSquare(double width) {
 
     width /= 2;
 
@@ -183,6 +173,6 @@ public class Utils3D {
 //
 //    polygon.addHole(hole);
 
-    return new Surface(shell);
+    return new Plane(shell);
   }
 }

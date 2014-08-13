@@ -1,14 +1,10 @@
 package cad.fx;
 
-import eu.mihosoft.vrl.v3d.CSG;
 import eu.mihosoft.vrl.v3d.Polygon;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.shape.MeshView;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class CSGNode extends MeshView {
@@ -38,14 +34,14 @@ public class CSGNode extends MeshView {
     System.out.println(poly);
   }
 
-  public final Map<Surface, Sketch> sketches = new HashMap<>();
+  public final Map<Plane, Sketch> sketches = new HashMap<>();
 
-  public Sketch getSketch(Surface surface) {
-    Sketch sketch = sketches.get(surface);
+  public Sketch getSketch(Plane plane) {
+    Sketch sketch = sketches.get(plane);
     if (sketch == null) {
-      sketch = new Sketch(surface);
+      sketch = new Sketch(plane);
       ((Group) getParent()).getChildren().add(sketch.drawLayer);
-      sketches.put(surface, sketch);
+      sketches.put(plane, sketch);
     }
     return sketch;
   }

@@ -1,19 +1,16 @@
 package cad;
 
 import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.opengl.util.FPSAnimator;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLProfile;
-import javax.media.opengl.awt.AWTGLAutoDrawable;
-import javax.media.opengl.awt.GLJPanel;
-import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import javax.media.opengl.Threading;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Cad implements GLEventListener, com.jogamp.newt.event.MouseListener {
 
@@ -24,7 +21,9 @@ public class Cad implements GLEventListener, com.jogamp.newt.event.MouseListener
 
   private static GLWindow window;
 
-  public static void main(String[] args) {
+  ExecutorService updater = Executors.newSingleThreadExecutor();
+  
+  public static void main(String[] args) throws NoSuchMethodException, ClassNotFoundException {
 
     // Get the default OpenGL profile, reflecting the best for your running platform
     GLProfile glp = GLProfile.getDefault();
@@ -34,42 +33,41 @@ public class Cad implements GLEventListener, com.jogamp.newt.event.MouseListener
     window = GLWindow.create(caps);
 
     // Create a animator that drives canvas' display() at the specified FPS.
-    final FPSAnimator animator = new FPSAnimator(window, 60, true);
+//    final FPSAnimator animator = new FPSAnimator(window, 60, true);
 ////    final Animator animator = new Animator(window);
-    window.addWindowListener(new com.jogamp.newt.event.WindowAdapter() {
-      @Override
-      public void windowDestroyNotify(com.jogamp.newt.event.WindowEvent arg0) {
-        // Use a dedicate thread to run the stop() to ensure that the
-        // animator stops before program exits.
-        new Thread() {
-          @Override
-          public void run() {
-            if (animator.isStarted())
-              animator.stop();    // stop the animator loop
-          }
-        }.start();
-      }
-    });
+//    window.addWindowListener(new com.jogamp.newt.event.WindowAdapter() {
+//      @Override
+//      public void windowDestroyNotify(com.jogamp.newt.event.WindowEvent arg0) {
+//        // Use a dedicate thread to run the stop() to ensure that the
+//        // animator stops before program exits.
+//        new Thread() {
+//          @Override
+//          public void run() {
+//            if (animator.isStarted())
+//              animator.stop();    // stop the animator loop
+//          }
+//        }.start();
+//      }
+//    });
 
     window.addGLEventListener(new Cad());
 
     window.setSize(640, 480);
     window.setTitle("CAD");
     window.setVisible(true);
-
-
-    new Thread(new Runnable() {
-      public void run() {
-        final Object monitor = new Object();
-        synchronized (monitor) {
-          while (true)
-          try {
+    
+    Executors.newSingleThreadExecutor().execute(() -> {
+      Object monitor = new Object();
+      while (true) {
+        try {
+          synchronized (monitor) {
             monitor.wait();
-          } catch (InterruptedException e) {
           }
+        } catch (InterruptedException e) {
         }
       }
-    }).start();
+    });
+    
 //    animator.start();
   }
 
@@ -143,20 +141,15 @@ public class Cad implements GLEventListener, com.jogamp.newt.event.MouseListener
 
   public void display(GLAutoDrawable drawable) {
     // Turn the gears' teeth
-    angle += 2.0f;
+//    angle += 2.0f;
 
     // Get the GL corresponding to the drawable we are animating
     GL2 gl = drawable.getGL().getGL2();
 
     // Special handling for the case where the GLJPanel is translucent
     // and wants to be composited with other Java 2D content
-    if ((drawable instanceof GLJPanel) &&
-        !((GLJPanel) drawable).isOpaque() &&
-        ((GLJPanel) drawable).shouldPreserveColorBufferIfTranslucent()) {
-      gl.glClear(GL2.GL_DEPTH_BUFFER_BIT);
-    } else {
-      gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
-    }
+
+    gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
     // Rotate the entire assembly of gears based on how the user
     // dragged the mouse around
@@ -167,7 +160,7 @@ public class Cad implements GLEventListener, com.jogamp.newt.event.MouseListener
 
     // Place the first gear and call its display list
     gl.glPushMatrix();
-    gl.glTranslatef(-3.0f, -2.0f, 0.0f);
+    gl.glTranslatef(1.0f, 1.0f, 0.0f);
     gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
     gl.glCallList(gear1);
     gl.glPopMatrix();
@@ -339,6 +332,41 @@ public class Cad implements GLEventListener, com.jogamp.newt.event.MouseListener
 
     view_rotx += thetaX;
     view_roty += thetaY;
+    
+    update(window::display);
+  }
+
+  
+
+  volatile boolean updating = false;
+  
+  private void update(Runnable op) {
+    if (updating) {
+      return;
+    }
+
+    Threading.invokeOnOpenGLThread(false, new Runnable() {
+      @Override
+      public void run() {
+        try {
+          updating = true;
+
+          op.run();
+        } finally {
+          updating = false;
+        }
+      }
+    });
+    
+//    updater.execute(() -> {
+//      try {
+//        updating = true;
+//        
+//        op.run();
+//      } finally {
+//        updating = false;
+//      }
+//    });
   }
 
   @Override
