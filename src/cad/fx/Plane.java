@@ -161,7 +161,7 @@ public class Plane {
     return planes;
   }
 
-  private static <T> T get(List<T> list, int i) {
+  public static <T> T get(List<T> list, int i) {
     i = i % list.size();
     if (i < 0) {
       i = list.size() + i;
