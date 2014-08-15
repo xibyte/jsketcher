@@ -6,6 +6,6 @@ import javafx.scene.shape.TriangleMesh;
 
 public class CSGMesh extends TriangleMesh {
 
-  public final TIntObjectMap<Plane> polygons = new TIntObjectHashMap<>();
+  public final TIntObjectMap<Polygon> polygons = new TIntObjectHashMap<>();
 
 }

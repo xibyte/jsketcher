@@ -8,11 +8,11 @@ import java.util.List;
 
 public class Sketch {
 
-  public final Plane owner;
+  public final Polygon owner;
   public final List<List<Vector>> polygons = new ArrayList<>();
   public final Group drawLayer = new Group();
 
-  public Sketch(Plane owner) {
+  public Sketch(Polygon owner) {
     this.owner = owner;
   }
 }
