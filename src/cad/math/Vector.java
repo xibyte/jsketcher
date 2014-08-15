@@ -6,6 +6,14 @@ public class Vector {
   public double y;
   public double z;
 
+  public static Vector fromArr3(float[] data) {
+    return new Vector(data[0], data[1], data[2]);
+  }
+
+  public static Vector fromArr3(double[] data) {
+    return new Vector(data[0], data[1], data[2]);
+  }
+
   public Vector() {
   }
 
@@ -23,16 +31,26 @@ public class Vector {
     this(x, y, 0);
   }
 
-  public Vector(double[] data) {
-    if (data.length > 0) {
-      x = data[0];
-      if (data.length > 1) {
-        y = data[1];
-        if (data.length > 2) {
-          z = data[2];
-        }
-      }
-    }
+  public void set(Vector vector) {
+    set(vector.x, vector.y, vector.z);
+  }
+
+  public void set(double x, double y, double z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  public void set3(float[] data) {
+    this.x = data[0];
+    this.y = data[1];
+    this.z = data[2];
+  }
+
+  public void set3(double[] data) {
+    this.x = data[0];
+    this.y = data[1];
+    this.z = data[2];
   }
 
   public Vector scale(double factor) {
@@ -102,4 +120,5 @@ public class Vector {
   public Vector negate() {
     return scale(-1);
   }
+
 }

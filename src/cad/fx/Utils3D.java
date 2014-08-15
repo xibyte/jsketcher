@@ -32,16 +32,16 @@ public class Utils3D {
   }
 
 
-  public static CSGMesh getMesh(List<Plane> planes) {
+  public static CSGMesh getMesh(List<Polygon> polygons) {
 
     CSGMesh mesh = new CSGMesh();
 
     int faceCounter = 0;
 
-    for (Plane plane : planes) {
+    for (Polygon poly : polygons) {
 
 
-      for (Vector[] triangle : plane.getTriangles()) {
+      for (Vector[] triangle : poly.getTriangles()) {
 
 
         mesh.getPoints().addAll(
@@ -82,7 +82,7 @@ public class Utils3D {
                 counter + 2, // third vertex
                 0 // texture (not covered)
         );
-        mesh.polygons.put(faceCounter, plane);
+        mesh.polygons.put(faceCounter, poly);
         ++faceCounter;
 
       } // end if #verts >= 3
@@ -147,12 +147,12 @@ public class Utils3D {
     return mesh;
   }
 
-  public static List<Plane> createCube(double width) {
-    Plane square = createSquare(width);
-    return Plane.extrude(square, square.normal.scale(width)); 
+  public static List<Polygon> createCube(double width) {
+    Polygon square = createSquare(width);
+    return Polygon.extrude(square, square.normal.scale(width)); 
   }
 
-  public static Plane createSquare(double width) {
+  public static Polygon createSquare(double width) {
 
     width /= 2;
 
@@ -173,6 +173,6 @@ public class Utils3D {
 //
 //    polygon.addHole(hole);
 
-    return new Plane(shell);
+    return new Polygon(shell);
   }
 }

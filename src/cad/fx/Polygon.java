@@ -4,7 +4,6 @@ import cad.math.HMath;
 import cad.math.Matrix;
 import cad.math.Vector;
 import org.poly2tri.Poly2Tri;
-import org.poly2tri.geometry.polygon.Polygon;
 import org.poly2tri.geometry.polygon.PolygonPoint;
 
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
-public class Plane {
+public class Polygon {
 
   public final Vector normal;
   public final List<Vector> shell;
@@ -23,15 +22,15 @@ public class Plane {
 
   private List<Vector[]> triangles;
 
-  public Plane(List<Vector> shell) {
+  public Polygon(List<Vector> shell) {
     this(shell, Collections.emptyList());
   }
 
-  public Plane(List<Vector> shell, List<List<Vector>> holes) {
+  public Polygon(List<Vector> shell, List<List<Vector>> holes) {
     this(normalOfCCWSeq(shell.get(0), shell.get(1), shell.get(2)), shell, holes);
   }
 
-  public Plane(Vector normal, List<Vector> shell, List<List<Vector>> holes) {
+  public Polygon(Vector normal, List<Vector> shell, List<List<Vector>> holes) {
     this.normal = normal.normalize();
     this.shell = shell;
     this.holes = holes;
@@ -43,11 +42,11 @@ public class Plane {
     }
   }
 
-  public Plane fixCCW() {
+  public Polygon fixCCW() {
     if (!normal.slightlyEqualTo(normalOfCCWSeq(shell.get(0), shell.get(1), shell.get(2)))) {
       List<Vector> shell = new ArrayList<>(this.shell);
       Collections.reverse(shell);
-      return new Plane(normal, shell, holes);
+      return new Polygon(normal, shell, holes);
     }
     return this;
   }
@@ -82,7 +81,7 @@ public class Plane {
       .map(vector -> new PolygonPoint(vector.x, vector.y, vector.z))
       .collect(toList());
 
-    Polygon polygon = new Polygon(shellPoints);
+    org.poly2tri.geometry.polygon.Polygon polygon = new org.poly2tri.geometry.polygon.Polygon(shellPoints);
 
     for (List<Vector> hole : holes) {
 
@@ -91,7 +90,7 @@ public class Plane {
         .map(vector -> new PolygonPoint(vector.x, vector.y, vector.z))
         .collect(toList());
 
-      polygon.addHole(new Polygon(holePoints));
+      polygon.addHole(new org.poly2tri.geometry.polygon.Polygon(holePoints));
     }
 
     Poly2Tri.triangulate(polygon);
@@ -128,11 +127,11 @@ public class Plane {
     triangle[2] = first;
   }
 
-  public Plane flip() {
-    return new Plane(normal.negate(), shell, holes);
+  public Polygon flip() {
+    return new Polygon(normal.negate(), shell, holes);
   }
 
-  public static List<Plane> extrude(Plane source, Vector target) {
+  public static List<Polygon> extrude(Polygon source, Vector target) {
 
     double dotProduct = target.normalize().dot(source.normal);
     if (dotProduct == 0) {
@@ -143,22 +142,22 @@ public class Plane {
     }
     source = source.fixCCW();
 
-    List<Plane> planes = new ArrayList<>();
-    planes.add(source);
+    List<Polygon> poly = new ArrayList<>();
+    poly.add(source);
 
-    Plane lid = source.shift(target).flip();
-    planes.add(lid);
+    Polygon lid = source.shift(target).flip();
+    poly.add(lid);
 
     for (int i = 0; i < source.shell.size(); i++) {
-      Plane face = new Plane(Arrays.asList(
+      Polygon face = new Polygon(Arrays.asList(
         get(source.shell, i - 1),
         get(lid.shell, i - 1),
         get(lid.shell, i),
         get(source.shell, i)
       ));
-      planes.add(face);
+      poly.add(face);
     }
-    return planes;
+    return poly;
   }
 
   public static <T> T get(List<T> list, int i) {
@@ -169,12 +168,12 @@ public class Plane {
     return list.get(i);
   }
 
-  public Plane shift(Vector target) {
+  public Polygon shift(Vector target) {
     List<Vector> shell = this.shell.stream().map(vector -> vector.plus(target)).collect(toList());
     List<List<Vector>> holes = new ArrayList<>();
     for (List<Vector> hole : this.holes) {
       holes.add(hole.stream().map(vector -> vector.plus(target)).collect(toList()));
     }
-    return new Plane(normal, shell, holes);
+    return new Polygon(normal, shell, holes);
   }
 }

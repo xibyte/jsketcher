@@ -72,20 +72,20 @@ public class CadContext {
     PickResult pickResult = e.getPickResult();
     int face = pickResult.getIntersectedFace();
     CSGMesh csgMesh = (CSGMesh) csgNode.getMesh();
-    Plane plane = csgMesh.polygons.get(face);
-    System.out.println(plane);
-    if (plane != null) {
+    Polygon poly = csgMesh.polygons.get(face);
+    System.out.println(poly);
+    if (poly != null) {
       if (selection != null) {
-        boolean isSameNode = selection.sameTo(csgNode, plane);
+        boolean isSameNode = selection.sameTo(csgNode, poly);
         if (sketcher == null && !isSameNode) {
-          selection = new Selection(csgNode, plane);
+          selection = new Selection(csgNode, poly);
         }
         if (sketcher != null && isSameNode) {
           sketcher.addPoint(pickResult.getIntersectedPoint());
         }
       } else {
         if (sketcher == null) {
-          selection = new Selection(csgNode, plane);
+          selection = new Selection(csgNode, poly);
         }
       }
     }
@@ -95,7 +95,7 @@ public class CadContext {
     if (sketcher != null || selection == null) {
       return;
     }
-    sketcher = new Sketcher(selection.csgNode.getSketch(selection.plane));
+    sketcher = new Sketcher(selection.csgNode.getSketch(selection.poly));
   }
 
   public void endSketching() {
@@ -111,43 +111,43 @@ public class CadContext {
       return;
     }
 
-    Sketch sketch = selection.csgNode.getSketch(selection.plane);
+    Sketch sketch = selection.csgNode.getSketch(selection.poly);
     Vector dir = sketch.owner.normal.scale(height);
     for (List<Vector> polygon : sketch.polygons) {
       if (polygon.isEmpty()) {
         continue;
       }
 
-      Plane plane = new Plane(sketch.owner.normal, polygon, Collections.emptyList());
-      List<Plane> extruded = Plane.extrude(plane, dir);
+      Polygon poly = new Polygon(sketch.owner.normal, polygon, Collections.emptyList());
+      List<Polygon> extruded = Polygon.extrude(poly, dir);
 
-      for (Plane s : extruded) {
+      for (Polygon s : extruded) {
         sketch.drawLayer.getChildren().addAll(toNodes(extruded));// fixme
       }
 //      CSG pad = Extrude.points(dir, polygon);
     }
   }
 
-  public List<CSGNode> toNodes(List<Plane> extruded) {
+  public List<CSGNode> toNodes(List<Polygon> extruded) {
     return extruded.stream().map(this::toNode).collect(toList());
   }
 
-  public CSGNode toNode(Plane plane) {
-    return new CSGNode(Utils3D.getMesh(Collections.singletonList(plane)), this);
+  public CSGNode toNode(Polygon poly) {
+    return new CSGNode(Utils3D.getMesh(Collections.singletonList(poly)), this);
   }
   
   public static class Selection {
 
     public final CSGNode csgNode;
-    public final Plane plane;
+    public final Polygon poly;
 
-    public Selection(CSGNode csgNode, Plane plane) {
+    public Selection(CSGNode csgNode, Polygon poly) {
       this.csgNode = csgNode;
-      this.plane = plane;
+      this.poly = poly;
     }
 
-    public boolean sameTo(CSGNode csgNode, Plane plane) {
-      return this.csgNode.equals(csgNode) && this.plane.equals(plane);
+    public boolean sameTo(CSGNode csgNode, Polygon poly) {
+      return this.csgNode.equals(csgNode) && this.poly.equals(poly);
     }
   }
 }

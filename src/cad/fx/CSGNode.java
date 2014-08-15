@@ -1,6 +1,5 @@
 package cad.fx;
 
-import eu.mihosoft.vrl.v3d.Polygon;
 import javafx.scene.Group;
 import javafx.scene.shape.MeshView;
 
@@ -26,22 +25,22 @@ public class CSGNode extends MeshView {
     });
   }
 
-  private void highlight(Polygon poly) {
+  private void highlight(eu.mihosoft.vrl.v3d.Polygon poly) {
     System.out.println(poly);
   }
   
-  private void select(Polygon poly) {
+  private void select(eu.mihosoft.vrl.v3d.Polygon poly) {
     System.out.println(poly);
   }
 
-  public final Map<Plane, Sketch> sketches = new HashMap<>();
+  public final Map<Polygon, Sketch> sketches = new HashMap<>();
 
-  public Sketch getSketch(Plane plane) {
-    Sketch sketch = sketches.get(plane);
+  public Sketch getSketch(Polygon poly) {
+    Sketch sketch = sketches.get(poly);
     if (sketch == null) {
-      sketch = new Sketch(plane);
+      sketch = new Sketch(poly);
       ((Group) getParent()).getChildren().add(sketch.drawLayer);
-      sketches.put(plane, sketch);
+      sketches.put(poly, sketch);
     }
     return sketch;
   }
