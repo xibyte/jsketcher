@@ -98,19 +98,15 @@ public class Scene implements GLEventListener, MouseListener {
   }
 
   public void dispose(GLAutoDrawable drawable) {
-    System.out.println("Gears.dispose: " + drawable);
+    System.out.println("dispose: " + drawable);
   }
 
   public void display(GLAutoDrawable drawable) {
     GL2 gl = drawable.getGL().getGL2();
 
-
-
     gl.glClearColor(0.5019608f, 0.5019608f, 0.5019608f, 0f);
 
     gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
-
-
 
     gl.glPushMatrix();
     gl.glScalef(scale, scale, scale);
@@ -122,13 +118,11 @@ public class Scene implements GLEventListener, MouseListener {
     gl.glRotatef(view_rotz, 0.0f, 0.0f, 1.0f);
 
     updatePickRay(gl);
-
     drawPickRay(gl);
 
     for (CompiledNode cn : scene) {
       gl.glCallList(cn.glId);
     }
-
 
     gl.glPopMatrix();
     gl.glPopMatrix();
@@ -149,13 +143,18 @@ public class Scene implements GLEventListener, MouseListener {
 
     float[] out = new float[3];
     float y = viewport[3] - winMouseY;
+    
     glu.gluUnProject(winMouseX, y, 0, model, 0, proj, 0, viewport, 0, out, 0);
     pickRay[0].set3(out);
 
     glu.gluUnProject(winMouseX, y, 1, model, 0, proj, 0, viewport, 0, out, 0);
     pickRay[1].set3(out);
 
-    pickRay[1] = pickRay[1].minus(pickRay[0]).scale(700);
+
+//    Vector dir = pickRay[1].minus(pickRay[0]);
+    
+//    pickRay[1] = pickRay[1].minus(pickRay[0]).scale(700);//.normalize().scale(55);
+    pickRay[1] = pickRay[1].minus(pickRay[0]).normalize().scale(30);
   }
 
   public static float[] fixW(float[] v) {
