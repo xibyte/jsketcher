@@ -1,4 +1,13 @@
 
+TCAD.view = {};
+
+TCAD.view.setFaceColor = function(polyFace, color) {
+  for (var i = 0; i < polyFace.faces.length; ++i) {
+    var face = polyFace.faces[i];
+    face.color.set( color );
+  }
+};
+
 TCAD.Viewer = function() {
 
   function aspect() {
@@ -71,6 +80,11 @@ TCAD.Viewer = function() {
   cube.rotation.x += 1;
   cube.rotation.y += 1;
 
+
+  /**
+   * CONTROLS
+   **/
+
 //  controls = new THREE.OrbitControls( camera , renderer.domElement);
   controls = new THREE.TrackballControls( camera , renderer.domElement);
 
@@ -90,8 +104,15 @@ TCAD.Viewer = function() {
   controls.dynamicDampingFactor = 0.3;
 
   controls.keys = [ 65, 83, 68 ];
-
   controls.addEventListener( 'change', render );
+
+
+  /**
+   * FACE SELECTING
+   **/
+
+
+  var selectionMgr = new TCAD.FaceSelectionManager( 0xFAFAD2, 0xB0C4DE)
 
   var projector = new THREE.Projector();
   var raycaster = new THREE.Raycaster();
@@ -106,21 +127,15 @@ TCAD.Viewer = function() {
     var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
     var mouse = new THREE.Vector3( x, y, 1 );
-//    console.log(event.clientX + ":"+event.clientY + " -> " + mouse.x + ":"+mouse.y);
     var ray = projector.pickingRay(mouse.clone(), camera);
     var intersects = ray.intersectObjects( scene.children );
     if (intersects.length > 0) {
-//      console.log("Face Index: " + intersects[0].faceIndex);
-      console.log(intersects[0]);
-      if (intersects[0].face.__TCAD_polyFace !== undefined) {
-        var poly = intersects[0].face.__TCAD_polyFace;
-        for (var i = 0; i < poly.faces.length; ++i) {
-          var face = poly.faces[i];
-          face.color.setHex( 0x00FF00 );
-          cube.geometry.colorsNeedUpdate = true;
-        }
+      var picked = intersects[0];
+      if (picked.face.__TCAD_polyFace !== undefined) {
+        var poly = picked.face.__TCAD_polyFace;
+        selectionMgr.select(poly);
+        picked.object.geometry.colorsNeedUpdate = true;
       }
-      
       render();
     }
   }
@@ -141,4 +156,23 @@ TCAD.Viewer = function() {
 
   render();
   animate();
+};
+
+TCAD.FaceSelectionManager = function(selectionColor, defaultColor) {
+  this.selectionColor = selectionColor;
+  this.defaultColor = defaultColor;
+  this.selection = [];
+};
+
+TCAD.FaceSelectionManager.prototype.select = function(polyFace) {
+  this.clear();
+  this.selection.push(polyFace);
+  TCAD.view.setFaceColor(polyFace, this.selectionColor);
+};
+
+TCAD.FaceSelectionManager.prototype.clear = function() {
+  for (var i = 0; i < this.selection.length; ++ i) {
+    TCAD.view.setFaceColor(this.selection[i], this.defaultColor);
+  }
+  this.selection.length = 0;
 };
