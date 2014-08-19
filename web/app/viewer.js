@@ -26,7 +26,12 @@ TCAD.Viewer = function() {
   }
   window.addEventListener( 'resize', onWindowResize, false );
 
-  var geometry = new THREE.BoxGeometry(1,1,1);
+
+//  var geometry = new THREE.BoxGeometry(1,1,1);
+
+//  var geometry = new TCAD.Solid([TCAD.utils.createSquare(1)]);
+  var geometry = new TCAD.Solid(TCAD.utils.createBox(1));
+  
 
   var material = new THREE.MeshPhongMaterial( new THREE.MeshPhongMaterial({
 
@@ -106,9 +111,16 @@ TCAD.Viewer = function() {
     var intersects = ray.intersectObjects( scene.children );
     if (intersects.length > 0) {
 //      console.log("Face Index: " + intersects[0].faceIndex);
-//      console.log(intersects[0]);
-      intersects[0].face.color.setHex( 0x00FF00 );
-      cube.geometry.colorsNeedUpdate = true;
+      console.log(intersects[0]);
+      if (intersects[0].face.__TCAD_polyFace !== undefined) {
+        var poly = intersects[0].face.__TCAD_polyFace;
+        for (var i = 0; i < poly.faces.length; ++i) {
+          var face = poly.faces[i];
+          face.color.setHex( 0x00FF00 );
+          cube.geometry.colorsNeedUpdate = true;
+        }
+      }
+      
       render();
     }
   }
@@ -129,4 +141,4 @@ TCAD.Viewer = function() {
 
   render();
   animate();
-}
+};

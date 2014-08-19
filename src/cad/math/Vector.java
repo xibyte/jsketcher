@@ -112,9 +112,9 @@ public class Vector {
 
   public boolean equalTo(Vector vector, double tolerance) {
     return
-        HMath.areEquals(x, vector.x, tolerance) &&
-        HMath.areEquals(y, vector.y, tolerance) &&
-        HMath.areEquals(z, vector.z, tolerance);
+        HMath.areEqual(x, vector.x, tolerance) &&
+        HMath.areEqual(y, vector.y, tolerance) &&
+        HMath.areEqual(z, vector.z, tolerance);
   }
 
   public Vector negate() {

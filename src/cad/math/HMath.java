@@ -252,7 +252,7 @@ public class HMath {
     return copy;
   }
 
-  public static boolean areEquals(double v1, double v2, double tolerance) {
+  public static boolean areEqual(double v1, double v2, double tolerance) {
     return abs(v1 - v2) < tolerance;
   }
 }

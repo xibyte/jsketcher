@@ -36,9 +36,7 @@ public class Polygon {
     this.holes = holes;
     checkPolygon(shell);
     for (List<Vector> hole : holes) {
-      if (hole.size() < 3) {
-        checkPolygon(hole);
-      }
+      checkPolygon(hole);
     }
   }
 
@@ -58,8 +56,8 @@ public class Polygon {
     return new Vector[] {x, y, normal};
   }
   
-  private void checkPolygon(List<Vector> shell) {
-    if (shell.size() < 3) {
+  private void checkPolygon(List<Vector> points) {
+    if (points.size() < 3) {
       throw new IllegalArgumentException("Polygon should contain at least 3 point");
     }
   }
