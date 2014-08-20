@@ -26,12 +26,35 @@ TCAD.utils.checkPolygon = function(poly) {
   }
 };
 
-TCAD.utils.fixCCW = function(shell) {
-  if (!TCAD.geom.isCCW(shell)) {
-    shell = shell.slice(0);
-    shell.reverse();
+TCAD.utils.createPoint = function() {
+  var g = new THREE.PlaneGeometry(0.05, 0.05);
+  var m = new THREE.MeshBasicMaterial({color: 0x0000ff, side: THREE.DoubleSide});
+  return new THREE.Mesh(g, m);
+};
+
+TCAD.utils.createSolid = function(faces) {
+  var geometry = new TCAD.Solid(faces);
+  geometry.dynamic = true; //true by default
+  var material = new THREE.MeshPhongMaterial({
+    vertexColors: THREE.FaceColors,
+    color: '#B0C4DE',
+    shininess: 0
+  });
+  return new THREE.Mesh( geometry, material );
+};
+
+TCAD.utils.fixCCW = function(path, normal) {
+  var _2DTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(path, normal)).invert();
+  var path2D = [];
+  for (var i = 0; i < path.length; ++i) {
+    path2D[i] = _2DTransformation.apply(path[i]);
   }
-  return shell;
+
+  if (!TCAD.geom.isCCW(path2D)) {
+    path = path.slice(0);
+    path.reverse();
+  }
+  return path;
 };
 
 TCAD.TOLERANCE = 0.000001;
@@ -55,6 +78,17 @@ TCAD.utils.equal = function(v1, v2) {
 };
 
 TCAD.geom = {};
+
+TCAD.geom.someBasis = function(twoPointsOnPlane, normal) {
+  var a = twoPointsOnPlane[0];
+  var b = twoPointsOnPlane[1];
+
+  var x = b.minus(a).normalize();
+  var y = normal.cross(x).normalize();
+
+  return [x, y, normal];
+};
+
 TCAD.geom.normalOfCCWSeq = function(ccwSequence) {
   var a = ccwSequence[0];
   var b = ccwSequence[1];
@@ -82,8 +116,8 @@ TCAD.geom.area = function (contour) {
   return a * 0.5;
 };
 
-TCAD.geom.isCCW = function(vertices) {
-  return TCAD.geom.area(vertices) >= 0;
+TCAD.geom.isCCW = function(path2D) {
+  return TCAD.geom.area(path2D) >= 0;
 };
 
 TCAD.geom.extrude = function(source, target) {
@@ -100,14 +134,16 @@ TCAD.geom.extrude = function(source, target) {
 
   var lid = source.shift(target).flip();
   poly.push(lid);
-
+  var lidShell = lid.shell.slice(0);
+  lidShell.reverse();
+  
   var n = source.shell.length;
   for ( var p = n - 1, i = 0; i < n; p = i ++ ) {
     var face = new TCAD.Polygon([
-      source.shell[p],
       source.shell[i],
-      lid.shell[i],
-      lid.shell[p]
+      source.shell[p],
+      lidShell[p],
+      lidShell[i]
     ]);
     poly.push(face);
   }
@@ -134,7 +170,7 @@ TCAD.Solid = function(polygons) {
     for ( var h = 0;  h < poly.holes; ++ h ) {
       pushVertices(poly.holes[ h ]);
     }
-    var polyFace = {faces : [], polygon : poly};
+    var polyFace = {faces : [], polygon : poly, sketch : null};
     
     for ( var i = 0;  i < faces.length; ++ i ) {
 
@@ -183,22 +219,12 @@ TCAD.Polygon = function(shell, holes, normal) {
   if (normal === undefined) {
     normal = TCAD.geom.normalOfCCWSeq(shell);
   } else {
-    shell = TCAD.utils.fixCCW(shell);
+    shell = TCAD.utils.fixCCW(shell, normal);
   }
 
   this.normal = normal;
   this.shell = shell;
   this.holes = holes;
-};
-
-TCAD.Polygon.prototype.someBasis = function() {
-  var a = this.shell[0];
-  var b = this.shell[1];
-
-  var x = b.minus(a).normalize();
-  var y = this.normal.cross(x).normalize();
-
-  return [x, y, this.normal];
 };
 
 TCAD.Polygon.prototype.reverse = function(triangle) {
@@ -230,7 +256,7 @@ TCAD.Polygon.prototype.shift = function(target) {
 
 TCAD.Polygon.prototype.triangulate = function() {
 
-  var _3dTransformation = new TCAD.Matrix().setBasis(this.someBasis());
+  var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.shell, this.normal));
   var _2dTransformation = _3dTransformation.invert();
 
   var i, h;
@@ -246,4 +272,9 @@ TCAD.Polygon.prototype.triangulate = function() {
     }
   }
   return THREE.Shape.Utils.triangulateShape( shell, holes );
+};
+
+
+TCAD.Sketch = function() {
+  this.group = new THREE.Object3D();
 };

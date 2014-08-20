@@ -10,12 +10,21 @@ TCAD.Vector.prototype.set = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
+  return this;
 };
 
 TCAD.Vector.prototype.set3 = function(data) {
   this.x = data[0];
   this.y = data[1];
   this.z = data[2];
+  return this;
+};
+
+TCAD.Vector.prototype.setV = function(data) {
+  this.x = data.x;
+  this.y = data.y;
+  this.z = data.z;
+  return this;
 };
 
 TCAD.Vector.prototype.multiply = function(factor) {
