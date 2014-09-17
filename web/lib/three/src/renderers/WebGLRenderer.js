@@ -2686,7 +2686,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 			_this.info.render.calls ++;
 			_this.info.render.points += position.array.length / 3;
 
-		} else if ( object instanceof THREE.Line ) {
+		} else if ( object instanceof THREE.Segment ) {
 
 			var mode = ( object.type === THREE.LineStrip ) ? _gl.LINE_STRIP : _gl.LINES;
 
@@ -2987,7 +2987,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		// render lines
 
-		} else if ( object instanceof THREE.Line ) {
+		} else if ( object instanceof THREE.Segment ) {
 
 			var mode = ( object.type === THREE.LineStrip ) ? _gl.LINE_STRIP : _gl.LINES;
 
@@ -3724,7 +3724,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 				
 				initGeometryGroups(scene, object, geometry);
 
-			} else if ( object instanceof THREE.Line ) {
+			} else if ( object instanceof THREE.Segment ) {
 
 				if ( ! geometry.__webglVertexBuffer ) {
 
@@ -3773,7 +3773,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 					}
 				}
 
-			} else if ( object instanceof THREE.Line ||
+			} else if ( object instanceof THREE.Segment ||
 						object instanceof THREE.PointCloud ) {
 
 				geometry = object.geometry;
@@ -3937,7 +3937,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			material.attributes && clearCustomAttributes( material );
 
-		} else if ( object instanceof THREE.Line ) {
+		} else if ( object instanceof THREE.Segment ) {
 
 			material = getBufferMaterial( object, geometry );
 
@@ -4007,7 +4007,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		if ( object instanceof THREE.Mesh  ||
 			 object instanceof THREE.PointCloud ||
-			 object instanceof THREE.Line ) {
+			 object instanceof THREE.Segment ) {
 
 			removeInstancesWebglObjects( scene.__webglObjects, object );
 

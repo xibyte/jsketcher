@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-THREE.Line = function ( geometry, material, type ) {
+THREE.Segment = function ( geometry, material, type ) {
 
 	THREE.Object3D.call( this );
 
@@ -16,9 +16,9 @@ THREE.Line = function ( geometry, material, type ) {
 THREE.LineStrip = 0;
 THREE.LinePieces = 1;
 
-THREE.Line.prototype = Object.create( THREE.Object3D.prototype );
+THREE.Segment.prototype = Object.create( THREE.Object3D.prototype );
 
-THREE.Line.prototype.raycast = ( function () {
+THREE.Segment.prototype.raycast = ( function () {
 
 	var inverseMatrix = new THREE.Matrix4();
 	var ray = new THREE.Ray();
@@ -87,9 +87,9 @@ THREE.Line.prototype.raycast = ( function () {
 
 }() );
 
-THREE.Line.prototype.clone = function ( object ) {
+THREE.Segment.prototype.clone = function ( object ) {
 
-	if ( object === undefined ) object = new THREE.Line( this.geometry, this.material, this.type );
+	if ( object === undefined ) object = new THREE.Segment( this.geometry, this.material, this.type );
 
 	THREE.Object3D.prototype.clone.call( this, object );
 

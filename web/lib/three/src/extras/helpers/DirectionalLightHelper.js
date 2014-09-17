@@ -28,7 +28,7 @@ THREE.DirectionalLightHelper = function ( light, size ) {
 	var material = new THREE.LineBasicMaterial( { fog: false } );
 	material.color.copy( this.light.color ).multiplyScalar( this.light.intensity );
 
-	this.lightPlane = new THREE.Line( geometry, material );
+	this.lightPlane = new THREE.Segment( geometry, material );
 	this.add( this.lightPlane );
 
 	geometry = new THREE.Geometry();
@@ -40,7 +40,7 @@ THREE.DirectionalLightHelper = function ( light, size ) {
 	material = new THREE.LineBasicMaterial( { fog: false } );
 	material.color.copy( this.light.color ).multiplyScalar( this.light.intensity );
 
-	this.targetLine = new THREE.Line( geometry, material );
+	this.targetLine = new THREE.Segment( geometry, material );
 	this.add( this.targetLine );
 
 	this.update();

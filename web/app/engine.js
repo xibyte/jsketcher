@@ -26,10 +26,55 @@ TCAD.utils.checkPolygon = function(poly) {
   }
 };
 
-TCAD.utils.createPoint = function() {
-  var g = new THREE.PlaneGeometry(0.05, 0.05);
-  var m = new THREE.MeshBasicMaterial({color: 0x0000ff, side: THREE.DoubleSide});
-  return new THREE.Mesh(g, m);
+TCAD.utils.createPoint = function(x, y, z) {
+//  var g = new THREE.PlaneGeometry(0.05, 0.05);
+//  var m = new THREE.MeshBasicMaterial({color: 0x0000ff, side: THREE.DoubleSide});
+//  return new THREE.Mesh(g, m);
+
+  var material = new THREE.ShaderMaterial({
+//    color: 0xff0000,
+//    linewidth: 5
+    vertexShader :
+      'void main() {\n\t' +
+      'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );' +
+      'gl_PointSize =10.0;\n\t' +
+     '\n}',
+
+    fragmentShader :
+        'void main() {\n\t' +
+        "vec2 coord = gl_PointCoord - vec2(0.5);  //from [0,1] to [-0.5,0.5]\n" +
+        "if(length(coord) > 0.5)                  //outside of circle radius?\n" +
+        "    discard;\n"+
+        "else\n"+
+        "    gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );\n"
+    +'\n}'
+  });
+  
+  var geometry = new THREE.Geometry();
+  geometry.vertices.push(new THREE.Vector3(x, y, z));
+//  geometry.vertices.push(new THREE.Vector3(x+.001, y+.001, z+.001));
+
+//  var line = new THREE.PointCloud(geometry, material);
+//  line.position.x = x;
+//  line.position.y = y;
+//  line.position.z = z;
+//  return line;
+  
+  material = new THREE.SpriteMaterial( { color: 0xffffff, fog: false } );
+  var sprite = new THREE.Sprite( material );
+  sprite.position.set( x, y, z );
+  return sprite;
+};
+
+TCAD.utils.createLine = function (a, b, color) {
+  var material = new THREE.LineBasicMaterial({
+    color: color,
+    linewidth: 3
+  });
+  var geometry = new THREE.Geometry();
+  geometry.vertices.push(new THREE.Vector3(a.x, a.y, a.z));
+  geometry.vertices.push(new THREE.Vector3(b.x, b.y, b.z));
+  return new THREE.Segment(geometry, material);
 };
 
 TCAD.utils.createSolid = function(faces) {
@@ -76,6 +121,7 @@ TCAD.utils.vectorsEqual = function(v1, v2) {
 TCAD.utils.equal = function(v1, v2) {
   return TCAD.utils.areEqual(v1, v2, TCAD.TOLERANCE);
 };
+
 
 TCAD.geom = {};
 
@@ -271,7 +317,7 @@ TCAD.Polygon.prototype.triangulate = function() {
       holes[h][i] = _2dTransformation.apply(this.holes[h][i]);
     }
   }
-  return THREE.Shape.Utils.triangulateShape( shell, holes );
+  return THREE.Shape.utils.triangulateShape( shell, holes );
 };
 
 

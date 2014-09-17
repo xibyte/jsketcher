@@ -80,7 +80,6 @@ public class Viewer3D extends SubScene {
     modelGroup.getChildren().add(modelXform);
     world.getChildren().addAll(modelGroup);
     world.getTransforms().add(new Rotate(180, new Point3D(1,0,0))); //fix Y-axis
-
 //    scene = new SubScene();
     setFill(Color.GREY);
     handleKeyboard(this, world);

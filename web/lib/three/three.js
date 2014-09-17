@@ -7040,7 +7040,7 @@ THREE.EventDispatcher.prototype = {
 			Mesh: {},
 			PointCloud: { threshold: 1 },
 			LOD: {},
-			Line: {}
+			Segment: {}
 		};
 
 	};
@@ -7980,7 +7980,7 @@ THREE.Projector = function () {
 
 				_renderData.lights.push( object );
 
-			} else if ( object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Sprite ) {
+			} else if ( object instanceof THREE.Mesh || object instanceof THREE.Segment || object instanceof THREE.Sprite ) {
 
 				if ( object.frustumCulled === false || _frustum.intersectsObject( object ) === true ) {
 
@@ -8254,7 +8254,7 @@ THREE.Projector = function () {
 
 				}
 
-			} else if ( object instanceof THREE.Line ) {
+			} else if ( object instanceof THREE.Segment ) {
 
 				if ( geometry instanceof THREE.BufferGeometry ) {
 
@@ -14519,7 +14519,7 @@ THREE.ParticleSystem = function ( geometry, material ) {
  * @author mrdoob / http://mrdoob.com/
  */
 
-THREE.Line = function ( geometry, material, type ) {
+THREE.Segment = function ( geometry, material, type ) {
 
 	THREE.Object3D.call( this );
 
@@ -14533,9 +14533,9 @@ THREE.Line = function ( geometry, material, type ) {
 THREE.LineStrip = 0;
 THREE.LinePieces = 1;
 
-THREE.Line.prototype = Object.create( THREE.Object3D.prototype );
+THREE.Segment.prototype = Object.create( THREE.Object3D.prototype );
 
-THREE.Line.prototype.raycast = ( function () {
+THREE.Segment.prototype.raycast = ( function () {
 
 	var inverseMatrix = new THREE.Matrix4();
 	var ray = new THREE.Ray();
@@ -14604,9 +14604,9 @@ THREE.Line.prototype.raycast = ( function () {
 
 }() );
 
-THREE.Line.prototype.clone = function ( object ) {
+THREE.Segment.prototype.clone = function ( object ) {
 
-	if ( object === undefined ) object = new THREE.Line( this.geometry, this.material, this.type );
+	if ( object === undefined ) object = new THREE.Segment( this.geometry, this.material, this.type );
 
 	THREE.Object3D.prototype.clone.call( this, object );
 
@@ -21438,7 +21438,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 			_this.info.render.calls ++;
 			_this.info.render.points += position.array.length / 3;
 
-		} else if ( object instanceof THREE.Line ) {
+		} else if ( object instanceof THREE.Segment ) {
 
 			var mode = ( object.type === THREE.LineStrip ) ? _gl.LINE_STRIP : _gl.LINES;
 
@@ -21739,7 +21739,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		// render lines
 
-		} else if ( object instanceof THREE.Line ) {
+		} else if ( object instanceof THREE.Segment ) {
 
 			var mode = ( object.type === THREE.LineStrip ) ? _gl.LINE_STRIP : _gl.LINES;
 
@@ -22476,7 +22476,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 				
 				initGeometryGroups(scene, object, geometry);
 
-			} else if ( object instanceof THREE.Line ) {
+			} else if ( object instanceof THREE.Segment ) {
 
 				if ( ! geometry.__webglVertexBuffer ) {
 
@@ -22525,7 +22525,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 					}
 				}
 
-			} else if ( object instanceof THREE.Line ||
+			} else if ( object instanceof THREE.Segment ||
 						object instanceof THREE.PointCloud ) {
 
 				geometry = object.geometry;
@@ -22689,7 +22689,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			material.attributes && clearCustomAttributes( material );
 
-		} else if ( object instanceof THREE.Line ) {
+		} else if ( object instanceof THREE.Segment ) {
 
 			material = getBufferMaterial( object, geometry );
 
@@ -22759,7 +22759,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		if ( object instanceof THREE.Mesh  ||
 			 object instanceof THREE.PointCloud ||
-			 object instanceof THREE.Line ) {
+			 object instanceof THREE.Segment ) {
 
 			removeInstancesWebglObjects( scene.__webglObjects, object );
 
@@ -26272,8 +26272,8 @@ THREE.FontUtils = {
 						for ( i2 = 1, divisions = this.divisions; i2 <= divisions; i2 ++ ) {
 
 							var t = i2 / divisions;
-							var tx = THREE.Shape.Utils.b2( t, cpx0, cpx1, cpx );
-							var ty = THREE.Shape.Utils.b2( t, cpy0, cpy1, cpy );
+							var tx = THREE.Shape.utils.b2( t, cpx0, cpx1, cpx );
+							var ty = THREE.Shape.utils.b2( t, cpy0, cpy1, cpy );
 					  }
 
 				  }
@@ -26303,8 +26303,8 @@ THREE.FontUtils = {
 						for ( i2 = 1, divisions = this.divisions; i2 <= divisions; i2 ++ ) {
 
 							var t = i2 / divisions;
-							var tx = THREE.Shape.Utils.b3( t, cpx0, cpx1, cpx2, cpx );
-							var ty = THREE.Shape.Utils.b3( t, cpy0, cpy1, cpy2, cpy );
+							var tx = THREE.Shape.utils.b3( t, cpx0, cpx1, cpx2, cpx );
+							var ty = THREE.Shape.utils.b3( t, cpy0, cpy1, cpy2, cpy );
 
 						}
 
@@ -26835,7 +26835,7 @@ THREE.Curve.prototype.getTangentAt = function ( u ) {
  *	Utils
  **************************************************************/
 
-THREE.Curve.Utils = {
+THREE.Curve.utils = {
 
 	tangentQuadraticBezier: function ( t, p0, p1, p2 ) {
 
@@ -27563,8 +27563,8 @@ THREE.Path.prototype.getPoints = function( divisions, closedPath ) {
 
 				t = j / divisions;
 
-				tx = THREE.Shape.Utils.b2( t, cpx0, cpx1, cpx );
-				ty = THREE.Shape.Utils.b2( t, cpy0, cpy1, cpy );
+				tx = THREE.Shape.utils.b2( t, cpx0, cpx1, cpx );
+				ty = THREE.Shape.utils.b2( t, cpy0, cpy1, cpy );
 
 				points.push( new THREE.Vector2( tx, ty ) );
 
@@ -27604,8 +27604,8 @@ THREE.Path.prototype.getPoints = function( divisions, closedPath ) {
 
 				t = j / divisions;
 
-				tx = THREE.Shape.Utils.b3( t, cpx0, cpx1, cpx2, cpx );
-				ty = THREE.Shape.Utils.b3( t, cpy0, cpy1, cpy2, cpy );
+				tx = THREE.Shape.utils.b3( t, cpx0, cpx1, cpx2, cpx );
+				ty = THREE.Shape.utils.b3( t, cpy0, cpy1, cpy2, cpy );
 
 				points.push( new THREE.Vector2( tx, ty ) );
 
@@ -27868,7 +27868,7 @@ THREE.Path.prototype.toShapes = function( isCCW, noHoles ) {
 
 	}
 
-	var holesFirst = ! THREE.Shape.Utils.isClockWise( subPaths[ 0 ].getPoints() );
+	var holesFirst = ! THREE.Shape.utils.isClockWise( subPaths[ 0 ].getPoints() );
 	holesFirst = isCCW ? ! holesFirst : holesFirst;
 
 	// console.log("Holes first", holesFirst);
@@ -27888,7 +27888,7 @@ THREE.Path.prototype.toShapes = function( isCCW, noHoles ) {
 
 		tmpPath = subPaths[ i ];
 		tmpPoints = tmpPath.getPoints();
-		solid = THREE.Shape.Utils.isClockWise( tmpPoints );
+		solid = THREE.Shape.utils.isClockWise( tmpPoints );
 		solid = isCCW ? ! solid : solid;
 
 		if ( solid ) {
@@ -28093,7 +28093,7 @@ THREE.Shape.prototype.extractAllSpacedPoints = function ( divisions ) {
  *	Utils
  **************************************************************/
 
-THREE.Shape.Utils = {
+THREE.Shape.utils = {
 
 	triangulateShape: function ( contour, holes ) {
 
@@ -28609,8 +28609,8 @@ THREE.QuadraticBezierCurve.prototype.getPoint = function ( t ) {
 
 	var tx, ty;
 
-	tx = THREE.Shape.Utils.b2( t, this.v0.x, this.v1.x, this.v2.x );
-	ty = THREE.Shape.Utils.b2( t, this.v0.y, this.v1.y, this.v2.y );
+	tx = THREE.Shape.utils.b2( t, this.v0.x, this.v1.x, this.v2.x );
+	ty = THREE.Shape.utils.b2( t, this.v0.y, this.v1.y, this.v2.y );
 
 	return new THREE.Vector2( tx, ty );
 
@@ -28621,8 +28621,8 @@ THREE.QuadraticBezierCurve.prototype.getTangent = function( t ) {
 
 	var tx, ty;
 
-	tx = THREE.Curve.Utils.tangentQuadraticBezier( t, this.v0.x, this.v1.x, this.v2.x );
-	ty = THREE.Curve.Utils.tangentQuadraticBezier( t, this.v0.y, this.v1.y, this.v2.y );
+	tx = THREE.Curve.utils.tangentQuadraticBezier( t, this.v0.x, this.v1.x, this.v2.x );
+	ty = THREE.Curve.utils.tangentQuadraticBezier( t, this.v0.y, this.v1.y, this.v2.y );
 
 	// returns unit vector
 
@@ -28654,8 +28654,8 @@ THREE.CubicBezierCurve.prototype.getPoint = function ( t ) {
 
 	var tx, ty;
 
-	tx = THREE.Shape.Utils.b3( t, this.v0.x, this.v1.x, this.v2.x, this.v3.x );
-	ty = THREE.Shape.Utils.b3( t, this.v0.y, this.v1.y, this.v2.y, this.v3.y );
+	tx = THREE.Shape.utils.b3( t, this.v0.x, this.v1.x, this.v2.x, this.v3.x );
+	ty = THREE.Shape.utils.b3( t, this.v0.y, this.v1.y, this.v2.y, this.v3.y );
 
 	return new THREE.Vector2( tx, ty );
 
@@ -28665,8 +28665,8 @@ THREE.CubicBezierCurve.prototype.getTangent = function( t ) {
 
 	var tx, ty;
 
-	tx = THREE.Curve.Utils.tangentCubicBezier( t, this.v0.x, this.v1.x, this.v2.x, this.v3.x );
-	ty = THREE.Curve.Utils.tangentCubicBezier( t, this.v0.y, this.v1.y, this.v2.y, this.v3.y );
+	tx = THREE.Curve.utils.tangentCubicBezier( t, this.v0.x, this.v1.x, this.v2.x, this.v3.x );
+	ty = THREE.Curve.utils.tangentCubicBezier( t, this.v0.y, this.v1.y, this.v2.y, this.v3.y );
 
 	var tangent = new THREE.Vector2( tx, ty );
 	tangent.normalize();
@@ -28704,8 +28704,8 @@ THREE.SplineCurve.prototype.getPoint = function ( t ) {
 	c[ 2 ] = intPoint  > points.length - 2 ? points.length -1 : intPoint + 1;
 	c[ 3 ] = intPoint  > points.length - 3 ? points.length -1 : intPoint + 2;
 
-	v.x = THREE.Curve.Utils.interpolate( points[ c[ 0 ] ].x, points[ c[ 1 ] ].x, points[ c[ 2 ] ].x, points[ c[ 3 ] ].x, weight );
-	v.y = THREE.Curve.Utils.interpolate( points[ c[ 0 ] ].y, points[ c[ 1 ] ].y, points[ c[ 2 ] ].y, points[ c[ 3 ] ].y, weight );
+	v.x = THREE.Curve.utils.interpolate( points[ c[ 0 ] ].x, points[ c[ 1 ] ].x, points[ c[ 2 ] ].x, points[ c[ 3 ] ].x, weight );
+	v.y = THREE.Curve.utils.interpolate( points[ c[ 0 ] ].y, points[ c[ 1 ] ].y, points[ c[ 2 ] ].y, points[ c[ 3 ] ].y, weight );
 
 	return v;
 
@@ -28822,9 +28822,9 @@ THREE.QuadraticBezierCurve3 = THREE.Curve.create(
 
 		var tx, ty, tz;
 
-		tx = THREE.Shape.Utils.b2( t, this.v0.x, this.v1.x, this.v2.x );
-		ty = THREE.Shape.Utils.b2( t, this.v0.y, this.v1.y, this.v2.y );
-		tz = THREE.Shape.Utils.b2( t, this.v0.z, this.v1.z, this.v2.z );
+		tx = THREE.Shape.utils.b2( t, this.v0.x, this.v1.x, this.v2.x );
+		ty = THREE.Shape.utils.b2( t, this.v0.y, this.v1.y, this.v2.y );
+		tz = THREE.Shape.utils.b2( t, this.v0.z, this.v1.z, this.v2.z );
 
 		return new THREE.Vector3( tx, ty, tz );
 
@@ -28853,9 +28853,9 @@ THREE.CubicBezierCurve3 = THREE.Curve.create(
 
 		var tx, ty, tz;
 
-		tx = THREE.Shape.Utils.b3( t, this.v0.x, this.v1.x, this.v2.x, this.v3.x );
-		ty = THREE.Shape.Utils.b3( t, this.v0.y, this.v1.y, this.v2.y, this.v3.y );
-		tz = THREE.Shape.Utils.b3( t, this.v0.z, this.v1.z, this.v2.z, this.v3.z );
+		tx = THREE.Shape.utils.b3( t, this.v0.x, this.v1.x, this.v2.x, this.v3.x );
+		ty = THREE.Shape.utils.b3( t, this.v0.y, this.v1.y, this.v2.y, this.v3.y );
+		tz = THREE.Shape.utils.b3( t, this.v0.z, this.v1.z, this.v2.z, this.v3.z );
 
 		return new THREE.Vector3( tx, ty, tz );
 
@@ -28898,9 +28898,9 @@ THREE.SplineCurve3 = THREE.Curve.create(
 			pt2 = points[ c[2] ],
 			pt3 = points[ c[3] ];
 
-		v.x = THREE.Curve.Utils.interpolate(pt0.x, pt1.x, pt2.x, pt3.x, weight);
-		v.y = THREE.Curve.Utils.interpolate(pt0.y, pt1.y, pt2.y, pt3.y, weight);
-		v.z = THREE.Curve.Utils.interpolate(pt0.z, pt1.z, pt2.z, pt3.z, weight);
+		v.x = THREE.Curve.utils.interpolate(pt0.x, pt1.x, pt2.x, pt3.x, weight);
+		v.y = THREE.Curve.utils.interpolate(pt0.y, pt1.y, pt2.y, pt3.y, weight);
+		v.z = THREE.Curve.utils.interpolate(pt0.z, pt1.z, pt2.z, pt3.z, weight);
 
 		return v;
 
@@ -28969,9 +28969,9 @@ THREE.ClosedSplineCurve3 = THREE.Curve.create(
         c[ 2 ] = ( intPoint + 1 ) % points.length;
         c[ 3 ] = ( intPoint + 2 ) % points.length;
 
-        v.x = THREE.Curve.Utils.interpolate( points[ c[ 0 ] ].x, points[ c[ 1 ] ].x, points[ c[ 2 ] ].x, points[ c[ 3 ] ].x, weight );
-        v.y = THREE.Curve.Utils.interpolate( points[ c[ 0 ] ].y, points[ c[ 1 ] ].y, points[ c[ 2 ] ].y, points[ c[ 3 ] ].y, weight );
-        v.z = THREE.Curve.Utils.interpolate( points[ c[ 0 ] ].z, points[ c[ 1 ] ].z, points[ c[ 2 ] ].z, points[ c[ 3 ] ].z, weight );
+        v.x = THREE.Curve.utils.interpolate( points[ c[ 0 ] ].x, points[ c[ 1 ] ].x, points[ c[ 2 ] ].x, points[ c[ 3 ] ].x, weight );
+        v.y = THREE.Curve.utils.interpolate( points[ c[ 0 ] ].y, points[ c[ 1 ] ].y, points[ c[ 2 ] ].y, points[ c[ 3 ] ].y, weight );
+        v.z = THREE.Curve.utils.interpolate( points[ c[ 0 ] ].z, points[ c[ 1 ] ].z, points[ c[ 2 ] ].z, points[ c[ 3 ] ].z, weight );
 
         return v;
 
@@ -30411,7 +30411,7 @@ THREE.ExtrudeGeometry.prototype.addShape = function ( shape, options ) {
 	var vertices = shapePoints.shape;
 	var holes = shapePoints.holes;
 
-	var reverse = ! THREE.Shape.Utils.isClockWise( vertices ) ;
+	var reverse = ! THREE.Shape.utils.isClockWise( vertices ) ;
 
 	if ( reverse ) {
 
@@ -30423,7 +30423,7 @@ THREE.ExtrudeGeometry.prototype.addShape = function ( shape, options ) {
 
 			ahole = holes[ h ];
 
-			if ( THREE.Shape.Utils.isClockWise( ahole ) ) {
+			if ( THREE.Shape.utils.isClockWise( ahole ) ) {
 
 				holes[ h ] = ahole.reverse();
 
@@ -30436,7 +30436,7 @@ THREE.ExtrudeGeometry.prototype.addShape = function ( shape, options ) {
 	}
 
 
-	var faces = THREE.Shape.Utils.triangulateShape ( vertices, holes );
+	var faces = THREE.Shape.utils.triangulateShape ( vertices, holes );
 
 	/* Vertices */
 
@@ -31048,7 +31048,7 @@ THREE.ShapeGeometry.prototype.addShape = function ( shape, options ) {
 	var vertices = shapePoints.shape;
 	var holes = shapePoints.holes;
 
-	var reverse = ! THREE.Shape.Utils.isClockWise( vertices );
+	var reverse = ! THREE.Shape.utils.isClockWise( vertices );
 
 	if ( reverse ) {
 
@@ -31060,7 +31060,7 @@ THREE.ShapeGeometry.prototype.addShape = function ( shape, options ) {
 
 			hole = holes[ i ];
 
-			if ( THREE.Shape.Utils.isClockWise( hole ) ) {
+			if ( THREE.Shape.utils.isClockWise( hole ) ) {
 
 				holes[ i ] = hole.reverse();
 
@@ -31072,7 +31072,7 @@ THREE.ShapeGeometry.prototype.addShape = function ( shape, options ) {
 
 	}
 
-	var faces = THREE.Shape.Utils.triangulateShape( vertices, holes );
+	var faces = THREE.Shape.utils.triangulateShape( vertices, holes );
 
 	// Vertices
 
@@ -32438,11 +32438,11 @@ THREE.AxisHelper = function ( size ) {
 
 	var material = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors } );
 
-	THREE.Line.call( this, geometry, material, THREE.LinePieces );
+	THREE.Segment.call( this, geometry, material, THREE.LinePieces );
 
 };
 
-THREE.AxisHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.AxisHelper.prototype = Object.create( THREE.Segment.prototype );
 
 // File:src/extras/helpers/ArrowHelper.js
 
@@ -32483,7 +32483,7 @@ THREE.ArrowHelper = ( function () {
 
 		this.position.copy( origin );
 
-		this.line = new THREE.Line( lineGeometry, new THREE.LineBasicMaterial( { color: color } ) );
+		this.line = new THREE.Segment( lineGeometry, new THREE.LineBasicMaterial( { color: color } ) );
 		this.line.matrixAutoUpdate = false;
 		this.add( this.line );
 
@@ -32563,7 +32563,7 @@ THREE.BoxHelper = function ( object ) {
 	var geometry = new THREE.BufferGeometry();
 	geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( 72 ), 3 ) );
 
-	THREE.Line.call( this, geometry, new THREE.LineBasicMaterial( { color: 0xffff00 } ), THREE.LinePieces );
+	THREE.Segment.call( this, geometry, new THREE.LineBasicMaterial( { color: 0xffff00 } ), THREE.LinePieces );
 
 	if ( object !== undefined ) {
 
@@ -32573,7 +32573,7 @@ THREE.BoxHelper = function ( object ) {
 
 };
 
-THREE.BoxHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.BoxHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.BoxHelper.prototype.update = function ( object ) {
 
@@ -32782,7 +32782,7 @@ THREE.CameraHelper = function ( camera ) {
 
 	}
 
-	THREE.Line.call( this, geometry, material, THREE.LinePieces );
+	THREE.Segment.call( this, geometry, material, THREE.LinePieces );
 
 	this.camera = camera;
 	this.matrixWorld = camera.matrixWorld;
@@ -32794,7 +32794,7 @@ THREE.CameraHelper = function ( camera ) {
 
 };
 
-THREE.CameraHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.CameraHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.CameraHelper.prototype.update = function () {
 
@@ -32907,7 +32907,7 @@ THREE.DirectionalLightHelper = function ( light, size ) {
 	var material = new THREE.LineBasicMaterial( { fog: false } );
 	material.color.copy( this.light.color ).multiplyScalar( this.light.intensity );
 
-	this.lightPlane = new THREE.Line( geometry, material );
+	this.lightPlane = new THREE.Segment( geometry, material );
 	this.add( this.lightPlane );
 
 	geometry = new THREE.Geometry();
@@ -32919,7 +32919,7 @@ THREE.DirectionalLightHelper = function ( light, size ) {
 	material = new THREE.LineBasicMaterial( { fog: false } );
 	material.color.copy( this.light.color ).multiplyScalar( this.light.intensity );
 
-	this.targetLine = new THREE.Line( geometry, material );
+	this.targetLine = new THREE.Segment( geometry, material );
 	this.add( this.targetLine );
 
 	this.update();
@@ -33038,14 +33038,14 @@ THREE.EdgesHelper = function ( object, hex ) {
 
 	}
 
-	THREE.Line.call( this, geometry, new THREE.LineBasicMaterial( { color: color } ), THREE.LinePieces );
+	THREE.Segment.call( this, geometry, new THREE.LineBasicMaterial( { color: color } ), THREE.LinePieces );
 
 	this.matrixAutoUpdate = false;
 	this.matrixWorld = object.matrixWorld;
 
 };
 
-THREE.EdgesHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.EdgesHelper.prototype = Object.create( THREE.Segment.prototype );
 
 // File:src/extras/helpers/FaceNormalsHelper.js
 
@@ -33074,7 +33074,7 @@ THREE.FaceNormalsHelper = function ( object, size, hex, linewidth ) {
 
 	}
 
-	THREE.Line.call( this, geometry, new THREE.LineBasicMaterial( { color: color, linewidth: width } ), THREE.LinePieces );
+	THREE.Segment.call( this, geometry, new THREE.LineBasicMaterial( { color: color, linewidth: width } ), THREE.LinePieces );
 
 	this.matrixAutoUpdate = false;
 
@@ -33084,7 +33084,7 @@ THREE.FaceNormalsHelper = function ( object, size, hex, linewidth ) {
 
 };
 
-THREE.FaceNormalsHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.FaceNormalsHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.FaceNormalsHelper.prototype.update = function () {
 
@@ -33151,11 +33151,11 @@ THREE.GridHelper = function ( size, step ) {
 
 	}
 
-	THREE.Line.call( this, geometry, material, THREE.LinePieces );
+	THREE.Segment.call( this, geometry, material, THREE.LinePieces );
 
 };
 
-THREE.GridHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.GridHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.GridHelper.prototype.setColors = function( colorCenterLine, colorGrid ) {
 
@@ -33334,7 +33334,7 @@ THREE.SkeletonHelper = function ( object ) {
 
 	var material = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors, depthTest: false, depthWrite: false, transparent: true } );
 
-	THREE.Line.call( this, geometry, material, THREE.LinePieces );
+	THREE.Segment.call( this, geometry, material, THREE.LinePieces );
 
 	this.root = object;
 
@@ -33346,7 +33346,7 @@ THREE.SkeletonHelper = function ( object ) {
 };
 
 
-THREE.SkeletonHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.SkeletonHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.SkeletonHelper.prototype.getBoneList = function( object ) {
 
@@ -33499,7 +33499,7 @@ THREE.VertexNormalsHelper = function ( object, size, hex, linewidth ) {
 
 	}
 
-	THREE.Line.call( this, geometry, new THREE.LineBasicMaterial( { color: color, linewidth: width } ), THREE.LinePieces );
+	THREE.Segment.call( this, geometry, new THREE.LineBasicMaterial( { color: color, linewidth: width } ), THREE.LinePieces );
 
 	this.matrixAutoUpdate = false;
 
@@ -33509,7 +33509,7 @@ THREE.VertexNormalsHelper = function ( object, size, hex, linewidth ) {
 
 };
 
-THREE.VertexNormalsHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.VertexNormalsHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.VertexNormalsHelper.prototype.update = ( function ( object ) {
 
@@ -33602,7 +33602,7 @@ THREE.VertexTangentsHelper = function ( object, size, hex, linewidth ) {
 
 	}
 
-	THREE.Line.call( this, geometry, new THREE.LineBasicMaterial( { color: color, linewidth: width } ), THREE.LinePieces );
+	THREE.Segment.call( this, geometry, new THREE.LineBasicMaterial( { color: color, linewidth: width } ), THREE.LinePieces );
 
 	this.matrixAutoUpdate = false;
 
@@ -33610,7 +33610,7 @@ THREE.VertexTangentsHelper = function ( object, size, hex, linewidth ) {
 
 };
 
-THREE.VertexTangentsHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.VertexTangentsHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.VertexTangentsHelper.prototype.update = ( function ( object ) {
 
@@ -33829,14 +33829,14 @@ THREE.WireframeHelper = function ( object, hex ) {
 
 	}
 
-	THREE.Line.call( this, geometry, new THREE.LineBasicMaterial( { color: color } ), THREE.LinePieces );
+	THREE.Segment.call( this, geometry, new THREE.LineBasicMaterial( { color: color } ), THREE.LinePieces );
 
 	this.matrixAutoUpdate = false;
 	this.matrixWorld = object.matrixWorld;
 
 };
 
-THREE.WireframeHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.WireframeHelper.prototype = Object.create( THREE.Segment.prototype );
 
 // File:src/extras/objects/ImmediateRenderObject.js
 

@@ -19,7 +19,7 @@
 			Mesh: {},
 			PointCloud: { threshold: 1 },
 			LOD: {},
-			Line: {}
+			Segment: {}
 		};
 
 	};

@@ -35,7 +35,7 @@ THREE.ArrowHelper = ( function () {
 
 		this.position.copy( origin );
 
-		this.line = new THREE.Line( lineGeometry, new THREE.LineBasicMaterial( { color: color } ) );
+		this.line = new THREE.Segment( lineGeometry, new THREE.LineBasicMaterial( { color: color } ) );
 		this.line.matrixAutoUpdate = false;
 		this.add( this.line );
 

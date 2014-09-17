@@ -31,9 +31,9 @@ THREE.SplineCurve3 = THREE.Curve.create(
 			pt2 = points[ c[2] ],
 			pt3 = points[ c[3] ];
 
-		v.x = THREE.Curve.Utils.interpolate(pt0.x, pt1.x, pt2.x, pt3.x, weight);
-		v.y = THREE.Curve.Utils.interpolate(pt0.y, pt1.y, pt2.y, pt3.y, weight);
-		v.z = THREE.Curve.Utils.interpolate(pt0.z, pt1.z, pt2.z, pt3.z, weight);
+		v.x = THREE.Curve.utils.interpolate(pt0.x, pt1.x, pt2.x, pt3.x, weight);
+		v.y = THREE.Curve.utils.interpolate(pt0.y, pt1.y, pt2.y, pt3.y, weight);
+		v.z = THREE.Curve.utils.interpolate(pt0.z, pt1.z, pt2.z, pt3.z, weight);
 
 		return v;
 

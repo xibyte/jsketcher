@@ -31,7 +31,7 @@ THREE.VertexNormalsHelper = function ( object, size, hex, linewidth ) {
 
 	}
 
-	THREE.Line.call( this, geometry, new THREE.LineBasicMaterial( { color: color, linewidth: width } ), THREE.LinePieces );
+	THREE.Segment.call( this, geometry, new THREE.LineBasicMaterial( { color: color, linewidth: width } ), THREE.LinePieces );
 
 	this.matrixAutoUpdate = false;
 
@@ -41,7 +41,7 @@ THREE.VertexNormalsHelper = function ( object, size, hex, linewidth ) {
 
 };
 
-THREE.VertexNormalsHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.VertexNormalsHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.VertexNormalsHelper.prototype.update = ( function ( object ) {
 

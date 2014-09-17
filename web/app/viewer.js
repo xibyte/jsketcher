@@ -73,7 +73,7 @@ TCAD.Viewer = function() {
 
   controls.keys = [ 65, 83, 68 ];
   controls.addEventListener( 'change', render );
-
+  this.controls = controls;
 
   /**
    * TOOLS
@@ -100,32 +100,35 @@ TCAD.Viewer = function() {
 
     var mouse = new THREE.Vector3( x, y, 1 );
     var ray = projector.pickingRay(mouse.clone(), camera);
-    var intersects = ray.intersectObjects( scene.children );
+    return ray.intersectObjects( scene.children );
+  };
+  
+  var scope = this; 
+  function onClick(e) {
+    var intersects = scope.raycast(e);
     if (intersects.length > 0) {
       var pickResult = intersects[0];
       if (pickResult.face.__TCAD_polyFace !== undefined) {
         var poly = pickResult.face.__TCAD_polyFace;
-        if (this.selectionMgr.contains(poly)) {
-          this.toolMgr.handle(poly, pickResult);            
+        if (scope.selectionMgr.contains(poly)) {
+          scope.toolMgr.handleClick(poly, pickResult);
         } else {
-          this.selectionMgr.select(poly);
+          scope.selectionMgr.select(poly);
           pickResult.object.geometry.colorsNeedUpdate = true;
         }
       }
       render();
     }
-  };
-  
-  var scope = this;
+  }
   
   var mouseState = {
     moved : false
   };
 
-  function onMove() {
+  function onMove(e) {
     mouseState.moved = true;
   }
-
+  renderer.domElement.addEventListener('mousemove', function(e){scope.toolMgr.handleMove(e)}, false);
   renderer.domElement.addEventListener('mousedown', 
     function() {
       mouseState.moved = false;
@@ -136,7 +139,7 @@ TCAD.Viewer = function() {
     function(e) {
       renderer.domElement.removeEventListener('mousemove', onMove);
       if (!mouseState.moved) {
-        scope.raycast(e);
+        onClick(e);
       }
     } , false);
 
@@ -178,7 +181,7 @@ TCAD.ToolManager = function(viewer) {
   this.tool = null;
 };
 
-TCAD.ToolManager.prototype.handle = function(face, pickResult) {
+TCAD.ToolManager.prototype.handleClick = function(face, pickResult) {
   if (this.tool == null) {
     return;    
   }
@@ -189,7 +192,15 @@ TCAD.ToolManager.prototype.handle = function(face, pickResult) {
     this.tool.workArea.sketch = new TCAD.Sketch();
     pickResult.object.parent.add(this.tool.workArea.sketch.group);
   }
-  this.tool.handle(face, pickResult);
+  this.tool.handleClick(face, pickResult);
+};
+
+
+TCAD.ToolManager.prototype.handleMove = function(event) {
+  if (this.tool == null) {
+    return;
+  }
+  this.tool.handleMove(event, this.viewer);
 };
 
 TCAD.ToolManager.prototype.commit = function() {
@@ -198,20 +209,23 @@ TCAD.ToolManager.prototype.commit = function() {
   }
   this.tool.commit();
   this.viewer.render();
+  this.tool = null;
 };
 
-TCAD.PolygonTool = function(workArea) {
+TCAD.PolygonTool = function(workArea, viewer) {
   this.workArea = workArea;
+  this.viewer = viewer;
   this.poly = {shell : [], holes : []};
 };
 
-TCAD.PolygonTool.prototype.handle = function(face, pickResult) {
+TCAD.PolygonTool.prototype.handleClick = function(face, pickResult) {
   this.poly.shell.push(new TCAD.Vector().setV(pickResult.point));
-  var point = TCAD.utils.createPoint();
-  point.position.x = pickResult.point.x;
-  point.position.y = pickResult.point.y;
-  point.position.z = pickResult.point.z;
+  var point = TCAD.utils.createPoint(pickResult.point.x, pickResult.point.y, pickResult.point.z);
   this.workArea.sketch.group.add(point);
+};
+
+TCAD.PolygonTool.prototype.handleMove = function(event, raycast) {
+
 };
 
 TCAD.PolygonTool.prototype.commit = function() {
@@ -222,3 +236,41 @@ TCAD.PolygonTool.prototype.commit = function() {
   this.workArea.sketch.group.parent.add(solid);
 };
 
+
+TCAD.LineTool = function(workArea) {
+  this.workArea = workArea;
+  this.protoLine = null;
+};
+
+TCAD.LineTool.prototype.handleClick = function(face, pickResult) {
+  if (this.protoLine == null) {
+    this.protoLine = TCAD.utils.createLine(pickResult.point, pickResult.point, 0x0000ff);
+    this.workArea.sketch.group.add(this.protoLine);
+  } else {
+    
+  }
+};
+
+TCAD.LineTool.prototype.handleMove = function(event, viewer) {
+  if (this.protoLine != null) {
+    var intersects = viewer.raycast(event);
+    if (intersects.length > 0 && intersects[0].face.__TCAD_polyFace == this.workArea) {
+      var p = intersects[0].point;
+      var vertices = this.protoLine.geometry.vertices;
+      vertices[vertices.length - 1].x = p.x;
+      vertices[vertices.length - 1].y = p.y;
+      vertices[vertices.length - 1].z = p.z;
+      this.protoLine.geometry.verticesNeedUpdate = true;
+      viewer.render();
+    }
+  }
+};
+
+
+TCAD.LineTool.prototype.commit = function() {
+//  var n = this.workArea.polygon.normal;
+//  var _2d = new TCAD.Polygon(this.poly.shell, this.poly.holes, n);
+//
+//  var solid = TCAD.utils.createSolid(TCAD.geom.extrude(_2d, n.multiply(1.1)));
+//  this.workArea.sketch.group.parent.add(solid);
+};
