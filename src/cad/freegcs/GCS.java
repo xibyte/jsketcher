@@ -143,14 +143,16 @@ public class System {
   void clearByTag(int tagId) {
     List<Constraint> toRemove = clist.stream().filter(constraint -> tagId == constraint.getTag()).collect(Collectors.toList());
     for (Constraint constr : toRemove) {
-      removeConstraint(constr); 
+      removeConstraint(constr);
     }
   }
 
   int addConstraint(Constraint constr) {
     isInit = false;
     if (constr.getTag() >= 0) // negatively tagged constraints have no impact
+    {
       hasDiagnosis = false;  // on the diagnosis
+    }
 
     clist.add(constr);
     TDoubleArrayList constr_params = constr.params();
@@ -167,9 +169,10 @@ public class System {
   void removeConstraint(Constraint constr) {
 
     clist.remove(constr);
-    if (constr.getTag() >= 0)
+    if (constr.getTag() >= 0) {
       hasDiagnosis = false;
-    
+    }
+
     clearSubSystems();
 
     TDoubleList constr_params = c2p.get(constr);
@@ -352,12 +355,13 @@ public class System {
   int addConstraintPerpendicularLine2Arc(Point p1, Point p2, Arc a,
                                          int tagId) {
     addConstraintP2PCoincident(p2, a.start, tagId);
-    double dx =(p2.x) -(p1.x);
-    double dy =(p2.y) -(p1.y);
-    if (dx * Math.cos( (a.startAngle)) + dy * Math.sin( (a.startAngle))>0)
+    double dx = (p2.x) - (p1.x);
+    double dy = (p2.y) - (p1.y);
+    if (dx * Math.cos((a.startAngle)) + dy * Math.sin((a.startAngle)) > 0) {
       return addConstraintP2PAngle(p1, p2, a.startAngle, 0, tagId);
-    else
+    } else {
       return addConstraintP2PAngle(p1, p2, a.startAngle, Math.PI, tagId);
+    }
   }
 
   int addConstraintPerpendicularArc2Line(Arc a, Point p1, Point p2,
@@ -365,10 +369,11 @@ public class System {
     addConstraintP2PCoincident(p1, a.end, tagId);
     double dx = (p2.x) - (p1.x);
     double dy = (p2.y) - (p1.y);
-    if (dx * Math.cos( (a.endAngle)) + dy * Math.sin( (a.endAngle))>0)
+    if (dx * Math.cos((a.endAngle)) + dy * Math.sin((a.endAngle)) > 0) {
       return addConstraintP2PAngle(p1, p2, a.endAngle, 0, tagId);
-    else
+    } else {
       return addConstraintP2PAngle(p1, p2, a.endAngle, Math.PI, tagId);
+    }
   }
 
   int addConstraintPerpendicularCircle2Arc(Point center, double radius,
@@ -420,23 +425,23 @@ public class System {
     double dy = (c2.center.y) - (c1.center.y);
     double d = Math.sqrt(dx * dx + dy * dy);
     return addConstraintTangentCircumf(c1.center, c2.center, c1.rad, c2.rad,
-            (d < c1.rad || d < c2.rad),tagId);
+            (d < c1.rad || d < c2.rad), tagId);
   }
 
   int addConstraintTangent(Arc a1, Arc a2, int tagId) {
-    double dx =(a2.center.x) -(a1.center.x);
-    double dy =(a2.center.y) -(a1.center.y);
+    double dx = (a2.center.x) - (a1.center.x);
+    double dy = (a2.center.y) - (a1.center.y);
     double d = Math.sqrt(dx * dx + dy * dy);
     return addConstraintTangentCircumf(a1.center, a2.center, a1.rad, a2.rad,
-            (d < a1.rad || d < a2.rad),tagId);
+            (d < a1.rad || d < a2.rad), tagId);
   }
 
   int addConstraintTangent(Circle c, Arc a, int tagId) {
-    double dx =(a.center.x) -(c.center.x);
-    double dy =(a.center.y) -(c.center.y);
+    double dx = (a.center.x) - (c.center.x);
+    double dy = (a.center.y) - (c.center.y);
     double d = Math.sqrt(dx * dx + dy * dy);
     return addConstraintTangentCircumf(c.center, a.center, c.rad, a.rad,
-            (d < c.rad || d < a.rad),tagId);
+            (d < c.rad || d < a.rad), tagId);
   }
 
   int addConstraintTangentLine2Arc(Point p1, Point p2, Arc a, int tagId) {
@@ -453,22 +458,24 @@ public class System {
 
   int addConstraintTangentCircle2Arc(Circle c, Arc a, int tagId) {
     addConstraintPointOnCircle(a.start, c, tagId);
-    double dx =(a.start.x) -(c.center.x);
-    double dy =(a.start.y) -(c.center.y);
-    if (dx * Math.cos( (a.startAngle)) + dy * Math.sin( (a.startAngle) ) > 0)
+    double dx = (a.start.x) - (c.center.x);
+    double dy = (a.start.y) - (c.center.y);
+    if (dx * Math.cos((a.startAngle)) + dy * Math.sin((a.startAngle)) > 0) {
       return addConstraintP2PAngle(c.center, a.start, a.startAngle, 0, tagId);
-    else
+    } else {
       return addConstraintP2PAngle(c.center, a.start, a.startAngle, Math.PI, tagId);
+    }
   }
 
   int addConstraintTangentArc2Circle(Arc a, Circle c, int tagId) {
     addConstraintPointOnCircle(a.end, c, tagId);
-    double dx =(a.end.x) - (c.center.x);
-    double dy =(a.end.y) - (c.center.y);
-    if (dx * Math.cos( (a.endAngle)) + dy * Math.sin( (a.endAngle))>0)
+    double dx = (a.end.x) - (c.center.x);
+    double dy = (a.end.y) - (c.center.y);
+    if (dx * Math.cos((a.endAngle)) + dy * Math.sin((a.endAngle)) > 0) {
       return addConstraintP2PAngle(c.center, a.end, a.endAngle, 0, tagId);
-    else
+    } else {
       return addConstraintP2PAngle(c.center, a.end, a.endAngle, Math.PI, tagId);
+    }
   }
 
   int addConstraintTangentArc2Arc(Arc a1, boolean reverse1, Arc a2, boolean reverse2,
@@ -479,10 +486,11 @@ public class System {
 
     double angle1 = reverse1 ? a1.startAngle : a1.endAngle;
     double angle2 = reverse2 ? a2.endAngle : a2.startAngle;
-    if (Math.cos( angle1)*Math.cos( angle2)+Math.sin( angle1)*Math.sin( angle2)>0)
+    if (Math.cos(angle1) * Math.cos(angle2) + Math.sin(angle1) * Math.sin(angle2) > 0) {
       return addConstraintEqual(angle1, angle2, tagId);
-    else
+    } else {
       return addConstraintP2PAngle(p2, a2.center, angle1, 0, tagId);
+    }
   }
 
   int addConstraintCircleRadius(Circle c, double radius, int tagId) {
@@ -521,25 +529,23 @@ public class System {
   }
 
 
-
-  void rescaleConstraint(int id, double coeff)
-  {
-    if (id >= clist.size() || id < 0)
+  void rescaleConstraint(int id, double coeff) {
+    if (id >= clist.size() || id < 0) {
       return;
+    }
     clist.get(id).rescale(coeff);
   }
 
-  void declareUnknowns(TDoubleList params)
-  {
+  void declareUnknowns(TDoubleList params) {
     plist = params;
     pIndex.clear();
-    for (int i=0; i < plist.size(); ++i)
+    for (int i = 0; i < plist.size(); ++i) {
       pIndex.put(plist.get(i), i);
+    }
     hasUnknowns = true;
   }
 
-  void initSolution()
-  {
+  void initSolution() {
     // - Stores the current parameters values in the vector "reference"
     // - identifies any decoupled subsystems and partitions the original
     //   system into corresponding components
@@ -551,8 +557,9 @@ public class System {
     //   system reduction specified in the previous step
 
     isInit = false;
-    if (!hasUnknowns)
+    if (!hasUnknowns) {
       return;
+    }
 
     // storing reference configuration
     setReference();
@@ -560,23 +567,26 @@ public class System {
     // diagnose conflicting or redundant constraints
     if (!hasDiagnosis) {
       diagnose();
-      if (!hasDiagnosis)
+      if (!hasDiagnosis) {
         return;
+      }
     }
     List<Constraint> clistR = new ArrayList<>();
     if (!redundant.isEmpty()) {
       for (Constraint constr : clist) {
-        if (redundant.contains(constr))
+        if (redundant.contains(constr)) {
           clistR.add(constr);
+        }
       }
-    }
-    else
+    } else {
       clistR = clist;
+    }
 
     // partitioning into decoupled components
     Graph g = new Graph();
-    for (int i=0; i < plist.size() + clistR.size(); i++)
+    for (int i = 0; i < plist.size() + clistR.size(); i++) {
       g.add_vertex();
+    }
 
     int cvtid = plist.size();
     for (Constraint constr : clistR) {
@@ -588,8 +598,9 @@ public class System {
       while (pit.hasNext()) {
         double param = pit.next();
         Integer it = pIndex.get(param);
-        if (it != null)
+        if (it != null) {
           g.add_edge(cvtid, it);
+        }
       }
       cvtid++;
     }
@@ -597,36 +608,39 @@ public class System {
     TIntList components = new TIntArrayList();
     int num_vertices = g.num_vertices();
     int componentsSize = 0;
-    if (num_vertices > 0)
+    if (num_vertices > 0) {
       componentsSize = g.connected_components(components);
+    }
 
     // identification of equality constraints and parameter reduction
     Set<Constraint> reducedConstrs = new HashSet<>();  // constraints that will be eliminated through reduction
     reductionmaps.clear(); // destroy any maps
 //    reductionmaps.resize(componentsSize); // create empty maps to be filled in
     {
-      TDoubleList reducedParams=new TDoubleArrayList(plist);
+      TDoubleList reducedParams = new TDoubleArrayList(plist);
 
-     for (Constraint constr : clistR) {
-      if (constr.getTag() >= 0 && ConstraintType.Equal.equals(constr.getTypeId())) {
+      for (Constraint constr : clistR) {
+        if (constr.getTag() >= 0 && ConstraintType.Equal.equals(constr.getTypeId())) {
 
-        Integer it1 = pIndex.get(constr.params().get(0));
-        Integer it2 = pIndex.get(constr.params().get(1));
-        if (it1 != null && it2 != null) {
-          reducedConstrs.add(constr);
-          double p_kept = reducedParams.get(it1);
-          double p_replaced = reducedParams.get(it2);
-          for (int i=0; i < plist.size(); ++i)
-          if (reducedParams.get(i) == p_replaced) {
-            reducedParams.set(i, p_kept);
+          Integer it1 = pIndex.get(constr.params().get(0));
+          Integer it2 = pIndex.get(constr.params().get(1));
+          if (it1 != null && it2 != null) {
+            reducedConstrs.add(constr);
+            double p_kept = reducedParams.get(it1);
+            double p_replaced = reducedParams.get(it2);
+            for (int i = 0; i < plist.size(); ++i) {
+              if (reducedParams.get(i) == p_replaced) {
+                reducedParams.set(i, p_kept);
+              }
+            }
           }
         }
       }
-    }
-      for (int i=0; i < plist.size(); ++i)
-      if (plist.get(i) != reducedParams.get(i)) {
-        int cid = components.get(i);
-        reductionmaps.get(cid).put(plist.get(i), reducedParams.get(i));
+      for (int i = 0; i < plist.size(); ++i) {
+        if (plist.get(i) != reducedParams.get(i)) {
+          int cid = components.get(i);
+          reductionmaps.get(cid).put(plist.get(i), reducedParams.get(i));
+        }
       }
     }
 
@@ -645,62 +659,64 @@ public class System {
 
     plists.clear(); // destroy any lists
 //    plists.resize(componentsSize); // create empty lists to be filled in
-    for (int i=0; i < plist.size(); ++i) {
+    for (int i = 0; i < plist.size(); ++i) {
       int cid = components.get(i);
       plists.get(cid).add(plist.get(i));
     }
 
     // calculates subSystems and subSystemsAux from clists, plists and reductionmaps
     clearSubSystems();
-    for (int cid=0; cid < clists.size(); cid++) {
+    for (int cid = 0; cid < clists.size(); cid++) {
       List<Constraint> clist0 = new ArrayList<>();
       List<Constraint> clist1 = new ArrayList<>();
 
       for (Constraint constr : clists.get(cid)) {
-        if (constr.getTag() >= 0)
+        if (constr.getTag() >= 0) {
           clist0.add(constr);
-        else // move or distance from reference constraints
+        } else // move or distance from reference constraints
+        {
           clist1.add(constr);
+        }
       }
 
       subSystems.add(null);
       subSystemsAux.add(null);
-      if (clist0.size() > 0)
+      if (clist0.size() > 0) {
         subSystems.set(cid, new SubSystem(clist0, plists.get(cid), reductionmaps.get(cid)));
-      if (clist1.size() > 0)
+      }
+      if (clist1.size() > 0) {
         subSystemsAux.set(cid, new SubSystem(clist1, plists.get(cid), reductionmaps.get(cid)));
+      }
     }
 
     isInit = true;
   }
 
-  void setReference()
-  {
+  void setReference() {
     reference.clear();
 //    reference.reserve(plist.size());
-    for ( param : plist) {
-      
+    for (param:
+         plist) {
+
     }
 
     TDoubleIterator it = plist.iterator();
     while (it.hasNext()) {
       double param = it.next();
-      reference.add(param);  
+      reference.add(param);
     }
   }
 
-  void resetToReference()
-  {
+  void resetToReference() {
     if (reference.size() == plist.size()) {
       for (int i = 0; i < plist.size(); i++) {
         plist.set(i, reference.get(i));
-        
+
       }
     }
   }
 
-  SolveStatus solve(TDoubleList params, boolean isFine, Algorithm alg)
-  {
+  SolveStatus solve(TDoubleList params, boolean isFine, Algorithm alg) {
     declareUnknowns(params);
     initSolution();
     return solve(isFine, alg);
@@ -726,35 +742,36 @@ public class System {
         res = Math.max(res, solve(subSystems.get(cid), isFine, alg).ordinal());
       } else if (subSystemsAux.get(cid) != null) {
         res = Math.max(res, solve(subSystemsAux.get(cid), isFine, alg).ordinal());
-      } 
+      }
     }
     if (res == SolveStatus.Success.ordinal()) {
-      for (Constraint constr : redundant) 
-        if (constr.error() > XconvergenceFine){
+      for (Constraint constr : redundant) {
+        if (constr.error() > XconvergenceFine) {
           res = SolveStatus.Converged.ordinal();
           return SolveStatus.Converged;
         }
+      }
     }
     return SolveStatus.values()[res];
   }
 
-  SolveStatus solve(SubSystem subsys, boolean isFine, Algorithm alg)
-  {
-    if (alg == Algorithm.BFGS)
+  SolveStatus solve(SubSystem subsys, boolean isFine, Algorithm alg) {
+    if (alg == Algorithm.BFGS) {
       return solve_BFGS(subsys, isFine);
-    else if (alg == Algorithm.LevenbergMarquardt)
+    } else if (alg == Algorithm.LevenbergMarquardt) {
       return solve_LM(subsys);
-    else if (alg == Algorithm.DogLeg)
+    } else if (alg == Algorithm.DogLeg) {
       return solve_DL(subsys);
-    else
+    } else {
       return SolveStatus.Failed;
+    }
   }
 
-  SolveStatus solve_BFGS(SubSystem subsys, boolean isFine)
-  {
+  SolveStatus solve_BFGS(SubSystem subsys, boolean isFine) {
     int xsize = subsys.pSize();
-    if (xsize == 0)
+    if (xsize == 0) {
       return SolveStatus.Success;
+    }
 
     subsys.redirectParams();
 
@@ -783,14 +800,17 @@ public class System {
 
     double convergence = isFine ? XconvergenceFine : XconvergenceRough;
     int maxIterNumber = MaxIterations * xsize;
-    double divergingLim = 1e6*err + 1e12;
+    double divergingLim = 1e6 * err + 1e12;
 
-    for (int iter=1; iter < maxIterNumber; iter++) {
+    for (int iter = 1; iter < maxIterNumber; iter++) {
 
-      if (h.getFrobeniusNorm() <= convergence || err <= smallF)
+      if (h.getFrobeniusNorm() <= convergence || err <= smallF) {
         break;
+      }
       if (err > divergingLim || err != err) // check for diverging and NaN
+      {
         break;
+      }
 
       y = grad;
       subsys.calcGrad(grad);
@@ -798,8 +818,9 @@ public class System {
 
       double hty = dotProduct(h, y);
       //make sure that hty is never 0
-      if (hty == 0)
+      if (hty == 0) {
         hty = .0000000001;
+      }
 
       Dy = D.multiply(y);
 
@@ -807,11 +828,11 @@ public class System {
 
       //Now calculate the BFGS update on D
       D = D.add(h.scalarMultiply((1. + ytDy / hty) / hty).multiply(h.transpose()));
-      D = D.subtract( ( 
-                        h.multiply(Dy.transpose())
-                        .add(Dy.multiply(h.transpose())) 
-                      ).scalarMultiply(1./hty)
-                    );
+      D = D.subtract((
+                      h.multiply(Dy.transpose())
+                              .add(Dy.multiply(h.transpose()))
+              ).scalarMultiply(1. / hty)
+      );
 
       xdir = D.scalarMultiply(-1).multiply(grad);
       lineSearch(subsys, xdir);
@@ -824,10 +845,12 @@ public class System {
 
     subsys.revertParams();
 
-    if (err <= smallF)
+    if (err <= smallF) {
       return SolveStatus.Success;
-    if (h.getFrobeniusNorm() <= convergence)
+    }
+    if (h.getFrobeniusNorm() <= convergence) {
       return SolveStatus.Converged;
+    }
     return SolveStatus.Failed;
   }
 
@@ -843,17 +866,17 @@ public class System {
 
   private void identity(RealMatrix m) {
     for (int i = 0; i < m.getColumnDimension() && i < m.getRowDimension(); i++) {
-       m.setEntry(i, i, 1.0);
+      m.setEntry(i, i, 1.0);
     }
   }
 
-  int solve_LM(SubSystem subsys)
-  {
+  int solve_LM(SubSystem subsys) {
     int xsize = subsys.pSize();
     int csize = subsys.cSize();
 
-    if (xsize == 0)
+    if (xsize == 0) {
       return Success;
+    }
 
     RealMatrix e = mtrx(csize), e_new = mtrx(csize); // vector of all function errors (every constraint is one function)
     RealMatrix J = mtrx(csize, xsize);        // Jacobi of the subsystem
@@ -868,27 +891,27 @@ public class System {
     e = e.scalarMultiply(-1);
 
     int maxIterNumber = MaxIterations * xsize;
-    double divergingLim = 1e6*squaredNorm(e) + 1e12;
+    double divergingLim = 1e6 * squaredNorm(e) + 1e12;
 
-    double eps=1e-10, eps1=1e-80;
-    double tau=1e-3;
-    double nu=2, mu=0;
-    int iter=0, stop=0; 
-    for (iter=0; iter < maxIterNumber && stop == 0; ++iter) {
+    double eps = 1e-10, eps1 = 1e-80;
+    double tau = 1e-3;
+    double nu = 2, mu = 0;
+    int iter = 0, stop = 0;
+    for (iter = 0; iter < maxIterNumber && stop == 0; ++iter) {
 
       // check error
-      double err=squaredNorm(e);
+      double err = squaredNorm(e);
       if (err <= eps) { // error is small, Success
         stop = 1;
         break;
-      }
-      else if (err > divergingLim || err != err) { // check for diverging and NaN
+      } else if (err > divergingLim || err != err) { // check for diverging and NaN
         stop = 6;
         break;
       }
 
       // J^T J, J^T e
-      subsys.calcJacobi(J);;
+      subsys.calcJacobi(J);
+      ;
 
       A = J.transpose().multiply(J);
       g = J.transpose().multiply(e);
@@ -904,19 +927,22 @@ public class System {
       }
 
       // compute initial damping factor
-      if (iter == 0)
+      if (iter == 0) {
         mu = tau * infinityNorm(diag_A);
+      }
 
       // determine increment using adaptive damping
-      int k=0;
+      int k = 0;
       while (k < 50) {
         // augment normal equations A = A+uI
-        for (int i=0; i < xsize; ++i)
+        for (int i = 0; i < xsize; ++i) {
           A.addToEntry(i, i, mu);
+        }
 
         //solve augmented functions A*h=-g
-        
-        h = new LUDecomposition(A).getSolver().solve(g);;
+
+        h = new LUDecomposition(A).getSolver().solve(g);
+        ;
         double rel_error = (A.multiply(h).subtract(g)).getFrobeniusNorm() / g.getFrobeniusNorm();
 
         // check if solving works
@@ -924,18 +950,18 @@ public class System {
 
           // restrict h according to maxStep
           double scale = subsys.maxStep(h);
-          if (scale < 1.)
+          if (scale < 1.) {
             h = h.scalarMultiply(scale);
+          }
 
           // compute par's new estimate and ||d_par||^2
           x_new = x.add(h);
           double h_norm = squaredNorm(h);
 
-          if (h_norm <= eps1*eps1*x.getFrobeniusNorm()) { // relative change in p is small, stop
+          if (h_norm <= eps1 * eps1 * x.getFrobeniusNorm()) { // relative change in p is small, stop
             stop = 3;
             break;
-          }
-          else if (h_norm >= (x.getFrobeniusNorm()+eps1)/(DBL_EPSILON*DBL_EPSILON)) { // almost singular
+          } else if (h_norm >= (x.getFrobeniusNorm() + eps1) / (DBL_EPSILON * DBL_EPSILON)) { // almost singular
             stop = 4;
             break;
           }
@@ -947,10 +973,10 @@ public class System {
           double dF = squaredNorm(e) - squaredNorm(e_new);
           double dL = dot(h, (h.scalarMultiply(mu).add(g)));
 
-          if (dF>0. && dL>0.) { // reduction in error, increment is accepted
-            double tmp=2*dF/dL-1.;
+          if (dF > 0. && dL > 0.) { // reduction in error, increment is accepted
+            double tmp = 2 * dF / dL - 1.;
             mu *= Math.max(1. / 3., 1. - tmp * tmp * tmp);
-            nu=2;
+            nu = 2;
 
             // update par's estimate
             x = x_new;
@@ -962,10 +988,12 @@ public class System {
         // if this point is reached, either the linear system could not be solved or
         // the error did not reduce; in any case, the increment must be rejected
 
-        mu*=nu;
-        nu*=2.0;
-        for (int i=0; i < xsize; ++i) // restore diagonal J^T J entries
-          A.setEntry(i,i,diag_A[i]);
+        mu *= nu;
+        nu *= 2.0;
+        for (int i = 0; i < xsize; ++i) // restore diagonal J^T J entries
+        {
+          A.setEntry(i, i, diag_A[i]);
+        }
 
         k++;
       }
@@ -975,8 +1003,9 @@ public class System {
       }
     }
 
-    if (iter >= maxIterNumber)
+    if (iter >= maxIterNumber) {
       stop = 5;
+    }
 
     subsys.revertParams();
 
@@ -999,25 +1028,25 @@ public class System {
   private RealMatrix mtrx(int size) {
     return new Array2DRowRealMatrix(size, 1);
   }
-  
+
   private RealMatrix mtrx(int rsize, int csize) {
     return new Array2DRowRealMatrix(rsize, csize);
   }
 
-  SolveStatus solve_DL(SubSystem subsys)
-  {
-    double tolg=1e-80, tolx=1e-80, tolf=1e-10;
+  SolveStatus solve_DL(SubSystem subsys) {
+    double tolg = 1e-80, tolx = 1e-80, tolf = 1e-10;
 
     int xsize = subsys.pSize();
     int csize = subsys.cSize();
 
-    if (xsize == 0)
+    if (xsize == 0) {
       return SolveStatus.Success;
+    }
 
     RealMatrix x = mtrx(xsize), x_new = mtrx(xsize);
     RealMatrix fx = mtrx(csize), fx_new = mtrx(csize);
     RealMatrix Jx = mtrx(csize, xsize), Jx_new = mtrx(csize, xsize);
-    RealMatrix g= mtrx(xsize), h_sd= mtrx(xsize), h_gn= mtrx(xsize), h_dl= mtrx(xsize);
+    RealMatrix g = mtrx(xsize), h_sd = mtrx(xsize), h_gn = mtrx(xsize), h_dl = mtrx(xsize);
 
     subsys.redirectParams();
 
@@ -1033,60 +1062,60 @@ public class System {
     double fx_inf = infinityNorm(fx);
 
     int maxIterNumber = MaxIterations * xsize;
-    double divergingLim = 1e6*err + 1e12;
+    double divergingLim = 1e6 * err + 1e12;
 
-    double delta=0.1;
-    double alpha=0.;
-    double nu=2.;
-    int iter=0, stop=0, reduce=0;
+    double delta = 0.1;
+    double alpha = 0.;
+    double nu = 2.;
+    int iter = 0, stop = 0, reduce = 0;
     while (stop == 0) {
 
       // check if finished
       if (fx_inf <= tolf) // Success
+      {
         stop = 1;
-      else if (g_inf <= tolg)
+      } else if (g_inf <= tolg) {
         stop = 2;
-      else if (delta <= tolx*(tolx + x.getFrobeniusNorm()))
+      } else if (delta <= tolx * (tolx + x.getFrobeniusNorm())) {
         stop = 2;
-      else if (iter >= maxIterNumber)
+      } else if (iter >= maxIterNumber) {
         stop = 4;
-      else if (err > divergingLim || err != err) { // check for diverging and NaN
+      } else if (err > divergingLim || err != err) { // check for diverging and NaN
         stop = 6;
-      }
-      else {
+      } else {
         // get the steepest descent direction
-        alpha = squaredNorm(g)/squaredNorm((Jx.multiply(g)));
-        h_sd  = g.scalarMultiply(alpha);
+        alpha = squaredNorm(g) / squaredNorm((Jx.multiply(g)));
+        h_sd = g.scalarMultiply(alpha);
 
         // get the gauss-newton step
         h_gn = new LUDecomposition(Jx).getSolver().solve(fx.scalarMultiply(-1));
         double rel_error = (Jx.multiply(h_gn).add(fx)).getFrobeniusNorm() / fx.getFrobeniusNorm();
-        if (rel_error > 1e15)
+        if (rel_error > 1e15) {
           break;
+        }
 
         // compute the dogleg step
         if (h_gn.getFrobeniusNorm() < delta) {
           h_dl = h_gn;
-          if  (h_dl.getFrobeniusNorm() <= tolx*(tolx + x.getFrobeniusNorm())) {
+          if (h_dl.getFrobeniusNorm() <= tolx * (tolx + x.getFrobeniusNorm())) {
             stop = 5;
             break;
           }
-        }
-        else if (alpha*g.getFrobeniusNorm() >= delta) {
+        } else if (alpha * g.getFrobeniusNorm() >= delta) {
           h_dl = h_sd.scalarMultiply(delta / (alpha * g.getFrobeniusNorm()));
-        }
-        else {
+        } else {
           //compute beta
           double beta = 0;
           RealMatrix b = h_gn.subtract(h_sd);
           double bb = (b.transpose().multiply(b)).getFrobeniusNorm();
           double gb = (h_sd.transpose().multiply(b)).getFrobeniusNorm();
-          double c = (delta + h_sd.getFrobeniusNorm())*(delta - h_sd.getFrobeniusNorm());
+          double c = (delta + h_sd.getFrobeniusNorm()) * (delta - h_sd.getFrobeniusNorm());
 
-          if (gb > 0)
+          if (gb > 0) {
             beta = c / (gb + Math.sqrt(gb * gb + c * bb));
-          else
-            beta = (Math.sqrt(gb * gb + c * bb) - gb)/bb;
+          } else {
+            beta = (Math.sqrt(gb * gb + c * bb) - gb) / bb;
+          }
 
           // and update h_dl and dL with beta
           h_dl = h_sd + b.scalarMultiply(beta);
@@ -1094,8 +1123,9 @@ public class System {
       }
 
       // see if we are already finished
-      if (stop != 0)
+      if (stop != 0) {
         break;
+      }
 
 // it didn't work in some tests
 //        // restrict h_dl according to maxStep
@@ -1111,12 +1141,12 @@ public class System {
       subsys.calcJacobi(Jx_new);
 
       // calculate the linear model and the update ratio
-      double dL = err - 0.5*squaredNorm((fx.add(Jx.multiply(h_dl))));
+      double dL = err - 0.5 * squaredNorm((fx.add(Jx.multiply(h_dl))));
       double dF = err - err_new;
-      double rho = dL/dF;
+      double rho = dL / dF;
 
       if (dF > 0 && dL > 0) {
-        x  = x_new;
+        x = x_new;
         Jx = Jx_new;
         fx = fx_new;
         err = err_new;
@@ -1126,23 +1156,22 @@ public class System {
         // get infinity norms
         g_inf = infinityNorm(g);
         fx_inf = infinityNorm(fx);
-      }
-      else
+      } else {
         rho = -1;
+      }
 
       // update delta
-      if (Math.abs(rho-1.) < 0.2 && h_dl.getFrobeniusNorm() > delta/3. && reduce <= 0) {
-        delta = 3*delta;
+      if (Math.abs(rho - 1.) < 0.2 && h_dl.getFrobeniusNorm() > delta / 3. && reduce <= 0) {
+        delta = 3 * delta;
         nu = 2;
         reduce = 0;
-      }
-      else if (rho < 0.25) {
-        delta = delta/nu;
-        nu = 2*nu;
+      } else if (rho < 0.25) {
+        delta = delta / nu;
+        nu = 2 * nu;
         reduce = 2;
-      }
-      else
+      } else {
         reduce--;
+      }
 
       // count this iteration and start again
       iter++;
@@ -1155,13 +1184,12 @@ public class System {
 
   // The following solver variant solves a system compound of two subsystems
 // treating the first of them as of higher priority than the second
-  int solve(SubSystem subsysA, SubSystem subsysB, boolean isFine)
-  {
+  int solve(SubSystem subsysA, SubSystem subsysB, boolean isFine) {
     int xsizeA = subsysA.pSize();
     int xsizeB = subsysB.pSize();
     int csizeA = subsysA.cSize();
 
-    TDoubleList plistAB = new TDoubleArrayList(xsizeA+xsizeB);
+    TDoubleList plistAB = new TDoubleArrayList(xsizeA + xsizeB);
     {
       TDoubleList plistA = new TDoubleArrayList(), plistB = new TDoubleArrayList();
       subsysA.getParamList(plistA);
@@ -1172,15 +1200,15 @@ public class System {
       plistB.sort();
 
       VEC_pD::const_iterator it;
-      it = std::set_union(plistA.begin(),plistA.end(),
-            plistB.begin(),plistB.end(),plistAB.begin());
-      plistAB.resize(it-plistAB.begin());
+      it = std::set_union (plistA.begin(), plistA.end(),
+            plistB.begin(), plistB.end(), plistAB.begin());
+      plistAB.resize(it - plistAB.begin());
     }
     int xsize = plistAB.size();
 
     Eigen::MatrixXd B = Eigen::MatrixXd::Identity(xsize, xsize);
     Eigen::MatrixXd JA(csizeA, xsize);
-    Eigen::MatrixXd Y,Z;
+    Eigen::MatrixXd Y, Z;
 
     Eigen::VectorXd resA(csizeA);
     Eigen::VectorXd lambda(csizeA), lambda0(csizeA), lambdadir(csizeA);
@@ -1191,27 +1219,28 @@ public class System {
     Eigen::VectorXd Bh(xsize);
 
     // We assume that there are no common constraints in subsysA and subsysB
-    subsysA->redirectParams();
-    subsysB->redirectParams();
+    subsysA -> redirectParams();
+    subsysB -> redirectParams();
 
-    subsysB->getParams(plistAB,x);
-    subsysA->getParams(plistAB,x);
-    subsysB->setParams(plistAB,x);  // just to ensure that A and B are synchronized
+    subsysB -> getParams(plistAB, x);
+    subsysA -> getParams(plistAB, x);
+    subsysB -> setParams(plistAB, x);  // just to ensure that A and B are synchronized
 
-    subsysB->calcGrad(plistAB,grad);
-    subsysA->calcJacobi(plistAB,JA);
-    subsysA->calcResidual(resA);
+    subsysB -> calcGrad(plistAB, grad);
+    subsysA -> calcJacobi(plistAB, JA);
+    subsysA -> calcResidual(resA);
 
     double convergence = isFine ? XconvergenceFine : XconvergenceRough;
     int maxIterNumber = MaxIterations * xsize;
-    double divergingLim = 1e6*subsysA->error() + 1e12;
+    double divergingLim = 1e6 * subsysA -> error() + 1e12;
 
     double mu = 0;
     lambda.setZero();
-    for (int iter=1; iter < maxIterNumber; iter++) {
+    for (int iter = 1; iter < maxIterNumber; iter++) {
       int status = qp_eq(B, grad, JA, resA, xdir, Y, Z);
-      if (status)
+      if (status) {
         break;
+      }
 
       x0 = x;
       lambda0 = lambda;
@@ -1220,32 +1249,32 @@ public class System {
 
       // line search
       {
-        double eta=0.25;
-        double tau=0.5;
-        double rho=0.5;
-        double alpha=1;
-        alpha = std::min(alpha, subsysA->maxStep(plistAB,xdir));
+        double eta = 0.25;
+        double tau = 0.5;
+        double rho = 0.5;
+        double alpha = 1;
+        alpha = std::min (alpha, subsysA -> maxStep(plistAB, xdir));
 
         // Eq. 18.32
         // double mu = lambda.lpNorm<Eigen::Infinity>() + 0.01;
         // Eq. 18.33
         // double mu =  grad.dot(xdir) / ( (1.-rho) * resA.lpNorm<1>());
         // Eq. 18.36
-        mu =  std::max(mu,
-              (grad.dot(xdir) +  std::max(0., 0.5*xdir.dot(B*xdir))) /
-        ( (1. - rho) * resA.lpNorm<1>() ) );
+        mu = std::max (mu,
+              (grad.dot(xdir) + std::max (0., 0.5 * xdir.dot(B * xdir)))/
+        ((1. - rho) * resA.lpNorm < 1 > ()));
 
         // Eq. 18.27
-        double f0 = subsysB->error() + mu * resA.lpNorm<1>();
+        double f0 = subsysB -> error() + mu * resA.lpNorm < 1 > ();
 
         // Eq. 18.29
-        double deriv = grad.dot(xdir) - mu * resA.lpNorm<1>();
+        double deriv = grad.dot(xdir) - mu * resA.lpNorm < 1 > ();
 
         x = x0 + alpha * xdir;
-        subsysA->setParams(plistAB,x);
-        subsysB->setParams(plistAB,x);
-        subsysA->calcResidual(resA);
-        double f = subsysB->error() + mu * resA.lpNorm<1>();
+        subsysA -> setParams(plistAB, x);
+        subsysB -> setParams(plistAB, x);
+        subsysA -> calcResidual(resA);
+        double f = subsysB -> error() + mu * resA.lpNorm < 1 > ();
 
         // line search, Eq. 18.28
         bool first = true;
@@ -1253,25 +1282,30 @@ public class System {
           if (first) { // try a second order step
 //                    xdir1 = JA.jacobiSvd(Eigen::ComputeThinU |
 //                                         Eigen::ComputeThinV).solve(-resA);
-            xdir1 = -Y*resA;
+            xdir1 = -Y * resA;
             x += xdir1; // = x0 + alpha * xdir + xdir1
-            subsysA->setParams(plistAB,x);
-            subsysB->setParams(plistAB,x);
-            subsysA->calcResidual(resA);
-            f = subsysB->error() + mu * resA.lpNorm<1>();
-            if (f < f0 + eta * alpha * deriv)
+            subsysA -> setParams(plistAB, x);
+            subsysB -> setParams(plistAB, x);
+            subsysA -> calcResidual(resA);
+            f = subsysB -> error() + mu * resA.lpNorm < 1 > ();
+            if (f < f0 + eta * alpha * deriv) {
               break;
+            }
           }
           alpha = tau * alpha;
           if (alpha < 1e-8) // let the linesearch fail
+          {
             alpha = 0.;
+          }
           x = x0 + alpha * xdir;
-          subsysA->setParams(plistAB,x);
-          subsysB->setParams(plistAB,x);
-          subsysA->calcResidual(resA);
-          f = subsysB->error() + mu * resA.lpNorm<1>();
+          subsysA -> setParams(plistAB, x);
+          subsysB -> setParams(plistAB, x);
+          subsysA -> calcResidual(resA);
+          f = subsysB -> error() + mu * resA.lpNorm < 1 > ();
           if (alpha < 1e-8) // let the linesearch fail
+          {
             break;
+          }
         }
         lambda = lambda0 + alpha * lambdadir;
 
@@ -1280,9 +1314,9 @@ public class System {
 
       y = grad - JA.transpose() * lambda;
       {
-        subsysB->calcGrad(plistAB,grad);
-        subsysA->calcJacobi(plistAB,JA);
-        subsysA->calcResidual(resA);
+        subsysB -> calcGrad(plistAB, grad);
+        subsysA -> calcJacobi(plistAB, JA);
+        subsysA -> calcResidual(resA);
       }
       y = grad - JA.transpose() * lambda - y; // Eq. 18.13
 
@@ -1291,52 +1325,57 @@ public class System {
         if (yTh != 0) {
           Bh = B * h;
           //Now calculate the BFGS update on B
-          B += 1./yTh * y * y.transpose();
-          B -= 1./h.dot(Bh) * (Bh * Bh.transpose());
+          B += 1. / yTh * y * y.transpose();
+          B -= 1. / h.dot(Bh) * (Bh * Bh.transpose());
         }
       }
 
-      double err = subsysA->error();
-      if (h.norm() <= convergence && err <= smallF)
+      double err = subsysA -> error();
+      if (h.norm() <= convergence && err <= smallF) {
         break;
+      }
       if (err > divergingLim || err != err) // check for diverging and NaN
+      {
         break;
+      }
     }
 
     int ret;
-    if (subsysA->error() <= smallF)
+    if (subsysA -> error() <= smallF) {
       ret = Success;
-    else if (h.norm() <= convergence)
+    } else if (h.norm() <= convergence) {
       ret = Converged;
-    else
+    } else {
       ret = Failed;
+    }
 
-    subsysA->revertParams();
-    subsysB->revertParams();
+    subsysA -> revertParams();
+    subsysB -> revertParams();
     return ret;
 
   }
 
-  void applySolution()
-  {
-    for (int cid=0; cid < int(subSystems.size()); cid++) {
-    if (subSystemsAux.get(cid))
-      subSystemsAux.get(cid)->applySolution();
-    if (subSystems.get(cid))
-      subSystems.get(cid)->applySolution();
-    for (MAP_pD_pD::const_iterator it=reductionmaps.get(cid).begin();
-         it != reductionmaps.get(cid).end(); ++it)
-    *(it->first) = *(it->second);
-  }
+  void applySolution() {
+    for (int cid = 0; cid <int(subSystems.size());
+    cid++){
+      if (subSystemsAux.get(cid)) {
+        subSystemsAux.get(cid)
+      }->applySolution();
+      if (subSystems.get(cid)) {
+        subSystems.get(cid)
+      }->applySolution();
+      for (MAP_pD_pD::const_iterator it = reductionmaps.get(cid).begin();
+           it != reductionmaps.get(cid).end() ;
+      ++it)
+      *(it -> first) =*(it -> second);
+    }
   }
 
-  void undoSolution()
-  {
+  void undoSolution() {
     resetToReference();
   }
 
-  int diagnose()
-  {
+  int diagnose() {
     // Analyses the constrainess grad of the system and provides feedback
     // The vector "conflictingTags" will hold a group of conflicting constraints
 
@@ -1357,154 +1396,168 @@ public class System {
     conflictingTags.clear();
     redundantTags.clear();
     Eigen::MatrixXd J(clist.size(), plist.size());
-    int count=0;
-    for (std::vector<Constraint *>::iterator constr=clist.begin();
-    constr != clist.end(); ++constr) {
-    (*constr)->revertParams();
-    if ((*constr)->getTag() >= 0) {
-      count++;
-      for (int j=0; j < int(plist.size()); j++)
-      J(count-1,j) = (*constr)->grad(plist[j]);
+    int count = 0;
+    for (std::vector < Constraint * >::iterator constr = clist.begin();
+    constr != clist.end();
+    ++constr){
+      ( * constr)->revertParams();
+      if (( * constr)->getTag() >= 0){
+        count++;
+        for (int j = 0; j <int(plist.size());
+        j++)
+        J(count - 1, j) = ( * constr)->grad(plist[j]);
+      }
     }
-  }
 
     if (J.rows() > 0) {
-      Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qrJT(J.topRows(count).transpose());
-      Eigen::MatrixXd Q = qrJT.matrixQ ();
+      Eigen::FullPivHouseholderQR < Eigen::MatrixXd > qrJT(J.topRows(count).transpose());
+      Eigen::MatrixXd Q = qrJT.matrixQ();
       int paramsNum = qrJT.rows();
       int constrNum = qrJT.cols();
       int rank = qrJT.rank();
 
       Eigen::MatrixXd R;
-      if (constrNum >= paramsNum)
-        R = qrJT.matrixQR().triangularView<Eigen::Upper>();
-      else
+      if (constrNum >= paramsNum) {
+        R = qrJT.matrixQR().triangularView < Eigen::Upper > ();
+      } else {
         R = qrJT.matrixQR().topRows(constrNum)
-                .triangularView<Eigen::Upper>();
+                .triangularView < Eigen::Upper > ();
+      }
 
       if (constrNum > rank) { // conflicting or redundant constraints
-        for (int i=1; i < rank; i++) {
+        for (int i = 1; i < rank; i++) {
           // eliminate non zeros above pivot
-          assert(R(i,i) != 0);
-          for (int row=0; row < i; row++) {
-            if (R(row,i) != 0) {
-              double coef=R(row,i)/R(i,i);
-              R.block(row,i+1,1,constrNum-i-1) -= coef * R.block(i,i+1,1,constrNum-i-1);
-              R(row,i) = 0;
+          assert (R(i, i) != 0);
+          for (int row = 0; row < i; row++) {
+            if (R(row, i) != 0) {
+              double coef = R(row, i) / R(i, i);
+              R.block(row, i + 1, 1, constrNum - i - 1) -= coef * R.block(i, i + 1, 1, constrNum - i - 1);
+              R(row, i) = 0;
             }
           }
         }
-        std::vector< std::vector<Constraint *> > conflictGroups(constrNum-rank);
-        for (int j=rank; j < constrNum; j++) {
-          for (int row=0; row < rank; row++) {
-            if (fabs(R(row,j)) > 1e-10) {
+        std::vector < std::vector < Constraint * >>conflictGroups(constrNum - rank);
+        for (int j = rank; j < constrNum; j++) {
+          for (int row = 0; row < rank; row++) {
+            if (fabs(R(row, j)) > 1e-10) {
               int origCol = qrJT.colsPermutation().indices()[row];
-              conflictGroups[j-rank].push_back(clist[origCol]);
+              conflictGroups[j - rank].push_back(clist[origCol]);
             }
           }
           int origCol = qrJT.colsPermutation().indices()[j];
-          conflictGroups[j-rank].push_back(clist[origCol]);
+          conflictGroups[j - rank].push_back(clist[origCol]);
         }
 
         // try to remove the conflicting constraints and solve the
         // system in order to check if the removed constraints were
         // just redundant but not really conflicting
-        std::set<Constraint *> skipped;
+        std::set < Constraint * > skipped;
         SET_I satisfiedGroups;
         while (1) {
-          std::map< Constraint *, SET_I > conflictingMap;
-          for (int i=0; i < conflictGroups.size(); i++) {
+          std::map < Constraint *, SET_I > conflictingMap;
+          for (int i = 0; i < conflictGroups.size(); i++) {
             if (satisfiedGroups.count(i) == 0) {
-              for (int j=0; j < conflictGroups[i].size(); j++) {
-                Constraint *constr = conflictGroups[i][j];
-                if (constr->getTag() != 0) // exclude constraints tagged with zero
+              for (int j = 0; j < conflictGroups[i].size(); j++) {
+                Constraint * constr = conflictGroups[i][j];
+                if (constr -> getTag() != 0) // exclude constraints tagged with zero
+                {
                   conflictingMap[constr].insert(i);
+                }
               }
             }
           }
-          if (conflictingMap.empty())
+          if (conflictingMap.empty()) {
             break;
+          }
 
           int maxPopularity = 0;
-          Constraint *mostPopular = NULL;
-          for (std::map< Constraint *, SET_I >::const_iterator it=conflictingMap.begin();
-          it != conflictingMap.end(); it++) {
-            if (it->second.size() > maxPopularity ||
-                    (it->second.size() == maxPopularity && mostPopular &&
-                            it->first->getTag() > mostPopular->getTag())) {
-              mostPopular = it->first;
-              maxPopularity = it->second.size();
+          Constraint * mostPopular = NULL;
+          for (std::map < Constraint *, SET_I >::const_iterator it = conflictingMap.begin();
+          it != conflictingMap.end();
+          it++){
+            if (it -> second.size() > maxPopularity ||
+                    (it -> second.size() == maxPopularity && mostPopular &&
+                            it -> first -> getTag() > mostPopular -> getTag())) {
+              mostPopular = it -> first;
+              maxPopularity = it -> second.size();
             }
           }
           if (maxPopularity > 0) {
             skipped.insert(mostPopular);
-            for (SET_I::const_iterator it=conflictingMap[mostPopular].begin();
-                 it != conflictingMap[mostPopular].end(); it++)
-            satisfiedGroups.insert(*it);
+            for (SET_I::const_iterator it = conflictingMap[mostPopular].begin();
+                 it != conflictingMap[mostPopular].end() ;
+            it++)
+            satisfiedGroups.insert( * it);
           }
         }
 
-        std::vector<Constraint *> clistTmp;
+        std::vector < Constraint * > clistTmp;
         clistTmp.reserve(clist.size());
-        for (std::vector<Constraint *>::iterator constr=clist.begin();
-        constr != clist.end(); ++constr)
-        if (skipped.count(*constr) == 0)
-        clistTmp.push_back(*constr);
+        for (std::vector < Constraint * >::iterator constr = clist.begin();
+        constr != clist.end();
+        ++constr)
+        if (skipped.count( * constr)==0)
+        clistTmp.push_back( * constr);
 
-        SubSystem *subSysTmp = new SubSystem(clistTmp, plist);
+        SubSystem * subSysTmp = new SubSystem(clistTmp, plist);
         int res = solve(subSysTmp);
         if (res == Success) {
-          subSysTmp->applySolution();
-          for (std::set<Constraint *>::const_iterator constr=skipped.begin();
-          constr != skipped.end(); constr++) {
-            double err = (*constr)->error();
-            if (err * err < XconvergenceFine)
-              redundant.insert(*constr);
+          subSysTmp -> applySolution();
+          for (std::set < Constraint * >::const_iterator constr = skipped.begin();
+          constr != skipped.end();
+          constr++){
+            double err = ( * constr)->error();
+            if (err * err < XconvergenceFine) {
+              redundant.insert( * constr
+            });
           }
           resetToReference();
 
-          std::vector< std::vector<Constraint *> > conflictGroupsOrig=conflictGroups;
+          std::vector < std::vector < Constraint * >>conflictGroupsOrig = conflictGroups;
           conflictGroups.clear();
-          for (int i=conflictGroupsOrig.size()-1; i >= 0; i--) {
+          for (int i = conflictGroupsOrig.size() - 1; i >= 0; i--) {
             bool isRedundant = false;
-            for (int j=0; j < conflictGroupsOrig[i].size(); j++) {
+            for (int j = 0; j < conflictGroupsOrig[i].size(); j++) {
               if (redundant.count(conflictGroupsOrig[i][j]) > 0) {
                 isRedundant = true;
                 break;
               }
             }
-            if (!isRedundant)
+            if (!isRedundant) {
               conflictGroups.push_back(conflictGroupsOrig[i]);
-            else
+            } else {
               constrNum--;
+            }
           }
         }
         delete subSysTmp;
 
         // simplified output of conflicting tags
         SET_I conflictingTagsSet;
-        for (int i=0; i < conflictGroups.size(); i++) {
-          for (int j=0; j < conflictGroups[i].size(); j++) {
+        for (int i = 0; i < conflictGroups.size(); i++) {
+          for (int j = 0; j < conflictGroups[i].size(); j++) {
             conflictingTagsSet.insert(conflictGroups[i][j]->getTag());
           }
         }
         conflictingTagsSet.erase(0); // exclude constraints tagged with zero
         conflictingTags.resize(conflictingTagsSet.size());
-        std::copy(conflictingTagsSet.begin(), conflictingTagsSet.end(),
+        std::copy (conflictingTagsSet.begin(), conflictingTagsSet.end(),
                 conflictingTags.begin());
 
         // output of redundant tags
         SET_I redundantTagsSet;
-        for (std::set<Constraint *>::iterator constr=redundant.begin();
-        constr != redundant.end(); ++constr)
-        redundantTagsSet.insert((*constr)->getTag());
+        for (std::set < Constraint * >::iterator constr = redundant.begin();
+        constr != redundant.end();
+        ++constr)
+        redundantTagsSet.insert(( * constr)->getTag());
         // remove tags represented at least in one non-redundant constraint
-        for (std::vector<Constraint *>::iterator constr=clist.begin();
-        constr != clist.end(); ++constr)
-        if (redundant.count(*constr) == 0)
-        redundantTagsSet.erase((*constr)->getTag());
+        for (std::vector < Constraint * >::iterator constr = clist.begin();
+        constr != clist.end();
+        ++constr)
+        if (redundant.count( * constr)==0)
+        redundantTagsSet.erase(( * constr)->getTag());
         redundantTags.resize(redundantTagsSet.size());
-        std::copy(redundantTagsSet.begin(), redundantTagsSet.end(),
+        std::copy (redundantTagsSet.begin(), redundantTagsSet.end(),
                 redundantTags.begin());
 
         if (paramsNum == rank && constrNum > rank) { // over-constrained
@@ -1523,8 +1576,7 @@ public class System {
     return dofs;
   }
 
-  void clearSubSystems()
-  {
+  void clearSubSystems() {
     isInit = false;
     free(subSystems);
     free(subSystemsAux);
@@ -1532,32 +1584,31 @@ public class System {
     subSystemsAux.clear();
   }
 
-  double lineSearch(SubSystem *subsys, Eigen::VectorXd &xdir)
-  {
-    double f1,f2,f3,alpha1,alpha2,alpha3,alphaStar;
+  double lineSearch(SubSystem*subsys, Eigen::VectorXd&xdir) {
+    double f1, f2, f3, alpha1, alpha2, alpha3, alphaStar;
 
-    double alphaMax = subsys->maxStep(xdir);
+    double alphaMax = subsys -> maxStep(xdir);
 
     Eigen::VectorXd x0, x;
 
     //Save initial values
-    subsys->getParams(x0);
+    subsys -> getParams(x0);
 
     //Start at the initial position alpha1 = 0
     alpha1 = 0.;
-    f1 = subsys->error();
+    f1 = subsys -> error();
 
     //Take a step of alpha2 = 1
     alpha2 = 1.;
     x = x0 + alpha2 * xdir;
-    subsys->setParams(x);
-    f2 = subsys->error();
+    subsys -> setParams(x);
+    f2 = subsys -> error();
 
     //Take a step of alpha3 = 2*alpha2
-    alpha3 = alpha2*2;
+    alpha3 = alpha2 * 2;
     x = x0 + alpha3 * xdir;
-    subsys->setParams(x);
-    f3 = subsys->error();
+    subsys -> setParams(x);
+    f3 = subsys -> error();
 
     //Now reduce or lengthen alpha2 and alpha3 until the minimum is
     //Bracketed by the triplet f1>f2<f3
@@ -1569,42 +1620,44 @@ public class System {
         f3 = f2;
         alpha2 = alpha2 / 2;
         x = x0 + alpha2 * xdir;
-        subsys->setParams(x);
-        f2 = subsys->error();
-      }
-      else if (f2 > f3) {
-        if (alpha3 >= alphaMax)
+        subsys -> setParams(x);
+        f2 = subsys -> error();
+      } else if (f2 > f3) {
+        if (alpha3 >= alphaMax) {
           break;
+        }
         //If f2 is greater than f3 then we increase alpha2 and alpha3 away from f1
         //Effectively both are lengthened by a factor of two.
         alpha2 = alpha3;
         f2 = f3;
         alpha3 = alpha3 * 2;
         x = x0 + alpha3 * xdir;
-        subsys->setParams(x);
-        f3 = subsys->error();
+        subsys -> setParams(x);
+        f3 = subsys -> error();
       }
     }
     //Get the alpha for the minimum f of the quadratic approximation
-    alphaStar = alpha2 + ((alpha2-alpha1)*(f1-f3))/(3*(f1-2*f2+f3));
+    alphaStar = alpha2 + ((alpha2 - alpha1) * (f1 - f3)) / (3 * (f1 - 2 * f2 + f3));
 
     //Guarantee that the new alphaStar is within the bracket
-    if (alphaStar >= alpha3 || alphaStar <= alpha1)
+    if (alphaStar >= alpha3 || alphaStar <= alpha1) {
       alphaStar = alpha2;
+    }
 
-    if (alphaStar > alphaMax)
+    if (alphaStar > alphaMax) {
       alphaStar = alphaMax;
+    }
 
-    if (alphaStar != alphaStar)
+    if (alphaStar != alphaStar) {
       alphaStar = 0.;
+    }
 
     //Take a final step to alphaStar
     x = x0 + alphaStar * xdir;
-    subsys->setParams(x);
+    subsys -> setParams(x);
 
     return alphaStar;
   }
-
 
 
 } //namespace GCS
