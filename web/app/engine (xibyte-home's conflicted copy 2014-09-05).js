@@ -26,12 +26,21 @@ TCAD.utils.checkPolygon = function(poly) {
   }
 };
 
-TCAD.utils.createPoint = function(x, y, z) {
-//  var g = new THREE.PlaneGeometry(0.05, 0.05);
-//  var m = new THREE.MeshBasicMaterial({color: 0x0000ff, side: THREE.DoubleSide});
-//  return new THREE.Mesh(g, m);
+TCAD.utils.createPoint = function(x, y, z, viewer) {
+  var g = new THREE.SphereGeometry(0.4, 12, 12);
+//  var m = new THREE.MeshBasicMaterial({color: 0xffffff});
 
-  var material = new THREE.ShaderMaterial({
+    var m = new THREE.MeshPhongMaterial({
+      vertexColors: THREE.FaceColors,
+      color: '#FFFFFF',
+      shininess: 0
+    });
+
+  var o = new THREE.Mesh(g, m);
+  o.position.set( x, y, z );
+  return o;
+
+  var materialS = new THREE.ShaderMaterial({
 //    color: 0xff0000,
 //    linewidth: 5
     vertexShader :
@@ -60,9 +69,11 @@ TCAD.utils.createPoint = function(x, y, z) {
 //  line.position.z = z;
 //  return line;
   
-  material = new THREE.SpriteMaterial( { color: 0xffffff, fog: false } );
+  var material = new THREE.SpriteMaterial( { color: 0xffffff, fog: false } );
   var sprite = new THREE.Sprite( material );
   sprite.position.set( x, y, z );
+  sprite.scale.set(0.25,0.25,0.25);
+  sprite.updateMatrix();
   return sprite;
 };
 
@@ -74,7 +85,7 @@ TCAD.utils.createLine = function (a, b, color) {
   var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(a.x, a.y, a.z));
   geometry.vertices.push(new THREE.Vector3(b.x, b.y, b.z));
-  return new THREE.Segment(geometry, material);
+  return new THREE.Line(geometry, material);
 };
 
 TCAD.utils.createSolid = function(faces) {
@@ -317,7 +328,7 @@ TCAD.Polygon.prototype.triangulate = function() {
       holes[h][i] = _2dTransformation.apply(this.holes[h][i]);
     }
   }
-  return THREE.Shape.utils.triangulateShape( shell, holes );
+  return THREE.Shape.Utils.triangulateShape( shell, holes );
 };
 
 

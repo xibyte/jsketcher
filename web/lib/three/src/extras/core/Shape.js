@@ -121,7 +121,7 @@ THREE.Shape.prototype.extractAllSpacedPoints = function ( divisions ) {
  *	Utils
  **************************************************************/
 
-THREE.Shape.Utils = {
+THREE.Shape.utils = {
 
 	triangulateShape: function ( contour, holes ) {
 

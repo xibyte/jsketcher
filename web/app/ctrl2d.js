@@ -1,5 +1,5 @@
 
-TCAD.UI = function(viewer) {
+TCAD.UI2D = function(viewer) {
   this.viewer = viewer;
   this.dat = new dat.GUI();
   var gui = this.dat;
@@ -8,7 +8,7 @@ TCAD.UI = function(viewer) {
   gui.TEXT_OPEN = 'Open FFF';
 
   var actionsF = gui.addFolder('Add Object');
-  var actions = new TCAD.UI.Actions(this);
+  var actions = new TCAD.UI2D.Actions(this);
   actionsF.add(actions.tools, 'polygon');
   actionsF.add(actions.tools, 'line');
   actionsF.add(actions.tools, 'commit');
@@ -18,7 +18,7 @@ TCAD.UI = function(viewer) {
 //    propsF.add(object3DProto.position, 'x');
 };
 
-TCAD.UI.Actions = function(scope) {
+TCAD.UI2D.Actions = function(scope) {
   
   this.tools = {
     polygon : function() {

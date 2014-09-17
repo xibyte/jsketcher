@@ -91,7 +91,7 @@ THREE.CameraHelper = function ( camera ) {
 
 	}
 
-	THREE.Line.call( this, geometry, material, THREE.LinePieces );
+	THREE.Segment.call( this, geometry, material, THREE.LinePieces );
 
 	this.camera = camera;
 	this.matrixWorld = camera.matrixWorld;
@@ -103,7 +103,7 @@ THREE.CameraHelper = function ( camera ) {
 
 };
 
-THREE.CameraHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.CameraHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.CameraHelper.prototype.update = function () {
 

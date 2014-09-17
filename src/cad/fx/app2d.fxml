@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import cad.fx.viewer.* ?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.Pane?>
+<VBox xmlns:fx="fx" fx:controller="cad.fx.App2DCtrl">
+
+  <ToolBar>
+    <Region styleClass="spacer"/>
+    <HBox styleClass="segmented-button-bar">
+      <Button text="solve" fx:id="solve"/>
+    </HBox>
+  </ToolBar>
+
+  <Pane fx:id="viewer">
+
+  </Pane>
+
+</VBox>

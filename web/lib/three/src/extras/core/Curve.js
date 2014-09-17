@@ -270,7 +270,7 @@ THREE.Curve.prototype.getTangentAt = function ( u ) {
  *	Utils
  **************************************************************/
 
-THREE.Curve.Utils = {
+THREE.Curve.utils = {
 
 	tangentQuadraticBezier: function ( t, p0, p1, p2 ) {
 

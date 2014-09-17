@@ -1,0 +1,67 @@
+<html>
+<head>
+  <title>TCAD</title>
+  <style>
+    body {
+      font-family: Monospace;
+      margin: 0px;
+      overflow: hidden;
+    }
+  </style>
+
+  <script src="lib/three/three.js"></script>
+  <script src="lib/dat.gui.min.js"></script>
+  <script src="app/canvas.js"></script>
+  <script src="app/parametric.js"></script>
+  <script src="app/engine.js"></script>
+  <script src="app/vector.js"></script>
+  <script src="app/bsp.js"></script>
+
+  <script>window.onload = function () {
+    viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
+    var layer = new TCAD.TWO.Layer("test", TCAD.TWO.Styles.DEFAULT);
+    viewer.layers.push(layer);
+    var points = [{x: 10, y: 10}, {x: 100, y: 10}, {x: 100, y: 100}];
+    var poly = new TCAD.TWO.Polygon(points);
+    layer.objects.push(poly);
+
+    viewer.addSegment(20, 20, 300, 300, layer);
+    
+    viewer.repaint();
+    var bsp = new TCAD.TWO.BSP();
+    bsp.add({x: 3, y:3}, {x: 10, y:10}, "first");
+
+
+
+    this.dat = new dat.GUI();
+    var gui = this.dat;
+
+    var actionsF = gui.addFolder('Add Object');
+    var actions = {
+      addSegment : function () {
+        viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(viewer, layer));
+      }, 
+      
+      pan : function() {
+        viewer.toolManager.releaseControl();
+      },
+
+      coincident : function() {
+        viewer.parametricManager.coincident(viewer.selected);
+      }
+    };
+    actionsF.add(actions, 'addSegment');
+    actionsF.add(actions, 'pan');
+    actionsF.add(actions, 'coincident');
+    actionsF.open();
+
+
+  }</script>
+</head>
+<body>
+
+  <canvas width="300" height="300" id="viewer">
+  </canvas>
+
+</body>
+</html>

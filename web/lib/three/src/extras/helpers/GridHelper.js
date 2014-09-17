@@ -23,11 +23,11 @@ THREE.GridHelper = function ( size, step ) {
 
 	}
 
-	THREE.Line.call( this, geometry, material, THREE.LinePieces );
+	THREE.Segment.call( this, geometry, material, THREE.LinePieces );
 
 };
 
-THREE.GridHelper.prototype = Object.create( THREE.Line.prototype );
+THREE.GridHelper.prototype = Object.create( THREE.Segment.prototype );
 
 THREE.GridHelper.prototype.setColors = function( colorCenterLine, colorGrid ) {
 

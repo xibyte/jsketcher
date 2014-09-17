@@ -271,7 +271,7 @@ THREE.Projector = function () {
 
 				_renderData.lights.push( object );
 
-			} else if ( object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Sprite ) {
+			} else if ( object instanceof THREE.Mesh || object instanceof THREE.Segment || object instanceof THREE.Sprite ) {
 
 				if ( object.frustumCulled === false || _frustum.intersectsObject( object ) === true ) {
 
@@ -545,7 +545,7 @@ THREE.Projector = function () {
 
 				}
 
-			} else if ( object instanceof THREE.Line ) {
+			} else if ( object instanceof THREE.Segment ) {
 
 				if ( geometry instanceof THREE.BufferGeometry ) {
 
