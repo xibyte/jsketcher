@@ -149,7 +149,7 @@ public class Utils3D {
 
   public static List<Polygon> createCube(double width) {
     Polygon square = createSquare(width);
-    return Polygon.extrude(square, square.normal.scale(width)); 
+    return Polygon.extrude(square, square.normal.multi(width));
   }
 
   public static Polygon createSquare(double width) {

@@ -1,12 +1,18 @@
 package cad.gcs;
 
-public abstract class Param {
+public class Param {
 
-  public final Constraint constraint;
+  public double value;
 
-  protected Param(Constraint constraint) {
-    this.constraint = constraint;
+  public Param(double value) {
+    this.value = value;
   }
 
-  public abstract double value();
+  public double get() {
+    return value;
+  }
+  
+  public double set(double value) {
+    return this.value = value;
+  }
 }
