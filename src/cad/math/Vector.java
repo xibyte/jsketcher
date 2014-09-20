@@ -53,11 +53,11 @@ public class Vector {
     this.z = data[2];
   }
 
-  public Vector scale(double factor) {
-    return scale(factor, factor, factor);
+  public Vector multi(double factor) {
+    return multi(factor, factor, factor);
   }
 
-  public Vector scale(double dx, double dy, double dz) {
+  public Vector multi(double dx, double dy, double dz) {
     return new Vector(x * dx, y * dy, z * dz);
   }
 
@@ -83,7 +83,14 @@ public class Vector {
   }
 
   public Vector plus(Vector vector) {
-    return new Vector(x + vector.x, y + vector.y, z + vector.z);
+    return new Vector(this)._plus(vector);
+  }
+
+  public Vector _plus(Vector vector) {
+    x += vector.x;
+    y += vector.y;
+    z += vector.z;
+    return this;
   }
 
   public Vector plus(double dx, double dy, double dz) {
@@ -118,7 +125,7 @@ public class Vector {
   }
 
   public Vector negate() {
-    return scale(-1);
+    return multi(-1);
   }
 
 }

@@ -112,7 +112,7 @@ public class CadContext {
     }
 
     Sketch sketch = selection.csgNode.getSketch(selection.poly);
-    Vector dir = sketch.owner.normal.scale(height);
+    Vector dir = sketch.owner.normal.multi(height);
     for (List<Vector> polygon : sketch.polygons) {
       if (polygon.isEmpty()) {
         continue;

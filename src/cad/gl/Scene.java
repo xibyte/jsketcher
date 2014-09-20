@@ -1,11 +1,9 @@
 package cad.gl;
 
-import cad.fx.Polygon;
 import cad.math.Vector;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.opengl.GLWindow;
-import com.sun.javafx.geom.*;
 import javafx.scene.input.PickResult;
 
 import javax.media.opengl.GL2;
@@ -154,7 +152,7 @@ public class Scene implements GLEventListener, MouseListener {
 //    Vector dir = pickRay[1].minus(pickRay[0]);
     
 //    pickRay[1] = pickRay[1].minus(pickRay[0]).scale(700);//.normalize().scale(55);
-    pickRay[1] = pickRay[1].minus(pickRay[0]).normalize().scale(30);
+    pickRay[1] = pickRay[1].minus(pickRay[0]).normalize().multi(30);
   }
 
   public static float[] fixW(float[] v) {
