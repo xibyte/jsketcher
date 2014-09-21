@@ -55,7 +55,12 @@ public class X implements Constraint {
   public double valueY() {
     return (params[l2p2y].get() - params[l2p1y].get()) * .5 - (params[l1p2y].get() - params[l1p1y].get()) * .5;
   }
-  
+
+  @Override
+  public Param[] getParams() {
+    return params;
+  }
+
   @Override
   public double[] params() {
     double[] _params = new double[8];
@@ -110,18 +115,6 @@ public class X implements Constraint {
     out[l2p2y] = g4.y;
   }
 
-
-  @Override
-  public void step(double alpha) {
-
-    System.out.println(angle());
-    
-    step(l1p1x, l1p1y, params[l2p1x].get() - params[l2p2x].get(), params[l2p1y].get() - params[l2p2y].get(), alpha);
-    step(l1p2x, l1p2y, -(params[l2p1x].get() - params[l2p2x].get()), -(params[l2p1y].get() - params[l2p2y].get()), alpha);
-
-    step(l2p1x, l2p1y, (params[l1p1x].get() - params[l1p2x].get()), (params[l1p1y].get() - params[l1p2y].get()), alpha);
-    step(l2p2x, l2p2y, -(params[l1p1x].get() - params[l1p2x].get()), -(params[l1p1y].get() - params[l1p2y].get()), alpha);
-  }
 
   public double angle() {
     double dx1 = (params[l1p1x].get() - params[l1p2x].get());

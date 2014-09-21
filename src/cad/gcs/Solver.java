@@ -15,6 +15,9 @@ import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Solver {
@@ -401,7 +404,7 @@ public class Solver {
         try {
           h = new LUDecomposition(A).getSolver().solve(g);
         } catch (Exception ssse) {
-          java.lang.System.out.println( "");
+          ssse.printStackTrace();
           return SolveStatus.Success;
         }
         
@@ -675,20 +678,38 @@ public class Solver {
     return new Array2DRowRealMatrix(rsize, csize);
   }
 
+  static class ParamInfo {
+
+    final int id;
+    final List<Constraint> constraints = new ArrayList<>();
+
+    ParamInfo(int id) {
+      this.id = id;
+    }
+  }
+
   public static class SubSystem {
 
     private final List<Constraint> constraints;
+    private final LinkedHashMap<Param, ParamInfo> params = new LinkedHashMap<>();
 
     public SubSystem(List<Constraint> constraints) {
       this.constraints = constraints;
+      for (Constraint c : constraints) {
+
+        for (Param p : c.getParams()) {
+          ParamInfo paramInfo = params.get(p);
+          if (paramInfo == null) {
+            paramInfo = new ParamInfo(params.size());
+            params.put(p, paramInfo);
+          }
+          paramInfo.constraints.add(c);
+        }
+      }
     }
 
     public int pSize() {
-      int s = 0;
-      for (Constraint c : constraints) {
-        s += c.params().length;
-      }
-      return s;
+      return params.size();
     }
 
     public int cSize() {
@@ -697,40 +718,23 @@ public class Solver {
 
 
     public void fillParams(RealMatrix x) {
-      int i = 0;
-      TDoubleList params = new TDoubleArrayList();
-      for (Constraint c : constraints) {
-        params.add(c.params());
-      }
-      x.setColumn(0, params.toArray());
+      x.setColumn(0, getParams().toArray());
     }
-
 
     public TDoubleList getParams() {
-      int i = 0;
-      TDoubleList params = new TDoubleArrayList();
-      for (Constraint c : constraints) {
-        params.add(c.params());
+      TDoubleList params_ = new TDoubleArrayList();
+      for (Param p : params.keySet()) {
+        params_.add(p.get());
       }
-      return params;
+      return params_;
     }
-
-    public TDoubleList getValues2() {
-      TDoubleList params = new TDoubleArrayList();
-      for (Constraint c : constraints) {
-        double err = c.error();
-        params.add(err);
-      }
-      return params;
-    }
-
 
     public TDoubleList getValues() {
-      TDoubleList params = new TDoubleArrayList();
+      TDoubleList values = new TDoubleArrayList();
       for (Constraint c : constraints) {
-        params.add(c.error());
+        values.add(c.error());
       }
-      return params;
+      return values;
     }
     
     public double calcResidual(RealMatrix r) {
@@ -778,51 +782,34 @@ public class Solver {
       }
       for (int i=0; i < constraints.size(); i++) {
         Constraint c = constraints.get(i);
-        double[] grad = new double[c.params().length];
+
+        Param[] cParams = c.getParams();
+        double[] grad = new double[cParams.length];
         c.gradient(grad);
-        for (int j=0; j < grad.length; j++) {
-          jacobi.setEntry(i,j, grad[j]);
+
+        for (int p = 0; p < cParams.length; p++) {
+          Param param = cParams[p];
+          int j = params.get(param).id;
+          jacobi.setEntry(i,j, grad[p]);
         }
       }
     }
 
     public RealMatrix makeJacobi() {
       RealMatrix jacobi = new Array2DRowRealMatrix(cSize(), pSize());
-      for (int j=0; j < pSize(); j++) {
-        for (int i=0; i < constraints.size(); i++) {
-          jacobi.setEntry(i, j, 0);
-        }
-      }
-      for (int i=0; i < constraints.size(); i++) {
-        Constraint c = constraints.get(i);
-        double[] grad = new double[c.params().length];
-        c.gradient(grad);
-        for (int j=0; j < grad.length; j++) {
-          jacobi.setEntry(i,j, grad[j]);
-        }
-      }
+      calcJacobi(jacobi);
       return jacobi;
     }
 
 
     public void setParams(RealMatrix params) {
-      int off = 0;
-      double[] arr = params.getColumn(0);
-      for (Constraint c : constraints) {
-        int l = c.params().length;
-        double[] cp = new double[l];
-        java.lang.System.arraycopy(arr, off, cp, 0, l);
-        c.set(cp);
-      }
+      setParams(params.getData()[0]);
     }
     
     public void setParams(double[] arr) {
-      int off = 0;
-      for (Constraint c : constraints) {
-        int l = c.params().length;
-        double[] cp = new double[l];
-        java.lang.System.arraycopy(arr, off, cp, 0, l);
-        c.set(cp);
+      Iterator<Param> pit = params.keySet().iterator();
+      for (double v : arr) {
+        pit.next().set(v);
       }
     }
 
@@ -831,15 +818,7 @@ public class Solver {
     }
 
     public void calcGrad(RealMatrix out) {
-
-      int cc = 0;
-      for (Constraint c : constraints) {
-        double[] grad = new double[c.params().length];
-        c.gradient(grad);
-        for (double aGrad : grad) {
-          out.setEntry(cc++, 0, aGrad);
-        }
-      }      
+      throw new UnsupportedOperationException("men at work");
     }
   }
 
