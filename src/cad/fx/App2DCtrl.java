@@ -7,6 +7,7 @@ import cad.gcs.GradientDescent3;
 import cad.gcs.Param;
 import cad.gcs.Solver;
 import cad.gcs.constr.Constraint2;
+import cad.gcs.constr.Parallel;
 import cad.gcs.constr.Perpendicular;
 import cad.gcs.constr.Perpendicular2;
 import cad.gcs.constr.X;
@@ -57,9 +58,9 @@ public class App2DCtrl implements Initializable {
 
     Line l1 = new Line(100, 100, 300, 600);
     Line l2 = new Line(400, 600, 600, 100);
-    content.getChildren().addAll(l1, l2);
+    Line l3 = new Line(650, 100, 800, 600);
 
-
+    content.getChildren().addAll(l1, l2, l3);
 
 
     solve.setOnAction(event -> {
@@ -74,13 +75,16 @@ public class App2DCtrl implements Initializable {
       Param l1p1y = new Param(l1.getStartY());
       Param l1p2x = new Param(l1.getEndX());
       Param l1p2y = new Param(l1.getEndY());
+
       Param l2p1x = new Param(l2.getStartX());
       Param l2p1y = new Param(l2.getStartY());
       Param l2p2x = new Param(l2.getEndX());
       Param l2p2y = new Param(l2.getEndY());
 
-
-      Perpendicular2 perpendicular2 = new Perpendicular2(as, ae, bs, be);
+      Param l3p1x = new Param(l3.getStartX());
+      Param l3p1y = new Param(l3.getStartY());
+      Param l3p2x = new Param(l3.getEndX());
+      Param l3p2y = new Param(l3.getEndY());
 
 
       Perpendicular perpendicular = new Perpendicular(
@@ -88,6 +92,17 @@ public class App2DCtrl implements Initializable {
         l1p1y,
         l1p2x,
         l1p2y,
+        l2p1x,
+        l2p1y,
+        l2p2x,
+        l2p2y
+      );
+
+      Parallel parallel = new Parallel(
+        l3p1x,
+        l3p1y,
+        l3p2x,
+        l3p2y,
         l2p1x,
         l2p1y,
         l2p2x,
@@ -120,9 +135,9 @@ public class App2DCtrl implements Initializable {
       
 //      solveGC(subSystem);
 
-      java.lang.System.out.println(perpendicular.angle());
+      java.lang.System.out.println("ANGLE |- :" + perpendicular.angle());
+      java.lang.System.out.println("ANGLE || :" + parallel.angle());
 
-      Constraint2 constr = perpendicular2;
 //      Constraint2 constr = xy;
 
 //      Constraint constr = perpendicular;
@@ -146,17 +161,39 @@ public class App2DCtrl implements Initializable {
       l1.setStartY(l1p1y.get());
       l1.setEndX(l1p2x.get());
       l1.setEndY(l1p2y.get());
+
       l2.setStartX(l2p1x.get());
       l2.setStartY(l2p1y.get());
       l2.setEndX(l2p2x.get());
       l2.setEndY(l2p2y.get());
-    });
 
+      l3.setStartX(l3p1x.get());
+      l3.setStartY(l3p1y.get());
+      l3.setEndX(l3p2x.get());
+      l3.setEndY(l3p2y.get());
+
+//      scale(l1);
+//      scale(l2);
+//      scale(l3);
+    });
+  }
+
+  double xxx = 100;
+
+  private void scale(Line l) {
+
+    Vector v = new Vector(l.getEndX() - l.getStartX(), l.getEndY() - l.getStartY());
+    v = v.normalize().multi(200);
+    l.setStartX(xxx += 100.);
+    l.setStartY(500.);
+
+    l.setEndX(l.getStartX() + v.x);
+    l.setEndY(l.getStartY() + v.y);
   }
 
   private void solveGC(final Solver.SubSystem subSystem) {
     GaussNewtonOptimizer optimizer = new GaussNewtonOptimizer((iteration, previous, current) -> {
-      return subSystem.value() < 0.00000001;
+      return subSystem.value() < 0.00001;
     }) {
 
       @Override
