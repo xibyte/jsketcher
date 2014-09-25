@@ -113,7 +113,7 @@ public class P2LDistance implements Constraint {
 
   }
 
-  public void gradient(double[] out) {
+  public void gradient2(double[] out) {
     double x0 = p0x(), x1 = p1x(), x2 = p2x();
     double y0 = p0y(), y1 = p1y(), y2 = p2y();
     double dx = x2 - x1;
@@ -157,7 +157,7 @@ public class P2LDistance implements Constraint {
     return a*a;
   }
 
-  public void gradient2(double[] out) {
+  public void gradient(double[] out) {
     double x0 = p0x(), x1 = p1x(), x2 = p2x();
     double y0 = p0y(), y1 = p1y(), y2 = p2y();
     double dx = x2 - x1;
