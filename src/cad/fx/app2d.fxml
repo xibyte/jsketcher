@@ -15,6 +15,7 @@
     <Region styleClass="spacer"/>
     <HBox styleClass="segmented-button-bar">
       <Button text="solve" fx:id="solve"/>
+      <Button text="square" fx:id="square"/>
     </HBox>
   </ToolBar>
 

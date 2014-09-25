@@ -68,6 +68,7 @@ public class Solver {
     double alpha = 0.;
     double nu = 2.;
     int iter = 0, stop = 0, reduce = 0;
+    double mu =  1e-8;
     while (stop == 0) {
 
       // check if finished
@@ -86,9 +87,38 @@ public class Solver {
         alpha = squaredNorm(g) / squaredNorm((Jx.multiply(g)));
         h_sd = g.scalarMultiply(alpha);
 
+        RealMatrix A = Jx.transpose().multiply(Jx);
+        RealMatrix gg = Jx.transpose().multiply(fx.scalarMultiply(-1));
+        double[] diag_A = diagonal(A);
+        
+        double mu_increase_factor_ = 10.0;
+        do  {
+          for (int i = 0; i < xsize; ++i) {
+            A.addToEntry(i, i, mu);
+          }
+
+          boolean success = true;
+          try {
+            h_gn = new LUDecomposition(A).getSolver().solve(gg);
+          } catch (Exception ssse) {
+            java.lang.System.out.println(ssse.getMessage());
+            success = false;
+          }
+          if (success) {
+            break;
+          }
+          mu *= mu_increase_factor_;
+        } while (mu < 1.0);
+        
         // get the gauss-newton step
-        h_gn = lu(Jx, fx.scalarMultiply(-1));
-        double rel_error = (Jx.transpose().multiply(h_gn).add(fx)).getFrobeniusNorm() / fx.getFrobeniusNorm();
+//        h_gn = new LUDecomposition(new Array2DRowRealMatrix(makeSquare(Jx.getData()))).getSolver().solve(fx.scalarMultiply(-1));
+
+
+        for (int i = 0; i < xsize; ++i) // restore diagonal J^T J entries
+        {
+          A.setEntry(i, i, diag_A[i]);
+        }
+        double rel_error = (Jx.multiply(h_gn).add(fx)).getFrobeniusNorm() / fx.getFrobeniusNorm();
         if (rel_error > 1e15)
           break;
 
@@ -142,9 +172,9 @@ public class Solver {
       double rho = dL / dF;
 
       if (dF > 0 && dL > 0) {
-        x = x_new;
-        Jx = Jx_new;
-        fx = fx_new;
+        x = x_new.copy();
+        Jx = Jx_new.copy();
+        fx = fx_new.copy();
         err = err_new;
 
         g = Jx.transpose().multiply(fx.scalarMultiply(-1));
@@ -401,14 +431,22 @@ public class Solver {
 
         //solve augmented functions A*h=-g
 
-        try {
-          h = new LUDecomposition(A).getSolver().solve(g);
-        } catch (Exception ssse) {
-          ssse.printStackTrace();
-          return SolveStatus.Success;
+        for (int _ = 0; _ < 1000; _++) {
+          try {
+            h = new LUDecomposition(A).getSolver().solve(g);
+          } catch (Exception ssse) {
+            mu *= 1./3.;
+            for (int i = 0; i < xsize; ++i) {
+              A.setEntry(i, i, diag_A[i] * mu);
+            }
+            if (_ == 999) {
+              return SolveStatus.Success;
+            }
+            continue;
+          }
+          break;
         }
         
-        ;
         double rel_error = (A.multiply(h).subtract(g)).getFrobeniusNorm() / g.getFrobeniusNorm();
 
         // check if solving works
@@ -690,7 +728,7 @@ public class Solver {
 
   public static class SubSystem {
 
-    private final List<Constraint> constraints;
+    public final List<Constraint> constraints;
     private final LinkedHashMap<Param, ParamInfo> params = new LinkedHashMap<>();
 
     public SubSystem(List<Constraint> constraints) {
@@ -790,7 +828,7 @@ public class Solver {
         for (int p = 0; p < cParams.length; p++) {
           Param param = cParams[p];
           int j = params.get(param).id;
-          jacobi.setEntry(i,j, grad[p]);
+          jacobi.setEntry(i,j, param.isLocked() ? 0 : grad[p]);
         }
       }
     }
@@ -803,7 +841,7 @@ public class Solver {
 
 
     public void setParams(RealMatrix params) {
-      setParams(params.getData()[0]);
+      setParams(params.getColumn(0));
     }
     
     public void setParams(double[] arr) {
