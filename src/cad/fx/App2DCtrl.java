@@ -20,6 +20,7 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.MaxIter;
+import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.optim.nonlinear.vector.ModelFunction;
 import org.apache.commons.math3.optim.nonlinear.vector.ModelFunctionJacobian;
 import org.apache.commons.math3.optim.nonlinear.vector.Target;
@@ -45,10 +46,11 @@ public class App2DCtrl implements Initializable {
   public Pane viewer;
   public Button solve;
   public Button square;
+  private Group content;
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-    Group content = new Group();
+    content = new Group();
     setInitObject(content);
     viewer.getChildren().setAll(content);
 
@@ -208,8 +210,11 @@ public class App2DCtrl implements Initializable {
       fxLine.setStartY(line[1].get());
       fxLine.setEndX(line[2].get());
       fxLine.setEndY(line[3].get());
+
       lines.add(fxLine);
     }
+
+    content.getChildren().addAll(lines);
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
     executor.execute(() -> {
@@ -239,7 +244,7 @@ public class App2DCtrl implements Initializable {
         Solver.SubSystem worse = new Solver.SubSystem(asList(subSystem.constraints.get(worseId)));
         solveLM_COMMONS(worse);
 //        Solver.solve_LM(worse);
-        System.out.println("WORSE FIXED ERROR:" + worse.error());
+        System.out.println("WORSE FIXED ERROR:" + Math.sqrt(worse.error()));
       }
       linearSolvedCallback.run();
     }
@@ -266,25 +271,27 @@ public class App2DCtrl implements Initializable {
 
     double[] wieght = new double[subSystem.cSize()];
     Arrays.fill(wieght, 1);
-    optimizer.optimize(
-            new MaxEval(10000),
-            new MaxIter(10000),
-            new InitialGuess(subSystem.getParams().toArray()),
-            new Target(new double[subSystem.cSize()]),
-            new Weight(wieght),
-            new ModelFunctionJacobian(point -> {
-              subSystem.setParams(point);
-              return subSystem.makeJacobi().getData();
-            }),
-            new ModelFunction(new MultivariateVectorFunction() {
-              @Override
-              public double[] value(double[] point) throws IllegalArgumentException {
-                subSystem.setParams(point);
-                return subSystem.getValues().toArray();
-              }
-            })
+    PointVectorValuePair result = optimizer.optimize(
+        new MaxEval(10000),
+        new MaxIter(10000),
+        new InitialGuess(subSystem.getParams().toArray()),
+        new Target(new double[subSystem.cSize()]),
+        new Weight(wieght),
+        new ModelFunctionJacobian(point -> {
+          subSystem.setParams(point);
+          return subSystem.makeJacobi().getData();
+        }),
+        new ModelFunction(new MultivariateVectorFunction() {
+          @Override
+          public double[] value(double[] point) throws IllegalArgumentException {
+            subSystem.setParams(point);
+            return subSystem.getValues().toArray();
+          }
+        })
 
     );
+
+    subSystem.setParams(result.getPoint());
   }
 
   private void solve(ActionEvent e) {
