@@ -54,20 +54,6 @@ public class Parallel implements Constraint {
   }
 
   @Override
-  public double[] params() {
-    double[] _params = new double[8];
-    _params[l1p1x] = params[l1p1x].get();
-    _params[l1p1y] = params[l1p1y].get();
-    _params[l1p2x] = params[l1p2x].get();
-    _params[l1p2y] = params[l1p2y].get();
-    _params[l2p1x] = params[l2p1x].get();
-    _params[l2p1y] = params[l2p1y].get();
-    _params[l2p2x] = params[l2p2x].get();
-    _params[l2p2y] = params[l2p2y].get();
-    return _params;
-  }
-
-  @Override
   public double error() {
     double dx1 =  (params[l1p2x].get() - params[l1p1x].get());
     double dy1 =  (params[l1p2y].get() - params[l1p1y].get());
@@ -141,7 +127,6 @@ public class Parallel implements Constraint {
     return 8;
   }
 
-  @Override
   public void set(double[] input) {
     params[l1p1x].set(input[l1p1x]);
     params[l1p1y].set(input[l1p1y]);
