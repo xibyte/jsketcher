@@ -175,7 +175,7 @@ public class App2DCtrl implements Initializable {
       };
 
 
-      List<Constraint> constrs = Arrays.<Constraint>asList(parallel);
+      List<Constraint> constrs = Arrays.<Constraint>asList(p2l2, parallel, perpendicular, p2l1);
 //      List<Constraint> constrs = Arrays.<Constraint>asList(p2l1);
       Solver.SubSystem subSystem = new Solver.SubSystem(constrs);
 //      Solver.optimize(subSystem);
@@ -186,8 +186,8 @@ public class App2DCtrl implements Initializable {
         globalSolve(subSystem, () -> Platform.runLater(update));
         if (true) return;
         while (subSystem.error() > 0.0001) {
-          Solver.solve_LM(subSystem);
-//          solveLM_COMMONS(subSystem);
+//          Solver.solve_LM(subSystem);
+          solveLM_COMMONS(subSystem);
 //        Solver.solve_DL(subSystem);
 //        Solver.solve_BFGS(subSystem, true);
           Platform.runLater(update);
