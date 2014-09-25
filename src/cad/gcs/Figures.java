@@ -1,6 +1,7 @@
 package cad.gcs;
 
 import cad.gcs.constr.Equals;
+import cad.gcs.constr.P2LDistance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,18 +32,22 @@ public class Figures {
     constrs.add(new Equals(l2[Y1], l1[Y2]));
     constrs.add(new Equals(l3[X1], l2[X2]));
     constrs.add(new Equals(l3[Y1], l2[Y2]));
-    constrs.add(new Equals(l4[X1], l4[X2]));
-    constrs.add(new Equals(l4[Y1], l4[Y2]));
+    constrs.add(new Equals(l4[X1], l3[X2]));
+    constrs.add(new Equals(l4[Y1], l3[Y2]));
+
     constrs.add(new Equals(l1[Y1], l1[Y2]));
-    constrs.add(new Equals(l3[Y1], l1[Y2]));
-    constrs.add(new Equals(l2[X1], l1[X2]));
-    constrs.add(new Equals(l4[X1], l1[X2]));
+    constrs.add(new Equals(l3[Y1], l3[Y2]));
+    constrs.add(new Equals(l2[X1], l2[X2]));
+    constrs.add(new Equals(l4[X1], l4[X2]));
+
+    constrs.add(new P2LDistance(100, l1[X1], l1[Y1], l2[X1], l2[Y1], l2[X2], l2[Y2]));
+    constrs.add(new P2LDistance(100, l1[X1], l1[Y1], l3[X1], l3[Y1], l3[X2], l3[Y2]));
 
     return new Figure(new Param[][]{l1, l2, l3, l4}, constrs);
   }
 
   private static Param[] line() {
-    return new Param[]{new Param(10), new Param(10), new Param(100), new Param(100)};
+    return new Param[]{new Param(200), new Param(200), new Param(500), new Param(500)};
   }
 
   public static class Figure {
