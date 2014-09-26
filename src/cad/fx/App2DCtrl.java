@@ -7,6 +7,7 @@ import cad.gcs.Solver;
 import cad.gcs.constr.P2LDistance;
 import cad.gcs.constr.Parallel;
 import cad.gcs.constr.Perpendicular;
+import cad.gcs.constr.Reconcilable;
 import cad.math.Vector;
 import gnu.trove.list.TDoubleList;
 import javafx.application.Platform;
@@ -16,17 +17,24 @@ import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
+import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.exception.MathIllegalStateException;
+import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.MaxIter;
+import org.apache.commons.math3.optim.PointValuePair;
 import org.apache.commons.math3.optim.PointVectorValuePair;
+import org.apache.commons.math3.optim.SimpleBounds;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
+import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunctionGradient;
+import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer;
 import org.apache.commons.math3.optim.nonlinear.vector.ModelFunction;
 import org.apache.commons.math3.optim.nonlinear.vector.ModelFunctionJacobian;
 import org.apache.commons.math3.optim.nonlinear.vector.Target;
 import org.apache.commons.math3.optim.nonlinear.vector.Weight;
 import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
-import org.jacop.constraints.Sum;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,9 +43,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import static java.util.Arrays.asList;
+import static org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer.Formula.FLETCHER_REEVES;
 
 public class App2DCtrl implements Initializable {
 
@@ -187,7 +195,7 @@ public class App2DCtrl implements Initializable {
       executor.execute(() -> {
         globalSolve(subSystem, () -> Platform.runLater(update));
         if (true) return;
-        while (subSystem.error() > 0.0001) {
+        while (subSystem.errorSquared() > 0.0001) {
 //          Solver.solve_LM(subSystem);
           solveLM_COMMONS(subSystem);
 //        Solver.solve_DL(subSystem);
@@ -233,20 +241,51 @@ public class App2DCtrl implements Initializable {
 
   private void globalSolve(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
 
+//    for (Constraint c : subSystem.constraints) {
+//      if (c instanceof Reconcilable) {
+//        ((Reconcilable) c).reconcile();
+//      }
+//    }
+    
     double eps = 0.0001;
-    while (subSystem.error() > eps) {
+    while (subSystem.errorSquared() > eps) {
       solveLM_COMMONS(subSystem);
-//      Solver.solve_LM(subSystem);
-      TDoubleList residuals = subSystem.calcResidual();
-      double worseValue = residuals.max();
-      if (Math.abs(worseValue) > eps) {
-        int worseId = residuals.indexOf(worseValue);
-        Solver.SubSystem worse = new Solver.SubSystem(asList(subSystem.constraints.get(worseId)));
-        solveLM_COMMONS(worse);
-//        Solver.solve_LM(worse);
-        System.out.println("WORSE FIXED ERROR:" + Math.sqrt(worse.error()));
+//    Solver.solve_LM(subSystem);
+      if (Math.abs(subSystem.errorSquared()) > eps) {
+//        solveWorse(subSystem, eps);
+        if(subSystem.constraints.size() > 1) {
+          Solver.SubSystem shrunk = shrink(subSystem);
+          globalSolve(shrunk, linearSolvedCallback);
+        }
       }
       linearSolvedCallback.run();
+    }
+  }
+
+  private Solver.SubSystem shrink(Solver.SubSystem system) {
+    TDoubleList residuals = system.calcResidual();
+    int minIdx = residuals.indexOf(residuals.min());
+    ArrayList<Constraint> constrs = new ArrayList<>(system.constraints);
+    constrs.remove(minIdx);
+    return new Solver.SubSystem(constrs);
+  }
+
+  private void solveWorse(Solver.SubSystem subSystem, double eps) {
+    TDoubleList residuals = subSystem.calcResidual();
+    double worseValue = residuals.max();
+    if (Math.abs(worseValue) > eps) {
+      int worseId = residuals.indexOf(worseValue);
+      Constraint worseConstr = subSystem.constraints.get(worseId);
+      if (worseConstr instanceof Reconcilable) {
+        ((Reconcilable) worseConstr).reconcile();
+      } else {
+        Solver.SubSystem worse = new Solver.SubSystem(asList(worseConstr));
+          solveLM_COMMONS(worse);
+//          Solver.solve_LM(worse);
+
+      }
+      
+      System.out.println("WORSE FIXED ERROR:" + worseConstr.error());
     }
   }
 
@@ -263,6 +302,48 @@ public class App2DCtrl implements Initializable {
     l.setEndY(l.getStartY() + v.y);
   }
 
+  private void solveScalarFunc(final Solver.SubSystem subSystem) {
+    double eps = 1e-10;
+    ConvergenceChecker<PointValuePair> convergenceChecker = new ConvergenceChecker<PointValuePair>() {
+      @Override
+      public boolean converged(int iteration, PointValuePair previous, PointValuePair current) {
+        return previous.getValue() < eps;
+      }
+    };
+    NonLinearConjugateGradientOptimizer optimizer = new NonLinearConjugateGradientOptimizer(FLETCHER_REEVES, convergenceChecker);
+    double[] lb = new double[subSystem.pSize()];
+    double[] ub = new double[subSystem.pSize()];
+    
+    Arrays.fill(lb, -1000);
+    Arrays.fill(ub,  1000);
+    
+    optimizer.optimize(
+      new MaxEval(10000), 
+      new InitialGuess(subSystem.getParams().toArray()), 
+      GoalType.MINIMIZE,
+      new SimpleBounds(lb, ub),
+//      new NonLinearConjugateGradientOptimizer.BracketingStep( 100 ),
+      getGradient(subSystem),
+      getScalarFunction(subSystem));
+  }
+
+  private ObjectiveFunction getScalarFunction(Solver.SubSystem system) {
+    return new ObjectiveFunction(point -> {
+      system.setParams(point);
+      return system.value();
+    });
+  }
+
+  private ObjectiveFunctionGradient getGradient(Solver.SubSystem subSystem) {
+    return new ObjectiveFunctionGradient(point -> {
+      subSystem.setParams(point);
+      Constraint constraint = subSystem.constraints.get(0);
+      double[] out = new double[constraint.pSize()];
+      constraint.gradient(out);
+      return out;
+    });
+  }
+
   private void solveLM_COMMONS(final Solver.SubSystem subSystem) {
     double eps = 1e-10, eps1 = 1e-80;
       double tau = 1e-3;
@@ -272,26 +353,30 @@ public class App2DCtrl implements Initializable {
     double[] wieght = new double[subSystem.cSize()];
     Arrays.fill(wieght, 1);
     PointVectorValuePair result = optimizer.optimize(
-        new MaxEval(10000),
-        new MaxIter(10000),
-        new InitialGuess(subSystem.getParams().toArray()),
-        new Target(new double[subSystem.cSize()]),
-        new Weight(wieght),
-        new ModelFunctionJacobian(point -> {
-          subSystem.setParams(point);
-          return subSystem.makeJacobi().getData();
-        }),
-        new ModelFunction(new MultivariateVectorFunction() {
-          @Override
-          public double[] value(double[] point) throws IllegalArgumentException {
-            subSystem.setParams(point);
-            return subSystem.getValues().toArray();
-          }
-        })
-
+      new MaxEval(10000),
+      new MaxIter(10000),
+      new InitialGuess(subSystem.getParams().toArray()),
+      new Target(new double[subSystem.cSize()]),
+      new Weight(wieght),
+      getJacobian(subSystem),
+      getFunction(subSystem)
     );
 
     subSystem.setParams(result.getPoint());
+  }
+
+  private ModelFunction getFunction(Solver.SubSystem subSystem) {
+    return new ModelFunction(point -> {
+      subSystem.setParams(point);
+      return subSystem.getValues().toArray();
+    });
+  }
+
+  private ModelFunctionJacobian getJacobian(Solver.SubSystem subSystem) {
+    return new ModelFunctionJacobian(point -> {
+      subSystem.setParams(point);
+      return subSystem.makeJacobi().getData();
+    });
   }
 
   private void solve(ActionEvent e) {
