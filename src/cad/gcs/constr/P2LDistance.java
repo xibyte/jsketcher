@@ -34,6 +34,9 @@ public class P2LDistance implements Constraint {
     double d = sqrt(dx * dx + dy * dy);
     double area = abs
             (-x0 * dy + y0 * dx + x1 * y2 - x2 * y1); // = x1y2 - x2y1 - x0y2 + x2y0 + x0y1 - x1y0 = 2*(triangle area)
+    if (d == 0) {
+      return 0;
+    }
     return (area / d - dist);
 
   }
@@ -172,9 +175,12 @@ public class P2LDistance implements Constraint {
     out[lp2x] = (((y0 - y1) * d - (dx / d) * area) / d2);
     out[lp2y] = (((x1 - x0) * d - (dy / d) * area) / d2);
 
-    if (area < 0) {
-      for (int i = 0; i < 6; i++) {
-        out[i] *= -1;
+    for (int i = 0; i < 6; i++) {
+      if (Double.isNaN(out[i])) {
+        out[i] = 0;
+      }
+      if (area < 0) {
+          out[i] *= -1;
       }
     }
   }

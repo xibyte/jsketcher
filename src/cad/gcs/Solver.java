@@ -301,7 +301,7 @@ public class Solver {
 //          setCost(computeCost(currentResiduals));
 //          return current;
 //        }
-        if (subSystem.value() < 0.0001) {
+        if (subSystem.valueSquared() < 0.0001) {
           return;
         }
       }
@@ -536,19 +536,19 @@ public class Solver {
 
     //Start at the initial position alpha1 = 0
     alpha1 = 0.;
-    f1 = subsys.error();
+    f1 = subsys.errorSquared();
 
     //Take a step of alpha2 = 1
     alpha2 = 1.;
     x = x0.add(xdir.scalarMultiply(alpha2));
     subsys.setParams(x);
-    f2 = subsys.error();
+    f2 = subsys.errorSquared();
 
     //Take a step of alpha3 = 2*alpha2
     alpha3 = alpha2 * 2;
     x = x0.add(xdir.scalarMultiply(alpha3));
     subsys .setParams(x);
-    f3 = subsys . error();
+    f3 = subsys .errorSquared();
 
     //Now reduce or lengthen alpha2 and alpha3 until the minimum is
     //Bracketed by the triplet f1>f2<f3
@@ -561,7 +561,7 @@ public class Solver {
         alpha2 = alpha2 / 2;
         x = x0.add( xdir.scalarMultiply(alpha2 ));
         subsys . setParams(x);
-        f2 = subsys . error();
+        f2 = subsys .errorSquared();
       } else if (f2 > f3) {
         if (alpha3 >= alphaMax) {
           break;
@@ -573,7 +573,7 @@ public class Solver {
         alpha3 = alpha3 * 2;
         x = x0.add( xdir.scalarMultiply(alpha3));
         subsys . setParams(x);
-        f3 = subsys . error();
+        f3 = subsys .errorSquared();
       }
     }
     //Get the alpha for the minimum f of the quadratic approximation
@@ -623,7 +623,7 @@ public class Solver {
     // Initial search direction oposed to gradient (steepest-descent)
     xdir = grad.scalarMultiply(-1);
     lineSearch(subsys, xdir);
-    double err = subsys.error();
+    double err = subsys.errorSquared();
 
     h = new Array2DRowRealMatrix(x.getData());
     subsys.fillParams(x);
@@ -667,7 +667,7 @@ public class Solver {
 
       xdir = D.scalarMultiply(-1).multiply(grad);
       lineSearch(subsys, xdir);
-      err = subsys.error();
+      err = subsys.errorSquared();
 
       h = new Array2DRowRealMatrix(x.getData());
       subsys.fillParams(x);
@@ -800,13 +800,21 @@ public class Solver {
       return r;
     }
 
-    public double value() {
+    public double valueSquared() {
       double err = 0.;
       for (Constraint c : constraints) {
         double v = c.error();
         err += v * v;
       }
       err *= 0.5;
+      return err;
+    }
+
+    public double value() {
+      double err = 0.;
+      for (Constraint c : constraints) {
+        err += c.error();
+      }
       return err;
     }
 
@@ -839,7 +847,6 @@ public class Solver {
       return jacobi;
     }
 
-
     public void setParams(RealMatrix params) {
       setParams(params.getColumn(0));
     }
@@ -851,8 +858,8 @@ public class Solver {
       }
     }
 
-    public double error() {
-      return value();
+    public double errorSquared() {
+      return valueSquared();
     }
 
     public void calcGrad(RealMatrix out) {

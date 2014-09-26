@@ -3,7 +3,7 @@ package cad.gcs.constr;
 import cad.gcs.Constraint;
 import cad.gcs.Param;
 
-public class Equals implements Constraint {
+public class Equals implements Constraint, Reconcilable {
 
   private final Param[] params;
 
@@ -30,5 +30,14 @@ public class Equals implements Constraint {
   @Override
   public int pSize() {
     return params.length;
+  }
+
+  @Override
+  public void reconcile() {
+    double x1 = params[0].get();
+    double x2 = params[1].get();
+    double diff = (x1 - x2) / 2;
+    params[0].set(x1 - diff);
+    params[1].set(x2 + diff);
   }
 }
