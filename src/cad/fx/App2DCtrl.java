@@ -248,6 +248,7 @@ public class App2DCtrl implements Initializable {
 //    }
     
     double eps = 0.0001;
+    System.out.println("Solve system with error: " + subSystem.errorSquared());
     while (subSystem.errorSquared() > eps) {
       solveLM_COMMONS(subSystem);
 //    Solver.solve_LM(subSystem);
