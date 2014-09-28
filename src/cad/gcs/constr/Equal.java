@@ -3,11 +3,11 @@ package cad.gcs.constr;
 import cad.gcs.Constraint;
 import cad.gcs.Param;
 
-public class Equals implements Constraint, Reconcilable {
+public class Equal implements Constraint, Reconcilable {
 
   private final Param[] params;
 
-  public Equals(Param p1, Param p2) {
+  public Equal(Param p1, Param p2) {
     this.params = new Param[]{p1, p2};
   }
 
