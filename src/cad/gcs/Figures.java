@@ -1,6 +1,6 @@
 package cad.gcs;
 
-import cad.gcs.constr.Equals;
+import cad.gcs.constr.Equal;
 import cad.gcs.constr.P2LDistance;
 
 import java.util.ArrayList;
@@ -26,19 +26,19 @@ public class Figures {
     Param[] l3 = line();
     Param[] l4 = line();
 
-    constrs.add(new Equals(l1[X1], l4[X2]));
-    constrs.add(new Equals(l1[Y1], l4[Y2]));
-    constrs.add(new Equals(l2[X1], l1[X2]));
-    constrs.add(new Equals(l2[Y1], l1[Y2]));
-    constrs.add(new Equals(l3[X1], l2[X2]));
-    constrs.add(new Equals(l3[Y1], l2[Y2]));
-    constrs.add(new Equals(l4[X1], l3[X2]));
-    constrs.add(new Equals(l4[Y1], l3[Y2]));
+    constrs.add(new Equal(l1[X1], l4[X2]));
+    constrs.add(new Equal(l1[Y1], l4[Y2]));
+    constrs.add(new Equal(l2[X1], l1[X2]));
+    constrs.add(new Equal(l2[Y1], l1[Y2]));
+    constrs.add(new Equal(l3[X1], l2[X2]));
+    constrs.add(new Equal(l3[Y1], l2[Y2]));
+    constrs.add(new Equal(l4[X1], l3[X2]));
+    constrs.add(new Equal(l4[Y1], l3[Y2]));
 
-    constrs.add(new Equals(l1[Y1], l1[Y2]));
-    constrs.add(new Equals(l3[Y1], l3[Y2]));
-    constrs.add(new Equals(l2[X1], l2[X2]));
-    constrs.add(new Equals(l4[X1], l4[X2]));
+    constrs.add(new Equal(l1[Y1], l1[Y2]));
+    constrs.add(new Equal(l3[Y1], l3[Y2]));
+    constrs.add(new Equal(l2[X1], l2[X2]));
+    constrs.add(new Equal(l4[X1], l4[X2]));
 
     constrs.add(new P2LDistance(100, l1[X1], l1[Y1], l2[X1], l2[Y1], l2[X2], l2[Y2]));
     constrs.add(new P2LDistance(100, l1[X1], l1[Y1], l3[X1], l3[Y1], l3[X2], l3[Y2]));
