@@ -70,11 +70,11 @@ TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
   this.solve();
 };
 
-TCAD.TWO.ParametricManager.prototype.solve = function() {
+TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
   var pdict = {};
   var refsCounter = 0;
   var params = [];
-  var data = {params : [], constraints: []};
+  var data = {params : [], constraints: [], locked: []};
   for (var i = 0; i < this.system.length; ++i) {
     var sdata = this.system[i].getSolveData();
     var prefs = [];
@@ -92,18 +92,31 @@ TCAD.TWO.ParametricManager.prototype.solve = function() {
       prefs.push(pref);
     }
   }
+
+  if (locked !== undefined) {
+    for (var i = 0; i < locked.length; ++i) {
+      var lp = pdict[locked[i].id];
+      if (lp !== undefined) {
+        data.locked.push(lp);
+      }
+    }
+  }
+
   var xhr = new XMLHttpRequest();
   xhr.withCredentials = true;
   var pm = this;
   var request = {reqId : this.REQUEST_COUNTER ++, system : data}
   xhr.onreadystatechange=function() {
-    if (xhr.readyState==4 && xhr.status==200) {
+    if (xhr.readyState == 4 && xhr.status == 200) {
       var response = JSON.parse(xhr.responseText);
       if (response.reqId != request.reqId) {
         return;
       }
       for (var p = 0; p < response.params.length; ++p) {
         params[p].set(response.params[p]);
+      }
+      if (onSolved !== undefined) {
+        onSolved();
       }
       pm.viewer.refresh();
     }

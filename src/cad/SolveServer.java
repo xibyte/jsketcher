@@ -74,6 +74,7 @@ class SolveHandler extends AbstractHandler {
     JSONObject system = req.getJSONObject("system");
     JSONArray params = system.getJSONArray("params");
     JSONArray constrs = system.getJSONArray("constraints");
+    JSONArray locked = system.getJSONArray("locked");
 
 //    TIntObjectMap<Param> paramsDict = new TIntObjectHashMap();
     List<Param> paramsDict = new ArrayList<>(params.length());
@@ -101,12 +102,15 @@ class SolveHandler extends AbstractHandler {
       h.refs = constr.getJSONArray(1);
       JSONArray constants = constr.getJSONArray(2);
 
-
       switch (functional) {
         case "equal":
           constraints.add(new Equal(h.get(0), h.get(1)));
           break;
       }
+    }
+
+    for (int i = 0; i < locked.length(); i++) {
+      paramsDict.get(locked.getInt(i)).setLocked(true);
     }
 
     Solver.SubSystem subSystem = new Solver.SubSystem(constraints);
