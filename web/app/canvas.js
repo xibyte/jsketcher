@@ -285,15 +285,38 @@ TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
   if (this.marked) ctx.restore();
 };
 
+TCAD.TWO.Param = function(obj, prop) {
+  this.id = TCAD.TWO.utils.genID();
+  this.obj = obj;
+  this.prop = prop;
+};
+
+TCAD.TWO.Param.prototype.set = function(value) {
+  this.obj[this.prop] = value;
+};
+
+TCAD.TWO.Param.prototype.get = function() {
+  return this.obj[this.prop];
+};
+
 TCAD.TWO.EndPoint = function(x, y) {
   TCAD.TWO.SketchObject.call(this);
   this.x = x;
   this.y = y;
   this.marked = false;
   this.parent = null;
+  this._x =  new TCAD.TWO.Param(this, 'x');
+  this._y =  new TCAD.TWO.Param(this, 'y');
 };
 
 TCAD.TWO.utils.extend(TCAD.TWO.EndPoint, TCAD.TWO.SketchObject);
+
+TCAD.TWO.EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
+
+TCAD.TWO.EndPoint.prototype.collectParams = function(params) {
+  params.push(this._x);
+  params.push(this._y);
+};
 
 TCAD.TWO.EndPoint.prototype.normalDistance = function(aim) {
   return aim.minus(new TCAD.Vector(this.x, this.y)).length();
@@ -317,6 +340,13 @@ TCAD.TWO.Segment = function(a, b) {
 };
 
 TCAD.TWO.utils.extend(TCAD.TWO.Segment, TCAD.TWO.SketchObject);
+
+TCAD.TWO.Segment.prototype._class = 'TCAD.TWO.Segment';
+
+TCAD.TWO.Segment.prototype.collectParams = function(params) {
+  this.a.collectParams(params);
+  this.b.collectParams(params);
+};
 
 TCAD.TWO.Segment.prototype.normalDistance = function(aim) {
   var x = aim.x;
