@@ -19,8 +19,12 @@
   <script src="app/main2d.js"></script>
 
   <script>
-    window.onload = function () {
+    console.log(document);
+    function start() {
       new TCAD.App2D();
+    }
+    window.onload = function() {
+      setTimeout(start, 0);
     }
   </script>
 </head>
