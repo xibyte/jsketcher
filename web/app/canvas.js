@@ -4,19 +4,19 @@ TCAD = {
 
 TCAD.TWO.Styles = {
   DEFAULT : {
-    lineWidth : "2",
+    lineWidth : 2,
     strokeStyle : "#ffffff", 
     fillStyle : "#000000"
   },
   
   SERVICE : {
-    lineWidth : "0.3",
+    lineWidth : 0.3,
     strokeStyle : "#ff0000",
     fillStyle : "#FF0000"
   },
 
   MARK : {
-    lineWidth : "2",
+    lineWidth : 2,
     strokeStyle : "#ff0000",
     fillStyle : "#FF0000"
   }
@@ -39,8 +39,8 @@ TCAD.TWO.utils.drawPoint = function (ctx, x, y, rad, scale) {
   ctx.fill();
 };
 
-TCAD.TWO.utils.setStyle = function(style, ctx) {
-  ctx.lineWidth  = style.lineWidth;
+TCAD.TWO.utils.setStyle = function(style, ctx, scale) {
+  ctx.lineWidth  = style.lineWidth / scale;
   ctx.strokeStyle  = style.strokeStyle;
   ctx.fillStyle  = style.fillStyle;
 };
@@ -149,7 +149,7 @@ TCAD.TWO.Viewer.prototype.repaint = function() {
       for (var o = 0; o < layer.objects.length; o++) {
         var obj = layer.objects[o];
         style = obj.style != null ? obj.style : layer.style;
-        if (style != prevStyle) TCAD.TWO.utils.setStyle(style, ctx); 
+        if (style != prevStyle) TCAD.TWO.utils.setStyle(style, ctx, this.scale);
         obj.draw(ctx, this.scale);
       }
     }
@@ -278,7 +278,7 @@ TCAD.TWO.SketchObject.prototype.translate = function(dx, dy) {
 TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
   if (this.marked) {
     ctx.save();
-    TCAD.TWO.utils.setStyle(TCAD.TWO.Styles.MARK, ctx);
+    TCAD.TWO.utils.setStyle(TCAD.TWO.Styles.MARK, ctx, scale);
   }
   this.drawImpl(ctx, scale);
   if (this.marked) ctx.restore();
