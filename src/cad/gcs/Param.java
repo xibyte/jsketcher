@@ -13,8 +13,11 @@ public class Param {
     return value;
   }
   
-  public double set(double value) {
-    return this.value = value;
+  public void set(double value) {
+    if (locked) {
+      return;
+    }
+    this.value = value;
   }
 
   public boolean isLocked() {
