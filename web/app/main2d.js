@@ -5,8 +5,6 @@ TCAD.App2D = function() {
   var layer = new TCAD.TWO.Layer("test", TCAD.TWO.Styles.DEFAULT);
   this.viewer.layers.push(layer);
 
-
-
   var sketchId = "TCAD.projects." + window.location.hash.substring(1);
   var sketchData = localStorage.getItem(sketchId);
 
@@ -24,9 +22,7 @@ TCAD.App2D = function() {
     }
   }
 
-
   this.viewer.repaint();
-
 
   var app = this;
 
