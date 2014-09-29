@@ -48,11 +48,26 @@
 
       coincident : function() {
         viewer.parametricManager.coincident(viewer.selected);
+      },
+
+      vertical : function() {
+        viewer.parametricManager.vertical(viewer.selected);
+      },
+
+      horizontal : function() {
+        viewer.parametricManager.horizontal(viewer.selected);
+      },
+
+      P2LDistance : function() {
+        viewer.parametricManager.p2lDistance(viewer.selected);
       }
     };
     actionsF.add(actions, 'addSegment');
     actionsF.add(actions, 'pan');
     actionsF.add(actions, 'coincident');
+    actionsF.add(actions, 'vertical');
+    actionsF.add(actions, 'horizontal');
+    actionsF.add(actions, 'P2LDistance');
     actionsF.open();
 
 

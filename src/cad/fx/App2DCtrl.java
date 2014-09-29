@@ -2,6 +2,7 @@ package cad.fx;
 
 import cad.gcs.Constraint;
 import cad.gcs.Figures;
+import cad.gcs.GlobalSolver;
 import cad.gcs.Param;
 import cad.gcs.Solver;
 import cad.gcs.constr.P2LDistance;
@@ -193,11 +194,11 @@ public class App2DCtrl implements Initializable {
 
       ExecutorService executor = Executors.newSingleThreadExecutor();
       executor.execute(() -> {
-        globalSolve(subSystem, () -> Platform.runLater(update));
+        GlobalSolver.globalSolve(subSystem, () -> Platform.runLater(update));
         if (true) return;
         while (subSystem.errorSquared() > 0.0001) {
 //          Solver.solve_LM(subSystem);
-          solveLM_COMMONS(subSystem);
+          GlobalSolver.solveLM_COMMONS(subSystem);
 //        Solver.solve_DL(subSystem);
 //        Solver.solve_BFGS(subSystem, true);
           Platform.runLater(update);
@@ -226,7 +227,7 @@ public class App2DCtrl implements Initializable {
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
     executor.execute(() -> {
-      globalSolve(subSystem, () -> Platform.runLater(() -> {
+      GlobalSolver.globalSolve(subSystem, () -> Platform.runLater(() -> {
         for (int i = 0; i < square.lines.length; i++) {
           Param[] line = square.lines[i];
           Line fxLine = lines.get(i);
@@ -239,37 +240,6 @@ public class App2DCtrl implements Initializable {
     });
   }
 
-  private void globalSolve(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
-
-//    for (Constraint c : subSystem.constraints) {
-//      if (c instanceof Reconcilable) {
-//        ((Reconcilable) c).reconcile();
-//      }
-//    }
-    
-    double eps = 0.0001;
-    System.out.println("Solve system with error: " + subSystem.errorSquared());
-    while (subSystem.errorSquared() > eps) {
-      solveLM_COMMONS(subSystem);
-//    Solver.solve_LM(subSystem);
-      if (Math.abs(subSystem.errorSquared()) > eps) {
-//        solveWorse(subSystem, eps);
-        if(subSystem.constraints.size() > 1) {
-          Solver.SubSystem shrunk = shrink(subSystem);
-          globalSolve(shrunk, linearSolvedCallback);
-        }
-      }
-      linearSolvedCallback.run();
-    }
-  }
-
-  private Solver.SubSystem shrink(Solver.SubSystem system) {
-    TDoubleList residuals = system.calcResidual();
-    int minIdx = residuals.indexOf(residuals.min());
-    ArrayList<Constraint> constrs = new ArrayList<>(system.constraints);
-    constrs.remove(minIdx);
-    return new Solver.SubSystem(constrs);
-  }
 
   private void solveWorse(Solver.SubSystem subSystem, double eps) {
     TDoubleList residuals = subSystem.calcResidual();
@@ -281,7 +251,7 @@ public class App2DCtrl implements Initializable {
         ((Reconcilable) worseConstr).reconcile();
       } else {
         Solver.SubSystem worse = new Solver.SubSystem(asList(worseConstr));
-          solveLM_COMMONS(worse);
+        GlobalSolver.solveLM_COMMONS(worse);
 //          Solver.solve_LM(worse);
 
       }
@@ -342,41 +312,6 @@ public class App2DCtrl implements Initializable {
       double[] out = new double[constraint.pSize()];
       constraint.gradient(out);
       return out;
-    });
-  }
-
-  private void solveLM_COMMONS(final Solver.SubSystem subSystem) {
-    double eps = 1e-10, eps1 = 1e-80;
-      double tau = 1e-3;
-
-    LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer(eps, eps, eps1);
-
-    double[] wieght = new double[subSystem.cSize()];
-    Arrays.fill(wieght, 1);
-    PointVectorValuePair result = optimizer.optimize(
-      new MaxEval(10000),
-      new MaxIter(10000),
-      new InitialGuess(subSystem.getParams().toArray()),
-      new Target(new double[subSystem.cSize()]),
-      new Weight(wieght),
-      getJacobian(subSystem),
-      getFunction(subSystem)
-    );
-
-    subSystem.setParams(result.getPoint());
-  }
-
-  private ModelFunction getFunction(Solver.SubSystem subSystem) {
-    return new ModelFunction(point -> {
-      subSystem.setParams(point);
-      return subSystem.getValues().toArray();
-    });
-  }
-
-  private ModelFunctionJacobian getJacobian(Solver.SubSystem subSystem) {
-    return new ModelFunctionJacobian(point -> {
-      subSystem.setParams(point);
-      return subSystem.makeJacobi().getData();
     });
   }
 
