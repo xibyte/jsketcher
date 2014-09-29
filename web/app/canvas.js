@@ -62,7 +62,6 @@ TCAD.TWO.Viewer = function(canvas) {
   this.translate = {x : 0.0, y : 0.0};
   this.scale = 1.0;
 
-  this.bsp = new TCAD.TWO.BSP();
   this.segments = [];
   this.selected = [];
   
@@ -77,7 +76,6 @@ TCAD.TWO.Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
   line._marked = false;
   layer.objects.push(line);
   this.segments.push(line);
-  this.bsp.add(a, b, line);
   return line;
 };
 
@@ -257,6 +255,7 @@ TCAD.TWO.utils.genID = function() {
 
 TCAD.TWO.SketchObject = function() {
   this.id = TCAD.TWO.utils.genID();
+  this.aux = false;
   this.marked = false;
   this.linked = [];
 };
@@ -466,9 +465,11 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
         this.deselectOnUp = false;
       } else {
         this.viewer.select([picked[0]], true);
-        var dragTool = new TCAD.TWO.DragTool(picked[0], this.viewer);
-        dragTool.mousedown(e);
-        this.viewer.toolManager.takeControl(dragTool);
+        if (!picked[0].aux) {
+          var dragTool = new TCAD.TWO.DragTool(picked[0], this.viewer);
+          dragTool.mousedown(e);
+          this.viewer.toolManager.takeControl(dragTool);
+        }
       }
       this.viewer.refresh();
       return;
@@ -484,7 +485,7 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
 TCAD.TWO.PanTool.prototype.mouseup = function(e) {
   this.dragging = false;
   if (this.deselectOnUp) {
-    viewer.deselectAll();
+    this.viewer.deselectAll();
     this.viewer.refresh();
   }
 };
