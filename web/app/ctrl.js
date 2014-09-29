@@ -1,6 +1,7 @@
 
-TCAD.UI = function(viewer) {
-  this.viewer = viewer;
+TCAD.UI = function(app) {
+  this.app = app;
+  this.viewer = app.viewer;
   this.dat = new dat.GUI();
   var gui = this.dat;
 
@@ -12,6 +13,7 @@ TCAD.UI = function(viewer) {
   actionsF.add(actions.tools, 'polygon');
   actionsF.add(actions.tools, 'line');
   actionsF.add(actions.tools, 'commit');
+  actionsF.add(actions.tools, 'edit');
   actionsF.open();
 
 //    var propsF = gui.addFolder('Properties');
@@ -31,6 +33,11 @@ TCAD.UI.Actions = function(scope) {
 
     commit : function() {
       scope.viewer.toolMgr.commit();
+    },
+
+    edit : function() {
+      scope.app.sketchFace();
     }
+
   }
 };

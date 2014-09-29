@@ -16,62 +16,13 @@
   <script src="app/engine.js"></script>
   <script src="app/vector.js"></script>
   <script src="app/bsp.js"></script>
+  <script src="app/main2d.js"></script>
 
-  <script>window.onload = function () {
-    viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
-    var layer = new TCAD.TWO.Layer("test", TCAD.TWO.Styles.DEFAULT);
-    viewer.layers.push(layer);
-    var points = [{x: 10, y: 10}, {x: 100, y: 10}, {x: 100, y: 100}];
-    var poly = new TCAD.TWO.Polygon(points);
-    layer.objects.push(poly);
-
-    viewer.addSegment(20, 20, 300, 300, layer);
-    
-    viewer.repaint();
-    var bsp = new TCAD.TWO.BSP();
-    bsp.add({x: 3, y:3}, {x: 10, y:10}, "first");
-
-
-
-    this.dat = new dat.GUI();
-    var gui = this.dat;
-
-    var actionsF = gui.addFolder('Add Object');
-    var actions = {
-      addSegment : function () {
-        viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(viewer, layer));
-      }, 
-      
-      pan : function() {
-        viewer.toolManager.releaseControl();
-      },
-
-      coincident : function() {
-        viewer.parametricManager.coincident(viewer.selected);
-      },
-
-      vertical : function() {
-        viewer.parametricManager.vertical(viewer.selected);
-      },
-
-      horizontal : function() {
-        viewer.parametricManager.horizontal(viewer.selected);
-      },
-
-      P2LDistance : function() {
-        viewer.parametricManager.p2lDistance(viewer.selected);
-      }
-    };
-    actionsF.add(actions, 'addSegment');
-    actionsF.add(actions, 'pan');
-    actionsF.add(actions, 'coincident');
-    actionsF.add(actions, 'vertical');
-    actionsF.add(actions, 'horizontal');
-    actionsF.add(actions, 'P2LDistance');
-    actionsF.open();
-
-
-  }</script>
+  <script>
+    window.onload = function () {
+      new TCAD.App2D();
+    }
+  </script>
 </head>
 <body>
 

@@ -196,6 +196,7 @@ TCAD.geom.extrude = function(source, target) {
   return poly;
 };
 
+TCAD.geom.FACE_COUNTER = 0;
 
 TCAD.Solid = function(polygons) {
 
@@ -216,7 +217,7 @@ TCAD.Solid = function(polygons) {
     for ( var h = 0;  h < poly.holes; ++ h ) {
       pushVertices(poly.holes[ h ]);
     }
-    var polyFace = {faces : [], polygon : poly, sketch : null};
+    var polyFace = {faces : [], polygon : poly, sketch : null, id : TCAD.geom.FACE_COUNTER++ };
     
     for ( var i = 0;  i < faces.length; ++ i ) {
 
