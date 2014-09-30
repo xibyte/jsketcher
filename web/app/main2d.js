@@ -16,12 +16,12 @@ TCAD.App2D = function() {
 //    layer.objects.push(poly);
   } else {
     var sketch = JSON.parse(sketchData);
-    this.makePolygon(sketch.boundary.shell, layer);
+    var bbox = this.makePolygon(sketch.boundary.shell, layer);
     for (var i = 0; i < sketch.boundary.holes.length; ++i ) {
       this.makePolygon(sketch.boundary.holes[i], layer);
     }
   }
-
+  this.viewer.showBounds(bbox[0], bbox[1], bbox[2], bbox[3])
   this.viewer.repaint();
 
   var app = this;
@@ -79,10 +79,16 @@ TCAD.App2D = function() {
 TCAD.App2D.prototype.makePolygon = function(points, layer) {
   var n = points.length;
   var k = 500;
+  var bounds = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
   for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
     var seg =  this.viewer.addSegment(k*points[p].x, k*points[p].y, k*points[q].x, k*points[q].y, layer);
     seg.aux = true;
     seg.a.aux = true;
     seg.b.aux = true;
+    bounds[0] = Math.min(bounds[0], k*points[p].x);
+    bounds[1] = Math.min(bounds[1], k*points[p].y);
+    bounds[2] = Math.max(bounds[2], k*points[q].x);
+    bounds[3] = Math.max(bounds[3], k*points[q].y);
   }
+  return bounds;
 };
