@@ -39,7 +39,9 @@ public class GlobalSolver {
           Solver.SubSystem shrunk = shrink(subSystem);
           triedShrink = true;
           globalSolve(shrunk, linearSolvedCallback);
-        } 
+        } else {
+          return;
+        }
       }
       linearSolvedCallback.run();
     }
