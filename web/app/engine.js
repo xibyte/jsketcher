@@ -301,7 +301,7 @@ TCAD.Polygon.prototype.shift = function(target) {
 };
 
 
-TCAD.Polygon.prototype.triangulate = function() {
+TCAD.Polygon.prototype.to2D = function() {
 
   var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.shell, this.normal));
   var _2dTransformation = _3dTransformation.invert();
@@ -310,7 +310,7 @@ TCAD.Polygon.prototype.triangulate = function() {
   var shell = [];
   var holes = [];
   for (i = 0; i < this.shell.length; ++i) {
-    shell[i] = _2dTransformation.apply(this.shell[i]).three();
+    shell[i] = _2dTransformation.apply(this.shell[i]);
   }
   for (h = 0; h < this.holes.length; ++h) {
     holes[h] = [];
@@ -318,7 +318,23 @@ TCAD.Polygon.prototype.triangulate = function() {
       holes[h][i] = _2dTransformation.apply(this.holes[h][i]);
     }
   }
-  return THREE.Shape.utils.triangulateShape( shell, holes );
+  return {shell: shell, holes: holes};
+};
+
+TCAD.Polygon.prototype.triangulate = function() {
+
+  var i, h;
+  var f2d = this.to2D();
+  
+  for (i = 0; i < f2d.shell.length; ++i) {
+    f2d.shell[i] = f2d.shell[i].three();
+  }
+  for (h = 0; h < f2d.holes.length; ++h) {
+    for (i = 0; i < f2d.holes[h].length; ++i) {
+      f2d.holes[h][i] = f2d.holes[h][i].three();
+    }
+  }
+  return THREE.Shape.utils.triangulateShape( f2d.shell, f2d.holes );
 };
 
 
