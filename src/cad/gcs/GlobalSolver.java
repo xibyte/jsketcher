@@ -15,6 +15,8 @@ import java.lang.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static java.lang.Math.abs;
+
 public class GlobalSolver {
 
   public static void globalSolve(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
@@ -28,21 +30,18 @@ public class GlobalSolver {
     double eps = 0.0001;
     java.lang.System.out.println("Solve system with error: " + subSystem.errorSquared());
     boolean triedShrink = false;
-    while (subSystem.value() > eps && !triedShrink) {
+    while (abs(subSystem.value()) > eps && !triedShrink) {
       solveLM_COMMONS(subSystem);
 //    Solver.solve_LM(subSystem);
-      linearSolvedCallback.run();
-      if (Math.abs(subSystem.value()) > eps) {
+      if (abs(subSystem.value()) > eps) {
 //        solveWorse(subSystem, eps);
         if(subSystem.constraints.size() > 1) {
           Solver.SubSystem shrunk = shrink(subSystem);
           triedShrink = true;
           globalSolve(shrunk, linearSolvedCallback);
-        } else {
-          return;
-        }
+        } 
       }
-      
+      linearSolvedCallback.run();
     }
   }
 
