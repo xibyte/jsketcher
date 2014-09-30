@@ -35,7 +35,7 @@ TCAD.App.prototype.sketchFace = function() {
   } else {
     data = JSON.parse(savedFace);
   }
-  data.boundary = polyFace.polygon;
+  data.boundary = polyFace.polygon.to2D();
   localStorage.setItem(faceStorageKey, JSON.stringify(data));
 
   window.open("http://localhost:8080/canvas.html#" + faceStorageKey.substring(14), "Edit Sketch", "height=700,width=700");
