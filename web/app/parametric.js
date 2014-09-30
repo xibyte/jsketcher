@@ -25,7 +25,21 @@ TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
     throw "Illegal Argument. Constraint requires 2 points or 1 line."
   }
   return points;
-}
+};
+
+
+TCAD.TWO.ParametricManager.prototype._fetchTwoLines = function(objs) {
+  var lines = [];
+  for (var i = 0; i < objs.length; ++i) {
+    if (objs[i]._class == 'TCAD.TWO.Segment') {
+      lines.push(objs[i]);
+    }
+  }
+  if (lines.length < 2) {
+    throw "Illegal Argument. Constraint requires 2 lines."
+  }
+  return lines;
+};
 
 TCAD.TWO.ParametricManager.prototype.vertical = function(objs) {
   var p = this._fetchTwoPoints(objs);
@@ -35,6 +49,16 @@ TCAD.TWO.ParametricManager.prototype.vertical = function(objs) {
 TCAD.TWO.ParametricManager.prototype.horizontal = function(objs) {
   var p = this._fetchTwoPoints(objs);
   this.add(new TCAD.TWO.Constraints.Equal(p[0]._y, p[1]._y));
+};
+
+TCAD.TWO.ParametricManager.prototype.parallel = function(objs) {
+  var lines = this._fetchTwoLines(objs);
+  this.add(new TCAD.TWO.Constraints.Parallel(lines[0], lines[1]));
+};
+
+TCAD.TWO.ParametricManager.prototype.perpendicular = function(objs) {
+  var lines = this._fetchTwoLines(objs);
+  this.add(new TCAD.TWO.Constraints.Perpendicular(lines[0], lines[1]));
 };
 
 TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs) {
@@ -74,8 +98,9 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
   var pdict = {};
   var refsCounter = 0;
   var params = [];
+  var i;
   var data = {params : [], constraints: [], locked: []};
-  for (var i = 0; i < this.system.length; ++i) {
+  for (i = 0; i < this.system.length; ++i) {
     var sdata = this.system[i].getSolveData();
     var prefs = [];
     var constr = [sdata[0], prefs, sdata[2]];
@@ -84,7 +109,7 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
       var param = sdata[1][p];
       var pref = pdict[param.id];
       if (pref === undefined) {
-        var pref = refsCounter++;
+        pref = refsCounter++;
         data.params.push(param.get());
         params.push(param);
         pdict[param.id] = pref;
@@ -94,7 +119,7 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
   }
 
   if (locked !== undefined) {
-    for (var i = 0; i < locked.length; ++i) {
+    for (i = 0; i < locked.length; ++i) {
       var lp = pdict[locked[i].id];
       if (lp !== undefined) {
         data.locked.push(lp);
@@ -105,7 +130,7 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
   var xhr = new XMLHttpRequest();
   xhr.withCredentials = true;
   var pm = this;
-  var request = {reqId : this.REQUEST_COUNTER ++, system : data}
+  var request = {reqId : this.REQUEST_COUNTER ++, system : data};
   xhr.onreadystatechange=function() {
     if (xhr.readyState == 4 && xhr.status == 200) {
       var response = JSON.parse(xhr.responseText);
@@ -120,7 +145,7 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
       }
       pm.viewer.refresh();
     }
-  }
+  };
   xhr.open("POST", "http://localhost:8080/solve", true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xhr.send(JSON.stringify(request));
@@ -136,7 +161,7 @@ TCAD.TWO.Constraints.Equal.prototype.getSolveData = function() {
 };
 
 TCAD.TWO.Constraints.Parallel = function(l1, l2) {
-  this.l1 = l2;
+  this.l1 = l1;
   this.l2 = l2;
 };
 
@@ -147,19 +172,8 @@ TCAD.TWO.Constraints.Parallel.prototype.getSolveData = function() {
   return ['parallel', params, []];
 };
 
-TCAD.TWO.Constraints.Parallel.prototype.setParams = function(params) {
-  l1.a._x.set(params[0]);
-  l1.a._y.set(params[1]);
-  l1.b._x.set(params[2]);
-  l1.b._y.set(params[3]);
-  l2.a._x.set(params[4]);
-  l2.a._y.set(params[5]);
-  l2.b._x.set(params[6]);
-  l2.b._y.set(params[7]);
-}
-
 TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
-  this.l1 = l2;
+  this.l1 = l1;
   this.l2 = l2;
 };
 
@@ -170,35 +184,16 @@ TCAD.TWO.Constraints.Perpendicular.prototype.getSolveData = function() {
   return ['perpendicular', params, []];
 };
 
-TCAD.TWO.Constraints.Perpendicular.prototype.setParams = function(params) {
-  l1.a._x.set(params[0]);
-  l1.a._y.set(params[1]);
-  l1.b._x.set(params[2]);
-  l1.b._y.set(params[3]);
-  l2.a._x.set(params[4]);
-  l2.a._y.set(params[5]);
-  l2.b._x.set(params[6]);
-  l2.b._y.set(params[7]);
-}
-
-
 TCAD.TWO.Constraints.P2LDistance = function(l, p, d) {
   this.l = l;
   this.p = p;
   this.d = d;
-  this.functional = 'P2LDistance';
 };
 
 TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function() {
-  return ['P2LDistance', [p._x, p._y, l.a._x, l.a._y, l.b._x, l.b._y], [d]];
+  var params = [];
+  this.p.collectParams(params);
+  this.l.collectParams(params);
+  return ['P2LDistance', params, [this.d]];
 };
-
-TCAD.TWO.Constraints.P2LDistance.prototype.setParams = function(params) {
-  p._x  .set(params[0]);
-  p._y  .set(params[1]);
-  l.a._x.set(params[2]);
-  l.a._y.set(params[3]);
-  l.b._x.set(params[4]);
-  l.b._y.set(params[5]);
-}
 

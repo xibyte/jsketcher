@@ -156,6 +156,11 @@ TCAD.TWO.Viewer.prototype.repaint = function() {
   }
 };
 
+TCAD.TWO.Viewer.prototype.showExtent = function(x1, y1, x2, y2) {
+  this.translate.x = x1;
+  this.translate.y = y1;
+};
+
 TCAD.TWO.Viewer.prototype.screenToModel2 = function(x, y, out) {
 
   out.x = x;
@@ -169,7 +174,7 @@ TCAD.TWO.Viewer.prototype.screenToModel2 = function(x, y, out) {
 };
 
 TCAD.TWO.Viewer.prototype.screenToModel = function(point) {
-  var out = {x: 0, y: 0}
+  var out = {x: 0, y: 0};
   this.screenToModel2(point.x, point.y, out);
   return out;
 };
