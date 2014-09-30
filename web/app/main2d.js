@@ -51,6 +51,14 @@ TCAD.App2D = function() {
       app.viewer.parametricManager.horizontal(app.viewer.selected);
     },
 
+    parallel : function() {
+      app.viewer.parametricManager.parallel(app.viewer.selected);
+    },
+
+    perpendicular : function() {
+      app.viewer.parametricManager.perpendicular(app.viewer.selected);
+    },
+    
     P2LDistance : function() {
       app.viewer.parametricManager.p2lDistance(app.viewer.selected);
     }
@@ -60,6 +68,8 @@ TCAD.App2D = function() {
   actionsF.add(actions, 'coincident');
   actionsF.add(actions, 'vertical');
   actionsF.add(actions, 'horizontal');
+  actionsF.add(actions, 'parallel');
+  actionsF.add(actions, 'perpendicular');
   actionsF.add(actions, 'P2LDistance');
   actionsF.open();
 
