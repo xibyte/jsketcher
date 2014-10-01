@@ -813,7 +813,7 @@ public class Solver {
     public double value() {
       double err = 0.;
       for (Constraint c : constraints) {
-        err += c.error();
+        err += Math.abs(c.error());
       }
       return err;
     }
@@ -885,12 +885,13 @@ public class Solver {
         out.setEntry(i, 0, v);
       }
     }
+
+
   }
 
   private static double dotProduct(RealMatrix m1, RealMatrix m2) {
     return new ArrayRealVector(m1.getData()[0]).dotProduct(new ArrayRealVector(m2.getData()[0]));
   }
-
 
   static double XconvergenceRough = 1e-8;
   static double XconvergenceFine = 1e-10;
