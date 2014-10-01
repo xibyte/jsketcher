@@ -16,9 +16,13 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Solver {
 
@@ -718,8 +722,8 @@ public class Solver {
 
   static class ParamInfo {
 
-    final int id;
-    final List<Constraint> constraints = new ArrayList<>();
+    int id;
+    Set<Constraint> constraints = new LinkedHashSet<>();
 
     ParamInfo(int id) {
       this.id = id;
@@ -732,7 +736,7 @@ public class Solver {
     private final LinkedHashMap<Param, ParamInfo> params = new LinkedHashMap<>();
 
     public SubSystem(List<Constraint> constraints) {
-      this.constraints = constraints;
+      this.constraints = new ArrayList<>(constraints);
       for (Constraint c : constraints) {
 
         for (Param p : c.getParams()) {
@@ -835,7 +839,9 @@ public class Solver {
 
         for (int p = 0; p < cParams.length; p++) {
           Param param = cParams[p];
-          int j = params.get(param).id;
+          ParamInfo pi = params.get(param);
+          if (pi == null) continue;
+          int j = pi.id;
           jacobi.setEntry(i,j, param.isLocked() ? 0 : grad[p]);
         }
       }
@@ -872,7 +878,9 @@ public class Solver {
 
         Param[] localParams = c.getParams();
         for (int i = 0; i < localParams.length; i++) {
-          grad[params.get(localParams[i]).id] += error * localGrad[i];
+          ParamInfo pi = params.get(localParams[i]);
+          if (pi == null) continue;
+          grad[pi.id] += error * localGrad[i];
         }
       }
       return grad;
@@ -886,6 +894,43 @@ public class Solver {
       }
     }
 
+
+    public List<SubSystem> splitUp () {
+      List<SubSystem> subSystems = new ArrayList<>();
+      for (Constraint constraint : constraints) {
+        Set<Param> params = new HashSet<>(Arrays.asList(constraint.getParams()));
+        SubSystem subSystem = new SubSystem(constraints);
+        subSystems.add(subSystem);
+        Iterator<Param> it = subSystem.params.keySet().iterator();
+        while (it.hasNext()) {
+          Param param = it.next();
+          if (!params.contains(param)) {
+            it.remove();
+          }
+        }
+        int i = 0;
+        for (ParamInfo pi : subSystem.params.values()) {
+          pi.id = i ++;
+        }
+        Iterator<Constraint> cit = subSystem.constraints.iterator();
+        while (cit.hasNext()) {
+          Constraint c = cit.next();
+          boolean remove = true;
+          for (ParamInfo pi : subSystem.params.values()) {
+            if (pi.constraints.contains(c)) {
+              remove = false;
+              break;
+            }
+          }
+          if (remove) {
+            cit.remove();
+          }
+      }
+
+      }
+
+      return subSystems;
+    }
 
   }
 
