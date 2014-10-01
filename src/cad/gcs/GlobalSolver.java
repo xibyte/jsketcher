@@ -29,17 +29,18 @@ public class GlobalSolver {
     double eps = 0.0001;
     java.lang.System.out.println("Solve system with error: " + subSystem.value());
     int count = 0;
-    while (subSystem.valueSquared() > eps && (count++ < 100)) {
+    while (subSystem.valueSquared() > eps && (count++ < 1)) {
       solveLM_COMMONS(subSystem);
 //      Solver.solve_BFGS(subSystem, false);
+//      Solver.solve_DL(subSystem);
 //    Solver.solve_LM(subSystem);
-      if (Math.abs(subSystem.valueSquared()) > eps) {
-//        solveWorse(subSystem, eps);
-        if(subSystem.constraints.size() > 1) {
-          Solver.SubSystem shrunk = shrink(subSystem);
-          globalSolve(shrunk, linearSolvedCallback);
-        }
-      }
+//      if (Math.abs(subSystem.valueSquared()) > eps) {
+////        solveWorse(subSystem, eps);
+//        if(subSystem.constraints.size() > 1) {
+//          Solver.SubSystem shrunk = shrink(subSystem);
+//          globalSolve(shrunk, linearSolvedCallback);
+//        }
+//      }
       linearSolvedCallback.run();
     }
   }
