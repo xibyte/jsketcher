@@ -14,10 +14,11 @@ import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquar
 import java.lang.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class GlobalSolver {
 
-  public static void globalSolve(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
+  public static void globalSolve2(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
 
 //    for (Constraint c : subSystem.constraints) {
 //      if (c instanceof Reconcilable) {
@@ -41,6 +42,25 @@ public class GlobalSolver {
       }
       linearSolvedCallback.run();
     }
+  }
+
+  public static void globalSolve(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
+
+
+    double eps = 0.0001;
+    java.lang.System.out.println("Solve system with error: " + subSystem.value());
+    int count = 0;
+
+    List<Solver.SubSystem> subSystems = subSystem.splitUp();
+    for (Solver.SubSystem system : subSystems) {
+      java.lang.System.out.println("Solve subsystem: " + subSystem.value());
+      solveLM_COMMONS(system);
+      Solver.solve_BFGS(subSystem, false);
+      Solver.solve_LM(subSystem);
+      java.lang.System.out.println("Subsystem solved: " + subSystem.value());
+      linearSolvedCallback.run();
+    }
+    linearSolvedCallback.run();
   }
 
 
