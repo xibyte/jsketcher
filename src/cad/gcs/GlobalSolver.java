@@ -18,7 +18,7 @@ import java.util.List;
 
 public class GlobalSolver {
 
-  public static void globalSolve2(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
+  public static void globalSolve(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
 
 //    for (Constraint c : subSystem.constraints) {
 //      if (c instanceof Reconcilable) {
@@ -44,7 +44,7 @@ public class GlobalSolver {
     }
   }
 
-  public static void globalSolve(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
+  public static void globalSolve2(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
 
 
     double eps = 0.0001;
@@ -55,12 +55,14 @@ public class GlobalSolver {
     for (Solver.SubSystem system : subSystems) {
       java.lang.System.out.println("Solve subsystem: " + subSystem.value());
       solveLM_COMMONS(system);
-      Solver.solve_BFGS(subSystem, false);
-      Solver.solve_LM(subSystem);
+//      Solver.solve_BFGS(system, false);
+//      Solver.solve_LM(system);
       java.lang.System.out.println("Subsystem solved: " + subSystem.value());
       linearSolvedCallback.run();
     }
     linearSolvedCallback.run();
+
+//    globalSolve2(subSystem, linearSolvedCallback);
   }
 
 

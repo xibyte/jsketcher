@@ -5,6 +5,7 @@ import cad.gcs.GlobalSolver;
 import cad.gcs.Param;
 import cad.gcs.Solver;
 import cad.gcs.constr.Equal;
+import cad.gcs.constr.EqualsTo;
 import cad.gcs.constr.Parallel;
 import cad.gcs.constr.Perpendicular;
 import gnu.trove.map.TIntObjectMap;
@@ -37,7 +38,7 @@ public class SolveServer {
 
     ResourceHandler rh = new ResourceHandler();
     rh.setDirectoriesListed(true);
-    rh.setResourceBase("/home/verastov/Dropbox/project/cadit/web");
+    rh.setResourceBase("/home/xibyte/Dropbox/project/cadit/web");
     handlers.addHandler(rh);
 
     server.setHandler(handlers);
@@ -118,7 +119,9 @@ class SolveHandler extends AbstractHandler {
     }
 
     for (int i = 0; i < locked.length(); i++) {
-//      paramsDict.get(locked.getInt(i)).setLocked(true);
+      Param param = paramsDict.get(locked.getInt(i));
+//      param.setLocked(true);
+      constraints.add(new EqualsTo(param, param.get()));
     }
 
     Solver.SubSystem subSystem = new Solver.SubSystem(constraints);
