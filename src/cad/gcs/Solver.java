@@ -625,7 +625,7 @@ public class Solver {
     lineSearch(subsys, xdir);
     double err = subsys.errorSquared();
 
-    h = new Array2DRowRealMatrix(x.getData());
+    h = x.copy();
     subsys.fillParams(x);
     h = x.subtract(h); // = x - xold
 
@@ -643,7 +643,7 @@ public class Solver {
         break;
       }
 
-      y = new Array2DRowRealMatrix(grad.getData());
+      y = grad.copy();
       subsys.calcGrad(grad);
       y = grad.subtract(y); // = grad - gradold
 
@@ -669,7 +669,7 @@ public class Solver {
       lineSearch(subsys, xdir);
       err = subsys.errorSquared();
 
-      h = new Array2DRowRealMatrix(x.getData());
+      h = x.copy();
       subsys.fillParams(x);
       h = x.subtract(h); // = x - xold
     }
@@ -862,8 +862,28 @@ public class Solver {
       return valueSquared();
     }
 
+    public double[] calcGrad() {
+      double[] grad = new double[params.size()];
+      for (Constraint c : constraints) {
+        double error = c.error();
+        
+        double[] localGrad = new double[c.pSize()];
+        c.gradient(localGrad);
+
+        Param[] localParams = c.getParams();
+        for (int i = 0; i < localParams.length; i++) {
+          grad[params.get(localParams[i]).id] += error * localGrad[i];
+        }
+      }
+      return grad;
+    }
+    
     public void calcGrad(RealMatrix out) {
-      throw new UnsupportedOperationException("men at work");
+      double[] grad = calcGrad();
+      for (int i = 0; i < grad.length; i++) {
+        double v = calcGrad()[i];
+        out.setEntry(i, 0, v);
+      }
     }
   }
 

@@ -118,7 +118,7 @@ class SolveHandler extends AbstractHandler {
     }
 
     for (int i = 0; i < locked.length(); i++) {
-      paramsDict.get(locked.getInt(i)).setLocked(true);
+//      paramsDict.get(locked.getInt(i)).setLocked(true);
     }
 
     Solver.SubSystem subSystem = new Solver.SubSystem(constraints);

@@ -31,8 +31,9 @@ public class GlobalSolver {
     java.lang.System.out.println("Solve system with error: " + subSystem.errorSquared());
     boolean triedShrink = false;
     while (abs(subSystem.value()) > eps && !triedShrink) {
-      solveLM_COMMONS(subSystem);
+//      solveLM_COMMONS(subSystem);
 //    Solver.solve_LM(subSystem);
+      Solver.solve_BFGS(subSystem, false);
       if (abs(subSystem.value()) > eps) {
 //        solveWorse(subSystem, eps);
         if(subSystem.constraints.size() > 1) {
