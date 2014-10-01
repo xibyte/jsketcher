@@ -102,12 +102,24 @@ public class Solver {
           }
 
           boolean success = true;
-          try {
-            h_gn = new LUDecomposition(A).getSolver().solve(gg);
-          } catch (Exception ssse) {
-            java.lang.System.out.println(ssse.getMessage());
-            success = false;
+
+
+          for (int _ = 0; _ < 1000; _++) {
+            try {
+              h_gn = new LUDecomposition(A).getSolver().solve(gg);
+            } catch (Exception ssse) {
+              mu *= 1./3.;
+              for (int i = 0; i < xsize; ++i) {
+                A.setEntry(i, i, diag_A[i] * mu);
+              }
+              if (_ == 999) {
+                return SolveStatus.Success;
+              }
+              continue;
+            }
+            break;
           }
+
           if (success) {
             break;
           }
