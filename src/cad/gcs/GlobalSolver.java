@@ -29,18 +29,22 @@ public class GlobalSolver {
     double eps = 0.0001;
     java.lang.System.out.println("Solve system with error: " + subSystem.value());
     int count = 0;
+
+    solveLM_COMMONS(subSystem);
+    if (true) return;
+
     while (subSystem.valueSquared() > eps && (count++ < 1)) {
       solveLM_COMMONS(subSystem);
 //      Solver.solve_BFGS(subSystem, false);
 //      Solver.solve_DL(subSystem);
 //    Solver.solve_LM(subSystem);
-//      if (Math.abs(subSystem.valueSquared()) > eps) {
-////        solveWorse(subSystem, eps);
-//        if(subSystem.constraints.size() > 1) {
-//          Solver.SubSystem shrunk = shrink(subSystem);
-//          globalSolve(shrunk, linearSolvedCallback);
-//        }
-//      }
+      if (Math.abs(subSystem.valueSquared()) > eps) {
+//        solveWorse(subSystem, eps);
+        if(subSystem.constraints.size() > 1) {
+          Solver.SubSystem shrunk = shrink(subSystem);
+          globalSolve(shrunk, linearSolvedCallback);
+        }
+      }
       linearSolvedCallback.run();
     }
   }
@@ -76,8 +80,8 @@ public class GlobalSolver {
     double[] wieght = new double[subSystem.cSize()];
     Arrays.fill(wieght, 1);
     PointVectorValuePair result = optimizer.optimize(
-      new MaxEval(10000),
-      new MaxIter(10000),
+      new MaxEval(100000),
+      new MaxIter(100000),
       new InitialGuess(subSystem.getParams().toArray()),
       new Target(new double[subSystem.cSize()]),
       new Weight(wieght),
