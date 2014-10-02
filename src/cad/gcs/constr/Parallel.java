@@ -55,12 +55,11 @@ public class Parallel implements Constraint {
 
   @Override
   public double error() {
-    double dx1 =  (params[l1p1x].get() - params[l1p2x].get());
-    double dy1 =  (params[l1p1y].get() - params[l1p2y].get());
-    double dx2 = -(params[l2p1x].get() - params[l2p2x].get());
-    double dy2 =  (params[l2p1y].get() - params[l2p2y].get());
-    //dot product shows how the lines off to be perpendicular
-    return (dx1 * dy2 - dy1 * dx2);
+    double dx1 = (params[l1p1x].get() - params[l1p2x].get());
+    double dy1 = (params[l1p1y].get() - params[l1p2y].get());
+    double dx2 = (params[l2p1x].get() - params[l2p2x].get());
+    double dy2 = (params[l2p1y].get() - params[l2p2y].get());
+    return (dx1*dy2 - dy1*dx2);
   }
 
 
