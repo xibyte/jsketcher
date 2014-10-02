@@ -31,6 +31,10 @@ public class GlobalSolver {
     int count = 0;
 
     solveLM_COMMONS(subSystem);
+//    Solver.solve_BFGS(subSystem, false);
+//    Solver.solve_DL(subSystem);
+//    Solver.solve_LM(subSystem);
+
     linearSolvedCallback.run();
     if (true) return;
 

@@ -28,6 +28,25 @@ TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
 };
 
 
+TCAD.TWO.ParametricManager.prototype._fetchPointAndLine = function(objs) {
+
+  var point = null;
+  var line = null;
+  
+  for (var i = 0; i < objs.length; ++i) {
+    if (objs[i]._class == 'TCAD.TWO.EndPoint') {
+      point = objs[i];
+    } else if (objs[i]._class == 'TCAD.TWO.Segment') {
+      line = objs[i];
+    }
+  }
+  if (point == null || line == null) {
+    throw "Illegal Argument. Constraint requires point and line."
+  }
+  
+  return [point, line];
+};
+
 TCAD.TWO.ParametricManager.prototype._fetchTwoLines = function(objs) {
   var lines = [];
   for (var i = 0; i < objs.length; ++i) {
@@ -61,18 +80,22 @@ TCAD.TWO.ParametricManager.prototype.perpendicular = function(objs) {
   this.add(new TCAD.TWO.Constraints.Perpendicular(lines[0], lines[1]));
 };
 
-TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs) {
-  var target = null;
-  var segment = null;
-  for (var i = 0; i < objs.length; ++i) {
-    if (objs[i]._class == 'TCAD.TWO.EndPoint') {
-      target = objs[i];
-    } else if (objs[i]._class == 'TCAD.TWO.Segment') {
-      segment = objs[i];
+TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback) {
+  var pl = this._fetchPointAndLine(objs);
+
+  var target = pl[0];
+  var segment = pl[1];
+  
+  var ex = new TCAD.Vector(-(segment.b.y - segment.a.y), segment.b.x - segment.a.x).normalize();
+  var distance = Math.abs(ex.dot(new TCAD.Vector(segment.a.x - target.x, segment.a.y - target.y)));
+
+  var promptDistance = promptCallback("Enter the distance", distance.toFixed(2));
+  
+  if (promptDistance != null) {
+    promptDistance = Number(promptDistance);
+    if (promptDistance == promptDistance) { // check for NaN
+      this.add(new TCAD.TWO.Constraints.P2LDistance(target, segment, promptDistance));
     }
-  }
-  if (target == null || segment == null) {
-    throw "Illegal Argument. P2LDistance requires point and line."
   }
 };
 
@@ -184,9 +207,9 @@ TCAD.TWO.Constraints.Perpendicular.prototype.getSolveData = function() {
   return ['perpendicular', params, []];
 };
 
-TCAD.TWO.Constraints.P2LDistance = function(l, p, d) {
-  this.l = l;
+TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
   this.p = p;
+  this.l = l;
   this.d = d;
 };
 
