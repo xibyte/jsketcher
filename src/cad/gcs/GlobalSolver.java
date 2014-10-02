@@ -31,9 +31,10 @@ public class GlobalSolver {
     int count = 0;
 
     solveLM_COMMONS(subSystem);
+    linearSolvedCallback.run();
     if (true) return;
 
-    while (subSystem.valueSquared() > eps && (count++ < 1)) {
+    while (subSystem.valueSquared() > eps && (count++ < 1000)) {
       solveLM_COMMONS(subSystem);
 //      Solver.solve_BFGS(subSystem, false);
 //      Solver.solve_DL(subSystem);
