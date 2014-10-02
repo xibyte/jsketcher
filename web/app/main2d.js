@@ -61,7 +61,12 @@ TCAD.App2D = function() {
     
     P2LDistance : function() {
       app.viewer.parametricManager.p2lDistance(app.viewer.selected, prompt);
+    },
+    
+    P2PDistance : function() {
+      app.viewer.parametricManager.p2pDistance(app.viewer.selected, prompt);
     }
+
   };
   actionsF.add(actions, 'addSegment');
   actionsF.add(actions, 'pan');
@@ -71,6 +76,7 @@ TCAD.App2D = function() {
   actionsF.add(actions, 'parallel');
   actionsF.add(actions, 'perpendicular');
   actionsF.add(actions, 'P2LDistance');
+  actionsF.add(actions, 'P2PDistance');
   actionsF.open();
 
 };

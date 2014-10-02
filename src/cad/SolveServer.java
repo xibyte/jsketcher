@@ -7,11 +7,9 @@ import cad.gcs.Solver;
 import cad.gcs.constr.Equal;
 import cad.gcs.constr.EqualsTo;
 import cad.gcs.constr.P2LDistance;
+import cad.gcs.constr.P2PDistance;
 import cad.gcs.constr.Parallel;
 import cad.gcs.constr.Perpendicular;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -118,6 +116,9 @@ class SolveHandler extends AbstractHandler {
           break;
         case "P2LDistance":
           constraints.add(new P2LDistance(constants.getDouble(0), h.get(0), h.get(1), h.get(2), h.get(3), h.get(4), h.get(5)));
+          break;
+        case "P2PDistance":
+          constraints.add(new P2PDistance(h.get(0), h.get(1), h.get(2), h.get(3), constants.getDouble(0)));
           break;
       }
     }
