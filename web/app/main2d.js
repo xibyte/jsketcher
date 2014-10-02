@@ -60,7 +60,7 @@ TCAD.App2D = function() {
     },
     
     P2LDistance : function() {
-      app.viewer.parametricManager.p2lDistance(app.viewer.selected);
+      app.viewer.parametricManager.p2lDistance(app.viewer.selected, prompt);
     }
   };
   actionsF.add(actions, 'addSegment');
