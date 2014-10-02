@@ -60,7 +60,7 @@ public class Perpendicular implements Constraint {
     double dx2 = (params[l2p1x].get() - params[l2p2x].get());
     double dy2 = (params[l2p1y].get() - params[l2p2y].get());
     //dot product shows how the lines off to be perpendicular
-    return (dx1 * dx2 + dy1 * dy2);
+    return (dx1*dx2 + dy1*dy2);
   }
 
   //derivative of ((x-a1)*a2 + a3)^2
