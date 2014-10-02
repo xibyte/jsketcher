@@ -171,7 +171,7 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
   xhr.onreadystatechange=function() {
     if (xhr.readyState == 4 && xhr.status == 200) {
       var response = JSON.parse(xhr.responseText);
-      if (response.reqId != request.reqId) {
+      if (response.reqId != pm.REQUEST_COUNTER - 1) {
         return;
       }
       for (var p = 0; p < response.params.length; ++p) {

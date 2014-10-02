@@ -566,6 +566,7 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   this.viewer.screenToModel2(e.x, e.y, this._point);
   this.obj.translate(this._point.x - x, this._point.y - y);
   this.viewer.refresh();
+  this.solveRequest();
 };
 
 TCAD.TWO.DragTool.prototype.mousedown = function(e) {
