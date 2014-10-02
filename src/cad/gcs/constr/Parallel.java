@@ -55,13 +55,12 @@ public class Parallel implements Constraint {
 
   @Override
   public double error() {
-    double dx1 =  (params[l1p2x].get() - params[l1p1x].get());
-    double dy1 =  (params[l1p2y].get() - params[l1p1y].get());
-    double dx2 = -(params[l2p2y].get() - params[l2p1y].get());
-    double dy2 =  (params[l2p2x].get() - params[l2p1x].get());
+    double dx1 =  (params[l1p1x].get() - params[l1p2x].get());
+    double dy1 =  (params[l1p1y].get() - params[l1p2y].get());
+    double dx2 = -(params[l2p1x].get() - params[l2p2x].get());
+    double dy2 =  (params[l2p1y].get() - params[l2p2y].get());
     //dot product shows how the lines off to be perpendicular
-    double off = dx1 * dx2 + dy1 * dy2;
-    return off * off;
+    return (dx1 * dy2 - dy1 * dx2);
   }
 
 
@@ -75,8 +74,19 @@ public class Parallel implements Constraint {
     return -2*a2*(a1*a2 - a2*x+a3);
   }
 
-  @Override
+
   public void gradient(double[] out) {
+    out[l1p1x] =  (params[l2p1y].get() - params[l2p2y].get()); // = dy2
+    out[l1p2x] = -(params[l2p1y].get() - params[l2p2y].get()); // = -dy2
+    out[l1p1y] = -(params[l2p1x].get() - params[l2p2x].get()); // = -dx2
+    out[l1p2y] =  (params[l2p1x].get() - params[l2p2x].get()); // = dx2
+    out[l2p1x] = -(params[l1p1y].get() - params[l1p2y].get()); // = -dy1
+    out[l2p2x] =  (params[l1p1y].get() - params[l1p2y].get()); // = dy1
+    out[l2p1y] =  (params[l1p1x].get() - params[l1p2x].get()); // = dx1
+    out[l2p2y] = -(params[l1p1x].get() - params[l1p2x].get()); // = -dx1
+  }
+  
+  public void gradient2(double[] out) {
 
     double x1 = params[l1p1x].get();
     double x2 = params[l1p1y].get();
