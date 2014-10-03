@@ -80,7 +80,7 @@ public class GlobalSolver {
     double eps = 1e-10, eps1 = 1e-80;
       double tau = 1e-3;
 
-    LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer(eps, eps, eps1);
+    LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer();
 
     double[] wieght = new double[subSystem.cSize()];
     Arrays.fill(wieght, 1);
