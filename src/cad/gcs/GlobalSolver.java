@@ -70,9 +70,9 @@ public class GlobalSolver {
 
 
   public static void solveLM_COMMONS(final Solver.SubSystem subSystem) {
-    double eps = 0.0001;
-
-
+    double fine = 0.00000001;
+    double rough = 0.0001;
+    double eps = rough;
 
     LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer(eps,eps,eps);
 
