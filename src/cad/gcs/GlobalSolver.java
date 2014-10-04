@@ -1,5 +1,7 @@
 package cad.gcs;
 
+import cad.gcs.constr.Equal;
+import cad.gcs.constr.EqualsTo;
 import gnu.trove.list.TDoubleList;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
@@ -12,6 +14,7 @@ import org.apache.commons.math3.optim.nonlinear.vector.Weight;
 import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
 
 import java.lang.*;
+import java.lang.System;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,31 +30,21 @@ public class GlobalSolver {
 //    }
 
     double eps = 0.0001;
-    java.lang.System.out.println("Solve system with error: " + subSystem.value());
+    java.lang.System.out.println(String.format("Solve system with error: %.4f", + subSystem.value()));
     int count = 0;
 
+    long start = System.currentTimeMillis();
+
     solveLM_COMMONS(subSystem);
-//    Solver.solve_BFGS(subSystem, false);
-//    Solver.solve_DL(subSystem);
-//    Solver.solve_LM(subSystem);
 
+//    if (subSystem.valueSquared() > eps) Solver.solve_BFGS(subSystem, false);
+//    if (subSystem.valueSquared() > eps) Solver.solve_DL(subSystem);
+//    if (subSystem.valueSquared() > eps) Solver.solve_LM(subSystem);
+
+    long end = System.currentTimeMillis();
+    java.lang.System.out.println(String.format("Solved with error: %.4f", + subSystem.value()));
+    java.lang.System.out.println("TOOK: " + (end - start) / 1000f);
     linearSolvedCallback.run();
-    if (true) return;
-
-    while (subSystem.valueSquared() > eps && (count++ < 1000)) {
-      solveLM_COMMONS(subSystem);
-//      Solver.solve_BFGS(subSystem, false);
-//      Solver.solve_DL(subSystem);
-//    Solver.solve_LM(subSystem);
-      if (Math.abs(subSystem.valueSquared()) > eps) {
-//        solveWorse(subSystem, eps);
-        if(subSystem.constraints.size() > 1) {
-          Solver.SubSystem shrunk = shrink(subSystem);
-          globalSolve(shrunk, linearSolvedCallback);
-        }
-      }
-      linearSolvedCallback.run();
-    }
   }
 
   public static void globalSolve2(Solver.SubSystem subSystem, Runnable linearSolvedCallback) {
@@ -77,13 +70,15 @@ public class GlobalSolver {
 
 
   public static void solveLM_COMMONS(final Solver.SubSystem subSystem) {
-    double eps = 1e-10, eps1 = 1e-80;
-      double tau = 1e-3;
+    double eps = 0.0001;
 
-    LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer();
+
+
+    LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer(eps,eps,eps);
 
     double[] wieght = new double[subSystem.cSize()];
     Arrays.fill(wieght, 1);
+    setUpWeight(subSystem, wieght);
     PointVectorValuePair result = optimizer.optimize(
       new MaxEval(100000),
       new MaxIter(100000),
@@ -95,6 +90,17 @@ public class GlobalSolver {
     );
 
     subSystem.setParams(result.getPoint());
+  }
+
+  private static void setUpWeight(Solver.SubSystem subSystem, double[] wieght) {
+    for (int i = 0; i < subSystem.constraints.size(); i++) {
+      Constraint constraint = subSystem.constraints.get(i);
+      if ((constraint instanceof Equal) || (constraint instanceof EqualsTo)) {
+//        wieght[i] = 0.9;
+      } else {
+//        wieght[i] = 0.1;
+      }
+    }
   }
 
   private static ModelFunction getFunction(Solver.SubSystem subSystem) {
