@@ -389,6 +389,50 @@ TCAD.TWO.Segment.prototype.drawImpl = function(ctx, scale) {
   ctx.stroke();
 };
 
+
+TCAD.TWO.Arc = function(a, b, c) {
+  TCAD.TWO.SketchObject.call(this);
+  this.a = a;
+  this.b = b;
+  this.c = c;
+  a.parent = this;
+  b.parent = this;
+  c.parent = this;
+};
+
+TCAD.TWO.utils.extend(TCAD.TWO.Arc, TCAD.TWO.SketchObject);
+
+TCAD.TWO.Arc.prototype._class = 'TCAD.TWO.Arc';
+
+TCAD.TWO.Arc.prototype.collectParams = function(params) {
+  this.a.collectParams(params);
+  this.b.collectParams(params);
+  this.c.collectParams(params);
+};
+
+TCAD.TWO.Arc.prototype.draw = function(ctx, scale) {
+  TCAD.TWO.SketchObject.prototype.draw.call(this, ctx, scale);
+  this.a.draw(ctx, scale);
+  this.b.draw(ctx, scale);
+  this.c.draw(ctx, scale);
+};
+
+TCAD.TWO.Arc.prototype.translateImpl = function(dx, dy) {
+  this.a.translate(dx, dy);
+  this.b.translate(dx, dy);
+  this.c.translate(dx, dy);
+};
+
+TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
+  ctx.beginPath();
+  ctx.moveTo(this.a.x, this.a.y);
+  ctx.lineTo(this.b.x, this.b.y);
+
+//  ctx.arc(c.x, c.y, ,0,2*Math.PI);
+  ctx.stroke();
+};
+
+
 TCAD.TWO.Point = function(x, y, rad) {
   this.x = x;
   this.y = y;
