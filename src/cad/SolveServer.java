@@ -37,7 +37,7 @@ public class SolveServer {
 
     ResourceHandler rh = new ResourceHandler();
     rh.setDirectoriesListed(true);
-    rh.setResourceBase("/home/verastov/Dropbox/project/cadit/web");
+    rh.setResourceBase("/home/xibyte/Dropbox/project/cadit/web");
     handlers.addHandler(rh);
 
     server.setHandler(handlers);
@@ -49,26 +49,41 @@ public class SolveServer {
 
 class SolveHandler extends AbstractHandler {
 
+  volatile boolean busy = false;
+
   public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
     if (!request.getRequestURI().startsWith("/solve")) {
       return;
     }
 
-    BufferedReader reader = request.getReader();
-    String jsonStr = new Scanner(reader).useDelimiter("\\A").next();
-    System.out.println("REQUEST: " + jsonStr);
-
-    JSONObject json = new JSONObject(jsonStr);
-
-    JSONObject solved = solve(json);
-    System.out.println("RESPONSE: " + solved);
-
-    response.setContentType("application/json;charset=utf-8");
-    response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
 
-    response.getWriter().println(solved.toString());
+    if (busy) {
+      response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+      return;
+    }
+    synchronized (this) {
+      if (busy) return;
+      busy = true;
+      try {
+        BufferedReader reader = request.getReader();
+        String jsonStr = new Scanner(reader).useDelimiter("\\A").next();
+        System.out.println("REQUEST: " + jsonStr);
+
+        JSONObject json = new JSONObject(jsonStr);
+
+        JSONObject solved = solve(json);
+        System.out.println("RESPONSE: " + solved);
+
+        response.setContentType("application/json;charset=utf-8");
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        response.getWriter().println(solved.toString());
+      } finally {
+        busy = false;
+      }
+    }
   }
 
   private JSONObject solve(JSONObject req) {
