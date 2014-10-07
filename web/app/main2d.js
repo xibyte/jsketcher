@@ -1,4 +1,6 @@
 
+var magic_k = 500;
+
 TCAD.App2D = function() {
 
   this.viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
@@ -7,6 +9,7 @@ TCAD.App2D = function() {
 
   var sketchId = "TCAD.projects." + window.location.hash.substring(1);
   var sketchData = localStorage.getItem(sketchId);
+  var boundary = null;
 
   if (sketchData == null) {
     //PUT SAMPLES
@@ -16,7 +19,8 @@ TCAD.App2D = function() {
 //    layer.objects.push(poly);
   } else {
     var sketch = JSON.parse(sketchData);
-    var bbox = this.makePolygon(sketch.boundary.shell, layer);
+    boundary = sketch.boundary;
+    var bbox = this.makePolygon(boundary.shell, layer);
     for (var i = 0; i < sketch.boundary.holes.length; ++i ) {
       this.makePolygon(sketch.boundary.holes[i], layer);
     }
@@ -38,6 +42,24 @@ TCAD.App2D = function() {
     pan : function() {
       app.viewer.toolManager.releaseControl();
     },
+
+    save : function() {
+      var sketch = {boundary : boundary};
+
+      sketch.segments = [];
+      var params = {};
+      for (var i = 0; i < layer.objects.length; ++i) {
+        var obj = layer.objects[i];
+
+        if (obj._class === 'TCAD.TWO.Segment') {
+          params[obj.a._x]
+          sketch.segments.push([obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
+        }
+      }
+
+      sketch.constraints = {}
+    },
+
 
     coincident : function() {
       app.viewer.parametricManager.coincident(app.viewer.selected);
@@ -70,6 +92,7 @@ TCAD.App2D = function() {
   };
   actionsF.add(actions, 'addSegment');
   actionsF.add(actions, 'pan');
+  actionsF.add(actions, 'save');
   actionsF.add(actions, 'coincident');
   actionsF.add(actions, 'vertical');
   actionsF.add(actions, 'horizontal');
@@ -84,7 +107,7 @@ TCAD.App2D = function() {
 
 TCAD.App2D.prototype.makePolygon = function(points, layer) {
   var n = points.length;
-  var k = 500;
+  var k = magic_k;
   var bounds = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
   for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
     var seg =  this.viewer.addSegment(k*points[p].x, k*points[p].y, k*points[q].x, k*points[q].y, layer);
