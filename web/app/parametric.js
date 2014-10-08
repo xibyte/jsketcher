@@ -131,7 +131,7 @@ TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
   this.solve();
 };
 
-TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
+TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
   var pdict = {};
   var refsCounter = 0;
   var params = [];
@@ -186,6 +186,55 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
   xhr.open("POST", "http://localhost:8080/solve", true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xhr.send(JSON.stringify(request));
+};
+
+
+TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
+  var pdict = {};
+  var params;
+  var i;
+  var _constrs = [];
+
+  function getParam(p) {
+    var _p = pdict[p.id];
+    if (_p === undefined) {
+      _p = new TCAD.parametric.Param(p.id, p.get())
+      _p._backingParam = p;
+      pdict[p.id] = _p;
+    }
+    return _p;
+  }
+
+  for (i = 0; i < this.system.length; ++i) {
+
+    var sdata = this.system[i].getSolveData();
+    params = []
+
+    for (var p = 0; p < sdata[1].length; ++p) {
+      var _p = getParam(sdata[1][p]);
+      params.push(_p);
+    }
+
+    var _constr = TCAD.constraints.create(sdata[0], params);
+    _constrs.push(_constr);
+  }
+
+  var _locked = [];
+  if (locked !== undefined) {
+    for (var p = 0; p < locked.length; ++p) {
+      _locked[p] = getParam(locked[p]);
+    }
+  }
+
+  TCAD.parametric.solve(_constrs, _locked);
+
+  for (var p in pdict) {
+    var _p = pdict[p];
+    _p._backingParam.set(_p.get());
+  }
+  if (onSolved !== undefined) {
+    onSolved();
+  }
 };
 
 TCAD.TWO.Constraints.Equal = function(p1, p2) {
