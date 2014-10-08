@@ -24,8 +24,8 @@ TCAD.App2D = function() {
     for (var i = 0; i < sketch.boundary.holes.length; ++i ) {
       this.makePolygon(sketch.boundary.holes[i], layer);
     }
+    this.viewer.showBounds(bbox[0], bbox[1], bbox[2], bbox[3])
   }
-  this.viewer.showBounds(bbox[0], bbox[1], bbox[2], bbox[3])
   this.viewer.repaint();
 
   var app = this;
