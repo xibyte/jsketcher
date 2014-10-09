@@ -195,6 +195,7 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel) {
   var params;
   var i;
   var _constrs = [];
+  var equals = [];
 
   function getParam(p) {
     var _p = pdict[p.id];
@@ -218,12 +219,17 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel) {
 
     var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
     _constrs.push(_constr);
+    if (sdata[0] === 'equal') {
+      equals.push(this.system[i]);
+    }
   }
 
   var _locked = [];
+  var lockedIds = {};
   if (locked !== undefined) {
     for (var p = 0; p < locked.length; ++p) {
       _locked[p] = getParam(locked[p]);
+      lockedIds[locked[p]] = true;
     }
   }
 
@@ -232,6 +238,22 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel) {
   for (var p in pdict) {
     var _p = pdict[p];
     _p._backingParam.set(_p.get());
+  }
+
+
+  //Make sure all equal constraints are equal
+  for (i = 0; i < equals.length; ++i) {
+    var ec = equals[i];
+    var master = ec.p1;
+    var slave = ec.p2;
+    if (lockedIds[master.id] === true) {
+      master = ec.p2;
+      slave = ec.p1;
+      if (lockedIds[master.id] === true) {
+        continue;
+      }
+    }
+    slave.set( master.get() );
   }
 };
 
