@@ -609,8 +609,8 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   var y = this._point.y;
   this.viewer.screenToModel2(e.x, e.y, this._point);
   this.obj.translate(this._point.x - x, this._point.y - y);
+  this.solveRequest(2);
   this.viewer.refresh();
-  this.solveRequest();
 };
 
 TCAD.TWO.DragTool.prototype.mousedown = function(e) {
@@ -618,19 +618,20 @@ TCAD.TWO.DragTool.prototype.mousedown = function(e) {
 };
 
 TCAD.TWO.DragTool.prototype.mouseup = function(e) {
-  this.solveRequest();
+  this.solveRequest(0);
+  this.viewer.refresh();
   this.viewer.toolManager.releaseControl();
 };
 
 TCAD.TWO.DragTool.prototype.mousewheel = function(e) {
 };
 
-TCAD.TWO.DragTool.prototype.solveRequest = function(e) {
+TCAD.TWO.DragTool.prototype.solveRequest = function(fineLevel) {
   var locked;
   if (this.obj._class == 'TCAD.TWO.EndPoint') {
     locked = [this.obj._x, this.obj._y];
   } else {
     locked = [];
   }
-  this.viewer.parametricManager.solve(locked);
+  this.viewer.parametricManager.solve(locked, fineLevel);
 };
