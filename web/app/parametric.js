@@ -215,7 +215,7 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
       params.push(_p);
     }
 
-    var _constr = TCAD.constraints.create(sdata[0], params);
+    var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
     _constrs.push(_constr);
   }
 
