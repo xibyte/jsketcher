@@ -282,6 +282,7 @@ TCAD.TWO.SketchObject.prototype._translate = function(dx, dy, translated) {
 };
 
 TCAD.TWO.SketchObject.prototype.translate = function(dx, dy) {
+//  this.translateImpl(dx, dy);
   this._translate(dx, dy, {});
 };
 
