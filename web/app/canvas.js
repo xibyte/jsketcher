@@ -332,6 +332,10 @@ TCAD.TWO.EndPoint.prototype.normalDistance = function(aim) {
   return aim.minus(new TCAD.Vector(this.x, this.y)).length();
 }
 
+TCAD.TWO.EndPoint.prototype.getReferencePoint = function() {
+  return this;
+};
+
 TCAD.TWO.EndPoint.prototype.translateImpl = function(dx, dy) {
   this.x += dx;
   this.y += dy;
@@ -378,6 +382,10 @@ TCAD.TWO.Segment.prototype.draw = function(ctx, scale) {
   this.b.draw(ctx, scale);
 };
 
+TCAD.TWO.Segment.prototype.getReferencePoint = function() {
+  return this.a;
+};
+
 TCAD.TWO.Segment.prototype.translateImpl = function(dx, dy) {
   this.a.translate(dx, dy);
   this.b.translate(dx, dy);
@@ -416,6 +424,10 @@ TCAD.TWO.Arc.prototype.draw = function(ctx, scale) {
   this.a.draw(ctx, scale);
   this.b.draw(ctx, scale);
   this.c.draw(ctx, scale);
+};
+
+TCAD.TWO.Arc.prototype.getReferencePoint = function() {
+  return this.c;
 };
 
 TCAD.TWO.Arc.prototype.translateImpl = function(dx, dy) {
@@ -603,14 +615,28 @@ TCAD.TWO.DragTool = function(obj, viewer) {
   this.obj = obj;
   this.viewer = viewer;
   this._point = {x: 0, y: 0};
+  this.ref = this.obj.getReferencePoint();
+  this.errorX = 0;
+  this.errorY = 0;
 };
 
 TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   var x = this._point.x;
   var y = this._point.y;
   this.viewer.screenToModel2(e.x, e.y, this._point);
-  this.obj.translate(this._point.x - x, this._point.y - y);
+  var dx = this._point.x - x - this.errorX;
+  var dy = this._point.y - y - this.errorY;
+  var checkX = this.ref.x;
+  var checkY = this.ref.y;
+  this.obj.translate(dx, dy);
   this.solveRequest(2);
+
+  this.errorX = (this.ref.x - dx) - checkX;
+  this.errorY = (this.ref.y - dy) - checkY;
+
+//  console.log("accumulated error X = " + this.errorX);
+//  console.log("accumulated error Y = " + this.errorY);
+
   this.viewer.refresh();
 };
 
