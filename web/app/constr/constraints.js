@@ -60,21 +60,17 @@ TCAD.constraints.P2LDistance = function(params, distance) {
   this.error = function() {
     var x0 = this.p0x(), x1 = this.p1x(), x2 = this.p2x();
     var y0 = this.p0y(), y1 = this.p1y(), y2 = this.p2y();
-    var dist = this.distance();
+    var dist = this.distance;
     var dx = x2 - x1;
     var dy = y2 - y1;
-    var d = sqrt(dx * dx + dy * dy);
-    var area = abs
+    var d = Math.sqrt(dx * dx + dy * dy);
+    var area = Math.abs
             (-x0 * dy + y0 * dx + x1 * y2 - x2 * y1); // = x1y2 - x2y1 - x0y2 + x2y0 + x0y1 - x1y0 = 2*(triangle area)
     if (d == 0) {
       return 0;
     }
     return (area / d - dist);
 
-  }
-
-  this.distance = function() {
-    return this.distance;
   }
 
   this.p1x = function() {
@@ -108,7 +104,7 @@ TCAD.constraints.P2LDistance = function(params, distance) {
     var dx = x2 - x1;
     var dy = y2 - y1;
     var d2 = dx * dx + dy * dy;
-    var d = sqrt(d2);
+    var d = Math.sqrt(d2);
     var area = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
     out[this.tx]   = ((y1 - y2) / d);
     out[this.ty]   = ((x2 - x1) / d);
@@ -118,7 +114,7 @@ TCAD.constraints.P2LDistance = function(params, distance) {
     out[this.lp2y] = (((x1 - x0) * d - (dy / d) * area) / d2);
 
     for (var i = 0; i < 6; i++) {
-      if (Double.isNaN(out[i])) {
+      if (Number.isNaN(out[i])) {
         out[i] = 0;
       }
       if (area < 0) {
@@ -168,14 +164,14 @@ TCAD.constraints.Parallel = function(params) {
   this.params = params;
 
   this.l1p1x = 0;
-  this.l1p2x = 1;
-  this.l1p1y = 2;
+  this.l1p1y = 1;
+  this.l1p2x = 2;
   this.l1p2y = 3;
   this.l2p1x = 4;
-  this.l2p2x = 5;
-  this.l2p1y = 6;
+  this.l2p1y = 5;
+  this.l2p2x = 6;
   this.l2p2y = 7;
-
+  
   this.error = function() {
     var dx1 = (this.params[this.l1p1x].get() - this.params[this.l1p2x].get());
     var dy1 = (this.params[this.l1p1y].get() - this.params[this.l1p2y].get());
