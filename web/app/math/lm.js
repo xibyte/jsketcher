@@ -152,8 +152,8 @@ function LMOptimizer(startPoint, target, model, jacobian) {
         a[i] = val;
     }
 
-//    var SAFE_MIN = 1e-100; //FIXME!!!!
-    var SAFE_MIN = 1.0e-1022; //FIXME!!!!
+//    var SAFE_MIN = Number.MIN_VALUE; //FIXME!!!!
+    var SAFE_MIN = 1e-30; //FIXME!!!!
 
     /**
      * Build an optimizer for least squares problems with default values
