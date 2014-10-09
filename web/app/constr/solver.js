@@ -69,6 +69,14 @@ TCAD.parametric.System.prototype.setParams = function(point) {
   }
 };
 
+TCAD.parametric.System.prototype.error = function() {
+  var error = 0;
+  for (var i=0; i < this.constraints.length; i++) {
+    error += Math.abs(this.constraints[i].error());
+  }
+  return error;
+};
+
 TCAD.parametric.System.prototype.getValues = function() {
   var values = [];
   for (var i=0; i < this.constraints.length; i++) {
@@ -126,4 +134,5 @@ TCAD.parametric.solve = function(constrs, locked, fineLevel) {
 
   var res = opt.doOptimize();
   sys.setParams(res[0]);
+//  console.log("Solved with error: " + sys.error());
 };
