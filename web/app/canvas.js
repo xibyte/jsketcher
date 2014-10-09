@@ -192,7 +192,7 @@ TCAD.TWO.Viewer.prototype.select = function(objs, exclusive) {
 };
 
 TCAD.TWO.Viewer.prototype.pick = function(e) {
-  var m = this.screenToModel(event);
+  var m = this.screenToModel(e);
   return this.searchSegment(m.x, m.y, 20 / this.scale, true);
 };
 
@@ -449,23 +449,23 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
   var canvas = viewer.canvas;
   var tm = this;
   canvas.addEventListener('mousemove', function (e) {
-    event.preventDefault();
-    event.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     tm.getTool().mousemove(e);
   }, false);
   canvas.addEventListener('mousedown', function (e) {
-    event.preventDefault();
-    event.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     tm.getTool().mousedown(e);
   }, false);
   canvas.addEventListener('mouseup', function (e) {
-    event.preventDefault();
-    event.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     tm.getTool().mouseup(e);
   }, false);
   canvas.addEventListener('mousewheel', function (e) {
-    event.preventDefault();
-    event.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     tm.getTool().mousewheel(e);
   }, false);
 };
@@ -496,15 +496,15 @@ TCAD.TWO.PanTool.prototype.mousemove = function(e) {
   if (!this.dragging) {
     return;    
   }
-  var dx = event.pageX - this.x;
-  var dy = event.pageY - this.y;
+  var dx = e.pageX - this.x;
+  var dy = e.pageY - this.y;
   dy *= -1;
   
   this.viewer.translate.x += dx;  
   this.viewer.translate.y += dy;
   
-  this.x = event.pageX;
-  this.y = event.pageY;
+  this.x = e.pageX;
+  this.y = e.pageY;
   this.deselectOnUp = false;
   this.viewer.refresh();
 };
@@ -532,8 +532,8 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
 
   this.dragging = true;
   this.deselectOnUp = true;
-  this.x = event.pageX;
-  this.y = event.pageY;
+  this.x = e.pageX;
+  this.y = e.pageY;
 };
 
 TCAD.TWO.PanTool.prototype.mouseup = function(e) {
@@ -548,17 +548,17 @@ TCAD.TWO.PanTool.prototype.mousewheel = function(e) {
 
   var delta = 0;
 
-  if ( event.wheelDelta ) { // WebKit / Opera / Explorer 9
-    delta = event.wheelDelta / 40;
-  } else if ( event.detail ) { // Firefox
-    delta = - event.detail / 3;
+  if ( e.wheelDelta ) { // WebKit / Opera / Explorer 9
+    delta = e.wheelDelta / 40;
+  } else if ( e.detail ) { // Firefox
+    delta = - e.detail / 3;
   }
 
-  var before = this.viewer.screenToModel(event);
+  var before = this.viewer.screenToModel(e);
   
   this.viewer.scale += delta * 0.01;
   
-  var after = this.viewer.screenToModel(event);
+  var after = this.viewer.screenToModel(e);
   
   var dx = after.x - before.x;
   var dy = after.y - before.y;
