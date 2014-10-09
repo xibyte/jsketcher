@@ -9,6 +9,7 @@ TCAD.TWO.ParametricManager = function(viewer) {
 TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this.system.push(constr);
   this.solve();
+  this.viewer.refresh();
 };
 
 TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
@@ -189,7 +190,7 @@ TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
 };
 
 
-TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
+TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel) {
   var pdict = {};
   var params;
   var i;
@@ -226,14 +227,11 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, onSolved) {
     }
   }
 
-  TCAD.parametric.solve(_constrs, _locked);
+  TCAD.parametric.solve(_constrs, _locked, fineLevel);
 
   for (var p in pdict) {
     var _p = pdict[p];
     _p._backingParam.set(_p.get());
-  }
-  if (onSolved !== undefined) {
-    onSolved();
   }
 };
 

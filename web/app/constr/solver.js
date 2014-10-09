@@ -77,7 +77,7 @@ TCAD.parametric.System.prototype.getValues = function() {
   return values;
 };
 
-TCAD.parametric.solve = function(constrs, locked) {
+TCAD.parametric.solve = function(constrs, locked, fineLevel) {
 
   if (constrs.length == 0) return;
 
@@ -109,9 +109,21 @@ TCAD.parametric.solve = function(constrs, locked) {
   };
 
   var opt = new LMOptimizer(sys.getParams(), arr(sys.constraints.length), model, jacobian);
-  opt.init();
+
+  switch (fineLevel) {
+    case 1:
+      eps = 0.01;
+      opt.init0(eps, eps, eps);
+      break;
+    case 2:
+      eps = 0.1;
+      opt.init0(eps, eps, eps);
+      break;
+    default:
+      eps = 0.00000001;
+      opt.init0(eps, eps, eps);
+  }
+
   var res = opt.doOptimize();
-
   sys.setParams(res[0]);
-
 };
