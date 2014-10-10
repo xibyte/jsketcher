@@ -67,7 +67,7 @@ TCAD.TWO.Arc.prototype.visit = function(h) {
 };
 
 TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
-  return -1000;
+  return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
 };
 
 
