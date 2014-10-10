@@ -100,6 +100,12 @@ TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback
   }
 };
 
+TCAD.TWO.utils.constRef = function(value) {
+  return function() {
+    return value;    
+  };
+};
+
 TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback) {
   var p = this._fetchTwoPoints(objs);
   var distance = new TCAD.Vector(p[1].x - p[0].x, p[1].y - p[0].y).length();
@@ -108,7 +114,7 @@ TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback
   if (promptDistance != null) {
     promptDistance = Number(promptDistance);
     if (promptDistance == promptDistance) { // check for NaN
-      this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], promptDistance));
+      this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], TCAD.TWO.utils.constRef(promptDistance)));
     }
   }
 };
@@ -314,4 +320,18 @@ TCAD.TWO.Constraints.P2PDistance.prototype.getSolveData = function() {
   this.p1.collectParams(params);
   this.p2.collectParams(params);
   return ['P2PDistance', params, [this.d]];
+};
+
+TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
+  this.p1 = p1;
+  this.p2 = p2;
+  this.d = d;
+};
+
+TCAD.TWO.Constraints.P2PDistanceV.prototype.getSolveData = function() {
+  var params = [];
+  this.p1.collectParams(params);
+  this.p2.collectParams(params);
+  params.push(this.d);
+  return ['P2PDistanceV', params];
 };
