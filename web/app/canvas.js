@@ -73,9 +73,7 @@ TCAD.TWO.Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
   var a = new TCAD.TWO.EndPoint(x1, y1);
   var b = new TCAD.TWO.EndPoint(x2, y2);
   var line = new TCAD.TWO.Segment(a, b);
-  line._marked = false;
   layer.objects.push(line);
-  this.segments.push(line);
   return line;
 };
 
@@ -87,22 +85,28 @@ TCAD.TWO.Viewer.prototype.searchSegment = function(x, y, buffer, deep) {
   var aim = new TCAD.Vector(x, y);
 
   var heroIdx = 0;
-  var heroLength = buffer * 2; // unreachable
+  var unreachable = buffer * 2;
+  var heroLength = unreachable; // unreachable
 
-  for (var i = 0; i < this.segments.length; i++) {
-    var seg = this.segments[i];
-    var objs = [seg.a, seg.b, seg]
+  for (var i = 0; i < this.layers.length; i++) {
+    var objs = this.layers[i].objects;
     for (var j = 0; j < objs.length; j++) {
-      var o = objs[j]
-      l = o.normalDistance(aim);
-      if (l > 0 && l <= buffer) {
-        pickResult.push(o);
-        if (!deep) return;
+      var l = unreachable + 1;
+      var hit = !objs[j].visit(function(o) {
+        l = o.normalDistance(aim);
+        if (l > 0 && l <= buffer) {
+          pickResult.push(o);
+          return false;
+        }
+        return true;
+      });
+      
+      if (hit) {
+        if (!deep && pickResult.length != 0) return;
         if (l < heroLength) {
           heroLength = l;
           heroIdx = pickResult.length - 1;
         }
-        break;
       }
     }
   }
@@ -261,7 +265,7 @@ TCAD.TWO.utils.ID_COUNTER = 0;
 
 TCAD.TWO.utils.genID = function() {
   return TCAD.TWO.utils.ID_COUNTER ++;
-}
+};
 
 TCAD.TWO.SketchObject = function() {
   this.id = TCAD.TWO.utils.genID();
@@ -330,7 +334,11 @@ TCAD.TWO.EndPoint.prototype.collectParams = function(params) {
 
 TCAD.TWO.EndPoint.prototype.normalDistance = function(aim) {
   return aim.minus(new TCAD.Vector(this.x, this.y)).length();
-}
+};
+
+TCAD.TWO.EndPoint.prototype.visit = function(h) {
+  return h(this);
+};
 
 TCAD.TWO.EndPoint.prototype.getReferencePoint = function() {
   return this;
@@ -374,7 +382,11 @@ TCAD.TWO.Segment.prototype.normalDistance = function(aim) {
   var b = e.multiply(a.dot(e));
   var n = a.minus(b);
   return n.length();
-}
+};
+
+TCAD.TWO.Segment.prototype.visit = function(h) {
+  return this.a.visit(h) && this.b.visit(h) && h(this);
+};
 
 TCAD.TWO.Segment.prototype.draw = function(ctx, scale) {
   TCAD.TWO.SketchObject.prototype.draw.call(this, ctx, scale);
