@@ -4,6 +4,8 @@ TCAD.constraints.create = function(name, params, values) {
   switch (name) {
     case "equal":
       return new TCAD.constraints.Equal(params);
+    case "equalsTo":
+      return new TCAD.constraints.EqualsTo(params, values[0]);
     case "perpendicular":
       return new TCAD.constraints.Perpendicular(params);
     case "parallel":

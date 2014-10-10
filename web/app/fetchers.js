@@ -14,15 +14,15 @@ TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
   return points;
 };
 
-TCAD.TWO.ParametricManager.prototype._fetchTwoOrMoreArcs = function(objs) {
+TCAD.TWO.ParametricManager.prototype._fetchArcs = function(objs, min) {
   var arcs = [];
   for (var i = 0; i < objs.length; ++i) {
     if (objs[i]._class == 'TCAD.TWO.Arc') {
       arcs.push(objs[i]);
     }
   }
-  if (arcs.length < 2) {
-    throw "Illegal Argument. Constraint requires ata least 2 arcs."
+  if (arcs.length < min) {
+    throw "Illegal Argument. Constraint requires ata least " + min + " arcs."
   }
   return arcs;
 };

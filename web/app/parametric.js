@@ -33,7 +33,7 @@ TCAD.TWO.ParametricManager.prototype.perpendicular = function(objs) {
 };
 
 TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
-  var arcs = this._fetchTwoOrMoreArcs(objs);
+  var arcs = this._fetchArcs(objs, 2);
   var prev = arcs[0].r;
   for (var i = 1; i < arcs.length; ++i) {
     this.system.push(new TCAD.TWO.Constraints.Equal(prev, arcs[i].r));
@@ -77,6 +77,23 @@ TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback
     promptDistance = Number(promptDistance);
     if (promptDistance == promptDistance) { // check for NaN
       this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], TCAD.TWO.utils.constRef(promptDistance)));
+    }
+  }
+};
+
+TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
+  var arcs = this._fetchArcs(objs, 1);
+  var radius = arcs[0].r.get();
+  var promptDistance = promptCallback("Enter the radius value", radius.toFixed(2));
+
+  if (promptDistance != null) {
+    promptDistance = Number(promptDistance);
+    if (promptDistance == promptDistance) { // check for NaN
+      for (var i = 0; i < arcs.length; ++i) {
+        this.system.push(new TCAD.TWO.Constraints.EqualsTo(arcs[i].r, promptDistance));
+      }
+      this.solve();
+      this.viewer.refresh();
     }
   }
 };
@@ -231,6 +248,15 @@ TCAD.TWO.Constraints.Equal = function(p1, p2) {
 
 TCAD.TWO.Constraints.Equal.prototype.getSolveData = function() {
   return ['equal', [this.p1, this.p2], []];
+};
+
+TCAD.TWO.Constraints.EqualsTo = function(p, v) {
+  this.p = p;
+  this.v = v;
+};
+
+TCAD.TWO.Constraints.EqualsTo.prototype.getSolveData = function() {
+  return ['equalsTo', [this.p], [this.v]];
 };
 
 TCAD.TWO.Constraints.Parallel = function(l1, l2) {
