@@ -10,7 +10,7 @@ TCAD.parametric.Param.prototype.set = function(value) {
   this.value = value;
 };
 
-TCAD.parametric.Param.prototype.get = function(value) {
+TCAD.parametric.Param.prototype.get = function() {
   return this.value;
 };
 
@@ -33,13 +33,15 @@ TCAD.parametric.System = function(constraints) {
 
 TCAD.parametric.System.prototype.makeJacobian = function() {
   var jacobi = [];
-  for (var i=0; i < this.constraints.length; i++) {
+  var i;
+  var j;
+  for (i=0; i < this.constraints.length; i++) {
     jacobi[i] = [];
-    for (var j=0; j < this.params.length; j++) {
+    for (j=0; j < this.params.length; j++) {
       jacobi[i][j] = 0;
     }
   }
-  for (var i=0; i < this.constraints.length; i++) {
+  for (i=0; i < this.constraints.length; i++) {
     var c = this.constraints[i];
 
     var cParams = c.params;
@@ -48,7 +50,7 @@ TCAD.parametric.System.prototype.makeJacobian = function() {
 
     for (var p = 0; p < cParams.length; p++) {
       var param = cParams[p];
-      var j = param.j;
+      j = param.j;
       jacobi[i][j] = grad[p];
     }
   }
