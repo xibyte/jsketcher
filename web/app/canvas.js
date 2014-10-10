@@ -299,6 +299,18 @@ TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
   if (this.marked) ctx.restore();
 };
 
+TCAD.TWO.Ref = function() {
+  this.value = 0;
+};
+
+TCAD.TWO.Ref.prototype.set = function(value) {
+  this.value = value;
+};
+
+TCAD.TWO.Ref.prototype.get = function() {
+  return this.value;
+};
+
 TCAD.TWO.Param = function(obj, prop) {
   this.id = TCAD.TWO.utils.genID();
   this.obj = obj;
@@ -619,8 +631,16 @@ TCAD.TWO.DragTool.prototype.mousewheel = function(e) {
 
 TCAD.TWO.DragTool.prototype.solveRequest = function(fineLevel) {
   var locked;
-  if (this.obj._class == 'TCAD.TWO.EndPoint') {
+  if (this.obj._class === 'TCAD.TWO.EndPoint') {
     locked = [this.obj._x, this.obj._y];
+    if (this.obj.parent != null
+      && this.obj.parent._class === 'TCAD.TWO.Arc') {
+
+      if (this.obj.id != this.obj.parent.c.id) {
+        locked.push(this.obj.parent.c._x);
+        locked.push(this.obj.parent.c._y);
+      }
+    }
   } else {
     locked = [];
   }

@@ -1,6 +1,6 @@
 TCAD.constraints = {};
 
-TCAD.constraints.create = function(name, params, constants) {
+TCAD.constraints.create = function(name, params, values) {
   switch (name) {
     case "equal":
       return new TCAD.constraints.Equal(params);
@@ -9,9 +9,11 @@ TCAD.constraints.create = function(name, params, constants) {
     case "parallel":
       return new TCAD.constraints.Parallel(params);
     case "P2LDistance":
-      return new TCAD.constraints.P2LDistance(params, constants[0]);
+      return new TCAD.constraints.P2LDistance(params, values[0]);
     case "P2PDistance":
-      return new TCAD.constraints.P2PDistance(params, constants[0]);
+      return new TCAD.constraints.P2PDistance(params, values[0]);
+    case "P2PDistanceV":
+      return new TCAD.constraints.P2PDistanceV(params);
   }
 }
 
@@ -137,14 +139,14 @@ TCAD.constraints.P2PDistance = function(params, distance) {
 
   this.get = function(i) {
     return this.params[i].get();
-  }
+  };
 
   this.error = function() {
     var dx = this.get(this.p1x) - this.get(this.p2x);
     var dy = this.get(this.p1y) - this.get(this.p2y);
     var d = Math.sqrt(dx * dx + dy * dy);
-    return (d - this.distance);
-  }
+    return (d - this.distance());
+  };
 
   this.gradient = function(out) {
 
@@ -158,6 +160,44 @@ TCAD.constraints.P2PDistance = function(params, distance) {
   }
 
 };
+
+
+TCAD.constraints.P2PDistanceV = function(params) {
+
+  this.params = params;
+
+
+  this.p1x = 0;
+  this.p1y = 1;
+  this.p2x = 2;
+  this.p2y = 3;
+  this.d = 4;
+
+  this.get = function(i) {
+    return this.params[i].get();
+  };
+
+  this.error = function() {
+    var dx = this.get(this.p1x) - this.get(this.p2x);
+    var dy = this.get(this.p1y) - this.get(this.p2y);
+    var d = Math.sqrt(dx * dx + dy * dy);
+    return (d - this.get(this.d));
+  };
+
+  this.gradient = function(out) {
+
+    var dx = this.get(this.p1x) - this.get(this.p2x);
+    var dy = this.get(this.p1y) - this.get(this.p2y);
+    var d = Math.sqrt(dx * dx + dy * dy);
+    out[this.p1x] = dx / d;
+    out[this.p1y] = dy / d;
+    out[this.p2x] = -dx / d;
+    out[this.p2y] = -dy / d;
+    out[this.d] = -1;
+  }
+
+};
+
 
 TCAD.constraints.Parallel = function(params) {
 
