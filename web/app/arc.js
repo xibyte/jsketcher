@@ -7,7 +7,7 @@ TCAD.TWO.Arc = function(a, b, c) {
   a.parent = this;
   b.parent = this;
   c.parent = this;
-  this.r = new TCAD.TWO.Ref();
+  this.r = new TCAD.TWO.Ref(0);
 };
 
 TCAD.TWO.utils.extend(TCAD.TWO.Arc, TCAD.TWO.SketchObject);
@@ -37,6 +37,11 @@ TCAD.TWO.Arc.prototype.translateImpl = function(dx, dy) {
   this.c.translate(dx, dy);
 };
 
+
+TCAD.TWO.Arc.prototype.radiusForDrawing = function() {
+  return this.distanceA();
+};
+
 TCAD.TWO.Arc.prototype.distanceA = function() {
   return TCAD.math.distance(this.a.x, this.a.y, this.c.x, this.c.y);
 };
@@ -47,7 +52,7 @@ TCAD.TWO.Arc.prototype.distanceB = function() {
 
 TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   ctx.beginPath();
-  var r = this.distanceA();
+  var r = this.radiusForDrawing();
   ctx.arc(this.c.x, this.c.y, r,
     Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x),
     Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x));

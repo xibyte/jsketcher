@@ -299,9 +299,9 @@ TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
   if (this.marked) ctx.restore();
 };
 
-TCAD.TWO.Ref = function() {
+TCAD.TWO.Ref = function(value) {
   this.id = TCAD.TWO.utils.genID();
-  this.value = 0;
+  this.value = value;
 };
 
 TCAD.TWO.Ref.prototype.set = function(value) {
