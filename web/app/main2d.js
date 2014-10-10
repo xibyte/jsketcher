@@ -91,6 +91,10 @@ TCAD.App2D = function() {
     
     P2PDistance : function() {
       app.viewer.parametricManager.p2pDistance(app.viewer.selected, prompt);
+    },
+
+    "R = R" : function() {
+      app.viewer.parametricManager.rr(app.viewer.selected, prompt);
     }
 
   };
@@ -105,6 +109,7 @@ TCAD.App2D = function() {
   actionsF.add(actions, 'perpendicular');
   actionsF.add(actions, 'P2LDistance');
   actionsF.add(actions, 'P2PDistance');
+  actionsF.add(actions, 'R = R');
   actionsF.open();
 
 };

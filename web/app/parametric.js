@@ -12,55 +12,6 @@ TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this.viewer.refresh();
 };
 
-TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
-  var points = [];
-  for (var i = 0; i < objs.length; ++i) {
-    if (objs[i]._class == 'TCAD.TWO.EndPoint') {
-      points.push(objs[i]);
-    } else if (objs[i]._class == 'TCAD.TWO.Segment') {
-      points.push(objs[i].a);
-      points.push(objs[i].b);
-    }
-  }
-  if (points.length < 2) {
-    throw "Illegal Argument. Constraint requires 2 points or 1 line."
-  }
-  return points;
-};
-
-
-TCAD.TWO.ParametricManager.prototype._fetchPointAndLine = function(objs) {
-
-  var point = null;
-  var line = null;
-  
-  for (var i = 0; i < objs.length; ++i) {
-    if (objs[i]._class == 'TCAD.TWO.EndPoint') {
-      point = objs[i];
-    } else if (objs[i]._class == 'TCAD.TWO.Segment') {
-      line = objs[i];
-    }
-  }
-  if (point == null || line == null) {
-    throw "Illegal Argument. Constraint requires point and line."
-  }
-  
-  return [point, line];
-};
-
-TCAD.TWO.ParametricManager.prototype._fetchTwoLines = function(objs) {
-  var lines = [];
-  for (var i = 0; i < objs.length; ++i) {
-    if (objs[i]._class == 'TCAD.TWO.Segment') {
-      lines.push(objs[i]);
-    }
-  }
-  if (lines.length < 2) {
-    throw "Illegal Argument. Constraint requires 2 lines."
-  }
-  return lines;
-};
-
 TCAD.TWO.ParametricManager.prototype.vertical = function(objs) {
   var p = this._fetchTwoPoints(objs);
   this.add(new TCAD.TWO.Constraints.Equal(p[0]._x, p[1]._x));
@@ -79,6 +30,17 @@ TCAD.TWO.ParametricManager.prototype.parallel = function(objs) {
 TCAD.TWO.ParametricManager.prototype.perpendicular = function(objs) {
   var lines = this._fetchTwoLines(objs);
   this.add(new TCAD.TWO.Constraints.Perpendicular(lines[0], lines[1]));
+};
+
+TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
+  var arcs = this._fetchTwoOrMoreArcs(objs);
+  var prev = arcs[0].r;
+  for (var i = 1; i < arcs.length; ++i) {
+    this.system.push(new TCAD.TWO.Constraints.Equal(prev, arcs[i].r));
+    prev = arcs[i].r;
+  }
+  this.solve();
+  this.viewer.refresh();
 };
 
 TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback) {
@@ -118,7 +80,6 @@ TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback
     }
   }
 };
-
 
 TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
   if (objs.length == 0) return;
