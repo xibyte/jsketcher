@@ -27,8 +27,12 @@ TCAD.Vector.prototype.setV = function(data) {
   return this;
 };
 
-TCAD.Vector.prototype.multiply = function(factor) {
-  return new TCAD.Vector(this.x * factor, this.y * factor, this.z * factor);
+TCAD.Vector.prototype.multiply = function(scalar) {
+  return new TCAD.Vector(this.x * scalar, this.y * scalar, this.z * scalar);
+};
+
+TCAD.Vector.prototype._multiply = function(scalar) {
+  return this.set(this.x * scalar, this.y * scalar, this.z * scalar);
 };
 
 TCAD.Vector.prototype.dot = function(vector) {
@@ -57,6 +61,15 @@ TCAD.Vector.prototype.normalize = function() {
     return new TCAD.Vector(0.0, 0.0, 0.0);
   }
   return new TCAD.Vector(this.x / mag, this.y / mag, this.z / mag);
+};
+
+
+TCAD.Vector.prototype._normalize = function() {
+  var mag = this.length();
+  if (mag == 0.0) {
+    return this.set(0, 0, 0)
+  }
+  return this.set(this.x / mag, this.y / mag, this.z / mag)
 };
 
 TCAD.Vector.prototype.cross = function(a) {
