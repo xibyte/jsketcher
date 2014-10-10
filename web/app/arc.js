@@ -45,6 +45,17 @@ TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   ctx.stroke();
 };
 
+TCAD.TWO.Arc.prototype.visit = function(h) {
+  return this.a.visit(h) 
+      && this.b.visit(h)
+      && this.c.visit(h) 
+      && h(this);
+};
+
+TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
+  return 1000;
+};
+
 
 TCAD.TWO.AddArcTool = function(viewer, layer) {
   this.viewer = viewer;
