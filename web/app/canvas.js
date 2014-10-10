@@ -386,13 +386,21 @@ TCAD.TWO.Segment.prototype.normalDistance = function(aim) {
   var x = aim.x;
   var y = aim.y;
 
-  if (x < Math.min(this.a.x, this.b.x) || x > Math.max(this.a.x, this.b.x)) return -1;
-  if (y < Math.min(this.a.y, this.b.y) || y > Math.max(this.a.y, this.b.y)) return -1;
-
-  var e = new TCAD.Vector(this.b.x - this.a.x, this.b.y - this.a.y).normalize();
+  var ab = new TCAD.Vector(this.b.x - this.a.x, this.b.y - this.a.y)
+  var e = ab.normalize();
   var a = new TCAD.Vector(aim.x - this.a.x, aim.y - this.a.y);
   var b = e.multiply(a.dot(e));
   var n = a.minus(b);
+
+  //Check if vector b lays on the vector ab
+  if (b.length() > ab.length()) {
+    return -1;
+  }
+
+  if (b.dot(ab) < 0) {
+    return -1;
+  }
+
   return n.length();
 };
 
