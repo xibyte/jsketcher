@@ -300,6 +300,7 @@ TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
 };
 
 TCAD.TWO.Ref = function() {
+  this.id = TCAD.TWO.utils.genID();
   this.value = 0;
 };
 
