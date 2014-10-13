@@ -87,13 +87,42 @@ TCAD.parametric.System.prototype.getValues = function() {
   return values;
 };
 
+TCAD.parametric.lock1 = function(constrs, locked) {
+
+  var lockedSet = {};
+  for (var i = 0; i < locked.length; i++) {
+    lockedSet[locked[i].id] = true;
+  }
+
+  for (var i = 0; i < constrs.length; i++) {
+    var c = constrs[i];
+    var mask = [];
+    var needWrap = false;
+    for (var j = 0; j < c.params.length; j++) {
+      var param = c.params[j];
+      mask[j] = lockedSet[param.id] === true;
+      needWrap = needWrap || mask[j];
+    }
+    if (needWrap) {
+      var wrapper = new TCAD.constraints.ConstantWrapper(c, mask);
+      constrs[i] = wrapper;
+    }
+  }
+};
+
+TCAD.parametric.lock2 = function(constrs, locked) {
+  for (var i = 0; i < locked.length; ++i) {
+    constrs.push(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()));
+  }
+};
+
 TCAD.parametric.solve = function(constrs, locked, fineLevel) {
 
   if (constrs.length == 0) return;
 
-  for (var i = 0; i < locked.length; ++i) {
-    constrs.push(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()));
-  }
+
+//  this.lock1(constrs, locked);
+  this.lock2(constrs, locked);
 
   var sys = new TCAD.parametric.System(constrs);
 
