@@ -34,6 +34,33 @@ TCAD.constraints.Equal = function(params) {
 
 };
 
+TCAD.constraints.ConstantWrapper = function(constr, mask) {
+
+  this.params = [];
+  this.grad = [];
+
+  for (j = 0; j < constr.params.length; j++) {
+    if (!mask[j]) {
+      this.params.push(constr.params[j]);
+    }
+    this.grad.push(0);
+  }
+
+  this.error = function() {
+    return constr.error();
+  }
+
+  this.gradient = function(out) {
+    constr.gradient(this.grad);
+    var jj = 0;
+    for (j = 0; j < mask.length; j++) {
+      if (!mask[j]) {
+        out[jj ++] = this.grad[j];
+      }
+    }
+  }
+};
+
 TCAD.constraints.EqualsTo = function(params, value) {
 
   this.params = params;
