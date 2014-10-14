@@ -105,7 +105,7 @@ TCAD.App2D = function() {
       app.viewer.parametricManager.tangent(app.viewer.selected);
     },
 
-    tangent : function() {
+    analyze : function() {
       app.viewer.parametricManager.analyze(alert);
     }
   };
