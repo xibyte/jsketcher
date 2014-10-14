@@ -32,6 +32,13 @@ TCAD.TWO.ParametricManager.prototype.perpendicular = function(objs) {
   this.add(new TCAD.TWO.Constraints.Perpendicular(lines[0], lines[1]));
 };
 
+TCAD.TWO.ParametricManager.prototype.tangent = function(objs) {
+  var al = this._fetchArcAndLine(objs);
+  var arc  = al[0];
+  var line  = al[1];
+  this.add(new TCAD.TWO.Constraints.P2LDistanceV( arc.c, line, arc.r ));
+};
+
 TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
   var arcs = this._fetchArcs(objs, 2);
   var prev = arcs[0].r;
@@ -72,7 +79,7 @@ TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback
   var p = this._fetchTwoPoints(objs);
   var distance = new TCAD.Vector(p[1].x - p[0].x, p[1].y - p[0].y).length();
   var promptDistance = promptCallback("Enter the distance", distance.toFixed(2));
-
+  
   if (promptDistance != null) {
     promptDistance = Number(promptDistance);
     if (promptDistance == promptDistance) { // check for NaN
@@ -295,6 +302,22 @@ TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function() {
   this.l.collectParams(params);
   return ['P2LDistance', params, [this.d]];
 };
+
+
+TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
+  this.p = p;
+  this.l = l;
+  this.d = d;
+};
+
+TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
+  var params = [];
+  this.p.collectParams(params);
+  this.l.collectParams(params);
+  params.push(this.d);
+  return ['P2LDistanceV', params];
+};
+
 
 TCAD.TWO.Constraints.P2PDistance = function(p1, p2, d) {
   this.p1 = p1;

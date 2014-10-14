@@ -46,6 +46,25 @@ TCAD.TWO.ParametricManager.prototype._fetchPointAndLine = function(objs) {
   return [point, line];
 };
 
+TCAD.TWO.ParametricManager.prototype._fetchArcAndLine = function(objs) {
+
+  var arc = null;
+  var line = null;
+
+  for (var i = 0; i < objs.length; ++i) {
+    if (objs[i]._class == 'TCAD.TWO.Arc') {
+      arc = objs[i];
+    } else if (objs[i]._class == 'TCAD.TWO.Segment') {
+      line = objs[i];
+    }
+  }
+  if (arc == null || line == null) {
+    throw "Illegal Argument. Constraint requires arc and line."
+  }
+
+  return [arc, line];
+};
+
 TCAD.TWO.ParametricManager.prototype._fetchTwoLines = function(objs) {
   var lines = [];
   for (var i = 0; i < objs.length; ++i) {
