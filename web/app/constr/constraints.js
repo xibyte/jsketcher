@@ -17,7 +17,7 @@ TCAD.constraints.create = function(name, params, values) {
     case "P2PDistanceV":
       return new TCAD.constraints.P2PDistanceV(params);
   }
-}
+};
 
 TCAD.constraints.Equal = function(params) {
 
@@ -25,7 +25,7 @@ TCAD.constraints.Equal = function(params) {
 
   this.error = function() {
     return this.params[0].get() - this.params[1].get();
-  }
+  };
 
   this.gradient = function(out) {
     out[0] = 1;
@@ -38,7 +38,8 @@ TCAD.constraints.ConstantWrapper = function(constr, mask) {
 
   this.params = [];
   this.grad = [];
-
+  var j;
+  
   for (j = 0; j < constr.params.length; j++) {
     if (!mask[j]) {
       this.params.push(constr.params[j]);
@@ -48,7 +49,7 @@ TCAD.constraints.ConstantWrapper = function(constr, mask) {
 
   this.error = function() {
     return constr.error();
-  }
+  };
 
   this.gradient = function(out) {
     constr.gradient(this.grad);
@@ -68,12 +69,12 @@ TCAD.constraints.EqualsTo = function(params, value) {
 
   this.error = function() {
     return this.params[0].get() - this.value;
-  }
+  };
 
 
   this.gradient = function(out) {
     out[0] = 1;
-  }
+  };
 };
 
 TCAD.constraints.P2LDistance = function(params, distance) {
@@ -102,31 +103,31 @@ TCAD.constraints.P2LDistance = function(params, distance) {
     }
     return (area / d - dist);
 
-  }
+  };
 
   this.p1x = function() {
     return params[this.lp1x].get();
-  }
+  };
 
   this.p1y = function() {
     return params[this.lp1y].get();
-  }
+  };
 
   this.p2x = function() {
     return params[this.lp2x].get();
-  }
+  };
 
   this.p2y = function() {
     return params[this.lp2y].get();
-  }
+  };
 
   this.p0x = function() {
     return params[this.tx].get();
-  }
+  };
 
   this.p0y = function() {
     return params[this.ty].get();
-  }
+  };
 
 
   this.gradient = function(out) {
@@ -247,7 +248,7 @@ TCAD.constraints.Parallel = function(params) {
     var dx2 = (this.params[this.l2p1x].get() - this.params[this.l2p2x].get());
     var dy2 = (this.params[this.l2p1y].get() - this.params[this.l2p2y].get());
     return (dx1*dy2 - dy1*dx2);
-  }
+  };
 
   this.gradient = function(out) {
     out[this.l1p1x] =  (this.params[this.l2p1y].get() - this.params[this.l2p2y].get()); // = dy2
@@ -281,7 +282,7 @@ TCAD.constraints.Perpendicular = function(params) {
     var dy2 = (this.params[this.l2p1y].get() - this.params[this.l2p2y].get());
     //dot product shows how the lines off to be perpendicular
     return (dx1*dx2 + dy1*dy2);
-  }
+  };
 
   this.gradient = function(out) {
 
