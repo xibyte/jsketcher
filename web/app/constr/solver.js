@@ -148,7 +148,7 @@ TCAD.parametric.solve = function(constrs, locked, fineLevel) {
   };
 
   var opt = new LMOptimizer(sys.getParams(), arr(sys.constraints.length), model, jacobian);
-
+  var eps;
   switch (fineLevel) {
     case 1:
       eps = 0.01;
