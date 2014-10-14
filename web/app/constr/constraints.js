@@ -12,6 +12,8 @@ TCAD.constraints.create = function(name, params, values) {
       return new TCAD.constraints.Parallel(params);
     case "P2LDistance":
       return new TCAD.constraints.P2LDistance(params, values[0]);
+    case "P2LDistanceV":
+      return new TCAD.constraints.P2LDistanceV(params);
     case "P2PDistance":
       return new TCAD.constraints.P2PDistance(params, values[0]);
     case "P2PDistanceV":
@@ -151,6 +153,87 @@ TCAD.constraints.P2LDistance = function(params, distance) {
       }
       if (area < 0) {
           out[i] *= -1;
+      }
+    }
+  }
+
+};
+
+
+TCAD.constraints.P2LDistanceV = function(params) {
+
+  this.params = params;//.slice(0, params.length -1);
+
+  var TX = 0;
+  var TY = 1;
+  var LP1X = 2;
+  var LP1Y = 3;
+  var LP2X = 4;
+  var LP2Y = 5;
+  var D = 6;
+
+  this.error = function() {
+    var x0 = this.p0x(), x1 = this.p1x(), x2 = this.p2x();
+    var y0 = this.p0y(), y1 = this.p1y(), y2 = this.p2y();
+    var dist = this.params[D].get();
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    var d = Math.sqrt(dx * dx + dy * dy);
+    var area = Math.abs
+    (-x0 * dy + y0 * dx + x1 * y2 - x2 * y1); // = x1y2 - x2y1 - x0y2 + x2y0 + x0y1 - x1y0 = 2*(triangle area)
+    if (d == 0) {
+      return 0;
+    }
+    return (area / d - dist);
+
+  };
+
+  this.p1x = function() {
+    return params[LP1X].get();
+  };
+
+  this.p1y = function() {
+    return params[LP1Y].get();
+  };
+
+  this.p2x = function() {
+    return params[LP2X].get();
+  };
+
+  this.p2y = function() {
+    return params[LP2Y].get();
+  };
+
+  this.p0x = function() {
+    return params[TX].get();
+  };
+
+  this.p0y = function() {
+    return params[TY].get();
+  };
+
+  this.gradient = function(out) {
+    var x0 = this.p0x(), x1 = this.p1x(), x2 = this.p2x();
+    var y0 = this.p0y(), y1 = this.p1y(), y2 = this.p2y();
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    var d2 = dx * dx + dy * dy;
+    var d = Math.sqrt(d2);
+    var area = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    out[TX]   = ((y1 - y2) / d);
+    out[TY]   = ((x2 - x1) / d);
+    out[LP1X] = (((y2 - y0) * d + (dx / d) * area) / d2);
+    out[LP1Y] = (((x0 - x2) * d + (dy / d) * area) / d2);
+    out[LP2X] = (((y0 - y1) * d - (dx / d) * area) / d2);
+    out[LP2Y] = (((x1 - x0) * d - (dy / d) * area) / d2);
+    out[D] = -1;
+    
+    for (var i = 0; i < 6; i++) {
+      if (Number.isNaN(out[i])) {
+        out[i] = 0;
+      }
+      if (area < 0) {
+        out[i] *= -1;
       }
     }
   }

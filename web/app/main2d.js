@@ -99,9 +99,13 @@ TCAD.App2D = function() {
 
     "R = R" : function() {
       app.viewer.parametricManager.rr(app.viewer.selected);
-    }
+    },
 
+    tangent : function() {
+      app.viewer.parametricManager.tangent(app.viewer.selected);
+    }
   };
+  
   actionsF.add(actions, 'addSegment');
   actionsF.add(actions, 'addArc');
   actionsF.add(actions, 'pan');
@@ -115,6 +119,7 @@ TCAD.App2D = function() {
   actionsF.add(actions, 'P2PDistance');
   actionsF.add(actions, 'Radius');
   actionsF.add(actions, 'R = R');
+  actionsF.add(actions, 'tangent');
   actionsF.open();
 
 };
