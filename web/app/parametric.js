@@ -108,19 +108,20 @@ TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
 TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
   if (objs.length == 0) return;
   var last = objs.length - 1;
-  for (var i = 0; i < objs.length; ++i) {
+  for (var i = 0; i < objs.length - 1; ++i) {
+    objs[i].x = objs[last].x;
+    objs[i].y = objs[last].y;
     for (var j = 0; j < objs.length; ++j) {
-      if (objs[i] != objs[j]) {
-        objs[i].linked.push(objs[j]);
-        objs[i].x = objs[last].x;
-        objs[i].y = objs[last].y;
-        this.system.push(new TCAD.TWO.Constraints.Equal(objs[i]._x, objs[last]._x));
-        this.system.push(new TCAD.TWO.Constraints.Equal(objs[i]._y, objs[last]._y));
+      if (objs[i].id !== objs[j].id) {
+        objs[j].linked.push(objs[i]);
       }
     }
+    this.system.push(new TCAD.TWO.Constraints.Equal(objs[i]._x, objs[last]._x));
+    this.system.push(new TCAD.TWO.Constraints.Equal(objs[i]._y, objs[last]._y));
   }
-  this.viewer.refresh();
+  
   this.solve();
+  this.viewer.refresh();
 };
 
 TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
