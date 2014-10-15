@@ -292,16 +292,6 @@ TCAD.TWO.SketchObject.prototype.visit = function(onlyVisible, h) {
   return h(this);
 };
 
-TCAD.TWO.SketchObject.prototype.isCoincidentTo = function(other) {
-  for (var i = 0; i < this.linked.length; i++) {
-    var obj = this.linked[i];
-    if (obj.id === other.id) {
-      return true;        
-    }
-  }
-  return false;
-};
-
 TCAD.TWO.SketchObject.prototype._translate = function(dx, dy, translated) {
   translated[this.id] = 'x';
   for (var i = 0; i < this.linked.length; ++i) {
