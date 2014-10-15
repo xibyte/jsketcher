@@ -12,6 +12,16 @@ TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this.viewer.refresh();
 };
 
+TCAD.TWO.ParametricManager.prototype.lock = function(objs) {
+  var p = this._fetchPoints(objs);
+  for (var i = 0; i < p.length; ++i) {
+    this.system.push(new TCAD.TWO.Constraints.EqualsTo(p[i]._x, p[i].x));
+    this.system.push(new TCAD.TWO.Constraints.EqualsTo(p[i]._y, p[i].y));
+  }
+  this.solve();
+  this.viewer.refresh();
+};
+
 TCAD.TWO.ParametricManager.prototype.vertical = function(objs) {
   var p = this._fetchTwoPoints(objs);
   this.add(new TCAD.TWO.Constraints.Equal(p[0]._x, p[1]._x));

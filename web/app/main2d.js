@@ -105,6 +105,10 @@ TCAD.App2D = function() {
       app.viewer.parametricManager.tangent(app.viewer.selected);
     },
 
+    lock : function() {
+      app.viewer.parametricManager.lock(app.viewer.selected);
+    },
+
     analyze : function() {
       app.viewer.parametricManager.analyze(alert);
     }
@@ -124,6 +128,7 @@ TCAD.App2D = function() {
   actionsF.add(actions, 'Radius');
   actionsF.add(actions, 'R = R');
   actionsF.add(actions, 'tangent');
+  actionsF.add(actions, 'lock');
   actionsF.add(actions, 'analyze');
   actionsF.open();
 

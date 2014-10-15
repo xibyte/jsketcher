@@ -14,6 +14,22 @@ TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
   return points;
 };
 
+TCAD.TWO.ParametricManager.prototype._fetchPoints = function(objs) {
+  var points = [];
+  for (var i = 0; i < objs.length; ++i) {
+    objs[i].visit(false, function(o) {
+      if (o._class === 'TCAD.TWO.EndPoint')  {
+        points.push(o);
+      }
+      return true;
+    });
+  }
+  if (points.length == 0) {
+    throw "Illegal Argument. Constraint requires at least 1 point/line/arc."
+  }
+  return points;
+};
+
 TCAD.TWO.ParametricManager.prototype._fetchArcs = function(objs, min) {
   var arcs = [];
   for (var i = 0; i < objs.length; ++i) {
@@ -22,7 +38,7 @@ TCAD.TWO.ParametricManager.prototype._fetchArcs = function(objs, min) {
     }
   }
   if (arcs.length < min) {
-    throw "Illegal Argument. Constraint requires ata least " + min + " arcs."
+    throw "Illegal Argument. Constraint requires at least " + min + " arcs."
   }
   return arcs;
 };
