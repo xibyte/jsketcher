@@ -622,7 +622,9 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   var checkX = this.ref.x;
   var checkY = this.ref.y;
   this.obj.translate(dx, dy);
-  this.solveRequest(2);
+  if (!e.shiftKey) {
+    this.solveRequest(2);
+  }
 
   this.errorX = (this.ref.x - dx) - checkX;
   this.errorY = (this.ref.y - dy) - checkY;
