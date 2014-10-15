@@ -111,6 +111,11 @@ TCAD.App2D = function() {
 
     analyze : function() {
       app.viewer.parametricManager.analyze(alert);
+    },
+
+    solve : function() {
+      app.viewer.parametricManager.solve([], 0);
+      app.viewer.refresh();
     }
   };
   
@@ -129,6 +134,7 @@ TCAD.App2D = function() {
   actionsF.add(actions, 'R = R');
   actionsF.add(actions, 'tangent');
   actionsF.add(actions, 'lock');
+  actionsF.add(actions, 'solve');
   actionsF.add(actions, 'analyze');
   actionsF.open();
 
