@@ -19,13 +19,7 @@ TCAD.TWO.Arc.prototype.collectParams = function(params) {
   this.a.collectParams(params);
   this.b.collectParams(params);
   this.c.collectParams(params);
-};
-
-TCAD.TWO.Arc.prototype.draw = function(ctx, scale) {
-  TCAD.TWO.SketchObject.prototype.draw.call(this, ctx, scale);
-  this.a.draw(ctx, scale);
-  this.b.draw(ctx, scale);
-  this.c.draw(ctx, scale);
+  params.push(this.r);
 };
 
 TCAD.TWO.Arc.prototype.getReferencePoint = function() {
