@@ -122,6 +122,11 @@ TCAD.TWO.Viewer.prototype._setupServiceLayer = function() {
   var layer = new TCAD.TWO.Layer("_service", TCAD.TWO.Styles.SERVICE);
   layer.objects.push(new TCAD.TWO.Point(0, 0, 2));
   this._serviceLayers.push(layer);
+
+  layer = new TCAD.TWO.Layer("_selection", TCAD.TWO.Styles.DEFAULT);
+  layer.objects = this.selected;
+  this._serviceLayers.push(layer);
+  
 };
 
 TCAD.TWO.Viewer.prototype.refresh = function() {
@@ -210,7 +215,7 @@ TCAD.TWO.Viewer.prototype.deselectAll = function() {
     var obj = this.selected[i];
     obj.marked = false;
   }
-  this.selected = [];
+  while(this.selected > 0) this.selected.pop();
 };
 
 TCAD.TWO.Layer = function(name, style) {
