@@ -56,9 +56,8 @@ TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   var r = this.radiusForDrawing();
   var startAngle = Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x);
   var endAngle;
-  if ( this.a.isCoincidentTo(this.b) || 
-      (TCAD.utils.areEqual(this.a.x, this.b.x, TCAD.utils.TOLERANCE) && 
-       TCAD.utils.areEqual(this.a.y, this.b.y, TCAD.utils.TOLERANCE))) {
+  if (TCAD.utils.areEqual(this.a.x, this.b.x, TCAD.TOLERANCE) && 
+      TCAD.utils.areEqual(this.a.y, this.b.y, TCAD.TOLERANCE)) {
     endAngle = startAngle + 2 * Math.PI;
   } else {
     endAngle = Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
