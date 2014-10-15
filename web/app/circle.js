@@ -30,9 +30,14 @@ TCAD.TWO.Circle.prototype.drawImpl = function(ctx, scale) {
   ctx.stroke();
 };
 
-
 TCAD.TWO.Circle.prototype.normalDistance = function(aim) {
   return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.r.get());
+};
+
+TCAD.TWO.Circle.prototype.getDefaultTool = function(viewer) {
+  var editTool = new TCAD.TWO.EditCircleTool(viewer, null);
+  editTool.circle = this;
+  return editTool;
 };
 
 

@@ -292,6 +292,10 @@ TCAD.TWO.SketchObject.prototype.visit = function(onlyVisible, h) {
   return h(this);
 };
 
+TCAD.TWO.SketchObject.prototype.getDefaultTool = function(viewer) {
+  return new TCAD.TWO.DragTool(this, viewer);
+};
+
 TCAD.TWO.SketchObject.prototype._translate = function(dx, dy, translated) {
   translated[this.id] = 'x';
   for (var i = 0; i < this.linked.length; ++i) {
@@ -526,9 +530,9 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
       } else {
         this.viewer.select([picked[0]], true);
         if (!picked[0].aux) {
-          var dragTool = new TCAD.TWO.DragTool(picked[0], this.viewer);
-          dragTool.mousedown(e);
-          this.viewer.toolManager.takeControl(dragTool);
+          var tool = picked[0].getDefaultTool(this.viewer);
+          tool.mousedown(e);
+          this.viewer.toolManager.takeControl(tool);
         }
       }
       this.viewer.refresh();
