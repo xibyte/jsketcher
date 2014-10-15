@@ -92,7 +92,7 @@ TCAD.TWO.Viewer.prototype.searchSegment = function(x, y, buffer, deep) {
     var objs = this.layers[i].objects;
     for (var j = 0; j < objs.length; j++) {
       var l = unreachable + 1;
-      var hit = !objs[j].visit(function(o) {
+      var hit = !objs[j].visit(true, function(o) {
         l = o.normalDistance(aim);
         if (l > 0 && l <= buffer) {
           pickResult.push(o);
@@ -276,10 +276,11 @@ TCAD.TWO.SketchObject = function() {
   this.linked = [];
 };
 
-TCAD.TWO.SketchObject.prototype.visit = function(h) {
+TCAD.TWO.SketchObject.prototype.visit = function(onlyVisible, h) {
+  if (!this.visible) return true; 
   for (var i = 0; i < this.children.length; i++) {
     var child = this.children[i];
-    if (!child.visit(h)) {
+    if (!child.visit(onlyVisible, h)) {
       return false;
     }
   }
@@ -312,6 +313,7 @@ TCAD.TWO.SketchObject.prototype.translate = function(dx, dy) {
 };
 
 TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
+  if (!this.visible) return;
   if (this.marked) {
     ctx.save();
     TCAD.TWO.utils.setStyle(TCAD.TWO.Styles.MARK, ctx, scale);
