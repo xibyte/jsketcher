@@ -191,9 +191,6 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel) {
   var params;
   var _constrs = [];
   var equals = [];
-  var i;
-  var p;
-  var _p;
 
   function getParam(p) {
     var _p = pdict[p.id];
@@ -205,6 +202,10 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel) {
     return _p;
   }
 
+  var i;
+  var p;
+  var _p;
+  
   for (i = 0; i < this.system.length; ++i) {
 
     var sdata = this.system[i].getSolveData();
