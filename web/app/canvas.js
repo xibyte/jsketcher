@@ -215,7 +215,7 @@ TCAD.TWO.Viewer.prototype.deselectAll = function() {
     var obj = this.selected[i];
     obj.marked = false;
   }
-  while(this.selected > 0) this.selected.pop();
+  while(this.selected.length > 0) this.selected.pop();
 };
 
 TCAD.TWO.Layer = function(name, style) {
