@@ -43,6 +43,10 @@ TCAD.App2D = function() {
       app.viewer.toolManager.takeControl(new TCAD.TWO.AddArcTool(app.viewer, layer));
     },
 
+    addCircle : function () {
+      app.viewer.toolManager.takeControl(new TCAD.TWO.EditCircleTool(app.viewer, layer));
+    },
+
     pan : function() {
       app.viewer.toolManager.releaseControl();
     },
@@ -121,6 +125,7 @@ TCAD.App2D = function() {
   
   actionsF.add(actions, 'addSegment');
   actionsF.add(actions, 'addArc');
+  actionsF.add(actions, 'addCircle');
   actionsF.add(actions, 'pan');
   actionsF.add(actions, 'save');
   actionsF.add(actions, 'coincident');
