@@ -25,20 +25,20 @@ TCAD.TWO.ParametricManager.prototype._fetchPoints = function(objs) {
     });
   }
   if (points.length == 0) {
-    throw "Illegal Argument. Constraint requires at least 1 point/line/arc."
+    throw "Illegal Argument. Constraint requires at least 1 point/line/arc/circle."
   }
   return points;
 };
 
-TCAD.TWO.ParametricManager.prototype._fetchArcs = function(objs, min) {
+TCAD.TWO.ParametricManager.prototype._fetchArkCirc = function(objs, min) {
   var arcs = [];
   for (var i = 0; i < objs.length; ++i) {
-    if (objs[i]._class == 'TCAD.TWO.Arc') {
+    if (objs[i]._class === 'TCAD.TWO.Arc' || objs[i]._class === 'TCAD.TWO.Circle') {
       arcs.push(objs[i]);
     }
   }
   if (arcs.length < min) {
-    throw "Illegal Argument. Constraint requires at least " + min + " arcs."
+    throw "Illegal Argument. Constraint requires at least " + min + " arcs/circles."
   }
   return arcs;
 };
@@ -62,13 +62,13 @@ TCAD.TWO.ParametricManager.prototype._fetchPointAndLine = function(objs) {
   return [point, line];
 };
 
-TCAD.TWO.ParametricManager.prototype._fetchArcAndLine = function(objs) {
+TCAD.TWO.ParametricManager.prototype._fetchArcCircAndLine = function(objs) {
 
   var arc = null;
   var line = null;
 
   for (var i = 0; i < objs.length; ++i) {
-    if (objs[i]._class == 'TCAD.TWO.Arc') {
+    if (objs[i]._class === 'TCAD.TWO.Arc' || objs[i]._class === 'TCAD.TWO.Circle') {
       arc = objs[i];
     } else if (objs[i]._class == 'TCAD.TWO.Segment') {
       line = objs[i];

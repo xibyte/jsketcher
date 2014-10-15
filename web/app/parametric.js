@@ -43,14 +43,14 @@ TCAD.TWO.ParametricManager.prototype.perpendicular = function(objs) {
 };
 
 TCAD.TWO.ParametricManager.prototype.tangent = function(objs) {
-  var al = this._fetchArcAndLine(objs);
+  var al = this._fetchArcCircAndLine(objs);
   var arc  = al[0];
   var line  = al[1];
   this.add(new TCAD.TWO.Constraints.P2LDistanceV( arc.c, line, arc.r ));
 };
 
 TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
-  var arcs = this._fetchArcs(objs, 2);
+  var arcs = this._fetchArkCirc(objs, 2);
   var prev = arcs[0].r;
   for (var i = 1; i < arcs.length; ++i) {
     this.system.push(new TCAD.TWO.Constraints.Equal(prev, arcs[i].r));
@@ -99,7 +99,7 @@ TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback
 };
 
 TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
-  var arcs = this._fetchArcs(objs, 1);
+  var arcs = this._fetchArkCirc(objs, 1);
   var radius = arcs[0].r.get();
   var promptDistance = promptCallback("Enter the radius value", radius.toFixed(2));
 
