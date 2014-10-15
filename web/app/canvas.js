@@ -271,7 +271,19 @@ TCAD.TWO.SketchObject = function() {
   this.id = TCAD.TWO.utils.genID();
   this.aux = false;
   this.marked = false;
+  this.visible = true;
+  this.children = [];
   this.linked = [];
+};
+
+TCAD.TWO.SketchObject.prototype.visit = function(h) {
+  for (var i = 0; i < this.children.length; i++) {
+    var child = this.children[i];
+    if (!child.visit(h)) {
+      return false;
+    }
+  }
+  return h(this);
 };
 
 TCAD.TWO.SketchObject.prototype.isCoincidentTo = function(other) {
@@ -306,6 +318,9 @@ TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
   }
   this.drawImpl(ctx, scale);
   if (this.marked) ctx.restore();
+  for (var i = 0; i < this.children.length; i++) {
+    this.children[i].draw(ctx, scale);
+  }
 };
 
 TCAD.TWO.Ref = function(value) {
@@ -358,10 +373,6 @@ TCAD.TWO.EndPoint.prototype.normalDistance = function(aim) {
   return aim.minus(new TCAD.Vector(this.x, this.y)).length();
 };
 
-TCAD.TWO.EndPoint.prototype.visit = function(h) {
-  return h(this);
-};
-
 TCAD.TWO.EndPoint.prototype.getReferencePoint = function() {
   return this;
 };
@@ -381,6 +392,7 @@ TCAD.TWO.Segment = function(a, b) {
   this.b = b;
   a.parent = this;
   b.parent = this;
+  this.children.push(a, b);
 };
 
 TCAD.TWO.utils.extend(TCAD.TWO.Segment, TCAD.TWO.SketchObject);
@@ -412,16 +424,6 @@ TCAD.TWO.Segment.prototype.normalDistance = function(aim) {
   }
 
   return n.length();
-};
-
-TCAD.TWO.Segment.prototype.visit = function(h) {
-  return this.a.visit(h) && this.b.visit(h) && h(this);
-};
-
-TCAD.TWO.Segment.prototype.draw = function(ctx, scale) {
-  TCAD.TWO.SketchObject.prototype.draw.call(this, ctx, scale);
-  this.a.draw(ctx, scale);
-  this.b.draw(ctx, scale);
 };
 
 TCAD.TWO.Segment.prototype.getReferencePoint = function() {

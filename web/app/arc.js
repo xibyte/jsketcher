@@ -7,6 +7,7 @@ TCAD.TWO.Arc = function(a, b, c) {
   a.parent = this;
   b.parent = this;
   c.parent = this;
+  this.children.push(a, b, c);
   this.r = new TCAD.TWO.Ref(0);
 };
 
@@ -66,12 +67,6 @@ TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   ctx.stroke();
 };
 
-TCAD.TWO.Arc.prototype.visit = function(h) {
-  return this.a.visit(h) 
-      && this.b.visit(h)
-      && this.c.visit(h) 
-      && h(this);
-};
 
 TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
   return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
