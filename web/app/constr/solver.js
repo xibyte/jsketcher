@@ -57,11 +57,38 @@ TCAD.parametric.System.prototype.makeJacobian = function() {
   return jacobi;
 };
 
-TCAD.parametric.System.prototype.getParams = function() {
-  var out = [];
+// ∇f(x) = E rj(x) ∇rj(x) = J(x)T r(x)
+TCAD.parametric.System.prototype.calcGrad = function(out) {
+  var i;
+  for (i = 0; i < out.length; ++i) {
+    out[i][0] = 0;
+  }
+
+  for (i=0; i < this.constraints.length; i++) {
+    var c = this.constraints[i];
+
+    var cParams = c.params;
+    var grad = [];
+    c.gradient(grad);
+
+    for (var p = 0; p < cParams.length; p++) {
+      var param = cParams[p];
+      var j = param.j;
+      out[j][0] += this.constraints[i].error() * grad[p]; // (10.4) 
+    }
+  }
+  
+};
+
+TCAD.parametric.System.prototype.fillParams = function(out) {
   for (var p = 0; p < this.params.length; p++) {
     out[p] = this.params[p].get();
   }
+};
+
+TCAD.parametric.System.prototype.getParams = function() {
+  var out = [];
+  this.fillParams(out);
   return out;
 };
 
@@ -77,6 +104,15 @@ TCAD.parametric.System.prototype.error = function() {
     error += Math.abs(this.constraints[i].error());
   }
   return error;
+};
+
+TCAD.parametric.System.prototype.errorSquare = function() {
+  var error = 0;
+  for (var i=0; i < this.constraints.length; i++) {
+    var t = this.constraints[i].error();
+    error += t * t;
+  }
+  return error * .5;
 };
 
 TCAD.parametric.System.prototype.getValues = function() {
@@ -146,6 +182,10 @@ TCAD.parametric.solve = function(constrs, locked, fineLevel) {
     sys.setParams(point);
     return sys.makeJacobian();
   };
+
+//  var res = TCAD.math.solve_BFGS(sys, 1e-4, 1e-4);
+//  console.log(res);
+//  return;
 
   var opt = new LMOptimizer(sys.getParams(), arr(sys.constraints.length), model, jacobian);
   var eps;
