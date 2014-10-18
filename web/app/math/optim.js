@@ -20,7 +20,7 @@ TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
   var y = new TCAD.math.Vector(xsize);
 
   // Initial unknowns vector and initial gradient vector
-  subsys.fillParams(x.data);
+  TCAD.math.fillParams(subsys, x.data);
   subsys.calcGrad(grad.data);
 
   // Initial search direction oposed to gradient (steepest-descent)
@@ -29,7 +29,7 @@ TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
   var err = subsys.errorSquare();
 
   h = x.copy();
-  subsys.fillParams(x.data);
+  TCAD.math.fillParams(subsys, x.data);
   h = x.subtract(h); // = x - xold
 
   var maxIterNumber = 100 * xsize;
@@ -57,7 +57,7 @@ TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
     err = subsys.errorSquare();
 
     h = x.copy();
-    subsys.fillParams(x.data);
+    TCAD.math.fillParams(subsys, x.data);
     h = x.subtract(h); // = x - xold
   }
 
@@ -66,6 +66,18 @@ TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
   if (h.norm() <= convergence)
     return "Converged";
   return "Failed";
+};
+
+TCAD.math.fillParams = function(sys, out) {
+  for (var p = 0; p < sys.params.length; p++) {
+    out[p][0] = sys.params[p].get();
+  }
+};
+
+TCAD.math.setParams2 = function(sys, point) {
+  for (var p = 0; p < sys.params.length; p++) {
+    sys.params[p].set(point[p][0]);
+  }
 };
 
 TCAD.math.bfgsUpdateInverse = function(H, y, s) {
@@ -85,7 +97,6 @@ TCAD.math.bfgsUpdateInverse = function(H, y, s) {
   var C = s.multiply(sT).scalarMultiply(p)
   return A.multiply(H).multiply(C).add(C);
 };
-
 
 TCAD.math.bfgsUpdate = function(B, y, h) {
 
@@ -128,7 +139,7 @@ TCAD.math.lineSearch = function(subsys, xdir) {
   var x0 = new TCAD.math.Vector(subsys.params.length);
 
   //Save initial values
-  subsys.fillParams(x0.data);
+  TCAD.math.fillParams(subsys, x0.data);
 
   //Start at the initial position alpha1 = 0
   alpha1 = 0.;
@@ -137,13 +148,13 @@ TCAD.math.lineSearch = function(subsys, xdir) {
   //Take a step of alpha2 = 1
   alpha2 = 1.;
   x = x0.add(xdir.scalarMultiply(alpha2));
-  subsys.setParams2(x.data);
+  TCAD.math.setParams2(subsys, x.data);
   f2 = subsys.errorSquare();
 
   //Take a step of alpha3 = 2*alpha2
   alpha3 = alpha2*2;
   x = x0.add(xdir.scalarMultiply(alpha3));
-  subsys.setParams2(x.data);
+  TCAD.math.setParams2(subsys, x.data);
   f3 = subsys.errorSquare();
 
   //Now reduce or lengthen alpha2 and alpha3 until the minimum is
@@ -156,7 +167,7 @@ TCAD.math.lineSearch = function(subsys, xdir) {
       f3 = f2;
       alpha2 = alpha2 / 2;
       x = x0.add( xdir.scalarMultiply(alpha2 ));
-      subsys.setParams2(x.data);
+      TCAD.math.setParams2(subsys, x.data);
       f2 = subsys.errorSquare();
     }
     else if (f2 > f3) {
@@ -168,7 +179,7 @@ TCAD.math.lineSearch = function(subsys, xdir) {
       f2 = f3;
       alpha3 = alpha3 * 2;
       x = x0.add( xdir.scalarMultiply(alpha3));
-      subsys.setParams2(x.data);
+      TCAD.math.setParams2(subsys, x.data);
       f3 = subsys.errorSquare();
     }
   }
@@ -187,7 +198,7 @@ TCAD.math.lineSearch = function(subsys, xdir) {
 
   //Take a final step to alphaStar
   x = x0 .add( xdir.scalarMultiply( alphaStar ) );
-  subsys.setParams2(x.data);
+  TCAD.math.setParams2(subsys, x.data);
 
   return alphaStar;
   
