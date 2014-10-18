@@ -11,10 +11,7 @@ TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
     return "Success";
   }
   
-  var Dy; //Vector
   var xdir; //Vector
-  var D = new TCAD.math.Matrix(xsize, xsize);
-  D.identity();
   var B = new TCAD.math.Matrix(xsize, xsize);
   B.identity();
   var x = new TCAD.math.Vector(xsize);
@@ -49,39 +46,11 @@ TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
     subsys.calcGrad(grad.data);
     y = grad.subtract(y); // = grad - gradold
 
-    var hty = h.dot(y);
-    //make sure that hty is never 0
-    if (hty == 0)
-      hty = .0000000001;
-
-    Dy = D.multiply(y);
-
-    var ytDy = y.dot(Dy);
-
-    //Now calculate the BFGS update on D
-
-
-    var B_x_h = B.multiply(h);
-    var hT_x_B = h.transpose().multiply(B);
-    var yT = y.transpose();
-    var y_x_yT = y.multiply(yT);
-    var yT_x_h = y.dot(h);
-
     //Now calculate the BFGS update on B
-    B = B.add( y_x_yT.scalarMultiply( 1 / yT_x_h ) );
-    B = B.subtract( ( B_x_h.multiply(hT_x_B) ).scalarMultiply( 1./h.dot(B_x_h) ) );
+//    TCAD.math.bfgsUpdate(B, h, y);
+    TCAD.math.bfgsUpdateInverse(B, y, h);
 
 
-    D = D.add( h.scalarMultiply(( 1.+ytDy/hty ) / hty).multiply( h.transpose() ) );
-    D = D.subtract((
-            h.multiply(Dy.transpose())
-                .add(Dy.multiply(h.transpose()))
-            ).scalarMultiply(1. / hty)
-    );
-
-
-
-//    xdir = D.multiply(grad).scalarMultiply(-1);
     xdir = B.multiply(grad).scalarMultiply(-1);
 //    xdir = grad.scalarMultiply(-1);
     TCAD.math.lineSearch(subsys, xdir);
@@ -99,6 +68,41 @@ TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
   return "Failed";
 };
 
+TCAD.math.bfgsUpdateInverse = function(H, y, s) {
+  // 18.16
+  var I = new TCAD.math.Matrix(s.rSize, s.rSize);
+  I.identity();
+
+  var yT = y.transpose();
+  var sT = s.transpose();
+  var yT_x_s = y.dot(s);
+  if (yT_x_s == 0) yT_x_h = .0000000001;
+
+  var p = 1 / yT_x_s;
+
+  var A = I.subtract( s.multiply(yT).scalarMultiply(p) )
+  var B = I.subtract( y.multiply(sT).scalarMultiply(p) )
+  var C = s.multiply(sT).scalarMultiply(p)
+  return A.multiply(H).multiply(C).add(C);
+};
+
+
+TCAD.math.bfgsUpdate = function(B, y, h) {
+
+  var B_x_h = B.multiply(h);
+  var hT_x_B = h.transpose().multiply(B);
+  var yT = y.transpose();
+  var y_x_yT = y.multiply(yT);
+  var yT_x_h = y.dot(h);
+  var hT_x_B_x_h = h.dot(B_x_h)
+
+  if (yT_x_h == 0) yT_x_h = .0000000001;
+  if (hT_x_B_x_h == 0) hT_x_B_x_h = .0000000001;
+
+
+  B = B.add( y_x_yT.scalarMultiply( 1 / yT_x_h ) );
+  B = B.subtract( ( B_x_h.multiply(hT_x_B) ).scalarMultiply( 1./hT_x_B_x_h ) );
+};
 
 TCAD.math.solve_SD = function(subsys) {
   var i = 0;
