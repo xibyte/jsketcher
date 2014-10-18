@@ -1,0 +1,191 @@
+
+
+TCAD.optim = {};
+
+// convergence Rough 1e-8
+// convergence Fine  1e-10
+TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
+
+  var xsize = subsys.params.length;
+  if (xsize == 0) {
+    return "Success";
+  }
+  
+  var Dy; //Vector
+  var xdir; //Vector
+  var D = new TCAD.math.Matrix(xsize, xsize);
+  D.identity();
+  var B = new TCAD.math.Matrix(xsize, xsize);
+  B.identity();
+  var x = new TCAD.math.Vector(xsize);
+  var grad = new TCAD.math.Vector(xsize);
+  var h = new TCAD.math.Vector(xsize);
+  var y = new TCAD.math.Vector(xsize);
+
+  // Initial unknowns vector and initial gradient vector
+  subsys.fillParams(x.data);
+  subsys.calcGrad(grad.data);
+
+  // Initial search direction oposed to gradient (steepest-descent)
+  xdir = grad.scalarMultiply(-1);
+  TCAD.math.lineSearch(subsys, xdir);
+  var err = subsys.errorSquare();
+
+  h = x.copy();
+  subsys.fillParams(x.data);
+  h = x.subtract(h); // = x - xold
+
+  var maxIterNumber = 100 * xsize;
+  var divergingLim = 1e6*err + 1e12;
+
+  for (var iter=1; iter < maxIterNumber; iter++) {
+
+    if (h.norm() <= convergence || err <= smallF)
+      break;
+    if (err > divergingLim || err != err) // check for diverging and NaN
+      break;
+
+    y = grad.copy();
+    subsys.calcGrad(grad.data);
+    y = grad.subtract(y); // = grad - gradold
+
+    var hty = h.dot(y);
+    //make sure that hty is never 0
+    if (hty == 0)
+      hty = .0000000001;
+
+    Dy = D.multiply(y);
+
+    var ytDy = y.dot(Dy);
+
+    //Now calculate the BFGS update on D
+
+
+    var B_x_h = B.multiply(h);
+    var hT_x_B = h.transpose().multiply(B);
+    var yT = y.transpose();
+    var y_x_yT = y.multiply(yT);
+    var yT_x_h = y.dot(h);
+
+    //Now calculate the BFGS update on B
+    B = B.add( y_x_yT.scalarMultiply( 1 / yT_x_h ) );
+    B = B.subtract( ( B_x_h.multiply(hT_x_B) ).scalarMultiply( 1./h.dot(B_x_h) ) );
+
+
+    D = D.add( h.scalarMultiply(( 1.+ytDy/hty ) / hty).multiply( h.transpose() ) );
+    D = D.subtract((
+            h.multiply(Dy.transpose())
+                .add(Dy.multiply(h.transpose()))
+            ).scalarMultiply(1. / hty)
+    );
+
+
+
+//    xdir = D.multiply(grad).scalarMultiply(-1);
+    xdir = B.multiply(grad).scalarMultiply(-1);
+//    xdir = grad.scalarMultiply(-1);
+    TCAD.math.lineSearch(subsys, xdir);
+    err = subsys.errorSquare();
+
+    h = x.copy();
+    subsys.fillParams(x.data);
+    h = x.subtract(h); // = x - xold
+  }
+
+  if (err <= smallF)
+    return "Success";
+  if (h.norm() <= convergence)
+    return "Converged";
+  return "Failed";
+};
+
+
+TCAD.math.solve_SD = function(subsys) {
+  var i = 0;
+  var grad = new TCAD.math.Vector(subsys.params.length);
+  while (subsys.errorSquare() > 0.1 ) {
+    subsys.calcGrad(grad.data);
+    var xdir = grad.scalarMultiply(-1);
+    TCAD.math.lineSearch(subsys, xdir);
+    if (i ++ > 100) {
+      return;
+    }
+  }
+  console.log(subsys.errorSquare());
+};
+
+TCAD.math.lineSearch = function(subsys, xdir) {
+
+  var f1,f2,f3,alpha1,alpha2,alpha3,alphaStar;
+
+  var alphaMax = 1; //maxStep(xdir);
+
+  var x;
+  var x0 = new TCAD.math.Vector(subsys.params.length);
+
+  //Save initial values
+  subsys.fillParams(x0.data);
+
+  //Start at the initial position alpha1 = 0
+  alpha1 = 0.;
+  f1 = subsys.errorSquare();
+
+  //Take a step of alpha2 = 1
+  alpha2 = 1.;
+  x = x0.add(xdir.scalarMultiply(alpha2));
+  subsys.setParams2(x.data);
+  f2 = subsys.errorSquare();
+
+  //Take a step of alpha3 = 2*alpha2
+  alpha3 = alpha2*2;
+  x = x0.add(xdir.scalarMultiply(alpha3));
+  subsys.setParams2(x.data);
+  f3 = subsys.errorSquare();
+
+  //Now reduce or lengthen alpha2 and alpha3 until the minimum is
+  //Bracketed by the triplet f1>f2<f3
+  while (f2 > f1 || f2 > f3) {
+    if (f2 > f1) {
+      //If f2 is greater than f1 then we shorten alpha2 and alpha3 closer to f1
+      //Effectively both are shortened by a factor of two.
+      alpha3 = alpha2;
+      f3 = f2;
+      alpha2 = alpha2 / 2;
+      x = x0.add( xdir.scalarMultiply(alpha2 ));
+      subsys.setParams2(x.data);
+      f2 = subsys.errorSquare();
+    }
+    else if (f2 > f3) {
+      if (alpha3 >= alphaMax)
+        break;
+      //If f2 is greater than f3 then we increase alpha2 and alpha3 away from f1
+      //Effectively both are lengthened by a factor of two.
+      alpha2 = alpha3;
+      f2 = f3;
+      alpha3 = alpha3 * 2;
+      x = x0.add( xdir.scalarMultiply(alpha3));
+      subsys.setParams2(x.data);
+      f3 = subsys.errorSquare();
+    }
+  }
+  //Get the alpha for the minimum f of the quadratic approximation
+  alphaStar = alpha2 + ((alpha2-alpha1)*(f1-f3))/(3*(f1-2*f2+f3));
+
+  //Guarantee that the new alphaStar is within the bracket
+  if (alphaStar >= alpha3 || alphaStar <= alpha1)
+    alphaStar = alpha2;
+
+  if (alphaStar > alphaMax)
+    alphaStar = alphaMax;
+
+  if (alphaStar != alphaStar)
+    alphaStar = 0.;
+
+  //Take a final step to alphaStar
+  x = x0 .add( xdir.scalarMultiply( alphaStar ) );
+  subsys.setParams2(x.data);
+
+  return alphaStar;
+  
+};
+    
