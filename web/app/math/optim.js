@@ -133,7 +133,7 @@ TCAD.math.lineSearch = function(subsys, xdir) {
 
   var f1,f2,f3,alpha1,alpha2,alpha3,alphaStar;
 
-  var alphaMax = 1; //maxStep(xdir);
+  var alphaMax = 1e28; //maxStep(xdir);
 
   var x;
   var x0 = new TCAD.math.Vector(subsys.params.length);
@@ -203,4 +203,143 @@ TCAD.math.lineSearch = function(subsys, xdir) {
   return alphaStar;
   
 };
-    
+
+
+TCAD.math.lineSearch3 = function(sys, xdir) {
+
+  var x0 = new TCAD.math.Vector(sys.params.length);
+  var x = new TCAD.math.Vector(sys.params.length);
+  TCAD.math.fillParams(sys, x0.data);
+
+  var alphas = [];
+  for (var i = 0; i < xdir.data.length; i++) {
+    alphas[i] = Number.MAX_VALUE;
+  }
+  for (var i = 0; i < sys.constraints.length; i++) {
+    TCAD.math.lineSearchForConstraint(sys.constraints[i], alphas, xdir, sys);
+    TCAD.math.setParams2(sys, x0.data);
+  }
+
+  for (var i = 0; i < xdir.data.length; i++) {
+    x.data[i][0] = xdir.data[i][0] * alphas[i] + x0.data[i][0];
+  }
+
+  //Take a final step to alphaStar
+  TCAD.math.setParams2(sys, x.data);
+};
+
+
+TCAD.math.lineSearchForConstraint = function(constr, alphas, _xdir, sys) {
+
+  var f1,f2,f3,alpha1,alpha2,alpha3,alphaStar;
+
+  var alphaMax = 1e28; //maxStep(xdir);
+
+  var x;
+  var xdir = new TCAD.math.Vector(constr.params.length);
+  var x0 = new TCAD.math.Vector(constr.params.length);
+
+  for (var p = 0; p < constr.params.length; p++) {
+    x0.data[p][0] = constr.params[p].get();
+    xdir.data[p][0] = _xdir.data[constr.params[p].j][0];
+  }
+
+  function errorSquare() {
+//    var t = constr.error();
+//    return t*t*0.5;
+    return sys.errorSquare();
+  }
+
+  function setParams2(x) {
+    for (var p = 0; p < constr.params.length; p++) {
+      constr.params[p].set(x.data[p][0]);
+    }
+  }
+
+  //Start at the initial position alpha1 = 0
+  alpha1 = 0.;
+  f1 = errorSquare();
+
+  //Take a step of alpha2 = 1
+  alpha2 = 1.;
+  x = x0.add(xdir.scalarMultiply(alpha2));
+  setParams2(x);
+  f2 = errorSquare();
+
+  //Take a step of alpha3 = 2*alpha2
+  alpha3 = alpha2*2;
+  x = x0.add(xdir.scalarMultiply(alpha3));
+  setParams2(x);
+  f3 = errorSquare();
+
+  //Now reduce or lengthen alpha2 and alpha3 until the minimum is
+  //Bracketed by the triplet f1>f2<f3
+  while (f2 > f1 || f2 > f3) {
+    if (f2 > f1) {
+      //If f2 is greater than f1 then we shorten alpha2 and alpha3 closer to f1
+      //Effectively both are shortened by a factor of two.
+      alpha3 = alpha2;
+      f3 = f2;
+      alpha2 = alpha2 / 2;
+      x = x0.add( xdir.scalarMultiply(alpha2 ));
+      setParams2(x);
+      f2 = errorSquare();
+    }
+    else if (f2 > f3) {
+      if (alpha3 >= alphaMax)
+        break;
+      //If f2 is greater than f3 then we increase alpha2 and alpha3 away from f1
+      //Effectively both are lengthened by a factor of two.
+      alpha2 = alpha3;
+      f2 = f3;
+      alpha3 = alpha3 * 2;
+      x = x0.add( xdir.scalarMultiply(alpha3));
+      setParams2(x);
+      f3 = errorSquare();
+    }
+  }
+  //Get the alpha for the minimum f of the quadratic approximation
+  alphaStar = alpha2 + ((alpha2-alpha1)*(f1-f3))/(3*(f1-2*f2+f3));
+
+  //Guarantee that the new alphaStar is within the bracket
+  if (alphaStar >= alpha3 || alphaStar <= alpha1)
+    alphaStar = alpha2;
+
+  if (alphaStar > alphaMax)
+    alphaStar = alphaMax;
+
+  if (alphaStar != alphaStar)
+    alphaStar = 0.;
+
+
+  for (var p = 0; p < constr.params.length; p++) {
+    var j = constr.params[p].j;
+    alphas[j] = Math.min(alphas[j], alphaStar);
+  }
+
+  return alphaStar;
+};
+
+
+TCAD.math.lineSearch2 = function(subsys, xdir) {
+
+  var x0 = new TCAD.math.Vector(subsys.params.length);
+  TCAD.math.fillParams(subsys, x0.data);
+
+  var alpha = 1.;
+  var f0 = subsys.errorSquare();
+
+  var x = x0.add(xdir.scalarMultiply(alpha));
+  TCAD.math.setParams2(subsys, x.data);
+  var f = subsys.errorSquare();
+
+  while (f > f0 || alpha > 0.00000001) {
+    alpha *= .5;
+    x = x0.add(xdir.scalarMultiply(alpha));
+    TCAD.math.setParams2(subsys, x.data);
+    f = subsys.errorSquare();
+  }
+
+  return alphaStar;
+
+};
