@@ -1,4 +1,6 @@
-numeric.grdec = function uncmin(f,x0,tol,gradient,maxit,callback,options) {
+optim = {};
+
+optim.bfgs = function uncmin(f,x0,tol,gradient,maxit,callback,options) {
   var grad = numeric.gradient;
   if(typeof options === "undefined") { options = {}; }
   if(typeof tol === "undefined") { tol = 1e-8; }
@@ -45,11 +47,13 @@ numeric.grdec = function uncmin(f,x0,tol,gradient,maxit,callback,options) {
     y = sub(g1,g0);
     ys = dot(y,s);
     Hy = dot(H1,y);
-//    H1 = sub(add(H1,
-//            mul(
-//                    (ys+dot(y,Hy))/(ys*ys),
-//                ten(s,s)    )),
-//        div(add(ten(Hy,s),ten(s,Hy)),ys));
+
+    // BFGS update on H1
+    H1 = sub(add(H1,
+            mul(
+                    (ys+dot(y,Hy))/(ys*ys),
+                ten(s,s)    )),
+        div(add(ten(Hy,s),ten(s,Hy)),ys));
     x0 = x1;
     f0 = f1;
     g0 = g1;

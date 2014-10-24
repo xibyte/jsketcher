@@ -82,7 +82,9 @@ TCAD.math.solve_UNCMIN = function(subsys) {
     subsys.calcGrad(grad);
     return grad;
   };
-  numeric.uncmin(f,x0,0.01,gradient,1000);
+  var r = optim.bfgs(f,x0,0.01,gradient, subsys.params.length * 100);
+  subsys.setParams(r.solution);
+
 };
 
 
