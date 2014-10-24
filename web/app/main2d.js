@@ -120,7 +120,18 @@ TCAD.App2D = function() {
     solve : function() {
       app.viewer.parametricManager.solve([], 0);
       app.viewer.refresh();
+    },
+
+    step : function() {
+      app.viewer.parametricManager.solve([], 0, 3);
+      app.viewer.refresh();
+    },
+
+    stepUNCMIN : function() {
+      app.viewer.parametricManager.solve([], 0, 4);
+      app.viewer.refresh();
     }
+
   };
   
   actionsF.add(actions, 'addSegment');
@@ -140,6 +151,8 @@ TCAD.App2D = function() {
   actionsF.add(actions, 'tangent');
   actionsF.add(actions, 'lock');
   actionsF.add(actions, 'solve');
+  actionsF.add(actions, 'step');
+  actionsF.add(actions, 'stepUNCMIN');
   actionsF.add(actions, 'analyze');
   actionsF.open();
 

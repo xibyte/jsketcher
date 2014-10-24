@@ -57,10 +57,9 @@ TCAD.parametric.System.prototype.makeJacobian = function() {
   return jacobi;
 };
 
-// ∇f(x) = E rj(x) ∇rj(x) = J(x)T r(x)
-TCAD.parametric.System.prototype.calcGrad = function(out) {
+TCAD.parametric.System.prototype.calcGrad_ = function(out) {
   var i;
-  for (i = 0; i < out.length; ++i) {
+  for (i = 0; i < out.length || i < this.params.length; ++i) {
     out[i][0] = 0;
   }
 
@@ -74,10 +73,30 @@ TCAD.parametric.System.prototype.calcGrad = function(out) {
     for (var p = 0; p < cParams.length; p++) {
       var param = cParams[p];
       var j = param.j;
-      out[j][0] += this.constraints[i].error() * grad[p]; // (10.4) 
+      out[j][0] += this.constraints[i].error() * grad[p]; // (10.4)
     }
   }
-  
+};
+
+TCAD.parametric.System.prototype.calcGrad = function(out) {
+  var i;
+  for (i = 0; i < out.length || i < this.params.length;  ++i) {
+    out[i] = 0;
+  }
+
+  for (i=0; i < this.constraints.length; i++) {
+    var c = this.constraints[i];
+
+    var cParams = c.params;
+    var grad = [];
+    c.gradient(grad);
+
+    for (var p = 0; p < cParams.length; p++) {
+      var param = cParams[p];
+      var j = param.j;
+      out[j] += this.constraints[i].error() * grad[p]; // (10.4) 
+    }
+  }
 };
 
 TCAD.parametric.System.prototype.fillParams = function(out) {
@@ -112,7 +131,7 @@ TCAD.parametric.System.prototype.errorSquare = function() {
     var t = this.constraints[i].error();
     error += t * t;
   }
-  return error * .5;
+  return error * 0.5;
 };
 
 TCAD.parametric.System.prototype.getValues = function() {
@@ -152,7 +171,7 @@ TCAD.parametric.lock2 = function(constrs, locked) {
   }
 };
 
-TCAD.parametric.solve = function(constrs, locked, fineLevel) {
+TCAD.parametric.solve = function(constrs, locked, fineLevel, alg) {
 
   if (constrs.length == 0) return;
 
@@ -183,9 +202,24 @@ TCAD.parametric.solve = function(constrs, locked, fineLevel) {
     return sys.makeJacobian();
   };
 
-//  var res = TCAD.math.solve_BFGS(sys, 1e-4, 1e-4);
-//  console.log(res);
-//  return;
+  if (alg > 0) {
+    switch (alg) {
+      case 1:
+        var res = TCAD.math.solve_BFGS(sys, 1e-4, 1e-4);
+        console.log(res);
+        break;
+      case 2:
+        TCAD.math.solve_TR(sys);
+        break;
+      case 3:
+        TCAD.math.noptim(sys);
+        break;
+      case 4:
+        TCAD.math.solve_UNCMIN(sys);
+        break;
+    }
+    return sys;
+  }
 
   var opt = new LMOptimizer(sys.getParams(), arr(sys.constraints.length), model, jacobian);
   var eps;
@@ -206,4 +240,5 @@ TCAD.parametric.solve = function(constrs, locked, fineLevel) {
   var res = opt.doOptimize();
   sys.setParams(res[0]);
 //  console.log("Solved with error: " + sys.error());
+  return sys;
 };
