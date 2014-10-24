@@ -196,7 +196,7 @@ TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
 };
 
 
-TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel) {
+TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel, alg) {
   var pdict = {};
   var params;
   var _constrs = [];
@@ -242,7 +242,7 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel) {
     }
   }
 
-  TCAD.parametric.solve(_constrs, _locked, fineLevel);
+  TCAD.parametric.solve(_constrs, _locked, fineLevel, alg);
 
   for (p in pdict) {
     _p = pdict[p];
