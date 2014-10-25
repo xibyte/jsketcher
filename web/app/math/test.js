@@ -39,14 +39,27 @@ function testCompare() {
   var bfgs_ = perpAndCoinc();
   var lm_ = perpAndCoinc();
   var tr_ = perpAndCoinc();
+  var dl_ = perpAndCoinc();
   
-  var bfgs = TCAD.parametric.solve(bfgs_, [], 0, 1);
+//  var bfgs = TCAD.parametric.solve(bfgs_, [], 0, 1);
   var lm = TCAD.parametric.solve(lm_, [], 0, 0);
-  var tr = TCAD.parametric.solve(tr_, [], 0, 2);
+//  var tr = TCAD.parametric.solve(tr_, [], 0, 2);
+  var dl = TCAD.parametric.solve(dl_, [], 0, 5);
   
-  console.log("bfgs: " + bfgs.errorSquare());
+//  console.log("bfgs: " + bfgs.errorSquare());
   console.log("lm: " + lm.errorSquare());
-  console.log("trusted region: " + tr.errorSquare());
+//  console.log("trusted region: " + tr.errorSquare());
+  console.log("dog leg: " + dl.errorSquare());
+
+}
+
+function lsolve() {
+  var n = numeric;
+  A = [[1, 0, 0], [2,3,0]]
+  b = [10,25]
+  var At = n.transpose(A);
+  var res = n.dot(n.dot(At, n.inv(n.dot(A, At)) ), b);
+  console.log(res);
 }
 
 

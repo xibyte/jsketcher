@@ -10,11 +10,13 @@
   </style>
   <script> TCAD = {} </script>
   <script src="lib/three/three.js"></script>
+  <script src="lib/numeric-1.2.6.js"></script>
   <script src="app/engine.js"></script>
   <script src="app/canvas.js"></script>
   <script src="app/math/math.js"></script>
   <script src="app/math/matrix.js"></script>
   <script src="app/math/optim.js"></script>
+  <script src="app/math/noptim.js"></script>
 
   <script src="app/math/lm.js"></script>
   <script src="app/constr/constraints.js"></script>
@@ -29,7 +31,8 @@
       new TCAD.App2D();
     }
     window.onload = function() {
-      testCompare();  
+      testCompare();
+      lsolve();
     }
   </script>
 </head>
