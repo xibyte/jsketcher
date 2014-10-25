@@ -1,4 +1,4 @@
-this.qrDecomposition = function(matrix) {
+TCAD.math.qr = function(matrix) {
 
   function arr(size) {
     var out = [];
@@ -19,27 +19,32 @@ this.qrDecomposition = function(matrix) {
 
   var nR = this.matrix.length;
   var nC = this.matrix[0].length;
-
+  var k;
+  var norm2;
+  var akk;
+  var j;
+  var i;
+  
   // initializations
-  for (var k = 0; k < nC; ++k) {
+  for (k = 0; k < nC; ++k) {
     this.permutation[k] = k;
-    var norm2 = 0;
-    for (var i = 0; i < nR; ++i) {
-      var akk = matrix[i][k];
+    norm2 = 0;
+    for (i = 0; i < nR; ++i) {
+      akk = matrix[i][k];
       norm2 += akk * akk;
     }
     this.norm[k] = Math.sqrt(norm2);
   }
 
   // transform the matrix column after column
-  for (var k = 0; k < nC; ++k) {
+  for (k = 0; k < nC; ++k) {
 
     // select the column with the greatest norm on active components
     var nextColumn = -1;
     var ak2 = Number.NEGATIVE_INFINITY;
-    for (var i = k; i < nC; ++i) {
-      var norm2 = 0;
-      for (var j = k; j < nR; ++j) {
+    for (i = k; i < nC; ++i) {
+      norm2 = 0;
+      for (j = k; j < nR; ++j) {
         var aki = matrix[j][this.permutation[i]];
         norm2 += aki * aki;
       }
@@ -60,7 +65,7 @@ this.qrDecomposition = function(matrix) {
     this.permutation[k]      = pk;
 
     // choose alpha such that Hk.u = alpha ek
-    var akk   = matrix[k][pk];
+    akk   = matrix[k][pk];
     var alpha = (akk > 0) ? -Math.sqrt(ak2) : Math.sqrt(ak2);
     var betak = 1.0 / (ak2 - akk * alpha);
     this.beta[pk]   = betak;
@@ -72,14 +77,14 @@ this.qrDecomposition = function(matrix) {
     // transform the remaining columns
     for (var dk = nC - 1 - k; dk > 0; --dk) {
       var gamma = 0;
-      for (var j = k; j < nR; ++j) {
+      for (j = k; j < nR; ++j) {
         gamma += matrix[j][pk] * matrix[j][this.permutation[k + dk]];
       }
       gamma *= betak;
-      for (var j = k; j < nR; ++j) {
+      for (j = k; j < nR; ++j) {
         matrix[j][this.permutation[k + dk]] -= gamma * matrix[j][pk];
       }
     }
   }
   this.rank = this.solvedCols;
-}
+};

@@ -57,6 +57,38 @@ TCAD.parametric.System.prototype.makeJacobian = function() {
   return jacobi;
 };
 
+TCAD.parametric.System.prototype.fillJacobian = function(jacobi) {
+  for (i=0; i < this.constraints.length; i++) {
+    var c = this.constraints[i];
+
+    var cParams = c.params;
+    var grad = [];
+    c.gradient(grad);
+
+    for (var p = 0; p < cParams.length; p++) {
+      var param = cParams[p];
+      j = param.j;
+      jacobi[i][j] = grad[p];
+    }
+  }
+  return jacobi;
+};
+
+TCAD.parametric.System.prototype.calcResidual = function(r) {
+
+  var i=0;
+  var err = 0.;
+
+  for (i=0; i < this.constraints.length; i++) {
+    var c = this.constraints[i];
+    r[i] = c.error();
+    err += r[i]*r[i];
+  }
+
+  err *= 0.5;
+  return err;
+}
+
 TCAD.parametric.System.prototype.calcGrad_ = function(out) {
   var i;
   for (i = 0; i < out.length || i < this.params.length; ++i) {
@@ -201,7 +233,7 @@ TCAD.parametric.solve = function(constrs, locked, fineLevel, alg) {
     sys.setParams(point);
     return sys.makeJacobian();
   };
-
+           alg = 5;
   if (alg > 0) {
     switch (alg) {
       case 1:
@@ -216,6 +248,9 @@ TCAD.parametric.solve = function(constrs, locked, fineLevel, alg) {
         break;
       case 4:
         TCAD.math.solve_UNCMIN(sys);
+        break;
+      case 5:
+        optim.dog_leg(sys);
         break;
     }
     return sys;
