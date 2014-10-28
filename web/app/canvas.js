@@ -19,7 +19,14 @@ TCAD.TWO.Styles = {
     lineWidth : 2,
     strokeStyle : "#ff0000",
     fillStyle : "#FF0000"
+  },
+
+  SNAP : {
+    lineWidth : 2,
+    strokeStyle : "#00FF00",
+    fillStyle : "#00FF00"
   }
+
 };
 
 TCAD.TWO.utils = {};
@@ -62,8 +69,8 @@ TCAD.TWO.Viewer = function(canvas) {
   this.translate = {x : 0.0, y : 0.0};
   this.scale = 1.0;
 
-  this.segments = [];
   this.selected = [];
+  this.snapped = [];
   
   this._setupServiceLayer();
   this.refresh();
@@ -77,7 +84,7 @@ TCAD.TWO.Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
   return line;
 };
 
-TCAD.TWO.Viewer.prototype.searchSegment = function(x, y, buffer, deep) {
+TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints) {
 
   buffer *= 0.5;
   
@@ -93,6 +100,9 @@ TCAD.TWO.Viewer.prototype.searchSegment = function(x, y, buffer, deep) {
     for (var j = 0; j < objs.length; j++) {
       var l = unreachable + 1;
       var hit = !objs[j].visit(true, function(o) {
+        if (onlyPoints && o._class !== 'TCAD.TWO.EndPoint') {
+          return false;  
+        }
         l = o.normalDistance(aim);
         if (l > 0 && l <= buffer) {
           pickResult.push(o);
@@ -102,7 +112,7 @@ TCAD.TWO.Viewer.prototype.searchSegment = function(x, y, buffer, deep) {
       });
       
       if (hit) {
-        if (!deep && pickResult.length != 0) return;
+        if (!deep && pickResult.length != 0) return pickResult;
         if (l < heroLength) {
           heroLength = l;
           heroIdx = pickResult.length - 1;
@@ -165,6 +175,29 @@ TCAD.TWO.Viewer.prototype.repaint = function() {
   }
 };
 
+TCAD.TWO.Viewer.prototype.snap = function(x, y, excl) {
+  this.cleanSnap();
+  var snapTo = this.search(x, y, 20 / this.scale, false, true);
+  if (snapTo.length > 0) {
+    snapTo = snapTo[0];
+    for (var i = 0; i < excl.length; i++) {
+      if (excl[i] === snapTo) {
+        return;
+      }
+    }
+    this.mark(snapTo, TCAD.TWO.Styles.SNAP);
+    this.snapped.push(snapTo);
+    return snapTo;
+  }
+  return null;
+};
+
+TCAD.TWO.Viewer.prototype.cleanSnap = function() {
+  while(this.snapped.length > 0) {
+    this.snapped.pop().marked = null;
+  }
+};
+
 TCAD.TWO.Viewer.prototype.showBounds = function(x1, y1, x2, y2) {
   this.translate.x = -x1;
   this.translate.y = -y1;
@@ -202,18 +235,20 @@ TCAD.TWO.Viewer.prototype.select = function(objs, exclusive) {
 
 TCAD.TWO.Viewer.prototype.pick = function(e) {
   var m = this.screenToModel(e);
-  return this.searchSegment(m.x, m.y, 20 / this.scale, true);
+  return this.search(m.x, m.y, 20 / this.scale, true, false);
 };
 
-TCAD.TWO.Viewer.prototype.mark = function(obj) {
-  obj.marked = true;
+TCAD.TWO.Viewer.prototype.mark = function(obj, style) {
+  if (style === undefined) {
+    style = TCAD.TWO.Styles.MARK;
+  }
+  obj.marked = style;
   this.selected.push(obj);
 };
 
 TCAD.TWO.Viewer.prototype.deselectAll = function() {
   for (var i = 0; i < this.selected.length; i++) {
-    var obj = this.selected[i];
-    obj.marked = false;
+    this.selected[i].marked = null;
   }
   while(this.selected.length > 0) this.selected.pop();
 };
@@ -275,7 +310,7 @@ TCAD.TWO.utils.genID = function() {
 TCAD.TWO.SketchObject = function() {
   this.id = TCAD.TWO.utils.genID();
   this.aux = false;
-  this.marked = false;
+  this.marked = null;
   this.visible = true;
   this.children = [];
   this.linked = [];
@@ -313,12 +348,12 @@ TCAD.TWO.SketchObject.prototype.translate = function(dx, dy) {
 
 TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
   if (!this.visible) return;
-  if (this.marked) {
+  if (this.marked != null) {
     ctx.save();
-    TCAD.TWO.utils.setStyle(TCAD.TWO.Styles.MARK, ctx, scale);
+    TCAD.TWO.utils.setStyle(this.marked, ctx, scale);
   }
   this.drawImpl(ctx, scale);
-  if (this.marked) ctx.restore();
+  if (this.marked != null) ctx.restore();
   for (var i = 0; i < this.children.length; i++) {
     this.children[i].draw(ctx, scale);
   }
@@ -355,7 +390,6 @@ TCAD.TWO.EndPoint = function(x, y) {
   TCAD.TWO.SketchObject.call(this);
   this.x = x;
   this.y = y;
-  this.marked = false;
   this.parent = null;
   this._x =  new TCAD.TWO.Param(this, 'x');
   this._y =  new TCAD.TWO.Param(this, 'y');
@@ -478,6 +512,16 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
     e.stopPropagation();
     tm.getTool().mousewheel(e);
   }, false);
+
+  window.addEventListener("keydown", function (e) {
+    tm.getTool().mousewheel(e);
+  }, false);
+  window.addEventListener("keypress", function (e) {
+    tm.getTool().mousewheel(e);
+  }, false);
+  window.addEventListener("keyup", function (e) {
+    tm.getTool().mousewheel(e);
+  }, false);
 };
 
 TCAD.TWO.ToolManager.prototype.takeControl = function(tool) {
@@ -488,7 +532,7 @@ TCAD.TWO.ToolManager.prototype.releaseControl = function() {
   if (this.stack.length == 1) {
     return;
   }
-  this.stack.pop();
+  this.stack.pop().cleanup();;
 };
 
 TCAD.TWO.ToolManager.prototype.getTool = function() {
@@ -501,6 +545,11 @@ TCAD.TWO.PanTool = function(viewer) {
   this.x = 0.0;
   this.y = 0.0;
 };
+
+TCAD.TWO.PanTool.prototype.keydown = function(e) {};
+TCAD.TWO.PanTool.prototype.keypress = function(e) {};
+TCAD.TWO.PanTool.prototype.keyup = function(e) {};
+TCAD.TWO.PanTool.prototype.cleanup = function(e) {};
 
 TCAD.TWO.PanTool.prototype.mousemove = function(e) {
   if (!this.dragging) {
@@ -587,6 +636,11 @@ TCAD.TWO.DragTool = function(obj, viewer) {
   this.errorX = 0;
   this.errorY = 0;
 };
+
+TCAD.TWO.DragTool.prototype.keydown = function(e) {};
+TCAD.TWO.DragTool.prototype.keypress = function(e) {};
+TCAD.TWO.DragTool.prototype.keyup = function(e) {};
+TCAD.TWO.DragTool.prototype.cleanup = function(e) {};
 
 TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   var x = this._point.x;

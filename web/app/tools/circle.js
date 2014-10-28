@@ -47,6 +47,11 @@ TCAD.TWO.EditCircleTool = function(viewer, layer) {
   this.circle = null;
 };
 
+TCAD.TWO.EditCircleTool.prototype.keydown = function(e) {};
+TCAD.TWO.EditCircleTool.prototype.keypress = function(e) {};
+TCAD.TWO.EditCircleTool.prototype.keyup = function(e) {};
+TCAD.TWO.EditCircleTool.prototype.cleanup = function(e) {};
+
 TCAD.TWO.EditCircleTool.prototype.mousemove = function(e) {
   if (this.circle != null) {
     var p = this.viewer.screenToModel(e);
