@@ -36,7 +36,11 @@ TCAD.App2D = function() {
   var actionsF = gui.addFolder('Add Object');
   var actions = {
     addSegment : function () {
-      app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer));
+      app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, false));
+    },
+    
+    addMultiSegment : function () {
+      app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, true));
     },
 
     addArc : function () {
@@ -133,8 +137,9 @@ TCAD.App2D = function() {
     }
 
   };
-  
+
   actionsF.add(actions, 'addSegment');
+  actionsF.add(actions, 'addMultiSegment');
   actionsF.add(actions, 'addArc');
   actionsF.add(actions, 'addCircle');
   actionsF.add(actions, 'pan');
