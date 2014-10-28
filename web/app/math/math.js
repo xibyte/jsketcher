@@ -18,6 +18,10 @@ TCAD.math._matrix = function(m, n) {
   return out;
 };
 
+TCAD.math.distanceAB = function(a, b) {
+  return TCAD.math.distance(a.x, a.y, b.x, b.y);
+};
+  
 TCAD.math.distance = function(x1, y1, x2, y2) {
   var dx = x1 - x2;
   var dy = y1 - y2;
