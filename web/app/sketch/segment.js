@@ -67,6 +67,7 @@ TCAD.TWO.AddSegmentTool.prototype.mousewheel = function(e) {
 TCAD.TWO.AddSegmentTool.prototype.keydown = function(e) {
   if (this.multi && e.keyCode == 27) {
     this.viewer.remove(this.line);
+    this.viewer.refresh();
   }    
 };
 
