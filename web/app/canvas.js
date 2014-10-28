@@ -81,7 +81,17 @@ TCAD.TWO.Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
   var b = new TCAD.TWO.EndPoint(x2, y2);
   var line = new TCAD.TWO.Segment(a, b);
   layer.objects.push(line);
+  line.layer = layer;
   return line;
+};
+
+TCAD.TWO.Viewer.prototype.remove = function(obj) {
+  if (obj.layer != null) {
+    var idx = obj.layer.objects.indexOf(obj);
+    if (idx != -1) {
+      obj.layer.objects.splice(idx, 1);
+    }
+  }
 };
 
 TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints) {
@@ -314,6 +324,7 @@ TCAD.TWO.SketchObject = function() {
   this.visible = true;
   this.children = [];
   this.linked = [];
+  this.layer = null;
 };
 
 TCAD.TWO.SketchObject.prototype.visit = function(onlyVisible, h) {
@@ -514,13 +525,13 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
   }, false);
 
   window.addEventListener("keydown", function (e) {
-    tm.getTool().mousewheel(e);
+    tm.getTool().keydown(e);
   }, false);
   window.addEventListener("keypress", function (e) {
-    tm.getTool().mousewheel(e);
+    tm.getTool().keydown(e);
   }, false);
   window.addEventListener("keyup", function (e) {
-    tm.getTool().mousewheel(e);
+    tm.getTool().keydown(e);
   }, false);
 };
 
@@ -532,7 +543,7 @@ TCAD.TWO.ToolManager.prototype.releaseControl = function() {
   if (this.stack.length == 1) {
     return;
   }
-  this.stack.pop().cleanup();;
+  this.stack.pop().cleanup();
 };
 
 TCAD.TWO.ToolManager.prototype.getTool = function() {
