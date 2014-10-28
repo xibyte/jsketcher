@@ -115,8 +115,7 @@ TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
   }
 };
 
-TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
-  if (objs.length == 0) return;
+TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
   var i;
   var last = objs.length - 1;
   for (i = 0; i < objs.length - 1; ++i) {
@@ -133,7 +132,11 @@ TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
       }
     }
   }
-  
+};
+
+TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
+  if (objs.length == 0) return;
+  this.linkObjects(objs);
   this.solve();
   this.viewer.refresh();
 };

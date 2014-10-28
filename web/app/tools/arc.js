@@ -74,6 +74,11 @@ TCAD.TWO.AddArcTool = function(viewer, layer) {
   this._v = new TCAD.Vector(0, 0, 0);
 };
 
+TCAD.TWO.AddArcTool.prototype.keydown = function(e) {};
+TCAD.TWO.AddArcTool.prototype.keypress = function(e) {};
+TCAD.TWO.AddArcTool.prototype.keyup = function(e) {};
+TCAD.TWO.AddArcTool.prototype.cleanup = function(e) {};
+
 TCAD.TWO.AddArcTool.prototype.mousemove = function(e) {
   if (this.point != null) {
     var p = this.viewer.screenToModel(e);
