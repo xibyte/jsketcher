@@ -274,8 +274,10 @@ TCAD.TWO.Constraints.Equal = function(p1, p2) {
   this.p2 = p2;
 };
 
+TCAD.TWO.Constraints.Equal.prototype.NAME = 'equal'; 
+
 TCAD.TWO.Constraints.Equal.prototype.getSolveData = function() {
-  return ['equal', [this.p1, this.p2], []];
+  return [this.NAME, [this.p1, this.p2], []];
 };
 
 TCAD.TWO.Constraints.EqualsTo = function(p, v) {
@@ -283,8 +285,10 @@ TCAD.TWO.Constraints.EqualsTo = function(p, v) {
   this.v = v;
 };
 
+TCAD.TWO.Constraints.EqualsTo.prototype.NAME = 'equalsTo';
+
 TCAD.TWO.Constraints.EqualsTo.prototype.getSolveData = function() {
-  return ['equalsTo', [this.p], [this.v]];
+  return [this.NAME, [this.p], [this.v]];
 };
 
 TCAD.TWO.Constraints.Parallel = function(l1, l2) {
@@ -292,11 +296,13 @@ TCAD.TWO.Constraints.Parallel = function(l1, l2) {
   this.l2 = l2;
 };
 
+TCAD.TWO.Constraints.Parallel.prototype.NAME = 'parallel';
+
 TCAD.TWO.Constraints.Parallel.prototype.getSolveData = function() {
   var params = [];
   this.l1.collectParams(params);
   this.l2.collectParams(params);
-  return ['parallel', params, []];
+  return [this.NAME, params, []];
 };
 
 TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
@@ -304,11 +310,13 @@ TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
   this.l2 = l2;
 };
 
+TCAD.TWO.Constraints.Perpendicular.prototype.NAME = 'perpendicular';
+
 TCAD.TWO.Constraints.Perpendicular.prototype.getSolveData = function() {
   var params = [];
   this.l1.collectParams(params);
   this.l2.collectParams(params);
-  return ['perpendicular', params, []];
+  return [this.NAME, params, []];
 };
 
 TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
@@ -317,11 +325,13 @@ TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
   this.d = d;
 };
 
+TCAD.TWO.Constraints.P2LDistance.prototype.NAME = 'P2LDistance';
+
 TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function() {
   var params = [];
   this.p.collectParams(params);
   this.l.collectParams(params);
-  return ['P2LDistance', params, [this.d]];
+  return [this.NAME, params, [this.d]];
 };
 
 
@@ -331,12 +341,14 @@ TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
   this.d = d;
 };
 
+TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME = 'P2LDistanceV';
+
 TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
   var params = [];
   this.p.collectParams(params);
   this.l.collectParams(params);
   params.push(this.d);
-  return ['P2LDistanceV', params];
+  return [this.NAME, params];
 };
 
 
@@ -346,11 +358,13 @@ TCAD.TWO.Constraints.P2PDistance = function(p1, p2, d) {
   this.d = d;
 };
 
+TCAD.TWO.Constraints.P2PDistance.prototype.NAME = 'P2PDistance';
+
 TCAD.TWO.Constraints.P2PDistance.prototype.getSolveData = function() {
   var params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
-  return ['P2PDistance', params, [this.d]];
+  return [this.NAME, params, [this.d]];
 };
 
 TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
@@ -359,10 +373,12 @@ TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
   this.d = d;
 };
 
+TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME = 'P2PDistanceV';
+
 TCAD.TWO.Constraints.P2PDistanceV.prototype.getSolveData = function() {
   var params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
   params.push(this.d);
-  return ['P2PDistanceV', params];
+  return [this.NAME, params];
 };
