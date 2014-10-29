@@ -192,6 +192,37 @@ optim.bfgs = function(f,x0,tol,gradient,maxit,callback,options) {
   return {solution: x0, f: f0, gradient: g0, invHessian: H1, iterations:it, message: msg};
 };
 
+optim.inv = function inv(x) {
+    var s = numeric.dim(x), abs = Math.abs, m = s[0], n = s[1];
+    var A = numeric.clone(x), Ai, Aj;
+    var I = numeric.identity(m), Ii, Ij;
+    var i,j,k,x;
+    for(j=0;j<n;++j) {
+        var i0 = -1;
+        var v0 = -1;
+        for(i=j;i!==m;++i) { k = abs(A[i][j]); if(k>v0) { i0 = i; v0 = k; } }
+        Aj = A[i0]; A[i0] = A[j]; A[j] = Aj;
+        Ij = I[i0]; I[i0] = I[j]; I[j] = Ij;
+        x = Aj[j];
+        if (x === 0) {
+          x = 1e-32
+        }
+        for(k=j;k!==n;++k)    Aj[k] /= x;
+        for(k=n-1;k!==-1;--k) Ij[k] /= x;
+        for(i=m-1;i!==-1;--i) {
+            if(i!==j) {
+                Ai = A[i];
+                Ii = I[i];
+                x = Ai[j];
+                for(k=j+1;k!==n;++k)  Ai[k] -= Aj[k]*x;
+                for(k=n-1;k>0;--k) { Ii[k] -= Ij[k]*x; --k; Ii[k] -= Ij[k]*x; }
+                if(k===0) Ii[0] -= Ij[0]*x;
+            }
+        }
+    }
+    return I;
+}
+
 // this is Gauss-Newton least square algorithm with trust region(dog leg) control/
 optim.dog_leg = function(subsys) {
 
@@ -268,7 +299,7 @@ optim.dog_leg = function(subsys) {
 //      return n.solve(A, b);
 //    }
     var At = n.transpose(A);
-    var res = n.dot(n.dot(At, n.inv(n.dot(A, At)) ), b);
+    var res = n.dot(n.dot(At, optim.inv(n.dot(A, At)) ), b);
     return res;
 
   }
