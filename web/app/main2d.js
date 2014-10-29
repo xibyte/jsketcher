@@ -25,7 +25,7 @@ TCAD.App2D = function() {
     try {
       this.loadSketch(sketch);
     } catch(e) {
-      if (typeof(e) === String) {
+      if (typeof(e) === typeof("")) {
         console.error(e);
       } else {
         throw e;
