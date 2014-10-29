@@ -89,6 +89,7 @@ TCAD.TWO.Viewer.prototype.remove = function(obj) {
   if (obj.layer != null) {
     var idx = obj.layer.objects.indexOf(obj);
     if (idx != -1) {
+      this.parametricManager.removeConstraintsByObj(obj);
       obj.layer.objects.splice(idx, 1);
     }
   }

@@ -13,7 +13,7 @@ TCAD.App2D = function() {
 
   if (sketchData == null) {
     //PUT SAMPLES
-    this.viewer.addSegment(20, 20, 300, 300, layer);
+//    this.viewer.addSegment(20, 20, 300, 300, layer);
 //    var points = [{x: 10, y: 10}, {x: 100, y: 10}, {x: 100, y: 100}];
 //    var poly = new TCAD.TWO.Polygon(points);
 //    layer.objects.push(poly);
@@ -67,7 +67,6 @@ TCAD.App2D = function() {
       var sketch = {};
       sketch.boundary = boundary;
       sketch.layers = [];
-      sketch.index = {};
       function point(p) {
         return [ p.id, [p._x.id, p.x], [p._y.id, p.y] ];
       }
@@ -239,7 +238,9 @@ TCAD.App2D.prototype.loadSketch = function(sketch) {
 TCAD.App2D.prototype.parseConstr = function (c, index) {
   function find(id) {
     var p = index[id];
-    if (!p) throw "CAN'T READ SKETCH";
+    if (!p) {
+      throw "CAN'T READ SKETCH";
+    }
     return p;
   }
   var name = c[0];
@@ -287,7 +288,7 @@ TCAD.App2D.prototype.serializeConstr = function (c) {
 
 TCAD.App2D.prototype.getSketchId = function() {
   var id = window.location.hash.substring(1);
-  if (!!id) {
+  if (!id) {
     id = "untitled";
   }
   return "TCAD.projects." + id;
