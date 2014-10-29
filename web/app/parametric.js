@@ -12,6 +12,34 @@ TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this.viewer.refresh();
 };
 
+TCAD.TWO.ParametricManager.prototype.removeConstraintsByObj = function(obj) {
+  var ownedParams = [];
+  obj.collectParams(ownedParams);
+  this.removeConstraintsByParams(ownedParams);
+};
+
+TCAD.TWO.ParametricManager.prototype.removeConstraintsByParams = function(ownedParams) {
+  var toRemove = [];
+  for (var i = 0; i < this.system.length; ++i) {
+    var params = this.system[i].getSolveData()[1];
+    MAIN:
+    for (var j = 0; j < ownedParams.length; ++j) {
+      for (var k = 0; k < params.length; ++k) {
+        if (ownedParams[j].id === params[k].id) {
+          toRemove.push(i);
+          break MAIN;
+        }
+      }
+    }
+  }
+
+  toRemove.sort();
+
+  for (var i = toRemove.length - 1; i >= 0 ; --i) {
+    this.system.splice(  toRemove[i], 1);
+  }
+};
+
 TCAD.TWO.ParametricManager.prototype.lock = function(objs) {
   var p = this._fetchPoints(objs);
   for (var i = 0; i < p.length; ++i) {
