@@ -296,7 +296,8 @@ TCAD.App2D.prototype.getSketchId = function() {
 
 TCAD.App2D.prototype.makePolygon = function(points, layer) {
   var n = points.length;
-  var k = magic_k;
+//  var k = magic_k;
+  var k = 1;
   var bounds = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
   for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
     var seg =  this.viewer.addSegment(k*points[p].x, k*points[p].y, k*points[q].x, k*points[q].y, layer);
