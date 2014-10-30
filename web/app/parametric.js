@@ -227,7 +227,9 @@ TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
 };
 
 TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel, alg) {
-  this.prepare(locked, alg).solve(fineLevel);  
+  var solver = this.prepare(locked, alg);
+  solver.solve(fineLevel);
+  solver.sync()
 };
 
 TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
@@ -291,12 +293,14 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
       _p.set(_p._backingParam.get());
     }
     solver.solveSystem(fineLevel);
+  }
+  
+  function sync() {
     for (p in pdict) {
       _p = pdict[p];
       _p._backingParam.set(_p.get());
     }
-  
-  
+
     //Make sure all equal constraints are equal
     for (i = 0; i < equals.length; ++i) {
       var ec = equals[i];
@@ -312,7 +316,9 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
       slave.set( master.get() );
     }
   }
+  
   solver.solve = solve;
+  solver.sync = sync;
   return solver; 
 };
 

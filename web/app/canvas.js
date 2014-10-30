@@ -693,6 +693,7 @@ TCAD.TWO.DragTool.prototype.mousewheel = function(e) {
 
 TCAD.TWO.DragTool.prototype.solveRequest = function(fineLevel) {
   this.solver.solve(fineLevel);
+  this.solver.sync();
 };
 
 TCAD.TWO.DragTool.prototype.prepareSolver = function() {
