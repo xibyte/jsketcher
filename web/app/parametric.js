@@ -276,9 +276,16 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
       lockedIds[locked[p]] = true;
     }
   }
-
+  
+  var lockedValues = [];
   var solver = TCAD.parametric.prepare(_constrs, _locked, alg);
   function solve(fineLevel) {
+    if (_locked.length != 0) {
+      for (p = 0; p < locked.length; ++p) {
+        lockedValues[p] = locked[p].get() ;
+      }
+      solver.updateLock(lockedValues);
+    }
     solver.solveSystem(fineLevel);
     for (p in pdict) {
       _p = pdict[p];

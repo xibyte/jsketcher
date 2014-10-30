@@ -197,10 +197,12 @@ TCAD.parametric.lock1 = function(constrs, locked) {
   }
 };
 
-TCAD.parametric.lock2 = function(constrs, locked) {
+TCAD.parametric.lock2Equals2 = function(constrs, locked) {
+  var _locked = [];
   for (var i = 0; i < locked.length; ++i) {
-    constrs.push(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()));
+    _locked.push(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()));
   }
+  return _locked;
 };
 
 TCAD.parametric.prepare = function(constrs, locked, alg) {
@@ -209,8 +211,9 @@ TCAD.parametric.prepare = function(constrs, locked, alg) {
 
 
 //  this.lock1(constrs, locked);
-  this.lock2(constrs, locked);
-
+  var lockingConstrs = this.lock2Equals2(constrs, locked);
+  Array.prototype.push.apply( constrs, lockingConstrs );
+  
   var sys = new TCAD.parametric.System(constrs);
 
   if (sys.params.length == 0) return;
@@ -281,7 +284,12 @@ TCAD.parametric.prepare = function(constrs, locked, alg) {
   }
   var systemSolver = {
     system : sys,
-    solveSystem : solve 
+    solveSystem : solve,
+    updateLock : function(values) {
+      for (var i = 0; i < values.length; ++i) {
+        lockingConstrs[i].value = values[i];
+      }
+    }
   };
   
   return systemSolver;
