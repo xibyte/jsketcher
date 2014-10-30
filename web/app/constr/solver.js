@@ -203,7 +203,7 @@ TCAD.parametric.lock2 = function(constrs, locked) {
   }
 };
 
-TCAD.parametric.solve = function(constrs, locked, fineLevel, alg) {
+TCAD.parametric.prepare = function(constrs, locked, alg) {
 
   if (constrs.length == 0) return;
 
@@ -233,47 +233,57 @@ TCAD.parametric.solve = function(constrs, locked, fineLevel, alg) {
     sys.setParams(point);
     return sys.makeJacobian();
   };
-           alg = 5;
-  if (alg > 0) {
-    switch (alg) {
+  alg = 5;
+  
+  function solve(fineLevel) {
+    if (alg > 0) {
+      switch (alg) {
+        case 1:
+          var res = TCAD.math.solve_BFGS(sys, 1e-4, 1e-4);
+          console.log(res);
+          break;
+        case 2:
+          TCAD.math.solve_TR(sys);
+          break;
+        case 3:
+          TCAD.math.noptim(sys);
+          break;
+        case 4:
+          TCAD.math.solve_UNCMIN(sys);
+          break;
+        case 5:
+          optim.dog_leg(sys);
+          break;
+      }
+      return sys;
+    }
+  
+    var opt = new LMOptimizer(sys.getParams(), arr(sys.constraints.length), model, jacobian);
+    var eps;
+    switch (fineLevel) {
       case 1:
-        var res = TCAD.math.solve_BFGS(sys, 1e-4, 1e-4);
-        console.log(res);
+        eps = 0.01;
+        opt.init0(eps, eps, eps);
         break;
       case 2:
-        TCAD.math.solve_TR(sys);
+        eps = 0.1;
+        opt.init0(eps, eps, eps);
         break;
-      case 3:
-        TCAD.math.noptim(sys);
-        break;
-      case 4:
-        TCAD.math.solve_UNCMIN(sys);
-        break;
-      case 5:
-        optim.dog_leg(sys);
-        break;
+      default:
+        eps = 0.00000001;
+        opt.init0(eps, eps, eps);
     }
-    return sys;
+  
+    var res = opt.doOptimize();
+    sys.setParams(res[0]);
+  //  console.log("Solved with error: " + sys.error());
+    return res;
   }
-
-  var opt = new LMOptimizer(sys.getParams(), arr(sys.constraints.length), model, jacobian);
-  var eps;
-  switch (fineLevel) {
-    case 1:
-      eps = 0.01;
-      opt.init0(eps, eps, eps);
-      break;
-    case 2:
-      eps = 0.1;
-      opt.init0(eps, eps, eps);
-      break;
-    default:
-      eps = 0.00000001;
-      opt.init0(eps, eps, eps);
-  }
-
-  var res = opt.doOptimize();
-  sys.setParams(res[0]);
-//  console.log("Solved with error: " + sys.error());
-  return sys;
+  var systemSolver = {
+    system : sys,
+    solveSystem : solve 
+  };
+  
+  return systemSolver;
+  
 };

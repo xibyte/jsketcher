@@ -226,8 +226,12 @@ TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
   xhr.send(JSON.stringify(request));
 };
 
-
 TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel, alg) {
+  this.prepare(locked, alg).solve(fineLevel);  
+};
+
+TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
+
   var pdict = {};
   var params;
   var _constrs = [];
@@ -273,28 +277,32 @@ TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel, alg) {
     }
   }
 
-  TCAD.parametric.solve(_constrs, _locked, fineLevel, alg);
-
-  for (p in pdict) {
-    _p = pdict[p];
-    _p._backingParam.set(_p.get());
-  }
-
-
-  //Make sure all equal constraints are equal
-  for (i = 0; i < equals.length; ++i) {
-    var ec = equals[i];
-    var master = ec.p1;
-    var slave = ec.p2;
-    if (lockedIds[master.id] === true) {
-      master = ec.p2;
-      slave = ec.p1;
-      if (lockedIds[master.id] === true) {
-        continue;
-      }
+  var solver = TCAD.parametric.prepare(_constrs, _locked, alg);
+  function solve(fineLevel) {
+    solver.solveSystem(fineLevel);
+    for (p in pdict) {
+      _p = pdict[p];
+      _p._backingParam.set(_p.get());
     }
-    slave.set( master.get() );
+  
+  
+    //Make sure all equal constraints are equal
+    for (i = 0; i < equals.length; ++i) {
+      var ec = equals[i];
+      var master = ec.p1;
+      var slave = ec.p2;
+      if (lockedIds[master.id] === true) {
+        master = ec.p2;
+        slave = ec.p1;
+        if (lockedIds[master.id] === true) {
+          continue;
+        }
+      }
+      slave.set( master.get() );
+    }
   }
+  solver.solve = solve;
+  return solver; 
 };
 
 TCAD.TWO.Constraints.Equal = function(p1, p2) {
