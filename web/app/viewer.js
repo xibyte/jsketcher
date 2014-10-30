@@ -15,8 +15,8 @@ TCAD.Viewer = function() {
   }
 
   var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera( 75, aspect(), 0.1, 1000 );
-  camera.position.z = 5;
+  var camera = new THREE.PerspectiveCamera( 500*75, aspect(), 0.1, 10000 );
+  camera.position.z = 1000;
 
   var light = new THREE.PointLight( 0xffffff);
   light.position.set( 10, 10, 10 );
@@ -45,7 +45,7 @@ TCAD.Viewer = function() {
 //  var geometry = new THREE.BoxGeometry(1,1,1);
 //  var geometry = new TCAD.Solid([TCAD.utils.createSquare(1)]);
   
-  var box = TCAD.utils.createSolid(TCAD.utils.createBox(1));
+  var box = TCAD.utils.createSolid(TCAD.utils.createBox(500));
   scene.add( box );
   
   
