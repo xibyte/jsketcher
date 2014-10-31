@@ -207,16 +207,11 @@ TCAD.parametric.lock2Equals2 = function(constrs, locked) {
 
 TCAD.parametric.prepare = function(constrs, locked, alg) {
 
-  if (constrs.length == 0) return;
-
-
 //  this.lock1(constrs, locked);
   var lockingConstrs = this.lock2Equals2(constrs, locked);
   Array.prototype.push.apply( constrs, lockingConstrs );
   
   var sys = new TCAD.parametric.System(constrs);
-
-  if (sys.params.length == 0) return;
 
   function arr(size) {
     var out = [];
@@ -239,6 +234,8 @@ TCAD.parametric.prepare = function(constrs, locked, alg) {
   alg = 5;
   
   function solve(fineLevel) {
+    if (constrs.length == 0) return;
+    if (sys.params.length == 0) return;
     if (alg > 0) {
       switch (alg) {
         case 1:

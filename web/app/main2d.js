@@ -4,35 +4,24 @@ var magic_k = 500;
 TCAD.App2D = function() {
 
   this.viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
-  var layer = new TCAD.TWO.Layer("test", TCAD.TWO.Styles.DEFAULT);
+  var layer = new TCAD.TWO.Layer("default", TCAD.TWO.Styles.DEFAULT);
   this.viewer.layers.push(layer);
 
   var sketchId = this.getSketchId();
   var sketchData = localStorage.getItem(sketchId);
   var boundary = null;
-
-  if (sketchData == null) {
-    //PUT SAMPLES
-//    this.viewer.addSegment(20, 20, 300, 300, layer);
-//    var points = [{x: 10, y: 10}, {x: 100, y: 10}, {x: 100, y: 100}];
-//    var poly = new TCAD.TWO.Polygon(points);
-//    layer.objects.push(poly);
-  } else {
+  if (sketchData != null) {
     var sketch = JSON.parse(sketchData);
-  }
-
-  if (sketch != null) {
     try {
-      this.loadSketch(sketch);
+      boundary = this.loadSketch(sketch, layer);
     } catch(e) {
-      if (typeof(e) === typeof("")) {
+      if (e == "CAN'T READ SKETCH") {
         console.error(e);
       } else {
         throw e;
       }
     }
   }
-
 
   this.viewer.repaint();
 
@@ -65,18 +54,21 @@ TCAD.App2D = function() {
 
     save : function() {
       var sketch = {};
-      sketch.boundary = boundary;
+      //sketch.boundary = boundary;
       sketch.layers = [];
       function point(p) {
         return [ p.id, [p._x.id, p.x], [p._y.id, p.y] ];
       }
       for (var l = 0; l < app.viewer.layers.length; ++l) {
         var layer = app.viewer.layers[l];
+        var isBoundary = layer.name === '';
         var toLayer = [];
         sketch.layers.push(toLayer);
         for (var i = 0; i < layer.objects.length; ++i) {
           var obj = layer.objects[i];
-          var to = {id: obj.id, _class: obj._class};
+          var to = {id: obj.id, _class: obj._class, aux : obj.aux};
+          if (obj.aux) to.aux = obj.aux;
+          if (!!obj.edge) to.edge = obj.edge;
           toLayer.push(to);
           if (obj._class === 'TCAD.TWO.Segment') {
             to.points = [point(obj.a), point(obj.b)];
@@ -189,16 +181,7 @@ TCAD.App2D = function() {
 
 };
 
-TCAD.App2D.prototype.loadSketch = function(sketch) {
-
-    var boundary = sketch.boundary;
-    if (boundary != null) {
-      var bbox = this.makePolygon(boundary.shell, layer);
-      for (var i = 0; i < sketch.boundary.holes.length; ++i ) {
-        this.makePolygon(sketch.boundary.holes[i], layer);
-      }
-      this.viewer.showBounds(bbox[0], bbox[1], bbox[2], bbox[3])
-    }
+TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
 
     var index = {};
 
@@ -211,28 +194,93 @@ TCAD.App2D.prototype.loadSketch = function(sketch) {
       return ep;
     }
 
-    for (var l = 0; l < sketch.layers.length; ++l) {
-      var layer = new TCAD.TWO.Layer("layer_" + l, TCAD.TWO.Styles.DEFAULT);
-      this.viewer.layers.push(layer);
-      for (var i = 0; i < sketch.layers[l].length; ++i) {
-        var obj = sketch.layers[l][i];
-        if (obj._class === 'TCAD.TWO.Segment') {
-          var a = createEndPoint(obj.points[0]);
-          var b = createEndPoint(obj.points[1]);
-          var line = new TCAD.TWO.Segment(a, b);
-          layer.objects.push(line);
-          line.layer = layer;
-          index[obj.id] = line;
-        } else if (obj._class === 'TCAD.TWO.Arc') {
-        } else if (obj._class === 'TCAD.TWO.Circle') {
+    if (!!sketch.layers) {
+      for (var l = 0; l < sketch.layers.length; ++l) {
+        var layer = new TCAD.TWO.Layer("layer_" + l, TCAD.TWO.Styles.DEFAULT);
+        this.viewer.layers.push(layer);
+        for (var i = 0; i < sketch.layers[l].length; ++i) {
+          var obj = sketch.layers[l][i];
+          var skobj = null;
+          if (obj._class === 'TCAD.TWO.Segment') {
+            var a = createEndPoint(obj.points[0]);
+            var b = createEndPoint(obj.points[1]);
+            var skobj = new TCAD.TWO.Segment(a, b);
+          } else if (obj._class === 'TCAD.TWO.Arc') {
+          } else if (obj._class === 'TCAD.TWO.Circle') {
+          }
         }
+
+        skobj.aux = !!obj.aux;
+        if (!!obj.edge) {
+          skobj.edge = edge;
+        }
+        layer.objects.push(skobj);
+        skobj.layer = layer;
+        index[obj.id] = skobj;
       }
     }
 
-    for (var i = 0; i < sketch.constraints.length; ++i) {
-      var c = this.parseConstr(sketch.constraints[i], index);
-      this.viewer.parametricManager.system.push(c);
+
+    if (!!sketch.boundary && sketch.boundary != null) {
+      this.updateBoundary(sketch.boundary, defaultLayer);
     }
+
+    if (!!sketch.constraints) {
+      for (var i = 0; i < sketch.constraints.length; ++i) {
+        var c = this.parseConstr(sketch.constraints[i], index);
+        this.viewer.parametricManager.system.push(c);
+      }
+    }
+};
+
+TCAD.App2D.prototype.updateBoundary = function (boundary, layer) {
+
+  var edges = [];
+  var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
+  var flattenPolygon = function(points) {
+    var n = points.length;
+    for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
+      edges.push([points[p].x, points[p].y, points[q].x, points[q].y]);
+      bbox[0] = Math.min(bbox[0], points[p].x);
+      bbox[1] = Math.min(bbox[1], points[p].y);
+      bbox[2] = Math.max(bbox[2], points[q].x);
+      bbox[3] = Math.max(bbox[3], points[q].y);
+    }
+  };
+
+  flattenPolygon(boundary.shell);
+  for (var i = 0; i < boundary.holes.length; ++i ) {
+    flattenPolygon(boundary.holes[i]);
+  }
+//  if (bbox[0] < Number.MAX_VALUE && bbox[1] < Number.MAX_VALUE && -bbox[2] < Number.MAX_VALUE && -bbox[3] < Number.MAX_VALUE) {
+//    this.viewer.showBounds(bbox[0], bbox[1], bbox[2], bbox[3])
+//  }
+
+  for (var l = 0; l < this.viewer.layers.length; ++l) {
+    var layer = this.viewer.layers[l];
+    for (var i = 0; i < layer.objects.length; ++i) {
+      var obj = layer.objects[i];
+      if (!!obj.edge) {
+        var edge = edges[obj.edge];
+        if (!!edge) {
+          obj.a.x = edge[0];
+          obj.a.y = edge[1];
+          obj.b.x = edge[2];
+          obj.b.y = edge[3];
+        }
+        edges[obj.edge] = null;
+      }
+    }
+  }
+  for (var i = 0; i < edges.length; ++i ) {
+    var edge = edges[i];
+    if (edge != null) {
+      var seg = this.viewer.addSegment(edge[0], edge[1], edge[2], edge[3], layer);
+      seg.aux = true;
+      seg.a.aux = true;
+      seg.b.aux = true;
+    }
+  }
 };
 
 TCAD.App2D.prototype.parseConstr = function (c, index) {
@@ -292,22 +340,4 @@ TCAD.App2D.prototype.getSketchId = function() {
     id = "untitled";
   }
   return "TCAD.projects." + id;
-};
-
-TCAD.App2D.prototype.makePolygon = function(points, layer) {
-  var n = points.length;
-//  var k = magic_k;
-  var k = 1;
-  var bounds = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
-  for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
-    var seg =  this.viewer.addSegment(k*points[p].x, k*points[p].y, k*points[q].x, k*points[q].y, layer);
-    seg.aux = true;
-    seg.a.aux = true;
-    seg.b.aux = true;
-    bounds[0] = Math.min(bounds[0], k*points[p].x);
-    bounds[1] = Math.min(bounds[1], k*points[p].y);
-    bounds[2] = Math.max(bounds[2], k*points[q].x);
-    bounds[3] = Math.max(bounds[3], k*points[q].y);
-  }
-  return bounds;
 };
