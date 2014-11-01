@@ -149,8 +149,12 @@ TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
   for (i = 0; i < objs.length - 1; ++i) {
     objs[i].x = objs[last].x;
     objs[i].y = objs[last].y;
-    this.system.push(new TCAD.TWO.Constraints.Equal(objs[i]._x, objs[last]._x));
-    this.system.push(new TCAD.TWO.Constraints.Equal(objs[i]._y, objs[last]._y));
+    var e1 = new TCAD.TWO.Constraints.Equal(objs[i]._x, objs[last]._x);
+    var e2 = new TCAD.TWO.Constraints.Equal(objs[i]._y, objs[last]._y);
+    e1.coincident = true;
+    e2.coincident = true;
+    this.system.push(e1);
+    this.system.push(e2);
   }
 
   for (i = 0; i < objs.length; ++i) {
@@ -239,7 +243,56 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   var _constrs = [];
   var equals = [];
 
+  var equalsDict = {};
+  var equalsIndex = [];
+  var eqcElimination = [];
+
+  function peq(p1, p2) {
+    return Math.abs(p1.get() - p2.get()) <= 0.000001
+  }
+  for (i = 0; i < this.system.length; ++i) {
+    var c = this.system[i];
+    if (c.NAME === 'equal' && c.coincident === true) {
+      var found = false;
+      //if (!peq(c.p1, c.p2)) continue;
+      var p0 = c.p1.id;
+      var p1 = c.p2.id;
+      equalsDict[p0] = c.p1;
+      equalsDict[p1] = c.p2;
+      for (ei = 0; ei < equalsIndex.length; ++ei) {
+        if (equalsIndex[ei].indexOf(p0) >= 0) {
+//          if (!peq(equalsDict[equalsIndex[ei][0]], c.p1) ) break;
+          if (equalsIndex[ei].indexOf(p1) < 0) {
+            equalsIndex[ei].push(p1);
+          }
+          found = true;
+        } else if (equalsIndex[ei].indexOf(p1) >= 0) {
+//          if (!peq(equalsDict[equalsIndex[ei][0]], c.p1) ) break;
+          equalsIndex[ei].push(p0);
+          found = true;
+        }
+        if (found) break;
+      }
+      if (!found) {
+        equalsIndex.push([p0, p1]);
+      }
+      eqcElimination.push(i);
+    }
+  }
+
+  var equalsElimination = {};
+  for (ei = 0; ei < equalsIndex.length; ++ei) {
+    var master = equalsIndex[ei][0];
+    for (i = 1; i < equalsIndex[ei].length; ++i) {
+      equalsElimination[equalsIndex[ei][i]] = master;
+    }
+  }
+  
   function getParam(p) {
+    var master = equalsElimination[p.id];
+    if (master !== undefined) {
+      p = equalsDict[master];
+    }
     var _p = pdict[p.id];
     if (_p === undefined) {
       _p = new TCAD.parametric.Param(p.id, p.get());
@@ -252,9 +305,16 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   var i;
   var p;
   var _p;
-  
+  var ei;
+
+  var ii = 0;
   for (i = 0; i < this.system.length; ++i) {
 
+    if (eqcElimination[ii] === i) {
+      ii++;
+      continue;
+    }
+    
     var sdata = this.system[i].getSolveData();
     params = [];
     
@@ -301,20 +361,17 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
       _p._backingParam.set(_p.get());
     }
 
-    //Make sure all equal constraints are equal
-    for (i = 0; i < equals.length; ++i) {
-      var ec = equals[i];
-      var master = ec.p1;
-      var slave = ec.p2;
-      if (lockedIds[master.id] === true) {
-        master = ec.p2;
-        slave = ec.p1;
-        if (lockedIds[master.id] === true) {
-          continue;
-        }
+    //Make sure all coincident constraints are equal
+
+    for (ei = 0; ei < equalsIndex.length; ++ei) {
+      var master = equalsDict[ equalsIndex[ei][0]];
+      for (i = 1; i < equalsIndex[ei].length; ++i) {
+        var slave = equalsDict[equalsIndex[ei][i]];
+        slave.set(master.get());
       }
-      slave.set( master.get() );
     }
+
+
   }
   
   solver.solve = solve;
@@ -325,6 +382,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
 TCAD.TWO.Constraints.Equal = function(p1, p2) {
   this.p1 = p1;
   this.p2 = p2;
+  this.coincident = false;
 };
 
 TCAD.TWO.Constraints.Equal.prototype.NAME = 'equal'; 
