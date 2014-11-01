@@ -205,7 +205,7 @@ optim.inv = function inv(x) {
         Ij = I[i0]; I[i0] = I[j]; I[j] = Ij;
         x = Aj[j];
         if (x === 0) {
-          console.log("CAN' INVERSE MATRIX");
+          //console.log("CAN' INVERSE MATRIX");
           x = 1e-32
         }
         for(k=j;k!==n;++k)    Aj[k] /= x;
@@ -340,8 +340,8 @@ optim.dog_leg = function(subsys) {
           // get the gauss-newton step
 //          h_gn = n.solve(Jx, n.mul(fx, -1));
 
-          //h_gn = lsolve(Jx, n.mul(fx, -1));
-          h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
+          h_gn = lsolve(Jx, n.mul(fx, -1));
+          //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
         
 //          solve linear problem using svd formula to get the gauss-newton step
 //          h_gn = lls(Jx, n.mul(fx, -1));
