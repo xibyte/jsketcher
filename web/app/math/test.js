@@ -57,8 +57,11 @@ function lsolve() {
   var n = numeric;
   A = [[1, 0, 0], [2,3,0]]
   b = [10,25]
-  var At = n.transpose(A);
-  var res = n.dot(n.dot(At, n.inv(n.dot(A, At)) ), b);
+//  var At = n.transpose(A);
+//  var A = n.dot(At, A);
+//  var b = n.dot(At, b);
+//  var res = n.dot(n.dot(At, n.inv(n.dot(A, At)) ), b);
+  var res = optim.cg(A, [100, 100, 0], b, 1e-8, 800);
   console.log(res);
 }
 
