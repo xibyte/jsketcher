@@ -205,6 +205,7 @@ optim.inv = function inv(x) {
         Ij = I[i0]; I[i0] = I[j]; I[j] = Ij;
         x = Aj[j];
         if (x === 0) {
+          console.log("CAN' INVERSE MATRIX");
           x = 1e-32
         }
         for(k=j;k!==n;++k)    Aj[k] /= x;
@@ -338,7 +339,9 @@ optim.dog_leg = function(subsys) {
 
           // get the gauss-newton step
 //          h_gn = n.solve(Jx, n.mul(fx, -1));
-          h_gn = lsolve(Jx, n.mul(fx, -1));
+
+          //h_gn = lsolve(Jx, n.mul(fx, -1));
+          h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
         
 //          solve linear problem using svd formula to get the gauss-newton step
 //          h_gn = lls(Jx, n.mul(fx, -1));
@@ -436,3 +439,37 @@ optim.dog_leg = function(subsys) {
 
 };
 
+optim.cg = function(A, x, b, tol, maxIt) {
+
+  var _ = numeric;
+
+  var tr = _.transpose;
+  var At = tr(A);
+  if (A.length != A[0].length) {
+    var A = _.dot(At, A);
+    var b = _.dot(At, b);
+    At = tr(A);
+  }
+
+  var r = _.sub(_.dot(A, x), b);
+  var p = _.mul(r, -1);
+  var rr = _.dotVV(r, r);
+
+  var a;
+  var _rr;
+  var beta;
+
+  for (var i = 0; i < maxIt; ++i) {
+    if (_.norm2(r) <= tol) break;
+    var Axp =_.dot(A, p);
+    a = rr / _.dotVV(Axp, p);
+    x = _.add(x, _.mul(p, a));
+    r = _.add(r, _.mul(Axp, a));
+    _rr = rr;
+    rr = _.dotVV(r, r);
+    beta = rr / _rr;
+    p = _.add(_.mul(r, -1), _.mul(p, beta));
+  }
+//  console.log("liner problem solved in " + i);
+  return x;
+};
