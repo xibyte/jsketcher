@@ -304,7 +304,14 @@ optim.dog_leg = function(subsys) {
     return res;
 
   }
-  
+
+  function lusolve(A, b) {
+    var At = n.transpose(A);
+    var A = n.dot(At, A);
+    var b = n.dot(At, b);
+    return n.solve(A, b, true);
+  }
+
   g = n.dot(n.transpose(Jx), n.mul(fx, -1));
 
   // get the infinity norm fx_inf and g_inf
@@ -338,13 +345,17 @@ optim.dog_leg = function(subsys) {
           h_sd  = n.mul(g, alpha);
 
           // get the gauss-newton step
-//          h_gn = n.solve(Jx, n.mul(fx, -1));
-
+          //h_gn = n.solve(Jx, n.mul(fx, -1));
           h_gn = lsolve(Jx, n.mul(fx, -1));
+
+          //LU-Decomposition
+//          h_gn = lusolve(Jx, n.mul(fx, -1));
+
+          //Conjugate gradient method
           //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
         
-//          solve linear problem using svd formula to get the gauss-newton step
-//          h_gn = lls(Jx, n.mul(fx, -1));
+          //solve linear problem using svd formula to get the gauss-newton step
+          //h_gn = lls(Jx, n.mul(fx, -1));
         
           var rel_error = n.norm2(n.add(n.dot(Jx, h_gn), fx)) / n.norm2(fx);
           if (rel_error > 1e15)
@@ -382,12 +393,6 @@ optim.dog_leg = function(subsys) {
       // see if we are already finished
       if (stop)
           break;
-
-// it didn't work in some tests
-//        // restrict h_dl according to maxStep
-//        double scale = subsys->maxStep(h_dl);
-//        if (scale < 1.)
-//            h_dl *= scale;
 
       // get the new values
       var err_new;
