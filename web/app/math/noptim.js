@@ -192,6 +192,39 @@ optim.bfgs = function(f,x0,tol,gradient,maxit,callback,options) {
   return {solution: x0, f: f0, gradient: g0, invHessian: H1, iterations:it, message: msg};
 };
 
+optim.bfgs_updater = function(gradient, x0) {
+  var n = x0.length;
+  var max = Math.max, norm2 = numeric.norm2;
+  var g0,g1,H1 = numeric.identity(n);
+  var dot = numeric.dot, inv = numeric.inv, sub = numeric.sub, add = numeric.add, ten = numeric.tensor, div = numeric.div, mul = numeric.mul;
+  var all = numeric.all, isfinite = numeric.isFinite, neg = numeric.neg;
+  var y,Hy,Hs,ys;
+  var msg = "";
+  var g0 = gradient(x0);
+
+  function step() {
+    return neg(dot(H1,g0));
+  }
+
+  function update(x, real_step) {
+    var s = real_step;
+
+    g1 = gradient(x);
+    y = sub(g1,g0);
+    ys = dot(y,s);
+    Hy = dot(H1,y);
+
+    // BFGS update on H1
+    H1 = sub(add(H1,
+            mul(
+                    (ys+dot(y,Hy))/(ys*ys),
+                ten(s,s)    )),
+        div(add(ten(Hy,s),ten(s,Hy)),ys));
+    g0 = g1;
+  }
+  return {step:step, update:update};
+};
+
 optim.inv = function inv(x) {
     var s = numeric.dim(x), abs = Math.abs, m = s[0], n = s[1];
     var A = numeric.clone(x), Ai, Aj;
