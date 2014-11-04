@@ -252,7 +252,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   }
   for (i = 0; i < this.system.length; ++i) {
     var c = this.system[i];
-    if (c.NAME === 'equal' && c.coincident === true) {
+    if (c.NAME === 'equal' && c.coincident === true && false) { //Disable it
       var found = false;
       //if (!peq(c.p1, c.p2)) continue;
       var p0 = c.p1.id;
