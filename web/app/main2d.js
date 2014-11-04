@@ -66,9 +66,9 @@ TCAD.App2D = function() {
         sketch.layers.push(toLayer);
         for (var i = 0; i < layer.objects.length; ++i) {
           var obj = layer.objects[i];
-          var to = {id: obj.id, _class: obj._class, aux : obj.aux};
+          var to = {id: obj.id, _class: obj._class};
           if (obj.aux) to.aux = obj.aux;
-          if (!!obj.edge) to.edge = obj.edge;
+          if (obj.edge !== undefined) to.edge = obj.edge;
           toLayer.push(to);
           if (obj._class === 'TCAD.TWO.Segment') {
             to.points = [point(obj.a), point(obj.b)];
@@ -194,7 +194,7 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
       return ep;
     }
 
-    if (!!sketch.layers) {
+    if (sketch.layers !== undefined) {
       for (var l = 0; l < sketch.layers.length; ++l) {
         var layer = new TCAD.TWO.Layer("layer_" + l, TCAD.TWO.Styles.DEFAULT);
         this.viewer.layers.push(layer);
@@ -209,8 +209,8 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
           } else if (obj._class === 'TCAD.TWO.Circle') {
           }
           if (!!obj.aux) skobj.accept(function(o){o.aux = true; return true;});
-          if (!!obj.edge) {
-            skobj.edge = true;
+          if (obj.edge !== undefined) {
+            skobj.edge = obj.edge;
           }
           layer.objects.push(skobj);
           skobj.layer = layer;
@@ -221,11 +221,11 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
     }
 
 
-    if (!!sketch.boundary && sketch.boundary != null) {
+    if (sketch.boundary !== undefined && sketch.boundary != null) {
       this.updateBoundary(sketch.boundary, defaultLayer);
     }
 
-    if (!!sketch.constraints) {
+    if (sketch.constraints !== undefined) {
       for (var i = 0; i < sketch.constraints.length; ++i) {
         var c = this.parseConstr(sketch.constraints[i], index);
         this.viewer.parametricManager.system.push(c);
@@ -260,15 +260,15 @@ TCAD.App2D.prototype.updateBoundary = function (boundary, layer) {
     var layer = this.viewer.layers[l];
     for (var i = 0; i < layer.objects.length; ++i) {
       var obj = layer.objects[i];
-      if (!!obj.edge) {
+      if (obj.edge !== undefined) {
         var edge = edges[obj.edge];
-        if (!!edge) {
+        if (edge !== undefined && edge != null) {
           obj.a.x = edge[0];
           obj.a.y = edge[1];
           obj.b.x = edge[2];
           obj.b.y = edge[3];
+          edges[obj.edge] = null;
         }
-        edges[obj.edge] = null;
       }
     }
   }
@@ -277,7 +277,7 @@ TCAD.App2D.prototype.updateBoundary = function (boundary, layer) {
     if (edge != null) {
       var seg = this.viewer.addSegment(edge[0], edge[1], edge[2], edge[3], layer);
       seg.accept(function(o){o.aux = true; return true;});
-      seg.edge = true;
+      seg.edge = i;
     }
   }
 };
