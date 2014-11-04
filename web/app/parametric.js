@@ -308,6 +308,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   var ei;
 
   var ii = 0;
+  var aux = [];
   for (i = 0; i < this.system.length; ++i) {
 
     if (eqcElimination[ii] === i) {
@@ -321,6 +322,9 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
     for (p = 0; p < sdata[1].length; ++p) {
       _p = getParam(sdata[1][p]);
       params.push(_p);
+      if (_p._backingParam.obj !== undefined && !!_p._backingParam.obj.aux) {
+        aux.push(_p);
+      }
     }
 
     var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
@@ -340,7 +344,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   }
   
   var lockedValues = [];
-  var solver = TCAD.parametric.prepare(_constrs, _locked, alg);
+  var solver = TCAD.parametric.prepare(_constrs, _locked, aux, alg);
   function solve(fineLevel) {
     if (_locked.length != 0) {
       for (p = 0; p < locked.length; ++p) {
