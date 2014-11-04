@@ -364,6 +364,18 @@ TCAD.TWO.SketchObject.prototype.getDefaultTool = function(viewer) {
   return new TCAD.TWO.DragTool(this, viewer);
 };
 
+TCAD.TWO.SketchObject.prototype.isAuxOrLinkedTo = function() {
+  if (!!this.aux) {
+    return true;
+  }
+  for (var i = 0; i < this.linked.length; ++i) {
+    if (!!this.linked[i].aux) {
+      return true;
+    }
+  }
+  return false;
+};
+
 TCAD.TWO.SketchObject.prototype._translate = function(dx, dy, translated) {
   translated[this.id] = 'x';
   for (var i = 0; i < this.linked.length; ++i) {
@@ -376,6 +388,9 @@ TCAD.TWO.SketchObject.prototype._translate = function(dx, dy, translated) {
 
 TCAD.TWO.SketchObject.prototype.translate = function(dx, dy) {
 //  this.translateImpl(dx, dy);
+  if (this.isAuxOrLinkedTo()) {
+    return;
+  }
   this._translate(dx, dy, {});
 };
 
@@ -606,7 +621,6 @@ TCAD.TWO.PanTool.prototype.mousemove = function(e) {
 };
 
 TCAD.TWO.PanTool.prototype.mousedown = function(e) {
-
   if (e.button == 0) {
     var picked = this.viewer.pick(e);
     if (picked.length > 0) {
@@ -615,7 +629,7 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
         this.deselectOnUp = false;
       } else {
         this.viewer.select([picked[0]], true);
-        if (!picked[0].aux) {
+        if (!picked[0].isAuxOrLinkedTo()) {
           var tool = picked[0].getDefaultTool(this.viewer);
           tool.mousedown(e);
           this.viewer.toolManager.takeControl(tool);
