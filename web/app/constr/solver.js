@@ -205,9 +205,9 @@ TCAD.parametric.lock2Equals2 = function(constrs, locked) {
   return _locked;
 };
 
-TCAD.parametric.prepare = function(constrs, locked, alg) {
+TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
 
-//  this.lock1(constrs, locked);
+  this.lock1(constrs, aux);
   var lockingConstrs = this.lock2Equals2(constrs, locked);
 //  Array.prototype.push.apply( constrs, lockingConstrs );
   
