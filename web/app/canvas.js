@@ -76,6 +76,18 @@ TCAD.TWO.Viewer = function(canvas) {
   this.refresh();
 };
 
+TCAD.TWO.Viewer.prototype.validateGeom = function() {
+  for (var i = 0; i < this.layers.length; i++) {
+    var objs = this.layers[i].objects;
+    for (var j = 0; j < objs.length; j++) {
+      if (!objs[j].validate()) {
+        return false;        
+      }
+    }
+  }
+  return true;
+};
+
 TCAD.TWO.Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
   var a = new TCAD.TWO.EndPoint(x1, y1);
   var b = new TCAD.TWO.EndPoint(x2, y2);
@@ -339,6 +351,11 @@ TCAD.TWO.SketchObject.prototype.visit = function(onlyVisible, h) {
   return h(this);
 };
 
+TCAD.TWO.SketchObject.prototype.validate = function() {
+  return true;
+};
+
+
 TCAD.TWO.SketchObject.prototype.getDefaultTool = function(viewer) {
   return new TCAD.TWO.DragTool(this, viewer);
 };
@@ -445,6 +462,10 @@ TCAD.TWO.Segment = function(a, b) {
 TCAD.TWO.utils.extend(TCAD.TWO.Segment, TCAD.TWO.SketchObject);
 
 TCAD.TWO.Segment.prototype._class = 'TCAD.TWO.Segment';
+
+TCAD.TWO.Segment.prototype.validate = function() {
+  return TCAD.math.distanceAB(this.a, this.b) > TCAD.TOLERANCE;
+};
 
 TCAD.TWO.Segment.prototype.collectParams = function(params) {
   this.a.collectParams(params);

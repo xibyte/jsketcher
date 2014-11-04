@@ -354,24 +354,34 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
     }
     solver.solveSystem(fineLevel);
   }
-  
+  var viewer = this.viewer;
   function sync() {
+    var rollback = [];
     for (p in pdict) {
       _p = pdict[p];
+      rollback.push([_p._backingParam, _p._backingParam.get()]);
       _p._backingParam.set(_p.get());
     }
 
     //Make sure all coincident constraints are equal
-
+    var rollbackCo = [];
     for (ei = 0; ei < equalsIndex.length; ++ei) {
       var master = equalsDict[ equalsIndex[ei][0]];
       for (i = 1; i < equalsIndex[ei].length; ++i) {
         var slave = equalsDict[equalsIndex[ei][i]];
+        rollbackCo.push([slave.id, slave.get()]); 
         slave.set(master.get());
       }
     }
-
-
+    
+    if (false && !viewer.validateGeom()) { //Disabled
+      for (i = 0; i < rollback.length; ++i) {
+        rollback[i][0].set(rollback[i][0]);
+      }
+      for (i = 0; i < rollbackCo.length; ++i) {
+        rollbackCo[i][0].set(rollbackCo[i][0]);
+      }
+    }
   }
   
   solver.solve = solve;
