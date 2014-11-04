@@ -122,12 +122,12 @@ TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints) {
     var objs = this.layers[i].objects;
     for (var j = 0; j < objs.length; j++) {
       var l = unreachable + 1;
-      var hit = !objs[j].visit(true, function(o) {
+      var hit = !objs[j].acceptV(true, function(o) {
         if (onlyPoints && o._class !== 'TCAD.TWO.EndPoint') {
           return false;  
         }
         l = o.normalDistance(aim);
-        if (l > 0 && l <= buffer) {
+        if (l >= 0 && l <= buffer) {
           pickResult.push(o);
           return false;
         }
@@ -340,15 +340,19 @@ TCAD.TWO.SketchObject = function() {
   this.layer = null;
 };
 
-TCAD.TWO.SketchObject.prototype.visit = function(onlyVisible, h) {
-  if (!this.visible) return true; 
+TCAD.TWO.SketchObject.prototype.accept = function(visitor) {
+  return this.acceptV(false, visitor);
+};
+
+TCAD.TWO.SketchObject.prototype.acceptV = function(onlyVisible, visitor) {
+  if (!this.visible) return false;
   for (var i = 0; i < this.children.length; i++) {
     var child = this.children[i];
-    if (!child.visit(onlyVisible, h)) {
+    if (!child.acceptV(onlyVisible, visitor)) {
       return false;
     }
   }
-  return h(this);
+  return visitor(this);
 };
 
 TCAD.TWO.SketchObject.prototype.validate = function() {
