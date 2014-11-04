@@ -638,6 +638,7 @@ TCAD.TWO.PanTool.prototype.mouseup = function(e) {
     this.viewer.deselectAll();
     this.viewer.refresh();
   }
+  this.deselectOnUp = false;
 };
 
 TCAD.TWO.PanTool.prototype.mousewheel = function(e) {
