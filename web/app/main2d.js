@@ -208,15 +208,15 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
           } else if (obj._class === 'TCAD.TWO.Arc') {
           } else if (obj._class === 'TCAD.TWO.Circle') {
           }
+          skobj.aux = !!obj.aux;
+          if (!!obj.edge) {
+            skobj.edge = edge;
+          }
+          layer.objects.push(skobj);
+          skobj.layer = layer;
+          index[obj.id] = skobj;
         }
 
-        skobj.aux = !!obj.aux;
-        if (!!obj.edge) {
-          skobj.edge = edge;
-        }
-        layer.objects.push(skobj);
-        skobj.layer = layer;
-        index[obj.id] = skobj;
       }
     }
 
