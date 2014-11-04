@@ -64,6 +64,23 @@ TCAD.constraints.ConstantWrapper = function(constr, mask) {
   }
 };
 
+TCAD.constraints.Weighted = function(constr, weight) {
+
+  this.params = constr.params;
+   
+  this.error = function() {
+    return constr.error() * weight;
+  };
+
+  this.gradient = function(out) {
+    constr.gradient(out);
+    for (var i = 0; i < out.length; i++) {
+      out[i] *= weight;
+    }
+  }
+};
+
+
 TCAD.constraints.EqualsTo = function(params, value) {
 
   this.params = params;

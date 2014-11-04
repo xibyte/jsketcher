@@ -87,7 +87,7 @@ TCAD.parametric.System.prototype.calcResidual = function(r) {
 
   err *= 0.5;
   return err;
-}
+};
 
 TCAD.parametric.System.prototype.calcGrad_ = function(out) {
   var i;
@@ -200,7 +200,7 @@ TCAD.parametric.lock1 = function(constrs, locked) {
 TCAD.parametric.lock2Equals2 = function(constrs, locked) {
   var _locked = [];
   for (var i = 0; i < locked.length; ++i) {
-    _locked.push(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()));
+    _locked.push(new TCAD.constraints.Weighted(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()), 0.1));
   }
   return _locked;
 };
@@ -209,7 +209,7 @@ TCAD.parametric.prepare = function(constrs, locked, alg) {
 
 //  this.lock1(constrs, locked);
   var lockingConstrs = this.lock2Equals2(constrs, locked);
-  Array.prototype.push.apply( constrs, lockingConstrs );
+//  Array.prototype.push.apply( constrs, lockingConstrs );
   
   var sys = new TCAD.parametric.System(constrs);
 
