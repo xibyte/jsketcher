@@ -17,7 +17,7 @@ TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
 TCAD.TWO.ParametricManager.prototype._fetchPoints = function(objs) {
   var points = [];
   for (var i = 0; i < objs.length; ++i) {
-    objs[i].visit(false, function(o) {
+    objs[i].accept(function(o) {
       if (o._class === 'TCAD.TWO.EndPoint')  {
         points.push(o);
       }
