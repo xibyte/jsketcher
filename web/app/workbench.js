@@ -6,6 +6,7 @@ TCAD.workbench.readSketchGeom = function(sketch) {
     for (var l = 0; l < sketch.layers.length; ++l) {
       for (var i = 0; i < sketch.layers[l].length; ++i) {
         var obj = sketch.layers[l][i];
+        if (obj.edge !== undefined) continue;
         if (obj._class === 'TCAD.TWO.Segment') {
           out.lines.push([
             obj.points[0][1][1], obj.points[0][2][1], //x,y 

@@ -260,9 +260,10 @@ TCAD.SketchFace = function(poly) {
   this.sketch3DGroup = null;
 };
 
-TCAD.SketchFace.prototype.syncSketches = function(geom) {
-  var material = new THREE.LineBasicMaterial({
+TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
       color: 0xFFFFFF, linewidth: 3});
+
+TCAD.SketchFace.prototype.syncSketches = function(geom) {
   var normal = this.polygon.normal;
   var offVector = normal.multiply(0.5);
   
@@ -285,7 +286,7 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
     
     lg.vertices.push(a.plus(offVector).three());
     lg.vertices.push(b.plus(offVector).three());
-    var line = new THREE.Segment(lg, material);
+    var line = new THREE.Segment(lg, this.SKETCH_MATERIAL);
     this.sketch3DGroup.add(line);
   }
 };
