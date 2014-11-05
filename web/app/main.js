@@ -6,6 +6,22 @@ TCAD.App = function() {
   this.viewer = new TCAD.Viewer();
   this.ui = new TCAD.UI(this);
 
+
+  var box = TCAD.utils.createSolid(TCAD.utils.createBox(500));
+  this.viewer.scene.add( box );
+  for (var i = 0; i < box.geometry.polyFaces.length; i++) {
+    var sketchFace = box.geometry.polyFaces[i];
+    var faceStorageKey = this.faceStorageKey(sketchFace.id);
+
+    var savedFace = localStorage.getItem(faceStorageKey);
+    if (savedFace != null) {
+      var geom = TCAD.workbench.readSketchGeom(JSON.parse(savedFace));
+      sketchFace.syncSketches(geom);
+      this.viewer.scene.add(sketchFace.sketch3DGroup);
+    }
+  }
+
+
   function storage_handler(evt) {
       console.log('The modified key was '+evt.key);
       console.log('The original value was '+evt.oldValue);

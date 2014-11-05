@@ -204,22 +204,22 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
           if (obj._class === 'TCAD.TWO.Segment') {
             var a = createEndPoint(obj.points[0]);
             var b = createEndPoint(obj.points[1]);
-            var skobj = new TCAD.TWO.Segment(a, b);
+            skobj = new TCAD.TWO.Segment(a, b);
           } else if (obj._class === 'TCAD.TWO.Arc') {
           } else if (obj._class === 'TCAD.TWO.Circle') {
           }
-          if (!!obj.aux) skobj.accept(function(o){o.aux = true; return true;});
-          if (obj.edge !== undefined) {
-            skobj.edge = obj.edge;
+          if (skobj != null) {
+            if (!!obj.aux) skobj.accept(function(o){o.aux = true; return true;});
+            if (obj.edge !== undefined) {
+              skobj.edge = obj.edge;
+            }
+            layer.objects.push(skobj);
+            skobj.layer = layer;
+            index[obj.id] = skobj;
           }
-          layer.objects.push(skobj);
-          skobj.layer = layer;
-          index[obj.id] = skobj;
         }
-
       }
     }
-
 
     if (sketch.boundary !== undefined && sketch.boundary != null) {
       this.updateBoundary(sketch.boundary, defaultLayer);

@@ -202,6 +202,7 @@ TCAD.Solid = function(polygons) {
 
   THREE.Geometry.call( this );
 
+  this.polyFaces = [];
   var scope = this;
   function pushVertices(vertices) {
     for ( var v = 0;  v < vertices.length; ++ v ) {
@@ -217,8 +218,9 @@ TCAD.Solid = function(polygons) {
     for ( var h = 0;  h < poly.holes; ++ h ) {
       pushVertices(poly.holes[ h ]);
     }
-    var polyFace = {faces : [], polygon : poly, sketch : null, id : TCAD.geom.FACE_COUNTER++ };
-    
+    var polyFace = new TCAD.SketchFace(poly);
+    this.polyFaces.push(polyFace);
+
     for ( var i = 0;  i < faces.length; ++ i ) {
 
       var a = faces[i][0] + off;
@@ -227,7 +229,7 @@ TCAD.Solid = function(polygons) {
       
       var fNormal = TCAD.geom.normalOfCCWSeqTHREE([
         this.vertices[a], this.vertices[b], this.vertices[c]]);
-      
+
       if (!TCAD.utils.vectorsEqual(fNormal, poly.normal)) {
         console.log("ASSERT");
         var _a = a;
@@ -249,6 +251,44 @@ TCAD.Solid = function(polygons) {
 };
 
 TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
+
+TCAD.SketchFace = function(poly) {
+  this.id = TCAD.geom.FACE_COUNTER++;
+  this.polygon = poly;
+  this.faces = [];
+  this.geom = null;
+  this.sketch3DGroup = null;
+};
+
+TCAD.SketchFace.prototype.syncSketches = function(geom) {
+  var material = new THREE.LineBasicMaterial({
+      color: 0xFFFFFF, linewidth: 3});
+  var normal = this.polygon.normal;
+  var offVector = normal.multiply(0.5);
+  
+  if (this.sketch3DGroup != null) {
+    this.sketch3DGroup.remove(this.sketch3DGroup.children);
+  } else {
+    this.sketch3DGroup = new THREE.Object3D();
+  }
+
+  this.geom = [];
+  var i = 0;
+  var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.polygon.shell, normal));
+  //we lost depth or z off in 2d sketch, calculate it again
+  var depth = normal.dot(this.polygon.shell[0]);
+  for (i = 0; i < geom.lines.length; ++i) {
+    var l = geom.lines[i];
+    var lg = new THREE.Geometry();
+    var a = _3dTransformation.apply(new TCAD.Vector(l[0], l[1], depth));
+    var b = _3dTransformation.apply(new TCAD.Vector(l[2], l[3], depth));
+    
+    lg.vertices.push(a.plus(offVector).three());
+    lg.vertices.push(b.plus(offVector).three());
+    var line = new THREE.Segment(lg, material);
+    this.sketch3DGroup.add(line);
+  }
+};
 
 /**
  * Polygon
