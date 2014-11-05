@@ -20,6 +20,7 @@ TCAD.App = function() {
       this.viewer.scene.add(sketchFace.sketch3DGroup);
     }
   }
+  this.viewer.render();
 
 
   function storage_handler(evt) {
