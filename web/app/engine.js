@@ -264,17 +264,20 @@ TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
       color: 0xFFFFFF, linewidth: 3});
 
 TCAD.SketchFace.prototype.syncSketches = function(geom) {
+  var i;
   var normal = this.polygon.normal;
   var offVector = normal.multiply(0.5);
-  
+
   if (this.sketch3DGroup != null) {
-    this.sketch3DGroup.remove(this.sketch3DGroup.children);
+    for (var i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
+      this.sketch3DGroup.remove(this.sketch3DGroup.children[i]);
+    }
+
   } else {
     this.sketch3DGroup = new THREE.Object3D();
   }
 
   this.geom = [];
-  var i = 0;
   var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.polygon.shell, normal));
   //we lost depth or z off in 2d sketch, calculate it again
   var depth = normal.dot(this.polygon.shell[0]);

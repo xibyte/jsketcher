@@ -22,13 +22,33 @@ TCAD.App = function() {
   }
   this.viewer.render();
 
-
+  var viewer = this.viewer;
+  var app = this;
   function storage_handler(evt) {
-      console.log('The modified key was '+evt.key);
-      console.log('The original value was '+evt.oldValue);
-      console.log('The new value is '+evt.newValue);
-      console.log('The URL of the page that made the change was '+evt.url);
-      console.log('The window where the change was made was '+evt.source);
+//      console.log('The modified key was '+evt.key);
+//      console.log('The original value was '+evt.oldValue);
+//      console.log('The new value is '+evt.newValue);
+//      console.log('The URL of the page that made the change was '+evt.url);
+//      console.log('The window where the change was made was '+evt.source);
+
+    var prefix = "TCAD.projects."+app.id+".sketch.";
+    if (evt.key.indexOf(prefix) < 0) return;
+    sketchFaceId = evt.key.substring(prefix.length);
+
+    for (var oi = 0; oi < viewer.scene.children.length; ++oi) {
+      var obj = viewer.scene.children[oi];
+      if (obj.geometry !== undefined && obj.geometry.polyFaces !== undefined) {
+        for (var i = 0; i < box.geometry.polyFaces.length; i++) {
+          var sketchFace = box.geometry.polyFaces[i];
+          if (sketchFace.id == sketchFaceId) {
+            var geom = TCAD.workbench.readSketchGeom(JSON.parse(evt.newValue));
+            sketchFace.syncSketches(geom);
+            viewer.render();
+            break;
+          }
+        }
+      }
+    }
   }
 
   window.addEventListener('storage', storage_handler, false);
