@@ -134,8 +134,8 @@ TCAD.Viewer = function() {
       renderer.domElement.removeEventListener('mousemove', onMove);
       var dx = Math.abs(mouseState.startX - e.clientX);
       var dy = Math.abs(mouseState.startY - e.clientY);
-      var TOL = 5;
-      if (dx <= TOL || dy <= TOL) {
+      var TOL = 1;
+      if (dx < TOL && dy < TOL) {
         onClick(e);
       }
     } , false);
