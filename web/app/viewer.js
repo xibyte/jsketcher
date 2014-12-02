@@ -114,23 +114,28 @@ TCAD.Viewer = function() {
   }
   
   var mouseState = {
-    moved : false
+    startX : 0,
+    startY : 0
   };
 
   function onMove(e) {
-    mouseState.moved = true;
-  }
+  };
+  
   renderer.domElement.addEventListener('mousemove', function(e){scope.toolMgr.handleMove(e)}, false);
   renderer.domElement.addEventListener('mousedown', 
-    function() {
-      mouseState.moved = false;
+    function(e) {
+      mouseState.startX = e.clientX;
+      mouseState.startY = e.clientY;
       renderer.domElement.addEventListener('mousemove', onMove, false);
     }, false);
   
   renderer.domElement.addEventListener('mouseup', 
     function(e) {
       renderer.domElement.removeEventListener('mousemove', onMove);
-      if (!mouseState.moved) {
+      var dx = Math.abs(mouseState.startX - e.clientX);
+      var dy = Math.abs(mouseState.startY - e.clientY);
+      var TOL = 5;
+      if (dx <= TOL || dy <= TOL) {
         onClick(e);
       }
     } , false);
