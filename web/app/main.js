@@ -5,9 +5,10 @@ TCAD.App = function() {
   this.id = "DEFAULT";
   this.viewer = new TCAD.Viewer();
   this.ui = new TCAD.UI(this);
+  this.craft = new TCAD.Craft(this);
 
 
-  var box = TCAD.utils.createSolid(TCAD.utils.createBox(500));
+  var box = TCAD.utils.createSolidMesh(TCAD.utils.createBox(500));
   this.viewer.scene.add( box );
   for (var i = 0; i < box.geometry.polyFaces.length; i++) {
     var sketchFace = box.geometry.polyFaces[i];
@@ -33,7 +34,7 @@ TCAD.App = function() {
 
     var prefix = "TCAD.projects."+app.id+".sketch.";
     if (evt.key.indexOf(prefix) < 0) return;
-    sketchFaceId = evt.key.substring(prefix.length);
+    var sketchFaceId = evt.key.substring(prefix.length);
 
     for (var oi = 0; oi < viewer.scene.children.length; ++oi) {
       var obj = viewer.scene.children[oi];
@@ -76,4 +77,22 @@ TCAD.App.prototype.sketchFace = function() {
   localStorage.setItem(faceStorageKey, JSON.stringify(data));
 
   window.open("canvas.html#" + faceStorageKey.substring(14), "Edit Sketch", "height=900,width=1200");
+};
+
+TCAD.App.prototype.extrude = function() {
+
+  if (this.viewer.selectionMgr.selection.length == 0) {
+    return;
+  }
+  var polyFace = this.viewer.selectionMgr.selection[0];
+  var height = prompt("Height", "50");
+  
+  var app = this;
+  this.craft.modify(polyFace.solid, function() {
+    return TCAD.craft.extrude(app, polyFace, height);
+  });
+};
+
+TCAD.App.prototype.cut = function(face, depth) {
+
 };

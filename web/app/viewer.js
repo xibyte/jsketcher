@@ -229,7 +229,7 @@ TCAD.PolygonTool.prototype.commit = function() {
   var n = this.workArea.polygon.normal;
   var _2d = new TCAD.Polygon(this.poly.shell, this.poly.holes, n);
   
-  var solid = TCAD.utils.createSolid(TCAD.geom.extrude(_2d, n.multiply(1.1)));
+  var solid = TCAD.utils.createSolidMesh(TCAD.geom.extrude(_2d, n.multiply(1.1)));
   this.workArea.sketch.group.parent.add(solid);
 };
 
@@ -268,6 +268,6 @@ TCAD.LineTool.prototype.commit = function() {
 //  var n = this.workArea.polygon.normal;
 //  var _2d = new TCAD.Polygon(this.poly.shell, this.poly.holes, n);
 //
-//  var solid = TCAD.utils.createSolid(TCAD.geom.extrude(_2d, n.multiply(1.1)));
+//  var solid = TCAD.utils.createSolidMesh(TCAD.geom.extrude(_2d, n.multiply(1.1)));
 //  this.workArea.sketch.group.parent.add(solid);
 };

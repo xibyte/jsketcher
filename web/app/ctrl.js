@@ -10,9 +10,8 @@ TCAD.UI = function(app) {
 
   var actionsF = gui.addFolder('Add Object');
   var actions = new TCAD.UI.Actions(this);
-  actionsF.add(actions.tools, 'polygon');
-  actionsF.add(actions.tools, 'line');
-  actionsF.add(actions.tools, 'commit');
+  actionsF.add(actions.tools, 'extrude');
+  actionsF.add(actions.tools, 'cut');
   actionsF.add(actions.tools, 'edit');
   actionsF.open();
 
@@ -23,21 +22,18 @@ TCAD.UI = function(app) {
 TCAD.UI.Actions = function(scope) {
   
   this.tools = {
-    polygon : function() {
-      scope.viewer.toolMgr.tool = new TCAD.PolygonTool(scope.viewer.selectionMgr.selection[0], scope.viewer);
+
+    extrude : function() {
+      scope.app.extrude();
     },
     
-    line : function() {
-      scope.viewer.toolMgr.tool = new TCAD.LineTool(scope.viewer.selectionMgr.selection[0]);
-    },
-
-    commit : function() {
-      scope.viewer.toolMgr.commit();
+    cut : function() {
+      
     },
 
     edit : function() {
       scope.app.sketchFace();
     }
 
-  }
+  };
 };
