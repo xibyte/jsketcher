@@ -1,42 +1,31 @@
 <html>
+
 <head>
-  <title>TCAD</title>
-  <style>
-    body {
-      font-family: Monospace;
-      margin: 0px;
-      overflow: hidden;
-    }
-  </style>
-  <script> TCAD = {} </script>
-  <script src="lib/three/three.js"></script>
-  <script src="lib/numeric-1.2.6.js"></script>
-  <script src="app/engine.js"></script>
-  <script src="app/canvas.js"></script>
-  <script src="app/math/math.js"></script>
-  <script src="app/math/matrix.js"></script>
-  <script src="app/math/optim.js"></script>
-  <script src="app/math/noptim.js"></script>
 
-  <script src="app/math/lm.js"></script>
-  <script src="app/constr/constraints.js"></script>
-  <script src="app/constr/solver.js"></script>
+<style>
+html, body {
+	background: gray;
+	height: 100%;
+	padding: 0;
+	margin: 0;
+}
+.panel {
+  background: #444;
+  border: 0px solid black;
+} 
+</style>
 
-  <script src="app/engine.js"></script>
-  <script src="app/vector.js"></script>
-  <script src="app/math/test.js"></script>
-
-  <script>
-    function start() {
-      new TCAD.App2D();
-    }
-    window.onload = function() {
-     // testCompare();
-      lsolve();
-    }
-  </script>
 </head>
-<body>
 
+<body>
+	<div class="panel" style="width: 100%; height: 50px;"></div>
+	<div style="width: 100%; height: calc(100% - 100px);">
+
+		<div class="panel" style="background: blue; float: left; width: 245px; height: 100%;"></div>
+		<!--  div style="background-color: blue; height: 20px; width: 100px; float: left;"><canvas width="300" height="300" id="viewer"></canvas></div-->
+		<div style="background: black; float: left; width: calc(100% - 296px); height: 100%;"></div>
+		<div class="panel" style="background-color: yellow; width: 50px; float: right; height: 100%; "></div>
+	</div>
+	<div class="panel" style="width: 100%; height: 50px; border-top-width: 1px;"></div>
 </body>
 </html>
