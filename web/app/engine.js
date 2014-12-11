@@ -77,7 +77,7 @@ TCAD.utils.createLine = function (a, b, color) {
   return new THREE.Segment(geometry, material);
 };
 
-TCAD.utils.createSolid = function(faces) {
+TCAD.utils.createSolidMesh = function(faces) {
   var geometry = new TCAD.Solid(faces);
   geometry.dynamic = true; //true by default
   var material = new THREE.MeshPhongMaterial({
@@ -85,7 +85,8 @@ TCAD.utils.createSolid = function(faces) {
     color: '#B0C4DE',
     shininess: 0
   });
-  return new THREE.Mesh( geometry, material );
+  geometry.meshObject = new THREE.Mesh(geometry, material);
+  return geometry.meshObject;
 };
 
 TCAD.utils.fixCCW = function(path, normal) {
@@ -122,6 +123,82 @@ TCAD.utils.equal = function(v1, v2) {
   return TCAD.utils.areEqual(v1, v2, TCAD.TOLERANCE);
 };
 
+TCAD.utils.sketchToPolygons = function(geom) {
+	  
+  var dict = {};
+  var points = {};
+  var lines = geom.lines;
+
+  function memDir(a, b) {
+    var dirs = dict[a];
+    if (!dirs) {
+      dirs = [];
+      dict[a] = dirs;
+    }
+    dirs.push(b);
+  }
+  
+  for (var i = 0; i < lines.length; i++) {
+    var a = lines[i][0];
+    var b = lines[i][1];
+    points[a] = true;
+    points[b] = true;
+    memDir(a, b);
+    memDir(b, a);
+  }
+	
+  var visited = {};
+  var polygons = [];
+  
+  function ar_eq(arr1, arr2) {
+    return arr1 + "" === arr2 + "";
+  }
+  
+  function go(p, poly, closePoints) {
+    var closePoint = null;
+    for (;;) {
+      var next = dict[p];
+      if (!!visited[p] || next.length == 0) {
+        break;
+      }
+      poly.push(p);
+      visited[p] = true;
+      p = next[0];
+      
+      if (!!closePoints[p]) {
+        closePoint = p;
+        break;
+      }
+      if (next.length > 1) {
+        //ramification
+        for (var ni = 1; ni < next.length; ni++) {
+          var n = next[ni];
+          var _v = {};
+          _v[p] = true;
+          go(n, [p], _v);  
+        }
+        closePoints[p] = true;
+      }
+      if (closePoint != null) {
+        var toCutOff = 0;
+        for (var i = 0; i < poly.length; i++) {
+          var p = poly[i];
+          if (ar_eq(p, closePoint)) {
+            toCutOff = i;
+            break;
+          }
+        }
+        poly.splice(0, toCutOff);
+        if (poly.length > 2) polygons.push(poly);
+      }
+    } 
+  } 
+
+  for (var p in points) {
+    go(p, [], [p]);
+  }
+  return polygons;
+};
 
 TCAD.geom = {};
 
@@ -218,7 +295,7 @@ TCAD.Solid = function(polygons) {
     for ( var h = 0;  h < poly.holes; ++ h ) {
       pushVertices(poly.holes[ h ]);
     }
-    var polyFace = new TCAD.SketchFace(poly);
+    var polyFace = new TCAD.SketchFace(this, poly);
     this.polyFaces.push(polyFace);
 
     for ( var i = 0;  i < faces.length; ++ i ) {
@@ -252,12 +329,14 @@ TCAD.Solid = function(polygons) {
 
 TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
 
-TCAD.SketchFace = function(poly) {
+TCAD.SketchFace = function(solid, poly) {
   this.id = TCAD.geom.FACE_COUNTER++;
+  this.solid = solid;
   this.polygon = poly;
   this.faces = [];
   this.geom = null;
   this.sketch3DGroup = null;
+  this.sketchGeom = null;
 };
 
 TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
@@ -292,6 +371,8 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
     var line = new THREE.Segment(lg, this.SKETCH_MATERIAL);
     this.sketch3DGroup.add(line);
   }
+  this.sketchGeom = geom;
+  this.sketchGeom.depth = depth;
 };
 
 /**
