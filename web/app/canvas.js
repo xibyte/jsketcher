@@ -251,9 +251,13 @@ TCAD.TWO.Viewer.prototype.screenToModel2 = function(x, y, out) {
   out.y /= this.scale;
 };
 
-TCAD.TWO.Viewer.prototype.screenToModel = function(point) {
+TCAD.TWO.Viewer.prototype.screenToModel = function(e) {
+  return this._screenToModel(e.offsetX, e.offsetY);
+};
+
+TCAD.TWO.Viewer.prototype._screenToModel = function(x, y) {
   var out = {x: 0, y: 0};
-  this.screenToModel2(point.x, point.y, out);
+  this.screenToModel2(x, y, out);
   return out;
 };
 
