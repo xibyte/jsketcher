@@ -55,9 +55,9 @@ TCAD.TWO.utils.setStyle = function(style, ctx, scale) {
 TCAD.TWO.Viewer = function(canvas) {
   
   this.canvas = canvas;
-
-  this.canvas.width = window.innerWidth;
-  this.canvas.height = window.innerHeight;
+  
+  this.canvas.width = canvas.parentNode.offsetWidth;
+  this.canvas.height = canvas.parentNode.offsetHeight;
 
   this.ctx = this.canvas.getContext("2d");
   this.layers = [];
