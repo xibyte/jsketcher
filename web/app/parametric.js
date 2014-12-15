@@ -4,11 +4,33 @@ TCAD.TWO.ParametricManager = function(viewer) {
   this.viewer = viewer;
   this.system = [];
   this.REQUEST_COUNTER = 0;
+  this.listeners = [];
+};
+
+TCAD.TWO.ParametricManager.prototype.notify = function(event) {
+  for (var i = 0; i < this.listeners.length; ++i) {
+    var l = this.listeners[i];
+    l(event);
+  }
 };
 
 TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this.system.push(constr);
   this.solve();
+  this.notify();
+  this.viewer.refresh();
+};
+
+TCAD.TWO.ParametricManager.prototype.remove = function(constr) {
+  for (var i = 0; i < this.system.length; ++i) {
+    var p = this.system[i];
+    if (p.id === constr.id) {
+      this.system.splice(i, 1);
+      break;
+    }
+  }
+  this.solve();
+  this.notify();
   this.viewer.refresh();
 };
 
@@ -38,6 +60,7 @@ TCAD.TWO.ParametricManager.prototype.removeConstraintsByParams = function(ownedP
   for (var i = toRemove.length - 1; i >= 0 ; --i) {
     this.system.splice(  toRemove[i], 1);
   }
+  this.notify();
 };
 
 TCAD.TWO.ParametricManager.prototype.lock = function(objs) {
@@ -47,6 +70,7 @@ TCAD.TWO.ParametricManager.prototype.lock = function(objs) {
     this.system.push(new TCAD.TWO.Constraints.EqualsTo(p[i]._y, p[i].y));
   }
   this.solve();
+  this.notify();
   this.viewer.refresh();
 };
 
@@ -85,6 +109,7 @@ TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
     prev = arcs[i].r;
   }
   this.solve();
+  this.notify();
   this.viewer.refresh();
 };
 
@@ -138,6 +163,7 @@ TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
         this.system.push(new TCAD.TWO.Constraints.EqualsTo(arcs[i].r, promptDistance));
       }
       this.solve();
+      this.notify();
       this.viewer.refresh();
     }
   }
@@ -164,6 +190,7 @@ TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
       }
     }
   }
+  this.notify();
 };
 
 TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {

@@ -1,0 +1,261 @@
+<!doctype html>
+<meta charset=utf-8>
+<html>
+<head>
+  <title>TCAD</title>
+  <style>
+		body {
+			font-family: Monospace;
+			overflow: hidden;
+		}
+		
+		html, body {
+			background: gray;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+		}
+		
+		.panel {
+			background: #444;
+			border: 0px solid black;
+		}
+    .b-top { border-top-width: 1px; }
+    .b-bot { border-bottom-width: 1px; }
+    .b-left { border-left-width: 1px; }
+    .b-right { border-right-width: 1px; }
+
+    .btn:hover {
+      background-color: #808080;
+      border-color: #ccc;
+    }
+
+    .btn {
+      border:1px solid black;
+      background-color: #606060;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: 4px;
+      color: white;
+      font-size: 16px;
+      font-family: DejaVu Sans, Symbola, Everson Mono, Dingbats, Segoe UI Symbol,
+            Quivira, SunExt-A, FreeSerif, Universalia, unifont;
+    }
+
+    .txt-btn {
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .sbtn {
+      min-width:20px;
+      height:20px;
+      line-height: 1.1;
+      border-color: #999;
+      padding: 1px 3px;
+    }
+
+    .rbtn {
+      width:37px;
+      height:37px;
+    }
+    .rbtn {
+      margin: 2px 6px;   
+    }
+    
+    .tlist {
+      list-style-type: none;
+      padding: 0px; 
+      margin:0;
+      color: #fff;
+    }
+    
+    .tlist li {
+      border-bottom: 1px solid #777;
+      padding: 4px 3px 4px  15px;
+      cursor: pointer;
+    }
+   
+    .tlist li:hover {
+      background: #222;
+    }
+    
+    .tool-caption {
+      font-weight: bold;
+      color: #fff;
+      border-bottom: 1px solid #000;
+      padding: 1px 3px;
+      background: #333;
+    }
+
+    #status > * {
+      margin: 1px;
+    }
+
+    .tool-caption .btn {
+      width:14px;
+      height:14px;
+      font-size: 10px;
+      line-height: 11px;
+      margin-top: -1px;
+    }
+
+
+    .tlist .btn {
+      width:18px;
+      height:19px;
+      font-size: 12px;
+      line-height: 17px;
+      margin-top: -2px;
+    }
+
+    .tlist .rm {
+      display: none;
+    }
+
+    .tlist li:hover .rm {
+      display: block;
+    }
+
+    .scroll {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .scroll::-webkit-scrollbar {
+    	width: 2px;
+    }
+
+    .scroll::-webkit-scrollbar-track {
+    	background:#eee;
+    	border: thin solid lightgray;
+    	box-shadow: 0px 0px 3px #dfdfdf inset;
+    	border-radius:10px;
+    }
+    .scroll::-webkit-scrollbar-thumb {
+    	background:#999;
+    	border: thin solid gray;
+    	border-radius:10px;
+    }
+
+    .scroll::-webkit-scrollbar-thumb:hover {
+    	background:#7d7d7d;
+    }
+
+
+    .win {
+      position: absolute;
+      min-width: 10px;
+      min-height: 10px;
+      left:100px;
+      top:300px;
+      background: #666;
+ 			border: 2px solid #ccc;
+    }
+
+    .win .content {
+      padding: 7px;
+    }
+
+  </style>
+
+  <script src="lib/jquery-2.1.0.min.js"></script>
+  <script src="lib/three/three.js"></script>
+  <script src="lib/numeric-1.2.6.js"></script>
+  <script src="app/canvas.js"></script>
+  <script src="app/sketch/arc.js"></script>
+  <script src="app/sketch/circle.js"></script>
+  <script src="app/sketch/segment.js"></script>
+  <script src="app/math/math.js"></script>
+  <script src="app/math/matrix.js"></script>
+  <script src="app/math/optim.js"></script>
+  <script src="app/math/noptim.js"></script>
+
+  <script src="app/math/lm.js"></script>
+  <script src="app/constr/constraints.js"></script>
+  <script src="app/constr/solver.js"></script>
+
+  <script src="app/parametric.js"></script>
+  <script src="app/fetchers.js"></script>
+  <script src="app/engine.js"></script>
+  <script src="app/vector.js"></script>
+  <script src="app/main2d.js"></script>
+  <script src="app/workbench.js"></script>
+  <script src="app/ui.js"></script>
+
+  <script>
+    function start() {
+      var app = new TCAD.App2D();
+      var actionsWin = new TCAD.ui.Window($('#actions'));
+      TCAD.ui.bindOpening( $('#showActions'), actionsWin );
+      var addAction = TCAD.ui.createActionsWinBuilder(actionsWin);
+      for (var p in app.actions) {
+        addAction(p === 'REqualsR' ? "R = R" : p, app.actions[p]);
+      }
+
+      var pm = app.viewer.parametricManager;
+      var constrList = new TCAD.ui.List($('#constrs'), {
+        items : function() {
+          var theItems = [];
+          for (var i = 0; i < pm.system.length; ++i) {
+            var constr = pm.system[i];
+            theItems.push({name : constr.NAME, constr : constr});
+          }
+          return theItems;
+        },
+
+        remove : function(item) {
+          pm.remove(item.constr);
+        },
+
+        hover : function() {}
+
+      });
+      app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
+    }
+    window.onload = function() {
+      setTimeout(start, 0);
+    };
+  </script>
+</head>
+<body>
+
+  <div class="panel b-bot" style="width: 100%; height: 35px;"></div>
+  <div style="width: 100%; height: calc(100% - 59px);">
+
+    <div class="panel b-right scroll" style="float: left; width: 245px; height: 100%;">
+      <div class="tool-caption">CONSTRAINTS</div>
+      <ul class="tlist" id='constrs'>
+        <li>$name$<span class="rm" style="float: right;"><input class="btn sbtn" style="" type="submit" value="✘"></span></li>
+      </ul>  
+    </div>
+    <div style="background: black; float: left; width: calc(100% - 298px); height: 100%;">
+      <canvas width="300" height="300" id="viewer"></canvas>
+    </div>
+    <div id="right-toolbar" class="panel b-left scroll" style="width: 50px; float: right; height: 100%; ">
+      <div style="width:50%; height: 2px"></div>  
+      <input class="btn rbtn" style="background-image: url(img/coi.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/vert.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/hor.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/par.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/per.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/p2l.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/p2p.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/eq.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/tgn.png);" type="submit" value="">
+      <input class="btn rbtn" style="background-image: url(img/lock.png);" type="submit" value="">
+    </div>
+  </div>
+  <div id="status" class="panel b-top" style="width: 100%; height=22px;">
+    <input id='showActions' class="btn sbtn" style="" type="submit" value="⌘">
+  </div>
+
+  <div id="actions" class="scroll win" style="display: none;">
+    <div class="tool-caption" >ACTIONS<span class="rm" style="float: right; "><input class="btn sbtn" style="" type="submit" value="✘"></span></div>
+    <div class="content">
+      <div><input class="btn txt-btn" style="width: 100%;" type="submit" value="$value$"></div>
+    </div>
+  </div>
+
+</body>
+</html>
