@@ -26,12 +26,7 @@ TCAD.App2D = function() {
   this.viewer.repaint();
 
   var app = this;
-
-  this.dat = new dat.GUI();
-  var gui = this.dat;
-
-  var actionsF = gui.addFolder('Add Object');
-  var actions = {
+  this.actions = {
     addSegment : function () {
       app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, false));
     },
@@ -98,7 +93,6 @@ TCAD.App2D = function() {
     vertical : function() {
       app.viewer.parametricManager.vertical(app.viewer.selected);
     },
-
     horizontal : function() {
       app.viewer.parametricManager.horizontal(app.viewer.selected);
     },
@@ -123,7 +117,7 @@ TCAD.App2D = function() {
       app.viewer.parametricManager.radius(app.viewer.selected, prompt);
     },
 
-    "R = R" : function() {
+    REqualsR : function() {
       app.viewer.parametricManager.rr(app.viewer.selected);
     },
 
@@ -153,32 +147,7 @@ TCAD.App2D = function() {
       app.viewer.parametricManager.solve([], 0, 4);
       app.viewer.refresh();
     }
-
   };
-
-  actionsF.add(actions, 'addSegment');
-  actionsF.add(actions, 'addMultiSegment');
-  actionsF.add(actions, 'addArc');
-  actionsF.add(actions, 'addCircle');
-  actionsF.add(actions, 'pan');
-  actionsF.add(actions, 'save');
-  actionsF.add(actions, 'coincident');
-  actionsF.add(actions, 'vertical');
-  actionsF.add(actions, 'horizontal');
-  actionsF.add(actions, 'parallel');
-  actionsF.add(actions, 'perpendicular');
-  actionsF.add(actions, 'P2LDistance');
-  actionsF.add(actions, 'P2PDistance');
-  actionsF.add(actions, 'Radius');
-  actionsF.add(actions, 'R = R');
-  actionsF.add(actions, 'tangent');
-  actionsF.add(actions, 'lock');
-  actionsF.add(actions, 'solve');
-  actionsF.add(actions, 'step');
-  actionsF.add(actions, 'stepUNCMIN');
-  actionsF.add(actions, 'analyze');
-  actionsF.open();
-
 };
 
 TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
