@@ -44,7 +44,7 @@ TCAD.App2D = function() {
   });
 
   this.registerAction('addMultiSegment', "Add Multi Segment", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, false));
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, true));
   });
 
   this.registerAction('addArc', "Add Arc", function () {

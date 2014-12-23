@@ -215,6 +215,7 @@
       for (var p = 0; p < app._actionsOrder.length; ++p) {
         var act = app.actions[app._actionsOrder[p]];
         addAction(act.desc, act.action);
+        $('.act-' + act.id).click(act.action);
       }
 
       var pm = app.viewer.parametricManager;
@@ -246,14 +247,14 @@
 
   <div class="panel b-bot" style="width: 100%; height: 35px; text-align:right;">
        <span class="logo" style="float:left">sketcher.js</span>
-       <button class="btn tbtn" ><i class="fa fa-floppy-o"></i></button><!--
+       <button class="btn tbtn act-save" ><i class="fa fa-floppy-o"></i></button><!--
     --><button class="btn tbtn sep" ><i class="fa fa-upload"></i></button><!--
-    --><button class="btn tbtn sep" ><i class="fa fa-arrows"></i></button><!--
+    --><button class="btn tbtn sep act-pan" ><i class="fa fa-arrows"></i></button><!--
     --><button class="btn tbtn" style="background-image: url(img/dot.png);" type="submit" value=""></button><!--
-    --><button class="btn tbtn" style="background-image: url(img/line.png);" type="submit" value=""></button><!--
-    --><button class="btn tbtn" style="background-image: url(img/mline.png);" type="submit" value=""></button><!--
-    --><button class="btn tbtn" style="background-image: url(img/circle.png);" type="submit" value=""></button><!--
-    --><button class="btn tbtn sep" style="background-image: url(img/arc.png);" type="submit" value=""></button><!--
+    --><button class="btn tbtn act-addSegment" style="background-image: url(img/line.png);" type="submit" value=""></button><!--
+    --><button class="btn tbtn act-addMultiSegment" style="background-image: url(img/mline.png);" type="submit" value=""></button><!--
+    --><button class="btn tbtn act-addCircle" style="background-image: url(img/circle.png);" type="submit" value=""></button><!--
+    --><button class="btn tbtn act-addArc sep" style="background-image: url(img/arc.png);" type="submit" value=""></button><!--
     --><button class="btn tbtn" style="background-image: url(img/hdim.png);" type="submit" value=""></button><!--
     --><button class="btn tbtn" style="background-image: url(img/vdim.png);" type="submit" value=""></button><!--
     --><button class="btn tbtn" style="background-image: url(img/dim.png);" type="submit" value=""></button><!--
@@ -273,17 +274,17 @@
     </div>
     <div id="right-toolbar" class="panel b-left scroll" style="width: 50px; float: right; height: 100%; ">
       <div style="width:50%; height: 2px"></div>  
-      <button class="btn rbtn" style="background-image: url(img/coi.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/vert.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/hor.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/par.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/per.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/p2l.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/p2p.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/eq.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/tgn.png);"></button>
-      <button class="btn rbtn" style="background-image: url(img/rad.png);"></button>
-      <button class="btn rbtn" ><i class="fa fa-lock"></i></button>
+      <button class="btn rbtn act-coincident" style="background-image: url(img/coi.png);"></button>
+      <button class="btn rbtn act-verticalConstraint" style="background-image: url(img/vert.png);"></button>
+      <button class="btn rbtn act-horizontalConstraint" style="background-image: url(img/hor.png);"></button>
+      <button class="btn rbtn act-parallelConstraint" style="background-image: url(img/par.png);"></button>
+      <button class="btn rbtn act-perpendicularConstraint" style="background-image: url(img/per.png);"></button>
+      <button class="btn rbtn act-P2LDistanceConstraint" style="background-image: url(img/p2l.png);"></button>
+      <button class="btn rbtn act-P2PDistanceConstraint" style="background-image: url(img/p2p.png);"></button>
+      <button class="btn rbtn act-REqualsRConstraint" style="background-image: url(img/eq.png);"></button>
+      <button class="btn rbtn act-tangentConstraint" style="background-image: url(img/tgn.png);"></button>
+      <button class="btn rbtn act-RadiusConstraint" style="background-image: url(img/rad.png);"></button>
+      <button class="btn rbtn act-lockConstraint" ><i class="fa fa-lock"></i></button>
     </div>
   </div>
   <div id="status" class="panel b-top" style="width: 100%; height=22px;">
