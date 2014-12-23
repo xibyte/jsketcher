@@ -161,6 +161,13 @@ TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints) {
 
 TCAD.TWO.Viewer.prototype._setupServiceLayer = function() {
   var layer = new TCAD.TWO.Layer("_service", TCAD.TWO.Styles.SERVICE);
+  var ch = new TCAD.TWO.CrossHair(0, 0, 20);
+  ch.style = {
+    lineWidth : 1,
+    strokeStyle : "#fff",
+    fillStyle : "#fff"
+  }
+  layer.objects.push(ch);
   layer.objects.push(new TCAD.TWO.Point(0, 0, 2));
   this._serviceLayers.push(layer);
 
@@ -552,6 +559,24 @@ TCAD.TWO.Point.prototype.draw = function(ctx, scale) {
   TCAD.TWO.utils.drawPoint(ctx, this.x, this.y, this.rad, scale);
 };
 
+TCAD.TWO.CrossHair = function(x, y, rad) {
+  this.x = x;
+  this.y = y;
+  this.rad = rad;
+  this.style = null;
+};
+
+TCAD.TWO.CrossHair.prototype.draw = function(ctx, scale) {
+  ctx.beginPath();
+  var rad = this.rad / scale;
+  ctx.moveTo(this.x - rad, this.y);
+  ctx.lineTo(this.x + rad, this.y);
+  ctx.moveTo(this.x, this.y - rad);
+  ctx.lineTo(this.x, this.y + rad);
+  ctx.closePath();
+  ctx.stroke();
+};
+
 TCAD.TWO.ToolManager = function(viewer, defaultTool) {
   this.stack = [defaultTool];
   var canvas = viewer.canvas;
@@ -672,15 +697,17 @@ TCAD.TWO.PanTool.prototype.mousewheel = function(e) {
   var delta = 0;
 
   if ( e.wheelDelta ) { // WebKit / Opera / Explorer 9
-    delta = e.wheelDelta / 40;
+    delta = e.wheelDelta;
   } else if ( e.detail ) { // Firefox
-    delta = - e.detail / 3;
+    delta = - e.detail;
   }
 
   var before = this.viewer.screenToModel(e);
-  
-  this.viewer.scale += delta * 0.01;
-  
+
+  var step = 0.05;
+  delta = delta < 0 ? 1 - step : 1 + step;
+  this.viewer.scale *= delta;
+
   var after = this.viewer.screenToModel(e);
   
   var dx = after.x - before.x;
