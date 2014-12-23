@@ -25,29 +25,41 @@ TCAD.App2D = function() {
 
   this.viewer.repaint();
 
+
+
   var app = this;
-  this.actions = {
-    addSegment : function () {
-      app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, false));
-    },
-    
-    addMultiSegment : function () {
-      app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, true));
-    },
 
-    addArc : function () {
-      app.viewer.toolManager.takeControl(new TCAD.TWO.AddArcTool(app.viewer, layer));
-    },
+  this.actions = {};
 
-    addCircle : function () {
-      app.viewer.toolManager.takeControl(new TCAD.TWO.EditCircleTool(app.viewer, layer));
-    },
+  //For debug view
+  this._actionsOrder = [];
 
-    pan : function() {
-      app.viewer.toolManager.releaseControl();
-    },
+  this.registerAction = function(id, desc, action) {
+    app.actions[id] = {id: id, desc: desc, action: action};
+    app._actionsOrder.push(id);
+  }
 
-    save : function() {
+  this.registerAction('addSegment', "Add Segment", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, false));
+  });
+
+  this.registerAction('addMultiSegment', "Add Multi Segment", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, false));
+  });
+
+  this.registerAction('addArc', "Add Arc", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddArcTool(app.viewer, layer));
+  });
+
+  this.registerAction('addCircle', "Add Circle", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.EditCircleTool(app.viewer, layer));
+  });
+
+  this.registerAction('pan', "Pan", function () {
+    app.viewer.toolManager.releaseControl();
+  });
+
+  this.registerAction('save', "Save", function () {
       var sketch = {};
       //sketch.boundary = boundary;
       sketch.layers = [];
@@ -83,71 +95,70 @@ TCAD.App2D = function() {
 
       var sketchId = app.getSketchId();
       localStorage.setItem(app.getSketchId(), sketchData);
-    },
+  });
 
+  this.registerAction('coincident', "Coincident", function () {
+    app.viewer.parametricManager.coincident(app.viewer.selected);
+  });
 
-    coincident : function() {
-      app.viewer.parametricManager.coincident(app.viewer.selected);
-    },
+  this.registerAction('verticalConstraint', "Vertical Constraint", function () {
+    app.viewer.parametricManager.vertical(app.viewer.selected);
+  });
 
-    vertical : function() {
-      app.viewer.parametricManager.vertical(app.viewer.selected);
-    },
-    horizontal : function() {
-      app.viewer.parametricManager.horizontal(app.viewer.selected);
-    },
+  this.registerAction('horizontalConstraint', "Horizontal Constraint", function () {
+    app.viewer.parametricManager.horizontal(app.viewer.selected);
+  });
 
-    parallel : function() {
-      app.viewer.parametricManager.parallel(app.viewer.selected);
-    },
+  this.registerAction('parallelConstraint', "Parallel Constraint", function () {
+    app.viewer.parametricManager.parallel(app.viewer.selected);
+  });
 
-    perpendicular : function() {
-      app.viewer.parametricManager.perpendicular(app.viewer.selected);
-    },
-    
-    P2LDistance : function() {
-      app.viewer.parametricManager.p2lDistance(app.viewer.selected, prompt);
-    },
-    
-    P2PDistance : function() {
-      app.viewer.parametricManager.p2pDistance(app.viewer.selected, prompt);
-    },
+  this.registerAction('perpendicularConstraint', "Perpendicular Constraint", function () {
+    app.viewer.parametricManager.perpendicular(app.viewer.selected);
+  });
 
-    Radius : function() {
-      app.viewer.parametricManager.radius(app.viewer.selected, prompt);
-    },
+  this.registerAction('P2LDistanceConstraint', "Distance Between Point and Line", function () {
+    app.viewer.parametricManager.p2lDistance(app.viewer.selected, prompt);
+  });
 
-    REqualsR : function() {
-      app.viewer.parametricManager.rr(app.viewer.selected);
-    },
+  this.registerAction('P2PDistanceConstraint', "Distance Between two Points", function () {
+    app.viewer.parametricManager.p2pDistance(app.viewer.selected, prompt);
+  });
 
-    tangent : function() {
-      app.viewer.parametricManager.tangent(app.viewer.selected);
-    },
+  this.registerAction('RadiusConstraint', "Radius Constraint", function () {
+    app.viewer.parametricManager.radius(app.viewer.selected, prompt);
+  });
 
-    lock : function() {
-      app.viewer.parametricManager.lock(app.viewer.selected);
-    },
+  this.registerAction('REqualsRConstraint', "Radius Equals Constraint", function () {
+    app.viewer.parametricManager.rr(app.viewer.selected);
+  });
 
-    analyze : function() {
-      app.viewer.parametricManager.analyze(alert);
-    },
+  this.registerAction('tangentConstraint', "Tangent Constraint", function () {
+    app.viewer.parametricManager.tangent(app.viewer.selected);
+  });
 
-    solve : function() {
-      app.viewer.parametricManager.solve([], 0);
-      app.viewer.refresh();
-    },
+  this.registerAction('lockConstraint', "Lock Constraint", function () {
+    app.viewer.parametricManager.lock(app.viewer.selected);
+  });
 
-    step : function() {
-      app.viewer.parametricManager.solve([], 0, 3);
-      app.viewer.refresh();
-    },
+  this.registerAction('analyzeConstraint', "Analyze Constraint", function () {
+    app.viewer.parametricManager.analyze(alert);
+  });
 
-    stepUNCMIN : function() {
-      app.viewer.parametricManager.solve([], 0, 4);
-      app.viewer.refresh();
-    }
-  };
+  this.registerAction('solve', "Solve System", function () {
+    app.viewer.parametricManager.solve([], 0);
+    app.viewer.refresh();
+  });
+
+  this.registerAction('solveStep', "Solve Step", function () {
+    app.viewer.parametricManager.solve([], 0, 3);
+    app.viewer.refresh();
+  });
+
+  this.registerAction('stepUNCMIN', "Solve Step UNCMIN", function () {
+    app.viewer.parametricManager.solve([], 0, 4);
+    app.viewer.refresh();
+  });
 };
 
 TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
