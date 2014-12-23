@@ -161,13 +161,7 @@ TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints) {
 
 TCAD.TWO.Viewer.prototype._setupServiceLayer = function() {
   var layer = new TCAD.TWO.Layer("_service", TCAD.TWO.Styles.SERVICE);
-  var ch = new TCAD.TWO.CrossHair(0, 0, 20);
-  ch.style = {
-    lineWidth : 1,
-    strokeStyle : "#fff",
-    fillStyle : "#fff"
-  }
-  layer.objects.push(ch);
+//  layer.objects.push(new TCAD.TWO.CrossHair(0, 0, 20));
   layer.objects.push(new TCAD.TWO.Point(0, 0, 2));
   this._serviceLayers.push(layer);
 
@@ -545,7 +539,10 @@ TCAD.TWO.Segment.prototype.drawImpl = function(ctx, scale) {
   ctx.beginPath();
   ctx.moveTo(this.a.x, this.a.y);
   ctx.lineTo(this.b.x, this.b.y);
+//  ctx.save();
+//  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.stroke();
+//  ctx.restore();
 };
 
 TCAD.TWO.Point = function(x, y, rad) {
@@ -571,10 +568,15 @@ TCAD.TWO.CrossHair.prototype.draw = function(ctx, scale) {
   var rad = this.rad / scale;
   ctx.moveTo(this.x - rad, this.y);
   ctx.lineTo(this.x + rad, this.y);
+  ctx.closePath();
   ctx.moveTo(this.x, this.y - rad);
   ctx.lineTo(this.x, this.y + rad);
   ctx.closePath();
+
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.stroke();
+  ctx.restore();
 };
 
 TCAD.TWO.ToolManager = function(viewer, defaultTool) {
