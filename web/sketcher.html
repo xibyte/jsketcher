@@ -215,7 +215,7 @@
       for (var p = 0; p < app._actionsOrder.length; ++p) {
         var act = app.actions[app._actionsOrder[p]];
         addAction(act.desc, act.action);
-        $('.act-' + act.id).click(act.action);
+        $('.act-' + act.id).click(act.action).attr('title', act.desc);
       }
 
       var pm = app.viewer.parametricManager;
