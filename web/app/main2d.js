@@ -59,6 +59,10 @@ TCAD.App2D = function() {
     app.viewer.toolManager.releaseControl();
   });
 
+  this.registerAction('addDim', "Add Dimension", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer));
+  });
+
   this.registerAction('save', "Save", function () {
       var sketch = {};
       //sketch.boundary = boundary;

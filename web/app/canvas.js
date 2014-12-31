@@ -25,6 +25,12 @@ TCAD.TWO.Styles = {
     lineWidth : 2,
     strokeStyle : "#00FF00",
     fillStyle : "#00FF00"
+  },
+
+  DIM : {
+    lineWidth : 1,
+    strokeStyle : "#bcffc1",
+    fillStyle : "#00FF00"
   }
 
 };
@@ -81,6 +87,9 @@ TCAD.TWO.Viewer = function(canvas) {
   this.snapped = [];
   
   this._setupServiceLayer();
+  this.dimLayer = new TCAD.TWO.Layer("_dim", TCAD.TWO.Styles.DIM);
+  this.layers.push(this.dimLayer);
+
   this.refresh();
 };
 
@@ -115,7 +124,7 @@ TCAD.TWO.Viewer.prototype.remove = function(obj) {
   }
 };
 
-TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints) {
+TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
 
   buffer *= 0.5;
   
@@ -126,25 +135,33 @@ TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints) {
   var unreachable = buffer * 2;
   var heroLength = unreachable; // unreachable
 
+  function isFiltered(o) {
+    for (var i = 0; i < filter.length; ++i) {
+      if (filter[i] === o) return true;
+    }
+    return false;
+  }
+
   for (var i = 0; i < this.layers.length; i++) {
     var objs = this.layers[i].objects;
     for (var j = 0; j < objs.length; j++) {
       var l = unreachable + 1;
-      var hit = !objs[j].acceptV(true, function(o) {
+      var before = pickResult.length;
+      objs[j].acceptV(true, function(o) {
         if (onlyPoints && o._class !== 'TCAD.TWO.EndPoint') {
           return false;  
         }
         l = o.normalDistance(aim);
-        if (l >= 0 && l <= buffer) {
+        if (l >= 0 && l <= buffer && !isFiltered(o)) {
           pickResult.push(o);
           return false;
         }
         return true;
       });
-      
+      var hit = before - pickResult.length != 0;
       if (hit) {
         if (!deep && pickResult.length != 0) return pickResult;
-        if (l < heroLength) {
+        if (l >= 0 && l < heroLength) {
           heroLength = l;
           heroIdx = pickResult.length - 1;
         }
@@ -168,7 +185,6 @@ TCAD.TWO.Viewer.prototype._setupServiceLayer = function() {
   layer = new TCAD.TWO.Layer("_selection", TCAD.TWO.Styles.DEFAULT);
   layer.objects = this.selected;
   this._serviceLayers.push(layer);
-  
 };
 
 TCAD.TWO.Viewer.prototype.refresh = function() {
@@ -209,14 +225,9 @@ TCAD.TWO.Viewer.prototype.repaint = function() {
 
 TCAD.TWO.Viewer.prototype.snap = function(x, y, excl) {
   this.cleanSnap();
-  var snapTo = this.search(x, y, 20 / this.scale, false, true);
+  var snapTo = this.search(x, y, 20 / this.scale, true, true, excl);
   if (snapTo.length > 0) {
     snapTo = snapTo[0];
-    for (var i = 0; i < excl.length; i++) {
-      if (excl[i] === snapTo) {
-        return;
-      }
-    }
     this.mark(snapTo, TCAD.TWO.Styles.SNAP);
     this.snapped.push(snapTo);
     return snapTo;
@@ -271,7 +282,7 @@ TCAD.TWO.Viewer.prototype.select = function(objs, exclusive) {
 
 TCAD.TWO.Viewer.prototype.pick = function(e) {
   var m = this.screenToModel(e);
-  return this.search(m.x, m.y, 20 / this.scale, true, false);
+  return this.search(m.x, m.y, 20 / this.scale, true, false, []);
 };
 
 TCAD.TWO.Viewer.prototype.mark = function(obj, style) {
