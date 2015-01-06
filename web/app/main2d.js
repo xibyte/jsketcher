@@ -73,18 +73,22 @@ TCAD.App2D = function() {
       for (var l = 0; l < app.viewer.layers.length; ++l) {
         var layer = app.viewer.layers[l];
         var isBoundary = layer.name === '';
-        var toLayer = [];
+        var toLayer = {name : layer.name, data : []};
         sketch.layers.push(toLayer);
         for (var i = 0; i < layer.objects.length; ++i) {
           var obj = layer.objects[i];
           var to = {id: obj.id, _class: obj._class};
           if (obj.aux) to.aux = obj.aux;
           if (obj.edge !== undefined) to.edge = obj.edge;
-          toLayer.push(to);
+          toLayer.data.push(to);
           if (obj._class === 'TCAD.TWO.Segment') {
             to.points = [point(obj.a), point(obj.b)];
           } else if (obj._class === 'TCAD.TWO.Arc') {
           } else if (obj._class === 'TCAD.TWO.Circle') {
+          } else if (obj._class === 'TCAD.TWO.Dimension') {
+            to.a = obj.a.id;
+            to.b = obj.b.id;
+            to.flip = obj.flip; 
           }
         }
       }
@@ -169,28 +173,49 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
 
     var index = {};
 
-    function createEndPoint(p) {
+    function endPoint(p) {
       var id = p[0];
-      var ep = new TCAD.TWO.EndPoint(p[1][1], p[2][1]);
+      var ep = index[id]; 
+      if (ep !== undefined) {
+        return 
+      }
+      ep = new TCAD.TWO.EndPoint(p[1][1], p[2][1]);
       index[p[1][0]] = ep._x;
       index[p[2][0]] = ep._y;
       index[id] = ep;
       return ep;
     }
 
+    var layerIdGen = 0;
+    function getLayer(viewer, name) {
+      for (var i = 0; i < viewer.layers.length; ++i) {
+        if (name === viewer.layers[i].name) {
+          return viewer.layers[i];
+        }
+      }
+      if (name === undefined) {
+        name = "layer_" + layerIdGen++;
+      }
+      var layer = new TCAD.TWO.Layer(name, TCAD.TWO.Styles.DEFAULT);
+      viewer.layers.push(layer);
+      return layer;
+    }
+  
     if (sketch.layers !== undefined) {
       for (var l = 0; l < sketch.layers.length; ++l) {
-        var layer = new TCAD.TWO.Layer("layer_" + l, TCAD.TWO.Styles.DEFAULT);
-        this.viewer.layers.push(layer);
-        for (var i = 0; i < sketch.layers[l].length; ++i) {
-          var obj = sketch.layers[l][i];
+        var layer = getLayer(this.viewer, sketch.layers[l].name);
+        for (var i = 0; i < sketch.layers[l].data.length; ++i) {
+          var obj = sketch.layers[l].data[i];
           var skobj = null;
           if (obj._class === 'TCAD.TWO.Segment') {
-            var a = createEndPoint(obj.points[0]);
-            var b = createEndPoint(obj.points[1]);
+            var a = endPoint(obj.points[0]);
+            var b = endPoint(obj.points[1]);
             skobj = new TCAD.TWO.Segment(a, b);
           } else if (obj._class === 'TCAD.TWO.Arc') {
           } else if (obj._class === 'TCAD.TWO.Circle') {
+          } else if (obj._class === 'TCAD.TWO.Dimension') {
+            skobj = new TCAD.TWO.Dimension(obj.a, obj.b);
+            skobj.flip = obj.flip;
           }
           if (skobj != null) {
             if (!!obj.aux) skobj.accept(function(o){o.aux = true; return true;});
@@ -204,6 +229,17 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
         }
       }
     }
+
+    for (l = 0; l < this.viewer.layers.length; ++l) {
+      layer = this.viewer.layers[l];
+      for (i = 0; i < layer.objects.length; ++i) {
+        obj = layer.objects[i];
+        if (obj._class === 'TCAD.TWO.Dimension') {
+          obj.a = index[obj.a];
+          obj.b = index[obj.b];
+        }
+      }
+    }  
 
     if (sketch.boundary !== undefined && sketch.boundary != null) {
       this.updateBoundary(sketch.boundary, defaultLayer);
