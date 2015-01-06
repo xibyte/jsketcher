@@ -217,7 +217,7 @@ TCAD.TWO.Viewer.prototype.repaint = function() {
         var obj = layer.objects[o];
         style = obj.style != null ? obj.style : layer.style;
         if (style != prevStyle) TCAD.TWO.utils.setStyle(style, ctx, this.scale);
-        obj.draw(ctx, this.scale);
+        obj.draw(ctx, this.scale, this);
       }
     }
   }
@@ -418,13 +418,13 @@ TCAD.TWO.SketchObject.prototype.translate = function(dx, dy) {
   this._translate(dx, dy, {});
 };
 
-TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale) {
+TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale, viewer) {
   if (!this.visible) return;
   if (this.marked != null) {
     ctx.save();
     TCAD.TWO.utils.setStyle(this.marked, ctx, scale);
   }
-  this.drawImpl(ctx, scale);
+  this.drawImpl(ctx, scale, viewer);
   if (this.marked != null) ctx.restore();
   for (var i = 0; i < this.children.length; i++) {
     this.children[i].draw(ctx, scale);
