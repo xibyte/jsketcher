@@ -23,7 +23,8 @@ TCAD.TWO.Dimension.prototype.translateImpl = function(dx, dy) {
 TCAD.TWO.Dimension.prototype.drawImpl = function(ctx, scale) {
 
   var off = 30;
-
+  var textOff = 3;
+  
   var a = this.flip ? this.b : this.a;
   var b = this.flip ? this.a : this.b;
 
@@ -80,11 +81,13 @@ TCAD.TWO.Dimension.prototype.drawImpl = function(ctx, scale) {
   var h = d / 2 - ctx.measureText(txt).width / 2;
 
   if (h > 0) {
-    var tx = _ax - (- _vyn) * h;
-    var ty = _ay - (  _vxn) * h;
+    var tx = (_ax + _vxn * textOff) - (- _vyn) * h;
+    var ty = (_ay + _vyn * textOff) - (  _vxn) * h;
     ctx.save();
     ctx.translate(tx, ty);
-    ctx.fillText(txt ,0, 0);
+    ctx.rotate(	- Math.atan2(_vxn, _vyn));		
+    ctx.scale(1, -1);
+    ctx.fillText(txt, 0, 0);
     ctx.restore();
   }
 
