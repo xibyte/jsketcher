@@ -1,33 +1,44 @@
 
-TCAD.TWO.Dimension = function(a, b) {
+TCAD.TWO.LinearDimension = function(a, b) {
   TCAD.TWO.SketchObject.call(this);
   this.a = a;
   this.b = b;
   this.flip = false;
 };
 
-TCAD.TWO.utils.extend(TCAD.TWO.Dimension, TCAD.TWO.SketchObject);
+TCAD.TWO.utils.extend(TCAD.TWO.LinearDimension, TCAD.TWO.SketchObject);
 
-TCAD.TWO.Dimension.prototype._class = 'TCAD.TWO.Dimension';
-
-TCAD.TWO.Dimension.prototype.collectParams = function(params) {
+TCAD.TWO.LinearDimension.prototype.collectParams = function(params) {
 };
 
-TCAD.TWO.Dimension.prototype.getReferencePoint = function() {
+TCAD.TWO.LinearDimension.prototype.getReferencePoint = function() {
   return this.a;
 };
 
-TCAD.TWO.Dimension.prototype.translateImpl = function(dx, dy) {
+TCAD.TWO.LinearDimension.prototype.translateImpl = function(dx, dy) {
 };
 
-TCAD.TWO.Dimension.prototype.drawImpl = function(ctx, scale) {
+TCAD.TWO.LinearDimension.prototype.getA = function() { return this.a };
+TCAD.TWO.LinearDimension.prototype.getB = function() { return this.b };
+
+TCAD.TWO.LinearDimension.prototype.drawImpl = function(ctx, scale) {
 
   var off = 30;
   var textOff = 3;
-  
-  var a = this.flip ? this.b : this.a;
-  var b = this.flip ? this.a : this.b;
 
+  var a, b, startA, startB;
+  if (this.flip) {
+    a = this.getB();
+    b = this.getA();
+    startA = this.b;
+    startB = this.a;
+  } else {
+    a = this.getA();
+    b = this.getB();
+    startA = this.a;
+    startB = this.b;
+  }
+  
   var d = TCAD.math.distanceAB(a, b);
 
   var _vx = - (b.y - a.y);
@@ -51,14 +62,14 @@ TCAD.TWO.Dimension.prototype.drawImpl = function(ctx, scale) {
   ctx.lineTo(_bx, _by);
 
 
-  function drawRef(a) {
-    ctx.moveTo(a.x, a.y);
+  function drawRef(startA, a) {
     var off2 = 1.2;
+    ctx.moveTo(startA.x, startA.y);
     ctx.lineTo(a.x + _vx * off2, a.y + _vy * off2);
   }
 
-  drawRef(a);
-  drawRef(b);
+  drawRef(startA, a);
+  drawRef(startB, b);
 
   ctx.closePath();
   ctx.stroke();
@@ -70,6 +81,7 @@ TCAD.TWO.Dimension.prototype.drawImpl = function(ctx, scale) {
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x - s1, y - s2);
+    ctx.closePath();
     ctx.stroke();
   }
 
@@ -90,18 +102,52 @@ TCAD.TWO.Dimension.prototype.drawImpl = function(ctx, scale) {
     ctx.fillText(txt, 0, 0);
     ctx.restore();
   }
-
 };
 
-TCAD.TWO.Dimension.prototype.normalDistance = function(aim) {
+TCAD.TWO.LinearDimension.prototype.normalDistance = function(aim) {
   return -1;
 };
 
-TCAD.TWO.AddDimTool = function(viewer, layer) {
+
+TCAD.TWO.Dimension = function(a, b) {
+  TCAD.TWO.LinearDimension.call(this, a, b);
+};
+
+TCAD.TWO.utils.extend(TCAD.TWO.Dimension, TCAD.TWO.LinearDimension);
+
+TCAD.TWO.Dimension.prototype._class = 'TCAD.TWO.Dimension';
+
+
+TCAD.TWO.HDimension = function(a, b) {
+  TCAD.TWO.LinearDimension.call(this, a, b);
+};
+
+TCAD.TWO.utils.extend(TCAD.TWO.HDimension, TCAD.TWO.LinearDimension);
+
+TCAD.TWO.HDimension.prototype._class = 'TCAD.TWO.HDimension';
+
+TCAD.TWO.HDimension.prototype.getA = function() { return this.a };
+TCAD.TWO.HDimension.prototype.getB = function() { return {x : this.b.x, y : this.a.y} };
+
+
+TCAD.TWO.VDimension = function(a, b) {
+  TCAD.TWO.LinearDimension.call(this, a, b);
+};
+
+TCAD.TWO.utils.extend(TCAD.TWO.VDimension, TCAD.TWO.LinearDimension);
+
+TCAD.TWO.VDimension.prototype._class = 'TCAD.TWO.VDimension';
+
+TCAD.TWO.VDimension.prototype.getA = function() { return this.a };
+TCAD.TWO.VDimension.prototype.getB = function() { return {x : this.a.x, y : this.b.y} };
+
+
+TCAD.TWO.AddDimTool = function(viewer, layer, dimCreation) {
   this.viewer = viewer;
   this.layer = layer;
   this.dim = null;
   this._v = new TCAD.Vector(0, 0, 0);
+  this.dimCreation = dimCreation;
 };
 
 TCAD.TWO.AddDimTool.prototype.keydown = function(e) {};
@@ -135,7 +181,7 @@ TCAD.TWO.AddDimTool.prototype.mouseup = function(e) {
   this.viewer.cleanSnap();
 
   if (this.dim == null) {
-    this.dim = new TCAD.TWO.Dimension(p, new TCAD.TWO.EndPoint(p.x, p.y));
+    this.dim = this.dimCreation(p, new TCAD.TWO.EndPoint(p.x, p.y));
     this.layer.objects.push(this.dim);
     this.viewer.refresh();
   } else {

@@ -64,7 +64,14 @@ TCAD.App2D = function() {
   });
 
   this.registerAction('addDim', "Add Dimension", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer));
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.Dimension(a,b)} ));
+  });
+  
+  this.registerAction('addHDim', "Add Horizontal Dimension", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.HDimension(a,b)} ));
+  });
+  this.registerAction('addVDim', "Add Vertical Dimension", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.VDimension(a,b)} ));
   });
 
   this.registerAction('save', "Save", function () {
