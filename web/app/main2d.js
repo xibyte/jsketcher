@@ -39,6 +39,10 @@ TCAD.App2D = function() {
     app._actionsOrder.push(id);
   }
 
+  this.registerAction('addPoint', "Add Point", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddPointTool(app.viewer, layer));
+  });
+  
   this.registerAction('addSegment', "Add Segment", function () {
     app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, layer, false));
   });

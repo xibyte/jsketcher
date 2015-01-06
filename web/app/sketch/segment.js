@@ -73,3 +73,35 @@ TCAD.TWO.AddSegmentTool.prototype.keydown = function(e) {
 
 TCAD.TWO.AddSegmentTool.prototype.keypress = function(e) {};
 TCAD.TWO.AddSegmentTool.prototype.keyup = function(e) {};
+
+
+TCAD.TWO.AddPointTool = function(viewer, layer) {
+  this.viewer = viewer;
+  this.layer = layer;
+};
+
+TCAD.TWO.AddPointTool.prototype.mousemove = function(e) {
+};
+
+TCAD.TWO.AddPointTool.prototype.cleanup = function(e) {
+};
+
+TCAD.TWO.AddPointTool.prototype.mousedown = function(e) {
+};
+
+TCAD.TWO.AddPointTool.prototype.mouseup = function(e) {
+  var a = this.viewer.screenToModel(e);
+  var p = new TCAD.TWO.EndPoint(a.x, a.y);
+  this.layer.objects.push(p);
+  p.layer = this.layer;
+  this.viewer.refresh();
+};
+
+TCAD.TWO.AddPointTool.prototype.mousewheel = function(e) {
+};
+
+TCAD.TWO.AddPointTool.prototype.keydown = function(e) {
+};
+
+TCAD.TWO.AddSegmentTool.prototype.keypress = function(e) {};
+TCAD.TWO.AddSegmentTool.prototype.keyup = function(e) {};
