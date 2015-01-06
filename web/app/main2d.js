@@ -96,7 +96,7 @@ TCAD.App2D = function() {
             to.points = [point(obj.a), point(obj.b)];
           } else if (obj._class === 'TCAD.TWO.Arc') {
           } else if (obj._class === 'TCAD.TWO.Circle') {
-          } else if (obj._class === 'TCAD.TWO.Dimension') {
+          } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
             to.a = obj.a.id;
             to.b = obj.b.id;
             to.flip = obj.flip; 
@@ -224,6 +224,12 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
             skobj = new TCAD.TWO.Segment(a, b);
           } else if (obj._class === 'TCAD.TWO.Arc') {
           } else if (obj._class === 'TCAD.TWO.Circle') {
+          } else if (obj._class === 'TCAD.TWO.HDimension') {
+            skobj = new TCAD.TWO.HDimension(obj.a, obj.b);
+            skobj.flip = obj.flip;
+          } else if (obj._class === 'TCAD.TWO.VDimension') {
+            skobj = new TCAD.TWO.VDimension(obj.a, obj.b);
+            skobj.flip = obj.flip;
           } else if (obj._class === 'TCAD.TWO.Dimension') {
             skobj = new TCAD.TWO.Dimension(obj.a, obj.b);
             skobj.flip = obj.flip;
@@ -245,7 +251,7 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
       layer = this.viewer.layers[l];
       for (i = 0; i < layer.objects.length; ++i) {
         obj = layer.objects[i];
-        if (obj._class === 'TCAD.TWO.Dimension') {
+        if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
           obj.a = index[obj.a];
           obj.b = index[obj.b];
         }
