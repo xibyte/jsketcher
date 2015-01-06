@@ -21,7 +21,7 @@ TCAD.TWO.LinearDimension.prototype.translateImpl = function(dx, dy) {
 TCAD.TWO.LinearDimension.prototype.getA = function() { return this.a };
 TCAD.TWO.LinearDimension.prototype.getB = function() { return this.b };
 
-TCAD.TWO.LinearDimension.prototype.drawImpl = function(ctx, scale) {
+TCAD.TWO.LinearDimension.prototype.drawImpl = function(ctx, scale, viewer) {
 
   var off = 30;
   var textOff = 3;
