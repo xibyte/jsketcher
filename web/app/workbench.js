@@ -38,17 +38,20 @@ TCAD.craft.extrude = function(app, face, height) {
   var sketchedPolygons = [];
   for (var i = 0; i < polygons2D.length; i++) {
     var poly2D = polygons2D[i];
-    if (poly2D.length < 3) continue;
+    if (poly2D.shell.length < 3) continue;
 
     if (depth == null) {
-      var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.polygon.shell, normal));
+      var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(face.polygon.shell, normal));
       //we lost depth or z off in 2d sketch, calculate it again
       depth = normal.dot(face.polygon.shell[0]);
     }
 
     var shell = [];
-    for (var m = 0; m < poly2D.length; ++m) {
-      var a = _3dTransformation.apply(new TCAD.Vector(poly2D[m][0], poly2D[m][1], depth));
+    for (var m = 0; m < poly2D.shell.length; ++m) {
+      var vec = poly2D.shell[m];
+      vec.z = depth;  // ???
+//      var a = _3dTransformation.apply(new TCAD.Vector(poly2D[m][0], poly2D[m][1], depth));
+      var a = _3dTransformation.apply(vec);
       shell.push(a)
     }
     sketchedPolygons.push(new TCAD.Polygon(shell));
