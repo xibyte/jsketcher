@@ -57,8 +57,17 @@ TCAD.graph.finaAllLoops = function(graph) {
 
   //filter duplicates
 
-  function sameLoop(a, b) {
-    var bShift = b.indexOf(a[0]);
+  function sameLoop(a, b, key) {
+    var first = key(a[0]);
+    var bShift = b.indexOf();
+    for (var bShift = 0; bShift < a.length; bShift++) {
+      if (key(b[bShift]) === first) {
+        break;
+      }
+    }
+    if (bShift == a.length) {
+      return false;
+    }
     for (var i = 0; i < a.length; i++) {
       var bUp = (bShift + i) % a.length;
       var bDown = bShift - i;
@@ -66,7 +75,8 @@ TCAD.graph.finaAllLoops = function(graph) {
         bDown = a.length + bDown;
       }
 //      console.log("up: " + bUp + "; down: " + bDown);
-      if (a[i] != b[bUp] && a[i] != b[bDown] ) {
+      var curr = key(a[i]);
+      if (curr != key(b[bUp]) && curr != key(b[bDown]) ) {
         return false;
       }
     }
@@ -82,7 +92,7 @@ TCAD.graph.finaAllLoops = function(graph) {
       if (b == null || a.length !== b.length) {
         continue;
       }
-      if (sameLoop(a, b)) {
+      if (sameLoop(a, b, graph.id)) {
         loops[j] = null;
         ++ duplicates;
       }
