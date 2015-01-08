@@ -129,73 +129,59 @@ TCAD.utils.sketchToPolygons = function(geom) {
   var points = {};
   var lines = geom.lines;
 
+  function key(a) {
+    return a[0] + ":" + a[1];
+  }
+
+  var size = 0;
+  var points = [];
   function memDir(a, b) {
-    var dirs = dict[a];
+    var ak = key(a);
+    var dirs = dict[ak];
     if (!dirs) {
       dirs = [];
-      dict[a] = dirs;
+      dict[ak] = dirs;
+      points.push(a);
     }
     dirs.push(b);
   }
-  
+
   for (var i = 0; i < lines.length; i++) {
-    var a = lines[i][0];
-    var b = lines[i][1];
-    points[a] = true;
-    points[b] = true;
+    var a = lines[i].slice(0,2);
+    var b = lines[i].slice(2,4);
     memDir(a, b);
     memDir(b, a);
   }
-	
-  var visited = {};
-  var polygons = [];
-  
-  function ar_eq(arr1, arr2) {
-    return arr1 + "" === arr2 + "";
-  }
-  
-  function go(p, poly, closePoints) {
-    var closePoint = null;
-    for (;;) {
-      var next = dict[p];
-      if (!!visited[p] || next.length == 0) {
-        break;
-      }
-      poly.push(p);
-      visited[p] = true;
-      p = next[0];
-      
-      if (!!closePoints[p]) {
-        closePoint = p;
-        break;
-      }
-      if (next.length > 1) {
-        //ramification
-        for (var ni = 1; ni < next.length; ni++) {
-          var n = next[ni];
-          var _v = {};
-          _v[p] = true;
-          go(n, [p], _v);  
-        }
-        closePoints[p] = true;
-      }
-      if (closePoint != null) {
-        var toCutOff = 0;
-        for (var i = 0; i < poly.length; i++) {
-          var p = poly[i];
-          if (ar_eq(p, closePoint)) {
-            toCutOff = i;
-            break;
-          }
-        }
-        poly.splice(0, toCutOff);
-        if (poly.length > 2) polygons.push(poly);
-      }
-    } 
-  } 
 
-  for (var p in points) {
-    go(p, [], [p]);
+  graph = {
+
+    id : key,
+
+    connections : function(e) {
+      var dirs = dict[key(e)];
+      return !dirs ? [] : dirs;
+    },
+
+    at : function(index) {
+      return points[index];
+    },
+
+    size : function() {
+      return points.length;
+    },
+  };
+
+  var loops = TCAD.graph.finaAllLoops(graph);
+  var polygons = [];
+  for (var li = 0; li < loops.length; ++li) {
+    var loop = loops[li];
+    var polyPoints = [];
+    for (var pi = 0; pi < loop.length; ++pi) {
+      var point = loop[pi];
+      polyPoints.push(new TCAD.Vector(point[0], point[1], 0));
+
+    }
+    polygons.push(new TCAD.Polygon(polyPoints));
   }
   return polygons;
 };
