@@ -80,6 +80,6 @@ TCAD.Craft.prototype.current = function() {
 TCAD.Craft.prototype.modify = function(solid, modification) {
   var faces = modification();
   this.app.viewer.scene.remove( solid.meshObject );
-  this.app.viewer.scene.add( TCAD.utils.createSolidMesh(faces) );
+  //this.app.viewer.scene.add( TCAD.utils.createSolidMesh(faces) );
   this.app.viewer.render();
 };
