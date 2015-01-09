@@ -78,14 +78,12 @@ TCAD.utils.createLine = function (a, b, color) {
 };
 
 TCAD.utils.createSolidMesh = function(faces) {
-  var geometry = new TCAD.Solid(faces);
-  geometry.dynamic = true; //true by default
   var material = new THREE.MeshPhongMaterial({
     vertexColors: THREE.FaceColors,
     color: '#B0C4DE',
     shininess: 0
   });
-  geometry.meshObject = new THREE.Mesh(geometry, material);
+  var geometry = new TCAD.Solid(faces, material);
   return geometry.meshObject;
 };
 
@@ -260,9 +258,11 @@ TCAD.geom.extrude = function(source, target) {
 
 TCAD.geom.FACE_COUNTER = 0;
 
-TCAD.Solid = function(polygons) {
-
+TCAD.Solid = function(polygons, material) {
   THREE.Geometry.call( this );
+  this.dynamic = true; //true by default
+  
+  this.meshObject = new THREE.Mesh(this, material);
 
   this.polyFaces = [];
   var scope = this;
@@ -315,13 +315,25 @@ TCAD.Solid = function(polygons) {
 TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
 
 TCAD.SketchFace = function(solid, poly) {
-  this.id = TCAD.geom.FACE_COUNTER++;
+  var proto = poly.__face;
+  poly.__face = this;
+  if (proto === undefined) {
+    this.id = TCAD.geom.FACE_COUNTER++;
+    this.sketchGeom = null;
+  } else {
+    this.id = proto.id;
+    this.sketchGeom = proto.sketchGeom;
+  }
+  
   this.solid = solid;
   this.polygon = poly;
   this.faces = [];
   this.geom = null;
   this.sketch3DGroup = null;
-  this.sketchGeom = null;
+
+  if (this.sketchGeom != null) {
+    this.syncSketches(this.sketchGeom);
+  }
 };
 
 TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({

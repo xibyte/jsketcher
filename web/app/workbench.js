@@ -4,8 +4,8 @@ TCAD.workbench.readSketchGeom = function(sketch) {
   var out = {lines : [], circles : [], arcs : []};
   if (sketch.layers !== undefined) {
     for (var l = 0; l < sketch.layers.length; ++l) {
-      for (var i = 0; i < sketch.layers[l].length; ++i) {
-        var obj = sketch.layers[l][i];
+      for (var i = 0; i < sketch.layers[l].data.length; ++i) {
+        var obj = sketch.layers[l].data[i];
         if (obj.edge !== undefined) continue;
         if (!!obj.aux) continue;
         if (obj._class === 'TCAD.TWO.Segment') {
@@ -27,7 +27,7 @@ TCAD.craft = {};
 TCAD.craft.extrude = function(app, face, height) {
 
   var savedFace = localStorage.getItem(app.faceStorageKey(face.id));
-  if (savedFace == null) return;
+  if (savedFace == null) return null;
   
   var geom = TCAD.workbench.readSketchGeom(JSON.parse(savedFace));
   var polygons2D = TCAD.utils.sketchToPolygons(geom);
@@ -36,6 +36,7 @@ TCAD.craft.extrude = function(app, face, height) {
   var normal = face.polygon.normal;
   var depth = null;
   var sketchedPolygons = [];
+  var newSolidFaces = [];
   for (var i = 0; i < polygons2D.length; i++) {
     var poly2D = polygons2D[i];
     if (poly2D.shell.length < 3) continue;
@@ -49,19 +50,21 @@ TCAD.craft.extrude = function(app, face, height) {
     var shell = [];
     for (var m = 0; m < poly2D.shell.length; ++m) {
       var vec = poly2D.shell[m];
-      vec.z = depth;  // ???
+      vec.z = depth;
 //      var a = _3dTransformation.apply(new TCAD.Vector(poly2D[m][0], poly2D[m][1], depth));
       var a = _3dTransformation.apply(vec);
       shell.push(a)
     }
     sketchedPolygons.push(new TCAD.Polygon(shell));
   }
-  var newSolidFaces = [];
+
   for (var i = 0; i < sketchedPolygons.length; i++) {
     var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(height));
     newSolidFaces = newSolidFaces.concat(newSolidFaces, extruded);
   }
-  
+
+  face.polygon.__face = undefined;
+
   for (var i = 0; i < solid.polyFaces.length; i++) {
     newSolidFaces.push(solid.polyFaces[i].polygon);
   }
@@ -79,7 +82,8 @@ TCAD.Craft.prototype.current = function() {
   
 TCAD.Craft.prototype.modify = function(solid, modification) {
   var faces = modification();
+  if (faces == null) return;
   this.app.viewer.scene.remove( solid.meshObject );
-  //this.app.viewer.scene.add( TCAD.utils.createSolidMesh(faces) );
+  this.app.viewer.scene.add( TCAD.utils.createSolidMesh(faces) );
   this.app.viewer.render();
 };
