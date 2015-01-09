@@ -18,7 +18,6 @@ TCAD.App = function() {
     if (savedFace != null) {
       var geom = TCAD.workbench.readSketchGeom(JSON.parse(savedFace));
       sketchFace.syncSketches(geom);
-      this.viewer.scene.add(sketchFace.sketch3DGroup);
     }
   }
   this.viewer.render();

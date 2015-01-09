@@ -126,7 +126,6 @@ TCAD.utils.equal = function(v1, v2) {
 TCAD.utils.sketchToPolygons = function(geom) {
 	  
   var dict = {};
-  var points = {};
   var lines = geom.lines;
 
   function key(a) {
@@ -153,7 +152,7 @@ TCAD.utils.sketchToPolygons = function(geom) {
     memDir(b, a);
   }
 
-  graph = {
+  var graph = {
 
     id : key,
 
@@ -168,7 +167,7 @@ TCAD.utils.sketchToPolygons = function(geom) {
 
     size : function() {
       return points.length;
-    },
+    }
   };
 
   var loops = TCAD.graph.finaAllLoops(graph);
@@ -337,9 +336,9 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
     for (var i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
       this.sketch3DGroup.remove(this.sketch3DGroup.children[i]);
     }
-
   } else {
     this.sketch3DGroup = new THREE.Object3D();
+    this.solid.meshObject.add(this.sketch3DGroup);
   }
 
   this.geom = [];
