@@ -1,0 +1,17 @@
+- add full set of constraints
+- UI representation constraints
+- add more free drawing capabil., create origin ref
+- add support for arcs and lines
+- add object properties panel
+- make dims selectable
+
+- cut inside
+- RCP framework
+- facets
+- assembly constraints
+- export to STL
+- object basic 3d operations(rotate/scale/translate) 
+
+- save/share in the cloud 
+- open library
+  
