@@ -75,7 +75,7 @@ TCAD.App.prototype.sketchFace = function() {
   data.boundary = polyFace.polygon.to2D();
   localStorage.setItem(faceStorageKey, JSON.stringify(data));
 
-  window.open("canvas.html#" + faceStorageKey.substring(14), "Edit Sketch", "height=900,width=1200");
+  window.open("sketcher.html#" + faceStorageKey.substring(14), "Edit Sketch", "height=900,width=1200");
 };
 
 TCAD.App.prototype.extrude = function() {
