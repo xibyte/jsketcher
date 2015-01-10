@@ -20,23 +20,44 @@ TCAD.workbench.readSketchGeom = function(sketch) {
     }
     return out;
   }
-};  
+};
+
+TCAD.workbench.serializeSolid = function(solid) {
+  data = {};
+  data.faceCounter = TCAD.geom.FACE_COUNTER;
+  for (var fi = 0; fi < solid.faces.length; ++fi) {
+    var face = solid.faces[fi];
+    var faceData = {};
+    faceData.id = face.id;
+  }
+  return data;
+}
+
+TCAD.workbench.applyHistory = function(history) {
+
+  for (var hi = 0; hi < history.length; ++hi) {
+    var mod = history[hi];
+    switch (mod.operation) {
+    }
+
+  }
+
+};
+
 
 TCAD.craft = {};
 
-TCAD.craft.extrude = function(app, face, height) {
+TCAD.craft.getSketchedPolygons3D = function(app, face) {
 
   var savedFace = localStorage.getItem(app.faceStorageKey(face.id));
   if (savedFace == null) return null;
-  
+
   var geom = TCAD.workbench.readSketchGeom(JSON.parse(savedFace));
   var polygons2D = TCAD.utils.sketchToPolygons(geom);
-  var solid = face.solid;
 
   var normal = face.polygon.normal;
   var depth = null;
   var sketchedPolygons = [];
-  var newSolidFaces = [];
   for (var i = 0; i < polygons2D.length; i++) {
     var poly2D = polygons2D[i];
     if (poly2D.shell.length < 3) continue;
@@ -57,7 +78,16 @@ TCAD.craft.extrude = function(app, face, height) {
     }
     sketchedPolygons.push(new TCAD.Polygon(shell));
   }
+  return sketchedPolygons;
+};
 
+TCAD.craft.extrude = function(app, face, faces, height) {
+
+  var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
+  if (sketchedPolygons == null) return null;
+
+  var newSolidFaces = [];
+  var normal = face.polygon.normal;
   for (var i = 0; i < sketchedPolygons.length; i++) {
     var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(height));
     newSolidFaces = newSolidFaces.concat(newSolidFaces, extruded);
@@ -65,8 +95,29 @@ TCAD.craft.extrude = function(app, face, height) {
 
   face.polygon.__face = undefined;
 
-  for (var i = 0; i < solid.polyFaces.length; i++) {
-    newSolidFaces.push(solid.polyFaces[i].polygon);
+  for (var i = 0; i < faces.length; i++) {
+    newSolidFaces.push(faces[i].polygon);
+  }
+  return newSolidFaces;
+};
+
+
+TCAD.craft.cut = function(app, face, faces, height) {
+
+  var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
+  if (sketchedPolygons == null) return null;
+
+  var newSolidFaces = [];
+  var normal = face.polygon.normal;
+  for (var i = 0; i < sketchedPolygons.length; i++) {
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(height));
+    newSolidFaces = newSolidFaces.concat(newSolidFaces, extruded);
+  }
+
+  face.polygon.__face = undefined;
+
+  for (var i = 0; i < faces.length; i++) {
+    newSolidFaces.push(faces[i].polygon);
   }
   return newSolidFaces;
 };
