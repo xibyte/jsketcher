@@ -88,10 +88,23 @@ TCAD.App.prototype.extrude = function() {
   
   var app = this;
   this.craft.modify(polyFace.solid, function() {
-    return TCAD.craft.extrude(app, polyFace, height);
+    return TCAD.craft.extrude(app, polyFace, polyFace.solid.polyFaces, height);
   });
 };
 
 TCAD.App.prototype.cut = function(face, depth) {
 
+};
+
+
+
+TCAD.App.prototype.save = function() {
+
+  var polyFace = this.viewer.selectionMgr.selection[0];
+  var height = prompt("Height", "50");
+
+  var app = this;
+  this.craft.modify(polyFace.solid, function() {
+    return TCAD.craft.extrude(app, polyFace, height);
+  });
 };
