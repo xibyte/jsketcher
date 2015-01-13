@@ -28,7 +28,7 @@ TCAD.UI.Actions = function(scope) {
     },
     
     cut : function() {
-      
+      scope.app.cut();
     },
 
     edit : function() {

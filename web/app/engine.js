@@ -263,7 +263,7 @@ TCAD.Solid = function(polygons, material) {
   this.dynamic = true; //true by default
   
   this.meshObject = new THREE.Mesh(this, material);
-
+  
   this.polyFaces = [];
   var scope = this;
   function pushVertices(vertices) {
@@ -328,7 +328,6 @@ TCAD.SketchFace = function(solid, poly) {
   this.solid = solid;
   this.polygon = poly;
   this.faces = [];
-  this.geom = null;
   this.sketch3DGroup = null;
 
   if (this.sketchGeom != null) {
@@ -353,7 +352,6 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
     this.solid.meshObject.add(this.sketch3DGroup);
   }
 
-  this.geom = [];
   var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.polygon.shell, normal));
   //we lost depth or z off in 2d sketch, calculate it again
   var depth = normal.dot(this.polygon.shell[0]);
