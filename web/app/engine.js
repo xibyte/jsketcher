@@ -101,7 +101,7 @@ TCAD.utils.fixCCW = function(path, normal) {
   return path;
 };
 
-TCAD.TOLERANCE = 0.000001;
+TCAD.TOLERANCE = 1E-6;
 
 TCAD.utils.areEqual = function(v1, v2, tolerance) {
   return Math.abs(v1 - v2) < tolerance;
@@ -275,7 +275,12 @@ TCAD.Solid = function(polygons, material) {
   var off = 0;
   for (var p = 0; p < polygons.length; ++ p) {
     var poly = polygons[p];
-    var faces = poly.triangulate();
+    try {
+      var faces = poly.triangulate();
+    } catch(e) {
+      console.log(e);
+      continue;
+    }
     pushVertices(poly.shell);
     for ( var h = 0;  h < poly.holes; ++ h ) {
       pushVertices(poly.holes[ h ]);
