@@ -415,14 +415,121 @@ TCAD.craft.cut = function(app, face, faces, height) {
   var cut = CSG.fromPolygons(work).subtract(CSG.fromPolygons(cutter));
 
   face.polygon.__face = undefined;
-  return TCAD.craft._mergeCSGPolygons(cut.polygons).map(function(path) {
-    return new TCAD.Polygon(path.vertices, [], path.normal);
-  });
 
-  function sortPaths() {
+  function pInP(p1, p2) {
+    var notEqPoints = [];
 
+    for (var i = 0; i < p1.length; ++i) {
+      var v1 = p1[i];
+      for (var j = 0; j < p2.length; ++j) {
+        var v2 = p2[j];
+        if (!v1.equals(v2)) {
+          notEqPoints.push(v1);
+          break;
+        }
+      }
+    }
+
+    if (notEqPoints.length == 0) {
+      return true;
+    }
+
+    for (var i = 0; i < notEqPoints.length; ++i) {
+      var v = notEqPoints[i];
+      if (!TCAD.utils.isPointInsidePolygon(v, p2)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
+  function sortPaths(paths3D) {
+
+    paths = paths3D.map(function(path) {
+      return {
+        vertices : new TCAD.Polygon(path.vertices, [], path.normal).to2D().shell,
+        normal : path.normal
+      }
+    });
+
+    var index = [];
+    for (var pi = 0; pi < paths.length; ++pi) {
+      index[pi] = [];
+      paths3D[pi].holes = [];
+    }
+
+    for (var pi = 0; pi < paths.length; ++pi) {
+      var path = paths[pi];
+      depth = path.vertices[0].dot(path.normal);
+      for (var piTest = 0; piTest < paths.length; ++piTest) {
+        var pathTest = paths[piTest];
+        if (piTest === pi) continue;
+        if (!pathTest.normal.equals(path.normal)) continue;
+        depthTest = pathTest.vertices[0].dot(pathTest.normal);
+        if (!TCAD.utils.equal(depthTest, depth)) continue;
+
+        if (pInP(pathTest.vertices, path.vertices)) {
+          index[piTest].push(pi);
+        }
+      }
+    }
+    function collect(master, level) {
+      var success = false;
+      for (var i = 0; i < index.length; ++i) {
+        var masters = index[i];
+        if (level != masters.length) continue;
+        for (var j = 0; j < masters.length; ++j) {
+          var m = masters[j];
+          if (m === master) {
+            paths3D[m].holes.push(paths3D[i])
+            success = true;
+          }
+        }
+      }
+      return success;
+    }
+
+    for (var success = true, level = 1;
+         level < paths3D.length && success;
+         level ++, success = false) {
+
+      for (var i = 0; i < index.length; ++i) {
+        var masters = index[i];
+        if (masters.length == level - 1) {
+          if (collect(i, level)) {
+            success = true;
+          }
+        }
+      }
+    }
+
+    function separate(path, separated) {
+      separated.push(path);
+      for (var i = 0; i < path.holes.length; ++i) {
+        var hole = path.holes[i];
+        for (var j = 0; j < hole.holes.length; ++j) {
+          var inner = hole.holes[j];
+          separate(inner, separated)
+        }
+      }
+    }
+
+    var separated = [];
+    for (var i = 0; i < index.length; ++i) {
+      var masters = index[i];
+      if (masters.length == 0) {
+        separate(paths3D[i], separated);
+      }
+    }
+    return separated;
+  }
+
+  var merged = TCAD.craft._mergeCSGPolygons(cut.polygons);
+  var sorted = sortPaths(merged);
+  return sorted.map(function(path) {
+    return new TCAD.Polygon(path.vertices, path.holes.map(function(path){return path.vertices}), path.normal);
+  });
 
 //    return cut.polygons.map(function(e) {
 //      return new TCAD.Polygon(e.vertices.map(
