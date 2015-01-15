@@ -146,7 +146,7 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
         normal : roundV(vec(cp.plane.normal))
       };
     });
-//    polygons = polygons.filter(function(e){return e.normal.equals(new TCAD.Vector(0,0,1)) });
+    //polygons = polygons.filter(function(e){return e.normal.equals(new TCAD.Vector(1,0,0)) });
     var points = [];
     var pointToPoly = {};
     for (var pi = 0; pi < polygons.length; ++pi) {
@@ -233,7 +233,7 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
   }
 
   var triangles = triangulate(mergeVertices(__cgsPolygons));
-//  return triangles;
+  //return triangles;
 
   var pi, vi,  poly, key, vert;
   var pid = 0;
@@ -252,7 +252,9 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
     }
   }
 
-  function sharesEdge(key1, key2, normalKey) {
+  function sharesEdge(v1, v2, key1, key2, normalKey) {
+    var e1 = v2.minus(v1).normalize();
+    var ne1 = e1.negate();
     var pp1 = pointToPoly[key1];
     var hit = 0;
     for (var ii = 0; ii < pp1.length; ii++) {
@@ -261,8 +263,13 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
         continue;        
       }
       for (var vi = 0; vi < poly.vertices.length; vi++) {
-        if (pkey(poly.vertices[vi]) === key2 && hit++ > 0) {
-          return true;
+        var v3 = poly.vertices[vi];
+        if (pkey(v3) !== key1) {
+          var e3 = v3.minus(v1).normalize();
+          if ((e3.equals(e1) || ne1.equals(e1)) &&
+              hit++ > 0) {
+            return true;
+          }
         }
       }
     }
@@ -328,10 +335,11 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
     keyPrev = null;
 
     visited[pnkey(pCurr, normal)] = true;
-    while (pCurr != null) {
+    var foundNext = true;
+    while (foundNext) {
+      foundNext = false;
       console.log(pnkey(pCurr, normal));
       path.push(vec(pCurr));
-      pCurr = null;
       var polygons = pointToPoly[keyCurr];
       POLY:
       for (pi = 0; pi < polygons.length; pi++) {
@@ -345,13 +353,14 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
           if (keyCurr === key) continue;
           if (keyPrev != null && keyPrev === key) continue;
           var nkey = pnkey(p, poly.normal);
-          if (sharesEdge(keyCurr, key, normalKey)) continue;
+          if (sharesEdge(pCurr, p, keyCurr, key, normalKey)) continue;
           if (visited[nkey] !== undefined) continue;
           visited[nkey] = true;
 
           pCurr = p;
           keyPrev = keyCurr;
           keyCurr = key;
+          foundNext = true;
           break POLY;
         }
       }
@@ -446,7 +455,7 @@ TCAD.craft.cut = function(app, face, faces, height) {
 
   function sortPaths(paths3D) {
 
-    paths = paths3D.map(function(path) {
+    var paths = paths3D.map(function(path) {
       return {
         vertices : new TCAD.Polygon(path.vertices, [], path.normal).to2D().shell,
         normal : path.normal
@@ -461,12 +470,12 @@ TCAD.craft.cut = function(app, face, faces, height) {
 
     for (var pi = 0; pi < paths.length; ++pi) {
       var path = paths[pi];
-      depth = path.vertices[0].dot(path.normal);
+      var depth = path.vertices[0].dot(path.normal);
       for (var piTest = 0; piTest < paths.length; ++piTest) {
         var pathTest = paths[piTest];
         if (piTest === pi) continue;
         if (!pathTest.normal.equals(path.normal)) continue;
-        depthTest = pathTest.vertices[0].dot(pathTest.normal);
+        var depthTest = pathTest.vertices[0].dot(pathTest.normal);
         if (!TCAD.utils.equal(depthTest, depth)) continue;
 
         if (pInP(pathTest.vertices, path.vertices)) {
