@@ -41,8 +41,28 @@ TCAD.workbench.applyHistory = function(history) {
     }
 
   }
-
 };
+
+TCAD.workbench.Cut = function() {
+
+  this.depth = null;
+
+  this.load = function(data) {
+    this.depth = data.depth;
+  };
+
+  this.save = function() {
+    return {
+      depth : this.depth
+    };
+  };
+
+  this.apply = function(app, face, faces) {
+    TCAD.craft.cut(app, face, faces, this.depth);
+  };
+};
+
+TCAD.workbench.Cut.prototype.TYPE = 'CUT';
 
 
 TCAD.craft = {};
