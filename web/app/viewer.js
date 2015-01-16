@@ -4,10 +4,14 @@ TCAD.view = {};
 TCAD.view.setFaceColor = function(polyFace, color) {
   for (var i = 0; i < polyFace.faces.length; ++i) {
     var face = polyFace.faces[i];
-    face.color.set( color );
+    if (color == null) {
+      face.color = new THREE.Color();
+    } else {
+      face.color.set( color );
+    }
   }
 };
-
+TCAD.view.FACE_COLOR =  0xB0C4DE;
 TCAD.Viewer = function() {
 
   function aspect() {
@@ -79,7 +83,7 @@ TCAD.Viewer = function() {
    **/
 
 
-  this.selectionMgr = new TCAD.FaceSelectionManager( 0xFAFAD2, 0xB0C4DE);
+  this.selectionMgr = new TCAD.FaceSelectionManager( 0xFAFAD2, null);
 
   var projector = new THREE.Projector();
   var raycaster = new THREE.Raycaster();
