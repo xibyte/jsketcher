@@ -190,7 +190,7 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
         normal : roundV(vec(cp.plane.normal))
       };
     });
-    //polygons = polygons.filter(function(e){return e.normal.equals(new TCAD.Vector(0,1,0)) });
+    //polygons = polygons.filter(function(e){return e.normal.equals(new TCAD.Vector(-1,0,0)) });
     return polygons;
   }
   
@@ -447,7 +447,7 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
       }
     }
     path = deleteRedundantPoints(path);
-    if (path.length > 3) {
+    if (path.length > 2) {
       paths.push({
         vertices : path,
         normal : normal
