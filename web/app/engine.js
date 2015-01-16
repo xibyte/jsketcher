@@ -80,7 +80,7 @@ TCAD.utils.createLine = function (a, b, color) {
 TCAD.utils.createSolidMesh = function(faces) {
   var material = new THREE.MeshPhongMaterial({
     vertexColors: THREE.FaceColors,
-    color: '#B0C4DE',
+    color: TCAD.view.FACE_COLOR,
     shininess: 0
   });
   var geometry = new TCAD.Solid(faces, material);
@@ -165,7 +165,7 @@ TCAD.utils.isPointInsidePolygon = function( inPt, inPolygon ) {
   }
 
   return	inside;
-}
+};
 
 TCAD.utils.sketchToPolygons = function(geom) {
 	  
