@@ -17,7 +17,7 @@ TCAD.Viewer = function() {
   function aspect() {
     return window.innerWidth / window.innerHeight;
   }
-  this.scene = new THREE.Scene()
+  this.scene = new THREE.Scene();
   var scene = this.scene;
   var camera = new THREE.PerspectiveCamera( 500*75, aspect(), 0.1, 10000 );
   camera.position.z = 1000;
