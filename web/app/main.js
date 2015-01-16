@@ -10,16 +10,7 @@ TCAD.App = function() {
 
   var box = TCAD.utils.createSolidMesh(TCAD.utils.createBox(500));
   this.viewer.scene.add( box );
-  for (var i = 0; i < box.geometry.polyFaces.length; i++) {
-    var sketchFace = box.geometry.polyFaces[i];
-    var faceStorageKey = this.faceStorageKey(sketchFace.id);
-
-    var savedFace = localStorage.getItem(faceStorageKey);
-    if (savedFace != null) {
-      var geom = TCAD.workbench.readSketchGeom(JSON.parse(savedFace));
-      sketchFace.syncSketches(geom);
-    }
-  }
+  this._refreshSketches();
   this.viewer.render();
 
   var viewer = this.viewer;
@@ -107,7 +98,27 @@ TCAD.App.prototype.cut = function() {
 
 };
 
+TCAD.App.prototype.refreshSketches = function() {
+  this._refreshSketches();
+  this.viewer.render();
+};
 
+TCAD.App.prototype._refreshSketches = function() {
+  for (var oi = 0; oi < this.viewer.scene.children.length; ++oi) {
+    var obj = this.viewer.scene.children[oi];
+    if (obj.geometry !== undefined && obj.geometry.polyFaces !== undefined) {
+      for (var i = 0; i < obj.geometry.polyFaces.length; i++) {
+        var sketchFace = obj.geometry.polyFaces[i];
+        var faceStorageKey = this.faceStorageKey(sketchFace.id);
+        var savedFace = localStorage.getItem(faceStorageKey);
+        if (savedFace != null) {
+          var geom = TCAD.workbench.readSketchGeom(JSON.parse(savedFace));
+          sketchFace.syncSketches(geom);
+        }
+      }
+    }
+  }
+};
 
 TCAD.App.prototype.save = function() {
 

@@ -13,6 +13,8 @@ TCAD.UI = function(app) {
   actionsF.add(actions.tools, 'extrude');
   actionsF.add(actions.tools, 'cut');
   actionsF.add(actions.tools, 'edit');
+  actionsF.add(actions.tools, 'save');
+  actionsF.add(actions.tools, 'refreshSketches');
   actionsF.open();
 
 //    var propsF = gui.addFolder('Properties');
@@ -33,7 +35,24 @@ TCAD.UI.Actions = function(scope) {
 
     edit : function() {
       scope.app.sketchFace();
+    },
+    
+    save : function() {
+      scope.app.save();
+    },
+    
+    refreshSketches : function() {
+      scope.app.refreshSketches();
+    },
+
+    undo : function() {
+      scope.app.undo();
+    },
+
+    redo : function() {
+      scope.app.redo();
     }
+
 
   };
 };
