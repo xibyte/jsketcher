@@ -69,6 +69,7 @@ TCAD.TWO.AddSegmentTool.prototype.keydown = function(e) {
   if (this.multi && this.line != null && e.keyCode == 27) {
     this.viewer.remove(this.line);
     this.viewer.refresh();
+    this.cleanup(null);
   }    
 };
 
