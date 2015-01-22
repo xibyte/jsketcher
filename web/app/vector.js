@@ -221,12 +221,19 @@ TCAD.Matrix.prototype.combine = function(transform) {
 };
 
 TCAD.Matrix.prototype.apply = function(vector) {
+  return this.__apply(vector, new TCAD.Vector())
+};
+
+TCAD.Matrix.prototype._apply = function(vector) {
+  return this.__apply(vector, vector);
+};
+
+TCAD.Matrix.prototype.__apply = function(vector, out) {
   var x = vector.x;
   var y = vector.y;
   var z = vector.z;
-  return new TCAD.Vector(
-          this.mxx * x + this.mxy * y + this.mxz * z + this.tx,
-          this.myx * x + this.myy * y + this.myz * z + this.ty,
-          this.mzx * x + this.mzy * y + this.mzz * z + this.tz);
+  return out.set(
+      this.mxx * x + this.mxy * y + this.mxz * z + this.tx,
+      this.myx * x + this.myy * y + this.myz * z + this.ty,
+      this.mzx * x + this.mzy * y + this.mzz * z + this.tz);
 };
-

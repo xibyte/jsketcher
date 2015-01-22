@@ -17,6 +17,8 @@ TCAD.utils.createSquare = function(width) {
 
 TCAD.utils.createBox = function(width) {
   var square = TCAD.utils.createSquare(width);
+  var rot = TCAD.math.rotateMatrix(3/4, TCAD.math.AXIS.Z, TCAD.math.ORIGIN);
+  square.eachVertex(function(path, i) { rot._apply(path[i]) } )
   return TCAD.geom.extrude(square, square.normal.multiply(width));
 };
 
@@ -521,6 +523,17 @@ TCAD.Polygon.prototype.triangulate = function() {
 //  return THREE.Shape.utils.triangulateShape( f2d.shell, f2d.holes );
 };
 
+TCAD.Polygon.prototype.eachVertex = function(handler) {
+  var i, h;
+  for (i = 0; i < this.shell.length; ++i) {
+    if (handler(this.shell, i) === true) return;
+  }
+  for (h = 0; h < this.holes.length; ++h) {
+    for (i = 0; i < this.holes[h].length; ++i) {
+      if (handler(this.holes[h], i) === true) return;
+    }
+  }
+};
 
 TCAD.Sketch = function() {
   this.group = new THREE.Object3D();
