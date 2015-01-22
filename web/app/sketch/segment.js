@@ -20,7 +20,8 @@ TCAD.TWO.AddSegmentTool.prototype.mousemove = function(e) {
 };
 
 TCAD.TWO.AddSegmentTool.prototype.cleanup = function(e) {
-  this.viewer.cleanSnap();  
+  this.viewer.cleanSnap();
+  this.line = null;
 };
 
 TCAD.TWO.AddSegmentTool.prototype.mousedown = function(e) {
