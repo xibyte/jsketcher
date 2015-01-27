@@ -1,0 +1,7 @@
+cd build_oce/
+cmake -D  OCE_VISUALISATION:BOOLEAN=FALSE -D OCE_DISABLE_X11:BOOLEAN=TRUE -D OCE_USE_PCH:BOOLEAN=TRUE  ../oce
+make -j 4
+
+export DESTDIR=/home/xibyte/git/build_oce/out && make -j4 install
+
+export LD_LIBRARY_PATH=/home/xibyte/git/build_oce/out/usr/local/lib/
