@@ -4,14 +4,17 @@
 - add support for arcs and lines
 - add object properties panel
 - make dims selectable
+- delete objects from scene
 
+- initialization / adding new objects
 - cut inside
   - border cases
 - RCP framework
 - facets
 - assembly constraints
 - export to STL
-- object basic 3d operations(rotate/scale/translate) 
+- object basic 3d operations(rotate/scale/translate)
+- wireframe for solids
 
 - save/share in the cloud 
 - open library

@@ -1,31 +1,29 @@
 <html>
-
 <head>
+	<title>Test Suite</title>
 
-<style>
-html, body {
-	background: gray;
-	height: 100%;
-	padding: 0;
-	margin: 0;
-}
-.panel {
-  background: #444;
-  border: 0px solid black;
-} 
-</style>
+	<script src="lib/three/three.js"></script>
+	<script src="lib/three/TrackballControls.js"></script>
+	<script src="lib/three/OrbitControls.js"></script>
+	<script src="lib/dat.gui.min.js"></script>
+	<script src="lib/csg.js"></script>
+	<script src="lib/pnltri.js"></script>
+	<script src="app/main.js"></script>
+	<script src="app/ctrl.js"></script>
+	<script src="app/viewer.js"></script>
+	<script src="app/engine.js"></script>
+	<script src="app/vector.js"></script>
+	<script src="app/math/math.js"></script>
+	<script src="app/workbench.js"></script>
+	<script src="app/math/graph.js"></script>
+	<script src="app/struct.js"></script>
+	<script src="app/struct-tests.js"></script>
 
+	<script>window.onload = function() {
+		TCAD.struct.tests.testHashTable();
+	}</script>
 </head>
-
 <body>
-	<div class="panel" style="width: 100%; height: 50px;"></div>
-	<div style="width: 100%; height: calc(100% - 100px);">
 
-		<div class="panel" style="background: blue; float: left; width: 245px; height: 100%;"></div>
-		<!--  div style="background-color: blue; height: 20px; width: 100px; float: left;"><canvas width="300" height="300" id="viewer"></canvas></div-->
-		<div style="background: black; float: left; width: calc(100% - 296px); height: 100%;"></div>
-		<div class="panel" style="background-color: yellow; width: 50px; float: right; height: 100%; "></div>
-	</div>
-	<div class="panel" style="width: 100%; height: 50px; border-top-width: 1px;"></div>
 </body>
 </html>
