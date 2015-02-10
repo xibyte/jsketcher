@@ -477,6 +477,10 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Coincident.prototype.NAME] = f
   return new TCAD.TWO.Constraints.Coincident(refs(data[0]), refs(data[1]));  
 };
 
+TCAD.TWO.Constraints.Coincident.prototype.getObjects = function() {
+  return [this.a, this.b];
+};
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.Lock = function(p, c) {
@@ -499,6 +503,11 @@ TCAD.TWO.Constraints.Lock.prototype.serialize = function() {
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Lock.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.Lock(refs(data[0]), data[1]);
+};
+
+
+TCAD.TWO.Constraints.Lock.prototype.getObjects = function() {
+  return [this.p];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
@@ -525,6 +534,10 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Parallel.prototype.NAME] = fun
   return new TCAD.TWO.Constraints.Parallel(refs(data[0]), refs(data[1]));
 };
 
+TCAD.TWO.Constraints.Parallel.prototype.getObjects = function() {
+  return [this.l1, this.l2];
+};
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
@@ -547,6 +560,10 @@ TCAD.TWO.Constraints.Perpendicular.prototype.serialize = function() {
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Perpendicular.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.Perpendicular(refs(data[0]), refs(data[1]));
+};
+
+TCAD.TWO.Constraints.Perpendicular.prototype.getObjects = function() {
+  return [this.l1, this.l2];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
@@ -572,6 +589,10 @@ TCAD.TWO.Constraints.P2LDistance.prototype.serialize = function() {
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2LDistance.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.P2LDistance(refs(data[0]), refs(data[1]), data[2]);
+};
+
+TCAD.TWO.Constraints.P2LDistance.prototype.getObjects = function() {
+  return [this.p, this.l];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
@@ -628,6 +649,10 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2PDistance.prototype.NAME] = 
   return new TCAD.TWO.Constraints.P2PDistance(refs(data[0]), refs(data[1]), data[2]);
 };
 
+TCAD.TWO.Constraints.P2PDistance.prototype.getObjects = function() {
+  return [this.p1, this.p2];
+};
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
@@ -678,6 +703,10 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Radius.prototype.NAME] = funct
   return new TCAD.TWO.Constraints.Radius(refs(data[0]), data[1]);
 };
 
+TCAD.TWO.Constraints.Radius.prototype.getObjects = function() {
+  return [this.arc];
+};
+
 // ------------------------------------------------------------------------------------------------------------------ // 
 
 TCAD.TWO.Constraints.RR = function(arc1, arc2) {
@@ -697,6 +726,10 @@ TCAD.TWO.Constraints.RR.prototype.serialize = function() {
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.RR.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.RR(refs(data[0]), refs(data[1]));
+};
+
+TCAD.TWO.Constraints.RR.prototype.getObjects = function() {
+  return [this.arc1, this.arc2];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
@@ -719,6 +752,10 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Vertical.prototype.NAME] = fun
   return new TCAD.TWO.Constraints.Vertical(refs(data[0]));
 };
 
+TCAD.TWO.Constraints.Vertical.prototype.getObjects = function() {
+  return [this.line];
+};
+
 // ------------------------------------------------------------------------------------------------------------------ // 
 
 TCAD.TWO.Constraints.Horizontal = function(line) {
@@ -737,6 +774,10 @@ TCAD.TWO.Constraints.Horizontal.prototype.serialize = function() {
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Horizontal.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.Horizontal(refs(data[0]));
+};
+
+TCAD.TWO.Constraints.Horizontal.prototype.getObjects = function() {
+  return [this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
@@ -762,6 +803,10 @@ TCAD.TWO.Constraints.Tangent.prototype.serialize = function() {
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Tangent.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.Tangent(refs(data[0]), refs(data[1]));
+};
+
+TCAD.TWO.Constraints.Tangent.prototype.getObjects = function() {
+  return [this.arc, this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
