@@ -227,7 +227,9 @@
           var theItems = [];
           for (var i = 0; i < pm.system.length; ++i) {
             var constr = pm.system[i];
-            theItems.push({name : constr.NAME, constr : constr});
+            if (constr.aux !== true) {
+              theItems.push({name : constr.NAME, constr : constr});
+            }
           }
           return theItems;
         },
