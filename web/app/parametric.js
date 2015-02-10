@@ -81,13 +81,11 @@ TCAD.TWO.ParametricManager.prototype.lock = function(objs) {
 };
 
 TCAD.TWO.ParametricManager.prototype.vertical = function(objs) {
-  var p = this._fetchTwoPoints(objs);
-  this.add(new TCAD.TWO.Constraints.Equal(p[0]._x, p[1]._x));
+  this.add(new TCAD.TWO.Constraints.Vertical(this._fetchLine(objs)));
 };
 
 TCAD.TWO.ParametricManager.prototype.horizontal = function(objs) {
-  var p = this._fetchTwoPoints(objs);
-  this.add(new TCAD.TWO.Constraints.Equal(p[0]._y, p[1]._y));
+  this.add(new TCAD.TWO.Constraints.Horizontal(this._fetchLine(objs)));
 };
 
 TCAD.TWO.ParametricManager.prototype.parallel = function(objs) {
@@ -694,23 +692,42 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.RR.prototype.NAME] = function(
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
-TCAD.TWO.Constraints.Vertical = function(arc1, arc2) {
-  this.arc1 = arc1;
-  this.arc2 = arc2;
+TCAD.TWO.Constraints.Vertical = function(line) {
+  this.line = line;
 };
 
 TCAD.TWO.Constraints.Vertical.prototype.NAME = 'Vertical';
 
 TCAD.TWO.Constraints.Vertical.prototype.getSolveData = function() {
-  return [['equal', [this.arc1.r, this.arc2.r], []]];
+  return [['equal', [this.line.a._x, this.line.b._x], []]];
 };
 
 TCAD.TWO.Constraints.Vertical.prototype.serialize = function() {
-  return [this.NAME, [this.arc1.id, this.arc2.id]];
+  return [this.NAME, [this.line.id]];
 };
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Vertical.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.RR(refs(data[0]), refs(data[1]));
+  return new TCAD.TWO.Constraints.Vertical(refs(data[0]));
+};
+
+// ------------------------------------------------------------------------------------------------------------------ // 
+
+TCAD.TWO.Constraints.Horizontal = function(line) {
+  this.line = line;
+};
+
+TCAD.TWO.Constraints.Horizontal.prototype.NAME = 'Horizontal';
+
+TCAD.TWO.Constraints.Horizontal.prototype.getSolveData = function() {
+  return [['equal', [this.line.a._y, this.line.b._y], []]];
+};
+
+TCAD.TWO.Constraints.Horizontal.prototype.serialize = function() {
+  return [this.NAME, [this.line.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Horizontal.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Horizontal(refs(data[0]));
 };
 
 // ------------------------------------------------------------------------------------------------------------------ // 
