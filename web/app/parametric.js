@@ -185,7 +185,13 @@ TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
     this.system.push(c);
   }
 
-  
+  for (i = 0; i < objs.length; ++i) {
+    for (var j = 0; j < objs.length; ++j) {
+      if (objs[i].id !== objs[j].id) {
+        objs[j].linked.push(objs[i]);
+      }
+    }
+  }
   
   this.notify();
 };
@@ -683,6 +689,27 @@ TCAD.TWO.Constraints.RR.prototype.serialize = function() {
 };
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.RR.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.RR(refs(data[0]), refs(data[1]));
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+TCAD.TWO.Constraints.Vertical = function(arc1, arc2) {
+  this.arc1 = arc1;
+  this.arc2 = arc2;
+};
+
+TCAD.TWO.Constraints.Vertical.prototype.NAME = 'Vertical';
+
+TCAD.TWO.Constraints.Vertical.prototype.getSolveData = function() {
+  return [['equal', [this.arc1.r, this.arc2.r], []]];
+};
+
+TCAD.TWO.Constraints.Vertical.prototype.serialize = function() {
+  return [this.NAME, [this.arc1.id, this.arc2.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Vertical.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.RR(refs(data[0]), refs(data[1]));
 };
 
