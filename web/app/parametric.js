@@ -26,6 +26,9 @@ TCAD.TWO.ParametricManager.prototype.remove = function(constr) {
     var p = this.system[i];
     if (p.id === constr.id) {
       this.system.splice(i, 1);
+      if (p.NAME === 'coi') {
+        this.unlinkObjects(p.a, p.b);
+      }
       break;
     }
   }
@@ -190,6 +193,21 @@ TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
     }
   }
   this.notify();
+};
+
+TCAD.TWO.ParametricManager.prototype.unlinkObjects = function(a, b) {
+  
+  function _unlink(a, b) {
+    for (var i = 0; i < a.linked.length; ++i) {
+      var obj = a.linked[i];
+      if (obj.id === b.id) {
+        a.linked.splice(i, 1);
+        break;
+      }
+    }
+  }
+  _unlink(a, b);
+  _unlink(b, a);
 };
 
 TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
