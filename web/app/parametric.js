@@ -109,10 +109,10 @@ TCAD.TWO.ParametricManager.prototype.tangent = function(objs) {
 
 TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
   var arcs = this._fetchArkCirc(objs, 2);
-  var prev = arcs[0].r;
+  var prev = arcs[0];
   for (var i = 1; i < arcs.length; ++i) {
-    this.system.push(new TCAD.TWO.Constraints.Equal(prev, arcs[i].r));
-    prev = arcs[i].r;
+    this.system.push(new TCAD.TWO.Constraints.RR(prev, arcs[i]));
+    prev = arcs[i];
   }
   this.solve();
   this.notify();
@@ -663,6 +663,27 @@ TCAD.TWO.Constraints.Radius.prototype.serialize = function() {
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Radius.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.Radius(refs(data[0]), data[1]);
+};
+
+// ------------------------------------------------------------------------------------------------------------------ // 
+
+TCAD.TWO.Constraints.RR = function(arc1, arc2) {
+  this.arc1 = arc1;
+  this.arc2 = arc2;
+};
+
+TCAD.TWO.Constraints.RR.prototype.NAME = 'RR';
+
+TCAD.TWO.Constraints.RR.prototype.getSolveData = function() {
+  return [['equal', [this.arc1.r, this.arc2.r], []]];
+};
+
+TCAD.TWO.Constraints.RR.prototype.serialize = function() {
+  return [this.NAME, [this.arc1.id, this.arc2.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.RR.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.RR(refs(data[0]), refs(data[1]));
 };
 
 // ------------------------------------------------------------------------------------------------------------------ // 
