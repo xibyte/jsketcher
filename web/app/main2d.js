@@ -267,6 +267,7 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
         var c = this.parseConstr(sketch.constraints[i], index);
         this.viewer.parametricManager.system.push(c);
       }
+      this.viewer.parametricManager.notify();
     }
 };
 
