@@ -73,7 +73,7 @@ TCAD.TWO.ParametricManager.prototype.removeConstraintsByParams = function(ownedP
 TCAD.TWO.ParametricManager.prototype.lock = function(objs) {
   var p = this._fetchPoints(objs);
   for (var i = 0; i < p.length; ++i) {
-    this.system.push(new TCAD.TWO.Constraints.Lock(p[i], p[i]));
+    this.system.push(new TCAD.TWO.Constraints.Lock(p[i], { x : p[i].x, y : p[i].y} ));
   }
   this.solve();
   this.notify();
@@ -185,13 +185,8 @@ TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
     this.system.push(c);
   }
 
-  for (i = 0; i < objs.length; ++i) {
-    for (var j = 0; j < objs.length; ++j) {
-      if (objs[i].id !== objs[j].id) {
-        objs[j].linked.push(objs[i]);
-      }
-    }
-  }
+  
+  
   this.notify();
 };
 
@@ -443,6 +438,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   return solver; 
 };
 
+TCAD.TWO.Constraints.Factory = {};
 
 TCAD.TWO.Constraints.Coincident = function(a, b) {
   this.a = a;
@@ -458,6 +454,14 @@ TCAD.TWO.Constraints.Coincident.prototype.getSolveData = function() {
   ];
 };
 
+TCAD.TWO.Constraints.Coincident.prototype.serialize = function() {
+  return [this.NAME, [this.a.id, this.b.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Coincident.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Coincident(refs(data[0]), refs(data[1]));  
+};
+
 TCAD.TWO.Constraints.Lock = function(p, c) {
   this.p = p;
   this.c = c;
@@ -467,9 +471,17 @@ TCAD.TWO.Constraints.Lock.prototype.NAME = 'lock';
 
 TCAD.TWO.Constraints.Lock.prototype.getSolveData = function() {
   return [
-    ['equalsTo', [this.p._x, this.c.x], []],
-    ['equalsTo', [this.p._y, this.c.y], []]
+    ['equalsTo', [this.p._x], [this.c.x]],
+    ['equalsTo', [this.p._y], [this.c.y]]
   ];
+};
+
+TCAD.TWO.Constraints.Lock.prototype.serialize = function() {
+  return [this.NAME, [this.p.id, this.c]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Lock.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Lock(refs(data[0]), data[1]);
 };
 
 TCAD.TWO.Constraints.Parallel = function(l1, l2) {
@@ -486,6 +498,14 @@ TCAD.TWO.Constraints.Parallel.prototype.getSolveData = function() {
   return [[this.NAME, params, []]];
 };
 
+TCAD.TWO.Constraints.Parallel.prototype.serialize = function() {
+  return [this.NAME, [this.l1.id, this.l2.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Parallel.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Parallel(refs(data[0]), refs(data[1]));
+};
+
 TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
   this.l1 = l1;
   this.l2 = l2;
@@ -498,6 +518,14 @@ TCAD.TWO.Constraints.Perpendicular.prototype.getSolveData = function() {
   this.l1.collectParams(params);
   this.l2.collectParams(params);
   return [[this.NAME, params, []]];
+};
+
+TCAD.TWO.Constraints.Perpendicular.prototype.serialize = function() {
+  return [this.NAME, [this.l1.id, this.l2.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Perpendicular.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Perpendicular(refs(data[0]), refs(data[1]));
 };
 
 TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
@@ -515,6 +543,13 @@ TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function() {
   return [[this.NAME, params, [this.d]]];
 };
 
+TCAD.TWO.Constraints.P2LDistance.prototype.serialize = function() {
+  return [this.NAME, [this.p.id, this.l.id, this.d]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2LDistance.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.P2LDistance(refs(data[0]), refs(data[1]), data[2]);
+};
 
 TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
   this.p = p;
@@ -530,6 +565,14 @@ TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
   this.l.collectParams(params);
   params.push(this.d);
   return [[this.NAME, params]];
+};
+
+TCAD.TWO.Constraints.P2LDistanceV.prototype.serialize = function() {
+  return [this.NAME, [this.p.id, this.l.id, this.d.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.P2LDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
 };
 
 
@@ -548,6 +591,15 @@ TCAD.TWO.Constraints.P2PDistance.prototype.getSolveData = function() {
   return [[this.NAME, params, [this.d]]];
 };
 
+TCAD.TWO.Constraints.P2PDistance.prototype.serialize = function() {
+  return [this.NAME, [this.p1.id, this.p2.id, this.d]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2PDistance.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.P2PDistance(refs(data[0]), refs(data[1]), data[2]);
+};
+
+
 TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
   this.p1 = p1;
   this.p2 = p2;
@@ -562,4 +614,12 @@ TCAD.TWO.Constraints.P2PDistanceV.prototype.getSolveData = function() {
   this.p2.collectParams(params);
   params.push(this.d);
   return [[this.NAME, params]];
+};
+
+TCAD.TWO.Constraints.P2PDistanceV.prototype.serialize = function() {
+  return [this.NAME, [this.p1.id, this.p2.id, this.d.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.P2PDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
 };

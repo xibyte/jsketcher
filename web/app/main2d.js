@@ -323,51 +323,21 @@ TCAD.App2D.prototype.parseConstr = function (c, index) {
   function find(id) {
     var p = index[id];
     if (!p) {
-      throw "CAN'T READ SKETCH";
+      throw "CAN'T READ SKETCH. Object ref is not found.";
     }
     return p;
   }
   var name = c[0];
   var ps = c[1];
-  switch (name) {
-    case "equal":
-      return new TCAD.TWO.Constraints.Equal(find(ps[0]), find(ps[1]));
-    case "equalsTo":
-      return new TCAD.TWO.Constraints.EqualsTo(find(ps[0]), ps[1]);
-    case "perpendicular":
-      return new TCAD.TWO.Constraints.Perpendicular(find(ps[0]), find(ps[1]));
-    case "parallel":
-      return new TCAD.TWO.Constraints.Parallel(find(ps[0]), find(ps[1]));
-    case "P2LDistance":
-      return new TCAD.TWO.Constraints.P2LDistance(find(ps[0]), find(ps[1]), ps[2]);
-    case "P2LDistanceV":
-      return new TCAD.TWO.Constraints.P2LDistanceV(find(ps[0]), find(ps[1]), find(ps[2]));
-    case "P2PDistance":
-      return new TCAD.TWO.Constraints.P2PDistance(find(ps[0]), find(ps[1]), ps[2]);
-    case "P2PDistanceV":
-      return new TCAD.TWO.Constraints.P2PDistanceV(find(ps[0]), find(ps[1]), find(ps[2]));
+  var constrCreate = TCAD.TWO.Constraints.Factory[name];
+  if (!constrCreate) {
+    throw "CAN'T READ SKETCH. Constraint " + name + " hasn't been registered.";
   }
+  return constrCreate(find, ps);
 };
 
 TCAD.App2D.prototype.serializeConstr = function (c) {
-  switch (c.NAME) {
-    case "equal":
-      return ['equal', [c.p1.id, c.p2.id]];
-    case "equalsTo":
-      return ['equalsTo', [c.p.id, c.v]];
-    case "perpendicular":
-      return ['perpendicular', [c.l1.id, c.l2.id]];
-    case "parallel":
-      return ['parallel', [c.l1.id, c.l2.id]];
-    case "P2LDistance":
-      return ['P2LDistance', [c.p.id, c.l.id, c.d]];
-    case "P2LDistanceV":
-      return ['P2LDistanceV', [c.p.id, c.l.id, c.d.get()]];
-    case "P2PDistance":
-      return ['P2PDistance', [c.p1.id, c.p2.id, c.d]];
-    case "P2PDistanceV":
-      return ['P2PDistanceV', [c.p1.id, c.p2.id, c.d.get()]];
-  }
+  return c.serialize();
 };
 
 TCAD.App2D.prototype.getSketchId = function() {
