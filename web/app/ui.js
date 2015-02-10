@@ -56,8 +56,10 @@ TCAD.ui.List.prototype.refresh = function() {
   var model = this.model;
   for (var i = 0; i < items.length; ++i) {
     var item = items[i];
-    this.ul.append(this.template.replace('$name$', item.name));
-    this.ul.find('li:last input').click(function() {model.remove(item, i)});
-    this.ul.find('li:last').hover(function() {model.hover(item, i)});
+    var li = $(this.template.replace('$name$', item.name));
+    this.ul.append(li);
+    var index = i;
+    li.find('.ui-rm').click(function() {model.remove(item, index)});
+    li.hover(function() {model.hover(item, index)});
   }
 };
