@@ -5,3 +5,18 @@ make -j 4
 export DESTDIR=/home/xibyte/git/build_oce/out && make -j4 install
 
 export LD_LIBRARY_PATH=/home/xibyte/git/build_oce/out/usr/local/lib/
+
+official/6.7.0
+
+ 1071  sudo apt-get install g++
+ 1073  sudo apt-get install tcl
+ 1074  sudo apt-get install tclsudo 
+ 1075  sudo apt-get install cmake cmake-curses-gui g++ build-essential
+ 1078  sudo apt-get install tcl-dev 
+ 1084  sudo apt-get install automake
+ 1090  sudo apt-get install libtool
+ 
+ 1085  ./build_configure 
+ 1092  ./configure 
+ 1093  make
+
