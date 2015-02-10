@@ -89,6 +89,8 @@ TCAD.App2D = function() {
           } else if (obj._class === 'TCAD.TWO.Arc') {
             to.points = [point(obj.a), point(obj.b), point(obj.c)];
           } else if (obj._class === 'TCAD.TWO.Circle') {
+            to.c = point(obj.c);
+            to.r = obj.r.get();
           } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
             to.a = obj.a.id;
             to.b = obj.b.id;
@@ -224,6 +226,9 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
             skobj = new TCAD.TWO.Arc(a, b, c);
             skobj.stabilize(this.viewer);
           } else if (obj._class === 'TCAD.TWO.Circle') {
+            var c = endPoint(obj.c);
+            skobj = new TCAD.TWO.Circle(c);
+            skobj.r.set(obj.r);
           } else if (obj._class === 'TCAD.TWO.HDimension') {
             skobj = new TCAD.TWO.HDimension(obj.a, obj.b);
             skobj.flip = obj.flip;
