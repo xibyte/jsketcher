@@ -54,12 +54,15 @@ TCAD.ui.List.prototype.refresh = function() {
   this.ul.empty();
   var items = this.model.items();
   var model = this.model;
+  function makeCallbacks(li, item, index) {
+    li.find('.ui-rm').click(function() {model.remove(item, index)});
+    li.hover(function() {model.hover(item, index)});
+    li.mouseleave(function() {model.mouseleave(item, index)});
+  }
   for (var i = 0; i < items.length; ++i) {
     var item = items[i];
     var li = $(this.template.replace('$name$', item.name));
     this.ul.append(li);
-    var index = i;
-    li.find('.ui-rm').click(function() {model.remove(item, index)});
-    li.hover(function() {model.hover(item, index)});
+    makeCallbacks(li, item, i)
   }
 };
