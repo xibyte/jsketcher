@@ -216,30 +216,39 @@ TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
   this.viewer.refresh();
 };
 
+TCAD.TWO.ParametricManager.prototype.getSolveData = function() {
+  var sdata = [];
+  for (i = 0; i < this.system.length; ++i) {
+    var data = this.system[i].getSolveData();
+    for (var j = 0; j < data.length; ++j) {
+      sdata.push(data[j]);
+    }
+  }
+  return sdata;
+}
+
 TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
   var pdict = {};
   var refsCounter = 0;
   var params = [];
   var i;
   var data = {params : [], constraints: [], locked: []};
-  for (i = 0; i < this.system.length; ++i) {
-    var sdataArr = this.system[i].getSolveData();
-    for (var j = 0; j < sdataArr.length; j++) {
-      var sdata = sdataArr[j];
-      var prefs = [];
-      var constr = [sdata[0], prefs, sdata[2]];
-      data.constraints.push(constr);
-      for (var p = 0; p < sdata[1].length; ++p) {
-        var param = sdata[1][p];
-        var pref = pdict[param.id];
-        if (pref === undefined) {
-          pref = refsCounter++;
-          data.params.push(param.get());
-          params.push(param);
-          pdict[param.id] = pref;
-        }
-        prefs.push(pref);
+  var sdataArr = this.getSolveData();
+  for (var j = 0; j < sdataArr.length; j++) {
+    var sdata = sdataArr[j];
+    var prefs = [];
+    var constr = [sdata[0], prefs, sdata[2]];
+    data.constraints.push(constr);
+    for (var p = 0; p < sdata[1].length; ++p) {
+      var param = sdata[1][p];
+      var pref = pdict[param.id];
+      if (pref === undefined) {
+        pref = refsCounter++;
+        data.params.push(param.get());
+        params.push(param);
+        pdict[param.id] = pref;
       }
+      prefs.push(pref);
     }
   }
 
@@ -296,15 +305,18 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   function peq(p1, p2) {
     return Math.abs(p1.get() - p2.get()) <= 0.000001
   }
-  for (i = 0; i < this.system.length; ++i) {
-    var c = this.system[i];
-    if (c.NAME === 'coi' && false) { //Disable it
+  var system = this.getSolveData();
+  for (i = 0; i < system.length; ++i) {
+    var c = system[i];
+    if (c[0] === 'equal' && false) { //Disable it
       var found = false;
-      //if (!peq(c.p1, c.p2)) continue;
-      var p0 = c.p1.id;
-      var p1 = c.p2.id;
-      equalsDict[p0] = c.p1;
-      equalsDict[p1] = c.p2;
+      var cp1 = c[1][0];
+      var cp2 = c[1][1];
+      //if (!peq(cp1, cp2)) continue;
+      var p0 = cp1.id;
+      var p1 = cp2.id;
+      equalsDict[p0] = cp1;
+      equalsDict[p1] = cp2;
       for (ei = 0; ei < equalsIndex.length; ++ei) {
         if (equalsIndex[ei].indexOf(p0) >= 0) {
 //          if (!peq(equalsDict[equalsIndex[ei][0]], c.p1) ) break;
@@ -355,31 +367,28 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
 
   var ii = 0;
   var aux = [];
-  for (i = 0; i < this.system.length; ++i) {
+  for (i = 0; i < system.length; ++i) {
 
     if (eqcElimination[ii] === i) {
       ii++;
       continue;
     }
     
-    var sdataArr = this.system[i].getSolveData();
-    for (var j = 0; j < sdataArr.length; j++) {
-      var sdata = sdataArr[j];
-      params = [];
-      
-      for (p = 0; p < sdata[1].length; ++p) {
-        _p = getParam(sdata[1][p]);
-        params.push(_p);
-        if (_p._backingParam.obj !== undefined && !!_p._backingParam.obj.aux) {
-          aux.push(_p);
-        }
+    var sdata = system[i];
+    params = [];
+
+    for (p = 0; p < sdata[1].length; ++p) {
+      _p = getParam(sdata[1][p]);
+      params.push(_p);
+      if (_p._backingParam.obj !== undefined && !!_p._backingParam.obj.aux) {
+        aux.push(_p);
       }
-  
-      var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
-      _constrs.push(_constr);
-      if (sdata[0] === 'equal') {
-        equals.push(this.system[i]);
-      }
+    }
+
+    var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
+    _constrs.push(_constr);
+    if (sdata[0] === 'equal') {
+      equals.push(this.system[i]);
     }
   }
 
