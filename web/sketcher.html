@@ -244,24 +244,7 @@
         }, 
         
         hover : function(item) {
-          var sdataArr = item.constr.getSolveData();
-          var visited = {};
-          var toSelect = [];
-            
-          function collect(obj) {
-            if (obj !== undefined && visited[obj.id] === undefined) {
-              toSelect.push(obj);
-              visited[obj.id] = obj;
-              collect(obj.parent);
-            }
-          }
-          for (var i = 0; i < sdataArr.length; i++) {
-            var params = sdataArr[i][1];
-            for (var j = 0; j < params.length; j++) {
-              collect(params[j].obj);
-            }
-          }
-          app.viewer.select(toSelect, true);
+          app.viewer.select(item.constr.getObjects(), true);
           app.viewer.refresh();
         }
 
