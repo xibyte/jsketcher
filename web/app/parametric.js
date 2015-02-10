@@ -166,7 +166,7 @@ TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
     promptDistance = Number(promptDistance);
     if (promptDistance == promptDistance) { // check for NaN
       for (var i = 0; i < arcs.length; ++i) {
-        this.system.push(new TCAD.TWO.Constraints.EqualsTo(arcs[i].r, promptDistance));
+        this.system.push(new TCAD.TWO.Constraints.Radius(arcs[i], promptDistance));
       }
       this.solve();
       this.notify();
@@ -440,6 +440,8 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
 
 TCAD.TWO.Constraints.Factory = {};
 
+// ------------------------------------------------------------------------------------------------------------------ //
+
 TCAD.TWO.Constraints.Coincident = function(a, b) {
   this.a = a;
   this.b = b;
@@ -461,6 +463,8 @@ TCAD.TWO.Constraints.Coincident.prototype.serialize = function() {
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Coincident.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.Coincident(refs(data[0]), refs(data[1]));  
 };
+
+// ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.Lock = function(p, c) {
   this.p = p;
@@ -484,6 +488,8 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Lock.prototype.NAME] = functio
   return new TCAD.TWO.Constraints.Lock(refs(data[0]), data[1]);
 };
 
+// ------------------------------------------------------------------------------------------------------------------ //
+
 TCAD.TWO.Constraints.Parallel = function(l1, l2) {
   this.l1 = l1;
   this.l2 = l2;
@@ -506,6 +512,8 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Parallel.prototype.NAME] = fun
   return new TCAD.TWO.Constraints.Parallel(refs(data[0]), refs(data[1]));
 };
 
+// ------------------------------------------------------------------------------------------------------------------ //
+
 TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
   this.l1 = l1;
   this.l2 = l2;
@@ -527,6 +535,8 @@ TCAD.TWO.Constraints.Perpendicular.prototype.serialize = function() {
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Perpendicular.prototype.NAME] = function(refs, data) {
   return new TCAD.TWO.Constraints.Perpendicular(refs(data[0]), refs(data[1]));
 };
+
+// ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
   this.p = p;
@@ -551,10 +561,13 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2LDistance.prototype.NAME] = 
   return new TCAD.TWO.Constraints.P2LDistance(refs(data[0]), refs(data[1]), data[2]);
 };
 
+// ------------------------------------------------------------------------------------------------------------------ //
+
 TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
   this.p = p;
   this.l = l;
   this.d = d;
+  this.aux = true;
 };
 
 TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME = 'P2LDistanceV';
@@ -567,14 +580,17 @@ TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
   return [[this.NAME, params]];
 };
 
-TCAD.TWO.Constraints.P2LDistanceV.prototype.serialize = function() {
-  return [this.NAME, [this.p.id, this.l.id, this.d.id]];
-};
+// We don't serialize auxiliary constraints
+//
+//TCAD.TWO.Constraints.P2LDistanceV.prototype.serialize = function() {
+//  return [this.NAME, [this.p.id, this.l.id, this.d.id]];
+//};
+//
+//TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME] = function(refs, data) {
+//  return new TCAD.TWO.Constraints.P2LDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
+//};
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.P2LDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
-};
-
+// ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.P2PDistance = function(p1, p2, d) {
   this.p1 = p1;
@@ -599,11 +615,13 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2PDistance.prototype.NAME] = 
   return new TCAD.TWO.Constraints.P2PDistance(refs(data[0]), refs(data[1]), data[2]);
 };
 
+// ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
   this.p1 = p1;
   this.p2 = p2;
   this.d = d;
+  this.aux = true;
 };
 
 TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME = 'P2PDistanceV';
@@ -616,10 +634,35 @@ TCAD.TWO.Constraints.P2PDistanceV.prototype.getSolveData = function() {
   return [[this.NAME, params]];
 };
 
-TCAD.TWO.Constraints.P2PDistanceV.prototype.serialize = function() {
-  return [this.NAME, [this.p1.id, this.p2.id, this.d.id]];
+// We don't serialize auxiliary constraints
+//
+//TCAD.TWO.Constraints.P2PDistanceV.prototype.serialize = function() {
+//  return [this.NAME, [this.p1.id, this.p2.id, this.d.id]];
+//};
+//
+//TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME] = function(refs, data) {
+//  return new TCAD.TWO.Constraints.P2PDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
+//};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+TCAD.TWO.Constraints.Radius = function(arc, d) {
+  this.arc = arc;
+  this.d = d;
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.P2PDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
+TCAD.TWO.Constraints.Radius.prototype.NAME = 'Radius';
+
+TCAD.TWO.Constraints.Radius.prototype.getSolveData = function() {
+  return [['equalsTo', [this.arc.r], [this.d]]];
 };
+
+TCAD.TWO.Constraints.Radius.prototype.serialize = function() {
+  return [this.NAME, [this.arc.id, this.d]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Radius.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Radius(refs(data[0]), data[1]);
+};
+
+// ------------------------------------------------------------------------------------------------------------------ // 
