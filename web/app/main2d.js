@@ -12,15 +12,7 @@ TCAD.App2D = function() {
   var boundary = null;
   if (sketchData != null) {
     var sketch = JSON.parse(sketchData);
-    try {
-      boundary = this.loadSketch(sketch, layer);
-    } catch(e) {
-      if (e == "CAN'T READ SKETCH") {
-        console.error(e);
-      } else {
-        throw e;
-      }
-    }
+    boundary = this.loadSketch(sketch, layer);
   }
 
   this.viewer.repaint();
@@ -95,6 +87,7 @@ TCAD.App2D = function() {
           if (obj._class === 'TCAD.TWO.Segment') {
             to.points = [point(obj.a), point(obj.b)];
           } else if (obj._class === 'TCAD.TWO.Arc') {
+            to.points = [point(obj.a), point(obj.b), point(obj.c)];
           } else if (obj._class === 'TCAD.TWO.Circle') {
           } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
             to.a = obj.a.id;
@@ -107,7 +100,9 @@ TCAD.App2D = function() {
       var constrs = sketch.constraints = [];
       var sys = app.viewer.parametricManager.system;
       for (var i = 0; i < sys.length; ++i) {
-        constrs.push(app.serializeConstr(sys[i]));
+        if (!sys[i].aux) {
+          constrs.push(app.serializeConstr(sys[i]));
+        }
       }
       var sketchData = JSON.stringify(sketch);
       console.log(sketchData);
@@ -223,6 +218,11 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
             var b = endPoint(obj.points[1]);
             skobj = new TCAD.TWO.Segment(a, b);
           } else if (obj._class === 'TCAD.TWO.Arc') {
+            var a = endPoint(obj.points[0]);
+            var b = endPoint(obj.points[1]);
+            var c = endPoint(obj.points[2]);
+            skobj = new TCAD.TWO.Arc(a, b, c);
+            skobj.stabilize(this.viewer);
           } else if (obj._class === 'TCAD.TWO.Circle') {
           } else if (obj._class === 'TCAD.TWO.HDimension') {
             skobj = new TCAD.TWO.HDimension(obj.a, obj.b);
@@ -331,7 +331,7 @@ TCAD.App2D.prototype.parseConstr = function (c, index) {
   var name = c[0];
   var ps = c[1];
   var constrCreate = TCAD.TWO.Constraints.Factory[name];
-  if (!constrCreate) {
+  if (constrCreate === undefined) {
     throw "CAN'T READ SKETCH. Constraint " + name + " hasn't been registered.";
   }
   return constrCreate(find, ps);
