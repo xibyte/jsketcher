@@ -102,7 +102,7 @@ TCAD.TWO.ParametricManager.prototype.tangent = function(objs) {
   var al = this._fetchArcCircAndLine(objs);
   var arc  = al[0];
   var line  = al[1];
-  this.add(new TCAD.TWO.Constraints.P2LDistanceV( arc.c, line, arc.r ));
+  this.add(new TCAD.TWO.Constraints.Tangent( arc, line));
 };
 
 TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
@@ -730,4 +730,29 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Horizontal.prototype.NAME] = f
   return new TCAD.TWO.Constraints.Horizontal(refs(data[0]));
 };
 
-// ------------------------------------------------------------------------------------------------------------------ // 
+// ------------------------------------------------------------------------------------------------------------------ //
+
+TCAD.TWO.Constraints.Tangent = function(arc, line) {
+  this.arc = arc;
+  this.line = line;
+};
+
+TCAD.TWO.Constraints.Tangent.prototype.NAME = 'Tangent';
+
+TCAD.TWO.Constraints.Tangent.prototype.getSolveData = function() {
+  var params = [];
+  this.arc.c.collectParams(params);
+  this.line.collectParams(params);
+  params.push(this.arc.r);
+  return [['P2LDistanceV', params, []]];
+};
+
+TCAD.TWO.Constraints.Tangent.prototype.serialize = function() {
+  return [this.NAME, [this.arc.id, this.line.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Tangent.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Tangent(refs(data[0]), refs(data[1]));
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
