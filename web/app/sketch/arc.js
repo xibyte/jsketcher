@@ -65,6 +65,11 @@ TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
   return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
 };
 
+TCAD.TWO.Arc.prototype.stabilize = function(viewer) {
+  this.r.set(this.distanceA());
+  viewer.parametricManager.system.push(new TCAD.TWO.Constraints.P2PDistanceV(this.b, this.c, this.r));
+  viewer.parametricManager.system.push(new TCAD.TWO.Constraints.P2PDistanceV(this.a, this.c, this.r));
+};
 
 TCAD.TWO.AddArcTool = function(viewer, layer) {
   this.viewer = viewer;
@@ -120,9 +125,7 @@ TCAD.TWO.AddArcTool.prototype.mouseup = function(e) {
   } else if (this.point.id === this.arc.a.id) {
     this.point = this.arc.b;
   } else {
-    var arc = this.arc;
-    this.viewer.parametricManager.system.push(new TCAD.TWO.Constraints.P2PDistanceV(arc.b, arc.c, arc.r));
-    this.viewer.parametricManager.system.push(new TCAD.TWO.Constraints.P2PDistanceV(arc.a, arc.c, arc.r));
+    this.arc.stabilize(this.viewer);
     this.viewer.toolManager.releaseControl();
   }
 };
