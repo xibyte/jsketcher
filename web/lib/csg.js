@@ -577,19 +577,27 @@ CSG.Node.prototype = {
   // nodes there. Each set of polygons is partitioned using the first polygon
   // (no heuristic is used to pick a good split).
   build: function(polygons) {
-    if (!polygons.length) return;
-    if (!this.plane) this.plane = polygons[0].plane.clone();
-    var front = [], back = [];
-    for (var i = 0; i < polygons.length; i++) {
-      this.plane.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
-    }
-    if (front.length) {
-      if (!this.front) this.front = new CSG.Node();
-      this.front.build(front);
-    }
-    if (back.length) {
-      if (!this.back) this.back = new CSG.Node();
-      this.back.build(back);
+    
+    
+    var stack = [[polygons, this]];
+    while (stack.length != 0) {
+      var e = stack.pop();
+      polygons = e[0];
+      var _this = e[1];
+      if (!polygons.length) continue;
+      if (!_this.plane) _this.plane = polygons[0].plane.clone();
+      var front = [], back = [];
+      for (var i = 0; i < polygons.length; i++) {
+        _this.plane.splitPolygon(polygons[i], _this.polygons, _this.polygons, front, back);
+      }
+      if (front.length) {
+        if (!_this.front) _this.front = new CSG.Node();
+        stack.push([front, _this.front]);
+      }
+      if (back.length) {
+        if (!_this.back) _this.back = new CSG.Node();
+        stack.push([back, _this.back]);
+      }
     }
   }
 };
