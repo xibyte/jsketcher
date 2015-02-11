@@ -217,7 +217,7 @@ TCAD.TWO.ParametricManager.prototype.getSolveData = function() {
     }
   }
   return sdata;
-}
+};
 
 TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
   var pdict = {};
