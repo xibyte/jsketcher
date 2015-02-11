@@ -24,7 +24,7 @@ TCAD.TWO.ParametricManager.prototype.add = function(constr) {
 TCAD.TWO.ParametricManager.prototype.remove = function(constr) {
   for (var i = 0; i < this.system.length; ++i) {
     var p = this.system[i];
-    if (p.id === constr.id) {
+    if (p === constr) {
       this.system.splice(i, 1);
       if (p.NAME === 'coi') {
         this.unlinkObjects(p.a, p.b);
@@ -183,14 +183,6 @@ TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
     this.system.push(c);
   }
 
-  for (i = 0; i < objs.length; ++i) {
-    for (var j = 0; j < objs.length; ++j) {
-      if (objs[i].id !== objs[j].id) {
-        objs[j].linked.push(objs[i]);
-      }
-    }
-  }
-  
   this.notify();
 };
 
@@ -458,6 +450,8 @@ TCAD.TWO.Constraints.Factory = {};
 TCAD.TWO.Constraints.Coincident = function(a, b) {
   this.a = a;
   this.b = b;
+  a.linked.push(b);
+  b.linked.push(a);
 };
 
 TCAD.TWO.Constraints.Coincident.prototype.NAME = 'coi';
