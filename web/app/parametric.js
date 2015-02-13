@@ -16,7 +16,7 @@ TCAD.TWO.ParametricManager.prototype.notify = function(event) {
 
 TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this.system.push(constr);
-  this.solve();
+  this.solve([], 0.00000001, 5);
   this.notify();
   this.viewer.refresh();
 };
@@ -213,6 +213,7 @@ TCAD.TWO.ParametricManager.prototype.getSolveData = function() {
   for (i = 0; i < this.system.length; ++i) {
     var data = this.system[i].getSolveData();
     for (var j = 0; j < data.length; ++j) {
+      data[j].push(this.system[i].reducible !== undefined);
       sdata.push(data[j]);
     }
   }
@@ -298,10 +299,11 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
     return Math.abs(p1.get() - p2.get()) <= 0.000001
   }
   var system = this.getSolveData();
+  var tuples = [];
   for (i = 0; i < system.length; ++i) {
     var c = system[i];
-    if (c[0] === 'equal' && false) { //Disable it
-      var found = false;
+    if (c[3] === true && false) { //Reduce flag
+      eqcElimination.push(i);
       var cp1 = c[1][0];
       var cp2 = c[1][1];
       //if (!peq(cp1, cp2)) continue;
@@ -309,24 +311,58 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
       var p1 = cp2.id;
       equalsDict[p0] = cp1;
       equalsDict[p1] = cp2;
-      for (ei = 0; ei < equalsIndex.length; ++ei) {
-        if (equalsIndex[ei].indexOf(p0) >= 0) {
-//          if (!peq(equalsDict[equalsIndex[ei][0]], c.p1) ) break;
-          if (equalsIndex[ei].indexOf(p1) < 0) {
-            equalsIndex[ei].push(p1);
-          }
-          found = true;
-        } else if (equalsIndex[ei].indexOf(p1) >= 0) {
-//          if (!peq(equalsDict[equalsIndex[ei][0]], c.p1) ) break;
-          equalsIndex[ei].push(p0);
-          found = true;
+      tuples.push([p0, p1]);
+    }
+  }
+
+  function _check(index, p0, p1) {
+    var exists = index.indexOf(p0) >= 0;
+    if (exists) {
+      if (index.indexOf(p1) < 0) {
+        index.push(p1);
+      }
+    }
+    return exists;
+  }
+
+  function _merge(arr1, arr2) {
+    for (var i = 0; i < arr2.length; ++i) {
+      if (arr1.indexOf(arr2[i]) < 0) {
+        arr1.push(arr2[i]);
+      }
+    }
+  }
+
+  function _join(tuples, index) {
+
+    var tuple = tuples[index];
+    tuples[index] = null;
+
+    for (var i = 0; i < tuples.length; ++i) {
+      var t1 = tuples[i];
+      if (t1 == null) continue;
+      if (tuple.indexOf(t1[0]) >= 0 || tuple.indexOf(t1[1]) >= 0) {
+        _join(tuples, i);
+        _merge(tuple, t1);
+      }
+    }
+  }
+
+  for (var i = 0; i < tuples.length; ++i) {
+    var tuple = tuples[i];
+    if (tuple != null) {
+      equalsIndex.push(tuple);
+      _join(tuples, i)
+      for (var mi = 0; mi < locked.length; ++mi) {
+        var master = locked[mi];
+        var masterIdx = tuple.indexOf(master.id);
+        if (masterIdx >= 0) {
+          var tmp = tuple[0];
+          tuple[0] = tuple[masterIdx];
+          tuple[masterIdx] = tmp;
+          break;
         }
-        if (found) break;
       }
-      if (!found) {
-        equalsIndex.push([p0, p1]);
-      }
-      eqcElimination.push(i);
     }
   }
 
@@ -455,6 +491,7 @@ TCAD.TWO.Constraints.Coincident = function(a, b) {
 };
 
 TCAD.TWO.Constraints.Coincident.prototype.NAME = 'coi';
+TCAD.TWO.Constraints.Coincident.prototype.reducible = true;
 
 TCAD.TWO.Constraints.Coincident.prototype.getSolveData = function() {
   return [
@@ -733,6 +770,7 @@ TCAD.TWO.Constraints.Vertical = function(line) {
 };
 
 TCAD.TWO.Constraints.Vertical.prototype.NAME = 'Vertical';
+TCAD.TWO.Constraints.Vertical.prototype.reducible = true;
 
 TCAD.TWO.Constraints.Vertical.prototype.getSolveData = function() {
   return [['equal', [this.line.a._x, this.line.b._x], []]];
@@ -757,6 +795,7 @@ TCAD.TWO.Constraints.Horizontal = function(line) {
 };
 
 TCAD.TWO.Constraints.Horizontal.prototype.NAME = 'Horizontal';
+TCAD.TWO.Constraints.Horizontal.prototype.reducible = true;
 
 TCAD.TWO.Constraints.Horizontal.prototype.getSolveData = function() {
   return [['equal', [this.line.a._y, this.line.b._y], []]];
