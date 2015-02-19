@@ -200,16 +200,18 @@ TCAD.parametric.lock1 = function(constrs, locked) {
 TCAD.parametric.lock2Equals2 = function(constrs, locked) {
   var _locked = [];
   for (var i = 0; i < locked.length; ++i) {
-    _locked.push(new TCAD.constraints.Weighted(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()), 0.1));
+    _locked.push(new TCAD.constraints.Weighted(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()), 1));
   }
   return _locked;
 };
+
+TCAD.parametric._alg = 5;
 
 TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
 
   this.lock1(constrs, aux);
   var lockingConstrs = this.lock2Equals2(constrs, locked);
-//  Array.prototype.push.apply( constrs, lockingConstrs );
+  Array.prototype.push.apply( constrs, lockingConstrs );
   
   var sys = new TCAD.parametric.System(constrs);
 
@@ -231,7 +233,7 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     sys.setParams(point);
     return sys.makeJacobian();
   };
-  alg = 5;
+  alg = TCAD.parametric._alg;
   
   function solve(fineLevel) {
     if (constrs.length == 0) return;
@@ -252,7 +254,10 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
           TCAD.math.solve_UNCMIN(sys);
           break;
         case 5:
-          optim.dog_leg(sys);
+          if (optim.dog_leg(sys) !== 0) {
+            TCAD.parametric._alg = alg = -5;
+            solve(fineLevel);
+          }
           break;
       }
       return sys;
@@ -260,9 +265,10 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
   
     var opt = new LMOptimizer(sys.getParams(), arr(sys.constraints.length), model, jacobian);
     var eps;
+    fineLevel = 1;
     switch (fineLevel) {
       case 1:
-        eps = 0.01;
+        eps = 0.001;
         opt.init0(eps, eps, eps);
         break;
       case 2:

@@ -792,8 +792,8 @@ TCAD.TWO.DragTool.prototype.solveRequest = function(fineLevel) {
       && this.obj.parent._class === 'TCAD.TWO.Arc') {
 
       if (this.obj.id != this.obj.parent.c.id) {
-        locked.push(this.obj.parent.c._x);
-        locked.push(this.obj.parent.c._y);
+         // locked.push(this.obj.parent.c._x);
+         // locked.push(this.obj.parent.c._y);
       }
     }
   } else {
