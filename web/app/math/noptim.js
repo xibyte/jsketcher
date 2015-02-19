@@ -358,10 +358,10 @@ optim.dog_leg = function(subsys) {
   var alpha=0.;
   var nu=2.;
   var iter=0, stop=0, reduce=0;
-  while (!stop) {
+  while (stop === 0) {
 
       // check if finished
-      if (fx_inf <= tolf) // Success
+      if (fx_inf <= tolf || err <= tolf) // Success
           stop = 1;
       else if (g_inf <= tolg)
           stop = 2;
