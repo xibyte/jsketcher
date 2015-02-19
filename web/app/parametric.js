@@ -746,6 +746,8 @@ TCAD.TWO.Constraints.RR = function(arc1, arc2) {
 };
 
 TCAD.TWO.Constraints.RR.prototype.NAME = 'RR';
+TCAD.TWO.Constraints.RR.prototype.reducible = true;
+
 
 TCAD.TWO.Constraints.RR.prototype.getSolveData = function() {
   return [['equal', [this.arc1.r, this.arc2.r], []]];
