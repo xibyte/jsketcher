@@ -55,13 +55,19 @@ function testCompare() {
 
 function lsolve() {
   var n = numeric;
-  A = [[1, 0, 0], [2,3,0]]
-  b = [10,25]
+  var A = [[2,3], [1,1]];
+  var b = [13,5];
 //  var At = n.transpose(A);
 //  var A = n.dot(At, A);
 //  var b = n.dot(At, b);
 //  var res = n.dot(n.dot(At, n.inv(n.dot(A, At)) ), b);
-  var res = optim.cg(A, [100, 100, 0], b, 1e-8, 800);
+//  var res = optim.cg(A, [100, 100, 0], b, 1e-8, 800);
+  
+  //var qr = new TCAD.math.QR(A);
+  //qr.qTy(b);
+  //var res = qr.solve(b);
+
+  var res = n.solve(A, b);
   console.log(res);
 }
 
