@@ -1,27 +1,44 @@
 <html>
 <head>
-	<title>Test Suite</title>
+	<title>TCAD</title>
+	<style>
+		body {
+			font-family: Monospace;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
 
+	<script> TCAD = {} </script>
+	
 	<script src="lib/three/three.js"></script>
-	<script src="lib/three/TrackballControls.js"></script>
-	<script src="lib/three/OrbitControls.js"></script>
-	<script src="lib/dat.gui.min.js"></script>
-	<script src="lib/csg.js"></script>
-	<script src="lib/pnltri.js"></script>
-	<script src="app/main.js"></script>
-	<script src="app/ctrl.js"></script>
-	<script src="app/viewer.js"></script>
-	<script src="app/engine.js"></script>
+	<script src="lib/numeric-1.2.6.js"></script>
+	<script src="app/canvas.js"></script>
 	<script src="app/vector.js"></script>
 	<script src="app/math/math.js"></script>
-	<script src="app/workbench.js"></script>
-	<script src="app/math/graph.js"></script>
-	<script src="app/struct.js"></script>
-	<script src="app/struct-tests.js"></script>
+	<script src="app/math/qr.js"></script>
+	<script src="app/engine.js"></script>
+	
+	<script src="app/math/matrix.js"></script>
+	<script src="app/math/optim.js"></script>
+	<script src="app/math/noptim.js"></script>
 
-	<script>window.onload = function() {
-		TCAD.struct.tests.testHashTable();
-	}</script>
+	<script src="app/math/lm.js"></script>
+	<script src="app/constr/constraints.js"></script>
+	<script src="app/constr/solver.js"></script>
+
+	<script src="app/engine.js"></script>
+	<script src="app/math/test.js"></script>
+
+	<script>
+		function start() {
+			new TCAD.App2D();
+		}
+		window.onload = function() {
+//			testCompare();
+			lsolve();
+		}
+	</script>
 </head>
 <body>
 
