@@ -255,7 +255,7 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
           break;
         case 5:
           if (optim.dog_leg(sys) !== 0) {
-            TCAD.parametric._alg = alg = -5;
+            alg = -5;
             solve(fineLevel);
           }
           break;
