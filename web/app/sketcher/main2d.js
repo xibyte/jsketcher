@@ -88,11 +88,15 @@ TCAD.App2D = function() {
       }
 
       var constrs = sketch.constraints = [];
-      var sys = app.viewer.parametricManager.system;
-      for (var i = 0; i < sys.length; ++i) {
-        if (!sys[i].aux) {
-          constrs.push(app.serializeConstr(sys[i]));
+      var subSystems = app.viewer.parametricManager.subSystems;
+      for (var j = 0; j < subSystems.length; j++) {
+        var sub = subSystems[j];
+        for (var i = 0; i < sub.constraints.length; ++i) {
+          if (!sub.constraints[i].aux) {
+            constrs.push(app.serializeConstr(sub.constraints[i]));
+          }
         }
+        
       }
       var sketchData = JSON.stringify(sketch);
       console.log(sketchData);
@@ -150,17 +154,7 @@ TCAD.App2D = function() {
   });
 
   this.registerAction('solve', "Solve System", function () {
-    app.viewer.parametricManager.solve([], 0);
-    app.viewer.refresh();
-  });
-
-  this.registerAction('solveStep', "Solve Step", function () {
-    app.viewer.parametricManager.solve([], 0, 3);
-    app.viewer.refresh();
-  });
-
-  this.registerAction('stepUNCMIN', "Solve Step UNCMIN", function () {
-    app.viewer.parametricManager.solve([], 0, 4);
+    app.viewer.parametricManager.solve();
     app.viewer.refresh();
   });
 
@@ -289,7 +283,7 @@ TCAD.App2D.prototype.loadSketch = function(sketch) {
     if (sketch.constraints !== undefined) {
       for (var i = 0; i < sketch.constraints.length; ++i) {
         var c = this.parseConstr(sketch.constraints[i], index);
-        this.viewer.parametricManager.system.push(c);
+        this.viewer.parametricManager._add(c);
       }
       this.viewer.parametricManager.notify();
     }

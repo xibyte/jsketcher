@@ -58,15 +58,15 @@ TCAD.TWO.EditCircleTool.prototype.mousemove = function(e) {
     var r = TCAD.math.distance(p.x, p.y, this.circle.c.x, this.circle.c.y);
     this.circle.r.set(r);
     if (!e.shiftKey) {
-      this.solveRequest(2);
+      this.solveRequest(true);
     }
     this.viewer.refresh();
   }
 };
 
-TCAD.TWO.EditCircleTool.prototype.solveRequest = function(fineLevel) {
+TCAD.TWO.EditCircleTool.prototype.solveRequest = function(rough) {
   this.solver = this.viewer.parametricManager.prepare([this.circle.r]);
-  this.solver.solve(fineLevel);
+  this.solver.solve(rough, 1);
   this.solver.sync();
 };
 
@@ -79,7 +79,7 @@ TCAD.TWO.EditCircleTool.prototype.mouseup = function(e) {
     this.layer.objects.push(this.circle);
     this.viewer.refresh();
   } else {
-    this.solveRequest(0);
+    this.solveRequest(false);
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
   }

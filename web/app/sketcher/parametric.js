@@ -1,9 +1,15 @@
 TCAD.TWO.Constraints = {};
 
+TCAD.TWO.SubSystem = function() {
+  this.alg = 1;
+  this.error = 0;
+  this.reduce = false;
+  this.constraints = [];
+};
+
 TCAD.TWO.ParametricManager = function(viewer) {
   this.viewer = viewer;
-  this.system = [];
-  this.REQUEST_COUNTER = 0;
+  this.subSystems = [];
   this.listeners = [];
 };
 
@@ -14,27 +20,74 @@ TCAD.TWO.ParametricManager.prototype.notify = function(event) {
   }
 };
 
-TCAD.TWO.ParametricManager.prototype.add = function(constr) {
-  this.system.push(constr);
-  this.solve([], 0.00000001, 5);
+TCAD.TWO.ParametricManager.prototype.findComponents = function(constr) {
+  if (this.subSystems.length === 0) {
+    this.subSystems.push(new TCAD.TWO.SubSystem());
+  }
+  return [0];  
+};
+
+TCAD.TWO.ParametricManager.prototype.tune = function(subSystem) {
+  
+};
+
+TCAD.TWO.ParametricManager.prototype._add = function(constr) {
+  var subSystemIds = this.findComponents(constr);
+  var subSystem; 
+  switch (subSystemIds.length) {
+    case 0:
+      subSystem = new TCAD.TWO.SubSystem();
+      this.subSystems.push(subSystem);
+      break;
+    case 1:
+      subSystem = this.subSystems[subSystemIds[0]];
+      break;
+    default:
+      subSystem = this.subSystems[subSystemIds[0]];
+      for (var i = 1; i < subSystemIds.length; i++) {
+        var toMerge = subSystemIds[i];
+        for (var j = 0; j < toMerge.constraints.length; j++) {
+          subSystem.push(toMerge.constraints[j]);
+        }
+      }
+    break;  
+  }
+  subSystem.constraints.push(constr);
+};
+
+TCAD.TWO.ParametricManager.prototype.refresh = function() {
+  this.solve();
   this.notify();
   this.viewer.refresh();
 };
 
+TCAD.TWO.ParametricManager.prototype.add = function(constr) {
+  this._add(constr);
+  this.refresh();
+};
+
+TCAD.TWO.ParametricManager.prototype.addAll = function(constrs) {
+  for (var i = 0; i < constrs.length; i++) {
+    this._add(constrs[i]);
+  }
+  this.refresh();
+};
+
 TCAD.TWO.ParametricManager.prototype.remove = function(constr) {
-  for (var i = 0; i < this.system.length; ++i) {
-    var p = this.system[i];
-    if (p === constr) {
-      this.system.splice(i, 1);
-      if (p.NAME === 'coi') {
-        this.unlinkObjects(p.a, p.b);
+  for (var j = 0; j < this.subSystems.length; j++) {
+    var sub = this.subSystems[j];
+    for (var i = 0; i < sub.constraints.length; ++i) {
+      var p = sub.constraints[i];
+      if (p === constr) {
+        sub.constraints(i, 1);
+        if (p.NAME === 'coi') {
+          this.unlinkObjects(p.a, p.b);
+        }
+        break;
       }
-      break;
     }
   }
-  this.solve();
-  this.notify();
-  this.viewer.refresh();
+  this.refresh();
 };
 
 TCAD.TWO.ParametricManager.prototype.removeConstraintsByObj = function(obj) {
@@ -44,40 +97,41 @@ TCAD.TWO.ParametricManager.prototype.removeConstraintsByObj = function(obj) {
 };
 
 TCAD.TWO.ParametricManager.prototype.removeConstraintsByParams = function(ownedParams) {
-  var toRemove = [];
-  for (var i = 0; i < this.system.length; ++i) {
-    var sdataArr = this.system[i].getSolveData();
-    for (var j = 0; j < sdataArr.length; j++) {
-      var sdata = sdataArr[j];
-      var params = sdata[1];
-      MAIN:
-      for (var j = 0; j < ownedParams.length; ++j) {
-        for (var k = 0; k < params.length; ++k) {
-          if (ownedParams[j].id === params[k].id) {
-            toRemove.push(i);
-            break MAIN;
+  for (var s = 0; s < this.subSystems.length; s++) {
+    var toRemove = [];
+    var sub = this.subSystems[s];
+    for (var i = 0; i < sub.constraints.length; ++i) {
+      var sdataArr = sub.constraints[i].getSolveData();
+      for (var j = 0; j < sdataArr.length; j++) {
+        var sdata = sdataArr[j];
+        var params = sdata[1];
+        MAIN:
+        for (var oi = 0; oi < ownedParams.length; ++oi) {
+          for (var k = 0; k < params.length; ++k) {
+            if (ownedParams[oi].id === params[k].id) {
+              toRemove.push(i);
+              break MAIN;
+            }
           }
         }
       }
     }
+    toRemove.sort();
+  
+    for (var i = toRemove.length - 1; i >= 0 ; --i) {
+      sub.constraints.splice(  toRemove[i], 1);
+    }
   }
 
-  toRemove.sort();
-
-  for (var i = toRemove.length - 1; i >= 0 ; --i) {
-    this.system.splice(  toRemove[i], 1);
-  }
   this.notify();
 };
 
 TCAD.TWO.ParametricManager.prototype.lock = function(objs) {
   var p = this._fetchPoints(objs);
   for (var i = 0; i < p.length; ++i) {
-    this.system.push(new TCAD.TWO.Constraints.Lock(p[i], { x : p[i].x, y : p[i].y} ));
+    this._add(new TCAD.TWO.Constraints.Lock(p[i], { x : p[i].x, y : p[i].y} ));
   }
-  this.solve();
-  this.notify();
-  this.viewer.refresh();
+  this.refresh();
 };
 
 TCAD.TWO.ParametricManager.prototype.vertical = function(objs) {
@@ -109,12 +163,10 @@ TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
   var arcs = this._fetchArkCirc(objs, 2);
   var prev = arcs[0];
   for (var i = 1; i < arcs.length; ++i) {
-    this.system.push(new TCAD.TWO.Constraints.RR(prev, arcs[i]));
+    this._add(new TCAD.TWO.Constraints.RR(prev, arcs[i]));
     prev = arcs[i];
   }
-  this.solve();
-  this.notify();
-  this.viewer.refresh();
+  this.refresh();
 };
 
 TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback) {
@@ -164,11 +216,9 @@ TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
     promptDistance = Number(promptDistance);
     if (promptDistance == promptDistance) { // check for NaN
       for (var i = 0; i < arcs.length; ++i) {
-        this.system.push(new TCAD.TWO.Constraints.Radius(arcs[i], promptDistance));
+        this._add(new TCAD.TWO.Constraints.Radius(arcs[i], promptDistance));
       }
-      this.solve();
-      this.notify();
-      this.viewer.refresh();
+      this.refresh();
     }
   }
 };
@@ -180,9 +230,8 @@ TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
     objs[i].x = objs[last].x;
     objs[i].y = objs[last].y;
     var c = new TCAD.TWO.Constraints.Coincident(objs[i], objs[last]);
-    this.system.push(c);
+    this._add(c);
   }
-
   this.notify();
 };
 
@@ -209,82 +258,65 @@ TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
 };
 
 TCAD.TWO.ParametricManager.prototype.getSolveData = function() {
-  var sdata = [];
-  for (i = 0; i < this.system.length; ++i) {
-    var data = this.system[i].getSolveData();
-    for (var j = 0; j < data.length; ++j) {
-      data[j].push(this.system[i].reducible !== undefined);
-      sdata.push(data[j]);
-    }
+  var sdata = []; 
+  for (var i = 0; i < this.subSystems.length; i++) {
+    this.__getSolveData(this.subSystems[i], sdata);
   }
   return sdata;
 };
 
-TCAD.TWO.ParametricManager.prototype.solve1 = function(locked, onSolved) {
-  var pdict = {};
-  var refsCounter = 0;
-  var params = [];
-  var i;
-  var data = {params : [], constraints: [], locked: []};
-  var sdataArr = this.getSolveData();
-  for (var j = 0; j < sdataArr.length; j++) {
-    var sdata = sdataArr[j];
-    var prefs = [];
-    var constr = [sdata[0], prefs, sdata[2]];
-    data.constraints.push(constr);
-    for (var p = 0; p < sdata[1].length; ++p) {
-      var param = sdata[1][p];
-      var pref = pdict[param.id];
-      if (pref === undefined) {
-        pref = refsCounter++;
-        data.params.push(param.get());
-        params.push(param);
-        pdict[param.id] = pref;
-      }
-      prefs.push(pref);
+TCAD.TWO.ParametricManager.prototype.__getSolveData = function(subSystem, out) {
+  for (var i = 0; i < subSystem.constraints.length; ++i) {
+    var constraint = subSystem.constraints[i];
+    var data = constraint.getSolveData();
+    for (var j = 0; j < data.length; ++j) {
+      data[j].push(constraint.reducible !== undefined);
+      out.push(data[j]);
     }
   }
+  return out;
+};
 
-  if (locked !== undefined) {
-    for (i = 0; i < locked.length; ++i) {
-      var lp = pdict[locked[i].id];
-      if (lp !== undefined) {
-        data.locked.push(lp);
+TCAD.TWO.ParametricManager.prototype.solve = function() {
+  var solver = this.prepare([]);
+  solver.solve(false);
+  solver.sync();
+};
+
+TCAD.TWO.ParametricManager.prototype.prepare = function(locked) {
+  var solvers = [];
+  for (var i = 0; i < this.subSystems.length; i++) {
+    solvers.push(this._prepare(locked, this.subSystems[i]));
+  }
+  var subSystems = this.subSystems;
+  return {
+    solve : function(rough) {
+      for (var i = 0; i < solvers.length; i++) {
+        var alg = subSystems[i].alg;
+        if (solvers[i].solve(rough, alg) !== 1) {
+          alg = alg == 1 ? 2 : 1;
+          if (solvers[i].solve(rough, alg) == 1) {
+            subSystems[i].alg = alg;
+          }
+        }
+      }
+    },
+    
+    sync : function() {
+      for (var i = 0; i < solvers.length; i++) {
+        solvers[i].sync();
+      }
+    },
+    
+    updateLock : function() {
+      for (var i = 0; i < solvers.length; i++) {
+        solvers[i].updateLock();
       }
     }
   }
-
-  var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
-  var pm = this;
-  var request = {reqId : this.REQUEST_COUNTER ++, system : data};
-  xhr.onreadystatechange=function() {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      var response = JSON.parse(xhr.responseText);
-      if (response.reqId != pm.REQUEST_COUNTER - 1) {
-        return;
-      }
-      for (var p = 0; p < response.params.length; ++p) {
-        params[p].set(response.params[p]);
-      }
-      if (onSolved !== undefined) {
-        onSolved();
-      }
-      pm.viewer.refresh();
-    }
-  };
-  xhr.open("POST", "http://localhost:8080/solve", true);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  xhr.send(JSON.stringify(request));
 };
 
-TCAD.TWO.ParametricManager.prototype.solve = function(locked, fineLevel, alg) {
-  var solver = this.prepare(locked, alg);
-  solver.solve(fineLevel);
-  solver.sync()
-};
-
-TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
+TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystem) {
 
   var pdict = {};
   var params;
@@ -298,7 +330,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   function peq(p1, p2) {
     return Math.abs(p1.get() - p2.get()) <= 0.000001
   }
-  var system = this.getSolveData();
+  var system = this.__getSolveData(subSystem, []);
   var tuples = [];
   for (i = 0; i < system.length; ++i) {
     var c = system[i];
@@ -416,7 +448,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
     var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
     _constrs.push(_constr);
     if (sdata[0] === 'equal') {
-      equals.push(this.system[i]);
+      equals.push(system[i]);
     }
   }
 
@@ -430,8 +462,8 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
   }
   
   var lockedValues = [];
-  var solver = TCAD.parametric.prepare(_constrs, _locked, aux, alg);
-  function solve(fineLevel) {
+  var solver = TCAD.parametric.prepare(_constrs, _locked, aux);
+  function solve(rough, alg) {
     if (_locked.length != 0) {
       for (p = 0; p < locked.length; ++p) {
         lockedValues[p] = locked[p].get() ;
@@ -442,7 +474,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked, alg) {
       _p = pdict[p];
       _p.set(_p._backingParam.get());
     }
-    solver.solveSystem(fineLevel);
+    solver.solveSystem(rough, alg);
   }
   var viewer = this.viewer;
   function sync() {
