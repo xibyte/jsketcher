@@ -1,46 +1,61 @@
+<!doctype html>
+<meta charset=utf-8>
 <html>
 <head>
-	<title>TCAD</title>
-	<style>
+  <title>Sketcher Tests</title>
+  <style>
 		body {
 			font-family: Monospace;
-			margin: 0px;
 			overflow: hidden;
 		}
-	</style>
-
-	<script> TCAD = {} </script>
-	
-	<script src="lib/three/three.js"></script>
-	<script src="lib/numeric-1.2.6.js"></script>
-	<script src="app/sketcher/canvas.js"></script>
-	<script src="app/math/vector.js"></script>
-	<script src="app/math/math.js"></script>
-	<script src="app/math/qr.js"></script>
-	<script src="app/engine.js"></script>
-	
-	<script src="app/math/matrix.js"></script>
-	<script src="app/math/optim.js"></script>
-	<script src="app/math/noptim.js"></script>
-
-	<script src="app/math/lm.js"></script>
-	<script src="app/sketcher/constr/constraints.js"></script>
-	<script src="app/sketcher/constr/solver.js"></script>
-
-	<script src="app/engine.js"></script>
-	<script src="app/math/test.js"></script>
-
-	<script>
-		function start() {
-			new TCAD.App2D();
+		
+		html, body {
+			background: gray;
+			height: 100%;
+			padding: 0;
+			margin: 0;
 		}
-		window.onload = function() {
-//			testCompare();
-			lsolve();
-		}
-	</script>
+  </style>
+
+  <script src="lib/jquery-2.1.0.min.js"></script>
+  <script src="lib/three/three.js"></script>
+  <script src="lib/numeric-1.2.6.js"></script>
+  <script src="app/sketcher/canvas.js"></script>
+  <script src="app/sketcher/shapes/arc.js"></script>
+  <script src="app/sketcher/shapes/circle.js"></script>
+  <script src="app/sketcher/shapes/segment.js"></script>
+  <script src="app/sketcher/shapes/dim.js"></script>
+
+  <script src="app/math/vector.js"></script>
+  <script src="app/math/math.js"></script>
+  <script src="app/math/qr.js"></script>
+  <script src="app/math/matrix.js"></script>
+  <script src="app/math/optim.js"></script>
+  <script src="app/math/noptim.js"></script>
+
+  <script src="app/math/lm.js"></script>
+  <script src="app/sketcher/constr/constraints.js"></script>
+  <script src="app/sketcher/constr/solver.js"></script>
+
+  <script src="app/sketcher/parametric.js"></script>
+  <script src="app/sketcher/fetchers.js"></script>
+  <script src="app/engine.js"></script>
+  <script src="app/sketcher/main2d.js"></script>
+  <script src="app/workbench.js"></script>
+  <script src="app/ui.js"></script>
+  <script src="app/math/graph.js"></script>
+  
+  <script>
+    function start() {
+      var app = new TCAD.App2D();
+    }
+    window.onload = function() {
+      setTimeout(start, 0);
+    };
+  </script>
 </head>
 <body>
-
+  <canvas width="300" height="300" id="viewer"></canvas>
+  <div id="testResults"></div>
 </body>
 </html>
