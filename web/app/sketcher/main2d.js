@@ -4,20 +4,8 @@ var magic_k = 500;
 TCAD.App2D = function() {
 
   this.viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
-  var layer = new TCAD.TWO.Layer("default", TCAD.TWO.Styles.DEFAULT);
-  this.viewer.layers.push(layer);
-
-  var sketchId = this.getSketchId();
-  var sketchData = localStorage.getItem(sketchId);
-  var boundary = null;
-  if (sketchData != null) {
-    var sketch = JSON.parse(sketchData);
-    boundary = this.loadSketch(sketch, layer);
-  }
-
-  this.viewer.repaint();
-
-
+  this.boundaryLayer = new TCAD.TWO.Layer("default", TCAD.TWO.Styles.DEFAULT);
+  this.viewer.layers.push(this.boundaryLayer);
 
   var app = this;
 
@@ -177,7 +165,18 @@ TCAD.App2D = function() {
   });
 };
 
-TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
+TCAD.App2D.prototype.loadFromLocalStorage = function() {
+  var sketchId = this.getSketchId();
+  var sketchData = localStorage.getItem(sketchId);
+  var boundary = null;
+  if (sketchData != null) {
+    var sketch = JSON.parse(sketchData);
+    boundary = this.loadSketch(sketch);
+  }
+  this.viewer.repaint();
+};
+
+TCAD.App2D.prototype.loadSketch = function(sketch) {
 
     var index = {};
 
@@ -264,7 +263,7 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
     }  
 
     if (sketch.boundary !== undefined && sketch.boundary != null) {
-      this.updateBoundary(sketch.boundary, defaultLayer);
+      this.updateBoundary(sketch.boundary);
     }
 
     if (sketch.constraints !== undefined) {
@@ -276,7 +275,7 @@ TCAD.App2D.prototype.loadSketch = function(sketch, defaultLayer) {
     }
 };
 
-TCAD.App2D.prototype.updateBoundary = function (boundary, layer) {
+TCAD.App2D.prototype.updateBoundary = function (boundary) {
 
   var edges = [];
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
@@ -318,7 +317,7 @@ TCAD.App2D.prototype.updateBoundary = function (boundary, layer) {
   for (var i = 0; i < edges.length; ++i ) {
     var edge = edges[i];
     if (edge != null) {
-      var seg = this.viewer.addSegment(edge[0], edge[1], edge[2], edge[3], layer);
+      var seg = this.viewer.addSegment(edge[0], edge[1], edge[2], edge[3], this.boundaryLayer);
       seg.accept(function(o){o.aux = true; return true;});
       seg.edge = i;
     }
