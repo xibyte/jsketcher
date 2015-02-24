@@ -6,15 +6,15 @@
   <style>
 		body {
 			font-family: Monospace;
+      color: white;
 			overflow: hidden;
 		}
 		
 		html, body {
 			background: gray;
 			height: 100%;
-			padding: 0;
-			margin: 0;
 		}
+    .err {color: red;}
   </style>
 
   <script src="lib/jquery-2.1.0.min.js"></script>
@@ -44,10 +44,15 @@
   <script src="app/workbench.js"></script>
   <script src="app/ui.js"></script>
   <script src="app/math/graph.js"></script>
-  
+
+  <script src="app/test/suite.js"></script>
+  <script src="app/test/fixtures.js"></script>
+  <script src="app/test/testCases.js"></script>
+
   <script>
     function start() {
-      var app = new TCAD.App2D();
+      THE_APP = new TCAD.App2D();
+      TCAD.test.runSuite();
     }
     window.onload = function() {
       setTimeout(start, 0);
@@ -55,7 +60,8 @@
   </script>
 </head>
 <body>
-  <canvas width="300" height="300" id="viewer"></canvas>
-  <div id="testResults"></div>
+  <canvas width="300" height="300" style="height: 301px;" id="viewer"></canvas>
+  <h3>TEST RESULTS</h3>
+  <div id="testOutput"></div>
 </body>
 </html>
