@@ -163,6 +163,11 @@ TCAD.App2D = function() {
     app.viewer.parametricManager.solve([], 0, 4);
     app.viewer.refresh();
   });
+
+  this.registerAction('CLEAN UP', "Clean All Draw", function () {
+    app.cleanUp();
+    app.viewer.refresh();
+  });
 };
 
 TCAD.App2D.prototype.loadFromLocalStorage = function() {
@@ -176,7 +181,22 @@ TCAD.App2D.prototype.loadFromLocalStorage = function() {
   this.viewer.repaint();
 };
 
+TCAD.App2D.prototype.cleanUp = function() {
+  for (var l = 0; l < this.viewer.layers.length; ++l) {
+    var layer = this.viewer.layers[l];
+    if (layer.objects.length != 0) {
+      layer.objects = [];
+    }
+  }
+  if (this.viewer.parametricManager.system.length != 0) {
+    this.viewer.parametricManager.system = [];
+    this.viewer.parametricManager.notify();
+  }
+};
+
 TCAD.App2D.prototype.loadSketch = function(sketch) {
+
+    this.cleanUp();
 
     var index = {};
 
