@@ -227,10 +227,13 @@
       var constrList = new TCAD.ui.List($('#constrs'), {
         items : function() {
           var theItems = [];
-          for (var i = 0; i < pm.system.length; ++i) {
-            var constr = pm.system[i];
-            if (constr.aux !== true) {
-              theItems.push({name : constr.NAME, constr : constr});
+          for (var j = 0; j < pm.subSystems.length; j++) {
+            var sub = pm.subSystems[j];
+            for (var i = 0; i < sub.constraints.length; ++i) {
+              var constr = sub.constraints[i];
+              if (constr.aux !== true) {
+                theItems.push({name : constr.NAME, constr : constr});
+              }
             }
           }
           return theItems;

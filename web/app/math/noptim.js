@@ -258,7 +258,7 @@ optim.inv = function inv(x) {
 }
 
 // this is Gauss-Newton least square algorithm with trust region(dog leg) control/
-optim.dog_leg = function(subsys) {
+optim.dog_leg = function(subsys, rough) {
 
   var tolg=1e-80, tolx=1e-80, tolf=1e-10;
 
@@ -361,7 +361,7 @@ optim.dog_leg = function(subsys) {
   while (stop === 0) {
 
       // check if finished
-      if (fx_inf <= tolf || err <= tolf) // Success
+      if (fx_inf <= tolf || (rough && err <= tolf)) // Success
           stop = 1;
       else if (g_inf <= tolg)
           stop = 2;
@@ -472,8 +472,11 @@ optim.dog_leg = function(subsys) {
       iter++;
   }
 
-
-  return (stop == 1) ? 'Success' : 'Failed';
+  return {
+    evalCount : iter,
+    error : err,
+    returnCode : stop
+  };
 
 };
 
