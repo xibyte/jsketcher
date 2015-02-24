@@ -212,6 +212,7 @@
   <script>
     function start() {
       var app = new TCAD.App2D();
+      app.loadFromLocalStorage();
       var actionsWin = new TCAD.ui.Window($('#actions'));
       TCAD.ui.bindOpening( $('#showActions'), actionsWin );
       var addAction = TCAD.ui.createActionsWinBuilder(actionsWin);
