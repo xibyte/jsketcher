@@ -487,7 +487,7 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
       _p = pdict[p];
       _p.set(_p._backingParam.get());
     }
-    solver.solveSystem(rough, alg);
+    return solver.solveSystem(rough, alg);
   }
   var viewer = this.viewer;
   function sync() {
