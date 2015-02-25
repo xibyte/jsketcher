@@ -74,9 +74,12 @@ TCAD.TWO.Viewer = function(canvas) {
   window.addEventListener( 'resize', onWindowResize, false );
   
   this.ctx = this.canvas.getContext("2d");
+  this._activeLayer = null;
   this.layers = [];
   this._serviceLayers = [];
-  this._workspace = [this.layers, this._serviceLayers];
+  this.dimLayer = new TCAD.TWO.Layer("_dim", TCAD.TWO.Styles.DIM);
+  this.dimLayers = [this.dimLayer];
+  this._workspace = [this.dimLayers, this.layers, this._serviceLayers];
   this.toolManager = new TCAD.TWO.ToolManager(this, new TCAD.TWO.PanTool(this));
   this.parametricManager = new TCAD.TWO.ParametricManager(this);
 
@@ -87,8 +90,6 @@ TCAD.TWO.Viewer = function(canvas) {
   this.snapped = [];
   
   this._setupServiceLayer();
-  this.dimLayer = new TCAD.TWO.Layer("_dim", TCAD.TWO.Styles.DIM);
-  this.layers.push(this.dimLayer);
 
   this.refresh();
 };
@@ -315,6 +316,21 @@ TCAD.TWO.Viewer.prototype.mark = function(obj, style) {
   }
   obj.marked = style;
   this.selected.push(obj);
+};
+
+TCAD.TWO.Viewer.prototype.activeLayer = function() {
+  var layer = this._activeLayer;
+  if (layer == null) {
+    if (this.layers.length == 0) {
+      this.layers.push(new TCAD.TWO.Layer("JustALayer", TCAD.TWO.Styles.DEFAULT));
+    }
+    layer = this.layers[0];
+  }
+  return layer;
+};
+
+TCAD.TWO.Viewer.prototype.setActiveLayer = function(layer) {
+  this._activeLayer = layer;
 };
 
 TCAD.TWO.Viewer.prototype.deselectAll = function() {

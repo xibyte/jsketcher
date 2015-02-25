@@ -71,9 +71,8 @@ TCAD.TWO.Arc.prototype.stabilize = function(viewer) {
   viewer.parametricManager._add(new TCAD.TWO.Constraints.P2PDistanceV(this.a, this.c, this.r));
 };
 
-TCAD.TWO.AddArcTool = function(viewer, layer) {
+TCAD.TWO.AddArcTool = function(viewer) {
   this.viewer = viewer;
-  this.layer = layer;
   this.arc = null;
   this.point = null;
   this._v = new TCAD.Vector(0, 0, 0);
@@ -120,7 +119,7 @@ TCAD.TWO.AddArcTool.prototype.mouseup = function(e) {
       new TCAD.TWO.EndPoint(p.x, p.y)
     );
     this.point = this.arc.a;
-    this.layer.objects.push(this.arc);
+    this.viewer.activeLayer().objects.push(this.arc);
     this.viewer.refresh();
   } else if (this.point.id === this.arc.a.id) {
     this.point = this.arc.b;

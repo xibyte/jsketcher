@@ -53,6 +53,14 @@ TCAD.TWO.ParametricManager.prototype._add = function(constr) {
     break;  
   }
   subSystem.constraints.push(constr);
+  this.checkRedundancy(subSystem, constr);
+};
+
+TCAD.TWO.ParametricManager.prototype.checkRedundancy = function (subSystem, constr) {
+  var solver = this.prepareForSubSystem([], subSystem);
+  if (TCAD.parametric.diagnose(solver.system).conflict) {
+    alert("Most likely this "+constr.NAME + "." + constr.id +" constraint is CONFLICTING!")
+  }
 };
 
 TCAD.TWO.ParametricManager.prototype.refresh = function() {
@@ -79,7 +87,7 @@ TCAD.TWO.ParametricManager.prototype.remove = function(constr) {
     for (var i = 0; i < sub.constraints.length; ++i) {
       var p = sub.constraints[i];
       if (p === constr) {
-        sub.constraints(i, 1);
+        sub.constraints.splice(i, 1);
         if (p.NAME === 'coi') {
           this.unlinkObjects(p.a, p.b);
         }
