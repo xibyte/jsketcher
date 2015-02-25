@@ -205,8 +205,6 @@ TCAD.parametric.lock2Equals2 = function(constrs, locked) {
   return _locked;
 };
 
-TCAD.parametric._alg = 5;
-
 TCAD.parametric.diagnose = function(sys) {
   var jacobian = sys.makeJacobian();
   var qr = new TCAD.math.QR(jacobian);
@@ -224,15 +222,6 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
   
   var sys = new TCAD.parametric.System(constrs);
 
-  function arr(size) {
-    var out = [];
-    out.length = size;
-    for (var i = 0; i < size; ++i) {
-        out[i] = 0;
-    }
-    return out;
-  }
-
   var model = function(point) {
     sys.setParams(point);
     return sys.getValues();
@@ -242,62 +231,22 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     sys.setParams(point);
     return sys.makeJacobian();
   };
-  alg = TCAD.parametric._alg;
-  var _point = [];
   
-  function solve(fineLevel) {
+  function solve(rough, alg) {
     if (constrs.length == 0) return;
     if (sys.params.length == 0) return;
     if (TCAD.parametric.diagnose(sys).conflict) {
       console.log("Conflicting or redundant constraints. Please fix your system.");
       return;
     }
-    if (alg > 0) {
-      switch (alg) {
-        case 1:
-          var res = TCAD.math.solve_BFGS(sys, 1e-4, 1e-4);
-          console.log(res);
-          break;
-        case 2:
-          TCAD.math.solve_TR(sys);
-          break;
-        case 3:
-          TCAD.math.noptim(sys);
-          break;
-        case 4:
-          TCAD.math.solve_UNCMIN(sys);
-          break;
-        case 5:
-          if (optim.dog_leg(sys) !== 0) {
-            //alg = -5;
-            //solve(fineLevel);
-          }
-          break;
-      }
-      return sys;
-    }
-  
-    var opt = new LMOptimizer(sys.getParams(), arr(sys.constraints.length), model, jacobian);
-    var eps;
-    fineLevel = 1;
-    switch (fineLevel) {
-      case 1:
-        eps = 0.001;
-        opt.init0(eps, eps, eps);
-        break;
+    
+    switch (alg) {
       case 2:
-        eps = 0.1;
-        opt.init0(eps, eps, eps);
-        break;
-      default:
-        eps = 0.00000001;
-        opt.init0(eps, eps, eps);
+        return TCAD.parametric.solve_lm(sys, model, jacobian, rough);
+      case 1:
+      default:    
+        return optim.dog_leg(sys, rough);
     }
-  
-    var res = opt.doOptimize();
-    sys.setParams(res[0]);
-  //  console.log("Solved with error: " + sys.error());
-    return res;
   }
   var systemSolver = {
     system : sys,
@@ -308,7 +257,25 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
       }
     }
   };
-  
   return systemSolver;
-  
 };
+
+TCAD.parametric.solve_lm = function(sys, model, jacobian, rough) {
+  var opt = new LMOptimizer(sys.getParams(), TCAD.math.vec(sys.constraints.length), model, jacobian);
+  opt.evalMaximalCount = 100 * sys.params.length;
+  var eps = rough ? 0.001 : 0.00000001;
+  opt.init0(eps, eps, eps);
+  var returnCode = 1;
+  try {
+    var res = opt.doOptimize();
+  } catch (e) {
+    returnCode = 2;
+  }
+  sys.setParams(res[0]);
+  return {
+    evalCount : opt.evalCount,
+    error : sys.error(),
+    returnCode : returnCode
+  };
+};
+

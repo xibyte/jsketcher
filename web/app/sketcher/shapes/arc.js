@@ -67,8 +67,8 @@ TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
 
 TCAD.TWO.Arc.prototype.stabilize = function(viewer) {
   this.r.set(this.distanceA());
-  viewer.parametricManager.system.push(new TCAD.TWO.Constraints.P2PDistanceV(this.b, this.c, this.r));
-  viewer.parametricManager.system.push(new TCAD.TWO.Constraints.P2PDistanceV(this.a, this.c, this.r));
+  viewer.parametricManager._add(new TCAD.TWO.Constraints.P2PDistanceV(this.b, this.c, this.r));
+  viewer.parametricManager._add(new TCAD.TWO.Constraints.P2PDistanceV(this.a, this.c, this.r));
 };
 
 TCAD.TWO.AddArcTool = function(viewer, layer) {

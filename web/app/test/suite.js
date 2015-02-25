@@ -4,14 +4,16 @@ TCAD.test.cases = {};
 TCAD.test.runSuite = function() {
   for (var p in TCAD.test.cases) {
     _log("... Run test " + p);
-    TCAD.test.cases[p].apply();
+    try {
+      TCAD.test.cases[p].apply();
+    } catch (e) {
+      _log("<b class='err'>ERROR: </b>" + e);
+      _log((e.stack+"").replace('\n', '<br />'));
+      
+    }
   }
   _log("DONE.");
 };
-
-function _log(text) {
-  $('#testOutput').append("<div>"+text+"</div>");
-}
 
 _loadFixture = function(name) {
   APP.loadSketch(TCAD.test.fixtures[name]);
@@ -25,16 +27,27 @@ _loadFixturesToLocalStorage = function() {
   }
 };
 
+TCAD.test._ERROR_TITLE = "<b class='err'>*</b> Assertion Error.";
+
+
+function _log(text) {
+  $('#testOutput').append("<div>"+text+"</div>");
+}
+
+function _logAssert(msg) {
+  _log(TCAD.test._ERROR_TITLE + " " + msg + "<br/>&nbsp;&nbsp;&nbsp;" + new Error("").stack.split('\n')[3]);
+}
+
 _assertEq = function(expected, actual, msg) {
   if (expected !== actual) {
-    _log("<b class='err'>*</b> Assertion Error. Expected [" + expected + "], but was [" + actual + "]");
+    _logAssert("Expected [" + expected + "], but was [" + actual + "]");
     if (!!msg) _log(msg);
   }
 };
 
 _assertEqD = function(expected, actual, precision, msg) {
   if (Math.abs(expected - actual) > precision) {
-    _log("<b class='err'>*</b> Assertion Error. Expected [" + expected + "] with precision " + precision + " but was [" + actual + "]");
+    _logAssert("Expected [" + expected + "] with precision " + precision + " but was [" + actual + "]");
     if (!!msg) _log(msg);
   }
 };
