@@ -50,14 +50,25 @@ TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   var r = this.radiusForDrawing();
   var startAngle = Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x);
   var endAngle;
-  if (TCAD.utils.areEqual(this.a.x, this.b.x, TCAD.TOLERANCE) && 
+  if (TCAD.utils.areEqual(this.a.x, this.b.x, TCAD.TOLERANCE) &&
       TCAD.utils.areEqual(this.a.y, this.b.y, TCAD.TOLERANCE)) {
     endAngle = startAngle + 2 * Math.PI;
   } else {
     endAngle = Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
-  } 
+  }
   ctx.arc(this.c.x, this.c.y, r, startAngle, endAngle);
-  ctx.stroke();
+  var distanceB = this.distanceB();
+  if (Math.abs(r - distanceB) * scale > 1) {
+    var adj = r / distanceB;
+    ctx.save();
+    ctx.setLineDash([7 / scale]);
+    ctx.lineTo(this.b.x, this.b.y);
+    ctx.moveTo(this.b.x + (this.b.x - this.c.x) / adj, this.b.y + (this.b.y - this.c.y) / adj);
+    ctx.stroke();
+    ctx.restore();
+  } else {
+    ctx.stroke();
+  }
 };
 
 
