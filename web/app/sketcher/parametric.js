@@ -284,11 +284,14 @@ TCAD.TWO.ParametricManager.prototype.solve = function() {
 };
 
 TCAD.TWO.ParametricManager.prototype.prepare = function(locked) {
+  return this._prepare(locked, this.subSystems);
+};
+
+TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems) {
   var solvers = [];
-  for (var i = 0; i < this.subSystems.length; i++) {
-    solvers.push(this._prepare(locked, this.subSystems[i]));
+  for (var i = 0; i < subSystems.length; i++) {
+    solvers.push(this.prepareForSubSystem(locked, subSystems[i]));
   }
-  var subSystems = this.subSystems;
   return {
     solvers : solvers,
     
@@ -318,7 +321,7 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked) {
   }
 };
 
-TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystem) {
+TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subSystem) {
 
   var pdict = {};
   var params;
