@@ -10,7 +10,7 @@ TCAD.test.cases.roundRect = function() {
   ep.x += 30;
   var solver = pm.prepare([]).solvers[0];
   _assertEqD(60, solver.system.error(), 0.01);
-  solver.solve(true, 1);
+  solver.solve(true);
   _assertEqD(0.000005, solver.system.error(), 1e-6);
 };
 
