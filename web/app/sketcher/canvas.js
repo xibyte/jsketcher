@@ -292,6 +292,7 @@ TCAD.TWO.Viewer.prototype.findById = function(id) {
       result = o;
       return false;
     }
+    return true;
   });
   return result;
 };
