@@ -182,8 +182,8 @@ TCAD.App2D.prototype.cleanUp = function() {
       layer.objects = [];
     }
   }
-  if (this.viewer.parametricManager.system.length != 0) {
-    this.viewer.parametricManager.system = [];
+  if (this.viewer.parametricManager.subSystems.length != 0) {
+    this.viewer.parametricManager.subSystems = [];
     this.viewer.parametricManager.notify();
   }
 };

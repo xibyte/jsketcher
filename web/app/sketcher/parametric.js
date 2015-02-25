@@ -290,6 +290,8 @@ TCAD.TWO.ParametricManager.prototype.prepare = function(locked) {
   }
   var subSystems = this.subSystems;
   return {
+    solvers : solvers,
+    
     solve : function(rough) {
       for (var i = 0; i < solvers.length; i++) {
         var alg = subSystems[i].alg;
