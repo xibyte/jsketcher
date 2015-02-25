@@ -273,6 +273,29 @@ TCAD.TWO.Viewer.prototype._screenToModel = function(x, y) {
   return out;
 };
 
+TCAD.TWO.Viewer.prototype.accept = function(visitor) {
+  for (var i = 0; i < this.layers.length; i++) {
+    var objs = this.layers[i].objects;
+    var result = null;
+    for (var j = 0; j < objs.length; j++) {
+      if (!objs[j].accept(visitor)) {
+        return false;
+      }
+    }
+  }
+};
+
+TCAD.TWO.Viewer.prototype.findById = function(id) {
+  var result = null;
+  this.accept(function(o) {
+    if (o.id === id) {
+      result = o;
+      return false;
+    }
+  });
+  return result;
+};
+
 TCAD.TWO.Viewer.prototype.select = function(objs, exclusive) {
   if (exclusive) this.deselectAll();
   for (var i = 0; i < objs.length; i++) {
@@ -369,7 +392,7 @@ TCAD.TWO.SketchObject.prototype.accept = function(visitor) {
 };
 
 TCAD.TWO.SketchObject.prototype.acceptV = function(onlyVisible, visitor) {
-  if (!this.visible) return false;
+  if (onlyVisible && !this.visible) return true;
   for (var i = 0; i < this.children.length; i++) {
     var child = this.children[i];
     if (!child.acceptV(onlyVisible, visitor)) {
