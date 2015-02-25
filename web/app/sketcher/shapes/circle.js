@@ -41,9 +41,8 @@ TCAD.TWO.Circle.prototype.getDefaultTool = function(viewer) {
 };
 
 
-TCAD.TWO.EditCircleTool = function(viewer, layer) {
+TCAD.TWO.EditCircleTool = function(viewer) {
   this.viewer = viewer;
-  this.layer = layer;
   this.circle = null;
 };
 
@@ -76,7 +75,7 @@ TCAD.TWO.EditCircleTool.prototype.mouseup = function(e) {
     this.circle = new TCAD.TWO.Circle(
       new TCAD.TWO.EndPoint(p.x, p.y)
     );
-    this.layer.objects.push(this.circle);
+    this.viewer.activeLayer().objects.push(this.circle);
     this.viewer.refresh();
   } else {
     this.solveRequest(false);
