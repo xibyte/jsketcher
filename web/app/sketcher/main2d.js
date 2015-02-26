@@ -152,6 +152,10 @@ TCAD.App2D = function() {
     app.viewer.parametricManager.lock(app.viewer.selected);
   });
 
+  this.registerAction('pointOnLine', "Point On Line", function () {
+    app.viewer.parametricManager.pointOnLine(app.viewer.selected);
+  });
+
   this.registerAction('analyzeConstraint', "Analyze Constraint", function () {
     app.viewer.parametricManager.analyze(alert);
   });

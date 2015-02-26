@@ -196,6 +196,13 @@ TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback
   }
 };
 
+TCAD.TWO.ParametricManager.prototype.pointOnLine = function(objs) {
+  var pl = this._fetchPointAndLine(objs);
+  var target = pl[0];
+  var segment = pl[1];
+  this.add(new TCAD.TWO.Constraints.PointOnLine(target, segment));
+};
+
 TCAD.TWO.utils.constRef = function(value) {
   return function() {
     return value;    
@@ -887,6 +894,34 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Tangent.prototype.NAME] = func
 
 TCAD.TWO.Constraints.Tangent.prototype.getObjects = function() {
   return [this.arc, this.line];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+TCAD.TWO.Constraints.PointOnLine = function(point, line) {
+  this.point = point;
+  this.line = line;
+};
+
+TCAD.TWO.Constraints.PointOnLine.prototype.NAME = 'PointOnLine';
+
+TCAD.TWO.Constraints.PointOnLine.prototype.getSolveData = function() {
+  var params = [];
+  this.point.collectParams(params);
+  this.line.collectParams(params);
+  return [['P2LDistance', params, [0]]];
+};
+
+TCAD.TWO.Constraints.PointOnLine.prototype.serialize = function() {
+  return [this.NAME, [this.point.id, this.line.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointOnLine.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.PointOnLine(refs(data[0]), refs(data[1]));
+};
+
+TCAD.TWO.Constraints.PointOnLine.prototype.getObjects = function() {
+  return [this.point, this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
