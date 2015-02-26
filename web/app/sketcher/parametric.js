@@ -59,7 +59,7 @@ TCAD.TWO.ParametricManager.prototype._add = function(constr) {
 TCAD.TWO.ParametricManager.prototype.checkRedundancy = function (subSystem, constr) {
   var solver = this.prepareForSubSystem([], subSystem);
   if (TCAD.parametric.diagnose(solver.system).conflict) {
-    alert("Most likely this "+constr.NAME + "." + constr.id +" constraint is CONFLICTING!")
+    alert("Most likely this "+constr.NAME + " constraint is CONFLICTING!")
   }
 };
 
