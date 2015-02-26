@@ -76,6 +76,8 @@ TCAD.App2D = function() {
             toLayer.data.push(to);
             if (obj._class === 'TCAD.TWO.Segment') {
               to.points = [point(obj.a), point(obj.b)];
+            } else if (obj._class === 'TCAD.TWO.EndPoint') {
+              to.location = point(obj);
             } else if (obj._class === 'TCAD.TWO.Arc') {
               to.points = [point(obj.a), point(obj.b), point(obj.c)];
             } else if (obj._class === 'TCAD.TWO.Circle') {
@@ -243,6 +245,8 @@ TCAD.App2D.prototype.loadSketch = function(sketch) {
             var a = endPoint(obj.points[0]);
             var b = endPoint(obj.points[1]);
             skobj = new TCAD.TWO.Segment(a, b);
+          } else if (obj._class === 'TCAD.TWO.EndPoint') {
+            skobj = endPoint(obj.location);
           } else if (obj._class === 'TCAD.TWO.Arc') {
             var a = endPoint(obj.points[0]);
             var b = endPoint(obj.points[1]);
