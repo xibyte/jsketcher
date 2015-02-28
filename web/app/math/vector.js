@@ -50,8 +50,29 @@ TCAD.Vector.prototype.minus = function(vector) {
   return new TCAD.Vector(this.x - vector.x, this.y - vector.y, this.z - vector.z);
 };
 
+TCAD.Vector.prototype._minus = function(vector) {
+  this.x -= vector.x;
+  this.y -= vector.y;
+  this.z -= vector.z;
+  return this;
+};
+
+TCAD.Vector.prototype._minusXYZ = function(x, y, z) {
+  this.x -= x;
+  this.y -= y;
+  this.z -= z;
+  return this;
+};
+
 TCAD.Vector.prototype.plus = function(vector) {
   return new TCAD.Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z);
+};
+
+TCAD.Vector.prototype._plus = function(vector) {
+  this.x += vector.x;
+  this.y += vector.y;
+  this.z += vector.z;
+  return this;
 };
 
 TCAD.Vector.prototype.normalize = function() {
