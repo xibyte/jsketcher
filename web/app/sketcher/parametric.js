@@ -298,6 +298,12 @@ TCAD.TWO.ParametricManager.prototype.solve = function() {
   solver.sync();
 };
 
+TCAD.TWO.ParametricManager.prototype.solveWithLock = function(lock) {
+  var solver = this.prepare(lock);
+  solver.solve(false);
+  solver.sync();
+};
+
 TCAD.TWO.ParametricManager.prototype.prepare = function(locked) {
   return this._prepare(locked, this.subSystems);
 };
@@ -313,11 +319,12 @@ TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems) {
     solve : function(rough) {
       for (var i = 0; i < solvers.length; i++) {
         var alg = subSystems[i].alg;
-        if (solvers[i].solve(rough, alg) !== 1) {
-          //alg = alg == 1 ? 2 : 1;
-          //if (solvers[i].solve(rough, alg) == 1) {
-          //  subSystems[i].alg = alg;
-          //}
+        var res = solvers[i].solve(rough, alg);
+        if (res.returnCode !== 1) {
+          alg = alg == 1 ? 2 : 1;
+          if (solvers[i].solve(rough, alg).returnCode == 1) {
+            subSystems[i].alg = alg;
+          }
         }
       }
     },
@@ -351,6 +358,11 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
     return Math.abs(p1.get() - p2.get()) <= 0.000001
   }
   var system = this.__getSolveData(subSystem, []);
+  system.sort(function(a, b){
+    a = a[0] === 'equal' ? 1 : 2;
+    b = b[0] === 'equal' ? 1 : 2;
+    return a - b;
+  });
   var tuples = [];
   for (i = 0; i < system.length; ++i) {
     var c = system[i];
