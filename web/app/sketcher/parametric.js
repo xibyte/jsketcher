@@ -358,11 +358,11 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
     return Math.abs(p1.get() - p2.get()) <= 0.000001
   }
   var system = this.__getSolveData(subSystem, []);
-  system.sort(function(a, b){
-    a = a[0] === 'equal' ? 1 : 2;
-    b = b[0] === 'equal' ? 1 : 2;
-    return a - b;
-  });
+//  system.sort(function(a, b){
+//    a = a[0] === 'equal' ? 1 : 2;
+//    b = b[0] === 'equal' ? 1 : 2;
+//    return a - b;
+//  });
   var tuples = [];
   for (i = 0; i < system.length; ++i) {
     var c = system[i];
