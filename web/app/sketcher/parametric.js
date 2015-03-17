@@ -322,9 +322,9 @@ TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems) {
         var res = solvers[i].solve(rough, alg);
         if (res.returnCode !== 1) {
           alg = alg == 1 ? 2 : 1;
-          if (solvers[i].solve(rough, alg).returnCode == 1) {
-            subSystems[i].alg = alg;
-          }
+          //if (solvers[i].solve(rough, alg).returnCode == 1) {
+            //subSystems[i].alg = alg;
+          //}
         }
       }
     },
