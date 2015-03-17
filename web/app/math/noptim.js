@@ -257,9 +257,8 @@ optim.inv = function inv(x) {
     return I;
 }
 
-// this is Gauss-Newton least square algorithm with trust region(dog leg) control/
 optim.dog_leg = function(subsys, rough) {
-
+    rough= true
   var tolg=1e-80, tolx=1e-80, tolf=1e-10;
 
   var xsize = subsys.params.length;
@@ -374,8 +373,11 @@ optim.dog_leg = function(subsys, rough) {
       }
       else {
           // get the steepest descent direction
-          alpha = n.norm2Squared(g)/n.norm2Squared(n.dot(Jx, g));
-          h_sd  = n.mul(g, alpha);
+          var Jt = n.transpose(Jx);
+          var B = n.dot(Jt, Jx);
+          var gBg = n.dot(g, n.dot(g, B));
+          alpha = n.norm2Squared(g) / gBg;
+          h_sd  = n.mul(g, - alpha);
 
           // get the gauss-newton step
           //h_gn = n.solve(Jx, n.mul(fx, -1));
@@ -395,15 +397,20 @@ optim.dog_leg = function(subsys, rough) {
               break;
 
           // compute the dogleg step
+          var gnorm = n.norm2(g);
           if (n.norm2(h_gn) < delta) {
               h_dl = n.clone(h_gn);
               if  (n.norm2(h_dl) <= tolx*(tolx + n.norm2(x))) {
                   stop = 5;
                   break;
               }
+              var dL = err - 0.5* n.norm2Squared(n.add(fx, n.dot(Jx, h_dl)));
           }
-          else if (alpha*n.norm2(g) >= delta) {
-              h_dl = n.mul( h_sd, delta/(alpha*n.norm2(g)));
+          else if (alpha* gnorm >= delta) {
+              var normRadius = delta/gnorm;
+              if( alpha >= normRadius ) alpha = normRadius;
+              h_dl = n.mul(g, - alpha);
+              var dL =  alpha*gnorm*gnorm - 0.5*alpha*alpha*gBg;
           }
           else {
               //compute beta
@@ -421,6 +428,7 @@ optim.dog_leg = function(subsys, rough) {
               // and update h_dl and dL with beta
               h_dl = n.add(h_sd, n.mul(beta,b));
           }
+          var dL = err - 0.5* n.norm2Squared(n.add(fx, n.dot(Jx, h_dl)));
       }
 
       // see if we are already finished
@@ -435,11 +443,33 @@ optim.dog_leg = function(subsys, rough) {
       subsys.fillJacobian(Jx_new);
 
       // calculate the linear model and the update ratio
-      var dL = err - 0.5* n.norm2Squared(n.add(fx, n.dot(Jx, h_dl)));
-      var dF = err - err_new;
-      var rho = dL/dF;
 
-      if (dF > 0 && dL > 0) {
+      var dF = err - err_new;
+
+      var acceptCandidate;
+
+      if( dF == 0 || dL == 0 ) {
+          acceptCandidate = true;
+      } else {
+          var rho = dL/dF;
+
+          // update delta
+          if( rho < 0.25 ) {
+              // if the model is a poor predictor reduce the size of the trust region
+              delta *= 0.5;
+          } else {
+              // only increase the size of the trust region if it is taking a step of maximum size
+              // otherwise just assume it's doing good enough job
+              if( rho > 0.75 ) {
+                  var r = n.norm2(h_dl);
+                  delta = Math.max(delta,3*r);
+              }
+          }
+          acceptCandidate = rho > 0;
+      }
+
+
+      if (acceptCandidate) {
           x  = n.clone(x_new);
           Jx = n.clone(Jx_new);
           fx = n.clone(fx_new);
@@ -451,22 +481,7 @@ optim.dog_leg = function(subsys, rough) {
           g_inf = n.norminf(g);
           fx_inf = n.norminf(fx);
       }
-      else
-          rho = -1;
 
-      // update delta
-      if (Math.abs(rho-1.) < 0.2 && n.norm2(h_dl) > delta/3. && reduce <= 0) {
-          delta = 3*delta;
-          nu = 2;
-          reduce = 0;
-      }
-      else if (rho < 0.25) {
-          delta = delta/nu;
-          nu = 2*nu;
-          reduce = 2;
-      }
-      else
-          reduce--;
 
       // count this iteration and start again
       iter++;
