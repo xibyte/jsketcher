@@ -258,8 +258,10 @@ optim.inv = function inv(x) {
 }
 
 optim.dog_leg = function(subsys, rough) {
-    rough= true
-  var tolg=1e-80, tolx=1e-80, tolf=1e-10;
+  rough = true
+  var tolg= rough ? 1e-4 : 1e-4;
+
+  var tolx=1e-80, tolf=1e-10;
 
   var xsize = subsys.params.length;
   var csize = subsys.constraints.length;
@@ -416,23 +418,21 @@ optim.dog_leg = function(subsys, rough) {
           else {
               //compute beta
               var beta = 0;
-              var b = n.sub(h_gn, h_sd);
-              var bb = Math.abs(n.dot(b, b));
-              var gb = Math.abs(n.dot(h_sd,b));
-              var c = (delta + n.norm2(h_sd))*(delta - n.norm2(h_sd));
+              var d = n.sub(h_gn, h_sd);
 
-              if (gb > 0)
-                  beta = c / (gb + Math.sqrt(gb * gb + c * bb));
-              else
-                  beta = (Math.sqrt(gb * gb + c * bb) - gb)/bb;
+              var a = n.dot(d, d);
+              var b = 2 * n.dot(h_sd, d);
+              var c = n.dot(h_sd, h_sd) - delta*delta
+
+              sqrt_discriminant = Math.sqrt(b*b - 4*a*c)
+
+              var beta = (-b + sqrt_discriminant) / (2*a)
 
               // and update h_dl and dL with beta
-              h_dl = n.add(h_sd, n.mul(beta,b));
+              h_dl = n.add(h_sd, n.mul(beta,d));
               hitBoundary = true;
           }
       }
-
-
 
 
       // see if we are already finished
