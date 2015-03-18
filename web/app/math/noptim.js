@@ -280,7 +280,7 @@ optim.dog_leg = function(subsys, rough) {
 
   var Jx = mx(csize, xsize);
   var Jx_new = mx(csize, xsize);
-  var g = vec(xsize);
+  var gNg = vec(xsize);
   var h_sd = vec(xsize);
   var h_gn = vec(xsize);
   var h_dl = vec(xsize);
@@ -344,13 +344,13 @@ optim.dog_leg = function(subsys, rough) {
     return n.solve(A, b, true);
   }
 
-  g = n.dot(n.transpose(Jx), n.mul(fx, -1));
-
+  gNg = n.dot(n.transpose(Jx), n.mul(fx, -1));
+  var g = n.dot(n.transpose(Jx), fx);
   // get the infinity norm fx_inf and g_inf
-  var g_inf = n.norminf(g);
+  var g_inf = n.norminf(gNg);
   var fx_inf = n.norminf(fx);
 
-  var maxIterNumber = 100 * xsize;
+  var maxIterNumber =  xsize * 100;
   var divergingLim = 1e6*err + 1e12;
 
   var delta=0.1;
@@ -375,7 +375,7 @@ optim.dog_leg = function(subsys, rough) {
           // get the steepest descent direction
           var Jt = n.transpose(Jx);
           var B = n.dot(Jt, Jx);
-          var gBg = n.dot(g, n.dot(g, B));
+          var gBg = n.dot(g, n.dot(B, g));
           alpha = n.norm2Squared(g) / gBg;
           h_sd  = n.mul(g, - alpha);
 
@@ -396,21 +396,22 @@ optim.dog_leg = function(subsys, rough) {
           if (rel_error > 1e15)
               break;
 
+          var hitBoundary = false;
+
           // compute the dogleg step
-          var gnorm = n.norm2(g);
+          var gnorm = n.norm2(gNg);
           if (n.norm2(h_gn) < delta) {
               h_dl = n.clone(h_gn);
               if  (n.norm2(h_dl) <= tolx*(tolx + n.norm2(x))) {
                   stop = 5;
                   break;
               }
-              var dL = err - 0.5* n.norm2Squared(n.add(fx, n.dot(Jx, h_dl)));
           }
           else if (alpha* gnorm >= delta) {
               var normRadius = delta/gnorm;
               if( alpha >= normRadius ) alpha = normRadius;
               h_dl = n.mul(g, - alpha);
-              var dL =  alpha*gnorm*gnorm - 0.5*alpha*alpha*gBg;
+              hitBoundary = true;
           }
           else {
               //compute beta
@@ -427,9 +428,12 @@ optim.dog_leg = function(subsys, rough) {
 
               // and update h_dl and dL with beta
               h_dl = n.add(h_sd, n.mul(beta,b));
+              hitBoundary = true;
           }
-          var dL = err - 0.5* n.norm2Squared(n.add(fx, n.dot(Jx, h_dl)));
       }
+
+
+
 
       // see if we are already finished
       if (stop)
@@ -445,14 +449,14 @@ optim.dog_leg = function(subsys, rough) {
       // calculate the linear model and the update ratio
 
       var dF = err - err_new;
+      var dL = - n.dot(g, h_dl) - 0.5 * n.dot(h_dl, n.dot(B, h_dl));
 
       var acceptCandidate;
 
       if( dF == 0 || dL == 0 ) {
           acceptCandidate = true;
       } else {
-          var rho = dL/dF;
-
+          var rho = dF/dL;
           // update delta
           if( rho < 0.25 ) {
               // if the model is a poor predictor reduce the size of the trust region
@@ -460,12 +464,12 @@ optim.dog_leg = function(subsys, rough) {
           } else {
               // only increase the size of the trust region if it is taking a step of maximum size
               // otherwise just assume it's doing good enough job
-              if( rho > 0.75 ) {
+              if( rho > 0.75 && hitBoundary) {
                   var r = n.norm2(h_dl);
-                  delta = Math.max(delta,3*r);
+                  delta *= 2;
               }
           }
-          acceptCandidate = rho > 0;
+          acceptCandidate = rho > 0; // could be 0 .. 0.25
       }
 
 
@@ -475,10 +479,11 @@ optim.dog_leg = function(subsys, rough) {
           fx = n.clone(fx_new);
           err = err_new;
 
-          g = n.dot(n.transpose(Jx), n.mul(fx, -1));
+          gNg = n.dot(n.transpose(Jx), n.mul(fx, -1));
+          g = n.dot(n.transpose(Jx), fx);
 
           // get infinity norms
-          g_inf = n.norminf(g);
+          g_inf = n.norminf(gNg);
           fx_inf = n.norminf(fx);
       }
 
