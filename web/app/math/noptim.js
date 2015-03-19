@@ -371,7 +371,6 @@ optim.dog_leg = function (subsys, rough) {
       stop = 6;
     }
     else {
-      var Jt = n.transpose(Jx);
 
       // get the gauss-newton step
       //h_gn = n.solve(Jx, n.mul(fx, -1));
@@ -385,10 +384,6 @@ optim.dog_leg = function (subsys, rough) {
 
       //solve linear problem using svd formula to get the gauss-newton step
       //h_gn = lls(Jx, n.mul(fx, -1));
-
-      var rel_error = n.norm2(n.add(n.dot(Jx, h_gn), fx)) / n.norm2(fx);
-      if (rel_error > 1e15)
-        break;
 
       var hitBoundary = false;
 
@@ -404,6 +399,7 @@ optim.dog_leg = function (subsys, rough) {
         stepKind = 1;
       }
       else {
+        var Jt = n.transpose(Jx);
         var B = n.dot(Jt, Jx);
         var gBg = n.dot(g, n.dot(B, g));
         alpha = n.norm2Squared(g) / gBg;
