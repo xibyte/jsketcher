@@ -417,14 +417,13 @@ optim.dog_leg = function(subsys, rough) {
           }
           else {
               //compute beta
-              var beta = 0;
               var d = n.sub(h_gn, h_sd);
 
               var a = n.dot(d, d);
               var b = 2 * n.dot(h_sd, d);
               var c = n.dot(h_sd, h_sd) - delta*delta
 
-              sqrt_discriminant = Math.sqrt(b*b - 4*a*c)
+              var sqrt_discriminant = Math.sqrt(b*b - 4*a*c)
 
               var beta = (-b + sqrt_discriminant) / (2*a)
 
