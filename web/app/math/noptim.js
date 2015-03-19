@@ -259,7 +259,7 @@ optim.inv = function inv(x) {
 
 optim.dog_leg = function (subsys, rough) {
   rough = true
-  var tolg = rough ? 1e-4 : 1e-4;
+  var tolg = rough ? 1e-5 : 1e-5;
 
   var tolx = 1e-80, tolf = 1e-10;
 
@@ -282,8 +282,6 @@ optim.dog_leg = function (subsys, rough) {
 
   var Jx = mx(csize, xsize);
   var Jx_new = mx(csize, xsize);
-  var gNg = vec(xsize);
-  var h_sd = vec(xsize);
   var h_gn = vec(xsize);
   var h_dl = vec(xsize);
 
@@ -345,10 +343,9 @@ optim.dog_leg = function (subsys, rough) {
     return n.solve(A, b, true);
   }
 
-  gNg = n.dot(n.transpose(Jx), n.mul(fx, -1));
   var g = n.dot(n.transpose(Jx), fx);
   // get the infinity norm fx_inf and g_inf
-  var g_inf = n.norminf(gNg);
+  var g_inf = n.norminf(g);
   var fx_inf = n.norminf(fx);
 
   var maxIterNumber = xsize * 100;
@@ -358,6 +355,7 @@ optim.dog_leg = function (subsys, rough) {
   var alpha = 0.;
   var nu = 2.;
   var iter = 0, stop = 0, reduce = 0;
+  var log = [];
   while (stop === 0) {
 
     // check if finished
@@ -373,12 +371,7 @@ optim.dog_leg = function (subsys, rough) {
       stop = 6;
     }
     else {
-      // get the steepest descent direction
       var Jt = n.transpose(Jx);
-      var B = n.dot(Jt, Jx);
-      var gBg = n.dot(g, n.dot(B, g));
-      alpha = n.norm2Squared(g) / gBg;
-      h_sd = n.mul(g, -alpha);
 
       // get the gauss-newton step
       //h_gn = n.solve(Jx, n.mul(fx, -1));
@@ -388,7 +381,7 @@ optim.dog_leg = function (subsys, rough) {
 //          h_gn = lusolve(Jx, n.mul(fx, -1));
 
       //Conjugate gradient method
-      //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
+      h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
 
       //solve linear problem using svd formula to get the gauss-newton step
       //h_gn = lls(Jx, n.mul(fx, -1));
@@ -399,36 +392,43 @@ optim.dog_leg = function (subsys, rough) {
 
       var hitBoundary = false;
 
+      var stepKind;
       // compute the dogleg step
-      var gnorm = n.norm2(gNg);
+      var gnorm = n.norm2(g);
       if (n.norm2(h_gn) < delta) {
         h_dl = n.clone(h_gn);
         if (n.norm2(h_dl) <= tolx * (tolx + n.norm2(x))) {
           stop = 5;
           break;
         }
-      }
-      else if (alpha * gnorm >= delta) {
-        var normRadius = delta / gnorm;
-        if (alpha >= normRadius) alpha = normRadius;
-        h_dl = n.mul(g, -alpha);
-        hitBoundary = true;
+        stepKind = 1;
       }
       else {
-        //compute beta
-        var d = n.sub(h_gn, h_sd);
+        var B = n.dot(Jt, Jx);
+        var gBg = n.dot(g, n.dot(B, g));
+        alpha = n.norm2Squared(g) / gBg;
+        if (alpha * gnorm >= delta) {
+          h_dl = n.mul(g, - delta / gnorm);
+          hitBoundary = true;
+          stepKind = 2;
+        } else {
+          var h_sd = n.mul(g, - alpha);
 
-        var a = n.dot(d, d);
-        var b = 2 * n.dot(h_sd, d);
-        var c = n.dot(h_sd, h_sd) - delta * delta
+          var d = n.sub(h_gn, h_sd);
 
-        var sqrt_discriminant = Math.sqrt(b * b - 4 * a * c)
+          var a = n.dot(d, d);
+          var b = 2 * n.dot(h_sd, d);
+          var c = n.dot(h_sd, h_sd) - delta * delta
 
-        var beta = (-b + sqrt_discriminant) / (2 * a)
+          var sqrt_discriminant = Math.sqrt(b * b - 4 * a * c)
 
-        // and update h_dl and dL with beta
-        h_dl = n.add(h_sd, n.mul(beta, d));
-        hitBoundary = true;
+          var beta = (-b + sqrt_discriminant) / (2 * a)
+
+          // and update h_dl and dL with beta
+          h_dl = n.add(h_sd, n.mul(beta, d));
+          hitBoundary = true;
+          stepKind = 3;
+        }
       }
     }
 
@@ -469,7 +469,7 @@ optim.dog_leg = function (subsys, rough) {
       }
       acceptCandidate = rho > 0; // could be 0 .. 0.25
     }
-
+    log.push([stepKind,err,  delta,rho]);
 
     if (acceptCandidate) {
       x = n.clone(x_new);
@@ -477,18 +477,18 @@ optim.dog_leg = function (subsys, rough) {
       fx = n.clone(fx_new);
       err = err_new;
 
-      gNg = n.dot(n.transpose(Jx), n.mul(fx, -1));
       g = n.dot(n.transpose(Jx), fx);
 
       // get infinity norms
-      g_inf = n.norminf(gNg);
+      g_inf = n.norminf(g);
       fx_inf = n.norminf(fx);
     }
 
     // count this iteration and start again
     iter++;
   }
-
+  log.push(stop);
+  window.___log(log);
   return {
     evalCount: iter,
     error: err,
