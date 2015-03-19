@@ -381,7 +381,7 @@ optim.dog_leg = function (subsys, rough) {
 //          h_gn = lusolve(Jx, n.mul(fx, -1));
 
       //Conjugate gradient method
-      h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
+      //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
 
       //solve linear problem using svd formula to get the gauss-newton step
       //h_gn = lls(Jx, n.mul(fx, -1));
