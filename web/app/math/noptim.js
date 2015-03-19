@@ -255,11 +255,11 @@ optim.inv = function inv(x) {
         }
     }
     return I;
-}
+};
 
 optim.dog_leg = function (subsys, rough) {
-  rough = true
-  var tolg = rough ? 1e-5 : 1e-5;
+  //rough = true
+  var tolg = rough ? 1e-3 : 1e-4;
 
   var tolx = 1e-80, tolf = 1e-10;
 
@@ -396,7 +396,7 @@ optim.dog_leg = function (subsys, rough) {
       // compute the dogleg step
       var gnorm = n.norm2(g);
       if (n.norm2(h_gn) < delta) {
-        h_dl = n.clone(h_gn);
+        h_dl = h_gn;
         if (n.norm2(h_dl) <= tolx * (tolx + n.norm2(x))) {
           stop = 5;
           break;
@@ -446,8 +446,9 @@ optim.dog_leg = function (subsys, rough) {
 
     // calculate the linear model and the update ratio
 
-    var dF = err - err_new;
-    var dL = -n.dot(g, h_dl) - 0.5 * n.dot(h_dl, n.dot(B, h_dl));
+    var fxNormSq = n.norm2Squared(fx);
+    var dF = fxNormSq - n.norm2Squared(fx_new);
+    var dL = fxNormSq - n.norm2Squared( n.add(fx,  n.dot(Jx, h_dl)) );
 
     var acceptCandidate;
 
