@@ -359,7 +359,7 @@ optim.dog_leg = function (subsys, rough) {
   while (stop === 0) {
 
     // check if finished
-    if (fx_inf <= tolf || (rough && err <= tolf)) // Success
+    if (fx_inf <= tolf || (rough && err <= 1e-3)) // Success
       stop = 1;
     else if (g_inf <= tolg)
       stop = 2;
@@ -426,10 +426,10 @@ optim.dog_leg = function (subsys, rough) {
 
     var dl_norm = n.norm2(h_dl);
 
-    if (dl_norm <= tolx) {
-      stop = 5;
-      break;
-    }
+//    if (dl_norm <= tolx) {
+//      stop = 5;
+//      break;
+//    }
 
     // see if we are already finished
     if (stop)
@@ -488,7 +488,7 @@ optim.dog_leg = function (subsys, rough) {
     iter++;
   }
   log.push(stop);
-  //window.___log(log);
+  window.___log(log);
   return {
     evalCount: iter,
     error: err,
