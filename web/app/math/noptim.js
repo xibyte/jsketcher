@@ -238,7 +238,7 @@ optim.inv = function inv(x) {
         Ij = I[i0]; I[i0] = I[j]; I[j] = Ij;
         x = Aj[j];
         if (x === 0) {
-          //console.log("CAN' INVERSE MATRIX");
+          console.log("CAN' INVERSE MATRIX");
           x = 1e-32
         }
         for(k=j;k!==n;++k)    Aj[k] /= x;
@@ -258,7 +258,7 @@ optim.inv = function inv(x) {
 };
 
 optim.dog_leg = function (subsys, rough) {
-  //rough = true
+  rough = true
   var tolg = rough ? 1e-3 : 1e-4;
 
   var tolx = 1e-80, tolf = 1e-10;
@@ -351,7 +351,7 @@ optim.dog_leg = function (subsys, rough) {
   var maxIterNumber = xsize * 100;
   var divergingLim = 1e6 * err + 1e12;
 
-  var delta = 0.1;
+  var delta = 10;
   var alpha = 0.;
   var nu = 2.;
   var iter = 0, stop = 0, reduce = 0;
@@ -364,7 +364,7 @@ optim.dog_leg = function (subsys, rough) {
     else if (g_inf <= tolg)
       stop = 2;
     else if (delta <= tolx * (tolx + n.norm2(x)))
-      stop = 2;
+      stop = 3;
     else if (iter >= maxIterNumber)
       stop = 4;
     else if (err > divergingLim || err != err) { // check for diverging and NaN
@@ -392,10 +392,6 @@ optim.dog_leg = function (subsys, rough) {
       var gnorm = n.norm2(g);
       if (n.norm2(h_gn) < delta) {
         h_dl = h_gn;
-        if (n.norm2(h_dl) <= tolx * (tolx + n.norm2(x))) {
-          stop = 5;
-          break;
-        }
         stepKind = 1;
       }
       else {
@@ -428,6 +424,12 @@ optim.dog_leg = function (subsys, rough) {
       }
     }
 
+    var dl_norm = n.norm2(h_dl);
+
+    if (dl_norm <= tolx) {
+      stop = 5;
+      break;
+    }
 
     // see if we are already finished
     if (stop)
@@ -455,12 +457,13 @@ optim.dog_leg = function (subsys, rough) {
       // update delta
       if (rho < 0.25) {
         // if the model is a poor predictor reduce the size of the trust region
-        delta *= 0.5;
+        delta = 0.25 * dl_norm;
+        //delta *= 0.5;
       } else {
         // only increase the size of the trust region if it is taking a step of maximum size
         // otherwise just assume it's doing good enough job
         if (rho > 0.75 && hitBoundary) {
-          var r = n.norm2(h_dl);
+          //delta = Math.max(delta,3*dl_norm);
           delta *= 2;
         }
       }
@@ -485,7 +488,7 @@ optim.dog_leg = function (subsys, rough) {
     iter++;
   }
   log.push(stop);
-  window.___log(log);
+  //window.___log(log);
   return {
     evalCount: iter,
     error: err,
