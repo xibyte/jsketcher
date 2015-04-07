@@ -238,7 +238,7 @@ optim.inv = function inv(x) {
         Ij = I[i0]; I[i0] = I[j]; I[j] = Ij;
         x = Aj[j];
         if (x === 0) {
-          //console.log("CAN' INVERSE MATRIX");
+          console.log("CAN' INVERSE MATRIX");
           x = 1e-32
         }
         for(k=j;k!==n;++k)    Aj[k] /= x;
@@ -255,18 +255,19 @@ optim.inv = function inv(x) {
         }
     }
     return I;
-}
+};
 
-// this is Gauss-Newton least square algorithm with trust region(dog leg) control/
-optim.dog_leg = function(subsys, rough) {
+optim.dog_leg = function (subsys, rough) {
+  //rough = true
+  var tolg = rough ? 1e-3 : 1e-4;
 
-  var tolg=1e-80, tolx=1e-80, tolf=1e-10;
+  var tolx = 1e-80, tolf = 1e-10;
 
   var xsize = subsys.params.length;
   var csize = subsys.constraints.length;
 
   if (xsize == 0)
-      return 'Success';
+    return 'Success';
 
   var vec = TCAD.math._arr;
   var mx = TCAD.math._matrix;
@@ -281,29 +282,26 @@ optim.dog_leg = function(subsys, rough) {
 
   var Jx = mx(csize, xsize);
   var Jx_new = mx(csize, xsize);
-  var g = vec(xsize);
-  var h_sd = vec(xsize);
   var h_gn = vec(xsize);
   var h_dl = vec(xsize);
 
   var r0 = vec(csize);
-  
+
   var err;
   subsys.fillParams(x);
-  
+
 //  subsys.setParams(vec(xsize));
 //  subsys.calcResidual(r0);
-  
+
   subsys.setParams(x);
   err = subsys.calcResidual(fx);
-  
+
   subsys.fillJacobian(Jx);
 
   function lls(A, b) {
     var At = n.transpose(A);
     var J = n.dot(At, A);
-    var r = n.dot(At, b);;
-
+    var r = n.dot(At, b);
     return nocadel_10_18(J, r);
   }
 
@@ -333,7 +331,7 @@ optim.dog_leg = function(subsys, rough) {
 //      return n.solve(A, b);
 //    }
     var At = n.transpose(A);
-    var res = n.dot(n.dot(At, optim.inv(n.dot(A, At)) ), b);
+    var res = n.dot(n.dot(At, optim.inv(n.dot(A, At))), b);
     return res;
 
   }
@@ -345,139 +343,157 @@ optim.dog_leg = function(subsys, rough) {
     return n.solve(A, b, true);
   }
 
-  g = n.dot(n.transpose(Jx), n.mul(fx, -1));
-
+  var g = n.dot(n.transpose(Jx), fx);
   // get the infinity norm fx_inf and g_inf
   var g_inf = n.norminf(g);
   var fx_inf = n.norminf(fx);
 
-  var maxIterNumber = 100 * xsize;
-  var divergingLim = 1e6*err + 1e12;
+  var maxIterNumber = xsize * 100;
+  var divergingLim = 1e6 * err + 1e12;
 
-  var delta=0.1;
-  var alpha=0.;
-  var nu=2.;
-  var iter=0, stop=0, reduce=0;
+  var delta = 10;
+  var alpha = 0.;
+  var nu = 2.;
+  var iter = 0, stop = 0, reduce = 0;
+  var log = [];
   while (stop === 0) {
 
-      // check if finished
-      if (fx_inf <= tolf || (rough && err <= tolf)) // Success
-          stop = 1;
-      else if (g_inf <= tolg)
-          stop = 2;
-      else if (delta <= tolx*(tolx + n.norm2(x)))
-          stop = 2;
-      else if (iter >= maxIterNumber)
-          stop = 4;
-      else if (err > divergingLim || err != err) { // check for diverging and NaN
-          stop = 6;
-      }
-      else {
-          // get the steepest descent direction
-          alpha = n.norm2Squared(g)/n.norm2Squared(n.dot(Jx, g));
-          h_sd  = n.mul(g, alpha);
+    // check if finished
+    if (fx_inf <= tolf || (rough && err <= 1e-3)) // Success
+      stop = 1;
+    else if (g_inf <= tolg)
+      stop = 2;
+    else if (delta <= tolx * (tolx + n.norm2(x)))
+      stop = 3;
+    else if (iter >= maxIterNumber)
+      stop = 4;
+    else if (err > divergingLim || err != err) { // check for diverging and NaN
+      stop = 6;
+    }
+    else {
 
-          // get the gauss-newton step
-          //h_gn = n.solve(Jx, n.mul(fx, -1));
-          h_gn = lsolve(Jx, n.mul(fx, -1));
+      // get the gauss-newton step
+      //h_gn = n.solve(Jx, n.mul(fx, -1));
+      h_gn = lsolve(Jx, n.mul(fx, -1));
 
-          //LU-Decomposition
+      //LU-Decomposition
 //          h_gn = lusolve(Jx, n.mul(fx, -1));
 
-          //Conjugate gradient method
-          //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
-        
-          //solve linear problem using svd formula to get the gauss-newton step
-          //h_gn = lls(Jx, n.mul(fx, -1));
-        
-          var rel_error = n.norm2(n.add(n.dot(Jx, h_gn), fx)) / n.norm2(fx);
-          if (rel_error > 1e15)
-              break;
+      //Conjugate gradient method
+      //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
 
-          // compute the dogleg step
-          if (n.norm2(h_gn) < delta) {
-              h_dl = n.clone(h_gn);
-              if  (n.norm2(h_dl) <= tolx*(tolx + n.norm2(x))) {
-                  stop = 5;
-                  break;
-              }
-          }
-          else if (alpha*n.norm2(g) >= delta) {
-              h_dl = n.mul( h_sd, delta/(alpha*n.norm2(g)));
-          }
-          else {
-              //compute beta
-              var beta = 0;
-              var b = n.sub(h_gn, h_sd);
-              var bb = Math.abs(n.dot(b, b));
-              var gb = Math.abs(n.dot(h_sd,b));
-              var c = (delta + n.norm2(h_sd))*(delta - n.norm2(h_sd));
+      //solve linear problem using svd formula to get the gauss-newton step
+      //h_gn = lls(Jx, n.mul(fx, -1));
 
-              if (gb > 0)
-                  beta = c / (gb + Math.sqrt(gb * gb + c * bb));
-              else
-                  beta = (Math.sqrt(gb * gb + c * bb) - gb)/bb;
+      var hitBoundary = false;
 
-              // and update h_dl and dL with beta
-              h_dl = n.add(h_sd, n.mul(beta,b));
-          }
+      var stepKind;
+      // compute the dogleg step
+      var gnorm = n.norm2(g);
+      if (n.norm2(h_gn) < delta) {
+        h_dl = h_gn;
+        stepKind = 1;
       }
+      else {
+        var Jt = n.transpose(Jx);
+        var B = n.dot(Jt, Jx);
+        var gBg = n.dot(g, n.dot(B, g));
+        alpha = n.norm2Squared(g) / gBg;
+        if (alpha * gnorm >= delta) {
+          h_dl = n.mul(g, - delta / gnorm);
+          hitBoundary = true;
+          stepKind = 2;
+        } else {
+          var h_sd = n.mul(g, - alpha);
 
-      // see if we are already finished
-      if (stop)
-          break;
+          var d = n.sub(h_gn, h_sd);
 
-      // get the new values
-      var err_new;
-      x_new = n.add(x, h_dl);
-      subsys.setParams(x_new);
-      err_new = subsys.calcResidual(fx_new);
-      subsys.fillJacobian(Jx_new);
+          var a = n.dot(d, d);
+          var b = 2 * n.dot(h_sd, d);
+          var c = n.dot(h_sd, h_sd) - delta * delta
 
-      // calculate the linear model and the update ratio
-      var dL = err - 0.5* n.norm2Squared(n.add(fx, n.dot(Jx, h_dl)));
-      var dF = err - err_new;
-      var rho = dL/dF;
+          var sqrt_discriminant = Math.sqrt(b * b - 4 * a * c)
 
-      if (dF > 0 && dL > 0) {
-          x  = n.clone(x_new);
-          Jx = n.clone(Jx_new);
-          fx = n.clone(fx_new);
-          err = err_new;
+          var beta = (-b + sqrt_discriminant) / (2 * a)
 
-          g = n.dot(n.transpose(Jx), n.mul(fx, -1));
-
-          // get infinity norms
-          g_inf = n.norminf(g);
-          fx_inf = n.norminf(fx);
+          // and update h_dl and dL with beta
+          h_dl = n.add(h_sd, n.mul(beta, d));
+          hitBoundary = true;
+          stepKind = 3;
+        }
       }
-      else
-          rho = -1;
+    }
 
+    var dl_norm = n.norm2(h_dl);
+
+//    if (dl_norm <= tolx) {
+//      stop = 5;
+//      break;
+//    }
+
+    // see if we are already finished
+    if (stop)
+      break;
+
+    // get the new values
+    var err_new;
+    x_new = n.add(x, h_dl);
+    subsys.setParams(x_new);
+    err_new = subsys.calcResidual(fx_new);
+    subsys.fillJacobian(Jx_new);
+
+    // calculate the linear model and the update ratio
+
+    var fxNormSq = n.norm2Squared(fx);
+    var dF = fxNormSq - n.norm2Squared(fx_new);
+    var dL = fxNormSq - n.norm2Squared( n.add(fx,  n.dot(Jx, h_dl)) );
+
+    var acceptCandidate;
+
+    if (dF == 0 || dL == 0) {
+      acceptCandidate = true;
+    } else {
+      var rho = dF / dL;
       // update delta
-      if (Math.abs(rho-1.) < 0.2 && n.norm2(h_dl) > delta/3. && reduce <= 0) {
-          delta = 3*delta;
-          nu = 2;
-          reduce = 0;
+      if (rho < 0.25) {
+        // if the model is a poor predictor reduce the size of the trust region
+        delta = 0.25 * dl_norm;
+        //delta *= 0.5;
+      } else {
+        // only increase the size of the trust region if it is taking a step of maximum size
+        // otherwise just assume it's doing good enough job
+        if (rho > 0.75 && hitBoundary) {
+          //delta = Math.max(delta,3*dl_norm);
+          delta *= 2;
+        }
       }
-      else if (rho < 0.25) {
-          delta = delta/nu;
-          nu = 2*nu;
-          reduce = 2;
-      }
-      else
-          reduce--;
+      acceptCandidate = rho > 0; // could be 0 .. 0.25
+    }
+    log.push([stepKind,err,  delta,rho]);
 
-      // count this iteration and start again
-      iter++;
+    if (acceptCandidate) {
+      x = n.clone(x_new);
+      Jx = n.clone(Jx_new);
+      fx = n.clone(fx_new);
+      err = err_new;
+
+      g = n.dot(n.transpose(Jx), fx);
+
+      // get infinity norms
+      g_inf = n.norminf(g);
+      fx_inf = n.norminf(fx);
+    }
+
+    // count this iteration and start again
+    iter++;
   }
-
+  log.push(stop);
+  window.___log(log);
   return {
-    evalCount : iter,
-    error : err,
-    returnCode : stop
+    evalCount: iter,
+    error: err,
+    returnCode: stop
   };
-
 };
 
 optim.cg = function(A, x, b, tol, maxIt) {

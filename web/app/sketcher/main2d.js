@@ -41,6 +41,10 @@ TCAD.App2D = function() {
   this.registerAction('pan', "Pan", function () {
     app.viewer.toolManager.releaseControl();
   });
+  
+  this.registerAction('addFillet', "Add Fillet", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.FilletTool(app.viewer));
+  });
 
   this.registerAction('addDim', "Add Dimension", function () {
     app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.Dimension(a,b)} ));

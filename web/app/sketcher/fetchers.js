@@ -102,3 +102,24 @@ TCAD.TWO.ParametricManager.prototype._fetchTwoLines = function(objs) {
   }
   return lines;
 };
+
+TCAD.TWO.utils._fetchSketchObjects = function(objs, silent, matching) {
+  var fetched = [];
+  for (var i = 0; i < objs.length; ++i) {
+    for (var j = 0; j < matching.length; j++) {
+      if (objs[i]._class ==  matching[j]) {
+        fetched[j] = objs[i]; 
+        matching[j] = null;
+      }
+    }
+  }
+  if (fetched.length != matching.length) {
+    if (silent) {
+      return null;
+    } else {
+      throw "Illegal Argument. " + matching + " required";
+    }
+  }
+  return fetched;
+};
+

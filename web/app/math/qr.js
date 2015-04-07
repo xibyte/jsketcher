@@ -18,7 +18,7 @@ TCAD.math.QR = function(matrix) {
   var vec = TCAD.math.vec;
   this.matrix = matrix;
   var nR = this.matrix.length;
-  var nC = this.matrix[0].length;
+  var nC = nR == 0 ? 0 : this.matrix[0].length;
 
   this.qrRankingThreshold = 1e-30; //??
   this.solvedCols  = Math.min(nR, nC);
