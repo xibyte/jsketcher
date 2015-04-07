@@ -488,7 +488,7 @@ optim.dog_leg = function (subsys, rough) {
     iter++;
   }
   log.push(stop);
-  window.___log(log);
+  //window.___log(log);
   return {
     evalCount: iter,
     error: err,
