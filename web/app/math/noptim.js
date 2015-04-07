@@ -258,7 +258,7 @@ optim.inv = function inv(x) {
 };
 
 optim.dog_leg = function (subsys, rough) {
-  rough = true
+  //rough = true
   var tolg = rough ? 1e-3 : 1e-4;
 
   var tolx = 1e-80, tolf = 1e-10;
@@ -494,7 +494,6 @@ optim.dog_leg = function (subsys, rough) {
     error: err,
     returnCode: stop
   };
-
 };
 
 optim.cg = function(A, x, b, tol, maxIt) {
