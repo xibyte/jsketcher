@@ -206,6 +206,12 @@ TCAD.parametric.lock2Equals2 = function(constrs, locked) {
 };
 
 TCAD.parametric.diagnose = function(sys) {
+  if (sys.constraints.length == 0 || sys.params.length == 0) {
+    return {
+      conflict : false,
+      dof : 0
+    }
+  }
   var jacobian = sys.makeJacobian();
   var qr = new TCAD.math.QR(jacobian);
   return {
@@ -231,13 +237,18 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     sys.setParams(point);
     return sys.makeJacobian();
   };
+  var nullResult = {
+    evalCount : 0,
+    error : 0,
+    returnCode : 1
+  };
   
   function solve(rough, alg) {
-    if (constrs.length == 0) return;
-    if (sys.params.length == 0) return;
+    if (constrs.length == 0) return nullResult;
+    if (sys.params.length == 0) return nullResult;
     if (TCAD.parametric.diagnose(sys).conflict) {
       console.log("Conflicting or redundant constraints. Please fix your system.");
-      return;
+      return nullResult;
     }
     
     switch (alg) {
