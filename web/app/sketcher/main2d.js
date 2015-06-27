@@ -6,6 +6,10 @@ TCAD.App2D = function() {
   this.viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
   this.boundaryLayer = new TCAD.TWO.Layer("default", TCAD.TWO.Styles.DEFAULT);
   this.viewer.layers.push(this.boundaryLayer);
+  this.dmp = new diff_match_patch();
+  this.historyPointer = -1;
+  this.diffs = [];
+
   var app = this;
 
   this.actions = {};
@@ -17,6 +21,18 @@ TCAD.App2D = function() {
     app.actions[id] = {id: id, desc: desc, action: action};
     app._actionsOrder.push(id);
   };
+
+  this.registerAction('undo', "Undo", function () {
+    app.undo();
+  });
+
+  this.registerAction('redo', "Redo", function () {
+    app.redo();
+  });
+
+  this.registerAction('checkpoint', "Checkpoint", function () {
+    app.checkpoint();
+  });
 
   this.registerAction('addPoint', "Add Point", function () {
     app.viewer.toolManager.takeControl(new TCAD.TWO.AddPointTool(app.viewer));
@@ -58,58 +74,8 @@ TCAD.App2D = function() {
   });
 
   this.registerAction('save', "Save", function () {
-      var sketch = {};
-      //sketch.boundary = boundary;
-      sketch.layers = [];
-      function point(p) {
-        return [ p.id, [p._x.id, p.x], [p._y.id, p.y] ];
-      }
-      var toSave = [app.viewer.dimLayers, app.viewer.layers]
-      for (var t = 0; t < toSave.length; ++t) {
-        var layers = toSave[t]; 
-        for (var l = 0; l < layers.length; ++l) {
-          var layer = layers[l];
-          var isBoundary = layer.name === '';
-          var toLayer = {name : layer.name, data : []};
-          sketch.layers.push(toLayer);
-          for (var i = 0; i < layer.objects.length; ++i) {
-            var obj = layer.objects[i];
-            var to = {id: obj.id, _class: obj._class};
-            if (obj.aux) to.aux = obj.aux;
-            if (obj.edge !== undefined) to.edge = obj.edge;
-            toLayer.data.push(to);
-            if (obj._class === 'TCAD.TWO.Segment') {
-              to.points = [point(obj.a), point(obj.b)];
-            } else if (obj._class === 'TCAD.TWO.EndPoint') {
-              to.location = point(obj);
-            } else if (obj._class === 'TCAD.TWO.Arc') {
-              to.points = [point(obj.a), point(obj.b), point(obj.c)];
-            } else if (obj._class === 'TCAD.TWO.Circle') {
-              to.c = point(obj.c);
-              to.r = obj.r.get();
-            } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
-              to.a = obj.a.id;
-              to.b = obj.b.id;
-              to.flip = obj.flip; 
-            }
-          }
-        }
-      }
-
-      var constrs = sketch.constraints = [];
-      var subSystems = app.viewer.parametricManager.subSystems;
-      for (var j = 0; j < subSystems.length; j++) {
-        var sub = subSystems[j];
-        for (var i = 0; i < sub.constraints.length; ++i) {
-          if (!sub.constraints[i].aux) {
-            constrs.push(app.serializeConstr(sub.constraints[i]));
-          }
-        }
-        
-      }
-      var sketchData = JSON.stringify(sketch);
+      var sketchData = app.saveSketch();
       console.log(sketchData);
-
       var sketchId = app.getSketchId();
       localStorage.setItem(app.getSketchId(), sketchData);
   });
@@ -182,6 +148,10 @@ TCAD.App2D.prototype.loadFromLocalStorage = function() {
   var sketchData = localStorage.getItem(sketchId);
   var boundary = null;
   if (sketchData != null) {
+    this.lastCheckpoint = sketchData;
+    this.diffs = [];
+    this.historyPointer = -1;
+
     var sketch = JSON.parse(sketchData);
     boundary = this.loadSketch(sketch);
   }
@@ -199,6 +169,59 @@ TCAD.App2D.prototype.cleanUp = function() {
     this.viewer.parametricManager.subSystems = [];
     this.viewer.parametricManager.notify();
   }
+};
+
+TCAD.App2D.prototype.saveSketch = function() {
+  var sketch = {};
+  //sketch.boundary = boundary;
+  sketch.layers = [];
+  function point(p) {
+    return [ p.id, [p._x.id, p.x], [p._y.id, p.y] ];
+  }
+  var toSave = [this.viewer.dimLayers, this.viewer.layers]
+  for (var t = 0; t < toSave.length; ++t) {
+    var layers = toSave[t];
+    for (var l = 0; l < layers.length; ++l) {
+      var layer = layers[l];
+      var isBoundary = layer.name === '';
+      var toLayer = {name : layer.name, data : []};
+      sketch.layers.push(toLayer);
+      for (var i = 0; i < layer.objects.length; ++i) {
+        var obj = layer.objects[i];
+        var to = {id: obj.id, _class: obj._class};
+        if (obj.aux) to.aux = obj.aux;
+        if (obj.edge !== undefined) to.edge = obj.edge;
+        toLayer.data.push(to);
+        if (obj._class === 'TCAD.TWO.Segment') {
+          to.points = [point(obj.a), point(obj.b)];
+        } else if (obj._class === 'TCAD.TWO.EndPoint') {
+          to.location = point(obj);
+        } else if (obj._class === 'TCAD.TWO.Arc') {
+          to.points = [point(obj.a), point(obj.b), point(obj.c)];
+        } else if (obj._class === 'TCAD.TWO.Circle') {
+          to.c = point(obj.c);
+          to.r = obj.r.get();
+        } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
+          to.a = obj.a.id;
+          to.b = obj.b.id;
+          to.flip = obj.flip;
+        }
+      }
+    }
+  }
+
+  var constrs = sketch.constraints = [];
+  var subSystems = this.viewer.parametricManager.subSystems;
+  for (var j = 0; j < subSystems.length; j++) {
+    var sub = subSystems[j];
+    for (var i = 0; i < sub.constraints.length; ++i) {
+      if (!sub.constraints[i].aux) {
+        constrs.push(this.serializeConstr(sub.constraints[i]));
+      }
+    }
+
+  }
+  return JSON.stringify(sketch);
 };
 
 TCAD.App2D.prototype.loadSketch = function(sketch) {
@@ -384,4 +407,76 @@ TCAD.App2D.prototype.getSketchId = function() {
     id = "untitled";
   }
   return "TCAD.projects." + id;
+};
+
+TCAD.App2D.prototype.undo = function () {
+  var currentState = this.saveSketch();
+  if (currentState == this.lastCheckpoint) {
+    if (this.historyPointer != -1) {
+      this.loadSketch(JSON.parse(this.lastCheckpoint));
+      this.viewer.refresh();
+      var diff = this.diffs[this.historyPointer];
+      this.lastCheckpoint = this.applyDiff(this.lastCheckpoint, diff);
+      this.historyPointer --;
+    }
+  } else {
+    var diffToCurr = this.getDiff(this.lastCheckpoint, currentState);
+    if (this.historyPointer != this.diffs.length - 1) {
+      this.diffs.splice(this.historyPointer + 1, this.diffs.length - this.historyPointer + 1)
+    }
+    this.diffs.push(diffToCurr);
+    this.loadSketch(JSON.parse(this.lastCheckpoint));
+    this.viewer.refresh();
+  }
+};
+
+TCAD.App2D.prototype.checkpoint = function () {
+  var currentState = this.saveSketch();
+  if (currentState == this.lastCheckpoint) {
+    return;
+  }
+  var diffToCurr = this.getDiff(currentState, this.lastCheckpoint);
+  if (this.historyPointer != this.diffs.length - 1) {
+    this.diffs.splice(this.historyPointer + 1, this.diffs.length - this.historyPointer + 1)
+  }
+  this.diffs.push(diffToCurr);
+  this.historyPointer = this.diffs.length - 1;
+  this.lastCheckpoint = currentState;
+};
+
+TCAD.App2D.prototype.redo = function () {
+  var currentState = this.saveSketch();
+  if (currentState != this.lastCheckpoint) {
+    return;
+  }
+  if (this.historyPointer != this.diffs.length - 1 && this.diffs.length != 0) {
+    this.historyPointer ++;
+    var diff = this.diffs[this.historyPointer];
+    this.lastCheckpoint = this.applyDiffInv(this.lastCheckpoint, diff);
+    this.loadSketch(JSON.parse(this.lastCheckpoint));
+  }
+};
+
+TCAD.App2D.prototype.applyDiff = function (text1, diff) {
+  var dmp = this.dmp;
+  var results = dmp.patch_apply(diff, text1);
+  return results[0];
+};
+
+TCAD.App2D.prototype.applyDiffInv = function () {
+
+};
+
+TCAD.App2D.prototype.getDiff = function (text1, text2) {
+  var dmp = this.dmp;
+  var diff = dmp.diff_main(text1, text2, true);
+
+  if (diff.length > 2) {
+    dmp.diff_cleanupSemantic(diff);
+  }
+
+  var patch_list = dmp.patch_make(text1, text2, diff);
+  var patch_text = dmp.patch_toText(patch_list);
+  console.log(patch_text);
+  return patch_list;
 };
