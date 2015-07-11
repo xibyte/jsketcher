@@ -165,6 +165,8 @@ TCAD.App2D.prototype.cleanUp = function() {
       layer.objects = [];
     }
   }
+  this.viewer.deselectAll();
+  TCAD.TWO.utils.ID_COUNTER = 0;
   if (this.viewer.parametricManager.subSystems.length != 0) {
     this.viewer.parametricManager.subSystems = [];
     this.viewer.parametricManager.notify();
@@ -413,14 +415,15 @@ TCAD.App2D.prototype.undo = function () {
   var currentState = this.saveSketch();
   if (currentState == this.lastCheckpoint) {
     if (this.historyPointer != -1) {
-      this.loadSketch(JSON.parse(this.lastCheckpoint));
-      this.viewer.refresh();
       var diff = this.diffs[this.historyPointer];
       this.lastCheckpoint = this.applyDiff(this.lastCheckpoint, diff);
+      this.loadSketch(JSON.parse(this.lastCheckpoint));
+      this.viewer.refresh();
+      console.log(this.lastCheckpoint);
       this.historyPointer --;
     }
   } else {
-    var diffToCurr = this.getDiff(this.lastCheckpoint, currentState);
+    var diffToCurr = this.getDiff(currentState, this.lastCheckpoint);
     if (this.historyPointer != this.diffs.length - 1) {
       this.diffs.splice(this.historyPointer + 1, this.diffs.length - this.historyPointer + 1)
     }
@@ -453,7 +456,9 @@ TCAD.App2D.prototype.redo = function () {
     this.historyPointer ++;
     var diff = this.diffs[this.historyPointer];
     this.lastCheckpoint = this.applyDiffInv(this.lastCheckpoint, diff);
+    console.log(this.lastCheckpoint);
     this.loadSketch(JSON.parse(this.lastCheckpoint));
+    this.viewer.refresh();
   }
 };
 
@@ -463,8 +468,21 @@ TCAD.App2D.prototype.applyDiff = function (text1, diff) {
   return results[0];
 };
 
-TCAD.App2D.prototype.applyDiffInv = function () {
+TCAD.App2D.prototype.applyDiffInv = function (text1, diff) {
+  this.reversePatch(diff);
+  var result = this.applyDiff(text1, diff);
+  this.reversePatch(diff);
+  return result;
+};
 
+TCAD.App2D.prototype.reversePatch = function (plist) {
+  for (var i = 0; i < plist.length; i++) {
+    var patch = plist[i];
+    for (var j = 0; j < patch.diffs.length; j++) {
+      var diff = patch.diffs[j];
+      diff[0] *= -1;
+    }
+  }
 };
 
 TCAD.App2D.prototype.getDiff = function (text1, text2) {
@@ -476,7 +494,7 @@ TCAD.App2D.prototype.getDiff = function (text1, text2) {
   }
 
   var patch_list = dmp.patch_make(text1, text2, diff);
-  var patch_text = dmp.patch_toText(patch_list);
-  console.log(patch_text);
+  //var patch_text = dmp.patch_toText(patch_list);
+  //console.log(patch_list);
   return patch_list;
 };
