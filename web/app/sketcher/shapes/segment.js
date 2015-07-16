@@ -90,6 +90,7 @@ TCAD.TWO.AddPointTool.prototype.mousedown = function(e) {
 };
 
 TCAD.TWO.AddPointTool.prototype.mouseup = function(e) {
+  this.viewer.historyManager.checkpoint();
   var a = this.viewer.screenToModel(e);
   var p = new TCAD.TWO.EndPoint(a.x, a.y);
   var layer = this.viewer.activeLayer();
