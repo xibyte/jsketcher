@@ -181,6 +181,7 @@ TCAD.TWO.AddDimTool.prototype.mouseup = function(e) {
   this.viewer.cleanSnap();
 
   if (this.dim == null) {
+    this.viewer.historyManager.checkpoint();
     this.dim = this.dimCreation(p, new TCAD.TWO.EndPoint(p.x, p.y));
     this.layer.objects.push(this.dim);
     this.viewer.refresh();

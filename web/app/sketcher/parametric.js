@@ -71,6 +71,7 @@ TCAD.TWO.ParametricManager.prototype.refresh = function() {
 
 TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this._add(constr);
+  this.viewer.historyManager.checkpoint();
   this.refresh();
 };
 
