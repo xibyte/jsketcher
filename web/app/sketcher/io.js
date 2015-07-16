@@ -47,7 +47,6 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
     viewer.layers.push(layer);
     return layer;
   }
-  var activeLayerCandidate = this.viewer.layers.length;
   if (sketch.layers !== undefined) {
     for (var l = 0; l < sketch.layers.length; ++l) {
       var layer = getLayer(this.viewer, sketch.layers[l].name);
@@ -107,13 +106,14 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
 
   if (sketch.constraints !== undefined) {
     for (var i = 0; i < sketch.constraints.length; ++i) {
-      var c = this.parseConstr(sketch.constraints[i], index);
-      this.viewer.parametricManager._add(c);
+      try {
+        var c = this.parseConstr(sketch.constraints[i], index);
+        this.viewer.parametricManager._add(c);
+      } catch (err) {
+        console.error(err);
+      }
     }
     this.viewer.parametricManager.notify();
-  }
-  if (activeLayerCandidate < this.viewer.layers.length) {
-    this.viewer.setActiveLayer(this.viewer.layers[activeLayerCandidate]);
   }
 };
 
@@ -144,7 +144,7 @@ TCAD.IO.prototype._serializeSketch = function() {
     var layers = toSave[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
-      var isBoundary = layer.name === '';
+      if (layer.readOnly) continue;
       var toLayer = {name : layer.name, data : []};
       sketch.layers.push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
@@ -188,7 +188,8 @@ TCAD.IO.prototype._serializeSketch = function() {
 TCAD.IO.prototype.updateBoundary = function (boundary) {
   if (this.boundaryLayer === undefined) {
     this.boundaryLayer = new TCAD.TWO.Layer("bounds", TCAD.TWO.Styles.BOUNDS);
-    this.viewer.layers.push(this.boundaryLayer);
+    this.boundaryLayer.readOnly = true;
+    this.viewer.layers.splice(0, 0, this.boundaryLayer);
   }
   var edges = [];
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
@@ -259,6 +260,39 @@ TCAD.IO.prototype.serializeConstr = function (c) {
 };
 
 TCAD.IO.prototype.svgExport = function (c) {
+
+
+  var toExport = [this.viewer.layers];
+  for (var t = 0; t < toExport.length; ++t) {
+    var layers = toExport[t];
+    for (var l = 0; l < layers.length; ++l) {
+      var layer = layers[l];
+      if (layer.readOnly) continue;
+      var toLayer = {name : layer.name, data : []};
+      for (var i = 0; i < layer.objects.length; ++i) {
+        var obj = layer.objects[i];
+        var to = {id: obj.id, _class: obj._class};
+        if (obj.aux) to.aux = obj.aux;
+        if (obj.edge !== undefined) to.edge = obj.edge;
+        toLayer.data.push(to);
+        if (obj._class === 'TCAD.TWO.Segment') {
+          to.points = [point(obj.a), point(obj.b)];
+        } else if (obj._class === 'TCAD.TWO.EndPoint') {
+          to.location = point(obj);
+        } else if (obj._class === 'TCAD.TWO.Arc') {
+          to.points = [point(obj.a), point(obj.b), point(obj.c)];
+        } else if (obj._class === 'TCAD.TWO.Circle') {
+          to.c = point(obj.c);
+          to.r = obj.r.get();
+        } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
+          to.a = obj.a.id;
+          to.b = obj.b.id;
+          to.flip = obj.flip;
+        }
+      }
+    }
+  }
+
 
   //
   //<circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" />

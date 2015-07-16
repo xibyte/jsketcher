@@ -327,17 +327,27 @@ TCAD.TWO.Viewer.prototype.mark = function(obj, style) {
 
 TCAD.TWO.Viewer.prototype.activeLayer = function() {
   var layer = this._activeLayer;
-  if (layer == null) {
-    if (this.layers.length == 0) {
-      this.layers.push(new TCAD.TWO.Layer("JustALayer", TCAD.TWO.Styles.DEFAULT));
+  if (layer == null || layer.readOnly) {
+    layer = null;
+    for (var i = 0; i < this.layers.length; i++) {
+      var l = this.layers[i];
+      if (!l.readOnly) {
+        layer = l;
+        break;
+      }
     }
-    layer = this.layers[0];
+  }
+  if (layer == null) {
+    layer = new TCAD.TWO.Layer("JustALayer", TCAD.TWO.Styles.DEFAULT);
+    this.layers.push(layer);
   }
   return layer;
 };
 
 TCAD.TWO.Viewer.prototype.setActiveLayer = function(layer) {
-  this._activeLayer = layer;
+  if (!layer.readOnly) {
+    this._activeLayer = layer;
+  }
 };
 
 TCAD.TWO.Viewer.prototype.deselectAll = function() {
@@ -351,6 +361,7 @@ TCAD.TWO.Layer = function(name, style) {
   this.name = name;
   this.style = style;
   this.objects = [];
+  this.readOnly = false;
 };
 
 TCAD.TWO.Viewer.prototype.fullHeavyUIRefresh = function() {
