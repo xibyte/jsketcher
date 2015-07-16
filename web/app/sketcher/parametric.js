@@ -697,7 +697,7 @@ TCAD.TWO.Constraints.P2LDistance.prototype.getObjects = function() {
   return [this.p, this.l];
 };
 
-TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields = {'d' : "Enter the distance"}
+TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields = {'d' : "Enter the distance"};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
@@ -759,7 +759,7 @@ TCAD.TWO.Constraints.P2PDistance.prototype.getObjects = function() {
   return [this.p1, this.p2];
 };
 
-TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields = {'d' : "Enter the distance"}
+TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields = {'d' : "Enter the distance"};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
@@ -818,7 +818,7 @@ TCAD.TWO.Constraints.Radius.prototype.getObjects = function() {
   return [this.arc];
 };
 
-TCAD.TWO.Constraints.Radius.prototype.SettableFields = {'d' : "Enter the radius value"}
+TCAD.TWO.Constraints.Radius.prototype.SettableFields = {'d' : "Enter the radius value"};
 
 // ------------------------------------------------------------------------------------------------------------------ // 
 
