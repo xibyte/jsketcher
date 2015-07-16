@@ -83,6 +83,7 @@ TCAD.TWO.ParametricManager.prototype.addAll = function(constrs) {
 };
 
 TCAD.TWO.ParametricManager.prototype.remove = function(constr) {
+  this.viewer.historyManager.checkpoint();
   for (var j = 0; j < this.subSystems.length; j++) {
     var sub = this.subSystems[j];
     for (var i = 0; i < sub.constraints.length; ++i) {
