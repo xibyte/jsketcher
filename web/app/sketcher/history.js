@@ -14,7 +14,6 @@ TCAD.HistoryManager.prototype.init = function(sketchData) {
 };
 
 TCAD.HistoryManager.prototype.undo = function () {
-  console.log("Undo " + this.diffs.length);
   var currentState = this.viewer.io.serializeSketch();
   if (currentState == this.lastCheckpoint) {
     if (this.historyPointer != -1) {
