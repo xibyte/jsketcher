@@ -276,7 +276,7 @@ TCAD.constraints.P2PDistance = function(params, distance) {
     var dx = this.get(this.p1x) - this.get(this.p2x);
     var dy = this.get(this.p1y) - this.get(this.p2y);
     var d = Math.sqrt(dx * dx + dy * dy);
-    return (d - this.distance());
+    return (d - this.distance);
   };
 
   this.gradient = function(out) {

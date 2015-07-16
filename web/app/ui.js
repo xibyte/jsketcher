@@ -58,6 +58,7 @@ TCAD.ui.List.prototype.refresh = function() {
     li.find('.ui-rm').click(function() {model.remove(item, index)});
     li.hover(function() {model.hover(item, index)});
     li.mouseleave(function() {model.mouseleave(item, index)});
+    li.click(function() {model.click(item, index)});
   }
   for (var i = 0; i < items.length; ++i) {
     var item = items[i];

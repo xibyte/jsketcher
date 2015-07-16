@@ -214,7 +214,7 @@ TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback
   var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback);
 
   if (promptDistance != null) {
-    this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], TCAD.TWO.utils.constRef(promptDistance)));
+    this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], promptDistance));
   }
 };
 
@@ -677,7 +677,7 @@ TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
 };
 
 TCAD.TWO.Constraints.P2LDistance.prototype.NAME = 'P2LDistance';
-TCAD.TWO.Constraints.P2LDistance.prototype.UI_NAME = 'Distance Point & Line';
+TCAD.TWO.Constraints.P2LDistance.prototype.UI_NAME = 'Distance P & L';
 
 TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function() {
   var params = [];
@@ -710,7 +710,7 @@ TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
 };
 
 TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME = 'P2LDistanceV';
-TCAD.TWO.Constraints.P2LDistanceV.prototype.UI_NAME = 'Distance Point & Line';
+TCAD.TWO.Constraints.P2LDistanceV.prototype.UI_NAME = 'Distance P & L';
 
 TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
   var params = [];
