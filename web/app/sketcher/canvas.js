@@ -61,6 +61,8 @@ TCAD.TWO.utils.setStyle = function(style, ctx, scale) {
 TCAD.TWO.Viewer = function(canvas) {
   
   this.canvas = canvas;
+  this.io = new TCAD.IO(this);
+  this.historyManager = new TCAD.HistoryManager(this);
   var viewer = this;
   function updateCanvasSize() {
     canvas.width = canvas.parentNode.offsetWidth;
@@ -344,6 +346,11 @@ TCAD.TWO.Layer = function(name, style) {
   this.name = name;
   this.style = style;
   this.objects = [];
+};
+
+TCAD.TWO.Viewer.prototype.fullHeavyUIRefresh = function() {
+  this.refresh();
+  this.parametricManager.notify();
 };
 
 TCAD.TWO.Polygon = function(points) {
@@ -684,8 +691,8 @@ TCAD.TWO.ToolManager.prototype.getTool = function() {
 TCAD.TWO.PanTool = function(viewer) {
   this.viewer = viewer;
   this.dragging = false;
-  this.x = 0.0;
-  this.y = 0.0;
+  this.originX = this.x = 0.0;
+  this.originY = this.y = 0.0;
 };
 
 TCAD.TWO.PanTool.prototype.keydown = function(e) {};
@@ -732,8 +739,8 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
 
   this.dragging = true;
   this.deselectOnUp = true;
-  this.x = e.pageX;
-  this.y = e.pageY;
+  this.originX = this.x = e.pageX;
+  this.originY = this.y = e.pageY;
 };
 
 TCAD.TWO.PanTool.prototype.mouseup = function(e) {
@@ -743,6 +750,10 @@ TCAD.TWO.PanTool.prototype.mouseup = function(e) {
     this.viewer.refresh();
   }
   this.deselectOnUp = false;
+  var traveled = TCAD.math.distance(this.originX, this.x, this.originY, this.y);
+  if (traveled > 10) {
+    this.viewer.historyManager.lightCheckpoint(10);
+  }
 };
 
 TCAD.TWO.PanTool.prototype.mousewheel = function(e) {

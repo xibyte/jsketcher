@@ -16,7 +16,7 @@ TCAD.test.runSuite = function() {
 };
 
 _loadFixture = function(name) {
-  APP.loadSketch(TCAD.test.fixtures[name]);
+  APP._loadSketch(TCAD.test.fixtures[name]);
 };
 
 _loadFixturesToLocalStorage = function() {

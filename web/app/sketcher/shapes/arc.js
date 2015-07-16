@@ -123,6 +123,7 @@ TCAD.TWO.AddArcTool.prototype.mousemove = function(e) {
 
 TCAD.TWO.AddArcTool.prototype.mouseup = function(e) {
   if (this.arc == null) {
+    this.viewer.historyManager.checkpoint();
     var p = this.viewer.screenToModel(e);
     this.arc = new TCAD.TWO.Arc(
       new TCAD.TWO.EndPoint(p.x, p.y),
