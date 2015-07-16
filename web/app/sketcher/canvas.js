@@ -691,8 +691,8 @@ TCAD.TWO.ToolManager.prototype.getTool = function() {
 TCAD.TWO.PanTool = function(viewer) {
   this.viewer = viewer;
   this.dragging = false;
-  this.originX = this.x = 0.0;
-  this.originY = this.y = 0.0;
+  this.x = 0.0;
+  this.y = 0.0;
 };
 
 TCAD.TWO.PanTool.prototype.keydown = function(e) {};
@@ -739,8 +739,8 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
 
   this.dragging = true;
   this.deselectOnUp = true;
-  this.originX = this.x = e.pageX;
-  this.originY = this.y = e.pageY;
+  this.x = e.pageX;
+  this.y = e.pageY;
 };
 
 TCAD.TWO.PanTool.prototype.mouseup = function(e) {
@@ -750,10 +750,6 @@ TCAD.TWO.PanTool.prototype.mouseup = function(e) {
     this.viewer.refresh();
   }
   this.deselectOnUp = false;
-  var traveled = TCAD.math.distance(this.originX, this.x, this.originY, this.y);
-  if (traveled > 10) {
-    this.viewer.historyManager.lightCheckpoint(10);
-  }
 };
 
 TCAD.TWO.PanTool.prototype.mousewheel = function(e) {
@@ -787,6 +783,7 @@ TCAD.TWO.DragTool = function(obj, viewer) {
   this.obj = obj;
   this.viewer = viewer;
   this._point = {x: 0, y: 0};
+  this.origin = {x: 0, y: 0};
   this.ref = this.obj.getReferencePoint();
   this.errorX = 0;
   this.errorY = 0;
@@ -821,6 +818,8 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
 };
 
 TCAD.TWO.DragTool.prototype.mousedown = function(e) {
+  this.origin.x = e.x;
+  this.origin.y = e.y;
   this.viewer.screenToModel2(e.x, e.y, this._point);
   this.prepareSolver();
 };
@@ -829,6 +828,10 @@ TCAD.TWO.DragTool.prototype.mouseup = function(e) {
   this.solveRequest(false);
   this.viewer.refresh();
   this.viewer.toolManager.releaseControl();
+  var traveled = TCAD.math.distance(this.origin.x, this.origin.y, e.x, e.y);
+  if (traveled >= 10) {
+    this.viewer.historyManager.lightCheckpoint(10);
+  }
 };
 
 TCAD.TWO.DragTool.prototype.mousewheel = function(e) {
