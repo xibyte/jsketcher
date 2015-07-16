@@ -187,13 +187,10 @@ TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback
   var ex = new TCAD.Vector(-(segment.b.y - segment.a.y), segment.b.x - segment.a.x).normalize();
   var distance = Math.abs(ex.dot(new TCAD.Vector(segment.a.x - target.x, segment.a.y - target.y)));
 
-  var promptDistance = promptCallback("Enter the distance", distance.toFixed(2));
-  
+  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback);
+
   if (promptDistance != null) {
-    promptDistance = Number(promptDistance);
-    if (promptDistance == promptDistance) { // check for NaN
-      this.add(new TCAD.TWO.Constraints.P2LDistance(target, segment, promptDistance));
-    }
+    this.add(new TCAD.TWO.Constraints.P2LDistance(target, segment, promptDistance));
   }
 };
 
@@ -213,29 +210,33 @@ TCAD.TWO.utils.constRef = function(value) {
 TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback) {
   var p = this._fetchTwoPoints(objs);
   var distance = new TCAD.Vector(p[1].x - p[0].x, p[1].y - p[0].y).length();
-  var promptDistance = promptCallback("Enter the distance", distance.toFixed(2));
-  
+  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback);
+
   if (promptDistance != null) {
-    promptDistance = Number(promptDistance);
-    if (promptDistance == promptDistance) { // check for NaN
-      this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], TCAD.TWO.utils.constRef(promptDistance)));
+    this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], TCAD.TWO.utils.constRef(promptDistance)));
+  }
+};
+
+TCAD.TWO.utils.askNumber = function(promptText, initValue, promptCallback) {
+  var promptValue = promptCallback(promptText, initValue);
+  if (promptValue != null) {
+    promptValue = Number(promptValue);
+    if (promptValue == promptValue) { // check for NaN
+      return promptValue;
     }
   }
+  return null;
 };
 
 TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
   var arcs = this._fetchArkCirc(objs, 1);
   var radius = arcs[0].r.get();
-  var promptDistance = promptCallback("Enter the radius value", radius.toFixed(2));
-
+  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.Radius.prototype.SettableFields.d, radius.toFixed(2), promptCallback);
   if (promptDistance != null) {
-    promptDistance = Number(promptDistance);
-    if (promptDistance == promptDistance) { // check for NaN
-      for (var i = 0; i < arcs.length; ++i) {
-        this._add(new TCAD.TWO.Constraints.Radius(arcs[i], promptDistance));
-      }
-      this.refresh();
+    for (var i = 0; i < arcs.length; ++i) {
+      this._add(new TCAD.TWO.Constraints.Radius(arcs[i], promptDistance));
     }
+    this.refresh();
   }
 };
 
@@ -696,6 +697,8 @@ TCAD.TWO.Constraints.P2LDistance.prototype.getObjects = function() {
   return [this.p, this.l];
 };
 
+TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields = {'d' : "Enter the distance"}
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
@@ -756,6 +759,8 @@ TCAD.TWO.Constraints.P2PDistance.prototype.getObjects = function() {
   return [this.p1, this.p2];
 };
 
+TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields = {'d' : "Enter the distance"}
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
@@ -812,6 +817,8 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Radius.prototype.NAME] = funct
 TCAD.TWO.Constraints.Radius.prototype.getObjects = function() {
   return [this.arc];
 };
+
+TCAD.TWO.Constraints.Radius.prototype.SettableFields = {'d' : "Enter the radius value"}
 
 // ------------------------------------------------------------------------------------------------------------------ // 
 
