@@ -71,6 +71,7 @@ TCAD.TWO.EditCircleTool.prototype.solveRequest = function(rough) {
 
 TCAD.TWO.EditCircleTool.prototype.mouseup = function(e) {
   if (this.circle == null) {
+    this.viewer.historyManager.checkpoint();
     var p = this.viewer.screenToModel(e);
     this.circle = new TCAD.TWO.Circle(
       new TCAD.TWO.EndPoint(p.x, p.y)
