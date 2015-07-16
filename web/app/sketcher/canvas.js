@@ -31,8 +31,13 @@ TCAD.TWO.Styles = {
     lineWidth : 1,
     strokeStyle : "#bcffc1",
     fillStyle : "#00FF00"
-  }
+  },
 
+  BOUNDS : {
+    lineWidth : 2,
+    strokeStyle : "#fff5c3",
+    fillStyle : "#000000"
+  }
 };
 
 TCAD.TWO.utils = {};
