@@ -556,6 +556,7 @@ TCAD.TWO.Constraints.Coincident = function(a, b) {
 };
 
 TCAD.TWO.Constraints.Coincident.prototype.NAME = 'coi';
+TCAD.TWO.Constraints.Coincident.prototype.UI_NAME = 'Coincident';
 TCAD.TWO.Constraints.Coincident.prototype.reducible = true;
 
 TCAD.TWO.Constraints.Coincident.prototype.getSolveData = function() {
@@ -585,6 +586,7 @@ TCAD.TWO.Constraints.Lock = function(p, c) {
 };
 
 TCAD.TWO.Constraints.Lock.prototype.NAME = 'lock';
+TCAD.TWO.Constraints.Lock.prototype.UI_NAME = 'Lock';
 
 TCAD.TWO.Constraints.Lock.prototype.getSolveData = function() {
   return [
@@ -614,6 +616,7 @@ TCAD.TWO.Constraints.Parallel = function(l1, l2) {
 };
 
 TCAD.TWO.Constraints.Parallel.prototype.NAME = 'parallel';
+TCAD.TWO.Constraints.Parallel.prototype.UI_NAME = 'Parallel';
 
 TCAD.TWO.Constraints.Parallel.prototype.getSolveData = function() {
   var params = [];
@@ -642,6 +645,7 @@ TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
 };
 
 TCAD.TWO.Constraints.Perpendicular.prototype.NAME = 'perpendicular';
+TCAD.TWO.Constraints.Perpendicular.prototype.UI_NAME = 'Perpendicular';
 
 TCAD.TWO.Constraints.Perpendicular.prototype.getSolveData = function() {
   var params = [];
@@ -671,6 +675,7 @@ TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
 };
 
 TCAD.TWO.Constraints.P2LDistance.prototype.NAME = 'P2LDistance';
+TCAD.TWO.Constraints.P2LDistance.prototype.UI_NAME = 'Distance Point & Line';
 
 TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function() {
   var params = [];
@@ -701,6 +706,7 @@ TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
 };
 
 TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME = 'P2LDistanceV';
+TCAD.TWO.Constraints.P2LDistanceV.prototype.UI_NAME = 'Distance Point & Line';
 
 TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
   var params = [];
@@ -729,6 +735,7 @@ TCAD.TWO.Constraints.P2PDistance = function(p1, p2, d) {
 };
 
 TCAD.TWO.Constraints.P2PDistance.prototype.NAME = 'P2PDistance';
+TCAD.TWO.Constraints.P2PDistance.prototype.UI_NAME = 'Distance Points';
 
 TCAD.TWO.Constraints.P2PDistance.prototype.getSolveData = function() {
   var params = [];
@@ -759,6 +766,7 @@ TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
 };
 
 TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME = 'P2PDistanceV';
+TCAD.TWO.Constraints.P2PDistanceV.prototype.UI_NAME = 'Distance Points';
 
 TCAD.TWO.Constraints.P2PDistanceV.prototype.getSolveData = function() {
   var params = [];
@@ -786,6 +794,8 @@ TCAD.TWO.Constraints.Radius = function(arc, d) {
 };
 
 TCAD.TWO.Constraints.Radius.prototype.NAME = 'Radius';
+TCAD.TWO.Constraints.Radius.prototype.UI_NAME = 'Radius Value';
+
 
 TCAD.TWO.Constraints.Radius.prototype.getSolveData = function() {
   return [['equalsTo', [this.arc.r], [this.d]]];
@@ -811,6 +821,7 @@ TCAD.TWO.Constraints.RR = function(arc1, arc2) {
 };
 
 TCAD.TWO.Constraints.RR.prototype.NAME = 'RR';
+TCAD.TWO.Constraints.RR.prototype.UI_NAME = 'Radius Equality';
 TCAD.TWO.Constraints.RR.prototype.reducible = true;
 
 
@@ -837,6 +848,7 @@ TCAD.TWO.Constraints.Vertical = function(line) {
 };
 
 TCAD.TWO.Constraints.Vertical.prototype.NAME = 'Vertical';
+TCAD.TWO.Constraints.Vertical.prototype.UI_NAME = 'Vertical';
 TCAD.TWO.Constraints.Vertical.prototype.reducible = true;
 
 TCAD.TWO.Constraints.Vertical.prototype.getSolveData = function() {
@@ -862,6 +874,7 @@ TCAD.TWO.Constraints.Horizontal = function(line) {
 };
 
 TCAD.TWO.Constraints.Horizontal.prototype.NAME = 'Horizontal';
+TCAD.TWO.Constraints.Horizontal.prototype.UI_NAME = 'Horizontal';
 TCAD.TWO.Constraints.Horizontal.prototype.reducible = true;
 
 TCAD.TWO.Constraints.Horizontal.prototype.getSolveData = function() {
@@ -888,6 +901,7 @@ TCAD.TWO.Constraints.Tangent = function(arc, line) {
 };
 
 TCAD.TWO.Constraints.Tangent.prototype.NAME = 'Tangent';
+TCAD.TWO.Constraints.Tangent.prototype.UI_NAME = 'Tangent';
 
 TCAD.TWO.Constraints.Tangent.prototype.getSolveData = function() {
   var params = [];
@@ -917,6 +931,7 @@ TCAD.TWO.Constraints.PointOnLine = function(point, line) {
 };
 
 TCAD.TWO.Constraints.PointOnLine.prototype.NAME = 'PointOnLine';
+TCAD.TWO.Constraints.PointOnLine.prototype.UI_NAME = 'Point On Line';
 
 TCAD.TWO.Constraints.PointOnLine.prototype.getSolveData = function() {
   var params = [];
