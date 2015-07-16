@@ -227,6 +227,17 @@
         $('.act-' + act.id).click(act.action).attr('title', act.desc);
       }
 
+      function infoStr(c) {
+        if (c.SettableFields === undefined) return "";
+        var info = Object.keys(c.SettableFields).map(function(f) {
+          return Number(c[f]).toFixed(2);
+        }).join(", ");
+        if (info.length != 0) {
+          info = " <span style='font-size: 8px;'>[" + info + "]</span>";
+        }
+        return info;
+      }
+
       var pm = app.viewer.parametricManager;
       var constrList = new TCAD.ui.List($('#constrs'), {
         items : function() {
@@ -236,7 +247,7 @@
             for (var i = 0; i < sub.constraints.length; ++i) {
               var constr = sub.constraints[i];
               if (constr.aux !== true) {
-                theItems.push({name : constr.UI_NAME, constr : constr});
+                theItems.push({name : constr.UI_NAME + infoStr(constr), constr : constr});
               }
             }
           }
@@ -255,8 +266,19 @@
         hover : function(item) {
           app.viewer.select(item.constr.getObjects(), true);
           app.viewer.refresh();
-        }
+        },
 
+        click : function(item) {
+          var c = item.constr;
+          if (c.SettableFields === undefined);
+          for (var f in c.SettableFields) {
+            var value = c[f];
+            var intro = c.SettableFields[f];
+            value = TCAD.TWO.utils.askNumber(intro, value.toFixed(4), prompt);
+            c[f] = value;
+          }
+          app.viewer.parametricManager.refresh();
+        }
       });
       app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
       constrList.refresh();
