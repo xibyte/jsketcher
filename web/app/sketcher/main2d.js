@@ -71,9 +71,9 @@ TCAD.App2D = function() {
 
   this.registerAction('save', "Save", function () {
       var sketchData = app.viewer.io.serializeSketch();
-      console.log(sketchData);
       var sketchId = app.getSketchId();
       localStorage.setItem(app.getSketchId(), sketchData);
+      app.viewer.historyManager.checkpoint();
   });
 
   this.registerAction('coincident', "Coincident", function () {
