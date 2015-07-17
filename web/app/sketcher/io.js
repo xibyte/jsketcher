@@ -259,45 +259,53 @@ TCAD.IO.prototype.serializeConstr = function (c) {
   return c.serialize();
 };
 
-TCAD.IO.prototype.svgExport = function (c) {
+TCAD.IO.prototype.svgExport = function () {
 
+  var format = function(str, args) {
+    return str.replace(/{(\d+)}/g, function(match, number) {
+      var val = args[number] !== undefined ? args[number] : match;
+      if (typeof val === 'number') val = val.toPrecision();
+      return val;
+    });
+  };
+  var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
+  var svg = "";
 
+  function append(chunk) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    svg += format(chunk, args) + "\n"
+  }
+  var a = new TCAD.Vector();
+  var b = new TCAD.Vector();
+
+  var colIdx = 0;
   var toExport = [this.viewer.layers];
   for (var t = 0; t < toExport.length; ++t) {
     var layers = toExport[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
       if (layer.readOnly) continue;
-      var toLayer = {name : layer.name, data : []};
+      var color = colors[colIdx++ % colors.length];
+      append('<g id="{0}" fill="{1}" stroke="{2}" stroke-width="{3}">', layer.name, "none", color, '2');
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
-        var to = {id: obj.id, _class: obj._class};
-        if (obj.aux) to.aux = obj.aux;
-        if (obj.edge !== undefined) to.edge = obj.edge;
-        toLayer.data.push(to);
         if (obj._class === 'TCAD.TWO.Segment') {
-          to.points = [point(obj.a), point(obj.b)];
+          append('<line x1="{0}" y1="{1}" x2="{2} y2="{3}" fill="none"/>', obj.a.x, obj.a.y, obj.b.x, obj.b.y);
         } else if (obj._class === 'TCAD.TWO.EndPoint') {
-          to.location = point(obj);
         } else if (obj._class === 'TCAD.TWO.Arc') {
-          to.points = [point(obj.a), point(obj.b), point(obj.c)];
+          a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
+          b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
+          var dir = a.cross(b).z > 0 ? 0 : 1;
+          var r = obj.r.get();
+          append('<path d="M {0} {1} A {2} {3} 0 {4} {5} {6} {7}" fill="none"/>', obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y);
         } else if (obj._class === 'TCAD.TWO.Circle') {
-          to.c = point(obj.c);
-          to.r = obj.r.get();
+          append('<circle cx="{0}" cy="{1}" r="{2}" fill="none"/>', obj.c.x, obj.c.y, obj.r.get());
         } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
-          to.a = obj.a.id;
-          to.b = obj.b.id;
-          to.flip = obj.flip;
         }
       }
+      append('</g>');
     }
   }
 
-
-  //
-  //<circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" />
-  //</svg>
-  //
-  //var out = "<svg width="100" height="100">";
-
+  return "<svg>\n" + svg + "</svg>"
 };
