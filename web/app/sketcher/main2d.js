@@ -13,6 +13,14 @@ TCAD.App2D = function() {
     app._actionsOrder.push(id);
   };
 
+  this.registerAction('export', "Export", function () {
+    var link = document.getElementById("downloader");
+    link.href = "data:," + app.viewer.io.svgExport();
+    link.download = app.getSketchId() + ".svg";
+    //link.click();
+    console.log(app.viewer.io.svgExport());
+  });
+
   this.registerAction('undo', "Undo", function () {
     app.viewer.historyManager.undo();
   });
