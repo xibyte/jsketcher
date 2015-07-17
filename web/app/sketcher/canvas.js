@@ -361,7 +361,7 @@ TCAD.TWO.Layer = function(name, style) {
   this.name = name;
   this.style = style;
   this.objects = [];
-  this.readOnly = false;
+  this.readOnly = false; // This is actually a mark for boundary layers coming from 3D
 };
 
 TCAD.TWO.Viewer.prototype.fullHeavyUIRefresh = function() {
