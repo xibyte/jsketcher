@@ -293,6 +293,13 @@ TCAD.io.PrettyColors = function() {
   }
 }
 
+TCAD.io.TextBuilder = function() {
+  this.data = "";
+  this.line = function (chunk, args) {
+    this.data += TCAD.io._format(chunk, args) + "\n"
+  }
+}
+
 TCAD.io.BBox = function() {
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
 
@@ -337,11 +344,7 @@ TCAD.io.BBox = function() {
 TCAD.IO.prototype.svgExport = function () {
 
   var T = TCAD.io.Types;
-  var svg = "";
-
-  function append(chunk, args) {
-    svg += TCAD.io._format(chunk, args) + "\n"
-  }
+  var out = new TCAD.io.TextBuilder();
 
   var bbox = new TCAD.io.BBox();
 
@@ -356,28 +359,28 @@ TCAD.IO.prototype.svgExport = function () {
       var layer = layers[l];
       if (layer.readOnly) continue;
       var color = prettyColors.next();
-      append('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
+      out.line('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
         if (obj._class !== T.END_POINT) bbox.check(obj);
         if (obj._class === T.SEGMENT) {
-          append('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
+          out.line('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
         } else if (obj._class === T.ARC) {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
           var dir = a.cross(b).z > 0 ? 0 : 1;
           var r = obj.r.get();
-          append('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
+          out.line('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
         } else if (obj._class === T.CIRCLE) {
-          append('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
+          out.line('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
         }
       }
-      append('</g>');
+      out.line('</g>');
     }
   }
   bbox.inc(20)
-  return TCAD.io._format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + svg + "</svg>"
+  return TCAD.io._format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + out.data + "</svg>"
 };
 
 TCAD.IO.prototype.dxfExport = function () {
