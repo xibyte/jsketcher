@@ -290,7 +290,7 @@ TCAD.IO.prototype.svgExport = function () {
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
         if (obj._class === 'TCAD.TWO.Segment') {
-          append('<line x1="{0}" y1="{1}" x2="{2} y2="{3}" fill="none"/>', obj.a.x, obj.a.y, obj.b.x, obj.b.y);
+          append('<line x1="{0}" y1="{1}" x2="{2}" y2="{3}" fill="none"/>', obj.a.x, obj.a.y, obj.b.x, obj.b.y);
         } else if (obj._class === 'TCAD.TWO.EndPoint') {
         } else if (obj._class === 'TCAD.TWO.Arc') {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
