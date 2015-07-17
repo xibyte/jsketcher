@@ -1,5 +1,15 @@
 TCAD.io = {};
 
+TCAD.io.Types = {
+  END_POINT : 'TCAD.TWO.EndPoint',
+  SEGMENT   : 'TCAD.TWO.Segment',
+  ARC       : 'TCAD.TWO.Arc',
+  CIRCLE    : 'TCAD.TWO.Circle',
+  DIM       : 'TCAD.TWO.Dimension',
+  HDIM      : 'TCAD.TWO.HDimension',
+  VDIM      : 'TCAD.TWO.VDimension'
+}
+
 TCAD.IO = function(viewer) {
   this.viewer = viewer;
 };
@@ -49,35 +59,36 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
     viewer.layers.push(layer);
     return layer;
   }
+  var T = TCAD.io.Types;
   if (sketch.layers !== undefined) {
     for (var l = 0; l < sketch.layers.length; ++l) {
       var layer = getLayer(this.viewer, sketch.layers[l].name);
       for (var i = 0; i < sketch.layers[l].data.length; ++i) {
         var obj = sketch.layers[l].data[i];
         var skobj = null;
-        if (obj._class === 'TCAD.TWO.Segment') {
+        if (obj._class === T.SEGMENT) {
           var a = endPoint(obj.points[0]);
           var b = endPoint(obj.points[1]);
           skobj = new TCAD.TWO.Segment(a, b);
-        } else if (obj._class === 'TCAD.TWO.EndPoint') {
+        } else if (obj._class === T.END_POINT) {
           skobj = endPoint(obj.location);
-        } else if (obj._class === 'TCAD.TWO.Arc') {
+        } else if (obj._class === T.ARC) {
           var a = endPoint(obj.points[0]);
           var b = endPoint(obj.points[1]);
           var c = endPoint(obj.points[2]);
           skobj = new TCAD.TWO.Arc(a, b, c);
           skobj.stabilize(this.viewer);
-        } else if (obj._class === 'TCAD.TWO.Circle') {
+        } else if (obj._class === T.CIRCLE) {
           var c = endPoint(obj.c);
           skobj = new TCAD.TWO.Circle(c);
           skobj.r.set(obj.r);
-        } else if (obj._class === 'TCAD.TWO.HDimension') {
+        } else if (obj._class === T.HDIM) {
           skobj = new TCAD.TWO.HDimension(obj.a, obj.b);
           skobj.flip = obj.flip;
-        } else if (obj._class === 'TCAD.TWO.VDimension') {
+        } else if (obj._class === T.VDIM) {
           skobj = new TCAD.TWO.VDimension(obj.a, obj.b);
           skobj.flip = obj.flip;
-        } else if (obj._class === 'TCAD.TWO.Dimension') {
+        } else if (obj._class === T.DIM) {
           skobj = new TCAD.TWO.Dimension(obj.a, obj.b);
           skobj.flip = obj.flip;
         }
@@ -141,6 +152,7 @@ TCAD.IO.prototype._serializeSketch = function() {
   function point(p) {
     return [ p.id, [p._x.id, p.x], [p._y.id, p.y] ];
   }
+  var T = TCAD.io.Types;
   var toSave = [this.viewer.dimLayers, this.viewer.layers];
   for (var t = 0; t < toSave.length; ++t) {
     var layers = toSave[t];
@@ -155,16 +167,16 @@ TCAD.IO.prototype._serializeSketch = function() {
         if (obj.aux) to.aux = obj.aux;
         if (obj.edge !== undefined) to.edge = obj.edge;
         toLayer.data.push(to);
-        if (obj._class === 'TCAD.TWO.Segment') {
+        if (obj._class === T.SEGMENT) {
           to.points = [point(obj.a), point(obj.b)];
-        } else if (obj._class === 'TCAD.TWO.EndPoint') {
+        } else if (obj._class === T.END_POINT) {
           to.location = point(obj);
-        } else if (obj._class === 'TCAD.TWO.Arc') {
+        } else if (obj._class === T.ARC) {
           to.points = [point(obj.a), point(obj.b), point(obj.c)];
-        } else if (obj._class === 'TCAD.TWO.Circle') {
+        } else if (obj._class === T.CIRCLE) {
           to.c = point(obj.c);
           to.r = obj.r.get();
-        } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
+        } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
           to.a = obj.a.id;
           to.b = obj.b.id;
           to.flip = obj.flip;
@@ -301,6 +313,7 @@ TCAD.io.BBox = function() {
 
 TCAD.IO.prototype.svgExport = function () {
 
+  var T = TCAD.io.Types;
   var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
   var svg = "";
 
@@ -324,23 +337,22 @@ TCAD.IO.prototype.svgExport = function () {
       append('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
-        if (obj._class === 'TCAD.TWO.Segment') {
+        if (obj._class === T.SEGMENT) {
           append('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
           bbox.checkBounds(obj.a.x, obj.a.y);
           bbox.checkBounds(obj.b.x, obj.b.y);
-        } else if (obj._class === 'TCAD.TWO.EndPoint') {
-        } else if (obj._class === 'TCAD.TWO.Arc') {
+        } else if (obj._class === T.ARC) {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
           var dir = a.cross(b).z > 0 ? 0 : 1;
           var r = obj.r.get();
           append('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
           bbox.checkCircBounds(obj.c.x, obj.c.y, r);
-        } else if (obj._class === 'TCAD.TWO.Circle') {
+        } else if (obj._class === T.CIRCLE) {
           var r = obj.r.get();
           append('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, r]);
           bbox.checkCircBounds(obj.c.x, obj.c.y, r);
-        } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
+        } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
         }
       }
       append('</g>');
