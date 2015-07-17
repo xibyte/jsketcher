@@ -285,20 +285,28 @@ TCAD.io._format = function(str, args) {
   });
 };
 
+TCAD.io.PrettyColors = function() {
+  var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
+  var colIdx = 0;
+  this.next = function () {
+    return colors[colIdx++ % colors.length];
+  }
+}
+
 TCAD.io.BBox = function() {
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
 
   var T = TCAD.io.Types;
   this.check = function(obj) {
     if (obj._class === T.SEGMENT) {
-      bbox.checkBounds(obj.a.x, obj.a.y);
-      bbox.checkBounds(obj.b.x, obj.b.y);
+      this.checkBounds(obj.a.x, obj.a.y);
+      this.checkBounds(obj.b.x, obj.b.y);
     } else if (obj._class === T.END_POINT) {
-      bbox.checkBounds(obj.x, obj.y);
+      this.checkBounds(obj.x, obj.y);
     } else if (obj._class === T.ARC) {
-      bbox.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
+      this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
     } else if (obj._class === T.CIRCLE) {
-      bbox.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
+      this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
     } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
     }
   }
@@ -329,7 +337,6 @@ TCAD.io.BBox = function() {
 TCAD.IO.prototype.svgExport = function () {
 
   var T = TCAD.io.Types;
-  var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
   var svg = "";
 
   function append(chunk, args) {
@@ -341,14 +348,14 @@ TCAD.IO.prototype.svgExport = function () {
   var a = new TCAD.Vector();
   var b = new TCAD.Vector();
 
-  var colIdx = 0;
+  var prettyColors = new TCAD.io.PrettyColors();
   var toExport = [this.viewer.layers];
   for (var t = 0; t < toExport.length; ++t) {
     var layers = toExport[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
       if (layer.readOnly) continue;
-      var color = colors[colIdx++ % colors.length];
+      var color = prettyColors.next();
       append('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
