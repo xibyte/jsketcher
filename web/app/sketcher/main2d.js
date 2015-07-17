@@ -13,12 +13,12 @@ TCAD.App2D = function() {
     app._actionsOrder.push(id);
   };
 
-  this.registerAction('export', "Export", function () {
-    var link = document.getElementById("downloader");
-    link.href = "data:," + app.viewer.io.svgExport();
-    link.download = app.getSketchId() + ".svg";
-    link.click();
-    //console.log(app.viewer.io.svgExport());
+  this.registerAction('exportSVG', "Export To SVG", function () {
+    app.exportTextData(app.viewer.io.svgExport(), "svg");
+  });
+
+  this.registerAction('exportDXF', "Export To DXF", function () {
+    app.exportTextData(app.viewer.io.dxfExport(), "dxf");
   });
 
   this.registerAction('undo', "Undo", function () {
@@ -141,6 +141,14 @@ TCAD.App2D = function() {
     app.viewer.refresh();
   });
 };
+
+TCAD.App2D.prototype.exportTextData = function(data, ext) {
+  var link = document.getElementById("downloader");
+  link.href = "data:application/octet-stream;charset=utf-8;base64," + btoa(data);
+  link.download = this.getSketchId() + "." + ext;
+  link.click();
+  //console.log(app.viewer.io.svgExport());
+}
 
 TCAD.App2D.prototype.loadFromLocalStorage = function() {
   var sketchId = this.getSketchId();

@@ -275,6 +275,7 @@ TCAD.IO.prototype.serializeConstr = function (c) {
 
 
 TCAD.io._format = function(str, args) {
+  if (args.length == 0) return str;
   var i = 0;
   return str.replace(/\$/g, function() {
     if (args === undefined || args[i] === undefined) throw "format arguments mismatch";
@@ -295,8 +296,18 @@ TCAD.io.PrettyColors = function() {
 
 TCAD.io.TextBuilder = function() {
   this.data = "";
-  this.line = function (chunk, args) {
+  this.fline = function (chunk, args) {
     this.data += TCAD.io._format(chunk, args) + "\n"
+  }
+  this.line = function (chunk) {
+    this.data += chunk + "\n"
+  }
+  this.number = function (n) {
+    this.data += n.toPrecision()
+  }
+  this.numberln = function (n) {
+    this.number(n)
+    this.data += "\n"
   }
 }
 
@@ -304,6 +315,13 @@ TCAD.io.BBox = function() {
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
 
   var T = TCAD.io.Types;
+
+  this.checkLayers = function(layers) {
+    for (var l = 0; l < layers.length; ++l)
+      for (var i = 0; i < layers[l].objects.length; ++i)
+        this.check(layers[l].objects[i]);
+  }
+
   this.check = function(obj) {
     if (obj._class === T.SEGMENT) {
       this.checkBounds(obj.a.x, obj.a.y);
@@ -341,6 +359,24 @@ TCAD.io.BBox = function() {
   this.bbox = bbox;
 };
 
+TCAD.IO.prototype.getWorkspaceToExport = function() {
+  return [this.viewer.layers];
+}
+
+TCAD.IO.prototype.getLayersToExport = function() {
+  var ws = this.getWorkspaceToExport();
+  var toExport = [];
+  for (var t = 0; t < ws.length; ++t) {
+    var layers = ws[t];
+    for (var l = 0; l < layers.length; ++l) {
+      var layer = layers[l];
+      if (layer.readOnly) continue;
+      toExport.push(layer)
+    }
+  }
+  return toExport;
+}
+
 TCAD.IO.prototype.svgExport = function () {
 
   var T = TCAD.io.Types;
@@ -352,37 +388,177 @@ TCAD.IO.prototype.svgExport = function () {
   var b = new TCAD.Vector();
 
   var prettyColors = new TCAD.io.PrettyColors();
-  var toExport = [this.viewer.layers];
-  for (var t = 0; t < toExport.length; ++t) {
-    var layers = toExport[t];
-    for (var l = 0; l < layers.length; ++l) {
-      var layer = layers[l];
-      if (layer.readOnly) continue;
-      var color = prettyColors.next();
-      out.line('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
-      for (var i = 0; i < layer.objects.length; ++i) {
-        var obj = layer.objects[i];
-        if (obj._class !== T.END_POINT) bbox.check(obj);
-        if (obj._class === T.SEGMENT) {
-          out.line('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
-        } else if (obj._class === T.ARC) {
-          a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
-          b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
-          var dir = a.cross(b).z > 0 ? 0 : 1;
-          var r = obj.r.get();
-          out.line('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
-        } else if (obj._class === T.CIRCLE) {
-          out.line('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
-        } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
-        }
+  var toExport = this.getLayersToExport();
+  for (var l = 0; l < toExport.length; ++l) {
+    var layer = toExport[l];
+    var color = prettyColors.next();
+    out.fline('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
+    for (var i = 0; i < layer.objects.length; ++i) {
+      var obj = layer.objects[i];
+      if (obj._class !== T.END_POINT) bbox.check(obj);
+      if (obj._class === T.SEGMENT) {
+        out.fline('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
+      } else if (obj._class === T.ARC) {
+        a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
+        b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
+        var dir = a.cross(b).z > 0 ? 0 : 1;
+        var r = obj.r.get();
+        out.fline('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
+      } else if (obj._class === T.CIRCLE) {
+        out.fline('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
+      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
       }
-      out.line('</g>');
     }
+    out.line('</g>');
   }
   bbox.inc(20)
   return TCAD.io._format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + out.data + "</svg>"
 };
 
 TCAD.IO.prototype.dxfExport = function () {
+  var T = TCAD.io.Types;
+  var out = new TCAD.io.TextBuilder();
+  var bbox = new TCAD.io.BBox();
+  var toExport = this.getLayersToExport();
+  bbox.checkLayers(toExport);
+  out.line("999");
+  out.line("js.parametric.sketcher");
+  out.line("0");
+  out.line("SECTION");
+  out.line("2");
+  out.line("HEADER");
+  out.line("9");
+  out.line("$ACADVER");
+  out.line("1");
+  out.line("AC1006");
+  out.line("9");
+  out.line("$INSBASE");
+  out.line("10");
+  out.line("0");
+  out.line("20");
+  out.line("0");
+  out.line("30");
+  out.line("0");
+  out.line("9");
+  out.line("$EXTMIN");
+  out.line("10");
+  out.numberln(bbox.bbox[0]);
+  out.line("20");
+  out.numberln(bbox.bbox[1]);
+  out.line("9");
+  out.line("$EXTMAX");
+  out.line("10");
+  out.numberln(bbox.bbox[2]);
+  out.line("20");
+  out.numberln(bbox.bbox[3]);
+  out.line("0");
+  out.line("ENDSEC");
 
+  out.line("0");
+  out.line("SECTION");
+  out.line("2");
+  out.line("TABLES");
+
+  for (var i = 0; i < toExport.length; i++) {
+    out.line("0");
+    out.line("LAYER");
+    out.line("2");
+    out.line("" + (i + 1));
+    out.line("70");
+    out.line("64");
+    out.line("62");
+    out.line("7");
+    out.line("6");
+    out.line("CONTINUOUS");
+  }
+  out.line("0");
+  out.line("ENDTAB");
+  out.line("0");
+  out.line("ENDSEC");
+  out.line("0");
+  out.line("SECTION");
+  out.line("2");
+  out.line("BLOCKS");
+  out.line("0");
+  out.line("ENDSEC");
+  out.line("0");
+  out.line("SECTION");
+  out.line("2");
+  out.line("ENTITIES");
+
+  for (var l = 0; l < toExport.length; l++) {
+    var lid = l + 1;
+    var layer = toExport[l];
+    for (var i = 0; i < layer.objects.length; ++i) {
+      var obj = layer.objects[i];
+      if (obj._class === T.END_POINT) {
+        out.line("0");
+        out.line("POINT");
+        out.line("8");
+        out.line(lid);
+        out.line("10");
+        out.numberln(obj.x);
+        out.line("20");
+        out.numberln(obj.y);
+        out.line("30");
+        out.line("0");
+      } else if (obj._class === T.SEGMENT) {
+        out.line("0");
+        out.line("LINE");
+        out.line("8");
+        out.line(lid);
+        //out.line("62"); color
+        //out.line("4");
+        out.line("10");
+        out.numberln(obj.a.x);
+        out.line("20");
+        out.numberln(obj.a.y);
+        out.line("30");
+        out.line("0");
+        out.line("11");
+        out.numberln(obj.b.x);
+        out.line("21");
+        out.numberln(obj.b.y);
+        out.line("31");
+        out.line("0");
+      } else if (obj._class === T.ARC) {
+        out.line("0");
+        out.line("ARC");
+        out.line("8");
+        out.line(lid);
+        out.line("10");
+        out.numberln(obj.c.x);
+        out.line("20");
+        out.numberln(obj.c.y);
+        out.line("30");
+        out.line("0");
+        out.line("40");
+        out.numberln(obj.r.get());
+        out.line("50");
+        out.numberln(obj.getStartAngle() * (180 / Math.PI));
+        out.line("51");
+        out.numberln(obj.getEndAngle() * (180 / Math.PI));
+      } else if (obj._class === T.CIRCLE) {
+        out.line("0");
+        out.line("CIRCLE");
+        out.line("8");
+        out.line(lid);
+        out.line("10");
+        out.numberln(obj.c.x);
+        out.line("20");
+        out.numberln(obj.c.y);
+        out.line("30");
+        out.line("0");
+        out.line("40");
+        out.numberln(obj.r.get());
+      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+      }
+    }
+  }
+
+  out.line("0");
+  out.line("ENDSEC");
+  out.line("0");
+  out.line("EOF");
+  return out.data;
 };

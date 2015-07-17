@@ -45,16 +45,24 @@ TCAD.TWO.Arc.prototype.distanceB = function() {
   return TCAD.math.distance(this.b.x, this.b.y, this.c.x, this.c.y);
 };
 
+TCAD.TWO.Arc.prototype.getStartAngle = function() {
+  return Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x);
+};
+
+TCAD.TWO.Arc.prototype.getEndAngle = function() {
+  return Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
+};
+
 TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   ctx.beginPath();
   var r = this.radiusForDrawing();
-  var startAngle = Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x);
+  var startAngle = this.getStartAngle();
   var endAngle;
   if (TCAD.utils.areEqual(this.a.x, this.b.x, TCAD.TOLERANCE) &&
       TCAD.utils.areEqual(this.a.y, this.b.y, TCAD.TOLERANCE)) {
     endAngle = startAngle + 2 * Math.PI;
   } else {
-    endAngle = Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
+    endAngle = this.getEndAngle();
   }
   ctx.arc(this.c.x, this.c.y, r, startAngle, endAngle);
   var distanceB = this.distanceB();
