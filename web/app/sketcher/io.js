@@ -1,3 +1,5 @@
+TCAD.io = {};
+
 TCAD.IO = function(viewer) {
   this.viewer = viewer;
 };
@@ -259,22 +261,42 @@ TCAD.IO.prototype.serializeConstr = function (c) {
   return c.serialize();
 };
 
+
+TCAD.io._format = function(str, args) {
+  var i = 0;
+  return str.replace(/\$/g, function() {
+    var val = args[i] !== undefined ? args[i] : match;
+    if (typeof val === 'number') val = val.toPrecision();
+    i ++;
+    return val;
+  });
+};
+
+
 TCAD.IO.prototype.svgExport = function () {
 
-  var format = function(str, args) {
-    return str.replace(/{(\d+)}/g, function(match, number) {
-      var val = args[number] !== undefined ? args[number] : match;
-      if (typeof val === 'number') val = val.toPrecision();
-      return val;
-    });
-  };
   var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
   var svg = "";
 
   function append(chunk) {
     var args = Array.prototype.slice.call(arguments, 1);
-    svg += format(chunk, args) + "\n"
+    svg += TCAD.io._format(chunk, args) + "\n"
   }
+  var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
+  function checkBounds(x, y) {
+    bbox[0] = Math.min(bbox[0], x);
+    bbox[1] = Math.min(bbox[1], y);
+    bbox[2] = Math.max(bbox[2], x);
+    bbox[3] = Math.max(bbox[3], y);
+  }
+
+  function checkCircBounds(x, y, r) {
+    checkBounds(x + r, y + r);
+    checkBounds(x - r, y + r);
+    checkBounds(x - r, y - r);
+    checkBounds(x - r, y + r);
+  }
+
   var a = new TCAD.Vector();
   var b = new TCAD.Vector();
 
@@ -286,26 +308,34 @@ TCAD.IO.prototype.svgExport = function () {
       var layer = layers[l];
       if (layer.readOnly) continue;
       var color = colors[colIdx++ % colors.length];
-      append('<g id="{0}" fill="{1}" stroke="{2}" stroke-width="{3}">', layer.name, "none", color, '2');
+      append('<g id="$" fill="$" stroke="$" stroke-width="$">', layer.name, "none", color, '2');
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
         if (obj._class === 'TCAD.TWO.Segment') {
-          append('<line x1="{0}" y1="{1}" x2="{2}" y2="{3}" fill="none"/>', obj.a.x, obj.a.y, obj.b.x, obj.b.y);
+          append('<line x1="$" y1="$" x2="$" y2="$" />', obj.a.x, obj.a.y, obj.b.x, obj.b.y);
+          checkBounds(obj.a.x, obj.a.y);
+          checkBounds(obj.b.x, obj.b.y);
         } else if (obj._class === 'TCAD.TWO.EndPoint') {
         } else if (obj._class === 'TCAD.TWO.Arc') {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
           var dir = a.cross(b).z > 0 ? 0 : 1;
           var r = obj.r.get();
-          append('<path d="M {0} {1} A {2} {3} 0 {4} {5} {6} {7}" fill="none"/>', obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y);
+          append('<path d="M $ $ A $ $ 0 $ $ $ $" />', obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y);
+          checkCircBounds(obj.c.x, obj.c.y, r);
         } else if (obj._class === 'TCAD.TWO.Circle') {
-          append('<circle cx="{0}" cy="{1}" r="{2}" fill="none"/>', obj.c.x, obj.c.y, obj.r.get());
+          var r = obj.r.get();
+          append('<circle cx="$" cy="$" r="$" />', obj.c.x, obj.c.y, r);
+          checkCircBounds(obj.c.x, obj.c.y, r);
         } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
         }
       }
       append('</g>');
     }
   }
-
-  return "<svg>\n" + svg + "</svg>"
+  bbox[0] -= 20;
+  bbox[1] -= 20;
+  bbox[2] += 20;
+  bbox[3] += 20;
+  return TCAD.io._format("<svg viewBox='$ $ $ $'>\n", bbox) + svg + "</svg>"
 };

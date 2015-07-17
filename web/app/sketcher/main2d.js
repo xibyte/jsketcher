@@ -17,8 +17,8 @@ TCAD.App2D = function() {
     var link = document.getElementById("downloader");
     link.href = "data:," + app.viewer.io.svgExport();
     link.download = app.getSketchId() + ".svg";
-    //link.click();
-    console.log(app.viewer.io.svgExport());
+    link.click();
+    //console.log(app.viewer.io.svgExport());
   });
 
   this.registerAction('undo', "Undo", function () {
