@@ -265,37 +265,50 @@ TCAD.IO.prototype.serializeConstr = function (c) {
 TCAD.io._format = function(str, args) {
   var i = 0;
   return str.replace(/\$/g, function() {
-    var val = args[i] !== undefined ? args[i] : match;
+    if (args === undefined || args[i] === undefined) throw "format arguments mismatch";
+    var val =  args[i];
     if (typeof val === 'number') val = val.toPrecision();
     i ++;
     return val;
   });
 };
 
-
-TCAD.IO.prototype.svgExport = function () {
-
-  var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
-  var svg = "";
-
-  function append(chunk) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    svg += TCAD.io._format(chunk, args) + "\n"
-  }
+TCAD.io.BBox = function() {
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
-  function checkBounds(x, y) {
+  this.checkBounds = function(x, y) {
     bbox[0] = Math.min(bbox[0], x);
     bbox[1] = Math.min(bbox[1], y);
     bbox[2] = Math.max(bbox[2], x);
     bbox[3] = Math.max(bbox[3], y);
   }
 
-  function checkCircBounds(x, y, r) {
-    checkBounds(x + r, y + r);
-    checkBounds(x - r, y + r);
-    checkBounds(x - r, y - r);
-    checkBounds(x - r, y + r);
+  this.checkCircBounds = function(x, y, r) {
+    this.checkBounds(x + r, y + r);
+    this.checkBounds(x - r, y + r);
+    this.checkBounds(x - r, y - r);
+    this.checkBounds(x - r, y + r);
   }
+
+
+  this.inc = function(by) {
+    bbox[0] -= by;
+    bbox[1] -= by;
+    bbox[2] += by;
+    bbox[3] += by;
+  }
+  this.bbox = bbox;
+};
+
+TCAD.IO.prototype.svgExport = function () {
+
+  var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
+  var svg = "";
+
+  function append(chunk, args) {
+    svg += TCAD.io._format(chunk, args) + "\n"
+  }
+
+  var bbox = new TCAD.io.BBox();
 
   var a = new TCAD.Vector();
   var b = new TCAD.Vector();
@@ -308,34 +321,35 @@ TCAD.IO.prototype.svgExport = function () {
       var layer = layers[l];
       if (layer.readOnly) continue;
       var color = colors[colIdx++ % colors.length];
-      append('<g id="$" fill="$" stroke="$" stroke-width="$">', layer.name, "none", color, '2');
+      append('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
         if (obj._class === 'TCAD.TWO.Segment') {
-          append('<line x1="$" y1="$" x2="$" y2="$" />', obj.a.x, obj.a.y, obj.b.x, obj.b.y);
-          checkBounds(obj.a.x, obj.a.y);
-          checkBounds(obj.b.x, obj.b.y);
+          append('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
+          bbox.checkBounds(obj.a.x, obj.a.y);
+          bbox.checkBounds(obj.b.x, obj.b.y);
         } else if (obj._class === 'TCAD.TWO.EndPoint') {
         } else if (obj._class === 'TCAD.TWO.Arc') {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
           var dir = a.cross(b).z > 0 ? 0 : 1;
           var r = obj.r.get();
-          append('<path d="M $ $ A $ $ 0 $ $ $ $" />', obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y);
-          checkCircBounds(obj.c.x, obj.c.y, r);
+          append('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
+          bbox.checkCircBounds(obj.c.x, obj.c.y, r);
         } else if (obj._class === 'TCAD.TWO.Circle') {
           var r = obj.r.get();
-          append('<circle cx="$" cy="$" r="$" />', obj.c.x, obj.c.y, r);
-          checkCircBounds(obj.c.x, obj.c.y, r);
+          append('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, r]);
+          bbox.checkCircBounds(obj.c.x, obj.c.y, r);
         } else if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
         }
       }
       append('</g>');
     }
   }
-  bbox[0] -= 20;
-  bbox[1] -= 20;
-  bbox[2] += 20;
-  bbox[3] += 20;
-  return TCAD.io._format("<svg viewBox='$ $ $ $'>\n", bbox) + svg + "</svg>"
+  bbox.inc(20)
+  return TCAD.io._format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + svg + "</svg>"
+};
+
+TCAD.IO.prototype.dxfExport = function () {
+
 };
