@@ -287,6 +287,22 @@ TCAD.io._format = function(str, args) {
 
 TCAD.io.BBox = function() {
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
+
+  var T = TCAD.io.Types;
+  this.check = function(obj) {
+    if (obj._class === T.SEGMENT) {
+      bbox.checkBounds(obj.a.x, obj.a.y);
+      bbox.checkBounds(obj.b.x, obj.b.y);
+    } else if (obj._class === T.END_POINT) {
+      bbox.checkBounds(obj.x, obj.y);
+    } else if (obj._class === T.ARC) {
+      bbox.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
+    } else if (obj._class === T.CIRCLE) {
+      bbox.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
+    } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+    }
+  }
+
   this.checkBounds = function(x, y) {
     bbox[0] = Math.min(bbox[0], x);
     bbox[1] = Math.min(bbox[1], y);
@@ -300,7 +316,6 @@ TCAD.io.BBox = function() {
     this.checkBounds(x - r, y - r);
     this.checkBounds(x - r, y + r);
   }
-
 
   this.inc = function(by) {
     bbox[0] -= by;
@@ -337,21 +352,17 @@ TCAD.IO.prototype.svgExport = function () {
       append('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
+        if (obj._class !== T.END_POINT) bbox.check(obj);
         if (obj._class === T.SEGMENT) {
           append('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
-          bbox.checkBounds(obj.a.x, obj.a.y);
-          bbox.checkBounds(obj.b.x, obj.b.y);
         } else if (obj._class === T.ARC) {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
           var dir = a.cross(b).z > 0 ? 0 : 1;
           var r = obj.r.get();
           append('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
-          bbox.checkCircBounds(obj.c.x, obj.c.y, r);
         } else if (obj._class === T.CIRCLE) {
-          var r = obj.r.get();
-          append('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, r]);
-          bbox.checkCircBounds(obj.c.x, obj.c.y, r);
+          append('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
         }
       }
