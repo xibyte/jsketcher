@@ -330,8 +330,7 @@
     --><button class="btn tbtn act-clone" ><i class="fa fa-files-o"></i></button><!--
     --><button class="btn tbtn act-open" ><i class="fa fa-folder-open-o"></i></button><!--
     --><button class="btn tbtn act-save" ><i class="fa fa-floppy-o"></i></button><!--
-    --><button class="btn tbtn act-exportSVG" ><i class="fa fa-upload"></i></button><!--
-    --><button class="btn tbtn act-exportDXF sep" ><i class="fa fa-upload"></i></button><!--
+    --><button class="btn tbtn act-export sep" ><i class="fa fa-upload"></i></button><!--
     --><button class="btn tbtn sep act-pan" ><i class="fa fa-arrows"></i></button><!--
     --><button class="btn tbtn act-addPoint" style="background-image: url(img/dot.png);" type="submit" value=""></button><!--
     --><button class="btn tbtn act-addSegment" style="background-image: url(img/line.png);" type="submit" value=""></button><!--
@@ -388,6 +387,16 @@
     <div class="content panel" style="padding: 0;">
       <ul class="tlist" id='sketchList'>
         <li>$name$<span class="rm" style="float: right;"><input class="btn sbtn ui-rm" style="" type="submit" value="✘"></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="exportManager" class="scroll win" style="display: none; min-width: 100px;">
+    <div class="tool-caption" >FORMAT<div class="rm pseudo-btn" style="float: right;">✘</div></div>
+    <div class="content panel" style="padding: 0;">
+      <ul class="tlist">
+        <li class="act-exportSVG">SVG</li>
+        <li class="act-exportDXF">DXF</li>
       </ul>
     </div>
   </div>

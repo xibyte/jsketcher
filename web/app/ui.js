@@ -26,6 +26,10 @@ TCAD.ui.createActionsWinBuilder = function(win) {
   };
 };
 
+TCAD.ui.closeWin = function(win) {
+  win.root.hide();
+};
+
 TCAD.ui.openWin = function(win, mouseEvent) {
 
   var x = mouseEvent.pageX;
