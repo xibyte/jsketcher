@@ -100,7 +100,7 @@
       font-weight: bold;
       color: #fff;
       border-bottom: 1px solid #000;
-      padding: 1px 3px;
+      padding: 0 0 0 3px;
       background: #333;
     }
 
@@ -126,11 +126,12 @@
     }
 
     .tlist .rm {
-      display: none;
+      visibility:hidden;
+      padding-left: 5px;
     }
 
     .tlist li:hover .rm {
-      display: block;
+      visibility:visible;
     }
 
     .scroll {
@@ -177,6 +178,28 @@
       margin-right: 13px;
     }
 
+
+    .pseudo-btn:hover {
+      background-color: #808080;
+    }
+
+    .pseudo-btn {
+      background-color: #606060;
+      color: white;
+      width: 18px; text-align: center;
+      cursor: pointer;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    .pseudo-btn a {
+      color: white;
+      text-decoration: none;
+    }
+
   </style>
   <link rel="shortcut icon" href="img/tgn.png" />
   <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.min.css">
@@ -218,6 +241,7 @@
       var app = new TCAD.App2D();
       app.loadFromLocalStorage();
       var actionsWin = new TCAD.ui.Window($('#actions'));
+
       TCAD.ui.bindOpening( $('#showActions'), actionsWin );
       var addAction = TCAD.ui.createActionsWinBuilder(actionsWin);
 
@@ -353,9 +377,18 @@
   </div>
 
   <div id="actions" class="scroll win" style="display: none;">
-    <div class="tool-caption" >ACTIONS<span class="rm" style="float: right; "><input class="btn sbtn" style="" type="submit" value="✘"></span></div>
+    <div class="tool-caption" >ACTIONS<div class="rm pseudo-btn" style="float: right;">✘</div></div>
     <div class="content">
       <div><input class="btn txt-btn" style="width: 100%;" type="submit" value="$value$"></div>
+    </div>
+  </div>
+
+  <div id="sketchManager" class="scroll win" style="display: none; min-width: 100px;">
+    <div class="tool-caption" >SKETCHES<div class="rm pseudo-btn" style="float: right;">✘</div></div>
+    <div class="content panel" style="padding: 0;">
+      <ul class="tlist" id='sketchList'>
+        <li>$name$<span class="rm" style="float: right;"><input class="btn sbtn ui-rm" style="" type="submit" value="✘"></span></li>
+      </ul>
     </div>
   </div>
 
