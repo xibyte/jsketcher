@@ -4,7 +4,7 @@ TCAD.ui = {};
 TCAD.ui.Window = function(el) {
   this.root = el;
   var root = this.root;
-  this.root.find('.tool-caption .rm input').click(function() {
+  this.root.find('.tool-caption .rm').click(function() {
     root.hide();
   });
 };
@@ -55,7 +55,10 @@ TCAD.ui.List.prototype.refresh = function() {
   var items = this.model.items();
   var model = this.model;
   function makeCallbacks(li, item, index) {
-    li.find('.ui-rm').click(function() {model.remove(item, index)});
+    li.find('.ui-rm').click(function(e) {
+      model.remove(item, index);
+      e.stopPropagation();
+    });
     li.hover(function() {model.hover(item, index)});
     li.mouseleave(function() {model.mouseleave(item, index)});
     li.click(function() {model.click(item, index)});

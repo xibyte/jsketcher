@@ -1,6 +1,11 @@
+TCAD.STORAGE_PREFIX = "TCAD.projects.";
+
 TCAD.App2D = function() {
 
   this.viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
+
+  this.initSketchManager();
+
   var app = this;
 
   this.actions = {};
@@ -12,6 +17,19 @@ TCAD.App2D = function() {
     app.actions[id] = {id: id, desc: desc, action: action};
     app._actionsOrder.push(id);
   };
+
+  this.registerAction('new', "Create New Sketch", function () {
+    app.newSketch();
+  });
+
+  this.registerAction('open', "Open Sketch", function (e) {
+    app._sketchesList.refresh();
+    TCAD.ui.openWin(app._sketchesWin, e);
+  });
+
+  this.registerAction('clone', "Clone Sketch", function () {
+    app.cloneSketch();
+  });
 
   this.registerAction('exportSVG', "Export To SVG", function () {
     app.exportTextData(app.viewer.io.svgExport(), "svg");
@@ -142,6 +160,78 @@ TCAD.App2D = function() {
   });
 };
 
+TCAD.App2D.prototype.cloneSketch = function() {
+  var name = prompt("Name for sketch clone");
+  if (name != null) {
+    if (this.isSketchExists(name)) {
+      alert("Sorry, a sketch with the name '" + name + "' already exists. Won't override it.");
+      return;
+    }
+    localStorage.setItem(TCAD.STORAGE_PREFIX + name, this.viewer.io.serializeSketch())
+    this.openSketch(name);
+  }
+};
+
+TCAD.App2D.prototype.isSketchExists = function(name) {
+  return localStorage.getItem(TCAD.STORAGE_PREFIX + name) != null;
+};
+
+TCAD.App2D.prototype.openSketch = function(name) {
+  var uri = window.location.href.split("#")[0];
+  if (name !== "untitled") {
+    uri += "#" + name;
+  }
+  var win = window.open(uri, '_blank');
+  win.focus();
+};
+
+TCAD.App2D.prototype.newSketch = function() {
+  var name = prompt("Name for sketch");
+  if (name != null) {
+    if (this.isSketchExists(name)) {
+      alert("Sorry, a sketch with the name '" + name + "' already exists. Won't override it.");
+      return;
+    }
+    this.openSketch(name);
+  }
+};
+
+TCAD.App2D.prototype.initSketchManager = function(data, ext) {
+  this._sketchesWin = new TCAD.ui.Window($('#sketchManager'));
+  var app = this;
+  var sketchesList = new TCAD.ui.List($('#sketchList'), {
+    items : function() {
+      var theItems = [];
+      for (var name in localStorage) {
+        if (!localStorage.hasOwnProperty(name)) {
+          continue;
+        }
+        if (name.startsWith(TCAD.STORAGE_PREFIX)) {
+          name = name.substring(TCAD.STORAGE_PREFIX.length);
+        }
+        theItems.push({name : name});
+      }
+      return theItems;
+    },
+
+    remove : function(item) {
+      if (confirm("Selected sketch will be REMOVED! Are you sure?")) {
+        localStorage.removeItem(TCAD.STORAGE_PREFIX + item.name);
+        sketchesList.refresh();
+      }
+    },
+
+    mouseleave : function(item) {},
+    hover : function(item) {},
+
+    click : function(item) {
+      app.openSketch(item.name);
+    }
+  });
+  sketchesList.refresh();
+  this._sketchesList = sketchesList;
+}
+
 TCAD.App2D.prototype.exportTextData = function(data, ext) {
   var link = document.getElementById("downloader");
   link.href = "data:application/octet-stream;charset=utf-8;base64," + btoa(data);
@@ -165,5 +255,5 @@ TCAD.App2D.prototype.getSketchId = function() {
   if (!id) {
     id = "untitled";
   }
-  return "TCAD.projects." + id;
+  return TCAD.STORAGE_PREFIX + id;
 };
