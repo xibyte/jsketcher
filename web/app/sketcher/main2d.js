@@ -1,12 +1,15 @@
 TCAD.STORAGE_PREFIX = "TCAD.projects.";
 
 TCAD.App2D = function() {
+  var app = this;
 
   this.viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
 
   this.initSketchManager();
+  this._exportWin = new TCAD.ui.Window($('#exportManager'));
 
-  var app = this;
+  $('#exportManager li').click(function() {TCAD.ui.closeWin(app._exportWin);});
+
 
   this.actions = {};
 
@@ -29,6 +32,10 @@ TCAD.App2D = function() {
 
   this.registerAction('clone', "Clone Sketch", function () {
     app.cloneSketch();
+  });
+
+  this.registerAction('export', "Export", function (e) {
+    TCAD.ui.openWin(app._exportWin, e);
   });
 
   this.registerAction('exportSVG', "Export To SVG", function () {
