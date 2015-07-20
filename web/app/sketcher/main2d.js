@@ -213,7 +213,7 @@ TCAD.App2D.prototype.initSketchManager = function(data, ext) {
         if (!localStorage.hasOwnProperty(name)) {
           continue;
         }
-        if (name.startsWith(TCAD.STORAGE_PREFIX)) {
+        if (name.indexOf(TCAD.STORAGE_PREFIX) === 0) {
           name = name.substring(TCAD.STORAGE_PREFIX.length);
         }
         theItems.push({name : name});
