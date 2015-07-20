@@ -1,6 +1,7 @@
 *.class
 /target/
 /out/
+/build/out/
 /.idea/
 *.iml
 *.ipr
