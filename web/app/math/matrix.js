@@ -1,4 +1,5 @@
 
+/** @constructor */
 TCAD.math.Matrix = function(r, c) {
   this.data = [];
   this.rSize = r;
@@ -119,6 +120,7 @@ TCAD.math.Matrix.prototype.norm = function(v) {
   return Math.sqrt(sum);
 };
 
+/** @constructor */
 TCAD.math.Vector = function(n) {
   TCAD.math.Matrix.call(this, n, 1);
 };

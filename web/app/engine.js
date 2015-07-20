@@ -306,7 +306,7 @@ TCAD.geom.extrude = function(source, target) {
 
 TCAD.geom.FACE_COUNTER = 0;
 
-/** @Constructor **/
+/** @constructor */
 TCAD.Solid = function(polygons, material) {
   THREE.Geometry.call( this );
   this.dynamic = true; //true by default
@@ -370,7 +370,7 @@ if (typeof THREE !== "undefined") {
   TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
 }
 
-/** @Constructor **/
+/** @constructor */
 TCAD.SketchFace = function(solid, poly) {
   var proto = poly.__face;
   poly.__face = this;
@@ -429,9 +429,7 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
   this.sketchGeom.depth = depth;
 };
 
-/**
- * Polygon
- **/
+/** @constructor */
 TCAD.Polygon = function(shell, holes, normal) {
 
   if (!holes) {
@@ -541,6 +539,7 @@ TCAD.Polygon.prototype.eachVertex = function(handler) {
   }
 };
 
+/** @constructor */
 TCAD.Sketch = function() {
   this.group = new THREE.Object3D();
 };

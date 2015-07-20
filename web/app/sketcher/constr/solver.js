@@ -1,5 +1,6 @@
 TCAD.parametric = {};
 
+/** @constructor */
 TCAD.parametric.Param = function(id, value) {
   this.id = id;
   this.value = value;
@@ -15,6 +16,7 @@ TCAD.parametric.Param.prototype.get = function() {
 };
 
 
+/** @constructor */
 TCAD.parametric.System = function(constraints) {
   this.constraints = constraints;
   this.params = [];
