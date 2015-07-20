@@ -224,8 +224,8 @@ TCAD.parametric.diagnose = function(sys) {
 
 TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
 
-  this.lock1(constrs, aux);
-  var lockingConstrs = this.lock2Equals2(constrs, locked);
+  TCAD.parametric.lock1(constrs, aux);
+  var lockingConstrs = TCAD.parametric.lock2Equals2(constrs, locked);
   Array.prototype.push.apply( constrs, lockingConstrs );
   
   var sys = new TCAD.parametric.System(constrs);

@@ -37,6 +37,7 @@ TCAD.constraints.Equal = function(params) {
 
 };
 
+/** @constructor */
 TCAD.constraints.ConstantWrapper = function(constr, mask) {
 
   this.params = [];
@@ -65,6 +66,7 @@ TCAD.constraints.ConstantWrapper = function(constr, mask) {
   }
 };
 
+/** @constructor */
 TCAD.constraints.Weighted = function(constr, weight) {
 
   this.params = constr.params;
