@@ -336,7 +336,7 @@ TCAD.io.BBox = function() {
       this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
     } else if (obj._class === T.CIRCLE) {
       this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
-    } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+//    } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
     }
   }
 
@@ -410,7 +410,7 @@ TCAD.IO.prototype.svgExport = function () {
         out.fline('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
       } else if (obj._class === T.CIRCLE) {
         out.fline('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
-      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+//      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
       }
     }
     out.line('</g>');
@@ -555,7 +555,7 @@ TCAD.IO.prototype.dxfExport = function () {
         out.line("0");
         out.line("40");
         out.numberln(obj.r.get());
-      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+//      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
       }
     }
   }

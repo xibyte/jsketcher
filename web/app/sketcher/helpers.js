@@ -5,7 +5,6 @@ TCAD.TWO.FilletTool = function(viewer) {
 
 TCAD.TWO.FilletTool.prototype.makeFillet = function(point1, point2) {
   function shrink(point1) {
-    point1.parent.a;
     if (point1.id === point1.parent.a.id) {
       var a = point1.parent.b;
       var b = point1.parent.a;
