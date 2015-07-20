@@ -1,5 +1,4 @@
-
-
+/** @constructor */
 TCAD.TWO.FilletTool = function(viewer) {
   this.viewer = viewer;
 };

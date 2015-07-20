@@ -1,4 +1,5 @@
 
+/** @constructor */
 TCAD.Vector = function(x, y, z) {
 	this.x = x || 0;
 	this.y = y || 0;
@@ -112,9 +113,7 @@ TCAD.Vector.prototype.three = function() {
   return new THREE.Vector3(this.x, this.y, this.z);
 };
 
-
-
-
+/** @constructor */
 TCAD.Matrix = function() {
   this.reset();
 };
