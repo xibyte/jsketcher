@@ -1,4 +1,4 @@
-
+/** @constructor */
 TCAD.TWO.LinearDimension = function(a, b) {
   TCAD.TWO.SketchObject.call(this);
   this.a = a;
@@ -108,7 +108,7 @@ TCAD.TWO.LinearDimension.prototype.normalDistance = function(aim) {
   return -1;
 };
 
-
+/** @constructor */
 TCAD.TWO.Dimension = function(a, b) {
   TCAD.TWO.LinearDimension.call(this, a, b);
 };
@@ -117,7 +117,7 @@ TCAD.TWO.utils.extend(TCAD.TWO.Dimension, TCAD.TWO.LinearDimension);
 
 TCAD.TWO.Dimension.prototype._class = 'TCAD.TWO.Dimension';
 
-
+/** @constructor */
 TCAD.TWO.HDimension = function(a, b) {
   TCAD.TWO.LinearDimension.call(this, a, b);
 };
@@ -129,7 +129,7 @@ TCAD.TWO.HDimension.prototype._class = 'TCAD.TWO.HDimension';
 TCAD.TWO.HDimension.prototype.getA = function() { return this.a };
 TCAD.TWO.HDimension.prototype.getB = function() { return {x : this.b.x, y : this.a.y} };
 
-
+/** @constructor */
 TCAD.TWO.VDimension = function(a, b) {
   TCAD.TWO.LinearDimension.call(this, a, b);
 };
@@ -141,7 +141,7 @@ TCAD.TWO.VDimension.prototype._class = 'TCAD.TWO.VDimension';
 TCAD.TWO.VDimension.prototype.getA = function() { return this.a };
 TCAD.TWO.VDimension.prototype.getB = function() { return {x : this.a.x, y : this.b.y} };
 
-
+/** @constructor */
 TCAD.TWO.AddDimTool = function(viewer, layer, dimCreation) {
   this.viewer = viewer;
   this.layer = layer;

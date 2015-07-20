@@ -14,6 +14,7 @@ TCAD.math.Arrays_fill = function(a, fromIndex, toIndex,val) {
     a[i] = val;
 };
 
+/** @constructor */
 TCAD.math.QR = function(matrix) {
   var vec = TCAD.math.vec;
   this.matrix = matrix;

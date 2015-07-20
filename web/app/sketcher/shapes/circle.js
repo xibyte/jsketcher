@@ -1,4 +1,4 @@
-
+/** @constructor */
 TCAD.TWO.Circle = function(c) {
   TCAD.TWO.SketchObject.call(this);
   this.c = c;
@@ -40,7 +40,7 @@ TCAD.TWO.Circle.prototype.getDefaultTool = function(viewer) {
   return editTool;
 };
 
-
+/** @constructor */
 TCAD.TWO.EditCircleTool = function(viewer) {
   this.viewer = viewer;
   this.circle = null;

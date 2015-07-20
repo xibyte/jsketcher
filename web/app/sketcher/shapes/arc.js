@@ -1,4 +1,4 @@
-
+/** @constructor */
 TCAD.TWO.Arc = function(a, b, c) {
   TCAD.TWO.SketchObject.call(this);
   this.a = a;
@@ -90,6 +90,7 @@ TCAD.TWO.Arc.prototype.stabilize = function(viewer) {
   viewer.parametricManager._add(new TCAD.TWO.Constraints.P2PDistanceV(this.a, this.c, this.r));
 };
 
+/** @constructor */
 TCAD.TWO.AddArcTool = function(viewer) {
   this.viewer = viewer;
   this.arc = null;
