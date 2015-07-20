@@ -49,3 +49,4 @@ echo '<!-- R:' "`git rev-parse --short HEAD` -->" >> out/sketcher.html
 #now make it work inside out dir
 ln -sf ../../web/lib/ out/lib
 ln -sf ../../web/img/ out/img
+ln -sf ../../web/css/ out/css
