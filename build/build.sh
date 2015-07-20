@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-git rev-parse --short HEAD #make sure git in place
-
 cd `dirname "$0"`
+
+git rev-parse --short HEAD #make sure git in place
 
 mkdir -p out
 rm -rf out/*
@@ -47,6 +47,11 @@ echo >> out/sketcher.html
 echo '<!-- R:' "`git rev-parse --short HEAD` -->" >> out/sketcher.html
 
 #now make it work inside out dir
-ln -sf ../../web/lib/ out/lib
 ln -sf ../../web/img/ out/img
 ln -sf ../../web/css/ out/css
+mkdir -p out/lib
+ln -sf ../../../web/lib/jquery-2.1.0.min.js out/lib/jquery-2.1.0.min.js
+ln -sf ../../../web/lib/numeric-1.2.6.js out/lib/numeric-1.2.6.js
+ln -sf ../../../web/lib/diff_match_patch.js out/lib/diff_match_patch.js
+ln -sf ../../../web/lib/font-awesome out/lib/font-awesome
+
