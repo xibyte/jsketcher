@@ -872,14 +872,14 @@ TCAD.TWO.DragTool.prototype.solveRequest = function(rough) {
   var locked;
   if (this.obj._class === 'TCAD.TWO.EndPoint') {
     locked = [this.obj._x, this.obj._y];
-    if (this.obj.parent != null
-      && this.obj.parent._class === 'TCAD.TWO.Arc') {
-
-      if (this.obj.id != this.obj.parent.c.id) {
-         // locked.push(this.obj.parent.c._x);
-         // locked.push(this.obj.parent.c._y);
-      }
-    }
+//    if (this.obj.parent != null
+//      && this.obj.parent._class === 'TCAD.TWO.Arc') {
+//
+//      if (this.obj.id != this.obj.parent.c.id) {
+//          locked.push(this.obj.parent.c._x);
+//          locked.push(this.obj.parent.c._y);
+//      }
+//    }
   } else {
     locked = [];
   }
