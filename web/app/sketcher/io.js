@@ -10,6 +10,7 @@ TCAD.io.Types = {
   VDIM      : 'TCAD.TWO.VDimension'
 }
 
+/** @constructor */
 TCAD.IO = function(viewer) {
   this.viewer = viewer;
 };
@@ -286,6 +287,7 @@ TCAD.io._format = function(str, args) {
   });
 };
 
+/** @constructor */
 TCAD.io.PrettyColors = function() {
   var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
   var colIdx = 0;
@@ -294,6 +296,7 @@ TCAD.io.PrettyColors = function() {
   }
 }
 
+/** @constructor */
 TCAD.io.TextBuilder = function() {
   this.data = "";
   this.fline = function (chunk, args) {
@@ -311,6 +314,7 @@ TCAD.io.TextBuilder = function() {
   }
 }
 
+/** @constructor */
 TCAD.io.BBox = function() {
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
 

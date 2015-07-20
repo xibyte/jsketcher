@@ -109,6 +109,7 @@ TCAD.graph.finaAllLoops = function(graph) {
   return loops;
 };
 
+/** @constructor */
 TCAD.graph.Graph = function(data) {
 
   this.id = function(e) {

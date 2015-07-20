@@ -1,5 +1,6 @@
 TCAD.TWO.Constraints = {};
 
+/** @constructor */
 TCAD.TWO.SubSystem = function() {
   this.alg = 1;
   this.error = 0;
@@ -7,6 +8,7 @@ TCAD.TWO.SubSystem = function() {
   this.constraints = [];
 };
 
+/** @constructor */
 TCAD.TWO.ParametricManager = function(viewer) {
   this.viewer = viewer;
   this.subSystems = [];
@@ -550,6 +552,7 @@ TCAD.TWO.Constraints.Factory = {};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.Coincident = function(a, b) {
   this.a = a;
   this.b = b;
@@ -582,6 +585,7 @@ TCAD.TWO.Constraints.Coincident.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.Lock = function(p, c) {
   this.p = p;
   this.c = c;
@@ -612,6 +616,7 @@ TCAD.TWO.Constraints.Lock.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.Parallel = function(l1, l2) {
   this.l1 = l1;
   this.l2 = l2;
@@ -641,6 +646,7 @@ TCAD.TWO.Constraints.Parallel.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
   this.l1 = l1;
   this.l2 = l2;
@@ -670,6 +676,7 @@ TCAD.TWO.Constraints.Perpendicular.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
   this.p = p;
   this.l = l;
@@ -702,6 +709,7 @@ TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields = {'d' : "Enter the di
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
   this.p = p;
   this.l = l;
@@ -732,6 +740,7 @@ TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.P2PDistance = function(p1, p2, d) {
   this.p1 = p1;
   this.p2 = p2;
@@ -764,6 +773,7 @@ TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields = {'d' : "Enter the di
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
   this.p1 = p1;
   this.p2 = p2;
@@ -794,6 +804,7 @@ TCAD.TWO.Constraints.P2PDistanceV.prototype.getSolveData = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.Radius = function(arc, d) {
   this.arc = arc;
   this.d = d;
@@ -823,6 +834,7 @@ TCAD.TWO.Constraints.Radius.prototype.SettableFields = {'d' : "Enter the radius 
 
 // ------------------------------------------------------------------------------------------------------------------ // 
 
+/** @constructor */
 TCAD.TWO.Constraints.RR = function(arc1, arc2) {
   this.arc1 = arc1;
   this.arc2 = arc2;
@@ -851,6 +863,7 @@ TCAD.TWO.Constraints.RR.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.Vertical = function(line) {
   this.line = line;
 };
@@ -877,6 +890,7 @@ TCAD.TWO.Constraints.Vertical.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ // 
 
+/** @constructor */
 TCAD.TWO.Constraints.Horizontal = function(line) {
   this.line = line;
 };
@@ -903,6 +917,7 @@ TCAD.TWO.Constraints.Horizontal.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.Tangent = function(arc, line) {
   this.arc = arc;
   this.line = line;
@@ -933,6 +948,7 @@ TCAD.TWO.Constraints.Tangent.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/** @constructor */
 TCAD.TWO.Constraints.PointOnLine = function(point, line) {
   this.point = point;
   this.line = line;

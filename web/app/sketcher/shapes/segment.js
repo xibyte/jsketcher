@@ -1,4 +1,4 @@
-
+/** @constructor */
 TCAD.TWO.AddSegmentTool = function(viewer, multi) {
   this.viewer = viewer;
   this.line = null;
@@ -75,7 +75,7 @@ TCAD.TWO.AddSegmentTool.prototype.keydown = function(e) {
 TCAD.TWO.AddSegmentTool.prototype.keypress = function(e) {};
 TCAD.TWO.AddSegmentTool.prototype.keyup = function(e) {};
 
-
+/** @constructor */
 TCAD.TWO.AddPointTool = function(viewer) {
   this.viewer = viewer;
 };

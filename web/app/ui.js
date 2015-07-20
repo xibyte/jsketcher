@@ -1,6 +1,7 @@
 TCAD.ui = {};
 
 
+/** @constructor */
 TCAD.ui.Window = function(el) {
   this.root = el;
   var root = this.root;
@@ -47,6 +48,7 @@ TCAD.ui.openWin = function(win, mouseEvent) {
 
 };
 
+/** @constructor */
 TCAD.ui.List = function(el, model) {
   this.ul = el;
   this.template = this.ul.html();

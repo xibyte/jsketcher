@@ -1,5 +1,6 @@
 TCAD.STORAGE_PREFIX = "TCAD.projects.";
 
+/** @constructor */
 TCAD.App2D = function() {
   var app = this;
 

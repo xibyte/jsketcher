@@ -21,6 +21,7 @@ TCAD.constraints.create = function(name, params, values) {
   }
 };
 
+/** @constructor */
 TCAD.constraints.Equal = function(params) {
 
   this.params = params;
@@ -81,6 +82,7 @@ TCAD.constraints.Weighted = function(constr, weight) {
 };
 
 
+/** @constructor */
 TCAD.constraints.EqualsTo = function(params, value) {
 
   this.params = params;
@@ -96,6 +98,7 @@ TCAD.constraints.EqualsTo = function(params, value) {
   };
 };
 
+/** @constructor */
 TCAD.constraints.P2LDistance = function(params, distance) {
 
   this.params = params;
@@ -178,6 +181,7 @@ TCAD.constraints.P2LDistance = function(params, distance) {
 };
 
 
+/** @constructor */
 TCAD.constraints.P2LDistanceV = function(params) {
 
   this.params = params;//.slice(0, params.length -1);
@@ -258,6 +262,7 @@ TCAD.constraints.P2LDistanceV = function(params) {
 
 };
 
+/** @constructor */
 TCAD.constraints.P2PDistance = function(params, distance) {
 
   this.params = params;
@@ -293,6 +298,7 @@ TCAD.constraints.P2PDistance = function(params, distance) {
 };
 
 
+/** @constructor */
 TCAD.constraints.P2PDistanceV = function(params) {
 
   this.params = params;
@@ -330,6 +336,7 @@ TCAD.constraints.P2PDistanceV = function(params) {
 };
 
 
+/** @constructor */
 TCAD.constraints.Parallel = function(params) {
 
   this.params = params;
@@ -363,6 +370,7 @@ TCAD.constraints.Parallel = function(params) {
   }
 };
 
+/** @constructor */
 TCAD.constraints.Perpendicular = function(params) {
 
   this.params = params;

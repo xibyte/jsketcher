@@ -1,3 +1,4 @@
+/** @constructor */
 TCAD.HistoryManager = function(viewer) {
   this.viewer = viewer;
   this.dmp = new diff_match_patch();
