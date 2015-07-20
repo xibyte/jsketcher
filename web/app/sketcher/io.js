@@ -61,46 +61,51 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
     return layer;
   }
   var T = TCAD.io.Types;
-  if (sketch.layers !== undefined) {
-    for (var l = 0; l < sketch.layers.length; ++l) {
-      var layer = getLayer(this.viewer, sketch.layers[l].name);
-      for (var i = 0; i < sketch.layers[l].data.length; ++i) {
-        var obj = sketch.layers[l].data[i];
+  var sketchLayers = sketch['layers'];
+  if (sketchLayers !== undefined) {
+    for (var l = 0; l < sketchLayers.length; ++l) {
+      var layer = getLayer(this.viewer, sketchLayers[l]['name']);
+      var layerData = sketchLayers[l]['data'];
+      for (var i = 0; i < layerData.length; ++i) {
+        var obj = layerData[i];
         var skobj = null;
-        if (obj._class === T.SEGMENT) {
-          var a = endPoint(obj.points[0]);
-          var b = endPoint(obj.points[1]);
+        var _class = obj['_class'];
+        if (_class === T.SEGMENT) {
+          var points = obj['points'];
+          var a = endPoint(points[0]);
+          var b = endPoint(points[1]);
           skobj = new TCAD.TWO.Segment(a, b);
-        } else if (obj._class === T.END_POINT) {
-          skobj = endPoint(obj.location);
-        } else if (obj._class === T.ARC) {
-          var a = endPoint(obj.points[0]);
-          var b = endPoint(obj.points[1]);
-          var c = endPoint(obj.points[2]);
+        } else if (_class === T.END_POINT) {
+          skobj = endPoint(obj['location']);
+        } else if (_class === T.ARC) {
+          var points = obj['points'];
+          var a = endPoint(points[0]);
+          var b = endPoint(points[1]);
+          var c = endPoint(points[2]);
           skobj = new TCAD.TWO.Arc(a, b, c);
           skobj.stabilize(this.viewer);
-        } else if (obj._class === T.CIRCLE) {
-          var c = endPoint(obj.c);
+        } else if (_class === T.CIRCLE) {
+          var c = endPoint(obj['c']);
           skobj = new TCAD.TWO.Circle(c);
-          skobj.r.set(obj.r);
-        } else if (obj._class === T.HDIM) {
-          skobj = new TCAD.TWO.HDimension(obj.a, obj.b);
-          skobj.flip = obj.flip;
-        } else if (obj._class === T.VDIM) {
-          skobj = new TCAD.TWO.VDimension(obj.a, obj.b);
-          skobj.flip = obj.flip;
-        } else if (obj._class === T.DIM) {
-          skobj = new TCAD.TWO.Dimension(obj.a, obj.b);
-          skobj.flip = obj.flip;
+          skobj.r.set(obj['r']);
+        } else if (_class === T.HDIM) {
+          skobj = new TCAD.TWO.HDimension(obj['a'], obj['b']);
+          skobj.flip = obj['flip'];
+        } else if (_class === T.VDIM) {
+          skobj = new TCAD.TWO.VDimension(obj['a'], obj['b']);
+          skobj.flip = obj['flip'];
+        } else if (_class === T.DIM) {
+          skobj = new TCAD.TWO.Dimension(obj['a'], obj['b']);
+          skobj.flip = obj['flip'];
         }
         if (skobj != null) {
-          if (!!obj.aux) skobj.accept(function(o){o.aux = true; return true;});
-          if (obj.edge !== undefined) {
-            skobj.edge = obj.edge;
+          if (!!obj['aux']) skobj.accept(function(o){o.aux = true; return true;});
+          if (obj['edge'] !== undefined) {
+            skobj.edge = obj['edge'];
           }
           layer.objects.push(skobj);
           skobj.layer = layer;
-          index[obj.id] = skobj;
+          index[obj['id']] = skobj;
         }
       }
     }
@@ -114,14 +119,16 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
     //}
   }
 
-  if (sketch.boundary !== undefined && sketch.boundary != null) {
-    this.updateBoundary(sketch.boundary);
+  var sketchBounds = sketch['boundary'];
+  if (sketchBounds !== undefined && sketchBounds != null) {
+    this.updateBoundary(sketchBounds);
   }
 
-  if (sketch.constraints !== undefined) {
-    for (var i = 0; i < sketch.constraints.length; ++i) {
+  var sketchConstraints = sketch['constraints'];
+  if (sketchConstraints !== undefined) {
+    for (var i = 0; i < sketchConstraints.length; ++i) {
       try {
-        var c = this.parseConstr(sketch.constraints[i], index);
+        var c = this.parseConstr(sketchConstraints[i], index);
         this.viewer.parametricManager._add(c);
       } catch (err) {
         console.error(err);
@@ -149,7 +156,7 @@ TCAD.IO.prototype.cleanUpData = function() {
 TCAD.IO.prototype._serializeSketch = function() {
   var sketch = {};
   //sketch.boundary = boundary;
-  sketch.layers = [];
+  sketch['layers'] = [];
   function point(p) {
     return [ p.id, [p._x.id, p.x], [p._y.id, p.y] ];
   }
@@ -160,33 +167,33 @@ TCAD.IO.prototype._serializeSketch = function() {
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
       if (layer.readOnly) continue;
-      var toLayer = {name : layer.name, data : []};
-      sketch.layers.push(toLayer);
+      var toLayer = {'name' : layer.name, 'data' : []};
+      sketch['layers'].push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
-        var to = {id: obj.id, _class: obj._class};
+        var to = {'id': obj.id, '_class': obj._class};
         if (obj.aux) to.aux = obj.aux;
         if (obj.edge !== undefined) to.edge = obj.edge;
-        toLayer.data.push(to);
+        toLayer['data'].push(to);
         if (obj._class === T.SEGMENT) {
-          to.points = [point(obj.a), point(obj.b)];
+          to['points'] = [point(obj.a), point(obj.b)];
         } else if (obj._class === T.END_POINT) {
-          to.location = point(obj);
+          to['location'] = point(obj);
         } else if (obj._class === T.ARC) {
-          to.points = [point(obj.a), point(obj.b), point(obj.c)];
+          to['points'] = [point(obj.a), point(obj.b), point(obj.c)];
         } else if (obj._class === T.CIRCLE) {
-          to.c = point(obj.c);
-          to.r = obj.r.get();
+          to['c'] = point(obj.c);
+          to['r'] = obj.r.get();
         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
-          to.a = obj.a.id;
-          to.b = obj.b.id;
-          to.flip = obj.flip;
+          to['a'] = obj.a.id;
+          to['b'] = obj.b.id;
+          to['flip'] = obj.flip;
         }
       }
     }
   }
 
-  var constrs = sketch.constraints = [];
+  var constrs = sketch['constraints'] = [];
   var subSystems = this.viewer.parametricManager.subSystems;
   for (var j = 0; j < subSystems.length; j++) {
     var sub = subSystems[j];
