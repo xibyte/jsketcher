@@ -306,6 +306,7 @@ TCAD.geom.extrude = function(source, target) {
 
 TCAD.geom.FACE_COUNTER = 0;
 
+/** @Constructor **/
 TCAD.Solid = function(polygons, material) {
   THREE.Geometry.call( this );
   this.dynamic = true; //true by default
@@ -365,8 +366,11 @@ TCAD.Solid = function(polygons, material) {
   this.mergeVertices();
 };
 
-TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
+if (typeof THREE !== "undefined") {
+  TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
+}
 
+/** @Constructor **/
 TCAD.SketchFace = function(solid, poly) {
   var proto = poly.__face;
   poly.__face = this;
@@ -388,8 +392,10 @@ TCAD.SketchFace = function(solid, poly) {
   }
 };
 
-TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
-      color: 0xFFFFFF, linewidth: 3});
+if (typeof THREE !== "undefined") {
+  TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
+        color: 0xFFFFFF, linewidth: 3});
+}
 
 TCAD.SketchFace.prototype.syncSketches = function(geom) {
   var i;
