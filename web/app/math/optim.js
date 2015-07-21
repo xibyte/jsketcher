@@ -1,660 +1,532 @@
+optim = {};
+
+//Added strong wolfe condition to numeric's uncmin
+optim.bfgs_ = function(f,x0,tol,gradient,maxit,callback,options) {
+  var grad = numeric.gradient;
+  if(typeof options === "undefined") { options = {}; }
+  if(typeof tol === "undefined") { tol = 1e-8; }
+  if(typeof gradient === "undefined") { gradient = function(x) { return grad(f,x); }; }
+  if(typeof maxit === "undefined") maxit = 1000;
+  x0 = numeric.clone(x0);
+  var n = x0.length;
+  var f0 = f(x0),f1,df0;
+  if(isNaN(f0)) throw new Error('uncmin: f(x0) is a NaN!');
+  var max = Math.max, norm2 = numeric.norm2;
+  tol = max(tol,numeric.epsilon);
+  var step,g0,g1,H1 = options.Hinv || numeric.identity(n);
+  var dot = numeric.dot, inv = numeric.inv, sub = numeric.sub, add = numeric.add, ten = numeric.tensor, div = numeric.div, mul = numeric.mul;
+  var all = numeric.all, isfinite = numeric.isFinite, neg = numeric.neg;
+  var it=0,i,s,x1,y,Hy,Hs,ys,i0,t,nstep,t1,t2;
+  var msg = "";
+  g0 = gradient(x0);
+  while(it<maxit) {
+    if(typeof callback === "function") { if(callback(it,x0,f0,g0,H1)) { msg = "Callback returned true"; break; } }
+    if(!all(isfinite(g0))) { msg = "Gradient has Infinity or NaN"; break; }
+    step = neg(dot(H1,g0));
+    if(!all(isfinite(step))) { msg = "Search direction has Infinity or NaN"; break; }
+    nstep = norm2(step);
+    if(nstep < tol) { msg="Newton step smaller than tol"; break; }
+    t = 1;
+    df0 = dot(g0,step);
+    // line search
+    x1 = x0;
+    var tL = 0;
+    var tR = 100;
+    while(it < maxit) {
+      if(t*nstep < tol) { break; }
+      s = mul(step,t);
+      x1 = add(x0,s);
+      f1 = f(x1);
+      //Nocadel, 3.7(a,b)
+      if(f1-f0 >= 0.1*t*df0 || isNaN(f1)) {
+        tR = t;
+        t = (tL + tR) * 0.5;
+        ++it;
+        continue;
+      } else {
+        var slope = dot(gradient(x1), step);
+        if (slope <= 0.9 * Math.abs(df0)){
+          break;
+        }else if ( slope >= 0.9 * df0) {
+          tR = t;
+          t = (tL+ tR) * 0.5;
+          continue;
+        }else{
+          tL = t;
+          t = (tL+ tR)*0.5;
+          continue;
+        }
+      }
+      break;
+    }
+    if(t*nstep < tol) { msg = "Line search step size smaller than tol"; break; }
+    if(it === maxit) { msg = "maxit reached during line search"; break; }
+    g1 = gradient(x1);
+    y = sub(g1,g0);
+    ys = dot(y,s);
+    Hy = dot(H1,y);
+
+    // BFGS update on H1
+    H1 = sub(add(H1,
+            mul(
+                    (ys+dot(y,Hy))/(ys*ys),
+                ten(s,s)    )),
+        div(add(ten(Hy,s),ten(s,Hy)),ys));
+    x0 = x1;
+    f0 = f1;
+    g0 = g1;
+    ++it;
+  }
+  return {solution: x0, f: f0, gradient: g0, invHessian: H1, iterations:it, message: msg};
+};
 
 
-TCAD.optim = {};
+optim.bfgs = function(f,x0,tol,gradient,maxit,callback,options) {
+  var grad = numeric.gradient;
+  if(typeof options === "undefined") { options = {}; }
+  if(typeof tol === "undefined") { tol = 1e-8; }
+  if(typeof gradient === "undefined") { gradient = function(x) { return grad(f,x); }; }
+  if(typeof maxit === "undefined") maxit = 1000;
+  x0 = numeric.clone(x0);
+  var n = x0.length;
+  var f0 = f(x0),f1,df0;
+  if(isNaN(f0)) throw new Error('uncmin: f(x0) is a NaN!');
+  var max = Math.max, norm2 = numeric.norm2;
+  tol = max(tol,numeric.epsilon);
+  var step,g0,g1,H1 = options.Hinv || numeric.identity(n);
+  var dot = numeric.dot, inv = numeric.inv, sub = numeric.sub, add = numeric.add, ten = numeric.tensor, div = numeric.div, mul = numeric.mul;
+  var all = numeric.all, isfinite = numeric.isFinite, neg = numeric.neg;
+  var it=0,i,s,x1,y,Hy,Hs,ys,i0,t,nstep,t1,t2;
+  var msg = "";
+  g0 = gradient(x0);
+  while(it<maxit) {
+    if(typeof callback === "function") { if(callback(it,x0,f0,g0,H1)) { msg = "Callback returned true"; break; } }
+    if(!all(isfinite(g0))) { msg = "Gradient has Infinity or NaN"; break; }
+    step = neg(dot(H1,g0));
+    if(!all(isfinite(step))) { msg = "Search direction has Infinity or NaN"; break; }
+    nstep = norm2(step);
+    if(nstep < tol) { msg="Newton step smaller than tol"; break; }
 
-// convergence Rough 1e-8
-// convergence Fine  1e-10
-TCAD.math.solve_BFGS = function(subsys, convergence, smallF) {
+    df0 = dot(g0,step);
+    // line search
+    t1 = 0.0;
+    f1 = f0;
+
+    t2 = 1.0;
+    s = mul(step,t2);
+    x1 = add(x0,s);
+    var f2 = f(x1);
+
+    t3 = 2.0;
+    s = mul(step,t3);
+    x1 = add(x0,s);
+    var f3 = f(x1);
+    var tMax = 1e23;
+
+    while( (f2 > f1 || f2 > f3) && it < maxit) {
+      if(t*nstep < tol) { break; }
+      if (f2 > f1) {
+        //If f2 is greater than f1 then we shorten alpha2 and alpha3 closer to f1
+        //Effectively both are shortened by a factor of two.
+        t3 = t2;
+        f3 = f2;
+        t2 = t2 / 2;
+
+        s = mul(step,t2);
+        x1 = add(x0,s);
+        f2 = f(x1);
+      }
+      else if (f2 > f3) {
+        if (t3 >= tMax)
+            break;
+        //If f2 is greater than f3 then we increase alpha2 and alpha3 away from f1
+        //Effectively both are lengthened by a factor of two.
+        t2 = t3;
+        f2 = f3;
+        t3 = t3 * 2;
+
+        s = mul(step,t3);
+        x1 = add(x0,s);
+        f3 = f(x1);
+      }
+      it ++;
+    }
+
+    //Get the alpha for the minimum f of the quadratic approximation
+    var ts = t2 + ((t2-t1)*(f1-f3))/(3*(f1-2*f2+f3));
+
+    //Guarantee that the new alphaStar is within the bracket
+    if (ts >= t3 || ts <= t1)
+        ts = t2;
+
+    if (ts > tMax)
+        ts = tMax;
+
+    if (ts != ts)
+        ts = 0.;
+
+    //Take a final step to alphaStar
+    s = mul(step,ts);
+    x1 = add(x0,s);
+    f1 = f(x1);
+
+
+    if(t*nstep < tol) { msg = "Line search step size smaller than tol"; break; }
+    if(it === maxit) { msg = "maxit reached during line search"; break; }
+    g1 = gradient(x1);
+    y = sub(g1,g0);
+    ys = dot(y,s);
+    Hy = dot(H1,y);
+
+    // BFGS update on H1
+    H1 = sub(add(H1,
+            mul(
+                    (ys+dot(y,Hy))/(ys*ys),
+                ten(s,s)    )),
+        div(add(ten(Hy,s),ten(s,Hy)),ys));
+    x0 = x1;
+    f0 = f1;
+    g0 = g1;
+    ++it;
+  }
+  return {solution: x0, f: f0, gradient: g0, invHessian: H1, iterations:it, message: msg};
+};
+
+optim.bfgs_updater = function(gradient, x0) {
+  var n = x0.length;
+  var max = Math.max, norm2 = numeric.norm2;
+  var g0,g1,H1 = numeric.identity(n);
+  var dot = numeric.dot, inv = numeric.inv, sub = numeric.sub, add = numeric.add, ten = numeric.tensor, div = numeric.div, mul = numeric.mul;
+  var all = numeric.all, isfinite = numeric.isFinite, neg = numeric.neg;
+  var y,Hy,Hs,ys;
+  var msg = "";
+  var g0 = gradient(x0);
+
+  function step() {
+    return neg(dot(H1,g0));
+  }
+
+  function update(x, real_step) {
+    var s = real_step;
+
+    g1 = gradient(x);
+    y = sub(g1,g0);
+    ys = dot(y,s);
+    Hy = dot(H1,y);
+
+    // BFGS update on H1
+    H1 = sub(add(H1,
+            mul(
+                    (ys+dot(y,Hy))/(ys*ys),
+                ten(s,s)    )),
+        div(add(ten(Hy,s),ten(s,Hy)),ys));
+    g0 = g1;
+  }
+  return {step:step, update:update};
+};
+
+optim.inv = function inv(x) {
+    var s = numeric.dim(x), abs = Math.abs, m = s[0], n = s[1];
+    var A = numeric.clone(x), Ai, Aj;
+    var I = numeric.identity(m), Ii, Ij;
+    var i,j,k,x;
+    for(j=0;j<n;++j) {
+        var i0 = -1;
+        var v0 = -1;
+        for(i=j;i!==m;++i) { k = abs(A[i][j]); if(k>v0) { i0 = i; v0 = k; } }
+        Aj = A[i0]; A[i0] = A[j]; A[j] = Aj;
+        Ij = I[i0]; I[i0] = I[j]; I[j] = Ij;
+        x = Aj[j];
+        if (x === 0) {
+          console.log("CAN' INVERSE MATRIX");
+          x = 1e-32
+        }
+        for(k=j;k!==n;++k)    Aj[k] /= x;
+        for(k=n-1;k!==-1;--k) Ij[k] /= x;
+        for(i=m-1;i!==-1;--i) {
+            if(i!==j) {
+                Ai = A[i];
+                Ii = I[i];
+                x = Ai[j];
+                for(k=j+1;k!==n;++k)  Ai[k] -= Aj[k]*x;
+                for(k=n-1;k>0;--k) { Ii[k] -= Ij[k]*x; --k; Ii[k] -= Ij[k]*x; }
+                if(k===0) Ii[0] -= Ij[0]*x;
+            }
+        }
+    }
+    return I;
+};
+
+optim.dog_leg = function (subsys, rough) {
+  //rough = true
+  var tolg = rough ? 1e-3 : 1e-4;
+
+  var tolx = 1e-80, tolf = 1e-10;
 
   var xsize = subsys.params.length;
-  if (xsize == 0) {
-    return "Success";
+  var csize = subsys.constraints.length;
+
+  if (xsize == 0)
+    return 'Success';
+
+  var vec = TCAD.math._arr;
+  var mx = TCAD.math._matrix;
+
+  var n = numeric;
+
+  var x = vec(xsize);
+  var x_new = vec(xsize);
+
+  var fx = vec(csize);
+  var fx_new = vec(csize);
+
+  var Jx = mx(csize, xsize);
+  var Jx_new = mx(csize, xsize);
+  var h_gn = vec(xsize);
+  var h_dl = vec(xsize);
+
+  var r0 = vec(csize);
+
+  var err;
+  subsys.fillParams(x);
+
+//  subsys.setParams(vec(xsize));
+//  subsys.calcResidual(r0);
+
+  subsys.setParams(x);
+  err = subsys.calcResidual(fx);
+
+  subsys.fillJacobian(Jx);
+
+  function lls(A, b) {
+    var At = n.transpose(A);
+    var J = n.dot(At, A);
+    var r = n.dot(At, b);
+    return nocadel_10_18(J, r);
   }
 
-  var xdir; //Vector
-  var B = new TCAD.math.Matrix(xsize, xsize);
-  B.identity();
-  var x = new TCAD.math.Vector(xsize);
-  var grad = new TCAD.math.Vector(xsize);
-  var h = new TCAD.math.Vector(xsize);
-  var y = new TCAD.math.Vector(xsize);
+  function nocadel_10_18(A, r) {
+    //10.18
+    var usv = n.svd(A);
+    var x = vec(xsize);
+    for (var i = 0; i < usv.S.length; ++i) {
+      var u = usv.U[i];
+      var v = usv.V[i];
+      var b = usv.S[i];
+      if (b != 0) {
+        var _t = n.mul(v, n.dot(u, r) / b);
+        x = n.add(x, _t);
+      }
+    }
+    return x;
+  }
 
-  // Initial unknowns vector and initial gradient vector
-  TCAD.math.fillParams(subsys, x.data);
-  subsys.calcGrad_(grad.data);
+  function lsolve(A, b) {
+//    if (csize < xsize) {
+//      var At = n.transpose(A);
+//      var J = n.dot(At, A);
+//      var r = n.dot(At, b);;
+//      return n.solve(J, r);
+//    } else {
+//      return n.solve(A, b);
+//    }
+    var At = n.transpose(A);
+    var res = n.dot(n.dot(At, optim.inv(n.dot(A, At))), b);
+    return res;
 
-  // Initial search direction oposed to gradient (steepest-descent)
-  xdir = grad.scalarMultiply(-1);
-  TCAD.math.lineSearch(subsys, xdir);
-  var err = subsys.errorSquare();
+  }
 
-  h = x.copy();
-  TCAD.math.fillParams(subsys, x.data);
-  h = x.subtract(h); // = x - xold
+  function lusolve(A, b) {
+    var At = n.transpose(A);
+    var A = n.dot(At, A);
+    var b = n.dot(At, b);
+    return n.solve(A, b, true);
+  }
 
-  var maxIterNumber = 100 * xsize;
-  var divergingLim = 1e6*err + 1e12;
+  var g = n.dot(n.transpose(Jx), fx);
+  // get the infinity norm fx_inf and g_inf
+  var g_inf = n.norminf(g);
+  var fx_inf = n.norminf(fx);
 
-  for (var iter=1; iter < maxIterNumber; iter++) {
+  var maxIterNumber = xsize * 100;
+  var divergingLim = 1e6 * err + 1e12;
 
-    if (h.norm() <= convergence || err <= smallF)
+  var delta = 10;
+  var alpha = 0.;
+  var nu = 2.;
+  var iter = 0, stop = 0, reduce = 0;
+  var log = [];
+  while (stop === 0) {
+
+    // check if finished
+    if (fx_inf <= tolf || (rough && err <= 1e-3)) // Success
+      stop = 1;
+    else if (g_inf <= tolg)
+      stop = 2;
+    else if (delta <= tolx * (tolx + n.norm2(x)))
+      stop = 3;
+    else if (iter >= maxIterNumber)
+      stop = 4;
+    else if (err > divergingLim || err != err) { // check for diverging and NaN
+      stop = 6;
+    }
+    else {
+
+      // get the gauss-newton step
+      //h_gn = n.solve(Jx, n.mul(fx, -1));
+      h_gn = lsolve(Jx, n.mul(fx, -1));
+
+      //LU-Decomposition
+//          h_gn = lusolve(Jx, n.mul(fx, -1));
+
+      //Conjugate gradient method
+      //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
+
+      //solve linear problem using svd formula to get the gauss-newton step
+      //h_gn = lls(Jx, n.mul(fx, -1));
+
+      var hitBoundary = false;
+
+      var stepKind;
+      // compute the dogleg step
+      var gnorm = n.norm2(g);
+      if (n.norm2(h_gn) < delta) {
+        h_dl = h_gn;
+        stepKind = 1;
+      }
+      else {
+        var Jt = n.transpose(Jx);
+        var B = n.dot(Jt, Jx);
+        var gBg = n.dot(g, n.dot(B, g));
+        alpha = n.norm2Squared(g) / gBg;
+        if (alpha * gnorm >= delta) {
+          h_dl = n.mul(g, - delta / gnorm);
+          hitBoundary = true;
+          stepKind = 2;
+        } else {
+          var h_sd = n.mul(g, - alpha);
+
+          var d = n.sub(h_gn, h_sd);
+
+          var a = n.dot(d, d);
+          var b = 2 * n.dot(h_sd, d);
+          var c = n.dot(h_sd, h_sd) - delta * delta
+
+          var sqrt_discriminant = Math.sqrt(b * b - 4 * a * c)
+
+          var beta = (-b + sqrt_discriminant) / (2 * a)
+
+          // and update h_dl and dL with beta
+          h_dl = n.add(h_sd, n.mul(beta, d));
+          hitBoundary = true;
+          stepKind = 3;
+        }
+      }
+    }
+
+    var dl_norm = n.norm2(h_dl);
+
+//    if (dl_norm <= tolx) {
+//      stop = 5;
+//      break;
+//    }
+
+    // see if we are already finished
+    if (stop)
       break;
-    if (err > divergingLim || err != err) // check for diverging and NaN
-      break;
 
-    y = grad.copy();
-    subsys.calcGrad_(grad.data);
-    y = grad.subtract(y); // = grad - gradold
+    // get the new values
+    var err_new;
+    x_new = n.add(x, h_dl);
+    subsys.setParams(x_new);
+    err_new = subsys.calcResidual(fx_new);
+    subsys.fillJacobian(Jx_new);
 
-    //Now calculate the BFGS update on B
-//    B = TCAD.math.bfgsUpdate(B, h, y);
-//    B = TCAD.math.bfgsUpdateInverse(B, y, h);
+    // calculate the linear model and the update ratio
 
-    xdir = B.multiply(grad).scalarMultiply(-1);
-//    xdir = grad.scalarMultiply(-1);
+    var fxNormSq = n.norm2Squared(fx);
+    var dF = fxNormSq - n.norm2Squared(fx_new);
+    var dL = fxNormSq - n.norm2Squared( n.add(fx,  n.dot(Jx, h_dl)) );
 
-    TCAD.math.lineSearch(subsys, xdir);
-    err = subsys.errorSquare();
+    var acceptCandidate;
 
-    h = x.copy();
-    TCAD.math.fillParams(subsys, x.data);
-    h = x.subtract(h); // = x - xold
-  }
-
-  if (err <= smallF)
-    return "Success";
-  if (h.norm() <= convergence)
-    return "Converged";
-  return "Failed";
-};
-
-TCAD.math.solve_UNCMIN = function(subsys) {
-  var x0 = [];
-  subsys.fillParams(x0);
-  
-  var f = function(x) {
-    subsys.setParams(x);
-    return subsys.errorSquare();
-  };
-  var gradient = function(x) {
-    subsys.setParams(x);
-    var grad = [];
-    subsys.calcGrad(grad);
-    return grad;
-  };
-  var r = optim.bfgs(f,x0,0.01,gradient, subsys.params.length * 100);
-  subsys.setParams(r.solution);
-
-};
-
-
-TCAD.math.solve_TR = function(subsys) {
-
-  var xsize = subsys.params.length;
-  if (xsize == 0) {
-    return "Success";
-  }
-
-  var p; //Vector
-  var B = new TCAD.math.Matrix(xsize, xsize);
-  B.identity();
-  var H = new TCAD.math.Matrix(xsize, xsize);
-  H.identity();
-
-  var x = new TCAD.math.Vector(xsize);
-  var grad = new TCAD.math.Vector(xsize);
-  var h = new TCAD.math.Vector(xsize);
-  var y = new TCAD.math.Vector(xsize);
-  var pZero = new TCAD.math.Vector(xsize);
-
-  TCAD.math.fillParams(subsys, x.data);
-  subsys.calcGrad_(grad.data);
-  p = grad.scalarMultiply(-1);
-
-  var err = subsys.errorSquare();
-
-  var delta = 0.01;
-  var deltaD = 1;
-  var nu = 0.1;
-
-
-  var maxIterNumber = 100 * xsize;
-  var divergingLim = 1e6*err + 1e12;
-
-
-  function m(fx, p, g, B) {
-    return fx + g.dot(p) + 0.5 * p.dot(B.multiply(p)); //4.3
-  }
-
-  function norm(x) {
-    var sum = 0;
-    for (var i = 0; i < x.rSize; i++) {
-      var a = x.data[i][0];
-      sum += a * a;
-    }
-    return Math.sqrt(sum);
-  }
-
-  var tolx = 0.01;
-  for (var iter=1; iter < maxIterNumber; iter++) {
-
-    TCAD.math.setParams2(subsys, x.data);
-    var fx = subsys.errorSquare();
-
-    if (fx <= tolx) break;
-    //if (h.norm() <= tolx) break;
-//    if (delta <= tolx*(tolx + x.norm())) break;
-    if (fx > divergingLim || fx != fx) break;
-
-    p = TCAD.math.cauchyPoint(delta, grad, B, norm);
-
-    var xAddP = x.add(p);
-
-    TCAD.math.setParams2(subsys, xAddP.data);
-    var fxAddP = subsys.errorSquare();
-
-    var r = ( fx - fxAddP ) / ( m(fx, pZero, grad, H) - m(fx, p, grad, H) );
-
-    if (r < 0.25) {
-      delta = 0.25 * norm(p);
+    if (dF == 0 || dL == 0) {
+      acceptCandidate = true;
     } else {
-      if (r > 0.75) {
-        delta = Math.min(delta * 2, deltaD);
+      var rho = dF / dL;
+      // update delta
+      if (rho < 0.25) {
+        // if the model is a poor predictor reduce the size of the trust region
+        delta = 0.25 * dl_norm;
+        //delta *= 0.5;
+      } else {
+        // only increase the size of the trust region if it is taking a step of maximum size
+        // otherwise just assume it's doing good enough job
+        if (rho > 0.75 && hitBoundary) {
+          //delta = Math.max(delta,3*dl_norm);
+          delta *= 2;
+        }
       }
+      acceptCandidate = rho > 0; // could be 0 .. 0.25
+    }
+    log.push([stepKind,err,  delta,rho]);
+
+    if (acceptCandidate) {
+      x = n.clone(x_new);
+      Jx = n.clone(Jx_new);
+      fx = n.clone(fx_new);
+      err = err_new;
+
+      g = n.dot(n.transpose(Jx), fx);
+
+      // get infinity norms
+      g_inf = n.norminf(g);
+      fx_inf = n.norminf(fx);
     }
 
-    if (r > nu) {
-      h = xAddP.subtract(x); // = x - xold
-      x = xAddP;
-
-      TCAD.math.setParams2(subsys, x.data);
-
-      y = grad.copy();
-      subsys.calcGrad_(grad.data);
-      y = grad.subtract(y);
-
-      //Now calculate the BFGS on B and H
-      B = TCAD.math.bfgsUpdateInverse(B, y, h);
-      H = TCAD.math.bfgsUpdate(H, y, h);
-    }
+    // count this iteration and start again
+    iter++;
   }
-  TCAD.math.setParams2(subsys, x.data);
-};
-
-
-TCAD.math.cauchyPoint = function(delta, grad, B, normaF) {
-  var tau;
-  var tauCondition = grad.dot(B.multiply(grad))
-  var norm = normaF(grad);
-  if (tauCondition <= 0) {
-    tau = 1;
-  } else {
-    tau = Math.min((norm*norm*norm)/(delta*tauCondition), 1);
-  }
-  return grad.scalarMultiply(- tau * delta / norm) ;
-};
-
-TCAD.math.fillParams = function(sys, out) {
-  for (var p = 0; p < sys.params.length; p++) {
-    out[p][0] = sys.params[p].get();
-  }
-};
-
-TCAD.math.setParams2 = function(sys, point) {
-  for (var p = 0; p < sys.params.length; p++) {
-    sys.params[p].set(point[p][0]);
-  }
-};
-
-TCAD.math.bfgsUpdateInverse = function(H, y, s) {
-  // 18.16
-  var I = new TCAD.math.Matrix(s.rSize, s.rSize);
-  I.identity();
-
-  var yT = y.transpose();
-  var sT = s.transpose();
-  var yT_x_s = y.dot(s);
-  if (yT_x_s == 0) yT_x_h = .0000000001;
-
-  var p = 1 / yT_x_s;
-
-  var A = I.subtract( s.multiply(yT).scalarMultiply(p) )
-  var B = I.subtract( y.multiply(sT).scalarMultiply(p) )
-  var C = s.multiply(sT).scalarMultiply(p)
-  return A.multiply(H).multiply(C).add(C);
-};
-
-TCAD.math.bfgsUpdate = function(B, y, h) {
-
-  var B_x_h = B.multiply(h);
-  var hT_x_B = h.transpose().multiply(B);
-  var yT = y.transpose();
-  var y_x_yT = y.multiply(yT);
-  var yT_x_h = y.dot(h);
-  var hT_x_B_x_h = h.dot(B_x_h)
-
-  if (yT_x_h == 0) yT_x_h = .0000000001;
-  if (hT_x_B_x_h == 0) hT_x_B_x_h = .0000000001;
-
-
-  B = B.add( y_x_yT.scalarMultiply( 1 / yT_x_h ) );
-  B = B.subtract( ( B_x_h.multiply(hT_x_B) ).scalarMultiply( 1./hT_x_B_x_h ) );
-  return B;
-};
-
-TCAD.math.solve_SD = function(subsys) {
-  var i = 0;
-  var grad = new TCAD.math.Vector(subsys.params.length);
-  while (subsys.errorSquare() > 0.1 ) {
-    subsys.calcGrad_(grad.data);
-    var xdir = grad.scalarMultiply(-1);
-    TCAD.math.lineSearch(subsys, xdir);
-    if (i ++ > 100) {
-      return;
-    }
-  }
-  console.log(subsys.errorSquare());
-};
-
-TCAD.math.lineSearchOrig = function(subsys, xdir) {
-
-  var f1,f2,f3,alpha1,alpha2,alpha3,alphaStar;
-
-  var alphaMax = 1e28; //maxStep(xdir);
-
-  var x;
-  var x0 = new TCAD.math.Vector(subsys.params.length);
-
-  //Save initial values
-  TCAD.math.fillParams(subsys, x0.data);
-
-  //Start at the initial position alpha1 = 0
-  alpha1 = 0.;
-  f1 = subsys.errorSquare();
-
-  //Take a step of alpha2 = 1
-  alpha2 = 1.;
-  x = x0.add(xdir.scalarMultiply(alpha2));
-  TCAD.math.setParams2(subsys, x.data);
-  f2 = subsys.errorSquare();
-
-  //Take a step of alpha3 = 2*alpha2
-  alpha3 = alpha2*2;
-  x = x0.add(xdir.scalarMultiply(alpha3));
-  TCAD.math.setParams2(subsys, x.data);
-  f3 = subsys.errorSquare();
-
-  //Now reduce or lengthen alpha2 and alpha3 until the minimum is
-  //Bracketed by the triplet f1>f2<f3
-  while (f2 > f1 || f2 > f3) {
-    if (f2 > f1) {
-      //If f2 is greater than f1 then we shorten alpha2 and alpha3 closer to f1
-      //Effectively both are shortened by a factor of two.
-      alpha3 = alpha2;
-      f3 = f2;
-      alpha2 = alpha2 / 2;
-      x = x0.add( xdir.scalarMultiply(alpha2 ));
-      TCAD.math.setParams2(subsys, x.data);
-      f2 = subsys.errorSquare();
-    }
-    else if (f2 > f3) {
-      if (alpha3 >= alphaMax)
-        break;
-      //If f2 is greater than f3 then we increase alpha2 and alpha3 away from f1
-      //Effectively both are lengthened by a factor of two.
-      alpha2 = alpha3;
-      f2 = f3;
-      alpha3 = alpha3 * 2;
-      x = x0.add( xdir.scalarMultiply(alpha3));
-      TCAD.math.setParams2(subsys, x.data);
-      f3 = subsys.errorSquare();
-    }
-  }
-  //Get the alpha for the minimum f of the quadratic approximation
-  alphaStar = alpha2 + ((alpha2-alpha1)*(f1-f3))/(3*(f1-2*f2+f3));
-
-  //Guarantee that the new alphaStar is within the bracket
-  if (alphaStar >= alpha3 || alphaStar <= alpha1)
-    alphaStar = alpha2;
-
-  if (alphaStar > alphaMax)
-    alphaStar = alphaMax;
-
-  if (alphaStar != alphaStar)
-    alphaStar = 0.;
-
-  //Take a final step to alphaStar
-  x = x0 .add( xdir.scalarMultiply( alphaStar ) );
-  TCAD.math.setParams2(subsys, x.data);
-  return alphaStar;
-
-};
-
-TCAD.math.lineSearchWeight = function(subsys, xdir) {
-
-  var f1,f2,f3,alpha1,alpha2,alpha3,alphaStar;
-
-
-  var alphaMax = 1e28; //maxStep(xdir);
-
-  var x;
-  var x0 = new TCAD.math.Vector(subsys.params.length);
-
-  var costs = [];
-  function updateCosts() {
-    var maxErr = -1;
-    var i;
-    var t;
-    for (i=0; i < subsys.constraints.length; i++) {
-      t = subsys.constraints[i].error();
-      maxErr = Math.max(maxErr, t*t);
-    }
-    if (maxErr > 0) {
-      for (i=0; i < subsys.constraints.length; i++) {
-        t = subsys.constraints[i].error();
-        costs[i] = t*t / maxErr;
-      }
-    } else {
-      TCAD.math.fill_array(costs, 0, subsys.constraints.length, 1)
-    }
-  }
-  updateCosts();
-//  console.log(costs);
-  var xdir = new TCAD.math.Vector(subsys.params.length);
-  calcGrad = function(out) {
-    var i;
-    for (i = 0; i < out.length; ++i) {
-      out[i][0] = 0;
-    }
-
-    for (i=0; i < subsys.constraints.length; i++) {
-      var c = subsys.constraints[i];
-
-      var cParams = c.params;
-      var grad = [];
-      c.gradient(grad);
-
-      for (var p = 0; p < cParams.length; p++) {
-        var param = cParams[p];
-        var j = param.j;
-        out[j][0] += costs[i] * grad[p]; // (10.4)
-      }
-    }
+  log.push(stop);
+  //window.___log(log);
+  return {
+    evalCount: iter,
+    error: err,
+    returnCode: stop
   };
-  calcGrad(xdir.data)
-  console.log(xdir.data);
-
-  function errorSquare() {
-    var error = 0;
-    for (var i = 0; i < subsys.constraints.length; i++) {
-      var t = subsys.constraints[i].error();
-      error += t * t * costs[i];
-    }
-    return error * 0.5;
-  }
-
-
-  //Save initial values
-  TCAD.math.fillParams(subsys, x0.data);
-
-  //Start at the initial position alpha1 = 0
-  alpha1 = 0.;
-  f1 = errorSquare();
-
-
-  //Take a step of alpha2 = 1
-  alpha2 = 1.;
-  x = x0.add(xdir.scalarMultiply(alpha2));
-  TCAD.math.setParams2(subsys, x.data);
-  f2 = errorSquare();
-
-  //Take a step of alpha3 = 2*alpha2
-  alpha3 = alpha2*2;
-  x = x0.add(xdir.scalarMultiply(alpha3));
-  TCAD.math.setParams2(subsys, x.data);
-  f3 = errorSquare();
-
-  //Now reduce or lengthen alpha2 and alpha3 until the minimum is
-  //Bracketed by the triplet f1>f2<f3
-  while (f2 > f1 || f2 > f3) {
-    if (f2 > f1) {
-      //If f2 is greater than f1 then we shorten alpha2 and alpha3 closer to f1
-      //Effectively both are shortened by a factor of two.
-      alpha3 = alpha2;
-      f3 = f2;
-      alpha2 = alpha2 / 2;
-      x = x0.add( xdir.scalarMultiply(alpha2 ));
-      TCAD.math.setParams2(subsys, x.data);
-      f2 = errorSquare();
-    }
-    else if (f2 > f3) {
-      if (alpha3 >= alphaMax)
-        break;
-      //If f2 is greater than f3 then we increase alpha2 and alpha3 away from f1
-      //Effectively both are lengthened by a factor of two.
-      alpha2 = alpha3;
-      f2 = f3;
-      alpha3 = alpha3 * 2;
-      x = x0.add( xdir.scalarMultiply(alpha3));
-      TCAD.math.setParams2(subsys, x.data);
-      f3 = errorSquare();
-    }
-  }
-  //Get the alpha for the minimum f of the quadratic approximation
-  alphaStar = alpha2 + ((alpha2-alpha1)*(f1-f3))/(3*(f1-2*f2+f3));
-
-  //Guarantee that the new alphaStar is within the bracket
-  if (alphaStar >= alpha3 || alphaStar <= alpha1)
-    alphaStar = alpha2;
-
-  if (alphaStar > alphaMax)
-    alphaStar = alphaMax;
-
-  if (alphaStar != alphaStar)
-    alphaStar = 0.;
-
-  //Take a final step to alphaStar
-  x = x0 .add( xdir.scalarMultiply( alphaStar ) );
-  TCAD.math.setParams2(subsys, x.data);
-//  console.log(alphaStar);
-  return alphaStar;
-
 };
 
-TCAD.math.lineSearchWolfeCond = function(sys, d) {
+optim.cg = function(A, x, b, tol, maxIt) {
 
-  var c1 = 0.1;
-  var c2 = 0.9;
+  var _ = numeric;
 
-  var x0 = new TCAD.math.Vector(sys.params.length);
-  TCAD.math.fillParams(sys, x0.data);
-
-  var alpha = 1;
-  var fx0 = sys.errorSquare();
-  var grad = new TCAD.math.Vector(sys.params.length);
-  sys.calcGrad_(grad.data);
-  var gx0 = grad.dot(d);
-
-  //bound the solution
-  var alphaL = 0;
-  var alphaR = 10000;
-  var maxit = 800;
-
-  for (var iter = 1; iter <= maxit; iter++){
-    var xp = x0.add(d.scalarMultiply(alpha));
-
-    TCAD.math.setParams2(sys, xp.data);
-    var erroralpha = sys.errorSquare(); //get the error at that point
-
-    if (erroralpha >= fx0 + alpha * c1 * gx0)  { // if error is not sufficiently reduced
-      alphaR = alpha;//move halfway between current alpha and lower alpha
-      alpha = (alphaL + alphaR)/2.0;
-    }else{//if error is sufficiently decreased
-
-      TCAD.math.setParams2(sys, xp.data);
-      sys.calcGrad_(grad.data);
-      var slopealpha = grad.dot(d); // then get slope along search direction
-      if (slopealpha <= c2 * Math.abs(gx0)){ // if slope sufficiently closer to 0
-        break;//then this is an acceptable point
-      }else if ( slopealpha >= c2 * gx0) { // if slope is too steep and positive then go to the left
-        alphaR = alpha;//move halfway between current alpha and lower alpha
-        alpha = (alphaL+ alphaR)/2;
-      }else{//if slope is too steep and negative then go to the right of this alpha
-        alphaL = alpha;//move halfway between current alpha and upper alpha
-        alpha = (alphaL+ alphaR)/2;
-      }
-    }
+  var tr = _.transpose;
+  var At = tr(A);
+  if (A.length != A[0].length) {
+    var A = _.dot(At, A);
+    var b = _.dot(At, b);
+    At = tr(A);
   }
 
-  //if ran out of iterations then return the best thing we got
-  var x = x0.add(d.scalarMultiply(alpha));
-  TCAD.math.setParams2(sys, x.data);
-  return alpha;
-};
+  var r = _.sub(_.dot(A, x), b);
+  var p = _.mul(r, -1);
+  var rr = _.dotVV(r, r);
 
-TCAD.math.lineSearch3 = function(sys, xdir) {
+  var a;
+  var _rr;
+  var beta;
 
-  var x0 = new TCAD.math.Vector(sys.params.length);
-  var x = new TCAD.math.Vector(sys.params.length);
-  TCAD.math.fillParams(sys, x0.data);
-
-  var alphas = [];
-  for (var i = 0; i < xdir.data.length; i++) {
-    alphas[i] = Number.MAX_VALUE;
+  for (var i = 0; i < maxIt; ++i) {
+    if (_.norm2(r) <= tol) break;
+    var Axp =_.dot(A, p);
+    a = rr / _.dotVV(Axp, p);
+    x = _.add(x, _.mul(p, a));
+    r = _.add(r, _.mul(Axp, a));
+    _rr = rr;
+    rr = _.dotVV(r, r);
+    beta = rr / _rr;
+    p = _.add(_.mul(r, -1), _.mul(p, beta));
   }
-  for (var i = 0; i < sys.constraints.length; i++) {
-    TCAD.math.lineSearchForConstraint(sys.constraints[i], alphas, xdir, sys);
-    TCAD.math.setParams2(sys, x0.data);
-  }
-
-  for (var i = 0; i < xdir.data.length; i++) {
-    x.data[i][0] = xdir.data[i][0] * alphas[i] + x0.data[i][0];
-  }
-
-  //Take a final step to alphaStar
-  TCAD.math.setParams2(sys, x.data);
-};
-
-
-TCAD.math.lineSearchForConstraint = function(constr, alphas, _xdir, sys) {
-
-  var f1,f2,f3,alpha1,alpha2,alpha3,alphaStar;
-
-  var alphaMax = 1e28; //maxStep(xdir);
-
-  var x;
-  var xdir = new TCAD.math.Vector(constr.params.length);
-  var x0 = new TCAD.math.Vector(constr.params.length);
-
-  for (var p = 0; p < constr.params.length; p++) {
-    x0.data[p][0] = constr.params[p].get();
-    xdir.data[p][0] = _xdir.data[constr.params[p].j][0];
-  }
-
-  function errorSquare() {
-//    var t = constr.error();
-//    return t*t*0.5;
-    return sys.errorSquare();
-  }
-
-  function setParams2(x) {
-    for (var p = 0; p < constr.params.length; p++) {
-      constr.params[p].set(x.data[p][0]);
-    }
-  }
-
-  //Start at the initial position alpha1 = 0
-  alpha1 = 0.;
-  f1 = errorSquare();
-
-  //Take a step of alpha2 = 1
-  alpha2 = 1.;
-  x = x0.add(xdir.scalarMultiply(alpha2));
-  setParams2(x);
-  f2 = errorSquare();
-
-  //Take a step of alpha3 = 2*alpha2
-  alpha3 = alpha2*2;
-  x = x0.add(xdir.scalarMultiply(alpha3));
-  setParams2(x);
-  f3 = errorSquare();
-
-  //Now reduce or lengthen alpha2 and alpha3 until the minimum is
-  //Bracketed by the triplet f1>f2<f3
-  while (f2 > f1 || f2 > f3) {
-    if (f2 > f1) {
-      //If f2 is greater than f1 then we shorten alpha2 and alpha3 closer to f1
-      //Effectively both are shortened by a factor of two.
-      alpha3 = alpha2;
-      f3 = f2;
-      alpha2 = alpha2 / 2;
-      x = x0.add( xdir.scalarMultiply(alpha2 ));
-      setParams2(x);
-      f2 = errorSquare();
-    }
-    else if (f2 > f3) {
-      if (alpha3 >= alphaMax)
-        break;
-      //If f2 is greater than f3 then we increase alpha2 and alpha3 away from f1
-      //Effectively both are lengthened by a factor of two.
-      alpha2 = alpha3;
-      f2 = f3;
-      alpha3 = alpha3 * 2;
-      x = x0.add( xdir.scalarMultiply(alpha3));
-      setParams2(x);
-      f3 = errorSquare();
-    }
-  }
-  //Get the alpha for the minimum f of the quadratic approximation
-  alphaStar = alpha2 + ((alpha2-alpha1)*(f1-f3))/(3*(f1-2*f2+f3));
-
-  //Guarantee that the new alphaStar is within the bracket
-  if (alphaStar >= alpha3 || alphaStar <= alpha1)
-    alphaStar = alpha2;
-
-  if (alphaStar > alphaMax)
-    alphaStar = alphaMax;
-
-  if (alphaStar != alphaStar)
-    alphaStar = 0.;
-
-
-  for (var p = 0; p < constr.params.length; p++) {
-    var j = constr.params[p].j;
-    alphas[j] = Math.min(alphas[j], alphaStar);
-  }
-
-  return alphaStar;
-};
-
-
-TCAD.math.lineSearch2 = function(subsys, xdir) {
-
-  var x0 = new TCAD.math.Vector(subsys.params.length);
-  TCAD.math.fillParams(subsys, x0.data);
-
-  var alpha = 1.;
-  var f0 = subsys.errorSquare();
-
-  var x = x0.add(xdir.scalarMultiply(alpha));
-  TCAD.math.setParams2(subsys, x.data);
-  var f = subsys.errorSquare();
-
-  while (f > f0 || alpha > 0.00000001) {
-    alpha *= .5;
-    x = x0.add(xdir.scalarMultiply(alpha));
-    TCAD.math.setParams2(subsys, x.data);
-    f = subsys.errorSquare();
-  }
-
-  return alphaStar;
-
-};
-
-
-TCAD.math.lineSearch = TCAD.math.lineSearchWeight;
-//TCAD.math.lineSearch = TCAD.math.lineSearchOrig;
-
-TCAD.math.fill_array = function(a, fromIndex, toIndex,val) {
-  for (var i = fromIndex; i < toIndex; i++) a[i] = val;
+//  console.log("liner problem solved in " + i);
+  return x;
 };
