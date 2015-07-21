@@ -27,7 +27,6 @@ java -jar compiler.jar \
 ../web/app/math/qr.js \
 ../web/app/math/matrix.js \
 ../web/app/math/optim.js \
-../web/app/math/noptim.js \
 ../web/app/math/lm.js \
 ../web/app/sketcher/constr/constraints.js \
 ../web/app/sketcher/constr/solver.js \
