@@ -837,7 +837,7 @@ TCAD.TWO.Constraints.RR = function(arc1, arc2) {
 
 TCAD.TWO.Constraints.RR.prototype.NAME = 'RR';
 TCAD.TWO.Constraints.RR.prototype.UI_NAME = 'Radius Equality';
-TCAD.TWO.Constraints.RR.prototype.reducible = true;
+//TCAD.TWO.Constraints.RR.prototype.reducible = true;
 
 
 TCAD.TWO.Constraints.RR.prototype.getSolveData = function() {
@@ -865,7 +865,7 @@ TCAD.TWO.Constraints.Vertical = function(line) {
 
 TCAD.TWO.Constraints.Vertical.prototype.NAME = 'Vertical';
 TCAD.TWO.Constraints.Vertical.prototype.UI_NAME = 'Vertical';
-TCAD.TWO.Constraints.Vertical.prototype.reducible = true;
+//TCAD.TWO.Constraints.Vertical.prototype.reducible = true;
 
 TCAD.TWO.Constraints.Vertical.prototype.getSolveData = function() {
   return [['equal', [this.line.a._x, this.line.b._x], []]];
@@ -892,7 +892,7 @@ TCAD.TWO.Constraints.Horizontal = function(line) {
 
 TCAD.TWO.Constraints.Horizontal.prototype.NAME = 'Horizontal';
 TCAD.TWO.Constraints.Horizontal.prototype.UI_NAME = 'Horizontal';
-TCAD.TWO.Constraints.Horizontal.prototype.reducible = true;
+//TCAD.TWO.Constraints.Horizontal.prototype.reducible = true;
 
 TCAD.TWO.Constraints.Horizontal.prototype.getSolveData = function() {
   return [['equal', [this.line.a._y, this.line.b._y], []]];
