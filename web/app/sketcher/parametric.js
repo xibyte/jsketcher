@@ -1,4 +1,5 @@
 TCAD.TWO.Constraints = {};
+TCAD.EQUALS_ELIMINATION_ENABLED = true;
 
 /** @constructor */
 TCAD.TWO.SubSystem = function() {
@@ -370,20 +371,22 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
 //    return a - b;
 //  });
   var tuples = [];
-//  for (i = 0; i < system.length; ++i) {
-//    var c = system[i];
-//    if (c[3] === true) { //Reduce flag
-//      eqcElimination.push(i);
-//      var cp1 = c[1][0];
-//      var cp2 = c[1][1];
-//      //if (!peq(cp1, cp2)) continue;
-//      var p0 = cp1.id;
-//      var p1 = cp2.id;
-//      equalsDict[p0] = cp1;
-//      equalsDict[p1] = cp2;
-//      tuples.push([p0, p1]);
-//    }
-//  }
+  if (TCAD.EQUALS_ELIMINATION_ENABLED) {
+    for (i = 0; i < system.length; ++i) {
+      var c = system[i];
+      if (c[3] === true) { //Reduce flag
+        eqcElimination.push(i);
+        var cp1 = c[1][0];
+        var cp2 = c[1][1];
+        //if (!peq(cp1, cp2)) continue;
+        var p0 = cp1.id;
+        var p1 = cp2.id;
+        equalsDict[p0] = cp1;
+        equalsDict[p1] = cp2;
+        tuples.push([p0, p1]);
+      }
+    }
+  }
 
   function _check(index, p0, p1) {
     var exists = index.indexOf(p0) >= 0;
