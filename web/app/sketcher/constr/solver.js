@@ -262,7 +262,8 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     }
   }
   var systemSolver = {
-    system : sys,
+    diagnose : function() {return TCAD.parametric.diagnose(sys)},
+    error : function() {return sys.error()},
     solveSystem : solve,
     updateLock : function(values) {
       for (var i = 0; i < values.length; ++i) {
