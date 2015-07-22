@@ -355,7 +355,6 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   var pdict = {};
   var params;
   var _constrs = [];
-  var equals = [];
 
   var equalsDict = {};
   var equalsIndex = [];
@@ -486,9 +485,6 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
 
     var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
     _constrs.push(_constr);
-    if (sdata[0] === 'equal') {
-      equals.push(system[i]);
-    }
   }
 
   var _locked = [];
