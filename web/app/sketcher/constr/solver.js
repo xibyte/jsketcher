@@ -2,6 +2,10 @@ TCAD.parametric = {};
 
 /** @constructor */
 TCAD.parametric.Param = function(id, value) {
+  this.reset(id, value);
+};
+
+TCAD.parametric.Param.prototype.reset = function(id, value) {
   this.id = id;
   this.value = value;
   this.j = -1;

@@ -454,7 +454,14 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
     }
     var _p = pdict[p.id];
     if (_p === undefined) {
-      _p = new TCAD.parametric.Param(p.id, p.get());
+      if (p.__cachedParam__ === undefined) {
+        _p = new TCAD.parametric.Param(p.id, p.get());
+        p.__cachedParam__ = _p;
+      } else {
+        _p = p.__cachedParam__;
+        _p.reset(p.id, p.get());
+      }
+
       _p._backingParam = p;
       pdict[p.id] = _p;
     }
