@@ -55,7 +55,7 @@ TCAD.TWO.ParametricManager.prototype._add = function(constr) {
     break;  
   }
   subSystem.constraints.push(constr);
-  this.checkRedundancy(subSystem, constr);
+  return subSystem;
 };
 
 TCAD.TWO.ParametricManager.prototype.checkRedundancy = function (subSystem, constr) {
@@ -73,13 +73,15 @@ TCAD.TWO.ParametricManager.prototype.refresh = function() {
 
 TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this.viewer.historyManager.checkpoint();
-  this._add(constr);
+  var subSystem = this._add(constr)
+  this.checkRedundancy(subSystem, constr);
   this.refresh();
 };
 
 TCAD.TWO.ParametricManager.prototype.addAll = function(constrs) {
   for (var i = 0; i < constrs.length; i++) {
-    this._add(constrs[i]);
+    var subSystem = this._add(constrs[i]);
+    this.checkRedundancy(subSystem, constrs[i]);
   }
   this.refresh();
 };
