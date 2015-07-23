@@ -248,15 +248,17 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     error : 0,
     returnCode : 1
   };
-  
+
+  var conflict = TCAD.parametric.diagnose(sys).conflict;
+  if (conflict) {
+    console.log("Conflicting or redundant constraints. Please fix your system.");
+    return nullResult;
+  }
+
   function solve(rough, alg) {
+    if (conflict) return nullResult;
     if (constrs.length == 0) return nullResult;
     if (sys.params.length == 0) return nullResult;
-    if (TCAD.parametric.diagnose(sys).conflict) {
-      console.log("Conflicting or redundant constraints. Please fix your system.");
-      return nullResult;
-    }
-    
     switch (alg) {
       case 2:
         return TCAD.parametric.solve_lm(sys, model, jacobian, rough);
