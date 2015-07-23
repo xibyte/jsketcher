@@ -7,36 +7,30 @@ git rev-parse --short HEAD #make sure git in place
 mkdir -p out
 rm -rf out/*
 
-java -jar compiler.jar \
---js_output_file out/app.js \
---jscomp_off externsValidation \
---compilation_level ADVANCED_OPTIMIZATIONS \
---externs ../web/lib/jquery-2.1.0.min.js \
---externs ../web/lib/numeric-1.2.6.js \
---externs ../web/lib/diff_match_patch.js \
-../web/app/sketcher/canvas.js \
-../web/app/sketcher/io.js \
-../web/app/sketcher/history.js \
-../web/app/sketcher/shapes/arc.js \
-../web/app/sketcher/shapes/circle.js \
-../web/app/sketcher/shapes/segment.js \
-../web/app/sketcher/shapes/dim.js \
-../web/app/sketcher/helpers.js \
-../web/app/math/vector.js \
-../web/app/math/math.js \
-../web/app/math/qr.js \
-../web/app/math/matrix.js \
-../web/app/math/optim.js \
-../web/app/math/lm.js \
-../web/app/sketcher/constr/constraints.js \
-../web/app/sketcher/constr/solver.js \
-../web/app/sketcher/parametric.js \
-../web/app/sketcher/fetchers.js \
-../web/app/engine.js \
-../web/app/sketcher/main2d.js \
-../web/app/ui.js \
-../web/app/math/graph.js \
-../web/app/app-init.js
+echo '//sketcher' > out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/canvas.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/io.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/history.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/shapes/arc.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/shapes/circle.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/shapes/segment.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/shapes/dim.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/helpers.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/math/vector.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/math/math.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/math/qr.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/math/matrix.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/math/optim.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/math/lm.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/constr/constraints.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/constr/solver.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/parametric.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/fetchers.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/engine.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/main2d.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/ui.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/math/graph.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/app-init.js >> out/app.js
 
 sed -n \
 '/<\!--\$\$\$javascript_start\$\$\$-->/{:a;N;/<\!--\$\$\$javascript_end\$\$\$-->/!ba;N;s|.*\n|  <script src="app.js"></script>|};p' \
