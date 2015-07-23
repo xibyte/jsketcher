@@ -34,7 +34,6 @@ TCAD.constraints.Equal = function(params) {
     out[0] = 1;
     out[1] = -1;
   }
-
 };
 
 /** @constructor */
@@ -94,7 +93,6 @@ TCAD.constraints.EqualsTo = function(params, value) {
     return this.params[0].get() - this.value;
   };
 
-
   this.gradient = function(out) {
     out[0] = 1;
   };
@@ -106,69 +104,43 @@ TCAD.constraints.P2LDistance = function(params, distance) {
   this.params = params;
   this.distance = distance;
 
-  this.tx = 0;
-  this.ty = 1;
-  this.lp1x = 2;
-  this.lp1y = 3;
-  this.lp2x = 4;
-  this.lp2y = 5;
+  var tx = 0;
+  var ty = 1;
+  var lp1x = 2;
+  var lp1y = 3;
+  var lp2x = 4;
+  var lp2y = 5;
 
   this.error = function() {
-    var x0 = this.p0x(), x1 = this.p1x(), x2 = this.p2x();
-    var y0 = this.p0y(), y1 = this.p1y(), y2 = this.p2y();
+    var x0 = params[tx].get(), x1 = params[lp1x].get(), x2 = params[lp2x].get();
+    var y0 = params[ty].get(), y1 = params[lp1y].get(), y2 = params[lp2y].get();
     var dist = this.distance;
     var dx = x2 - x1;
     var dy = y2 - y1;
     var d = Math.sqrt(dx * dx + dy * dy);
     //calculate triangle area
     var area = Math.abs
-            (-x0 * dy + y0 * dx + x1 * y2 - x2 * y1);
+    (-x0 * dy + y0 * dx + x1 * y2 - x2 * y1);
     if (d == 0) {
       return 0;
     }
     return (area / d - dist);
-
   };
-
-  this.p1x = function() {
-    return params[this.lp1x].get();
-  };
-
-  this.p1y = function() {
-    return params[this.lp1y].get();
-  };
-
-  this.p2x = function() {
-    return params[this.lp2x].get();
-  };
-
-  this.p2y = function() {
-    return params[this.lp2y].get();
-  };
-
-  this.p0x = function() {
-    return params[this.tx].get();
-  };
-
-  this.p0y = function() {
-    return params[this.ty].get();
-  };
-
 
   this.gradient = function(out) {
-    var x0 = this.p0x(), x1 = this.p1x(), x2 = this.p2x();
-    var y0 = this.p0y(), y1 = this.p1y(), y2 = this.p2y();
+    var x0 = params[tx].get(), x1 = params[lp1x].get(), x2 = params[lp2x].get();
+    var y0 = params[ty].get(), y1 = params[lp1y].get(), y2 = params[lp2y].get();
     var dx = x2 - x1;
     var dy = y2 - y1;
     var d2 = dx * dx + dy * dy;
     var d = Math.sqrt(d2);
     var area = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
-    out[this.tx]   = ((y1 - y2) / d);
-    out[this.ty]   = ((x2 - x1) / d);
-    out[this.lp1x] = (((y2 - y0) * d + (dx / d) * area) / d2);
-    out[this.lp1y] = (((x0 - x2) * d + (dy / d) * area) / d2);
-    out[this.lp2x] = (((y0 - y1) * d - (dx / d) * area) / d2);
-    out[this.lp2y] = (((x1 - x0) * d - (dy / d) * area) / d2);
+    out[tx]   = ((y1 - y2) / d);
+    out[ty]   = ((x2 - x1) / d);
+    out[lp1x] = (((y2 - y0) * d + (dx / d) * area) / d2);
+    out[lp1y] = (((x0 - x2) * d + (dy / d) * area) / d2);
+    out[lp2x] = (((y0 - y1) * d - (dx / d) * area) / d2);
+    out[lp2y] = (((x1 - x0) * d - (dy / d) * area) / d2);
 
     for (var i = 0; i < 6; i++) {
       if (Number.isNaN(out[i])) {
@@ -179,9 +151,7 @@ TCAD.constraints.P2LDistance = function(params, distance) {
       }
     }
   }
-
 };
-
 
 /** @constructor */
 TCAD.constraints.P2LDistanceV = function(params) {
@@ -197,8 +167,8 @@ TCAD.constraints.P2LDistanceV = function(params) {
   var D = 6;
 
   this.error = function() {
-    var x0 = this.p0x(), x1 = this.p1x(), x2 = this.p2x();
-    var y0 = this.p0y(), y1 = this.p1y(), y2 = this.p2y();
+    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
     var dist = this.params[D].get();
     var dx = x2 - x1;
     var dy = y2 - y1;
@@ -209,36 +179,11 @@ TCAD.constraints.P2LDistanceV = function(params) {
       return 0;
     }
     return (area / d - dist);
-
-  };
-
-  this.p1x = function() {
-    return params[LP1X].get();
-  };
-
-  this.p1y = function() {
-    return params[LP1Y].get();
-  };
-
-  this.p2x = function() {
-    return params[LP2X].get();
-  };
-
-  this.p2y = function() {
-    return params[LP2Y].get();
-  };
-
-  this.p0x = function() {
-    return params[TX].get();
-  };
-
-  this.p0y = function() {
-    return params[TY].get();
   };
 
   this.gradient = function(out) {
-    var x0 = this.p0x(), x1 = this.p1x(), x2 = this.p2x();
-    var y0 = this.p0y(), y1 = this.p1y(), y2 = this.p2y();
+    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
     var dx = x2 - x1;
     var dy = y2 - y1;
     var d2 = dx * dx + dy * dy;
@@ -251,7 +196,7 @@ TCAD.constraints.P2LDistanceV = function(params) {
     out[LP2X] = (((y0 - y1) * d - (dx / d) * area) / d2);
     out[LP2Y] = (((x1 - x0) * d - (dy / d) * area) / d2);
     out[D] = -1;
-    
+
     for (var i = 0; i < 6; i++) {
       if (Number.isNaN(out[i])) {
         out[i] = 0;
@@ -263,40 +208,33 @@ TCAD.constraints.P2LDistanceV = function(params) {
   }
 
 };
-
 /** @constructor */
 TCAD.constraints.P2PDistance = function(params, distance) {
 
   this.params = params;
   this.distance = distance;
 
-  this.p1x = 0;
-  this.p1y = 1;
-  this.p2x = 2;
-  this.p2y = 3;
-
-  this.get = function(i) {
-    return this.params[i].get();
-  };
+  var p1x = 0;
+  var p1y = 1;
+  var p2x = 2;
+  var p2y = 3;
 
   this.error = function() {
-    var dx = this.get(this.p1x) - this.get(this.p2x);
-    var dy = this.get(this.p1y) - this.get(this.p2y);
+    var dx = params[p1x].get() - params[p2x].get();
+    var dy = params[p1y].get() - params[p2y].get();
     var d = Math.sqrt(dx * dx + dy * dy);
     return (d - this.distance);
   };
 
   this.gradient = function(out) {
-
-    var dx = this.get(this.p1x) - this.get(this.p2x);
-    var dy = this.get(this.p1y) - this.get(this.p2y);
+    var dx = params[p1x].get() - params[p2x].get();
+    var dy = params[p1y].get() - params[p2y].get();
     var d = Math.sqrt(dx * dx + dy * dy);
-    out[this.p1x] = dx / d;
-    out[this.p1y] = dy / d;
-    out[this.p2x] = -dx / d;
-    out[this.p2y] = -dy / d;
+    out[p1x] = dx / d;
+    out[p1y] = dy / d;
+    out[p2x] = -dx / d;
+    out[p2y] = -dy / d;
   }
-
 };
 
 
@@ -305,36 +243,29 @@ TCAD.constraints.P2PDistanceV = function(params) {
 
   this.params = params;
 
-
-  this.p1x = 0;
-  this.p1y = 1;
-  this.p2x = 2;
-  this.p2y = 3;
-  this.d = 4;
-
-  this.get = function(i) {
-    return this.params[i].get();
-  };
+  var p1x = 0;
+  var p1y = 1;
+  var p2x = 2;
+  var p2y = 3;
+  var D = 4;
 
   this.error = function() {
-    var dx = this.get(this.p1x) - this.get(this.p2x);
-    var dy = this.get(this.p1y) - this.get(this.p2y);
+    var dx = params[p1x].get() - params[p2x].get();
+    var dy = params[p1y].get() - params[p2y].get();
     var d = Math.sqrt(dx * dx + dy * dy);
-    return (d - this.get(this.d));
+    return (d - params[D].get());
   };
 
   this.gradient = function(out) {
-
-    var dx = this.get(this.p1x) - this.get(this.p2x);
-    var dy = this.get(this.p1y) - this.get(this.p2y);
+    var dx = params[p1x].get() - params[p2x].get();
+    var dy = params[p1y].get() - params[p2y].get();
     var d = Math.sqrt(dx * dx + dy * dy);
-    out[this.p1x] = dx / d;
-    out[this.p1y] = dy / d;
-    out[this.p2x] = -dx / d;
-    out[this.p2y] = -dy / d;
-    out[this.d] = -1;
+    out[p1x] = dx / d;
+    out[p1y] = dy / d;
+    out[p2x] = -dx / d;
+    out[p2y] = -dy / d;
+    out[D] = -1;
   }
-
 };
 
 
@@ -343,32 +274,32 @@ TCAD.constraints.Parallel = function(params) {
 
   this.params = params;
 
-  this.l1p1x = 0;
-  this.l1p1y = 1;
-  this.l1p2x = 2;
-  this.l1p2y = 3;
-  this.l2p1x = 4;
-  this.l2p1y = 5;
-  this.l2p2x = 6;
-  this.l2p2y = 7;
+  var l1p1x = 0;
+  var l1p1y = 1;
+  var l1p2x = 2;
+  var l1p2y = 3;
+  var l2p1x = 4;
+  var l2p1y = 5;
+  var l2p2x = 6;
+  var l2p2y = 7;
   
   this.error = function() {
-    var dx1 = (this.params[this.l1p1x].get() - this.params[this.l1p2x].get());
-    var dy1 = (this.params[this.l1p1y].get() - this.params[this.l1p2y].get());
-    var dx2 = (this.params[this.l2p1x].get() - this.params[this.l2p2x].get());
-    var dy2 = (this.params[this.l2p1y].get() - this.params[this.l2p2y].get());
+    var dx1 = (params[l1p1x].get() - params[l1p2x].get());
+    var dy1 = (params[l1p1y].get() - params[l1p2y].get());
+    var dx2 = (params[l2p1x].get() - params[l2p2x].get());
+    var dy2 = (params[l2p1y].get() - params[l2p2y].get());
     return (dx1*dy2 - dy1*dx2);
   };
 
   this.gradient = function(out) {
-    out[this.l1p1x] =  (this.params[this.l2p1y].get() - this.params[this.l2p2y].get());
-    out[this.l1p2x] = -(this.params[this.l2p1y].get() - this.params[this.l2p2y].get());
-    out[this.l1p1y] = -(this.params[this.l2p1x].get() - this.params[this.l2p2x].get());
-    out[this.l1p2y] =  (this.params[this.l2p1x].get() - this.params[this.l2p2x].get());
-    out[this.l2p1x] = -(this.params[this.l1p1y].get() - this.params[this.l1p2y].get());
-    out[this.l2p2x] =  (this.params[this.l1p1y].get() - this.params[this.l1p2y].get());
-    out[this.l2p1y] =  (this.params[this.l1p1x].get() - this.params[this.l1p2x].get());
-    out[this.l2p2y] = -(this.params[this.l1p1x].get() - this.params[this.l1p2x].get());
+    out[l1p1x] =  (params[l2p1y].get() - params[l2p2y].get());
+    out[l1p2x] = -(params[l2p1y].get() - params[l2p2y].get());
+    out[l1p1y] = -(params[l2p1x].get() - params[l2p2x].get());
+    out[l1p2y] =  (params[l2p1x].get() - params[l2p2x].get());
+    out[l2p1x] = -(params[l1p1y].get() - params[l1p2y].get());
+    out[l2p2x] =  (params[l1p1y].get() - params[l1p2y].get());
+    out[l2p1y] =  (params[l1p1x].get() - params[l1p2x].get());
+    out[l2p2y] = -(params[l1p1x].get() - params[l1p2x].get());
   }
 };
 
@@ -377,35 +308,32 @@ TCAD.constraints.Perpendicular = function(params) {
 
   this.params = params;
 
-  this.l1p1x = 0;
-  this.l1p1y = 1;
-  this.l1p2x = 2;
-  this.l1p2y = 3;
-  this.l2p1x = 4;
-  this.l2p1y = 5;
-  this.l2p2x = 6;
-  this.l2p2y = 7;
+  var l1p1x = 0;
+  var l1p1y = 1;
+  var l1p2x = 2;
+  var l1p2y = 3;
+  var l2p1x = 4;
+  var l2p1y = 5;
+  var l2p2x = 6;
+  var l2p2y = 7;
 
   this.error = function() {
-    var dx1 = (this.params[this.l1p1x].get() - this.params[this.l1p2x].get());
-    var dy1 = (this.params[this.l1p1y].get() - this.params[this.l1p2y].get());
-    var dx2 = (this.params[this.l2p1x].get() - this.params[this.l2p2x].get());
-    var dy2 = (this.params[this.l2p1y].get() - this.params[this.l2p2y].get());
+    var dx1 = (params[l1p1x].get() - params[l1p2x].get());
+    var dy1 = (params[l1p1y].get() - params[l1p2y].get());
+    var dx2 = (params[l2p1x].get() - params[l2p2x].get());
+    var dy2 = (params[l2p1y].get() - params[l2p2y].get());
     //dot product shows how the lines off to be perpendicular
     return (dx1*dx2 + dy1*dy2);
   };
 
   this.gradient = function(out) {
-
-    out[this.l1p1x] =  (this.params[this.l2p1x].get() - this.params[this.l2p2x].get());
-    out[this.l1p2x] = -(this.params[this.l2p1x].get() - this.params[this.l2p2x].get());
-    out[this.l1p1y] =  (this.params[this.l2p1y].get() - this.params[this.l2p2y].get());
-    out[this.l1p2y] = -(this.params[this.l2p1y].get() - this.params[this.l2p2y].get());
-    out[this.l2p1x] =  (this.params[this.l1p1x].get() - this.params[this.l1p2x].get());
-    out[this.l2p2x] = -(this.params[this.l1p1x].get() - this.params[this.l1p2x].get());
-    out[this.l2p1y] =  (this.params[this.l1p1y].get() - this.params[this.l1p2y].get());
-    out[this.l2p2y] = -(this.params[this.l1p1y].get() - this.params[this.l1p2y].get());
-
+    out[l1p1x] =  (params[l2p1x].get() - params[l2p2x].get());
+    out[l1p2x] = -(params[l2p1x].get() - params[l2p2x].get());
+    out[l1p1y] =  (params[l2p1y].get() - params[l2p2y].get());
+    out[l1p2y] = -(params[l2p1y].get() - params[l2p2y].get());
+    out[l2p1x] =  (params[l1p1x].get() - params[l1p2x].get());
+    out[l2p2x] = -(params[l1p1x].get() - params[l1p2x].get());
+    out[l2p1y] =  (params[l1p1y].get() - params[l1p2y].get());
+    out[l2p2y] = -(params[l1p1y].get() - params[l1p2y].get());
   }
-
 };
