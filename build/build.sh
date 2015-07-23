@@ -7,7 +7,7 @@ git rev-parse --short HEAD #make sure git in place
 mkdir -p out
 rm -rf out/*
 
-echo '//sketcher' > out/app.js
+> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/canvas.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/io.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/history.js >> out/app.js
