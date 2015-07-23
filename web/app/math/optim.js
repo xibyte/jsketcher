@@ -259,9 +259,11 @@ optim.inv = function inv(x) {
 
 optim.dog_leg = function (subsys, rough) {
   //rough = true
-  var tolg = rough ? 1e-3 : 1e-4;
+  //var tolg = rough ? 1e-3 : 1e-4;
+  var tolg = 1e-1;
+  var tolf = 1e-2;
 
-  var tolx = 1e-80, tolf = 1e-10;
+  var tolx = 1e-80;
 
   var xsize = subsys.params.length;
   var csize = subsys.constraints.length;
@@ -295,31 +297,7 @@ optim.dog_leg = function (subsys, rough) {
 
   subsys.setParams(x);
   err = subsys.calcResidual(fx);
-
   subsys.fillJacobian(Jx);
-
-  function lls(A, b) {
-    var At = n.transpose(A);
-    var J = n.dot(At, A);
-    var r = n.dot(At, b);
-    return nocadel_10_18(J, r);
-  }
-
-  function nocadel_10_18(A, r) {
-    //10.18
-    var usv = n.svd(A);
-    var x = vec(xsize);
-    for (var i = 0; i < usv.S.length; ++i) {
-      var u = usv.U[i];
-      var v = usv.V[i];
-      var b = usv.S[i];
-      if (b != 0) {
-        var _t = n.mul(v, n.dot(u, r) / b);
-        x = n.add(x, _t);
-      }
-    }
-    return x;
-  }
 
   function lsolve(A, b) {
 //    if (csize < xsize) {
@@ -333,14 +311,6 @@ optim.dog_leg = function (subsys, rough) {
     var At = n.transpose(A);
     var res = n.dot(n.dot(At, optim.inv(n.dot(A, At))), b);
     return res;
-
-  }
-
-  function lusolve(A, b) {
-    var At = n.transpose(A);
-    var A = n.dot(At, A);
-    var b = n.dot(At, b);
-    return n.solve(A, b, true);
   }
 
   var g = n.dot(n.transpose(Jx), fx);
@@ -355,14 +325,14 @@ optim.dog_leg = function (subsys, rough) {
   var alpha = 0.;
   var nu = 2.;
   var iter = 0, stop = 0, reduce = 0;
-  var log = [];
+  //var log = [];
   while (stop === 0) {
 
     // check if finished
-    if (fx_inf <= tolf || (rough && err <= 1e-3)) // Success
+    if (fx_inf <= tolf ) // Success
       stop = 1;
-    else if (g_inf <= tolg)
-      stop = 2;
+    else if (g_inf <= tolg) // Success too
+      stop = 1;
     else if (delta <= tolx * (tolx + n.norm2(x)))
       stop = 3;
     else if (iter >= maxIterNumber)
@@ -469,7 +439,7 @@ optim.dog_leg = function (subsys, rough) {
       }
       acceptCandidate = rho > 0; // could be 0 .. 0.25
     }
-    log.push([stepKind,err,  delta,rho]);
+    //log.push([stepKind,err,  delta,rho]);
 
     if (acceptCandidate) {
       x = n.clone(x_new);
@@ -487,7 +457,7 @@ optim.dog_leg = function (subsys, rough) {
     // count this iteration and start again
     iter++;
   }
-  log.push(stop);
+  //log.push(stop);
   //window.___log(log);
   return {
     evalCount: iter,
