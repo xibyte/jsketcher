@@ -745,8 +745,8 @@ TCAD.TWO.PanTool.prototype.mousemove = function(e) {
   var dy = e.pageY - this.y;
   dy *= -1;
   
-  this.viewer.translate.x += dx;  
-  this.viewer.translate.y += dy;
+  this.viewer.translate.x += dx * this.viewer.retinaPxielRatio;
+  this.viewer.translate.y += dy * this.viewer.retinaPxielRatio;
   
   this.x = e.pageX;
   this.y = e.pageY;
