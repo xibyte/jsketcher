@@ -70,10 +70,18 @@ TCAD.TWO.Viewer = function(canvas) {
   this.io = new TCAD.IO(this);
   this.historyManager = new TCAD.HistoryManager(this);
   var viewer = this;
+  this.retinaPxielRatio = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
   function updateCanvasSize() {
-    canvas.width = canvas.parentNode.offsetWidth;
-    canvas.height = canvas.parentNode.offsetHeight;
+    var canvasWidth = canvas.parentNode.offsetWidth;;
+    var canvasHeight = canvas.parentNode.offsetHeight;;
+
+    canvas.width = canvasWidth * viewer.retinaPxielRatio;
+    canvas.height = canvasHeight * viewer.retinaPxielRatio;
+
+    canvas.style.width = canvasWidth + "px";
+    canvas.style.height = canvasHeight + "px";
   }
+
   function onWindowResize() {
     updateCanvasSize();
     viewer.refresh();
@@ -204,7 +212,7 @@ TCAD.TWO.Viewer.prototype.refresh = function() {
 };
 
 TCAD.TWO.Viewer.prototype.repaint = function() {
-  
+
   var ctx = this.ctx;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   
@@ -262,8 +270,8 @@ TCAD.TWO.Viewer.prototype.showBounds = function(x1, y1, x2, y2) {
 
 TCAD.TWO.Viewer.prototype.screenToModel2 = function(x, y, out) {
 
-  out.x = x;
-  out.y = this.canvas.height - y;
+  out.x = x * this.retinaPxielRatio;
+  out.y = this.canvas.height - y * this.retinaPxielRatio;
 
   out.x -= this.translate.x;
   out.y -= this.translate.y;
