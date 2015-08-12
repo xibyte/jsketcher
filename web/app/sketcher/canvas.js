@@ -233,8 +233,8 @@ TCAD.TWO.Viewer.prototype.repaint = function() {
       for (var o = 0; o < layer.objects.length; o++) {
         var obj = layer.objects[o];
         style = obj.style != null ? obj.style : layer.style;
-        if (style != prevStyle) TCAD.TWO.utils.setStyle(style, ctx, this.scale);
-        obj.draw(ctx, this.scale, this);
+        if (style != prevStyle) TCAD.TWO.utils.setStyle(style, ctx, this.scale / this.retinaPxielRatio);
+        obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
       }
     }
   }
