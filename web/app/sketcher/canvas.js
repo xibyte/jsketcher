@@ -750,7 +750,7 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
   if (e.button == 0) {
     var picked = this.viewer.pick(e);
     if (picked.length > 0) {
-      if (e.ctrlKey) {
+      if (e.shiftKey) {
         this.viewer.select([picked[0]], false);
         this.deselectOnUp = false;
       } else {
