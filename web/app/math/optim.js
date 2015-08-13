@@ -260,8 +260,14 @@ optim.inv = function inv(x) {
 optim.dog_leg = function (subsys, rough) {
   //rough = true
   //var tolg = rough ? 1e-3 : 1e-4;
-  var tolg = 1e-1;
-  var tolf = 1e-2;
+  var tolg, tolf;
+  if (rough) {
+    tolg = 1e-2;
+    tolf = 1e-2;
+  } else {
+    tolg = 1e-6;
+    tolf = 1e-6;
+  }
 
   var tolx = 1e-80;
 
