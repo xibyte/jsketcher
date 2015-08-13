@@ -842,7 +842,7 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   var checkX = this.ref.x;
   var checkY = this.ref.y;
   this.obj.translate(dx, dy);
-  if (!e.shiftKey) {
+  if (!e.altKey && !e.ctrlKey) {
     this.solveRequest(true);
   }
 
