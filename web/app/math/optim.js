@@ -299,19 +299,22 @@ optim.dog_leg = function (subsys, rough) {
   err = subsys.calcResidual(fx);
   subsys.fillJacobian(Jx);
 
-  function lsolve(A, b) {
-//    if (csize < xsize) {
-//      var At = n.transpose(A);
-//      var J = n.dot(At, A);
-//      var r = n.dot(At, b);;
-//      return n.solve(J, r);
-//    } else {
-//      return n.solve(A, b);
-//    }
+  function lsolve_slow(A, b) {
     var At = n.transpose(A);
     var res = n.dot(n.dot(At, optim.inv(n.dot(A, At))), b);
     return res;
   }
+
+  function lsolve(A, b) {
+    if (csize < xsize) {
+      var At = n.transpose(A);
+      var sol = n.solve(n.dot(A, At), b);
+      return n.dot(At, sol);
+    } else {
+      return n.solve(A, b);
+    }
+  }
+
 
   var g = n.dot(n.transpose(Jx), fx);
   // get the infinity norm fx_inf and g_inf
