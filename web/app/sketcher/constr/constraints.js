@@ -68,16 +68,17 @@ TCAD.constraints.ConstantWrapper = function(constr, mask) {
 /** @constructor */
 TCAD.constraints.Weighted = function(constr, weight) {
 
+  this.weight = weight;
   this.params = constr.params;
    
   this.error = function() {
-    return constr.error() * weight;
+    return constr.error() * this.weight;
   };
 
   this.gradient = function(out) {
     constr.gradient(out);
     for (var i = 0; i < out.length; i++) {
-      out[i] *= weight;
+      out[i] *= this.weight;
     }
   }
 };
