@@ -258,11 +258,13 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     if (conflict) return nullResult;
     if (constrs.length == 0) return nullResult;
     if (sys.params.length == 0) return nullResult;
-    var res = optim.dog_leg(sys, true);
-    if (!rough) {
-      res = TCAD.parametric.solve_lm(sys, model, jacobian, false)
+    switch (alg) {
+      case 2:
+        return TCAD.parametric.solve_lm(sys, model, jacobian, rough);
+      case 1:
+      default:    
+        return optim.dog_leg(sys, rough);
     }
-    return res;
   }
   var systemSolver = {
     diagnose : function() {return TCAD.parametric.diagnose(sys)},
