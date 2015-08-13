@@ -314,13 +314,12 @@ optim.dog_leg = function (subsys, rough) {
   function lsolve(A, b) {
     if (csize < xsize) {
       var At = n.transpose(A);
-      var sol = n.solve(n.dot(A, At), b);
+      var sol = n.solve(n.dot(A, At), b, true);
       return n.dot(At, sol);
     } else {
-      return n.solve(A, b);
+      return n.solve(A, b, false);
     }
   }
-
 
   var g = n.dot(n.transpose(Jx), fx);
   // get the infinity norm fx_inf and g_inf
