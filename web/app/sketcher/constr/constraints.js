@@ -70,6 +70,7 @@ TCAD.constraints.Weighted = function(constr, weight) {
 
   this.weight = weight;
   this.params = constr.params;
+  this.constr = constr;
    
   this.error = function() {
     return constr.error() * this.weight;
