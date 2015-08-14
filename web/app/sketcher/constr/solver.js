@@ -272,7 +272,7 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     solveSystem : solve,
     updateLock : function(values) {
       for (var i = 0; i < values.length; ++i) {
-        lockingConstrs[i].value = values[i];
+        lockingConstrs[i].constr.value = values[i];
       }
     }
   };
