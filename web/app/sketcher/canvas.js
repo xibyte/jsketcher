@@ -68,7 +68,6 @@ TCAD.TWO.Viewer = function(canvas) {
   
   this.canvas = canvas;
   this.io = new TCAD.IO(this);
-  this.historyManager = new TCAD.HistoryManager(this);
   var viewer = this;
   this.retinaPxielRatio = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
   function updateCanvasSize() {
@@ -107,6 +106,7 @@ TCAD.TWO.Viewer = function(canvas) {
   
   this._setupServiceLayer();
 
+  this.historyManager = new TCAD.HistoryManager(this);
   this.refresh();
 };
 
