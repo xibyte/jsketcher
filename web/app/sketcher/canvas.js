@@ -674,7 +674,8 @@ TCAD.TWO.CrossHair.prototype.draw = function(ctx, scale) {
 
 /** @constructor */
 TCAD.TWO.ToolManager = function(viewer, defaultTool) {
-  this.stack = [defaultTool];
+  this.defaultTool = defaultTool;
+  this.tool = defaultTool;
   var canvas = viewer.canvas;
   var tm = this;
   canvas.addEventListener('mousemove', function (e) {
@@ -697,9 +698,19 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
     e.stopPropagation();
     tm.getTool().mousewheel(e);
   }, false);
+  canvas.addEventListener('dblclick', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (tm.tool.dblclick !== undefined) {
+      tm.tool.dblclick(e);
+    }
+  }, false);
 
   window.addEventListener("keydown", function (e) {
     tm.getTool().keydown(e);
+    if (e.keyCode == 27) {
+      tm.releaseControl();
+    }
   }, false);
   window.addEventListener("keypress", function (e) {
     tm.getTool().keydown(e);
@@ -710,18 +721,16 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
 };
 
 TCAD.TWO.ToolManager.prototype.takeControl = function(tool) {
-  this.stack.push(tool);
+  this.tool = tool;
 };
 
 TCAD.TWO.ToolManager.prototype.releaseControl = function() {
-  if (this.stack.length == 1) {
-    return;
-  }
-  this.stack.pop().cleanup();
+  this.tool.cleanup();
+  this.tool = this.defaultTool;
 };
 
 TCAD.TWO.ToolManager.prototype.getTool = function() {
-  return this.stack[this.stack.length - 1];
+  return this.tool;
 };
 
 /** @constructor */
