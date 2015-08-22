@@ -61,15 +61,25 @@ TCAD.TWO.AddSegmentTool.prototype.mouseup = function(e) {
   }
 };
 
+TCAD.TWO.AddSegmentTool.prototype.dblclick = function(e) {
+  this.cancelSegment();
+};
+
 TCAD.TWO.AddSegmentTool.prototype.mousewheel = function(e) {
 };
 
 TCAD.TWO.AddSegmentTool.prototype.keydown = function(e) {
-  if (this.multi && this.line != null && e.keyCode == 27) {
+  if (e.keyCode == 27) {
+    this.cancelSegment();
+  }
+};
+
+TCAD.TWO.AddSegmentTool.prototype.cancelSegment = function() {
+  if (this.multi && this.line != null) {
     this.viewer.remove(this.line);
     this.viewer.refresh();
     this.cleanup(null);
-  }    
+  }
 };
 
 TCAD.TWO.AddSegmentTool.prototype.keypress = function(e) {};
