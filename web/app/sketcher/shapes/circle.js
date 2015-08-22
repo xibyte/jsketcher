@@ -49,18 +49,23 @@ TCAD.TWO.EditCircleTool = function(viewer) {
 TCAD.TWO.EditCircleTool.prototype.keydown = function(e) {};
 TCAD.TWO.EditCircleTool.prototype.keypress = function(e) {};
 TCAD.TWO.EditCircleTool.prototype.keyup = function(e) {};
-TCAD.TWO.EditCircleTool.prototype.cleanup = function(e) {};
+
+TCAD.TWO.EditCircleTool.prototype.cleanup = function(e) {
+  this.viewer.cleanSnap();
+};
 
 TCAD.TWO.EditCircleTool.prototype.mousemove = function(e) {
+  var p = this.viewer.screenToModel(e);
   if (this.circle != null) {
-    var p = this.viewer.screenToModel(e);
     var r = TCAD.math.distance(p.x, p.y, this.circle.c.x, this.circle.c.y);
     this.circle.r.set(r);
     if (!e.shiftKey) {
       this.solveRequest(true);
     }
-    this.viewer.refresh();
+  } else {
+    this.viewer.snap(p.x, p.y, []);
   }
+  this.viewer.refresh();
 };
 
 TCAD.TWO.EditCircleTool.prototype.solveRequest = function(rough) {
@@ -72,10 +77,12 @@ TCAD.TWO.EditCircleTool.prototype.solveRequest = function(rough) {
 TCAD.TWO.EditCircleTool.prototype.mouseup = function(e) {
   if (this.circle == null) {
     this.viewer.historyManager.checkpoint();
-    var p = this.viewer.screenToModel(e);
+    var needSnap = this.viewer.snapped.length != 0;
+    var p = needSnap ? this.viewer.snapped.pop() : this.viewer.screenToModel(e);
     this.circle = new TCAD.TWO.Circle(
       new TCAD.TWO.EndPoint(p.x, p.y)
     );
+    if (needSnap) this.viewer.parametricManager.linkObjects([this.circle.c, p]);
     this.viewer.activeLayer().objects.push(this.circle);
     this.viewer.refresh();
   } else {
