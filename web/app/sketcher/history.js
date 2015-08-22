@@ -2,9 +2,7 @@
 TCAD.HistoryManager = function(viewer) {
   this.viewer = viewer;
   this.dmp = new diff_match_patch();
-  this.historyPointer = -1;
-  this.diffs = [];
-  this._counter = 0;
+  this.init(this.viewer.io.serializeSketch());
 };
 
 
