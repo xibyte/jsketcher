@@ -226,7 +226,8 @@ TCAD.utils.sketchToPolygons = function(geom) {
       polyPoints.push(new TCAD.Vector(point[0], point[1], 0));
 
     }
-    polygons.push(new TCAD.Polygon(polyPoints));
+    console.warn("Points count < 3!");
+    if (polyPoints.length >= 3) polygons.push(new TCAD.Polygon(polyPoints));
   }
   return polygons;
 };
@@ -419,7 +420,7 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
     var lg = new THREE.Geometry();
     var a = _3dTransformation.apply(new TCAD.Vector(l[0], l[1], depth));
     var b = _3dTransformation.apply(new TCAD.Vector(l[2], l[3], depth));
-    
+
     lg.vertices.push(a.plus(offVector).three());
     lg.vertices.push(b.plus(offVector).three());
     var line = new THREE.Segment(lg, this.SKETCH_MATERIAL);
@@ -429,9 +430,10 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
   this.sketchGeom.depth = depth;
 };
 
+TCAD.POLYGON_COUNTER = 0;
 /** @constructor */
 TCAD.Polygon = function(shell, holes, normal) {
-
+  this.id = TCAD.POLYGON_COUNTER ++;
   if (!holes) {
     holes = [];
   }
