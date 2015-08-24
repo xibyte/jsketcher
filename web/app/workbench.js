@@ -594,7 +594,8 @@ TCAD.craft._makeFromPolygons = function(polygons) {
     for ( var h = 0; h < poly.holes.length; h ++ ) {
       Array.prototype.push.apply( points, poly.holes[h] );
     }
-
+    var pid = poly.id;
+    var shared = new CSG.Polygon.Shared([pid, pid, pid, pid]);
     var refs = poly.triangulate();
     for ( var i = 0;  i < refs.length; ++ i ) {
       var a = refs[i][0] + off;
@@ -604,7 +605,7 @@ TCAD.craft._makeFromPolygons = function(polygons) {
         new CSG.Vertex(csgVec(points[a]), csgVec(poly.normal)),
         new CSG.Vertex(csgVec(points[b]), csgVec(poly.normal)),
         new CSG.Vertex(csgVec(points[c]), csgVec(poly.normal))
-      ]);
+      ], shared);
       csgPolygons.push(csgPoly);
     }
     off = points.length;
@@ -753,18 +754,33 @@ TCAD.craft.cut = function(app, face, faces, height) {
     return separated;
   }
 
-  var merged = TCAD.craft._mergeCSGPolygons(cut.polygons);
-  var sorted = sortPaths(merged);
-  return sorted.map(function(path) {
-    return new TCAD.Polygon(path.vertices, path.holes.map(function(path){return path.vertices}), path.normal);
-  });
+  var byShared = {};
+  for (var i = 0; i < cut.polygons.length; i++) {
+    var p = cut.polygons[i];
+    var tag = p.shared.getTag();
+    if (byShared[tag] === undefined) byShared[tag] = [];
+    byShared[tag].push(p);
+  }
+  var result = [];
+  for (var tag in byShared) {
+    var merged = TCAD.craft._mergeCSGPolygons(byShared[tag]);
+    var sorted = sortPaths(merged);
+    result.push.apply(result, sorted.map(function(path) {
+        return new TCAD.Polygon(path.vertices, path.holes.map(function(path){return path.vertices}), path.normal);
+      })
+    );
 
-//    return cut.polygons.map(function(e) {
-//      return new TCAD.Polygon(e.vertices.map(
-//        function(v) {
-//          return new TCAD.Vector(v.pos.x, v.pos.y, v.pos.z)
-//        }), [])
-//    });
+  }
+  console.log(result);
+  return result;
+
+
+    //return byShared[20].map(function(e) {
+    //  return new TCAD.Polygon(e.vertices.map(
+    //    function(v) {
+    //      return new TCAD.Vector(v.pos.x, v.pos.y, v.pos.z)
+    //    }), [])
+    //});
 
 };
 
