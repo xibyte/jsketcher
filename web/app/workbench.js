@@ -582,6 +582,9 @@ TCAD.craft._mergeCSGPolygonsTester = function(data) {
 };
 
 TCAD.craft._makeFromPolygons = function(polygons) {
+  function csgVec(v) {
+    return new CSG.Vector3D(v.x, v.y, v.z);
+  }
   var points = [];
   var csgPolygons = [];
   var off = 0;
@@ -591,17 +594,17 @@ TCAD.craft._makeFromPolygons = function(polygons) {
     for ( var h = 0; h < poly.holes.length; h ++ ) {
       Array.prototype.push.apply( points, poly.holes[h] );
     }
-    var shared = {group : poly};
+
     var refs = poly.triangulate();
     for ( var i = 0;  i < refs.length; ++ i ) {
       var a = refs[i][0] + off;
       var b = refs[i][1] + off;
       var c = refs[i][2] + off;
       var csgPoly = new CSG.Polygon([
-        new CSG.Vertex(points[a], poly.normal),
-        new CSG.Vertex(points[b], poly.normal),
-        new CSG.Vertex(points[c], poly.normal)
-      ], shared);
+        new CSG.Vertex(csgVec(points[a]), csgVec(poly.normal)),
+        new CSG.Vertex(csgVec(points[b]), csgVec(poly.normal)),
+        new CSG.Vertex(csgVec(points[c]), csgVec(poly.normal))
+      ]);
       csgPolygons.push(csgPoly);
     }
     off = points.length;
