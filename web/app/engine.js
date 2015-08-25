@@ -226,8 +226,11 @@ TCAD.utils.sketchToPolygons = function(geom) {
       polyPoints.push(new TCAD.Vector(point[0], point[1], 0));
 
     }
-    console.warn("Points count < 3!");
-    if (polyPoints.length >= 3) polygons.push(new TCAD.Polygon(polyPoints));
+    if (polyPoints.length >= 3) {
+      polygons.push(new TCAD.Polygon(polyPoints));
+    } else {
+      console.warn("Points count < 3!");
+    }
   }
   return polygons;
 };
