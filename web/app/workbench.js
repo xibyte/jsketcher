@@ -14,12 +14,47 @@ TCAD.workbench.readSketchGeom = function(sketch) {
             obj.points[1][1][1], obj.points[1][2][1]  //x,y
           ]);
         } else if (obj._class === 'TCAD.TWO.Arc') {
+          out.lines.push.apply(out.lines, TCAD.workbench.integrate(
+            [obj.points[0][1][1], obj.points[0][2][1]],
+            [obj.points[1][1][1], obj.points[1][2][1]],
+            [obj.points[2][1][1], obj.points[2][2][1]],
+            20
+          ));
         } else if (obj._class === 'TCAD.TWO.Circle') {
         }
       }
     }
   }
   return out;
+};
+
+TCAD.workbench.integrate = function(_a, _b, _c, k) {
+  var ao = new TCAD.Vector(_a[0], _a[1], 0);
+  var bo = new TCAD.Vector(_b[0], _b[1], 0);
+  var c = new TCAD.Vector(_c[0], _c[1], 0);
+  var a = ao.minus(c);
+  var b = bo.minus(c);
+  var points = [[ao.x, ao.y]];
+  var abAngle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
+  if (abAngle > Math.PI * 2) abAngle = Math.PI / 2 - abAngle;
+  if (abAngle < 0) abAngle = Math.PI * 2 + abAngle;
+
+  var r = a.length();
+  var step =  abAngle / k;
+  var angle = Math.atan2(a.y, a.x) + step;
+
+  for (var i = 0; i < k - 2; ++i) {
+    points.push([c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)]);
+    angle += step;
+  }
+  points.push([bo.x, bo.y]);
+  var lines = [];
+  for (var i = 0; i < points.length - 1; i++) {
+    var p1 = points[i];
+    var p2 = points[i + 1];
+    lines.push([p1[0], p1[1], p2[0], p2[1]]);
+  }
+  return lines;
 };
 
 TCAD.workbench.serializeSolid = function(solid) {
