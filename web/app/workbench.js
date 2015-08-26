@@ -715,15 +715,9 @@ TCAD.craft.cut = function(app, face, faces, height) {
 
     for (var pi = 0; pi < paths.length; ++pi) {
       var path = paths[pi];
-//      var depth = paths3D[pi].vertices[0].dot(paths3D[pi].normal);
       for (var piTest = 0; piTest < paths.length; ++piTest) {
         var pathTest = paths[piTest];
         if (piTest === pi) continue;
-        if (!pathTest.normal.equals(path.normal)) continue;
-//        var depthTest = paths3D[piTest].vertices[0].dot(paths3D[piTest].normal);
-//        if (!TCAD.utils.equal(depthTest, depth)) continue;
-        if (!TCAD.utils.areEqual(path.w, pathTest.w, 10E-6)) continue;
-
         if (pInP(pathTest.vertices, path.vertices)) {
           index[piTest].push(pi);
         }
