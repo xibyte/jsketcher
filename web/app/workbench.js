@@ -636,6 +636,9 @@ TCAD.craft._makeFromPolygons = function(polygons) {
       var a = refs[i][0] + off;
       var b = refs[i][1] + off;
       var c = refs[i][2] + off;
+      if (points[b].minus(points[a]).cross(points[c].minus(points[a])).length() === 0)  {
+        continue;
+      }
       var csgPoly = new CSG.Polygon([
         new CSG.Vertex(csgVec(points[a]), csgVec(poly.normal)),
         new CSG.Vertex(csgVec(points[b]), csgVec(poly.normal)),
