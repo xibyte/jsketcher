@@ -195,7 +195,7 @@ TCAD.craft._mergeCSGPolygonsTest = function() {
   console.log(paths);
 };
 
-TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
+TCAD.craft._mergeCSGPolygons = function (__cgsPolygons) {
   var pointToPoly = {};
   var points = [];
   var pkey = TCAD.craft.pkey;
@@ -203,6 +203,7 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
   function pnkey(point, normal) {
     return pkey(point) + ":" + pkey(normal);
   }
+
   function vec(p) {
     var v = new TCAD.Vector();
     v.setV(p);
@@ -211,76 +212,74 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
 
 //  var tol = Math.round(1 / TCAD.TOLERANCE);
   var tol = 1E6;
+
   function round(num) {
     return Math.round(num * tol) / tol;
   }
+
   function roundV(v) {
     return v.set(round(v.x), round(v.y), round(v.z));
   }
 
   function prepare(__cgsPolygons) {
     var counter = 0;
-    var polygons = __cgsPolygons.map(function(cp) {
+    var polygons = __cgsPolygons.map(function (cp) {
       if (cp.plane.___ID === undefined) {
-        cp.plane.___ID = ++ counter;
+        cp.plane.___ID = ++counter;
       }
       return {
-        vertices : cp.vertices.map(function(cv) {return vec(cv.pos)}),
-        normal : vec(cp.plane.normal),
-        w : cp.plane.w
+        vertices: cp.vertices.map(function (cv) {
+          return vec(cv.pos)
+        }),
+        normal: vec(cp.plane.normal),
+        w: cp.plane.w
       };
     });
 
     var points = [];
 
-                 for (var pi = 0; pi < polygons.length; ++pi) {
-                   var poly = polygons[pi];
-                   for (var vi = 0; vi < poly.vertices.length; ++vi) {
-                     var vert = poly.vertices[vi];
-                     points.push(vert);
-                   }
-                 }
+    for (var pi = 0; pi < polygons.length; ++pi) {
+      var poly = polygons[pi];
+      for (var vi = 0; vi < poly.vertices.length; ++vi) {
+        var vert = poly.vertices[vi];
+        points.push(vert);
+      }
+    }
 
-        var tol = 1E-6;
-        for (var i = 0; i < points.length; i++) {
-          var a = points[i];
-          for (var j = i + 1; j < points.length; j++) {
-            var b = points[j];
-            if (
-              TCAD.utils.areEqual(a.x, b.x, tol) &&
-              TCAD.utils.areEqual(a.y, b.y, tol) &&
-              TCAD.utils.areEqual(a.z, b.z, tol)
-            ) {
-              b.setV(a);
-            }
-          }
+    var tol = 1E-6;
+    for (var i = 0; i < points.length; i++) {
+      var a = points[i];
+      for (var j = i + 1; j < points.length; j++) {
+        var b = points[j];
+        if (
+          TCAD.utils.areEqual(a.x, b.x, tol) &&
+          TCAD.utils.areEqual(a.y, b.y, tol) &&
+          TCAD.utils.areEqual(a.z, b.z, tol)
+        ) {
+          b.setV(a);
         }
-        for (var i = 0; i < polygons.length; i++) {
-          var a = polygons[i];
-          for (var j = i + 1; j < polygons.length; j++) {
-            var b = polygons[j];
-            if (
-              TCAD.utils.areEqual(a.normal.x, b.normal.x, tol) &&
-              TCAD.utils.areEqual(a.normal.y, b.normal.y, tol) &&
-              TCAD.utils.areEqual(a.normal.z, b.normal.z, tol)
-            ) {
-              b.normal.setV(a.normal);
-            }
-            if (TCAD.utils.areEqual(a.w, b.w, tol)) {
-              b.w = a.w;
-            }
-          }
+      }
+    }
+    for (var i = 0; i < polygons.length; i++) {
+      var a = polygons[i];
+      for (var j = i + 1; j < polygons.length; j++) {
+        var b = polygons[j];
+        if (
+          TCAD.utils.areEqual(a.normal.x, b.normal.x, tol) &&
+          TCAD.utils.areEqual(a.normal.y, b.normal.y, tol) &&
+          TCAD.utils.areEqual(a.normal.z, b.normal.z, tol)
+        ) {
+          b.normal.setV(a.normal);
         }
+        if (TCAD.utils.areEqual(a.w, b.w, tol)) {
+          b.w = a.w;
+        }
+      }
+    }
 
 //        for (var i = 0; i < points.length; i++) {
 //          roundV(points[i]);
 //        }
-
-        for (var i = 0; i < points.length; i++) {
-//          console.log(points[i]);
-        }
-
-
 
     //polygons = polygons.filter(function(e){return e.normal.equals(new TCAD.Vector(-1,0,0)) });
     return polygons;
@@ -511,7 +510,6 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
     var foundNext = true;
     while (foundNext) {
       foundNext = false;
-      console.log(pnkey(pCurr, normal));
       path.push(vec(pCurr));
       var gons = pointToPoly[keyCurr];
       POLY:
@@ -548,7 +546,6 @@ TCAD.craft._mergeCSGPolygons = function(__cgsPolygons) {
         w : w
       });
     }
-    console.log("-----")
   }
 
   return paths;
@@ -605,15 +602,6 @@ TCAD.craft._mergeCSGPolygonsTester = function(data) {
   var paths = TCAD.craft._mergeCSGPolygons(data.map(function(p) {
     return cppol(p);
   }));
-
-  console.log("<><><><><><><><><><><><><><><><><><>");
-  paths.map(function(p) {
-    p.vertices.map(function(v){
-      console.log(v.x + ":" + v.y);
-    });
-    console.log("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-  })
-  
 };
 
 TCAD.craft._makeFromPolygons = function(polygons) {
@@ -809,17 +797,7 @@ TCAD.craft.cut = function(app, face, faces, height) {
     );
 
   }
-  console.log(result);
   return result;
-
-
-    //return byShared[20].map(function(e) {
-    //  return new TCAD.Polygon(e.vertices.map(
-    //    function(v) {
-    //      return new TCAD.Vector(v.pos.x, v.pos.y, v.pos.z)
-    //    }), [])
-    //});
-
 };
 
 TCAD.Craft = function(app) {
