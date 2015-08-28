@@ -82,3 +82,19 @@ TCAD.math.rotateMatrix = function(angle, axis, pivot) {
   m.tz = pz * (1 - m.mzz) - px * m.mzx - py * m.mzy;
   return m;
 };
+
+TCAD.math.circleFromPoints = function(p1, p2, p3) {
+  var center = new TCAD.Vector();
+  var offset = p2.x*p2.x + p2.y*p2.y;
+  var bc =   ( p1.x*p1.x + p1.y*p1.y - offset )/2.0;
+  var cd =   (offset - p3.x*p3.x - p3.y*p3.y)/2.0;
+  var det =  (p1.x - p2.x) * (p2.y - p3.y) - (p2.x - p3.x)* (p1.y - p2.y);
+
+  if (Math.abs(det) < TCAD.TOLERANCE) { return null; }
+
+  var idet = 1/det;
+
+  center.x =  (bc * (p2.y - p3.y) - cd * (p1.y - p2.y)) * idet;
+  center.y =  (cd * (p1.x - p2.x) - bc * (p2.x - p3.x)) * idet;
+  return center;
+};
