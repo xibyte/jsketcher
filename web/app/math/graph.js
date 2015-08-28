@@ -59,7 +59,6 @@ TCAD.graph.finaAllLoops = function(graph) {
 
   function sameLoop(a, b, key) {
     var first = key(a[0]);
-    var bShift = b.indexOf();
     for (var bShift = 0; bShift < a.length; bShift++) {
       if (key(b[bShift]) === first) {
         break;
