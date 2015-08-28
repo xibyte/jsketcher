@@ -63,7 +63,87 @@ TCAD.App.prototype.sketchFace = function() {
   } else {
     data = JSON.parse(savedFace);
   }
-  data.boundary = polyFace.polygon.to2D();
+  data.boundary = {lines : [], arcs : []};
+  function sameSketchObject(a, b) {
+    if (a.sketchConnectionObject === undefined || b.sketchConnectionObject === undefined) {
+      return false;
+    }
+    return a.sketchConnectionObject.id === b.sketchConnectionObject.id;
+  }
+  var paths = [];
+  polyFace.polygon.collectPaths(paths);
+  var _2dTr = polyFace.polygon.get2DTransformation();
+  for (var i = 0; i < paths.length; i++) {
+    var path = paths[i];
+    var shift = 0;
+    TCAD.utils.iteratePath(path, 0, function(a, b, ai, bi) {
+      shift = bi;
+      return sameSketchObject(a, b);
+    });
+
+    function addSegment(a, b) {
+      data.boundary.lines.push({
+        a : {x : a.x, y: a.y},
+        b : {x : b.x, y: b.y}
+      });
+    }
+    function addArc(arc) {
+      if (arc.length < 2) {
+        return;
+      }
+      var a = arc[0], b = arc[arc.length - 1];
+      if (arc.length == 2) {
+        addSegment(a, b);
+        return;
+      }
+      var mid = (arc.length / 2) >> 0;
+      var c = TCAD.math.circleFromPoints(arc[0], arc[mid], arc[arc.length-1]);
+      if (c == null) {
+        return;
+      }
+      if (!TCAD.geom.isCCW([arc[0], arc[mid], arc[arc.length-1]])) {
+        var t = a;
+        a = b;
+        b = t;
+      }
+      data.boundary.arcs.push({
+        a : {x : a.x, y: a.y},
+        b : {x : b.x, y: b.y},
+        c : {x : c.x, y : c.y}
+      });
+    }
+    var currSko = null;
+    var arc = null;
+    TCAD.utils.iteratePath(path, shift+1, function(a, b, ai, bi, iterNumber, path) {
+      var isArc = a.sketchConnectionObject !== undefined && a.sketchConnectionObject._class == 'TCAD.TWO.Arc';
+      var a2d = _2dTr.apply(a);
+      if (isArc) {
+        if (currSko !== a.sketchConnectionObject.id) {
+          currSko = a.sketchConnectionObject.id;
+          if (arc != null) {
+            arc.push(a2d);
+            addArc(arc);
+          }
+          arc = [];
+        }
+        arc.push(a2d);
+        if (iterNumber === path.length - 1) {
+          arc.push(_2dTr.apply(b));
+          addArc(arc);
+        }
+      } else {
+        if (arc != null) {
+          arc.push(a2d);
+          addArc(arc);
+          arc = null;
+        }
+        currSko = null;
+        addSegment(a2d, _2dTr.apply(b));
+      }
+      return true;
+    });
+  }
+
   localStorage.setItem(faceStorageKey, JSON.stringify(data));
 
   window.open("sketcher.html#" + faceStorageKey.substring(14), "Edit Sketch", "height=900,width=1200");
