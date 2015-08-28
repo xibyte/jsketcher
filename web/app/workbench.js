@@ -1,25 +1,38 @@
 TCAD.workbench = {};
 
+TCAD.workbench.SketchConnection = function(a, b, sketchObject) {
+  this.a = a;
+  this.b = b;
+  this.sketchObject = sketchObject;
+};
+
 TCAD.workbench.readSketchGeom = function(sketch) {
-  var out = {lines : [], circles : [], arcs : []};
+  var out = {connections : []};
+  var id = 0;
   if (sketch.layers !== undefined) {
     for (var l = 0; l < sketch.layers.length; ++l) {
       for (var i = 0; i < sketch.layers[l].data.length; ++i) {
         var obj = sketch.layers[l].data[i];
         if (obj.edge !== undefined) continue;
         if (!!obj.aux) continue;
+        var a = new TCAD.Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
+        var b = new TCAD.Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
         if (obj._class === 'TCAD.TWO.Segment') {
-          out.lines.push([
-            obj.points[0][1][1], obj.points[0][2][1], //x,y
-            obj.points[1][1][1], obj.points[1][2][1]  //x,y
-          ]);
+          out.connections.push(new TCAD.workbench.SketchConnection(
+              a, b, {_class : obj._class, id : id++}
+            ));
         } else if (obj._class === 'TCAD.TWO.Arc') {
-          out.lines.push.apply(out.lines, TCAD.workbench.integrate(
-            [obj.points[0][1][1], obj.points[0][2][1]],
-            [obj.points[1][1][1], obj.points[1][2][1]],
-            [obj.points[2][1][1], obj.points[2][2][1]],
-            20
-          ));
+          var center = new TCAD.Vector(obj.points[2][1][1], obj.points[2][2][1], 0);
+          var approxArc = TCAD.workbench.approxArc(a, b, center, 20);
+          var data =  {_class : obj._class, id : id++};
+          for (var j = 0; j < approxArc.length - 1; j++) {
+            var pa = approxArc[j];
+            var pb = approxArc[j+1];
+            out.connections.push(new TCAD.workbench.SketchConnection(
+              pa, pb, data
+            ));
+          }
+
         } else if (obj._class === 'TCAD.TWO.Circle') {
         }
       }
@@ -28,13 +41,10 @@ TCAD.workbench.readSketchGeom = function(sketch) {
   return out;
 };
 
-TCAD.workbench.integrate = function(_a, _b, _c, k) {
-  var ao = new TCAD.Vector(_a[0], _a[1], 0);
-  var bo = new TCAD.Vector(_b[0], _b[1], 0);
-  var c = new TCAD.Vector(_c[0], _c[1], 0);
+TCAD.workbench.approxArc = function(ao, bo, c, k) {
   var a = ao.minus(c);
   var b = bo.minus(c);
-  var points = [[ao.x, ao.y]];
+  var points = [ao];
   var abAngle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
   if (abAngle > Math.PI * 2) abAngle = Math.PI / 2 - abAngle;
   if (abAngle < 0) abAngle = Math.PI * 2 + abAngle;
@@ -44,21 +54,15 @@ TCAD.workbench.integrate = function(_a, _b, _c, k) {
   var angle = Math.atan2(a.y, a.x) + step;
 
   for (var i = 0; i < k - 2; ++i) {
-    points.push([c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)]);
+    points.push(new TCAD.Vector(c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)));
     angle += step;
   }
-  points.push([bo.x, bo.y]);
-  var lines = [];
-  for (var i = 0; i < points.length - 1; i++) {
-    var p1 = points[i];
-    var p2 = points[i + 1];
-    lines.push([p1[0], p1[1], p2[0], p2[1]]);
-  }
-  return lines;
+  points.push(bo);
+  return points;
 };
 
 TCAD.workbench.serializeSolid = function(solid) {
-  data = {};
+  var data = {};
   data.faceCounter = TCAD.geom.FACE_COUNTER;
   for (var fi = 0; fi < solid.faces.length; ++fi) {
     var face = solid.faces[fi];
@@ -129,9 +133,11 @@ TCAD.craft.getSketchedPolygons3D = function(app, face) {
       vec.z = depth;
 //      var a = _3dTransformation.apply(new TCAD.Vector(poly2D[m][0], poly2D[m][1], depth));
       var a = _3dTransformation.apply(vec);
-      shell.push(a)
+      a.sketchConnectionObject = vec.sketchConnectionObject;
+      shell.push(a);
     }
-    sketchedPolygons.push(new TCAD.Polygon(shell));
+    var polygon = new TCAD.Polygon(shell);
+    sketchedPolygons.push(polygon);
   }
   return sketchedPolygons;
 };
@@ -195,7 +201,7 @@ TCAD.craft._mergeCSGPolygonsTest = function() {
   console.log(paths);
 };
 
-TCAD.craft._mergeCSGPolygons = function (__cgsPolygons) {
+TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
   var pointToPoly = {};
   var points = [];
   var pkey = TCAD.craft.pkey;
@@ -231,6 +237,7 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons) {
         vertices: cp.vertices.map(function (cv) {
           return vec(cv.pos)
         }),
+        csgInfo : cp.shared.__tcad,
         normal: vec(cp.plane.normal),
         w: cp.plane.w
       };
@@ -243,12 +250,13 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons) {
       for (var vi = 0; vi < poly.vertices.length; ++vi) {
         var vert = poly.vertices[vi];
         points.push(vert);
+        allPoints.push(vert);
       }
     }
 
     var tol = 1E-6;
-    for (var i = 0; i < points.length; i++) {
-      var a = points[i];
+    for (var i = 0; i < allPoints.length; i++) {
+      var a = allPoints[i];
       for (var j = i + 1; j < points.length; j++) {
         var b = points[j];
         if (
@@ -508,6 +516,7 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons) {
 
     visited[pnkey(pCurr, normal)] = true;
     var foundNext = true;
+    var csgInfo;
     while (foundNext) {
       foundNext = false;
       path.push(vec(pCurr));
@@ -515,6 +524,7 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons) {
       POLY:
       for (pi = 0; pi < gons.length; pi++) {
         poly = gons[pi];
+        csgInfo = poly.csgInfo;
         if (normalKey != pkey(poly.normal)) continue;
         var dirs = getDirs(poly.vertices, keyCurr);
         if (dirs == null) continue;
@@ -543,7 +553,8 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons) {
       paths.push({
         vertices : path,
         normal : normal,
-        w : w
+        w : w,
+        csgInfo : csgInfo
       });
     }
   }
@@ -619,6 +630,7 @@ TCAD.craft._makeFromPolygons = function(polygons) {
     }
     var pid = poly.id;
     var shared = new CSG.Polygon.Shared([pid, pid, pid, pid]);
+    shared.__tcad = poly.csgInfo;
     var refs = poly.triangulate();
     for ( var i = 0;  i < refs.length; ++ i ) {
       var a = refs[i][0] + off;
@@ -637,6 +649,43 @@ TCAD.craft._makeFromPolygons = function(polygons) {
     off = points.length;
   }
   return csgPolygons;
+};
+
+TCAD.craft.recoverySketchInfo = function(polygons) {
+  var nonStructuralGons = [];
+  var sketchEdges = {};
+  function key(a, b) {return a.asKey() + ":" + b.asKey()}
+
+  for (var pi = 0; pi < polygons.length; pi++) {
+    var poly = polygons[pi];
+    var paths = [];
+    poly.collectPaths(paths);
+    for (var i = 0; i < paths.length; i++) {
+      var path = paths[i];
+      if (poly.csgInfo !== undefined && poly.csgInfo.derivedFrom !== undefined) {
+        var n = path.length;
+        for (var p =  n - 1, q = 0; q < n ; p = q++ ) {
+          sketchEdges[key(path[p], path[q])] = poly.csgInfo;
+        }
+      } else {
+        nonStructuralGons.push(path);
+      }
+    }
+  }
+
+  for (var i = 0; i < nonStructuralGons.length; i++) {
+    var path = nonStructuralGons[i];
+    var n = path.length;
+    for (var p =  n - 1, q = 0; q < n ; p = q++ ) {
+      var csgInfo = sketchEdges[key(path[p], path[q])];
+      if (!csgInfo) {
+        csgInfo = sketchEdges[key(path[q], path[p])];
+      }
+      if (csgInfo) {
+        path[p].sketchConnectionObject = csgInfo.derivedFrom;
+      }
+    }
+  }
 };
 
 TCAD.craft.cut = function(app, face, faces, height) {
@@ -703,7 +752,8 @@ TCAD.craft.cut = function(app, face, faces, height) {
       return {
         vertices : path.vertices.map(function(v) {return tr.apply(v);}),
         normal : path.normal,
-        w : path.w
+        w : path.w,
+        csgInfo : path.csgInfo
       }
     });
 
@@ -782,15 +832,21 @@ TCAD.craft.cut = function(app, face, faces, height) {
     byShared[tag].push(p);
   }
   var result = [];
+  var allPoints = [];
   for (var tag in byShared) {
-    var merged = TCAD.craft._mergeCSGPolygons(byShared[tag]);
+    var merged = TCAD.craft._mergeCSGPolygons(byShared[tag], allPoints);
     var sorted = sortPaths(merged);
     result.push.apply(result, sorted.map(function(path) {
-        return new TCAD.Polygon(path.vertices, path.holes.map(function(path){return path.vertices}), path.normal);
+        var p = new TCAD.Polygon(path.vertices, path.holes.map(function (path) {
+          return path.vertices
+        }), path.normal);
+        p.csgInfo = path.csgInfo;
+        return p;
       })
     );
-
   }
+  TCAD.craft.recoverySketchInfo(result);
+
   return result;
 };
 

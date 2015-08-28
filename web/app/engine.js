@@ -172,14 +172,18 @@ TCAD.utils.isPointInsidePolygon = function( inPt, inPolygon ) {
 TCAD.utils.sketchToPolygons = function(geom) {
 	  
   var dict = {};
-  var lines = geom.lines;
+  var lines = geom.connections;
 
   function key(a) {
-    return a[0] + ":" + a[1];
+    return a.x + ":" + a.y;
+  }
+  function edgeKey(a, b) {
+    return key(a) + ":" + key(b);
   }
 
   var size = 0;
   var points = [];
+  var edges = {};
   function memDir(a, b) {
     var ak = key(a);
     var dirs = dict[ak];
@@ -192,10 +196,11 @@ TCAD.utils.sketchToPolygons = function(geom) {
   }
 
   for (var i = 0; i < lines.length; i++) {
-    var a = lines[i].slice(0,2);
-    var b = lines[i].slice(2,4);
+    var a = lines[i].a;
+    var b = lines[i].b;
     memDir(a, b);
     memDir(b, a);
+    edges[edgeKey(a, b)] = lines[i];
   }
 
   var graph = {
@@ -223,11 +228,18 @@ TCAD.utils.sketchToPolygons = function(geom) {
     var polyPoints = [];
     for (var pi = 0; pi < loop.length; ++pi) {
       var point = loop[pi];
-      polyPoints.push(new TCAD.Vector(point[0], point[1], 0));
+      var next = loop[(pi + 1) % loop.length];
 
+      var edge = edges[edgeKey(point, next)];
+      if (edge === undefined) {
+        edge = edges[edgeKey(next, point)];
+      }
+      polyPoints.push(point);
+      point.sketchConnectionObject = edge.sketchObject;
     }
     if (polyPoints.length >= 3) {
-      polygons.push(new TCAD.Polygon(polyPoints));
+      var polygon = new TCAD.Polygon(polyPoints);
+      polygons.push(polygon);
     } else {
       console.warn("Points count < 3!");
     }
@@ -303,6 +315,7 @@ TCAD.geom.extrude = function(source, target) {
       lidShell[p],
       lidShell[i]
     ]);
+    face.csgInfo = {derivedFrom:  source.shell[i].sketchConnectionObject};
     poly.push(face);
   }
   return poly;
@@ -418,11 +431,12 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
   var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.polygon.shell, normal));
   //we lost depth or z off in 2d sketch, calculate it again
   var depth = normal.dot(this.polygon.shell[0]);
-  for (i = 0; i < geom.lines.length; ++i) {
-    var l = geom.lines[i];
+  for (i = 0; i < geom.connections.length; ++i) {
+    var l = geom.connections[i];
     var lg = new THREE.Geometry();
-    var a = _3dTransformation.apply(new TCAD.Vector(l[0], l[1], depth));
-    var b = _3dTransformation.apply(new TCAD.Vector(l[2], l[3], depth));
+    l.a.z = l.b.z = depth;
+    var a = _3dTransformation.apply(l.a);
+    var b = _3dTransformation.apply(l.b);
 
     lg.vertices.push(a.plus(offVector).three());
     lg.vertices.push(b.plus(offVector).three());
@@ -489,11 +503,15 @@ TCAD.Polygon.prototype.shift = function(target) {
   return new TCAD.Polygon(shell, holes, this.normal);
 };
 
+TCAD.Polygon.prototype.get2DTransformation = function() {
+  var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.shell, this.normal));
+  var _2dTransformation = _3dTransformation.invert();
+  return _2dTransformation;
+};
 
 TCAD.Polygon.prototype.to2D = function() {
 
-  var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.shell, this.normal));
-  var _2dTransformation = _3dTransformation.invert();
+  var _2dTransformation = this.get2DTransformation();
 
   var i, h;
   var shell = [];
@@ -508,6 +526,11 @@ TCAD.Polygon.prototype.to2D = function() {
     }
   }
   return {shell: shell, holes: holes};
+};
+
+TCAD.Polygon.prototype.collectPaths = function(paths) {
+  paths.push(this.shell);
+  paths.push.apply(paths, this.holes);
 };
 
 TCAD.Polygon.prototype.triangulate = function() {
@@ -547,4 +570,15 @@ TCAD.Polygon.prototype.eachVertex = function(handler) {
 /** @constructor */
 TCAD.Sketch = function() {
   this.group = new THREE.Object3D();
+};
+
+TCAD.utils.iteratePath = function(path, shift, callback) {
+  var p, q, n = path.length;
+  for (p = n - 1,q = 0;q < n; p = q++) {
+    var ai = (p + shift) % n;
+    var bi = (q + shift) % n;
+    if (!callback(path[ai], path[bi], ai, bi, q, path)) {
+      break
+    }
+  }
 };

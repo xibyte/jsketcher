@@ -213,50 +213,44 @@ TCAD.IO.prototype.updateBoundary = function (boundary) {
     this.boundaryLayer.readOnly = true;
     this.viewer.layers.splice(0, 0, this.boundaryLayer);
   }
-  var edges = [];
-  var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
-  var flattenPolygon = function(points) {
-    var n = points.length;
-    for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
-      edges.push([points[p].x, points[p].y, points[q].x, points[q].y]);
-      bbox[0] = Math.min(bbox[0], points[p].x);
-      bbox[1] = Math.min(bbox[1], points[p].y);
-      bbox[2] = Math.max(bbox[2], points[q].x);
-      bbox[3] = Math.max(bbox[3], points[q].y);
-    }
-  };
-
-  flattenPolygon(boundary.shell);
-  for (var i = 0; i < boundary.holes.length; ++i ) {
-    flattenPolygon(boundary.holes[i]);
-  }
 //  if (bbox[0] < Number.MAX_VALUE && bbox[1] < Number.MAX_VALUE && -bbox[2] < Number.MAX_VALUE && -bbox[3] < Number.MAX_VALUE) {
 //    this.viewer.showBounds(bbox[0], bbox[1], bbox[2], bbox[3])
 //  }
 
-  for (var l = 0; l < this.viewer.layers.length; ++l) {
-    var layer = this.viewer.layers[l];
-    for (var i = 0; i < layer.objects.length; ++i) {
-      var obj = layer.objects[i];
-      if (obj.edge !== undefined) {
-        var edge = edges[obj.edge];
-        if (edge !== undefined && edge != null) {
-          obj.a.x = edge[0];
-          obj.a.y = edge[1];
-          obj.b.x = edge[2];
-          obj.b.y = edge[3];
-          edges[obj.edge] = null;
-        }
-      }
-    }
+  //for (var l = 0; l < this.viewer.layers.length; ++l) {
+  //  var layer = this.viewer.layers[l];
+  //  for (var i = 0; i < layer.objects.length; ++i) {
+  //    var obj = layer.objects[i];
+  //    if (obj.edge !== undefined) {
+  //      var edge = edges[obj.edge];
+  //      if (edge !== undefined && edge != null) {
+  //        obj.a.x = edge[0];
+  //        obj.a.y = edge[1];
+  //        obj.b.x = edge[2];
+  //        obj.b.y = edge[3];
+  //        edges[obj.edge] = null;
+  //      }
+  //    }
+  //  }
+  //}
+
+  var id, i = 0;
+  for (i = 0; i < boundary.lines.length; ++i, ++id) {
+    var edge = boundary.lines[i];
+    var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, this.boundaryLayer);
+    seg.accept(function(o){o.aux = true; return true;});
+    seg.edge = id ++;
   }
-  for (var i = 0; i < edges.length; ++i ) {
-    var edge = edges[i];
-    if (edge != null) {
-      var seg = this.viewer.addSegment(edge[0], edge[1], edge[2], edge[3], this.boundaryLayer);
-      seg.accept(function(o){o.aux = true; return true;});
-      seg.edge = i;
-    }
+  for (i = 0; i < boundary.arcs.length; ++i, ++id) {
+    var a = boundary.arcs[i];
+    var arc = new TCAD.TWO.Arc(
+      new TCAD.TWO.EndPoint(a.a.x, a.a.y),
+      new TCAD.TWO.EndPoint(a.b.x, a.b.y),
+      new TCAD.TWO.EndPoint(a.c.x, a.c.y)
+    );
+    this.boundaryLayer.objects.push(arc);
+    arc.accept(function(o){o.aux = true; return true;});
+    arc.edge = id ++;
   }
 };
 
