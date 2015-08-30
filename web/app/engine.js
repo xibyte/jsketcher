@@ -170,26 +170,23 @@ TCAD.utils.isPointInsidePolygon = function( inPt, inPolygon ) {
 };
 
 TCAD.utils.sketchToPolygons = function(geom) {
-	  
-  var dict = {};
+
+  var dict = TCAD.struct.hashTable.forVector2d();
+  var edges = TCAD.struct.hashTable.forDoubleArray();
+
   var lines = geom.connections;
 
-  function key(a) {
-    return a.x + ":" + a.y;
-  }
   function edgeKey(a, b) {
-    return key(a) + ":" + key(b);
+    return [a.x, a.y, b.x, b.y];
   }
 
   var size = 0;
   var points = [];
-  var edges = {};
   function memDir(a, b) {
-    var ak = key(a);
-    var dirs = dict[ak];
-    if (!dirs) {
+    var dirs = dict.get(a);
+    if (dirs === null) {
       dirs = [];
-      dict[ak] = dirs;
+      dict.put(a, dirs);
       points.push(a);
     }
     dirs.push(b);
@@ -200,16 +197,14 @@ TCAD.utils.sketchToPolygons = function(geom) {
     var b = lines[i].b;
     memDir(a, b);
     memDir(b, a);
-    edges[edgeKey(a, b)] = lines[i];
+    edges.put(edgeKey(a, b), lines[i]);
   }
 
   var graph = {
 
-    id : key,
-
     connections : function(e) {
-      var dirs = dict[key(e)];
-      return !dirs ? [] : dirs;
+      var dirs = dict.get(e);
+      return dirs === null ? [] : dirs;
     },
 
     at : function(index) {
@@ -221,7 +216,7 @@ TCAD.utils.sketchToPolygons = function(geom) {
     }
   };
 
-  var loops = TCAD.graph.finaAllLoops(graph);
+  var loops = TCAD.graph.finaAllLoops(graph, dict.hashCodeF, dict.equalsF);
   var polygons = [];
   for (var li = 0; li < loops.length; ++li) {
     var loop = loops[li];
@@ -230,9 +225,9 @@ TCAD.utils.sketchToPolygons = function(geom) {
       var point = loop[pi];
       var next = loop[(pi + 1) % loop.length];
 
-      var edge = edges[edgeKey(point, next)];
-      if (edge === undefined) {
-        edge = edges[edgeKey(next, point)];
+      var edge = edges.get(edgeKey(point, next));
+      if (edge === null) {
+        edge = edges.get(edgeKey(next, point));
       }
       polyPoints.push(point);
       point.sketchConnectionObject = edge.sketchObject;
