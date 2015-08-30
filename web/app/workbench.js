@@ -143,25 +143,25 @@ TCAD.craft.getSketchedPolygons3D = function(app, face) {
 };
 
 TCAD.craft.extrude = function(app, face, faces, height) {
-
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
 
   var newSolidFaces = [];
   var normal = face.polygon.normal;
+
+  var toMeldWith = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
     var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(height));
-    newSolidFaces = newSolidFaces.concat(extruded);
+    toMeldWith = toMeldWith.concat(TCAD.craft._makeFromPolygons(extruded));
   }
+  var work = TCAD.craft._makeFromPolygons(faces.map(function(f){ return f.polygon }));
+
+  var meld = CSG.fromPolygons(work).union(CSG.fromPolygons(toMeldWith));
 
   face.polygon.__face = undefined;
 
-  for (var i = 0; i < faces.length; i++) {
-    newSolidFaces.push(faces[i].polygon);
-  }
-  return newSolidFaces;
+  return TCAD.craft.reconstruct(meld);
 };
-
 
 TCAD.craft.pkey = function(point) {
   return point.x + ":" + point.y + ":" + point.z;
@@ -588,25 +588,7 @@ TCAD.craft.recoverySketchInfo = function(polygons) {
   }
 };
 
-TCAD.craft.cut = function(app, face, faces, height) {
-
-  var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
-  if (sketchedPolygons == null) return null;
-
-  var newSolidFaces = [];
-  var normal = face.polygon.normal;
-
-  var cutter = [];
-  for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - height));
-    cutter = cutter.concat(TCAD.craft._makeFromPolygons(extruded));
-  }
-  var work = TCAD.craft._makeFromPolygons(faces.map(function(f){ return f.polygon }));
-
-  var cut = CSG.fromPolygons(work).subtract(CSG.fromPolygons(cutter));
-
-  face.polygon.__face = undefined;
-
+TCAD.craft.reconstruct = function (cut) {
   function pInP(p1, p2) {
     var notEqPoints = [];
 
@@ -743,8 +725,29 @@ TCAD.craft.cut = function(app, face, faces, height) {
     );
   }
   TCAD.craft.recoverySketchInfo(result);
-
   return result;
+};
+
+TCAD.craft.cut = function(app, face, faces, height) {
+
+  var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
+  if (sketchedPolygons == null) return null;
+
+  var newSolidFaces = [];
+  var normal = face.polygon.normal;
+
+  var cutter = [];
+  for (var i = 0; i < sketchedPolygons.length; i++) {
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - height));
+    cutter = cutter.concat(TCAD.craft._makeFromPolygons(extruded));
+  }
+  var work = TCAD.craft._makeFromPolygons(faces.map(function(f){ return f.polygon }));
+
+  var cut = CSG.fromPolygons(work).subtract(CSG.fromPolygons(cutter));
+
+  face.polygon.__face = undefined;
+
+  return TCAD.craft.reconstruct(cut);
 };
 
 TCAD.Craft = function(app) {
