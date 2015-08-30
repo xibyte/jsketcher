@@ -3,33 +3,31 @@
 TCAD.graph = {};
 
 
-TCAD.graph.finaAllLoops = function(graph) {
+TCAD.graph.finaAllLoops = function(graph, hashCode, equals) {
 
   var loops = [];
-  var visited = {};
+  var visited = new TCAD.struct.HashTable(hashCode, equals);
   function step(vertex, comesFrom, path) {
     var i;
-    var vertexId = graph.id(vertex);
-    visited[vertexId] = true;
+    visited.put(vertex, true);
     for (i = path.length - 1; i >= 0; --i) {
-      if (vertexId === graph.id(path[i])) {
+      if (equals(vertex, path[i])) {
         loops.push(path.slice(i));
         return;
       }
     }
-    
+
     var next = graph.connections(vertex);
-    
+
     path.push(vertex);
     var needClone = false;
-    
+
     VERTEX:
-    for (i = 0; i < next.length; i++) {
-      var v = next[i];
-      var nextId = graph.id(v);
-      if (nextId === comesFrom) {
-        continue;
-      }
+      for (i = 0; i < next.length; i++) {
+        var v = next[i];
+        if (equals(v, comesFrom)) {
+          continue;
+        }
 
 //      //avoid duplicates
 //      for (var li = loops.length - 1; li >= 0; --li) {
@@ -40,27 +38,27 @@ TCAD.graph.finaAllLoops = function(graph) {
 //          }
 //        }
 //      }
-      
-      var p = needClone ? path.slice(0) : path;
-      needClone = true;
-      step(v, vertexId, p);  
-    }
+
+        var p = needClone ? path.slice(0) : path;
+        needClone = true;
+        step(v, vertex, p);
+      }
     path.pop();
   }
 
   for (var i = 0; i < graph.size(); i++) {
     var vertex = graph.at(i);
-    if (visited[graph.id(vertex)] !== true) {
+    if (visited.get(vertex) !== true) {
       step(vertex, -1, []);
     }
   }
 
   //filter duplicates
 
-  function sameLoop(a, b, key) {
-    var first = key(a[0]);
+  function sameLoop(a, b) {
+    var first = a[0];
     for (var bShift = 0; bShift < a.length; bShift++) {
-      if (key(b[bShift]) === first) {
+      if (equals(b[bShift], first)) {
         break;
       }
     }
@@ -74,8 +72,8 @@ TCAD.graph.finaAllLoops = function(graph) {
         bDown = a.length + bDown;
       }
 //      console.log("up: " + bUp + "; down: " + bDown);
-      var curr = key(a[i]);
-      if (curr != key(b[bUp]) && curr != key(b[bDown]) ) {
+      var curr = a[i];
+      if ( !equals(curr, b[bUp]) && !equals(curr, b[bDown]) ) {
         return false;
       }
     }
@@ -91,7 +89,7 @@ TCAD.graph.finaAllLoops = function(graph) {
       if (b == null || a.length !== b.length) {
         continue;
       }
-      if (sameLoop(a, b, graph.id)) {
+      if (sameLoop(a, b)) {
         loops[j] = null;
         ++ duplicates;
       }
@@ -111,10 +109,6 @@ TCAD.graph.finaAllLoops = function(graph) {
 /** @constructor */
 TCAD.graph.Graph = function(data) {
 
-  this.id = function(e) {
-    return e;
-  };
-
   this.connections = function(e) {
     return data[e];
   };
@@ -130,7 +124,7 @@ TCAD.graph.Graph = function(data) {
 
 TCAD.graph.test = function() {
   var data = [
-    [],  
+    [],
     [2],
     [1, 3, 9],
     [2, 4],
