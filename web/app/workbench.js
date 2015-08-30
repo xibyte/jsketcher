@@ -724,7 +724,7 @@ TCAD.craft.reconstruct = function (cut) {
   return result;
 };
 
-TCAD.craft.cut = function(app, face, faces, height) {
+TCAD.craft.cut = function(app, face, faces, depth) {
 
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
@@ -734,7 +734,7 @@ TCAD.craft.cut = function(app, face, faces, height) {
 
   var cutter = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - height));
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - depth));
     cutter = cutter.concat(TCAD.craft._makeFromPolygons(extruded));
   }
   var work = TCAD.craft._makeFromPolygons(faces.map(function(f){ return f.polygon }));
