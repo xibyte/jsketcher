@@ -202,13 +202,7 @@ TCAD.craft._mergeCSGPolygonsTest = function() {
 };
 
 TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
-  var pointToPoly = {};
-  var points = [];
   var pkey = TCAD.craft.pkey;
-
-  function pnkey(point, normal) {
-    return pkey(point) + ":" + pkey(normal);
-  }
 
   function vec(p) {
     var v = new TCAD.Vector();
@@ -218,14 +212,6 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
 
 //  var tol = Math.round(1 / TCAD.TOLERANCE);
   var tol = 1E6;
-
-  function round(num) {
-    return Math.round(num * tol) / tol;
-  }
-
-  function roundV(v) {
-    return v.set(round(v.x), round(v.y), round(v.z));
-  }
 
   function prepare(__cgsPolygons) {
     var counter = 0;
@@ -284,12 +270,6 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
         }
       }
     }
-
-//        for (var i = 0; i < points.length; i++) {
-//          roundV(points[i]);
-//        }
-
-    //polygons = polygons.filter(function(e){return e.normal.equals(new TCAD.Vector(-1,0,0)) });
     return polygons;
   }
   
@@ -325,12 +305,8 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
         for (var gi = 0; gi < gons.length; gi++) {
           var pointPoly = gons[gi];
           if (poly.id === pointPoly.id) continue POLYGONS;
-          if (pointPoly.normal.equals(poly.normal)) {
-            hasNormal = true;  
-          }
         }
-        if (!hasNormal) continue;
-        
+
         var n = poly.vertices.length;
 
         var add = [];
@@ -356,116 +332,11 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
     return polygons;
   }
   
-  function triangulate(polygons) {
-    var triangles = [];
-    for (var ei = 0; ei < polygons.length; ++ei) {
-      var poly = polygons[ei];
-      var nvec = poly.normal;
-      var refs = new TCAD.Polygon(poly.vertices, [], nvec).triangulate();
-      for ( var i = 0;  i < refs.length; ++ i ) {
-        var a = refs[i][0];
-        var b = refs[i][1];
-        var c = refs[i][2];
-        var triangle = {
-          vertices : [
-            poly.vertices[a],
-            poly.vertices[b],
-            poly.vertices[c]
-          ],
-          normal : poly.normal
-        };
-        triangles.push(triangle);
-      }
-    }
-    return triangles;
-  }
-
   var polygons = prepare(__cgsPolygons);
   polygons = mergeVertices(polygons);
-  //polygons = triangulate(polygons);
-//  return polygons;
+  //return polygons;
 
-  var pi, vi,  poly, key, vert;
-  var pid = 0;
-  for (pi = 0; pi < polygons.length; pi++) {
-    poly = polygons[pi];
-    poly.id = pi;
-    for (vi = 0; vi < poly.vertices.length; vi++) {
-      vert = poly.vertices[vi];
-      key = pkey(vert);
-      var pList = pointToPoly[key];
-      if (pList === undefined) {
-        pointToPoly[key] = [poly];
-        points.push(vert);
-      } else {
-        pList.push(poly);
-      }
-    }
-  }
 
-  function getNeighbors(vertices, i) {
-    var a = i - 1;
-    var b = i + 1;
-    if (a < 0) a = vertices.length - 1;      
-    if (b == vertices.length) b = 0;
-    return [a, b];
-  }
-  
-  function pointIdx(vertices, key) {
-    for (var i = 0; i < vertices.length; i++) {
-      var v = vertices[i];
-      if (pkey(v) === key) {
-        return i;
-      }
-    }
-    return -1;
-  }
-  
-  function getDirs(vertices, key) {
-    var idx = pointIdx(vertices, key);
-    if  (idx != -1) {
-      return getNeighbors(vertices, idx).map(function(i) { return vertices[i]; });
-    }
-    return null;
-  }
-  
-  function sharesEdge(masterPolyId, v1, v2, key1, key2, normalKey) {
-    var e1 = v2.minus(v1).normalize();
-    var pp1 = pointToPoly[key1];
-    function along(v) {
-      var e = v.minus(v1).normalize();
-      return e.equals(e1);
-    }
-    for (var ii = 0; ii < pp1.length; ii++) {
-      var poly = pp1[ii];
-      if (pkey(poly.normal) !== normalKey) {
-        continue;        
-      }
-      if (masterPolyId === poly.id) continue;
-      var idx = pointIdx(poly.vertices, key1);
-      if (idx != -1) {
-        var neighbors = getNeighbors(poly.vertices, idx);
-        if (along(poly.vertices[neighbors[0]]) || 
-            along(poly.vertices[neighbors[1]])) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-  
-  var paths = [];
-  var path;
-  var visited = {};
-  function nextUnvisitedPolygon(p, key) {
-    var polygons = pointToPoly[key];
-    for (var pi = 0; pi < polygons.length; pi++) {
-      var poly = polygons[pi];
-      var nkey = pnkey(p, poly.normal);
-      if (visited[nkey] === undefined) return poly;
-    }
-    return null;
-  }
   function deleteRedundantPoints(path) {
     var n = path.length;
     if (n < 3) return path;
@@ -494,72 +365,103 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
     return path;
   }
 
-  var p, pCurr, keyCurr, keyPrev, keyStart, pStart;
-  for (var i = 0; i < points.length; i++) {
-    var point = points[i];
-    key = pkey(point);
-    var unvPoly = nextUnvisitedPolygon(point, key);
-    if (unvPoly == null) {
-      continue;
+  var edges = TCAD.struct.hashTable.forEdge();
+
+  for (var pi = 0; pi < polygons.length; pi++) {
+    var poly = polygons[pi];
+    var n = poly.vertices.length, p, q;
+    for (p = n - 1, q = 0; q < n; p = q ++) {
+      var a = poly.vertices[p];
+      var b = poly.vertices[q];
+
+      var edge = [a, b, poly];
+      var shares = edges.get(edge);
+      if (shares === null) {
+        shares = 0;
+      }
+      edges.put(edge, shares + 1);
     }
-    var normal = unvPoly.normal;
-    var w = unvPoly.w;
-    var normalKey = pkey(normal);
+  }
 
-    pCurr = point;
-    pStart = point;
-    keyCurr = key;
-    keyStart = key;
-    
-    path = [];
-    keyPrev = null;
+  var veq = TCAD.struct.hashTable.vectorEquals;
 
-    visited[pnkey(pCurr, normal)] = true;
-    var foundNext = true;
-    var csgInfo;
-    while (foundNext) {
-      foundNext = false;
-      path.push(vec(pCurr));
-      var gons = pointToPoly[keyCurr];
-      POLY:
-      for (pi = 0; pi < gons.length; pi++) {
-        poly = gons[pi];
-        csgInfo = poly.csgInfo;
-        if (normalKey != pkey(poly.normal)) continue;
-        var dirs = getDirs(poly.vertices, keyCurr);
-        if (dirs == null) continue;
-        for (vi = 0; vi < dirs.length; vi++) {
-          p = dirs[vi];
-          key = pkey(p);
-          
-          if (keyStart === key) continue;
-          if (keyCurr === key) continue;
-          if (keyPrev != null && keyPrev === key) continue;
-          var nkey = pnkey(p, poly.normal);
-          if (sharesEdge(poly.id, pCurr, p, keyCurr, key, normalKey)) continue;
-          if (visited[nkey] !== undefined) continue;
-          visited[nkey] = true;
+  var paths = [];
+  var csgDatas = [];
+  var index = TCAD.struct.hashTable.forVector3d();
 
-          pCurr = p;
-          keyPrev = keyCurr;
-          keyCurr = key;
-          foundNext = true;
-          break POLY;
-        }
+  function indexPoint(p, edge) {
+    var edges = index.get(p);
+    if (edges === null) {
+      edges = [];
+      index.put(p, edges);
+    }
+    edges.push(edge);
+  }
+
+  var edgesToProcess = [];
+  edges.entries(function(k, v) {
+    if (v === 1) {
+      indexPoint(k[0], k);
+      indexPoint(k[1], k);
+      k[3] = false;
+      edgesToProcess.push(k);
+    }
+  });
+
+  function nextPoint(p) {
+    var edges = index.get(p);
+    if (edges === null) return null;
+    for (var i = 0; i < edges.length; i++) {
+      var edge = edges[i]
+      if (edge[3]) continue;
+      var res = null;
+      if (veq(p, edge[0])) res = edge[1];
+      if (veq(p, edge[1])) res = edge[0];
+      if (res != null) {
+        edge[3] = true;
+        return res;
       }
     }
-    path = deleteRedundantPoints(path);
+    return null;
+  }
+
+  for (var ei = 0; ei < edgesToProcess.length; ei++) {
+    var edge = edgesToProcess[ei];
+    if (edge[3]) {
+      continue;
+    }
+    edge[3] = true;
+    var path = [edge[0], edge[1]];
+    paths.push(path);
+    csgDatas.push(edge[2]);
+    var next = nextPoint(edge[1]);
+    while (next !== null) {
+      if (!veq(next, path[0])) {
+        path.push(next);
+        next = nextPoint(next);
+      } else {
+        next = null;
+      }
+    }
+  }
+
+
+
+  var filteredPaths = [];
+  for (var i = 0; i < paths.length; i++) {
+    var path = deleteRedundantPoints(paths[i]);
+    var csgData = csgDatas[i];
     if (path.length > 2) {
-      paths.push({
+      filteredPaths.push({
         vertices : path,
-        normal : normal,
-        w : w,
-        csgInfo : csgInfo
+        normal : csgData.normal,
+        w : csgData.w,
+        csgInfo : csgData.csgInfo
       });
     }
   }
 
-  return paths;
+  return filteredPaths;
 };
 
 
