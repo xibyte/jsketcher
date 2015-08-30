@@ -202,7 +202,6 @@ TCAD.craft._mergeCSGPolygonsTest = function() {
 };
 
 TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
-  var pkey = TCAD.craft.pkey;
 
   function vec(p) {
     var v = new TCAD.Vector();
@@ -275,16 +274,15 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
   
   function mergeVertices(polygons) {
     var points = [];
-    var pointToPoly = {};
+    var pointToPoly = TCAD.struct.hashTable.forVector3d();
     for (var pi = 0; pi < polygons.length; ++pi) {
       var poly = polygons[pi];
       poly.id = pi;
       for (var vi = 0; vi < poly.vertices.length; ++vi) {
         var vert = poly.vertices[vi];
-        var key = pkey(vert);
-        var pList = pointToPoly[key];
-        if (pList === undefined) {
-          pointToPoly[key] = [poly];
+        var pList = pointToPoly.get(vert);
+        if (pList === null) {
+          pointToPoly.put(vert, [poly]);
           points.push(vert);
         } else {
           pList.push(poly);
@@ -296,7 +294,7 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
     for (var i = 0; i < points.length; i++) {
       var point = points[i];
       
-      var gons = pointToPoly[pkey(point)];
+      var gons = pointToPoly.get(point);
       
       POLYGONS:
       for (var pi = 0; pi < polygons.length; ++pi) {
@@ -555,8 +553,8 @@ TCAD.craft._makeFromPolygons = function(polygons) {
 
 TCAD.craft.recoverySketchInfo = function(polygons) {
   var nonStructuralGons = [];
-  var sketchEdges = {};
-  function key(a, b) {return a.asKey() + ":" + b.asKey()}
+  var sketchEdges = TCAD.struct.hashTable.forDoubleArray();
+  function key(a, b) {return [a.x, a.y, b.x, b.y]};
 
   for (var pi = 0; pi < polygons.length; pi++) {
     var poly = polygons[pi];
@@ -567,7 +565,7 @@ TCAD.craft.recoverySketchInfo = function(polygons) {
       if (poly.csgInfo !== undefined && poly.csgInfo.derivedFrom !== undefined) {
         var n = path.length;
         for (var p =  n - 1, q = 0; q < n ; p = q++ ) {
-          sketchEdges[key(path[p], path[q])] = poly.csgInfo;
+          sketchEdges.put(key(path[p], path[q]), poly.csgInfo);
         }
       } else {
         nonStructuralGons.push(path);
@@ -579,9 +577,9 @@ TCAD.craft.recoverySketchInfo = function(polygons) {
     var path = nonStructuralGons[i];
     var n = path.length;
     for (var p =  n - 1, q = 0; q < n ; p = q++ ) {
-      var csgInfo = sketchEdges[key(path[p], path[q])];
-      if (!csgInfo) {
-        csgInfo = sketchEdges[key(path[q], path[p])];
+      var csgInfo = sketchEdges.get(key(path[p], path[q]));
+      if (csgInfo === null) {
+        csgInfo = sketchEdges.get(key(path[q], path[p]));
       }
       if (csgInfo) {
         path[p].sketchConnectionObject = csgInfo.derivedFrom;
@@ -639,22 +637,19 @@ TCAD.craft.cut = function(app, face, faces, height) {
 
   function sortPaths(paths3D) {
 
-    var transforms = {};
+    var transforms = TCAD.struct.hashTable.forVector3d();
 
     var paths = paths3D.map(function(path) {
-
-      var nkey = TCAD.craft.pkey(path.normal);
-      var tr = transforms[nkey];
-      if (tr === undefined) {
+      var tr = transforms.get(path.normal);
+      if (tr === null) {
         var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(path.vertices, path.normal));
         var tr = _3dTransformation.invert();
-        transforms[nkey] = tr;
+        transforms.put(path.normal, tr);
       }
 
       return {
         vertices : path.vertices.map(function(v) {return tr.apply(v);}),
         normal : path.normal,
-        w : path.w,
         csgInfo : path.csgInfo
       }
     });

@@ -27,10 +27,6 @@ TCAD.Vector.prototype.setV = function(data) {
   return this;
 };
 
-TCAD.Vector.prototype.asKey = function() {
-  return this.x + ":" + this.y + ":" + this.z
-};
-
 TCAD.Vector.prototype.multiply = function(scalar) {
   return new TCAD.Vector(this.x * scalar, this.y * scalar, this.z * scalar);
 };
