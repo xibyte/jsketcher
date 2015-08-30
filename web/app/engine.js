@@ -324,7 +324,7 @@ TCAD.Solid = function(polygons, material) {
   this.dynamic = true; //true by default
   
   this.meshObject = new THREE.Mesh(this, material);
-  
+
   this.polyFaces = [];
   var scope = this;
   function pushVertices(vertices) {
@@ -376,11 +376,43 @@ TCAD.Solid = function(polygons, material) {
   }
 
   this.mergeVertices();
+
+  this.wireframeGroup = new THREE.Object3D();
+  this.meshObject.add(this.wireframeGroup);
+  this.makeWireframe(polygons);
 };
 
 if (typeof THREE !== "undefined") {
   TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
 }
+
+TCAD.Solid.prototype.makeWireframe = function(polygons) {
+  var edges = new TCAD.struct.hashTable.forEdge();
+  var paths = [];
+  for (var i = 0; i < polygons.length; i++) {
+    var poly = polygons[i];
+    if (poly.csgInfo === undefined || poly.csgInfo.derivedFrom === undefined || poly.csgInfo.derivedFrom._class !== 'TCAD.TWO.Arc') {
+      poly.collectPaths(paths);
+    }
+  }
+  for (var i = 0; i < paths.length; i++) {
+    var path = paths[i];
+    var p, q, n = path.length;
+    for (p = n - 1, q = 0; q < n; p = q++) {
+      var a = path[p];
+      var b = path[q];
+      var edge = [a, b];
+      if (edge !== null) {
+        var lg = new THREE.Geometry();
+        lg.vertices.push(a);
+        lg.vertices.push(b);
+        var line = new THREE.Segment(lg, TCAD.SketchFace.prototype.SKETCH_MATERIAL);
+        this.wireframeGroup.add(line);
+        edges.put(edge, true);
+      }
+    }
+  }
+};
 
 /** @constructor */
 TCAD.SketchFace = function(solid, poly) {
