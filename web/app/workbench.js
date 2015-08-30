@@ -163,10 +163,6 @@ TCAD.craft.extrude = function(app, face, faces, height) {
   return TCAD.craft.reconstruct(meld);
 };
 
-TCAD.craft.pkey = function(point) {
-  return point.x + ":" + point.y + ":" + point.z;
-}
-
 TCAD.craft._pointOnLine = function(p, a, b) {
   
   var ab = a.minus(b);
