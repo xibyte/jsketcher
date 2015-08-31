@@ -85,7 +85,7 @@ TCAD.utils.createSolidMesh = function(faces) {
     color: TCAD.view.FACE_COLOR,
     shininess: 0,
     polygonOffset : true,
-    polygonOffsetFactor : 3,
+    polygonOffsetFactor : 4,
     polygonOffsetUnits : 1
 
   });
