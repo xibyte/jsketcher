@@ -12,8 +12,8 @@ TCAD.view.setFaceColor = function(polyFace, color) {
   }
 };
 TCAD.view.FACE_COLOR =  0xB0C4DE;
-TCAD.Viewer = function() {
-
+TCAD.Viewer = function(bus) {
+  this.bus = bus;
   function aspect() {
     return window.innerWidth / window.innerHeight;
   }
@@ -110,7 +110,7 @@ TCAD.Viewer = function() {
         if (scope.selectionMgr.contains(poly)) {
           scope.toolMgr.handleClick(poly, pickResult);
         } else {
-          scope.selectionMgr.select(poly);
+          scope.select(poly);
           pickResult.object.geometry.colorsNeedUpdate = true;
         }
       }
@@ -153,6 +153,11 @@ TCAD.Viewer = function() {
 
   render();
   animate();
+};
+
+TCAD.Viewer.prototype.select = function(polyFace) {
+  this.selectionMgr.select(polyFace);
+  this.bus.notify('selection', polyFace);
 };
 
 TCAD.FaceSelectionManager = function(selectionColor, defaultColor) {
