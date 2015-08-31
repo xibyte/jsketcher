@@ -5,9 +5,6 @@ TCAD.UI = function(app) {
   this.dat = new dat.GUI();
   var gui = this.dat;
 
-  gui.TEXT_CLOSED = 'XXX Controls';
-  gui.TEXT_OPEN = 'Open FFF';
-
   var actionsF = gui.addFolder('Add Object');
   var actions = new TCAD.UI.Actions(this);
   actionsF.add(actions.tools, 'extrude');
@@ -16,6 +13,12 @@ TCAD.UI = function(app) {
   actionsF.add(actions.tools, 'save');
   actionsF.add(actions.tools, 'refreshSketches');
   actionsF.open();
+
+  var camera =  gui.addFolder('Camera');
+  camera.add(app.viewer.camera.position, 'x').listen();
+  camera.add(app.viewer.camera.position, 'y').listen();
+  camera.add(app.viewer.camera.position, 'z').listen();
+  camera.open();
 
 //    var propsF = gui.addFolder('Properties');
 //    propsF.add(object3DProto.position, 'x');
