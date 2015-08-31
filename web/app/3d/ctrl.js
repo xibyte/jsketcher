@@ -3,7 +3,12 @@ TCAD.UI = function(app) {
   this.app = app;
   this.viewer = app.viewer;
   this.dat = new dat.GUI();
+  var ui = this;
   var gui = this.dat;
+
+  app.bus.subscribe('selection', function (polyFace) {
+    ui.setSolid(polyFace.solid)
+  });
 
   var actionsF = gui.addFolder('Add Object');
   var actions = new TCAD.UI.Actions(this);
@@ -20,8 +25,15 @@ TCAD.UI = function(app) {
   camera.add(app.viewer.camera.position, 'z').listen();
   camera.open();
 
-//    var propsF = gui.addFolder('Properties');
-//    propsF.add(object3DProto.position, 'x');
+  this.solidFolder = null;
+};
+
+TCAD.UI.prototype.setSolid = function(solid) {
+  if (this.solidFolder !== null) {
+    this.solidFolder.remove();
+  }
+  this.solidFolder = this.dat.addFolder("Solid Properties");
+  this.solidFolder.add(solid.wireframeGroup, 'visible').listen()
 };
 
 TCAD.UI.Actions = function(scope) {
