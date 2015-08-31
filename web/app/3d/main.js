@@ -3,10 +3,10 @@ TCAD = {};
 TCAD.App = function() {
 
   this.id = "DEFAULT";
-  this.viewer = new TCAD.Viewer();
+  this.bus = new TCAD.Bus();
+  this.viewer = new TCAD.Viewer(this.bus);
   this.ui = new TCAD.UI(this);
   this.craft = new TCAD.Craft(this);
-
 
   var box = TCAD.utils.createSolidMesh(TCAD.utils.createBox(500));
   this.viewer.scene.add( box );
@@ -204,4 +204,27 @@ TCAD.App.prototype.save = function() {
 
   var polyFace = this.viewer.selectionMgr.selection[0];
   var height = prompt("Height", "50");
+};
+
+TCAD.Bus = function() {
+  this.listeners = {};
+};
+
+TCAD.Bus.prototype.subscribe = function(event, callback) {
+  var listenerList = this.listeners[event];
+  if (listenerList === undefined) {
+    listenerList = [];
+    this.listeners[event] = listenerList;
+  }
+  listenerList.push(callback);
+};
+
+TCAD.Bus.prototype.notify = function(event, data) {
+  var listenerList = this.listeners[event];
+  if (listenerList !== undefined) {
+    for (var i = 0; i < listenerList.length; i++) {
+      listenerList[i](data);
+    }
+  }
+
 };
