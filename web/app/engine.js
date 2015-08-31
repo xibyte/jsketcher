@@ -71,7 +71,7 @@ TCAD.utils.createPoint = function(x, y, z) {
 TCAD.utils.createLine = function (a, b, color) {
   var material = new THREE.LineBasicMaterial({
     color: color,
-    linewidth: 3
+    linewidth: 1
   });
   var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(a.x, a.y, a.z));
@@ -83,7 +83,11 @@ TCAD.utils.createSolidMesh = function(faces) {
   var material = new THREE.MeshPhongMaterial({
     vertexColors: THREE.FaceColors,
     color: TCAD.view.FACE_COLOR,
-    shininess: 0
+    shininess: 0,
+    polygonOffset : true,
+    polygonOffsetFactor : 3,
+    polygonOffsetUnits : 1
+
   });
   var geometry = new TCAD.Solid(faces, material);
   return geometry.meshObject;
@@ -444,7 +448,7 @@ if (typeof THREE !== "undefined") {
 TCAD.SketchFace.prototype.syncSketches = function(geom) {
   var i;
   var normal = this.polygon.normal;
-  var offVector = normal.multiply(0.5);
+  var offVector = normal.multiply(0); // disable it. use polygon offset feature of material
 
   if (this.sketch3DGroup != null) {
     for (var i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
