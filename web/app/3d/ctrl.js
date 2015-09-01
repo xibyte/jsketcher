@@ -6,10 +6,6 @@ TCAD.UI = function(app) {
   var ui = this;
   var gui = this.dat;
 
-  app.bus.subscribe('selection', function (polyFace) {
-    ui.setSolid(polyFace.solid)
-  });
-
   var actionsF = gui.addFolder('Add Object');
   var actions = new TCAD.UI.Actions(this);
   actionsF.add(actions.tools, 'extrude');
@@ -37,13 +33,13 @@ TCAD.UI.prototype.setSolid = function(solid) {
 };
 
 TCAD.UI.Actions = function(scope) {
-  
+
   this.tools = {
 
     extrude : function() {
       scope.app.extrude();
     },
-    
+
     cut : function() {
       scope.app.cut();
     },
@@ -51,11 +47,11 @@ TCAD.UI.Actions = function(scope) {
     edit : function() {
       scope.app.sketchFace();
     },
-    
+
     save : function() {
       scope.app.save();
     },
-    
+
     refreshSketches : function() {
       scope.app.refreshSketches();
     },
