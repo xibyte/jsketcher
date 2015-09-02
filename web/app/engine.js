@@ -410,7 +410,7 @@ TCAD.Solid.prototype.makeWireframe = function(polygons) {
         var lg = new THREE.Geometry();
         lg.vertices.push(a);
         lg.vertices.push(b);
-        var line = new THREE.Segment(lg, TCAD.SketchFace.prototype.SKETCH_MATERIAL);
+        var line = new THREE.Segment(lg, TCAD.SketchFace.prototype.WIREFRAME_MATERIAL);
         this.wireframeGroup.add(line);
         edges.put(edge, true);
       }
@@ -442,7 +442,9 @@ TCAD.SketchFace = function(solid, poly) {
 
 if (typeof THREE !== "undefined") {
   TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
-        color: 0xFFFFFF, linewidth: 3});
+    color: 0xFFFFFF, linewidth: 3});
+  TCAD.SketchFace.prototype.WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({
+    color: 0x2B3856, linewidth: 3});
 }
 
 TCAD.SketchFace.prototype.syncSketches = function(geom) {
