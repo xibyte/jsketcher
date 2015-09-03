@@ -713,19 +713,20 @@ TCAD.craft.cut = function(app, request) {
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
 
-  var faces = TCAD.craft.collectFaces(request.solids);
-  var normal = face.polygon.normal;
+  face.polygon.__face = undefined;
 
+  var faces = TCAD.craft.collectFaces(request.solids);
+
+  var normal = face.polygon.normal;
   var cutter = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
     var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - request.depth));
     cutter = cutter.concat(TCAD.craft._makeFromPolygons(extruded));
   }
+
   var work = TCAD.craft._makeFromPolygons(faces.map(function(f){ return f.polygon }));
 
   var cut = CSG.fromPolygons(work).subtract(CSG.fromPolygons(cutter));
-
-  face.polygon.__face = undefined;
 
   return TCAD.craft.reconstruct(cut);
 };
@@ -769,7 +770,7 @@ TCAD.Craft.prototype.modify = function(request) {
   }
   this.app.viewer.scene.add(TCAD.utils.createSolidMesh(newFaces));
   this.history.push(detachedRequest);
-  this.app.bus.notify('operation');
+  this.app.bus.notify('craft');
   //REMOVE IT
   this.app._refreshSketches();
 
@@ -778,5 +779,8 @@ TCAD.Craft.prototype.modify = function(request) {
 
 TCAD.craft.OPS = {
   CUT : TCAD.craft.cut,
-  PAD : TCAD.craft.extrude
+  PAD : TCAD.craft.extrude,
+  BOX : function(app, request) {
+    return TCAD.utils.createBox(request.size);
+  }
 };

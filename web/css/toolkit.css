@@ -7,7 +7,7 @@
   background-color: #000;
 }
 
-.tc-row {
+.tc-row, .tc-table li {
   height: 27px;
   line-height: 27px;
   overflow: hidden;
@@ -15,10 +15,14 @@
   border-bottom: 1px solid #2c2c2c;
 }
 
+.tc-title, .tc-chevron-open {
+    padding-left: 16px;
+    background: url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) no-repeat 6px 10px;
+}
+
 .tc-title {
-  padding-left: 16px;
-  background: black url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;
-  cursor: pointer;
+    background-color: black;
+    cursor: pointer;
 }
 
 .tc-folder {
@@ -90,10 +94,11 @@
 }
 .tc-scroll::-webkit-scrollbar-thumb {
     background:#999;
-    border: thin solid gray;
+    border: thin solid #444444;
     border-radius:10px;
 }
 
 .tc-scroll::-webkit-scrollbar-thumb:hover {
     background:#7d7d7d;
 }
+
