@@ -8,8 +8,8 @@ TCAD.App = function() {
   this.ui = new TCAD.UI(this);
   this.craft = new TCAD.Craft(this);
 
-  var box = TCAD.utils.createSolidMesh(TCAD.utils.createBox(500));
-  this.viewer.scene.add( box );
+  this.addBox();
+
   this._refreshSketches();
   this.viewer.render();
 
@@ -184,6 +184,14 @@ TCAD.App.prototype.cut = function() {
     solids : solids,
     face : polyFace,
     depth : depth
+  });
+};
+
+TCAD.App.prototype.addBox = function() {
+  this.craft.modify({
+    type: 'BOX',
+    solids : [],
+    size : 500
   });
 };
 
