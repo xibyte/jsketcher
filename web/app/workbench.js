@@ -72,38 +72,6 @@ TCAD.workbench.serializeSolid = function(solid) {
   return data;
 };
 
-TCAD.workbench.applyHistory = function(history) {
-
-  for (var hi = 0; hi < history.length; ++hi) {
-    var mod = history[hi];
-    switch (mod.operation) {
-    }
-
-  }
-};
-
-TCAD.workbench.Cut = function() {
-
-  this.depth = null;
-
-  this.load = function(data) {
-    this.depth = data.depth;
-  };
-
-  this.save = function() {
-    return {
-      depth : this.depth
-    };
-  };
-
-  this.apply = function(app, face, faces) {
-    TCAD.craft.cut(app, face, faces, this.depth);
-  };
-};
-
-TCAD.workbench.Cut.prototype.TYPE = 'CUT';
-
-
 TCAD.craft = {};
 
 TCAD.craft.getSketchedPolygons3D = function(app, face) {
@@ -142,16 +110,18 @@ TCAD.craft.getSketchedPolygons3D = function(app, face) {
   return sketchedPolygons;
 };
 
-TCAD.craft.extrude = function(app, face, faces, height) {
+TCAD.craft.extrude = function(app, request) {
+  var face = request.face;
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
 
-  var newSolidFaces = [];
+  var faces = TCAD.craft.collectFaces(request.solids);
+
   var normal = face.polygon.normal;
 
   var toMeldWith = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(height));
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(request.height));
     toMeldWith = toMeldWith.concat(TCAD.craft._makeFromPolygons(extruded));
   }
   var work = TCAD.craft._makeFromPolygons(faces.map(function(f){ return f.polygon }));
@@ -218,7 +188,7 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
         vertices: cp.vertices.map(function (cv) {
           return vec(cv.pos)
         }),
-        csgInfo : cp.shared.__tcad,
+        shared : cp.shared.__tcad,
         normal: vec(cp.plane.normal),
         w: cp.plane.w
       };
@@ -450,7 +420,7 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
         vertices : path,
         normal : csgData.normal,
         w : csgData.w,
-        csgInfo : csgData.csgInfo
+        shared : csgData.shared
       });
     }
   }
@@ -526,7 +496,10 @@ TCAD.craft._makeFromPolygons = function(polygons) {
     }
     var pid = poly.id;
     var shared = new CSG.Polygon.Shared([pid, pid, pid, pid]);
-    shared.__tcad = poly.csgInfo;
+    shared.__tcad = {
+      csgInfo : poly.csgInfo,
+      face : poly.__face
+    };
     var refs = poly.triangulate();
     for ( var i = 0;  i < refs.length; ++ i ) {
       var a = refs[i][0] + off;
@@ -628,7 +601,7 @@ TCAD.craft.reconstruct = function (cut) {
       return {
         vertices : path.vertices.map(function(v) {return tr.apply(v);}),
         normal : path.normal,
-        csgInfo : path.csgInfo
+        shared : path.shared
       }
     });
 
@@ -715,7 +688,10 @@ TCAD.craft.reconstruct = function (cut) {
         var p = new TCAD.Polygon(path.vertices, path.holes.map(function (path) {
           return path.vertices
         }), path.normal);
-        p.csgInfo = path.csgInfo;
+        if (path.shared !== undefined) {
+          p.csgInfo = path.shared.csgInfo;
+          p.__face = path.shared.face;
+        }
         return p;
       })
     );
@@ -724,17 +700,25 @@ TCAD.craft.reconstruct = function (cut) {
   return result;
 };
 
-TCAD.craft.cut = function(app, face, faces, depth) {
+TCAD.craft.collectFaces = function(solids) {
+  var faces = [];
+  for (var i = 0; i < solids.length; i++) {
+     TCAD.utils.addAll(faces, solids[i].polyFaces);
+  }
+  return faces;
+};
 
+TCAD.craft.cut = function(app, request) {
+  var face = request.face;
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
 
-  var newSolidFaces = [];
+  var faces = TCAD.craft.collectFaces(request.solids);
   var normal = face.polygon.normal;
 
   var cutter = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - depth));
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - request.depth));
     cutter = cutter.concat(TCAD.craft._makeFromPolygons(extruded));
   }
   var work = TCAD.craft._makeFromPolygons(faces.map(function(f){ return f.polygon }));
@@ -754,15 +738,45 @@ TCAD.Craft = function(app) {
 TCAD.Craft.prototype.current = function() {
   return this.history[this.history.length - 1];
 };
-  
-TCAD.Craft.prototype.modify = function(solid, modification) {
-  var faces = modification();
-  if (faces == null) return;
-  this.app.viewer.scene.remove( solid.meshObject );
-  this.app.viewer.scene.add(TCAD.utils.createSolidMesh(faces));
 
+TCAD.craft.detach = function(request) {
+  var detachedConfig = {};
+  for (var prop in request) {
+    if (request.hasOwnProperty(prop)) {
+      var value = request[prop];
+      if (typeof(value) === 'object' && value.id !== undefined) {
+        detachedConfig[prop] = value.id;
+      } else {
+        detachedConfig[prop] = value;
+      }
+    }
+  }
+  return detachedConfig
+};
+
+TCAD.Craft.prototype.modify = function(request) {
+
+  var op = TCAD.craft.OPS[request.type];
+  if (!op) return;
+
+  var detachedRequest = TCAD.craft.detach(request);
+  var newFaces = op(this.app, request);
+
+  if (newFaces == null) return;
+  for (var i = 0; i < request.solids.length; i++) {
+    var solid = request.solids[i];
+    this.app.viewer.scene.remove( solid.meshObject );
+  }
+  this.app.viewer.scene.add(TCAD.utils.createSolidMesh(newFaces));
+  this.history.push(detachedRequest);
+  this.app.bus.notify('operation');
   //REMOVE IT
   this.app._refreshSketches();
 
   this.app.viewer.render();
+};
+
+TCAD.craft.OPS = {
+  CUT : TCAD.craft.cut,
+  PAD : TCAD.craft.extrude
 };

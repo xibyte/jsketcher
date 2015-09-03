@@ -107,6 +107,12 @@ TCAD.utils.fixCCW = function(path, normal) {
   return path;
 };
 
+TCAD.utils.addAll = function(arr, arrToAdd) {
+  for (var i = 0; i < arrToAdd.length; i++) {
+    arr.push(arrToAdd[i]);
+  }
+};
+
 TCAD.TOLERANCE = 1E-6;
 
 TCAD.utils.areEqual = function(v1, v2, tolerance) {
@@ -320,7 +326,7 @@ TCAD.geom.extrude = function(source, target) {
   return poly;
 };
 
-TCAD.geom.FACE_COUNTER = 0;
+TCAD.geom.SOLID_COUNTER = 0;
 
 /** @constructor */
 TCAD.Solid = function(polygons, material) {
@@ -328,6 +334,9 @@ TCAD.Solid = function(polygons, material) {
   this.dynamic = true; //true by default
   
   this.meshObject = new THREE.Mesh(this, material);
+
+  this.id = TCAD.geom.SOLID_COUNTER ++;
+  this.faceCounter = 0;
 
   this.polyFaces = [];
   var scope = this;
@@ -423,7 +432,7 @@ TCAD.SketchFace = function(solid, poly) {
   var proto = poly.__face;
   poly.__face = this;
   if (proto === undefined) {
-    this.id = TCAD.geom.FACE_COUNTER++;
+    this.id = solid.id + ":" + (solid.faceCounter++);
     this.sketchGeom = null;
   } else {
     this.id = proto.id;
