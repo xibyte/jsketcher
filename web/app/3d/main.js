@@ -156,10 +156,15 @@ TCAD.App.prototype.extrude = function() {
   }
   var polyFace = this.viewer.selectionMgr.selection[0];
   var height = prompt("Height", "50");
-  
+  if (!height) return;
+
   var app = this;
-  this.craft.modify(polyFace.solid, function() {
-    return TCAD.craft.extrude(app, polyFace, polyFace.solid.polyFaces, height);
+  var solids = [polyFace.solid];
+  this.craft.modify({
+    type: 'PAD',
+    solids : solids,
+    face : polyFace,
+    height : height
   });
 };
 
@@ -170,12 +175,16 @@ TCAD.App.prototype.cut = function() {
   }
   var polyFace = this.viewer.selectionMgr.selection[0];
   var depth = prompt("Depth", "50");
+  if (!depth) return;
 
   var app = this;
-  this.craft.modify(polyFace.solid, function() {
-    return TCAD.craft.cut(app, polyFace, polyFace.solid.polyFaces, depth);
+  var solids = [polyFace.solid];
+  this.craft.modify({
+    type: 'CUT',
+    solids : solids,
+    face : polyFace,
+    depth : depth
   });
-
 };
 
 TCAD.App.prototype.refreshSketches = function() {
