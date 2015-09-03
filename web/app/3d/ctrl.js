@@ -4,6 +4,7 @@ TCAD.UI = function(app) {
   this.viewer = app.viewer;
 
   var box = new TCAD.toolkit.Box();
+  box.root.css({height : '100%'});
   var propFolder = new TCAD.toolkit.Folder("Solid's Properties");
   var cameraFolder = new TCAD.toolkit.Folder("Camera");
   var objectsFolder = new TCAD.toolkit.Folder("Objects");
@@ -20,11 +21,21 @@ TCAD.UI = function(app) {
   TCAD.toolkit.add(cameraFolder, new TCAD.toolkit.Number("z"));
   TCAD.toolkit.add(box, objectsFolder);
   TCAD.toolkit.add(box, modificationsFolder);
-  this.modificationsTreeComp = new TCAD.toolkit.Tree();
-  TCAD.toolkit.add(cameraFolder, this.modificationsTreeComp);
+  var modificationsTreeComp = new TCAD.toolkit.Tree();
+  TCAD.toolkit.add(modificationsFolder, modificationsTreeComp);
+
+  var ui = this;
+
+  this.app.bus.subscribe("craft", function() {
+    var data = {children : []};
+    for (var i = 0; i < app.craft.history.length; i++) {
+      var op = app.craft.history[i];
+      data.children.push(ui.getInfoForOp(op));
+    }
+    modificationsTreeComp.set(data);
+  });
 
   this.dat = new dat.GUI();
-  var ui = this;
   var gui = this.dat;
 
   var actionsF = gui.addFolder('Add Object');
@@ -43,6 +54,18 @@ TCAD.UI = function(app) {
   camera.open();
 
   this.solidFolder = null;
+};
+
+TCAD.UI.prototype.getInfoForOp = function(op) {
+  var info = {name : op.type};
+  if ('CUT' === op.type) {
+    info.name +=  " (" + op.depth + ")";
+    info.children = [{name : "depth : " + op.depth}]
+  } else if ('BOX' === op.type) {
+    info.name +=  " (" + op.size + ")";
+    info.children = [{name : "size : " + op.size}]
+  }
+  return info;
 };
 
 TCAD.UI.prototype.setSolid = function(solid) {
