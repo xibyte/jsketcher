@@ -114,6 +114,7 @@ TCAD.craft.extrude = function(app, request) {
   var face = request.face;
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
+  face.polygon.__face = undefined;
 
   var faces = TCAD.craft.collectFaces(request.solids);
 
@@ -128,8 +129,6 @@ TCAD.craft.extrude = function(app, request) {
 
   var meld = CSG.fromPolygons(work).union(CSG.fromPolygons(toMeldWith));
 
-  face.polygon.__face = undefined;
-
   return TCAD.craft.reconstruct(meld);
 };
 
@@ -139,11 +138,11 @@ TCAD.craft._pointOnLine = function(p, a, b) {
   var ap = a.minus(p);
   
   var dp = ab.dot(ap);
-  
+
   var abLength = ab.length();
   var apLength = ap.length();
-  
-  return apLength > 0 && apLength < abLength && TCAD.utils.equal(abLength * apLength, dp);
+
+  return apLength > 0 && apLength < abLength && TCAD.utils.areEqual(abLength * apLength, dp, 1E-20);
 };
 
 TCAD.craft._mergeCSGPolygonsTest = function() {
@@ -215,7 +214,7 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
           TCAD.utils.areEqual(a.y, b.y, tol) &&
           TCAD.utils.areEqual(a.z, b.z, tol)
         ) {
-          b.setV(a);
+          //b.setV(a);
         }
       }
     }
@@ -228,10 +227,10 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
           TCAD.utils.areEqual(a.normal.y, b.normal.y, tol) &&
           TCAD.utils.areEqual(a.normal.z, b.normal.z, tol)
         ) {
-          b.normal.setV(a.normal);
+          //b.normal.setV(a.normal);
         }
         if (TCAD.utils.areEqual(a.w, b.w, tol)) {
-          b.w = a.w;
+          //b.w = a.w;
         }
       }
     }
@@ -278,7 +277,7 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
           var a = poly.vertices[ p ];
           var b = poly.vertices[ q ];
           if (TCAD.craft._pointOnLine(point, a, b)) {
-            add[q] = point;            
+            add[q] = point;
           }
         }
         if (add.length != 0) {
@@ -713,7 +712,7 @@ TCAD.craft.cut = function(app, request) {
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
 
-  face.polygon.__face = undefined;
+  //face.polygon.__face = undefined;
 
   var faces = TCAD.craft.collectFaces(request.solids);
 
