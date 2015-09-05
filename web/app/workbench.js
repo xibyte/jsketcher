@@ -90,9 +90,9 @@ TCAD.craft.getSketchedPolygons3D = function(app, face) {
     if (poly2D.shell.length < 3) continue;
 
     if (depth == null) {
-      var _3dTransformation = new TCAD.Matrix().setBasis(face.csgGroup.basis());
+      var _3dTransformation = new TCAD.Matrix().setBasis(face.basis());
       //we lost depth or z off in 2d sketch, calculate it again
-      depth = normal.dot(face.csgGroup.polygons[0].vertices[0]);
+      depth = face.csgGroup.plane.w;
     }
 
     var shell = [];
@@ -494,11 +494,10 @@ TCAD.craft._makeFromPolygons = function(polygons) {
       Array.prototype.push.apply( points, poly.holes[h] );
     }
     var pid = poly.id;
-    var shared = new CSG.Polygon.Shared([pid, pid, pid, pid]);
-    shared.__tcad = {
-      csgInfo : poly.csgInfo,
-      face : poly.__face
-    };
+    var shared = TCAD.utils.createShared(pid);
+    shared.__tcad.csgInfo = poly.csgInfo;
+    //shared.__tcad.faceId = poly.__face.id;
+
     var refs = poly.triangulate();
     for ( var i = 0;  i < refs.length; ++ i ) {
       var a = refs[i][0] + off;
@@ -763,16 +762,10 @@ TCAD.craft.cut = function(app, request) {
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
 
-  //face.polygon.__face = undefined;
-  var work;
-  if (!!request.solids[0].__cached_csg) {
-    work = request.solids[0].__cached_csg;
-  } else {
-    var faces = TCAD.craft.collectFaces(request.solids);
-    work = CSG.fromPolygons(TCAD.craft.collectCSGPolygons(faces));
-  }
+  //face.c.__face = undefined;
+  var work = request.solids[0].csg;
 
-  var normal = face.csgGroup.normal;
+  var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var cutter = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
     var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - request.depth));
@@ -782,8 +775,7 @@ TCAD.craft.cut = function(app, request) {
 
   var cut = work.subtract(CSG.fromPolygons(cutter));
 
-  var solid = TCAD.utils.createSolidMesh(TCAD.craft.toGroups(cut.polygons)).geometry;
-  //solid.__cached_csg = cut;
+  var solid = TCAD.utils.createSolidMesh(cut).geometry;
   return solid;
 };
 
@@ -837,6 +829,6 @@ TCAD.craft.OPS = {
   CUT : TCAD.craft.cut,
   PAD : TCAD.craft.extrude,
   BOX : function(app, request) {
-    return TCAD.utils.createBox(request.size).geometry;
+    return TCAD.utils.createCSGBox(request.size).geometry;
   }
 };

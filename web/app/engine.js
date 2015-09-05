@@ -15,12 +15,32 @@ TCAD.utils.createSquare = function(width) {
   return new TCAD.Polygon(shell);
 };
 
+TCAD.utils.csgVec = function(v) {
+  return new CSG.Vector3D(v.x, v.y, v.z);
+};
+
+TCAD.utils.vec = function(v) {
+  return new TCAD.Vector(v.x, v.y, v.z);
+};
+
 TCAD.utils.createBox = function(width) {
   var square = TCAD.utils.createSquare(width);
   var rot = TCAD.math.rotateMatrix(3/4, TCAD.math.AXIS.Z, TCAD.math.ORIGIN);
   square.eachVertex(function(path, i) { rot._apply(path[i]) } );
   var polygons = TCAD.geom.extrude(square, square.normal.multiply(width));
-  return TCAD.utils.createSolidMesh(TCAD.utils.toCsgGroups(polygons));
+  return polygons;
+};
+
+TCAD.utils.createCSGBox = function(width) {
+  var csg = CSG.fromPolygons(TCAD.utils.createBox(width).map(function (p) {
+    var vertices = [];
+    for (var vi = 0; vi < p.shell.length; vi++) {
+      var v = p.shell[vi];
+      vertices.push(new CSG.Vertex(TCAD.utils.csgVec(v)));
+    }
+    return new CSG.Polygon(vertices, TCAD.utils.createShared(p.id));
+  }));
+  return TCAD.utils.createSolidMesh(csg);
 };
 
 TCAD.utils.toCsgGroups = function(polygons) {
@@ -94,7 +114,7 @@ TCAD.utils.createLine = function (a, b, color) {
   return new THREE.Segment(geometry, material);
 };
 
-TCAD.utils.createSolidMesh = function(csgGroups) {
+TCAD.utils.createSolidMesh = function(csg) {
   var material = new THREE.MeshPhongMaterial({
     vertexColors: THREE.FaceColors,
     color: TCAD.view.FACE_COLOR,
@@ -104,7 +124,7 @@ TCAD.utils.createSolidMesh = function(csgGroups) {
     polygonOffsetUnits : 1
 
   });
-  var geometry = new TCAD.Solid(csgGroups, material);
+  var geometry = new TCAD.Solid(csg, material);
   return geometry.meshObject;
 };
 
@@ -403,9 +423,35 @@ TCAD.CSGGroup.prototype.toCSGPolygons = function() {
   return csgPolygons;
 };
 
+TCAD.utils.groupCSG = function(csg) {
+  var csgPolygons = csg.toPolygons();
+  var groups = {};
+  for (var i = 0; i < csgPolygons.length; i++) {
+    var p = csgPolygons[i];
+    var tag = p.shared.getTag();
+    if (groups[tag] === undefined) {
+      groups[tag] = {
+        tag : tag,
+        polygons : [],
+        shared : p.shared,
+        plane : p.plane
+      };
+    }
+    groups[tag].polygons.push(p);
+  }
+  return groups;
+};
+
+TCAD.utils.createShared = function(id) {
+  var shared = new CSG.Polygon.Shared([id, id, id, id]);
+  shared.__tcad = {};
+  return shared;
+};
+
 /** @constructor */
-TCAD.Solid = function(csgPolygonGroups, material) {
+TCAD.Solid = function(csg, material) {
   THREE.Geometry.call( this );
+  this.csg = csg;
   this.dynamic = true; //true by default
 
   this.meshObject = new THREE.Mesh(this, material);
@@ -418,54 +464,40 @@ TCAD.Solid = function(csgPolygonGroups, material) {
 
   this.polyFaces = [];
   var scope = this;
-  function pushVertices(vertices) {
-    for ( var v = 0;  v < vertices.length; ++ v ) {
-      scope.vertices.push( new THREE.Vector3( vertices[v].x, vertices[v].y, vertices[v].z ) );
-    }
-  }
+  function threeV(v) {return new THREE.Vector3( v.x, v.y, v.z )}
 
   var off = 0;
-  for (var gIdx = 0; gIdx < csgPolygonGroups.length; ++ gIdx)  {
-    var group = csgPolygonGroups[gIdx];
+  var groups = TCAD.utils.groupCSG(csg);
+  for (var gIdx in groups)  {
+    var group = groups[gIdx];
+    if (group.shared.__tcad === undefined) group.shared.__tcad = {};
     var polyFace = new TCAD.SketchFace(this, group);
     this.polyFaces.push(polyFace);
-
     for (var p = 0; p < group.polygons.length; ++p) {
       var poly = group.polygons[p];
-      try {
-        var faces = poly.triangulate();
-      } catch (e) {
-        console.log(e);
-        continue;
-      }
-      pushVertices(poly.vertices);
+      var vLength = poly.vertices.length;
+      if (vLength < 3) continue;
+      var firstVertex = poly.vertices[0];
+      this.vertices.push(threeV(firstVertex.pos));
+      this.vertices.push(threeV(poly.vertices[1].pos));
+      var normal = threeV(poly.plane.normal);
+      for (var i = 2; i < vLength; i++) {
+        this.vertices.push(threeV(poly.vertices[i].pos));
 
-      for (var i = 0; i < faces.length; ++i) {
-
-        var a = faces[i][0] + off;
-        var b = faces[i][1] + off;
-        var c = faces[i][2] + off;
-
-        var fNormal = TCAD.geom.normalOfCCWSeqTHREE([
-          this.vertices[a], this.vertices[b], this.vertices[c]]);
-
-        if (!TCAD.utils.vectorsEqual(fNormal, poly.normal)) {
-          console.log("ASSERT");
-          var _a = a;
-          a = c;
-          c = _a;
-        }
-
+        var a = off;
+        var b = i - 1 + off;
+        var c = i + off;
         var face = new THREE.Face3(a, b, c);
         polyFace.faces.push(face);
         face.__TCAD_polyFace = polyFace;
-        face.normal = poly.normal.three();
+        face.normal = normal;
         face.materialIndex = gIdx;
         this.faces.push(face);
       }
       off = this.vertices.length;
     }
   }
+
   this.mergeVertices();
 
   //this.makeWireframe(polygons);
@@ -505,16 +537,15 @@ TCAD.Solid.prototype.makeWireframe = function(polygons) {
 
 /** @constructor */
 TCAD.SketchFace = function(solid, csgGroup) {
-  var proto = csgGroup.__face;
   csgGroup.__face = this;
-  if (proto === undefined) {
+  this.sketchGeom = null;
+  if (csgGroup.shared.__tcad.faceId === undefined) {
     this.id = solid.tCadId + ":" + (solid.faceCounter++);
-    this.sketchGeom = null;
   } else {
-    this.id = proto.id;
-    this.sketchGeom = proto.sketchGeom;
+    this.id = csgGroup.shared.__tcad.faceId;
   }
-  
+  csgGroup.shared.__tcad.faceId = this.id;
+
   this.solid = solid;
   this.csgGroup = csgGroup;
   this.faces = [];
@@ -532,10 +563,17 @@ if (typeof THREE !== "undefined") {
     color: 0x2B3856, linewidth: 3});
 }
 
+TCAD.SketchFace.prototype.basis = function() {
+  var vec = TCAD.utils.vec;
+  return TCAD.geom.someBasis(this.csgGroup.polygons[0].vertices.map(function (v) {
+    return vec(v.pos)
+  }), vec(this.csgGroup.plane.normal));
+}
+
 TCAD.SketchFace.prototype.syncSketches = function(geom) {
   var i;
-  var normal = this.csgGroup.normal;
-  var offVector = normal.multiply(0); // disable it. use polygon offset feature of material
+  var normal = this.csgGroup.plane.normal;
+  var offVector = normal.scale(0); // disable it. use polygon offset feature of material
 
   if (this.sketch3DGroup != null) {
     for (var i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
@@ -546,9 +584,10 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
     this.solid.meshObject.add(this.sketch3DGroup);
   }
 
-  var _3dTransformation = new TCAD.Matrix().setBasis(this.csgGroup.basis());
+  var basis = this.basis();
+  var _3dTransformation = new TCAD.Matrix().setBasis(basis);
   //we lost depth or z off in 2d sketch, calculate it again
-  var depth = normal.dot(this.csgGroup.polygons[0].vertices[0]);
+  var depth = this.csgGroup.plane.w;
   for (i = 0; i < geom.connections.length; ++i) {
     var l = geom.connections[i];
     var lg = new THREE.Geometry();
