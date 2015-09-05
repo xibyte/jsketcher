@@ -70,11 +70,16 @@ TCAD.App.prototype.sketchFace = function() {
     }
     return a.sketchConnectionObject.id === b.sketchConnectionObject.id;
   }
-  var paths = [];
-  polyFace.polygon.collectPaths(paths);
-  var _2dTr = polyFace.polygon.get2DTransformation();
+
+  var paths = TCAD.craft._mergeCSGPolygons(polyFace.csgGroup.polygons, []);
+
+  //polyFace.polygon.collectPaths(paths);
+  var _3dTransformation = new TCAD.Matrix().setBasis(polyFace.basis());
+  var _2dTr = _3dTransformation.invert();
+
+
   for (var i = 0; i < paths.length; i++) {
-    var path = paths[i];
+    var path = paths[i].vertices;
     var shift = 0;
     TCAD.utils.iteratePath(path, 0, function(a, b, ai, bi) {
       shift = bi;
