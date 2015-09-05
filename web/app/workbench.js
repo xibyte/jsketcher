@@ -406,59 +406,6 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
   return filteredPaths;
 };
 
-
-
-TCAD.craft._mergeCSGPolygonsTest0 = function(data) {
-  TCAD.craft._mergeCSGPolygonsTester(
-      [
-        [[0,0], [50,0], [50,10], [0,10]],
-        [[0,10], [50,10], [50,60], [0,60]],
-        [[0,60], [50,60], [50,100], [0,100]]
-      ]
-  );
-};
-
-TCAD.craft._mergeCSGPolygonsTest1 = function(data) {
-  TCAD.craft._mergeCSGPolygonsTester(
-      [
-        [[0,0], [50,0], [50,10], [0,10]],
-        [[0,10], [20,10], [20,60], [0,60]],
-        [[20,10], [30,10], [30,60], [20,60]],
-        [[40,10], [50,10], [50,60], [40,60]],
-        [[0,60], [50,60], [50,100], [0,100]]
-      ]
-  );
-};
-
-TCAD.craft._mergeCSGPolygonsTest2 = function(data) {
-  TCAD.craft._mergeCSGPolygonsTester(
-      [
-        [[0,0], [25,0], [50,0], [50,10], [0,10]],
-        [[0,10], [20,10], [20,60], [0,60]],
-        [[20,10], [30,10], [30,60], [20,60]],
-        [[40,10], [50,10], [50,60], [40,60]],
-        [[0,60], [50,60], [50,100], [0,100]]
-      ]
-  );
-};
-
-TCAD.craft._mergeCSGPolygonsTester = function(data) {
-
-  function cppol(points) {
-    return {
-      vertices : points.map(function(e) {
-        return {pos: new TCAD.Vector(e[0], e[1], 0)};
-      }),
-      plane: {normal : new TCAD.Vector(0,0,1), w : 0}
-
-    }
-
-  }
-  var paths = TCAD.craft._mergeCSGPolygons(data.map(function(p) {
-    return cppol(p);
-  }));
-};
-
 TCAD.craft._makeFromPolygons = function(polygons) {
   function csgVec(v) {
     return new CSG.Vector3D(v.x, v.y, v.z);
