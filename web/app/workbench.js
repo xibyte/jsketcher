@@ -145,27 +145,6 @@ TCAD.craft._pointOnLine = function(p, a, b) {
   return apLength > 0 && apLength < abLength && TCAD.utils.areEqual(abLength * apLength, dp, 1E-20);
 };
 
-TCAD.craft._mergeCSGPolygonsTest = function() {
-
-  function cppol(points) {
-    return {
-      vertices : points.map(function(e) {
-        return new TCAD.Vector(e[0], e[1], 0);
-      }),
-      normal : new TCAD.Vector(0,0,1) 
-    }
-    
-  }
-  var paths = TCAD.craft._mergeCSGPolygons(
-      [
-        cppol([0,0], [50,0], [50,10], [0,10]),
-        cppol([0,10], [50,10], [50,60], [0,60]),
-        cppol([0,60], [50,60], [50,100], [0,100])
-      ]
-  );
-  console.log(paths);
-};
-
 TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
 
   function vec(p) {
