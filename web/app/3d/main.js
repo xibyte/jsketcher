@@ -71,7 +71,7 @@ TCAD.App.prototype.sketchFace = function() {
     return a.sketchConnectionObject.id === b.sketchConnectionObject.id;
   }
 
-  var paths = TCAD.craft._mergeCSGPolygons(polyFace.csgGroup.polygons, []);
+  var paths = TCAD.craft.reconstructSketchBounds(polyFace.solid.csg, polyFace);
 
   //polyFace.polygon.collectPaths(paths);
   var _3dTransformation = new TCAD.Matrix().setBasis(polyFace.basis());
