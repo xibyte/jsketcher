@@ -145,6 +145,109 @@ TCAD.craft._pointOnLine = function(p, a, b) {
   return apLength > 0 && apLength < abLength && TCAD.utils.areEqual(abLength * apLength, dp, 1E-20);
 };
 
+TCAD.craft.reconstructSketchBounds = function(csg, face) {
+
+  var polygons = csg.toPolygons();
+  var plane = face.csgGroup.plane;
+  var sketchSegments = [];
+  for (var pi = 0; pi < polygons.length; pi++) {
+    var poly = polygons[pi];
+    if (poly.plane.equals(plane)) {
+      continue;
+    }
+    var p, q, n = poly.vertices.length;
+    for(p = n - 1, q = 0; q < n; p = q ++) {
+      var a = poly.vertices[p];
+      var b = poly.vertices[q];
+      var ab = b.pos.minus(a.pos);
+      var parallelTpPlane = TCAD.utils.equal(ab.unit().dot(plane.normal), 0);
+      var pointOnPlane = TCAD.utils.equal(plane.signedDistanceToPoint(a.pos), 0);
+      if (parallelTpPlane && pointOnPlane) {
+        sketchSegments.push([a.pos, b.pos, poly]);
+      }
+    }
+  }
+  return TCAD.craft.segmentsToPaths(sketchSegments);
+};
+
+TCAD.craft.segmentsToPaths = function(segments) {
+
+  var veq = TCAD.struct.hashTable.vectorEquals;
+
+  var paths = [];
+  var csgDatas = [];
+  var index = TCAD.struct.hashTable.forVector3d();
+
+  function indexPoint(p, edge) {
+    var edges = index.get(p);
+    if (edges === null) {
+      edges = [];
+      index.put(p, edges);
+    }
+    edges.push(edge);
+  }
+
+  for (var si = 0; si < segments.length; si++) {
+    var k = segments[si];
+    indexPoint(k[0], k);
+    indexPoint(k[1], k);
+    k[3] = false;
+  }
+
+  function nextPoint(p) {
+    var edges = index.get(p);
+    if (edges === null) return null;
+    for (var i = 0; i < edges.length; i++) {
+      var edge = edges[i]
+      if (edge[3]) continue;
+      var res = null;
+      if (veq(p, edge[0])) res = edge[1];
+      if (veq(p, edge[1])) res = edge[0];
+      if (res != null) {
+        edge[3] = true;
+        return res;
+      }
+    }
+    return null;
+  }
+
+  for (var ei = 0; ei < segments.length; ei++) {
+    var edge = segments[ei];
+    if (edge[3]) {
+      continue;
+    }
+    edge[3] = true;
+    var path = [edge[0], edge[1]];
+    paths.push(path);
+    csgDatas.push(edge[2]);
+    var next = nextPoint(edge[1]);
+    while (next !== null) {
+      if (!veq(next, path[0])) {
+        path.push(next);
+        next = nextPoint(next);
+      } else {
+        next = null;
+      }
+    }
+  }
+
+  var filteredPaths = [];
+  for (var i = 0; i < paths.length; i++) {
+    var path = paths[i];
+    var csgData = csgDatas[i];
+    if (path.length > 2) {
+      filteredPaths.push({
+        vertices : path,
+        normal : csgData.plane.normal,
+        w : csgData.plane.w,
+        shared : csgData.shared
+      });
+    }
+  }
+
+  return filteredPaths;
+};
+
 TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
 
   function vec(p) {
