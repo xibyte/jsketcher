@@ -170,6 +170,32 @@ TCAD.craft.reconstructSketchBounds = function(csg, face) {
   return TCAD.craft.segmentsToPaths(sketchSegments);
 };
 
+TCAD.craft.deleteRedundantPoints = function(path) {
+  var cleanedPath = [];
+  //Delete redundant point
+  var pathLength = path.length;
+  for (var pi = 0; pi < pathLength; pi++) {
+    var bIdx = ((pi + 1) % pathLength);
+    var a = path[pi];
+    var b = path[bIdx];
+    var c = path[(pi + 2) % pathLength];
+    var eq = TCAD.utils.equal;
+    if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1)) {
+      cleanedPath.push(b);
+      for (var ii = 0; ii < pathLength - pi; ++ii) {
+        a = path[(ii + bIdx) % pathLength];
+        b = path[(ii + bIdx + 1) % pathLength];
+        c = path[(ii + bIdx + 2) % pathLength];
+        if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1)) {
+          cleanedPath.push(b);
+        }
+      }
+      break;
+    }
+  }
+  return cleanedPath;
+};
+
 TCAD.craft.segmentsToPaths = function(segments) {
 
   var veq = TCAD.struct.hashTable.vectorEquals;
@@ -234,22 +260,24 @@ TCAD.craft.segmentsToPaths = function(segments) {
     }
   }
 
-  TCAD.utils.iteratePath(path, 0, function(a, b) {
-    var fromPolygon = csgIndex.get([a, b]);
-    if (fromPolygon !== null) {
-      if (fromPolygon.shared.__tcad.csgInfo) {
-        a.sketchConnectionObject = fromPolygon.shared.__tcad.csgInfo.derivedFrom;
-      }
-    }
-    return true;
-  });
-
   var filteredPaths = [];
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i];
+
+    //Set derived from object to be able to recunstruct
+    TCAD.utils.iteratePath(path, 0, function (a, b) {
+      var fromPolygon = csgIndex.get([a, b]);
+      if (fromPolygon !== null) {
+        if (fromPolygon.shared.__tcad.csgInfo) {
+          a.sketchConnectionObject = fromPolygon.shared.__tcad.csgInfo.derivedFrom;
+        }
+      }
+      return true;
+    });
+    path = TCAD.craft.deleteRedundantPoints(path);
     if (path.length > 2) {
       filteredPaths.push({
-        vertices : path
+        vertices: path
       });
     }
   }
