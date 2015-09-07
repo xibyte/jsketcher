@@ -175,8 +175,8 @@ TCAD.craft.segmentsToPaths = function(segments) {
   var veq = TCAD.struct.hashTable.vectorEquals;
 
   var paths = [];
-  var csgDatas = [];
   var index = TCAD.struct.hashTable.forVector3d();
+  var csgIndex = TCAD.struct.hashTable.forEdge();
 
   function indexPoint(p, edge) {
     var edges = index.get(p);
@@ -191,6 +191,10 @@ TCAD.craft.segmentsToPaths = function(segments) {
     var k = segments[si];
     indexPoint(k[0], k);
     indexPoint(k[1], k);
+    var csgInfo = k[2];
+    if (csgInfo !== undefined && csgInfo !== null) {
+      csgIndex.put([k[0], k[1]], csgInfo);
+    }
     k[3] = false;
   }
 
@@ -219,7 +223,6 @@ TCAD.craft.segmentsToPaths = function(segments) {
     edge[3] = true;
     var path = [edge[0], edge[1]];
     paths.push(path);
-    csgDatas.push(edge[2]);
     var next = nextPoint(edge[1]);
     while (next !== null) {
       if (!veq(next, path[0])) {
@@ -231,16 +234,22 @@ TCAD.craft.segmentsToPaths = function(segments) {
     }
   }
 
+  TCAD.utils.iteratePath(path, 0, function(a, b) {
+    var fromPolygon = csgIndex.get([a, b]);
+    if (fromPolygon !== null) {
+      if (fromPolygon.shared.__tcad.csgInfo) {
+        a.sketchConnectionObject = fromPolygon.shared.__tcad.csgInfo.derivedFrom;
+      }
+    }
+    return true;
+  });
+
   var filteredPaths = [];
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i];
-    var csgData = csgDatas[i];
     if (path.length > 2) {
       filteredPaths.push({
-        vertices : path,
-        normal : csgData.plane.normal,
-        w : csgData.plane.w,
-        shared : csgData.shared
+        vertices : path
       });
     }
   }
