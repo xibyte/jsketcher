@@ -7,7 +7,7 @@ TCAD.workbench.SketchConnection = function(a, b, sketchObject) {
 };
 
 TCAD.workbench.readSketchGeom = function(sketch) {
-  var out = {connections : []};
+  var out = {connections : [], loops : []};
   var id = 0;
   if (sketch.layers !== undefined) {
     for (var l = 0; l < sketch.layers.length; ++l) {
@@ -15,25 +15,29 @@ TCAD.workbench.readSketchGeom = function(sketch) {
         var obj = sketch.layers[l].data[i];
         if (obj.edge !== undefined) continue;
         if (!!obj.aux) continue;
-        var a = new TCAD.Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
-        var b = new TCAD.Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
         if (obj._class === 'TCAD.TWO.Segment') {
-          out.connections.push(new TCAD.workbench.SketchConnection(
-              a, b, {_class : obj._class, id : id++}
-            ));
+          var a = new TCAD.Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
+          var b = new TCAD.Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
+          out.connections.push(new TCAD.workbench.SketchConnection(a, b, {_class : obj._class, id : id++}));
         } else if (obj._class === 'TCAD.TWO.Arc') {
+          var a = new TCAD.Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
+          var b = new TCAD.Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
           var center = new TCAD.Vector(obj.points[2][1][1], obj.points[2][2][1], 0);
           var approxArc = TCAD.workbench.approxArc(a, b, center, 20);
           var data =  {_class : obj._class, id : id++};
           for (var j = 0; j < approxArc.length - 1; j++) {
-            var pa = approxArc[j];
-            var pb = approxArc[j+1];
-            out.connections.push(new TCAD.workbench.SketchConnection(
-              pa, pb, data
-            ));
+            out.connections.push(new TCAD.workbench.SketchConnection(approxArc[j], approxArc[j+1], data));
           }
-
         } else if (obj._class === 'TCAD.TWO.Circle') {
+          var center = new TCAD.Vector(obj.c[1][1], obj.c[2][1], 0);
+          var approxCircle = TCAD.workbench.approxCircle(center, obj.r, 20);
+          var data =  {_class : obj._class, id : id++};
+          var loop = [];
+          var p, q, n = approxCircle.length;
+          for (var p = n - 1, q = 0; q < n; p = q++) {
+            loop.push(new TCAD.workbench.SketchConnection(approxCircle[p], approxCircle[q], data));
+          }
+          out.loops.push(loop);
         }
       }
     }
@@ -58,6 +62,16 @@ TCAD.workbench.approxArc = function(ao, bo, c, k) {
     angle += step;
   }
   points.push(bo);
+  return points;
+};
+
+TCAD.workbench.approxCircle = function(c, r, k) {
+  var points = [];
+  var step =  (2 * Math.PI) / k;
+
+  for (var i = 0, angle = 0; i < k; ++i, angle += step) {
+    points.push(new TCAD.Vector(c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)));
+  }
   return points;
 };
 
