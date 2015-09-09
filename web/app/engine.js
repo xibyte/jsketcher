@@ -142,12 +142,6 @@ TCAD.utils.fixCCW = function(path, normal) {
   return path;
 };
 
-TCAD.utils.addAll = function(arr, arrToAdd) {
-  for (var i = 0; i < arrToAdd.length; i++) {
-    arr.push(arrToAdd[i]);
-  }
-};
-
 TCAD.TOLERANCE = 1E-6;
 
 TCAD.utils.areEqual = function(v1, v2, tolerance) {
@@ -282,6 +276,19 @@ TCAD.utils.sketchToPolygons = function(geom) {
       polygons.push(polygon);
     } else {
       console.warn("Points count < 3!");
+    }
+  }
+  for (var li = 0; li < geom.loops.length; ++li) {
+    var loop = geom.loops[li];
+    var polyPoints = [];
+    for (var si = 0; si < loop.length; si++) {
+      var conn = loop[si];
+      //reuse a point and ignore b point since it's a guaranteed loop
+      conn.a.sketchConnectionObject = conn.sketchObject;
+      polyPoints.push(conn.a);
+    }
+    if (polyPoints.length >= 3) {
+      polygons.push(new TCAD.Polygon(polyPoints));
     }
   }
   return polygons;
@@ -538,7 +545,6 @@ TCAD.Solid.prototype.makeWireframe = function(polygons) {
 /** @constructor */
 TCAD.SketchFace = function(solid, csgGroup) {
   csgGroup.__face = this;
-  this.sketchGeom = null;
   if (csgGroup.shared.__tcad.faceId === undefined) {
     this.id = solid.tCadId + ":" + (solid.faceCounter++);
   } else {
@@ -550,10 +556,6 @@ TCAD.SketchFace = function(solid, csgGroup) {
   this.csgGroup = csgGroup;
   this.faces = [];
   this.sketch3DGroup = null;
-
-  if (this.sketchGeom != null) {
-    this.syncSketches(this.sketchGeom);
-  }
 };
 
 if (typeof THREE !== "undefined") {
@@ -588,8 +590,9 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
   var _3dTransformation = new TCAD.Matrix().setBasis(basis);
   //we lost depth or z off in 2d sketch, calculate it again
   var depth = this.csgGroup.plane.w;
-  for (i = 0; i < geom.connections.length; ++i) {
-    var l = geom.connections[i];
+  var connections = geom.connections.concat(TCAD.utils.arrFlatten1L(geom.loops));
+  for (i = 0; i < connections.length; ++i) {
+    var l = connections[i];
     var lg = new THREE.Geometry();
     l.a.z = l.b.z = depth;
     var a = _3dTransformation.apply(l.a);
@@ -600,8 +603,6 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
     var line = new THREE.Segment(lg, this.SKETCH_MATERIAL);
     this.sketch3DGroup.add(line);
   }
-  this.sketchGeom = geom;
-  this.sketchGeom.depth = depth;
 };
 
 TCAD.POLYGON_COUNTER = 0;
@@ -738,4 +739,19 @@ TCAD.utils.iteratePath = function(path, shift, callback) {
       break
     }
   }
+};
+
+TCAD.utils.addAll = function(arr, arrToAdd) {
+  for (var i = 0; i < arrToAdd.length; i++) {
+    arr.push(arrToAdd[i]);
+  }
+};
+
+TCAD.utils.arrFlatten1L = function(arr) {
+  var result = [];
+  for (var i = 0; i < arr.length; i++) {
+    TCAD.utils.addAll(result, arr[i]);
+
+  }
+  return result;
 };

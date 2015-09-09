@@ -213,6 +213,7 @@ TCAD.IO.prototype.updateBoundary = function (boundary) {
     this.boundaryLayer.readOnly = true;
     this.viewer.layers.splice(0, 0, this.boundaryLayer);
   }
+  var layer = this.boundaryLayer;
 //  if (bbox[0] < Number.MAX_VALUE && bbox[1] < Number.MAX_VALUE && -bbox[2] < Number.MAX_VALUE && -bbox[3] < Number.MAX_VALUE) {
 //    this.viewer.showBounds(bbox[0], bbox[1], bbox[2], bbox[3])
 //  }
@@ -233,13 +234,16 @@ TCAD.IO.prototype.updateBoundary = function (boundary) {
   //    }
   //  }
   //}
+  var id = 0;
+  function __makeAux(obj) {
+    obj.accept(function(o){o.aux = true; return true;});
+    obj.edge = id ++;
+  }
 
-  var id, i = 0;
-  for (i = 0; i < boundary.lines.length; ++i, ++id) {
+  for (var i = 0; i < boundary.lines.length; ++i, ++id) {
     var edge = boundary.lines[i];
     var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, this.boundaryLayer);
-    seg.accept(function(o){o.aux = true; return true;});
-    seg.edge = id ++;
+    __makeAux(seg);
   }
   for (i = 0; i < boundary.arcs.length; ++i, ++id) {
     var a = boundary.arcs[i];
@@ -249,8 +253,15 @@ TCAD.IO.prototype.updateBoundary = function (boundary) {
       new TCAD.TWO.EndPoint(a.c.x, a.c.y)
     );
     this.boundaryLayer.objects.push(arc);
-    arc.accept(function(o){o.aux = true; return true;});
-    arc.edge = id ++;
+    __makeAux(arc);
+  }
+  for (i = 0; i < boundary.circles.length; ++i, ++id) {
+    var obj = boundary.circles[i];
+    var circle = new TCAD.TWO.Circle(new TCAD.TWO.EndPoint(obj.c.x, obj.c.y));
+    circle.r.set(obj.r);
+    this.boundaryLayer.objects.push(circle);
+    __makeAux(circle);
+
   }
 };
 
