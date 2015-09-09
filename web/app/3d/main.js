@@ -63,7 +63,7 @@ TCAD.App.prototype.sketchFace = function() {
   } else {
     data = JSON.parse(savedFace);
   }
-  data.boundary = {lines : [], arcs : []};
+  data.boundary = {lines : [], arcs : [], circles : []};
   function sameSketchObject(a, b) {
     if (a.sketchConnectionObject === undefined || b.sketchConnectionObject === undefined) {
       return false;
@@ -77,46 +77,71 @@ TCAD.App.prototype.sketchFace = function() {
   var _3dTransformation = new TCAD.Matrix().setBasis(polyFace.basis());
   var _2dTr = _3dTransformation.invert();
 
+  function addSegment(a, b) {
+    data.boundary.lines.push({
+      a : {x : a.x, y: a.y},
+      b : {x : b.x, y: b.y}
+    });
+  }
+  function addArc(arc) {
+    if (arc.length < 2) {
+      return;
+    }
+    var a = arc[0], b = arc[arc.length - 1];
+    if (arc.length == 2) {
+      addSegment(a, b);
+      return;
+    }
+    var mid = (arc.length / 2) >> 0;
+    var c = TCAD.math.circleFromPoints(arc[0], arc[mid], arc[arc.length-1]);
+    if (c == null) {
+      return;
+    }
+    if (!TCAD.geom.isCCW([arc[0], arc[mid], arc[arc.length-1]])) {
+      var t = a;
+      a = b;
+      b = t;
+    }
+    data.boundary.arcs.push({
+      a : {x : a.x, y: a.y},
+      b : {x : b.x, y: b.y},
+      c : {x : c.x, y : c.y}
+    });
+  }
+  function addCircle(circle) {
+    var n = circle.length;
+    //var c = TCAD.math.circleFromPoints(circle[0], circle[((n / 3) >> 0) % n], circle[((2 * n / 3) >> 0) % n]);
+    var c = TCAD.math.circleFromPoints(circle[0], circle[1], circle[2]);
+    if (c === null) return;
+    var r = TCAD.math.distanceAB(circle[0], c);
+    data.boundary.circles.push({
+      c : {x : c.x, y: c.y},
+      r : r
+    });
+  }
+  function isCircle(path) {
+    return path.length > 0 && path[0].sketchConnectionObject !== undefined && path[0].sketchConnectionObject._class == 'TCAD.TWO.Circle';
+  }
+
+  function trPath (path) {
+    var out = [];
+    for (var i = 0; i < path.length; i++) {
+      out.push(_2dTr.apply(path[i]));
+    }
+    return out;
+  }
 
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i].vertices;
     var shift = 0;
+    if (isCircle(path)) {
+      addCircle(trPath(path));
+      continue;
+    }
     TCAD.utils.iteratePath(path, 0, function(a, b, ai, bi) {
       shift = bi;
       return sameSketchObject(a, b);
     });
-
-    function addSegment(a, b) {
-      data.boundary.lines.push({
-        a : {x : a.x, y: a.y},
-        b : {x : b.x, y: b.y}
-      });
-    }
-    function addArc(arc) {
-      if (arc.length < 2) {
-        return;
-      }
-      var a = arc[0], b = arc[arc.length - 1];
-      if (arc.length == 2) {
-        addSegment(a, b);
-        return;
-      }
-      var mid = (arc.length / 2) >> 0;
-      var c = TCAD.math.circleFromPoints(arc[0], arc[mid], arc[arc.length-1]);
-      if (c == null) {
-        return;
-      }
-      if (!TCAD.geom.isCCW([arc[0], arc[mid], arc[arc.length-1]])) {
-        var t = a;
-        a = b;
-        b = t;
-      }
-      data.boundary.arcs.push({
-        a : {x : a.x, y: a.y},
-        b : {x : b.x, y: b.y},
-        c : {x : c.x, y : c.y}
-      });
-    }
     var currSko = null;
     var arc = null;
     TCAD.utils.iteratePath(path, shift+1, function(a, b, ai, bi, iterNumber, path) {
