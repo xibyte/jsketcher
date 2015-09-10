@@ -51,26 +51,46 @@ TCAD.Viewer = function(bus) {
    **/
 
 //  controls = new THREE.OrbitControls( camera , renderer.domElement);
-  var controls = new THREE.TrackballControls( camera , renderer.domElement);
+  var trackballControls = new THREE.TrackballControls( camera , renderer.domElement);
 
   // document.addEventListener( 'mousemove', function(){
 
   //   controls.update();
 
   // }, false );
-  controls.rotateSpeed = 3.8;
-  controls.zoomSpeed = 1.2;
-  controls.panSpeed = 0.8;
+  trackballControls.rotateSpeed = 3.8;
+  trackballControls.zoomSpeed = 1.2;
+  trackballControls.panSpeed = 0.8;
 
-  controls.noZoom = false;
-  controls.noPan = false;
+  trackballControls.noZoom = false;
+  trackballControls.noPan = false;
 
-  controls.staticMoving = true;
-  controls.dynamicDampingFactor = 0.3;
+  trackballControls.staticMoving = true;
+  trackballControls.dynamicDampingFactor = 0.3;
 
-  controls.keys = [ 65, 83, 68 ];
-  controls.addEventListener( 'change', render );
-  this.controls = controls;
+  trackballControls.keys = [ 65, 83, 68 ];
+  trackballControls.addEventListener( 'change', render );
+  this.trackballControls = trackballControls;
+
+  var transformControls = new THREE.TransformControls( camera, renderer.domElement );
+  transformControls.addEventListener( 'change', render );
+  scene.add( transformControls );
+  this.transformControls = transformControls;
+
+  function updateTransformControls() {
+    if (transformControls.object !== undefined) {
+      if (transformControls.object.parent === undefined) {
+        transformControls.detach();
+        render();
+      }
+      transformControls.update();
+    }
+  }
+
+  function updateControlsAndHelpers() {
+    trackballControls.update();
+    updateTransformControls();
+  }
 
   /**
    * TOOLS
@@ -110,9 +130,15 @@ TCAD.Viewer = function(bus) {
         if (scope.selectionMgr.contains(poly)) {
           scope.toolMgr.handleClick(poly, pickResult);
         } else {
-          scope.select(poly);
-          pickResult.object.geometry.colorsNeedUpdate = true;
+          if (e.shiftKey) {
+            scope.transformControls.attach(pickResult.object);
+          } else {
+            scope.select(poly);
+            pickResult.object.geometry.colorsNeedUpdate = true;
+          }
         }
+      } else {
+        scope.transformControls.detach();
       }
       render();
     }
@@ -148,7 +174,7 @@ TCAD.Viewer = function(bus) {
   function animate() {
 //    console.log("animate");
     requestAnimationFrame( animate );
-    controls.update();
+    updateControlsAndHelpers();
   }
 
   render();
