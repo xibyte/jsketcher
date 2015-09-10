@@ -842,21 +842,23 @@ TCAD.craft.cut = function(app, request) {
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
 
-  //face.c.__face = undefined;
-  var work = request.solids[0].csg;
-
   var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var cutter = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
     var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - request.depth));
     cutter = cutter.concat(TCAD.craft._makeFromPolygons(extruded));
   }
+  var cutterCSG = CSG.fromPolygons(cutter);
 
-
-  var cut = work.subtract(CSG.fromPolygons(cutter));
-
-  var solid = TCAD.utils.createSolidMesh(cut).geometry;
-  return solid;
+  //face.c.__face = undefined;
+  var outSolids = [];
+  for (var si = 0; si < request.solids.length; si++) {
+    var work = request.solids[si].csg;
+    var cut = work.subtract(cutterCSG);
+    var solidMesh = TCAD.utils.createSolidMesh(cut);
+    outSolids.push(solidMesh.geometry);
+  }
+  return outSolids;
 };
 
 TCAD.Craft = function(app) {
@@ -889,18 +891,18 @@ TCAD.Craft.prototype.modify = function(request) {
   if (!op) return;
 
   var detachedRequest = TCAD.craft.detach(request);
-  var newGroups = op(this.app, request);
+  var newSolids = op(this.app, request);
 
-  if (newGroups == null) return;
-  for (var i = 0; i < request.solids.length; i++) {
-    var solid = request.solids[i];
-    this.app.viewer.scene.remove( solid.meshObject );
+  if (newSolids == null) return;
+  var i;
+  for (i = 0; i < request.solids.length; i++) {
+    this.app.viewer.scene.remove( request.solids[i].meshObject );
   }
-  this.app.viewer.scene.add(newGroups.meshObject);
+  for (i = 0; i < newSolids.length; i++) {
+    this.app.viewer.scene.add(newSolids[i].meshObject);
+  }
   this.history.push(detachedRequest);
   this.app.bus.notify('craft');
-  //REMOVE IT
-  this.app._refreshSketches();
 
   this.app.viewer.render();
 };
@@ -909,6 +911,6 @@ TCAD.craft.OPS = {
   CUT : TCAD.craft.cut,
   PAD : TCAD.craft.extrude,
   BOX : function(app, request) {
-    return TCAD.utils.createCSGBox(request.size).geometry;
+    return [TCAD.utils.createCSGBox(request.size).geometry];
   }
 };
