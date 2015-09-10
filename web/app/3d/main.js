@@ -42,6 +42,9 @@ TCAD.App = function() {
     }
   }
 
+  this.bus.subscribe("craft", function() {
+    app._refreshSketches();
+  });
   window.addEventListener('storage', storage_handler, false);
 };
 
