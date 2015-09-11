@@ -850,7 +850,7 @@ TCAD.craft.cut = function(app, request) {
   }
   var cutterCSG = CSG.fromPolygons(cutter);
 
-  //face.c.__face = undefined;
+  face.csgGroup.shared.__tcad.faceId = undefined;
   var outSolids = [];
   for (var si = 0; si < request.solids.length; si++) {
     var work = request.solids[si].csg;
