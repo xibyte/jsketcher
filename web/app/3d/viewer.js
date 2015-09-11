@@ -87,6 +87,17 @@ TCAD.Viewer = function(bus) {
     }
   }
 
+  function addAxis(axis, color) {
+    var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1});
+    var axisGeom = new THREE.Geometry();
+    axisGeom.vertices.push(axis.multiply(-1000));
+    axisGeom.vertices.push(axis.multiply(1000));
+    scene.add(new THREE.Segment(axisGeom, lineMaterial));
+  }
+  addAxis(TCAD.math.AXIS.X, 0xFF0000);
+  addAxis(TCAD.math.AXIS.Y, 0x00FF00);
+  addAxis(TCAD.math.AXIS.Z, 0x0000FF);
+
   function updateControlsAndHelpers() {
     trackballControls.update();
     updateTransformControls();
