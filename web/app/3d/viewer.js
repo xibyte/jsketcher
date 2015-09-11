@@ -90,8 +90,8 @@ TCAD.Viewer = function(bus) {
   function addAxis(axis, color) {
     var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1});
     var axisGeom = new THREE.Geometry();
-    axisGeom.vertices.push(axis.multiply(-1000));
-    axisGeom.vertices.push(axis.multiply(1000));
+    axisGeom.vertices.push(axis.multiply(-1000).three());
+    axisGeom.vertices.push(axis.multiply(1000).three());
     scene.add(new THREE.Segment(axisGeom, lineMaterial));
   }
   addAxis(TCAD.math.AXIS.X, 0xFF0000);
@@ -134,8 +134,10 @@ TCAD.Viewer = function(bus) {
   var scope = this; 
   function onClick(e) {
     var intersects = scope.raycast(e);
-    if (intersects.length > 0) {
-      var pickResult = intersects[0];
+    if (intersects.length === 0) scope.transformControls.detach();
+    for (var ii = 0; ii < intersects.length; ii++) {
+      var pickResult = intersects[ii];
+      if (!pickResult.face) continue;
       if (pickResult.face.__TCAD_polyFace !== undefined) {
         var poly = pickResult.face.__TCAD_polyFace;
         if (scope.selectionMgr.contains(poly)) {
@@ -148,10 +150,9 @@ TCAD.Viewer = function(bus) {
             pickResult.object.geometry.colorsNeedUpdate = true;
           }
         }
-      } else {
-        scope.transformControls.detach();
       }
       render();
+      break;
     }
   }
   
