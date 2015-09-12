@@ -272,13 +272,14 @@ TCAD.utils.sketchToPolygons = function(geom) {
   for (var li = 0; li < geom.loops.length; ++li) {
     var loop = geom.loops[li];
     var polyPoints = loop.slice(0);
-    if (!TCAD.geom.isCCW(polyPoints)) polyPoints.reverse();
     for (var si = 0; si < polyPoints.length; si++) {
       var conn = polyPoints[si];
       //reuse a point and ignore b point since it's a guaranteed loop
       conn.a.sketchConnectionObject = conn.sketchObject;
       polyPoints[si] = conn.a;
     }
+    // we assume that connection object is the same al other the loop. That's why reverse is safe.
+    if (!TCAD.geom.isCCW(polyPoints)) polyPoints.reverse();
     if (polyPoints.length >= 3) {
       polygons.push(polyPoints);
     }
