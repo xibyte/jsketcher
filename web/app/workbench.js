@@ -137,7 +137,7 @@ TCAD.craft.extrude = function(app, request) {
   }
   var meld = request.solids[0].csg.union(CSG.fromPolygons(toMeldWith));
 
-  face.csgGroup.shared.__tcad.faceId = undefined;
+  face.csgGroup.shared.__tcad.faceId += '$';
   return [TCAD.utils.createSolidMesh(meld).geometry];
 };
 
@@ -845,7 +845,7 @@ TCAD.craft.cut = function(app, request) {
   }
   var cutterCSG = CSG.fromPolygons(cutter);
 
-  face.csgGroup.shared.__tcad.faceId = undefined;
+  face.csgGroup.shared.__tcad.faceId += '$';
   var outSolids = [];
   for (var si = 0; si < request.solids.length; si++) {
     var work = request.solids[si].csg;
