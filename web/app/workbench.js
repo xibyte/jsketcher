@@ -128,22 +128,17 @@ TCAD.craft.extrude = function(app, request) {
   var face = request.face;
   var sketchedPolygons = TCAD.craft.getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
-  face.polygon.__face = undefined;
 
-  var faces = TCAD.craft.collectFaces(request.solids);
-
-  var normal = face.polygon.normal;
-
+  var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var toMeldWith = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
     var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(request.height));
     toMeldWith = toMeldWith.concat(TCAD.craft._makeFromPolygons(extruded));
   }
-  var work = TCAD.craft._makeFromPolygons(faces.map(function(f){ return f.polygon }));
+  var meld = request.solids[0].csg.union(CSG.fromPolygons(toMeldWith));
 
-  var meld = CSG.fromPolygons(work).union(CSG.fromPolygons(toMeldWith));
-
-  return TCAD.craft.reconstruct(meld);
+  face.csgGroup.shared.__tcad.faceId = undefined;
+  return [TCAD.utils.createSolidMesh(meld).geometry];
 };
 
 TCAD.craft._pointOnLine = function(p, a, b) {
