@@ -126,7 +126,15 @@ TCAD.App.prototype.sketchFace = function() {
     });
   }
   function isCircle(path) {
-    return path.length > 0 && path[0].sketchConnectionObject !== undefined && path[0].sketchConnectionObject._class == 'TCAD.TWO.Circle';
+    for (var i = 0; i < path.length; i++) {
+      var p = path[i];
+      if (p.sketchConnectionObject === undefined
+        || p.sketchConnectionObject._class !== 'TCAD.TWO.Circle'
+        || p.sketchConnectionObject.id !== path[0].sketchConnectionObject.id) {
+        return false;
+      }
+    }
+    return true;
   }
 
   function trPath (path) {
@@ -139,6 +147,7 @@ TCAD.App.prototype.sketchFace = function() {
 
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i].vertices;
+    if (path.length < 3) continue;
     var shift = 0;
     if (isCircle(path)) {
       addCircle(trPath(path));
@@ -151,7 +160,8 @@ TCAD.App.prototype.sketchFace = function() {
     var currSko = null;
     var arc = null;
     TCAD.utils.iteratePath(path, shift+1, function(a, b, ai, bi, iterNumber, path) {
-      var isArc = a.sketchConnectionObject !== undefined && a.sketchConnectionObject._class == 'TCAD.TWO.Arc';
+      var isArc = a.sketchConnectionObject !== undefined &&
+        (a.sketchConnectionObject._class == 'TCAD.TWO.Arc' || a.sketchConnectionObject._class == 'TCAD.TWO.Circle'); //if circle gets splitted
       var a2d = _2dTr.apply(a);
       if (isArc) {
         if (currSko !== a.sketchConnectionObject.id) {
