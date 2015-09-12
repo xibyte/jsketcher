@@ -565,12 +565,29 @@ if (typeof THREE !== "undefined") {
     color: 0x2B3856, linewidth: 3});
 }
 
-TCAD.SketchFace.prototype.basis = function() {
+TCAD.SketchFace.prototype.calcBasis = function() {
   var vec = TCAD.utils.vec;
-  return TCAD.geom.someBasis(this.csgGroup.polygons[0].vertices.map(function (v) {
-    return vec(v.pos)
-  }), vec(this.csgGroup.plane.normal));
-}
+  var normal = vec(this.csgGroup.plane.normal);
+  var alignPlane, x, y;
+  if (Math.abs(normal.dot(TCAD.math.AXIS.Y)) < 0.5) {
+    alignPlane = normal.cross(TCAD.math.AXIS.Y);
+  } else {
+    alignPlane = normal.cross(TCAD.math.AXIS.Z);
+  }
+  y = alignPlane.cross(normal);
+  x = y.cross(normal);
+  return [x, y, normal];
+};
+
+TCAD.SketchFace.prototype.basis = function() {
+  if (!this._basis) {
+    this._basis = this.calcBasis();
+  }
+  return this._basis;
+  //return TCAD.geom.someBasis(this.csgGroup.polygons[0].vertices.map(function (v) {
+  //  return vec(v.pos)
+  //}), vec(this.csgGroup.plane.normal));
+};
 
 TCAD.SketchFace.prototype.syncSketches = function(geom) {
   var i;
