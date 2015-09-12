@@ -101,7 +101,7 @@ TCAD.craft.getSketchedPolygons3D = function(app, face) {
   var sketchedPolygons = [];
   for (var i = 0; i < polygons2D.length; i++) {
     var poly2D = polygons2D[i];
-    if (poly2D.shell.length < 3) continue;
+    if (poly2D.length < 3) continue;
 
     if (depth == null) {
       var _3dTransformation = new TCAD.Matrix().setBasis(face.basis());
@@ -109,16 +109,16 @@ TCAD.craft.getSketchedPolygons3D = function(app, face) {
       depth = face.csgGroup.plane.w;
     }
 
-    var shell = [];
-    for (var m = 0; m < poly2D.shell.length; ++m) {
-      var vec = poly2D.shell[m];
+    var polygon = [];
+    for (var m = 0; m < poly2D.length; ++m) {
+      var vec = poly2D[m];
       vec.z = depth;
 //      var a = _3dTransformation.apply(new TCAD.Vector(poly2D[m][0], poly2D[m][1], depth));
       var a = _3dTransformation.apply(vec);
       a.sketchConnectionObject = vec.sketchConnectionObject;
-      shell.push(a);
+      polygon.push(a);
     }
-    var polygon = new TCAD.Polygon(shell);
+
     sketchedPolygons.push(polygon);
   }
   return sketchedPolygons;
@@ -132,10 +132,11 @@ TCAD.craft.extrude = function(app, request) {
   var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var toMeldWith = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(request.height));
-    toMeldWith = toMeldWith.concat(TCAD.craft._makeFromPolygons(extruded));
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(request.height), normal);
+    toMeldWith = toMeldWith.concat(extruded);
   }
-  var meld = request.solids[0].csg.union(CSG.fromPolygons(toMeldWith));
+
+  var meld = request.solids[0].csg.union(CSG.fromPolygons(TCAD.craft._triangulateCSG(toMeldWith)));
 
   face.csgGroup.shared.__tcad.faceId += '$';
   return [TCAD.utils.createSolidMesh(meld).geometry];
@@ -555,42 +556,27 @@ TCAD.craft._mergeCSGPolygons = function (__cgsPolygons, allPoints) {
   return filteredPaths;
 };
 
-TCAD.craft._makeFromPolygons = function(polygons) {
+TCAD.craft._triangulateCSG = function(polygons) {
   function csgVec(v) {
     return new CSG.Vector3D(v.x, v.y, v.z);
   }
-  var points = [];
-  var csgPolygons = [];
-  var off = 0;
+  var triangled = [];
   for (var ei = 0; ei < polygons.length; ++ei) {
     var poly = polygons[ei];
-    Array.prototype.push.apply( points, poly.shell );
-    for ( var h = 0; h < poly.holes.length; h ++ ) {
-      Array.prototype.push.apply( points, poly.holes[h] );
-    }
-    var pid = poly.id;
-    var shared = TCAD.utils.createShared(pid);
-    shared.__tcad.csgInfo = poly.csgInfo;
-    //shared.__tcad.faceId = poly.__face.id;
-
-    var refs = poly.triangulate();
+    var points = poly.vertices;
+    var refs = TCAD.geom.triangulate(points, poly.plane.normal);
     for ( var i = 0;  i < refs.length; ++ i ) {
-      var a = refs[i][0] + off;
-      var b = refs[i][1] + off;
-      var c = refs[i][2] + off;
-      if (points[b].minus(points[a]).cross(points[c].minus(points[a])).length() === 0)  {
+      var a = refs[i][0];
+      var b = refs[i][1];
+      var c = refs[i][2];
+      if (points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() === 0)  {
         continue;
       }
-      var csgPoly = new CSG.Polygon([
-        new CSG.Vertex(csgVec(points[a]), csgVec(poly.normal)),
-        new CSG.Vertex(csgVec(points[b]), csgVec(poly.normal)),
-        new CSG.Vertex(csgVec(points[c]), csgVec(poly.normal))
-      ], shared);
-      csgPolygons.push(csgPoly);
+      var csgPoly = new CSG.Polygon([points[a], points[b], points[c]], poly.shared, poly.plane);
+      triangled.push(csgPoly);
     }
-    off = points.length;
   }
-  return csgPolygons;
+  return triangled;
 };
 
 TCAD.craft.recoverySketchInfo = function(polygons) {
@@ -840,10 +826,10 @@ TCAD.craft.cut = function(app, request) {
   var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var cutter = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - request.depth));
-    cutter = cutter.concat(TCAD.craft._makeFromPolygons(extruded));
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - request.depth), normal);
+    cutter = cutter.concat(extruded);
   }
-  var cutterCSG = CSG.fromPolygons(cutter);
+  var cutterCSG = CSG.fromPolygons(TCAD.craft._triangulateCSG(cutter));
 
   face.csgGroup.shared.__tcad.faceId += '$';
   var outSolids = [];
