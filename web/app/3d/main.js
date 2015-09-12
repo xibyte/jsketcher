@@ -2,7 +2,10 @@ TCAD = {};
 
 TCAD.App = function() {
 
-  this.id = "DEFAULT";
+  this.id = window.location.hash.substring(1);
+  if (!this.id) {
+    this.id = "DEFAULT";
+  }
   this.bus = new TCAD.Bus();
   this.viewer = new TCAD.Viewer(this.bus);
   this.ui = new TCAD.UI(this);
