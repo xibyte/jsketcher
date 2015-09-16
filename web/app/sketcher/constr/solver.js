@@ -1,13 +1,13 @@
 TCAD.parametric = {};
 
 /** @constructor */
-TCAD.parametric.Param = function(id, value) {
-  this.reset(id, value);
+TCAD.parametric.Param = function(id, value, readOnly) {
+  if (!!readOnly) this.set = this.nop;
+  this.reset(value);
 };
 
-TCAD.parametric.Param.prototype.reset = function(id, value) {
-  this.id = id;
-  this.value = value;
+TCAD.parametric.Param.prototype.reset = function(value) {
+  this.set(value);
   this.j = -1;
 };
 
@@ -19,6 +19,7 @@ TCAD.parametric.Param.prototype.get = function() {
   return this.value;
 };
 
+TCAD.parametric.Param.prototype.nop = function() {};
 
 /** @constructor */
 TCAD.parametric.System = function(constraints) {
