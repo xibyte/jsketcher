@@ -9,9 +9,10 @@ TCAD.UI = function(app) {
   var cameraFolder = new TCAD.toolkit.Folder("Camera");
   var objectsFolder = new TCAD.toolkit.Folder("Objects");
   var modificationsFolder = new TCAD.toolkit.Folder("Modifications");
+  var extrude, cut, edit;
   TCAD.toolkit.add(box, propFolder);
-  TCAD.toolkit.add(propFolder, new TCAD.toolkit.Button("Extrude"));
-  TCAD.toolkit.add(propFolder, new TCAD.toolkit.Button("Cut"));
+  TCAD.toolkit.add(propFolder, extrude = new TCAD.toolkit.Button("Extrude"));
+  TCAD.toolkit.add(propFolder, cut = new TCAD.toolkit.Button("Cut"));
   TCAD.toolkit.add(propFolder, new TCAD.toolkit.Button("Edit"));
   TCAD.toolkit.add(propFolder, new TCAD.toolkit.Button("Refresh Sketches"));
   TCAD.toolkit.add(propFolder, new TCAD.toolkit.Text("Message"));
@@ -33,6 +34,32 @@ TCAD.UI = function(app) {
       data.children.push(ui.getInfoForOp(op));
     }
     modificationsTreeComp.set(data);
+  });
+
+  cut.root.click(function() {
+    if (app.viewer.selectionMgr.selection.length == 0) {
+      return;
+    }
+    var face = app.viewer.selectionMgr.selection[0];
+    var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
+    var polygons = TCAD.craft.getSketchedPolygons3D(app, face);
+
+    var tk = TCAD.toolkit;
+    var ops = new tk.Box();
+    ops.root.css({left : (box.root.width() + 10) + 'px', top : 0});
+    var folder = new tk.Folder("Cut Options");
+    tk.add(ops, folder);
+    var depth = new tk.Number("Depth", 50);
+    var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
+    depth.input.on('t-change', function() {
+      var depthValue = $(this).val();
+      var target = normal.negate().multiply(depthValue);
+      wizard.update(target);
+      app.viewer.render()
+    });
+    depth.input.trigger('t-change');
+    tk.add(folder, depth);
+    tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [tk.methodRef(folder, "close"), ]));
   });
 
   this.dat = new dat.GUI();

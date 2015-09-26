@@ -13,7 +13,8 @@
 
   <script src="lib/jquery-2.1.0.min.js"></script>
   <script src="lib/three/three.js"></script>
-  <script> THREE.Line = THREE.Segment </script><!-- Intelij renamed all THREE.Line to THREE.Segment by mistake. It will not be needed after updating three.js-->
+
+  <script> THREE.Segment = THREE.Line </script><!-- Intelij renamed all THREE.Line to THREE.Segment by mistake. It will not be needed after updating three.js-->
   <script src="lib/three/TrackballControls.js"></script>
   <script src="lib/three/OrbitControls.js"></script>
   <script src="lib/three/TransformControls.js"></script>
@@ -30,6 +31,7 @@
   <script src="app/math/graph.js"></script>
   <script src="app/3d/hashmap.js"></script>
   <script src="app/ui/toolkit.js"></script>
+  <script src="app/3d/wizards/wizards.js"></script>
 
   <script>window.onload = function() {
     window._TCAD_APP = new TCAD.App();
