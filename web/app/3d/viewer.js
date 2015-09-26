@@ -94,7 +94,7 @@ TCAD.Viewer = function(bus) {
     var axisGeom = new THREE.Geometry();
     axisGeom.vertices.push(axis.multiply(-1000).three());
     axisGeom.vertices.push(axis.multiply(1000).three());
-    scene.add(new THREE.Segment(axisGeom, lineMaterial));
+    scene.add(new THREE.Line(axisGeom, lineMaterial));
   }
   addAxis(TCAD.math.AXIS.X, 0xFF0000);
   addAxis(TCAD.math.AXIS.Y, 0x00FF00);
