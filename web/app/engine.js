@@ -336,6 +336,15 @@ TCAD.geom.isCCW = function(path2D) {
   return TCAD.geom.area(path2D) >= 0;
 };
 
+
+TCAD.geom.calculateExtrudedLid = function(sourcePolygon, direction, lateralExpansionFactor) {
+  var lid = [];
+  for (var si = 0; si < sourcePolygon.length; ++si) {
+    lid[si] = sourcePolygon[si].plus(direction);
+  }
+  return lid;
+};
+
 TCAD.geom.extrude = function(source, target, sourceNormal) {
 
   var extrudeDistance = target.normalize().dot(sourceNormal);
@@ -345,10 +354,7 @@ TCAD.geom.extrude = function(source, target, sourceNormal) {
   var negate = extrudeDistance < 0;
 
   var poly = [null, null];
-  var lid = [];
-  for (var si = 0; si < source.length; ++si) {
-    lid[si] = source[si].plus(target);
-  }
+  var lid = TCAD.geom.calculateExtrudedLid(source, target, 1);
 
   var bottom, top;
   if (negate) {
@@ -536,9 +542,9 @@ TCAD.SketchFace = function(solid, csgGroup) {
 
 if (typeof THREE !== "undefined") {
   TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
-    color: 0xFFFFFF, linewidth: 3});
+    color: 0xFFFFFF, linewidth: 3/TCAD.DPR});
   TCAD.SketchFace.prototype.WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({
-    color: 0x2B3856, linewidth: 3});
+    color: 0x2B3856, linewidth: 3/TCAD.DPR});
 }
 
 TCAD.SketchFace.prototype.calcBasis = function() {
