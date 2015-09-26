@@ -90,7 +90,7 @@ TCAD.Viewer = function(bus) {
   }
 
   function addAxis(axis, color) {
-    var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1});
+    var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1/TCAD.DPR});
     var axisGeom = new THREE.Geometry();
     axisGeom.vertices.push(axis.multiply(-1000).three());
     axisGeom.vertices.push(axis.multiply(1000).three());

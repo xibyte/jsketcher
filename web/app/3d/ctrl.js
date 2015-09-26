@@ -3,27 +3,28 @@ TCAD.UI = function(app) {
   this.app = app;
   this.viewer = app.viewer;
 
-  var box = new TCAD.toolkit.Box();
-  box.root.css({height : '100%'});
-  var propFolder = new TCAD.toolkit.Folder("Solid's Properties");
-  var cameraFolder = new TCAD.toolkit.Folder("Camera");
-  var objectsFolder = new TCAD.toolkit.Folder("Objects");
-  var modificationsFolder = new TCAD.toolkit.Folder("Modifications");
-  var extrude, cut, edit;
-  TCAD.toolkit.add(box, propFolder);
-  TCAD.toolkit.add(propFolder, extrude = new TCAD.toolkit.Button("Extrude"));
-  TCAD.toolkit.add(propFolder, cut = new TCAD.toolkit.Button("Cut"));
-  TCAD.toolkit.add(propFolder, new TCAD.toolkit.Button("Edit"));
-  TCAD.toolkit.add(propFolder, new TCAD.toolkit.Button("Refresh Sketches"));
-  TCAD.toolkit.add(propFolder, new TCAD.toolkit.Text("Message"));
-  TCAD.toolkit.add(box, cameraFolder);
-  TCAD.toolkit.add(cameraFolder, new TCAD.toolkit.Number("x"));
-  TCAD.toolkit.add(cameraFolder, new TCAD.toolkit.Number("y"));
-  TCAD.toolkit.add(cameraFolder, new TCAD.toolkit.Number("z"));
-  TCAD.toolkit.add(box, objectsFolder);
-  TCAD.toolkit.add(box, modificationsFolder);
-  var modificationsTreeComp = new TCAD.toolkit.Tree();
-  TCAD.toolkit.add(modificationsFolder, modificationsTreeComp);
+  var tk = TCAD.toolkit;
+  var mainBox = new tk.Box();
+  mainBox.root.css({height : '100%'});
+  var propFolder = new tk.Folder("Solid's Properties");
+  var cameraFolder = new tk.Folder("Camera");
+  var objectsFolder = new tk.Folder("Objects");
+  var modificationsFolder = new tk.Folder("Modifications");
+  var extrude, cut, edit, refreshSketches;
+  tk.add(mainBox, propFolder);
+  tk.add(propFolder, extrude = new tk.Button("Extrude"));
+  tk.add(propFolder, cut = new tk.Button("Cut"));
+  tk.add(propFolder, edit = new tk.Button("Edit"));
+  tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
+  tk.add(propFolder, new tk.Text("Message"));
+  tk.add(mainBox, cameraFolder);
+  tk.add(cameraFolder, new tk.Number("x"));
+  tk.add(cameraFolder, new tk.Number("y"));
+  tk.add(cameraFolder, new tk.Number("z"));
+  tk.add(mainBox, objectsFolder);
+  tk.add(mainBox, modificationsFolder);
+  var modificationsTreeComp = new tk.Tree();
+  tk.add(modificationsFolder, modificationsTreeComp);
 
   var ui = this;
 
@@ -36,49 +37,65 @@ TCAD.UI = function(app) {
     modificationsTreeComp.set(data);
   });
 
-  cut.root.click(function() {
-    if (app.viewer.selectionMgr.selection.length == 0) {
-      return;
+  function cutExtrude(isCut) {
+    return function() {
+      if (app.viewer.selectionMgr.selection.length == 0) {
+        return;
+      }
+      var face = app.viewer.selectionMgr.selection[0];
+      var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
+      var polygons = TCAD.craft.getSketchedPolygons3D(app, face);
+
+      var box = new tk.Box();
+      box.root.css({left : (mainBox.root.width() + 10) + 'px', top : 0});
+      var folder = new tk.Folder(isCut ? "Cut Options" : "Extrude Options");
+      tk.add(box, folder);
+      var theValue = new tk.Number(isCut ? "Depth" : "Height", 50);
+      var angle = new tk.Number("Angle", 0);
+      var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
+      theValue.input.on('t-change', function() {
+        var depthValue = $(this).val();
+        var target = isCut ? normal.negate() : normal;
+        target = target.multiply(depthValue);
+        wizard.update(target);
+        app.viewer.render()
+      });
+      theValue.input.trigger('t-change');
+      tk.add(folder, theValue);
+      tk.add(folder, angle);
+      function close() {
+        box.close();
+        wizard.dispose();
+      }
+      function applyCut() {
+        var depthValue = theValue.input.val();
+        app.craft.modify({
+          type: 'CUT',
+          solids : [face.solid],
+          face : face,
+          depth : depthValue
+        });
+        close();
+      }
+      function applyExtrude() {
+        var heightValue = theValue.input.val();
+        app.craft.modify({
+          type: 'PAD',
+          solids : [face.solid],
+          face : face,
+          height : heightValue
+        });
+        close();
+      }
+
+      tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, isCut ? applyCut : applyExtrude]));
     }
-    var face = app.viewer.selectionMgr.selection[0];
-    var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
-    var polygons = TCAD.craft.getSketchedPolygons3D(app, face);
+  }
 
-    var tk = TCAD.toolkit;
-    var ops = new tk.Box();
-    ops.root.css({left : (box.root.width() + 10) + 'px', top : 0});
-    var folder = new tk.Folder("Cut Options");
-    tk.add(ops, folder);
-    var depth = new tk.Number("Depth", 50);
-    var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
-    depth.input.on('t-change', function() {
-      var depthValue = $(this).val();
-      var target = normal.negate().multiply(depthValue);
-      wizard.update(target);
-      app.viewer.render()
-    });
-    depth.input.trigger('t-change');
-    tk.add(folder, depth);
-    tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [tk.methodRef(folder, "close"), ]));
-  });
-
-  this.dat = new dat.GUI();
-  var gui = this.dat;
-
-  var actionsF = gui.addFolder('Add Object');
-  var actions = new TCAD.UI.Actions(this);
-  actionsF.add(actions.tools, 'extrude');
-  actionsF.add(actions.tools, 'cut');
-  actionsF.add(actions.tools, 'edit');
-  actionsF.add(actions.tools, 'save');
-  actionsF.add(actions.tools, 'refreshSketches');
-  actionsF.open();
-
-  var camera =  gui.addFolder('Camera');
-  camera.add(app.viewer.camera.position, 'x').listen();
-  camera.add(app.viewer.camera.position, 'y').listen();
-  camera.add(app.viewer.camera.position, 'z').listen();
-  camera.open();
+  cut.root.click(cutExtrude(true));
+  extrude.root.click(cutExtrude(false));
+  edit.root.click(tk.methodRef(app, "sketchFace"));
+  refreshSketches.root.click(tk.methodRef(app, "refreshSketches"));
 
   this.solidFolder = null;
 };
@@ -101,40 +118,4 @@ TCAD.UI.prototype.setSolid = function(solid) {
   }
   this.solidFolder = this.dat.addFolder("Solid Properties");
   this.solidFolder.add(solid.wireframeGroup, 'visible').listen()
-};
-
-TCAD.UI.Actions = function(scope) {
-
-  this.tools = {
-
-    extrude : function() {
-      scope.app.extrude();
-    },
-
-    cut : function() {
-      scope.app.cut();
-    },
-
-    edit : function() {
-      scope.app.sketchFace();
-    },
-
-    save : function() {
-      scope.app.save();
-    },
-
-    refreshSketches : function() {
-      scope.app.refreshSketches();
-    },
-
-    undo : function() {
-      scope.app.undo();
-    },
-
-    redo : function() {
-      scope.app.redo();
-    }
-
-
-  };
 };
