@@ -66,11 +66,10 @@ TCAD.toolkit.Number = function(name, initValue) {
     } else if ( e.detail ) { // Firefox
       delta = - e.detail;
     }
-    var step = 0.05;
-
     var val = $(this).val();
     if (!val) val = 0;
-    val = parseFloat(val) + (delta < 0 ? -1 : 1);
+    var step = e.shiftKey ? 100 : 1;
+    val = parseFloat(val) + (delta < 0 ? -step : step);
     $(this).val(val);
     e.preventDefault();
     e.stopPropagation();
@@ -91,7 +90,7 @@ TCAD.toolkit.ButtonRow = function(captions, actions) {
 
   function withAction(btn, action) {
     return btn.click(function(){
-      actions[i].call()
+      action.call()
     });
   }
   for (var i = 0; i < captions.length; i++) {
