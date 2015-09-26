@@ -102,7 +102,7 @@ TCAD.utils.createLine = function (a, b, color) {
   var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(a.x, a.y, a.z));
   geometry.vertices.push(new THREE.Vector3(b.x, b.y, b.z));
-  return new THREE.Segment(geometry, material);
+  return new THREE.Line(geometry, material);
 };
 
 TCAD.utils.createSolidMesh = function(csg) {
@@ -516,7 +516,7 @@ TCAD.Solid.prototype.makeWireframe = function(polygons) {
         var lg = new THREE.Geometry();
         lg.vertices.push(a);
         lg.vertices.push(b);
-        var line = new THREE.Segment(lg, TCAD.SketchFace.prototype.WIREFRAME_MATERIAL);
+        var line = new THREE.Line(lg, TCAD.SketchFace.prototype.WIREFRAME_MATERIAL);
         this.wireframeGroup.add(line);
         edges.put(edge, true);
       }
@@ -599,7 +599,7 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
 
     lg.vertices.push(a.plus(offVector).three());
     lg.vertices.push(b.plus(offVector).three());
-    var line = new THREE.Segment(lg, this.SKETCH_MATERIAL);
+    var line = new THREE.Line(lg, this.SKETCH_MATERIAL);
     this.sketch3DGroup.add(line);
   }
 };

@@ -14,7 +14,7 @@ TCAD.wizards.OpWizard.prototype.setupLine = function(lineId, a, b) {
     lg.vertices.push(new THREE.Vector3().copy(a));
     lg.vertices.push(new THREE.Vector3().copy(b));
     TCAD.SketchFace.prototype.WIREFRAME_MATERIAL.depthWrite = false;
-    line = new THREE.Segment(lg, TCAD.SketchFace.prototype.WIREFRAME_MATERIAL);
+    line = new THREE.Line(lg, TCAD.SketchFace.prototype.WIREFRAME_MATERIAL);
     line.renderDepth = 0;
     this.previewGroup.add(line);
     this.lines[lineId] = line;
