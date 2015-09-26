@@ -1,3 +1,4 @@
+TCAD.DPR = (window.devicePixelRatio) ? window.devicePixelRatio : 1;
 
 TCAD.view = {};
 
@@ -5,7 +6,7 @@ TCAD.view.setFaceColor = function(polyFace, color) {
   for (var i = 0; i < polyFace.faces.length; ++i) {
     var face = polyFace.faces[i];
     if (color == null) {
-      face.color = new THREE.Color();
+      face.color.set(new THREE.Color());
     } else {
       face.color.set( color );
     }
@@ -28,6 +29,7 @@ TCAD.Viewer = function(bus) {
   scene.add(light);
 
   var renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(TCAD.DPR);
   renderer.setClearColor(0x808080, 1);
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
@@ -117,9 +119,7 @@ TCAD.Viewer = function(bus) {
 
   this.selectionMgr = new TCAD.FaceSelectionManager( 0xFAFAD2, null);
 
-  var projector = new THREE.Projector();
   var raycaster = new THREE.Raycaster();
-  raycaster.ray.direction.set(0, -1, 0);
 
   this.raycast = function(event) {
 
@@ -127,8 +127,8 @@ TCAD.Viewer = function(bus) {
     var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
     var mouse = new THREE.Vector3( x, y, 1 );
-    var ray = projector.pickingRay(mouse.clone(), camera);
-    return ray.intersectObjects( scene.children );
+    raycaster.setFromCamera( mouse, camera );
+    return raycaster.intersectObjects( scene.children );
   };
   
   var scope = this; 
