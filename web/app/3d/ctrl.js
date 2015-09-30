@@ -51,18 +51,23 @@ TCAD.UI = function(app) {
       var folder = new tk.Folder(isCut ? "Cut Options" : "Extrude Options");
       tk.add(box, folder);
       var theValue = new tk.Number(isCut ? "Depth" : "Height", 50);
+      var scale = new tk.Number("Expansion", 1, 0.1);
+      var deflection = new tk.Number("Deflection", 0);
       var angle = new tk.Number("Angle", 0);
       var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
-      theValue.input.on('t-change', function() {
-        var depthValue = $(this).val();
+      function onChange() {
+        var depthValue = theValue.input.val();
+        var scaleValue = scale.input.val();
         var target = isCut ? normal.negate() : normal;
         target = target.multiply(depthValue);
-        wizard.update(target);
+        wizard.update(target, normal, scaleValue);
         app.viewer.render()
-      });
-      theValue.input.trigger('t-change');
+      }
+      theValue.input.on('t-change', onChange);
+      scale.input.on('t-change', onChange);
+      onChange();
       tk.add(folder, theValue);
-      tk.add(folder, angle);
+      tk.add(folder, scale);
       function close() {
         box.close();
         wizard.dispose();
