@@ -50,11 +50,11 @@ TCAD.wizards.ExtrudeWizard = function(viewer, polygons) {
 
 TCAD.wizards.ExtrudeWizard.prototype = Object.create( TCAD.wizards.OpWizard.prototype );
 
-TCAD.wizards.ExtrudeWizard.prototype.update = function(target) {
+TCAD.wizards.ExtrudeWizard.prototype.update = function(target, normal, scale) {
   var linesCounter = 0;
   for (var i = 0; i < this.polygons.length; i++) {
     var poly = this.polygons[i];
-    var lid = TCAD.geom.calculateExtrudedLid(poly, target, 1);
+    var lid = TCAD.geom.calculateExtrudedLid(poly, normal, target, scale);
     var p, q, n = poly.length;
     for (p = n - 1, q = 0; q < n; p = q++) {
       this.setupLine(linesCounter ++, poly[p], poly[q], TCAD.wizards.BASE_MATERIAL);
