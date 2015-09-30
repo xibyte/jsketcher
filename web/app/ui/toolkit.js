@@ -38,10 +38,11 @@ TCAD.toolkit.propLayout = function(root, name, valueEl) {
     .append(valueEl));
 };
 
-TCAD.toolkit.Number = function(name, initValue) {
+TCAD.toolkit.Number = function(name, initValue, baseStep) {
   this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-number'});
   this.input = $("<input type='text' value='"+initValue+"' />");
   this.slide = false;
+  baseStep = baseStep || 1;
   var scope = this;
   var lastValue = null;
   function trigger() {
@@ -68,7 +69,7 @@ TCAD.toolkit.Number = function(name, initValue) {
     }
     var val = $(this).val();
     if (!val) val = 0;
-    var step = e.shiftKey ? 100 : 1;
+    var step = baseStep * (e.shiftKey ? 100 : 1);
     val = parseFloat(val) + (delta < 0 ? -step : step);
     $(this).val(val);
     e.preventDefault();
