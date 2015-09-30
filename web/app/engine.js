@@ -26,7 +26,7 @@ TCAD.utils.createBox = function(width) {
   var rot = TCAD.math.rotateMatrix(3/4, TCAD.math.AXIS.Z, TCAD.math.ORIGIN);
   square.forEach(function(v) { rot._apply(v) } );
   var normal = TCAD.geom.normalOfCCWSeq(square);
-  return TCAD.geom.extrude(square, normal.multiply(width), normal);
+  return TCAD.geom.extrude(square, normal.multiply(width), normal, 1);
 };
 
 TCAD.utils.createCSGBox = function(width) {
@@ -336,12 +336,63 @@ TCAD.geom.isCCW = function(path2D) {
   return TCAD.geom.area(path2D) >= 0;
 };
 
+TCAD.BBox = function() {
+  this.minX = Number.MAX_VALUE;
+  this.minY = Number.MAX_VALUE;
+  this.maxX = -Number.MAX_VALUE;
+  this.maxY = -Number.MAX_VALUE;
+  this.checkBounds = function(x, y) {
+    this.minX = Math.min(this.minX, x);
+    this.minY = Math.min(this.minY, y);
+    this.maxX = Math.max(this.maxX, x);
+    this.maxY = Math.max(this.maxY, y);
+  };
 
-TCAD.geom.calculateExtrudedLid = function(sourcePolygon, direction, lateralExpansionFactor) {
+  this.center = function() {
+    return new TCAD.Vector(this.minX + (this.maxX - this.minX) / 2, this.minY + (this.maxY - this.minY) / 2, 0)
+  };
+};
+
+TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expansionFactor, deflection, angle) {
   var lid = [];
-  for (var si = 0; si < sourcePolygon.length; ++si) {
-    lid[si] = sourcePolygon[si].plus(direction);
+  var length = sourcePolygon.length;
+  var work;
+  var si;
+  if (expansionFactor != 1) {
+    var source2d = [];
+    work = [];
+    
+    var _3dTr = new TCAD.Matrix().setBasis(TCAD.geom.someBasis2(new CSG.Vector3D(normal))); // use passed basis
+    var _2dTr = _3dTr.invert();
+    var sourceBBox = new TCAD.BBox();
+    var workBBox = new TCAD.BBox();
+    for (si = 0; si < length; ++si) {
+      var sourcePoint = _2dTr.apply(sourcePolygon[si]);
+      source2d[si] = sourcePoint;
+      work[si] = sourcePoint.multiply(expansionFactor);
+      work[si].z = source2d[si].z = 0;
+      sourceBBox.checkBounds(sourcePoint.x, sourcePoint.y);
+      workBBox.checkBounds(work[si].x, work[si].y)
+    }
+    var alignVector = workBBox.center().minus(sourceBBox.center());
+    var depth = normal.dot(sourcePolygon[0]);
+    for (si = 0; si < length; ++si) {
+      work[si] = work[si].minus(alignVector);
+      work[si].z = depth;
+      work[si] = _3dTr.apply(work[si]);
+    }
+  } else {
+    work = sourcePolygon;
   }
+
+  if (deflection != 0) {
+   //var
+  }
+
+  for (si = 0; si < length; ++si) {
+    lid[si] = work[si].plus(direction);
+  }
+
   return lid;
 };
 
@@ -354,7 +405,7 @@ TCAD.geom.extrude = function(source, target, sourceNormal) {
   var negate = extrudeDistance < 0;
 
   var poly = [null, null];
-  var lid = TCAD.geom.calculateExtrudedLid(source, target, 1);
+  var lid = TCAD.geom.calculateExtrudedLid(source, sourceNormal, target, 1);
 
   var bottom, top;
   if (negate) {
