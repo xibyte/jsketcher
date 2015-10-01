@@ -52,22 +52,27 @@ TCAD.UI = function(app) {
       tk.add(box, folder);
       var theValue = new tk.Number(isCut ? "Depth" : "Height", 50);
       var scale = new tk.Number("Expansion", 1, 0.1);
-      var deflection = new tk.Number("Deflection", 0);
-      var angle = new tk.Number("Angle", 0);
+      var deflection = new tk.Number("Deflection", 0, 1);
+      var angle = new tk.Number("Angle", 0, 5);
       var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
       function onChange() {
         var depthValue = theValue.input.val();
         var scaleValue = scale.input.val();
-        var target = isCut ? normal.negate() : normal;
-        target = target.multiply(depthValue);
-        wizard.update(target, normal, scaleValue);
+        var deflectionValue = deflection.input.val();
+        var angleValue = angle.input.val();
+        if (isCut) depthValue *= -1;
+        wizard.update(face._basis, normal, depthValue, scaleValue, deflectionValue, angleValue);
         app.viewer.render()
       }
       theValue.input.on('t-change', onChange);
       scale.input.on('t-change', onChange);
+      deflection.input.on('t-change', onChange);
+      angle.input.on('t-change', onChange);
       onChange();
       tk.add(folder, theValue);
       tk.add(folder, scale);
+      tk.add(folder, deflection);
+      tk.add(folder, angle);
       function close() {
         box.close();
         wizard.dispose();
@@ -78,7 +83,7 @@ TCAD.UI = function(app) {
           type: 'CUT',
           solids : [face.solid],
           face : face,
-          depth : depthValue
+          params : wizard.operationParams
         });
         close();
       }
@@ -88,7 +93,7 @@ TCAD.UI = function(app) {
           type: 'PAD',
           solids : [face.solid],
           face : face,
-          height : heightValue
+          params : wizard.operationParams
         });
         close();
       }
