@@ -132,7 +132,7 @@ TCAD.craft.extrude = function(app, request) {
   var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var toMeldWith = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(request.height), normal);
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal, request.params.target, request.params.expansionFactor );
     toMeldWith = toMeldWith.concat(extruded);
   }
 
@@ -826,7 +826,7 @@ TCAD.craft.cut = function(app, request) {
   var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var cutter = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - request.depth), normal);
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal, request.params.target, request.params.expansionFactor );
     cutter = cutter.concat(extruded);
   }
   var cutterCSG = CSG.fromPolygons(TCAD.craft._triangulateCSG(cutter));

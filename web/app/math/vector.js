@@ -105,6 +105,10 @@ TCAD.Vector.prototype.negate = function() {
   return this.multiply(-1);
 };
 
+TCAD.Vector.prototype._negate = function() {
+  return this._multiply(-1);
+};
+
 TCAD.Vector.prototype.equals = function(vector) {
   return TCAD.utils.vectorsEqual(this, vector);
 };

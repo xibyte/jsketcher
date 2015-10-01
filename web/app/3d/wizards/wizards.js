@@ -50,8 +50,20 @@ TCAD.wizards.ExtrudeWizard = function(viewer, polygons) {
 
 TCAD.wizards.ExtrudeWizard.prototype = Object.create( TCAD.wizards.OpWizard.prototype );
 
-TCAD.wizards.ExtrudeWizard.prototype.update = function(target, normal, scale) {
+TCAD.wizards.ExtrudeWizard.prototype.update = function(basis, normal, depth, scale, deflection, angle) {
   var linesCounter = 0;
+  var target;
+  if (deflection != 0) {
+    target = normal.copy();
+    if (depth < 0) target._negate();
+    target = TCAD.math.rotateMatrix(deflection * Math.PI / 180, basis[0], TCAD.math.ORIGIN)._apply(target);
+    if (angle != 0) {
+      target = TCAD.math.rotateMatrix(angle * Math.PI / 180, basis[2], TCAD.math.ORIGIN)._apply(target);
+    }
+    target._multiply(Math.abs(depth));
+  } else {
+    target = normal.multiply(depth)
+  }
   for (var i = 0; i < this.polygons.length; i++) {
     var poly = this.polygons[i];
     var lid = TCAD.geom.calculateExtrudedLid(poly, normal, target, scale);
@@ -63,5 +75,9 @@ TCAD.wizards.ExtrudeWizard.prototype.update = function(target, normal, scale) {
     for (q = 0; q < n; q++) {
       this.setupLine(linesCounter ++, poly[q], lid[q], TCAD.wizards.IMAGINE_MATERIAL);
     }
+  }
+  this.operationParams = {
+    target : target,
+    expansionFactor : scale
   }
 };

@@ -26,7 +26,7 @@ TCAD.utils.createBox = function(width) {
   var rot = TCAD.math.rotateMatrix(3/4, TCAD.math.AXIS.Z, TCAD.math.ORIGIN);
   square.forEach(function(v) { rot._apply(v) } );
   var normal = TCAD.geom.normalOfCCWSeq(square);
-  return TCAD.geom.extrude(square, normal.multiply(width), normal, 1);
+  return TCAD.geom.extrude(square, normal, normal.multiply(width), 1);
 };
 
 TCAD.utils.createCSGBox = function(width) {
@@ -353,15 +353,15 @@ TCAD.BBox = function() {
   };
 };
 
-TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expansionFactor, deflection, angle) {
+TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expansionFactor) {
   var lid = [];
   var length = sourcePolygon.length;
   var work;
   var si;
-  if (expansionFactor != 1) {
+  if (!!expansionFactor && expansionFactor != 1) {
     var source2d = [];
     work = [];
-    
+
     var _3dTr = new TCAD.Matrix().setBasis(TCAD.geom.someBasis2(new CSG.Vector3D(normal))); // use passed basis
     var _2dTr = _3dTr.invert();
     var sourceBBox = new TCAD.BBox();
@@ -385,10 +385,6 @@ TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expa
     work = sourcePolygon;
   }
 
-  if (deflection != 0) {
-   //var
-  }
-
   for (si = 0; si < length; ++si) {
     lid[si] = work[si].plus(direction);
   }
@@ -396,7 +392,7 @@ TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expa
   return lid;
 };
 
-TCAD.geom.extrude = function(source, target, sourceNormal) {
+TCAD.geom.extrude = function(source, sourceNormal, target, expansionFactor) {
 
   var extrudeDistance = target.normalize().dot(sourceNormal);
   if (extrudeDistance == 0) {
@@ -405,7 +401,7 @@ TCAD.geom.extrude = function(source, target, sourceNormal) {
   var negate = extrudeDistance < 0;
 
   var poly = [null, null];
-  var lid = TCAD.geom.calculateExtrudedLid(source, sourceNormal, target, 1);
+  var lid = TCAD.geom.calculateExtrudedLid(source, sourceNormal, target, expansionFactor);
 
   var bottom, top;
   if (negate) {
