@@ -57,7 +57,7 @@ TCAD.workbench.approxArc = function(ao, bo, c, k) {
   var step =  abAngle / k;
   var angle = Math.atan2(a.y, a.x) + step;
 
-  for (var i = 0; i < k - 2; ++i) {
+  for (var i = 0; i < k - 1; ++i) {
     points.push(new TCAD.Vector(c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)));
     angle += step;
   }
