@@ -189,14 +189,14 @@ TCAD.craft.deleteRedundantPoints = function(path) {
     var a = path[pi];
     var b = path[bIdx];
     var c = path[(pi + 2) % pathLength];
-    var eq = TCAD.utils.equal;
-    if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1)) {
+    var eq = TCAD.utils.areEqual;
+    if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1, 1E-20)) {
       cleanedPath.push(b);
       for (var ii = 0; ii < pathLength - pi - 1; ++ii) {
         a = path[(ii + bIdx) % pathLength];
         b = path[(ii + bIdx + 1) % pathLength];
         c = path[(ii + bIdx + 2) % pathLength];
-        if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1)) {
+        if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1, 1E-20)) {
           cleanedPath.push(b);
         }
       }
