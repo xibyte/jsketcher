@@ -51,26 +51,57 @@ TCAD.Viewer = function(bus) {
    **/
 
 //  controls = new THREE.OrbitControls( camera , renderer.domElement);
-  var controls = new THREE.TrackballControls( camera , renderer.domElement);
+  var trackballControls = new THREE.TrackballControls( camera , renderer.domElement);
 
   // document.addEventListener( 'mousemove', function(){
 
   //   controls.update();
 
   // }, false );
-  controls.rotateSpeed = 3.8;
-  controls.zoomSpeed = 1.2;
-  controls.panSpeed = 0.8;
+  trackballControls.rotateSpeed = 3.8;
+  trackballControls.zoomSpeed = 1.2;
+  trackballControls.panSpeed = 0.8;
 
-  controls.noZoom = false;
-  controls.noPan = false;
+  trackballControls.noZoom = false;
+  trackballControls.noPan = false;
 
-  controls.staticMoving = true;
-  controls.dynamicDampingFactor = 0.3;
+  trackballControls.staticMoving = true;
+  trackballControls.dynamicDampingFactor = 0.3;
 
-  controls.keys = [ 65, 83, 68 ];
-  controls.addEventListener( 'change', render );
-  this.controls = controls;
+  trackballControls.keys = [ 65, 83, 68 ];
+  trackballControls.addEventListener( 'change', render );
+  this.trackballControls = trackballControls;
+
+  var transformControls = new THREE.TransformControls( camera, renderer.domElement );
+  transformControls.addEventListener( 'change', render );
+  scene.add( transformControls );
+  this.transformControls = transformControls;
+
+  function updateTransformControls() {
+    if (transformControls.object !== undefined) {
+      if (transformControls.object.parent === undefined) {
+        transformControls.detach();
+        render();
+      }
+      transformControls.update();
+    }
+  }
+
+  function addAxis(axis, color) {
+    var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1});
+    var axisGeom = new THREE.Geometry();
+    axisGeom.vertices.push(axis.multiply(-1000).three());
+    axisGeom.vertices.push(axis.multiply(1000).three());
+    scene.add(new THREE.Segment(axisGeom, lineMaterial));
+  }
+  addAxis(TCAD.math.AXIS.X, 0xFF0000);
+  addAxis(TCAD.math.AXIS.Y, 0x00FF00);
+  addAxis(TCAD.math.AXIS.Z, 0x0000FF);
+
+  function updateControlsAndHelpers() {
+    trackballControls.update();
+    updateTransformControls();
+  }
 
   /**
    * TOOLS
@@ -103,18 +134,25 @@ TCAD.Viewer = function(bus) {
   var scope = this; 
   function onClick(e) {
     var intersects = scope.raycast(e);
-    if (intersects.length > 0) {
-      var pickResult = intersects[0];
+    if (intersects.length === 0) scope.transformControls.detach();
+    for (var ii = 0; ii < intersects.length; ii++) {
+      var pickResult = intersects[ii];
+      if (!pickResult.face) continue;
       if (pickResult.face.__TCAD_polyFace !== undefined) {
         var poly = pickResult.face.__TCAD_polyFace;
         if (scope.selectionMgr.contains(poly)) {
           scope.toolMgr.handleClick(poly, pickResult);
         } else {
-          scope.select(poly);
-          pickResult.object.geometry.colorsNeedUpdate = true;
+          if (e.shiftKey) {
+            scope.transformControls.attach(pickResult.object);
+          } else {
+            scope.select(poly);
+            pickResult.object.geometry.colorsNeedUpdate = true;
+          }
         }
       }
       render();
+      break;
     }
   }
   
@@ -148,7 +186,7 @@ TCAD.Viewer = function(bus) {
   function animate() {
 //    console.log("animate");
     requestAnimationFrame( animate );
-    controls.update();
+    updateControlsAndHelpers();
   }
 
   render();
