@@ -4,10 +4,20 @@ TCAD.toolkit.add = function(parent, child) {
   parent.content.append(child.root);
 };
 
+TCAD.toolkit.methodRef = function(_this, methodName, args) {
+  return function() {
+    _this[methodName].apply(_this, args);
+  };
+};
+
 TCAD.toolkit.Box = function() {
   this.root = this.content = $('<div class="tc-box" />');
   this.root.addClass('tc-box tc-scroll');
   this.root.appendTo('body');
+};
+
+TCAD.toolkit.Box.prototype.close = function() {
+  this.root.remove();
 };
 
 TCAD.toolkit.Folder = function(title) {
@@ -28,14 +38,71 @@ TCAD.toolkit.propLayout = function(root, name, valueEl) {
     .append(valueEl));
 };
 
-TCAD.toolkit.Number = function(name) {
+TCAD.toolkit.Number = function(name, initValue, baseStep) {
   this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-number'});
-  TCAD.toolkit.propLayout(this.root, name, $('<input type="text"/>'))
+  this.input = $("<input type='text' value='"+initValue+"' />");
+  this.slide = false;
+  baseStep = baseStep || 1;
+  var scope = this;
+  var lastValue = null;
+  function trigger() {
+    if ($(this).val() !== lastValue) {
+      $(this).trigger('t-change');
+      lastValue = $(this).val();
+    }
+  }
+  this.input.on('input', function(e) {
+    var val = $(this).val();
+    try {
+      parseFloat(val)
+    } catch (e) {
+      $(this).val(val.replace(/[^0-9\.]/g, ''));
+    }
+    trigger.call(this);
+  });
+  this.input.get(0).addEventListener('mousewheel', function (e) {
+    var delta = 0;
+    if ( e.wheelDelta ) { // WebKit / Opera / Explorer 9
+      delta = e.wheelDelta;
+    } else if ( e.detail ) { // Firefox
+      delta = - e.detail;
+    }
+    var val = $(this).val();
+    if (!val) val = 0;
+    var step = baseStep * (e.shiftKey ? 100 : 1);
+    val = parseFloat(val) + (delta < 0 ? -step : step);
+    $(this).val(val);
+    e.preventDefault();
+    e.stopPropagation();
+    trigger.call(this);
+  }, false);
+  TCAD.toolkit.propLayout(this.root, name, this.input);
 };
 
 TCAD.toolkit.Text = function(name) {
   this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-text'});
-  TCAD.toolkit.propLayout(this.root, name, $('<input type="text" />'))
+  TCAD.toolkit.propLayout(this.root, name, $('<input type="text"/>'));
+};
+
+TCAD.toolkit.ButtonRow = function(captions, actions) {
+
+  this.root = $('<div/>',
+    {class: 'tc-row tc-ctrl tc-buttons-block'});
+
+  function withAction(btn, action) {
+    return btn.click(function(){
+      action.call()
+    });
+  }
+  for (var i = 0; i < captions.length; i++) {
+    var caption = captions[i];
+    var btn = $('<span/>', {
+      text: caption,
+      class: 'tc-buttons-block-item'
+    });
+    withAction(btn, actions[i]);
+    this.root.append(btn);
+  }
 };
 
 TCAD.toolkit.Tree = function() {

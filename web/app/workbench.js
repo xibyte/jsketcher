@@ -132,7 +132,7 @@ TCAD.craft.extrude = function(app, request) {
   var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var toMeldWith = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply(request.height), normal);
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal, request.params.target, request.params.expansionFactor );
     toMeldWith = toMeldWith.concat(extruded);
   }
 
@@ -162,17 +162,17 @@ TCAD.craft.reconstructSketchBounds = function(csg, face) {
   var sketchSegments = [];
   for (var pi = 0; pi < polygons.length; pi++) {
     var poly = polygons[pi];
-    if (poly.plane.equals(plane)) {
+    if (TCAD.utils.equal(poly.plane.normal.dot(plane.normal), 1)) {
       continue;
     }
     var p, q, n = poly.vertices.length;
     for(p = n - 1, q = 0; q < n; p = q ++) {
       var a = poly.vertices[p];
       var b = poly.vertices[q];
-      var ab = b.pos.minus(a.pos);
-      var parallelTpPlane = TCAD.utils.equal(ab.unit().dot(plane.normal), 0);
-      var pointOnPlane = TCAD.utils.equal(plane.signedDistanceToPoint(a.pos), 0);
-      if (parallelTpPlane && pointOnPlane) {
+      var pointAOnPlane = TCAD.utils.equal(plane.signedDistanceToPoint(a.pos), 0);
+      if (!pointAOnPlane) continue;
+      var pointBOnPlane = TCAD.utils.equal(plane.signedDistanceToPoint(b.pos), 0);
+      if (pointBOnPlane) {
         sketchSegments.push([a.pos, b.pos, poly]);
       }
     }
@@ -826,7 +826,7 @@ TCAD.craft.cut = function(app, request) {
   var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
   var cutter = [];
   for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal.multiply( - request.depth), normal);
+    var extruded = TCAD.geom.extrude(sketchedPolygons[i], normal, request.params.target, request.params.expansionFactor );
     cutter = cutter.concat(extruded);
   }
   var cutterCSG = CSG.fromPolygons(TCAD.craft._triangulateCSG(cutter));
