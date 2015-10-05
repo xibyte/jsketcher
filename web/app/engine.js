@@ -26,7 +26,7 @@ TCAD.utils.createBox = function(width) {
   var rot = TCAD.math.rotateMatrix(3/4, TCAD.math.AXIS.Z, TCAD.math.ORIGIN);
   square.forEach(function(v) { rot._apply(v) } );
   var normal = TCAD.geom.normalOfCCWSeq(square);
-  return TCAD.geom.extrude(square, normal.multiply(width), normal);
+  return TCAD.geom.extrude(square, normal, normal.multiply(width), 1);
 };
 
 TCAD.utils.createCSGBox = function(width) {
@@ -102,7 +102,7 @@ TCAD.utils.createLine = function (a, b, color) {
   var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(a.x, a.y, a.z));
   geometry.vertices.push(new THREE.Vector3(b.x, b.y, b.z));
-  return new THREE.Segment(geometry, material);
+  return new THREE.Line(geometry, material);
 };
 
 TCAD.utils.createSolidMesh = function(csg) {
@@ -336,7 +336,63 @@ TCAD.geom.isCCW = function(path2D) {
   return TCAD.geom.area(path2D) >= 0;
 };
 
-TCAD.geom.extrude = function(source, target, sourceNormal) {
+TCAD.BBox = function() {
+  this.minX = Number.MAX_VALUE;
+  this.minY = Number.MAX_VALUE;
+  this.maxX = -Number.MAX_VALUE;
+  this.maxY = -Number.MAX_VALUE;
+  this.checkBounds = function(x, y) {
+    this.minX = Math.min(this.minX, x);
+    this.minY = Math.min(this.minY, y);
+    this.maxX = Math.max(this.maxX, x);
+    this.maxY = Math.max(this.maxY, y);
+  };
+
+  this.center = function() {
+    return new TCAD.Vector(this.minX + (this.maxX - this.minX) / 2, this.minY + (this.maxY - this.minY) / 2, 0)
+  };
+};
+
+TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expansionFactor) {
+  var lid = [];
+  var length = sourcePolygon.length;
+  var work;
+  var si;
+  if (!!expansionFactor && expansionFactor != 1) {
+    var source2d = [];
+    work = [];
+
+    var _3dTr = new TCAD.Matrix().setBasis(TCAD.geom.someBasis2(new CSG.Vector3D(normal))); // use passed basis
+    var _2dTr = _3dTr.invert();
+    var sourceBBox = new TCAD.BBox();
+    var workBBox = new TCAD.BBox();
+    for (si = 0; si < length; ++si) {
+      var sourcePoint = _2dTr.apply(sourcePolygon[si]);
+      source2d[si] = sourcePoint;
+      work[si] = sourcePoint.multiply(expansionFactor);
+      work[si].z = source2d[si].z = 0;
+      sourceBBox.checkBounds(sourcePoint.x, sourcePoint.y);
+      workBBox.checkBounds(work[si].x, work[si].y)
+    }
+    var alignVector = workBBox.center().minus(sourceBBox.center());
+    var depth = normal.dot(sourcePolygon[0]);
+    for (si = 0; si < length; ++si) {
+      work[si] = work[si].minus(alignVector);
+      work[si].z = depth;
+      work[si] = _3dTr.apply(work[si]);
+    }
+  } else {
+    work = sourcePolygon;
+  }
+
+  for (si = 0; si < length; ++si) {
+    lid[si] = work[si].plus(direction);
+  }
+
+  return lid;
+};
+
+TCAD.geom.extrude = function(source, sourceNormal, target, expansionFactor) {
 
   var extrudeDistance = target.normalize().dot(sourceNormal);
   if (extrudeDistance == 0) {
@@ -345,10 +401,7 @@ TCAD.geom.extrude = function(source, target, sourceNormal) {
   var negate = extrudeDistance < 0;
 
   var poly = [null, null];
-  var lid = [];
-  for (var si = 0; si < source.length; ++si) {
-    lid[si] = source[si].plus(target);
-  }
+  var lid = TCAD.geom.calculateExtrudedLid(source, sourceNormal, target, expansionFactor);
 
   var bottom, top;
   if (negate) {
@@ -430,6 +483,22 @@ TCAD.utils.createShared = function() {
   return shared;
 };
 
+TCAD.utils.isSmoothPiece = function(shared) {
+  return shared.__tcad && !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom &&
+  (shared.__tcad.csgInfo.derivedFrom._class === 'TCAD.TWO.Arc' || shared.__tcad.csgInfo.derivedFrom._class === 'TCAD.TWO.Circle');
+};
+
+TCAD.utils.sameID = function(id1, id2) {
+  if (id1 === null || id2 === null) {
+    return false;
+  }
+  return id1 === id2;
+};
+
+TCAD.utils.getDerivedID = function(shared) {
+  return shared.__tcad && !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom ? shared.__tcad.csgInfo.derivedFrom.id : null;
+};
+
 /** @constructor */
 TCAD.Solid = function(csg, material) {
   THREE.Geometry.call( this );
@@ -445,6 +514,7 @@ TCAD.Solid = function(csg, material) {
   this.meshObject.add(this.wireframeGroup);
 
   this.polyFaces = [];
+  this.wires = TCAD.struct.hashTable.forEdge();
   var scope = this;
   function threeV(v) {return new THREE.Vector3( v.x, v.y, v.z )}
 
@@ -475,47 +545,79 @@ TCAD.Solid = function(csg, material) {
         face.normal = normal;
         face.materialIndex = gIdx;
         this.faces.push(face);
-        TCAD.view.setFaceColor(polyFace, !!group.shared.__tcad.csgInfo && !!group.shared.__tcad.csgInfo.derivedFrom && group.shared.__tcad.csgInfo.derivedFrom._class === 'TCAD.TWO.Arc' ? 0xFF0000 : null);
+        //TCAD.view.setFaceColor(polyFace, TCAD.utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
       }
       off = this.vertices.length;
     }
+    this.collectWires(polyFace);
   }
 
   this.mergeVertices();
 
-  //this.makeWireframe(polygons);
+  this.processWires();
 };
 
 if (typeof THREE !== "undefined") {
   TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
 }
 
-TCAD.Solid.prototype.makeWireframe = function(polygons) {
-  var edges = new TCAD.struct.hashTable.forEdge();
-  var paths = [];
-  for (var i = 0; i < polygons.length; i++) {
-    var poly = polygons[i];
-    if (poly.csgInfo === undefined || poly.csgInfo.derivedFrom === undefined || poly.csgInfo.derivedFrom._class !== 'TCAD.TWO.Arc') {
-      poly.collectPaths(paths);
+TCAD.Solid.prototype.collectWires = function(face) {
+
+  function contains(faces, face) {
+    for (var j = 0; j < faces.length; j++) {
+      if (faces[j].csgGroup.plane.id === face.id ) {
+        return true;
+      }
     }
+    return false;
   }
+  var paths = TCAD.craft.reconstructSketchBounds(this.csg, face);
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i];
-    var p, q, n = path.length;
-    for (p = n - 1, q = 0; q < n; p = q++) {
-      var a = path[p];
-      var b = path[q];
-      var edge = [a, b];
-      if (edge !== null) {
-        var lg = new THREE.Geometry();
-        lg.vertices.push(a);
-        lg.vertices.push(b);
-        var line = new THREE.Segment(lg, TCAD.SketchFace.prototype.WIREFRAME_MATERIAL);
-        this.wireframeGroup.add(line);
-        edges.put(edge, true);
+    var p, q, n = path.vertices.length;
+    for (q = 0, p = n - 1; q < n; p = q++) {
+      var edge = [path.vertices[p], path.vertices[q]];
+      var connectedFaces = this.wires.get(edge);
+      if (connectedFaces === null) {
+        this.wires.put(edge, [face]);
+      } else {
+        if (!contains(connectedFaces, face)) {
+          connectedFaces.push(face);
+        }
       }
     }
   }
+};
+
+TCAD.Solid.SMOOTH_LIMIT = 10 * Math.PI / 180;
+
+TCAD.Solid.prototype.processWires = function() {
+  var solid = this;
+  this.wires.entries(function(edge, faces) {
+    if (faces.length > 1) {
+      console.log("count: " +faces.map(function(e){return e.id}));
+      var u = TCAD.utils;
+      var shared1 = faces[0].csgGroup.shared;
+      var shared2 = faces[1].csgGroup.shared;
+      if (u.sameID(u.getDerivedID(shared1), u.getDerivedID(shared2))) {
+        return;
+      }
+      var angle = Math.acos(faces[0].csgGroup.plane.normal.dot(faces[1].csgGroup.plane.normal));
+      console.log(angle * 180 / Math.PI);
+      if (angle < TCAD.Solid.SMOOTH_LIMIT) {
+        return;
+      }
+    }
+    solid.addLineToScene(edge[0], edge[1]);
+  });
+};
+
+TCAD.Solid.prototype.addLineToScene = function(a, b) {
+  var lg = new THREE.Geometry();
+  lg.vertices.push(a);
+  lg.vertices.push(b);
+  var line = new THREE.Line(lg, TCAD.SketchFace.prototype.WIREFRAME_MATERIAL);
+  this.wireframeGroup.add(line);
 };
 
 /** @constructor */
@@ -536,9 +638,9 @@ TCAD.SketchFace = function(solid, csgGroup) {
 
 if (typeof THREE !== "undefined") {
   TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
-    color: 0xFFFFFF, linewidth: 3});
+    color: 0xFFFFFF, linewidth: 3/TCAD.DPR});
   TCAD.SketchFace.prototype.WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({
-    color: 0x2B3856, linewidth: 3});
+    color: 0x2B3856, linewidth: 3/TCAD.DPR});
 }
 
 TCAD.SketchFace.prototype.calcBasis = function() {
@@ -593,7 +695,7 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
 
     lg.vertices.push(a.plus(offVector).three());
     lg.vertices.push(b.plus(offVector).three());
-    var line = new THREE.Segment(lg, this.SKETCH_MATERIAL);
+    var line = new THREE.Line(lg, this.SKETCH_MATERIAL);
     this.sketch3DGroup.add(line);
   }
 };
