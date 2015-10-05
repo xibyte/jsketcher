@@ -545,8 +545,9 @@ TCAD.Solid = function(csg, material) {
         face.normal = normal;
         face.materialIndex = gIdx;
         this.faces.push(face);
-        //TCAD.view.setFaceColor(polyFace, TCAD.utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
+        //face.color.set(new THREE.Color().setRGB( Math.random(), Math.random(), Math.random()));
       }
+      //TCAD.view.setFaceColor(polyFace, TCAD.utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
       off = this.vertices.length;
     }
     this.collectWires(polyFace);
