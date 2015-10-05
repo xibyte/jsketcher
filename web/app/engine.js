@@ -595,7 +595,6 @@ TCAD.Solid.prototype.processWires = function() {
   var solid = this;
   this.wires.entries(function(edge, faces) {
     if (faces.length > 1) {
-      console.log("count: " +faces.map(function(e){return e.id}));
       var u = TCAD.utils;
       var shared1 = faces[0].csgGroup.shared;
       var shared2 = faces[1].csgGroup.shared;
@@ -603,7 +602,6 @@ TCAD.Solid.prototype.processWires = function() {
         return;
       }
       var angle = Math.acos(faces[0].csgGroup.plane.normal.dot(faces[1].csgGroup.plane.normal));
-      console.log(angle * 180 / Math.PI);
       if (angle < TCAD.Solid.SMOOTH_LIMIT) {
         return;
       }
