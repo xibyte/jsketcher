@@ -564,9 +564,9 @@ if (typeof THREE !== "undefined") {
 
 TCAD.Solid.prototype.collectWires = function(face) {
 
-  function contains(faces, face) {
-    for (var j = 0; j < faces.length; j++) {
-      if (faces[j].csgGroup.plane.id === face.id ) {
+  function contains(planes, plane) {
+    for (var j = 0; j < planes.length; j++) {
+      if (planes[j].equals(plane)) {
         return true;
       }
     }
@@ -578,13 +578,19 @@ TCAD.Solid.prototype.collectWires = function(face) {
     var p, q, n = path.vertices.length;
     for (q = 0, p = n - 1; q < n; p = q++) {
       var edge = [path.vertices[p], path.vertices[q]];
-      var connectedFaces = this.wires.get(edge);
-      if (connectedFaces === null) {
-        this.wires.put(edge, [face]);
+      var data = this.wires.get(edge);
+
+      if (data === null) {
+        data = {
+          sharedPlanes : [face.csgGroup.plane],
+          sharedFaces : [face]
+        };
+        this.wires.put(edge, data);
       } else {
-        if (!contains(connectedFaces, face)) {
-          connectedFaces.push(face);
+        if (!contains(data.sharedPlanes, face.csgGroup.plane)) {
+          data.sharedPlanes.push(face.csgGroup.plane);
         }
+        data.sharedFaces.push(face);
       }
     }
   }
@@ -594,19 +600,26 @@ TCAD.Solid.SMOOTH_LIMIT = 10 * Math.PI / 180;
 
 TCAD.Solid.prototype.processWires = function() {
   var solid = this;
-  this.wires.entries(function(edge, faces) {
-    if (faces.length > 1) {
+  this.wires.entries(function(edge, data) {
+    if (data.sharedPlanes.length > 1) {
       var u = TCAD.utils;
-      var shared1 = faces[0].csgGroup.shared;
-      var shared2 = faces[1].csgGroup.shared;
-      if (u.sameID(u.getDerivedID(shared1), u.getDerivedID(shared2))) {
-        return;
-      }
-      var angle = Math.acos(faces[0].csgGroup.plane.normal.dot(faces[1].csgGroup.plane.normal));
+      var plane0 = data.sharedPlanes[0];
+      var plane1 = data.sharedPlanes[1];
+      var angle = Math.acos(plane0.normal.dot(plane1.normal));
       if (angle < TCAD.Solid.SMOOTH_LIMIT) {
         return;
       }
     }
+    for (var i = 0; i < data.sharedFaces.length; ++i) {
+      for (var j = i + 1; j < data.sharedFaces.length; ++j) {
+        var face0 = data.sharedFaces[0];
+        var face1 = data.sharedFaces[1];
+        if (u.sameID(u.getDerivedID(face0.csgGroup.shared), u.getDerivedID(face1.csgGroup.shared))) {
+          return;
+        }
+      }
+    }
+
     solid.addLineToScene(edge[0], edge[1]);
   });
 };
