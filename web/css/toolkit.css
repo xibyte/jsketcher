@@ -3,7 +3,7 @@
   position: absolute;
   margin-left: 0; margin-top: 0;
   top: 0; left: 0;
-  width : 250px; height: 300px;
+  width : 250px;
   background-color: #000;
 }
 
@@ -102,3 +102,27 @@
     background:#7d7d7d;
 }
 
+.tc-buttons-block-item {
+    border: 1px solid #606060;
+    border-left-width: 0;
+    padding: 1px 3px 1px 3px;
+    color : #cccccc;
+}
+
+.tc-buttons-block-item:hover {
+    background-color: #444444;
+    cursor: pointer;
+}
+
+.tc-buttons-block-item:first-child {
+    border-left-width: 1px;
+    border-radius: 5px 0 0 5px;
+}
+
+.tc-buttons-block-item:last-child {
+    border-radius: 0 5px 5px 0;
+}
+
+.tc-buttons-block {
+    text-align: right;
+}

@@ -5,6 +5,7 @@ TCAD.TWO.Circle = function(c) {
   c.parent = this;
   this.children.push(c);
   this.r = new TCAD.TWO.Ref(0);
+  this.r.obj = this;
 };
 
 TCAD.TWO.utils.extend(TCAD.TWO.Circle, TCAD.TWO.SketchObject);
