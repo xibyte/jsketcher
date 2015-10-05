@@ -601,8 +601,8 @@ TCAD.Solid.SMOOTH_LIMIT = 10 * Math.PI / 180;
 TCAD.Solid.prototype.processWires = function() {
   var solid = this;
   this.wires.entries(function(edge, data) {
+    var u = TCAD.utils;
     if (data.sharedPlanes.length > 1) {
-      var u = TCAD.utils;
       var plane0 = data.sharedPlanes[0];
       var plane1 = data.sharedPlanes[1];
       var angle = Math.acos(plane0.normal.dot(plane1.normal));
