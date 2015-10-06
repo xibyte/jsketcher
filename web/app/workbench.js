@@ -45,7 +45,7 @@ TCAD.workbench.readSketchGeom = function(sketch) {
   return out;
 };
 
-TCAD.workbench.approxArc = function(ao, bo, c, k) {
+TCAD.workbench.approxArc = function(ao, bo, c, resolution) {
   var a = ao.minus(c);
   var b = bo.minus(c);
   var points = [ao];
@@ -54,7 +54,10 @@ TCAD.workbench.approxArc = function(ao, bo, c, k) {
   if (abAngle < 0) abAngle = Math.PI * 2 + abAngle;
 
   var r = a.length();
-  var step =  abAngle / k;
+  resolution = 1;
+  //var step = Math.acos(1 - ((resolution * resolution) / (2 * r * r)));
+  var step = resolution / (2 * Math.PI);
+  var k = Math.round(abAngle / step);
   var angle = Math.atan2(a.y, a.x) + step;
 
   for (var i = 0; i < k - 1; ++i) {
@@ -65,9 +68,13 @@ TCAD.workbench.approxArc = function(ao, bo, c, k) {
   return points;
 };
 
-TCAD.workbench.approxCircle = function(c, r, k) {
+TCAD.workbench.approxCircle = function(c, r, resolution) {
   var points = [];
-  var step =  (2 * Math.PI) / k;
+
+  resolution = 1;
+  //var step = Math.acos(1 - ((resolution * resolution) / (2 * r * r)));
+  var step = resolution / (2 * Math.PI);
+  var k = Math.round((2 * Math.PI) / step);
 
   for (var i = 0, angle = 0; i < k; ++i, angle += step) {
     points.push(new TCAD.Vector(c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)));
@@ -190,13 +197,13 @@ TCAD.craft.deleteRedundantPoints = function(path) {
     var b = path[bIdx];
     var c = path[(pi + 2) % pathLength];
     var eq = TCAD.utils.areEqual;
-    if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1, 1E-20)) {
+    if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1, 1E-9)) {
       cleanedPath.push(b);
       for (var ii = 0; ii < pathLength - pi - 1; ++ii) {
         a = path[(ii + bIdx) % pathLength];
         b = path[(ii + bIdx + 1) % pathLength];
         c = path[(ii + bIdx + 2) % pathLength];
-        if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1, 1E-20)) {
+        if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1, 1E-9)) {
           cleanedPath.push(b);
         }
       }
