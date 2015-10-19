@@ -28,6 +28,17 @@ TCAD.math.distance = function(x1, y1, x2, y2) {
   return Math.sqrt(dx * dx + dy * dy);
 };
 
+TCAD.math.distanceAB3 = function(a, b) {
+  return TCAD.math.distance3(a.x, a.y, a.z, b.x, b.y, b.z);
+};
+
+TCAD.math.distance3 = function(x1, y1, z1, x2, y2, z2) {
+  var dx = x1 - x2;
+  var dy = y1 - y2;
+  var dz = z1 - z2;
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+};
+
 TCAD.math.ORIGIN = new TCAD.Vector(0, 0, 0);
 
 TCAD.math.AXIS = {
