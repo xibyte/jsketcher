@@ -163,13 +163,16 @@ TCAD.craft._pointOnLine = function(p, a, b) {
 };
 
 TCAD.craft.reconstructSketchBounds = function(csg, face) {
-
   var polygons = csg.toPolygons();
   var plane = face.csgGroup.plane;
-  var sketchSegments = [];
+  var outerEdges = [];
+  var planePolygons = [];
   for (var pi = 0; pi < polygons.length; pi++) {
     var poly = polygons[pi];
     if (TCAD.utils.equal(poly.plane.normal.dot(plane.normal), 1)) {
+      if (TCAD.utils.equal(plane.w, poly.plane.w)) {
+        planePolygons.push(poly);
+      }
       continue;
     }
     var p, q, n = poly.vertices.length;
@@ -180,11 +183,12 @@ TCAD.craft.reconstructSketchBounds = function(csg, face) {
       if (!pointAOnPlane) continue;
       var pointBOnPlane = TCAD.utils.equal(plane.signedDistanceToPoint(b.pos), 0);
       if (pointBOnPlane) {
-        sketchSegments.push([a.pos, b.pos, poly]);
+        outerEdges.push([a.pos, b.pos, poly]);
       }
     }
   }
-  return TCAD.craft.segmentsToPaths(sketchSegments);
+
+  return TCAD.craft.segmentsToPaths(outerEdges);
 };
 
 TCAD.craft.deleteRedundantPoints = function(path) {
@@ -245,7 +249,7 @@ TCAD.craft.segmentsToPaths = function(segments) {
     var edges = index.get(p);
     if (edges === null) return null;
     for (var i = 0; i < edges.length; i++) {
-      var edge = edges[i]
+      var edge = edges[i];
       if (edge[3]) continue;
       var res = null;
       if (veq(p, edge[0])) res = edge[1];
@@ -584,6 +588,59 @@ TCAD.craft._triangulateCSG = function(polygons) {
     }
   }
   return triangled;
+};
+
+TCAD.craft.splitTwoSegments = function (a, b) {
+  var da = a[1].minus(a[0]);
+  var db = b[1].minus(b[0]);
+  var dc = b[0].minus(a[0]);
+
+  var daXdb = da.cross(db);
+  if (Math.abs(dc.dot(daXdb)) > 1e-6) {
+    // lines are not coplanar
+    return null;
+  }
+  var veq = TCAD.utils.vectorsEqual;
+  if (veq(a[0], b[0]) || veq(a[0], b[1]) || veq(a[1], b[0]) || veq(a[1], b[1])) {
+    return null;
+  }
+
+  var dcXdb = dc.cross(db);
+
+  var s = dcXdb.dot(daXdb) / daXdb.lengthSquared();
+  if (s > 0.0 && s < 1.0) {
+    var ip = a[0].plus(da.times(s));
+    function _split(s, ip) {
+      if (s[0].equals(ip) || s[1].equals(ip)) {
+        return [s];
+      }
+      return [[s[0], ip, s[2]], [ip, s[1], s[2]]]
+    }
+
+    return {
+      splitterParts : _split(a, ip),
+      residual : _split(b, ip)
+    }
+  }
+  return null;
+};
+
+TCAD.craft.attract = function(vectors, precision) {
+  var eq = TCAD.utils.areEqual();
+  var dist = TCAD.math.distanceAB3;
+  vectors = vectors.slice();
+  for (var i = 0; i < vectors.length; i++) {
+    var v1 = vectors[i];
+    if (v1 == null) continue;
+    for (var j = i + 1; j < vectors.length; j++) {
+      var v2 = vectors[j];
+      if (v2 == null) continue;
+      if (dist(v1, v2) <= precision) {
+        TCAD.Vector.prototype.setV.call(v2, v1);
+        vectors[j] = null;
+      }
+    }
+  }
 };
 
 TCAD.craft.recoverySketchInfo = function(polygons) {
