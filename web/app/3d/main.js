@@ -51,6 +51,12 @@ TCAD.App = function() {
   window.addEventListener('storage', storage_handler, false);
 };
 
+TCAD.App.prototype.findAllSolids = function() {
+  return this.viewer.scene.children
+    .filter(function(obj) {return !!obj.geometry && obj.geometry.tCadId !== undefined} )
+    .map(function(obj) {return obj.geometry} )
+};
+
 TCAD.App.prototype.findFace = function(faceId) {
   var solidId = faceId.split(":")[0];
   var children = this.viewer.scene.children;

@@ -11,13 +11,13 @@ TCAD.UI = function(app) {
   var cameraFolder = new tk.Folder("Camera");
   var objectsFolder = new tk.Folder("Objects");
   var modificationsFolder = new tk.Folder("Modifications");
-  var extrude, cut, edit, refreshSketches, printSolids, printFace, printFaceId;
+  var extrude, cut, edit, refreshSketches, showSketches, printSolids, printFace, printFaceId;
   tk.add(mainBox, propFolder);
   tk.add(propFolder, extrude = new tk.Button("Extrude"));
   tk.add(propFolder, cut = new tk.Button("Cut"));
   tk.add(propFolder, edit = new tk.Button("Edit"));
   tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
-  tk.add(propFolder, new tk.Text("Message"));
+  tk.add(propFolder, showSketches = new tk.CheckBox("Show Sketches", true));
   tk.add(mainBox, debugFolder);
   tk.add(debugFolder, printSolids = new tk.Button("Print Solids"));
   tk.add(debugFolder, printFace = new tk.Button("Print Face"));
@@ -127,6 +127,17 @@ TCAD.UI = function(app) {
   });
   printFaceId.root.click(function () {
     console.log(app.viewer.selectionMgr.selection[0].id);
+  });
+  showSketches.input.click(function () {
+    var enabled = this.checked;
+    var solids = app.findAllSolids();
+    for (var i = 0; i < solids.length; i++) {
+      for (var j = 0; j < solids[i].polyFaces.length; j++) {
+        var face = solids[i].polyFaces[j];
+        face.sketch3DGroup.visible = enabled;
+      }
+    }
+    app.viewer.render();
   });
   this.solidFolder = null;
 };
