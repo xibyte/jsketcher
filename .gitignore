@@ -6,3 +6,4 @@
 *.iml
 *.ipr
 *.iws
+/web/app/test/viz/**
