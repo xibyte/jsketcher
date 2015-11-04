@@ -117,7 +117,7 @@ TCAD.Viewer = function(bus) {
    **/
 
 
-  this.selectionMgr = new TCAD.FaceSelectionManager( 0xFAFAD2, null);
+  this.selectionMgr = new TCAD.FaceSelectionManager( 0xFAFAD2, 0xFF0000, null);
 
   var raycaster = new THREE.Raycaster();
 
@@ -198,16 +198,26 @@ TCAD.Viewer.prototype.select = function(polyFace) {
   this.bus.notify('selection', polyFace);
 };
 
-TCAD.FaceSelectionManager = function(selectionColor, defaultColor) {
+TCAD.FaceSelectionManager = function(selectionColor, readOnlyColor, defaultColor) {
   this.selectionColor = selectionColor;
+  this.readOnlyColor = readOnlyColor;
   this.defaultColor = defaultColor;
   this.selection = [];
 };
 
 TCAD.FaceSelectionManager.prototype.select = function(polyFace) {
   this.clear();
-  this.selection.push(polyFace);
-  TCAD.view.setFaceColor(polyFace, this.selectionColor);
+  if (polyFace.curvedSurfaces !== null) {
+    for (var i = 0; i < polyFace.curvedSurfaces.length; i++) {
+      var face  = polyFace.curvedSurfaces[i];
+      this.selection.push(face);
+      TCAD.view.setFaceColor(face, this.readOnlyColor);
+    }
+  } else {
+    this.selection.push(polyFace);
+    TCAD.view.setFaceColor(polyFace, this.selectionColor);
+  }
+
 };
 
 TCAD.FaceSelectionManager.prototype.contains = function(polyFace) {
