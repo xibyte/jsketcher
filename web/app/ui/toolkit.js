@@ -32,6 +32,15 @@ TCAD.toolkit.Button = function(title) {
     {class: 'tc-row tc-ctrl tc-ctrl-btn', text: title});
 };
 
+TCAD.toolkit.CheckBox = function(title, checked) {
+  this.root = $('<div/>',
+    {class: 'tc-row tc-ctrl tc-ctrl-btn'});
+  this.root.append('<label><input type="checkbox">' + title + '</label>')
+  this.input = this.root.find("input");
+  this.input.prop('checked', !!checked);
+  console.log(this.input);
+};
+
 TCAD.toolkit.propLayout = function(root, name, valueEl) {
   root.append($('<span/>', {class: 'tc-prop-name', text: name}))
     .append($('<div/>', {class: 'tc-prop-value'})
