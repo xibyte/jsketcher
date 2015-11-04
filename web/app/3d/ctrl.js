@@ -7,16 +7,21 @@ TCAD.UI = function(app) {
   var mainBox = new tk.Box();
   mainBox.root.css({height : '100%'});
   var propFolder = new tk.Folder("Solid's Properties");
+  var debugFolder = new tk.Folder("Debug");
   var cameraFolder = new tk.Folder("Camera");
   var objectsFolder = new tk.Folder("Objects");
   var modificationsFolder = new tk.Folder("Modifications");
-  var extrude, cut, edit, refreshSketches;
+  var extrude, cut, edit, refreshSketches, printSolids, printFace, printFaceId;
   tk.add(mainBox, propFolder);
   tk.add(propFolder, extrude = new tk.Button("Extrude"));
   tk.add(propFolder, cut = new tk.Button("Cut"));
   tk.add(propFolder, edit = new tk.Button("Edit"));
   tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
   tk.add(propFolder, new tk.Text("Message"));
+  tk.add(mainBox, debugFolder);
+  tk.add(debugFolder, printSolids = new tk.Button("Print Solids"));
+  tk.add(debugFolder, printFace = new tk.Button("Print Face"));
+  tk.add(debugFolder, printFaceId = new tk.Button("Print Face ID"));
   tk.add(mainBox, cameraFolder);
   tk.add(cameraFolder, new tk.Number("x"));
   tk.add(cameraFolder, new tk.Number("y"));
@@ -106,7 +111,23 @@ TCAD.UI = function(app) {
   extrude.root.click(cutExtrude(false));
   edit.root.click(tk.methodRef(app, "sketchFace"));
   refreshSketches.root.click(tk.methodRef(app, "refreshSketches"));
-
+  printSolids.root.click(function () {
+    app.viewer.scene.children.map(function(o) {
+      if (o.geometry instanceof TCAD.Solid) {
+        console.log(JSON.stringify(o.geometry.csg));
+      }
+    });
+  });
+  printFace.root.click(function () {
+    var s = app.viewer.selectionMgr.selection[0];
+    console.log(JSON.stringify({
+      polygons : s.csgGroup.polygons,
+      basis : s._basis
+    }));
+  });
+  printFaceId.root.click(function () {
+    console.log(app.viewer.selectionMgr.selection[0].id);
+  });
   this.solidFolder = null;
 };
 

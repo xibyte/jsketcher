@@ -153,6 +153,9 @@ TCAD.utils.equal = function(v1, v2) {
   return TCAD.utils.areEqual(v1, v2, TCAD.TOLERANCE);
 };
 
+TCAD.utils.strictEqual = function(a, b) {
+  return a.x == b.x && a.y == b.y && a.z == b.z;
+};
 
 TCAD.utils.isPointInsidePolygon = function( inPt, inPolygon ) {
   var EPSILON = TCAD.TOLERANCE;
@@ -858,7 +861,6 @@ TCAD.utils.arrFlatten1L = function(arr) {
   var result = [];
   for (var i = 0; i < arr.length; i++) {
     TCAD.utils.addAll(result, arr[i]);
-
   }
   return result;
 };

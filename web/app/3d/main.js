@@ -51,6 +51,23 @@ TCAD.App = function() {
   window.addEventListener('storage', storage_handler, false);
 };
 
+TCAD.App.prototype.findFace = function(faceId) {
+  var solidId = faceId.split(":")[0];
+  var children = this.viewer.scene.children;
+  for (var i = 0; i < children.length; i++) {
+    var obj = children[i];
+    if (!!obj.geometry && obj.geometry.tCadId !== undefined) {
+      for (var j = 0; j < obj.geometry.polyFaces.length; j++) {
+        var face = obj.geometry.polyFaces[j];
+        if (face.id == faceId) {
+          return face;
+        }
+      }
+    }
+  }
+  return null;
+};
+
 TCAD.App.prototype.faceStorageKey = function(polyFaceId) {
   return "TCAD.projects."+this.id+".sketch." + polyFaceId;
 };
@@ -101,6 +118,9 @@ TCAD.App.prototype.sketchFace = function() {
     var mid = (arc.length / 2) >> 0;
     var c = TCAD.math.circleFromPoints(arc[0], arc[mid], arc[arc.length-1]);
     if (c == null) {
+      for (var i = 1; i < arc.length; i++) {
+        addSegment(arc[i - 1], arc[i]);
+      }
       return;
     }
     if (!TCAD.geom.isCCW([arc[0], arc[mid], arc[arc.length-1]])) {
