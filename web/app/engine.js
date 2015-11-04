@@ -502,6 +502,10 @@ TCAD.utils.getDerivedID = function(shared) {
   return shared.__tcad && !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom ? shared.__tcad.csgInfo.derivedFrom.id : null;
 };
 
+TCAD.utils.getDerivedFrom = function(shared) {
+  return shared.__tcad && !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom ? shared.__tcad.csgInfo.derivedFrom : null;
+};
+
 /** @constructor */
 TCAD.Solid = function(csg, material) {
   THREE.Geometry.call( this );
@@ -518,6 +522,7 @@ TCAD.Solid = function(csg, material) {
 
   this.polyFaces = [];
   this.wires = TCAD.struct.hashTable.forEdge();
+  this.curvedSurfaces = {};
   var scope = this;
   function threeV(v) {return new THREE.Vector3( v.x, v.y, v.z )}
 
@@ -553,6 +558,7 @@ TCAD.Solid = function(csg, material) {
       //TCAD.view.setFaceColor(polyFace, TCAD.utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
       off = this.vertices.length;
     }
+    this.collectCurvedSurface(polyFace);
     this.collectWires(polyFace);
   }
 
@@ -564,6 +570,18 @@ TCAD.Solid = function(csg, material) {
 if (typeof THREE !== "undefined") {
   TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
 }
+
+TCAD.Solid.prototype.collectCurvedSurface = function(face) {
+  var derivedFrom = TCAD.utils.getDerivedFrom(face.csgGroup.shared);
+  if (derivedFrom === null || derivedFrom._class !== "TCAD.TWO.Arc" && derivedFrom._class !== "TCAD.TWO.Circle" ) return;
+  var surfaces = this.curvedSurfaces[derivedFrom.id];
+  if (surfaces === undefined) {
+    surfaces = [];
+    this.curvedSurfaces[derivedFrom.id] = surfaces;
+  }
+  surfaces.push(face);
+  face.curvedSurfaces = surfaces;
+};
 
 TCAD.Solid.prototype.collectWires = function(face) {
 
@@ -649,6 +667,7 @@ TCAD.SketchFace = function(solid, csgGroup) {
   this.csgGroup = csgGroup;
   this.faces = [];
   this.sketch3DGroup = null;
+  this.curvedSurfaces = null;
 };
 
 if (typeof THREE !== "undefined") {
