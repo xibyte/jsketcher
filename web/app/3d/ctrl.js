@@ -134,7 +134,7 @@ TCAD.UI = function(app) {
     for (var i = 0; i < solids.length; i++) {
       for (var j = 0; j < solids[i].polyFaces.length; j++) {
         var face = solids[i].polyFaces[j];
-        face.sketch3DGroup.visible = enabled;
+        if (face.sketch3DGroup != null) face.sketch3DGroup.visible = enabled;
       }
     }
     app.viewer.render();
