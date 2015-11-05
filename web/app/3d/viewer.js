@@ -23,7 +23,8 @@ TCAD.Viewer = function(bus) {
   var camera = new THREE.PerspectiveCamera( 500*75, aspect(), 0.1, 10000 );
   this.camera = camera;
   camera.position.z = 1000;
-
+  camera.position.x = -1000;
+  camera.position.y = 300;
   var light = new THREE.PointLight( 0xffffff);
   light.position.set( 10, 10, 10 );
   scene.add(light);
