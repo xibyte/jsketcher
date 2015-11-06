@@ -105,19 +105,79 @@ TCAD.utils.createLine = function (a, b, color) {
   return new THREE.Line(geometry, material);
 };
 
-TCAD.utils.createSolidMesh = function(csg) {
-  var material = new THREE.MeshPhongMaterial({
+TCAD.utils.createSolidMaterial = function() {
+  return new THREE.MeshPhongMaterial({
     vertexColors: THREE.FaceColors,
     color: TCAD.view.FACE_COLOR,
     shininess: 0,
     polygonOffset : true,
     polygonOffsetFactor : 4,
     polygonOffsetUnits : 1
-
   });
+};
+
+TCAD.utils.createSolidMesh = function(csg) {
+  var material = TCAD.utils.createSolidMaterial();
   var geometry = new TCAD.Solid(csg, material);
   return geometry.meshObject;
 };
+
+TCAD.utils.intercept = function(obj, methodName, aspect) {
+  var originFunc = obj[methodName];
+  obj[methodName] = function() {
+    var $this = this;
+    aspect(function() {originFunc.apply($this, arguments)}, arguments);
+  }
+};
+
+TCAD.utils.createPlane = function(basis, depth, boundingPolygon, shared) {
+  var tu = TCAD.utils;
+
+  boundingPolygon = boundingPolygon || TCAD.utils.createSquare(800);
+  shared = shared || tu.createShared();
+
+  var material = tu.createSolidMaterial();
+  material.transparent = true;
+  material.opacity = 0.5;
+  material.side = THREE.DoubleSide;
+
+  var tr = new TCAD.Matrix().setBasis(basis);
+  var shift = basis[2].multiply(depth);
+  tr.tx = shift.x;
+  tr.ty = shift.y;
+  tr.tz = shift.z;
+
+  var currentBounds = new TCAD.BBox();
+  var points = boundingPolygon.map(function(p) { currentBounds.checkBounds(p.x, p.y); return tr._apply(p); });
+  var polygon = new CSG.Polygon(points.map(function(p){return new CSG.Vertex(TCAD.utils.csgVec(p))}), shared);
+  var plane = new TCAD.Solid(CSG.fromPolygons([polygon]), material);
+  plane.wireframeGroup.visible = false;
+  plane.mergeable = false;
+
+  var sketchFace = plane.polyFaces[0];
+  tu.intercept(sketchFace, 'syncSketches', function(invocation, args) {
+    var geom = args[0];
+    invocation(geom);
+    var bbox = new TCAD.BBox();
+    var connections = geom.connections.concat(TCAD.utils.arrFlatten1L(geom.loops));
+    for (var i = 0; i < connections.length; ++i) {
+      var l = connections[i];
+      bbox.checkBounds(l.a.x, l.a.y);
+      bbox.checkBounds(l.b.x, l.b.y);
+    }
+    if (bbox.maxX > currentBounds.maxX || bbox.maxY > currentBounds.maxY || bbox.minX < currentBounds.minX || bbox.minY < currentBounds.minY) {
+      var parent = plane.meshObject.parent;
+      plane.vanish();
+      bbox.expand(20);
+      var newPlane = TCAD.utils.createPlane(basis, depth, bbox.toPolygon(), sketchFace.csgGroup.shared);
+      TCAD.SketchFace.prototype.syncSketches.call(newPlane.geometry.polyFaces[0], geom);
+      parent.add(newPlane);
+    }
+  });
+
+  return plane.meshObject;
+};
+
 
 TCAD.utils.fixCCW = function(path, normal) {
   var _2DTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(path, normal)).invert();
@@ -354,6 +414,30 @@ TCAD.BBox = function() {
   this.center = function() {
     return new TCAD.Vector(this.minX + (this.maxX - this.minX) / 2, this.minY + (this.maxY - this.minY) / 2, 0)
   };
+
+  this.width = function() {
+    return this.maxX - this.minX;
+  };
+
+  this.height = function() {
+    return this.maxY - this.minY;
+  };
+
+  this.expand = function(delta) {
+    this.minX -= delta;
+    this.minY -= delta;
+    this.maxX += delta;
+    this.maxY += delta;
+  };
+
+  this.toPolygon = function() {
+    return [
+      new TCAD.Vector(this.minX, this.minY, 0),
+      new TCAD.Vector(this.maxX, this.minY, 0),
+      new TCAD.Vector(this.maxX, this.maxY, 0),
+      new TCAD.Vector(this.minX, this.maxY, 0)
+    ];
+  }
 };
 
 TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expansionFactor) {
@@ -523,6 +607,7 @@ TCAD.Solid = function(csg, material) {
   this.polyFaces = [];
   this.wires = TCAD.struct.hashTable.forEdge();
   this.curvedSurfaces = {};
+  this.mergeable = true;
   var scope = this;
   function threeV(v) {return new THREE.Vector3( v.x, v.y, v.z )}
 
@@ -570,6 +655,12 @@ TCAD.Solid = function(csg, material) {
 if (typeof THREE !== "undefined") {
   TCAD.Solid.prototype = Object.create( THREE.Geometry.prototype );
 }
+
+TCAD.Solid.prototype.vanish = function() {
+  this.meshObject.parent.remove( this.meshObject );
+  this.meshObject.material.dispose();
+  this.dispose();
+};
 
 TCAD.Solid.prototype.collectCurvedSurface = function(face) {
   var derivedFrom = TCAD.utils.getDerivedFrom(face.csgGroup.shared);
