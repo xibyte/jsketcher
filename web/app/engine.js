@@ -151,7 +151,7 @@ TCAD.utils.createPlane = function(basis, depth, boundingPolygon, shared) {
   var currentBounds = new TCAD.BBox();
   var points = boundingPolygon.map(function(p) { currentBounds.checkBounds(p.x, p.y); return tr._apply(p); });
   var polygon = new CSG.Polygon(points.map(function(p){return new CSG.Vertex(TCAD.utils.csgVec(p))}), shared);
-  var plane = new TCAD.Solid(CSG.fromPolygons([polygon]), material);
+  var plane = new TCAD.Solid(CSG.fromPolygons([polygon]), material, 'PLANE');
   plane.wireframeGroup.visible = false;
   plane.mergeable = false;
 
@@ -592,8 +592,9 @@ TCAD.utils.getDerivedFrom = function(shared) {
 };
 
 /** @constructor */
-TCAD.Solid = function(csg, material) {
+TCAD.Solid = function(csg, material, type) {
   THREE.Geometry.call( this );
+  this.tCadType = type || 'SOLID';
   this.csg = csg;
   this.dynamic = true; //true by default
 
