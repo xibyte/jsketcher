@@ -686,7 +686,7 @@ TCAD.Solid.prototype.collectWires = function(face) {
     }
     return false;
   }
-  var paths = TCAD.craft.reconstructSketchBounds(this.csg, face);
+  var paths = TCAD.craft.reconstructSketchBounds(this.csg, face, true);
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i];
     var p, q, n = path.vertices.length;
