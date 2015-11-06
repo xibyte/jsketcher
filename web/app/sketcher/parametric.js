@@ -117,10 +117,10 @@ TCAD.TWO.ParametricManager.prototype.removeConstraintsByParams = function(ownedP
     var sub = this.subSystems[s];
     for (var i = 0; i < sub.constraints.length; ++i) {
       var sdataArr = sub.constraints[i].getSolveData();
+      MAIN:
       for (var j = 0; j < sdataArr.length; j++) {
         var sdata = sdataArr[j];
         var params = sdata[1];
-        MAIN:
         for (var oi = 0; oi < ownedParams.length; ++oi) {
           for (var k = 0; k < params.length; ++k) {
             if (ownedParams[oi].id === params[k].id) {
