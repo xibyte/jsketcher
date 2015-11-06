@@ -186,7 +186,8 @@ TCAD.craft.polygonsToSegments = function(polygons) {
   return segmentsByPolygon;
 };
 
-TCAD.craft.reconstructSketchBounds = function(csg, face) {
+TCAD.craft.reconstructSketchBounds = function(csg, face, strict) {
+  strict = strict || false;
   var polygons = csg.toPolygons();
   var plane = face.csgGroup.plane;
   var outerEdges = [];
@@ -194,7 +195,7 @@ TCAD.craft.reconstructSketchBounds = function(csg, face) {
   for (var pi = 0; pi < polygons.length; pi++) {
     var poly = polygons[pi];
     if (TCAD.utils.equal(poly.plane.normal.dot(plane.normal), 1)) {
-      if (TCAD.utils.equal(plane.w, poly.plane.w)) {
+      if (TCAD.utils.equal(plane.w, poly.plane.w) && (!strict || !!poly.shared.__tcad && poly.shared.__tcad.faceId  === face.id)) {
         planePolygons.push(poly);
       }
       continue;
