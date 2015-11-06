@@ -81,3 +81,60 @@ TCAD.wizards.ExtrudeWizard.prototype.update = function(basis, normal, depth, sca
     expansionFactor : scale
   }
 };
+
+
+TCAD.wizards.PlaneWizard = function(viewer) {
+  this.previewGroup = new THREE.Object3D();
+  this.viewer = viewer;
+  viewer.scene.add(this.previewGroup);
+  this.previewGroup.add(this.plane = this.createPlane());
+  this.viewer.render();
+  this.operationParams = {
+    basis : TCAD.math.IDENTITY_BASIS,
+    depth : 0
+  };
+};
+
+TCAD.wizards.PlaneWizard.prototype.createPlane = function() {
+  var geometry = new THREE.PlaneGeometry(750,750,1,1,1);
+  var material = new THREE.MeshLambertMaterial( { color : TCAD.view.FACE_COLOR, transparent: true, opacity:0.5, side: THREE.DoubleSide });
+  var plane = new THREE.Mesh(geometry, material);
+  return plane;
+};
+
+TCAD.wizards.PlaneWizard.prototype.update = function(orientation, w) {
+  if (orientation === 'XY') {
+    this.plane.rotation.x = 0;
+    this.plane.rotation.y = 0;
+    this.plane.rotation.z = 0;
+    this.plane.position.x = 0;
+    this.plane.position.y = 0;
+    this.plane.position.z = w;
+    this.operationParams.basis = TCAD.math.IDENTITY_BASIS;
+  } else if (orientation === 'XZ') {
+    this.plane.rotation.x = Math.PI / 2;
+    this.plane.rotation.y = 0;
+    this.plane.rotation.z = 0;
+    this.plane.position.x = 0;
+    this.plane.position.y = w;
+    this.plane.position.z = 0;
+    this.operationParams.basis = [TCAD.math.AXIS.X, TCAD.math.AXIS.Z, TCAD.math.AXIS.Y];
+  } else if (orientation === 'ZY') {
+    this.plane.rotation.x = 0;
+    this.plane.rotation.y = Math.PI / 2;
+    this.plane.rotation.z = 0;
+    this.plane.position.x = w;
+    this.plane.position.y = 0;
+    this.plane.position.z = 0;
+    this.operationParams.basis = [TCAD.math.AXIS.Z, TCAD.math.AXIS.Y, TCAD.math.AXIS.X];
+  } else {
+    throw orientation + " isn't supported yet";
+  }
+  this.operationParams.depth = w;
+  this.viewer.render();
+};
+
+TCAD.wizards.PlaneWizard.prototype.dispose = function() {
+  this.viewer.scene.remove(this.previewGroup);
+  this.viewer.render();
+};

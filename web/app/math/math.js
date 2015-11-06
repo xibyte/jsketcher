@@ -45,7 +45,9 @@ TCAD.math.AXIS = {
   X : new TCAD.Vector(1, 0, 0),
   Y : new TCAD.Vector(0, 1, 0),
   Z : new TCAD.Vector(0, 0, 1)
-}; 
+};
+
+TCAD.math.IDENTITY_BASIS = [TCAD.math.AXIS.X, TCAD.math.AXIS.Y, TCAD.math.AXIS.Z];
 
 TCAD.math.rotateMatrix = function(angle, axis, pivot) {
   var sin = Math.sin(angle);
