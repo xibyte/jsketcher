@@ -710,6 +710,13 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
     tm.getTool().keydown(e);
     if (e.keyCode == 27) {
       tm.releaseControl();
+    } else if (e.keyCode == 46) {
+      var selection = viewer.selected.slice();
+      viewer.deselectAll();
+      for (var i = 0; i < selection.length; i++) {
+        viewer.remove(selection[i]);
+      }
+      viewer.refresh();
     }
   }, false);
   window.addEventListener("keypress", function (e) {
