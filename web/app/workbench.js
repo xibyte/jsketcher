@@ -409,7 +409,9 @@ TCAD.craft._triangulateCSG = function(polygons) {
       var a = refs[i][0];
       var b = refs[i][1];
       var c = refs[i][2];
-      if (points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() === 0)  {
+      //magnitude of cross product is the area of parallelogram
+      var area = points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() / 2.0;
+      if (area < TCAD.TOLERANCE)  {
         continue;
       }
       var csgPoly = new CSG.Polygon([points[a], points[b], points[c]], poly.shared, poly.plane);
