@@ -34,12 +34,36 @@ TCAD.toolkit.Button = function(title) {
 
 TCAD.toolkit.CheckBox = function(title, checked) {
   this.root = $('<div/>',
-    {class: 'tc-row tc-ctrl tc-ctrl-btn'});
+    {class: 'tc-row tc-ctrl'});
   this.root.append('<label><input type="checkbox">' + title + '</label>')
   this.input = this.root.find("input");
   this.input.prop('checked', !!checked);
-  console.log(this.input);
 };
+
+TCAD.toolkit.InlineRadio = function(choiceLabels, choiceValues, checkedIndex) {
+  var name = 'TCAD.toolkit.InlineRadio_' + (TCAD.toolkit.InlineRadio.COUNTER++)
+  this.root = $('<div/>',
+    {class: 'tc-row tc-ctrl tc-inline-radio'});
+  this.inputs = [];
+  for (var i = 0; i < choiceLabels.length; i++) {
+    var checked = checkedIndex === i ? "checked" : '';
+    var label = $('<label><input type="radio" name="' + name + '" value="' + choiceValues[i] + '">' + choiceLabels[i] + '</label>');
+    this.inputs.push(label.find("input"));
+     this.root.append(label);
+  }
+  this.inputs[checkedIndex].prop('checked', true);
+};
+
+TCAD.toolkit.InlineRadio.prototype.getValue = function() {
+  for (var i = 0; i < this.inputs.length; i++) {
+    if (this.inputs[i].prop('checked')) {
+      return this.inputs[i].attr('value');
+    }
+  }
+  return null;
+};
+
+TCAD.toolkit.InlineRadio.COUNTER = 0;
 
 TCAD.toolkit.propLayout = function(root, name, valueEl) {
   root.append($('<span/>', {class: 'tc-prop-name', text: name}))

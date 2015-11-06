@@ -146,7 +146,12 @@ TCAD.craft.extrude = function(app, request) {
     toMeldWith = toMeldWith.concat(extruded);
   }
 
-  var meld = request.solids[0].csg.union(CSG.fromPolygons(TCAD.craft._triangulateCSG(toMeldWith)));
+  var solid = request.solids[0];
+
+  var meld = CSG.fromPolygons(TCAD.craft._triangulateCSG(toMeldWith));
+  if (solid.mergeable) {
+    meld = solid.csg.union(meld);
+  }
 
   face.csgGroup.shared.__tcad.faceId += '$';
   return [TCAD.utils.createSolidMesh(meld).geometry];
@@ -759,18 +764,17 @@ TCAD.Craft.prototype.modify = function(request) {
   var op = TCAD.craft.OPS[request.type];
   if (!op) return;
 
-  var detachedRequest = TCAD.craft.detach(request);
   var newSolids = op(this.app, request);
 
   if (newSolids == null) return;
   var i;
   for (i = 0; i < request.solids.length; i++) {
-    this.app.viewer.scene.remove( request.solids[i].meshObject );
+    request.solids[i].vanish();
   }
   for (i = 0; i < newSolids.length; i++) {
-    this.app.viewer.scene.add(newSolids[i].meshObject);
+    this.app.viewer.workGroup.add(newSolids[i].meshObject);
   }
-  this.history.push(detachedRequest);
+  this.history.push(TCAD.craft.detach(request));
   this.app.bus.notify('craft');
 
   this.app.viewer.render();
@@ -779,6 +783,9 @@ TCAD.Craft.prototype.modify = function(request) {
 TCAD.craft.OPS = {
   CUT : TCAD.craft.cut,
   PAD : TCAD.craft.extrude,
+  PLANE : function(app, request) {
+    return [TCAD.utils.createPlane(request.params.basis, request.params.depth).geometry];
+  },
   BOX : function(app, request) {
     return [TCAD.utils.createCSGBox(request.size).geometry];
   }

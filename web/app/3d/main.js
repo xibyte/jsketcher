@@ -11,7 +11,9 @@ TCAD.App = function() {
   this.ui = new TCAD.UI(this);
   this.craft = new TCAD.Craft(this);
 
-  this.addBox();
+  if (this.id == '$scratch$') {
+    this.addBox();
+  }
 
   this._refreshSketches();
   this.viewer.render();
@@ -52,22 +54,19 @@ TCAD.App = function() {
 };
 
 TCAD.App.prototype.findAllSolids = function() {
-  return this.viewer.scene.children
+  return this.viewer.workGroup.children
     .filter(function(obj) {return !!obj.geometry && obj.geometry.tCadId !== undefined} )
     .map(function(obj) {return obj.geometry} )
 };
 
 TCAD.App.prototype.findFace = function(faceId) {
-  var solidId = faceId.split(":")[0];
-  var children = this.viewer.scene.children;
-  for (var i = 0; i < children.length; i++) {
-    var obj = children[i];
-    if (!!obj.geometry && obj.geometry.tCadId !== undefined) {
-      for (var j = 0; j < obj.geometry.polyFaces.length; j++) {
-        var face = obj.geometry.polyFaces[j];
-        if (face.id == faceId) {
-          return face;
-        }
+  var solids = this.findAllSolids();
+  for (var i = 0; i < solids.length; i++) {
+    var solid = solids[i];
+    for (var j = 0; j < solid.polyFaces.length; j++) {
+      var face = solid.polyFaces[j];
+      if (face.id == faceId) {
+        return face;
       }
     }
   }
@@ -273,17 +272,16 @@ TCAD.App.prototype.refreshSketches = function() {
 };
 
 TCAD.App.prototype._refreshSketches = function() {
-  for (var oi = 0; oi < this.viewer.scene.children.length; ++oi) {
-    var obj = this.viewer.scene.children[oi];
-    if (obj.geometry !== undefined && obj.geometry.polyFaces !== undefined) {
-      for (var i = 0; i < obj.geometry.polyFaces.length; i++) {
-        var sketchFace = obj.geometry.polyFaces[i];
-        var faceStorageKey = this.faceStorageKey(sketchFace.id);
-        var savedFace = localStorage.getItem(faceStorageKey);
-        if (savedFace != null) {
-          var geom = TCAD.workbench.readSketchGeom(JSON.parse(savedFace));
-          sketchFace.syncSketches(geom);
-        }
+  var allSolids = this.findAllSolids();
+  for (var oi = 0; oi < allSolids.length; ++oi) {
+    var obj = allSolids[oi];
+    for (var i = 0; i < obj.polyFaces.length; i++) {
+      var sketchFace = obj.polyFaces[i];
+      var faceStorageKey = this.faceStorageKey(sketchFace.id);
+      var savedFace = localStorage.getItem(faceStorageKey);
+      if (savedFace != null) {
+        var geom = TCAD.workbench.readSketchGeom(JSON.parse(savedFace));
+        sketchFace.syncSketches(geom);
       }
     }
   }

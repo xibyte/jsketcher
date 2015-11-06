@@ -126,3 +126,7 @@
 .tc-buttons-block {
     text-align: right;
 }
+
+.tc-inline-radio label {
+    padding-right: 5px;
+}

@@ -11,11 +11,12 @@ TCAD.UI = function(app) {
   var cameraFolder = new tk.Folder("Camera");
   var objectsFolder = new tk.Folder("Objects");
   var modificationsFolder = new tk.Folder("Modifications");
-  var extrude, cut, edit, refreshSketches, showSketches, printSolids, printFace, printFaceId;
+  var extrude, cut, edit, addPlane, refreshSketches, showSketches, printSolids, printFace, printFaceId;
   tk.add(mainBox, propFolder);
   tk.add(propFolder, extrude = new tk.Button("Extrude"));
   tk.add(propFolder, cut = new tk.Button("Cut"));
   tk.add(propFolder, edit = new tk.Button("Edit"));
+  tk.add(propFolder, addPlane = new tk.Button("Add a Plane"));
   tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
   tk.add(propFolder, showSketches = new tk.CheckBox("Show Sketches", true));
   tk.add(mainBox, debugFolder);
@@ -111,6 +112,38 @@ TCAD.UI = function(app) {
   extrude.root.click(cutExtrude(false));
   edit.root.click(tk.methodRef(app, "sketchFace"));
   refreshSketches.root.click(tk.methodRef(app, "refreshSketches"));
+  addPlane.root.click(function() {
+    var box = new tk.Box();
+    box.root.css({left : (mainBox.root.width() + 10) + 'px', top : 0});
+    var folder = new tk.Folder("Add a Plane");
+    tk.add(box, folder);
+    var choice = ['XY', 'XZ', 'ZY'];
+    var orientation = new tk.InlineRadio(choice, choice, 0);
+    var depth = new tk.Number("Depth", 0);
+
+    tk.add(folder, orientation);
+    tk.add(folder, depth);
+    var wizard = new TCAD.wizards.PlaneWizard(app.viewer);
+    function onChange() {
+      wizard.update(orientation.getValue(), depth.input.val());
+    }
+    function close() {
+      box.close();
+      wizard.dispose();
+    }
+    function ok() {
+      app.craft.modify({
+        type: 'PLANE',
+        solids : [],
+        params : wizard.operationParams
+      });
+      close();
+    }
+    orientation.root.find('input:radio').change(onChange);
+    depth.input.on('t-change', onChange);
+    onChange();
+    tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, ok]));
+  });
   printSolids.root.click(function () {
     app.viewer.scene.children.map(function(o) {
       if (o.geometry instanceof TCAD.Solid) {
