@@ -111,8 +111,9 @@ TCAD.utils.createSolidMaterial = function() {
     color: TCAD.view.FACE_COLOR,
     shininess: 0,
     polygonOffset : true,
-    polygonOffsetFactor : 4,
-    polygonOffsetUnits : 1
+    polygonOffsetFactor : 1,
+    polygonOffsetUnits : 2,
+    side : THREE.DoubleSide
   });
 };
 
