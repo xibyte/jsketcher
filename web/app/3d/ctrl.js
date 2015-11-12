@@ -11,13 +11,15 @@ TCAD.UI = function(app) {
   var cameraFolder = new tk.Folder("Camera");
   var objectsFolder = new tk.Folder("Objects");
   var modificationsFolder = new tk.Folder("Modifications");
-  var extrude, cut, edit, addPlane, refreshSketches, showSketches, printSolids, printFace, printFaceId;
+  var extrude, cut, edit, addPlane, save,
+    refreshSketches, showSketches, printSolids, printFace, printFaceId;
   tk.add(mainBox, propFolder);
   tk.add(propFolder, extrude = new tk.Button("Extrude"));
   tk.add(propFolder, cut = new tk.Button("Cut"));
   tk.add(propFolder, edit = new tk.Button("Edit"));
   tk.add(propFolder, addPlane = new tk.Button("Add a Plane"));
   tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
+  tk.add(propFolder, save = new tk.Button("Save"));
   tk.add(propFolder, showSketches = new tk.CheckBox("Show Sketches", true));
   tk.add(mainBox, debugFolder);
   tk.add(debugFolder, printSolids = new tk.Button("Print Solids"));
@@ -172,6 +174,10 @@ TCAD.UI = function(app) {
     }
     app.viewer.render();
   });
+  save.root.click(function() {
+    app.save();
+  });
+
   this.solidFolder = null;
 };
 

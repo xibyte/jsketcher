@@ -288,9 +288,15 @@ TCAD.App.prototype._refreshSketches = function() {
 };
 
 TCAD.App.prototype.save = function() {
+  var data = {};
+  data.solids = [];
+  data.planes = [];
+  data.history = this.craft.history
+  var solid = this.findAllSolids();
+  for (var i = 0; i < solid.length; i++) {
+    var solid = solid[i];
 
-  var polyFace = this.viewer.selectionMgr.selection[0];
-  var height = prompt("Height", "50");
+  }
 };
 
 TCAD.Bus = function() {
