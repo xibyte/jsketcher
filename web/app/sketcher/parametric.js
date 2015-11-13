@@ -394,20 +394,20 @@ TCAD.TWO.ParametricManager.isAux = function(obj) {
   return false;
 };
 
-TCAD.TWO.ParametricManager.findAuxIndices = function(system) {
-  var auxParams = [];
+TCAD.TWO.ParametricManager.fetchAuxParams = function(system, auxParams, auxDict) {
   for (var i = 0; i < system.length; ++i) {
     for (var p = 0; p < system[i][1].length; ++p) {
       var parameter = system[i][1][p];
       if (parameter.obj !== undefined) {
-        parameter.__aux = TCAD.TWO.ParametricManager.isAux(parameter.obj);
-        if (parameter.__aux) {
-          auxParams.push(parameter);
+        if (TCAD.TWO.ParametricManager.isAux(parameter.obj)) {
+          if (auxDict[parameter.id] === undefined) {
+            auxDict[parameter.id] = parameter;
+            auxParams.push(parameter);
+          }
         }
       }
     }
   }
-  return auxParams;
 };
 
 TCAD.TWO.ParametricManager.__toId = function(v) {
@@ -424,19 +424,14 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   var equalsIndex = [];
   var eqcElimination = {};
 
-  var lockedIds = locked.map(function(p) {return p.id});
-
   var system = [];
   this.__getSolveData(subSystemConstraints, system);
   if (!!extraConstraints) this.__getSolveData(extraConstraints, system);
 
-//  system.sort(function(a, b){
-//    a = a[0] === 'equal' ? 1 : 2;
-//    b = b[0] === 'equal' ? 1 : 2;
-//    return a - b;
-//  });
+  var auxParams = [];
+  var auxDict = {};
 
-  var auxParams = TCAD.TWO.ParametricManager.findAuxIndices(system);
+  TCAD.TWO.ParametricManager.fetchAuxParams(system, auxParams, auxDict);
 
   var tuples = [];
   if (TCAD.EQUALS_ELIMINATION_ENABLED) {
@@ -554,7 +549,7 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
     var _p = pdict[p.id];
     if (_p === undefined) {
       if (p.__cachedParam__ === undefined) {
-        _p = new TCAD.parametric.Param(p.id, p.get(), !!p.__aux);
+        _p = new TCAD.parametric.Param(p.id, p.get());
         p.__cachedParam__ = _p;
       } else {
         _p = p.__cachedParam__;
@@ -584,7 +579,7 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
       var param = sdata[1][p];
       _p = getParam(param);
       params.push(_p);
-      if (param.__aux) aux.push(_p);
+      if (auxDict[param.id] !== undefined) aux.push(_p);
     }
 
     var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
