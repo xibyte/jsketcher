@@ -70,6 +70,7 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
         var obj = layerData[i];
         var skobj = null;
         var _class = obj['_class'];
+        var aux = !!obj['aux'];
         if (_class === T.SEGMENT) {
           var points = obj['points'];
           var a = endPoint(points[0]);
@@ -83,7 +84,7 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
           var b = endPoint(points[1]);
           var c = endPoint(points[2]);
           skobj = new TCAD.TWO.Arc(a, b, c);
-          skobj.stabilize(this.viewer);
+          if (!aux) skobj.stabilize(this.viewer);
         } else if (_class === T.CIRCLE) {
           var c = endPoint(obj['c']);
           skobj = new TCAD.TWO.Circle(c);
@@ -99,7 +100,7 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
           skobj.flip = obj['flip'];
         }
         if (skobj != null) {
-          if (!!obj['aux']) skobj.accept(function(o){o.aux = true; return true;});
+          if (aux) skobj.accept(function(o){o.aux = true; return true;});
           if (obj['edge'] !== undefined) {
             skobj.edge = obj['edge'];
           }
