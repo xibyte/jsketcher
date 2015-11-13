@@ -401,6 +401,10 @@ TCAD.craft._triangulateCSG = function(polygons) {
   function csgVec(v) {
     return new CSG.Vector3D(v.x, v.y, v.z);
   }
+  function selfIntersecting(a, b, c) {
+    var f = TCAD.craft._pointOnLine;
+    return f(c, a, b) || f(a, b, c) || f(b, c, a);
+  }
   var triangled = [];
   for (var ei = 0; ei < polygons.length; ++ei) {
     var poly = polygons[ei];
@@ -411,8 +415,8 @@ TCAD.craft._triangulateCSG = function(polygons) {
       var b = refs[i][1];
       var c = refs[i][2];
       //magnitude of cross product is the area of parallelogram
-      var area = points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() / 2.0;
-      if (area < TCAD.TOLERANCE)  {
+      //var area = points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() / 2.0;
+      if (selfIntersecting(points[a].pos, points[b].pos, points[c].pos))  {
         continue;
       }
       var csgPoly = new CSG.Polygon([points[a], points[b], points[c]], poly.shared, poly.plane);
