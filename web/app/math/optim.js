@@ -1,5 +1,7 @@
 optim = {};
 
+optim.DEBUG_HANDLER = function() {};
+
 //Added strong wolfe condition to numeric's uncmin
 optim.bfgs_ = function(f,x0,tol,gradient,maxit,callback,options) {
   var grad = numeric.gradient;
@@ -335,6 +337,7 @@ optim.dog_leg = function (subsys, rough) {
   var iter = 0, stop = 0, reduce = 0;
   //var log = [];
   while (stop === 0) {
+    optim.DEBUG_HANDLER(iter, err);
 
     // check if finished
     if (fx_inf <= tolf ) // Success
@@ -365,14 +368,12 @@ optim.dog_leg = function (subsys, rough) {
 
       var hitBoundary = false;
 
-      var stepKind;
       // compute the dogleg step
       var gnorm = n.norm2(g);
-      if (n.norm2(h_gn) < delta) {
+      var gnNorm = n.norm2(h_gn);
+      if (gnNorm < delta) {
         h_dl = h_gn;
-        stepKind = 1;
-      }
-      else {
+      } else {
         var Jt = n.transpose(Jx);
         var B = n.dot(Jt, Jx);
         var gBg = n.dot(g, n.dot(B, g));
@@ -380,24 +381,26 @@ optim.dog_leg = function (subsys, rough) {
         if (alpha * gnorm >= delta) {
           h_dl = n.mul(g, - delta / gnorm);
           hitBoundary = true;
-          stepKind = 2;
         } else {
           var h_sd = n.mul(g, - alpha);
+          if (isNaN(gnNorm)) { 
+            h_dl = h_sd;
+          } else {
 
-          var d = n.sub(h_gn, h_sd);
+            var d = n.sub(h_gn, h_sd);
 
-          var a = n.dot(d, d);
-          var b = 2 * n.dot(h_sd, d);
-          var c = n.dot(h_sd, h_sd) - delta * delta
+            var a = n.dot(d, d);
+            var b = 2 * n.dot(h_sd, d);
+            var c = n.dot(h_sd, h_sd) - delta * delta;
 
-          var sqrt_discriminant = Math.sqrt(b * b - 4 * a * c)
+            var sqrt_discriminant = Math.sqrt(b * b - 4 * a * c);
 
-          var beta = (-b + sqrt_discriminant) / (2 * a)
+            var beta = (-b + sqrt_discriminant) / (2 * a);
 
-          // and update h_dl and dL with beta
-          h_dl = n.add(h_sd, n.mul(beta, d));
-          hitBoundary = true;
-          stepKind = 3;
+            // and update h_dl and dL with beta
+            h_dl = n.add(h_sd, n.mul(beta, d));
+            hitBoundary = true;
+          } 
         }
       }
     }
