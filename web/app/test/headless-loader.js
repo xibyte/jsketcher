@@ -12,7 +12,7 @@ require("./craft-fixtures.js");
 
 var assert = require('assert');
 viz = function(name, polygons, segments) {
-  var colors =  ['aqua', 'black', 'blue', 'brown', 'crimson', 'fuchsia', 'fuschia', 'gray', 'green', 'lemon', 'lime', 'olive', 'orange', 'peach', 'pink', 'purple', 'salmon', 'tan', 'teal', 'violet', 'violet', 'blue', 'white', 'yellow'];
+  var colors =  ['aqua', 'black', 'blue', 'brown', 'crimson', 'gray', 'green', 'lemon', 'lime', 'olive', 'orange', 'peach', 'pink', 'purple', 'salmon', 'tan', 'teal', 'violet', 'violet', 'blue', 'white', 'yellow'];
   var bbox = new TCAD.BBox();
   var fs = require('fs');
   var builder = require('xmlbuilder');
