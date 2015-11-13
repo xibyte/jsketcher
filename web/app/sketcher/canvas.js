@@ -258,14 +258,16 @@ TCAD.TWO.Viewer.prototype.cleanSnap = function() {
   }
 };
 
-TCAD.TWO.Viewer.prototype.showBounds = function(x1, y1, x2, y2) {
-  this.translate.x = -x1;
-  this.translate.y = -y1;
+TCAD.TWO.Viewer.prototype.showBounds = function(x1, y1, x2, y2, offset) {
   var dx = x2 - x1;
   var dy = y2 - y1;
-  console.log(this.scale);
-  this.scale = this.canvas.width / dx;
-  this.scale *= 0.7;
+  if (this.canvas.width > this.canvas.height) {
+    this.scale = this.canvas.height / dy;
+  } else {
+    this.scale = this.canvas.width / dx;
+  }
+  this.translate.x = -x1 * this.scale;
+  this.translate.y = -y1 * this.scale;
 };
 
 TCAD.TWO.Viewer.prototype.screenToModel2 = function(x, y, out) {

@@ -166,6 +166,33 @@ TCAD.App2D = function() {
     app.cleanUpData();
     app.viewer.refresh();
   });
+
+  this.registerAction('fit', "Fit Sketch On Screen", function () {
+    app.fit();
+    app.viewer.refresh();
+  });
+};
+
+TCAD.App2D.prototype.fit = function() {
+
+  var bbox = new TCAD.io.BBox();
+  
+  for (var l = 0; l < this.viewer.layers.length; ++l) {
+    var layer = this.viewer.layers[l];
+    for (var i = 0; i < layer.objects.length; ++i) {
+      var obj = layer.objects[i];
+      obj.accept(function(obj) {
+        if (obj._class === 'TCAD.TWO.EndPoint') {
+          bbox.checkBounds(obj.x, obj.y);
+        }
+        return true;
+      });
+    }
+  }
+  var bounds = bbox.bbox;
+  this.viewer.showBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
+  bbox.inc(20 / this.viewer.scale);
+  this.viewer.showBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
 };
 
 TCAD.App2D.prototype.cloneSketch = function() {
