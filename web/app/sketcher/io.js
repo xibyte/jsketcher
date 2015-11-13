@@ -352,6 +352,10 @@ TCAD.io.BBox = function() {
     }
   };
 
+  this.isValid = function() {
+    return bbox[0] != Number.MAX_VALUE;
+  };
+  
   this.checkBounds = function(x, y) {
     bbox[0] = Math.min(bbox[0], x);
     bbox[1] = Math.min(bbox[1], y);
