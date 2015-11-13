@@ -250,7 +250,7 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     returnCode : 1
   };
 
-  var conflict = TCAD.parametric.diagnose(sys).conflict;
+  var conflict = false;//TCAD.parametric.diagnose(sys).conflict;
   if (conflict) {
     console.log("Conflicting or redundant constraints. Please fix your system.");
   }
@@ -271,6 +271,7 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     diagnose : function() {return TCAD.parametric.diagnose(sys)},
     error : function() {return sys.error()},
     solveSystem : solve,
+    system : sys,
     updateLock : function(values) {
       for (var i = 0; i < values.length; ++i) {
         lockingConstrs[i].constr.value = values[i];
