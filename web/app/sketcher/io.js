@@ -119,10 +119,7 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
     //}
   }
 
-  var sketchBounds = sketch['boundary'];
-  if (sketchBounds !== undefined && sketchBounds != null) {
-    this.updateBoundary(sketchBounds);
-  }
+  this.setupBoundary(sketch['boundary']);
 
   var sketchConstraints = sketch['constraints'];
   if (sketchConstraints !== undefined) {
@@ -166,7 +163,6 @@ TCAD.IO.prototype._serializeSketch = function() {
     var layers = toSave[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
-      if (layer.readOnly) continue;
       var toLayer = {'name' : layer.name, 'data' : []};
       sketch['layers'].push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
@@ -207,33 +203,25 @@ TCAD.IO.prototype._serializeSketch = function() {
   return sketch;
 };
 
-TCAD.IO.prototype.updateBoundary = function (boundary) {
-  if (this.boundaryLayer === undefined) {
-    this.boundaryLayer = new TCAD.TWO.Layer("bounds", TCAD.TWO.Styles.BOUNDS);
-    this.boundaryLayer.readOnly = true;
-    this.viewer.layers.splice(0, 0, this.boundaryLayer);
+TCAD.IO.prototype.setupBoundary = function(boundary) {
+  var boundaryLayerName = "__bounds__";
+  var boundaryLayer = this.viewer.findLayerByName(boundaryLayerName);
+  
+  if (boundaryLayer != null) {
+    boundaryLayer.readOnly = true;
+    boundaryLayer.style = TCAD.TWO.Styles.BOUNDS;
   }
-  var layer = this.boundaryLayer;
-//  if (bbox[0] < Number.MAX_VALUE && bbox[1] < Number.MAX_VALUE && -bbox[2] < Number.MAX_VALUE && -bbox[3] < Number.MAX_VALUE) {
-//    this.viewer.showBounds(bbox[0], bbox[1], bbox[2], bbox[3])
-//  }
+  
+  if (boundary === undefined || boundary == null) return;
+  
+  if (boundaryLayer === null) {
+    boundaryLayer = new TCAD.TWO.Layer(boundaryLayerName, TCAD.TWO.Styles.BOUNDS);
+    boundaryLayer.readOnly = true;
+    this.viewer.layers.splice(0, 0, boundaryLayer);
+  } else {
+    boundaryLayer.objects = [];
+  } 
 
-  //for (var l = 0; l < this.viewer.layers.length; ++l) {
-  //  var layer = this.viewer.layers[l];
-  //  for (var i = 0; i < layer.objects.length; ++i) {
-  //    var obj = layer.objects[i];
-  //    if (obj.edge !== undefined) {
-  //      var edge = edges[obj.edge];
-  //      if (edge !== undefined && edge != null) {
-  //        obj.a.x = edge[0];
-  //        obj.a.y = edge[1];
-  //        obj.b.x = edge[2];
-  //        obj.b.y = edge[3];
-  //        edges[obj.edge] = null;
-  //      }
-  //    }
-  //  }
-  //}
   var id = 0;
   function __makeAux(obj) {
     obj.accept(function(o){o.aux = true; return true;});
@@ -242,7 +230,7 @@ TCAD.IO.prototype.updateBoundary = function (boundary) {
 
   for (var i = 0; i < boundary.lines.length; ++i, ++id) {
     var edge = boundary.lines[i];
-    var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, this.boundaryLayer);
+    var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, boundaryLayer);
     __makeAux(seg);
   }
   for (i = 0; i < boundary.arcs.length; ++i, ++id) {
@@ -252,14 +240,14 @@ TCAD.IO.prototype.updateBoundary = function (boundary) {
       new TCAD.TWO.EndPoint(a.b.x, a.b.y),
       new TCAD.TWO.EndPoint(a.c.x, a.c.y)
     );
-    this.boundaryLayer.objects.push(arc);
+    boundaryLayer.objects.push(arc);
     __makeAux(arc);
   }
   for (i = 0; i < boundary.circles.length; ++i, ++id) {
     var obj = boundary.circles[i];
     var circle = new TCAD.TWO.Circle(new TCAD.TWO.EndPoint(obj.c.x, obj.c.y));
     circle.r.set(obj.r);
-    this.boundaryLayer.objects.push(circle);
+    boundaryLayer.objects.push(circle);
     __makeAux(circle);
 
   }
@@ -399,7 +387,6 @@ TCAD.IO.prototype.getLayersToExport = function() {
     var layers = ws[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
-      if (layer.readOnly) continue;
       toExport.push(layer)
     }
   }

@@ -304,6 +304,15 @@ TCAD.TWO.Viewer.prototype.accept = function(visitor) {
   }
 };
 
+TCAD.TWO.Viewer.prototype.findLayerByName = function(name) {
+  for (var i = 0; i < this.layers.length; i++) {
+    if (this.layers[i].name == name) {
+      return this.layers[i];
+    }
+  }
+  return null;
+};
+
 TCAD.TWO.Viewer.prototype.findById = function(id) {
   var result = null;
   this.accept(function(o) {
