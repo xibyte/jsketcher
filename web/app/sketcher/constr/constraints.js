@@ -236,7 +236,7 @@ TCAD.constraints.P2PDistance = function(params, distance) {
     out[p1y] = dy / d;
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
-    for (var i = 0; i < 4; i++) if (Number.isNaN(out[i])) out[i] = 0;
+    TCAD.constraints._fixNaN(out);
   }
 };
 
@@ -268,7 +268,7 @@ TCAD.constraints.P2PDistanceV = function(params) {
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
     out[D] = -1;
-    for (var i = 0; i < 4; i++) if (Number.isNaN(out[i])) out[i] = 0;
+    TCAD.constraints._fixNaN(out);
   }
 };
 
@@ -339,5 +339,13 @@ TCAD.constraints.Perpendicular = function(params) {
     out[l2p2x] = -(params[l1p1x].get() - params[l1p2x].get());
     out[l2p1y] =  (params[l1p1y].get() - params[l1p2y].get());
     out[l2p2y] = -(params[l1p1y].get() - params[l1p2y].get());
+  }
+};
+
+TCAD.constraints._fixNaN = function(grad) {
+  for (var i = 0; i < grad.length; i++) {
+    if (isNaN(grad[i])) {
+      grad[i] = 0;
+    }
   }
 };
