@@ -236,6 +236,7 @@ TCAD.constraints.P2PDistance = function(params, distance) {
     out[p1y] = dy / d;
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
+    for (var i = 0; i < 4; i++) if (Number.isNaN(out[i])) out[i] = 0;
   }
 };
 
@@ -267,6 +268,7 @@ TCAD.constraints.P2PDistanceV = function(params) {
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
     out[D] = -1;
+    for (var i = 0; i < 4; i++) if (Number.isNaN(out[i])) out[i] = 0;
   }
 };
 

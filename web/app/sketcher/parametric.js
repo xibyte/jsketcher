@@ -60,7 +60,7 @@ TCAD.TWO.ParametricManager.prototype._add = function(constr) {
 };
 
 TCAD.TWO.ParametricManager.prototype.checkRedundancy = function (subSystem, constr) {
-  var solver = this.prepareForSubSystem([], subSystem);
+  var solver = this.prepareForSubSystem([], subSystem.constraints);
   if (solver.diagnose().conflict) {
     alert("Most likely this "+constr.NAME + " constraint is CONFLICTING!")
   }
@@ -295,14 +295,14 @@ TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
 TCAD.TWO.ParametricManager.prototype.getSolveData = function() {
   var sdata = []; 
   for (var i = 0; i < this.subSystems.length; i++) {
-    this.__getSolveData(this.subSystems[i], sdata);
+    this.__getSolveData(this.subSystems[i].constraints, sdata);
   }
   return sdata;
 };
 
-TCAD.TWO.ParametricManager.prototype.__getSolveData = function(subSystem, out) {
-  for (var i = 0; i < subSystem.constraints.length; ++i) {
-    var constraint = subSystem.constraints[i];
+TCAD.TWO.ParametricManager.prototype.__getSolveData = function(constraints, out) {
+  for (var i = 0; i < constraints.length; ++i) {
+    var constraint = constraints[i];
     var data = constraint.getSolveData();
     for (var j = 0; j < data.length; ++j) {
       data[j].push(constraint.reducible !== undefined);
@@ -324,21 +324,24 @@ TCAD.TWO.ParametricManager.prototype.solveWithLock = function(lock) {
   solver.sync();
 };
 
-TCAD.TWO.ParametricManager.prototype.prepare = function(locked) {
-  return this._prepare(locked, this.subSystems);
+TCAD.TWO.ParametricManager.prototype.prepare = function(locked, extraConstraints) {
+  return this._prepare(locked, this.subSystems, extraConstraints);
 };
 
-TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems) {
+TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems, extraConstraints) {
   var solvers = [];
   for (var i = 0; i < subSystems.length; i++) {
-    solvers.push(this.prepareForSubSystem(locked, subSystems[i]));
+    solvers.push(this.prepareForSubSystem(locked, subSystems[i].constraints, extraConstraints));
+  }
+  if (subSystems.length == 0 && locked.length != 0) {
+    solvers.push(this.prepareForSubSystem(locked, [], extraConstraints));
   }
   return {
     solvers : solvers,
     
     solve : function(rough) {
       for (var i = 0; i < solvers.length; i++) {
-        var alg = subSystems[i].alg;
+        var alg =  i < subSystems.length ? subSystems[i].alg : 1;
         var res = solvers[i].solve(rough, alg);
         if (res.returnCode !== 1) {
           alg = alg == 1 ? 2 : 1;
@@ -354,10 +357,10 @@ TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems) {
         solvers[i].sync();
       }
     },
-    
-    updateLock : function() {
+
+    updateLock : function(values) {
       for (var i = 0; i < solvers.length; i++) {
-        solvers[i].updateLock();
+        solvers[i].updateLock(values);
       }
     }
   }
@@ -393,7 +396,7 @@ TCAD.TWO.ParametricManager.__toId = function(v) {
   return v.id;
 };
 
-TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subSystem) {
+TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemConstraints, extraConstraints) {
 
   var pdict = {};
   var params;
@@ -401,12 +404,17 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
 
   var equalsDict = {};
   var equalsIndex = [];
-  var eqcElimination = [];
+  var eqcElimination = {};
+
+  var lockedIds = locked.map(function(p) {return p.id});
 
   function peq(p1, p2) {
     return Math.abs(p1.get() - p2.get()) <= 0.000001
   }
-  var system = this.__getSolveData(subSystem, []);
+  var system = [];
+  this.__getSolveData(subSystemConstraints, system);
+  if (!!extraConstraints) this.__getSolveData(extraConstraints, system);
+
 //  system.sort(function(a, b){
 //    a = a[0] === 'equal' ? 1 : 2;
 //    b = b[0] === 'equal' ? 1 : 2;
@@ -417,18 +425,49 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
 
   var tuples = [];
   if (TCAD.EQUALS_ELIMINATION_ENABLED) {
+    var c, pi, paramIndex = {};
+    
+    function intersect(array1, array2) {
+      if (!array1 || !array2) return false;
+      return array1.filter(function(n) {
+        return array2.indexOf(n) != -1
+      }).length != 0;
+    }
+    
     for (i = 0; i < system.length; ++i) {
-      var c = system[i];
+      c = system[i];
+      if (c[3] !== true) {
+        var sameParams = {};
+        for (pi = 0; pi < c[1].length; pi++) {
+          var param = c[1][pi];
+          var paramConstrs = paramIndex[param.id];
+          if (paramConstrs === undefined) {
+            paramConstrs = [];
+            paramIndex[param.id] = paramConstrs;
+          }
+          paramConstrs.push(i);
+        }
+      }
+    }
+
+    for (i = 0; i < system.length; ++i) {
+      c = system[i];
       if (c[3] === true) { //Reduce flag
+        
         var cp1 = c[1][0];
         var cp2 = c[1][1];
-        //if (!peq(cp1, cp2)) continue;
         var p0 = cp1.id;
         var p1 = cp2.id;
-        eqcElimination.push(i);
+
+        var assoc0 = paramIndex[p0];
+        var assoc1 = paramIndex[p1];
+        if (intersect(assoc0, assoc1)) {
+          continue;
+        }
         equalsDict[p0] = cp1;
         equalsDict[p1] = cp2;
         tuples.push([p0, p1]);
+        eqcElimination[i] = true;
       }
     }
   }
@@ -518,14 +557,10 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   var _p;
   var ei;
 
-  var ii = 0;
   var aux = [];
   for (i = 0; i < system.length; ++i) {
 
-    if (eqcElimination[ii] === i) {
-      ii++;
-      continue;
-    }
+    if (eqcElimination[i] === true) continue;
     
     var sdata = system[i];
     params = [];
@@ -542,23 +577,14 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   }
 
   var _locked = [];
-  var lockedIds = {};
   if (locked !== undefined) {
     for (p = 0; p < locked.length; ++p) {
       _locked[p] = getParam(locked[p]);
-      lockedIds[locked[p]] = true;
     }
   }
   
-  var lockedValues = [];
   var solver = TCAD.parametric.prepare(_constrs, _locked, aux);
   function solve(rough, alg) {
-    if (_locked.length != 0) {
-      for (p = 0; p < locked.length; ++p) {
-        lockedValues[p] = locked[p].get() ;
-      }
-      solver.updateLock(lockedValues);
-    }
     for (p in pdict) {
       _p = pdict[p];
       _p.set(_p._backingParam.get());

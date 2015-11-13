@@ -839,11 +839,9 @@ TCAD.TWO.DragTool = function(obj, viewer) {
   this._point = {x: 0, y: 0};
   this.origin = {x: 0, y: 0};
   this.ref = this.obj.getReferencePoint();
-  this.errorX = 0;
-  this.errorY = 0;
   this.solver = null;
 };
-
+TCAD.TWO.DragTool.prototype.snapshots = []
 TCAD.TWO.DragTool.prototype.keydown = function(e) {};
 TCAD.TWO.DragTool.prototype.keypress = function(e) {};
 TCAD.TWO.DragTool.prototype.keyup = function(e) {};
@@ -852,29 +850,27 @@ TCAD.TWO.DragTool.prototype.cleanup = function(e) {};
 TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   var x = this._point.x;
   var y = this._point.y;
-  this.viewer.screenToModel2(e.x, e.y, this._point);
-  var dx = this._point.x - x - this.errorX;
-  var dy = this._point.y - y - this.errorY;
-  var checkX = this.ref.x;
-  var checkY = this.ref.y;
-  this.obj.translate(dx, dy);
+  this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
+  var dx = this._point.x - x;
+  var dy = this._point.y - y;
   if (!e.altKey && !e.ctrlKey) {
+    for (var i = 0; i < this.lockedShifts.length; i += 2) {
+      this.lockedValues[i] = this._point.x - this.lockedShifts[i];
+      this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
+    }
+    this.solver.updateLock(this.lockedValues);
     this.solveRequest(true);
+  } else {
+    this.obj.translate(dx, dy);
   }
-
-  this.errorX = (this.ref.x - dx) - checkX;
-  this.errorY = (this.ref.y - dy) - checkY;
-
-//  console.log("accumulated error X = " + this.errorX);
-//  console.log("accumulated error Y = " + this.errorY);
 
   this.viewer.refresh();
 };
 
 TCAD.TWO.DragTool.prototype.mousedown = function(e) {
-  this.origin.x = e.x;
-  this.origin.y = e.y;
-  this.viewer.screenToModel2(e.x, e.y, this._point);
+  this.origin.x = e.offsetX;
+  this.origin.y = e.offsetY;
+  this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
   this.prepareSolver();
 };
 
@@ -882,10 +878,11 @@ TCAD.TWO.DragTool.prototype.mouseup = function(e) {
   this.solveRequest(false);
   this.viewer.refresh();
   this.viewer.toolManager.releaseControl();
-  var traveled = TCAD.math.distance(this.origin.x, this.origin.y, e.x, e.y);
+  var traveled = TCAD.math.distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
   if (traveled >= 10) {
     this.viewer.historyManager.lightCheckpoint(10);
   }
+  //this.animateSolution();
 };
 
 TCAD.TWO.DragTool.prototype.mousewheel = function(e) {
@@ -896,20 +893,70 @@ TCAD.TWO.DragTool.prototype.solveRequest = function(rough) {
   this.solver.sync();
 };
 
+TCAD.TWO.DragTool.prototype.getParamsToLock = function() {
+  var params = [];
+  this.obj.accept(function(obj) {
+    if (obj._class === 'TCAD.TWO.EndPoint') {
+      params.push(obj._x);
+      params.push(obj._y);
+    }
+    return true;
+  });
+  return params;
+};
+
 TCAD.TWO.DragTool.prototype.prepareSolver = function() {
-  var locked;
-  if (this.obj._class === 'TCAD.TWO.EndPoint') {
-    locked = [this.obj._x, this.obj._y];
-//    if (this.obj.parent != null
-//      && this.obj.parent._class === 'TCAD.TWO.Arc') {
-//
-//      if (this.obj.id != this.obj.parent.c.id) {
-//          locked.push(this.obj.parent.c._x);
-//          locked.push(this.obj.parent.c._y);
-//      }
-//    }
-  } else {
-    locked = [];
+  var locked = this.getParamsToLock();
+  this.lockedShifts = [];
+  this.lockedValues = [];
+  for (var i = 0; i < locked.length; i += 2) {
+    this.lockedShifts[i] = this._point.x - locked[i].get();
+    this.lockedShifts[i + 1] = this._point.y - locked[i + 1].get();
   }
   this.solver = this.viewer.parametricManager.prepare(locked);
+  //this.enableRecording();
+};
+
+TCAD.TWO.DragTool.prototype.enableRecording = function() {
+  var solver = this.solver;
+  var snapshots = this.snapshots = [];
+  optim.DEBUG_HANDLER = function()  {
+    snapshots.push([]);
+    for (var i = 0; i < solver.solvers.length; i++) {
+      var sys = solver.solvers[i].system;
+      snapshots[i].push(sys.params.map(function(p) {return p.get()}))
+    }
+  };
+};
+
+TCAD.TWO.DragTool.prototype.animateSolution = function() {
+  if (this.snapshots.length === 0) return; 
+  var stepNum = 0;
+  var scope = this;
+  var then = Date.now();
+  var speed = 3000; 
+  function step() {
+    var now = Date.now();
+    var elapsed = now - then;
+
+    if (elapsed > speed) {
+      for (var i = 0; i < scope.solver.solvers.length; i++) {
+        var sys = scope.solver.solvers[i].system;
+        if (stepNum >= scope.snapshots[i].length) continue;
+        var values = scope.snapshots[i][stepNum];
+        for (var k = 0; k < values.length; k++) {
+          sys.params[k]._backingParam.set(values[k]);
+        }
+      }
+      stepNum ++;
+      
+      then = now;
+      scope.viewer.repaint();
+    }
+
+    if (stepNum < scope.snapshots[0].length) {
+      window.requestAnimationFrame(step);
+    } 
+  }
+  window.requestAnimationFrame(step);
 };
