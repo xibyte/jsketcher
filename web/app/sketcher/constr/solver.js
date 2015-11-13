@@ -2,7 +2,6 @@ TCAD.parametric = {};
 
 /** @constructor */
 TCAD.parametric.Param = function(id, value, readOnly) {
-  if (!!readOnly) this.set = this.nop;
   this.reset(value);
 };
 
@@ -181,11 +180,11 @@ TCAD.parametric.System.prototype.getValues = function() {
   return values;
 };
 
-TCAD.parametric.lock1 = function(constrs, locked) {
+TCAD.parametric.wrapAux = function(constrs, locked) {
 
   var lockedSet = {};
   for (var i = 0; i < locked.length; i++) {
-    lockedSet[locked[i].id] = true;
+    lockedSet[locked[i].j] = true;
   }
 
   for (var i = 0; i < constrs.length; i++) {
@@ -194,7 +193,7 @@ TCAD.parametric.lock1 = function(constrs, locked) {
     var needWrap = false;
     for (var j = 0; j < c.params.length; j++) {
       var param = c.params[j];
-      mask[j] = lockedSet[param.id] === true;
+      mask[j] = lockedSet[param.j] === true;
       needWrap = needWrap || mask[j];
     }
     if (needWrap) {
@@ -229,11 +228,11 @@ TCAD.parametric.diagnose = function(sys) {
 
 TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
 
-  TCAD.parametric.lock1(constrs, aux);
   var lockingConstrs = TCAD.parametric.lock2Equals2(constrs, locked);
   Array.prototype.push.apply( constrs, lockingConstrs );
   
   var sys = new TCAD.parametric.System(constrs);
+  TCAD.parametric.wrapAux(constrs, aux);
 
   var model = function(point) {
     sys.setParams(point);
