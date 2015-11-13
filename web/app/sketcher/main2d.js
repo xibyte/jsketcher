@@ -181,15 +181,11 @@ TCAD.App2D.prototype.fit = function() {
     var layer = this.viewer.layers[l];
     for (var i = 0; i < layer.objects.length; ++i) {
       var obj = layer.objects[i];
-      obj.accept(function(obj) {
-        if (obj._class === 'TCAD.TWO.EndPoint') {
-          bbox.checkBounds(obj.x, obj.y);
-        } else if (obj._class === 'TCAD.TWO.Circle' || obj._class === 'TCAD.TWO.Arc') {
-          bbox.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
-        }
-        return true;
-      });
+      bbox.check(obj);
     }
+  }
+  if (!bbox.isValid()) {
+    return;
   }
   var bounds = bbox.bbox;
   this.viewer.showBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
