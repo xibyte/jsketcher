@@ -184,6 +184,8 @@ TCAD.App2D.prototype.fit = function() {
       obj.accept(function(obj) {
         if (obj._class === 'TCAD.TWO.EndPoint') {
           bbox.checkBounds(obj.x, obj.y);
+        } else if (obj._class === 'TCAD.TWO.Circle' || obj._class === 'TCAD.TWO.Arc') {
+          bbox.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
         }
         return true;
       });
