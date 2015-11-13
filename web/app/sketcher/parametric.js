@@ -174,14 +174,32 @@ TCAD.TWO.ParametricManager.prototype.tangent = function(objs) {
   this.add(new TCAD.TWO.Constraints.Tangent( arc, line));
 };
 
-TCAD.TWO.ParametricManager.prototype.rr = function(objs) {
-  var arcs = this._fetchArkCirc(objs, 2);
+TCAD.TWO.ParametricManager.prototype.rr = function(arcs) {
   var prev = arcs[0];
   for (var i = 1; i < arcs.length; ++i) {
     this._add(new TCAD.TWO.Constraints.RR(prev, arcs[i]));
     prev = arcs[i];
   }
   this.refresh();
+};
+
+TCAD.TWO.ParametricManager.prototype.ll = function(lines) {
+  this.add(new TCAD.TWO.Constraints.LL(lines[0], lines[1]));
+};
+
+TCAD.TWO.ParametricManager.prototype.entityEquality = function(objs) {
+  var arcs, lines = undefined;
+  try {
+    arcs = this._fetchArkCirc(objs, 2);
+  } catch (e1) {
+    try {
+       lines = this._fetchTwoLines(objs);
+    } catch (e2) {
+      throw e1 + "\n" + e2;
+    }
+  }
+  if (!!arcs) this.rr(arcs);
+  if (!!lines) this.ll(lines);
 };
 
 TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback) {
@@ -408,9 +426,6 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
 
   var lockedIds = locked.map(function(p) {return p.id});
 
-  function peq(p1, p2) {
-    return Math.abs(p1.get() - p2.get()) <= 0.000001
-  }
   var system = [];
   this.__getSolveData(subSystemConstraints, system);
   if (!!extraConstraints) this.__getSolveData(extraConstraints, system);
@@ -925,6 +940,43 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.RR.prototype.NAME] = function(
 
 TCAD.TWO.Constraints.RR.prototype.getObjects = function() {
   return [this.arc1, this.arc2];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ // 
+
+/** @constructor */
+TCAD.TWO.Constraints.LL = function(line1, line2) {
+  this.line1 = line1;
+  this.line2 = line2;
+  this.length = new TCAD.TWO.Ref(TCAD.math.distanceAB(line1.a, line1.b));
+};
+
+TCAD.TWO.Constraints.LL.prototype.NAME = 'LL';
+TCAD.TWO.Constraints.LL.prototype.UI_NAME = 'Lines Equality';
+
+TCAD.TWO.Constraints.LL.prototype.getSolveData = function() {
+  var params1 = [];
+  var params2 = [];
+  this.line1.collectParams(params1);
+  this.line2.collectParams(params2);
+  params1.push(this.length);
+  params2.push(this.length);
+  return [
+    ['P2PDistanceV', params1, []],
+    ['P2PDistanceV', params2, []]
+  ];
+};
+
+TCAD.TWO.Constraints.LL.prototype.serialize = function() {
+  return [this.NAME, [this.line1.id, this.line2.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.LL.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.LL(refs(data[0]), refs(data[1]));
+};
+
+TCAD.TWO.Constraints.LL.prototype.getObjects = function() {
+  return [this.line1, this.line2];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
