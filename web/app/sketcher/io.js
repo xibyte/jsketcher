@@ -8,7 +8,7 @@ TCAD.io.Types = {
   DIM       : 'TCAD.TWO.Dimension',
   HDIM      : 'TCAD.TWO.HDimension',
   VDIM      : 'TCAD.TWO.VDimension'
-}
+};
 
 /** @constructor */
 TCAD.IO = function(viewer) {
@@ -306,25 +306,25 @@ TCAD.io.PrettyColors = function() {
   this.next = function () {
     return colors[colIdx++ % colors.length];
   }
-}
+};
 
 /** @constructor */
 TCAD.io.TextBuilder = function() {
   this.data = "";
   this.fline = function (chunk, args) {
     this.data += TCAD.io._format(chunk, args) + "\n"
-  }
+  };
   this.line = function (chunk) {
     this.data += chunk + "\n"
-  }
+  };
   this.number = function (n) {
     this.data += n.toPrecision()
-  }
+  };
   this.numberln = function (n) {
     this.number(n)
     this.data += "\n"
   }
-}
+};
 
 /** @constructor */
 TCAD.io.BBox = function() {
@@ -336,7 +336,7 @@ TCAD.io.BBox = function() {
     for (var l = 0; l < layers.length; ++l)
       for (var i = 0; i < layers[l].objects.length; ++i)
         this.check(layers[l].objects[i]);
-  }
+  };
 
   this.check = function(obj) {
     if (obj._class === T.SEGMENT) {
@@ -350,34 +350,34 @@ TCAD.io.BBox = function() {
       this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
 //    } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
     }
-  }
+  };
 
   this.checkBounds = function(x, y) {
     bbox[0] = Math.min(bbox[0], x);
     bbox[1] = Math.min(bbox[1], y);
     bbox[2] = Math.max(bbox[2], x);
     bbox[3] = Math.max(bbox[3], y);
-  }
+  };
 
   this.checkCircBounds = function(x, y, r) {
     this.checkBounds(x + r, y + r);
     this.checkBounds(x - r, y + r);
     this.checkBounds(x - r, y - r);
     this.checkBounds(x - r, y + r);
-  }
+  };
 
   this.inc = function(by) {
     bbox[0] -= by;
     bbox[1] -= by;
     bbox[2] += by;
     bbox[3] += by;
-  }
+  };
   this.bbox = bbox;
 };
 
 TCAD.IO.prototype.getWorkspaceToExport = function() {
   return [this.viewer.layers];
-}
+};
 
 TCAD.IO.prototype.getLayersToExport = function() {
   var ws = this.getWorkspaceToExport();
@@ -391,7 +391,7 @@ TCAD.IO.prototype.getLayersToExport = function() {
     }
   }
   return toExport;
-}
+};
 
 TCAD.IO.prototype.svgExport = function () {
 
@@ -427,7 +427,7 @@ TCAD.IO.prototype.svgExport = function () {
     }
     out.line('</g>');
   }
-  bbox.inc(20)
+  bbox.inc(20);
   return TCAD.io._format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + out.data + "</svg>"
 };
 
