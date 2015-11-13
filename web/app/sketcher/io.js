@@ -372,6 +372,15 @@ TCAD.io.BBox = function() {
     bbox[2] += by;
     bbox[3] += by;
   };
+  
+  this.width = function() {
+    return bbox[2] - bbox[0];
+  };
+
+  this.height = function() {
+    return bbox[3] - bbox[1];
+  };
+
   this.bbox = bbox;
 };
 
