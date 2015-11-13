@@ -137,8 +137,8 @@ TCAD.App2D = function() {
     app.viewer.parametricManager.radius(app.viewer.selected, prompt);
   });
 
-  this.registerAction('REqualsRConstraint', "Radius Equals Constraint", function () {
-    app.viewer.parametricManager.rr(app.viewer.selected);
+  this.registerAction('EntityEqualityConstraint', "Radius Equals Constraint", function () {
+    app.viewer.parametricManager.entityEquality(app.viewer.selected);
   });
 
   this.registerAction('tangentConstraint', "Tangent Constraint", function () {
