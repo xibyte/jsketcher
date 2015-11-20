@@ -11,14 +11,16 @@ CSG = require("../../lib/csg.js").CSG;
 require("./craft-fixtures.js");
 
 var assert = require('assert');
-viz = function(name, polygons, segments) {
+viz = function(name, polygons, segments, outline) {
   var colors =  ['aqua', 'black', 'blue', 'brown', 'crimson', 'gray', 'green', 'lemon', 'lime', 'olive', 'orange', 'peach', 'pink', 'purple', 'salmon', 'tan', 'teal', 'violet', 'violet', 'blue', 'white', 'yellow'];
   var bbox = new TCAD.BBox();
   var fs = require('fs');
   var builder = require('xmlbuilder');
-  var svg = builder.create('html')
+  var svgNode = builder.create('html')
     .ele('body')
       .ele('svg', {width: 800, height: 600});
+
+  var svg = svgNode.ele('g', {'transform': 'scale(1,-1)'});
   for (var pi = 0; pi < polygons.length; ++ pi) {
     var poly = polygons[pi];
     var pointsStr = "";
@@ -34,9 +36,20 @@ viz = function(name, polygons, segments) {
     svg.ele('ellipse', {cx : s[0].x, cy : s[0].y, rx:3, ry:2, fill : "red"});
     svg.ele('ellipse', {cx : s[1].x, cy : s[1].y, rx:2, ry:3, fill : "red"});
   }
+  if (!!outline) {
+    var n = outline.length, p,q;
+    for (var p = n - 1, q = 0; q < n; p = q ++) {
+      var a = outline[p];
+      var b = outline[q];
+      svg.ele('line', {x1 : a.x, y1 : a.y, x2 : b.x, y2 : b.y, stroke:'red', 'stroke-width':'2'});
+      svg.ele('ellipse', {cx : a.x, cy : a.y, rx:3, ry:2, fill : "red"});
+      svg.ele('ellipse', {cx : b.x, cy : b.y, rx:2, ry:3, fill : "red"});
+    }
+  }
+
   var length = Math.max(bbox.maxX - bbox.minX, bbox.maxY - bbox.minY) + 100;
-  svg.att('viewBox', (bbox.minX - 100) + " " + (bbox.minY - 100) + " " + length + " " + length)
-  var htmlText = svg.end({ pretty: true});
+  svgNode.att('viewBox', (bbox.minX ) + " " + (bbox.minY + bbox.height() - bbox.height() * 0.2) + " " + length + " " + length)
+  var htmlText = svgNode.end({ pretty: true});
   if (!fs.existsSync('viz')) fs.mkdirSync('viz', function(err) {});
   fs.writeFile("viz/" + name + ".html", htmlText);
 }
@@ -61,4 +74,3 @@ polygonTransform = function(tr) {
     return polygon.map(tr);
   }
 };
-
