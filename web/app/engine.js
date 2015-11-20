@@ -105,6 +105,16 @@ TCAD.utils.createLine = function (a, b, color) {
   return new THREE.Line(geometry, material);
 };
 
+TCAD.utils.createPoint = function (x, y, z) {
+  var geometry = new THREE.SphereGeometry( 5, 16, 16 );
+  var material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+  var sphere = new THREE.Mesh(geometry, material);
+  sphere.position.x = x;
+  sphere.position.y = y;
+  sphere.position.z = z;
+  return sphere;
+};
+
 TCAD.utils.createSolidMaterial = function() {
   return new THREE.MeshPhongMaterial({
     vertexColors: THREE.FaceColors,
@@ -289,6 +299,7 @@ TCAD.utils.sketchToPolygons = function(geom) {
   for (var i = 0; i < lines.length; i++) {
     var a = lines[i].a;
     var b = lines[i].b;
+
     memDir(a, b);
     memDir(b, a);
     edges.put(edgeKey(a, b), lines[i]);
