@@ -69,6 +69,14 @@ TCAD.struct.HashTable.prototype.rebuild = function() {
   }
 };
 
+TCAD.struct.HashTable.prototype.getKeys = function() {
+  var keys = [];
+  this.entries(function(k) {
+    keys.push(k)
+  });
+  return keys;
+};
+
 TCAD.struct.HashTable.prototype.entries = function(callback) {
   for (var i = 0; i < this.table.length; i++) {
     var e = this.table[i];
