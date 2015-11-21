@@ -171,6 +171,19 @@ TCAD.craft._pointOnLine = function(p, a, b) {
 };
 
 TCAD.craft.polygonsToSegments = function(polygons) {
+  function selfIntersecting(a, b, c) {
+    var f = TCAD.craft._pointOnLine;
+    return f(c, a, b) || f(a, b, c) || f(b, c, a);
+  }
+  //polygons.filter(function(p) {
+  //  
+  //});
+  //magnitude of cross product is the area of parallelogram
+  //var area = points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() / 2.0;
+  //if (selfIntersecting(points[a].pos, points[b].pos, points[c].pos))  {
+  //continue;
+  //}
+
   var segmentsByPolygon = [];
   for (var pi = 0; pi < polygons.length; pi++) {
     var segments = [];
@@ -184,7 +197,7 @@ TCAD.craft.polygonsToSegments = function(polygons) {
     segmentsByPolygon.push(segments);
   }
   return segmentsByPolygon;
-};
+};  
 
 TCAD.craft.reconstructSketchBounds = function(csg, face, strict) {
   strict = strict || false;
@@ -235,10 +248,30 @@ TCAD.craft.pickUpCraftInfo = function(outline, outerEdges) {
   }
 };
 
-TCAD.craft.findOutline = function(planePolygons) {
+
+TCAD.craft.getOutlineByCollision = function(segments, outerEdges) {
+  var eq = TCAD.utils.strictEqual;
+  var outline = [];
+  for (var psi1 = 0; psi1 < segments.length; psi1++) {
+    var s1 = segments[psi1];
+    for (var psi2 = 0; psi2 < outerEdges.length; psi2++) {
+      var s2 = outerEdges[psi2];
+      if (TCAD.utils.equal(Math.abs(s1[0].minus(s1[1]).unit().dot(s2[0].minus(s2[1]).unit())), 1) &&
+        (eq(s1[0], s2[0]) || eq(s1[1], s2[1]) || eq(s1[0], s2[1]) || eq(s1[1], s2[0]) ||
+        TCAD.craft._pointOnLine(s1[0], s2[0], s2[1]) || TCAD.craft._pointOnLine(s1[1], s2[0], s2[1]))) {
+        outline.push(s1);
+      }
+    }
+  }
+  return outline;
+};
+
+ TCAD.craft.findOutline = function(planePolygons, outer) {
   var segmentsByPolygon = TCAD.craft.polygonsToSegments(planePolygons);
-  TCAD.craft.simplifySegments(segmentsByPolygon);
+  //TCAD.craft.simplifySegments(segmentsByPolygon);
   var planeSegments = TCAD.utils.arrFlatten1L(segmentsByPolygon);
+  //planeSegments = TCAD.craft.removeSharedEdges(planeSegments);
+  TCAD.craft.removeTJoints(planeSegments);
   planeSegments = TCAD.craft.removeSharedEdges(planeSegments);
   return planeSegments;
 };
@@ -282,28 +315,65 @@ TCAD.craft.simplifySegments = function(polygonToSegments) {
   }
 };
 
+TCAD.craft._closeFactorToLine = function(p, seg1, seg2) {
+
+  var a = p.minus(seg1);
+  var b = seg2.minus(seg1);
+  var bn = b.unit();
+
+  var projLength = bn.dot(a);
+  var bx = bn.times(projLength);
+  if (!(projLength > 0 && projLength < b.length())) {
+    return -1;
+  }
+  
+  var c = a.minus(bx);
+  return c.length();    
+};
+
+TCAD.craft.removeTJoints = function(segments) {
+  var pointIndex = TCAD.struct.hashTable.forVector3d();
+
+  for (var i = 0; i < segments.length; ++i) {
+    pointIndex.put(segments[i][0], 1);
+    pointIndex.put(segments[i][1], 1);
+  }
+  
+  var points = pointIndex.getKeys();
+  var eq = TCAD.utils.strictEqual;
+  for (var pi1 = 0; pi1 < points.length; ++pi1) {
+    var point = points[pi1];
+    var best = null, bestFactor;
+    for (var pi2 = 0; pi2 < segments.length; ++pi2) {
+      var seg = segments[pi2];
+      if (eq(seg[0], point) || eq(seg[1], point)) continue;
+      var factor = TCAD.craft._closeFactorToLine(point, seg[0], seg[1]);
+      if (factor != -1 && factor < 1E-6 && (best == null || factor < bestFactor)) {
+        best = seg;
+        bestFactor = factor;
+      }
+    }
+    if (best != null) {
+      segments.push([point, best[1]]);
+      best[1] = point;
+    }
+  }
+};
+
+
 TCAD.craft.deleteRedundantPoints = function(path) {
   var cleanedPath = [];
   //Delete redundant point
   var pathLength = path.length;
+  var skipMode = false;
   for (var pi = 0; pi < pathLength; pi++) {
     var bIdx = ((pi + 1) % pathLength);
     var a = path[pi];
     var b = path[bIdx];
     var c = path[(pi + 2) % pathLength];
     var eq = TCAD.utils.areEqual;
-    if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1, 1E-9)) {
-      cleanedPath.push(b);
-      for (var ii = 0; ii < pathLength - pi - 1; ++ii) {
-        a = path[(ii + bIdx) % pathLength];
-        b = path[(ii + bIdx + 1) % pathLength];
-        c = path[(ii + bIdx + 2) % pathLength];
-        if (!eq(a.minus(b).unit().dot(a.minus(c).unit()), 1, 1E-9)) {
-          cleanedPath.push(b);
-        }
-      }
-      break;
-    }
+    if (!skipMode) cleanedPath.push(a);
+    skipMode = eq(a.minus(b).unit().dot(b.minus(c).unit()), 1, 1E-9);
   }
   return cleanedPath;
 };
@@ -401,10 +471,6 @@ TCAD.craft._triangulateCSG = function(polygons) {
   function csgVec(v) {
     return new CSG.Vector3D(v.x, v.y, v.z);
   }
-  function selfIntersecting(a, b, c) {
-    var f = TCAD.craft._pointOnLine;
-    return f(c, a, b) || f(a, b, c) || f(b, c, a);
-  }
   var triangled = [];
   for (var ei = 0; ei < polygons.length; ++ei) {
     var poly = polygons[ei];
@@ -414,11 +480,6 @@ TCAD.craft._triangulateCSG = function(polygons) {
       var a = refs[i][0];
       var b = refs[i][1];
       var c = refs[i][2];
-      //magnitude of cross product is the area of parallelogram
-      //var area = points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() / 2.0;
-      if (selfIntersecting(points[a].pos, points[b].pos, points[c].pos))  {
-        continue;
-      }
       var csgPoly = new CSG.Polygon([points[a], points[b], points[c]], poly.shared, poly.plane);
       triangled.push(csgPoly);
     }
