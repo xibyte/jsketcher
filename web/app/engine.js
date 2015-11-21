@@ -605,6 +605,7 @@ TCAD.utils.getDerivedFrom = function(shared) {
 /** @constructor */
 TCAD.Solid = function(csg, material, type) {
   THREE.Geometry.call( this );
+  csg = csg.reTesselated().canonicalized();
   this.tCadType = type || 'SOLID';
   this.csg = csg;
   this.dynamic = true; //true by default
