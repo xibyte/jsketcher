@@ -13,6 +13,8 @@ TCAD.App = function() {
 
   if (this.id == '$scratch$') {
     this.addBox();
+  } else {
+    this.load();
   }
 
   this._refreshSketches();
@@ -73,8 +75,26 @@ TCAD.App.prototype.findFace = function(faceId) {
   return null;
 };
 
+TCAD.App.prototype.indexEntities = function() {
+  var out = {solids : {}, faces : {}};
+  var solids = this.findAllSolids();
+  for (var i = 0; i < solids.length; i++) {
+    var solid = solids[i];
+    out.solids[solid.tCadId] = solid;
+    for (var j = 0; j < solid.polyFaces.length; j++) {
+      var face = solid.polyFaces[j];
+      out.faces[face.id] = face;
+    }
+  }
+  return out;
+};
+
 TCAD.App.prototype.faceStorageKey = function(polyFaceId) {
   return "TCAD.projects."+this.id+".sketch." + polyFaceId;
+};
+
+TCAD.App.prototype.projectStorageKey = function(polyFaceId) {
+  return "TCAD.projects."+this.id;
 };
 
 TCAD.App.prototype.sketchFace = function() {
@@ -289,12 +309,15 @@ TCAD.App.prototype._refreshSketches = function() {
 
 TCAD.App.prototype.save = function() {
   var data = {};
-  data.solids = [];
-  data.planes = [];
-  data.history = this.craft.history
-  var solid = this.findAllSolids();
-  for (var i = 0; i < solid.length; i++) {
-    var solid = solid[i];
+  data.history = this.craft.history;
+  localStorage.setItem(this.projectStorageKey(), JSON.stringify(data));
+};
 
+TCAD.App.prototype.load = function() {
+  var project = localStorage.getItem(this.projectStorageKey());
+  if (!!project) {
+    var data = JSON.parse(project);
+    this.craft.loadHistory(data.history);
+    
   }
 };

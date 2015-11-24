@@ -808,6 +808,24 @@ TCAD.craft.cut = function(app, request) {
 TCAD.Craft = function(app) {
   this.app = app;
   this.history = [];
+  this.historyPointer = -1;
+};
+
+TCAD.Craft.prototype.loadHistory = function(history) {
+  this.history = -1;
+  this.history = history;
+  this.reset(history);
+  this.app.bus.notify('craft');
+  this.app.viewer.render();
+};
+
+TCAD.Craft.prototype.reset = function(modifications) {
+  TCAD.utils.SOLID_COUNTER = 0;
+  TCAD.utils.SHARED_COUNTER = 0;
+  for (var i = 0; i < modifications.length; i++) {
+    var request = TCAD.craft.materialize(this.app.indexEntities(), modifications[i]);
+    this.modifyInternal(request);
+  }
 };
 
 TCAD.Craft.prototype.current = function() {
@@ -819,8 +837,16 @@ TCAD.craft.detach = function(request) {
   for (var prop in request) {
     if (request.hasOwnProperty(prop)) {
       var value = request[prop];
-      if (typeof(value) === 'object' && value.id !== undefined) {
+      if (prop == 'solids') {
+        detachedConfig[prop] = value.map(function(s){return s.tCadId});
+      } else if (prop == 'face') {
         detachedConfig[prop] = value.id;
+      } else if (prop == 'target') {
+        detachedConfig[prop] = [value.x, value.y, value.z];
+      } else if (prop == 'basis') {
+        detachedConfig[prop] = value.map(function(v){return [v.x, v.y, v.z]});
+      } else if (prop == 'params') {
+        detachedConfig[prop] = TCAD.craft.detach(value);
       } else {
         detachedConfig[prop] = value;
       }
@@ -829,8 +855,34 @@ TCAD.craft.detach = function(request) {
   return detachedConfig
 };
 
-TCAD.Craft.prototype.modify = function(request) {
+TCAD.craft.materialize = function(index, detachedConfig) {
+  var request = {};
+  function required(value) {
+    if (value == null || value == undefined) throw "value is required";
+    return value;
+  }
+  for (var prop in detachedConfig) {
+    if (detachedConfig.hasOwnProperty(prop)) {
+      var value = detachedConfig[prop];
+      if (prop == 'solids') {
+        request[prop] = value.map(function(id){return required(index.solids[id])});
+      } else if (prop == 'target') {
+        request[prop] = new TCAD.Vector().set3(value);
+      } else if (prop == 'face') {
+        request[prop] = required(index.faces[value]);
+      } else if (prop == 'basis') {
+        request[prop] = value.map(function(v) {return new TCAD.Vector().set3(v)});
+      } else if (prop == 'params') {
+        request[prop] = TCAD.craft.materialize(index, value);
+      } else {
+        request[prop] = value;
+      }
+    }
+  }
+  return request;
+};
 
+TCAD.Craft.prototype.modifyInternal = function(request) {
   var op = TCAD.craft.OPS[request.type];
   if (!op) return;
 
@@ -844,9 +896,12 @@ TCAD.Craft.prototype.modify = function(request) {
   for (i = 0; i < newSolids.length; i++) {
     this.app.viewer.workGroup.add(newSolids[i].meshObject);
   }
+};
+
+TCAD.Craft.prototype.modify = function(request) {
+  this.modifyInternal(request);
   this.history.push(TCAD.craft.detach(request));
   this.app.bus.notify('craft');
-
   this.app.viewer.render();
 };
 
