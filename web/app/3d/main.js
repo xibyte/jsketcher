@@ -298,26 +298,3 @@ TCAD.App.prototype.save = function() {
 
   }
 };
-
-TCAD.Bus = function() {
-  this.listeners = {};
-};
-
-TCAD.Bus.prototype.subscribe = function(event, callback) {
-  var listenerList = this.listeners[event];
-  if (listenerList === undefined) {
-    listenerList = [];
-    this.listeners[event] = listenerList;
-  }
-  listenerList.push(callback);
-};
-
-TCAD.Bus.prototype.notify = function(event, data) {
-  var listenerList = this.listeners[event];
-  if (listenerList !== undefined) {
-    for (var i = 0; i < listenerList.length; i++) {
-      listenerList[i](data);
-    }
-  }
-
-};
