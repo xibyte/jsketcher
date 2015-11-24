@@ -111,3 +111,11 @@ TCAD.math.circleFromPoints = function(p1, p2, p3) {
   center.y =  (cd * (p1.x - p2.x) - bc * (p2.x - p3.x)) * idet;
   return center;
 };
+
+TCAD.math.norm2 = function(vec) {
+  var sq = 0;
+  for (var i = 0; i < vec.length; i++) {
+    sq += vec[i] * vec[i];
+  }
+  return Math.sqrt(sq);  
+};

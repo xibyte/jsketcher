@@ -130,3 +130,11 @@
 .tc-inline-radio label {
     padding-right: 5px;
 }
+
+.tc-pseudo-btn {  
+    cursor : pointer;
+}
+
+.tc-pseudo-btn:hover {
+    background-color: #000;
+}

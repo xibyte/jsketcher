@@ -138,6 +138,19 @@ TCAD.toolkit.ButtonRow = function(captions, actions) {
   }
 };
 
+TCAD.toolkit.List = function() {
+  this.root = $('<div/>', {class: 'tc-tree'});
+};
+
+TCAD.toolkit.List.prototype.addRow = function(name) {
+  var row = $('<div/>', {
+    text: name, class: 'tc-row tc-pseudo-btn',
+    css: {'margin-left': '10px'}
+  });
+  this.root.append(row);
+  return row;
+};
+
 TCAD.toolkit.Tree = function() {
   this.root = $('<div/>', {class: 'tc-tree'});
 };

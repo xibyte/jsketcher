@@ -181,6 +181,7 @@ TCAD.utils.createPlane = function(basis, depth, boundingPolygon, shared) {
       plane.vanish();
       bbox.expand(20);
       var newPlane = TCAD.utils.createPlane(basis, depth, bbox.toPolygon(), sketchFace.csgGroup.shared);
+      newPlane.geometry.tCadId = plane.tCadId;
       TCAD.SketchFace.prototype.syncSketches.call(newPlane.geometry.polyFaces[0], geom);
       parent.add(newPlane);
     }
