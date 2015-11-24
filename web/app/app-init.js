@@ -2,6 +2,16 @@ function start() {
   var app = new TCAD.App2D();
   app.loadFromLocalStorage();
   app.fit();
+
+  function addLayer(name, style) {
+    if (app.viewer.findLayerByName(name) === null) {
+      app.viewer.layers.push(new TCAD.TWO.Layer(name, style));
+    }
+  }
+
+  addLayer("sketch", TCAD.TWO.Styles.DEFAULT);
+  addLayer("_construction_", TCAD.TWO.Styles.CONSTRUCTION);
+  
   var actionsWin = new TCAD.ui.Window($('#actions'));
 
   TCAD.ui.bindOpening( $('#showActions'), actionsWin );
@@ -68,6 +78,27 @@ function start() {
   });
   app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
   constrList.refresh();
+
+  var updateLayersList = function () {
+    var options = '';
+    for (var i = 0; i < app.viewer.layers.length; i++) {
+      var layer = app.viewer.layers[i];
+      options += "<option value='"+layer.name+"'>"+layer.name+"</option>"
+    }
+    $('#layersList').html(options).val(app.viewer.activeLayer.name);
+  };
+  updateLayersList();
+  app.viewer.bus.subscribe("activeLayer", function() {
+    updateLayersList();
+  });
+  $('#layersList')
+    .mousedown(updateLayersList)
+    .change(function () {
+      var layer = app.viewer.findLayerByName($('#layersList').val());
+      if (layer != null) {
+        app.viewer.activeLayer = layer;
+      }
+    });
 }
 window.___log = function(log) {
     $('#log').append( " *****************<br><br><br><br>");

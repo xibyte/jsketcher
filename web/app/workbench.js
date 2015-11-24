@@ -14,8 +14,10 @@ TCAD.workbench.readSketchGeom = function(sketch) {
   var out = {connections : [], loops : []};
   if (sketch.layers !== undefined) {
     for (var l = 0; l < sketch.layers.length; ++l) {
-      for (var i = 0; i < sketch.layers[l].data.length; ++i) {
-        var obj = sketch.layers[l].data[i];
+      var layer = sketch.layers[l];
+      if (layer.name == "_construction_") continue;
+      for (var i = 0; i < layer.data.length; ++i) {
+        var obj = layer.data[i];
         if (obj.edge !== undefined) continue;
         if (!!obj.aux) continue;
         if (obj._class === 'TCAD.TWO.Segment') {

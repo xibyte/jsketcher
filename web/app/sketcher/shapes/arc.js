@@ -140,7 +140,7 @@ TCAD.TWO.AddArcTool.prototype.mouseup = function(e) {
       new TCAD.TWO.EndPoint(p.x, p.y)
     );
     this.point = this.arc.a;
-    this.viewer.activeLayer().objects.push(this.arc);
+    this.viewer.activeLayer.objects.push(this.arc);
     this.viewer.refresh();
   } else if (this.point.id === this.arc.a.id) {
     this.point = this.arc.b;
