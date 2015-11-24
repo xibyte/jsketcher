@@ -37,6 +37,12 @@ TCAD.TWO.Styles = {
     lineWidth : 2,
     strokeStyle : "#fff5c3",
     fillStyle : "#000000"
+  },
+  
+  CONSTRUCTION : {
+    lineWidth : 1,
+    strokeStyle : "#aaaaaa",
+    fillStyle : "#000000"
   }
 };
 
@@ -87,7 +93,13 @@ TCAD.TWO.Viewer = function(canvas) {
   }
   updateCanvasSize();
   window.addEventListener( 'resize', onWindowResize, false );
-  
+
+  Object.defineProperty(this, "activeLayer", {
+    get: viewer.getActiveLayer ,
+    set: viewer.setActiveLayer
+  });
+
+  this.bus = new TCAD.Bus();
   this.ctx = this.canvas.getContext("2d");
   this._activeLayer = null;
   this.layers = [];
@@ -345,7 +357,7 @@ TCAD.TWO.Viewer.prototype.mark = function(obj, style) {
   this.selected.push(obj);
 };
 
-TCAD.TWO.Viewer.prototype.activeLayer = function() {
+TCAD.TWO.Viewer.prototype.getActiveLayer = function() {
   var layer = this._activeLayer;
   if (layer == null || layer.readOnly) {
     layer = null;
@@ -367,6 +379,7 @@ TCAD.TWO.Viewer.prototype.activeLayer = function() {
 TCAD.TWO.Viewer.prototype.setActiveLayer = function(layer) {
   if (!layer.readOnly) {
     this._activeLayer = layer;
+    this.bus.notify("activeLayer");
   }
 };
 
@@ -789,9 +802,18 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
         this.viewer.select([picked[0]], false);
         this.deselectOnUp = false;
       } else {
-        this.viewer.select([picked[0]], true);
-        if (!picked[0].isAuxOrLinkedTo()) {
-          var tool = picked[0].getDefaultTool(this.viewer);
+        var toSelect = picked[0];
+        if (this.viewer.selected.length === 1) {
+          for (var i = 0; i < picked.length - 1; i++) {
+            if (picked[i].id == this.viewer.selected[0].id) {
+              toSelect = picked[i + 1];
+              break;
+            }
+          }
+        }
+        this.viewer.select([toSelect], true);
+        if (!toSelect.isAuxOrLinkedTo()) {
+          var tool = toSelect.getDefaultTool(this.viewer);
           tool.mousedown(e);
           this.viewer.toolManager.takeControl(tool);
         }

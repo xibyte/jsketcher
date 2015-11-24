@@ -64,8 +64,10 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
   var sketchLayers = sketch['layers'];
   if (sketchLayers !== undefined) {
     for (var l = 0; l < sketchLayers.length; ++l) {
-      var layer = getLayer(this.viewer, sketchLayers[l]['name']);
-      var layerData = sketchLayers[l]['data'];
+      var ioLayer = sketchLayers[l];
+      var layer = getLayer(this.viewer, ioLayer['name']);
+      if (!!ioLayer.style) layer.style = ioLayer.style;
+      var layerData = ioLayer['data'];
       for (var i = 0; i < layerData.length; ++i) {
         var obj = layerData[i];
         var skobj = null;
@@ -164,7 +166,7 @@ TCAD.IO.prototype._serializeSketch = function() {
     var layers = toSave[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
-      var toLayer = {'name' : layer.name, 'data' : []};
+      var toLayer = {'name' : layer.name, style : layer.style, 'data' : []};
       sketch['layers'].push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];

@@ -37,7 +37,7 @@ TCAD.TWO.AddSegmentTool.prototype.mouseup = function(e) {
       this.viewer.cleanSnap();
       needSnap = true;
     }
-    this.line = this.viewer.addSegment(a.x, a.y, b.x, b.y, this.viewer.activeLayer());
+    this.line = this.viewer.addSegment(a.x, a.y, b.x, b.y, this.viewer.activeLayer);
     if (needSnap) {
       this.viewer.parametricManager.linkObjects([this.line.a, a]);
     }
@@ -53,7 +53,7 @@ TCAD.TWO.AddSegmentTool.prototype.mouseup = function(e) {
     }
     if (this.multi) {
       var b = this.line.b; 
-      this.line = this.viewer.addSegment(b.x, b.y, b.x, b.y, this.viewer.activeLayer());
+      this.line = this.viewer.addSegment(b.x, b.y, b.x, b.y, this.viewer.activeLayer);
       this.viewer.parametricManager.linkObjects([this.line.a, b]);
     } else {
       this.line = null;
@@ -103,7 +103,7 @@ TCAD.TWO.AddPointTool.prototype.mouseup = function(e) {
   this.viewer.historyManager.checkpoint();
   var a = this.viewer.screenToModel(e);
   var p = new TCAD.TWO.EndPoint(a.x, a.y);
-  var layer = this.viewer.activeLayer();
+  var layer = this.viewer.activeLayer;
   layer.objects.push(p);
   p.layer = layer;
   this.viewer.refresh();
