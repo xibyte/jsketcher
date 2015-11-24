@@ -31,18 +31,17 @@ TCAD.UI = function(app) {
   tk.add(cameraFolder, new tk.Number("z"));
   tk.add(mainBox, objectsFolder);
   tk.add(mainBox, modificationsFolder);
-  var modificationsTreeComp = new tk.Tree();
-  tk.add(modificationsFolder, modificationsTreeComp);
+  var modificationsListComp = new tk.List();
+  tk.add(modificationsFolder, modificationsListComp);
 
   var ui = this;
 
   this.app.bus.subscribe("craft", function() {
-    var data = {children : []};
+    modificationsListComp.root.empty();
     for (var i = 0; i < app.craft.history.length; i++) {
       var op = app.craft.history[i];
-      data.children.push(ui.getInfoForOp(op));
+      modificationsListComp.addRow(ui.getInfoForOp(op));
     }
-    modificationsTreeComp.set(data);
   });
 
   function cutExtrude(isCut) {
@@ -147,10 +146,9 @@ TCAD.UI = function(app) {
     tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, ok]));
   });
   printSolids.root.click(function () {
-    app.viewer.scene.children.map(function(o) {
-      if (o.geometry instanceof TCAD.Solid) {
-        console.log(JSON.stringify(o.geometry.csg));
-      }
+    app.findAllSolids().map(function(o) {
+      console.log("Solid ID: " + o.tCadId);
+      console.log(JSON.stringify(o.csg));
     });
   });
   printFace.root.click(function () {
@@ -182,15 +180,18 @@ TCAD.UI = function(app) {
 };
 
 TCAD.UI.prototype.getInfoForOp = function(op) {
-  var info = {name : op.type};
+  var p = op.params;
+  var norm2 = TCAD.math.norm2;
   if ('CUT' === op.type) {
-    info.name +=  " (" + op.depth + ")";
-    info.children = [{name : "depth : " + op.depth}]
+    return op.type + " (" + norm2(p.target) + ")";
+  } else if ('PAD' === op.type) {
+    return op.type + " (" + norm2(p.target) + ")";
   } else if ('BOX' === op.type) {
-    info.name +=  " (" + op.size + ")";
-    info.children = [{name : "size : " + op.size}]
+    return op.type + " (" + op.size + ")";
+  } else if ('PLANE' === op.type) {
+    return op.type + " (" + p.depth + ")";
   }
-  return info;
+  return op.type;
 };
 
 TCAD.UI.prototype.setSolid = function(solid) {
