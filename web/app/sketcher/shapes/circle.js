@@ -84,7 +84,7 @@ TCAD.TWO.EditCircleTool.prototype.mouseup = function(e) {
       new TCAD.TWO.EndPoint(p.x, p.y)
     );
     if (needSnap) this.viewer.parametricManager.linkObjects([this.circle.c, p]);
-    this.viewer.activeLayer().objects.push(this.circle);
+    this.viewer.activeLayer.objects.push(this.circle);
     this.viewer.refresh();
   } else {
     this.solveRequest(false);
