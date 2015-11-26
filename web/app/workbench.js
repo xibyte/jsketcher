@@ -156,7 +156,7 @@ TCAD.craft.extrude = function(app, request) {
   }
 
   face.csgGroup.shared.__tcad.faceId += '$';
-  return [TCAD.utils.createSolidMesh(meld).geometry];
+  return [TCAD.utils.createSolid(meld)];
 };
 
 TCAD.craft._pointOnLine = function(p, a, b) {
@@ -799,8 +799,8 @@ TCAD.craft.cut = function(app, request) {
   for (var si = 0; si < request.solids.length; si++) {
     var work = request.solids[si].csg;
     var cut = work.subtract(cutterCSG);
-    var solidMesh = TCAD.utils.createSolidMesh(cut);
-    outSolids.push(solidMesh.geometry);
+    var solidMesh = TCAD.utils.createSolid(cut);
+    outSolids.push(solidMesh);
   }
   return outSolids;
 };
@@ -808,24 +808,41 @@ TCAD.craft.cut = function(app, request) {
 TCAD.Craft = function(app) {
   this.app = app;
   this.history = [];
-  this.historyPointer = -1;
+  this._historyPointer = 0;
+  Object.defineProperty(this, "historyPointer", {
+    get: function() {return this._historyPointer},
+    set: function(value) {
+      if (this._historyPointer === value) return; 
+      this._historyPointer = value;
+      this.reset(this.history.slice(0, this._historyPointer));
+      this.app.bus.notify('craft');
+      this.app.bus.notify('historyPointer');
+      this.app.viewer.render();
+    }
+  });
 };
 
 TCAD.Craft.prototype.loadHistory = function(history) {
-  this.history = -1;
   this.history = history;
+  this._historyPointer = history.length;
   this.reset(history);
   this.app.bus.notify('craft');
+  this.app.bus.notify('historyPointer');
   this.app.viewer.render();
 };
 
 TCAD.Craft.prototype.reset = function(modifications) {
-  TCAD.utils.SOLID_COUNTER = 0;
+  TCAD.geom.SOLID_COUNTER = 0;
   TCAD.utils.SHARED_COUNTER = 0;
+  this.app.findAllSolids().forEach(function(s) {s.vanish()})
   for (var i = 0; i < modifications.length; i++) {
     var request = TCAD.craft.materialize(this.app.indexEntities(), modifications[i]);
     this.modifyInternal(request);
   }
+};
+
+TCAD.Craft.prototype.finishHistoryEditing = function() {
+  this.loadHistory(this.history);
 };
 
 TCAD.Craft.prototype.current = function() {
@@ -894,14 +911,20 @@ TCAD.Craft.prototype.modifyInternal = function(request) {
     request.solids[i].vanish();
   }
   for (i = 0; i < newSolids.length; i++) {
-    this.app.viewer.workGroup.add(newSolids[i].meshObject);
+    this.app.viewer.workGroup.add(newSolids[i].cadGroup);
   }
 };
 
-TCAD.Craft.prototype.modify = function(request) {
+TCAD.Craft.prototype.modify = function(request, overriding) {
   this.modifyInternal(request);
-  this.history.push(TCAD.craft.detach(request));
+  var detachedRequest = TCAD.craft.detach(request);
+  if (!overriding && this._historyPointer != this.history.length) {
+    this.history.splice(this._historyPointer + 1, 0, null);
+  }
+  this.history[this._historyPointer] = detachedRequest;
+  this._historyPointer ++;
   this.app.bus.notify('craft');
+  this.app.bus.notify('historyPointer');
   this.app.viewer.render();
 };
 
@@ -909,9 +932,9 @@ TCAD.craft.OPS = {
   CUT : TCAD.craft.cut,
   PAD : TCAD.craft.extrude,
   PLANE : function(app, request) {
-    return [TCAD.utils.createPlane(request.params.basis, request.params.depth).geometry];
+    return [TCAD.utils.createPlane(request.params.basis, request.params.depth)];
   },
   BOX : function(app, request) {
-    return [TCAD.utils.createCSGBox(request.size).geometry];
+    return [TCAD.utils.createCSGBox(request.size)];
   }
 };

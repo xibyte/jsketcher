@@ -172,9 +172,6 @@ TCAD.SelectionManager.prototype.handlePick = function(event) {
       var sketchFace = pickResult.face.__TCAD_polyFace;
       if (!this.contains(sketchFace)) {
         this.select(sketchFace);
-        pickResult.object.geometry.colorsNeedUpdate = true;
-        this.viewer.bus.notify('selection', sketchFace);
-        this.viewer.render();
         break;
       }
     }
@@ -193,6 +190,9 @@ TCAD.SelectionManager.prototype.select = function(sketchFace) {
     this.selection.push(sketchFace);
     TCAD.view.setFacesColor(sketchFace.faces, this.selectionColor);
   }
+  sketchFace.solid.mesh.geometry.colorsNeedUpdate = true;
+  this.viewer.bus.notify('selection', sketchFace);
+  this.viewer.render();
 };
 
 TCAD.SelectionManager.prototype.contains = function(face) {
