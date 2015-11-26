@@ -570,7 +570,6 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   var aux = [];
   for (i = 0; i < system.length; ++i) {
 
-    if (eqcElimination[i] === true) continue;
     
     var sdata = system[i];
     params = [];
@@ -579,8 +578,27 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
       var param = sdata[1][p];
       _p = getParam(param);
       params.push(_p);
-      if (auxDict[param.id] !== undefined) aux.push(_p);
+
+      (function () {
+        if (auxDict[param.id] !== undefined) {
+          aux.push(_p);
+          return;
+        }
+        for (var i = 0; i < equalsIndex.length; ++i) {
+          var eqParms = equalsIndex[i];
+          if (eqParms.indexOf(param.id) != -1) {
+            for (var j = 0; j < eqParms.length; j++) {
+              var eqp = eqParms[j];
+              if (auxDict[eqp] !== undefined) {
+                aux.push(_p);
+                return;
+              }
+            }
+          }
+        }
+      })();
     }
+    if (eqcElimination[i] === true) continue;
 
     var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
     _constrs.push(_constr);
