@@ -904,12 +904,12 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
   var dx = this._point.x - x;
   var dy = this._point.y - y;
+  for (var i = 0; i < this.lockedShifts.length; i += 2) {
+    this.lockedValues[i] = this._point.x - this.lockedShifts[i];
+    this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
+  }
+  this.solver.updateLock(this.lockedValues);
   if (!e.altKey && !e.ctrlKey) {
-    for (var i = 0; i < this.lockedShifts.length; i += 2) {
-      this.lockedValues[i] = this._point.x - this.lockedShifts[i];
-      this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
-    }
-    this.solver.updateLock(this.lockedValues);
     this.solveRequest(true);
   } else {
     this.obj.translate(dx, dy);
