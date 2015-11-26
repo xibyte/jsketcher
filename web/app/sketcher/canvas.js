@@ -383,6 +383,15 @@ TCAD.TWO.Viewer.prototype.setActiveLayer = function(layer) {
   }
 };
 
+TCAD.TWO.Viewer.prototype.deselect = function(obj) {
+  for (var i = 0; i < this.selected.length; i++) {
+    if (obj.id == this.selected[i].id) {
+      this.selected.splice(i, 1)[0].marked = null;
+      break;
+    }
+  }
+};
+
 TCAD.TWO.Viewer.prototype.deselectAll = function() {
   for (var i = 0; i < this.selected.length; i++) {
     this.selected[i].marked = null;
@@ -799,7 +808,16 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
     var picked = this.viewer.pick(e);
     if (picked.length > 0) {
       if (e.shiftKey) {
-        this.viewer.select([picked[0]], false);
+        var toSelect = picked[0];
+        var ids = this.viewer.selected.map(function(s){return s.id});        
+        for (var i = 0; i < picked.length; i++) {
+          if (ids.indexOf(picked[i].id) != -1) {
+            this.viewer.deselect(picked[i]);
+          } else {
+            toSelect = picked[i];                
+          }
+        }
+        this.viewer.select([toSelect], false);
         this.deselectOnUp = false;
       } else {
         var toSelect = picked[0];
