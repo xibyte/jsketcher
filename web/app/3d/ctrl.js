@@ -8,11 +8,10 @@ TCAD.UI = function(app) {
   mainBox.root.css({height : '100%'});
   var propFolder = new tk.Folder("Solid's Properties");
   var debugFolder = new tk.Folder("Debug");
-  var cameraFolder = new tk.Folder("Camera");
   var objectsFolder = new tk.Folder("Objects");
   var modificationsFolder = new tk.Folder("Modifications");
   var extrude, cut, edit, addPlane, save,
-    refreshSketches, showSketches, printSolids, printFace, printFaceId;
+    refreshSketches, showSketches, printSolids, printFace, printFaceId, finishHistory;
   tk.add(mainBox, propFolder);
   tk.add(propFolder, extrude = new tk.Button("Extrude"));
   tk.add(propFolder, cut = new tk.Button("Cut"));
@@ -25,87 +24,65 @@ TCAD.UI = function(app) {
   tk.add(debugFolder, printSolids = new tk.Button("Print Solids"));
   tk.add(debugFolder, printFace = new tk.Button("Print Face"));
   tk.add(debugFolder, printFaceId = new tk.Button("Print Face ID"));
-  tk.add(mainBox, cameraFolder);
-  tk.add(cameraFolder, new tk.Number("x"));
-  tk.add(cameraFolder, new tk.Number("y"));
-  tk.add(cameraFolder, new tk.Number("z"));
   tk.add(mainBox, objectsFolder);
   tk.add(mainBox, modificationsFolder);
   var modificationsListComp = new tk.List();
   tk.add(modificationsFolder, modificationsListComp);
 
   var ui = this;
-
+  
+  function setHistory() {
+    ui.app.craft.finishHistoryEditing();
+  }
+  finishHistory = new tk.ButtonRow(["Finish History Editing"], [setHistory]);
+  finishHistory.root.hide();
+  tk.add(modificationsFolder, finishHistory);
+  var historyWizard = null;
+  function updateHistoryPointer() {
+    if (historyWizard != null) {
+      historyWizard.close();
+      historyWizard = null;
+    }
+    
+    var craft = ui.app.craft;
+    var historyEditMode = craft.historyPointer != craft.history.length;
+    if (historyEditMode) {
+      var rows = modificationsListComp.root.find('.tc-row');
+      rows.removeClass('history-selected');
+      rows.eq(craft.historyPointer).addClass('history-selected');
+      var op = craft.history[craft.historyPointer];
+      historyWizard = TCAD.UI.createWizard(op, app, mainBox);
+      finishHistory.root.show();
+    } else {
+      finishHistory.root.hide();
+    }
+  }
+  
   this.app.bus.subscribe("craft", function() {
     modificationsListComp.root.empty();
     for (var i = 0; i < app.craft.history.length; i++) {
       var op = app.craft.history[i];
-      modificationsListComp.addRow(ui.getInfoForOp(op));
+      var row = modificationsListComp.addRow(ui.getInfoForOp(op));
+      (function(i) {
+        row.click(function () {
+          ui.app.craft.historyPointer = i;
+        })
+      })(i);
     }
+    updateHistoryPointer();
   });
+  
+  this.app.bus.subscribe("historyPointer", function() {
+    //updateHistoryPointer();
+  });
+
 
   function cutExtrude(isCut) {
     return function() {
       if (app.viewer.selectionMgr.selection.length == 0) {
         return;
       }
-      var face = app.viewer.selectionMgr.selection[0];
-      var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
-      var polygons = TCAD.craft.getSketchedPolygons3D(app, face);
-
-      var box = new tk.Box();
-      box.root.css({left : (mainBox.root.width() + 10) + 'px', top : 0});
-      var folder = new tk.Folder(isCut ? "Cut Options" : "Extrude Options");
-      tk.add(box, folder);
-      var theValue = new tk.Number(isCut ? "Depth" : "Height", 50);
-      var scale = new tk.Number("Expansion", 1, 0.1);
-      var deflection = new tk.Number("Deflection", 0, 1);
-      var angle = new tk.Number("Angle", 0, 5);
-      var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
-      function onChange() {
-        var depthValue = theValue.input.val();
-        var scaleValue = scale.input.val();
-        var deflectionValue = deflection.input.val();
-        var angleValue = angle.input.val();
-        if (isCut) depthValue *= -1;
-        wizard.update(face._basis, normal, depthValue, scaleValue, deflectionValue, angleValue);
-        app.viewer.render()
-      }
-      theValue.input.on('t-change', onChange);
-      scale.input.on('t-change', onChange);
-      deflection.input.on('t-change', onChange);
-      angle.input.on('t-change', onChange);
-      onChange();
-      tk.add(folder, theValue);
-      tk.add(folder, scale);
-      tk.add(folder, deflection);
-      tk.add(folder, angle);
-      function close() {
-        box.close();
-        wizard.dispose();
-      }
-      function applyCut() {
-        var depthValue = theValue.input.val();
-        app.craft.modify({
-          type: 'CUT',
-          solids : [face.solid],
-          face : face,
-          params : wizard.operationParams
-        });
-        close();
-      }
-      function applyExtrude() {
-        var heightValue = theValue.input.val();
-        app.craft.modify({
-          type: 'PAD',
-          solids : [face.solid],
-          face : face,
-          params : wizard.operationParams
-        });
-        close();
-      }
-
-      tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, isCut ? applyCut : applyExtrude]));
+      TCAD.UI.createCutExtrudeWizard(isCut, ui.app, app.viewer.selectionMgr.selection[0], mainBox);
     }
   }
 
@@ -114,36 +91,7 @@ TCAD.UI = function(app) {
   edit.root.click(tk.methodRef(app, "sketchFace"));
   refreshSketches.root.click(tk.methodRef(app, "refreshSketches"));
   addPlane.root.click(function() {
-    var box = new tk.Box();
-    box.root.css({left : (mainBox.root.width() + 10) + 'px', top : 0});
-    var folder = new tk.Folder("Add a Plane");
-    tk.add(box, folder);
-    var choice = ['XY', 'XZ', 'ZY'];
-    var orientation = new tk.InlineRadio(choice, choice, 0);
-    var depth = new tk.Number("Depth", 0);
-
-    tk.add(folder, orientation);
-    tk.add(folder, depth);
-    var wizard = new TCAD.wizards.PlaneWizard(app.viewer);
-    function onChange() {
-      wizard.update(orientation.getValue(), depth.input.val());
-    }
-    function close() {
-      box.close();
-      wizard.dispose();
-    }
-    function ok() {
-      app.craft.modify({
-        type: 'PLANE',
-        solids : [],
-        params : wizard.operationParams
-      });
-      close();
-    }
-    orientation.root.find('input:radio').change(onChange);
-    depth.input.on('t-change', onChange);
-    onChange();
-    tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, ok]));
+    TCAD.UI.createPlaneWizard(app, mainBox);
   });
   printSolids.root.click(function () {
     app.findAllSolids().map(function(o) {
@@ -175,8 +123,6 @@ TCAD.UI = function(app) {
   save.root.click(function() {
     app.save();
   });
-
-  this.solidFolder = null;
 };
 
 TCAD.UI.prototype.getInfoForOp = function(op) {
@@ -194,10 +140,131 @@ TCAD.UI.prototype.getInfoForOp = function(op) {
   return op.type;
 };
 
-TCAD.UI.prototype.setSolid = function(solid) {
-  if (this.solidFolder !== null) {
-    this.solidFolder.remove();
+TCAD.UI.createWizard = function(op, app, alignComponent) {
+  var initParams = op.protoParams;
+  var face = op.face !== undefined ? app.findFace(op.face) : null;
+  if (face != null) {
+    app.viewer.selectionMgr.select(face);
   }
-  this.solidFolder = this.dat.addFolder("Solid Properties");
-  this.solidFolder.add(solid.wireframeGroup, 'visible').listen()
+  if ('CUT' === op.type) {
+    return TCAD.UI.createCutExtrudeWizard(true, app, face, alignComponent, initParams, true);
+  } else if ('PAD' === op.type) {
+    return TCAD.UI.createCutExtrudeWizard(false, app, face, alignComponent, initParams, true);
+  } else if ('PLANE' === op.type) {
+    return TCAD.UI.createPlaneWizard(app, alignComponent, initParams, true);
+  }
+  return null;
+};
+
+
+TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, initParams, overriding) {
+  var tk = TCAD.toolkit;
+  function def(index, fallback) {
+    return !!initParams ? initParams[index] : fallback;
+  }
+
+  var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
+  var polygons = TCAD.craft.getSketchedPolygons3D(app, face);
+
+  var box = new tk.Box();
+  box.root.css({left : (alignComponent.root.width() + 10) + 'px', top : 0});
+  var folder = new tk.Folder(isCut ? "Cut Options" : "Extrude Options");
+  tk.add(box, folder);
+  var theValue = new tk.Number(isCut ? "Depth" : "Height", def(0, 50));
+  var scale = new tk.Number("Expansion", def(1, 1), 0.1);
+  var deflection = new tk.Number("Deflection", def(2, 0), 1);
+  var angle = new tk.Number("Angle", def(3, 0), 5);
+  var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
+  var depthValue, scaleValue, deflectionValue, angleValue;
+  function onChange() {
+    depthValue = theValue.input.val();
+    scaleValue = scale.input.val();
+    deflectionValue = deflection.input.val();
+    angleValue = angle.input.val();
+    if (isCut) depthValue *= -1;
+    wizard.update(face._basis, normal, depthValue, scaleValue, deflectionValue, angleValue);
+    app.viewer.render()
+  }
+  theValue.input.on('t-change', onChange);
+  scale.input.on('t-change', onChange);
+  deflection.input.on('t-change', onChange);
+  angle.input.on('t-change', onChange);
+  onChange();
+  tk.add(folder, theValue);
+  tk.add(folder, scale);
+  tk.add(folder, deflection);
+  tk.add(folder, angle);
+  function close() {
+    box.close();
+    wizard.dispose();
+  }
+  function applyCut() {
+    var depthValue = theValue.input.val();
+    app.craft.modify({
+      type: 'CUT',
+      solids : [app.findSolid(face.solid.tCadId)],
+      face : app.findFace(face.id),
+      params : wizard.operationParams,
+      protoParams : [depthValue, scaleValue, deflectionValue, angleValue]
+    }, overriding);
+    close();
+  }
+  function applyExtrude() {
+    var heightValue = theValue.input.val();
+    app.craft.modify({
+      type: 'PAD',
+      solids : [app.findSolid(face.solid.tCadId)],
+      face : app.findFace(face.id),
+      params : wizard.operationParams,
+      protoParams : [depthValue, scaleValue, deflectionValue, angleValue]
+    }, overriding);
+    close();
+  }
+
+  tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, isCut ? applyCut : applyExtrude]));
+  return new TCAD.UI.WizardRef(wizard, box, close);
+};
+
+TCAD.UI.createPlaneWizard = function (app, alignComponent, initParams, overiding) {
+  var tk = TCAD.toolkit;
+  
+  var box = new tk.Box();
+  box.root.css({left : (alignComponent.root.width() + 10) + 'px', top : 0});
+  var folder = new tk.Folder("Add a Plane");
+  tk.add(box, folder);
+  var choice = ['XY', 'XZ', 'ZY'];
+  var orientation = new tk.InlineRadio(choice, choice, !initParams ? 0 : choice.indexOf(initParams[0]));
+  var depth = new tk.Number("Depth", !initParams ? 0 : initParams[1]);
+
+  tk.add(folder, orientation);
+  tk.add(folder, depth);
+  var wizard = new TCAD.wizards.PlaneWizard(app.viewer);
+  var orientationValue, w;
+  function onChange() {
+    wizard.update(orientationValue = orientation.getValue(), w = depth.input.val());
+  }
+  function close() {
+    box.close();
+    wizard.dispose();
+  }
+  function ok() {
+    app.craft.modify({
+      type: 'PLANE',
+      solids : [],
+      params : wizard.operationParams,
+      protoParams : [orientationValue, w]
+    }, overiding);
+    close();
+  }
+  orientation.root.find('input:radio').change(onChange);
+  depth.input.on('t-change', onChange);
+  onChange();
+  tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, ok]));
+  return new TCAD.UI.WizardRef(wizard, box, close);
+};
+
+TCAD.UI.WizardRef = function(wizard, box, close) {
+  this.wizard = wizard;
+  this.box = box;
+  this.close = close;
 };
