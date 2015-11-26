@@ -271,7 +271,7 @@ TCAD.App2D.prototype.exportTextData = function(data, ext) {
   link.download = this.getSketchId() + "." + ext;
   link.click();
   //console.log(app.viewer.io.svgExport());
-}
+};
 
 TCAD.App2D.prototype.loadFromLocalStorage = function() {
   var sketchId = this.getSketchId();

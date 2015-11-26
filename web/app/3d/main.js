@@ -57,8 +57,8 @@ TCAD.App = function() {
 
 TCAD.App.prototype.findAllSolids = function() {
   return this.viewer.workGroup.children
-    .filter(function(obj) {return !!obj.geometry && obj.geometry.tCadId !== undefined} )
-    .map(function(obj) {return obj.geometry} )
+    .filter(function(obj) {return obj.__tcad_solid !== undefined} )
+    .map(function(obj) {return obj.__tcad_solid} )
 };
 
 TCAD.App.prototype.findFace = function(faceId) {
@@ -70,6 +70,17 @@ TCAD.App.prototype.findFace = function(faceId) {
       if (face.id == faceId) {
         return face;
       }
+    }
+  }
+  return null;
+};
+
+TCAD.App.prototype.findSolid = function(solidId) {
+  var solids = this.findAllSolids();
+  for (var i = 0; i < solids.length; i++) {
+    var solid = solids[i];
+    if (solid.tCadId == solidId) {
+      return solid;
     }
   }
   return null;
@@ -317,7 +328,8 @@ TCAD.App.prototype.load = function() {
   var project = localStorage.getItem(this.projectStorageKey());
   if (!!project) {
     var data = JSON.parse(project);
-    this.craft.loadHistory(data.history);
-    
+    if (!!data.history) {
+      this.craft.loadHistory(data.history);
+    }
   }
 };

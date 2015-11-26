@@ -123,6 +123,10 @@
     border-radius: 0 5px 5px 0;
 }
 
+.tc-buttons-block-item:last-child:first-child {
+    border-radius: 5px;
+}
+
 .tc-buttons-block {
     text-align: right;
 }
