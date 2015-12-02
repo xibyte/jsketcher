@@ -206,7 +206,7 @@ TCAD.parametric.wrapAux = function(constrs, locked) {
 TCAD.parametric.lock2Equals2 = function(constrs, locked) {
   var _locked = [];
   for (var i = 0; i < locked.length; ++i) {
-    _locked.push(new TCAD.constraints.Weighted(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()), 1));
+    _locked.push(new TCAD.constraints.EqualsTo([locked[i]], locked[i].get()));
   }
   return _locked;
 };
@@ -228,10 +228,14 @@ TCAD.parametric.diagnose = function(sys) {
 
 TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
 
-  var lockingConstrs = TCAD.parametric.lock2Equals2(constrs, locked);
-  Array.prototype.push.apply( constrs, lockingConstrs );
-  
+  var simpleMode = true;
+  if (!simpleMode) {
+    var lockingConstrs = TCAD.parametric.lock2Equals2(constrs, locked);
+    Array.prototype.push.apply( constrs, lockingConstrs );
+  }
+            
   var sys = new TCAD.parametric.System(constrs);
+  
   TCAD.parametric.wrapAux(constrs, aux);
 
   var model = function(point) {
@@ -249,13 +253,8 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     returnCode : 1
   };
 
-  var conflict = false;//TCAD.parametric.diagnose(sys).conflict;
-  if (conflict) {
-    console.log("Conflicting or redundant constraints. Please fix your system.");
-  }
-
   function solve(rough, alg) {
-    if (conflict) return nullResult;
+    //if (simpleMode) return nullResult;
     if (constrs.length == 0) return nullResult;
     if (sys.params.length == 0) return nullResult;
     switch (alg) {
@@ -273,7 +272,11 @@ TCAD.parametric.prepare = function(constrs, locked, aux, alg) {
     system : sys,
     updateLock : function(values) {
       for (var i = 0; i < values.length; ++i) {
-        lockingConstrs[i].constr.value = values[i];
+        if (simpleMode) {
+          locked[i].set(values[i]);
+        } else {
+          lockingConstrs[i].value = values[i];
+        }
       }
     }
   };

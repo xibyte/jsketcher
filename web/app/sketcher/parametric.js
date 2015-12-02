@@ -613,10 +613,6 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   
   var solver = TCAD.parametric.prepare(_constrs, _locked, aux);
   function solve(rough, alg) {
-    for (p in pdict) {
-      _p = pdict[p];
-      _p.set(_p._backingParam.get());
-    }
     return solver.solveSystem(rough, alg);
   }
   var viewer = this.viewer;
