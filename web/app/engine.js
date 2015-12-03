@@ -164,15 +164,18 @@ TCAD.utils.createPlane = function(basis, depth) {
   var plane = new TCAD.Solid(CSG.fromPolygons([polygon]), material, 'PLANE');
   plane.wireframeGroup.visible = false;
   plane.mergeable = false;
+  var _3d = tr.invert();
 
   function setBounds(bbox) {
     var corner = new TCAD.Vector(bbox.minX, bbox.minY, 0);
     var size = new TCAD.Vector(bbox.width(), bbox.height(), 1);
-    tr.invert()._apply(size);
-    tr.invert()._apply(corner);
+    _3d._apply(size);
+    _3d._apply(corner);
     plane.mesh.scale.set(size.x, size.y, size.z);
     plane.mesh.position.set(corner.x, corner.y, corner.z);
     currentBounds = bbox;
+    var poly = new CSG.Polygon(bbox.toPolygon().map(function(p){return new CSG.Vertex(TCAD.utils.csgVec( _3d._apply(p) ))}), shared);
+    plane.csg = CSG.fromPolygons([poly]);
   }
   var bb = new TCAD.BBox();
   bb.checkBounds(-400, -400);
