@@ -264,8 +264,8 @@ optim.dog_leg = function (subsys, rough) {
   //var tolg = rough ? 1e-3 : 1e-4;
   var tolg, tolf;
   if (rough) {
-    tolg = 1e-2;
-    tolf = 1e-2;
+    tolg = 1e-3;
+    tolf = 1e-3;
   } else {
     tolg = 1e-6;
     tolf = 1e-6;
