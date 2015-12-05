@@ -153,6 +153,10 @@ TCAD.App2D = function() {
     app.viewer.parametricManager.pointOnLine(app.viewer.selected);
   });
 
+  this.registerAction('llAngle', "Angle Between 2 Lines", function () {
+    app.viewer.parametricManager.llAngle(app.viewer.selected, prompt);
+  });
+
   this.registerAction('analyzeConstraint', "Analyze Constraint", function () {
     app.viewer.parametricManager.analyze(alert);
   });

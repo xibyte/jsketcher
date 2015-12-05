@@ -18,6 +18,12 @@ TCAD.constraints.create = function(name, params, values) {
       return new TCAD.constraints.P2PDistance(params, values[0]);
     case "P2PDistanceV":
       return new TCAD.constraints.P2PDistanceV(params);
+    case "angle":
+      return new TCAD.constraints.Angle(params);
+    case "angleConst":
+      var _ = true, x = false;
+      // Exclude angle value from parameters
+      return new TCAD.constraints.ConstantWrapper(new TCAD.constraints.Angle(params), [x,x,x,x,x,x,x,x,_]);
   }
 };
 
@@ -342,10 +348,78 @@ TCAD.constraints.Perpendicular = function(params) {
   }
 };
 
+/** @constructor */
+TCAD.constraints.Angle = function(params) {
+
+  this.params = params;
+
+  var l1p1x = 0;
+  var l1p1y = 1;
+  var l1p2x = 2;
+  var l1p2y = 3;
+  var l2p1x = 4;
+  var l2p1y = 5;
+  var l2p2x = 6;
+  var l2p2y = 7;
+  var angle = 8;
+  var scale = 1000; // we need scale to get same order of measure units(radians are to small)
+
+  function p(ref) {
+    return params[ref].get();
+  }
+
+  this.error = function() {
+    var dx1 = (p(l1p2x) - p(l1p1x));
+    var dy1 = (p(l1p2y) - p(l1p1y));
+    var dx2 = (p(l2p2x) - p(l2p1x));
+    var dy2 = (p(l2p2y) - p(l2p1y));
+    var a = Math.atan2(dy1,dx1) + p(angle);
+    var ca = Math.cos(a);
+    var sa = Math.sin(a);
+    var x2 = dx2*ca + dy2*sa;
+    var y2 = -dx2*sa + dy2*ca;
+    return Math.atan2(y2,x2) * scale;
+  };
+
+  this.gradient = function (out) {
+    var dx1 = (p(l1p2x) - p(l1p1x));
+    var dy1 = (p(l1p2y) - p(l1p1y));
+    var r2 = dx1 * dx1 + dy1 * dy1;
+    out[l1p1x] = -dy1 / r2;
+    out[l1p1y] = dx1 / r2;
+    out[l1p2x] = dy1 / r2;
+    out[l1p2y] = -dx1 / r2;
+    var dx1 = (p(l1p2x) - p(l1p1x));
+    var dy1 = (p(l1p2y) - p(l1p1y));
+    var dx2 = (p(l2p2x) - p(l2p1x));
+    var dy2 = (p(l2p2y) - p(l2p1y));
+    var a = Math.atan2(dy1, dx1) + p(angle);
+    var ca = Math.cos(a);
+    var sa = Math.sin(a);
+    var x2 = dx2 * ca + dy2 * sa;
+    var y2 = -dx2 * sa + dy2 * ca;
+    var r2 = dx2 * dx2 + dy2 * dy2;
+    dx2 = -y2 / r2;
+    dy2 = x2 / r2;
+    out[l2p1x] = (-ca * dx2 + sa * dy2);
+    out[l2p1y] = (-sa * dx2 - ca * dy2);
+    out[l2p2x] = ( ca * dx2 - sa * dy2);
+    out[l2p2y] = ( sa * dx2 + ca * dy2);
+    out[angle] = -1;
+    TCAD.constraints.rescale(out, scale);
+  }
+};
+
 TCAD.constraints._fixNaN = function(grad) {
   for (var i = 0; i < grad.length; i++) {
     if (isNaN(grad[i])) {
       grad[i] = 0;
     }
+  }
+};
+
+TCAD.constraints.rescale = function(grad, factor) {
+  for (var i = 0; i < grad.length; i++) {
+    grad[i] *= factor;
   }
 };
