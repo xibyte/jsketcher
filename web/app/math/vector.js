@@ -117,6 +117,10 @@ TCAD.Vector.prototype.three = function() {
   return new THREE.Vector3(this.x, this.y, this.z);
 };
 
+TCAD.Vector.prototype.csg = function() {
+  return new CSG.Vector3D(this.x, this.y, this.z);
+};
+
 /** @constructor */
 TCAD.Matrix = function() {
   this.reset();
