@@ -223,6 +223,35 @@ TCAD.TWO.ParametricManager.prototype.pointOnLine = function(objs) {
   this.add(new TCAD.TWO.Constraints.PointOnLine(target, segment));
 };
 
+TCAD.TWO.ParametricManager.prototype.llAngle = function(objs, promptCallback) {
+  var lines = this._fetch(objs, 'TCAD.TWO.Segment', 2);
+  var l1 = lines[0];
+  var l2 = lines[1];
+
+  var points = [l1.a, l1.b, l2.a, l2.b];
+
+  if (l1.b.x < l1.a.x) {
+    points[0] = l1.b;
+    points[1] = l1.a;
+  }
+
+  if (l2.b.x < l2.a.x) {
+    points[2] = l2.b;
+    points[3] = l2.a;
+  }
+
+  var dx1 = points[1].x - points[0].x;
+  var dy1 = points[1].y - points[0].y;
+  var dx2 = points[3].x - points[2].x;
+  var dy2 = points[3].y - points[2].y;
+
+  var angle = Math.atan2(dy2,dx2) - Math.atan2(dy1,dx1);
+  angle *= 1 / Math.PI * 180;
+  angle = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.Angle.prototype.SettableFields.angle, angle.toFixed(2), promptCallback);
+  if (angle === null) return;
+  this.add(new TCAD.TWO.Constraints.Angle(points[0], points[1], points[2], points[3], angle));
+};
+
 TCAD.TWO.utils.constRef = function(value) {
   return function() {
     return value;    
@@ -1100,5 +1129,64 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointOnLine.prototype.NAME] = 
 TCAD.TWO.Constraints.PointOnLine.prototype.getObjects = function() {
   return [this.point, this.line];
 };
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+TCAD.TWO.Constraints.Angle = function(p1, p2, p3, p4, angle) {
+  this.p1 = p1;
+  this.p2 = p2;
+  this.p3 = p3;
+  this.p4 = p4;
+  this._angle = new TCAD.TWO.Ref(0);
+  Object.defineProperty(this, "angle", {
+    get: function() {return this._angle.get() / Math.PI * 180},
+    set: function(value) {
+      this._angle.set(value / 180 * Math.PI)}
+  });
+  this.angle = angle;
+};
+
+TCAD.TWO.Constraints.Angle.prototype.NAME = 'Angle';
+TCAD.TWO.Constraints.Angle.prototype.UI_NAME = 'Lines Angle';
+
+TCAD.TWO.Constraints.Angle.prototype.getSolveData = function() {
+  var params = [];
+  this.p1.collectParams(params);
+  this.p2.collectParams(params);
+  this.p3.collectParams(params);
+  this.p4.collectParams(params);
+  params.push(this._angle);
+  return [['angleConst', params, []]];
+};
+
+TCAD.TWO.Constraints.Angle.prototype.serialize = function() {
+  return [this.NAME, [this.p1.id, this.p2.id, this.p3.id, this.p4.id, this.angle.get()]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Angle.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Angle( refs(data[0]), refs(data[1]), data[2] );
+};
+
+TCAD.TWO.Constraints.Angle.prototype.getObjects = function() {
+  var out = [];
+  var index = {};
+  function add(obj) {
+    if (index[obj.id] === undefined) {
+      index[obj.id] = obj;
+      out.push(obj);
+    }
+  }
+  function check(obj) {
+    if (obj.parent !== null) {
+      add(obj.parent);
+    } else {
+      add(obj);
+    }
+  }
+  return out;
+};
+
+TCAD.TWO.Constraints.Angle.prototype.SettableFields = {'angle' : "Enter the angle value"};
 
 // ------------------------------------------------------------------------------------------------------------------ //
