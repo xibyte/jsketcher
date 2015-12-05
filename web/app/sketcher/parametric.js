@@ -184,22 +184,20 @@ TCAD.TWO.ParametricManager.prototype.rr = function(arcs) {
 };
 
 TCAD.TWO.ParametricManager.prototype.ll = function(lines) {
-  this.add(new TCAD.TWO.Constraints.LL(lines[0], lines[1]));
+  var prev = lines[0];
+  for (var i = 1; i < lines.length; ++i) {
+    this._add(new TCAD.TWO.Constraints.LL(prev, lines[i]));
+    prev = lines[i];
+  }
+  this.refresh();
+
 };
 
 TCAD.TWO.ParametricManager.prototype.entityEquality = function(objs) {
-  var arcs, lines = undefined;
-  try {
-    arcs = this._fetchArkCirc(objs, 2);
-  } catch (e1) {
-    try {
-       lines = this._fetchTwoLines(objs);
-    } catch (e2) {
-      throw e1 + "\n" + e2;
-    }
-  }
-  if (!!arcs) this.rr(arcs);
-  if (!!lines) this.ll(lines);
+  var arcs = this._fetch(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 0);
+  var lines = this._fetch(objs, ['TCAD.TWO.Segment'], 0);
+  if (arcs.length > 0) this.rr(arcs);
+  if (lines.length > 0) this.ll(lines);
 };
 
 TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback) {
