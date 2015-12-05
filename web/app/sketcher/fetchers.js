@@ -43,6 +43,19 @@ TCAD.TWO.ParametricManager.prototype._fetchArkCirc = function(objs, min) {
   return arcs;
 };
 
+TCAD.TWO.ParametricManager.prototype._fetch = function(objs, types, min) {
+  var result = [];
+  for (var i = 0; i < objs.length; ++i) {
+    if (types.indexOf(objs[i]._class)  > -1 ) {
+      result.push(objs[i]);
+    }
+  }
+  if (result.length < min) {
+    throw "Illegal Argument. Constraint requires at least " + min + " of " + types;
+  }
+  return result;
+};
+
 TCAD.TWO.ParametricManager.prototype._fetchPointAndLine = function(objs) {
 
   var point = null;
