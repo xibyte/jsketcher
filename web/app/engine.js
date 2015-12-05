@@ -548,8 +548,12 @@ TCAD.geom.extrude = function(source, sourceNormal, target, expansionFactor) {
     return new CSG.Vertex(TCAD.utils.csgVec(v));
   }
 
-  poly[0] = new CSG.Polygon(source.map(vecToVertex), TCAD.utils.createShared());
-  poly[1] = new CSG.Polygon(lid.map(vecToVertex), TCAD.utils.createShared());
+  var negateNormal = sourceNormal.negate();
+  var sourcePlane = new CSG.Plane(negateNormal.csg(), negateNormal.dot(source[0]));
+  var lidPlane = new CSG.Plane(sourceNormal.csg(), sourceNormal.dot(lid[0]));
+
+  poly[0] = new CSG.Polygon(source.map(vecToVertex), TCAD.utils.createShared(), sourcePlane);
+  poly[1] = new CSG.Polygon(lid.map(vecToVertex), TCAD.utils.createShared(), lidPlane);
   return poly;
 };
 
