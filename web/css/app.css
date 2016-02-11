@@ -193,3 +193,12 @@ html, body {
   color: white;
   text-decoration: none;
 }
+
+#layerSelection label {
+  color: #fff;
+}
+
+#layersList {
+  background-color: #ddd;
+  margin: 10px;
+}
