@@ -216,6 +216,12 @@ TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback
   }
 };
 
+TCAD.TWO.ParametricManager.prototype.pointOnArc = function(objs) {
+  var points = this._fetch(objs, ['TCAD.TWO.EndPoint'], 1);
+  var arcs = this._fetch(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
+  this.add(new TCAD.TWO.Constraints.PointOnArc(points[0], arcs[0]));
+};
+
 TCAD.TWO.ParametricManager.prototype.pointOnLine = function(objs) {
   var pl = this._fetchPointAndLine(objs);
   var target = pl[0];
@@ -1128,6 +1134,37 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointOnLine.prototype.NAME] = 
 
 TCAD.TWO.Constraints.PointOnLine.prototype.getObjects = function() {
   return [this.point, this.line];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+TCAD.TWO.Constraints.PointOnArc = function(point, arc) {
+  this.point = point;
+  this.arc = arc;
+};
+
+TCAD.TWO.Constraints.PointOnArc.prototype.NAME = 'PointOnArc';
+TCAD.TWO.Constraints.PointOnArc.prototype.UI_NAME = 'Point On Arc';
+
+TCAD.TWO.Constraints.PointOnArc.prototype.getSolveData = function() {
+  var params = [];
+  this.point.collectParams(params);
+  this.arc.c.collectParams(params);
+  params.push(this.arc.r);
+  return [['P2PDistanceV', params, []]];
+};
+
+TCAD.TWO.Constraints.PointOnArc.prototype.serialize = function() {
+  return [this.NAME, [this.point.id, this.arc.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointOnArc.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.PointOnArc(refs(data[0]), refs(data[1]));
+};
+
+TCAD.TWO.Constraints.PointOnArc.prototype.getObjects = function() {
+  return [this.point, this.arc];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
