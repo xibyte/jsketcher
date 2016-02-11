@@ -216,6 +216,11 @@ TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback
   }
 };
 
+TCAD.TWO.ParametricManager.prototype.pointInMiddle = function(objs) {
+  var pl = this._fetchPointAndLine(objs);
+  this.add(new TCAD.TWO.Constraints.PointInMiddle(pl[0], pl[1]));
+};
+
 TCAD.TWO.ParametricManager.prototype.pointOnArc = function(objs) {
   var points = this._fetch(objs, ['TCAD.TWO.EndPoint'], 1);
   var arcs = this._fetch(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
@@ -1165,6 +1170,48 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointOnArc.prototype.NAME] = f
 
 TCAD.TWO.Constraints.PointOnArc.prototype.getObjects = function() {
   return [this.point, this.arc];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+TCAD.TWO.Constraints.PointInMiddle = function(point, line) {
+  this.point = point;
+  this.line = line;
+  this.length = new TCAD.TWO.Ref(TCAD.math.distanceAB(line.a, line.b) / 2);
+};
+
+TCAD.TWO.Constraints.PointInMiddle.prototype.NAME = 'PointInMiddle';
+TCAD.TWO.Constraints.PointInMiddle.prototype.UI_NAME = 'Point In the Middle';
+
+TCAD.TWO.Constraints.PointInMiddle.prototype.getSolveData = function() {
+  var params1 = [];
+  var params2 = [];
+  
+  this.line.a.collectParams(params1);
+  this.point.collectParams(params1);
+  params1.push(this.length);
+
+  this.line.b.collectParams(params2);
+  this.point.collectParams(params2);
+  params2.push(this.length);
+
+  return [
+    ['P2PDistanceV', params1, []],
+    ['P2PDistanceV', params2, []]
+  ];
+};
+
+TCAD.TWO.Constraints.PointInMiddle.prototype.serialize = function() {
+  return [this.NAME, [this.point.id, this.line.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointInMiddle.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.PointInMiddle(refs(data[0]), refs(data[1]));
+};
+
+TCAD.TWO.Constraints.PointInMiddle.prototype.getObjects = function() {
+  return [this.point, this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //

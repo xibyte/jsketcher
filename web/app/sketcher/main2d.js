@@ -157,6 +157,10 @@ TCAD.App2D = function() {
     app.viewer.parametricManager.pointOnArc(app.viewer.selected);
   });
 
+  this.registerAction('pointInMiddle', "Point In the Middle", function () {
+    app.viewer.parametricManager.pointInMiddle(app.viewer.selected);
+  });
+
   this.registerAction('llAngle', "Angle Between 2 Lines", function () {
     app.viewer.parametricManager.llAngle(app.viewer.selected, prompt);
   });
