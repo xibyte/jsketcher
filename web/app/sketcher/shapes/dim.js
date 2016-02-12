@@ -62,14 +62,18 @@ TCAD.TWO.LinearDimension.prototype.drawImpl = function(ctx, scale, viewer) {
   ctx.lineTo(_bx, _by);
 
 
-  function drawRef(startA, a) {
-    var off2 = 1.2;
-    ctx.moveTo(startA.x, startA.y);
-    ctx.lineTo(a.x + _vx * off2, a.y + _vy * off2);
+  function drawRef(start, x, y) {
+    var vec = new TCAD.Vector(x - start.x, y - start.y);
+    vec._normalize();
+    vec._multiply(7);
+    
+    ctx.moveTo(start.x, start.y );
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + vec.x, y + vec.y);
   }
 
-  drawRef(startA, a);
-  drawRef(startB, b);
+  drawRef(startA, _ax, _ay);
+  drawRef(startB, _bx, _by);
 
   ctx.closePath();
   ctx.stroke();
