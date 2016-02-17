@@ -35,7 +35,7 @@ function start() {
   }
 
   var pm = app.viewer.parametricManager;
-  var constrList = new TCAD.ui.List($('#constrs'), {
+  var constrList = new TCAD.ui.List('constrs', {
     items : function() {
       var theItems = [];
       for (var j = 0; j < pm.subSystems.length; j++) {
@@ -76,6 +76,7 @@ function start() {
       app.viewer.parametricManager.refresh();
     }
   });
+  $('.dock-node').append(constrList.ul);
   app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
   constrList.refresh();
 

@@ -17,6 +17,9 @@ TCAD.App2D = function() {
   //For debug view
   this._actionsOrder = [];
 
+  this.dock = new TCAD.ui.Dock($('#dock'), $('#status'), TCAD.App2D.viewes);
+  this.dock.show('Constraints');
+  
   this.registerAction = function(id, desc, action) {
     app.actions[id] = {id: id, desc: desc, action: action};
     app._actionsOrder.push(id);
@@ -185,6 +188,33 @@ TCAD.App2D = function() {
   });
 };
 
+TCAD.App2D.viewes = [
+  {
+    name: 'Layers',
+    icon: 'bars'
+  },
+  {
+    name: 'Properties',
+    icon: 'sliders'
+  },
+  {
+    name: 'Dimensions',
+    icon: 'arrows-v'
+  },
+  {
+    name: 'Settings',
+    icon: 'wrench'
+  },
+  {
+    name: 'Constraints',
+    icon: 'cogs'
+  }
+];
+
+TCAD.App2D.faBtn = function(iconName) {
+  return $('<i>', {class : 'fa fa-'+iconName});  
+};
+
 TCAD.App2D.prototype.fit = function() {
 
   var bbox = new TCAD.io.BBox();
@@ -244,7 +274,7 @@ TCAD.App2D.prototype.newSketch = function() {
 TCAD.App2D.prototype.initSketchManager = function(data, ext) {
   this._sketchesWin = new TCAD.ui.Window($('#sketchManager'));
   var app = this;
-  var sketchesList = new TCAD.ui.List($('#sketchList'), {
+  var sketchesList = new TCAD.ui.List('sketchList', {
     items : function() {
       var theItems = [];
       for (var name in localStorage) {
@@ -273,6 +303,7 @@ TCAD.App2D.prototype.initSketchManager = function(data, ext) {
       app.openSketch(item.name);
     }
   });
+  $('#sketchManager').find('.content').append(sketchesList.ul);
   sketchesList.refresh();
   this._sketchesList = sketchesList;
 };
