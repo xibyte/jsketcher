@@ -49,11 +49,10 @@ TCAD.ui.openWin = function(win, mouseEvent) {
 };
 
 /** @constructor */
-TCAD.ui.List = function(el, model) {
-  this.ul = el;
-  this.template = this.ul.html();
-  this.ul.empty();
+TCAD.ui.List = function(id, model) {
+  this.ul = $('<ul>', { class : 'tlist', id : id});
   this.model = model;
+  this.template = '<li>$name$<span class="btn rm" style="float: right;"><i class="fa fa-remove"></i></span></li>';
 };
 
 TCAD.ui.List.prototype.refresh = function() {
@@ -61,7 +60,7 @@ TCAD.ui.List.prototype.refresh = function() {
   var items = this.model.items();
   var model = this.model;
   function makeCallbacks(li, item, index) {
-    li.find('.ui-rm').click(function(e) {
+    li.find('.rm').click(function(e) {
       model.remove(item, index);
       e.stopPropagation();
     });
@@ -69,6 +68,8 @@ TCAD.ui.List.prototype.refresh = function() {
     li.mouseleave(function() {model.mouseleave(item, index)});
     li.click(function() {model.click(item, index)});
   }
+  
+
   for (var i = 0; i < items.length; ++i) {
     var item = items[i];
     var li = $(this.template.replace('$name$', item.name));
@@ -76,3 +77,74 @@ TCAD.ui.List.prototype.refresh = function() {
     makeCallbacks(li, item, i)
   }
 };
+
+TCAD.ui.Dock = function(dockEl, switcherEl, viewDefinitions) {
+  this.viewes = {};
+  this.dockEl = dockEl;
+  this.order = [];
+  function bindClick(dock, switchEl, viewName) {
+    switchEl.click(function() {
+      if (dock.isVisible(viewName)) {
+        dock.hide(viewName);
+      } else {
+        dock.show(viewName);
+      }
+    });
+  }
+  for (var i = 0; i < viewDefinitions.length; i++) {
+    var viewDef = viewDefinitions[i];
+    var view = {};
+    this.viewes[viewDef.name] = view;
+    this.order.push(viewDef.name);
+    view.node = $('<div>', {class: 'dock-node'});
+    var caption = $('<div>', {class: 'tool-caption'});
+    caption.append($('<span>', {class: 'txt'}).text(viewDef.name.toUpperCase()));
+    caption.append(TCAD.App2D.faBtn(viewDef.icon));
+    view.node.append(caption);
+    
+    view.switch = $('<span>', {class: 'dock-btn'});
+    view.switch.append(TCAD.App2D.faBtn(viewDef.icon));
+    view.switch.append($('<span>', {class: 'txt'}).text(viewDef.name));
+    bindClick(this, view.switch, viewDef.name);
+    switcherEl.append(view.switch);
+  }
+};
+
+TCAD.ui.Dock.prototype.show = function(viewName) {
+  var view = this.viewes[viewName];
+  if (view.switch.hasClass('selected')) {
+    return;
+  }
+  
+  var addAfter = null; 
+  for (var i = 0; i < this.order.length; i++) {
+    var otherView = this.order[i];
+    if (viewName == otherView) break;
+    if (this.isVisible(otherView)) {
+      addAfter = this.viewes[otherView]
+    }
+  }
+  if (addAfter == null) {
+    this.dockEl.find('.tool-caption .no-top-border').removeClass('no-top-border');
+    this.dockEl.prepend(view.node);
+    view.node.find('.tool-caption').addClass('no-top-border');
+  } else {
+    view.node.insertAfter(addAfter.node);
+  }
+  view.switch.addClass('selected');
+};
+
+TCAD.ui.Dock.prototype.hide = function(viewName) {
+  var view = this.viewes[viewName];
+  if (!view.switch.hasClass('selected')) {
+    return;
+  }
+  view.node.detach();
+  view.switch.removeClass('selected');
+};
+
+
+TCAD.ui.Dock.prototype.isVisible = function(viewName) {
+  return this.viewes[viewName].switch.hasClass('selected');
+};
+

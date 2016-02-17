@@ -73,12 +73,7 @@
   </div>
   <div style="width: 100%; height: calc(100% - 59px);">
 
-    <div class="panel b-right scroll" style="float: left; width: 245px; height: 100%;">
-      <div class="tool-caption">CONSTRAINTS</div>
-      <ul class="tlist" id='constrs'>
-        <li>$name$<span class="rm" style="float: right;"><input class="btn sbtn ui-rm" style="" type="submit" value="✘"></span></li>
-      </ul>  
-    </div>
+    <div id="dock" class="panel b-right scroll" style="float: left; width: 245px; height: 100%;"></div>
     <div style="background: black; float: left; width: calc(100% - 298px); height: 100%;">
       <canvas width="300" height="300" id="viewer"></canvas>
     </div>
@@ -101,9 +96,9 @@
       <button class="btn rbtn act-llAngle" style="background-image: url(img/vec/angle.svg);"></button>
     </div>
   </div>
-  <div id="status" class="panel b-top" style="width: 100%; height:22px;">
-    <input id='showActions' class="btn sbtn" style="" type="submit" value="⌘">
-  </div>
+  
+  <div id="status" class="panel b-top" style="width: 100%; height:22px; padding-top: 3px;"><span 
+    id='showActions' class="dock-btn"><i class="fa fa-slack"></i></span></div>
 
   <div id="actions" class="scroll win" style="display: none;">
     <div class="tool-caption" >ACTIONS<div class="rm pseudo-btn" style="float: right;">✘</div></div>
@@ -115,9 +110,6 @@
   <div id="sketchManager" class="win" style="display: none; min-width: 100px;">
     <div class="tool-caption" >SKETCHES<div class="rm pseudo-btn" style="float: right;">✘</div></div>
     <div class="content panel scroll" style="padding: 0;max-height: 500px;">
-      <ul class="tlist" id='sketchList'>
-        <li>$name$<span class="rm" style="float: right;"><input class="btn sbtn ui-rm" style="" type="submit" value="✘"></span></li>
-      </ul>
     </div>
   </div>
 
