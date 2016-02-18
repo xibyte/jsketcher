@@ -76,10 +76,15 @@ function start() {
       app.viewer.parametricManager.refresh();
     }
   });
-  $('.dock-node').append(constrList.ul);
+  app.dock.views['Constraints'].node.append(constrList.ul);
   app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
   constrList.refresh();
-
+  
+  var layerSelection = $('<span>', {id: 'layerSelection'})
+    .append($('<label>', {for : 'layersList'}).text('Layer: '))
+    .append($('<select>', {id : 'layersList'}));
+  app.dock.views['Properties'].node.append(layerSelection);
+  
   var updateLayersList = function () {
     var options = '';
     for (var i = 0; i < app.viewer.layers.length; i++) {

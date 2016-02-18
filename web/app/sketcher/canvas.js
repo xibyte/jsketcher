@@ -87,12 +87,12 @@ TCAD.TWO.Viewer = function(canvas) {
     canvas.style.height = canvasHeight + "px";
   }
 
-  function onWindowResize() {
+  this.onWindowResize = function() {
     updateCanvasSize();
     viewer.refresh();
-  }
+  };
   updateCanvasSize();
-  window.addEventListener( 'resize', onWindowResize, false );
+  window.addEventListener( 'resize', this.onWindowResize, false );
 
   Object.defineProperty(this, "activeLayer", {
     get: viewer.getActiveLayer ,
@@ -713,7 +713,7 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
   var tm = this;
   canvas.addEventListener('mousemove', function (e) {
     e.preventDefault();
-    e.stopPropagation();
+    //e.stopPropagation(); // allow propagation for move in sake of dynamic layout 
     tm.getTool().mousemove(e);
   }, false);
   canvas.addEventListener('mousedown', function (e) {
