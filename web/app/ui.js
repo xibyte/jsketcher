@@ -5,6 +5,10 @@ TCAD.ui = {};
 TCAD.ui.Window = function(el) {
   this.root = el;
   var root = this.root;
+  this.root.find('.tool-caption').each(function() {
+    var closeBtn = '<span class="btn rm" style="float: right;"><i class="fa fa-remove"></i></span>';
+    $(this).append(closeBtn);
+  }); 
   this.root.find('.tool-caption .rm').click(function() {
     root.hide();
   });
@@ -63,6 +67,7 @@ TCAD.ui.List.prototype.refresh = function() {
     li.find('.rm').click(function(e) {
       model.remove(item, index);
       e.stopPropagation();
+      e.preventDefault();
     });
     li.hover(function() {model.hover(item, index)});
     li.mouseleave(function() {model.mouseleave(item, index)});
@@ -79,11 +84,10 @@ TCAD.ui.List.prototype.refresh = function() {
 };
 
 TCAD.ui.Dock = function(dockEl, switcherEl, viewDefinitions) {
-  this.viewes = {};
+  this.views = {};
   this.dockEl = dockEl;
-  this.order = [];
   function bindClick(dock, switchEl, viewName) {
-    switchEl.click(function() {
+    switchEl.click(function(e) {
       if (dock.isVisible(viewName)) {
         dock.hide(viewName);
       } else {
@@ -94,13 +98,14 @@ TCAD.ui.Dock = function(dockEl, switcherEl, viewDefinitions) {
   for (var i = 0; i < viewDefinitions.length; i++) {
     var viewDef = viewDefinitions[i];
     var view = {};
-    this.viewes[viewDef.name] = view;
-    this.order.push(viewDef.name);
+    this.views[viewDef.name] = view;
     view.node = $('<div>', {class: 'dock-node'});
     var caption = $('<div>', {class: 'tool-caption'});
     caption.append($('<span>', {class: 'txt'}).text(viewDef.name.toUpperCase()));
     caption.append(TCAD.App2D.faBtn(viewDef.icon));
     view.node.append(caption);
+    view.node.hide();
+    this.dockEl.append(view.node);
     
     view.switch = $('<span>', {class: 'dock-btn'});
     view.switch.append(TCAD.App2D.faBtn(viewDef.icon));
@@ -111,40 +116,84 @@ TCAD.ui.Dock = function(dockEl, switcherEl, viewDefinitions) {
 };
 
 TCAD.ui.Dock.prototype.show = function(viewName) {
-  var view = this.viewes[viewName];
+  var view = this.views[viewName];
   if (view.switch.hasClass('selected')) {
     return;
   }
-  
-  var addAfter = null; 
-  for (var i = 0; i < this.order.length; i++) {
-    var otherView = this.order[i];
-    if (viewName == otherView) break;
-    if (this.isVisible(otherView)) {
-      addAfter = this.viewes[otherView]
-    }
+  if (!this.dockEl.is(":visible")) {
+    this.dockEl.show();
+    $('body').trigger('layout');
   }
-  if (addAfter == null) {
-    this.dockEl.find('.tool-caption .no-top-border').removeClass('no-top-border');
-    this.dockEl.prepend(view.node);
-    view.node.find('.tool-caption').addClass('no-top-border');
-  } else {
-    view.node.insertAfter(addAfter.node);
-  }
+  view.node.show();
   view.switch.addClass('selected');
 };
 
 TCAD.ui.Dock.prototype.hide = function(viewName) {
-  var view = this.viewes[viewName];
+  var view = this.views[viewName];
   if (!view.switch.hasClass('selected')) {
     return;
   }
-  view.node.detach();
+  view.node.hide();
   view.switch.removeClass('selected');
+  if (this.dockEl.find('.dock-node:visible').length == 0) {
+    this.dockEl.hide();
+    $('body').trigger('layout');
+  } 
 };
-
 
 TCAD.ui.Dock.prototype.isVisible = function(viewName) {
-  return this.viewes[viewName].switch.hasClass('selected');
+  return this.views[viewName].switch.hasClass('selected');
 };
 
+TCAD.ui.WinManager = function() {
+  this.moveHandler = null;
+  var wm = this;
+  $('body').mousemove(function(e) {
+    if (wm.moveHandler != null) {
+      wm.moveHandler(e);
+      e.preventDefault();
+    }  
+  });
+};
+
+TCAD.ui.WinManager.prototype.makeHRResizable = function(el) {
+  var origin = {x : NaN, y : NaN};
+  var originSize = {x : NaN, y : NaN};
+  var wm = this;
+  function onEdge(e, el) {
+    var offset = el.offset();
+    var width = el.width();
+    return e.pageX > offset.left + width;
+  }
+  function mousemove(e) {
+    var dx = e.pageX - origin.x;
+    var dy = e.pageY - origin.y;
+    var newWidth = originSize.x + dx;
+    el.css('width', (newWidth) + 'px');
+    $('body').trigger('layout');
+  }
+  el.mousedown(function(e) {
+    if (!onEdge(e, $(this))) {
+      stopDrag(e);
+      return;
+    }
+    origin.x = e.pageX;
+    origin.y = e.pageY;
+    originSize.x = el.width()
+    wm.moveHandler = mousemove;
+  });
+  var stopDrag = function(e) {
+    origin.x = NaN;
+    origin.y = NaN;
+    wm.moveHandler = null;
+  };
+  
+  el.mouseup(stopDrag);
+  el.mousemove(function(e) {
+    if (onEdge(e, $(this))) {
+      el.css('cursor', 'ew-resize');
+    } else {
+      el.css('cursor', 'inherited');
+    }
+  });
+};
