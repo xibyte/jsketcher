@@ -112,6 +112,14 @@ TCAD.toolkit.Number = function(name, initValue, baseStep) {
   TCAD.toolkit.propLayout(this.root, name, this.input);
 };
 
+TCAD.toolkit.Combo = function(id, label) {
+  this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-combo'});
+  var label = $('<span/>', {class: 'tc-prop-name', text: label});
+  this.select = $('<select>', {id : id});
+  this.root.append(label)
+    .append($('<div/>', {class: 'tc-prop-value'}).append(this.select));
+};
+
 TCAD.toolkit.Text = function(name) {
   this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-text'});
   TCAD.toolkit.propLayout(this.root, name, $('<input type="text"/>'));
