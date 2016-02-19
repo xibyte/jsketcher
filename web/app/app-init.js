@@ -79,11 +79,9 @@ function start() {
   app.dock.views['Constraints'].node.append(constrList.ul);
   app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
   constrList.refresh();
-  
-  var layerSelection = $('<span>', {id: 'layerSelection'})
-    .append($('<label>', {for : 'layersList'}).text('Layer: '))
-    .append($('<select>', {id : 'layersList'}));
-  app.dock.views['Properties'].node.append(layerSelection);
+
+  var layerSelection = new TCAD.toolkit.Combo('layerSelection', 'Layer');
+  app.dock.views['Properties'].node.append(layerSelection.root);
   
   var updateLayersList = function () {
     var options = '';
@@ -91,20 +89,24 @@ function start() {
       var layer = app.viewer.layers[i];
       options += "<option value='"+layer.name+"'>"+layer.name+"</option>"
     }
-    $('#layersList').html(options).val(app.viewer.activeLayer.name);
+    layerSelection.select.html(options).val(app.viewer.activeLayer.name);
   };
   updateLayersList();
   app.viewer.bus.subscribe("activeLayer", function() {
     updateLayersList();
   });
-  $('#layersList')
+  layerSelection.select
     .mousedown(updateLayersList)
     .change(function () {
-      var layer = app.viewer.findLayerByName($('#layersList').val());
+      var layer = app.viewer.findLayerByName(layerSelection.select.val());
       if (layer != null) {
         app.viewer.activeLayer = layer;
       }
     });
+
+  var dimScale = new TCAD.toolkit.Number("Dim Scale", 1);
+  app.dock.views['Properties'].node.append(dimScale.root);
+  
 }
 window.___log = function(log) {
     $('#log').append( " *****************<br><br><br><br>");
