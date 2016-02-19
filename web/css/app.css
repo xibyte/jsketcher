@@ -46,6 +46,10 @@ html, body {
   font-size: 14px;
 }
 
+#dock {
+  color: #fff;
+}
+
 .dock-btn {
   padding: 1px 5px 1px 5px;
   border:0 solid black;
@@ -238,4 +242,12 @@ html, body {
 #layersList {
   background-color: #ddd;
   margin: 10px;
+}
+
+.tc-ctrl {
+  border-left: 0;
+}
+
+.tc-ctrl input[type=text], .tc-ctrl select {
+  color: #fff;
 }
