@@ -121,6 +121,7 @@ html, body {
   color: #fff;
   padding: 2px 0 2px 3px;
   background: #333;
+  font-size: 13px;
 }
 
 .no-top-border {
@@ -176,7 +177,6 @@ html, body {
 .scroll::-webkit-scrollbar-thumb:hover {
   background: royalblue;
 }
-
 
 .win {
   position: absolute;
