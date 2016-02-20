@@ -181,7 +181,7 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
   var folder = new tk.Folder(isCut ? "Cut Options" : "Extrude Options");
   tk.add(box, folder);
   var theValue = new tk.Number(isCut ? "Depth" : "Height", def(0, 50));
-  var scale = new tk.Number("Expansion", def(1, 1), 0.1);
+  var scale = new tk.Number("Expansion", def(1, 1), 0.1, 1);
   var deflection = new tk.Number("Deflection", def(2, 0), 1);
   var angle = new tk.Number("Angle", def(3, 0), 5);
   var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);

@@ -23,8 +23,8 @@ TCAD.TWO.LinearDimension.prototype.getB = function() { return this.b };
 
 TCAD.TWO.LinearDimension.prototype.drawImpl = function(ctx, scale, viewer) {
 
-  var off = 30;
-  var textOff = 3;
+  var off = 30 * viewer.dimScale;
+  var textOff = 3 * viewer.dimScale;
 
   var a, b, startA, startB;
   if (this.flip) {
@@ -65,7 +65,7 @@ TCAD.TWO.LinearDimension.prototype.drawImpl = function(ctx, scale, viewer) {
   function drawRef(start, x, y) {
     var vec = new TCAD.Vector(x - start.x, y - start.y);
     vec._normalize();
-    vec._multiply(7);
+    vec._multiply(7 * viewer.dimScale);
     
     ctx.moveTo(start.x, start.y );
     ctx.lineTo(x, y);
@@ -92,7 +92,7 @@ TCAD.TWO.LinearDimension.prototype.drawImpl = function(ctx, scale, viewer) {
 //  drawArrow(_ax, _ay);
 //  drawArrow(_bx, _by);
 
-  ctx.font="12px Arial";
+  ctx.font= (12 * viewer.dimScale) + "px Arial";
   var txt = d.toFixed(2);
   var h = d / 2 - ctx.measureText(txt).width / 2;
 

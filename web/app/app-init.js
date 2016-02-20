@@ -104,9 +104,12 @@ function start() {
       }
     });
 
-  var dimScale = new TCAD.toolkit.Number("Dim Scale", 1);
+  var dimScale = new TCAD.toolkit.Number("Dim Scale", 1, 0.1, 1);
+  dimScale.min = 0.1;
   app.dock.views['Properties'].node.append(dimScale.root);
-  
+  dimScale.input.on('t-change', function() {
+    app.viewer.dimScale = $(this).val();   
+  });
 }
 window.___log = function(log) {
     $('#log').append( " *****************<br><br><br><br>");
