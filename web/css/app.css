@@ -184,8 +184,8 @@ html, body {
 
 .win {
   position: absolute;
-  min-width: 10px;
-  min-height: 10px;
+  min-width: 100px;
+  min-height: 20px;
   left:100px;
   top:300px;
   background: #666;
@@ -195,10 +195,12 @@ html, body {
 
 .win .content {
   padding: 7px;
+  height: calc(100% - 19px);
 }
 
 .win .tool-caption {
   cursor: default;
+  height: 15px;
 }
 .win .tool-caption .rm {
   border: 0;

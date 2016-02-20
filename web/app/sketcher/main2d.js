@@ -8,7 +8,7 @@ TCAD.App2D = function() {
   this.winManager = new TCAD.ui.WinManager();
 
   this.initSketchManager();
-  this._exportWin = new TCAD.ui.Window($('#exportManager'));
+  this._exportWin = new TCAD.ui.Window($('#exportManager'), app.winManager);
 
   $('#exportManager li').click(function() {TCAD.ui.closeWin(app._exportWin);});
 
@@ -22,7 +22,7 @@ TCAD.App2D = function() {
   this.dock = new TCAD.ui.Dock(dockEl, $('#status'), TCAD.App2D.views);
   this.dock.show('Constraints');
   
-  this.winManager.makeHRResizable(dockEl);
+  this.winManager.registerResize(dockEl, TCAD.ui.DIRECTIONS.EAST, function() {$('body').trigger('layout'); });
   $('body').on('layout', this.viewer.onWindowResize);
   
   this.registerAction = function(id, desc, action) {
@@ -208,6 +208,13 @@ TCAD.App2D.views = [
   }
 ];
 
+TCAD.App2D.bottomViews = [
+  {
+    name: 'Commands',
+    icon: 'desktop'
+  }
+];
+
 TCAD.App2D.faBtn = function(iconName) {
   return $('<i>', {class : 'fa fa-'+iconName});  
 };
@@ -269,7 +276,7 @@ TCAD.App2D.prototype.newSketch = function() {
 };
 
 TCAD.App2D.prototype.initSketchManager = function(data, ext) {
-  this._sketchesWin = new TCAD.ui.Window($('#sketchManager'));
+  this._sketchesWin = new TCAD.ui.Window($('#sketchManager'), this.winManager);
   var app = this;
   var sketchesList = new TCAD.ui.List('sketchList', {
     items : function() {
@@ -303,7 +310,6 @@ TCAD.App2D.prototype.initSketchManager = function(data, ext) {
   $('#sketchManager').find('.content').append(sketchesList.ul);
   sketchesList.refresh();
   this._sketchesList = sketchesList;
-  this.winManager.makeHRResizable($('#sketchManager'));
 };
 
 TCAD.App2D.prototype.loadFromLocalStorage = function() {
