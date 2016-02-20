@@ -4,7 +4,8 @@ TCAD.ui = {};
 TCAD.ui.Window = function(el, winManager) {
   this.root = el;
   var root = this.root;
-  this.root.find('.tool-caption').each(function() {
+  var caption = this.root.find('.tool-caption');
+  caption.each(function() {
     var closeBtn = '<span class="btn rm" style="float: right;"><i class="fa fa-remove"></i></span>';
     $(this).append(closeBtn);
   }); 
@@ -13,6 +14,7 @@ TCAD.ui.Window = function(el, winManager) {
   });
   var DIRS = TCAD.ui.DIRECTIONS;
   winManager.registerResize(this.root, DIRS.NORTH | DIRS.SOUTH | DIRS.WEST | DIRS.EAST);
+  winManager.registerDrag(this.root, caption);
 };
 
 TCAD.ui.WinManager = function() {
@@ -27,6 +29,16 @@ TCAD.ui.WinManager = function() {
   $('body').mouseup(function(e) {
     wm.moveHandler = null;
   });
+};
+
+TCAD.ui.WinManager.prototype.captureDrag = function(el, e) {
+  var origin = {x : e.pageX, y : e.pageY};
+  var originLocation = el.offset();
+  this.moveHandler = function(e) {
+    var dx = e.pageX - origin.x;
+    var dy = e.pageY - origin.y;
+    el.offset({left : originLocation.left + dx, top : originLocation.top + dy});
+  };
 };
 
 TCAD.ui.WinManager.prototype.captureResize = function(el, dirMask, e, onResize) {
@@ -152,6 +164,13 @@ TCAD.ui.WinManager.prototype.registerResize = function(el, dirMask, onResize) {
     } else {
       el.css('cursor', 'inherited');
     }
+  });
+};
+
+TCAD.ui.WinManager.prototype.registerDrag = function(el, dragger) {
+  var wm = this;
+  dragger.mousedown(function(e) {
+    wm.captureDrag(el, e);
   });
 };
 
