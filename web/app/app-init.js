@@ -12,7 +12,7 @@ function start() {
   addLayer("sketch", TCAD.TWO.Styles.DEFAULT);
   addLayer("_construction_", TCAD.TWO.Styles.CONSTRUCTION);
   
-  var actionsWin = new TCAD.ui.Window($('#actions'));
+  var actionsWin = new TCAD.ui.Window($('#actions'), app.winManager);
 
   TCAD.ui.bindOpening( $('#showActions'), actionsWin );
   var addAction = TCAD.ui.createActionsWinBuilder(actionsWin);

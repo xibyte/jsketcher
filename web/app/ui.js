@@ -1,8 +1,7 @@
 TCAD.ui = {};
 
-
 /** @constructor */
-TCAD.ui.Window = function(el) {
+TCAD.ui.Window = function(el, winManager) {
   this.root = el;
   var root = this.root;
   this.root.find('.tool-caption').each(function() {
@@ -11,6 +10,148 @@ TCAD.ui.Window = function(el) {
   }); 
   this.root.find('.tool-caption .rm').click(function() {
     root.hide();
+  });
+  var DIRS = TCAD.ui.DIRECTIONS;
+  winManager.registerResize(this.root, DIRS.NORTH | DIRS.SOUTH | DIRS.WEST | DIRS.EAST);
+};
+
+TCAD.ui.WinManager = function() {
+  this.moveHandler = null;
+  var wm = this;
+  $('body').mousemove(function(e) {
+    if (wm.moveHandler != null) {
+      wm.moveHandler(e);
+      e.preventDefault();
+    }
+  });
+  $('body').mouseup(function(e) {
+    wm.moveHandler = null;
+  });
+};
+
+TCAD.ui.WinManager.prototype.captureResize = function(el, dirMask, e, onResize) {
+  
+  var origin = {x : e.pageX, y : e.pageY};
+  var originSize = {x : el.width(), y : el.height()};
+  var originLocation = el.offset();
+  var north = TCAD.ui._maskTest(dirMask, TCAD.ui.DIRECTIONS.NORTH);
+  var south = TCAD.ui._maskTest(dirMask, TCAD.ui.DIRECTIONS.SOUTH);
+  var west = TCAD.ui._maskTest(dirMask, TCAD.ui.DIRECTIONS.WEST);
+  var east = TCAD.ui._maskTest(dirMask, TCAD.ui.DIRECTIONS.EAST);
+  
+  this.moveHandler = function(e) {
+    var dx = e.pageX - origin.x;
+    var dy = e.pageY - origin.y;
+    if (east) {
+      el.css('width', (originSize.x + dx) + 'px');
+    }
+    var top = originLocation.top;
+    var left = originLocation.left;
+    var setLoc = false;
+    if (west) {
+      el.css('width', (originSize.x - dx) + 'px');
+      left += dx;
+      setLoc = true;
+    }
+    if (south) {
+      el.css('height', (originSize.y + dy) + 'px');
+    }
+    if (north) {
+      el.css('height', (originSize.y - dy) + 'px');
+      top += dy;
+      setLoc = true;
+    }
+    if (setLoc) {
+      el.offset({left : left, top: top});
+    }
+    if (onResize !== undefined) {
+      onResize();
+    }
+  }
+};
+
+TCAD.ui.DIRECTIONS = {
+  NORTH : 0x0001,
+  SOUTH : 0x0010,
+  WEST :  0x0100,
+  EAST :  0x1000,
+};
+
+TCAD.ui.WinManager.prototype.registerResize = function(el, dirMask, onResize) {
+  var wm = this;
+  var north = TCAD.ui._maskTest(dirMask, TCAD.ui.DIRECTIONS.NORTH);
+  var south = TCAD.ui._maskTest(dirMask, TCAD.ui.DIRECTIONS.SOUTH);
+  var west = TCAD.ui._maskTest(dirMask, TCAD.ui.DIRECTIONS.WEST);
+  var east = TCAD.ui._maskTest(dirMask, TCAD.ui.DIRECTIONS.EAST);
+
+  var borderTop = parseInt(el.css('borderTopWidth'), 10);
+  var borderLeft = parseInt(el.css('borderLeftWidth'), 10);
+  
+  function onNorthEdge(e, el) {
+    var offset = el.offset();
+    return e.pageY < offset.top + borderTop;
+  }
+
+  function onSouthEdge(e, el) {
+    var offset = el.offset();
+    var height = el.height();
+    return e.pageY > offset.top + height + borderTop;
+  }
+
+  function onWestEdge(e, el) {
+    var offset = el.offset();
+    return e.pageX < offset.left + borderLeft;
+  }
+
+  function onEastEdge(e, el) {
+    var offset = el.offset();
+    var width = el.width();
+    return e.pageX > offset.left + width + borderLeft;
+  }
+  
+  
+  el.mousedown(function(e) {
+    var $this = $(this);
+    if (north && east && onNorthEdge(e, $this) && onEastEdge(e, $this)) {
+      wm.captureResize(el, TCAD.ui.DIRECTIONS.NORTH | TCAD.ui.DIRECTIONS.EAST, e, onResize);
+    } else if (north && west && onNorthEdge(e, $this) && onWestEdge(e, $this)) {
+      wm.captureResize(el, TCAD.ui.DIRECTIONS.NORTH | TCAD.ui.DIRECTIONS.WEST, e, onResize);
+    } else if (south && east && onSouthEdge(e, $this) && onEastEdge(e, $this)) {
+      wm.captureResize(el, TCAD.ui.DIRECTIONS.SOUTH | TCAD.ui.DIRECTIONS.EAST, e, onResize);
+    } else if (south && west && onSouthEdge(e, $this) && onWestEdge(e, $this)) {
+      wm.captureResize(el, TCAD.ui.DIRECTIONS.SOUTH | TCAD.ui.DIRECTIONS.WEST, e, onResize);
+    } else if (north && onNorthEdge(e, $this)) {
+      wm.captureResize(el, TCAD.ui.DIRECTIONS.NORTH, e, onResize);
+    } else if (south && onSouthEdge(e, $this)) {
+      wm.captureResize(el, TCAD.ui.DIRECTIONS.SOUTH, e, onResize);
+    } else if (west && onWestEdge(e, $this)) {
+      wm.captureResize(el, TCAD.ui.DIRECTIONS.WEST, e, onResize);
+    } else if (east && onEastEdge(e, $this)) {
+      wm.captureResize(el, TCAD.ui.DIRECTIONS.EAST, e, onResize);
+    }
+  });
+  el.mousemove(function(e) {
+
+    var $this = $(this);
+    if (north && east && onNorthEdge(e, $this) && onEastEdge(e, $this)) {
+      el.css('cursor', 'nesw-resize');
+    } else if (north && west && onNorthEdge(e, $this) && onWestEdge(e, $this)) {
+      el.css('cursor', 'nwse-resize');
+    } else if (south && east && onSouthEdge(e, $this) && onEastEdge(e, $this)) {
+      el.css('cursor', 'nwse-resize');
+    } else if (south && west && onSouthEdge(e, $this) && onWestEdge(e, $this)) {
+      el.css('cursor', 'nesw-resize');
+    } else if (south && onSouthEdge(e, $this)) {
+      el.css('cursor', 'ns-resize');
+    } else if (north && onNorthEdge(e, $this)) {
+      el.css('cursor', 'ns-resize');
+    } else if (east && onEastEdge(e, $this)) {
+      el.css('cursor', 'ew-resize');
+    } else if (west && onWestEdge(e, $this)) {
+      el.css('cursor', 'ew-resize');
+    } else {
+      el.css('cursor', 'inherited');
+    }
   });
 };
 
@@ -145,55 +286,6 @@ TCAD.ui.Dock.prototype.isVisible = function(viewName) {
   return this.views[viewName].switch.hasClass('selected');
 };
 
-TCAD.ui.WinManager = function() {
-  this.moveHandler = null;
-  var wm = this;
-  $('body').mousemove(function(e) {
-    if (wm.moveHandler != null) {
-      wm.moveHandler(e);
-      e.preventDefault();
-    }  
-  });
-};
-
-TCAD.ui.WinManager.prototype.makeHRResizable = function(el) {
-  var origin = {x : NaN, y : NaN};
-  var originSize = {x : NaN, y : NaN};
-  var wm = this;
-  function onEdge(e, el) {
-    var offset = el.offset();
-    var width = el.width();
-    return e.pageX > offset.left + width;
-  }
-  function mousemove(e) {
-    var dx = e.pageX - origin.x;
-    var dy = e.pageY - origin.y;
-    var newWidth = originSize.x + dx;
-    el.css('width', (newWidth) + 'px');
-    $('body').trigger('layout');
-  }
-  el.mousedown(function(e) {
-    if (!onEdge(e, $(this))) {
-      stopDrag(e);
-      return;
-    }
-    origin.x = e.pageX;
-    origin.y = e.pageY;
-    originSize.x = el.width()
-    wm.moveHandler = mousemove;
-  });
-  var stopDrag = function(e) {
-    origin.x = NaN;
-    origin.y = NaN;
-    wm.moveHandler = null;
-  };
-  
-  el.mouseup(stopDrag);
-  el.mousemove(function(e) {
-    if (onEdge(e, $(this))) {
-      el.css('cursor', 'ew-resize');
-    } else {
-      el.css('cursor', 'inherited');
-    }
-  });
+TCAD.ui._maskTest = function (mask, value) {
+  return (mask & value) === value;
 };
