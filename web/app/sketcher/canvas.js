@@ -106,6 +106,9 @@ TCAD.TWO.Viewer = function(canvas) {
   this._serviceLayers = [];
   this.dimLayer = new TCAD.TWO.Layer("_dim", TCAD.TWO.Styles.DIM);
   this.dimLayers = [this.dimLayer];
+  this.bus.defineObservable(this, 'dimScale', 'dimScale', 1);
+  this.bus.subscribe('dimScale', function(){ viewer.refresh(); });
+  
   this._workspace = [this.dimLayers, this.layers, this._serviceLayers];
   this.toolManager = new TCAD.TWO.ToolManager(this, new TCAD.TWO.PanTool(this));
   this.parametricManager = new TCAD.TWO.ParametricManager(this);
