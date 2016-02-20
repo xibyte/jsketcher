@@ -110,6 +110,9 @@ function start() {
   dimScale.input.on('t-change', function() {
     app.viewer.dimScale = $(this).val();   
   });
+  app.viewer.bus.subscribe('dimScale', function(value) {
+    dimScale.input.val(value);
+  });
 }
 window.___log = function(log) {
     $('#log').append( " *****************<br><br><br><br>");
