@@ -71,11 +71,14 @@ TCAD.toolkit.propLayout = function(root, name, valueEl) {
     .append(valueEl));
 };
 
-TCAD.toolkit.Number = function(name, initValue, baseStep) {
+TCAD.toolkit.Number = function(name, initValue, baseStep, round) {
   this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-number'});
   this.input = $("<input type='text' value='"+initValue+"' />");
   this.slide = false;
   baseStep = baseStep || 1;
+  round = round || 0;
+  this.min = null;
+  this.max = null;
   var scope = this;
   var lastValue = null;
   function trigger() {
@@ -84,13 +87,13 @@ TCAD.toolkit.Number = function(name, initValue, baseStep) {
       lastValue = $(this).val();
     }
   }
+  
   this.input.on('input', function(e) {
     var val = $(this).val();
-    try {
-      parseFloat(val)
-    } catch (e) {
-      $(this).val(val.replace(/[^0-9\.]/g, ''));
-    }
+    //var floatRegex = /[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?/;
+    //if (!floatRegex.test(val)) {
+    //  $(this).val(val.replace(/[^0-9\.-]/g, ''));
+    //}
     trigger.call(this);
   });
   this.input.get(0).addEventListener('mousewheel', function (e) {
@@ -104,6 +107,15 @@ TCAD.toolkit.Number = function(name, initValue, baseStep) {
     if (!val) val = 0;
     var step = baseStep * (e.shiftKey ? 100 : 1);
     val = parseFloat(val) + (delta < 0 ? -step : step);
+    if (scope.min != null && val < scope.min) {
+      val = scope.min;
+    }
+    if (scope.max != null && val > scope.min) {
+      val = scope.max;
+    }
+    if (round !== 0) {
+      val = val.toFixed(round);
+    }
     $(this).val(val);
     e.preventDefault();
     e.stopPropagation();
@@ -204,4 +216,20 @@ TCAD.Bus.prototype.notify = function(event, data) {
       listenerList[i](data);
     }
   }
+};
+
+TCAD.Bus.Observable = function(initValue) {
+  this.value = initValue;
+};
+
+TCAD.Bus.prototype.defineObservable = function(scope, name, eventName, initValue) {
+  var observable = new TCAD.Bus.Observable(initValue);
+  var bus = this;
+  return Object.defineProperty(scope, name, {
+    get: function() { return observable.value;},
+    set: function(value) { 
+      observable.value = value;
+      bus.notify(eventName, value);
+    }
+  });
 };
