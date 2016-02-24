@@ -238,11 +238,13 @@ TCAD.constraints.P2PDistance = function(params, distance) {
     var dx = params[p1x].get() - params[p2x].get();
     var dy = params[p1y].get() - params[p2y].get();
     var d = Math.sqrt(dx * dx + dy * dy);
+    if (d == 0) {
+      d = 0.000001;
+    }
     out[p1x] = dx / d;
     out[p1y] = dy / d;
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
-    TCAD.constraints._fixNaN(out);
   }
 };
 
@@ -269,12 +271,14 @@ TCAD.constraints.P2PDistanceV = function(params) {
     var dx = params[p1x].get() - params[p2x].get();
     var dy = params[p1y].get() - params[p2y].get();
     var d = Math.sqrt(dx * dx + dy * dy);
+    if (d == 0) {
+      d = 0.000001;
+    }
     out[p1x] = dx / d;
     out[p1y] = dy / d;
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
     out[D] = -1;
-    TCAD.constraints._fixNaN(out);
   }
 };
 
