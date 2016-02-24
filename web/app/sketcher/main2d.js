@@ -19,9 +19,17 @@ TCAD.App2D = function() {
   this._actionsOrder = [];
 
   var dockEl = $('#dock');
-  this.dock = new TCAD.ui.Dock(dockEl, $('#status'), TCAD.App2D.views);
+  var statusEl = $('#status');
+  this.dock = new TCAD.ui.Dock(dockEl, statusEl, TCAD.App2D.views);
   this.dock.show('Constraints');
-  
+
+  var consoleBtn = TCAD.ui.dockBtn('Commands', 'list');
+  statusEl.append(consoleBtn);
+  var commandsWin = new TCAD.ui.Window($('#commands'), this.winManager);
+  consoleBtn.click(function() {
+    commandsWin.toggle();
+  });
+
   this.winManager.registerResize(dockEl, TCAD.ui.DIRECTIONS.EAST, function() {$('body').trigger('layout'); });
   $('body').on('layout', this.viewer.onWindowResize);
   
