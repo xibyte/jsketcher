@@ -3,6 +3,8 @@ TCAD.ui = {};
 /** @constructor */
 TCAD.ui.Window = function(el, winManager) {
   this.root = el;
+  this.neverOpened = !this.root.is(':visible');
+  this.tileUpRelative = $('body'); 
   var root = this.root;
   var caption = this.root.find('.tool-caption');
   caption.each(function() {
@@ -15,6 +17,27 @@ TCAD.ui.Window = function(el, winManager) {
   var DIRS = TCAD.ui.DIRECTIONS;
   winManager.registerResize(this.root, DIRS.NORTH | DIRS.SOUTH | DIRS.WEST | DIRS.EAST);
   winManager.registerDrag(this.root, caption);
+};
+
+TCAD.ui.Window.prototype.toggle = function() {
+  if (!this.root.is(':visible')) {
+    this.tileUpPolicy(this.neverOpened, this.tileUpRelative);
+  }
+  this.neverOpened = false ;
+  this.root.toggle();
+};
+
+TCAD.ui.Window.prototype.tileUpPolicy = function(firstTime, relativeEl) {
+  var span = 100;
+  var relOff = relativeEl.offset();
+  if (firstTime) {
+    this.root.offset( {
+      //left :  relOff.left + relativeEl.width() - this.root.width() - span,
+      //top : relOff.top + relativeEl.height() - this.root.height() - span
+      left :  relOff.left,
+      top : relOff.top
+    });
+  }
 };
 
 TCAD.ui.WinManager = function() {
@@ -243,6 +266,13 @@ TCAD.ui.List.prototype.refresh = function() {
   }
 };
 
+TCAD.ui.dockBtn = function(name, icon) {
+  var btn = $('<span>', {class: 'dock-btn'});
+  btn.append(TCAD.App2D.faBtn(icon));
+  btn.append($('<span>', {class: 'txt'}).text(name));
+  return btn;
+};
+
 TCAD.ui.Dock = function(dockEl, switcherEl, viewDefinitions) {
   this.views = {};
   this.dockEl = dockEl;
@@ -266,10 +296,7 @@ TCAD.ui.Dock = function(dockEl, switcherEl, viewDefinitions) {
     view.node.append(caption);
     view.node.hide();
     this.dockEl.append(view.node);
-    
-    view.switch = $('<span>', {class: 'dock-btn'});
-    view.switch.append(TCAD.App2D.faBtn(viewDef.icon));
-    view.switch.append($('<span>', {class: 'txt'}).text(viewDef.name));
+    view.switch = TCAD.ui.dockBtn(viewDef.name, viewDef.icon);
     bindClick(this, view.switch, viewDef.name);
     switcherEl.append(view.switch);
   }
