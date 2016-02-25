@@ -30,6 +30,9 @@ TCAD.App2D = function() {
   consoleBtn.click(function() {
     commandsWin.toggle();
   });
+  new TCAD.ui.Terminal(commandsWin, function(command) {
+    return "Command " + command + " executed";
+  });
 
   this.winManager.registerResize(dockEl, TCAD.ui.DIRECTIONS.EAST, function() {$('body').trigger('layout'); });
   $('body').on('layout', this.viewer.onWindowResize);
