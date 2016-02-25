@@ -4,7 +4,8 @@ TCAD.ui = {};
 TCAD.ui.Window = function(el, winManager) {
   this.root = el;
   this.neverOpened = !this.root.is(':visible');
-  this.tileUpRelative = $('body'); 
+  this.tileUpRelative = $('body');
+  this.onShowCallback = null;
   var root = this.root;
   var caption = this.root.find('.tool-caption');
   caption.each(function() {
@@ -20,11 +21,15 @@ TCAD.ui.Window = function(el, winManager) {
 };
 
 TCAD.ui.Window.prototype.toggle = function() {
-  if (!this.root.is(':visible')) {
+  var aboutToShow = !this.root.is(':visible');
+  if (aboutToShow) {
     this.tileUpPolicy(this.neverOpened, this.tileUpRelative);
   }
   this.neverOpened = false ;
   this.root.toggle();
+  if (aboutToShow && this.onShowCallback != null) {
+    this.onShowCallback(this);
+  }
 };
 
 TCAD.ui.Window.prototype.tileUpPolicy = function(firstTime, relativeEl) {
@@ -373,4 +378,24 @@ TCAD.ui.Dock.prototype.isVisible = function(viewName) {
 
 TCAD.ui._maskTest = function (mask, value) {
   return (mask & value) === value;
+};
+
+
+TCAD.ui.Terminal = function(win, commandProcessor) {
+  this.win = win;
+  win.onShowCallback = function() {
+    win.root.find('.terminal-input input').focus();
+  };
+
+  win.root.find('.terminal-input input').keyup(function(e){
+    if(e.keyCode == 13) {
+      var input = win.root.find('.terminal-input input');
+      var command = input.val();
+      var out = win.root.find('.terminal-output');
+      input.val('');
+      out.append($('<div>', {text: '> '+command, class: 'terminal-commandText'}));
+      var result = commandProcessor(command);
+      out.append($('<div>', {text: result, class: 'terminal-commandResult'}));
+    }
+  });
 };
