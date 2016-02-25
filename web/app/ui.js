@@ -28,16 +28,55 @@ TCAD.ui.Window.prototype.toggle = function() {
 };
 
 TCAD.ui.Window.prototype.tileUpPolicy = function(firstTime, relativeEl) {
-  var span = 100;
+  var span = 20;
   var relOff = relativeEl.offset();
+  var off = this.root.offset();
+  off = {
+    left: parseInt(this.root.css('left')),
+    top: parseInt(this.root.css('top'))
+  };
+
   if (firstTime) {
-    this.root.offset( {
-      //left :  relOff.left + relativeEl.width() - this.root.width() - span,
-      //top : relOff.top + relativeEl.height() - this.root.height() - span
-      left :  relOff.left,
-      top : relOff.top
+    off = {
+      left: relOff.left + relativeEl.width() - this.root.width() - span,
+      top: relOff.top + relativeEl.height() - this.root.height() - span
+    };
+    this.root.css({
+      left: off.left + 'px',
+      top: off.top + 'px'
     });
   }
+  var needToSet = false;
+  if (off.left < relOff.left || off.left >= relOff.left + relativeEl.width() - span) {
+    off.left = relOff.left + span;
+    needToSet = true;
+  }
+  if (off.top < relOff.top || off.top >= relOff.top + relativeEl.height() - span) {
+    off.top = relOff.top + span;
+    needToSet = true;
+  }
+  if (needToSet) {
+    this.root.css({
+      left: off.left + 'px',
+      top: off.top + 'px'
+    });
+  }
+  //var fixedWidth = null;
+  //var fixedHeight = null;
+  //
+  //if (off.left + this.root.width() > relOff.left + relativeEl.width()) {
+  //  fixedWidth = this.root.width() - span * 2; 
+  //}
+  //if (off.top + this.root.height() > relOff.top + relativeEl.height()) {
+  //  fixedHeight = this.root.width() - span * 2;
+  //}
+  //if (fixedWidth != null) {
+  //  console.log(fixedWidth)
+  //  this.root.css({ width : fixedWidth + 'px'});
+  //}
+  //if (fixedHeight != null) {
+  //  this.root.css({ height : fixedHeight + 'px'});
+  //}
 };
 
 TCAD.ui.WinManager = function() {
