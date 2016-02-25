@@ -26,6 +26,7 @@ TCAD.App2D = function() {
   var consoleBtn = TCAD.ui.dockBtn('Commands', 'list');
   statusEl.append(consoleBtn);
   var commandsWin = new TCAD.ui.Window($('#commands'), this.winManager);
+  commandsWin.tileUpRelative = $('#viewer');
   consoleBtn.click(function() {
     commandsWin.toggle();
   });
