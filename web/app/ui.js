@@ -398,7 +398,7 @@ TCAD.ui.Terminal = function(win, commandProcessor) {
         var result = commandProcessor(command);
         out.append($('<div>', {text: result, class: 'terminal-commandResult'}));
       }
-      out.scrollTop(out.height());
+      out.parent().scrollTop(out.height());
     }
   });
 };

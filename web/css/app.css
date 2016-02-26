@@ -259,14 +259,22 @@ html, body {
   font-family: Monospace;
 }
 
-.terminal-output {
+.terminal-output-area {
   height: calc(100% - 30px);
-  vertical-align: bottom;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-output {
+  flex: 1;
+}
+
+.terminal-pusher {
+  height: 100%;
 }
 
 .terminal-input {
   height: 30px;
-  vertical-align: bottom;
 }
 
 .terminal-input input {
