@@ -471,9 +471,9 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
 
   TCAD.TWO.ParametricManager.fetchAuxParams(system, auxParams, auxDict);
 
-  var tuples = [];
+  var links = [];
   if (TCAD.EQUALS_ELIMINATION_ENABLED) {
-    var c, pi, paramIndex = {};
+    var c, pi, paramToConstraints = {};
     
     function intersect(array1, array2) {
       if (!array1 || !array2) return false;
@@ -488,47 +488,84 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
         var sameParams = {};
         for (pi = 0; pi < c[1].length; pi++) {
           var param = c[1][pi];
-          var paramConstrs = paramIndex[param.id];
+          var paramConstrs = paramToConstraints[param.id];
           if (paramConstrs === undefined) {
             paramConstrs = [];
-            paramIndex[param.id] = paramConstrs;
+            paramToConstraints[param.id] = paramConstrs;
           }
           paramConstrs.push(i);
         }
       }
     }
 
+    
+    function Link(a, b, constr) {
+      this.a = a;
+      this.b = b;
+      this.constr = constr;
+      this.invalid = false;
+      this.processed = false;
+    }
+    
     for (i = 0; i < system.length; ++i) {
       c = system[i];
       if (c[3] === true) { //Reduce flag
-        
         var cp1 = c[1][0];
         var cp2 = c[1][1];
-        var p0 = cp1.id;
-        var p1 = cp2.id;
+        links.push(new Link(cp1, cp2, i));
+      }
+    }
+  }
 
-        var assoc0 = paramIndex[p0];
-        var assoc1 = paramIndex[p1];
-        if (intersect(assoc0, assoc1)) {
+  function shared(param1, param2) {
+    if (param1 == param2) return false;
+    var assoc0 = paramToConstraints[param1];
+    var assoc1 = paramToConstraints[param2];
+    return intersect(assoc0, assoc1);
+  }
+
+  var linkTuples = [];
+  
+  function mergeLinks(startIndex, into) {
+    var linkI = links[startIndex];
+    if (linkI.processed) return;
+    linkI.processed = true;
+    into.push(linkI);
+    for (var j = startIndex + 1; j < links.length; j++) {
+      var linkJ = links[j];
+      if (linkI.a.id == linkJ.a.id || linkI.a.id == linkJ.b.id || linkI.b.id == linkJ.a.id || linkI.b.id == linkJ.b.id) {
+        mergeLinks(j, into);
+      }
+    }
+  }
+  for (i = 0; i < links.length; i++) {
+    if (links[i].processed) continue;
+    var linkTuple = [];
+    linkTuples.push(linkTuple);
+    mergeLinks(i, linkTuple)  
+  }
+   
+  function resolveConflicts() {
+    for (var i = 0; i < linkTuples.length; i++) {
+      var tuple = linkTuples[i];
+      
+      for (var j = 0; j < tuple.length; j++) {
+        var linkA = tuple[j];
+        if (linkA.invalid) continue;
+        if (shared(linkA.a.id, linkA.b.id)) {
+          linkA.invalid = true;
           continue;
         }
-        equalsDict[p0] = cp1;
-        equalsDict[p1] = cp2;
-        tuples.push([p0, p1]);
-        eqcElimination[i] = true;
+        for (var k = j + 1; k < tuple.length; k++) {
+          var linkB = tuple[k];
+          if (shared(linkA.a.id, linkB.a.id) || shared(linkA.a.id, linkB.b.id) || shared(linkA.b.id, linkB.a.id) || shared(linkA.b.id, linkB.b.id)) {
+            linkB.invalid = true;
+          }
+        }
       }
     }
   }
-
-  function _check(index, p0, p1) {
-    var exists = index.indexOf(p0) >= 0;
-    if (exists) {
-      if (index.indexOf(p1) < 0) {
-        index.push(p1);
-      }
-    }
-    return exists;
-  }
+  resolveConflicts();
 
   function _merge(arr1, arr2) {
     for (var i = 0; i < arr2.length; ++i) {
@@ -538,35 +575,38 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
     }
   }
 
-  function _join(tuples, index) {
-
-    var tuple = tuples[index];
-    tuples[index] = null;
-
-    for (var i = 0; i < tuples.length; ++i) {
-      var t1 = tuples[i];
-      if (t1 == null) continue;
-      if (tuple.indexOf(t1[0]) >= 0 || tuple.indexOf(t1[1]) >= 0) {
-        _join(tuples, i);
-        _merge(tuple, t1);
+  function linksToTuples(linkTuples) {
+    var tuples = [];
+    for (var i = 0; i < linkTuples.length; i++) {
+      var linkTuple = linkTuples[i];
+      var tuple = [];
+      tuples.push(tuple);
+      for (var j = 0; j < linkTuple.length; j++) {
+        var link = linkTuple[j];
+        if (!link.invalid) {
+          _merge(tuple, [link.a.id, link.b.id]);
+          eqcElimination[link.constr] = true;
+          equalsDict[link.a.id] = link.a;
+          equalsDict[link.b.id] = link.b;
+        }
       }
-    }
-  }
+    }   
+    return tuples;
+  } 
+  var tuples = linksToTuples(linkTuples);
+
   var readOnlyParams = auxParams.concat(locked);
   for (var i = 0; i < tuples.length; ++i) {
     var tuple = tuples[i];
-    if (tuple != null) {
-      equalsIndex.push(tuple);
-      _join(tuples, i)
-      for (var mi = 0; mi < readOnlyParams.length; ++mi) {
-        var master = readOnlyParams[mi];
-        var masterIdx = tuple.indexOf(master.id);
-        if (masterIdx >= 0) {
-          var tmp = tuple[0];
-          tuple[0] = tuple[masterIdx];
-          tuple[masterIdx] = tmp;
-          break;
-        }
+    equalsIndex.push(tuple);
+    for (var mi = 0; mi < readOnlyParams.length; ++mi) {
+      var master = readOnlyParams[mi];
+      var masterIdx = tuple.indexOf(master.id);
+      if (masterIdx >= 0) {
+        var tmp = tuple[0];
+        tuple[0] = tuple[masterIdx];
+        tuple[masterIdx] = tmp;
+        break;
       }
     }
   }
