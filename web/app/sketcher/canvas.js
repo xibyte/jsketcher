@@ -621,9 +621,14 @@ TCAD.TWO.Segment = function(a, b) {
 TCAD.TWO.utils.extend(TCAD.TWO.Segment, TCAD.TWO.SketchObject);
 
 TCAD.TWO.Segment.prototype._class = 'TCAD.TWO.Segment';
+TCAD.TWO.Segment.MIN_LENGTH = 0.1; // 0.08; // if length < 0.08 canvas doesn't even draw a line
 
 TCAD.TWO.Segment.prototype.validate = function() {
-  return TCAD.math.distanceAB(this.a, this.b) > TCAD.TOLERANCE;
+  return TCAD.math.distanceAB(this.a, this.b) > TCAD.TWO.Segment.MIN_LENGTH;
+};
+
+TCAD.TWO.Segment.prototype.addFixingGeomConstraints = function(constrs) {
+  constrs.push(new TCAD.TWO.Constraints.MinLength(this.a, this.b, TCAD.TWO.Segment.MIN_LENGTH));
 };
 
 TCAD.TWO.Segment.prototype.collectParams = function(params) {
@@ -925,7 +930,7 @@ TCAD.TWO.DragTool.prototype.mousedown = function(e) {
   this.origin.x = e.offsetX;
   this.origin.y = e.offsetY;
   this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
-  this.prepareSolver();
+  this.prepareSolver([]);
 };
 
 TCAD.TWO.DragTool.prototype.mouseup = function(e) {
@@ -945,6 +950,22 @@ TCAD.TWO.DragTool.prototype.mousewheel = function(e) {
 TCAD.TWO.DragTool.prototype.solveRequest = function(rough) {
   this.solver.solve(rough, 1);
   this.solver.sync();
+  if (false) {
+    var fixingConstrs = [];
+    this.viewer.accept(function(obj) {
+      if (obj._class === 'TCAD.TWO.Segment') {
+        if (!obj.validate()) {
+          obj.addFixingGeomConstraints(fixingConstrs);
+        }
+      }
+      return true;
+    });
+    if (fixingConstrs.length !== 0) {
+      this.prepareSolver(fixingConstrs);
+      this.solver.solve(rough, 1);
+      this.solver.sync();
+    }
+  }
 };
 
 TCAD.TWO.DragTool.prototype.getParamsToLock = function() {
@@ -959,7 +980,7 @@ TCAD.TWO.DragTool.prototype.getParamsToLock = function() {
   return params;
 };
 
-TCAD.TWO.DragTool.prototype.prepareSolver = function() {
+TCAD.TWO.DragTool.prototype.prepareSolver = function(extraConstraints) {
   var locked = this.getParamsToLock();
   this.lockedShifts = [];
   this.lockedValues = [];
@@ -967,7 +988,7 @@ TCAD.TWO.DragTool.prototype.prepareSolver = function() {
     this.lockedShifts[i] = this._point.x - locked[i].get();
     this.lockedShifts[i + 1] = this._point.y - locked[i + 1].get();
   }
-  this.solver = this.viewer.parametricManager.prepare(locked);
+  this.solver = this.viewer.parametricManager.prepare(locked, extraConstraints);
   //this.enableRecording();
 };
 
