@@ -6,6 +6,8 @@ TCAD.constraints.create = function(name, params, values) {
       return new TCAD.constraints.Equal(params);
     case "equalsTo":
       return new TCAD.constraints.EqualsTo(params, values[0]);
+    case "MinLength":
+      return new TCAD.constraints.MinLength(params, values[0]);
     case "perpendicular":
       return new TCAD.constraints.Perpendicular(params);
     case "parallel":
@@ -41,6 +43,45 @@ TCAD.constraints.Equal = function(params) {
     out[1] = -1;
   }
 };
+
+
+TCAD.constraints.MinLength = function(params, distance) {
+  
+  this.params = params;
+  this.distance = distance;
+
+  var p1x = 0;
+  var p1y = 1;
+  var p2x = 2;
+  var p2y = 3;
+
+  this.error = function() {
+    var dx = params[p1x].get() - params[p2x].get();
+    var dy = params[p1y].get() - params[p2y].get();
+    var d = Math.sqrt(dx * dx + dy * dy);
+    return d < this.distance ? (d - this.distance) : 0;
+  };
+
+  this.gradient = function(out) {
+    var dx = params[p1x].get() - params[p2x].get();
+    var dy = params[p1y].get() - params[p2y].get();
+    var d = Math.sqrt(dx * dx + dy * dy);
+    if (d == 0) {
+      d = 0.000001;
+    }
+    if (d >= this.distance) {
+      out[p1x] = 0;
+      out[p1y] = 0;
+      out[p2x] = 0;
+      out[p2y] = 0;
+    }
+    out[p1x] = dx / d;
+    out[p1y] = dy / d;
+    out[p2x] = -dx / d;
+    out[p2y] = -dy / d;
+  }
+};
+
 
 /** @constructor */
 TCAD.constraints.ConstantWrapper = function(constr, mask) {

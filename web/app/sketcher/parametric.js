@@ -878,6 +878,26 @@ TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields = {'d' : "Enter the di
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
+TCAD.TWO.Constraints.MinLength = function(a, b, min) {
+  this.a = a;
+  this.b = b;
+  this.min = min;
+  this.aux = true;
+};
+
+TCAD.TWO.Constraints.MinLength.prototype.NAME = 'MinLength';
+TCAD.TWO.Constraints.MinLength.prototype.UI_NAME = 'MinLength';
+
+TCAD.TWO.Constraints.MinLength.prototype.getSolveData = function() {
+  var params = [];
+  this.a.collectParams(params);
+  this.b.collectParams(params);
+  return [[this.NAME, params, [this.min]]];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
 TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
   this.p = p;
   this.l = l;
