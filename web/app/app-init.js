@@ -113,6 +113,13 @@ function start() {
   app.viewer.bus.subscribe('dimScale', function(value) {
     dimScale.input.val(value);
   });
+  app.dock.views['Dimensions'].node.append($('<textarea />', {css: {
+    width: '100%', 
+    resize: 'vertical',
+    background: 'inherit',
+    border : 'none',
+    color: '#C4E1A4'
+  } }));
 }
 window.___log = function(log) {
     $('#log').append( " *****************<br><br><br><br>");
