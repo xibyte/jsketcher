@@ -104,8 +104,8 @@ TCAD.TWO.AddArcTool.prototype.keyup = function(e) {};
 TCAD.TWO.AddArcTool.prototype.cleanup = function(e) {};
 
 TCAD.TWO.AddArcTool.prototype.mousemove = function(e) {
+  var p = this.viewer.screenToModel(e);
   if (this.point != null) {
-    var p = this.viewer.screenToModel(e);
     this.point.x = p.x;
     this.point.y = p.y;
 
@@ -126,6 +126,10 @@ TCAD.TWO.AddArcTool.prototype.mousemove = function(e) {
       this.arc.b.y = this.arc.c.y + r * Math.sin(ang);
     }
 
+    this.viewer.snap(p.x, p.y, [this.arc.a, this.arc.b, this.arc.c]);
+    this.viewer.refresh();
+  } else {
+    this.viewer.snap(p.x, p.y, []);
     this.viewer.refresh();
   }
 };
@@ -141,12 +145,24 @@ TCAD.TWO.AddArcTool.prototype.mouseup = function(e) {
     );
     this.point = this.arc.a;
     this.viewer.activeLayer.objects.push(this.arc);
+    this.snapIfNeed(this.arc.c);
     this.viewer.refresh();
   } else if (this.point.id === this.arc.a.id) {
+    this.snapIfNeed(this.arc.a);
     this.point = this.arc.b;
   } else {
+    this.snapIfNeed(this.arc.b);
     this.arc.stabilize(this.viewer);
     this.viewer.toolManager.releaseControl();
+  }
+};
+
+TCAD.TWO.AddArcTool.prototype.snapIfNeed = function(p) {
+  if (this.viewer.snapped.length != 0) {
+    var snapWith = this.viewer.snapped.pop();
+    this.viewer.cleanSnap();
+    this.viewer.parametricManager.linkObjects([p, snapWith]);
+    this.viewer.parametricManager.refresh();
   }
 };
 
