@@ -142,24 +142,50 @@ TCAD.App.prototype.sketchFace = function() {
       b : {x : b.x, y: b.y}
     });
   }
+  
   function addArc(arc) {
-    if (arc.length < 2) {
-      return;
-    }
-    var a = arc[0], b = arc[arc.length - 1];
-    if (arc.length == 2) {
-      addSegment(a, b);
-      return;
-    }
-    var mid = (arc.length / 2) >> 0;
-    var c = TCAD.math.circleFromPoints(arc[0], arc[mid], arc[arc.length-1]);
-    if (c == null) {
+    function addArcAsSegments(arc) {
       for (var i = 1; i < arc.length; i++) {
         addSegment(arc[i - 1], arc[i]);
       }
+    }
+    if (arc.length < 5) {
+      addArcAsSegments(arc);
       return;
     }
-    if (!TCAD.geom.isCCW([arc[0], arc[mid], arc[arc.length-1]])) {
+    var a = arc[1], b = arc[arc.length - 2];
+
+    var mid = (arc.length / 2) >> 0;
+    var c = TCAD.math.circleFromPoints(a, arc[mid], b);
+    if (c == null) {
+      addArcAsSegments(arc);
+      return;
+    }
+
+    var dist = TCAD.math.distanceAB;
+    
+    var rad = dist(a, c);
+
+    if (Math.abs(rad - dist(b, c)) > TCAD.TOLERANCE) {
+      addArcAsSegments(arc);
+      return;
+    }
+
+    var firstPoint = arc[0];
+    var lastPoint = arc[arc.length - 1];
+    if (Math.abs(rad - dist(firstPoint, c)) < TCAD.TOLERANCE) {
+      a = firstPoint;      
+    } else {
+      addSegment(firstPoint, a);
+    }
+
+    if (Math.abs(rad - dist(lastPoint, c)) < TCAD.TOLERANCE) {
+      b = lastPoint;
+    } else {
+      addSegment(b, lastPoint);
+    }
+
+    if (!TCAD.geom.isCCW([a, arc[mid], b])) {
       var t = a;
       a = b;
       b = t;
