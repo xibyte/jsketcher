@@ -1305,11 +1305,11 @@ TCAD.TWO.Constraints.Angle.prototype.getSolveData = function() {
 };
 
 TCAD.TWO.Constraints.Angle.prototype.serialize = function() {
-  return [this.NAME, [this.p1.id, this.p2.id, this.p3.id, this.p4.id, this.angle.get()]];
+  return [this.NAME, [this.p1.id, this.p2.id, this.p3.id, this.p4.id, this.angle]];
 };
 
 TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Angle.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Angle( refs(data[0]), refs(data[1]), data[2] );
+  return new TCAD.TWO.Constraints.Angle( refs(data[0]), refs(data[1]), refs(data[2]), refs(data[3]), data[4] );
 };
 
 TCAD.TWO.Constraints.Angle.prototype.getObjects = function() {
@@ -1328,6 +1328,10 @@ TCAD.TWO.Constraints.Angle.prototype.getObjects = function() {
       add(obj);
     }
   }
+  check(this.p1);
+  check(this.p2);
+  check(this.p3);
+  check(this.p4);
   return out;
 };
 
