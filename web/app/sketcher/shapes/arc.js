@@ -9,6 +9,8 @@ TCAD.TWO.Arc = function(a, b, c) {
   c.parent = this;
   this.children.push(a, b, c);
   this.r = new TCAD.TWO.Ref(0);
+  this.r.value = this.distanceA();
+  this.r.obj = this;
 };
 
 TCAD.TWO.utils.extend(TCAD.TWO.Arc, TCAD.TWO.SketchObject);
