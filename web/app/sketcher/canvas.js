@@ -156,6 +156,11 @@ TCAD.TWO.Viewer.prototype.remove = function(obj) {
   }
 };
 
+TCAD.TWO.Viewer.prototype.add = function(obj, layer) {
+  layer.objects.push(obj);
+  obj.layer = layer;
+};
+
 TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
 
   buffer *= 0.5;
