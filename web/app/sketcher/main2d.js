@@ -114,8 +114,13 @@ TCAD.App2D = function() {
   this.registerAction('addHDim', "Add Horizontal Dimension", function () {
     app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.HDimension(a,b)} ));
   });
+  
   this.registerAction('addVDim', "Add Vertical Dimension", function () {
     app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.VDimension(a,b)} ));
+  });
+
+  this.registerAction('addCircleDim', "Add Circle Dimension", function () {
+    app.viewer.toolManager.takeControl(new TCAD.TWO.AddCircleDimTool(app.viewer, app.viewer.dimLayer));
   });
 
   this.registerAction('save', "Save", function () {
