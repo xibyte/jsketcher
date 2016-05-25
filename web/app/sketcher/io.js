@@ -7,7 +7,8 @@ TCAD.io.Types = {
   CIRCLE    : 'TCAD.TWO.Circle',
   DIM       : 'TCAD.TWO.Dimension',
   HDIM      : 'TCAD.TWO.HDimension',
-  VDIM      : 'TCAD.TWO.VDimension'
+  VDIM      : 'TCAD.TWO.VDimension',
+  DDIM      : 'TCAD.TWO.DiameterDimension'
 };
 
 /** @constructor */
@@ -100,6 +101,8 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
         } else if (_class === T.DIM) {
           skobj = new TCAD.TWO.Dimension(obj['a'], obj['b']);
           skobj.flip = obj['flip'];
+        } else if (_class === T.DDIM) {
+          skobj = new TCAD.TWO.DiameterDimension(obj['obj']);
         }
         if (skobj != null) {
           if (aux) skobj.accept(function(o){o.aux = true; return true;});
@@ -116,10 +119,12 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
 
   for (i = 0; i < this.viewer.dimLayer.objects.length; ++i) {
     obj = this.viewer.dimLayer.objects[i];
-    //if (obj._class === 'TCAD.TWO.Dimension' || obj._class === 'TCAD.TWO.HDimension' || obj._class === 'TCAD.TWO.VDimension') {
-    obj.a = index[obj.a];
-    obj.b = index[obj.b];
-    //}
+    if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+      obj.a = index[obj.a];
+      obj.b = index[obj.b];
+    } else if (obj._class === T.DDIM) {
+      obj.obj = index[obj.obj];
+    }
   }
 
   this.setupBoundary(sketch['boundary']);
@@ -187,7 +192,9 @@ TCAD.IO.prototype._serializeSketch = function() {
           to['a'] = obj.a.id;
           to['b'] = obj.b.id;
           to['flip'] = obj.flip;
-        }
+        } else if (obj._class === T.DDIM) {
+          to['obj'] = obj.obj.id;
+        } 
       }
     }
   }
