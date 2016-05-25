@@ -83,7 +83,15 @@ TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
 
 
 TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
-  return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
+  var aimAngle = Math.atan2(this.c.y - aim.y, this.c.x - aim.x);
+  if (aimAngle <= this.getStartAngle() && aimAngle >= this.getEndAngle()) {
+    return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());  
+  } else {
+    return Math.min(
+      TCAD.math.distance(aim.x, aim.y, this.a.x, this.a.y),
+      TCAD.math.distance(aim.x, aim.y, this.b.x, this.b.y)
+    );
+  }
 };
 
 TCAD.TWO.Arc.prototype.stabilize = function(viewer) {
