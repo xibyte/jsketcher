@@ -221,6 +221,11 @@ TCAD.TWO.ParametricManager.prototype.pointInMiddle = function(objs) {
   this.add(new TCAD.TWO.Constraints.PointInMiddle(pl[0], pl[1]));
 };
 
+TCAD.TWO.ParametricManager.prototype.symmetry = function(objs) {
+  var pl = this._fetchPointAndLine(objs);
+  this.add(new TCAD.TWO.Constraints.Symmetry(pl[0], pl[1]));
+};
+
 TCAD.TWO.ParametricManager.prototype.pointOnArc = function(objs) {
   var points = this._fetch(objs, ['TCAD.TWO.EndPoint'], 1);
   var arcs = this._fetch(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
@@ -1271,6 +1276,36 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointInMiddle.prototype.NAME] 
 };
 
 TCAD.TWO.Constraints.PointInMiddle.prototype.getObjects = function() {
+  return [this.point, this.line];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+TCAD.TWO.Constraints.Symmetry = function(point, line) {
+  this.point = point;
+  this.line = line;
+  this.length = new TCAD.TWO.Ref(TCAD.math.distanceAB(line.a, line.b) / 2);
+};
+
+TCAD.TWO.Constraints.Symmetry.prototype.NAME = 'Symmetry';
+TCAD.TWO.Constraints.Symmetry.prototype.UI_NAME = 'Symmetry';
+
+TCAD.TWO.Constraints.Symmetry.prototype.getSolveData = function() {
+  var pointInMiddleData = TCAD.TWO.Constraints.PointInMiddle.prototype.getSolveData.call(this);
+  var pointOnLineData = TCAD.TWO.Constraints.PointOnLine.prototype.getSolveData.call(this);
+  return pointInMiddleData.concat(pointOnLineData);
+};
+
+TCAD.TWO.Constraints.Symmetry.prototype.serialize = function() {
+  return [this.NAME, [this.point.id, this.line.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Symmetry.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.Symmetry(refs(data[0]), refs(data[1]));
+};
+
+TCAD.TWO.Constraints.Symmetry.prototype.getObjects = function() {
   return [this.point, this.line];
 };
 
