@@ -81,12 +81,11 @@ TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   }
 };
 
-TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
-
+TCAD.TWO.Arc.prototype.isPointInsideSector = function(x, y) {
   var ca = new TCAD.Vector(this.a.x - this.c.x, this.a.y - this.c.y);
   var cb = new TCAD.Vector(this.b.x - this.c.x, this.b.y - this.c.y);
-  var ct = new TCAD.Vector(aim.x - this.c.x, aim.y - this.c.y);
-  
+  var ct = new TCAD.Vector(x - this.c.x, y - this.c.y);
+
   ca._normalize();
   cb._normalize();
   ct._normalize();
@@ -96,15 +95,20 @@ TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
   var isInside = cosAT >= cosAB;
   var abInverse = ca.cross(cb).z < 0;
   var atInverse = ca.cross(ct).z < 0;
-  
+
   var result;
   if (abInverse) {
     result = !atInverse || !isInside;
   } else {
-    result = !atInverse && isInside; 
+    result = !atInverse && isInside;
   }
-  
-  if (result) {
+  return result;
+};
+
+TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
+
+  var isInsideSector = this.isPointInsideSector(aim.x, aim.y);
+  if (isInsideSector) {
     return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
   } else {
     return Math.min(
