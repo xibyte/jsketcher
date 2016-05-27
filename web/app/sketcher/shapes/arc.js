@@ -81,11 +81,31 @@ TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   }
 };
 
-
 TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
-  var aimAngle = Math.atan2(this.c.y - aim.y, this.c.x - aim.x);
-  if (aimAngle <= this.getStartAngle() && aimAngle >= this.getEndAngle()) {
-    return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());  
+
+  var ca = new TCAD.Vector(this.a.x - this.c.x, this.a.y - this.c.y);
+  var cb = new TCAD.Vector(this.b.x - this.c.x, this.b.y - this.c.y);
+  var ct = new TCAD.Vector(aim.x - this.c.x, aim.y - this.c.y);
+  
+  ca._normalize();
+  cb._normalize();
+  ct._normalize();
+  var cosAB = ca.dot(cb);
+  var cosAT = ca.dot(ct);
+
+  var isInside = cosAT >= cosAB;
+  var abInverse = ca.cross(cb).z < 0;
+  var atInverse = ca.cross(ct).z < 0;
+  
+  var result;
+  if (abInverse) {
+    result = !atInverse || !isInside;
+  } else {
+    result = !atInverse && isInside; 
+  }
+  
+  if (result) {
+    return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
   } else {
     return Math.min(
       TCAD.math.distance(aim.x, aim.y, this.a.x, this.a.y),
