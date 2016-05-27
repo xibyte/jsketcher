@@ -13,7 +13,7 @@ TCAD.TWO.FilletTool.prototype.makeFillet = function(point1, point2) {
       var b = point1.parent.b;
     }
     var d = TCAD.math.distanceAB(a, b);
-    k = 4 / 5;
+    var k = 4 / 5;
     b.x = a.x + (b.x - a.x) * k; 
     b.y = a.y + (b.y - a.y) * k;
     return new TCAD.Vector(a.x - b.x, a.y - b.y, 0);
