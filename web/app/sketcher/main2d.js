@@ -193,6 +193,9 @@ TCAD.App2D = function() {
   this.registerAction('symmetry', "Symmetry", function () {
     app.viewer.parametricManager.symmetry(app.viewer.selected, prompt);
   });
+  this.registerAction('lockConvex', "Lock Convexity", function () {
+    app.viewer.parametricManager.lockConvex(app.viewer.selected, alert);
+  });
   
   this.registerAction('analyzeConstraint', "Analyze Constraint", function () {
     app.viewer.parametricManager.analyze(alert);
