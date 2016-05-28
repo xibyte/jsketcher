@@ -26,6 +26,8 @@ TCAD.constraints.create = function(name, params, values) {
       var _ = true, x = false;
       // Exclude angle value from parameters
       return new TCAD.constraints.ConstantWrapper(new TCAD.constraints.Angle(params), [x,x,x,x,x,x,x,x,_]);
+    case 'LockConvex':
+      return new TCAD.constraints.LockConvex(params);
   }
 };
 
@@ -79,6 +81,47 @@ TCAD.constraints.MinLength = function(params, distance) {
     out[p1y] = dy / d;
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
+  }
+};
+
+TCAD.constraints.LockConvex = function(params) {
+  this.params = params;
+
+  var _pcx = 0;
+  var _pcy = 1;
+  var _pax = 2;
+  var _pay = 3;
+  var _ptx = 4;
+  var _pty = 5;
+
+  this.error = function() {
+    var cx = params[_pcx].get();
+    var cy = params[_pcy].get();
+    var ax = params[_pax].get();
+    var ay = params[_pay].get();
+    var tx = params[_ptx].get();
+    var ty = params[_pty].get();
+    
+    var crossProductNorm = (cx - ax) * (ty - ay) - (cy - ay) * (tx - ax);
+
+    var violate = crossProductNorm < 0;
+    return violate ? crossProductNorm : 0;
+  };
+
+  this.gradient = function(out) {
+    var cx = params[_pcx].get();
+    var cy = params[_pcy].get();
+    var ax = params[_pax].get();
+    var ay = params[_pay].get();
+    var tx = params[_ptx].get();
+    var ty = params[_pty].get();
+
+    out[_pcx] = ty-ay;
+    out[_pcy] = ax-tx;
+    out[_pax] = cy-ty;
+    out[_pay] = tx-cx;
+    out[_ptx] = ay-cy;
+    out[_pty] = cx-ax;
   }
 };
 

@@ -167,6 +167,56 @@ TCAD.TWO.ParametricManager.prototype.perpendicular = function(objs) {
   this.add(new TCAD.TWO.Constraints.Perpendicular(lines[0], lines[1]));
 };
 
+TCAD.TWO.ParametricManager.prototype.lockConvex = function(objs, warnCallback) {
+  var lines = this._fetchTwoLines(objs);
+  var l1 = lines[0];
+  var l2 = lines[1];
+  var pts =[l1.a, l1.b, l2.a, l2.b]; 
+  function isLinked(p1, p2) {
+    for (var i = 0; i < p1.linked.length; ++i) {
+      if (p1.linked[i].id === p2.id) {
+        return true;        
+      }
+    }
+    return false;
+  }  
+  
+  function swap(arr, i1, i2) {
+    var _ = arr[i1];
+    arr[i1] = arr[i2];
+    arr[i2] = _;
+  }
+  
+  if (isLinked(pts[0], pts[2])) {
+    swap(pts, 0, 1);
+  } else if (isLinked(pts[0], pts[3])) {
+    swap(pts, 0, 1);
+    swap(pts, 2, 3);
+  } else if (isLinked(pts[1], pts[3])) {
+    swap(pts, 2, 3);
+  } else if (isLinked(pts[1], pts[2])) {
+    //we are good
+  } else {
+    warnCallback("Lines must be connected");
+    return;
+  }
+  
+  var c = pts[0];
+  var a = pts[1];
+  var t = pts[3];
+  
+  // ||ac x at|| > 0 
+  var crossNorma = (c.x - a.x) * (t.y - a.y) - (c.y - a.y) * (t.x - a.x); 
+  
+  if (crossNorma < 0) {
+    var _ =  c;
+    c = t;
+    t = _;
+  }
+  
+  this.add(new TCAD.TWO.Constraints.LockConvex(c, a, t));
+};
+
 TCAD.TWO.ParametricManager.prototype.tangent = function(objs) {
   var al = this._fetchArcCircAndLine(objs);
   var arc  = al[0];
@@ -719,6 +769,25 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   solver.solve = solve;
   solver.sync = sync;
   return solver; 
+};
+
+TCAD.TWO.Constraints.ParentsCollector = function() {
+  this.parents = [];
+  var parents = this.parents;
+  var index = {};
+  function add(obj) {
+    if (index[obj.id] === undefined) {
+      index[obj.id] = obj;
+      parents.push(obj);
+    }
+  }
+  this.check = function(obj) {
+    if (obj.parent !== null) {
+      add(obj.parent);
+    } else {
+      add(obj);
+    }
+  };
 };
 
 TCAD.TWO.Constraints.Factory = {};
@@ -1348,28 +1417,50 @@ TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Angle.prototype.NAME] = functi
 };
 
 TCAD.TWO.Constraints.Angle.prototype.getObjects = function() {
-  var out = [];
-  var index = {};
-  function add(obj) {
-    if (index[obj.id] === undefined) {
-      index[obj.id] = obj;
-      out.push(obj);
-    }
-  }
-  function check(obj) {
-    if (obj.parent !== null) {
-      add(obj.parent);
-    } else {
-      add(obj);
-    }
-  }
-  check(this.p1);
-  check(this.p2);
-  check(this.p3);
-  check(this.p4);
-  return out;
+  var collector = new TCAD.TWO.Constraints.ParentsCollector();
+  collector.check(this.p1);
+  collector.check(this.p2);
+  collector.check(this.p3);
+  collector.check(this.p4);
+  return collector.parents;
 };
 
 TCAD.TWO.Constraints.Angle.prototype.SettableFields = {'angle' : "Enter the angle value"};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+TCAD.TWO.Constraints.LockConvex = function(c, a, t) {
+  this.c = c;
+  this.a = a;
+  this.t = t;
+};
+
+TCAD.TWO.Constraints.LockConvex.prototype.NAME = 'LockConvex';
+TCAD.TWO.Constraints.LockConvex.prototype.UI_NAME = 'Lock Convexity';
+
+TCAD.TWO.Constraints.LockConvex.prototype.getSolveData = function() {
+  var params = [];
+  this.c.collectParams(params);
+  this.a.collectParams(params);
+  this.t.collectParams(params);
+  return [['LockConvex', params, []]];
+};
+
+TCAD.TWO.Constraints.LockConvex.prototype.serialize = function() {
+  return [this.NAME, [this.c.id, this.a.id, this.t.id]];
+};
+
+TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.LockConvex.prototype.NAME] = function(refs, data) {
+  return new TCAD.TWO.Constraints.LockConvex(refs(data[0]), refs(data[1]), refs(data[2]));
+};
+
+TCAD.TWO.Constraints.LockConvex.prototype.getObjects = function() {
+  var collector = new TCAD.TWO.Constraints.ParentsCollector();
+  collector.check(this.c);
+  collector.check(this.a);
+  collector.check(this.t);
+  return collector.parents;
+};
 
 // ------------------------------------------------------------------------------------------------------------------ //
