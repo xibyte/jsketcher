@@ -45,6 +45,17 @@ TCAD.TWO.FilletTool.prototype.makeFillet = function(point1, point2) {
   pm._add(new TCAD.TWO.Constraints.Tangent( arc, point2.parent));
   pm._add(new TCAD.TWO.Constraints.Coincident( arc.a, point1));
   pm._add(new TCAD.TWO.Constraints.Coincident( arc.b, point2));
+
+  //function otherEnd(point) {
+  //  if (point.parent.a.id === point.id) {
+  //    return point.parent.b;
+  //  } else {
+  //    return point.parent.a;
+  //  }
+  //}
+  //
+  //pm._add(new TCAD.TWO.Constraints.LockConvex(arc.c, arc.a, otherEnd(point1)));
+  //pm._add(new TCAD.TWO.Constraints.LockConvex(otherEnd(point2), arc.b, arc.c));
   
   var solver = pm.solveWithLock([]);
 //  var solver = pm.solveWithLock([point1._x, point1._y, point2._x, point2._y]);
