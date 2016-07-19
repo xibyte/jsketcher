@@ -411,15 +411,13 @@ optim.dog_leg = function (subsys, rough) {
 //      break;
 //    }
 
-    // see if we are already finished
-    if (stop)
+    if (stop) {
       break;
-
-    // get the new values
-    var err_new;
+    } 
+    
     x_new = n.add(x, h_dl);
     subsys.setParams(x_new);
-    err_new = subsys.calcResidual(fx_new);
+    var err_new = subsys.calcResidual(fx_new);
     subsys.fillJacobian(Jx_new);
 
     // calculate the linear model and the update ratio
