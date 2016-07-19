@@ -259,6 +259,12 @@ optim.inv = function inv(x) {
     return I;
 };
 
+optim._result = function(evalCount, error, returnCode) {
+  this.evalCount = evalCount;
+  this.error = error;
+  this.returnCode = returnCode;
+};
+
 optim.dog_leg = function (subsys, rough) {
   //rough = true
   //var tolg = rough ? 1e-3 : 1e-4;
@@ -276,8 +282,9 @@ optim.dog_leg = function (subsys, rough) {
   var xsize = subsys.params.length;
   var csize = subsys.constraints.length;
 
-  if (xsize == 0)
-    return 'Success';
+  if (xsize == 0) {
+    return new optim._result(0, 0, 1);
+  }
 
   var vec = TCAD.math._arr;
   var mx = TCAD.math._matrix;
@@ -466,11 +473,7 @@ optim.dog_leg = function (subsys, rough) {
   }
   //log.push(stop);
   //window.___log(log);
-  return {
-    evalCount: iter,
-    error: err,
-    returnCode: stop
-  };
+  return new optim._result(iter, err, stop);
 };
 
 optim.cg = function(A, x, b, tol, maxIt) {
