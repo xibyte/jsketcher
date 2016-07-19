@@ -333,8 +333,7 @@ optim.dog_leg = function (subsys, rough) {
 
   var delta = 10;
   var alpha = 0.;
-  var nu = 2.;
-  var iter = 0, stop = 0, reduce = 0;
+  var iter = 0, stop = 0;
   //var log = [];
   while (stop === 0) {
     optim.DEBUG_HANDLER(iter, err);
