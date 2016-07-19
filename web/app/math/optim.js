@@ -297,14 +297,13 @@ optim.dog_leg = function (subsys, rough) {
 
   var r0 = vec(csize);
 
-  var err;
   subsys.fillParams(x);
 
 //  subsys.setParams(vec(xsize));
 //  subsys.calcResidual(r0);
 
   subsys.setParams(x);
-  err = subsys.calcResidual(fx);
+  var err = subsys.calcResidual(fx);
   subsys.fillJacobian(Jx);
 
   function lsolve_slow(A, b) {
