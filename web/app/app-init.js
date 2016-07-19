@@ -42,11 +42,17 @@ function start() {
         var sub = pm.subSystems[j];
         for (var i = 0; i < sub.constraints.length; ++i) {
           var constr = sub.constraints[i];
-          if (constr.aux !== true) {
+          if (constr.aux !== true && app.constraintFilter[constr.NAME] != true) {
             theItems.push({name : constr.UI_NAME + infoStr(constr), constr : constr});
           }
         }
       }
+      theItems.sort(function (a, b) {
+        if (a.constr.NAME == 'coi') {
+          return b.constr.NAME == 'coi' ? 0 : 1;
+        }
+        return a.constr.NAME.localeCompare(b.constr.NAME)
+      });
       return theItems;
     },
 
@@ -76,7 +82,49 @@ function start() {
       app.viewer.parametricManager.refresh();
     }
   });
-  app.dock.views['Constraints'].node.append(constrList.ul);
+  var constraintsView = app.dock.views['Constraints'];
+
+  function configureConstraintsFilter() {
+    var constraintsCaption = constraintsView.node.find('.tool-caption');
+    var constraintsFilterBtn = TCAD.App2D.faBtn("filter");
+    constraintsFilterBtn.css({float: 'right', 'margin-right': '10px', cursor: 'pointer'});
+    constraintsCaption.append(constraintsFilterBtn);
+    var constraintsFilterWin = new TCAD.ui.Window($('#constrFilter'), app.winManager);
+    TCAD.ui.bindOpening(constraintsFilterBtn, constraintsFilterWin);
+    var content = constraintsFilterWin.root.find('.content');
+
+    var constrTypes = [], constrType;
+    for (var cname in TCAD.TWO.Constraints) {
+      c = TCAD.TWO.Constraints[cname];
+      if (c.prototype !== undefined && c.prototype.UI_NAME !== undefined && !c.prototype.aux) {
+        constrTypes.push(c);
+      }      
+    }
+    constrTypes.sort(function (a, b) {
+      if (a.prototype.NAME == 'coi') {
+        return b.prototype.NAME == 'coi' ? 0 : -1;
+      }
+      return a.prototype.UI_NAME.localeCompare(b.prototype.UI_NAME)
+    });
+    for (var i = 0; i < constrTypes.length; i++) {
+      var c = constrTypes[i];
+      if (c.prototype !== undefined && c.prototype.UI_NAME !== undefined && !c.prototype.aux) {
+        var checkbox = $('<input>', {type : 'checkbox', checked : 'checked', value : c.prototype.NAME});
+        content.append(
+            $('<label>', { css : {display : 'block', 'white-space' : 'nowrap'}})
+              .append(checkbox)
+              .append(c.prototype.UI_NAME)
+          );
+        checkbox.change(function(){
+          var checkbox = $(this);
+          app.constraintFilter[checkbox.val()] = checkbox.is(':checked') != true;
+          constrList.refresh();
+        });
+      }
+    }
+  }
+  configureConstraintsFilter();
+  constraintsView.node.append(constrList.ul);
   app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
   constrList.refresh();
 

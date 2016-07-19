@@ -74,7 +74,7 @@ TCAD.TWO.ParametricManager.prototype.refresh = function() {
 
 TCAD.TWO.ParametricManager.prototype.add = function(constr) {
   this.viewer.historyManager.checkpoint();
-  var subSystem = this._add(constr)
+  var subSystem = this._add(constr);
   this.checkRedundancy(subSystem, constr);
   this.refresh();
 };
@@ -956,9 +956,9 @@ TCAD.TWO.Constraints.MinLength = function(a, b, min) {
   this.a = a;
   this.b = b;
   this.min = min;
-  this.aux = true;
 };
 
+TCAD.TWO.Constraints.MinLength.prototype.aux = true;
 TCAD.TWO.Constraints.MinLength.prototype.NAME = 'MinLength';
 TCAD.TWO.Constraints.MinLength.prototype.UI_NAME = 'MinLength';
 
@@ -976,9 +976,9 @@ TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
   this.p = p;
   this.l = l;
   this.d = d;
-  this.aux = true;
 };
 
+TCAD.TWO.Constraints.P2LDistanceV.prototype.aux = true;
 TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME = 'P2LDistanceV';
 TCAD.TWO.Constraints.P2LDistanceV.prototype.UI_NAME = 'Distance P & L';
 
@@ -1040,9 +1040,9 @@ TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
   this.p1 = p1;
   this.p2 = p2;
   this.d = d;
-  this.aux = true;
 };
 
+TCAD.TWO.Constraints.P2PDistanceV.prototype.aux = true;
 TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME = 'P2PDistanceV';
 TCAD.TWO.Constraints.P2PDistanceV.prototype.UI_NAME = 'Distance Points';
 
