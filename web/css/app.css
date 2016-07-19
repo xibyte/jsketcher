@@ -194,6 +194,7 @@ html, body {
 }
 
 .win .content {
+  color: #fff;
   padding: 7px;
   height: calc(100% - 19px);
 }
@@ -298,4 +299,8 @@ html, body {
 
 .terminal-commandText {
   color: #777777;
+}
+
+input[type=checkbox], input[type=radio] {
+  vertical-align: middle;
 }

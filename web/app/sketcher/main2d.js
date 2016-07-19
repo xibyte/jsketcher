@@ -6,13 +6,13 @@ TCAD.App2D = function() {
 
   this.viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
   this.winManager = new TCAD.ui.WinManager();
-
+    
   this.initSketchManager();
   this._exportWin = new TCAD.ui.Window($('#exportManager'), app.winManager);
 
   $('#exportManager li').click(function() {TCAD.ui.closeWin(app._exportWin);});
 
-
+  this.constraintFilter = {};
   this.actions = {};
 
   //For debug view
