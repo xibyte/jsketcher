@@ -328,7 +328,7 @@ optim.dog_leg = function (subsys, rough) {
   var g_inf = n.norminf(g);
   var fx_inf = n.norminf(fx);
 
-  var maxIterNumber = xsize * 100;
+  var iterLimit = xsize * 100;
   var divergingLim = 1e6 * err + 1e12;
 
   var delta = 10;
@@ -345,7 +345,7 @@ optim.dog_leg = function (subsys, rough) {
       stop = 1;
     else if (delta <= tolx * (tolx + n.norm2(x)))
       stop = 3;
-    else if (iter >= maxIterNumber)
+    else if (iter >= iterLimit)
       stop = 4;
     else if (err > divergingLim || err != err) { // check for diverging and NaN
       stop = 6;
@@ -360,7 +360,7 @@ optim.dog_leg = function (subsys, rough) {
 //          h_gn = lusolve(Jx, n.mul(fx, -1));
 
       //Conjugate gradient method
-      //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, maxIterNumber);
+      //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, iterLimit);
 
       //solve linear problem using svd formula to get the gauss-newton step
       //h_gn = lls(Jx, n.mul(fx, -1));
