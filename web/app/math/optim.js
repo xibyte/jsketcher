@@ -339,24 +339,23 @@ optim.dog_leg = function (subsys, rough) {
 
   var delta = 10;
   var alpha = 0.;
-  var iter = 0, stop = 0;
+  var iter = 0, returnCode = 0;
   //var log = [];
-  while (stop === 0) {
+  while (returnCode === 0) {
     optim.DEBUG_HANDLER(iter, err);
 
     // check if finished
-    if (fx_inf <= tolf ) // Success
-      stop = 1;
-    else if (g_inf <= tolg) // Success too
-      stop = 1;
-    else if (delta <= tolx * (tolx + n.norm2(x)))
-      stop = 3;
-    else if (iter >= iterLimit)
-      stop = 4;
-    else if (err > divergingLim || err != err) { // check for diverging and NaN
-      stop = 6;
-    }
-    else {
+    if (fx_inf <= tolf) { // Success
+      returnCode = 1;
+    } else if (g_inf <= tolg) {// Success too
+      returnCode = 1;
+    } else if (delta <= tolx * (tolx + n.norm2(x))) {
+      returnCode = 3;
+    } else if (iter >= iterLimit) {
+      returnCode = 4;
+    } else if (err > divergingLim || err != err) { // check for diverging and NaN
+      returnCode = 6;
+    } else {
 
       // get the gauss-newton step
       //h_gn = n.solve(Jx, n.mul(fx, -1));
@@ -413,11 +412,11 @@ optim.dog_leg = function (subsys, rough) {
     var dl_norm = n.norm2(h_dl);
 
 //    if (dl_norm <= tolx) {
-//      stop = 5;
+//      returnCode = 5;
 //      break;
 //    }
 
-    if (stop) {
+    if (returnCode != 0) {
       break;
     } 
     
@@ -471,9 +470,9 @@ optim.dog_leg = function (subsys, rough) {
     // count this iteration and start again
     iter++;
   }
-  //log.push(stop);
+  //log.push(returnCode);
   //window.___log(log);
-  return new optim._result(iter, err, stop);
+  return new optim._result(iter, err, returnCode);
 };
 
 optim.cg = function(A, x, b, tol, maxIt) {
