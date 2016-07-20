@@ -21,20 +21,20 @@ TCAD.toolkit.Box.prototype.close = function() {
 };
 
 TCAD.toolkit.Folder = function(title) {
-  this.root = $('<div/>', {class: 'tc-folder'});
+  this.root = $('<div/>', {'class': 'tc-folder'});
   this.content = $('<div/>');
-  this.root.append($('<div/>', {text: title, class: 'tc-row tc-title'}));
+  this.root.append($('<div/>', {text: title, 'class': 'tc-row tc-title'}));
   this.root.append(this.content);
 };
 
 TCAD.toolkit.Button = function(title) {
   this.root = $('<div/>',
-    {class: 'tc-row tc-ctrl tc-ctrl-btn', text: title});
+    {'class': 'tc-row tc-ctrl tc-ctrl-btn', text: title});
 };
 
 TCAD.toolkit.CheckBox = function(title, checked) {
   this.root = $('<div/>',
-    {class: 'tc-row tc-ctrl'});
+    {'class': 'tc-row tc-ctrl'});
   this.root.append('<label><input type="checkbox">' + title + '</label>')
   this.input = this.root.find("input");
   this.input.prop('checked', !!checked);
@@ -43,7 +43,7 @@ TCAD.toolkit.CheckBox = function(title, checked) {
 TCAD.toolkit.InlineRadio = function(choiceLabels, choiceValues, checkedIndex) {
   var name = 'TCAD.toolkit.InlineRadio_' + (TCAD.toolkit.InlineRadio.COUNTER++)
   this.root = $('<div/>',
-    {class: 'tc-row tc-ctrl tc-inline-radio'});
+    {'class': 'tc-row tc-ctrl tc-inline-radio'});
   this.inputs = [];
   for (var i = 0; i < choiceLabels.length; i++) {
     var checked = checkedIndex === i ? "checked" : '';
@@ -66,13 +66,13 @@ TCAD.toolkit.InlineRadio.prototype.getValue = function() {
 TCAD.toolkit.InlineRadio.COUNTER = 0;
 
 TCAD.toolkit.propLayout = function(root, name, valueEl) {
-  root.append($('<span/>', {class: 'tc-prop-name', text: name}))
-    .append($('<div/>', {class: 'tc-prop-value'})
+  root.append($('<span/>', {'class': 'tc-prop-name', text: name}))
+    .append($('<div/>', {'class': 'tc-prop-value'})
     .append(valueEl));
 };
 
 TCAD.toolkit.Number = function(name, initValue, baseStep, round) {
-  this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-number'});
+  this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-number'});
   this.input = $("<input type='text' value='"+initValue+"' />");
   this.slide = false;
   baseStep = baseStep || 1;
@@ -125,22 +125,22 @@ TCAD.toolkit.Number = function(name, initValue, baseStep, round) {
 };
 
 TCAD.toolkit.Combo = function(id, label) {
-  this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-combo'});
-  var label = $('<span/>', {class: 'tc-prop-name', text: label});
+  this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-combo'});
+  var label = $('<span/>', {'class': 'tc-prop-name', text: label});
   this.select = $('<select>', {id : id});
   this.root.append(label)
-    .append($('<div/>', {class: 'tc-prop-value'}).append(this.select));
+    .append($('<div/>', {'class': 'tc-prop-value'}).append(this.select));
 };
 
 TCAD.toolkit.Text = function(name) {
-  this.root = $('<div/>', {class: 'tc-row tc-ctrl tc-ctrl-text'});
+  this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-text'});
   TCAD.toolkit.propLayout(this.root, name, $('<input type="text"/>'));
 };
 
 TCAD.toolkit.ButtonRow = function(captions, actions) {
 
   this.root = $('<div/>',
-    {class: 'tc-row tc-ctrl tc-buttons-block'});
+    {'class': 'tc-row tc-ctrl tc-buttons-block'});
 
   function withAction(btn, action) {
     return btn.click(function(){
@@ -151,7 +151,7 @@ TCAD.toolkit.ButtonRow = function(captions, actions) {
     var caption = captions[i];
     var btn = $('<span/>', {
       text: caption,
-      class: 'tc-buttons-block-item'
+      'class': 'tc-buttons-block-item'
     });
     withAction(btn, actions[i]);
     this.root.append(btn);
@@ -159,12 +159,12 @@ TCAD.toolkit.ButtonRow = function(captions, actions) {
 };
 
 TCAD.toolkit.List = function() {
-  this.root = $('<div/>', {class: 'tc-tree'});
+  this.root = $('<div/>', {'class': 'tc-tree'});
 };
 
 TCAD.toolkit.List.prototype.addRow = function(name) {
   var row = $('<div/>', {
-    text: name, class: 'tc-row tc-pseudo-btn',
+    text: name, 'class': 'tc-row tc-pseudo-btn',
     css: {'margin-left': '10px'}
   });
   this.root.append(row);
@@ -172,7 +172,7 @@ TCAD.toolkit.List.prototype.addRow = function(name) {
 };
 
 TCAD.toolkit.Tree = function() {
-  this.root = $('<div/>', {class: 'tc-tree'});
+  this.root = $('<div/>', {'class': 'tc-tree'});
 };
 
 TCAD.toolkit.Tree.prototype.set = function(data) {
@@ -184,7 +184,7 @@ TCAD.toolkit.Tree.prototype._fill = function(data, level) {
   var notLeaf = data.children !== undefined && data.children.length !== 0;
   if (data.name !== undefined) {
     this.root.append($('<div/>', {
-      text: data.name, class: 'tc-row' + (notLeaf ? ' tc-chevron-open' : ''),
+      text: data.name, 'class': 'tc-row' + (notLeaf ? ' tc-chevron-open' : ''),
       css: {'margin-left': level * (notLeaf ? 10 : 16) + 'px'}
     }));
   }
