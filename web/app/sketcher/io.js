@@ -141,6 +141,10 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
     }
     this.viewer.parametricManager.notify();
   }
+  var constants = sketch['constants'];
+  if (constants !== undefined) {
+    this.viewer.params.constantDefinition = constants;
+  }
 };
 
 TCAD.IO.prototype.cleanUpData = function() {
@@ -208,7 +212,11 @@ TCAD.IO.prototype._serializeSketch = function() {
         constrs.push(this.serializeConstr(sub.constraints[i]));
       }
     }
+  }
 
+  var constantDefinition = this.viewer.params.constantDefinition;
+  if (constantDefinition !== undefined && constantDefinition != null && !/^\s*$/.test(constantDefinition)) {
+    sketch['constants'] = constantDefinition;
   }
   return sketch;
 };

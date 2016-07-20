@@ -73,6 +73,7 @@ TCAD.TWO.utils.setStyle = function(style, ctx, scale) {
 TCAD.TWO.Viewer = function(canvas) {
   
   this.canvas = canvas;
+  this.params = new TCAD.Parameters();
   this.io = new TCAD.IO(this);
   var viewer = this;
   this.retinaPxielRatio = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
