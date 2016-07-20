@@ -26,7 +26,13 @@ function start() {
   function infoStr(c) {
     if (c.SettableFields === undefined) return "";
     var info = Object.keys(c.SettableFields).map(function(f) {
-      return Number(c[f]).toFixed(2);
+      var val = c[f];
+      var num = Number(val);
+      if (isNaN(num)) {
+        num = Number(app.viewer.parametricManager.constantResolver(val));
+        return val + "(" + (isNaN(num) ? "?" : num.toFixed(2)) + ")" ;
+      } 
+      return num.toFixed(2);
     }).join(", ");
     if (info.length != 0) {
       info = " <span style='font-size: 8px;'>[" + info + "]</span>";
@@ -76,8 +82,12 @@ function start() {
       for (var f in c.SettableFields) {
         var value = c[f];
         var intro = c.SettableFields[f];
-        value = TCAD.TWO.utils.askNumber(intro, value.toFixed(4), prompt);
-        c[f] = value;
+         
+        
+        value = TCAD.TWO.utils.askNumber(intro, typeof(value) == "number" ? value.toFixed(4) : value, prompt, pm.constantResolver);
+        if (value != null) {
+          c[f] = value;
+        }
       }
       app.viewer.parametricManager.refresh();
     }
@@ -161,13 +171,21 @@ function start() {
   app.viewer.bus.subscribe('dimScale', function(value) {
     dimScale.input.val(value);
   });
-  app.dock.views['Dimensions'].node.append($('<textarea />', {css: {
-    width: '100%', 
+  var constantTextArea = $('<textarea />', {placeholder : 'for example: A = 50', css: {
+    width: '100%',
     resize: 'vertical',
     background: 'inherit',
     border : 'none',
     color: '#C4E1A4'
-  } }));
+  } });
+  app.viewer.params.subscribe('constantDefinition', 'constantTextArea', function(value) {
+    constantTextArea.val(value);
+  })();
+  constantTextArea.bind("change", function() {
+    app.viewer.params.set('constantDefinition', $(this).val(), 'constantTextArea');
+  });
+
+  app.dock.views['Dimensions'].node.append(constantTextArea);
 }
 window.___log = function(log) {
     $('#log').append( " *****************<br><br><br><br>");
