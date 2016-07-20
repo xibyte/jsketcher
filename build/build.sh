@@ -29,6 +29,7 @@ java -jar yuic.jar --disable-optimizations ../web/app/sketcher/fetchers.js >> ou
 java -jar yuic.jar --disable-optimizations ../web/app/engine.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/main2d.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/ui.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/ui/toolkit.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/math/graph.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/app-init.js >> out/app.js
 
