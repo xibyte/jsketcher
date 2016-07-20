@@ -281,7 +281,7 @@ TCAD.ui.openWin = function(win, mouseEvent) {
 
 /** @constructor */
 TCAD.ui.List = function(id, model) {
-  this.ul = $('<ul>', { class : 'tlist', id : id});
+  this.ul = $('<ul>', { 'class' : 'tlist', id : id});
   this.model = model;
   this.template = '<li>$name$<span class="btn rm" style="float: right;"><i class="fa fa-remove"></i></span></li>';
 };
@@ -311,9 +311,9 @@ TCAD.ui.List.prototype.refresh = function() {
 };
 
 TCAD.ui.dockBtn = function(name, icon) {
-  var btn = $('<span>', {class: 'dock-btn'});
+  var btn = $('<span>', {'class': 'dock-btn'});
   btn.append(TCAD.App2D.faBtn(icon));
-  btn.append($('<span>', {class: 'txt'}).text(name));
+  btn.append($('<span>', {'class': 'txt'}).text(name));
   return btn;
 };
 
@@ -333,22 +333,22 @@ TCAD.ui.Dock = function(dockEl, switcherEl, viewDefinitions) {
     var viewDef = viewDefinitions[i];
     var view = {};
     this.views[viewDef.name] = view;
-    view.node = $('<div>', {class: 'dock-node'});
-    var caption = $('<div>', {class: 'tool-caption'});
-    caption.append($('<span>', {class: 'txt'}).text(viewDef.name.toUpperCase()));
+    view.node = $('<div>', {'class': 'dock-node'});
+    var caption = $('<div>', {'class': 'tool-caption'});
+    caption.append($('<span>', {'class': 'txt'}).text(viewDef.name.toUpperCase()));
     caption.append(TCAD.App2D.faBtn(viewDef.icon));
     view.node.append(caption);
     view.node.hide();
     this.dockEl.append(view.node);
-    view.switch = TCAD.ui.dockBtn(viewDef.name, viewDef.icon);
-    bindClick(this, view.switch, viewDef.name);
-    switcherEl.append(view.switch);
+    view.switchBtn = TCAD.ui.dockBtn(viewDef.name, viewDef.icon);
+    bindClick(this, view.switchBtn, viewDef.name);
+    switcherEl.append(view.switchBtn);
   }
 };
 
 TCAD.ui.Dock.prototype.show = function(viewName) {
   var view = this.views[viewName];
-  if (view.switch.hasClass('selected')) {
+  if (view.switchBtn.hasClass('selected')) {
     return;
   }
   if (!this.dockEl.is(":visible")) {
@@ -356,16 +356,16 @@ TCAD.ui.Dock.prototype.show = function(viewName) {
     $('body').trigger('layout');
   }
   view.node.show();
-  view.switch.addClass('selected');
+  view.switchBtn.addClass('selected');
 };
 
 TCAD.ui.Dock.prototype.hide = function(viewName) {
   var view = this.views[viewName];
-  if (!view.switch.hasClass('selected')) {
+  if (!view.switchBtn.hasClass('selected')) {
     return;
   }
   view.node.hide();
-  view.switch.removeClass('selected');
+  view.switchBtn.removeClass('selected');
   if (this.dockEl.find('.dock-node:visible').length == 0) {
     this.dockEl.hide();
     $('body').trigger('layout');
@@ -373,7 +373,7 @@ TCAD.ui.Dock.prototype.hide = function(viewName) {
 };
 
 TCAD.ui.Dock.prototype.isVisible = function(viewName) {
-  return this.views[viewName].switch.hasClass('selected');
+  return this.views[viewName].switchBtn.hasClass('selected');
 };
 
 TCAD.ui._maskTest = function (mask, value) {
@@ -393,10 +393,10 @@ TCAD.ui.Terminal = function(win, commandProcessor) {
       var command = input.val();
       var out = win.root.find('.terminal-output');
       input.val('');
-      out.append($('<div>', {text: '> '+command, class: 'terminal-commandText'}));
+      out.append($('<div>', {text: '> '+command, 'class': 'terminal-commandText'}));
       if (command != null && command.trim().length != 0) {
         var result = commandProcessor(command);
-        out.append($('<div>', {text: result, class: 'terminal-commandResult'}));
+        out.append($('<div>', {text: result, 'class': 'terminal-commandResult'}));
       }
       out.parent().scrollTop(out.height());
     }

@@ -97,7 +97,7 @@ function start() {
   function configureConstraintsFilter() {
     var constraintsCaption = constraintsView.node.find('.tool-caption');
     var constraintsFilterBtn = TCAD.App2D.faBtn("filter");
-    constraintsFilterBtn.css({float: 'right', 'margin-right': '10px', cursor: 'pointer'});
+    constraintsFilterBtn.css({'float': 'right', 'margin-right': '10px', cursor: 'pointer'});
     constraintsCaption.append(constraintsFilterBtn);
     var constraintsFilterWin = new TCAD.ui.Window($('#constrFilter'), app.winManager);
     TCAD.ui.bindOpening(constraintsFilterBtn, constraintsFilterWin);

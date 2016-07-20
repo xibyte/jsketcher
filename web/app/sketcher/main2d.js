@@ -240,7 +240,7 @@ TCAD.App2D.bottomViews = [
 ];
 
 TCAD.App2D.faBtn = function(iconName) {
-  return $('<i>', {class : 'fa fa-'+iconName});  
+  return $('<i>', {'class' : 'fa fa-'+iconName});  
 };
 
 TCAD.App2D.prototype.fit = function() {
