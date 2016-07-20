@@ -196,6 +196,58 @@ TCAD.toolkit.Tree.prototype._fill = function(data, level) {
   }
 };
 
+TCAD.Parameters = function() {
+  this.listeners = {};
+};
+
+TCAD.Parameters.prototype.define = function(name, initValue) {
+  function fn(name) {
+    return '___' + name;
+  }
+  this[fn(name)] = initValue;
+  return Object.defineProperty(this, name, {
+    get: function() { return this[fn(name)]},
+    set: function(value) {
+      var oldValue = this[fn(name)];
+      this[fn(name)] = value;
+      this.notify(name, value, oldValue);
+    }
+  });
+};
+
+TCAD.Parameters.prototype.subscribe = function(name, listenerId, callback, scope) {
+  var listenerList = this.listeners[name];
+  if (listenerList === undefined) {
+    listenerList = [];
+    this.listeners[name] = listenerList;
+  }
+  var callbackFunc = scope === undefined ? callback : function() {
+    callback.apply(scope, arguments);
+  }; 
+  listenerList.push([listenerId, callbackFunc]);
+  var params = this;
+  return (function () { callbackFunc(params[name], undefined, null) }); // return init function
+};
+
+TCAD.Parameters.prototype.notify = function(name, newValue, oldValue) {
+  var listenerList = this.listeners[name];
+  if (listenerList !== undefined) {
+    for (var i = 0; i < listenerList.length; i++) {
+      var listenerId = listenerList[i][0];
+      var callback = listenerList[i][1];
+      if (listenerId == null || this.__currentSender == null || listenerId != this.__currentSender) {
+        callback(newValue, oldValue, this.__currentSender);
+      }
+    }
+  }
+  this.__currentSender = null;
+};
+
+TCAD.Parameters.prototype.set = function(name, value, sender) {
+  this.__currentSender = sender;
+  this[name] = value;
+};
+
 TCAD.Bus = function() {
   this.listeners = {};
 };

@@ -14,6 +14,24 @@ TCAD.TWO.ParametricManager = function(viewer) {
   this.viewer = viewer;
   this.subSystems = [];
   this.listeners = [];
+  this.constantTable = {};
+  
+  this.viewer.params.define("constantDefinition", null);
+  this.viewer.params.subscribe("constantDefinition", "parametricManager", this.rebuildConstantTable, this)();
+  this.constantResolver = this.createConstantResolver();
+};
+
+TCAD.TWO.ParametricManager.prototype.createConstantResolver = function() {
+  var pm = this;
+  return function(value) {
+    var _value = pm.constantTable[value];
+    if (_value !== undefined) {
+      value = _value;
+    } else if (typeof(value) != 'number') {
+      console.error("unable to resolve constant " + value);
+    }
+    return value;
+  }
 };
 
 TCAD.TWO.ParametricManager.prototype.notify = function(event) {
@@ -22,6 +40,29 @@ TCAD.TWO.ParametricManager.prototype.notify = function(event) {
     l(event);
   }
 };
+
+TCAD.TWO.ParametricManager.prototype.rebuildConstantTable = function(constantDefinition) {
+  this.constantTable = {};
+  if (constantDefinition == null) return;
+  var lines = constantDefinition.split('\n');
+  var prefix = "(function() { \n";
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var m = line.match(/^\s*([^\s]+)\s*=(.+)$/);
+    if (m != null && m.length == 3) {
+      var constant = m[1];
+      try {
+        var value = eval(prefix + "return " + m[2] + "; \n})()");
+        this.constantTable[constant] = value;
+        prefix += constant + " = " + value + ";\n"
+      } catch(e) {
+        console.log(e);
+      }
+    }
+  }
+  this.refresh();
+};
+
 
 TCAD.TWO.ParametricManager.prototype.findComponents = function(constr) {
   if (this.subSystems.length === 0) {
@@ -116,7 +157,7 @@ TCAD.TWO.ParametricManager.prototype.removeConstraintsByParams = function(ownedP
     var toRemove = [];
     var sub = this.subSystems[s];
     for (var i = 0; i < sub.constraints.length; ++i) {
-      var sdataArr = sub.constraints[i].getSolveData();
+      var sdataArr = sub.constraints[i].getSolveData(this.constantResolver);
       MAIN:
       for (var j = 0; j < sdataArr.length; j++) {
         var sdata = sdataArr[j];
@@ -259,7 +300,7 @@ TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback
   var ex = new TCAD.Vector(-(segment.b.y - segment.a.y), segment.b.x - segment.a.x).normalize();
   var distance = Math.abs(ex.dot(new TCAD.Vector(segment.a.x - target.x, segment.a.y - target.y)));
 
-  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback);
+  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback, this.constantResolver);
 
   if (promptDistance != null) {
     this.add(new TCAD.TWO.Constraints.P2LDistance(target, segment, promptDistance));
@@ -313,7 +354,7 @@ TCAD.TWO.ParametricManager.prototype.llAngle = function(objs, promptCallback) {
 
   var angle = Math.atan2(dy2,dx2) - Math.atan2(dy1,dx1);
   angle *= 1 / Math.PI * 180;
-  angle = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.Angle.prototype.SettableFields.angle, angle.toFixed(2), promptCallback);
+  angle = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.Angle.prototype.SettableFields.angle, angle.toFixed(2), promptCallback, this.constantResolver);
   if (angle === null) return;
   this.add(new TCAD.TWO.Constraints.Angle(points[0], points[1], points[2], points[3], angle));
 };
@@ -327,19 +368,26 @@ TCAD.TWO.utils.constRef = function(value) {
 TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback) {
   var p = this._fetchTwoPoints(objs);
   var distance = new TCAD.Vector(p[1].x - p[0].x, p[1].y - p[0].y).length();
-  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback);
+  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback, this.constantResolver);
 
   if (promptDistance != null) {
     this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], promptDistance));
   }
 };
 
-TCAD.TWO.utils.askNumber = function(promptText, initValue, promptCallback) {
-  var promptValue = promptCallback(promptText, initValue);
-  if (promptValue != null) {
-    promptValue = Number(promptValue);
+TCAD.TWO.utils.askNumber = function(promptText, initValue, promptCallback, resolver) {
+  var promptValueStr = promptCallback(promptText, initValue);
+  if (promptValueStr != null) {
+    var promptValue = Number(promptValueStr);
     if (promptValue == promptValue) { // check for NaN
       return promptValue;
+    } else {
+      if (!!resolver) {
+        promptValue = resolver(promptValueStr);
+        if (promptValue == promptValue) {
+          return promptValueStr;
+        }
+      }
     }
   }
   return null;
@@ -348,7 +396,7 @@ TCAD.TWO.utils.askNumber = function(promptText, initValue, promptCallback) {
 TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
   var arcs = this._fetchArkCirc(objs, 1);
   var radius = arcs[0].r.get();
-  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.Radius.prototype.SettableFields.d, radius.toFixed(2), promptCallback);
+  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.Radius.prototype.SettableFields.d, radius.toFixed(2), promptCallback, this.constantResolver);
   if (promptDistance != null) {
     for (var i = 0; i < arcs.length; ++i) {
       this._add(new TCAD.TWO.Constraints.Radius(arcs[i], promptDistance));
@@ -414,7 +462,7 @@ TCAD.TWO.ParametricManager.prototype.getSolveData = function() {
 TCAD.TWO.ParametricManager.prototype.__getSolveData = function(constraints, out) {
   for (var i = 0; i < constraints.length; ++i) {
     var constraint = constraints[i];
-    var data = constraint.getSolveData();
+    var data = constraint.getSolveData(this.constantResolver);
     for (var j = 0; j < data.length; ++j) {
       data[j].push(constraint.reducible !== undefined);
       out.push(data[j]);
@@ -928,11 +976,11 @@ TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
 TCAD.TWO.Constraints.P2LDistance.prototype.NAME = 'P2LDistance';
 TCAD.TWO.Constraints.P2LDistance.prototype.UI_NAME = 'Distance P & L';
 
-TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function() {
+TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function(resolver) {
   var params = [];
   this.p.collectParams(params);
   this.l.collectParams(params);
-  return [[this.NAME, params, [this.d]]];
+  return [[this.NAME, params, [resolver(this.d)]]];
 };
 
 TCAD.TWO.Constraints.P2LDistance.prototype.serialize = function() {
@@ -1012,11 +1060,11 @@ TCAD.TWO.Constraints.P2PDistance = function(p1, p2, d) {
 TCAD.TWO.Constraints.P2PDistance.prototype.NAME = 'P2PDistance';
 TCAD.TWO.Constraints.P2PDistance.prototype.UI_NAME = 'Distance Points';
 
-TCAD.TWO.Constraints.P2PDistance.prototype.getSolveData = function() {
+TCAD.TWO.Constraints.P2PDistance.prototype.getSolveData = function(resolver) {
   var params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
-  return [[this.NAME, params, [this.d]]];
+  return [[this.NAME, params, [resolver(this.d)]]];
 };
 
 TCAD.TWO.Constraints.P2PDistance.prototype.serialize = function() {
@@ -1076,8 +1124,8 @@ TCAD.TWO.Constraints.Radius.prototype.NAME = 'Radius';
 TCAD.TWO.Constraints.Radius.prototype.UI_NAME = 'Radius Value';
 
 
-TCAD.TWO.Constraints.Radius.prototype.getSolveData = function() {
-  return [['equalsTo', [this.arc.r], [this.d]]];
+TCAD.TWO.Constraints.Radius.prototype.getSolveData = function(resolver) {
+  return [['equalsTo', [this.arc.r], [resolver(this.d)]]];
 };
 
 TCAD.TWO.Constraints.Radius.prototype.serialize = function() {
@@ -1360,9 +1408,9 @@ TCAD.TWO.Constraints.Symmetry = function(point, line) {
 TCAD.TWO.Constraints.Symmetry.prototype.NAME = 'Symmetry';
 TCAD.TWO.Constraints.Symmetry.prototype.UI_NAME = 'Symmetry';
 
-TCAD.TWO.Constraints.Symmetry.prototype.getSolveData = function() {
-  var pointInMiddleData = TCAD.TWO.Constraints.PointInMiddle.prototype.getSolveData.call(this);
-  var pointOnLineData = TCAD.TWO.Constraints.PointOnLine.prototype.getSolveData.call(this);
+TCAD.TWO.Constraints.Symmetry.prototype.getSolveData = function(resolver) {
+  var pointInMiddleData = TCAD.TWO.Constraints.PointInMiddle.prototype.getSolveData.call(this, [resolver]);
+  var pointOnLineData = TCAD.TWO.Constraints.PointOnLine.prototype.getSolveData.call(this, [resolver]);
   return pointInMiddleData.concat(pointOnLineData);
 };
 
@@ -1387,18 +1435,14 @@ TCAD.TWO.Constraints.Angle = function(p1, p2, p3, p4, angle) {
   this.p3 = p3;
   this.p4 = p4;
   this._angle = new TCAD.TWO.Ref(0);
-  Object.defineProperty(this, "angle", {
-    get: function() {return this._angle.get() / Math.PI * 180},
-    set: function(value) {
-      this._angle.set(value / 180 * Math.PI)}
-  });
   this.angle = angle;
 };
 
 TCAD.TWO.Constraints.Angle.prototype.NAME = 'Angle';
 TCAD.TWO.Constraints.Angle.prototype.UI_NAME = 'Lines Angle';
 
-TCAD.TWO.Constraints.Angle.prototype.getSolveData = function() {
+TCAD.TWO.Constraints.Angle.prototype.getSolveData = function(resolver) {
+  this._angle.set(resolver(this.angle) / 180 * Math.PI);
   var params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
