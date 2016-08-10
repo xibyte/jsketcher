@@ -903,6 +903,7 @@ TCAD.TWO.DragTool = function(obj, viewer) {
   this.viewer = viewer;
   this._point = {x: 0, y: 0};
   this.origin = {x: 0, y: 0};
+  this.lastSolved = {x: 0, y: 0};
   this.ref = this.obj.getReferencePoint();
   this.solver = null;
 };
@@ -924,7 +925,35 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   }
   this.solver.updateLock(this.lockedValues);
   if (!e.altKey && !e.ctrlKey) {
-    this.solveRequest(true);
+    var distanceSinceLastSolved = TCAD.math.distance(this.lastSolved.x, this.lastSolved.y, this._point.x, this._point.y)
+    var MIN_STEP = 5;
+    if (distanceSinceLastSolved > MIN_STEP) {
+      var dir = new TCAD.Vector(this._point.x - this.lastSolved.x, this._point.y - this.lastSolved.y);
+      dir._normalize();
+      dir._multiply(MIN_STEP);
+      var increment = dir.copy();
+      for (var keepMoving = true; keepMoving; dir._plus(increment)) {
+        var emulatedX, emulatedY;
+        if (dir.length() >= distanceSinceLastSolved) {
+          keepMoving = false;
+          emulatedX = this._point.x;
+          emulatedY = this._point.y;
+        } else {
+          emulatedX = this.lastSolved.x + dir.x;
+          emulatedY = this.lastSolved.y + dir.y;
+        }
+        for (var i = 0; i < this.lockedShifts.length; i += 2) {
+          this.lockedValues[i] = emulatedX - this.lockedShifts[i];
+          this.lockedValues[i + 1] = emulatedY - this.lockedShifts[i + 1];
+        }
+        this.solver.updateLock(this.lockedValues);
+        this.solveRequest(true);
+      }
+    } else {
+      this.solveRequest(true);
+    }
+    this.lastSolved.x = this._point.x;
+    this.lastSolved.y = this._point.y;
   } else {
     this.obj.translate(dx, dy);
   }
@@ -936,6 +965,8 @@ TCAD.TWO.DragTool.prototype.mousedown = function(e) {
   this.origin.x = e.offsetX;
   this.origin.y = e.offsetY;
   this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
+  this.lastSolved.x = this._point.x;
+  this.lastSolved.y = this._point.y;
   this.prepareSolver([]);
 };
 
