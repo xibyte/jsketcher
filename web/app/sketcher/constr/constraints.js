@@ -196,52 +196,48 @@ TCAD.constraints.P2LDistance = function(params, distance) {
   this.params = params;
   this.distance = distance;
 
-  var tx = 0;
-  var ty = 1;
-  var lp1x = 2;
-  var lp1y = 3;
-  var lp2x = 4;
-  var lp2y = 5;
+  var TX = 0;
+  var TY = 1;
+  var LP1X = 2;
+  var LP1Y = 3;
+  var LP2X = 4;
+  var LP2Y = 5;
 
   this.error = function() {
-    var x0 = params[tx].get(), x1 = params[lp1x].get(), x2 = params[lp2x].get();
-    var y0 = params[ty].get(), y1 = params[lp1y].get(), y2 = params[lp2y].get();
-    var dist = this.distance;
+    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
     var dx = x2 - x1;
     var dy = y2 - y1;
     var d = Math.sqrt(dx * dx + dy * dy);
-    //calculate triangle area
-    var area = Math.abs
-    (-x0 * dy + y0 * dx + x1 * y2 - x2 * y1);
     if (d == 0) {
       return 0;
     }
-    return (area / d - dist);
+    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    return Math.abs(A) / d -  this.distance;
   };
 
   this.gradient = function(out) {
-    var x0 = params[tx].get(), x1 = params[lp1x].get(), x2 = params[lp2x].get();
-    var y0 = params[ty].get(), y1 = params[lp1y].get(), y2 = params[lp2y].get();
+    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
     var dx = x2 - x1;
     var dy = y2 - y1;
     var d2 = dx * dx + dy * dy;
     var d = Math.sqrt(d2);
-    var area = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
-    out[tx]   = ((y1 - y2) / d);
-    out[ty]   = ((x2 - x1) / d);
-    out[lp1x] = (((y2 - y0) * d + (dx / d) * area) / d2);
-    out[lp1y] = (((x0 - x2) * d + (dy / d) * area) / d2);
-    out[lp2x] = (((y0 - y1) * d - (dx / d) * area) / d2);
-    out[lp2y] = (((x1 - x0) * d - (dy / d) * area) / d2);
+    var d3 = d * d2;
+//    var AA = -x0 * (y2 - y1) + y0 * (x2 - x1) + x1 * y2 - x2 * y1;
+    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    var AM = Math.abs(A);
+    var j = A < 0 ? -1 : 1;
 
-    for (var i = 0; i < 6; i++) {
-      if (Number.isNaN(out[i])) {
-        out[i] = 0;
-      }
-      if (area < 0) {
-          out[i] *= -1;
-      }
-    }
+    out[TX] = j * (y1 - y2) / d;
+    out[TY] = j * (x2 - x1) / d;
+
+    out[LP1X] = j * (y2 - y0) / d + AM * dx / d3;
+    out[LP1Y] = j * (x0 - x2) / d + AM * dy / d3;
+    out[LP2X] = j * (y0 - y1) / d - AM * dx / d3;
+    out[LP2Y] = j * (x1 - x0) / d - AM * dy / d3;
+
+    TCAD.constraints._fixNaN(out);
   }
 };
 
@@ -294,11 +290,7 @@ TCAD.constraints.P2LDistanceV = function(params) {
     out[LP2Y] = j * (x1 - x0) / d - AM * dy / d3;
     out[D] = -1;
 
-    for (var i = 0; i < 6; i++) {
-      if (Number.isNaN(out[i])) {
-        out[i] = 0;
-      }
-    }
+    TCAD.constraints._fixNaN(out);
   }
 
 };
