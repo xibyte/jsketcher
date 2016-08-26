@@ -29,16 +29,6 @@ TCAD.graph.findAllLoops = function(graph, hashCode, equals) {
           continue;
         }
 
-//      //avoid duplicates
-//      for (var li = loops.length - 1; li >= 0; --li) {
-//        var loop = loops[li];
-//        for (var j = 1; j < loop.length; j++) {
-//          if (loop[j - 1] == nextId && loop[j] == vertexId) {
-//            continue VERTEX;
-//          }
-//        }
-//      }
-
         var p = needClone ? path.slice(0) : path;
         needClone = true;
         step(v, vertex, p);
