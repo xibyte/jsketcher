@@ -47,14 +47,10 @@ TCAD.math.Matrix.prototype.multiply = function(m) {
   var out = new TCAD.math.Matrix(nRows, nCols);
   
   var outData = out.data;
-  // Will hold a column of "m".
   var mCol = TCAD.math._arr(nSum);
   var mData = m.data;
 
-  // Multiply.
   for (var col = 0; col < nCols; col++) {
-    // Copy all elements of column "col" of "m" so that
-    // will be in contiguous memory.
     for (var mRow = 0; mRow < nSum; mRow++) {
       mCol[mRow] = mData[mRow][col];
     }
