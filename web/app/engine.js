@@ -334,7 +334,7 @@ TCAD.utils.sketchToPolygons = function(geom) {
     }
   };
 
-  var loops = TCAD.graph.finaAllLoops(graph, dict.hashCodeF, dict.equalsF);
+  var loops = TCAD.graph.findAllLoops(graph, dict.hashCodeF, dict.equalsF);
   var polygons = [];
   for (var li = 0; li < loops.length; ++li) {
     var loop = loops[li];
