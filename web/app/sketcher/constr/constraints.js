@@ -1,5 +1,8 @@
 TCAD.constraints = {};
 
+/**
+ * This intermediate layer should be eliminated since constraint server isn't used anymore
+ */
 TCAD.constraints.create = function(name, params, values) {
   switch (name) {
     case "equal":
