@@ -3,7 +3,7 @@
 TCAD.graph = {};
 
 
-TCAD.graph.finaAllLoops = function(graph, hashCode, equals) {
+TCAD.graph.findAllLoops = function(graph, hashCode, equals) {
 
   var loops = [];
   var visited = new TCAD.struct.HashTable(hashCode, equals);
@@ -137,7 +137,7 @@ TCAD.graph.test = function() {
   ];
 
   var graph = new TCAD.graph.Graph(data);
-  console.log(TCAD.graph.finaAllLoops(graph));
+  console.log(TCAD.graph.findAllLoops(graph));
 };
 
 TCAD.graph.test0 = function() {
@@ -154,5 +154,5 @@ TCAD.graph.test0 = function() {
   ];
 
   var graph = new TCAD.graph.Graph(data);
-  console.log(TCAD.graph.finaAllLoops(graph));
+  console.log(TCAD.graph.findAllLoops(graph));
 };
