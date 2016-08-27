@@ -2,4 +2,4 @@
 
 cd `dirname "$0"`
 
-aws s3 sync out/ s3://sketcher/
+aws s3 sync ../web/ s3://sketcher/
