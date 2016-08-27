@@ -8,7 +8,6 @@ TCAD.UI = function(app) {
   mainBox.root.css({height : '100%'});
   var propFolder = new tk.Folder("Solid's Properties");
   var debugFolder = new tk.Folder("Debug");
-  var objectsFolder = new tk.Folder("Objects");
   var exportFolder = new tk.Folder("Export");
   var modificationsFolder = new tk.Folder("Modifications");
   var extrude, cut, edit, addPlane, save,
@@ -23,11 +22,10 @@ TCAD.UI = function(app) {
   tk.add(propFolder, showSketches = new tk.CheckBox("Show Sketches", true));
   tk.add(mainBox, exportFolder);
   tk.add(exportFolder, stlExport = new tk.Button("STL"));
-  tk.add(mainBox, debugFolder);
+  //tk.add(mainBox, debugFolder);
   tk.add(debugFolder, printSolids = new tk.Button("Print Solids"));
   tk.add(debugFolder, printFace = new tk.Button("Print Face"));
   tk.add(debugFolder, printFaceId = new tk.Button("Print Face ID"));
-  tk.add(mainBox, objectsFolder);
   tk.add(mainBox, modificationsFolder);
   var modificationsListComp = new tk.List();
   tk.add(modificationsFolder, modificationsListComp);
