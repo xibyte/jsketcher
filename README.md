@@ -36,21 +36,21 @@ TBD
 Supported Constraints
 =====================
 
-* Coincident [web/img/coi.png]
-* Vertical [web/img/vert.png]
-* Horizontal [web/img/hor.png]
-* Parallel [web/img/par.png]
-* Perpendicular [web/img/per.png]
-* Point to Line Distance [web/img/p2l.png]
-* Point to Object Distance [web/img/p2p.png]
-* Entity Equality(radius/length) [web/img/eq.png]
-* Tangent [web/img/tgn.png]
-* Radius [web/img/rad.png]
-* Point On Line [web/img/vec/pointOnLine.svg]
-* Point On Arc [web/img/vec/pointOnArc.svg)]
-* Point In Middle [web/img/vec/pointInMiddle.svg]
-* llAngle [web/img/vec/angle.svg]
-* Symmetry [web/img/vec/symmetry.svg]
-* Lock Convexity [web/img/vec/convex.svg]
-* Fillet Meta Constraint [web/img/vec/fillet.svg]
+* Coincident
+* Vertical
+* Horizontal
+* Parallel
+* Perpendicular
+* Point to Line Distance
+* Point to Object Distance
+* Entity Equality(radius/length)
+* Tangent
+* Radius
+* Point On Line
+* Point On Arc
+* Point In Middle
+* Angle
+* Symmetry
+* Lock Convexity
+* Fillet Meta Constraint
 
