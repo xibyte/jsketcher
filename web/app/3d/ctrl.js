@@ -10,7 +10,7 @@ TCAD.UI = function(app) {
   var debugFolder = new tk.Folder("Debug");
   var exportFolder = new tk.Folder("Export");
   var modificationsFolder = new tk.Folder("Modifications");
-  var extrude, cut, edit, addPlane, save,
+  var extrude, cut, edit, addPlane, save, deselectAll,
     refreshSketches, showSketches, printSolids, printFace, printFaceId, finishHistory, stlExport;
   tk.add(mainBox, propFolder);
   tk.add(propFolder, extrude = new tk.Button("Extrude"));
@@ -20,6 +20,7 @@ TCAD.UI = function(app) {
   tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
   tk.add(propFolder, save = new tk.Button("Save"));
   tk.add(propFolder, showSketches = new tk.CheckBox("Show Sketches", true));
+  tk.add(propFolder, deselectAll = new tk.Button("Deselect All"));
   tk.add(mainBox, exportFolder);
   tk.add(exportFolder, stlExport = new tk.Button("STL"));
   //tk.add(mainBox, debugFolder);
@@ -123,6 +124,9 @@ TCAD.UI = function(app) {
   });
   save.root.click(function() {
     app.save();
+  });
+  deselectAll.root.click(function() {
+    app.viewer.selectionMgr.deselectAll();
   });
   stlExport.root.click(function() {
     var allPolygons = TCAD.utils.arrFlatten1L(app.findAllSolids().map(function (s) {
