@@ -233,6 +233,14 @@ TCAD.SelectionManager.prototype.select = function(sketchFace) {
   this.viewer.render();
 };
 
+TCAD.SelectionManager.prototype.deselectAll = function() {
+  for (var i = 0; i < this.selection.length; ++ i) {
+    this.selection[i].solid.mesh.geometry.colorsNeedUpdate = true;
+  }
+  this.clear();
+  this.viewer.render();
+};
+
 TCAD.SelectionManager.prototype.contains = function(face) {
   return this.selection.indexOf(face) != -1;
 };
