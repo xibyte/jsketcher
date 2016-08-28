@@ -161,6 +161,33 @@ TCAD.SelectionManager = function(viewer, selectionColor, readOnlyColor, defaultC
   this.defaultColor = defaultColor;
   this.selection = [];
   this.planeSelection = [];
+  
+  this.basisGroup = new THREE.Object3D();
+  var length = 200;
+  var arrowLength = length * 0.2;
+  var arrowHead = arrowLength * 0.4;
+  var xAxis = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), length, 0xFF0000, arrowLength, arrowHead);
+  var yAxis = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), length, 0x00FF00, arrowLength, arrowHead);
+  xAxis.updateMatrix();
+  yAxis.updateMatrix();
+  xAxis.matrixAutoUpdate = false;
+  yAxis.matrixAutoUpdate = false;
+  xAxis.line.material.linewidth =  1/TCAD.DPR;
+  yAxis.line.material.linewidth =  1/TCAD.DPR;
+  this.basisGroup.add(xAxis);
+  this.basisGroup.add(yAxis);
+  this.basisGroup.visible = false;
+  viewer.scene.add(this.basisGroup);
+};
+
+TCAD.SelectionManager.prototype.updateBasis = function(basis, depth) {
+  this.basisGroup.matrix.identity();
+  var mx = new THREE.Matrix4();
+  mx.makeBasis(basis[0].three(), basis[1].three(), basis[2].three());
+  var depthOff = new THREE.Vector3(0, 0, depth);
+  depthOff.applyMatrix4(mx);
+  mx.setPosition(depthOff);
+  this.basisGroup.applyMatrix(mx);
 };
 
 TCAD.SelectionManager.prototype.handlePick = function(event) {
@@ -188,6 +215,8 @@ TCAD.SelectionManager.prototype.select = function(sketchFace) {
     }
   } else {
     this.selection.push(sketchFace);
+    this.updateBasis(sketchFace.basis(), sketchFace.depth());
+    this.basisGroup.visible = true;
     TCAD.view.setFacesColor(sketchFace.faces, this.selectionColor);
   }
   sketchFace.solid.mesh.geometry.colorsNeedUpdate = true;
@@ -204,5 +233,6 @@ TCAD.SelectionManager.prototype.clear = function() {
     TCAD.view.setFacesColor(this.selection[i].faces, this.defaultColor);
   }
   this.selection.length = 0;
+  this.basisGroup.visible = false;
 };
 
