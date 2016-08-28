@@ -53,6 +53,7 @@ TCAD.App = function() {
   }
 
   this.bus.subscribe("craft", function() {
+    app.viewer.selectionMgr.clear();
     app._refreshSketches();
   });
   window.addEventListener('storage', storage_handler, false);
@@ -328,6 +329,7 @@ TCAD.App.prototype.addBox = function() {
 
 TCAD.App.prototype.refreshSketches = function() {
   this._refreshSketches();
+  this.bus.notify('refreshSketch');
   this.viewer.render();
 };
 
