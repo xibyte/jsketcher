@@ -166,14 +166,23 @@ TCAD.SelectionManager = function(viewer, selectionColor, readOnlyColor, defaultC
   var length = 200;
   var arrowLength = length * 0.2;
   var arrowHead = arrowLength * 0.4;
-  var xAxis = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), length, 0xFF0000, arrowLength, arrowHead);
-  var yAxis = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), length, 0x00FF00, arrowLength, arrowHead);
-  xAxis.updateMatrix();
-  yAxis.updateMatrix();
-  xAxis.matrixAutoUpdate = false;
-  yAxis.matrixAutoUpdate = false;
-  xAxis.line.material.linewidth =  1/TCAD.DPR;
-  yAxis.line.material.linewidth =  1/TCAD.DPR;
+
+  function createArrow(axis, color) {
+    var arrow = new THREE.ArrowHelper(axis, new THREE.Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
+    arrow.updateMatrix();
+    arrow.matrixAutoUpdate = false;
+    arrow.line.renderOrder = 1e11;
+    arrow.cone.renderOrder = 1e11;
+    arrow.line.material.linewidth =  1/TCAD.DPR;
+    arrow.line.material.depthWrite = false;
+    arrow.line.material.depthTest = false;
+    arrow.cone.material.depthWrite = false;
+    arrow.cone.material.depthTest = false;
+    return arrow;
+  }
+
+  var xAxis = createArrow(new THREE.Vector3(1, 0, 0), 0xFF0000);
+  var yAxis = createArrow(new THREE.Vector3(0, 1, 0), 0x00FF00);
   this.basisGroup.add(xAxis);
   this.basisGroup.add(yAxis);
   this.basisGroup.visible = false;
