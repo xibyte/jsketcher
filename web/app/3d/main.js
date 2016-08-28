@@ -53,7 +53,10 @@ TCAD.App = function() {
   }
 
   this.bus.subscribe("craft", function() {
-    app.viewer.selectionMgr.clear();
+    var historyEditMode = app.craft.historyPointer != app.craft.history.length;
+    if (!historyEditMode) {
+      app.viewer.selectionMgr.clear();
+    }
     app._refreshSketches();
   });
   window.addEventListener('storage', storage_handler, false);
