@@ -217,6 +217,7 @@ TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filt
 TCAD.TWO.Viewer.prototype._setupServiceLayer = function() {
   var layer = new TCAD.TWO.Layer("_service", TCAD.TWO.Styles.SERVICE);
 //  layer.objects.push(new TCAD.TWO.CrossHair(0, 0, 20));
+  layer.objects.push(new TCAD.TWO.BasisOrigin(null, this));
   layer.objects.push(new TCAD.TWO.Point(0, 0, 2));
   this._serviceLayers.push(layer);
 
@@ -720,6 +721,69 @@ TCAD.TWO.CrossHair.prototype.draw = function(ctx, scale) {
 };
 
 /** @constructor */
+TCAD.TWO.BasisOrigin = function(basis, viewer) {
+  this.viewer = viewer;
+  this.inverseX = false;
+  this.inverseY = false;
+  this.lineWidth = 100;
+  this.xColor = '#FF0000';
+  this.yColor = '#00FF00';
+};
+
+TCAD.TWO.BasisOrigin.prototype.draw = function(ctx, scale) {
+  ctx.save();
+  if (this.inverseX) {
+    this.xScale = -1;
+    this.xShift = this.lineWidth + 10;
+  } else {
+    this.xScale = 1;
+    this.xShift = 10;
+  }
+  if (this.inverseY) {
+    this.yScale = -1;
+    this.yShift = this.viewer.canvas.height - this.lineWidth - 10;
+  } else {
+    this.yScale = 1;
+    this.yShift = this.viewer.canvas.height - 10;
+  }
+
+  ctx.setTransform( this.xScale, 0, 0, this.yScale, this.xShift, this.yShift);
+  ctx.beginPath();
+
+  ctx.lineWidth  = 1;
+  ctx.strokeStyle  = this.yColor;
+
+  var headA = 5;
+  var headB = 10;
+
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, - this.lineWidth);
+  
+  ctx.moveTo(0, - this.lineWidth);
+  ctx.lineTo(headA, 0 - this.lineWidth + headB);
+
+  ctx.moveTo(0, - this.lineWidth);
+  ctx.lineTo(- headA, - this.lineWidth + headB);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.strokeStyle  = this.xColor;
+  ctx.moveTo(0, 0);
+  ctx.lineTo(this.lineWidth, 0);
+
+  ctx.moveTo(this.lineWidth, 0);
+  ctx.lineTo(this.lineWidth - headB, headA);
+
+  ctx.moveTo(this.lineWidth, 0);
+  ctx.lineTo(this.lineWidth - headB, - headA);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.restore();
+};
+
+/** @constructor */
 TCAD.TWO.ToolManager = function(viewer, defaultTool) {
   this.defaultTool = defaultTool;
   this.tool = defaultTool;
@@ -757,7 +821,7 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
     tm.getTool().keydown(e);
     if (e.keyCode == 27) {
       tm.releaseControl();
-    } else if (e.keyCode == 46) {
+    } else if (e.keyCode == 46 || e.keyCode == 8) {
       var selection = viewer.selected.slice();
       viewer.deselectAll();
       for (var i = 0; i < selection.length; i++) {
