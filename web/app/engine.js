@@ -832,13 +832,17 @@ TCAD.SketchFace.prototype.basis = function() {
   //}), vec(this.csgGroup.plane.normal));
 };
 
+TCAD.SketchFace.prototype.depth = function() {
+  return this.csgGroup.plane.w;
+};
+
 TCAD.SketchFace.prototype.syncSketches = function(geom) {
   var i;
   var normal = this.csgGroup.plane.normal;
   var offVector = normal.scale(0); // disable it. use polygon offset feature of material
 
   if (this.sketch3DGroup != null) {
-    for (var i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
+    for (i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
       this.sketch3DGroup.remove(this.sketch3DGroup.children[i]);
     }
   } else {
