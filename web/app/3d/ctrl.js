@@ -73,7 +73,17 @@ TCAD.UI = function(app) {
     }
     updateHistoryPointer();
   });
-  
+
+  this.app.bus.subscribe("refreshSketch", function() {
+    if (historyWizard != null) {
+      var craft = ui.app.craft;
+      var op = JSON.parse(JSON.stringify(craft.history[craft.historyPointer]));
+      op.protoParams = historyWizard.currentParams();
+      historyWizard.close();
+      historyWizard = TCAD.UI.createWizard(op, app, mainBox);
+    }
+  });
+
   this.app.bus.subscribe("historyPointer", function() {
     //updateHistoryPointer();
   });
@@ -210,6 +220,9 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
     box.close();
     wizard.dispose();
   }
+  function protoParams() {
+    return [depthValue, scaleValue, deflectionValue, angleValue];
+  }
   function applyCut() {
     var depthValue = theValue.input.val();
     app.craft.modify({
@@ -217,7 +230,7 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
       solids : [app.findSolid(face.solid.tCadId)],
       face : app.findFace(face.id),
       params : wizard.operationParams,
-      protoParams : [depthValue, scaleValue, deflectionValue, angleValue]
+      protoParams : protoParams()
     }, overriding);
     close();
   }
@@ -228,13 +241,13 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
       solids : [app.findSolid(face.solid.tCadId)],
       face : app.findFace(face.id),
       params : wizard.operationParams,
-      protoParams : [depthValue, scaleValue, deflectionValue, angleValue]
+      protoParams : protoParams()
     }, overriding);
     close();
   }
 
   tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, isCut ? applyCut : applyExtrude]));
-  return new TCAD.UI.WizardRef(wizard, box, close);
+  return new TCAD.UI.WizardRef(wizard, box, close, protoParams);
 };
 
 TCAD.UI.createPlaneWizard = function (app, alignComponent, initParams, overiding) {
@@ -259,12 +272,15 @@ TCAD.UI.createPlaneWizard = function (app, alignComponent, initParams, overiding
     box.close();
     wizard.dispose();
   }
+  function protoParams() {
+    return [orientationValue, w];
+  }
   function ok() {
     app.craft.modify({
       type: 'PLANE',
       solids : [],
       params : wizard.operationParams,
-      protoParams : [orientationValue, w]
+      protoParams : protoParams()
     }, overiding);
     close();
   }
@@ -272,11 +288,12 @@ TCAD.UI.createPlaneWizard = function (app, alignComponent, initParams, overiding
   depth.input.on('t-change', onChange);
   onChange();
   tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, ok]));
-  return new TCAD.UI.WizardRef(wizard, box, close);
+  return new TCAD.UI.WizardRef(wizard, box, close, protoParams);
 };
 
-TCAD.UI.WizardRef = function(wizard, box, close) {
+TCAD.UI.WizardRef = function(wizard, box, close, currentParams) {
   this.wizard = wizard;
   this.box = box;
   this.close = close;
+  this.currentParams = currentParams;
 };
