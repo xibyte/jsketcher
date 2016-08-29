@@ -127,7 +127,7 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
     }
   }
 
-  this.setupBoundary(sketch['boundary']);
+  this.setupBoundary(sketch['boundary'], index);
 
   var sketchConstraints = sketch['constraints'];
   if (sketchConstraints !== undefined) {
@@ -240,13 +240,41 @@ TCAD.IO.prototype.setupBoundary = function(boundary) {
     boundaryLayer.objects = [];
   } 
 
+  var edgeIndex = {};
+  var i, obj;
+  for (i = 0; i < boundaryLayer.objects.length; i++) {
+    boundaryLayer.objects[i].accept(function(obj){
+      if (obj.edge !== undefined) edgeIndex[obj.edge] = obj; 
+      return true;
+    });
+  }
+  
   var id = 0;
   function __makeAux(obj) {
     obj.accept(function(o){o.aux = true; return true;});
     obj.edge = id ++;
   }
+  
+  function collect(obj) {
+    var objects = [];
+    obj.accept(function(o){objects.push(o); return true;});
+    return objects;
+  }
 
-  for (var i = 0; i < boundary.lines.length; ++i, ++id) {
+  function reindex(obj) {
+    var oldObject = edgeIndex[obj.edge];
+    if (oldObject == undefined) return;
+    var newObjects = collect(obj);
+    var oldObjects = collect(oldObject);
+    if (newObjects.length != oldObjects.length) return;
+    for (var j = 0; j < newObjects.length; j++) {
+      var from = oldObjects[j];
+      var to = newObjects[j];
+      index[from.id] = to.id;
+    }
+  }
+  
+  for (i = 0; i < boundary.lines.length; ++i, ++id) {
     var edge = boundary.lines[i];
     var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, boundaryLayer);
     __makeAux(seg);
@@ -262,7 +290,7 @@ TCAD.IO.prototype.setupBoundary = function(boundary) {
     __makeAux(arc);
   }
   for (i = 0; i < boundary.circles.length; ++i, ++id) {
-    var obj = boundary.circles[i];
+    obj = boundary.circles[i];
     var circle = new TCAD.TWO.Circle(new TCAD.TWO.EndPoint(obj.c.x, obj.c.y));
     circle.r.set(obj.r);
     boundaryLayer.objects.push(circle);
