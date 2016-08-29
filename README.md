@@ -2,7 +2,15 @@ JS.Sketcher
 ===========
 
 JS.Sketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
-  
+<a href='https://www.youtube.com/watch?v=1wpfHc2AmWs'> 
+  <img src='../../wiki/img/2d-sketcher.small.png' width='400px'>
+  <img src='../../wiki/img/mount-plate.small.png' width='400px'> 
+</a>
+
+[YouTube Tutorial Video](https://www.youtube.com/watch?v=1wpfHc2AmWs)
+
+[Live Sample Demo](http://sketcher.s3-website-us-east-1.amazonaws.com/#sample)
+
 Current Status
 ==============
 
@@ -27,11 +35,6 @@ This modeller is already used for:
 
 * Designing of 3d models to get them 3d-printed. 3D models are based on parametric 2d sketches. All models can be exported as an STL file and 3d-printed after.     
 * Creating of 2d parametric sketches which could be exported to DWG or SVG format.   
-
-Demo Screencast
-===============
-
-TBD
 
 Supported Constraints
 =====================
