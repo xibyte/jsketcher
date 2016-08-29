@@ -197,12 +197,11 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
   var deflection = new tk.Number("Deflection", def(2, 0), 1);
   var angle = new tk.Number("Angle", def(3, 0), 5);
   var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
-  var depthValue, scaleValue, deflectionValue, angleValue;
   function onChange() {
-    depthValue = theValue.input.val();
-    scaleValue = scale.input.val();
-    deflectionValue = deflection.input.val();
-    angleValue = angle.input.val();
+    var depthValue = theValue.input.val();
+    var scaleValue = scale.input.val();
+    var deflectionValue = deflection.input.val();
+    var angleValue = angle.input.val();
     if (isCut) depthValue *= -1;
     wizard.update(face._basis, normal, depthValue, scaleValue, deflectionValue, angleValue);
     app.viewer.render()
@@ -221,10 +220,13 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
     wizard.dispose();
   }
   function protoParams() {
+    var depthValue = theValue.input.val();
+    var scaleValue = scale.input.val();
+    var deflectionValue = deflection.input.val();
+    var angleValue = angle.input.val();
     return [depthValue, scaleValue, deflectionValue, angleValue];
   }
   function applyCut() {
-    var depthValue = theValue.input.val();
     app.craft.modify({
       type: 'CUT',
       solids : [app.findSolid(face.solid.tCadId)],
@@ -235,7 +237,6 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
     close();
   }
   function applyExtrude() {
-    var heightValue = theValue.input.val();
     app.craft.modify({
       type: 'PAD',
       solids : [app.findSolid(face.solid.tCadId)],
