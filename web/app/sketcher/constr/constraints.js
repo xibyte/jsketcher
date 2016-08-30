@@ -148,6 +148,7 @@ TCAD.constraints.ConstantWrapper = function(constr, mask) {
   };
 
   this.gradient = function(out) {
+    TCAD.math.Arrays_fill(this.grad, 0, this.grad.length, 0);
     constr.gradient(this.grad);
     var jj = 0;
     for (j = 0; j < mask.length; j++) {
@@ -320,12 +321,14 @@ TCAD.constraints.P2PDistance = function(params, distance) {
     var dy = params[p1y].get() - params[p2y].get();
     var d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
+      if (this.distance == 0) return;
       d = 0.000001;
     }
     out[p1x] = dx / d;
     out[p1y] = dy / d;
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
+    
   }
 };
 
@@ -353,6 +356,7 @@ TCAD.constraints.P2PDistanceV = function(params) {
     var dy = params[p1y].get() - params[p2y].get();
     var d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
+      if (params[D].get() == 0) return;
       d = 0.000001;
     }
     out[p1x] = dx / d;
