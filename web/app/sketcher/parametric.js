@@ -517,6 +517,12 @@ TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems, ext
       }
     },
 
+    updateParameter : function(p) {
+      for (var i = 0; i < solvers.length; i++) {
+        solvers[i].updateParameter(p);
+      }
+    },
+
     updateLock : function(values) {
       for (var i = 0; i < solvers.length; i++) {
         solvers[i].updateLock(values);
@@ -798,24 +804,29 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   }
   var viewer = this.viewer;
   function sync() {
-    for (p in pdict) {
-      _p = pdict[p];
+    for (var p in pdict) {
+      var _p = pdict[p];
       if (!!_p._backingParam.__aux) continue;
       _p._backingParam.set(_p.get());
     }
 
     //Make sure all coincident constraints are equal
-    for (ei = 0; ei < equalsIndex.length; ++ei) {
+    for (var ei = 0; ei < equalsIndex.length; ++ei) {
       var master = equalsDict[ equalsIndex[ei][0]];
-      for (i = 1; i < equalsIndex[ei].length; ++i) {
+      for (var i = 1; i < equalsIndex[ei].length; ++i) {
         var slave = equalsDict[equalsIndex[ei][i]];
         slave.set(master.get());
       }
     }
   }
-  
+
+  function updateParameter(p) {
+    getParam(p).set(p.get());
+  }
+
   solver.solve = solve;
   solver.sync = sync;
+  solver.updateParameter = updateParameter;
   return solver; 
 };
 
