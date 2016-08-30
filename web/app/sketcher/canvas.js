@@ -1059,7 +1059,7 @@ TCAD.TWO.DragTool.prototype.solveRequest = function(rough) {
   
   var paramsToUpdate = [];
   this.viewer.accept(function(obj) {
-    if (!obj.validate()) {
+    if (!obj.validate() && obj.aux !== true) {
       obj.recover();
       obj.collectParams(paramsToUpdate);
     }
