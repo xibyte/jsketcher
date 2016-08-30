@@ -754,15 +754,15 @@ TCAD.TWO.BasisOrigin.prototype.draw = function(ctx, scale) {
 
   ctx.setTransform( this.xScale, 0, 0, this.yScale, this.xShift, this.yShift);
   ctx.beginPath();
-
+  
   ctx.lineWidth  = 1;
   ctx.strokeStyle  = this.yColor;
 
-  var headA = 5;
+  var headA = 1;
   var headB = 10;
 
-  ctx.moveTo(0, 0);
-  ctx.lineTo(0, - this.lineWidth);
+  ctx.moveTo(0.5, 0);
+  ctx.lineTo(0.5, - this.lineWidth);
   
   ctx.moveTo(0, - this.lineWidth);
   ctx.lineTo(headA, 0 - this.lineWidth + headB);
@@ -774,8 +774,8 @@ TCAD.TWO.BasisOrigin.prototype.draw = function(ctx, scale) {
 
   ctx.beginPath();
   ctx.strokeStyle  = this.xColor;
-  ctx.moveTo(0, 0);
-  ctx.lineTo(this.lineWidth, 0);
+  ctx.moveTo(0, 0.5);
+  ctx.lineTo(this.lineWidth, 0.5);
 
   ctx.moveTo(this.lineWidth, 0);
   ctx.lineTo(this.lineWidth - headB, headA);
