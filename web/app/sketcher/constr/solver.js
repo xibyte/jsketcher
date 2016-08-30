@@ -52,6 +52,7 @@ TCAD.parametric.System.prototype.makeJacobian = function() {
 
     var cParams = c.params;
     var grad = [];
+    TCAD.math.Arrays_fill(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (var p = 0; p < cParams.length; p++) {
@@ -64,16 +65,17 @@ TCAD.parametric.System.prototype.makeJacobian = function() {
 };
 
 TCAD.parametric.System.prototype.fillJacobian = function(jacobi) {
-  for (i=0; i < this.constraints.length; i++) {
+  for (var i=0; i < this.constraints.length; i++) {
     var c = this.constraints[i];
 
     var cParams = c.params;
     var grad = [];
+    TCAD.math.Arrays_fill(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (var p = 0; p < cParams.length; p++) {
       var param = cParams[p];
-      j = param.j;
+      var j = param.j;
       jacobi[i][j] = grad[p];
     }
   }
@@ -106,6 +108,7 @@ TCAD.parametric.System.prototype.calcGrad_ = function(out) {
 
     var cParams = c.params;
     var grad = [];
+    TCAD.math.Arrays_fill(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (var p = 0; p < cParams.length; p++) {
@@ -127,6 +130,7 @@ TCAD.parametric.System.prototype.calcGrad = function(out) {
 
     var cParams = c.params;
     var grad = [];
+    TCAD.math.Arrays_fill(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (var p = 0; p < cParams.length; p++) {
