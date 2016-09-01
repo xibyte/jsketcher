@@ -333,14 +333,15 @@ optim.dog_leg = function (subsys, rough) {
   // get the infinity norm fx_inf and g_inf
   var g_inf = n.norminf(g);
   var fx_inf = n.norminf(fx);
-
-  var iterLimit = xsize * 100;
+  
+  var iterLimit = 100;
   var divergingLim = 1e6 * err + 1e12;
 
   var delta = 10;
   var alpha = 0.;
   var iter = 0, returnCode = 0;
   //var log = [];
+
   while (returnCode === 0) {
     optim.DEBUG_HANDLER(iter, err);
 
