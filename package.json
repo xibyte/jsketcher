@@ -1,0 +1,43 @@
+{
+  "name": "jsketcher",
+  "version": "0.1.0",
+  "description": "JS.Sketcher is a parametric 2D and 3D CAD modeler written in pure javascript",
+  "scripts": {
+    "start": "webpack-dev-server --content-base web/ --port 3000",
+    "lint": "eslint web/app",
+    "build": "webpack --config webpack.config.js --progress --profile --colors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xibyte/jsketcher.git"
+  },
+  "keywords": [
+    "parametric",
+    "cad"
+  ],
+  "author": "Val Erastov <xibyte@gmail.com> (http://github.com/xibyte)",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/xibyte/jsketcher/issues"
+  },
+  "homepage": "https://github.com/xibyte/jsketcher",
+  "devDependencies": {
+    "babel-cli": "6.14.0",
+    "babel-core": "6.14.0",
+    "babel-eslint": "6.1.2",
+    "babel-loader": "6.2.5",
+    "babel-preset-es2015": "6.14.0",
+    "css-loader": "0.24.0",
+    "eslint": "3.2.0",
+    "eslint-config-airbnb-base": "5.0.1",
+    "eslint-plugin-babel": "3.2.0",
+    "eslint-plugin-import": "1.12.0",
+    "style-loader": "0.13.1",
+    "webpack": "1.13.2",
+    "webpack-dev-server": "1.15.0"
+  },
+  "dependencies": {
+    "diff-match-patch": "1.0.0",
+    "numeric": "1.2.6"
+  }
+}

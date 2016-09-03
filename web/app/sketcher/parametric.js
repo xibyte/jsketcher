@@ -1,16 +1,24 @@
-TCAD.TWO.Constraints = {};
-TCAD.EQUALS_ELIMINATION_ENABLED = true;
+import * as utils from '../utils/utils'
+import {Ref} from './viewer2d'
+import {Param, prepare} from './constr/solver'
+import {createByConstraintName} from './constr/constraints'
+import Vector from '../math/vector'
+import * as math from '../math/math'
+import * as fetch from './fetchers'
+
+var Constraints = {};
+var EQUALS_ELIMINATION_ENABLED = true;
 
 /** @constructor */
-TCAD.TWO.SubSystem = function() {
+function SubSystem() {
   this.alg = 1;
   this.error = 0;
   this.reduce = false;
   this.constraints = [];
-};
+}
 
 /** @constructor */
-TCAD.TWO.ParametricManager = function(viewer) {
+function ParametricManager(viewer) {
   this.viewer = viewer;
   this.subSystems = [];
   this.listeners = [];
@@ -19,9 +27,9 @@ TCAD.TWO.ParametricManager = function(viewer) {
   this.viewer.params.define("constantDefinition", null);
   this.viewer.params.subscribe("constantDefinition", "parametricManager", this.rebuildConstantTable, this)();
   this.constantResolver = this.createConstantResolver();
-};
+}
 
-TCAD.TWO.ParametricManager.prototype.createConstantResolver = function() {
+ParametricManager.prototype.createConstantResolver = function() {
   var pm = this;
   return function(value) {
     var _value = pm.constantTable[value];
@@ -34,14 +42,14 @@ TCAD.TWO.ParametricManager.prototype.createConstantResolver = function() {
   }
 };
 
-TCAD.TWO.ParametricManager.prototype.notify = function(event) {
+ParametricManager.prototype.notify = function(event) {
   for (var i = 0; i < this.listeners.length; ++i) {
     var l = this.listeners[i];
     l(event);
   }
 };
 
-TCAD.TWO.ParametricManager.prototype.rebuildConstantTable = function(constantDefinition) {
+ParametricManager.prototype.rebuildConstantTable = function(constantDefinition) {
   this.constantTable = {};
   if (constantDefinition == null) return;
   var lines = constantDefinition.split('\n');
@@ -64,23 +72,23 @@ TCAD.TWO.ParametricManager.prototype.rebuildConstantTable = function(constantDef
 };
 
 
-TCAD.TWO.ParametricManager.prototype.findComponents = function(constr) {
+ParametricManager.prototype.findComponents = function(constr) {
   if (this.subSystems.length === 0) {
-    this.subSystems.push(new TCAD.TWO.SubSystem());
+    this.subSystems.push(new SubSystem());
   }
   return [0];  
 };
 
-TCAD.TWO.ParametricManager.prototype.tune = function(subSystem) {
+ParametricManager.prototype.tune = function(subSystem) {
   
 };
 
-TCAD.TWO.ParametricManager.prototype._add = function(constr) {
+ParametricManager.prototype._add = function(constr) {
   var subSystemIds = this.findComponents(constr);
   var subSystem; 
   switch (subSystemIds.length) {
     case 0:
-      subSystem = new TCAD.TWO.SubSystem();
+      subSystem = new SubSystem();
       this.subSystems.push(subSystem);
       break;
     case 1:
@@ -100,27 +108,27 @@ TCAD.TWO.ParametricManager.prototype._add = function(constr) {
   return subSystem;
 };
 
-TCAD.TWO.ParametricManager.prototype.checkRedundancy = function (subSystem, constr) {
+ParametricManager.prototype.checkRedundancy = function (subSystem, constr) {
   var solver = this.prepareForSubSystem([], subSystem.constraints);
   if (solver.diagnose().conflict) {
     alert("Most likely this "+constr.NAME + " constraint is CONFLICTING!")
   }
 };
 
-TCAD.TWO.ParametricManager.prototype.refresh = function() {
+ParametricManager.prototype.refresh = function() {
   this.solve();
   this.notify();
   this.viewer.refresh();
 };
 
-TCAD.TWO.ParametricManager.prototype.add = function(constr) {
+ParametricManager.prototype.add = function(constr) {
   this.viewer.historyManager.checkpoint();
   var subSystem = this._add(constr);
   this.checkRedundancy(subSystem, constr);
   this.refresh();
 };
 
-TCAD.TWO.ParametricManager.prototype.addAll = function(constrs) {
+ParametricManager.prototype.addAll = function(constrs) {
   for (var i = 0; i < constrs.length; i++) {
     var subSystem = this._add(constrs[i]);
     this.checkRedundancy(subSystem, constrs[i]);
@@ -128,7 +136,7 @@ TCAD.TWO.ParametricManager.prototype.addAll = function(constrs) {
   this.refresh();
 };
 
-TCAD.TWO.ParametricManager.prototype.remove = function(constr) {
+ParametricManager.prototype.remove = function(constr) {
   this.viewer.historyManager.checkpoint();
   for (var j = 0; j < this.subSystems.length; j++) {
     var sub = this.subSystems[j];
@@ -146,13 +154,13 @@ TCAD.TWO.ParametricManager.prototype.remove = function(constr) {
   this.refresh();
 };
 
-TCAD.TWO.ParametricManager.prototype.removeConstraintsByObj = function(obj) {
+ParametricManager.prototype.removeConstraintsByObj = function(obj) {
   var ownedParams = [];
   obj.collectParams(ownedParams);
   this.removeConstraintsByParams(ownedParams);
 };
 
-TCAD.TWO.ParametricManager.prototype.removeConstraintsByParams = function(ownedParams) {
+ParametricManager.prototype.removeConstraintsByParams = function(ownedParams) {
   for (var s = 0; s < this.subSystems.length; s++) {
     var toRemove = [];
     var sub = this.subSystems[s];
@@ -182,34 +190,34 @@ TCAD.TWO.ParametricManager.prototype.removeConstraintsByParams = function(ownedP
   this.notify();
 };
 
-TCAD.TWO.ParametricManager.prototype.lock = function(objs) {
-  var p = this._fetchPoints(objs);
+ParametricManager.prototype.lock = function(objs) {
+  var p = fetch.points(objs);
   for (var i = 0; i < p.length; ++i) {
-    this._add(new TCAD.TWO.Constraints.Lock(p[i], { x : p[i].x, y : p[i].y} ));
+    this._add(new Constraints.Lock(p[i], { x : p[i].x, y : p[i].y} ));
   }
   this.refresh();
 };
 
-TCAD.TWO.ParametricManager.prototype.vertical = function(objs) {
-  this.add(new TCAD.TWO.Constraints.Vertical(this._fetchLine(objs)));
+ParametricManager.prototype.vertical = function(objs) {
+  this.add(new Constraints.Vertical(fetch.line(objs)));
 };
 
-TCAD.TWO.ParametricManager.prototype.horizontal = function(objs) {
-  this.add(new TCAD.TWO.Constraints.Horizontal(this._fetchLine(objs)));
+ParametricManager.prototype.horizontal = function(objs) {
+  this.add(new Constraints.Horizontal(fetch.line(objs)));
 };
 
-TCAD.TWO.ParametricManager.prototype.parallel = function(objs) {
-  var lines = this._fetchTwoLines(objs);
-  this.add(new TCAD.TWO.Constraints.Parallel(lines[0], lines[1]));
+ParametricManager.prototype.parallel = function(objs) {
+  var lines = fetch.twoLines(objs);
+  this.add(new Constraints.Parallel(lines[0], lines[1]));
 };
 
-TCAD.TWO.ParametricManager.prototype.perpendicular = function(objs) {
-  var lines = this._fetchTwoLines(objs);
-  this.add(new TCAD.TWO.Constraints.Perpendicular(lines[0], lines[1]));
+ParametricManager.prototype.perpendicular = function(objs) {
+  var lines = fetch.twoLines(objs);
+  this.add(new Constraints.Perpendicular(lines[0], lines[1]));
 };
 
-TCAD.TWO.ParametricManager.prototype.lockConvex = function(objs, warnCallback) {
-  var lines = this._fetchTwoLines(objs);
+ParametricManager.prototype.lockConvex = function(objs, warnCallback) {
+  var lines = fetch.twoLines(objs);
   var l1 = lines[0];
   var l2 = lines[1];
   var pts =[l1.a, l1.b, l2.a, l2.b]; 
@@ -255,83 +263,83 @@ TCAD.TWO.ParametricManager.prototype.lockConvex = function(objs, warnCallback) {
     t = _;
   }
   
-  this.add(new TCAD.TWO.Constraints.LockConvex(c, a, t));
+  this.add(new Constraints.LockConvex(c, a, t));
 };
 
-TCAD.TWO.ParametricManager.prototype.tangent = function(objs) {
-  var al = this._fetchArcCircAndLine(objs);
+ParametricManager.prototype.tangent = function(objs) {
+  var al = fetch.arcCircAndLine(objs);
   var arc  = al[0];
   var line  = al[1];
-  this.add(new TCAD.TWO.Constraints.Tangent( arc, line));
+  this.add(new Constraints.Tangent( arc, line));
 };
 
-TCAD.TWO.ParametricManager.prototype.rr = function(arcs) {
+ParametricManager.prototype.rr = function(arcs) {
   var prev = arcs[0];
   for (var i = 1; i < arcs.length; ++i) {
-    this._add(new TCAD.TWO.Constraints.RR(prev, arcs[i]));
+    this._add(new Constraints.RR(prev, arcs[i]));
     prev = arcs[i];
   }
   this.refresh();
 };
 
-TCAD.TWO.ParametricManager.prototype.ll = function(lines) {
+ParametricManager.prototype.ll = function(lines) {
   var prev = lines[0];
   for (var i = 1; i < lines.length; ++i) {
-    this._add(new TCAD.TWO.Constraints.LL(prev, lines[i]));
+    this._add(new Constraints.LL(prev, lines[i]));
     prev = lines[i];
   }
   this.refresh();
 
 };
 
-TCAD.TWO.ParametricManager.prototype.entityEquality = function(objs) {
-  var arcs = this._fetch(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 0);
-  var lines = this._fetch(objs, ['TCAD.TWO.Segment'], 0);
+ParametricManager.prototype.entityEquality = function(objs) {
+  var arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 0);
+  var lines = fetch.generic(objs, ['TCAD.TWO.Segment'], 0);
   if (arcs.length > 0) this.rr(arcs);
   if (lines.length > 0) this.ll(lines);
 };
 
-TCAD.TWO.ParametricManager.prototype.p2lDistance = function(objs, promptCallback) {
-  var pl = this._fetchPointAndLine(objs);
+ParametricManager.prototype.p2lDistance = function(objs, promptCallback) {
+  var pl = fetch.pointAndLine(objs);
 
   var target = pl[0];
   var segment = pl[1];
   
-  var ex = new TCAD.Vector(-(segment.b.y - segment.a.y), segment.b.x - segment.a.x).normalize();
-  var distance = Math.abs(ex.dot(new TCAD.Vector(segment.a.x - target.x, segment.a.y - target.y)));
+  var ex = new Vector(-(segment.b.y - segment.a.y), segment.b.x - segment.a.x).normalize();
+  var distance = Math.abs(ex.dot(new Vector(segment.a.x - target.x, segment.a.y - target.y)));
 
-  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback, this.constantResolver);
+  var promptDistance = utils.askNumber(Constraints.P2LDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback, this.constantResolver);
 
   if (promptDistance != null) {
-    this.add(new TCAD.TWO.Constraints.P2LDistance(target, segment, promptDistance));
+    this.add(new Constraints.P2LDistance(target, segment, promptDistance));
   }
 };
 
-TCAD.TWO.ParametricManager.prototype.pointInMiddle = function(objs) {
-  var pl = this._fetchPointAndLine(objs);
-  this.add(new TCAD.TWO.Constraints.PointInMiddle(pl[0], pl[1]));
+ParametricManager.prototype.pointInMiddle = function(objs) {
+  var pl = fetch.pointAndLine(objs);
+  this.add(new Constraints.PointInMiddle(pl[0], pl[1]));
 };
 
-TCAD.TWO.ParametricManager.prototype.symmetry = function(objs) {
-  var pl = this._fetchPointAndLine(objs);
-  this.add(new TCAD.TWO.Constraints.Symmetry(pl[0], pl[1]));
+ParametricManager.prototype.symmetry = function(objs) {
+  var pl = fetch.pointAndLine(objs);
+  this.add(new Constraints.Symmetry(pl[0], pl[1]));
 };
 
-TCAD.TWO.ParametricManager.prototype.pointOnArc = function(objs) {
-  var points = this._fetch(objs, ['TCAD.TWO.EndPoint'], 1);
-  var arcs = this._fetch(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
-  this.add(new TCAD.TWO.Constraints.PointOnArc(points[0], arcs[0]));
+ParametricManager.prototype.pointOnArc = function(objs) {
+  var points = fetch.generic(objs, ['TCAD.TWO.EndPoint'], 1);
+  var arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
+  this.add(new Constraints.PointOnArc(points[0], arcs[0]));
 };
 
-TCAD.TWO.ParametricManager.prototype.pointOnLine = function(objs) {
-  var pl = this._fetchPointAndLine(objs);
+ParametricManager.prototype.pointOnLine = function(objs) {
+  var pl = fetch.pointAndLine(objs);
   var target = pl[0];
   var segment = pl[1];
-  this.add(new TCAD.TWO.Constraints.PointOnLine(target, segment));
+  this.add(new Constraints.PointOnLine(target, segment));
 };
 
-TCAD.TWO.ParametricManager.prototype.llAngle = function(objs, promptCallback) {
-  var lines = this._fetch(objs, 'TCAD.TWO.Segment', 2);
+ParametricManager.prototype.llAngle = function(objs, promptCallback) {
+  var lines = fetch.generic(objs, 'TCAD.TWO.Segment', 2);
   var l1 = lines[0];
   var l2 = lines[1];
 
@@ -354,62 +362,38 @@ TCAD.TWO.ParametricManager.prototype.llAngle = function(objs, promptCallback) {
 
   var angle = Math.atan2(dy2,dx2) - Math.atan2(dy1,dx1);
   angle *= 1 / Math.PI * 180;
-  angle = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.Angle.prototype.SettableFields.angle, angle.toFixed(2), promptCallback, this.constantResolver);
+  angle = utils.askNumber(Constraints.Angle.prototype.SettableFields.angle, angle.toFixed(2), promptCallback, this.constantResolver);
   if (angle === null) return;
-  this.add(new TCAD.TWO.Constraints.Angle(points[0], points[1], points[2], points[3], angle));
+  this.add(new Constraints.Angle(points[0], points[1], points[2], points[3], angle));
 };
 
-TCAD.TWO.utils.constRef = function(value) {
-  return function() {
-    return value;    
-  };
-};
-
-TCAD.TWO.ParametricManager.prototype.p2pDistance = function(objs, promptCallback) {
-  var p = this._fetchTwoPoints(objs);
-  var distance = new TCAD.Vector(p[1].x - p[0].x, p[1].y - p[0].y).length();
-  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback, this.constantResolver);
+ParametricManager.prototype.p2pDistance = function(objs, promptCallback) {
+  var p = fetch.twoPoints(objs);
+  var distance = new Vector(p[1].x - p[0].x, p[1].y - p[0].y).length();
+  var promptDistance = utils.askNumber(Constraints.P2PDistance.prototype.SettableFields.d, distance.toFixed(2), promptCallback, this.constantResolver);
 
   if (promptDistance != null) {
-    this.add(new TCAD.TWO.Constraints.P2PDistance(p[0], p[1], promptDistance));
+    this.add(new Constraints.P2PDistance(p[0], p[1], promptDistance));
   }
 };
 
-TCAD.TWO.utils.askNumber = function(promptText, initValue, promptCallback, resolver) {
-  var promptValueStr = promptCallback(promptText, initValue);
-  if (promptValueStr != null) {
-    var promptValue = Number(promptValueStr);
-    if (promptValue == promptValue) { // check for NaN
-      return promptValue;
-    } else {
-      if (!!resolver) {
-        promptValue = resolver(promptValueStr);
-        if (promptValue == promptValue) {
-          return promptValueStr;
-        }
-      }
-    }
-  }
-  return null;
-};
-
-TCAD.TWO.ParametricManager.prototype.radius = function(objs, promptCallback) {
-  var arcs = this._fetchArkCirc(objs, 1);
+ParametricManager.prototype.radius = function(objs, promptCallback) {
+  var arcs = fetch.arkCirc(objs, 1);
   var radius = arcs[0].r.get();
-  var promptDistance = TCAD.TWO.utils.askNumber(TCAD.TWO.Constraints.Radius.prototype.SettableFields.d, radius.toFixed(2), promptCallback, this.constantResolver);
+  var promptDistance = utils.askNumber(Constraints.Radius.prototype.SettableFields.d, radius.toFixed(2), promptCallback, this.constantResolver);
   if (promptDistance != null) {
     for (var i = 0; i < arcs.length; ++i) {
-      this._add(new TCAD.TWO.Constraints.Radius(arcs[i], promptDistance));
+      this._add(new Constraints.Radius(arcs[i], promptDistance));
     }
     this.refresh();
   }
 };
 
-TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
+ParametricManager.prototype.linkObjects = function(objs) {
   var i;
   var masterIdx = -1;
   for (i = 0; i < objs.length; ++i) {
-    if (TCAD.TWO.ParametricManager.isAux(objs[i])) {
+    if (ParametricManager.isAux(objs[i])) {
       if (masterIdx !== -1) {
         throw "not allowed to have a coincident constraint between two or more auxiliary objects";
       }
@@ -423,13 +407,13 @@ TCAD.TWO.ParametricManager.prototype.linkObjects = function(objs) {
     if (i === masterIdx) continue;
     objs[i].x = objs[masterIdx].x;
     objs[i].y = objs[masterIdx].y;
-    var c = new TCAD.TWO.Constraints.Coincident(objs[i], objs[masterIdx]);
+    var c = new Constraints.Coincident(objs[i], objs[masterIdx]);
     this._add(c);
   }
   this.notify();
 };
 
-TCAD.TWO.ParametricManager.prototype.unlinkObjects = function(a, b) {
+ParametricManager.prototype.unlinkObjects = function(a, b) {
   
   function _unlink(a, b) {
     for (var i = 0; i < a.linked.length; ++i) {
@@ -444,14 +428,14 @@ TCAD.TWO.ParametricManager.prototype.unlinkObjects = function(a, b) {
   _unlink(b, a);
 };
 
-TCAD.TWO.ParametricManager.prototype.coincident = function(objs) {
+ParametricManager.prototype.coincident = function(objs) {
   if (objs.length == 0) return;
   this.linkObjects(objs);
   this.solve();
   this.viewer.refresh();
 };
 
-TCAD.TWO.ParametricManager.prototype.getSolveData = function() {
+ParametricManager.prototype.getSolveData = function() {
   var sdata = []; 
   for (var i = 0; i < this.subSystems.length; i++) {
     this.__getSolveData(this.subSystems[i].constraints, sdata);
@@ -459,7 +443,7 @@ TCAD.TWO.ParametricManager.prototype.getSolveData = function() {
   return sdata;
 };
 
-TCAD.TWO.ParametricManager.prototype.__getSolveData = function(constraints, out) {
+ParametricManager.prototype.__getSolveData = function(constraints, out) {
   for (var i = 0; i < constraints.length; ++i) {
     var constraint = constraints[i];
     var data = constraint.getSolveData(this.constantResolver);
@@ -471,23 +455,23 @@ TCAD.TWO.ParametricManager.prototype.__getSolveData = function(constraints, out)
   return out;
 };
 
-TCAD.TWO.ParametricManager.prototype.solve = function() {
+ParametricManager.prototype.solve = function() {
   var solver = this.prepare([]);
   solver.solve(false);
   solver.sync();
 };
 
-TCAD.TWO.ParametricManager.prototype.solveWithLock = function(lock) {
+ParametricManager.prototype.solveWithLock = function(lock) {
   var solver = this.prepare(lock);
   solver.solve(false);
   solver.sync();
 };
 
-TCAD.TWO.ParametricManager.prototype.prepare = function(locked, extraConstraints) {
+ParametricManager.prototype.prepare = function(locked, extraConstraints) {
   return this._prepare(locked, this.subSystems, extraConstraints);
 };
 
-TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems, extraConstraints) {
+ParametricManager.prototype._prepare = function(locked, subSystems, extraConstraints) {
   var solvers = [];
   for (var i = 0; i < subSystems.length; i++) {
     solvers.push(this.prepareForSubSystem(locked, subSystems[i].constraints, extraConstraints));
@@ -531,7 +515,7 @@ TCAD.TWO.ParametricManager.prototype._prepare = function(locked, subSystems, ext
   }
 };
 
-TCAD.TWO.ParametricManager.isAux = function(obj) {
+ParametricManager.isAux = function(obj) {
   while (!!obj) {
     if (!!obj.aux) {
       return true;
@@ -541,12 +525,12 @@ TCAD.TWO.ParametricManager.isAux = function(obj) {
   return false;
 };
 
-TCAD.TWO.ParametricManager.fetchAuxParams = function(system, auxParams, auxDict) {
+ParametricManager.fetchAuxParams = function(system, auxParams, auxDict) {
   for (var i = 0; i < system.length; ++i) {
     for (var p = 0; p < system[i][1].length; ++p) {
       var parameter = system[i][1][p];
       if (parameter.obj !== undefined) {
-        if (TCAD.TWO.ParametricManager.isAux(parameter.obj)) {
+        if (ParametricManager.isAux(parameter.obj)) {
           if (auxDict[parameter.id] === undefined) {
             auxDict[parameter.id] = parameter;
             auxParams.push(parameter);
@@ -557,11 +541,11 @@ TCAD.TWO.ParametricManager.fetchAuxParams = function(system, auxParams, auxDict)
   }
 };
 
-TCAD.TWO.ParametricManager.__toId = function(v) {
+ParametricManager.__toId = function(v) {
   return v.id;
 };
 
-TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemConstraints, extraConstraints) {
+ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemConstraints, extraConstraints) {
 
   var pdict = {};
   var params;
@@ -578,19 +562,11 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   var auxParams = [];
   var auxDict = {};
 
-  TCAD.TWO.ParametricManager.fetchAuxParams(system, auxParams, auxDict);
+  ParametricManager.fetchAuxParams(system, auxParams, auxDict);
 
   var links = [];
-  if (TCAD.EQUALS_ELIMINATION_ENABLED) {
+  if (EQUALS_ELIMINATION_ENABLED) {
     var c, pi, paramToConstraints = {};
-    
-    function intersect(array1, array2) {
-      if (!array1 || !array2) return false;
-      return array1.filter(function(n) {
-        return array2.indexOf(n) != -1
-      }).length != 0;
-    }
-    
     for (i = 0; i < system.length; ++i) {
       c = system[i];
       if (c[3] !== true) {
@@ -607,7 +583,6 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
       }
     }
 
-    
     function Link(a, b, constr) {
       this.a = a;
       this.b = b;
@@ -625,7 +600,13 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
       }
     }
   }
-
+  function intersect(array1, array2) {
+    if (!array1 || !array2) return false;
+    return array1.filter(function(n) {
+        return array2.indexOf(n) != -1
+      }).length != 0;
+  }
+  
   function shared(param1, param2) {
     if (param1 == param2) return false;
     var assoc0 = paramToConstraints[param1];
@@ -736,7 +717,7 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
     var _p = pdict[p.id];
     if (_p === undefined) {
       if (p.__cachedParam__ === undefined) {
-        _p = new TCAD.parametric.Param(p.id, p.get());
+        _p = new Param(p.id, p.get());
         p.__cachedParam__ = _p;
       } else {
         _p = p.__cachedParam__;
@@ -787,7 +768,7 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
     }
     if (eqcElimination[i] === true) continue;
 
-    var _constr = TCAD.constraints.create(sdata[0], params, sdata[2]);
+    var _constr = createByConstraintName(sdata[0], params, sdata[2]);
     _constrs.push(_constr);
   }
 
@@ -798,7 +779,7 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
     }
   }
   
-  var solver = TCAD.parametric.prepare(_constrs, _locked, aux);
+  var solver = prepare(_constrs, _locked, aux);
   function solve(rough, alg) {
     return solver.solveSystem(rough, alg);
   }
@@ -830,7 +811,7 @@ TCAD.TWO.ParametricManager.prototype.prepareForSubSystem = function(locked, subS
   return solver; 
 };
 
-TCAD.TWO.Constraints.ParentsCollector = function() {
+Constraints.ParentsCollector = function() {
   this.parents = [];
   var parents = this.parents;
   var index = {};
@@ -849,179 +830,179 @@ TCAD.TWO.Constraints.ParentsCollector = function() {
   };
 };
 
-TCAD.TWO.Constraints.Factory = {};
+Constraints.Factory = {};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Coincident = function(a, b) {
+Constraints.Coincident = function(a, b) {
   this.a = a;
   this.b = b;
   a.linked.push(b);
   b.linked.push(a);
 };
 
-TCAD.TWO.Constraints.Coincident.prototype.NAME = 'coi';
-TCAD.TWO.Constraints.Coincident.prototype.UI_NAME = 'Coincident';
-TCAD.TWO.Constraints.Coincident.prototype.reducible = true;
+Constraints.Coincident.prototype.NAME = 'coi';
+Constraints.Coincident.prototype.UI_NAME = 'Coincident';
+Constraints.Coincident.prototype.reducible = true;
 
-TCAD.TWO.Constraints.Coincident.prototype.getSolveData = function() {
+Constraints.Coincident.prototype.getSolveData = function() {
   return [
     ['equal', [this.a._x, this.b._x], []],
     ['equal', [this.a._y, this.b._y], []]
   ];
 };
 
-TCAD.TWO.Constraints.Coincident.prototype.serialize = function() {
+Constraints.Coincident.prototype.serialize = function() {
   return [this.NAME, [this.a.id, this.b.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Coincident.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Coincident(refs(data[0]), refs(data[1]));  
+Constraints.Factory[Constraints.Coincident.prototype.NAME] = function(refs, data) {
+  return new Constraints.Coincident(refs(data[0]), refs(data[1]));  
 };
 
-TCAD.TWO.Constraints.Coincident.prototype.getObjects = function() {
+Constraints.Coincident.prototype.getObjects = function() {
   return [this.a, this.b];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Lock = function(p, c) {
+Constraints.Lock = function(p, c) {
   this.p = p;
   this.c = c;
 };
 
-TCAD.TWO.Constraints.Lock.prototype.NAME = 'lock';
-TCAD.TWO.Constraints.Lock.prototype.UI_NAME = 'Lock';
+Constraints.Lock.prototype.NAME = 'lock';
+Constraints.Lock.prototype.UI_NAME = 'Lock';
 
-TCAD.TWO.Constraints.Lock.prototype.getSolveData = function() {
+Constraints.Lock.prototype.getSolveData = function() {
   return [
     ['equalsTo', [this.p._x], [this.c.x]],
     ['equalsTo', [this.p._y], [this.c.y]]
   ];
 };
 
-TCAD.TWO.Constraints.Lock.prototype.serialize = function() {
+Constraints.Lock.prototype.serialize = function() {
   return [this.NAME, [this.p.id, this.c]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Lock.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Lock(refs(data[0]), data[1]);
+Constraints.Factory[Constraints.Lock.prototype.NAME] = function(refs, data) {
+  return new Constraints.Lock(refs(data[0]), data[1]);
 };
 
 
-TCAD.TWO.Constraints.Lock.prototype.getObjects = function() {
+Constraints.Lock.prototype.getObjects = function() {
   return [this.p];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Parallel = function(l1, l2) {
+Constraints.Parallel = function(l1, l2) {
   this.l1 = l1;
   this.l2 = l2;
 };
 
-TCAD.TWO.Constraints.Parallel.prototype.NAME = 'parallel';
-TCAD.TWO.Constraints.Parallel.prototype.UI_NAME = 'Parallel';
+Constraints.Parallel.prototype.NAME = 'parallel';
+Constraints.Parallel.prototype.UI_NAME = 'Parallel';
 
-TCAD.TWO.Constraints.Parallel.prototype.getSolveData = function() {
+Constraints.Parallel.prototype.getSolveData = function() {
   var params = [];
   this.l1.collectParams(params);
   this.l2.collectParams(params);
   return [[this.NAME, params, []]];
 };
 
-TCAD.TWO.Constraints.Parallel.prototype.serialize = function() {
+Constraints.Parallel.prototype.serialize = function() {
   return [this.NAME, [this.l1.id, this.l2.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Parallel.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Parallel(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.Parallel.prototype.NAME] = function(refs, data) {
+  return new Constraints.Parallel(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.Parallel.prototype.getObjects = function() {
+Constraints.Parallel.prototype.getObjects = function() {
   return [this.l1, this.l2];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Perpendicular = function(l1, l2) {
+Constraints.Perpendicular = function(l1, l2) {
   this.l1 = l1;
   this.l2 = l2;
 };
 
-TCAD.TWO.Constraints.Perpendicular.prototype.NAME = 'perpendicular';
-TCAD.TWO.Constraints.Perpendicular.prototype.UI_NAME = 'Perpendicular';
+Constraints.Perpendicular.prototype.NAME = 'perpendicular';
+Constraints.Perpendicular.prototype.UI_NAME = 'Perpendicular';
 
-TCAD.TWO.Constraints.Perpendicular.prototype.getSolveData = function() {
+Constraints.Perpendicular.prototype.getSolveData = function() {
   var params = [];
   this.l1.collectParams(params);
   this.l2.collectParams(params);
   return [[this.NAME, params, []]];
 };
 
-TCAD.TWO.Constraints.Perpendicular.prototype.serialize = function() {
+Constraints.Perpendicular.prototype.serialize = function() {
   return [this.NAME, [this.l1.id, this.l2.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Perpendicular.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Perpendicular(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.Perpendicular.prototype.NAME] = function(refs, data) {
+  return new Constraints.Perpendicular(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.Perpendicular.prototype.getObjects = function() {
+Constraints.Perpendicular.prototype.getObjects = function() {
   return [this.l1, this.l2];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.P2LDistance = function(p, l, d) {
+Constraints.P2LDistance = function(p, l, d) {
   this.p = p;
   this.l = l;
   this.d = d;
 };
 
-TCAD.TWO.Constraints.P2LDistance.prototype.NAME = 'P2LDistance';
-TCAD.TWO.Constraints.P2LDistance.prototype.UI_NAME = 'Distance P & L';
+Constraints.P2LDistance.prototype.NAME = 'P2LDistance';
+Constraints.P2LDistance.prototype.UI_NAME = 'Distance P & L';
 
-TCAD.TWO.Constraints.P2LDistance.prototype.getSolveData = function(resolver) {
+Constraints.P2LDistance.prototype.getSolveData = function(resolver) {
   var params = [];
   this.p.collectParams(params);
   this.l.collectParams(params);
   return [[this.NAME, params, [resolver(this.d)]]];
 };
 
-TCAD.TWO.Constraints.P2LDistance.prototype.serialize = function() {
+Constraints.P2LDistance.prototype.serialize = function() {
   return [this.NAME, [this.p.id, this.l.id, this.d]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2LDistance.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.P2LDistance(refs(data[0]), refs(data[1]), data[2]);
+Constraints.Factory[Constraints.P2LDistance.prototype.NAME] = function(refs, data) {
+  return new Constraints.P2LDistance(refs(data[0]), refs(data[1]), data[2]);
 };
 
-TCAD.TWO.Constraints.P2LDistance.prototype.getObjects = function() {
+Constraints.P2LDistance.prototype.getObjects = function() {
   return [this.p, this.l];
 };
 
-TCAD.TWO.Constraints.P2LDistance.prototype.SettableFields = {'d' : "Enter the distance"};
+Constraints.P2LDistance.prototype.SettableFields = {'d' : "Enter the distance"};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.MinLength = function(a, b, min) {
+Constraints.MinLength = function(a, b, min) {
   this.a = a;
   this.b = b;
   this.min = min;
 };
 
-TCAD.TWO.Constraints.MinLength.prototype.aux = true;
-TCAD.TWO.Constraints.MinLength.prototype.NAME = 'MinLength';
-TCAD.TWO.Constraints.MinLength.prototype.UI_NAME = 'MinLength';
+Constraints.MinLength.prototype.aux = true;
+Constraints.MinLength.prototype.NAME = 'MinLength';
+Constraints.MinLength.prototype.UI_NAME = 'MinLength';
 
-TCAD.TWO.Constraints.MinLength.prototype.getSolveData = function() {
+Constraints.MinLength.prototype.getSolveData = function() {
   var params = [];
   this.a.collectParams(params);
   this.b.collectParams(params);
@@ -1031,17 +1012,17 @@ TCAD.TWO.Constraints.MinLength.prototype.getSolveData = function() {
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.P2LDistanceV = function(p, l, d) {
+Constraints.P2LDistanceV = function(p, l, d) {
   this.p = p;
   this.l = l;
   this.d = d;
 };
 
-TCAD.TWO.Constraints.P2LDistanceV.prototype.aux = true;
-TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME = 'P2LDistanceV';
-TCAD.TWO.Constraints.P2LDistanceV.prototype.UI_NAME = 'Distance P & L';
+Constraints.P2LDistanceV.prototype.aux = true;
+Constraints.P2LDistanceV.prototype.NAME = 'P2LDistanceV';
+Constraints.P2LDistanceV.prototype.UI_NAME = 'Distance P & L';
 
-TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
+Constraints.P2LDistanceV.prototype.getSolveData = function() {
   var params = [];
   this.p.collectParams(params);
   this.l.collectParams(params);
@@ -1051,61 +1032,61 @@ TCAD.TWO.Constraints.P2LDistanceV.prototype.getSolveData = function() {
 
 // We don't serialize auxiliary constraints
 //
-//TCAD.TWO.Constraints.P2LDistanceV.prototype.serialize = function() {
+//Constraints.P2LDistanceV.prototype.serialize = function() {
 //  return [this.NAME, [this.p.id, this.l.id, this.d.id]];
 //};
 //
-//TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2LDistanceV.prototype.NAME] = function(refs, data) {
-//  return new TCAD.TWO.Constraints.P2LDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
+//Constraints.Factory[Constraints.P2LDistanceV.prototype.NAME] = function(refs, data) {
+//  return new Constraints.P2LDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
 //};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.P2PDistance = function(p1, p2, d) {
+Constraints.P2PDistance = function(p1, p2, d) {
   this.p1 = p1;
   this.p2 = p2;
   this.d = d;
 };
 
-TCAD.TWO.Constraints.P2PDistance.prototype.NAME = 'P2PDistance';
-TCAD.TWO.Constraints.P2PDistance.prototype.UI_NAME = 'Distance Points';
+Constraints.P2PDistance.prototype.NAME = 'P2PDistance';
+Constraints.P2PDistance.prototype.UI_NAME = 'Distance Points';
 
-TCAD.TWO.Constraints.P2PDistance.prototype.getSolveData = function(resolver) {
+Constraints.P2PDistance.prototype.getSolveData = function(resolver) {
   var params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
   return [[this.NAME, params, [resolver(this.d)]]];
 };
 
-TCAD.TWO.Constraints.P2PDistance.prototype.serialize = function() {
+Constraints.P2PDistance.prototype.serialize = function() {
   return [this.NAME, [this.p1.id, this.p2.id, this.d]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2PDistance.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.P2PDistance(refs(data[0]), refs(data[1]), data[2]);
+Constraints.Factory[Constraints.P2PDistance.prototype.NAME] = function(refs, data) {
+  return new Constraints.P2PDistance(refs(data[0]), refs(data[1]), data[2]);
 };
 
-TCAD.TWO.Constraints.P2PDistance.prototype.getObjects = function() {
+Constraints.P2PDistance.prototype.getObjects = function() {
   return [this.p1, this.p2];
 };
 
-TCAD.TWO.Constraints.P2PDistance.prototype.SettableFields = {'d' : "Enter the distance"};
+Constraints.P2PDistance.prototype.SettableFields = {'d' : "Enter the distance"};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.P2PDistanceV = function(p1, p2, d) {
+Constraints.P2PDistanceV = function(p1, p2, d) {
   this.p1 = p1;
   this.p2 = p2;
   this.d = d;
 };
 
-TCAD.TWO.Constraints.P2PDistanceV.prototype.aux = true;
-TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME = 'P2PDistanceV';
-TCAD.TWO.Constraints.P2PDistanceV.prototype.UI_NAME = 'Distance Points';
+Constraints.P2PDistanceV.prototype.aux = true;
+Constraints.P2PDistanceV.prototype.NAME = 'P2PDistanceV';
+Constraints.P2PDistanceV.prototype.UI_NAME = 'Distance Points';
 
-TCAD.TWO.Constraints.P2PDistanceV.prototype.getSolveData = function() {
+Constraints.P2PDistanceV.prototype.getSolveData = function() {
   var params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
@@ -1115,86 +1096,86 @@ TCAD.TWO.Constraints.P2PDistanceV.prototype.getSolveData = function() {
 
 // We don't serialize auxiliary constraints
 //
-//TCAD.TWO.Constraints.P2PDistanceV.prototype.serialize = function() {
+//Constraints.P2PDistanceV.prototype.serialize = function() {
 //  return [this.NAME, [this.p1.id, this.p2.id, this.d.id]];
 //};
 //
-//TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.P2PDistanceV.prototype.NAME] = function(refs, data) {
-//  return new TCAD.TWO.Constraints.P2PDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
+//Constraints.Factory[Constraints.P2PDistanceV.prototype.NAME] = function(refs, data) {
+//  return new Constraints.P2PDistanceV(refs(data[0]), refs(data[1]), refs(data[2]));
 //};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Radius = function(arc, d) {
+Constraints.Radius = function(arc, d) {
   this.arc = arc;
   this.d = d;
 };
 
-TCAD.TWO.Constraints.Radius.prototype.NAME = 'Radius';
-TCAD.TWO.Constraints.Radius.prototype.UI_NAME = 'Radius Value';
+Constraints.Radius.prototype.NAME = 'Radius';
+Constraints.Radius.prototype.UI_NAME = 'Radius Value';
 
 
-TCAD.TWO.Constraints.Radius.prototype.getSolveData = function(resolver) {
+Constraints.Radius.prototype.getSolveData = function(resolver) {
   return [['equalsTo', [this.arc.r], [resolver(this.d)]]];
 };
 
-TCAD.TWO.Constraints.Radius.prototype.serialize = function() {
+Constraints.Radius.prototype.serialize = function() {
   return [this.NAME, [this.arc.id, this.d]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Radius.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Radius(refs(data[0]), data[1]);
+Constraints.Factory[Constraints.Radius.prototype.NAME] = function(refs, data) {
+  return new Constraints.Radius(refs(data[0]), data[1]);
 };
 
-TCAD.TWO.Constraints.Radius.prototype.getObjects = function() {
+Constraints.Radius.prototype.getObjects = function() {
   return [this.arc];
 };
 
-TCAD.TWO.Constraints.Radius.prototype.SettableFields = {'d' : "Enter the radius value"};
+Constraints.Radius.prototype.SettableFields = {'d' : "Enter the radius value"};
 
 // ------------------------------------------------------------------------------------------------------------------ // 
 
 /** @constructor */
-TCAD.TWO.Constraints.RR = function(arc1, arc2) {
+Constraints.RR = function(arc1, arc2) {
   this.arc1 = arc1;
   this.arc2 = arc2;
 };
 
-TCAD.TWO.Constraints.RR.prototype.NAME = 'RR';
-TCAD.TWO.Constraints.RR.prototype.UI_NAME = 'Radius Equality';
-//TCAD.TWO.Constraints.RR.prototype.reducible = true;
+Constraints.RR.prototype.NAME = 'RR';
+Constraints.RR.prototype.UI_NAME = 'Radius Equality';
+//Constraints.RR.prototype.reducible = true;
 
 
-TCAD.TWO.Constraints.RR.prototype.getSolveData = function() {
+Constraints.RR.prototype.getSolveData = function() {
   return [['equal', [this.arc1.r, this.arc2.r], []]];
 };
 
-TCAD.TWO.Constraints.RR.prototype.serialize = function() {
+Constraints.RR.prototype.serialize = function() {
   return [this.NAME, [this.arc1.id, this.arc2.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.RR.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.RR(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.RR.prototype.NAME] = function(refs, data) {
+  return new Constraints.RR(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.RR.prototype.getObjects = function() {
+Constraints.RR.prototype.getObjects = function() {
   return [this.arc1, this.arc2];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ // 
 
 /** @constructor */
-TCAD.TWO.Constraints.LL = function(line1, line2) {
+Constraints.LL = function(line1, line2) {
   this.line1 = line1;
   this.line2 = line2;
-  this.length = new TCAD.TWO.Ref(TCAD.math.distanceAB(line1.a, line1.b));
+  this.length = new Ref(math.distanceAB(line1.a, line1.b));
 };
 
-TCAD.TWO.Constraints.LL.prototype.NAME = 'LL';
-TCAD.TWO.Constraints.LL.prototype.UI_NAME = 'Lines Equality';
+Constraints.LL.prototype.NAME = 'LL';
+Constraints.LL.prototype.UI_NAME = 'Lines Equality';
 
-TCAD.TWO.Constraints.LL.prototype.getSolveData = function() {
+Constraints.LL.prototype.getSolveData = function() {
   var params1 = [];
   var params2 = [];
   this.line1.collectParams(params1);
@@ -1207,84 +1188,84 @@ TCAD.TWO.Constraints.LL.prototype.getSolveData = function() {
   ];
 };
 
-TCAD.TWO.Constraints.LL.prototype.serialize = function() {
+Constraints.LL.prototype.serialize = function() {
   return [this.NAME, [this.line1.id, this.line2.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.LL.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.LL(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.LL.prototype.NAME] = function(refs, data) {
+  return new Constraints.LL(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.LL.prototype.getObjects = function() {
+Constraints.LL.prototype.getObjects = function() {
   return [this.line1, this.line2];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Vertical = function(line) {
+Constraints.Vertical = function(line) {
   this.line = line;
 };
 
-TCAD.TWO.Constraints.Vertical.prototype.NAME = 'Vertical';
-TCAD.TWO.Constraints.Vertical.prototype.UI_NAME = 'Vertical';
-//TCAD.TWO.Constraints.Vertical.prototype.reducible = true;
+Constraints.Vertical.prototype.NAME = 'Vertical';
+Constraints.Vertical.prototype.UI_NAME = 'Vertical';
+//Constraints.Vertical.prototype.reducible = true;
 
-TCAD.TWO.Constraints.Vertical.prototype.getSolveData = function() {
+Constraints.Vertical.prototype.getSolveData = function() {
   return [['equal', [this.line.a._x, this.line.b._x], []]];
 };
 
-TCAD.TWO.Constraints.Vertical.prototype.serialize = function() {
+Constraints.Vertical.prototype.serialize = function() {
   return [this.NAME, [this.line.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Vertical.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Vertical(refs(data[0]));
+Constraints.Factory[Constraints.Vertical.prototype.NAME] = function(refs, data) {
+  return new Constraints.Vertical(refs(data[0]));
 };
 
-TCAD.TWO.Constraints.Vertical.prototype.getObjects = function() {
+Constraints.Vertical.prototype.getObjects = function() {
   return [this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ // 
 
 /** @constructor */
-TCAD.TWO.Constraints.Horizontal = function(line) {
+Constraints.Horizontal = function(line) {
   this.line = line;
 };
 
-TCAD.TWO.Constraints.Horizontal.prototype.NAME = 'Horizontal';
-TCAD.TWO.Constraints.Horizontal.prototype.UI_NAME = 'Horizontal';
-//TCAD.TWO.Constraints.Horizontal.prototype.reducible = true;
+Constraints.Horizontal.prototype.NAME = 'Horizontal';
+Constraints.Horizontal.prototype.UI_NAME = 'Horizontal';
+//Constraints.Horizontal.prototype.reducible = true;
 
-TCAD.TWO.Constraints.Horizontal.prototype.getSolveData = function() {
+Constraints.Horizontal.prototype.getSolveData = function() {
   return [['equal', [this.line.a._y, this.line.b._y], []]];
 };
 
-TCAD.TWO.Constraints.Horizontal.prototype.serialize = function() {
+Constraints.Horizontal.prototype.serialize = function() {
   return [this.NAME, [this.line.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Horizontal.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Horizontal(refs(data[0]));
+Constraints.Factory[Constraints.Horizontal.prototype.NAME] = function(refs, data) {
+  return new Constraints.Horizontal(refs(data[0]));
 };
 
-TCAD.TWO.Constraints.Horizontal.prototype.getObjects = function() {
+Constraints.Horizontal.prototype.getObjects = function() {
   return [this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Tangent = function(arc, line) {
+Constraints.Tangent = function(arc, line) {
   this.arc = arc;
   this.line = line;
 };
 
-TCAD.TWO.Constraints.Tangent.prototype.NAME = 'Tangent';
-TCAD.TWO.Constraints.Tangent.prototype.UI_NAME = 'Tangent';
+Constraints.Tangent.prototype.NAME = 'Tangent';
+Constraints.Tangent.prototype.UI_NAME = 'Tangent';
 
-TCAD.TWO.Constraints.Tangent.prototype.getSolveData = function() {
+Constraints.Tangent.prototype.getSolveData = function() {
   var params = [];
   this.arc.c.collectParams(params);
   this.line.collectParams(params);
@@ -1292,60 +1273,60 @@ TCAD.TWO.Constraints.Tangent.prototype.getSolveData = function() {
   return [['P2LDistanceV', params, []]];
 };
 
-TCAD.TWO.Constraints.Tangent.prototype.serialize = function() {
+Constraints.Tangent.prototype.serialize = function() {
   return [this.NAME, [this.arc.id, this.line.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Tangent.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Tangent(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.Tangent.prototype.NAME] = function(refs, data) {
+  return new Constraints.Tangent(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.Tangent.prototype.getObjects = function() {
+Constraints.Tangent.prototype.getObjects = function() {
   return [this.arc, this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.PointOnLine = function(point, line) {
+Constraints.PointOnLine = function(point, line) {
   this.point = point;
   this.line = line;
 };
 
-TCAD.TWO.Constraints.PointOnLine.prototype.NAME = 'PointOnLine';
-TCAD.TWO.Constraints.PointOnLine.prototype.UI_NAME = 'Point On Line';
+Constraints.PointOnLine.prototype.NAME = 'PointOnLine';
+Constraints.PointOnLine.prototype.UI_NAME = 'Point On Line';
 
-TCAD.TWO.Constraints.PointOnLine.prototype.getSolveData = function() {
+Constraints.PointOnLine.prototype.getSolveData = function() {
   var params = [];
   this.point.collectParams(params);
   this.line.collectParams(params);
   return [['P2LDistance', params, [0]]];
 };
 
-TCAD.TWO.Constraints.PointOnLine.prototype.serialize = function() {
+Constraints.PointOnLine.prototype.serialize = function() {
   return [this.NAME, [this.point.id, this.line.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointOnLine.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.PointOnLine(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.PointOnLine.prototype.NAME] = function(refs, data) {
+  return new Constraints.PointOnLine(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.PointOnLine.prototype.getObjects = function() {
+Constraints.PointOnLine.prototype.getObjects = function() {
   return [this.point, this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.PointOnArc = function(point, arc) {
+Constraints.PointOnArc = function(point, arc) {
   this.point = point;
   this.arc = arc;
 };
 
-TCAD.TWO.Constraints.PointOnArc.prototype.NAME = 'PointOnArc';
-TCAD.TWO.Constraints.PointOnArc.prototype.UI_NAME = 'Point On Arc';
+Constraints.PointOnArc.prototype.NAME = 'PointOnArc';
+Constraints.PointOnArc.prototype.UI_NAME = 'Point On Arc';
 
-TCAD.TWO.Constraints.PointOnArc.prototype.getSolveData = function() {
+Constraints.PointOnArc.prototype.getSolveData = function() {
   var params = [];
   this.point.collectParams(params);
   this.arc.c.collectParams(params);
@@ -1353,31 +1334,31 @@ TCAD.TWO.Constraints.PointOnArc.prototype.getSolveData = function() {
   return [['P2PDistanceV', params, []]];
 };
 
-TCAD.TWO.Constraints.PointOnArc.prototype.serialize = function() {
+Constraints.PointOnArc.prototype.serialize = function() {
   return [this.NAME, [this.point.id, this.arc.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointOnArc.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.PointOnArc(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.PointOnArc.prototype.NAME] = function(refs, data) {
+  return new Constraints.PointOnArc(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.PointOnArc.prototype.getObjects = function() {
+Constraints.PointOnArc.prototype.getObjects = function() {
   return [this.point, this.arc];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.PointInMiddle = function(point, line) {
+Constraints.PointInMiddle = function(point, line) {
   this.point = point;
   this.line = line;
-  this.length = new TCAD.TWO.Ref(TCAD.math.distanceAB(line.a, line.b) / 2);
+  this.length = new Ref(math.distanceAB(line.a, line.b) / 2);
 };
 
-TCAD.TWO.Constraints.PointInMiddle.prototype.NAME = 'PointInMiddle';
-TCAD.TWO.Constraints.PointInMiddle.prototype.UI_NAME = 'Point In the Middle';
+Constraints.PointInMiddle.prototype.NAME = 'PointInMiddle';
+Constraints.PointInMiddle.prototype.UI_NAME = 'Point In the Middle';
 
-TCAD.TWO.Constraints.PointInMiddle.prototype.getSolveData = function() {
+Constraints.PointInMiddle.prototype.getSolveData = function() {
   var params1 = [];
   var params2 = [];
   
@@ -1395,64 +1376,64 @@ TCAD.TWO.Constraints.PointInMiddle.prototype.getSolveData = function() {
   ];
 };
 
-TCAD.TWO.Constraints.PointInMiddle.prototype.serialize = function() {
+Constraints.PointInMiddle.prototype.serialize = function() {
   return [this.NAME, [this.point.id, this.line.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.PointInMiddle.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.PointInMiddle(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.PointInMiddle.prototype.NAME] = function(refs, data) {
+  return new Constraints.PointInMiddle(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.PointInMiddle.prototype.getObjects = function() {
+Constraints.PointInMiddle.prototype.getObjects = function() {
   return [this.point, this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Symmetry = function(point, line) {
+Constraints.Symmetry = function(point, line) {
   this.point = point;
   this.line = line;
-  this.length = new TCAD.TWO.Ref(TCAD.math.distanceAB(line.a, line.b) / 2);
+  this.length = new Ref(math.distanceAB(line.a, line.b) / 2);
 };
 
-TCAD.TWO.Constraints.Symmetry.prototype.NAME = 'Symmetry';
-TCAD.TWO.Constraints.Symmetry.prototype.UI_NAME = 'Symmetry';
+Constraints.Symmetry.prototype.NAME = 'Symmetry';
+Constraints.Symmetry.prototype.UI_NAME = 'Symmetry';
 
-TCAD.TWO.Constraints.Symmetry.prototype.getSolveData = function(resolver) {
-  var pointInMiddleData = TCAD.TWO.Constraints.PointInMiddle.prototype.getSolveData.call(this, [resolver]);
-  var pointOnLineData = TCAD.TWO.Constraints.PointOnLine.prototype.getSolveData.call(this, [resolver]);
+Constraints.Symmetry.prototype.getSolveData = function(resolver) {
+  var pointInMiddleData = Constraints.PointInMiddle.prototype.getSolveData.call(this, [resolver]);
+  var pointOnLineData = Constraints.PointOnLine.prototype.getSolveData.call(this, [resolver]);
   return pointInMiddleData.concat(pointOnLineData);
 };
 
-TCAD.TWO.Constraints.Symmetry.prototype.serialize = function() {
+Constraints.Symmetry.prototype.serialize = function() {
   return [this.NAME, [this.point.id, this.line.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Symmetry.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Symmetry(refs(data[0]), refs(data[1]));
+Constraints.Factory[Constraints.Symmetry.prototype.NAME] = function(refs, data) {
+  return new Constraints.Symmetry(refs(data[0]), refs(data[1]));
 };
 
-TCAD.TWO.Constraints.Symmetry.prototype.getObjects = function() {
+Constraints.Symmetry.prototype.getObjects = function() {
   return [this.point, this.line];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.Angle = function(p1, p2, p3, p4, angle) {
+Constraints.Angle = function(p1, p2, p3, p4, angle) {
   this.p1 = p1;
   this.p2 = p2;
   this.p3 = p3;
   this.p4 = p4;
-  this._angle = new TCAD.TWO.Ref(0);
+  this._angle = new Ref(0);
   this.angle = angle;
 };
 
-TCAD.TWO.Constraints.Angle.prototype.NAME = 'Angle';
-TCAD.TWO.Constraints.Angle.prototype.UI_NAME = 'Lines Angle';
+Constraints.Angle.prototype.NAME = 'Angle';
+Constraints.Angle.prototype.UI_NAME = 'Lines Angle';
 
-TCAD.TWO.Constraints.Angle.prototype.getSolveData = function(resolver) {
+Constraints.Angle.prototype.getSolveData = function(resolver) {
   this._angle.set(resolver(this.angle) / 180 * Math.PI);
   var params = [];
   this.p1.collectParams(params);
@@ -1463,16 +1444,16 @@ TCAD.TWO.Constraints.Angle.prototype.getSolveData = function(resolver) {
   return [['angleConst', params, []]];
 };
 
-TCAD.TWO.Constraints.Angle.prototype.serialize = function() {
+Constraints.Angle.prototype.serialize = function() {
   return [this.NAME, [this.p1.id, this.p2.id, this.p3.id, this.p4.id, this.angle]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.Angle.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.Angle( refs(data[0]), refs(data[1]), refs(data[2]), refs(data[3]), data[4] );
+Constraints.Factory[Constraints.Angle.prototype.NAME] = function(refs, data) {
+  return new Constraints.Angle( refs(data[0]), refs(data[1]), refs(data[2]), refs(data[3]), data[4] );
 };
 
-TCAD.TWO.Constraints.Angle.prototype.getObjects = function() {
-  var collector = new TCAD.TWO.Constraints.ParentsCollector();
+Constraints.Angle.prototype.getObjects = function() {
+  var collector = new Constraints.ParentsCollector();
   collector.check(this.p1);
   collector.check(this.p2);
   collector.check(this.p3);
@@ -1480,21 +1461,21 @@ TCAD.TWO.Constraints.Angle.prototype.getObjects = function() {
   return collector.parents;
 };
 
-TCAD.TWO.Constraints.Angle.prototype.SettableFields = {'angle' : "Enter the angle value"};
+Constraints.Angle.prototype.SettableFields = {'angle' : "Enter the angle value"};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-TCAD.TWO.Constraints.LockConvex = function(c, a, t) {
+Constraints.LockConvex = function(c, a, t) {
   this.c = c;
   this.a = a;
   this.t = t;
 };
 
-TCAD.TWO.Constraints.LockConvex.prototype.NAME = 'LockConvex';
-TCAD.TWO.Constraints.LockConvex.prototype.UI_NAME = 'Lock Convexity';
+Constraints.LockConvex.prototype.NAME = 'LockConvex';
+Constraints.LockConvex.prototype.UI_NAME = 'Lock Convexity';
 
-TCAD.TWO.Constraints.LockConvex.prototype.getSolveData = function() {
+Constraints.LockConvex.prototype.getSolveData = function() {
   var params = [];
   this.c.collectParams(params);
   this.a.collectParams(params);
@@ -1502,16 +1483,16 @@ TCAD.TWO.Constraints.LockConvex.prototype.getSolveData = function() {
   return [['LockConvex', params, []]];
 };
 
-TCAD.TWO.Constraints.LockConvex.prototype.serialize = function() {
+Constraints.LockConvex.prototype.serialize = function() {
   return [this.NAME, [this.c.id, this.a.id, this.t.id]];
 };
 
-TCAD.TWO.Constraints.Factory[TCAD.TWO.Constraints.LockConvex.prototype.NAME] = function(refs, data) {
-  return new TCAD.TWO.Constraints.LockConvex(refs(data[0]), refs(data[1]), refs(data[2]));
+Constraints.Factory[Constraints.LockConvex.prototype.NAME] = function(refs, data) {
+  return new Constraints.LockConvex(refs(data[0]), refs(data[1]), refs(data[2]));
 };
 
-TCAD.TWO.Constraints.LockConvex.prototype.getObjects = function() {
-  var collector = new TCAD.TWO.Constraints.ParentsCollector();
+Constraints.LockConvex.prototype.getObjects = function() {
+  var collector = new Constraints.ParentsCollector();
   collector.check(this.c);
   collector.check(this.a);
   collector.check(this.t);
@@ -1519,3 +1500,5 @@ TCAD.TWO.Constraints.LockConvex.prototype.getObjects = function() {
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
+
+export {Constraints, ParametricManager}

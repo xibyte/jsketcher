@@ -8,7 +8,7 @@ mkdir -p out
 rm -rf out/*
 
 > out/app.js
-java -jar yuic.jar --disable-optimizations ../web/app/sketcher/canvas.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/viewer2d.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/io.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/history.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/shapes/arc.js >> out/app.js
@@ -26,12 +26,12 @@ java -jar yuic.jar --disable-optimizations ../web/app/sketcher/constr/constraint
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/constr/solver.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/parametric.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/sketcher/fetchers.js >> out/app.js
-java -jar yuic.jar --disable-optimizations ../web/app/engine.js >> out/app.js
-java -jar yuic.jar --disable-optimizations ../web/app/sketcher/main2d.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/cad-utils.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/sketcher/sketcher-app.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/ui.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/ui/toolkit.js >> out/app.js
 java -jar yuic.jar --disable-optimizations ../web/app/math/graph.js >> out/app.js
-java -jar yuic.jar --disable-optimizations ../web/app/app-init.js >> out/app.js
+java -jar yuic.jar --disable-optimizations ../web/app/init-sketcher-app.js >> out/app.js
 
 sed -n \
 '/<\!--\$\$\$javascript_start\$\$\$-->/{:a;N;/<\!--\$\$\$javascript_end\$\$\$-->/!ba;N;s|.*\n|  <script src="app.js"></script>|};p' \

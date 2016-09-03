@@ -1,9 +1,17 @@
-/** @constructor */
-TCAD.TWO.FilletTool = function(viewer) {
-  this.viewer = viewer;
-};
+import Vector from '../math/vector'
+import {Styles} from './viewer2d'
+import * as fetch from './fetchers'
+import * as math from '../math/math'
+import {EndPoint} from './viewer2d'
+import {Arc} from './shapes/arc'
+import {Constraints} from './parametric'
 
-TCAD.TWO.FilletTool.prototype.makeFillet = function(point1, point2) {
+/** @constructor */
+function FilletTool(viewer) {
+  this.viewer = viewer;
+}
+
+FilletTool.prototype.makeFillet = function(point1, point2) {
   function shrink(point1) {
     if (point1.id === point1.parent.a.id) {
       var a = point1.parent.b;
@@ -12,11 +20,11 @@ TCAD.TWO.FilletTool.prototype.makeFillet = function(point1, point2) {
       var a = point1.parent.a;
       var b = point1.parent.b;
     }
-    var d = TCAD.math.distanceAB(a, b);
+    var d = math.distanceAB(a, b);
     var k = 4 / 5;
     b.x = a.x + (b.x - a.x) * k; 
     b.y = a.y + (b.y - a.y) * k;
-    return new TCAD.Vector(a.x - b.x, a.y - b.y, 0);
+    return new Vector(a.x - b.x, a.y - b.y, 0);
   }
   
   var v1 = shrink(point1);
@@ -28,23 +36,23 @@ TCAD.TWO.FilletTool.prototype.makeFillet = function(point1, point2) {
     point2 = _;
   }
   
-  var vec = new TCAD.Vector();
+  var vec = new Vector();
   vec.setV(point2);
   vec._minus(point1);
   vec._multiply(0.5);
   vec._plus(point1);
   
-  var arc = new TCAD.TWO.Arc(
-      new TCAD.TWO.EndPoint(point1.x, point1.y), 
-      new TCAD.TWO.EndPoint(point2.x, point2.y), 
-      new TCAD.TWO.EndPoint(vec.x, vec.y))
+  var arc = new Arc(
+      new EndPoint(point1.x, point1.y), 
+      new EndPoint(point2.x, point2.y), 
+      new EndPoint(vec.x, vec.y))
   point1.parent.layer.objects.push(arc);
   var pm = this.viewer.parametricManager;
   arc.stabilize(this.viewer);
-  pm._add(new TCAD.TWO.Constraints.Tangent( arc, point1.parent));
-  pm._add(new TCAD.TWO.Constraints.Tangent( arc, point2.parent));
-  pm._add(new TCAD.TWO.Constraints.Coincident( arc.a, point1));
-  pm._add(new TCAD.TWO.Constraints.Coincident( arc.b, point2));
+  pm._add(new Constraints.Tangent( arc, point1.parent));
+  pm._add(new Constraints.Tangent( arc, point2.parent));
+  pm._add(new Constraints.Coincident( arc.a, point1));
+  pm._add(new Constraints.Coincident( arc.b, point2));
 
   //function otherEnd(point) {
   //  if (point.parent.a.id === point.id) {
@@ -54,8 +62,8 @@ TCAD.TWO.FilletTool.prototype.makeFillet = function(point1, point2) {
   //  }
   //}
   //
-  //pm._add(new TCAD.TWO.Constraints.LockConvex(arc.c, arc.a, otherEnd(point1)));
-  //pm._add(new TCAD.TWO.Constraints.LockConvex(otherEnd(point2), arc.b, arc.c));
+  //pm._add(new Constraints.LockConvex(arc.c, arc.a, otherEnd(point1)));
+  //pm._add(new Constraints.LockConvex(otherEnd(point2), arc.b, arc.c));
   
   var solver = pm.solveWithLock([]);
 //  var solver = pm.solveWithLock([point1._x, point1._y, point2._x, point2._y]);
@@ -63,7 +71,7 @@ TCAD.TWO.FilletTool.prototype.makeFillet = function(point1, point2) {
   this.viewer.refresh();
 };
 
-TCAD.TWO.FilletTool.prototype.mouseup = function(e) {
+FilletTool.prototype.mouseup = function(e) {
   var candi = this.getCandidate(e);
   if (candi == null) return;
   var point1 = candi[0];
@@ -86,13 +94,13 @@ TCAD.TWO.FilletTool.prototype.mouseup = function(e) {
   }
 };
 
-TCAD.TWO.FilletTool.prototype.getCandidate = function(e) {
+FilletTool.prototype.getCandidate = function(e) {
   var picked = this.viewer.pick(e);
   if (picked.length > 0) {
     function isLine(line) {
       return line != null && line._class === 'TCAD.TWO.Segment';
     }
-    var res = TCAD.TWO.utils._fetchSketchObjects(picked, true, ['TCAD.TWO.EndPoint']);
+    var res = fetch.sketchObjects(picked, true, ['TCAD.TWO.EndPoint']);
     if (res == null) return null;
     var point1 = res[0];
     if (!isLine(point1.parent)) return;
@@ -107,12 +115,12 @@ TCAD.TWO.FilletTool.prototype.getCandidate = function(e) {
   return null;
 };
 
-TCAD.TWO.FilletTool.prototype.keydown = function(e) {};
-TCAD.TWO.FilletTool.prototype.keypress = function(e) {};
-TCAD.TWO.FilletTool.prototype.keyup = function(e) {};
-TCAD.TWO.FilletTool.prototype.cleanup = function(e) {};
+FilletTool.prototype.keydown = function(e) {};
+FilletTool.prototype.keypress = function(e) {};
+FilletTool.prototype.keyup = function(e) {};
+FilletTool.prototype.cleanup = function(e) {};
 
-TCAD.TWO.FilletTool.prototype.mousemove = function(e) {
+FilletTool.prototype.mousemove = function(e) {
   var needRefresh = false;
   if (this.viewer.selected.length != 0) {
     this.viewer.deselectAll();
@@ -120,13 +128,14 @@ TCAD.TWO.FilletTool.prototype.mousemove = function(e) {
   }
   var candi = this.getCandidate(e);
   if (candi != null) {
-    this.viewer.mark(candi[0], TCAD.TWO.Styles.SNAP);
+    this.viewer.mark(candi[0], Styles.SNAP);
     needRefresh = true;
   }
   if (needRefresh) {
     this.viewer.refresh();
   }
 };
-TCAD.TWO.FilletTool.prototype.mousedown = function(e) {};
-TCAD.TWO.FilletTool.prototype.mousewheel = function(e) {};
+FilletTool.prototype.mousedown = function(e) {};
+FilletTool.prototype.mousewheel = function(e) {};
 
+export {FilletTool}

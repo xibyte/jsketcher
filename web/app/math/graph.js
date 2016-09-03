@@ -1,12 +1,25 @@
+import {HashTable} from '../utils/hashmap'
 
+/** @constructor */
+function Graph(data) {
 
-TCAD.graph = {};
+  this.connections = function(e) {
+    return data[e];
+  };
 
+  this.at = function(index) {
+    return index;
+  };
 
-TCAD.graph.findAllLoops = function(graph, hashCode, equals) {
+  this.size = function() {
+    return data.length;
+  };
+}
+
+Graph.findAllLoops = function(graph, hashCode, equals) {
 
   var loops = [];
-  var visited = new TCAD.struct.HashTable(hashCode, equals);
+  var visited = new HashTable(hashCode, equals);
   function step(vertex, comesFrom, path) {
     var i;
     visited.put(vertex, true);
@@ -96,23 +109,8 @@ TCAD.graph.findAllLoops = function(graph, hashCode, equals) {
   return loops;
 };
 
-/** @constructor */
-TCAD.graph.Graph = function(data) {
 
-  this.connections = function(e) {
-    return data[e];
-  };
-
-  this.at = function(index) {
-    return index;
-  };
-
-  this.size = function() {
-    return data.length;
-  };
-};
-
-TCAD.graph.test = function() {
+var test = function() {
   var data = [
     [],
     [2],
@@ -126,11 +124,11 @@ TCAD.graph.test = function() {
     [2, 4]
   ];
 
-  var graph = new TCAD.graph.Graph(data);
-  console.log(TCAD.graph.findAllLoops(graph));
+  var graph = new Graph(data);
+  console.log(Graph.findAllLoops(graph));
 };
 
-TCAD.graph.test0 = function() {
+var test0 = function() {
   var data = [
     [3, 1],
     [0, 2, 8],
@@ -143,6 +141,8 @@ TCAD.graph.test0 = function() {
     [1, 7]
   ];
 
-  var graph = new TCAD.graph.Graph(data);
-  console.log(TCAD.graph.findAllLoops(graph));
+  var graph = new Graph(data);
+  console.log(Graph.findAllLoops(graph));
 };
+
+export {Graph}

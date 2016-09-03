@@ -1046,3 +1046,5 @@ function LMOptimizer(startPoint, target, model, jacobian) {
     }
 
 }
+
+export {LMOptimizer}
