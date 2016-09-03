@@ -1,11 +1,13 @@
+import {EndPoint} from '../viewer2d'
+
 /** @constructor */
-TCAD.TWO.AddSegmentTool = function(viewer, multi) {
+function AddSegmentTool(viewer, multi) {
   this.viewer = viewer;
   this.line = null;
   this.multi = multi;
-};
+}
 
-TCAD.TWO.AddSegmentTool.prototype.mousemove = function(e) {
+AddSegmentTool.prototype.mousemove = function(e) {
   var p = this.viewer.screenToModel(e);
   if (this.line != null) {
     this.viewer.snap(p.x, p.y, [this.line.a, this.line.b]);
@@ -18,16 +20,16 @@ TCAD.TWO.AddSegmentTool.prototype.mousemove = function(e) {
   }
 };
 
-TCAD.TWO.AddSegmentTool.prototype.cleanup = function(e) {
+AddSegmentTool.prototype.cleanup = function(e) {
   this.viewer.cleanSnap();
   this.line = null;
 };
 
-TCAD.TWO.AddSegmentTool.prototype.mousedown = function(e) {
+AddSegmentTool.prototype.mousedown = function(e) {
   
 };
 
-TCAD.TWO.AddSegmentTool.prototype.mouseup = function(e) {
+AddSegmentTool.prototype.mouseup = function(e) {
   if (this.line == null) {
     var b = this.viewer.screenToModel(e);
     var a = b;
@@ -61,20 +63,20 @@ TCAD.TWO.AddSegmentTool.prototype.mouseup = function(e) {
   }
 };
 
-TCAD.TWO.AddSegmentTool.prototype.dblclick = function(e) {
+AddSegmentTool.prototype.dblclick = function(e) {
   this.cancelSegment();
 };
 
-TCAD.TWO.AddSegmentTool.prototype.mousewheel = function(e) {
+AddSegmentTool.prototype.mousewheel = function(e) {
 };
 
-TCAD.TWO.AddSegmentTool.prototype.keydown = function(e) {
+AddSegmentTool.prototype.keydown = function(e) {
   if (e.keyCode == 27) {
     this.cancelSegment();
   }
 };
 
-TCAD.TWO.AddSegmentTool.prototype.cancelSegment = function() {
+AddSegmentTool.prototype.cancelSegment = function() {
   if (this.multi && this.line != null) {
     this.viewer.remove(this.line);
     this.viewer.refresh();
@@ -82,38 +84,40 @@ TCAD.TWO.AddSegmentTool.prototype.cancelSegment = function() {
   }
 };
 
-TCAD.TWO.AddSegmentTool.prototype.keypress = function(e) {};
-TCAD.TWO.AddSegmentTool.prototype.keyup = function(e) {};
+AddSegmentTool.prototype.keypress = function(e) {};
+AddSegmentTool.prototype.keyup = function(e) {};
 
 /** @constructor */
-TCAD.TWO.AddPointTool = function(viewer) {
+function AddPointTool(viewer) {
   this.viewer = viewer;
+}
+
+AddPointTool.prototype.mousemove = function(e) {
 };
 
-TCAD.TWO.AddPointTool.prototype.mousemove = function(e) {
+AddPointTool.prototype.cleanup = function(e) {
 };
 
-TCAD.TWO.AddPointTool.prototype.cleanup = function(e) {
+AddPointTool.prototype.mousedown = function(e) {
 };
 
-TCAD.TWO.AddPointTool.prototype.mousedown = function(e) {
-};
-
-TCAD.TWO.AddPointTool.prototype.mouseup = function(e) {
+AddPointTool.prototype.mouseup = function(e) {
   this.viewer.historyManager.checkpoint();
   var a = this.viewer.screenToModel(e);
-  var p = new TCAD.TWO.EndPoint(a.x, a.y);
+  var p = new EndPoint(a.x, a.y);
   var layer = this.viewer.activeLayer;
   layer.objects.push(p);
   p.layer = layer;
   this.viewer.refresh();
 };
 
-TCAD.TWO.AddPointTool.prototype.mousewheel = function(e) {
+AddPointTool.prototype.mousewheel = function(e) {
 };
 
-TCAD.TWO.AddPointTool.prototype.keydown = function(e) {
+AddPointTool.prototype.keydown = function(e) {
 };
 
-TCAD.TWO.AddSegmentTool.prototype.keypress = function(e) {};
-TCAD.TWO.AddSegmentTool.prototype.keyup = function(e) {};
+AddSegmentTool.prototype.keypress = function(e) {};
+AddSegmentTool.prototype.keyup = function(e) {};
+
+export {AddSegmentTool, AddPointTool}

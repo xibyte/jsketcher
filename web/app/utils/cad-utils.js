@@ -1,60 +1,58 @@
+import Vector from '../math/vector'
+import {HashTable} from '../utils/hashmap'
+import {Graph} from '../math/graph'
+import * as math from '../math/math'
+import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
+import {reconstructSketchBounds} from '../3d/workbench' //FIXME
 
-TCAD.utils = {};
+export const DPR = (window.devicePixelRatio) ? window.devicePixelRatio : 1;
+export const FACE_COLOR =  0xB0C4DE;
 
-TCAD.utils.createSquare = function(width) {
+export var Counters = {
+  solid : 0,
+  shared : 0
+};
+
+export function createSquare(width) {
 
   width /= 2;
 
   return [
-    new TCAD.Vector(-width, -width, 0),
-    new TCAD.Vector( width, -width, 0),
-    new TCAD.Vector( width,  width, 0),
-    new TCAD.Vector(-width,  width, 0)
+    new Vector(-width, -width, 0),
+    new Vector( width, -width, 0),
+    new Vector( width,  width, 0),
+    new Vector(-width,  width, 0)
   ];
-};
+}
 
-TCAD.utils.csgVec = function(v) {
+export function csgVec(v) {
   return new CSG.Vector3D(v.x, v.y, v.z);
-};
+}
 
-TCAD.utils.vec = function(v) {
-  return new TCAD.Vector(v.x, v.y, v.z);
-};
+export function vec(v) {
+  return new Vector(v.x, v.y, v.z);
+}
 
-TCAD.utils.createBox = function(width) {
-  var square = TCAD.utils.createSquare(width);
-  var rot = TCAD.math.rotateMatrix(3/4, TCAD.math.AXIS.Z, TCAD.math.ORIGIN);
+export function createBox(width) {
+  var square = createSquare(width);
+  var rot = Matrix3.rotateMatrix(3/4, AXIS.Z, ORIGIN);
   square.forEach(function(v) { rot._apply(v) } );
-  var normal = TCAD.geom.normalOfCCWSeq(square);
-  return TCAD.geom.extrude(square, normal, normal.multiply(width), 1);
-};
+  var normal = normalOfCCWSeq(square);
+  return extrude(square, normal, normal.multiply(width), 1);
+}
 
-TCAD.utils.createCSGBox = function(width) {
-  var csg = CSG.fromPolygons(TCAD.utils.createBox(width));
-  return TCAD.utils.createSolid(csg);
-};
+export function createCSGBox(width) {
+  var csg = CSG.fromPolygons(createBox(width));
+  return createSolid(csg);
+}
 
-TCAD.utils.toCsgGroups = function(polygons) {
-  var groups = [];
-  for (var i = 0; i < polygons.length; i++) {
-    var p = polygons[i];
-    if (p.holes.length === 0) {
-      groups.push( new TCAD.CSGGroup([new TCAD.SimplePolygon(p.shell, p.normal)], p.normal) );
-    } else {
-      // TODO: triangulation needed
-      groups.push( new TCAD.CSGGroup([new TCAD.SimplePolygon(p.shell, p.normal)], p.normal) );
-    }
-  }
-  return groups;
-};
-
-TCAD.utils.checkPolygon = function(poly) {
+export function checkPolygon(poly) {
   if (poly.length < 3) {
     throw new Error('Polygon should contain at least 3 point');
   }
-};
+}
 
-TCAD.utils.createPoint = function(x, y, z) {
+export function createPoint0(x, y, z) {
 //  var g = new THREE.PlaneGeometry(0.05, 0.05);
 //  var m = new THREE.MeshBasicMaterial({color: 0x0000ff, side: THREE.DoubleSide});
 //  return new THREE.Mesh(g, m);
@@ -92,9 +90,19 @@ TCAD.utils.createPoint = function(x, y, z) {
   var sprite = new THREE.Sprite( material );
   sprite.position.set( x, y, z );
   return sprite;
-};
+}
 
-TCAD.utils.createLine = function (a, b, color) {
+export function createPoint1(x, y, z) {
+  var geometry = new THREE.SphereGeometry( 5, 16, 16 );
+  var material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+  var sphere = new THREE.Mesh(geometry, material);
+  sphere.position.x = x;
+  sphere.position.y = y;
+  sphere.position.z = z;
+  return sphere;
+}
+
+export function createLine(a, b, color) {
   var material = new THREE.LineBasicMaterial({
     color: color,
     linewidth: 1
@@ -103,91 +111,79 @@ TCAD.utils.createLine = function (a, b, color) {
   geometry.vertices.push(new THREE.Vector3(a.x, a.y, a.z));
   geometry.vertices.push(new THREE.Vector3(b.x, b.y, b.z));
   return new THREE.Line(geometry, material);
-};
+}
 
-TCAD.utils.createPoint = function (x, y, z) {
-  var geometry = new THREE.SphereGeometry( 5, 16, 16 );
-  var material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
-  var sphere = new THREE.Mesh(geometry, material);
-  sphere.position.x = x;
-  sphere.position.y = y;
-  sphere.position.z = z;
-  return sphere;
-};
-
-TCAD.utils.createSolidMaterial = function() {
+export function createSolidMaterial() {
   return new THREE.MeshPhongMaterial({
     vertexColors: THREE.FaceColors,
-    color: TCAD.view.FACE_COLOR,
+    color: FACE_COLOR,
     shininess: 0,
     polygonOffset : true,
     polygonOffsetFactor : 1,
     polygonOffsetUnits : 2,
     side : THREE.DoubleSide
   });
-};
+}
 
-TCAD.utils.createSolid = function(csg) {
-  var material = TCAD.utils.createSolidMaterial();
-  return new TCAD.Solid(csg, material);
-};
+export function createSolid(csg) {
+  var material = createSolidMaterial();
+  return new Solid(csg, material);
+}
 
-TCAD.utils.intercept = function(obj, methodName, aspect) {
+export function intercept(obj, methodName, aspect) {
   var originFunc = obj[methodName];
   obj[methodName] = function() {
     var $this = this;
     aspect(function() {originFunc.apply($this, arguments)}, arguments);
   }
-};
+}
 
-TCAD.utils.createPlane = function(basis, depth) {
-  var tu = TCAD.utils;
-
+export function createPlane(basis, depth) {
   var initWidth = 1;
   var boundingPolygon = [
-      new TCAD.Vector(0,  0, 0),
-      new TCAD.Vector(initWidth,  0, 0),
-      new TCAD.Vector(initWidth, initWidth, 0),
-      new TCAD.Vector(0, initWidth, 0)
+      new Vector(0,  0, 0),
+      new Vector(initWidth,  0, 0),
+      new Vector(initWidth, initWidth, 0),
+      new Vector(0, initWidth, 0)
     ];
-  var shared = tu.createShared();
+  var shared = createShared();
 
-  var material = tu.createSolidMaterial();
+  var material = createSolidMaterial();
   material.transparent = true;
   material.opacity = 0.5;
   material.side = THREE.DoubleSide;
 
-  var tr = new TCAD.Matrix().setBasis(basis);
-  var currentBounds = new TCAD.BBox();
+  var tr = new Matrix3().setBasis(basis);
+  var currentBounds = new BBox();
   var points = boundingPolygon.map(function(p) { p.z = depth; return tr._apply(p); });
-  var polygon = new CSG.Polygon(points.map(function(p){return new CSG.Vertex(TCAD.utils.csgVec(p))}), shared);
-  var plane = new TCAD.Solid(CSG.fromPolygons([polygon]), material, 'PLANE');
+  var polygon = new CSG.Polygon(points.map(function(p){return new CSG.Vertex(csgVec(p))}), shared);
+  var plane = new Solid(CSG.fromPolygons([polygon]), material, 'PLANE');
   plane.wireframeGroup.visible = false;
   plane.mergeable = false;
   var _3d = tr.invert();
 
   function setBounds(bbox) {
-    var corner = new TCAD.Vector(bbox.minX, bbox.minY, 0);
-    var size = new TCAD.Vector(bbox.width(), bbox.height(), 1);
+    var corner = new Vector(bbox.minX, bbox.minY, 0);
+    var size = new Vector(bbox.width(), bbox.height(), 1);
     _3d._apply(size);
     _3d._apply(corner);
     plane.mesh.scale.set(size.x, size.y, size.z);
     plane.mesh.position.set(corner.x, corner.y, corner.z);
     currentBounds = bbox;
-    var poly = new CSG.Polygon(bbox.toPolygon().map(function(p){return new CSG.Vertex(TCAD.utils.csgVec( _3d._apply(p) ))}), shared);
+    var poly = new CSG.Polygon(bbox.toPolygon().map(function(p){return new CSG.Vertex(csgVec( _3d._apply(p) ))}), shared);
     plane.csg = CSG.fromPolygons([poly]);
   }
-  var bb = new TCAD.BBox();
+  var bb = new BBox();
   bb.checkBounds(-400, -400);
   bb.checkBounds( 400,  400);
   setBounds(bb);
   
   var sketchFace = plane.polyFaces[0];
-  tu.intercept(sketchFace, 'syncSketches', function(invocation, args) {
+  intercept(sketchFace, 'syncSketches', function(invocation, args) {
     var geom = args[0];
     invocation(geom);
-    var bbox = new TCAD.BBox();
-    var connections = geom.connections.concat(TCAD.utils.arrFlatten1L(geom.loops));
+    var bbox = new BBox();
+    var connections = geom.connections.concat(arrFlatten1L(geom.loops));
     for (var i = 0; i < connections.length; ++i) {
       var l = connections[i];
       bbox.checkBounds(l.a.x, l.a.y);
@@ -200,49 +196,24 @@ TCAD.utils.createPlane = function(basis, depth) {
   });
 
   return plane;
-};
+}
 
-
-TCAD.utils.fixCCW = function(path, normal) {
-  var _2DTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(path, normal)).invert();
+export function fixCCW(path, normal) {
+  var _2DTransformation = new Matrix3().setBasis(someBasis(path, normal)).invert();
   var path2D = [];
   for (var i = 0; i < path.length; ++i) {
     path2D[i] = _2DTransformation.apply(path[i]);
   }
 
-  if (!TCAD.geom.isCCW(path2D)) {
+  if (!isCCW(path2D)) {
     path = path.slice(0);
     path.reverse();
   }
   return path;
-};
+}
 
-TCAD.TOLERANCE = 1E-6;
-
-TCAD.utils.areEqual = function(v1, v2, tolerance) {
-  return Math.abs(v1 - v2) < tolerance;
-};
-
-TCAD.utils.areVectorsEqual = function(v1, v2, tolerance) {
-  return TCAD.utils.areEqual(v1.x, v2.x, tolerance) &&
-      TCAD.utils.areEqual(v1.y, v2.y, tolerance) &&
-      TCAD.utils.areEqual(v1.z, v2.z, tolerance);
-};
-
-TCAD.utils.vectorsEqual = function(v1, v2) {
-  return TCAD.utils.areVectorsEqual(v1, v2, TCAD.TOLERANCE);
-};
-
-TCAD.utils.equal = function(v1, v2) {
-  return TCAD.utils.areEqual(v1, v2, TCAD.TOLERANCE);
-};
-
-TCAD.utils.strictEqual = function(a, b) {
-  return a.x == b.x && a.y == b.y && a.z == b.z;
-};
-
-TCAD.utils.isPointInsidePolygon = function( inPt, inPolygon ) {
-  var EPSILON = TCAD.TOLERANCE;
+export function isPointInsidePolygon( inPt, inPolygon ) {
+  var EPSILON = math.TOLERANCE;
 
   var polyLen = inPolygon.length;
 
@@ -284,12 +255,12 @@ TCAD.utils.isPointInsidePolygon = function( inPt, inPolygon ) {
   }
 
   return	inside;
-};
+}
 
-TCAD.utils.sketchToPolygons = function(geom) {
+export function sketchToPolygons(geom) {
 
-  var dict = TCAD.struct.hashTable.forVector2d();
-  var edges = TCAD.struct.hashTable.forDoubleArray();
+  var dict = HashTable.forVector2d();
+  var edges = HashTable.forDoubleArray();
 
   var lines = geom.connections;
 
@@ -334,11 +305,11 @@ TCAD.utils.sketchToPolygons = function(geom) {
     }
   };
 
-  var loops = TCAD.graph.findAllLoops(graph, dict.hashCodeF, dict.equalsF);
+  var loops = Graph.findAllLoops(graph, dict.hashCodeF, dict.equalsF);
   var polygons = [];
   for (var li = 0; li < loops.length; ++li) {
     var loop = loops[li];
-    if (!TCAD.geom.isCCW(loop)) loop.reverse();
+    if (!isCCW(loop)) loop.reverse();
     var polyPoints = [];
     for (var pi = 0; pi < loop.length; ++pi) {
       var point = loop[pi];
@@ -367,23 +338,21 @@ TCAD.utils.sketchToPolygons = function(geom) {
       polyPoints[si] = conn.a;
     }
     // we assume that connection object is the same al other the loop. That's why reverse is safe.
-    if (!TCAD.geom.isCCW(polyPoints)) polyPoints.reverse();
+    if (!isCCW(polyPoints)) polyPoints.reverse();
     if (polyPoints.length >= 3) {
       polygons.push(polyPoints);
     }
   }
   return polygons;
-};
+}
 
-TCAD.geom = {};
-
-TCAD.geom.someBasis2 = function(normal) {
+export function someBasis2(normal) {
   var x = normal.cross(normal.randomNonParallelVector());
   var y = normal.cross(x).unit();
   return [x, y, normal];
-};
+}
 
-TCAD.geom.someBasis = function(twoPointsOnPlane, normal) {
+export function someBasis(twoPointsOnPlane, normal) {
   var a = twoPointsOnPlane[0];
   var b = twoPointsOnPlane[1];
 
@@ -391,40 +360,40 @@ TCAD.geom.someBasis = function(twoPointsOnPlane, normal) {
   var y = normal.cross(x).normalize();
 
   return [x, y, normal];
-};
+}
 
-TCAD.geom.normalOfCCWSeq = function(ccwSequence) {
+export function normalOfCCWSeq(ccwSequence) {
   var a = ccwSequence[0];
   var b = ccwSequence[1];
   var c = ccwSequence[2];
 
   return b.minus(a).cross(c.minus(a)).normalize();
-};
+}
 
-TCAD.geom.normalOfCCWSeqTHREE = function(ccwSequence) {
+export function normalOfCCWSeqTHREE(ccwSequence) {
   var a = ccwSequence[0];
   var b = ccwSequence[1].clone();
   var c = ccwSequence[2].clone();
 
   return b.sub(a).cross(c.sub(a)).normalize();
-};
+}
 
 
 // http://en.wikipedia.org/wiki/Shoelace_formula
-TCAD.geom.area = function (contour) {
+export function area(contour) {
   var n = contour.length;
   var a = 0.0;
   for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
     a += contour[ p ].x * contour[ q ].y - contour[ q ].x * contour[ p ].y;
   }
   return a * 0.5;
-};
+}
 
-TCAD.geom.isCCW = function(path2D) {
-  return TCAD.geom.area(path2D) >= 0;
-};
+export function isCCW(path2D) {
+  return area(path2D) >= 0;
+}
 
-TCAD.BBox = function() {
+export function BBox() {
   this.minX = Number.MAX_VALUE;
   this.minY = Number.MAX_VALUE;
   this.maxX = -Number.MAX_VALUE;
@@ -437,7 +406,7 @@ TCAD.BBox = function() {
   };
 
   this.center = function() {
-    return new TCAD.Vector(this.minX + (this.maxX - this.minX) / 2, this.minY + (this.maxY - this.minY) / 2, 0)
+    return new Vector(this.minX + (this.maxX - this.minX) / 2, this.minY + (this.maxY - this.minY) / 2, 0)
   };
 
   this.width = function() {
@@ -457,15 +426,15 @@ TCAD.BBox = function() {
 
   this.toPolygon = function() {
     return [
-      new TCAD.Vector(this.minX, this.minY, 0),
-      new TCAD.Vector(this.maxX, this.minY, 0),
-      new TCAD.Vector(this.maxX, this.maxY, 0),
-      new TCAD.Vector(this.minX, this.maxY, 0)
+      new Vector(this.minX, this.minY, 0),
+      new Vector(this.maxX, this.minY, 0),
+      new Vector(this.maxX, this.maxY, 0),
+      new Vector(this.minX, this.maxY, 0)
     ];
   }
-};
+}
 
-TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expansionFactor) {
+export function calculateExtrudedLid(sourcePolygon, normal, direction, expansionFactor) {
   var lid = [];
   var length = sourcePolygon.length;
   var work;
@@ -474,10 +443,10 @@ TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expa
     var source2d = [];
     work = [];
 
-    var _3dTr = new TCAD.Matrix().setBasis(TCAD.geom.someBasis2(new CSG.Vector3D(normal))); // use passed basis
+    var _3dTr = new Matrix3().setBasis(someBasis2(new CSG.Vector3D(normal))); // use passed basis
     var _2dTr = _3dTr.invert();
-    var sourceBBox = new TCAD.BBox();
-    var workBBox = new TCAD.BBox();
+    var sourceBBox = new BBox();
+    var workBBox = new BBox();
     for (si = 0; si < length; ++si) {
       var sourcePoint = _2dTr.apply(sourcePolygon[si]);
       source2d[si] = sourcePoint;
@@ -502,9 +471,9 @@ TCAD.geom.calculateExtrudedLid = function(sourcePolygon, normal, direction, expa
   }
 
   return lid;
-};
+}
 
-TCAD.geom.extrude = function(source, sourceNormal, target, expansionFactor) {
+export function extrude(source, sourceNormal, target, expansionFactor) {
 
   var extrudeDistance = target.normalize().dot(sourceNormal);
   if (extrudeDistance == 0) {
@@ -513,7 +482,7 @@ TCAD.geom.extrude = function(source, sourceNormal, target, expansionFactor) {
   var negate = extrudeDistance < 0;
 
   var poly = [null, null];
-  var lid = TCAD.geom.calculateExtrudedLid(source, sourceNormal, target, expansionFactor);
+  var lid = calculateExtrudedLid(source, sourceNormal, target, expansionFactor);
 
   var bottom, top;
   if (negate) {
@@ -526,13 +495,13 @@ TCAD.geom.extrude = function(source, sourceNormal, target, expansionFactor) {
 
   var n = source.length;
   for ( var p = n - 1, i = 0; i < n; p = i ++ ) {
-    var shared = TCAD.utils.createShared();
+    var shared = createShared();
     shared.__tcad.csgInfo = {derivedFrom:  source[p].sketchConnectionObject};
     var face = new CSG.Polygon([
-      new CSG.Vertex(TCAD.utils.csgVec(bottom[p])),
-      new CSG.Vertex(TCAD.utils.csgVec(bottom[i])),
-      new CSG.Vertex(TCAD.utils.csgVec(top[i])),
-      new CSG.Vertex(TCAD.utils.csgVec(top[p]))
+      new CSG.Vertex(csgVec(bottom[p])),
+      new CSG.Vertex(csgVec(bottom[i])),
+      new CSG.Vertex(csgVec(top[i])),
+      new CSG.Vertex(csgVec(top[p]))
     ], shared);
     poly.push(face);
   }
@@ -550,21 +519,19 @@ TCAD.geom.extrude = function(source, sourceNormal, target, expansionFactor) {
   }
 
   function vecToVertex(v) {
-    return new CSG.Vertex(TCAD.utils.csgVec(v));
+    return new CSG.Vertex(csgVec(v));
   }
 
   var sourcePlane = new CSG.Plane(bottomNormal.csg(), bottomNormal.dot(source[0]));
   var lidPlane = new CSG.Plane(topNormal.csg(), topNormal.dot(lid[0]));
 
-  poly[0] = new CSG.Polygon(source.map(vecToVertex), TCAD.utils.createShared(), sourcePlane);
-  poly[1] = new CSG.Polygon(lid.map(vecToVertex), TCAD.utils.createShared(), lidPlane);
+  poly[0] = new CSG.Polygon(source.map(vecToVertex), createShared(), sourcePlane);
+  poly[1] = new CSG.Polygon(lid.map(vecToVertex), createShared(), lidPlane);
   return poly;
-};
+}
 
-TCAD.geom.SOLID_COUNTER = 0;
-
-TCAD.geom.triangulate = function(path, normal) {
-  var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis2(normal));
+export function triangulate(path, normal) {
+  var _3dTransformation = new Matrix3().setBasis(someBasis2(normal));
   var _2dTransformation = _3dTransformation.invert();
   var i;
   var shell = [];
@@ -574,9 +541,9 @@ TCAD.geom.triangulate = function(path, normal) {
   var myTriangulator = new PNLTRI.Triangulator();
   return  myTriangulator.triangulate_polygon( [ shell ] );
 //  return THREE.Shape.utils.triangulateShape( f2d.shell, f2d.holes );
-};
+}
 
-TCAD.utils.groupCSG = function(csg) {
+export function groupCSG(csg) {
   var csgPolygons = csg.toPolygons();
   var groups = {};
   for (var i = 0; i < csgPolygons.length; i++) {
@@ -593,38 +560,37 @@ TCAD.utils.groupCSG = function(csg) {
     groups[tag].polygons.push(p);
   }
   return groups;
-};
+}
 
-TCAD.utils.SHARED_COUNTER = 0;
-TCAD.utils.createShared = function() {
-  var id = TCAD.utils.SHARED_COUNTER ++;
+export function createShared() {
+  var id = Counters.shared ++;
   var shared = new CSG.Polygon.Shared([id, id, id, id]);
   shared.__tcad = {};
   return shared;
-};
+}
 
-TCAD.utils.isSmoothPiece = function(shared) {
+export function isSmoothPiece(shared) {
   return shared.__tcad && !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom &&
   (shared.__tcad.csgInfo.derivedFrom._class === 'TCAD.TWO.Arc' || shared.__tcad.csgInfo.derivedFrom._class === 'TCAD.TWO.Circle');
-};
+}
 
-TCAD.utils.sameID = function(id1, id2) {
+export function sameID(id1, id2) {
   if (id1 === null || id2 === null) {
     return false;
   }
   return id1 === id2;
-};
+}
 
-TCAD.utils.getDerivedID = function(shared) {
+export function getDerivedID(shared) {
   return shared.__tcad && !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom ? shared.__tcad.csgInfo.derivedFrom.id : null;
-};
+}
 
-TCAD.utils.getDerivedFrom = function(shared) {
+export function getDerivedFrom(shared) {
   return shared.__tcad && !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom ? shared.__tcad.csgInfo.derivedFrom : null;
-};
+}
 
 /** @constructor */
-TCAD.Solid = function(csg, material, type) {
+export function Solid(csg, material, type) {
   csg = csg.reTesselated().canonicalized();
   this.tCadType = type || 'SOLID';
   this.csg = csg;
@@ -637,30 +603,30 @@ TCAD.Solid = function(csg, material, type) {
   this.mesh = new THREE.Mesh(geometry, material);
   this.cadGroup.add(this.mesh);
     
-  this.tCadId = TCAD.geom.SOLID_COUNTER ++;
+  this.tCadId = Counters.solid ++;
   this.faceCounter = 0;
 
   this.wireframeGroup = new THREE.Object3D();
   this.cadGroup.add(this.wireframeGroup);
 
   this.polyFaces = [];
-  this.wires = TCAD.struct.hashTable.forEdge();
+  this.wires = HashTable.forEdge();
   this.curvedSurfaces = {};
   this.mergeable = true;
   
   this.setupGeometry();
-};
+}
 
-TCAD.Solid.prototype.setupGeometry = function() {
+Solid.prototype.setupGeometry = function() {
   function threeV(v) {return new THREE.Vector3( v.x, v.y, v.z )}
 
   var off = 0;
-  var groups = TCAD.utils.groupCSG(this.csg);
+  var groups = groupCSG(this.csg);
   var geom = this.mesh.geometry;
   for (var gIdx in groups)  {
     var group = groups[gIdx];
     if (group.shared.__tcad === undefined) group.shared.__tcad = {};
-    var polyFace = new TCAD.SketchFace(this, group);
+    var polyFace = new SketchFace(this, group);
     this.polyFaces.push(polyFace);
     for (var p = 0; p < group.polygons.length; ++p) {
       var poly = group.polygons[p];
@@ -684,7 +650,7 @@ TCAD.Solid.prototype.setupGeometry = function() {
         geom.faces.push(face);
         //face.color.set(new THREE.Color().setRGB( Math.random(), Math.random(), Math.random()));
       }
-      //TCAD.view.setFaceColor(polyFace, TCAD.utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
+      //view.setFaceColor(polyFace, utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
       off = geom.vertices.length;
     }
     this.collectCurvedSurface(polyFace);
@@ -696,14 +662,14 @@ TCAD.Solid.prototype.setupGeometry = function() {
   this.processWires();
 };
 
-TCAD.Solid.prototype.vanish = function() {
+Solid.prototype.vanish = function() {
   this.cadGroup.parent.remove( this.cadGroup );
   this.mesh.material.dispose();
   this.mesh.geometry.dispose();
 };
 
-TCAD.Solid.prototype.collectCurvedSurface = function(face) {
-  var derivedFrom = TCAD.utils.getDerivedFrom(face.csgGroup.shared);
+Solid.prototype.collectCurvedSurface = function(face) {
+  var derivedFrom = getDerivedFrom(face.csgGroup.shared);
   if (derivedFrom === null || derivedFrom._class !== "TCAD.TWO.Arc" && derivedFrom._class !== "TCAD.TWO.Circle" ) return;
   var surfaces = this.curvedSurfaces[derivedFrom.id];
   if (surfaces === undefined) {
@@ -714,7 +680,7 @@ TCAD.Solid.prototype.collectCurvedSurface = function(face) {
   face.curvedSurfaces = surfaces;
 };
 
-TCAD.Solid.prototype.collectWires = function(face) {
+Solid.prototype.collectWires = function(face) {
 
   function contains(planes, plane) {
     for (var j = 0; j < planes.length; j++) {
@@ -724,7 +690,7 @@ TCAD.Solid.prototype.collectWires = function(face) {
     }
     return false;
   }
-  var paths = TCAD.craft.reconstructSketchBounds(this.csg, face, true);
+  var paths = reconstructSketchBounds(this.csg, face, true);
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i];
     var p, q, n = path.vertices.length;
@@ -748,17 +714,16 @@ TCAD.Solid.prototype.collectWires = function(face) {
   }
 };
 
-TCAD.Solid.SMOOTH_LIMIT = 10 * Math.PI / 180;
+Solid.SMOOTH_LIMIT = 10 * Math.PI / 180;
 
-TCAD.Solid.prototype.processWires = function() {
+Solid.prototype.processWires = function() {
   var solid = this;
   this.wires.entries(function(edge, data) {
-    var u = TCAD.utils;
     if (data.sharedPlanes.length > 1) {
       var plane0 = data.sharedPlanes[0];
       var plane1 = data.sharedPlanes[1];
       var angle = Math.acos(plane0.normal.dot(plane1.normal));
-      if (angle < TCAD.Solid.SMOOTH_LIMIT) {
+      if (angle < Solid.SMOOTH_LIMIT) {
         return;
       }
     }
@@ -766,7 +731,7 @@ TCAD.Solid.prototype.processWires = function() {
       for (var j = i + 1; j < data.sharedFaces.length; ++j) {
         var face0 = data.sharedFaces[0];
         var face1 = data.sharedFaces[1];
-        if (u.sameID(u.getDerivedID(face0.csgGroup.shared), u.getDerivedID(face1.csgGroup.shared))) {
+        if (sameID(getDerivedID(face0.csgGroup.shared), getDerivedID(face1.csgGroup.shared))) {
           return;
         }
       }
@@ -776,16 +741,16 @@ TCAD.Solid.prototype.processWires = function() {
   });
 };
 
-TCAD.Solid.prototype.addLineToScene = function(a, b) {
+Solid.prototype.addLineToScene = function(a, b) {
   var lg = new THREE.Geometry();
   lg.vertices.push(a);
   lg.vertices.push(b);
-  var line = new THREE.Line(lg, TCAD.SketchFace.prototype.WIREFRAME_MATERIAL);
+  var line = new THREE.Line(lg, SketchFace.prototype.WIREFRAME_MATERIAL);
   this.wireframeGroup.add(line);
 };
 
 /** @constructor */
-TCAD.SketchFace = function(solid, csgGroup) {
+function SketchFace(solid, csgGroup) {
   csgGroup.__face = this;
   if (csgGroup.shared.__tcad.faceId === undefined) {
     this.id = solid.tCadId + ":" + (solid.faceCounter++);
@@ -799,44 +764,43 @@ TCAD.SketchFace = function(solid, csgGroup) {
   this.faces = [];
   this.sketch3DGroup = null;
   this.curvedSurfaces = null;
-};
-
-if (typeof THREE !== "undefined") {
-  TCAD.SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
-    color: 0xFFFFFF, linewidth: 3/TCAD.DPR});
-  TCAD.SketchFace.prototype.WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({
-    color: 0x2B3856, linewidth: 3/TCAD.DPR});
 }
 
-TCAD.SketchFace.prototype.calcBasis = function() {
-  var vec = TCAD.utils.vec;
+if (typeof THREE !== "undefined") {
+  SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
+    color: 0xFFFFFF, linewidth: 3/DPR});
+  SketchFace.prototype.WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({
+    color: 0x2B3856, linewidth: 3/DPR});
+}
+
+SketchFace.prototype.calcBasis = function() {
   var normal = vec(this.csgGroup.plane.normal);
   var alignPlane, x, y;
-  if (Math.abs(normal.dot(TCAD.math.AXIS.Y)) < 0.5) {
-    alignPlane = normal.cross(TCAD.math.AXIS.Y);
+  if (Math.abs(normal.dot(AXIS.Y)) < 0.5) {
+    alignPlane = normal.cross(AXIS.Y);
   } else {
-    alignPlane = normal.cross(TCAD.math.AXIS.Z);
+    alignPlane = normal.cross(AXIS.Z);
   }
   y = alignPlane.cross(normal);
   x = y.cross(normal);
   return [x, y, normal];
 };
 
-TCAD.SketchFace.prototype.basis = function() {
+SketchFace.prototype.basis = function() {
   if (!this._basis) {
     this._basis = this.calcBasis();
   }
   return this._basis;
-  //return TCAD.geom.someBasis(this.csgGroup.polygons[0].vertices.map(function (v) {
+  //return someBasis(this.csgGroup.polygons[0].vertices.map(function (v) {
   //  return vec(v.pos)
   //}), vec(this.csgGroup.plane.normal));
 };
 
-TCAD.SketchFace.prototype.depth = function() {
+SketchFace.prototype.depth = function() {
   return this.csgGroup.plane.w;
 };
 
-TCAD.SketchFace.prototype.syncSketches = function(geom) {
+SketchFace.prototype.syncSketches = function(geom) {
   var i;
   var normal = this.csgGroup.plane.normal;
   var offVector = normal.scale(0); // disable it. use polygon offset feature of material
@@ -851,10 +815,10 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
   }
 
   var basis = this.basis();
-  var _3dTransformation = new TCAD.Matrix().setBasis(basis);
+  var _3dTransformation = new Matrix3().setBasis(basis);
   //we lost depth or z off in 2d sketch, calculate it again
   var depth = this.csgGroup.plane.w;
-  var connections = geom.connections.concat(TCAD.utils.arrFlatten1L(geom.loops));
+  var connections = geom.connections.concat(arrFlatten1L(geom.loops));
   for (i = 0; i < connections.length; ++i) {
     var l = connections[i];
     var lg = new THREE.Geometry();
@@ -869,26 +833,26 @@ TCAD.SketchFace.prototype.syncSketches = function(geom) {
   }
 };
 
-TCAD.POLYGON_COUNTER = 0;
+var POLYGON_COUNTER = 0;
 /** @constructor */
-TCAD.Polygon = function(shell, holes, normal) {
-  this.id = TCAD.POLYGON_COUNTER ++;
+export function Polygon(shell, holes, normal) {
+  this.id = POLYGON_COUNTER ++;
   if (!holes) {
     holes = [];
   }
-  TCAD.utils.checkPolygon(shell);
+  checkPolygon(shell);
   for (var h = 0; h < holes.length; ++h) {
-    TCAD.utils.checkPolygon(holes[h]);
+    checkPolygon(holes[h]);
   }
 
   if (normal === undefined) {
-    normal = TCAD.geom.normalOfCCWSeq(shell);
+    normal = normalOfCCWSeq(shell);
   } else {
-    shell = TCAD.utils.fixCCW(shell, normal);
+    shell = fixCCW(shell, normal);
     if (holes.length > 0) {
       var neg = normal.negate();
       for (var h = 0; h < holes.length; ++h) {
-        holes[h] = TCAD.utils.fixCCW(holes[h], neg);
+        holes[h] = fixCCW(holes[h], neg);
       }
     }
 
@@ -897,19 +861,19 @@ TCAD.Polygon = function(shell, holes, normal) {
   this.normal = normal;
   this.shell = shell;
   this.holes = holes;
-};
+}
 
-TCAD.Polygon.prototype.reverse = function(triangle) {
+Polygon.prototype.reverse = function(triangle) {
   var first = triangle[0];
   triangle[0] = triangle[2];
   triangle[2] = first;
 };
 
-TCAD.Polygon.prototype.flip = function() {
-  return new TCAD.Polygon(this.shell, this.holes, this.normal.negate());
+Polygon.prototype.flip = function() {
+  return new Polygon(this.shell, this.holes, this.normal.negate());
 };
 
-TCAD.Polygon.prototype.shift = function(target) {
+Polygon.prototype.shift = function(target) {
   var shell = [];
   var i;
   for (i = 0; i < this.shell.length; ++i) {
@@ -922,16 +886,16 @@ TCAD.Polygon.prototype.shift = function(target) {
       holes[h][i] = this.holes[h][i].plus(target);
     }
   }
-  return new TCAD.Polygon(shell, holes, this.normal);
+  return new Polygon(shell, holes, this.normal);
 };
 
-TCAD.Polygon.prototype.get2DTransformation = function() {
-  var _3dTransformation = new TCAD.Matrix().setBasis(TCAD.geom.someBasis(this.shell, this.normal));
+Polygon.prototype.get2DTransformation = function() {
+  var _3dTransformation = new Matrix3().setBasis(someBasis(this.shell, this.normal));
   var _2dTransformation = _3dTransformation.invert();
   return _2dTransformation;
 };
 
-TCAD.Polygon.prototype.to2D = function() {
+Polygon.prototype.to2D = function() {
 
   var _2dTransformation = this.get2DTransformation();
 
@@ -950,12 +914,12 @@ TCAD.Polygon.prototype.to2D = function() {
   return {shell: shell, holes: holes};
 };
 
-TCAD.Polygon.prototype.collectPaths = function(paths) {
+Polygon.prototype.collectPaths = function(paths) {
   paths.push(this.shell);
   paths.push.apply(paths, this.holes);
 };
 
-TCAD.Polygon.prototype.triangulate = function() {
+Polygon.prototype.triangulate = function() {
 
   function triangulateShape( contour, holes ) {
     var myTriangulator = new PNLTRI.Triangulator();
@@ -977,7 +941,7 @@ TCAD.Polygon.prototype.triangulate = function() {
 //  return THREE.Shape.utils.triangulateShape( f2d.shell, f2d.holes );
 };
 
-TCAD.Polygon.prototype.eachVertex = function(handler) {
+Polygon.prototype.eachVertex = function(handler) {
   var i, h;
   for (i = 0; i < this.shell.length; ++i) {
     if (handler(this.shell, i) === true) return;
@@ -990,11 +954,11 @@ TCAD.Polygon.prototype.eachVertex = function(handler) {
 };
 
 /** @constructor */
-TCAD.Sketch = function() {
+export function Sketch() {
   this.group = new THREE.Object3D();
-};
+}
 
-TCAD.utils.iteratePath = function(path, shift, callback) {
+export function iteratePath(path, shift, callback) {
   var p, q, n = path.length;
   for (p = n - 1,q = 0;q < n; p = q++) {
     var ai = (p + shift) % n;
@@ -1003,18 +967,18 @@ TCAD.utils.iteratePath = function(path, shift, callback) {
       break
     }
   }
-};
+}
 
-TCAD.utils.addAll = function(arr, arrToAdd) {
+export function addAll(arr, arrToAdd) {
   for (var i = 0; i < arrToAdd.length; i++) {
     arr.push(arrToAdd[i]);
   }
-};
+}
 
-TCAD.utils.arrFlatten1L = function(arr) {
+export function arrFlatten1L(arr) {
   var result = [];
   for (var i = 0; i < arr.length; i++) {
-    TCAD.utils.addAll(result, arr[i]);
+    addAll(result, arr[i]);
   }
   return result;
-};
+}

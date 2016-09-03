@@ -1,18 +1,19 @@
+import diff_match_patch from 'diff-match-patch';
+
 /** @constructor */
-TCAD.HistoryManager = function(viewer) {
+function HistoryManager(viewer) {
   this.viewer = viewer;
   this.dmp = new diff_match_patch();
   this.init(this.viewer.io.serializeSketch());
-};
+}
 
-
-TCAD.HistoryManager.prototype.init = function(sketchData) {
+HistoryManager.prototype.init = function(sketchData) {
   this.lastCheckpoint = sketchData;
   this.diffs = [];
   this.historyPointer = -1;
 };
 
-TCAD.HistoryManager.prototype.undo = function () {
+HistoryManager.prototype.undo = function () {
   var currentState = this.viewer.io.serializeSketch();
   if (currentState == this.lastCheckpoint) {
     if (this.historyPointer != -1) {
@@ -33,14 +34,14 @@ TCAD.HistoryManager.prototype.undo = function () {
   }
 };
 
-TCAD.HistoryManager.prototype.lightCheckpoint = function (weight) {
+HistoryManager.prototype.lightCheckpoint = function (weight) {
   this._counter += weight;
   if (this._counter >= 100) {
     this.checkpoint();
   }
 };
 
-TCAD.HistoryManager.prototype.checkpoint = function () {
+HistoryManager.prototype.checkpoint = function () {
   try {
     this._checkpoint();
   } catch(e) {
@@ -48,7 +49,7 @@ TCAD.HistoryManager.prototype.checkpoint = function () {
   }
 };
 
-TCAD.HistoryManager.prototype._checkpoint = function () {
+HistoryManager.prototype._checkpoint = function () {
   this._counter = 0;
   var currentState = this.viewer.io.serializeSketch();
   if (currentState == this.lastCheckpoint) {
@@ -63,7 +64,7 @@ TCAD.HistoryManager.prototype._checkpoint = function () {
   this.lastCheckpoint = currentState;
 };
 
-TCAD.HistoryManager.prototype.redo = function () {
+HistoryManager.prototype.redo = function () {
   var currentState = this.viewer.io.serializeSketch();
   if (currentState != this.lastCheckpoint) {
     return;
@@ -77,20 +78,20 @@ TCAD.HistoryManager.prototype.redo = function () {
   }
 };
 
-TCAD.HistoryManager.prototype.applyDiff = function (text1, diff) {
+HistoryManager.prototype.applyDiff = function (text1, diff) {
   var dmp = this.dmp;
   var results = dmp.patch_apply(diff, text1);
   return results[0];
 };
 
-TCAD.HistoryManager.prototype.applyDiffInv = function (text1, diff) {
+HistoryManager.prototype.applyDiffInv = function (text1, diff) {
   this.reversePatch(diff);
   var result = this.applyDiff(text1, diff);
   this.reversePatch(diff);
   return result;
 };
 
-TCAD.HistoryManager.prototype.reversePatch = function (plist) {
+HistoryManager.prototype.reversePatch = function (plist) {
   for (var i = 0; i < plist.length; i++) {
     var patch = plist[i];
     for (var j = 0; j < patch.diffs.length; j++) {
@@ -100,7 +101,7 @@ TCAD.HistoryManager.prototype.reversePatch = function (plist) {
   }
 };
 
-TCAD.HistoryManager.prototype.getDiff = function (text1, text2) {
+HistoryManager.prototype.getDiff = function (text1, text2) {
   var dmp = this.dmp;
   var diff = dmp.diff_main(text1, text2, true);
 
@@ -113,3 +114,5 @@ TCAD.HistoryManager.prototype.getDiff = function (text1, text2) {
   //console.log(patch_list);
   return patch_list;
 };
+
+export {HistoryManager}
