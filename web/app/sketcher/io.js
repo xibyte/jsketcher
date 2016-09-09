@@ -16,6 +16,8 @@ var Types = {
   DDIM      : 'TCAD.TWO.DiameterDimension'
 };
 
+IO.BOUNDARY_LAYER_NAME = "__bounds__";
+
 /** @constructor */
 function IO(viewer) {
   this.viewer = viewer;
@@ -68,10 +70,18 @@ IO.prototype._loadSketch = function(sketch) {
   }
   var T = Types;
   var sketchLayers = sketch['layers'];
+  var boundary = sketch['boundary'];
+  var boundaryNeedsUpdate = !(boundary === undefined || boundary == null);
+  var boundaryIOLayer = null;
   if (sketchLayers !== undefined) {
     for (var l = 0; l < sketchLayers.length; ++l) {
       var ioLayer = sketchLayers[l];
-      var layer = getLayer(this.viewer, ioLayer['name']);
+      var layerName = ioLayer['name'];
+      if (layerName == IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate) {
+        boundaryIOLayer = ioLayer; 
+        continue;
+      }
+      var layer = getLayer(this.viewer, layerName);
       if (!!ioLayer.style) layer.style = ioLayer.style;
       var layerData = ioLayer['data'];
       for (i = 0; i < layerData.length; ++i) {
@@ -132,7 +142,7 @@ IO.prototype._loadSketch = function(sketch) {
     }
   }
 
-  this.setupBoundary(sketch['boundary'], index);
+  this.setupBoundary(boundary, index, boundaryIOLayer);
 
   var sketchConstraints = sketch['constraints'];
   if (sketchConstraints !== undefined) {
@@ -140,8 +150,8 @@ IO.prototype._loadSketch = function(sketch) {
       try {
         const c = this.parseConstr(sketchConstraints[i], index);
         this.viewer.parametricManager._add(c);
-      } catch (err) {
-        console.error(err);
+      } catch (msg) {
+        console.info("Skipping. " + msg);
       }
     }
     this.viewer.parametricManager.notify();
@@ -226,65 +236,45 @@ IO.prototype._serializeSketch = function() {
   return sketch;
 };
 
-IO.prototype.setupBoundary = function(boundary, index) {
-  var boundaryLayerName = "__bounds__";
-  var boundaryLayer = this.viewer.findLayerByName(boundaryLayerName);
-  
-  if (boundaryLayer != null) {
-    boundaryLayer.readOnly = true;
-    boundaryLayer.style = Styles.BOUNDS;
-  }
-  
-  if (boundary === undefined || boundary == null) return;
+IO.prototype.setupBoundary = function(boundary, index, boundaryIOLayer) {
+  var boundaryLayer = this.viewer.findLayerByName(IO.BOUNDARY_LAYER_NAME);
   
   if (boundaryLayer === null) {
-    boundaryLayer = new Layer(boundaryLayerName, Styles.BOUNDS);
-    boundaryLayer.readOnly = true;
+    boundaryLayer = new Layer(IO.BOUNDARY_LAYER_NAME, Styles.BOUNDS);
     this.viewer.layers.splice(0, 0, boundaryLayer);
   } else {
     boundaryLayer.objects = [];
-  } 
+  }
 
+  boundaryLayer.readOnly = true;
+  boundaryLayer.style = Styles.BOUNDS;
+  
   var edgeIndex = {};
   var i, obj;
-  for (i = 0; i < boundaryLayer.objects.length; i++) {
-    boundaryLayer.objects[i].accept(function(obj){
-      if (obj.edge !== undefined) edgeIndex[obj.edge] = obj; 
-      return true;
-    });
-  }
-  
-  var id = 0;
-  function __makeAux(obj) {
-    obj.accept(function(o){o.aux = true; return true;});
-    obj.edge = id ++;
-  }
-  
-  function collect(obj) {
-    var objects = [];
-    obj.accept(function(o){objects.push(o); return true;});
-    return objects;
-  }
-
-  function reindex(obj) {
-    var oldObject = edgeIndex[obj.edge];
-    if (oldObject == undefined) return;
-    var newObjects = collect(obj);
-    var oldObjects = collect(oldObject);
-    if (newObjects.length != oldObjects.length) return;
-    for (var j = 0; j < newObjects.length; j++) {
-      var from = oldObjects[j];
-      var to = newObjects[j];
-      index[from.id] = to.id;
+  if (boundaryIOLayer != null) {
+    var layerData = boundaryIOLayer.data;
+    for (i = 0; i < layerData.length; ++i) {
+      var ioObj = layerData[i];
+      if (ioObj.edge !== undefined) edgeIndex[ioObj.edge] = ioObj.id;
     }
   }
   
-  for (i = 0; i < boundary.lines.length; ++i, ++id) {
+  var id = 0;
+  function __processAux(obj) {
+    obj.accept(function(o){
+      o.aux = true; 
+      o.edge = id ++;
+      index[edgeIndex[o.edge]] = o;
+      return true;
+    });
+  }
+
+  for (i = 0; i < boundary.lines.length; ++i) {
     var edge = boundary.lines[i];
     var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, boundaryLayer);
-    __makeAux(seg);
+    __processAux(seg);
   }
-  for (i = 0; i < boundary.arcs.length; ++i, ++id) {
+  for (i = 0; i < boundary.arcs.length; ++i) {
     var a = boundary.arcs[i];
     var arc = new Arc(
       new EndPoint(a.a.x, a.a.y),
@@ -292,31 +282,30 @@ IO.prototype.setupBoundary = function(boundary, index) {
       new EndPoint(a.c.x, a.c.y)
     );
     boundaryLayer.objects.push(arc);
-    __makeAux(arc);
+    __processAux(arc);
   }
-  for (i = 0; i < boundary.circles.length; ++i, ++id) {
+  for (i = 0; i < boundary.circles.length; ++i) {
     obj = boundary.circles[i];
     var circle = new Circle(new EndPoint(obj.c.x, obj.c.y));
     circle.r.set(obj.r);
     boundaryLayer.objects.push(circle);
-    __makeAux(circle);
-
+    __processAux(circle);
   }
 };
 
 IO.prototype.parseConstr = function (c, index) {
+  var name = c[0];
+  var ps = c[1];
   function find(id) {
     var p = index[id];
     if (!p) {
-      throw "CAN'T READ SKETCH. Object ref is not found.";
+      throw "Constraint " + name + " refers to nonexistent object.";
     }
     return p;
   }
-  var name = c[0];
-  var ps = c[1];
   var constrCreate = Constraints.Factory[name];
   if (constrCreate === undefined) {
-    throw "CAN'T READ SKETCH. Constraint " + name + " hasn't been registered.";
+    throw "Constraint " + name + " doesn't exist.";
   }
   return constrCreate(find, ps);
 };
