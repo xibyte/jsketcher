@@ -152,7 +152,9 @@ IO.prototype._loadSketch = function(sketch) {
     }
   }
 
-  this.addNewBoundaryObjects(boundary, maxEdge);
+  if (boundaryNeedsUpdate) {
+    this.addNewBoundaryObjects(boundary, maxEdge);
+  }
 
   var sketchConstraints = sketch['constraints'];
   if (sketchConstraints !== undefined) {
