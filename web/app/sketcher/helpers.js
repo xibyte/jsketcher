@@ -13,12 +13,13 @@ function FilletTool(viewer) {
 
 FilletTool.prototype.makeFillet = function(point1, point2) {
   function shrink(point1) {
+    var a, b;
     if (point1.id === point1.parent.a.id) {
-      var a = point1.parent.b;
-      var b = point1.parent.a;
+      a = point1.parent.b;
+      b = point1.parent.a;
     } else {
-      var a = point1.parent.a;
-      var b = point1.parent.b;
+      a = point1.parent.a;
+      b = point1.parent.b;
     }
     var d = math.distanceAB(a, b);
     var k = 4 / 5;
@@ -45,7 +46,7 @@ FilletTool.prototype.makeFillet = function(point1, point2) {
   var arc = new Arc(
       new EndPoint(point1.x, point1.y), 
       new EndPoint(point2.x, point2.y), 
-      new EndPoint(vec.x, vec.y))
+      new EndPoint(vec.x, vec.y));
   point1.parent.layer.objects.push(arc);
   var pm = this.viewer.parametricManager;
   arc.stabilize(this.viewer);
@@ -94,12 +95,13 @@ FilletTool.prototype.mouseup = function(e) {
   }
 };
 
+function isLine(line) {
+  return line != null && line._class === 'TCAD.TWO.Segment';
+}
+
 FilletTool.prototype.getCandidate = function(e) {
   var picked = this.viewer.pick(e);
   if (picked.length > 0) {
-    function isLine(line) {
-      return line != null && line._class === 'TCAD.TWO.Segment';
-    }
     var res = fetch.sketchObjects(picked, true, ['TCAD.TWO.EndPoint']);
     if (res == null) return null;
     var point1 = res[0];

@@ -31,7 +31,7 @@ AddSegmentTool.prototype.mousedown = function(e) {
 
 AddSegmentTool.prototype.mouseup = function(e) {
   if (this.line == null) {
-    var b = this.viewer.screenToModel(e);
+    const b = this.viewer.screenToModel(e);
     var a = b;
     var needSnap = false;
     if (this.viewer.snapped.length != 0) {
@@ -54,7 +54,7 @@ AddSegmentTool.prototype.mouseup = function(e) {
       this.viewer.refresh();
     }
     if (this.multi) {
-      var b = this.line.b; 
+      const b = this.line.b; 
       this.line = this.viewer.addSegment(b.x, b.y, b.x, b.y, this.viewer.activeLayer);
       this.viewer.parametricManager.linkObjects([this.line.a, b]);
     } else {

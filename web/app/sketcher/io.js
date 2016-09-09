@@ -74,27 +74,27 @@ IO.prototype._loadSketch = function(sketch) {
       var layer = getLayer(this.viewer, ioLayer['name']);
       if (!!ioLayer.style) layer.style = ioLayer.style;
       var layerData = ioLayer['data'];
-      for (var i = 0; i < layerData.length; ++i) {
+      for (i = 0; i < layerData.length; ++i) {
         var obj = layerData[i];
         var skobj = null;
         var _class = obj['_class'];
         var aux = !!obj['aux'];
         if (_class === T.SEGMENT) {
-          var points = obj['points'];
-          var a = endPoint(points[0]);
-          var b = endPoint(points[1]);
+          const points = obj['points'];
+          const a = endPoint(points[0]);
+          const b = endPoint(points[1]);
           skobj = new Segment(a, b);
         } else if (_class === T.END_POINT) {
           skobj = endPoint(obj['location']);
         } else if (_class === T.ARC) {
-          var points = obj['points'];
-          var a = endPoint(points[0]);
-          var b = endPoint(points[1]);
-          var c = endPoint(points[2]);
+          const points = obj['points'];
+          const a = endPoint(points[0]);
+          const b = endPoint(points[1]);
+          const c = endPoint(points[2]);
           skobj = new Arc(a, b, c);
           if (!aux) skobj.stabilize(this.viewer);
         } else if (_class === T.CIRCLE) {
-          var c = endPoint(obj['c']);
+          const c = endPoint(obj['c']);
           skobj = new Circle(c);
           skobj.r.set(obj['r']);
         } else if (_class === T.HDIM) {
@@ -138,7 +138,7 @@ IO.prototype._loadSketch = function(sketch) {
   if (sketchConstraints !== undefined) {
     for (var i = 0; i < sketchConstraints.length; ++i) {
       try {
-        var c = this.parseConstr(sketchConstraints[i], index);
+        const c = this.parseConstr(sketchConstraints[i], index);
         this.viewer.parametricManager._add(c);
       } catch (err) {
         console.error(err);
@@ -212,7 +212,7 @@ IO.prototype._serializeSketch = function() {
   var subSystems = this.viewer.parametricManager.subSystems;
   for (var j = 0; j < subSystems.length; j++) {
     var sub = subSystems[j];
-    for (var i = 0; i < sub.constraints.length; ++i) {
+    for (i = 0; i < sub.constraints.length; ++i) {
       if (!sub.constraints[i].aux) {
         constrs.push(this.serializeConstr(sub.constraints[i]));
       }
@@ -226,7 +226,7 @@ IO.prototype._serializeSketch = function() {
   return sketch;
 };
 
-IO.prototype.setupBoundary = function(boundary) {
+IO.prototype.setupBoundary = function(boundary, index) {
   var boundaryLayerName = "__bounds__";
   var boundaryLayer = this.viewer.findLayerByName(boundaryLayerName);
   
@@ -486,6 +486,7 @@ IO.prototype.dxfExport = function () {
   var out = new TextBuilder();
   var bbox = new BBox();
   var toExport = this.getLayersToExport();
+  var i;
   bbox.checkLayers(toExport);
   out.line("999");
   out.line("js.parametric.sketcher");
@@ -525,7 +526,7 @@ IO.prototype.dxfExport = function () {
   out.line("2");
   out.line("TABLES");
 
-  for (var i = 0; i < toExport.length; i++) {
+  for (i = 0; i < toExport.length; i++) {
     out.line("0");
     out.line("LAYER");
     out.line("2");
@@ -555,7 +556,7 @@ IO.prototype.dxfExport = function () {
   for (var l = 0; l < toExport.length; l++) {
     var lid = l + 1;
     var layer = toExport[l];
-    for (var i = 0; i < layer.objects.length; ++i) {
+    for (i = 0; i < layer.objects.length; ++i) {
       var obj = layer.objects[i];
       if (obj._class === T.END_POINT) {
         out.line("0");
