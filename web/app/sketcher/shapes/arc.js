@@ -1,6 +1,12 @@
+import * as utils from '../../utils/utils';
+import * as math from '../../math/math';
+import Vector from '../../math/vector'
+import {SketchObject, EndPoint, Ref} from '../viewer2d'
+import {Constraints} from '../parametric'
+
 /** @constructor */
-TCAD.TWO.Arc = function(a, b, c) {
-  TCAD.TWO.SketchObject.call(this);
+function Arc(a, b, c) {
+  SketchObject.call(this);
   this.a = a;
   this.b = b;
   this.c = c;
@@ -8,60 +14,60 @@ TCAD.TWO.Arc = function(a, b, c) {
   b.parent = this;
   c.parent = this;
   this.children.push(a, b, c);
-  this.r = new TCAD.TWO.Ref(0);
+  this.r = new Ref(0);
   this.r.value = this.distanceA();
   this.r.obj = this;
-};
+}
 
-TCAD.TWO.utils.extend(TCAD.TWO.Arc, TCAD.TWO.SketchObject);
+utils.extend(Arc, SketchObject);
 
-TCAD.TWO.Arc.prototype._class = 'TCAD.TWO.Arc';
+Arc.prototype._class = 'TCAD.TWO.Arc';
 
-TCAD.TWO.Arc.prototype.collectParams = function(params) {
+Arc.prototype.collectParams = function(params) {
   this.a.collectParams(params);
   this.b.collectParams(params);
   this.c.collectParams(params);
   params.push(this.r);
 };
 
-TCAD.TWO.Arc.prototype.getReferencePoint = function() {
+Arc.prototype.getReferencePoint = function() {
   return this.c;
 };
 
-TCAD.TWO.Arc.prototype.translateImpl = function(dx, dy) {
+Arc.prototype.translateImpl = function(dx, dy) {
   this.a.translate(dx, dy);
   this.b.translate(dx, dy);
   this.c.translate(dx, dy);
 };
 
 
-TCAD.TWO.Arc.prototype.radiusForDrawing = function() {
+Arc.prototype.radiusForDrawing = function() {
   return this.distanceA();
 };
 
-TCAD.TWO.Arc.prototype.distanceA = function() {
-  return TCAD.math.distance(this.a.x, this.a.y, this.c.x, this.c.y);
+Arc.prototype.distanceA = function() {
+  return math.distance(this.a.x, this.a.y, this.c.x, this.c.y);
 };
 
-TCAD.TWO.Arc.prototype.distanceB = function() {
-  return TCAD.math.distance(this.b.x, this.b.y, this.c.x, this.c.y);
+Arc.prototype.distanceB = function() {
+  return math.distance(this.b.x, this.b.y, this.c.x, this.c.y);
 };
 
-TCAD.TWO.Arc.prototype.getStartAngle = function() {
+Arc.prototype.getStartAngle = function() {
   return Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x);
 };
 
-TCAD.TWO.Arc.prototype.getEndAngle = function() {
+Arc.prototype.getEndAngle = function() {
   return Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
 };
 
-TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
+Arc.prototype.drawImpl = function(ctx, scale) {
   ctx.beginPath();
   var r = this.radiusForDrawing();
   var startAngle = this.getStartAngle();
   var endAngle;
-  if (TCAD.utils.areEqual(this.a.x, this.b.x, TCAD.TOLERANCE) &&
-      TCAD.utils.areEqual(this.a.y, this.b.y, TCAD.TOLERANCE)) {
+  if (math.areEqual(this.a.x, this.b.x, math.TOLERANCE) &&
+      math.areEqual(this.a.y, this.b.y, math.TOLERANCE)) {
     endAngle = startAngle + 2 * Math.PI;
   } else {
     endAngle = this.getEndAngle();
@@ -81,10 +87,10 @@ TCAD.TWO.Arc.prototype.drawImpl = function(ctx, scale) {
   }
 };
 
-TCAD.TWO.Arc.prototype.isPointInsideSector = function(x, y) {
-  var ca = new TCAD.Vector(this.a.x - this.c.x, this.a.y - this.c.y);
-  var cb = new TCAD.Vector(this.b.x - this.c.x, this.b.y - this.c.y);
-  var ct = new TCAD.Vector(x - this.c.x, y - this.c.y);
+Arc.prototype.isPointInsideSector = function(x, y) {
+  var ca = new Vector(this.a.x - this.c.x, this.a.y - this.c.y);
+  var cb = new Vector(this.b.x - this.c.x, this.b.y - this.c.y);
+  var ct = new Vector(x - this.c.x, y - this.c.y);
 
   ca._normalize();
   cb._normalize();
@@ -105,45 +111,45 @@ TCAD.TWO.Arc.prototype.isPointInsideSector = function(x, y) {
   return result;
 };
 
-TCAD.TWO.Arc.prototype.normalDistance = function(aim) {
+Arc.prototype.normalDistance = function(aim) {
 
   var isInsideSector = this.isPointInsideSector(aim.x, aim.y);
   if (isInsideSector) {
-    return Math.abs(TCAD.math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
+    return Math.abs(math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
   } else {
     return Math.min(
-      TCAD.math.distance(aim.x, aim.y, this.a.x, this.a.y),
-      TCAD.math.distance(aim.x, aim.y, this.b.x, this.b.y)
+      math.distance(aim.x, aim.y, this.a.x, this.a.y),
+      math.distance(aim.x, aim.y, this.b.x, this.b.y)
     );
   }
 };
 
-TCAD.TWO.Arc.prototype.stabilize = function(viewer) {
+Arc.prototype.stabilize = function(viewer) {
   this.r.set(this.distanceA());
-  viewer.parametricManager._add(new TCAD.TWO.Constraints.P2PDistanceV(this.b, this.c, this.r));
-  viewer.parametricManager._add(new TCAD.TWO.Constraints.P2PDistanceV(this.a, this.c, this.r));
+  viewer.parametricManager._add(new Constraints.P2PDistanceV(this.b, this.c, this.r));
+  viewer.parametricManager._add(new Constraints.P2PDistanceV(this.a, this.c, this.r));
 };
 
 /** @constructor */
-TCAD.TWO.AddArcTool = function(viewer) {
+function AddArcTool(viewer) {
   this.viewer = viewer;
   this.arc = null;
   this.point = null;
-  this._v = new TCAD.Vector(0, 0, 0);
-};
+  this._v = new Vector(0, 0, 0);
+}
 
-TCAD.TWO.AddArcTool.prototype.keydown = function(e) {};
-TCAD.TWO.AddArcTool.prototype.keypress = function(e) {};
-TCAD.TWO.AddArcTool.prototype.keyup = function(e) {};
-TCAD.TWO.AddArcTool.prototype.cleanup = function(e) {};
+AddArcTool.prototype.keydown = function(e) {};
+AddArcTool.prototype.keypress = function(e) {};
+AddArcTool.prototype.keyup = function(e) {};
+AddArcTool.prototype.cleanup = function(e) {};
 
-TCAD.TWO.AddArcTool.prototype.mousemove = function(e) {
+AddArcTool.prototype.mousemove = function(e) {
   var p = this.viewer.screenToModel(e);
   if (this.point != null) {
     this.point.x = p.x;
     this.point.y = p.y;
 
-    var r = TCAD.math.distance(this.arc.a.x, this.arc.a.y, this.arc.c.x, this.arc.c.y);
+    var r = math.distance(this.arc.a.x, this.arc.a.y, this.arc.c.x, this.arc.c.y);
     if (this.point.id === this.arc.b.id) {
       //force placement second point on the arc
       var v = this._v;
@@ -168,14 +174,14 @@ TCAD.TWO.AddArcTool.prototype.mousemove = function(e) {
   }
 };
 
-TCAD.TWO.AddArcTool.prototype.mouseup = function(e) {
+AddArcTool.prototype.mouseup = function(e) {
   if (this.arc == null) {
     this.viewer.historyManager.checkpoint();
     var p = this.viewer.screenToModel(e);
-    this.arc = new TCAD.TWO.Arc(
-      new TCAD.TWO.EndPoint(p.x, p.y),
-      new TCAD.TWO.EndPoint(p.x, p.y),
-      new TCAD.TWO.EndPoint(p.x, p.y)
+    this.arc = new Arc(
+      new EndPoint(p.x, p.y),
+      new EndPoint(p.x, p.y),
+      new EndPoint(p.x, p.y)
     );
     this.point = this.arc.a;
     this.viewer.activeLayer.objects.push(this.arc);
@@ -191,7 +197,7 @@ TCAD.TWO.AddArcTool.prototype.mouseup = function(e) {
   }
 };
 
-TCAD.TWO.AddArcTool.prototype.snapIfNeed = function(p) {
+AddArcTool.prototype.snapIfNeed = function(p) {
   if (this.viewer.snapped.length != 0) {
     var snapWith = this.viewer.snapped.pop();
     this.viewer.cleanSnap();
@@ -200,8 +206,10 @@ TCAD.TWO.AddArcTool.prototype.snapIfNeed = function(p) {
   }
 };
 
-TCAD.TWO.AddArcTool.prototype.mousedown = function(e) {
+AddArcTool.prototype.mousedown = function(e) {
 };
 
-TCAD.TWO.AddArcTool.prototype.mousewheel = function(e) {
+AddArcTool.prototype.mousewheel = function(e) {
 };
+
+export {Arc, AddArcTool}

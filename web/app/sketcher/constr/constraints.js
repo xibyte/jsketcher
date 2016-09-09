@@ -1,41 +1,41 @@
-TCAD.constraints = {};
+import {fillArray} from '../../utils/utils'
 
 /**
  * This intermediate layer should be eliminated since constraint server isn't used anymore
  */
-TCAD.constraints.create = function(name, params, values) {
+function createByConstraintName(name, params, values) {
   switch (name) {
     case "equal":
-      return new TCAD.constraints.Equal(params);
+      return new Equal(params);
     case "equalsTo":
-      return new TCAD.constraints.EqualsTo(params, values[0]);
+      return new EqualsTo(params, values[0]);
     case "MinLength":
-      return new TCAD.constraints.MinLength(params, values[0]);
+      return new MinLength(params, values[0]);
     case "perpendicular":
-      return new TCAD.constraints.Perpendicular(params);
+      return new Perpendicular(params);
     case "parallel":
-      return new TCAD.constraints.Parallel(params);
+      return new Parallel(params);
     case "P2LDistance":
-      return new TCAD.constraints.P2LDistance(params, values[0]);
+      return new P2LDistance(params, values[0]);
     case "P2LDistanceV":
-      return new TCAD.constraints.P2LDistanceV(params);
+      return new P2LDistanceV(params);
     case "P2PDistance":
-      return new TCAD.constraints.P2PDistance(params, values[0]);
+      return new P2PDistance(params, values[0]);
     case "P2PDistanceV":
-      return new TCAD.constraints.P2PDistanceV(params);
+      return new P2PDistanceV(params);
     case "angle":
-      return new TCAD.constraints.Angle(params);
+      return new Angle(params);
     case "angleConst":
       var _ = true, x = false;
       // Exclude angle value from parameters
-      return new TCAD.constraints.ConstantWrapper(new TCAD.constraints.Angle(params), [x,x,x,x,x,x,x,x,_]);
+      return new ConstantWrapper(new Angle(params), [x,x,x,x,x,x,x,x,_]);
     case 'LockConvex':
-      return new TCAD.constraints.LockConvex(params);
+      return new LockConvex(params);
   }
-};
+}
 
 /** @constructor */
-TCAD.constraints.Equal = function(params) {
+function Equal(params) {
 
   this.params = params;
 
@@ -47,10 +47,10 @@ TCAD.constraints.Equal = function(params) {
     out[0] = 1;
     out[1] = -1;
   }
-};
+}
 
 
-TCAD.constraints.MinLength = function(params, distance) {
+function MinLength(params, distance) {
   
   this.params = params;
   this.distance = distance;
@@ -85,9 +85,9 @@ TCAD.constraints.MinLength = function(params, distance) {
     out[p2x] = -dx / d;
     out[p2y] = -dy / d;
   }
-};
+}
 
-TCAD.constraints.LockConvex = function(params) {
+function LockConvex(params) {
   this.params = params;
 
   var _pcx = 0;
@@ -126,11 +126,11 @@ TCAD.constraints.LockConvex = function(params) {
     out[_ptx] = ay-cy;
     out[_pty] = cx-ax;
   }
-};
+}
 
 
 /** @constructor */
-TCAD.constraints.ConstantWrapper = function(constr, mask) {
+function ConstantWrapper(constr, mask) {
 
   this.params = [];
   this.grad = [];
@@ -148,7 +148,7 @@ TCAD.constraints.ConstantWrapper = function(constr, mask) {
   };
 
   this.gradient = function(out) {
-    TCAD.math.Arrays_fill(this.grad, 0, this.grad.length, 0);
+    fillArray(this.grad, 0, this.grad.length, 0);
     constr.gradient(this.grad);
     var jj = 0;
     for (j = 0; j < mask.length; j++) {
@@ -157,10 +157,10 @@ TCAD.constraints.ConstantWrapper = function(constr, mask) {
       }
     }
   }
-};
+}
 
 /** @constructor */
-TCAD.constraints.Weighted = function(constr, weight) {
+function Weighted(constr, weight) {
 
   this.weight = weight;
   this.params = constr.params;
@@ -176,11 +176,11 @@ TCAD.constraints.Weighted = function(constr, weight) {
       out[i] *= this.weight;
     }
   }
-};
+}
 
 
 /** @constructor */
-TCAD.constraints.EqualsTo = function(params, value) {
+function EqualsTo(params, value) {
 
   this.params = params;
   this.value = value;
@@ -192,10 +192,10 @@ TCAD.constraints.EqualsTo = function(params, value) {
   this.gradient = function(out) {
     out[0] = 1;
   };
-};
+}
 
 /** @constructor */
-TCAD.constraints.P2LDistance = function(params, distance) {
+function P2LDistance(params, distance) {
 
   this.params = params;
   this.distance = distance;
@@ -241,12 +241,12 @@ TCAD.constraints.P2LDistance = function(params, distance) {
     out[LP2X] = j * (y0 - y1) / d - AM * dx / d3;
     out[LP2Y] = j * (x1 - x0) / d - AM * dy / d3;
 
-    TCAD.constraints._fixNaN(out);
+    _fixNaN(out);
   }
-};
+}
 
 /** @constructor */
-TCAD.constraints.P2LDistanceV = function(params) {
+function P2LDistanceV(params) {
 
   this.params = params;//.slice(0, params.length -1);
 
@@ -294,12 +294,12 @@ TCAD.constraints.P2LDistanceV = function(params) {
     out[LP2Y] = j * (x1 - x0) / d - AM * dy / d3;
     out[D] = -1;
 
-    TCAD.constraints._fixNaN(out);
+    _fixNaN(out);
   }
 
-};
+}
 /** @constructor */
-TCAD.constraints.P2PDistance = function(params, distance) {
+function P2PDistance(params, distance) {
 
   this.params = params;
   this.distance = distance;
@@ -330,11 +330,11 @@ TCAD.constraints.P2PDistance = function(params, distance) {
     out[p2y] = -dy / d;
     
   }
-};
+}
 
 
 /** @constructor */
-TCAD.constraints.P2PDistanceV = function(params) {
+function P2PDistanceV(params) {
 
   this.params = params;
 
@@ -365,11 +365,11 @@ TCAD.constraints.P2PDistanceV = function(params) {
     out[p2y] = -dy / d;
     out[D] = -1;
   }
-};
+}
 
 
 /** @constructor */
-TCAD.constraints.Parallel = function(params) {
+function Parallel(params) {
 
   this.params = params;
 
@@ -400,10 +400,10 @@ TCAD.constraints.Parallel = function(params) {
     out[l2p1y] =  (params[l1p1x].get() - params[l1p2x].get());
     out[l2p2y] = -(params[l1p1x].get() - params[l1p2x].get());
   }
-};
+}
 
 /** @constructor */
-TCAD.constraints.Perpendicular = function(params) {
+function Perpendicular(params) {
 
   this.params = params;
 
@@ -435,10 +435,10 @@ TCAD.constraints.Perpendicular = function(params) {
     out[l2p1y] =  (params[l1p1y].get() - params[l1p2y].get());
     out[l2p2y] = -(params[l1p1y].get() - params[l1p2y].get());
   }
-};
+}
 
 /** @constructor */
-TCAD.constraints.Angle = function(params) {
+function Angle(params) {
 
   this.params = params;
 
@@ -478,8 +478,8 @@ TCAD.constraints.Angle = function(params) {
     out[l1p1y] = dx1 / r2;
     out[l1p2x] = dy1 / r2;
     out[l1p2y] = -dx1 / r2;
-    var dx1 = (p(l1p2x) - p(l1p1x));
-    var dy1 = (p(l1p2y) - p(l1p1y));
+    dx1 = (p(l1p2x) - p(l1p1x));
+    dy1 = (p(l1p2y) - p(l1p1y));
     var dx2 = (p(l2p2x) - p(l2p1x));
     var dy2 = (p(l2p2y) - p(l2p1y));
     var a = Math.atan2(dy1, dx1) + p(angle);
@@ -487,7 +487,7 @@ TCAD.constraints.Angle = function(params) {
     var sa = Math.sin(a);
     var x2 = dx2 * ca + dy2 * sa;
     var y2 = -dx2 * sa + dy2 * ca;
-    var r2 = dx2 * dx2 + dy2 * dy2;
+    r2 = dx2 * dx2 + dy2 * dy2;
     dx2 = -y2 / r2;
     dy2 = x2 / r2;
     out[l2p1x] = (-ca * dx2 + sa * dy2);
@@ -495,20 +495,22 @@ TCAD.constraints.Angle = function(params) {
     out[l2p2x] = ( ca * dx2 - sa * dy2);
     out[l2p2y] = ( sa * dx2 + ca * dy2);
     out[angle] = -1;
-    TCAD.constraints.rescale(out, scale);
+    rescale(out, scale);
   }
-};
+}
 
-TCAD.constraints._fixNaN = function(grad) {
+function _fixNaN(grad) {
   for (var i = 0; i < grad.length; i++) {
     if (isNaN(grad[i])) {
       grad[i] = 0;
     }
   }
-};
+}
 
-TCAD.constraints.rescale = function(grad, factor) {
+function rescale(grad, factor) {
   for (var i = 0; i < grad.length; i++) {
     grad[i] *= factor;
   }
-};
+}
+
+export {createByConstraintName, EqualsTo, ConstantWrapper}

@@ -1,8 +1,12 @@
-TCAD = {
-  TWO : {}
-};
+import {Parameters, Bus} from '../ui/toolkit'
+import {ParametricManager} from './parametric'
+import {HistoryManager} from './history'
+import Vector from '../math/vector'
+import {optim} from '../math/optim'
+import * as utils from '../utils/utils'
+import * as math from '../math/math'
 
-TCAD.TWO.Styles = {
+var Styles = {
   DEFAULT : {
     lineWidth : 2,
     strokeStyle : "#ffffff", 
@@ -46,40 +50,30 @@ TCAD.TWO.Styles = {
   }
 };
 
-TCAD.TWO.utils = {};
 
-TCAD.TWO.utils.extend = function(func, parent) {
-  for(var prop in parent.prototype) {
-    if(parent.prototype.hasOwnProperty(prop))
-      func.prototype[prop] = parent.prototype[prop];
-  }
-};
-
-TCAD.TWO.utils.point = function(x, y){ return {x: x, y: y} };
-
-TCAD.TWO.utils.drawPoint = function (ctx, x, y, rad, scale) {
+function _drawPoint(ctx, x, y, rad, scale) {
   ctx.beginPath();
   ctx.arc(x, y, rad / scale, 0, 2 * Math.PI, false);
   ctx.fill();
-};
+}
 
-TCAD.TWO.utils.setStyle = function(style, ctx, scale) {
+function setStyle(style, ctx, scale) {
   ctx.lineWidth  = style.lineWidth / scale;
   ctx.strokeStyle  = style.strokeStyle;
   ctx.fillStyle  = style.fillStyle;
-};
+}
 
 /** @constructor */
-TCAD.TWO.Viewer = function(canvas) {
+function Viewer(canvas, IO) {
   
   this.canvas = canvas;
-  this.params = new TCAD.Parameters();
-  this.io = new TCAD.IO(this);
+  this.params = new Parameters();
+  this.io = new IO(this);
   var viewer = this;
   this.retinaPxielRatio = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
   function updateCanvasSize() {
-    var canvasWidth = canvas.parentNode.offsetWidth;;
-    var canvasHeight = canvas.parentNode.offsetHeight;;
+    var canvasWidth = canvas.parentNode.offsetWidth;
+    var canvasHeight = canvas.parentNode.offsetHeight;
 
     canvas.width = canvasWidth * viewer.retinaPxielRatio;
     canvas.height = canvasHeight * viewer.retinaPxielRatio;
@@ -100,19 +94,19 @@ TCAD.TWO.Viewer = function(canvas) {
     set: viewer.setActiveLayer
   });
 
-  this.bus = new TCAD.Bus();
+  this.bus = new Bus();
   this.ctx = this.canvas.getContext("2d");
   this._activeLayer = null;
   this.layers = [];
   this._serviceLayers = [];
-  this.dimLayer = new TCAD.TWO.Layer("_dim", TCAD.TWO.Styles.DIM);
+  this.dimLayer = new Layer("_dim", Styles.DIM);
   this.dimLayers = [this.dimLayer];
   this.bus.defineObservable(this, 'dimScale', 'dimScale', 1);
   this.bus.subscribe('dimScale', function(){ viewer.refresh(); });
   
   this._workspace = [this.dimLayers, this.layers, this._serviceLayers];
-  this.toolManager = new TCAD.TWO.ToolManager(this, new TCAD.TWO.PanTool(this));
-  this.parametricManager = new TCAD.TWO.ParametricManager(this);
+  this.toolManager = new ToolManager(this, new PanTool(this));
+  this.parametricManager = new ParametricManager(this);
 
   this.translate = {x : 0.0, y : 0.0};
   this.scale = 1.0;
@@ -122,11 +116,11 @@ TCAD.TWO.Viewer = function(canvas) {
   
   this._setupServiceLayer();
 
-  this.historyManager = new TCAD.HistoryManager(this);
+  this.historyManager = new HistoryManager(this);
   this.refresh();
-};
+}
 
-TCAD.TWO.Viewer.prototype.validateGeom = function() {
+Viewer.prototype.validateGeom = function() {
   for (var i = 0; i < this.layers.length; i++) {
     var objs = this.layers[i].objects;
     for (var j = 0; j < objs.length; j++) {
@@ -138,16 +132,16 @@ TCAD.TWO.Viewer.prototype.validateGeom = function() {
   return true;
 };
 
-TCAD.TWO.Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
-  var a = new TCAD.TWO.EndPoint(x1, y1);
-  var b = new TCAD.TWO.EndPoint(x2, y2);
-  var line = new TCAD.TWO.Segment(a, b);
+Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
+  var a = new EndPoint(x1, y1);
+  var b = new EndPoint(x2, y2);
+  var line = new Segment(a, b);
   layer.objects.push(line);
   line.layer = layer;
   return line;
 };
 
-TCAD.TWO.Viewer.prototype.remove = function(obj) {
+Viewer.prototype.remove = function(obj) {
   if (obj.layer != null) {
     var idx = obj.layer.objects.indexOf(obj);
     if (idx != -1) {
@@ -157,17 +151,17 @@ TCAD.TWO.Viewer.prototype.remove = function(obj) {
   }
 };
 
-TCAD.TWO.Viewer.prototype.add = function(obj, layer) {
+Viewer.prototype.add = function(obj, layer) {
   layer.objects.push(obj);
   obj.layer = layer;
 };
 
-TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
+Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
 
   buffer *= 0.5;
   
   var pickResult = [];
-  var aim = new TCAD.Vector(x, y);
+  var aim = new Vector(x, y);
 
   var heroIdx = 0;
   var unreachable = buffer * 2;
@@ -214,26 +208,26 @@ TCAD.TWO.Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filt
   return pickResult;
 };
 
-TCAD.TWO.Viewer.prototype._setupServiceLayer = function() {
-  var layer = new TCAD.TWO.Layer("_service", TCAD.TWO.Styles.SERVICE);
-//  layer.objects.push(new TCAD.TWO.CrossHair(0, 0, 20));
-  layer.objects.push(new TCAD.TWO.BasisOrigin(null, this));
-  layer.objects.push(new TCAD.TWO.Point(0, 0, 2));
+Viewer.prototype._setupServiceLayer = function() {
+  var layer = new Layer("_service", Styles.SERVICE);
+//  layer.objects.push(new CrossHair(0, 0, 20));
+  layer.objects.push(new BasisOrigin(null, this));
+  layer.objects.push(new Point(0, 0, 2));
   this._serviceLayers.push(layer);
 
-  layer = new TCAD.TWO.Layer("_selection", TCAD.TWO.Styles.DEFAULT);
+  layer = new Layer("_selection", Styles.DEFAULT);
   layer.objects = this.selected;
   this._serviceLayers.push(layer);
 };
 
-TCAD.TWO.Viewer.prototype.refresh = function() {
+Viewer.prototype.refresh = function() {
   var viewer = this;
   window.requestAnimationFrame( function() {
     viewer.repaint();     
   });  
 };
 
-TCAD.TWO.Viewer.prototype.repaint = function() {
+Viewer.prototype.repaint = function() {
 
   var ctx = this.ctx;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -255,32 +249,32 @@ TCAD.TWO.Viewer.prototype.repaint = function() {
       for (var o = 0; o < layer.objects.length; o++) {
         var obj = layer.objects[o];
         style = obj.style != null ? obj.style : layer.style;
-        if (style != prevStyle) TCAD.TWO.utils.setStyle(style, ctx, this.scale / this.retinaPxielRatio);
+        if (style != prevStyle) setStyle(style, ctx, this.scale / this.retinaPxielRatio);
         obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
       }
     }
   }
 };
 
-TCAD.TWO.Viewer.prototype.snap = function(x, y, excl) {
+Viewer.prototype.snap = function(x, y, excl) {
   this.cleanSnap();
   var snapTo = this.search(x, y, 20 / this.scale, true, true, excl);
   if (snapTo.length > 0) {
     snapTo = snapTo[0];
-    this.mark(snapTo, TCAD.TWO.Styles.SNAP);
+    this.mark(snapTo, Styles.SNAP);
     this.snapped.push(snapTo);
     return snapTo;
   }
   return null;
 };
 
-TCAD.TWO.Viewer.prototype.cleanSnap = function() {
+Viewer.prototype.cleanSnap = function() {
   while(this.snapped.length > 0) {
     this.snapped.pop().marked = null;
   }
 };
 
-TCAD.TWO.Viewer.prototype.showBounds = function(x1, y1, x2, y2, offset) {
+Viewer.prototype.showBounds = function(x1, y1, x2, y2, offset) {
   var dx = x2 - x1;
   var dy = y2 - y1;
   if (this.canvas.width > this.canvas.height) {
@@ -292,7 +286,7 @@ TCAD.TWO.Viewer.prototype.showBounds = function(x1, y1, x2, y2, offset) {
   this.translate.y = -y1 * this.scale;
 };
 
-TCAD.TWO.Viewer.prototype.screenToModel2 = function(x, y, out) {
+Viewer.prototype.screenToModel2 = function(x, y, out) {
 
   out.x = x * this.retinaPxielRatio;
   out.y = this.canvas.height - y * this.retinaPxielRatio;
@@ -304,17 +298,17 @@ TCAD.TWO.Viewer.prototype.screenToModel2 = function(x, y, out) {
   out.y /= this.scale;
 };
 
-TCAD.TWO.Viewer.prototype.screenToModel = function(e) {
+Viewer.prototype.screenToModel = function(e) {
   return this._screenToModel(e.offsetX, e.offsetY);
 };
 
-TCAD.TWO.Viewer.prototype._screenToModel = function(x, y) {
+Viewer.prototype._screenToModel = function(x, y) {
   var out = {x: 0, y: 0};
   this.screenToModel2(x, y, out);
   return out;
 };
 
-TCAD.TWO.Viewer.prototype.accept = function(visitor) {
+Viewer.prototype.accept = function(visitor) {
   for (var i = 0; i < this.layers.length; i++) {
     var objs = this.layers[i].objects;
     var result = null;
@@ -326,7 +320,7 @@ TCAD.TWO.Viewer.prototype.accept = function(visitor) {
   }
 };
 
-TCAD.TWO.Viewer.prototype.findLayerByName = function(name) {
+Viewer.prototype.findLayerByName = function(name) {
   for (var i = 0; i < this.layers.length; i++) {
     if (this.layers[i].name == name) {
       return this.layers[i];
@@ -335,7 +329,7 @@ TCAD.TWO.Viewer.prototype.findLayerByName = function(name) {
   return null;
 };
 
-TCAD.TWO.Viewer.prototype.findById = function(id) {
+Viewer.prototype.findById = function(id) {
   var result = null;
   this.accept(function(o) {
     if (o.id === id) {
@@ -347,27 +341,27 @@ TCAD.TWO.Viewer.prototype.findById = function(id) {
   return result;
 };
 
-TCAD.TWO.Viewer.prototype.select = function(objs, exclusive) {
+Viewer.prototype.select = function(objs, exclusive) {
   if (exclusive) this.deselectAll();
   for (var i = 0; i < objs.length; i++) {
     this.mark(objs[i]);
   }
 };
 
-TCAD.TWO.Viewer.prototype.pick = function(e) {
+Viewer.prototype.pick = function(e) {
   var m = this.screenToModel(e);
   return this.search(m.x, m.y, 20 / this.scale, true, false, []);
 };
 
-TCAD.TWO.Viewer.prototype.mark = function(obj, style) {
+Viewer.prototype.mark = function(obj, style) {
   if (style === undefined) {
-    style = TCAD.TWO.Styles.MARK;
+    style = Styles.MARK;
   }
   obj.marked = style;
   this.selected.push(obj);
 };
 
-TCAD.TWO.Viewer.prototype.getActiveLayer = function() {
+Viewer.prototype.getActiveLayer = function() {
   var layer = this._activeLayer;
   if (layer == null || layer.readOnly) {
     layer = null;
@@ -380,20 +374,20 @@ TCAD.TWO.Viewer.prototype.getActiveLayer = function() {
     }
   }
   if (layer == null) {
-    layer = new TCAD.TWO.Layer("JustALayer", TCAD.TWO.Styles.DEFAULT);
+    layer = new Layer("JustALayer", Styles.DEFAULT);
     this.layers.push(layer);
   }
   return layer;
 };
 
-TCAD.TWO.Viewer.prototype.setActiveLayer = function(layer) {
+Viewer.prototype.setActiveLayer = function(layer) {
   if (!layer.readOnly) {
     this._activeLayer = layer;
     this.bus.notify("activeLayer");
   }
 };
 
-TCAD.TWO.Viewer.prototype.deselect = function(obj) {
+Viewer.prototype.deselect = function(obj) {
   for (var i = 0; i < this.selected.length; i++) {
     if (obj.id == this.selected[i].id) {
       this.selected.splice(i, 1)[0].marked = null;
@@ -402,7 +396,7 @@ TCAD.TWO.Viewer.prototype.deselect = function(obj) {
   }
 };
 
-TCAD.TWO.Viewer.prototype.deselectAll = function() {
+Viewer.prototype.deselectAll = function() {
   for (var i = 0; i < this.selected.length; i++) {
     this.selected[i].marked = null;
   }
@@ -410,25 +404,25 @@ TCAD.TWO.Viewer.prototype.deselectAll = function() {
 };
 
 /** @constructor */
-TCAD.TWO.Layer = function(name, style) {
+function Layer(name, style) {
   this.name = name;
   this.style = style;
   this.objects = [];
   this.readOnly = false; // This is actually a mark for boundary layers coming from 3D
-};
+}
 
-TCAD.TWO.Viewer.prototype.fullHeavyUIRefresh = function() {
+Viewer.prototype.fullHeavyUIRefresh = function() {
   this.refresh();
   this.parametricManager.notify();
 };
 
 /** @constructor */
-TCAD.TWO.Polygon = function(points) {
+function Polygon(points) {
   this.points = points;
   this.style = null;
-};
+}
 
-TCAD.TWO.Polygon.prototype.draw = function(ctx) {
+Polygon.prototype.draw = function(ctx) {
 
   if (this.points.length < 3) {
     return;    
@@ -446,12 +440,12 @@ TCAD.TWO.Polygon.prototype.draw = function(ctx) {
 };
 
 /** @constructor */
-TCAD.TWO.Polyline = function(points) {
+function Polyline(points) {
   this.points = points;
   this.style = null;
-};
+}
 
-TCAD.TWO.Polyline.prototype.draw = function(ctx) {
+Polyline.prototype.draw = function(ctx) {
 
   if (this.points.length < 2) {
     return;
@@ -466,28 +460,32 @@ TCAD.TWO.Polyline.prototype.draw = function(ctx) {
   ctx.stroke();
 };
 
-TCAD.TWO.utils.ID_COUNTER = 0;
-
-TCAD.TWO.utils.genID = function() {
-  return TCAD.TWO.utils.ID_COUNTER ++;
-};
+var ID_COUNTER = 0;
 
 /** @constructor */
-TCAD.TWO.SketchObject = function() {
-  this.id = TCAD.TWO.utils.genID();
+function SketchObject() {
+  this.id = SketchObject.genID();
   this.aux = false;
   this.marked = null;
   this.visible = true;
   this.children = [];
   this.linked = [];
   this.layer = null;
+}
+
+SketchObject.genID = function() {
+  return ID_COUNTER ++;
 };
 
-TCAD.TWO.SketchObject.prototype.accept = function(visitor) {
+SketchObject.resetIDGenerator = function(value) {
+  ID_COUNTER = value;
+};
+
+SketchObject.prototype.accept = function(visitor) {
   return this.acceptV(false, visitor);
 };
 
-TCAD.TWO.SketchObject.prototype.acceptV = function(onlyVisible, visitor) {
+SketchObject.prototype.acceptV = function(onlyVisible, visitor) {
   if (onlyVisible && !this.visible) return true;
   for (var i = 0; i < this.children.length; i++) {
     var child = this.children[i];
@@ -498,18 +496,18 @@ TCAD.TWO.SketchObject.prototype.acceptV = function(onlyVisible, visitor) {
   return visitor(this);
 };
 
-TCAD.TWO.SketchObject.prototype.validate = function() {
+SketchObject.prototype.validate = function() {
   return true;
 };
 
-TCAD.TWO.SketchObject.prototype.recover = function() {
+SketchObject.prototype.recover = function() {
 };
 
-TCAD.TWO.SketchObject.prototype.getDefaultTool = function(viewer) {
-  return new TCAD.TWO.DragTool(this, viewer);
+SketchObject.prototype.getDefaultTool = function(viewer) {
+  return new DragTool(this, viewer);
 };
 
-TCAD.TWO.SketchObject.prototype.isAuxOrLinkedTo = function() {
+SketchObject.prototype.isAuxOrLinkedTo = function() {
   if (!!this.aux) {
     return true;
   }
@@ -521,7 +519,7 @@ TCAD.TWO.SketchObject.prototype.isAuxOrLinkedTo = function() {
   return false;
 };
 
-TCAD.TWO.SketchObject.prototype._translate = function(dx, dy, translated) {
+SketchObject.prototype._translate = function(dx, dy, translated) {
   translated[this.id] = 'x';
   for (var i = 0; i < this.linked.length; ++i) {
     if (translated[this.linked[i].id] != 'x') {
@@ -531,7 +529,7 @@ TCAD.TWO.SketchObject.prototype._translate = function(dx, dy, translated) {
   this.translateImpl(dx, dy);
 };
 
-TCAD.TWO.SketchObject.prototype.translate = function(dx, dy) {
+SketchObject.prototype.translate = function(dx, dy) {
 //  this.translateImpl(dx, dy);
   if (this.isAuxOrLinkedTo()) {
     return;
@@ -539,11 +537,11 @@ TCAD.TWO.SketchObject.prototype.translate = function(dx, dy) {
   this._translate(dx, dy, {});
 };
 
-TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale, viewer) {
+SketchObject.prototype.draw = function(ctx, scale, viewer) {
   if (!this.visible) return;
   if (this.marked != null) {
     ctx.save();
-    TCAD.TWO.utils.setStyle(this.marked, ctx, scale);
+    setStyle(this.marked, ctx, scale);
   }
   this.drawImpl(ctx, scale, viewer);
   if (this.marked != null) ctx.restore();
@@ -553,89 +551,89 @@ TCAD.TWO.SketchObject.prototype.draw = function(ctx, scale, viewer) {
 };
 
 /** @constructor */
-TCAD.TWO.Ref = function(value) {
-  this.id = TCAD.TWO.utils.genID();
+function Ref(value) {
+  this.id = SketchObject.genID();
+  this.value = value;
+}
+
+Ref.prototype.set = function(value) {
   this.value = value;
 };
 
-TCAD.TWO.Ref.prototype.set = function(value) {
-  this.value = value;
-};
-
-TCAD.TWO.Ref.prototype.get = function() {
+Ref.prototype.get = function() {
   return this.value;
 };
 
 /** @constructor */
-TCAD.TWO.Param = function(obj, prop) {
-  this.id = TCAD.TWO.utils.genID();
+function Param(obj, prop) {
+  this.id = SketchObject.genID();
   this.obj = obj;
   this.prop = prop;
-};
+}
 
-TCAD.TWO.Param.prototype.set = function(value) {
+Param.prototype.set = function(value) {
   this.obj[this.prop] = value;
 };
 
-TCAD.TWO.Param.prototype.get = function() {
+Param.prototype.get = function() {
   return this.obj[this.prop];
 };
 
 /** @constructor */
-TCAD.TWO.EndPoint = function(x, y) {
-  TCAD.TWO.SketchObject.call(this);
+function EndPoint(x, y) {
+  SketchObject.call(this);
   this.x = x;
   this.y = y;
   this.parent = null;
-  this._x =  new TCAD.TWO.Param(this, 'x');
-  this._y =  new TCAD.TWO.Param(this, 'y');
-};
+  this._x =  new Param(this, 'x');
+  this._y =  new Param(this, 'y');
+}
 
-TCAD.TWO.utils.extend(TCAD.TWO.EndPoint, TCAD.TWO.SketchObject);
+utils.extend(EndPoint, SketchObject);
 
-TCAD.TWO.EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
+EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
 
-TCAD.TWO.EndPoint.prototype.collectParams = function(params) {
+EndPoint.prototype.collectParams = function(params) {
   params.push(this._x);
   params.push(this._y);
 };
 
-TCAD.TWO.EndPoint.prototype.normalDistance = function(aim) {
-  return aim.minus(new TCAD.Vector(this.x, this.y)).length();
+EndPoint.prototype.normalDistance = function(aim) {
+  return aim.minus(new Vector(this.x, this.y)).length();
 };
 
-TCAD.TWO.EndPoint.prototype.getReferencePoint = function() {
+EndPoint.prototype.getReferencePoint = function() {
   return this;
 };
 
-TCAD.TWO.EndPoint.prototype.translateImpl = function(dx, dy) {
+EndPoint.prototype.translateImpl = function(dx, dy) {
   this.x += dx;
   this.y += dy;
 };
 
-TCAD.TWO.EndPoint.prototype.drawImpl = function(ctx, scale) {
-  TCAD.TWO.utils.drawPoint(ctx, this.x, this.y, 3, scale)
+EndPoint.prototype.drawImpl = function(ctx, scale) {
+  _drawPoint(ctx, this.x, this.y, 3, scale)
 };
 
 /** @constructor */
-TCAD.TWO.Segment = function(a, b) {
-  TCAD.TWO.SketchObject.call(this);
+function Segment(a, b) {
+  SketchObject.call(this);
   this.a = a;
   this.b = b;
   a.parent = this;
   b.parent = this;
   this.children.push(a, b);
+}
+
+utils.extend(Segment, SketchObject);
+
+Segment.prototype._class = 'TCAD.TWO.Segment';
+
+Segment.prototype.validate = function() {
+  return math.distanceAB(this.a, this.b) > math.TOLERANCE;
 };
 
-TCAD.TWO.utils.extend(TCAD.TWO.Segment, TCAD.TWO.SketchObject);
-
-TCAD.TWO.Segment.prototype._class = 'TCAD.TWO.Segment';
-
-TCAD.TWO.Segment.prototype.validate = function() {
-  return TCAD.math.distanceAB(this.a, this.b) > TCAD.TOLERANCE;
-};
-
-TCAD.TWO.Segment.prototype.recover = function() {
+Segment.prototype.recover = function() {
   var recoverLength = 100;
   this.a.x -= recoverLength;
   this.a.y -= recoverLength;
@@ -643,18 +641,18 @@ TCAD.TWO.Segment.prototype.recover = function() {
   this.b.y += recoverLength;
 };
 
-TCAD.TWO.Segment.prototype.collectParams = function(params) {
+Segment.prototype.collectParams = function(params) {
   this.a.collectParams(params);
   this.b.collectParams(params);
 };
 
-TCAD.TWO.Segment.prototype.normalDistance = function(aim) {
+Segment.prototype.normalDistance = function(aim) {
   var x = aim.x;
   var y = aim.y;
 
-  var ab = new TCAD.Vector(this.b.x - this.a.x, this.b.y - this.a.y)
+  var ab = new Vector(this.b.x - this.a.x, this.b.y - this.a.y)
   var e = ab.normalize();
-  var a = new TCAD.Vector(aim.x - this.a.x, aim.y - this.a.y);
+  var a = new Vector(aim.x - this.a.x, aim.y - this.a.y);
   var b = e.multiply(a.dot(e));
   var n = a.minus(b);
 
@@ -670,16 +668,16 @@ TCAD.TWO.Segment.prototype.normalDistance = function(aim) {
   return n.length();
 };
 
-TCAD.TWO.Segment.prototype.getReferencePoint = function() {
+Segment.prototype.getReferencePoint = function() {
   return this.a;
 };
 
-TCAD.TWO.Segment.prototype.translateImpl = function(dx, dy) {
+Segment.prototype.translateImpl = function(dx, dy) {
   this.a.translate(dx, dy);
   this.b.translate(dx, dy);
 };
 
-TCAD.TWO.Segment.prototype.drawImpl = function(ctx, scale) {
+Segment.prototype.drawImpl = function(ctx, scale) {
   ctx.beginPath();
   ctx.moveTo(this.a.x, this.a.y);
   ctx.lineTo(this.b.x, this.b.y);
@@ -690,26 +688,26 @@ TCAD.TWO.Segment.prototype.drawImpl = function(ctx, scale) {
 };
 
 /** @constructor */
-TCAD.TWO.Point = function(x, y, rad) {
+function Point(x, y, rad) {
   this.x = x;
   this.y = y;
   this.rad = rad;
   this.style = null;
-};
+}
 
-TCAD.TWO.Point.prototype.draw = function(ctx, scale) {
-  TCAD.TWO.utils.drawPoint(ctx, this.x, this.y, this.rad, scale);
+Point.prototype.draw = function(ctx, scale) {
+  _drawPoint(ctx, this.x, this.y, this.rad, scale);
 };
 
 /** @constructor */
-TCAD.TWO.CrossHair = function(x, y, rad) {
+function CrossHair(x, y, rad) {
   this.x = x;
   this.y = y;
   this.rad = rad;
   this.style = null;
-};
+}
 
-TCAD.TWO.CrossHair.prototype.draw = function(ctx, scale) {
+CrossHair.prototype.draw = function(ctx, scale) {
   ctx.beginPath();
   var rad = this.rad / scale;
   ctx.moveTo(this.x - rad, this.y);
@@ -726,16 +724,16 @@ TCAD.TWO.CrossHair.prototype.draw = function(ctx, scale) {
 };
 
 /** @constructor */
-TCAD.TWO.BasisOrigin = function(basis, viewer) {
+function BasisOrigin(basis, viewer) {
   this.viewer = viewer;
   this.inverseX = false;
   this.inverseY = false;
   this.lineWidth = 100;
   this.xColor = '#FF0000';
   this.yColor = '#00FF00';
-};
+}
 
-TCAD.TWO.BasisOrigin.prototype.draw = function(ctx, scale) {
+BasisOrigin.prototype.draw = function(ctx, scale) {
   ctx.save();
   if (this.inverseX) {
     this.xScale = -1;
@@ -789,7 +787,7 @@ TCAD.TWO.BasisOrigin.prototype.draw = function(ctx, scale) {
 };
 
 /** @constructor */
-TCAD.TWO.ToolManager = function(viewer, defaultTool) {
+function ToolManager(viewer, defaultTool) {
   this.defaultTool = defaultTool;
   this.tool = defaultTool;
   var canvas = viewer.canvas;
@@ -841,35 +839,35 @@ TCAD.TWO.ToolManager = function(viewer, defaultTool) {
   window.addEventListener("keyup", function (e) {
     tm.getTool().keydown(e);
   }, false);
-};
+}
 
-TCAD.TWO.ToolManager.prototype.takeControl = function(tool) {
+ToolManager.prototype.takeControl = function(tool) {
   this.tool = tool;
 };
 
-TCAD.TWO.ToolManager.prototype.releaseControl = function() {
+ToolManager.prototype.releaseControl = function() {
   this.tool.cleanup();
   this.tool = this.defaultTool;
 };
 
-TCAD.TWO.ToolManager.prototype.getTool = function() {
+ToolManager.prototype.getTool = function() {
   return this.tool;
 };
 
 /** @constructor */
-TCAD.TWO.PanTool = function(viewer) {
+function PanTool(viewer) {
   this.viewer = viewer;
   this.dragging = false;
   this.x = 0.0;
   this.y = 0.0;
-};
+}
 
-TCAD.TWO.PanTool.prototype.keydown = function(e) {};
-TCAD.TWO.PanTool.prototype.keypress = function(e) {};
-TCAD.TWO.PanTool.prototype.keyup = function(e) {};
-TCAD.TWO.PanTool.prototype.cleanup = function(e) {};
+PanTool.prototype.keydown = function(e) {};
+PanTool.prototype.keypress = function(e) {};
+PanTool.prototype.keyup = function(e) {};
+PanTool.prototype.cleanup = function(e) {};
 
-TCAD.TWO.PanTool.prototype.mousemove = function(e) {
+PanTool.prototype.mousemove = function(e) {
   if (!this.dragging) {
     return;    
   }
@@ -886,14 +884,16 @@ TCAD.TWO.PanTool.prototype.mousemove = function(e) {
   this.viewer.refresh();
 };
 
-TCAD.TWO.PanTool.prototype.mousedown = function(e) {
+PanTool.prototype.mousedown = function(e) {
   if (e.button == 0) {
     var picked = this.viewer.pick(e);
+    var i;
     if (picked.length > 0) {
+      var toSelect;
       if (e.shiftKey) {
-        var toSelect = picked[0];
+        toSelect = picked[0];
         var ids = this.viewer.selected.map(function(s){return s.id});        
-        for (var i = 0; i < picked.length; i++) {
+        for (i = 0; i < picked.length; i++) {
           if (ids.indexOf(picked[i].id) != -1) {
             this.viewer.deselect(picked[i]);
           } else {
@@ -903,9 +903,9 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
         this.viewer.select([toSelect], false);
         this.deselectOnUp = false;
       } else {
-        var toSelect = picked[0];
+        toSelect = picked[0];
         if (this.viewer.selected.length === 1) {
-          for (var i = 0; i < picked.length - 1; i++) {
+          for (i = 0; i < picked.length - 1; i++) {
             if (picked[i].id == this.viewer.selected[0].id) {
               toSelect = picked[i + 1];
               break;
@@ -930,7 +930,7 @@ TCAD.TWO.PanTool.prototype.mousedown = function(e) {
   this.y = e.pageY;
 };
 
-TCAD.TWO.PanTool.prototype.mouseup = function(e) {
+PanTool.prototype.mouseup = function(e) {
   this.dragging = false;
   if (this.deselectOnUp) {
     this.viewer.deselectAll();
@@ -939,7 +939,7 @@ TCAD.TWO.PanTool.prototype.mouseup = function(e) {
   this.deselectOnUp = false;
 };
 
-TCAD.TWO.PanTool.prototype.mousewheel = function(e) {
+PanTool.prototype.mousewheel = function(e) {
 
   var delta = 0;
 
@@ -967,21 +967,21 @@ TCAD.TWO.PanTool.prototype.mousewheel = function(e) {
 };
 
 /** @constructor */
-TCAD.TWO.DragTool = function(obj, viewer) {
+function DragTool(obj, viewer) {
   this.obj = obj;
   this.viewer = viewer;
   this._point = {x: 0, y: 0};
   this.origin = {x: 0, y: 0};
   this.ref = this.obj.getReferencePoint();
   this.solver = null;
-};
-TCAD.TWO.DragTool.prototype.snapshots = []
-TCAD.TWO.DragTool.prototype.keydown = function(e) {};
-TCAD.TWO.DragTool.prototype.keypress = function(e) {};
-TCAD.TWO.DragTool.prototype.keyup = function(e) {};
-TCAD.TWO.DragTool.prototype.cleanup = function(e) {};
+}
+DragTool.prototype.snapshots = []
+DragTool.prototype.keydown = function(e) {};
+DragTool.prototype.keypress = function(e) {};
+DragTool.prototype.keyup = function(e) {};
+DragTool.prototype.cleanup = function(e) {};
 
-TCAD.TWO.DragTool.prototype.mousemove = function(e) {
+DragTool.prototype.mousemove = function(e) {
   var x = this._point.x;
   var y = this._point.y;
   this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
@@ -993,7 +993,7 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   }
   this.solver.updateLock(this.lockedValues);
   if (!e.altKey && !e.ctrlKey) {
-        this.solveRequest(true);
+    this.solveRequest(true);
   } else {
     this.obj.translate(dx, dy);
   }
@@ -1001,28 +1001,28 @@ TCAD.TWO.DragTool.prototype.mousemove = function(e) {
   this.viewer.refresh();
 };
 
-TCAD.TWO.DragTool.prototype.mousedown = function(e) {
+DragTool.prototype.mousedown = function(e) {
   this.origin.x = e.offsetX;
   this.origin.y = e.offsetY;
   this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
   this.prepareSolver([]);
 };
 
-TCAD.TWO.DragTool.prototype.mouseup = function(e) {
+DragTool.prototype.mouseup = function(e) {
   this.solveRequest(false);
   this.viewer.refresh();
   this.viewer.toolManager.releaseControl();
-  var traveled = TCAD.math.distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
+  var traveled = math.distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
   if (traveled >= 10) {
     this.viewer.historyManager.lightCheckpoint(10);
   }
   //this.animateSolution();
 };
 
-TCAD.TWO.DragTool.prototype.mousewheel = function(e) {
+DragTool.prototype.mousewheel = function(e) {
 };
 
-TCAD.TWO.DragTool.prototype.solveRequest = function(rough) {
+DragTool.prototype.solveRequest = function(rough) {
   this.solver.solve(rough, 1);
   this.solver.sync();
   
@@ -1044,10 +1044,10 @@ TCAD.TWO.DragTool.prototype.solveRequest = function(rough) {
   }
 };
 
-TCAD.TWO.DragTool.prototype.getParamsToLock = function() {
+DragTool.prototype.getParamsToLock = function() {
   var params = [];
   this.obj.accept(function(obj) {
-    if (obj._class === 'TCAD.TWO.EndPoint') {
+    if (obj._class === 'TCAD.TWO.EndPoint' && !obj.isAuxOrLinkedTo()) {
       params.push(obj._x);
       params.push(obj._y);
     }
@@ -1056,7 +1056,7 @@ TCAD.TWO.DragTool.prototype.getParamsToLock = function() {
   return params;
 };
 
-TCAD.TWO.DragTool.prototype.prepareSolver = function(extraConstraints) {
+DragTool.prototype.prepareSolver = function(extraConstraints) {
   var locked = this.getParamsToLock();
   this.lockedShifts = [];
   this.lockedValues = [];
@@ -1068,7 +1068,7 @@ TCAD.TWO.DragTool.prototype.prepareSolver = function(extraConstraints) {
   //this.enableRecording();
 };
 
-TCAD.TWO.DragTool.prototype.enableRecording = function() {
+DragTool.prototype.enableRecording = function() {
   var solver = this.solver;
   var snapshots = this.snapshots = [];
   optim.DEBUG_HANDLER = function()  {
@@ -1080,7 +1080,7 @@ TCAD.TWO.DragTool.prototype.enableRecording = function() {
   };
 };
 
-TCAD.TWO.DragTool.prototype.animateSolution = function() {
+DragTool.prototype.animateSolution = function() {
   if (this.snapshots.length === 0) return; 
   var stepNum = 0;
   var scope = this;
@@ -1111,3 +1111,5 @@ TCAD.TWO.DragTool.prototype.animateSolution = function() {
   }
   window.requestAnimationFrame(step);
 };
+
+export {Styles, Viewer, Layer, SketchObject, EndPoint, Point, Segment, ToolManager, PanTool, DragTool, Ref}

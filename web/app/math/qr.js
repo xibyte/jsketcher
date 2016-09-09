@@ -1,22 +1,9 @@
-
-TCAD.math.vec = function(size) {
-  var out = [];
-  out.length = size;
-  for (var i = 0; i < size; ++i) {
-    out[i] = 0;
-  }
-  return out;
-};
-
-
-TCAD.math.Arrays_fill = function(a, fromIndex, toIndex,val) {
-  for (var i = fromIndex; i < toIndex; i++)
-    a[i] = val;
-};
+import {fillArray} from '../utils/utils'
+import * as math from './math'
 
 /** @constructor */
-TCAD.math.QR = function(matrix) {
-  var vec = TCAD.math.vec;
+function QR(matrix) {
+  var vec = math._vec;
   this.matrix = matrix;
   var nR = this.matrix.length;
   var nC = nR == 0 ? 0 : this.matrix[0].length;
@@ -97,9 +84,9 @@ TCAD.math.QR = function(matrix) {
     }
   }
   this.rank = this.solvedCols;
-};
+}
 
-TCAD.math.QR.prototype.qTy = function(y) {
+QR.prototype.qTy = function(y) {
   var nR = this.matrix.length;
   var nC = this.matrix[0].length;
 
@@ -116,12 +103,12 @@ TCAD.math.QR.prototype.qTy = function(y) {
   }
 };
 
-TCAD.math.QR.prototype.solve = function(qy) {
+QR.prototype.solve = function(qy) {
 
   var nR = this.matrix.length;
   var nC = this.matrix[0].length;
 
-  var vec = TCAD.math.vec;
+  var vec = math._vec;
   
   var diag = vec(nC);
   var lmDiag = vec(nC);
@@ -147,7 +134,7 @@ TCAD.math.QR.prototype.solve = function(qy) {
     var pj = this.permutation[j];
     var dpj = diag[pj];
     if (dpj != 0) {
-      TCAD.math.Arrays_fill(lmDiag, j + 1, lmDiag.length, 0);
+      fillArray(lmDiag, j + 1, lmDiag.length, 0);
     }
     lmDiag[j] = dpj;
 
@@ -226,3 +213,5 @@ TCAD.math.QR.prototype.solve = function(qy) {
   }
   return out;
 };
+
+export default QR

@@ -1,6 +1,11 @@
-TCAD.io = {};
+import {EndPoint, Layer, Styles, Segment, SketchObject} from './viewer2d'
+import {Arc} from './shapes/arc'
+import {Circle} from './shapes/circle'
+import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
+import {Constraints} from './parametric'
+import Vector from '../math/vector'
 
-TCAD.io.Types = {
+var Types = {
   END_POINT : 'TCAD.TWO.EndPoint',
   SEGMENT   : 'TCAD.TWO.Segment',
   ARC       : 'TCAD.TWO.Arc',
@@ -12,19 +17,19 @@ TCAD.io.Types = {
 };
 
 /** @constructor */
-TCAD.IO = function(viewer) {
+function IO(viewer) {
   this.viewer = viewer;
-};
+}
 
-TCAD.IO.prototype.loadSketch = function(sketchData) {
+IO.prototype.loadSketch = function(sketchData) {
   return this._loadSketch(JSON.parse(sketchData));
 };
 
-TCAD.IO.prototype.serializeSketch = function() {
+IO.prototype.serializeSketch = function() {
   return JSON.stringify(this._serializeSketch());
 };
 
-TCAD.IO.prototype._loadSketch = function(sketch) {
+IO.prototype._loadSketch = function(sketch) {
 
   this.cleanUpData();
 
@@ -36,7 +41,7 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
     if (ep !== undefined) {
       return
     }
-    ep = new TCAD.TWO.EndPoint(p[1][1], p[2][1]);
+    ep = new EndPoint(p[1][1], p[2][1]);
     index[p[1][0]] = ep._x;
     index[p[2][0]] = ep._y;
     index[id] = ep;
@@ -57,11 +62,11 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
         }
       }
     }
-    var layer = new TCAD.TWO.Layer(name, TCAD.TWO.Styles.DEFAULT);
+    var layer = new Layer(name, Styles.DEFAULT);
     viewer.layers.push(layer);
     return layer;
   }
-  var T = TCAD.io.Types;
+  var T = Types;
   var sketchLayers = sketch['layers'];
   if (sketchLayers !== undefined) {
     for (var l = 0; l < sketchLayers.length; ++l) {
@@ -69,40 +74,40 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
       var layer = getLayer(this.viewer, ioLayer['name']);
       if (!!ioLayer.style) layer.style = ioLayer.style;
       var layerData = ioLayer['data'];
-      for (var i = 0; i < layerData.length; ++i) {
+      for (i = 0; i < layerData.length; ++i) {
         var obj = layerData[i];
         var skobj = null;
         var _class = obj['_class'];
         var aux = !!obj['aux'];
         if (_class === T.SEGMENT) {
-          var points = obj['points'];
-          var a = endPoint(points[0]);
-          var b = endPoint(points[1]);
-          skobj = new TCAD.TWO.Segment(a, b);
+          const points = obj['points'];
+          const a = endPoint(points[0]);
+          const b = endPoint(points[1]);
+          skobj = new Segment(a, b);
         } else if (_class === T.END_POINT) {
           skobj = endPoint(obj['location']);
         } else if (_class === T.ARC) {
-          var points = obj['points'];
-          var a = endPoint(points[0]);
-          var b = endPoint(points[1]);
-          var c = endPoint(points[2]);
-          skobj = new TCAD.TWO.Arc(a, b, c);
+          const points = obj['points'];
+          const a = endPoint(points[0]);
+          const b = endPoint(points[1]);
+          const c = endPoint(points[2]);
+          skobj = new Arc(a, b, c);
           if (!aux) skobj.stabilize(this.viewer);
         } else if (_class === T.CIRCLE) {
-          var c = endPoint(obj['c']);
-          skobj = new TCAD.TWO.Circle(c);
+          const c = endPoint(obj['c']);
+          skobj = new Circle(c);
           skobj.r.set(obj['r']);
         } else if (_class === T.HDIM) {
-          skobj = new TCAD.TWO.HDimension(obj['a'], obj['b']);
+          skobj = new HDimension(obj['a'], obj['b']);
           skobj.flip = obj['flip'];
         } else if (_class === T.VDIM) {
-          skobj = new TCAD.TWO.VDimension(obj['a'], obj['b']);
+          skobj = new VDimension(obj['a'], obj['b']);
           skobj.flip = obj['flip'];
         } else if (_class === T.DIM) {
-          skobj = new TCAD.TWO.Dimension(obj['a'], obj['b']);
+          skobj = new Dimension(obj['a'], obj['b']);
           skobj.flip = obj['flip'];
         } else if (_class === T.DDIM) {
-          skobj = new TCAD.TWO.DiameterDimension(obj['obj']);
+          skobj = new DiameterDimension(obj['obj']);
         }
         if (skobj != null) {
           if (aux) skobj.accept(function(o){o.aux = true; return true;});
@@ -133,7 +138,7 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
   if (sketchConstraints !== undefined) {
     for (var i = 0; i < sketchConstraints.length; ++i) {
       try {
-        var c = this.parseConstr(sketchConstraints[i], index);
+        const c = this.parseConstr(sketchConstraints[i], index);
         this.viewer.parametricManager._add(c);
       } catch (err) {
         console.error(err);
@@ -147,7 +152,7 @@ TCAD.IO.prototype._loadSketch = function(sketch) {
   }
 };
 
-TCAD.IO.prototype.cleanUpData = function() {
+IO.prototype.cleanUpData = function() {
   for (var l = 0; l < this.viewer.layers.length; ++l) {
     var layer = this.viewer.layers[l];
     if (layer.objects.length != 0) {
@@ -155,21 +160,21 @@ TCAD.IO.prototype.cleanUpData = function() {
     }
   }
   this.viewer.deselectAll();
-  TCAD.TWO.utils.ID_COUNTER = 0;
+  SketchObject.resetIDGenerator(0);
   if (this.viewer.parametricManager.subSystems.length != 0) {
     this.viewer.parametricManager.subSystems = [];
     this.viewer.parametricManager.notify();
   }
 };
 
-TCAD.IO.prototype._serializeSketch = function() {
+IO.prototype._serializeSketch = function() {
   var sketch = {};
   //sketch.boundary = boundary;
   sketch['layers'] = [];
   function point(p) {
     return [ p.id, [p._x.id, p.x], [p._y.id, p.y] ];
   }
-  var T = TCAD.io.Types;
+  var T = Types;
   var toSave = [this.viewer.dimLayers, this.viewer.layers];
   for (var t = 0; t < toSave.length; ++t) {
     var layers = toSave[t];
@@ -207,7 +212,7 @@ TCAD.IO.prototype._serializeSketch = function() {
   var subSystems = this.viewer.parametricManager.subSystems;
   for (var j = 0; j < subSystems.length; j++) {
     var sub = subSystems[j];
-    for (var i = 0; i < sub.constraints.length; ++i) {
+    for (i = 0; i < sub.constraints.length; ++i) {
       if (!sub.constraints[i].aux) {
         constrs.push(this.serializeConstr(sub.constraints[i]));
       }
@@ -221,19 +226,19 @@ TCAD.IO.prototype._serializeSketch = function() {
   return sketch;
 };
 
-TCAD.IO.prototype.setupBoundary = function(boundary) {
+IO.prototype.setupBoundary = function(boundary, index) {
   var boundaryLayerName = "__bounds__";
   var boundaryLayer = this.viewer.findLayerByName(boundaryLayerName);
   
   if (boundaryLayer != null) {
     boundaryLayer.readOnly = true;
-    boundaryLayer.style = TCAD.TWO.Styles.BOUNDS;
+    boundaryLayer.style = Styles.BOUNDS;
   }
   
   if (boundary === undefined || boundary == null) return;
   
   if (boundaryLayer === null) {
-    boundaryLayer = new TCAD.TWO.Layer(boundaryLayerName, TCAD.TWO.Styles.BOUNDS);
+    boundaryLayer = new Layer(boundaryLayerName, Styles.BOUNDS);
     boundaryLayer.readOnly = true;
     this.viewer.layers.splice(0, 0, boundaryLayer);
   } else {
@@ -281,17 +286,17 @@ TCAD.IO.prototype.setupBoundary = function(boundary) {
   }
   for (i = 0; i < boundary.arcs.length; ++i, ++id) {
     var a = boundary.arcs[i];
-    var arc = new TCAD.TWO.Arc(
-      new TCAD.TWO.EndPoint(a.a.x, a.a.y),
-      new TCAD.TWO.EndPoint(a.b.x, a.b.y),
-      new TCAD.TWO.EndPoint(a.c.x, a.c.y)
+    var arc = new Arc(
+      new EndPoint(a.a.x, a.a.y),
+      new EndPoint(a.b.x, a.b.y),
+      new EndPoint(a.c.x, a.c.y)
     );
     boundaryLayer.objects.push(arc);
     __makeAux(arc);
   }
   for (i = 0; i < boundary.circles.length; ++i, ++id) {
     obj = boundary.circles[i];
-    var circle = new TCAD.TWO.Circle(new TCAD.TWO.EndPoint(obj.c.x, obj.c.y));
+    var circle = new Circle(new EndPoint(obj.c.x, obj.c.y));
     circle.r.set(obj.r);
     boundaryLayer.objects.push(circle);
     __makeAux(circle);
@@ -299,7 +304,7 @@ TCAD.IO.prototype.setupBoundary = function(boundary) {
   }
 };
 
-TCAD.IO.prototype.parseConstr = function (c, index) {
+IO.prototype.parseConstr = function (c, index) {
   function find(id) {
     var p = index[id];
     if (!p) {
@@ -309,19 +314,18 @@ TCAD.IO.prototype.parseConstr = function (c, index) {
   }
   var name = c[0];
   var ps = c[1];
-  var constrCreate = TCAD.TWO.Constraints.Factory[name];
+  var constrCreate = Constraints.Factory[name];
   if (constrCreate === undefined) {
     throw "CAN'T READ SKETCH. Constraint " + name + " hasn't been registered.";
   }
   return constrCreate(find, ps);
 };
 
-TCAD.IO.prototype.serializeConstr = function (c) {
+IO.prototype.serializeConstr = function (c) {
   return c.serialize();
 };
 
-
-TCAD.io._format = function(str, args) {
+function _format(str, args) {
   if (args.length == 0) return str;
   var i = 0;
   return str.replace(/\$/g, function() {
@@ -331,22 +335,22 @@ TCAD.io._format = function(str, args) {
     i ++;
     return val;
   });
-};
+}
 
 /** @constructor */
-TCAD.io.PrettyColors = function() {
+function PrettyColors() {
   var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
   var colIdx = 0;
   this.next = function () {
     return colors[colIdx++ % colors.length];
   }
-};
+}
 
 /** @constructor */
-TCAD.io.TextBuilder = function() {
+function TextBuilder() {
   this.data = "";
   this.fline = function (chunk, args) {
-    this.data += TCAD.io._format(chunk, args) + "\n"
+    this.data += _format(chunk, args) + "\n"
   };
   this.line = function (chunk) {
     this.data += chunk + "\n"
@@ -358,13 +362,13 @@ TCAD.io.TextBuilder = function() {
     this.number(n)
     this.data += "\n"
   }
-};
+}
 
 /** @constructor */
-TCAD.io.BBox = function() {
+function BBox() {
   var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
 
-  var T = TCAD.io.Types;
+  var T = Types;
 
   this.checkLayers = function(layers) {
     for (var l = 0; l < layers.length; ++l)
@@ -420,13 +424,13 @@ TCAD.io.BBox = function() {
   };
 
   this.bbox = bbox;
-};
+}
 
-TCAD.IO.prototype.getWorkspaceToExport = function() {
+IO.prototype.getWorkspaceToExport = function() {
   return [this.viewer.layers];
 };
 
-TCAD.IO.prototype.getLayersToExport = function() {
+IO.prototype.getLayersToExport = function() {
   var ws = this.getWorkspaceToExport();
   var toExport = [];
   for (var t = 0; t < ws.length; ++t) {
@@ -439,17 +443,17 @@ TCAD.IO.prototype.getLayersToExport = function() {
   return toExport;
 };
 
-TCAD.IO.prototype.svgExport = function () {
+IO.prototype.svgExport = function () {
 
-  var T = TCAD.io.Types;
-  var out = new TCAD.io.TextBuilder();
+  var T = Types;
+  var out = new TextBuilder();
 
-  var bbox = new TCAD.io.BBox();
+  var bbox = new BBox();
 
-  var a = new TCAD.Vector();
-  var b = new TCAD.Vector();
+  var a = new Vector();
+  var b = new Vector();
 
-  var prettyColors = new TCAD.io.PrettyColors();
+  var prettyColors = new PrettyColors();
   var toExport = this.getLayersToExport();
   for (var l = 0; l < toExport.length; ++l) {
     var layer = toExport[l];
@@ -474,14 +478,15 @@ TCAD.IO.prototype.svgExport = function () {
     out.line('</g>');
   }
   bbox.inc(20);
-  return TCAD.io._format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + out.data + "</svg>"
+  return _format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + out.data + "</svg>"
 };
 
-TCAD.IO.prototype.dxfExport = function () {
-  var T = TCAD.io.Types;
-  var out = new TCAD.io.TextBuilder();
-  var bbox = new TCAD.io.BBox();
+IO.prototype.dxfExport = function () {
+  var T = Types;
+  var out = new TextBuilder();
+  var bbox = new BBox();
   var toExport = this.getLayersToExport();
+  var i;
   bbox.checkLayers(toExport);
   out.line("999");
   out.line("js.parametric.sketcher");
@@ -521,7 +526,7 @@ TCAD.IO.prototype.dxfExport = function () {
   out.line("2");
   out.line("TABLES");
 
-  for (var i = 0; i < toExport.length; i++) {
+  for (i = 0; i < toExport.length; i++) {
     out.line("0");
     out.line("LAYER");
     out.line("2");
@@ -551,7 +556,7 @@ TCAD.IO.prototype.dxfExport = function () {
   for (var l = 0; l < toExport.length; l++) {
     var lid = l + 1;
     var layer = toExport[l];
-    for (var i = 0; i < layer.objects.length; ++i) {
+    for (i = 0; i < layer.objects.length; ++i) {
       var obj = layer.objects[i];
       if (obj._class === T.END_POINT) {
         out.line("0");
@@ -625,10 +630,12 @@ TCAD.IO.prototype.dxfExport = function () {
   return out.data;
 };
 
-TCAD.io.exportTextData = function(data, fileName) {
+IO.exportTextData = function(data, fileName) {
   var link = document.getElementById("downloader");
   link.href = "data:application/octet-stream;charset=utf-8;base64," + btoa(data);
   link.download = fileName;
   link.click();
   //console.log(app.viewer.io.svgExport());
 };
+
+export {IO, BBox, Types};

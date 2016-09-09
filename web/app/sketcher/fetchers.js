@@ -1,4 +1,4 @@
-TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
+export function twoPoints(objs) {
   var points = [];
   for (var i = 0; i < objs.length; ++i) {
     if (objs[i]._class == 'TCAD.TWO.EndPoint') {
@@ -12,9 +12,9 @@ TCAD.TWO.ParametricManager.prototype._fetchTwoPoints = function(objs) {
     throw "Illegal Argument. Constraint requires 2 points or 1 line."
   }
   return points;
-};
+}
 
-TCAD.TWO.ParametricManager.prototype._fetchPoints = function(objs) {
+export function points(objs) {
   var points = [];
   for (var i = 0; i < objs.length; ++i) {
     objs[i].accept(function(o) {
@@ -28,9 +28,9 @@ TCAD.TWO.ParametricManager.prototype._fetchPoints = function(objs) {
     throw "Illegal Argument. Constraint requires at least 1 point/line/arc/circle."
   }
   return points;
-};
+}
 
-TCAD.TWO.ParametricManager.prototype._fetchArkCirc = function(objs, min) {
+export function arkCirc(objs, min) {
   var arcs = [];
   for (var i = 0; i < objs.length; ++i) {
     if (objs[i]._class === 'TCAD.TWO.Arc' || objs[i]._class === 'TCAD.TWO.Circle') {
@@ -41,9 +41,9 @@ TCAD.TWO.ParametricManager.prototype._fetchArkCirc = function(objs, min) {
     throw "Illegal Argument. Constraint requires at least " + min + " arcs/circles."
   }
   return arcs;
-};
+}
 
-TCAD.TWO.ParametricManager.prototype._fetch = function(objs, types, min) {
+export function generic(objs, types, min) {
   var result = [];
   for (var i = 0; i < objs.length; ++i) {
     if (types.indexOf(objs[i]._class)  > -1 ) {
@@ -54,9 +54,9 @@ TCAD.TWO.ParametricManager.prototype._fetch = function(objs, types, min) {
     throw "Illegal Argument. Constraint requires at least " + min + " of " + types;
   }
   return result;
-};
+}
 
-TCAD.TWO.ParametricManager.prototype._fetchPointAndLine = function(objs) {
+export function pointAndLine(objs) {
 
   var point = null;
   var line = null;
@@ -73,18 +73,18 @@ TCAD.TWO.ParametricManager.prototype._fetchPointAndLine = function(objs) {
   }
 
   return [point, line];
-};
+}
 
-TCAD.TWO.ParametricManager.prototype._fetchLine = function(objs) {
+export function line(objs) {
   for (var i = 0; i < objs.length; ++i) {
     if (objs[i]._class == 'TCAD.TWO.Segment') {
       return objs[i];
     }
   }
   throw "Illegal Argument. Constraint requires a line."
-};
+}
 
-TCAD.TWO.ParametricManager.prototype._fetchArcCircAndLine = function(objs) {
+export function arcCircAndLine(objs) {
 
   var arc = null;
   var line = null;
@@ -101,9 +101,9 @@ TCAD.TWO.ParametricManager.prototype._fetchArcCircAndLine = function(objs) {
   }
 
   return [arc, line];
-};
+}
 
-TCAD.TWO.ParametricManager.prototype._fetchTwoLines = function(objs) {
+export function twoLines(objs) {
   var lines = [];
   for (var i = 0; i < objs.length; ++i) {
     if (objs[i]._class == 'TCAD.TWO.Segment') {
@@ -114,9 +114,9 @@ TCAD.TWO.ParametricManager.prototype._fetchTwoLines = function(objs) {
     throw "Illegal Argument. Constraint requires 2 lines."
   }
   return lines;
-};
+}
 
-TCAD.TWO.utils._fetchSketchObjects = function(objs, silent, matching) {
+export function sketchObjects(objs, silent, matching) {
   var fetched = [];
   for (var i = 0; i < objs.length; ++i) {
     for (var j = 0; j < matching.length; j++) {
@@ -134,5 +134,5 @@ TCAD.TWO.utils._fetchSketchObjects = function(objs, silent, matching) {
     }
   }
   return fetched;
-};
+}
 
