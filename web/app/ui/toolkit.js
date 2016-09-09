@@ -1,47 +1,47 @@
-TCAD.toolkit = {};
+import $ from '../../lib/jquery-2.1.0.min'
 
-TCAD.toolkit.add = function(parent, child) {
+export function add(parent, child) {
   parent.content.append(child.root);
-};
+}
 
-TCAD.toolkit.methodRef = function(_this, methodName, args) {
+export function methodRef(_this, methodName, args) {
   return function() {
     _this[methodName].apply(_this, args);
   };
-};
+}
 
-TCAD.toolkit.Box = function() {
+export function Box() {
   this.root = this.content = $('<div class="tc-box" />');
   this.root.addClass('tc-box tc-scroll');
   this.root.appendTo('body');
-};
+}
 
-TCAD.toolkit.Box.prototype.close = function() {
+Box.prototype.close = function() {
   this.root.remove();
 };
 
-TCAD.toolkit.Folder = function(title) {
+export function Folder(title) {
   this.root = $('<div/>', {'class': 'tc-folder'});
   this.content = $('<div/>');
   this.root.append($('<div/>', {text: title, 'class': 'tc-row tc-title'}));
   this.root.append(this.content);
-};
+}
 
-TCAD.toolkit.Button = function(title) {
+export function Button(title) {
   this.root = $('<div/>',
     {'class': 'tc-row tc-ctrl tc-ctrl-btn', text: title});
-};
+}
 
-TCAD.toolkit.CheckBox = function(title, checked) {
+export function CheckBox(title, checked) {
   this.root = $('<div/>',
     {'class': 'tc-row tc-ctrl'});
   this.root.append('<label><input type="checkbox">' + title + '</label>')
   this.input = this.root.find("input");
   this.input.prop('checked', !!checked);
-};
+}
 
-TCAD.toolkit.InlineRadio = function(choiceLabels, choiceValues, checkedIndex) {
-  var name = 'TCAD.toolkit.InlineRadio_' + (TCAD.toolkit.InlineRadio.COUNTER++)
+export function InlineRadio(choiceLabels, choiceValues, checkedIndex) {
+  var name = 'TCAD.toolkit.InlineRadio_' + (InlineRadio.COUNTER++)
   this.root = $('<div/>',
     {'class': 'tc-row tc-ctrl tc-inline-radio'});
   this.inputs = [];
@@ -52,9 +52,9 @@ TCAD.toolkit.InlineRadio = function(choiceLabels, choiceValues, checkedIndex) {
      this.root.append(label);
   }
   this.inputs[checkedIndex].prop('checked', true);
-};
+}
 
-TCAD.toolkit.InlineRadio.prototype.getValue = function() {
+InlineRadio.prototype.getValue = function() {
   for (var i = 0; i < this.inputs.length; i++) {
     if (this.inputs[i].prop('checked')) {
       return this.inputs[i].attr('value');
@@ -63,15 +63,15 @@ TCAD.toolkit.InlineRadio.prototype.getValue = function() {
   return null;
 };
 
-TCAD.toolkit.InlineRadio.COUNTER = 0;
+InlineRadio.COUNTER = 0;
 
-TCAD.toolkit.propLayout = function(root, name, valueEl) {
+export function propLayout(root, name, valueEl) {
   root.append($('<span/>', {'class': 'tc-prop-name', text: name}))
     .append($('<div/>', {'class': 'tc-prop-value'})
     .append(valueEl));
-};
+}
 
-TCAD.toolkit.Number = function(name, initValue, baseStep, round) {
+export function Number(name, initValue, baseStep, round) {
   this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-number'});
   this.input = $("<input type='text' value='"+initValue+"' />");
   this.slide = false;
@@ -121,23 +121,23 @@ TCAD.toolkit.Number = function(name, initValue, baseStep, round) {
     e.stopPropagation();
     trigger.call(this);
   }, false);
-  TCAD.toolkit.propLayout(this.root, name, this.input);
-};
+  propLayout(this.root, name, this.input);
+}
 
-TCAD.toolkit.Combo = function(id, label) {
+export function Combo(id, labelText) {
   this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-combo'});
-  var label = $('<span/>', {'class': 'tc-prop-name', text: label});
+  var label = $('<span/>', {'class': 'tc-prop-name', text: labelText});
   this.select = $('<select>', {id : id});
   this.root.append(label)
     .append($('<div/>', {'class': 'tc-prop-value'}).append(this.select));
-};
+}
 
-TCAD.toolkit.Text = function(name) {
+export function Text(name) {
   this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-text'});
-  TCAD.toolkit.propLayout(this.root, name, $('<input type="text"/>'));
-};
+  propLayout(this.root, name, $('<input type="text"/>'));
+}
 
-TCAD.toolkit.ButtonRow = function(captions, actions) {
+export function ButtonRow(captions, actions) {
 
   this.root = $('<div/>',
     {'class': 'tc-row tc-ctrl tc-buttons-block'});
@@ -156,13 +156,13 @@ TCAD.toolkit.ButtonRow = function(captions, actions) {
     withAction(btn, actions[i]);
     this.root.append(btn);
   }
-};
+}
 
-TCAD.toolkit.List = function() {
+export function List() {
   this.root = $('<div/>', {'class': 'tc-tree'});
-};
+}
 
-TCAD.toolkit.List.prototype.addRow = function(name) {
+List.prototype.addRow = function(name) {
   var row = $('<div/>', {
     text: name, 'class': 'tc-row tc-pseudo-btn',
     css: {'margin-left': '10px'}
@@ -171,16 +171,16 @@ TCAD.toolkit.List.prototype.addRow = function(name) {
   return row;
 };
 
-TCAD.toolkit.Tree = function() {
+export function Tree() {
   this.root = $('<div/>', {'class': 'tc-tree'});
-};
+}
 
-TCAD.toolkit.Tree.prototype.set = function(data) {
+Tree.prototype.set = function(data) {
   this.root.empty();
   this._fill(data, 0);
 };
 
-TCAD.toolkit.Tree.prototype._fill = function(data, level) {
+Tree.prototype._fill = function(data, level) {
   var notLeaf = data.children !== undefined && data.children.length !== 0;
   if (data.name !== undefined) {
     this.root.append($('<div/>', {
@@ -196,11 +196,11 @@ TCAD.toolkit.Tree.prototype._fill = function(data, level) {
   }
 };
 
-TCAD.Parameters = function() {
+export function Parameters() {
   this.listeners = {};
-};
+}
 
-TCAD.Parameters.prototype.define = function(name, initValue) {
+Parameters.prototype.define = function(name, initValue) {
   function fn(name) {
     return '___' + name;
   }
@@ -215,7 +215,7 @@ TCAD.Parameters.prototype.define = function(name, initValue) {
   });
 };
 
-TCAD.Parameters.prototype.subscribe = function(name, listenerId, callback, scope) {
+Parameters.prototype.subscribe = function(name, listenerId, callback, scope) {
   var listenerList = this.listeners[name];
   if (listenerList === undefined) {
     listenerList = [];
@@ -229,7 +229,7 @@ TCAD.Parameters.prototype.subscribe = function(name, listenerId, callback, scope
   return (function () { callbackFunc(params[name], undefined, null) }); // return init function
 };
 
-TCAD.Parameters.prototype.notify = function(name, newValue, oldValue) {
+Parameters.prototype.notify = function(name, newValue, oldValue) {
   var listenerList = this.listeners[name];
   if (listenerList !== undefined) {
     for (var i = 0; i < listenerList.length; i++) {
@@ -243,16 +243,16 @@ TCAD.Parameters.prototype.notify = function(name, newValue, oldValue) {
   this.__currentSender = null;
 };
 
-TCAD.Parameters.prototype.set = function(name, value, sender) {
+Parameters.prototype.set = function(name, value, sender) {
   this.__currentSender = sender;
   this[name] = value;
 };
 
-TCAD.Bus = function() {
+export function Bus() {
   this.listeners = {};
-};
+}
 
-TCAD.Bus.prototype.subscribe = function(event, callback) {
+Bus.prototype.subscribe = function(event, callback) {
   var listenerList = this.listeners[event];
   if (listenerList === undefined) {
     listenerList = [];
@@ -261,7 +261,7 @@ TCAD.Bus.prototype.subscribe = function(event, callback) {
   listenerList.push(callback);
 };
 
-TCAD.Bus.prototype.notify = function(event, data) {
+Bus.prototype.notify = function(event, data) {
   var listenerList = this.listeners[event];
   if (listenerList !== undefined) {
     for (var i = 0; i < listenerList.length; i++) {
@@ -270,12 +270,12 @@ TCAD.Bus.prototype.notify = function(event, data) {
   }
 };
 
-TCAD.Bus.Observable = function(initValue) {
+Bus.Observable = function(initValue) {
   this.value = initValue;
 };
 
-TCAD.Bus.prototype.defineObservable = function(scope, name, eventName, initValue) {
-  var observable = new TCAD.Bus.Observable(initValue);
+Bus.prototype.defineObservable = function(scope, name, eventName, initValue) {
+  var observable = new Bus.Observable(initValue);
   var bus = this;
   return Object.defineProperty(scope, name, {
     get: function() { return observable.value;},

@@ -1,30 +1,28 @@
-TCAD.struct = {};
-
-TCAD.struct.HashTable = function(hashCodeF, equalsF) {
+function HashTable(hashCodeF, equalsF) {
   this.hashCodeF = hashCodeF;
   this.equalsF = equalsF;
   this.setTableSize(8);
   this.size = 0;
-};
+}
 
-TCAD.struct.HashTable.prototype.hash = function(key) {
+HashTable.prototype.hash = function(key) {
   return Math.abs(this.hashCodeF(key) % this.table.length);
 };
 
-TCAD.struct.HashTable.prototype.get = function(key) {
+HashTable.prototype.get = function(key) {
   var entry = this._findEntry(key, this._findBucket(key));
   if (entry == null) return null;
   return entry[1];
 };
 
-TCAD.struct.HashTable.prototype.put = function(key, value) {
+HashTable.prototype.put = function(key, value) {
   if (this.size >= 0.75 * this.table.length) {
     this.rebuild();
   }
   this._put(key, value);
 };
 
-TCAD.struct.HashTable.prototype._findBucket = function(key) {
+HashTable.prototype._findBucket = function(key) {
   var hash = this.hash(key);
   var bucket = this.table[hash];
   if (bucket === null) {
@@ -34,7 +32,7 @@ TCAD.struct.HashTable.prototype._findBucket = function(key) {
   return bucket;
 };
 
-TCAD.struct.HashTable.prototype._findEntry = function(key, bucket) {
+HashTable.prototype._findEntry = function(key, bucket) {
   for (var i = 0; i < bucket.length; i++) {
     if (this.equalsF(bucket[i][0], key)) {
       return bucket[i];
@@ -43,7 +41,7 @@ TCAD.struct.HashTable.prototype._findEntry = function(key, bucket) {
   return null;
 };
 
-TCAD.struct.HashTable.prototype._put = function(key, value) {
+HashTable.prototype._put = function(key, value) {
   var bucket = this._findBucket(key);
   var entry = this._findEntry(key, bucket);
   if (entry == null) {
@@ -54,7 +52,7 @@ TCAD.struct.HashTable.prototype._put = function(key, value) {
   this.size++;
 };
 
-TCAD.struct.HashTable.prototype.rebuild = function() {
+HashTable.prototype.rebuild = function() {
   this.size = 0;
   var oldTable = this.table;
   this.setTableSize(this.table.length * 2);
@@ -69,7 +67,7 @@ TCAD.struct.HashTable.prototype.rebuild = function() {
   }
 };
 
-TCAD.struct.HashTable.prototype.getKeys = function() {
+HashTable.prototype.getKeys = function() {
   var keys = [];
   this.entries(function(k) {
     keys.push(k)
@@ -77,7 +75,7 @@ TCAD.struct.HashTable.prototype.getKeys = function() {
   return keys;
 };
 
-TCAD.struct.HashTable.prototype.entries = function(callback) {
+HashTable.prototype.entries = function(callback) {
   for (var i = 0; i < this.table.length; i++) {
     var e = this.table[i];
     if (e != null)  {
@@ -89,38 +87,35 @@ TCAD.struct.HashTable.prototype.entries = function(callback) {
   }
 };
 
-TCAD.struct.HashTable.prototype.setTableSize = function(newSize) {
+HashTable.prototype.setTableSize = function(newSize) {
   this.table = [];
   for (var i = 0; i < newSize; i++) {
     this.table[i] = null;
   }
 };
 
-TCAD.struct.hashTable = {};
-
-TCAD.struct.hashTable.DoubleHelper = function() {
+function DoubleHelper() {
   this.dv = new DataView(new ArrayBuffer(8));
-};
+}
 
-TCAD.struct.hashTable.DoubleHelper.prototype.hash = function(v) {
+DoubleHelper.prototype.hash = function(v) {
   this.dv.setFloat64(0, v);
   return this.dv.getInt32(0) ^ this.dv.getInt32(4);
 };
 
-TCAD.struct.hashTable.vectorEquals = function(a, b) {
-  return a.x === b.x && a.y === b.y && a.z === b.z;
-};
-
-TCAD.struct.hashTable.forVector3d = function() {
-  var doubleHelper = new TCAD.struct.hashTable.DoubleHelper();
+HashTable.forVector3d = function() {
+  var doubleHelper = new DoubleHelper();
   function hash(v) {
     return doubleHelper.hash(v.x) ^ doubleHelper.hash(v.y) ^ doubleHelper.hash(v.z);
   }
-  return new TCAD.struct.HashTable(hash, TCAD.struct.hashTable.vectorEquals);
+  function eq(a, b) {
+    return a.x === b.x && a.y === b.y && a.z === b.z;
+  }
+  return new HashTable(hash, eq);
 };
 
-TCAD.struct.hashTable.forEdge = function() {
-  var doubleHelper = new TCAD.struct.hashTable.DoubleHelper();
+HashTable.forEdge = function() {
+  var doubleHelper = new DoubleHelper();
   function hash(v) {
     return doubleHelper.hash(v[0].x) ^ doubleHelper.hash(v[0].y) ^ doubleHelper.hash(v[0].z)
           ^doubleHelper.hash(v[1].x) ^ doubleHelper.hash(v[1].y) ^ doubleHelper.hash(v[1].z);
@@ -135,22 +130,22 @@ TCAD.struct.hashTable.forEdge = function() {
     var b2 = e2[1];
     return (veq(a1, a2) && veq(b1, b2)) || (veq(a1, b2) && veq(b1, a2));
   }
-  return new TCAD.struct.HashTable(hash, eq);
+  return new HashTable(hash, eq);
 };
 
-TCAD.struct.hashTable.forVector2d = function() {
-  var doubleHelper = new TCAD.struct.hashTable.DoubleHelper();
+HashTable.forVector2d = function() {
+  var doubleHelper = new DoubleHelper();
   function hash(v) {
     return doubleHelper.hash(v.x) ^ doubleHelper.hash(v.y) ;
   }
   function eq(a, b) {
     return a.x === b.x && a.y === b.y;
   }
-  return new TCAD.struct.HashTable(hash, eq);
+  return new HashTable(hash, eq);
 };
 
-TCAD.struct.hashTable.forDoubleArray = function() {
-  var doubleHelper = new TCAD.struct.hashTable.DoubleHelper();
+HashTable.forDoubleArray = function() {
+  var doubleHelper = new DoubleHelper();
   function hash(v) {
     var hash = 0;
     for (var i = 0; i < v.length; i++) {
@@ -164,5 +159,7 @@ TCAD.struct.hashTable.forDoubleArray = function() {
     }
     return true;
   }
-  return new TCAD.struct.HashTable(hash, eq);
+  return new HashTable(hash, eq);
 };
+
+export {HashTable, DoubleHelper}
