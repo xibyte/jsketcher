@@ -69,18 +69,15 @@ IO.prototype._loadSketch = function(sketch) {
     return layer;
   }
   var T = Types;
+  var maxEdge = 0;
   var sketchLayers = sketch['layers'];
   var boundary = sketch['boundary'];
   var boundaryNeedsUpdate = !(boundary === undefined || boundary == null);
-  var boundaryIOLayer = null;
   if (sketchLayers !== undefined) {
     for (var l = 0; l < sketchLayers.length; ++l) {
       var ioLayer = sketchLayers[l];
       var layerName = ioLayer['name'];
-      if (layerName == IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate) {
-        boundaryIOLayer = ioLayer; 
-        continue;
-      }
+      var boundaryProcessing = layerName == IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
       var layer = getLayer(this.viewer, layerName);
       if (!!ioLayer.style) layer.style = ioLayer.style;
       var layerData = ioLayer['data'];
@@ -89,6 +86,13 @@ IO.prototype._loadSketch = function(sketch) {
         var skobj = null;
         var _class = obj['_class'];
         var aux = !!obj['aux'];
+        
+        if (boundaryProcessing) {
+          if (_class === T.SEGMENT && boundary.lines.length == 0) continue;
+          else if (_class === T.ARC && boundary.arcs.length == 0) continue;
+          else if (_class === T.CIRCLE && boundary.circles.length == 0) continue;
+        }
+        
         if (_class === T.SEGMENT) {
           const points = obj['points'];
           const a = endPoint(points[0]);
@@ -123,10 +127,16 @@ IO.prototype._loadSketch = function(sketch) {
           if (aux) skobj.accept(function(o){o.aux = true; return true;});
           if (obj['edge'] !== undefined) {
             skobj.edge = obj['edge'];
+            maxEdge = Math.max(maxEdge, skobj.edge);
           }
           layer.objects.push(skobj);
           skobj.layer = layer;
           index[obj['id']] = skobj;
+        }
+        if (boundaryProcessing) {
+          if (_class === T.SEGMENT) this.synchLine(skobj, boundary.lines.shift());
+          else if (_class === T.ARC) this.synchArc(skobj, boundary.arcs.shift());
+          else if (_class === T.CIRCLE) this.synchCircle(skobj, boundary.circles.shift());
         }
       }
     }
@@ -142,7 +152,7 @@ IO.prototype._loadSketch = function(sketch) {
     }
   }
 
-  this.setupBoundary(boundary, index, boundaryIOLayer);
+  this.addNewBoundaryObjects(boundary, maxEdge);
 
   var sketchConstraints = sketch['constraints'];
   if (sketchConstraints !== undefined) {
@@ -159,6 +169,72 @@ IO.prototype._loadSketch = function(sketch) {
   var constants = sketch['constants'];
   if (constants !== undefined) {
     this.viewer.params.constantDefinition = constants;
+  }
+};
+
+IO.prototype.synchLine = function(skobj, edgeObj) {
+  skobj.a.x = edgeObj.a.x;
+  skobj.a.y = edgeObj.a.y;
+  skobj.b.x = edgeObj.b.x;
+  skobj.b.y = edgeObj.b.y;
+};
+
+IO.prototype.synchArc = function(skobj, edgeObj) {
+  skobj.a.x = edgeObj.a.x;
+  skobj.a.y = edgeObj.a.y;
+  skobj.b.x = edgeObj.b.x;
+  skobj.b.y = edgeObj.b.y;
+  skobj.c.x = edgeObj.c.x;
+  skobj.c.y = edgeObj.c.y;
+};
+
+IO.prototype.synchCircle = function(skobj, edgeObj) {
+  skobj.c.x = edgeObj.c.x;
+  skobj.c.y = edgeObj.c.y;
+  skobj.r.set(edgeObj.r);
+};
+
+IO.prototype.addNewBoundaryObjects = function(boundary, maxEdge) {
+  var boundaryLayer = this.viewer.findLayerByName(IO.BOUNDARY_LAYER_NAME);
+
+  if (boundaryLayer === null) {
+    boundaryLayer = new Layer(IO.BOUNDARY_LAYER_NAME, Styles.BOUNDS);
+    this.viewer.layers.splice(0, 0, boundaryLayer);
+  } 
+
+  boundaryLayer.readOnly = true;
+  boundaryLayer.style = Styles.BOUNDS;
+
+  var i, obj, id = maxEdge + 1;
+  function __processAux(obj) {
+    obj.edge = id ++;
+    obj.accept(function(o){
+      o.aux = true;
+      return true;
+    });
+  }
+
+  for (i = 0; i < boundary.lines.length; ++i) {
+    var edge = boundary.lines[i];
+    var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, boundaryLayer);
+    __processAux(seg);
+  }
+  for (i = 0; i < boundary.arcs.length; ++i) {
+    var a = boundary.arcs[i];
+    var arc = new Arc(
+      new EndPoint(a.a.x, a.a.y),
+      new EndPoint(a.b.x, a.b.y),
+      new EndPoint(a.c.x, a.c.y)
+    );
+    boundaryLayer.objects.push(arc);
+    __processAux(arc);
+  }
+  for (i = 0; i < boundary.circles.length; ++i) {
+    obj = boundary.circles[i];
+    var circle = new Circle(new EndPoint(obj.c.x, obj.c.y));
+    circle.r.set(obj.r);
+    boundaryLayer.objects.push(circle);
+    __processAux(circle);
   }
 };
 
@@ -234,63 +310,6 @@ IO.prototype._serializeSketch = function() {
     sketch['constants'] = constantDefinition;
   }
   return sketch;
-};
-
-IO.prototype.setupBoundary = function(boundary, index, boundaryIOLayer) {
-  var boundaryLayer = this.viewer.findLayerByName(IO.BOUNDARY_LAYER_NAME);
-  
-  if (boundaryLayer === null) {
-    boundaryLayer = new Layer(IO.BOUNDARY_LAYER_NAME, Styles.BOUNDS);
-    this.viewer.layers.splice(0, 0, boundaryLayer);
-  } else {
-    boundaryLayer.objects = [];
-  }
-
-  boundaryLayer.readOnly = true;
-  boundaryLayer.style = Styles.BOUNDS;
-  
-  var edgeIndex = {};
-  var i, obj;
-  if (boundaryIOLayer != null) {
-    var layerData = boundaryIOLayer.data;
-    for (i = 0; i < layerData.length; ++i) {
-      var ioObj = layerData[i];
-      if (ioObj.edge !== undefined) edgeIndex[ioObj.edge] = ioObj.id;
-    }
-  }
-  
-  var id = 0;
-  function __processAux(obj) {
-    obj.accept(function(o){
-      o.aux = true; 
-      o.edge = id ++;
-      index[edgeIndex[o.edge]] = o;
-      return true;
-    });
-  }
-
-  for (i = 0; i < boundary.lines.length; ++i) {
-    var edge = boundary.lines[i];
-    var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, boundaryLayer);
-    __processAux(seg);
-  }
-  for (i = 0; i < boundary.arcs.length; ++i) {
-    var a = boundary.arcs[i];
-    var arc = new Arc(
-      new EndPoint(a.a.x, a.a.y),
-      new EndPoint(a.b.x, a.b.y),
-      new EndPoint(a.c.x, a.c.y)
-    );
-    boundaryLayer.objects.push(arc);
-    __processAux(arc);
-  }
-  for (i = 0; i < boundary.circles.length; ++i) {
-    obj = boundary.circles[i];
-    var circle = new Circle(new EndPoint(obj.c.x, obj.c.y));
-    circle.r.set(obj.r);
-    boundaryLayer.objects.push(circle);
-    __processAux(circle);
-  }
 };
 
 IO.prototype.parseConstr = function (c, index) {
