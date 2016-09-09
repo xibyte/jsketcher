@@ -1,9 +1,8 @@
-optim = {};
-
-optim.DEBUG_HANDLER = function() {};
+import numeric from 'numeric';
+import {_vec, _matrix} from './math'
 
 //Added strong wolfe condition to numeric's uncmin
-optim.bfgs_ = function(f,x0,tol,gradient,maxit,callback,options) {
+var bfgs_ = function(f,x0,tol,gradient,maxit,callback,options) {
   var grad = numeric.gradient;
   if(typeof options === "undefined") { options = {}; }
   if(typeof tol === "undefined") { tol = 1e-8; }
@@ -44,7 +43,6 @@ optim.bfgs_ = function(f,x0,tol,gradient,maxit,callback,options) {
         tR = t;
         t = (tL + tR) * 0.5;
         ++it;
-        continue;
       } else {
         var slope = dot(gradient(x1), step);
         if (slope <= 0.9 * Math.abs(df0)){
@@ -52,14 +50,11 @@ optim.bfgs_ = function(f,x0,tol,gradient,maxit,callback,options) {
         }else if ( slope >= 0.9 * df0) {
           tR = t;
           t = (tL+ tR) * 0.5;
-          continue;
         }else{
           tL = t;
           t = (tL+ tR)*0.5;
-          continue;
         }
       }
-      break;
     }
     if(t*nstep < tol) { msg = "Line search step size smaller than tol"; break; }
     if(it === maxit) { msg = "maxit reached during line search"; break; }
@@ -83,7 +78,7 @@ optim.bfgs_ = function(f,x0,tol,gradient,maxit,callback,options) {
 };
 
 
-optim.bfgs = function(f,x0,tol,gradient,maxit,callback,options) {
+var bfgs = function(f,x0,tol,gradient,maxit,callback,options) {
   var grad = numeric.gradient;
   if(typeof options === "undefined") { options = {}; }
   if(typeof tol === "undefined") { tol = 1e-8; }
@@ -119,7 +114,7 @@ optim.bfgs = function(f,x0,tol,gradient,maxit,callback,options) {
     x1 = add(x0,s);
     var f2 = f(x1);
 
-    t3 = 2.0;
+    var t3 = 2.0;
     s = mul(step,t3);
     x1 = add(x0,s);
     var f3 = f(x1);
@@ -194,7 +189,7 @@ optim.bfgs = function(f,x0,tol,gradient,maxit,callback,options) {
   return {solution: x0, f: f0, gradient: g0, invHessian: H1, iterations:it, message: msg};
 };
 
-optim.bfgs_updater = function(gradient, x0) {
+var bfgs_updater = function(gradient, x0) {
   var n = x0.length;
   var max = Math.max, norm2 = numeric.norm2;
   var g0,g1,H1 = numeric.identity(n);
@@ -202,7 +197,7 @@ optim.bfgs_updater = function(gradient, x0) {
   var all = numeric.all, isfinite = numeric.isFinite, neg = numeric.neg;
   var y,Hy,Hs,ys;
   var msg = "";
-  var g0 = gradient(x0);
+  g0 = gradient(x0);
 
   function step() {
     return neg(dot(H1,g0));
@@ -227,9 +222,10 @@ optim.bfgs_updater = function(gradient, x0) {
   return {step:step, update:update};
 };
 
-optim.inv = function inv(x) {
-    var s = numeric.dim(x), abs = Math.abs, m = s[0], n = s[1];
-    var A = numeric.clone(x), Ai, Aj;
+var inv = function inv(A) {
+    A = numeric.clone(A);
+    var s = numeric.dim(A), abs = Math.abs, m = s[0], n = s[1];
+    var Ai, Aj;
     var I = numeric.identity(m), Ii, Ij;
     var i,j,k,x;
     for(j=0;j<n;++j) {
@@ -259,13 +255,13 @@ optim.inv = function inv(x) {
     return I;
 };
 
-optim._result = function(evalCount, error, returnCode) {
+var _result = function(evalCount, error, returnCode) {
   this.evalCount = evalCount;
   this.error = error;
   this.returnCode = returnCode;
 };
 
-optim.dog_leg = function (subsys, rough) {
+var dog_leg = function (subsys, rough) {
   //rough = true
   //var tolg = rough ? 1e-3 : 1e-4;
   var tolg, tolf;
@@ -283,11 +279,11 @@ optim.dog_leg = function (subsys, rough) {
   var csize = subsys.constraints.length;
 
   if (xsize == 0) {
-    return new optim._result(0, 0, 1);
+    return new _result(0, 0, 1);
   }
 
-  var vec = TCAD.math._arr;
-  var mx = TCAD.math._matrix;
+  var vec = _vec;
+  var mx = _matrix;
 
   var n = numeric;
 
@@ -315,7 +311,7 @@ optim.dog_leg = function (subsys, rough) {
 
   function lsolve_slow(A, b) {
     var At = n.transpose(A);
-    var res = n.dot(n.dot(At, optim.inv(n.dot(A, At))), b);
+    var res = n.dot(n.dot(At, inv(n.dot(A, At))), b);
     return res;
   }
 
@@ -366,7 +362,7 @@ optim.dog_leg = function (subsys, rough) {
 //          h_gn = lusolve(Jx, n.mul(fx, -1));
 
       //Conjugate gradient method
-      //h_gn = optim.cg(Jx, h_gn, n.mul(fx, -1), 1e-8, iterLimit);
+      //h_gn = cg(Jx, h_gn, n.mul(fx, -1), 1e-8, iterLimit);
 
       //solve linear problem using svd formula to get the gauss-newton step
       //h_gn = lls(Jx, n.mul(fx, -1));
@@ -473,19 +469,18 @@ optim.dog_leg = function (subsys, rough) {
   }
   //log.push(returnCode);
   //window.___log(log);
-  return new optim._result(iter, err, returnCode);
+  return new _result(iter, err, returnCode);
 };
 
-optim.cg = function(A, x, b, tol, maxIt) {
+var cg = function(A, x, b, tol, maxIt) {
 
   var _ = numeric;
 
   var tr = _.transpose;
   var At = tr(A);
   if (A.length != A[0].length) {
-    var A = _.dot(At, A);
-    var b = _.dot(At, b);
-    At = tr(A);
+    A = _.dot(At, A);
+    b = _.dot(At, b);
   }
 
   var r = _.sub(_.dot(A, x), b);
@@ -510,3 +505,7 @@ optim.cg = function(A, x, b, tol, maxIt) {
 //  console.log("liner problem solved in " + i);
   return x;
 };
+
+var optim = {DEBUG_HANDLER : function() {}}; //backward compatibility
+
+export {dog_leg, optim}

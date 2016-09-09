@@ -1,9 +1,14 @@
+import * as tk from '../ui/toolkit'
+import * as cad_utils from '../utils/cad-utils'
+import * as math from '../math/math'
+import * as workbench from './workbench'
+import {ExtrudeWizard, PlaneWizard} from './wizards/wizards'
+import {IO} from '../sketcher/io'
 
-TCAD.UI = function(app) {
+function UI(app) {
   this.app = app;
   this.viewer = app.viewer;
 
-  var tk = TCAD.toolkit;
   var mainBox = new tk.Box();
   mainBox.root.css({height : '100%'});
   var propFolder = new tk.Folder("Solid's Properties");
@@ -53,7 +58,7 @@ TCAD.UI = function(app) {
       rows.removeClass('history-selected');
       rows.eq(craft.historyPointer).addClass('history-selected');
       var op = craft.history[craft.historyPointer];
-      historyWizard = TCAD.UI.createWizard(op, app, mainBox);
+      historyWizard = UI.createWizard(op, app, mainBox);
       finishHistory.root.show();
     } else {
       finishHistory.root.hide();
@@ -80,7 +85,7 @@ TCAD.UI = function(app) {
       var op = JSON.parse(JSON.stringify(craft.history[craft.historyPointer]));
       op.protoParams = historyWizard.currentParams();
       historyWizard.close();
-      historyWizard = TCAD.UI.createWizard(op, app, mainBox);
+      historyWizard = UI.createWizard(op, app, mainBox);
     }
   });
 
@@ -94,7 +99,7 @@ TCAD.UI = function(app) {
       if (app.viewer.selectionMgr.selection.length == 0) {
         return;
       }
-      TCAD.UI.createCutExtrudeWizard(isCut, ui.app, app.viewer.selectionMgr.selection[0], mainBox);
+      UI.createCutExtrudeWizard(isCut, ui.app, app.viewer.selectionMgr.selection[0], mainBox);
     }
   }
 
@@ -103,7 +108,7 @@ TCAD.UI = function(app) {
   edit.root.click(tk.methodRef(app, "sketchFace"));
   refreshSketches.root.click(tk.methodRef(app, "refreshSketches"));
   addPlane.root.click(function() {
-    TCAD.UI.createPlaneWizard(app, mainBox);
+    UI.createPlaneWizard(app, mainBox);
   });
   printSolids.root.click(function () {
     app.findAllSolids().map(function(o) {
@@ -139,17 +144,17 @@ TCAD.UI = function(app) {
     app.viewer.selectionMgr.deselectAll();
   });
   stlExport.root.click(function() {
-    var allPolygons = TCAD.utils.arrFlatten1L(app.findAllSolids().map(function (s) {
+    var allPolygons = cad_utils.arrFlatten1L(app.findAllSolids().map(function (s) {
       return s.csg.toPolygons()
     }));
     var stl = CSG.fromPolygons(allPolygons).toStlString();
-    TCAD.io.exportTextData(stl.data[0], app.id + ".stl");
+    IO.exportTextData(stl.data[0], app.id + ".stl");
   })
-};
+}
 
-TCAD.UI.prototype.getInfoForOp = function(op) {
+UI.prototype.getInfoForOp = function(op) {
   var p = op.params;
-  var norm2 = TCAD.math.norm2;
+  var norm2 = math.norm2;
   if ('CUT' === op.type) {
     return op.type + " (" + norm2(p.target) + ")";
   } else if ('PAD' === op.type) {
@@ -162,31 +167,30 @@ TCAD.UI.prototype.getInfoForOp = function(op) {
   return op.type;
 };
 
-TCAD.UI.createWizard = function(op, app, alignComponent) {
+UI.createWizard = function(op, app, alignComponent) {
   var initParams = op.protoParams;
   var face = op.face !== undefined ? app.findFace(op.face) : null;
   if (face != null) {
     app.viewer.selectionMgr.select(face);
   }
   if ('CUT' === op.type) {
-    return TCAD.UI.createCutExtrudeWizard(true, app, face, alignComponent, initParams, true);
+    return UI.createCutExtrudeWizard(true, app, face, alignComponent, initParams, true);
   } else if ('PAD' === op.type) {
-    return TCAD.UI.createCutExtrudeWizard(false, app, face, alignComponent, initParams, true);
+    return UI.createCutExtrudeWizard(false, app, face, alignComponent, initParams, true);
   } else if ('PLANE' === op.type) {
-    return TCAD.UI.createPlaneWizard(app, alignComponent, initParams, true);
+    return UI.createPlaneWizard(app, alignComponent, initParams, true);
   }
   return null;
 };
 
 
-TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, initParams, overriding) {
-  var tk = TCAD.toolkit;
+UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, initParams, overriding) {
   function def(index, fallback) {
     return !!initParams ? initParams[index] : fallback;
   }
 
-  var normal = TCAD.utils.vec(face.csgGroup.plane.normal);
-  var polygons = TCAD.craft.getSketchedPolygons3D(app, face);
+  var normal = cad_utils.vec(face.csgGroup.plane.normal);
+  var polygons = workbench.getSketchedPolygons3D(app, face);
 
   var box = new tk.Box();
   box.root.css({left : (alignComponent.root.width() + 10) + 'px', top : 0});
@@ -196,7 +200,7 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
   var scale = new tk.Number("Expansion", def(1, 1), 0.1, 1);
   var deflection = new tk.Number("Deflection", def(2, 0), 1);
   var angle = new tk.Number("Angle", def(3, 0), 5);
-  var wizard = new TCAD.wizards.ExtrudeWizard(app.viewer, polygons);
+  var wizard = new ExtrudeWizard(app.viewer, polygons);
   function onChange() {
     var depthValue = theValue.input.val();
     var scaleValue = scale.input.val();
@@ -248,12 +252,10 @@ TCAD.UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, ini
   }
 
   tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, isCut ? applyCut : applyExtrude]));
-  return new TCAD.UI.WizardRef(wizard, box, close, protoParams);
+  return new UI.WizardRef(wizard, box, close, protoParams);
 };
 
-TCAD.UI.createPlaneWizard = function (app, alignComponent, initParams, overiding) {
-  var tk = TCAD.toolkit;
-  
+UI.createPlaneWizard = function (app, alignComponent, initParams, overiding) {
   var box = new tk.Box();
   box.root.css({left : (alignComponent.root.width() + 10) + 'px', top : 0});
   var folder = new tk.Folder("Add a Plane");
@@ -264,7 +266,7 @@ TCAD.UI.createPlaneWizard = function (app, alignComponent, initParams, overiding
 
   tk.add(folder, orientation);
   tk.add(folder, depth);
-  var wizard = new TCAD.wizards.PlaneWizard(app.viewer);
+  var wizard = new PlaneWizard(app.viewer);
   var orientationValue, w;
   function onChange() {
     wizard.update(orientationValue = orientation.getValue(), w = depth.input.val());
@@ -289,12 +291,14 @@ TCAD.UI.createPlaneWizard = function (app, alignComponent, initParams, overiding
   depth.input.on('t-change', onChange);
   onChange();
   tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, ok]));
-  return new TCAD.UI.WizardRef(wizard, box, close, protoParams);
+  return new UI.WizardRef(wizard, box, close, protoParams);
 };
 
-TCAD.UI.WizardRef = function(wizard, box, close, currentParams) {
+UI.WizardRef = function(wizard, box, close, currentParams) {
   this.wizard = wizard;
   this.box = box;
   this.close = close;
   this.currentParams = currentParams;
 };
+
+export {UI}

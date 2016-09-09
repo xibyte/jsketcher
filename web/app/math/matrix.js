@@ -1,15 +1,19 @@
+import * as math from 'math'
 
-/** @constructor */
-TCAD.math.Matrix = function(r, c) {
+/**
+ *  @constructor
+ *  @deprecated use numeric library
+ * */
+export function Matrix(r, c) {
   this.data = [];
   this.rSize = r;
   this.cSize = c;
   for (var i = 0; i < r; i++) {
-    this.data[i] = TCAD.math._arr(c)
+    this.data[i] = math._vec(c)
   }
-};
+}
 
-TCAD.math.Matrix.prototype.identity = function() {
+Matrix.prototype.identity = function() {
 
   for (var i = 0; i < this.rSize; i++) {
     for (var j = 0; j < this.cSize; j++) {
@@ -18,8 +22,8 @@ TCAD.math.Matrix.prototype.identity = function() {
   }
 };
 
-TCAD.math.Matrix.prototype.subtract = function(m) {
-  var out = new TCAD.math.Matrix(this.rSize, this.cSize);
+Matrix.prototype.subtract = function(m) {
+  var out = new Matrix(this.rSize, this.cSize);
   for (var i = 0; i < this.rSize; i++) {
     for (var j = 0; j < this.cSize; j++) {
       out.data[i][j] = this.data[i][j] - m.data[i][j];
@@ -28,8 +32,8 @@ TCAD.math.Matrix.prototype.subtract = function(m) {
   return out;
 };
 
-TCAD.math.Matrix.prototype.add = function(m) {
-  var out = new TCAD.math.Matrix(this.rSize, this.cSize);
+Matrix.prototype.add = function(m) {
+  var out = new Matrix(this.rSize, this.cSize);
   for (var i = 0; i < this.rSize; i++) {
     for (var j = 0; j < this.cSize; j++) {
       out.data[i][j] = this.data[i][j] + m.data[i][j];
@@ -38,16 +42,16 @@ TCAD.math.Matrix.prototype.add = function(m) {
   return out;
 };
 
-TCAD.math.Matrix.prototype.multiply = function(m) {
+Matrix.prototype.multiply = function(m) {
 
   var nRows = this.rSize;
   var nCols = m.cSize;
   var nSum = this.cSize;
 
-  var out = new TCAD.math.Matrix(nRows, nCols);
+  var out = new Matrix(nRows, nCols);
   
   var outData = out.data;
-  var mCol = TCAD.math._arr(nSum);
+  var mCol = math._vec(nSum);
   var mData = m.data;
 
   for (var col = 0; col < nCols; col++) {
@@ -68,8 +72,8 @@ TCAD.math.Matrix.prototype.multiply = function(m) {
   return out;
 };
 
-TCAD.math.Matrix.prototype.scalarMultiply = function(s) {
-  var out = new TCAD.math.Matrix(this.rSize, this.cSize);
+Matrix.prototype.scalarMultiply = function(s) {
+  var out = new Matrix(this.rSize, this.cSize);
   for (var i = 0; i < this.rSize; i++) {
     for (var j = 0; j < this.cSize; j++) {
       out.data[i][j] = this.data[i][j] * s;
@@ -78,8 +82,8 @@ TCAD.math.Matrix.prototype.scalarMultiply = function(s) {
   return out;
 };
 
-TCAD.math.Matrix.prototype.transpose = function() {
-  var out = new TCAD.math.Matrix(this.cSize, this.rSize);
+Matrix.prototype.transpose = function() {
+  var out = new Matrix(this.cSize, this.rSize);
   for (var i = 0; i < this.rSize; i++) {
     for (var j = 0; j < this.cSize; j++) {
       out.data[j][i] = this.data[i][j];
@@ -88,8 +92,8 @@ TCAD.math.Matrix.prototype.transpose = function() {
   return out;
 };
 
-TCAD.math.Matrix.prototype.copy = function() {
-  var out = new TCAD.math.Matrix(this.rSize, this.cSize);
+Matrix.prototype.copy = function() {
+  var out = new Matrix(this.rSize, this.cSize);
   for (var i = 0; i < this.rSize; i++) {
     for (var j = 0; j < this.cSize; j++) {
       out.data[i][j] = this.data[i][j];
@@ -98,7 +102,7 @@ TCAD.math.Matrix.prototype.copy = function() {
   return out;
 };
 
-TCAD.math.Matrix.prototype.dot = function(v) {
+Matrix.prototype.dot = function(v) {
   var vData = v.data;
   var dot = 0;
   for (var i = 0; i < this.rSize; i++) {
@@ -107,7 +111,7 @@ TCAD.math.Matrix.prototype.dot = function(v) {
   return dot;
 };
 
-TCAD.math.Matrix.prototype.norm = function(v) {
+Matrix.prototype.norm = function(v) {
   var sum = 0;
   for (var i = 0; i < this.rSize; i++) {
     var a = this.data[i][0];
@@ -115,11 +119,3 @@ TCAD.math.Matrix.prototype.norm = function(v) {
   }
   return Math.sqrt(sum);
 };
-
-/** @constructor */
-TCAD.math.Vector = function(n) {
-  TCAD.math.Matrix.call(this, n, 1);
-};
-
-TCAD.TWO.utils.extend(TCAD.math.Vector, TCAD.math.Matrix);
-

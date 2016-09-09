@@ -1,16 +1,24 @@
-TCAD.STORAGE_PREFIX = "TCAD.projects.";
+import {Viewer} from './viewer2d.js'
+import * as ui from '../ui/ui'
+import {IO, BBox} from './io'
+import {AddDimTool, AddCircleDimTool, HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
+import {AddPointTool, AddSegmentTool} from './shapes/segment'
+import {AddArcTool} from './shapes/arc'
+import {EditCircleTool} from './shapes/circle'
+import {FilletTool} from './helpers'
+import $ from '../../lib/jquery-2.1.0.min'
 
 /** @constructor */
-TCAD.App2D = function() {
+function App2D() {
   var app = this;
 
-  this.viewer = new TCAD.TWO.Viewer(document.getElementById('viewer'));
-  this.winManager = new TCAD.ui.WinManager();
+  this.viewer = new Viewer(document.getElementById('viewer'), IO);
+  this.winManager = new ui.WinManager();
     
   this.initSketchManager();
-  this._exportWin = new TCAD.ui.Window($('#exportManager'), app.winManager);
+  this._exportWin = new ui.Window($('#exportManager'), app.winManager);
 
-  $('#exportManager li').click(function() {TCAD.ui.closeWin(app._exportWin);});
+  $('#exportManager li').click(function() {ui.closeWin(app._exportWin);});
 
   this.constraintFilter = {};
   this.actions = {};
@@ -20,21 +28,21 @@ TCAD.App2D = function() {
 
   var dockEl = $('#dock');
   var statusEl = $('#status');
-  this.dock = new TCAD.ui.Dock(dockEl, statusEl, TCAD.App2D.views);
+  this.dock = new ui.Dock(dockEl, statusEl, App2D.views);
   this.dock.show('Constraints');
 
-  var consoleBtn = TCAD.ui.dockBtn('Commands', 'list');
+  var consoleBtn = ui.dockBtn('Commands', 'list');
   statusEl.append(consoleBtn);
-  var commandsWin = new TCAD.ui.Window($('#commands'), this.winManager);
+  var commandsWin = new ui.Window($('#commands'), this.winManager);
   commandsWin.tileUpRelative = $('#viewer');
   consoleBtn.click(function() {
     commandsWin.toggle();
   });
-  new TCAD.ui.Terminal(commandsWin, function(command) {
+  new ui.Terminal(commandsWin, function(command) {
     return "Command " + command + " executed";
   });
 
-  this.winManager.registerResize(dockEl, TCAD.ui.DIRECTIONS.EAST, function() {$('body').trigger('layout'); });
+  this.winManager.registerResize(dockEl, ui.DIRECTIONS.EAST, function() {$('body').trigger('layout'); });
   $('body').on('layout', this.viewer.onWindowResize);
   
   this.registerAction = function(id, desc, action) {
@@ -48,7 +56,7 @@ TCAD.App2D = function() {
 
   this.registerAction('open', "Open Sketch", function (e) {
     app._sketchesList.refresh();
-    TCAD.ui.openWin(app._sketchesWin, e);
+    ui.openWin(app._sketchesWin, e);
   });
 
   this.registerAction('clone', "Clone Sketch", function () {
@@ -56,15 +64,15 @@ TCAD.App2D = function() {
   });
 
   this.registerAction('export', "Export", function (e) {
-    TCAD.ui.openWin(app._exportWin, e);
+    ui.openWin(app._exportWin, e);
   });
 
   this.registerAction('exportSVG', "Export To SVG", function () {
-    TCAD.io.exportTextData(app.viewer.io.svgExport(), app.getSketchId() + ".svg");
+    IO.exportTextData(app.viewer.io.svgExport(), app.getSketchId() + ".svg");
   });
 
   this.registerAction('exportDXF', "Export To DXF", function () {
-    TCAD.io.exportTextData(app.viewer.io.dxfExport(), app.getSketchId() + ".dxf");
+    IO.exportTextData(app.viewer.io.dxfExport(), app.getSketchId() + ".dxf");
   });
 
   this.registerAction('undo', "Undo", function () {
@@ -80,23 +88,23 @@ TCAD.App2D = function() {
   });
 
   this.registerAction('addPoint', "Add Point", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddPointTool(app.viewer));
+    app.viewer.toolManager.takeControl(new AddPointTool(app.viewer));
   });
   
   this.registerAction('addSegment', "Add Segment", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, false));
+    app.viewer.toolManager.takeControl(new AddSegmentTool(app.viewer, false));
   });
 
   this.registerAction('addMultiSegment', "Add Multi Segment", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddSegmentTool(app.viewer, true));
+    app.viewer.toolManager.takeControl(new AddSegmentTool(app.viewer, true));
   });
 
   this.registerAction('addArc', "Add Arc", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddArcTool(app.viewer));
+    app.viewer.toolManager.takeControl(new AddArcTool(app.viewer));
   });
 
   this.registerAction('addCircle', "Add Circle", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.EditCircleTool(app.viewer));
+    app.viewer.toolManager.takeControl(new EditCircleTool(app.viewer));
   });
 
   this.registerAction('pan', "Pan", function () {
@@ -104,23 +112,23 @@ TCAD.App2D = function() {
   });
   
   this.registerAction('addFillet', "Add Fillet", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.FilletTool(app.viewer));
+    app.viewer.toolManager.takeControl(new FilletTool(app.viewer));
   });
 
   this.registerAction('addDim', "Add Dimension", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.Dimension(a,b)} ));
+    app.viewer.toolManager.takeControl(new AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new Dimension(a,b)} ));
   });
   
   this.registerAction('addHDim', "Add Horizontal Dimension", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.HDimension(a,b)} ));
+    app.viewer.toolManager.takeControl(new AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new HDimension(a,b)} ));
   });
   
   this.registerAction('addVDim', "Add Vertical Dimension", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new TCAD.TWO.VDimension(a,b)} ));
+    app.viewer.toolManager.takeControl(new AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new VDimension(a,b)} ));
   });
 
   this.registerAction('addCircleDim', "Add Circle Dimension", function () {
-    app.viewer.toolManager.takeControl(new TCAD.TWO.AddCircleDimTool(app.viewer, app.viewer.dimLayer));
+    app.viewer.toolManager.takeControl(new AddCircleDimTool(app.viewer, app.viewer.dimLayer));
   });
 
   this.registerAction('save', "Save", function () {
@@ -215,9 +223,9 @@ TCAD.App2D = function() {
     app.fit();
     app.viewer.refresh();
   });
-};
+}
 
-TCAD.App2D.views = [
+App2D.views = [
   {
     name: 'Dimensions',
     icon: 'arrows-v'
@@ -232,20 +240,16 @@ TCAD.App2D.views = [
   }
 ];
 
-TCAD.App2D.bottomViews = [
+App2D.bottomViews = [
   {
     name: 'Commands',
     icon: 'desktop'
   }
 ];
 
-TCAD.App2D.faBtn = function(iconName) {
-  return $('<i>', {'class' : 'fa fa-'+iconName});  
-};
+App2D.prototype.fit = function() {
 
-TCAD.App2D.prototype.fit = function() {
-
-  var bbox = new TCAD.io.BBox();
+  var bbox = new BBox();
   
   for (var l = 0; l < this.viewer.layers.length; ++l) {
     var layer = this.viewer.layers[l];
@@ -263,23 +267,23 @@ TCAD.App2D.prototype.fit = function() {
   this.viewer.showBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
 };
 
-TCAD.App2D.prototype.cloneSketch = function() {
+App2D.prototype.cloneSketch = function() {
   var name = prompt("Name for sketch clone");
   if (name != null) {
     if (this.isSketchExists(name)) {
       alert("Sorry, a sketch with the name '" + name + "' already exists. Won't override it.");
       return;
     }
-    localStorage.setItem(TCAD.STORAGE_PREFIX + name, this.viewer.io.serializeSketch())
+    localStorage.setItem(App2D.STORAGE_PREFIX + name, this.viewer.io.serializeSketch())
     this.openSketch(name);
   }
 };
 
-TCAD.App2D.prototype.isSketchExists = function(name) {
-  return localStorage.getItem(TCAD.STORAGE_PREFIX + name) != null;
+App2D.prototype.isSketchExists = function(name) {
+  return localStorage.getItem(App2D.STORAGE_PREFIX + name) != null;
 };
 
-TCAD.App2D.prototype.openSketch = function(name) {
+App2D.prototype.openSketch = function(name) {
   var uri = window.location.href.split("#")[0];
   if (name !== "untitled") {
     uri += "#" + name;
@@ -288,7 +292,7 @@ TCAD.App2D.prototype.openSketch = function(name) {
   win.focus();
 };
 
-TCAD.App2D.prototype.newSketch = function() {
+App2D.prototype.newSketch = function() {
   var name = prompt("Name for sketch");
   if (name != null) {
     if (this.isSketchExists(name)) {
@@ -299,18 +303,18 @@ TCAD.App2D.prototype.newSketch = function() {
   }
 };
 
-TCAD.App2D.prototype.initSketchManager = function(data, ext) {
-  this._sketchesWin = new TCAD.ui.Window($('#sketchManager'), this.winManager);
+App2D.prototype.initSketchManager = function(data, ext) {
+  this._sketchesWin = new ui.Window($('#sketchManager'), this.winManager);
   var app = this;
-  var sketchesList = new TCAD.ui.List('sketchList', {
+  var sketchesList = new ui.List('sketchList', {
     items : function() {
       var theItems = [];
       for (var name in localStorage) {
         if (!localStorage.hasOwnProperty(name)) {
           continue;
         }
-        if (name.indexOf(TCAD.STORAGE_PREFIX) === 0) {
-          name = name.substring(TCAD.STORAGE_PREFIX.length);
+        if (name.indexOf(App2D.STORAGE_PREFIX) === 0) {
+          name = name.substring(App2D.STORAGE_PREFIX.length);
         }
         theItems.push({name : name});
       }
@@ -319,7 +323,7 @@ TCAD.App2D.prototype.initSketchManager = function(data, ext) {
 
     remove : function(item) {
       if (confirm("Selected sketch will be REMOVED! Are you sure?")) {
-        localStorage.removeItem(TCAD.STORAGE_PREFIX + item.name);
+        localStorage.removeItem(App2D.STORAGE_PREFIX + item.name);
         sketchesList.refresh();
       }
     },
@@ -336,7 +340,7 @@ TCAD.App2D.prototype.initSketchManager = function(data, ext) {
   this._sketchesList = sketchesList;
 };
 
-TCAD.App2D.prototype.loadFromLocalStorage = function() {
+App2D.prototype.loadFromLocalStorage = function() {
   var sketchId = this.getSketchId();
   var sketchData = localStorage.getItem(sketchId);
   if (sketchData != null) {
@@ -346,10 +350,14 @@ TCAD.App2D.prototype.loadFromLocalStorage = function() {
   this.viewer.repaint();
 };
 
-TCAD.App2D.prototype.getSketchId = function() {
+App2D.prototype.getSketchId = function() {
   var id = window.location.hash.substring(1);
   if (!id) {
     id = "untitled";
   }
-  return TCAD.STORAGE_PREFIX + id;
+  return App2D.STORAGE_PREFIX + id;
 };
+
+App2D.STORAGE_PREFIX = "TCAD.projects.";
+
+export default App2D;
