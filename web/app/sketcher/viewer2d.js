@@ -635,10 +635,8 @@ Segment.prototype.validate = function() {
 
 Segment.prototype.recover = function() {
   var recoverLength = 100;
-  this.a.x -= recoverLength;
-  this.a.y -= recoverLength;
-  this.b.x += recoverLength;
-  this.b.y += recoverLength;
+  this.a.translate(-recoverLength, -recoverLength);
+  this.b.translate( recoverLength,  recoverLength);
 };
 
 Segment.prototype.collectParams = function(params) {
