@@ -2,7 +2,8 @@
   "extends": "eslint:recommended",
   "env": {
     "browser": true,
-    "commonjs": true
+    "commonjs": true,
+    "es6": true
   },
   "parser": "babel-eslint",
   "plugins": [
