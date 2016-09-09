@@ -7,7 +7,6 @@ import * as math from '../math/math'
 import * as fetch from './fetchers'
 
 var Constraints = {};
-var EQUALS_ELIMINATION_ENABLED = true;
 
 /** @constructor */
 function SubSystem() {
@@ -545,59 +544,46 @@ ParametricManager.__toId = function(v) {
   return v.id;
 };
 
-ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemConstraints, extraConstraints) {
+ParametricManager.reduceSystem = function(system, readOnlyParams) {
 
-  var pdict = {};
-  var params;
-  var _constrs = [];
-
-  var equalsDict = {};
-  var equalsIndex = [];
-  var eqcElimination = {};
-
-  var system = [];
-  this.__getSolveData(subSystemConstraints, system);
-  if (!!extraConstraints) this.__getSolveData(extraConstraints, system);
-
-  var auxParams = [];
-  var auxDict = {};
-
-  ParametricManager.fetchAuxParams(system, auxParams, auxDict);
-
+  var info = {
+    idToParam : {},
+    linkedParams : [],
+    reducedConstraints : {},
+    reducedParams : {}
+  };
+  
   var links = [];
-  if (EQUALS_ELIMINATION_ENABLED) {
-    var c, pi, paramToConstraints = {};
-    for (i = 0; i < system.length; ++i) {
-      c = system[i];
-      if (c[3] !== true) {
-        var sameParams = {};
-        for (pi = 0; pi < c[1].length; pi++) {
-          var param = c[1][pi];
-          var paramConstrs = paramToConstraints[param.id];
-          if (paramConstrs === undefined) {
-            paramConstrs = [];
-            paramToConstraints[param.id] = paramConstrs;
-          }
-          paramConstrs.push(i);
-        }
-      }
-    }
+  function Link(a, b, constr) {
+    this.a = a;
+    this.b = b;
+    this.constr = constr;
+    this.invalid = false;
+    this.processed = false;
+  }
 
-    function Link(a, b, constr) {
-      this.a = a;
-      this.b = b;
-      this.constr = constr;
-      this.invalid = false;
-      this.processed = false;
-    }
-    
-    for (i = 0; i < system.length; ++i) {
-      c = system[i];
-      if (c[3] === true) { //Reduce flag
-        var cp1 = c[1][0];
-        var cp2 = c[1][1];
-        links.push(new Link(cp1, cp2, i));
+  var c, pi, paramToConstraints = {};
+  for (i = 0; i < system.length; ++i) {
+    c = system[i];
+    if (c[3] !== true) {
+      for (pi = 0; pi < c[1].length; pi++) {
+        var param = c[1][pi];
+        var paramConstrs = paramToConstraints[param.id];
+        if (paramConstrs === undefined) {
+          paramConstrs = [];
+          paramToConstraints[param.id] = paramConstrs;
+        }
+        paramConstrs.push(i);
       }
+    }
+  }
+
+  for (i = 0; i < system.length; ++i) {
+    c = system[i];
+    if (c[3] === true) { //Reduce flag
+      var cp1 = c[1][0];
+      var cp2 = c[1][1];
+      links.push(new Link(cp1, cp2, i));
     }
   }
   function intersect(array1, array2) {
@@ -606,7 +592,7 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
         return array2.indexOf(n) != -1
       }).length != 0;
   }
-  
+
   function shared(param1, param2) {
     if (param1 == param2) return false;
     var assoc0 = paramToConstraints[param1];
@@ -615,7 +601,7 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
   }
 
   var linkTuples = [];
-  
+
   function mergeLinks(startIndex, into) {
     var linkI = links[startIndex];
     if (linkI.processed) return;
@@ -632,13 +618,13 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
     if (links[i].processed) continue;
     var linkTuple = [];
     linkTuples.push(linkTuple);
-    mergeLinks(i, linkTuple)  
+    mergeLinks(i, linkTuple)
   }
-   
+
   function resolveConflicts() {
     for (var i = 0; i < linkTuples.length; i++) {
       var tuple = linkTuples[i];
-      
+
       for (var j = 0; j < tuple.length; j++) {
         var linkA = tuple[j];
         if (linkA.invalid) continue;
@@ -675,23 +661,22 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
         var link = linkTuple[j];
         if (!link.invalid) {
           _merge(tuple, [link.a.id, link.b.id]);
-          eqcElimination[link.constr] = true;
-          equalsDict[link.a.id] = link.a;
-          equalsDict[link.b.id] = link.b;
+          info.reducedConstraints[link.constr] = true;
+          info.idToParam[link.a.id] = link.a;
+          info.idToParam[link.b.id] = link.b;
         }
       }
-    }   
+    }
     return tuples;
-  } 
+  }
   var tuples = linksToTuples(linkTuples);
 
-  var readOnlyParams = auxParams.concat(locked);
   for (var i = 0; i < tuples.length; ++i) {
     var tuple = tuples[i];
-    equalsIndex.push(tuple);
+    info.linkedParams.push(tuple);
     for (var mi = 0; mi < readOnlyParams.length; ++mi) {
-      var master = readOnlyParams[mi];
-      var masterIdx = tuple.indexOf(master.id);
+      var masterParam = readOnlyParams[mi];
+      var masterIdx = tuple.indexOf(masterParam.id);
       if (masterIdx >= 0) {
         var tmp = tuple[0];
         tuple[0] = tuple[masterIdx];
@@ -701,20 +686,36 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
     }
   }
 
-  var equalsElimination = {};
-  for (ei = 0; ei < equalsIndex.length; ++ei) {
-    var master = equalsIndex[ei][0];
-    for (i = 1; i < equalsIndex[ei].length; ++i) {
-      equalsElimination[equalsIndex[ei][i]] = master;
+  for (var ei = 0; ei < info.linkedParams.length; ++ei) {
+    var master = info.linkedParams[ei][0];
+    for (i = 1; i < info.linkedParams[ei].length; ++i) {
+      info.reducedParams[info.linkedParams[ei][i]] = master;
     }
   }
+  return info;
+};
+
+ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemConstraints, extraConstraints) {
+
+  var constrs = [];
+  var solverParamsDict = {};
+  var system = [];
+  var auxParams = [];
+  var auxDict = {};
   
-  function getParam(p) {
-    var master = equalsElimination[p.id];
+  this.__getSolveData(subSystemConstraints, system);
+  if (!!extraConstraints) this.__getSolveData(extraConstraints, system);
+
+  ParametricManager.fetchAuxParams(system, auxParams, auxDict);
+  var readOnlyParams = auxParams.concat(locked);
+  var reduceInfo = ParametricManager.reduceSystem(system, readOnlyParams);
+  
+  function getSolverParam(p) {
+    var master = reduceInfo.reducedParams[p.id];
     if (master !== undefined) {
-      p = equalsDict[master];
+      p = reduceInfo.idToParam[master];
     }
-    var _p = pdict[p.id];
+    var _p = solverParamsDict[p.id];
     if (_p === undefined) {
       if (p.__cachedParam__ === undefined) {
         _p = new Param(p.id, p.get());
@@ -725,84 +726,74 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
       }
 
       _p._backingParam = p;
-      pdict[p.id] = _p;
+      solverParamsDict[p.id] = _p;
     }
     return _p;
   }
 
-  var i;
-  var p;
-  var _p;
-  var ei;
-
+  (function pickupAuxiliaryInfoFromSlaves() {
+    for (var i = 0; i < reduceInfo.linkedParams.length; ++i) {
+      var linkedParams = reduceInfo.linkedParams[i];
+      var master = linkedParams[0];
+      if (auxDict[master] !== undefined) continue;
+      for (var j = 1; j < linkedParams.length; j++) {
+        var slave = linkedParams[j];
+        if (auxDict[slave] !== undefined) {
+          auxDict[master] = true;
+          break;
+        }
+      }
+    }
+  })();
+  
   var aux = [];
-  for (i = 0; i < system.length; ++i) {
-
+  for (var i = 0; i < system.length; ++i) {
     
     var sdata = system[i];
-    params = [];
+    var params = [];
 
-    for (p = 0; p < sdata[1].length; ++p) {
+    for (var p = 0; p < sdata[1].length; ++p) {
       var param = sdata[1][p];
-      _p = getParam(param);
-      params.push(_p);
-
-      (function () {
-        if (auxDict[param.id] !== undefined) {
-          aux.push(_p);
-          return;
-        }
-        for (var i = 0; i < equalsIndex.length; ++i) {
-          var eqParms = equalsIndex[i];
-          if (eqParms.indexOf(param.id) != -1) {
-            for (var j = 0; j < eqParms.length; j++) {
-              var eqp = eqParms[j];
-              if (auxDict[eqp] !== undefined) {
-                aux.push(_p);
-                return;
-              }
-            }
-          }
-        }
-      })();
+      var solverParam = getSolverParam(param);
+      params.push(solverParam);
+      if (auxDict[param.id] !== undefined) {
+        aux.push(solverParam);
+      }
     }
-    if (eqcElimination[i] === true) continue;
+    if (reduceInfo.reducedConstraints[i] === true) continue;
 
     var _constr = createByConstraintName(sdata[0], params, sdata[2]);
-    _constrs.push(_constr);
+    constrs.push(_constr);
   }
 
-  var _locked = [];
-  if (locked !== undefined) {
-    for (p = 0; p < locked.length; ++p) {
-      _locked[p] = getParam(locked[p]);
-    }
+  var lockedSolverParams = [];
+  for (p = 0; p < locked.length; ++p) {
+    lockedSolverParams[p] = getSolverParam(locked[p]);
   }
   
-  var solver = prepare(_constrs, _locked, aux);
+  var solver = prepare(constrs, lockedSolverParams, aux);
   function solve(rough, alg) {
     return solver.solveSystem(rough, alg);
   }
-  var viewer = this.viewer;
   function sync() {
-    for (var p in pdict) {
-      var _p = pdict[p];
-      if (!!_p._backingParam.__aux) continue;
-      _p._backingParam.set(_p.get());
+    for (var paramId in solverParamsDict) {
+      var solverParam = solverParamsDict[paramId];
+      if (!!solverParam._backingParam.aux) continue;
+      solverParam._backingParam.set(solverParam.get());
     }
 
     //Make sure all coincident constraints are equal
-    for (var ei = 0; ei < equalsIndex.length; ++ei) {
-      var master = equalsDict[ equalsIndex[ei][0]];
-      for (var i = 1; i < equalsIndex[ei].length; ++i) {
-        var slave = equalsDict[equalsIndex[ei][i]];
+    for (var ei = 0; ei < reduceInfo.linkedParams.length; ++ei) {
+      var master = reduceInfo.idToParam[ reduceInfo.linkedParams[ei][0]];
+      for (var i = 1; i < reduceInfo.linkedParams[ei].length; ++i) {
+        var slave = reduceInfo.idToParam[reduceInfo.linkedParams[ei][i]];
         slave.set(master.get());
       }
     }
   }
 
   function updateParameter(p) {
-    getParam(p).set(p.get());
+    getSolverParam(p).set(p.get());
   }
 
   solver.solve = solve;
