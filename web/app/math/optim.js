@@ -343,57 +343,60 @@ var dog_leg = function (subsys, rough) {
       returnCode = 4;
     } else if (err > divergingLim || err != err) {
       returnCode = 6;
+    }
+
+    if (returnCode != 0) {
+      break;
+    }
+
+    // get the gauss-newton step
+    //h_gn = n.solve(Jx, n.mul(fx, -1));
+    h_gn = lsolve(Jx, n.mul(fx, -1));
+
+    //LU-Decomposition
+    //h_gn = lusolve(Jx, n.mul(fx, -1));
+
+    //Conjugate gradient method
+    //h_gn = cg(Jx, h_gn, n.mul(fx, -1), 1e-8, iterLimit);
+
+    //solve linear problem using svd formula to get the gauss-newton step
+    //h_gn = lls(Jx, n.mul(fx, -1));
+
+    var hitBoundary = false;
+
+    // compute the dogleg step
+    var gnorm = n.norm2(g);
+    var gnNorm = n.norm2(h_gn);
+    if (gnNorm < delta) {
+      h_dl = h_gn;
     } else {
-
-      // get the gauss-newton step
-      //h_gn = n.solve(Jx, n.mul(fx, -1));
-      h_gn = lsolve(Jx, n.mul(fx, -1));
-
-      //LU-Decomposition
-      //h_gn = lusolve(Jx, n.mul(fx, -1));
-
-      //Conjugate gradient method
-      //h_gn = cg(Jx, h_gn, n.mul(fx, -1), 1e-8, iterLimit);
-
-      //solve linear problem using svd formula to get the gauss-newton step
-      //h_gn = lls(Jx, n.mul(fx, -1));
-
-      var hitBoundary = false;
-
-      // compute the dogleg step
-      var gnorm = n.norm2(g);
-      var gnNorm = n.norm2(h_gn);
-      if (gnNorm < delta) {
-        h_dl = h_gn;
+      var Jt = n.transpose(Jx);
+      var B = n.dot(Jt, Jx);
+      var gBg = n.dot(g, n.dot(B, g));
+      alpha = n.norm2Squared(g) / gBg;
+      if (alpha * gnorm >= delta) {
+        h_dl = n.mul(g, - delta / gnorm);
+        hitBoundary = true;
       } else {
-        var Jt = n.transpose(Jx);
-        var B = n.dot(Jt, Jx);
-        var gBg = n.dot(g, n.dot(B, g));
-        alpha = n.norm2Squared(g) / gBg;
-        if (alpha * gnorm >= delta) {
-          h_dl = n.mul(g, - delta / gnorm);
-          hitBoundary = true;
+        var h_sd = n.mul(g, - alpha);
+        if (isNaN(gnNorm)) { 
+          h_dl = h_sd;
         } else {
-          var h_sd = n.mul(g, - alpha);
-          if (isNaN(gnNorm)) { 
-            h_dl = h_sd;
-          } else {
 
-            var d = n.sub(h_gn, h_sd);
+          var d = n.sub(h_gn, h_sd);
 
-            var a = n.dot(d, d);
-            var b = 2 * n.dot(h_sd, d);
-            var c = n.dot(h_sd, h_sd) - delta * delta;
+          var a = n.dot(d, d);
+          var b = 2 * n.dot(h_sd, d);
+          var c = n.dot(h_sd, h_sd) - delta * delta;
 
-            var sqrt_discriminant = Math.sqrt(b * b - 4 * a * c);
+          var sqrt_discriminant = Math.sqrt(b * b - 4 * a * c);
 
-            var beta = (-b + sqrt_discriminant) / (2 * a);
+          var beta = (-b + sqrt_discriminant) / (2 * a);
 
-            // and update h_dl and dL with beta
-            h_dl = n.add(h_sd, n.mul(beta, d));
-            hitBoundary = true;
-          } 
-        }
+          // and update h_dl and dL with beta
+          h_dl = n.add(h_sd, n.mul(beta, d));
+          hitBoundary = true;
+        } 
       }
     }
 
@@ -403,10 +406,6 @@ var dog_leg = function (subsys, rough) {
 //      returnCode = 5;
 //      break;
 //    }
-
-    if (returnCode != 0) {
-      break;
-    } 
     
     x_new = n.add(x, h_dl);
     subsys.setParams(x_new);
