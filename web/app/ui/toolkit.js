@@ -124,9 +124,9 @@ export function Number(name, initValue, baseStep, round) {
   propLayout(this.root, name, this.input);
 }
 
-export function Combo(id, label) {
+export function Combo(id, labelText) {
   this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-combo'});
-  var label = $('<span/>', {'class': 'tc-prop-name', text: label});
+  var label = $('<span/>', {'class': 'tc-prop-name', text: labelText});
   this.select = $('<select>', {id : id});
   this.root.append(label)
     .append($('<div/>', {'class': 'tc-prop-value'}).append(this.select));
