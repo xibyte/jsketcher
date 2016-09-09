@@ -33,29 +33,14 @@ function App() {
   var viewer = this.viewer;
   var app = this;
   function storage_handler(evt) {
-//      console.log('The modified key was '+evt.key);
-//      console.log('The original value was '+evt.oldValue);
-//      console.log('The new value is '+evt.newValue);
-//      console.log('The URL of the page that made the change was '+evt.url);
-//      console.log('The window where the change was made was '+evt.source);
-
     var prefix = "TCAD.projects."+app.id+".sketch.";
     if (evt.key.indexOf(prefix) < 0) return;
     var sketchFaceId = evt.key.substring(prefix.length);
-
-    for (var oi = 0; oi < viewer.scene.children.length; ++oi) {
-      var obj = viewer.scene.children[oi];
-      if (obj.geometry !== undefined && obj.geometry.polyFaces !== undefined) {
-        for (var i = 0; i < obj.geometry.polyFaces.length; i++) {
-          var sketchFace = obj.geometry.polyFaces[i];
-          if (sketchFace.id == sketchFaceId) {
-            var geom = workbench.readSketchGeom(JSON.parse(evt.newValue));
-            sketchFace.syncSketches(geom);
-            viewer.render();
-            break;
-          }
-        }
-      }
+    var sketchFace = app.findFace(sketchFaceId);
+    if (sketchFace != null) {
+      app.refreshSketchOnFace(sketchFace);
+      app.bus.notify('refreshSketch');
+      app.viewer.render();
     }
   }
 
@@ -349,13 +334,17 @@ App.prototype._refreshSketches = function() {
     var obj = allSolids[oi];
     for (var i = 0; i < obj.polyFaces.length; i++) {
       var sketchFace = obj.polyFaces[i];
-      var faceStorageKey = this.faceStorageKey(sketchFace.id);
-      var savedFace = localStorage.getItem(faceStorageKey);
-      if (savedFace != null) {
-        var geom = workbench.readSketchGeom(JSON.parse(savedFace));
-        sketchFace.syncSketches(geom);
-      }
+      this.refreshSketchOnFace(sketchFace);
     }
+  }
+};
+
+App.prototype.refreshSketchOnFace = function(sketchFace) {
+  var faceStorageKey = this.faceStorageKey(sketchFace.id);
+  var savedFace = localStorage.getItem(faceStorageKey);
+  if (savedFace != null) {
+    var geom = workbench.readSketchGeom(JSON.parse(savedFace));
+    sketchFace.syncSketches(geom);
   }
 };
 
