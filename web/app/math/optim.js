@@ -298,14 +298,7 @@ var dog_leg = function (subsys, rough) {
   var h_gn = vec(xsize);
   var h_dl = vec(xsize);
 
-  var r0 = vec(csize);
-
   subsys.fillParams(x);
-
-//  subsys.setParams(vec(xsize));
-//  subsys.calcResidual(r0);
-
-  subsys.setParams(x);
   var err = subsys.calcResidual(fx);
   subsys.fillJacobian(Jx);
 
@@ -326,7 +319,6 @@ var dog_leg = function (subsys, rough) {
   }
 
   var g = n.dot(n.transpose(Jx), fx);
-  // get the infinity norm fx_inf and g_inf
   var g_inf = n.norminf(g);
   var fx_inf = n.norminf(fx);
   
@@ -341,16 +333,15 @@ var dog_leg = function (subsys, rough) {
   while (returnCode === 0) {
     optim.DEBUG_HANDLER(iter, err);
 
-    // check if finished
-    if (fx_inf <= tolf) { // Success
+    if (fx_inf <= tolf) {
       returnCode = 1;
-    } else if (g_inf <= tolg) {// Success too
+    } else if (g_inf <= tolg) {
       returnCode = 1;
     } else if (delta <= tolx * (tolx + n.norm2(x))) {
       returnCode = 3;
     } else if (iter >= iterLimit) {
       returnCode = 4;
-    } else if (err > divergingLim || err != err) { // check for diverging and NaN
+    } else if (err > divergingLim || err != err) {
       returnCode = 6;
     } else {
 
@@ -359,7 +350,7 @@ var dog_leg = function (subsys, rough) {
       h_gn = lsolve(Jx, n.mul(fx, -1));
 
       //LU-Decomposition
-//          h_gn = lusolve(Jx, n.mul(fx, -1));
+      //h_gn = lusolve(Jx, n.mul(fx, -1));
 
       //Conjugate gradient method
       //h_gn = cg(Jx, h_gn, n.mul(fx, -1), 1e-8, iterLimit);
