@@ -991,7 +991,7 @@ DragTool.prototype.mousemove = function(e) {
   }
   this.solver.updateLock(this.lockedValues);
   if (!e.altKey && !e.ctrlKey) {
-        this.solveRequest(true);
+    this.solveRequest(true);
   } else {
     this.obj.translate(dx, dy);
   }
@@ -1045,7 +1045,7 @@ DragTool.prototype.solveRequest = function(rough) {
 DragTool.prototype.getParamsToLock = function() {
   var params = [];
   this.obj.accept(function(obj) {
-    if (obj._class === 'TCAD.TWO.EndPoint') {
+    if (obj._class === 'TCAD.TWO.EndPoint' && !obj.isAuxOrLinkedTo()) {
       params.push(obj._x);
       params.push(obj._y);
     }
