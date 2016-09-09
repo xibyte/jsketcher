@@ -1,6 +1,7 @@
 import * as utils from '../../utils/utils'
 import * as math from '../../math/math'
 import QR from '../../math/qr'
+import LMOptimizer from '../../math/lm'
 import {ConstantWrapper, EqualsTo} from './constraints'
 import {dog_leg} from '../../math/optim'
 
@@ -188,12 +189,12 @@ System.prototype.getValues = function() {
 
 var wrapAux = function(constrs, locked) {
 
-  var lockedSet = {};
-  for (var i = 0; i < locked.length; i++) {
+  var i, lockedSet = {};
+  for (i = 0; i < locked.length; i++) {
     lockedSet[locked[i].j] = true;
   }
 
-  for (var i = 0; i < constrs.length; i++) {
+  for (i = 0; i < constrs.length; i++) {
     var c = constrs[i];
     var mask = [];
     var needWrap = false;

@@ -478,8 +478,8 @@ function Angle(params) {
     out[l1p1y] = dx1 / r2;
     out[l1p2x] = dy1 / r2;
     out[l1p2y] = -dx1 / r2;
-    var dx1 = (p(l1p2x) - p(l1p1x));
-    var dy1 = (p(l1p2y) - p(l1p1y));
+    dx1 = (p(l1p2x) - p(l1p1x));
+    dy1 = (p(l1p2y) - p(l1p1y));
     var dx2 = (p(l2p2x) - p(l2p1x));
     var dy2 = (p(l2p2y) - p(l2p1y));
     var a = Math.atan2(dy1, dx1) + p(angle);
@@ -487,7 +487,7 @@ function Angle(params) {
     var sa = Math.sin(a);
     var x2 = dx2 * ca + dy2 * sa;
     var y2 = -dx2 * sa + dy2 * ca;
-    var r2 = dx2 * dx2 + dy2 * dy2;
+    r2 = dx2 * dx2 + dy2 * dy2;
     dx2 = -y2 / r2;
     dy2 = x2 / r2;
     out[l2p1x] = (-ca * dx2 + sa * dy2);

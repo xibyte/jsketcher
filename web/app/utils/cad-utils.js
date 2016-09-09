@@ -307,10 +307,11 @@ export function sketchToPolygons(geom) {
 
   var loops = Graph.findAllLoops(graph, dict.hashCodeF, dict.equalsF);
   var polygons = [];
-  for (var li = 0; li < loops.length; ++li) {
-    var loop = loops[li];
+  var li, loop, polyPoints;
+  for (li = 0; li < loops.length; ++li) {
+    loop = loops[li];
     if (!isCCW(loop)) loop.reverse();
-    var polyPoints = [];
+    polyPoints = [];
     for (var pi = 0; pi < loop.length; ++pi) {
       var point = loop[pi];
       var next = loop[(pi + 1) % loop.length];
@@ -328,9 +329,9 @@ export function sketchToPolygons(geom) {
       console.warn("Points count < 3!");
     }
   }
-  for (var li = 0; li < geom.loops.length; ++li) {
-    var loop = geom.loops[li];
-    var polyPoints = loop.slice(0);
+  for (li = 0; li < geom.loops.length; ++li) {
+    loop = geom.loops[li];
+    polyPoints = loop.slice(0);
     for (var si = 0; si < polyPoints.length; si++) {
       var conn = polyPoints[si];
       //reuse a point and ignore b point since it's a guaranteed loop
@@ -840,8 +841,9 @@ export function Polygon(shell, holes, normal) {
   if (!holes) {
     holes = [];
   }
+  var h;
   checkPolygon(shell);
-  for (var h = 0; h < holes.length; ++h) {
+  for (h = 0; h < holes.length; ++h) {
     checkPolygon(holes[h]);
   }
 
@@ -851,7 +853,7 @@ export function Polygon(shell, holes, normal) {
     shell = fixCCW(shell, normal);
     if (holes.length > 0) {
       var neg = normal.negate();
-      for (var h = 0; h < holes.length; ++h) {
+      for (h = 0; h < holes.length; ++h) {
         holes[h] = fixCCW(holes[h], neg);
       }
     }

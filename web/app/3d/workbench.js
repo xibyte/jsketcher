@@ -414,13 +414,14 @@ function segmentsToPaths(segments) {
     return null;
   }
 
+  var path;
   for (var ei = 0; ei < segments.length; ei++) {
     var edge = segments[ei];
     if (edge[3]) {
       continue;
     }
     edge[3] = true;
-    var path = [edge[0], edge[1]];
+    path = [edge[0], edge[1]];
     paths.push(path);
     var next = nextPoint(edge[1]);
     while (next !== null) {
@@ -435,7 +436,7 @@ function segmentsToPaths(segments) {
 
   var filteredPaths = [];
   for (var i = 0; i < paths.length; i++) {
-    var path = paths[i];
+    path = paths[i];
 
     //Set derived from object to be able to recunstruct
     cad_utils.iteratePath(path, 0, function (a, b) {
@@ -495,16 +496,15 @@ function splitTwoSegments(a, b) {
 
   var dcXdb = dc.cross(db);
 
+  function _split(s, ip) {
+    if (s[0].equals(ip) || s[1].equals(ip)) {
+      return [s];
+    }
+    return [[s[0], ip, s[2]], [ip, s[1], s[2]]]
+  }
   var s = dcXdb.dot(daXdb) / daXdb.lengthSquared();
   if (s > 0.0 && s < 1.0) {
     var ip = a[0].plus(da.times(s));
-    function _split(s, ip) {
-      if (s[0].equals(ip) || s[1].equals(ip)) {
-        return [s];
-      }
-      return [[s[0], ip, s[2]], [ip, s[1], s[2]]]
-    }
-
     return {
       splitterParts : _split(a, ip),
       residual : _split(b, ip)
@@ -540,11 +540,12 @@ function recoverySketchInfo(polygons) {
     var poly = polygons[pi];
     var paths = [];
     poly.collectPaths(paths);
-    for (var i = 0; i < paths.length; i++) {
-      var path = paths[i];
+    var i, path, n, p, q;
+    for (i = 0; i < paths.length; i++) {
+      path = paths[i];
       if (poly.csgInfo !== undefined && poly.csgInfo.derivedFrom !== undefined) {
-        var n = path.length;
-        for (var p =  n - 1, q = 0; q < n ; p = q++ ) {
+        n = path.length;
+        for (p =  n - 1, q = 0; q < n ; p = q++ ) {
           sketchEdges.put(key(path[p], path[q]), poly.csgInfo);
         }
       } else {
@@ -553,10 +554,10 @@ function recoverySketchInfo(polygons) {
     }
   }
 
-  for (var i = 0; i < nonStructuralGons.length; i++) {
-    var path = nonStructuralGons[i];
-    var n = path.length;
-    for (var p =  n - 1, q = 0; q < n ; p = q++ ) {
+  for (i = 0; i < nonStructuralGons.length; i++) {
+    path = nonStructuralGons[i];
+    n = path.length;
+    for (p =  n - 1, q = 0; q < n ; p = q++ ) {
       var csgInfo = sketchEdges.get(key(path[p], path[q]));
       if (csgInfo === null) {
         csgInfo = sketchEdges.get(key(path[q], path[p]));

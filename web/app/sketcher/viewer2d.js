@@ -887,11 +887,13 @@ PanTool.prototype.mousemove = function(e) {
 PanTool.prototype.mousedown = function(e) {
   if (e.button == 0) {
     var picked = this.viewer.pick(e);
+    var i;
     if (picked.length > 0) {
+      var toSelect;
       if (e.shiftKey) {
-        var toSelect = picked[0];
+        toSelect = picked[0];
         var ids = this.viewer.selected.map(function(s){return s.id});        
-        for (var i = 0; i < picked.length; i++) {
+        for (i = 0; i < picked.length; i++) {
           if (ids.indexOf(picked[i].id) != -1) {
             this.viewer.deselect(picked[i]);
           } else {
@@ -901,9 +903,9 @@ PanTool.prototype.mousedown = function(e) {
         this.viewer.select([toSelect], false);
         this.deselectOnUp = false;
       } else {
-        var toSelect = picked[0];
+        toSelect = picked[0];
         if (this.viewer.selected.length === 1) {
-          for (var i = 0; i < picked.length - 1; i++) {
+          for (i = 0; i < picked.length - 1; i++) {
             if (picked[i].id == this.viewer.selected[0].id) {
               toSelect = picked[i + 1];
               break;

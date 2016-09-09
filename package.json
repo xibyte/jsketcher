@@ -5,7 +5,7 @@
   "scripts": {
     "start": "webpack-dev-server --content-base web/ --port 3000",
     "build": "webpack --config webpack.config.js --progress --profile --colors",
-    "lint": "eslint web/app -c ./build/.eslintrc.json"
+    "lint": "eslint web/app -c ./build/.eslintrc.json --ignore-path ./build/.eslintignore"
   },
   "repository": {
     "type": "git",

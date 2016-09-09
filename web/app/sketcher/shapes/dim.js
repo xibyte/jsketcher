@@ -221,10 +221,11 @@ DiameterDimension.prototype.drawForCircle = function(ctx, scale, viewer) {
     ctx.fillText(txt, 0, 0);
     ctx.restore();
   }
-
+  
+  var tx, ty; 
   if (h - fontSize * .3 > 0) { // take into account font size to not have circle overlap symbols
-    var tx = (a.x + _vxn * textOff) - (-_vyn) * h;
-    var ty = (a.y + _vyn * textOff) - (  _vxn) * h;
+    tx = (a.x + _vxn * textOff) - (-_vyn) * h;
+    ty = (a.y + _vyn * textOff) - (  _vxn) * h;
     drawText(tx, ty);
   } else {
     var off = 2 * viewer.dimScale;
@@ -237,8 +238,8 @@ DiameterDimension.prototype.drawForCircle = function(ctx, scale, viewer) {
     ctx.stroke();
     angled._multiply(off);
     
-    var tx = (b.x + _vxn * textOff) + angled.x;
-    var ty = (b.y + _vyn * textOff) + angled.y;
+    tx = (b.x + _vxn * textOff) + angled.x;
+    ty = (b.y + _vyn * textOff) + angled.y;
     drawText(tx, ty);
   }
 };

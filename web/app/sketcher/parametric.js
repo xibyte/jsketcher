@@ -163,7 +163,8 @@ ParametricManager.prototype.removeConstraintsByParams = function(ownedParams) {
   for (var s = 0; s < this.subSystems.length; s++) {
     var toRemove = [];
     var sub = this.subSystems[s];
-    for (var i = 0; i < sub.constraints.length; ++i) {
+    var i;
+    for (i = 0; i < sub.constraints.length; ++i) {
       var sdataArr = sub.constraints[i].getSolveData(this.constantResolver);
       MAIN:
       for (var j = 0; j < sdataArr.length; j++) {
@@ -181,7 +182,7 @@ ParametricManager.prototype.removeConstraintsByParams = function(ownedParams) {
     }
     toRemove.sort();
   
-    for (var i = toRemove.length - 1; i >= 0 ; --i) {
+    for (i = toRemove.length - 1; i >= 0 ; --i) {
       sub.constraints.splice(  toRemove[i], 1);
     }
   }

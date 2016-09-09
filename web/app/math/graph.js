@@ -35,21 +35,20 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
     path.push(vertex);
     var needClone = false;
 
-    VERTEX:
-      for (i = 0; i < next.length; i++) {
-        var v = next[i];
-        if (equals(v, comesFrom)) {
-          continue;
-        }
-
-        var p = needClone ? path.slice(0) : path;
-        needClone = true;
-        step(v, vertex, p);
+    for (i = 0; i < next.length; i++) {
+      var v = next[i];
+      if (equals(v, comesFrom)) {
+        continue;
       }
+
+      var p = needClone ? path.slice(0) : path;
+      needClone = true;
+      step(v, vertex, p);
+    }
     path.pop();
   }
 
-  for (var i = 0; i < graph.size(); i++) {
+  for (i = 0; i < graph.size(); i++) {
     var vertex = graph.at(i);
     if (visited.get(vertex) !== true) {
       step(vertex, -1, []);
@@ -83,8 +82,8 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
     return true;
   }
 
-  var duplicates = 0;
-  for (var i = 0; i < loops.length; i++) {
+  var i, duplicates = 0;
+  for (i = 0; i < loops.length; i++) {
     var a = loops[i];
     if (a == null) continue;
     for (var j = i + 1; j < loops.length; j++) {
@@ -100,7 +99,7 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
   }
   if (duplicates != 0) {
     var filtered = [];
-    for (var i = 0; i < loops.length; i++) {
+    for (i = 0; i < loops.length; i++) {
       if (loops[i] != null) filtered.push(loops[i]);
     }
     loops = filtered;
