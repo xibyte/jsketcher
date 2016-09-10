@@ -1,5 +1,6 @@
 import * as cad_utils from './cad-utils'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
+import DPR from '../utils/dpr'
 
 function Viewer(bus) {
   this.bus = bus;
@@ -18,7 +19,7 @@ function Viewer(bus) {
   scene.add(light);
 
   var renderer = new THREE.WebGLRenderer();
-  renderer.setPixelRatio(cad_utils.DPR);
+  renderer.setPixelRatio(DPR);
   renderer.setClearColor(0x808080, 1);
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
@@ -75,7 +76,7 @@ function Viewer(bus) {
   }
 
   function addAxis(axis, color) {
-    var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1/cad_utils.DPR});
+    var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1/DPR});
     var axisGeom = new THREE.Geometry();
     axisGeom.vertices.push(axis.multiply(-1000).three());
     axisGeom.vertices.push(axis.multiply(1000).three());
@@ -172,7 +173,7 @@ function SelectionManager(viewer, selectionColor, readOnlyColor, defaultColor) {
     arrow.matrixAutoUpdate = false;
     arrow.line.renderOrder = 1e11;
     arrow.cone.renderOrder = 1e11;
-    arrow.line.material.linewidth =  1/cad_utils.DPR;
+    arrow.line.material.linewidth =  1/DPR;
     arrow.line.material.depthWrite = false;
     arrow.line.material.depthTest = false;
     arrow.cone.material.depthWrite = false;

@@ -3,7 +3,8 @@ import Vector from '../math/vector'
 import Counters from './counters'
 import {reconstructSketchBounds} from './workbench'
 import {Matrix3, AXIS} from '../math/l3space'
-import {DPR, arrFlatten1L} from './cad-utils'
+import {arrFlatten1L} from './cad-utils'
+import DPR from '../utils/dpr'
 
 /** @constructor */
 export function Solid(csg, material, type) {
@@ -201,12 +202,8 @@ function SketchFace(solid, csgGroup) {
   this.curvedSurfaces = null;
 }
 
-if (typeof THREE !== "undefined") {
-  SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({
-    color: 0xFFFFFF, linewidth: 3/DPR});
-  SketchFace.prototype.WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({
-    color: 0x2B3856, linewidth: 3/DPR});
-}
+SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({color: 0xFFFFFF, linewidth: 3/DPR});
+SketchFace.prototype.WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({color: 0x2B3856, linewidth: 3/DPR});
 
 SketchFace.prototype.calcBasis = function() {
   var normal = new Vector().setV(this.csgGroup.plane.normal);

@@ -5,8 +5,8 @@ import * as math from '../math/math'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import Counters from './counters'
 import {Solid} from './solid'
+import DPR from '../utils/dpr'
 
-export const DPR = (window.devicePixelRatio) ? window.devicePixelRatio : 1;
 export const FACE_COLOR =  0xB0C4DE;
 
 export function createSquare(width) {
