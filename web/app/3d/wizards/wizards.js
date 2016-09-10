@@ -2,18 +2,19 @@ import Vector from '../../math/vector'
 import * as cad_utils from '../cad-utils'
 import * as math from '../../math/math'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../../math/l3space'
+import DPR from '../../utils/dpr'
 
 
 var IMAGINE_MATERIAL = new THREE.LineBasicMaterial({
   color: 0xFA8072,
-  linewidth: 1/cad_utils.DPR,
+  linewidth: 1/DPR,
   depthWrite: false,
   depthTest: false
 });
 
 var BASE_MATERIAL = new THREE.LineBasicMaterial({
   color: 0x8B0000,
-  linewidth: 3/cad_utils.DPR,
+  linewidth: 3/DPR,
   depthWrite: false,
   depthTest: false
 });
