@@ -3,6 +3,7 @@ import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 import * as workbench from './workbench'
 import {ExtrudeWizard, PlaneWizard} from './wizards/wizards'
+import {TransformWizard} from './wizards/transform'
 import {IO} from '../sketcher/io'
 
 function UI(app) {
@@ -149,7 +150,10 @@ function UI(app) {
     }));
     var stl = CSG.fromPolygons(allPolygons).toStlString();
     IO.exportTextData(stl.data[0], app.id + ".stl");
-  })
+  });
+  app.bus.subscribe("solid-pick", function(solid) {
+    new TransformWizard(app.viewer, solid).createUI(mainBox);
+  });
 }
 
 UI.prototype.getInfoForOp = function(op) {

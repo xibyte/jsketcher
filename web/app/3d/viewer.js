@@ -109,7 +109,11 @@ function Viewer(bus) {
   };
   
   function onClick(e) {
-    viewer.selectionMgr.handlePick(e);
+    if (e.button != 0) {
+      viewer.handleSolidPick(e);
+    } else {
+      viewer.selectionMgr.handlePick(e);
+    }
   }
   
   var mouseState = {
@@ -142,6 +146,29 @@ function Viewer(bus) {
   render();
   animate();
 }
+
+Viewer.prototype.handleSolidPick = function(e) {
+  this.raycastFaces(event, this, function(sketchFace) {
+    this.selectionMgr.clear();
+    this.bus.notify("solid-pick", sketchFace.solid);
+    this.render();
+    return false;
+  });
+};
+
+
+Viewer.prototype.raycastFaces = function(event, scope, visitor) {
+  var pickResults = this.raycast(event);
+  for (var i = 0; i < pickResults.length; i++) {
+    var pickResult = pickResults[i];
+    if (!!pickResult.face && pickResult.face.__TCAD_polyFace !== undefined) {
+      var sketchFace = pickResult.face.__TCAD_polyFace;
+      if (!visitor.call(scope, sketchFace)) {
+        break;
+      }
+    }
+  }
+};
 
 Viewer.setFacesColor = function(faces, color) {
   for (var i = 0; i < faces.length; ++i) {
@@ -200,18 +227,13 @@ SelectionManager.prototype.updateBasis = function(basis, depth) {
 };
 
 SelectionManager.prototype.handlePick = function(event) {
-
-  var pickResults = this.viewer.raycast(event);
-  for (var i = 0; i < pickResults.length; i++) {
-    var pickResult = pickResults[i];
-    if (!!pickResult.face && pickResult.face.__TCAD_polyFace !== undefined) {
-      var sketchFace = pickResult.face.__TCAD_polyFace;
-      if (!this.contains(sketchFace)) {
-        this.select(sketchFace);
-        break;
-      }
+  this.viewer.raycastFaces(event, this, function(sketchFace) {
+    if (!this.contains(sketchFace)) {
+      this.select(sketchFace);
+      return false;
     }
-  }
+    return true;
+  });
 };
 
 SelectionManager.prototype.select = function(sketchFace) {
