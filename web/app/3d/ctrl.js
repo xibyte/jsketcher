@@ -1,5 +1,5 @@
 import * as tk from '../ui/toolkit'
-import * as cad_utils from '../utils/cad-utils'
+import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 import * as workbench from './workbench'
 import {ExtrudeWizard, PlaneWizard} from './wizards/wizards'

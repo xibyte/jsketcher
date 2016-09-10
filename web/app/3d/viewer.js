@@ -1,4 +1,4 @@
-import * as cad_utils from '../utils/cad-utils'
+import * as cad_utils from './cad-utils'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 
 function Viewer(bus) {

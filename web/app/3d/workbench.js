@@ -1,8 +1,9 @@
 import Vector from '../math/vector'
-import * as cad_utils from '../utils/cad-utils'
+import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import {HashTable} from '../utils/hashmap'
+import Counters from './counters'
 
 function SketchConnection(a, b, sketchObject) {
   this.a = a;
@@ -620,8 +621,8 @@ Craft.prototype.loadHistory = function(history) {
 };
 
 Craft.prototype.reset = function(modifications) {
-  cad_utils.Counters.solid = 0;
-  cad_utils.Counters.shared = 0;
+  Counters.solid = 0;
+  Counters.shared = 0;
   this.app.findAllSolids().forEach(function(s) {s.vanish()})
   for (var i = 0; i < modifications.length; i++) {
     var request = materialize(this.app.indexEntities(), modifications[i]);
