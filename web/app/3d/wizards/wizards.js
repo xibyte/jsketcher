@@ -1,5 +1,5 @@
 import Vector from '../../math/vector'
-import * as cad_utils from '../../utils/cad-utils'
+import * as cad_utils from '../cad-utils'
 import * as math from '../../math/math'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../../math/l3space'
 

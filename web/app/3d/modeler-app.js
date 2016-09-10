@@ -4,7 +4,7 @@ import {UI} from './ctrl'
 import Vector from '../math/vector'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
 import * as workbench  from './workbench'
-import * as cad_utils from '../utils/cad-utils'
+import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 
 function App() {
