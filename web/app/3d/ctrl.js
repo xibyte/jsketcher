@@ -2,7 +2,8 @@ import * as tk from '../ui/toolkit'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 import * as workbench from './workbench'
-import {ExtrudeWizard, PlaneWizard} from './wizards/wizards'
+import {ExtrudeWizard} from './wizards/extrude'
+import {PlaneWizard} from './wizards/plane'
 import {TransformWizard} from './wizards/transform'
 import {IO} from '../sketcher/io'
 
@@ -10,7 +11,7 @@ function UI(app) {
   this.app = app;
   this.viewer = app.viewer;
 
-  var mainBox = new tk.Box();
+  var mainBox = this.mainBox =  new tk.Box();
   mainBox.root.css({height : '100%'});
   var propFolder = new tk.Folder("Solid's Properties");
   var debugFolder = new tk.Folder("Debug");
@@ -48,7 +49,7 @@ function UI(app) {
   var historyWizard = null;
   function updateHistoryPointer() {
     if (historyWizard != null) {
-      historyWizard.close();
+      historyWizard.dispose();
       historyWizard = null;
     }
     
@@ -59,7 +60,7 @@ function UI(app) {
       rows.removeClass('history-selected');
       rows.eq(craft.historyPointer).addClass('history-selected');
       var op = craft.history[craft.historyPointer];
-      historyWizard = UI.createWizard(op, app, mainBox);
+      historyWizard = ui.createWizardForOperation(op, app);
       finishHistory.root.show();
     } else {
       finishHistory.root.hide();
@@ -84,9 +85,9 @@ function UI(app) {
     if (historyWizard != null) {
       var craft = ui.app.craft;
       var op = JSON.parse(JSON.stringify(craft.history[craft.historyPointer]));
-      op.protoParams = historyWizard.currentParams();
-      historyWizard.close();
-      historyWizard = UI.createWizard(op, app, mainBox);
+      op.protoParams = historyWizard.getParams();
+      historyWizard.dispose();
+      historyWizard = ui.createWizardForOperation(op, app);
     }
   });
 
@@ -94,13 +95,13 @@ function UI(app) {
     //updateHistoryPointer();
   });
 
-
   function cutExtrude(isCut) {
     return function() {
-      if (app.viewer.selectionMgr.selection.length == 0) {
+      var selection = app.viewer.selectionMgr.selection;
+      if (selection.length == 0) {
         return;
       }
-      UI.createCutExtrudeWizard(isCut, ui.app, app.viewer.selectionMgr.selection[0], mainBox);
+      ui.registerWizard(new ExtrudeWizard(ui.app, selection[0], isCut), false);
     }
   }
 
@@ -109,7 +110,7 @@ function UI(app) {
   edit.root.click(tk.methodRef(app, "sketchFace"));
   refreshSketches.root.click(tk.methodRef(app, "refreshSketches"));
   addPlane.root.click(function() {
-    UI.createPlaneWizard(app, mainBox);
+    ui.registerWizard(new PlaneWizard(app.viewer), false)
   });
   printSolids.root.click(function () {
     app.findAllSolids().map(function(o) {
@@ -156,6 +157,15 @@ function UI(app) {
   });
 }
 
+UI.prototype.registerWizard = function(wizard, overridingHistory) {
+  wizard.ui.box.root.css({left : (this.mainBox.root.width() + 10) + 'px', top : 0});
+  var craft = this.app.craft; 
+  wizard.apply = function() {
+    craft.modify(wizard.createRequest(), overridingHistory);
+  };
+  return wizard;
+};
+
 UI.prototype.getInfoForOp = function(op) {
   var p = op.params;
   var norm2 = math.norm2;
@@ -171,138 +181,23 @@ UI.prototype.getInfoForOp = function(op) {
   return op.type;
 };
 
-UI.createWizard = function(op, app, alignComponent) {
+
+UI.prototype.createWizardForOperation = function(op) {
   var initParams = op.protoParams;
-  var face = op.face !== undefined ? app.findFace(op.face) : null;
+  var face = op.face !== undefined ? this.app.findFace(op.face) : null;
   if (face != null) {
-    app.viewer.selectionMgr.select(face);
+    this.app.viewer.selectionMgr.select(face);
   }
+  var wizard;
   if ('CUT' === op.type) {
-    return UI.createCutExtrudeWizard(true, app, face, alignComponent, initParams, true);
+    wizard = new ExtrudeWizard(this.app, face, true, initParams);
   } else if ('PAD' === op.type) {
-    return UI.createCutExtrudeWizard(false, app, face, alignComponent, initParams, true);
+    wizard = new ExtrudeWizard(this.app, face, false, initParams);
   } else if ('PLANE' === op.type) {
-    return UI.createPlaneWizard(app, alignComponent, initParams, true);
+    wizard = new PlaneWizard(this.app.viewer, initParams);
   }
-  return null;
-};
-
-
-UI.createCutExtrudeWizard = function (isCut, app, face, alignComponent, initParams, overriding) {
-  function def(index, fallback) {
-    return !!initParams ? initParams[index] : fallback;
-  }
-
-  var normal = cad_utils.vec(face.csgGroup.plane.normal);
-  var polygons = workbench.getSketchedPolygons3D(app, face);
-
-  var box = new tk.Box();
-  box.root.css({left : (alignComponent.root.width() + 10) + 'px', top : 0});
-  var folder = new tk.Folder(isCut ? "Cut Options" : "Extrude Options");
-  tk.add(box, folder);
-  var theValue = new tk.Number(isCut ? "Depth" : "Height", def(0, 50));
-  var scale = new tk.Number("Expansion", def(1, 1), 0.1, 1);
-  var deflection = new tk.Number("Deflection", def(2, 0), 1);
-  var angle = new tk.Number("Angle", def(3, 0), 5);
-  var wizard = new ExtrudeWizard(app.viewer, polygons);
-  function onChange() {
-    var depthValue = theValue.input.val();
-    var scaleValue = scale.input.val();
-    var deflectionValue = deflection.input.val();
-    var angleValue = angle.input.val();
-    if (isCut) depthValue *= -1;
-    wizard.update(face._basis, normal, depthValue, scaleValue, deflectionValue, angleValue);
-    app.viewer.render()
-  }
-  theValue.input.on('t-change', onChange);
-  scale.input.on('t-change', onChange);
-  deflection.input.on('t-change', onChange);
-  angle.input.on('t-change', onChange);
-  onChange();
-  tk.add(folder, theValue);
-  tk.add(folder, scale);
-  tk.add(folder, deflection);
-  tk.add(folder, angle);
-  function close() {
-    box.close();
-    wizard.dispose();
-  }
-  function protoParams() {
-    var depthValue = theValue.input.val();
-    var scaleValue = scale.input.val();
-    var deflectionValue = deflection.input.val();
-    var angleValue = angle.input.val();
-    return [depthValue, scaleValue, deflectionValue, angleValue];
-  }
-  function applyCut() {
-    app.craft.modify({
-      type: 'CUT',
-      solids : [app.findSolid(face.solid.tCadId)],
-      face : app.findFace(face.id),
-      params : wizard.operationParams,
-      protoParams : protoParams()
-    }, overriding);
-    close();
-  }
-  function applyExtrude() {
-    app.craft.modify({
-      type: 'PAD',
-      solids : [app.findSolid(face.solid.tCadId)],
-      face : app.findFace(face.id),
-      params : wizard.operationParams,
-      protoParams : protoParams()
-    }, overriding);
-    close();
-  }
-
-  tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, isCut ? applyCut : applyExtrude]));
-  return new UI.WizardRef(wizard, box, close, protoParams);
-};
-
-UI.createPlaneWizard = function (app, alignComponent, initParams, overiding) {
-  var box = new tk.Box();
-  box.root.css({left : (alignComponent.root.width() + 10) + 'px', top : 0});
-  var folder = new tk.Folder("Add a Plane");
-  tk.add(box, folder);
-  var choice = ['XY', 'XZ', 'ZY'];
-  var orientation = new tk.InlineRadio(choice, choice, !initParams ? 0 : choice.indexOf(initParams[0]));
-  var depth = new tk.Number("Depth", !initParams ? 0 : initParams[1]);
-
-  tk.add(folder, orientation);
-  tk.add(folder, depth);
-  var wizard = new PlaneWizard(app.viewer);
-  var orientationValue, w;
-  function onChange() {
-    wizard.update(orientationValue = orientation.getValue(), w = depth.input.val());
-  }
-  function close() {
-    box.close();
-    wizard.dispose();
-  }
-  function protoParams() {
-    return [orientationValue, w];
-  }
-  function ok() {
-    app.craft.modify({
-      type: 'PLANE',
-      solids : [],
-      params : wizard.operationParams,
-      protoParams : protoParams()
-    }, overiding);
-    close();
-  }
-  orientation.root.find('input:radio').change(onChange);
-  depth.input.on('t-change', onChange);
-  onChange();
-  tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [close, ok]));
-  return new UI.WizardRef(wizard, box, close, protoParams);
-};
-
-UI.WizardRef = function(wizard, box, close, currentParams) {
-  this.wizard = wizard;
-  this.box = box;
-  this.close = close;
-  this.currentParams = currentParams;
+  this.registerWizard(wizard, true);
+  return wizard;
 };
 
 export {UI}
