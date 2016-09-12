@@ -8,7 +8,7 @@ export function BoxWizard(viewer, initParams) {
   this.viewer = viewer;
   addOkCancelLogic(this);
   viewer.scene.add(this.previewGroup);
-  this.previewGroup.add(this.box = this.createBox());
+  this.previewGroup.add(this.box = this.createSphere());
   if (!initParams) {
     initParams = BoxWizard.DEFAULT_PARAMS;
   }
@@ -19,19 +19,16 @@ export function BoxWizard(viewer, initParams) {
 
 BoxWizard.DEFAULT_PARAMS = [500, 500, 500];
 
-BoxWizard.prototype.createBox = function() {
-  var geometry = new THREE.BoxGeometry(100, 100, 100);
+BoxWizard.prototype.createSphere = function() {
+  var geometry = new THREE.BoxGeometry(1, 1, 1);
   var material = new THREE.MeshLambertMaterial( { color : FACE_COLOR, transparent: true, opacity:0.5, side: THREE.DoubleSide });
   return new THREE.Mesh(geometry, material);
 };
 
 BoxWizard.prototype.update = function(w, h, d) {
-  function toScale(v) {
-    return 1 + (v - 100) / 100;
-  }
-  this.box.scale.x = toScale(w);
-  this.box.scale.y = toScale(h);
-  this.box.scale.z = toScale(d);
+  this.box.scale.x = w;
+  this.box.scale.y = h;
+  this.box.scale.z = d;
   this.viewer.render();
 };
 
@@ -40,9 +37,9 @@ BoxWizard.prototype.createUI = function(w, h, d) {
   ui.box = new tk.Box();
   var folder = new tk.Folder("Add a Box");
   tk.add(ui.box, folder);
-  ui.width = new tk.Number("Width", w);
-  ui.height = new tk.Number("Height", h);
-  ui.depth = new tk.Number("Depth", d);
+  ui.width = tk.config(new tk.Number("Width", w), {min : 0});
+  ui.height = tk.config(new tk.Number("Height", h), {min : 0});
+  ui.depth = tk.config(new tk.Number("Depth", d), {min : 0});
   tk.add(folder, ui.width);
   tk.add(folder, ui.height);
   tk.add(folder, ui.depth);

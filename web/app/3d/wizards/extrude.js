@@ -69,8 +69,8 @@ ExtrudeWizard.prototype.createUI = function (depth, scale, deflection, angle) {
   ui.box = new tk.Box();
   var folder = new tk.Folder(this.invert ? "Cut Options" : "Extrude Options");
   tk.add(ui.box, folder);
-  ui.theValue = new tk.Number(this.invert ? "Depth" : "Height", depth);
-  ui.scale = new tk.Number("Expansion", scale, 0.1, 1);
+  ui.theValue = tk.config(new tk.Number(this.invert ? "Depth" : "Height", depth), {min: 0});
+  ui.scale = tk.config(new tk.Number("Expansion", scale, 0.1, 1), {min:0});
   ui.deflection = new tk.Number("Deflection", deflection, 1);
   ui.angle = new tk.Number("Angle", angle, 5);
   var onChange = tk.methodRef(this, "synch");

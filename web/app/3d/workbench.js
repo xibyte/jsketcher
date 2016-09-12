@@ -726,5 +726,8 @@ export const OPERATIONS = {
   BOX : function(app, request) {
     var p = request.params;
     return [cad_utils.createCSGBox(p.w, p.h, p.d)];
+  },
+  SPHERE : function(app, request) {
+    return [cad_utils.createSphere(request.params.radius)];
   }
 };

@@ -56,5 +56,4 @@ OpWizard.prototype.dispose = function() {
   this.viewer.render();
 };
 
-
 export {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL, addOkCancelLogic}

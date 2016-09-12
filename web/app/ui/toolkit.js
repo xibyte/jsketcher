@@ -71,7 +71,7 @@ export function propLayout(root, name, valueEl) {
     .append(valueEl));
 }
 
-export function Number(name, initValue, baseStep, round) {
+function NumberWidget(name, initValue, baseStep, round) {
   this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-number'});
   this.input = $("<input type='text' value='"+initValue+"' />");
   this.slide = false;
@@ -123,6 +123,10 @@ export function Number(name, initValue, baseStep, round) {
   }, false);
   propLayout(this.root, name, this.input);
 }
+
+NumberWidget.prototype.val = function() {
+  return Number(this.input.val());
+};
 
 export function Combo(id, labelText) {
   this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-combo'});
@@ -285,3 +289,12 @@ Bus.prototype.defineObservable = function(scope, name, eventName, initValue) {
     }
   });
 };
+
+export function config(obj, props) {
+  for (var key in props) {
+    obj[key] = props[key];   
+  }
+  return obj;
+}
+
+export {NumberWidget as Number}
