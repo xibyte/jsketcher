@@ -724,6 +724,7 @@ export const OPERATIONS = {
     return [cad_utils.createPlane(request.params.basis, request.params.depth)];
   },
   BOX : function(app, request) {
-    return [cad_utils.createCSGBox(request.size)];
+    var p = request.params;
+    return [cad_utils.createCSGBox(p.w, p.h, p.d)];
   }
 };
