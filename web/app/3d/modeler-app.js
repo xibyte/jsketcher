@@ -318,7 +318,8 @@ App.prototype.addBox = function() {
   this.craft.modify({
     type: 'BOX',
     solids : [],
-    size : 500
+    params : {w: 500, h: 500, d: 500},
+    protoParams : [500, 500, 500]
   });
 };
 

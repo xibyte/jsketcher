@@ -85,7 +85,7 @@ PlaneWizard.prototype.getParams = function() {
   return [this.ui.orientation.getValue(), this.ui.depth.input.val()]
 };
 
-PlaneWizard.prototype.createRequest = function(params) {
+PlaneWizard.prototype.createRequest = function() {
   return {
     type: 'PLANE',
     solids : [],
