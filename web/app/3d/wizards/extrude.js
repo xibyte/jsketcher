@@ -98,7 +98,7 @@ ExtrudeWizard.prototype.getParams = function() {
   return [depthValue, scaleValue, deflectionValue, angleValue];
 };
 
-ExtrudeWizard.prototype.createRequest = function(params) {
+ExtrudeWizard.prototype.createRequest = function() {
   return  {
     type : this.invert ? 'CUT' : 'PAD',
     solids : [this.app.findSolid(this.face.solid.tCadId)],

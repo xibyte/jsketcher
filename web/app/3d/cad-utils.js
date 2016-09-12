@@ -9,15 +9,16 @@ import DPR from '../utils/dpr'
 
 export const FACE_COLOR =  0xB0C4DE;
 
-export function createSquare(width) {
+export function createSquare(w, h) {
 
-  width /= 2;
+  w /= 2;
+  h /= 2;
 
   return [
-    new Vector(-width, -width, 0),
-    new Vector( width, -width, 0),
-    new Vector( width,  width, 0),
-    new Vector(-width,  width, 0)
+    new Vector(-w, -h, 0),
+    new Vector( w, -h, 0),
+    new Vector( w,  h, 0),
+    new Vector(-w,  h, 0)
   ];
 }
 
@@ -29,16 +30,17 @@ export function vec(v) {
   return new Vector(v.x, v.y, v.z);
 }
 
-export function createBox(width) {
-  var square = createSquare(width);
-  var rot = Matrix3.rotateMatrix(3/4, AXIS.Z, ORIGIN);
-  square.forEach(function(v) { rot._apply(v) } );
+export function createBox(w, h, d) {
+  var square = createSquare(w, h);
+  //var rot = Matrix3.rotateMatrix(3/4, AXIS.Z, ORIGIN);
+  var halfDepth = d / 2; 
+  square.forEach(function(v) { v.z -= halfDepth; } );
   var normal = normalOfCCWSeq(square);
-  return extrude(square, normal, normal.multiply(width), 1);
+  return extrude(square, normal, normal.multiply(d), 1);
 }
 
-export function createCSGBox(width) {
-  var csg = CSG.fromPolygons(createBox(width));
+export function createCSGBox(w, h, d) {
+  var csg = CSG.fromPolygons(createBox(w, h, d));
   return createSolid(csg);
 }
 
