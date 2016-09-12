@@ -44,6 +44,24 @@ export function createCSGBox(w, h, d) {
   return createSolid(csg);
 }
 
+export function createSphere(radius) {
+  var csg = CSG.sphere({radius: radius, resolution: 48});
+  var shared = createShared();
+  shared.__tcad.csgInfo = {
+    derivedFrom : {
+      id : 0,
+      _class : 'TCAD.TWO.Circle'
+    }
+  };
+  for (var i = 0; i < csg.polygons.length; i++) {
+    var poly = csg.polygons[i];
+    poly.shared = shared;
+  }
+  var solid = createSolid(csg);
+  solid.cadGroup.remove(solid.wireframeGroup);
+  return solid;
+}
+
 export function checkPolygon(poly) {
   if (poly.length < 3) {
     throw new Error('Polygon should contain at least 3 point');
@@ -439,6 +457,7 @@ export function calculateExtrudedLid(sourcePolygon, normal, direction, expansion
   var work;
   var si;
   if (!!expansionFactor && expansionFactor != 1) {
+    if (expansionFactor < 0.001) expansionFactor = 0.0001;
     var source2d = [];
     work = [];
 

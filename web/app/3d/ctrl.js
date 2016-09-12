@@ -5,6 +5,7 @@ import * as workbench from './workbench'
 import {ExtrudeWizard} from './wizards/extrude'
 import {PlaneWizard} from './wizards/plane'
 import {BoxWizard} from './wizards/box'
+import {SphereWizard} from './wizards/sphere'
 import {TransformWizard} from './wizards/transform'
 import {IO} from '../sketcher/io'
 
@@ -18,13 +19,14 @@ function UI(app) {
   var debugFolder = new tk.Folder("Debug");
   var exportFolder = new tk.Folder("Export");
   var modificationsFolder = new tk.Folder("Modifications");
-  var extrude, cut, edit, addPlane, addBox, save, deselectAll,
+  var extrude, cut, edit, addPlane, addBox, addSphere, save, deselectAll,
     refreshSketches, showSketches, printSolids, printFace, printFaceId, finishHistory, stlExport;
   tk.add(mainBox, propFolder);
   tk.add(propFolder, extrude = new tk.Button("Extrude"));
   tk.add(propFolder, cut = new tk.Button("Cut"));
   tk.add(propFolder, edit = new tk.Button("Edit"));
   tk.add(propFolder, addPlane = new tk.Button("Add a Plane"));
+  tk.add(propFolder, addSphere = new tk.Button("Add a Sphere"));
   tk.add(propFolder, addBox = new tk.Button("Add a Box"));
   tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
   tk.add(propFolder, save = new tk.Button("Save"));
@@ -117,6 +119,9 @@ function UI(app) {
   addBox.root.click(function() {
     ui.registerWizard(new BoxWizard(app.viewer), false)
   });
+  addSphere.root.click(function() {
+    ui.registerWizard(new SphereWizard(app.viewer), false)
+  });
   printSolids.root.click(function () {
     app.findAllSolids().map(function(o) {
       console.log("Solid ID: " + o.tCadId);
@@ -182,6 +187,8 @@ UI.prototype.getInfoForOp = function(op) {
     return op.type + " (" + p.w + ", " + p.h + ", " + p.d + ")";
   } else if ('PLANE' === op.type) {
     return op.type + " (" + p.depth + ")";
+  } else if ('SPHERE' === op.type) {
+    return op.type + " (" + p.radius + ")";
   }
   return op.type;
 };
@@ -202,6 +209,8 @@ UI.prototype.createWizardForOperation = function(op) {
     wizard = new PlaneWizard(this.app.viewer, initParams);
   } else if ('BOX' === op.type) {
     wizard = new BoxWizard(this.app.viewer, initParams);
+  } else if ('SPHERE' === op.type) {
+    wizard = new SphereWizard(this.app.viewer, initParams);
   }
   this.registerWizard(wizard, true);
   return wizard;
