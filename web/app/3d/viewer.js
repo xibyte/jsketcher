@@ -212,8 +212,6 @@ function SelectionManager(viewer, selectionColor, readOnlyColor, defaultColor) {
   var yAxis = createArrow(new THREE.Vector3(0, 1, 0), 0x00FF00);
   this.basisGroup.add(xAxis);
   this.basisGroup.add(yAxis);
-  this.basisGroup.visible = false;
-  viewer.scene.add(this.basisGroup);
 }
 
 SelectionManager.prototype.updateBasis = function(basis, depth) {
@@ -247,7 +245,7 @@ SelectionManager.prototype.select = function(sketchFace) {
   } else {
     this.selection.push(sketchFace);
     this.updateBasis(sketchFace.basis(), sketchFace.depth());
-    this.basisGroup.visible = true;
+    sketchFace.solid.cadGroup.add(this.basisGroup);
     Viewer.setFacesColor(sketchFace.faces, this.selectionColor);
   }
   sketchFace.solid.mesh.geometry.colorsNeedUpdate = true;
@@ -271,8 +269,8 @@ SelectionManager.prototype.clear = function() {
   for (var i = 0; i < this.selection.length; ++ i) {
     Viewer.setFacesColor(this.selection[i].faces, this.defaultColor);
   }
+  if (this.basisGroup.parent !== null ) this.basisGroup.parent.remove( this.basisGroup );
   this.selection.length = 0;
-  this.basisGroup.visible = false;
 };
 
 export {Viewer, SelectionManager}
