@@ -8,7 +8,7 @@ export function BoxWizard(viewer, initParams) {
   this.viewer = viewer;
   addOkCancelLogic(this);
   viewer.scene.add(this.previewGroup);
-  this.previewGroup.add(this.box = this.createSphere());
+  this.previewGroup.add(this.box = this.createBox());
   if (!initParams) {
     initParams = BoxWizard.DEFAULT_PARAMS;
   }
@@ -19,7 +19,7 @@ export function BoxWizard(viewer, initParams) {
 
 BoxWizard.DEFAULT_PARAMS = [500, 500, 500];
 
-BoxWizard.prototype.createSphere = function() {
+BoxWizard.prototype.createBox = function() {
   var geometry = new THREE.BoxGeometry(1, 1, 1);
   var material = new THREE.MeshLambertMaterial( { color : FACE_COLOR, transparent: true, opacity:0.5, side: THREE.DoubleSide });
   return new THREE.Mesh(geometry, material);
