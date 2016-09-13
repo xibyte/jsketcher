@@ -163,7 +163,7 @@ function UI(app) {
     IO.exportTextData(stl.data[0], app.id + ".stl");
   });
   app.bus.subscribe("solid-pick", function(solid) {
-    new TransformWizard(app.viewer, solid).createUI(mainBox);
+    ui.registerWizard(new TransformWizard(app.viewer, solid));
   });
 }
 
