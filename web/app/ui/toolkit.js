@@ -47,7 +47,7 @@ export function InlineRadio(choiceLabels, choiceValues, checkedIndex) {
   this.inputs = [];
   for (var i = 0; i < choiceLabels.length; i++) {
     var checked = checkedIndex === i ? "checked" : '';
-    var label = $('<label><input type="radio" name="' + name + '" value="' + choiceValues[i] + '">' + choiceLabels[i] + '</label>');
+    var label = $('<label><input type="radio" name="' + name + '" value="' + choiceValues[i] + '"><span>' + choiceLabels[i] + '</span></label>');
     this.inputs.push(label.find("input"));
      this.root.append(label);
   }
@@ -110,7 +110,7 @@ function NumberWidget(name, initValue, baseStep, round) {
     if (scope.min != null && val < scope.min) {
       val = scope.min;
     }
-    if (scope.max != null && val > scope.min) {
+    if (scope.max != null && val > scope.max) {
       val = scope.max;
     }
     if (round !== 0) {
