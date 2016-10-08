@@ -2,6 +2,7 @@ import * as tk from '../ui/toolkit'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 import * as workbench from './workbench'
+import ToolBar from '../ui/toolbar'
 import {ExtrudeWizard} from './wizards/extrude'
 import {PlaneWizard} from './wizards/plane'
 import {BoxWizard} from './wizards/box'
@@ -15,19 +16,12 @@ function UI(app) {
 
   var mainBox = this.mainBox =  new tk.Box();
   mainBox.root.css({height : '100%'});
-  var propFolder = new tk.Folder("Solid's Properties");
+  var propFolder = new tk.Folder("Model");
   var debugFolder = new tk.Folder("Debug");
   var exportFolder = new tk.Folder("Export");
   var modificationsFolder = new tk.Folder("Modifications");
-  var extrude, cut, edit, addPlane, addBox, addSphere, save, deselectAll,
-    refreshSketches, showSketches, printSolids, printFace, printFaceId, finishHistory, stlExport;
+  var save, deselectAll, refreshSketches, showSketches, printSolids, printFace, printFaceId, finishHistory, stlExport;
   tk.add(mainBox, propFolder);
-  tk.add(propFolder, extrude = new tk.Button("Extrude"));
-  tk.add(propFolder, cut = new tk.Button("Cut"));
-  tk.add(propFolder, edit = new tk.Button("Edit"));
-  tk.add(propFolder, addPlane = new tk.Button("Add a Plane"));
-  tk.add(propFolder, addSphere = new tk.Button("Add a Sphere"));
-  tk.add(propFolder, addBox = new tk.Button("Add a Box"));
   tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
   tk.add(propFolder, save = new tk.Button("Save"));
   tk.add(propFolder, showSketches = new tk.CheckBox("Show Sketches", true));
@@ -42,6 +36,8 @@ function UI(app) {
   var modificationsListComp = new tk.List();
   tk.add(modificationsFolder, modificationsListComp);
 
+  this.toolBar = this.createToolBar();
+  
   var ui = this;
   
   function setHistory() {
@@ -76,6 +72,10 @@ function UI(app) {
     for (var i = 0; i < app.craft.history.length; i++) {
       var op = app.craft.history[i];
       var row = modificationsListComp.addRow(ui.getInfoForOp(op));
+      var icon = UI.getIconForOp(op);
+      if (icon != null) {
+        tk.List.setIconForRow(row, icon);
+      }
       (function(i) {
         row.click(function () {
           ui.app.craft.historyPointer = i;
@@ -99,29 +99,7 @@ function UI(app) {
     //updateHistoryPointer();
   });
 
-  function cutExtrude(isCut) {
-    return function() {
-      var selection = app.viewer.selectionMgr.selection;
-      if (selection.length == 0) {
-        return;
-      }
-      ui.registerWizard(new ExtrudeWizard(ui.app, selection[0], isCut), false);
-    }
-  }
-
-  cut.root.click(cutExtrude(true));
-  extrude.root.click(cutExtrude(false));
-  edit.root.click(tk.methodRef(app, "sketchFace"));
   refreshSketches.root.click(tk.methodRef(app, "refreshSketches"));
-  addPlane.root.click(function() {
-    ui.registerWizard(new PlaneWizard(app.viewer), false)
-  });
-  addBox.root.click(function() {
-    ui.registerWizard(new BoxWizard(app.viewer), false)
-  });
-  addSphere.root.click(function() {
-    ui.registerWizard(new SphereWizard(app.viewer), false)
-  });
   printSolids.root.click(function () {
     app.findAllSolids().map(function(o) {
       console.log("Solid ID: " + o.tCadId);
@@ -167,8 +145,30 @@ function UI(app) {
   });
 }
 
+UI.prototype.cutExtrude = function(isCut) {
+  return () => {
+    var selection = this.app.viewer.selectionMgr.selection;
+    if (selection.length == 0) {
+      return;
+    }
+    this.registerWizard(new ExtrudeWizard(this.app, selection[0], isCut), false);
+  }
+};
+
+UI.prototype.createToolBar = function () {
+  var toolBar = new ToolBar();
+  toolBar.add('Edit', 'img/3d/face-edit96.png', () => this.app.sketchFace());
+  toolBar.add('Cut', 'img/3d/cut96.png', this.cutExtrude(true));
+  toolBar.add('Extrude', 'img/3d/extrude96.png', this.cutExtrude(false));
+  toolBar.add('New Plane', 'img/3d/plane96.png', () => this.registerWizard(new PlaneWizard(this.app.viewer), false));
+  toolBar.add('New Box', 'img/3d/cube96.png', () => this.registerWizard(new BoxWizard(this.app.viewer), false));
+  toolBar.add('New Sphere', 'img/3d/sphere96.png', () => this.registerWizard(new SphereWizard(this.app.viewer), false));
+  $('body').append(toolBar.node);
+  return toolBar;
+};
+
 UI.prototype.registerWizard = function(wizard, overridingHistory) {
-  wizard.ui.box.root.css({left : (this.mainBox.root.width() + 10) + 'px', top : 0});
+  wizard.ui.box.root.css({left : (this.mainBox.root.width() + this.toolBar.node.width() + 30) + 'px', top : 0});
   var craft = this.app.craft; 
   wizard.apply = function() {
     craft.modify(wizard.createRequest(), overridingHistory);
@@ -192,6 +192,22 @@ UI.prototype.getInfoForOp = function(op) {
   }
   return op.type;
 };
+
+UI.getIconForOp = function(op) {
+  if ('CUT' === op.type) {
+    return 'img/3d/cut32.png';
+  } else if ('PAD' === op.type) {
+    return 'img/3d/extrude32.png';
+  } else if ('BOX' === op.type) {
+    return 'img/3d/cube32.png';
+  } else if ('PLANE' === op.type) {
+    return 'img/3d/plane32.png';
+  } else if ('SPHERE' === op.type) {
+    return 'img/3d/sphere32.png';
+  }
+  return null;
+};
+
 
 
 UI.prototype.createWizardForOperation = function(op) {

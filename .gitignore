@@ -6,6 +6,7 @@
 *.iml
 *.ipr
 *.iws
+*.blend1
 /web/app/test/viz/**
 /npm-debug.log
 /node_modules
