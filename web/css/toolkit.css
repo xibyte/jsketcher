@@ -159,3 +159,20 @@ input[type=checkbox] {
 .tc-pseudo-btn:hover {
     background-color: #000;
 }
+
+.tc-toolbar-btn:hover {
+    cursor: pointer;
+    background-color: #333;
+    color: #fff;
+}
+.tc-toolbar-btn {
+    white-space: nowrap;
+    font-size: 12px;
+    font-family:  "Arial Narrow", Arial, sans-serif;
+    color: #555;
+    text-align: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}

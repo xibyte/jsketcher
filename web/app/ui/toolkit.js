@@ -169,10 +169,23 @@ export function List() {
 List.prototype.addRow = function(name) {
   var row = $('<div/>', {
     text: name, 'class': 'tc-row tc-pseudo-btn',
-    css: {'margin-left': '10px'}
+    css: {
+      'margin-left': '10px'
+    }
   });
   this.root.append(row);
   return row;
+};
+
+List.setIconForRow = function(row, icon) {
+  row.css({
+    'background-image' : 'url('+icon+')',
+    'background-position-y': 'center',
+    'background-position-x': '5px',
+    'background-repeat': 'no-repeat',
+    'background-size': '16px 16px',
+    'padding-left' : '25px'
+  });
 };
 
 export function Tree() {
