@@ -36,7 +36,8 @@ function UI(app) {
   var modificationsListComp = new tk.List();
   tk.add(modificationsFolder, modificationsListComp);
 
-  this.toolBar = this.createToolBar();
+  this.craftToolBar = this.createCraftToolBar();
+  this.createBoolToolBar(this.craftToolBar.node.position().top + this.craftToolBar.node.height() + 20);
   
   var ui = this;
   
@@ -155,20 +156,31 @@ UI.prototype.cutExtrude = function(isCut) {
   }
 };
 
-UI.prototype.createToolBar = function () {
+UI.prototype.createCraftToolBar = function () {
   var toolBar = new ToolBar();
   toolBar.add('Edit', 'img/3d/face-edit96.png', () => this.app.sketchFace());
   toolBar.add('Cut', 'img/3d/cut96.png', this.cutExtrude(true));
   toolBar.add('Extrude', 'img/3d/extrude96.png', this.cutExtrude(false));
-  toolBar.add('New Plane', 'img/3d/plane96.png', () => this.registerWizard(new PlaneWizard(this.app.viewer), false));
-  toolBar.add('New Box', 'img/3d/cube96.png', () => this.registerWizard(new BoxWizard(this.app.viewer), false));
-  toolBar.add('New Sphere', 'img/3d/sphere96.png', () => this.registerWizard(new SphereWizard(this.app.viewer), false));
+  toolBar.add('Plane', 'img/3d/plane96.png', () => this.registerWizard(new PlaneWizard(this.app.viewer), false));
+  toolBar.add('Box', 'img/3d/cube96.png', () => this.registerWizard(new BoxWizard(this.app.viewer), false));
+  toolBar.add('Sphere', 'img/3d/sphere96.png', () => this.registerWizard(new SphereWizard(this.app.viewer), false));
   $('body').append(toolBar.node);
   return toolBar;
 };
 
+UI.prototype.createBoolToolBar = function(vertPos) {
+  var toolBar = new ToolBar();
+  toolBar.add('Intersection', 'img/3d/intersection96.png', () => this.app.sketchFace());
+  toolBar.add('Difference', 'img/3d/difference96.png', this.cutExtrude(true));
+  toolBar.add('Union', 'img/3d/union96.png', this.cutExtrude(false));
+  $('body').append(toolBar.node);
+  toolBar.node.css({top : vertPos + 'px'});
+  return toolBar;
+};
+
+
 UI.prototype.registerWizard = function(wizard, overridingHistory) {
-  wizard.ui.box.root.css({left : (this.mainBox.root.width() + this.toolBar.node.width() + 30) + 'px', top : 0});
+  wizard.ui.box.root.css({left : (this.mainBox.root.width() + this.craftToolBar.node.width() + 30) + 'px', top : 0});
   var craft = this.app.craft; 
   wizard.apply = function() {
     craft.modify(wizard.createRequest(), overridingHistory);
