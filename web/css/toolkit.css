@@ -31,10 +31,6 @@
   background-color: #1a1a1a;
 }
 
-.tc-ctrl {
-  border-left: 3px solid #e61d5f;
-}
-
 .tc-ctrl-btn {
   border-left: 3px solid #e61d5f;
   cursor: pointer;
