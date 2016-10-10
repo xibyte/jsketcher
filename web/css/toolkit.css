@@ -82,14 +82,6 @@
   color: #eee;
 }
 
-.tc-ctrl input[type=checkbox] {
-    vertical-align: sub;
-}
-
-.tc-ctrl input[type=radio] {
-    vertical-align: sub;
-}
-
 .tc-scroll {
     overflow-y: auto;
     overflow-x: hidden;
@@ -146,10 +138,6 @@
 
 .tc-inline-radio label {
     padding-right: 5px;
-}
-
-input[type=checkbox] {
-    vertical-align: sub;
 }
 
 .tc-pseudo-btn {  
