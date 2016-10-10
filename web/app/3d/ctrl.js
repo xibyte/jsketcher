@@ -38,6 +38,7 @@ function UI(app) {
 
   this.craftToolBar = this.createCraftToolBar();
   this.createBoolToolBar(this.craftToolBar.node.position().top + this.craftToolBar.node.height() + 20);
+  this.createMiscToolBar();
   
   var ui = this;
   
@@ -165,6 +166,17 @@ UI.prototype.createCraftToolBar = function () {
   toolBar.add('Box', 'img/3d/cube96.png', () => this.registerWizard(new BoxWizard(this.app.viewer), false));
   toolBar.add('Sphere', 'img/3d/sphere96.png', () => this.registerWizard(new SphereWizard(this.app.viewer), false));
   $('body').append(toolBar.node);
+  return toolBar;
+};
+
+UI.prototype.createMiscToolBar = function () {
+  var toolBar = new ToolBar();
+  toolBar.addFa('floppy-o', () => this.app.sketchFace());
+  toolBar.addFa('upload', () => this.app.sketchFace());
+  toolBar.addFa('refresh', () => this.app.sketchFace());
+  toolBar.addFa('square-o', () => this.app.sketchFace());
+  $('body').append(toolBar.node);
+  toolBar.node.css({left : '', right: '20px', 'font-size': '16px'});
   return toolBar;
 };
 

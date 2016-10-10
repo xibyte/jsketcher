@@ -166,13 +166,16 @@ input[type=checkbox] {
     color: #fff;
 }
 .tc-toolbar-btn {
-    white-space: nowrap;
-    font-size: 12px;
-    font-family:  "Arial Narrow", Arial, sans-serif;
     color: #555;
     text-align: center;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+}
+
+.tc-squeezed-text {
+    white-space: nowrap;
+    font-size: 12px;
+    font-family:  "Arial Narrow", Arial, sans-serif;
 }
