@@ -8,9 +8,8 @@
     overflow: hidden;
     }
   </style>
-  <link rel="stylesheet" href="css/toolkit.css">
-  <link rel="stylesheet" href="css/app3d.css">
-  <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/toolkit.css?modeler">
+  <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.min.css?modeler">
 
 
   <script src="lib/jquery-2.1.0.min.js"></script>
@@ -25,6 +24,16 @@
   <script src="/static/index.bundle.js"></script>
 </head>
 <body>
+  <div class="app-tab-view" id="view-3d">
+    <div style="position: relative; width: 100%; height: 100%">
+      <div id="right-panel"></div>
+      <div id="viewer-container"></div>
+      <div id="control-bar">
+      </div>
+    </div>
+  </div>
+  <div id="tab-switcher">
+  </div>
   <a id="downloader" style="display: none;" ></a>
 </body>
 </html>

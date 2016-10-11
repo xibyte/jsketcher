@@ -13,9 +13,9 @@ import {IO} from '../sketcher/io'
 function UI(app) {
   this.app = app;
   this.viewer = app.viewer;
-
-  var mainBox = this.mainBox =  new tk.Box();
+  var mainBox = this.mainBox =  new tk.Panel();
   mainBox.root.css({height : '100%'});
+  $('#right-panel').append(mainBox.root);
   var propFolder = new tk.Folder("Model");
   var debugFolder = new tk.Folder("Debug");
   var exportFolder = new tk.Folder("Export");
@@ -36,9 +36,10 @@ function UI(app) {
   var modificationsListComp = new tk.List();
   tk.add(modificationsFolder, modificationsListComp);
 
-  this.craftToolBar = this.createCraftToolBar();
+  var toolbarVertOffset = 10; //this.mainBox.root.position().top;
+  this.craftToolBar = this.createCraftToolBar(toolbarVertOffset);
   this.createBoolToolBar(this.craftToolBar.node.position().top + this.craftToolBar.node.height() + 20);
-  this.createMiscToolBar();
+  this.createMiscToolBar(toolbarVertOffset);
   
   var ui = this;
   
@@ -157,7 +158,7 @@ UI.prototype.cutExtrude = function(isCut) {
   }
 };
 
-UI.prototype.createCraftToolBar = function () {
+UI.prototype.createCraftToolBar = function (vertPos) {
   var toolBar = new ToolBar();
   toolBar.add('Edit', 'img/3d/face-edit96.png', () => this.app.sketchFace());
   toolBar.add('Cut', 'img/3d/cut96.png', this.cutExtrude(true));
@@ -165,17 +166,19 @@ UI.prototype.createCraftToolBar = function () {
   toolBar.add('Plane', 'img/3d/plane96.png', () => this.registerWizard(new PlaneWizard(this.app.viewer), false));
   toolBar.add('Box', 'img/3d/cube96.png', () => this.registerWizard(new BoxWizard(this.app.viewer), false));
   toolBar.add('Sphere', 'img/3d/sphere96.png', () => this.registerWizard(new SphereWizard(this.app.viewer), false));
-  $('body').append(toolBar.node);
+  $('#view-3d').append(toolBar.node);
+  toolBar.node.css({top : vertPos + 'px'});
   return toolBar;
 };
 
-UI.prototype.createMiscToolBar = function () {
+UI.prototype.createMiscToolBar = function (vertPos) {
   var toolBar = new ToolBar();
   toolBar.addFa('floppy-o', () => this.app.sketchFace());
   toolBar.addFa('upload', () => this.app.sketchFace());
   toolBar.addFa('refresh', () => this.app.sketchFace());
   toolBar.addFa('square-o', () => this.app.sketchFace());
-  $('body').append(toolBar.node);
+  $('#view-3d').append(toolBar.node);
+  toolBar.node.css({top : vertPos + 'px'});
   toolBar.node.css({left : '', right: '20px', 'font-size': '16px'});
   return toolBar;
 };
@@ -185,7 +188,7 @@ UI.prototype.createBoolToolBar = function(vertPos) {
   toolBar.add('Intersection', 'img/3d/intersection96.png', () => this.app.sketchFace());
   toolBar.add('Difference', 'img/3d/difference96.png', this.cutExtrude(true));
   toolBar.add('Union', 'img/3d/union96.png', this.cutExtrude(false));
-  $('body').append(toolBar.node);
+  $('#view-3d').append(toolBar.node);
   toolBar.node.css({top : vertPos + 'px'});
   return toolBar;
 };

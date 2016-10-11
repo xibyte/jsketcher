@@ -7,6 +7,10 @@
   background-color: #000;
 }
 
+.tc-panel {
+  background-color: #000;
+}
+
 .tc-row, .tc-table li {
   height: 27px;
   line-height: 27px;
