@@ -20,6 +20,15 @@ Box.prototype.close = function() {
   this.root.remove();
 };
 
+export function Panel() {
+  this.root = this.content = $('<div />');
+  this.root.addClass('tc-panel tc-scroll');
+}
+
+Panel.prototype.close = function() {
+  this.root.remove();
+};
+
 export function Folder(title) {
   this.root = $('<div/>', {'class': 'tc-folder'});
   this.content = $('<div/>');
