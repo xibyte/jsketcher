@@ -2,10 +2,10 @@ import * as cad_utils from './cad-utils'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import DPR from '../utils/dpr'
 
-function Viewer(bus) {
+function Viewer(bus, container) {
   this.bus = bus;
   function aspect() {
-    return window.innerWidth / window.innerHeight;
+    return container.clientWidth / container.clientHeight;
   }
   this.scene = new THREE.Scene();
   var scene = this.scene;
@@ -21,8 +21,8 @@ function Viewer(bus) {
   var renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio(DPR);
   renderer.setClearColor(0x808080, 1);
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  document.body.appendChild( renderer.domElement );
+  renderer.setSize( container.clientWidth, container.clientHeight );
+  container.appendChild( renderer.domElement );
   function render() {
 //    console.log("render");
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
@@ -33,7 +33,7 @@ function Viewer(bus) {
   function onWindowResize() {
     camera.aspect = aspect();
     camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( container.clientWidth, container.clientHeight );
     render();
   }
   window.addEventListener( 'resize', onWindowResize, false );
@@ -100,8 +100,8 @@ function Viewer(bus) {
 
   this.raycast = function(event) {
 
-    var x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    var x = ( event.offsetX / container.clientWidth ) * 2 - 1;
+    var y = - ( event.offsetY / container.clientHeight ) * 2 + 1;
 
     var mouse = new THREE.Vector3( x, y, 1 );
     raycaster.setFromCamera( mouse, camera );
@@ -123,14 +123,14 @@ function Viewer(bus) {
 
   renderer.domElement.addEventListener('mousedown',
     function(e) {
-      mouseState.startX = e.clientX;
-      mouseState.startY = e.clientY;
+      mouseState.startX = e.offsetX;
+      mouseState.startY = e.offsetY;
     }, false);
 
   renderer.domElement.addEventListener('mouseup',
     function(e) {
-      var dx = Math.abs(mouseState.startX - e.clientX);
-      var dy = Math.abs(mouseState.startY - e.clientY);
+      var dx = Math.abs(mouseState.startX - e.offsetX);
+      var dy = Math.abs(mouseState.startY - e.offsetY);
       var TOL = 1;
       if (dx < TOL && dy < TOL) {
         onClick(e);

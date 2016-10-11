@@ -1,11 +1,13 @@
 import {Bus} from '../ui/toolkit'
 import {Viewer} from './viewer'
 import {UI} from './ctrl'
+import TabSwitcher from './tab-switcher'
 import Vector from '../math/vector'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
 import * as workbench  from './workbench'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
+require('../../css/app3d.less');
 
 function App() {
 
@@ -17,7 +19,7 @@ function App() {
     this.initSample();
   }
   this.bus = new Bus();
-  this.viewer = new Viewer(this.bus);
+  this.viewer = new Viewer(this.bus, document.getElementById('viewer-container'));
   this.ui = new UI(this);
   this.craft = new workbench.Craft(this);
 
@@ -26,6 +28,8 @@ function App() {
   } else {
     this.load();
   }
+
+  this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
 
   this._refreshSketches();
   this.viewer.render();
@@ -99,12 +103,14 @@ App.prototype.indexEntities = function() {
   return out;
 };
 
+App.STORAGE_PREFIX = "TCAD.projects.";
+
 App.prototype.faceStorageKey = function(polyFaceId) {
-  return "TCAD.projects."+this.id+".sketch." + polyFaceId;
+  return App.STORAGE_PREFIX + this.id + ".sketch." + polyFaceId;
 };
 
 App.prototype.projectStorageKey = function(polyFaceId) {
-  return "TCAD.projects."+this.id;
+  return App.STORAGE_PREFIX + this.id;
 };
 
 App.prototype.sketchFace = function() {
@@ -272,8 +278,8 @@ App.prototype.sketchFace = function() {
   }
 
   localStorage.setItem(faceStorageKey, JSON.stringify(data));
-
-  window.open("sketcher.html#" + faceStorageKey.substring(14), "Edit Sketch", "height=900,width=1200");
+  var sketchURL = faceStorageKey.substring(App.STORAGE_PREFIX.length);
+  this.tabSwitcher.showSketch(sketchURL, polyFace.id);
 };
 
 App.prototype.extrude = function() {

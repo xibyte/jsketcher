@@ -1,0 +1,82 @@
+@tab-switcher-inner-height: 20px;
+@tab-switcher-top-border: 1px;
+@tab-switcher-height: @tab-switcher-inner-height + @tab-switcher-top-border;
+
+@tab-border-color: #2c2c2c;
+
+@right-panel-width: 250px;
+
+.no-selection {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+body {
+  background-color: #808080;
+}
+
+.history-selected, .history-selected:hover {
+  background-color: #780000;
+}
+
+.app-tab-view {
+  position: absolute;
+  top: 0;
+  bottom: @tab-switcher-height;
+  width: 100%;
+}
+
+#tab-switcher {
+  position: absolute;
+  height: @tab-switcher-inner-height;
+  bottom: 0;
+  background-color: #000;
+  width: 100%;
+  border-top: 1px solid @tab-border-color;
+  color: #eee;
+  font: 11px 'Lucida Grande', sans-serif;
+  text-align: center;
+  .no-selection;
+}
+
+#tab-switcher .tab {
+  padding: 2px 5px 0 5px;
+  height: 100%;
+  float: left;
+  cursor: pointer;
+  border-right: 1px solid #2c2c2c;
+  color: #aaa;
+}
+
+#tab-switcher .tab:hover {
+  color: #eee;
+}
+
+#tab-switcher .tab-selected {
+  background-color: #222;
+  color: #eee;
+}
+
+.tab .expand:hover {
+  color: green;
+}
+
+.tab .close:hover {
+  color: red;
+}
+
+#viewer-container {
+  position: absolute; left: @right-panel-width; right:0; height: 100%;
+}
+
+#control-bar {
+  
+}
+
+#right-panel {
+  position: absolute; height: 100%; width: @right-panel-width;
+}
+
+

@@ -23,7 +23,11 @@ module.exports = {
       include: path.join(__dirname, 'web/app')
     }, {
       test: /\.css$/,
-      loader: 'style-loader!css-loader'
+      loader: 'style!css'
+    },
+    {
+      test: /\.less$/,
+      loader: "style!css!less"
     }]
   }
 };
