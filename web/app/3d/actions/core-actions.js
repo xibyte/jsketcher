@@ -3,7 +3,6 @@ import * as ActionHelpers from './action-helpers'
 export const EditFace = {
   cssIcons: ['file-picture-o'],
   label: 'edit',
-  icon32: 'img/3d/face-edit32.png',
   icon96: 'img/3d/face-edit96.png',
   info: 'open sketcher for a face/plane',
   listens: ['selection'],
@@ -13,15 +12,15 @@ export const EditFace = {
 
 export const Save = {
   cssIcons: ['floppy-o'],
-  label: 'refresh sketches',
-  info: 'force refreshing sketches/loading from storage',
+  label: 'save',
+  info: 'save project to storage',
   invoke: (app) => app.save()
 };
 
 export const StlExport = {
   cssIcons: ['upload', 'flip-vertical'],
-  label: '',
-  info: 'refresh all visible sketches',
+  label: 'STL Export',
+  info: 'export model to STL file',
   invoke: (app) => app.stlExport()
 };
 
@@ -51,7 +50,7 @@ export const ShowSketches = {
   property: 'showSketches',
   cssIcons: ['image'],
   label: 'show sketches',
-  info: 'toggle whether show sketches on a solid face'
+  info: 'toggle whether to show sketches on a solid face'
 };
 
 export const noIcon = {

@@ -2,10 +2,11 @@ export const keymap = {
 
   'CUT': 'C',
   'PAD': 'E',
-  'zoomIn': '+',
-  'zoomOut': '-',
+  'ZoomIn': '+',
+  'ZoomOut': '-',
   'menu.craft': 'shift+C',
   'menu.primitives': 'shift+A',
   'menu.main': 'space',
-  'save': 'CTRL + S'
+  'Save': 'ctrl+S',
+  'Info': 'F1'
 }; 
