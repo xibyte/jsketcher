@@ -1,6 +1,8 @@
 import {jwerty} from 'jwerty'
 import {keymap} from './keymaps/default'
-import {DefaultMouseEvent, EventData, fit} from './utils'
+import {Bind} from './bind'
+import {MessageSink} from './message-sink'
+import {LoadTemplate, DefaultMouseEvent, EventData, fit} from './utils'
 
 export function InputManager(app) {
   this.app = app;
@@ -8,19 +10,20 @@ export function InputManager(app) {
   this.keymap = keymap;
   this.mouseInfo = new DefaultMouseEvent();
   this.requestedActionInfo = null;
+  this.actionInfoDom = $(LoadTemplate('action-info')({}));
+  this.messageSink = new MessageSink(this);
   $(() => {
     $(document)
       .on('keydown', (e) => this.handleKeyPress(e))
       .on('mousedown', (e) => this.clear(e))
       .on('mouseenter', '.action-item', (e) => this.showActionInfo($(e.target)))
-      .on('mouseleave', '.action-item', (e) => this.emptyInfo())
+      .on('mouseleave', '.action-item', (e) => this.hideActionInfo())
       .on('mousemove', (e) => this.mouseInfo = e)
       .on('click', '.action-item', (e) => this.handleActionClick(e));
   });
 }
 
 InputManager.prototype.handleKeyPress = function(e) {
-  console.log(e.keyCode);
   switch (e.keyCode) {
     case 27 : this.clear(); break;
   }
@@ -44,7 +47,7 @@ InputManager.prototype.clear = function(e) {
     this.openMenus = [];
   }
   this.requestedActionInfo = null;
-  $('#message-sink').hide();
+  this.messageSink.hide();
 };
 
 InputManager.prototype.handleActionClick = function(event) {
@@ -62,37 +65,19 @@ InputManager.prototype.registerOpenMenu = function(menu) {
   this.openMenus.push(menu);
 };
 
-InputManager.messageSink = function() {
-  return $('#message-sink');
-};
-
-InputManager.prototype.emptyInfo = function() {
+InputManager.prototype.hideActionInfo = function() {
   this.requestedActionInfo = null;
-  var messageSink = InputManager.messageSink();
-  messageSink.empty();
-  messageSink.hide();
+  this.messageSink.hide();
 };
 
 InputManager.prototype.showActionInfo = function(el) {
   //show hint immediately and deffer showing the full info
-  var hint = el.data('actionHint');
-  if (hint) {
-    InputManager.messageSink().text(hint);
-    this.showMessageSinkAround();
-  }
+  //var hint = el.data('actionHint');
+  //if (hint) {
+  //  InputManager.messageSink().text(hint);
+  //  this.showMessageSinkAround();
+  //}
   this.requestInfo(el.data('action'));
-};
-
-InputManager.prototype.info = function(text) {
-  InputManager.messageSink().html(text);
-  this.showMessageSinkAround();
-};
-
-InputManager.prototype.showMessageSinkAround = function() {
-  var messageSink = InputManager.messageSink();
-  messageSink.show();
-  messageSink.offset({left: this.mouseInfo.pageX + 10, top: this.mouseInfo.pageY + 10});
-  fit(messageSink, $('body'));
 };
 
 InputManager.prototype.requestInfo = function(action) {
@@ -103,13 +88,14 @@ InputManager.prototype.requestInfo = function(action) {
     if (actionId != null) {
       const action = this.app.actionManager.actions[actionId];
       if (action) {
-        var hotkey = this.keymap[actionId];
-        InputManager.messageSink().html(
-          (action.state.hint ? action.state.hint  : '') +
-          ('<div>' + action.info + '</div>') +
-          (hotkey ? '<div  >hotkey: ' + hotkey + '</div>' : ''));
-        this.showMessageSinkAround();
+        var hotKey = this.keymap[actionId];
+        Bind(this.actionInfoDom, {
+          hint: action.state.hint,
+          info: action.info,
+          hotKey: hotKey
+        });
+        this.messageSink.showContent(this.actionInfoDom);
       }
     }
-  }, 1000);
+  }, 500);
 };

@@ -28,6 +28,10 @@ module.exports = {
     {
       test: /\.less$/,
       loader: "style!css!less"
+    },
+    {
+      test: /\.html$/,
+      loader: 'mustache'
     }]
   }
 };

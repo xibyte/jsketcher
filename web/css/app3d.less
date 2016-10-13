@@ -9,6 +9,8 @@
 @control-button-border: 1px solid #2c2c2c;
 @menu-border-radius: 3px;
 
+@suppressed-color: #888;
+
 .no-selection {
   user-select: none;
   -webkit-user-select: none;
@@ -187,13 +189,13 @@ body {
 }
 
 .menu-item.action-disabled {
-  color: #888;
+  color: @suppressed-color;
 }
 
 .menu-item .action-hotkey-info {
   float: right;
   padding-left: 15px;
-  color: #888;
+  color: @suppressed-color;
   font-size: 9px;
   margin-top: 1px;
 }
@@ -206,16 +208,31 @@ body {
   padding-left: 25px;
 }
 
-#message-sink {
+.message-sink {
   display: none;
   position: absolute;
   max-width: 400px;
   padding: 5px;
+  padding: 2px 5px 2px 5px;
   .aux-win;
   color: #ccc;
   white-space: nowrap;
   z-index: 999;
 }
 
+.action-info > div {
+  padding: 3px 0 3px 0;
+}
+.action-info-hotkey {
+ text-align: right;
+ font-style: italic;
+ color: @suppressed-color;  
+}
+
+.action-info-hint {
+  text-align: right;
+  font-style: italic;
+  color: #E1A4A4;
+}
 
 
