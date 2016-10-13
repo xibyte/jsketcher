@@ -38,8 +38,10 @@
     "webpack-dev-server": "1.15.0"
   },
   "dependencies": {
+    "sprintf": "0.1.5",
     "diff-match-patch": "1.0.0",
     "numeric": "1.2.6",
-    "jwerty": "0.3.2"
+    "jwerty": "0.3.2",
+    "mustache-loader": "0.3.3"
   }
 }

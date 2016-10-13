@@ -66,7 +66,7 @@ ActionManager.prototype.run = function(actionId, event) {
   if (action.state.enabled) {
     action.__handler(this.app, event);
   } else {
-    this.app.inputManager.info("action '"+actionId+"' is disabled and can't be launched<br>" + action.state.hint);
+    this.app.inputManager.messageSink.info("action '"+actionId+"' is disabled and can't be launched<br>" + action.state.hint);
   }
 };
 

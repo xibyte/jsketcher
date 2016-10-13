@@ -70,5 +70,8 @@ export function fit(el, relativeEl) {
       top: off.top + 'px'
     });
   }
-
 }
+
+export function LoadTemplate(name) {
+  return require('./tmpl/' + name + '.html');
+} 
