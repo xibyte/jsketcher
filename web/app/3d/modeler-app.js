@@ -13,6 +13,7 @@ import * as workbench  from './workbench'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 import {IO} from '../sketcher/io'
+import {AddDebugSupport} from './debug'
 require('../../css/app3d.less');
 
 function App() {
@@ -37,6 +38,8 @@ function App() {
   this.ui = new UI(this);
   this.craft = new workbench.Craft(this);
 
+  AddDebugSupport(this);
+  
   if (this.id == '$scratch$') {
     this.addBox();
   } else {
@@ -394,7 +397,7 @@ App.prototype.stlExport = function() {
     return s.csg.toPolygons()
   }));
   var stl = CSG.fromPolygons(allPolygons).toStlString();
-  IO.exportTextData(stl.data[0], app.id + ".stl");
+  IO.exportTextData(stl.data[0], this.id + ".stl");
 };
 
 App.prototype.showInfo = function() {
