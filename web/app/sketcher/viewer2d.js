@@ -101,7 +101,7 @@ function Viewer(canvas, IO) {
   this._serviceLayers = [];
   this.dimLayer = new Layer("_dim", Styles.DIM);
   this.dimLayers = [this.dimLayer];
-  this.bus.defineObservable(this, 'dimScale', 'dimScale', 1);
+  this.bus.defineObservable(this, 'dimScale', 1);
   this.bus.subscribe('dimScale', function(){ viewer.refresh(); });
   
   this._workspace = [this.dimLayers, this.layers, this._serviceLayers];

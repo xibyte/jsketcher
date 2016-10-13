@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "diff-match-patch": "1.0.0",
-    "numeric": "1.2.6"
+    "numeric": "1.2.6",
+    "jwerty": "0.3.2"
   }
 }

@@ -1,7 +1,12 @@
 import {Bus} from '../ui/toolkit'
 import {Viewer} from './viewer'
-import {UI} from './ctrl'
-import TabSwitcher from './tab-switcher'
+import {UI} from './ui/ctrl'
+import TabSwitcher from './ui/tab-switcher'
+import ControlBar from './ui/control-bar'
+import {InputManager} from './ui/input-manager'
+import {ActionManager} from './actions/actions'
+import * as CoreActions from './actions/core-actions'
+import {OperationActions} from './actions/operation-actions'
 import Vector from '../math/vector'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
 import * as workbench  from './workbench'
@@ -19,7 +24,15 @@ function App() {
     this.initSample();
   }
   this.bus = new Bus();
+  this.actionManager = new ActionManager(this);
+  this.inputManager = new InputManager(this);
+  this.state = this.createState();
   this.viewer = new Viewer(this.bus, document.getElementById('viewer-container'));
+  this.actionManager.registerActions(CoreActions);
+  this.actionManager.registerActions(OperationActions);
+  this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
+  this.controlBar = new ControlBar(this, $('#control-bar'));
+
   this.ui = new UI(this);
   this.craft = new workbench.Craft(this);
 
@@ -28,8 +41,6 @@ function App() {
   } else {
     this.load();
   }
-
-  this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
 
   this._refreshSketches();
   this.viewer.render();
@@ -47,6 +58,7 @@ function App() {
       app.viewer.render();
     }
   }
+  window.addEventListener('storage', storage_handler, false);
 
   this.bus.subscribe("craft", function() {
     var historyEditMode = app.craft.historyPointer != app.craft.history.length;
@@ -55,8 +67,13 @@ function App() {
     }
     app._refreshSketches();
   });
-  window.addEventListener('storage', storage_handler, false);
 }
+
+App.prototype.createState = function() {
+  const state = {};
+  this.bus.defineObservable(state, 'showSketches', true);
+  return state;
+};
 
 App.prototype.findAllSolids = function() {
   return this.viewer.workGroup.children
