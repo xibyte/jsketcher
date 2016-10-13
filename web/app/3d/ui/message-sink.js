@@ -18,6 +18,7 @@ MessageSink.prototype.hide = function() {
 
 MessageSink.prototype.showContent = function(dom) {
   this.node.children().detach();
+  this.node.empty();
   this.node.append(dom);
   this.show();
 };

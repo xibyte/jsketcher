@@ -28,7 +28,7 @@ export const main = {
   label: 'start',
   cssIcons: ['rocket'],
   info: 'common set of actions',
-  actions: ['PAD', 'CUT', '-', 'INTERSECTION', 'DIFFERENCE', 'UNION', '-', 'PLANE', 'BOX', 'SPHERE', '-', 
-            'deselectAll', 'refreshSketches' ]
+  actions: ['PAD', 'CUT', '-', 'INTERSECTION', 'DIFFERENCE', 'UNION', '-', 'PLANE', 'BOX', 'SPHERE', '-',
+    'EditFace', '-', 'DeselectAll', 'RefreshSketches'  ]
 };
 

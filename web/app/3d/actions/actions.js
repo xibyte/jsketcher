@@ -72,6 +72,11 @@ ActionManager.prototype.run = function(actionId, event) {
 
 ActionManager.prototype.subscribe = function(actionId, callback) {
   this.app.bus.subscribe('action.update.'+actionId, callback);
+  const action = this.actions[actionId];
+  if (action) {
+    callback(action.state);
+  }
+  return callback;
 };
 
 const NOOP = () => {};

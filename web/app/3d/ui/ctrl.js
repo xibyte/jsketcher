@@ -11,7 +11,6 @@ import {PlaneWizard} from '../wizards/plane'
 import {BoxWizard} from '../wizards/box'
 import {SphereWizard} from '../wizards/sphere'
 import {TransformWizard} from '../wizards/transform'
-import {IO} from '../../sketcher/io'
 
 function UI(app) {
   this.app = app;
@@ -142,13 +141,6 @@ function UI(app) {
   deselectAll.root.click(function() {
     app.viewer.selectionMgr.deselectAll();
   });
-  stlExport.root.click(function() {
-    var allPolygons = cad_utils.arrFlatten1L(app.findAllSolids().map(function (s) {
-      return s.csg.toPolygons()
-    }));
-    var stl = CSG.fromPolygons(allPolygons).toStlString();
-    IO.exportTextData(stl.data[0], app.id + ".stl");
-  });
   app.bus.subscribe("solid-pick", function(solid) {
     ui.registerWizard(new TransformWizard(app.viewer, solid));
   });
@@ -165,20 +157,20 @@ UI.prototype.cutExtrude = function(isCut) {
 };
 
 UI.prototype.createCraftToolBar = function (vertPos) {
-  var toolBar = new ToolBar();
-  toolBar.add('Edit', 'img/3d/face-edit96.png', () => this.app.sketchFace());
-  toolBar.add('Cut', 'img/3d/cut96.png', this.cutExtrude(true));
-  toolBar.add('Extrude', 'img/3d/extrude96.png', this.cutExtrude(false));
-  toolBar.add('Plane', 'img/3d/plane96.png', () => this.registerWizard(new PlaneWizard(this.app.viewer), false));
-  toolBar.add('Box', 'img/3d/cube96.png', () => this.registerWizard(new BoxWizard(this.app.viewer), false));
-  toolBar.add('Sphere', 'img/3d/sphere96.png', () => this.registerWizard(new SphereWizard(this.app.viewer), false));
+  var toolBar = new ToolBar(this.app);
+  toolBar.add(this.app.actionManager.actions['EditFace']);
+  toolBar.add(this.app.actionManager.actions['CUT']);
+  toolBar.add(this.app.actionManager.actions['PAD']);
+  toolBar.add(this.app.actionManager.actions['PLANE']);
+  toolBar.add(this.app.actionManager.actions['BOX']);
+  toolBar.add(this.app.actionManager.actions['SPHERE']);
   $('#viewer-container').append(toolBar.node);
   toolBar.node.css({left: '10px',top : vertPos + 'px'});
   return toolBar;
 };
 
 UI.prototype.createMiscToolBar = function (vertPos) {
-  var toolBar = new ToolBar();
+  var toolBar = new ToolBar(this.app);
   toolBar.addFa('floppy-o', () => this.app.sketchFace());
   toolBar.addFa('upload', () => this.app.sketchFace());
   toolBar.addFa('refresh', () => this.app.sketchFace());
@@ -190,10 +182,10 @@ UI.prototype.createMiscToolBar = function (vertPos) {
 };
 
 UI.prototype.createBoolToolBar = function(vertPos) {
-  var toolBar = new ToolBar();
-  toolBar.add('Intersection', 'img/3d/intersection96.png', () => this.app.sketchFace());
-  toolBar.add('Difference', 'img/3d/difference96.png', this.cutExtrude(true));
-  toolBar.add('Union', 'img/3d/union96.png', this.cutExtrude(false));
+  var toolBar = new ToolBar(this.app);
+  toolBar.add(this.app.actionManager.actions['INTERSECTION']);
+  toolBar.add(this.app.actionManager.actions['DIFFERENCE']);
+  toolBar.add(this.app.actionManager.actions['UNION']);
   $('#viewer-container').append(toolBar.node);
   toolBar.node.css({left: '10px', top : vertPos + 'px'});
   return toolBar;
@@ -214,9 +206,9 @@ UI.prototype.registerMenuActions = function() {
 UI.prototype.fillControlBar = function() {
   const LEFT = true;
   const RIGHT = !LEFT;
-  this.app.controlBar.add('info', RIGHT, {'label': null});
-  this.app.controlBar.add('refreshSketches', RIGHT, {'label': null});
-  this.app.controlBar.add('showSketches', RIGHT, {'label': 'sketches'});
+  this.app.controlBar.add('Info', RIGHT, {'label': null});
+  this.app.controlBar.add('RefreshSketches', RIGHT, {'label': null});
+  this.app.controlBar.add('ShowSketches', RIGHT, {'label': 'sketches'});
   this.app.controlBar.add('menu.craft', LEFT);
   this.app.controlBar.add('menu.primitives', LEFT);
   this.app.controlBar.add('menu.boolean', LEFT);
@@ -264,6 +256,21 @@ UI.getIconForOp = function(op) {
 };
 
 
+UI.prototype.initOperation = function(op) {
+  if ('CUT' === op) {
+    this.cutExtrude(false)();
+  } else if ('PAD' === op) {
+    this.cutExtrude(false)();
+  } else if ('BOX' === op) {
+    this.registerWizard(new BoxWizard(this.app.viewer), false)
+  } else if ('PLANE' === op) {
+    this.registerWizard(new PlaneWizard(this.app.viewer), false)
+  } else if ('SPHERE' === op) {
+    this.registerWizard(new SphereWizard(this.app.viewer), false)
+  } else {
+    console.log('unknown operation');
+  }
+};
 
 UI.prototype.createWizardForOperation = function(op) {
   var initParams = op.protoParams;

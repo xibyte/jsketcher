@@ -72,6 +72,11 @@ export function fit(el, relativeEl) {
   }
 }
 
+export function capitalize(str) {
+  if (!str) return;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function LoadTemplate(name) {
   return require('./tmpl/' + name + '.html');
 } 

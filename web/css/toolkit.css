@@ -167,3 +167,12 @@
     font-size: 12px;
     font-family:  "Arial Narrow", Arial, sans-serif;
 }
+
+.tc-toolbar-btn.action-disabled {
+  color: #999;  
+}
+
+.tc-toolbar-btn.action-disabled:hover {
+    color: #aaa;
+    background-color: #888;
+}

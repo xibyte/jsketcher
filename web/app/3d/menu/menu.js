@@ -39,16 +39,13 @@ export default function Menu(menuActions, inputManager) {
     }
     
     container.append(menuItem);
-    var uiUpdater = (state) => {
+    this.inputManager.app.actionManager.subscribe(action.id, (state) => {
       if (state.enabled) {
         menuItem.removeClass('action-disabled');
       } else {
         menuItem.addClass('action-disabled');
       }
-      menuItem.data('actionHint', state.hint);
-    };
-    uiUpdater(action.state);
-    this.inputManager.app.actionManager.subscribe(action.id, uiUpdater);
+    });
   }
   this.node.hide();
   $('body').append(this.node);
