@@ -1,43 +1,46 @@
 import * as Operations from '../operations'
+import * as ActionHelpers from './action-helpers'
 
-function mergeInfo(op, action) {
+function mergeInfo(opName, action) {
+  const op = Operations[opName];
   action.label = op.label;
   action.icon32 = op.icon + '32.png';
   action.icon96 = op.icon + '96.png';
+  action.invoke = (app) => app.ui.initOperation(opName);
   return action;
 }
 
 export const OperationActions = {
   
-  'CUT': mergeInfo(Operations.CUT, {
+  'CUT': mergeInfo('CUT', {
     info: 'makes a cut based on 2D sketch'
   }),
   
-  'PAD': mergeInfo(Operations.PAD, {
+  'PAD': mergeInfo('PAD', {
     info: 'extrudes 2D sketch'
   }),
 
-  'BOX': mergeInfo(Operations.BOX, {
+  'BOX': mergeInfo('BOX', {
     info: 'creates new object box'
   }),
 
-  'PLANE': mergeInfo(Operations.PLANE, {
+  'PLANE': mergeInfo('PLANE', {
     info: 'creates new object plane'
   }),
   
-  'SPHERE': mergeInfo(Operations.SPHERE, {
+  'SPHERE': mergeInfo('SPHERE', {
     info: 'creates new object sphere'
   }),
 
-  'INTERSECTION': mergeInfo(Operations.INTERSECTION, {
+  'INTERSECTION': mergeInfo('INTERSECTION', {
     info: 'intersection operation on two solids'
   }),
   
-  'DIFFERENCE': mergeInfo(Operations.DIFFERENCE, {
+  'DIFFERENCE': mergeInfo('DIFFERENCE', {
     info: 'difference operation on two solids'
   }),
   
-  'UNION': mergeInfo(Operations.UNION, {
+  'UNION': mergeInfo('UNION', {
     info: 'union operation on two solids'
   })
 };
@@ -51,20 +54,10 @@ requiresSolidSelection(OperationActions.UNION, 2);
 
 function requiresFaceSelection(action, amount) {
   action.listens = ['selection'];
-  action.update = (state, app) => {
-    state.enabled = app.viewer.selectionMgr.selection.length >= amount;
-    if (!state.enabled) {
-      state.hint = 'requires at least one face to be selected';
-    } 
-  }
+  action.update = ActionHelpers.checkForSelectedFaces(amount)
 }
 
 function requiresSolidSelection(action, amount) {
   action.listens = ['selection'];
-  action.update = (state, app) => {
-    state.enabled = app.viewer.selectionMgr.selection.length >= amount;
-    if (!state.enabled) {
-      state.hint = 'requires at least two solids to be selected';
-    }
-  }
+  action.update = ActionHelpers.checkForSelectedSolids(amount)
 }
