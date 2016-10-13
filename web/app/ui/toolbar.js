@@ -1,5 +1,7 @@
+import {capitalize} from 'utils'
 
-export default function ToolBar() {
+export default function ToolBar(app) {
+  this.app = app;
   this.node = $('<div>', {
     css :{
       'position': 'absolute', 
@@ -10,24 +12,33 @@ export default function ToolBar() {
   }); 
 }
 
-ToolBar.prototype.add = function(caption, icon, action) {
+ToolBar.prototype.add = function(action) {
+  if (!action) return;
   var btn = $('<div>', {
-    'class': 'tc-toolbar-btn tc-squeezed-text',
-    text : caption,
+    'class': 'tc-toolbar-btn tc-squeezed-text action-item',
+    text : capitalize(action.label),
     css: ToolBar.buttonCss({
-      'background-image': 'url('+icon+')',
+      'background-image': 'url('+action.icon96+')',
       'background-repeat': 'no-repeat',
       'background-position-x': 'center',
       'background-position-y': 'top',
       'background-size': '48px 48px'
     })
   });
-  btn.click(action);
+  btn.attr('data-action', action.id);
+  this.app.actionManager.subscribe(action.id, (state) => {
+    if (state.enabled) {
+      btn.removeClass('action-disabled');
+    } else {
+      btn.addClass('action-disabled');
+    }
+  });
   this.node.append(btn);
   return btn;
 };
 
 ToolBar.prototype.addFa = function(faIcon, action) {
+  if (!action) return;
   var btn = $('<div>', {
     'class': 'tc-toolbar-btn',
     css : {

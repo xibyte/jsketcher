@@ -12,6 +12,7 @@ import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
 import * as workbench  from './workbench'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
+import {IO} from '../sketcher/io'
 require('../../css/app3d.less');
 
 function App() {
@@ -386,6 +387,18 @@ App.prototype.load = function() {
       this.craft.loadHistory(data.history);
     }
   }
+};
+
+App.prototype.stlExport = function() {
+  var allPolygons = cad_utils.arrFlatten1L(this.findAllSolids().map(function (s) {
+    return s.csg.toPolygons()
+  }));
+  var stl = CSG.fromPolygons(allPolygons).toStlString();
+  IO.exportTextData(stl.data[0], app.id + ".stl");
+};
+
+App.prototype.showInfo = function() {
+  alert('men at work');
 };
 
 App.prototype.initSample = function() {
