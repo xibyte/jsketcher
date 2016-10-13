@@ -121,14 +121,24 @@ function Viewer(bus, container) {
     startY : 0
   };
 
+  //fix for FireFox
+  function fixOffsetAPI(event) {
+    if (event.offsetX == undefined) {
+      event.offsetX = event.layerX;
+      event.offsetY = event.layerY;
+    }
+  }
+  
   renderer.domElement.addEventListener('mousedown',
     function(e) {
+      fixOffsetAPI(e);
       mouseState.startX = e.offsetX;
       mouseState.startY = e.offsetY;
     }, false);
 
   renderer.domElement.addEventListener('mouseup',
     function(e) {
+      fixOffsetAPI(e);
       var dx = Math.abs(mouseState.startX - e.offsetX);
       var dy = Math.abs(mouseState.startY - e.offsetY);
       var TOL = 1;
@@ -258,6 +268,7 @@ SelectionManager.prototype.deselectAll = function() {
     this.selection[i].solid.mesh.geometry.colorsNeedUpdate = true;
   }
   this.clear();
+  this.viewer.bus.notify('selection', null);
   this.viewer.render();
 };
 

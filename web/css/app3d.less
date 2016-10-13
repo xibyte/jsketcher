@@ -6,6 +6,9 @@
 
 @right-panel-width: 250px;
 
+@control-button-border: 1px solid #2c2c2c;
+@menu-border-radius: 3px;
+
 .no-selection {
   user-select: none;
   -webkit-user-select: none;
@@ -15,6 +18,11 @@
 
 body {
   background-color: #808080;
+  .main-font;
+}
+
+.main-font {
+  font: 11px 'Lucida Grande', sans-serif;
 }
 
 .history-selected, .history-selected:hover {
@@ -36,7 +44,6 @@ body {
   width: 100%;
   border-top: 1px solid @tab-border-color;
   color: #eee;
-  font: 11px 'Lucida Grande', sans-serif;
   text-align: center;
   .no-selection;
 }
@@ -68,15 +75,147 @@ body {
 }
 
 #viewer-container {
-  position: absolute; left: @right-panel-width; right:0; height: 100%;
+  position: absolute;
+  left: @right-panel-width;
+  right: 0;
+  top: 0;
+  bottom: 0;
 }
 
 #control-bar {
-  
+  position: absolute;
+  left: @right-panel-width;
+  right: 0;
+  bottom: 0;
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #ccc;
+}
+
+#control-bar .left-group {
+  text-align: left;
+  float: left;
+}
+
+#control-bar .right-group {
+  text-align: right;
+}
+
+#control-bar .left-group .button {
+  float: left;
+  border-right: @control-button-border;
+}
+
+#control-bar .right-group .button {
+  float: right;
+  border-left: @control-button-border;
+}
+
+.button .fa {
+  line-height: 1.5;
+}
+
+#control-bar .button {
+  padding: 3px 7px 0 5px;
+  height: 100%;
+  vertical-align: baseline;
+  cursor: pointer;
+  .no-selection
+}
+
+#control-bar .button:hover {
+  background-color: #555;
+}
+
+#control-bar .button-selected {
+  background-color: #666;
+}
+
+#control-bar .button-selected:hover {
+  background-color: #666;
 }
 
 #right-panel {
-  position: absolute; height: 100%; width: @right-panel-width;
+  position: absolute;
+  height: 100%;
+  background-color: #000;
+  width: @right-panel-width;
 }
+
+.aux-win {
+  color: #fff;
+  background-color: rgba(0,0,0,0.7);
+  border: solid 1px #000;
+  border-radius: @menu-border-radius
+}
+
+.menu {
+  position: absolute;
+  .aux-win;
+  /* this element can't have neither padding nor margin to be properly positioned as menu */
+}
+
+.menu-container {
+  padding: 5px 0 5px 0;
+}
+
+.menu-item {
+  padding: 5px 5px 5px 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.menu-item:hover {
+  background-color: #0074D9;
+}
+
+.menu-flat-bottom {
+  border-radius: @menu-border-radius @menu-border-radius 0 0;
+}
+
+.menu-flat-top {
+  border-radius: 0 0 @menu-border-radius @menu-border-radius;
+}
+
+.menu-separator {
+  border-top: solid 1px #777;
+}
+
+.menu-item .fa {
+  margin-left: -16px;
+  padding-right: 3px;
+}
+
+.menu-item.action-disabled {
+  color: #888;
+}
+
+.menu-item .action-hotkey-info {
+  float: right;
+  padding-left: 15px;
+  color: #888;
+  font-size: 9px;
+  margin-top: 1px;
+}
+
+.icon16-left {
+  background-position-y: center;
+  background-position-x: 5px;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  padding-left: 25px;
+}
+
+#message-sink {
+  display: none;
+  position: absolute;
+  max-width: 400px;
+  padding: 5px;
+  .aux-win;
+  color: #ccc;
+  white-space: nowrap;
+  z-index: 999;
+}
+
 
 

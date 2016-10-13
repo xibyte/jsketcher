@@ -278,20 +278,26 @@ export function Bus() {
   this.listeners = {};
 }
 
-Bus.prototype.subscribe = function(event, callback) {
+Bus.prototype.subscribe = function(event, callback, listenerId) {
   var listenerList = this.listeners[event];
   if (listenerList === undefined) {
     listenerList = [];
     this.listeners[event] = listenerList;
   }
-  listenerList.push(callback);
+  if (listenerId == undefined) listenerId = null;
+  listenerList.push([callback, listenerId]);
+  return callback;
 };
 
-Bus.prototype.notify = function(event, data) {
+Bus.prototype.notify = function(event, data, sender) {
   var listenerList = this.listeners[event];
   if (listenerList !== undefined) {
     for (var i = 0; i < listenerList.length; i++) {
-      listenerList[i](data);
+      const callback = listenerList[i][0];
+      const listenerId = listenerList[i][1];
+      if (sender == undefined || listenerId == null  || listenerId != sender) {
+        callback(data);
+      }
     }
   }
 };
@@ -300,7 +306,8 @@ Bus.Observable = function(initValue) {
   this.value = initValue;
 };
 
-Bus.prototype.defineObservable = function(scope, name, eventName, initValue) {
+Bus.prototype.defineObservable = function(scope, name, initValue, eventName) {
+  if (eventName == undefined) eventName = name;
   var observable = new Bus.Observable(initValue);
   var bus = this;
   return Object.defineProperty(scope, name, {

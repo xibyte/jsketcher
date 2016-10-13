@@ -3,8 +3,6 @@ export default function ToolBar() {
   this.node = $('<div>', {
     css :{
       'position': 'absolute', 
-      'left': '260px', 
-      'top': '10px',
       'background-color': 'rgba(255, 255, 255, 0.5)',
       'padding': '5px',
       'border-radius' : '5px'

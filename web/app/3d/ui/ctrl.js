@@ -1,14 +1,17 @@
-import * as tk from '../ui/toolkit'
-import * as cad_utils from './cad-utils'
-import * as math from '../math/math'
-import * as workbench from './workbench'
-import ToolBar from '../ui/toolbar'
-import {ExtrudeWizard} from './wizards/extrude'
-import {PlaneWizard} from './wizards/plane'
-import {BoxWizard} from './wizards/box'
-import {SphereWizard} from './wizards/sphere'
-import {TransformWizard} from './wizards/transform'
-import {IO} from '../sketcher/io'
+import * as tk from '../../ui/toolkit'
+import * as cad_utils from '../cad-utils'
+import * as math from '../../math/math'
+import * as workbench from '../workbench'
+import ToolBar from '../../ui/toolbar'
+import * as MenuConfig from '../menu/menu-config'
+import * as Operations from '../operations'
+import Menu from '../menu/menu'
+import {ExtrudeWizard} from '../wizards/extrude'
+import {PlaneWizard} from '../wizards/plane'
+import {BoxWizard} from '../wizards/box'
+import {SphereWizard} from '../wizards/sphere'
+import {TransformWizard} from '../wizards/transform'
+import {IO} from '../../sketcher/io'
 
 function UI(app) {
   this.app = app;
@@ -37,10 +40,13 @@ function UI(app) {
   tk.add(modificationsFolder, modificationsListComp);
 
   var toolbarVertOffset = 10; //this.mainBox.root.position().top;
+
+  this.registerMenuActions();  
+  
   this.craftToolBar = this.createCraftToolBar(toolbarVertOffset);
   this.createBoolToolBar(this.craftToolBar.node.position().top + this.craftToolBar.node.height() + 20);
   this.createMiscToolBar(toolbarVertOffset);
-  
+  this.fillControlBar();
   var ui = this;
   
   function setHistory() {
@@ -119,8 +125,7 @@ function UI(app) {
   printFaceId.root.click(function () {
     console.log(app.viewer.selectionMgr.selection[0].id);
   });
-  showSketches.input.click(function () {
-    var enabled = this.checked;
+  this.app.bus.subscribe("showSketches", (enabled) => {
     var solids = app.findAllSolids();
     for (var i = 0; i < solids.length; i++) {
       for (var j = 0; j < solids[i].polyFaces.length; j++) {
@@ -130,6 +135,7 @@ function UI(app) {
     }
     app.viewer.render();
   });
+
   save.root.click(function() {
     app.save();
   });
@@ -166,8 +172,8 @@ UI.prototype.createCraftToolBar = function (vertPos) {
   toolBar.add('Plane', 'img/3d/plane96.png', () => this.registerWizard(new PlaneWizard(this.app.viewer), false));
   toolBar.add('Box', 'img/3d/cube96.png', () => this.registerWizard(new BoxWizard(this.app.viewer), false));
   toolBar.add('Sphere', 'img/3d/sphere96.png', () => this.registerWizard(new SphereWizard(this.app.viewer), false));
-  $('#view-3d').append(toolBar.node);
-  toolBar.node.css({top : vertPos + 'px'});
+  $('#viewer-container').append(toolBar.node);
+  toolBar.node.css({left: '10px',top : vertPos + 'px'});
   return toolBar;
 };
 
@@ -177,9 +183,9 @@ UI.prototype.createMiscToolBar = function (vertPos) {
   toolBar.addFa('upload', () => this.app.sketchFace());
   toolBar.addFa('refresh', () => this.app.sketchFace());
   toolBar.addFa('square-o', () => this.app.sketchFace());
-  $('#view-3d').append(toolBar.node);
+  $('#viewer-container').append(toolBar.node);
   toolBar.node.css({top : vertPos + 'px'});
-  toolBar.node.css({left : '', right: '20px', 'font-size': '16px'});
+  toolBar.node.css({right: '10px', 'font-size': '16px'});
   return toolBar;
 };
 
@@ -188,11 +194,33 @@ UI.prototype.createBoolToolBar = function(vertPos) {
   toolBar.add('Intersection', 'img/3d/intersection96.png', () => this.app.sketchFace());
   toolBar.add('Difference', 'img/3d/difference96.png', this.cutExtrude(true));
   toolBar.add('Union', 'img/3d/union96.png', this.cutExtrude(false));
-  $('#view-3d').append(toolBar.node);
-  toolBar.node.css({top : vertPos + 'px'});
+  $('#viewer-container').append(toolBar.node);
+  toolBar.node.css({left: '10px', top : vertPos + 'px'});
   return toolBar;
 };
 
+UI.prototype.registerMenuActions = function() { 
+  for (let menuName in MenuConfig) {
+    const m = MenuConfig[menuName];
+    var action = Object.assign({'type' : 'menu'}, m);
+    delete action['actions'];
+    action.menu = new Menu(
+      m.actions.map((a) => this.app.actionManager.actions[a])
+      .filter((a) => a != undefined), this.app.inputManager);
+    this.app.actionManager.registerAction('menu.' + menuName, action);
+  }
+};
+
+UI.prototype.fillControlBar = function() {
+  const LEFT = true;
+  const RIGHT = !LEFT;
+  this.app.controlBar.add('info', RIGHT, {'label': null});
+  this.app.controlBar.add('refreshSketches', RIGHT, {'label': null});
+  this.app.controlBar.add('showSketches', RIGHT, {'label': 'sketches'});
+  this.app.controlBar.add('menu.craft', LEFT);
+  this.app.controlBar.add('menu.primitives', LEFT);
+  this.app.controlBar.add('menu.boolean', LEFT);
+};
 
 UI.prototype.registerWizard = function(wizard, overridingHistory) {
   wizard.ui.box.root.css({left : (this.mainBox.root.width() + this.craftToolBar.node.width() + 30) + 'px', top : 0});
