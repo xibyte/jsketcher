@@ -1,6 +1,7 @@
 export const file = {
   label: 'file',
-  actions: ['save', 'exportStl', 'uploadToThingiverse']
+  cssIcons: ['file'],
+  actions: ['Save', 'StlExport']
 };
 
 export const craft = {

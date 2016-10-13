@@ -2,7 +2,7 @@ import * as tk from '../../ui/toolkit'
 import * as cad_utils from '../cad-utils'
 import * as math from '../../math/math'
 import * as workbench from '../workbench'
-import ToolBar from '../../ui/toolbar'
+import ToolBar from './toolbar'
 import * as MenuConfig from '../menu/menu-config'
 import * as Operations from '../operations'
 import Menu from '../menu/menu'
@@ -18,29 +18,16 @@ function UI(app) {
   var mainBox = this.mainBox =  new tk.Panel();
   mainBox.root.css({height : '100%'});
   $('#right-panel').append(mainBox.root);
-  var propFolder = new tk.Folder("Model");
-  var debugFolder = new tk.Folder("Debug");
-  var exportFolder = new tk.Folder("Export");
+  var modelFolder = new tk.Folder("Model");
   var modificationsFolder = new tk.Folder("Modifications");
-  var save, deselectAll, refreshSketches, showSketches, printSolids, printFace, printFaceId, finishHistory, stlExport;
-  tk.add(mainBox, propFolder);
-  tk.add(propFolder, refreshSketches = new tk.Button("Refresh Sketches"));
-  tk.add(propFolder, save = new tk.Button("Save"));
-  tk.add(propFolder, showSketches = new tk.CheckBox("Show Sketches", true));
-  tk.add(propFolder, deselectAll = new tk.Button("Deselect All"));
-  tk.add(mainBox, exportFolder);
-  tk.add(exportFolder, stlExport = new tk.Button("STL"));
-  //tk.add(mainBox, debugFolder);
-  tk.add(debugFolder, printSolids = new tk.Button("Print Solids"));
-  tk.add(debugFolder, printFace = new tk.Button("Print Face"));
-  tk.add(debugFolder, printFaceId = new tk.Button("Print Face ID"));
+  tk.add(mainBox, modelFolder);
   tk.add(mainBox, modificationsFolder);
   var modificationsListComp = new tk.List();
   tk.add(modificationsFolder, modificationsListComp);
 
   var toolbarVertOffset = 10; //this.mainBox.root.position().top;
 
-  this.registerMenuActions();  
+  this.registerMenuActions(MenuConfig);  
   
   this.craftToolBar = this.createCraftToolBar(toolbarVertOffset);
   this.createBoolToolBar(this.craftToolBar.node.position().top + this.craftToolBar.node.height() + 20);
@@ -51,7 +38,7 @@ function UI(app) {
   function setHistory() {
     ui.app.craft.finishHistoryEditing();
   }
-  finishHistory = new tk.ButtonRow(["Finish History Editing"], [setHistory]);
+  let finishHistory = new tk.ButtonRow(["Finish History Editing"], [setHistory]);
   finishHistory.root.hide();
   tk.add(modificationsFolder, finishHistory);
   var historyWizard = null;
@@ -107,23 +94,6 @@ function UI(app) {
     //updateHistoryPointer();
   });
 
-  refreshSketches.root.click(tk.methodRef(app, "refreshSketches"));
-  printSolids.root.click(function () {
-    app.findAllSolids().map(function(o) {
-      console.log("Solid ID: " + o.tCadId);
-      console.log(JSON.stringify(o.csg));
-    });
-  });
-  printFace.root.click(function () {
-    var s = app.viewer.selectionMgr.selection[0];
-    console.log(JSON.stringify({
-      polygons : s.csgGroup.polygons,
-      basis : s._basis
-    }));
-  });
-  printFaceId.root.click(function () {
-    console.log(app.viewer.selectionMgr.selection[0].id);
-  });
   this.app.bus.subscribe("showSketches", (enabled) => {
     var solids = app.findAllSolids();
     for (var i = 0; i < solids.length; i++) {
@@ -135,12 +105,6 @@ function UI(app) {
     app.viewer.render();
   });
 
-  save.root.click(function() {
-    app.save();
-  });
-  deselectAll.root.click(function() {
-    app.viewer.selectionMgr.deselectAll();
-  });
   app.bus.subscribe("solid-pick", function(solid) {
     ui.registerWizard(new TransformWizard(app.viewer, solid));
   });
@@ -171,10 +135,8 @@ UI.prototype.createCraftToolBar = function (vertPos) {
 
 UI.prototype.createMiscToolBar = function (vertPos) {
   var toolBar = new ToolBar(this.app);
-  toolBar.addFa('floppy-o', () => this.app.sketchFace());
-  toolBar.addFa('upload', () => this.app.sketchFace());
-  toolBar.addFa('refresh', () => this.app.sketchFace());
-  toolBar.addFa('square-o', () => this.app.sketchFace());
+  toolBar.addFa(this.app.actionManager.actions['Save']);
+  toolBar.addFa(this.app.actionManager.actions['StlExport']);
   $('#viewer-container').append(toolBar.node);
   toolBar.node.css({top : vertPos + 'px'});
   toolBar.node.css({right: '10px', 'font-size': '16px'});
@@ -191,9 +153,9 @@ UI.prototype.createBoolToolBar = function(vertPos) {
   return toolBar;
 };
 
-UI.prototype.registerMenuActions = function() { 
-  for (let menuName in MenuConfig) {
-    const m = MenuConfig[menuName];
+UI.prototype.registerMenuActions = function(menuConfig) { 
+  for (let menuName in menuConfig) {
+    const m = menuConfig[menuName];
     var action = Object.assign({'type' : 'menu'}, m);
     delete action['actions'];
     action.menu = new Menu(
@@ -209,9 +171,11 @@ UI.prototype.fillControlBar = function() {
   this.app.controlBar.add('Info', RIGHT, {'label': null});
   this.app.controlBar.add('RefreshSketches', RIGHT, {'label': null});
   this.app.controlBar.add('ShowSketches', RIGHT, {'label': 'sketches'});
+  this.app.controlBar.add('DeselectAll', RIGHT, {'label': null});
+  this.app.controlBar.add('menu.file', LEFT);
   this.app.controlBar.add('menu.craft', LEFT);
-  this.app.controlBar.add('menu.primitives', LEFT);
   this.app.controlBar.add('menu.boolean', LEFT);
+  this.app.controlBar.add('menu.primitives', LEFT);
 };
 
 UI.prototype.registerWizard = function(wizard, overridingHistory) {

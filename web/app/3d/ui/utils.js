@@ -77,6 +77,10 @@ export function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+export function cssIconsToClasses(cssIcons) {
+  return cssIcons.map((i)=> 'fa-'+i).join(' ')
+}
+
 export function LoadTemplate(name) {
   return require('./tmpl/' + name + '.html');
 } 

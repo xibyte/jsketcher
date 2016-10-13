@@ -1,4 +1,4 @@
-import {cssIconsToClasses} from '../actions/actions'
+import {cssIconsToClasses} from '../ui/utils'
 
 export default function ControlBar(app, bar) {
   this.app = app;

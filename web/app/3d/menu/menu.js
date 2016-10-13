@@ -1,4 +1,4 @@
-import {cssIconsToClasses} from '../actions/actions'
+import {cssIconsToClasses} from '../ui/utils'
 import {EventData} from '../ui/utils'
 
 

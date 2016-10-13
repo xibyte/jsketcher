@@ -1,6 +1,3 @@
-export function cssIconsToClasses(cssIcons) {
-  return cssIcons.map((i)=> 'fa-'+i).join(' ')
-}
 
 export function ActionManager(app) {
   this.app = app;
