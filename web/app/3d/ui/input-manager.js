@@ -16,7 +16,7 @@ export function InputManager(app) {
     $(document)
       .on('keydown', (e) => this.handleKeyPress(e))
       .on('mousedown', (e) => this.clear(e))
-      .on('mouseenter', '.action-item', (e) => this.showActionInfo($(e.target)))
+      .on('mouseenter', '.action-item', (e) => this.showActionInfo($(e.currentTarget)))
       .on('mouseleave', '.action-item', (e) => this.hideActionInfo())
       .on('mousemove', (e) => this.mouseInfo = e)
       .on('click', '.action-item', (e) => this.handleActionClick(e));
@@ -71,24 +71,24 @@ InputManager.prototype.hideActionInfo = function() {
 };
 
 InputManager.prototype.showActionInfo = function(el) {
-  //show hint immediately and deffer showing the full info
-  //var hint = el.data('actionHint');
-  //if (hint) {
-  //  InputManager.messageSink().text(hint);
-  //  this.showMessageSinkAround();
-  //}
-  this.requestInfo(el.data('action'));
+  var action = el.data('action');
+  if (action) {
+    this.requestInfo(action);
+  }
 };
 
-InputManager.prototype.requestInfo = function(action) {
-  this.requestedActionInfo = action;
+InputManager.prototype.requestInfo = function(actionRequest) {
+  if (this.requestedActionInfo == actionRequest) {
+    return;
+  }
+  this.requestedActionInfo = actionRequest;
   setTimeout(() => {
-    var actionId = this.requestedActionInfo;
+    const actionId = this.requestedActionInfo;
     this.requestedActionInfo = null;
-    if (actionId != null) {
+    if (actionId != null ) {
       const action = this.app.actionManager.actions[actionId];
       if (action) {
-        var hotKey = this.keymap[actionId];
+        const hotKey = this.keymap[actionId];
         Bind(this.actionInfoDom, {
           hint: action.state.hint,
           info: action.info,
