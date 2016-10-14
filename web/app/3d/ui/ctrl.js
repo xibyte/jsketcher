@@ -222,7 +222,7 @@ UI.getIconForOp = function(op) {
 
 UI.prototype.initOperation = function(op) {
   if ('CUT' === op) {
-    this.cutExtrude(false)();
+    this.cutExtrude(true)();
   } else if ('PAD' === op) {
     this.cutExtrude(false)();
   } else if ('BOX' === op) {
