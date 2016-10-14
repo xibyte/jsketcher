@@ -8,7 +8,7 @@ export const craft = {
   label: 'craft',
   cssIcons: ['magic'],
   info: 'set of available craft operations on a solid',
-  actions: ['PAD', 'CUT']
+  actions: ['PAD', 'CUT', 'SHELL']
 };
 
 export const primitives = {
@@ -29,7 +29,7 @@ export const main = {
   label: 'start',
   cssIcons: ['rocket'],
   info: 'common set of actions',
-  actions: ['PAD', 'CUT', '-', 'INTERSECTION', 'DIFFERENCE', 'UNION', '-', 'PLANE', 'BOX', 'SPHERE', '-',
+  actions: ['PAD', 'CUT', 'SHELL', '-', 'INTERSECTION', 'DIFFERENCE', 'UNION', '-', 'PLANE', 'BOX', 'SPHERE', '-',
     'EditFace', '-', 'DeselectAll', 'RefreshSketches'  ]
 };
 
