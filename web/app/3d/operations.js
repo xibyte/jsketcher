@@ -11,6 +11,12 @@ export const PAD = {
   info: (p) => 'PAD (' + p + ')'
 };
 
+export const SHELL = {
+  icon: 'img/3d/shell',
+  label: 'Shell',
+  info: (p) => 'SHELL (' + p + ')'
+};
+
 export const BOX = {
   icon: 'img/3d/cube',
   label: 'Box',

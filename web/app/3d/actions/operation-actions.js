@@ -20,6 +20,10 @@ export const OperationActions = {
     info: 'extrudes 2D sketch'
   }),
 
+  'SHELL': mergeInfo('SHELL', {
+    info: 'makes shell using borders'
+  }),
+
   'BOX': mergeInfo('BOX', {
     info: 'creates new object box'
   }),
