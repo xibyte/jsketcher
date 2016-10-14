@@ -56,8 +56,8 @@ html, body {
   background: #606060 no-repeat center;
   border-radius: 4px;
   color: white;
-  font-size: 13px;
-  font-family: Monospace, serif;
+  font-size: 11px;
+  font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
   cursor: pointer;
   margin: 1px 4px 1px 4px;
 }
