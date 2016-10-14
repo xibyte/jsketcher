@@ -9,37 +9,34 @@ function Viewer(bus, container) {
   }
   this.scene = new THREE.Scene();
   var scene = this.scene;
-  var camera = new THREE.PerspectiveCamera( 500*75, aspect(), 0.1, 10000 );
-  this.camera = camera;
-  camera.position.z = 1000;
-  camera.position.x = -1000;
-  camera.position.y = 300;
+  this.camera = new THREE.PerspectiveCamera( 500*75, aspect(), 0.1, 10000 );
+  this.camera.position.z = 1000;
+  this.camera.position.x = -1000;
+  this.camera.position.y = 300;
   var light = new THREE.PointLight( 0xffffff);
   light.position.set( 10, 10, 10 );
   scene.add(light);
 
-  var renderer = new THREE.WebGLRenderer();
-  renderer.setPixelRatio(DPR);
-  renderer.setClearColor(0x808080, 1);
-  renderer.setSize( container.clientWidth, container.clientHeight );
-  container.appendChild( renderer.domElement );
-  function render() {
-//    console.log("render");
-    light.position.set(camera.position.x, camera.position.y, camera.position.z);
-    renderer.render(scene, camera);
-  }
-  this.render = render;
+  this.renderer = new THREE.WebGLRenderer();
+  this.renderer.setPixelRatio(DPR);
+  this.renderer.setClearColor(0x808080, 1);
+  this.renderer.setSize( container.clientWidth, container.clientHeight );
+  container.appendChild( this.renderer.domElement );
+  
+  this.render = function() {
+    light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
+    this.renderer.render(scene, this.camera);
+  };
 
-  function onWindowResize() {
-    camera.aspect = aspect();
-    camera.updateProjectionMatrix();
-    renderer.setSize( container.clientWidth, container.clientHeight );
-    render();
-  }
-  window.addEventListener( 'resize', onWindowResize, false );
+  window.addEventListener( 'resize', () => {
+    this.camera.aspect = aspect();
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize( container.clientWidth, container.clientHeight );
+    this.render();
+  }, false );
 
 //  controls = new THREE.OrbitControls( camera , renderer.domElement);
-  var trackballControls = new THREE.TrackballControls( camera , renderer.domElement);
+  var trackballControls = new THREE.TrackballControls(this.camera , this.renderer.domElement);
 
   // document.addEventListener( 'mousemove', function(){
 
@@ -57,23 +54,23 @@ function Viewer(bus, container) {
   trackballControls.dynamicDampingFactor = 0.3;
 
   trackballControls.keys = [ 65, 83, 68 ];
-  trackballControls.addEventListener( 'change', render );
+  trackballControls.addEventListener( 'change', () => this.render());
   this.trackballControls = trackballControls;
 
-  var transformControls = new THREE.TransformControls( camera, renderer.domElement );
-  transformControls.addEventListener( 'change', render );
+  var transformControls = new THREE.TransformControls( this.camera, this.renderer.domElement );
+  transformControls.addEventListener( 'change', () => this.render() );
   scene.add( transformControls );
   this.transformControls = transformControls;
 
-  function updateTransformControls() {
+  this.updateTransformControls = function() {
     if (transformControls.object !== undefined) {
       if (transformControls.object.parent === undefined) {
         transformControls.detach();
-        render();
+        this.render();
       }
       transformControls.update();
     }
-  }
+  };
 
   function addAxis(axis, color) {
     var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1/DPR});
@@ -86,10 +83,10 @@ function Viewer(bus, container) {
   addAxis(AXIS.Y, 0x00FF00);
   addAxis(AXIS.Z, 0x0000FF);
 
-  function updateControlsAndHelpers() {
+  this.updateControlsAndHelpers = function() {
     trackballControls.update();
-    updateTransformControls();
-  }
+    this.updateTransformControls();
+  };
 
   this.workGroup = new THREE.Object3D();
   this.scene.add(this.workGroup);
@@ -104,7 +101,7 @@ function Viewer(bus, container) {
     var y = - ( event.offsetY / container.clientHeight ) * 2 + 1;
 
     var mouse = new THREE.Vector3( x, y, 1 );
-    raycaster.setFromCamera( mouse, camera );
+    raycaster.setFromCamera( mouse, this.camera );
     return raycaster.intersectObjects( viewer.workGroup.children, true );
   };
   
@@ -129,14 +126,14 @@ function Viewer(bus, container) {
     }
   }
   
-  renderer.domElement.addEventListener('mousedown',
+  this.renderer.domElement.addEventListener('mousedown',
     function(e) {
       fixOffsetAPI(e);
       mouseState.startX = e.offsetX;
       mouseState.startY = e.offsetY;
     }, false);
 
-  renderer.domElement.addEventListener('mouseup',
+  this.renderer.domElement.addEventListener('mouseup',
     function(e) {
       fixOffsetAPI(e);
       var dx = Math.abs(mouseState.startX - e.offsetX);
@@ -147,14 +144,14 @@ function Viewer(bus, container) {
       }
     } , false);
 
-  function animate() {
-//    console.log("animate");
-    requestAnimationFrame( animate );
-    updateControlsAndHelpers();
-  }
 
-  render();
-  animate();
+  this.animate = function() {
+    requestAnimationFrame( () => this.animate() );
+    this.updateControlsAndHelpers();
+  };
+
+  this.render();
+  this.animate();
 }
 
 Viewer.prototype.handleSolidPick = function(e) {
