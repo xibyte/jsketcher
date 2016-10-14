@@ -164,8 +164,8 @@
 
 .tc-squeezed-text {
     white-space: nowrap;
-    font-size: 12px;
-    font-family:  "Arial Narrow", Arial, sans-serif;
+    font-size: 10px;
+    font-family:  'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;;
 }
 
 .tc-toolbar-btn.action-disabled {
