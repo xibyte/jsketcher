@@ -189,34 +189,19 @@ UI.prototype.registerWizard = function(wizard, overridingHistory) {
 
 UI.prototype.getInfoForOp = function(op) {
   var p = op.params;
-  var norm2 = math.norm2;
-  if ('CUT' === op.type) {
-    return op.type + " (" + norm2(p.target) + ")";
-  } else if ('PAD' === op.type) {
-    return op.type + " (" + norm2(p.target) + ")";
-  } else if ('BOX' === op.type) {
-    return op.type + " (" + p.w + ", " + p.h + ", " + p.d + ")";
-  } else if ('PLANE' === op.type) {
-    return op.type + " (" + p.depth + ")";
-  } else if ('SPHERE' === op.type) {
-    return op.type + " (" + p.radius + ")";
+  var opDef = Operations[op.type];
+  if (opDef && opDef.info) {
+    return op.type + ' ' + opDef.info(p);
   }
   return op.type;
 };
 
 UI.getIconForOp = function(op) {
-  if ('CUT' === op.type) {
-    return 'img/3d/cut32.png';
-  } else if ('PAD' === op.type) {
-    return 'img/3d/extrude32.png';
-  } else if ('BOX' === op.type) {
-    return 'img/3d/cube32.png';
-  } else if ('PLANE' === op.type) {
-    return 'img/3d/plane32.png';
-  } else if ('SPHERE' === op.type) {
-    return 'img/3d/sphere32.png';
+  var opDef = Operations[op.type];
+  if (!opDef || !opDef.icon) {
+    return null;
   }
-  return null;
+  return opDef.icon + '32.png';
 };
 
 
