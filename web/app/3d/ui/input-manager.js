@@ -30,7 +30,7 @@ InputManager.prototype.handleKeyPress = function(e) {
 
   for (let action in this.keymap) {
     if (jwerty.is(this.keymap[action], e)) {
-      this.app.actionManager.run(action, e);
+      setTimeout(() => this.app.actionManager.run(action, e), 0);
       break;
     }
   }
