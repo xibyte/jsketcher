@@ -3,13 +3,13 @@ import * as math from '../math/math'
 export const CUT = {
   icon: 'img/3d/cut',
   label: 'Cut', 
-  info: (p) => '(' + math.norm2(p.target) + ')'
+  info: (p) => '(' + r(math.norm2(p.target)) + ')'
 };
 
 export const PAD = {
   icon: 'img/3d/extrude',
   label: 'Extrude',
-  info: (p) => '(' + math.norm2(p.target) + ')'
+  info: (p) => '(' + r(math.norm2(p.target)) + ')'
 };
 
 export const SHELL = {
@@ -53,3 +53,7 @@ export const UNION = {
   label: 'Union',
   info: (p) => null
 };
+
+function r(value) {
+  return value.toPrecision(4).replace(/\.0$/, '');
+}
