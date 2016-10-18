@@ -3,18 +3,18 @@ import * as workbench from '../workbench'
 import * as cad_utils from '../cad-utils'
 import Vector from '../../math/vector'
 import {Matrix3, ORIGIN} from '../../math/l3space'
-import {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL, addOkCancelLogic} from './wizard-commons'
+import {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL, addBehavior} from './wizard-commons'
 
 export function ExtrudeWizard(app, face, invert, initParams) {
   OpWizard.call(this, app.viewer);
   this.app = app;
   this.face = face;
   this.invert = invert;
-  addOkCancelLogic(this);
   this.updatePolygons();
   this.ui = {};
   if (!initParams) initParams = ExtrudeWizard.DEFAULT_PARAMS;
   this.createUI.apply(this, initParams);
+  addBehavior(this);
   this.synch();
 }
 

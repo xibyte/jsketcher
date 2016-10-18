@@ -16,7 +16,7 @@ ShellWizard.prototype.update = function(d) {
 };
 
 ExtrudeWizard.prototype.updatePolygons = function() {
-  this.polygons = workbench.reconstructOutline(this.face.solid.csg, this.face);
+  this.polygons = [];//workbench.reconstructOutline(this.face.solid.csg, this.face);
 };
 
 ShellWizard.prototype.createUI = function(d) {

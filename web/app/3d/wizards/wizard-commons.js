@@ -14,7 +14,7 @@ const BASE_MATERIAL = new THREE.LineBasicMaterial({
   depthTest: false
 });
 
-function addOkCancelLogic(wizard) {
+function addBehavior(wizard) {
   wizard.apply = function() {};
   wizard.onCancel = function() {};
   wizard.okClick = function() {
@@ -24,6 +24,15 @@ function addOkCancelLogic(wizard) {
   wizard.cancelClick = function() {
     this.onCancel();
     this.dispose();
+  };
+  wizard.ui.box.root.keydown((e) => {
+    switch (e.keyCode) {
+      case 27 : wizard.cancelClick(); break;
+      case 13 : wizard.okClick(); break;
+    }
+  });
+  wizard.focus = () => {
+    wizard.ui.box.root.find('input, select').first().focus()  
   };
 }
 
@@ -56,4 +65,4 @@ OpWizard.prototype.dispose = function() {
   this.viewer.render();
 };
 
-export {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL, addOkCancelLogic}
+export {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL, addBehavior}
