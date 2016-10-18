@@ -1,13 +1,12 @@
 import {AXIS, IDENTITY_BASIS} from '../../math/l3space'
 import * as tk from '../../ui/toolkit.js'
 import {FACE_COLOR} from '../cad-utils'
-import {addOkCancelLogic} from './wizard-commons'
+import {addBehavior} from './wizard-commons'
 
 export function TransformWizard(viewer, solid, initParams) {
   this.previewGroup = new THREE.Object3D();
   this.viewer = viewer;
   this.solid = solid;
-  addOkCancelLogic(this);
   if (!initParams) {
     initParams = TransformWizard.DEFAULT_PARAMS;
   }
@@ -22,6 +21,7 @@ export function TransformWizard(viewer, solid, initParams) {
   this.transfomControlListener = tk.methodRef(this, "synchToUI");
   this.viewer.transformControls.addEventListener( 'objectChange', this.transfomControlListener );
   this.createUI.apply(this, initParams);
+  addBehavior(this);
   this.synch();
 }
 

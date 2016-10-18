@@ -184,6 +184,7 @@ UI.prototype.registerWizard = function(wizard, overridingHistory) {
   wizard.apply = function() {
     craft.modify(wizard.createRequest(), overridingHistory);
   };
+  wizard.focus();
   return wizard;
 };
 

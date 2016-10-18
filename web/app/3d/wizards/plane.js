@@ -1,12 +1,11 @@
 import {AXIS, IDENTITY_BASIS} from '../../math/l3space'
 import * as tk from '../../ui/toolkit.js'
 import {FACE_COLOR} from '../cad-utils'
-import {addOkCancelLogic} from './wizard-commons'
+import {addBehavior} from './wizard-commons'
 
 export function PlaneWizard(viewer, initParams) {
   this.previewGroup = new THREE.Object3D();
   this.viewer = viewer;
-  addOkCancelLogic(this);
   viewer.scene.add(this.previewGroup);
   this.previewGroup.add(this.plane = this.createPlane());
   this.operationParams = {
@@ -18,6 +17,8 @@ export function PlaneWizard(viewer, initParams) {
   }
   this.ui = {};
   this.createUI.apply(this, initParams);
+  addBehavior(this);
+  this.focus = ()  => this.ui.depth.input.focus();
   this.synch();
 }
 
