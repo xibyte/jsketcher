@@ -13,6 +13,7 @@ import {SphereWizard} from '../wizards/sphere'
 import {TransformWizard} from '../wizards/transform'
 import {LoadTemplate} from './utils'
 import {BindArray} from './bind'
+import {SolidList} from './solid-list'
 
 function UI(app) {
   this.app = app;
@@ -21,6 +22,9 @@ function UI(app) {
   mainBox.root.css({height : '100%'});
   $('#right-panel').append(mainBox.root);
   var modelFolder = new tk.Folder("Model");
+  this.solidList = new SolidList(this.app.viewer.workGroup);
+  modelFolder.content.append(this.solidList.dom);
+  
   var modificationsFolder = new tk.Folder("Modifications");
   var modificationsDom = $(LoadTemplate('modifications')({}));
 
