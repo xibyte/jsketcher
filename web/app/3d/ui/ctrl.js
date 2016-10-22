@@ -11,6 +11,8 @@ import {PlaneWizard} from '../wizards/plane'
 import {BoxWizard} from '../wizards/box'
 import {SphereWizard} from '../wizards/sphere'
 import {TransformWizard} from '../wizards/transform'
+import {LoadTemplate} from './utils'
+import {BindArray} from './bind'
 
 function UI(app) {
   this.app = app;
@@ -20,10 +22,11 @@ function UI(app) {
   $('#right-panel').append(mainBox.root);
   var modelFolder = new tk.Folder("Model");
   var modificationsFolder = new tk.Folder("Modifications");
+  var modificationsDom = $(LoadTemplate('modifications')({}));
+
   tk.add(mainBox, modelFolder);
   tk.add(mainBox, modificationsFolder);
-  var modificationsListComp = new tk.List();
-  tk.add(modificationsFolder, modificationsListComp);
+  modificationsFolder.content.append(modificationsDom);
 
   var toolbarVertOffset = 10; //this.mainBox.root.position().top;
 
@@ -51,7 +54,7 @@ function UI(app) {
     var craft = ui.app.craft;
     var historyEditMode = craft.historyPointer != craft.history.length;
     if (historyEditMode) {
-      var rows = modificationsListComp.root.find('.tc-row');
+      var rows = modificationsDom.find('.tc-row');
       rows.removeClass('history-selected');
       rows.eq(craft.historyPointer).addClass('history-selected');
       var op = craft.history[craft.historyPointer];
@@ -63,20 +66,20 @@ function UI(app) {
   }
   
   this.app.bus.subscribe("craft", function() {
-    modificationsListComp.root.empty();
-    for (var i = 0; i < app.craft.history.length; i++) {
-      var op = app.craft.history[i];
-      var row = modificationsListComp.addRow(ui.getInfoForOp(op));
-      var icon = UI.getIconForOp(op);
-      if (icon != null) {
-        tk.List.setIconForRow(row, icon);
-      }
-      (function(i) {
-        row.click(function () {
-          ui.app.craft.historyPointer = i;
-        })
-      })(i);
+    let modifications = [];
+    for (let i = 0; i < app.craft.history.length; i++) {
+      let op = app.craft.history[i];
+      let m = {
+        id : i,
+        info: ui.getInfoForOp(op),
+        OnBind : (dom, data) => {
+          dom.css('background-image', 'url('+ UI.getIconForOp(op)+')');
+          dom.click(() => ui.app.craft.historyPointer = data.id);
+        }
+      };
+      modifications.push(m);
     }
+    BindArray(modificationsDom, modifications);
     updateHistoryPointer();
   });
 

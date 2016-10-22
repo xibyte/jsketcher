@@ -172,15 +172,12 @@ export function ButtonRow(captions, actions) {
 }
 
 export function List() {
-  this.root = $('<div/>', {'class': 'tc-tree'});
+  this.root = $('<div/>', {'class': 'tc-list'});
 }
 
 List.prototype.addRow = function(name) {
   var row = $('<div/>', {
-    text: name, 'class': 'tc-row tc-pseudo-btn',
-    css: {
-      'margin-left': '10px'
-    }
+    text: name, 'class': 'tc-row tc-pseudo-btn'
   });
   this.root.append(row);
   return row;
@@ -188,12 +185,7 @@ List.prototype.addRow = function(name) {
 
 List.setIconForRow = function(row, icon) {
   row.css({
-    'background-image' : 'url('+icon+')',
-    'background-position-y': 'center',
-    'background-position-x': '5px',
-    'background-repeat': 'no-repeat',
-    'background-size': '16px 16px',
-    'padding-left' : '25px'
+    'background-image' : 'url('+icon+')'
   });
 };
 
