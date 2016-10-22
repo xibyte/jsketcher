@@ -176,3 +176,11 @@
     color: #aaa;
     background-color: #888;
 }
+
+.tc-list .tc-row {
+    background-position-y: center;
+    background-position-x: 5px;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    padding-left : 25px;    
+}
