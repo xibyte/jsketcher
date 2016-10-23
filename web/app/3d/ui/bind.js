@@ -3,7 +3,7 @@ import {sprintf} from 'sprintf'
 export const BINDING_CALLBACK = 'OnBind';
 
 export function Bind(node, data, policy) {
-  if (!policy) policy = DEFAULT_POLICY;
+  policy = adjustPolicyForNode(node, policy, data.Policy);
   const props = Object.getOwnPropertyNames(data);
   const scope = getScope(node);
   for (let prop of props) {
@@ -29,7 +29,8 @@ export function Bind(node, data, policy) {
   }
 }
 
-export function BindArray(node, array, policy, path) {
+export function BindArray(node, array, policy) {
+  policy = adjustPolicyForNode(node, policy);
   let template = node.data("BindingTemplate");
   if (!template) {
     template = node.children();
@@ -57,23 +58,36 @@ export function BindArray(node, array, policy, path) {
 }
 
 export function BindContent(node, value, policy) {
-  if (!policy.hideEmptyValue || value || value === 0) {
-    var format = node.attr('data-bind-format');
-    if (format == '') {
-      format = node.text();
-      node.attr('data-bind-format', format);
-    }
-    if (format) {
-      value = sprintf(format, value);
+  policy = adjustPolicyForNode(node, policy);
+  var formatData = node.attr('data-bind-format');
+  if (!formatData && policy.format) {
+    formatData = node.text();
+    node.attr('data-bind-format', formatData);
+  }
+
+  var isEmpty = value === '' || value === undefined || value === null;
+  if (isEmpty && policy.hideEmpty) {
+    node.text('');
+    node.hide();
+  } else {
+    if (formatData) {
+      value = sprintf(formatData, value);
     }
     node.text(value);
     node.show();
-  } else {
-    node.text('');
-    node.hide();
   }
 }
 
+function readPolicies(attr) {
+  for (var i = 1; i < arguments.length; i++) {
+    var policy = arguments[i];
+    var value = policy[attr];
+    if (value !== undefined) {
+      return value;
+    }
+  }
+  return undefined;
+}
 
 function clearScope(dom) {
   dom.removeData('BindingScope');
@@ -113,8 +127,35 @@ function index(dom) {
   return scope;
 }
 
+function adjustPolicyForNode(dom, propagatedPolicy, dataPolicy) {
+  let policy = propagatedPolicy || DEFAULT_POLICY;
+  let policyFromHints = getPolicyFromHints(dom);
+  if (policyFromHints) {
+    policy = Object.assign({}, policy, policyFromHints);
+  }
+  if (dataPolicy) {
+    policy = Object.assign({}, policy, dataPolicy);
+  }
+  return policy;
+}
+
+function getPolicyFromHints(dom) {
+  var hintsAttr = dom.attr('data-bind-hints');
+  if (!hintsAttr) {
+    return undefined;
+  }
+  var parsedHints = dom.data('BindingPolicy');
+  if (!parsedHints) {
+    parsedHints = {};
+    hintsAttr.split('|').forEach(h => parsedHints[h] = true);
+    dom.data('BindingPolicy', parsedHints);
+  }
+  return parsedHints;
+}
+
 const DEFAULT_POLICY = {
-  hideEmptyValue: true
+  hideEmpty: true,
+  format: false
 };
 
 export function Scope() {
