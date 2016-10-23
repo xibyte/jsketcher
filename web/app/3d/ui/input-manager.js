@@ -87,8 +87,8 @@ InputManager.prototype.requestInfo = function(actionRequest) {
     this.requestedActionInfo = null;
     if (actionId != null ) {
       const action = this.app.actionManager.actions[actionId];
-      if (action) {
-        const hotKey = this.keymap[actionId];
+      const hotKey = this.keymap[actionId];
+      if (action && (action.state.hint || action.info || hotKey)) {
         Bind(this.actionInfoDom, {
           hint: action.state.hint,
           info: action.info,
