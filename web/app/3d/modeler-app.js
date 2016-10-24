@@ -20,6 +20,9 @@ function App() {
 
   this.id = window.location.hash.substring(1);
   if (!this.id) {
+    this.id = window.location.search.substring(1);
+  }
+  if (!this.id) {
     this.id = "DEFAULT";
   }
   if (this.id == "sample" ) {
@@ -365,6 +368,10 @@ App.prototype._refreshSketches = function() {
       this.refreshSketchOnFace(sketchFace);
     }
   }
+};
+
+App.prototype.findSketches = function(solid) {
+  return solid.polyFaces.filter(f => this.faceStorageKey(f.id) in localStorage).map(f => f.id);
 };
 
 App.prototype.refreshSketchOnFace = function(sketchFace) {
