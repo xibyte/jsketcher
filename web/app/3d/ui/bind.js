@@ -31,12 +31,7 @@ export function Bind(node, data, policy) {
 
 export function BindArray(node, array, policy) {
   policy = adjustPolicyForNode(node, policy);
-  let template = node.data("BindingTemplate");
-  if (!template) {
-    template = node.children();
-    template.detach();
-    node.data("BindingTemplate", template);
-  }
+  let template = detachTemplate(node);
   let scope = getScope(node);
   node.children().detach();
   clearScope(node);
@@ -78,15 +73,14 @@ export function BindContent(node, value, policy) {
   }
 }
 
-function readPolicies(attr) {
-  for (var i = 1; i < arguments.length; i++) {
-    var policy = arguments[i];
-    var value = policy[attr];
-    if (value !== undefined) {
-      return value;
-    }
+function detachTemplate(node) {
+  let template = node.data("BindingTemplate");
+  if (!template) {
+    template = node.children();
+    template.detach();
+    node.data("BindingTemplate", template);
   }
-  return undefined;
+  return template;
 }
 
 function clearScope(dom) {
@@ -115,12 +109,20 @@ function index(dom) {
   }
   advance(dom);  
   while (queue.length != 0) {
+    let list = false;
     let node = queue.shift();
     var nestedScope = node.attr('data-bind-scope');
+    if (!nestedScope) {
+      nestedScope = node.attr('data-bind-list');
+      list = true;
+    }
     if (nestedScope) {
       scope.nestedScopes[nestedScope] = node;
+      if (list) {
+        detachTemplate(node);
+      }
     } else {
-      advance(node); 
+      advance(node);
     }
   }
   
