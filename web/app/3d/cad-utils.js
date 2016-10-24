@@ -141,9 +141,9 @@ export function createSolidMaterial() {
   });
 }
 
-export function createSolid(csg) {
+export function createSolid(csg, id) {
   var material = createSolidMaterial();
-  return new Solid(csg, material);
+  return new Solid(csg, material, undefined, id);
 }
 
 export function intercept(obj, methodName, aspect) {

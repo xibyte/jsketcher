@@ -7,7 +7,7 @@ import {arrFlatten1L} from './cad-utils'
 import DPR from '../utils/dpr'
 
 /** @constructor */
-export function Solid(csg, material, type) {
+export function Solid(csg, material, type, id) {
   csg = csg.reTesselated().canonicalized();
   this.tCadType = type || 'SOLID';
   this.csg = csg;
@@ -21,6 +21,7 @@ export function Solid(csg, material, type) {
   this.cadGroup.add(this.mesh);
 
   this.tCadId = Counters.solid ++;
+  this.id = id === undefined ? this.tCadId : id; // to keep identity through the history
   this.faceCounter = 0;
 
   this.wireframeGroup = new THREE.Object3D();
