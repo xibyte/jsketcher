@@ -22,7 +22,7 @@ function UI(app) {
   mainBox.root.css({height : '100%'});
   $('#right-panel').append(mainBox.root);
   var modelFolder = new tk.Folder("Model");
-  this.solidList = new SolidList(this.app.viewer.workGroup);
+  this.solidList = new SolidList(this.app);
   modelFolder.content.append(this.solidList.dom);
   
   var modificationsFolder = new tk.Folder("Modifications");

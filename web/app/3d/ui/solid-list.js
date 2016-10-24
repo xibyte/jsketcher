@@ -1,52 +1,28 @@
 import {LoadTemplate} from './utils'
 import {BindArray} from './bind'
 
-export function SolidList(workGroup) {
-  workGroup.addEventListener('added', (e) => this.added(e.target));
-  workGroup.addEventListener('removed', (e) => this.removed(e.target));
-  this.model = [];
+export function SolidList(app) {
+  this.app = app;
+  app.bus.subscribe('solid-list', (data) => this.onChange(data));
   this.dom = $(LoadTemplate('solid-list')({}));
-  this.synchOrder();
 }
 
-SolidList.prototype.added = function(obj) {
-  if (!obj.__tcad_solid) return;
-  this.model.push(obj.__tcad_solid);
-  let updateData = this.toOrderList();
-  Object.assign(updateData, getDomData(obj.__tcad_solid));
-  BindArray(this.dom, updateData);
-};
-
-SolidList.prototype.removed = function(obj) {
-  if (!obj.__tcad_solid) return;
-  const index = this.indexOf(obj.__tcad_solid);
-  if (index != -1) {
-    this.model.splice( index, 1 );
-  }
-  this.synchOrder();
-};
-
-SolidList.prototype.indexOf = function(solid) {
-  for (var i = 0; i < this.model.length; i++) {
-    if (this.model[i].tCadId = solid.tCadId) {
-      return i;        
+SolidList.prototype.onChange = function(data) {
+  let domData = data.solids.map(s => ({id: s.id}));
+  domData.forEach(s => {
+    let toRefresh = data.needRefresh.find(nr => nr.id == s.id);
+    if (toRefresh) {
+      Object.assign(s, this.getFullInfo(toRefresh));
     }
-  }
-  return -1;
+  });
+  BindArray(this.dom, domData);
 };
 
-SolidList.prototype.toOrderList = function() {
-  return this.model.map((e) => ({id: e.tCadId}));
-};
-
-SolidList.prototype.synchOrder = function() {
-  BindArray(this.dom, this.toOrderList());
-};
-
-function getDomData(solid) {
+SolidList.prototype.getFullInfo = function(solid) {
   return {
-    id: solid.tCadId,
-    type: solid.tCadType
-  }
-}
+    id: solid.id,
+    type: solid.tCadType,
+    sketches: this.app.findSketches(solid).map(id => ({id}))
+  };
+};
 

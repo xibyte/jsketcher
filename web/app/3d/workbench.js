@@ -149,7 +149,7 @@ export function extrude(app, request) {
   }
 
   face.csgGroup.shared.__tcad.faceId += '$';
-  return [cad_utils.createSolid(meld)];
+  return [cad_utils.createSolid(meld, solid.id)];
 }
 
 function _pointOnLine(p, a, b) {
@@ -586,9 +586,10 @@ export function cut(app, request) {
   face.csgGroup.shared.__tcad.faceId += '$';
   var outSolids = [];
   for (var si = 0; si < request.solids.length; si++) {
-    var work = request.solids[si].csg;
+    var solid = request.solids[si];
+    var work = solid.csg;
     var cut = work.subtract(cutterCSG);
-    var solidMesh = cad_utils.createSolid(cut);
+    var solidMesh = cad_utils.createSolid(cut, solid.id);
     outSolids.push(solidMesh);
   }
   return outSolids;
@@ -597,6 +598,7 @@ export function cut(app, request) {
 export function Craft(app) {
   this.app = app;
   this.history = [];
+  this.solids = [];
   this._historyPointer = 0;
   Object.defineProperty(this, "historyPointer", {
     get: function() {return this._historyPointer},
@@ -623,7 +625,8 @@ Craft.prototype.loadHistory = function(history) {
 Craft.prototype.reset = function(modifications) {
   Counters.solid = 0;
   Counters.shared = 0;
-  this.app.findAllSolids().forEach(function(s) {s.vanish()})
+  this.solids = [];
+  this.app.findAllSolids().forEach(function(s) {s.vanish()});
   for (var i = 0; i < modifications.length; i++) {
     var request = materialize(this.app.indexEntities(), modifications[i]);
     this.modifyInternal(request);
@@ -693,15 +696,34 @@ Craft.prototype.modifyInternal = function(request) {
   if (!op) return;
 
   var newSolids = op(this.app, request);
-
   if (newSolids == null) return;
-  var i;
-  for (i = 0; i < request.solids.length; i++) {
-    request.solids[i].vanish();
+  const toUpdate = [];
+  for (let i = 0; i < request.solids.length; i++) {
+    let solid = request.solids[i];
+    var indexToRemove = this.solids.indexOf(solid);
+    if (indexToRemove != -1) {
+      let updatedIdx = newSolids.findIndex((s) => s.id == solid.id);
+      if (updatedIdx != -1) {
+        toUpdate[updatedIdx] = indexToRemove;
+      } else {
+        this.solids.splice(indexToRemove, 1);
+      }
+    }
+    solid.vanish();
   }
-  for (i = 0; i < newSolids.length; i++) {
-    this.app.viewer.workGroup.add(newSolids[i].cadGroup);
+  for (let i = 0; i < newSolids.length; i++) {
+    let solid = newSolids[i];
+    if (toUpdate[i] !== undefined) {
+      this.solids[toUpdate[i]] = solid;
+    } else {
+      this.solids.push(solid);
+    }
+    this.app.viewer.workGroup.add(solid.cadGroup);
   }
+  this.app.bus.notify('solid-list', {
+    solids : this.solids,
+    needRefresh : newSolids
+  });
 };
 
 Craft.prototype.modify = function(request, overriding) {
