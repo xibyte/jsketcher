@@ -154,6 +154,8 @@ UI.prototype.initOperation = function(op) {
     this.registerWizard(new PlaneWizard(this.app.viewer), false)
   } else if ('SPHERE' === op) {
     this.registerWizard(new SphereWizard(this.app.viewer), false)
+  } else if ('IMPORT_STL' === op) {
+    alert('men at work');
   } else {
     console.log('unknown operation');
   }

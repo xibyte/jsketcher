@@ -54,6 +54,12 @@ export const UNION = {
   info: (p) => null
 };
 
+export const IMPORT_STL = {
+  icon: 'img/3d/stl',
+  label: 'STL Import',
+  info: (p) => null
+};
+
 function r(value) {
   return value.toPrecision(4).replace(/\.0$/, '');
 }
