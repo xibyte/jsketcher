@@ -33,22 +33,45 @@ export function BindArray(node, array, policy) {
   policy = adjustPolicyForNode(node, policy);
   let template = detachTemplate(node);
   let scope = getScope(node);
-  node.children().detach();
-  clearScope(node);
 
-  for (let value of array) {
-    let child = scope.nestedScopes[value.id];
-    if (!child) {
-      child = template.clone();
-    } else {
-      delete scope.nestedScopes[value.id];
-    }
-    child.attr('data-bind-scope', value.id);
-    Bind(child, value, policy);
-    node.append(child);
+  function createFromTemplate(id) {
+    const child = template.clone();
+    child.attr('data-bind-scope', id);
+    scope.nestedScopes[id] = child;
+    return child;
   }
-  for (let toDelete of Object.getOwnPropertyNames(scope.nestedScopes)) {
-    scope.nestedScopes[toDelete].remove();
+  
+  const children = node.children();
+  let domPointer = 0;   
+  for (let dataPointer = 0; dataPointer < array.length; dataPointer++) {
+    const value = array[dataPointer];
+    let domItem;
+    if (domPointer == children.length) {
+      domItem = createFromTemplate(value.id);
+      node.append(domItem);
+    } else {
+      domItem = children.eq(domPointer);
+      var domItemId = domItem.attr('data-bind-scope');
+      if (domItemId != value.id) {
+        domItem = scope.nestedScopes[value.id];
+        if (!domItem) {
+          domItem = createFromTemplate(value.id);
+        }
+        if (domPointer == 0) {
+          node.prepend(domItem);
+        } else {
+          children.eq(domPointer - 1).after(domItem);
+        }
+      } 
+      domPointer ++;
+    }
+    Bind(domItem, value, policy);
+  }
+  //clean up
+  for (; domPointer < children.length; domPointer++) {
+    let item =  children.eq(domPointer);
+    item.remove();
+    delete scope[item.attr('data-bind-scope')];
   }
 }
 
