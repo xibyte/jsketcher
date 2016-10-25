@@ -5,6 +5,7 @@ export function SolidList(app) {
   this.app = app;
   app.bus.subscribe('solid-list', (data) => this.onChange(data));
   this.dom = $(LoadTemplate('solid-list')({}));
+  BindArray(this.dom, []);
 }
 
 SolidList.prototype.onChange = function(data) {
