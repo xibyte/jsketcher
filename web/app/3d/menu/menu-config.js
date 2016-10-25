@@ -1,7 +1,7 @@
 export const file = {
   label: 'file',
   cssIcons: ['file'],
-  actions: ['Save', 'StlExport']
+  actions: ['Save', 'StlExport', '-', 'IMPORT_STL']
 };
 
 export const craft = {
