@@ -27,7 +27,8 @@ function UI(app) {
   
   var modificationsFolder = new tk.Folder("Modifications");
   var modificationsDom = $(LoadTemplate('modifications')({}));
-
+  BindArray(modificationsDom, []);
+  
   tk.add(mainBox, modelFolder);
   tk.add(mainBox, modificationsFolder);
   modificationsFolder.content.append(modificationsDom);

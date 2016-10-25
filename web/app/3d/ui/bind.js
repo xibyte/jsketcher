@@ -4,8 +4,8 @@ export const BINDING_CALLBACK = 'OnBind';
 
 export function Bind(node, data, policy) {
   policy = adjustPolicyForNode(node, policy, data.Policy);
-  const props = Object.getOwnPropertyNames(data);
   const scope = getScope(node);
+  const props = Object.getOwnPropertyNames(data);
   for (let prop of props) {
     if (prop == BINDING_CALLBACK) continue;
     let value = data[prop];
@@ -31,8 +31,8 @@ export function Bind(node, data, policy) {
 
 export function BindArray(node, array, policy) {
   policy = adjustPolicyForNode(node, policy);
-  let template = detachTemplate(node);
   let scope = getScope(node);
+  let template = detachTemplate(node);
 
   function createFromTemplate(id) {
     const child = template.clone();
