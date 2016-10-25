@@ -14,6 +14,7 @@ import {TransformWizard} from '../wizards/transform'
 import {LoadTemplate} from './utils'
 import {BindArray} from './bind'
 import {SolidList} from './solid-list'
+import {ModificationsPanel} from './modifications-panel'
 
 function UI(app) {
   this.app = app;
@@ -25,13 +26,9 @@ function UI(app) {
   this.solidList = new SolidList(this.app);
   modelFolder.content.append(this.solidList.dom);
   
-  var modificationsFolder = new tk.Folder("Modifications");
-  var modificationsDom = $(LoadTemplate('modifications')({}));
-  BindArray(modificationsDom, []);
-  
   tk.add(mainBox, modelFolder);
-  tk.add(mainBox, modificationsFolder);
-  modificationsFolder.content.append(modificationsDom);
+  let modificationsPanel = new ModificationsPanel(this.app);
+  mainBox.content.append(modificationsPanel.dom);
 
   var toolbarVertOffset = 10; //this.mainBox.root.position().top;
 
@@ -43,65 +40,6 @@ function UI(app) {
   this.fillControlBar();
   var ui = this;
   
-  function setHistory() {
-    ui.app.craft.finishHistoryEditing();
-  }
-  let finishHistory = new tk.ButtonRow(["Finish History Editing"], [setHistory]);
-  finishHistory.root.hide();
-  tk.add(modificationsFolder, finishHistory);
-  var historyWizard = null;
-  function updateHistoryPointer() {
-    if (historyWizard != null) {
-      historyWizard.dispose();
-      historyWizard = null;
-    }
-    
-    var craft = ui.app.craft;
-    var historyEditMode = craft.historyPointer != craft.history.length;
-    if (historyEditMode) {
-      var rows = modificationsDom.find('.tc-row');
-      rows.removeClass('history-selected');
-      rows.eq(craft.historyPointer).addClass('history-selected');
-      var op = craft.history[craft.historyPointer];
-      historyWizard = ui.createWizardForOperation(op, app);
-      finishHistory.root.show();
-    } else {
-      finishHistory.root.hide();
-    }
-  }
-  
-  this.app.bus.subscribe("craft", function() {
-    let modifications = [];
-    for (let i = 0; i < app.craft.history.length; i++) {
-      let op = app.craft.history[i];
-      let m = {
-        id : i,
-        info: ui.getInfoForOp(op),
-        OnBind : (dom, data) => {
-          dom.css('background-image', 'url('+ UI.getIconForOp(op)+')');
-          dom.click(() => ui.app.craft.historyPointer = data.id);
-        }
-      };
-      modifications.push(m);
-    }
-    BindArray(modificationsDom, modifications);
-    updateHistoryPointer();
-  });
-
-  this.app.bus.subscribe("refreshSketch", function() {
-    if (historyWizard != null) {
-      var craft = ui.app.craft;
-      var op = JSON.parse(JSON.stringify(craft.history[craft.historyPointer]));
-      op.protoParams = historyWizard.getParams();
-      historyWizard.dispose();
-      historyWizard = ui.createWizardForOperation(op, app);
-    }
-  });
-
-  this.app.bus.subscribe("historyPointer", function() {
-    //updateHistoryPointer();
-  });
-
   this.app.bus.subscribe("showSketches", (enabled) => {
     var solids = app.findAllSolids();
     for (var i = 0; i < solids.length; i++) {
@@ -204,15 +142,6 @@ UI.prototype.getInfoForOp = function(op) {
   }
   return op.type;
 };
-
-UI.getIconForOp = function(op) {
-  var opDef = Operations[op.type];
-  if (!opDef || !opDef.icon) {
-    return null;
-  }
-  return opDef.icon + '32.png';
-};
-
 
 UI.prototype.initOperation = function(op) {
   if ('CUT' === op) {
