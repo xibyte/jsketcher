@@ -46,6 +46,10 @@ export const OperationActions = {
   
   'UNION': mergeInfo('UNION', {
     info: 'union operation on two solids'
+  }),
+  
+  'IMPORT_STL': mergeInfo('IMPORT_STL', {
+    info: 'union operation on two solids'
   })
 };
 
