@@ -6,6 +6,7 @@ import {AddPointTool, AddSegmentTool} from './shapes/segment'
 import {AddArcTool} from './shapes/arc'
 import {EditCircleTool} from './shapes/circle'
 import {FilletTool} from './helpers'
+import {ReferencePointTool} from './shapes/origin'
 import $ from '../../lib/jquery-2.1.0.min'
 
 /** @constructor */
@@ -89,6 +90,10 @@ function App2D() {
 
   this.registerAction('checkpoint', "Checkpoint", function () {
     app.viewer.historyManager.checkpoint();
+  });
+
+  this.registerAction('referencePoint', "Set Reference Point", function () {
+    app.viewer.toolManager.takeControl(new ReferencePointTool(app.viewer));
   });
 
   this.registerAction('addPoint', "Add Point", function () {

@@ -114,6 +114,8 @@ function Viewer(canvas, IO) {
   this.selected = [];
   this.snapped = [];
   
+  this.referencePoint = new ReferencePoint();
+  
   this._setupServiceLayer();
 
   this.historyManager = new HistoryManager(this);
@@ -212,6 +214,7 @@ Viewer.prototype._setupServiceLayer = function() {
   var layer = new Layer("_service", Styles.SERVICE);
 //  layer.objects.push(new CrossHair(0, 0, 20));
   layer.objects.push(new BasisOrigin(null, this));
+  layer.objects.push(this.referencePoint);
   layer.objects.push(new Point(0, 0, 2));
   this._serviceLayers.push(layer);
 
@@ -782,6 +785,28 @@ BasisOrigin.prototype.draw = function(ctx, scale) {
   ctx.stroke();
 
   ctx.restore();
+};
+
+
+/** @constructor */
+function ReferencePoint(viewer) {
+  this.viewer = viewer;
+  this.x = 0;
+  this.y = 0;
+}
+
+ReferencePoint.prototype.draw = function(ctx, scale) {
+  ctx.strokeStyle  = 'salmon';
+  ctx.fillStyle  = 'salmon';
+  ctx.lineWidth = 1 / scale;
+  
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, 1 / scale, 0, 2 * Math.PI, false);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, 7 / scale, 0, 2 * Math.PI, false);
+  ctx.stroke();
 };
 
 /** @constructor */
