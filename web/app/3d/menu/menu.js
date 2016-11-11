@@ -56,10 +56,10 @@ Menu.prototype.show = function(app, event) {
   this.node.removeClass('menu-flat-bottom');
   this.node.show(); //node should be visible to get right dimensions
   const r = Math.round;
-  let source = EventData.get(event, 'menu-button');
-  if (source != undefined) {
-    var off = source.offset();
-    var orientation = source.data('menuOrientation');
+  let button = EventData.get(event, 'initiator');
+  if (button != undefined) {
+    var off = button.offset();
+    var orientation = button.data('menuOrientation');
     if (orientation == 'up') {
       this.node.addClass('menu-flat-bottom');
       this.node.offset({
@@ -70,7 +70,7 @@ Menu.prototype.show = function(app, event) {
       this.node.addClass('menu-flat-top');
       this.node.offset({
         left: r(off.left),
-        top: r(off.top + source.outerHeight())
+        top: r(off.top + button.outerHeight())
       });
     } else {
     }

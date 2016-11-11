@@ -33,3 +33,8 @@ export const main = {
     'EditFace', '-', 'DeselectAll', 'RefreshSketches'  ]
 };
 
+export const SolidContext = {
+  label: 'solid-context',
+  info: 'solid context actions',
+  actions: ['LookAtSolid']
+};

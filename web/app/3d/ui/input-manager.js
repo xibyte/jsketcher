@@ -7,6 +7,7 @@ import {LoadTemplate, DefaultMouseEvent, EventData, fit} from './utils'
 export function InputManager(app) {
   this.app = app;
   this.openMenus = [];
+  this.menuContext = null;
   this.keymap = keymap;
   this.mouseInfo = new DefaultMouseEvent();
   this.requestedActionInfo = null;
@@ -19,7 +20,8 @@ export function InputManager(app) {
       .on('mouseenter', '.action-item', (e) => this.showActionInfo($(e.currentTarget)))
       .on('mouseleave', '.action-item', (e) => this.hideActionInfo())
       .on('mousemove', (e) => this.mouseInfo = e)
-      .on('click', '.action-item', (e) => this.handleActionClick(e));
+      .on('click', '.action-item', (e) => this.handleActionClick(e))
+      .on('contextmenu', '.action-item', (e) => {return this.handleRightClick(e)});
   });
 }
 
@@ -40,14 +42,28 @@ InputManager.prototype.clear = function(e) {
   if (e != undefined && $(e.target).closest('.menu-item').length != 0) {
     return;
   }
+  this.clearMenus();
+  this.requestedActionInfo = null;
+  this.messageSink.hide();
+};
+
+InputManager.prototype.clearMenus = function() {
+  this.menuContext = null;
   if (this.openMenus.length != 0) {
     for (let openMenu of this.openMenus) {
       openMenu.node.hide();
     }
     this.openMenus = [];
   }
-  this.requestedActionInfo = null;
-  this.messageSink.hide();
+};
+
+InputManager.prototype.handleRightClick = function(e) {
+  if ($(event.currentTarget).hasClass('.right-click-action')) {
+    e.preventDefault();
+    this.handleActionClick(e);
+    return false;
+  }
+  return true;
 };
 
 InputManager.prototype.handleActionClick = function(event) {
@@ -55,14 +71,17 @@ InputManager.prototype.handleActionClick = function(event) {
   var action = target.data('action');
   if (action != undefined) {
     this.clear();
-    EventData.set(event, 'menu-button', target);
+    EventData.set(event, 'initiator', this.menuContext ? this.menuContext : target);
     this.app.actionManager.run(action, event);
   }
 };
 
-InputManager.prototype.registerOpenMenu = function(menu) {
+InputManager.prototype.registerOpenMenu = function(menu, button) {
   fit(menu.node, $('body'));
   this.openMenus.push(menu);
+  if (this.menuContext == null) {
+    this.menuContext = button;
+  }
 };
 
 InputManager.prototype.hideActionInfo = function() {
