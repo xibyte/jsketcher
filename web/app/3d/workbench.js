@@ -751,5 +751,15 @@ export const OPERATIONS = {
   },
   SPHERE : function(app, request) {
     return [cad_utils.createSphere(request.params.radius)];
+  },
+  IMPORT: function(app, request) {
+    return request.params.solids.map(s => cad_utils.createSolid(CSG.fromPolygons(
+                              s.faces.map(
+                                  f => new CSG.Polygon(f.vertices.map(v => new CSG.Vertex(new CSG.Vector3D(v[0], v[1], v[2]))) 
+                                    , cad_utils.createShared()) 
+                              )
+                            ) 
+    ));
+     
   }
 };
