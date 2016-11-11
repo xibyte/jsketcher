@@ -3,25 +3,30 @@ import {sprintf} from 'sprintf'
 export const BINDING_CALLBACK = 'OnBind';
 
 export function Bind(node, data, policy) {
-  policy = adjustPolicyForNode(node, policy, data.Policy);
   const scope = getScope(node);
   const props = Object.getOwnPropertyNames(data);
   for (let prop of props) {
     if (prop == BINDING_CALLBACK) continue;
     let value = data[prop];
-    let bindFunc, subNode;
     if (Array.isArray(value)) {
-      bindFunc = BindArray;
-      subNode = scope.nestedScopes[prop];
+      const nodesToBind = scope.nestedScopes[prop];
+      if (!nodesToBind) continue;
+      for (let nodeToBind of nodesToBind) {
+        BindArray(nodeToBind, value, policy);
+      }
     } else if (typeof value === 'object') {
-      bindFunc = Bind;
-      subNode = scope.nestedScopes[prop];
+      const nodesToBind = scope.nestedScopes[prop];
+      if (!nodesToBind) continue;
+      for (let nodeToBind of nodesToBind) {
+        Bind(nodeToBind, value, policy);
+      }
     } else {
-      bindFunc = BindContent;
-      subNode = scope.bindings[prop];
+      const bindCallbacks = scope.bindings[prop];
+      if (!bindCallbacks) continue;
+      for (let bindCallback of bindCallbacks) {
+        bindCallback(value, policy);
+      }
     }
-    if (!subNode) continue;
-    bindFunc(subNode, value, policy);
   }
   var callback = data[BINDING_CALLBACK];
   if (callback) {
@@ -30,14 +35,13 @@ export function Bind(node, data, policy) {
 }
 
 export function BindArray(node, array, policy) {
-  policy = adjustPolicyForNode(node, policy);
   let scope = getScope(node);
   let template = detachTemplate(node);
 
   function createFromTemplate(id) {
     const child = template.clone();
     child.attr('data-bind-scope', id);
-    scope.nestedScopes[id] = child;
+    scope.nestedScopes[id] = [child];
     return child;
   }
   
@@ -75,27 +79,6 @@ export function BindArray(node, array, policy) {
   }
 }
 
-export function BindContent(node, value, policy) {
-  policy = adjustPolicyForNode(node, policy);
-  var formatData = node.attr('data-bind-format');
-  if (!formatData && policy.format) {
-    formatData = node.text();
-    node.attr('data-bind-format', formatData);
-  }
-
-  var isEmpty = value === '' || value === undefined || value === null;
-  if (isEmpty && policy.hideEmpty) {
-    node.text('');
-    node.hide();
-  } else {
-    if (formatData) {
-      value = sprintf(formatData, value);
-    }
-    node.text(value);
-    node.show();
-  }
-}
-
 function detachTemplate(node) {
   let template = node.data("BindingTemplate");
   if (!template) {
@@ -119,14 +102,40 @@ function getScope(dom) {
   return scope;
 }
 
+function detectBinder(def) {
+  for (let binder of BINDERS) {
+    if (def.startsWith(binder.prefix)) {
+      return binder;    
+    }
+  }
+  return DEFAULT_BINDER;
+}
+
+function setupBindings(bindings, bindingsDefinition, node) {
+  bindingsDefinition.split(',').forEach(defStr => {
+    defStr = defStr.trim();
+    const binder = detectBinder(defStr);
+    const def = parseBindDefinition(defStr.substring(binder.prefix.length));
+    addToList(bindings, def.dataKey, (value, policy) => {
+      policy = adjustPolicyForNode(policy, def.policy);
+      const formattedValue = format(def.formatters, value);
+      binder.apply(node, formattedValue, policy, def.key);        
+    });
+  });
+}
+
 function index(dom) {
   const scope = new Scope();
   //do bfs
   const queue = [];
   function advance(node) {
-    var binding = node.attr('data-bind');
-    if (binding) {
-      scope.bindings[binding] = node;
+    let bindingsDefinition = node.attr('data-bind');
+    if (bindingsDefinition) {
+      setupBindings(scope.bindings, bindingsDefinition, node)
+      let template = node.text();
+      if (template) {
+        node.attr('data-bind-template', template);
+      }
     }
     node.children().each((i, e) => queue.push($(e)))
   }
@@ -140,7 +149,7 @@ function index(dom) {
       list = true;
     }
     if (nestedScope) {
-      scope.nestedScopes[nestedScope] = node;
+      addToList(scope.nestedScopes, nestedScope, node);
       if (list) {
         detachTemplate(node);
       }
@@ -152,36 +161,127 @@ function index(dom) {
   return scope;
 }
 
-function adjustPolicyForNode(dom, propagatedPolicy, dataPolicy) {
+function adjustPolicyForNode(propagatedPolicy, nodePolicy) {
   let policy = propagatedPolicy || DEFAULT_POLICY;
-  let policyFromHints = getPolicyFromHints(dom);
-  if (policyFromHints) {
-    policy = Object.assign({}, policy, policyFromHints);
-  }
-  if (dataPolicy) {
-    policy = Object.assign({}, policy, dataPolicy);
+  if (nodePolicy) {
+    policy = Object.assign({}, policy, nodePolicy);
   }
   return policy;
 }
 
-function getPolicyFromHints(dom) {
-  var hintsAttr = dom.attr('data-bind-hints');
-  if (!hintsAttr) {
-    return undefined;
+function addToList(map, key, value) {
+  let list = map[key];
+  if (!list) {
+    list = [];
+    map[key] = list;
   }
-  var parsedHints = dom.data('BindingPolicy');
-  if (!parsedHints) {
-    parsedHints = {};
-    hintsAttr.split('|').forEach(h => parsedHints[h] = true);
-    dom.data('BindingPolicy', parsedHints);
-  }
-  return parsedHints;
+  list.push(value);
 }
 
 const DEFAULT_POLICY = {
-  hideEmpty: true,
-  format: false
+  hideEmpty: true
 };
+
+export const FORMATTERS = {
+  capitalize: (s) => s.replace(/\b\w/g, l => l.toUpperCase()),
+  uppercase: (s) => s.toUpperCase(),
+  'css-url': (s) => 'url(' + s + ')'
+};
+
+function parseDataLink(str, def) {
+  const idx = str.indexOf('|');
+  if (idx == -1) {
+    def.dataKey = str.trim();
+    def.formatters = [];
+  } else {
+    def.dataKey = str.substring(0, idx).trim();
+    def.formatters = str.substring(idx + 1).split('|').map(s => s.trim());
+  }
+}
+
+function parsePolicy(policyStr) {
+  const policy = {};
+  policyStr.split('&').forEach(p => {
+    p = p.trim();
+    let eqIdx = p.indexOf('=');
+    if (eqIdx == -1) {
+      policy[p] = true;
+    } else {
+      policy[p.substring(0, eqIdx)] = p.substring(eqIdx + 1);
+    }
+  });
+  return policy;
+}
+
+function parseBindDefinition(str) {
+  const def = {};
+  let qmIdx = str.indexOf('?');
+  if (qmIdx != -1) {
+    def.policy = parsePolicy(str.substring(qmIdx + 1));
+    str = str.substring(0, qmIdx);
+  } 
+  const colonIdx = str.indexOf(':');
+  if (colonIdx == -1) {
+    parseDataLink(str, def);
+  } else {
+    def.key = str.substring(0, colonIdx).trim();
+    parseDataLink(str.substring(colonIdx + 1), def);
+  }
+  return def;
+}
+
+function format(formatters, value) {
+  for (let formatterKey of formatters) {
+    const formatter = FORMATTERS[formatterKey];
+    if (formatter) {
+      value = formatter(value);
+    }
+  }
+  return value;
+}
+
+const DEFAULT_BINDER = {
+  prefix: '',
+  apply: (node, value, policy) => {
+    let templateData = node.attr('data-bind-template');
+
+    var isEmpty = value === '' || value === undefined || value === null;
+    if (isEmpty) {
+      node.text('');
+    } else {
+      if (templateData) {
+        value = sprintf(templateData, value);
+      }
+      node.text(value);
+    }
+    if (isEmpty && policy.hideEmpty) {
+      node.hide();
+    } else {
+      node.show();
+    }
+  }
+};
+
+export const BINDERS = [
+  {
+    prefix: '@',
+    apply: (node, value, policy, key) => node.attr(key, value)
+  },
+  
+  {
+    prefix: '$',
+    apply: (node, value, policy, key) => node.css(key, value)
+  },
+  
+  {
+    prefix: '!',
+    apply: (node, value, policy, key) => value ? node.addClass(key) : node.removeClass(key)
+  },
+  
+  DEFAULT_BINDER
+];
+
+
 
 export function Scope() {
   this.bindings = {};
