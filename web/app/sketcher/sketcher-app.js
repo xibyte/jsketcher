@@ -27,16 +27,20 @@ function App2D() {
   this._actionsOrder = [];
 
   var dockEl = $('#dock');
-  var statusEl = $('#status');
-  this.dock = new ui.Dock(dockEl, statusEl, App2D.views);
+  var buttonGroup = $('#status .button-group');
+  this.dock = new ui.Dock(dockEl, buttonGroup, App2D.views);
   this.dock.show('Constraints');
 
   var consoleBtn = ui.dockBtn('Commands', 'list');
-  statusEl.append(consoleBtn);
+  buttonGroup.append(consoleBtn);
   var commandsWin = new ui.Window($('#commands'), this.winManager);
   commandsWin.tileUpRelative = $('#viewer');
   consoleBtn.click(function() {
     commandsWin.toggle();
+  });
+  $(document).on('mousemove', '#viewer', (e) => {
+    let coord = this.viewer.screenToModel(e);
+    $('.coordinates-info').text(coord.x.toFixed(3) + " : " + coord.y.toFixed(3));
   });
   new ui.Terminal(commandsWin, function(command) {
     return "Command " + command + " executed";
