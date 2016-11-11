@@ -55,9 +55,6 @@ html, body {
   border:0 solid black;
   background: #606060 no-repeat center;
   border-radius: 4px;
-  color: white;
-  font-size: 11px;
-  font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
   cursor: pointer;
   margin: 1px 4px 1px 4px;
 }
@@ -303,4 +300,16 @@ html, body {
 
 input[type=checkbox], input[type=radio] {
   vertical-align: middle;
+}
+
+#status {
+  font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
+  color: white;
+  font-size: 11px;
+  padding-top: 5px;
+}
+
+#status .coordinates-info {
+  padding-right: 5px;
+  font-style: italic;
 }
