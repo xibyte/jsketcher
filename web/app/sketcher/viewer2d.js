@@ -813,6 +813,7 @@ ReferencePoint.prototype.draw = function(ctx, scale) {
 function ToolManager(viewer, defaultTool) {
   this.defaultTool = defaultTool;
   this.tool = defaultTool;
+  this.viewer = viewer;
   var canvas = viewer.canvas;
   var tm = this;
   canvas.addEventListener('mousemove', function (e) {
@@ -866,6 +867,7 @@ function ToolManager(viewer, defaultTool) {
 
 ToolManager.prototype.takeControl = function(tool) {
   this.tool = tool;
+  this.viewer.bus.notify("tool-state");
 };
 
 ToolManager.prototype.releaseControl = function() {
