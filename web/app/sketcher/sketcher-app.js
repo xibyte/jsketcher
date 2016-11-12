@@ -23,6 +23,7 @@ function App2D() {
 
   this.constraintFilter = {};
   this.actions = {};
+  this.commands = {};
 
   //For debug view
   this._actionsOrder = [];
@@ -43,15 +44,17 @@ function App2D() {
     let coord = this.viewer.screenToModel(e);
     $('.coordinates-info').text(coord.x.toFixed(3) + " : " + coord.y.toFixed(3));
   });
-  new ui.Terminal(commandsWin, function(command) {
-    return "Command " + command + " executed";
-  });
-
+  this.terminalHandeler = null;
+  this.terminal = new ui.Terminal(commandsWin, (command) => this.handleTerminalInput(command));
+  this.bindToolsToTerminal();
+  
+  
   this.winManager.registerResize(dockEl, ui.DIRECTIONS.EAST, function() {$('body').trigger('layout'); });
   $('body').on('layout', this.viewer.onWindowResize);
   
-  this.registerAction = function(id, desc, action) {
-    app.actions[id] = {id: id, desc: desc, action: action};
+  this.registerAction = function(id, desc, action, command) {
+    app.actions[id] = {id, desc, action};
+    app.commands[command] = id; 
     app._actionsOrder.push(id);
   };
 
@@ -79,7 +82,7 @@ function App2D() {
   this.registerAction('exportDXF', "Export To DXF", function () {
     IO.exportTextData(app.viewer.io.dxfExport(), app.getSketchId() + ".dxf");
   });
-
+  
   this.registerAction('undo', "Undo", function () {
     app.viewer.historyManager.undo();
   });
@@ -94,7 +97,7 @@ function App2D() {
 
   this.registerAction('referencePoint', "Set Reference Point", function () {
     app.viewer.toolManager.takeControl(new ReferencePointTool(app.viewer));
-  });
+  }, "origin");
 
   this.registerAction('addPoint', "Add Point", function () {
     app.viewer.toolManager.takeControl(new AddPointTool(app.viewer));
@@ -367,6 +370,37 @@ App2D.prototype.getSketchId = function() {
   return App2D.STORAGE_PREFIX + id;
 };
 
+App2D.prototype.bindToolsToTerminal = function() {
+};
+
+App2D.STATIC_COMMANDS = {
+  "time" : () => new Date(),
+  "help" : (app) => app.getAllCommandList().join(", ")
+  
+};
+
+App2D.prototype.getAllCommandList = function() {
+  const commands = this.commands.slice();
+  commands.push.apply(commands, App2D.STATIC_COMMANDS);
+  return commands;
+};
+
+App2D.prototype.handleTerminalInput = function(commandStr) {
+  commandStr = commandStr.trim();
+  if (this.terminalHandeler != null) {
+    this.terminalHandeler(commandStr);
+  } else {
+    let cmd = App2D.STATIC_COMMANDS[commandStr];
+    if (cmd) {
+      cmd(this);
+    }
+    let actionDef = this.commands[cmd];
+    if (actionDef) {
+      actionDef();
+    }
+  }
+};
+
 App2D.STORAGE_PREFIX = "TCAD.projects.";
 
-export default App2D;
+export default App2D;-
