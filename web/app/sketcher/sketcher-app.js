@@ -1,5 +1,6 @@
 import {Viewer} from './viewer2d.js'
 import * as ui from '../ui/ui'
+import {Terminal} from '../ui/terminal'
 import {IO, BBox} from './io'
 import {AddDimTool, AddCircleDimTool, HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
 import {AddPointTool, AddSegmentTool} from './shapes/segment'
@@ -46,7 +47,7 @@ function App2D() {
     $('.coordinates-info').text(coord.x.toFixed(3) + " : " + coord.y.toFixed(3));
   });
   this.terminalHandeler = null;
-  this.terminal = new ui.Terminal(this.commandsWin, (command) => this.handleTerminalInput(command), () => this.getAllCommandList());
+  this.terminal = new Terminal(this.commandsWin, (command) => this.handleTerminalInput(command), () => this.getAllCommandList());
   this.bindToolsToTerminal();
   
   
@@ -367,7 +368,6 @@ App2D.prototype.getSketchId = function() {
 };
 
 App2D.prototype.bindToolsToTerminal = function() {
-  
 };
 
 App2D.STATIC_COMMANDS = {
@@ -391,7 +391,7 @@ App2D.prototype.handleTerminalInput = function(commandStr) {
     if (cmd) {
       return cmd(this);
     }
-    let actionId = this.commands[cmd];
+    let actionId = this.commands[commandStr];
     if (actionId) {
       this.actions[actionId].action();
     } else {
