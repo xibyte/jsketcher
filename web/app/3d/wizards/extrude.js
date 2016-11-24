@@ -3,26 +3,24 @@ import * as workbench from '../workbench'
 import * as cad_utils from '../cad-utils'
 import Vector from '../../math/vector'
 import {Matrix3, ORIGIN} from '../../math/l3space'
-import {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL, addBehavior} from './wizard-commons'
+import {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL} from './wizard-commons'
 
 export function ExtrudeWizard(app, face, invert, initParams) {
-  OpWizard.call(this, app.viewer);
+  this.invert = invert; // title depends on invert flag
+  OpWizard.call(this, app.viewer, initParams);
   this.app = app;
   this.face = face;
-  this.invert = invert;
   this.updatePolygons();
-  this.ui = {};
-  if (!initParams) initParams = ExtrudeWizard.DEFAULT_PARAMS;
-  this.createUI.apply(this, initParams);
-  addBehavior(this);
   this.synch();
 }
 
 ExtrudeWizard.prototype = Object.create( OpWizard.prototype );
 
-ExtrudeWizard.DEFAULT_PARAMS = [50, 1, 0, 0];
+ExtrudeWizard.prototype.DEFAULT_PARAMS = [50, 1, 0, 0];
 
-ExtrudeWizard.prototype.apply = function() {};
+ExtrudeWizard.prototype.title = function() {
+  return this.invert ? "Cut Options" : "Extrude Options";
+};
 
 ExtrudeWizard.prototype.updatePolygons = function() {
   this.polygons = workbench.getSketchedPolygons3D(this.app, this.face);
@@ -65,9 +63,8 @@ ExtrudeWizard.prototype.update = function(depth, scale, deflection, angle) {
 };
 
 ExtrudeWizard.prototype.createUI = function (depth, scale, deflection, angle) {
-  var ui = this.ui;
-  ui.box = new tk.Box();
-  var folder = new tk.Folder(this.invert ? "Cut Options" : "Extrude Options");
+  const ui = this.ui;
+  const folder = this.ui.folder;
   tk.add(ui.box, folder);
   ui.theValue = tk.config(new tk.Number(this.invert ? "Depth" : "Height", depth), {min: 0});
   ui.scale = tk.config(new tk.Number("Prism", scale, 0.1, 1), {min:0});
@@ -82,7 +79,6 @@ ExtrudeWizard.prototype.createUI = function (depth, scale, deflection, angle) {
   tk.add(folder, ui.scale);
   tk.add(folder, ui.deflection);
   tk.add(folder, ui.angle);
-  tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [tk.methodRef(this, "cancelClick"), tk.methodRef(this, "okClick")]));
 };
 
 ExtrudeWizard.prototype.synch = function() {
@@ -98,17 +94,12 @@ ExtrudeWizard.prototype.getParams = function() {
   return [depthValue, scaleValue, deflectionValue, angleValue];
 };
 
-ExtrudeWizard.prototype.createRequest = function() {
-  return  {
+ExtrudeWizard.prototype.createRequest = function(done) {
+  done({
     type : this.invert ? 'CUT' : 'PAD',
-    solids : [this.app.findSolid(this.face.solid.tCadId)],
+    solids : [this.app.findSolidByCadId(this.face.solid.tCadId)],
     face : this.app.findFace(this.face.id),
     params : this.operationParams,
     protoParams : this.getParams()
-  };
-};
-
-ExtrudeWizard.prototype.dispose = function() {
-  OpWizard.prototype.dispose.call(this);
-  this.ui.box.close();
+  });
 };
