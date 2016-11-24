@@ -868,11 +868,15 @@ function ToolManager(viewer, defaultTool) {
 ToolManager.prototype.takeControl = function(tool) {
   this.tool = tool;
   this.viewer.bus.notify("tool-state");
+  if (this.tool.restart) {
+    this.tool.restart();
+  }
 };
 
 ToolManager.prototype.releaseControl = function() {
   this.tool.cleanup();
   this.tool = this.defaultTool;
+  this.viewer.bus.notify("tool-state");
 };
 
 ToolManager.prototype.getTool = function() {

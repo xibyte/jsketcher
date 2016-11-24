@@ -7,6 +7,14 @@ ReferencePointTool.prototype.keydown = function(e) {};
 ReferencePointTool.prototype.keypress = function(e) {};
 ReferencePointTool.prototype.keyup = function(e) {};
 
+ReferencePointTool.prototype.restart = function(e) {
+  this.sendMessage('specify point');
+};
+
+ReferencePointTool.prototype.sendMessage = function(text) {
+  this.viewer.bus.notify('tool-message', text);
+};
+
 ReferencePointTool.prototype.cleanup = function(e) {
   this.viewer.cleanSnap();
 };
@@ -25,6 +33,7 @@ ReferencePointTool.prototype.mousedown = function(e) {
   let p = needSnap ? this.viewer.snapped.pop() : this.viewer.screenToModel(e);
   this.viewer.referencePoint.x = p.x;
   this.viewer.referencePoint.y = p.y;
+  this.sendMessage(p.x + ', ' + p.y);
   this.viewer.refresh();
   this.viewer.toolManager.releaseControl();
 };
@@ -32,30 +41,31 @@ ReferencePointTool.prototype.mousedown = function(e) {
 ReferencePointTool.prototype.mousewheel = function(e) {
 };
 
-ReferencePointTool.prototype.hint = function(e) {
-  return "specify point"
-};
-
 ReferencePointTool.prototype.processCommand = function(command) {
   var referencePoint = this.viewer.referencePoint;
-  let point = ParseVector(referencePoint, command);
-  referencePoint.x += point.x;
-  referencePoint.y += point.y;
+  let result = ParseVector(referencePoint, command);
+  if(typeof result === 'string') {
+    return result;
+  }  
+  referencePoint.x += result.x;
+  referencePoint.y += result.y;
   this.viewer.refresh();
+  this.viewer.toolManager.releaseControl();
+
 };
 
 const VECTOR_PATTERNS = /^(@)?(.+)(,|<)(.+)$/;
 
 function ParseVector(referencePoint, command) {
-  command = str.replace(/\s+/g, '');
+  command = command.replace(/\s+/g, '');
 
   const match = command.match(VECTOR_PATTERNS);
   if (match) {
     const ref = !match[1];
-    let x = parseFloat(match[2]);
+    let x = parseFloat(eval(match[2]));
     if (isNaN(x)) return "wrong input for number: "  + match[2];
     const polar = match[3] == '<';
-    let y = parseFloat(match[4]);
+    let y = parseFloat(eval(match[4]));
     if (isNaN(y)) return "wrong input for number: "  + match[4];
     if (polar) {
       y = y * Math.sin(x);
