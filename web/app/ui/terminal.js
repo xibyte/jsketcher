@@ -6,13 +6,13 @@ export function Terminal(win, commandProcessor, variantsSupplier) {
   win.onShowCallback = function() {
     input.focus();
   };
+  win.root.click(() => input.focus());
   this.history = [];
   this.historyPointer = 0;
   const setHistory = () => {
     if (this.history.length == 0) return;
     input.val(this.history[this.historyPointer]);
   };
-
 
   input.keydown((e) => {
     function consumeEvent() {
@@ -41,6 +41,7 @@ export function Terminal(win, commandProcessor, variantsSupplier) {
             variants = variants.slice(0,limit);
           }
           autocompleteArea.text(variants.join(' ') + more);
+          this.scrollToTheEnd();
         }
       }
       consumeEvent();
@@ -71,13 +72,18 @@ export function Terminal(win, commandProcessor, variantsSupplier) {
         }
         this.historyPointer = this.history.length;
       }
-      this.out.parent().scrollTop(this.out.height());
+      this.scrollToTheEnd();
     }
   });
 }
 
+Terminal.prototype.scrollToTheEnd = function() {
+  this.out.parent().scrollTop(this.out.height());
+};
+
 Terminal.prototype.print = function(text) {
   this.win.root.find('.terminal-output').append($('<div>', {text, 'class': 'terminal-commandResult'}));
+  this.scrollToTheEnd();
 };
 
 function sharedStartOfSortedArray(array){
