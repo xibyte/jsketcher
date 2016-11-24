@@ -46,7 +46,7 @@ function App2D() {
     let coord = this.viewer.screenToModel(e);
     $('.coordinates-info').text(coord.x.toFixed(3) + " : " + coord.y.toFixed(3));
   });
-  this.terminalHandeler = null;
+  this.terminalHandler = undefined;
   this.terminal = new Terminal(this.commandsWin, (command) => this.handleTerminalInput(command), () => this.getAllCommandList());
   this.bindToolsToTerminal();
   
@@ -368,6 +368,13 @@ App2D.prototype.getSketchId = function() {
 };
 
 App2D.prototype.bindToolsToTerminal = function() {
+  this.viewer.bus.subscribe('tool-state', () => {
+    var tool = this.viewer.toolManager.tool;
+    this.terminalHandler = tool.processCommand;
+  });
+  this.viewer.bus.subscribe('tool-message', (message) => {
+    this.terminal.print(message);
+  });
 };
 
 App2D.STATIC_COMMANDS = {
@@ -384,8 +391,8 @@ App2D.prototype.getAllCommandList = function() {
 
 App2D.prototype.handleTerminalInput = function(commandStr) {
   commandStr = commandStr.trim();
-  if (this.terminalHandeler != null) {
-    return this.terminalHandeler(commandStr);
+  if (this.terminalHandler) {
+    return this.terminalHandler(commandStr);
   } else {
     let cmd = App2D.STATIC_COMMANDS[commandStr];
     if (cmd) {
