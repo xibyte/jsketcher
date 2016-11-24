@@ -1,23 +1,23 @@
 import {AXIS, IDENTITY_BASIS} from '../../math/l3space'
 import * as tk from '../../ui/toolkit.js'
 import {FACE_COLOR} from '../cad-utils'
-import {addBehavior} from './wizard-commons'
+import {Wizard} from './wizard-commons'
 
 export function SphereWizard(viewer, initParams) {
+  Wizard.call(this, viewer, initParams);
   this.previewGroup = new THREE.Object3D();
-  this.viewer = viewer;
-  viewer.scene.add(this.previewGroup);
+  this.viewer.scene.add(this.previewGroup);
   this.previewGroup.add(this.sphere = this.createSphere());
-  if (!initParams) {
-    initParams = SphereWizard.DEFAULT_PARAMS;
-  }
-  this.ui = {};
-  this.createUI.apply(this, initParams);
-  addBehavior(this);
   this.synch();
 }
 
-SphereWizard.DEFAULT_PARAMS = [500];
+SphereWizard.prototype = Object.create( Wizard.prototype );
+
+SphereWizard.prototype.DEFAULT_PARAMS = [500];
+
+SphereWizard.prototype.title = function() {
+  return "Add a Sphere";
+};
 
 SphereWizard.prototype.createSphere = function() {
   var geometry = new THREE.SphereGeometry(1, 30, 28);
@@ -33,15 +33,10 @@ SphereWizard.prototype.update = function(radius) {
 };
 
 SphereWizard.prototype.createUI = function(radius) {
-  var ui = this.ui;
-  ui.box = new tk.Box();
-  var folder = new tk.Folder("Add a Sphere");
-  tk.add(ui.box, folder);
-  ui.radius = tk.config(new tk.Number("Radius", radius), {min : 0});
-  tk.add(folder, ui.radius);
+  this.ui.radius = tk.config(new tk.Number("Radius", radius), {min : 0});
+  tk.add(this.ui.folder, this.ui.radius);
   var onChange = tk.methodRef(this, "synch");
-  ui.radius.input.on('t-change', onChange);
-  tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [tk.methodRef(this, "cancelClick"), tk.methodRef(this, "okClick")]));
+  this.ui.radius.input.on('t-change', onChange);
 };
 
 SphereWizard.prototype.synch = function() {
@@ -53,18 +48,18 @@ SphereWizard.prototype.getParams = function() {
   return [this.ui.radius.val()];
 };
 
-SphereWizard.prototype.createRequest = function() {
+SphereWizard.prototype.createRequest = function(done) {
   var params = this.getParams();
-  return {
+  done({
     type: 'SPHERE',
     solids : [],
     params : {radius : params[0]},
     protoParams : params
-  }
+  });
 };
 
 SphereWizard.prototype.dispose = function() {
+  Wizard.prototype.dispose.call(this);
   this.viewer.scene.remove(this.previewGroup);
-  this.ui.box.close();
   this.viewer.render();
 };
