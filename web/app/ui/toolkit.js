@@ -137,17 +137,18 @@ NumberWidget.prototype.val = function() {
   return Number(this.input.val());
 };
 
+export function Text(name, initValue) {
+  this.root = $('<div/>', {'class': 'tc-row tc-ctrl'});
+  this.input = $("<input type='text' value='"+initValue+"' />");
+  propLayout(this.root, name, this.input);
+}
+
 export function Combo(id, labelText) {
   this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-combo'});
   var label = $('<span/>', {'class': 'tc-prop-name', text: labelText});
   this.select = $('<select>', {id : id});
   this.root.append(label)
     .append($('<div/>', {'class': 'tc-prop-value'}).append(this.select));
-}
-
-export function Text(name) {
-  this.root = $('<div/>', {'class': 'tc-row tc-ctrl tc-ctrl-text'});
-  propLayout(this.root, name, $('<input type="text"/>'));
 }
 
 export function ButtonRow(captions, actions) {
@@ -164,7 +165,7 @@ export function ButtonRow(captions, actions) {
     var caption = captions[i];
     var btn = $('<span/>', {
       text: caption,
-      'class': 'tc-buttons-block-item'
+      'class': 'tc-block-btn active-btn'
     });
     withAction(btn, actions[i]);
     this.root.append(btn);
