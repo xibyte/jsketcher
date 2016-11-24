@@ -6,7 +6,7 @@ export function ModificationsPanel(app) {
   this.app = app;
   this.dom = $(LoadTemplate('modifications')({}));
   this.buttonsBlock = this.dom.find(".tc-buttons-block");
-  var buttons = this.buttonsBlock.find(".tc-buttons-block-item");
+  var buttons = this.buttonsBlock.find(".tc-block-btn");
   buttons.eq(0).click(() => app.craft.finishHistoryEditing());
   this.buttonsBlock.hide();
   this.historyWizard = null;
