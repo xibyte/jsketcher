@@ -42,6 +42,7 @@
     "diff-match-patch": "1.0.0",
     "numeric": "1.2.6",
     "jwerty": "0.3.2",
-    "mustache-loader": "0.3.3"
+    "mustache-loader": "0.3.3",
+    "jquery": "2.1.0"
   }
 }

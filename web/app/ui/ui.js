@@ -1,4 +1,3 @@
-import $ from '../../lib/jquery-2.1.0.min'
 
 /** @constructor */
 function Window(el, winManager) {
@@ -383,26 +382,87 @@ function _maskTest(mask, value) {
   return (mask & value) === value;
 }
 
-function Terminal(win, commandProcessor) {
+function sharedStartOfSortedArray(array){
+  var a1= array[0], a2= array[array.length-1], L= a1.length, i= 0;
+  while(i<L && a1.charAt(i)=== a2.charAt(i)) i++;
+  return a1.substring(0, i);
+}
+
+function Terminal(win, commandProcessor, variantsSupplier) {
   this.win = win;
+  const input = win.root.find('.terminal-input input');
+
   win.onShowCallback = function() {
-    win.root.find('.terminal-input input').focus();
+    input.focus();
+  };
+  this.history = [];
+  this.historyPointer = 0;
+  const setHistory = () => {
+    if (this.history.length == 0) return;
+    input.val(this.history[this.historyPointer]);
   };
 
-  win.root.find('.terminal-input input').keyup(function(e){
+  input.keydown((e) => {
+    function consumeEvent() {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (e.keyCode == 9) {
+      const text = input.val();
+      let variants = variantsSupplier().filter(v => v.startsWith(text));
+      variants.sort();
+      if (variants.length == 0) {
+      } else  {
+        const shared = sharedStartOfSortedArray(variants);
+        if (shared.length != text.length) {
+          input.val(shared);
+        } else {
+          const out = win.root.find('.terminal-output');
+          let autocompleteArea = out.find('.autocomplete-area');
+          if (autocompleteArea.length == 0) {
+            autocompleteArea = $('<div>', {'class': 'terminal-commandText autocomplete-area'});
+            out.append(autocompleteArea);
+          }
+          let more = '';
+          const limit = 20;
+          if (variants.length > limit) {
+            more = '... and ' + (variants.length - limit) + ' more';
+            variants = variants.slice(0,limit);
+          }
+          autocompleteArea.text(variants.join(' ') + more);
+        }
+      }
+      consumeEvent();
+    } else if (e.keyCode == 38) {
+      this.historyPointer = Math.max(this.historyPointer - 1, 0);
+      setHistory();
+      consumeEvent();
+    } else if (e.keyCode == 40) {
+      if (this.historyPointer != this.history.length) {
+        this.historyPointer = Math.min(this.historyPointer + 1, this.history.length - 1);
+        setHistory();
+      }
+      consumeEvent();
+    } 
+  });
+
+  input.keyup((e) => {
     if(e.keyCode == 13) {
-      var input = win.root.find('.terminal-input input');
-      var command = input.val();
-      var out = win.root.find('.terminal-output');
+      const command = input.val();
+      const out = win.root.find('.terminal-output');
+      out.find('.autocomplete-area').remove();
       input.val('');
       out.append($('<div>', {text: '> '+command, 'class': 'terminal-commandText'}));
       if (command != null && command.trim().length != 0) {
         var result = commandProcessor(command);
         out.append($('<div>', {text: result, 'class': 'terminal-commandResult'}));
+        this.history.push(command);
+        this.historyPointer = this.history.length;
       }
       out.parent().scrollTop(out.height());
     }
   });
+  
 }
 
 export { WinManager, Window, List, Dock, Terminal, dockBtn, faBtn, openWin, closeWin, bindOpening, createActionsWinBuilder, DIRECTIONS };

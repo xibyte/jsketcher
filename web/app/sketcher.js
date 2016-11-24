@@ -1,10 +1,10 @@
 import App2D from './sketcher/sketcher-app';
 import {Layer, Styles} from './sketcher/viewer2d';
-import $ from '../lib/jquery-2.1.0.min'
 import * as ui from './ui/ui.js';
 import * as toolkit from './ui/toolkit';
 import {askNumber} from './utils/utils';
 import {Constraints} from './sketcher/parametric'
+import './utils/jqueryfy'
 
 function initializeSketcherApplication() {
   var app = new App2D();
