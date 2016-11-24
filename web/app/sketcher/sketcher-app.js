@@ -403,4 +403,4 @@ App2D.prototype.handleTerminalInput = function(commandStr) {
 
 App2D.STORAGE_PREFIX = "TCAD.projects.";
 
-export default App2D;-
+export default App2D;
