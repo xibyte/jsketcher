@@ -1,15 +1,15 @@
+import {StlSolid, StlFace} from './stl-data-structure'
+
 export function parse(buf) {
 
-  var solid = {
-    name: null,
-    faces: []    
-  };
-  var solids = [];
-  var triangle = [];
-  var normal = null;  
-  var reader = new LinesReader(buf);
+  let solid = new StlSolid('');
+  let face = new StlFace(null);
+  let solids = [];
+  let reader = new LinesReader(buf);
+  let lineNumber = 0;
   while (reader.hasNextLine()) {
-    let line = reader.nextLine();  
+    let line = reader.nextLine();
+    lineNumber ++;
     var parts = line
       .trim()
       .split(' ')
@@ -18,10 +18,7 @@ export function parse(buf) {
       });
     switch(parts[0]) {
       case 'solid':
-        solid = {
-          name: parts.slice(1).join(' '),
-          faces: []
-        };
+        solid = new StlSolid(parts.slice(1).join(' '));
         break;
       case 'endsolid':
         solids.push(solid);
@@ -29,22 +26,22 @@ export function parse(buf) {
       case 'facet':
         var noramlParts = parts.slice(2);
         if (noramlParts.length == 3) {
-          normal = noramlParts.map(Number);
+          face.normal = noramlParts.map(Number);
+        } else {
+          console.warn('bad normal definition at line ' + lineNumber);
         }
         break;
       case 'vertex':
-        var position = parts.slice(1).map(Number);
-        triangle.push(position);
+        const position = parts.slice(1).map(Number);
+        face.vertices.push(position);
         break;
       case 'endfacet':
-        if (triangle.length == 3) {
-          solid.faces.push({
-            vertices: triangle,
-            normal: normal 
-          });
+        if (face.normal != null && face.vertices.length == 3) {
+          solid.faces.push(face);
+        } else {
+          console.warn('bad stl face at line ' + lineNumber);
         }
-        triangle = [];
-        normal = null;
+        face = new StlFace(null);
       default:
       // skip
     }
