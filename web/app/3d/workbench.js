@@ -4,6 +4,8 @@ import * as math from '../math/math'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import {HashTable} from '../utils/hashmap'
 import Counters from './counters'
+import {Mesh} from './mesh'
+import {LoadSTLFromURL} from './io'
 
 function SketchConnection(a, b, sketchObject) {
   this.a = a;
@@ -697,33 +699,33 @@ Craft.prototype.modifyInternal = function(request) {
 
   var newSolids = op(this.app, request);
   if (newSolids == null) return;
-  const toUpdate = [];
-  for (let i = 0; i < request.solids.length; i++) {
-    let solid = request.solids[i];
-    var indexToRemove = this.solids.indexOf(solid);
-    if (indexToRemove != -1) {
-      let updatedIdx = newSolids.findIndex((s) => s.id == solid.id);
-      if (updatedIdx != -1) {
-        toUpdate[updatedIdx] = indexToRemove;
-      } else {
-        this.solids.splice(indexToRemove, 1);
+    const toUpdate = [];
+    for (let i = 0; i < request.solids.length; i++) {
+      let solid = request.solids[i];
+      var indexToRemove = this.solids.indexOf(solid);
+      if (indexToRemove != -1) {
+        let updatedIdx = newSolids.findIndex((s) => s.id == solid.id);
+        if (updatedIdx != -1) {
+          toUpdate[updatedIdx] = indexToRemove;
+        } else {
+          this.solids.splice(indexToRemove, 1);
+        }
       }
+      solid.vanish();
     }
-    solid.vanish();
-  }
-  for (let i = 0; i < newSolids.length; i++) {
-    let solid = newSolids[i];
-    if (toUpdate[i] !== undefined) {
-      this.solids[toUpdate[i]] = solid;
-    } else {
-      this.solids.push(solid);
+    for (let i = 0; i < newSolids.length; i++) {
+      let solid = newSolids[i];
+      if (toUpdate[i] !== undefined) {
+        this.solids[toUpdate[i]] = solid;
+      } else {
+        this.solids.push(solid);
+      }
+      this.app.viewer.workGroup.add(solid.cadGroup);
     }
-    this.app.viewer.workGroup.add(solid.cadGroup);
-  }
-  this.app.bus.notify('solid-list', {
-    solids : this.solids,
-    needRefresh : newSolids
-  });
+    this.app.bus.notify('solid-list', {
+      solids: this.solids,
+      needRefresh: newSolids
+    });
 };
 
 Craft.prototype.modify = function(request, overriding) {
@@ -752,14 +754,19 @@ export const OPERATIONS = {
   SPHERE : function(app, request) {
     return [cad_utils.createSphere(request.params.radius)];
   },
-  IMPORT: function(app, request) {
-    return request.params.solids.map(s => cad_utils.createSolid(CSG.fromPolygons(
-                              s.faces.map(
-                                  f => new CSG.Polygon(f.vertices.map(v => new CSG.Vertex(new CSG.Vector3D(v[0], v[1], v[2]))) 
-                                    , cad_utils.createShared()) 
-                              )
-                            ) 
-    ));
-     
+  IMPORT_STL: function(app, request) {
+    return request.params.objects.map(s => {
+      const smoothAngle = 1 / 180 * Math.PI;
+      const mesh = Mesh.fromPolygons(s.faces.map(f => f.vertices.map(v => new Vector().set3(v))), smoothAngle);
+      const polygons = [];
+      for (let meshFace of mesh.faces) {
+        const pl = meshFace.polygons[0];
+        const plane = new CSG.Plane(pl.normal.csg(), pl.w);
+        const shared = cad_utils.createShared();
+        meshFace.polygons.map(p => new CSG.Polygon(p.points.map(v => new CSG.Vertex(v.csg())), shared, plane))
+          .forEach(p => polygons.push(p));
+      }
+      return cad_utils.createSolid(CSG.fromPolygons(polygons));
+    });
   }
 };
