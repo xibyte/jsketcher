@@ -1,31 +1,26 @@
 import {AXIS, IDENTITY_BASIS} from '../../math/l3space'
 import * as tk from '../../ui/toolkit.js'
 import {FACE_COLOR} from '../cad-utils'
-import {addBehavior} from './wizard-commons'
+import {Wizard} from './wizard-commons'
 
 export function TransformWizard(viewer, solid, initParams) {
+  Wizard.call(this, viewer, initParams);
   this.previewGroup = new THREE.Object3D();
-  this.viewer = viewer;
   this.solid = solid;
-  if (!initParams) {
-    initParams = TransformWizard.DEFAULT_PARAMS;
-  }
-  this._cancelClick = this.cancelClick;
-  this.cancelClick = function() {
-    this.discardChanges();
-    this._cancelClick();  
-  };
-  this.ui = {};
   this.initialPosition = this.solid.cadGroup.position.clone();
   this.viewer.transformControls.attach(this.solid.cadGroup);
   this.transfomControlListener = tk.methodRef(this, "synchToUI");
   this.viewer.transformControls.addEventListener( 'objectChange', this.transfomControlListener );
-  this.createUI.apply(this, initParams);
-  addBehavior(this);
   this.synch();
 }
 
-TransformWizard.DEFAULT_PARAMS = [0, 0, 0, 0, 0, 0, 1];
+TransformWizard.prototype = Object.create( Wizard.prototype );
+
+TransformWizard.prototype.DEFAULT_PARAMS = [0, 0, 0, 0, 0, 0, 1];
+
+TransformWizard.prototype.title = function() {
+  return "Solid Transform";
+};
 
 TransformWizard.prototype.discardChanges = function() {
   this.solid.cadGroup.position.copy(this.initialPosition);
@@ -46,9 +41,8 @@ TransformWizard.prototype.update = function(x, y, z, rotationX, rotationY, rotat
 };
 
 TransformWizard.prototype.createUI = function(x, y, z, rotationX, rotationY, rotationZ, rotationW) {
-  var ui = this.ui;
-  ui.box = new tk.Box();
-  var folder = new tk.Folder("Solid Transform");
+  const ui = this.ui;
+  const folder = ui.folder;
   var position = new tk.Folder("Position");
   var rotation = new tk.Folder("Rotation");
   tk.add(folder, position);
@@ -78,7 +72,6 @@ TransformWizard.prototype.createUI = function(x, y, z, rotationX, rotationY, rot
   ui.rotationX.input.on('t-change', onChange);
   ui.rotationY.input.on('t-change', onChange);
   ui.rotationZ.input.on('t-change', onChange);
-  tk.add(folder, new tk.ButtonRow(["Cancel", "OK"], [tk.methodRef(this, "cancelClick"), tk.methodRef(this, "okClick")]));
 };
 
 TransformWizard.prototype.modeChanged = function() {
@@ -109,9 +102,9 @@ TransformWizard.prototype.getParams = function() {
     this.ui.rotationX.val(), this.ui.rotationY.val(), this.ui.rotationZ.val(), this.ui.rotationW.val()];
 };
 
-TransformWizard.prototype.createRequest = function() {
+TransformWizard.prototype.createRequest = function(done) {
   var params = this.getParams();
-  return {
+  done({
     type: 'TRANSFORM',
     solids : [],
     params : {
@@ -119,12 +112,17 @@ TransformWizard.prototype.createRequest = function() {
       rotate: {x : params[3], y : params[4], z : params[5]}
     } ,
     protoParams : params
-  }
+  });
+};
+
+TransformWizard.prototype.cancelClick = function() {
+  Wizard.prototype.cancelClick.call(this);
+  this.discardChanges();
 };
 
 TransformWizard.prototype.dispose = function() {
+  Wizard.prototype.dispose.call(this);
   this.viewer.transformControls.removeEventListener( 'objectChange', this.transfomControlListener );
   this.viewer.transformControls.detach(this.solid.cadGroup);
-  this.ui.box.close();
   this.viewer.render();
 };
