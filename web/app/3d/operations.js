@@ -57,7 +57,7 @@ export const UNION = {
 export const IMPORT_STL = {
   icon: 'img/3d/stl',
   label: 'STL Import',
-  info: (p) => null
+  info: (p) => '(' + p.url.substring(p.url.lastIndexOf('/') + 1 ) + ')'
 };
 
 function r(value) {
