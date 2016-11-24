@@ -255,6 +255,7 @@ html, body {
 #commands .content {
   color: #C4E1A4;
   font-family: Monospace;
+  font-size: 11px
 }
 
 .terminal-output-area {
@@ -296,6 +297,10 @@ html, body {
 
 .terminal-commandText {
   color: #777777;
+}
+
+.autocomplete-area {
+  font-style: italic;
 }
 
 input[type=checkbox], input[type=radio] {
