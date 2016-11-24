@@ -53,6 +53,14 @@ export const ShowSketches = {
   info: 'toggle whether to show sketches on a solid face'
 };
 
+export const LookAtSolid = {
+  cssIcons: ['crosshairs'],
+  label: 'look at solid',
+  info: 'position camera at the solid at zoom to fit it',
+  invoke: (app, e) => app.lookAtSolid(app.inputManager.context.attr('data-id'))
+};
+
+
 export const noIcon = {
   label: 'no icon'
 };
