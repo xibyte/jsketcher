@@ -15,12 +15,7 @@ export function parse(dataView) {
   let triangleCount = dataView.getUint32(off, true);
   off += 4;
 
-  let cells = [];
-  let positions = [];
-  let faceNormals = [];
-
   for (let i = 0; i < triangleCount; i++) {
-    let cell = [];
     let normal = readVector(dataView, off);
     off += 12; // 3 floats
 
