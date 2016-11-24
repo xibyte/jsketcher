@@ -7,7 +7,7 @@ import {AddArcTool} from './shapes/arc'
 import {EditCircleTool} from './shapes/circle'
 import {FilletTool} from './helpers'
 import {ReferencePointTool} from './shapes/origin'
-import $ from '../../lib/jquery-2.1.0.min'
+import {InputManager} from './input-manager'
 
 /** @constructor */
 function App2D() {
@@ -15,7 +15,8 @@ function App2D() {
 
   this.viewer = new Viewer(document.getElementById('viewer'), IO);
   this.winManager = new ui.WinManager();
-    
+  this.inputManager = new InputManager(this); 
+  
   this.initSketchManager();
   this._exportWin = new ui.Window($('#exportManager'), app.winManager);
 
@@ -35,17 +36,17 @@ function App2D() {
 
   var consoleBtn = ui.dockBtn('Commands', 'list');
   buttonGroup.append(consoleBtn);
-  var commandsWin = new ui.Window($('#commands'), this.winManager);
-  commandsWin.tileUpRelative = $('#viewer');
-  consoleBtn.click(function() {
-    commandsWin.toggle();
+  this.commandsWin = new ui.Window($('#commands'), this.winManager);
+  this.commandsWin.tileUpRelative = $('#viewer');
+  consoleBtn.click(() => {
+    this.commandsWin.toggle();
   });
   $(document).on('mousemove', '#viewer', (e) => {
     let coord = this.viewer.screenToModel(e);
     $('.coordinates-info').text(coord.x.toFixed(3) + " : " + coord.y.toFixed(3));
   });
   this.terminalHandeler = null;
-  this.terminal = new ui.Terminal(commandsWin, (command) => this.handleTerminalInput(command));
+  this.terminal = new ui.Terminal(this.commandsWin, (command) => this.handleTerminalInput(command), () => this.getAllCommandList());
   this.bindToolsToTerminal();
   
   
@@ -54,12 +55,14 @@ function App2D() {
   
   this.registerAction = function(id, desc, action, command) {
     app.actions[id] = {id, desc, action};
-    app.commands[command] = id; 
+    if (command) {
+      app.commands[command] = id;
+    }
     app._actionsOrder.push(id);
   };
 
-  this.registerAction('new', "Create New Sketch", function () {
-    app.newSketch();
+  this.registerAction('terminal', "Open/Close Terminal Window", function () {
+    app.commandsWin.toggle();
   });
 
   this.registerAction('open', "Open Sketch", function (e) {
@@ -252,13 +255,6 @@ App2D.views = [
   }
 ];
 
-App2D.bottomViews = [
-  {
-    name: 'Commands',
-    icon: 'desktop'
-  }
-];
-
 App2D.prototype.fit = function() {
 
   var bbox = new BBox();
@@ -286,7 +282,7 @@ App2D.prototype.cloneSketch = function() {
       alert("Sorry, a sketch with the name '" + name + "' already exists. Won't override it.");
       return;
     }
-    localStorage.setItem(App2D.STORAGE_PREFIX + name, this.viewer.io.serializeSketch())
+    localStorage.setItem(App2D.STORAGE_PREFIX + name, this.viewer.io.serializeSketch());
     this.openSketch(name);
   }
 };
@@ -371,32 +367,38 @@ App2D.prototype.getSketchId = function() {
 };
 
 App2D.prototype.bindToolsToTerminal = function() {
+  
 };
 
 App2D.STATIC_COMMANDS = {
   "time" : () => new Date(),
   "help" : (app) => app.getAllCommandList().join(", ")
-  
 };
 
 App2D.prototype.getAllCommandList = function() {
-  const commands = this.commands.slice();
-  commands.push.apply(commands, App2D.STATIC_COMMANDS);
+  const commands = Object.keys(this.commands);
+  commands.push.apply(commands, Object.keys(App2D.STATIC_COMMANDS));
+  commands.sort();
   return commands;
 };
 
 App2D.prototype.handleTerminalInput = function(commandStr) {
   commandStr = commandStr.trim();
   if (this.terminalHandeler != null) {
-    this.terminalHandeler(commandStr);
+    return this.terminalHandeler(commandStr);
   } else {
     let cmd = App2D.STATIC_COMMANDS[commandStr];
     if (cmd) {
-      cmd(this);
+      return cmd(this);
     }
-    let actionDef = this.commands[cmd];
-    if (actionDef) {
-      actionDef();
+    let actionId = this.commands[cmd];
+    if (actionId) {
+      this.actions[actionId].action();
+    } else {
+      try {
+        return eval(commandStr);
+      } catch(e) {
+      }
     }
   }
 };
