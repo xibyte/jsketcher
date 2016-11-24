@@ -7,16 +7,19 @@ import {LoadTemplate, DefaultMouseEvent, EventData, fit} from './utils'
 export function InputManager(app) {
   this.app = app;
   this.openMenus = [];
-  this.menuContext = null;
   this.keymap = keymap;
   this.mouseInfo = new DefaultMouseEvent();
   this.requestedActionInfo = null;
   this.actionInfoDom = $(LoadTemplate('action-info')({}));
   this.messageSink = new MessageSink(this);
+  this.context = null;
   $(() => {
     $(document)
       .on('keydown', (e) => this.handleKeyPress(e))
       .on('mousedown', (e) => this.clear(e))
+      .on('click', '.context-click', (e) => this.context = $(e.currentTarget))
+      .on('mouseenter', '.context-hover', (e) => this.context = $(e.currentTarget))
+      .on('mouseleave', '.context-hover', (e) => this.context = null)
       .on('mouseenter', '.action-item', (e) => this.showActionInfo($(e.currentTarget)))
       .on('mouseleave', '.action-item', (e) => this.hideActionInfo())
       .on('mousemove', (e) => this.mouseInfo = e)
@@ -48,7 +51,6 @@ InputManager.prototype.clear = function(e) {
 };
 
 InputManager.prototype.clearMenus = function() {
-  this.menuContext = null;
   if (this.openMenus.length != 0) {
     for (let openMenu of this.openMenus) {
       openMenu.node.hide();
@@ -67,21 +69,19 @@ InputManager.prototype.handleRightClick = function(e) {
 };
 
 InputManager.prototype.handleActionClick = function(event) {
+  this.mouseInfo = event;
   var target = $(event.currentTarget);
   var action = target.data('action');
   if (action != undefined) {
     this.clear();
-    EventData.set(event, 'initiator', this.menuContext ? this.menuContext : target);
+    EventData.set(event, 'initiator', target);
     this.app.actionManager.run(action, event);
   }
 };
 
-InputManager.prototype.registerOpenMenu = function(menu, button) {
+InputManager.prototype.registerOpenMenu = function(menu) {
   fit(menu.node, $('body'));
   this.openMenus.push(menu);
-  if (this.menuContext == null) {
-    this.menuContext = button;
-  }
 };
 
 InputManager.prototype.hideActionInfo = function() {

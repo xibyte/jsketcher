@@ -11,6 +11,7 @@ import {PlaneWizard} from '../wizards/plane'
 import {BoxWizard} from '../wizards/box'
 import {SphereWizard} from '../wizards/sphere'
 import {TransformWizard} from '../wizards/transform'
+import {ImportWizard} from '../wizards/import'
 import {LoadTemplate} from './utils'
 import {BindArray} from './bind'
 import {SolidList} from './solid-list'
@@ -55,16 +56,6 @@ function UI(app) {
     ui.registerWizard(new TransformWizard(app.viewer, solid));
   });
 }
-
-UI.prototype.cutExtrude = function(isCut) {
-  return () => {
-    var selection = this.app.viewer.selectionMgr.selection;
-    if (selection.length == 0) {
-      return;
-    }
-    this.registerWizard(new ExtrudeWizard(this.app, selection[0], isCut), false);
-  }
-};
 
 UI.prototype.createCraftToolBar = function (vertPos) {
   var toolBar = new ToolBar(this.app);
@@ -127,9 +118,14 @@ UI.prototype.fillControlBar = function() {
 UI.prototype.registerWizard = function(wizard, overridingHistory) {
   wizard.ui.box.root.css({left : (this.mainBox.root.width() + this.craftToolBar.node.width() + 30) + 'px', top : 0});
   var craft = this.app.craft; 
-  wizard.apply = function() {
-    craft.modify(wizard.createRequest(), overridingHistory);
+  wizard.onRequestReady = function(request) {
+    if (request.invalidAndShouldBeDropped == true) {
+      alert(request.message);   
+    } else {
+      craft.modify(request, overridingHistory);
+    }
   };
+    
   wizard.focus();
   return wizard;
 };
@@ -144,21 +140,8 @@ UI.prototype.getInfoForOp = function(op) {
 };
 
 UI.prototype.initOperation = function(op) {
-  if ('CUT' === op) {
-    this.cutExtrude(true)();
-  } else if ('PAD' === op) {
-    this.cutExtrude(false)();
-  } else if ('BOX' === op) {
-    this.registerWizard(new BoxWizard(this.app.viewer), false)
-  } else if ('PLANE' === op) {
-    this.registerWizard(new PlaneWizard(this.app.viewer), false)
-  } else if ('SPHERE' === op) {
-    this.registerWizard(new SphereWizard(this.app.viewer), false)
-  } else if ('IMPORT_STL' === op) {
-    alert('men at work');
-  } else {
-    console.log('unknown operation');
-  }
+  var selection = this.app.viewer.selectionMgr.selection;
+  return this.createWizard(op, false, undefined, selection[0]);
 };
 
 UI.prototype.createWizardForOperation = function(op) {
@@ -167,19 +150,29 @@ UI.prototype.createWizardForOperation = function(op) {
   if (face != null) {
     this.app.viewer.selectionMgr.select(face);
   }
-  var wizard;
-  if ('CUT' === op.type) {
+  return this.createWizard(op.type, true, initParams, face);
+};
+
+UI.prototype.createWizard = function(type, overridingHistory, initParams, face) {
+  let wizard = null;
+  if ('CUT' === type) {
     wizard = new ExtrudeWizard(this.app, face, true, initParams);
-  } else if ('PAD' === op.type) {
+  } else if ('PAD' === type) {
     wizard = new ExtrudeWizard(this.app, face, false, initParams);
-  } else if ('PLANE' === op.type) {
+  } else if ('PLANE' === type) {
     wizard = new PlaneWizard(this.app.viewer, initParams);
-  } else if ('BOX' === op.type) {
+  } else if ('BOX' === type) {
     wizard = new BoxWizard(this.app.viewer, initParams);
-  } else if ('SPHERE' === op.type) {
+  } else if ('SPHERE' === type) {
     wizard = new SphereWizard(this.app.viewer, initParams);
+  } else if ('IMPORT_STL' === type) {
+    wizard = new ImportWizard(this.app.viewer, initParams);
+  } else {
+    console.log('unknown operation');
   }
-  this.registerWizard(wizard, true);
+  if (wizard != null) {
+    this.registerWizard(wizard, overridingHistory);
+  }
   return wizard;
 };
 
