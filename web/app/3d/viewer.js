@@ -154,6 +154,23 @@ function Viewer(bus, container) {
   this.animate();
 }
 
+Viewer.prototype.lookAt = function(obj) {
+  var box = new THREE.Box3();
+  box.setFromObject(obj);
+  let size = box.size();
+  //this.camera.position.set(0,0,0);
+  box.center(this.camera.position);
+  const maxSize = Math.max(size.x, size.z);
+  const dist = maxSize / 2 / Math.tan(Math.PI * this.camera.fov / 360);
+  this.camera.position.addScaledVector(this.camera.position.normalize(), 5000);
+
+  //this.camera.position.sub(new THREE.Vector3(0, 0, dist));
+  this.camera.up = new THREE.Vector3(0,1,0);
+  
+  
+  this.render();  
+};
+
 Viewer.prototype.handleSolidPick = function(e) {
   this.raycastFaces(event, this, function(sketchFace) {
     this.selectionMgr.clear();
