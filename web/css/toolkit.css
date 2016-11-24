@@ -107,28 +107,28 @@
     background:#7d7d7d;
 }
 
-.tc-buttons-block-item {
+.tc-block-btn {
     border: 1px solid #606060;
     border-left-width: 0;
     padding: 1px 3px 1px 3px;
     color : #cccccc;
 }
 
-.tc-buttons-block-item:hover {
+.tc-block-btn.active-btn:hover {
     background-color: #444444;
     cursor: pointer;
 }
 
-.tc-buttons-block-item:first-child {
+.tc-block-btn:first-child {
     border-left-width: 1px;
     border-radius: 5px 0 0 5px;
 }
 
-.tc-buttons-block-item:last-child {
+.tc-block-btn:last-child {
     border-radius: 0 5px 5px 0;
 }
 
-.tc-buttons-block-item:last-child:first-child {
+.tc-block-btn:last-child:first-child {
     border-radius: 5px;
 }
 
