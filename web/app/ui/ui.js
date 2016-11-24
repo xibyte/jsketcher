@@ -390,6 +390,7 @@ function sharedStartOfSortedArray(array){
 
 function Terminal(win, commandProcessor, variantsSupplier) {
   this.win = win;
+  this.out = win.root.find('.terminal-output');
   const input = win.root.find('.terminal-input input');
 
   win.onShowCallback = function() {
@@ -402,6 +403,7 @@ function Terminal(win, commandProcessor, variantsSupplier) {
     input.val(this.history[this.historyPointer]);
   };
 
+  
   input.keydown((e) => {
     function consumeEvent() {
       e.preventDefault();
@@ -417,11 +419,10 @@ function Terminal(win, commandProcessor, variantsSupplier) {
         if (shared.length != text.length) {
           input.val(shared);
         } else {
-          const out = win.root.find('.terminal-output');
-          let autocompleteArea = out.find('.autocomplete-area');
+          let autocompleteArea = this.out.find('.autocomplete-area');
           if (autocompleteArea.length == 0) {
             autocompleteArea = $('<div>', {'class': 'terminal-commandText autocomplete-area'});
-            out.append(autocompleteArea);
+            this.out.append(autocompleteArea);
           }
           let more = '';
           const limit = 20;
@@ -449,22 +450,24 @@ function Terminal(win, commandProcessor, variantsSupplier) {
   input.keyup((e) => {
     if(e.keyCode == 13) {
       const command = input.val();
-      const out = win.root.find('.terminal-output');
-      out.find('.autocomplete-area').remove();
+      this.out.find('.autocomplete-area').remove();
       input.val('');
-      out.append($('<div>', {text: '> '+command, 'class': 'terminal-commandText'}));
+      this.out.append($('<div>', {text: '> '+command, 'class': 'terminal-commandText'}));
       if (command != null && command.trim().length != 0) {
-        var result = commandProcessor(command);
-        out.append($('<div>', {text: result, 'class': 'terminal-commandResult'}));
+        const result = commandProcessor(command);
+        this.print(result);
         if (this.history.length == 0 || command != this.history[this.history.length - 1]) {
           this.history.push(command);
         }
         this.historyPointer = this.history.length;
       }
-      out.parent().scrollTop(out.height());
+      this.out.parent().scrollTop(this.out.height());
     }
   });
-  
 }
+
+Terminal.prototype.print = function(text) {
+  this.win.root.find('.terminal-output').append($('<div>', {text, 'class': 'terminal-commandResult'}));
+};
 
 export { WinManager, Window, List, Dock, Terminal, dockBtn, faBtn, openWin, closeWin, bindOpening, createActionsWinBuilder, DIRECTIONS };
