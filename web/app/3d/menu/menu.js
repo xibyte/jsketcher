@@ -29,7 +29,7 @@ export default function Menu(menuActions, inputManager) {
       menuItem.append($('<i>', {'class': 'fa ' + cssIconsToClasses(action.cssIcons)})).append(' ');
     } else {
     }
-    menuItem.append($('<span>',{text: action.label}));
+    menuItem.append($('<span>',{text: action.label, class: 'menu-text'}));
     var hotkey = this.inputManager.keymap[action.id];
     if (hotkey) {
       hotkey = hotkey.replace(/\s/g, '');
@@ -73,15 +73,26 @@ Menu.prototype.show = function(app, event) {
         top: r(off.top + button.outerHeight())
       });
     } else {
-    }
-  } else {
-    var mouseInfo = this.inputManager.mouseInfo;
-    if (mouseInfo != null) {
+      let mouseInfo = this.inputManager.mouseInfo;
+      let screenOff = $(document).outerHeight() - (mouseInfo.pageX + this.node.outerHeight());
+      if (screenOff > 0) {
+        screenOff = 0;
+      }
+      let x = mouseInfo.pageX;
+      if (x + this.node.outerWidth()) {
+        
+      }
       this.node.offset({
-        left: r(mouseInfo.pageX - this.node.outerWidth() / 2),
-        top: r(mouseInfo.pageY - this.node.outerHeight() / 2)
+        left: mouseInfo.pageX,
+        top: mouseInfo.pageY + screenOff 
       });
     }
+  } else {
+    let mouseInfo = this.inputManager.mouseInfo;
+    this.node.offset({
+      left: r(mouseInfo.pageX - this.node.outerWidth() / 2),
+      top: r(mouseInfo.pageY - this.node.outerHeight() / 2)
+    });
   }
   this.inputManager.registerOpenMenu(this);
 };

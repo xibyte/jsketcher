@@ -30,7 +30,7 @@ export const main = {
   cssIcons: ['rocket'],
   info: 'common set of actions',
   actions: ['PAD', 'CUT', 'SHELL', '-', 'INTERSECTION', 'DIFFERENCE', 'UNION', '-', 'PLANE', 'BOX', 'SPHERE', '-',
-    'EditFace', '-', 'DeselectAll', 'RefreshSketches'  ]
+    'EditFace', '-', 'DeselectAll', 'RefreshSketches']
 };
 
 export const SolidContext = {

@@ -49,7 +49,7 @@ export const OperationActions = {
   }),
   
   'IMPORT_STL': mergeInfo('IMPORT_STL', {
-    info: 'union operation on two solids'
+    info: 'import stl from external location'
   })
 };
 
