@@ -456,7 +456,9 @@ function Terminal(win, commandProcessor, variantsSupplier) {
       if (command != null && command.trim().length != 0) {
         var result = commandProcessor(command);
         out.append($('<div>', {text: result, 'class': 'terminal-commandResult'}));
-        this.history.push(command);
+        if (this.history.length == 0 || command != this.history[this.history.length - 1]) {
+          this.history.push(command);
+        }
         this.historyPointer = this.history.length;
       }
       out.parent().scrollTop(out.height());
