@@ -65,7 +65,12 @@ function setStyle(style, ctx, scale) {
 
 /** @constructor */
 function Viewer(canvas, IO) {
-  
+
+  // 1/1000'' aka 1 mil is a standard precision for the imperial system(for engeneering) 
+  // this precision also covers the metric system which is supposed to be ~0.01
+  // this field is used only for displaying purposes now, although in future it could be
+  // used to keep all internal data with such precision transforming the input from user
+  this.presicion = 3; 
   this.canvas = canvas;
   this.params = new Parameters();
   this.io = new IO(this);
@@ -121,6 +126,10 @@ function Viewer(canvas, IO) {
   this.historyManager = new HistoryManager(this);
   this.refresh();
 }
+
+Viewer.prototype.roundToPrecision = function(value) {
+  return value.toFixed(this.presicion);
+};
 
 Viewer.prototype.validateGeom = function() {
   for (var i = 0; i < this.layers.length; i++) {

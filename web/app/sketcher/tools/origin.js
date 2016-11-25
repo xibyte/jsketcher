@@ -25,7 +25,7 @@ export class ReferencePointTool extends Tool {
     let p = needSnap ? this.viewer.snapped.pop() : this.viewer.screenToModel(e);
     this.viewer.referencePoint.x = p.x;
     this.viewer.referencePoint.y = p.y;
-    this.sendMessage(p.x + ', ' + p.y);
+    this.sendPickedMessage(p.x, p.y);
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
   };
