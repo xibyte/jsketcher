@@ -2,11 +2,13 @@ export function Terminal(win, commandProcessor, variantsSupplier) {
   this.win = win;
   this.out = win.root.find('.terminal-output');
   const input = win.root.find('.terminal-input input');
-
+  this.input = input;
+  
   win.onShowCallback = function() {
     input.focus();
   };
-  win.root.click(() => input.focus());
+  this.makeAlwaysFocusable();
+
   this.history = [];
   this.historyPointer = 0;
   const setHistory = () => {
@@ -77,12 +79,28 @@ export function Terminal(win, commandProcessor, variantsSupplier) {
   });
 }
 
+Terminal.prototype.makeAlwaysFocusable = function() {
+  let wasMove = false;
+  this.win.root.mousedown(() => {
+    wasMove = false;
+    return true;
+  });
+  this.win.root.mousemove(() => {
+    wasMove = true;
+    return true;
+  });
+  this.win.root.mouseup(() => {
+    if (!wasMove) this.input.focus();
+    return true;
+  });
+};
+
 Terminal.prototype.scrollToTheEnd = function() {
   this.out.parent().scrollTop(this.out.height());
 };
 
 Terminal.prototype.print = function(text) {
-  this.win.root.find('.terminal-output').append($('<div>', {text, 'class': 'terminal-commandResult'}));
+  this.out.append($('<div>', {text, 'class': 'terminal-commandResult'}));
   this.scrollToTheEnd();
 };
 
