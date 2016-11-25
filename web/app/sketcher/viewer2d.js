@@ -875,8 +875,7 @@ ToolManager.prototype.takeControl = function(tool) {
 
 ToolManager.prototype.releaseControl = function() {
   this.tool.cleanup();
-  this.tool = this.defaultTool;
-  this.viewer.bus.notify("tool-state");
+  this.takeControl(this.defaultTool);
 };
 
 ToolManager.prototype.getTool = function() {
