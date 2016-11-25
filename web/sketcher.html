@@ -5,13 +5,13 @@
   <title>sketcher.js</title>
   <link rel="shortcut icon" href="img/tgn.png" />
   <link rel="stylesheet" href="css/toolkit.css">
-  <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.min.css">
+  <script src="/static/sketcher.bundle.js"></script>
 </head>
 <body>
   <a id="downloader" style="display: none;" ></a>
   <div class="panel b-bot" style="width: 100%; height: 35px; text-align:right;">
-       <span class="logo" style="float:left">sketcher.js</span>
+       <span class="logo" style="float:left">sketcher <sup> 2D</sup></span>
 
        <button class="btn tbtn act-undo" ><i class="fa fa-arrow-left"></i></button><!--
     --><button class="btn tbtn act-redo sep" ><i class="fa fa-arrow-right"></i></button><!--
@@ -61,7 +61,7 @@
       <button class="btn rbtn act-addFillet" style="background-image: url(img/vec/fillet.svg);"></button>
     </div>
     <div id="viewer-container" style="background: black; overflow: hidden; height: 100%; position: relative">
-      <div class="tool-message" style="position: absolute; bottom: 5px; left: 5px;"></div>
+      <div class="tool-message" style="position: absolute; bottom: 5px; right: 5px;"></div>
       <canvas width="300" height="300" id="viewer"></canvas>
     </div>
   </div>
@@ -117,6 +117,5 @@
   </div>
 
   <!--<div id="log" style="position:absolute; width: 500px; height: 300px; top:500px; pxleft:0; overflow: scroll;background-color: salmon;">-->
-  <script src="/static/sketcher.bundle.js"></script>
 </body>
 </html>
