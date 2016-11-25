@@ -5,6 +5,7 @@ import * as toolkit from './ui/toolkit';
 import {askNumber} from './utils/utils';
 import {Constraints} from './sketcher/parametric'
 import './utils/jqueryfy'
+import '../css/app.less'
 
 function initializeSketcherApplication() {
   var app = new App2D();
@@ -201,6 +202,4 @@ function initializeSketcherApplication() {
   app.dock.views['Dimensions'].node.append(constantTextArea);
 }
 
-window.onload = function() {
-  setTimeout(initializeSketcherApplication, 0);
-};
+$( () => initializeSketcherApplication() );
