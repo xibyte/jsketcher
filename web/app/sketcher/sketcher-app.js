@@ -369,7 +369,7 @@ App2D.prototype.getSketchId = function() {
 };
 
 App2D.prototype.bindToolsToTerminal = function() {
-  this.viewer.bus.subscribe('tool-state', () => {
+  this.viewer.bus.subscribe('tool-change', () => {
     var tool = this.viewer.toolManager.tool;
     this.terminalHandler = tool.processCommand;
     $('.tool-info').text('tool: ' + tool.name);
