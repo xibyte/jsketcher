@@ -876,7 +876,7 @@ function ToolManager(viewer, defaultTool) {
 
 ToolManager.prototype.takeControl = function(tool) {
   this.tool = tool;
-  this.viewer.bus.notify("tool-state");
+  this.viewer.bus.notify("tool-change");
   if (this.tool.restart) {
     this.tool.restart();
   }
