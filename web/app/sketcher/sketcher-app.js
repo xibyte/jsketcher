@@ -3,11 +3,12 @@ import * as ui from '../ui/ui'
 import {Terminal} from '../ui/terminal'
 import {IO, BBox} from './io'
 import {AddDimTool, AddCircleDimTool, HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
-import {AddPointTool, AddSegmentTool} from './shapes/segment'
+import {AddPointTool} from './tools/point'
+import {AddSegmentTool} from './tools/segment'
 import {AddArcTool} from './shapes/arc'
 import {EditCircleTool} from './shapes/circle'
 import {FilletTool} from './helpers'
-import {ReferencePointTool} from './shapes/origin'
+import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 
 /** @constructor */
@@ -371,9 +372,11 @@ App2D.prototype.bindToolsToTerminal = function() {
   this.viewer.bus.subscribe('tool-state', () => {
     var tool = this.viewer.toolManager.tool;
     this.terminalHandler = tool.processCommand;
-  });
+    $('.tool-info').text('tool: ' + tool.name);
+  })();
   this.viewer.bus.subscribe('tool-message', (message) => {
     this.terminal.print(message);
+    $('.tool-message').text(': ' + message);
   });
 };
 

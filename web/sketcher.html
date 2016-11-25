@@ -60,7 +60,8 @@
       <div style="height: 10px;"></div>
       <button class="btn rbtn act-addFillet" style="background-image: url(img/vec/fillet.svg);"></button>
     </div>
-    <div style="background: black; overflow: hidden; height: 100%;">
+    <div id="viewer-container" style="background: black; overflow: hidden; height: 100%; position: relative">
+      <div class="tool-message" style="position: absolute; bottom: 5px; left: 5px;"></div>
       <canvas width="300" height="300" id="viewer"></canvas>
     </div>
   </div>
@@ -69,7 +70,8 @@
     <div class="button-group" style="float: left">
       <span id='showActions' class="dock-btn" ><i class="fa fa-slack"></i></span>
     </div>
-    <div class="coordinates-info" style="float: right"></div>
+    <div class="status-item coordinates-info">0.000:0.000</div>
+    <div class="status-item tool-info"></div>
   </div>
 
   <div id="actions" class="scroll win" style="display: none;">

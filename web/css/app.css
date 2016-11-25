@@ -309,12 +309,22 @@ input[type=checkbox], input[type=radio] {
 
 #status {
   font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
-  color: white;
+  color: #fff;
   font-size: 11px;
   padding-top: 5px;
 }
 
 #status .coordinates-info {
-  padding-right: 5px;
   font-style: italic;
+  color:#fff;
+}
+
+.status-item {
+  padding-right: 5px;
+  padding-left: 5px;
+  float: right; 
+  color:#bbb;
+}
+#viewer-container .tool-message {
+  color: 
 }
