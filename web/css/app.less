@@ -1,5 +1,6 @@
 body {
-  font-family: Monospace;
+  .sans-serif;
+  font-size: 11px;
   overflow: hidden;
 }
 
@@ -8,6 +9,18 @@ html, body {
   height: 100%;
   padding: 0;
   margin: 0;
+}
+
+.helvetica {
+  font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
+}
+
+.mono {
+  font-family: Monaco, monospace;
+}
+
+.sans-serif {
+  font-family: sans-serif;
 }
 
 .logo {
@@ -35,15 +48,10 @@ html, body {
   background: #606060 no-repeat center;
   border-radius: 4px;
   color: white;
-  font-size: 16px;
-  font-family: DejaVu Sans, Symbola, Everson Mono, Dingbats, Segoe UI Symbol,
-               Quivira, SunExt-A, FreeSerif, Universalia, unifont, serif;
   vertical-align: top;
 }
 
 .txt-btn {
-  font-family: monospace;
-  font-size: 14px;
 }
 
 #dock {
@@ -78,7 +86,6 @@ html, body {
   line-height: 1.1;
   border-color: #999;
   padding: 1px 3px;
-  font-family: monospace;
   font-size: 14px;
 }
 
@@ -122,7 +129,6 @@ html, body {
   color: #fff;
   padding: 2px 0 2px 3px;
   background: #333;
-  font-size: 13px;
 }
 
 .no-top-border {
@@ -191,9 +197,10 @@ html, body {
 }
 
 .win .content {
+  .sans-serif;
   color: #fff;
   padding: 7px;
-  height: calc(100% - 19px);
+  height: ~"calc(100% - 19px)"; //escape less processing
 }
 
 .win .tool-caption {
@@ -252,14 +259,17 @@ html, body {
   color: #fff;
 }
 
+#commands {
+  .mono;
+}
+
 #commands .content {
   color: #C4E1A4;
-  font-family: Monospace;
   font-size: 11px
 }
 
 .terminal-output-area {
-  height: calc(100% - 30px);
+  height: ~"calc(100% - 30px)"; //escape less processing
   display: flex;
   flex-direction: column;
 }
@@ -285,14 +295,12 @@ html, body {
   padding: 3px;
   width: 100%;
   box-sizing: border-box;
-  font-family: Monospace;
   padding-left: 0;
 }
 
 .terminal-input input::-webkit-input-placeholder {
   color: #777777;
   font-style: italic;
-  font-family: Monospace;
 }  
 
 .terminal-commandText {
@@ -308,7 +316,7 @@ input[type=checkbox], input[type=radio] {
 }
 
 #status {
-  font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
+  .helvetica;
   color: #fff;
   font-size: 11px;
   padding-top: 5px;
@@ -325,6 +333,11 @@ input[type=checkbox], input[type=radio] {
   float: right; 
   color:#bbb;
 }
+
 #viewer-container .tool-message {
-  color: 
+  .helvetica;
+  color: #000; 
+  font-size: 11px;
+  cursor: default;
+  pointer-events: none;
 }
