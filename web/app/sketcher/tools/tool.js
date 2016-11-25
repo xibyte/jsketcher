@@ -29,6 +29,11 @@ export class Tool {
   sendMessage(text) {
     this.viewer.bus.notify('tool-message', text);
   };
+
+  sendPickedMessage(x, y) {
+    this.sendMessage('picked: ' + this.viewer.roundToPrecision(x) + " : " + this.viewer.roundToPrecision(y));
+  };
+
 }
 
 const VECTOR_PATTERNS = /^(@)?(.+)(,|<)(.+)$/;

@@ -45,7 +45,7 @@ function App2D() {
   });
   $(document).on('mousemove', '#viewer', (e) => {
     let coord = this.viewer.screenToModel(e);
-    $('.coordinates-info').text(coord.x.toFixed(3) + " : " + coord.y.toFixed(3));
+    $('.coordinates-info').text(this.viewer.roundToPrecision(coord.x) + " : " + this.viewer.roundToPrecision(coord.y));
   });
   this.terminalHandler = undefined;
   this.terminal = new Terminal(this.commandsWin, (command) => this.handleTerminalInput(command), () => this.getAllCommandList());
@@ -376,7 +376,7 @@ App2D.prototype.bindToolsToTerminal = function() {
   })();
   this.viewer.bus.subscribe('tool-message', (message) => {
     this.terminal.print(message);
-    $('.tool-message').text(': ' + message);
+    $('.tool-message').text(message);
   });
 };
 
