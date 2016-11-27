@@ -6,7 +6,7 @@ import {AddDimTool, AddCircleDimTool, HDimension, VDimension, Dimension, Diamete
 import {AddPointTool} from './tools/point'
 import {AddSegmentTool} from './tools/segment'
 import {AddArcTool} from './shapes/arc'
-import {EditCircleTool} from './shapes/circle'
+import {EditCircleTool} from './tools/circle'
 import {FilletTool} from './helpers'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
@@ -40,8 +40,8 @@ function App2D() {
   buttonGroup.append(consoleBtn);
   this.commandsWin = new ui.Window($('#commands'), this.winManager);
   this.commandsWin.tileUpRelative = $('#viewer');
-  consoleBtn.click(() => {
-    this.commandsWin.toggle();
+  consoleBtn.click((e) => {
+    this.actions['terminal'].action(e)
   });
   $(document).on('mousemove', '#viewer', (e) => {
     let coord = this.viewer.screenToModel(e);
@@ -62,9 +62,20 @@ function App2D() {
     }
     app._actionsOrder.push(id);
   };
-
+  
+  function checkForTerminalVisibility() {
+    const terminalVisible = app.commandsWin.root.is(':visible');
+    if (terminalVisible) {
+      app.terminal.scrollToTheEnd();
+    }
+    app.viewer.referencePoint.visible = terminalVisible;
+  }
+  checkForTerminalVisibility();
+  
   this.registerAction('terminal', "Open/Close Terminal Window", function () {
     app.commandsWin.toggle();
+    checkForTerminalVisibility();
+    app.viewer.refresh();
   });
 
   this.registerAction('open', "Open Sketch", function (e) {
@@ -106,23 +117,23 @@ function App2D() {
 
   this.registerAction('addPoint', "Add Point", function () {
     app.viewer.toolManager.takeControl(new AddPointTool(app.viewer));
-  });
+  }, "point");
   
   this.registerAction('addSegment', "Add Segment", function () {
     app.viewer.toolManager.takeControl(new AddSegmentTool(app.viewer, false));
-  });
+  }, 'line');
 
   this.registerAction('addMultiSegment', "Add Multi Segment", function () {
     app.viewer.toolManager.takeControl(new AddSegmentTool(app.viewer, true));
-  });
+  }, 'mline');
 
   this.registerAction('addArc', "Add Arc", function () {
     app.viewer.toolManager.takeControl(new AddArcTool(app.viewer));
-  });
+  }, 'arc');
 
   this.registerAction('addCircle', "Add Circle", function () {
     app.viewer.toolManager.takeControl(new EditCircleTool(app.viewer));
-  });
+  }, 'circle');
 
   this.registerAction('pan', "Pan", function () {
     app.viewer.toolManager.releaseControl();
@@ -369,14 +380,19 @@ App2D.prototype.getSketchId = function() {
 };
 
 App2D.prototype.bindToolsToTerminal = function() {
+  const toolCommandProcessor = (command) => this.viewer.toolManager.tool.processCommand(command);
   this.viewer.bus.subscribe('tool-change', () => {
     var tool = this.viewer.toolManager.tool;
-    this.terminalHandler = tool.processCommand;
+    this.terminalHandler = tool.processCommand ? toolCommandProcessor : undefined;
     $('.tool-info').text('tool: ' + tool.name);
+    $('.tool-hint').text('');
   })();
   this.viewer.bus.subscribe('tool-message', (message) => {
     this.terminal.print(message);
-    $('.tool-message').text(message);
+  });
+  this.viewer.bus.subscribe('tool-hint', (message) => {
+    this.terminal.print(message);
+    $('.tool-hint').text(message);
   });
 };
 

@@ -18,6 +18,8 @@ InputManager.prototype.handleKeyPress = function(e) {
   for (let action in this.keymap) {
     if (jwerty.is(this.keymap[action], e)) {
       setTimeout(() => this.app.actions[action].action(e), 0);
+      e.stopPropagation();
+      e.preventDefault();
       break;
     }
   }
