@@ -220,16 +220,17 @@ Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
 };
 
 Viewer.prototype._setupServiceLayer = function() {
-  var layer = new Layer("_service", Styles.SERVICE);
+  let layer = new Layer("_selection", Styles.DEFAULT);
+  layer.objects = this.selected;
+  this._serviceLayers.push(layer);
+
+  layer = new Layer("_service", Styles.SERVICE);
 //  layer.objects.push(new CrossHair(0, 0, 20));
   layer.objects.push(new BasisOrigin(null, this));
   layer.objects.push(this.referencePoint);
   layer.objects.push(new Point(0, 0, 2));
   this._serviceLayers.push(layer);
 
-  layer = new Layer("_selection", Styles.DEFAULT);
-  layer.objects = this.selected;
-  this._serviceLayers.push(layer);
 };
 
 Viewer.prototype.refresh = function() {
@@ -282,7 +283,7 @@ Viewer.prototype.snap = function(x, y, excl) {
 
 Viewer.prototype.cleanSnap = function() {
   while(this.snapped.length > 0) {
-    this.snapped.pop().marked = null;
+    this.deselect(this.snapped.pop());
   }
 };
 
@@ -370,6 +371,12 @@ Viewer.prototype.mark = function(obj, style) {
     style = Styles.MARK;
   }
   obj.marked = style;
+  
+  for (let i = 0; i < this.selected.length; i++) {
+    if (obj.id == this.selected[i].id) {
+      return;
+    }
+  }
   this.selected.push(obj);
 };
 
@@ -800,11 +807,13 @@ BasisOrigin.prototype.draw = function(ctx, scale) {
 /** @constructor */
 function ReferencePoint(viewer) {
   this.viewer = viewer;
+  this.visible = true;
   this.x = 0;
   this.y = 0;
 }
 
 ReferencePoint.prototype.draw = function(ctx, scale) {
+  if (!this.visible) return;
   ctx.strokeStyle  = 'salmon';
   ctx.fillStyle  = 'salmon';
   ctx.lineWidth = 1 / scale;
@@ -843,7 +852,13 @@ function ToolManager(viewer, defaultTool) {
   canvas.addEventListener('mousewheel', function (e) {
     e.preventDefault();
     e.stopPropagation();
-    tm.getTool().mousewheel(e);
+    let tool = tm.tool;
+    if (tool.mousewheel === undefined) {
+      tool = tm.defaultTool;
+    }
+    if (tool.mousewheel !== undefined) {
+      tool.mousewheel(e)
+    }
   }, false);
   canvas.addEventListener('dblclick', function (e) {
     e.preventDefault();

@@ -7,7 +7,7 @@ export class ReferencePointTool extends Tool {
   }
   
   restart() {
-    this.sendMessage('specify point', false);
+    this.sendSpecifyPointHint();
   };
   
   cleanup(e) {
@@ -25,13 +25,13 @@ export class ReferencePointTool extends Tool {
     let p = needSnap ? this.viewer.snapped.pop() : this.viewer.screenToModel(e);
     this.viewer.referencePoint.x = p.x;
     this.viewer.referencePoint.y = p.y;
-    this.sendPickedMessage(p.x, p.y);
+    this.pointPicked(p.x, p.y);
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
   };
   
   processCommand(command) {
-    var referencePoint = this.viewer.referencePoint;
+    const referencePoint = this.viewer.referencePoint;
     let result = Tool.ParseVector(referencePoint, command);
     if(typeof result === 'string') {
       return result;
