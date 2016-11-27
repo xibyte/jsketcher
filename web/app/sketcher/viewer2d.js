@@ -226,9 +226,9 @@ Viewer.prototype._setupServiceLayer = function() {
 
   layer = new Layer("_service", Styles.SERVICE);
 //  layer.objects.push(new CrossHair(0, 0, 20));
-  layer.objects.push(new BasisOrigin(null, this));
-  layer.objects.push(this.referencePoint);
   layer.objects.push(new Point(0, 0, 2));
+  layer.objects.push(this.referencePoint);
+  layer.objects.push(new BasisOrigin(null, this));
   this._serviceLayers.push(layer);
 
 };
