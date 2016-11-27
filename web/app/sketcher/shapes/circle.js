@@ -1,5 +1,7 @@
 import * as utils from '../../utils/utils';
 import * as math from '../../math/math';
+import {EditCircleTool} from '../tools/circle'
+
 import {SketchObject, EndPoint, Ref} from '../viewer2d'
 
 /** @constructor */
@@ -45,62 +47,5 @@ Circle.prototype.getDefaultTool = function(viewer) {
   return editTool;
 };
 
-/** @constructor */
-function EditCircleTool(viewer) {
-  this.viewer = viewer;
-  this.circle = null;
-}
 
-EditCircleTool.prototype.keydown = function(e) {};
-EditCircleTool.prototype.keypress = function(e) {};
-EditCircleTool.prototype.keyup = function(e) {};
-
-EditCircleTool.prototype.cleanup = function(e) {
-  this.viewer.cleanSnap();
-};
-
-EditCircleTool.prototype.mousemove = function(e) {
-  var p = this.viewer.screenToModel(e);
-  if (this.circle != null) {
-    var r = math.distance(p.x, p.y, this.circle.c.x, this.circle.c.y);
-    this.circle.r.set(r);
-    if (!e.shiftKey) {
-      this.solveRequest(true);
-    }
-  } else {
-    this.viewer.snap(p.x, p.y, []);
-  }
-  this.viewer.refresh();
-};
-
-EditCircleTool.prototype.solveRequest = function(rough) {
-  this.solver = this.viewer.parametricManager.prepare([this.circle.r]);
-  this.solver.solve(rough, 1);
-  this.solver.sync();
-};
-
-EditCircleTool.prototype.mouseup = function(e) {
-  if (this.circle == null) {
-    this.viewer.historyManager.checkpoint();
-    var needSnap = this.viewer.snapped.length != 0;
-    var p = needSnap ? this.viewer.snapped.pop() : this.viewer.screenToModel(e);
-    this.circle = new Circle(
-      new EndPoint(p.x, p.y)
-    );
-    if (needSnap) this.viewer.parametricManager.linkObjects([this.circle.c, p]);
-    this.viewer.activeLayer.objects.push(this.circle);
-    this.viewer.refresh();
-  } else {
-    this.solveRequest(false);
-    this.viewer.refresh();
-    this.viewer.toolManager.releaseControl();
-  }
-};
-
-EditCircleTool.prototype.mousedown = function(e) {
-};
-
-EditCircleTool.prototype.mousewheel = function(e) {
-};
-
-export {Circle, EditCircleTool}
+export {Circle}
