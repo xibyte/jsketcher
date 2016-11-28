@@ -43,11 +43,9 @@ export class Tool {
   };
 }
 
-const VECTOR_PATTERNS = /^(@)?(.+)(,|<)(.+)$/;
-
 Tool.ParseNumber = function(str) {
   let val;
-  try { 
+  try {
     val = eval(str);
   } catch(e) {
     return e.toString();
@@ -57,10 +55,26 @@ Tool.ParseNumber = function(str) {
   return valNumber;
 };
 
+
+Tool.ParseNumberWithRef = function(str, ref) {
+  const rel = str.startsWith('@');
+  if (rel) {
+    str = str.substring(1);
+  }
+  let val = Tool.ParseNumber(str);
+  if(typeof val === 'string') return val;
+  if (rel) {
+    val += ref;
+  }
+  return val;
+};
+
+const VECTOR_PATTERN = /^(@)?(.+)(,|<)(.+)$/;
+
 Tool.ParseVector = function(referencePoint, command) {
   command = command.replace(/\s+/g, '');
 
-  const match = command.match(VECTOR_PATTERNS);
+  const match = command.match(VECTOR_PATTERN);
   if (match) {
     const ref = match[1] !== undefined;
     let x = Tool.ParseNumber(match[2]);
@@ -83,5 +97,21 @@ Tool.ParseVector = function(referencePoint, command) {
 
   return "wrong input, point is expected: x,y | @x,y | r<polar | @r<polar ";
 };
+
+Tool.ParseNumberSequence = function(command, refs, length) {
+  command = command.replace(/\s+/g, '');
+  const parts = command.split(',');
+  const result = [];
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    let val = refs && refs[i] ? Tool.ParseNumberWithRef(part, refs[i]) : Tool.ParseNumberWithRef(part);
+    result.push(val);
+  }
+  if (length !== undefined && result.length != length) {
+    return "wrong input, sequence of length " + length + " is expected: x1,x2...";
+  }
+  return result;
+};
+
 
 
