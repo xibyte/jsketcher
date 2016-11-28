@@ -4,7 +4,7 @@ import {Tool} from './tool'
 import Vector from '../../math/vector'
 import * as math from '../../math/math';
 
-export class AddArcTool extends Tool{
+export class AddArcTool extends Tool {
 
   constructor(viewer) {
     super('arc', viewer);
