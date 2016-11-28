@@ -1,11 +1,11 @@
 import * as utils from '../../utils/utils';
 import * as math from '../../math/math';
 import Vector from '../../math/vector'
-import {SketchObject, EndPoint, Ref} from '../viewer2d'
+import {SketchObject, Ref} from '../viewer2d'
 import {Constraints} from '../parametric'
 
 /** @constructor */
-function Arc(a, b, c) {
+export function Arc(a, b, c) {
   SketchObject.call(this);
   this.a = a;
   this.b = b;
@@ -130,86 +130,3 @@ Arc.prototype.stabilize = function(viewer) {
   viewer.parametricManager._add(new Constraints.P2PDistanceV(this.a, this.c, this.r));
 };
 
-/** @constructor */
-function AddArcTool(viewer) {
-  this.viewer = viewer;
-  this.arc = null;
-  this.point = null;
-  this._v = new Vector(0, 0, 0);
-}
-
-AddArcTool.prototype.keydown = function(e) {};
-AddArcTool.prototype.keypress = function(e) {};
-AddArcTool.prototype.keyup = function(e) {};
-AddArcTool.prototype.cleanup = function(e) {};
-
-AddArcTool.prototype.mousemove = function(e) {
-  var p = this.viewer.screenToModel(e);
-  if (this.point != null) {
-    this.point.x = p.x;
-    this.point.y = p.y;
-
-    var r = math.distance(this.arc.a.x, this.arc.a.y, this.arc.c.x, this.arc.c.y);
-    if (this.point.id === this.arc.b.id) {
-      //force placement second point on the arc
-      var v = this._v;
-      v.set(this.arc.b.x - this.arc.c.x, this.arc.b.y - this.arc.c.y, 0);
-      v._normalize()._multiply(r);
-      this.arc.b.x = v.x + this.arc.c.x;
-      this.arc.b.y = v.y + this.arc.c.y;
-    } else {
-      var ang = Math.atan2(this.point.y - this.arc.c.y, this.point.x - this.arc.c.x) + (2 * Math.PI -  0.3);
-      
-      ang %= 2 * Math.PI; 
-      
-      this.arc.b.x = this.arc.c.x + r * Math.cos(ang);
-      this.arc.b.y = this.arc.c.y + r * Math.sin(ang);
-    }
-
-    this.viewer.snap(p.x, p.y, [this.arc.a, this.arc.b, this.arc.c]);
-    this.viewer.refresh();
-  } else {
-    this.viewer.snap(p.x, p.y, []);
-    this.viewer.refresh();
-  }
-};
-
-AddArcTool.prototype.mouseup = function(e) {
-  if (this.arc == null) {
-    this.viewer.historyManager.checkpoint();
-    var p = this.viewer.screenToModel(e);
-    this.arc = new Arc(
-      new EndPoint(p.x, p.y),
-      new EndPoint(p.x, p.y),
-      new EndPoint(p.x, p.y)
-    );
-    this.point = this.arc.a;
-    this.viewer.activeLayer.objects.push(this.arc);
-    this.snapIfNeed(this.arc.c);
-    this.viewer.refresh();
-  } else if (this.point.id === this.arc.a.id) {
-    this.snapIfNeed(this.arc.a);
-    this.point = this.arc.b;
-  } else {
-    this.snapIfNeed(this.arc.b);
-    this.arc.stabilize(this.viewer);
-    this.viewer.toolManager.releaseControl();
-  }
-};
-
-AddArcTool.prototype.snapIfNeed = function(p) {
-  if (this.viewer.snapped.length != 0) {
-    var snapWith = this.viewer.snapped.pop();
-    this.viewer.cleanSnap();
-    this.viewer.parametricManager.linkObjects([p, snapWith]);
-    this.viewer.parametricManager.refresh();
-  }
-};
-
-AddArcTool.prototype.mousedown = function(e) {
-};
-
-AddArcTool.prototype.mousewheel = function(e) {
-};
-
-export {Arc, AddArcTool}
