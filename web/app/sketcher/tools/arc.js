@@ -85,8 +85,8 @@ export class AddArcTool extends Tool {
   }
 
   snapIfNeed(p) {
-    if (this.viewer.snapped.length != 0) {
-      var snapWith = this.viewer.snapped.pop();
+    if (this.viewer.snapped != null) {
+      var snapWith = this.viewer.snapped;
       this.viewer.cleanSnap();
       this.viewer.parametricManager.linkObjects([p, snapWith]);
       this.viewer.parametricManager.refresh();
