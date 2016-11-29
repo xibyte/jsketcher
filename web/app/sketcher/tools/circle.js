@@ -47,8 +47,8 @@ export class EditCircleTool extends Tool {
 
   stepCreateCircle(center, tryToSnap) {
     this.viewer.historyManager.checkpoint();
-    const needSnap = tryToSnap && this.viewer.snapped.length != 0;
-    const p = needSnap ? this.viewer.snapped.pop() : center;
+    const needSnap = tryToSnap && this.viewer.snapped != null;
+    const p = needSnap ? this.viewer.snapped : center;
     this.circle = new Circle(
       new EndPoint(p.x, p.y)
     );

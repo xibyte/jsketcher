@@ -36,8 +36,8 @@ export class AddSegmentTool extends Tool {
       const b = this.viewer.screenToModel(e);
       let a = b;
       var needSnap = false;
-      if (this.viewer.snapped.length != 0) {
-        a = this.viewer.snapped.pop();
+      if (this.viewer.snapped != null) {
+        a = this.viewer.snapped;
         this.viewer.cleanSnap();
         needSnap = true;
       }
@@ -48,8 +48,8 @@ export class AddSegmentTool extends Tool {
       this.firstPointPicked();
       this.viewer.refresh();
     } else {
-      if (this.viewer.snapped.length != 0) {
-        var p = this.viewer.snapped.pop();
+      if (this.viewer.snapped != null) {
+        var p = this.viewer.snapped;
         this.viewer.cleanSnap();
         this.line.b.x = p.x;
         this.line.b.y = p.y;

@@ -21,8 +21,8 @@ export class ReferencePointTool extends Tool {
   };
   
   mousedown(e) {
-    const needSnap = this.viewer.snapped.length != 0;
-    let p = needSnap ? this.viewer.snapped.pop() : this.viewer.screenToModel(e);
+    const needSnap = this.viewer.snapped != null;
+    let p = needSnap ? this.viewer.snapped : this.viewer.screenToModel(e);
     this.viewer.referencePoint.x = p.x;
     this.viewer.referencePoint.y = p.y;
     this.pointPicked(p.x, p.y);
