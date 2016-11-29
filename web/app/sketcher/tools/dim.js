@@ -31,11 +31,11 @@ export class AddDimTool extends Tool {
       return;
     }
 
-    if (this.viewer.snapped.length == 0) {
+    if (this.viewer.snapped == null) {
       return;
     }
 
-    var p = this.viewer.snapped.pop();
+    const p = this.viewer.snapped;
     this.viewer.cleanSnap();
 
     if (this.dim == null) {

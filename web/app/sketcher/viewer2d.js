@@ -117,7 +117,7 @@ function Viewer(canvas, IO) {
   this.scale = 1.0;
 
   this.selected = [];
-  this.snapped = [];
+  this.snapped = null;
   
   this.referencePoint = new ReferencePoint();
   
@@ -273,17 +273,16 @@ Viewer.prototype.snap = function(x, y, excl) {
   this.cleanSnap();
   var snapTo = this.search(x, y, 20 / this.scale, true, true, excl);
   if (snapTo.length > 0) {
-    snapTo = snapTo[0];
-    this.mark(snapTo, Styles.SNAP);
-    this.snapped.push(snapTo);
-    return snapTo;
+    this.snapped = snapTo[0];
+    this.mark(this.snapped, Styles.SNAP);
   }
-  return null;
+  return this.snapped;
 };
 
 Viewer.prototype.cleanSnap = function() {
-  while(this.snapped.length > 0) {
-    this.deselect(this.snapped.pop());
+  if (this.snapped != null) {
+    this.deselect(this.snapped);
+    this.snapped = null;
   }
 };
 
@@ -405,7 +404,7 @@ Viewer.prototype.setActiveLayer = function(layer) {
 
 Viewer.prototype.deselect = function(obj) {
   for (var i = 0; i < this.selected.length; i++) {
-    if (obj.id == this.selected[i].id) {
+    if (obj === this.selected[i]) {
       this.selected.splice(i, 1)[0].marked = null;
       break;
     }
@@ -1160,5 +1159,9 @@ DragTool.prototype.animateSolution = function() {
   }
   window.requestAnimationFrame(step);
 };
+
+class ShapeList extends Set {
+  
+}
 
 export {Styles, Viewer, Layer, SketchObject, EndPoint, Point, Segment, ToolManager, PanTool, DragTool, Ref}
