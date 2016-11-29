@@ -372,12 +372,9 @@ Viewer.prototype.mark = function(obj, style) {
   }
   obj.marked = style;
   
-  for (let i = 0; i < this.selected.length; i++) {
-    if (obj.id == this.selected[i].id) {
-      return;
-    }
+  if (this.selected.indexOf(obj) == -1) {
+    this.selected.push(obj);
   }
-  this.selected.push(obj);
 };
 
 Viewer.prototype.getActiveLayer = function() {
