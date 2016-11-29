@@ -2,7 +2,7 @@ import {Viewer} from './viewer2d.js'
 import * as ui from '../ui/ui'
 import {Terminal} from '../ui/terminal'
 import {IO, BBox} from './io'
-import {AddDimTool, AddCircleDimTool, HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
+import {AddFreeDimTool, AddHorizontalDimTool, AddVerticalDimTool, AddCircleDimTool} from './tools/dim'
 import {AddPointTool} from './tools/point'
 import {AddSegmentTool} from './tools/segment'
 import {AddArcTool} from './tools/arc'
@@ -11,7 +11,6 @@ import {FilletTool} from './helpers'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 
-/** @constructor */
 function App2D() {
   var app = this;
 
@@ -144,15 +143,15 @@ function App2D() {
   });
 
   this.registerAction('addDim', "Add Dimension", function () {
-    app.viewer.toolManager.takeControl(new AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new Dimension(a,b)} ));
+    app.viewer.toolManager.takeControl(new AddFreeDimTool(app.viewer, app.viewer.dimLayer));
   });
   
   this.registerAction('addHDim', "Add Horizontal Dimension", function () {
-    app.viewer.toolManager.takeControl(new AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new HDimension(a,b)} ));
+    app.viewer.toolManager.takeControl(new AddHorizontalDimTool(app.viewer, app.viewer.dimLayer));
   });
   
   this.registerAction('addVDim', "Add Vertical Dimension", function () {
-    app.viewer.toolManager.takeControl(new AddDimTool(app.viewer, app.viewer.dimLayer, function(a,b) {return new VDimension(a,b)} ));
+    app.viewer.toolManager.takeControl(new AddVerticalDimTool(app.viewer, app.viewer.dimLayer));
   });
 
   this.registerAction('addCircleDim', "Add Circle Dimension", function () {

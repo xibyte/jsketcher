@@ -1,6 +1,6 @@
 import * as utils from '../../utils/utils'
 import * as math from '../../math/math'
-import {SketchObject, EndPoint} from '../viewer2d'
+import {SketchObject} from '../viewer2d'
 import Vector from '../../math/vector'
 
 /** @constructor */
@@ -297,106 +297,4 @@ DiameterDimension.prototype.normalDistance = function(aim) {
   return -1;
 };
 
-/** @constructor */
-function AddDimTool(viewer, layer, dimCreation) {
-  this.viewer = viewer;
-  this.layer = layer;
-  this.dim = null;
-  this._v = new Vector(0, 0, 0);
-  this.dimCreation = dimCreation;
-}
-
-AddDimTool.prototype.keydown = function(e) {};
-AddDimTool.prototype.keypress = function(e) {};
-AddDimTool.prototype.keyup = function(e) {};
-AddDimTool.prototype.cleanup = function(e) {};
-
-AddDimTool.prototype.mousemove = function(e) {
-  var p = this.viewer.screenToModel(e);
-  this.viewer.snap(p.x, p.y, []);
-  if (this.dim != null) {
-    this.dim.b.x = p.x;
-    this.dim.b.y = p.y;
-  }
-  this.viewer.refresh();
-};
-
-AddDimTool.prototype.mouseup = function(e) {
-
-  if (e.button > 0 && this.dim != null) {
-    this.dim.flip = !this.dim.flip;
-    this.viewer.refresh();
-    return;
-  }
-
-  if (this.viewer.snapped.length == 0) {
-    return;
-  }
-
-  var p = this.viewer.snapped.pop();
-  this.viewer.cleanSnap();
-
-  if (this.dim == null) {
-    this.viewer.historyManager.checkpoint();
-    this.dim = this.dimCreation(p, new EndPoint(p.x, p.y));
-    this.layer.objects.push(this.dim);
-    this.viewer.refresh();
-  } else {
-    this.dim.b = p;
-    this.viewer.toolManager.releaseControl();
-    this.viewer.refresh();
-  }
-};
-
-AddDimTool.prototype.mousedown = function(e) {
-};
-
-AddDimTool.prototype.mousewheel = function(e) {
-};
-
-/** @constructor */
-function AddCircleDimTool(viewer, layer) {
-  this.viewer = viewer;
-  this.layer = layer;
-  this.dim = new DiameterDimension(null);
-  this.viewer.add(this.dim, this.layer);
-}
-
-AddCircleDimTool.prototype.keydown = function(e) {};
-AddCircleDimTool.prototype.keypress = function(e) {};
-AddCircleDimTool.prototype.keyup = function(e) {};
-AddCircleDimTool.prototype.cleanup = function(e) {};
-
-AddCircleDimTool.prototype.mousemove = function(e) {
-  var p = this.viewer.screenToModel(e);
-  var objects = this.viewer.search(p.x, p.y, 20 / this.viewer.scale, true, false, []).filter(function(o) {
-    return o._class === 'TCAD.TWO.Circle' || o._class === 'TCAD.TWO.Arc'; 
-  });
-  
-  if (objects.length != 0) {
-    this.dim.obj = objects[0];
-  } else {
-    this.dim.obj = null; 
-  }
-  if (this.dim.obj != null) {
-    this.dim.angle = Math.atan2(p.y - this.dim.obj.c.y, p.x - this.dim.obj.c.x);
-  }
-  this.viewer.refresh();
-};
-
-AddCircleDimTool.prototype.mouseup = function(e) {
-  if (this.dim.obj !== null) {
-    this.viewer.historyManager.checkpoint();
-  } else {
-    this.viewer.remove(this.dim);
-  }
-  this.viewer.toolManager.releaseControl();
-};
-
-AddCircleDimTool.prototype.mousedown = function(e) {
-};
-
-AddCircleDimTool.prototype.mousewheel = function(e) {
-};
-
-export {AddDimTool, AddCircleDimTool, HDimension, VDimension, Dimension, DiameterDimension}
+export {HDimension, VDimension, Dimension, DiameterDimension}
