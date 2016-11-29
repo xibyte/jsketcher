@@ -1,6 +1,7 @@
 import {Parameters, Bus} from '../ui/toolkit'
 import {ParametricManager} from './parametric'
 import {HistoryManager} from './history'
+import {ToolManager} from './tools/manager'
 import {PanTool} from './tools/pan'
 import {DragTool} from './tools/drag'
 import Vector from '../math/vector'
@@ -824,83 +825,4 @@ ReferencePoint.prototype.draw = function(ctx, scale) {
   ctx.stroke();
 };
 
-/** @constructor */
-function ToolManager(viewer, defaultTool) {
-  this.defaultTool = defaultTool;
-  this.tool = defaultTool;
-  this.viewer = viewer;
-  var canvas = viewer.canvas;
-  var tm = this;
-  canvas.addEventListener('mousemove', function (e) {
-    e.preventDefault();
-    //e.stopPropagation(); // allow propagation for move in sake of dynamic layout 
-    tm.getTool().mousemove(e);
-  }, false);
-  canvas.addEventListener('mousedown', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    tm.getTool().mousedown(e);
-  }, false);
-  canvas.addEventListener('mouseup', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    tm.getTool().mouseup(e);
-  }, false);
-  canvas.addEventListener('mousewheel', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    let tool = tm.tool;
-    if (tool.mousewheel === undefined) {
-      tool = tm.defaultTool;
-    }
-    if (tool.mousewheel !== undefined) {
-      tool.mousewheel(e)
-    }
-  }, false);
-  canvas.addEventListener('dblclick', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (tm.tool.dblclick !== undefined) {
-      tm.tool.dblclick(e);
-    }
-  }, false);
-
-  window.addEventListener("keydown", function (e) {
-    tm.getTool().keydown(e);
-    if (e.keyCode == 27) {
-      tm.releaseControl();
-    } else if (e.keyCode == 46 || e.keyCode == 8) {
-      var selection = viewer.selected.slice();
-      viewer.deselectAll();
-      for (var i = 0; i < selection.length; i++) {
-        viewer.remove(selection[i]);
-      }
-      viewer.refresh();
-    }
-  }, false);
-  window.addEventListener("keypress", function (e) {
-    tm.getTool().keydown(e);
-  }, false);
-  window.addEventListener("keyup", function (e) {
-    tm.getTool().keydown(e);
-  }, false);
-}
-
-ToolManager.prototype.takeControl = function(tool) {
-  this.tool = tool;
-  this.viewer.bus.notify("tool-change");
-  if (this.tool.restart) {
-    this.tool.restart();
-  }
-};
-
-ToolManager.prototype.releaseControl = function() {
-  this.tool.cleanup();
-  this.takeControl(this.defaultTool);
-};
-
-ToolManager.prototype.getTool = function() {
-  return this.tool;
-};
-
-export {Styles, Viewer, Layer, SketchObject, EndPoint, Point, Segment, ToolManager, Ref}
+export {Styles, Viewer, Layer, SketchObject, EndPoint, Point, Segment, Ref}
