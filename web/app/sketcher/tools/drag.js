@@ -9,7 +9,6 @@ export class DragTool extends Tool{
     this.obj = obj;
     this._point = {x: 0, y: 0};
     this.origin = {x: 0, y: 0};
-    this.ref = this.obj.getReferencePoint();
     this.solver = null;
   }
   
