@@ -13,6 +13,11 @@ export class SketchObject {
     this.layer = null;
   }
 
+  addChild(child) {
+    this.children.push(child);
+    child.parent = this;
+  }
+  
   accept(visitor) {
     return this.acceptV(false, visitor);
   }
