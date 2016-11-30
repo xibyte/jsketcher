@@ -71,7 +71,7 @@ export class AddVerticalDimTool extends AddDimTool {
 
 export class AddCircleDimTool extends Tool {
   constructor(viewer, layer) {
-    super(viewer);
+    super('arc/circle dimension', viewer);
     this.layer = layer;
     this.dim = new DiameterDimension(null);
     this.viewer.add(this.dim, this.layer);
