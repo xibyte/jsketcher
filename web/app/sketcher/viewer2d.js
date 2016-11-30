@@ -1,11 +1,15 @@
+import {Generator} from './id-generator'
 import {Parameters, Bus} from '../ui/toolkit'
 import {ParametricManager} from './parametric'
 import {HistoryManager} from './history'
 import {ToolManager} from './tools/manager'
 import {PanTool} from './tools/pan'
 import {DragTool} from './tools/drag'
+import {Segment} from './shapes/segment'
+import {EndPoint} from './shapes/point'
 import Vector from '../math/vector'
-import * as utils from '../utils/utils'
+
+import * as draw_utils from './shapes/draw-utils'
 import * as math from '../math/math'
 
 var Styles = {
@@ -52,18 +56,6 @@ var Styles = {
   }
 };
 
-
-function _drawPoint(ctx, x, y, rad, scale) {
-  ctx.beginPath();
-  ctx.arc(x, y, rad / scale, 0, 2 * Math.PI, false);
-  ctx.fill();
-}
-
-function setStyle(style, ctx, scale) {
-  ctx.lineWidth  = style.lineWidth / scale;
-  ctx.strokeStyle  = style.strokeStyle;
-  ctx.fillStyle  = style.fillStyle;
-}
 
 /** @constructor */
 function Viewer(canvas, IO) {
@@ -264,7 +256,7 @@ Viewer.prototype.repaint = function() {
       for (var o = 0; o < layer.objects.length; o++) {
         var obj = layer.objects[o];
         style = obj.style != null ? obj.style : layer.style;
-        if (style != prevStyle) setStyle(style, ctx, this.scale / this.retinaPxielRatio);
+        if (style != prevStyle) draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
         obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
       }
     }
@@ -477,231 +469,6 @@ Polyline.prototype.draw = function(ctx) {
   ctx.stroke();
 };
 
-var ID_COUNTER = 0;
-
-/** @constructor */
-function SketchObject() {
-  this.id = SketchObject.genID();
-  this.aux = false;
-  this.marked = null;
-  this.visible = true;
-  this.children = [];
-  this.linked = [];
-  this.layer = null;
-}
-
-SketchObject.genID = function() {
-  return ID_COUNTER ++;
-};
-
-SketchObject.resetIDGenerator = function(value) {
-  ID_COUNTER = value;
-};
-
-SketchObject.prototype.accept = function(visitor) {
-  return this.acceptV(false, visitor);
-};
-
-SketchObject.prototype.acceptV = function(onlyVisible, visitor) {
-  if (onlyVisible && !this.visible) return true;
-  for (var i = 0; i < this.children.length; i++) {
-    var child = this.children[i];
-    if (!child.acceptV(onlyVisible, visitor)) {
-      return false;
-    }
-  }
-  return visitor(this);
-};
-
-SketchObject.prototype.validate = function() {
-  return true;
-};
-
-SketchObject.prototype.recover = function() {
-};
-
-SketchObject.prototype.getDefaultTool = function(viewer) {
-  return new DragTool(this, viewer);
-};
-
-SketchObject.prototype.isAuxOrLinkedTo = function() {
-  if (!!this.aux) {
-    return true;
-  }
-  for (var i = 0; i < this.linked.length; ++i) {
-    if (!!this.linked[i].aux) {
-      return true;
-    }
-  }
-  return false;
-};
-
-SketchObject.prototype._translate = function(dx, dy, translated) {
-  translated[this.id] = 'x';
-  for (var i = 0; i < this.linked.length; ++i) {
-    if (translated[this.linked[i].id] != 'x') {
-      this.linked[i]._translate(dx, dy, translated);
-    }
-  }
-  this.translateImpl(dx, dy);
-};
-
-SketchObject.prototype.translate = function(dx, dy) {
-//  this.translateImpl(dx, dy);
-  if (this.isAuxOrLinkedTo()) {
-    return;
-  }
-  this._translate(dx, dy, {});
-};
-
-SketchObject.prototype.draw = function(ctx, scale, viewer) {
-  if (!this.visible) return;
-  if (this.marked != null) {
-    ctx.save();
-    setStyle(this.marked, ctx, scale);
-  }
-  this.drawImpl(ctx, scale, viewer);
-  if (this.marked != null) ctx.restore();
-  for (var i = 0; i < this.children.length; i++) {
-    this.children[i].draw(ctx, scale);
-  }
-};
-
-/** @constructor */
-function Ref(value) {
-  this.id = SketchObject.genID();
-  this.value = value;
-}
-
-Ref.prototype.set = function(value) {
-  this.value = value;
-};
-
-Ref.prototype.get = function() {
-  return this.value;
-};
-
-/** @constructor */
-function Param(obj, prop) {
-  this.id = SketchObject.genID();
-  this.obj = obj;
-  this.prop = prop;
-}
-
-Param.prototype.set = function(value) {
-  this.obj[this.prop] = value;
-};
-
-Param.prototype.get = function() {
-  return this.obj[this.prop];
-};
-
-/** @constructor */
-function EndPoint(x, y) {
-  SketchObject.call(this);
-  this.x = x;
-  this.y = y;
-  this.parent = null;
-  this._x =  new Param(this, 'x');
-  this._y =  new Param(this, 'y');
-}
-
-utils.extend(EndPoint, SketchObject);
-
-EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
-
-EndPoint.prototype.collectParams = function(params) {
-  params.push(this._x);
-  params.push(this._y);
-};
-
-EndPoint.prototype.normalDistance = function(aim) {
-  return aim.minus(new Vector(this.x, this.y)).length();
-};
-
-EndPoint.prototype.getReferencePoint = function() {
-  return this;
-};
-
-EndPoint.prototype.translateImpl = function(dx, dy) {
-  this.x += dx;
-  this.y += dy;
-};
-
-EndPoint.prototype.drawImpl = function(ctx, scale) {
-  _drawPoint(ctx, this.x, this.y, 3, scale)
-};
-
-/** @constructor */
-function Segment(a, b) {
-  SketchObject.call(this);
-  this.a = a;
-  this.b = b;
-  a.parent = this;
-  b.parent = this;
-  this.children.push(a, b);
-}
-
-utils.extend(Segment, SketchObject);
-
-Segment.prototype._class = 'TCAD.TWO.Segment';
-
-Segment.prototype.validate = function() {
-  return math.distanceAB(this.a, this.b) > math.TOLERANCE;
-};
-
-Segment.prototype.recover = function() {
-  var recoverLength = 100;
-  this.a.translate(-recoverLength, -recoverLength);
-  this.b.translate( recoverLength,  recoverLength);
-};
-
-Segment.prototype.collectParams = function(params) {
-  this.a.collectParams(params);
-  this.b.collectParams(params);
-};
-
-Segment.prototype.normalDistance = function(aim) {
-  var x = aim.x;
-  var y = aim.y;
-
-  var ab = new Vector(this.b.x - this.a.x, this.b.y - this.a.y)
-  var e = ab.normalize();
-  var a = new Vector(aim.x - this.a.x, aim.y - this.a.y);
-  var b = e.multiply(a.dot(e));
-  var n = a.minus(b);
-
-  //Check if vector b lays on the vector ab
-  if (b.length() > ab.length()) {
-    return -1;
-  }
-
-  if (b.dot(ab) < 0) {
-    return -1;
-  }
-
-  return n.length();
-};
-
-Segment.prototype.getReferencePoint = function() {
-  return this.a;
-};
-
-Segment.prototype.translateImpl = function(dx, dy) {
-  this.a.translate(dx, dy);
-  this.b.translate(dx, dy);
-};
-
-Segment.prototype.drawImpl = function(ctx, scale) {
-  ctx.beginPath();
-  ctx.moveTo(this.a.x, this.a.y);
-  ctx.lineTo(this.b.x, this.b.y);
-//  ctx.save();
-//  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.stroke();
-//  ctx.restore();
-};
-
 /** @constructor */
 function Point(x, y, rad) {
   this.x = x;
@@ -711,7 +478,7 @@ function Point(x, y, rad) {
 }
 
 Point.prototype.draw = function(ctx, scale) {
-  _drawPoint(ctx, this.x, this.y, this.rad, scale);
+  draw_utils.DrawPoint(ctx, this.x, this.y, this.rad, scale);
 };
 
 /** @constructor */
@@ -825,4 +592,4 @@ ReferencePoint.prototype.draw = function(ctx, scale) {
   ctx.stroke();
 };
 
-export {Styles, Viewer, Layer, SketchObject, EndPoint, Point, Segment, Ref}
+export {Viewer, Layer, Styles}

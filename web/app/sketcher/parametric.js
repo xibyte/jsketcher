@@ -1,5 +1,5 @@
 import * as utils from '../utils/utils'
-import {Ref} from './viewer2d'
+import {Ref} from './shapes/ref'
 import {Param, prepare} from './constr/solver'
 import {createByConstraintName} from './constr/constraints'
 import Vector from '../math/vector'
