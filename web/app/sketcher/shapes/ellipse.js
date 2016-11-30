@@ -45,7 +45,7 @@ export class Ellipse extends SketchObject {
   toEllipseCoordinateSystem(point) {
     let x = point.x - this.centerX;
     let y = point.y - this.centerY;
-    const angle = Math.atan2(y, x) - this.rotation;
+    const angle = Math.atan2(y, x) + this.rotation;
     const distance = math.distance(0, 0, x, y);
     x = distance * Math.cos(angle);
     y = distance * Math.sin(angle);
@@ -55,7 +55,7 @@ export class Ellipse extends SketchObject {
   normalDistance(aim) {
     const trInfo = this.toEllipseCoordinateSystem(aim);
     const sq = (a) => a * a;
-    const L = Math.sqrt(1/( sq(Math.sin(trInfo.angle)/this.radiusX) + sq(Math.cos(trInfo.angle)/this.radiusY)));
+    const L = Math.sqrt(1/( sq(Math.cos(trInfo.angle)/this.radiusX) + sq(Math.sin(trInfo.angle)/this.radiusY)));
     return Math.abs(trInfo.distance - L);
   }
 }
