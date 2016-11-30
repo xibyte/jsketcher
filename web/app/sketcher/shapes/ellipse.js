@@ -45,7 +45,7 @@ export class Ellipse extends SketchObject {
   toEllipseCoordinateSystem(point) {
     let x = point.x - this.centerX;
     let y = point.y - this.centerY;
-    const angle = Math.atan2(y, x) + this.rotation;
+    const angle = Math.atan2(y, x) - this.rotation;
     const distance = math.distance(0, 0, x, y);
     x = distance * Math.cos(angle);
     y = distance * Math.sin(angle);
