@@ -1,5 +1,8 @@
-import {EndPoint, Layer, Styles, Segment, SketchObject} from './viewer2d'
+import {Generator} from './id-generator'
+import {Layer, Styles} from './viewer2d'
 import {Arc} from './shapes/arc'
+import {EndPoint} from './shapes/point'
+import {Segment} from './shapes/segment'
 import {Circle} from './shapes/circle'
 import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
 import {Constraints} from './parametric'
@@ -248,7 +251,7 @@ IO.prototype.cleanUpData = function() {
     }
   }
   this.viewer.deselectAll();
-  SketchObject.resetIDGenerator(0);
+  Generator.resetIDGenerator(0);
   if (this.viewer.parametricManager.subSystems.length != 0) {
     this.viewer.parametricManager.subSystems = [];
     this.viewer.parametricManager.notify();
