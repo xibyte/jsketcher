@@ -2,7 +2,7 @@ import {Tool} from './tool'
 import {optim} from '../../math/optim'
 import * as math from '../../math/math'
 
-export class DragTool extends Tool{
+export class DragTool extends Tool {
   
   constructor(obj, viewer) {
     super('drag', viewer);
@@ -23,7 +23,7 @@ export class DragTool extends Tool{
       this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
     }
     this.solver.updateLock(this.lockedValues);
-    if (!e.altKey && !e.ctrlKey) {
+    if (!e.ctrlKey) {
       this.solveRequest(true);
     } else {
       this.obj.translate(dx, dy);

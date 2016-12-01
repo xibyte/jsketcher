@@ -57,7 +57,7 @@ export class PanTool extends Tool {
           }
           this.viewer.select([toSelect], true);
           if (!toSelect.isAuxOrLinkedTo()) {
-            var tool = toSelect.getDefaultTool(this.viewer);
+            var tool = toSelect.getDefaultTool(this.viewer, e.altKey);
             tool.mousedown(e);
             this.viewer.toolManager.switchTool(tool);
           }
