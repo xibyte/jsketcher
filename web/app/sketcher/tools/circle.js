@@ -22,7 +22,7 @@ export class EditCircleTool extends Tool {
     if (this.circle != null) {
       var r = math.distance(p.x, p.y, this.circle.c.x, this.circle.c.y);
       this.circle.r.set(r);
-      if (!e.shiftKey) {
+      if (!Tool.dumbMode(e)) {
         this.solveRequest(true);
       }
     } else {
