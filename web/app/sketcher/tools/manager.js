@@ -59,9 +59,13 @@ export class ToolManager {
   }
 
   takeControl(tool) {
+    this.switchTool(tool);
+    this.tool.restart();
+  }
+
+  switchTool(tool) {
     this.tool = tool;
     this.viewer.bus.notify("tool-change");
-    this.tool.restart();
   }
 
   releaseControl() {
