@@ -331,6 +331,12 @@ ParametricManager.prototype.pointOnArc = function(objs) {
   this.add(new Constraints.PointOnArc(points[0], arcs[0]));
 };
 
+ParametricManager.prototype.pointOnEllipse = function(objs) {
+  const points = fetch.generic(objs, ['TCAD.TWO.EndPoint'], 1);
+  const ellipses = fetch.generic(objs, ['TCAD.TWO.Ellipse'], 1);
+  this.add(new Constraints.PointOnEllipse(points[0], ellipses[0]));
+};
+
 ParametricManager.prototype.pointOnLine = function(objs) {
   var pl = fetch.pointAndLine(objs);
   var target = pl[0];
@@ -1336,6 +1342,38 @@ Constraints.Factory[Constraints.PointOnArc.prototype.NAME] = function(refs, data
 
 Constraints.PointOnArc.prototype.getObjects = function() {
   return [this.point, this.arc];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+Constraints.PointOnEllipse = function(point, ellipse) {
+  this.point = point;
+  this.ellipse= ellipse;
+};
+
+Constraints.PointOnEllipse.prototype.NAME = 'PointOnEllipse';
+Constraints.PointOnEllipse.prototype.UI_NAME = 'Point On Ellipse';
+
+Constraints.PointOnEllipse.prototype.getSolveData = function() {
+  var params = [];
+  this.point.collectParams(params);
+  this.ellipse.ep1.collectParams(params);
+  this.ellipse.ep2.collectParams(params);
+  params.push(this.ellipse.r);
+  return [['PointOnEllipse', params, []]];
+};
+
+Constraints.PointOnEllipse.prototype.serialize = function() {
+  return [this.NAME, [this.point.id, this.ellipse.id]];
+};
+
+Constraints.Factory[Constraints.PointOnEllipse.prototype.NAME] = function(refs, data) {
+  return new Constraints.PointOnEllipse(refs(data[0]), refs(data[1]));
+};
+
+Constraints.PointOnEllipse.prototype.getObjects = function() {
+  return [this.point, this.ellipse];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
