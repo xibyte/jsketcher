@@ -23,7 +23,7 @@ export class DragTool extends Tool {
       this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
     }
     this.solver.updateLock(this.lockedValues);
-    if (!e.ctrlKey) {
+    if (!Tool.dumbMode(e)) {
       this.solveRequest(true);
     } else {
       this.obj.translate(dx, dy);
