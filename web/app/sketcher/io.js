@@ -4,6 +4,7 @@ import {Arc} from './shapes/arc'
 import {EndPoint} from './shapes/point'
 import {Segment} from './shapes/segment'
 import {Circle} from './shapes/circle'
+import {Ellipse} from './shapes/ellipse'
 import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
 import {Constraints} from './parametric'
 import Vector from '../math/vector'
@@ -13,6 +14,7 @@ var Types = {
   SEGMENT   : 'TCAD.TWO.Segment',
   ARC       : 'TCAD.TWO.Arc',
   CIRCLE    : 'TCAD.TWO.Circle',
+  ELLIPSE    : 'TCAD.TWO.Ellipse',
   DIM       : 'TCAD.TWO.Dimension',
   HDIM      : 'TCAD.TWO.HDimension',
   VDIM      : 'TCAD.TWO.VDimension',
@@ -113,6 +115,11 @@ IO.prototype._loadSketch = function(sketch) {
         } else if (_class === T.CIRCLE) {
           const c = endPoint(obj['c']);
           skobj = new Circle(c);
+          skobj.r.set(obj['r']);
+        } else if (_class === T.ELLIPSE) {
+          const ep1 = endPoint(obj['ep1']);
+          const ep2 = endPoint(obj['ep2']);
+          skobj = new Ellipse(ep1, ep2);
           skobj.r.set(obj['r']);
         } else if (_class === T.HDIM) {
           skobj = new HDimension(obj['a'], obj['b']);
@@ -287,6 +294,10 @@ IO.prototype._serializeSketch = function() {
           to['points'] = [point(obj.a), point(obj.b), point(obj.c)];
         } else if (obj._class === T.CIRCLE) {
           to['c'] = point(obj.c);
+          to['r'] = obj.r.get();
+        } else if (obj._class === T.ELLIPSE) {
+          to['ep1'] = point(obj.ep1);
+          to['ep2'] = point(obj.ep2);
           to['r'] = obj.r.get();
         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
           to['a'] = obj.a.id;
