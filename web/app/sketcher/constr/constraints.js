@@ -23,6 +23,8 @@ function createByConstraintName(name, params, values) {
       return new P2PDistance(params, values[0]);
     case "P2PDistanceV":
       return new P2PDistanceV(params);
+    case "PointOnEllipse":
+      return new PointOnEllipse(params);
     case "angle":
       return new Angle(params);
     case "angleConst":
@@ -367,7 +369,6 @@ function P2PDistanceV(params) {
   }
 }
 
-
 /** @constructor */
 function Parallel(params) {
 
@@ -496,6 +497,62 @@ function Angle(params) {
     out[l2p2y] = ( sa * dx2 + ca * dy2);
     out[angle] = -1;
     rescale(out, scale);
+  }
+}
+
+/** @constructor */
+function PointOnEllipse(params) {
+
+  this.params = params;
+
+  const PX = 0;
+  const PY = 1;
+  const EP1X = 2;
+  const EP1Y = 3;
+  const EP2X = 4;
+  const EP2Y = 5;
+  const R = 6;
+
+  this.error = function() {
+    const sq = x => x * x;
+    const px = params[PX].get();
+    const py = params[PY].get();
+    const ep1x = params[EP1X].get();
+    const ep1y = params[EP1Y].get();
+    const ep2x = params[EP2X].get();
+    const ep2y = params[EP2Y].get();
+    const radiusY = params[R].get();
+  
+    const centerX = ep1x + (ep2x - ep1x) * 0.5;
+    const centerY = ep1y + (ep2y - ep1y) * 0.5;
+    const rotation = Math.atan2(ep2y - ep1y, ep2x - ep1x);
+    let x = px - centerX;
+    let y = py - centerY;
+    const polarAngle = Math.atan2(y, x) - rotation;
+    const polarRadius = Math.sqrt(x*x + y*y);
+    const radiusX = Math.sqrt(sq(ep1x - ep2x) + sq(ep1y - ep2y)) * 0.5;
+    
+    const L = Math.sqrt(1/( sq(Math.cos(polarAngle)/radiusX) + sq(Math.sin(polarAngle)/radiusY)));
+    return L - polarRadius
+  };
+
+  this.gradient = function(out) {
+    const h = 1; 
+    const approx = (param) => {
+      const fx = this.error();
+      params[param].set(params[param].get() + h);
+      const fhx = this.error();
+      params[param].set(params[param].get() - h);
+      return (fhx - fx) / h;  
+    };
+
+    out[PX] = approx(PX);
+    out[PY] = approx(PY);
+    out[EP1X] = approx(EP1X);
+    out[EP1Y] = approx(EP1Y);
+    out[EP2X] = approx(EP2X);
+    out[EP2Y] = approx(EP2Y);
+    out[R] = approx(R);
   }
 }
 
