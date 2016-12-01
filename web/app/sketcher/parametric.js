@@ -1347,21 +1347,35 @@ Constraints.PointOnArc.prototype.getObjects = function() {
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
-Constraints.PointOnEllipse = function(point, ellipse) {
+Constraints.PointOnEllipseInternal = function(point, ellipse) {
   this.point = point;
   this.ellipse= ellipse;
 };
 
-Constraints.PointOnEllipse.prototype.NAME = 'PointOnEllipse';
-Constraints.PointOnEllipse.prototype.UI_NAME = 'Point On Ellipse';
+Constraints.PointOnEllipseInternal.prototype.NAME = 'PointOnEllipseI';
+Constraints.PointOnEllipseInternal.prototype.UI_NAME = 'Point On Ellipse';
 
-Constraints.PointOnEllipse.prototype.getSolveData = function() {
+Constraints.PointOnEllipseInternal.prototype.getSolveData = function() {
   var params = [];
   this.point.collectParams(params);
   this.ellipse.ep1.collectParams(params);
   this.ellipse.ep2.collectParams(params);
   params.push(this.ellipse.r);
   return [['PointOnEllipse', params, []]];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+Constraints.PointOnEllipse = function(point, ellipse) {
+  Constraints.PointOnEllipseInternal.call(this, point, ellipse);
+};
+
+Constraints.PointOnEllipse.prototype.NAME = 'PointOnEllipse';
+Constraints.PointOnEllipse.prototype.UI_NAME = 'Point On Ellipse';
+
+Constraints.PointOnEllipse.prototype.getSolveData = function() {
+  return Constraints.PointOnEllipseInternal.prototype.getSolveData.call(this);
 };
 
 Constraints.PointOnEllipse.prototype.serialize = function() {
