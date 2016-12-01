@@ -7,7 +7,7 @@ import {AddPointTool} from './tools/point'
 import {AddSegmentTool} from './tools/segment'
 import {AddArcTool} from './tools/arc'
 import {EditCircleTool} from './tools/circle'
-import {FilletTool} from './helpers'
+import {FilletTool} from './tools/fillet'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 
