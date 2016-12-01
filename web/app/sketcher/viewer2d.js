@@ -247,40 +247,36 @@ Viewer.prototype.repaint = function() {
   ctx.transform(1, 0, 0, 1, this.translate.x , this.translate.y );
   ctx.transform(this.scale, 0, 0, this.scale, 0, 0);
 
-  let prevStyle = null;
-  const draw = (layer, obj) => {
-    let style = obj.style != null ? obj.style : layer.style;
-    if (style != prevStyle) draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
-    obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
-  };
-  let points = [];
-  for (let w = 0; w < this._workspace.length; w++) {
-    let layers = this._workspace[w];
-    for (let l = 0; l < layers.length; l++) {
-      points.length = 0;
-      let layer = layers[l];
-      for (let o = 0; o < layer.objects.length; o++) {
-        let obj = layer.objects[o];
-        draw(layer, obj);
-        Viewer.collectPoints(obj, points);
+  this.__prevStyle = null;
+  
+  for (let layers of this._workspace) {
+    for (let layer of layers) {
+      for (let obj of layer.objects) {
+        this.__draw(ctx, layer, obj);
       }
-      //Repaint points one more time
-      for (let point of points) {
-        draw(layer, point);
-      }
+    }
+  }
+  
+  //Redraw sketch points
+  for (let layer of this.layers) {
+    for (let sketchObject of layer.objects) {
+      sketchObject.acceptV(true, (obj) => {
+        if (obj._class === 'TCAD.TWO.EndPoint') {
+          this.__draw(ctx, layer, obj);
+        }
+        return true;
+      });
     }
   }
 };
 
-Viewer.collectPoints = function(object, points) {
-  if (object.acceptV){
-    object.acceptV(true, (obj) => {
-      if (obj._class === 'TCAD.TWO.EndPoint') {
-        points.push(obj);
-      }
-      return true;
-    });
+Viewer.prototype.__draw = function(ctx, layer, obj) {
+  let style = obj.style != null ? obj.style : layer.style;
+  if (style !== this.__prevStyle) {
+    draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
   }
+  this.__prevStyle = style;
+  obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
 };
 
 Viewer.prototype.snap = function(x, y, excl) {
