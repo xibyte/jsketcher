@@ -46,17 +46,22 @@ export class Ellipse extends SketchObject {
     let x = point.x - this.centerX;
     let y = point.y - this.centerY;
     const angle = Math.atan2(y, x) - this.rotation;
-    const distance = math.distance(0, 0, x, y);
-    x = distance * Math.cos(angle);
-    y = distance * Math.sin(angle);
-    return {x, y, angle, distance};
+    const radius = math.distance(0, 0, x, y);
+    x = radius * Math.cos(angle);
+    y = radius * Math.sin(angle);
+    return {x, y, angle, radius};
   }
   
   normalDistance(aim) {
-    const trInfo = this.toEllipseCoordinateSystem(aim);
-    const sq = (a) => a * a;
-    const L = Math.sqrt(1/( sq(Math.cos(trInfo.angle)/this.radiusX) + sq(Math.sin(trInfo.angle)/this.radiusY)));
-    return Math.abs(trInfo.distance - L);
+    const polarPoint = this.toEllipseCoordinateSystem(aim);
+    const L = Math.sqrt(1/( sq(Math.cos(polarPoint.angle)/this.radiusX) + sq(Math.sin(polarPoint.angle)/this.radiusY)));
+    return Math.abs(polarPoint.radius - L);
+  }
+  
+  static findMinorRadius(majorRadius, pntRadius, pntAngle) {
+    return Math.abs( Math.sin(pntAngle) /  Math.sqrt(1 / sq(pntRadius) - sq(Math.cos(pntAngle) / majorRadius)) );
   }
 }
 Ellipse.prototype._class = 'TCAD.TWO.Ellipse';
+
+const sq = (a) => a * a;

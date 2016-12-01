@@ -8,6 +8,7 @@ import {AddSegmentTool} from './tools/segment'
 import {AddArcTool} from './tools/arc'
 import {EditCircleTool} from './tools/circle'
 import {FilletTool} from './tools/fillet'
+import {EllipseTool} from './tools/ellipse'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 
@@ -133,6 +134,10 @@ function App2D() {
   this.registerAction('addCircle', "Add Circle", function () {
     app.viewer.toolManager.takeControl(new EditCircleTool(app.viewer));
   }, 'circle');
+
+  this.registerAction('addEllipse', "Add Ellipse", function () {
+    app.viewer.toolManager.takeControl(new EllipseTool(app.viewer));
+  });
 
   this.registerAction('pan', "Pan", function () {
     app.viewer.toolManager.releaseControl();
