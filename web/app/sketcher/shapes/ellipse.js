@@ -52,10 +52,14 @@ export class Ellipse extends SketchObject {
     y = radius * Math.sin(angle);
     return {x, y, angle, radius};
   }
-  
+
+  radiusAtAngle(angle) {
+    return Math.sqrt(1/( sq(Math.cos(angle)/this.radiusX) + sq(Math.sin(angle)/this.radiusY)))
+  }
+
   normalDistance(aim) {
     const polarPoint = this.toEllipseCoordinateSystem(aim);
-    const L = Math.sqrt(1/( sq(Math.cos(polarPoint.angle)/this.radiusX) + sq(Math.sin(polarPoint.angle)/this.radiusY)));
+    const L = this.radiusAtAngle(polarPoint.angle);
     return Math.abs(polarPoint.radius - L);
   }
   
