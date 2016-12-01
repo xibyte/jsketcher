@@ -1,5 +1,6 @@
 import {Ref} from './ref'
 import {SketchObject} from './sketch-object'
+import {EllipseTool, STATE_RADIUS} from '../tools/ellipse'
 
 import * as math from '../../math/math';
 
@@ -60,6 +61,17 @@ export class Ellipse extends SketchObject {
   
   static findMinorRadius(majorRadius, pntRadius, pntAngle) {
     return Math.abs( Math.sin(pntAngle) /  Math.sqrt(1 / sq(pntRadius) - sq(Math.cos(pntAngle) / majorRadius)) );
+  }
+
+  getDefaultTool(viewer, alternative) {
+    if (alternative) {
+      return super.getDefaultTool(viewer, alternative);  
+    } else {
+      const editTool = new EllipseTool(viewer);
+      editTool.ellipse = this;
+      editTool.state = STATE_RADIUS;
+      return editTool;
+    }
   }
 }
 Ellipse.prototype._class = 'TCAD.TWO.Ellipse';

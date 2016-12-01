@@ -3,12 +3,12 @@ import {EndPoint} from '../shapes/point'
 import {Ellipse} from '../shapes/ellipse'
 import Vector from '../../math/vector'
 
-const STATE_POINT1 = 0;
-const STATE_POINT2 = 1;
-const RADIUS = 2;
+export const STATE_POINT1 = 0;
+export const STATE_POINT2 = 1;
+export const STATE_RADIUS = 2;
 
 export class EllipseTool extends Tool {
-  
+
   constructor(viewer) {
     super('ellipse', viewer);
     this.ellipse = null;
@@ -21,6 +21,10 @@ export class EllipseTool extends Tool {
     this.sendHint('specify first major axis point')
   }
 
+  cleanup(e) {
+    this.viewer.cleanSnap();
+  }
+  
   point(e) {
     return this.viewer.snapped ? this.viewer.snapped : this.viewer.screenToModel(e);
   }
@@ -30,21 +34,23 @@ export class EllipseTool extends Tool {
       case STATE_POINT1: {
         const p = this.point(e);
         this.ellipse = new Ellipse(new EndPoint(p.x, p.y), new EndPoint(p.x, p.y));
+        this.snapIfNeed(this.ellipse.ep1);
         this.viewer.activeLayer.objects.push(this.ellipse);
         this.viewer.refresh();
         this.state = STATE_POINT2;
-        this.sendHint('specify second major axis point')
+        this.sendHint('specify second major axis point');
         break;
       }
       case STATE_POINT2: {
         const p = this.point(e);
         this.ellipse.ep2.setFromPoint(p);
+        this.snapIfNeed(this.ellipse.ep2);
         this.viewer.refresh();
-        this.state = RADIUS;
-        this.sendHint('specify minor axis radius')
+        this.state = STATE_RADIUS;
+        this.sendHint('specify minor axis radius');
         break;
       }
-      case RADIUS:
+      case STATE_RADIUS:
         this.viewer.toolManager.releaseControl();
     }
   }
@@ -58,9 +64,9 @@ export class EllipseTool extends Tool {
       case STATE_POINT2:
         this.ellipse.ep2.setFromPoint(this.viewer.screenToModel(e));
         this.ellipse.r.value = this.ellipse.radiusX * 0.5;
-        this.viewer.snap(p.x, p.y, [this.ellipse.ep1]);
+        this.viewer.snap(p.x, p.y, [this.ellipse.ep1, this.ellipse.ep2]);
         break;
-      case RADIUS:
+      case STATE_RADIUS:
         const polarPoint = this.ellipse.toEllipseCoordinateSystem(p);
         let minorRadius = Ellipse.findMinorRadius(this.ellipse.radiusX, polarPoint.radius, polarPoint.angle);
         if (isNaN(minorRadius)) {
@@ -74,6 +80,4 @@ export class EllipseTool extends Tool {
     } 
     this.viewer.refresh();
   }
-
-
 }

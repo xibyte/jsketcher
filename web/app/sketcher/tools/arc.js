@@ -84,15 +84,6 @@ export class AddArcTool extends Tool {
     this.viewer.toolManager.releaseControl();
   }
 
-  snapIfNeed(p) {
-    if (this.viewer.snapped != null) {
-      var snapWith = this.viewer.snapped;
-      this.viewer.cleanSnap();
-      this.viewer.parametricManager.linkObjects([p, snapWith]);
-      this.viewer.parametricManager.refresh();
-    }
-  }
-
   demoSecondPoint() {
     const r = this.radiusOfFirstPoint();
     let ang = Math.atan2(this.arc.a.y - this.arc.c.y, this.arc.a.x - this.arc.c.x) + (2 * Math.PI - 0.3);
