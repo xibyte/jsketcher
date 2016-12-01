@@ -73,6 +73,15 @@ export class SketchObject {
     }
     this._translate(dx, dy, {});
   }
+
+  translateImpl(dx, dy) {
+    this.accept(function (obj) {
+      if (obj._class === 'TCAD.TWO.EndPoint') {
+        obj.translate(dx, dy);
+      }
+      return true;
+    });
+  }
   
   draw(ctx, scale, viewer) {
     if (!this.visible) return;

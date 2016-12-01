@@ -41,6 +41,15 @@ export class Tool {
     this.viewer.referencePoint.x = x;
     this.viewer.referencePoint.y = y;
   };
+
+  snapIfNeed(p) {
+    if (this.viewer.snapped != null) {
+      var snapWith = this.viewer.snapped;
+      this.viewer.cleanSnap();
+      this.viewer.parametricManager.linkObjects([p, snapWith]);
+      this.viewer.parametricManager.refresh();
+    }
+  }
 }
 
 Tool.ParseNumber = function(str) {
