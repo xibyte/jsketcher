@@ -40,10 +40,14 @@ export class Circle extends SketchObject {
     return Math.abs(math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.r.get());
   }
   
-  getDefaultTool(viewer) {
-    var editTool = new EditCircleTool(viewer, null);
-    editTool.circle = this;
-    return editTool;
+  getDefaultTool(viewer, alternative) {
+    if (alternative) {
+      return super.getDefaultTool(viewer, alternative);
+    } else {
+      const editTool = new EditCircleTool(viewer, null);
+      editTool.circle = this;
+      return editTool;
+    }
   }
 }
 
