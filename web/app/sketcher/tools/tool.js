@@ -50,6 +50,10 @@ export class Tool {
       this.viewer.parametricManager.refresh();
     }
   }
+  
+  static dumbMode(e) {
+    return e.ctrlKey;
+  }
 }
 
 Tool.ParseNumber = function(str) {
