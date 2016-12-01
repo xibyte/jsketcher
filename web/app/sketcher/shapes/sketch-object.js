@@ -24,8 +24,7 @@ export class SketchObject {
   
   acceptV(onlyVisible, visitor) {
     if (onlyVisible && !this.visible) return true;
-    for (var i = 0; i < this.children.length; i++) {
-      var child = this.children[i];
+    for (let child of this.children) {
       if (!child.acceptV(onlyVisible, visitor)) {
         return false;
       }
