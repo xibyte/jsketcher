@@ -35,6 +35,19 @@ export class EndPoint extends SketchObject {
   drawImpl(ctx, scale) {
     DrawPoint(ctx, this.x, this.y, 3, scale)
   }
+
+  setXY(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  setFromPoint(p) {
+    this.setXY(p.x, p.y);
+  }
+
+  setFromArray(arr) {
+    this.setXY(arr[0], arr[1]);
+  }
 }
 EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
 
