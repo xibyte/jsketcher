@@ -1,6 +1,6 @@
 import {HDimension, VDimension, Dimension, DiameterDimension} from '../shapes/dim'
 import Vector from '../../math/vector'
-import {EndPoint} from '../viewer2d'
+import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
 
 export class AddDimTool extends Tool {

@@ -1,6 +1,6 @@
 import {Tool} from './tool'
 import * as math from '../../math/math';
-import {EndPoint} from '../viewer2d'
+import {EndPoint} from '../shapes/point'
 import {Circle} from '../shapes/circle'
 
 export class EditCircleTool extends Tool {

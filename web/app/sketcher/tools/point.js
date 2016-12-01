@@ -1,4 +1,4 @@
-import {EndPoint} from '../viewer2d'
+import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
 
 export class AddPointTool extends Tool {
