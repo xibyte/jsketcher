@@ -75,9 +75,18 @@ export class EllipseTool extends Tool {
           const v = new Vector(this.ellipse.ep2.x - p.x, this.ellipse.ep2.y - p.y);
           minorRadius = Math.abs(projAxis.dot(v));
         }
-        this.ellipse.r.value = minorRadius;
+        this.ellipse.r.set(minorRadius);
+        if (!Tool.dumbMode(e)) {
+          this.solveRequest(true);
+        }
         break;
     } 
     this.viewer.refresh();
+  }
+
+  solveRequest(rough) {
+    this.solver = this.viewer.parametricManager.prepare([this.ellipse.r]);
+    this.solver.solve(rough, 1);
+    this.solver.sync();
   }
 }
