@@ -514,7 +514,6 @@ function PointOnEllipse(params) {
   const R = 6;
 
   this.error = function() {
-    const sq = x => x * x;
     const px = params[PX].get();
     const py = params[PY].get();
     const ep1x = params[EP1X].get();
@@ -526,8 +525,10 @@ function PointOnEllipse(params) {
     const centerX = ep1x + (ep2x - ep1x) * 0.5;
     const centerY = ep1y + (ep2y - ep1y) * 0.5;
     const rotation = Math.atan2(ep2y - ep1y, ep2x - ep1x);
+
     let x = px - centerX;
     let y = py - centerY;
+
     const polarAngle = Math.atan2(y, x) - rotation;
     const polarRadius = Math.sqrt(x*x + y*y);
     const radiusX = Math.sqrt(sq(ep1x - ep2x) + sq(ep1y - ep2y)) * 0.5;
@@ -536,23 +537,21 @@ function PointOnEllipse(params) {
     return L - polarRadius
   };
 
-  this.gradient = function(out) {
-    const h = 1; 
-    const approx = (param) => {
-      const fx = this.error();
-      params[param].set(params[param].get() + h);
-      const fhx = this.error();
-      params[param].set(params[param].get() - h);
-      return (fhx - fx) / h;  
-    };
+  this.gradient = NumericGradient;
+}
 
-    out[PX] = approx(PX);
-    out[PY] = approx(PY);
-    out[EP1X] = approx(EP1X);
-    out[EP1Y] = approx(EP1Y);
-    out[EP2X] = approx(EP2X);
-    out[EP2Y] = approx(EP2Y);
-    out[R] = approx(R);
+function NumericGradient(out) {
+  const h = 1;
+  const approx = (param) => {
+    const fx = this.error();
+    this.params[param].set(this.params[param].get() + h);
+    const fhx = this.error();
+    this.params[param].set(this.params[param].get() - h);
+    return (fhx - fx) / h;
+  };
+
+  for (var i = 0; i < out.length; i++) {
+    out[i] = approx(i);
   }
 }
 
@@ -569,5 +568,7 @@ function rescale(grad, factor) {
     grad[i] *= factor;
   }
 }
+
+const sq = x => x * x;
 
 export {createByConstraintName, EqualsTo, ConstantWrapper}
