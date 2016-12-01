@@ -236,7 +236,7 @@ Viewer.prototype.refresh = function() {
 
 Viewer.prototype.repaint = function() {
 
-  var ctx = this.ctx;
+  const ctx = this.ctx;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   
   ctx.fillStyle = "#808080";
@@ -247,19 +247,39 @@ Viewer.prototype.repaint = function() {
   ctx.transform(1, 0, 0, 1, this.translate.x , this.translate.y );
   ctx.transform(this.scale, 0, 0, this.scale, 0, 0);
 
-  var prevStyle = null;
-  var style;
-  for (var w = 0; w < this._workspace.length; w++) {
-    var layers = this._workspace[w];
-    for (var l = 0; l < layers.length; l++) {
-      var layer = layers[l];
-      for (var o = 0; o < layer.objects.length; o++) {
-        var obj = layer.objects[o];
-        style = obj.style != null ? obj.style : layer.style;
-        if (style != prevStyle) draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
-        obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
+  let prevStyle = null;
+  const draw = (layer, obj) => {
+    let style = obj.style != null ? obj.style : layer.style;
+    if (style != prevStyle) draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
+    obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
+  };
+  let points = [];
+  for (let w = 0; w < this._workspace.length; w++) {
+    let layers = this._workspace[w];
+    for (let l = 0; l < layers.length; l++) {
+      points.length = 0;
+      let layer = layers[l];
+      for (let o = 0; o < layer.objects.length; o++) {
+        let obj = layer.objects[o];
+        draw(layer, obj);
+        Viewer.collectPoints(obj, points);
+      }
+      //Repaint points one more time
+      for (let point of points) {
+        draw(layer, point);
       }
     }
+  }
+};
+
+Viewer.collectPoints = function(object, points) {
+  if (object.acceptV){
+    object.acceptV(true, (obj) => {
+      if (obj._class === 'TCAD.TWO.EndPoint') {
+        points.push(obj);
+      }
+      return true;
+    });
   }
 };
 
