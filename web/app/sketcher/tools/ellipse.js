@@ -33,6 +33,7 @@ export class EllipseTool extends Tool {
         this.viewer.activeLayer.objects.push(this.ellipse);
         this.viewer.refresh();
         this.state = STATE_POINT2;
+        this.sendHint('specify second major axis point')
         break;
       }
       case STATE_POINT2: {
@@ -40,6 +41,7 @@ export class EllipseTool extends Tool {
         this.ellipse.ep2.setFromPoint(p);
         this.viewer.refresh();
         this.state = RADIUS;
+        this.sendHint('specify minor axis radius')
         break;
       }
       case RADIUS:
