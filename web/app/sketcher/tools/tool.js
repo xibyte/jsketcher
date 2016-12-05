@@ -52,7 +52,7 @@ export class Tool {
   }
   
   static dumbMode(e) {
-    return e.ctrlKey;
+    return e.ctrlKey || e.metaKey;
   }
 }
 
