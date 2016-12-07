@@ -100,13 +100,16 @@ function Viewer(canvas, IO) {
   this.ctx = this.canvas.getContext("2d");
   this._activeLayer = null;
   this.layers = [];
-  this._serviceLayers = [];
   this.dimLayer = new Layer("_dim", Styles.DIM);
   this.dimLayers = [this.dimLayer];
   this.bus.defineObservable(this, 'dimScale', 1);
   this.bus.subscribe('dimScale', function(){ viewer.refresh(); });
   
-  this._workspace = [this.dimLayers, this.layers, this._serviceLayers];
+  this._workspace = [this.layers, this.dimLayers];
+
+  this.referencePoint = new ReferencePoint();
+  this._serviceWorkspace = [this._createServiceLayers()];
+  
   this.toolManager = new ToolManager(this, new PanTool(this));
   this.parametricManager = new ParametricManager(this);
 
@@ -116,10 +119,6 @@ function Viewer(canvas, IO) {
   this.selected = [];
   this.snapped = null;
   
-  this.referencePoint = new ReferencePoint();
-  
-  this._setupServiceLayer();
-
   this.historyManager = new HistoryManager(this);
   this.refresh();
 }
@@ -205,17 +204,13 @@ Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
   return pickResult;
 };
 
-Viewer.prototype._setupServiceLayer = function() {
-  let layer = new Layer("_selection", Styles.DEFAULT);
-  layer.objects = this.selected;
-  this._serviceLayers.push(layer);
-
-  layer = new Layer("_service", Styles.SERVICE);
+Viewer.prototype._createServiceLayers = function() {
+  let layer = new Layer("_service", Styles.SERVICE);
 //  layer.objects.push(new CrossHair(0, 0, 20));
   layer.objects.push(new Point(0, 0, 2));
   layer.objects.push(this.referencePoint);
   layer.objects.push(new BasisOrigin(null, this));
-  this._serviceLayers.push(layer);
+  return [layer];
 
 };
 
@@ -241,8 +236,24 @@ Viewer.prototype.repaint = function() {
 
   this.__prevStyle = null;
 
-  for (let drawPredicate of Viewer.__DRAW_PIPELINE) {
-    for (let layers of this._workspace) {
+  this.__drawWorkspace(ctx, this._workspace, Viewer.__SKETCH_DRAW_PIPELINE);
+  this.__drawWorkspace(ctx, this._serviceWorkspace, Viewer.__SIMPLE_DRAW_PIPELINE);
+};
+
+Viewer.__SKETCH_DRAW_PIPELINE = [
+  (obj) => obj._class !== 'TCAD.TWO.EndPoint' && obj.marked === null,
+  (obj) => obj._class !== 'TCAD.TWO.EndPoint' && obj.marked !== null,
+  (obj) => obj._class === 'TCAD.TWO.EndPoint' && obj.marked === null,
+  (obj) => obj._class === 'TCAD.TWO.EndPoint' && obj.marked !== null
+];
+
+Viewer.__SIMPLE_DRAW_PIPELINE = [
+  (obj) => true
+];
+
+Viewer.prototype.__drawWorkspace = function(ctx, workspace, pipeline) {
+  for (let drawPredicate of pipeline) {
+    for (let layers of workspace) {
       for (let layer of layers) {
         for (let obj of layer.objects) {
           obj.accept((obj) => {
@@ -257,12 +268,6 @@ Viewer.prototype.repaint = function() {
     }
   }
 };
-
-Viewer.__DRAW_PIPELINE = [
-  (obj) => obj._class !== 'TCAD.TWO.EndPoint',
-  (obj) => obj._class === 'TCAD.TWO.EndPoint' && obj.marked == null,
-  (obj) => obj._class === 'TCAD.TWO.EndPoint' && obj.marked != null
-];
 
 Viewer.prototype.__draw = function(ctx, layer, obj) {
   let style = obj.style != null ? obj.style : layer.style;
