@@ -31,12 +31,12 @@ export class SketchObject {
     }
     return visitor(this);
   }
-  
-  validate() {
-    return true;
+
+  stabilize(viewer) {
   }
-  
-  recover() {
+
+  recoverIfNecessary() {
+    return false;
   }
   
   getDefaultTool(viewer) {
