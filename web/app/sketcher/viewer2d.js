@@ -125,18 +125,6 @@ Viewer.prototype.roundToPrecision = function(value) {
   return value.toFixed(this.presicion);
 };
 
-Viewer.prototype.validateGeom = function() {
-  for (var i = 0; i < this.layers.length; i++) {
-    var objs = this.layers[i].objects;
-    for (var j = 0; j < objs.length; j++) {
-      if (!objs[j].validate()) {
-        return false;        
-      }
-    }
-  }
-  return true;
-};
-
 Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
   var a = new EndPoint(x1, y1);
   var b = new EndPoint(x2, y2);
