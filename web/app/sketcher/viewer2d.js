@@ -7,6 +7,9 @@ import {PanTool} from './tools/pan'
 import {DragTool} from './tools/drag'
 import {Segment} from './shapes/segment'
 import {EndPoint} from './shapes/point'
+import {Point} from './shapes/primitives'
+import {ReferencePoint} from './shapes/reference-point'
+import {BasisOrigin} from './shapes/basis-origin'
 import Vector from '../math/vector'
 
 import * as draw_utils from './shapes/draw-utils'
@@ -172,7 +175,8 @@ Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
     for (var j = 0; j < objs.length; j++) {
       var l = unreachable + 1;
       var before = pickResult.length;
-      objs[j].acceptV(true, function(o) {
+      objs[j].accept(function(o) {
+        if (!o.visible) return true;
         if (onlyPoints && o._class !== 'TCAD.TWO.EndPoint') {
           return false;  
         }
@@ -236,27 +240,29 @@ Viewer.prototype.repaint = function() {
   ctx.transform(this.scale, 0, 0, this.scale, 0, 0);
 
   this.__prevStyle = null;
-  
-  for (let layers of this._workspace) {
-    for (let layer of layers) {
-      for (let obj of layer.objects) {
-        this.__draw(ctx, layer, obj);
+
+  for (let drawPredicate of Viewer.__DRAW_PIPELINE) {
+    for (let layers of this._workspace) {
+      for (let layer of layers) {
+        for (let obj of layer.objects) {
+          obj.accept((obj) => {
+            if (!obj.visible) return true;
+            if (drawPredicate(obj)) {
+              this.__draw(ctx, layer, obj);
+            }
+            return true;
+          });
+        }
       }
     }
   }
-  
-  //Redraw sketch points
-  for (let layer of this.layers) {
-    for (let sketchObject of layer.objects) {
-      sketchObject.acceptV(true, (obj) => {
-        if (obj._class === 'TCAD.TWO.EndPoint') {
-          this.__draw(ctx, layer, obj);
-        }
-        return true;
-      });
-    }
-  }
 };
+
+Viewer.__DRAW_PIPELINE = [
+  (obj) => obj._class !== 'TCAD.TWO.EndPoint',
+  (obj) => obj._class === 'TCAD.TWO.EndPoint' && obj.marked == null,
+  (obj) => obj._class === 'TCAD.TWO.EndPoint' && obj.marked != null
+];
 
 Viewer.prototype.__draw = function(ctx, layer, obj) {
   let style = obj.style != null ? obj.style : layer.style;
@@ -427,173 +433,6 @@ function Layer(name, style) {
 Viewer.prototype.fullHeavyUIRefresh = function() {
   this.refresh();
   this.parametricManager.notify();
-};
-
-/** @constructor */
-function Polygon(points) {
-  this.points = points;
-  this.style = null;
-}
-
-Polygon.prototype.draw = function(ctx) {
-
-  if (this.points.length < 3) {
-    return;    
-  }
-  
-  ctx.beginPath();
-  var first = this.points[0];
-  ctx.moveTo(first.x, first.y);
-  for (var i = 1; i < this.points.length; i++) {
-    var p = this.points[i];
-    ctx.lineTo(p.x, p.y);    
-  }
-  ctx.closePath();
-  ctx.stroke(); 
-};
-
-/** @constructor */
-function Polyline(points) {
-  this.points = points;
-  this.style = null;
-}
-
-Polyline.prototype.draw = function(ctx) {
-
-  if (this.points.length < 2) {
-    return;
-  }
-
-  var first = this.points[0];
-  ctx.moveTo(first.x, first.y);
-  for (var i = 1; i < this.points.length; i++) {
-    var p = this.points[i];
-    ctx.lineTo(p.x, p.y);
-  }
-  ctx.stroke();
-};
-
-/** @constructor */
-function Point(x, y, rad) {
-  this.x = x;
-  this.y = y;
-  this.rad = rad;
-  this.style = null;
-}
-
-Point.prototype.draw = function(ctx, scale) {
-  draw_utils.DrawPoint(ctx, this.x, this.y, this.rad, scale);
-};
-
-/** @constructor */
-function CrossHair(x, y, rad) {
-  this.x = x;
-  this.y = y;
-  this.rad = rad;
-  this.style = null;
-}
-
-CrossHair.prototype.draw = function(ctx, scale) {
-  ctx.beginPath();
-  var rad = this.rad / scale;
-  ctx.moveTo(this.x - rad, this.y);
-  ctx.lineTo(this.x + rad, this.y);
-  ctx.closePath();
-  ctx.moveTo(this.x, this.y - rad);
-  ctx.lineTo(this.x, this.y + rad);
-  ctx.closePath();
-
-  ctx.save();
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.stroke();
-  ctx.restore();
-};
-
-/** @constructor */
-function BasisOrigin(basis, viewer) {
-  this.viewer = viewer;
-  this.inverseX = false;
-  this.inverseY = false;
-  this.lineWidth = 100;
-  this.xColor = '#FF0000';
-  this.yColor = '#00FF00';
-}
-
-BasisOrigin.prototype.draw = function(ctx, scale) {
-  ctx.save();
-  if (this.inverseX) {
-    this.xScale = -1;
-    this.xShift = this.lineWidth + 10;
-  } else {
-    this.xScale = 1;
-    this.xShift = 10;
-  }
-  if (this.inverseY) {
-    this.yScale = -1;
-    this.yShift = this.viewer.canvas.height - this.lineWidth - 10;
-  } else {
-    this.yScale = 1;
-    this.yShift = this.viewer.canvas.height - 10;
-  }
-
-  ctx.setTransform( this.xScale, 0, 0, this.yScale, this.xShift, this.yShift);
-  ctx.beginPath();
-  
-  ctx.lineWidth  = 1;
-  ctx.strokeStyle  = this.yColor;
-
-  var headA = 1;
-  var headB = 10;
-
-  ctx.moveTo(0.5, 0);
-  ctx.lineTo(0.5, - this.lineWidth);
-  
-  ctx.moveTo(0, - this.lineWidth);
-  ctx.lineTo(headA, 0 - this.lineWidth + headB);
-
-  ctx.moveTo(0, - this.lineWidth);
-  ctx.lineTo(- headA, - this.lineWidth + headB);
-  ctx.closePath();
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.strokeStyle  = this.xColor;
-  ctx.moveTo(0, 0.5);
-  ctx.lineTo(this.lineWidth, 0.5);
-
-  ctx.moveTo(this.lineWidth, 0);
-  ctx.lineTo(this.lineWidth - headB, headA);
-
-  ctx.moveTo(this.lineWidth, 0);
-  ctx.lineTo(this.lineWidth - headB, - headA);
-  ctx.closePath();
-  ctx.stroke();
-
-  ctx.restore();
-};
-
-
-/** @constructor */
-function ReferencePoint(viewer) {
-  this.viewer = viewer;
-  this.visible = true;
-  this.x = 0;
-  this.y = 0;
-}
-
-ReferencePoint.prototype.draw = function(ctx, scale) {
-  if (!this.visible) return;
-  ctx.strokeStyle  = 'salmon';
-  ctx.fillStyle  = 'salmon';
-  ctx.lineWidth = 1 / scale;
-  
-  ctx.beginPath();
-  ctx.arc(this.x, this.y, 1 / scale, 0, 2 * Math.PI, false);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(this.x, this.y, 7 / scale, 0, 2 * Math.PI, false);
-  ctx.stroke();
 };
 
 export {Viewer, Layer, Styles}

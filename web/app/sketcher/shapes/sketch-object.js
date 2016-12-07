@@ -1,13 +1,14 @@
 import {Generator} from '../id-generator'
 import {SetStyle} from './draw-utils'
 import {DragTool} from '../tools/drag'
+import {Shape} from './shape'
 
-export class SketchObject {
+export class SketchObject extends Shape {
   constructor() {
+    super();
     this.id = Generator.genID();
     this.aux = false;
     this.marked = null;
-    this.visible = true;
     this.children = [];
     this.linked = [];
     this.layer = null;
@@ -19,13 +20,8 @@ export class SketchObject {
   }
   
   accept(visitor) {
-    return this.acceptV(false, visitor);
-  }
-  
-  acceptV(onlyVisible, visitor) {
-    if (onlyVisible && !this.visible) return true;
     for (let child of this.children) {
-      if (!child.acceptV(onlyVisible, visitor)) {
+      if (!child.accept(visitor)) {
         return false;
       }
     }
@@ -90,9 +86,6 @@ export class SketchObject {
     }
     this.drawImpl(ctx, scale, viewer);
     if (this.marked != null) ctx.restore();
-    for (var i = 0; i < this.children.length; i++) {
-      this.children[i].draw(ctx, scale);
-    }
   }
 }
 
