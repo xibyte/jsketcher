@@ -59,9 +59,10 @@ export class DragTool extends Tool {
 
     var paramsToUpdate = [];
     this.viewer.accept(function (obj) {
-      if (!obj.validate() && obj.aux !== true) {
-        obj.recover();
-        obj.collectParams(paramsToUpdate);
+      if (obj.aux !== true) {
+        if (obj.recoverIfNecessary()){
+          obj.collectParams(paramsToUpdate);
+        }
       }
       return true;
     });

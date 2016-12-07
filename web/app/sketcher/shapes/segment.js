@@ -1,5 +1,6 @@
 import {SketchObject} from './sketch-object'
 import Vector from '../../math/vector'
+import {Constraints} from '../parametric'
 import * as math from '../../math/math'
 
 export class Segment extends SketchObject {
@@ -13,14 +14,15 @@ export class Segment extends SketchObject {
     this.children.push(a, b);
   }
   
-  validate() {
-    return math.distanceAB(this.a, this.b) > math.TOLERANCE;
-  }
-  
-  recover() {
-    var recoverLength = 100;
-    this.a.translate(-recoverLength, -recoverLength);
-    this.b.translate( recoverLength,  recoverLength);
+  recoverIfNecessary() {
+    if (math.distanceAB(this.a, this.b) > math.TOLERANCE) {
+      return false;
+    } else {
+      const recoverLength = 100;
+      this.a.translate(-recoverLength, -recoverLength);
+      this.b.translate( recoverLength,  recoverLength);
+      return true;
+    }
   }
   
   collectParams(params) {

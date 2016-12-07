@@ -111,7 +111,6 @@ IO.prototype._loadSketch = function(sketch) {
           const b = endPoint(points[1]);
           const c = endPoint(points[2]);
           skobj = new Arc(a, b, c);
-          if (!aux) skobj.stabilize(this.viewer);
         } else if (_class === T.CIRCLE) {
           const c = endPoint(obj['c']);
           skobj = new Circle(c);
@@ -134,6 +133,7 @@ IO.prototype._loadSketch = function(sketch) {
           skobj = new DiameterDimension(obj['obj']);
         }
         if (skobj != null) {
+          if (!aux) skobj.stabilize(this.viewer);
           if (aux) skobj.accept(function(o){o.aux = true; return true;});
           if (obj['edge'] !== undefined) {
             skobj.edge = obj['edge'];

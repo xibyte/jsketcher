@@ -267,10 +267,14 @@ ParametricManager.prototype.lockConvex = function(objs, warnCallback) {
 };
 
 ParametricManager.prototype.tangent = function(objs) {
-  var al = fetch.arcCircAndLine(objs);
-  var arc  = al[0];
-  var line  = al[1];
-  this.add(new Constraints.Tangent( arc, line));
+  const ellipses = fetch.generic(objs, ['TCAD.TWO.Ellipse'], 0);
+  const lines = fetch.generic(objs, ['TCAD.TWO.Segment'], 1);
+  if (ellipses.length > 0) {
+    this.add(new Constraints.EllipseTangent(lines[0], ellipses[0]));
+  } else {
+    const arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
+    this.add(new Constraints.Tangent(arcs[0], lines[0]));
+  }
 };
 
 ParametricManager.prototype.rr = function(arcs) {
@@ -1105,6 +1109,22 @@ Constraints.P2PDistanceV.prototype.getSolveData = function() {
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
+Constraints.GreaterThan = function(p, limit) {
+  this.p = p;
+  this.limit = limit;
+};
+
+Constraints.GreaterThan.prototype.aux = true;
+Constraints.GreaterThan.prototype.NAME = 'GreaterThan';
+Constraints.GreaterThan.prototype.UI_NAME = 'Greater Than';
+
+Constraints.GreaterThan.prototype.getSolveData = function() {
+  return [[this.NAME, [this.p], [this.limit]]];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
 Constraints.Radius = function(arc, d) {
   this.arc = arc;
   this.d = d;
@@ -1388,6 +1408,39 @@ Constraints.Factory[Constraints.PointOnEllipse.prototype.NAME] = function(refs, 
 
 Constraints.PointOnEllipse.prototype.getObjects = function() {
   return [this.point, this.ellipse];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+Constraints.EllipseTangent = function(line, ellipse) {
+  this.line = line;
+  this.ellipse = ellipse;
+};
+
+Constraints.EllipseTangent.prototype.NAME = 'EllipseTangent';
+Constraints.EllipseTangent.prototype.UI_NAME = 'Tangent Ellipse';
+
+Constraints.EllipseTangent.prototype.getSolveData = function() {
+  const params = [];
+  this.line.collectParams(params);
+  this.ellipse.ep1.collectParams(params);
+  this.ellipse.ep2.collectParams(params);
+  params.push(this.ellipse.r);
+  return [['EllipseTangent', params, []]];
+
+};
+
+Constraints.EllipseTangent.prototype.serialize = function() {
+  return [this.NAME, [this.line.id, this.ellipse.id]];
+};
+
+Constraints.Factory[Constraints.EllipseTangent.prototype.NAME] = function(refs, data) {
+  return new Constraints.EllipseTangent(refs(data[0]), refs(data[1]));
+};
+
+Constraints.EllipseTangent.prototype.getObjects = function() {
+  return [this.line, this.ellipse];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
