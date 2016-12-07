@@ -1,6 +1,7 @@
 import {Ref} from './ref'
 import {SketchObject} from './sketch-object'
 import {EllipseTool, STATE_RADIUS} from '../tools/ellipse'
+import {Constraints} from '../parametric'
 
 import * as math from '../../math/math';
 
@@ -13,9 +14,30 @@ export class Ellipse extends SketchObject {
     this.addChild(this.ep1);
     this.addChild(this.ep2);
     this.r = new Ref(0);
-    this.r.value = this.radiusX * 0.5;
+    this.r.set(this.radiusX * 0.5);
     this.r.obj = this;
   }
+
+  recoverIfNecessary() {
+    let recovered = false;
+    if (math.distanceAB(this.ep1, this.ep2) <= math.TOLERANCE) {
+      this.ep1.translate(-RECOVER_LENGTH, -RECOVER_LENGTH);
+      this.ep2.translate(RECOVER_LENGTH, RECOVER_LENGTH);
+      recovered = true;
+    }
+    if (this.radiusY <= 0.1) {
+      this.r.set(RECOVER_LENGTH);
+      recovered = true;
+    }
+    return recovered;
+  }
+  
+  collectParams(params) {
+    this.ep1.collectParams(params);
+    this.ep2.collectParams(params);
+    params.push(this.r);
+  }
+
 
   get rotation() {
     return Math.atan2(this.ep2.y - this.ep1.y, this.ep2.x - this.ep1.x);
@@ -39,7 +61,9 @@ export class Ellipse extends SketchObject {
 
   drawImpl(ctx, scale) {
     ctx.beginPath();
-    ctx.ellipse(this.centerX, this.centerY, this.radiusX, this.radiusY, this.rotation, 0, 2 * Math.PI);
+    const radiusX = Math.max(this.radiusX, 1e-8);
+    const radiusY = Math.max(this.radiusY, 1e-8);
+    ctx.ellipse(this.centerX, this.centerY, radiusX, radiusY, this.rotation, 0, 2 * Math.PI);
     ctx.stroke();
   }
   
@@ -81,3 +105,4 @@ export class Ellipse extends SketchObject {
 Ellipse.prototype._class = 'TCAD.TWO.Ellipse';
 
 const sq = (a) => a * a;
+const RECOVER_LENGTH = 100;
