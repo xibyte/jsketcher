@@ -136,7 +136,11 @@ function App2D() {
   }, 'circle');
 
   this.registerAction('addEllipse', "Add Ellipse", function () {
-    app.viewer.toolManager.takeControl(new EllipseTool(app.viewer));
+    app.viewer.toolManager.takeControl(new EllipseTool(app.viewer, false));
+  });
+
+  this.registerAction('addEllipticalArc', "Add Elliptical Arc", function () {
+    app.viewer.toolManager.takeControl(new EllipseTool(app.viewer, true));
   });
 
   this.registerAction('pan', "Pan", function () {

@@ -267,7 +267,7 @@ ParametricManager.prototype.lockConvex = function(objs, warnCallback) {
 };
 
 ParametricManager.prototype.tangent = function(objs) {
-  const ellipses = fetch.generic(objs, ['TCAD.TWO.Ellipse'], 0);
+  const ellipses = fetch.generic(objs, ['TCAD.TWO.Ellipse', 'TCAD.TWO.EllipticalArc'], 0);
   const lines = fetch.generic(objs, ['TCAD.TWO.Segment'], 1);
   if (ellipses.length > 0) {
     this.add(new Constraints.EllipseTangent(lines[0], ellipses[0]));
@@ -337,7 +337,7 @@ ParametricManager.prototype.pointOnArc = function(objs) {
 
 ParametricManager.prototype.pointOnEllipse = function(objs) {
   const points = fetch.generic(objs, ['TCAD.TWO.EndPoint'], 1);
-  const ellipses = fetch.generic(objs, ['TCAD.TWO.Ellipse'], 1);
+  const ellipses = fetch.generic(objs, ['TCAD.TWO.Ellipse', 'TCAD.TWO.EllipticalArc'], 1);
   this.add(new Constraints.PointOnEllipse(points[0], ellipses[0]));
 };
 
@@ -1374,6 +1374,7 @@ Constraints.PointOnEllipseInternal = function(point, ellipse) {
 
 Constraints.PointOnEllipseInternal.prototype.NAME = 'PointOnEllipseI';
 Constraints.PointOnEllipseInternal.prototype.UI_NAME = 'Point On Ellipse';
+Constraints.PointOnEllipseInternal.prototype.aux = true;
 
 Constraints.PointOnEllipseInternal.prototype.getSolveData = function() {
   var params = [];
