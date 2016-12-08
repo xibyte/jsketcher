@@ -34,3 +34,9 @@ export function constRef(value) {
     return value;
   };
 }
+
+export function swap(arr, i1, i2) {
+  const tmp = arr[i1];
+  arr[i1] = arr[i2];
+  arr[i2] = tmp;
+} 

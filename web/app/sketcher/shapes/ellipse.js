@@ -1,6 +1,5 @@
 import {Ref} from './ref'
 import {SketchObject} from './sketch-object'
-import {EllipseTool, STATE_RADIUS} from '../tools/ellipse'
 import {Constraints} from '../parametric'
 
 import * as math from '../../math/math';
@@ -95,10 +94,6 @@ export class Ellipse extends SketchObject {
     if (alternative) {
       return super.getDefaultTool(viewer, alternative);  
     } else {
-      const editTool = new EllipseTool(viewer);
-      editTool.ellipse = this;
-      editTool.state = STATE_RADIUS;
-      return editTool;
     }
   }
 }
