@@ -18,34 +18,46 @@ export function readSketchGeom(sketch) {
   function genId() {
     return _SKETCH_OBJ_COUNTER++;
   }
-  var out = {connections : [], loops : []};
+  const RESOLUTION = 20;
+  const out = {connections : [], loops : []};
   if (sketch.layers !== undefined) {
     for (var l = 0; l < sketch.layers.length; ++l) {
-      var layer = sketch.layers[l];
+      const layer = sketch.layers[l];
       if (layer.name == "_construction_") continue;
       for (var i = 0; i < layer.data.length; ++i) {
-        var obj = layer.data[i];
+        const obj = layer.data[i];
         if (obj.edge !== undefined) continue;
         if (!!obj.aux) continue;
         if (obj._class === 'TCAD.TWO.Segment') {
-          var segA = new Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
-          var segB = new Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
+          const segA = new Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
+          const segB = new Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
           out.connections.push(new SketchConnection(segA, segB, {_class : obj._class, id : genId()}));
         } else if (obj._class === 'TCAD.TWO.Arc') {
-          var arcA = new Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
-          var arcB = new Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
-          var arcCenter = new Vector(obj.points[2][1][1], obj.points[2][2][1], 0);
-          var approxedArc = approxArc(arcA, arcB, arcCenter, 20);
-          var arcData =  {_class : obj._class, id : genId()};
-          for (var j = 0; j < approxedArc.length - 1; j++) {
+          const arcA = new Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
+          const arcB = new Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
+          const arcCenter = new Vector(obj.points[2][1][1], obj.points[2][2][1], 0);
+          const approxedArc = approxArc(arcA, arcB, arcCenter, RESOLUTION);
+          const arcData =  {_class : obj._class, id : genId()};
+          for (let j = 0; j < approxedArc.length - 1; j++) {
             out.connections.push(new SketchConnection(approxedArc[j], approxedArc[j+1], arcData));
           }
+        } else if (obj._class === 'TCAD.TWO.EllipticalArc') {
+          const ep1 = ReadSketchPoint(obj.ep1);
+          const ep2 = ReadSketchPoint(obj.ep2);
+          const a = ReadSketchPoint(obj.a);
+          const b = ReadSketchPoint(obj.b);
+          const r = obj.r;
+          const approxedEllArc = approxEllipticalArc(ep1, ep2, a, b, r, RESOLUTION);
+          const arcData =  {_class : obj._class, id : genId()};
+          for (let j = 0; j < approxedEllArc.length - 1; j++) {
+            out.connections.push(new SketchConnection(approxedEllArc[j], approxedEllArc[j+1], arcData));
+          }
         } else if (obj._class === 'TCAD.TWO.Circle') {
-          var circleCenter = new Vector(obj.c[1][1], obj.c[2][1], 0);
-          var approxedCircle = approxCircle(circleCenter, obj.r, 20);
-          var circleData =  {_class : obj._class, id : genId()};
-          var loop = [];
-          var p, q, n = approxedCircle.length;
+          const circleCenter = new Vector(obj.c[1][1], obj.c[2][1], 0);
+          const approxedCircle = approxCircle(circleCenter, obj.r, RESOLUTION);
+          const circleData =  {_class : obj._class, id : genId()};
+          const loop = [];
+          let p, q, n = approxedCircle.length;
           for (p = n - 1, q = 0; q < n; p = q++) {
             loop.push(new SketchConnection(approxedCircle[p], approxedCircle[q], circleData));
           }
@@ -55,6 +67,10 @@ export function readSketchGeom(sketch) {
     }
   }
   return out;
+}
+
+function ReadSketchPoint(arr) {
+  return new Vector(arr[1][1], arr[2][1], 0)
 }
 
 export function approxArc(ao, bo, c, resolution) {
@@ -74,6 +90,36 @@ export function approxArc(ao, bo, c, resolution) {
 
   for (var i = 0; i < k - 1; ++i) {
     points.push(new Vector(c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)));
+    angle += step;
+  }
+  points.push(bo);
+  return points;
+}
+
+export function approxEllipticalArc(ep1, ep2, ao, bo, radiusY, resolution) {
+  const axisX = ep2.minus(ep1);
+  const radiusX = axisX.length() * 0.5;
+  axisX._normalize();
+  const c = ep1.plus(axisX.multiply(radiusX));
+  const a = ao.minus(c);
+  const b = bo.minus(c);
+  const points = [ao];
+  const rotation = Math.atan2(axisX.y, axisX.x);
+  let abAngle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
+  if (abAngle > Math.PI * 2) abAngle = Math.PI / 2 - abAngle;
+  if (abAngle < 0) abAngle = Math.PI * 2 + abAngle;
+
+  const sq = (a) => a * a; 
+
+  resolution = 1;
+
+  const step = resolution / (2 * Math.PI);
+  const k = Math.round(abAngle / step);
+  let angle = Math.atan2(a.y, a.x) + step - rotation;
+
+  for (let i = 0; i < k - 1; ++i) {
+    const r = Math.sqrt(1/( sq(Math.cos(angle)/radiusX) + sq(Math.sin(angle)/radiusY)));
+    points.push(new Vector(c.x + r*Math.cos(angle + rotation), c.y + r*Math.sin(angle + rotation)));
     angle += step;
   }
   points.push(bo);
