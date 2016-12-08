@@ -77,7 +77,7 @@ export class Ellipse extends SketchObject {
   }
 
   radiusAtAngle(angle) {
-    return Math.sqrt(1/( sq(Math.cos(angle)/this.radiusX) + sq(Math.sin(angle)/this.radiusY)))
+    return Math.sqrt(1/( sq(Math.cos(angle)/this.radiusX) + sq(Math.sin(angle)/this.radiusY)));
   }
 
   normalDistance(aim) {
