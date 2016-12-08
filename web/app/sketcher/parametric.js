@@ -786,6 +786,8 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
   function solve(rough, alg) {
     return solver.solveSystem(rough, alg);
   }
+  
+  const viewer = this.viewer;
   function sync() {
     for (var paramId in solverParamsDict) {
       var solverParam = solverParamsDict[paramId];
@@ -801,6 +803,7 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
         slave.set(master.get());
       }
     }
+    viewer.equalizeLinkedEndpoints();
   }
 
   function updateParameter(p) {

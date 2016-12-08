@@ -151,6 +151,10 @@ Viewer.prototype.add = function(obj, layer) {
   obj.layer = layer;
 };
 
+function isEndPoint(o) {
+  return o._class === 'TCAD.TWO.EndPoint'
+}
+
 Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
 
   buffer *= 0.5;
@@ -176,7 +180,7 @@ Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
       var before = pickResult.length;
       objs[j].accept(function(o) {
         if (!o.visible) return true;
-        if (onlyPoints && o._class !== 'TCAD.TWO.EndPoint') {
+        if (onlyPoints && !isEndPoint(o)) {
           return false;  
         }
         l = o.normalDistance(aim);
@@ -241,10 +245,10 @@ Viewer.prototype.repaint = function() {
 };
 
 Viewer.__SKETCH_DRAW_PIPELINE = [
-  (obj) => obj._class !== 'TCAD.TWO.EndPoint' && obj.marked === null,
-  (obj) => obj._class !== 'TCAD.TWO.EndPoint' && obj.marked !== null,
-  (obj) => obj._class === 'TCAD.TWO.EndPoint' && obj.marked === null,
-  (obj) => obj._class === 'TCAD.TWO.EndPoint' && obj.marked !== null
+  (obj) => !isEndPoint(obj) && obj.marked === null,
+  (obj) => !isEndPoint(obj) && obj.marked !== null,
+  (obj) =>  isEndPoint(obj) && obj.marked === null,
+  (obj) =>  isEndPoint(obj) && obj.marked !== null
 ];
 
 Viewer.__SIMPLE_DRAW_PIPELINE = [
@@ -330,11 +334,9 @@ Viewer.prototype._screenToModel = function(x, y) {
 };
 
 Viewer.prototype.accept = function(visitor) {
-  for (var i = 0; i < this.layers.length; i++) {
-    var objs = this.layers[i].objects;
-    var result = null;
-    for (var j = 0; j < objs.length; j++) {
-      if (!objs[j].accept(visitor)) {
+  for (let layer of this.layers) {
+    for (let object of layer.objects) {
+      if (!object.accept(visitor)) {
         return false;
       }
     }
@@ -426,6 +428,29 @@ Viewer.prototype.deselectAll = function() {
   }
   while(this.selected.length > 0) this.selected.pop();
 };
+
+Viewer.prototype.equalizeLinkedEndpoints = function() {
+  const visited = new Set();
+
+  function equalize(obj) {
+    if (visited.has(obj.id)) return;
+    visited.add(obj.id);
+    for (let link of obj.linked) {
+      if (isEndPoint(link)) {
+        equalize(obj, link);
+        link.setFromPoint(obj);
+        equalize(link);
+      }
+    }
+  }
+  this.accept((obj) => {
+    if (isEndPoint(obj)) {
+      equalize(obj);
+    }
+    return true;
+  });
+};
+
 
 /** @constructor */
 function Layer(name, style) {
