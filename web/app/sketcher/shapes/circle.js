@@ -44,9 +44,6 @@ export class Circle extends SketchObject {
     if (alternative) {
       return super.getDefaultTool(viewer, alternative);
     } else {
-      const editTool = new EditCircleTool(viewer, null);
-      editTool.circle = this;
-      return editTool;
     }
   }
 }

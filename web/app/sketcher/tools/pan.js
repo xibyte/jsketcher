@@ -1,4 +1,5 @@
 import {Tool} from './tool'
+import {GetShapeEditTool} from './edit-tools-map'
 
 export class PanTool extends Tool {
   constructor(viewer) {
@@ -57,7 +58,7 @@ export class PanTool extends Tool {
           }
           this.viewer.select([toSelect], true);
           if (!toSelect.isAuxOrLinkedTo()) {
-            var tool = toSelect.getDefaultTool(this.viewer, e.altKey);
+            const tool = GetShapeEditTool(this.viewer, toSelect, e.altKey);
             tool.mousedown(e);
             this.viewer.toolManager.switchTool(tool);
           }

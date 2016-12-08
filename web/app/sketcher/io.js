@@ -5,6 +5,7 @@ import {EndPoint} from './shapes/point'
 import {Segment} from './shapes/segment'
 import {Circle} from './shapes/circle'
 import {Ellipse} from './shapes/ellipse'
+import {EllipticalArc} from './shapes/elliptical-arc'
 import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
 import {Constraints} from './parametric'
 import Vector from '../math/vector'
@@ -14,7 +15,8 @@ var Types = {
   SEGMENT   : 'TCAD.TWO.Segment',
   ARC       : 'TCAD.TWO.Arc',
   CIRCLE    : 'TCAD.TWO.Circle',
-  ELLIPSE    : 'TCAD.TWO.Ellipse',
+  ELLIPSE   : 'TCAD.TWO.Ellipse',
+  ELL_ARC   : 'TCAD.TWO.EllipticalArc',
   DIM       : 'TCAD.TWO.Dimension',
   HDIM      : 'TCAD.TWO.HDimension',
   VDIM      : 'TCAD.TWO.VDimension',
@@ -119,6 +121,13 @@ IO.prototype._loadSketch = function(sketch) {
           const ep1 = endPoint(obj['ep1']);
           const ep2 = endPoint(obj['ep2']);
           skobj = new Ellipse(ep1, ep2);
+          skobj.r.set(obj['r']);
+        } else if (_class === T.ELL_ARC) {
+          const ep1 = endPoint(obj['ep1']);
+          const ep2 = endPoint(obj['ep2']);
+          const a = endPoint(obj['a']);
+          const b = endPoint(obj['b']);
+          skobj = new EllipticalArc(ep1, ep2, a, b);
           skobj.r.set(obj['r']);
         } else if (_class === T.HDIM) {
           skobj = new HDimension(obj['a'], obj['b']);
@@ -298,6 +307,12 @@ IO.prototype._serializeSketch = function() {
         } else if (obj._class === T.ELLIPSE) {
           to['ep1'] = point(obj.ep1);
           to['ep2'] = point(obj.ep2);
+          to['r'] = obj.r.get();
+        } else if (obj._class === T.ELL_ARC) {
+          to['ep1'] = point(obj.ep1);
+          to['ep2'] = point(obj.ep2);
+          to['a'] = point(obj.a);
+          to['b'] = point(obj.b);
           to['r'] = obj.r.get();
         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
           to['a'] = obj.a.id;

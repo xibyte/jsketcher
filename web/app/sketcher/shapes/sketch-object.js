@@ -35,10 +35,6 @@ export class SketchObject extends Shape {
     return false;
   }
   
-  getDefaultTool(viewer) {
-    return new DragTool(this, viewer);
-  }
-  
   isAuxOrLinkedTo() {
     if (!!this.aux) {
       return true;
