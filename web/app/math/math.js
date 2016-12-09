@@ -87,3 +87,4 @@ export function _matrix(m, n) {
   return out;
 }
 
+export const sq = (a) => a * a;
