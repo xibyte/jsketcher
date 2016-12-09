@@ -39,13 +39,6 @@ export class Circle extends SketchObject {
   normalDistance(aim) {
     return Math.abs(math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.r.get());
   }
-  
-  getDefaultTool(viewer, alternative) {
-    if (alternative) {
-      return super.getDefaultTool(viewer, alternative);
-    } else {
-    }
-  }
 }
 
 Circle.prototype._class = 'TCAD.TWO.Circle';
