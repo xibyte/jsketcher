@@ -1,6 +1,7 @@
 import Vector from '../math/vector'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
+import {LUT} from '../math/bezier-cubic'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import {HashTable} from '../utils/hashmap'
 import Counters from './counters'
@@ -18,6 +19,10 @@ export function readSketchGeom(sketch) {
   function genId() {
     return _SKETCH_OBJ_COUNTER++;
   }
+  function createData(obj) {
+    return {_class : obj._class, id : genId()}
+  }
+  
   const RESOLUTION = 20;
   const out = {connections : [], loops : []};
   if (sketch.layers !== undefined) {
@@ -31,13 +36,13 @@ export function readSketchGeom(sketch) {
         if (obj._class === 'TCAD.TWO.Segment') {
           const segA = new Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
           const segB = new Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
-          out.connections.push(new SketchConnection(segA, segB, {_class : obj._class, id : genId()}));
+          out.connections.push(new SketchConnection(segA, segB, createData(obj)));
         } else if (obj._class === 'TCAD.TWO.Arc') {
           const arcA = new Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
           const arcB = new Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
           const arcCenter = new Vector(obj.points[2][1][1], obj.points[2][2][1], 0);
           const approxedArc = approxArc(arcA, arcB, arcCenter, RESOLUTION);
-          const arcData =  {_class : obj._class, id : genId()};
+          const arcData =  createData(obj);
           for (let j = 0; j < approxedArc.length - 1; j++) {
             out.connections.push(new SketchConnection(approxedArc[j], approxedArc[j+1], arcData));
           }
@@ -48,14 +53,24 @@ export function readSketchGeom(sketch) {
           const b = ReadSketchPoint(obj.b);
           const r = obj.r;
           const approxedEllArc = approxEllipticalArc(ep1, ep2, a, b, r, RESOLUTION);
-          const arcData =  {_class : obj._class, id : genId()};
+          const arcData =  createData(obj);
           for (let j = 0; j < approxedEllArc.length - 1; j++) {
             out.connections.push(new SketchConnection(approxedEllArc[j], approxedEllArc[j+1], arcData));
+          }
+        } else if (obj._class === 'TCAD.TWO.BezierCurve') {
+          const a = ReadSketchPoint(obj.a);
+          const b = ReadSketchPoint(obj.b);
+          const cp1 = ReadSketchPoint(obj.cp1);
+          const cp2 = ReadSketchPoint(obj.cp2);
+          const approxedCurve = approxBezierCurve(a, b, cp1, cp2, RESOLUTION);
+          const curvedData =  createData(obj);
+          for (let j = 0; j < approxedCurve.length - 1; j++) {
+            out.connections.push(new SketchConnection(approxedCurve[j], approxedCurve[j+1], curvedData));
           }
         } else if (obj._class === 'TCAD.TWO.Circle') {
           const circleCenter = new Vector(obj.c[1][1], obj.c[2][1], 0);
           const approxedCircle = approxCircle(circleCenter, obj.r, RESOLUTION);
-          const circleData =  {_class : obj._class, id : genId()};
+          const circleData =  createData(obj);
           const loop = [];
           let p, q, n = approxedCircle.length;
           for (p = n - 1, q = 0; q < n; p = q++) {
@@ -140,6 +155,9 @@ export function approxCircle(c, r, resolution) {
   return points;
 }
 
+export function approxBezierCurve(a, b, cp1, cp2, resolution) {
+  return LUT(a, b, cp1, cp2, 1);
+}
 
 export function getSketchedPolygons3D(app, face) {
 
