@@ -9,6 +9,7 @@ import {AddArcTool} from './tools/arc'
 import {EditCircleTool} from './tools/circle'
 import {FilletTool} from './tools/fillet'
 import {EllipseTool} from './tools/ellipse'
+import {BezierCurveTool} from './tools/bezier-curve'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 
@@ -141,6 +142,10 @@ function App2D() {
 
   this.registerAction('addEllipticalArc', "Add Elliptical Arc", function () {
     app.viewer.toolManager.takeControl(new EllipseTool(app.viewer, true));
+  });
+
+  this.registerAction('addBezierCurve', "Add Bezier Curve", function () {
+    app.viewer.toolManager.takeControl(new BezierCurveTool(app.viewer));
   });
 
   this.registerAction('pan', "Pan", function () {

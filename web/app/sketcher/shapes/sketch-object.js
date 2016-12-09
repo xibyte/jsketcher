@@ -1,6 +1,4 @@
 import {Generator} from '../id-generator'
-import {SetStyle} from './draw-utils'
-import {DragTool} from '../tools/drag'
 import {Shape} from './shape'
 
 export class SketchObject extends Shape {
@@ -78,7 +76,7 @@ export class SketchObject extends Shape {
     if (!this.visible) return;
     if (this.marked != null) {
       ctx.save();
-      SetStyle(this.marked, ctx, scale);
+      viewer.setStyle(this.marked, ctx);
     }
     this.drawImpl(ctx, scale, viewer);
     if (this.marked != null) ctx.restore();

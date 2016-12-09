@@ -1,3 +1,4 @@
+import {EndPoint} from '../shapes/point'
 
 export class Tool {
   
@@ -44,13 +45,24 @@ export class Tool {
 
   snapIfNeed(p) {
     if (this.viewer.snapped != null) {
-      var snapWith = this.viewer.snapped;
+      const snapWith = this.viewer.snapped;
       this.viewer.cleanSnap();
+      p.setFromPoint(snapWith);
       this.viewer.parametricManager.linkObjects([p, snapWith]);
       this.viewer.parametricManager.refresh();
     }
   }
-  
+
+  endpoint(e) {
+    const ep = new EndPoint();
+    if (this.viewer.snapped != null) {
+      this.snapIfNeed(ep);
+    } else {
+      ep.setFromPoint(this.viewer.screenToModel(e))
+    }
+    return ep;
+  }
+
   static dumbMode(e) {
     return e.ctrlKey || e.metaKey;
   }
