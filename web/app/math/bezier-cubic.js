@@ -31,10 +31,3 @@ export function compute(t, from, to, controlPoint1, controlPoint2) {
     a * p0.z + b * p1.z + c * p2.z + d * p3.z
   );
 }
-
-function CurveData(a, b, cp1, cp2) {
-  this.a = a;
-  this.b = b;
-  this.cp1 = cp1;
-  this.cp2 = cp2;
-}
