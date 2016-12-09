@@ -1,5 +1,6 @@
 import {Generator} from './id-generator'
-import {Layer, Styles} from './viewer2d'
+import {Layer} from './viewer2d'
+import {Styles} from './styles'
 import {Arc} from './shapes/arc'
 import {EndPoint} from './shapes/point'
 import {Segment} from './shapes/segment'
