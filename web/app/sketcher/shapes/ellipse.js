@@ -89,13 +89,6 @@ export class Ellipse extends SketchObject {
   static findMinorRadius(majorRadius, pntRadius, pntAngle) {
     return Math.abs( Math.sin(pntAngle) /  Math.sqrt(1 / sq(pntRadius) - sq(Math.cos(pntAngle) / majorRadius)) );
   }
-
-  getDefaultTool(viewer, alternative) {
-    if (alternative) {
-      return super.getDefaultTool(viewer, alternative);  
-    } else {
-    }
-  }
 }
 Ellipse.prototype._class = 'TCAD.TWO.Ellipse';
 
