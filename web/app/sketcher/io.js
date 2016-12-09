@@ -90,6 +90,7 @@ IO.prototype._loadSketch = function(sketch) {
       var boundaryProcessing = layerName == IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
       var layer = getLayer(this.viewer, layerName);
       if (!!ioLayer.style) layer.style = ioLayer.style;
+      layer.readOnly = !!ioLayer.readOnly;
       var layerData = ioLayer['data'];
       for (i = 0; i < layerData.length; ++i) {
         var obj = layerData[i];
@@ -296,7 +297,7 @@ IO.prototype._serializeSketch = function() {
     var layers = toSave[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
-      var toLayer = {'name' : layer.name, style : layer.style, 'data' : []};
+      var toLayer = {'name' : layer.name, style : layer.style, readOnly: layer.readOnly, 'data' : []};
       sketch['layers'].push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
