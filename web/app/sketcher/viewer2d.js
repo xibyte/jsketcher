@@ -137,7 +137,7 @@ Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
       objs[j].accept(function(o) {
         if (!o.visible) return true;
         if (onlyPoints && !isEndPoint(o)) {
-          return false;  
+          return true;  
         }
         l = o.normalDistance(aim);
         if (l >= 0 && l <= buffer && !isFiltered(o)) {
@@ -230,12 +230,28 @@ Viewer.prototype.__drawWorkspace = function(ctx, workspace, pipeline) {
 };
 
 Viewer.prototype.__draw = function(ctx, layer, obj) {
-  let style = obj.style != null ? obj.style : layer.style;
+  const style = this.getStyleForObject(layer, obj);
   if (style !== this.__prevStyle) {
-    draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
+    this.setStyle(style, ctx);
   }
   this.__prevStyle = style;
   obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
+};
+
+Viewer.prototype.getStyleForObject = function(layer, obj) {
+  if (obj.style != null) {
+    return obj.style;
+  } else if (obj.role != null) {
+    const style = layer.stylesByRoles[obj.role];
+    if (style) {
+      return style;
+    }
+  }
+  return layer.style;  
+};
+  
+Viewer.prototype.setStyle = function(style, ctx) {
+  draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
 };
 
 Viewer.prototype.snap = function(x, y, excl) {
@@ -412,9 +428,17 @@ Viewer.prototype.equalizeLinkedEndpoints = function() {
 function Layer(name, style) {
   this.name = name;
   this.style = style;
+  this.stylesByRoles = {
+    'construction': Styles.CONSTRUCTION_OF_OBJECT  
+  };
   this.objects = [];
   this.readOnly = false; // This is actually a mark for boundary layers coming from 3D
 }
+
+Layer.prototype.add = function(object) {
+  this.objects.push(object);
+  object.layer = this;
+};
 
 Viewer.prototype.fullHeavyUIRefresh = function() {
   this.refresh();

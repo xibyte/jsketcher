@@ -87,4 +87,10 @@ export function _matrix(m, n) {
   return out;
 }
 
+export function rotate(px, py, angle) {
+  const x =  px * Math.cos(angle) - py * Math.sin(angle)
+  const y =  px * Math.sin(angle) + py * Math.cos(angle);
+  return {x, y};
+}
+
 export const sq = (a) => a * a;
