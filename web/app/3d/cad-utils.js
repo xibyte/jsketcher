@@ -1,4 +1,5 @@
 import Vector from '../math/vector'
+import BBox from '../math/bbox'
 import {HashTable} from '../utils/hashmap'
 import {Graph} from '../math/graph'
 import * as math from '../math/math'
@@ -365,47 +366,6 @@ export function area(contour) {
 
 export function isCCW(path2D) {
   return area(path2D) >= 0;
-}
-
-export function BBox() {
-  this.minX = Number.MAX_VALUE;
-  this.minY = Number.MAX_VALUE;
-  this.maxX = -Number.MAX_VALUE;
-  this.maxY = -Number.MAX_VALUE;
-  this.checkBounds = function(x, y) {
-    this.minX = Math.min(this.minX, x);
-    this.minY = Math.min(this.minY, y);
-    this.maxX = Math.max(this.maxX, x);
-    this.maxY = Math.max(this.maxY, y);
-  };
-
-  this.center = function() {
-    return new Vector(this.minX + (this.maxX - this.minX) / 2, this.minY + (this.maxY - this.minY) / 2, 0)
-  };
-
-  this.width = function() {
-    return this.maxX - this.minX;
-  };
-
-  this.height = function() {
-    return this.maxY - this.minY;
-  };
-
-  this.expand = function(delta) {
-    this.minX -= delta;
-    this.minY -= delta;
-    this.maxX += delta;
-    this.maxY += delta;
-  };
-
-  this.toPolygon = function() {
-    return [
-      new Vector(this.minX, this.minY, 0),
-      new Vector(this.maxX, this.minY, 0),
-      new Vector(this.maxX, this.maxY, 0),
-      new Vector(this.minX, this.maxY, 0)
-    ];
-  }
 }
 
 export function calculateExtrudedLid(sourcePolygon, normal, direction, expansionFactor) {

@@ -1,4 +1,5 @@
 import Vector from './vector'
+import BBox from './bbox'
 
 export const TOLERANCE = 1E-6;
 
@@ -97,6 +98,23 @@ export function rotateInPlace(px, py, angle, out) {
   return out;
 }
 
+export function polygonOffset( polygon, scale ) {
+  const origBBox = new BBox();
+  const scaledBBox = new BBox();
+  const result = [];
+  for (let point of polygon) {
+    const scaledPoint = new Vector(point.x, point.y)._multiply(scale);
+    result.push(scaledPoint);
+    origBBox.checkPoint(point);
+    scaledBBox.checkPoint(scaledPoint);
+  }
+  const alignVector = scaledBBox.center()._minus(origBBox.center());
+  for (let point of result) {
+    point._minus(alignVector);
+  }
+  return result;
+}
+
 export function isPointInsidePolygon( inPt, inPolygon ) {
   var EPSILON = TOLERANCE;
 
@@ -141,6 +159,5 @@ export function isPointInsidePolygon( inPt, inPolygon ) {
 
   return	inside;
 }
-
 
 export const sq = (a) => a * a;
