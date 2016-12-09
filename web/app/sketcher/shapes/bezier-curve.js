@@ -48,12 +48,12 @@ export class BezierCurve extends SketchObject {
     ctx.bezierCurveTo(this.cp1.x, this.cp1.y, this.cp2.x, this.cp2.y, this.b.x, this.b.y);
     ctx.stroke();
     
-    //debug lut
-    if (this.lut) {
-      for (let p of this.lut) {
-        draw_utils.DrawPoint(ctx, p.x, p.y, 3, scale);
-      }
-    }
+    ////debug lut
+    //if (this.lut) {
+    //  for (let p of this.lut) {
+    //    draw_utils.DrawPoint(ctx, p.x, p.y, 3, scale);
+    //  }
+    //}
   }
 }
 BezierCurve.prototype._class = 'TCAD.TWO.BezierCurve';
