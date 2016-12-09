@@ -7,6 +7,7 @@ import {Segment} from './shapes/segment'
 import {Circle} from './shapes/circle'
 import {Ellipse} from './shapes/ellipse'
 import {EllipticalArc} from './shapes/elliptical-arc'
+import {BezierCurve} from './shapes/bezier-curve'
 import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
 import {Constraints} from './parametric'
 import Vector from '../math/vector'
@@ -18,6 +19,7 @@ var Types = {
   CIRCLE    : 'TCAD.TWO.Circle',
   ELLIPSE   : 'TCAD.TWO.Ellipse',
   ELL_ARC   : 'TCAD.TWO.EllipticalArc',
+  BEZIER    : 'TCAD.TWO.BezierCurve',
   DIM       : 'TCAD.TWO.Dimension',
   HDIM      : 'TCAD.TWO.HDimension',
   VDIM      : 'TCAD.TWO.VDimension',
@@ -130,6 +132,12 @@ IO.prototype._loadSketch = function(sketch) {
           const b = endPoint(obj['b']);
           skobj = new EllipticalArc(ep1, ep2, a, b);
           skobj.r.set(obj['r']);
+        } else if (_class === T.BEZIER) {
+          const a = endPoint(obj['a']);
+          const b = endPoint(obj['b']);
+          const cp1 = endPoint(obj['cp1']);
+          const cp2 = endPoint(obj['cp2']);
+          skobj = new BezierCurve(a, b, cp1, cp2);
         } else if (_class === T.HDIM) {
           skobj = new HDimension(obj['a'], obj['b']);
           skobj.flip = obj['flip'];
@@ -315,6 +323,11 @@ IO.prototype._serializeSketch = function() {
           to['a'] = point(obj.a);
           to['b'] = point(obj.b);
           to['r'] = obj.r.get();
+        } else if (obj._class === T.BEZIER) {
+          to['a'] = point(obj.a);
+          to['b'] = point(obj.b);
+          to['cp1'] = point(obj.cp1);
+          to['cp2'] = point(obj.cp2);
         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
           to['a'] = obj.a.id;
           to['b'] = obj.b.id;

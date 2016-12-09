@@ -48,6 +48,10 @@ export class EndPoint extends SketchObject {
   setFromArray(arr) {
     this.setXY(arr[0], arr[1]);
   }
+  
+  copy() {
+    return new EndPoint(this.x, this.y);
+  }
 }
 EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
 
