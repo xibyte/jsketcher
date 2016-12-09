@@ -1,6 +1,8 @@
 import {Ref} from './ref'
 import {SketchObject} from './sketch-object'
 import {Segment} from './segment'
+import {LUT} from '../../math/bezier-cubic'
+import * as draw_utils from '../shapes/draw-utils'
 
 import * as math from '../../math/math';
 
@@ -27,8 +29,17 @@ export class BezierCurve extends SketchObject {
     this.cp2.collectParams(params);
   }
 
-  normalDistance() {
-    return 1000000;
+  normalDistance(aim, scale) {
+    this.lut = LUT(this.a, this.b, this.cp1, this.cp2, scale);
+    const lut = this.lut;
+    let hero = -1;
+    for (let p = lut.length - 1, q = 0; q < lut.length; p = q ++) {
+      const dist = Math.min(Segment.calcNormalDistance(aim, lut[p], lut[q]));        
+      if (dist != -1) {
+        hero = hero == -1 ? dist : Math.min(dist, hero);
+      }
+    }
+    return hero;
   }
   
   drawImpl(ctx, scale, viewer) {
@@ -36,6 +47,13 @@ export class BezierCurve extends SketchObject {
     ctx.moveTo(this.a.x, this.a.y);
     ctx.bezierCurveTo(this.cp1.x, this.cp1.y, this.cp2.x, this.cp2.y, this.b.x, this.b.y);
     ctx.stroke();
+    
+    //debug lut
+    if (this.lut) {
+      for (let p of this.lut) {
+        draw_utils.DrawPoint(ctx, p.x, p.y, 3, scale);
+      }
+    }
   }
 }
 BezierCurve.prototype._class = 'TCAD.TWO.BezierCurve';

@@ -29,16 +29,17 @@ export class Segment extends SketchObject {
     this.a.collectParams(params);
     this.b.collectParams(params);
   }
-  
+
   normalDistance(aim) {
-    var x = aim.x;
-    var y = aim.y;
-  
-    var ab = new Vector(this.b.x - this.a.x, this.b.y - this.a.y)
-    var e = ab.normalize();
-    var a = new Vector(aim.x - this.a.x, aim.y - this.a.y);
-    var b = e.multiply(a.dot(e));
-    var n = a.minus(b);
+    return Segment.calcNormalDistance(aim, this.a, this.b);
+  }
+
+  static calcNormalDistance(aim, segmentA, segmentB) {
+    const ab = new Vector(segmentB.x - segmentA.x, segmentB.y - segmentA.y)
+    const e = ab.normalize();
+    const a = new Vector(aim.x - segmentA.x, aim.y - segmentA.y);
+    const b = e.multiply(a.dot(e));
+    const n = a.minus(b);
   
     //Check if vector b lays on the vector ab
     if (b.length() > ab.length()) {

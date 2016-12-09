@@ -134,12 +134,12 @@ Viewer.prototype.search = function(x, y, buffer, deep, onlyPoints, filter) {
     for (var j = 0; j < objs.length; j++) {
       var l = unreachable + 1;
       var before = pickResult.length;
-      objs[j].accept(function(o) {
+      objs[j].accept((o) => {
         if (!o.visible) return true;
         if (onlyPoints && !isEndPoint(o)) {
           return true;  
         }
-        l = o.normalDistance(aim);
+        l = o.normalDistance(aim, this.scale);
         if (l >= 0 && l <= buffer && !isFiltered(o)) {
           pickResult.push(o);
           return false;
