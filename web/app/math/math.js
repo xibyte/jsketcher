@@ -88,9 +88,13 @@ export function _matrix(m, n) {
 }
 
 export function rotate(px, py, angle) {
-  const x =  px * Math.cos(angle) - py * Math.sin(angle)
-  const y =  px * Math.sin(angle) + py * Math.cos(angle);
-  return {x, y};
+  return rotateInPlace(px, py, angle, new Vector());
+}
+
+export function rotateInPlace(px, py, angle, out) {
+  out.x =  px * Math.cos(angle) - py * Math.sin(angle);
+  out.y =  px * Math.sin(angle) + py * Math.cos(angle);
+  return out;
 }
 
 export const sq = (a) => a * a;
