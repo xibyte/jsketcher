@@ -1,5 +1,6 @@
 import App2D from './sketcher/sketcher-app';
-import {Layer, Styles} from './sketcher/viewer2d';
+import {Styles} from './sketcher/styles'
+import {Layer} from './sketcher/viewer2d';
 import * as ui from './ui/ui.js';
 import * as toolkit from './ui/toolkit';
 import {askNumber} from './utils/utils';

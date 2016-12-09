@@ -1,5 +1,5 @@
 import Vector from '../../math/vector'
-import {Styles} from '../viewer2d'
+import {Styles} from '../styles'
 import * as fetch from '../fetchers'
 import * as math from '../../math/math'
 import {EndPoint} from '../shapes/point'
