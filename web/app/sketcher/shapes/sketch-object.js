@@ -12,6 +12,10 @@ export class SketchObject extends Shape {
     this.layer = null;
   }
 
+  normalDistance(aim, scale) {
+    return -1;
+  }
+  
   addChild(child) {
     this.children.push(child);
     child.parent = this;
