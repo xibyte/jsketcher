@@ -485,9 +485,21 @@ export function createShared() {
   return shared;
 }
 
+export const CURVE_CLASSES = new Set();
+CURVE_CLASSES.add('TCAD.TWO.Arc');
+CURVE_CLASSES.add('TCAD.TWO.Circle');
+CURVE_CLASSES.add('TCAD.TWO.Ellipse');
+CURVE_CLASSES.add('TCAD.TWO.EllipticalArc');
+CURVE_CLASSES.add('TCAD.TWO.BezierCurve');
+
+export function isCurveClass(className) {
+  return CURVE_CLASSES.has(className);
+}
+
 export function isSmoothPiece(shared) {
-  return shared.__tcad && !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom &&
-  (shared.__tcad.csgInfo.derivedFrom._class === 'TCAD.TWO.Arc' || shared.__tcad.csgInfo.derivedFrom._class === 'TCAD.TWO.Circle');
+  return shared.__tcad && 
+    !!shared.__tcad.csgInfo && !!shared.__tcad.csgInfo.derivedFrom 
+    && isCurveClass(shared.__tcad.csgInfo.derivedFrom._class);
 }
 
 var POLYGON_COUNTER = 0;
