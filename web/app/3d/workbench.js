@@ -156,7 +156,7 @@ export function approxCircle(c, r, resolution) {
 }
 
 export function approxBezierCurve(a, b, cp1, cp2, resolution) {
-  return LUT(a, b, cp1, cp2, 1);
+  return LUT(a, b, cp1, cp2, 10);
 }
 
 export function getSketchedPolygons3D(app, face) {
