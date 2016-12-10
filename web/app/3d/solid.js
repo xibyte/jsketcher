@@ -3,7 +3,7 @@ import Vector from '../math/vector'
 import Counters from './counters'
 import {reconstructSketchBounds} from './workbench'
 import {Matrix3, AXIS} from '../math/l3space'
-import {arrFlatten1L} from './cad-utils'
+import {arrFlatten1L, isCurveClass} from './cad-utils'
 import DPR from '../utils/dpr'
 
 /** @constructor */
@@ -107,7 +107,7 @@ Solid.prototype.vanish = function() {
 
 Solid.prototype.collectCurvedSurface = function(face) {
   var derivedFrom = getDerivedFrom(face.csgGroup.shared);
-  if (derivedFrom === null || derivedFrom._class !== "TCAD.TWO.Arc" && derivedFrom._class !== "TCAD.TWO.Circle" ) return;
+  if (derivedFrom === null || !isCurveClass(derivedFrom._class)) return;
   var surfaces = this.curvedSurfaces[derivedFrom.id];
   if (surfaces === undefined) {
     surfaces = [];
