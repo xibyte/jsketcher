@@ -12,7 +12,7 @@ import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim
 import {Constraints} from './parametric'
 import Vector from '../math/vector'
 
-var Types = {
+const Types = {
   END_POINT : 'TCAD.TWO.EndPoint',
   SEGMENT   : 'TCAD.TWO.Segment',
   ARC       : 'TCAD.TWO.Arc',
@@ -161,6 +161,15 @@ IO.prototype._loadSketch = function(sketch) {
           layer.objects.push(skobj);
           skobj.layer = layer;
           index[obj['id']] = skobj;
+          
+          //reindex non point children to recover constraints
+          const childrenIds = obj['children'];
+          if (childrenIds) {
+            const children = nonPointChildren(skobj);
+            for (let childIdx = 0; childIdx < childrenIds.length; childIdx++) {
+              index[childrenIds[childIdx]] = children[childIdx];
+            }
+          }
         }
         if (boundaryProcessing) {
           if (_class === T.SEGMENT) this.synchLine(skobj, boundary.lines.shift());
@@ -335,7 +344,11 @@ IO.prototype._serializeSketch = function() {
           to['flip'] = obj.flip;
         } else if (obj._class === T.DDIM) {
           to['obj'] = obj.obj.id;
-        } 
+        }
+        const children = nonPointChildren(obj).map(c => c.id);
+        if (children.length != 0) {
+          to['children'] = children;
+        }
       }
     }
   }
@@ -357,6 +370,17 @@ IO.prototype._serializeSketch = function() {
   }
   return sketch;
 };
+
+function nonPointChildren(obj){
+  const children = [];
+  obj.accept((o) => {
+    if (o._class !== Types.END_POINT) {
+      children.push(o);
+    }
+    return true;
+  });
+  return children;
+}
 
 IO.prototype.parseConstr = function (c, index) {
   var name = c[0];
