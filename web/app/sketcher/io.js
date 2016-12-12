@@ -464,6 +464,15 @@ function BBox() {
       this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
     } else if (obj._class === T.CIRCLE) {
       this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
+    } else if (obj._class === T.ELLIPSE || obj._class === T.ELL_ARC) {
+      this.checkCircBounds(obj.centerX, obj.centerY, Math.max(obj.radiusX, obj.radiusY));
+    } else if (obj) {
+      obj.accept((o) => {
+        if (o._class == T.END_POINT) {
+          this.checkBounds(o.x, o.y);
+        }
+        return true;
+      });
 //    } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
     }
   };
