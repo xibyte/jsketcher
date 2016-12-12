@@ -227,14 +227,10 @@ function App2D() {
     app.viewer.parametricManager.pointOnLine(app.viewer.selected);
   });
 
-  this.registerAction('pointOnArc', "Point On Arc", function () {
+  this.registerAction('pointOnArc', "Point On Arc / Ellipse", function () {
     app.viewer.parametricManager.pointOnArc(app.viewer.selected);
   });
   
-  this.registerAction('pointOnEllipse', "Point On Ellipse", function () {
-    app.viewer.parametricManager.pointOnEllipse(app.viewer.selected);
-  });
-
   this.registerAction('pointInMiddle', "Point In the Middle", function () {
     app.viewer.parametricManager.pointInMiddle(app.viewer.selected);
   });
