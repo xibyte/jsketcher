@@ -52,7 +52,7 @@ Supported Constraints
 * Tangent
 * Radius
 * Point On Line
-* Point On Arc
+* Point On Arc / Ellipse
 * Point In Middle
 * Angle
 * Symmetry
