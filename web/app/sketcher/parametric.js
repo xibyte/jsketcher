@@ -330,15 +330,14 @@ ParametricManager.prototype.symmetry = function(objs) {
 };
 
 ParametricManager.prototype.pointOnArc = function(objs) {
-  var points = fetch.generic(objs, ['TCAD.TWO.EndPoint'], 1);
-  var arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
-  this.add(new Constraints.PointOnArc(points[0], arcs[0]));
-};
-
-ParametricManager.prototype.pointOnEllipse = function(objs) {
   const points = fetch.generic(objs, ['TCAD.TWO.EndPoint'], 1);
-  const ellipses = fetch.generic(objs, ['TCAD.TWO.Ellipse', 'TCAD.TWO.EllipticalArc'], 1);
-  this.add(new Constraints.PointOnEllipse(points[0], ellipses[0]));
+  const arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle', 'TCAD.TWO.Ellipse', 'TCAD.TWO.EllipticalArc'], 1);
+  const arc = arcs[0];
+  if (arc._class == 'TCAD.TWO.Ellipse' || arc._class == 'TCAD.TWO.EllipticalArc') {
+    this.add(new Constraints.PointOnEllipse(points[0], arc));
+  } else {
+    this.add(new Constraints.PointOnArc(points[0], arc));
+  }
 };
 
 ParametricManager.prototype.pointOnLine = function(objs) {
