@@ -87,6 +87,7 @@ function NumberWidget(name, initValue, baseStep, round) {
   round = round || 0;
   this.min = null;
   this.max = null;
+  this.accelerator = 100;
   var scope = this;
   var lastValue = null;
   function trigger() {
@@ -113,7 +114,7 @@ function NumberWidget(name, initValue, baseStep, round) {
     }
     var val = $(this).val();
     if (!val) val = 0;
-    var step = baseStep * (e.shiftKey ? 100 : 1);
+    var step = baseStep * (e.shiftKey ? scope.accelerator : 1);
     val = parseFloat(val) + (delta < 0 ? -step : step);
     if (scope.min != null && val < scope.min) {
       val = scope.min;
