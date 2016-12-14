@@ -107,9 +107,16 @@ OpWizard.prototype.setupLine = function(lineId, a, b, material) {
   }
 };
 
+OpWizard.prototype.disposeLines = function() {
+  for (let line of this.lines) {
+    line.geometry.dispose();
+  }
+};
+
 OpWizard.prototype.dispose = function() {
   Wizard.prototype.dispose.call(this);
   this.viewer.scene.remove(this.previewGroup);
+  this.disposeLines();
   this.viewer.render();
 };
 

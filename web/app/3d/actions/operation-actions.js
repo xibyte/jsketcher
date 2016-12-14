@@ -20,10 +20,14 @@ export const OperationActions = {
     info: 'extrudes 2D sketch'
   }),
 
+  'REVOLVE': mergeInfo('REVOLVE', {
+    info: 'revolve 2D sketch'
+  }),
+
   'SHELL': mergeInfo('SHELL', {
     info: 'makes shell using borders'
   }),
-
+  
   'BOX': mergeInfo('BOX', {
     info: 'creates new object box'
   }),
@@ -55,6 +59,7 @@ export const OperationActions = {
 
 requiresFaceSelection(OperationActions.CUT, 1);
 requiresFaceSelection(OperationActions.PAD, 1);
+requiresFaceSelection(OperationActions.REVOLVE, 1);
 
 requiresSolidSelection(OperationActions.INTERSECTION, 2);
 requiresSolidSelection(OperationActions.DIFFERENCE, 2);

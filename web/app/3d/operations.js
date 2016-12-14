@@ -12,6 +12,12 @@ export const PAD = {
   info: (p) => '(' + r(math.norm2(p.target)) + ')'
 };
 
+export const REVOLVE = {
+  icon: 'img/3d/shell',
+  label: 'Revolve',
+  info: (p) => '(' + p.angle + ')'
+};
+
 export const SHELL = {
   icon: 'img/3d/shell',
   label: 'Shell',

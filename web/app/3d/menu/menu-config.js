@@ -8,7 +8,7 @@ export const craft = {
   label: 'craft',
   cssIcons: ['magic'],
   info: 'set of available craft operations on a solid',
-  actions: ['PAD', 'CUT', 'SHELL']
+  actions: ['PAD', 'CUT', 'REVOLVE', 'SHELL']
 };
 
 export const primitives = {
