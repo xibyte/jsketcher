@@ -7,6 +7,7 @@ import {HashTable} from '../utils/hashmap'
 import Counters from './counters'
 import {Mesh} from './mesh'
 import {LoadSTLFromURL} from './io'
+import revolve from './revolve'
 
 function SketchConnection(a, b, sketchObject) {
   this.a = a;
@@ -210,6 +211,23 @@ export function extrude(app, request) {
   var solid = request.solids[0];
 
   var meld = CSG.fromPolygons(_triangulateCSG(toMeldWith));
+  if (solid.mergeable) {
+    meld = solid.csg.union(meld);
+  }
+
+  face.csgGroup.shared.__tcad.faceId += '$';
+  return [cad_utils.createSolid(meld, solid.id)];
+}
+
+export function performRevolve(app, request) {
+  const face = request.face;
+  const sketchedPolygons = getSketchedPolygons3D(app, face);
+  if (sketchedPolygons == null) return null;
+
+  const revolved = revolve(sketchedPolygons, sketchedPolygons[0], request.params.angle / 180 * Math.PI, request.params.resolution);
+
+  const solid = request.solids[0];
+  let meld = CSG.fromPolygons(_triangulateCSG(revolved));
   if (solid.mergeable) {
     meld = solid.csg.union(meld);
   }
@@ -808,6 +826,7 @@ Craft.prototype.modify = function(request, overriding) {
 export const OPERATIONS = {
   CUT : cut,
   PAD : extrude,
+  REVOLVE : performRevolve,
   PLANE : function(app, request) {
     return [cad_utils.createPlane(request.params.basis, request.params.depth)];
   },

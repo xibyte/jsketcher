@@ -7,6 +7,7 @@ import * as MenuConfig from '../menu/menu-config'
 import * as Operations from '../operations'
 import Menu from '../menu/menu'
 import {ExtrudeWizard} from '../wizards/extrude'
+import {RevolveWizard} from '../wizards/revolve'
 import {PlaneWizard} from '../wizards/plane'
 import {BoxWizard} from '../wizards/box'
 import {SphereWizard} from '../wizards/sphere'
@@ -159,6 +160,8 @@ UI.prototype.createWizard = function(type, overridingHistory, initParams, face) 
     wizard = new ExtrudeWizard(this.app, face, true, initParams);
   } else if ('PAD' === type) {
     wizard = new ExtrudeWizard(this.app, face, false, initParams);
+  } else if ('REVOLVE' === type) {
+    wizard = new RevolveWizard(this.app, face, false, initParams);
   } else if ('PLANE' === type) {
     wizard = new PlaneWizard(this.app.viewer, initParams);
   } else if ('BOX' === type) {
