@@ -68,6 +68,24 @@ export function revolveToWireframe(polygons, axisSegment, angle, resolution) {
   return out;
 }
 
+export function revolveToTriangles(polygons, axisSegment, angle, resolution) {
+  const out = [];
+  //add initial polygon
+  revolveIterator(polygons, axisSegment, angle, resolution, (pOrig, pRot, p, q) => {
+    //skip point if they are on the axis of revolving
+    if (!math.equal(0, math.distanceAB3(pOrig[q], pRot[q]))) {
+      out.push( [pOrig[p], pOrig[q], pRot[q]] );
+    }
+    if (!math.equal(0, math.distanceAB3(pOrig[p], pRot[p]))) {
+      out.push( [ pRot[q],  pRot[p], pOrig[p]] );
+    }
+  });
+  if (angle < 0) {
+    out.forEach(tr => tr.reverse());
+  }
+  return out;
+}
+
 export function revolveIterator(polygons, axisSegment, angle, resolution, callback) {
   
   if (resolution < 2) resolution = 2;

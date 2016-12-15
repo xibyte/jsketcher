@@ -3,8 +3,8 @@ import * as workbench from '../workbench'
 import * as cad_utils from '../cad-utils'
 import Vector from '../../math/vector'
 import {Matrix3, ORIGIN} from '../../math/l3space'
-import {revolveToWireframe} from '../revolve'
-import {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL} from './wizard-commons'
+import {revolveToTriangles} from '../revolve'
+import {OpWizard, IMAGINARY_SURFACE_MATERIAL, } from './wizard-commons'
 
 export function RevolveWizard(app, face, initParams) {
   OpWizard.call(this, app.viewer, initParams);
@@ -32,14 +32,26 @@ RevolveWizard.prototype.updatePolygons = function() {
 };
 
 RevolveWizard.prototype.update = function(angle, resolution) {
-  let linesCounter = 0;
-  const segments = revolveToWireframe(this.polygons, this.polygons[0], angle / 180 * Math.PI, resolution);
-  for (let segment of segments) {
-    this.setupLine(linesCounter ++, segment[0], segment[1], IMAGINE_MATERIAL);
+  if (this.mesh) {
+    this.mesh.geometry.dispose();
+    this.previewGroup.remove(this.mesh);
   }
-  for (var i = 0; i < this.lines.length; i++) {
-    this.lines[i].visible = i < linesCounter;
+  const triangles = revolveToTriangles(this.polygons, this.polygons[0], angle / 180 * Math.PI, resolution);
+  const geometry = new THREE.Geometry();
+
+  for (let tr of triangles) {
+    const a = geometry.vertices.length;
+    const b = a + 1;
+    const c = a + 2;
+    const face = new THREE.Face3(a, b, c);
+    tr.forEach(v => geometry.vertices.push(v.three()));
+    geometry.faces.push(face);
   }
+  geometry.mergeVertices();
+  geometry.computeFaceNormals();
+  
+  this.mesh = new THREE.Mesh(geometry, IMAGINARY_SURFACE_MATERIAL);
+  this.previewGroup.add(this.mesh);
 };
 
 RevolveWizard.prototype.createUI = function (angle, resolution) {

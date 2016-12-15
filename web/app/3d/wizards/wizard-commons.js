@@ -1,7 +1,6 @@
 import DPR from '../../utils/dpr'
 import * as tk from '../../ui/toolkit'
 
-
 const IMAGINE_MATERIAL = new THREE.LineBasicMaterial({
   color: 0xFA8072,
   linewidth: 1/DPR,
@@ -14,6 +13,15 @@ const BASE_MATERIAL = new THREE.LineBasicMaterial({
   linewidth: 3/DPR,
   depthWrite: false,
   depthTest: false
+});
+
+const IMAGINARY_SURFACE_MATERIAL = new THREE.MeshPhongMaterial({
+  vertexColors: THREE.FaceColors,
+  color: 0xFA8072,
+  transparent: true,
+  opacity: 0.5,
+  shininess: 0,
+  side : THREE.DoubleSide
 });
 
 export function Wizard(viewer, initParams) {
@@ -120,4 +128,4 @@ OpWizard.prototype.dispose = function() {
   this.viewer.render();
 };
 
-export {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL}
+export {OpWizard, IMAGINE_MATERIAL, IMAGINARY_SURFACE_MATERIAL, BASE_MATERIAL}
