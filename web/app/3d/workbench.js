@@ -344,7 +344,7 @@ function getOutlineByCollision(segments, outerEdges) {
   return outline;
 }
 
-function findOutline (planePolygons, outer) {
+export function findOutline (planePolygons) {
   var segmentsByPolygon = polygonsToSegments(planePolygons);
   //simplifySegments(segmentsByPolygon);
   var planeSegments = cad_utils.arrFlatten1L(segmentsByPolygon);
@@ -455,7 +455,7 @@ function deleteRedundantPoints(path) {
   return cleanedPath;
 }
 
-function segmentsToPaths(segments) {
+export function segmentsToPaths(segments) {
 
   var veq = math.strictEqual;
   var paths = [];

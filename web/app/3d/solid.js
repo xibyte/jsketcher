@@ -1,7 +1,7 @@
 import {HashTable} from '../utils/hashmap'
 import Vector from '../math/vector'
 import Counters from './counters'
-import {reconstructSketchBounds} from './workbench'
+import {findOutline, segmentsToPaths} from './workbench'
 import {Matrix3, AXIS} from '../math/l3space'
 import {arrFlatten1L, isCurveClass} from './cad-utils'
 import DPR from '../utils/dpr'
@@ -91,7 +91,7 @@ Solid.prototype.setupGeometry = function() {
       off = geom.vertices.length;
     }
     this.collectCurvedSurface(polyFace);
-    this.collectWires(polyFace);
+    this.collectWires(polyFace, group.polygons);
   }
 
   geom.mergeVertices();
@@ -117,7 +117,7 @@ Solid.prototype.collectCurvedSurface = function(face) {
   face.curvedSurfaces = surfaces;
 };
 
-Solid.prototype.collectWires = function(face) {
+Solid.prototype.collectWires = function(face, facePolygons) {
 
   function contains(planes, plane) {
     for (var j = 0; j < planes.length; j++) {
@@ -127,7 +127,10 @@ Solid.prototype.collectWires = function(face) {
     }
     return false;
   }
-  var paths = reconstructSketchBounds(this.csg, face, true);
+  
+  const outline = findOutline(facePolygons);
+  const paths = segmentsToPaths(outline);
+
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i];
     var p, q, n = path.vertices.length;
