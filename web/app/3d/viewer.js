@@ -1,6 +1,8 @@
 import * as cad_utils from './cad-utils'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import DPR from '../utils/dpr'
+import * as mask from '../utils/mask';
+import {SelectionManager, SketchSelectionManager} from './selection'
 
 function Viewer(bus, container) {
   this.bus = bus;
@@ -91,11 +93,14 @@ function Viewer(bus, container) {
   this.workGroup = new THREE.Object3D();
   this.scene.add(this.workGroup);
   this.selectionMgr = new SelectionManager( this, 0xFAFAD2, 0xFF0000, null);
+  this.sketchSelectionMgr = new SketchSelectionManager( this, new THREE.LineBasicMaterial({color: 0xFF0000, linewidth: 6/DPR}));
   var viewer = this;
 
   var raycaster = new THREE.Raycaster();
-
+  
   this.raycast = function(event) {
+
+    raycaster.linePrecision = 35 / this.camera.zoom;
 
     var x = ( event.offsetX / container.clientWidth ) * 2 - 1;
     var y = - ( event.offsetY / container.clientHeight ) * 2 + 1;
@@ -109,7 +114,7 @@ function Viewer(bus, container) {
     if (e.button != 0) {
       viewer.handleSolidPick(e);
     } else {
-      viewer.selectionMgr.handlePick(e);
+      viewer.handlePick(e);
     }
   }
   
@@ -172,7 +177,7 @@ Viewer.prototype.lookAt = function(obj) {
 };
 
 Viewer.prototype.handleSolidPick = function(e) {
-  this.raycastFaces(event, this, function(sketchFace) {
+  this.raycastObjects(event, PICK_KIND.FACE, (sketchFace) => {
     this.selectionMgr.clear();
     this.bus.notify("solid-pick", sketchFace.solid);
     this.render();
@@ -180,122 +185,44 @@ Viewer.prototype.handleSolidPick = function(e) {
   });
 };
 
+export const PICK_KIND = {
+  FACE:   mask.type(1),
+  SKETCH: mask.type(2),
+  EDGE:   mask.type(3),
+  VERTEX: mask.type(4)
+};
 
-Viewer.prototype.raycastFaces = function(event, scope, visitor) {
-  var pickResults = this.raycast(event);
-  for (var i = 0; i < pickResults.length; i++) {
-    var pickResult = pickResults[i];
-    if (!!pickResult.face && pickResult.face.__TCAD_polyFace !== undefined) {
-      var sketchFace = pickResult.face.__TCAD_polyFace;
-      if (!visitor.call(scope, sketchFace)) {
+Viewer.prototype.raycastObjects = function(event, kind, visitor) {
+  let pickResults = this.raycast(event);
+  for (let i = 0; i < pickResults.length; i++) {
+    const pickResult = pickResults[i];
+    if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face && pickResult.face.__TCAD_polyFace !== undefined) {
+      const sketchFace = pickResult.face.__TCAD_polyFace;
+      if (!visitor(sketchFace, PICK_KIND.FACE)) {
+        break;
+      }
+    } else if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line &&
+               pickResult.object.__TCAD_SketchObject !== undefined) {
+      if (!visitor(pickResult.object, PICK_KIND.SKETCH)) {
         break;
       }
     }
   }
 };
 
-Viewer.setFacesColor = function(faces, color) {
-  for (var i = 0; i < faces.length; ++i) {
-    var face = faces[i];
-    if (color == null) {
-      face.color.set(new THREE.Color());
-    } else {
-      face.color.set( color );
-    }
-  }
-};
-
-function SelectionManager(viewer, selectionColor, readOnlyColor, defaultColor) {
-  this.viewer = viewer;
-  this.selectionColor = selectionColor;
-  this.readOnlyColor = readOnlyColor;
-  this.defaultColor = defaultColor;
-  this.selection = [];
-  this.planeSelection = [];
-  
-  this.basisGroup = new THREE.Object3D();
-  var length = 200;
-  var arrowLength = length * 0.2;
-  var arrowHead = arrowLength * 0.4;
-
-  function createArrow(axis, color) {
-    var arrow = new THREE.ArrowHelper(axis, new THREE.Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
-    arrow.updateMatrix();
-    arrow.matrixAutoUpdate = false;
-    arrow.line.renderOrder = 1e11;
-    arrow.cone.renderOrder = 1e11;
-    arrow.line.material.linewidth =  1/DPR;
-    arrow.line.material.depthWrite = false;
-    arrow.line.material.depthTest = false;
-    arrow.cone.material.depthWrite = false;
-    arrow.cone.material.depthTest = false;
-    return arrow;
-  }
-
-  var xAxis = createArrow(new THREE.Vector3(1, 0, 0), 0xFF0000);
-  var yAxis = createArrow(new THREE.Vector3(0, 1, 0), 0x00FF00);
-  this.basisGroup.add(xAxis);
-  this.basisGroup.add(yAxis);
-}
-
-SelectionManager.prototype.updateBasis = function(basis, depth) {
-  this.basisGroup.matrix.identity();
-  var mx = new THREE.Matrix4();
-  mx.makeBasis(basis[0].three(), basis[1].three(), basis[2].three());
-  var depthOff = new THREE.Vector3(0, 0, depth);
-  depthOff.applyMatrix4(mx);
-  mx.setPosition(depthOff);
-  this.basisGroup.applyMatrix(mx);
-};
-
-SelectionManager.prototype.handlePick = function(event) {
-  this.viewer.raycastFaces(event, this, function(sketchFace) {
-    if (!this.contains(sketchFace)) {
-      this.select(sketchFace);
-      return false;
+Viewer.prototype.handlePick = function(event) {
+  this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH, (object, kind) => {
+    if (kind == PICK_KIND.FACE) {
+      if (this.selectionMgr.pick(object)) {
+        return false;
+      }
+    } else if (kind == PICK_KIND.SKETCH) {
+      if (this.sketchSelectionMgr.pick(object)) {
+        return false;
+      }
     }
     return true;
   });
 };
 
-SelectionManager.prototype.select = function(sketchFace) {
-  this.clear();
-  if (sketchFace.curvedSurfaces !== null) {
-    for (var i = 0; i < sketchFace.curvedSurfaces.length; i++) {
-      var face  = sketchFace.curvedSurfaces[i];
-      this.selection.push(face);
-      Viewer.setFacesColor(face.faces, this.readOnlyColor);
-    }
-  } else {
-    this.selection.push(sketchFace);
-    this.updateBasis(sketchFace.basis(), sketchFace.depth());
-    sketchFace.solid.cadGroup.add(this.basisGroup);
-    Viewer.setFacesColor(sketchFace.faces, this.selectionColor);
-  }
-  sketchFace.solid.mesh.geometry.colorsNeedUpdate = true;
-  this.viewer.bus.notify('selection', sketchFace);
-  this.viewer.render();
-};
-
-SelectionManager.prototype.deselectAll = function() {
-  for (var i = 0; i < this.selection.length; ++ i) {
-    this.selection[i].solid.mesh.geometry.colorsNeedUpdate = true;
-  }
-  this.clear();
-  this.viewer.bus.notify('selection', null);
-  this.viewer.render();
-};
-
-SelectionManager.prototype.contains = function(face) {
-  return this.selection.indexOf(face) != -1;
-};
-
-SelectionManager.prototype.clear = function() {
-  for (var i = 0; i < this.selection.length; ++ i) {
-    Viewer.setFacesColor(this.selection[i].faces, this.defaultColor);
-  }
-  if (this.basisGroup.parent !== null ) this.basisGroup.parent.remove( this.basisGroup );
-  this.selection.length = 0;
-};
-
-export {Viewer, SelectionManager}
+export {Viewer}

@@ -282,6 +282,16 @@ Bus.prototype.subscribe = function(event, callback, listenerId) {
   return callback;
 };
 
+Bus.prototype.unsubscribe = function(event, callback) {
+  const listenerList = this.listeners[event];
+  for (let i = 0; i < listenerList.length; i++) {
+    if (listenerList[i][0] === callback) {
+      listenerList.splice(i, 1);
+      return;
+    }
+  }
+};
+
 Bus.prototype.notify = function(event, data, sender) {
   var listenerList = this.listeners[event];
   if (listenerList !== undefined) {

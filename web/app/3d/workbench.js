@@ -16,29 +16,31 @@ function SketchConnection(a, b, sketchObject) {
   this.sketchObject = sketchObject;
 }
 
-var _SKETCH_OBJ_COUNTER = 0;
-export function readSketchGeom(sketch) {
-  function genId() {
-    return _SKETCH_OBJ_COUNTER++;
-  }
+export function readSketchGeom(sketch, faceId, readConstructionSegments) {
+  let idCounter = 0;
   function createData(obj) {
-    return {_class : obj._class, id : genId()}
+    return {_class : obj._class, id : faceId + ":" + (idCounter ++)}
   }
   
   const RESOLUTION = 20;
-  const out = {connections : [], loops : []};
+  const out = {connections : [], loops : [], constructionSegments: []};
   if (sketch.layers !== undefined) {
-    for (var l = 0; l < sketch.layers.length; ++l) {
-      const layer = sketch.layers[l];
-      if (layer.name == "_construction_") continue;
-      for (var i = 0; i < layer.data.length; ++i) {
-        const obj = layer.data[i];
+    for (let layer of sketch.layers) {
+      const isConstructionLayer = layer.name == "_construction_";
+      if (isConstructionLayer && !readConstructionSegments) continue;
+      for (let obj of layer.data) {
+        if (isConstructionLayer && obj._class !== 'TCAD.TWO.Segment') continue; 
         if (obj.edge !== undefined) continue;
         if (!!obj.aux) continue;
         if (obj._class === 'TCAD.TWO.Segment') {
           const segA = new Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
           const segB = new Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
-          out.connections.push(new SketchConnection(segA, segB, createData(obj)));
+          const sketchConnection = new SketchConnection(segA, segB, createData(obj));
+          if (isConstructionLayer) {
+            out.constructionSegments.push(sketchConnection);
+          } else {
+            out.connections.push(sketchConnection);
+          }
         } else if (obj._class === 'TCAD.TWO.Arc') {
           const arcA = new Vector(obj.points[0][1][1], obj.points[0][2][1], 0);
           const arcB = new Vector(obj.points[1][1][1], obj.points[1][2][1], 0);
@@ -166,7 +168,7 @@ export function getSketchedPolygons3D(app, face) {
   var savedFace = localStorage.getItem(app.faceStorageKey(face.id));
   if (savedFace == null) return null;
 
-  var geom = readSketchGeom(JSON.parse(savedFace));
+  var geom = readSketchGeom(JSON.parse(savedFace), face.id, false);
   var polygons2D = cad_utils.sketchToPolygons(geom);
 
   var normal = face.csgGroup.normal;
@@ -225,7 +227,14 @@ export function performRevolve(app, request) {
   const sketchedPolygons = getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
 
-  const revolved = revolve(sketchedPolygons, sketchedPolygons[0], request.params.angle / 180 * Math.PI, request.params.resolution);
+  const params = request.params;
+
+  const vertices = face.getSketchObjectVerticesIn3D(params.pivotSketchObjectId);
+  if (!vertices) {
+    return null;
+  }
+  const axis = [vertices[0], vertices[vertices.length-1]];
+  const revolved = revolve(sketchedPolygons, axis, params.angle / 180 * Math.PI, params.resolution);
 
   const solid = request.solids[0];
   let meld = CSG.fromPolygons(_triangulateCSG(revolved));
