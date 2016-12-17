@@ -398,7 +398,7 @@ App.prototype.refreshSketchOnFace = function(sketchFace) {
   var faceStorageKey = this.faceStorageKey(sketchFace.id);
   var savedFace = localStorage.getItem(faceStorageKey);
   if (savedFace != null) {
-    var geom = workbench.readSketchGeom(JSON.parse(savedFace));
+    var geom = workbench.readSketchGeom(JSON.parse(savedFace), sketchFace.id, true);
     sketchFace.syncSketches(geom);
   }
 };

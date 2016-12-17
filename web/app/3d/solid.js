@@ -207,6 +207,7 @@ function SketchFace(solid, csgGroup) {
 }
 
 SketchFace.prototype.SKETCH_MATERIAL = new THREE.LineBasicMaterial({color: 0xFFFFFF, linewidth: 3/DPR});
+SketchFace.prototype.SKETCH_CONSTRUCTION_MATERIAL = new THREE.LineBasicMaterial({color: 0x777777, linewidth: 2/DPR});
 SketchFace.prototype.WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({color: 0x2B3856, linewidth: 3/DPR});
 
 SketchFace.prototype.calcBasis = function() {
@@ -237,12 +238,11 @@ SketchFace.prototype.depth = function() {
 };
 
 SketchFace.prototype.syncSketches = function(geom) {
-  var i;
-  var normal = this.csgGroup.plane.normal;
-  var offVector = normal.scale(0); // disable it. use polygon offset feature of material
+  const normal = this.csgGroup.plane.normal;
+  const offVector = normal.scale(0); // disable it. use polygon offset feature of material
 
   if (this.sketch3DGroup != null) {
-    for (i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
+    for (let i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
       this.sketch3DGroup.remove(this.sketch3DGroup.children[i]);
     }
   } else {
@@ -250,23 +250,51 @@ SketchFace.prototype.syncSketches = function(geom) {
     this.solid.cadGroup.add(this.sketch3DGroup);
   }
 
-  var basis = this.basis();
-  var _3dTransformation = new Matrix3().setBasis(basis);
+  const basis = this.basis();
+  const _3dTransformation = new Matrix3().setBasis(basis);
   //we lost depth or z off in 2d sketch, calculate it again
-  var depth = this.csgGroup.plane.w;
-  var connections = geom.connections.concat(arrFlatten1L(geom.loops));
-  for (i = 0; i < connections.length; ++i) {
-    var l = connections[i];
-    var lg = new THREE.Geometry();
-    l.a.z = l.b.z = depth;
-    var a = _3dTransformation.apply(l.a);
-    var b = _3dTransformation.apply(l.b);
+  const depth = this.csgGroup.plane.w;
+  const polyLines = new Map();
+  function addSketchConnections(connections, material) {
+    for (let i = 0; i < connections.length; ++i) {
+      const l = connections[i];
 
-    lg.vertices.push(a.plus(offVector).three());
-    lg.vertices.push(b.plus(offVector).three());
-    var line = new THREE.Line(lg, this.SKETCH_MATERIAL);
+      let line = polyLines.get(l.sketchObject.id);
+      if (!line) {
+        line = new THREE.Line(undefined, material);
+        line.__TCAD_SketchObject = l.sketchObject;
+        polyLines.set(l.sketchObject.id, line);
+      }
+      const lg = line.geometry;
+      l.a.z = l.b.z = depth;
+      const a = _3dTransformation.apply(l.a);
+      const b = _3dTransformation.apply(l.b);
+
+      lg.vertices.push(a.plus(offVector).three());
+      lg.vertices.push(b.plus(offVector).three());
+    }
+
+  }
+  addSketchConnections(geom.constructionSegments, this.SKETCH_CONSTRUCTION_MATERIAL);
+  addSketchConnections(geom.connections, this.SKETCH_MATERIAL);
+  addSketchConnections(geom.loops, this.SKETCH_MATERIAL);
+
+  for (let line of polyLines.values()) {
     this.sketch3DGroup.add(line);
   }
+};
+
+
+SketchFace.prototype.findById = function(sketchObjectId) {
+  return this.sketch3DGroup.children.find(o => o.__TCAD_SketchObject && o.__TCAD_SketchObject.id == sketchObjectId);
+};
+
+SketchFace.prototype.getSketchObjectVerticesIn3D = function(sketchObjectId) {
+  const object = this.findById(sketchObjectId);
+  if (!object) {
+    return undefined;
+  }
+  return object.geometry.vertices;;
 };
 
 function sameID(id1, id2) {

@@ -7,12 +7,45 @@ import {revolveToTriangles} from '../revolve'
 import {OpWizard, IMAGINARY_SURFACE_MATERIAL, } from './wizard-commons'
 
 export function RevolveWizard(app, face, initParams) {
+  if (face.sketch3DGroup == null) app.refreshSketchOnFace(face);
+  if (!initParams) this.DEFAULT_PARAMS[2] = findDefaultAxis(app, face);
   OpWizard.call(this, app.viewer, initParams);
   this.app = app;
   this.face = face;
   this.updatePolygons();
   this.synch();
   this.autoResoltion = true;
+  this.selectionListener = () => {
+    const object = this.app.viewer.sketchSelectionMgr.selection[0];
+    if (canBePivot(object, this.face)) {
+      this.ui.pivotSketchObjectId.input.val(object.__TCAD_SketchObject.id);
+      this.synch();
+    }
+  };
+  app.bus.subscribe('selection-sketch-object', this.selectionListener);
+}
+
+function canBePivot(sketchObject, face) {
+  return sketchObject && isSketchSegment(sketchObject) && sketchObject.parent == face.sketch3DGroup;
+}
+
+function findDefaultAxis(app, face) {
+  let line;
+  const preSelected = app.viewer.sketchSelectionMgr.selection[0];
+  if (canBePivot(preSelected, face)) {
+    line = preSelected;
+  } else {
+    line = firstSegment(face.sketch3DGroup.children);
+    if (line) {
+      app.viewer.sketchSelectionMgr.select(line);
+    }
+  }
+  if (!line) {
+    alert("Sketch doesn't contain any segments which can be used as a revolve pivot");
+    return undefined;
+  } else {
+    return line.__TCAD_SketchObject.id;
+  }
 }
 
 function defaultResolution(angle) {
@@ -31,12 +64,19 @@ RevolveWizard.prototype.updatePolygons = function() {
   this.polygons = workbench.getSketchedPolygons3D(this.app, this.face);
 };
 
-RevolveWizard.prototype.update = function(angle, resolution) {
+RevolveWizard.prototype.update = function(angle, resolution, pivotSketchObjectId) {
   if (this.mesh) {
     this.mesh.geometry.dispose();
     this.previewGroup.remove(this.mesh);
   }
-  const triangles = revolveToTriangles(this.polygons, this.polygons[0], angle / 180 * Math.PI, resolution);
+  
+  const vertices = this.face.getSketchObjectVerticesIn3D(pivotSketchObjectId);
+  if (!vertices) {
+    console.log('illegal state');
+    return;
+  }
+  const axis = [vertices[0], vertices[vertices.length-1]];
+  const triangles = revolveToTriangles(this.polygons, axis, angle / 180 * Math.PI, resolution);
   const geometry = new THREE.Geometry();
 
   for (let tr of triangles) {
@@ -54,12 +94,13 @@ RevolveWizard.prototype.update = function(angle, resolution) {
   this.previewGroup.add(this.mesh);
 };
 
-RevolveWizard.prototype.createUI = function (angle, resolution) {
+RevolveWizard.prototype.createUI = function (angle, resolution, axisObjectId) {
   const ui = this.ui;
   const folder = this.ui.folder;
   tk.add(ui.box, folder);
   ui.angle = tk.config(new tk.Number("Angle", angle, 5), {min: -360, max: 360, accelerator: 10});
   ui.resolution = tk.config(new tk.Number("Resolution", resolution), {min: 2, accelerator: 2});
+  ui.pivotSketchObjectId = new tk.Text("Axis Object", axisObjectId === undefined ? "" : axisObjectId);
   
   ui.angle.input.on('t-change', () => {
     if (this.autoResoltion) {
@@ -73,6 +114,7 @@ RevolveWizard.prototype.createUI = function (angle, resolution) {
   });
   tk.add(folder, ui.angle);
   tk.add(folder, ui.resolution);
+  tk.add(folder, ui.pivotSketchObjectId);
 };
 
 RevolveWizard.prototype.synch = function() {
@@ -81,9 +123,10 @@ RevolveWizard.prototype.synch = function() {
 };
 
 RevolveWizard.prototype.getParams = function() {
-  var angleValue = parseFloat(this.ui.angle.input.val());
-  var resolutionValue = parseFloat(this.ui.resolution.input.val());
-  return [angleValue, resolutionValue];
+  const angleValue = parseFloat(this.ui.angle.input.val());
+  const resolutionValue = parseFloat(this.ui.resolution.input.val());
+  const pivotSketchObjectId = this.ui.pivotSketchObjectId.input.val();
+  return [angleValue, resolutionValue, pivotSketchObjectId];
 };
 
 RevolveWizard.prototype.createRequest = function(done) {
@@ -94,8 +137,26 @@ RevolveWizard.prototype.createRequest = function(done) {
     face : this.app.findFace(this.face.id),
     params : {
       angle: params[0],
-      resolution: params[1]
+      resolution: params[1],
+      pivotSketchObjectId: params[2]
     },
     protoParams: params
   });
 };
+
+RevolveWizard.prototype.dispose = function() {
+  this.app.bus.unsubscribe('selection-sketch-object', this.selectionListener);
+  OpWizard.prototype.dispose.call(this);
+};
+
+function isSketchSegment(line) {
+  return line.__TCAD_SketchObject && line.__TCAD_SketchObject._class === 'TCAD.TWO.Segment';
+}
+function firstSegment(objects) {
+  for (let line of objects) {
+    if (isSketchSegment(line)) {
+      return line;
+    }
+  }
+  return undefined;
+}
