@@ -8,6 +8,7 @@ import Counters from './counters'
 import {Mesh} from './mesh'
 import {LoadSTLFromURL} from './io'
 import revolve from './revolve'
+import {Triangulate} from './triangulation'
 
 function SketchConnection(a, b, sketchObject) {
   this.a = a;
@@ -545,19 +546,21 @@ export function segmentsToPaths(segments) {
 }
 
 function _triangulateCSG(polygons) {
-  function csgVec(v) {
-    return new CSG.Vector3D(v.x, v.y, v.z);
+  function csgVert(data) {
+    return new CSG.Vertex(new CSG.Vector3D(data[0], data[1], data[2]));
   }
+  function data(v) {
+    return [v.x, v.y, v.z];
+  }
+
   var triangled = [];
-  for (var ei = 0; ei < polygons.length; ++ei) {
-    var poly = polygons[ei];
-    var points = poly.vertices;
-    var refs = cad_utils.triangulate(points, poly.plane.normal);
-    for ( var i = 0;  i < refs.length; ++ i ) {
-      var a = refs[i][0];
-      var b = refs[i][1];
-      var c = refs[i][2];
-      var csgPoly = new CSG.Polygon([points[a], points[b], points[c]], poly.shared, poly.plane);
+  for (let poly of polygons) {
+    let vertices = Triangulate([poly.vertices.map(v => data(v.pos))], data(poly.plane.normal));
+    for (let i = 0;  i < vertices.length; i += 3 ) {
+      var a = csgVert(vertices[i]);
+      var b = csgVert(vertices[i + 1]);
+      var c = csgVert(vertices[i + 2]);
+      var csgPoly = new CSG.Polygon([a, b, c], poly.shared, poly.plane);
       triangled.push(csgPoly);
     }
   }
