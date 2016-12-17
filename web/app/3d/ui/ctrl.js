@@ -161,7 +161,7 @@ UI.prototype.createWizard = function(type, overridingHistory, initParams, face) 
   } else if ('PAD' === type) {
     wizard = new ExtrudeWizard(this.app, face, false, initParams);
   } else if ('REVOLVE' === type) {
-    wizard = new RevolveWizard(this.app, face, false, initParams);
+    wizard = new RevolveWizard(this.app, face, initParams);
   } else if ('PLANE' === type) {
     wizard = new PlaneWizard(this.app.viewer, initParams);
   } else if ('BOX' === type) {
