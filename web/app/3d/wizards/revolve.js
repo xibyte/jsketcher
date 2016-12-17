@@ -49,7 +49,7 @@ function findDefaultAxis(app, face) {
 }
 
 function defaultResolution(angle) {
-  return Math.max(2, Math.round(angle / 4.0 ));
+  return Math.max(2, Math.round(Math.abs(angle) / 4.0 ));
 }
 
 RevolveWizard.prototype = Object.create( OpWizard.prototype );
