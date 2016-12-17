@@ -2,7 +2,7 @@ import * as ActionHelpers from './action-helpers'
 
 export const EditFace = {
   cssIcons: ['file-picture-o'],
-  label: 'edit',
+  label: 'edit sketch',
   icon96: 'img/3d/face-edit96.png',
   info: 'open sketcher for a face/plane',
   listens: ['selection'],
