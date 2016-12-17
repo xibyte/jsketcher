@@ -44,6 +44,7 @@
     "jwerty": "0.3.2",
     "mustache-loader": "0.3.3",
     "jquery": "2.1.0",
-    "less": "2.7.1"
+    "less": "2.7.1",
+    "libtess": "1.2.2"
   }
 }
