@@ -2,7 +2,7 @@ import * as math from '../math/math'
 
 export const CUT = {
   icon: 'img/3d/cut',
-  label: 'Cut', 
+  label: 'Cut',
   info: (p) => '(' + r(math.norm2(p.target)) + ')'
 };
 
@@ -13,7 +13,7 @@ export const PAD = {
 };
 
 export const REVOLVE = {
-  icon: 'img/3d/shell',
+  icon: 'img/3d/revolve',
   label: 'Revolve',
   info: (p) => '(' + p.angle + ')'
 };
