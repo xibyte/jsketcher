@@ -60,12 +60,14 @@ function UI(app) {
 
 UI.prototype.createCraftToolBar = function (vertPos) {
   var toolBar = new ToolBar(this.app);
-  toolBar.add(this.app.actionManager.actions['EditFace']);
-  toolBar.add(this.app.actionManager.actions['CUT']);
-  toolBar.add(this.app.actionManager.actions['PAD']);
   toolBar.add(this.app.actionManager.actions['PLANE']);
-  toolBar.add(this.app.actionManager.actions['BOX']);
-  toolBar.add(this.app.actionManager.actions['SPHERE']);
+  toolBar.add(this.app.actionManager.actions['EditFace']);
+  toolBar.add(this.app.actionManager.actions['PAD']);
+  toolBar.add(this.app.actionManager.actions['CUT']);
+  toolBar.add(this.app.actionManager.actions['REVOLVE']);  
+  
+  
+
   $('#viewer-container').append(toolBar.node);
   toolBar.node.css({left: '10px',top : vertPos + 'px'});
   return toolBar;
