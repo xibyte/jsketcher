@@ -59,3 +59,11 @@ Supported Constraints
 * Lock Convexity
 * Fillet Meta Constraint
 
+Get Started With the Code
+=========================
+
+Install node.js
+
+$ cd <jsketcher folder>
+$ npm install
+$ npm start
