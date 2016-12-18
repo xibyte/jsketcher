@@ -64,6 +64,6 @@ Get Started With the Code
 
 Install node.js
 
-* $ cd <jsketcher folder>
+* $ cd \<jsketcher folder\>
 * $ npm install
 * $ npm start
