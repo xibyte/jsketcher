@@ -4,7 +4,7 @@ JS.Sketcher
 JS.Sketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
 <a href='https://www.youtube.com/watch?v=1wpfHc2AmWs'> 
   <img src='../../wiki/img/2d-sketcher.small.png' width='400px'>
-  <img src='../../wiki/img/mount-plate.small.png' width='400px'> 
+  <img src='../../wiki/img/3D%20Model.small.png' width='400px'> 
 </a>
 
 [YouTube Tutorial Video](https://youtu.be/Vk3TTp8hNxQ)
