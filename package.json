@@ -4,7 +4,8 @@
   "description": "JS.Sketcher is a parametric 2D and 3D CAD modeler written in pure javascript",
   "scripts": {
     "start": "webpack-dev-server --content-base web/ --port 3000",
-    "build": "webpack --config webpack.config.js --progress --profile --colors",
+    "pack": "webpack --config webpack.config.js --progress --profile --colors",
+    "build": "gulp",
     "lint": "eslint web/app -c ./build/.eslintrc.json --ignore-path ./build/.eslintignore"
   },
   "repository": {
@@ -35,7 +36,9 @@
     "eslint-plugin-import": "1.12.0",
     "style-loader": "0.13.1",
     "webpack": "1.13.2",
-    "webpack-dev-server": "1.15.0"
+    "webpack-dev-server": "1.15.0",
+    "gulp": "3.9.1",
+    "del": "2.2.2"
   },
   "dependencies": {
     "sprintf": "0.1.5",
