@@ -9,9 +9,9 @@ JS.Sketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
 
 [YouTube Tutorial Video](https://youtu.be/Vk3TTp8hNxQ)
 
-[Live Sample Demo](http://sketcher.s3-website-us-east-1.amazonaws.com/#sample)
+[Live Sample Demo](http://web-cad.org/?sample)
 
-[2D Sketcher](http://sketcher.s3-website-us-east-1.amazonaws.com/sketcher.html#__sample2D__)
+[2D Sketcher](http://web-cad.org/sketcher.html#__sample2D__)
 
 Current Status
 ==============
