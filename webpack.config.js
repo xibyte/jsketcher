@@ -8,7 +8,7 @@ module.exports = {
     sketcher: ['./web/app/sketcher']
   },
   output: {
-    path: path.join(__dirname, 'dist'),
+    path: path.join(__dirname, 'dist/static'),
     filename: '[name].bundle.js',
     chunkFilename: '[id].bundle.js',
     publicPath: '/static/'
