@@ -277,7 +277,7 @@ SketchFace.prototype.syncSketches = function(geom) {
   }
   addSketchConnections(geom.constructionSegments, this.SKETCH_CONSTRUCTION_MATERIAL);
   addSketchConnections(geom.connections, this.SKETCH_MATERIAL);
-  addSketchConnections(geom.loops, this.SKETCH_MATERIAL);
+  addSketchConnections(arrFlatten1L(geom.loops), this.SKETCH_MATERIAL);
 
   for (let line of polyLines.values()) {
     this.sketch3DGroup.add(line);
