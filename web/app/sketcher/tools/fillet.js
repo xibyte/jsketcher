@@ -14,6 +14,20 @@ export class FilletTool extends Tool {
     this.viewer = viewer;
   }
   
+  restart() {
+    for (let master of this.viewer.selected) {
+      if (master instanceof EndPoint) {
+        for (let slave of master.linked) {
+          if (slave instanceof EndPoint) {
+            if (this.breakLinkAndMakeFillet(master, slave)) {
+              this.viewer.toolManager.releaseControl();
+            }
+          }
+        }        
+      }
+    }
+  }
+  
   makeFillet(point1, point2) {
     function shrink(point1) {
       var a, b;
@@ -78,24 +92,21 @@ export class FilletTool extends Tool {
   mouseup(e) {
     var candi = this.getCandidate(e);
     if (candi == null) return;
-    var point1 = candi[0];
-    var point2 = candi[1];
+    const point1 = candi[0];
+    const point2 = candi[1];
+    this.breakLinkAndMakeFillet(point1, point2)
+  }
   
-    var pm = this.viewer.parametricManager;
-    for (var i = 0; i < pm.subSystems.length; i++) {
-      var subSys = pm.subSystems[i];
-      for (var j = 0; j < subSys.constraints.length; j++) {
-        var c = subSys.constraints[j];
-        if (c.NAME === 'coi' &&
-          ((c.a.id === point1.id && c.b.id === point2.id) ||
-          (c.b.id === point1.id && c.a.id === point2.id)))   {
-          pm.remove(c);
-          this.makeFillet(point1, point2);
-          this.viewer.deselectAll();
-          return;
-        }
-      }
+  breakLinkAndMakeFillet(point1, point2) {
+    const pm = this.viewer.parametricManager;
+    const coi = pm.findCoincidentConstraint(point1, point2);
+    if (coi != null) {
+      pm.remove(coi);
+      this.makeFillet(point1, point2);
+      this.viewer.deselectAll();
+      return true;
     }
+    return false;
   }
   
   static isLine(line) {
