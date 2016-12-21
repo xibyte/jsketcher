@@ -54,7 +54,7 @@ export class Tool {
   }
 
   endpoint(e) {
-    const ep = new EndPoint();
+    const ep = new EndPoint(0, 0);
     if (this.viewer.snapped != null) {
       this.snapIfNeed(ep);
     } else {
