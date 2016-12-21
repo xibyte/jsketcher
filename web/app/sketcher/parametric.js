@@ -441,6 +441,19 @@ ParametricManager.prototype.unlinkObjects = function(a, b) {
   _unlink(b, a);
 };
 
+ParametricManager.prototype.findCoincidentConstraint = function(point1, point2) {
+  for (let subSys of this.subSystems) {
+    for (let c of subSys.constraints) {
+      if (c.NAME === 'coi' &&
+        ((c.a.id === point1.id && c.b.id === point2.id) ||
+        (c.b.id === point1.id && c.a.id === point2.id)))   {
+        return c;
+      }
+    }
+  }
+  return null;
+};
+
 ParametricManager.prototype.coincident = function(objs) {
   if (objs.length == 0) return;
   this.linkObjects(objs);
