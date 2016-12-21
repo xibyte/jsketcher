@@ -84,6 +84,10 @@ export function line(objs) {
   throw "Illegal Argument. Constraint requires a line."
 }
 
+export function lines(objs) {
+  return objs.filter(o => o._class == 'TCAD.TWO.Segment')
+}
+
 export function arcCircAndLine(objs) {
 
   var arc = null;

@@ -207,8 +207,12 @@ ParametricManager.prototype.horizontal = function(objs) {
 };
 
 ParametricManager.prototype.parallel = function(objs) {
-  var lines = fetch.twoLines(objs);
-  this.add(new Constraints.Parallel(lines[0], lines[1]));
+  const lines = fetch.lines(objs);
+  const constraints = [];
+  for (let i = 1; i < lines.length; i++) {
+    constraints.push(new Constraints.Parallel(lines[i - 1], lines[i]));
+  }
+  this.addAll(constraints);
 };
 
 ParametricManager.prototype.perpendicular = function(objs) {
