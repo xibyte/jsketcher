@@ -199,17 +199,11 @@ ParametricManager.prototype.lock = function(objs) {
 };
 
 ParametricManager.prototype.vertical = function(objs) {
-  const lines = fetch.lines(objs);
-  for (let line of lines) {
-    this.add(new Constraints.Vertical(line));
-  }
+  this.addAll(fetch.lines(objs).map(line => new Constraints.Vertical(line)));
 };
 
 ParametricManager.prototype.horizontal = function(objs) {
-  const lines = fetch.lines(objs);
-  for (let line of lines) {
-    this.add(new Constraints.Horizontal(line));
-  }
+  this.addAll(fetch.lines(objs).map(line => new Constraints.Horizontal(line)));
 };
 
 ParametricManager.prototype.parallel = function(objs) {
