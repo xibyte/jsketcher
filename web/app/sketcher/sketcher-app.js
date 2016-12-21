@@ -10,6 +10,7 @@ import {EditCircleTool} from './tools/circle'
 import {FilletTool} from './tools/fillet'
 import {EllipseTool} from './tools/ellipse'
 import {BezierCurveTool} from './tools/bezier-curve'
+import {RectangleTool} from './tools/rectangle'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 
@@ -147,6 +148,10 @@ function App2D() {
   this.registerAction('addBezierCurve', "Add Bezier Curve", function () {
     app.viewer.toolManager.takeControl(new BezierCurveTool(app.viewer));
   });
+  
+  this.registerAction('addRectangle', "Add Rectangle", function () {
+    app.viewer.toolManager.takeControl(new RectangleTool(app.viewer));
+  }, 'rect');
 
   this.registerAction('pan', "Pan", function () {
     app.viewer.toolManager.releaseControl();
