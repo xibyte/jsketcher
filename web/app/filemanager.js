@@ -54,3 +54,19 @@ var filetodelete = document.getElementById("filelist").options[document.getEleme
   }
   updatelistbox();
 }
+
+
+function openSelectedItem()
+{
+  var filetoopen = document.getElementById("filelist").options[document.getElementById("filelist").selectedIndex].text;
+  filetoopen.replace("TCAD.projects.", "");
+  if (filetoopen.search("sketch") < 0)
+  {
+    window.location.href = "./index.html#" + filetoopen.replace("TCAD.projects.", "");
+  }
+  else
+  {
+    window.location.href = "./sketcher.html#" + filetoopen.replace("TCAD.projects.", "");
+  }
+
+}
