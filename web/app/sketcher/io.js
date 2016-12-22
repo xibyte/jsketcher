@@ -158,8 +158,7 @@ IO.prototype._loadSketch = function(sketch) {
             skobj.edge = obj['edge'];
             maxEdge = Math.max(maxEdge, skobj.edge);
           }
-          layer.objects.push(skobj);
-          skobj.layer = layer;
+          layer.add(skobj);
           index[obj['id']] = skobj;
           
           //reindex non point children to recover constraints

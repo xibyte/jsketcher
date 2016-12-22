@@ -64,7 +64,7 @@ export class FilletTool extends Tool {
       new EndPoint(point1.x, point1.y),
       new EndPoint(point2.x, point2.y),
       new EndPoint(vec.x, vec.y));
-    point1.parent.layer.objects.push(arc);
+    point1.parent.layer.add(arc);
     var pm = this.viewer.parametricManager;
     arc.stabilize(this.viewer);
     pm._add(new Constraints.Tangent( arc, point1.parent));

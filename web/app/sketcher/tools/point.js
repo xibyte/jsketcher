@@ -28,8 +28,7 @@ export class AddPointTool extends Tool {
     this.viewer.historyManager.checkpoint();
     const p = new EndPoint(input.x, input.y);
     const layer = this.viewer.activeLayer;
-    layer.objects.push(p);
-    p.layer = layer;
+    layer.add(p);
     this.pointPicked(input.x, input.y);
     this.viewer.refresh();
     this.restart();

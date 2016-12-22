@@ -55,7 +55,7 @@ export class EditCircleTool extends Tool {
     if (needSnap) this.viewer.parametricManager.linkObjects([this.circle.c, p]);
     this.pointPicked(this.circle.c.x, this.circle.c.y);
     this.sendHint('specify radius');
-    this.viewer.activeLayer.objects.push(this.circle);
+    this.viewer.activeLayer.add(this.circle);
     this.viewer.refresh();
   }
 
