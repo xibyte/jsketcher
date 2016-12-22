@@ -64,7 +64,7 @@ export class AddArcTool extends Tool {
       new EndPoint(p.x, p.y)
     );
     this.point = this.arc.a;
-    this.viewer.activeLayer.objects.push(this.arc);
+    this.viewer.activeLayer.add(this.arc);
     this.snapIfNeed(this.arc.c);
     this.pointPicked(p.x, p.y);
     this.sendHint('specify arc starting point');

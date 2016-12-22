@@ -51,7 +51,7 @@ export class EllipseTool extends Tool {
         const p = this.point(e);
         this.ellipse = this.newEllipse(p);
         this.snapIfNeed(this.ellipse.ep1);
-        this.viewer.activeLayer.objects.push(this.ellipse);
+        this.viewer.activeLayer.add(this.ellipse);
         this.viewer.refresh();
         this.state = STATE_POINT2;
         this.sendHint('specify second major axis point');

@@ -74,7 +74,7 @@ export class RectangleTool extends Tool {
       new Segment(p.copy(), p.copy())
     ];
     for (let s of this.rectangle) {
-      this.viewer.activeLayer.objects.push(s);
+      this.viewer.activeLayer.add(s);
       this.snapExclude.push(s.a, s.b);
     }
     this.pointPicked(p.x, p.y);
