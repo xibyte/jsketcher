@@ -160,7 +160,8 @@ App.prototype.sketchSelectedFace = function() {
   if (this.viewer.selectionMgr.selection.length == 0) {
     return;
   }
-  var polyFace = this.viewer.selectionMgr.selection[0];
+  const polyFace = this.viewer.selectionMgr.selection[0];
+  this.sketchFace(polyFace);
 };
 
 App.prototype.sketchFace = function(polyFace) {
