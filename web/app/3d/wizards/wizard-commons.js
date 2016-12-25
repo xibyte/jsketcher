@@ -29,7 +29,7 @@ export function Wizard(viewer, initParams) {
   this.viewer = viewer;
   this.disposed = false;
   this.ui = {
-    box: new tk.Box(), 
+    box: new tk.Box($('#view-3d')), 
     folder: new tk.Folder(this.title())
   };
   tk.add(this.ui.box, this.ui.folder);
