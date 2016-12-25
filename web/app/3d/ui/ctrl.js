@@ -31,7 +31,7 @@ function UI(app) {
   tk.add(mainBox, modelFolder);
   let modificationsPanel = new ModificationsPanel(this.app);
   mainBox.content.append(modificationsPanel.dom);
-
+  
   var toolbarVertOffset = 10; //this.mainBox.root.position().top;
 
   this.registerMenuActions(MenuConfig);  
@@ -116,6 +116,8 @@ UI.prototype.fillControlBar = function() {
   this.app.controlBar.add('menu.craft', LEFT);
   this.app.controlBar.add('menu.boolean', LEFT);
   this.app.controlBar.add('menu.primitives', LEFT);
+  this.app.controlBar.add('Donate', LEFT);
+  this.app.controlBar.add('GitHub', LEFT);
 };
 
 UI.prototype.registerWizard = function(wizard, overridingHistory) {
