@@ -5,6 +5,7 @@ class AbstractSelectionManager {
   constructor(viewer) {
     this.viewer = viewer;
     this.selection = [];
+    this.viewer.bus.subscribe('craft', () => this.deselectAll());
   }
 
   contains(face) {
@@ -20,6 +21,10 @@ class AbstractSelectionManager {
   }
   
   select() {
+    throw "AbstractFunctionCall";
+  }
+  
+  deselectAll() {
     throw "AbstractFunctionCall";
   }
 }
@@ -39,6 +44,10 @@ export class SketchSelectionManager extends AbstractSelectionManager {
     line.material = this.selectionMaterial;
     this.notify();
     this.viewer.render();
+  }
+
+  deselectAll() {
+    this.clear();
   }
   
   clear() {
