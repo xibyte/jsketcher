@@ -45,6 +45,20 @@ export const Info = {
   invoke: (app) => app.showInfo()
 };
 
+export const Donate = {
+  cssIcons: ['paypal'],
+  label: 'donate',
+  info: 'open paypal donate page',
+  invoke: (app, e) => window.open('https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=WADW7V7CC32CY&lc=US&item_name=web%2dcad%2eorg&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted', '_blank')
+};
+
+export const GitHub = {
+  cssIcons: ['github'],
+  label: 'GitHub',
+  info: 'open GitHub project page',
+  invoke: (app, e) => window.open('https://github.com/xibyte/jsketcher', '_blank')
+};
+
 export const ShowSketches = {
   type: 'binary',
   property: 'showSketches',
