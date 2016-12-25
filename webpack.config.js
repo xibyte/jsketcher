@@ -20,7 +20,7 @@ module.exports = {
     loaders: [{
       test: /\.js$/,
       loaders: ['babel'],
-      include: path.join(__dirname, 'web/app')
+      include: [path.join(__dirname, 'web/app'), path.join(__dirname, 'web/test')]
     }, {
       test: /\.css$/,
       loader: 'style!css'
@@ -31,7 +31,7 @@ module.exports = {
     },
     {
       test: /\.html$/,
-      loader: 'mustache'
+      loader: 'handlebars?helperDirs[]=' + __dirname + '/web/app/ui/helpers'
     }]
   }
 };
