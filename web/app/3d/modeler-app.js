@@ -5,8 +5,7 @@ import TabSwitcher from './ui/tab-switcher'
 import ControlBar from './ui/control-bar'
 import {InputManager} from './ui/input-manager'
 import {ActionManager} from './actions/actions'
-import * as CoreActions from './actions/core-actions'
-import {OperationActions} from './actions/operation-actions'
+import * as AllActions from './actions/all-actions'
 import Vector from '../math/vector'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
 import * as workbench  from './workbench'
@@ -15,7 +14,7 @@ import * as math from '../math/math'
 import {IO} from '../sketcher/io'
 import {AddDebugSupport} from './debug'
 import {init as initSample} from './sample'
-import '../../css/app3d.less';
+import '../../css/app3d.less'
 
 function App() {
   this.id = this.processHints();
@@ -24,8 +23,7 @@ function App() {
   this.inputManager = new InputManager(this);
   this.state = this.createState();
   this.viewer = new Viewer(this.bus, document.getElementById('viewer-container'));
-  this.actionManager.registerActions(CoreActions);
-  this.actionManager.registerActions(OperationActions);
+  this.actionManager.registerActions(AllActions);
   this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
   this.controlBar = new ControlBar(this, $('#control-bar'));
 
@@ -157,11 +155,16 @@ App.prototype.projectStorageKey = function(polyFaceId) {
   return App.STORAGE_PREFIX + this.id;
 };
 
-App.prototype.sketchFace = function() {
+
+App.prototype.sketchSelectedFace = function() {
   if (this.viewer.selectionMgr.selection.length == 0) {
     return;
   }
-  var polyFace = this.viewer.selectionMgr.selection[0];
+  const polyFace = this.viewer.selectionMgr.selection[0];
+  this.sketchFace(polyFace);
+};
+
+App.prototype.sketchFace = function(polyFace) {
   var faceStorageKey = this.faceStorageKey(polyFace.id);
 
   var savedFace = localStorage.getItem(faceStorageKey);
