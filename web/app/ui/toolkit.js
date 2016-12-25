@@ -9,10 +9,10 @@ export function methodRef(_this, methodName, args) {
   };
 }
 
-export function Box() {
+export function Box(parent) {
   this.root = this.content = $('<div class="tc-box" />');
   this.root.addClass('tc-box tc-scroll');
-  this.root.appendTo('body');
+  this.root.appendTo(parent ? parent : 'body');
 }
 
 Box.prototype.close = function() {
