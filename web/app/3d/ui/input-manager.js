@@ -76,6 +76,7 @@ InputManager.prototype.handleActionClick = function(event) {
     this.clear();
     EventData.set(event, 'initiator', target);
     this.app.actionManager.run(action, event);
+    event.stopPropagation();
   }
 };
 

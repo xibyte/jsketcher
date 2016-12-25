@@ -2,12 +2,12 @@ import * as ActionHelpers from './action-helpers'
 
 export const EditFace = {
   cssIcons: ['file-picture-o'],
-  label: 'edit sketch',
+  label: 'sketch',
   icon96: 'img/3d/face-edit96.png',
   info: 'open sketcher for a face/plane',
   listens: ['selection'],
   update: ActionHelpers.checkForSelectedFaces(1),
-  invoke: (app) => app.sketchFace()
+  invoke: (app) => app.sketchSelectedFace()
 };
 
 export const Save = {
@@ -73,7 +73,6 @@ export const LookAtSolid = {
   info: 'position camera at the solid at zoom to fit it',
   invoke: (app, e) => app.lookAtSolid(app.inputManager.context.attr('data-id'))
 };
-
 
 export const noIcon = {
   label: 'no icon'

@@ -23,6 +23,10 @@ body {
   .main-font;
 }
 
+iframe {
+  border: 0;
+}
+
 .main-font {
   font: 11px 'Lucida Grande', sans-serif;
 }
@@ -193,6 +197,10 @@ body {
   padding-right: 3px;
 }
 
+.action-disabled {
+  color: @suppressed-color - 30;
+}
+
 .menu-item.action-disabled {
   color: @suppressed-color;
 }
@@ -251,4 +259,33 @@ body {
 .modification-item {
   word-wrap: break-word;
   word-break: break-all;
+}
+
+.modification-button {
+  line-height: 27px;
+  font-size: 1.3em;
+  padding: 0 3px 0 3px;
+  &:hover {
+    color: yellowgreen;
+  }
+}
+
+.modification-button.danger {
+  &:hover {
+    color: red;
+  }
+}
+
+.modification-button.action-disabled {
+  &:hover {
+    .action-disabled;
+  }
+}
+
+.modification-right-buttons {
+  display: none;
+}
+
+.history-selected .modification-right-buttons, .modification-item:hover .modification-right-buttons {
+  display: initial;
 }

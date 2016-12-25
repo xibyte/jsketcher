@@ -1,7 +1,14 @@
 <div class="tc-folder">
   <div class="tc-row tc-title">Modifications</div>
   <div class="tc-list" data-bind-list="modifications">
-    <div class="tc-row tc-pseudo-btn modification-item" data-bind="info"></div>
+    <div class="tc-row tc-pseudo-btn modification-item context-hover action-item" data-action="SetHistoryPointer" data-bind="@data-modification: id">
+      <span data-bind="info" style="float: left"></span>
+      <span style="float: right" class="modification-right-buttons">
+        <i class="fa fa-edit modification-button action-item" data-action="OpenHistoryWizard"></i>
+        <i class="fa fa-image modification-button action-item require-face" data-action="EditOperationSketch"></i>
+        <i class="fa fa-remove modification-button action-item danger" data-action="RemoveModification"></i>
+      </span>
+    </div>
   </div>
   <div class="tc-row tc-ctrl tc-buttons-block">
     <span class="tc-block-btn active-btn">Finish History Editing</span>

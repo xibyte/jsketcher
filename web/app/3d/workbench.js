@@ -709,6 +709,17 @@ export function Craft(app) {
   });
 }
 
+Craft.prototype.remove = function(modificationIndex) {
+  const history = this.history;
+  history.splice(modificationIndex, history.length - modificationIndex);
+
+  if (this.historyPointer >= history.length) {
+    this.finishHistoryEditing();
+  } else {
+    this.app.bus.notify('historyShrink');
+  }
+};
+
 Craft.prototype.loadHistory = function(history) {
   this.history = history;
   this._historyPointer = history.length;

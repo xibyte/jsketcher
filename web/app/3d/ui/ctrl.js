@@ -132,6 +132,12 @@ UI.prototype.registerWizard = function(wizard, overridingHistory) {
   };
     
   wizard.focus();
+  if (this.registeredWizard != undefined) {
+    if (!this.registeredWizard.disposed) {
+      this.registeredWizard.dispose();
+    }
+  }
+  this.registeredWizard = wizard;
   return wizard;
 };
 
