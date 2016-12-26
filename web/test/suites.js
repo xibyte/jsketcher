@@ -1,7 +1,7 @@
 export default {
   SketcherIO: [
-    TestCase('segment-io'), 
-    TestCase('arc-io') 
+    TestCase('segment'), 
+    TestCase('arc') 
   ],
   
   SketcherTools: [
