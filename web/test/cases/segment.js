@@ -65,12 +65,7 @@ export default {
 
   testSnap: function(env) {
     test.emptySketch((win, app) => {
-      addSegment(app, 10, 10, 100, 100);
-      env.assertEquals(0, app.viewer.selected.length);
-      // this point technically isn't on the line but should trigger the selection
-      click(app.viewer.toolManager.tool, 55, 50);
-      env.assertEquals(1, app.viewer.selected.length);
-      env.done();
+      env.fail('implement me');
     });
   }
 
