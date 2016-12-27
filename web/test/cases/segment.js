@@ -1,5 +1,6 @@
 import * as test from '../test'
 import * as sketcher_utils from '../utils/sketcher-utils'
+import * as keyboard from '../utils/keyboard'
 import {TestMouseEvent} from '../utils/mouse-event'
 import Vector from '../../app/math/vector';
 
@@ -47,7 +48,7 @@ export default {
     test.emptySketch(env.test((win, app) => {
       addSegment(app, 10, 10, 100, 100);
       env.assertEquals(0, app.viewer.selected.length);
-      sketcher_utils.click(app.viewer.toolManager.tool, 50, 50);
+      sketcher_utils.click(app, 50, 50);
       env.assertEquals(1, app.viewer.selected.length);
       env.done();
     }));
@@ -58,8 +59,21 @@ export default {
       addSegment(app, 10, 10, 100, 100);
       env.assertEquals(0, app.viewer.selected.length);
       // this point technically isn't on the line but should trigger the selection
-      sketcher_utils.click(app.viewer.toolManager.tool, 55, 50);
+      sketcher_utils.click(app, 55, 50);
       env.assertEquals(1, app.viewer.selected.length);
+      env.assertEquals('TCAD.TWO.Segment', app.viewer.selected[0]._class);
+      env.done();
+    }));
+  },
+
+  testRemove: function(env) {
+    test.emptySketch(env.test((win, app) => {
+      const segment = addSegment(app, 10, 10, 100, 100);
+      env.assertEquals(1, app.viewer.activeLayer.objects.length);
+      sketcher_utils.click(app, 50, 50);
+      const keyboardEvent = keyboard.keyCode('keydown', 8);
+      win.dispatchEvent(keyboardEvent);
+      env.assertEquals(0, app.viewer.activeLayer.objects.length);
       env.done();
     }));
   },
@@ -116,13 +130,14 @@ export default {
       sketcher_utils.move(app, from, from.plus(moveDelta));
       env.assertPoint2DEquals(sketcher_utils.toModelP(app, initA.plus(moveDelta)), segment.a);
       env.assertPoint2DEquals(sketcher_utils.toModelP(app, initB.plus(moveDelta)), segment.b);
+      env.assertEquals('TCAD.TWO.Segment', app.viewer.selected[0]._class);
       env.done();
     }));
   }
 }
 
-function vec() {
-  return new Vector(arguments);
+function vec(x, y, z) {
+  return new Vector(x, y, z);
 }
 
 function collectObjects(visitable) {
