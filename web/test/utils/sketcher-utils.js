@@ -12,9 +12,9 @@ export function getConstraints(app) {
   return app.viewer.parametricManager.subSystems[0].constraints;
 }
 
-export function click(tool, x, y) {
-  tool.mousedown(new TestMouseEvent(x, y));
-  tool.mouseup(new TestMouseEvent(x, y));
+export function click(app, x, y) {
+  app.viewer.toolManager.tool.mousedown(new TestMouseEvent(x, y));
+  app.viewer.toolManager.tool.mouseup(new TestMouseEvent(x, y));
 }
 
 export function move(app, from, to) {
