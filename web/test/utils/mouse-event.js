@@ -1,4 +1,4 @@
-export function TestMouseEvent(x, y, type) {
+export function TestMouseEvent(x, y, type, attrs) {
   this.type = type ? type : 'click';
   this.canBubble = true;
   this.cancelable = true;
@@ -17,4 +17,7 @@ export function TestMouseEvent(x, y, type) {
   this.metaKey = false;
   this.button = 0;
   this.relatedTarget = null;
+  if (attrs) {
+    Object.assign(this, attrs);
+  }
 }

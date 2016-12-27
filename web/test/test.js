@@ -63,6 +63,12 @@ export class TestEnv {
     }
   }
 
+  assertFloatEquals(expected, actual, msg) {
+    if (Math.abs(expected - actual) >= 1E-6) {
+      this.fail('assertFloatEquals: Expected: ' + expected + ' but was ' + actual, msg);
+    }
+  }
+
   assertPointXY2DEquals(expectedX, expectedY, actual, msg) {
     if (actual.x !== expectedX || actual.y !== expectedY) {
       this.fail('assertPoint2DEquals: Expected: (' +  expectedX + ', ' + expectedY + ') but was (' + actual.x + ', ' + actual.y + ')' , msg);
