@@ -1,6 +1,7 @@
 
 export function FailError(msg) {
   this.msg = msg;
+  this.stack = (new Error()).stack;
 }
 
 export class TestEnv {
@@ -26,6 +27,28 @@ export class TestEnv {
     throw new FailError(this.error);
   }
 
+  terminateOnError(error) {
+    this.failed = true;
+    this.error = error + "";
+    this.done();
+    throw error;
+  }
+
+  test(testBlock) {
+    const env = this;
+    return function() {
+      try {
+        testBlock.apply(this, arguments);
+      } catch (e) {
+        if (!env.finished) {
+          env.terminateOnError(e);
+        }
+        console.error(e.stack);
+        throw e;
+      }
+    }
+  }
+  
   assertTrue(stmt, msg) {
     if (!stmt) {
       this.fail('assertTrue fails.', msg);
@@ -37,10 +60,14 @@ export class TestEnv {
     }
   }
 
-  assertPoint2DEquals(expectedX, expectedY, actial, msg) {
-    if (actial.x !== expectedX || actial.y !== expectedY) {
-      this.fail('assertPoint2DEquals: Expected: (' +  expectedX + ', ' + expectedY + ') but was (' + actial.x + ', ' + actial.y + ')' , msg);
+  assertPointXY2DEquals(expectedX, expectedY, actual, msg) {
+    if (actual.x !== expectedX || actual.y !== expectedY) {
+      this.fail('assertPoint2DEquals: Expected: (' +  expectedX + ', ' + expectedY + ') but was (' + actual.x + ', ' + actual.y + ')' , msg);
     }
+  }
+  
+  assertPoint2DEquals(expected, actial, msg) {
+    this.assertPointXY2DEquals(expected.x, expected.y, actial, msg);
   }
 }
 
