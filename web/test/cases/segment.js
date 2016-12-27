@@ -4,23 +4,11 @@ import * as keyboard from '../utils/keyboard'
 import {TestMouseEvent} from '../utils/mouse-event'
 import Vector from '../../app/math/vector';
 
-function addSegment(app, aX, aY, bX, bY) {
-  app.actions['addSegment'].action();
-  const tool = app.viewer.toolManager.tool;
-  tool.mousemove(new TestMouseEvent(aX, aY));
-  tool.mouseup(new TestMouseEvent(aX, aY));
-  tool.mousemove(new TestMouseEvent(bX, bY));
-  const segment = tool.line;
-  tool.mouseup(new TestMouseEvent(bX, bY));
-  app.viewer.toolManager.releaseControl();
-  return segment;
-}
-
 export default {
   testSegmentWizard: function(env) {
     test.emptySketch(env.test((win, app) => {
       env.assertEquals(0, app.viewer.activeLayer.objects.length);
-      addSegment(app, 10, 10, 100, 100);  
+      sketcher_utils.addSegment(app, 10, 10, 100, 100);  
       env.assertEquals(1, app.viewer.activeLayer.objects.length);
       const segment = app.viewer.activeLayer.objects[0];
       env.assertEquals('TCAD.TWO.Segment', segment._class);
@@ -33,7 +21,7 @@ export default {
   testSaveLoad: function(env) {
     test.emptySketch(env.test((win, app) => {
       env.assertEquals(0, app.viewer.activeLayer.objects.length);
-      addSegment(app, 10, 10, 100, 100);
+      sketcher_utils.addSegment(app, 10, 10, 100, 100);
       app.actions['save'].action();
       test.sketch(env.test((win, app) => {
         env.assertEquals(1, app.viewer.activeLayer.objects.length);
@@ -46,9 +34,9 @@ export default {
   
   testSelection: function(env) {
     test.emptySketch(env.test((win, app) => {
-      addSegment(app, 10, 10, 100, 100);
+      sketcher_utils.addSegment(app, 10, 10, 100, 100);
       env.assertEquals(0, app.viewer.selected.length);
-      sketcher_utils.click(app, 50, 50);
+      sketcher_utils.clickXY(app, 50, 50);
       env.assertEquals(1, app.viewer.selected.length);
       env.done();
     }));
@@ -56,10 +44,10 @@ export default {
   
   testSelectionNeighborhood: function(env) {
     test.emptySketch(env.test((win, app) => {
-      addSegment(app, 10, 10, 100, 100);
+      sketcher_utils.addSegment(app, 10, 10, 100, 100);
       env.assertEquals(0, app.viewer.selected.length);
       // this point technically isn't on the line but should trigger the selection
-      sketcher_utils.click(app, 55, 50);
+      sketcher_utils.clickXY(app, 55, 50);
       env.assertEquals(1, app.viewer.selected.length);
       env.assertEquals('TCAD.TWO.Segment', app.viewer.selected[0]._class);
       env.done();
@@ -68,9 +56,9 @@ export default {
 
   testRemove: function(env) {
     test.emptySketch(env.test((win, app) => {
-      const segment = addSegment(app, 10, 10, 100, 100);
+      const segment = sketcher_utils.addSegment(app, 10, 10, 100, 100);
       env.assertEquals(1, app.viewer.activeLayer.objects.length);
-      sketcher_utils.click(app, 50, 50);
+      sketcher_utils.clickXY(app, 50, 50);
       const keyboardEvent = keyboard.keyCode('keydown', 8);
       win.dispatchEvent(keyboardEvent);
       env.assertEquals(0, app.viewer.activeLayer.objects.length);
@@ -80,8 +68,8 @@ export default {
 
   testSnapFirstPoint: function(env) {
     test.emptySketch(env.test((win, app) => {
-      const s1 = addSegment(app, 10, 10, 100, 100);
-      const s2 = addSegment(app, 102, 102, 50, 10);
+      const s1 = sketcher_utils.addSegment(app, 10, 10, 100, 100);
+      const s2 = sketcher_utils.addSegment(app, 102, 102, 50, 10);
       const constraints = sketcher_utils.getConstraints(app);
       env.assertEquals(1, constraints.length);
       env.assertEquals('coi', constraints[0].NAME);
@@ -95,8 +83,8 @@ export default {
 
   testSnapSecondPoint: function(env) {
     test.emptySketch(env.test((win, app) => {
-      const s1 = addSegment(app, 10, 10, 100, 100);
-      const s2 = addSegment(app, 50, 10, 102, 102);
+      const s1 = sketcher_utils.addSegment(app, 10, 10, 100, 100);
+      const s2 = sketcher_utils.addSegment(app, 50, 10, 102, 102);
       const constraints = sketcher_utils.getConstraints(app);
       env.assertEquals(1, constraints.length);
       env.assertEquals('coi', constraints[0].NAME);
@@ -110,7 +98,7 @@ export default {
 
   testEndPointMove: function(env) {
     test.emptySketch(env.test((win, app) => {
-      const segment = addSegment(app, 10, 10, 100, 100);
+      const segment = sketcher_utils.addSegment(app, 10, 10, 100, 100);
       sketcher_utils.move(app, vec(100, 100), vec(200, 150));
       //should be still
       env.assertPoint2DEquals(sketcher_utils.toModel(app, 10, 10), segment.a);
@@ -124,7 +112,7 @@ export default {
     test.emptySketch(env.test((win, app) => {
       const initA = vec(10, 10);
       const initB = vec(100, 100);
-      const segment = addSegment(app, initA.x, initA.y, initB.x, initB.y);
+      const segment = sketcher_utils.addSegment(app, initA.x, initA.y, initB.x, initB.y);
       const from = vec(50, 50);
       const moveDelta = vec(100, 50);
       sketcher_utils.move(app, from, from.plus(moveDelta));
@@ -138,12 +126,4 @@ export default {
 
 function vec(x, y, z) {
   return new Vector(x, y, z);
-}
-
-function collectObjects(visitable) {
-  const objects = [];
-  visitable.accept((o) => {
-    objects.push(o);
-  });
-  return objects;
 }
