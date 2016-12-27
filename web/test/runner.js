@@ -8,20 +8,10 @@ import DurationFormat from './utils/duration-format'
 
 
 $(() => {
-  const runBtn = $('#run-button');
-  const pauseBtn = $('#pause-button');
-
-  disableBtn(pauseBtn);
-
-  runBtn.click(() => {
-    run();
-    //disableBtn(runBtn);
-    //enableBtn(pauseBtn);
-  });
-
-  pauseBtn.click(() => {
-    disableBtn(pauseBtn);
-    enableBtn(runBtn);
+  $(document).on('click', '.action-item', (e) => {
+    const target = $(e.currentTarget);
+    const actionId = target.data('action');
+    ACTIONS[actionId].invoke(target);
   });
   $('#test-list').html(TestList({suites}));
   new Menu(ACTIONS);
@@ -120,6 +110,11 @@ function enableBtn(btn) {
 
 
 const ACTIONS = {
+  Run: {
+    label: "Run All Test",
+    invoke: run
+  },
+
   RunSuite: {
     label: "Run Suite",
     invoke: (target) => {
