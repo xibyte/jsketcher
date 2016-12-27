@@ -9,7 +9,6 @@ export class Menu {
     $(document)
       .on('mousemove', (e) => this.mouseInfo = e)
       .on('click', (e) => this.popup.hide())
-      .on('click', '.right-click-menu', (e) => this.onShowMenu(e, $(e.currentTarget)))
       .on('contextmenu', (e) => {
         const target = $(e.target).closest('.right-click-menu');
         if (target.length == 0) return true;
