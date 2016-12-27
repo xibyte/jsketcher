@@ -1,9 +1,15 @@
 export default {
-  SketcherIO: [
-    TestCase('segment'), 
-    TestCase('arc') 
+  SketcherObjects: [
+    TestCase('segment'),
+    TestCase('arc'),
   ],
-  
+
+  SketcherSolver: [
+    TestCase('constraints'),
+    TestCase('parametric'),
+    
+  ],
+
   SketcherTools: [
 
   ],
