@@ -15,6 +15,9 @@ export class TestEnv {
   }
 
   done() {
+    if (this.finished) {
+      return;
+    }
     this.finished = true;
     this.took = performance.now() - this.took;
     this.callback(this);
