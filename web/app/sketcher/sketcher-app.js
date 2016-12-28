@@ -11,6 +11,7 @@ import {FilletTool} from './tools/fillet'
 import {EllipseTool} from './tools/ellipse'
 import {BezierCurveTool} from './tools/bezier-curve'
 import {RectangleTool} from './tools/rectangle'
+import {OffsetTool} from './tools/offset'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 
@@ -152,6 +153,10 @@ function App2D() {
   this.registerAction('addRectangle', "Add Rectangle", function () {
     app.viewer.toolManager.takeControl(new RectangleTool(app.viewer));
   }, 'rect');
+
+  this.registerAction('offsetTool', "Polygon Offset", function () {
+    app.viewer.toolManager.takeControl(new OffsetTool(app.viewer));
+  });
 
   this.registerAction('pan', "Pan", function () {
     app.viewer.toolManager.releaseControl();

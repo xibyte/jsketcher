@@ -98,12 +98,12 @@ export function rotateInPlace(px, py, angle, out) {
   return out;
 }
 
-export function polygonOffset( polygon, scale ) {
+export function polygonOffsetXY(polygon, scaleX, scaleY) {
   const origBBox = new BBox();
   const scaledBBox = new BBox();
   const result = [];
   for (let point of polygon) {
-    const scaledPoint = new Vector(point.x, point.y)._multiply(scale);
+    const scaledPoint = new Vector(point.x * scaleX, point.y * scaleY);
     result.push(scaledPoint);
     origBBox.checkPoint(point);
     scaledBBox.checkPoint(scaledPoint);
@@ -113,6 +113,21 @@ export function polygonOffset( polygon, scale ) {
     point._minus(alignVector);
   }
   return result;
+}
+
+
+export function polygonOffset( polygon, scale ) {
+  return polygonOffsetXY( polygon, scale, scale );
+}
+
+export function polygonOffsetByDelta( polygon, delta ) {
+  const origBBox = new BBox();
+  for (let point of polygon) {
+    origBBox.checkPoint(point);
+  }
+  const width = origBBox.width();
+  const height = origBBox.height();
+  return polygonOffsetXY(polygon, (width + delta) / width, (height + delta) / height);
 }
 
 export function isPointInsidePolygon( inPt, inPolygon ) {
