@@ -185,6 +185,7 @@ export function getSketchedPolygons3D(app, face) {
     }
 
     var polygon = [];
+    polygon._2D = poly2D;
     for (var m = 0; m < poly2D.length; ++m) {
       var vec = poly2D[m];
       vec.z = depth;
@@ -199,27 +200,102 @@ export function getSketchedPolygons3D(app, face) {
   return sketchedPolygons;
 }
 
+function sortPolygons(polygons) {
+  function Loop(polygon) {
+    this.polygon = polygon;
+    this.nesting = [];
+    this.level = 0;
+  }
+  function contains(polygon, other) {
+    for (let point of other._2D) {
+      if (!math.isPointInsidePolygon(point, polygon._2D)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  const loops = polygons.map(p => new Loop(p));
+  for (let i = 0; i < loops.length; ++i) {
+    const loop = loops[i];
+    for (let j = 0; j < loops.length; ++j) {
+      if (i == j) continue;
+      const other = loops[j];
+      if (contains(loop.polygon, other.polygon)) {
+        loop.nesting.push(other);
+        other.level ++;
+      }
+    }
+  }
+
+  const allShells = [];
+  function collect(level) {
+    const shells = loops.filter(l => l.level == level);
+    if (shells.length == 0) {
+      return;
+    }
+    for (let shell of shells) {
+      shell.nesting = shell.nesting.filter(l => l.level == level + 1);
+      allShells.push(shell);
+    }
+    collect(level + 2);
+  }
+  collect(0);
+  return allShells;
+}
+
+function extrudeNestedLoops(sketchedPolygons, normal, target, expansionFactor) {
+  const loops = sortPolygons(sketchedPolygons);
+  const doExtrude = (polygon) => {
+    const extruded = cad_utils.extrude(polygon, normal, target, expansionFactor);
+    return CSG.fromPolygons(_triangulateCSG(extruded));
+  };
+  let blob = null;
+  for (let loop of loops) {
+    let shell = doExtrude(loop.polygon);
+    for (let nestedLoop of loop.nesting) {
+      const hole = doExtrude(nestedLoop.polygon);
+      shell = shell.subtract(hole);
+    }
+    if (blob === null) {
+      blob = shell;
+    } else {
+      blob = blob.union(shell);
+    }
+  }
+  return blob;
+}
+
 export function extrude(app, request) {
-  var face = request.face;
-  var sketchedPolygons = getSketchedPolygons3D(app, face);
+  const face = request.face;
+  const sketchedPolygons = getSketchedPolygons3D(app, face);
   if (sketchedPolygons == null) return null;
-
-  var normal = cad_utils.vec(face.csgGroup.plane.normal);
-  var toMeldWith = [];
-  for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = cad_utils.extrude(sketchedPolygons[i], normal, request.params.target, request.params.expansionFactor );
-    toMeldWith = toMeldWith.concat(extruded);
-  }
-
-  var solid = request.solids[0];
-
-  var meld = CSG.fromPolygons(_triangulateCSG(toMeldWith));
+  const normal = cad_utils.vec(face.csgGroup.plane.normal);
+  let blob = extrudeNestedLoops(sketchedPolygons, normal, request.params.target, request.params.expansionFactor);
+  let solid = request.solids[0];
   if (solid.mergeable) {
-    meld = solid.csg.union(meld);
+    blob = solid.csg.union(blob);
   }
+  face.csgGroup.shared.__tcad.faceId += '$';
+  return [cad_utils.createSolid(blob, solid.id)];
+}
+
+export function cut(app, request) {
+  const face = request.face;
+  const sketchedPolygons = getSketchedPolygons3D(app, face);
+  if (sketchedPolygons == null) return null;
+  const normal = cad_utils.vec(face.csgGroup.plane.normal);
+  let cutter = extrudeNestedLoops(sketchedPolygons, normal, request.params.target, request.params.expansionFactor);
 
   face.csgGroup.shared.__tcad.faceId += '$';
-  return [cad_utils.createSolid(meld, solid.id)];
+  var outSolids = [];
+  for (var si = 0; si < request.solids.length; si++) {
+    let solid = request.solids[si];
+    let work = solid.csg;
+    let cut = work.subtract(cutter);
+    let solidMesh = cad_utils.createSolid(cut, solid.id);
+    outSolids.push(solidMesh);
+  }
+  return outSolids;
 }
 
 export function performRevolve(app, request) {
@@ -664,31 +740,6 @@ function recoverySketchInfo(polygons) {
       }
     }
   }
-}
-
-export function cut(app, request) {
-  var face = request.face;
-  var sketchedPolygons = getSketchedPolygons3D(app, face);
-  if (sketchedPolygons == null) return null;
-
-  var normal = cad_utils.vec(face.csgGroup.plane.normal);
-  var cutter = [];
-  for (var i = 0; i < sketchedPolygons.length; i++) {
-    var extruded = cad_utils.extrude(sketchedPolygons[i], normal, request.params.target, request.params.expansionFactor );
-    cutter = cutter.concat(extruded);
-  }
-  var cutterCSG = CSG.fromPolygons(_triangulateCSG(cutter));
-
-  face.csgGroup.shared.__tcad.faceId += '$';
-  var outSolids = [];
-  for (var si = 0; si < request.solids.length; si++) {
-    var solid = request.solids[si];
-    var work = solid.csg;
-    var cut = work.subtract(cutterCSG);
-    var solidMesh = cad_utils.createSolid(cut, solid.id);
-    outSolids.push(solidMesh);
-  }
-  return outSolids;
 }
 
 export function Craft(app) {
