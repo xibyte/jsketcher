@@ -17,11 +17,14 @@
 
 </head>
 <body onload="updatelistbox();">
+  <a id="downloader" style="display: none;" ></a>
   <div>
     <button onclick="deleteItem()">Delete</button>
     <button onclick="openSelectedItem()">Open</button>
+    <button onclick="ExportToLocalFile()">Export All Data</button>
+    <input type="file" id="file-input" />
     Show Sketches<input type="checkbox" id="showsketches" onclick='showsketches(this);'><br>
-    <select id = 'filelist' size="50"> </select>
+    <select id = 'filelist' size="50"></select>
   </div>
 
 
