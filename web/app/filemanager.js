@@ -29,8 +29,6 @@ function updatelistbox()
         option.text = localStorage.key(i);
         x.add(option);
       }
-
-
   }
 }
 
@@ -70,3 +68,56 @@ function openSelectedItem()
   }
 
 }
+
+
+
+function ExportToLocalFile()
+{
+  var bla;
+  var lengthOfLocalStorage = localStorage.length;
+  bla = lengthOfLocalStorage.toString();
+  for(var i=0, len=localStorage.length; i<len; i++)
+  {
+    var key = localStorage.key(i);
+    var value = localStorage[key];
+    bla += "\n" + key +"\n" + value;
+  }
+
+
+  exportTextData(bla,"export.web-cad");
+}
+
+
+function readSingleFile(e) {
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e)
+  {
+    var data = e.target.result;
+    var arrayOfLines = data.split("\n");
+    alert(arrayOfLines[0]);
+
+    for (i = 0; i < arrayOfLines[0]; i++)
+    {
+      localStorage.setItem(arrayOfLines[i*2+1],arrayOfLines[i*2+2]);
+    }
+  };
+  reader.readAsText(file);
+}
+
+window.onload = function () {document.getElementById('file-input').addEventListener('change', readSingleFile, false);}
+
+
+
+
+function exportTextData(data, fileName)
+{
+  var link = document.getElementById("downloader");
+  link.href = "data:application/octet-stream;charset=utf-8;base64," + btoa(data);
+  link.download = fileName;
+  link.click();
+  //console.log(app.viewer.io.svgExport());
+};
