@@ -9,6 +9,8 @@ function createByConstraintName(name, params, values) {
       return new Equal(params);
     case "equalsTo":
       return new EqualsTo(params, values[0]);
+    case "Diff":
+      return new Diff(params, values[0]);
     case "MinLength":
       return new MinLength(params, values[0]);
     case "perpendicular":
@@ -198,6 +200,21 @@ function EqualsTo(params, value) {
 
   this.gradient = function(out) {
     out[0] = 1;
+  };
+}
+
+function Diff(params, value) {
+
+  this.params = params;
+  this.value = value;
+
+  this.error = function() {
+    return this.params[0].get() - this.params[1].get() - this.value;
+  };
+
+  this.gradient = function(out) {
+    out[0] =  1;
+    out[1] = -1;
   };
 }
 

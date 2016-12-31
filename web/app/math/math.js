@@ -175,4 +175,18 @@ export function isPointInsidePolygon( inPt, inPolygon ) {
   return	inside;
 }
 
+// http://en.wikipedia.org/wiki/Shoelace_formula
+export function area(contour) {
+  var n = contour.length;
+  var a = 0.0;
+  for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
+    a += contour[ p ].x * contour[ q ].y - contour[ q ].x * contour[ p ].y;
+  }
+  return a * 0.5;
+}
+
+export function isCCW(path2D) {
+  return area(path2D) >= 0;
+}
+
 export const sq = (a) => a * a;
