@@ -60,11 +60,11 @@ function openSelectedItem()
   filetoopen.replace("TCAD.projects.", "");
   if (filetoopen.search("sketch") < 0)
   {
-    window.location.href = "./index.html#" + filetoopen.replace("TCAD.projects.", "");
+    window.location.href = "/index.html?" + filetoopen.replace("TCAD.projects.", "");
   }
   else
   {
-    window.location.href = "./sketcher.html#" + filetoopen.replace("TCAD.projects.", "");
+    window.location.href = "/sketcher.html#" + filetoopen.replace("TCAD.projects.", "");
   }
 
 }
@@ -100,7 +100,7 @@ function readSingleFile(e) {
     var arrayOfLines = data.split("\n");
     alert(arrayOfLines[0]);
 
-    for (i = 0; i < arrayOfLines[0]; i++)
+    for (var i = 0; i < arrayOfLines[0]; i++)
     {
       localStorage.setItem(arrayOfLines[i*2+1],arrayOfLines[i*2+2]);
     }
@@ -120,4 +120,4 @@ function exportTextData(data, fileName)
   link.download = fileName;
   link.click();
   //console.log(app.viewer.io.svgExport());
-};
+}
