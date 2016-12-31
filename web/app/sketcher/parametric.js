@@ -402,7 +402,7 @@ ParametricManager.prototype.radius = function(objs, promptCallback) {
   }
 };
 
-ParametricManager.prototype.linkObjects = function(objs) {
+ParametricManager.prototype._linkObjects = function(objs) {
   var i;
   var masterIdx = -1;
   for (i = 0; i < objs.length; ++i) {
@@ -423,6 +423,10 @@ ParametricManager.prototype.linkObjects = function(objs) {
     var c = new Constraints.Coincident(objs[i], objs[masterIdx]);
     this._add(c);
   }
+};
+
+ParametricManager.prototype.linkObjects = function(objs) {
+  this._linkObjects(objs);
   this.notify();
 };
 
@@ -885,6 +889,38 @@ Constraints.Factory[Constraints.Coincident.prototype.NAME] = function(refs, data
 Constraints.Coincident.prototype.getObjects = function() {
   return [this.a, this.b];
 };
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+Constraints.RadiusOffset = function(arc1, arc2, offset) {
+  this.arc1 = arc1;
+  this.arc2 = arc2;
+  this.offset = offset;
+};
+
+Constraints.RadiusOffset.prototype.NAME = 'RadiusOffset';
+Constraints.RadiusOffset.prototype.UI_NAME = 'Radius Offset';
+
+Constraints.RadiusOffset.prototype.getSolveData = function() {
+  return [
+    ['Diff', [this.arc1.r, this.arc2.r], [this.offset]]
+  ];
+};
+
+Constraints.RadiusOffset.prototype.serialize = function() {
+  return [this.NAME, [this.arc1.id, this.arc2.id, this.offset]];
+};
+
+Constraints.Factory[Constraints.RadiusOffset.prototype.NAME] = function(refs, data) {
+  return new Constraints.RadiusOffset(refs(data[0]), refs(data[1]), data[2]);
+};
+
+Constraints.RadiusOffset.prototype.getObjects = function() {
+  return [this.arc1, this.arc2];
+};
+
+Constraints.RadiusOffset.prototype.SettableFields = {'offset' : "Enter the offset"};
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
