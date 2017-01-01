@@ -43,7 +43,6 @@ function createByConstraintName(name, params, values) {
   }
 }
 
-/** @constructor */
 function Equal(params) {
 
   this.params = params;
@@ -137,8 +136,6 @@ function LockConvex(params) {
   }
 }
 
-
-/** @constructor */
 function ConstantWrapper(constr, mask) {
 
   this.params = [];
@@ -168,7 +165,6 @@ function ConstantWrapper(constr, mask) {
   }
 }
 
-/** @constructor */
 function Weighted(constr, weight) {
 
   this.weight = weight;
@@ -187,8 +183,6 @@ function Weighted(constr, weight) {
   }
 }
 
-
-/** @constructor */
 function EqualsTo(params, value) {
 
   this.params = params;
@@ -218,7 +212,6 @@ function Diff(params, value) {
   };
 }
 
-/** @constructor */
 function P2LDistance(params, distance) {
 
   this.params = params;
@@ -269,7 +262,6 @@ function P2LDistance(params, distance) {
   }
 }
 
-/** @constructor */
 function P2LDistanceV(params) {
 
   this.params = params;//.slice(0, params.length -1);
@@ -322,7 +314,7 @@ function P2LDistanceV(params) {
   }
 
 }
-/** @constructor */
+
 function P2PDistance(params, distance) {
 
   this.params = params;
@@ -356,8 +348,6 @@ function P2PDistance(params, distance) {
   }
 }
 
-
-/** @constructor */
 function P2PDistanceV(params) {
 
   this.params = params;
@@ -391,7 +381,6 @@ function P2PDistanceV(params) {
   }
 }
 
-/** @constructor */
 function Parallel(params) {
 
   this.params = params;
@@ -425,7 +414,6 @@ function Parallel(params) {
   }
 }
 
-/** @constructor */
 function Perpendicular(params) {
 
   this.params = params;
@@ -460,7 +448,6 @@ function Perpendicular(params) {
   }
 }
 
-/** @constructor */
 function Angle(params) {
 
   this.params = params;
@@ -522,7 +509,6 @@ function Angle(params) {
   }
 }
 
-/** @constructor */
 function PointOnEllipse(params) {
 
   this.params = params;
@@ -562,7 +548,6 @@ function PointOnEllipse(params) {
   this.gradient = NumericGradient;
 }
 
-/** @constructor */
 function EllipseTangent(params) {
 
   this.params = params;
