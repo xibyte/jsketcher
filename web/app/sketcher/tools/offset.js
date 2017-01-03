@@ -28,7 +28,6 @@ export class OffsetTool extends LoopPickTool {
     if (isNaN(delta)) {
       return;
     }
-    const absDelta = Math.abs(delta);
 
     const edges = [];
     const startPoint = findLowestPoint(loopPoints);
@@ -45,7 +44,9 @@ export class OffsetTool extends LoopPickTool {
     if (inverse) {
       delta *= -1;
     }
-    
+
+    const pm = this.viewer.parametricManager;
+    const offsetConstant = createOffsetConstant(pm, delta);
     for (let i = 0; i < length; ++i) {
       let a = loopPoints[pos(i)];
       let b = loopPoints[pos(i + 1)];
@@ -59,8 +60,8 @@ export class OffsetTool extends LoopPickTool {
       if (origEdge._class == 'TCAD.TWO.Segment') {
         const segment = this.viewer.addSegment(aOffX, aOffY, 
                                                bOffX, bOffY, this.viewer.activeLayer);
-        this.viewer.parametricManager._add(new Constraints.Parallel(origEdge, segment));
-        this.viewer.parametricManager._add(new Constraints.P2LDistanceSigned(a, segment.b, segment.a, delta));
+        pm._add(new Constraints.Parallel(origEdge, segment));
+        pm._add(new Constraints.P2LDistanceSigned(a, segment.b, segment.a, offsetConstant));
         edges.push(segment);
       } else if (origEdge._class == 'TCAD.TWO.Arc') {
         const connectionEdge = new SimpleEdge(new EndPoint(aOffX, aOffY), new EndPoint(bOffX, bOffY));
@@ -72,17 +73,17 @@ export class OffsetTool extends LoopPickTool {
           new EndPoint(origEdge.c.x + offVector.x, origEdge.c.y + offVector.y)
         );
         arc.stabilize(this.viewer);
-        this.viewer.parametricManager._linkObjects([arc.c, origEdge.c]);
-        this.viewer.parametricManager._add(new Constraints.RadiusOffset(inverse?arc:origEdge, inverse?origEdge:arc, delta));
+        pm._linkObjects([arc.c, origEdge.c]);
+        pm._add(new Constraints.RadiusOffset(inverse?arc:origEdge, inverse?origEdge:arc, offsetConstant));
         this.viewer.activeLayer.add(arc);
       }
     }
 
     for (let i = 0; i < edges.length; i++) {
-      this.viewer.parametricManager._linkObjects([edges[i].b, edges[(i + 1) % edges.length].a]);
+      pm._linkObjects([edges[i].b, edges[(i + 1) % edges.length].a]);
     }
-    this.viewer.parametricManager.solve(undefined, undefined, loopEdges);
-    this.viewer.parametricManager.refresh();
+    pm.solve(undefined, undefined, loopEdges);
+    pm.refresh();
     this.viewer.toolManager.releaseControl();
   }
   
@@ -124,4 +125,14 @@ function findLowestPoint(poly) {
     }
   }  
   return hero;
+}
+
+function createOffsetConstant(pm, value) {
+  let constant;
+  let i = 0;
+  do {
+    constant = 'OFFSET' + i++;
+  } while (pm.constantTable[constant]);
+  pm.defineNewConstant(constant, value);
+  return constant;
 }

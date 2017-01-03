@@ -23,8 +23,8 @@ function ParametricManager(viewer) {
   this.listeners = [];
   this.constantTable = {};
   
-  this.viewer.params.define("constantDefinition", null);
-  this.viewer.params.subscribe("constantDefinition", "parametricManager", this.rebuildConstantTable, this)();
+  this.viewer.params.define('constantDefinition', null);
+  this.viewer.params.subscribe('constantDefinition', 'parametricManager', this.onConstantsExternalChange, this)();
   this.constantResolver = this.createConstantResolver();
 }
 
@@ -61,15 +61,31 @@ ParametricManager.prototype.rebuildConstantTable = function(constantDefinition) 
       try {
         var value = eval(prefix + "return " + m[2] + "; \n})()");
         this.constantTable[constant] = value;
-        prefix += constant + " = " + value + ";\n"
+        prefix += "const " + constant + " = " + value + ";\n"
       } catch(e) {
         console.log(e);
       }
     }
   }
+};
+
+ParametricManager.prototype.onConstantsExternalChange = function(constantDefinition) {
+  this.rebuildConstantTable(constantDefinition);
   this.refresh();
 };
 
+ParametricManager.prototype.defineNewConstant = function(name, value) {
+  let constantDefinition = this.viewer.params.constantDefinition;
+  let constantText = name + ' = ' + value;
+  if (constantDefinition) {
+    constantDefinition += '\n' + constantText;
+  } else {
+    constantDefinition = constantText;
+  }
+  this.rebuildConstantTable(constantDefinition);
+  //disabling onConstantsExternalChange since we don't need re-solve  
+  this.viewer.params.set('constantDefinition', constantDefinition, 'parametricManager');
+};
 
 ParametricManager.prototype.findComponents = function(constr) {
   if (this.subSystems.length === 0) {
@@ -500,7 +516,7 @@ ParametricManager.prototype._prepare = function(locked, subSystems, extraConstra
   for (var i = 0; i < subSystems.length; i++) {
     solvers.push(this.prepareForSubSystem(locked, subSystems[i].constraints, extraConstraints, disabledObjects));
   }
-  if (subSystems.length == 0 && locked.length != 0) {
+  if (subSystems.length == 0 && locked && locked.length != 0) {
     solvers.push(this.prepareForSubSystem(locked, [], extraConstraints, disabledObjects));
   }
   return {
@@ -896,9 +912,9 @@ Constraints.RadiusOffset = function(arc1, arc2, offset) {
 Constraints.RadiusOffset.prototype.NAME = 'RadiusOffset';
 Constraints.RadiusOffset.prototype.UI_NAME = 'Radius Offset';
 
-Constraints.RadiusOffset.prototype.getSolveData = function() {
+Constraints.RadiusOffset.prototype.getSolveData = function(resolver) {
   return [
-    ['Diff', [this.arc1.r, this.arc2.r], [this.offset]]
+    ['Diff', [this.arc1.r, this.arc2.r], [resolver(this.offset)]]
   ];
 };
 
