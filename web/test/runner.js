@@ -15,6 +15,7 @@ $(() => {
   });
   $('#test-list').html(TestList({suites}));
   new Menu(ACTIONS);
+  checkStartupRequest();
 });
 
 const queue = [];
@@ -108,6 +109,22 @@ function enableBtn(btn) {
   btn.removeAttr('disabled');
 }
 
+function checkStartupRequest() {
+  const testId = window.location.hash.substring(1);
+  if (testId) {
+    runTestImpl(testId);
+    const testDomId = 'test-' + testId.split(':').join('-');
+    $('#' +testDomId).get(0).scrollIntoView();
+  }
+}
+
+function runTestImpl(testIdStr) {
+  const testId = testIdStr.split(':');
+  queue.length = 0;
+  window.location.hash = "#" + testIdStr;
+  scheduleTest(findTestById(testId), testIdStr);
+  pokeQueue();
+}
 
 const ACTIONS = {
   Run: {
@@ -127,7 +144,7 @@ const ACTIONS = {
   RunTestCase: {
     label: "Run Test Case",
     invoke: (target) => {
-      var testCaseIdStr = target.data('testCaseId');
+      const testCaseIdStr = target.data('testCaseId');
       const testCaseId = testCaseIdStr.split(':');
       queue.length = 0;
       scheduleTestCase(findTestCaseById(testCaseId), testCaseIdStr);
@@ -138,11 +155,8 @@ const ACTIONS = {
   RunTest: {
     label: "Run Test",
     invoke: (target) => {
-      var testIdStr = target.data('testId');
-      const testId = testIdStr.split(':');
-      queue.length = 0;
-      scheduleTest(findTestById(testId), testIdStr);
-      pokeQueue();
+      const testIdStr = target.data('testId');
+      runTestImpl(testIdStr);
     }
   }
 };
