@@ -13,9 +13,11 @@ function Param(id, value, readOnly) {
 Param.prototype.reset = function(value) {
   this.set(value);
   this.j = -1;
+  this.aux = false;
 };
 
 Param.prototype.set = function(value) {
+  if (this.aux) return;
   this.value = value;
 };
 
@@ -187,28 +189,27 @@ System.prototype.getValues = function() {
   return values;
 };
 
-var wrapAux = function(constrs, locked) {
-
-  var i, lockedSet = {};
-  for (i = 0; i < locked.length; i++) {
-    lockedSet[locked[i].j] = true;
-  }
-
-  for (i = 0; i < constrs.length; i++) {
-    var c = constrs[i];
-    var mask = [];
-    var needWrap = false;
-    for (var j = 0; j < c.params.length; j++) {
-      var param = c.params[j];
-      mask[j] = lockedSet[param.j] === true;
+function wrapAux(constrs) {
+  for (let i = 0; i < constrs.length; i++) {
+    const c = constrs[i];
+    const mask = [];
+    let needWrap = false;
+    for (let j = 0; j < c.params.length; j++) {
+      const param = c.params[j];
+      mask[j] = param.aux === true;
       needWrap = needWrap || mask[j];
     }
     if (needWrap) {
-      var wrapper = new ConstantWrapper(c, mask);
-      constrs[i] = wrapper;
+      constrs[i] = new ConstantWrapper(c, mask);
     }
   }
-};
+  for (let constr of constrs) {
+    if (constr.params.length == 0) {
+      return constrs.filter(c => c.params.length != 0);
+    }
+  }
+  return constrs;
+}
 
 var lock2Equals2 = function(constrs, locked) {
   var _locked = [];
@@ -233,18 +234,17 @@ var diagnose = function(sys) {
   }
 };
 
-var prepare = function(constrs, locked, aux, alg) {
+var prepare = function(constrs, locked) {
 
   var simpleMode = true;
   if (!simpleMode) {
     var lockingConstrs = lock2Equals2(constrs, locked);
     Array.prototype.push.apply( constrs, lockingConstrs );
   }
-            
+
+  constrs = wrapAux(constrs);
   var sys = new System(constrs);
   
-  wrapAux(constrs, aux);
-
   var model = function(point) {
     sys.setParams(point);
     return sys.getValues();
