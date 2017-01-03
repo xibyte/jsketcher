@@ -83,8 +83,8 @@ export class FilletTool extends Tool {
     //pm._add(new Constraints.LockConvex(arc.c, arc.a, otherEnd(point1)));
     //pm._add(new Constraints.LockConvex(otherEnd(point2), arc.b, arc.c));
   
-    var solver = pm.solveWithLock([]);
-  //  var solver = pm.solveWithLock([point1._x, point1._y, point2._x, point2._y]);
+    var solver = pm.solve();
+  //  var solver = pm.solve([point1._x, point1._y, point2._x, point2._y]);
     pm.notify();
     this.viewer.refresh();
   }
