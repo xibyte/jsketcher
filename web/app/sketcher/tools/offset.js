@@ -25,8 +25,11 @@ export class OffsetTool extends LoopPickTool {
       }
     }
     let delta = parseInt(prompt('offset distance?', 100));
+    if (isNaN(delta)) {
+      return;
+    }
     const absDelta = Math.abs(delta);
-    
+
     const edges = [];
     const startPoint = findLowestPoint(loopPoints);
     const start = loopPoints.indexOf(startPoint);
@@ -38,15 +41,14 @@ export class OffsetTool extends LoopPickTool {
       return (i + start) % length;
     }
 
-    if (!math.isCCW([loopPoints[pos(0)], loopPoints[pos(1)], loopPoints[pos(length - 1)]])) {
+    const inverse = this.twoConnectedArcs() || !math.isCCW([loopPoints[pos(0)], loopPoints[pos(1)], loopPoints[pos(length - 1)]]);
+    if (inverse) {
       delta *= -1;
     }
     
-    const arcs = [];
-    
     for (let i = 0; i < length; ++i) {
-      const a = loopPoints[pos(i)];
-      const b = loopPoints[pos(i + 1)];
+      let a = loopPoints[pos(i)];
+      let b = loopPoints[pos(i + 1)];
       const normal = new Vector(-(b.y - a.y), (b.x - a.x))._normalize();
       const offVector = normal._multiply(delta);
       const origEdge = loopEdges[pos(i)];
@@ -58,32 +60,38 @@ export class OffsetTool extends LoopPickTool {
         const segment = this.viewer.addSegment(aOffX, aOffY, 
                                                bOffX, bOffY, this.viewer.activeLayer);
         this.viewer.parametricManager._add(new Constraints.Parallel(origEdge, segment));
-        this.viewer.parametricManager._add(new Constraints.P2LDistance(a, segment, absDelta));
+        this.viewer.parametricManager._add(new Constraints.P2LDistanceSigned(a, segment.b, segment.a, delta));
         edges.push(segment);
       } else if (origEdge._class == 'TCAD.TWO.Arc') {
+        const connectionEdge = new SimpleEdge(new EndPoint(aOffX, aOffY), new EndPoint(bOffX, bOffY));
+        edges.push(connectionEdge);
+        const arcEdge = inverse ? connectionEdge.reverse() : connectionEdge;
         const arc = new Arc(
-          new EndPoint(aOffX, aOffY),
-          new EndPoint(bOffX, bOffY),
+          arcEdge.a,
+          arcEdge.b,
           new EndPoint(origEdge.c.x + offVector.x, origEdge.c.y + offVector.y)
         );
         arc.stabilize(this.viewer);
-        this.viewer.parametricManager._linkObjects([origEdge.c, arc.c]);
-        this.viewer.parametricManager._add(new Constraints.RadiusOffset(origEdge, arc, delta));
+        this.viewer.parametricManager._linkObjects([arc.c, origEdge.c]);
+        this.viewer.parametricManager._add(new Constraints.RadiusOffset(inverse?arc:origEdge, inverse?origEdge:arc, delta));
         this.viewer.activeLayer.add(arc);
-        edges.push(arc);
-        arcs.push(arc);
       }
     }
 
-    arcs.forEach(e => e.c.aux = true);
     for (let i = 0; i < edges.length; i++) {
       this.viewer.parametricManager._linkObjects([edges[i].b, edges[(i + 1) % edges.length].a]);
     }
-    loopEdges.forEach(e => e.aux = true);
+    this.viewer.parametricManager.solve(undefined, undefined, loopEdges);
     this.viewer.parametricManager.refresh();
-    loopEdges.forEach(e => e.aux = false);
-    arcs.forEach(e => e.c.aux = false);
     this.viewer.toolManager.releaseControl();
+  }
+  
+  twoConnectedArcs() {
+    function isArc(edge) {
+      return edge._class == 'TCAD.TWO.Arc';
+    }
+    const edges = this.pickedLoop.edges;
+    return edges.length == 2 && isArc(edges[0]) && isArc(edges[1]);
   }
 }
 
@@ -96,9 +104,12 @@ const SUPPORTED_OBJECTS = new Set();
 SUPPORTED_OBJECTS.add('TCAD.TWO.Segment');
 SUPPORTED_OBJECTS.add('TCAD.TWO.Arc');
 
-function SimpleSegment(a, b) {
+function SimpleEdge(a, b) {
   this.a = a;
   this.b = b;
+  this.reverse = function() {
+    return new SimpleEdge(b, a);
+  }
 }
 
 function findLowestPoint(poly) {

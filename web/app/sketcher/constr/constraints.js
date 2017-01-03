@@ -17,6 +17,8 @@ function createByConstraintName(name, params, values) {
       return new Perpendicular(params);
     case "parallel":
       return new Parallel(params);
+    case "P2LDistanceSigned":
+      return new P2LDistanceSigned(params, values[0]);
     case "P2LDistance":
       return new P2LDistance(params, values[0]);
     case "P2LDistanceV":
@@ -140,9 +142,8 @@ function ConstantWrapper(constr, mask) {
 
   this.params = [];
   this.grad = [];
-  var j;
   
-  for (j = 0; j < constr.params.length; j++) {
+  for (let j = 0; j < constr.params.length; j++) {
     if (!mask[j]) {
       this.params.push(constr.params[j]);
     }
@@ -157,7 +158,7 @@ function ConstantWrapper(constr, mask) {
     fillArray(this.grad, 0, this.grad.length, 0);
     constr.gradient(this.grad);
     var jj = 0;
-    for (j = 0; j < mask.length; j++) {
+    for (let j = 0; j < mask.length; j++) {
       if (!mask[j]) {
         out[jj ++] = this.grad[j];
       }
@@ -210,6 +211,29 @@ function Diff(params, value) {
     out[0] =  1;
     out[1] = -1;
   };
+}
+
+function P2LDistanceSigned(params, value) {
+
+  const TX = 0;
+  const TY = 1;
+  const AX = 2;
+  const AY = 3;
+  const BX = 4;
+  const BY = 5;
+
+  this.params = params;
+  this.value = value;
+
+  this.error = function() {
+    const tx = params[TX].get(), ax = params[AX].get(), bx = params[BX].get();
+    const ty = params[TY].get(), ay = params[AY].get(), by = params[BY].get();
+    const d = Math.sqrt(sq(by - ay) + sq(bx - ax));
+    
+    return (-(by - ay) * (tx - ax) ) / d + ((bx - ax) * (ty - ay)) / d - this.value;
+  };
+
+  this.gradient = NumericGradient;
 }
 
 function P2LDistance(params, distance) {
