@@ -11,6 +11,7 @@ export default {
   ],
 
   SketcherTools: [
+    TestCase('offset'),
 
   ],
   
