@@ -37,6 +37,7 @@ export function addSegment(app, aX, aY, bX, bY) {
   app.actions['addSegment'].action();
   const tool = app.viewer.toolManager.tool;
   tool.mousemove(new TestMouseEvent(aX, aY));
+  tool.mousedown(new TestMouseEvent(aX, aY));
   tool.mouseup(new TestMouseEvent(aX, aY));
   tool.mousemove(new TestMouseEvent(bX, bY));
   const segment = tool.line;
@@ -44,6 +45,20 @@ export function addSegment(app, aX, aY, bX, bY) {
   app.viewer.toolManager.releaseControl();
   return segment;
 }
+
+export function polyLine(app) {
+  app.actions['addMultiSegment'].action();
+  const tool = app.viewer.toolManager.tool;
+  for (let i = 1; i < arguments.length; ++i) {
+    let p = arguments[i];
+    tool.mousemove(new TestMouseEvent(p.x, p.y));
+    tool.mousedown(new TestMouseEvent(p.x, p.y));
+    tool.mouseup(new TestMouseEvent(p.x, p.y));
+  }
+  tool.cancelSegment();
+  app.viewer.toolManager.releaseControl();
+}
+
 
 export function segmentAsVector(segment) {
   return new Vector(segment.b.x - segment.a.x, segment.b.y - segment.a.y);
