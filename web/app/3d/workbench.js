@@ -902,7 +902,17 @@ export const OPERATIONS = {
   PAD : extrude,
   REVOLVE : performRevolve,
   PLANE : function(app, request) {
-    return [cad_utils.createPlane(request.params.basis, request.params.depth)];
+    let basis, depth = request.params.depth;
+    const relativeToFaceId = request.params.relativeToFaceId;
+    if (relativeToFaceId != undefined && relativeToFaceId != '') {
+      const face = app.findFace(relativeToFaceId);
+      if (!face) return;
+      basis = face.basis();
+      depth += face.depth();
+    } else {
+      basis = request.params.basis;
+    }
+    return [cad_utils.createPlane(basis, depth)];
   },
   BOX : function(app, request) {
     var p = request.params;

@@ -173,7 +173,7 @@ UI.prototype.createWizard = function(type, overridingHistory, initParams, face) 
   } else if ('REVOLVE' === type) {
     wizard = new RevolveWizard(this.app, face, initParams);
   } else if ('PLANE' === type) {
-    wizard = new PlaneWizard(this.app.viewer, initParams);
+    wizard = new PlaneWizard(this.app, initParams);
   } else if ('BOX' === type) {
     wizard = new BoxWizard(this.app.viewer, initParams);
   } else if ('SPHERE' === type) {
