@@ -2,23 +2,35 @@ import {AXIS, IDENTITY_BASIS} from '../../math/l3space'
 import * as tk from '../../ui/toolkit.js'
 import {FACE_COLOR} from '../cad-utils'
 import {Wizard} from './wizard-commons'
+import {Matrix3} from '../../math/l3space'
 
-export function PlaneWizard(viewer, initParams) {
-  Wizard.call(this, viewer, initParams);
+export function PlaneWizard(app, initParams) {
+  Wizard.call(this, app.viewer, initParams);
+  this.app = app;
   this.previewGroup = new THREE.Object3D();
   this.viewer.scene.add(this.previewGroup);
   this.previewGroup.add(this.plane = this.createPlane());
   this.operationParams = {
     basis : IDENTITY_BASIS,
-    depth : 0
+    depth : 0,
+    relativeToFaceId: ''
   };
+  this.selectionListener = () => {
+    const face = this.app.viewer.selectionMgr.selection[0];
+    if (face) {
+      this.ui.relativeToFace.input.val(face.id);
+      this.synch();
+    }
+  };
+  app.bus.subscribe('selection', this.selectionListener);
+
   this.focus = () => this.ui.depth.input.focus();
   this.synch();
 }
 
 PlaneWizard.prototype = Object.create( Wizard.prototype );
 
-PlaneWizard.prototype.DEFAULT_PARAMS = ['XY', 0];
+PlaneWizard.prototype.DEFAULT_PARAMS = ['XY', 0, ''];
 
 PlaneWizard.prototype.title = function() {
   return "Add a Plane";
@@ -30,8 +42,17 @@ PlaneWizard.prototype.createPlane = function() {
   return new THREE.Mesh(geometry, material);
 };
 
-PlaneWizard.prototype.update = function(orientation, w) {
-  if (orientation === 'XY') {
+PlaneWizard.prototype.update = function(orientation, w, relativeToFaceId) {
+  if (relativeToFaceId != '') {
+    const face = this.app.findFace(relativeToFaceId);
+    const m = new THREE.Matrix4();
+    m.makeBasis.apply(m, face.basis());
+    const wVec = new THREE.Vector3(0, 0, w + face.depth());
+    wVec.applyMatrix4(m); 
+    m.setPosition(wVec);
+    this.plane.matrix.identity();
+    this.plane.applyMatrix(m);
+  } else if (orientation === 'XY') {
     this.plane.rotation.x = 0;
     this.plane.rotation.y = 0;
     this.plane.rotation.z = 0;
@@ -59,16 +80,20 @@ PlaneWizard.prototype.update = function(orientation, w) {
     throw orientation + " isn't supported yet";
   }
   this.operationParams.depth = w;
+  this.operationParams.relativeToFaceId = relativeToFaceId;
   this.viewer.render();
 };
 
-PlaneWizard.prototype.createUI = function(orientation, w) {
+PlaneWizard.prototype.createUI = function(orientation, w, relativeToFaceId) {
   const folder = this.ui.folder;
   const choice = ['XY', 'XZ', 'ZY'];
   this.ui.orientation = new tk.InlineRadio(choice, choice, choice.indexOf(orientation));
   this.ui.depth = new tk.Number("Depth", w);
+  this.ui.relativeToFace = new tk.Text("Relative to Face", relativeToFaceId === undefined ? '' : relativeToFaceId);
   tk.add(folder, this.ui.orientation);
+  tk.add(folder, this.ui.relativeToFace);
   tk.add(folder, this.ui.depth);
+  
   var onChange = tk.methodRef(this, "synch");
   this.ui.orientation.root.find('input:radio').change(onChange);
   this.ui.depth.input.on('t-change', onChange);
@@ -80,7 +105,7 @@ PlaneWizard.prototype.synch = function() {
 };
 
 PlaneWizard.prototype.getParams = function() {
-  return [this.ui.orientation.getValue(), this.ui.depth.input.val()]
+  return [this.ui.orientation.getValue(), parseFloat(this.ui.depth.input.val()), this.ui.relativeToFace.input.val()]
 };
 
 PlaneWizard.prototype.createRequest = function(done) {
