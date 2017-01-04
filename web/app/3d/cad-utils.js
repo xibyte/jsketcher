@@ -177,18 +177,13 @@ export function createPlane(basis, depth) {
   var plane = new Solid(CSG.fromPolygons([polygon]), material, 'PLANE');
   plane.wireframeGroup.visible = false;
   plane.mergeable = false;
-  var _3d = tr.invert();
 
   function setBounds(bbox) {
-    var corner = new Vector(bbox.minX, bbox.minY, 0);
-    var size = new Vector(bbox.width(), bbox.height(), 1);
-    _3d._apply(size);
-    _3d._apply(corner);
-    plane.mesh.scale.set(size.x, size.y, size.z);
-    plane.mesh.position.set(corner.x, corner.y, corner.z);
     currentBounds = bbox;
-    var poly = new CSG.Polygon(bbox.toPolygon().map(function(p){return new CSG.Vertex(csgVec( _3d._apply(p) ))}), shared);
+    const poly = new CSG.Polygon(bbox.toPolygon().map(function(p){p.z = depth; return new CSG.Vertex(csgVec( tr._apply(p) ))}), shared);
     plane.csg = CSG.fromPolygons([poly]);
+    plane.dropGeometry();
+    plane.createGeometry();
   }
   var bb = new BBox();
   bb.checkBounds(-400, -400);

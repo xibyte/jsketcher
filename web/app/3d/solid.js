@@ -15,25 +15,37 @@ export function Solid(csg, material, type, id) {
   this.cadGroup = new THREE.Object3D();
   this.cadGroup.__tcad_solid = this;
 
-  var geometry = new THREE.Geometry();
-  geometry.dynamic = true;
-  this.mesh = new THREE.Mesh(geometry, material);
-  this.cadGroup.add(this.mesh);
-
   this.tCadId = Counters.solid ++;
   this.id = id === undefined ? this.tCadId : id; // to keep identity through the history
   this.faceCounter = 0;
 
   this.wireframeGroup = new THREE.Object3D();
   this.cadGroup.add(this.wireframeGroup);
+  this.mergeable = true;
+  this.material = material;
+  this.createGeometry();
+}
+
+Solid.prototype.createGeometry = function() {
+  const geometry = new THREE.Geometry();
+  geometry.dynamic = true;
+  this.mesh = new THREE.Mesh(geometry, this.material);
+  this.cadGroup.add(this.mesh);
 
   this.polyFaces = [];
   this.wires = HashTable.forEdge();
   this.curvedSurfaces = {};
-  this.mergeable = true;
 
   this.setupGeometry();
-}
+};
+
+Solid.prototype.dropGeometry = function() {
+  this.cadGroup.remove( this.mesh );
+  this.mesh.geometry.dispose();
+  for(let i = this.wireframeGroup.children.length-1; i >=0 ; i--){
+    this.wireframeGroup.remove(this.wireframeGroup.children[i]);
+  }
+};
 
 function groupCSG(csg) {
   var csgPolygons = csg.toPolygons();
@@ -101,7 +113,7 @@ Solid.prototype.setupGeometry = function() {
 
 Solid.prototype.vanish = function() {
   this.cadGroup.parent.remove( this.cadGroup );
-  this.mesh.material.dispose();
+  this.material.dispose();
   this.mesh.geometry.dispose();
 };
 
