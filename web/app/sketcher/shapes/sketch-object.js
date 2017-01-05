@@ -85,5 +85,9 @@ export class SketchObject extends Shape {
     this.drawImpl(ctx, scale, viewer);
     if (this.marked != null) ctx.restore();
   }
+  
+  copy() {
+    throw 'method not implemented';
+  }
 }
 
