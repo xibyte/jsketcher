@@ -127,6 +127,10 @@ export class Arc extends SketchObject {
     viewer.parametricManager._add(new Constraints.P2PDistanceV(this.b, this.c, this.r));
     viewer.parametricManager._add(new Constraints.P2PDistanceV(this.a, this.c, this.r));
   }
+
+  copy() {
+    return new Arc(this.a.copy(), this.b.copy(), this.c.copy());
+  }
 }
 
 Arc.prototype._class = 'TCAD.TWO.Arc';
