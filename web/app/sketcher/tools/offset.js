@@ -3,7 +3,6 @@ import {Constraints} from '../parametric'
 import * as math from '../../math/math';
 import Vector from '../../math/vector';
 import {swap} from '../../utils/utils'
-import ClipperLib from '../../../lib/clipper'
 import {EndPoint} from '../shapes/point'
 import {Arc} from '../shapes/arc'
 
@@ -16,7 +15,7 @@ export class OffsetTool extends LoopPickTool {
   onMousedown(e) {
     const loopPoints = this.pickedLoop.points;
     const loopEdges = this.pickedLoop.edges;
-    const length = loopPoints.length;
+    const length = loopEdges.length;
 
     for (let obj of loopEdges) {
       if (!SUPPORTED_OBJECTS.has(obj._class)) {
@@ -29,58 +28,46 @@ export class OffsetTool extends LoopPickTool {
       return;
     }
 
-    const edges = [];
-    const startPoint = findLowestPoint(loopPoints);
-    const start = loopPoints.indexOf(startPoint);
-    if (start == -1) {
-      return;
-    }
+    const edges = loopEdges.map(e => e.copy());
 
+    const lowestPoint = findLowestPoint(loopPoints);
+    const low = loopPoints.indexOf(lowestPoint);
     function pos(i) {
-      return (i + start) % length;
+      return (i + low) % length;
     }
-
-    const inverse = this.twoConnectedArcs() || !math.isCCW([loopPoints[pos(0)], loopPoints[pos(1)], loopPoints[pos(length - 1)]]);
-    if (inverse) {
-      delta *= -1;
-    }
+    
+    const mainInverse = !this.twoConnectedArcs() && math.isCCW([loopPoints[pos(0)], loopPoints[pos(1)], loopPoints[pos(length - 1)]]);    
 
     const pm = this.viewer.parametricManager;
     const offsetConstant = createOffsetConstant(pm, delta);
     for (let i = 0; i < length; ++i) {
-      let a = loopPoints[pos(i)];
-      let b = loopPoints[pos(i + 1)];
-      const normal = new Vector(-(b.y - a.y), (b.x - a.x))._normalize();
-      const offVector = normal._multiply(delta);
-      const origEdge = loopEdges[pos(i)];
-      const aOffX = a.x + offVector.x;
-      const aOffY = a.y + offVector.y;
-      const bOffX = b.x + offVector.x;
-      const bOffY = b.y + offVector.y;
-      if (origEdge._class == 'TCAD.TWO.Segment') {
-        const segment = this.viewer.addSegment(aOffX, aOffY, 
-                                               bOffX, bOffY, this.viewer.activeLayer);
-        pm._add(new Constraints.Parallel(origEdge, segment));
-        pm._add(new Constraints.P2LDistanceSigned(a, segment.b, segment.a, offsetConstant));
-        edges.push(segment);
-      } else if (origEdge._class == 'TCAD.TWO.Arc') {
-        const connectionEdge = new SimpleEdge(new EndPoint(aOffX, aOffY), new EndPoint(bOffX, bOffY));
-        edges.push(connectionEdge);
-        const arcEdge = inverse ? connectionEdge.reverse() : connectionEdge;
-        const arc = new Arc(
-          arcEdge.a,
-          arcEdge.b,
-          new EndPoint(origEdge.c.x + offVector.x, origEdge.c.y + offVector.y)
-        );
-        arc.stabilize(this.viewer);
-        pm._linkObjects([arc.c, origEdge.c]);
-        pm._add(new Constraints.RadiusOffset(inverse?arc:origEdge, inverse?origEdge:arc, offsetConstant));
-        this.viewer.activeLayer.add(arc);
+      const edge = edges[i];
+      const origEdge = loopEdges[i];
+      const edgeInverse = loopPoints[i] != origEdge.a;
+      const inverse = mainInverse != edgeInverse;
+      
+      this.viewer.activeLayer.add(edge);
+      if (edge._class == 'TCAD.TWO.Segment') {
+        pm._add(new Constraints.Parallel(origEdge, edge));
+        pm._add(new Constraints.P2LDistanceSigned(origEdge.a, inverse?edge.b:edge.a, inverse?edge.a:edge.b, offsetConstant));
+      } else if (edge._class == 'TCAD.TWO.Arc') {
+        edge.stabilize(this.viewer);
+        pm._linkObjects([edge.c, origEdge.c]);
+        pm._add(new Constraints.RadiusOffset(inverse?origEdge:edge, inverse?edge:origEdge, offsetConstant));
       }
     }
-
+    
     for (let i = 0; i < edges.length; i++) {
-      pm._linkObjects([edges[i].b, edges[(i + 1) % edges.length].a]);
+      const next = ((i + 1) % edges.length);
+      if (loopEdges[i].a.linked.indexOf(loopEdges[next].a) != -1) {
+        pm._linkObjects([edges[i].a, edges[next].a]);
+      } else if (loopEdges[i].a.linked.indexOf(loopEdges[next].b) != -1) {
+        pm._linkObjects([edges[i].a, edges[next].b]);
+      } else if (loopEdges[i].b.linked.indexOf(loopEdges[next].a) != -1) {
+        pm._linkObjects([edges[i].b, edges[next].a]);
+      } else if (loopEdges[i].b.linked.indexOf(loopEdges[next].b) != -1) {
+        pm._linkObjects([edges[i].b, edges[next].b]);
+      }
     }
     pm.solve(undefined, undefined, loopEdges);
     pm.refresh();
