@@ -16,6 +16,9 @@ import {AddDebugSupport} from './debug'
 import {init as initSample} from './sample'
 import '../../css/app3d.less'
 
+import * as BREPBuilder from '../brep/brep-builder'
+import {SceneSolid} from '../brep/viz/scene-solid'
+
 function App() {
   this.id = this.processHints();
   this.bus = new Bus();
@@ -63,7 +66,22 @@ function App() {
     }
     app._refreshSketches();
   });
+  this.BREPTest();
 }
+
+App.prototype.BREPTest = function() {
+
+  const box = BREPBuilder.createPrism([
+    BREPBuilder.point(-250, -250, 250),
+    BREPBuilder.point(250, -250, 250),
+    BREPBuilder.point(250, 250, 250),
+    BREPBuilder.point(-250, 250, 250),
+  ], 500);
+  
+  const sceneSolid = new SceneSolid(box);
+  this.viewer.workGroup.add(sceneSolid.cadGroup);
+  this.viewer.render()
+};
 
 App.prototype.processHints = function() {
   let id = window.location.hash.substring(1);
