@@ -52,6 +52,7 @@ function createPlaneFace(normal, loop) {
   const plane = new Plane(normal, w);
   const face = new Face(plane);
   face.outerLoop = loop;
+  loop.face = face;
   return face;
 }
 
@@ -77,12 +78,15 @@ export function createPlaneLoop(vertices) {
     loop.halfEdges.push(halfEdge);
   });
 
-  iterateSegments(loop.halfEdges, (prev, next) => {
+  linkSegments(loop.halfEdges);
+  return loop;
+}
+
+export function linkSegments(halfEdges) {
+  iterateSegments(halfEdges, (prev, next) => {
     prev.next = next;
     next.prev = prev;
   });
-  
-  return loop;
 }
 
 export function point(x, y, z) {
