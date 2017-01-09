@@ -1,4 +1,5 @@
 import {Surface} from '../surface'
+import {Line} from './line'
 import {AXIS} from  '../../../math/l3space'
  
 export class Plane extends Surface {
@@ -21,4 +22,12 @@ export class Plane extends Surface {
     x = y.cross(normal);
     return [x, y, normal];
   }
+  
+  intersect(other) {
+    if (other instanceof Plane) {
+      return new Line.fromTwoPlanesIntersection(this, other);
+    }
+    return super.intersect();
+  }
+  
 }
