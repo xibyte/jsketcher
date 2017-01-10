@@ -50,7 +50,13 @@ export class SceneSolid {
           face.normal = normal;
           face.materialIndex = gIdx ++;
           geom.faces.push(face);
-          //face.color.set(new THREE.Color().setRGB( Math.random(), Math.random(), Math.random()));
+          if (brepFace.debugName == 'base') {
+            face.color.set(new THREE.Color().setHex( 0x000077 ));
+          }
+          if (brepFace.debugName == 'wall_3') {
+            face.color.set(new THREE.Color().setHex( 0x007700 ));
+          }
+
         }
         //view.setFaceColor(polyFace, utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
         off = geom.vertices.length;

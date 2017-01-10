@@ -22,8 +22,11 @@ export function union( shell1, shell2 ) {
     
     const seen = new Set();
     const face = faceData.face;
-    const edges = faceData.newEdges.concat(face.outerLoop);
-    
+    if (shell2.faces.indexOf(face) != -1) {
+      continue;
+    }
+    const edges = faceData.newEdges.concat(face.outerLoop.halfEdges);
+    edges.forEach(e => __DEBUG__.AddLine(e.vertexA.point, e.vertexB.point));
     while (true) {
       let edge = edges.pop();
       if (!edge) {
@@ -37,7 +40,10 @@ export function union( shell1, shell2 ) {
         loop.halfEdges.push(edge);
         seen.add(edge);
         let candidates = faceData.vertexToEdge.get(edge.vertexB);
-        edge = findMaxTurningLeft(candidates, face);
+        if (!candidates) {
+          break;
+        }
+        edge = findMaxTurningLeft(edge, candidates);
         if (seen.has(edge)) {
           break;
         }
@@ -47,9 +53,10 @@ export function union( shell1, shell2 ) {
       const newFace = new Face(face.surface);
       newFace.outerLoop = loop;
       newFace.outerLoop.face = newFace;
-      result.push(newFace);
+      result.faces.push(newFace);
     }
   }
+  return result;
 }
 
 function initSolveData(shell, facesData) {
@@ -64,7 +71,7 @@ function initSolveData(shell, facesData) {
   }  
 }
 
-function findMaxTurningLeft(edge, edges, face) {
+function findMaxTurningLeft(edge, edges) {
   edges = edges.slice();
   function edgeVector(edge) {
     return edge.vertexB.point.minus(edge.vertexA.point)._normalize();
@@ -89,6 +96,10 @@ function intersectFaces(shell1, shell2) {
     for (let j = 0; j < shell2.faces.length; j++) {
       const face1 = shell1.faces[i];
       const face2 = shell2.faces[j];
+
+      if (face1.debugName == 'base' && face2.debugName == 'wall_3') {
+        console.log('there');
+      }
       
       const curve = face1.surface.intersect(face2.surface);
 
@@ -125,10 +136,11 @@ function split(face, loop, result, onCurve, direction) {
   }
   for (let i = 0; i < nodes.length; i++) {
     let inNode = nodes[i];
+    if (inNode == null) continue;
     nodes[i] = null;
     let closestIdx = findCloserProjection(nodes, inNode.point);
     if (closestIdx == -1) {
-      throw 'consider me';
+      continue;
     }
     let outNode = nodes[closestIdx];
     
@@ -181,8 +193,8 @@ function splitEdgeByVertex(originHalfEdge, vertex) {
   orig.vertexB = vertex;
   twin.vertexA = vertex;
   
-  orig.loop.push(halfEdge1);
-  twin.loop.push(halfEdge2);
+  orig.loop.halfEdges.push(halfEdge1);
+  twin.loop.halfEdges.push(halfEdge2);
 
   halfEdge1.loop = orig.loop;
   halfEdge2.loop = twin.loop;
@@ -277,6 +289,8 @@ function Node(vertex, normal, splitsEdge) {
   this.vertex = vertex;
   this.normal = normal;
   this.point = vertex.point;
+  this.edge = splitsEdge;
+  __DEBUG__.AddPoint(this.point);
 }
 
 class SolveData {
@@ -299,5 +313,5 @@ function addToListInMap(map, key, value) {
     list = [];
     map.set(key, list);
   }
-  list.add(value);
+  list.push(value);
 }

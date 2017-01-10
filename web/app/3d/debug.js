@@ -1,12 +1,49 @@
 import {checkForSelectedFaces} from './actions/action-helpers'
 
-export const DEBUG = false;
+export const DEBUG = true;
 
 export function AddDebugSupport(app) {
   if (!DEBUG) return;
   app.actionManager.registerActions(DebugActions);
   app.ui.registerMenuActions(DebugMenuConfig);
   app.controlBar.add('menu.debug', true);
+  addGlobalDebugActions(app);
+}
+
+function addGlobalDebugActions(app) {
+  window.__DEBUG__ = {
+    AddLine: (a, b) => {
+      app.viewer.workGroup.add(createLine(a, b));
+      app.viewer.render();
+    },
+    AddPoint: (coordinates, or, vector) => {
+      app.viewer.workGroup.add(createPoint(coordinates, or, vector));
+      app.viewer.render();
+    }
+  };
+}
+
+function createLine(a, b) {
+  const debugLineMaterial = new THREE.LineBasicMaterial({color: 0xFA8072, linewidth: 3});
+  const  lg = new THREE.Geometry();
+  lg.vertices.push(a.three());
+  lg.vertices.push(b.three());
+  return new THREE.Line(lg, debugLineMaterial);
+}
+
+function createPoint(x, y, z) {
+  if (!y) {
+    y = x.y;
+    z = x.z;
+    x = x.x;
+  }
+  var geometry = new THREE.SphereGeometry( 5, 16, 16 );
+  var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+  var sphere = new THREE.Mesh(geometry, material);
+  sphere.position.x = x;
+  sphere.position.y = y;
+  sphere.position.z = z;
+  return sphere;
 }
 
 const DebugMenuConfig = {
