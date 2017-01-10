@@ -9,7 +9,6 @@ import Vector from '../../math/vector';
 
 export function union( shell1, shell2 ) {
 
-  
   const facesData = [];
   
   initSolveData(shell1, facesData);
@@ -22,25 +21,30 @@ export function union( shell1, shell2 ) {
   for (let faceData of facesData) {
     
     const seen = new Set();
-
+    const face = faceData.face;
+    const edges = faceData.newEdges.concat(face.outerLoop);
+    
     while (true) {
-      let edge = faceData.edges.pop();
-      if (edge == undefined || seen.has(edge)) {
+      let edge = edges.pop();
+      if (!edge) {
         break;
+      }
+      if (seen.has(edge)) {
+        continue;
       }
       const loop = new Loop();
       while (edge) {
         loop.halfEdges.push(edge);
         seen.add(edge);
         let candidates = faceData.vertexToEdge.get(edge.vertexB);
-        edge = findMaxTurningLeft(candidates);
+        edge = findMaxTurningLeft(candidates, face);
         if (seen.has(edge)) {
           break;
         }
       }
 
       BREPBuilder.linkSegments(loop.halfEdges);
-      const newFace = new Face(faceData.face.surface);
+      const newFace = new Face(face.surface);
       newFace.outerLoop = loop;
       newFace.outerLoop.face = newFace;
       result.push(newFace);
@@ -53,15 +57,31 @@ function initSolveData(shell, facesData) {
     const solveData = new FaceSolveData(face);
     facesData.push(solveData);
     face.__faceSolveData = solveData;
-    for (let he of face.outerLoop) {
+    for (let he of face.outerLoop.halfEdges) {
       EdgeSolveData.clear(he);
       solveData.vertexToEdge.set(he.vertexA, [he]);
     }
   }  
 }
 
-function findMaxTurningLeft() {
-  
+function findMaxTurningLeft(edge, edges, face) {
+  edges = edges.slice();
+  function edgeVector(edge) {
+    return edge.vertexB.point.minus(edge.vertexA.point)._normalize();
+  }
+  const edgeV = edgeVector(edge);
+  function leftTurningMeasure(v1, v2) {
+    let measure = v1.dot(v2);
+    if (v1.cross(v1) < 0) {
+      measure *= -1;
+      measure += 2;
+    }
+    return measure 
+  }
+  edges.sort((e1, e2) => {
+    return leftTurningMeasure(edgeV, edgeVector(e1)) - leftTurningMeasure(edgeV, edgeVector(e2));
+  });
+  return edges[0];
 }
 
 function intersectFaces(shell1, shell2) {
@@ -144,34 +164,37 @@ function split(face, loop, result, onCurve, direction) {
 }
 
 function splitEdgeByVertex(originHalfEdge, vertex) {
+  const orig = originHalfEdge;
+  
   const halfEdge1 = new HalfEdge();
   halfEdge1.vertexA = vertex;
-  halfEdge1.vertexB = originHalfEdge.vertexB;
+  halfEdge1.vertexB = orig.vertexB;
 
   const halfEdge2 = new HalfEdge();
   halfEdge2.vertexA = halfEdge1.vertexB;
   halfEdge2.vertexB = halfEdge1.vertexA;
 
-  const newEdge = new Edge(originHalfEdge.edge);
+  const newEdge = new Edge(orig.edge);
   BREPBuilder.linkHalfEdges(newEdge, halfEdge1, halfEdge2);
 
-  const twin = originHalfEdge.twin();
-  originHalfEdge.vertexB = vertex;
+  const twin = orig.twin();
+  orig.vertexB = vertex;
   twin.vertexA = vertex;
   
-  originHalfEdge.loop.push(halfEdge1);
+  orig.loop.push(halfEdge1);
   twin.loop.push(halfEdge2);
 
-  halfEdge1.loop = originHalfEdge.loop;
+  halfEdge1.loop = orig.loop;
   halfEdge2.loop = twin.loop;
 
-  EdgeSolveData.transfer(originHalfEdge, halfEdge1);
+  EdgeSolveData.transfer(orig, halfEdge1);
   EdgeSolveData.transfer(twin, halfEdge2);
 
-  EdgeSolveData.createIfEmpty(twin).splitByFace.set(originHalfEdge.loop.face, vertex);
-  EdgeSolveData.createIfEmpty(halfEdge2).skipFace.add(originHalfEdge.loop.face);
+  EdgeSolveData.createIfEmpty(twin).splitByFace.set(orig.loop.face, vertex);
+  EdgeSolveData.createIfEmpty(halfEdge2).skipFace.add(orig.loop.face);
 
-  //addToListInMap(originHalfEdge.loop.face.__faceSolveData.vertexToEdge, 
+  addToListInMap(orig.loop.face.__faceSolveData.vertexToEdge, vertex, halfEdge1);
+  addToListInMap(twin.loop.face.__faceSolveData.vertexToEdge, vertex, halfEdge2);
 }
 
 function findCloserProjection(nodes, point) {
@@ -179,7 +202,7 @@ function findCloserProjection(nodes, point) {
   let heroDistance = Number.MAX_VALUE;
   for (let i = 0; i < nodes.length; i++) {
     let node = nodes[i];
-    if (node == null)
+    if (node == null) continue;
     let projectionDistance = node.normal.dot(node.point.minus(point));
     if (hero == -1 || (projectionDistance > 0 && projectionDistance < heroDistance)) {
       hero = i;
@@ -266,7 +289,6 @@ class FaceSolveData {
   constructor(face) {
     this.face = face;
     this.newEdges = [];
-    this.newChunks = [];
     this.vertexToEdge = new Map();
   }
 }

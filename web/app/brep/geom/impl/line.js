@@ -15,7 +15,7 @@ export class Line extends Curve {
   intersectSurface(surface) {
     //assume surface is plane
     const s0 = surface.normal.multiply(surface.w);
-    return surface.normal(s0.minus(this.p0)) / surface.normal(this.v); // 4.7.4
+    return surface.normal.dot(s0.minus(this.p0)) / surface.normal.dot(this.v); // 4.7.4
   }
 
   intersectCurve(curve, surface) {

@@ -4,7 +4,7 @@ const webpack = require('webpack');
 module.exports = {
   devtool: 'source-map',
   entry: {
-    index: ['./web/app/index'],
+    index: ['babel-polyfill', './web/app/index'],
     sketcher: ['./web/app/sketcher']
   },
   output: {
