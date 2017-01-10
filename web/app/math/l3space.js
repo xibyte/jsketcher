@@ -30,6 +30,13 @@ Matrix3.prototype.setBasis = function(basis) {
   return this;
 };
 
+Matrix3.prototype.translate = function(dx, dy, dz) {
+  this.tx += dx;
+  this.ty += dy;
+  this.tz += dz;
+  return this;
+};
+
 Matrix3.prototype.set3 = function(
   mxx, mxy, mxz,
   myx, myy, myz,

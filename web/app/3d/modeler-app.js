@@ -16,7 +16,9 @@ import {AddDebugSupport} from './debug'
 import {init as initSample} from './sample'
 import '../../css/app3d.less'
 
-import * as BREPBuilder from '../brep/brep-builder'
+import * as BREPPrimitives from '../brep/brep-primitives'
+import * as BREPAffine from '../brep/operations/affine'
+import * as BREPBool from '../brep/operations/boolean'
 import {SceneSolid} from '../brep/viz/scene-solid'
 
 function App() {
@@ -70,17 +72,23 @@ function App() {
 }
 
 App.prototype.BREPTest = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new SceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box1 = BREPPrimitives.box(500, 500, 500);
+  const box2 = BREPPrimitives.box(500, 500, 500);
 
-  const box = BREPBuilder.createPrism([
-    BREPBuilder.point(-250, -250, 250),
-    BREPBuilder.point(250, -250, 250),
-    BREPBuilder.point(250, 250, 250),
-    BREPBuilder.point(-250, 250, 250),
-  ], 500);
+  BREPAffine.transform(box2, new Matrix3().translate(250, 250, 250));
+
+  //addToScene(box1);
+  //addToScene(box2);
+
+  const result = BREPBool.union(box1, box2);
+  addToScene(result);
   
-  const sceneSolid = new SceneSolid(box);
-  this.viewer.workGroup.add(sceneSolid.cadGroup);
   this.viewer.render()
+  
 };
 
 App.prototype.processHints = function() {

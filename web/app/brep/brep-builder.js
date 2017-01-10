@@ -36,13 +36,18 @@ export function createPrism(basePoints, height) {
     const wallNormal = cad_utils.normalOfCCWSeq([baseHalfEdge.vertexA.point, baseHalfEdge.vertexB.point, lidHalfEdge.vertexB.point]);
     
     const wallFace = createPlaneFace(wallNormal, wallLoop);
-
+    wallFace.debugName = 'wall_' + i;
+    
     shell.faces.push(wallFace);
   }
   
   iterateSegments(shell.faces, (a, b) => {
     linkHalfEdges(new Edge(new Line()), a.outerLoop.halfEdges[1], b.outerLoop.halfEdges[3]);
   });
+
+  baseFace.debugName = 'base';
+  baseFace.debugName = 'lid';
+  
   shell.faces.push(baseFace, lidFace);
   return shell;
 }
@@ -100,4 +105,3 @@ export function iterateSegments(items, callback) {
     callback(items[i], items[j], i, j);
   }
 }
-
