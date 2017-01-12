@@ -18,6 +18,7 @@ import '../../css/app3d.less'
 
 import * as BREPPrimitives from '../brep/brep-primitives'
 import * as BREPBool from '../brep/operations/boolean'
+import {BREPValidator} from '../brep/brep-validator'
 import {SceneSolid} from '../brep/viz/scene-solid'
 
 function App() {
@@ -82,6 +83,8 @@ App.prototype.BREPTestImpl = function() {
   const box1 = BREPPrimitives.box(500, 500, 500);
   const box2 = BREPPrimitives.box(500, 500, 500, new Matrix3().translate(250, 250, 250));
 
+  BREPValidator.validateToConsole(box1);
+  
   //box1.faces = [box1.faces[2]];
   //box2.faces = [box2.faces[5]];
   

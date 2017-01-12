@@ -17,18 +17,20 @@ export function createPrism(basePoints, height) {
   const lidNormal = normal.multiply(-1);
   const offVector = lidNormal.multiply(height);
   
-  const lidSegments = [];
-  iterateSegments(basePoints.map(p => p.plus(offVector)), (a, b) => lidSegments.push({a, b}));
-  const lidLoop = new Loop();
+  //iterateSegments(basePoints.map(p => new Vertex(p.plus(offVector))), (a, b) => lidSegments.push({a, b}));
+  const lidPoints = basePoints.map(p => p.plus(offVector)).reverse();
+  const lidLoop = createPlaneLoop(lidPoints.map(p => new Vertex(p)));
 
   const shell = new Shell();
 
   const n = baseLoop.halfEdges.length;
   for (let i = 0; i < n; i++) {
+    let lidIdx = n - 2 - i;
+    if (lidIdx == -1) {
+      lidIdx = n - 1;
+    }
     const baseHalfEdge = baseLoop.halfEdges[i];
-    const lidSegment = lidSegments[i];
-    const lidHalfEdge = createHalfEdge(lidLoop, new Vertex(lidSegment.b), new Vertex(lidSegment.a)); 
-    
+    const lidHalfEdge = lidLoop.halfEdges[lidIdx];
     const wallPolygon = [baseHalfEdge.vertexB, baseHalfEdge.vertexA, lidHalfEdge.vertexB, lidHalfEdge.vertexA];
     const wallLoop = createPlaneLoop(wallPolygon);
 
