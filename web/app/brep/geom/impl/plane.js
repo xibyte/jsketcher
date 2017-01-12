@@ -30,4 +30,7 @@ export class Plane extends Surface {
     return super.intersect();
   }
   
+  invert() {
+    return new Plane(this.normal.multiply(-1), - this.w);
+  }
 }

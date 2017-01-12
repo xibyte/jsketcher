@@ -12,22 +12,62 @@ import {Matrix3} from '../../math/l3space';
 
 export const TOLERANCE = 1e-8;
 
+const TYPE = {
+  UNION: 0,
+  INTERSECT: 1,
+  SUBTRACT: 2
+};
+
 export function union( shell1, shell2 ) {
+  return BooleanAlgorithm(shell1, shell2, TYPE.UNION);
+}
+
+export function intersect( shell1, shell2 ) {
+  return BooleanAlgorithm(shell1, shell2, TYPE.INTERSECT);
+}
+
+export function subtract( shell1, shell2 ) {
+  invert(shell2);
+  return BooleanAlgorithm(shell1, shell2, TYPE.SUBTRACT);
+}
+
+export function invert( shell ) {
+  for (let face of shell.faces) {
+    face.surface = face.surface.invert();
+    invertLoop(face.outerLoop);
+  }
+  BREPValidator.validateToConsole(shell);
+}
+
+function invertLoop(loop) {
+  for (let halfEdge of loop.halfEdges) {
+    const t = halfEdge.vertexA;
+    halfEdge.vertexA = halfEdge.vertexB;
+    halfEdge.vertexB = t;
+  }
+  loop.halfEdges.reverse();
+  BREPBuilder.linkSegments(loop.halfEdges);
+}
+
+export function BooleanAlgorithm( shell1, shell2, type ) {
 
   const facesData = [];
   
   initSolveData(shell1, facesData);
   initSolveData(shell2, facesData);
   
-  intersectFaces(shell1, shell2);
+  intersectFaces(shell1, shell2, type !== TYPE.UNION);
 
   const result = new Shell();
   //__DEBUG__.AddSegment(shell2.faces[0].outerLoop.halfEdges[0].vertexA.point, shell2.faces[0].outerLoop.halfEdges[0].vertexB.point)
   
   for (let faceData of facesData) {
-    
-    const seen = new Set();
     const face = faceData.face;
+    if (faceData.newEdges.length == 0) {
+      if (type === TYPE.INTERSECT) continue;
+      if (type === TYPE.SUBTRACT && face.shell == shell2) continue;
+    }
+    const seen = new Set();
     const edges = face.outerLoop.halfEdges.concat(faceData.newEdges);
     while (true) {
       let edge = edges.pop();
@@ -61,6 +101,7 @@ export function union( shell1, shell2 ) {
         const newFace = new Face(face.surface);
         newFace.outerLoop = loop;
         newFace.outerLoop.face = newFace;
+        newFace.shell = result;
         result.faces.push(newFace);
       }
     }
@@ -101,7 +142,7 @@ function findMaxTurningLeft(edge, edges) {
   return edges[0];
 }
 
-function intersectFaces(shell1, shell2) {
+function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
   for (let i = 0; i < shell1.faces.length; i++) {
     for (let j = 0; j < shell2.faces.length; j++) {
       const face1 = shell1.faces[i];
@@ -115,11 +156,13 @@ function intersectFaces(shell1, shell2) {
 
       const newEdges = [];
       const direction = face1.surface.normal.cross(face2.surface.normal);
+      if (inverseCrossEdgeDirection) {
+        direction._multiply(-1);
+      }
       split(nodes, newEdges, curve, direction);
 
       newEdges.forEach(e => {
          //__DEBUG__.AddHalfEdge(e.halfEdge1);
-        console.log("new edge");
         face1.__faceSolveData.newEdges.push(e.halfEdge1);
         face2.__faceSolveData.newEdges.push(e.halfEdge2);
         

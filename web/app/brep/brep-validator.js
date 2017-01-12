@@ -9,6 +9,9 @@ export class BREPValidator {
   
   validateShell(shell) {
     for (let face of shell.faces) {
+      if (face.shell !== shell) {
+        this.addError(new FaceRefersToWrongShell(face, shell))
+      }
       this.validateFace(face);
     }
   }
@@ -76,6 +79,17 @@ BREPValidator.validateToConsole = function(shell) {
     console.log('BREP is Valid.');
   }
 };
+
+class FaceRefersToWrongShell {
+  constructor(face, shell) {
+    this.face = face;
+    this.shell = shell;
+  }
+
+  message() {
+    return "face refers to a shell it doesn't belong to";
+  }
+}
 
 class VerticesOfHalfEdgeArentConnected {
   constructor(loop, halfEdge1, halfEdge2) {

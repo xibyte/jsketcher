@@ -59,6 +59,7 @@ export function createPrism(basePoints, height) {
   lidFace.debugName = 'lid';
   
   shell.faces.push(baseFace, lidFace);
+  shell.faces.forEach(f => f.shell = shell);
   return shell;
 }
 
