@@ -69,10 +69,10 @@ export class SceneSolid {
     const visited = new Set();
     for (let face of this.shell.faces) {
       for (let halfEdge of face.outerLoop.halfEdges) {
-        //if (!visited.has(halfEdge.edge)) {
+        if (!visited.has(halfEdge.edge)) {
           visited.add(halfEdge.edge);
           this.addLineToScene(halfEdge.vertexA.point, halfEdge.vertexB.point, halfEdge.edge);
-        //}  
+        }  
       }
     }
   }

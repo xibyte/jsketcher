@@ -1,4 +1,5 @@
 import * as BREPBuilder from '../brep-builder';
+import {BREPValidator} from '../brep-validator';
 import {HalfEdge, Edge} from '../topo/edge';
 import {Loop} from '../topo/loop';
 import {Face} from '../topo/face';
@@ -27,14 +28,7 @@ export function union( shell1, shell2 ) {
     
     const seen = new Set();
     const face = faceData.face;
-    //if (shell2.faces.indexOf(face) != -1) {
-    //  continue;
-    //}
-    if (face.debugName == 'lid') {
-      __DEBUG__.Clear();     
-    }
     const edges = face.outerLoop.halfEdges.concat(faceData.newEdges);
-    //edges.forEach(e => __DEBUG__.AddLine(e.vertexA.point, e.vertexB.point));
     while (true) {
       let edge = edges.pop();
       if (!edge) {
@@ -60,6 +54,9 @@ export function union( shell1, shell2 ) {
       }
 
       if (loop.halfEdges[0].vertexA == loop.halfEdges[loop.halfEdges.length - 1].vertexB) {
+        for (let halfEdge of loop.halfEdges) {
+          halfEdge.loop = loop;
+        }
         BREPBuilder.linkSegments(loop.halfEdges);
         const newFace = new Face(face.surface);
         newFace.outerLoop = loop;
@@ -68,6 +65,7 @@ export function union( shell1, shell2 ) {
       }
     }
   }
+  BREPValidator.validateToConsole(result);
   return result;
 }
 
@@ -199,6 +197,8 @@ function split(nodes, result, onCurve, direction) {
     const edge = new Edge(onCurve);
     edge.halfEdge1 = halfEdgeNegativeDir;
     edge.halfEdge2 = halfEdgeSameDir;
+    halfEdgeNegativeDir.edge = edge;
+    halfEdgeSameDir.edge = edge;
     
     result.push(edge);
   }
