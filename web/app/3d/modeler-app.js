@@ -91,7 +91,7 @@ App.prototype.BREPTestImpl = function() {
   //addToScene(box1);
   //addToScene(box2);
 
-  const result = BREPBool.union(box1, box2);
+  const result = BREPBool.subtract(box1, box2);
   addToScene(result);
   
   this.viewer.render()
