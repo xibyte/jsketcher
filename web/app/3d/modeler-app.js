@@ -71,6 +71,10 @@ function App() {
 }
 
 App.prototype.BREPTest = function() {
+  setTimeout(() => this.BREPTestImpl());
+};
+
+App.prototype.BREPTestImpl = function() {
   const addToScene = (shell) => {
     const sceneSolid = new SceneSolid(shell);
     this.viewer.workGroup.add(sceneSolid.cadGroup);
@@ -78,11 +82,14 @@ App.prototype.BREPTest = function() {
   const box1 = BREPPrimitives.box(500, 500, 500);
   const box2 = BREPPrimitives.box(500, 500, 500, new Matrix3().translate(250, 250, 250));
 
-  addToScene(box1);
-  addToScene(box2);
+  //box1.faces = [box1.faces[2]];
+  //box2.faces = [box2.faces[5]];
+  
+  //addToScene(box1);
+  //addToScene(box2);
 
   const result = BREPBool.union(box1, box2);
-  //addToScene(result);
+  addToScene(result);
   
   this.viewer.render()
   
