@@ -43,12 +43,19 @@ export class BREPValidator {
       if (next.prev != curr) {
         this.addError(new HalfEdgePrevPointerIncorrect(next, curr));
       }
-      const twin = curr.twin();
-      if (twin.vertexB != curr.vertexA) {
-        this.addError(new TwinStartVertexIncorrect(curr, twin));
-      }
-      if (twin.vertexA != curr.vertexB) {
-        this.addError(new TwinEndVertexIncorrect(curr, twin));
+      if (!curr.edge) {
+        this.addError(new EdgeForHalfEdgeIsntSet(curr));
+      } else {
+        const twin = curr.twin();
+        if (curr.edge !== twin.edge) {
+          this.addError(new EdgeOfTwinDifferent(curr, twin));
+        }
+        if (twin.vertexB != curr.vertexA) {
+          this.addError(new TwinStartVertexIncorrect(curr, twin));
+        }
+        if (twin.vertexA != curr.vertexB) {
+          this.addError(new TwinEndVertexIncorrect(curr, twin));
+        }
       }
     }
   }
@@ -63,7 +70,10 @@ BREPValidator.validateToConsole = function(shell) {
 
   brepValidator.validateShell(shell);
   for (let brepError of brepValidator.errors) {
-    console.log(brepError.message());
+    console.warn(brepError.message());
+  }
+  if (brepValidator.errors.length == 0) {
+    console.log('BREP is Valid.');
   }
 };
 
@@ -142,5 +152,26 @@ class TwinEndVertexIncorrect {
 
   message() {
     return "a twin has incorrect end vertex, should be identical to the start vertex of the half edge";
+  }
+}
+
+class EdgeForHalfEdgeIsntSet {
+  constructor(halfEdge) {
+    this.halfEdge = halfEdge;
+  }
+
+  message() {
+    return "half edge doesn't refer to an edge";
+  }
+}
+
+class EdgeOfTwinDifferent {
+  constructor(halfEdge, twin) {
+    this.halfEdge = halfEdge;
+    this.twin = twin;
+  }
+
+  message() {
+    return "edge of twin doesn't match to the half edge's edge";
   }
 }
