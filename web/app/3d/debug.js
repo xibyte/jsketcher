@@ -11,16 +11,34 @@ export function AddDebugSupport(app) {
 }
 
 function addGlobalDebugActions(app) {
+  const debugGroup = new THREE.Object3D();
+  app.viewer.workGroup.add(debugGroup);
   window.__DEBUG__ = {
     AddLine: (a, b) => {
-      app.viewer.workGroup.add(createLine(a, b));
+      debugGroup.add(createLine(a, b));
       app.viewer.render();
     },
-    AddPoint: (coordinates, or, vector) => {
-      app.viewer.workGroup.add(createPoint(coordinates, or, vector));
+    AddSegment: (a, b) => {
+      debugGroup.add(createLine(a, b));
+      debugGroup.add(createPoint(a, 0x000088));
+      debugGroup.add(createPoint(b, 0x880000));
+      app.viewer.render();
+    },
+    AddPoint: (coordinates, or, vector, andColorAtTheEnd) => {
+      debugGroup.add(createPoint(coordinates, or, vector, andColorAtTheEnd));
+      app.viewer.render();
+    },
+    AddVertex: (v) => {
+      window.__DEBUG__.AddPoint(v.point);
+    },
+    AddHalfEdge: (he) => {
+      window.__DEBUG__.AddSegment(he.vertexA.point, he.vertexB.point);
+    },
+    Clear: () => {
+      while (debugGroup.children.length) debugGroup.remove(debugGroup.children[0]);
       app.viewer.render();
     }
-  };
+  }
 }
 
 function createLine(a, b) {
@@ -31,14 +49,16 @@ function createLine(a, b) {
   return new THREE.Line(lg, debugLineMaterial);
 }
 
-function createPoint(x, y, z) {
-  if (!y) {
+function createPoint(x, y, z, color) {
+  if (!z) {
+    color = y;
     y = x.y;
     z = x.z;
     x = x.x;
   }
+  color = color || 0x00ff00;
   var geometry = new THREE.SphereGeometry( 5, 16, 16 );
-  var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+  var material = new THREE.MeshBasicMaterial( {color} );
   var sphere = new THREE.Mesh(geometry, material);
   sphere.position.x = x;
   sphere.position.y = y;
