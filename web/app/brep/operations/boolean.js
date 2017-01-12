@@ -30,6 +30,9 @@ export function union( shell1, shell2 ) {
     //if (shell2.faces.indexOf(face) != -1) {
     //  continue;
     //}
+    if (face.debugName == 'lid') {
+      __DEBUG__.Clear();     
+    }
     const edges = face.outerLoop.halfEdges.concat(faceData.newEdges);
     //edges.forEach(e => __DEBUG__.AddLine(e.vertexA.point, e.vertexB.point));
     while (true) {
