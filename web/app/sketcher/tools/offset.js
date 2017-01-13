@@ -105,7 +105,7 @@ function findLowestPoint(poly) {
   for (let point of poly) {
     if (point.y < hero.y) {
       hero = point;
-    } else if (hero.y == hero.y) {
+    } else if (hero.y == hero.y) { // TODO: revisit and fix bug
       if (point.x < hero.x) {
         hero = point;
       }
