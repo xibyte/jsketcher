@@ -72,7 +72,7 @@ function App() {
 }
 
 App.prototype.BREPTest = function() {
-  setTimeout(() => this.BREPTestImpl());
+  setTimeout(() => this.BREPTestImpl1());
 };
 
 App.prototype.BREPTestImpl1 = function() {
