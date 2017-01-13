@@ -2,7 +2,7 @@ import * as cad_utils from './cad-utils'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import DPR from '../utils/dpr'
 import * as mask from '../utils/mask';
-import {SelectionManager, SketchSelectionManager} from './selection'
+import {SelectionManager, BREPFaceSelectionManager, SketchSelectionManager} from './selection'
 
 function Viewer(bus, container) {
   this.bus = bus;
@@ -92,7 +92,9 @@ function Viewer(bus, container) {
 
   this.workGroup = new THREE.Object3D();
   this.scene.add(this.workGroup);
+  this.createBasisGroup();
   this.selectionMgr = new SelectionManager( this, 0xFAFAD2, 0xFF0000, null);
+  this.brepSelectionMgr = new BREPFaceSelectionManager( this, 0xFAFAD2, 0xFF0000, null);
   this.sketchSelectionMgr = new SketchSelectionManager( this, new THREE.LineBasicMaterial({color: 0xFF0000, linewidth: 6/DPR}));
   var viewer = this;
 
@@ -159,6 +161,53 @@ function Viewer(bus, container) {
   this.animate();
 }
 
+Viewer.prototype.createBasisGroup = function() {
+  this.basisGroup = new THREE.Object3D();
+  var length = 200;
+  var arrowLength = length * 0.2;
+  var arrowHead = arrowLength * 0.4;
+
+  function createArrow(axis, color) {
+    var arrow = new THREE.ArrowHelper(axis, new THREE.Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
+    arrow.updateMatrix();
+    arrow.matrixAutoUpdate = false;
+    arrow.line.renderOrder = 1e11;
+    arrow.cone.renderOrder = 1e11;
+    arrow.line.material.linewidth =  1/DPR;
+    arrow.line.material.depthWrite = false;
+    arrow.line.material.depthTest = false;
+    arrow.cone.material.depthWrite = false;
+    arrow.cone.material.depthTest = false;
+    return arrow;
+  }
+
+  var xAxis = createArrow(new THREE.Vector3(1, 0, 0), 0xFF0000);
+  var yAxis = createArrow(new THREE.Vector3(0, 1, 0), 0x00FF00);
+  this.basisGroup.add(xAxis);
+  this.basisGroup.add(yAxis);
+};
+
+Viewer.prototype.updateBasis = function(basis, depth){
+  this.basisGroup.matrix.identity();
+  var mx = new THREE.Matrix4();
+  mx.makeBasis(basis[0].three(), basis[1].three(), basis[2].three());
+  var depthOff = new THREE.Vector3(0, 0, depth);
+  depthOff.applyMatrix4(mx);
+  mx.setPosition(depthOff);
+  this.basisGroup.applyMatrix(mx);
+};
+
+Viewer.prototype.showBasis = function(){
+  this.workGroup.add(this.basisGroup);
+};
+
+Viewer.prototype.hideBasis = function(){
+  if (this.basisGroup.parent !== null ) {
+    this.basisGroup.parent.remove( this.basisGroup );
+  }
+};
+
+
 Viewer.prototype.lookAt = function(obj) {
   var box = new THREE.Box3();
   box.setFromObject(obj);
@@ -189,7 +238,9 @@ export const PICK_KIND = {
   FACE:   mask.type(1),
   SKETCH: mask.type(2),
   EDGE:   mask.type(3),
-  VERTEX: mask.type(4)
+  VERTEX: mask.type(4),
+  TOPO_FACE:   mask.type(5),
+  TOPO_EDGE:   mask.type(6)
 };
 
 Viewer.prototype.raycastObjects = function(event, kind, visitor) {
@@ -206,12 +257,20 @@ Viewer.prototype.raycastObjects = function(event, kind, visitor) {
       if (!visitor(pickResult.object, PICK_KIND.SKETCH)) {
         break;
       }
+    } else if (mask.is(kind, PICK_KIND.TOPO_FACE) && !!pickResult.face && pickResult.face.__TCAD_TOPO) {
+      if (!visitor(pickResult.face.__TCAD_TOPO, PICK_KIND.TOPO_FACE)) {
+        break;
+      }
+    } else if (mask.is(kind, PICK_KIND.TOPO_EDGE) && pickResult.object instanceof THREE.Line && pickResult.object.__TCAD_TOPO) {
+      if (!visitor(pickResult.object.__TCAD_TOPO, PICK_KIND.TOPO_EDGE)) {
+        break;
+      }
     }
   }
 };
 
 Viewer.prototype.handlePick = function(event) {
-  this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH, (object, kind) => {
+  this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.TOPO_FACE | PICK_KIND.TOPO_EDGE, (object, kind) => {
     if (kind == PICK_KIND.FACE) {
       if (this.selectionMgr.pick(object)) {
         return false;
@@ -220,6 +279,10 @@ Viewer.prototype.handlePick = function(event) {
       if (this.sketchSelectionMgr.pick(object)) {
         return false;
       }
+    } else if (kind == PICK_KIND.TOPO_FACE) {
+      this.brepSelectionMgr.select(object);
+    } else if (kind == PICK_KIND.TOPO_EDGE) {
+      //this.brepSelectionMgr.selectEdge(object);
     }
     return true;
   });
