@@ -8,7 +8,8 @@ export class Face extends TopoObject {
     this.shell = null;
     this.outerLoop = null;
     this.innerLoops = [];
-    this.defineIterable('loops', () => loopsGenerator(this))
+    this.defineIterable('loops', () => loopsGenerator(this));
+    this.defineIterable('edges', () => halfEdgesGenerator(this))
   }
 }
 
@@ -20,4 +21,11 @@ export function* loopsGenerator(face) {
     yield innerLoop;
   }
 }
-  
+
+export function* halfEdgesGenerator(face) {
+  for (let loop of face.loops) {
+    for (let halfEdge of loop.halfEdges) {
+      yield halfEdge;
+    }
+  }
+}

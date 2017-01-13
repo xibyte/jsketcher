@@ -65,7 +65,9 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
     const face = faceData.face;
     const loops = [];
     const seen = new Set();
-    const edges = face.outerLoop.halfEdges.concat(faceData.newEdges);
+    const edges = [];
+    for (let e of face.edges) edges.push(e);
+    faceData.newEdges.forEach(e => edges.push(e));
     while (true) {
       let edge = edges.pop();
       if (!edge) {
@@ -176,7 +178,7 @@ function loopsToFaces(originFace, loops, out) {
     }
   }
   const nestedLoops = getNestedLoops(originFace, loops);
-
+  //loops.forEach(l => l.halfEdges.forEach(h => __DEBUG__.AddHalfEdge(h)))
   for (let nestedLoop of nestedLoops) {
     if (nestedLoop.loop.isCCW(originFace.surface)) {
       createFaces(nestedLoop);
@@ -225,7 +227,7 @@ function initSolveData(shell, facesData) {
     const solveData = new FaceSolveData(face);
     facesData.push(solveData);
     face.__faceSolveData = solveData;
-    for (let he of face.outerLoop.halfEdges) {
+    for (let he of face.edges) {
       EdgeSolveData.clear(he);
       solveData.vertexToEdge.set(he.vertexA, [he]);
     }
@@ -261,8 +263,8 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
       const curve = face1.surface.intersect(face2.surface);
   
       const nodes = [];
-      collectNodesOfIntersection(face2, face1.outerLoop, nodes);
-      collectNodesOfIntersection(face1, face2.outerLoop, nodes);
+      collectNodesOfIntersectionOfFace(face2, face1, nodes);
+      collectNodesOfIntersectionOfFace(face1, face2, nodes);
 
       const newEdges = [];
       const direction = face1.surface.normal.cross(face2.surface.normal);
@@ -280,6 +282,12 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
         addToListInMap(face2.__faceSolveData.vertexToEdge, e.halfEdge2.vertexA, e.halfEdge2);
       });
     }
+  }
+}
+
+function collectNodesOfIntersectionOfFace(splittingFace, face, nodes) {
+  for (let loop of face.loops) {
+    collectNodesOfIntersection(splittingFace, loop, nodes);
   }
 }
 
@@ -449,9 +457,20 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
 }
 
 function pointBelongsToFace(point, face) {
-  //TODO: holes case
   const tr = new Matrix3().setBasis(face.surface.calculateBasis());
-  const polygon = face.outerLoop.asPolygon().map(p => tr.apply(p));
+  if (pointInsideLoop(point, face.outerLoop, tr)) {
+    for (let innerLoop of face.innerLoops) {
+      if (pointInsideLoop(point, innerLoop, tr)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+function pointInsideLoop(point, loop, tr) {
+  const polygon = loop.asPolygon().map(p => tr.apply(p));
   const point2d = tr.apply(point);
   return pointInsidePolygon(point2d, polygon);
 }

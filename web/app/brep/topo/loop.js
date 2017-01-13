@@ -18,7 +18,7 @@ export class Loop extends TopoObject {
     const lowestLeftIdx = math.findLowestLeftPoint(polygon2d);
     const n = polygon.length;
     const nextIdx = ((lowestLeftIdx + 1) % n);
-    const prevIdx = ((n - lowestLeftIdx - 1) % n);
+    const prevIdx = ((n + lowestLeftIdx - 1) % n);
     const o = polygon[lowestLeftIdx];
     const first = polygon[nextIdx].minus(o);
     const last = o.minus(polygon[prevIdx]);
