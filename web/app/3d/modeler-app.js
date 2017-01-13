@@ -72,7 +72,7 @@ function App() {
 }
 
 App.prototype.BREPTest = function() {
-  setTimeout(() => this.BREPTestImpl1());
+  setTimeout(() => this.BREPTestImpl());
 };
 
 App.prototype.BREPTestImpl1 = function() {
@@ -104,7 +104,8 @@ App.prototype.BREPTestImpl = function() {
     this.viewer.workGroup.add(sceneSolid.cadGroup);
   };
   const box1 = BREPPrimitives.box(500, 500, 500);
-  const box2 = BREPPrimitives.box(250, 250, 500, new Matrix3().translate(25, 25, 250));
+  const box2 = BREPPrimitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+  const box3 = BREPPrimitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
 
   BREPValidator.validateToConsole(box1);
 
@@ -113,8 +114,10 @@ App.prototype.BREPTestImpl = function() {
 
   //addToScene(box1);
   //addToScene(box2);
+  //addToScene(box3);
 
-  const result = BREPBool.subtract(box1, box2);
+  let result = BREPBool.subtract(box1, box2);
+  result = BREPBool.subtract(result, box3);
   addToScene(result);
 
   this.viewer.render()
@@ -212,7 +215,7 @@ App.prototype.projectStorageKey = function(polyFaceId) {
 };
 
 
-App.prototype.sketchSelectedFace = function() {
+App.prototype.editFace = function() {
   if (this.viewer.selectionMgr.selection.length == 0) {
     return;
   }
