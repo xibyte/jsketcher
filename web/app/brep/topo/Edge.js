@@ -1,7 +1,9 @@
+import {TopoObject} from './topo-object'
 
-export class Edge {
+export class Edge extends TopoObject {
 
   constructor(curve) {
+    super();
     this.curve = curve;
     this.halfEdge1 = null;
     this.halfEdge2 = null;

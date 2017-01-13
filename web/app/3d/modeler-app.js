@@ -75,7 +75,7 @@ App.prototype.BREPTest = function() {
   setTimeout(() => this.BREPTestImpl());
 };
 
-App.prototype.BREPTestImpl = function() {
+App.prototype.BREPTestImpl1 = function() {
   const addToScene = (shell) => {
     const sceneSolid = new SceneSolid(shell);
     this.viewer.workGroup.add(sceneSolid.cadGroup);
@@ -96,6 +96,29 @@ App.prototype.BREPTestImpl = function() {
   
   this.viewer.render()
   
+};
+
+App.prototype.BREPTestImpl = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new SceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box1 = BREPPrimitives.box(500, 500, 500);
+  const box2 = BREPPrimitives.box(250, 250, 500, new Matrix3().translate(25, 25, 250));
+
+  BREPValidator.validateToConsole(box1);
+
+  //box1.faces = [box1.faces[2]];
+  //box2.faces = [box2.faces[5]];
+
+  //addToScene(box1);
+  //addToScene(box2);
+
+  const result = BREPBool.subtract(box1, box2);
+  addToScene(result);
+
+  this.viewer.render()
+
 };
 
 App.prototype.processHints = function() {

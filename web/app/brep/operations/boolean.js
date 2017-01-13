@@ -67,6 +67,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
       if (type === TYPE.INTERSECT) continue;
       if (type === TYPE.SUBTRACT && face.shell == shell2) continue;
     }
+    const loops = [];
     const seen = new Set();
     const edges = face.outerLoop.halfEdges.concat(faceData.newEdges);
     while (true) {
@@ -97,17 +98,35 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
         for (let halfEdge of loop.halfEdges) {
           halfEdge.loop = loop;
         }
+        
         BREPBuilder.linkSegments(loop.halfEdges);
-        const newFace = new Face(face.surface);
-        newFace.outerLoop = loop;
-        newFace.outerLoop.face = newFace;
-        newFace.shell = result;
-        result.faces.push(newFace);
+        loops.push(loop);
       }
     }
+    const newFaces = loopsToFaces(face, loops);
+    newFaces.forEach(face => {
+      face.shell = result;
+      result.faces.push(face);
+    })
   }
   BREPValidator.validateToConsole(result);
   return result;
+}
+
+function loopsToFaces(originFace, loops) {
+  const newFace = new Face(originFace.surface);
+  for (let loop of loops) {
+    if (loop.isCCW(originFace.surface)) {
+      newFace.outerLoop = loop;
+    } else {
+      newFace.innerLoops.push(loop);
+    }
+    loop.face = newFace;
+  }
+  if (newFace.outerLoop == null) {
+    return [];
+  }
+  return [newFace];
 }
 
 function initSolveData(shell, facesData) {
