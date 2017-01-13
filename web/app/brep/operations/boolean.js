@@ -58,15 +58,11 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   
   intersectFaces(shell1, shell2, type !== TYPE.UNION);
 
-  const result = new Shell();
+  const allFaces = [];
   //__DEBUG__.AddSegment(shell2.faces[0].outerLoop.halfEdges[0].vertexA.point, shell2.faces[0].outerLoop.halfEdges[0].vertexB.point)
-  
+  const newLoops = new Set();
   for (let faceData of facesData) {
     const face = faceData.face;
-    if (faceData.newEdges.length == 0) {
-      if (type === TYPE.INTERSECT) continue;
-      if (type === TYPE.SUBTRACT && face.shell == shell2) continue;
-    }
     const loops = [];
     const seen = new Set();
     const edges = face.outerLoop.halfEdges.concat(faceData.newEdges);
@@ -81,7 +77,9 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
       const loop = new Loop();
       while (edge) {
         //__DEBUG__.AddHalfEdge(edge);
-
+        const isNew = faceData.newEdges.indexOf(edge) != -1;
+        if (isNew) newLoops.add(loop);
+        
         loop.halfEdges.push(edge);
         seen.add(edge);
         let candidates = faceData.vertexToEdge.get(edge.vertexB);
@@ -103,31 +101,124 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
         loops.push(loop);
       }
     }
-    const newFaces = loopsToFaces(face, loops);
-    newFaces.forEach(face => {
-      face.shell = result;
-      result.faces.push(face);
-    })
+    loopsToFaces(face, loops, allFaces);
   }
+  const result = new Shell();
+  const faces = filterFaces(allFaces, newLoops);
+  faces.forEach(face => {
+    face.shell = result;
+    result.faces.push(face);
+  });
+
   BREPValidator.validateToConsole(result);
   return result;
 }
 
-function loopsToFaces(originFace, loops) {
-  const newFace = new Face(originFace.surface);
-  for (let loop of loops) {
-    if (loop.isCCW(originFace.surface)) {
-      newFace.outerLoop = loop;
-    } else {
-      newFace.innerLoops.push(loop);
-    }
-    loop.face = newFace;
+function filterFaces(faces, newLoops, validLoops) {
+  const validFaces = new Set(faces);
+  const result = new Set();
+  for (let face of faces) {
+    traverseFaces(face, validFaces, (it) => {
+      if (result.has(it) || isFaceContainNewLoop(it, newLoops)) {
+        result.add(face);
+        return true;
+      }
+    });
   }
-  if (newFace.outerLoop == null) {
-    return [];
-  }
-  return [newFace];
+  return result;
 }
+
+function isFaceContainNewLoop(face, newLoops) {
+  for (let loop of face.loops) {
+    if (newLoops.has(loop)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function traverseFaces(face, validFaces, callback) {
+  const stack = [face];
+  const seen = new Set();
+  while (stack.length !== 0) {
+    face = stack.pop();
+    if (seen.has(face)) continue;
+    seen.add(face);
+    if (callback(face) === true) {
+      return;
+    }
+    for (let loop of face.loops) {
+      if (!validFaces.has(face)) continue;
+      for (let halfEdge of loop.halfEdges) {
+        const twin = halfEdge.twin();
+        if (validFaces.has(twin.loop.face)) {
+          stack.push(twin.loop.face)
+        }
+      }
+    }
+  }
+}
+
+function loopsToFaces(originFace, loops, out) {
+  function createFaces(nestedLoop) {
+    const loop = nestedLoop.loop;
+    const newFace = new Face(originFace.surface);
+    newFace.outerLoop = loop;
+    loop.face = newFace;
+    out.push(newFace);
+    for (let child of nestedLoop.nesting) {
+      if (child.loop.isCCW(originFace.surface)) {
+        createFaces(child);
+      } else {
+        child.loop.face = newFace;
+        newFace.innerLoops.push(child.loop);
+      }
+    }
+  }
+  const nestedLoops = getNestedLoops(originFace, loops);
+
+  for (let nestedLoop of nestedLoops) {
+    if (nestedLoop.loop.isCCW(originFace.surface)) {
+      createFaces(nestedLoop);
+    }
+  }
+}
+
+function getNestedLoops(face, brepLoops) {
+  const tr = new Matrix3().setBasis(face.surface.calculateBasis());
+  function NestedLoop(polygon, loop) {
+    this.polygon = polygon;
+    this.loop = loop;
+    this.nesting = [];
+    this.level = 0;
+  }
+
+  const loops = brepLoops.map(loop => {
+    const polygon = loop.asPolygon().map(point => tr.apply(point));
+    return new NestedLoop(polygon, loop);
+  });
+  function contains(polygon, other) {
+    for (let point of other) {
+      if (!math.isPointInsidePolygon(point, polygon)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  for (let i = 0; i < loops.length; ++i) {
+    const loop = loops[i];
+    for (let j = 0; j < loops.length; ++j) {
+      if (i == j) continue;
+      const other = loops[j];
+      if (contains(loop.polygon, other.polygon)) {
+        loop.nesting.push(other);
+        other.level ++;
+      }
+    }
+  }
+  return loops.filter(l => l.level == 0);
+}
+
 
 function initSolveData(shell, facesData) {
   for (let face of shell.faces) {
