@@ -189,4 +189,20 @@ export function isCCW(path2D) {
   return area(path2D) >= 0;
 }
 
+export function findLowestLeftPoint(poly) {
+  let heroIdx = 0;
+  for (let i = 1; i< poly.length; ++i) {
+    const point = poly[i];
+    let hero = poly[heroIdx];
+    if (point.y < hero.y) {
+      heroIdx = i;
+    } else if (hero.y == point.y) {
+      if (point.x < hero.x) {
+        heroIdx = i;
+      }
+    }
+  }
+  return heroIdx;
+}
+
 export const sq = (a) => a * a;

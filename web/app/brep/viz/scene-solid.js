@@ -110,16 +110,18 @@ function triangulate(face) {
     return [v.x, v.y, v.z];
   }
 
-  var triangled = [];
-  const polygons = [face.outerLoop.asPolygon()];
-  for (let poly of polygons) {
-    let vertices = Triangulate([poly.map(v => data(v))], data(face.surface.normal));
-    for (let i = 0;  i < vertices.length; i += 3 ) {
-      var a = csgVert(vertices[i]);
-      var b = csgVert(vertices[i + 1]);
-      var c = csgVert(vertices[i + 2]);
-      triangled.push([a, b, c]);
-    }
+  const triangled = [];
+  const contours = [];  
+  for (let loop of face.loops) {
+    contours.push(loop.asPolygon().map(point => data(point)));
+  } 
+
+  let vertices = Triangulate(contours, data(face.surface.normal));
+  for (let i = 0;  i < vertices.length; i += 3 ) {
+    var a = csgVert(vertices[i]);
+    var b = csgVert(vertices[i + 1]);
+    var c = csgVert(vertices[i + 2]);
+    triangled.push([a, b, c]);
   }
   return triangled;
 

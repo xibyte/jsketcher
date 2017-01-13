@@ -1,9 +1,10 @@
-import * as define from './define.js'
+import {TopoObject} from './topo-object'
 
-export class Shell {
+export class Shell extends TopoObject {
   constructor() {
+    super();
     this.faces = [];
-    define.iterable(this, 'vertices', () => verticesGenerator(this));
+    this.defineIterable('vertices', () => verticesGenerator(this));
   }
 }
 
