@@ -16,7 +16,7 @@ export class SceneSolid {
     this.mesh = new THREE.Mesh(geometry, createSolidMaterial());
     this.cadGroup.add(this.mesh);
 
-    this.polyFaces = [];
+    this.sceneFaces = [];
     this.createFaces();
     this.createEdges();
     this.createVertices();
@@ -27,8 +27,8 @@ export class SceneSolid {
     let gIdx = 0;
     const geom = this.mesh.geometry;
     for (let brepFace of this.shell.faces) {
-      const polyFace = new SceneFace(brepFace);
-      this.polyFaces.push(polyFace);
+      const sceneFace = new SceneFace(brepFace, this);
+      this.sceneFaces.push(sceneFace);
       const polygons = triangulate(brepFace);
       for (let p = 0; p < polygons.length; ++p) {
         const poly = polygons[p];
@@ -45,20 +45,16 @@ export class SceneSolid {
           const b = i - 1 + off;
           const c = i + off;
           const face = new THREE.Face3(a, b, c);
-          polyFace.faces.push(face);
-          face.__TCAD_polyFace = polyFace;
+          sceneFace.meshFaces.push(face);
+          face.__TCAD_TOPO = sceneFace;
           face.normal = normal;
           face.materialIndex = gIdx ++;
           geom.faces.push(face);
           if (brepFace.debugName == 'base') {
             face.color.set(new THREE.Color().setHex( 0x000077 ));
           }
-          if (brepFace.debugName == 'wall_3') {
-            face.color.set(new THREE.Color().setHex( 0x007700 ));
-          }
-
         }
-        //view.setFaceColor(polyFace, utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
+        //view.setFaceColor(sceneFace, utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
         off = geom.vertices.length;
       }
     }
@@ -71,7 +67,7 @@ export class SceneSolid {
       for (let halfEdge of face.outerLoop.halfEdges) {
         if (!visited.has(halfEdge.edge)) {
           visited.add(halfEdge.edge);
-          this.addLineToScene(halfEdge.vertexA.point, halfEdge.vertexB.point, halfEdge.edge);
+          this.addLineToScene(halfEdge.vertexA.point.three(), halfEdge.vertexB.point.three(), halfEdge.edge);
         }  
       }
     }
@@ -96,9 +92,10 @@ const WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({color: 0xff0000, linewid
 
   
 class SceneFace {
-  constructor(brepFace) {
+  constructor(brepFace, solid) {
+    this.solid = solid;
     this.brepFace = brepFace;
-    this.faces = [];
+    this.meshFaces = [];
   }
 }
 
