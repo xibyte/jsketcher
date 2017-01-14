@@ -5,7 +5,7 @@ import {Graph} from '../math/graph'
 import * as math from '../math/math'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import Counters from './counters'
-import {Solid} from './solid'
+import {MeshSceneSolid} from './scene/mesh-scene-object'
 import DPR from '../utils/dpr'
 
 export const FACE_COLOR =  0xB0C4DE;
@@ -143,8 +143,7 @@ export function createSolidMaterial() {
 }
 
 export function createSolid(csg, id) {
-  var material = createSolidMaterial();
-  return new Solid(csg, material, undefined, id);
+  return new MeshSceneSolid(csg, undefined, id);
 }
 
 export function intercept(obj, methodName, aspect) {
@@ -174,7 +173,7 @@ export function createPlane(basis, depth) {
   var currentBounds = new BBox();
   var points = boundingPolygon.map(function(p) { p.z = depth; return tr._apply(p); });
   var polygon = new CSG.Polygon(points.map(function(p){return new CSG.Vertex(csgVec(p))}), shared);
-  var plane = new Solid(CSG.fromPolygons([polygon]), material, 'PLANE');
+  var plane = new MeshSceneSolid(CSG.fromPolygons([polygon]), 'PLANE');
   plane.wireframeGroup.visible = false;
   plane.mergeable = false;
 
@@ -190,7 +189,7 @@ export function createPlane(basis, depth) {
   bb.checkBounds( 400,  400);
   setBounds(bb);
   
-  var sketchFace = plane.polyFaces[0];
+  var sketchFace = plane.sceneFaces[0];
   intercept(sketchFace, 'syncSketches', function(invocation, args) {
     var geom = args[0];
     invocation(geom);

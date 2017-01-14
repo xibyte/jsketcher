@@ -1,6 +1,5 @@
 import {TopoObject} from './topo-object'
 
-import {Matrix3} from '../../math/l3space'
 import * as math from '../../math/math'
 
 export class Loop extends TopoObject {
@@ -12,7 +11,7 @@ export class Loop extends TopoObject {
   }
 
   isCCW(surface) {
-    const tr = new Matrix3().setBasis(surface.calculateBasis());
+    const tr = surface.get2DTransformation();
     const polygon = this.asPolygon();
     const polygon2d = polygon.map(p => tr.apply(p));
     const lowestLeftIdx = math.findLowestLeftPoint(polygon2d);

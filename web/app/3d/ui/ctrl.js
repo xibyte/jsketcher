@@ -45,8 +45,8 @@ function UI(app) {
   this.app.bus.subscribe("showSketches", (enabled) => {
     var solids = app.findAllSolids();
     for (var i = 0; i < solids.length; i++) {
-      for (var j = 0; j < solids[i].polyFaces.length; j++) {
-        var face = solids[i].polyFaces[j];
+      for (var j = 0; j < solids[i].sceneFaces.length; j++) {
+        var face = solids[i].sceneFaces[j];
         if (face.sketch3DGroup != null) face.sketch3DGroup.visible = enabled;
       }
     }

@@ -1,22 +1,20 @@
 import Vector from '../../math/vector'
 import {Triangulate} from '../../3d/triangulation'
+import {SceneSolid, SceneFace} from './scene-object'
 
-export class SceneSolid {
-  
-  constructor(shell) {
+export class BREPSceneSolid extends SceneSolid {
+
+  constructor(shell, type) {
+    super(type);
     this.shell = shell;
+    this.createGeometry();
+  }
 
-    this.cadGroup = new THREE.Object3D();
-    this.cadGroup.__tcad_solid = this;
-    this.wireframeGroup = new THREE.Object3D();
-    this.cadGroup.add(this.wireframeGroup);
-
+  createGeometry() {
     const geometry = new THREE.Geometry();
     geometry.dynamic = true;
-    this.mesh = new THREE.Mesh(geometry, createSolidMaterial());
+    this.mesh = new THREE.Mesh(geometry, this.material);
     this.cadGroup.add(this.mesh);
-
-    this.sceneFaces = [];
     this.createFaces();
     this.createEdges();
     this.createVertices();
@@ -27,7 +25,7 @@ export class SceneSolid {
     let gIdx = 0;
     const geom = this.mesh.geometry;
     for (let brepFace of this.shell.faces) {
-      const sceneFace = new SceneFace(brepFace, this);
+      const sceneFace = new BREPSceneFace(brepFace, this);
       this.sceneFaces.push(sceneFace);
       const polygons = triangulate(brepFace);
       for (let p = 0; p < polygons.length; ++p) {
@@ -40,13 +38,10 @@ export class SceneSolid {
         const normal = threeV(brepFace.surface.normal);
         for (let i = 2; i < vLength; i++) {
           geom.vertices.push(threeV(poly[i]));
-
           const a = off;
           const b = i - 1 + off;
           const c = i + off;
-          const face = new THREE.Face3(a, b, c);
-          sceneFace.meshFaces.push(face);
-          face.__TCAD_TOPO = sceneFace;
+          const face = sceneFace.createMeshFace(a, b, c);
           face.normal = normal;
           face.materialIndex = gIdx ++;
           geom.faces.push(face);
@@ -58,7 +53,7 @@ export class SceneSolid {
         off = geom.vertices.length;
       }
     }
-    geom.mergeVertices();    
+    geom.mergeVertices();
   }
 
   createEdges() {
@@ -68,34 +63,36 @@ export class SceneSolid {
         if (!visited.has(halfEdge.edge)) {
           visited.add(halfEdge.edge);
           this.addLineToScene(halfEdge.vertexA.point.three(), halfEdge.vertexB.point.three(), halfEdge.edge);
-        }  
+        }
       }
     }
   }
-  
+
   createVertices() {
-    
   }
-
-  addLineToScene(a, b, edge) {
-    const  lg = new THREE.Geometry();
-    lg.vertices.push(a);
-    lg.vertices.push(b);
-    const line = new THREE.Line(lg, WIREFRAME_MATERIAL);
-    line.__TCAD_edge = edge;
-    this.wireframeGroup.add(line);
-  };
-
 }
 
-const WIREFRAME_MATERIAL = new THREE.LineBasicMaterial({color: 0xff0000, linewidth: 10});
-
-  
-class SceneFace {
+class BREPSceneFace extends SceneFace {
   constructor(brepFace, solid) {
-    this.solid = solid;
+    super(solid);
     this.brepFace = brepFace;
-    this.meshFaces = [];
+  }
+
+
+  normal() {
+    return this.brepFace.surface.normal;
+  }
+  
+  depth() {
+    return this.brepFace.surface.w;
+  }
+
+  getBounds() {
+    const bounds = [];
+    for (let loop of this.brepFace.loops) {
+      bounds.push(loop.asPolygon().map(p => new Vector().setV(p)));
+    }
+    return bounds;
   }
 }
 
@@ -108,10 +105,10 @@ function triangulate(face) {
   }
 
   const triangled = [];
-  const contours = [];  
+  const contours = [];
   for (let loop of face.loops) {
     contours.push(loop.asPolygon().map(point => data(point)));
-  } 
+  }
 
   let vertices = Triangulate(contours, data(face.surface.normal));
   for (let i = 0;  i < vertices.length; i += 3 ) {
@@ -122,19 +119,6 @@ function triangulate(face) {
   }
   return triangled;
 
-}
-
-
-function createSolidMaterial() {
-  return new THREE.MeshPhongMaterial({
-    vertexColors: THREE.FaceColors,
-    color: 0xB0C4DE,
-    shininess: 0,
-    polygonOffset : true,
-    polygonOffsetFactor : 1,
-    polygonOffsetUnits : 2,
-    //side : THREE.DoubleSide
-  });
 }
 
 function threeV(v) {return new THREE.Vector3( v.x, v.y, v.z )}
