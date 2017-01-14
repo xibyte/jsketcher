@@ -8,7 +8,6 @@ import {Vertex} from '../topo/vertex';
 import {Line} from '../geom/impl/line';
 import Vector from '../../math/vector';
 import * as math from '../../math/math';
-import {Matrix3} from '../../math/l3space';
 
 export const TOLERANCE = 1e-8;
 
@@ -187,7 +186,7 @@ function loopsToFaces(originFace, loops, out) {
 }
 
 function getNestedLoops(face, brepLoops) {
-  const tr = new Matrix3().setBasis(face.surface.calculateBasis());
+  const tr = face.surface.get2DTransformation();
   function NestedLoop(polygon, loop) {
     this.polygon = polygon;
     this.loop = loop;
@@ -457,7 +456,7 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
 }
 
 function pointBelongsToFace(point, face) {
-  const tr = new Matrix3().setBasis(face.surface.calculateBasis());
+  const tr = face.surface.get2DTransformation();
   if (pointInsideLoop(point, face.outerLoop, tr)) {
     for (let innerLoop of face.innerLoops) {
       if (pointInsideLoop(point, innerLoop, tr)) {
