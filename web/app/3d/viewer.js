@@ -2,7 +2,7 @@ import * as cad_utils from './cad-utils'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import DPR from '../utils/dpr'
 import * as mask from '../utils/mask';
-import {SelectionManager, BREPFaceSelectionManager, SketchSelectionManager} from './selection'
+import {SelectionManager, SketchSelectionManager} from './selection'
 
 function Viewer(bus, container) {
   this.bus = bus;
@@ -94,7 +94,6 @@ function Viewer(bus, container) {
   this.scene.add(this.workGroup);
   this.createBasisGroup();
   this.selectionMgr = new SelectionManager( this, 0xFAFAD2, 0xFF0000, null);
-  this.brepSelectionMgr = new BREPFaceSelectionManager( this, 0xFAFAD2, 0xFF0000, null);
   this.sketchSelectionMgr = new SketchSelectionManager( this, new THREE.LineBasicMaterial({color: 0xFF0000, linewidth: 6/DPR}));
   var viewer = this;
 
@@ -238,17 +237,15 @@ export const PICK_KIND = {
   FACE:   mask.type(1),
   SKETCH: mask.type(2),
   EDGE:   mask.type(3),
-  VERTEX: mask.type(4),
-  TOPO_FACE:   mask.type(5),
-  TOPO_EDGE:   mask.type(6)
+  VERTEX: mask.type(4)
 };
 
 Viewer.prototype.raycastObjects = function(event, kind, visitor) {
   let pickResults = this.raycast(event);
   for (let i = 0; i < pickResults.length; i++) {
     const pickResult = pickResults[i];
-    if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face && pickResult.face.__TCAD_polyFace !== undefined) {
-      const sketchFace = pickResult.face.__TCAD_polyFace;
+    if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face && pickResult.face.__TCAD_SceneFace !== undefined) {
+      const sketchFace = pickResult.face.__TCAD_SceneFace;
       if (!visitor(sketchFace, PICK_KIND.FACE)) {
         break;
       }
@@ -257,20 +254,12 @@ Viewer.prototype.raycastObjects = function(event, kind, visitor) {
       if (!visitor(pickResult.object, PICK_KIND.SKETCH)) {
         break;
       }
-    } else if (mask.is(kind, PICK_KIND.TOPO_FACE) && !!pickResult.face && pickResult.face.__TCAD_TOPO) {
-      if (!visitor(pickResult.face.__TCAD_TOPO, PICK_KIND.TOPO_FACE)) {
-        break;
-      }
-    } else if (mask.is(kind, PICK_KIND.TOPO_EDGE) && pickResult.object instanceof THREE.Line && pickResult.object.__TCAD_TOPO) {
-      if (!visitor(pickResult.object.__TCAD_TOPO, PICK_KIND.TOPO_EDGE)) {
-        break;
-      }
     }
   }
 };
 
 Viewer.prototype.handlePick = function(event) {
-  this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.TOPO_FACE | PICK_KIND.TOPO_EDGE, (object, kind) => {
+  this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH, (object, kind) => {
     if (kind == PICK_KIND.FACE) {
       if (this.selectionMgr.pick(object)) {
         return false;
@@ -279,10 +268,6 @@ Viewer.prototype.handlePick = function(event) {
       if (this.sketchSelectionMgr.pick(object)) {
         return false;
       }
-    } else if (kind == PICK_KIND.TOPO_FACE) {
-      this.brepSelectionMgr.select(object);
-    } else if (kind == PICK_KIND.TOPO_EDGE) {
-      //this.brepSelectionMgr.selectEdge(object);
     }
     return true;
   });

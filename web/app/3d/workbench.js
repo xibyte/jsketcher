@@ -395,7 +395,7 @@ export function reconstructSketchBounds(csg, face, strict) {
 
   pickUpCraftInfo(outline, outerEdges);
 
-  return segmentsToPaths(outline);
+  return segmentsToPaths(outline).map(poly => poly.vertices);
 }
 
 function pickUpCraftInfo(outline, outerEdges) {

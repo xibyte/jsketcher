@@ -19,7 +19,7 @@ import '../../css/app3d.less'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
-import {SceneSolid} from '../brep/viz/scene-solid'
+import {BREPSceneSolid} from './scene/brep-scene-object'
 
 function App() {
   this.id = this.processHints();
@@ -77,7 +77,7 @@ App.prototype.BREPTest = function() {
 
 App.prototype.BREPTestImpl1 = function() {
   const addToScene = (shell) => {
-    const sceneSolid = new SceneSolid(shell);
+    const sceneSolid = new BREPSceneSolid(shell);
     this.viewer.workGroup.add(sceneSolid.cadGroup);
   };
   const box1 = BREPPrimitives.box(500, 500, 500);
@@ -100,7 +100,7 @@ App.prototype.BREPTestImpl1 = function() {
 
 App.prototype.BREPTestImpl = function() {
   const addToScene = (shell) => {
-    const sceneSolid = new SceneSolid(shell);
+    const sceneSolid = new BREPSceneSolid(shell);
     this.viewer.workGroup.add(sceneSolid.cadGroup);
   };
   const box1 = BREPPrimitives.box(500, 500, 500);
@@ -158,8 +158,8 @@ App.prototype.findFace = function(faceId) {
   var solids = this.findAllSolids();
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
-    for (var j = 0; j < solid.polyFaces.length; j++) {
-      var face = solid.polyFaces[j];
+    for (var j = 0; j < solid.sceneFaces.length; j++) {
+      var face = solid.sceneFaces[j];
       if (face.id == faceId) {
         return face;
       }
@@ -196,8 +196,8 @@ App.prototype.indexEntities = function() {
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
     out.solids[solid.tCadId] = solid;
-    for (var j = 0; j < solid.polyFaces.length; j++) {
-      var face = solid.polyFaces[j];
+    for (var j = 0; j < solid.sceneFaces.length; j++) {
+      var face = solid.sceneFaces[j];
       out.faces[face.id] = face;
     }
   }
@@ -223,8 +223,8 @@ App.prototype.editFace = function() {
   this.sketchFace(polyFace);
 };
 
-App.prototype.sketchFace = function(polyFace) {
-  var faceStorageKey = this.faceStorageKey(polyFace.id);
+App.prototype.sketchFace = function(sceneFace) {
+  var faceStorageKey = this.faceStorageKey(sceneFace.id);
 
   var savedFace = localStorage.getItem(faceStorageKey);
   var data;
@@ -241,10 +241,10 @@ App.prototype.sketchFace = function(polyFace) {
     return a.sketchConnectionObject.id === b.sketchConnectionObject.id;
   }
 
-  var paths = workbench.reconstructSketchBounds(polyFace.solid.csg, polyFace);
+  var paths = sceneFace.getBounds();
 
-  //polyFace.polygon.collectPaths(paths);
-  var _3dTransformation = new Matrix3().setBasis(polyFace.basis());
+  //sceneFace.polygon.collectPaths(paths);
+  var _3dTransformation = new Matrix3().setBasis(sceneFace.basis());
   var _2dTr = _3dTransformation.invert();
 
   function addSegment(a, b) {
@@ -339,7 +339,7 @@ App.prototype.sketchFace = function(polyFace) {
   }
 
   for (var i = 0; i < paths.length; i++) {
-    var path = paths[i].vertices;
+    var path = paths[i];
     if (path.length < 3) continue;
     var shift = 0;
     if (isCircle(path)) {
@@ -385,7 +385,7 @@ App.prototype.sketchFace = function(polyFace) {
 
   localStorage.setItem(faceStorageKey, JSON.stringify(data));
   var sketchURL = faceStorageKey.substring(App.STORAGE_PREFIX.length);
-  this.tabSwitcher.showSketch(sketchURL, polyFace.id);
+  this.tabSwitcher.showSketch(sketchURL, sceneFace.id);
 };
 
 App.prototype.extrude = function() {
@@ -445,15 +445,15 @@ App.prototype._refreshSketches = function() {
   var allSolids = this.findAllSolids();
   for (var oi = 0; oi < allSolids.length; ++oi) {
     var obj = allSolids[oi];
-    for (var i = 0; i < obj.polyFaces.length; i++) {
-      var sketchFace = obj.polyFaces[i];
+    for (var i = 0; i < obj.sceneFaces.length; i++) {
+      var sketchFace = obj.sceneFaces[i];
       this.refreshSketchOnFace(sketchFace);
     }
   }
 };
 
 App.prototype.findSketches = function(solid) {
-  return solid.polyFaces.filter(f => this.faceStorageKey(f.id) in localStorage).map(f => f.id);
+  return solid.sceneFaces.filter(f => this.faceStorageKey(f.id) in localStorage).map(f => f.id);
 };
 
 App.prototype.refreshSketchOnFace = function(sketchFace) {

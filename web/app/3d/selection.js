@@ -79,22 +79,22 @@ export class SelectionManager extends AbstractSelectionManager {
     this.planeSelection = [];
   }
   
-  select(sketchFace) {
+  select(sceneFace) {
     this.clear();
-    if (sketchFace.curvedSurfaces !== null) {
-      for (var i = 0; i < sketchFace.curvedSurfaces.length; i++) {
-        var face  = sketchFace.curvedSurfaces[i];
+    if (!!sceneFace.curvedSurfaces) {
+      for (var i = 0; i < sceneFace.curvedSurfaces.length; i++) {
+        var face  = sceneFace.curvedSurfaces[i];
         this.selection.push(face);
-        setFacesColor(face.faces, this.readOnlyColor);
+        setFacesColor(face.meshFaces, this.readOnlyColor);
       }
     } else {
-      this.selection.push(sketchFace);
-      this.viewer.updateBasis(sketchFace.basis(), sketchFace.depth());
+      this.selection.push(sceneFace);
+      this.viewer.updateBasis(sceneFace.basis(), sceneFace.depth());
       this.viewer.showBasis();
-      setFacesColor(sketchFace.faces, this.selectionColor);
+      setFacesColor(sceneFace.meshFaces, this.selectionColor);
     }
-    sketchFace.solid.mesh.geometry.colorsNeedUpdate = true;
-    this.viewer.bus.notify('selection', sketchFace);
+    sceneFace.solid.mesh.geometry.colorsNeedUpdate = true;
+    this.viewer.bus.notify('selection', sceneFace);
     this.viewer.render();
   }
   
@@ -104,41 +104,6 @@ export class SelectionManager extends AbstractSelectionManager {
     this.viewer.render();
   }
   
-  clear() {
-    for (let selectee of this.selection) {
-      setFacesColor(selectee.faces, this.defaultColor);
-      selectee.solid.mesh.geometry.colorsNeedUpdate = true;
-    }
-    this.viewer.hideBasis();
-    this.selection.length = 0;
-  }
-}
-
-export class BREPFaceSelectionManager extends AbstractSelectionManager {
-
-  constructor(viewer, selectionColor, readOnlyColor, defaultColor) {
-    super(viewer);
-    this.selectionColor = selectionColor;
-    this.defaultColor = defaultColor;
-    this.readOnlyColor = readOnlyColor;
-  }
-
-  select(face) {
-    this.clear();
-    this.selection.push(face);
-    setFacesColor(face.meshFaces, this.selectionColor);
-
-    face.solid.mesh.geometry.colorsNeedUpdate = true;
-    this.viewer.bus.notify('selection', face);
-    this.viewer.render();
-  }
-
-  deselectAll() {
-    this.clear();
-    this.viewer.bus.notify('selection', null);
-    this.viewer.render();
-  }
-
   clear() {
     for (let selectee of this.selection) {
       setFacesColor(selectee.meshFaces, this.defaultColor);
@@ -147,7 +112,6 @@ export class BREPFaceSelectionManager extends AbstractSelectionManager {
     this.viewer.hideBasis();
     this.selection.length = 0;
   }
-
 }
 
 function setFacesColor(faces, color) {
