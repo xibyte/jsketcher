@@ -1,6 +1,6 @@
 import {Surface} from '../surface'
 import {Line} from './line'
-import {AXIS} from  '../../../math/l3space'
+import {Matrix3, AXIS} from  '../../../math/l3space'
  
 export class Plane extends Surface {
 
@@ -32,5 +32,9 @@ export class Plane extends Surface {
   
   invert() {
     return new Plane(this.normal.multiply(-1), - this.w);
+  }
+
+  get2DTransformation() {
+    return new Matrix3().setBasis(this.calculateBasis()).invert();
   }
 }
