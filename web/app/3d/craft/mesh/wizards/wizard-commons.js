@@ -1,5 +1,5 @@
-import DPR from '../../utils/dpr'
-import * as tk from '../../ui/toolkit'
+import DPR from '../../../../utils/dpr'
+import * as tk from '../../../../ui/toolkit'
 
 const IMAGINE_MATERIAL = new THREE.LineBasicMaterial({
   color: 0xFA8072,

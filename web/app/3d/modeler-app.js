@@ -8,7 +8,8 @@ import {ActionManager} from './actions/actions'
 import * as AllActions from './actions/all-actions'
 import Vector from '../math/vector'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
-import * as workbench  from './workbench'
+import {Craft} from './craft/craft'
+import * as workbench  from './craft/mesh/workbench'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 import {IO} from '../sketcher/io'
@@ -33,7 +34,7 @@ function App() {
   this.controlBar = new ControlBar(this, $('#control-bar'));
 
   this.ui = new UI(this);
-  this.craft = new workbench.Craft(this);
+  this.craft = new Craft(this);
 
   AddDebugSupport(this);
   

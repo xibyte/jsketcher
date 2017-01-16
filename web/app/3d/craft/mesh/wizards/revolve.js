@@ -1,8 +1,8 @@
-import * as tk from '../../ui/toolkit.js'
+import * as tk from '../../../../ui/toolkit.js'
 import * as workbench from '../workbench'
-import * as cad_utils from '../cad-utils'
-import Vector from '../../math/vector'
-import {Matrix3, ORIGIN} from '../../math/l3space'
+import * as cad_utils from '../../../cad-utils'
+import Vector from '../../../../math/vector'
+import {Matrix3, ORIGIN} from '../../../../math/l3space'
 import {revolveToTriangles} from '../revolve'
 import {OpWizard, IMAGINARY_SURFACE_MATERIAL, } from './wizard-commons'
 
