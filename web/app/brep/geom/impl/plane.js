@@ -35,6 +35,10 @@ export class Plane extends Surface {
   }
 
   get2DTransformation() {
-    return new Matrix3().setBasis(this.calculateBasis()).invert();
+    return this.get3DTransformation().invert();
+  }
+
+  get3DTransformation() {
+    return new Matrix3().setBasis(this.calculateBasis());
   }
 }

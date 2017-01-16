@@ -1,21 +1,30 @@
-import * as math from '../math/math'
+import {MESH_OPERATIONS} from './mesh/workbench'
+import {Extrude} from './brep/cut-extrude'
 
 export const CUT = {
   icon: 'img/3d/cut',
   label: 'Cut',
-  info: (p) => '(' + r(math.norm2(p.target)) + ')'
+  info: (p) => '(' + r(p.depth) + ')',
+  action: (app, request) => {
+  }
 };
 
 export const PAD = {
   icon: 'img/3d/extrude',
   label: 'Extrude',
-  info: (p) => '(' + r(math.norm2(p.target)) + ')'
+  info: (p) => '(' + r(p.height) + ')',
+  action: (app, request) => {
+
+  }
 };
 
 export const REVOLVE = {
   icon: 'img/3d/revolve',
   label: 'Revolve',
-  info: (p) => '(' + p.angle + ')'
+  info: (p) => '(' + p.angle + ')',
+  action: (app, request) => {
+
+  }
 };
 
 export const SHELL = {
@@ -27,19 +36,28 @@ export const SHELL = {
 export const BOX = {
   icon: 'img/3d/cube',
   label: 'Box',
-  info: (p) => '(' + p.w + ', ' + p.h + ', ' + p.d + ')'
+  info: (p) => '(' + p.w + ', ' + p.h + ', ' + p.d + ')',
+  action: (app, request) => {
+
+  }
 };
 
 export const PLANE = {
   icon: 'img/3d/plane',
   label: 'Plane',
-  info: (p) =>  '(' + p.depth + ')'
+  info: (p) =>  '(' + p.depth + ')',
+  action: (app, request) => {
+
+  }
 };
 
 export const SPHERE = {
   icon: 'img/3d/sphere',
   label: 'Sphere',
-  info: (p) => '(' + p.radius + ')'
+  info: (p) => '(' + p.radius + ')',
+  action: (app, request) => {
+
+  }
 };
 
 export const INTERSECTION = {
@@ -63,7 +81,10 @@ export const UNION = {
 export const IMPORT_STL = {
   icon: 'img/3d/stl',
   label: 'STL Import',
-  info: (p) => '(' + p.url.substring(p.url.lastIndexOf('/') + 1 ) + ')'
+  info: (p) => '(' + p.url.substring(p.url.lastIndexOf('/') + 1 ) + ')',
+  action: (app, request) => {
+
+  }
 };
 
 function r(value) {

@@ -1,7 +1,7 @@
 import {HashTable} from '../../utils/hashmap'
 import Vector from '../../math/vector'
 import Counters from '../counters'
-import {findOutline, segmentsToPaths, reconstructSketchBounds} from '../workbench'
+import {findOutline, segmentsToPaths, reconstructSketchBounds} from '../craft/mesh/workbench'
 import {Matrix3, AXIS} from '../../math/l3space'
 import {arrFlatten1L, isCurveClass} from '../cad-utils'
 import DPR from '../../utils/dpr'
