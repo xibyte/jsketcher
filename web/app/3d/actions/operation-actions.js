@@ -1,4 +1,4 @@
-import * as Operations from '../operations'
+import * as Operations from '../craft/operations'
 import * as ActionHelpers from './action-helpers'
 
 function mergeInfo(opName, action) {

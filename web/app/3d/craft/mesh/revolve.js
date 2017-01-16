@@ -1,7 +1,7 @@
-import {Matrix3} from '../math/l3space'
-import Vector from '../math/vector'
-import * as math from '../math/math'
-import {createShared} from './cad-utils'
+import {Matrix3} from '../../../math/l3space'
+import Vector from '../../../math/vector'
+import * as math from '../../../math/math'
+import {createShared} from '../../cad-utils'
 
 function Group(derivedFrom) {
   this.polygons = [];

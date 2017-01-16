@@ -2,7 +2,7 @@
 export class TopoObject {
   
   constructor() {
-    this.debugName = '';
+    this.role = '';
     this.data = {};
   }
   

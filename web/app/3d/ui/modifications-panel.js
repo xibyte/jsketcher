@@ -1,6 +1,6 @@
 import {LoadTemplate} from './utils'
 import {Bind} from './bind'
-import * as Operations from '../operations'
+import * as Operations from '../craft/operations'
 
 export function ModificationsPanel(app) {
   this.app = app;
