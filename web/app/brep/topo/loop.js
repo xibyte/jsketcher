@@ -11,7 +11,7 @@ export class Loop extends TopoObject {
   }
 
   isCCW(surface) {
-    Loop.isPolygonCCWOnSurface(this.asPolygon(), surface);
+    return Loop.isPolygonCCWOnSurface(this.asPolygon(), surface);
   }
   
   asPolygon() {
