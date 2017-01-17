@@ -6,7 +6,9 @@ import ToolBar from './toolbar'
 import * as MenuConfig from '../menu/menu-config'
 import * as Operations from '../craft/operations'
 import Menu from '../menu/menu'
-import {ExtrudeWizard} from '../craft/mesh/wizards/extrude'
+import {CutWizard} from '../craft/brep/wizards/cut-extrude'
+
+import {ExtrudeWizard as MeshExtrudeWizard} from '../craft/mesh/wizards/extrude'
 import {RevolveWizard} from '../craft/mesh/wizards/revolve'
 import {PlaneWizard} from '../craft/mesh/wizards/plane'
 import {BoxWizard} from '../craft/mesh/wizards/box'
@@ -56,6 +58,15 @@ function UI(app) {
   app.bus.subscribe("solid-pick", function(solid) {
     ui.registerWizard(new TransformWizard(app.viewer, solid));
   });
+  registerOperations(app);
+}
+
+function registerOperations(app) {
+  const opNames = Object.keys(Operations);
+  for (let opName of opNames) {
+    console.log('Registering Operation ' + opName);
+    app.craft.registerOperation(opName, Operations[opName].action);
+  }
 }
 
 UI.prototype.createCraftToolBar = function (vertPos) {
@@ -121,7 +132,7 @@ UI.prototype.fillControlBar = function() {
 };
 
 UI.prototype.registerWizard = function(wizard, overridingHistory) {
-  wizard.ui.box.root.css({left : (this.mainBox.root.width() + this.craftToolBar.node.width() + 30) + 'px', top : 0});
+  wizard.box.root.css({left : (this.mainBox.root.width() + this.craftToolBar.node.width() + 30) + 'px', top : 0});
   var craft = this.app.craft; 
   wizard.onRequestReady = function(request) {
     if (request.invalidAndShouldBeDropped == true) {
@@ -167,9 +178,9 @@ UI.prototype.createWizardForOperation = function(op) {
 UI.prototype.createWizard = function(type, overridingHistory, initParams, face) {
   let wizard = null;
   if ('CUT' === type) {
-    wizard = new ExtrudeWizard(this.app, face, true, initParams);
+    wizard = new CutWizard(this.app, initParams);
   } else if ('PAD' === type) {
-    wizard = new ExtrudeWizard(this.app, face, false, initParams);
+    wizard = new MeshExtrudeWizard(this.app, face, false, initParams);
   } else if ('REVOLVE' === type) {
     wizard = new RevolveWizard(this.app, face, initParams);
   } else if ('PLANE' === type) {

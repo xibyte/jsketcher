@@ -1,5 +1,5 @@
 import {CURRENT_SELECTION as S} from './wizard'
-import {PreviewWizard, SketchBasedPreviewMaker} from './preview-wizard'
+import {PreviewWizard, SketchBasedPreviewer} from './preview-wizard'
 import {ParametricExtruder} from '../cut-extrude'
 
 const METADATA = [
@@ -10,9 +10,9 @@ const METADATA = [
   ['face'    , 'face'  ,  S  ]
 ];
 
-class Cut extends PreviewWizard {
+export class CutWizard extends PreviewWizard {
   constructor(app, initialState) {
-    super(app, 'CUT', METADATA, null, initialState)
+    super(app, 'CUT', METADATA, new ExtrudePreviewer(true), initialState)
   }
   
   uiLabel(name) {
@@ -21,9 +21,9 @@ class Cut extends PreviewWizard {
   }
 }
 
-class Extrude extends PreviewWizard {
+export class ExtrudeWizard extends PreviewWizard {
   constructor(app, initialState) {
-    super(app, 'EXTRUDE', METADATA, new ExtrudePreviewMaker(), initialState)
+    super(app, 'EXTRUDE', METADATA, new ExtrudePreviewer(false), initialState)
   }
   
   uiLabel(name) {
@@ -32,18 +32,19 @@ class Extrude extends PreviewWizard {
   }
 }
 
-export class ExtrudePreviewMaker extends SketchBasedPreviewMaker{
+export class ExtrudePreviewer extends SketchBasedPreviewer {
 
-  constructor(cut) {
+  constructor(inversed) {
     super();
-    this.cut = cut;
+    this.inversed = inversed;
   }
   
   createImpl(app, params, sketch, face) {
     const parametricExtruder = new ParametricExtruder(face, params);
 
-    const baseNormal = this.cut ? face.surface.normal : face.surface.normal.negate();
-    const lidNormal = this.cut ? baseNormal.negate() : face.surface.normal;
+    const surface = face.brepFace.surface;
+    const baseNormal = this.inversed ? surface.normal : surface.normal.negate();
+    const lidNormal = this.inversed ? baseNormal.negate() : surface.normal;
     
     parametricExtruder.prepareLidCalculation(baseNormal, lidNormal);
     
