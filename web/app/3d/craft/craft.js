@@ -2,6 +2,7 @@ import Counters from '../counters'
 
 export function Craft(app) {
   this.app = app;
+  this.operations = {};
   this.history = [];
   this.solids = [];
   this._historyPointer = 0;
@@ -17,6 +18,10 @@ export function Craft(app) {
     }
   });
 }
+
+Craft.prototype.registerOperation = function(name, action) {
+  this.operations[name] = action;
+};
 
 Craft.prototype.remove = function(modificationIndex) {
   const history = this.history;
@@ -62,35 +67,7 @@ Craft.prototype.modifyInternal = function(request) {
   var op = this.operations[request.type];
   if (!op) return;
 
-  var newSolids = op(this.app, request.params);
-  if (newSolids == null) return;
-  const toUpdate = [];
-  for (let i = 0; i < request.solids.length; i++) {
-    let solid = request.solids[i];
-    var indexToRemove = this.solids.indexOf(solid);
-    if (indexToRemove != -1) {
-      let updatedIdx = newSolids.findIndex((s) => s.id == solid.id);
-      if (updatedIdx != -1) {
-        toUpdate[updatedIdx] = indexToRemove;
-      } else {
-        this.solids.splice(indexToRemove, 1);
-      }
-    }
-    solid.vanish();
-  }
-  for (let i = 0; i < newSolids.length; i++) {
-    let solid = newSolids[i];
-    if (toUpdate[i] !== undefined) {
-      this.solids[toUpdate[i]] = solid;
-    } else {
-      this.solids.push(solid);
-    }
-    this.app.viewer.workGroup.add(solid.cadGroup);
-  }
-  this.app.bus.notify('solid-list', {
-    solids: this.solids,
-    needRefresh: newSolids
-  });
+  op(this.app, request.params);
 };
 
 Craft.prototype.modify = function(request, overriding) {

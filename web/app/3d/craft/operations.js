@@ -1,18 +1,17 @@
 import {MESH_OPERATIONS} from './mesh/workbench'
-import {Extrude} from './brep/cut-extrude'
+import {Extrude, Cut} from './brep/cut-extrude'
 
 export const CUT = {
   icon: 'img/3d/cut',
   label: 'Cut',
-  info: (p) => '(' + r(p.depth) + ')',
-  action: (app, request) => {
-  }
+  info: (p) => '(' + r(p.value) + ')',
+  action: (app, params) => Cut(app, params)
 };
 
 export const PAD = {
   icon: 'img/3d/extrude',
   label: 'Extrude',
-  info: (p) => '(' + r(p.height) + ')',
+  info: (p) => '(' + r(p.value) + ')',
   action: (app, request) => {
 
   }

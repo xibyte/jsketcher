@@ -4,20 +4,26 @@ import {Loop} from '../../../../brep/topo/loop'
 
 export class PreviewWizard extends Wizard {
 
-  constructor(app, opearation, metadata, previewMaker, initialState) {
+  constructor(app, opearation, metadata, previewer, initialState) {
     super(app, opearation, metadata, initialState);
+    this.operation = opearation;
     this.previewGroup = new THREE.Object3D();
-    this.previewMaker = previewMaker;
+    this.previewer = previewer;
     this.previewObject = null;
     this.app.viewer.workGroup.add(this.previewGroup);
     this.updatePreview();
   }
   
+  createRequest() {
+    return {
+      type: this.operation,
+      params: this.readFormFields()
+    };
+  }
+  
   updatePreview() {
-    if (this.previewObject != null) {
-      this.destroyPreviewObject();
-    }
-    this.previewObject = this.previewMaker.create(this.app, this.readFormFields());
+    this.destroyPreviewObject();
+    this.previewObject = this.previewer.create(this.app, this.readFormFields());
     if (this.previewObject != null) {
       this.previewGroup.add( this.previewObject );
     }
@@ -25,14 +31,22 @@ export class PreviewWizard extends Wizard {
   }
 
   destroyPreviewObject() {
-    this.previewGroup.parent.remove( this.previewObject );
-    this.previewObject.geometry.dispose();
-    this.previewGroup = null;
+    if (this.previewObject != null) {
+      this.previewGroup.remove( this.previewObject );
+      this.previewObject.geometry.dispose();
+      this.previewObject = null;
+    }
+  }
+  
+  onUIChange() {
+    super.onUIChange();
+    this.updatePreview();
   }
 
-
   dispose() {
+    this.destroyPreviewObject();
     this.app.viewer.workGroup.remove(this.previewGroup);
+    this.app.viewer.render();
     super.dispose();
   }
 }
@@ -54,7 +68,7 @@ PreviewWizard.createMesh = function(triangles) {
   return new THREE.Mesh(geometry, IMAGINARY_SURFACE_MATERIAL);
 };
 
-export class SketchBasedPreviewMaker {
+export class SketchBasedPreviewer {
 
   constructor() {
     this.fixToCCW = true;
@@ -69,15 +83,16 @@ export class SketchBasedPreviewMaker {
     if (!face) return null;
     const needSketchRead = !this.sketch || params.face != this.face;
     if (needSketchRead) {
-      this.sketch = ReadSketchFromFace(app, params.face);
+      this.sketch = ReadSketchFromFace(app, face);
       for (let polygon of this.sketch) {
-        if (!Loop.isPolygonCCWOnSurface(polygon, face.surface) && this.fixToCCW) {
+        if (!Loop.isPolygonCCWOnSurface(polygon, face.brepFace.surface) && this.fixToCCW) {
           polygon.reverse();
         }
       }
       this.face = params.face;
     }
-    return this.createImpl(app, params, this.sketch, face);
+    const triangles = this.createImpl(app, params, this.sketch, face);
+    return PreviewWizard.createMesh(triangles);
   }
 }
 
@@ -87,6 +102,8 @@ export const IMAGINARY_SURFACE_MATERIAL = new THREE.MeshPhongMaterial({
   transparent: true,
   opacity: 0.5,
   shininess: 0,
+  depthWrite: false,
+  depthTest: false,
   side : THREE.DoubleSide
 });
 
