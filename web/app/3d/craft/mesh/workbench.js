@@ -170,7 +170,7 @@ export function getSketchedPolygons3D(app, face) {
   var geom = readSketchGeom(JSON.parse(savedFace), face.id, false);
   var polygons2D = cad_utils.sketchToPolygons(geom);
 
-  var normal = face.csgGroup.normal;
+  var normal = face.normal();
   var depth = null;
   var sketchedPolygons = [];
   for (var i = 0; i < polygons2D.length; i++) {
@@ -180,7 +180,7 @@ export function getSketchedPolygons3D(app, face) {
     if (depth == null) {
       var _3dTransformation = new Matrix3().setBasis(face.basis());
       //we lost depth or z off in 2d sketch, calculate it again
-      depth = face.csgGroup.plane.w;
+      depth = face.depth();
     }
 
     var polygon = [];

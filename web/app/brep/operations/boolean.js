@@ -77,7 +77,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
       }
       const loop = new Loop();
       while (edge) {
-        //__DEBUG__.AddHalfEdge(edge);
+        __DEBUG__.AddHalfEdge(edge);
         const isNew = faceData.newEdges.indexOf(edge) != -1;
         if (isNew) newLoops.add(loop);
         
@@ -435,7 +435,7 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
     //TODO: should check if point on a vertex then exclude two edges of the vertex from further intersection test cuz it would produce three identical Nodes
     if (pointBelongsToFace(pointOfIntersection, face)) {
       let vertexOfIntersection;
-      if (math.areVectorsEqual(edge.vertexA.point, pointOfIntersection, TOLERANCE)) {
+      if (math.areVectorsEqual(edge.vertexA.point, pointOfIntersection, TOLERANCE)) { //TODO: TOLERANCE^2 ???
         vertecies.add(edge.vertexA);
         vertexOfIntersection = edge.vertexA;
         //console.log("point A on surface");

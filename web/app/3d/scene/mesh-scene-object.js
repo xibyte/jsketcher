@@ -78,13 +78,7 @@ export class MeshSceneSolid extends SceneSolid {
 
     this.processWires();
   };
-
-  vanish () {
-    this.cadGroup.parent.remove( this.cadGroup );
-    this.material.dispose();
-    this.mesh.geometry.dispose();
-  }
-
+  
   collectCurvedSurface(face) {
     var derivedFrom = getDerivedFrom(face.csgGroup.shared);
     if (derivedFrom === null || !isCurveClass(derivedFrom._class)) return;

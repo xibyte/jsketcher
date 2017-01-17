@@ -33,8 +33,8 @@ function App() {
   this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
   this.controlBar = new ControlBar(this, $('#control-bar'));
 
-  this.ui = new UI(this);
   this.craft = new Craft(this);
+  this.ui = new UI(this);
 
   AddDebugSupport(this);
   
@@ -43,6 +43,8 @@ function App() {
   } else {
     this.load();
   }
+
+  this.BREPTest();
 
   this._refreshSketches();
   this.viewer.render();
@@ -69,11 +71,11 @@ function App() {
     }
     app._refreshSketches();
   });
-  this.BREPTest();
 }
 
 App.prototype.BREPTest = function() {
-  setTimeout(() => this.BREPTestImpl());
+  this.BREPTestImpl();
+  //setTimeout(() => this.BREPTestImpl());
 };
 
 App.prototype.BREPTestImpl1 = function() {

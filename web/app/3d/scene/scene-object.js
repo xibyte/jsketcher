@@ -42,7 +42,9 @@ export class SceneSolid {
   }
 
   vanish() {
-    throw 'not implemented';
+    this.cadGroup.parent.remove( this.cadGroup );
+    this.material.dispose();
+    this.mesh.geometry.dispose();
   }
 }
 
