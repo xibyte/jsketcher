@@ -259,6 +259,10 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
       const face1 = shell1.faces[i];
       const face2 = shell2.faces[j];
 
+      if (face1.surface.equals(face2.surface, TOLERANCE)) {
+        continue;
+      }
+      
       const curve = face1.surface.intersect(face2.surface);
   
       const nodes = [];
