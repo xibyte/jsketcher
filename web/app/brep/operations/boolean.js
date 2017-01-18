@@ -443,7 +443,7 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
         vertecies.add(edge.vertexA);
         vertexOfIntersection = edge.vertexA;
         //console.log("point A on surface");
-      } if (math.areVectorsEqual(edge.vertexB.point, pointOfIntersection, TOLERANCE)) {
+      } else if (math.areVectorsEqual(edge.vertexB.point, pointOfIntersection, TOLERANCE)) {
         vertecies.add(edge.vertexB);
         vertexOfIntersection = edge.vertexB;
         //console.log("point B on surface");
