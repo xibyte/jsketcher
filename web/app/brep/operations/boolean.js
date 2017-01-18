@@ -225,7 +225,7 @@ function initSolveData(shell, facesData) {
   for (let face of shell.faces) {
     const solveData = new FaceSolveData(face);
     facesData.push(solveData);
-    face.__faceSolveData = solveData;
+    face.data[MY] = solveData;
     for (let he of face.edges) {
       EdgeSolveData.clear(he);
       solveData.vertexToEdge.set(he.vertexA, [he]);
@@ -278,11 +278,11 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
 
       newEdges.forEach(e => {
          //__DEBUG__.AddHalfEdge(e.halfEdge1);
-        face1.__faceSolveData.newEdges.push(e.halfEdge1);
-        face2.__faceSolveData.newEdges.push(e.halfEdge2);
+        face1.data[MY].newEdges.push(e.halfEdge1);
+        face2.data[MY].newEdges.push(e.halfEdge2);
         
-        addToListInMap(face1.__faceSolveData.vertexToEdge, e.halfEdge1.vertexA, e.halfEdge1);
-        addToListInMap(face2.__faceSolveData.vertexToEdge, e.halfEdge2.vertexA, e.halfEdge2);
+        addToListInMap(face1.data[MY].vertexToEdge, e.halfEdge1.vertexA, e.halfEdge1);
+        addToListInMap(face2.data[MY].vertexToEdge, e.halfEdge2.vertexA, e.halfEdge2);
       });
     }
   }
@@ -375,7 +375,7 @@ function splitEdgeByVertex(originHalfEdge, vertex, splittingFace) {
     newEdge.vertexA = vertex;
     newEdge.vertexB = h.vertexB;
     h.vertexB = newEdge.vertexA;
-    addToListInMap(h.loop.face.__faceSolveData.vertexToEdge, vertex, newEdge);
+    addToListInMap(h.loop.face.data[MY].vertexToEdge, vertex, newEdge);
     return newEdge;
   }
 
@@ -583,4 +583,5 @@ function addToListInMap(map, key, value) {
   list.push(value);
 }
 
+const MY = '__BOOLEAN_ALGORITHM_DATA__'; 
 let xxx = 0;
