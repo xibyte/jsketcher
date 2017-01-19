@@ -10,6 +10,7 @@ import Vector from '../../math/vector';
 import * as math from '../../math/math';
 
 export const TOLERANCE = 1e-8;
+export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 
 const TYPE = {
   UNION: 0,
@@ -50,6 +51,8 @@ function invertLoop(loop) {
 
 export function BooleanAlgorithm( shell1, shell2, type ) {
 
+  __DEBUG__.Clear();
+  
   const facesData = [];
   
   initSolveData(shell1, facesData);
@@ -77,7 +80,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
       }
       const loop = new Loop();
       while (edge) {
-        __DEBUG__.AddHalfEdge(edge);
+        //__DEBUG__.AddHalfEdge(edge);
         const isNew = faceData.newEdges.indexOf(edge) != -1;
         if (isNew) newLoops.add(loop);
         
@@ -255,8 +258,8 @@ function findMaxTurningLeft(edge, edges) {
 
 function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
   for (let i = 0; i < shell1.faces.length; i++) {
+    const face1 = shell1.faces[i];
     for (let j = 0; j < shell2.faces.length; j++) {
-      const face1 = shell1.faces[i];
       const face2 = shell2.faces[j];
 
       if (face1.surface.equals(face2.surface, TOLERANCE)) {
@@ -289,6 +292,11 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
 }
 
 function collectNodesOfIntersectionOfFace(splittingFace, face, nodes) {
+  
+  //__DEBUG__.Clear();
+  //for (let l of splittingFace.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
+  //for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x0000ff));
+  
   for (let loop of face.loops) {
     collectNodesOfIntersection(splittingFace, loop, nodes);
   }
@@ -297,6 +305,7 @@ function collectNodesOfIntersectionOfFace(splittingFace, face, nodes) {
 function collectNodesOfIntersection(face, loop, nodes) {
   const verticesCases = new Set();
   for (let edge of loop.halfEdges) {
+    //__DEBUG__.AddHalfEdge(edge);
     const edgeSolveData = EdgeSolveData.get(edge);
     if (edgeSolveData.skipFace.has(face)) {
       continue;
@@ -309,6 +318,12 @@ function collectNodesOfIntersection(face, loop, nodes) {
     }
     intersectFaceWithEdge(face, edge, nodes, verticesCases);
   }
+  for (let he of loop.halfEdges) {
+    if (verticesCases.has(he.vertexA) && verticesCases.has(he.vertexB)) {
+      deleteEdge(he.edge);
+    }
+  }  
+
 }
 
 function split(nodes, result, onCurve, direction) {
@@ -431,6 +446,9 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
   const ab = edge.vertexB.point.minus(p0);
   const length = ab.length();
   const v = ab._multiply(1 / length);
+  if (math.areEqual(v.dot(face.surface.normal), 0, TOLERANCE_SQ)) {
+    return; // we not consider edges parallel to the face
+  }
   const edgeLine = new Line(p0, v);
   const t = edgeLine.intersectSurface(face.surface);
   if (t >= 0 && t <= length) {
@@ -439,7 +457,7 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
     //TODO: should check if point on a vertex then exclude two edges of the vertex from further intersection test cuz it would produce three identical Nodes
     if (pointBelongsToFace(pointOfIntersection, face)) {
       let vertexOfIntersection;
-      if (math.areVectorsEqual(edge.vertexA.point, pointOfIntersection, TOLERANCE)) { //TODO: TOLERANCE^2 ???
+      if (math.areVectorsEqual(edge.vertexA.point, pointOfIntersection, TOLERANCE)) {
         vertecies.add(edge.vertexA);
         vertexOfIntersection = edge.vertexA;
         //console.log("point A on surface");
@@ -457,6 +475,19 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
       
     }
   }
+}
+
+function deleteEdge(edge) {
+  if (edge.halfEdge1 != null) {
+    deleteHalfEdge(edge.halfEdge1);
+  }
+  if (edge.halfEdge2 != null) {
+    deleteHalfEdge(edge.halfEdge2);
+  }
+}
+
+function deleteHalfEdge(he) {
+  removeFromListInMap(he.loop.face.data[MY].vertexToEdge, he.vertexA, he);
 }
 
 function pointBelongsToFace(point, face) {
@@ -581,6 +612,16 @@ function addToListInMap(map, key, value) {
     map.set(key, list);
   }
   list.push(value);
+}
+
+function removeFromListInMap(map, key, value) {
+  let list = map.get(key);
+  if (list) {
+    const idx = list.indexOf(value);
+    if (idx != -1) {
+      list.splice(idx, 1);
+    }
+  }
 }
 
 const MY = '__BOOLEAN_ALGORITHM_DATA__'; 
