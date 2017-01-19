@@ -1,6 +1,7 @@
 import {Surface} from '../surface'
 import {Line} from './line'
 import {Matrix3, AXIS} from  '../../../math/l3space'
+import * as math from  '../../../math/math'
  
 export class Plane extends Surface {
 
@@ -40,5 +41,11 @@ export class Plane extends Surface {
 
   get3DTransformation() {
     return new Matrix3().setBasis(this.calculateBasis());
+  }
+  
+  equals(other, tol) {
+    return other instanceof Plane && 
+      math.areVectorsEqual(this.normal.multiply(this.w), other.normal.multiply(other.w), tol);
+    //TODO: store this.normal.multiply(this.w) in a field since it's constant value
   }
 }
