@@ -425,6 +425,8 @@ function split(nodes, result, onCurve, direction) {
     edge.halfEdge2 = halfEdgeSameDir;
     halfEdgeNegativeDir.edge = edge;
     halfEdgeSameDir.edge = edge;
+    
+    //check for corner case when to faces only intersects in edges
     if (!containsEdges(result, edge)) {
       result.push(edge);
     }
