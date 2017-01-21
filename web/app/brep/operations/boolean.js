@@ -60,11 +60,18 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   
   intersectFaces(shell1, shell2, type !== TYPE.UNION);
 
-  const allFaces = [];
+  for (let faceData of facesData) {
+    fixCoincidentEdges(faceData, type !== TYPE.UNION)
+  }
+
+    const allFaces = [];
   //__DEBUG__.AddSegment(shell2.faces[0].outerLoop.halfEdges[0].vertexA.point, shell2.faces[0].outerLoop.halfEdges[0].vertexB.point)
   const newLoops = new Set();
   for (let faceData of facesData) {
     const face = faceData.face;
+    __DEBUG__.Clear();
+    for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
+
     const loops = [];
     const seen = new Set();
     const edges = [];
@@ -80,7 +87,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
       }
       const loop = new Loop();
       while (edge) {
-        //__DEBUG__.AddHalfEdge(edge);
+        __DEBUG__.AddHalfEdge(edge);
         const isNew = faceData.newEdges.indexOf(edge) != -1;
         if (isNew) newLoops.add(loop);
         
@@ -90,7 +97,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
         if (!candidates) {
           break;
         }
-        edge = findMaxTurningLeft(edge, candidates);
+        edge = findMaxTurningLeft(edge, candidates, face.surface.normal);
         if (seen.has(edge)) {
           break;
         }
@@ -116,6 +123,43 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
 
   BREPValidator.validateToConsole(result);
   return result;
+}
+
+function fixCoincidentEdges(faceData, keep) {
+  const newEdges = [];
+  const toRemove = [];
+  for (let newEdge of faceData.newEdges) {
+    const oldEdge = findCoincidentEdge(newEdge, faceData.face);
+    if (oldEdge != null) {
+      deleteHalfEdge(oldEdge);
+      //deleteHalfEdge(newEdge.twin());
+      if (oldEdge.edge.halfEdge1 == oldEdge) {
+        oldEdge.edge.halfEdge1 = newEdge;
+      } else {
+        oldEdge.edge.halfEdge2 = newEdge;
+      }
+      
+      if (keep) {
+      } else {
+        //deleteEdge(newEdge.edge);
+        //deleteEdge(oldEdge.edge);
+      }
+    } else {
+      newEdges.push(newEdge);
+    }
+  }  
+  //faceData.newEdges = newEdges;
+}
+
+function findCoincidentEdge(edge, face) {
+  for (let loop of face.loops) {
+    for (let he of loop.halfEdges) {
+      if (edge.vertexA == he.vertexA && edge.vertexB == he.vertexB) {
+        return he;
+      }
+    }
+  }
+  return null;
 }
 
 function filterFaces(faces, newLoops, validLoops) {
@@ -236,7 +280,7 @@ function initSolveData(shell, facesData) {
   }  
 }
 
-function findMaxTurningLeft(edge, edges) {
+function findMaxTurningLeft(edge, edges, normal) {
   edges = edges.slice();
   function edgeVector(edge) {
     return edge.vertexB.point.minus(edge.vertexA.point)._normalize();
@@ -244,7 +288,7 @@ function findMaxTurningLeft(edge, edges) {
   const edgeV = edgeVector(edge);
   function leftTurningMeasure(v1, v2) {
     let measure = v1.dot(v2);
-    if (v1.cross(v1) < 0) {
+    if (v1.cross(v2).dot(normal) < 0) {
       measure *= -1;
       measure += 2;
     }
@@ -281,14 +325,17 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
 
       newEdges.forEach(e => {
          //__DEBUG__.AddHalfEdge(e.halfEdge1);
-        face1.data[MY].newEdges.push(e.halfEdge1);
-        face2.data[MY].newEdges.push(e.halfEdge2);
         
-        addToListInMap(face1.data[MY].vertexToEdge, e.halfEdge1.vertexA, e.halfEdge1);
-        addToListInMap(face2.data[MY].vertexToEdge, e.halfEdge2.vertexA, e.halfEdge2);
+        addNewEdge(face1, e.halfEdge1);
+        addNewEdge(face2, e.halfEdge2);
       });
     }
   }
+}
+
+function addNewEdge(face, halfEdge) {
+  face.data[MY].newEdges.push(halfEdge);
+  addToListInMap(face.data[MY].vertexToEdge, halfEdge.vertexA, halfEdge);
 }
 
 function collectNodesOfIntersectionOfFace(splittingFace, face, nodes) {
@@ -378,10 +425,27 @@ function split(nodes, result, onCurve, direction) {
     edge.halfEdge2 = halfEdgeSameDir;
     halfEdgeNegativeDir.edge = edge;
     halfEdgeSameDir.edge = edge;
-    
-    result.push(edge);
+    if (!containsEdges(result, edge)) {
+      result.push(edge);
+    }
   }
 }
+
+function containsEdges(edges, edge) {
+  for (let e of edges) {
+    if (isSameEdge(e, edge)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isSameEdge(e1, e2) {
+  return e1.halfEdge1.vertexA ==  e2.halfEdge1.vertexA &&
+    e1.halfEdge2.vertexB ==  e2.halfEdge2.vertexB;
+
+}
+
 
 function splitEdgeByVertex(originHalfEdge, vertex, splittingFace) {
   
@@ -455,9 +519,12 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
     const pointOfIntersection = edgeLine.parametricEquation(t);
     //TODO: should check if point on an edge then exclude that edge from further intersection test cuz it would produce two identical Nodes
     //TODO: should check if point on a vertex then exclude two edges of the vertex from further intersection test cuz it would produce three identical Nodes
-    if (pointBelongsToFace(pointOfIntersection, face)) {
+    const classRes = classifyPointToFace(pointOfIntersection, face);
+    if (classRes.inside) {
       let vertexOfIntersection;
-      if (math.areVectorsEqual(edge.vertexA.point, pointOfIntersection, TOLERANCE)) {
+      if (classRes.vertex) {
+        vertexOfIntersection = classRes.vertex;
+      } else if (math.areVectorsEqual(edge.vertexA.point, pointOfIntersection, TOLERANCE)) {
         vertecies.add(edge.vertexA);
         vertexOfIntersection = edge.vertexA;
         //console.log("point A on surface");
@@ -471,8 +538,11 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
       }
 
       const edgeNormal = edge.loop.face.surface.normal.cross(v)._normalize() ;
-      result.push(new Node(vertexOfIntersection, edgeNormal, edge));
-      
+      const node = new Node(vertexOfIntersection, edgeNormal, edge);
+      result.push(node);
+      if (classRes.edge) {
+        splitEdgeByVertex(classRes.edge, vertexOfIntersection, edge.loop.face);
+      } 
     }
   }
 }
@@ -490,28 +560,33 @@ function deleteHalfEdge(he) {
   removeFromListInMap(he.loop.face.data[MY].vertexToEdge, he.vertexA, he);
 }
 
-function pointBelongsToFace(point, face) {
+function classifyPointToFace(point, face) {
   const tr = face.surface.get2DTransformation();
-  if (pointInsideLoop(point, face.outerLoop, tr)) {
-    for (let innerLoop of face.innerLoops) {
-      if (pointInsideLoop(point, innerLoop, tr)) {
-        return false;
-      }
-    }
-    return true;
-  }
-  return false;
-}
-
-function pointInsideLoop(point, loop, tr) {
-  const polygon = loop.asPolygon().map(p => tr.apply(p));
   const point2d = tr.apply(point);
-  return pointInsidePolygon(point2d, polygon);
+  const result = classifyPointInsideLoop(point2d, face.outerLoop, tr);
+  if (result.inside) {
+    if (result.vertex || result.edge) {
+      return result;
+    } else {
+      for (let innerLoop of face.innerLoops) {
+        const innerResult = classifyPointInsideLoop(point2d, innerLoop, tr);
+        if (innerResult.inside) {
+          if (innerResult.vertex || innerResult.edge) {
+            return innerResult;
+          } else {
+            return {inside: false};
+          }
+        }
+      }
+      return result;
+    }
+  }
+  return result;
 }
 
 function pointInsidePolygon(point, polygon) {
   //TODO: absolutely unacceptable way. should be done honoring intersecting edges and vertices. see TODOs above
-  return math.isPointInsidePolygon(point, polygon);
+  return math.isPointInsidePolygon(point, polygon, TOLERANCE);
 }
 
 function edgeNormal(edge) {
@@ -604,6 +679,74 @@ class FaceSolveData {
     this.vertexToEdge = new Map();
   }
 }
+
+export function classifyPointInsideLoop( inPt, loop, tr ) {
+
+  var EPSILON = TOLERANCE;
+  
+  function VertexResult(vertex) {
+    this.inside = true;
+    this.vertex = vertex;
+  }
+
+  function EdgeResult(edge) {
+    this.inside = true;
+    this.edge = edge;
+  }
+  
+  const _2dCoords = new Map();
+  for( let edge of loop.halfEdges ) {
+    const p = tr.apply(edge.vertexA.point);
+    if (math.areEqual(inPt.y, p.y, TOLERANCE) && math.areEqual(inPt.x, p.x, TOLERANCE)) {
+      return new VertexResult(edge.vertexA);
+    }
+    _2dCoords.set(edge.vertexA, p);
+  }
+
+    // inPt on polygon contour => immediate success    or
+  // toggling of inside/outside at every single! intersection point of an edge
+  //  with the horizontal line through inPt, left of inPt
+  //  not counting lowerY endpoints of edges and whole edges on that line
+  var inside = false;
+  for( let edge of loop.halfEdges ) {
+
+    const a = _2dCoords.get(edge.vertexA);
+    const b = _2dCoords.get(edge.vertexB);
+    
+    var edgeLowPt  = a;
+    var edgeHighPt = b;
+
+    var edgeDx = edgeHighPt.x - edgeLowPt.x;
+    var edgeDy = edgeHighPt.y - edgeLowPt.y;
+
+    if ( Math.abs(edgeDy) > EPSILON ) {			// not parallel
+      if ( edgeDy < 0 ) {
+        edgeLowPt  = b; edgeDx = - edgeDx;
+        edgeHighPt = a; edgeDy = - edgeDy;
+      }
+      if ( ( inPt.y < edgeLowPt.y ) || ( inPt.y > edgeHighPt.y ) ) 		continue;
+
+      if ( math.areEqual(inPt.y, edgeLowPt.y, TOLERANCE) ) {
+        if ( math.areEqual(inPt.x, edgeLowPt.x, TOLERANCE) )		new VertexResult(edgeLowPt);		// inPt is on contour ?
+        // continue;				// no intersection or edgeLowPt => doesn't count !!!
+      } else {
+        var perpEdge = edgeDy * (inPt.x - edgeLowPt.x) - edgeDx * (inPt.y - edgeLowPt.y);
+        if ( math.areEqual(perpEdge, 0, TOLERANCE_SQ) ) return new EdgeResult(edge);		// inPt is on contour ?
+        if ( perpEdge < 0 ) 				continue;
+        inside = ! inside;		// true intersection left of inPt
+      }
+    } else {		// parallel or colinear
+      if ( !math.areEqual(inPt.y, edgeLowPt.y, TOLERANCE) ) 		continue;			// parallel
+      // egde lies on the same horizontal line as inPt
+      if ( ( ( edgeHighPt.x <= inPt.x ) && ( inPt.x <= edgeLowPt.x ) ) ||
+        ( ( edgeLowPt.x <= inPt.x ) && ( inPt.x <= edgeHighPt.x ) ) ) return	new EdgeResult(edge);	// inPt: Point on contour !
+      // continue;
+    }
+  }
+
+  return	{inside};
+}
+
 
 function addToListInMap(map, key, value) {
   let list = map.get(key);
