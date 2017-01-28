@@ -53,15 +53,19 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
 
   __DEBUG__.Clear();
   
-  const facesData = [];
+  let facesData = [];
   
   initSolveData(shell1, facesData);
   initSolveData(shell2, facesData);
   
+  mergeVertices(shell1, shell2);
+  markOverlappingFaces(shell1, shell2);
   intersectFaces(shell1, shell2, type !== TYPE.UNION);
-
+  mergeOverlappingFaces(shell1, shell2);
+  facesData = facesData.filter(fd => fd.merged !== true);
+  
   for (let faceData of facesData) {
-    fixCoincidentEdges(faceData, type !== TYPE.UNION)
+    fixCoincidentEdges(faceData, type === TYPE.UNION)
   }
 
     const allFaces = [];
@@ -69,14 +73,16 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   const newLoops = new Set();
   for (let faceData of facesData) {
     const face = faceData.face;
-    __DEBUG__.Clear();
-    for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
+    //__DEBUG__.Clear();
+    //for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
 
     const loops = [];
     const seen = new Set();
-    const edges = [];
+    let edges = [];
     for (let e of face.edges) edges.push(e);
+    //faceData.newEdges.sort(e => e.merged === true ? 0 : 1);
     faceData.newEdges.forEach(e => edges.push(e));
+    edges = edges.filter(e => e.invalid !== true);
     while (true) {
       let edge = edges.pop();
       if (!edge) {
@@ -87,7 +93,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
       }
       const loop = new Loop();
       while (edge) {
-        __DEBUG__.AddHalfEdge(edge);
+        //__DEBUG__.AddHalfEdge(edge);
         const isNew = faceData.newEdges.indexOf(edge) != -1;
         if (isNew) newLoops.add(loop);
         
@@ -125,38 +131,252 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   return result;
 }
 
-function fixCoincidentEdges(faceData, keep) {
-  const newEdges = [];
-  const toRemove = [];
-  for (let newEdge of faceData.newEdges) {
-    const oldEdge = findCoincidentEdge(newEdge, faceData.face);
-    if (oldEdge != null) {
-      deleteHalfEdge(oldEdge);
-      //deleteHalfEdge(newEdge.twin());
-      if (oldEdge.edge.halfEdge1 == oldEdge) {
-        oldEdge.edge.halfEdge1 = newEdge;
-      } else {
-        oldEdge.edge.halfEdge2 = newEdge;
+function mergeVertices(shell1, shell2) {
+  const toSwap = new Map();
+  for (let v1 of shell1.vertices) {
+    for (let v2 of shell2.vertices) {
+      if (math.areVectorsEqual(v1.point, v2.point, TOLERANCE)) {
+        toSwap.set(v2, v1);
       }
-      
-      if (keep) {
-      } else {
-        //deleteEdge(newEdge.edge);
-        //deleteEdge(oldEdge.edge);
-      }
-    } else {
-      newEdges.push(newEdge);
     }
-  }  
-  //faceData.newEdges = newEdges;
+  }
+
+  for (let face of shell2.faces) {
+    for (let h of face.edges) {
+      const aSwap = toSwap.get(h.vertexA);
+      const bSwap = toSwap.get(h.vertexB);
+      if (aSwap) {
+        h.vertexA = aSwap;
+      }
+      if (bSwap) {
+        h.vertexB = bSwap;
+      }
+    }
+  }
 }
 
-function findCoincidentEdge(edge, face) {
-  for (let loop of face.loops) {
-    for (let he of loop.halfEdges) {
-      if (edge.vertexA == he.vertexA && edge.vertexB == he.vertexB) {
-        return he;
+function markOverlappingFaces(shell1, shell2) {
+  for (let face1 of shell1.faces) {
+    for (let face2 of shell2.faces) {
+      if (face1.surface.coplanarUnsigned(face2.surface, TOLERANCE)) {
+        markOverlapping(face1, face2);
       }
+    }
+  }
+}
+
+function markOverlapping(face1, face2) {
+  let data1 = face1.data[MY];
+  let data2 = face2.data[MY];
+  data1.overlaps.add(face2);
+  data2.overlaps.add(face1);
+}
+
+function mergeOverlappingFaces(shell1, shell2) {
+  for (let face1 of shell1.faces) {
+    for (let face2 of shell2.faces) {
+      if (face1.data[MY].overlaps.has(face2)) {
+        doMergeOverlappingFaces(face1, face2);
+      }
+    }
+  }
+}
+
+function doMergeOverlappingFaces(face1, face2) {
+  let data1 = face1.data[MY];
+  let data2 = face2.data[MY];
+
+  
+  function keepOnlyOneEqualEdge(face1, face2) {
+    for (let ne of face1.data[MY].newEdges) {
+      for (let loop of face2.loops) {
+        for (let he of loop.halfEdges) {
+          if (areEdgesEqual(ne, he)) {
+            he.skipped = true;
+            deleteEdge(he.edge);
+          }
+        }
+      }
+    }
+  }
+
+  function outAllOppositeEdges(face1, face2) {
+    for (let ne of face1.data[MY].newEdges) {
+      for (let loop of face2.loops) {
+        for (let he of loop.halfEdges) {
+          if (areEdgesOpposite(ne, he)) {
+            ne.skipped = true;
+            he.skipped = true;
+            deleteEdge(ne.edge);
+            deleteEdge(he.edge);
+          }
+        }
+      }
+    }
+  }
+
+
+  //keepOnlyOneEqualEdge(face1, face2);
+  //keepOnlyOneEqualEdge(face2, face1);
+
+  //outAllOppositeEdges(face1, face2);
+  //outAllOppositeEdges(face2, face1);
+
+  
+  for (let ne of data1.newEdges) {
+    for (let he of face2.edges) {
+      if (areEdgesOpposite(ne, he)) { // UNION
+        ne.skipped = true;
+        he.skipped = true;
+        deleteEdge(ne.edge);
+        deleteEdge(he.edge);
+      } else if (areEdgesEqual(ne, he)) { //INTERSECTION
+        he.skipped = true;
+        deleteEdge(he.edge);
+      }
+    }
+  }
+
+  for (let ne of data2.newEdges) {
+    for (let he of face1.edges) {
+      if (areEdgesOpposite(ne, he)) { // UNION
+        ne.skipped = true;
+        he.skipped = true;
+        deleteEdge(ne.edge);
+        deleteEdge(he.edge);
+      } else if (areEdgesEqual(ne, he)) { //INTERSECTION
+        ne.skipped = true;
+        deleteEdge(ne.edge);
+      }
+    }
+  }
+
+  for (let h1 of face1.edges) {
+    for (let h2 of face2.edges) {
+      if (areEdgesEqual(h1, h2)) { //INTERSECTION
+        h2.skipped = true;
+        deleteEdge(h2);
+      }
+    }
+  }
+
+  data1.vertexToEdge.clear();
+  const newEdges = [];
+  const loops = [];
+
+  function collectEdges(face) {
+    for (let loop of face.loops) {
+      const newLoop = new Loop();
+      newLoop.face = face;
+      for (let he of loop.halfEdges) {
+        if (he.skipped === true) continue;
+        addToListInMap(data1.vertexToEdge, he.vertexA, he);
+        newLoop.halfEdges.push(he);
+        he.loop = newLoop;
+      }
+      if (newLoop.halfEdges.length != 0) {
+        loops.push(newLoop);
+      }
+    }
+    for (let he of face.data[MY].newEdges) {
+      if (he.skipped === true) continue;
+      newEdges.push(he);
+    }
+  }
+
+  collectEdges(face1);
+  collectEdges(face2);
+
+  face1.outerLoop = new Loop();
+  face1.outerLoop.face = face1;
+  
+  face1.innerLoops = loops;
+  data1.newEdges = [];
+  for (let newEdge of newEdges) {
+    addNewEdge(face1, newEdge);
+  }
+  data2.merged = true;
+}
+
+function areEdgesEqual(e1, e2) {
+  return e1.vertexA == e2.vertexA && e1.vertexB == e2.vertexB;
+}
+
+function areEdgesOpposite(e1, e2) {
+  return e1.vertexA == e2.vertexB && e1.vertexB == e2.vertexA;
+}
+
+
+function fixCoincidentEdges(faceData, union) {
+  
+  const newEdges = [];
+  for (let i = 0; i < faceData.newEdges.length; ++i) {
+    const e1 = faceData.newEdges[i];
+    let choice = e1;
+    for (let j = 0; j < faceData.newEdges.length; ++j) {
+      if (i == j) continue;
+      const e2 = faceData.newEdges[j];
+      if (areEdgesEqual(e1, e2)) {
+
+        const face1 = e1.twin().loop.face;
+        const face2 = e2.twin().loop.face;
+        const op = e1.twin();
+        
+        function find(face, edge) {
+          for (let loop of face.loops) {
+            for (let he of loop.halfEdges) {
+              if (areEdgesEqual(edge, he)) {
+                return he;
+              }
+            }
+          }
+        }
+        
+        function findAndRemove(face, edge) {
+          const found = find(face, edge);
+          if (found != null) {
+            deleteHalfEdge(found);
+            return true;
+          }
+          return false;
+        }
+        
+        if (findAndRemove(face1, op)) {
+          choice = e1;
+        }
+        if (findAndRemove(face1, e1)) {
+          deleteEdge(e1.edge);         
+        }
+
+        if (findAndRemove(face2, op)) {
+          choice = e2;
+        }
+        if (findAndRemove(face2, e1)) {
+          deleteEdge(e2.edge);
+        }
+        
+        break;  
+      }
+    }
+    newEdges.push(choice);
+  }
+  faceData.newEdges = newEdges;
+}
+
+function findCoincidentEdgeOnFace(edge, face) {
+  for (let loop of face.loops) {
+    const coi = findCoincidentEdge(edge, loop.halfEdges);
+    if (coi != null) {
+      return coi;
+    }
+  }
+  return null;
+}
+
+function findCoincidentEdge(edge, edges) {
+  for (let he of edges) {
+    if (areEdgesEqual(edge, he)) {
+      return he;
     }
   }
   return null;
@@ -305,8 +525,12 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
     const face1 = shell1.faces[i];
     for (let j = 0; j < shell2.faces.length; j++) {
       const face2 = shell2.faces[j];
+      //__DEBUG__.Clear();
+      //for (let l of face1.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
+      //for (let l of face2.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x0000ff));
 
-      if (face1.surface.equals(face2.surface, TOLERANCE)) {
+      if (face1.data[MY].overlaps.has(face2)) {
+        console.log("skip overlapping");
         continue;
       }
       
@@ -315,27 +539,62 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
       const nodes = [];
       collectNodesOfIntersectionOfFace(face2, face1, nodes);
       collectNodesOfIntersectionOfFace(face1, face2, nodes);
-
+      
       const newEdges = [];
       const direction = face1.surface.normal.cross(face2.surface.normal);
       if (inverseCrossEdgeDirection) {
         direction._multiply(-1);
       }
+      filterDuplicateVertices(nodes);
       split(nodes, newEdges, curve, direction);
 
       newEdges.forEach(e => {
          //__DEBUG__.AddHalfEdge(e.halfEdge1);
-        
-        addNewEdge(face1, e.halfEdge1);
-        addNewEdge(face2, e.halfEdge2);
+        if (!faceContainsSimilarEdge(face1, e.halfEdge1) || !faceContainsSimilarEdge(face2, e.halfEdge2)) {
+          addNewEdge(face1, e.halfEdge1);
+          addNewEdge(face2, e.halfEdge2);
+        } else {
+          console.log("faceContainsSimilarEdge");
+        }
       });
     }
   }
 }
 
 function addNewEdge(face, halfEdge) {
-  face.data[MY].newEdges.push(halfEdge);
-  addToListInMap(face.data[MY].vertexToEdge, halfEdge.vertexA, halfEdge);
+  if (faceContainsSimilarEdge(face, halfEdge)) {
+    //return false;
+  }
+  var data = face.data[MY];
+  data.newEdges.push(halfEdge);
+  halfEdge.loop = data.loopOfNew;
+  addToListInMap(data.vertexToEdge, halfEdge.vertexA, halfEdge);
+  return true;
+}
+
+function filterDuplicateVertices(nodes) {
+  for (let i = 0; i < nodes.length; i++) {
+    const node1 = nodes[i];
+    if (node1 == null) continue;
+    for (let j = 0; j < nodes.length; j++) {
+      if (i == j) continue;
+      const node2 = nodes[j];
+      if (node2 != null && node2.vertex == node1.vertex) {
+        nodes[j] = null
+      }
+    }
+  }
+}
+
+function faceContainsSimilarEdge(face, halfEdge) {
+  for (let loop of face.loops) {
+    for (let he of loop.halfEdges) {
+      if (areEdgesEqual(halfEdge, he) || areEdgesOpposite(halfEdge, he)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function collectNodesOfIntersectionOfFace(splittingFace, face, nodes) {
@@ -350,6 +609,10 @@ function collectNodesOfIntersectionOfFace(splittingFace, face, nodes) {
 }
 
 function collectNodesOfIntersection(face, loop, nodes) {
+  //__DEBUG__.Clear();
+  //for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
+  //loop.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ffff));
+
   const verticesCases = new Set();
   for (let edge of loop.halfEdges) {
     //__DEBUG__.AddHalfEdge(edge);
@@ -359,17 +622,17 @@ function collectNodesOfIntersection(face, loop, nodes) {
     }
     const preExistVertex = edgeSolveData.splitByFace.get(face);
     if (preExistVertex) {
-      __DEBUG__.AddVertex(preExistVertex);
+      //__DEBUG__.AddVertex(preExistVertex);
       nodes.push(new Node(preExistVertex, edgeNormal(edge), edge, face));
       continue
     }
     intersectFaceWithEdge(face, edge, nodes, verticesCases);
   }
-  for (let he of loop.halfEdges) {
-    if (verticesCases.has(he.vertexA) && verticesCases.has(he.vertexB)) {
-      deleteEdge(he.edge);
-    }
-  }  
+  //for (let he of loop.halfEdges) {
+  //  if (verticesCases.has(he.vertexA) && verticesCases.has(he.vertexB)) {
+  //    deleteEdge(he.edge);
+  //  }
+  //}  
 
 }
 
@@ -443,9 +706,7 @@ function containsEdges(edges, edge) {
 }
 
 function isSameEdge(e1, e2) {
-  return e1.halfEdge1.vertexA ==  e2.halfEdge1.vertexA &&
-    e1.halfEdge2.vertexB ==  e2.halfEdge2.vertexB;
-
+  return areEdgesEqual(e1.halfEdge1, e2.halfEdge1);
 }
 
 
@@ -559,6 +820,7 @@ function deleteEdge(edge) {
 }
 
 function deleteHalfEdge(he) {
+  he.invalid = true;
   removeFromListInMap(he.loop.face.data[MY].vertexToEdge, he.vertexA, he);
 }
 
@@ -644,7 +906,7 @@ function Node(vertex, normal, splitsEdge, splittingFace) {
   this.point = vertex.point;
   this.edge = splitsEdge;
   this.splittingFace = splittingFace;
-  __DEBUG__.AddPoint(this.point);
+  //__DEBUG__.AddPoint(this.point);
 }
 
 
@@ -677,8 +939,11 @@ class SolveData {
 class FaceSolveData {
   constructor(face) {
     this.face = face;
-    this.newEdges = [];
+    this.loopOfNew = new Loop();
+    this.newEdges = this.loopOfNew.halfEdges;
     this.vertexToEdge = new Map();
+    this.overlaps = new Set();
+    this.loopOfNew.face = face;
   }
 }
 

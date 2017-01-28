@@ -27,9 +27,10 @@ export function Cut(app, params) {
   const extruder = new ParametricExtruder(face, params);
   const cutter = extruder.extrude(sketch[0]);
   BREPValidator.validateToConsole(cutter);
+  solid.vanish();
+  app.viewer.render();//just for debug purposes
   const newSolid = new BREPSceneSolid(subtract(solid.shell, cutter));
   //const newSolid = new BREPSceneSolid(cutter);
-  solid.vanish();
   
   app.viewer.workGroup.add(newSolid.cadGroup);
   app.bus.notify('solid-list', {
