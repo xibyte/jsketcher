@@ -52,8 +52,8 @@ export class Wizard {
   }
 
   okClick() {
-    this.apply();
     this.dispose();
+    this.apply();
   }
 
   apply() {
