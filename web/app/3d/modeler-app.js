@@ -74,7 +74,8 @@ function App() {
 }
 
 App.prototype.BREPTest = function() {
-  this.BREPTestImpl();
+  //this.BREPTestImplOverlap1();
+  this.BREPTestImpl()
   //setTimeout(() => this.BREPTestImpl());
 };
 
@@ -101,6 +102,46 @@ App.prototype.BREPTestImpl1 = function() {
   
 };
 
+App.prototype.BREPTestImplOverlap = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new BREPSceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box1 = BREPPrimitives.box(500, 500, 500);
+  const box2 = BREPPrimitives.box(500, 500, 500, new Matrix3().translate(250, 0, 250));
+
+  BREPValidator.validateToConsole(box1);
+
+  //addToScene(box1);
+  //addToScene(box2);
+
+  const result = BREPBool.subtract(box1, box2);
+  addToScene(result);
+
+  this.viewer.render()
+
+};
+
+App.prototype.BREPTestImplOverlap1 = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new BREPSceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box1 = BREPPrimitives.box(600, 600, 600);
+  const box2 = BREPPrimitives.box(300, 600, 300, new Matrix3().translate(150, 0, 150));
+
+  BREPValidator.validateToConsole(box1);
+
+  //addToScene(box1);
+  //addToScene(box2);
+
+  const result = BREPBool.intersect(box1, box2);
+  addToScene(result);
+
+  this.viewer.render()
+
+};
+
 App.prototype.BREPTestImpl = function() {
   const addToScene = (shell) => {
     const sceneSolid = new BREPSceneSolid(shell);
@@ -122,6 +163,7 @@ App.prototype.BREPTestImpl = function() {
   let result = BREPBool.subtract(box1, box2);
   result = BREPBool.subtract(result, box3);
   addToScene(result);
+  //addToScene(box1);
 
   this.viewer.render()
 

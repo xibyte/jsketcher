@@ -42,8 +42,8 @@ export class Plane extends Surface {
   get3DTransformation() {
     return new Matrix3().setBasis(this.calculateBasis());
   }
-  
-  equals(other, tol) {
+
+  coplanarUnsigned(other, tol) {
     return other instanceof Plane && 
       math.areVectorsEqual(this.normal.multiply(this.w), other.normal.multiply(other.w), tol);
     //TODO: store this.normal.multiply(this.w) in a field since it's constant value

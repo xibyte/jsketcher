@@ -18,8 +18,8 @@ function addGlobalDebugActions(app) {
       debugGroup.add(createLine(a, b));
       app.viewer.render();
     },
-    AddSegment: (a, b) => {
-      debugGroup.add(createLine(a, b));
+    AddSegment: (a, b, color) => {
+      debugGroup.add(createLine(a, b, color));
       debugGroup.add(createPoint(a, 0x000088));
       debugGroup.add(createPoint(b, 0x880000));
       app.viewer.render();
@@ -31,8 +31,8 @@ function addGlobalDebugActions(app) {
     AddVertex: (v) => {
       window.__DEBUG__.AddPoint(v.point);
     },
-    AddHalfEdge: (he) => {
-      window.__DEBUG__.AddSegment(he.vertexA.point, he.vertexB.point);
+    AddHalfEdge: (he, color) => {
+      window.__DEBUG__.AddSegment(he.vertexA.point, he.vertexB.point, color);
     },
     Clear: () => {
       while (debugGroup.children.length) debugGroup.remove(debugGroup.children[0]);
@@ -41,8 +41,9 @@ function addGlobalDebugActions(app) {
   }
 }
 
-function createLine(a, b) {
-  const debugLineMaterial = new THREE.LineBasicMaterial({color: 0xFA8072, linewidth: 3});
+function createLine(a, b, color) {
+  color = color || 0xFA8072;
+  const debugLineMaterial = new THREE.LineBasicMaterial({color, linewidth: 3});
   const  lg = new THREE.Geometry();
   lg.vertices.push(a.three());
   lg.vertices.push(b.three());
