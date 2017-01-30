@@ -902,25 +902,25 @@ function EdgeSolveData() {
 EdgeSolveData.EMPTY = new EdgeSolveData();
 
 EdgeSolveData.get = function(edge) {
-  if (!edge.__edgeSolveData) {
+  if (!edge.data[MY]) {
     return EdgeSolveData.EMPTY;
   }
-  return edge.__edgeSolveData;
+  return edge.data[MY];
 };
 
 EdgeSolveData.createIfEmpty = function(edge) {
-  if (!edge.__edgeSolveData) {
-    edge.__edgeSolveData = new EdgeSolveData();
+  if (!edge.data[MY]) {
+    edge.data[MY] = new EdgeSolveData();
   }
-  return edge.__edgeSolveData;
+  return edge.data[MY];
 };
 
 EdgeSolveData.clear = function(edge) {
-  delete edge.__edgeSolveData;
+  delete edge.data[MY];
 };
 
 EdgeSolveData.transfer = function(from, to) {
-  to.__edgeSolveData = from.__edgeSolveData;
+  to.data[MY] = from.data[MY];
 };
 
 function Node(vertex, normal, splitsEdge, splittingFace) {
