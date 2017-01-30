@@ -10,9 +10,10 @@ export class Edge extends TopoObject {
   }
 }
 
-export class HalfEdge {
+export class HalfEdge extends TopoObject {
 
   constructor() {
+    super();
     this.edge = null;
     this.vertexA = null;
     this.vertexB = null;
