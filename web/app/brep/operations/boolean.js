@@ -84,7 +84,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
     for (let e of face.edges) edges.push(e);
     //faceData.newEdges.sort(e => e.merged === true ? 0 : 1);
     faceData.newEdges.forEach(e => edges.push(e));
-    edges = edges.filter(e => e.invalid !== true);
+    edges = edges.filter(e => EdgeSolveData.get(e).invalid !== true);
     while (true) {
       let edge = edges.pop();
       if (!edge) {
@@ -129,6 +129,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
     result.faces.push(face);
   });
 
+  cleanUpSolveData(result);
   BREPValidator.validateToConsole(result);
   return result;
 }
@@ -187,53 +188,17 @@ function mergeOverlappingFaces(shell1, shell2) {
 function doMergeOverlappingFaces(face1, face2) {
   let data1 = face1.data[MY];
   let data2 = face2.data[MY];
-
-  
-  function keepOnlyOneEqualEdge(face1, face2) {
-    for (let ne of face1.data[MY].newEdges) {
-      for (let loop of face2.loops) {
-        for (let he of loop.halfEdges) {
-          if (areEdgesEqual(ne, he)) {
-            he.skipped = true;
-            deleteEdge(he.edge);
-          }
-        }
-      }
-    }
-  }
-
-  function outAllOppositeEdges(face1, face2) {
-    for (let ne of face1.data[MY].newEdges) {
-      for (let loop of face2.loops) {
-        for (let he of loop.halfEdges) {
-          if (areEdgesOpposite(ne, he)) {
-            ne.skipped = true;
-            he.skipped = true;
-            deleteEdge(ne.edge);
-            deleteEdge(he.edge);
-          }
-        }
-      }
-    }
-  }
-
-
-  //keepOnlyOneEqualEdge(face1, face2);
-  //keepOnlyOneEqualEdge(face2, face1);
-
-  //outAllOppositeEdges(face1, face2);
-  //outAllOppositeEdges(face2, face1);
-
+  const skipped = new Set();
   
   for (let ne of data1.newEdges) {
     for (let he of face2.edges) {
       if (areEdgesOpposite(ne, he)) { // UNION
-        ne.skipped = true;
-        he.skipped = true;
+        skipped.add(ne);
+        skipped.add(he);
         deleteEdge(ne.edge);
         deleteEdge(he.edge);
       } else if (areEdgesEqual(ne, he)) { //INTERSECTION
-        he.skipped = true;
+        skipped.add(he);
         deleteEdge(he.edge);
       }
     }
@@ -242,12 +207,12 @@ function doMergeOverlappingFaces(face1, face2) {
   for (let ne of data2.newEdges) {
     for (let he of face1.edges) {
       if (areEdgesOpposite(ne, he)) { // UNION
-        ne.skipped = true;
-        he.skipped = true;
+        skipped.add(ne);
+        skipped.add(he);
         deleteEdge(ne.edge);
         deleteEdge(he.edge);
       } else if (areEdgesEqual(ne, he)) { //INTERSECTION
-        ne.skipped = true;
+        skipped.add(ne);
         deleteEdge(ne.edge);
       }
     }
@@ -256,7 +221,7 @@ function doMergeOverlappingFaces(face1, face2) {
   for (let h1 of face1.edges) {
     for (let h2 of face2.edges) {
       if (areEdgesEqual(h1, h2)) { //INTERSECTION
-        h2.skipped = true;
+        skipped.add(h2);
         deleteEdge(h2);
       }
     }
@@ -271,7 +236,7 @@ function doMergeOverlappingFaces(face1, face2) {
       const newLoop = new Loop();
       newLoop.face = face;
       for (let he of loop.halfEdges) {
-        if (he.skipped === true) continue;
+        if (skipped.has(he)) continue;
         addToListInMap(data1.vertexToEdge, he.vertexA, he);
         newLoop.halfEdges.push(he);
         he.loop = newLoop;
@@ -281,7 +246,7 @@ function doMergeOverlappingFaces(face1, face2) {
       }
     }
     for (let he of face.data[MY].newEdges) {
-      if (he.skipped === true) continue;
+      if (skipped.has(he)) continue;
       newEdges.push(he);
     }
   }
@@ -521,6 +486,15 @@ function initSolveData(shell, facesData) {
       addToListInMap(solveData.vertexToEdge, he.vertexA, he);
     }
   }  
+}
+
+function cleanUpSolveData(shell) {
+  for (let face of shell.faces) {
+    delete face.data[MY];
+    for (let he of face.edges) {
+      EdgeSolveData.clear(he);
+    }
+  }
 }
 
 function findMaxTurningLeft(edge, edges, normal) {
@@ -843,7 +817,7 @@ function deleteEdge(edge) {
 }
 
 function deleteHalfEdge(he) {
-  he.invalid = true;
+  EdgeSolveData.createIfEmpty(he).invalid = true;
   removeFromListInMap(he.loop.face.data[MY].vertexToEdge, he.vertexA, he);
 }
 

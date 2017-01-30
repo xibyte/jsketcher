@@ -74,8 +74,8 @@ function App() {
 }
 
 App.prototype.BREPTest = function() {
-  //this.BREPTestImplOverlap1();
-  this.BREPTestImpl()
+  this.BREPTestImplOverlap1();
+  //this.BREPTestImpl()
   //setTimeout(() => this.BREPTestImpl());
 };
 
@@ -135,7 +135,7 @@ App.prototype.BREPTestImplOverlap1 = function() {
   //addToScene(box1);
   //addToScene(box2);
 
-  const result = BREPBool.intersect(box1, box2);
+  const result = BREPBool.subtract(box1, box2);
   addToScene(result);
 
   this.viewer.render()
@@ -160,10 +160,10 @@ App.prototype.BREPTestImpl = function() {
   //addToScene(box2);
   //addToScene(box3);
 
-  let result = BREPBool.subtract(box1, box2);
-  result = BREPBool.subtract(result, box3);
-  addToScene(result);
-  //addToScene(box1);
+  //let result = BREPBool.subtract(box1, box2);
+  //result = BREPBool.subtract(result, box3);
+  //addToScene(result);
+  addToScene(box1);
 
   this.viewer.render()
 
