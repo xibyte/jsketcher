@@ -54,11 +54,12 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   __DEBUG__.Clear();
   
   let facesData = [];
-  
+
+  mergeVertices(shell1, shell2);
+
   initSolveData(shell1, facesData);
   initSolveData(shell2, facesData);
   
-  mergeVertices(shell1, shell2);
   markOverlappingFaces(shell1, shell2);
   intersectFaces(shell1, shell2, type !== TYPE.UNION);
   mergeOverlappingFaces(shell1, shell2);
