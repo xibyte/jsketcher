@@ -65,6 +65,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   facesData = facesData.filter(fd => fd.merged !== true);
   
   for (let faceData of facesData) {
+    fixOppositeEdges(faceData);
     fixCoincidentEdges(faceData, type === TYPE.UNION)
   }
 
@@ -307,6 +308,27 @@ function areEdgesOpposite(e1, e2) {
 }
 
 
+function fixOppositeEdges(faceData) {
+  //corner case there a point on edge ____V____ 
+  for (let i = 0; i < faceData.newEdges.length; ++i) {
+    const e1 = faceData.newEdges[i];
+    if (e1 == null) continue;
+    for (let j = 0; j < faceData.newEdges.length; ++j) {
+      if (i == j) continue;
+      const e2 = faceData.newEdges[j];
+      if (e2 == null) continue;
+      if (areEdgesOpposite(e1, e2)) {
+        deleteEdge(e1.edge);
+        deleteEdge(e2.edge);
+        faceData.newEdges[i] = null;
+        faceData.newEdges[j] = null;
+        break;
+      }
+    }
+  }
+  faceData.newEdges = faceData.newEdges.filter(e => e != null);
+}
+
 function fixCoincidentEdges(faceData, union) {
   
   const newEdges = [];
@@ -495,7 +517,7 @@ function initSolveData(shell, facesData) {
     face.data[MY] = solveData;
     for (let he of face.edges) {
       EdgeSolveData.clear(he);
-      solveData.vertexToEdge.set(he.vertexA, [he]);
+      addToListInMap(solveData.vertexToEdge, he.vertexA, he);
     }
   }  
 }
