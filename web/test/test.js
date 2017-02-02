@@ -57,6 +57,13 @@ export class TestEnv {
       this.fail('assertTrue fails.', msg);
     }
   }
+  
+  assertFalse(stmt, msg) {
+    if (stmt) {
+      this.fail('assertFalse fails.', msg);
+    }
+  }
+  
   assertEquals(expected, actual, msg) {
     if (expected !== actual) {
       this.fail('assertEquals: Expected: ' + expected + ' but was ' + actual, msg);
@@ -94,14 +101,18 @@ export function load(url, callback) {
   frame.attr('src', window.location.origin + url)
 }
 
-const TEST_SKETCH_PROJECT = '$$$__test__$$$';
+const TEST_PROJECT = '$$$__test__$$$';
 const STORAGE_PREFIX_SKETCH = "TCAD.projects.";
 
 export function emptySketch(callback) {
-  localStorage.removeItem(STORAGE_PREFIX_SKETCH + TEST_SKETCH_PROJECT);
+  localStorage.removeItem(STORAGE_PREFIX_SKETCH + TEST_PROJECT);
   sketch(callback);
 }
 
 export function sketch(callback) {
-  load('/sketcher.html#' + TEST_SKETCH_PROJECT, callback);
+  load('/sketcher.html#' + TEST_PROJECT, callback);
+}
+
+export function modeller(callback) {
+  load('/index.html#' + TEST_PROJECT, callback);
 }

@@ -22,7 +22,12 @@ export default {
   ModellerOperations: [
 
   ],
-  
+
+  BREP: [
+    TestCase('brep-bool'),
+    TestCase('brep-pip')
+  ],
+
 };
 
 function TestCase(name) {
