@@ -29,6 +29,10 @@ export class Line extends Curve {
   parametricEquation(t) {
     return this.p0.plus(this.v.multiply(t));
   }
+  
+  t(point) {
+    return point.minus(this.p0).dot(this.v);
+  }
 }
 
 Line.fromTwoPlanesIntersection = function(plane1, plane2) {

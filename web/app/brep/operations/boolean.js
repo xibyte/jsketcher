@@ -11,6 +11,7 @@ import * as math from '../../math/math';
 
 export const TOLERANCE = 1e-8;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
+export const TOLERANCE_HALF = TOLERANCE * 0.5;
 
 const TYPE = {
   UNION: 0,
@@ -442,20 +443,16 @@ function loopsToFaces(originFace, loops, out) {
 
 function getNestedLoops(face, brepLoops) {
   const tr = face.surface.get2DTransformation();
-  function NestedLoop(polygon, loop) {
-    this.polygon = polygon;
+  function NestedLoop(loop) {
     this.loop = loop;
     this.nesting = [];
     this.level = 0;
   }
 
-  const loops = brepLoops.map(loop => {
-    const polygon = loop.asPolygon().map(point => tr.apply(point));
-    return new NestedLoop(polygon, loop);
-  });
-  function contains(polygon, other) {
-    for (let point of other) {
-      if (!math.isPointInsidePolygon(point, polygon)) {
+  const loops = brepLoops.map(loop => new NestedLoop(loop));
+  function contains(loop, other) {
+    for (let point of other.asPolygon()) {
+      if (!classifyPointInsideLoop(point, loop, tr).inside) {
         return false;
       }
     }
@@ -466,7 +463,7 @@ function getNestedLoops(face, brepLoops) {
     for (let j = 0; j < loops.length; ++j) {
       if (i == j) continue;
       const other = loops[j];
-      if (contains(loop.polygon, other.polygon)) {
+      if (contains(loop.loop, other.loop)) {
         loop.nesting.push(other);
         other.level ++;
       }
@@ -530,7 +527,9 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
         console.log("skip overlapping");
         continue;
       }
-      
+      if (i == 7 && j == 2) {
+        console.log("please hold");
+      }
       const curve = face1.surface.intersect(face2.surface);
   
       const nodes = [];
@@ -543,6 +542,7 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
         direction._multiply(-1);
       }
       filterDuplicateVertices(nodes);
+      calculateNodeNormals(nodes, curve);
       split(nodes, newEdges, curve, direction);
 
       newEdges.forEach(e => {
@@ -567,6 +567,18 @@ function addNewEdge(face, halfEdge) {
   halfEdge.loop = data.loopOfNew;
   addToListInMap(data.vertexToEdge, halfEdge.vertexA, halfEdge);
   return true;
+}
+
+function calculateNodeNormals(nodes, curve) {
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    if (n != null) {
+      n.normal = nodeNormal(n.point, n.edge, curve);
+      if (n.normal == 0) {
+        nodes[i] = null;
+      }
+    }
+  }
 }
 
 function filterDuplicateVertices(nodes) {
@@ -620,7 +632,7 @@ function collectNodesOfIntersection(face, loop, nodes) {
     const preExistVertex = edgeSolveData.splitByFace.get(face);
     if (preExistVertex) {
       //__DEBUG__.AddVertex(preExistVertex);
-      nodes.push(new Node(preExistVertex, edgeNormal(edge), edge, face));
+      nodes.push(new Node(preExistVertex, edge, face));
       continue
     }
     intersectFaceWithEdge(face, edge, nodes, verticesCases);
@@ -640,7 +652,7 @@ function split(nodes, result, onCurve, direction) {
 
     if (inNode == null) continue;
     nodes[i] = null;
-    let closestIdx = findCloserProjection(nodes, inNode);
+    let closestIdx = findCloserOnCurve(nodes, inNode, onCurve);
     if (closestIdx == -1) {
       continue;
     }
@@ -649,7 +661,7 @@ function split(nodes, result, onCurve, direction) {
     //if (i == 1)  __DEBUG__.AddSegment(inNode.point, inNode.point.plus(inNode.normal.multiply(1000)));
     //__DEBUG__.AddSegment(new Vector(),  outNode.normal.multiply(100));
 
-    if (outNode.normal.dot(inNode.normal) > 0) {
+    if (outNode.normal * inNode.normal > 0) {
       continue;
     }
 
@@ -745,16 +757,18 @@ function splitEdgeByVertex(originHalfEdge, vertex, splittingFace) {
   EdgeSolveData.createIfEmpty(newTwin).skipFace.add(splittingFace);
 }
 
-function findCloserProjection(nodes, toNode) {
+function findCloserOnCurve(nodes, toNode, curve) {
   let hero = -1;
   let heroDistance = Number.MAX_VALUE;
+  const origin = curve.t(toNode.point);
   for (let i = 0; i < nodes.length; i++) {
     let node = nodes[i];
     if (node == null) continue;
-    let projectionDistance = toNode.normal.dot(node.point.minus(toNode.point));
-    if (projectionDistance > 0 && projectionDistance < heroDistance) {
+    let inward = toNode.normal * node.normal < 0;
+    let distance = Math.abs(origin - curve.t(node.point));
+    if (inward && distance < heroDistance) {
       hero = i;
-      heroDistance = projectionDistance;
+      heroDistance = distance;
     }
   }
   return hero;
@@ -797,8 +811,7 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
         duplicatePointTest(pointOfIntersection);
       }
 
-      const edgeNormal = edge.loop.face.surface.normal.cross(v)._normalize() ;
-      const node = new Node(vertexOfIntersection, edgeNormal, edge);
+      const node = new Node(vertexOfIntersection, edge);
       result.push(node);
       if (classRes.edge) {
         splitEdgeByVertex(classRes.edge, vertexOfIntersection, edge.loop.face);
@@ -845,9 +858,14 @@ function classifyPointToFace(point, face) {
   return result;
 }
 
-function pointInsidePolygon(point, polygon) {
-  //TODO: absolutely unacceptable way. should be done honoring intersecting edges and vertices. see TODOs above
-  return math.isPointInsidePolygon(point, polygon, TOLERANCE);
+function nodeNormal(point, edge, curve) {
+  const edgeTangent =  edgeNormal(edge); // todo @ point
+  const curveTangent = curve.v; //todo @ point
+  let dot = edgeTangent.dot(curveTangent);
+  if (dot != 0) {
+    dot /= Math.abs(dot);
+  } 
+  return dot;
 }
 
 function edgeNormal(edge) {
@@ -863,8 +881,7 @@ function intersectCurveWithEdge(curve, edge, surface, result) {
   const t = edgeLine.intersectCurve(curve, surface);
   if (t >= 0 && t <= length) {
     const pointOfIntersection = edgeLine.parametricEquation(t);
-    const edgeNormal = surface.normal.cross(v)._normalize() ;
-    result.push(new Node(pointOfIntersection, edgeNormal, edge));
+    result.push(new Node(pointOfIntersection, edge));
   }
 }
 
@@ -897,9 +914,9 @@ EdgeSolveData.transfer = function(from, to) {
   to.data[MY] = from.data[MY];
 };
 
-function Node(vertex, normal, splitsEdge, splittingFace) {
+function Node(vertex, splitsEdge, splittingFace) {
   this.vertex = vertex;
-  this.normal = normal;
+  this.normal = 0;
   this.point = vertex.point;
   this.edge = splitsEdge;
   this.splittingFace = splittingFace;
@@ -920,7 +937,6 @@ function duplicatePointTest(point, data) {
   }
   __DEBUG_POINT_DUPS.push([point, data]);
   if (res) {
-    __DEBUG__.Clear();
     __DEBUG__.AddPoint(point);
     console.error('DUPLICATE DETECTED: ' + point)
   }
@@ -945,8 +961,6 @@ class FaceSolveData {
 }
 
 export function classifyPointInsideLoop( inPt, loop, tr ) {
-
-  var EPSILON = TOLERANCE;
   
   function VertexResult(vertex) {
     this.inside = true;
@@ -957,7 +971,7 @@ export function classifyPointInsideLoop( inPt, loop, tr ) {
     this.inside = true;
     this.edge = edge;
   }
-  
+
   const _2dCoords = new Map();
   for( let edge of loop.halfEdges ) {
     const p = tr.apply(edge.vertexA.point);
@@ -967,15 +981,63 @@ export function classifyPointInsideLoop( inPt, loop, tr ) {
     _2dCoords.set(edge.vertexA, p);
   }
 
-    // inPt on polygon contour => immediate success    or
-  // toggling of inside/outside at every single! intersection point of an edge
-  //  with the horizontal line through inPt, left of inPt
-  //  not counting lowerY endpoints of edges and whole edges on that line
-  var inside = false;
+  const grads = [];
   for( let edge of loop.halfEdges ) {
+    const a = _2dCoords.get(edge.vertexA);
+    const b = _2dCoords.get(edge.vertexB);
+    const dy = b.y - a.y;
+    if (math.areEqual(dy, 0, TOLERANCE)) {
+      grads.push(0)
+    } else if (dy > 0) {
+      grads.push(1)
+    } else {
+      grads.push(-1)
+    }
+  }
+
+  function nextGrad(start) {
+    for(let i = 0; i < grads.length; ++i) {
+      const idx = (i + start + 1) % grads.length; 
+      if (grads[idx] != 0) {
+        return grads[idx];
+      }
+    }    
+  }
+
+  function prevGrad(start) {
+    for(let i = 0; i < grads.length; ++i) {
+      const idx = (start - i - 1 + grads.length) % grads.length;
+      if (grads[idx] != 0) {
+        return grads[idx];
+      }
+    }
+  }
+  
+  const skip = new Set();
+
+  let inside = false;
+  for( let i = 0; i < loop.halfEdges.length; ++i) {
+
+    const edge = loop.halfEdges[i];
+
+    var shouldBeSkipped = skip.has(edge.vertexA) || skip.has(edge.vertexB);
 
     const a = _2dCoords.get(edge.vertexA);
     const b = _2dCoords.get(edge.vertexB);
+
+    const aEq = math.areEqual(inPt.y, a.y, TOLERANCE);
+    const bEq = math.areEqual(inPt.y, b.y, TOLERANCE);
+
+    if (aEq) {
+      skip.add(edge.vertexA);
+    }  
+    if (bEq) {
+      skip.add(edge.vertexB);
+    }
+
+    if (math.areVectorsEqual(a, b, TOLERANCE)) {
+      console.error('unable to classify invalid polygon');
+    }
     
     var edgeLowPt  = a;
     var edgeHighPt = b;
@@ -983,34 +1045,47 @@ export function classifyPointInsideLoop( inPt, loop, tr ) {
     var edgeDx = edgeHighPt.x - edgeLowPt.x;
     var edgeDy = edgeHighPt.y - edgeLowPt.y;
 
-    if ( Math.abs(edgeDy) > EPSILON ) {			// not parallel
-      if ( edgeDy < 0 ) {
-        edgeLowPt  = b; edgeDx = - edgeDx;
-        edgeHighPt = a; edgeDy = - edgeDy;
-      }
-      if ( ( inPt.y < edgeLowPt.y ) || ( inPt.y > edgeHighPt.y ) ) 		continue;
-
-      if ( math.areEqual(inPt.y, edgeLowPt.y, TOLERANCE) ) {
-        if ( math.areEqual(inPt.x, edgeLowPt.x, TOLERANCE) )		new VertexResult(edgeLowPt);		// inPt is on contour ?
-        // continue;				// no intersection or edgeLowPt => doesn't count !!!
-      } else {
-        var perpEdge = edgeDy * (inPt.x - edgeLowPt.x) - edgeDx * (inPt.y - edgeLowPt.y);
-        if ( math.areEqual(perpEdge, 0, TOLERANCE_SQ) ) return new EdgeResult(edge);		// inPt is on contour ?
-        if ( perpEdge < 0 ) 				continue;
-        inside = ! inside;		// true intersection left of inPt
-      }
-    } else {		// parallel or colinear
-      if ( !math.areEqual(inPt.y, edgeLowPt.y, TOLERANCE) ) 		continue;			// parallel
-      // egde lies on the same horizontal line as inPt
+    if (aEq && bEq) {
       if ( ( ( edgeHighPt.x <= inPt.x ) && ( inPt.x <= edgeLowPt.x ) ) ||
-        ( ( edgeLowPt.x <= inPt.x ) && ( inPt.x <= edgeHighPt.x ) ) ) return	new EdgeResult(edge);	// inPt: Point on contour !
-      // continue;
+           ( ( edgeLowPt.x <= inPt.x ) && ( inPt.x <= edgeHighPt.x ) ) ) {
+        return	new EdgeResult(edge);
+      }	else {
+        continue;
+      }
     }
+
+    if (shouldBeSkipped) {
+      continue;
+    }
+
+    if ( edgeDy < 0 ) {
+      edgeLowPt  = b; edgeDx = - edgeDx;
+      edgeHighPt = a; edgeDy = - edgeDy;
+    }
+    if (!aEq && !bEq && ( inPt.y < edgeLowPt.y ) || ( inPt.y > edgeHighPt.y ) ) {
+      continue;
+    }
+
+    if (bEq) {
+      if (grads[i] * nextGrad(i) < 0) {
+        continue;
+      }
+    } else if (aEq) {
+      if (grads[i] * prevGrad(i) < 0) {
+        continue;
+      }
+    }
+
+    let perpEdge = edgeDx * (inPt.y - edgeLowPt.y) - edgeDy * (inPt.x - edgeLowPt.x);
+    if ( math.areEqual(perpEdge, 0, TOLERANCE_SQ) ) return new EdgeResult(edge);		// inPt is on contour ?
+    if ( perpEdge < 0 ) {
+      continue;
+    }
+    inside = ! inside;		// true intersection left of inPt
   }
 
   return	{inside};
 }
-
 
 function addToListInMap(map, key, value) {
   let list = map.get(key);
