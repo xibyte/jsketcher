@@ -21,6 +21,7 @@ import * as BREPPrimitives from '../brep/brep-primitives'
 import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/brep-scene-object'
+import TPI from './tpi'
 
 function App() {
   this.id = this.processHints();
@@ -32,20 +33,19 @@ function App() {
   this.actionManager.registerActions(AllActions);
   this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
   this.controlBar = new ControlBar(this, $('#control-bar'));
-
+  this.TPI = TPI;
+  
   this.craft = new Craft(this);
   this.ui = new UI(this);
 
   AddDebugSupport(this);
   
-  if (this.id == '$scratch$') {
-    this.addBox();
+  if (this.id.startsWith('$scratch$')) {
+    this.scratchCode();
   } else {
     this.load();
   }
-
-  this.BREPTest();
-
+  
   this._refreshSketches();
   this.viewer.render();
 
@@ -73,10 +73,30 @@ function App() {
   });
 }
 
-App.prototype.BREPTest = function() {
-  this.BREPTestImplOverlap1();
-  //this.BREPTestImpl()
+App.prototype.addShellOnScene = function(shell) {
+  const sceneSolid = new BREPSceneSolid(shell);
+  this.viewer.workGroup.add(sceneSolid.cadGroup);
+  this.viewer.render()
+};
+
+App.prototype.scratchCode = function() {
+  //this.BREPTestImplOverlap1();
+  //this.BREPBox()
+  this.BREPTestImpl()
   //setTimeout(() => this.BREPTestImpl());
+};
+
+App.prototype.BREPBox = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new BREPSceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box = BREPPrimitives.box(500, 500, 500);
+
+  addToScene(box);
+
+  this.viewer.render()
+
 };
 
 App.prototype.BREPTestImpl1 = function() {
@@ -160,10 +180,10 @@ App.prototype.BREPTestImpl = function() {
   //addToScene(box2);
   //addToScene(box3);
 
-  //let result = BREPBool.subtract(box1, box2);
-  //result = BREPBool.subtract(result, box3);
-  //addToScene(result);
-  addToScene(box1);
+  let result = BREPBool.subtract(box1, box2);
+  result = BREPBool.subtract(result, box3);
+  addToScene(result);
+  //addToScene(box1);
 
   this.viewer.render()
 
@@ -468,15 +488,6 @@ App.prototype.cut = function() {
     solids : solids,
     face : polyFace,
     depth : depth
-  });
-};
-
-App.prototype.addBox = function() {
-  this.craft.modify({
-    type: 'BOX',
-    solids : [],
-    params : {w: 500, h: 500, d: 500},
-    protoParams : [500, 500, 500]
   });
 };
 
