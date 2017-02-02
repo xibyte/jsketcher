@@ -5,6 +5,7 @@ import {Extruder} from '../../../brep/brep-builder'
 import {BREPValidator} from '../../../brep/brep-validator'
 import {subtract} from '../../../brep/operations/boolean'
 import {Loop} from '../../../brep/topo/loop'
+import {Shell} from '../../../brep/topo/shell'
 import {ReadSketchFromFace} from './sketch-reader'
 
 import {BREPSceneSolid} from '../../scene/brep-scene-object'
@@ -25,7 +26,7 @@ export function Cut(app, params) {
   }
 
   const extruder = new ParametricExtruder(face, params);
-  const cutter = extruder.extrude(sketch[0]);
+  const cutter = combineCutters(sketch.map(s => extruder.extrude(s))) ;
   BREPValidator.validateToConsole(cutter);
   solid.vanish();
   app.viewer.render();//just for debug purposes
@@ -38,6 +39,15 @@ export function Cut(app, params) {
     needRefresh: [newSolid]
   });
 
+}
+
+function combineCutters(cutters) {
+  if (cutters.length == 1) {
+    return cutters[0];
+  }
+  const cutter = new Shell();
+  cutters.forEach(c => c.faces.forEach(f => cutter.faces.push(f)));
+  return cutter;
 }
 
 export class ParametricExtruder extends Extruder {
