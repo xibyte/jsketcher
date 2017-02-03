@@ -4,8 +4,8 @@ import {SceneSolid, SceneFace} from './scene-object'
 
 export class BREPSceneSolid extends SceneSolid {
 
-  constructor(shell, type) {
-    super(type);
+  constructor(shell, type, skin) {
+    super(type, undefined, skin);
     this.shell = shell;
     this.createGeometry();
   }

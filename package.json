@@ -48,6 +48,7 @@
     "jwerty": "0.3.2",
     "handlebars": "4.0.6",
     "handlebars-loader": "1.4.0",
+    "json-loader": "0.5.4 ",
     "jquery": "2.1.0",
     "less": "2.7.1",
     "libtess": "1.2.2"

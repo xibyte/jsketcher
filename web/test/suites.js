@@ -32,7 +32,10 @@ export default {
 
 function TestCase(name) {
   let tests = require('./cases/' + name).default;
-  tests = Object.keys(tests).filter(key => key.startsWith('test')).map(key => tests[key]);
+  tests = Object.keys(tests).filter(key => key.startsWith('test')).map(key => ({
+    name: key,
+    func: tests[key]
+  }));
   return {
     name, tests
   }
