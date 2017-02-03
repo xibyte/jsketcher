@@ -73,8 +73,8 @@ function App() {
   });
 }
 
-App.prototype.addShellOnScene = function(shell) {
-  const sceneSolid = new BREPSceneSolid(shell);
+App.prototype.addShellOnScene = function(shell, skin) {
+  const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
   this.viewer.workGroup.add(sceneSolid.cadGroup);
   this.viewer.render()
 };

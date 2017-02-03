@@ -26,6 +26,7 @@ export function Cut(app, params) {
   }
 
   const extruder = new ParametricExtruder(face, params);
+  console.error('normal should be explicitly passed to the extruder#extrude method. there is no way to guess normal from points of sketch!');
   const cutter = combineCutters(sketch.map(s => extruder.extrude(s))) ;
   BREPValidator.validateToConsole(cutter);
   solid.vanish();

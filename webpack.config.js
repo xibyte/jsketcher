@@ -32,6 +32,10 @@ module.exports = {
     {
       test: /\.html$/,
       loader: 'handlebars?helperDirs[]=' + __dirname + '/web/app/ui/helpers'
+    },
+    {
+      test: /\.json$/,
+      loader: 'json'      
     }]
   }
 };

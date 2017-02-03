@@ -7,7 +7,7 @@ import DPR from '../../utils/dpr'
 
 export class SceneSolid {
   
-  constructor(type, id) {
+  constructor(type, id, skin) {
     this.tCadType = type || 'SOLID';
 
     this.cadGroup = new THREE.Object3D();
@@ -22,7 +22,7 @@ export class SceneSolid {
     this.mergeable = true;
     this.sceneFaces = [];
 
-    this.material = createSolidMaterial();
+    this.material = createSolidMaterial(skin);
   }
 
   addLineToScene(a, b) {
@@ -48,8 +48,8 @@ export class SceneSolid {
   }
 }
 
-function createSolidMaterial() {
-  return new THREE.MeshPhongMaterial({
+function createSolidMaterial(skin) {
+  return new THREE.MeshPhongMaterial(Object.assign({
     vertexColors: THREE.FaceColors,
     color: 0xB0C4DE,
     shininess: 0,
@@ -57,7 +57,7 @@ function createSolidMaterial() {
     polygonOffsetFactor : 1,
     polygonOffsetUnits : 2,
     //side : THREE.DoubleSide
-  });
+  }, skin));
 }
 
 export class SceneFace {
