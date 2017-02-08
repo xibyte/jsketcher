@@ -10,7 +10,7 @@ import * as cad_utils from '../3d/cad-utils'
 
 
 export function createPrism(basePoints, height) {
-  return new SimpleExtruder(height).extrude(basePoints);
+  return new SimpleExtruder(height).extrude(basePoints, cad_utils.normalOfCCWSeq(basePoints));
 }
 
 export class Extruder { 
@@ -22,8 +22,7 @@ export class Extruder {
     throw 'not implemented';
   }
 
-  extrude(basePoints) {
-    const normal = cad_utils.normalOfCCWSeq(basePoints);
+  extrude(basePoints, normal) {
     const baseLoop = createPlaneLoop(basePoints.map(p => new Vertex(p)));
     const baseFace = createPlaneFace(normal, baseLoop);
     const lidNormal = normal.multiply(-1);

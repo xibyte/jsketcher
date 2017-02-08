@@ -6,6 +6,7 @@ export class Line extends Curve {
     super();
     this.p0 = p0;
     this.v = v;
+    this._pointsCache = new Map();
   }
 
   intersectEdge(edge) {
@@ -32,6 +33,16 @@ export class Line extends Curve {
   
   t(point) {
     return point.minus(this.p0).dot(this.v);
+  }
+  
+  pointOfSurfaceIntersection(surface) {
+    let point = this._pointsCache.get(surface);
+    if (!point) {
+      const t = this.intersectSurface(surface);
+      point = this.parametricEquation(t);
+      this._pointsCache.set(surface, point);
+    }
+    return point;
   }
 }
 

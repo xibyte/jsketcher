@@ -19,15 +19,15 @@ export function Cut(app, params) {
   const solid = face.solid;
 
   const sketch = ReadSketchFromFace(app, face);
-  for (let polygon of sketch) {
-    if (!Loop.isPolygonCCWOnSurface(polygon, face.brepFace.surface)) {
-      polygon.reverse();
-    }
-  }
+  //for (let polygon of sketch) {
+  //  if (!Loop.isPolygonCCWOnSurface(polygon, face.brepFace.surface)) {
+  //    polygon.reverse();
+  //  }
+  //}
 
   const extruder = new ParametricExtruder(face, params);
   console.error('normal should be explicitly passed to the extruder#extrude method. there is no way to guess normal from points of sketch!');
-  const cutter = combineCutters(sketch.map(s => extruder.extrude(s))) ;
+  const cutter = combineCutters(sketch.map(s => extruder.extrude(s, face.brepFace.surface.normal))) ;
   BREPValidator.validateToConsole(cutter);
   solid.vanish();
   app.viewer.render();//just for debug purposes

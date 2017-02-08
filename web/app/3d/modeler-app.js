@@ -17,6 +17,7 @@ import {AddDebugSupport} from './debug'
 import {init as initSample} from './sample'
 import '../../css/app3d.less'
 
+import * as BREPBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
@@ -80,9 +81,50 @@ App.prototype.addShellOnScene = function(shell, skin) {
 };
 
 App.prototype.scratchCode = function() {
+  this.addShellOnScene(BREPPrimitives.box(500, 500, 500)); return;
+  //this.BREPTestImpl();return;
+  const ap = [[-250, -250, 250],
+    [ 250, -250, 250],
+    [ 250,  250, 250],
+    [-250,  250, 250]];
+  
+  
+  const bp = [
+    [   0, -100, 250],
+    [ 250, -250, 250],
+    [ 100,    0, 250],
+    [ 250,  250, 250],
+    [   0,  100, 250],
+    [-250,  250, 250],
+    [-100,    0, 250],
+    [-250, -250, 250]
+  ];
+
+  const a = BREPBuilder.createPrism(ap.map(p => new this.TPI.brep.geom.Point().set3(p)), 500);
+  const b = BREPBuilder.createPrism(bp.map(p => new this.TPI.brep.geom.Point().set3(p)), 500);
+
+
+  this.addShellOnScene(a, {
+    color: 0x800080,
+    transparent: true,
+    opacity: 0.5,
+  });
+  this.addShellOnScene(b, {
+    color: 0xfff44f,
+    transparent: true,
+    opacity: 0.5,
+  });
+  //this.addShellOnScene(a);
+  //this.addShellOnScene(b);
+  const result = BREPBool.subtract(a, b);
+  this.addShellOnScene(result);
+
+  this.viewer.render();
+
+
   //this.BREPTestImplOverlap1();
   //this.BREPBox()
-  this.BREPTestImpl()
+  //this.BREPTestImpl()
   //setTimeout(() => this.BREPTestImpl());
 };
 
