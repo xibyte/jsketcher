@@ -80,11 +80,15 @@ export class Wizard {
 
   setFormFields(params) {
     const keys = Object.keys(params);
-    for (let key of keys) {
-      const formField = this.formFields[name];
-      if (formField) {
-        formField.setter(params[key]);
-      }
+    for (let name of keys) {
+      this.setFormField(name, params[name]);
+    }
+  }
+
+  setFormField(name, value) {
+    const formField = this.formFields[name];
+    if (formField) {
+      formField.setter(value);
     }
   }
   

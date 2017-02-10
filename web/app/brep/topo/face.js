@@ -4,6 +4,7 @@ export class Face extends TopoObject {
 
   constructor(surface) {
     super();
+    this.id = undefined;
     this.surface = surface;
     this.shell = null;
     this.outerLoop = null;

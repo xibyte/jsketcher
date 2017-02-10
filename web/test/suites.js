@@ -25,6 +25,7 @@ export default {
 
   BREP: [
     TestCase('brep-bool'),
+    TestCase('brep-bool-wizard-based'),
     TestCase('brep-pip')
   ],
 

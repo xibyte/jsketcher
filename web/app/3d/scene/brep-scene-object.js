@@ -74,7 +74,8 @@ export class BREPSceneSolid extends SceneSolid {
 
 class BREPSceneFace extends SceneFace {
   constructor(brepFace, solid) {
-    super(solid);
+    super(solid, brepFace.id);
+    brepFace.id = this.id;
     this.brepFace = brepFace;
   }
 
