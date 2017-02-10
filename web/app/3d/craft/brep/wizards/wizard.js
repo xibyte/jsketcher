@@ -11,7 +11,14 @@ export class Wizard {
       this.setFormFields(initialState);
     }
   }
-  
+
+  createRequest() {
+    return {
+      type: this.operation,
+      params: this.readFormFields()
+    };
+  }
+
   uiLabel(name) {
     return name;
   }

@@ -67,7 +67,25 @@ Craft.prototype.modifyInternal = function(request) {
   var op = this.operations[request.type];
   if (!op) return;
 
-  op(this.app, request.params);
+  const result = op(this.app, request.params);
+
+  for (let solid of result.outdated) {
+    solid.vanish();
+    const idx = this.solids.indexOf(solid);
+    if (idx != -1) {
+      this.solids.splice(idx, 1);
+    }
+  }
+
+  for (let solid of result.created) {
+    this.solids.push(solid);
+    this.app.viewer.workGroup.add(solid.cadGroup);
+  }
+
+  this.app.bus.notify('solid-list', {
+    solids: this.solids,
+    needRefresh: result.created
+  });
 };
 
 Craft.prototype.modify = function(request, overriding) {
