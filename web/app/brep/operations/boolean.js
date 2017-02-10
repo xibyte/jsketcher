@@ -331,8 +331,10 @@ function mergeOverlappingFaces(shell1, shell2) {
 }
 
 function doMergeOverlappingFaces(face1, face2) {
+  const data2 = face2.data[MY];
+  merge(face2, data2.newEdges);
   merge(face1, face2.edges);
-  face2.data[MY].merged = true;
+  data2.merged = true;
 }
 
 function areEdgesEqual(e1, e2) {
@@ -504,12 +506,16 @@ function loopsToFaces(originFace, loops, out) {
       }
     }
   }
+  const beforeLength = out.length;
   const nestedLoops = getNestedLoops(originFace, loops);
   //loops.forEach(l => l.halfEdges.forEach(h => __DEBUG__.AddHalfEdge(h)))
   for (let nestedLoop of nestedLoops) {
     if (nestedLoop.loop.isCCW(originFace.surface)) {
       createFaces(nestedLoop);
     }
+  }
+  if (out.length > beforeLength) {
+    out[beforeLength].id = originFace.id;
   }
 }
 
@@ -916,27 +922,33 @@ function deleteHalfEdge(he) {
 }
 
 function classifyPointToFace(point, face) {
+  function ccwCorrection(result, loop) {
+    if (!loop.isCCW(face.surface)) {
+      result.inside = !result.inside; 
+    }
+    return result;
+  }
   const tr = face.surface.get2DTransformation();
   const point2d = tr.apply(point);
-  const result = classifyPointInsideLoop(point2d, face.outerLoop, tr);
-  if (result.inside) {
-    if (result.vertex || result.edge) {
-      return result;
-    } else {
-      for (let innerLoop of face.innerLoops) {
-        const innerResult = classifyPointInsideLoop(point2d, innerLoop, tr);
-        if (innerResult.inside) {
-          if (innerResult.vertex || innerResult.edge) {
-            return innerResult;
-          } else {
-            return {inside: false};
-          }
-        }
-      }
-      return result;
+  const outer = classifyPointInsideLoop(point2d, face.outerLoop, tr);
+  
+  if (outer.inside) {
+    if (outer.vertex || outer.edge) {
+      return outer;
     }
   }
-  return result;
+  
+  for (let innerLoop of face.innerLoops) {
+    const inner = classifyPointInsideLoop(point2d, innerLoop, tr);
+    if (inner.vertex || inner.edge) {
+      return inner;
+    }
+    if (inner.inside) {
+      return ccwCorrection(outer, innerLoop);
+    }
+  }
+
+  return ccwCorrection(outer, face.outerLoop);
 }
 
 function nodeNormal(point, edge, curve) {
