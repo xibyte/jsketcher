@@ -11,7 +11,7 @@ import {CutWizard} from '../craft/brep/wizards/cut-extrude'
 import {ExtrudeWizard as MeshExtrudeWizard} from '../craft/mesh/wizards/extrude'
 import {RevolveWizard} from '../craft/mesh/wizards/revolve'
 import {PlaneWizard} from '../craft/mesh/wizards/plane'
-import {BoxWizard} from '../craft/mesh/wizards/box'
+import {BoxWizard} from '../craft/brep/wizards/box'
 import {SphereWizard} from '../craft/mesh/wizards/sphere'
 import {TransformWizard} from '../craft/mesh/wizards/transform'
 import {ImportWizard} from '../craft/mesh/wizards/import'
@@ -186,7 +186,7 @@ UI.prototype.createWizard = function(type, overridingHistory, initParams, face) 
   } else if ('PLANE' === type) {
     wizard = new PlaneWizard(this.app, initParams);
   } else if ('BOX' === type) {
-    wizard = new BoxWizard(this.app.viewer, initParams);
+    wizard = new BoxWizard(this.app, initParams);
   } else if ('SPHERE' === type) {
     wizard = new SphereWizard(this.app.viewer, initParams);
   } else if ('IMPORT_STL' === type) {
