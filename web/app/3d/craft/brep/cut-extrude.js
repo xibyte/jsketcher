@@ -26,20 +26,13 @@ export function Cut(app, params) {
   //}
 
   const extruder = new ParametricExtruder(face, params);
-  console.error('normal should be explicitly passed to the extruder#extrude method. there is no way to guess normal from points of sketch!');
   const cutter = combineCutters(sketch.map(s => extruder.extrude(s, face.brepFace.surface.normal))) ;
   BREPValidator.validateToConsole(cutter);
-  solid.vanish();
-  app.viewer.render();//just for debug purposes
   const newSolid = new BREPSceneSolid(subtract(solid.shell, cutter));
-  //const newSolid = new BREPSceneSolid(cutter);
-  
-  app.viewer.workGroup.add(newSolid.cadGroup);
-  app.bus.notify('solid-list', {
-    solids: [],
-    needRefresh: [newSolid]
-  });
-
+  return {
+    outdated: [solid],
+    created:  [newSolid]
+  }
 }
 
 function combineCutters(cutters) {

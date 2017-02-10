@@ -4,26 +4,20 @@ import {Loop} from '../../../../brep/topo/loop'
 
 export class PreviewWizard extends Wizard {
 
-  constructor(app, opearation, metadata, previewer, initialState) {
+  constructor(app, opearation, metadata, initialState) {
     super(app, opearation, metadata, initialState);
     this.operation = opearation;
     this.previewGroup = new THREE.Object3D();
-    this.previewer = previewer;
     this.previewObject = null;
     this.app.viewer.workGroup.add(this.previewGroup);
     this.updatePreview();
   }
   
-  createRequest() {
-    return {
-      type: this.operation,
-      params: this.readFormFields()
-    };
-  }
+  createPreviewObject() {throw 'abstract'};
   
   updatePreview() {
     this.destroyPreviewObject();
-    this.previewObject = this.previewer.create(this.app, this.readFormFields());
+    this.previewObject = this.createPreviewObject(this.app, this.readFormFields());
     if (this.previewObject != null) {
       this.previewGroup.add( this.previewObject );
     }

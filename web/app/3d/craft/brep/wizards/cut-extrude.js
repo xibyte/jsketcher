@@ -12,9 +12,13 @@ const METADATA = [
 
 export class CutWizard extends PreviewWizard {
   constructor(app, initialState) {
-    super(app, 'CUT', METADATA, new ExtrudePreviewer(true), initialState)
+    super(app, 'CUT', METADATA, initialState)
   }
   
+  createPreviewObject(app, params) {
+    return CUT_PREVIEWER.create(app, params);
+  }
+
   uiLabel(name) {
     if ('value' == name) return 'depth';
     return super.uiLabel(name);
@@ -25,7 +29,11 @@ export class ExtrudeWizard extends PreviewWizard {
   constructor(app, initialState) {
     super(app, 'EXTRUDE', METADATA, new ExtrudePreviewer(false), initialState)
   }
-  
+
+  createPreviewObject(app, params) {
+    return EXTRUDE_PREVIEWER.create(app, params);
+  }
+
   uiLabel(name) {
     if ('value' == name) return 'height';
     return super.uiLabel(name);
@@ -60,3 +68,6 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
     return triangles;
   }
 }
+
+const EXTRUDE_PREVIEWER = new ExtrudePreviewer(false);
+const CUT_PREVIEWER = new ExtrudePreviewer(true);

@@ -1,5 +1,7 @@
 import {MESH_OPERATIONS} from './mesh/workbench'
 import {Extrude, Cut} from './brep/cut-extrude'
+import {BREPSceneSolid} from '../scene/brep-scene-object'
+import {box} from '../../brep/brep-primitives'
 
 export const CUT = {
   icon: 'img/3d/cut',
@@ -22,7 +24,7 @@ export const REVOLVE = {
   label: 'Revolve',
   info: (p) => '(' + p.angle + ')',
   action: (app, request) => {
-
+    
   }
 };
 
@@ -35,9 +37,12 @@ export const SHELL = {
 export const BOX = {
   icon: 'img/3d/cube',
   label: 'Box',
-  info: (p) => '(' + p.w + ', ' + p.h + ', ' + p.d + ')',
+  info: (p) => '(' + p.width + ', ' + p.height + ', ' + p.depth + ')',
   action: (app, request) => {
-
+    return {
+      outdated: [],
+      created: [new BREPSceneSolid(box(request.width, request.height, request.depth))]
+    }
   }
 };
 
