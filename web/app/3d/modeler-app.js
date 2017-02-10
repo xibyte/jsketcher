@@ -82,6 +82,21 @@ App.prototype.addShellOnScene = function(shell, skin) {
 
 App.prototype.scratchCode = function() {
   this.addShellOnScene(BREPPrimitives.box(500, 500, 500)); return;
+
+  const boxWithHole = BREPBool.subtract(BREPPrimitives.box(500, 500, 500), BREPPrimitives.box(500, 300, 300));
+  //this.addShellOnScene(boxWithHole);
+
+  var c = BREPBuilder.createPrism([
+    BREPBuilder.point(0, 0, 250),
+    BREPBuilder.point(500, 0, 250),
+    BREPBuilder.point(500, 500, 250),
+    BREPBuilder.point(0, 500, 250)
+  ], 500);
+  this.addShellOnScene(BREPBool.subtract(boxWithHole, c));
+
+
+  return;
+  
   //this.BREPTestImpl();return;
   const ap = [[-250, -250, 250],
     [ 250, -250, 250],

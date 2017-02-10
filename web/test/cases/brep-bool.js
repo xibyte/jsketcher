@@ -71,19 +71,7 @@ function ddt(env, app, name) {
 function compare(env, app, name, result) {
   const out = require('./data/brep/' + name + '/out.json');
   const resultData = shellToData(app.TPI.brep.IO, out.format, result);
-  const resultJSON = JSON.stringify(resultData).replace(/\s/g, '');
-  const expectedJSON = JSON.stringify(out).replace(/\s/g, '');
-  if (resultJSON != expectedJSON) {
-    console.log('EXPECTED:');
-    console.log(prettyJSON(out));
-    console.log('ACTUAL:');
-    console.log(prettyJSON(resultData));
-    env.fail('expected brep data different from actual. ^^see log above^^');
-  }
-}
-
-function prettyJSON(obj) {
-  return JSON.stringify(obj, null, 0);
+  env.assertData(out, resultData);
 }
 
 function shellToData(io, format, shell) {

@@ -28,7 +28,13 @@ export function Cut(app, params) {
   const extruder = new ParametricExtruder(face, params);
   const cutter = combineCutters(sketch.map(s => extruder.extrude(s, face.brepFace.surface.normal))) ;
   BREPValidator.validateToConsole(cutter);
-  const newSolid = new BREPSceneSolid(subtract(solid.shell, cutter));
+  const result = subtract(solid.shell, cutter);
+  for (let newFace of result.faces) {
+    if (newFace.id == face.id) {
+      newFace.id = undefined;
+    }
+  }
+  const newSolid = new BREPSceneSolid(result);
   return {
     outdated: [solid],
     created:  [newSolid]

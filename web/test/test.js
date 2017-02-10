@@ -85,6 +85,22 @@ export class TestEnv {
   assertPoint2DEquals(expected, actial, msg) {
     this.assertPointXY2DEquals(expected.x, expected.y, actial, msg);
   }
+  
+  assertData(expected, actual) {
+    const expectedJSON = JSON.stringify(expected).replace(/\s/g, '');
+    const actualJSON = JSON.stringify(actual).replace(/\s/g, '');
+    if (actualJSON != expectedJSON) {
+      console.log('EXPECTED:');
+      console.log(this.prettyJSON(expected));
+      console.log('ACTUAL:');
+      console.log(this.prettyJSON(actual));
+      this.fail('expected data different from actual. ^^see log above^^');
+    }
+  }
+
+  prettyJSON(obj) {
+    return JSON.stringify(obj, null, 0);
+  }
 }
 
 export function load(url, callback) {
@@ -115,4 +131,14 @@ export function sketch(callback) {
 
 export function modeller(callback) {
   load('/index.html#' + TEST_PROJECT, callback);
+}
+
+export function emptyModeller(callback) {
+  for(let i=0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith(STORAGE_PREFIX_SKETCH + TEST_PROJECT)) {
+      localStorage.removeItem(key);
+    }
+  }
+  modeller(callback);
 }
