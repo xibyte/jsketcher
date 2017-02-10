@@ -72,7 +72,7 @@ const DebugMenuConfig = {
     label: 'debug',
     cssIcons: ['bug'],
     info: 'set of debug actions',
-    actions: [ 'DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId']
+    actions: [ 'DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId', 'DebugFaceSketch']
   }
 };
 
@@ -112,6 +112,32 @@ const DebugActions = {
     update: checkForSelectedFaces(1),
     invoke: (app) => {
       console.log(app.viewer.selectionMgr.selection[0].id);
+    }
+  },
+  
+  'DebugFaceSketch': {
+    cssIcons: ['cutlery'],
+    label: 'print face sketch',
+    info: 'print face sketch stripping constraints and boundary',
+    listens: ['selection'],
+    update: checkForSelectedFaces(1),
+    invoke: (app) => {
+      const faceId = app.viewer.selectionMgr.selection[0].id;
+      const sketch = JSON.parse(localStorage.getItem(app.faceStorageKey(faceId)));
+      const layers = sketch.layers.filter(l => l.name != '__bounds__');
+      const data = [];
+      for (let l of layers) {
+        for (let d of l.data) {
+          data.push(d);
+        }
+      }
+      const squashed = {
+        layers: [{
+            name: 'sketch',
+            data
+          }]
+      };
+      console.log(JSON.stringify(squashed));
     }
   }
 };
