@@ -14,8 +14,8 @@ export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 export const TOLERANCE_HALF = TOLERANCE * 0.5;
 
 const DEBUG = {
-  OPERANDS_MODE: true,
-  LOOP_DETECTION: true,
+  OPERANDS_MODE: false,
+  LOOP_DETECTION: false,
   FACE_FACE_INTERSECTION: false,
   FACE_EDGE_INTERSECTION: false,
   SEWING: false,
