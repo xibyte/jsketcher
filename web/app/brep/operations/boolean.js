@@ -14,15 +14,14 @@ export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 export const TOLERANCE_HALF = TOLERANCE * 0.5;
 
 const DEBUG = {
-  OPERANDS_MODE: false,
-  LOOP_DETECTION: false,
+  OPERANDS_MODE: true,
+  LOOP_DETECTION: true,
   FACE_FACE_INTERSECTION: false,
   FACE_EDGE_INTERSECTION: false,
   SEWING: false,
   EDGE_MERGING: false,
   NOOP: () => {}
 };
-
 
 const TYPE = {
   UNION: 0,
@@ -31,14 +30,17 @@ const TYPE = {
 };
 
 export function union( shell1, shell2 ) {
+  __DEBUG_OPERANDS(shell1, shell2);
   return BooleanAlgorithm(shell1, shell2, TYPE.UNION);
 }
 
 export function intersect( shell1, shell2 ) {
+  __DEBUG_OPERANDS(shell1, shell2);
   return BooleanAlgorithm(shell1, shell2, TYPE.INTERSECT);
 }
 
 export function subtract( shell1, shell2 ) {
+  __DEBUG_OPERANDS(shell1, shell2);
   invert(shell2);
   return BooleanAlgorithm(shell1, shell2, TYPE.SUBTRACT);
 }
@@ -65,11 +67,6 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
 
   POINT_TO_VERT.clear();
 
-  if (DEBUG.OPERANDS_MODE) {
-    __DEBUG__.HideSolids();
-    __DEBUG__.AddVolume(shell1, 0x800080);
-    __DEBUG__.AddVolume(shell2, 0xfff44f);
-  }
   let facesData = [];
 
   mergeVertices(shell1, shell2);
@@ -155,6 +152,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
 
   cleanUpSolveData(result);
   BREPValidator.validateToConsole(result);
+  if (DEBUG.OPERANDS_MODE) __DEBUG__.ClearVolumes();
   return result;
 }
 
@@ -1219,5 +1217,13 @@ function removeFromListInMap(map, key, value) {
   }
 }
 
+function __DEBUG_OPERANDS(shell1, shell2) {
+  if (DEBUG.OPERANDS_MODE) {
+    __DEBUG__.HideSolids();
+    __DEBUG__.AddVolume(shell1, 0x800080);
+    __DEBUG__.AddVolume(shell2, 0xfff44f);
+  }
+}
+
 const MY = '__BOOLEAN_ALGORITHM_DATA__'; 
-let xxx = 0;
+
