@@ -1,6 +1,6 @@
 import {Surface} from '../surface'
 import {Line} from './line'
-import {Matrix3, AXIS} from  '../../../math/l3space'
+import {Matrix3, AXIS, BasisForPlane} from  '../../../math/l3space'
 import * as math from  '../../../math/math'
  
 export class Plane extends Surface {
@@ -47,5 +47,23 @@ export class Plane extends Surface {
     return other instanceof Plane && 
       math.areVectorsEqual(this.normal.multiply(this.w), other.normal.multiply(other.w), tol);
     //TODO: store this.normal.multiply(this.w) in a field since it's constant value
+  }
+
+  toParametricForm() {
+    const basis = BasisForPlane(this.normal);
+    return new ParametricPlane(this.normal.multiply(this.w), basis.x, basis.y);
+  }
+}
+
+class ParametricPlane {
+
+  constructor(r0, r1, r2) {
+    this.r0 = r0;
+    this.r1 = r1;
+    this.r2 = r2;
+  }
+
+  equation(u, v) {
+    return this.r0 + this.r1.multiply(u) + this.r2.multiply(v);
   }
 }
