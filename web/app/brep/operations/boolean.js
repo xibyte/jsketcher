@@ -152,7 +152,9 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
 
   cleanUpSolveData(result);
   BREPValidator.validateToConsole(result);
-  if (DEBUG.OPERANDS_MODE) __DEBUG__.ClearVolumes();
+
+  __DEBUG__.ClearVolumes();
+  __DEBUG__.Clear();
   return result;
 }
 
@@ -344,9 +346,17 @@ function markOverlapping(face1, face2) {
 
 function mergeOverlappingFaces(shell1, shell2) {
   for (let face1 of shell1.faces) {
-    for (let face2 of shell2.faces) {
-      if (face1.data[MY].overlaps.has(face2)) {
-        doMergeOverlappingFaces(face1, face2);
+    const data1 = face1.data[MY];
+    if (data1.merged === true) continue;
+    for (let face2 of data1.overlaps) {
+      const data2 = face2.data[MY];
+      if (data2.merged === true) continue;
+      doMergeOverlappingFaces(face1, face2);
+      for (let face3 of data2.overlaps) {
+        if (face1 == face3) continue;
+        const data3 = face3.data[MY];
+        if (data3.merged === true) continue;
+        doMergeOverlappingFaces(face1, face3);
       }
     }
   }
