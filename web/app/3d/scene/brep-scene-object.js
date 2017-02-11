@@ -45,9 +45,6 @@ export class BREPSceneSolid extends SceneSolid {
           face.normal = normal;
           face.materialIndex = gIdx ++;
           geom.faces.push(face);
-          if (brepFace.debugName == 'base') {
-            face.color.set(new THREE.Color().setHex( 0x000077 ));
-          }
         }
         //view.setFaceColor(sceneFace, utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
         off = geom.vertices.length;
