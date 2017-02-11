@@ -1,7 +1,7 @@
 import {HashTable} from '../../utils/hashmap'
 import Vector from '../../math/vector'
 import Counters from '../counters'
-import {Matrix3, AXIS} from '../../math/l3space'
+import {Matrix3, BasisForPlane} from '../../math/l3space'
 import {arrFlatten1L, isCurveClass} from '../cad-utils'
 import DPR from '../../utils/dpr'
 
@@ -86,16 +86,7 @@ export class SceneFace {
   }
   
   calcBasis() {
-    const normal = this.normal();
-    let alignPlane, x, y;
-    if (Math.abs(normal.dot(AXIS.Y)) < 0.5) {
-      alignPlane = normal.cross(AXIS.Y);
-    } else {
-      alignPlane = normal.cross(AXIS.Z);
-    }
-    y = alignPlane.cross(normal);
-    x = y.cross(normal);
-    return [x, y, normal];
+    return BasisForPlane(this.normal());    
   };
 
   basis() {

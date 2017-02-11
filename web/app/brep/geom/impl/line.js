@@ -47,10 +47,14 @@ export class Line extends Curve {
 }
 
 Line.fromTwoPlanesIntersection = function(plane1, plane2) {
-  const v = plane1.normal.cross(plane2.normal);
-  const plane1Vec = plane1.normal.multiply(plane1.w);
-  const plane2Vec = plane2.normal.multiply(plane2.w);
-  const p0 = plane1Vec.plus(plane2Vec);
+  const n1 = plane1.normal;
+  const n2 = plane2.normal;
+  const v = n1.cross(n2)._normalize();
+  const pf1 = plane1.toParametricForm();
+  const pf2 = plane2.toParametricForm();
+  const r0diff = pf1.r0.minus(pf2.r0);
+  const ww = r0diff.minus(n2.multiply(r0diff.dot(n2)));
+  const p0 = pf2.r0.plus( ww.multiply( n1.dot(r0diff) / n1.dot(ww)))
   return new Line(p0, v);
 };
 

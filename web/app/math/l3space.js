@@ -206,4 +206,16 @@ Matrix3.rotateMatrix = function(angle, axis, pivot) {
   return m;
 };
 
-export {Matrix3, ORIGIN, IDENTITY_BASIS, AXIS}; 
+function BasisForPlane(normal) {
+  let alignPlane, x, y;
+  if (Math.abs(normal.dot(AXIS.Y)) < 0.5) {
+    alignPlane = normal.cross(AXIS.Y);
+  } else {
+    alignPlane = normal.cross(AXIS.Z);
+  }
+  y = alignPlane.cross(normal);
+  x = y.cross(normal);
+  return [x, y, normal];
+}
+
+export {Matrix3, ORIGIN, IDENTITY_BASIS, AXIS, BasisForPlane}; 
