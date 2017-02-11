@@ -21,33 +21,15 @@ export class BREPSceneSolid extends SceneSolid {
   }
   
   createFaces() {
-    let off = 0;
-    let gIdx = 0;
     const geom = this.mesh.geometry;
-    for (let brepFace of this.shell.faces) {
-      const sceneFace = new BREPSceneFace(brepFace, this);
+    const groups = triangulateToThree(this.shell, geom);
+    for (let g of groups) {
+      const sceneFace = new BREPSceneFace(g.brepFace, this);
       this.sceneFaces.push(sceneFace);
-      const polygons = triangulate(brepFace);
-      for (let p = 0; p < polygons.length; ++p) {
-        const poly = polygons[p];
-        const vLength = poly.length;
-        if (vLength < 3) continue;
-        const firstVertex = poly[0];
-        geom.vertices.push(threeV(firstVertex));
-        geom.vertices.push(threeV(poly[1]));
-        const normal = threeV(brepFace.surface.normal);
-        for (let i = 2; i < vLength; i++) {
-          geom.vertices.push(threeV(poly[i]));
-          const a = off;
-          const b = i - 1 + off;
-          const c = i + off;
-          const face = sceneFace.createMeshFace(a, b, c);
-          face.normal = normal;
-          face.materialIndex = gIdx ++;
-          geom.faces.push(face);
-        }
-        //view.setFaceColor(sceneFace, utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
-        off = geom.vertices.length;
+      for (let i = g.groupStart; i < g.groupEnd; i ++) {
+        const face = geom.faces[i];
+        sceneFace.meshFaces.push(face);
+        face.__TCAD_SceneFace = this;
       }
     }
     geom.mergeVertices();
@@ -117,6 +99,47 @@ function triangulate(face) {
   }
   return triangled;
 
+}
+
+export function triangulateToThree(shell, geom) {    
+  const result = [];
+  let off = 0;
+  let gIdx = 0;
+  for (let brepFace of shell.faces) {
+    const polygons = triangulate(brepFace);
+    const groupStart = geom.faces.length;
+    for (let p = 0; p < polygons.length; ++p) {
+      const poly = polygons[p];
+      const vLength = poly.length;
+      if (vLength < 3) continue;
+      const firstVertex = poly[0];
+      geom.vertices.push(threeV(firstVertex));
+      geom.vertices.push(threeV(poly[1]));
+      const normal = threeV(brepFace.surface.normal);
+      for (let i = 2; i < vLength; i++) {
+        geom.vertices.push(threeV(poly[i]));
+        const a = off;
+        const b = i - 1 + off;
+        const c = i + off;
+        const face = new THREE.Face3(a, b, c);
+        face.normal = normal;
+        face.materialIndex = gIdx ++;
+        geom.faces.push(face);
+      }
+      //view.setFaceColor(sceneFace, utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
+      off = geom.vertices.length;
+    }
+    result.push(new FaceGroup(brepFace, groupStart, geom.faces.length));
+  }
+  return result;
+}
+
+class FaceGroup {
+  constructor(brepFace, groupStart, groupEnd) {
+    this.brepFace = brepFace;
+    this.groupStart = groupStart;
+    this.groupEnd = groupEnd;
+  }
 }
 
 function threeV(v) {return new THREE.Vector3( v.x, v.y, v.z )}
