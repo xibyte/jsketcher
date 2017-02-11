@@ -134,7 +134,7 @@ export function modeller(callback) {
 }
 
 export function emptyModeller(callback) {
-  for(let i=0; i < localStorage.length; i++) {
+  for(let i = localStorage.length - 1; i >= 0 ; i--) {
     const key = localStorage.key(i);
     if (key.startsWith(STORAGE_PREFIX_SKETCH + TEST_PROJECT)) {
       localStorage.removeItem(key);
