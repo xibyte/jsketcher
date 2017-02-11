@@ -1160,7 +1160,7 @@ export function classifyPointInsideLoop( inPt, loop, tr ) {
       edgeLowPt  = b; edgeDx = - edgeDx;
       edgeHighPt = a; edgeDy = - edgeDy;
     }
-    if (!aEq && !bEq && ( inPt.y < edgeLowPt.y ) || ( inPt.y > edgeHighPt.y ) ) {
+    if (!aEq && !bEq && ( inPt.y < edgeLowPt.y || inPt.y > edgeHighPt.y ) ) {
       continue;
     }
 
