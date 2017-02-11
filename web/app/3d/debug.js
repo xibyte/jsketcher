@@ -38,21 +38,26 @@ function addGlobalDebugActions(app) {
       for (let e of face.edges) __DEBUG__.AddHalfEdge(e, color);
     },
     AddVolume: (shell, color) => {
+      color = color || 0xffffff;
       app.addShellOnScene(shell, {
         color,
         transparent: true,
         opacity: 0.5,
-      });
+      }).__debug__ = true;
     },
     HideSolids: () => {
-      app.findAllSolids().forEach(s => s.cadGroup.traverse(o => o.visible = false));
+      app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));
       app.viewer.render();
     },
     Clear: () => {
-        while (debugGroup.children.length) debugGroup.remove(debugGroup.children[0]);
-        app.viewer.render();
-      }
+      while (debugGroup.children.length) debugGroup.remove(debugGroup.children[0]);
+      app.viewer.render();
+    },
+    ClearVolumes: () => {
+      app.findAllSolidsOnScene().filter(s => s.__debug__ === true).forEach(s => s.vanish());
+      app.viewer.render();
     }
+  }
 }
 
 function createLine(a, b, color) {
