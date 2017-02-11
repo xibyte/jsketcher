@@ -1,4 +1,7 @@
 import {checkForSelectedFaces} from './actions/action-helpers'
+import {triangulateToThree} from './scene/brep-scene-object'
+import {createSolidMaterial} from './scene/scene-object'
+import DPR from '../utils/dpr'
 
 export const DEBUG = true;
 
@@ -12,7 +15,9 @@ export function AddDebugSupport(app) {
 
 function addGlobalDebugActions(app) {
   const debugGroup = new THREE.Object3D();
+  const debugVolumeGroup = new THREE.Object3D();
   app.viewer.workGroup.add(debugGroup);
+  app.viewer.workGroup.add(debugVolumeGroup);
   window.__DEBUG__ = {
     AddLine: (a, b) => {
       debugGroup.add(createLine(a, b));
@@ -39,24 +44,50 @@ function addGlobalDebugActions(app) {
     },
     AddVolume: (shell, color) => {
       color = color || 0xffffff;
-      app.addShellOnScene(shell, {
+      const geometry = new THREE.Geometry();
+      triangulateToThree(shell, geometry);
+      const mesh = new THREE.Mesh(geometry, createSolidMaterial({
         color,
         transparent: true,
         opacity: 0.5,
-      }).__debug__ = true;
+      }));
+      debugVolumeGroup.add(mesh);
+      window.__DEBUG__.AddWireframe(shell, color);
+      app.viewer.render();
+    },
+    AddWireframe: (shell, color) => {
+      color = color || 0xffffff;
+      const visited = new Set();
+      for (let e of shell.edges) {
+        var lg = new THREE.Geometry();
+        lg.vertices.push(e.halfEdge1.vertexA.point.three());
+        lg.vertices.push(e.halfEdge2.vertexA.point.three());
+        const line = new THREE.Line(lg,  new THREE.LineBasicMaterial({color, linewidth: 3/DPR}));
+        debugVolumeGroup.add(line);
+      }
+      app.viewer.render();
     },
     HideSolids: () => {
       app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));
       app.viewer.render();
     },
     Clear: () => {
-      while (debugGroup.children.length) debugGroup.remove(debugGroup.children[0]);
+      clearGroup(debugGroup);
       app.viewer.render();
     },
     ClearVolumes: () => {
-      app.findAllSolidsOnScene().filter(s => s.__debug__ === true).forEach(s => s.vanish());
+      clearGroup(debugVolumeGroup);
       app.viewer.render();
     }
+  }
+}
+
+function clearGroup(g) {
+  while (g.children.length) {
+    const o = g.children[0];
+    o.material.dispose();
+    o.geometry.dispose();
+    g.remove(o);
   }
 }
 

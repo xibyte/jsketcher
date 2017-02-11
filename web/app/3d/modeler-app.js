@@ -76,8 +76,8 @@ function App() {
 
 App.prototype.addShellOnScene = function(shell, skin) {
   const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
-  this.viewer.workGroup.add(sceneSolid.cadGroup);
-  this.viewer.render()
+  //this.viewer.workGroup.add(sceneSolid.cadGroup);
+  this.viewer.render();
   return sceneSolid;
 };
 
