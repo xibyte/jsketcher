@@ -615,6 +615,29 @@ export default {
     }));
   },
 
+  /**
+   *      o--------o
+   *      |        |
+   *      | *-->   o
+   *      |        |
+   *      o-o------o
+   */
+  testPIPClassificationConvexPointAndPointInRound: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [173.69055445978523, -250],
+        [173.69055445978523, -40.45650878155794],
+        [173.69055445978523, 250],
+        [-17.236467236467238, 250],
+        [-17.236467236467238, -250],
+        [5.818373610536707, -250]
+      ]);
+
+      const result = classify(app, win, loop, [5.818373610536707, -40.45650878155793]);
+      env.assertTrue(result.inside);
+      env.done();
+    }));
+  },
 
 }
 
