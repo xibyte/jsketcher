@@ -34,11 +34,25 @@ function addGlobalDebugActions(app) {
     AddHalfEdge: (he, color) => {
       window.__DEBUG__.AddSegment(he.vertexA.point, he.vertexB.point, color);
     },
-    Clear: () => {
-      while (debugGroup.children.length) debugGroup.remove(debugGroup.children[0]);
+    AddFace: (face, color) => {
+      for (let e of face.edges) __DEBUG__.AddHalfEdge(e, color);
+    },
+    AddVolume: (shell, color) => {
+      app.addShellOnScene(shell, {
+        color,
+        transparent: true,
+        opacity: 0.5,
+      });
+    },
+    HideSolids: () => {
+      app.findAllSolids().forEach(s => s.cadGroup.traverse(o => o.visible = false));
       app.viewer.render();
+    },
+    Clear: () => {
+        while (debugGroup.children.length) debugGroup.remove(debugGroup.children[0]);
+        app.viewer.render();
+      }
     }
-  }
 }
 
 function createLine(a, b, color) {

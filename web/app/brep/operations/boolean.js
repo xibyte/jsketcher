@@ -13,6 +13,17 @@ export const TOLERANCE = 1e-8;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 export const TOLERANCE_HALF = TOLERANCE * 0.5;
 
+const DEBUG = {
+  OPERANDS_MODE: false,
+  LOOP_DETECTION: false,
+  FACE_FACE_INTERSECTION: false,
+  FACE_EDGE_INTERSECTION: false,
+  SEWING: false,
+  EDGE_MERGING: false,
+  NOOP: () => {}
+};
+
+
 const TYPE = {
   UNION: 0,
   INTERSECT: 1,
@@ -54,7 +65,11 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
 
   POINT_TO_VERT.clear();
 
-  __DEBUG__.Clear();
+  if (DEBUG.OPERANDS_MODE) {
+    __DEBUG__.HideSolids();
+    __DEBUG__.AddVolume(shell1, 0x800080);
+    __DEBUG__.AddVolume(shell2, 0xfff44f);
+  }
   let facesData = [];
 
   mergeVertices(shell1, shell2);
@@ -81,8 +96,11 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   const newLoops = new Set();
   for (let faceData of facesData) {
     const face = faceData.face;
-    //__DEBUG__.Clear();
-    //for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
+    if (DEBUG.LOOP_DETECTION) {
+      __DEBUG__.Clear();
+      __DEBUG__.AddFace(face, 0x00ff00);
+      DEBUG.NOOP();
+    }
 
     const loops = [];
     const seen = new Set();
@@ -98,7 +116,9 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
       }
       const loop = new Loop();
       while (edge) {
-        //__DEBUG__.AddHalfEdge(edge);
+        if (DEBUG.LOOP_DETECTION) {
+          __DEBUG__.AddHalfEdge(edge);
+        }
         const isNew = EdgeSolveData.get(edge).newEdgeFlag === true;
         if (isNew) newLoops.add(loop);
         
@@ -151,13 +171,17 @@ function sew(allFaces) {
   const analyzedNeighbors = new Map();
   FACES: 
   for (let face of allFaces) {
-    //__DEBUG__.Clear();
-    //for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
+    if (DEBUG.SEWING) {
+      __DEBUG__.Clear();
+      __DEBUG__.AddFace(face, 0x00ff00);
+    }
     let edges = [];
     for (let e of face.edges) edges.push(e);
     edges.sort((e1, e2) => EdgeSolveData.get(e1).newEdgeFlag === true ? 0 : 1);
     for (let h1 of face.edges) {
-      //__DEBUG__.AddHalfEdge(h1);
+      if (DEBUG.SEWING) {
+        __DEBUG__.AddHalfEdge(h1);
+      }
       
       if (sewed.has(h1)) {
         continue;
@@ -352,8 +376,11 @@ function disassemble(faceData) {
 function merge(face, newEdges) {
 
   let allEdges = [];
-  //__DEBUG__.Clear();
-  //for (let e of face.edges) __DEBUG__.AddHalfEdge(e, 0x00ff00);
+  if (DEBUG.SEWING) {
+    __DEBUG__.Clear();
+    __DEBUG__.AddFace(face, 0x00ff00);
+  }
+
 
   for (let e of face.edges) {
     if (findCoincidentEdge(e, allEdges) == null) {
@@ -381,10 +408,8 @@ function merge(face, newEdges) {
   face.outerLoop = new Loop();
   face.outerLoop.face = face;
   allEdges.forEach(he => face.outerLoop.halfEdges.push(he));
-  for (let e of allEdges) {
-    //__DEBUG__.Clear();
-    //__DEBUG__.AddHalfEdge(e, 0xffff00)
-    console.log();
+  if (DEBUG.SEWING) {
+    for (let e of allEdges) __DEBUG__.AddHalfEdge(e, 0xffff00);
   }
 
   face.innerLoops = [];
@@ -595,18 +620,22 @@ function leftTurningMeasure(v1, v2, normal) {
 function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
   for (let i = 0; i < shell1.faces.length; i++) {
     const face1 = shell1.faces[i];
+    if (DEBUG.FACE_FACE_INTERSECTION) {
+      __DEBUG__.Clear(); __DEBUG__.AddFace(face1, 0x00ff00);
+      DEBUG.NOOP();
+    }
     for (let j = 0; j < shell2.faces.length; j++) {
       const face2 = shell2.faces[j];
-      //__DEBUG__.Clear();
-      //for (let l of face1.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
-      //for (let l of face2.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x0000ff));
+      if (DEBUG.FACE_FACE_INTERSECTION) {
+        __DEBUG__.Clear(); __DEBUG__.AddFace(face1, 0x00ff00);
+        __DEBUG__.AddFace(face2, 0x0000ff);
+        if (face1.refId == 0 && DEBUG.face2.refId == 0) {
+          DEBUG.NOOP();
+        }
+      }
 
       if (face1.data[MY].overlaps.has(face2)) {
-        console.log("skip overlapping");
         continue;
-      }
-      if (i == 2 && j == 1) {
-        console.log("please hold");
       }
       const curve = face1.surface.intersect(face2.surface);
   
@@ -624,7 +653,6 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
       split(nodes, newEdges, curve, direction);
 
       newEdges.forEach(e => {
-        //__DEBUG__.AddHalfEdge(e.halfEdge1);
         addNewEdge(face1, e.halfEdge1);
         addNewEdge(face2, e.halfEdge2);
       });
@@ -684,42 +712,24 @@ function faceContainsSimilarEdge(face, halfEdge) {
 }
 
 function collectNodesOfIntersectionOfFace(splittingFace, face, nodes) {
-  
-  //__DEBUG__.Clear();
-  //for (let l of splittingFace.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
-  //for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x0000ff));
-  
   for (let loop of face.loops) {
     collectNodesOfIntersection(splittingFace, loop, nodes);
   }
 }
 
 function collectNodesOfIntersection(face, loop, nodes) {
-  //__DEBUG__.Clear();
-  //for (let l of face.loops) l.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ff00));
-  //loop.halfEdges.forEach(he => __DEBUG__.AddHalfEdge(he, 0x00ffff));
-
-  const verticesCases = new Set();
   for (let edge of loop.halfEdges) {
-    //__DEBUG__.AddHalfEdge(edge);
     const edgeSolveData = EdgeSolveData.get(edge);
     if (edgeSolveData.skipFace.has(face)) {
       continue;
     }
     const preExistVertex = edgeSolveData.splitByFace.get(face);
     if (preExistVertex) {
-      //__DEBUG__.AddVertex(preExistVertex);
       nodes.push(new Node(preExistVertex, edge, face));
       continue
     }
-    intersectFaceWithEdge(face, edge, nodes, verticesCases);
+    intersectFaceWithEdge(face, edge, nodes);
   }
-  //for (let he of loop.halfEdges) {
-  //  if (verticesCases.has(he.vertexA) && verticesCases.has(he.vertexB)) {
-  //    deleteEdge(he.edge);
-  //  }
-  //}  
-
 }
 
 function split(nodes, result, onCurve, direction) {
@@ -861,8 +871,16 @@ function newVertex(point) {
   return vertex;
 }
 
-function intersectFaceWithEdge(face, edge, result, vertecies) {
-  
+function intersectFaceWithEdge(face, edge, result) {
+
+  if (DEBUG.FACE_EDGE_INTERSECTION) {
+    __DEBUG__.Clear();
+    __DEBUG__.AddFace(face, 0x00ffff);
+    __DEBUG__.AddFace(edge.loop.face, 0xffffff);
+    __DEBUG__.AddHalfEdge(edge, 0xffff00);
+    DEBUG.NOOP();
+  }
+
   const p0 = edge.vertexA.point;
   const ab = edge.vertexB.point.minus(p0);
   const length = ab.length();
@@ -882,9 +900,6 @@ function intersectFaceWithEdge(face, edge, result, vertecies) {
   if (coiA || coiB || pInsideSeg) {
     const classRes = classifyPointToFace(pointOfIntersection, face);
     if (classRes.inside) {
-      if (coiA) vertecies.add(edge.vertexA);
-      if (coiB) vertecies.add(edge.vertexB);
-
       let vertexOfIntersection;
       if (classRes.vertex) {
         vertexOfIntersection = classRes.vertex;
