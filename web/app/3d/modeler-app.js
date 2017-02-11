@@ -78,6 +78,7 @@ App.prototype.addShellOnScene = function(shell, skin) {
   const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
   this.viewer.workGroup.add(sceneSolid.cadGroup);
   this.viewer.render()
+  return sceneSolid;
 };
 
 App.prototype.scratchCode = function() {
@@ -270,14 +271,14 @@ App.prototype.createState = function() {
   return state;
 };
 
-App.prototype.findAllSolids = function() {
+App.prototype.findAllSolidsOnScene = function() {
   return this.viewer.workGroup.children
     .filter(function(obj) {return obj.__tcad_solid !== undefined} )
     .map(function(obj) {return obj.__tcad_solid} )
 };
 
 App.prototype.findFace = function(faceId) {
-  var solids = this.findAllSolids();
+  var solids = this.craft.solids;
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
     for (var j = 0; j < solid.sceneFaces.length; j++) {
@@ -291,7 +292,7 @@ App.prototype.findFace = function(faceId) {
 };
 
 App.prototype.findSolidByCadId = function(cadId) {
-  var solids = this.findAllSolids();
+  var solids = this.craft.solids;
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
     if (solid.tCadId == cadId) {
@@ -302,7 +303,7 @@ App.prototype.findSolidByCadId = function(cadId) {
 };
 
 App.prototype.findSolidById = function(solidId) {
-  var solids = this.findAllSolids();
+  var solids = this.craft.solids;
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
     if (solid.id == solidId) {
@@ -314,7 +315,7 @@ App.prototype.findSolidById = function(solidId) {
 
 App.prototype.indexEntities = function() {
   var out = {solids : {}, faces : {}};
-  var solids = this.findAllSolids();
+  var solids = this.craft.solids;
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
     out.solids[solid.tCadId] = solid;
@@ -555,7 +556,7 @@ App.prototype.refreshSketches = function() {
 };
 
 App.prototype._refreshSketches = function() {
-  var allSolids = this.findAllSolids();
+  var allSolids = this.craft.solids;
   for (var oi = 0; oi < allSolids.length; ++oi) {
     var obj = allSolids[oi];
     for (var i = 0; i < obj.sceneFaces.length; i++) {
@@ -595,7 +596,7 @@ App.prototype.load = function() {
 };
 
 App.prototype.stlExport = function() {
-  var allPolygons = cad_utils.arrFlatten1L(this.findAllSolids().map(function (s) {
+  var allPolygons = cad_utils.arrFlatten1L(this.craft.solids.map(function (s) {
     return s.csg.toPolygons()
   }));
   var stl = CSG.fromPolygons(allPolygons).toStlString();
