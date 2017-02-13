@@ -46,8 +46,8 @@ Craft.prototype.loadHistory = function(history) {
 Craft.prototype.reset = function(modifications) {
   Counters.solid = 0;
   Counters.shared = 0;
+  this.solids.forEach(function(s) {s.vanish()});
   this.solids = [];
-  this.app.findAllSolids().forEach(function(s) {s.vanish()});
   for (var i = 0; i < modifications.length; i++) {
     const request = modifications[i];
     this.modifyInternal(request);
