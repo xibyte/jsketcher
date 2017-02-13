@@ -639,6 +639,24 @@ export default {
     }));
   },
 
+  testPIPClassification_TR_OUT_TR_INNER: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [322.13852864400235, -37.0295350874076],
+        [367.4746645834503, -15.906441503172019],
+        [251.791373147527, 232.3826363038744],
+        [245.2760702222779, 246.36631998769906],
+        [220.04289927805857, 300.5238449519503],
+        [174.70676333861064, 279.4007513677147],
+        [190.09822472107308, 246.36631998769903],
+        [251.82559013214498, 113.88192709797234],
+      ]);
+
+      const result = classify(app, win, loop, [201.75255470018428, 221.3528300786975]);
+      env.assertTrue(result.inside);
+      env.done();
+    }));
+  },
 }
 
 function classify(app, win, loop, p) {

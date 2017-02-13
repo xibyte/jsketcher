@@ -14,8 +14,8 @@ export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 export const TOLERANCE_HALF = TOLERANCE * 0.5;
 
 const DEBUG = {
-  OPERANDS_MODE: false,
-  LOOP_DETECTION: false,
+  OPERANDS_MODE: true,
+  LOOP_DETECTION: true,
   FACE_FACE_INTERSECTION: false,
   FACE_EDGE_INTERSECTION: false,
   SEWING: false,
@@ -88,56 +88,15 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   
   facesData = facesData.filter(fd => fd.merged !== true);
 
-    const allFaces = [];
-  //__DEBUG__.AddSegment(shell2.faces[0].outerLoop.halfEdges[0].vertexA.point, shell2.faces[0].outerLoop.halfEdges[0].vertexB.point)
+  const allFaces = [];
   const newLoops = new Set();
   for (let faceData of facesData) {
     const face = faceData.face;
-    if (DEBUG.LOOP_DETECTION) {
-      __DEBUG__.Clear();
-      __DEBUG__.AddFace(face, 0x00ff00);
-      DEBUG.NOOP();
-    }
-
-    const loops = [];
-    const seen = new Set();
-    let edges = [];
-    for (let e of face.edges) edges.push(e);
-    while (true) {
-      let edge = edges.pop();
-      if (!edge) {
-        break;
-      }
-      if (seen.has(edge)) {
-        continue;
-      }
-      const loop = new Loop();
-      while (edge) {
-        if (DEBUG.LOOP_DETECTION) {
-          __DEBUG__.AddHalfEdge(edge);
-        }
+    const loops = detectLoops(faceData.face);
+    for (let loop of loops) {
+      for (let edge of loop.halfEdges) {
         const isNew = EdgeSolveData.get(edge).newEdgeFlag === true;
         if (isNew) newLoops.add(loop);
-        
-        loop.halfEdges.push(edge);
-        seen.add(edge);
-        let candidates = faceData.vertexToEdge.get(edge.vertexB);
-        if (!candidates) {
-          break;
-        }
-        edge = findMaxTurningLeft(edge, candidates, face.surface.normal);
-        if (seen.has(edge)) {
-          break;
-        }
-      }
-
-      if (loop.halfEdges[0].vertexA == loop.halfEdges[loop.halfEdges.length - 1].vertexB) {
-        for (let halfEdge of loop.halfEdges) {
-          halfEdge.loop = loop;
-        }
-        
-        BREPBuilder.linkSegments(loop.halfEdges);
-        loops.push(loop);
       }
     }
     loopsToFaces(face, loops, allFaces);
@@ -158,7 +117,58 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   return result;
 }
 
+function detectLoops(face) {
+  const faceData = face.data[MY];
+  if (DEBUG.LOOP_DETECTION) {
+    __DEBUG__.Clear();
+    __DEBUG__.AddFace(face, 0x00ff00);
+    DEBUG.NOOP();
+  }
+
+  const loops = [];
+  const seen = new Set();
+  let edges = [];
+  for (let e of face.edges) edges.push(e);
+  while (true) {
+    let edge = edges.pop();
+    if (!edge) {
+      break;
+    }
+    if (seen.has(edge)) {
+      continue;
+    }
+    const loop = new Loop();
+    loop.face = face;
+    while (edge) {
+      if (DEBUG.LOOP_DETECTION) {
+        __DEBUG__.AddHalfEdge(edge);
+      }
+      loop.halfEdges.push(edge);
+      seen.add(edge);
+      let candidates = faceData.vertexToEdge.get(edge.vertexB);
+      if (!candidates) {
+        break;
+      }
+      edge = findMaxTurningLeft(edge, candidates, edge.loop.face.surface.normal);
+      if (seen.has(edge)) {
+        break;
+      }
+    }
+
+    if (loop.halfEdges[0].vertexA == loop.halfEdges[loop.halfEdges.length - 1].vertexB) {
+      for (let halfEdge of loop.halfEdges) {
+        halfEdge.loop = loop;
+      }
+
+      BREPBuilder.linkSegments(loop.halfEdges);
+      loops.push(loop);
+    }
+  }
+  return loops;
+} 
+
 function initGraph(faceData) {
+  faceData.vertexToEdge.clear();
   for (let he of faceData.face.edges) {
     addToListInMap(faceData.vertexToEdge, he.vertexA, he);
   }
@@ -345,28 +355,56 @@ function markOverlapping(face1, face2) {
 }
 
 function mergeOverlappingFaces(shell1, shell2) {
+  const merged = new Set(); 
   for (let face1 of shell1.faces) {
+    if (merged.has(face1)) continue;
     const data1 = face1.data[MY];
-    if (data1.merged === true) continue;
-    for (let face2 of data1.overlaps) {
-      const data2 = face2.data[MY];
-      if (data2.merged === true) continue;
-      doMergeOverlappingFaces(face1, face2);
-      for (let face3 of data2.overlaps) {
-        if (face1 == face3) continue;
-        const data3 = face3.data[MY];
-        if (data3.merged === true) continue;
-        doMergeOverlappingFaces(face1, face3);
+    if (data1.overlaps.size != 0) {
+      for (let face2 of data1.overlaps) {
+        doMergeOverlappingFaces(face1, face2);
       }
+      const others = data1.overlaps.values().next().value.data[MY].overlaps;    
+      for (let face3 of others) {
+        if (face1 == face3) {
+          continue;
+        }
+        doMergeOverlappingFaces(face1, face3);
+        merged.add(face3);
+      }      
     }
   }
 }
 
 function doMergeOverlappingFaces(face1, face2) {
   const data2 = face2.data[MY];
-  merge(face2, data2.newEdges);
-  merge(face1, face2.edges);
+  
+  let allEdges = [];
+  for (let e of face1.edges) {
+    allEdges.push(e);
+  }  
+  for (let e of face2.edges) {
+    const coi = findCoincidentEdge(e, allEdges);
+    if (coi == null) {
+      allEdges.push(e);
+    } else {
+      if (EdgeSolveData.get(coi).newEdgeFlag === true) {
+        EdgeSolveData.createIfEmpty(e).newEdgeFlag = true;
+      }
+    }
+  }
+
+  nullifyOppositeEdges(allEdges);
+  allEdges = allEdges.filter(e => e != null);
+  bringNewEdgesToTheTail(allEdges);
+  squash(face1, allEdges);  
   data2.merged = true;
+}
+
+function squash(face, edges) {
+  face.outerLoop = new Loop();
+  face.outerLoop.face = face;
+  edges.forEach(he => face.outerLoop.halfEdges.push(he));
+  face.innerLoops = [];
 }
 
 function areEdgesEqual(e1, e2) {
@@ -384,7 +422,7 @@ function disassemble(faceData) {
 function merge(face, newEdges) {
 
   let allEdges = [];
-  if (DEBUG.SEWING) {
+  if (DEBUG.EDGE_MERGING) {
     __DEBUG__.Clear();
     __DEBUG__.AddFace(face, 0x00ff00);
   }
@@ -408,19 +446,19 @@ function merge(face, newEdges) {
   nullifyOppositeEdges(allEdges);
   
   allEdges = allEdges.filter(e => e != null);
+  //put new edges to the tail
+  bringNewEdgesToTheTail(allEdges);
+  squash(face, allEdges)
+  if (DEBUG.EDGE_MERGING) {
+    for (let e of allEdges) __DEBUG__.AddHalfEdge(e, 0xffff00);
+  }
+}
+
+function bringNewEdgesToTheTail(edges) {
   function edgeOrder(e) {
     return EdgeSolveData.get(e).newEdgeFlag === true ? 1 : 0;
   }
-  //put new edges to the tail
-  allEdges.sort((e1, e2) => edgeOrder(e1) - edgeOrder(e2));
-  face.outerLoop = new Loop();
-  face.outerLoop.face = face;
-  allEdges.forEach(he => face.outerLoop.halfEdges.push(he));
-  if (DEBUG.SEWING) {
-    for (let e of allEdges) __DEBUG__.AddHalfEdge(e, 0xffff00);
-  }
-
-  face.innerLoops = [];
+  edges.sort((e1, e2) => edgeOrder(e1) - edgeOrder(e2));
 }
 
 function nullifyOppositeEdges(edges) {
@@ -478,6 +516,15 @@ function findCoincidentEdge(edge, edges) {
   return null;
 }
 
+function findOppositeEdge(edge, edges) {
+  for (let he of edges) {
+    if (areEdgesOpposite(edge, he)) {
+      return he;
+    }
+  }
+  return null;
+}
+
 function filterFaces(faces, newLoops, validLoops) {
   const validFaces = new Set(faces);
   const result = new Set();
@@ -524,15 +571,15 @@ function traverseFaces(face, validFaces, callback) {
 }
 
 function loopsToFaces(originFace, loops, out) {
-  function createFaces(nestedLoop) {
+  function createFaces(nestedLoop, surface) {
     const loop = nestedLoop.loop;
-    const newFace = new Face(originFace.surface);
+    const newFace = new Face(surface);
     newFace.outerLoop = loop;
     loop.face = newFace;
     out.push(newFace);
     for (let child of nestedLoop.nesting) {
-      if (child.loop.isCCW(originFace.surface)) {
-        createFaces(child);
+      if (child.loop.isCCW(surface)) {
+        createFaces(child, surface);
       } else {
         child.loop.face = newFace;
         newFace.innerLoops.push(child.loop);
@@ -543,9 +590,11 @@ function loopsToFaces(originFace, loops, out) {
   const nestedLoops = getNestedLoops(originFace, loops);
   //loops.forEach(l => l.halfEdges.forEach(h => __DEBUG__.AddHalfEdge(h)))
   for (let nestedLoop of nestedLoops) {
-    if (nestedLoop.loop.isCCW(originFace.surface)) {
-      createFaces(nestedLoop);
+    let surface = originFace.surface;
+    if (!nestedLoop.loop.isCCW(surface)) {
+      surface = surface.invert();
     }
+    createFaces(nestedLoop, surface);
   }
   if (out.length > beforeLength) {
     out[beforeLength].id = originFace.id;
@@ -637,7 +686,7 @@ function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
       if (DEBUG.FACE_FACE_INTERSECTION) {
         __DEBUG__.Clear(); __DEBUG__.AddFace(face1, 0x00ff00);
         __DEBUG__.AddFace(face2, 0x0000ff);
-        if (face1.refId == 0 && DEBUG.face2.refId == 0) {
+        if (face1.refId == 0 && face2.refId == 0) {
           DEBUG.NOOP();
         }
       }
@@ -1198,7 +1247,7 @@ export function classifyPointInsideLoop( inPt, loop, tr ) {
     }
 
     let perpEdge = edgeDx * (inPt.y - edgeLowPt.y) - edgeDy * (inPt.x - edgeLowPt.x);
-    if ( math.areEqual(perpEdge, 0, TOLERANCE_SQ) ) return new EdgeResult(edge);		// inPt is on contour ?
+    if ( math.areEqual(perpEdge, 0, TOLERANCE) ) return new EdgeResult(edge);		// inPt is on contour ?
     if ( perpEdge < 0 ) {
       continue;
     }
