@@ -149,7 +149,7 @@ function detectLoops(face) {
       if (!candidates) {
         break;
       }
-      edge = findMaxTurningLeft(edge, candidates, edge.loop.face.surface.normal);
+      edge = findMaxTurningLeft(edge, candidates, face.surface.normal);
       if (seen.has(edge)) {
         break;
       }
