@@ -139,6 +139,10 @@ function detectLoops(face) {
     }
     const loop = new Loop();
     loop.face = face;
+    let surface = EdgeSolveData.get(edge).transferedSurface; 
+    if (!surface) {
+      surface = face.surface;
+    }
     while (edge) {
       if (DEBUG.LOOP_DETECTION) {
         __DEBUG__.AddHalfEdge(edge);
@@ -149,7 +153,7 @@ function detectLoops(face) {
       if (!candidates) {
         break;
       }
-      edge = findMaxTurningLeft(edge, candidates, face.surface.normal);
+      edge = findMaxTurningLeft(edge, candidates, surface.normal);
       if (seen.has(edge)) {
         break;
       }
@@ -360,22 +364,23 @@ function mergeOverlappingFaces(shell1, shell2) {
     if (merged.has(face1)) continue;
     const data1 = face1.data[MY];
     if (data1.overlaps.size != 0) {
-      for (let face2 of data1.overlaps) {
-        doMergeOverlappingFaces(face1, face2);
-      }
-      const others = data1.overlaps.values().next().value.data[MY].overlaps;    
+      const others = data1.overlaps.values().next().value.data[MY].overlaps;
       for (let face3 of others) {
         if (face1 == face3) {
           continue;
         }
-        doMergeOverlappingFaces(face1, face3);
+        doMergeOverlappingFaces(face1, face3, true);
         merged.add(face3);
-      }      
+      }
+      for (let face2 of data1.overlaps) {
+        doMergeOverlappingFaces(face1, face2, false);
+        face2.data[MY].merged = true;
+      }
     }
   }
 }
 
-function doMergeOverlappingFaces(face1, face2) {
+function doMergeOverlappingFaces(face1, face2, keepNew) {
   const data2 = face2.data[MY];
   
   let allEdges = [];
@@ -385,17 +390,37 @@ function doMergeOverlappingFaces(face1, face2) {
   for (let e of face2.edges) {
     const coi = findCoincidentEdge(e, allEdges);
     if (coi == null) {
+      if (EdgeSolveData.get(e).newEdgeFlag === true) {
+        delete EdgeSolveData.get(e).newEdgeFlag;
+        EdgeSolveData.createIfEmpty(e).transferedSurface = face2.surface;
+      }
       allEdges.push(e);
     } else {
       if (EdgeSolveData.get(coi).newEdgeFlag === true) {
-        EdgeSolveData.createIfEmpty(e).newEdgeFlag = true;
+        if (keepNew) {
+          EdgeSolveData.createIfEmpty(e).newEdgeFlag = true;
+        } else {
+          EdgeSolveData.createIfEmpty(e).transferedSurface = face2.surface;
+        }
       }
     }
   }
+  function sort(edges) {
+    function edgeOrder(e) {
+      if (EdgeSolveData.get(e).newEdgeFlag === true) {
+        return 2
+      } else if (EdgeSolveData.get(e).transferedSurface !== undefined) {
+        return 1;
+      }
+      return 0;
+    }
+    edges.sort((e1, e2) => edgeOrder(e1) - edgeOrder(e2));
+  }
+
 
   nullifyOppositeEdges(allEdges);
   allEdges = allEdges.filter(e => e != null);
-  bringNewEdgesToTheTail(allEdges);
+  sort(allEdges);
   squash(face1, allEdges);  
   data2.merged = true;
 }
