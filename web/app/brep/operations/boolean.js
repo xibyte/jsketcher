@@ -78,6 +78,10 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   intersectFaces(shell1, shell2, type !== TYPE.UNION);
 
   for (let faceData of facesData) {
+    splitNewEdgesIfNeeded(faceData);
+  }
+
+  for (let faceData of facesData) {
     disassemble(faceData)
   }
 
@@ -437,6 +441,30 @@ function areEdgesOpposite(e1, e2) {
   return e1.vertexA == e2.vertexB && e1.vertexB == e2.vertexA;
 }
 
+function splitNewEdgesIfNeeded(faceData) {
+  for (let oe of faceData.face.edges) {
+    for (let ne of faceData.newEdges) {
+      if (math.areEqual(Math.abs(ne.edge.curve.v.dot(oe.edge.curve.v)), 1, TOLERANCE_SQ) &&
+        math.areEqual(Math.abs(ne.edge.curve.v.dot(ne.vertexA.point.minus(oe.vertexA.point)._normalize())), 1, TOLERANCE_SQ)) {
+        const line = Line.fromSegment(ne.vertexA.point, ne.vertexB.point);
+        const length = math.distanceAB3(ne.vertexA.point, ne.vertexB.point);
+
+        function check(vertex) {
+          if (ne.vertexA != vertex && ne.vertexB != vertex) {
+            const t = line.t(vertex.point);
+            if (t >= 0 && t <= length) {
+              splitEdgeByVertex(ne, vertex);
+            }
+          }
+        }
+
+        check(oe.vertexA);
+        check(oe.vertexB);
+      }
+    }
+  }
+}
+
 function disassemble(faceData) {
   merge(faceData.face, faceData.newEdges);
 }
@@ -752,7 +780,7 @@ function calculateNodeNormals(nodes, curve) {
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i];
     if (n != null) {
-      n.normal = nodeNormal(n.point, n.edge, curve);
+      n.normal = nodeNormal(n.point, n.edge, curve, n.dir);
       if (n.normal == 0) {
         nodes[i] = null;
       }
@@ -966,17 +994,25 @@ function intersectFaceWithEdge(face, edge, result) {
   const v = ab._multiply(1 / length);
   
   if (math.areEqual(edge.edge.curve.v.dot(face.surface.normal), 0, TOLERANCE_SQ)) {
-    return; // we not consider edges parallel to the face
+    if (math.areEqual(face.surface.normal.dot(edge.vertexA.point), face.surface.w, TOLERANCE)) {
+      classifyAndAdd(edge.vertexA.point, true, false);
+      classifyAndAdd(edge.vertexB.point, false, true);
+    }
+  } else {
+
+    let pointOfIntersection = edge.edge.curve.pointOfSurfaceIntersection(face.surface);
+    let t = new Line(p0, v).t(pointOfIntersection);
+    let pInsideSeg = t >= 0 && t <= length;
+
+    const coiA = math.areVectorsEqual(edge.vertexA.point, pointOfIntersection, TOLERANCE);
+    const coiB = math.areVectorsEqual(edge.vertexB.point, pointOfIntersection, TOLERANCE);
+    if (coiA) pointOfIntersection = edge.vertexA.point;
+    if (coiB) pointOfIntersection = edge.vertexB.point;
+    if (coiA || coiB || pInsideSeg) {
+      classifyAndAdd(pointOfIntersection, coiA, coiB)
+    }
   }
-  let pointOfIntersection = edge.edge.curve.pointOfSurfaceIntersection(face.surface);
-  let t = new Line(p0, v).t(pointOfIntersection);
-  let pInsideSeg = t >= 0 && t <= length;
-  
-  const coiA = math.areVectorsEqual(edge.vertexA.point, pointOfIntersection, TOLERANCE);
-  const coiB = math.areVectorsEqual(edge.vertexB.point, pointOfIntersection, TOLERANCE);
-  if (coiA) pointOfIntersection = edge.vertexA.point;
-  if (coiB) pointOfIntersection = edge.vertexB.point;
-  if (coiA || coiB || pInsideSeg) {
+  function classifyAndAdd(pointOfIntersection, coiA, coiB, dir) {
     const classRes = classifyPointToFace(pointOfIntersection, face);
     if (classRes.inside) {
       let vertexOfIntersection;
@@ -993,10 +1029,14 @@ function intersectFaceWithEdge(face, edge, result) {
       }
 
       const node = new Node(vertexOfIntersection, edge);
+      if (dir) {
+        node.dir = dir;
+      }
+      
       result.push(node);
       if (classRes.edge) {
         splitEdgeByVertex(classRes.edge, vertexOfIntersection, edge.loop.face);
-      } 
+      }
     }
   }
 }
@@ -1045,8 +1085,10 @@ function classifyPointToFace(point, face) {
   return ccwCorrection(outer, face.outerLoop);
 }
 
-function nodeNormal(point, edge, curve) {
-  const edgeTangent =  edgeNormal(edge); // todo @ point
+function nodeNormal(point, edge, curve, edgeTangent) {
+  if (edgeTangent == null) {
+    edgeTangent =  edgeNormal(edge); // todo @ point
+  }
   const curveTangent = curve.v; //todo @ point
   let dot = edgeTangent.dot(curveTangent);
   if (math.areEqual(dot, 0, TOLERANCE)) {
@@ -1111,6 +1153,7 @@ function Node(vertex, splitsEdge, splittingFace) {
   this.normal = 0;
   this.point = vertex.point;
   this.edge = splitsEdge;
+  this.dir = null;
   this.splittingFace = splittingFace;
   //__DEBUG__.AddPoint(this.point);
 }
