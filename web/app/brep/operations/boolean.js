@@ -390,10 +390,7 @@ function doMergeOverlappingFaces(face1, face2, keepNew) {
   for (let e of face2.edges) {
     const coi = findCoincidentEdge(e, allEdges);
     if (coi == null) {
-      if (EdgeSolveData.get(e).newEdgeFlag === true) {
-        delete EdgeSolveData.get(e).newEdgeFlag;
-        EdgeSolveData.createIfEmpty(e).transferedSurface = face2.surface;
-      }
+      EdgeSolveData.createIfEmpty(e).transferedSurface = face2.surface;
       allEdges.push(e);
     } else {
       if (EdgeSolveData.get(coi).newEdgeFlag === true) {
@@ -407,11 +404,11 @@ function doMergeOverlappingFaces(face1, face2, keepNew) {
   }
   function sort(edges) {
     function edgeOrder(e) {
-      if (EdgeSolveData.get(e).newEdgeFlag === true) {
-        return 2
-      } else if (EdgeSolveData.get(e).transferedSurface !== undefined) {
-        return 1;
-      }
+      if (EdgeSolveData.get(e).transferedSurface !== undefined) {
+        return EdgeSolveData.get(e).newEdgeFlag === true ? 2 : 1;
+      } else if (EdgeSolveData.get(e).newEdgeFlag === true) {
+        return 3;
+      } else
       return 0;
     }
     edges.sort((e1, e2) => edgeOrder(e1) - edgeOrder(e2));
