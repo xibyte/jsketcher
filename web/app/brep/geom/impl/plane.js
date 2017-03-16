@@ -49,6 +49,12 @@ export class Plane extends Surface {
     //TODO: store this.normal.multiply(this.w) in a field since it's constant value
   }
 
+  equals(other, tol) {
+    return other instanceof Plane &&
+      math.areVectorsEqual(this.normal, other.normal, tol) &&
+      math.areEqual(this.w, other.w, tol);
+  }
+
   toParametricForm() {
     const basis = BasisForPlane(this.normal);
     return new ParametricPlane(this.normal.multiply(this.w), basis.x, basis.y);

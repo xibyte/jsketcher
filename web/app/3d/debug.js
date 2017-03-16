@@ -36,6 +36,24 @@ function addGlobalDebugActions(app) {
     AddVertex: (v) => {
       window.__DEBUG__.AddPoint(v.point);
     },
+    AddPolygon: (vertices, color) => {
+      for (let i = 0; i < vertices.length; i ++) {
+        __DEBUG__.AddSegment(vertices[i].point, vertices[(i + 1) % vertices.length].point, color);
+      }  
+    },
+    AddPlane: (plane) => {
+      const geo = new THREE.PlaneBufferGeometry(2000, 2000, 8, 8);
+      const coplanarPoint = plane.normal.multiply(plane.w);
+      const focalPoint = coplanarPoint.plus(plane.normal);
+      geo.lookAt(focalPoint.three());
+      geo.translate(coplanarPoint.x, coplanarPoint.y, coplanarPoint.z);
+      const mat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.3, });
+      const planeObj = new THREE.Mesh(geo, mat);
+      debugGroup.add(planeObj);
+      app.viewer.render();
+    },
     AddHalfEdge: (he, color) => {
       window.__DEBUG__.AddSegment(he.vertexA.point, he.vertexB.point, color);
     },
@@ -93,7 +111,7 @@ function clearGroup(g) {
 
 function createLine(a, b, color) {
   color = color || 0xFA8072;
-  const debugLineMaterial = new THREE.LineBasicMaterial({color, linewidth: 3});
+  const debugLineMaterial = new THREE.LineBasicMaterial({color, linewidth: 10});
   const  lg = new THREE.Geometry();
   lg.vertices.push(a.three());
   lg.vertices.push(b.three());
