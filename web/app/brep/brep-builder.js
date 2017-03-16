@@ -148,3 +148,13 @@ export function iterateSegments(items, callback) {
     callback(items[i], items[j], i, j);
   }
 }
+
+export function invertLoop(loop) {
+  for (let halfEdge of loop.halfEdges) {
+    const t = halfEdge.vertexA;
+    halfEdge.vertexA = halfEdge.vertexB;
+    halfEdge.vertexB = t;
+  }
+  loop.halfEdges.reverse();
+  linkSegments(loop.halfEdges);
+}

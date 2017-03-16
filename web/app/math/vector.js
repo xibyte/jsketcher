@@ -48,6 +48,14 @@ Vector.prototype.length = function() {
   return Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
 };
 
+Vector.prototype.lengthSquared = function() {
+  return this.dot(this);
+};
+
+Vector.prototype.distanceToSquared = function(a) {
+  return this.minus(a).lengthSquared();
+};
+
 Vector.prototype.minus = function(vector) {
   return new Vector(this.x - vector.x, this.y - vector.y, this.z - vector.z);
 };
@@ -116,10 +124,6 @@ Vector.prototype.equals = function(vector) {
 
 Vector.prototype.three = function() {
   return new THREE.Vector3(this.x, this.y, this.z);
-};
-
-Vector.prototype.csg = function() {
-  return new CSG.Vector3D(this.x, this.y, this.z);
 };
 
 export default Vector;

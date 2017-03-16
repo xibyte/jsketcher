@@ -48,19 +48,15 @@ export function subtract( shell1, shell2 ) {
 export function invert( shell ) {
   for (let face of shell.faces) {
     face.surface = face.surface.invert();
-    invertLoop(face.outerLoop);
+    for (let loop of face.loops) {
+      invertLoop(loop);
+    }
   }
   BREPValidator.validateToConsole(shell);
 }
 
 function invertLoop(loop) {
-  for (let halfEdge of loop.halfEdges) {
-    const t = halfEdge.vertexA;
-    halfEdge.vertexA = halfEdge.vertexB;
-    halfEdge.vertexB = t;
-  }
-  loop.halfEdges.reverse();
-  BREPBuilder.linkSegments(loop.halfEdges);
+  BREPBuilder.invertLoop(loop);
 }
 
 export function BooleanAlgorithm( shell1, shell2, type ) {
@@ -204,11 +200,22 @@ function sew(allFaces) {
       if (sewed.has(h1)) {
         continue;
       }
-      const neighbors = findNeighborhood(allFaces, face, h1);
-      if (neighbors.length == 0) {
+      const neighborhood = findNeighborhood(allFaces, face, h1);
+      if (neighborhood.all.length == 1) {
         continue FACES;
       }
-      let h2 = neighborhoodAnalysis(h1, neighbors, analyzedNeighbors);
+      
+      let h2;
+      if (neighborhood.all.length == 2 && neighborhood.side2.length == 1) {
+        h2 = neighborhood.side2[0];
+      } else {
+        h2 = analyzedNeighbors.get(h1);
+        if (h2 === undefined) { // null indicates edge can't be sewed
+          neighborhoodAnalysis(neighborhood, analyzedNeighbors);
+        }
+        h2 = analyzedNeighbors.get(h1);
+      }
+
       if (h2 == null) {
         continue FACES;
       }
@@ -230,98 +237,82 @@ function sew(allFaces) {
   return sewedFaces;
 }
 
-function neighborhoodAnalysis(edge, neighbors, analized) {
-  if (neighbors.opposite.length > 1 || neighbors.other != null) {
+function edgeV(edge) {
+  return edge.vertexB.point.minus(edge.vertexA.point)._normalize();
+}
 
-    let paired = analized.get(edge);
-    if (paired) {
-      return paired;
-    }
+function neighborhoodAnalysis(neighborhood, analized) {
     
-    let a1 = neighbors.opposite[0];
-    let a2 = neighbors.opposite[1];
-    let b1 = edge;
-    let b2 = neighbors.other;
-    if (!a1 || !a2) {
-      a1 = edge;
-      a2 = neighbors.other;
-      b1 = neighbors.opposite[0];
-      b2 = neighbors.opposite[1];
-    } 
+  function encloses(e1, e2, testeeE) {
+    const f1 = e1.loop.face;
+    const f2 = e2.loop.face;
+    const testee = testeeE.loop.face;
 
-    if (!a2) {
-      throw 'unsupported neighborhood case'
+    const normal = edgeV(e1);
+    const t1 = f1.surface.normal.cross(normal)._normalize();
+    const t2 = f2.surface.normal.cross(edgeV(e2))._normalize();
+    const t3 = testee.surface.normal.cross(edgeV(testeeE))._normalize();
+
+    //__DEBUG__.AddSegment(e1.vertexA.point, e1.vertexA.point.plus(normal.multiply(100)), 0xffffff);
+    //__DEBUG__.AddSegment(e1.vertexA.point, e1.vertexA.point.plus(t1.multiply(100)), 0x00ff00);
+    //__DEBUG__.AddSegment(e1.vertexA.point, e1.vertexA.point.plus(t2.multiply(100)), 0x00ffff);
+    //__DEBUG__.AddSegment(e1.vertexA.point, e1.vertexA.point.plus(t3.multiply(100)), 0xff0000);
+
+    const angle = leftTurningMeasure(t1, t2, normal);
+    const testAngle = leftTurningMeasure(t1, t3, normal);
+    return testAngle > angle;
+  }
+  
+  let paired = new Set();
+  for (let e1 of neighborhood.side1) {
+    SIDE_2:
+    for (let e2 of neighborhood.side2) {
+      if (analized.has(e2)) continue;
+      for (let t of neighborhood.all) {
+        if (t == e1 || t == e2) {
+          continue;
+        }
+        if (encloses(e1, e2, t)) {
+          continue SIDE_2;  
+        }
+      }
+      analized.set(e1, e2);
+      analized.set(e2, e1);
+      paired.add(e1);
+      paired.add(e2);
     }
-    
-    const a1N = a1.loop.face.surface.normal;
-    const a2N = a2.loop.face.surface.normal;
-    const b1N = b1.loop.face.surface.normal;
-    const normal = a1N.cross(b1N);
-    
-    if (b2 == null) {
-      const dist1 = leftTurningMeasure(b1N, a1N.negate(), normal);
-      const dist2 = leftTurningMeasure(b1N, a2N.negate(), normal);
-      if (dist1 > dist2) {
-        analized.set(b1, a1);
-        analized.set(a1, b1);
-        analized.set(a2, null);
-      }  else {
-        analized.set(b1, a2);
-        analized.set(a2, b1);
-        analized.set(a1, null);
-      }
-    } else {
-      const b2N = b2.loop.face.surface.normal;
-      const dist1 = leftTurningMeasure(b1N, a1N.negate(), normal);
-      const dist2 = leftTurningMeasure(b1N, a2N.negate(), normal);
-      let closestDist, closestOption1, closestOption2, leftOver1, leftOver2;
-      if (dist1 > dist2) {
-        closestOption1 = a1;
-        leftOver1 = a2;
-        closestDist = dist1;
-      }  else {
-        closestOption1 = a2;
-        leftOver1 = a1;
-        closestDist = dist2;
-      }
-      // concurrent in between
-      if (leftTurningMeasure(b1N, b2N, normal) > closestDist) {
-        closestOption2 = b2;
-        leftOver2 = b1;
-      } else {
-        closestOption2 = b1;
-        leftOver2 = b2;
-      }
-      analized.set(closestOption1, closestOption2);
-      analized.set(closestOption2, closestOption1);
-      analized.set(leftOver1, leftOver2);
-      analized.set(leftOver2, leftOver1);
-      return analized.get(edge);
+  }
+  
+  for (let e of neighborhood.all) {
+    if (!paired.has(e)) {
+      analized.set(e, null);
     }
-  } else {
-    return neighbors.opposite[0];
   }
 }  
   
 function findNeighborhood(allFaces, skipFace, forEdge) {
   const result = {
-    opposite: [],
-    other: null 
+    side1: [forEdge],
+    side2: [],
+    all: [forEdge]
   };
+  
   for (let face of allFaces) {
     if (face == skipFace) continue;
     for (let e of face.edges) {
       if (areEdgesOpposite(e, forEdge)) {
-        result.opposite.push(e)
+        result.side2.push(e);
+        result.all.push(e);
       } else if (e != forEdge && areEdgesEqual(e, forEdge)) {
-        result.other = e;
+        result.side1.push(e);
+        result.all.push(e);
       }
     }
   }
   return result;
 }
 
-function mergeVertices(shell1, shell2) {
+export function mergeVertices(shell1, shell2) {
   const toSwap = new Map();
   for (let v1 of shell1.vertices) {
     for (let v2 of shell2.vertices) {
@@ -443,13 +434,14 @@ function areEdgesOpposite(e1, e2) {
 
 function splitNewEdgesIfNeeded(faceData) {
   for (let oe of faceData.face.edges) {
-    for (let ne of faceData.newEdges) {
-      if (math.areEqual(Math.abs(ne.edge.curve.v.dot(oe.edge.curve.v)), 1, TOLERANCE_SQ) &&
-        math.areEqual(Math.abs(ne.edge.curve.v.dot(ne.vertexA.point.minus(oe.vertexA.point)._normalize())), 1, TOLERANCE_SQ)) {
-        const line = Line.fromSegment(ne.vertexA.point, ne.vertexB.point);
-        const length = math.distanceAB3(ne.vertexA.point, ne.vertexB.point);
+    for (let i = 0; i < faceData.newEdges.length; ++i) {
+      let ne = faceData.newEdges[i];
+      if ( math.areEqual(Math.abs(ne.edge.curve.v.dot(oe.edge.curve.v)), 1, TOLERANCE) &&
+        math.areEqual(Math.abs(ne.edge.curve.v.dot(ne.vertexA.point.minus(oe.vertexA.point)._normalize())), 1, TOLERANCE)) {
 
         function check(vertex) {
+          const line = Line.fromSegment(ne.vertexA.point, ne.vertexB.point);
+          const length = math.distanceAB3(ne.vertexA.point, ne.vertexB.point);
           if (ne.vertexA != vertex && ne.vertexB != vertex) {
             const t = line.t(vertex.point);
             if (t >= 0 && t <= length) {
@@ -487,9 +479,12 @@ function merge(face, newEdges) {
   nullifyOppositeEdges(newEdges);
   
   for (let e of newEdges) {
-    if (e == null) continue; 
-    if (findCoincidentEdge(e, allEdges) == null) {
+    if (e == null) continue;
+    const existingEdge = findCoincidentEdge(e, allEdges);
+    if (existingEdge == null) {
       allEdges.push(e);
+    } else {
+      EdgeSolveData.createIfEmpty(existingEdge).newEdgeFlag = true
     }
   }
   
@@ -498,7 +493,7 @@ function merge(face, newEdges) {
   allEdges = allEdges.filter(e => e != null);
   //put new edges to the tail
   bringNewEdgesToTheTail(allEdges);
-  squash(face, allEdges)
+  squash(face, allEdges);
   if (DEBUG.EDGE_MERGING) {
     for (let e of allEdges) __DEBUG__.AddHalfEdge(e, 0xffff00);
   }
@@ -620,7 +615,7 @@ function traverseFaces(face, validFaces, callback) {
   }
 }
 
-function loopsToFaces(originFace, loops, out) {
+export function loopsToFaces(originFace, loops, out) {
   function createFaces(nestedLoop, surface) {
     const loop = nestedLoop.loop;
     const newFace = new Face(surface);
@@ -703,25 +698,27 @@ function cleanUpSolveData(shell) {
   }
 }
 
-function findMaxTurningLeft(edge, edges, normal) {
+function findMaxTurningLeft(pivotEdge, edges, normal) {
   edges = edges.slice();
   function edgeVector(edge) {
     return edge.vertexB.point.minus(edge.vertexA.point)._normalize();
   }
-  const edgeV = edgeVector(edge);
+  const pivot = pivotEdge.vertexA.point.minus(pivotEdge.vertexB.point)._normalize();
   edges.sort((e1, e2) => {
-    return leftTurningMeasure(edgeV, edgeVector(e1), normal) - leftTurningMeasure(edgeV, edgeVector(e2), normal);
+    return leftTurningMeasure(pivot, edgeVector(e1), normal) - leftTurningMeasure(pivot, edgeVector(e2), normal);
   });
-  return edges[0];
+  return edges[edges.length - 1];
 }
 
 function leftTurningMeasure(v1, v2, normal) {
   let measure = v1.dot(v2);
   if (v1.cross(v2).dot(normal) < 0) {
-    measure *= -1;
-    measure += 2;
+    measure = -(2 + measure);
   }
-  return measure
+  measure -= 1;//shift to the zero
+  
+  //make it positive all the way
+  return -measure;
 }
 
 function intersectFaces(shell1, shell2, inverseCrossEdgeDirection) {
@@ -957,9 +954,9 @@ function findCloserOnCurve(nodes, toNode, curve) {
   for (let i = 0; i < nodes.length; i++) {
     let node = nodes[i];
     if (node == null) continue;
-    let inward = toNode.normal * node.normal < 0;
-    let distance = Math.abs(origin - curve.t(node.point));
-    if (inward && distance < heroDistance) {
+    let distance = (origin - curve.t(node.point)) * node.normal;
+    if (distance < 0) continue;
+    if (distance < heroDistance) {
       hero = i;
       heroDistance = distance;
     }
@@ -993,7 +990,7 @@ function intersectFaceWithEdge(face, edge, result) {
   const length = ab.length();
   const v = ab._multiply(1 / length);
   
-  if (math.areEqual(edge.edge.curve.v.dot(face.surface.normal), 0, TOLERANCE_SQ)) {
+  if (math.areEqual(edge.edge.curve.v.dot(face.surface.normal), 0, TOLERANCE)) {
     if (math.areEqual(face.surface.normal.dot(edge.vertexA.point), face.surface.w, TOLERANCE)) {
       classifyAndAdd(edge.vertexA.point, true, false);
       classifyAndAdd(edge.vertexB.point, false, true);
@@ -1012,7 +1009,7 @@ function intersectFaceWithEdge(face, edge, result) {
       classifyAndAdd(pointOfIntersection, coiA, coiB)
     }
   }
-  function classifyAndAdd(pointOfIntersection, coiA, coiB, dir) {
+  function classifyAndAdd(pointOfIntersection, coiA, coiB) {
     const classRes = classifyPointToFace(pointOfIntersection, face);
     if (classRes.inside) {
       let vertexOfIntersection;
@@ -1029,9 +1026,6 @@ function intersectFaceWithEdge(face, edge, result) {
       }
 
       const node = new Node(vertexOfIntersection, edge);
-      if (dir) {
-        node.dir = dir;
-      }
       
       result.push(node);
       if (classRes.edge) {
