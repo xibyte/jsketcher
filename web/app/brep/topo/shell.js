@@ -7,12 +7,23 @@ export class Shell extends TopoObject {
     this.defineIterable('vertices', () => verticesGenerator(this));
     this.defineIterable('edges', () => edges(this))
   }
+  
+  reindexVertices() {
+    for (let e of this.edges) {
+      e.halfEdge1.vertexA.edges.clear();
+      e.halfEdge1.vertexB.edges.clear();
+    }
+    for (let e of this.edges) {
+      e.halfEdge1.vertexA.edges.add(e.halfEdge1);
+      e.halfEdge2.vertexA.edges.add(e.halfEdge2);
+    }
+  }
 }
 
 export function* verticesGenerator(shell) {
   const seen = new Set();
   for (let face of shell.faces) {
-    for (let edge of face.outerLoop.halfEdges) {
+    for (let edge of face.edges) {
       if (!seen.has(edge.vertexA)) {
         seen.add(edge.vertexA);
         yield edge.vertexA;
