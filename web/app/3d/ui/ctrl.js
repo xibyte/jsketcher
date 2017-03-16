@@ -133,15 +133,8 @@ UI.prototype.fillControlBar = function() {
 
 UI.prototype.registerWizard = function(wizard, overridingHistory) {
   wizard.box.root.css({left : (this.mainBox.root.width() + this.craftToolBar.node.width() + 30) + 'px', top : 0});
-  var craft = this.app.craft; 
-  wizard.onRequestReady = function(request) {
-    if (request.invalidAndShouldBeDropped == true) {
-      alert(request.message);   
-    } else {
-      craft.modify(request, overridingHistory);
-    }
-  };
-    
+  var craft = this.app.craft;
+  wizard.overridingHistory = overridingHistory;
   wizard.focus();
   if (this.registeredWizard != undefined) {
     if (!this.registeredWizard.disposed) {
@@ -167,7 +160,7 @@ UI.prototype.initOperation = function(op) {
 };
 
 UI.prototype.createWizardForOperation = function(op) {
-  var initParams = op.protoParams;
+  var initParams = op.params;
   var face = op.face !== undefined ? this.app.findFace(op.face) : null;
   if (face != null) {
     this.app.viewer.selectionMgr.select(face);

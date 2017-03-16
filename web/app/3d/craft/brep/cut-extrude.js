@@ -75,7 +75,7 @@ export class ParametricExtruder extends Extruder {
 
   calculateLid(basePoints) {
     if (this.params.prism != 1) {
-      const scale = this.params.prism < 0.001 ? 0.0001 : this.params.prism;
+      const scale = this.params.prism;
       const _3Dtr = this.face.brepFace.surface.get3DTransformation();
       const _2Dtr = _3Dtr.invert();
       const poly2d = basePoints.map(p => _2Dtr.apply(p));

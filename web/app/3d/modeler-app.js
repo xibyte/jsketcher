@@ -20,6 +20,7 @@ import '../../css/app3d.less'
 import * as BREPBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import * as BREPBool from '../brep/operations/boolean'
+import * as BREPMeshBool from './craft/mesh/mesh-boolean'
 import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/brep-scene-object'
 import TPI from './tpi'
@@ -82,7 +83,7 @@ App.prototype.addShellOnScene = function(shell, skin) {
 };
 
 App.prototype.scratchCode = function() {
-  this.addShellOnScene(BREPPrimitives.box(500, 500, 500)); return;
+  this.BREPMeshTestImpl(); return;
 
   const boxWithHole = BREPBool.subtract(BREPPrimitives.box(500, 500, 500), BREPPrimitives.box(500, 300, 300));
   //this.addShellOnScene(boxWithHole);
@@ -246,6 +247,30 @@ App.prototype.BREPTestImpl = function() {
   this.viewer.render()
 
 };
+
+App.prototype.BREPMeshTestImpl = function() {
+  const box1 = BREPPrimitives.box(500, 500, 500);
+  const box2 = BREPPrimitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+  //const box3 = BREPPrimitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
+
+  BREPValidator.validateToConsole(box1);
+
+  //box1.faces = [box1.faces[2]];
+  //box2.faces = [box2.faces[5]];
+
+  //addToScene(box1);
+  //addToScene(box2);
+  //addToScene(box3);
+
+  let result = BREPMeshBool.subtract(box1, box2);
+  //result = BREPBool.subtract(result, box3);
+  //this.addShellOnScene(result);
+  //addToScene(box1);
+
+  this.viewer.render()
+
+};
+
 
 App.prototype.processHints = function() {
   let id = window.location.hash.substring(1);

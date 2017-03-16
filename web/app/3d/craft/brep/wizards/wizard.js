@@ -7,6 +7,7 @@ export class Wizard {
     this.metadata = metadata;
     this.formFields = {};
     this.box = this.createUI(opearation, metadata);
+    this.overridingHistory = false;
     if (initialState != undefined) {
       this.setFormFields(initialState);
     }
@@ -64,7 +65,7 @@ export class Wizard {
   }
 
   apply() {
-    this.app.craft.modify(this.createRequest(), false);
+    this.app.craft.modify(this.createRequest(), this.overridingHistory);
   }
   
   onUIChange() {}
@@ -109,6 +110,8 @@ export class Wizard {
         if (faceId === CURRENT_SELECTION) {
           let selection = this.app.viewer.selectionMgr.selection[0];
           return selection ? selection.id : '';
+        } else {
+          return faceId;
         }
       });
     }
