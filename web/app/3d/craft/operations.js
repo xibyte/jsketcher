@@ -10,13 +10,11 @@ export const CUT = {
   action: (app, params) => Cut(app, params)
 };
 
-export const PAD = {
+export const EXTRUDE = {
   icon: 'img/3d/extrude',
   label: 'Extrude',
   info: (p) => '(' + r(p.value) + ')',
-  action: (app, request) => {
-
-  }
+  action: (app, params) => Extrude(app, params)
 };
 
 export const REVOLVE = {

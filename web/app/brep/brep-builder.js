@@ -6,8 +6,23 @@ import {HalfEdge, Edge} from './topo/edge'
 import {Line} from './geom/impl/line'
 import {Plane} from './geom/impl/plane'
 import {Point} from './geom/point'
+import {BasisForPlane, Matrix3} from '../math/l3space'
 import * as cad_utils from '../3d/cad-utils'
+import * as math from '../math/math'
 
+function isCCW(points, normal) {
+  const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();
+  const points2d = points.map(p => tr2d.apply(p));
+  return math.isCCW(points2d);
+}
+
+function checkCCW(points, normal) {
+  if (!isCCW(points, normal)) {
+    points = points.slice();
+    points.reverse();
+  }
+  return points;
+}
 
 export function createPrism(basePoints, height) {
   return new SimpleExtruder(height).extrude(basePoints, cad_utils.normalOfCCWSeq(basePoints));
@@ -21,8 +36,9 @@ export class Extruder {
   calculateLid(basePoints) {
     throw 'not implemented';
   }
-
+  
   extrude(basePoints, normal) {
+    basePoints = checkCCW(basePoints, normal);
     const baseLoop = createPlaneLoop(basePoints.map(p => new Vertex(p)));
     const baseFace = createPlaneFace(normal, baseLoop);
     const lidNormal = normal.multiply(-1);
@@ -30,7 +46,7 @@ export class Extruder {
     this.prepareLidCalculation(normal, lidNormal);
 
     //iterateSegments(basePoints.map(p => new Vertex(p.plus(offVector))), (a, b) => lidSegments.push({a, b}));
-    const lidPoints = this.calculateLid(basePoints).reverse();
+    const lidPoints = this.calculateLid(basePoints, normal, lidNormal).reverse();
     const lidLoop = createPlaneLoop(lidPoints.map(p => new Vertex(p)));
   
     const shell = new Shell();

@@ -6,9 +6,8 @@ import ToolBar from './toolbar'
 import * as MenuConfig from '../menu/menu-config'
 import * as Operations from '../craft/operations'
 import Menu from '../menu/menu'
-import {CutWizard} from '../craft/brep/wizards/cut-extrude'
+import {ExtrudeWizard, CutWizard} from '../craft/brep/wizards/cut-extrude'
 
-import {ExtrudeWizard as MeshExtrudeWizard} from '../craft/mesh/wizards/extrude'
 import {RevolveWizard} from '../craft/mesh/wizards/revolve'
 import {PlaneWizard} from '../craft/mesh/wizards/plane'
 import {BoxWizard} from '../craft/brep/wizards/box'
@@ -45,7 +44,7 @@ function UI(app) {
   var ui = this;
   
   this.app.bus.subscribe("showSketches", (enabled) => {
-    var solids = app.findAllSolids();
+    var solids = app.findAllSolidsOnScene();
     for (var i = 0; i < solids.length; i++) {
       for (var j = 0; j < solids[i].sceneFaces.length; j++) {
         var face = solids[i].sceneFaces[j];
@@ -73,12 +72,11 @@ UI.prototype.createCraftToolBar = function (vertPos) {
   var toolBar = new ToolBar(this.app);
   toolBar.add(this.app.actionManager.actions['PLANE']);
   toolBar.add(this.app.actionManager.actions['EditFace']);
-  toolBar.add(this.app.actionManager.actions['PAD']);
+  toolBar.add(this.app.actionManager.actions['EXTRUDE']);
   toolBar.add(this.app.actionManager.actions['CUT']);
   toolBar.add(this.app.actionManager.actions['REVOLVE']);  
   
   
-
   $('#viewer-container').append(toolBar.node);
   toolBar.node.css({left: '10px',top : vertPos + 'px'});
   return toolBar;
@@ -172,8 +170,8 @@ UI.prototype.createWizard = function(type, overridingHistory, initParams, face) 
   let wizard = null;
   if ('CUT' === type) {
     wizard = new CutWizard(this.app, initParams);
-  } else if ('PAD' === type) {
-    wizard = new MeshExtrudeWizard(this.app, face, false, initParams);
+  } else if ('EXTRUDE' === type) {
+    wizard = new ExtrudeWizard(this.app, initParams);
   } else if ('REVOLVE' === type) {
     wizard = new RevolveWizard(this.app, face, initParams);
   } else if ('PLANE' === type) {
