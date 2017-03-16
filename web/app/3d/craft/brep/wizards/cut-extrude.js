@@ -27,7 +27,7 @@ export class CutWizard extends PreviewWizard {
 
 export class ExtrudeWizard extends PreviewWizard {
   constructor(app, initialState) {
-    super(app, 'EXTRUDE', METADATA, new ExtrudePreviewer(false), initialState)
+    super(app, 'EXTRUDE', METADATA, initialState)
   }
 
   createPreviewObject(app, params) {
@@ -48,7 +48,7 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
   }
   
   createImpl(app, params, sketch, face) {
-    const parametricExtruder = new ParametricExtruder(face, params);
+    const parametricExtruder = new ParametricExtruder(params);
 
     const surface = face.brepFace.surface;
     const baseNormal = this.inversed ? surface.normal : surface.normal.negate();

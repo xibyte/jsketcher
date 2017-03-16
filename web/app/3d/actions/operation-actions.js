@@ -14,7 +14,7 @@ export const CUT = mergeInfo('CUT', {
   info: 'makes a cut based on 2D sketch'
 });
 
-export const PAD = mergeInfo('PAD', {
+export const EXTRUDE = mergeInfo('EXTRUDE', {
   info: 'extrudes 2D sketch'
 });
 
@@ -55,7 +55,7 @@ export const IMPORT_STL = mergeInfo('IMPORT_STL', {
 });
 
 requiresFaceSelection(CUT, 1);
-requiresFaceSelection(PAD, 1);
+requiresFaceSelection(EXTRUDE, 1);
 requiresFaceSelection(REVOLVE, 1);
 
 requiresSolidSelection(INTERSECTION, 2);

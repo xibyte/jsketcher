@@ -20,7 +20,6 @@ import '../../css/app3d.less'
 import * as BREPBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import * as BREPBool from '../brep/operations/boolean'
-import * as BREPMeshBool from './craft/mesh/mesh-boolean'
 import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/brep-scene-object'
 import TPI from './tpi'
@@ -262,7 +261,7 @@ App.prototype.BREPMeshTestImpl = function() {
   //addToScene(box2);
   //addToScene(box3);
 
-  let result = BREPMeshBool.subtract(box1, box2);
+  //let result = BREPMeshBool.subtract(box1, box2);
   //result = BREPBool.subtract(result, box3);
   //this.addShellOnScene(result);
   //addToScene(box1);
@@ -548,7 +547,7 @@ App.prototype.extrude = function() {
   var app = this;
   var solids = [polyFace.solid];
   this.craft.modify({
-    type: 'PAD',
+    type: 'EXTRUDE',
     solids : solids,
     face : polyFace,
     height : height

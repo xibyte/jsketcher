@@ -96,7 +96,7 @@ ExtrudeWizard.prototype.getParams = function() {
 
 ExtrudeWizard.prototype.createRequest = function(done) {
   done({
-    type : this.invert ? 'CUT' : 'PAD',
+    type : this.invert ? 'CUT' : 'EXTRUDE',
     solids : [this.app.findSolidByCadId(this.face.solid.tCadId)],
     face : this.app.findFace(this.face.id),
     params : this.operationParams,
