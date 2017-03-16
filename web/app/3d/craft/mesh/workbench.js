@@ -793,7 +793,7 @@ function materialize(index, detachedConfig) {
 
 export const MESH_OPERATIONS = {
   CUT : cut,
-  PAD : extrude,
+  EXTRUDE : extrude,
   REVOLVE : performRevolve,
   PLANE : function(app, request) {
     let basis, depth = request.params.depth;
