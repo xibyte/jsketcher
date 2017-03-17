@@ -1,6 +1,7 @@
 import {MESH_OPERATIONS} from './mesh/workbench'
 import {Extrude, Cut} from './brep/cut-extrude'
 import {BREPSceneSolid} from '../scene/brep-scene-object'
+import {PlaneSceneObject} from '../scene/plane-scene-object'
 import {box} from '../../brep/brep-primitives'
 
 export const CUT = {
@@ -49,7 +50,10 @@ export const PLANE = {
   label: 'Plane',
   info: (p) =>  '(' + p.depth + ')',
   action: (app, request) => {
-
+    return {
+      outdated: [],
+      created: [PlaneSceneObject.create(request)]
+    }
   }
 };
 
