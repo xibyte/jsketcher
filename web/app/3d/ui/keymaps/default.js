@@ -1,7 +1,7 @@
 export const keymap = {
 
   'CUT': 'C',
-  'PAD': 'E',
+  'EXTRUDE': 'E',
   'ZoomIn': '+',
   'ZoomOut': '-',
   'menu.craft': 'shift+C',

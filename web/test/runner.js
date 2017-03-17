@@ -37,7 +37,7 @@ function scheduleTestCase(testCase, caseId) {
 function scheduleTest(test, id) {
   queue.push({
       id,
-      func: test
+      func: test.func
     });
 }
 
@@ -89,6 +89,11 @@ function pause() {
 
 function updateIcon(dom, success) {
   dom.find('.status').addClass(success ? 'status-success' : 'status-fail');
+  const passed = $('#test-list .status.status-success').length;
+  const failed = $('#test-list .status.status-fail').length;
+  $('.report-amount-run').text(passed + failed);
+  $('.report-amount-passed').text(passed);
+  $('.report-amount-failed').text(failed);
 }
 
 function findTestCaseById(id) {
