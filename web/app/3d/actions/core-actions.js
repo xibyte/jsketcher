@@ -7,7 +7,7 @@ export const EditFace = {
   info: 'open sketcher for a face/plane',
   listens: ['selection'],
   update: ActionHelpers.checkForSelectedFaces(1),
-  invoke: (app) => app.sketchSelectedFace()
+  invoke: (app) => app.editFace()
 };
 
 export const Save = {

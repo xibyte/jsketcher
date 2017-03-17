@@ -1,6 +1,6 @@
 import {LoadTemplate} from './utils'
 import {Bind} from './bind'
-import * as Operations from '../operations'
+import * as Operations from '../craft/operations'
 
 export function ModificationsPanel(app) {
   this.app = app;
@@ -41,7 +41,10 @@ ModificationsPanel.prototype.updateList = function() {
       id : i,
       info: this.app.ui.getInfoForOp(op),
       OnBind : (dom, data) => {
-        dom.css('background-image', 'url('+ getIconForOp(op)+')');
+        const icon = getIconForOp(op);
+        if (icon) {
+          dom.css('background-image', 'url('+ icon+')');
+        }
         if (!op.face) {
           dom.find('.require-face').addClass('action-disabled');
         }

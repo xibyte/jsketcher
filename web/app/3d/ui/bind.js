@@ -60,6 +60,8 @@ export function BindArray(node, array, policy) {
         domItem = scope.nestedScopes[value.id];
         if (!domItem) {
           domItem = createFromTemplate(value.id);
+        } else {
+          domItem = domItem[0];
         }
         if (domPointer == 0) {
           node.prepend(domItem);

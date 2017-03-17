@@ -299,7 +299,11 @@ Bus.prototype.notify = function(event, data, sender) {
       const callback = listenerList[i][0];
       const listenerId = listenerList[i][1];
       if (sender == undefined || listenerId == null  || listenerId != sender) {
-        callback(data);
+        try {
+          callback(data);
+        } catch(e) {
+          console.error(e);
+        }
       }
     }
   }

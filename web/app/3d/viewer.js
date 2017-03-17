@@ -92,6 +92,7 @@ function Viewer(bus, container) {
 
   this.workGroup = new THREE.Object3D();
   this.scene.add(this.workGroup);
+  this.createBasisGroup();
   this.selectionMgr = new SelectionManager( this, 0xFAFAD2, 0xFF0000, null);
   this.sketchSelectionMgr = new SketchSelectionManager( this, new THREE.LineBasicMaterial({color: 0xFF0000, linewidth: 6/DPR}));
   var viewer = this;
@@ -159,6 +160,53 @@ function Viewer(bus, container) {
   this.animate();
 }
 
+Viewer.prototype.createBasisGroup = function() {
+  this.basisGroup = new THREE.Object3D();
+  var length = 200;
+  var arrowLength = length * 0.2;
+  var arrowHead = arrowLength * 0.4;
+
+  function createArrow(axis, color) {
+    var arrow = new THREE.ArrowHelper(axis, new THREE.Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
+    arrow.updateMatrix();
+    arrow.matrixAutoUpdate = false;
+    arrow.line.renderOrder = 1e11;
+    arrow.cone.renderOrder = 1e11;
+    arrow.line.material.linewidth =  1/DPR;
+    arrow.line.material.depthWrite = false;
+    arrow.line.material.depthTest = false;
+    arrow.cone.material.depthWrite = false;
+    arrow.cone.material.depthTest = false;
+    return arrow;
+  }
+
+  var xAxis = createArrow(new THREE.Vector3(1, 0, 0), 0xFF0000);
+  var yAxis = createArrow(new THREE.Vector3(0, 1, 0), 0x00FF00);
+  this.basisGroup.add(xAxis);
+  this.basisGroup.add(yAxis);
+};
+
+Viewer.prototype.updateBasis = function(basis, depth){
+  this.basisGroup.matrix.identity();
+  var mx = new THREE.Matrix4();
+  mx.makeBasis(basis[0].three(), basis[1].three(), basis[2].three());
+  var depthOff = new THREE.Vector3(0, 0, depth);
+  depthOff.applyMatrix4(mx);
+  mx.setPosition(depthOff);
+  this.basisGroup.applyMatrix(mx);
+};
+
+Viewer.prototype.showBasis = function(){
+  this.workGroup.add(this.basisGroup);
+};
+
+Viewer.prototype.hideBasis = function(){
+  if (this.basisGroup.parent !== null ) {
+    this.basisGroup.parent.remove( this.basisGroup );
+  }
+};
+
+
 Viewer.prototype.lookAt = function(obj) {
   var box = new THREE.Box3();
   box.setFromObject(obj);
@@ -196,8 +244,8 @@ Viewer.prototype.raycastObjects = function(event, kind, visitor) {
   let pickResults = this.raycast(event);
   for (let i = 0; i < pickResults.length; i++) {
     const pickResult = pickResults[i];
-    if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face && pickResult.face.__TCAD_polyFace !== undefined) {
-      const sketchFace = pickResult.face.__TCAD_polyFace;
+    if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face && pickResult.face.__TCAD_SceneFace !== undefined) {
+      const sketchFace = pickResult.face.__TCAD_SceneFace;
       if (!visitor(sketchFace, PICK_KIND.FACE)) {
         break;
       }

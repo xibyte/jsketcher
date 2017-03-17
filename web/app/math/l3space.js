@@ -30,6 +30,13 @@ Matrix3.prototype.setBasis = function(basis) {
   return this;
 };
 
+Matrix3.prototype.translate = function(dx, dy, dz) {
+  this.tx += dx;
+  this.ty += dy;
+  this.tz += dz;
+  return this;
+};
+
 Matrix3.prototype.set3 = function(
   mxx, mxy, mxz,
   myx, myy, myz,
@@ -199,4 +206,16 @@ Matrix3.rotateMatrix = function(angle, axis, pivot) {
   return m;
 };
 
-export {Matrix3, ORIGIN, IDENTITY_BASIS, AXIS}; 
+function BasisForPlane(normal) {
+  let alignPlane, x, y;
+  if (Math.abs(normal.dot(AXIS.Y)) < 0.5) {
+    alignPlane = normal.cross(AXIS.Y);
+  } else {
+    alignPlane = normal.cross(AXIS.Z);
+  }
+  y = alignPlane.cross(normal);
+  x = y.cross(normal);
+  return [x, y, normal];
+}
+
+export {Matrix3, ORIGIN, IDENTITY_BASIS, AXIS, BasisForPlane}; 
