@@ -98,11 +98,15 @@ export class SceneFace {
 
   createMeshFace(a, b, c) {
     const face = new THREE.Face3(a, b, c);
-    this.meshFaces.push(face);
-    face.__TCAD_SceneFace = this;
+    this.registerMeshFace(face);
     return face;
   }
-  
+
+  registerMeshFace(threeFace) {
+    this.meshFaces.push(threeFace);
+    threeFace.__TCAD_SceneFace = this;
+  }
+
   syncSketches(geom) {
     const normal = this.normal();
     const offVector = new Vector();//normal.multiply(0); // disable it. use polygon offset feature of material

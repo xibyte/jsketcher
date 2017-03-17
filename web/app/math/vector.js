@@ -74,6 +74,10 @@ Vector.prototype._minusXYZ = function(x, y, z) {
   return this;
 };
 
+Vector.prototype.plusXYZ = function(x, y, z) {
+  return new Vector(this.x + x, this.y + y, this.z + z);
+};
+
 Vector.prototype.plus = function(vector) {
   return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z);
 };
