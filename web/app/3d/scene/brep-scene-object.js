@@ -28,8 +28,7 @@ export class BREPSceneSolid extends SceneSolid {
       this.sceneFaces.push(sceneFace);
       for (let i = g.groupStart; i < g.groupEnd; i ++) {
         const face = geom.faces[i];
-        sceneFace.meshFaces.push(face);
-        face.__TCAD_SceneFace = sceneFace;
+        sceneFace.registerMeshFace(face);
       }
     }
     geom.mergeVertices();

@@ -71,6 +71,11 @@ InlineRadio.prototype.getValue = function() {
   return null;
 };
 
+InlineRadio.prototype.setValue = function(v) {
+  this.root.find('input[value='+v+']').prop('checked', true);
+};
+
+
 InlineRadio.COUNTER = 0;
 
 export function propLayout(root, name, valueEl) {

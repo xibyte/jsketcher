@@ -10,6 +10,13 @@ var AXIS = {
 
 var IDENTITY_BASIS = [AXIS.X, AXIS.Y, AXIS.Z];
 
+export const STANDARD_BASES = {
+  'XY': IDENTITY_BASIS,
+  'XZ': [AXIS.X, AXIS.Z, AXIS.Y],
+  'ZY': [AXIS.Z, AXIS.Y, AXIS.X]
+};
+
+
 /** @constructor */
 function Matrix3() {
   this.reset();

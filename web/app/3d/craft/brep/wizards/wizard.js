@@ -1,4 +1,5 @@
 import * as tk from '../../../../ui/toolkit'
+import {camelCaseSplit} from '../../../../utils/utils'
 
 export class Wizard {
   
@@ -21,7 +22,7 @@ export class Wizard {
   }
 
   uiLabel(name) {
-    return name;
+    return camelCaseSplit(name).map(w => w.toLowerCase()).join(' ');
   }
   
   focus() {
@@ -36,9 +37,9 @@ export class Wizard {
       const name = def[0];
       const type = def[1];
       const defaultValue = def[2];
-      const params = def[3];
+      const params = def[3] || {};
       const label = this.uiLabel(name);
-      const formItem = this.createFormField(name, label, type, params);
+      const formItem = this.createFormField(name, label, type, params, defaultValue);
       formItem.setter(defaultValue);
       tk.add(folder, formItem.ui);
       this.formFields[name] = formItem;
@@ -98,13 +99,20 @@ export class Wizard {
     this.box.close();
   }
   
-  createFormField(name, label, type, params) {
+  createFormField(name, label, type, params, initValue) {
     if (type == 'number') {
-      const number = tk.config(new tk.Number(label, 0, params.step, params.round), params);
+      const number = tk.config(new tk.Number(label, initValue, params.step, params.round), params);
       number.input.on('t-change', () => this.onUIChange(name));
       return Field.fromInput(number, Field.TEXT_TO_NUMBER_COERCION);
+    } else if (type == 'choice') {
+      const ops = params.options;
+      const radio = new tk.InlineRadio(ops, ops, ops.indexOf(initValue));
+      radio.root.find('input[type=radio]').on('change', () => {
+        this.onUIChange(name);
+      });
+      return new Field(radio, () => radio.getValue(), (v) => radio.setValue(v));
     } else if (type == 'face') {
-      const face = new tk.Text(label, '');
+      const face = new tk.Text(label, initValue);
       face.input.on('change', () => this.onUIChange(name));
       return Field.fromInput(face, undefined, (faceId) => {
         if (faceId === CURRENT_SELECTION) {
@@ -137,7 +145,5 @@ Field.fromInput = function (inputEl, getterCoercer, setterCoercer) {
   setterCoercer = setterCoercer || Field.NO_COERCION;
   return new Field(inputEl, () => getterCoercer(inputEl.input.val()), (value) => inputEl.input.val(setterCoercer(value)));
 };
-
-
 
 export const CURRENT_SELECTION = {}; 
