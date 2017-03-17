@@ -8,13 +8,21 @@ import {ActionManager} from './actions/actions'
 import * as AllActions from './actions/all-actions'
 import Vector from '../math/vector'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
-import * as workbench  from './workbench'
+import {Craft} from './craft/craft'
+import * as workbench  from './craft/mesh/workbench'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
 import {IO} from '../sketcher/io'
 import {AddDebugSupport} from './debug'
 import {init as initSample} from './sample'
 import '../../css/app3d.less'
+
+import * as BREPBuilder from '../brep/brep-builder'
+import * as BREPPrimitives from '../brep/brep-primitives'
+import * as BREPBool from '../brep/operations/boolean'
+import {BREPValidator} from '../brep/brep-validator'
+import {BREPSceneSolid} from './scene/brep-scene-object'
+import TPI from './tpi'
 
 function App() {
   this.id = this.processHints();
@@ -26,18 +34,19 @@ function App() {
   this.actionManager.registerActions(AllActions);
   this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
   this.controlBar = new ControlBar(this, $('#control-bar'));
-
+  this.TPI = TPI;
+  
+  this.craft = new Craft(this);
   this.ui = new UI(this);
-  this.craft = new workbench.Craft(this);
 
   AddDebugSupport(this);
   
-  if (this.id == '$scratch$') {
-    this.addBox();
+  if (this.id.startsWith('$scratch$')) {
+    this.scratchCode();
   } else {
     this.load();
   }
-
+  
   this._refreshSketches();
   this.viewer.render();
 
@@ -65,6 +74,203 @@ function App() {
   });
 }
 
+App.prototype.addShellOnScene = function(shell, skin) {
+  const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
+  this.viewer.workGroup.add(sceneSolid.cadGroup);
+  this.viewer.render();
+  return sceneSolid;
+};
+
+App.prototype.scratchCode = function() {
+  this.BREPMeshTestImpl(); return;
+
+  const boxWithHole = BREPBool.subtract(BREPPrimitives.box(500, 500, 500), BREPPrimitives.box(500, 300, 300));
+  //this.addShellOnScene(boxWithHole);
+
+  var c = BREPBuilder.createPrism([
+    BREPBuilder.point(0, 0, 250),
+    BREPBuilder.point(500, 0, 250),
+    BREPBuilder.point(500, 500, 250),
+    BREPBuilder.point(0, 500, 250)
+  ], 500);
+  this.addShellOnScene(BREPBool.subtract(boxWithHole, c));
+
+
+  return;
+  
+  //this.BREPTestImpl();return;
+  const ap = [[-250, -250, 250],
+    [ 250, -250, 250],
+    [ 250,  250, 250],
+    [-250,  250, 250]];
+  
+  
+  const bp = [
+    [   0, -100, 250],
+    [ 250, -250, 250],
+    [ 100,    0, 250],
+    [ 250,  250, 250],
+    [   0,  100, 250],
+    [-250,  250, 250],
+    [-100,    0, 250],
+    [-250, -250, 250]
+  ];
+
+  const a = BREPBuilder.createPrism(ap.map(p => new this.TPI.brep.geom.Point().set3(p)), 500);
+  const b = BREPBuilder.createPrism(bp.map(p => new this.TPI.brep.geom.Point().set3(p)), 500);
+
+
+  this.addShellOnScene(a, {
+    color: 0x800080,
+    transparent: true,
+    opacity: 0.5,
+  });
+  this.addShellOnScene(b, {
+    color: 0xfff44f,
+    transparent: true,
+    opacity: 0.5,
+  });
+  //this.addShellOnScene(a);
+  //this.addShellOnScene(b);
+  const result = BREPBool.subtract(a, b);
+  this.addShellOnScene(result);
+
+  this.viewer.render();
+
+
+  //this.BREPTestImplOverlap1();
+  //this.BREPBox()
+  //this.BREPTestImpl()
+  //setTimeout(() => this.BREPTestImpl());
+};
+
+App.prototype.BREPBox = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new BREPSceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box = BREPPrimitives.box(500, 500, 500);
+
+  addToScene(box);
+
+  this.viewer.render()
+
+};
+
+App.prototype.BREPTestImpl1 = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new BREPSceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box1 = BREPPrimitives.box(500, 500, 500);
+  const box2 = BREPPrimitives.box(500, 500, 500, new Matrix3().translate(250, 250, 250));
+
+  BREPValidator.validateToConsole(box1);
+  
+  //box1.faces = [box1.faces[2]];
+  //box2.faces = [box2.faces[5]];
+  
+  //addToScene(box1);
+  //addToScene(box2);
+
+  const result = BREPBool.subtract(box1, box2);
+  addToScene(result);
+  
+  this.viewer.render()
+  
+};
+
+App.prototype.BREPTestImplOverlap = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new BREPSceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box1 = BREPPrimitives.box(500, 500, 500);
+  const box2 = BREPPrimitives.box(500, 500, 500, new Matrix3().translate(250, 0, 250));
+
+  BREPValidator.validateToConsole(box1);
+
+  //addToScene(box1);
+  //addToScene(box2);
+
+  const result = BREPBool.subtract(box1, box2);
+  addToScene(result);
+
+  this.viewer.render()
+
+};
+
+App.prototype.BREPTestImplOverlap1 = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new BREPSceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box1 = BREPPrimitives.box(600, 600, 600);
+  const box2 = BREPPrimitives.box(300, 600, 300, new Matrix3().translate(150, 0, 150));
+
+  BREPValidator.validateToConsole(box1);
+
+  //addToScene(box1);
+  //addToScene(box2);
+
+  const result = BREPBool.subtract(box1, box2);
+  addToScene(result);
+
+  this.viewer.render()
+
+};
+
+App.prototype.BREPTestImpl = function() {
+  const addToScene = (shell) => {
+    const sceneSolid = new BREPSceneSolid(shell);
+    this.viewer.workGroup.add(sceneSolid.cadGroup);
+  };
+  const box1 = BREPPrimitives.box(500, 500, 500);
+  const box2 = BREPPrimitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+  const box3 = BREPPrimitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
+
+  BREPValidator.validateToConsole(box1);
+
+  //box1.faces = [box1.faces[2]];
+  //box2.faces = [box2.faces[5]];
+
+  //addToScene(box1);
+  //addToScene(box2);
+  //addToScene(box3);
+
+  let result = BREPBool.subtract(box1, box2);
+  result = BREPBool.subtract(result, box3);
+  addToScene(result);
+  //addToScene(box1);
+
+  this.viewer.render()
+
+};
+
+App.prototype.BREPMeshTestImpl = function() {
+  const box1 = BREPPrimitives.box(500, 500, 500);
+  const box2 = BREPPrimitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+  //const box3 = BREPPrimitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
+
+  BREPValidator.validateToConsole(box1);
+
+  //box1.faces = [box1.faces[2]];
+  //box2.faces = [box2.faces[5]];
+
+  //addToScene(box1);
+  //addToScene(box2);
+  //addToScene(box3);
+
+  //let result = BREPMeshBool.subtract(box1, box2);
+  //result = BREPBool.subtract(result, box3);
+  //this.addShellOnScene(result);
+  //addToScene(box1);
+
+  this.viewer.render()
+
+};
+
+
 App.prototype.processHints = function() {
   let id = window.location.hash.substring(1);
   if (!id) {
@@ -89,18 +295,18 @@ App.prototype.createState = function() {
   return state;
 };
 
-App.prototype.findAllSolids = function() {
+App.prototype.findAllSolidsOnScene = function() {
   return this.viewer.workGroup.children
     .filter(function(obj) {return obj.__tcad_solid !== undefined} )
     .map(function(obj) {return obj.__tcad_solid} )
 };
 
 App.prototype.findFace = function(faceId) {
-  var solids = this.findAllSolids();
+  var solids = this.craft.solids;
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
-    for (var j = 0; j < solid.polyFaces.length; j++) {
-      var face = solid.polyFaces[j];
+    for (var j = 0; j < solid.sceneFaces.length; j++) {
+      var face = solid.sceneFaces[j];
       if (face.id == faceId) {
         return face;
       }
@@ -110,7 +316,7 @@ App.prototype.findFace = function(faceId) {
 };
 
 App.prototype.findSolidByCadId = function(cadId) {
-  var solids = this.findAllSolids();
+  var solids = this.craft.solids;
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
     if (solid.tCadId == cadId) {
@@ -121,7 +327,7 @@ App.prototype.findSolidByCadId = function(cadId) {
 };
 
 App.prototype.findSolidById = function(solidId) {
-  var solids = this.findAllSolids();
+  var solids = this.craft.solids;
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
     if (solid.id == solidId) {
@@ -133,12 +339,12 @@ App.prototype.findSolidById = function(solidId) {
 
 App.prototype.indexEntities = function() {
   var out = {solids : {}, faces : {}};
-  var solids = this.findAllSolids();
+  var solids = this.craft.solids;
   for (var i = 0; i < solids.length; i++) {
     var solid = solids[i];
     out.solids[solid.tCadId] = solid;
-    for (var j = 0; j < solid.polyFaces.length; j++) {
-      var face = solid.polyFaces[j];
+    for (var j = 0; j < solid.sceneFaces.length; j++) {
+      var face = solid.sceneFaces[j];
       out.faces[face.id] = face;
     }
   }
@@ -156,7 +362,7 @@ App.prototype.projectStorageKey = function(polyFaceId) {
 };
 
 
-App.prototype.sketchSelectedFace = function() {
+App.prototype.editFace = function() {
   if (this.viewer.selectionMgr.selection.length == 0) {
     return;
   }
@@ -164,8 +370,8 @@ App.prototype.sketchSelectedFace = function() {
   this.sketchFace(polyFace);
 };
 
-App.prototype.sketchFace = function(polyFace) {
-  var faceStorageKey = this.faceStorageKey(polyFace.id);
+App.prototype.sketchFace = function(sceneFace) {
+  var faceStorageKey = this.faceStorageKey(sceneFace.id);
 
   var savedFace = localStorage.getItem(faceStorageKey);
   var data;
@@ -182,10 +388,10 @@ App.prototype.sketchFace = function(polyFace) {
     return a.sketchConnectionObject.id === b.sketchConnectionObject.id;
   }
 
-  var paths = workbench.reconstructSketchBounds(polyFace.solid.csg, polyFace);
+  var paths = sceneFace.getBounds();
 
-  //polyFace.polygon.collectPaths(paths);
-  var _3dTransformation = new Matrix3().setBasis(polyFace.basis());
+  //sceneFace.polygon.collectPaths(paths);
+  var _3dTransformation = new Matrix3().setBasis(sceneFace.basis());
   var _2dTr = _3dTransformation.invert();
 
   function addSegment(a, b) {
@@ -280,7 +486,7 @@ App.prototype.sketchFace = function(polyFace) {
   }
 
   for (var i = 0; i < paths.length; i++) {
-    var path = paths[i].vertices;
+    var path = paths[i];
     if (path.length < 3) continue;
     var shift = 0;
     if (isCircle(path)) {
@@ -326,7 +532,7 @@ App.prototype.sketchFace = function(polyFace) {
 
   localStorage.setItem(faceStorageKey, JSON.stringify(data));
   var sketchURL = faceStorageKey.substring(App.STORAGE_PREFIX.length);
-  this.tabSwitcher.showSketch(sketchURL, polyFace.id);
+  this.tabSwitcher.showSketch(sketchURL, sceneFace.id);
 };
 
 App.prototype.extrude = function() {
@@ -341,7 +547,7 @@ App.prototype.extrude = function() {
   var app = this;
   var solids = [polyFace.solid];
   this.craft.modify({
-    type: 'PAD',
+    type: 'EXTRUDE',
     solids : solids,
     face : polyFace,
     height : height
@@ -367,15 +573,6 @@ App.prototype.cut = function() {
   });
 };
 
-App.prototype.addBox = function() {
-  this.craft.modify({
-    type: 'BOX',
-    solids : [],
-    params : {w: 500, h: 500, d: 500},
-    protoParams : [500, 500, 500]
-  });
-};
-
 App.prototype.refreshSketches = function() {
   this._refreshSketches();
   this.bus.notify('refreshSketch');
@@ -383,18 +580,18 @@ App.prototype.refreshSketches = function() {
 };
 
 App.prototype._refreshSketches = function() {
-  var allSolids = this.findAllSolids();
+  var allSolids = this.craft.solids;
   for (var oi = 0; oi < allSolids.length; ++oi) {
     var obj = allSolids[oi];
-    for (var i = 0; i < obj.polyFaces.length; i++) {
-      var sketchFace = obj.polyFaces[i];
+    for (var i = 0; i < obj.sceneFaces.length; i++) {
+      var sketchFace = obj.sceneFaces[i];
       this.refreshSketchOnFace(sketchFace);
     }
   }
 };
 
 App.prototype.findSketches = function(solid) {
-  return solid.polyFaces.filter(f => this.faceStorageKey(f.id) in localStorage).map(f => f.id);
+  return solid.sceneFaces.filter(f => this.faceStorageKey(f.id) in localStorage).map(f => f.id);
 };
 
 App.prototype.refreshSketchOnFace = function(sketchFace) {
@@ -423,7 +620,7 @@ App.prototype.load = function() {
 };
 
 App.prototype.stlExport = function() {
-  var allPolygons = cad_utils.arrFlatten1L(this.findAllSolids().map(function (s) {
+  var allPolygons = cad_utils.arrFlatten1L(this.craft.solids.map(function (s) {
     return s.csg.toPolygons()
   }));
   var stl = CSG.fromPolygons(allPolygons).toStlString();

@@ -28,6 +28,7 @@
     "babel-eslint": "6.1.2",
     "babel-loader": "6.2.5",
     "babel-preset-es2015": "6.14.0",
+    "babel-polyfill": "6.20.0",
     "css-loader": "0.24.0",
     "less-loader": "2.2.3",
     "eslint": "3.2.0",
@@ -47,6 +48,7 @@
     "jwerty": "0.3.2",
     "handlebars": "4.0.6",
     "handlebars-loader": "1.4.0",
+    "json-loader": "0.5.4 ",
     "jquery": "2.1.0",
     "less": "2.7.1",
     "libtess": "1.2.2"
