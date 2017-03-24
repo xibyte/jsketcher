@@ -619,6 +619,7 @@ export function loopsToFaces(originFace, loops, out) {
   function createFaces(nestedLoop, surface) {
     const loop = nestedLoop.loop;
     const newFace = new Face(surface);
+    Object.assign(newFace.data, originFace.data);
     newFace.outerLoop = loop;
     loop.face = newFace;
     out.push(newFace);

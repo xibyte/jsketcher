@@ -1,4 +1,5 @@
 import Vector from '../../math/vector'
+import {EDGE_AUX} from '../../brep/approx'
 import {Triangulate} from '../../3d/triangulation'
 import {SceneSolid, SceneFace} from './scene-object'
 
@@ -40,7 +41,9 @@ export class BREPSceneSolid extends SceneSolid {
       for (let halfEdge of face.outerLoop.halfEdges) {
         if (!visited.has(halfEdge.edge)) {
           visited.add(halfEdge.edge);
-          this.addLineToScene(halfEdge.vertexA.point.three(), halfEdge.vertexB.point.three(), halfEdge.edge);
+          if (halfEdge.edge.data[EDGE_AUX] === undefined) {
+            this.addLineToScene(halfEdge.vertexA.point.three(), halfEdge.vertexB.point.three(), halfEdge.edge);
+          }
         }
       }
     }
@@ -55,6 +58,7 @@ class BREPSceneFace extends SceneFace {
     super(solid, brepFace.id);
     brepFace.id = this.id;
     this.brepFace = brepFace;
+    brepFace.data['scene.face'] = this;
   }
 
 
