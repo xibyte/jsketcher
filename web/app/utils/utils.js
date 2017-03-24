@@ -78,11 +78,11 @@ export class DoubleKeyMap {
     if (subMap == null) {
       subMap = this.map.get(b);
       if (subMap != null) {
-        return subMap.get(a);;
+        return subMap.get(a);
       }
       return null;
     }
-    subMap.get(b);
+    return subMap.get(b);
   }
 
   set(a, b, value) {

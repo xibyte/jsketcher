@@ -1,4 +1,5 @@
 import DPR from '../utils/dpr'
+import * as approx from '../brep/approx'
 
 class AbstractSelectionManager {
   
@@ -81,9 +82,10 @@ export class SelectionManager extends AbstractSelectionManager {
   
   select(sceneFace) {
     this.clear();
-    if (!!sceneFace.curvedSurfaces) {
-      for (var i = 0; i < sceneFace.curvedSurfaces.length; i++) {
-        var face  = sceneFace.curvedSurfaces[i];
+    const group = this.findGroup(sceneFace);
+    if (group) {
+      for (var i = 0; i < group.length; i++) {
+        var face  = group[i];
         this.selection.push(face);
         setFacesColor(face.meshFaces, this.readOnlyColor);
       }
@@ -96,6 +98,17 @@ export class SelectionManager extends AbstractSelectionManager {
     sceneFace.solid.mesh.geometry.colorsNeedUpdate = true;
     this.viewer.bus.notify('selection', sceneFace);
     this.viewer.render();
+  }
+  
+  findGroup(sceneFace) {
+    if (sceneFace.curvedSurfaces) {
+      return sceneFace.curvedSurfaces;
+    }
+    const approxFace = sceneFace.brepFace.data[approx.FACE_CHUNK];
+    if (approxFace) {
+      return approxFace.faces.map(f => f.data['scene.face']);
+    }
+    return undefined;
   }
   
   deselectAll() {

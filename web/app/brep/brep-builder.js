@@ -38,7 +38,6 @@ export class Extruder {
   }
   
   extrude(basePoints, normal) {
-    basePoints = checkCCW(basePoints, normal);
     const baseLoop = createPlaneLoop(basePoints.map(p => new Vertex(p)));
     const baseFace = createPlaneFace(normal, baseLoop);
     const lidNormal = normal.multiply(-1);
@@ -72,6 +71,7 @@ export class Extruder {
       
       const wallFace = createPlaneFace(wallNormal, wallLoop);
       wallFace.role = 'wall:' + i;
+      this.onWallCallback(wallFace, baseHalfEdge);
       
       shell.faces.push(wallFace);
     }
@@ -89,6 +89,9 @@ export class Extruder {
     shell.faces.push(baseFace, lidFace);
     shell.faces.forEach(f => f.shell = shell);
     return shell;
+  }
+
+  onWallCallback(wallFace, baseHalfEdge) {
   }
 }
 
