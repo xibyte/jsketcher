@@ -3,10 +3,12 @@ import * as math from '../../../math/math'
 import Vector from '../../../math/vector'
 import {Extruder} from '../../../brep/brep-builder'
 import {BREPValidator} from '../../../brep/brep-validator'
+import * as approx from '../../../brep/approx'
 import {subtract, union} from '../../../brep/operations/boolean'
 import {Loop} from '../../../brep/topo/loop'
 import {Shell} from '../../../brep/topo/shell'
 import {ReadSketchFromFace} from './sketch-reader'
+import {isCurveClass} from '../../cad-utils'
 
 import {BREPSceneSolid} from '../../scene/brep-scene-object'
 
@@ -35,6 +37,7 @@ export function doOperation(app, params, cut) {
       newFace.id = undefined;
     }
   }
+  approx.update(result);
   const newSolid = new BREPSceneSolid(result);
   return {
     outdated: [solid],
@@ -56,6 +59,7 @@ export class ParametricExtruder extends Extruder {
   constructor(params) {
     super();
     this.params = params;
+    this.approxIndex = new Map();
   }
   
   prepareLidCalculation(baseNormal, lidNormal) {
@@ -83,5 +87,15 @@ export class ParametricExtruder extends Extruder {
       basePoints = math.polygonOffset(poly2d, scale).map(p => _3Dtr.apply(p));
     }
     return basePoints.map(p => p.plus(this.target));
+  }
+
+  onWallCallback(wallFace, baseHalfEdge) {
+    const conn = baseHalfEdge.vertexA.point.sketchConnectionObject;
+    if (conn && isCurveClass(conn._class)) {
+      if (!conn.approxSurface) {
+        conn.approxSurface = new approx.ApproxSurface();
+      }
+      conn.approxSurface.addFace(wallFace);
+    }
   }
 }

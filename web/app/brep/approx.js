@@ -1,8 +1,10 @@
-const FACE_CHUNK = 'approx.face.chunk';
-const EDGE_CHUNK = 'approx.edge.chunk';
-const EDGE_AUX = 'approx.edge.aux';
+import {DoubleKeyMap} from '../utils/utils'
 
-class ApproxSurface {
+export const FACE_CHUNK = 'approx.face.chunk';
+export const EDGE_CHUNK = 'approx.edge.chunk';
+export const EDGE_AUX = 'approx.edge.aux';
+
+export class ApproxSurface {
   constructor() {
     this.faces = [];   
   }
@@ -11,9 +13,14 @@ class ApproxSurface {
     face.data[FACE_CHUNK] = this;
     this.faces.push(face);
   }
+  
+  clear() {
+    this.faces = [];
+  }
+  
 }
 
-class ApproxCurve {
+export class ApproxCurve {
   constructor(surface1, surface2) {
     this.surface1 = surface1;
     this.surface2 = surface2;
@@ -37,8 +44,20 @@ class ApproxCurve {
   }
 }
 
-function update(shell) {
+export function update(shell) {
   const index = new DoubleKeyMap();
+  for (let face of shell.faces) {
+    const approxSurface = face.data[FACE_CHUNK];
+    if (approxSurface) {
+      approxSurface.clear();
+    }
+  }
+  for (let face of shell.faces) {
+    const approxSurface = face.data[FACE_CHUNK];
+    if (approxSurface) {
+      approxSurface.addFace(face);
+    }
+  }
   for (let e of shell.edges) {
     const face1 = e.halfEdge1.loop.face;
     const face2 = e.halfEdge2.loop.face;
@@ -55,7 +74,7 @@ function update(shell) {
   }
 }
 
-function getCurve(index, o1, o2) {
+export function getCurve(index, o1, o2) {
   let curve = index.get(o1, o2);
   if (curve == null) {
     curve = new ApproxCurve(o1, o2);
