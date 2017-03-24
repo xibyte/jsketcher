@@ -42,7 +42,9 @@ export class BREPSceneSolid extends SceneSolid {
         if (!visited.has(halfEdge.edge)) {
           visited.add(halfEdge.edge);
           if (halfEdge.edge.data[EDGE_AUX] === undefined) {
-            this.addLineToScene(halfEdge.vertexA.point.three(), halfEdge.vertexB.point.three(), halfEdge.edge);
+            const line = this.addLineToScene(halfEdge.vertexA.point.three(), halfEdge.vertexB.point.three(), halfEdge.edge);
+            line.__TCAD_EDGE = halfEdge.edge;
+            halfEdge.edge.data['scene.edge'] = line;
           }
         }
       }

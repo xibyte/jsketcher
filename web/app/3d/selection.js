@@ -70,6 +70,59 @@ export class SketchSelectionManager extends AbstractSelectionManager {
   }
 }
 
+export class EdgeSelectionManager extends AbstractSelectionManager {
+
+  constructor (viewer, selectionMaterial) {
+    super(viewer);
+    this.selectionMaterial = selectionMaterial;
+    this.defaultMaterials = [];
+  }
+
+  select(line) {
+    this._clearSilent();
+    const edge = line.__TCAD_EDGE;
+    const approxCurve = edge.data[approx.EDGE_CHUNK];
+    if (approxCurve) {
+      for (let edgeChunk of approxCurve.edges) {
+        this.mark(edgeChunk.data['scene.edge']);
+      }
+    } else {
+      this.mark(line);
+    }
+    this.notify();
+    this.viewer.render();
+  }
+
+  mark(line) {
+    this.defaultMaterials.push(line.material);
+    this.selection.push(line);
+    line.material = this.selectionMaterial;
+  }
+  
+  deselectAll() {
+    this.clear();
+  }
+
+  clear() {
+    this._clearSilent();
+    this.notify();
+    this.viewer.render();
+  }
+
+  _clearSilent() {
+    for (let i = 0; i < this.selection.length; i++) {
+      this.selection[i].material = this.defaultMaterials[i];
+    }
+    this.defaultMaterials.length = 0;
+    this.selection.length = 0;
+  }
+
+  notify() {
+    //this.viewer.bus.notify('selection-edge');
+  }
+}
+
+
 export class SelectionManager extends AbstractSelectionManager {
   
   constructor(viewer, selectionColor, readOnlyColor, defaultColor) {

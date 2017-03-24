@@ -2,7 +2,7 @@ import * as cad_utils from './cad-utils'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import DPR from '../utils/dpr'
 import * as mask from '../utils/mask';
-import {SelectionManager, SketchSelectionManager} from './selection'
+import {SelectionManager, SketchSelectionManager, EdgeSelectionManager} from './selection'
 
 function Viewer(bus, container) {
   this.bus = bus;
@@ -95,6 +95,7 @@ function Viewer(bus, container) {
   this.createBasisGroup();
   this.selectionMgr = new SelectionManager( this, 0xFAFAD2, 0xFF0000, null);
   this.sketchSelectionMgr = new SketchSelectionManager( this, new THREE.LineBasicMaterial({color: 0xFF0000, linewidth: 6/DPR}));
+  this.edgeSelectionMgr = new EdgeSelectionManager( this, new THREE.LineBasicMaterial({color: 0xFA8072, linewidth: 12/DPR}));
   var viewer = this;
 
   var raycaster = new THREE.Raycaster();
@@ -254,18 +255,27 @@ Viewer.prototype.raycastObjects = function(event, kind, visitor) {
       if (!visitor(pickResult.object, PICK_KIND.SKETCH)) {
         break;
       }
+    } else if (mask.is(kind, PICK_KIND.EDGE) && pickResult.object instanceof THREE.Line &&
+      pickResult.object. __TCAD_EDGE!== undefined) {
+      if (!visitor(pickResult.object, PICK_KIND.EDGE)) {
+        break;
+      }
     }
   }
 };
 
 Viewer.prototype.handlePick = function(event) {
-  this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH, (object, kind) => {
+  this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, (object, kind) => {
     if (kind == PICK_KIND.FACE) {
       if (this.selectionMgr.pick(object)) {
         return false;
       }
     } else if (kind == PICK_KIND.SKETCH) {
       if (this.sketchSelectionMgr.pick(object)) {
+        return false;
+      }
+    } else if (kind == PICK_KIND.EDGE) {
+      if (this.edgeSelectionMgr.pick(object)) {
         return false;
       }
     }
