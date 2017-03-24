@@ -66,3 +66,36 @@ export function camelCaseSplit(str) {
   }
   return words;
 }
+
+export class DoubleKeyMap {
+
+  constructor() {
+    this.map = new Map();
+  }
+
+  get(a, b) {
+    let subMap = this.map.get(a);
+    if (subMap == null) {
+      subMap = this.map.get(b);
+      if (subMap != null) {
+        return subMap.get(a);;
+      }
+      return null;
+    }
+    subMap.get(b);
+  }
+
+  set(a, b, value) {
+    let subMap = this.map.get(a);
+    if (subMap == null) {
+      subMap = this.map.get(b);
+      if (subMap != null) {
+        subMap.set(a, value);
+        return;
+      }
+      subMap = new Map();
+      this.map.set(a, subMap);
+    } 
+    subMap.set(b, value);
+  }
+}
