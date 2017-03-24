@@ -31,6 +31,7 @@ export class SceneSolid {
     lg.vertices.push(b);
     var line = new THREE.Line(lg, WIREFRAME_MATERIAL);
     this.wireframeGroup.add(line);
+    return line;
   }
 
   createGeometry() {
