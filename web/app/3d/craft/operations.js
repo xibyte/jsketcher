@@ -52,7 +52,7 @@ export const PLANE = {
   action: (app, request) => {
     return {
       outdated: [],
-      created: [PlaneSceneObject.create(request)]
+      created: [PlaneSceneObject.create(request, (f) => app.findFace(f))]
     }
   }
 };
