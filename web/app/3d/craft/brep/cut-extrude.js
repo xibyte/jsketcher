@@ -68,7 +68,6 @@ export class ParametricExtruder extends Extruder {
   constructor(params) {
     super();
     this.params = params;
-    this.approxIndex = new Map();
   }
   
   prepareLidCalculation(baseNormal, lidNormal) {
