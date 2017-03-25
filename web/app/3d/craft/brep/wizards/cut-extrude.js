@@ -1,6 +1,8 @@
 import {CURRENT_SELECTION as S} from './wizard'
 import {PreviewWizard, SketchBasedPreviewer} from './preview-wizard'
 import {ParametricExtruder, fixNegativeValue} from '../cut-extrude'
+import {TriangulatePolygons} from '../../../triangulation'
+import Vector from '../../../../math/vector'
 
 const METADATA = [
   ['value'   , 'number',  50],
@@ -68,6 +70,11 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
         triangles.push([ base[p], base[q], lid[q] ]);
         triangles.push([ lid[q], lid[p], base[p] ]);
       }
+      TriangulatePolygons([base], baseNormal, (v) => v.toArray(), (arr) => new Vector().set3(arr))
+        .forEach(tr => triangles.push(tr));
+      
+      TriangulatePolygons([lid], lidNormal, (v) => v.toArray(), (arr) => new Vector().set3(arr))
+        .forEach(tr => triangles.push(tr));
     }
     return triangles;
   }

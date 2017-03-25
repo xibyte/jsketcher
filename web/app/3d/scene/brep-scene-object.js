@@ -82,7 +82,7 @@ class BREPSceneFace extends SceneFace {
 }
 
 function triangulate(face) {
-  function csgVert(data) {
+  function v(data) {
     return new Vector(data[0], data[1], data[2]);
   }
   function data(v) {
@@ -97,13 +97,12 @@ function triangulate(face) {
 
   let vertices = Triangulate(contours, data(face.surface.normal));
   for (let i = 0;  i < vertices.length; i += 3 ) {
-    var a = csgVert(vertices[i]);
-    var b = csgVert(vertices[i + 1]);
-    var c = csgVert(vertices[i + 2]);
+    var a = v(vertices[i]);
+    var b = v(vertices[i + 1]);
+    var c = v(vertices[i + 2]);
     triangled.push([a, b, c]);
   }
   return triangled;
-
 }
 
 export function triangulateToThree(shell, geom) {    
