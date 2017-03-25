@@ -65,6 +65,23 @@ export function Triangulate(contours, normal) {
   return triangleVerts;
 }
 
+export function TriangulatePolygons(polygons, normal, toArray, fromArray) {
+  const triangled = [];
+  const contours = [];
+  for (let poly of polygons) {
+    contours.push(poly.map(point => toArray(point)));
+  }
+
+  let vertices = Triangulate(contours, toArray(normal));
+  for (let i = 0;  i < vertices.length; i += 3 ) {
+    var a = fromArray(vertices[i]);
+    var b = fromArray(vertices[i + 1]);
+    var c = fromArray(vertices[i + 2]);
+    triangled.push([a, b, c]);
+  }
+  return triangled;
+}
+
 export function TriangulateFace(face) {
   function arr(v) {
     return [v.x, v.y, v.z];
