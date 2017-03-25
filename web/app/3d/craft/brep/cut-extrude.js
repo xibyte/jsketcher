@@ -23,9 +23,14 @@ export function Cut(app, params) {
 export function doOperation(app, params, cut) {
   const face = app.findFace(params.face);
   const solid = face.solid;
-  const reverseNormal = !cut;
+  let reverseNormal = !cut;
   
   let normal = face.normal();
+  if (params.value < 0) {
+    params = fixNegativeValue(params);
+    reverseNormal = !reverseNormal;
+  }
+
   if (reverseNormal) normal = normal.negate();
   const sketch = ReadSketchFromFace(app, face, reverseNormal);
   
@@ -53,6 +58,14 @@ export function doOperation(app, params, cut) {
     created:  [newSolid]
   }
 }
+
+export function fixNegativeValue(params) {
+  if (params.value < 0) {
+    params = Object.assign({}, params);
+    params.value *= -1;
+  } 
+  return params;
+} 
 
 function combineShells(shells) {
   if (shells.length == 1) {
