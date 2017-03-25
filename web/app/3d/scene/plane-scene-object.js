@@ -56,8 +56,8 @@ export class PlaneSceneObject extends SceneSolid {
   
   static create(params, faceResolver) {
     let face = null;
-    if (params.face) {
-      face = faceResolver(params.face);
+    if (params.parallelTo) {
+      face = faceResolver(params.parallelTo);
     }
     let plane = null;
     if (face == null) {

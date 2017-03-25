@@ -17,8 +17,8 @@ export class PlaneWizard extends PreviewWizard {
   
   createPreviewObject(app, params) {
     let face = null;
-    if (params.face) {
-      face = this.app.findFace(params.face);
+    if (params.parallelTo) {
+      face = this.app.findFace(params.parallelTo);
     }
     let basis;
     let depth = params.depth;

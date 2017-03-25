@@ -1,9 +1,9 @@
 import {CURRENT_SELECTION as S} from './wizard'
 import {PreviewWizard, SketchBasedPreviewer} from './preview-wizard'
-import {ParametricExtruder} from '../cut-extrude'
+import {ParametricExtruder, fixNegativeValue} from '../cut-extrude'
 
 const METADATA = [
-  ['value'   , 'number',  50,  {min: 0}],
+  ['value'   , 'number',  50],
   ['prism'   , 'number',  1 ,  {min: 0, step: 0.1, round: 1}],
   ['angle'   , 'number',  0 ,  {}],
   ['rotation', 'number',  0 ,  {step: 5}],
@@ -48,11 +48,15 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
   }
   
   createImpl(app, params, sketch, face) {
-    const parametricExtruder = new ParametricExtruder(params);
-
     const normal = face.normal();
-    const baseNormal = this.inversed ? normal : normal.negate();
-    const lidNormal = this.inversed ? baseNormal.negate() : normal;
+    let reverseNormal = this.inversed;
+    if (params.value < 0) {
+      params = fixNegativeValue(params);
+      reverseNormal = !reverseNormal;
+    }
+    const parametricExtruder = new ParametricExtruder(params);
+    const baseNormal = reverseNormal ? normal : normal.negate();
+    const lidNormal =  reverseNormal ? baseNormal.negate() : normal;
     
     parametricExtruder.prepareLidCalculation(baseNormal, lidNormal);
     
