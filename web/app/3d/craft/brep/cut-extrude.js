@@ -23,19 +23,28 @@ export function Cut(app, params) {
 export function doOperation(app, params, cut) {
   const face = app.findFace(params.face);
   const solid = face.solid;
-  const sketch = ReadSketchFromFace(app, face);
+  const reverseNormal = !cut;
+  
+  let normal = face.normal();
+  if (reverseNormal) normal = normal.negate();
+  const sketch = ReadSketchFromFace(app, face, reverseNormal);
+  
   const extruder = new ParametricExtruder(params);
-  let normal = face.brepFace.surface.normal;
-  if (!cut) normal = normal.negate(); 
   const operand = combineShells(sketch.map(s => extruder.extrude(s, normal)));
   BREPValidator.validateToConsole(operand);
-  
-  const op = cut ? subtract : union;
-  const result = op(solid.shell, operand);
-  for (let newFace of result.faces) {
-    if (newFace.id == face.id) {
-      newFace.id = undefined;
+
+  let result;
+  if (solid instanceof BREPSceneSolid) {
+    const op = cut ? subtract : union;
+    result = op(solid.shell, operand);
+    for (let newFace of result.faces) {
+      if (newFace.id == face.id) {
+        newFace.id = undefined;
+      }
     }
+  } else {
+    if (cut) throw 'unable to cut plane';
+    result = operand;
   }
   approx.update(result);
   const newSolid = new BREPSceneSolid(result);

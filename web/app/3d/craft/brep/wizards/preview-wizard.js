@@ -65,7 +65,7 @@ PreviewWizard.createMesh = function(triangles) {
 export class SketchBasedPreviewer {
 
   constructor() {
-    this.fixToCCW = true;
+    //this.fixToCCW = true;
   }
   
   createImpl(app, params, sketch, face) {
@@ -78,11 +78,11 @@ export class SketchBasedPreviewer {
     const needSketchRead = !this.sketch || params.face != this.face;
     if (needSketchRead) {
       this.sketch = ReadSketchFromFace(app, face);
-      for (let polygon of this.sketch) {
-        if (!Loop.isPolygonCCWOnSurface(polygon, face.brepFace.surface) && this.fixToCCW) {
-          polygon.reverse();
-        }
-      }
+      //for (let polygon of this.sketch) {
+        //if (!Loop.isPolygonCCWOnSurface(polygon, face.brepFace.surface) && this.fixToCCW) {
+        //  polygon.reverse();
+        //}
+      //}
       this.face = params.face;
     }
     const triangles = this.createImpl(app, params, this.sketch, face);

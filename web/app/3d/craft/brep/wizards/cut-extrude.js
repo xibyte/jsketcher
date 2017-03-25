@@ -50,9 +50,9 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
   createImpl(app, params, sketch, face) {
     const parametricExtruder = new ParametricExtruder(params);
 
-    const surface = face.brepFace.surface;
-    const baseNormal = this.inversed ? surface.normal : surface.normal.negate();
-    const lidNormal = this.inversed ? baseNormal.negate() : surface.normal;
+    const normal = face.normal();
+    const baseNormal = this.inversed ? normal : normal.negate();
+    const lidNormal = this.inversed ? baseNormal.negate() : normal;
     
     parametricExtruder.prepareLidCalculation(baseNormal, lidNormal);
     

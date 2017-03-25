@@ -162,15 +162,16 @@ export function approxBezierCurve(a, b, cp1, cp2, resolution) {
   return LUT(a, b, cp1, cp2, 10);
 }
 
-export function getSketchedPolygons3D(app, face) {
+export function getSketchedPolygons3D(app, face, reverseGeom) {
 
   var savedFace = localStorage.getItem(app.faceStorageKey(face.id));
   if (savedFace == null) return null;
 
   var geom = readSketchGeom(JSON.parse(savedFace), face.id, false);
   var polygons2D = cad_utils.sketchToPolygons(geom);
-
-  var normal = face.normal();
+  if (reverseGeom) {
+    polygons2D.forEach(p => p.reverse());
+  }
   var depth = null;
   var sketchedPolygons = [];
   for (var i = 0; i < polygons2D.length; i++) {

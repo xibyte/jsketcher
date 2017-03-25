@@ -157,9 +157,11 @@ export class SelectionManager extends AbstractSelectionManager {
     if (sceneFace.curvedSurfaces) {
       return sceneFace.curvedSurfaces;
     }
-    const approxFace = sceneFace.brepFace.data[approx.FACE_CHUNK];
-    if (approxFace) {
-      return approxFace.faces.map(f => f.data['scene.face']);
+    if (sceneFace.brepFace) {
+      const approxFace = sceneFace.brepFace.data[approx.FACE_CHUNK];
+      if (approxFace) {
+        return approxFace.faces.map(f => f.data['scene.face']);
+      }
     }
     return undefined;
   }
