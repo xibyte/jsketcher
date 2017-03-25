@@ -126,6 +126,10 @@ Vector.prototype.equals = function(vector) {
   return vectorsEqual(this, vector);
 };
 
+Vector.prototype.toArray = function() {
+  return [this.x, this.y, this.z];
+};
+
 Vector.prototype.three = function() {
   return new THREE.Vector3(this.x, this.y, this.z);
 };
