@@ -1,5 +1,5 @@
 import Vector from '../../math/vector'
-import {EDGE_AUX} from '../../brep/approx'
+import {EDGE_AUX} from '../../brep/stitching'
 import {Triangulate} from '../../3d/triangulation'
 import {SceneSolid, SceneFace} from './scene-object'
 

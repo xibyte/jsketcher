@@ -1,5 +1,5 @@
 import DPR from '../utils/dpr'
-import * as approx from '../brep/approx'
+import * as stitching from '../brep/stitching'
 
 class AbstractSelectionManager {
   
@@ -81,9 +81,9 @@ export class EdgeSelectionManager extends AbstractSelectionManager {
   select(line) {
     this._clearSilent();
     const edge = line.__TCAD_EDGE;
-    const approxCurve = edge.data[approx.EDGE_CHUNK];
-    if (approxCurve) {
-      for (let edgeChunk of approxCurve.edges) {
+    const stitchedCurve = edge.data[stitching.EDGE_CHUNK];
+    if (stitchedCurve) {
+      for (let edgeChunk of stitchedCurve.edges) {
         this.mark(edgeChunk.data['scene.edge']);
       }
     } else {
@@ -158,9 +158,9 @@ export class SelectionManager extends AbstractSelectionManager {
       return sceneFace.curvedSurfaces;
     }
     if (sceneFace.brepFace) {
-      const approxFace = sceneFace.brepFace.data[approx.FACE_CHUNK];
-      if (approxFace) {
-        return approxFace.faces.map(f => f.data['scene.face']);
+      const stitchedFace = sceneFace.brepFace.data[stitching.FACE_CHUNK];
+      if (stitchedFace) {
+        return stitchedFace.faces.map(f => f.data['scene.face']);
       }
     }
     return undefined;
