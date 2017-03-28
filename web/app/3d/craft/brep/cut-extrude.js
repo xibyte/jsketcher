@@ -3,7 +3,7 @@ import * as math from '../../../math/math'
 import Vector from '../../../math/vector'
 import {Extruder} from '../../../brep/brep-builder'
 import {BREPValidator} from '../../../brep/brep-validator'
-import * as approx from '../../../brep/approx'
+import * as stitching from '../../../brep/stitching'
 import {subtract, union} from '../../../brep/operations/boolean'
 import {Loop} from '../../../brep/topo/loop'
 import {Shell} from '../../../brep/topo/shell'
@@ -51,7 +51,7 @@ export function doOperation(app, params, cut) {
     if (cut) throw 'unable to cut plane';
     result = operand;
   }
-  approx.update(result);
+  stitching.update(result);
   const newSolid = new BREPSceneSolid(result);
   return {
     outdated: [solid],
@@ -113,10 +113,10 @@ export class ParametricExtruder extends Extruder {
   onWallCallback(wallFace, baseHalfEdge) {
     const conn = baseHalfEdge.vertexA.point.sketchConnectionObject;
     if (conn && isCurveClass(conn._class)) {
-      if (!conn.approxSurface) {
-        conn.approxSurface = new approx.ApproxSurface();
+      if (!conn.stitchedSurface) {
+        conn.stitchedSurface = new stitching.StitchedSurface();
       }
-      conn.approxSurface.addFace(wallFace);
+      conn.stitchedSurface.addFace(wallFace);
     }
   }
 }
