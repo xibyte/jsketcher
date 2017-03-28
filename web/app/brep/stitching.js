@@ -1,10 +1,10 @@
 import {DoubleKeyMap} from '../utils/utils'
 
-export const FACE_CHUNK = 'approx.face.chunk';
-export const EDGE_CHUNK = 'approx.edge.chunk';
-export const EDGE_AUX = 'approx.edge.aux';
+export const FACE_CHUNK = 'stitching.face.chunk';
+export const EDGE_CHUNK = 'stitching.edge.chunk';
+export const EDGE_AUX = 'stitching.edge.aux';
 
-export class ApproxSurface {
+export class StitchedSurface {
   constructor() {
     this.faces = [];   
   }
@@ -20,7 +20,7 @@ export class ApproxSurface {
   
 }
 
-export class ApproxCurve {
+export class StitchedCurve {
   constructor(surface1, surface2) {
     this.surface1 = surface1;
     this.surface2 = surface2;
@@ -33,7 +33,7 @@ export class ApproxCurve {
   }
   
   equals(other) {
-    return other instanceof ApproxCurve &&
+    return other instanceof StitchedCurve &&
         
       ((this.surface1 == other.surface1 &&
         this.surface2 == other.surface2) ||
@@ -47,29 +47,29 @@ export class ApproxCurve {
 export function update(shell) {
   const index = new DoubleKeyMap();
   for (let face of shell.faces) {
-    const approxSurface = face.data[FACE_CHUNK];
-    if (approxSurface) {
-      approxSurface.clear();
+    const stitchedSurface = face.data[FACE_CHUNK];
+    if (stitchedSurface) {
+      stitchedSurface.clear();
     }
   }
   for (let face of shell.faces) {
-    const approxSurface = face.data[FACE_CHUNK];
-    if (approxSurface) {
-      approxSurface.addFace(face);
+    const stitchedSurface = face.data[FACE_CHUNK];
+    if (stitchedSurface) {
+      stitchedSurface.addFace(face);
     }
   }
   for (let e of shell.edges) {
     const face1 = e.halfEdge1.loop.face;
     const face2 = e.halfEdge2.loop.face;
-    const approxSurface1 = face1.data[FACE_CHUNK];
-    const approxSurface2 = face2.data[FACE_CHUNK];
-    if (approxSurface1 !== undefined && approxSurface1 === approxSurface2) {
-      e.data[EDGE_AUX] = approxSurface1;
-    } else if (approxSurface1 !== undefined || approxSurface2 !== undefined ) {
-      const o1 = approxSurface1 !== undefined ? approxSurface1 : face1.surface;
-      const o2 = approxSurface2 !== undefined ? approxSurface2 : face2.surface;
-      const approxCurve = getCurve(index, o1, o2);
-      approxCurve.addEdge(e);
+    const stitchedSurface1 = face1.data[FACE_CHUNK];
+    const stitchedSurface2 = face2.data[FACE_CHUNK];
+    if (stitchedSurface1 !== undefined && stitchedSurface1 === stitchedSurface2) {
+      e.data[EDGE_AUX] = stitchedSurface1;
+    } else if (stitchedSurface1 !== undefined || stitchedSurface2 !== undefined ) {
+      const o1 = stitchedSurface1 !== undefined ? stitchedSurface1 : face1.surface;
+      const o2 = stitchedSurface2 !== undefined ? stitchedSurface2 : face2.surface;
+      const stitchedCurve = getCurve(index, o1, o2);
+      stitchedCurve.addEdge(e);
     } 
   }
 }
@@ -77,7 +77,7 @@ export function update(shell) {
 export function getCurve(index, o1, o2) {
   let curve = index.get(o1, o2);
   if (curve == null) {
-    curve = new ApproxCurve(o1, o2);
+    curve = new StitchedCurve(o1, o2);
     index.set(o1, o2, curve);
   }
   return curve;
