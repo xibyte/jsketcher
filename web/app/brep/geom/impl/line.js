@@ -44,6 +44,10 @@ export class Line extends Curve {
     }
     return point;
   }
+
+  translate(vector) {
+    return new Line(this.p0.plus(vector), this.v);
+  }
 }
 
 Line.fromTwoPlanesIntersection = function(plane1, plane2) {

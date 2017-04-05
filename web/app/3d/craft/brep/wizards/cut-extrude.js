@@ -1,8 +1,10 @@
 import {CURRENT_SELECTION as S} from './wizard'
 import {PreviewWizard, SketchBasedPreviewer} from './preview-wizard'
-import {ParametricExtruder, fixNegativeValue} from '../cut-extrude'
+import {getEncloseDetails} from '../cut-extrude'
 import {TriangulatePolygons} from '../../../triangulation'
 import Vector from '../../../../math/vector'
+import {reversedIndex} from '../../../../utils/utils'
+
 
 const METADATA = [
   ['value'   , 'number',  50],
@@ -50,31 +52,23 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
   }
   
   createImpl(app, params, sketch, face) {
-    const normal = face.normal();
-    let reverseNormal = this.inversed;
-    if (params.value < 0) {
-      params = fixNegativeValue(params);
-      reverseNormal = !reverseNormal;
-    }
-    const parametricExtruder = new ParametricExtruder(params);
-    const baseNormal = reverseNormal ? normal : normal.negate();
-    const lidNormal =  reverseNormal ? baseNormal.negate() : normal;
-    
-    parametricExtruder.prepareLidCalculation(baseNormal, lidNormal);
-    
-    const triangles = [];    
-    for (let base of sketch) {
-      var lid = parametricExtruder.calculateLid(base);
+    const encloseDetails = getEncloseDetails(params, sketch, face.brepFace.surface, !this.inversed);
+    const triangles = [];
+    for (let d of encloseDetails) {
+      const base = d.basePath.points;
+      const lid = d.lidPath.points;
       const n = base.length;
       for (let p = n - 1, q = 0; q < n; p = q ++) {
         triangles.push([ base[p], base[q], lid[q] ]);
         triangles.push([ lid[q], lid[p], base[p] ]);
       }
-      TriangulatePolygons([base], baseNormal, (v) => v.toArray(), (arr) => new Vector().set3(arr))
-        .forEach(tr => triangles.push(tr));
       
-      TriangulatePolygons([lid], lidNormal, (v) => v.toArray(), (arr) => new Vector().set3(arr))
-        .forEach(tr => triangles.push(tr));
+      function collectOnSurface(points, normal) {
+        TriangulatePolygons([points], normal, (v) => v.toArray(), (arr) => new Vector().set3(arr))
+          .forEach(tr => triangles.push(tr));
+      }
+      collectOnSurface(base, d.baseSurface.normal);
+      collectOnSurface(lid, d.lidSurface.normal);
     }
     return triangles;
   }

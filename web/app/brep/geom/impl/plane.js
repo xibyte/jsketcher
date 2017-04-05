@@ -12,16 +12,14 @@ export class Plane extends Surface {
   }
 
   calculateBasis() {
-    const normal = this.normal;
-    let alignPlane, x, y;
-    if (Math.abs(normal.dot(AXIS.Y)) < 0.5) {
-      alignPlane = normal.cross(AXIS.Y);
-    } else {
-      alignPlane = normal.cross(AXIS.Z);
+    return BasisForPlane(this.normal);
+  }
+  
+  basis() {
+    if (!this._basis) {
+      this._basis = this.calculateBasis();
     }
-    y = alignPlane.cross(normal);
-    x = y.cross(normal);
-    return [x, y, normal];
+    return this._basis;
   }
   
   intersect(other) {
@@ -30,7 +28,11 @@ export class Plane extends Surface {
     }
     return super.intersect();
   }
-  
+
+  translate(vector) {
+    return new Plane(this.normal, this.normal.dot(this.normal.multiply(this.w)._plus(vector)));
+  }
+
   invert() {
     return new Plane(this.normal.multiply(-1), - this.w);
   }
@@ -40,7 +42,7 @@ export class Plane extends Surface {
   }
 
   get3DTransformation() {
-    return new Matrix3().setBasis(this.calculateBasis());
+    return new Matrix3().setBasis(this.basis());
   }
 
   coplanarUnsigned(other, tol) {

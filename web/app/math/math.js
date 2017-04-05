@@ -70,6 +70,10 @@ export function strictEqual(a, b) {
   return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
+export function strictEqual2D(a, b) {
+  return a.x == b.x && a.y == b.y;
+}
+
 export function _vec(size) {
   var out = [];
   out.length = size;

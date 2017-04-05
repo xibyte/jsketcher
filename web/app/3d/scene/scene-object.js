@@ -2,7 +2,7 @@ import {HashTable} from '../../utils/hashmap'
 import Vector from '../../math/vector'
 import Counters from '../counters'
 import {Matrix3, BasisForPlane} from '../../math/l3space'
-import {arrFlatten1L, isCurveClass} from '../cad-utils'
+import {isCurveClass} from '../cad-utils'
 import DPR from '../../utils/dpr'
 
 export class SceneSolid {
@@ -61,6 +61,8 @@ export function createSolidMaterial(skin) {
   }, skin));
 }
 
+const OFF_LINES_VECTOR = new Vector();//normal.multiply(0); // disable it. use polygon offset feature of material
+
 export class SceneFace {
   constructor(solid, propagatedId) {
     if (propagatedId === undefined) {
@@ -109,9 +111,6 @@ export class SceneFace {
   }
 
   syncSketches(geom) {
-    const normal = this.normal();
-    const offVector = new Vector();//normal.multiply(0); // disable it. use polygon offset feature of material
-
     if (this.sketch3DGroup != null) {
       for (let i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
         this.sketch3DGroup.remove(this.sketch3DGroup.children[i]);
@@ -125,34 +124,29 @@ export class SceneFace {
     const _3dTransformation = new Matrix3().setBasis(basis);
     //we lost depth or z off in 2d sketch, calculate it again
     const depth = this.depth();
-    const polyLines = new Map();
-    function addSketchConnections(connections, material) {
-      for (let i = 0; i < connections.length; ++i) {
-        const l = connections[i];
+    const addSketchObjects = (sketchObjects, material, close) => {
+      for (let sketchObject of sketchObjects) {
+        let line = new THREE.Line(undefined, material);
+        line.__TCAD_SketchObject = sketchObject;
+        const chunks = sketchObject.approximate(10);
+        function addLine(p, q) {
+          const lg = line.geometry;
+          chunks[p].z = chunks[q].z = depth;
+          const a = _3dTransformation.apply(chunks[p]);
+          const b = _3dTransformation.apply(chunks[q]);
 
-        let line = polyLines.get(l.sketchObject.id);
-        if (!line) {
-          line = new THREE.Line(undefined, material);
-          line.__TCAD_SketchObject = l.sketchObject;
-          polyLines.set(l.sketchObject.id, line);
+          lg.vertices.push(a._plus(OFF_LINES_VECTOR).three());
+          lg.vertices.push(b._plus(OFF_LINES_VECTOR).three());
         }
-        const lg = line.geometry;
-        l.a.z = l.b.z = depth;
-        const a = _3dTransformation.apply(l.a);
-        const b = _3dTransformation.apply(l.b);
-
-        lg.vertices.push(a.plus(offVector).three());
-        lg.vertices.push(b.plus(offVector).three());
+        for (let q = 1; q < chunks.length; q ++) {
+          addLine(q - 1, q);
+        }
+        this.sketch3DGroup.add(line);
       }
-
-    }
-    addSketchConnections(geom.constructionSegments, SKETCH_CONSTRUCTION_MATERIAL);
-    addSketchConnections(geom.connections, SKETCH_MATERIAL);
-    addSketchConnections(arrFlatten1L(geom.loops), SKETCH_MATERIAL);
-
-    for (let line of polyLines.values()) {
-      this.sketch3DGroup.add(line);
-    }
+    };
+    addSketchObjects(geom.constructionSegments, SKETCH_CONSTRUCTION_MATERIAL);
+    addSketchObjects(geom.connections, SKETCH_MATERIAL);
+    addSketchObjects(geom.loops, SKETCH_MATERIAL);
   }
 
   findById(sketchObjectId) {
