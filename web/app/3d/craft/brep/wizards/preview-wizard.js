@@ -1,5 +1,5 @@
 import {Wizard} from './wizard'
-import {ReadSketchFromFace} from '../sketch-reader'
+import {ReadSketchContoursFromFace} from '../../sketch/sketch-reader'
 import {Loop} from '../../../../brep/topo/loop'
 
 export class PreviewWizard extends Wizard {
@@ -77,7 +77,7 @@ export class SketchBasedPreviewer {
     if (!face) return null;
     const needSketchRead = !this.sketch || params.face != this.face;
     if (needSketchRead) {
-      this.sketch = ReadSketchFromFace(app, face);
+      this.sketch = ReadSketchContoursFromFace(app, face, false);
       //for (let polygon of this.sketch) {
         //if (!Loop.isPolygonCCWOnSurface(polygon, face.brepFace.surface) && this.fixToCCW) {
         //  polygon.reverse();
