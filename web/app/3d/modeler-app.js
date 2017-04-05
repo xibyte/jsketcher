@@ -9,6 +9,7 @@ import * as AllActions from './actions/all-actions'
 import Vector from '../math/vector'
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
 import {Craft} from './craft/craft'
+import {ReadSketch}  from './craft/sketch/sketch-reader'
 import * as workbench  from './craft/mesh/workbench'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
@@ -598,7 +599,7 @@ App.prototype.refreshSketchOnFace = function(sketchFace) {
   var faceStorageKey = this.faceStorageKey(sketchFace.id);
   var savedFace = localStorage.getItem(faceStorageKey);
   if (savedFace != null) {
-    var geom = workbench.readSketchGeom(JSON.parse(savedFace), sketchFace.id, true);
+    var geom = ReadSketch(JSON.parse(savedFace), sketchFace.id, true);
     sketchFace.syncSketches(geom);
   }
 };

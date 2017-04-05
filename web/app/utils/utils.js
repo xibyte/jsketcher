@@ -67,6 +67,11 @@ export function camelCaseSplit(str) {
   return words;
 }
 
+export function defineIterable(obj, name, iteratorFactory) {
+  obj[name] = {};
+  obj[name][Symbol.iterator] = iteratorFactory;
+}
+
 export class DoubleKeyMap {
 
   constructor() {
@@ -98,4 +103,12 @@ export class DoubleKeyMap {
     } 
     subMap.set(b, value);
   }
+}
+
+export function reversedIndex(i, n) {
+  let lidIdx = n - i;
+  if (lidIdx == n) {
+    lidIdx = 0;
+  }
+  return lidIdx;
 }

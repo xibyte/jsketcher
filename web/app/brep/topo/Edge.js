@@ -29,9 +29,17 @@ export class HalfEdge extends TopoObject {
     this.prev = null;
   }
   
+  static create(a, b, loop, edge) {
+    const e = new HalfEdge().setAB(a, b);
+    e.loop = loop;
+    e.edge = edge;
+    return e;
+  }
+  
   setAB(a, b) {
     this.vertexA = a;
     this.vertexB = b;
+    return this;
   }
   
   twin() {
