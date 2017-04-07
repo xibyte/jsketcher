@@ -146,21 +146,6 @@ export function linkHalfEdges(edge, halfEdge1, halfEdge2) {
   edge.halfEdge2 = halfEdge2;
 }
 
-export function createLoopFromCompositeCurve(path) { // TODO: REMOVE!
-  const loop = new Loop();
-  const vertices = [];
-  for (let seg of path) {
-    vertices[seg.pos] = new Vertex(s.pointA);
-  }
-  for (let seg of path) {
-    const halfEdge = createHalfEdge(loop, vertices[seg.pos], vertices[seg.posNext]);
-    halfEdge.edge = new Edge(seg.curve);
-    halfEdge.edge.halfEdge1 = halfEdge;
-  }
-  linkSegments(loop.halfEdges);
-  return loop;
-}
-
 export function createHalfEdge(loop, vertexA, vertexB) {
   const halfEdge = new HalfEdge();
   halfEdge.loop = loop;
@@ -211,6 +196,10 @@ export function createPlaneLoop(vertices) {
   return loop;
 }
 
+function bothClassOf(o1, o2, className) {
+  return o1.constructor.name == className && o2.constructor.name == className; 
+}
+
 export function createFaceFromTwoEdges(e1, e2) {
   const loop = new Loop();
   e1.loop = loop;
@@ -222,22 +211,22 @@ export function createFaceFromTwoEdges(e1, e2) {
     HalfEdge.create(e2.vertexB,  e1.vertexA, loop));
   
   let surface = null;
-  if (e1.edge.curve.constructor.name == 'Line' && 
-      e2.edge.curve.constructor.name == 'Line') {
+  if (bothClassOf(e1.edge.curve, e2.edge.curve, 'Line')) {
     const normal = cad_utils.normalOfCCWSeq(loop.halfEdges.map(e => e.vertexA.point));
     surface = createPlaneForLoop(normal, loop);
-  } else if ((e1.edge.curve instanceof ApproxCurve) && (e2.edge.curve instanceof ApproxCurve)) {
-    const chunk1 = e1.edge.curve.getChunk(e1.edge.vertexA.point, e1.edge.vertexB.point);
-    const chunk2 = e2.edge.curve.getChunk(e2.edge.vertexA.point, e2.edge.vertexB.point);
+  } else if (bothClassOf(e1.edge.curve, e2.edge.curve, 'ApproxCurve')) {
+    
+    const chunk1 = e1.edge.curve.getChunk(e1.vertexA.point, e1.vertexB.point);
+    const chunk2 = e2.edge.curve.getChunk(e2.vertexA.point, e2.vertexB.point);
     const n = chunk1.length;
     if (n != chunk2.length) {
       throw 'unsupported';
     }
-    surface = new ApproxSurface();
+    const mesh = [];
     for (let p = n - 1, q = 0; q < n; p = q ++) {
-      const polygon = [ chunk1[p], chunk1[q], chunk2[q], chunk2[p] ];
-      surface.mesh.push(polygon);
+      mesh.push([ chunk1[p], chunk1[q], chunk2[q], chunk2[p] ]);
     }
+    surface = new ApproxSurface(mesh);
   } else {
     throw 'unsupported';
   }
