@@ -15,6 +15,9 @@ export class Curve {
   translate(vector) {
     throw 'not implemented';
   }
+
+  approximate(resolution, from, to, path) {
+  }
 }
 
 

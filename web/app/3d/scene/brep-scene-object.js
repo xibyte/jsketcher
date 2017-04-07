@@ -1,7 +1,7 @@
 import Vector from '../../math/vector'
 import {EDGE_AUX} from '../../brep/stitching'
 import {Triangulate} from '../../3d/triangulation'
-import {SceneSolid, SceneFace} from './scene-object'
+import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './scene-object'
 
 export class BREPSceneSolid extends SceneSolid {
 
@@ -42,7 +42,14 @@ export class BREPSceneSolid extends SceneSolid {
         if (!visited.has(halfEdge.edge)) {
           visited.add(halfEdge.edge);
           if (halfEdge.edge.data[EDGE_AUX] === undefined) {
-            const line = this.addLineToScene(halfEdge.vertexA.point.three(), halfEdge.vertexB.point.three(), halfEdge.edge);
+            const line = new THREE.Line(undefined, WIREFRAME_MATERIAL);
+            const contour = [halfEdge.vertexA.point];
+            halfEdge.edge.curve.approximate(10, halfEdge.vertexA.point, halfEdge.vertexB.point, contour);
+            contour.push(halfEdge.vertexB.point);
+            for (let p of contour) {
+              line.geometry.vertices.push(p.three());
+            }
+            this.wireframeGroup.add(line);
             line.__TCAD_EDGE = halfEdge.edge;
             halfEdge.edge.data['scene.edge'] = line;
           }
@@ -88,19 +95,22 @@ function triangulate(face) {
   function data(v) {
     return [v.x, v.y, v.z];
   }
-
+  
   const triangled = [];
-  const contours = [];
-  for (let loop of face.loops) {
-    contours.push(loop.asPolygon().map(point => data(point)));
-  }
-
-  let vertices = Triangulate(contours, data(face.surface.normal));
-  for (let i = 0;  i < vertices.length; i += 3 ) {
-    var a = v(vertices[i]);
-    var b = v(vertices[i + 1]);
-    var c = v(vertices[i + 2]);
-    triangled.push([a, b, c]);
+  if (face.surface.constructor.name == 'Plane') {
+    const contours = [];
+    for (let loop of face.loops) {
+      contours.push(loop.asPolygon().map(point => data(point)));
+    }
+    let vertices = Triangulate(contours, data(face.surface.normal));
+    for (let i = 0;  i < vertices.length; i += 3 ) {
+      var a = v(vertices[i]);
+      var b = v(vertices[i + 1]);
+      var c = v(vertices[i + 2]);
+      triangled.push([a, b, c]);
+    }
+  } else {
+    throw 'unsupported;'
   }
   return triangled;
 }
