@@ -115,12 +115,31 @@ export default {
     }));
   },
 
-
+  test_NESTED_FACES: function(env) {
+    test.emptyModeller(env.test((win, app) => {
+      app.actionManager.actions['BOX'].invoke(app);
+      app.ui.registeredWizard.okClick();
+      setSketch(win, app, '0:2', {"layers":[{"name":"sketch","data":[{"id":34,"_class":"TCAD.TWO.Segment","points":[[28,[29,-150],[30,150]],[31,[32,150],[33,150]]],"children":[34]},{"id":41,"_class":"TCAD.TWO.Segment","points":[[35,[36,150],[37,150]],[38,[39,150],[40,-150]]],"children":[41]},{"id":48,"_class":"TCAD.TWO.Segment","points":[[42,[43,150],[44,-150]],[45,[46,-150],[47,-150]]],"children":[48]},{"id":55,"_class":"TCAD.TWO.Segment","points":[[49,[50,-150],[51,-150]],[52,[53,-150],[54,150]]],"children":[55]}]}]} );
+      setSketch(win, app, '0:0', {"layers":[{"name":"sketch","data":[{"id":34,"_class":"TCAD.TWO.Segment","points":[[28,[29,-220],[30,220]],[31,[32,8.881784197001252e-15],[33,220]]],"children":[34]},{"id":41,"_class":"TCAD.TWO.Segment","points":[[35,[36,8.881784197001252e-15],[37,220]],[38,[39,8.881784197001252e-15],[40,-1.4210854715202004e-14]]],"children":[41]},{"id":48,"_class":"TCAD.TWO.Segment","points":[[42,[43,8.881784197001252e-15],[44,-1.4210854715202004e-14]],[45,[46,-220],[47,-1.4210854715202004e-14]]],"children":[48]},{"id":55,"_class":"TCAD.TWO.Segment","points":[[49,[50,-220],[51,-1.4210854715202004e-14]],[52,[53,-220],[54,220]]],"children":[55]}]}]} );
+      extrude(app, '0:2', 50);
+      cut(app, '0:0', 500);
+      assertScene(app, env, {"format":"LOOPS","vertices":[[-250,-250,-250],[-250,-250,250],[-250,24.438723388262304,-169.15430109914888],[-250,170.1126824084925,-44.56473088447832],[-250,250,-250],[-250,250,250],[-200,24.438723388262304,-169.15430109914888],[-200,170.1126824084925,-44.56473088447832],[-200,250,-250],[250,-250,-250],[250,-250,250],[250,250,-250],[250,250,250]],"faces":[[[9,10,1,0]],[[11,12,10,9]],[[4,5,12,11,8]],[[4,3,2,4,0,1,5]],[[5,1,10,12]],[[0,4,8,11,9]],[[4,2,6,8]],[[2,3,7,6]],[[3,4,8,7]],[[6,7,8]]]});
+      env.done();
+    }));
+  },
 };
 
 function cut(app, faceId, depth, prism) {
+  cutExtrude(app, faceId, depth, prism, true);
+}
+
+function extrude(app, faceId, depth, prism) {
+  cutExtrude(app, faceId, depth, prism, false);
+}
+
+function cutExtrude(app, faceId, depth, prism, cut) {
   selectFace(app, faceId);
-  app.actionManager.actions['CUT'].invoke(app);
+  app.actionManager.actions[cut ? 'CUT' : 'EXTRUDE'].invoke(app);
   app.ui.registeredWizard.setFormField('value', depth);
   if (prism !== undefined) {
     app.ui.registeredWizard.setFormField('prism', prism);
