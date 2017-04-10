@@ -616,31 +616,50 @@ function traverseFaces(face, validFaces, callback) {
 }
 
 export function loopsToFaces(originFace, loops, out) {
-  function createFaces(nestedLoop, surface) {
+  const originSurface = originFace.surface;
+  let invertedSurface = null;
+  function invertSurface(surface) {
+    if (surface == originSurface) {
+      if (invertedSurface == null) {
+        invertedSurface = originSurface.invert();
+      }
+      return invertedSurface;
+    } else {
+      return originSurface;
+    }
+  }
+  
+  function createFaces(nestedLoop, surface, level) {
+    if (!nestedLoop.loop.isCCW(surface)) {
+      surface = invertSurface(surface);
+    }
+
     const loop = nestedLoop.loop;
     const newFace = new Face(surface);
     Object.assign(newFace.data, originFace.data);
     newFace.outerLoop = loop;
     loop.face = newFace;
     out.push(newFace);
+
     for (let child of nestedLoop.nesting) {
-      if (child.loop.isCCW(surface)) {
-        createFaces(child, surface);
-      } else {
-        child.loop.face = newFace;
-        newFace.innerLoops.push(child.loop);
+      if (child.level == level + 2) {
+        createFaces(child, surface, level + 2);
+      } else if (child.level == level + 1) {
+        if (!child.loop.isCCW(surface)) {
+          child.loop.face = newFace;
+          newFace.innerLoops.push(child.loop);
+        } else {
+          createFaces(child, surface, level + 1);
+        } 
       }
     }
   }
   const beforeLength = out.length;
   const nestedLoops = getNestedLoops(originFace, loops);
-  //loops.forEach(l => l.halfEdges.forEach(h => __DEBUG__.AddHalfEdge(h)))
   for (let nestedLoop of nestedLoops) {
-    let surface = originFace.surface;
-    if (!nestedLoop.loop.isCCW(surface)) {
-      surface = surface.invert();
+    if (nestedLoop.level == 0) {
+      createFaces(nestedLoop, originSurface, 0);
     }
-    createFaces(nestedLoop, surface);
   }
   if (out.length > beforeLength) {
     out[beforeLength].id = originFace.id;
