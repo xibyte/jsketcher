@@ -177,6 +177,9 @@ export class Ellipse extends SketchPrimitive {
   }
 }
 
+const USE_APPROX_FOR = new Set();
+//USE_APPROX_FOR.add('Arc');
+
 export class Contour {
 
   constructor() {
@@ -214,8 +217,8 @@ export class Contour {
       if (segIdx == this.segments.length - 1) {
         approximation[n - 1] = firstPoint;
       }
-      
-      if (!forceApproximation && segment.constructor.name == 'Arc') {
+
+      if (!forceApproximation && USE_APPROX_FOR.has(segment.constructor.name)) {
         cc.add(new ApproxCurve(approximation, segment), prev, segment);
         prev = approximation[n - 1];
       } else {
