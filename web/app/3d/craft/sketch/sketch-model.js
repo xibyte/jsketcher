@@ -1,9 +1,12 @@
 import {CompositeCurve} from '../../../brep/geom/curve'
 import {ApproxCurve} from '../../../brep/geom/impl/approx'
+import {NurbsCurve} from '../../../brep/geom/impl/nurbs'
 import {Point} from '../../../brep/geom/point'
 import {Line} from '../../../brep/geom/impl/Line'
 import {LUT} from '../../../math/bezier-cubic'
 import {isCCW} from '../../../math/math'
+import {AXIS} from '../../../math/l3space'
+import verb from 'verb-nurbs'
 
 const RESOLUTION = 20;
 
@@ -27,6 +30,19 @@ class SketchPrimitive {
   
   isCurve() {
     return this.constructor.name != 'Segment';
+  }
+  
+  toNurbs(plane, _3dtr) {
+    const obj = this.inverted ? this.toInverted() : this;
+    return obj.toNurbsImpl(plane, _3dtr);
+  }
+
+  toNurbsImpl(plane, _3dtr) {
+    throw 'not implemented'
+  }
+  
+  toInverted() {
+    throw 'not implemented'
   }
 }
 
@@ -75,6 +91,18 @@ export class Arc extends SketchPrimitive {
     }
     points.push(bo);
     return points;
+  }
+
+  toInverted() {
+    return new Arc(-1, this.b, this.a, this.c);
+  }
+  
+  toNurbsImpl(plane, _3dtr) {
+    const basis = plane.basis();
+    const startAngle = Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x);
+    const endAngle = Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
+    const arcCurve = new verb.geom.Arc(_3dtr(this.c).toArray(), basis[0].toArray(), basis[1].toArray(), this.r, startAngle, endAngle);
+    return new NurbsCurve(arcCurve);
   }
 }
 
@@ -180,6 +208,10 @@ export class Ellipse extends SketchPrimitive {
 const USE_APPROX_FOR = new Set();
 //USE_APPROX_FOR.add('Arc');
 
+const USE_NURBS_FOR = new Set();
+USE_NURBS_FOR.add('Arc');
+
+
 export class Contour {
 
   constructor() {
@@ -220,6 +252,9 @@ export class Contour {
 
       if (!forceApproximation && USE_APPROX_FOR.has(segment.constructor.name)) {
         cc.add(new ApproxCurve(approximation, segment), prev, segment);
+        prev = approximation[n - 1];
+      } else if (!forceApproximation && USE_NURBS_FOR.has(segment.constructor.name)) {
+        cc.add(segment.toNurbs(surface, tr), prev, segment);
         prev = approximation[n - 1];
       } else {
         for (let i = 1; i < n; ++i) {

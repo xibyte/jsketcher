@@ -6,6 +6,7 @@ import {BREPValidator} from '../../../brep/brep-validator'
 import * as stitching from '../../../brep/stitching'
 import {subtract, union} from '../../../brep/operations/boolean'
 import {Loop} from '../../../brep/topo/loop'
+import {Line} from '../../../brep/geom/impl/line'
 import {Shell} from '../../../brep/topo/shell'
 import {CompositeCurve} from '../../../brep/geom/curve'
 import {ReadSketchContoursFromFace} from '../sketch/sketch-reader'
@@ -103,17 +104,28 @@ export function getEncloseDetails(params, contours, sketchSurface, invert, force
     const lidPath = new CompositeCurve();
     
     let lidPoints = basePath.points;
-    if (!math.equal(params.prism, 1)) {
+    var applyPrism = !math.equal(params.prism, 1);
+    if (applyPrism) {
       const _3D = sketchSurface.get3DTransformation();
       const _2D = _3D.invert();
-      lidPoints = math.polygonOffset(lidPoints.map(p => _2D.apply(p)) , params.prism).map(p => _3D._apply(p));  
+      lidPoints = math.polygonOffset(lidPoints.map(p => _2D.apply(p)) , params.prism).map(p => _3D._apply(p));
     }
-    
+    lidPoints = lidPoints.map(p => p.plus(target));
     for (let i = 0; i < basePath.points.length; ++i) {
       const curve = basePath.curves[i];
       const point = lidPoints[i];
       const group = basePath.groups[i];
-      lidPath.add(curve.translate(target), point.plus(target), group);
+      let lidCurve;
+      if (curve.isLine) {
+        //TODO: breaks test_TR_OUT_TR_INNER
+        lidCurve = Line.fromSegment(point, lidPoints[(i + 1) % lidPoints.length]);
+      } else {
+        lidCurve = curve.translate(target);
+        if (applyPrism) {
+          lidCurve = lidCurve.offset(params.prism);
+        }
+      }      
+      lidPath.add(lidCurve, point, group);
     }
 
     const lidSurface = baseSurface.translate(target).invert();

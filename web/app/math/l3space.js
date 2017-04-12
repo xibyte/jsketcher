@@ -73,6 +73,14 @@ Matrix3.prototype.setMatrix = function(m) {
   return this;
 };
 
+Matrix3.prototype.toArray = function() {
+  return [
+    [this.mxx, this.mxy, this.mxz, this.tx],
+    [this.myx, this.myy, this.myz, this.ty],
+    [this.mzx, this.mzy, this.mzz, this.tz]
+  ];
+};
+
 Matrix3.prototype.invert = function() {
 
   var det =
