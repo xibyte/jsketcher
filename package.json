@@ -51,6 +51,7 @@
     "json-loader": "0.5.4 ",
     "jquery": "2.1.0",
     "less": "2.7.1",
-    "libtess": "1.2.2"
+    "libtess": "1.2.2",
+    "verb-nurbs": "2.0.2"
   }
 }

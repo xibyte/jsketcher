@@ -5,12 +5,14 @@ import {Face} from './topo/face'
 import {HalfEdge, Edge} from './topo/edge'
 import {Line} from './geom/impl/line'
 import {ApproxCurve, ApproxSurface} from './geom/impl/approx'
+import {NurbsSurface} from './geom/impl/nurbs'
 import {Plane} from './geom/impl/plane'
 import {Point} from './geom/point'
 import {BasisForPlane, Matrix3} from '../math/l3space'
 import {CompositeCurve} from './geom/curve' 
 import * as cad_utils from '../3d/cad-utils'
 import * as math from '../math/math'
+import verb from 'verb-nurbs'
 
 function isCCW(points, normal) {
   const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();
@@ -214,6 +216,11 @@ export function createFaceFromTwoEdges(e1, e2) {
   if (bothClassOf(e1.edge.curve, e2.edge.curve, 'Line')) {
     const normal = cad_utils.normalOfCCWSeq(loop.halfEdges.map(e => e.vertexA.point));
     surface = createPlaneForLoop(normal, loop);
+  } else if (bothClassOf(e1.edge.curve, e2.edge.curve, 'NurbsCurve')) {
+    
+    const verbSurface = verb.geom.NurbsSurface.byLoftingCurves([e1.edge.curve.verb, e2.edge.curve.verb], 2);
+    surface = new NurbsSurface(verbSurface);
+    
   } else if (bothClassOf(e1.edge.curve, e2.edge.curve, 'ApproxCurve')) {
     
     const chunk1 = e1.edge.curve.getChunk(e1.vertexA.point, e1.vertexB.point);
