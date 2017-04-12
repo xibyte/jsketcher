@@ -2,6 +2,7 @@
 export class Curve {
 
   constructor() {
+    this.isLine = false;
   }
 
   intersectCurve(curve) {
