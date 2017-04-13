@@ -6,6 +6,7 @@ import {Line} from '../../../brep/geom/impl/Line'
 import {LUT} from '../../../math/bezier-cubic'
 import {isCCW} from '../../../math/math'
 import {AXIS} from '../../../math/l3space'
+import {distanceAB, makeAngle0_360} from '../../../math/math'
 import verb from 'verb-nurbs'
 
 const RESOLUTION = 20;
@@ -31,17 +32,16 @@ class SketchPrimitive {
   isCurve() {
     return this.constructor.name != 'Segment';
   }
-  
+
   toNurbs(plane, _3dtr) {
-    const obj = this.inverted ? this.toInverted() : this;
-    return obj.toNurbsImpl(plane, _3dtr);
+    let verbNurbs = this.toVerbNurbs(plane, _3dtr);
+    //if (this.inverted) {
+    //  verbNurbs = verbNurbs.reverse();
+    //}
+    return new NurbsCurve(verbNurbs);
   }
 
-  toNurbsImpl(plane, _3dtr) {
-    throw 'not implemented'
-  }
-  
-  toInverted() {
+  toVerbNurbs(plane, _3dtr) {
     throw 'not implemented'
   }
 }
@@ -93,16 +93,11 @@ export class Arc extends SketchPrimitive {
     return points;
   }
 
-  toInverted() {
-    return new Arc(-1, this.b, this.a, this.c);
-  }
-  
-  toNurbsImpl(plane, _3dtr) {
+  toVerbNurbs(plane, _3dtr) {
     const basis = plane.basis();
-    const startAngle = Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x);
-    const endAngle = Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
-    const arcCurve = new verb.geom.Arc(_3dtr(this.c).toArray(), basis[0].toArray(), basis[1].toArray(), this.r, startAngle, endAngle);
-    return new NurbsCurve(arcCurve);
+    const startAngle = makeAngle0_360(Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x));
+    const endAngle = makeAngle0_360(Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x));
+    return new verb.geom.Arc(_3dtr(this.c).toArray(), basis[0].toArray(), basis[1].toArray(), distanceAB(this.c, this.a), startAngle, endAngle);
   }
 }
 
