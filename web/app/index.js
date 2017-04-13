@@ -1,5 +1,5 @@
-import './utils/jqueryfy'
-import './utils/three-loader'
+//import './utils/jqueryfy'
+//import './utils/three-loader'
 import App from './3d/modeler-app'
 
 window.onload = function() {
