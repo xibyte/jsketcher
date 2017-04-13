@@ -209,4 +209,12 @@ export function findLowestLeftPoint(poly) {
   return heroIdx;
 }
 
+export function makeAngle0_360(angle) {
+  angle %= Math.PI;
+  if (angle < 0) {
+    angle = 2 * Math.PI + angle;
+  }
+  return angle;
+} 
+
 export const sq = (a) => a * a;
