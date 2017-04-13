@@ -35,9 +35,9 @@ class SketchPrimitive {
 
   toNurbs(plane, _3dtr) {
     let verbNurbs = this.toVerbNurbs(plane, _3dtr);
-    //if (this.inverted) {
-    //  verbNurbs = verbNurbs.reverse();
-    //}
+    if (this.inverted) {
+      verbNurbs = verbNurbs.reverse();
+    }
     return new NurbsCurve(verbNurbs);
   }
 
