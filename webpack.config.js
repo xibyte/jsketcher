@@ -13,6 +13,9 @@ module.exports = {
     chunkFilename: '[id].bundle.js',
     publicPath: '/static/'
   },
+  externals: {
+    'verb-nurbs': 'verb'
+  },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
   ],
