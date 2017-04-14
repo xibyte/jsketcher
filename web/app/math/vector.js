@@ -15,9 +15,9 @@ Vector.prototype.set = function(x, y, z) {
 };
 
 Vector.prototype.set3 = function(data) {
-  this.x = data[0];
-  this.y = data[1];
-  this.z = data[2];
+  this.x = data[0] || 0;
+  this.y = data[1] || 0;
+  this.z = data[2] || 0;
   return this;
 };
 

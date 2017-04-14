@@ -24,9 +24,14 @@ function addGlobalDebugActions(app) {
       app.viewer.render();
     },
     AddSegment: (a, b, color) => {
-      debugGroup.add(createLine(a, b, color));
-      debugGroup.add(createPoint(a, 0x000088));
-      debugGroup.add(createPoint(b, 0x880000));
+      __DEBUG__.AddPolyLine([a, b], color);
+    },
+    AddPolyLine: (points, color) => {
+      for (let i = 1; i < points.length; ++i) {
+        debugGroup.add(createLine(points[i - 1], points[i], color));
+      }
+      debugGroup.add(createPoint(points[0], 0x000088));
+      debugGroup.add(createPoint(points[points.length - 1], 0x880000));
       app.viewer.render();
     },
     AddPoint: (coordinates, or, vector, andColorAtTheEnd) => {
@@ -55,7 +60,12 @@ function addGlobalDebugActions(app) {
       app.viewer.render();
     },
     AddHalfEdge: (he, color) => {
-      window.__DEBUG__.AddSegment(he.vertexA.point, he.vertexB.point, color);
+      const points = [he.vertexA.point];
+      if (he.edge && he.edge.curve) {
+        he.edge.curve.approximate(10, he.vertexA.point, he.vertexB.point, points);
+      }
+      points.push(he.vertexB.point);
+      window.__DEBUG__.AddPolyLine(points, color);  
     },
     AddFace: (face, color) => {
       for (let e of face.edges) __DEBUG__.AddHalfEdge(e, color);
