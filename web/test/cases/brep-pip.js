@@ -1,5 +1,5 @@
 import * as test from '../test'
-import {Matrix3} from '../../app/math/l3space'
+import {AXIS} from '../../app/math/l3space'
 
 export default {
   
@@ -639,6 +639,167 @@ export default {
     }));
   },
 
+  /**
+   *      o--------o
+   *      |         \
+   * *--> |          )
+   *      |         /
+   *      o--------o
+   */
+  testPIPClassification1NurbsOut: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [100,  100],
+        [500,  100],
+        [500,  500],
+        [100,  500]
+      ], [,['nurbs', [500,  100], [700,  250], [500,  500] ]]);
+      const result = classify(app, win, loop, [-300, 300]);
+      env.assertFalse(result.inside);
+      env.done();
+    }));
+  },
+
+  /**
+   *      o--------o
+   *      |         \
+   * *--> |          )
+   *      |         /
+   *      o--------o
+   */
+  testPIPClassification1NurbsIn: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [100,  100],
+        [500,  100],
+        [500,  500],
+        [100,  500]
+      ], [,['nurbs', [500,  100], [700,  250], [500,  500] ]]);
+      const result = classify(app, win, loop, [300, 300]);
+      env.assertTrue(result.inside);
+      env.done();
+    }));
+  },
+
+
+  /**
+   *      *-->
+   *      
+   *         . ' .
+   *       /      \
+   *      o        o
+   *      |        |
+   *      |        |
+   *      |        |
+   *      o--------o
+   */
+  testPIPClassificationCloseToNurbsOut: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [100,  100],
+        [500,  100],
+        [500,  500],
+        [100,  500]
+      ], [,,['nurbs', [500,  500], [250,  750], [100,  500] ]]);
+      const result = classify(app, win, loop, [-300, 780]);
+      env.assertFalse(result.inside);
+      env.done();
+    }));
+  },
+  
+  /**
+   *      *-->
+   *         . ' .
+   *       /      \
+   *      o        o
+   *      |        |
+   *      |        | 
+   *      |        |
+   *      o--------o
+   */
+  testPIPClassificationTouchesNurbsOut: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [100,  100],
+        [500,  100],
+        [500,  500],
+        [100,  500]
+      ], [,,['nurbs', [500,  500], [250,  750], [100,  500] ]]);
+      const result = classify(app, win, loop, [-300, 750]);
+      env.assertFalse(result.inside);
+      env.done();
+    }));
+  },
+
+  /**
+   *      
+   *  *-->   . ' .
+   *       /      \
+   *      o        o
+   *      |        |
+   *      |        |
+   *      |        |
+   *      o--------o
+   */
+  testPIPClassificationThroughNurbsOut: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [100,  100],
+        [500,  100],
+        [500,  500],
+        [100,  500]
+      ], [,,['nurbs', [500,  500], [250,  750], [100,  500] ]]);
+      const result = classify(app, win, loop, [-300, 650]);
+      env.assertFalse(result.inside);
+      env.done();
+    }));
+  },
+
+  /**
+   *
+   *         . ' .
+   *       /  *-> \
+   *      o        o
+   *      |        |
+   *      |        |
+   *      |        |
+   *      o--------o
+   */
+  testPIPClassificationCrossesNurbsIn: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [100,  100],
+        [500,  100],
+        [500,  500],
+        [100,  500]
+      ], [,,['nurbs', [500,  500], [250,  750], [100,  500] ]]);
+      const result = classify(app, win, loop, [300, 650]);
+      env.assertTrue(result.inside);
+      env.done();
+    }));
+  },
+  
+  /**
+   *      o--------o
+   *       \        \
+   * *-->   )        )
+   *       /        /
+   *      o--------o
+   */
+  testPIPClassification2NurbsOut: function (env) {
+    test.modeller(env.test((win, app) => {
+      const loop = createLoop(app.TPI,[
+        [100,  100],
+        [500,  100],
+        [500,  500],
+        [100,  500]
+      ], [,['nurbs', [500,  100], [700,  250], [500,  500]], , ['nurbs', [100,  500], [250,  250], [100,  100]]]);
+      const result = classify(app, win, loop, [-300, 300]);
+      env.assertFalse(result.inside);
+      env.done();
+    }));
+  },
+  
   testPIPClassification_TR_OUT_TR_INNER: function (env) {
     test.modeller(env.test((win, app) => {
       const loop = createLoop(app.TPI,[
@@ -660,14 +821,13 @@ export default {
 }
 
 function classify(app, win, loop, p) {
-  const IDENTITY = new Matrix3();
   loop.halfEdges.forEach(e => win.__DEBUG__.AddHalfEdge(e, 0xffff00));
   const pnt = point(app.TPI, p[0], p[1], 0);
   const beam = pnt.copy();
   beam.x += 1700;
   win.__DEBUG__.AddLine(pnt, beam);
   win.__DEBUG__.AddPoint(pnt, 0xffffff);
-  const result = app.TPI.brep.bool.classifyPointInsideLoop(pnt, loop, IDENTITY);
+  const result = app.TPI.brep.bool.classifyPointInsideLoop(pnt, loop, new app.TPI.brep.geom.Plane(AXIS.Z, 0));
   win.__DEBUG__.AddPoint(pnt, result.inside ? 0x00ff00 : 0xff0000);
   if (result.edge) {
     win.__DEBUG__.AddHalfEdge(result.edge, 0xffffff)
@@ -676,9 +836,16 @@ function classify(app, win, loop, p) {
 }
 
 
-function createLoop(tpi, points) {
+function createLoop(tpi, points, curves) {
+  curves = curves || [];
   const vertices = points.map(p => vertex(tpi, p[0], p[1], 0));
-  return tpi.brep.builder.createPlaneLoop(vertices);
+  return tpi.brep.builder.createPlaneLoop(vertices, curves.map(c => {
+    if (c && c[0] == 'nurbs') {
+      const points = c.slice(1).map(p => new tpi.brep.geom.Point().set3(p) );
+      return tpi.brep.geom.NurbsCurve.createByPoints(points, 2);
+    }
+    return undefined;
+  }));
 }
 
 function vertex(tpi, x, y, z) {

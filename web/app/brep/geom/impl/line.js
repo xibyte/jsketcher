@@ -4,7 +4,6 @@ export class Line extends Curve {
 
   constructor(p0, v) {
     super();
-    this.isLine = true;
     this.p0 = p0;
     this.v = v;
     this._pointsCache = new Map();
@@ -55,6 +54,8 @@ export class Line extends Curve {
   
   offset() {};
 }
+
+Line.prototype.isLine = true;
 
 Line.fromTwoPlanesIntersection = function(plane1, plane2) {
   const n1 = plane1.normal;

@@ -1,4 +1,5 @@
 import {Surface} from '../surface'
+import {Point} from '../point'
 import {Line} from './line'
 import {Matrix3, AXIS, BasisForPlane} from  '../../../math/l3space'
 import * as math from  '../../../math/math'
@@ -38,11 +39,17 @@ export class Plane extends Surface {
   }
 
   get2DTransformation() {
-    return this.get3DTransformation().invert();
+    if (!this.__2dTr) {
+      this.__2dTr = this.get3DTransformation().invert(); 
+    }
+    return this.__2dTr;
   }
 
   get3DTransformation() {
-    return new Matrix3().setBasis(this.basis());
+    if (!this.__3dTr) {
+      this.__3dTr = new Matrix3().setBasis(this.basis());
+    }
+    return this.__3dTr;
   }
 
   coplanarUnsigned(other, tol) {
@@ -58,8 +65,27 @@ export class Plane extends Surface {
   }
 
   toParametricForm() {
-    const basis = BasisForPlane(this.normal);
-    return new ParametricPlane(this.normal.multiply(this.w), basis.x, basis.y);
+    if (!this.__parametricForm) {
+      const basis = BasisForPlane(this.normal);
+      this.__parametricForm = new ParametricPlane(this.normal.multiply(this.w), basis.x, basis.y);
+    }
+    return this.__parametricForm;
+  }
+  
+  toUV(point) {
+    return this.get2DTransformation().apply(point);
+  }
+
+  fromUV(u, v) {
+    return this.get3DTransformation()._apply(new Point(u, v, 0));
+  }
+
+  domainU() {
+    return [Number.MIN_VALUE, Number.MAX_VALUE];
+  }
+  
+  domainV() {
+    return [Number.MIN_VALUE, Number.MAX_VALUE];
   }
 }
 

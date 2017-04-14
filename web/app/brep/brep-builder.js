@@ -186,12 +186,14 @@ export function invertLoop(loop) {
   linkSegments(loop.halfEdges);
 }
 
-export function createPlaneLoop(vertices) {
+export function createPlaneLoop(vertices, curves) {
 
   const loop = new Loop();
 
-  iterateSegments(vertices, (a, b) => {
-    createHalfEdge(loop, a, b)
+  iterateSegments(vertices, (a, b, i) => {
+    const halfEdge = createHalfEdge(loop, a, b);
+    halfEdge.edge = new Edge(curves[i] ? curves[i] : Line.fromSegment(a.point, b.point));
+    return halfEdge;
   });
 
   linkSegments(loop.halfEdges);
