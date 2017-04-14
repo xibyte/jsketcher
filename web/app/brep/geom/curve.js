@@ -2,7 +2,6 @@
 export class Curve {
 
   constructor() {
-    this.isLine = false;
   }
 
   intersectCurve(curve) {
@@ -20,7 +19,7 @@ export class Curve {
   approximate(resolution, from, to, path) {
   }
 }
-
+Curve.prototype.isLine = false;
 
 export class CompositeCurve {
 

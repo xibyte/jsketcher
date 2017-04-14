@@ -1,6 +1,7 @@
 import verb from 'verb-nurbs'
 import {Matrix3} from  '../../../math/l3space'
-import Vector from  '../../../math/vector'
+import * as math from  '../../../math/math'
+import {Point} from '../point'
 
 export class NurbsCurve {
 
@@ -31,7 +32,7 @@ export class NurbsCurve {
     const step = this.verb.paramAtLength(length / resolution);
     u += step;
     for (;u < endU; u += step) {
-      out.push(new Vector().set3(this.verb.point(u)));
+      out.push(new Point().set3(this.verb.point(u)));
     }
     if (reverse) {
       for (let i = off, j = out.length - 1; i != j; ++i, --j) {
@@ -41,7 +42,47 @@ export class NurbsCurve {
       }
     }
   }
+
+  approximateU(resolution, paramFrom, paramTo, consumer) {
+    let u = paramFrom;
+    let endU = paramTo;
+    let step = this.verb.paramAtLength(resolution);
+    if (u > endU) {
+      step *= -1;
+    }
+    u += step;
+    for (;step > 0 ? u < endU : u > endU; u += step) {
+      consumer(u);
+    }
+  }
+  
+  tangentAtPoint(point) {
+    return new Point().set3(this.verb.tangent(this.verb.closestParam(point.data())));
+  }
+  
+  closestDistanceToPoint(point) {
+    const closest = this.verb.closestPoint(point.data());
+    return math.distance3(point.x, point.y, point.z, closest[0], closest[1], closest[2]);
+  }
+  
+  tangent(point) {
+    return new Point().set3(this.verb.tangent( this.verb.closestParam(point.data() )));
+  }
+  
+  intersect(other, tolerance) {
+    return verb.geom.Intersect.curves(this.verb, other.verb, tolerance).map(i => new Point().set3(i.point0));
+  }
+  
+  static createByPoints(points, degeree) {
+    points = points.map(p => p.data());
+    return new NurbsCurve(new verb.geom.NurbsCurve.byPoints(points, degeree));
+  }
 }
+
+NurbsCurve.prototype.createLinearNurbs = function(a, b) {
+  return new NurbsCurve(new verb.geom.Line(a.data(), b.data()));
+};
+
 
 export class NurbsSurface {
   

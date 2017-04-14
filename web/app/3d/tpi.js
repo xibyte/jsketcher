@@ -9,6 +9,8 @@ import {Face} from '../brep/topo/face';
 import {Shell} from '../brep/topo/shell';
 import {Vertex} from '../brep/topo/vertex';
 import {Point} from '../brep/geom/point';
+import {NurbsCurve} from '../brep/geom/impl/nurbs';
+import {Plane} from '../brep/geom/impl/plane';
 
 export default {
   brep: {
@@ -17,7 +19,7 @@ export default {
     bool: BREPBool,
     validator: BREPValidator,
     geom: {
-      Point
+      Point, NurbsCurve, Plane
     },
     topo: {
       HalfEdge, Edge, Loop, Face, Shell, Vertex
