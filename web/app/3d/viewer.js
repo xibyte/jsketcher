@@ -101,9 +101,7 @@ function Viewer(bus, container) {
   var raycaster = new THREE.Raycaster();
   
   this.raycast = function(event) {
-
-    raycaster.linePrecision = 35 / this.camera.zoom;
-
+    raycaster.linePrecision = 12 * (this.zoomMeasure() * 0.8);
     var x = ( event.offsetX / container.clientWidth ) * 2 - 1;
     var y = - ( event.offsetY / container.clientHeight ) * 2 + 1;
 
@@ -160,6 +158,20 @@ function Viewer(bus, container) {
   this.render();
   this.animate();
 }
+
+Viewer.prototype.updateZoomLineThickness = function() {
+  this.workGroup.traverse (object =>
+  {
+    if (object instanceof THREE.Mesh && object.__TCAD_EDGE) {
+      const zoomMeasure = this.zoomMeasure();
+      object.scale.set(zoomMeasure, zoomMeasure, object.scale.z);
+    }
+  });
+};
+
+Viewer.prototype.zoomMeasure = function() {
+  return this.trackballControls.object.position.length() / 1e3;
+};
 
 Viewer.prototype.createBasisGroup = function() {
   this.basisGroup = new THREE.Object3D();
@@ -243,22 +255,33 @@ export const PICK_KIND = {
 
 Viewer.prototype.raycastObjects = function(event, kind, visitor) {
   let pickResults = this.raycast(event);
+  const pickers = [
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line &&
+        pickResult.object.__TCAD_SketchObject !== undefined) {
+        return !visitor(pickResult.object, PICK_KIND.SKETCH);
+      }
+      return false;
+    },
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.EDGE) && pickResult.object. __TCAD_EDGE!== undefined) {
+        return !visitor(pickResult.object, PICK_KIND.EDGE);
+      }
+      return false;
+    },
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face && pickResult.face.__TCAD_SceneFace !== undefined) {
+        const sketchFace = pickResult.face.__TCAD_SceneFace;
+        return !visitor(sketchFace, PICK_KIND.FACE);
+      }
+      return false;
+    },
+  ];
   for (let i = 0; i < pickResults.length; i++) {
     const pickResult = pickResults[i];
-    if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face && pickResult.face.__TCAD_SceneFace !== undefined) {
-      const sketchFace = pickResult.face.__TCAD_SceneFace;
-      if (!visitor(sketchFace, PICK_KIND.FACE)) {
-        break;
-      }
-    } else if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line &&
-               pickResult.object.__TCAD_SketchObject !== undefined) {
-      if (!visitor(pickResult.object, PICK_KIND.SKETCH)) {
-        break;
-      }
-    } else if (mask.is(kind, PICK_KIND.EDGE) && pickResult.object instanceof THREE.Line &&
-      pickResult.object. __TCAD_EDGE!== undefined) {
-      if (!visitor(pickResult.object, PICK_KIND.EDGE)) {
-        break;
+    for (let picker of pickers) {
+      if (picker(pickResult)) {
+        return;
       }
     }
   }

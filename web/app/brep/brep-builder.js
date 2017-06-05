@@ -13,6 +13,8 @@ import {CompositeCurve} from './geom/curve'
 import * as cad_utils from '../3d/cad-utils'
 import * as math from '../math/math'
 import verb from 'verb-nurbs'
+import {StitchedCurve, StitchedSurface, EDGE_AUX} from './stitching'
+import {initTiles, refine} from './nurbs-tiling'
 
 function isCCW(points, normal) {
   const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();
@@ -56,49 +58,67 @@ export function enclose(basePath, lidPath, baseSurface, lidSurface, onWallF) {
   const lidLoop = new Loop();
   
   const shell = new Shell();
+  const walls = [];
+
   const baseVertices = basePath.points.map(p => new Vertex(p));
   const lidVertices = lidPath.points.map(p => new Vertex(p));
   
   const n = basePath.points.length;
   for (let i = 0; i < n; i++) {
     let j = (i + 1) % n;
-    const baseHalfEdge = new HalfEdge().setAB(baseVertices[i], baseVertices[j]);
-    const lidHalfEdge = new HalfEdge().setAB(lidVertices[j], lidVertices[i]);
-    
-    baseHalfEdge.edge = new Edge(basePath.curves[i]);
-    lidHalfEdge.edge = new Edge(lidPath.curves[i]);
 
-    baseHalfEdge.edge.halfEdge1 = baseHalfEdge;
-    lidHalfEdge.edge.halfEdge1 = lidHalfEdge;
+    const wall = createWall(basePath.curves[i], lidPath.curves[i], baseVertices[j], baseVertices[i], lidVertices[i], lidVertices[j]);
+    walls.push(wall);
 
+    function addHalfEdges(loop, edges) {
+      for (let i = edges.length - 1; i >= 0; i--) {
+        let he = edges[i];
+        const twin = new HalfEdge().setAB(he.vertexB, he.vertexA);
+        twin.loop = loop;
+        loop.halfEdges.push(twin);
+        he.edge.link(twin, he);
+      }
+    }
+    addHalfEdges(baseLoop, wall.bottomEdges);
+    addHalfEdges(lidLoop, wall.topEdges);
 
-    baseHalfEdge.loop = baseLoop;
-    baseLoop.halfEdges.push(baseHalfEdge);
+    //lidLoop.halfEdges[(n + n - 2 - i) % n] = lidHalfEdge; // keep old style order for the unit tests
 
-    lidHalfEdge.loop = lidLoop;
-    lidLoop.halfEdges[(n + n - 2 - i) % n] = lidHalfEdge; // keep old style order for the unit tests
-
-    const wallFace = createFaceFromTwoEdges(createTwin(baseHalfEdge), createTwin(lidHalfEdge));
-    
-    wallFace.role = 'wall:' + i;
-    onWallF(wallFace, basePath.groups[i]);
-    shell.faces.push(wallFace);
+    //onWallF(wall, basePath.groups[i]);
+    for (let wallFace of wall.faces) {
+      shell.faces.push(wallFace);
+    }
   }
-  
-  iterateSegments(shell.faces, (a, b) => {
-    const halfEdgeA = a.outerLoop.halfEdges[3];
-    const halfEdgeB = b.outerLoop.halfEdges[1];
-    const curve = Line.fromSegment(halfEdgeA.vertexA.point, halfEdgeA.vertexB.point);
-    linkHalfEdges(new Edge(curve), halfEdgeA, halfEdgeB);
-  });
 
+  lidLoop.halfEdges.reverse();
   linkSegments(baseLoop.halfEdges);
   linkSegments(lidLoop.halfEdges);
+
+  iterateSegments(walls, (a, b) => {
+    
+    function connect(halfEdgeA, halfEdgeB) {
+      const curve = Line.fromSegment(halfEdgeA.vertexA.point, halfEdgeA.vertexB.point);
+      new Edge(curve).link(halfEdgeA, halfEdgeB);
+    }
+    
+    let aEdges = a.leftEdges;
+    let bEdges = b.rightEdges;
+    
+    if (aEdges.length == 1 && bEdges.length == 1) {
+      connect(aEdges[0], bEdges[0])
+    } else {
+      function vertIsoCurve(nurbs, left) {
+        nurbs = nurbs._data;
+        var data = verb.eval.Make.surfaceIsocurve(nurbs, nurbs.knotsU[left ? 0 : nurbs.knotsU.length - 1], true);
+        return new verb.geom.NurbsCurve(data);
+      }
+      let alignCurve = a.stitchInfo != null ? vertIsoCurve(a.stitchInfo.surface.origin, true) : vertIsoCurve(b.stitchInfo.surface.origin, false);
+      throw 'unsupported';
+    }
+  });
   
   const baseFace = createFace(baseSurface, baseLoop);
   const lidFace = createFace(lidSurface, lidLoop);
-  baseFace.role = 'base';
-  lidFace.role = 'lid';
 
   shell.faces.push(baseFace, lidFace);
   shell.faces.forEach(f => f.shell = shell);
@@ -132,8 +152,9 @@ function createPlaneForLoop(normal, loop) {
   return plane;
 }
 
-function createPlaneFace(normal, loop) {
-  const plane = createPlaneForLoop();
+function createPlaneFace(loop) {
+  const normal = cad_utils.normalOfCCWSeq(loop.halfEdges.map(e => e.vertexA.point));
+  const plane = createPlaneForLoop(normal, loop);
   const face = new Face(plane);
   face.outerLoop = loop;
   loop.face = face;
@@ -204,46 +225,111 @@ function bothClassOf(o1, o2, className) {
   return o1.constructor.name == className && o2.constructor.name == className; 
 }
 
-export function createFaceFromTwoEdges(e1, e2) {
-  const loop = new Loop();
-  e1.loop = loop;
-  e2.loop = loop;
-  loop.halfEdges.push(
-    e1,
-    HalfEdge.create(e1.vertexB,  e2.vertexA, loop),
-    e2,
-    HalfEdge.create(e2.vertexB,  e1.vertexA, loop));
+class Wall {
   
-  let surface = null;
-  if (bothClassOf(e1.edge.curve, e2.edge.curve, 'Line')) {
-    const normal = cad_utils.normalOfCCWSeq(loop.halfEdges.map(e => e.vertexA.point));
-    surface = createPlaneForLoop(normal, loop);
-  } else if (bothClassOf(e1.edge.curve, e2.edge.curve, 'NurbsCurve')) {
+  constructor(faces, bottomEdges, rightEdges, topEdges, leftEdges) {
+    this.faces = faces;
+    this.bottomEdges = bottomEdges;
+    this.rightEdges = rightEdges;   
+    this.topEdges = topEdges; 
+    this.leftEdges = leftEdges;
+  }
+}
+
+export function createWall(curve1, curve2, vertexNB, vertexCB, vertexCL, vertexNL) { 
+  if (bothClassOf(curve1, curve2, 'Line')) {
+    const loop = new Loop();
+    loop.halfEdges.push(
+      HalfEdge.create(vertexNB, vertexCB, loop, new Edge(curve1)),
+      HalfEdge.create(vertexCB, vertexCL, loop),
+      HalfEdge.create(vertexCL, vertexNL, loop, new Edge(curve2)),
+      HalfEdge.create(vertexNL,  vertexNB, loop));
     
-    const verbSurface = verb.geom.NurbsSurface.byLoftingCurves([e1.edge.curve.verb, e2.edge.curve.verb], 2);
-    surface = new NurbsSurface(verbSurface);
-    
-  } else if (bothClassOf(e1.edge.curve, e2.edge.curve, 'ApproxCurve')) {
-    
-    const chunk1 = e1.edge.curve.getChunk(e1.vertexA.point, e1.vertexB.point);
-    const chunk2 = e2.edge.curve.getChunk(e2.vertexA.point, e2.vertexB.point);
-    const n = chunk1.length;
-    if (n != chunk2.length) {
-      throw 'unsupported';
-    }
-    const mesh = [];
-    for (let p = n - 1, q = 0; q < n; p = q ++) {
-      mesh.push([ chunk1[p], chunk1[q], chunk2[q], chunk2[p] ]);
-    }
-    surface = new ApproxSurface(mesh);
+    linkSegments(loop.halfEdges);
+
+    return new Wall([createPlaneFace(loop)], [loop.halfEdges[0]], [loop.halfEdges[1]], [loop.halfEdges[2]], [loop.halfEdges[3]] );
+  } else if (bothClassOf(curve1, curve2, 'NurbsCurve')) {
+    const nurbs = verb.geom.NurbsSurface.byLoftingCurves([curve1.verb.reverse(), curve2.verb.reverse()], 1);
+    return wallFromNUBRS(nurbs, true, vertexNB, vertexCB, vertexCL, vertexNL);
   } else {
     throw 'unsupported';
   }
+}
 
-  linkSegments(loop.halfEdges);
+export function wallFromNUBRS(surface, vFlat, vertexNB, vertexCB, vertexCL, vertexNL) {
   
-  const face = new Face(surface);
-  face.outerLoop = loop;
-  loop.face = face;
-  return face;
+  const outerEdges = {
+    bottom : [],
+    right : [],
+    top : [],
+    left : []
+  };
+  const stitched = new StitchedSurface();
+  stitched.origin = surface;
+  
+  const opts = {};
+  if (vFlat) {
+    opts.maxVSplits = 1;
+  }
+  
+  const tiles = initTiles(surface, opts);
+  refine(tiles, {vMax: 0});
+  function vertex(uv) {
+    if (!uv._vertex) {
+      uv._vertex = new Vertex(new Point().set3(surface.point(uv.u, uv.v)));
+    }
+    return uv._vertex;
+  }
+
+  var nVs = tiles.length - 1;
+  var nUs = tiles[0].length - 1;
+  tiles[0][0].edges[0].a._vertex = vertexNB;
+  tiles[0][nUs].edges[0].b._vertex = vertexCB;
+  tiles[nVs][nUs].edges[1].b._vertex = vertexCL;
+  tiles[nVs][0].edges[2].b._vertex = vertexNL;
+  
+  for (let row of tiles) {
+    for (let tile of row) {
+      tile.leafs(tileLeaf => {
+        const loop = new Loop();
+        const vertexNormals = new Map();
+        for (let e of tileLeaf.edges) {
+          e.leafs(edgeLeaf => {
+            if (!edgeLeaf._halfEdge) {
+              const a = vertex(e.a);
+              const b = vertex(e.b);
+              edgeLeaf._halfEdge = new HalfEdge().setAB(a, b);
+              if (edgeLeaf.outer) {
+                outerEdges[edgeLeaf.outer].push(edgeLeaf._halfEdge);
+              } else {
+                edgeLeaf.twin._halfEdge = new HalfEdge().setAB(b, a);
+                const edge = new Edge(Line.fromSegment(a.point, b.point));
+                edge.link(edgeLeaf._halfEdge, edgeLeaf.twin._halfEdge);
+                edge.data[EDGE_AUX] = stitched;
+              }
+              vertexNormals.set(a, e.a.normal());
+              vertexNormals.set(b, e.b.normal());
+            }
+            edgeLeaf._halfEdge.loop = loop;
+            loop.halfEdges.push(edgeLeaf._halfEdge);
+          });
+        }
+        linkSegments(loop.halfEdges);
+        const face = createPlaneFace(loop);
+        face.data.VERTEX_NORMALS = vertexNormals;
+        stitched.addFace(face);
+      });
+    }
+  }
+  
+  function setEdge(edges) {
+    for (let e of edges) {
+      e.edge = new Edge(Line.fromSegment(e.vertexA.point, e.vertexB.point))
+    }
+  }
+
+  setEdge(outerEdges.bottom);
+  setEdge(outerEdges.top);
+  
+  return new Wall(stitched.faces, outerEdges.bottom, outerEdges.right, outerEdges.top, outerEdges.left);
 }

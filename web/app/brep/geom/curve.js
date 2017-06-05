@@ -4,8 +4,8 @@ export class Curve {
   constructor() {
   }
 
-  intersectCurve(curve) {
-    throw 'not implemented';
+  isSameClass(other) {
+    return this.constructor.name == other.constructor.name;
   }
   
   parametricEquation(t) {
@@ -13,6 +13,10 @@ export class Curve {
   }
   
   translate(vector) {
+    throw 'not implemented';
+  }
+
+  toNurbs(domainA, domainB) {
     throw 'not implemented';
   }
 

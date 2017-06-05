@@ -97,7 +97,21 @@ export class Arc extends SketchPrimitive {
     const basis = plane.basis();
     const startAngle = makeAngle0_360(Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x));
     const endAngle = makeAngle0_360(Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x));
-    return new verb.geom.Arc(_3dtr(this.c).toArray(), basis[0].toArray(), basis[1].toArray(), distanceAB(this.c, this.a), startAngle, endAngle);
+
+    let angle = endAngle - startAngle;
+    if (angle < 0) {
+      angle = Math.PI * 2 + angle;
+    }
+    function pointAtAngle(angle) {
+      const dx = basis[0].multiply(Math.cos(angle));
+      const dy = basis[1].multiply(Math.sin(angle));
+      return dx.plus(dy);
+    }
+    const xAxis = pointAtAngle(startAngle);
+    const yAxis = pointAtAngle(startAngle + Math.PI * 0.5);
+
+    let arc = new verb.geom.Arc(_3dtr(this.c).data(), xAxis.data(), yAxis.data(), distanceAB(this.c, this.a), 0, Math.abs(angle));
+    return arc;
   }
 }
 

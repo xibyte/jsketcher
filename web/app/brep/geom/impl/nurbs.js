@@ -15,30 +15,21 @@ export class NurbsCurve {
   }
   
   approximate(resolution, from, to, out) {
-    const off = out.length;
-    let u = this.verb.closestParam(from.toArray());
+    const chunks = this.verb.divideByArcLength(10);
+    let startU = this.verb.closestParam(from.toArray());
     let endU = this.verb.closestParam(to.toArray());
-    const reverse = u > endU;
+    const reverse = startU > endU;
     if (reverse) {
-      const tmp = u;
-      u = endU;
+      const tmp = startU;
+      startU = endU;
       endU = tmp;
+      chunks.reverse();
     }
 
-    const length = this.verb.lengthAtParam(endU) - this.verb.lengthAtParam(u);
-    if (length < resolution) {
-      return 
-    }
-    const step = this.verb.paramAtLength(length / resolution);
-    u += step;
-    for (;u < endU; u += step) {
-      out.push(new Point().set3(this.verb.point(u)));
-    }
-    if (reverse) {
-      for (let i = off, j = out.length - 1; i != j; ++i, --j) {
-        const tmp = out[i];
-        out[i] = out[j];
-        out[j] = tmp;
+    for (let sample of chunks) {
+      const u = sample.u;
+      if (u > startU + math.TOLERANCE && u < endU - math.TOLERANCE) {
+        out.push(new Point().set3(this.verb.point(u)));
       }
     }
   }
@@ -79,8 +70,12 @@ export class NurbsCurve {
   }
 }
 
-NurbsCurve.prototype.createLinearNurbs = function(a, b) {
+NurbsCurve.createLinearNurbs = function(a, b) {
   return new NurbsCurve(new verb.geom.Line(a.data(), b.data()));
+};
+
+NurbsCurve.prototype.createLinearNurbs = function(a, b) {
+  return NurbsCurve.createLinearNurbs(a, b);
 };
 
 
@@ -88,6 +83,10 @@ export class NurbsSurface {
   
   constructor(verbSurface) {
     this.verb = verbSurface;
+  }
+
+  coplanarUnsigned(other, tolerance) {
+    const tess = this.verb.tessellate({maxDepth: 3});
   }
   
 }

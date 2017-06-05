@@ -112,3 +112,20 @@ export function reversedIndex(i, n) {
   }
   return lidIdx;
 }
+
+export function rotateArr(arr, pivot) {
+  
+  function reverse(arr, from, to) {
+    to --;
+    while (from < to) {
+      const t = arr[from];
+      arr[from] = arr[to];
+      arr[to] = t;
+      from ++;
+      to --;
+    }
+  }
+  reverse(arr, 0, pivot);
+  reverse(arr, pivot, arr.length);
+  reverse(arr, 0, arr.length);
+}

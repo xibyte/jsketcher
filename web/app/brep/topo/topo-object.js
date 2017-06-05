@@ -2,7 +2,6 @@
 export class TopoObject {
   
   constructor() {
-    this.role = '';
     this.data = {};
     Object.defineProperty(this, "refId", {
       value: REF_COUNTER ++,

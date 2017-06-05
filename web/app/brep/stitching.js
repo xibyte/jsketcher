@@ -7,6 +7,7 @@ export const EDGE_AUX = 'stitching.edge.aux';
 export class StitchedSurface {
   constructor() {
     this.faces = [];   
+    this.origin = null;
   }
   
   addFace(face) {

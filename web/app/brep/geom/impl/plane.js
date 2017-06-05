@@ -24,7 +24,7 @@ export class Plane extends Surface {
   }
   
   intersect(other) {
-    if (other instanceof Plane) {
+    if (other.isPlane) {
       return new Line.fromTwoPlanesIntersection(this, other);
     }
     return super.intersect();
@@ -88,6 +88,8 @@ export class Plane extends Surface {
     return [Number.MIN_VALUE, Number.MAX_VALUE];
   }
 }
+
+Plane.prototype.isPlane = true;
 
 class ParametricPlane {
 

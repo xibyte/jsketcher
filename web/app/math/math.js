@@ -210,7 +210,7 @@ export function findLowestLeftPoint(poly) {
 }
 
 export function makeAngle0_360(angle) {
-  angle %= Math.PI;
+  angle %= 2 * Math.PI;
   if (angle < 0) {
     angle = 2 * Math.PI + angle;
   }

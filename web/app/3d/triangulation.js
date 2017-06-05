@@ -90,26 +90,10 @@ export function TriangulateFace(face) {
   function vertexCallback(data, out) {
     out.push(data);
   }
-  let edge = false;
   function combinecallback(coords, data, weight) {
-    throw 'should never happen cuz brep is non-manifold'
-    //const point = new Point(coords[0], coords[1], coords[2]);
-    //if (edge) {
-    //  const vertex = new Vertex(point);
-    //  data.edge.split(vertex);
-    //  return {
-    //    edge: data.edge.next,
-    //    point
-    //  }
-    //} else {
-    //  return {
-    //    edge: null,
-    //    point
-    //  }
-    //}
+    //throw 'should never happen cuz brep is non-manifold'
   }
   function edgeCallback(flag) {
-    edge = flag;
   }
 
   var tessy = new libtess.GluTesselator();

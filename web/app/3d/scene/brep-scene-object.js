@@ -1,7 +1,7 @@
 import Vector from '../../math/vector'
 import {EDGE_AUX} from '../../brep/stitching'
 import {normalOfCCWSeq} from '../cad-utils'
-import {Triangulate} from '../../3d/triangulation'
+import {TriangulateFace} from '../../3d/triangulation'
 import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './scene-object'
 
 const SMOOTH_RENDERING = true;
@@ -91,33 +91,6 @@ class BREPSceneFace extends SceneFace {
   }
 }
 
-function triangulatePlaneFace(face) {
-  function v(data) {
-    return new Vector(data[0], data[1], data[2]);
-  }
-  function data(v) {
-    return [v.x, v.y, v.z];
-  }
-  const triangled = [];
-  const contours = [];
-  for (let loop of face.loops) {
-    const contour = [];
-    for (let he of loop.halfEdges) {
-      contour.push(he.vertexA.point);
-      he.edge.curve.approximate(10, he.vertexA.point, he.vertexB.point, contour);
-    }
-    contours.push(contour.map(point => data(point)));
-  }
-  let vertices = Triangulate(contours, data(face.surface.normal));
-  for (let i = 0;  i < vertices.length; i += 3 ) {
-    var a = v(vertices[i]);
-    var b = v(vertices[i + 1]);
-    var c = v(vertices[i + 2]);
-    triangled.push([a, b, c]);
-  }
-  return triangled;
-}
-
 export function triangulateToThree(shell, geom) {    
   const result = [];
   let gIdx = 0;
@@ -128,50 +101,33 @@ export function triangulateToThree(shell, geom) {
   for (let brepFace of shell.faces) {
     const groupStart = geom.faces.length;
     if (brepFace.surface.constructor.name == 'Plane') {
-      const polygons = triangulatePlaneFace(brepFace);
+      const polygons = TriangulateFace(brepFace);
+      const vertexNormals = brepFace.data.VERTEX_NORMALS;
+      let normalOrNormals = threeV(brepFace.surface.normal);
       for (let p = 0; p < polygons.length; ++p) {
         const off = geom.vertices.length;
         const poly = polygons[p];
         const vLength = poly.length;
         if (vLength < 3) continue;
         const firstVertex = poly[0];
-        geom.vertices.push(threeV(firstVertex));
-        geom.vertices.push(threeV(poly[1]));
-        const normal = threeV(brepFace.surface.normal ? brepFace.surface.normal : normalOfCCWSeq(poly));
+        geom.vertices.push(firstVertex.point.three());
+        geom.vertices.push(poly[1].point.three());
         for (let i = 2; i < vLength; i++) {
-          geom.vertices.push(threeV(poly[i]));
+          geom.vertices.push(poly[i].point.three());
           const a = off;
           const b = i - 1 + off;
           const c = i + off;
-          const face = new THREE.Face3(a, b, c);
-          face.normal = normal;
+
+          if (vertexNormals) {
+            const normals =[vertexNormals.get(firstVertex), vertexNormals.get(poly[i - 1]), vertexNormals.get(poly[i])];
+            if (normals[0] && normals[1] && normals[2]) {
+              normalOrNormals = normals.map(n => n.three()); 
+            }
+          }
+          const face = new THREE.Face3(a, b, c, normalOrNormals);
           addFace(face);
         }
         //view.setFaceColor(sceneFace, utils.isSmoothPiece(group.shared) ? 0xFF0000 : null);
-      }
-    } else if (brepFace.surface.constructor.name == 'NurbsSurface1') {
-      const off = geom.vertices.length;
-      const contours = [];
-      
-      for (let loop of brepFace.loops) {
-        const points = [];
-        for (let he of loop.halfEdges) {
-          points.push(he.vertexA.point);
-          he.edge.curve.approximate(10, he.vertexA.point, he.vertexB.point, points);
-        }
-        const verb = brepFace.surface.verb;
-        const uvs = points.map(point => verb.closestParam(point.data()));
-        uvs.forEach(uv => uv.push(0)); // add z coord
-        contours.push(uvs);
-        //....TODO
-        for (let i = 0;  i < tessedUVs.length; i += 3 ) {
-          var a = new Vector().set3(tessedUVs[i]);
-          var b = new Vector().set3(tessedUVs[i + 1]);
-          var c = new Vector().set3(tessedUVs[i + 2]);
-          const normalOrNormals = normalOfCCWSeq([a, b, c]).three();
-          const face = new THREE.Face3(off, off + 1, off + 2, normalOrNormals);
-          addFace(face);
-        }
       }
     } else if (brepFace.surface.constructor.name == 'NurbsSurface') {
       const off = geom.vertices.length;
