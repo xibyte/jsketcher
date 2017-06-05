@@ -1,5 +1,5 @@
 import Vector from '../../math/vector'
-import {EDGE_AUX} from '../../brep/stitching'
+import {EDGE_AUX, FACE_CHUNK} from '../../brep/stitching'
 import {normalOfCCWSeq} from '../cad-utils'
 import {TriangulateFace} from '../../3d/triangulation'
 import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './scene-object'
@@ -102,7 +102,8 @@ export function triangulateToThree(shell, geom) {
     const groupStart = geom.faces.length;
     if (brepFace.surface.constructor.name == 'Plane') {
       const polygons = TriangulateFace(brepFace);
-      const vertexNormals = brepFace.data.VERTEX_NORMALS;
+      const stitchedSurface = brepFace.data[FACE_CHUNK];
+      const nurbs = stitchedSurface ? stitchedSurface.origin : undefined;
       let normalOrNormals = threeV(brepFace.surface.normal);
       for (let p = 0; p < polygons.length; ++p) {
         const off = geom.vertices.length;
@@ -118,11 +119,19 @@ export function triangulateToThree(shell, geom) {
           const b = i - 1 + off;
           const c = i + off;
 
-          if (vertexNormals) {
-            const normals =[vertexNormals.get(firstVertex), vertexNormals.get(poly[i - 1]), vertexNormals.get(poly[i])];
-            if (normals[0] && normals[1] && normals[2]) {
-              normalOrNormals = normals.map(n => n.three()); 
+          if (nurbs && SMOOTH_RENDERING) {
+            function normal(v) {
+              const uv = nurbs.closestParam(v.point.data());
+              const vec = new THREE.Vector3();
+              vec.set.apply(vec, nurbs.normal(uv[0], uv[1]));
+              vec.normalize();
+              if (brepFace.data.INVERTED) {
+                vec.negate();
+              }
+              return vec;
             }
+
+            normalOrNormals = [firstVertex, poly[i - 1], poly[i]].map(v => normal(v));
           }
           const face = new THREE.Face3(a, b, c, normalOrNormals);
           addFace(face);

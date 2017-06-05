@@ -48,6 +48,7 @@ export function subtract( shell1, shell2 ) {
 export function invert( shell ) {
   for (let face of shell.faces) {
     face.surface = face.surface.invert();
+    face.data.INVERTED = !face.data.INVERTED;
     for (let loop of face.loops) {
       invertLoop(loop);
     }
