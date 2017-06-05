@@ -63,8 +63,9 @@ function combineShells(shells) {
   return cutter;
 }
 
-export function wallJoiner(wallFace, group) {
+export function wallJoiner(wall, group) {
   if (group && group.constructor.name != 'Segment') {
+    const wallFace = wall.faces[0];
     if (!group.stitchedSurface) {
       group.stitchedSurface = new stitching.StitchedSurface();
     }
