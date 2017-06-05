@@ -199,6 +199,12 @@ export class Circle extends SketchPrimitive {
     points.push(points[0]); // close it
     return points;
   }
+
+
+  toVerbNurbs(plane, _3dtr) {
+    const basis = plane.basis();
+    return new verb.geom.Circle(_3dtr(this.c).data(), basis[0].data(), basis[1].data(), this.r);
+  }
 }
 
 export class Ellipse extends SketchPrimitive {
@@ -219,6 +225,7 @@ const USE_APPROX_FOR = new Set();
 
 const USE_NURBS_FOR = new Set();
 USE_NURBS_FOR.add('Arc');
+USE_NURBS_FOR.add('Circle');
 
 
 export class Contour {
