@@ -43,7 +43,7 @@ function App() {
   AddDebugSupport(this);
   
   if (this.id.startsWith('$scratch$')) {
-    this.scratchCode();
+    setTimeout(() => this.scratchCode(), 0);
   } else {
     this.load();
   }
@@ -83,43 +83,8 @@ App.prototype.addShellOnScene = function(shell, skin) {
 };
 
 App.prototype.scratchCode = function() {
-  this.BREPMeshTestImpl(); return;
-
-  const boxWithHole = BREPBool.subtract(BREPPrimitives.box(500, 500, 500), BREPPrimitives.box(500, 300, 300));
-  //this.addShellOnScene(boxWithHole);
-
-  var c = BREPBuilder.createPrism([
-    BREPBuilder.point(0, 0, 250),
-    BREPBuilder.point(500, 0, 250),
-    BREPBuilder.point(500, 500, 250),
-    BREPBuilder.point(0, 500, 250)
-  ], 500);
-  this.addShellOnScene(BREPBool.subtract(boxWithHole, c));
-
-
-  return;
-  
-  //this.BREPTestImpl();return;
-  const ap = [[-250, -250, 250],
-    [ 250, -250, 250],
-    [ 250,  250, 250],
-    [-250,  250, 250]];
-  
-  
-  const bp = [
-    [   0, -100, 250],
-    [ 250, -250, 250],
-    [ 100,    0, 250],
-    [ 250,  250, 250],
-    [   0,  100, 250],
-    [-250,  250, 250],
-    [-100,    0, 250],
-    [-250, -250, 250]
-  ];
-
   const a = BREPBuilder.createPrism(ap.map(p => new this.TPI.brep.geom.Point().set3(p)), 500);
   const b = BREPBuilder.createPrism(bp.map(p => new this.TPI.brep.geom.Point().set3(p)), 500);
-
 
   this.addShellOnScene(a, {
     color: 0x800080,
@@ -137,140 +102,7 @@ App.prototype.scratchCode = function() {
   this.addShellOnScene(result);
 
   this.viewer.render();
-
-
-  //this.BREPTestImplOverlap1();
-  //this.BREPBox()
-  //this.BREPTestImpl()
-  //setTimeout(() => this.BREPTestImpl());
 };
-
-App.prototype.BREPBox = function() {
-  const addToScene = (shell) => {
-    const sceneSolid = new BREPSceneSolid(shell);
-    this.viewer.workGroup.add(sceneSolid.cadGroup);
-  };
-  const box = BREPPrimitives.box(500, 500, 500);
-
-  addToScene(box);
-
-  this.viewer.render()
-
-};
-
-App.prototype.BREPTestImpl1 = function() {
-  const addToScene = (shell) => {
-    const sceneSolid = new BREPSceneSolid(shell);
-    this.viewer.workGroup.add(sceneSolid.cadGroup);
-  };
-  const box1 = BREPPrimitives.box(500, 500, 500);
-  const box2 = BREPPrimitives.box(500, 500, 500, new Matrix3().translate(250, 250, 250));
-
-  BREPValidator.validateToConsole(box1);
-  
-  //box1.faces = [box1.faces[2]];
-  //box2.faces = [box2.faces[5]];
-  
-  //addToScene(box1);
-  //addToScene(box2);
-
-  const result = BREPBool.subtract(box1, box2);
-  addToScene(result);
-  
-  this.viewer.render()
-  
-};
-
-App.prototype.BREPTestImplOverlap = function() {
-  const addToScene = (shell) => {
-    const sceneSolid = new BREPSceneSolid(shell);
-    this.viewer.workGroup.add(sceneSolid.cadGroup);
-  };
-  const box1 = BREPPrimitives.box(500, 500, 500);
-  const box2 = BREPPrimitives.box(500, 500, 500, new Matrix3().translate(250, 0, 250));
-
-  BREPValidator.validateToConsole(box1);
-
-  //addToScene(box1);
-  //addToScene(box2);
-
-  const result = BREPBool.subtract(box1, box2);
-  addToScene(result);
-
-  this.viewer.render()
-
-};
-
-App.prototype.BREPTestImplOverlap1 = function() {
-  const addToScene = (shell) => {
-    const sceneSolid = new BREPSceneSolid(shell);
-    this.viewer.workGroup.add(sceneSolid.cadGroup);
-  };
-  const box1 = BREPPrimitives.box(600, 600, 600);
-  const box2 = BREPPrimitives.box(300, 600, 300, new Matrix3().translate(150, 0, 150));
-
-  BREPValidator.validateToConsole(box1);
-
-  //addToScene(box1);
-  //addToScene(box2);
-
-  const result = BREPBool.subtract(box1, box2);
-  addToScene(result);
-
-  this.viewer.render()
-
-};
-
-App.prototype.BREPTestImpl = function() {
-  const addToScene = (shell) => {
-    const sceneSolid = new BREPSceneSolid(shell);
-    this.viewer.workGroup.add(sceneSolid.cadGroup);
-  };
-  const box1 = BREPPrimitives.box(500, 500, 500);
-  const box2 = BREPPrimitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
-  const box3 = BREPPrimitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
-
-  BREPValidator.validateToConsole(box1);
-
-  //box1.faces = [box1.faces[2]];
-  //box2.faces = [box2.faces[5]];
-
-  //addToScene(box1);
-  //addToScene(box2);
-  //addToScene(box3);
-
-  let result = BREPBool.subtract(box1, box2);
-  result = BREPBool.subtract(result, box3);
-  addToScene(result);
-  //addToScene(box1);
-
-  this.viewer.render()
-
-};
-
-App.prototype.BREPMeshTestImpl = function() {
-  const box1 = BREPPrimitives.box(500, 500, 500);
-  const box2 = BREPPrimitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
-  //const box3 = BREPPrimitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
-
-  BREPValidator.validateToConsole(box1);
-
-  //box1.faces = [box1.faces[2]];
-  //box2.faces = [box2.faces[5]];
-
-  //addToScene(box1);
-  //addToScene(box2);
-  //addToScene(box3);
-
-  //let result = BREPMeshBool.subtract(box1, box2);
-  //result = BREPBool.subtract(result, box3);
-  //this.addShellOnScene(result);
-  //addToScene(box1);
-
-  this.viewer.render()
-
-};
-
 
 App.prototype.processHints = function() {
   let id = window.location.hash.substring(1);
