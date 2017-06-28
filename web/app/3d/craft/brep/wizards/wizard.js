@@ -112,18 +112,25 @@ export class Wizard {
       });
       return new Field(radio, () => radio.getValue(), (v) => radio.setValue(v));
     } else if (type == 'face') {
-      const face = new tk.Text(label, initValue);
-      face.input.on('change', () => this.onUIChange(name));
-      return Field.fromInput(face, undefined, (faceId) => {
-        if (faceId === CURRENT_SELECTION) {
-          let selection = this.app.viewer.selectionMgr.selection[0];
-          return selection ? selection.id : '';
-        } else {
-          return faceId;
-        }
-      });
+      return selectionWidget(name, label, initValue, this.app.viewer.selectionMgr);
+    } else if (type == 'sketch.segment') {
+      return selectionWidget(name, label, initValue, this.app.viewer.sketchSelectionMgr);
     }
   }
+}
+
+function selectionWidget(name, label, initValue, selectionManager) {
+  const obj = new tk.Text(label, initValue);
+  obj.input.on('change', () => this.onUIChange(name));
+  return Field.fromInput(obj, undefined, (objId) => {
+    if (objId === CURRENT_SELECTION) {
+      let selection = selectionManager.selection[0];
+      return selection ? selection.id : '';
+    } else {
+      return objId;
+    }
+  });
+
 }
 
 function FaceSelectionListener() {
