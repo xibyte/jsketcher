@@ -85,11 +85,30 @@ export class NurbsSurface {
     this.verb = verbSurface;
   }
 
+  isCognateCurve(curve) {
+    return curve.constructor.name == 'NurbsCurve';
+  }
+
   toNurbs() {
     return this;
   }
 
-  coplanarUnsignedForSameClass(other, tolerance) {
-    throw 'not implemented'
+  coplanarUnsignedForSameClass(other, tol) {
+    //throw 'not implemented'
+    return false;
+  }
+
+  intersectForSameClass(other, tol) {
+    const curves = verb.geom.Intersect.surfaces(this.verb, other.verb, tol);
+    return curves.map(curve => new NurbsCurve(curve));
+  }
+
+  classifyCognateCurve(line, tol) {
+    const parallel = math.areEqual(line.v.dot(this.normal), 0, tol);
+    const pointOnPlane = math.areEqual(this.normal.dot(line.p0), this.w, tol);
+    return {
+      hit: !parallel || pointOnPlane,
+      parallel
+    }
   }
 }

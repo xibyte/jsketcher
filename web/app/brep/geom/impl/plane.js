@@ -3,7 +3,7 @@ import {Point} from '../point'
 import {Line} from './line'
 import {Matrix3, AXIS, BasisForPlane} from  '../../../math/l3space'
 import * as math from  '../../../math/math'
- 
+
 export class Plane extends Surface {
 
   constructor(normal, w) {
@@ -12,22 +12,23 @@ export class Plane extends Surface {
     this.w = w;
   }
 
+  isCognateCurve(curve) {
+    return curve.constructor.name == 'Line';
+  }
+
   calculateBasis() {
     return BasisForPlane(this.normal);
   }
-  
+
   basis() {
     if (!this._basis) {
       this._basis = this.calculateBasis();
     }
     return this._basis;
   }
-  
-  intersect(other) {
-    if (other.isPlane) {
-      return new Line.fromTwoPlanesIntersection(this, other);
-    }
-    return super.intersect();
+
+  intersectForSameClass(other) {
+    return new Line.fromTwoPlanesIntersection(this, other);
   }
 
   translate(vector) {
@@ -40,14 +41,18 @@ export class Plane extends Surface {
 
   get2DTransformation() {
     if (!this.__2dTr) {
-      this.__2dTr = this.get3DTransformation().invert(); 
+      this.__2dTr = this.get3DTransformation().invert();
     }
     return this.__2dTr;
   }
 
   get3DTransformation() {
     if (!this.__3dTr) {
-      this.__3dTr = new Matrix3().setBasis(this.basis());
+      const basis = new Matrix3().setBasis(this.basis());
+      const translate = new Matrix3();
+      translate.tz = this.w
+      this.__3dTr = basis.combine(translate);
+//      this.__3dTr.tz = this.w;
     }
     return this.__3dTr;
   }
@@ -69,7 +74,7 @@ export class Plane extends Surface {
     }
     return this.__parametricForm;
   }
-  
+
   toUV(point) {
     return this.get2DTransformation().apply(point);
   }
@@ -81,9 +86,18 @@ export class Plane extends Surface {
   domainU() {
     return [Number.MIN_VALUE, Number.MAX_VALUE];
   }
-  
+
   domainV() {
     return [Number.MIN_VALUE, Number.MAX_VALUE];
+  }
+
+  classifyCognateCurve(line, tol) {
+    const parallel = math.areEqual(line.v.dot(this.normal), 0, tol);
+    const pointOnPlane = math.areEqual(this.normal.dot(line.p0), this.w, tol);
+    return {
+      hit: !parallel || pointOnPlane,
+      parallel
+    }
   }
 }
 

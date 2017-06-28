@@ -8,7 +8,7 @@ import * as Operations from '../craft/operations'
 import Menu from '../menu/menu'
 import {ExtrudeWizard, CutWizard} from '../craft/brep/wizards/cut-extrude'
 
-import {RevolveWizard} from '../craft/mesh/wizards/revolve'
+import {RevolveWizard} from '../craft/brep/wizards/revolve'
 import {PlaneWizard} from '../craft/brep/wizards/plane'
 import {BoxWizard} from '../craft/brep/wizards/box'
 import {SphereWizard} from '../craft/mesh/wizards/sphere'
