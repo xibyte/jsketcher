@@ -85,8 +85,11 @@ export class NurbsSurface {
     this.verb = verbSurface;
   }
 
-  coplanarUnsigned(other, tolerance) {
-    const tess = this.verb.tessellate({maxDepth: 3});
+  toNurbs() {
+    return this;
   }
-  
+
+  coplanarUnsignedForSameClass(other, tolerance) {
+    throw 'not implemented'
+  }
 }
