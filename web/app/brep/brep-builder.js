@@ -48,7 +48,7 @@ export function createPrism(basePoints, height) {
 }
 
 
-export function enclose(basePath, lidPath, baseSurface, lidSurface, onWallF) {
+export function enclose(basePath, lidPath, baseSurface, lidSurface) {
 
   if (basePath.points.length != lidPath.points.length) {
     throw 'illegal arguments';
@@ -123,6 +123,13 @@ export function enclose(basePath, lidPath, baseSurface, lidSurface, onWallF) {
   shell.faces.push(baseFace, lidFace);
   shell.faces.forEach(f => f.shell = shell);
   return shell;
+}
+
+export function revolve(basePath, baseSurface) {
+  const baseLoop = new Loop();
+
+  const shell = new Shell();
+  new verb.geom.RevolvedSurface( prof, [0,0,0], [1,0,0], 2* Math.PI);
 }
 
 function createTwin(halfEdge) {

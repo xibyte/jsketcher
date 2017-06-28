@@ -226,7 +226,9 @@ const USE_APPROX_FOR = new Set();
 const USE_NURBS_FOR = new Set();
 USE_NURBS_FOR.add('Arc');
 USE_NURBS_FOR.add('Circle');
-
+//USE_NURBS_FOR.add('Ellipse');
+//USE_NURBS_FOR.add('EllipticalArc');
+//USE_NURBS_FOR.add('BezierCurve');
 
 export class Contour {
 
