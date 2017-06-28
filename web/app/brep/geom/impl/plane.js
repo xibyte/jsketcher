@@ -52,16 +52,14 @@ export class Plane extends Surface {
     return this.__3dTr;
   }
 
-  coplanarUnsigned(other, tol) {
-    return other instanceof Plane && 
-      math.areVectorsEqual(this.normal.multiply(this.w), other.normal.multiply(other.w), tol);
+  coplanarUnsignedForSameClass(other, tol) {
+    return math.areVectorsEqual(this.normal.multiply(this.w), other.normal.multiply(other.w), tol);
     //TODO: store this.normal.multiply(this.w) in a field since it's constant value
   }
 
-  equals(other, tol) {
-    return other instanceof Plane &&
-      math.areVectorsEqual(this.normal, other.normal, tol) &&
-      math.areEqual(this.w, other.w, tol);
+  equalsForSameClass(other, tol) {
+    return math.areVectorsEqual(this.normal, other.normal, tol) &&
+           math.areEqual(this.w, other.w, tol);
   }
 
   toParametricForm() {
