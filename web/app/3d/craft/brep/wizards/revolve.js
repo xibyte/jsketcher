@@ -31,8 +31,6 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
   createImpl(app, params, sketch, face) {
     const triangles = [];
 
-    sketch.
-    
     for (let d of encloseDetails) {
       const base = d.basePath.points;
       const lid = d.lidPath.points;
@@ -52,4 +50,3 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
     return triangles;
   }
 }
-
