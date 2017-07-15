@@ -2,7 +2,7 @@ import {CompositeCurve} from '../../../brep/geom/curve'
 import {ApproxCurve} from '../../../brep/geom/impl/approx'
 import {NurbsCurve} from '../../../brep/geom/impl/nurbs'
 import {Point} from '../../../brep/geom/point'
-import {Line} from '../../../brep/geom/impl/Line'
+import {Line} from '../../../brep/geom/impl/line'
 import {LUT} from '../../../math/bezier-cubic'
 import {isCCW} from '../../../math/math'
 import {AXIS} from '../../../math/l3space'
@@ -16,7 +16,7 @@ class SketchPrimitive {
     this.id = id;
     this.inverted = false;
   }
-  
+
   invert() {
     this.inverted = !this.inverted;
   }
@@ -28,7 +28,7 @@ class SketchPrimitive {
     }
     return approximation;
   }
-  
+
   isCurve() {
     return this.constructor.name != 'Segment';
   }
@@ -52,7 +52,7 @@ export class Segment extends SketchPrimitive {
     this.a = a;
     this.b = b;
   }
-  
+
   approximateImpl(resolution) {
     return [this.a, this.b];
   }
@@ -69,7 +69,7 @@ export class Arc extends SketchPrimitive {
   approximateImpl(resolution) {
     return Arc.approximateArc(this.a, this.b, this.c, resolution);
   }
-  
+
   static approximateArc(ao, bo, c, resolution) {
     var a = ao.minus(c);
     var b = bo.minus(c);
@@ -77,14 +77,14 @@ export class Arc extends SketchPrimitive {
     var abAngle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
     if (abAngle > Math.PI * 2) abAngle = Math.PI / 2 - abAngle;
     if (abAngle < 0) abAngle = Math.PI * 2 + abAngle;
-  
+
     var r = a.length();
     resolution = 1;
     //var step = Math.acos(1 - ((resolution * resolution) / (2 * r * r)));
     var step = resolution / (2 * Math.PI);
     var k = Math.round(abAngle / step);
     var angle = Math.atan2(a.y, a.x) + step;
-  
+
     for (var i = 0; i < k - 1; ++i) {
       points.push(new Point(c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)));
       angle += step;
@@ -155,15 +155,15 @@ export class EllipticalArc extends SketchPrimitive {
     let abAngle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
     if (abAngle > Math.PI * 2) abAngle = Math.PI / 2 - abAngle;
     if (abAngle < 0) abAngle = Math.PI * 2 + abAngle;
-  
+
     const sq = (a) => a * a;
-  
+
     resolution = 1;
-  
+
     const step = resolution / (2 * Math.PI);
     const k = Math.round(abAngle / step);
     let angle = Math.atan2(a.y, a.x) + step - rotation;
-  
+
     for (let i = 0; i < k - 1; ++i) {
       const r = Math.sqrt(1/( sq(Math.cos(angle)/radiusX) + sq(Math.sin(angle)/radiusY)));
       points.push(new Point(c.x + r*Math.cos(angle + rotation), c.y + r*Math.sin(angle + rotation)));
@@ -172,7 +172,7 @@ export class EllipticalArc extends SketchPrimitive {
     points.push(bo);
     return points;
   }
-  
+
 }
 
 export class Circle extends SketchPrimitive {
@@ -242,7 +242,7 @@ export class Contour {
 
   transferOnSurface(surface, forceApproximation) {
     const cc = new CompositeCurve();
-    
+
     const _3dTransformation = surface.get3DTransformation();
     const depth = surface.w;
     function tr(v) {
@@ -250,20 +250,20 @@ export class Contour {
       v.z = depth;
       return _3dTransformation._apply(v);
     }
-    
+
     let prev = null;
     let firstPoint = null;
     for (let segIdx = 0; segIdx < this.segments.length; ++segIdx) {
       let segment = this.segments[segIdx];
       let approximation = segment.approximate(RESOLUTION);
-      
+
       approximation = approximation.map(p => tr(p));
 
       const n = approximation.length;
       prev = prev == null ? approximation[0] : prev;
-      approximation[0] = prev; // this magic is to keep identity of same vectors 
+      approximation[0] = prev; // this magic is to keep identity of same vectors
       if (firstPoint == null) firstPoint = approximation[0];
-      
+
       if (segIdx == this.segments.length - 1) {
         approximation[n - 1] = firstPoint;
       }
@@ -284,7 +284,7 @@ export class Contour {
     }
     return cc;
   }
-  
+
   approximate(resolution) {
     const approximation = [];
     for (let segment of this.segments) {
@@ -300,7 +300,7 @@ export class Contour {
   isCCW() {
     return isCCW(this.approximate(10));
   }
-  
+
   reverse() {
     this.segments.reverse();
     this.segments.forEach(s => s.invert());
