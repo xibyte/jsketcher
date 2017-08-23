@@ -24,7 +24,7 @@ export class RevolveWizard extends PreviewWizard {
 export class RevolvePreviewer extends SketchBasedNurbsPreviewer {
 
   createNurbses(app, params, sketch, face) {
-    const surface = face.brepFace.surface;
+    const surface = face.surface();
     const pivot =  evalPivot(params.pivot, sketch, surface);
     const nurbses = [];
     const contours = sketch.fetchContours();

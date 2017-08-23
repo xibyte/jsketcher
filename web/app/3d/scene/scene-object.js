@@ -87,7 +87,11 @@ export class SceneFace {
   getBounds() {
     throw 'not implemented';
   }
-  
+
+  surface() {
+    throw 'not implemented';
+  }
+
   calcBasis() {
     return BasisForPlane(this.normal());    
   };

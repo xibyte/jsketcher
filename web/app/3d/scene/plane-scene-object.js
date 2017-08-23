@@ -83,6 +83,10 @@ class PlaneSceneFace extends SceneFace {
     return this.solid.plane.w;
   }
 
+  surface() {
+    return this.solid.plane;
+  }    
+
   getBounds() {
     return [];
   }
