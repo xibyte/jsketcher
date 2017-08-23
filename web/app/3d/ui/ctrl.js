@@ -9,7 +9,7 @@ import Menu from '../menu/menu'
 import {ExtrudeWizard, CutWizard} from '../craft/brep/wizards/cut-extrude-wizard'
 
 import {RevolveWizard} from '../craft/brep/wizards/revolve-wizard'
-import {PlaneWizard} from '../craft/brep/wizards/plane'
+import {PlaneWizard} from '../craft/brep/wizards/plane-wizard'
 import {BoxWizard} from '../craft/brep/wizards/box'
 import {SphereWizard} from '../craft/mesh/wizards/sphere'
 import {TransformWizard} from '../craft/mesh/wizards/transform'

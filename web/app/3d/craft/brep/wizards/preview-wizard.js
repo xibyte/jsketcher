@@ -79,7 +79,7 @@ export class SketchBasedPreviewer {
     if (needSketchRead) {
       this.sketch = ReadSketchFromFace(app, face);
       //for (let polygon of this.sketch) {
-        //if (!Loop.isPolygonCCWOnSurface(polygon, face.brepFace.surface) && this.fixToCCW) {
+        //if (!Loop.isPolygonCCWOnSurface(polygon, face.surface()) && this.fixToCCW) {
         //  polygon.reverse();
         //}
       //}
