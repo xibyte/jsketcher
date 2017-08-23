@@ -4,7 +4,7 @@ import {normalOfCCWSeq} from '../cad-utils'
 import {TriangulateFace} from '../../3d/triangulation'
 import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './scene-object'
 
-const SMOOTH_RENDERING = true;
+const SMOOTH_RENDERING = false //true;
 
 export class BREPSceneSolid extends SceneSolid {
 

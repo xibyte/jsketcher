@@ -33,8 +33,8 @@ class SketchPrimitive {
     return this.constructor.name != 'Segment';
   }
 
-  toNurbs(plane, _3dtr) {
-    let verbNurbs = this.toVerbNurbs(plane, _3dtr);
+  toNurbs(plane) {
+    let verbNurbs = this.toVerbNurbs(plane, to3DTrFunc(plane));
     if (this.inverted) {
       verbNurbs = verbNurbs.reverse();
     }
@@ -55,6 +55,10 @@ export class Segment extends SketchPrimitive {
 
   approximateImpl(resolution) {
     return [this.a, this.b];
+  }
+
+  toVerbNurbs(plane, _3dtr) {
+    return new verb.geom.Line(_3dtr(this.a).data(), _3dtr(this.b).data());
   }
 }
 
@@ -242,14 +246,7 @@ export class Contour {
 
   transferOnSurface(surface, forceApproximation) {
     const cc = new CompositeCurve();
-
-    const _3dTransformation = surface.get3DTransformation();
-    const depth = surface.w;
-    function tr(v) {
-      v = v.copy();
-      v.z = depth;
-      return _3dTransformation._apply(v);
-    }
+    const tr = to3DTrFunc(surface);
 
     let prev = null;
     let firstPoint = null;
@@ -272,7 +269,7 @@ export class Contour {
         cc.add(new ApproxCurve(approximation, segment), prev, segment);
         prev = approximation[n - 1];
       } else if (!forceApproximation && USE_NURBS_FOR.has(segment.constructor.name)) {
-        cc.add(segment.toNurbs(surface, tr), prev, segment);
+        cc.add(segment.toNurbs(surface), prev, segment);
         prev = approximation[n - 1];
       } else {
         for (let i = 1; i < n; ++i) {
@@ -304,5 +301,12 @@ export class Contour {
   reverse() {
     this.segments.reverse();
     this.segments.forEach(s => s.invert());
+  }
+}
+
+function to3DTrFunc(surface) {
+  const _3dTransformation = surface.get3DTransformation();
+  return function (v) {
+    return _3dTransformation.apply(v);
   }
 }

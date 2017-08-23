@@ -1,5 +1,6 @@
 import {MESH_OPERATIONS} from './mesh/workbench'
 import {Extrude, Cut} from './brep/cut-extrude'
+import {Revolve} from './brep/revolve'
 import {BREPSceneSolid} from '../scene/brep-scene-object'
 import {PlaneSceneObject} from '../scene/plane-scene-object'
 import {box} from '../../brep/brep-primitives'
@@ -22,9 +23,7 @@ export const REVOLVE = {
   icon: 'img/3d/revolve',
   label: 'Revolve',
   info: (p) => '(' + p.angle + ')',
-  action: (app, request) => {
-    
-  }
+  action: (app, params) => Revolve(app, params)
 };
 
 export const SHELL = {

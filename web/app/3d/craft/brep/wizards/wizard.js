@@ -2,7 +2,7 @@ import * as tk from '../../../../ui/toolkit'
 import {camelCaseSplit} from '../../../../utils/utils'
 
 export class Wizard {
-  
+
   constructor(app, opearation, metadata, initialState) {
     this.app = app;
     this.metadata = metadata;
@@ -24,11 +24,11 @@ export class Wizard {
   uiLabel(name) {
     return camelCaseSplit(name).map(w => w.toLowerCase()).join(' ');
   }
-  
+
   focus() {
     this.box.root.find('input, select').first().focus()
   }
-  
+
   createUI(operation, metadata) {
     const box = new tk.Box($('#view-3d'));
     const folder = new tk.Folder(operation);
@@ -55,7 +55,7 @@ export class Wizard {
 
     return box;
   }
-  
+
   cancelClick() {
     this.dispose();
   }
@@ -68,7 +68,7 @@ export class Wizard {
   apply() {
     this.app.craft.modify(this.createRequest(), this.overridingHistory);
   }
-  
+
   onUIChange() {}
 
   readFormFields() {
@@ -93,12 +93,12 @@ export class Wizard {
       formField.setter(value);
     }
   }
-  
+
   dispose() {
     this.disposed = true;
     this.box.close();
   }
-  
+
   createFormField(name, label, type, params, initValue) {
     if (type == 'number') {
       const number = tk.config(new tk.Number(label, initValue, params.step, params.round), params);
@@ -112,20 +112,20 @@ export class Wizard {
       });
       return new Field(radio, () => radio.getValue(), (v) => radio.setValue(v));
     } else if (type == 'face') {
-      return selectionWidget(name, label, initValue, this.app.viewer.selectionMgr);
+      return selectionWidget(name, label, initValue, this.app.viewer.selectionMgr, (selection) => selection.id);
     } else if (type == 'sketch.segment') {
-      return selectionWidget(name, label, initValue, this.app.viewer.sketchSelectionMgr);
+      return selectionWidget(name, label, initValue, this.app.viewer.sketchSelectionMgr, (selection) => selection.__TCAD_SketchObject.id);
     }
   }
 }
 
-function selectionWidget(name, label, initValue, selectionManager) {
+function selectionWidget(name, label, initValue, selectionManager, toId) {
   const obj = new tk.Text(label, initValue);
   obj.input.on('change', () => this.onUIChange(name));
   return Field.fromInput(obj, undefined, (objId) => {
     if (objId === CURRENT_SELECTION) {
       let selection = selectionManager.selection[0];
-      return selection ? selection.id : '';
+      return selection ?  toId(selection) : '';
     } else {
       return objId;
     }
@@ -153,4 +153,4 @@ Field.fromInput = function (inputEl, getterCoercer, setterCoercer) {
   return new Field(inputEl, () => getterCoercer(inputEl.input.val()), (value) => inputEl.input.val(setterCoercer(value)));
 };
 
-export const CURRENT_SELECTION = {}; 
+export const CURRENT_SELECTION = {};
