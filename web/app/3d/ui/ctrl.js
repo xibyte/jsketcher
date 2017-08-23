@@ -6,9 +6,9 @@ import ToolBar from './toolbar'
 import * as MenuConfig from '../menu/menu-config'
 import * as Operations from '../craft/operations'
 import Menu from '../menu/menu'
-import {ExtrudeWizard, CutWizard} from '../craft/brep/wizards/cut-extrude'
+import {ExtrudeWizard, CutWizard} from '../craft/brep/wizards/cut-extrude-wizard'
 
-import {RevolveWizard} from '../craft/brep/wizards/revolve'
+import {RevolveWizard} from '../craft/brep/wizards/revolve-wizard'
 import {PlaneWizard} from '../craft/brep/wizards/plane'
 import {BoxWizard} from '../craft/brep/wizards/box'
 import {SphereWizard} from '../craft/mesh/wizards/sphere'
@@ -28,21 +28,21 @@ function UI(app) {
   var modelFolder = new tk.Folder("Model");
   this.solidList = new SolidList(this.app);
   modelFolder.content.append(this.solidList.dom);
-  
+
   tk.add(mainBox, modelFolder);
   let modificationsPanel = new ModificationsPanel(this.app);
   mainBox.content.append(modificationsPanel.dom);
-  
+
   var toolbarVertOffset = 10; //this.mainBox.root.position().top;
 
-  this.registerMenuActions(MenuConfig);  
-  
+  this.registerMenuActions(MenuConfig);
+
   this.craftToolBar = this.createCraftToolBar(toolbarVertOffset);
   this.createBoolToolBar(this.craftToolBar.node.position().top + this.craftToolBar.node.height() + 20);
   this.createMiscToolBar(toolbarVertOffset);
   this.fillControlBar();
   var ui = this;
-  
+
   this.app.bus.subscribe("showSketches", (enabled) => {
     var solids = app.findAllSolidsOnScene();
     for (var i = 0; i < solids.length; i++) {
@@ -74,9 +74,9 @@ UI.prototype.createCraftToolBar = function (vertPos) {
   toolBar.add(this.app.actionManager.actions['EditFace']);
   toolBar.add(this.app.actionManager.actions['EXTRUDE']);
   toolBar.add(this.app.actionManager.actions['CUT']);
-  toolBar.add(this.app.actionManager.actions['REVOLVE']);  
-  
-  
+  toolBar.add(this.app.actionManager.actions['REVOLVE']);
+
+
   $('#viewer-container').append(toolBar.node);
   toolBar.node.css({left: '10px',top : vertPos + 'px'});
   return toolBar;
@@ -102,7 +102,7 @@ UI.prototype.createBoolToolBar = function(vertPos) {
   return toolBar;
 };
 
-UI.prototype.registerMenuActions = function(menuConfig) { 
+UI.prototype.registerMenuActions = function(menuConfig) {
   for (let menuName in menuConfig) {
     const m = menuConfig[menuName];
     var action = Object.assign({'type' : 'menu'}, m);

@@ -5,12 +5,42 @@ import {Graph} from '../../../math/graph'
 import * as math from '../../../math/math'
 import {HashTable} from '../../../utils/hashmap'
 
-export function ReadSketch(sketch, faceId, readConstructionSegments) {
-  let idCounter = 0;
-  function genID() {
-    return faceId + ":" + (idCounter++);
+class SketchGeom {
+
+  constructor() {
+    this.connections = [];
+    this.loops = [];
+    this.constructionSegments = [];
+    this._contours = null;
   }
-  const out = {connections : [], loops : [], constructionSegments: []};
+
+  fetchContours() {
+    if (this._contours == null) {
+      this._contours = FetchContours(this);
+    }
+    return this._contours;
+  }
+
+  findById(id) {
+    function _find() {
+      for (let arr of arguments) {
+        for (let segment of arr) {
+          if (segment.id === id) {
+            return segment;
+          }
+        }
+      }
+      return null;
+    }
+    return _find(this.connections, this.loops, this.constructionSegments);
+  }
+}
+
+export function ReadSketch(sketch, faceId, readConstructionSegments) {
+  function getID(obj) {
+    return faceId + ":" + obj.id;
+  }
+  const out = new SketchGeom();
   if (sketch.layers !== undefined) {
     for (let layer of sketch.layers) {
       const isConstructionLayer = layer.name == "_construction_";
@@ -23,31 +53,31 @@ export function ReadSketch(sketch, faceId, readConstructionSegments) {
           const segA = ReadSketchPoint(obj.points[0]);
           const segB = ReadSketchPoint(obj.points[1]);
           const pushOn = isConstructionLayer ? out.constructionSegments : out.connections;
-          pushOn.push(new sm.Segment(genID(), segA, segB));
+          pushOn.push(new sm.Segment(getID(obj), segA, segB));
         } else if (obj._class === 'TCAD.TWO.Arc') {
           const arcA = ReadSketchPoint(obj.points[0]);
           const arcB = ReadSketchPoint(obj.points[1]);
           const arcCenter = ReadSketchPoint(obj.points[2]);
-          out.connections.push(new sm.Arc(genID(), arcA, arcB, arcCenter));
+          out.connections.push(new sm.Arc(getID(obj), arcA, arcB, arcCenter));
         } else if (obj._class === 'TCAD.TWO.EllipticalArc') {
           const ep1 = ReadSketchPoint(obj.ep1);
           const ep2 = ReadSketchPoint(obj.ep2);
           const a = ReadSketchPoint(obj.a);
           const b = ReadSketchPoint(obj.b);
-          out.connections.push(new sm.EllipticalArc(genID(), ep1, ep2, a, b, obj.r));
+          out.connections.push(new sm.EllipticalArc(getID(obj), ep1, ep2, a, b, obj.r));
         } else if (obj._class === 'TCAD.TWO.BezierCurve') {
           const a = ReadSketchPoint(obj.a);
           const b = ReadSketchPoint(obj.b);
           const cp1 = ReadSketchPoint(obj.cp1);
           const cp2 = ReadSketchPoint(obj.cp2);
-          out.connections.push(new sm.BezierCurve(genID(), a, b, cp1, cp2));
+          out.connections.push(new sm.BezierCurve(getID(obj), a, b, cp1, cp2));
         } else if (obj._class === 'TCAD.TWO.Circle') {
           const circleCenter = ReadSketchPoint(obj.c);
-          out.loops.push(new sm.Circle(genID(), circleCenter, obj.r));
+          out.loops.push(new sm.Circle(getID(obj), circleCenter, obj.r));
         } else if (obj._class === 'TCAD.TWO.Ellipse') {
           const ep1 = ReadSketchPoint(obj.ep1);
           const ep2 = ReadSketchPoint(obj.ep2);
-          out.loops.push(new sm.Ellipse(genID(), ep1, ep2, obj.r));
+          out.loops.push(new sm.Ellipse(getID(obj), ep1, ep2, obj.r));
         }
       }
     }
@@ -59,10 +89,13 @@ export function ReadSketchPoint(arr) {
   return new Vector(arr[1][1], arr[2][1], 0)
 }
 
-export function ReadSketchContoursFromFace(app, face) {
+export function ReadSketchFromFace(app, face) {
   const savedFace = localStorage.getItem(app.faceStorageKey(face.id));
   if (savedFace == null) return null;
-  const geom = ReadSketch(JSON.parse(savedFace), face.id, false);
+  return ReadSketch(JSON.parse(savedFace), face.id, true);
+}
+
+export function FetchContours(geom) {
   const contours = findClosedContours(geom.connections);
   for (let loop of geom.loops) {
     const contour = new sm.Contour();
@@ -84,12 +117,12 @@ function findClosedContours(segments) {
 
 function findClosedContoursFromPairedCurves(segments, result) {
   for (let i = 0; i < segments.length; i++) {
-    const s1 = segments[i]; 
+    const s1 = segments[i];
     for (let j = i; j < segments.length; j++) {
       if (i == j) continue;
       const s2 = segments[j];
       if (s1.isCurve() && s2.isCurve()) {
-        let paired = false; 
+        let paired = false;
         if (math.strictEqual2D(s1.a, s2.a) && math.strictEqual2D(s1.b, s2.b)) {
           paired = true;
           s2.invert();
@@ -108,7 +141,7 @@ function findClosedContoursFromPairedCurves(segments, result) {
 }
 
 function findClosedContoursFromGraph(segments, result) {
-  
+
   const dict = HashTable.forVector2d();
   const edges = HashTable.forDoubleArray();
 

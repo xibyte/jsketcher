@@ -46,20 +46,22 @@ export class HalfEdge extends TopoObject {
     return this.edge.halfEdge1 == this ? this.edge.halfEdge2 : this.edge.halfEdge1;
   }
 
+  
+  splitHalfEdge(vertex) {
+    const h = this;
+    const newEdge = new HalfEdge();
+    newEdge.vertexA = vertex;
+    newEdge.vertexB = h.vertexB;
+    h.vertexB = newEdge.vertexA;
+
+    h.vertexA.edges.add(newEdge);
+    h.vertexA.edges.delete(h);
+    vertex.edges.add(newEdge);
+    
+    return newEdge;
+  }
+  
   split(vertex) {
-
-    function splitHalfEdge(h) {
-      const newEdge = new HalfEdge();
-      newEdge.vertexA = vertex;
-      newEdge.vertexB = h.vertexB;
-      h.vertexB = newEdge.vertexA;
-
-      h.vertexA.edges.add(newEdge);
-      h.vertexA.edges.remove(h);
-      vertex.edges.add(newEdge);
-      
-      return newEdge;
-    }
 
     const orig = this;
     const twin = orig.twin();
@@ -68,8 +70,8 @@ export class HalfEdge extends TopoObject {
       return;
     }
 
-    const newOrig = splitHalfEdge(orig);
-    const newTwin = splitHalfEdge(twin);
+    const newOrig = orig.splitHalfEdge(vertex);
+    const newTwin = twin.splitHalfEdge(vertex);
 
 
     orig.edge.link(orig, newTwin);
@@ -78,9 +80,16 @@ export class HalfEdge extends TopoObject {
     orig.loop.halfEdges.splice(orig.loop.halfEdges.indexOf(orig) + 1, 0, newOrig);
     twin.loop.halfEdges.splice(twin.loop.halfEdges.indexOf(twin) + 1, 0, newTwin);
 
-    orig.next = newOrig;
-    twin.next = newTwin;
-    
+    function insertToLL(orig, newOrig) {
+      orig.next.prev = newOrig
+      newOrig.next = orig.next;
+      orig.next = newOrig;
+      newOrig.prev = orig;
+    }
+
+    insertToLL(orig, newOrig);
+    insertToLL(twin, newTwin);
+
     newOrig.loop = orig.loop;
     newTwin.loop = twin.loop;
   }

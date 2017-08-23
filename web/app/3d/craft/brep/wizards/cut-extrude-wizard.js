@@ -1,17 +1,22 @@
 import {CURRENT_SELECTION as S} from './wizard'
 import {PreviewWizard, SketchBasedPreviewer} from './preview-wizard'
+import {getEncloseDetails} from '../cut-extrude'
 import {TriangulatePolygons} from '../../../triangulation'
 import Vector from '../../../../math/vector'
+import {reversedIndex} from '../../../../utils/utils'
 
 
 const METADATA = [
-  ['angle'   , 'number',  5, {min: -360, max: 360, step: 10}],
-  ['pivot'   , 'sketch'  ,  S  ]
+  ['value'   , 'number',  50],
+  ['prism'   , 'number',  1 ,  {min: 0, step: 0.1, round: 1}],
+  ['angle'   , 'number',  0 ,  {}],
+  ['rotation', 'number',  0 ,  {step: 5}],
+  ['face'    , 'face'  ,  S  ]
 ];
 
-export class RevolveWizard extends PreviewWizard {
+export class CutWizard extends PreviewWizard {
   constructor(app, initialState) {
-    super(app, 'REVOLVE', METADATA, initialState)
+    super(app, 'CUT', METADATA, initialState)
   }
 
   createPreviewObject(app, params) {
@@ -24,13 +29,31 @@ export class RevolveWizard extends PreviewWizard {
   }
 }
 
+export class ExtrudeWizard extends PreviewWizard {
+  constructor(app, initialState) {
+    super(app, 'EXTRUDE', METADATA, initialState)
+  }
 
+  createPreviewObject(app, params) {
+    return EXTRUDE_PREVIEWER.create(app, params);
+  }
+
+  uiLabel(name) {
+    if ('value' == name) return 'height';
+    return super.uiLabel(name);
+  }
+}
 
 export class ExtrudePreviewer extends SketchBasedPreviewer {
 
-  createImpl(app, params, sketch, face) {
-    const triangles = [];
+  constructor(inversed) {
+    super();
+    this.inversed = inversed;
+  }
 
+  createImpl(app, params, sketch, face) {
+    const encloseDetails = getEncloseDetails(params, sketch, face.brepFace.surface, !this.inversed, true);
+    const triangles = [];
     for (let d of encloseDetails) {
       const base = d.basePath.points;
       const lid = d.lidPath.points;
@@ -50,3 +73,6 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
     return triangles;
   }
 }
+
+const EXTRUDE_PREVIEWER = new ExtrudePreviewer(false);
+const CUT_PREVIEWER = new ExtrudePreviewer(true);
