@@ -94,6 +94,11 @@ export class TestEnv {
       console.log(this.prettyJSON(expected));
       console.log('ACTUAL:');
       console.log(this.prettyJSON(actual));
+      if (checkSimilarity(expected, actual)) {
+        console.log("The data is similar(has same number of faces, loops and half-edges). Most likely it the test needs to be updated.");
+      } else {
+        console.warn("The data isn't similar(has different number of faces, loops or half-edges). Most likely something is really broken.");
+      }
       this.fail('expected data different from actual. ^^see log above^^');
     }
   }
@@ -101,6 +106,37 @@ export class TestEnv {
   prettyJSON(obj) {
     return JSON.stringify(obj, null, 0);
   }
+}
+
+function checkSimilarity(data1, data2) {
+
+  function edgesCount(data) {
+    let count = 0;
+    for (let face of data.faces) {
+      face.forEach((loop) => count += loop.length);
+    }  
+    return count;
+  }
+
+  function loopsCount(data) {
+    let count = 0;
+    for (let face of data.faces) {
+      face.forEach(() => count ++);
+    }  
+    return count;
+  }
+
+  function info(data) {
+    const loops = loopsCount(data);
+    const edges = edgesCount(data);
+    return `faces: ${data.faces.length}; loops: ${loops}; half-edges: ${edges}`;
+  }
+
+  const info1 = info(data1);
+  const info2 = info(data2);
+  console.log(info1 + " : " + info2);
+  return info1 == info2; 
+
 }
 
 export function load(url, callback) {

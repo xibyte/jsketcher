@@ -129,7 +129,7 @@ function createLine(a, b, color) {
 }
 
 function createPoint(x, y, z, color) {
-  if (!z) {
+  if (z === undefined) {
     color = y;
     y = x.y;
     z = x.z;

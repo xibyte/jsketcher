@@ -46,14 +46,14 @@ export class PlaneSceneObject extends SceneSolid {
       this.sceneFace.meshFaces = [];
     }
   }
-  
+
   updateBounds(bounds2d) {
     this.dropGeometry();
     const tr = this.plane.get3DTransformation();
-    this.bounds = bounds2d.map(v => tr.apply(v.plusXYZ(0, 0, this.plane.w)));
+    this.bounds = bounds2d.map(v => tr.apply(v));
     this.createGeometry();
   }
-  
+
   static create(params, faceResolver) {
     let face = null;
     if (params.parallelTo) {
