@@ -52,7 +52,7 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
   }
 
   createImpl(app, params, sketch, face) {
-    const encloseDetails = getEncloseDetails(params, sketch, face.brepFace.surface, !this.inversed, true);
+    const encloseDetails = getEncloseDetails(params, sketch, face.surface(), !this.inversed, true);
     const triangles = [];
     for (let d of encloseDetails) {
       const base = d.basePath.points;

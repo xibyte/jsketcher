@@ -193,6 +193,10 @@ class MeshSceneFace extends SceneFace {
     return this.csgGroup.plane.w;
   }
 
+  surface() {
+    return this.csgGroup.plane;
+  }    
+
   getBounds() {
     return reconstructSketchBounds(this.solid.csg, this);
   }

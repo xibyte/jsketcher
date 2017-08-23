@@ -29,7 +29,7 @@ export function doOperation(app, params, cut) {
   if (savedFace == null) return null;
 
   const sketch = ReadSketchFromFace(app, face);
-  const details = getEncloseDetails(params, sketch.fetchContours(), face.brepFace.surface, !cut, false);
+  const details = getEncloseDetails(params, sketch.fetchContours(), face.surface(), !cut, false);
   const operand = combineShells(details.map(d => enclose(d.basePath, d.lidPath, d.baseSurface, d.lidSurface, wallJoiner)));
   return BooleanOperation(face, solid, operand, cut ? 'subtract' : 'union');
 }

@@ -82,6 +82,10 @@ class BREPSceneFace extends SceneFace {
     return this.brepFace.surface.w;
   }
 
+  surface() {
+    return this.brepFace.surface;
+  }
+  
   getBounds() {
     const bounds = [];
     for (let loop of this.brepFace.loops) {

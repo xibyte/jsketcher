@@ -6,7 +6,7 @@ export function Revolve(app, params) {
 
   const face = app.findFace(params.face);
   const solid = face.solid;
-  const surface = face.brepFace.surface;
+  const surface = face.surface();
 
   const sketch = ReadSketchFromFace(app, face);
   const pivot = evalPivot(params.pivot, sketch, surface);
