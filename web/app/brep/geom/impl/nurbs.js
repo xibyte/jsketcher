@@ -2,10 +2,14 @@ import verb from 'verb-nurbs'
 import {Matrix3} from  '../../../math/l3space'
 import * as math from  '../../../math/math'
 import {Point} from '../point'
+import {Surface} from "../surface";
+import Vector from "../../../math/vector";
+import {Curve} from "../curve";
 
-export class NurbsCurve {
+export class NurbsCurve extends Curve {
 
   constructor(verbCurve) {
+    super();
     this.verb = verbCurve;
   }
 
@@ -50,18 +54,30 @@ export class NurbsCurve {
   tangentAtPoint(point) {
     return new Point().set3(this.verb.tangent(this.verb.closestParam(point.data())));
   }
+
+  tangentAtParam(param) {
+    return new Point().set3(this.verb.tangent(param ));
+  }
   
   closestDistanceToPoint(point) {
     const closest = this.verb.closestPoint(point.data());
     return math.distance3(point.x, point.y, point.z, closest[0], closest[1], closest[2]);
   }
-  
-  tangent(point) {
-    return new Point().set3(this.verb.tangent( this.verb.closestParam(point.data() )));
+
+  split(point) {
+    return this.verb.split(this.verb.closestParam(point.data)).map(v => new NurbsCurve(v));
+  }
+
+  intersect(other, tolerance) {
+    return verb.geom.Intersect.curves(this.verb, other.verb, tolerance);
+  }
+
+  invert() {
+    return new NurbsCurve(this.verb.reverse());
   }
   
-  intersect(other, tolerance) {
-    return verb.geom.Intersect.curves(this.verb, other.verb, tolerance).map(i => new Point().set3(i.point0));
+  point(u) {
+    return new Point().set3(this.verb.point(u));
   }
   
   static createByPoints(points, degeree) {
@@ -78,37 +94,36 @@ NurbsCurve.prototype.createLinearNurbs = function(a, b) {
   return NurbsCurve.createLinearNurbs(a, b);
 };
 
-
-export class NurbsSurface {
+export class NurbsSurface extends Surface {
   
   constructor(verbSurface) {
+    super();
     this.verb = verbSurface;
-  }
-
-  isCognateCurve(curve) {
-    return curve.constructor.name == 'NurbsCurve';
+    this.inverted = false;
   }
 
   toNurbs() {
     return this;
   }
-
-  coplanarUnsignedForSameClass(other, tol) {
-    //throw 'not implemented'
-    return false;
+  
+  normal(point) {
+    let uv = this.verb.closestParam(point.data());
+    let normal = new Vector().set3(this.verb.normal(uv[0], uv[1]));
+    if (this.inverted) {
+      normal._negate();
+    }
+    return normal;
   }
 
   intersectForSameClass(other, tol) {
     const curves = verb.geom.Intersect.surfaces(this.verb, other.verb, tol);
-    return curves.map(curve => new NurbsCurve(curve));
+    let inverted = this.inverted !== other.inverted;
+    return curves.map(curve => new NurbsCurve(inverted ?  curve.reverse() : curve));
   }
-
-  classifyCognateCurve(line, tol) {
-    const parallel = math.areEqual(line.v.dot(this.normal), 0, tol);
-    const pointOnPlane = math.areEqual(this.normal.dot(line.p0), this.w, tol);
-    return {
-      hit: !parallel || pointOnPlane,
-      parallel
-    }
+  
+  invert() {
+    let inverted = new NurbsSurface(this.verb);
+    inverted.inverted = !this.inverted;
+    return inverted;
   }
 }

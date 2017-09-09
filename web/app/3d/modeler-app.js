@@ -24,6 +24,8 @@ import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/brep-scene-object'
 import TPI from './tpi'
+import {createBox, createSphere, createCylinder} from "../hds/hds-builder";
+// import {createSphere, rayMarchOntoCanvas, sdfIntersection, sdfSolid, sdfSubtract, sdfTransform, sdfUnion} from "../hds/sdf";
 
 function App() {
   this.id = this.processHints();
@@ -83,26 +85,50 @@ App.prototype.addShellOnScene = function(shell, skin) {
 };
 
 App.prototype.scratchCode = function() {
-  const a = BREPBuilder.createPrism(ap.map(p => new this.TPI.brep.geom.Point().set3(p)), 500);
-  const b = BREPBuilder.createPrism(bp.map(p => new this.TPI.brep.geom.Point().set3(p)), 500);
-
-  this.addShellOnScene(a, {
-    color: 0x800080,
-    transparent: true,
-    opacity: 0.5,
-  });
-  this.addShellOnScene(b, {
-    color: 0xfff44f,
-    transparent: true,
-    opacity: 0.5,
-  });
-  //this.addShellOnScene(a);
-  //this.addShellOnScene(b);
-  const result = BREPBool.subtract(a, b);
-  this.addShellOnScene(result);
-
+  let box = createBox(500, 500, 500);
+  let sphere = createSphere([0, 200, 0], 300);
+  let clylinder = createCylinder(150, 500);
+ 
+  this.viewer.workGroup.add(box.toThreeMesh());
+  // this.viewer.workGroup.add(sphere.toThreeMesh());
+  this.viewer.workGroup.add(clylinder.toThreeMesh());
   this.viewer.render();
 };
+
+
+App.prototype.raytracing = function() {
+  let box = createBox(800, 800, 800);
+  this.viewer.workGroup.add(box.toThreeMesh());
+
+  let win = $('<div><canvas width="1000" height="1000" /></div>')
+    .css({
+     'position': 'absolute',
+     'width': '800px',
+     'height': '800px',
+     'left': '20px',
+     'top': '20px',
+     'z-order': 999999
+  });
+  win.appendTo($('body'));
+  const canvas = win.find('canvas')[0];
+  console.log(canvas);
+  const ctx = canvas.getContext('2d');
+
+  // ctx.fillStyle = 'green';
+  // ctx.fillRect(10, 10, 100, 100);
+  
+  let sphere = createSphere(new Vector(), 600);
+  let sphere2 = sdfTransform(sphere, new Matrix3().translate(-150, 300, 0));
+  let solid = sdfSolid(box);
+  let solid2 = sdfTransform(sphere, new Matrix3().translate(-150, 300, 0));
+  let result = sdfSubtract(sphere, sphere2);
+  let solid3 = sdfSubtract(solid, solid2);
+  
+  let width = this.viewer.container.clientWidth;
+  let height = this.viewer.container.clientHeight;
+  rayMarchOntoCanvas(solid3, this.viewer.camera, width, height, canvas, 2000, 10);
+  this.viewer.render();
+}
 
 App.prototype.processHints = function() {
   let id = window.location.hash.substring(1);
