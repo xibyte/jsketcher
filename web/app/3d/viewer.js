@@ -6,6 +6,7 @@ import {SelectionManager, SketchSelectionManager, EdgeSelectionManager} from './
 
 function Viewer(bus, container) {
   this.bus = bus;
+  this.container = container;
   function aspect() {
     return container.clientWidth / container.clientHeight;
   }

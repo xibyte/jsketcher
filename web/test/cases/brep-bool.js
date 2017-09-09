@@ -16,7 +16,28 @@ const CASE = {
       app.addShellOnScene(result);
       env.done();
     }));
+  },
+
+  /**
+   * https://github.com/xibyte/jsketcher/issues/47
+   */
+  testFacesAreInSamePlane_BUG_47: function(env) {
+    test.modeller(env.test((win, app) => {
+
+      const mat = new Matrix3();
+      const m = mat.translate(0, 0, 10);
+      
+      const box1 = app.TPI.brep.primitives.box(100, 100, 100, undefined);
+      const box2 = app.TPI.brep.primitives.box(100, 100, 100, mat);
+      const shell = app.TPI.brep.bool.union(box1, box2);
+  
+      // app.addShellOnScene(box1);
+      // app.addShellOnScene(box2);
+      app.addShellOnScene(shell);
+      env.done();
+    }));
   }
+
 };
 
 def('simple.union');
