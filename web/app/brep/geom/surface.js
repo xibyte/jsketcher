@@ -6,19 +6,6 @@ export class Surface {
   }
 
   //--------------------------------------------------------------------------------------------------------------------
-
-  classifyCognateCurve(curve, tol) {
-    throw 'not implemented';
-  }
-
-  classifyCurve(curve, tol) {
-    if (this.isCognateCurve(curve)) {
-      return this.classifyCognateCurve(curve, tol)
-    }
-    return this.toNurbs().classifyCognateCurve(curve.toNurbs(), tol);
-  };
-
-  //--------------------------------------------------------------------------------------------------------------------
   
   intersectForSameClass() {
     throw 'not implemented';
@@ -30,19 +17,6 @@ export class Surface {
     }
     return this.toNurbs().intersectForSameClass(other.toNurbs(), tol);
   };
-
-  //--------------------------------------------------------------------------------------------------------------------
-
-  coplanarUnsignedForSameClass(other, tol) {
-    throw 'not implemented';
-  }
-
-  coplanarUnsigned(other, tol) {
-    if (this.isSameClass(other)) {
-      return this.coplanarUnsignedForSameClass(other, tol)
-    }
-    return this.toNurbs().coplanarUnsignedForSameClass(other.toNurbs());
-  }
 
   //--------------------------------------------------------------------------------------------------------------------
 
@@ -59,16 +33,16 @@ export class Surface {
 
   //--------------------------------------------------------------------------------------------------------------------
 
+  normal(point) {
+    throw 'not implemented';
+  }
+
   toNurbs() {
     throw 'not implemented';
   }
 
   isSameClass(other) {
-    return this.constructor.name == other.constructor.name;
-  }
-
-  isCognateCurve(curve) {
-    return false;
+    return this.constructor.name === other.constructor.name;
   }
 }
 Surface.prototype.isPlane = false;

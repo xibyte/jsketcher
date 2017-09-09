@@ -15,7 +15,7 @@ export class Face extends TopoObject {
 }
 
 export function* loopsGenerator(face) {
-  if (face.outerLoop != null) {
+  if (face.outerLoop !== null) {
     yield face.outerLoop;
   }
   for (let innerLoop of face.innerLoops) {
