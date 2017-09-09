@@ -4,6 +4,7 @@ export class Line extends Curve {
 
   constructor(p0, v) {
     super();
+    throw 'only nurbs for now'
     this.p0 = p0;
     this.v = v;
     this._pointsCache = new Map();
