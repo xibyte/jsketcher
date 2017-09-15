@@ -8,13 +8,8 @@ export class Plane extends Surface {
 
   constructor(normal, w) {
     super();
-    throw 'only nurbs for now'
     this.normal = normal;
     this.w = w;
-  }
-
-  isCognateCurve(curve) {
-    return curve.constructor.name == 'Line';
   }
 
   calculateBasis() {

@@ -1,11 +1,10 @@
 import * as BREPBuilder from '../brep-builder';
 import {BREPValidator} from '../brep-validator';
-import {HalfEdge, Edge} from '../topo/edge';
+import {Edge} from '../topo/edge';
 import {Loop} from '../topo/loop';
 import {Face} from '../topo/face';
 import {Shell} from '../topo/shell';
 import {Vertex} from '../topo/vertex';
-import {Line} from '../geom/impl/line';
 import Vector from '../../math/vector';
 import * as math from '../../math/math';
 
@@ -24,9 +23,8 @@ const DEBUG = {
 };
 
 const TYPE = {
-  UNION: 0,
-  INTERSECT: 1,
-  SUBTRACT: 2
+  UNION: 'UNION',
+  INTERSECT: 'INTERSECT'
 };
 
 export function union( shell1, shell2 ) {
@@ -42,13 +40,12 @@ export function intersect( shell1, shell2 ) {
 export function subtract( shell1, shell2 ) {
   __DEBUG_OPERANDS(shell1, shell2);
   invert(shell2);
-  return BooleanAlgorithm(shell1, shell2, TYPE.SUBTRACT);
+  return BooleanAlgorithm(shell1, shell2, TYPE.INTERSECT);
 }
 
 export function invert( shell ) {
   for (let face of shell.faces) {
     face.surface = face.surface.invert();
-    face.data.INVERTED = !face.data.INVERTED;
     for (let loop of face.loops) {
       invertLoop(loop);
     }
@@ -75,7 +72,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   initSolveData(shell1, facesData);
   initSolveData(shell2, facesData);
 
-  intersectFaces(shell1, shell2, type !== TYPE.UNION);
+  intersectFaces(shell1, shell2, type);
 
   for (let faceData of facesData) {
     initGraph(faceData);
@@ -203,7 +200,7 @@ function squash(face, edges) {
   face.innerLoops = [];
 }
 
-function filterFaces(faces, newLoops, validLoops) {
+function filterFaces(faces, newLoops) {
   const validFaces = new Set(faces);
   const result = new Set();
   for (let face of faces) {
@@ -299,7 +296,7 @@ function leftTurningMeasure(v1, v2, normal) {
   return -measure;
 }
 
-function intersectEdges(shell1, shell2, ) {
+function intersectEdges(shell1, shell2) {
   const tuples1 = [];
   const tuples2 = [];
 
@@ -347,7 +344,38 @@ function intersectEdges(shell1, shell2, ) {
   }
 }
 
-function intersectFaces(shell1, shell2, invert) {
+//TODO: extract to a unit test
+function curveDirectionValidityTest(curve, surface1, surface2, operationType) {
+  let point = curve.point(0.5);
+  let tangent = curve.tangentAtPoint(point);
+  assert('tangent should be normalized', eq(tangent.length, 1));
+
+  let normal1 = surface1.normal(point);
+  assert('normal should be normalized', eq(normal1.length, 1));
+
+  let normal2 = surface2.normal(point);
+  assert('normal should be normalized', eq(normal2.length, 1));
+
+  let expectedDirection = normal1.cross(normal2);
+
+  if (operationType === TYPE.UNION) {
+    expectedDirection._negate();
+  }
+
+  let sameAsExpected = expectedDirection.dot(tangent) > 0;
+  assert('wrong intersection curve direction', sameAsExpected);
+}
+
+//TODO: extract to a unit test
+function newEdgeDirectionValidityTest(e, curve) {
+  let point = e.halfEdge1.vertexA.point;
+  let tangent = curve.tangentAtPoint(point);
+  assert('tangent of originated curve and first halfEdge should be the same', math.vectorsEqual(tangent, e.halfEdge1.tangent(point)));
+  assert('tangent of originated curve and second halfEdge should be the opposite', math.vectorsEqual(tangent, e.halfEdge2.tangent(point)));
+}
+
+function intersectFaces(shell1, shell2, operationType) {
+  const invert = operationType === TYPE.UNION;
   for (let i = 0; i < shell1.faces.length; i++) {
     const face1 = shell1.faces[i];
     if (DEBUG.FACE_FACE_INTERSECTION) {
@@ -370,6 +398,7 @@ function intersectFaces(shell1, shell2, invert) {
         if (invert) {
           curve = curve.invert();
         }
+        curveDirectionValidityTest(curve, face1.surface, face2.surface, invert);
         const nodes = [];
         collectNodesOfIntersectionOfFace(curve, face1, nodes);
         collectNodesOfIntersectionOfFace(curve, face2, nodes);
@@ -380,6 +409,7 @@ function intersectFaces(shell1, shell2, invert) {
         split(nodes, curve, newEdges);
 
         newEdges.forEach(e => {
+          newEdgeDirectionValidityTest(e, curve)
           addNewEdge(face1, e.halfEdge1);
           addNewEdge(face2, e.halfEdge2);
         });
@@ -519,7 +549,7 @@ function newVertex(point) {
 
 function nodeNormal(point, edge, curve) {
   const edgeTangent = edge.tangent(point);
-  const curveTangent = new Vector().set3(curve.tangent(curve.closestParam(point.data())));
+  const curveTangent = curve.tangentAtPoint(point);
 
   let dot = edgeTangent.dot(curveTangent);
   if (equal(dot, 0)) {
@@ -635,6 +665,12 @@ function __DEBUG_OPERANDS(shell1, shell2) {
 
 function equal(v1, v2) {
   return math.areEqual(v1, v2, TOLERANCE);
+}
+
+function assert(name, cond) {
+  if (!cond) {
+    throw 'ASSERTION FAILED: ' + name;
+  }
 }
 
 const MY = '__BOOLEAN_ALGORITHM_DATA__'; 

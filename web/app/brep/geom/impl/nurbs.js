@@ -1,4 +1,3 @@
-import verb from 'verb-nurbs'
 import {Matrix3} from  '../../../math/l3space'
 import * as math from  '../../../math/math'
 import {Point} from '../point'
@@ -95,7 +94,7 @@ NurbsCurve.prototype.createLinearNurbs = function(a, b) {
 };
 
 export class NurbsSurface extends Surface {
-  
+
   constructor(verbSurface) {
     super();
     this.verb = verbSurface;
@@ -105,7 +104,7 @@ export class NurbsSurface extends Surface {
   toNurbs() {
     return this;
   }
-  
+
   normal(point) {
     let uv = this.verb.closestParam(point.data());
     let normal = new Vector().set3(this.verb.normal(uv[0], uv[1]));
@@ -113,6 +112,18 @@ export class NurbsSurface extends Surface {
       normal._negate();
     }
     return normal;
+  }
+
+  normalInMiddle(point) {
+    let normal = new Vector().set3(this.verb.normal(0.5, 0.5));
+    if (this.inverted) {
+      normal._negate();
+    }
+    return normal;
+  }
+
+  point(u, v) {
+    return new Point().set3(this.verb.point(u, v));
   }
 
   intersectForSameClass(other, tol) {
@@ -125,5 +136,19 @@ export class NurbsSurface extends Surface {
     let inverted = new NurbsSurface(this.verb);
     inverted.inverted = !this.inverted;
     return inverted;
+  }
+
+  isoCurve(param, useV) {
+    const data = verb.eval.Make.surfaceIsocurve(this.verb._data, param, useV);
+    const isoCurve = new verb.geom.NurbsCurve(data);
+    return new NurbsCurve(isoCurve);
+  }
+
+  isoCurveAlignU(param) {
+    return this.isoCurve(param, true);
+  }
+
+  isoCurveAlignV(param) {
+    return this.isoCurve(param, false);
   }
 }

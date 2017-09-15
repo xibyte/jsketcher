@@ -1,7 +1,8 @@
 import {checkForSelectedFaces} from './actions/action-helpers'
-import {triangulateToThree} from './scene/brep-scene-object'
+import {nurbsToThreeGeom, triangulateToThree} from './scene/brep-scene-object'
 import {createSolidMaterial} from './scene/scene-object'
 import DPR from '../utils/dpr'
+import Vector from "../math/vector";
 
 export const DEBUG = true;
 
@@ -37,6 +38,9 @@ function addGlobalDebugActions(app) {
     AddPoint: (coordinates, or, vector, andColorAtTheEnd) => {
       debugGroup.add(createPoint(coordinates, or, vector, andColorAtTheEnd));
       app.viewer.render();
+    },
+    AddPoint3: (arr, color) => {
+      __DEBUG__.AddPoint(arr[0], arr[1], arr[2], color);
     },
     AddVertex: (v) => {
       window.__DEBUG__.AddPoint(v.point);
@@ -94,6 +98,23 @@ function addGlobalDebugActions(app) {
         debugVolumeGroup.add(line);
       }
       app.viewer.render();
+    },
+    AddNurbs: (nurbs, color) => {
+      color = color || 0xffffff;
+      const geometry = new THREE.Geometry();
+      nurbsToThreeGeom(nurbs.verb, geometry);
+      geometry.computeFaceNormals();
+      const mesh = new THREE.Mesh(geometry, createSolidMaterial({
+        color,
+        transparent: true,
+        opacity: 0.5,
+        side: THREE.DoubleSide
+      }));
+      debugVolumeGroup.add(mesh);
+      app.viewer.render();
+    },
+    AddCurve: (curve, color) => {
+      __DEBUG__.AddPolyLine(curve.verb.tessellate().map(v => new Vector().set3(v)), color);
     },
     HideSolids: () => {
       app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));

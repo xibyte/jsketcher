@@ -1,4 +1,4 @@
-import {TriangulateFace} from '../../3d/triangulation'
+import {TriangulateFace} from '../../3d/tess/triangulation'
 import {Shell} from '../topo/shell'
 import {HalfEdge} from '../topo/edge'
 import {Loop} from '../topo/loop'
