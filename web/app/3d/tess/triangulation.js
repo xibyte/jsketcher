@@ -1,6 +1,7 @@
 import libtess from 'libtess'
-import {Point} from '../brep/geom/point'
-import {Vertex} from '../brep/topo/vertex'
+import {Point} from '../../brep/geom/point'
+import {Vertex} from '../../brep/topo/vertex'
+import Vector from "../../math/vector";
 
 function initTesselator() {
   // function called for each vertex of tesselator output
@@ -113,6 +114,17 @@ export function TriangulateFace(face) {
   for (let loop of face.loops) {
     tessy.gluTessBeginContour();
     for (let e of loop.halfEdges) {
+      if (e.edge.curve.isLine) {
+        tessy.gluTessVertex(arr(e.vertexA.point), e.vertexA);
+      } else if (e.edge.curve.verb) {
+        tessy.gluTessVertex(arr(e.vertexA.point), e.vertexA);
+        let points = e.edge.curve.verb.tessellate();
+        if (e.inverted) {
+          points.reverse();
+        }
+        points.shift();
+        points.forEach(v => tessy.gluTessVertex(v, {point: new Vector().set3(v)}));
+      }
       tessy.gluTessVertex(arr(e.vertexA.point), e.vertexA);
     }
     tessy.gluTessEndContour();
