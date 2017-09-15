@@ -7,7 +7,7 @@ import {HashTable} from '../../../utils/hashmap'
 import {Mesh} from '../../mesh'
 import {LoadSTLFromURL} from '../../io'
 import revolve from './revolve'
-import {Triangulate} from '../../triangulation'
+import {Triangulate} from '../../tess/triangulation'
 
 export function sortPolygons(polygons) {
   function Loop(polygon) {

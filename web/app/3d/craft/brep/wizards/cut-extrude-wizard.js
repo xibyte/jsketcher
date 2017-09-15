@@ -1,7 +1,7 @@
 import {CURRENT_SELECTION as S} from './wizard'
 import {PreviewWizard, SketchBasedPreviewer} from './preview-wizard'
 import {getEncloseDetails} from '../cut-extrude'
-import {TriangulatePolygons} from '../../../triangulation'
+import {TriangulatePolygons} from '../../../tess/triangulation'
 import Vector from '../../../../math/vector'
 import {reversedIndex} from '../../../../utils/utils'
 

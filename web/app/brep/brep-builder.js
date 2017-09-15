@@ -4,7 +4,6 @@ import {Loop} from './topo/loop'
 import {Face} from './topo/face'
 import {HalfEdge, Edge} from './topo/edge'
 import {Line} from './geom/impl/line'
-import {ApproxCurve, ApproxSurface} from './geom/impl/approx'
 import {NurbsSurface, NurbsCurve} from './geom/impl/nurbs'
 import {Plane} from './geom/impl/plane'
 import {Point} from './geom/point'
@@ -12,12 +11,9 @@ import {BasisForPlane, Matrix3} from '../math/l3space'
 import {CompositeCurve} from './geom/curve'
 import * as cad_utils from '../3d/cad-utils'
 import * as math from '../math/math'
-import verb from 'verb-nurbs'
-import {StitchedCurve, StitchedSurface, EDGE_AUX} from './stitching'
-import {initTiles, refine} from './nurbs-tiling'
 import mergeNullFace from './null-face-merge'
 import {invert} from './operations/boolean'
-import {rotateArr} from '../utils/utils'
+import BBox from "../math/bbox";
 
 function isCCW(points, normal) {
   const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();
@@ -44,15 +40,15 @@ export function createPrism(basePoints, height) {
 
   for (let i = 0; i < basePoints.length; i++) {
     let j = (i + 1) % basePoints.length;
-    basePath.add(Line.fromSegment(basePoints[i], basePoints[j]), basePoints[i], null);
-    lidPath.add(Line.fromSegment(lidPoints[i], lidPoints[j]), lidPoints[i], null);
+    basePath.add(NurbsCurve.createLinearNurbs(basePoints[i], basePoints[j]), basePoints[i], null);
+    lidPath.add(NurbsCurve.createLinearNurbs(lidPoints[i], lidPoints[j]), lidPoints[i], null);
   }
   return enclose(basePath, lidPath, baseSurface, lidSurface, () => {});
 }
 
-export function enclose(basePath, lidPath, baseSurface, lidSurface) {
+export function enclose(basePath, lidPath, basePlane, lidPlane) {
 
-  if (basePath.points.length != lidPath.points.length) {
+  if (basePath.points.length !== lidPath.points.length) {
     throw 'illegal arguments';
   }
 
@@ -67,55 +63,57 @@ export function enclose(basePath, lidPath, baseSurface, lidSurface) {
     const wall = createWall(basePath.curves[i], lidPath.curves[i], baseVertices[j], baseVertices[i], lidVertices[i], lidVertices[j]);
     walls.push(wall);
   }
-  return assemble(walls, baseSurface, lidSurface)
+  return assemble(walls, basePlane, lidPlane)
 }
 
-function assemble(walls, baseSurface, lidSurface) {
-  const baseLoop = new Loop();
-  const lidLoop = new Loop();
+function assemble(walls, basePlane, lidPlane) {
+
   const shell = new Shell();
 
-  for (let wall of walls) {
+  const wallEdges = [];
+  const baseEdges = [];
+  const lidEdges = [];
 
-    function addHalfEdges(loop, edges) {
-      for (let i = edges.length - 1; i >= 0; i--) {
-        let he = edges[i];
-        he.edge = new Edge(Line.fromSegment(he.vertexA.point, he.vertexB.point))
-        const twin = new HalfEdge().setAB(he.vertexB, he.vertexA);
-        twin.loop = loop;
-        loop.halfEdges.push(twin);
-        he.edge.link(twin, he);
-      }
-    }
-    addHalfEdges(baseLoop, wall.bottomEdges);
-    addHalfEdges(lidLoop, wall.topEdges);
-
-    for (let wallFace of wall.faces) {
-      shell.faces.push(wallFace);
-    }
+  for (let w of walls) {
+    let wallEdge = Edge.fromCurve(w.isoCurveAlignV(0));
+    wallEdges.push(wallEdge);
   }
 
-  lidLoop.halfEdges.reverse();
-  rotateArr(lidLoop.halfEdges, 1); // keep old order for the unit tests
-  linkSegments(baseLoop.halfEdges);
-  linkSegments(lidLoop.halfEdges);
+  for (let i = 0; i < wallEdges.length; ++i) {
+    let j = (i + 1) % wallEdges.length;
+    let curr = wallEdges[i];
+    let next = wallEdges[j];
+    let wall = walls[i];
 
-  connectWalls(walls);
+    let baseEdge = new Edge(wall.isoCurveAlignU(0), curr.halfEdge1.vertexA, next.halfEdge1.vertexA);
+    let lidEdge = new Edge(wall.isoCurveAlignU(1), curr.halfEdge1.vertexB, next.halfEdge1.vertexB);
 
-  const baseFace = createFace(baseSurface, baseLoop);
-  const lidFace = createFace(lidSurface, lidLoop);
+    baseEdges.push(baseEdge);
+    lidEdges.push(lidEdge);
 
-  shell.faces.push(baseFace, lidFace);
+    let wallFace = new Face(wall);
+    wallFace.outerLoop.halfEdges.push(baseEdge.halfEdge2, curr.halfEdge1, lidEdge.halfEdge1, next.halfEdge2);
+    wallFace.outerLoop.link();
+    shell.faces.push(wallFace);
+  }
+  const base = new Face();
+  const lid = new Face();
+
+  lidEdges.reverse();
+
+  baseEdges.forEach(e => base.outerLoop.halfEdges.push(e.halfEdge1));
+  lidEdges.forEach(e => lid.outerLoop.halfEdges.push(e.halfEdge2));
+
+  base.outerLoop.link();
+  lid.outerLoop.link();
+
+  base.surface = createBoundingNurbs(base.outerLoop.asPolygon(), basePlane);
+  lid.surface = createBoundingNurbs(lid.outerLoop.asPolygon(), lidPlane);
+
+  shell.faces.push(base, lid);
   shell.faces.forEach(f => f.shell = shell);
   return shell;
 }
-
-function vertIsoCurve(nurbs, param, useU) {
-  const domU = nurbs.domainU();
-  const data = verb.eval.Make.surfaceIsocurve(nurbs._data, param, useU);
-  return new verb.geom.NurbsCurve(data);
-}
-
 
 function assembleRevolved(walls, baseSurface, lidSurface) {
   const baseLoop = new Loop();
@@ -304,13 +302,27 @@ function createPlaneForLoop(normal, loop) {
   return plane;
 }
 
-function createPlaneFace(loop) {
-  const normal = cad_utils.normalOfCCWSeq(loop.halfEdges.map(e => e.vertexA.point));
-  const plane = createPlaneForLoop(normal, loop);
-  const face = new Face(plane);
-  face.outerLoop = loop;
-  loop.face = face;
-  return face;
+function createBoundingNurbs(points, plane) {
+  if (!plane) {
+    const normal = cad_utils.normalOfCCWSeq(points);
+    const w = points[0].dot(normal);
+    plane = new Plane(normal, w);
+  }
+  let to2D = plane.get2DTransformation();
+
+  let points2d = points.map(p => to2D.apply(p));
+  let bBox = new BBox();
+  points2d.forEach(p => bBox.checkPoint(p));
+
+  let to3D = plane.get3DTransformation();
+
+  let polygon = bBox.toPolygon();
+  polygon = polygon.map(p => to3D._apply(p));
+
+  const nurbs = new NurbsSurface(new verb.geom.ExtrudedSurface(new verb.geom.Line(
+    polygon[1].data(), polygon[0].data()), polygon[2].minus(polygon[1]).data()));
+
+  return nurbs;
 }
 
 
@@ -374,114 +386,17 @@ export function createPlaneLoop(vertices, curves) {
 }
 
 function bothClassOf(o1, o2, className) {
-  return o1.constructor.name == className && o2.constructor.name == className;
+  return o1.constructor.name === className && o2.constructor.name === className;
 }
 
-class Wall {
-
-  constructor(faces, bottomEdges, rightEdges, topEdges, leftEdges, surface) {
-    this.faces = faces;
-    this.bottomEdges = bottomEdges;
-    this.rightEdges = rightEdges;
-    this.topEdges = topEdges;
-    this.leftEdges = leftEdges;
-    this.surface = surface;
-  }
-}
-
-export function createWall(curve1, curve2, vertexNB, vertexCB, vertexCL, vertexNL) {
+export function createWall(curve1, curve2) {
   if (bothClassOf(curve1, curve2, 'Line')) {
-    const loop = new Loop();
-    loop.halfEdges.push(
-      HalfEdge.create(vertexNB, vertexCB, loop, new Edge(curve1)),
-      HalfEdge.create(vertexCB, vertexCL, loop),
-      HalfEdge.create(vertexCL, vertexNL, loop, new Edge(curve2)),
-      HalfEdge.create(vertexNL,  vertexNB, loop));
-
-    linkSegments(loop.halfEdges);
-
-    return new Wall([createPlaneFace(loop)], [loop.halfEdges[0]], [loop.halfEdges[1]], [loop.halfEdges[2]], [loop.halfEdges[3]] );
+    throw 'unsupported'
   } else if (bothClassOf(curve1, curve2, 'NurbsCurve')) {
-    const nurbs = verb.geom.NurbsSurface.byLoftingCurves([curve1.verb.reverse(), curve2.verb.reverse()], 1);
-    return wallFromNUBRS(nurbs, true, vertexNB, vertexCB, vertexCL, vertexNL);
+    return new NurbsSurface(verb.geom.NurbsSurface.byLoftingCurves([curve1.verb, curve2.verb], 1));
   } else {
     throw 'unsupported';
   }
 }
 
-function swapUV(surface) {
-  throw 'not implemented';
-  const data = surface._data;
-  verb_eval_Modify.knotsReverse()
-  return new verb.geom.NurbsCurve(new verb.core.NurbsSurfaceData(data.degreeV, data.degreeU, surface.knotsV, surface.knotsU));
-}
 
-export function wallFromNUBRS(surface, vFlat, vertexNB, vertexCB, vertexCL, vertexNL) {
-
-  const outerEdges = {
-    bottom : [],
-    right : [],
-    top : [],
-    left : []
-  };
-  const stitched = new StitchedSurface();
-  stitched.origin = surface;
-
-  const opts = {};
-  if (vFlat) {
-    opts.maxVSplits = 1;
-  }
-
-  const tiles = initTiles(surface, opts);
-  refine(tiles, {vMax: vFlat ? 0 : undefined});
-  function vertex(uv) {
-    if (!uv._vertex) {
-      uv._vertex = new Vertex(new Point().set3(surface.point(uv.u, uv.v)));
-    }
-    return uv._vertex;
-  }
-
-  var nVs = tiles.length - 1;
-  var nUs = tiles[0].length - 1;
-
-  tiles[0][0].edges[0].a._vertex = vertexNB;
-  tiles[0][nUs].edges[0].b._vertex = vertexCB;
-  tiles[nVs][nUs].edges[1].b._vertex = vertexCL;
-  tiles[nVs][0].edges[2].b._vertex = vertexNL;
-
-  for (let row of tiles) {
-    for (let tile of row) {
-      tile.leafs(tileLeaf => {
-        const loop = new Loop();
-        const vertexNormals = new Map();
-        for (let e of tileLeaf.edges) {
-          e.leafs(edgeLeaf => {
-            if (!edgeLeaf._halfEdge) {
-              const a = vertex(e.a);
-              const b = vertex(e.b);
-              edgeLeaf._halfEdge = new HalfEdge().setAB(a, b);
-              if (edgeLeaf.outer) {
-                outerEdges[edgeLeaf.outer].push(edgeLeaf._halfEdge);
-              } else {
-                edgeLeaf.twin._halfEdge = new HalfEdge().setAB(b, a);
-                const edge = new Edge(Line.fromSegment(a.point, b.point));
-                edge.link(edgeLeaf._halfEdge, edgeLeaf.twin._halfEdge);
-                edge.data[EDGE_AUX] = stitched;
-              }
-              vertexNormals.set(a, e.a.normal());
-              vertexNormals.set(b, e.b.normal());
-            }
-            edgeLeaf._halfEdge.loop = loop;
-            loop.halfEdges.push(edgeLeaf._halfEdge);
-          });
-        }
-        linkSegments(loop.halfEdges);
-        const face = createPlaneFace(loop);
-        face.data.VERTEX_NORMALS = vertexNormals;
-        stitched.addFace(face);
-      });
-    }
-  }
-
-  return new Wall(stitched.faces, outerEdges.bottom, outerEdges.right, outerEdges.top, outerEdges.left, surface);
-}

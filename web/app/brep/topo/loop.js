@@ -17,6 +17,17 @@ export class Loop extends TopoObject {
   asPolygon() {
     return this.halfEdges.map(e => e.vertexA.point);
   }
+
+  link() {
+    let length = this.halfEdges.length;
+    for (let i = 0; i < length; i++) {
+      let j = (i + 1) % length;
+      const curr = this.halfEdges[i];
+      const next = this.halfEdges[j];
+      curr.next = next;
+      next.prev = curr;
+    }
+  }
 }
 
 Loop.isPolygonCCWOnSurface = function(polygon, surface) {
