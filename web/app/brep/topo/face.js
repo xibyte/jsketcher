@@ -1,4 +1,5 @@
 import {TopoObject} from './topo-object'
+import {Loop} from './loop'
 
 export class Face extends TopoObject {
 
@@ -7,7 +8,7 @@ export class Face extends TopoObject {
     this.id = undefined;
     this.surface = surface;
     this.shell = null;
-    this.outerLoop = null;
+    this.outerLoop = new Loop();
     this.innerLoops = [];
     this.defineIterable('loops', () => loopsGenerator(this));
     this.defineIterable('edges', () => halfEdgesGenerator(this))
