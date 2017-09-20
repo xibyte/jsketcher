@@ -55,13 +55,7 @@ export default function(face) {
   }
   analyzeCurvature(face.surface.verb, triangles);
 
-  if (face.surface.inverted) {
-    triangles.forEach(t => t.reverse());
-  }
-
   return triangles.map(t => t.map(p => face.surface.point(p[0], p[1])));
-
-
 }
 
 function analyzeCurvature(nurbs, triangles) {
