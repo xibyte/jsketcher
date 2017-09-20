@@ -116,6 +116,12 @@ function addGlobalDebugActions(app) {
     AddCurve: (curve, color) => {
       __DEBUG__.AddPolyLine(curve.verb.tessellate().map(v => new Vector().set3(v)), color);
     },
+    AddNurbsCorners: (nurbs) => {
+      __DEBUG__.AddPoint(nurbs.point(0, 0), 0xff0000);
+      __DEBUG__.AddPoint(nurbs.point(1, 0), 0x00ff00);
+      __DEBUG__.AddPoint(nurbs.point(1, 1), 0x0000ff);
+      __DEBUG__.AddPoint(nurbs.point(0, 1), 0x00ffff);
+    },
     HideSolids: () => {
       app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));
       app.viewer.render();

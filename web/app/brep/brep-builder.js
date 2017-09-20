@@ -43,7 +43,7 @@ export function createPrism(basePoints, height) {
     basePath.add(NurbsCurve.createLinearNurbs(basePoints[i], basePoints[j]), basePoints[i], null);
     lidPath.add(NurbsCurve.createLinearNurbs(lidPoints[i], lidPoints[j]), lidPoints[i], null);
   }
-  return enclose(basePath, lidPath, baseSurface, lidSurface, () => {});
+  return enclose(basePath, lidPath, baseSurface, lidSurface);
 }
 
 export function enclose(basePath, lidPath, basePlane, lidPlane) {
@@ -54,13 +54,10 @@ export function enclose(basePath, lidPath, basePlane, lidPlane) {
 
   const walls = [];
 
-  const baseVertices = basePath.points.map(p => new Vertex(p));
-  const lidVertices = lidPath.points.map(p => new Vertex(p));
-
   const n = basePath.points.length;
   for (let i = 0; i < n; i++) {
     let j = (i + 1) % n;
-    const wall = createWall(basePath.curves[i], lidPath.curves[i], baseVertices[j], baseVertices[i], lidVertices[i], lidVertices[j]);
+    const wall = createWall(basePath.curves[i], lidPath.curves[i]);
     walls.push(wall);
   }
   return assemble(walls, basePlane, lidPlane)
@@ -85,14 +82,14 @@ function assemble(walls, basePlane, lidPlane) {
     let next = wallEdges[j];
     let wall = walls[i];
 
-    let baseEdge = new Edge(wall.isoCurveAlignU(0), curr.halfEdge1.vertexA, next.halfEdge1.vertexA);
-    let lidEdge = new Edge(wall.isoCurveAlignU(1), curr.halfEdge1.vertexB, next.halfEdge1.vertexB);
+    let baseEdge = new Edge(wall.isoCurveAlignU(1), curr.halfEdge1.vertexB, next.halfEdge1.vertexB);
+    let lidEdge = new Edge(wall.isoCurveAlignU(0), curr.halfEdge1.vertexA, next.halfEdge1.vertexA);
 
     baseEdges.push(baseEdge);
     lidEdges.push(lidEdge);
 
     let wallFace = new Face(wall);
-    wallFace.outerLoop.halfEdges.push(baseEdge.halfEdge2, curr.halfEdge1, lidEdge.halfEdge1, next.halfEdge2);
+    wallFace.outerLoop.halfEdges.push(baseEdge.halfEdge2, curr.halfEdge2, lidEdge.halfEdge1, next.halfEdge1);
     wallFace.outerLoop.link();
     shell.faces.push(wallFace);
   }
@@ -320,11 +317,10 @@ function createBoundingNurbs(points, plane) {
   polygon = polygon.map(p => to3D._apply(p));
 
   const nurbs = new NurbsSurface(new verb.geom.ExtrudedSurface(new verb.geom.Line(
-    polygon[1].data(), polygon[0].data()), polygon[2].minus(polygon[1]).data()));
+    polygon[0].data(), polygon[1].data()), polygon[2].minus(polygon[1]).data()));
 
   return nurbs;
 }
-
 
 export function linkHalfEdges(edge, halfEdge1, halfEdge2) {
   halfEdge1.edge = edge;
@@ -393,7 +389,7 @@ export function createWall(curve1, curve2) {
   if (bothClassOf(curve1, curve2, 'Line')) {
     throw 'unsupported'
   } else if (bothClassOf(curve1, curve2, 'NurbsCurve')) {
-    return new NurbsSurface(verb.geom.NurbsSurface.byLoftingCurves([curve1.verb, curve2.verb], 1));
+    return new NurbsSurface(verb.geom.NurbsSurface.byLoftingCurves([curve2.verb, curve1.verb], 1));
   } else {
     throw 'unsupported';
   }
