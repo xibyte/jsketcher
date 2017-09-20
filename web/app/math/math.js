@@ -58,6 +58,12 @@ export function areVectorsEqual(v1, v2, tolerance) {
          areEqual(v1.z, v2.z, tolerance);
 }
 
+export function areVectorsEqual3(v1, v2, tolerance) {
+  return areEqual(v1[0], v2[0], tolerance) &&
+         areEqual(v1[1], v2[1], tolerance) &&
+         areEqual(v1[2], v2[2], tolerance);
+}
+
 export function vectorsEqual(v1, v2) {
   return areVectorsEqual(v1, v2, TOLERANCE);
 }

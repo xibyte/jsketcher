@@ -41,24 +41,18 @@ export class BREPSceneSolid extends SceneSolid {
 
   createEdges() {
     const visited = new Set();
-    for (let face of this.shell.faces) {
-      for (let halfEdge of face.outerLoop.halfEdges) {
-        if (!visited.has(halfEdge.edge)) {
-          visited.add(halfEdge.edge);
-          if (halfEdge.edge.data[EDGE_AUX] === undefined) {
-            const line = new THREE.Line(undefined, WIREFRAME_MATERIAL);
-            const contour = [halfEdge.vertexA.point];
-            halfEdge.edge.curve.approximate(10, halfEdge.vertexA.point, halfEdge.vertexB.point, contour);
-            contour.push(halfEdge.vertexB.point);
-            for (let p of contour) {
-              line.geometry.vertices.push(p.three());
-            }
-            this.wireframeGroup.add(line);
-            line.__TCAD_EDGE = halfEdge.edge;
-            halfEdge.edge.data['scene.edge'] = line;
-          }
+    for (let edge of this.shell.edges) {
+      if (edge.data[EDGE_AUX] === undefined) {
+        const line = new THREE.Line(undefined, WIREFRAME_MATERIAL);
+        const contour = edge.curve.verb.tessellate();
+        for (let p of contour) {
+          line.geometry.vertices.push(new THREE.Vector3().fromArray(p));
         }
+        this.wireframeGroup.add(line);
+        line.__TCAD_EDGE = edge;
+        edge.data['scene.edge'] = line;
       }
+
     }
   }
 
