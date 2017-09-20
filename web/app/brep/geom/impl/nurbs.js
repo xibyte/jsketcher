@@ -51,11 +51,11 @@ export class NurbsCurve extends Curve {
   }
   
   tangentAtPoint(point) {
-    return new Point().set3(this.verb.tangent(this.verb.closestParam(point.data())));
+    return new Point().set3(this.verb.tangent(this.verb.closestParam(point.data())))._normalize();
   }
 
   tangentAtParam(param) {
-    return new Point().set3(this.verb.tangent(param ));
+    return new Point().set3(this.verb.tangent(param ))._normalize();
   }
   
   closestDistanceToPoint(point) {
@@ -67,10 +67,6 @@ export class NurbsCurve extends Curve {
     return this.verb.split(this.verb.closestParam(point.data)).map(v => new NurbsCurve(v));
   }
 
-  intersect(other, tolerance) {
-    return verb.geom.Intersect.curves(this.verb, other.verb, tolerance);
-  }
-
   invert() {
     return new NurbsCurve(this.verb.reverse());
   }
@@ -78,7 +74,16 @@ export class NurbsCurve extends Curve {
   point(u) {
     return new Point().set3(this.verb.point(u));
   }
-  
+
+  intersectCurve(other, tol) {
+    return verb.geom.Intersect.curves(this.verb, other.verb, tol).map( i => ({
+      u0: i.u0,
+      u1: i.u1,
+      p0: new Vector().set3(i.point0),
+      p1: new Vector().set3(i.point1)
+    }));
+  }
+
   static createByPoints(points, degeree) {
     points = points.map(p => p.data());
     return new NurbsCurve(new verb.geom.NurbsCurve.byPoints(points, degeree));
@@ -111,6 +116,7 @@ export class NurbsSurface extends Surface {
     if (this.inverted) {
       normal._negate();
     }
+    normal._normalize();
     return normal;
   }
 
@@ -119,22 +125,19 @@ export class NurbsSurface extends Surface {
     if (this.inverted) {
       normal._negate();
     }
+    normal._normalize();
     return normal;
   }
 
-  normalInMiddle(point) {
-    let normal = new Vector().set3(this.verb.normal(0.5, 0.5));
-    if (this.inverted) {
-      normal._negate();
-    }
-    return normal;
+  normalInMiddle() {
+    return this.normalUV(0.5, 0.5);
   }
 
   point(u, v) {
     return new Point().set3(this.verb.point(u, v));
   }
 
-  intersectForSameClass(other, tol) {
+  intersectSurfaceForSameClass(other, tol) {
     const curves = verb.geom.Intersect.surfaces(this.verb, other.verb, tol);
     let inverted = this.inverted !== other.inverted;
     return curves.map(curve => new NurbsCurve(inverted ?  curve.reverse() : curve));

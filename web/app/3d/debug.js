@@ -122,6 +122,11 @@ function addGlobalDebugActions(app) {
       __DEBUG__.AddPoint(nurbs.point(1, 1), 0x0000ff);
       __DEBUG__.AddPoint(nurbs.point(0, 1), 0x00ffff);
     },
+    AddNormal: (atPoint, normal, color, scale) => {
+      scale = scale || 100;
+      __DEBUG__.AddSegment(atPoint, atPoint.plus(normal.multiply(scale)), color);
+    },
+
     HideSolids: () => {
       app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));
       app.viewer.render();

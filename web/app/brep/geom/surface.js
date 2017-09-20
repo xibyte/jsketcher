@@ -7,15 +7,15 @@ export class Surface {
 
   //--------------------------------------------------------------------------------------------------------------------
   
-  intersectForSameClass() {
+  intersectSurfaceForSameClass() {
     throw 'not implemented';
   }
   
-  intersect(other, tol) {
+  intersectSurface(other, tol) {
     if (this.isSameClass(other)) {
-      return this.intersectForSameClass(other, tol)
+      return this.intersectSurfaceForSameClass(other, tol)
     }
-    return this.toNurbs().intersectForSameClass(other.toNurbs(), tol);
+    return this.toNurbs().intersectSurfaceForSameClass(other.toNurbs(), tol);
   };
 
   //--------------------------------------------------------------------------------------------------------------------

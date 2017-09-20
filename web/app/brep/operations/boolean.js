@@ -46,18 +46,18 @@ export function subtract( shell1, shell2 ) {
 export function invert( shell ) {
   for (let face of shell.faces) {
     face.surface = face.surface.invert();
-    for (let loop of face.loops) {
-      invertLoop(loop);
-    }
     for (let edge of shell.edges) {
       edge.invert();
     }
+    for (let loop of face.loops) {
+      for (let i = 0; i < loop.halfEdges.length; i++) {
+        loop.halfEdges[i] = loop.halfEdges[i].twin();
+      }
+      loop.halfEdges.reverse();
+      loop.link();
+    }
   }
   BREPValidator.validateToConsole(shell);
-}
-
-function invertLoop(loop) {
-  BREPBuilder.invertLoop(loop);
 }
 
 export function BooleanAlgorithm( shell1, shell2, type ) {
@@ -297,11 +297,16 @@ function leftTurningMeasure(v1, v2, normal) {
 }
 
 function intersectEdges(shell1, shell2) {
-  const tuples1 = [];
-  const tuples2 = [];
+  function collectTuples(shell) {
+    const tuples = [];
+    for (let edge of shell.edges) {
+      tuples.push([edge]);
+    }
+    return tuples;
+  }
 
-  shell1.edges.forEach(e => tuples1.push([e]));
-  shell2.edges.forEach(e => tuples2.push([e]));
+  const tuples1 = collectTuples(shell1);
+  const tuples2 = collectTuples(shell2);
 
   for (let i = 0; i < tuples1.length; i++) {
     const edges1 = tuples1[i];
@@ -311,7 +316,7 @@ function intersectEdges(shell1, shell2) {
         const e1 = edges1[k];
         for (let l = edges2.length - 1; l >= 0 ; l--) {
           const e2 = edges2[l];
-          let points = e1.curve.intersect(e2.curve, TOLERANCE);
+          let points = e1.curve.intersectCurve(e2.curve, TOLERANCE);
 
           for (let point of points) {
             const {u0, u1} = point;
@@ -344,26 +349,23 @@ function intersectEdges(shell1, shell2) {
   }
 }
 
-//TODO: extract to a unit test
-function curveDirectionValidityTest(curve, surface1, surface2, operationType) {
+
+function fixCurveDirection(curve, surface1, surface2, operationType) {
   let point = curve.point(0.5);
   let tangent = curve.tangentAtPoint(point);
-  assert('tangent should be normalized', eq(tangent.length, 1));
-
   let normal1 = surface1.normal(point);
-  assert('normal should be normalized', eq(normal1.length, 1));
-
   let normal2 = surface2.normal(point);
-  assert('normal should be normalized', eq(normal2.length, 1));
 
   let expectedDirection = normal1.cross(normal2);
 
   if (operationType === TYPE.UNION) {
     expectedDirection._negate();
   }
-
   let sameAsExpected = expectedDirection.dot(tangent) > 0;
-  assert('wrong intersection curve direction', sameAsExpected);
+  if (sameAsExpected) {
+    curve = curve.invert();
+  }
+  return curve;
 }
 
 //TODO: extract to a unit test
@@ -392,13 +394,10 @@ function intersectFaces(shell1, shell2, operationType) {
         }
       }
 
-      let curves = face1.surface.intersect(face2.surface, TOLERANCE);
+      let curves = face1.surface.intersectSurface(face2.surface, TOLERANCE);
 
       for (let curve of curves) {
-        if (invert) {
-          curve = curve.invert();
-        }
-        curveDirectionValidityTest(curve, face1.surface, face2.surface, invert);
+        curve = fixCurveDirection(curve, face1.surface, face2.surface, operationType);
         const nodes = [];
         collectNodesOfIntersectionOfFace(curve, face1, nodes);
         collectNodesOfIntersectionOfFace(curve, face2, nodes);
@@ -409,7 +408,7 @@ function intersectFaces(shell1, shell2, operationType) {
         split(nodes, curve, newEdges);
 
         newEdges.forEach(e => {
-          newEdgeDirectionValidityTest(e, curve)
+          newEdgeDirectionValidityTest(e, curve);
           addNewEdge(face1, e.halfEdge1);
           addNewEdge(face2, e.halfEdge2);
         });
@@ -465,33 +464,31 @@ function collectNodesOfIntersectionOfFace(curve, face, nodes) {
 
 function collectNodesOfIntersection(curve, loop, nodes) {
   for (let edge of loop.halfEdges) {
-    intersectCurveWithEdge(curves, edge, nodes);
+    intersectCurveWithEdge(curve, edge, nodes);
   }
 }
 
 function intersectCurveWithEdge(curve, edge, result) {
-  for (let i = 0; i < curves.length; ++i) {
-    const points = edge.edge.curve.intersectCurve(curve);
-    for (let point of points) {
-      const {u0, u1} = point;
+  const points = edge.edge.curve.intersectCurve(curve, TOLERANCE);
+  for (let point of points) {
+    const {u0, u1} = point;
 
-      let vertex;
-      if (equal(u0, 0)) {
-        vertex = edge.edge.halfEdge1.vertexA;
-      } else if (equal(u0, 1)) {
-        vertex = edge.edge.halfEdge1.vertexB;
-      } else {
-        vertex = new Vertex(edge.edge.curve.point(u0));
-      }
-      
-      result.push(new Node(vertex, edge, curve, u1));
+    let vertex;
+    if (equal(u0, 0)) {
+      vertex = edge.edge.halfEdge1.vertexA;
+    } else if (equal(u0, 1)) {
+      vertex = edge.edge.halfEdge1.vertexB;
+    } else {
+      vertex = new Vertex(edge.edge.curve.point(u0));
     }
+
+    result.push(new Node(vertex, edge, curve, u1));
   }
 }
 
 function split(nodes, curve, result) {
-  nodes.sort((n1, n2) => n1.u - n2.u);
   nodes = nodes.filter(n => n !== null);
+  nodes.sort((n1, n2) => n1.u - n2.u);
   for (let i = 0; i < nodes.length - 1; i++) {
     let inNode = nodes[i];
     let outNode = nodes[i + 1];
