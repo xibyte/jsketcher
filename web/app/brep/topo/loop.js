@@ -4,9 +4,9 @@ import * as math from '../../math/math'
 
 export class Loop extends TopoObject {
 
-  constructor() {
+  constructor(face) {
     super();
-    this.face = null;
+    this.face = face;
     this.halfEdges = [];
   }
 
@@ -26,6 +26,8 @@ export class Loop extends TopoObject {
       const next = this.halfEdges[j];
       curr.next = next;
       next.prev = curr;
+
+      curr.loop = this;
     }
   }
 }

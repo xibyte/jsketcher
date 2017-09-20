@@ -8,7 +8,7 @@ export class Face extends TopoObject {
     this.id = undefined;
     this.surface = surface;
     this.shell = null;
-    this.outerLoop = new Loop();
+    this.outerLoop = new Loop(this);
     this.innerLoops = [];
     this.defineIterable('loops', () => loopsGenerator(this));
     this.defineIterable('edges', () => halfEdgesGenerator(this))

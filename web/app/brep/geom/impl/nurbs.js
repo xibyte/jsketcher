@@ -17,45 +17,12 @@ export class NurbsCurve extends Curve {
     return new NurbsCurve(this.verb.transform(tr));
   }
   
-  approximate(resolution, from, to, out) {
-    const chunks = this.verb.divideByArcLength(10);
-    let startU = this.verb.closestParam(from.toArray());
-    let endU = this.verb.closestParam(to.toArray());
-    const reverse = startU > endU;
-    if (reverse) {
-      const tmp = startU;
-      startU = endU;
-      endU = tmp;
-      chunks.reverse();
-    }
-
-    for (let sample of chunks) {
-      const u = sample.u;
-      if (u > startU + math.TOLERANCE && u < endU - math.TOLERANCE) {
-        out.push(new Point().set3(this.verb.point(u)));
-      }
-    }
-  }
-
-  approximateU(resolution, paramFrom, paramTo, consumer) {
-    let u = paramFrom;
-    let endU = paramTo;
-    let step = this.verb.paramAtLength(resolution);
-    if (u > endU) {
-      step *= -1;
-    }
-    u += step;
-    for (;step > 0 ? u < endU : u > endU; u += step) {
-      consumer(u);
-    }
-  }
-  
   tangentAtPoint(point) {
-    return new Point().set3(this.verb.tangent(this.verb.closestParam(point.data())))._normalize();
+    return pt(this.verb.tangent(this.verb.closestParam(point.data())))._normalize();
   }
 
   tangentAtParam(param) {
-    return new Point().set3(this.verb.tangent(param ))._normalize();
+    return pt(this.verb.tangent(param ))._normalize();
   }
   
   closestDistanceToPoint(point) {
@@ -64,7 +31,7 @@ export class NurbsCurve extends Curve {
   }
 
   split(point) {
-    return this.verb.split(this.verb.closestParam(point.data)).map(v => new NurbsCurve(v));
+    return this.verb.split(this.verb.closestParam(point.data())).map(v => new NurbsCurve(v));
   }
 
   invert() {
@@ -72,17 +39,55 @@ export class NurbsCurve extends Curve {
   }
   
   point(u) {
-    return new Point().set3(this.verb.point(u));
+    return pt(this.verb.point(u));
   }
 
   intersectCurve(other, tol) {
-    return verb.geom.Intersect.curves(this.verb, other.verb, tol).map( i => ({
+    let isecs = [];
+    tol = tol || 1e-6;
+
+    const eq = (v1, v2) => math.areVectorsEqual3(v1, v2, tol);
+
+    function add(i0) {
+      for (let i1 of isecs) {
+        if (eq(i0.p0, i1.p0)) {
+          return;    
+        }    
+      }  
+      isecs.push(i0);
+    }
+
+    function isecOn(c0, c1, u0) {
+      const p0 = c0.verb.point(u0);
+      const u1 = c1.verb.closestParam(p0);
+      const p1 = c1.verb.point(u1);
+      if (eq(p0, p1)) {
+        if (c0 === other) {
+          add({u0: u1, u1: u0, p0: p1, p1: p0});
+        } else {
+          add({u0, u1, p0, p1});
+        }
+       
+      }
+    }
+    
+    isecOn(this, other, 0);
+    isecOn(this, other, 1);
+    isecOn(other, this, 0);
+    isecOn(other, this, 1);
+
+    verb.geom.Intersect.curves(this.verb, other.verb, tol).forEach( i => add({
       u0: i.u0,
       u1: i.u1,
-      p0: new Vector().set3(i.point0),
-      p1: new Vector().set3(i.point1)
+      p0: i.point0,
+      p1: i.point1
     }));
-  }
+    isecs.forEach(i => {
+      i.p0 = pt(i.p0);
+      i.p1 = pt(i.p1);
+    })
+    return isecs;
+}
 
   static createByPoints(points, degeree) {
     points = points.map(p => p.data());
@@ -112,7 +117,7 @@ export class NurbsSurface extends Surface {
 
   normal(point) {
     let uv = this.verb.closestParam(point.data());
-    let normal = new Vector().set3(this.verb.normal(uv[0], uv[1]));
+    let normal = pt(this.verb.normal(uv[0], uv[1]));
     if (this.inverted) {
       normal._negate();
     }
@@ -121,7 +126,7 @@ export class NurbsSurface extends Surface {
   }
 
   normalUV(u, v) {
-    let normal = new Vector().set3(this.verb.normal(u, v));
+    let normal = pt(this.verb.normal(u, v));
     if (this.inverted) {
       normal._negate();
     }
@@ -134,11 +139,11 @@ export class NurbsSurface extends Surface {
   }
 
   point(u, v) {
-    return new Point().set3(this.verb.point(u, v));
+    return pt(this.verb.point(u, v));
   }
 
   intersectSurfaceForSameClass(other, tol) {
-    const curves = verb.geom.Intersect.surfaces(this.verb, other.verb, tol);
+    const curves = verb_isec(this.verb, other.verb);
     let inverted = this.inverted !== other.inverted;
     return curves.map(curve => new NurbsCurve(inverted ?  curve.reverse() : curve));
   }
@@ -162,4 +167,32 @@ export class NurbsSurface extends Surface {
   isoCurveAlignV(param) {
     return this.isoCurve(param, false);
   }
+}
+
+function dist(p1, p2) {
+  return math.distance3(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
+}
+
+function pt(data) {
+  return new Point().set3(data);
+}
+
+
+function verb_isec(nurbs1, nurbs2) {
+  const tol = 1e-3
+  const surface0 = nurbs1.asNurbs();
+  const surface1 = nurbs2.asNurbs();
+	var tess1 = verb.eval.Tess.rationalSurfaceAdaptive(surface0);
+	var tess2 = verb.eval.Tess.rationalSurfaceAdaptive(surface1);
+	var resApprox = verb.eval.Intersect.meshes(tess1,tess2);
+	var exactPls = resApprox.map(function(pl) {
+		return pl.map(function(inter) {
+			return verb.eval.Intersect.surfacesAtPointWithEstimate(surface0,surface1,inter.uv0,inter.uv1,tol);
+		});
+	});
+	return exactPls.map(function(x) {
+		return verb.eval.Make.rationalInterpCurve(x.map(function(y) {
+			return y.point;
+		}), x.length - 1);
+	}).map(cd => new verb.geom.NurbsCurve(cd));
 }

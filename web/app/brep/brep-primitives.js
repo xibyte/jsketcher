@@ -1,4 +1,5 @@
-import * as BREPBuilder from './brep-builder'
+import {Point} from './geom/point'
+import {createPrism} from './brep-builder'
 import {Matrix3} from '../math/l3space'
 
 export function box(w, h, d, tr) {
@@ -8,11 +9,11 @@ export function box(w, h, d, tr) {
   if (!tr) {
     tr = IDENTITY;
   }
-  return BREPBuilder.createPrism([
-    tr._apply(BREPBuilder.point(-wh, -hh, dh)),
-    tr._apply(BREPBuilder.point( wh, -hh, dh)),
-    tr._apply(BREPBuilder.point( wh,  hh, dh)),
-    tr._apply(BREPBuilder.point(-wh,  hh, dh))
+  return createPrism([
+    tr._apply(new Point(-wh, -hh, dh)),
+    tr._apply(new Point( wh, -hh, dh)),
+    tr._apply(new Point( wh,  hh, dh)),
+    tr._apply(new Point(-wh,  hh, dh))
   ], d);
 }
 

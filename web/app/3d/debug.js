@@ -64,11 +64,10 @@ function addGlobalDebugActions(app) {
       app.viewer.render();
     },
     AddHalfEdge: (he, color) => {
-      const points = [he.vertexA.point];
-      if (he.edge && he.edge.curve) {
-        he.edge.curve.approximate(10, he.vertexA.point, he.vertexB.point, points);
+      const points = he.edge.curve.verb.tessellate().map(p => new Vector().set3(p));
+      if (he.inverted) {
+        points.reverse();
       }
-      points.push(he.vertexB.point);
       window.__DEBUG__.AddPolyLine(points, color);  
     },
     AddFace: (face, color) => {
