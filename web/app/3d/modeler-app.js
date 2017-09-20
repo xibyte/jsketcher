@@ -84,14 +84,16 @@ App.prototype.addShellOnScene = function(shell, skin) {
 };
 
 App.prototype.scratchCode = function() {
-  let box = createBox(500, 500, 500);
-  let sphere = createSphere([0, 200, 0], 300);
-  let clylinder = createCylinder(150, 500);
- 
-  this.viewer.workGroup.add(box.toThreeMesh());
-  // this.viewer.workGroup.add(sphere.toThreeMesh());
-  this.viewer.workGroup.add(clylinder.toThreeMesh());
-  this.viewer.render();
+  const app = this;
+  const box1 = app.TPI.brep.primitives.box(500, 500, 500);
+  const box2 = app.TPI.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+  const box3 = app.TPI.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
+  let result = app.TPI.brep.bool.union(box1, box2);
+  // let result = app.TPI.brep.bool.subtract(box1, box2);
+  // result = app.TPI.brep.bool.subtract(result, box3);
+  app.addShellOnScene(box1);
+  app.addShellOnScene(box2);
+  app.viewer.render();
 };
 
 

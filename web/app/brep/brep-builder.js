@@ -357,16 +357,6 @@ export function iterateSegments(items, callback) {
   }
 }
 
-export function invertLoop(loop) {
-  for (let halfEdge of loop.halfEdges) {
-    const t = halfEdge.vertexA;
-    halfEdge.vertexA = halfEdge.vertexB;
-    halfEdge.vertexB = t;
-  }
-  loop.halfEdges.reverse();
-  linkSegments(loop.halfEdges);
-}
-
 export function createPlaneLoop(vertices, curves) {
 
   const loop = new Loop();
