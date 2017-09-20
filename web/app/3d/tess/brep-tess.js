@@ -17,7 +17,13 @@ export default function(face) {
   // tessy.gluTessProperty(libtess.gluEnum.GLU_TESS_WINDING_RULE, libtess.windingRule.GLU_TESS_WINDING_POSITIVE);
   tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_VERTEX_DATA, vertexCallback);
 
-  tessy.gluTessNormal(0, 0, 1);
+  const mirrored = isMirrored(face.surface);
+
+  if (mirrored) {
+    tessy.gluTessNormal(0, 0, -1);
+  } else {
+    tessy.gluTessNormal(0, 0, 1);
+  }
 
   const params = [];
   tessy.gluTessBeginPolygon(params);
@@ -86,4 +92,11 @@ function analyzeCurvature(nurbs, triangles) {
 
   return triangles;
 
+}
+
+function isMirrored(surface) {
+  let a = surface.point(0, 0);
+  let b = surface.point(1, 0);
+  let c = surface.point(1, 1);
+  return b.minus(a).cross(c.minus(a))._normalize().dot(surface.normalUV(0, 0)) < 0;
 }

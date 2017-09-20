@@ -114,6 +114,14 @@ export class NurbsSurface extends Surface {
     return normal;
   }
 
+  normalUV(u, v) {
+    let normal = new Vector().set3(this.verb.normal(u, v));
+    if (this.inverted) {
+      normal._negate();
+    }
+    return normal;
+  }
+
   normalInMiddle(point) {
     let normal = new Vector().set3(this.verb.normal(0.5, 0.5));
     if (this.inverted) {
