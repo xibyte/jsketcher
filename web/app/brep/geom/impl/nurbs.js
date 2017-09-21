@@ -44,7 +44,7 @@ export class NurbsCurve extends Curve {
 
   intersectCurve(other, tol) {
     let isecs = [];
-    tol = tol || 1e-6;
+    tol = tol || 1e-3;
 
     const eq = (v1, v2) => math.areVectorsEqual3(v1, v2, tol);
 
@@ -85,8 +85,11 @@ export class NurbsCurve extends Curve {
     isecs.forEach(i => {
       i.p0 = pt(i.p0);
       i.p1 = pt(i.p1);
-    })
-    return isecs;
+    });
+    return isecs.filter(({u0, u1}) => {
+      return Math.abs(this.tangentAtParam(u0).dot(other.tangentAtParam(u1))) <= tol;
+    });
+
 }
 
   static createByPoints(points, degeree) {
