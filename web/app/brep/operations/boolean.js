@@ -24,17 +24,17 @@ const TYPE = {
 };
 
 export function union( shell1, shell2 ) {
-  __DEBUG_OPERANDS(shell1, shell2);
+  $DEBUG_OPERANDS(shell1, shell2);
   return BooleanAlgorithm(shell1, shell2, TYPE.UNION);
 }
 
 export function intersect( shell1, shell2 ) {
-  __DEBUG_OPERANDS(shell1, shell2);
+  $DEBUG_OPERANDS(shell1, shell2);
   return BooleanAlgorithm(shell1, shell2, TYPE.INTERSECT);
 }
 
 export function subtract( shell1, shell2 ) {
-  __DEBUG_OPERANDS(shell1, shell2);
+  $DEBUG_OPERANDS(shell1, shell2);
   invert(shell2);
   return BooleanAlgorithm(shell1, shell2, TYPE.INTERSECT);
 }
@@ -81,8 +81,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
     const loops = detectLoops(faceData.face);
     for (let loop of loops) {
       for (let edge of loop.halfEdges) {
-        const isNew = EdgeSolveData.get(edge).newEdgeFlag === true;
-        if (isNew) newLoops.add(loop);
+        if (isNew(edge)) newLoops.add(loop);
       }
     }
     loopsToFaces(face, loops, allFaces);
@@ -99,7 +98,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   BREPValidator.validateToConsole(result);
 
   __DEBUG__.ClearVolumes();
-  __DEBUG__.Clear();
+  // __DEBUG__.Clear();
   return result;
 }
 
@@ -114,8 +113,9 @@ function detectLoops(face) {
   const loops = [];
   const seen = new Set();
   let edges = [];
-  for (let e of face.edges) edges.push(e);
-  for (let e of faceData.loopOfNew.halfEdges) edges.push(e);
+  for (let e of face.edges) {
+    edges.push(e);
+  }
   while (true) {
     let edge = edges.pop();
     if (!edge) {
@@ -148,10 +148,6 @@ function detectLoops(face) {
     }
   }
   return loops;
-}
-
-function edgeV(edge) {
-  return edge.vertexB.point.minus(edge.vertexA.point)._normalize();
 }
 
 export function mergeVertices(shell1, shell2) {
@@ -450,6 +446,8 @@ function collectNodesOfIntersection(curve, loop, nodes) {
 }
 
 function intersectCurveWithEdge(curve, edge, result) {
+  __DEBUG__.AddCurve(curve, 0xffffff);
+  __DEBUG__.AddHalfEdge(edge, 0xff00ff);
   const points = edge.edge.curve.intersectCurve(curve, TOLERANCE);
   for (let point of points) {
     const {u0, u1} = point;
@@ -462,6 +460,8 @@ function intersectCurveWithEdge(curve, edge, result) {
     } else {
       vertex = vertexFactory.create(point.p0);
     }
+
+    __DEBUG__.AddVertex(vertex);
 
     result.push(new Node(vertex, edge, curve, u1));
   }
@@ -518,8 +518,7 @@ function nodeNormal(point, edge, curve) {
   const normal = edge.loop.face.surface.normal(point);
   const edgeTangent = edge.tangent(point);
   const curveTangent = curve.tangentAtPoint(point);
-  
-    
+
   let cross = normal.cross(edgeTangent);
   let dot = cross.dot(curveTangent);
   if (eq(dot, 0)) {
@@ -560,12 +559,16 @@ EdgeSolveData.transfer = function(from, to) {
   to.data[MY] = from.data[MY];
 };
 
+function isNew(edge) {
+  return EdgeSolveData.get(edge).newEdgeFlag === true
+}
+
 function Node(vertex, edge, curve, u) {
   this.vertex = vertex;
   this.edge = edge;
   this.curve = curve;
   this.u = u;
-  this.normal = nodeNormal(vertex.point, edge, curve);
+  this.normal = isNew(edge) ? 0 : nodeNormal(vertex.point, edge, curve);
   //__DEBUG__.AddPoint(this.point);
 }
 
@@ -620,15 +623,13 @@ class FaceSolveData {
   constructor(face) {
     this.face = face;
     this.loopOfNew = new Loop(face);
+    face.innerLoops.push(this.loopOfNew);
     this.vertexToEdge = new Map();
   }
 
   initGraph() {
     this.vertexToEdge.clear();
     for (let he of this.face.edges) {
-      this.addToGraph(he);
-    }
-    for (let he of this.loopOfNew.halfEdges) {
       this.addToGraph(he);
     }
   }
@@ -657,7 +658,7 @@ function removeFromListInMap(map, key, value) {
   }
 }
 
-function __DEBUG_OPERANDS(shell1, shell2) {
+function $DEBUG_OPERANDS(shell1, shell2) {
   if (DEBUG.OPERANDS_MODE) {
     __DEBUG__.HideSolids();
     __DEBUG__.AddVolume(shell1, 0x800080);

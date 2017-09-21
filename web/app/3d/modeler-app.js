@@ -24,6 +24,7 @@ import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/brep-scene-object'
 import TPI from './tpi'
+import {NurbsCurve} from "../brep/geom/impl/nurbs";
 // import {createSphere, rayMarchOntoCanvas, sdfIntersection, sdfSolid, sdfSubtract, sdfTransform, sdfUnion} from "../hds/sdf";
 
 function App() {
@@ -37,18 +38,18 @@ function App() {
   this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
   this.controlBar = new ControlBar(this, $('#control-bar'));
   this.TPI = TPI;
-  
+
   this.craft = new Craft(this);
   this.ui = new UI(this);
 
   AddDebugSupport(this);
-  
+
   if (this.id.startsWith('$scratch$')) {
     setTimeout(() => this.scratchCode(), 0);
   } else {
     this.load();
   }
-  
+
   this._refreshSketches();
   this.viewer.render();
 
@@ -85,14 +86,34 @@ App.prototype.addShellOnScene = function(shell, skin) {
 
 App.prototype.scratchCode = function() {
   const app = this;
+
   const box1 = app.TPI.brep.primitives.box(500, 500, 500);
   const box2 = app.TPI.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+
   const box3 = app.TPI.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
   // let result = app.TPI.brep.bool.union(box1, box2);
-  let result = app.TPI.brep.bool.subtract(box1, box2);
-  result = app.TPI.brep.bool.subtract(result, box3);
+  // let result = app.TPI.brep.bool.subtract(box1, box2);
+  // result = app.TPI.brep.bool.subtract(result, box3);
   // app.addShellOnScene(box1);
-  app.addShellOnScene(result);
+  // app.addShellOnScene(result);
+
+
+  let curve1 = new NurbsCurve(new verb.geom.NurbsCurve({"degree":6,"controlPoints":[[150,149.99999999999997,-249.99999999999994,1],[108.33333333333051,150.00000000000907,-250.00000000001975,1],[66.6666666666712,149.99999999998562,-249.99999999996987,1],[24.99999999999545,150.00000000001364,-250.00000000002711,1],[-16.66666666666362,149.99999999999145,-249.9999999999837,1],[-58.33333333333436,150.0000000000029,-250.00000000000531,1],[-99.99999999999997,150,-250,1]],"knots":[0,0,0,0,0,0,0,1,1,1,1,1,1,1]}));
+  let curve2 = new NurbsCurve(new verb.geom.NurbsCurve({"degree":9,"controlPoints":[[100,-250,-250,1],[99.9999999999927,-194.44444444444687,-250.00000000000028,1],[100.00000000002228,-138.8888888888811,-249.99999999999838,1],[99.99999999995923,-83.33333333334777,-250.00000000000287,1],[100.00000000005268,-27.77777777775936,-249.99999999999744,1],[99.9999999999493,27.777777777760704,-250.0000000000008,1],[100.00000000003591,83.33333333334477,-250.00000000000063,1],[99.99999999998269,138.88888888888374,-249.99999999999966,1],[100.00000000000443,194.44444444444562,-249.99999999999986,1],[100,250,-250,1]],"knots":[0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]}));
+
+  __DEBUG__.AddCurve(curve1);
+  __DEBUG__.AddCurve(curve2);
+
+
+  // let curves =  surface.intersectSurface(box1.faces[0].surface);
+  // const curve = box1.faces[0].outerLoop.halfEdges[0].edge.curve;
+  let points = curve1.intersectCurve(curve2);
+  for (let p of points) {
+    __DEBUG__.AddPoint(p.p0);
+  }
+
+
+
   app.viewer.render();
 };
 
