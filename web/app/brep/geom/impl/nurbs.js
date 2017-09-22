@@ -3,6 +3,7 @@ import * as math from  '../../../math/math'
 import {Point} from '../point'
 import {Surface} from "../surface";
 import Vector from "../../../math/vector";
+import * as vec from "../../../math/vec";
 import {Curve} from "../curve";
 
 export class NurbsCurve extends Curve {
@@ -76,7 +77,7 @@ export class NurbsCurve extends Curve {
     isecOn(other, this, 0);
     isecOn(other, this, 1);
 
-    verb.geom.Intersect.curves(this.verb, other.verb, tol).forEach( i => add({
+    verb_curve_isec(this.verb, other.verb, tol).forEach( i => add({
       u0: i.u0,
       u1: i.u1,
       p0: i.point0,
@@ -86,10 +87,11 @@ export class NurbsCurve extends Curve {
       i.p0 = pt(i.p0);
       i.p1 = pt(i.p1);
     });
-    return isecs.filter(({u0, u1}) => {
-      return Math.abs(this.tangentAtParam(u0).dot(other.tangentAtParam(u1))) <= tol;
+    isecs = isecs.filter(({u0, u1}) => {
+      let collinearFactor = Math.abs(this.tangentAtParam(u0).dot(other.tangentAtParam(u1)));
+      return !math.areEqual(collinearFactor, 1, tol);
     });
-
+    return isecs;
 }
 
   static createByPoints(points, degeree) {
@@ -146,7 +148,7 @@ export class NurbsSurface extends Surface {
   }
 
   intersectSurfaceForSameClass(other, tol) {
-    const curves = verb_isec(this.verb, other.verb);
+    const curves = verb_surface_isec(this.verb, other.verb, tol);
     let inverted = this.inverted !== other.inverted;
     return curves.map(curve => new NurbsCurve(inverted ?  curve.reverse() : curve));
   }
@@ -180,15 +182,13 @@ function pt(data) {
   return new Point().set3(data);
 }
 
-
-function verb_isec(nurbs1, nurbs2) {
-  const tol = 1e-3
+function verb_surface_isec(nurbs1, nurbs2, tol) {
   const surface0 = nurbs1.asNurbs();
   const surface1 = nurbs2.asNurbs();
-	var tess1 = verb.eval.Tess.rationalSurfaceAdaptive(surface0);
-	var tess2 = verb.eval.Tess.rationalSurfaceAdaptive(surface1);
-	var resApprox = verb.eval.Intersect.meshes(tess1,tess2);
-	var exactPls = resApprox.map(function(pl) {
+	const tess1 = verb.eval.Tess.rationalSurfaceAdaptive(surface0);
+	const tess2 = verb.eval.Tess.rationalSurfaceAdaptive(surface1);
+	const resApprox = verb.eval.Intersect.meshes(tess1,tess2);
+	const exactPls = resApprox.map(function(pl) {
 		return pl.map(function(inter) {
 			return verb.eval.Intersect.surfacesAtPointWithEstimate(surface0,surface1,inter.uv0,inter.uv1,tol);
 		});
@@ -198,4 +198,71 @@ function verb_isec(nurbs1, nurbs2) {
 			return y.point;
 		}), x.length - 1);
 	}).map(cd => new verb.geom.NurbsCurve(cd));
+}
+
+function verb_curve_isec(curve1, curve2, tol) {
+
+  let result = [];
+  let segs1 = curve1.tessellate();
+  let segs2 = curve2.tessellate();
+
+  for (let i = 0; i < segs1.length - 1; i++) {
+    let a1 = segs1[i];
+    let b1 = segs1[i + 1];
+    for (let j = 0; j < segs2.length - 1; j++) {
+      let a2 = segs2[j];
+      let b2 = segs2[j + 1];
+
+      //TODO: minimize
+      let isec = intersectSegs(a1, b1, a2, b2, tol);
+      if (isec !== null) {
+        let {u1, u2, point1, point2, l1, l2} = isec;
+        result.push({
+          u0: curve1.closestParam(point1),
+          u1: curve2.closestParam(point2),
+          point0: point1,
+          point1: point2
+        });
+        if (math.areEqual(u1, l1, tol )) {
+          i ++;
+        }
+        if (math.areEqual(u2, l2, tol )) {
+          j ++;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+export function lineLineIntersection(p1, p2, v1, v2) {
+  let zAx = vec.cross(v1, v2);
+  const n1 = vec._normalize(vec.cross(zAx, v1));
+  const n2 = vec._normalize(vec.cross(zAx, v2));
+  return {
+    u1: vec.dot(n2, vec.sub(p2, p1)) / vec.dot(n2, v1),
+    u2: vec.dot(n1, vec.sub(p1, p2)) / vec.dot(n1, v2),
+  }
+}
+
+function intersectSegs(a1, b1, a2, b2, tol) {
+  let v1 = vec.sub(b1, a1);
+  let v2 = vec.sub(b2, a2);
+  let l1 = vec.length(v1);
+  let l2 = vec.length(v2);
+  vec._div(v1, l1);
+  vec._div(v2, l2);
+
+  let {u1, u2} = lineLineIntersection(a1, a2, v1, v2);
+  let point1 = vec.add(a1, vec.mul(v1, u1));
+  let point2 = vec.add(a2, vec.mul(v2, u2));
+  let p2p = vec.lengthSq(vec.sub(point1, point2));
+  let eq = (a, b) => math.areEqual(a, b, tol);
+  if (u1 !== Infinity && u2 !== Infinity && math.areEqual(p2p, 0, tol*tol) &&
+      ((u1 >0 && u1 < l1) || eq(u1, 0) || eq(u1, l1)) &&
+      ((u2 >0 && u2 < l2) || eq(u2, 0) || eq(u2, l2))
+     ) {
+    return {point1, point2, u1, u2, l1, l2}
+  }
+  return null;
 }

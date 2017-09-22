@@ -7,8 +7,8 @@ import {Vertex} from '../topo/vertex';
 import Vector from '../../math/vector';
 import * as math from '../../math/math';
 
-export const TOLERANCE = 1e-8;
- export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
+export const TOLERANCE = 1e-3;
+export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 export const TOLERANCE_HALF = TOLERANCE * 0.5;
 
 const DEBUG = {
@@ -448,6 +448,7 @@ function collectNodesOfIntersection(curve, loop, nodes) {
 function intersectCurveWithEdge(curve, edge, result) {
   __DEBUG__.AddCurve(curve, 0xffffff);
   __DEBUG__.AddHalfEdge(edge, 0xff00ff);
+  console.log(1)
   const points = edge.edge.curve.intersectCurve(curve, TOLERANCE);
   for (let point of points) {
     const {u0, u1} = point;
