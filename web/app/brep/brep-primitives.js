@@ -1,5 +1,5 @@
 import {Point} from './geom/point'
-import {createPrism} from './brep-builder'
+import {createPrism} from './brep-enclose'
 import {Matrix3} from '../math/l3space'
 
 export function box(w, h, d, tr) {
