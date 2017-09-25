@@ -18,7 +18,7 @@ import {AddDebugSupport} from './debug'
 import {init as initSample} from './sample'
 import '../../css/app3d.less'
 
-import * as BREPBuilder from '../brep/brep-builder'
+import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
@@ -84,8 +84,68 @@ App.prototype.addShellOnScene = function(shell, skin) {
   return sceneSolid;
 };
 
+App.prototype.test1 = function() {
+
+  const bb = new BrepBuilder();
+
+  const a1 = bb.vertex(0, 0, 0);
+  const b1 = bb.vertex(300, 0, 0);
+  const c1 = bb.vertex(300, 300, 0);
+  const d1 = bb.vertex(0, 300, 0);
+
+  const a2 = bb.vertex(0, 0, 300);
+  const b2 = bb.vertex(300, 0, 300);
+  const c2 = bb.vertex(300, 300, 300);
+  const d2 = bb.vertex(0, 300, 300);
+
+  bb.face().loop([d1, c1, b1, a1]);
+  bb.face().loop([a2, b2, c2, d2]);
+  bb.face().loop([a1, b1, b2, a2]);
+  bb.face().loop([b1, c1, c2, b2]);
+  bb.face().loop([c1, d1, d2, c2]);
+  bb.face().loop([d1, a1, a2, d2]);
+  
+  let result = bb.build();
+  this.addShellOnScene(result);
+}
+
+App.prototype.test2 = function() {
+  
+    function square() {
+      let bb = new BrepBuilder();
+     
+        const a = bb.vertex(0, 0, 0);
+        const b = bb.vertex(300, 0, 0);
+        const c = bb.vertex(300, 300, 0);
+        const d = bb.vertex(0, 300, 0);
+        bb.face().loop([a, b, c, d]);       
+        return bb.build();
+    }
+    function square2() {
+      let bb = new BrepBuilder();
+     
+        const a = bb.vertex(0, 150, 0);
+        const b = bb.vertex(350, 150, 0);
+        const c = bb.vertex(350, 150, 350);
+        const d = bb.vertex(0, 150, 350);
+        bb.face().loop([a, b, c, d]);       
+        return bb.build();
+    }
+    let s1 = square();
+    let s2 = square2();
+
+    result = this.TPI.brep.bool.subtract(s1, s2);
+
+    // this.addShellOnScene(s1);
+    // this.addShellOnScene(s2);
+    // this.addShellOnScene(result);
+  }
+
 App.prototype.scratchCode = function() {
   const app = this;
+  this.test2();
+
+  return;
 
   const box1 = app.TPI.brep.primitives.box(500, 500, 500);
   const box2 = app.TPI.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));

@@ -9,6 +9,8 @@ export class Edge extends TopoObject {
     this.curve = curve;
     this.halfEdge1 = new HalfEdge(this, false, a, b);
     this.halfEdge2 = new HalfEdge(this, true, b, a);
+    a.edges.add(this.halfEdge1);
+    b.edges.add(this.halfEdge2);
   }
 
   static fromCurve(curve) {
