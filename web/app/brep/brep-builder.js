@@ -61,7 +61,7 @@ export default class BrepBuilder {
       for (let loop of face.loops) {
         loop.link();    
       }  
-      if (face.surface == null) {
+      if (face.surface === null) {
         face.surface = createBoundingNurbs(face.outerLoop.asPolygon());
       }
     }
@@ -72,7 +72,6 @@ export default class BrepBuilder {
           const nullFace = new Face(face.surface);          
           nullFace.outerLoop.halfEdges.push(twin);
           nullFace.outerLoop.link();
-          this._shell.faces.push(nullFace);
         }
       }
     }
