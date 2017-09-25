@@ -32,7 +32,11 @@ export class NurbsCurve extends Curve {
   }
 
   split(point) {
-    return this.verb.split(this.verb.closestParam(point.data())).map(v => new NurbsCurve(v));
+    return this.splitByParam(this.verb.closestParam(point.data()));
+  }
+
+  splitByParam(u) {
+    return this.verb.split(u).map(v => new NurbsCurve(v));
   }
 
   invert() {
