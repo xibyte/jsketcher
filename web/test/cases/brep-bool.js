@@ -118,7 +118,7 @@ function readInput(name) {
 
 function materialize(tpi, def) {
   if (def.type == 'EXTRUDE') {
-    return tpi.brep.builder.createPrism(def.base.map(p => new tpi.brep.geom.Point().set3(p)), def.height);
+    return tpi.brep.createPrism(def.base.map(p => new tpi.brep.geom.Point().set3(p)), def.height);
   } else {
     throw 'unsupported type: ' + def.type;
   }

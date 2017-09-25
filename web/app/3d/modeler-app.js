@@ -111,42 +111,39 @@ App.prototype.test1 = function() {
 
 App.prototype.test2 = function() {
   
-    function square() {
-      let bb = new BrepBuilder();
-     
-        const a = bb.vertex(0, 0, 0);
-        const b = bb.vertex(300, 0, 0);
-        const c = bb.vertex(300, 300, 0);
-        const d = bb.vertex(0, 300, 0);
-        bb.face().loop([a, b, c, d]);       
-        return bb.build();
-    }
-    function square2() {
-      let bb = new BrepBuilder();
-     
-        const a = bb.vertex(0, 150, 0);
-        const b = bb.vertex(350, 150, 0);
-        const c = bb.vertex(350, 150, 350);
-        const d = bb.vertex(0, 150, 350);
-        bb.face().loop([a, b, c, d]);       
-        return bb.build();
-    }
-    let s1 = square();
-    let s2 = square2();
+  function square() {
+    let bb = new BrepBuilder();
 
-    result = this.TPI.brep.bool.subtract(s1, s2);
-
-    // this.addShellOnScene(s1);
-    // this.addShellOnScene(s2);
-    // this.addShellOnScene(result);
+      const a = bb.vertex(0, 0, 0);
+      const b = bb.vertex(300, 0, 0);
+      const c = bb.vertex(300, 300, 0);
+      const cc = bb.vertex(150, 100, 0);
+      const d = bb.vertex(0, 300, 0);
+      bb.face().loop([a, b, c, cc, d]);
+      return bb.build();
   }
+  function square2() {
+    let bb = new BrepBuilder();
 
-App.prototype.scratchCode = function() {
+      const a = bb.vertex(0, 150, -100);
+      const b = bb.vertex(350, 150, -100);
+      const c = bb.vertex(350, 150, 350);
+      const d = bb.vertex(0, 150, 350);
+      bb.face().loop([a, b, c, d]);
+      return bb.build();
+  }
+  let s1 = square();
+  let s2 = square2();
+  // this.addShellOnScene(s1);
+  // this.addShellOnScene(s2);
+
+  let result = this.TPI.brep.bool.intersect(s1, s2);
+
+  this.addShellOnScene(result);
+};
+
+App.prototype.test3 = function() {
   const app = this;
-  this.test2();
-
-  return;
-
   const box1 = app.TPI.brep.primitives.box(500, 500, 500);
   const box2 = app.TPI.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
 
@@ -156,6 +153,13 @@ App.prototype.scratchCode = function() {
   result = app.TPI.brep.bool.subtract(result, box3);
   // app.addShellOnScene(box1);
   app.addShellOnScene(result);
+
+};
+
+App.prototype.scratchCode = function() {
+
+  this.test3();
+
 
 
   // let curve1 = new NurbsCurve(new verb.geom.NurbsCurve({"degree":6,"controlPoints":[[150,149.99999999999997,-249.99999999999994,1],[108.33333333333051,150.00000000000907,-250.00000000001975,1],[66.6666666666712,149.99999999998562,-249.99999999996987,1],[24.99999999999545,150.00000000001364,-250.00000000002711,1],[-16.66666666666362,149.99999999999145,-249.9999999999837,1],[-58.33333333333436,150.0000000000029,-250.00000000000531,1],[-99.99999999999997,150,-250,1]],"knots":[0,0,0,0,0,0,0,1,1,1,1,1,1,1]}));
