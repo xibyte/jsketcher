@@ -1,120 +1,88 @@
-import {Shell} from './topo/shell'
-import {Vertex} from './topo/vertex'
-import {Loop} from './topo/loop'
-import {Face} from './topo/face'
-import {HalfEdge, Edge} from './topo/edge'
-import {Line} from './geom/impl/line'
-import {NurbsSurface, NurbsCurve} from './geom/impl/nurbs'
-import {Plane} from './geom/impl/plane'
-import {Point} from './geom/point'
-import {BasisForPlane, Matrix3} from '../math/l3space'
-import {CompositeCurve} from './geom/curve'
-import * as cad_utils from '../3d/cad-utils'
-import * as math from '../math/math'
-import mergeNullFace from './null-face-merge'
-import {invert} from './operations/boolean'
+import {NurbsSurface, NurbsCurve} from './geom/impl/nurbs';
+import {Plane} from './geom/impl/plane';
+import {Point} from './geom/point';
+import {Shell} from './topo/shell';
+import {Face} from './topo/face';
+import {Loop} from './topo/loop';
+import {Edge} from './topo/edge';
+import {Vertex} from './topo/vertex';
+import {normalOfCCWSeq} from '../3d/cad-utils';
 import BBox from "../math/bbox";
 
-function isCCW(points, normal) {
-  const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();
-  const points2d = points.map(p => tr2d.apply(p));
-  return math.isCCW(points2d);
+export default class BrepBuilder {
+
+  constructor() {
+    this._shell = new Shell();    
+    this._face = null;
+    this._loop = null;
+  }
+
+  face(surface) {
+    this._face = new Face(surface ? surface : null);
+    this._shell.faces.push(this._face);
+    this._loop = null;
+    return this;  
+  }
+
+  loop(vertices) {
+    if (this._loop === null) {
+      this._loop = this._face.outerLoop;
+    } else {
+      this._loop = new Loop();
+      this._face.innerLoops.push(this._loop);
+    }
+    if (vertices) {
+      for (let i = 0; i < vertices.length; ++i) {
+        this.edge(vertices[i], vertices[(i + 1) % vertices.length]);  
+      }
+    }
+    return this;
+  }
+
+  edge(a, b, curve) {
+    let he = a.edgeFor(b);
+    if (he === null) {
+      if (!curve) {
+        curve = NurbsCurve.createLinearNurbs(a.point, b.point);
+      }
+      const e = new Edge(curve, a, b);
+      he = e.halfEdge1;
+    }
+    this._loop.halfEdges.push(he);
+    return this;   
+  }
+
+  vertex(x, y, z) {
+    return new Vertex(new Point(x, y, z));
+  }
+
+  build() {
+    for (let face of this._shell.faces) {
+      for (let loop of face.loops) {
+        loop.link();    
+      }  
+      if (face.surface == null) {
+        face.surface = createBoundingNurbs(face.outerLoop.asPolygon());
+      }
+    }
+    for (let face of this._shell.faces) {
+      for (let he of face.edges) {
+        let twin = he.twin();
+        if (twin.loop === null) {
+          const nullFace = new Face(face.surface);          
+          nullFace.outerLoop.halfEdges.push(twin);
+          nullFace.outerLoop.link();
+          this._shell.faces.push(nullFace);
+        }
+      }
+    }
+    return this._shell;
+  }
 }
 
-function checkCCW(points, normal) {
-  if (!isCCW(points, normal)) {
-    points = points.slice();
-    points.reverse();
-  }
-  return points;
-}
-
-export function createPrism(basePoints, height) {
-  const normal = cad_utils.normalOfCCWSeq(basePoints);
-  const baseSurface = new Plane(normal, normal.dot(basePoints[0]));
-  const extrudeVector = baseSurface.normal.multiply( - height);
-  const lidSurface = baseSurface.translate(extrudeVector).invert();
-  const lidPoints = basePoints.map(p => p.plus(extrudeVector));
-  const basePath = new CompositeCurve();
-  const lidPath = new CompositeCurve();
-
-  for (let i = 0; i < basePoints.length; i++) {
-    let j = (i + 1) % basePoints.length;
-    basePath.add(NurbsCurve.createLinearNurbs(basePoints[i], basePoints[j]), basePoints[i], null);
-    lidPath.add(NurbsCurve.createLinearNurbs(lidPoints[i], lidPoints[j]), lidPoints[i], null);
-  }
-  return enclose(basePath, lidPath, baseSurface, lidSurface);
-}
-
-export function enclose(basePath, lidPath, basePlane, lidPlane) {
-
-  if (basePath.points.length !== lidPath.points.length) {
-    throw 'illegal arguments';
-  }
-
-  const walls = [];
-
-  const n = basePath.points.length;
-  for (let i = 0; i < n; i++) {
-    let j = (i + 1) % n;
-    const wall = createWall(basePath.curves[i], lidPath.curves[i]);
-    walls.push(wall);
-  }
-  return assemble(walls, basePlane, lidPlane)
-}
-
-function assemble(walls, basePlane, lidPlane) {
-
-  const shell = new Shell();
-
-  const wallEdges = [];
-  const baseEdges = [];
-  const lidEdges = [];
-
-  for (let w of walls) {
-    let wallEdge = Edge.fromCurve(w.isoCurveAlignV(0));
-    wallEdges.push(wallEdge);
-  }
-
-  for (let i = 0; i < wallEdges.length; ++i) {
-    let j = (i + 1) % wallEdges.length;
-    let curr = wallEdges[i];
-    let next = wallEdges[j];
-    let wall = walls[i];
-
-    let baseEdge = new Edge(wall.isoCurveAlignU(1), curr.halfEdge1.vertexB, next.halfEdge1.vertexB);
-    let lidEdge = new Edge(wall.isoCurveAlignU(0), curr.halfEdge1.vertexA, next.halfEdge1.vertexA);
-
-    baseEdges.push(baseEdge);
-    lidEdges.push(lidEdge);
-
-    let wallFace = new Face(wall);
-    wallFace.outerLoop.halfEdges.push(baseEdge.halfEdge2, curr.halfEdge2, lidEdge.halfEdge1, next.halfEdge1);
-    wallFace.outerLoop.link();
-    shell.faces.push(wallFace);
-  }
-  const base = new Face();
-  const lid = new Face();
-
-  lidEdges.reverse();
-
-  baseEdges.forEach(e => base.outerLoop.halfEdges.push(e.halfEdge1));
-  lidEdges.forEach(e => lid.outerLoop.halfEdges.push(e.halfEdge2));
-
-  base.outerLoop.link();
-  lid.outerLoop.link();
-
-  base.surface = createBoundingNurbs(base.outerLoop.asPolygon(), basePlane);
-  lid.surface = createBoundingNurbs(lid.outerLoop.asPolygon(), lidPlane);
-
-  shell.faces.push(base, lid);
-  shell.faces.forEach(f => f.shell = shell);
-  return shell;
-}
-
-function createBoundingNurbs(points, plane) {
+export function createBoundingNurbs(points, plane) {
   if (!plane) {
-    const normal = cad_utils.normalOfCCWSeq(points);
+    const normal = normalOfCCWSeq(points);
     const w = points[0].dot(normal);
     plane = new Plane(normal, w);
   }
@@ -134,19 +102,3 @@ function createBoundingNurbs(points, plane) {
 
   return nurbs;
 }
-
-function bothClassOf(o1, o2, className) {
-  return o1.constructor.name === className && o2.constructor.name === className;
-}
-
-export function createWall(curve1, curve2) {
-  if (bothClassOf(curve1, curve2, 'Line')) {
-    throw 'unsupported'
-  } else if (bothClassOf(curve1, curve2, 'NurbsCurve')) {
-    return new NurbsSurface(verb.geom.NurbsSurface.byLoftingCurves([curve2.verb, curve1.verb], 1));
-  } else {
-    throw 'unsupported';
-  }
-}
-
-

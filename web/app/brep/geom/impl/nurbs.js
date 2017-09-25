@@ -104,10 +104,6 @@ NurbsCurve.createLinearNurbs = function(a, b) {
   return new NurbsCurve(new verb.geom.Line(a.data(), b.data()));
 };
 
-NurbsCurve.prototype.createLinearNurbs = function(a, b) {
-  return NurbsCurve.createLinearNurbs(a, b);
-};
-
 export class NurbsSurface extends Surface {
 
   constructor(verbSurface) {
