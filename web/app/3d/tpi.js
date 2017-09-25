@@ -1,5 +1,6 @@
 import * as BREPPrimitives from '../brep/brep-primitives'
-import * as BREPBuilder from '../brep/brep-builder'
+import BrepBuilder from '../brep/brep-builder'
+import {createPrism} from '../brep/brep-enclose'
 import * as BREPBool from '../brep/operations/boolean'
 import * as IO from '../brep/brep-io'
 import {BREPValidator} from '../brep/brep-validator'
@@ -14,7 +15,8 @@ import {Plane} from '../brep/geom/impl/plane';
 
 export default {
   brep: {
-    builder: BREPBuilder,
+    builder: BrepBuilder,
+    createPrism,
     primitives: BREPPrimitives,
     bool: BREPBool,
     validator: BREPValidator,

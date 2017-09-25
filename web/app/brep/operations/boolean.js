@@ -14,7 +14,7 @@ export const TOLERANCE_HALF = TOLERANCE * 0.5;
 const DEBUG = {
   OPERANDS_MODE: false,
   LOOP_DETECTION: true,
-  FACE_FACE_INTERSECTION: true,
+  FACE_FACE_INTERSECTION: false,
   NOOP: () => {}
 };
 
@@ -252,73 +252,72 @@ function findMaxTurningLeft(pivotEdge, edges, surface) {
   function edgeVector(edge) {
     return edge.tangent(edge.vertexA.point);
   }
-  const pivot = pivotEdge.tangent(pivotEdge.vertexB.point);
+  const pivot = pivotEdge.tangent(pivotEdge.vertexB.point).negate();
   const normal = surface.normal(pivotEdge.vertexB.point);
   edges.sort((e1, e2) => {
     return leftTurningMeasure(pivot, edgeVector(e1), normal) - leftTurningMeasure(pivot, edgeVector(e2), normal);
   });
-  return edges[edges.length - 1];
+  return edges[0];
 }
 
 function leftTurningMeasure(v1, v2, normal) {
   let measure = v1.dot(v2);
+  measure += 3; //-1..1 => 2..4
   if (v1.cross(v2).dot(normal) < 0) {
-    measure = -(2 + measure);
+    measure = 4 - measure;
   }
-  measure -= 1;//shift to the zero
-
   //make it positive all the way
-  return -measure;
+  return measure;
 }
 
 function intersectEdges(shell1, shell2) {
-  function collectTuples(shell) {
-    const tuples = [];
-    for (let edge of shell.edges) {
-      tuples.push([edge]);
+  let isecs = new Map();
+  function addIsesc(e, params) {
+    let allParams = isecs.get(e);
+    if (!allParams) {
+      isecs.set(e, params);
+    } else {
+      params.forEach(p => allParams.push(p));
     }
-    return tuples;
   }
-
-  const tuples1 = collectTuples(shell1);
-  const tuples2 = collectTuples(shell2);
-
-  for (let i = 0; i < tuples1.length; i++) {
-    const edges1 = tuples1[i];
-    for (let j = 0; j < tuples2.length; j++) {
-      const edges2 = tuples2[j];
-      for (let k = 0; k < edges1.length; k++) {
-        const e1 = edges1[k];
-        for (let l = edges2.length - 1; l >= 0 ; l--) {
-          const e2 = edges2[l];
-          let points = e1.curve.intersectCurve(e2.curve, TOLERANCE);
-
-          for (let point of points) {
-            const {u0, u1} = point;
-            let vertex;
-            if (eq(u0, 0)) {
-              vertex = e1.halfEdge1.vertexA;
-            } else if (eq(u0, 1)) {
-              vertex = e1.halfEdge1.vertexB;
-            } else if (eq(u1, 0)) {
-              vertex = e2.halfEdge1.vertexA;
-            } else if (eq(u1, 1)) {
-              vertex = e2.halfEdge1.vertexB;
-            } else {
-              vertex = vertexFactory.create(e1.curve.point(u0));
-            }
-            const new1 = splitEdgeByVertex(e1, vertex);
-            const new2 = splitEdgeByVertex(e2, vertex);
-            if (new1 !== null) {
-              edges1[k] = new1[0];
-              edges1.push(new1[1]);
-            }
-            if (new2 !== null) {
-              edges2[l] = new2[0];
-              edges2.push(new2[1]);
-            }
-          }
-        }
+  for (let e1 of shell1.edges) {
+    for (let e2 of shell2.edges) {
+      let points = e1.curve.intersectCurve(e2.curve, TOLERANCE);
+      if (points.length !== 0) {
+        const vertexHolder = [];
+        addIsesc(e1, points.map(p => ({u: p.u0, vertexHolder})));
+        addIsesc(e2, points.map(p => ({u: p.u1, vertexHolder})));
+      }
+    }
+  }
+  for (let [e, points] of isecs) {
+    points.sort((p1, p2) => p1.u - p2.u);
+    let first = points[0];
+    let last = points[points.length - 1];
+    if (eq(first.u, 0) && !first.vertexHolder[0]) {
+      first.vertexHolder[0] = e.halfEdge1.vertexA;
+      first.skip = true;
+    }
+    if (eq(last.u, 1) && !last.vertexHolder[0]) {
+      last.vertexHolder[0] = e.halfEdge1.vertexB;
+      last.skip = true;
+    }
+  }
+  for (let [e, points] of isecs) {
+    for (let {u, vertexHolder} of points ) {
+      if (!vertexHolder[0]) {
+        vertexHolder[0] = vertexFactory.create(e.curve.point(u));
+      }
+    }
+  }
+  for (let [e, points] of isecs) {
+    for (let {u, vertexHolder, skip} of points ) {
+      if (skip === true) {
+        continue;
+      }
+      let split = splitEdgeByVertex(e, vertexHolder[0]);
+      if (split !== null) {
+        e = split[1];
       }
     }
   }
@@ -446,9 +445,8 @@ function collectNodesOfIntersection(curve, loop, nodes) {
 }
 
 function intersectCurveWithEdge(curve, edge, result) {
-  __DEBUG__.AddCurve(curve, 0xffffff);
-  __DEBUG__.AddHalfEdge(edge, 0xff00ff);
-  console.log(1)
+  // __DEBUG__.AddCurve(curve, 0xffffff);
+  // __DEBUG__.AddHalfEdge(edge, 0xff00ff);
   const points = edge.edge.curve.intersectCurve(curve, TOLERANCE);
   for (let point of points) {
     const {u0, u1} = point;
@@ -474,16 +472,21 @@ function split(nodes, curve, result) {
   for (let i = 0; i < nodes.length - 1; i++) {
     let inNode = nodes[i];
     let outNode = nodes[i + 1];
-    if (inNode.normal * outNode.normal !== -1) {
+    if (inNode.normal === -1) {
       continue
     }
-
-    const edge = new Edge(curve, inNode.vertex, outNode.vertex);
-
-    splitEdgeByVertex(inNode.edge.edge, edge.halfEdge1.vertexA);
-    splitEdgeByVertex(outNode.edge.edge, edge.halfEdge1.vertexB);
-
+    let edgeCurve = curve;
+    if (!eq(inNode.u, 0)) {
+      [,edgeCurve] = edgeCurve.split(inNode.vertex.point);
+    }
+    if (!eq(outNode.u, 1)) {
+      [edgeCurve] = edgeCurve.split(outNode.vertex.point);
+    }
+    const edge = new Edge(edgeCurve, inNode.vertex, outNode.vertex);
     result.push(edge);
+  }
+  for (let {edge, vertex} of nodes) {
+    splitEdgeByVertex(edge.edge, vertex);
   }
 }
 
