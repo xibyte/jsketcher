@@ -76,7 +76,7 @@ function addGlobalDebugActions(app) {
     AddVolume: (shell, color) => {
       color = color || 0xffffff;
       const geometry = new THREE.Geometry();
-      triangulateToThree(shell, geometry);
+      triangulateToThree(shell.faces, geometry);
       const mesh = new THREE.Mesh(geometry, createSolidMaterial({
         color,
         transparent: true,

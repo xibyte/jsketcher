@@ -137,8 +137,8 @@ App.prototype.test2 = function() {
   // this.addShellOnScene(s1);
   // this.addShellOnScene(s2);
 
-  let result = this.TPI.brep.bool.intersect(s1, s2);
-
+  // let result = this.TPI.brep.bool.intersect(s1, s2);
+  let result = s1;
   this.addShellOnScene(result);
 };
 
@@ -149,10 +149,10 @@ App.prototype.test3 = function() {
 
   const box3 = app.TPI.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
   // let result = app.TPI.brep.bool.union(box1, box2);
-  let result = app.TPI.brep.bool.subtract(box1, box2);
-  result = app.TPI.brep.bool.subtract(result, box3);
-  // app.addShellOnScene(box1);
-  app.addShellOnScene(result);
+  // let result = app.TPI.brep.bool.subtract(box1, box2);
+  // result = app.TPI.brep.bool.subtract(result, box3);
+  app.addShellOnScene(box1);
+  // app.addShellOnScene(result);
 
 };
 
