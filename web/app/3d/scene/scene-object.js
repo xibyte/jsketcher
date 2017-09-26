@@ -21,8 +21,7 @@ export class SceneSolid {
     this.cadGroup.add(this.wireframeGroup);
     this.mergeable = true;
     this.sceneFaces = [];
-
-    this.material = createSolidMaterial(skin);
+    this.skin = skin;
   }
 
   addLineToScene(a, b) {

@@ -1,7 +1,9 @@
 import libtess from 'libtess'
 import Vector from "../../math/vector";
+import {Face} from "../../brep/topo/face";
+import BrepBuilder from "../../brep/brep-builder";
 
-export default function(face) {
+export default function A(face) {
   function asUV(p) {
     let uv = face.surface.verb.closestParam(p);
     uv.push(0);
@@ -88,9 +90,24 @@ function analyzeCurvature(nurbs, triangles) {
 
 }
 
-function isMirrored(surface) {
+export function isMirrored(surface) {
   let a = surface.point(0, 0);
   let b = surface.point(1, 0);
   let c = surface.point(1, 1);
   return b.minus(a).cross(c.minus(a))._normalize().dot(surface.normalUV(0, 0)) < 0;
 }
+
+
+function test() {
+
+  let bb = new BrepBuilder();
+  let shell = bb.face()
+      .loop([bb.vertex(0,0,0), bb.vertex(100,0,0), bb.vertex(100,100,0), bb.vertex(0,100,0)])
+      .loop([bb.vertex(-100,30,0), bb.vertex(200,30,0), bb.vertex(300,60,0), bb.vertex(-100,60,0)]).build();
+
+  let trs = A(shell.faces[0]);
+  console.log(trs);
+
+}
+
+test();
