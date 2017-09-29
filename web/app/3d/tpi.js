@@ -12,6 +12,7 @@ import {Vertex} from '../brep/topo/vertex';
 import {Point} from '../brep/geom/point';
 import {NurbsCurve} from '../brep/geom/impl/nurbs';
 import {Plane} from '../brep/geom/impl/plane';
+import pip from "./tess/pip";
 
 export default {
   brep: {
@@ -19,6 +20,7 @@ export default {
     createPrism,
     primitives: BREPPrimitives,
     bool: BREPBool,
+    pip,
     validator: BREPValidator,
     geom: {
       Point, NurbsCurve, Plane
