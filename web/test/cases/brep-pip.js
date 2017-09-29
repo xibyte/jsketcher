@@ -1,5 +1,4 @@
 import * as test from '../test'
-import {AXIS} from '../../app/math/l3space'
 
 export default {
   
@@ -407,7 +406,7 @@ export default {
 
       const result = classify(app, win, loop, [100, 300]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.edge === loop.halfEdges[3]);
+      env.assertTrue(result.edge[0] === loop[3]);
       env.done();
     }));
   },
@@ -429,7 +428,7 @@ export default {
 
       const result = classify(app, win, loop, [300, 300]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.edge === loop.halfEdges[2]);
+      env.assertTrue(result.edge[0] === loop[2]);
       env.done();
     }));
   },
@@ -452,7 +451,7 @@ export default {
 
       const result = classify(app, win, loop, [300, 500]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.edge === loop.halfEdges[2]);
+      env.assertTrue(result.edge[0] === loop[2]);
       env.done();
     }));
   },
@@ -479,7 +478,7 @@ export default {
 
       const result = classify(app, win, loop, [150, 300]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.edge === loop.halfEdges[6]);
+      env.assertTrue(result.edge[0] === loop[6]);
       env.done();
     }));
   },
@@ -506,7 +505,7 @@ export default {
 
       const result = classify(app, win, loop, [450, 300]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.edge === loop.halfEdges[2]);
+      env.assertTrue(result.edge[0] === loop[2]);
       env.done();
     }));
   },
@@ -529,7 +528,7 @@ export default {
 
       const result = classify(app, win, loop, [100, 100]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.vertex === loop.halfEdges[0].vertexA);
+      env.assertTrue(result.vertex === loop[0]);
       env.done();
     }));
   },
@@ -556,7 +555,7 @@ export default {
 
       const result = classify(app, win, loop, [200, 300]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.vertex === loop.halfEdges[5].vertexB);
+      env.assertTrue(result.vertex === loop[6]);
       env.done();
     }));
   },
@@ -583,7 +582,7 @@ export default {
 
       const result = classify(app, win, loop, [400, 300]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.vertex === loop.halfEdges[3].vertexA);
+      env.assertTrue(result.vertex === loop[3]);
       env.done();
     }));
   },
@@ -610,7 +609,7 @@ export default {
       ]);
       const result = classify(app, win, loop, [350, 300]);
       env.assertTrue(result.inside);
-      env.assertTrue(result.vertex === loop.halfEdges[3].vertexB);
+      env.assertTrue(result.vertex === loop[4]);
       env.done();
     }));
   },
@@ -639,167 +638,6 @@ export default {
     }));
   },
 
-  /**
-   *      o--------o
-   *      |         \
-   * *--> |          )
-   *      |         /
-   *      o--------o
-   */
-  testPIPClassification1NurbsOut: function (env) {
-    test.modeller(env.test((win, app) => {
-      const loop = createLoop(app.TPI,[
-        [100,  100],
-        [500,  100],
-        [500,  500],
-        [100,  500]
-      ], [,['nurbs', [500,  100], [700,  250], [500,  500] ]]);
-      const result = classify(app, win, loop, [-300, 300]);
-      env.assertFalse(result.inside);
-      env.done();
-    }));
-  },
-
-  /**
-   *      o--------o
-   *      |         \
-   * *--> |          )
-   *      |         /
-   *      o--------o
-   */
-  testPIPClassification1NurbsIn: function (env) {
-    test.modeller(env.test((win, app) => {
-      const loop = createLoop(app.TPI,[
-        [100,  100],
-        [500,  100],
-        [500,  500],
-        [100,  500]
-      ], [,['nurbs', [500,  100], [700,  250], [500,  500] ]]);
-      const result = classify(app, win, loop, [300, 300]);
-      env.assertTrue(result.inside);
-      env.done();
-    }));
-  },
-
-
-  /**
-   *      *-->
-   *      
-   *         . ' .
-   *       /      \
-   *      o        o
-   *      |        |
-   *      |        |
-   *      |        |
-   *      o--------o
-   */
-  testPIPClassificationCloseToNurbsOut: function (env) {
-    test.modeller(env.test((win, app) => {
-      const loop = createLoop(app.TPI,[
-        [100,  100],
-        [500,  100],
-        [500,  500],
-        [100,  500]
-      ], [,,['nurbs', [500,  500], [250,  750], [100,  500] ]]);
-      const result = classify(app, win, loop, [-300, 780]);
-      env.assertFalse(result.inside);
-      env.done();
-    }));
-  },
-  
-  /**
-   *      *-->
-   *         . ' .
-   *       /      \
-   *      o        o
-   *      |        |
-   *      |        | 
-   *      |        |
-   *      o--------o
-   */
-  testPIPClassificationTouchesNurbsOut: function (env) {
-    test.modeller(env.test((win, app) => {
-      const loop = createLoop(app.TPI,[
-        [100,  100],
-        [500,  100],
-        [500,  500],
-        [100,  500]
-      ], [,,['nurbs', [500,  500], [250,  750], [100,  500] ]]);
-      const result = classify(app, win, loop, [-300, 750]);
-      env.assertFalse(result.inside);
-      env.done();
-    }));
-  },
-
-  /**
-   *      
-   *  *-->   . ' .
-   *       /      \
-   *      o        o
-   *      |        |
-   *      |        |
-   *      |        |
-   *      o--------o
-   */
-  testPIPClassificationThroughNurbsOut: function (env) {
-    test.modeller(env.test((win, app) => {
-      const loop = createLoop(app.TPI,[
-        [100,  100],
-        [500,  100],
-        [500,  500],
-        [100,  500]
-      ], [,,['nurbs', [500,  500], [250,  750], [100,  500] ]]);
-      const result = classify(app, win, loop, [-300, 650]);
-      env.assertFalse(result.inside);
-      env.done();
-    }));
-  },
-
-  /**
-   *
-   *         . ' .
-   *       /  *-> \
-   *      o        o
-   *      |        |
-   *      |        |
-   *      |        |
-   *      o--------o
-   */
-  testPIPClassificationCrossesNurbsIn: function (env) {
-    test.modeller(env.test((win, app) => {
-      const loop = createLoop(app.TPI,[
-        [100,  100],
-        [500,  100],
-        [500,  500],
-        [100,  500]
-      ], [,,['nurbs', [500,  500], [250,  750], [100,  500] ]]);
-      const result = classify(app, win, loop, [300, 650]);
-      env.assertTrue(result.inside);
-      env.done();
-    }));
-  },
-  
-  /**
-   *      o--------o
-   *       \        \
-   * *-->   )        )
-   *       /        /
-   *      o--------o
-   */
-  testPIPClassification2NurbsOut: function (env) {
-    test.modeller(env.test((win, app) => {
-      const loop = createLoop(app.TPI,[
-        [100,  100],
-        [500,  100],
-        [500,  500],
-        [100,  500]
-      ], [,['nurbs', [500,  100], [700,  250], [500,  500]], , ['nurbs', [100,  500], [250,  250], [100,  100]]]);
-      const result = classify(app, win, loop, [-300, 300]);
-      env.assertFalse(result.inside);
-      env.done();
-    }));
-  },
-  
   testPIPClassification_TR_OUT_TR_INNER: function (env) {
     test.modeller(env.test((win, app) => {
       const loop = createLoop(app.TPI,[
@@ -821,37 +659,28 @@ export default {
 }
 
 function classify(app, win, loop, p) {
-  loop.halfEdges.forEach(e => win.__DEBUG__.AddHalfEdge(e, 0xffff00));
-  const pnt = point(app.TPI, p[0], p[1], 0);
+
+  const n = loop.length;
+  for (let p = n - 1, q = 0; q < n; p = q ++) {
+    const a = loop[p];
+    const b = loop[q];
+    win.__DEBUG__.AddSegment(a, b, 0xffff00);
+  }
+
+  const pnt = new app.TPI.brep.geom.Point(p[0], p[1], 0);
   const beam = pnt.copy();
   beam.x += 1700;
   win.__DEBUG__.AddLine(pnt, beam);
   win.__DEBUG__.AddPoint(pnt, 0xffffff);
-  const result = app.TPI.brep.bool.classifyPointInsideLoop(pnt, loop, new app.TPI.brep.geom.Plane(AXIS.Z, 0));
+  const result = app.TPI.brep.pip([loop])(pnt);
   win.__DEBUG__.AddPoint(pnt, result.inside ? 0x00ff00 : 0xff0000);
   if (result.edge) {
-    win.__DEBUG__.AddHalfEdge(result.edge, 0xffffff)
+    win.__DEBUG__.AddSegment(result.edge[0], result.edge[1], 0xffffff)
   }
   return result;
 }
 
 
-function createLoop(tpi, points, curves) {
-  curves = curves || [];
-  const vertices = points.map(p => vertex(tpi, p[0], p[1], 0));
-  return tpi.brep.builder.createPlaneLoop(vertices, curves.map(c => {
-    if (c && c[0] == 'nurbs') {
-      const points = c.slice(1).map(p => new tpi.brep.geom.Point().set3(p) );
-      return tpi.brep.geom.NurbsCurve.createByPoints(points, 2);
-    }
-    return undefined;
-  }));
-}
-
-function vertex(tpi, x, y, z) {
-  return new tpi.brep.topo.Vertex(point(tpi, x, y, z));
-}
-
-function point(tpi, x, y, z) {
-  return new tpi.brep.geom.Point(x, y, z);
+function createLoop(tpi, points) {
+  return points.map(([x, y]) => new tpi.brep.geom.Point(x, y, 0));
 }

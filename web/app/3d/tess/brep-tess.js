@@ -98,16 +98,4 @@ export function isMirrored(surface) {
 }
 
 
-function test() {
 
-  let bb = new BrepBuilder();
-  let shell = bb.face()
-      .loop([bb.vertex(0,0,0), bb.vertex(100,0,0), bb.vertex(100,100,0), bb.vertex(0,100,0)])
-      .loop([bb.vertex(-100,30,0), bb.vertex(200,30,0), bb.vertex(300,60,0), bb.vertex(-100,60,0)]).build();
-
-  let trs = A(shell.faces[0]);
-  console.log(trs);
-
-}
-
-test();
