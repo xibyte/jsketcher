@@ -21,7 +21,8 @@ export class SceneSolid {
     this.cadGroup.add(this.wireframeGroup);
     this.mergeable = true;
     this.sceneFaces = [];
-    this.skin = skin;
+
+    this.material = createSolidMaterial(skin);
   }
 
   addLineToScene(a, b) {
@@ -55,8 +56,7 @@ export function createSolidMaterial(skin) {
     shininess: 0,
     polygonOffset : true,
     polygonOffsetFactor : 1,
-    polygonOffsetUnits : 2,
-    //side : THREE.DoubleSide
+    polygonOffsetUnits : 2
   }, skin));
 }
 

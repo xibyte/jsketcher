@@ -1,6 +1,6 @@
-import {areEqual, isCCW} from "../../math/math";
+import {areEqual} from "../../math/math";
 
-export default function(loops, tol) {
+export default function(outerLoop, innerLoops, tol) {
 
   tol = tol || 1e-6;
 
@@ -10,16 +10,6 @@ export default function(loops, tol) {
 
   function veq(a, b, TOLERANCE) {
     return eq(a.x, b.x, TOLERANCE) && eq(a.y, b.y, TOLERANCE);
-  }
-
-  let outerLoops = [];
-  let innerLoops = [];
-  for (let loop of loops) {
-    if (isCCW(loop)) {
-      outerLoops.push(loop);
-    } else {
-      innerLoops.push(loop);
-    }
   }
 
   function classifyPointInsideLoop( pt, loop ) {
@@ -145,23 +135,22 @@ export default function(loops, tol) {
   }
 
   return function classifyPointInsideLoops(pt) {
-    let outer = null;
-    for (let outerLoop of outerLoops) {
-      outer = classifyPointInsideLoop(pt, outerLoop);
-      if (outer.inside) {
-        if (outer.vertex || outer.edge) {
-          return outer;
-        }
+    let outer = classifyPointInsideLoop(pt, outerLoop);
+    if (outer.inside) {
+      if (outer.vertex || outer.edge) {
+        return outer;
       }
     }
 
-    for (let innerLoop of innerLoops) {
-      const inner = classifyPointInsideLoop(pt, innerLoop);
-      if (inner.vertex || inner.edge) {
-        return inner;
-      }
-      if (inner.inside) {
-        return {inside: false};
+    if (innerLoops) {
+      for (let innerLoop of innerLoops) {
+        const inner = classifyPointInsideLoop(pt, innerLoop);
+        if (inner.vertex || inner.edge) {
+          return inner;
+        }
+        if (inner.inside) {
+          return {inside: false};
+        }
       }
     }
 
