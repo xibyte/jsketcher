@@ -42,15 +42,16 @@
     "grunt-contrib-copy": "1.0.0"
   },
   "dependencies": {
-    "sprintf": "0.1.5",
     "diff-match-patch": "1.0.0",
-    "numeric": "1.2.6",
-    "jwerty": "0.3.2",
+    "earcut": "2.1.1",
     "handlebars": "4.0.6",
     "handlebars-loader": "1.4.0",
-    "json-loader": "0.5.4 ",
     "jquery": "2.1.0",
+    "json-loader": "0.5.4 ",
+    "jwerty": "0.3.2",
     "less": "2.7.1",
-    "libtess": "1.2.2"
+    "libtess": "1.2.2",
+    "numeric": "1.2.6",
+    "sprintf": "0.1.5"
   }
 }

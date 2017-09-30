@@ -672,7 +672,7 @@ function classify(app, win, loop, p) {
   beam.x += 1700;
   win.__DEBUG__.AddLine(pnt, beam);
   win.__DEBUG__.AddPoint(pnt, 0xffffff);
-  const result = app.TPI.brep.pip([loop])(pnt);
+  const result = app.TPI.brep.pip(loop)(pnt);
   win.__DEBUG__.AddPoint(pnt, result.inside ? 0x00ff00 : 0xff0000);
   if (result.edge) {
     win.__DEBUG__.AddSegment(result.edge[0], result.edge[1], 0xffffff)
