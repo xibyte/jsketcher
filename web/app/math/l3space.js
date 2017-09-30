@@ -37,6 +37,13 @@ Matrix3.prototype.setBasis = function(basis) {
   return this;
 };
 
+Matrix3.prototype.scale = function(dx, dy, dz) {
+  this.mxx *= dx;
+  this.myy *= dy;
+  this.mzz *= dz;
+  return this;
+};
+
 Matrix3.prototype.translate = function(dx, dy, dz) {
   this.tx += dx;
   this.ty += dy;

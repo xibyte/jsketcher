@@ -1,93 +1,149 @@
-import libtess from 'libtess'
+import PIP from "./pip";
+import earcut from 'earcut'
 import Vector from "../../math/vector";
-import {Face} from "../../brep/topo/face";
-import BrepBuilder from "../../brep/brep-builder";
 
 export default function A(face) {
-  function asUV(p) {
-    let uv = face.surface.verb.closestParam(p);
-    uv.push(0);
-    return uv;
+  function uv(p) {
+    return face.surface.verb.closestParam(p);
   }
 
-  function vertexCallback(data, out) {
-    out.push(data);
-  }
+  const workingPt = (uv, pt3d) => {
+    let wpt = new Vector(uv[0], uv[1], 0);
+    wpt._multiply(1000);
+    wpt.__3D = pt3d;
+    return wpt;
+  };
 
-
-  const tessy = new libtess.GluTesselator();
-  // tessy.gluTessProperty(libtess.gluEnum.GLU_TESS_WINDING_RULE, libtess.windingRule.GLU_TESS_WINDING_POSITIVE);
-  tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_VERTEX_DATA, vertexCallback);
-
+  const pt = (pt3d) => workingPt(uv(pt3d), pt3d);
+// throw 1
   const mirrored = isMirrored(face.surface);
 
-  if (mirrored) {
-    tessy.gluTessNormal(0, 0, -1);
-  } else {
-    tessy.gluTessNormal(0, 0, 1);
-  }
-
-  const params = [];
-  tessy.gluTessBeginPolygon(params);
-
+  let loops = [];
   for (let loop of face.loops) {
-    tessy.gluTessBeginContour();
+    let pipLoop = [];
+    loops.push(pipLoop);
     for (let e of loop.halfEdges) {
-      let points = e.edge.curve.verb.tessellate();
-      if (e.inverted) {
-        points.reverse();
+      let curvePoints = e.edge.curve.verb.tessellate(100000);
+      let inverted = mirrored !== e.inverted;
+      if (inverted) {
+        curvePoints.reverse();
       }
-      points.pop();
-      for (let point of points) {
-        let uv = asUV(point);
-        tessy.gluTessVertex(uv, uv);
+      curvePoints.pop();
+      for (let point of curvePoints) {
+        let p = pt(point);
+        pipLoop.push(p);
       }
     }
-    tessy.gluTessEndContour();
   }
-  tessy.gluTessEndPolygon();
 
-
-  const triangles = [];
-  for (let i = 0;  i < params.length; i += 3 ) {
-    const a = params[i];
-    const b = params[i + 1];
-    const c = params[i + 2];
-    triangles.push([a, b, c]);
+  let steinerPoints = [];
+  let tess = face.surface.verb.tessellate({maxDepth: 3});
+  for (let i = 0; i < tess.points.length; i++) {
+    steinerPoints.push(workingPt(tess.uvs[i], tess.points[i]));
   }
-  analyzeCurvature(face.surface.verb, triangles);
 
-  return triangles.map(t => t.map(p => face.surface.point(p[0], p[1])));
-}
+  let [outer, ...inners] = loops;
+  inners.forEach(inner => inner.reverse());
+  let pip = PIP(outer, inners);
+  steinerPoints = steinerPoints.filter(pt => pip(pt).inside);
 
-function analyzeCurvature(nurbs, triangles) {
+  let points = [];
+  let pointsData = [];
+  let holes = [];
 
+  function pushLoop(loop) {
+    for (let pt of loop) {
+      pointsData.push(pt.x);
+      pointsData.push(pt.y);
+      points.push(pt);
+    }
+  }
 
-  // nurbs
-  //
-  // const data = nurbs._data;
-  //
-  // for (let i = 1; i < data.knotsU.length - 2) {
-  //   const u = data.knotsU[i];
-  // }
-  //
-  // for (let tr of triangles) {
-  //
-  //   getCheckPoint(tr, data.knotsU)
-  //
-  //
-  //
-  // }
-  //
-  //
-  //
-  // const umax = data.knotsU[data.knotsU.length - 1];
-  // const umin = data.knotsU[0];
-  // const vmax = data.knotsV[data.knotsV.length - 1];
-  // const vmin = data.knotsV[0];
+  pushLoop(outer);
+
+  for (let inner of inners) {
+    holes.push(pointsData.length / 2);
+    pushLoop(inner);
+  }
+
+  let trs = earcut(pointsData, holes);
+
+  let triangles = [];
+
+  for (let i = 0; i < trs.length; i += 3) {
+    const tr = [trs[i], trs[i + 1], trs[i + 2]];
+
+    // __DEBUG__.AddPointPolygon(tr.map( ii => new Vector(pointsData[ii * 2], pointsData[ii * 2 + 1], 0) ));
+
+    triangles.push(tr.map(i => points[i]));
+  }
+
+  splitTriangles(triangles, steinerPoints);
+
+  triangles = triangles.filter(tr => tr !== null);
+
+  for (let tr of triangles) {
+    for (let i = 0; i < tr.length; i++) {
+      tr[i] = new Vector().set3(tr[i].__3D);
+    }
+  }
 
   return triangles;
+}
 
+function splitTriangles(triangles, steinerPoints) {
+  for (let sp of steinerPoints) {
+    // __DEBUG__.AddPoint(sp);
+    let newTrs = [];
+    for (let i = 0; i < triangles.length; ++i) {
+      let tr = triangles[i];
+      if (tr === null) {
+        continue;
+      }
+      let pip = new PIP(tr);
+      let res = pip(sp);
+      if (!res.inside || res.vertex) {
+        continue;
+      } else {
+        if (res.edge) {
+          let [tr1, tr2] = splitEdgeOfTriangle(sp, tr, res.edge);
+          if (tr1 && tr2) {
+            newTrs.push(tr1, tr2);
+            triangles[i] = null;
+          }
+        } else {
+          let [tr1, tr2, tr3] = splitTriangle(sp, tr, res.edge, triangles);
+          newTrs.push(tr1, tr2, tr3);
+          triangles[i] = null;
+        }
+
+      }
+    }
+    newTrs.forEach(tr => triangles.push(tr));
+  }
+}
+
+function splitEdgeOfTriangle(p, tr, edge) {
+  let n = tr.length;
+  for (let i1 = 0; i1 < n; i1 ++ ) {
+    let i2 = (i1 + 1) % n;
+    let i3 = (i1 + 2) % n;
+    if (tr[i1] === edge[0] && tr[i2] === edge[1]) {
+      let tr1 = [tr[i1], p, tr[i3]];
+      let tr2 = [p, tr[i2], tr[i3]];
+      return [tr1, tr2];
+    }
+  }
+  return [];
+}
+
+function splitTriangle(p, tr, edge) {
+  let [a, b, c] = tr;
+  return [
+    [a, b, p],
+    [b, c, p],
+    [c, a, p]
+  ];
 }
 
 export function isMirrored(surface) {

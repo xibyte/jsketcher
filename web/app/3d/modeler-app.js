@@ -24,7 +24,7 @@ import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/brep-scene-object'
 import TPI from './tpi'
-import {NurbsCurve} from "../brep/geom/impl/nurbs";
+import {NurbsCurve, NurbsSurface} from "../brep/geom/impl/nurbs";
 // import {createSphere, rayMarchOntoCanvas, sdfIntersection, sdfSolid, sdfSubtract, sdfTransform, sdfUnion} from "../hds/sdf";
 
 function App() {
@@ -156,9 +156,58 @@ App.prototype.test3 = function() {
 
 };
 
-App.prototype.scratchCode = function() {
+App.prototype.test5 = function() {
 
-  this.test3();
+  const degree = 3
+    , knots = [0, 0, 0, 0, 0.333, 0.666, 1, 1, 1, 1]
+    , pts = [ 	[ [0, 0, -10], 	[10, 0, 0], 	[20, 0, 0], 	[30, 0, 0] , 	[40, 0, 0], [50, 0, 0] ],
+    [ [0, -10, 0], 	[10, -10, 10], 	[20, -10, 10], 	[30, -10, 0] , [40, -10, 0], [50, -10, 0]	],
+    [ [0, -20, 0], 	[10, -20, 10], 	[20, -20, 10], 	[30, -20, 0] , [40, -20, -2], [50, -20, -12] 	],
+    [ [0, -30, 0], 	[10, -30, 0], 	[20, -30, -23], 	[30, -30, 0] , [40, -30, 0], [50, -30, 0]     ],
+    [ [0, -40, 0], 	[10, -40, 0], 	[20, -40, 0], 	[30, -40, 4] , [40, -40, -20], [50, -40, 0]     ],
+    [ [0, -50, 12], [10, -50, 0], 	[20, -50, 20], 	[30, -50, 0] , [50, -50, -10], [50, -50, -15]     ]  ];
+
+  let  srf = verb.geom.NurbsSurface.byKnotsControlPointsWeights( degree, degree, knots, knots, pts );
+  srf = srf.transform(new Matrix3().scale(10,10,10).toArray());
+  srf = new NurbsSurface(srf);
+  // __DEBUG__.AddNurbs(srf);
+
+  let bb = new BrepBuilder();
+  function vx(u, v) {
+    let pt = srf.point(u, v);
+    return bb.vertex(pt.x, pt.y, pt.z);
+  }
+
+  const a = vx(0.1, 0.1);
+  const b = vx(0.9, 0.1);
+  const c = vx(0.9, 0.9);
+  const d = vx(0.1, 0.9);
+
+  const e = vx(0.3, 0.3);
+  const f = vx(0.3, 0.7);
+  const g = vx(0.7, 0.7);
+  const h = vx(0.7, 0.3);
+
+
+  let shell = bb.face(srf)
+    .loop()
+    .edgeTrim(a, b, srf.verb.isocurve(0.1, true))
+    .edgeTrim(b, c, srf.verb.isocurve(0.9, false))
+    .edgeTrim(c, d, srf.verb.isocurve(0.9, true).reverse())
+    .edgeTrim(d, a, srf.verb.isocurve(0.1, false).reverse())
+    .loop()
+    .edgeTrim(e, f, srf.verb.isocurve(0.3, false))
+    .edgeTrim(f, g, srf.verb.isocurve(0.7, true))
+    .edgeTrim(g, h, srf.verb.isocurve(0.7, false).reverse())
+    .edgeTrim(h, e, srf.verb.isocurve(0.3, true).reverse())
+    .build();
+
+  this.addShellOnScene(shell);
+};
+
+App.prototype.scratchCode = function() {
+  const app = this;
+  this.test5();
 
 
 
