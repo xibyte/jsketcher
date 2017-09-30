@@ -39,6 +39,15 @@ export default class BrepBuilder {
     return this;
   }
 
+  edgeTrim(a, b, curve) {
+    let u1 = curve.closestParam(a.point.data());
+    curve = curve.split(u1)[1];
+    let u2 = curve.closestParam(b.point.data());
+    curve = curve.split(u2)[0];
+    this.edge(a, b, new NurbsCurve(curve));
+    return this;
+  }
+
   edge(a, b, curve) {
     let he = a.edgeFor(b);
     if (he === null) {

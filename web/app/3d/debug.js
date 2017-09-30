@@ -50,6 +50,12 @@ function addGlobalDebugActions(app) {
         __DEBUG__.AddSegment(vertices[i].point, vertices[(i + 1) % vertices.length].point, color);
       }  
     },
+    AddPointPolygon: (points, color) => {
+      for (let i = 0; i < points.length; i ++) {
+        __DEBUG__.AddSegment(points[i], points[(i + 1) % points.length], color);
+      }
+    },
+
     AddPlane: (plane) => {
       const geo = new THREE.PlaneBufferGeometry(2000, 2000, 8, 8);
       const coplanarPoint = plane.normal.multiply(plane.w);
