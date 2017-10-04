@@ -35,29 +35,28 @@ export function createPrism(basePoints, height) {
   const extrudeVector = baseSurface.normal.multiply( - height);
   const lidSurface = baseSurface.translate(extrudeVector).invert();
   const lidPoints = basePoints.map(p => p.plus(extrudeVector));
-  const basePath = new CompositeCurve();
-  const lidPath = new CompositeCurve();
+  const basePath = [];
+  const lidPath = [];
 
   for (let i = 0; i < basePoints.length; i++) {
     let j = (i + 1) % basePoints.length;
-    basePath.add(NurbsCurve.createLinearNurbs(basePoints[i], basePoints[j]), basePoints[i], null);
-    lidPath.add(NurbsCurve.createLinearNurbs(lidPoints[i], lidPoints[j]), lidPoints[i], null);
+    basePath.push(NurbsCurve.createLinearNurbs(basePoints[i], basePoints[j]));
+    lidPath.push(NurbsCurve.createLinearNurbs(lidPoints[i], lidPoints[j]));
   }
   return enclose(basePath, lidPath, baseSurface, lidSurface);
 }
 
 export function enclose(basePath, lidPath, basePlane, lidPlane) {
 
-  if (basePath.points.length !== lidPath.points.length) {
+  if (basePath.length !== lidPath.length) {
     throw 'illegal arguments';
   }
 
   const walls = [];
 
-  const n = basePath.points.length;
+  const n = basePath.length;
   for (let i = 0; i < n; i++) {
-    let j = (i + 1) % n;
-    const wall = createWall(basePath.curves[i], lidPath.curves[i]);
+    const wall = createWall(basePath[i], lidPath[i]);
     walls.push(wall);
   }
   return assemble(walls, basePlane, lidPlane)
@@ -104,8 +103,8 @@ function assemble(walls, basePlane, lidPlane) {
   base.outerLoop.link();
   lid.outerLoop.link();
 
-  base.surface = createBoundingNurbs(base.outerLoop.asPolygon(), basePlane);
-  lid.surface = createBoundingNurbs(lid.outerLoop.asPolygon(), lidPlane);
+  base.surface = createBoundingNurbs(base.outerLoop.tess(), basePlane);
+  lid.surface = createBoundingNurbs(lid.outerLoop.tess(), lidPlane);
 
   shell.faces.push(base, lid);
   shell.faces.forEach(f => f.shell = shell);

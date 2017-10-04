@@ -109,6 +109,13 @@ App.prototype.test1 = function() {
   this.addShellOnScene(result);
 }
 
+
+App.prototype.cylTest = function() {
+  
+    const cylinder1 = BREPPrimitives.cylinder(200, 500);
+    this.addShellOnScene(cylinder1);
+  }
+
 App.prototype.test2 = function() {
   
   function square() {
@@ -149,10 +156,10 @@ App.prototype.test3 = function() {
 
   const box3 = app.TPI.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
   // let result = app.TPI.brep.bool.union(box1, box2);
-  // let result = app.TPI.brep.bool.subtract(box1, box2);
-  // result = app.TPI.brep.bool.subtract(result, box3);
-  app.addShellOnScene(box1);
-  // app.addShellOnScene(result);
+  let result = app.TPI.brep.bool.subtract(box1, box2);
+  result = app.TPI.brep.bool.subtract(result, box3);
+  // app.addShellOnScene(box1);
+  app.addShellOnScene(result);
 
 };
 
@@ -207,7 +214,7 @@ App.prototype.test5 = function() {
 
 App.prototype.scratchCode = function() {
   const app = this;
-  this.test5();
+  this.cylTest();
 
 
 

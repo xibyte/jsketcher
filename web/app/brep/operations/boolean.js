@@ -4,6 +4,7 @@ import {Loop} from '../topo/loop';
 import {Face} from '../topo/face';
 import {Shell} from '../topo/shell';
 import {Vertex} from '../topo/vertex';
+import {evolveFace} from './evolve-face'
 import Vector from '../../math/vector';
 import * as math from '../../math/math';
 
@@ -220,12 +221,11 @@ function traverseFaces(face, validFaces, callback) {
 }
 
 export function loopsToFaces(originFace, loops, out) {
-  const face = new Face(originFace.surface);
-  face.innerLoops = loops;
-  loops.forEach(loop => loop.face = face);
-  out.push(face);
+  const newFaces = evolveFace(originFace, loops);
+  for (let newFace of newFaces) {
+    out.push(newFace);
+  }
 }
-
 
 function initSolveData(shell, facesData) {
   for (let face of shell.faces) {

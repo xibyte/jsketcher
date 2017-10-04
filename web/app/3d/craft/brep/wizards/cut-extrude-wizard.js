@@ -52,23 +52,34 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
   }
 
   createImpl(app, params, sketch, face) {
-    const encloseDetails = getEncloseDetails(params, sketch, face.surface(), !this.inversed, true);
+    const encloseDetails = getEncloseDetails(params, sketch, face.surface(), !this.inversed);
     const triangles = [];
-    for (let d of encloseDetails) {
-      const base = d.basePath.points;
-      const lid = d.lidPath.points;
-      const n = base.length;
-      for (let p = n - 1, q = 0; q < n; p = q ++) {
-        triangles.push([ base[p], base[q], lid[q] ]);
-        triangles.push([ lid[q], lid[p], base[p] ]);
+
+    for (let {basePath, lidPath, baseSurface, lidSurface} of encloseDetails) {
+      const basePoints = [];
+      const lidPoints = [];
+      for (let i = 0; i < basePath.length; ++i) {
+        let baseNurbs = basePath[i];    
+        let lidNurbs = lidPath[i];  
+        const params = verb.eval.Tess.rationalCurveAdaptiveSample(baseNurbs.verb._data,1,true).map(p => p[0]);  
+        const base = params.map(u => baseNurbs.point(u));
+        const lid = params.map(u => lidNurbs.point(u));
+        const n = base.length;
+        for (let p = n - 1, q = 0; q < n; p = q ++) {
+          triangles.push([ base[p], base[q], lid[q] ]);
+          triangles.push([ lid[q], lid[p], base[p] ]);
+        }
+        base.forEach(p => basePoints.push(new Vector().set3(p)));
+        lid.forEach(p => lidPoints.push(new Vector().set3(p)));
+
       }
 
       function collectOnSurface(points, normal) {
         TriangulatePolygons([points], normal, (v) => v.toArray(), (arr) => new Vector().set3(arr))
           .forEach(tr => triangles.push(tr));
       }
-      collectOnSurface(base, d.baseSurface.normal);
-      collectOnSurface(lid, d.lidSurface.normal);
+      collectOnSurface(basePoints, baseSurface.normal);
+      collectOnSurface(lidPoints, lidSurface.normal);
     }
     return triangles;
   }

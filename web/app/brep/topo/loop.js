@@ -1,4 +1,5 @@
 import {TopoObject} from './topo-object'
+import {Point} from '../geom/point'
 
 import * as math from '../../math/math'
 
@@ -29,6 +30,22 @@ export class Loop extends TopoObject {
 
       curr.loop = this;
     }
+  }
+
+  tess() {
+    let out = [];
+    for (let e of this.halfEdges) {
+      let curvePoints = e.edge.curve.verb.tessellate(100000);
+      if (e.inverted) {
+        curvePoints.reverse();
+      }
+      curvePoints.pop();
+      for (let point of curvePoints) {
+        let p = Point.fromData(point);
+        out.push(p);
+      }
+    }
+    return out;
   }
 }
 
