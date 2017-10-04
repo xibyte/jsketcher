@@ -59,7 +59,7 @@ export class BREPSceneSolid extends SceneSolid {
   createVertices() {
   }
 }
-
+  
 class BREPSceneFace extends SceneFace {
   constructor(brepFace, solid) {
     super(solid, brepFace.id);
@@ -70,7 +70,7 @@ class BREPSceneFace extends SceneFace {
 
 
   normal() {
-    return this.brepFace.surface.normal;
+    return this.brepFace.surface.normalInMiddle();
   }
 
   depth() {

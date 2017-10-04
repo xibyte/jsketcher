@@ -3,20 +3,6 @@ import earcut from 'earcut'
 import Vector from "../../math/vector";
 
 export default function A(face) {
-  function uv(p) {
-    return face.surface.verb.closestParam(p);
-  }
-
-  const workingPt = (uv, pt3d) => {
-    let wpt = new Vector(uv[0], uv[1], 0);
-    wpt._multiply(1000);
-    wpt.__3D = pt3d;
-    return wpt;
-  };
-
-  const pt = (pt3d) => workingPt(uv(pt3d), pt3d);
-// throw 1
-  const mirrored = isMirrored(face.surface);
 
   let loops = [];
   for (let loop of face.loops) {
@@ -24,13 +10,12 @@ export default function A(face) {
     loops.push(pipLoop);
     for (let e of loop.halfEdges) {
       let curvePoints = e.edge.curve.verb.tessellate(100000);
-      let inverted = mirrored !== e.inverted;
-      if (inverted) {
+      if (e.inverted) {
         curvePoints.reverse();
       }
       curvePoints.pop();
       for (let point of curvePoints) {
-        let p = pt(point);
+        let p = face.surface.workingPoint(Vector.fromData(point));
         pipLoop.push(p);
       }
     }
@@ -39,7 +24,7 @@ export default function A(face) {
   let steinerPoints = [];
   let tess = face.surface.verb.tessellate({maxDepth: 3});
   for (let i = 0; i < tess.points.length; i++) {
-    steinerPoints.push(workingPt(tess.uvs[i], tess.points[i]));
+    steinerPoints.push(face.surface.createWorkingPoint(tess.uvs[i], Vector.fromData(tess.points[i])));
   }
 
   let [outer, ...inners] = loops;
@@ -73,7 +58,7 @@ export default function A(face) {
   for (let i = 0; i < trs.length; i += 3) {
     const tr = [trs[i], trs[i + 1], trs[i + 2]];
 
-    // __DEBUG__.AddPointPolygon(tr.map( ii => new Vector(pointsData[ii * 2], pointsData[ii * 2 + 1], 0) ));
+    __DEBUG__.AddPointPolygon(tr.map( ii => new Vector(pointsData[ii * 2], pointsData[ii * 2 + 1], 0) ));
 
     triangles.push(tr.map(i => points[i]));
   }
@@ -84,7 +69,7 @@ export default function A(face) {
 
   for (let tr of triangles) {
     for (let i = 0; i < tr.length; i++) {
-      tr[i] = new Vector().set3(tr[i].__3D);
+      tr[i] = tr[i].__3D;
     }
   }
 
@@ -93,7 +78,7 @@ export default function A(face) {
 
 function splitTriangles(triangles, steinerPoints) {
   for (let sp of steinerPoints) {
-    // __DEBUG__.AddPoint(sp);
+    __DEBUG__.AddPoint(sp);
     let newTrs = [];
     for (let i = 0; i < triangles.length; ++i) {
       let tr = triangles[i];

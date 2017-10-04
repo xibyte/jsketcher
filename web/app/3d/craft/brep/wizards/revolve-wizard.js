@@ -29,7 +29,7 @@ export class RevolvePreviewer extends SketchBasedNurbsPreviewer {
     const nurbses = [];
     const contours = sketch.fetchContours();
     for (let contour of contours) {
-      const basePath = contour.transferOnSurface(surface);
+      const basePath = contour.approximateOnSurface(surface);
       revolveToWallNurbs(basePath, surface, pivot.p0, pivot.v, params.angle).forEach(nurbs => nurbses.push(nurbs));
     }
     return nurbses;

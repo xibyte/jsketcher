@@ -87,17 +87,13 @@ export class Plane extends Surface {
     return [Number.MIN_VALUE, Number.MAX_VALUE];
   }
 
-  classifyCognateCurve(line, tol) {
-    const parallel = math.areEqual(line.v.dot(this.normal), 0, tol);
-    const pointOnPlane = math.areEqual(this.normal.dot(line.p0), this.w, tol);
-    return {
-      hit: !parallel || pointOnPlane,
-      parallel
-    }
-  }
 }
 
 Plane.prototype.isPlane = true;
+
+Plane.XY = new Plane(AXIS.Z, 0);
+Plane.XZ = new Plane(AXIS.Y, 0);
+Plane.YZ = new Plane(AXIS.X, 0);
 
 class ParametricPlane {
 

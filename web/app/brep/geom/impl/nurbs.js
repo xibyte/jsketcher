@@ -36,6 +36,11 @@ export class NurbsCurve extends Curve {
   }
 
   splitByParam(u) {
+    const split = this.verb.split(u);
+    if (!math.equal(this.verb.closestParam(split[0].point(0)),0)) {
+      // throw 'wrong split';          
+      console.error('wrong split')
+    }
     return this.verb.split(u).map(v => new NurbsCurve(v));
   }
 
@@ -110,10 +115,11 @@ NurbsCurve.createLinearNurbs = function(a, b) {
 
 export class NurbsSurface extends Surface {
 
-  constructor(verbSurface) {
+  constructor(verbSurface, inverted) {
     super();
     this.verb = verbSurface;
-    this.inverted = false;
+    this.inverted = inverted === true;
+    this.mirrored = NurbsSurface.isMirrored(this);
   }
 
   toNurbs() {
@@ -147,6 +153,26 @@ export class NurbsSurface extends Surface {
     return pt(this.verb.point(u, v));
   }
 
+  workingPoint(point) {
+    return this.createWorkingPoint(this.verb.closestParam(point.data()), point);
+  }
+
+  createWorkingPoint(uv, pt3d) {
+    const wp = new Vector(uv[0], uv[1], 0)._multiply(1000);
+    if (this.mirrored) {
+      wp.x *= -1;
+    }
+    wp.__3D = pt3d;
+    return wp; 
+  }
+
+  static isMirrored(surface) {  
+    let a = surface.point(0, 0);
+    let b = surface.point(1, 0);
+    let c = surface.point(1, 1);
+    return b.minus(a).cross(c.minus(a))._normalize().dot(surface.normalUV(0, 0)) < 0;
+  }
+
   intersectSurfaceForSameClass(other, tol) {
     const curves = verb_surface_isec(this.verb, other.verb, tol);
     let inverted = this.inverted !== other.inverted;
@@ -154,9 +180,7 @@ export class NurbsSurface extends Surface {
   }
   
   invert() {
-    let inverted = new NurbsSurface(this.verb);
-    inverted.inverted = !this.inverted;
-    return inverted;
+    return new NurbsSurface(this.verb, !this.inverted);
   }
 
   isoCurve(param, useV) {

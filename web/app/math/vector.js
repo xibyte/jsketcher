@@ -136,4 +136,8 @@ Vector.prototype.three = function() {
   return new THREE.Vector3(this.x, this.y, this.z);
 };
 
+Vector.fromData = function(arr) {
+  return new Vector().set3(arr);
+}
+
 export default Vector;
