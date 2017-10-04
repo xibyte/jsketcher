@@ -71,7 +71,7 @@ export default class BrepBuilder {
         loop.link();    
       }  
       if (face.surface === null) {
-        face.surface = createBoundingNurbs(face.outerLoop.asPolygon());
+        face.surface = createBoundingNurbs(face.outerLoop.tess());
       }
     }
     for (let face of this._shell.faces) {
@@ -101,7 +101,6 @@ export function createBoundingNurbs(points, plane) {
   points2d.forEach(p => bBox.checkPoint(p));
 
   let to3D = plane.get3DTransformation();
-
   let polygon = bBox.toPolygon();
   polygon = polygon.map(p => to3D._apply(p));
 
