@@ -42,6 +42,7 @@
     "grunt-contrib-copy": "1.0.0"
   },
   "dependencies": {
+    "clipper-lib": "6.2.1",
     "diff-match-patch": "1.0.0",
     "earcut": "2.1.1",
     "handlebars": "4.0.6",

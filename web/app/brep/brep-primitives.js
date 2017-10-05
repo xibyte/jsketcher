@@ -21,9 +21,9 @@ export function box(w, h, d, tr) {
 
 
 export function cylinder(r, h, tr) {
-  let circle1 = new Circle(-1, new Point(0,0,0), r).toNurbs(Plane.XY);
-  let circle2 = circle1.translate(new Point(0,h,0))
-  return enclose(circle1, circle2);
+  let circle1 = new Circle(-1, new Point(0,0,h), r).toNurbs(Plane.XY);
+  let circle2 = circle1.translate(new Point(0,0,-h));
+  return enclose([circle1], [circle2]);
 }
 
 
