@@ -3,14 +3,15 @@ import * as math from  '../../../math/math'
 import {Point} from '../point'
 import {Surface} from "../surface";
 import Vector from "../../../math/vector";
-import * as vec from "../../../math/vec";
 import {Curve} from "../curve";
+import {verb_curve_isec, verb_surface_isec} from "./nurbs-ext";
 
 export class NurbsCurve extends Curve {
 
   constructor(verbCurve) {
     super();
     this.verb = verbCurve;
+    this.data = verbCurve.asNurbs();
   }
 
   translate(vector) {
@@ -36,12 +37,39 @@ export class NurbsCurve extends Curve {
   }
 
   splitByParam(u) {
-    const split = this.verb.split(u);
-    if (!math.equal(this.verb.closestParam(split[0].point(0)),0)) {
-      // throw 'wrong split';          
-      console.error('wrong split')
+    let split = verb.eval.Divide.curveSplit(this.data, u);
+    split.forEach(n => {
+      let min = n.knots[0];
+      let max = n.knots[n.knots.length - 1];
+      let d = max - min;
+      for (let i = 0; i < n.knots.length; i++) {
+        let val = n.knots[i];
+        if (val === min) {
+          n.knots[i] = 0;
+        } else if (val === max) {
+          n.knots[i] = 1;
+        } else {
+          n.knots[i] = (val - min) / d;
+        }
+      }
+    });
+    split = split.map(c => new verb.geom.NurbsCurve(c));
+    const splitCheck = (split) => {
+      return (
+        math.equal(this.verb.closestParam(split[0].point(1)), this.verb.closestParam(split[1].point(0))) &&
+        math.equal(this.verb.closestParam(split[0].point(0)), 0) &&
+        math.equal(this.verb.closestParam(split[0].point(1)), u) &&
+        math.equal(this.verb.closestParam(split[1].point(0)), u) &&
+        math.equal(this.verb.closestParam(split[1].point(1)), 1)
+      )
+    };
+    if (!splitCheck(split)) {
+      throw 'wrong split';
     }
-    return this.verb.split(u).map(v => new NurbsCurve(v));
+    // if (!splitCheck(split)) {
+    //   split.reverse();
+    // }
+    return split.map(v => new NurbsCurve(v));
   }
 
   invert() {
@@ -86,7 +114,7 @@ export class NurbsCurve extends Curve {
     isecOn(other, this, 0);
     isecOn(other, this, 1);
 
-    verb_curve_isec(this.verb, other.verb, tol).forEach( i => add({
+    verb_curve_isec(this, other, tol).forEach( i => add({
       u0: i.u0,
       u1: i.u1,
       p0: i.point0,
@@ -212,95 +240,7 @@ export class NurbsSurface extends Surface {
 NurbsSurface.WORKING_POINT_SCALE_FACTOR = 1000;
 NurbsSurface.WORKING_POINT_UNSCALE_FACTOR = 1 / NurbsSurface.WORKING_POINT_SCALE_FACTOR;
 
-function dist(p1, p2) {
-  return math.distance3(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
-}
-
 function pt(data) {
   return new Point().set3(data);
 }
 
-function verb_surface_isec(nurbs1, nurbs2, tol) {
-  const surface0 = nurbs1.asNurbs();
-  const surface1 = nurbs2.asNurbs();
-	const tess1 = verb.eval.Tess.rationalSurfaceAdaptive(surface0);
-	const tess2 = verb.eval.Tess.rationalSurfaceAdaptive(surface1);
-	const resApprox = verb.eval.Intersect.meshes(tess1,tess2);
-	const exactPls = resApprox.map(function(pl) {
-		return pl.map(function(inter) {
-			return verb.eval.Intersect.surfacesAtPointWithEstimate(surface0,surface1,inter.uv0,inter.uv1,tol);
-		});
-	});
-	return exactPls.map(function(x) {
-		return verb.eval.Make.rationalInterpCurve(x.map(function(y) {
-			return y.point;
-		}), x.length - 1);
-	}).map(cd => new verb.geom.NurbsCurve(cd));
-}
-
-function verb_curve_isec(curve1, curve2, tol) {
-
-  let result = [];
-  let segs1 = curve1.tessellate();
-  let segs2 = curve2.tessellate();
-
-  for (let i = 0; i < segs1.length - 1; i++) {
-    let a1 = segs1[i];
-    let b1 = segs1[i + 1];
-    for (let j = 0; j < segs2.length - 1; j++) {
-      let a2 = segs2[j];
-      let b2 = segs2[j + 1];
-
-      //TODO: minimize
-      let isec = intersectSegs(a1, b1, a2, b2, tol);
-      if (isec !== null) {
-        let {u1, u2, point1, point2, l1, l2} = isec;
-        result.push({
-          u0: curve1.closestParam(point1),
-          u1: curve2.closestParam(point2),
-          point0: point1,
-          point1: point2
-        });
-        if (math.areEqual(u1, l1, tol )) {
-          i ++;
-        }
-        if (math.areEqual(u2, l2, tol )) {
-          j ++;
-        }
-      }
-    }
-  }
-  return result;
-}
-
-export function lineLineIntersection(p1, p2, v1, v2) {
-  let zAx = vec.cross(v1, v2);
-  const n1 = vec._normalize(vec.cross(zAx, v1));
-  const n2 = vec._normalize(vec.cross(zAx, v2));
-  return {
-    u1: vec.dot(n2, vec.sub(p2, p1)) / vec.dot(n2, v1),
-    u2: vec.dot(n1, vec.sub(p1, p2)) / vec.dot(n1, v2),
-  }
-}
-
-function intersectSegs(a1, b1, a2, b2, tol) {
-  let v1 = vec.sub(b1, a1);
-  let v2 = vec.sub(b2, a2);
-  let l1 = vec.length(v1);
-  let l2 = vec.length(v2);
-  vec._div(v1, l1);
-  vec._div(v2, l2);
-
-  let {u1, u2} = lineLineIntersection(a1, a2, v1, v2);
-  let point1 = vec.add(a1, vec.mul(v1, u1));
-  let point2 = vec.add(a2, vec.mul(v2, u2));
-  let p2p = vec.lengthSq(vec.sub(point1, point2));
-  let eq = (a, b) => math.areEqual(a, b, tol);
-  if (u1 !== Infinity && u2 !== Infinity && math.areEqual(p2p, 0, tol*tol) &&
-      ((u1 >0 && u1 < l1) || eq(u1, 0) || eq(u1, l1)) &&
-      ((u2 >0 && u2 < l2) || eq(u2, 0) || eq(u2, l2))
-     ) {
-    return {point1, point2, u1, u2, l1, l2}
-  }
-  return null;
-}

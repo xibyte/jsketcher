@@ -52,6 +52,11 @@ export function enclose(basePath, lidPath, basePlane, lidPlane) {
     throw 'illegal arguments';
   }
 
+  if (basePath.length === 1) {
+    basePath = basePath[0].splitByParam(0.5);
+    lidPath = lidPath[0].splitByParam(0.5);
+  }
+
   const walls = [];
 
   const n = basePath.length;

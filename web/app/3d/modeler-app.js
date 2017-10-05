@@ -25,6 +25,7 @@ import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/brep-scene-object'
 import TPI from './tpi'
 import {NurbsCurve, NurbsSurface} from "../brep/geom/impl/nurbs";
+import {curveTessellate} from "../brep/geom/impl/nurbs-ext";
 // import {createSphere, rayMarchOntoCanvas, sdfIntersection, sdfSolid, sdfSubtract, sdfTransform, sdfUnion} from "../hds/sdf";
 
 function App() {
@@ -113,8 +114,14 @@ App.prototype.test1 = function() {
 App.prototype.cylTest = function() {
   
     const cylinder1 = BREPPrimitives.cylinder(200, 500);
-    this.addShellOnScene(cylinder1);
-  }
+    const cylinder2 = BREPPrimitives.cylinder(200, 500, Matrix3.rotateMatrix(90, AXIS.Y, ORIGIN));
+
+  let result = this.TPI.brep.bool.subtract(cylinder1, cylinder2);
+
+    // this.addShellOnScene(cylinder1);
+    // this.addShellOnScene(cylinder2);
+  this.addShellOnScene(result);
+};
 
 App.prototype.test2 = function() {
   
@@ -213,8 +220,8 @@ App.prototype.test5 = function() {
 };
 
 App.prototype.scratchCode = function() {
-  const app = this;
-  this.test5();
+  // const app = this;
+  // this.test3();
   // this.cylTest();
 
 
@@ -222,18 +229,16 @@ App.prototype.scratchCode = function() {
   // let curve1 = new NurbsCurve(new verb.geom.NurbsCurve({"degree":6,"controlPoints":[[150,149.99999999999997,-249.99999999999994,1],[108.33333333333051,150.00000000000907,-250.00000000001975,1],[66.6666666666712,149.99999999998562,-249.99999999996987,1],[24.99999999999545,150.00000000001364,-250.00000000002711,1],[-16.66666666666362,149.99999999999145,-249.9999999999837,1],[-58.33333333333436,150.0000000000029,-250.00000000000531,1],[-99.99999999999997,150,-250,1]],"knots":[0,0,0,0,0,0,0,1,1,1,1,1,1,1]}));
   // let curve2 = new NurbsCurve(new verb.geom.NurbsCurve({"degree":9,"controlPoints":[[100,-250,-250,1],[99.9999999999927,-194.44444444444687,-250.00000000000028,1],[100.00000000002228,-138.8888888888811,-249.99999999999838,1],[99.99999999995923,-83.33333333334777,-250.00000000000287,1],[100.00000000005268,-27.77777777775936,-249.99999999999744,1],[99.9999999999493,27.777777777760704,-250.0000000000008,1],[100.00000000003591,83.33333333334477,-250.00000000000063,1],[99.99999999998269,138.88888888888374,-249.99999999999966,1],[100.00000000000443,194.44444444444562,-249.99999999999986,1],[100,250,-250,1]],"knots":[0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]}));
 
-  // var p1 = [-50,0,0], p2 = [100,0,0], p3 = [100,100,0], p4 = [0,100,0], p5 = [50, 50, 0];
-  // var pts = [p1, p2, p3, p4, p5];
-  // let curve1 = new NurbsCurve(verb.geom.NurbsCurve.byPoints( pts, 3 ));
-  //
-  // var p1a = [-50,0,0], p2a = [50,-10,0], p3a = [150,50,0], p4a = [30,100,0], p5a = [50, 120, 0];
-  // var ptsa = [p1a, p2a, p3a, p4a, p5a];
-  // let curve2 = new NurbsCurve(verb.geom.NurbsCurve.byPoints( ptsa, 3 ));
-  //
-  // __DEBUG__.AddCurve(curve1);
-  // __DEBUG__.AddCurve(curve2);
+  var p1 = [-50,0,0], p2 = [100,0,0], p3 = [100,100,0], p4 = [0,100,0], p5 = [50, 50, 0];
+  var pts = [p1, p2, p3, p4, p5];
+  let curve1 = new NurbsCurve(verb.geom.NurbsCurve.byPoints( pts, 3 ));
 
+  var p1a = [-50,0,0], p2a = [50,-10,0], p3a = [150,50,0], p4a = [30,100,0], p5a = [50, 120, 0];
+  var ptsa = [p1a, p2a, p3a, p4a, p5a];
+  let curve2 = new NurbsCurve(verb.geom.NurbsCurve.byPoints( ptsa, 3 ));
 
+  __DEBUG__.AddCurve(curve1);
+  __DEBUG__.AddCurve(curve2);
 
   // let points = curve1.intersectCurve(curve2);
   // for (let p of points) {
