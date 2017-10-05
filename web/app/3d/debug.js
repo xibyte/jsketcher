@@ -3,6 +3,7 @@ import {nurbsToThreeGeom, triangulateToThree} from './scene/brep-scene-object'
 import {createSolidMaterial} from './scene/scene-object'
 import DPR from '../utils/dpr'
 import Vector from "../math/vector";
+import {curveTessellate} from "../brep/geom/impl/nurbs-ext";
 
 export const DEBUG = true;
 
@@ -128,7 +129,7 @@ function addGlobalDebugActions(app) {
       app.viewer.render();
     },
     AddCurve: (curve, color) => {
-      __DEBUG__.AddPolyLine(curve.verb.tessellate().map(v => new Vector().set3(v)), color);
+      __DEBUG__.AddPolyLine( curveTessellate(curve.data).map(u => new Vector().set3(curve.verb.point(u))), color);
     },
     AddNurbsCorners: (nurbs) => {
       __DEBUG__.AddPoint(nurbs.point(0, 0), 0xff0000);
