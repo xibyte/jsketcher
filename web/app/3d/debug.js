@@ -56,6 +56,15 @@ function addGlobalDebugActions(app) {
       }
     },
 
+    AddPointPolygons: (polygons, color) => {
+      for (let points of polygons) {
+        for (let i = 0; i < points.length; i ++) {
+          debugGroup.add(createLine(points[i], points[(i + 1) % points.length], color));
+        }
+      }
+      app.viewer.render();
+    },
+
     AddPlane: (plane) => {
       const geo = new THREE.PlaneBufferGeometry(2000, 2000, 8, 8);
       const coplanarPoint = plane.normal.multiply(plane.w);

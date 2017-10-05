@@ -158,12 +158,23 @@ export class NurbsSurface extends Surface {
   }
 
   createWorkingPoint(uv, pt3d) {
-    const wp = new Vector(uv[0], uv[1], 0)._multiply(1000);
+    const wp = new Vector(uv[0], uv[1], 0)._multiply(NurbsSurface.WORKING_POINT_SCALE_FACTOR);
     if (this.mirrored) {
       wp.x *= -1;
     }
     wp.__3D = pt3d;
     return wp; 
+  }
+
+  workingPointTo3D(wp) {
+    if (wp.__3D === undefined) {
+      const uv = wp.multiply(NurbsSurface.WORKING_POINT_UNSCALE_FACTOR);
+      if (this.mirrored) {
+        uv.x *= -1;
+      }
+      wp.__3D = this.point(uv.x, uv.y);
+    }
+    return wp.__3D;
   }
 
   static isMirrored(surface) {  
@@ -197,6 +208,9 @@ export class NurbsSurface extends Surface {
     return this.isoCurve(param, false);
   }
 }
+
+NurbsSurface.WORKING_POINT_SCALE_FACTOR = 1000;
+NurbsSurface.WORKING_POINT_UNSCALE_FACTOR = 1 / NurbsSurface.WORKING_POINT_SCALE_FACTOR;
 
 function dist(p1, p2) {
   return math.distance3(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
