@@ -185,28 +185,28 @@ App.prototype.test5 = function() {
     return bb.vertex(pt.x, pt.y, pt.z);
   }
 
-  const a = vx(0.1, 0.1);
-  const b = vx(0.9, 0.1);
+  const a = vx(0.13, 0.13);
+  const b = vx(0.9, 0.13);
   const c = vx(0.9, 0.9);
-  const d = vx(0.1, 0.9);
+  const d = vx(0.13, 0.9);
 
-  const e = vx(0.3, 0.3);
-  const f = vx(0.3, 0.7);
-  const g = vx(0.7, 0.7);
-  const h = vx(0.7, 0.3);
+  const e = vx(0.33, 0.33);
+  const f = vx(0.33, 0.73);
+  const g = vx(0.73, 0.73);
+  const h = vx(0.73, 0.33);
 
 
   let shell = bb.face(srf)
     .loop()
-    .edgeTrim(a, b, srf.verb.isocurve(0.1, true))
+    .edgeTrim(a, b, srf.verb.isocurve(0.13, true))
     .edgeTrim(b, c, srf.verb.isocurve(0.9, false))
     .edgeTrim(c, d, srf.verb.isocurve(0.9, true).reverse())
-    .edgeTrim(d, a, srf.verb.isocurve(0.1, false).reverse())
+    .edgeTrim(d, a, srf.verb.isocurve(0.13, false).reverse())
     .loop()
-    .edgeTrim(e, f, srf.verb.isocurve(0.3, false))
-    .edgeTrim(f, g, srf.verb.isocurve(0.7, true))
-    .edgeTrim(g, h, srf.verb.isocurve(0.7, false).reverse())
-    .edgeTrim(h, e, srf.verb.isocurve(0.3, true).reverse())
+    .edgeTrim(e, f, srf.verb.isocurve(0.33, false))
+    .edgeTrim(f, g, srf.verb.isocurve(0.73, true))
+    .edgeTrim(g, h, srf.verb.isocurve(0.73, false).reverse())
+    .edgeTrim(h, e, srf.verb.isocurve(0.33, true).reverse())
     .build();
 
   this.addShellOnScene(shell);
@@ -214,7 +214,8 @@ App.prototype.test5 = function() {
 
 App.prototype.scratchCode = function() {
   const app = this;
-  this.cylTest();
+  this.test5();
+  // this.cylTest();
 
 
 
