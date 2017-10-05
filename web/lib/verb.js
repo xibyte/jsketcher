@@ -3787,14 +3787,14 @@ verb_eval_Analyze.rationalCurveClosestParam = function(curve,p) {
 		var c1v = verb_core_Vec.norm(dif);
 		var c2n = verb_core_Vec.dot(e[1],dif);
 		var c2d = verb_core_Vec.norm(e[1]) * c1v;
-		var c2v = c2n / c2d;
+		var c2v = c2n / notZero(c2d);
 		var c1 = c1v < eps1;
 		var c2 = Math.abs(c2v) < eps2;
 		if(c1 && c2) return cu;
 		var ct = n(cu,e,dif);
 		if(ct < minu) if(closed) ct = maxu - (ct - minu); else ct = minu; else if(ct > maxu) if(closed) ct = minu + (ct - maxu); else ct = maxu;
 		var c3v = verb_core_Vec.norm(verb_core_Vec.mul(ct - cu,e[1]));
-		if(c3v < eps1) return cu;
+		if(c3v < eps1 || Number.isNaN(c3v)) return cu;
 		cu = ct;
 		i++;
 	}
@@ -4126,7 +4126,7 @@ verb_eval_Eval.rationalCurveDerivatives = function(curve,u,numDerivs) {
 			var i1 = _g3++;
 			v = verb_core_Vec.sub(v,verb_core_Vec.mul(verb_core_Binomial.get(k1,i1) * wders[i1],CK[k1 - i1]));
 		}
-		CK.push(verb_core_Vec.mul(1 / wders[0],v));
+		CK.push(verb_core_Vec.mul(1 / notZero(wders[0]),v));
 	}
 	return CK;
 };
@@ -4357,7 +4357,7 @@ verb_eval_Eval.derivativeBasisFunctionsGivenNI = function(knotSpan_index,u,p,n,k
 		while(_g2 < j) {
 			var r = _g2++;
 			ndu[j][r] = right[r + 1] + left[j - r];
-			temp = ndu[r][j - 1] / ndu[j][r];
+			temp = ndu[r][j - 1] / notZero(ndu[j][r]);
 			ndu[r][j] = saved + right[r + 1] * temp;
 			saved = left[j - r] * temp;
 		}
@@ -4393,7 +4393,7 @@ verb_eval_Eval.derivativeBasisFunctionsGivenNI = function(knotSpan_index,u,p,n,k
 			rk = r1 - k;
 			pk = p - k;
 			if(r1 >= k) {
-				a[s2][0] = a[s1][0] / ndu[pk + 1][rk];
+				a[s2][0] = a[s1][0] / notZero(ndu[pk + 1][rk]);
 				d = a[s2][0] * ndu[rk][pk];
 			}
 			if(rk >= -1) j1 = 1; else j1 = -rk;
@@ -4402,11 +4402,11 @@ verb_eval_Eval.derivativeBasisFunctionsGivenNI = function(knotSpan_index,u,p,n,k
 			var _g41 = j2 + 1;
 			while(_g5 < _g41) {
 				var j4 = _g5++;
-				a[s2][j4] = (a[s1][j4] - a[s1][j4 - 1]) / ndu[pk + 1][rk + j4];
+				a[s2][j4] = (a[s1][j4] - a[s1][j4 - 1]) / notZero(ndu[pk + 1][rk + j4]);
 				d += a[s2][j4] * ndu[rk + j4][pk];
 			}
 			if(r1 <= pk) {
-				a[s2][k] = -a[s1][k - 1] / ndu[pk + 1][r1];
+				a[s2][k] = -a[s1][k - 1] / notZero(ndu[pk + 1][r1]);
 				d += a[s2][k] * ndu[r1][pk];
 			}
 			ders[k][r1] = d;
@@ -4430,6 +4430,9 @@ verb_eval_Eval.derivativeBasisFunctionsGivenNI = function(knotSpan_index,u,p,n,k
 	}
 	return ders;
 };
+function notZero(val) {
+	return val === 0 ? 0.00001 : val;
+}
 verb_eval_Eval.basisFunctions = function(u,degree,knots) {
 	var knotSpan_index = verb_eval_Eval.knotSpan(degree,u,knots);
 	return verb_eval_Eval.basisFunctionsGivenKnotSpanIndex(knotSpan_index,u,degree,knots);
@@ -4457,8 +4460,18 @@ verb_eval_Eval.basisFunctionsGivenKnotSpanIndex = function(knotSpan_index,u,degr
 		}
 		basisFunctions[j] = saved;
 	}
+  fixNaNs(basisFunctions, 1);
 	return basisFunctions;
 };
+
+function fixNaNs(arr, v) {
+  for (var i = 0; i < arr.length; i++) {
+    if (!Number.isFinite(arr[i])) {
+      arr[i] = v;
+		}
+  }
+}
+
 verb_eval_Eval.knotSpan = function(degree,u,knots) {
 	return verb_eval_Eval.knotSpanGivenN(knots.length - degree - 2,degree,u,knots);
 };
