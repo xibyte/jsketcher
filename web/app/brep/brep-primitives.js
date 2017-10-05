@@ -1,7 +1,7 @@
 import {Point} from './geom/point'
 import {Plane} from './geom/impl/plane'
 import {createPrism, enclose} from './brep-enclose'
-import {Matrix3} from '../math/l3space'
+import {AXIS, Matrix3} from '../math/l3space'
 import {Circle} from '../3d/craft/sketch/sketch-model'
 
 export function box(w, h, d, tr) {
@@ -21,8 +21,9 @@ export function box(w, h, d, tr) {
 
 
 export function cylinder(r, h, tr) {
-  let circle1 = new Circle(-1, new Point(0,0,h), r).toNurbs(Plane.XY);
-  let circle2 = circle1.translate(new Point(0,0,-h));
+  tr = tr || IDENTITY;
+  let circle1 = new Circle(-1, new Point(0,0,0), r).toNurbs( new Plane(tr.apply(AXIS.Z), h));
+  let circle2 = circle1.translate(tr.apply(new Point(0,0,-h)));
   return enclose([circle1], [circle2]);
 }
 
