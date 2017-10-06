@@ -7,10 +7,9 @@ import {Vertex} from '../topo/vertex';
 import {evolveFace} from './evolve-face'
 import Vector from '../../math/vector';
 import * as math from '../../math/math';
+import {TOLERANCE} from '../geom/tolerance';
 
-export const TOLERANCE = 1e-3;
-export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
-export const TOLERANCE_HALF = TOLERANCE * 0.5;
+
 
 const DEBUG = {
   OPERANDS_MODE: false,
