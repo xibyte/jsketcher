@@ -12,14 +12,14 @@ export default function A(face) {
     let pipLoop = [];
     loops.push(pipLoop);
     for (let e of loop.halfEdges) {
-      let curvePoints = e.edge.curve.verb.tessellate(100000);
+      let curvePoints = e.edge.curve.tessellate();
       if (e.inverted) {
         curvePoints.reverse();
       }
       curvePoints.pop();
       for (let point of curvePoints) {
-        let p = face.surface.workingPoint(Vector.fromData(point));
-        pipLoop.push(p);
+        let wp = face.surface.workingPoint(point);
+        pipLoop.push(wp);
       }
     }
   }
