@@ -4,7 +4,7 @@ import {Point} from '../point'
 import {Surface} from "../surface";
 import Vector from "../../../math/vector";
 import {Curve} from "../curve";
-import {verb_curve_isec, verb_surface_isec} from "./nurbs-ext";
+import * as impl from "./nurbs-impl";
 
 export class NurbsCurve extends Curve {
 
@@ -80,6 +80,10 @@ export class NurbsCurve extends Curve {
     return pt(this.verb.point(u));
   }
 
+  tessellate(tessTol, scale) {
+    return impl.curveTessellate(this.data, tessTol, scale).map(p => pt(p));
+  }
+
   intersectCurve(other, tol) {
     let isecs = [];
     tol = tol || 1e-3;
@@ -114,7 +118,7 @@ export class NurbsCurve extends Curve {
     isecOn(other, this, 0);
     isecOn(other, this, 1);
 
-    verb_curve_isec(this, other, tol).forEach( i => add({
+    impl.verb_curve_isec(this.data, other.data, tol).forEach( i => add({
       u0: i.u0,
       u1: i.u1,
       p0: i.point0,
@@ -213,7 +217,7 @@ export class NurbsSurface extends Surface {
   }
 
   intersectSurfaceForSameClass(other, tol) {
-    const curves = verb_surface_isec(this.verb, other.verb, tol);
+    const curves = impl.verb_surface_isec(this.verb, other.verb, tol);
     let inverted = this.inverted !== other.inverted;
     return curves.map(curve => new NurbsCurve(inverted ?  curve.reverse() : curve));
   }
