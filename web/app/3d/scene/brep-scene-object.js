@@ -104,7 +104,11 @@ export function triangulateToThree(shell, geom) {
     const polygons = brepTess(brepFace);
     const stitchedSurface = brepFace.data[FACE_CHUNK];
     const nurbs = stitchedSurface ? stitchedSurface.origin : undefined;
-    let normalOrNormals = threeV(brepFace.surface.normalInMiddle());
+    const isPlane = brepFace.surface.data.degree === 1;
+    let normalOrNormals;
+    if (isPlane) {
+      normalOrNormals = threeV(brepFace.surface.normalInMiddle());
+    }
     for (let p = 0; p < polygons.length; ++p) {
       const off = geom.vertices.length;
       const poly = polygons[p];
@@ -119,16 +123,8 @@ export function triangulateToThree(shell, geom) {
         const b = i - 1 + off;
         const c = i + off;
 
-        if (nurbs && SMOOTH_RENDERING) {
-          function normal(v) {
-            const uv = nurbs.closestParam(v.data());
-            const vec = new THREE.Vector3();
-            vec.set.apply(vec, nurbs.normal(uv[0], uv[1]));
-            vec.normalize();
-            return vec;
-          }
-
-          normalOrNormals = [firstVertex, poly[i - 1], poly[i]].map(v => normal(v));
+        if (!isPlane) {
+          normalOrNormals = [firstVertex, poly[i - 1], poly[i]].map(v => brepFace.surface.normal(v));
         }
         const face = new THREE.Face3(a, b, c, normalOrNormals);
         addFace(face);
