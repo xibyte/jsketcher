@@ -1,7 +1,4 @@
-import PIP from "./pip";
-import earcut from 'earcut'
 import Vector from "../../math/vector";
-import {NurbsSurface} from "../../brep/geom/impl/nurbs";
 import ClipperLib from 'clipper-lib';
 import libtess from 'libtess'
 
@@ -41,8 +38,8 @@ function convertPoints(paths, converter) {
 }
 
 function clip(triangles, loops) {
-  __DEBUG__.AddPointPolygons(triangles, 0xff00ff);
-  __DEBUG__.AddPointPolygons(loops, 0xffffff);
+  // __DEBUG__.AddPointPolygons(triangles, 0xff00ff);
+  // __DEBUG__.AddPointPolygons(loops, 0xffffff);
 
   const scale = 1e3 ;// multiplying by NurbsSurface.WORKING_POINT_SCALE_FACTOR gives 1e6
 
