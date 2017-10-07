@@ -110,8 +110,8 @@ export function createBoundingNurbs(points, plane) {
 
   const nurbs = new NurbsSurface(planeNurbs);
 
-  __DEBUG__.AddNurbs(nurbs);
-  __DEBUG__.AddSurfaceNormal(nurbs);
+  // __DEBUG__.AddNurbs(nurbs);
+  // __DEBUG__.AddSurfaceNormal(nurbs);
 
   return nurbs;
 }
