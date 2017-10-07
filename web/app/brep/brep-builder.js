@@ -102,10 +102,16 @@ export function createBoundingNurbs(points, plane) {
 
   let to3D = plane.get3DTransformation();
   let polygon = bBox.toPolygon();
-  polygon = polygon.map(p => to3D._apply(p));
+  polygon = polygon.map(p => to3D._apply(p).data());
 
-  const nurbs = new NurbsSurface(new verb.geom.ExtrudedSurface(new verb.geom.Line(
-    polygon[0].data(), polygon[1].data()), polygon[2].minus(polygon[1]).data()));
+  let planeNurbs = verb.geom.NurbsSurface.byKnotsControlPointsWeights( 1, 1, [0,0,1,1], [0,0,1,1],
+    [ [ polygon[3], polygon[2]] ,
+      [ polygon[0], polygon[1] ] ] );
+
+  const nurbs = new NurbsSurface(planeNurbs);
+
+  __DEBUG__.AddNurbs(nurbs);
+  __DEBUG__.AddSurfaceNormal(nurbs);
 
   return nurbs;
 }
