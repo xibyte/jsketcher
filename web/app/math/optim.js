@@ -2,7 +2,7 @@ import numeric from 'numeric';
 import {_vec, _matrix} from './math'
 
 //Added strong wolfe condition to numeric's uncmin
-var bfgs_ = function(f,x0,tol,gradient,maxit,callback,options) {
+export function fmin_bfgs(f,x0,tol,gradient,maxit,callback,options) {
   var grad = numeric.gradient;
   if(typeof options === "undefined") { options = {}; }
   if(typeof tol === "undefined") { tol = 1e-8; }
