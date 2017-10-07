@@ -118,7 +118,7 @@ export class NurbsCurve extends Curve {
     isecOn(other, this, 0);
     isecOn(other, this, 1);
 
-    impl.verb_curve_isec(this.data, other.data, tol).forEach( i => add({
+    impl.curveIntersect(this.data, other.data, tol).forEach(i => add({
       u0: i.u0,
       u1: i.u1,
       p0: i.point0,
@@ -149,6 +149,7 @@ export class NurbsSurface extends Surface {
 
   constructor(verbSurface, inverted) {
     super();
+    this.data = verbSurface.asNurbs();
     this.verb = verbSurface;
     this.inverted = inverted === true;
     this.mirrored = NurbsSurface.isMirrored(this);
@@ -217,7 +218,7 @@ export class NurbsSurface extends Surface {
   }
 
   intersectSurfaceForSameClass(other, tol) {
-    const curves = impl.verb_surface_isec(this.verb, other.verb, tol);
+    const curves = impl.surfaceIntersect(this.data, other.data, tol);
     let inverted = this.inverted !== other.inverted;
     return curves.map(curve => new NurbsCurve(inverted ?  curve.reverse() : curve));
   }
