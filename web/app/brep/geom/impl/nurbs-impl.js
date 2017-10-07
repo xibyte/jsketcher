@@ -1,6 +1,7 @@
 import * as vec from "../../../math/vec";
 import * as math from  '../../../math/math'
 import {TOLERANCE, TOLERANCE_SQ} from '../tolerance';
+import {fmin_bfgs} from "../../../math/optim";
 
 export function curveStep(curve, u, tessTol, scale) {
   tessTol = tessTol || 1;
@@ -149,10 +150,15 @@ export function curveIntersect(curve1, curve2) {
       //TODO: minimize
       let isec = intersectSegs(a1, b1, a2, b2, TOLERANCE);
       if (isec !== null) {
-        let {u1, u2, point1, point2, l1, l2} = isec;
+        let {point1, point2, l1, l2} = isec;
+
+        let u1 = curveClosestParam(curve1, point1);
+        let u2 = curveClosestParam(curve2, point2);
+        [u1, u2] = curveExactIntersection(curve1, curve2, u1, u2);
+
         result.push({
-          u0: curveClosestParam(curve1, point1),
-          u1: curveClosestParam(curve2, point2),
+          u0: u1,
+          u1: u2,
           point0: point1,
           point1: point2
         });
@@ -166,6 +172,23 @@ export function curveIntersect(curve1, curve2) {
     }
   }
   return result;
+}
+
+function curveExactIntersection(curve1, curve2, u1, u2) {
+
+  function f([u1, u2]) {
+    return vec.lengthSq( vec.sub(curvePoint(curve1, u1), curvePoint(curve2, u2)));
+  }
+  function grad([u1, u2]) {
+    let d1 = verb.eval.Eval.rationalCurveDerivatives(curve1, u1, 1);
+    let d2 = verb.eval.Eval.rationalCurveDerivatives(curve2, u2, 1);
+    let r = vec.sub(d1[0], d2[0]);
+    let drdu = d1[1];
+    let drdt = vec.mul(-1, d2[1]);
+    return [2 * vec.dot(drdu, r), 2 * vec.dot(drdt,r)];
+  }
+  let params = [u1, u2];
+  return fmin_bfgs(f, params, TOLERANCE_SQ, grad).solution;
 }
 
 function lineLineIntersection(p1, p2, v1, v2) {
