@@ -113,9 +113,7 @@ export function curveClosestParam(curve, point) {
   return verb.eval.Analyze.rationalCurveClosestParam(curve, point);
 }
 
-export function verb_surface_isec(nurbs1, nurbs2) {
-  const surface0 = nurbs1.asNurbs();
-  const surface1 = nurbs2.asNurbs();
+export function surfaceIntersect(surface0, surface1) {
   const tess1 = verb.eval.Tess.rationalSurfaceAdaptive(surface0);
   const tess2 = verb.eval.Tess.rationalSurfaceAdaptive(surface1);
   const resApprox = verb.eval.Intersect.meshes(tess1,tess2);
@@ -127,11 +125,15 @@ export function verb_surface_isec(nurbs1, nurbs2) {
   return exactPls.map(function(x) {
     return verb.eval.Make.rationalInterpCurve(x.map(function(y) {
       return y.point;
-    }), x.length - 1);
+    }), surfaceMaxDegree(surface0) === 1 && surfaceMaxDegree(surface1) === 1 ? 1 : x.length - 1);
   }).map(cd => new verb.geom.NurbsCurve(cd));
 }
 
-export function verb_curve_isec(curve1, curve2) {
+export function surfaceMaxDegree(surface) {
+  return Math.max(surface.degreeU, surface.degreeV);
+}
+
+export function curveIntersect(curve1, curve2) {
 
   let result = [];
   let segs1 = curveTessellate(curve1);
