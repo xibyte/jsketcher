@@ -53,10 +53,12 @@ export function areEqual(v1, v2, tolerance) {
 }
 
 export function areVectorsEqual(v1, v2, tolerance) {
+  //TODO: use tolerance_SQ and length_SQ
   return areEqual(distanceAB3(v1, v2), 0, tolerance);
 }
 
 export function areVectorsEqual3(v1, v2, tolerance) {
+  //TODO: use tolerance_SQ and length_SQ
   return areEqual(distance3(v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]), 0, tolerance);
 }
 
