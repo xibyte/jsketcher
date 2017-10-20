@@ -46,7 +46,7 @@ export class BREPSceneSolid extends SceneSolid {
         const line = new THREE.Line(undefined, WIREFRAME_MATERIAL);
         const contour = edge.curve.tessellate();
         for (let p of contour) {
-          line.geometry.vertices.push(new THREE.Vector3().fromArray(p));
+          line.geometry.vertices.push(p.three());
         }
         this.wireframeGroup.add(line);
         line.__TCAD_EDGE = edge;
