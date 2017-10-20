@@ -7,8 +7,6 @@ import {evolveFace} from './evolve-face'
 import * as math from '../../math/math';
 import {eqTol, TOLERANCE, ueq, veq} from '../geom/tolerance';
 
-
-
 const DEBUG = {
   OPERANDS_MODE: false,
   LOOP_DETECTION: false,
