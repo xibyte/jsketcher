@@ -35,14 +35,13 @@ export class Loop extends TopoObject {
   tess() {
     let out = [];
     for (let e of this.halfEdges) {
-      let curvePoints = e.edge.curve.verb.tessellate(100000);
+      let curvePoints = e.edge.curve.tessellate();
       if (e.inverted) {
         curvePoints.reverse();
       }
       curvePoints.pop();
       for (let point of curvePoints) {
-        let p = Point.fromData(point);
-        out.push(p);
+        out.push(point);
       }
     }
     return out;

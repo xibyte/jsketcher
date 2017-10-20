@@ -13,7 +13,7 @@ import {TOLERANCE} from '../geom/tolerance';
 
 const DEBUG = {
   OPERANDS_MODE: false,
-  LOOP_DETECTION: true,
+  LOOP_DETECTION: false,
   FACE_FACE_INTERSECTION: false,
   NOOP: () => {}
 };
@@ -372,6 +372,7 @@ function intersectFaces(shell1, shell2, operationType) {
       let curves = face1.surface.intersectSurface(face2.surface, TOLERANCE);
 
       for (let curve of curves) {
+        // __DEBUG__.AddCurve(curve);
         curve = fixCurveDirection(curve, face1.surface, face2.surface, operationType);
         const nodes = [];
         collectNodesOfIntersectionOfFace(curve, face1, nodes);

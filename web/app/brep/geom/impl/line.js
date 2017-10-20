@@ -1,9 +1,7 @@
-import {Curve} from '../curve'
 
-export class Line extends Curve {
+export class Line {
 
   constructor(p0, v) {
-    super();
     throw 'only nurbs for now'
     this.p0 = p0;
     this.v = v;
@@ -27,7 +25,7 @@ export class Line extends Curve {
     return super.intersectCurve(curve, surface);
   }
 
-  parametricEquation(t) {
+  point(t) {
     return this.p0.plus(this.v.multiply(t));
   }
   
@@ -39,7 +37,7 @@ export class Line extends Curve {
     let point = this._pointsCache.get(surface);
     if (!point) {
       const t = this.intersectSurface(surface);
-      point = this.parametricEquation(t);
+      point = this.point(t);
       this._pointsCache.set(surface, point);
     }
     return point;

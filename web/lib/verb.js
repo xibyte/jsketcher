@@ -4063,6 +4063,12 @@ verb_eval_Eval.rationalSurfaceNormal = function(surface,u,v) {
 	return verb_core_Vec.cross(derivs[1][0],derivs[0][1]);
 };
 verb_eval_Eval.rationalSurfaceDerivatives = function(surface,u,v,numDerivs) {
+  if (surface.knotsU[surface.knotsU.length - 1] === u) {
+    u -= 1e-8;
+  }
+  if (surface.knotsV[surface.knotsV.length - 1] === v) {
+    v -= 1e-8;
+  }
 	if(numDerivs == null) numDerivs = 1;
 	var ders = verb_eval_Eval.surfaceDerivatives(surface,u,v,numDerivs);
 	var Aders = verb_eval_Eval.rational2d(ders);

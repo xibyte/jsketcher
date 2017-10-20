@@ -1,6 +1,6 @@
 import * as vec from "../../../math/vec";
 import * as math from  '../../../math/math'
-import {TOLERANCE, TOLERANCE_SQ} from '../tolerance';
+import {eqEps, TOLERANCE, TOLERANCE_SQ} from '../tolerance';
 import {fmin_bfgs} from "../../../math/optim";
 
 export function curveStep(curve, u, tessTol, scale) {
@@ -24,7 +24,7 @@ export function curveDomain(curve) {
   return [curve.knots[0], curve.knots[curve.knots.length - 1]];
 }
 
-export function curveParts(curve) {
+export function distinctKnots(curve) {
   let out = [curve.knots[0]];
   for (let i = 1; i < curve.knots.length; ++i) {
     if (out[out.length - 1] !== curve.knots[i]) {
@@ -34,19 +34,22 @@ export function curveParts(curve) {
   return out;
 }
 
-export function curveTessellateToParams(curve, tessTol, scale) {
-  let domain = curveDomain(curve);
+export function curveTessellate(curve, min, max, tessTol, scale) {
 
   if (curve.degree === 1) {
-    return domain;
+    return distinctKnots(curve);
   }
+  let domain = curveDomain(curve);
 
-  let [min, max] = domain;
+  let [dmin, dmax] = domain;
 
   let out = [];
   let nSplits = curve.knots.length - 1;
 
-  let splitStep = (max - min) / nSplits
+  let splitStep = (dmax - dmin) / nSplits;
+  nSplits = Math.round((max - min) / splitStep);
+  splitStep = (max - min) / nSplits;
+  
   let splits = [min];
   
   for (let i = 1; i < nSplits; ++i) {
@@ -70,40 +73,6 @@ export function curveTessellateToParams(curve, tessTol, scale) {
 
   out.push(max);
   return out;
-  // let out = [];
-  // function tessRange(begin, end) {
-  //   let u = begin;
-  //   while (u < end) {
-  //     out.push(u);
-  //     u += curveStep(curve, u, tessTol, scale );
-  //   }
-  // }
-  
-  // let parts = curveParts(curve);
-  // for (let i = 1; i < parts.length; ++i) {
-  //   let begin = parts[i - 1];
-  //   let end = parts[i];
-  //   tessRange(begin, end);
-  // }
-  // out.push(parts[parts.length - 1]);
-  // return out;
-}
-
-export function curveTessellate(curve, tessTol, scale) {
-  let params = curveTessellateToParams(curve, tessTol, scale);
-  let out = [];
-  if (params.length === 0) {
-    return out;
-  }
-  out.push(curvePoint(curve, params[0]));
-
-  for (let i = 1; i < params.length; ++i) {
-    let p = curvePoint(curve, params[i]);
-    if (!math.areVectorsEqual3(out[out.length - 1], p, TOLERANCE)) {
-      out.push(p);
-    }
-  }
-  return out;
 }
 
 export function curvePoint(curve, u) {
@@ -115,19 +84,38 @@ export function curveClosestParam(curve, point) {
 }
 
 export function surfaceIntersect(surface0, surface1) {
-  const tess1 = verb.eval.Tess.rationalSurfaceAdaptive(surface0);
-  const tess2 = verb.eval.Tess.rationalSurfaceAdaptive(surface1);
-  const resApprox = verb.eval.Intersect.meshes(tess1,tess2);
+  const tess0 = verb.eval.Tess.rationalSurfaceAdaptive(surface0);
+  const tess1 = verb.eval.Tess.rationalSurfaceAdaptive(surface1);
+  
+  function fixTessNaNPoitns(s, tess) {
+    for (let i = 0; i < tess.points.length; i++) {
+      let pt = tess.points[i];
+      if (Number.isNaN(pt[0]) || Number.isNaN(pt[1]) || Number.isNaN(pt[2])) {
+        let [u, v] = tess.uvs[i];
+        tess.points[i] = verb.eval.Eval.rationalSurfacePoint(s, u, v);
+      }
+    }
+  }
+
+  fixTessNaNPoitns(surface0, tess0);
+  fixTessNaNPoitns(surface1, tess1);
+  
+  const resApprox = verb.eval.Intersect.meshes(tess0,tess1);
   const exactPls = resApprox.map(function(pl) {
     return pl.map(function(inter) {
       return verb.eval.Intersect.surfacesAtPointWithEstimate(surface0,surface1,inter.uv0,inter.uv1,TOLERANCE);
     });
   });
+
+
+  //temporary workaround
+  return exactPls.map(pl => verb.eval.Make.polyline(pl.map(ip => ip.point)));
+  
   return exactPls.map(function(x) {
     return verb.eval.Make.rationalInterpCurve(x.map(function(y) {
       return y.point;
     }), surfaceMaxDegree(surface0) === 1 && surfaceMaxDegree(surface1) === 1 ? 1 : x.length - 1);
-  }).map(cd => new verb.geom.NurbsCurve(cd));
+  });
 }
 
 export function surfaceMaxDegree(surface) {
@@ -159,8 +147,8 @@ export function curveIntersect(curve1, curve2) {
         result.push({
           u0: u1,
           u1: u2,
-          point0: point1,
-          point1: point2
+          p0: point1,
+          p1: point2
         });
         if (math.areEqual(u1, l1, TOLERANCE )) {
           i ++;
@@ -223,6 +211,30 @@ function intersectSegs(a1, b1, a2, b2) {
   return null;
 }
 
-function dist(p1, p2) {
-  return math.distance3(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
+export function normalizeCurveParametrization(curve) {
+  let [min, max] = curveDomain(curve);
+  let d = max - min;
+  for (let i = 0; i < curve.knots.length; i++) {
+    let val = curve.knots[i];
+    if (eqEps(val, min)) {
+      curve.knots[i] = 0;
+    } else if (eqEps(val, max)) {
+      curve.knots[i] = 1;
+    } else {
+      curve.knots[i] = (val - min) / d;
+    }
+  }
+  return curve;
+}
+
+export function normalizeCurveParametrizationIfNeeded(curve) {
+  let [min, max] = curveDomain(curve);
+  if (min !== 0 || max !== 1) {
+    normalizeCurveParametrization(curve)
+  }
+}
+
+export function curveInvert(curve) {
+  let reversed = verb.eval.Modify.curveReverse(curve);
+  return reversed;
 }

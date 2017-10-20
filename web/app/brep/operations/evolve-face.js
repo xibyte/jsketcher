@@ -17,7 +17,7 @@ export function evolveFace(originFace, loops) {
 
   function createFaces(nestedLoop, level) {
     let surface;
-    __DEBUG__.AddPointPolygon(nestedLoop.workingPolygon)
+    // __DEBUG__.AddPointPolygon(nestedLoop.workingPolygon)
     if (nestedLoop.inverted) {
       surface = invertSurface(surface);   
     } else {

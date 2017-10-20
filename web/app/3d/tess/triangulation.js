@@ -118,7 +118,7 @@ export function TriangulateFace(face) {
         tessy.gluTessVertex(arr(e.vertexA.point), e.vertexA);
       } else if (e.edge.curve.verb) {
         tessy.gluTessVertex(arr(e.vertexA.point), e.vertexA);
-        let points = e.edge.curve.verb.tessellate();
+        let points = e.edge.curve.tessellate();
         if (e.inverted) {
           points.reverse();
         }

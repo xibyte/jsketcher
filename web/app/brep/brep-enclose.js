@@ -8,7 +8,6 @@ import {NurbsSurface, NurbsCurve} from './geom/impl/nurbs'
 import {Plane} from './geom/impl/plane'
 import {Point} from './geom/point'
 import {BasisForPlane, Matrix3} from '../math/l3space'
-import {CompositeCurve} from './geom/curve'
 import * as cad_utils from '../3d/cad-utils'
 import * as math from '../math/math'
 import mergeNullFace from './null-face-merge'
@@ -124,7 +123,7 @@ export function createWall(curve1, curve2) {
   if (bothClassOf(curve1, curve2, 'Line')) {
     throw 'unsupported'
   } else if (bothClassOf(curve1, curve2, 'NurbsCurve')) {
-    return new NurbsSurface(verb.geom.NurbsSurface.byLoftingCurves([curve2.verb, curve1.verb], 1));
+    return NurbsSurface.loft(curve2, curve1, 1);
   } else {
     throw 'unsupported';
   }

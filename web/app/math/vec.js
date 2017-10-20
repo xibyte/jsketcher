@@ -1,8 +1,19 @@
-export function __mul(v, scalar, out) {
-  out[0] = scalar * v[0];
-  out[1] = scalar * v[1];
-  out[2] = scalar * v[2];
+function scalarOperand(v, out, func) {
+  for (let i = 0; i < v.length; i++) {
+    out[i] = func(v[i]);
+  }
   return out;
+}
+
+function vectorOperand(v1, v2, out, func) {
+  for (let i = 0; i < v1.length; i++) {
+    out[i] = func(v1[i], v2[i]);
+  }
+  return out;
+}
+
+export function __mul(v, scalar, out) {
+  return scalarOperand(v, out, x => x * scalar); 
 }
 
 export function _mul(v, scalar) {
@@ -14,10 +25,7 @@ export function mul(v, scalar) {
 }
 
 export function __div(v, scalar, out) {
-  out[0] = v[0] / scalar;
-  out[1] = v[1] / scalar;
-  out[2] = v[2] / scalar;
-  return out;
+  return scalarOperand(v, out, x => x / scalar);
 }
 
 export function _div(v, scalar) {
@@ -30,10 +38,7 @@ export function div(v, scalar) {
 
 
 export function __add(v1, v2, out) {
-  out[0] = v1[0] + v2[0];
-  out[1] = v1[1] + v2[1];
-  out[2] = v1[2] + v2[2];
-  return out;
+  return vectorOperand(v1, v2, out, (x1, x2) => x1 + x2);
 }
 
 export function _add(v1, v2) {
@@ -45,10 +50,7 @@ export function add(v1, v2) {
 }
 
 export function __sub(v1, v2, out) {
-  out[0] = v1[0] - v2[0];
-  out[1] = v1[1] - v2[1];
-  out[2] = v1[2] - v2[2];
-  return out;
+  return vectorOperand(v1, v2, out, (x1, x2) => x1 - x2);
 }
 
 export function _sub(v1, v2) {
@@ -59,12 +61,8 @@ export function sub(v1, v2) {
   return __sub(v1, v2, []);
 }
 
-
 export function __negate(v, out) {
-  out[0] = - v[0];
-  out[1] = - v[1];
-  out[2] = - v[2];
-  return out;
+  return scalarOperand(v, out, x => -x);
 }
 
 export function _negate(v) {
@@ -77,7 +75,11 @@ export function negate(v) {
 
 
 export function dot(v1, v2) {
-  return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+  let sum = 0;
+  for (let i = 0; i < v1.length; i++) {
+    sum += v1[i] * v2[i];
+  }
+  return sum;
 }
 
 export function __cross(v1, v2, out) {

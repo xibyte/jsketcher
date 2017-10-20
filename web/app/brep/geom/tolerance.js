@@ -1,3 +1,20 @@
-export const TOLERANCE = 1e-6;
+import {areEqual} from "../../math/math";
+
+export const TOLERANCE = 1e-5;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
-export const TOLERANCE_HALF = TOLERANCE * 0.5;
+
+export const EPSILON = 1e-12;
+export const EPSILON_SQ = EPSILON * EPSILON;
+
+
+//tolerance used for parametric domain which is between 0..1
+export const TOLERANCE_01 = TOLERANCE * 1e-2;
+export const TOLERANCE_01_SQ = TOLERANCE * TOLERANCE;
+
+export function eqTol(a, b) {
+  return areEqual(a, b, TOLERANCE);
+}
+
+export function eqEps(a, b) {
+  return areEqual(a, b, EPSILON);
+}

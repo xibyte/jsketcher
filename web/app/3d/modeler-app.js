@@ -24,7 +24,10 @@ import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/brep-scene-object'
 import TPI from './tpi'
-import {NurbsCurve, NurbsSurface} from "../brep/geom/impl/nurbs";
+import {NurbsCurve, NurbsCurveImpl, NurbsSurface} from "../brep/geom/impl/nurbs";
+import {Circle} from "./craft/sketch/sketch-model";
+import {Plane} from "../brep/geom/impl/plane";
+import {enclose} from "../brep/brep-enclose";
 // import {createSphere, rayMarchOntoCanvas, sdfIntersection, sdfSolid, sdfSubtract, sdfTransform, sdfUnion} from "../hds/sdf";
 
 function App() {
@@ -113,7 +116,16 @@ App.prototype.test1 = function() {
 App.prototype.cylTest = function() {
   
     const cylinder1 = BREPPrimitives.cylinder(200, 500);
-    const cylinder2 = BREPPrimitives.cylinder(200, 500, Matrix3.rotateMatrix(90, AXIS.Y, ORIGIN));
+
+
+  // const cylinder2 = (function () {
+  //     let circle1 = new Circle(-1, new Vector(0,0,0), 200).toNurbs( new Plane(AXIS.X, 500));
+  //     let circle2 = circle1.translate(new Vector(-1000,0,0));
+  //     return enclose([circle1], [circle2])
+  //   })();
+    
+
+  const cylinder2 = BREPPrimitives.cylinder(200, 500, Matrix3.rotateMatrix(90, AXIS.Y, ORIGIN));
 
   let result = this.TPI.brep.bool.subtract(cylinder1, cylinder2);
 
@@ -201,18 +213,21 @@ App.prototype.test5 = function() {
   const g = vx(0.73, 0.73);
   const h = vx(0.73, 0.33);
 
+  function fromVerb(verb) {
+    return new NurbsCurve(new NurbsCurveImpl(verb));
+  }
 
   let shell = bb.face(srf)
     .loop()
-    .edgeTrim(a, b, srf.verb.isocurve(0.13, true))
-    .edgeTrim(b, c, srf.verb.isocurve(0.9, false))
-    .edgeTrim(c, d, srf.verb.isocurve(0.9, true).reverse())
-    .edgeTrim(d, a, srf.verb.isocurve(0.13, false).reverse())
+    .edgeTrim(a, b, fromVerb(srf.verb.isocurve(0.13, true)))
+    .edgeTrim(b, c, fromVerb(srf.verb.isocurve(0.9, false)))
+    .edgeTrim(c, d, fromVerb(srf.verb.isocurve(0.9, true).reverse()))
+    .edgeTrim(d, a, fromVerb(srf.verb.isocurve(0.13, false).reverse()))
     .loop()
-    .edgeTrim(e, f, srf.verb.isocurve(0.33, false))
-    .edgeTrim(f, g, srf.verb.isocurve(0.73, true))
-    .edgeTrim(g, h, srf.verb.isocurve(0.73, false).reverse())
-    .edgeTrim(h, e, srf.verb.isocurve(0.33, true).reverse())
+    .edgeTrim(e, f, fromVerb(srf.verb.isocurve(0.33, false)))
+    .edgeTrim(f, g, fromVerb(srf.verb.isocurve(0.73, true)))
+    .edgeTrim(g, h, fromVerb(srf.verb.isocurve(0.73, false).reverse()))
+    .edgeTrim(h, e, fromVerb(srf.verb.isocurve(0.33, true).reverse()))
     .build();
 
   this.addShellOnScene(shell);
@@ -220,8 +235,8 @@ App.prototype.test5 = function() {
 
 App.prototype.scratchCode = function() {
   // const app = this;
-  this.test3();
-  // this.cylTest();
+  // this.test5();
+  this.cylTest();
 
 return
 
@@ -230,21 +245,22 @@ return
 
   var p1 = [-50,0,0], p2 = [100,0,0], p3 = [100,100,0], p4 = [0,100,0], p5 = [50, 50, 0];
   var pts = [p1, p2, p3, p4, p5];
-  let curve1 = new NurbsCurve(verb.geom.NurbsCurve.byPoints( pts, 3 ));
+  let curve1 = new NurbsCurve(new NurbsCurveImpl(verb.geom.NurbsCurve.byPoints( pts, 3 )));
 
   var p1a = [-50,0,0], p2a = [50,-10,0], p3a = [150,50,0], p4a = [30,100,0], p5a = [50, 120, 0];
   var ptsa = [p1a, p2a, p3a, p4a, p5a];
-  let curve2 = new NurbsCurve(verb.geom.NurbsCurve.byPoints( ptsa, 3 ));
+  let curve2 = new NurbsCurve(new NurbsCurveImpl(verb.geom.NurbsCurve.byPoints( ptsa, 3 )));
 
-  // __DEBUG__.AddCurve(curve1);
+  curve1 = curve1.splitByParam(0.6)[0];
+  __DEBUG__.AddCurve(curve1);
   __DEBUG__.AddCurve(curve2);
 
-  // let points = curve1.intersectCurve(curve2);
-  // for (let p of points) {
-  //   __DEBUG__.AddPoint(p.p0);
-  // }
+  let points = curve1.intersectCurve(curve2);
+  for (let p of points) {
+    __DEBUG__.AddPoint(p.p0);
+  }
 
-  app.viewer.render();
+  // app.viewer.render();
 };
 
 
