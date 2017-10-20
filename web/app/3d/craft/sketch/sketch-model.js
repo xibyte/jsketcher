@@ -1,6 +1,4 @@
-import {CompositeCurve} from '../../../brep/geom/curve'
-import {ApproxCurve} from '../../../brep/geom/impl/approx'
-import {NurbsCurve} from '../../../brep/geom/impl/nurbs'
+import {NurbsCurve, NurbsCurveImpl} from '../../../brep/geom/impl/nurbs'
 import {Point} from '../../../brep/geom/point'
 import {Line} from '../../../brep/geom/impl/line'
 import {LUT} from '../../../math/bezier-cubic'
@@ -38,7 +36,7 @@ class SketchPrimitive {
     if (this.inverted) {
       verbNurbs = verbNurbs.reverse();
     }
-    return new NurbsCurve(verbNurbs);
+    return new NurbsCurve(new NurbsCurveImpl(verbNurbs));
   }
 
   toVerbNurbs(plane, _3dtr) {
@@ -308,3 +306,19 @@ function to3DTrFunc(surface) {
     return _3dTransformation.apply(v);
   }
 }
+
+class CompositeCurve {
+
+  constructor() {
+    this.curves = [];
+    this.points = [];
+    this.groups = [];
+  }
+
+  add(curve, point, group) {
+    this.curves.push(curve);
+    this.points.push(point);
+    this.groups.push(group);
+  }
+}
+

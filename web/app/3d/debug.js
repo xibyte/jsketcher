@@ -79,7 +79,7 @@ function addGlobalDebugActions(app) {
       app.viewer.render();
     },
     AddHalfEdge: (he, color) => {
-      const points = he.edge.curve.verb.tessellate().map(p => new Vector().set3(p));
+      const points = he.edge.curve.tessellate();
       if (he.inverted) {
         points.reverse();
       }
@@ -128,8 +128,7 @@ function addGlobalDebugActions(app) {
       app.viewer.render();
     },
     AddCurve: (curve, color) => {
-      __DEBUG__.AddPolyLine( curve.verb.tessellate().map(v => new Vector().set3(v)), 0xffffff);
-      __DEBUG__.AddPolyLine( curve.tessellate(0.5, 1), color);
+      __DEBUG__.AddPolyLine( curve.tessellate(), color);
     },
     AddNurbsCorners: (nurbs) => {
       __DEBUG__.AddPoint(nurbs.point(0, 0), 0xff0000);
