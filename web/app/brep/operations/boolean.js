@@ -1,13 +1,11 @@
 import {BREPValidator} from '../brep-validator';
 import {Edge} from '../topo/edge';
 import {Loop} from '../topo/loop';
-import {Face} from '../topo/face';
 import {Shell} from '../topo/shell';
 import {Vertex} from '../topo/vertex';
 import {evolveFace} from './evolve-face'
-import Vector from '../../math/vector';
 import * as math from '../../math/math';
-import {TOLERANCE} from '../geom/tolerance';
+import {eqTol, TOLERANCE, ueq, veq} from '../geom/tolerance';
 
 
 
@@ -293,11 +291,11 @@ function intersectEdges(shell1, shell2) {
     points.sort((p1, p2) => p1.u - p2.u);
     let first = points[0];
     let last = points[points.length - 1];
-    if (eq(first.u, 0) && !first.vertexHolder[0]) {
+    if (ueq(first.u, 0) && !first.vertexHolder[0]) {
       first.vertexHolder[0] = e.halfEdge1.vertexA;
       first.skip = true;
     }
-    if (eq(last.u, 1) && !last.vertexHolder[0]) {
+    if (ueq(last.u, 1) && !last.vertexHolder[0]) {
       last.vertexHolder[0] = e.halfEdge1.vertexB;
       last.skip = true;
     }
@@ -354,7 +352,7 @@ function intersectFaces(shell1, shell2, operationType) {
   for (let i = 0; i < shell1.faces.length; i++) {
     const face1 = shell1.faces[i];
     if (DEBUG.FACE_FACE_INTERSECTION) {
-      __DEBUG__.Clear(); 
+      __DEBUG__.Clear();
       __DEBUG__.AddFace(face1, 0x00ff00);
       DEBUG.NOOP();
     }
@@ -421,7 +419,7 @@ function filterNodes(nodes) {
       if (i === j) continue;
       const node2 = nodes[j];
       if (node2 !== null) {
-        if (eq(node2.u, node1.u)) {
+        if (ueq(node2.u, node1.u)) {
           if (node1.normal + node2.normal === 0) {
             nodes[i] = null
           }
@@ -452,9 +450,9 @@ function intersectCurveWithEdge(curve, edge, result) {
     const {u0, u1} = point;
 
     let vertex;
-    if (eq(u0, 0)) {
+    if (ueq(u0, 0)) {
       vertex = edge.edge.halfEdge1.vertexA;
-    } else if (eq(u0, 1)) {
+    } else if (ueq(u0, 1)) {
       vertex = edge.edge.halfEdge1.vertexB;
     } else {
       vertex = vertexFactory.create(point.p0);
@@ -476,10 +474,10 @@ function split(nodes, curve, result) {
       continue
     }
     let edgeCurve = curve;
-    if (!eq(inNode.u, 0)) {
+    if (!ueq(inNode.u, 0)) {
       [,edgeCurve] = edgeCurve.split(inNode.vertex.point);
     }
-    if (!eq(outNode.u, 1)) {
+    if (!ueq(outNode.u, 1)) {
       [edgeCurve] = edgeCurve.split(outNode.vertex.point);
     }
     const edge = new Edge(edgeCurve, inNode.vertex, outNode.vertex);
@@ -528,9 +526,9 @@ function nodeNormal(point, edge, curve) {
   if (eq(dot, 0)) {
     dot = 0;
   } else {
-    if (dot < 0) 
+    if (dot < 0)
       dot = -1;
-    else 
+    else
       dot = 1;
   }
   return dot;
@@ -590,7 +588,7 @@ class VertexFactory {
     this.vertices = [];
   }
 
-  addVertices(vertices) {  
+  addVertices(vertices) {
     for (let v of vertices) {
       this.vertices.push(v);
     }
@@ -602,11 +600,11 @@ class VertexFactory {
         return vertex;
       }
     }
-    return null;  
+    return null;
   }
 
   create(point) {
-    
+
     let vertex = this.find(point);
     if (vertex === null) {
       vertex = new Vertex(point);
@@ -670,13 +668,7 @@ function $DEBUG_OPERANDS(shell1, shell2) {
   }
 }
 
-function eq(v1, v2) {
-  return math.areEqual(v1, v2, TOLERANCE);
-}
-
-function veq(v1, v2) {
-  return math.areVectorsEqual(v1, v2, TOLERANCE);
-}
+const eq = eqTol;
 
 function assert(name, cond) {
   if (!cond) {

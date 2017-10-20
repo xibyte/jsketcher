@@ -4,7 +4,7 @@ import {Point} from '../point'
 import {Surface} from "../surface";
 import Vector from "../../../math/vector";
 import * as ext from "./nurbs-ext";
-import {EPSILON, eqEps, TOLERANCE} from "../tolerance";
+import {EPSILON, eqEps, TOLERANCE, TOLERANCE_SQ, veq, veq3} from "../tolerance";
 import curveIntersect from "./curve/curves-isec";
 import curveTess from "./curve/curve-tess";
 import {areEqual} from "../../../math/math";
@@ -189,7 +189,7 @@ export class NurbsCurve { //TODO: rename to BrepCurve
   intersectCurve(other) {
     let isecs = [];
 
-    const eq = (v1, v2) => math.areVectorsEqual3(v1, v2, TOLERANCE);
+    const eq = veq3;
 
     function add(i0) {
       for (let i1 of isecs) {
