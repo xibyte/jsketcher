@@ -2,7 +2,7 @@ import {Surface} from '../surface'
 import {Point} from '../point'
 import {Line} from './line'
 import {Matrix3, AXIS, BasisForPlane} from  '../../../math/l3space'
-import * as math from  '../../../math/math'
+import {eqTol, veq} from "../tolerance";
 
 export class Plane extends Surface {
 
@@ -53,14 +53,13 @@ export class Plane extends Surface {
     return this.__3dTr;
   }
 
-  coplanarUnsignedForSameClass(other, tol) {
-    return math.areVectorsEqual(this.normal.multiply(this.w), other.normal.multiply(other.w), tol);
-    //TODO: store this.normal.multiply(this.w) in a field since it's constant value
+  coplanarUnsignedForSameClass(other) {
+    return veq(this.normal.multiply(this.w), other.normal.multiply(other.w));
   }
 
-  equalsForSameClass(other, tol) {
-    return math.areVectorsEqual(this.normal, other.normal, tol) &&
-           math.areEqual(this.w, other.w, tol);
+  equalsForSameClass(other) {
+    return veq(this.normal, other.normal) &&
+           eqTol(this.w, other.w);
   }
 
   toParametricForm() {
