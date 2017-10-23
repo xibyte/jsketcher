@@ -40,10 +40,17 @@ class HalfEdge extends TopoObject {
     this.loop = null;
     this.next = null;
     this.prev = null;
+    this.manifold = null;
+    this.manifoldHolder = null;
   }
 
   twin() {
-    return this.edge.halfEdge1 === this ? this.edge.halfEdge2 : this.edge.halfEdge1;
+    let twin = this.edge.halfEdge1 === this ? this.edge.halfEdge2 : this.edge.halfEdge1;
+    return twin.manifoldHolder === null ? twin : twin.manifoldHolder; 
+  }
+
+  twins() {
+    return this.manifold === null ? [this.twin()] : [this.twin(), ...this.manifold.map(me => me.twin())];
   }
 
   tangent(point) {
@@ -53,5 +60,28 @@ class HalfEdge extends TopoObject {
       tangent._negate();
     }
     return tangent;
+  }
+
+  tessellate() {
+    let res = this.edge.curve.tessellate.apply(this.edge.curve, arguments);
+    if (this.inverted) {
+      res = res.slice().reverse();
+    }
+    return res;
+  }
+  
+  attachManifold(he, shallow) {
+    if (this.manifold === null) {
+      this.manifold = [];
+    }
+    if (this.manifold.indexOf(he) === -1) {
+      this.manifold.push(he);
+    }
+    he.manifoldHolder = this;
+    // if (shallow === true) {
+    //   return;
+    // }
+    // this.twin().attachManifold()
+    // he.attachManifold(, true);
   }
 }
