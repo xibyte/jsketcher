@@ -5,11 +5,11 @@ import {Shell} from '../topo/shell';
 import {Vertex} from '../topo/vertex';
 import {evolveFace} from './evolve-face'
 import * as math from '../../math/math';
-import {eqTol, TOLERANCE, ueq, veq} from '../geom/tolerance';
+import {eqEps, eqTol, TOLERANCE, ueq, veq} from '../geom/tolerance';
 
 const DEBUG = {
   OPERANDS_MODE: false,
-  LOOP_DETECTION: false,
+  LOOP_DETECTION: true,
   FACE_FACE_INTERSECTION: false,
   NOOP: () => {}
 };
@@ -57,7 +57,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   let facesData = [];
 
   mergeVertices(shell1, shell2);
-  initVertexFactory(shell1, shell2)
+  initVertexFactory(shell1, shell2);
 
   intersectEdges(shell1, shell2);
 
@@ -70,20 +70,29 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
     faceData.initGraph();
   }
 
-  const allFaces = [];
-  const newLoops = new Set();
   for (let faceData of facesData) {
-    const face = faceData.face;
-    const loops = detectLoops(faceData.face);
-    for (let loop of loops) {
-      for (let edge of loop.halfEdges) {
-        if (isNew(edge)) newLoops.add(loop);
-      }
-    }
-    loopsToFaces(face, loops, allFaces);
+    faceData.detectedLoops = detectLoops(faceData.face);
   }
-  let faces = allFaces;
-  faces = filterFaces(faces, newLoops);
+  
+  let detectedLoops = new Set();
+  for (let faceData of facesData) {
+    for (let loop of faceData.detectedLoops) {
+      detectedLoops.add(loop);
+    }
+  }
+
+  // let invalidLoops = invalidateLoops(detectedLoops);
+  
+  let faces = [];
+  
+  for (let faceData of facesData) {
+    // faceData.detectedLoops = faceData.detectedLoops.filter(l => !invalidLoops.has(l));
+    loopsToFaces(faceData.face, faceData.detectedLoops, faces);
+  }
+
+  faces = filterFaces(faces);
+  
+  
   const result = new Shell();
   faces.forEach(face => {
     face.shell = result;
@@ -93,7 +102,7 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   cleanUpSolveData(result);
   BREPValidator.validateToConsole(result);
 
-  __DEBUG__.ClearVolumes();
+  // __DEBUG__.ClearVolumes();
   // __DEBUG__.Clear();
   return result;
 }
@@ -108,12 +117,8 @@ function detectLoops(face) {
 
   const loops = [];
   const seen = new Set();
-  let edges = [];
-  for (let e of face.edges) {
-    edges.push(e);
-  }
   while (true) {
-    let edge = edges.pop();
+    let edge = faceData.graphEdges.pop();
     if (!edge) {
       break;
     }
@@ -122,12 +127,19 @@ function detectLoops(face) {
     }
     const loop = new Loop(null);
     let surface = face.surface;
+    
     while (edge) {
       if (DEBUG.LOOP_DETECTION) {
         __DEBUG__.AddHalfEdge(edge);
       }
-      loop.halfEdges.push(edge);
       seen.add(edge);
+      loop.halfEdges.push(edge);
+      if (loop.halfEdges[0].vertexA === edge.vertexB) {
+        loop.link();
+        loops.push(loop);
+        break;
+      }
+      
       let candidates = faceData.vertexToEdge.get(edge.vertexB);
       if (!candidates) {
         break;
@@ -136,11 +148,6 @@ function detectLoops(face) {
       if (seen.has(edge)) {
         break;
       }
-    }
-
-    if (loop.halfEdges[0].vertexA === loop.halfEdges[loop.halfEdges.length - 1].vertexB) {
-      loop.link();
-      loops.push(loop);
     }
   }
   return loops;
@@ -170,28 +177,53 @@ export function mergeVertices(shell1, shell2) {
   }
 }
 
-function filterFaces(faces, newLoops) {
-  const validFaces = new Set(faces);
-  const result = new Set();
-  for (let face of faces) {
-    traverseFaces(face, validFaces, (it) => {
-      if (result.has(it) || isFaceContainNewLoop(it, newLoops)) {
-        result.add(face);
-        return true;
-      }
-    });
-  }
-  return result;
+
+function filterFaces(faces) {
+
+
+  return faces.filter(raycastFilter);
+  
+  
+  //
+  // function isFaceContainNewEdge(face) {
+  //   for (let e of face.edges) {
+  //     if (isNewNM(e)) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
+  //
+  // const validFaces = new Set(faces);
+  // const result = new Set();
+  // for (let face of faces) {
+  //   __DEBUG__.Clear();
+  //   __DEBUG__.AddFace(face);
+  //   traverseFaces(face, validFaces, (it) => {
+  //     if (result.has(it) || isFaceContainNewEdge(it)) {
+  //       result.add(face);
+  //       return true;
+  //     }
+  //   });
+  // }
+  // return result;
 }
 
-function isFaceContainNewLoop(face, newLoops) {
-  for (let loop of face.loops) {
-    if (newLoops.has(loop)) {
-      return true;
-    }
+function raycastFilter(face, shell, opType) {
+  
+  let testPt = getPointOnFace(face);
+  let testCurve = ;
+  
+  
+  for (let testFace of face.faces) {
+    let pts = testFace.surface.intersectCurve(testCurve)
+    
   }
-  return false;
+  
+  
+  
 }
+
 
 function traverseFaces(face, validFaces, callback) {
   const stack = [face];
@@ -203,16 +235,62 @@ function traverseFaces(face, validFaces, callback) {
     if (callback(face) === true) {
       return;
     }
+    if (!validFaces.has(face)) continue;
     for (let loop of face.loops) {
-      if (!validFaces.has(face)) continue;
       for (let halfEdge of loop.halfEdges) {
-        const twin = halfEdge.twin();
-        if (validFaces.has(twin.loop.face)) {
-          stack.push(twin.loop.face)
+        for (let twin of halfEdge.twins()) {
+          if (validFaces.has(twin.loop.face)) {
+            stack.push(twin.loop.face)
+          }
         }
       }
     }
   }
+}
+
+function invalidateLoops(newLoops) {
+  // __DEBUG__.Clear();
+  const invalid = new Set();
+  for (let loop of newLoops) {
+    // __DEBUG__.AddLoop(loop);
+    for (let e of loop.halfEdges) {
+      if (e.manifold !== null) {
+        let manifold = [e,  ...e.manifold];
+        manifold.filter(me => newLoops.has(me.twin().loop));
+        if (manifold.length === 0) {
+          invalid.add(loop);
+        } else {
+          let [me, ...rest] = manifold;
+          e.edge = me.edge;
+          e.manifold = rest.length === 0 ? null : rest;
+        }
+      } else {
+        if (!newLoops.has(e.twin().loop)) {
+          invalid.add(loop);
+          break;
+        }
+      }
+    }
+  }
+  
+  // const seen = new Set();
+  //
+  // const stack = Array.from(invalid);
+  //
+  // while (stack.length !== 0) {
+  //   let loop = stack.pop();
+  //   if (!seen.has(loop)) continue;
+  //   seen.add(loop);
+  //    
+  //   for (let he of loop.halfEdges) {
+  //     let twins = he.twins();
+  //     for (let twin of twins) {
+  //       invalid.add(twin.loop);
+  //       stack.push(twin.loop); 
+  //     }        
+  //   }
+  // }
+  return invalid;  
 }
 
 export function loopsToFaces(originFace, loops, out) {
@@ -250,13 +328,20 @@ function findMaxTurningLeft(pivotEdge, edges, surface) {
   const pivot = pivotEdge.tangent(pivotEdge.vertexB.point).negate();
   const normal = surface.normal(pivotEdge.vertexB.point);
   edges.sort((e1, e2) => {
-    return leftTurningMeasure(pivot, edgeVector(e1), normal) - leftTurningMeasure(pivot, edgeVector(e2), normal);
+    let delta = leftTurningMeasure(pivot, edgeVector(e1), normal) - leftTurningMeasure(pivot, edgeVector(e2), normal);
+    if (ueq(delta, 0)) {
+      return isNew(e1) ? (isNew(e2) ? 0 : -1) : (isNew(e2) ? 1 : 0) 
+    }
+    return delta;
   });
   return edges[0];
 }
 
 function leftTurningMeasure(v1, v2, normal) {
   let measure = v1.dot(v2);
+  if (ueq(measure, 1)) {
+    return 0;    
+  }
   measure += 3; //-1..1 => 2..4
   if (v1.cross(v2).dot(normal) < 0) {
     measure = 4 - measure;
@@ -365,7 +450,7 @@ function intersectFaces(shell1, shell2, operationType) {
         }
       }
 
-      let curves = face1.surface.intersectSurface(face2.surface, TOLERANCE);
+      let curves = face1.surface.intersectSurface(face2.surface);
 
       for (let curve of curves) {
         // __DEBUG__.AddCurve(curve);
@@ -394,7 +479,6 @@ function addNewEdge(face, halfEdge) {
   data.loopOfNew.halfEdges.push(halfEdge);
   halfEdge.loop = data.loopOfNew;
   EdgeSolveData.createIfEmpty(halfEdge).newEdgeFlag = true;
-  //addToListInMap(data.vertexToEdge, halfEdge.vertexA, halfEdge);
   return true;
 }
 
@@ -563,6 +647,18 @@ function isNew(edge) {
   return EdgeSolveData.get(edge).newEdgeFlag === true
 }
 
+function isNewNM(edge) {
+  if (edge.manifold === null) {
+    return isNew(edge);
+  }
+  for (let me of edge.manifold) {
+    if (isNew(me)) {
+      return true;
+    }
+  }
+  return isNew(edge); 
+}
+
 function Node(vertex, edge, curve, u) {
   this.vertex = vertex;
   this.edge = edge;
@@ -625,6 +721,7 @@ class FaceSolveData {
     this.loopOfNew = new Loop(face);
     face.innerLoops.push(this.loopOfNew);
     this.vertexToEdge = new Map();
+    this.graphEdges = [];
   }
 
   initGraph() {
@@ -632,20 +729,46 @@ class FaceSolveData {
     for (let he of this.face.edges) {
       this.addToGraph(he);
     }
+    this.removeOppositeEdges();
   }
 
   addToGraph(he) {
-    addToListInMap(this.vertexToEdge, he.vertexA, he);
+    // __DEBUG__.Clear();
+    // __DEBUG__.AddFace(he.loop.face);
+    // __DEBUG__.AddHalfEdge(he, 0xffffff);
+    let list = this.vertexToEdge.get(he.vertexA);
+    if (!list) {
+      list = [];
+      this.vertexToEdge.set(he.vertexA, list);
+    } else {
+      for (let ex of list) {
+        if (he.vertexB === ex.vertexB && isSameEdge(he, ex)) {
+          ex.attachManifold(he);    
+          return; 
+        }          
+      }
+    }
+    list.push(he);
+    this.graphEdges.push(he);
   }
-}
 
-function addToListInMap(map, key, value) {
-  let list = map.get(key);
-  if (!list) {
-    list = [];
-    map.set(key, list);
+  removeOppositeEdges() {
+    let toRemove = new Set();
+    for (let e1 of this.graphEdges) {
+      let others = this.vertexToEdge.get(e1.vertexB);
+      for (let e2 of others) {
+        if (e1 === e2) continue;
+        if (e1.vertexA === e2.vertexB && isSameEdge(e1, e2)) {
+          toRemove.add(e1);
+          toRemove.add(e2);
+        }
+      }
+    }
+    for (let e of toRemove) {
+      removeFromListInMap(this.vertexToEdge, e.vertexA, e);
+    }
+    this.graphEdges = this.graphEdges.filter(e => !toRemove.has(e));
   }
-  list.push(value);
 }
 
 function removeFromListInMap(map, key, value) {
@@ -656,6 +779,17 @@ function removeFromListInMap(map, key, value) {
       list.splice(idx, 1);
     }
   }
+}
+
+function isSameEdge(e1, e2) {
+  let tess = e1.tessellate();
+  for (let pt1 of tess) {
+    let pt2 = e2.edge.curve.point(e2.edge.curve.param(pt1));
+    if (!veq(pt1, pt2)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function $DEBUG_OPERANDS(shell1, shell2) {
@@ -675,4 +809,5 @@ function assert(name, cond) {
 }
 
 const MY = '__BOOLEAN_ALGORITHM_DATA__'; 
+
 

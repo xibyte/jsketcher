@@ -88,17 +88,22 @@ function addGlobalDebugActions(app) {
     AddFace: (face, color) => {
       for (let e of face.edges) __DEBUG__.AddHalfEdge(e, color);
     },
+    AddLoop: (loop, color) => {
+      for (let e of loop.halfEdges) __DEBUG__.AddHalfEdge(e, color);
+    },
     AddVolume: (shell, color) => {
       color = color || 0xffffff;
       const geometry = new THREE.Geometry();
-      triangulateToThree(shell.faces, geometry);
+      triangulateToThree(shell, geometry);
       const mesh = new THREE.Mesh(geometry, createSolidMaterial({
         color,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.3,
+        depthWrite: false, 
+        depthTest: false
       }));
       debugVolumeGroup.add(mesh);
-      window.__DEBUG__.AddWireframe(shell, color);
+      // window.__DEBUG__.AddWireframe(shell, color);
       app.viewer.render();
     },
     AddWireframe: (shell, color) => {

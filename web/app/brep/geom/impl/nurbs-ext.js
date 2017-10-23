@@ -1,6 +1,6 @@
 import * as vec from "../../../math/vec";
 import * as math from  '../../../math/math'
-import {eqEps, TOLERANCE, TOLERANCE_SQ} from '../tolerance';
+import {eqEps, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
 import {fmin_bfgs} from "../../../math/optim";
 
 export function curveStep(curve, u, tessTol, scale) {
@@ -100,7 +100,7 @@ export function surfaceIntersect(surface0, surface1) {
   fixTessNaNPoitns(surface0, tess0);
   fixTessNaNPoitns(surface1, tess1);
   
-  const resApprox = verb.eval.Intersect.meshes(tess0,tess1);
+  const resApprox = meshesIntersect(tess0,tess1, TOLERANCE, TOLERANCE_SQ, TOLERANCE_01);
   const exactPls = resApprox.map(function(pl) {
     return pl.map(function(inter) {
       return verb.eval.Intersect.surfacesAtPointWithEstimate(surface0,surface1,inter.uv0,inter.uv1,TOLERANCE);
@@ -116,6 +116,30 @@ export function surfaceIntersect(surface0, surface1) {
       return y.point;
     }), surfaceMaxDegree(surface0) === 1 && surfaceMaxDegree(surface1) === 1 ? 1 : x.length - 1);
   });
+}
+
+function meshesIntersect(mesh0,mesh1, TOLERANCE, TOLERANCE_SQ, TOLERANCE_01) {
+  let bbtree0 = new verb.core.LazyMeshBoundingBoxTree(mesh0);
+  let bbtree1 = new verb.core.LazyMeshBoundingBoxTree(mesh1);
+  let bbints = verb.eval.Intersect.boundingBoxTrees(bbtree0,bbtree1,TOLERANCE);
+  let segments = verb.core.ArrayExtensions.unique(bbints.map(function(ids) {
+    return verb.eval.Intersect.triangles(mesh0,ids.item0,mesh1,ids.item1);
+  }).filter(function(x) {
+    return x != null;
+  }).filter(function(x1) {
+    return verb.core.Vec.distSquared(x1.min.point,x1.max.point) > TOLERANCE_SQ;
+  }),function(a,b) {
+    let s1 = verb.core.Vec.sub(a.min.uv0,b.min.uv0);
+    let d1 = verb.core.Vec.dot(s1,s1);
+    let s2 = verb.core.Vec.sub(a.max.uv0,b.max.uv0);
+    let d2 = verb.core.Vec.dot(s2,s2);
+    let s3 = verb.core.Vec.sub(a.min.uv0,b.max.uv0);
+    let d3 = verb.core.Vec.dot(s3,s3);
+    let s4 = verb.core.Vec.sub(a.max.uv0,b.min.uv0);
+    let d4 = verb.core.Vec.dot(s4,s4);
+    return d1 < TOLERANCE_01 && d2 < TOLERANCE_01 || d3 < TOLERANCE_01 && d4 < TOLERANCE_01;
+  });
+  return verb.eval.Intersect.makeMeshIntersectionPolylines(segments);
 }
 
 export function surfaceMaxDegree(surface) {

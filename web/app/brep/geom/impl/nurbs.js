@@ -336,8 +336,8 @@ export class NurbsSurface extends Surface {
     return b.minus(a).cross(c.minus(a))._normalize().dot(surface.normalUV(0, 0)) < 0;
   }
 
-  intersectSurfaceForSameClass(other, tol) {
-    let curves = ext.surfaceIntersect(this.data, other.data, tol);
+  intersectSurfaceForSameClass(other) {
+    let curves = ext.surfaceIntersect(this.data, other.data);
     let inverted = this.inverted !== other.inverted;
     if (inverted) {
       curves = curves.map(curve => ext.curveInvert(curve));
