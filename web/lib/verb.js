@@ -1945,7 +1945,7 @@ verb_Verb.main = function() {
 	console.log("verb 2.0.0");
 };
 var verb_core_ArrayExtensions = function() { };
-$hxClasses["verb.core.ArrayExtensions"] = verb_core_ArrayExtensions;
+$hxClasses["verb.core.ArrayExtensions"] = $hx_exports.core.ArrayExtensions = verb_core_ArrayExtensions;
 verb_core_ArrayExtensions.__name__ = ["verb","core","ArrayExtensions"];
 verb_core_ArrayExtensions.alloc = function(a,n) {
 	if(n < 0) return;
@@ -2615,7 +2615,8 @@ verb_core_LazyCurveBoundingBoxTree.prototype = {
 	}
 	,__class__: verb_core_LazyCurveBoundingBoxTree
 };
-var verb_core_LazyMeshBoundingBoxTree = function(mesh,faceIndices) {
+  
+var verb_core_LazyMeshBoundingBoxTree = $hx_exports.core.LazyMeshBoundingBoxTree = function(mesh,faceIndices) {
 	this._boundingBox = null;
 	this._mesh = mesh;
 	if(faceIndices == null) {
@@ -4943,7 +4944,7 @@ verb_eval_Intersect.clipRayInCoplanarTriangle = function(ray,mesh,faceIndex) {
 		if(res == null) continue;
 		var useg = res.u0;
 		var uray = res.u1;
-		if(useg < -verb_core_Constants.EPSILON || useg > l[i] + verb_core_Constants.EPSILON) continue;
+		if(useg < -1e-3|| useg > l[i] + 1e-3) continue;
 		if(minU == null || uray < minU.u) minU = new verb_core_CurveTriPoint(uray,verb_core_Vec.onRay(ray.origin,ray.dir,uray),verb_core_Vec.onRay(uvs[i],uvd[i],useg / l[i]));
 		if(maxU == null || uray > maxU.u) maxU = new verb_core_CurveTriPoint(uray,verb_core_Vec.onRay(ray.origin,ray.dir,uray),verb_core_Vec.onRay(uvs[i],uvd[i],useg / l[i]));
 	}
@@ -5069,7 +5070,7 @@ verb_eval_Intersect.rays = function(a0,a,b0,b) {
 	var daa = verb_core_Vec.dot(a,a);
 	var dbb = verb_core_Vec.dot(b,b);
 	var div = daa * dbb - dab * dab;
-	if(Math.abs(div) < verb_core_Constants.EPSILON) return null;
+	if(Math.abs(div) < 1e-3) return null;
 	var num = dab * (dab0 - daa0) - daa * (dbb0 - dba0);
 	var w = num / div;
 	var t = (dab0 - daa0 + w * dab) / daa;
