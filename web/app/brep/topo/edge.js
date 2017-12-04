@@ -70,7 +70,7 @@ class HalfEdge extends TopoObject {
     return res;
   }
   
-  attachManifold(he, shallow) {
+  attachManifold(he) {
     if (this.manifold === null) {
       this.manifold = [];
     }
@@ -78,10 +78,5 @@ class HalfEdge extends TopoObject {
       this.manifold.push(he);
     }
     he.manifoldHolder = this;
-    // if (shallow === true) {
-    //   return;
-    // }
-    // this.twin().attachManifold()
-    // he.attachManifold(, true);
   }
 }

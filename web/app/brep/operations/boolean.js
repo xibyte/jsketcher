@@ -8,7 +8,7 @@ import * as math from '../../math/math';
 import {eqEps, eqTol, TOLERANCE, ueq, veq} from '../geom/tolerance';
 
 const DEBUG = {
-  OPERANDS_MODE: false,
+  OPERANDS_MODE: true,
   LOOP_DETECTION: true,
   FACE_FACE_INTERSECTION: false,
   NOOP: () => {}
@@ -178,52 +178,85 @@ export function mergeVertices(shell1, shell2) {
 }
 
 
+function filterFacesByInvalidEnclose(faces) {
+
+  function encloses(f1, f2, testee, overEdge) {
+    const edgeV = edge => edge.tangent(edge.vertexA.point);
+  
+    const unit = edgeV(overEdge);
+    const pt = overEdge.vertexA.point;
+    const t1 = f1.surface.normal(pt).cross(unit)._normalize();
+    const t2 = f2.surface.normal(pt).cross(unit)._normalize();
+    const t3 = testee.surface.normal(pt).cross(unit)._normalize();
+  
+    __DEBUG__.AddNormal(pt, unit, 0xffffff);
+    __DEBUG__.AddNormal(pt, t1, 0x00ff00);
+    __DEBUG__.AddNormal(pt, t2, 0x00ffff);
+    __DEBUG__.AddNormal(pt, t3, 0xff0000);
+  
+    const angle = leftTurningMeasure(t1, t2, unit);
+    const testAngle = leftTurningMeasure(t1, t3, unit);
+    return testAngle > angle;
+  }
+
+  let invalidFaces = new Set();
+
+  for (let face of faces) {
+    for (let e of face.edges) {
+      if (e.manifold !== null) {
+        let all = new Set();
+        all.add(face);
+        e.twins().forEach(t => all.add(t.loop.face));
+        let invalidCandidates = new Set(all);
+        for (let f1 of all) {
+          for (let f2 of all) {
+            if (f1 === f2) continue;
+            let neverEnclose = true;
+            for (let f3 of all) {
+              if (f1 === f3 || f2 === f3) continue;
+              if (encloses(f1, f2, f3, e)) {
+                neverEnclose = false;
+                break;
+              }  
+            }
+            if (neverEnclose) {
+              invalidCandidates.delete(f1);
+              invalidCandidates.delete(f2);
+            }
+          }            
+        }
+        invalidCandidates.forEach(f => invalidFaces.add(f));
+      }
+    }
+  }
+  return faces.filter(f => !invalidFaces.has(f));
+}
+
 function filterFaces(faces) {
 
-
-  return faces.filter(raycastFilter);
-  
-  
-  //
-  // function isFaceContainNewEdge(face) {
-  //   for (let e of face.edges) {
-  //     if (isNewNM(e)) {
-  //       return true;
-  //     }
-  //   }
-  //   return false;
-  // }
-  //
-  // const validFaces = new Set(faces);
-  // const result = new Set();
-  // for (let face of faces) {
-  //   __DEBUG__.Clear();
-  //   __DEBUG__.AddFace(face);
-  //   traverseFaces(face, validFaces, (it) => {
-  //     if (result.has(it) || isFaceContainNewEdge(it)) {
-  //       result.add(face);
-  //       return true;
-  //     }
-  //   });
-  // }
-  // return result;
-}
-
-function raycastFilter(face, shell, opType) {
-  
-  let testPt = getPointOnFace(face);
-  let testCurve = ;
-  
-  
-  for (let testFace of face.faces) {
-    let pts = testFace.surface.intersectCurve(testCurve)
-    
+  function isFaceContainNewEdge(face) {
+    for (let e of face.edges) {
+      if (isNewNM(e)) {
+        return true;
+      }
+    }
+    return false;
   }
   
-  
-  
+  const validFaces = new Set(faces);
+  const result = new Set();
+  for (let face of faces) {
+    // __DEBUG__.Clear();
+    // __DEBUG__.AddFace(face);
+    traverseFaces(face, validFaces, (it) => {
+      if (result.has(it) || isFaceContainNewEdge(it)) {
+        result.add(face);
+        return true;
+      }
+    });
+  }
+  return filterFacesByInvalidEnclose(result);
 }
-
 
 function traverseFaces(face, validFaces, callback) {
   const stack = [face];
