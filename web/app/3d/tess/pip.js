@@ -8,8 +8,8 @@ export default function(outerLoop, innerLoops, tol) {
     return areEqual(a, b, tol);
   }
 
-  function veq(a, b, TOLERANCE) {
-    return eq(a.x, b.x, TOLERANCE) && eq(a.y, b.y, TOLERANCE);
+  function veq(a, b) {
+    return eq(a.x, b.x) && eq(a.y, b.y);
   }
 
   function classifyPointInsideLoop( pt, loop ) {
