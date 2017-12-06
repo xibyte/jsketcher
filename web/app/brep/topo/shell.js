@@ -18,6 +18,15 @@ export class Shell extends TopoObject {
       e.halfEdge2.vertexA.edges.add(e.halfEdge2);
     }
   }
+  
+  clone() {
+    let clone = new Shell();
+    this.faces.forEach(face => clone.faces.push(face.clone));
+    clone.faces.forEach(face => face.shell = clone);
+    Object.assign(clone.data, this.data);
+    return clone;
+  }
+  
 }
 
 export function* verticesGenerator(shell) {

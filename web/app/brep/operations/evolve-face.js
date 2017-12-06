@@ -27,6 +27,7 @@ export function evolveFace(originFace, loops) {
     const loop = nestedLoop.loop;
     const newFace = new Face(surface);
     Object.assign(newFace.data, originFace.data);
+    newFace.data.__origin = originFace;
     newFace.outerLoop = loop;
     loop.face = newFace;
     out.push(newFace);
@@ -59,6 +60,7 @@ export function evolveFace(originFace, loops) {
 function getNestedLoops(face, brepLoops) {
   function NestedLoop(loop) {
     this.loop = loop;
+    //FIXME
     this.workingPolygon = loop.asPolygon().map(p => face.surface.workingPoint(p));
     this.inverted = !isCCW(this.workingPolygon);
     this.pip = PIP(this.workingPolygon);

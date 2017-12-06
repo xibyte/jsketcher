@@ -15,6 +15,10 @@ export function eqTol(a, b) {
   return areEqual(a, b, TOLERANCE);
 }
 
+export function eqSqTol(a, b) {
+  return areEqual(a, b, TOLERANCE_SQ);
+}
+
 export function eqEps(a, b) {
   return areEqual(a, b, EPSILON);
 }
