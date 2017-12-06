@@ -363,6 +363,10 @@ export class NurbsSurface extends Surface {
   isoCurveAlignV(param) {
     return this.isoCurve(param, false);
   }
+  
+  intersectWithCurve(curve) {
+    return verb.geom.Intersect.curveAndSurface(curve.impl.verb, this.verb, TOLERANCE).map(({uv}) => uv);
+  }
 }
 
 NurbsSurface.WORKING_POINT_SCALE_FACTOR = 1000;

@@ -108,7 +108,7 @@ export function surfaceIntersect(surface0, surface1) {
   });
 
 
-  //temporary workaround
+  //TODO: temporary workaround
   return exactPls.map(pl => verb.eval.Make.polyline(pl.map(ip => ip.point)));
   
   return exactPls.map(function(x) {
