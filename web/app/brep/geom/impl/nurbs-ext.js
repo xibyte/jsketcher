@@ -235,6 +235,17 @@ function intersectSegs(a1, b1, a2, b2) {
   return null;
 }
 
+export function normalizeCurveEnds(curve) {
+  for (let i = 0; i < curve.knots.length; i++) {
+    let val = curve.knots[i];
+    if (eqEps(val, 0)) {
+      curve.knots[i] = 0;
+    } else if (eqEps(val, 1)) {
+      curve.knots[i] = 1;
+    }
+  }
+}
+
 export function normalizeCurveParametrization(curve) {
   let [min, max] = curveDomain(curve);
   let d = max - min;
