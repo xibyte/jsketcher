@@ -52,7 +52,7 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
   }
 
   createImpl(app, params, sketch, face) {
-    const encloseDetails = getEncloseDetails(params, sketch, face.surface(), !this.inversed);
+    const encloseDetails = getEncloseDetails(params, sketch, face.surface().tangentPlane(0, 0), !this.inversed);
     const triangles = [];
 
     for (let {basePath, lidPath, baseSurface, lidSurface} of encloseDetails) {
@@ -61,7 +61,7 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
       for (let i = 0; i < basePath.length; ++i) {
         let baseNurbs = basePath[i];    
         let lidNurbs = lidPath[i];  
-        const params = verb.eval.Tess.rationalCurveAdaptiveSample(baseNurbs.verb._data,1,true).map(p => p[0]);  
+        const params = verb.eval.Tess.rationalCurveAdaptiveSample(baseNurbs.impl.data, 1,true).map(p => p[0]);  
         const base = params.map(u => baseNurbs.point(u));
         const lid = params.map(u => lidNurbs.point(u));
         const n = base.length;
