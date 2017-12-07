@@ -6,6 +6,7 @@ import {isCCW} from '../../../math/math'
 import {AXIS} from '../../../math/l3space'
 import {distanceAB, makeAngle0_360} from '../../../math/math'
 import verb from 'verb-nurbs'
+import {normalizeCurveEnds} from "../../../brep/geom/impl/nurbs-ext";
 
 const RESOLUTION = 20;
 
@@ -36,6 +37,10 @@ class SketchPrimitive {
     if (this.inverted) {
       verbNurbs = verbNurbs.reverse();
     }
+    let data = verbNurbs.asNurbs();
+    normalizeCurveEnds(data);
+    verbNurbs = new verb.geom.NurbsCurve(data);
+
     return new NurbsCurve(new NurbsCurveImpl(verbNurbs));
   }
 

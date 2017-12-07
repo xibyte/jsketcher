@@ -28,7 +28,8 @@ export function doOperation(app, params, cut) {
   if (savedFace == null) return null;
 
   const sketch = ReadSketchFromFace(app, face);
-  const details = getEncloseDetails(params, sketch.fetchContours(), face.surface(), !cut, false);
+  let plane = face.surface().tangentPlane(0, 0);
+  const details = getEncloseDetails(params, sketch.fetchContours(), plane, !cut, false);
   const operand = combineShells(details.map(d => enclose(d.basePath, d.lidPath, d.baseSurface, d.lidSurface)));
   return BooleanOperation(face, solid, operand, cut ? 'subtract' : 'union');
 }
@@ -43,7 +44,8 @@ export function getEncloseDetails(params, contours, sketchSurface, invert) {
   const baseSurface = invert ? sketchSurface.invert() : sketchSurface;
 
   let target;
-  let baseSurfaceNormal =  baseSurface.normalInMiddle ? baseSurface.normalInMiddle() : baseSurface.normal;
+  
+  let baseSurfaceNormal = baseSurface.normal;
 
   const targetDir = baseSurfaceNormal.negate();
 

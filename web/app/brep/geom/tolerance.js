@@ -1,6 +1,6 @@
 import {areEqual, areVectorsEqual, areVectorsEqual3} from "../../math/math";
 
-export const TOLERANCE = 1e-5;
+export const TOLERANCE = 1e-3;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 
 export const EPSILON = 1e-12;

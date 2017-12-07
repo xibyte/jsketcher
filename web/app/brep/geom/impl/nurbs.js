@@ -1,13 +1,14 @@
-import {Matrix3} from  '../../../math/l3space'
+import {BasisForPlane, Matrix3} from '../../../math/l3space'
 import * as math from  '../../../math/math'
 import {Point} from '../point'
 import {Surface} from "../surface";
 import Vector from "../../../math/vector";
 import * as ext from "./nurbs-ext";
-import {EPSILON, eqEps, TOLERANCE, TOLERANCE_SQ, veq, veq3} from "../tolerance";
+import {EPSILON, eqEps, TOLERANCE, TOLERANCE_SQ, ueq, veq, veq3} from "../tolerance";
 import curveIntersect from "./curve/curves-isec";
 import curveTess from "./curve/curve-tess";
 import {areEqual} from "../../../math/math";
+import {Plane} from "./plane";
 
 
 class ParametricCurve {
@@ -149,8 +150,8 @@ export class NurbsCurve { //TODO: rename to BrepCurve
   }
 
   splitByParam(u) {
-    if (u < this.uMin || u > this.uMax) {
-      throw 'illegal splitting parameter ' + u;
+    if (ueq(this.uMin) || ueq(this.uMax) || u < this.uMin || u > this.uMax) {
+      return null
     }
     let split = this.impl.split(u);
 
@@ -300,6 +301,10 @@ export class NurbsSurface extends Surface {
     return this.normalUV(0.5, 0.5);
   }
 
+  param(point) {
+    return this.verb.closestParam(point.data());
+  }
+
   point(u, v) {
     return pt(this.verb.point(u, v));
   }
@@ -366,6 +371,11 @@ export class NurbsSurface extends Surface {
   
   intersectWithCurve(curve) {
     return verb.geom.Intersect.curveAndSurface(curve.impl.verb, this.verb, TOLERANCE).map(({uv}) => uv);
+  }
+
+  tangentPlane(u, v) {
+    let normal = this.normalUV(u, v);
+    return new Plane(normal,  normal.dot(this.point(u, v)));
   }
 }
 
