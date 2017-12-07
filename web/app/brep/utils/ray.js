@@ -1,5 +1,5 @@
 import pertrub from './vector-petrub';
-import {NurbsCurve, NurbsCurveImpl} from '../geom/impl/nurbs';
+import {NurbsCurve} from '../geom/impl/nurbs';
 
 
 export class Ray {
@@ -14,8 +14,8 @@ export class Ray {
     this.curve = NurbsCurve.createLinearNurbs(this.pt, this.pt.plus(this.dir.multiply(this.reachableDistance)));
   }
 
-  pertrub(angleStep) {
-    this.dir.set3(pertrub(this.dir.data(), angleStep));
+  pertrub() {
+    this.dir.set3(pertrub(this.dir.data()));
     this.updateCurve();
   }
 } 

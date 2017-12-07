@@ -36,6 +36,14 @@ Vector.prototype._multiply = function(scalar) {
   return this.set(this.x * scalar, this.y * scalar, this.z * scalar);
 };
 
+Vector.prototype.divide = function(scalar) {
+  return new Vector(this.x / scalar, this.y / scalar, this.z / scalar);
+};
+
+Vector.prototype._divide = function(scalar) {
+  return this.set(this.x / scalar, this.y / scalar, this.z / scalar);
+};
+
 Vector.prototype.dot = function(vector) {
   return this.x * vector.x + this.y * vector.y + this.z * vector.z;
 };

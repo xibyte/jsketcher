@@ -79,9 +79,4 @@ class HalfEdge extends TopoObject {
     }
     he.manifoldHolder = this;
   }
-  
-  clone() {
-    let clone
-    Object.assign(clone.data, this.data);
-  }
 }

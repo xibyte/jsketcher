@@ -13,22 +13,10 @@ export class Face extends TopoObject {
     this.defineIterable('loops', () => loopsGenerator(this));
     this.defineIterable('edges', () => halfEdgesGenerator(this))
   }
-  
-  clone() {
-    function cloneLoop(source, dest) {
-      source.halfEdges.forEach(edge => dest.halfEdges.push(edge.clone()));
-      Object.assign(dest.data, source.data);
-      return dest;
-    }
-    
-    let clone = new Face(this.surface);
-    cloneLoop(this.outerLoop, clone.outerLoop);
-    this.innerLoops.forEach(loop => clone.innerLoops.push(cloneLoop(loop, new Loop(clone))));
-    Object.assign(clone.data, this.data);
-    return clone;
+
+  createWorkingPolygon() {
+    return [this.outerLoop, ...this.innerLoops].map(loop => loop.tess().map(pt => this.surface.workingPoint(pt)));
   }
-  
-  
 }
 
 export function* loopsGenerator(face) {

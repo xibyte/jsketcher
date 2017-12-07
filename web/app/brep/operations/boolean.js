@@ -8,11 +8,13 @@ import PIP from '../../3d/tess/pip';
 import * as math from '../../math/math';
 import {eqEps, eqTol, eqSqTol, TOLERANCE, ueq, veq} from '../geom/tolerance';
 import {Ray} from "../utils/ray";
+import pickPointInside2dPolygon from "../utils/pickPointInPolygon";
 
 const DEBUG = {
   OPERANDS_MODE: false,
   LOOP_DETECTION: false,
   FACE_FACE_INTERSECTION: false,
+  RAY_CAST: false,
   NOOP: () => {}
 };
 
@@ -147,6 +149,7 @@ function detectLoops(face) {
       if (!candidates) {
         break;
       }
+      candidates = candidates.filter(c => c.vertexB !== edge.vertexA || !isSameEdge(c, edge));
       edge = findMaxTurningLeft(edge, candidates, surface);
       if (seen.has(edge)) {
         break;
@@ -236,19 +239,20 @@ function filterFacesByInvalidEnclose(faces) {
 
 function isPointInsideSolid(pt, initDir, solid) {
   let ray = new Ray(pt, initDir, 3000);
-  const pertrubStep = 5;
-  for (let i = 0; i < 360; i+=pertrubStep) {
+  for (let i = 0; i < 1; ++i) {
     let res = rayCastSolidImpl(ray, solid);
     if (res !== null) {
       return res;    
     }
-    ray.pertrub(pertrubStep);
+    ray.pertrub();
   }
   return false; 
 }
 
 function rayCastSolidImpl(ray, solid) {
-  __DEBUG__.AddCurve(ray.curve, 0xffffff);
+  if (DEBUG.RAY_CAST) {
+    __DEBUG__.AddCurve(ray.curve, 0xffffff);  
+  }
   let closestDistanceSq = -1;
   let inside = false;
   let hitEdge = false;
@@ -261,10 +265,10 @@ function rayCastSolidImpl(ray, solid) {
     }  
   }
 
-
-
   for (let face of solid.faces) {
-    __DEBUG__.AddFace(face, 0xffff00);
+    if (DEBUG.RAY_CAST) {
+      __DEBUG__.AddFace(face, 0xffff00);
+    }
     let pip = face.data[MY].pip;
     let uvs = face.surface.intersectWithCurve(ray.curve);
     
@@ -303,31 +307,28 @@ function rayCastSolidImpl(ray, solid) {
   return inside;
 }
 
-function guessPointOnFace(face) {
-  //TODO:
-  let {pip, workingPolygon: [poly]} = createPIPForFace(face);
-  let [a, b] = poly;
-  let ab = b.minus(a); 
-  let len = ab.length();
-  let unit = ab.normalize();
-  let res = a.plus(unit.multiply(len * 0.5));
-  let offVec = unit.multiply(100); //???
-  res.x += - offVec.y;
-  res.y +=   offVec.x;
-
-  if (!pip(res).inside) {
-    throw 'bummer';
+function pickPointOnFace(face) {
+  let wp = pickPointInside2dPolygon(face.createWorkingPolygon());
+  if (wp === null) {
+    return null;
   }
-  return face.surface.workingPointTo3D(res);
+  return face.surface.workingPointTo3D(wp);
 }
 
 function filterByRayCast(faces, a, b, isIntersection) {
   
   let result = [];
   for (let face of faces) {
-    __DEBUG__.Clear();
-    __DEBUG__.AddFace(face, 0x00ff00);
-    let pt = guessPointOnFace(face);
+    if (DEBUG.RAY_CAST) {
+      __DEBUG__.Clear();
+      __DEBUG__.AddFace(face, 0x00ff00);
+    }
+
+    let pt = pickPointOnFace(face);
+    if (pt === null) {
+      continue;
+    }
+    
     let normal = face.surface.normal(pt);
 
     let insideA = face.data.__origin.shell === a || isPointInsideSolid(pt, normal, a);
@@ -601,7 +602,9 @@ function intersectFaces(shell1, shell2, operationType) {
       let curves = face1.surface.intersectSurface(face2.surface);
 
       for (let curve of curves) {
-        // __DEBUG__.AddCurve(curve);
+        if (DEBUG.FACE_FACE_INTERSECTION) {
+          __DEBUG__.AddCurve(curve);
+        }
         curve = fixCurveDirection(curve, face1.surface, face2.surface, operationType);
         const nodes = [];
         collectNodesOfIntersectionOfFace(curve, face1, nodes);
@@ -865,7 +868,7 @@ class SolveData {
 
 
 function createPIPForFace(face) {
-  let workingPolygon = [face.outerLoop, ...face.innerLoops].map(loop => loop.tess().map(pt => face.surface.workingPoint(pt)));
+  let workingPolygon = face.createWorkingPolygon();
   let [inner, ...outers] = workingPolygon;
   return {
     pip: PIP(inner, outers),
@@ -888,13 +891,15 @@ class FaceSolveData {
     for (let he of this.face.edges) {
       this.addToGraph(he);
     }
-    this.removeOppositeEdges();
   }
 
   addToGraph(he) {
     // __DEBUG__.Clear();
     // __DEBUG__.AddFace(he.loop.face);
     // __DEBUG__.AddHalfEdge(he, 0xffffff);
+    if (this.isNewOppositeEdge(he)) {
+      return;
+    }
     let list = this.vertexToEdge.get(he.vertexA);
     if (!list) {
       list = [];
@@ -911,17 +916,24 @@ class FaceSolveData {
     this.graphEdges.push(he);
   }
 
+  isNewOppositeEdge(e1) {
+    if (!isNew(e1)) {
+      return false;
+    }
+    let others = this.vertexToEdge.get(e1.vertexB);
+    if (others) {
+      for (let e2 of others) {
+        if (e1.vertexA === e2.vertexB && isSameEdge(e1, e2)) {
+          return true;
+        }
+      }
+    }
+    return false;    
+  }
+  
   removeOppositeEdges() {
     let toRemove = new Set();
     for (let e1 of this.graphEdges) {
-      let others = this.vertexToEdge.get(e1.vertexB);
-      for (let e2 of others) {
-        if (e1 === e2) continue;
-        if (e1.vertexA === e2.vertexB && isSameEdge(e1, e2)) {
-          toRemove.add(e1);
-          toRemove.add(e2);
-        }
-      }
     }
     for (let e of toRemove) {
       removeFromListInMap(this.vertexToEdge, e.vertexA, e);
