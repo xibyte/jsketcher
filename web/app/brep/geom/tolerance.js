@@ -1,4 +1,4 @@
-import {areEqual, areVectorsEqual, areVectorsEqual3} from "../../math/math";
+import {areEqual, areNegVectorsEqual, areVectorsEqual, areVectorsEqual3} from "../../math/math";
 
 export const TOLERANCE = 1e-3;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
@@ -25,6 +25,10 @@ export function eqEps(a, b) {
 
 export function veq(a, b) {
   return areVectorsEqual(a, b, TOLERANCE_SQ);
+}
+
+export function veqNeg(a, b) {
+  return areNegVectorsEqual(a, b, TOLERANCE_SQ);
 }
 
 export function veq3(a, b) {

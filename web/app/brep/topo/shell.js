@@ -7,7 +7,7 @@ export class Shell extends TopoObject {
     super();
     this.faces = [];
     this.defineIterable('vertices', () => verticesGenerator(this));
-    this.defineIterable('edges', () => edges(this))
+    this.defineIterable('edges', () => edgesGenerator(this.faces))
   }
   
   reindexVertices() {
@@ -66,9 +66,9 @@ export function* verticesGenerator(shell) {
   }
 }
 
-export function* edges(shell) {
+export function* edgesGenerator(faces) {
   const visited = new Set();
-  for (let face of shell.faces) {
+  for (let face of faces) {
     for (let halfEdge of face.edges) {
       if (!visited.has(halfEdge.edge)) {
         visited.add(halfEdge.edge);
