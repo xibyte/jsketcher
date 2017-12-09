@@ -27,6 +27,14 @@ export class Edge extends TopoObject {
     this.halfEdge2.inverted = true;
     this.curve = this.curve.invert();
   }
+  
+  clone() {
+    let clone = new Edge(this.curve, this.halfEdge1.vertexA, this.halfEdge1.vertexB);
+    Object.assign(clone.data, this.data);
+    Object.assign(clone.halfEdge1.data, this.halfEdge1.data);
+    Object.assign(clone.halfEdge2.data, this.halfEdge2.data);
+    return clone;
+  }
 }
 
 class HalfEdge extends TopoObject {
