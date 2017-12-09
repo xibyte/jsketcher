@@ -61,6 +61,14 @@ class HalfEdge extends TopoObject {
     return this.manifold === null ? [this.twin()] : [this.twin(), ...this.manifold.map(me => me.twin())];
   }
 
+  tangentAtStart() {
+    return this.tangent(this.vertexA.point);
+  }
+
+  tangentAtEnd() {
+    return this.tangent(this.vertexB.point);
+  }
+
   tangent(point) {
     let tangent = this.edge.curve.tangentAtPoint(point);
     tangent._normalize();
