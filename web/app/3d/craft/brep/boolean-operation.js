@@ -8,7 +8,7 @@ const BoolOpMap = {
   'subtract': subtract,
   'union': union,
   'intersect': intersect
-}
+};
 
 export function BooleanOperation(face, solid, operand, operationType) {
   let result;
@@ -16,12 +16,12 @@ export function BooleanOperation(face, solid, operand, operationType) {
    const op = BoolOpMap[operationType];
    result = op(solid.shell, operand);
    for (let newFace of result.faces) {
-     if (newFace.id == face.id) {
+     if (newFace.id === face.id) {
        newFace.id = undefined;
      }
    }
  } else {
-   if (operationType != 'union') throw 'unable to cut plane';
+   if (operationType !== 'union') throw 'unable to cut plane';
    result = operand;
  }
  updateStitching(result);
@@ -33,11 +33,12 @@ export function BooleanOperation(face, solid, operand, operationType) {
 }
 
 export function combineShells(shells) {
-  if (shells.length == 1) {
+  if (shells.length === 1) {
     return shells[0];
   }
   const operand = new Shell();
   shells.forEach(c => c.faces.forEach(f => operand.faces.push(f)));
+  // operand.faces.forEach(f => f.shell = operand);
   BREPValidator.validateToConsole(operand);
   return operand;
 }

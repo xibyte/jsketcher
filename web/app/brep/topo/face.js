@@ -5,13 +5,16 @@ export class Face extends TopoObject {
 
   constructor(surface) {
     super();
-    this.id = undefined;
     this.surface = surface;
     this.shell = null;
     this.outerLoop = new Loop(this);
     this.innerLoops = [];
     this.defineIterable('loops', () => loopsGenerator(this));
-    this.defineIterable('edges', () => halfEdgesGenerator(this))
+    this.defineIterable('edges', () => halfEdgesGenerator(this));
+    Object.defineProperty(this, "id", {
+      get: () => this.data.id,
+      set: (value) => this.data.id = value,
+    });
   }
 
   createWorkingPolygon() {
