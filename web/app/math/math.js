@@ -26,6 +26,11 @@ export function distanceSquaredAB3(a, b) {
   return distanceSquared3(a.x, a.y, a.z, b.x, b.y, b.z);
 }
 
+export function distanceSquaredANegB3(a, b) {
+  return distanceSquared3(a.x, a.y, a.z, -b.x, -b.y, -b.z);
+}
+
+
 export function distanceSquared3(x1, y1, z1, x2, y2, z2) {
   var dx = x1 - x2;
   var dy = y1 - y2;
@@ -63,6 +68,10 @@ export function areEqual(v1, v2, tolerance) {
 
 export function areVectorsEqual(v1, v2, toleranceSQ) {
   return areEqual(distanceSquaredAB3(v1, v2), 0, toleranceSQ);
+}
+
+export function areNegVectorsEqual(v1, v2, toleranceSQ) {
+  return areEqual(distanceSquaredANegB3(v1, v2), 0, toleranceSQ);
 }
 
 export function areVectorsEqual3(v1, v2, toleranceSQ) {

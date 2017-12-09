@@ -9,6 +9,8 @@ export class Loop extends TopoObject {
     super();
     this.face = face;
     this.halfEdges = [];
+    this.encloses = undefined;
+    this.defineIterable('encloses', () => enclosesGenerator(this.halfEdges));
   }
 
   isCCW(surface) {
@@ -47,6 +49,22 @@ export class Loop extends TopoObject {
     return out;
   }
 }
+
+export function* enclosesGenerator(halfEdges) {
+  let length = halfEdges.length;
+  for (let i = 0; i < halfEdges.length; i++) {
+    let j = (i + 1) % length;
+    const curr = halfEdges[i];
+    const next = halfEdges[j];
+    if (curr.vertexB !== next.vertexA) {
+      __DEBUG__.AddHalfEdge(curr, 0xff1199);
+      __DEBUG__.AddHalfEdge(curr, 0x99ff11);
+      throw 'using enclose generator on invalid Loop';       
+    }
+    yield [curr, next, curr.vertexB];
+  }
+}
+
 
 Loop.isPolygonCCWOnSurface = function(polygon, surface) {
   const tr = surface.get2DTransformation();

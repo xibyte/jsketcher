@@ -53,7 +53,7 @@ export class Plane extends Surface {
     return this.__3dTr;
   }
 
-  coplanarUnsignedForSameClass(other) {
+  coplanarUnsigned(other) {
     return veq(this.normal.multiply(this.w), other.normal.multiply(other.w));
   }
 
@@ -86,13 +86,12 @@ export class Plane extends Surface {
     return [Number.MIN_VALUE, Number.MAX_VALUE];
   }
 
-
   tangentPlane() {
     return this;
   }
-  
 }
 
+Plane.prototype.TYPE = 'plane';
 Plane.prototype.isPlane = true;
 
 Plane.XY = new Plane(AXIS.Z, 0);

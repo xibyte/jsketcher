@@ -4,7 +4,7 @@ import {Point} from '../point'
 import {Surface} from "../surface";
 import Vector from "../../../math/vector";
 import * as ext from "./nurbs-ext";
-import {EPSILON, eqEps, TOLERANCE, TOLERANCE_SQ, ueq, veq, veq3} from "../tolerance";
+import {EPSILON, eqEps, eqSqTol, TOLERANCE, TOLERANCE_SQ, ueq, veq, veq3, veqNeg} from "../tolerance";
 import curveIntersect from "./curve/curves-isec";
 import curveTess from "./curve/curve-tess";
 import {areEqual} from "../../../math/math";
@@ -233,8 +233,9 @@ export class NurbsCurve { //TODO: rename to BrepCurve
       i.p1 = pt(i.p1);
     });
     isecs = isecs.filter(({u0, u1}) => {
-      let collinearFactor = Math.abs(this.tangentAtParam(u0).dot(other.tangentAtParam(u1)));
-      return !math.areEqual(collinearFactor, 1);
+      let t0 = this.tangentAtParam(u0);
+      let t1 = other.tangentAtParam(u1);
+      return !veq(t0, t1) && !veqNeg(t0, t1);
     });
     return isecs;
   }
@@ -245,6 +246,14 @@ export class NurbsCurve { //TODO: rename to BrepCurve
 
   invert() {
     return new NurbsCurve(this.impl.invert());
+  }
+
+  middlePoint() {
+    return this.point(0.5);
+  }
+
+  passesThrough(point) {
+    return eqSqTol(0, point.distanceToSquared(this.point(this.param(point))));
   }
 }
 
@@ -260,17 +269,26 @@ function degree1OptTessellator(curve, min, max, tessTol, scale) {
 }
 
 NurbsCurve.createLinearNurbs = function(a, b) {
-  return new NurbsCurve(new NurbsCurveImpl(new verb.geom.Line(a.data(), b.data())));
+  let line = verb.geom.NurbsCurve.byKnotsControlPointsWeights( 1, [0,0,1,1], [a.data(), b.data()]);
+  return new NurbsCurve(new NurbsCurveImpl(line));
 };
 
 export class NurbsSurface extends Surface {
 
-  constructor(verbSurface, inverted) {
+  constructor(verbSurface, inverted, simpleSurface) {
     super();
+    let {min: uMin, max: uMax} = verbSurface.domainU();
+    let {min: vMin, max: vMax} = verbSurface.domainV();
+    
+    if (uMin !== 0 || uMax !== 1 || vMin !== 0 || vMax !== 1) {
+      throw 'only normalized(0..1) parametrization is supported';
+    }
+
     this.data = verbSurface.asNurbs();
     this.verb = verbSurface;
     this.inverted = inverted === true;
     this.mirrored = NurbsSurface.isMirrored(this);
+    this.simpleSurface = simpleSurface || figureOutSimpleSurface(this); 
   }
 
   toNurbs() {
@@ -300,6 +318,12 @@ export class NurbsSurface extends Surface {
     //TODO: use domain!
     return this.normalUV(0.5, 0.5);
   }
+
+  pointInMiddle() {
+    //TODO: use domain!
+    return this.point(0.5, 0.5);
+  }
+
 
   param(point) {
     return this.verb.closestParam(point.data());
@@ -375,7 +399,7 @@ export class NurbsSurface extends Surface {
 
   tangentPlane(u, v) {
     let normal = this.normalUV(u, v);
-    return new Plane(normal,  normal.dot(this.point(u, v)));
+    return new Plane(normal, normal.dot(this.point(u, v)));
   }
 }
 
@@ -406,4 +430,12 @@ const surTess = verb.eval.Tess.rationalSurfaceAdaptive;
 verb.eval.Tess.rationalSurfaceAdaptive = function(surface, opts) {
   const keys = [opts ? opts.maxDepth: 'undefined'];
   return cache('tess', keys, surface, () => surTess(surface, opts));
+};
+
+function figureOutSimpleSurface(nurbs) {
+  if (ext.surfaceMaxDegree(nurbs.data) === 1) {
+    //TODO: use domain!       
+    return nurbs.tangentPlane(0.5, 0.5);    
+  }
+  return null;
 }
