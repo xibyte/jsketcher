@@ -9,6 +9,7 @@ import * as math from '../../math/math';
 import {eqEps, eqTol, eqSqTol, TOLERANCE, ueq, veq} from '../geom/tolerance';
 import {Ray} from "../utils/ray";
 import pickPointInside2dPolygon from "../utils/pickPointInPolygon";
+import CadError from "../../utils/errors";
 
 const DEBUG = {
   OPERANDS_MODE: false,
@@ -61,11 +62,21 @@ export function invert( shell ) {
     }
   }
   shell.data.inverted = !shell.data.inverted;
-  BREPValidator.validateToConsole(shell);
+  checkShellForErrors(shell, 'UNABLE_BOOLEAN_OPERAND_INVERSION');
+}
+
+function checkShellForErrors(shell, code) {
+  let errors = BREPValidator.validate(shell);
+  if (errors.length !== 0) {
+    throw new CadError(code, errors);
+  }
 }
 
 export function BooleanAlgorithm( shell1, shell2, type ) {
 
+  shell1 = shell1.clone();
+  shell2 = shell2.clone();
+  
   let facesData = [];
 
   mergeVertices(shell1, shell2);
@@ -81,7 +92,8 @@ export function BooleanAlgorithm( shell1, shell2, type ) {
   for (let faceData of facesData) {
     faceData.initGraph();
   }
-
+  checkFaceDataForError(facesData);
+  
   for (let faceData of facesData) {
     faceData.detectedLoops = detectLoops(faceData.face);
   }
@@ -923,7 +935,8 @@ class FaceSolveData {
     face.innerLoops.push(this.loopOfNew);
     this.vertexToEdge = new Map();
     this.graphEdges = [];
-    Object.assign(this, createPIPForFace(face))
+    Object.assign(this, createPIPForFace(face));
+    this.errors = [];
   }
 
   initGraph() {
@@ -937,38 +950,49 @@ class FaceSolveData {
     // __DEBUG__.Clear();
     // __DEBUG__.AddFace(he.loop.face);
     // __DEBUG__.AddHalfEdge(he, 0xffffff);
-    if (this.isNewOppositeEdge(he)) {
-      return;
+    // if (this.isNewOppositeEdge(he)) {
+    //   return;
+    // }
+    let opp = this.findOppositeEdge(he);
+    if (opp) {
+      this.errors.push(edgeCollisionError(opp, he));
     }
+    
     let list = this.vertexToEdge.get(he.vertexA);
     if (!list) {
       list = [];
       this.vertexToEdge.set(he.vertexA, list);
     } else {
       for (let ex of list) {
-        // if (he.vertexB === ex.vertexB && isSameEdge(he, ex)) {
+        if (he.vertexB === ex.vertexB && isSameEdge(he, ex)) {
+          this.errors.push(edgeCollisionError(ex, he));
         //   ex.attachManifold(he);    
         //   return; 
-        // }          
+        }          
       }
     }
     list.push(he);
     this.graphEdges.push(he);
   }
 
-  isNewOppositeEdge(e1) {
-    if (!isNew(e1)) {
-      return false;
-    }
+  findOppositeEdge(e1) {
     let others = this.vertexToEdge.get(e1.vertexB);
     if (others) {
       for (let e2 of others) {
         if (e1.vertexA === e2.vertexB && isSameEdge(e1, e2)) {
-          return true;
+          return e2;
         }
       }
     }
-    return false;    
+    return null;
+  }
+
+
+  isNewOppositeEdge(e1) {
+    if (!isNew(e1)) {
+      return false;
+    }
+    return this.findOppositeEdge(e1) !== null;
   }
   
   removeOppositeEdges() {
@@ -1003,6 +1027,24 @@ function isSameEdge(e1, e2) {
   return true;
 }
 
+function edgeCollisionError(e1, e2) {
+  return {
+    e1, e2, code: 'EDGE_COLLISION'
+  }
+}
+
+function checkFaceDataForError(facesData) {
+  if (facesData.find(f => f.errors)) {
+    let payload = [];    
+    for (let faceData of facesData) {
+      for (let err of faceData.errors) {
+        payload.push(err);
+      }
+    }
+    throw new CadError('BOOLEAN_INVALID_RESULT', payload);
+  }
+}
+
 function $DEBUG_OPERANDS(shell1, shell2) {
   if (DEBUG.OPERANDS_MODE) {
     __DEBUG__.HideSolids();
@@ -1020,5 +1062,3 @@ function assert(name, cond) {
 }
 
 const MY = '__BOOLEAN_ALGORITHM_DATA__'; 
-
-

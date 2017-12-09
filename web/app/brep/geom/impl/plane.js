@@ -86,6 +86,11 @@ export class Plane extends Surface {
     return [Number.MIN_VALUE, Number.MAX_VALUE];
   }
 
+
+  tangentPlane() {
+    return this;
+  }
+  
 }
 
 Plane.prototype.isPlane = true;
