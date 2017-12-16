@@ -88,7 +88,6 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
 
   intersectEdges(shellA, shellB);
   mergeOverlappingFaces(shellA, shellB, type);
-  transferOverlappingEdges(shellA, shellB);
   
   initSolveData(shellA, facesData);
   initSolveData(shellB, facesData);
@@ -808,16 +807,13 @@ function intersectFaces(shellA, shellB, operationType) {
 }
 
 function chooseValidEdge(edge, face, operationType) {
-
-  let pt = edge.middlePoint();
-  let normal = edge.tangent(pt);
-  let a = normal.cross(edge.loop.face.surface.normal(pt));
-  let b = normal.cross(edge.twin().loop.face.surface.normal(pt));
-  let testee = normal.cross(face.surface.normal(pt));
-  if (isInsideEnclose(normal, testee, a, b, false)) {
-    
-  }
-
+  let pt = edge.edge.curve.middlePoint();
+  let edgeTangent = edge.tangent(pt);
+  let edgeFaceNormal = edge.loop.face.surface.normal(pt);
+  let edgeFaceDir = edgeTangent.cross(edgeFaceNormal);
+  let faceNormal = face.surface.normal(pt);
+  let outside = edgeFaceDir.dot(faceNormal);
+  return (operationType === TYPE.INTERSECT) === outside ? edge.twin() : edge;
 }
 
 function transferEdges(faceSource, faceDest, operationType) {
@@ -826,14 +822,15 @@ function transferEdges(faceSource, faceDest, operationType) {
       continue;
     }
     for (let edge of loop.halfEdges) {
+      if (isEdgeTransfered(edge.edge)) {
+        continue;    
+      }
       if (edgeCollinearToFace(edge, faceDest)) {
-        
-        if (chooseValidEdge(edge, faceDest, operationType)) {
-          
-        }
-        
-        let mid = edge.middlePoint();
-        
+        let validEdge = chooseValidEdge(edge, faceDest, operationType);
+        let twin = validEdge.twin();
+        twin.loop.face.data[MY].markTransferedFrom(twin);
+        markEdgeTransfered(twin.edge)
+        addNewEdge(face, twin);
       }
     }
   }
@@ -1054,6 +1051,7 @@ export function isCurveEntersEdgeAtPoint(curve, edge, point) {
   return isOnPositiveHalfPlaneFromVec(edgeTangent, curveTangent, normal);
 }
 
+//TODO: rename to HalfEdgeSolveData
 function EdgeSolveData() {
 }
 
@@ -1099,6 +1097,20 @@ function isNewNM(edge) {
     }
   }
   return isNew(edge); 
+}
+
+function markEdgeTransfered(edge) {
+  let data = edge.data[MY];
+  if (!data) {
+    data = {};
+    edge.data[MY] = data;
+  }
+  data.transfered = true;
+}
+
+function isEdgeTransfered(edge) {
+  let data = edge.data[MY];
+  return data && data.transfered;
 }
 
 function Node(vertex, u) {
@@ -1177,6 +1189,13 @@ class FaceSolveData extends EdgeGraph {
     this.errors = [];
   }
 
+  markTransferedFrom(edge) {
+    if (!this.transferedFrom) {
+      this.transferedFrom = new Set();
+    }
+    this.transferedFrom.add(edge);
+  }
+
   initGraph() {
     this.vertexToEdge.clear();
     for (let he of this.face.edges) {
@@ -1191,6 +1210,10 @@ class FaceSolveData extends EdgeGraph {
     // if (this.isNewOppositeEdge(he)) {
     //   return;
     // }
+    if (this.transferedFrom && this.transferedFrom.has(he)) {
+      return;
+    }
+      
     let opp = this.findOppositeEdge(he);
     if (opp) {
       this.errors.push(edgeCollisionError(opp, he));
@@ -1280,6 +1303,22 @@ function curveAndEdgeCoincident(curve, edge) {
     let pt1 = tess[i];
     let pt2 = curve.point(curve.param(pt1));
     if (!veq(pt1, pt2)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function edgeCollinearToFace(edge, face) {
+  let tess = edge.tessellate();
+  for (let i = 0; i < tess.length; ++i) {
+    let pt1 = tess[i];
+    let pt2 = face.surface.point(face.surface.param(pt1));
+    if (!veq(pt1, pt2)) {
+      return false;
+    }
+
+    if (!face.rayCast(pt2)) {
       return false;
     }
   }
