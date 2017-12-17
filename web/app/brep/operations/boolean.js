@@ -11,15 +11,17 @@ import {Ray} from "../utils/ray";
 import pickPointInside2dPolygon from "../utils/pickPointInPolygon";
 import CadError from "../../utils/errors";
 import {createBoundingNurbs} from "../brep-builder";
+import BREP_DEBUG from '../debug/brep-debug';
+
 
 const A = 0, B = 1;
 
 const DEBUG = {
   OPERANDS_MODE: false,
-  LOOP_DETECTION: true,
-  FACE_FACE_INTERSECTION: true,
+  LOOP_DETECTION: false,
+  FACE_FACE_INTERSECTION: false,
   RAY_CAST: false,
-  FACE_MERGE: true,
+  FACE_MERGE: false,
   NOOP: () => {}
 };
 
@@ -78,9 +80,13 @@ function checkShellForErrors(shell, code) {
 
 export function BooleanAlgorithm( shellA, shellB, type ) {
 
+  BREP_DEBUG.startBooleanSession(shellA, shellB, type);
+
   shellA = prepareWorkingCopy(shellA);
   shellB = prepareWorkingCopy(shellB);
   
+  BREP_DEBUG.currentBooleanSession.setWorkingOperands(shellA, shellB);
+
   let facesData = [];
 
   mergeVertices(shellA, shellB);
@@ -137,6 +143,7 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
 
   // __DEBUG__.ClearVolumes();
   // __DEBUG__.Clear();
+  BREP_DEBUG.currentBooleanSession.setResult(result);
   return result;
 }
 
@@ -585,8 +592,8 @@ function filterFacesByNewEdges(faces) {
   const validFaces = new Set(faces);
   const result = new Set();
   for (let face of faces) {
-    __DEBUG__.Clear();
-    __DEBUG__.AddFace(face);
+    // __DEBUG__.Clear();
+    // __DEBUG__.AddFace(face);
     traverseFaces(face, validFaces, (it) => {
       if (result.has(it) || isFaceContainNewEdge(it)) {
         result.add(face);
@@ -866,7 +873,7 @@ function collectNodesOfIntersectionOfFace(curve, face, nodes, operand) {
 }
 
 function collectNodesOfIntersection(curve, loop, nodes, operand) {
-  __DEBUG__.AddCurve(curve, 0xffffff);
+  // __DEBUG__.AddCurve(curve, 0xffffff);
   let skippedEnclosures = new Set();
   
   for (let edge of loop.halfEdges) {
