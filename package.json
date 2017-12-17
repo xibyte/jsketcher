@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "JS.Sketcher is a parametric 2D and 3D CAD modeler written in pure javascript",
   "scripts": {
-    "start": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.config.dev.js --content-base web/ --port 3000",
+    "start": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.config.js --content-base web/ --port 3000",
+    "start-test": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.config.dev.js --content-base web/ --port 3000",
     "pack": "node ./node_modules/webpack/bin/webpack.js --config webpack.config.js --progress --profile --colors",
     "build": "grunt",
     "lint": "eslint web/app"
@@ -31,6 +32,7 @@
     "babel-preset-stage-2": "6.24.1",
     "babel-polyfill": "6.26.0",
     "babel-preset-react": "6.24.1",
+    "babel-plugin-local-styles-transformer": "git://github.com/xibyte/babel-plugin-local-styles-transformer.git#0.0.1",
 
     "css-loader": "0.28.7",
     "less-loader": "4.0.5",
@@ -58,6 +60,7 @@
     "less": "2.7.3",
     "libtess": "1.2.2",
     "numeric": "1.2.6",
-    "sprintf": "0.1.5"
+    "sprintf": "0.1.5",
+    "classnames": "2.2.5"
   }
 }

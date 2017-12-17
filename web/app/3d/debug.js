@@ -4,6 +4,11 @@ import {createSolidMaterial} from './scene/scene-object'
 import DPR from '../utils/dpr'
 import Vector from "../math/vector";
 import {NurbsCurve} from "../brep/geom/impl/nurbs";
+import * as ui from '../ui/ui';
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import BrepDebugger from './../brep/debug/debugger/brepDebugger';
 
 export const DEBUG = true;
 
@@ -207,7 +212,7 @@ const DebugMenuConfig = {
     label: 'debug',
     cssIcons: ['bug'],
     info: 'set of debug actions',
-    actions: [ 'DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId', 'DebugFaceSketch']
+    actions: [ 'DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId', 'DebugFaceSketch', 'DebugOpenBrepDebugger']
   }
 };
 
@@ -273,6 +278,28 @@ const DebugActions = {
           }]
       };
       console.log(JSON.stringify(squashed));
+    }
+  },
+  'DebugOpenBrepDebugger': {
+    cssIcons: ['cubes'],
+    label: 'open BREP debugger',
+    info: 'open the BREP debugger in a window',
+    invoke: (app) => {
+
+      let debuggerWinDom = document.getElementById('brep-debugger');
+      if (!debuggerWinDom) {
+        //Temporary hack until win infrastructure is done for 3d
+        debuggerWinDom = document.createElement('div');
+        debuggerWinDom.setAttribute('id', 'brep-debugger');
+        debuggerWinDom.innerHTML = '<div class="tool-caption" ><i class="fa fa-fw fa-bug"></i>Brep Debugger</div><div class="content"></div>';
+        document.body.appendChild(debuggerWinDom);
+        debuggerWinDom.debuggerWin = new ui.Window($(debuggerWinDom), new ui.WinManager());
+        ReactDOM.render(
+          <BrepDebugger />,
+          debuggerWinDom.getElementsByClassName('content')[0] 
+        );
+      }
+      debuggerWinDom.debuggerWin.show();
     }
   }
 };
