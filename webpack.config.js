@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 
+const WEB_APP = path.join(__dirname, 'web/app');
+
 module.exports = {
   devtool: 'source-map',
   entry: {
@@ -25,21 +27,26 @@ module.exports = {
   module: {
     rules: [{
       test: /\.(js|jsx)$/,
-      use: ['babel-loader'],
-      include: [path.join(__dirname, 'web/app'), path.join(__dirname, 'web/test')]
+      loader: 'babel-loader',
+      include: [WEB_APP, path.join(__dirname, 'web/test')],
+      options: {
+        plugins: [
+          ['local-styles-transformer', {include: WEB_APP}]
+        ]
+      }
     }, {
       test: /\.css$/,
       use: [
-        "style-loader",
-        "css-loader",
+        'style-loader',
+        'css-loader',
       ]    
     },
     {
       test: /\.less$/,
       use: [
-        "style-loader",
-        "css-loader?-url",
-        "less-loader"
+        'style-loader',
+        'css-loader?-url',
+        'less-loader'
       ]    
     },
     {
@@ -50,5 +57,9 @@ module.exports = {
       test: /\.json$/,
       use: 'json-loader'      
     }]
+  },
+  devServer: {
+    hot: false,
+    inline: false,
   }
 };
