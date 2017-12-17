@@ -12,7 +12,9 @@
   "globals" : {
     "THREE" : true,
     "CSG" : true,
-    "PNLTRI" : true
+    "PNLTRI" : true,
+    "__DEBUG__": true,
+    "$": true
   },
   "rules": {
     "comma-dangle": "off",
