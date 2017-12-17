@@ -19,6 +19,11 @@ function Window(el, winManager) {
   winManager.registerDrag(this.root, caption);
 }
 
+
+Window.prototype.show = function() {
+  this.root.show();
+}
+
 Window.prototype.toggle = function() {
   var aboutToShow = !this.root.is(':visible');
   if (aboutToShow) {
