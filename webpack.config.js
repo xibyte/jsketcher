@@ -19,26 +19,36 @@ module.exports = {
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
   ],
+  resolve: {
+    extensions: ['.js', '.jsx']
+  },
   module: {
-    loaders: [{
-      test: /\.js$/,
-      loaders: ['babel'],
+    rules: [{
+      test: /\.(js|jsx)$/,
+      use: ['babel-loader'],
       include: [path.join(__dirname, 'web/app'), path.join(__dirname, 'web/test')]
     }, {
       test: /\.css$/,
-      loader: 'style!css'
+      use: [
+        "style-loader",
+        "css-loader",
+      ]    
     },
     {
       test: /\.less$/,
-      loader: "style!css?-url!less"
+      use: [
+        "style-loader",
+        "css-loader?-url",
+        "less-loader"
+      ]    
     },
     {
       test: /\.html$/,
-      loader: 'handlebars?helperDirs[]=' + __dirname + '/web/app/ui/helpers'
+      use: 'handlebars-loader?helperDirs[]=' + __dirname + '/web/app/ui/helpers'
     },
     {
       test: /\.json$/,
-      loader: 'json'      
+      use: 'json-loader'      
     }]
   }
 };
