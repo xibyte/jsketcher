@@ -16,13 +16,18 @@
   }
 
   & .section {
-    & .caption {
-      &.closable {
-        cursor: pointer;
+
+    &.closable >  .caption {
+      cursor: pointer;
+      & .title {
         &:hover {
-          color: blue;    
+          color: blue;
+          text-decoration: underline;
         }
       }
+    }
+    
+    & .caption {
       &.accent {
         background-color: rgb(255, 244, 244);
         font-weight: bold;
