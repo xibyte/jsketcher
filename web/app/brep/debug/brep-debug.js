@@ -16,6 +16,7 @@ class BRepDebug {
 class BooleanSession {
 
   constructor(a, b, type) {
+    this.id = ID_COUNTER ++;
     this.inputOperandA = a;
     this.inputOperandB = b;
   }
@@ -30,5 +31,7 @@ class BooleanSession {
   }
 
 }
+
+let ID_COUNTER = 1;
 
 export default (new BRepDebug()); 

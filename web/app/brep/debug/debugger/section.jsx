@@ -7,21 +7,34 @@ export default class Section extends React.PureComponent {
   constructor() {
     super();
     this.state = {
-      closed: false
+      closed: null
     }
   }
 
   render() {
     let {name, tabs, closable, defaultClosed, accent, children, captionStyles, controls} = this.props;
-    let closed = closable && (this.state.closed || defaultClosed);
-    return <div className={cx('section', {closable, closed})} style={{paddingLeft: tabs}}>
+    let closed = this.isClosed();
+    return <div className={cx('section', {closable, closed})} style={{paddingLeft: tabs + 'em'}}>
       <div className={cx('caption', {accent}, captionStyles)} >
-        <span className='title'>{closable && <i className={'fa fa-caret-' + (closed ? 'right': 'down')} />} {name}</span>
+        <span className='title' onClick={closable ? this.tweakClose : undefined}>
+          {closable && <i className={cx('fa fa-fw fa-caret-' + (closed ? 'right': 'down'), {'invisible': !children} )} />} {name}
+        </span>
         <span className='control'>{controls}</span>
       </div>
-      {children}
+      {!closed && children}
     </div>;
   }
+
+  isClosed() {
+    let {closable, defaultClosed} = this.props;
+    if (!closable) return false;
+    return closable && (this.state.closed === null ? defaultClosed : this.state.closed)
+  }
+
+  tweakClose = () => {
+    this.setState({closed: !this.isClosed()});
+  }
+
 }
 
 function mapIterator(it, fn) {

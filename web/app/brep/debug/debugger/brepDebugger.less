@@ -1,5 +1,9 @@
 .brep-debugger {
 
+  & .invisible {
+    visibility: hidden;
+  }
+
   padding: 0.3em;
   line-height: 1.5;
   button {
@@ -28,6 +32,7 @@
     }
     
     & .caption {
+      white-space: nowrap;
       &.accent {
         background-color: rgb(255, 244, 244);
         font-weight: bold;
@@ -47,12 +52,15 @@
       }
     }
   }
-  .button {
+  .clickable {
     cursor: pointer;
-    font-size: 1.3em;
     &:hover {
       color: blue;    
     }
+  }
+  .button {
+    font-size: 1.3em;
+    .clickable;
   }
 }
 
