@@ -294,8 +294,11 @@ const DebugActions = {
         debuggerWinDom.innerHTML = '<div class="tool-caption" ><i class="fa fa-fw fa-bug"></i>Brep Debugger</div><div class="content"></div>';
         document.body.appendChild(debuggerWinDom);
         debuggerWinDom.debuggerWin = new ui.Window($(debuggerWinDom), new ui.WinManager());
+        let brepDebugGroup = new THREE.Object3D();
+        app.viewer.workGroup.add(brepDebugGroup);
+      
         ReactDOM.render(
-          <BrepDebugger />,
+          <BrepDebugger brepDebugGroup={brepDebugGroup}/>,
           debuggerWinDom.getElementsByClassName('content')[0] 
         );
       }
