@@ -2,6 +2,7 @@ import React from 'react';
 import './brepDebugger.less';
 import BREP_DEBUG from '../brep-debug';
 import ShellExplorer from './shellExplorer';
+import LoopDetectionExplorer from './loopDetectionExplorer';
 import Section from './section'
 
 export default class BrepDebugger extends React.PureComponent {
@@ -9,25 +10,33 @@ export default class BrepDebugger extends React.PureComponent {
   render() {
     let {booleanSessions} = BREP_DEBUG;          
     let {brepDebugGroup} = this.props;
+    function hideAll() {
+      for (let obj of brepDebugGroup.children) {
+        obj.visible = false;
+      }
+      __DEBUG__.render();
+    }
     return <div className='brep-debugger'>
       <div className='section'>
-        <i className='fa fa-fw fa-eye-slash button' onClick={() => __DEBUG__.HideSolids()} />
+        <i className='fa fa-fw fa-eye button grayed' onClick={hideAll} />{' '}
+        <i className='fa fa-fw fa-cubes button grayed' onClick={() => __DEBUG__.HideSolids()} />{' '} 
+        <i className='fa fa-fw fa-cubes button' onClick={() => __DEBUG__.ShowSolids()} />
       </div>
 
       <div className='section boolean-sessions'>
       {booleanSessions.map(session => 
-        <Section name={`boolean session ${session.id}`} closable accent captionStyles={['centered']}>
+        <Section name={`boolean session ${session.id} - ${session.type}`} closable accent captionStyles={['centered']}>
           <div className='section'>
 
             <Section name='input operands' accent>
               <div className='operands-veiew'> 
                 <div>
                   <div className='caption operand-a'>Operand A</div>
-                  <ShellExplorer shell={session.inputOperandA} groups3d={brepDebugGroup}/>
+                  <ShellExplorer shell={session.inputOperandA} group3d={brepDebugGroup}/>
                 </div>
                 <div>
                   <div className='caption operand-b'>Operand B</div>
-                  <ShellExplorer shell={session.inputOperandB} groups3d={brepDebugGroup}/>
+                  <ShellExplorer shell={session.inputOperandB} group3d={brepDebugGroup}/>
                 </div>
               </div>
             </Section>
@@ -38,19 +47,24 @@ export default class BrepDebugger extends React.PureComponent {
             <div className='operands-veiew'> 
               <div>
                 <div className='caption operand-a'>Operand A</div>
-                <ShellExplorer shell={session.workingOperandA} groups3d={brepDebugGroup}/>
+                <ShellExplorer shell={session.workingOperandA} group3d={brepDebugGroup}/>
               </div>
               <div>
                 <div className='caption operand-b'>Operand B</div>
-                <ShellExplorer shell={session.workingOperandB} groups3d={brepDebugGroup}/>
+                <ShellExplorer shell={session.workingOperandB} group3d={brepDebugGroup}/>
               </div>
               <div>
                 <div className='caption result'>Result</div>
-                <ShellExplorer shell={session.result} groups3d={brepDebugGroup}/>
+                <ShellExplorer shell={session.result} group3d={brepDebugGroup}/>
               </div>
             </div>
           </Section>
 
+          
+          <Section name='loops detection' accent>
+            {session.loopDetection.map(ld => <LoopDetectionExplorer key={ld.id} loopDetection={ld} group3d={brepDebugGroup} />)}  
+          </Section>
+          
           <Section name='edge intersections' accent>
             edge intersections...
           </Section>
@@ -61,9 +75,7 @@ export default class BrepDebugger extends React.PureComponent {
           <Section name='face intersections' accent>
             face intersections...
           </Section>
-          <Section name='loops detection' accent>
-            loops detection...
-          </Section>
+
           <Section name='loops validation' accent>
             loops validation...
           </Section>

@@ -34,23 +34,20 @@ const FILTER_STRATEGY = FILTER_STRATEGIES.NEW_EDGES;
 
 const TYPE = {
   UNION: 'UNION',
-  INTERSECT: 'INTERSECT'
+  INTERSECT: 'INTERSECT',
+  SUBTRACT: 'SUBTRACT'
 };
 
 export function union( shell1, shell2 ) {
-  $DEBUG_OPERANDS(shell1, shell2);
   return BooleanAlgorithm(shell1, shell2, TYPE.UNION);
 }
 
 export function intersect( shell1, shell2 ) {
-  $DEBUG_OPERANDS(shell1, shell2);
   return BooleanAlgorithm(shell1, shell2, TYPE.INTERSECT);
 }
 
 export function subtract( shell1, shell2 ) {
-  $DEBUG_OPERANDS(shell1, shell2);
-  invert(shell2);
-  return BooleanAlgorithm(shell1, shell2, TYPE.INTERSECT);
+  return BooleanAlgorithm(shell1, shell2, TYPE.SUBTRACT);
 }
 
 export function invert( shell ) {
@@ -85,7 +82,12 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
   shellA = prepareWorkingCopy(shellA);
   shellB = prepareWorkingCopy(shellB);
   
-  BREP_DEBUG.currentBooleanSession.setWorkingOperands(shellA, shellB);
+  BREP_DEBUG.setBooleanWorkingOperands(shellA, shellB);
+
+  if (type === TYPE.SUBTRACT) {
+    invert(shellB);
+    type = TYPE.INTERSECT;
+  }
 
   let facesData = [];
 
@@ -143,7 +145,7 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
 
   // __DEBUG__.ClearVolumes();
   // __DEBUG__.Clear();
-  BREP_DEBUG.currentBooleanSession.setResult(result);
+  BREP_DEBUG.setBooleanResult(result);
   return result;
 }
 
@@ -161,12 +163,7 @@ function setAnalysisFace(originShell, clonedShell) {
 }
 
 function detectLoops(surface, graph) {
-  if (DEBUG.LOOP_DETECTION) {
-    __DEBUG__.Clear();
-    graph.graphEdges.forEach(de => __DEBUG__.AddHalfEdge(de, 0x00ff00));
-    DEBUG.NOOP();
-  }
-
+  BREP_DEBUG.startBooleanLoopDetection(graph);
   const loops = [];
   const seen = new Set();
   while (true) {
@@ -178,16 +175,15 @@ function detectLoops(surface, graph) {
       continue;
     }
     const loop = new Loop(null);
-    
+    BREP_DEBUG.booleanLoopDetectionBeginLoop();
     while (edge) {
-      if (DEBUG.LOOP_DETECTION) {
-        __DEBUG__.AddHalfEdge(edge);
-      }
+      BREP_DEBUG.booleanLoopDetectionStep(edge);
       seen.add(edge);
       loop.halfEdges.push(edge);
       if (loop.halfEdges[0].vertexA === edge.vertexB) {
         loop.link();
         loops.push(loop);
+        BREP_DEBUG.booleanLoopDetectionSuccess();
         break;
       }
       
@@ -195,8 +191,9 @@ function detectLoops(surface, graph) {
       if (!candidates) {
         break;
       }
-      candidates = candidates.filter(c => c.vertexB !== edge.vertexA || !isSameEdge(c, edge));
+      candidates = candidates.filter(c => c.vertexB !== edge.vertexA || !isSameEdge(c, edge)); //TODO: we don't need the check for the same edge
       edge = findMaxTurningLeft(edge, candidates, surface);
+      BREP_DEBUG.booleanLoopDetectionNextStep(candidates, edge);
       if (seen.has(edge)) {
         break;
       }
@@ -1365,14 +1362,6 @@ function filterInPlace(arr, predicate) {
     if (!predicate(arr[i])) {
       arr.splice(i, 1)
     }
-  }
-}
-
-function $DEBUG_OPERANDS(shell1, shell2) {
-  if (DEBUG.OPERANDS_MODE) {
-    __DEBUG__.HideSolids();
-    __DEBUG__.AddVolume(shell1, 0x800080);
-    __DEBUG__.AddVolume(shell2, 0xfff44f);
   }
 }
 
