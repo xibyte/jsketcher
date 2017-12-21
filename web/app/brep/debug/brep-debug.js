@@ -10,26 +10,56 @@ class BRepDebug {
     this.booleanSessions.push(this.currentBooleanSession);
   }
 
+  setBooleanWorkingOperands(a, b) {
+    this.currentBooleanSession.workingOperandA = a;
+    this.currentBooleanSession.workingOperandB = b;
+  }
 
+  setBooleanResult(result) {
+    this.currentBooleanSession.result = result;
+  }
+
+  startBooleanLoopDetection(graph) {
+    this.currentBooleanSession.loopDetection.push({
+      id: this.currentBooleanSession.loopDetection.length + 1,
+      steps: [],
+      graph: graph.graphEdges.slice()
+    });
+  }
+  
+
+  booleanLoopDetectionBeginLoop() {
+    last(this.currentBooleanSession.loopDetection).steps.push({type: 'TRY_LOOP'});
+  }
+
+  booleanLoopDetectionStep(edge) {
+    last(this.currentBooleanSession.loopDetection).steps.push({type: 'TRY_EDGE', edge});
+  }
+  
+  booleanLoopDetectionSuccess() {
+    last(this.currentBooleanSession.loopDetection).steps.push({type: 'LOOP_FOUND'});
+  }
+
+  booleanLoopDetectionNextStep(candidates, winner) {
+    last(this.currentBooleanSession.loopDetection).steps.push({type: 'NEXT_STEP_ANALYSIS'});
+  }
 }
 
 class BooleanSession {
 
   constructor(a, b, type) {
     this.id = ID_COUNTER ++;
+    this.type = type;
     this.inputOperandA = a;
     this.inputOperandB = b;
+    this.loopDetection = [];
+    this.mergeFacesLoopDetection = [];
+    this.currentLoopDetection = null;
   }
+}
 
-  setWorkingOperands(a, b) {
-    this.workingOperandA = a;
-    this.workingOperandB = b;
-  }
-
-  setResult(result) {
-    this.result = result;
-  }
-
+function last(arr) {
+  return arr[arr.length - 1];
 }
 
 let ID_COUNTER = 1;

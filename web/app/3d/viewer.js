@@ -75,13 +75,14 @@ function Viewer(bus, container) {
     }
   };
 
+  let arrowLength = 1500;
+  let createAxisArrow = createArrow.bind(null, arrowLength, 40, 16);
   function addAxis(axis, color) {
-    var lineMaterial = new THREE.LineBasicMaterial({color: color, linewidth: 1/DPR});
-    var axisGeom = new THREE.Geometry();
-    axisGeom.vertices.push(axis.multiply(-1000).three());
-    axisGeom.vertices.push(axis.multiply(1000).three());
-    scene.add(new THREE.Line(axisGeom, lineMaterial));
+    let arrow = createAxisArrow(axis, color);
+    arrow.position.add( new THREE.Vector3().copy(axis).multiplyScalar(- arrowLength * 0.5) )
+    scene.add(arrow);
   }
+  
   addAxis(AXIS.X, 0xFF0000);
   addAxis(AXIS.Y, 0x00FF00);
   addAxis(AXIS.Z, 0x0000FF);
@@ -174,28 +175,42 @@ Viewer.prototype.zoomMeasure = function() {
   return this.trackballControls.object.position.length() / 1e3;
 };
 
+
+function createArrow(length, arrowLength, arrowHead, axis, color) {
+  var arrow = new THREE.ArrowHelper(axis, new THREE.Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
+  arrow.updateMatrix();
+  arrow.line.material.linewidth =  1/DPR;
+  arrow.line.material.opacity = 0.2;
+  arrow.line.material.transparent = true;
+  arrow.cone.material.opacity = 0.2;
+  arrow.cone.material.transparent = true;
+  
+  return arrow;
+}
+
+
 Viewer.prototype.createBasisGroup = function() {
-  this.basisGroup = new THREE.Object3D();
   var length = 200;
   var arrowLength = length * 0.2;
   var arrowHead = arrowLength * 0.4;
 
-  function createArrow(axis, color) {
-    var arrow = new THREE.ArrowHelper(axis, new THREE.Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
-    arrow.updateMatrix();
+  let _createArrow = createArrow.bind(null, length, arrowLength, arrowHead);
+  
+  function createBasisArrow(axis, color) {
+    let arrow = _createArrow(axis, color);
     arrow.matrixAutoUpdate = false;
     arrow.line.renderOrder = 1e11;
     arrow.cone.renderOrder = 1e11;
-    arrow.line.material.linewidth =  1/DPR;
     arrow.line.material.depthWrite = false;
     arrow.line.material.depthTest = false;
     arrow.cone.material.depthWrite = false;
     arrow.cone.material.depthTest = false;
     return arrow;
   }
-
-  var xAxis = createArrow(new THREE.Vector3(1, 0, 0), 0xFF0000);
-  var yAxis = createArrow(new THREE.Vector3(0, 1, 0), 0x00FF00);
+  
+  this.basisGroup = new THREE.Object3D();
+  var xAxis = createBasisArrow(new THREE.Vector3(1, 0, 0), 0xFF0000);
+  var yAxis = createBasisArrow(new THREE.Vector3(0, 1, 0), 0x00FF00);
   this.basisGroup.add(xAxis);
   this.basisGroup.add(yAxis);
 };
