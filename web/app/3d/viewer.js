@@ -82,9 +82,9 @@ function Viewer(bus, container) {
     axisGeom.vertices.push(axis.multiply(1000).three());
     scene.add(new THREE.Line(axisGeom, lineMaterial));
   }
-  // addAxis(AXIS.X, 0xFF0000);
-  // addAxis(AXIS.Y, 0x00FF00);
-  // addAxis(AXIS.Z, 0x0000FF);
+  addAxis(AXIS.X, 0xFF0000);
+  addAxis(AXIS.Y, 0x00FF00);
+  addAxis(AXIS.Z, 0x0000FF);
 
   this.updateControlsAndHelpers = function() {
     trackballControls.update();
