@@ -161,6 +161,10 @@ function addGlobalDebugActions(app) {
       app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));
       app.viewer.render();
     },
+    ShowSolids: () => {
+      app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = true));
+      app.viewer.render();
+    },
     Clear: () => {
       clearGroup(debugGroup);
       app.viewer.render();
@@ -168,7 +172,8 @@ function addGlobalDebugActions(app) {
     ClearVolumes: () => {
       clearGroup(debugVolumeGroup);
       app.viewer.render();
-    }
+    },
+    render: () => app.viewer.render()
   }
 }
 
@@ -181,7 +186,7 @@ function clearGroup(g) {
   }
 }
 
-function createLine(a, b, color) {
+export function createLine(a, b, color) {
   color = color || 0xFA8072;
   const debugLineMaterial = new THREE.LineBasicMaterial({color, linewidth: 10});
   const  lg = new THREE.Geometry();
@@ -190,7 +195,7 @@ function createLine(a, b, color) {
   return new THREE.Line(lg, debugLineMaterial);
 }
 
-function createPoint(x, y, z, color) {
+export function createPoint(x, y, z, color) {
   if (z === undefined) {
     color = y;
     y = x.y;
