@@ -183,7 +183,7 @@ function detectLoops(surface, graph) {
       if (loop.halfEdges[0].vertexA === edge.vertexB) {
         loop.link();
         loops.push(loop);
-        BREP_DEBUG.booleanLoopDetectionSuccess();
+        BREP_DEBUG.booleanLoopDetectionSuccess(loop);
         break;
       }
       
