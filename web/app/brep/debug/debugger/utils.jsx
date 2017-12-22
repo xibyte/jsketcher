@@ -1,13 +1,34 @@
 import React from 'react';
-import {BLUE, cycleColor, GREEN, SALMON, WHITE} from "./colors";
-import {distanceAB3, distanceSquaredAB3} from "../../../math/math";
+import {AQUA, BLACK, BLUE, cycleColor, DETECTED_EDGE, DISCARDED_EDGE, GREEN, RED, SALMON, WHITE} from "./colors";
+import {distanceAB3} from "../../../math/math";
+import Section from "./section";
 
-export function getFaceViewObjects(group3d, category, out, face) {
-  forEach(face.loops, getLoopViewObjects.bind(null, group3d, category, out));
+export function getFaceViewObjects(group3d, category, context, out, face) {
+  return getLoopsViewObjects(group3d, category, context, out, face.loops);
 }
 
-export function getLoopViewObjects(group3d, category, out, loop) {
-  forEach(loop.halfEdges, getEdgeViewObjects.bind(null, group3d, category, out));
+export function getLoopsViewObjects(group3d, category, context, out, loops) {
+  forEach(loops, getLoopViewObjects.bind(null, group3d, category, context, out));
+}
+
+export function getLoopViewObjects(group3d, category, context, out, loop) {
+  return getEdgesViewObjects(group3d, category, context, out, loop.halfEdges);
+}
+
+export function getEdgesViewObjects(group3d, category, context, out, edges) {
+  forEach(edges, getEdgeViewObjects.bind(null, group3d, category, context, out));
+}
+
+export function getViewObjectsComposite(providers) {
+  return function (group3d, category, context, out, objects) {
+    for (let i = 0; i < providers.length; i++) {
+      let obj = objects[i];
+      if (obj) {
+        let provider = providers[i];
+        provider(group3d, category, context, out, obj);
+      }
+    }
+  }
 }
 
 export const getEdgeViewObjects = findOrCreate.bind(null, (edge, color) => {
@@ -68,35 +89,59 @@ export const getVertexViewObjects = findOrCreate.bind(null, ({point: {x,y,z}}, c
   return sphere;
 });
 
-export function findOrCreate(creator, group3d, category, out, topoObj) {
+export function findOrCreate(creator, group3d, category, context, out, topoObj) {
   let id = category + '/' + topoObj.refId;
   let obj = group3d.children.find(obj => obj.__tcad_debug_refId === id);
   if (!obj) {
-    obj = creator(topoObj, getInitColor(category, topoObj.constructor.name));
+    obj = creator(topoObj, getInitColor(category, topoObj, context));
     group3d.add(obj);
     obj.__tcad_debug_refId = id;
+    obj.__tcad_debug_topoObj = topoObj;
     obj.visible = false;
   }
   out.push(obj);
 }
 
-export function setViewObjectsColor(objectsProvider, group3d, category, topoObj, colorGetter) {
-  let objs = [];
-  objectsProvider(group3d, category, objs, topoObj);
-  objs.forEach(o => o.__tcad_debug_materials.forEach(m => m.color.setHex(colorGetter(o))));
-  __DEBUG__.render();
+export function setViewObjectsColor(objectsProvider, group3d, category, context, topoObj, colorGetter) {
+  fetchViewObjects(objectsProvider, group3d, category, context, topoObj)
+    .forEach(o => o.__tcad_debug_materials.forEach(m => m.color.setHex(colorGetter(o))));
 }
 
-export function getInitColor(category, objectType) {
-  switch (objectType) {
-    case 'HalfEdge': 
-      switch (category) {
-        case 'face_intersection_operandA': return GREEN;
-        case 'face_intersection_operandB': return BLUE;
-        default: return SALMON;
+export function fetchViewObjects(objectsProvider, group3d, category, context, topoObj) {
+  let objs = [];
+  objectsProvider(group3d, category, context, objs, topoObj);
+  return objs;
+}
+
+
+export function getInitColor(category, obj, context) {
+  switch (category) {
+    case 'face_intersection_operandA': return GREEN;
+    case 'face_intersection_operandB': return BLUE;
+    case 'loop-detection': {
+      return context.has(obj) ? DETECTED_EDGE : DISCARDED_EDGE;
+    }
+    case 'edge-transfer': {
+      let {edge, face, chosenFace, discardedFace, chosenEdge} = context;
+      if (obj === edge) {
+        return RED;
+      } else if (obj.loop.face === face) {
+        return WHITE;
+      } else if (obj === chosenEdge) {
+        return AQUA;
+      } else if (obj.loop.face === chosenFace) {
+        return AQUA;
+      } else if (obj.loop.face === discardedFace) {
+        return BLACK;
+      } else {
+        return BLACK;
       }
-    case 'Vertex':
-      return GREEN;
+    }
+    default:
+      switch (obj.constructor.name) {
+        case 'HalfEdge': return SALMON;
+        case 'Vertex': return GREEN;
+      }
   }
   return WHITE;
 }
@@ -116,8 +161,8 @@ export function forEach(it, fn) {
 }
 
 
-export function createObjectsUpdater(viewObjectsProvider, group3d, category, topoObj) {
-  let getObjects = out => viewObjectsProvider.bind(null, group3d, category, out, topoObj)();
+export function createObjectsUpdater(viewObjectsProvider, group3d, category, context, topoObj) {
+  let getObjects = out => viewObjectsProvider.bind(null, group3d, category, context, out, topoObj)();
   return function (func) {
     let out = [];
     getObjects(out);
@@ -126,8 +171,8 @@ export function createObjectsUpdater(viewObjectsProvider, group3d, category, top
   }
 }
 
-export function Controls({viewObjectsProvider, group3d, category, topoObj}) {
-  let applyToAll = createObjectsUpdater(viewObjectsProvider, group3d, category, topoObj);
+export function Controls({viewObjectsProvider, group3d, category, context, topoObj}) {
+  let applyToAll = createObjectsUpdater(viewObjectsProvider, group3d, category, context, topoObj);
   function tweak() {
     let toState = null;
     applyToAll(o => {
@@ -146,18 +191,43 @@ export function Controls({viewObjectsProvider, group3d, category, topoObj}) {
   </span>;
 }
 
-export function ActiveLabel({viewObjectsProvider, group3d, category, topoObj, children, ...props}) {
-  let applyToAll = createObjectsUpdater(viewObjectsProvider, group3d, category, topoObj);
+export function ActiveLabel({viewObjectsProvider, group3d, category, context, topoObj, children, ...props}) {
+  let applyToAll = createObjectsUpdater(viewObjectsProvider, group3d, category, context, topoObj);
   function onMouseEnter() {
     applyToAll(o => {
-      o.__tcad_debug_last_visible = o.visible;
+      if (o.__tcad_debug_last_visible === undefined) {
+        o.__tcad_debug_last_visible = o.visible;
+      }
+      o.__tcad_debug_materials.forEach(m => {
+        m.opacity = 0.7;
+        m.transparent = true;
+      });
       o.visible = true;
     })
   }
   function onMouseLeave() {
-    applyToAll(o => o.visible = o.__tcad_debug_last_visible);
+    applyToAll(o => {
+      if (o.__tcad_debug_last_visible !== undefined) {
+        o.visible = o.__tcad_debug_last_visible;
+        o.__tcad_debug_last_visible = undefined;
+      }
+      o.__tcad_debug_materials.forEach(m => {
+        m.opacity = 1;
+        m.transparent = false;
+      });
+    });
   }
   return <span {...{onMouseEnter, onMouseLeave, ...props}}>{children}</span>;
 } 
+
+export function InteractiveSection({viewObjectsProvider, topoObj, group3d, category, context, name, closable, defaultClosed, children}) {
+  let ctrlProps = {viewObjectsProvider, topoObj, group3d, category, context};
+  let controls = <Controls {...ctrlProps} />;
+  let nameCtrl = <ActiveLabel {...ctrlProps}>{name}</ActiveLabel>;
+  return <Section name={nameCtrl} tabs={TAB} {...{closable, defaultClosed, controls}} >
+    {children}
+  </Section>
+
+}
 
 export const TAB = '0.5';
