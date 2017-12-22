@@ -1,7 +1,9 @@
-import React from 'react';
+import React, {Fragment as FR} from 'react';
 import Section from "./section";
 import {
-  ActiveLabel, Controls, getEdgeViewObjects, getFaceViewObjects, getLoopViewObjects, getVertexViewObjects, mapIterable,
+  ActiveLabel, Controls, getEdgesViewObjects, getEdgeViewObjects, getFaceViewObjects, getLoopsViewObjects,
+  getLoopViewObjects,
+  getVertexViewObjects, InteractiveSection, mapIterable,
   TAB
 } from "./utils";
 
@@ -11,63 +13,77 @@ export default class ShellExplorer extends React.PureComponent {
     let {shell, group3d} = this.props;
     
     return <div className='shell-explorer'>
-      <Section name={`shell ${shell.refId}`} closable>
-        {shell.faces.map(face => <FaceExplorer key={face.refId} {...{face, group3d}} category='default' />)}
+      <Section name={`shell ${shell ? shell.refId : 'UNAVAILABLE'}`} closable>
+        {shell && shell.faces.map(face => <FaceExplorer key={face.refId} {...{face, group3d}} category='default' context={null} />)}
       </Section>
     </div>;
   }
 }
 
-export function FaceExplorer({face, group3d, customName, category}) {
-  if (!category) throw 'no category';
+export function FaceExplorer({face, group3d, customName, category, context}) {
+  return <LoopsExplorer loops={face.loops} {...{group3d, category, context}} name={getName('face', customName, face)} />
+}
+
+export function LoopsExplorer({loops, group3d, name, category, context}) {
   let ctrlProps = {
-    viewObjectsProvider: getFaceViewObjects, topoObj: face, group3d, category
+    viewObjectsProvider: getLoopsViewObjects, topoObj: loops, group3d, category, context
   };
   let controls = <Controls {...ctrlProps} />;
-  let name = <ActiveLabel {...ctrlProps}>{getName('face', customName, face)}</ActiveLabel>
-  return <Section name={name} tabs={TAB} closable defaultClosed={true} controls={controls}>
-    {mapIterable(face.loops, loop => <LoopExplorer key={loop.refId} {...{loop, group3d, category}} />)}    
+  let nameComp = <ActiveLabel {...ctrlProps}>{name}</ActiveLabel>;
+  return <Section name={nameComp} tabs={TAB} closable defaultClosed={true} controls={controls}>
+    {mapIterable(loops, loop => <LoopExplorer key={loop.refId} {...{loop, group3d, category, context}} />)}
   </Section>
 }
 
-export function LoopExplorer({loop, group3d, customName, category}) {
-  if (!category) throw 'no category';
+export function LoopExplorer({loop, group3d, customName, category, context}) {
+  let highlightProps = {
+    viewObjectsProvider: getEdgesViewObjects, topoObj: loop.halfEdges, group3d, category, context
+  };
+
+  return <InteractiveSection name={getName('loop', customName, loop)} tabs={TAB} closable defaultClosed={true} {...highlightProps}>
+    {mapIterable(loop.halfEdges, edge => <EdgeExplorer key={edge.refId} {...{edge, group3d, category, context}}/>)}
+    {loop.face && <FaceExplorer face={loop.face} {...{group3d, category, context}} />}
+  </InteractiveSection>
+
+}
+
+export function EdgesExplorer({edges, group3d, name, category, context}) {
   let ctrlProps = {
-    viewObjectsProvider: getLoopViewObjects, topoObj: loop, group3d, category
+    viewObjectsProvider: getEdgesViewObjects, topoObj: edges, group3d, category, context
   };
   let controls = <Controls {...ctrlProps} />;
-  let name = <ActiveLabel {...ctrlProps}>{getName('loop', customName, loop)}</ActiveLabel>;
-  
-  return <Section name={name} tabs={TAB} closable defaultClosed={true} controls={controls}>
-    {mapIterable(loop.halfEdges, edge => <EdgesExplorer key={edge.refId} {...{edge, group3d, category}}/>)}    
+  let nameCtrl = <ActiveLabel {...ctrlProps}>{name}</ActiveLabel>;
+
+  return <Section name={nameCtrl} tabs={TAB} closable defaultClosed={true} controls={controls}>
+    {mapIterable(edges, edge => <EdgeExplorer key={edge.refId} {...{edge, group3d, category, context}}/>)}
   </Section>
 }
 
-export function EdgesExplorer({edge, group3d, customName, category}) {
-  if (!category) throw 'no category';
+export function EdgeExplorer({edge, group3d, customName, category, context}) {
   let ctrlProps = {
-    viewObjectsProvider: getEdgeViewObjects, topoObj: edge, group3d, category
+    viewObjectsProvider: getEdgeViewObjects, topoObj: edge, group3d, category, context
   };
   let controls = <Controls {...ctrlProps} />;
   let name = <ActiveLabel {...ctrlProps}>{getName('edge', customName, edge)}</ActiveLabel>;
   let twin = edge.twin();
   
   return <Section name={name} tabs={TAB} closable defaultClosed={true} controls={controls}>
-    {twin && [
-      twin.loop && [<LoopExplorer loop={twin.loop} customName='t-loop' {...{group3d, category}} />,
-      twin.loop.face &&<FaceExplorer face={twin.loop.face} customName='t-face' {...{group3d, category}} />],
-      <EdgesExplorer edge={twin} customName='twin' {...{group3d, category}} />
-    ]}
-    <VertexExplorer vertex={edge.vertexA} customName='vertex A' {...{group3d, category}} />
-    <VertexExplorer vertex={edge.vertexB} customName='vertex B' {...{group3d, category}} />
-
+    {twin && <FR>
+      {twin.loop && <FR>
+        <LoopExplorer loop={twin.loop} customName='t-loop' {...{group3d, category, context}} />
+        {twin.loop.face && <FaceExplorer face={twin.loop.face} customName='t-face' {...{group3d, category, context}} />}
+        <EdgeExplorer edge={twin} customName='twin' {...{group3d, category, context}} />
+      </FR>}
+    </FR>}
+    {edge.loop && <LoopExplorer loop={edge.loop} {...{group3d, category, context}} />}
+    <VertexExplorer vertex={edge.vertexA} customName='vertex A' {...{group3d, category, context}} />
+    <VertexExplorer vertex={edge.vertexB} customName='vertex B' {...{group3d, category, context}} />
   </Section>
 }
 
-export function VertexExplorer({vertex, group3d, customName, category}) {
-  if (!category) throw 'no category';
+export function VertexExplorer({vertex, group3d, customName, category, context}) {
   let ctrlProps = {
-    viewObjectsProvider: getVertexViewObjects, topoObj: vertex, group3d, category
+    viewObjectsProvider: getVertexViewObjects, topoObj: vertex, group3d, category, context
   };
   let controls = <Controls {...ctrlProps} />;
   let name = <ActiveLabel {...ctrlProps}>{getName('vertex', customName, vertex)}</ActiveLabel>;

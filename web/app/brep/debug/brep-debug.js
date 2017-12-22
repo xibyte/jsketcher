@@ -3,6 +3,7 @@ class BRepDebug {
 
   constructor() {
     this.booleanSessions = [];
+    this.booleanDetectedLoopEdges = new Set();
   }
 
   startBooleanSession(a, b, type) {
@@ -23,6 +24,7 @@ class BRepDebug {
     this.currentBooleanSession.loopDetection.push({
       id: this.currentBooleanSession.loopDetection.length + 1,
       steps: [],
+      detectedLoops: [],
       graph: graph.graphEdges.slice()
     });
   }
@@ -36,12 +38,15 @@ class BRepDebug {
     last(this.currentBooleanSession.loopDetection).steps.push({type: 'TRY_EDGE', edge});
   }
   
-  booleanLoopDetectionSuccess() {
-    last(this.currentBooleanSession.loopDetection).steps.push({type: 'LOOP_FOUND'});
+  booleanLoopDetectionSuccess(loop) {
+    let ld = last(this.currentBooleanSession.loopDetection);
+    loop.halfEdges.forEach(e => this.booleanDetectedLoopEdges.add(e));
+    ld.detectedLoops.push(loop);
+    ld.steps.push({type: 'LOOP_FOUND'});
   }
 
   booleanLoopDetectionNextStep(candidates, winner) {
-    last(this.currentBooleanSession.loopDetection).steps.push({type: 'NEXT_STEP_ANALYSIS'});
+    last(this.currentBooleanSession.loopDetection).steps.push({type: 'NEXT_STEP_ANALYSIS', candidates, winner});
   }
 }
 
