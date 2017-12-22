@@ -3,7 +3,6 @@ class BRepDebug {
 
   constructor() {
     this.booleanSessions = [];
-    this.booleanDetectedLoopEdges = new Set();
   }
 
   startBooleanSession(a, b, type) {
@@ -40,13 +39,16 @@ class BRepDebug {
   
   booleanLoopDetectionSuccess(loop) {
     let ld = last(this.currentBooleanSession.loopDetection);
-    loop.halfEdges.forEach(e => this.booleanDetectedLoopEdges.add(e));
     ld.detectedLoops.push(loop);
     ld.steps.push({type: 'LOOP_FOUND'});
   }
 
   booleanLoopDetectionNextStep(candidates, winner) {
     last(this.currentBooleanSession.loopDetection).steps.push({type: 'NEXT_STEP_ANALYSIS', candidates, winner});
+  }
+
+  transferEdge(edge, face, chosenEdge) {
+    this.currentBooleanSession.transferedEdges.push({edge, face, chosenEdge});
   }
 }
 
@@ -58,6 +60,7 @@ class BooleanSession {
     this.inputOperandA = a;
     this.inputOperandB = b;
     this.loopDetection = [];
+    this.transferedEdges = [];
     this.mergeFacesLoopDetection = [];
     this.currentLoopDetection = null;
   }

@@ -810,7 +810,7 @@ function intersectFaces(shellA, shellB, operationType) {
   }
 }
 
-function chooseValidEdge(edge, face, operationType) {
+export function chooseValidEdge(edge, face, operationType) {
   let pt = edge.edge.curve.middlePoint();
   let edgeTangent = edge.tangent(pt);
   let edgeFaceNormal = edge.loop.face.surface.normal(pt);
@@ -826,15 +826,20 @@ function transferEdges(faceSource, faceDest, operationType) {
       continue;
     }
     for (let edge of loop.halfEdges) {
-      if (isEdgeTransfered(edge.edge)) {
+      if (isEdgeTransferred(edge.edge)) {
         continue;    
       }
       if (edgeCollinearToFace(edge, faceDest)) {
+        //not coincide with an edge
+        if (!faceDest.rayCast(edge.edge.curve.middlePoint()).strictInside) {
+          continue;          
+        }
         let validEdge = chooseValidEdge(edge, faceDest, operationType);
+        BREP_DEBUG.transferEdge(edge, faceDest, validEdge);
         let twin = validEdge.twin();
-        twin.loop.face.data[MY].markTransferedFrom(twin);
-        markEdgeTransfered(twin.edge)
-        addNewEdge(face, twin);
+        twin.loop.face.data[MY].markTransferredFrom(twin);
+        markEdgeTransferred(twin.edge);
+        addNewEdge(faceDest, twin);
       }
     }
   }
@@ -1103,7 +1108,7 @@ function isNewNM(edge) {
   return isNew(edge); 
 }
 
-function markEdgeTransfered(edge) {
+function markEdgeTransferred(edge) {
   let data = edge.data[MY];
   if (!data) {
     data = {};
@@ -1112,7 +1117,7 @@ function markEdgeTransfered(edge) {
   data.transfered = true;
 }
 
-function isEdgeTransfered(edge) {
+function isEdgeTransferred(edge) {
   let data = edge.data[MY];
   return data && data.transfered;
 }
@@ -1189,11 +1194,12 @@ class FaceSolveData extends EdgeGraph {
     super();
     this.face = face;
     this.loopOfNew = new Loop(face);
+    this.loopOfNew.face = face;
     face.innerLoops.push(this.loopOfNew);
     this.errors = [];
   }
 
-  markTransferedFrom(edge) {
+  markTransferredFrom(edge) {
     if (!this.transferedFrom) {
       this.transferedFrom = new Set();
     }
@@ -1317,12 +1323,13 @@ function edgeCollinearToFace(edge, face) {
   let tess = edge.tessellate();
   for (let i = 0; i < tess.length; ++i) {
     let pt1 = tess[i];
-    let pt2 = face.surface.point(face.surface.param(pt1));
+    let [u, v] = face.surface.param(pt1);
+    let pt2 = face.surface.point(u, v);
     if (!veq(pt1, pt2)) {
       return false;
     }
 
-    if (!face.rayCast(pt2)) {
+    if (!face.rayCast(pt2).inside) {
       return false;
     }
   }
