@@ -4,6 +4,7 @@ import BREP_DEBUG from '../brep-debug';
 import ShellExplorer from './shellExplorer';
 import LoopDetectionExplorer from './loopDetectionExplorer';
 import Section from './section'
+import {EdgeTransferExplorer} from "./edgeTransferExplorer";
 
 export default class BrepDebugger extends React.PureComponent {
 
@@ -21,11 +22,12 @@ export default class BrepDebugger extends React.PureComponent {
         <i className='fa fa-fw fa-eye button grayed' onClick={hideAll} />{' '}
         <i className='fa fa-fw fa-cubes button grayed' onClick={() => __DEBUG__.HideSolids()} />{' '} 
         <i className='fa fa-fw fa-cubes button' onClick={() => __DEBUG__.ShowSolids()} />
+        <i className='fa fa-fw fa-refresh button' onClick={() => this.forceUpdate()} />
       </div>
 
       <div className='section boolean-sessions'>
       {booleanSessions.map(session => 
-        <Section name={`boolean session ${session.id} - ${session.type}`} closable accent captionStyles={['centered']}>
+        <Section key={session.id} name={`boolean session ${session.id} - ${session.type}`} closable accent captionStyles={['centered']}>
           <div className='section'>
 
             <Section name='input operands' accent>
@@ -63,6 +65,10 @@ export default class BrepDebugger extends React.PureComponent {
           
           <Section name='loops detection' accent>
             {session.loopDetection.map(ld => <LoopDetectionExplorer key={ld.id} loopDetection={ld} group3d={brepDebugGroup} />)}  
+          </Section>
+
+          <Section name='edge transfer' accent>
+            {session.transferedEdges.map((et, i) => <EdgeTransferExplorer key={i} {...et} index={i} group3d={brepDebugGroup} />)}
           </Section>
           
           <Section name='edge intersections' accent>
