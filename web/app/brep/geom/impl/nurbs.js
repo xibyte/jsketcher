@@ -291,6 +291,15 @@ export class NurbsSurface extends Surface {
     this.simpleSurface = simpleSurface || figureOutSimpleSurface(this); 
   }
 
+  middle() {
+    let {min: uMin, max: uMax} = this.verb.domainU();
+    let {min: vMin, max: vMax} = this.verb.domainV();
+    return [
+      (uMax - uMin) * 0.5,
+      (vMax - vMin) * 0.5
+    ];
+  }
+  
   toNurbs() {
     return this;
   }

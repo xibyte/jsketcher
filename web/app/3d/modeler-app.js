@@ -622,12 +622,7 @@ App.prototype.findSketches = function(solid) {
 };
 
 App.prototype.refreshSketchOnFace = function(sketchFace) {
-  var faceStorageKey = this.faceStorageKey(sketchFace.id);
-  var savedFace = localStorage.getItem(faceStorageKey);
-  if (savedFace != null) {
-    var geom = ReadSketch(JSON.parse(savedFace), sketchFace.id, true);
-    sketchFace.syncSketches(geom);
-  }
+  sketchFace.updateSketch(this);
 };
 
 App.prototype.save = function() {

@@ -11,21 +11,26 @@ export class PreviewWizard extends Wizard {
     this.previewObject = null;
     this.app.viewer.workGroup.add(this.previewGroup);
     this.updatePreview();
+    app.bus.subscribe('refreshSketch', this.onSketchUpdate);
   }
+  
+  onSketchUpdate = () => {
+    this.updatePreview();
+  };
   
   createPreviewObject() {throw 'abstract'};
   
   updatePreview() {
     this.destroyPreviewObject();
     this.previewObject = this.createPreviewObject(this.app, this.readFormFields());
-    if (this.previewObject != null) {
+    if (this.previewObject !== null) {
       this.previewGroup.add( this.previewObject );
     }
     this.app.viewer.render();
   }
 
   destroyPreviewObject() {
-    if (this.previewObject != null) {
+    if (this.previewObject !== null) {
       this.previewGroup.remove( this.previewObject );
       this.previewObject.geometry.dispose();
       this.previewObject = null;
@@ -38,6 +43,7 @@ export class PreviewWizard extends Wizard {
   }
 
   dispose() {
+    this.app.bus.unsubscribe('refreshSketch', this.onSketchUpdate);
     this.destroyPreviewObject();
     this.app.viewer.workGroup.remove(this.previewGroup);
     this.app.viewer.render();
@@ -75,17 +81,7 @@ export class SketchBasedPreviewer {
   create(app, params) {
     const face = app.findFace(params.face);
     if (!face) return null;
-    const needSketchRead = !this.sketch || params.face != this.face;
-    if (needSketchRead) {
-      this.sketch = ReadSketchFromFace(app, face);
-      //for (let polygon of this.sketch) {
-        //if (!Loop.isPolygonCCWOnSurface(polygon, face.surface()) && this.fixToCCW) {
-        //  polygon.reverse();
-        //}
-      //}
-      this.face = params.face;
-    }
-    const triangles = this.createImpl(app, params, this.sketch.fetchContours(), face);
+    const triangles = this.createImpl(app, params, face.sketch.fetchContours(), face);
     return PreviewWizard.createMesh(triangles);
   }
 }
