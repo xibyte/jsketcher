@@ -4,6 +4,7 @@ import Counters from '../counters'
 import {Matrix3, BasisForPlane} from '../../math/l3space'
 import {isCurveClass} from '../cad-utils'
 import DPR from '../../utils/dpr'
+import {ReadSketch, ReadSketchFromFace} from "../craft/sketch/sketch-reader";
 
 export class SceneSolid {
   
@@ -22,6 +23,8 @@ export class SceneSolid {
     this.mergeable = true;
     this.sceneFaces = [];
 
+    this.sketch = null;
+    
     this.material = createSolidMaterial(skin);
   }
 
@@ -113,8 +116,24 @@ export class SceneFace {
     threeFace.__TCAD_SceneFace = this;
   }
 
-  syncSketches(geom) {
-    if (this.sketch3DGroup != null) {
+  readSketchGeom(app) {
+    let faceStorageKey = app.faceStorageKey(this.id);
+    let savedFace = localStorage.getItem(faceStorageKey);
+    if (savedFace === null) {
+      return null;
+    }
+    return ReadSketch(JSON.parse(savedFace), this.id, true);
+  }
+
+  updateSketch(app) {
+    this.sketch = this.readSketchGeom(app);
+    if (this.sketch !== null) {
+      this.syncSketch(this.sketch);
+    }
+  }
+  
+  syncSketch(geom) {
+    if (this.sketch3DGroup !== null) {
       for (let i = this.sketch3DGroup.children.length - 1; i >= 0; --i) {
         this.sketch3DGroup.remove(this.sketch3DGroup.children[i]);
       }
@@ -123,10 +142,9 @@ export class SceneFace {
       this.solid.cadGroup.add(this.sketch3DGroup);
     }
 
-    const basis = this.basis();
-    const _3dTransformation = new Matrix3().setBasis(basis);
-    //we lost depth or z off in 2d sketch, calculate it again
-    const depth = this.depth();
+    let surface = this.surface();
+    let [u, v] = surface.middle();
+    const _3dTransformation =  surface.tangentPlane(u, v).get3DTransformation();
     const addSketchObjects = (sketchObjects, material, close) => {
       for (let sketchObject of sketchObjects) {
         let line = new THREE.Line(undefined, material);
@@ -134,7 +152,6 @@ export class SceneFace {
         const chunks = sketchObject.approximate(10);
         function addLine(p, q) {
           const lg = line.geometry;
-          chunks[p].z = chunks[q].z = depth;
           const a = _3dTransformation.apply(chunks[p]);
           const b = _3dTransformation.apply(chunks[q]);
 
@@ -153,7 +170,7 @@ export class SceneFace {
   }
 
   findById(sketchObjectId) {
-    return this.sketch3DGroup.children.find(o => o.__TCAD_SketchObject && o.__TCAD_SketchObject.id == sketchObjectId);
+    return this.sketch3DGroup.children.find(o => o.__TCAD_SketchObject && o.__TCAD_SketchObject.id === sketchObjectId);
   }
 
   getSketchObjectVerticesIn3D(sketchObjectId) {
