@@ -46,7 +46,7 @@ export class Plane extends Surface {
     if (!this.__3dTr) {
       const basis = new Matrix3().setBasis(this.basis());
       const translate = new Matrix3();
-      translate.tz = this.w
+      translate.tz = this.w;
       this.__3dTr = basis.combine(translate);
 //      this.__3dTr.tz = this.w;
     }
