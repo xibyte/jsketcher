@@ -9,7 +9,7 @@ export class Wizard {
     this.formFields = {};
     this.box = this.createUI(opearation, metadata);
     this.overridingHistory = false;
-    if (initialState != undefined) {
+    if (initialState !== undefined) {
       this.setFormFields(initialState);
     }
   }

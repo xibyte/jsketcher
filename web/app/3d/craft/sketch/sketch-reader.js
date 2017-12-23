@@ -15,7 +15,7 @@ class SketchGeom {
   }
 
   fetchContours() {
-    if (this._contours == null) {
+    if (this._contours === null) {
       this._contours = FetchContours(this);
     }
     return this._contours;
@@ -91,7 +91,9 @@ export function ReadSketchPoint(arr) {
 
 export function ReadSketchFromFace(app, face) {
   const savedFace = localStorage.getItem(app.faceStorageKey(face.id));
-  if (savedFace == null) return null;
+  if (savedFace === null) {
+    return null;
+  }
   return ReadSketch(JSON.parse(savedFace), face.id, true);
 }
 
