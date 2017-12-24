@@ -85,7 +85,7 @@ export class Face extends TopoObject {
         if (ray.passesThrough(v.point) || initVertex === v) {
           let dist = pt.distanceToSquared(v.point);
           if (result === null || dist < result.dist) {
-            let inside = !isCurveEntersEnclose(ray, a, b);
+            let inside = !isCurveEntersEnclose(ray, a, b, true);
             result = {
               dist,
               inside,
