@@ -249,23 +249,28 @@ function findOverlappingFaces(shell1, shell2) {
   return overlapGroups;
 }
 
-function mergeOverlappingFaces(shell1, shell2, opType) {
-  let groups = findOverlappingFaces(shell1, shell2);
-  for (let group of groups) {
-    mergeFaces(Array.from(group[0]), Array.from(group[1]), opType)
+function mergeOverlappingFaces(shellA, shellB, opType) {
+  let groups = findOverlappingFaces(shellA, shellB);
+  for (let [groupA, groupB] of groups) {
+    filterInPlace(shellA.faces, f => !groupA.has(f));
+    filterInPlace(shellB.faces, f => !groupB.has(f));
+    let newFaces = mergeFaces(Array.from(groupA), Array.from(groupB), opType)
+    for (let newFace of newFaces) {
+      shellA.faces.push(newFace);
+    }
   }
 }
 
-function mergeFaces(faces1, faces2, opType) {
-  let allFaces = [...faces1, ...faces2];
-  for (let face of allFaces) {
+function mergeFaces(facesA, facesB, opType) {
+  let originFaces = [...facesA, ...facesB];
+  for (let face of originFaces) {
     face.__mergeGraph = new Map();
     for (let e of face.edges) {
       addToListInMap(face.__mergeGraph, e.vertexA, e);
     }
   }
 
-  let destFace = faces1[0];
+  let originFace = facesA[0];
 
   let valid = new Set();
   let invalid = new Set();
@@ -320,7 +325,7 @@ function mergeFaces(faces1, faces2, opType) {
             continue;
           }
           
-          let inside = isInsideEnclose(destFace.surface.normal(v.point), 
+          let inside = isInsideEnclose(originFace.surface.normal(v.point), 
             testee.tangentAtStart(), inEdge.tangentAtEnd(), outEdge.tangentAtStart(), true);
 
           if (inside && opType === TYPE.INTERSECT) {
@@ -339,14 +344,14 @@ function mergeFaces(faces1, faces2, opType) {
     }
   }
 
-  for (let face1 of faces1) {
-    for (let face2 of faces2) {
+  for (let face1 of facesA) {
+    for (let face2 of facesB) {
       invalidate(face1, face2.__mergeGraph);
       invalidate(face2, face1.__mergeGraph);
     }
   }
 
-  for (let face of allFaces) {
+  for (let face of originFaces) {
     for (let loop of face.loops) {
       loop.link();          
     }
@@ -366,7 +371,7 @@ function mergeFaces(faces1, faces2, opType) {
 
   let graph = new EdgeGraph();
   let discardedEdges = new Set();
-  for (let face of allFaces) {
+  for (let face of originFaces) {
     for (let edge of face.edges) {
       discardedEdges.add(edge);
       if (!invalid.has(edge)) {
@@ -375,50 +380,20 @@ function mergeFaces(faces1, faces2, opType) {
     }
   }
   
-  for (let face of allFaces) {
-    if (destFace !== face) {
-      face.data[MY] = INVALID_FLAG;
-    }
-    face.outerLoop.halfEdges = [];
-    face.innerLoops = [];
-  }    
-
-  let detectedLoops = detectLoops(destFace.surface, graph);
+  let detectedLoops = detectLoops(originFace.surface, graph);
   if (detectedLoops.length === 0) {
-    destFace.data[MY] = INVALID_FLAG;
     return;
   }
-  let [newDestFace, ...destFaces] = evolveFace(destFace, detectedLoops);
+  let newFaces = evolveFace(originFace, detectedLoops);
 
-  if (destFaces.length !== 0) {
-    throw 'unsupported yet';
-  } else {
-    //TODO:
-    //temporary hack:
-    destFace.outerLoop = newDestFace.outerLoop;
-    destFace.innerLoops = newDestFace.innerLoops;
-    //mark all edges as new to get them into the result
-    for (let edge of destFace.edges) {
+  for (let newFace of newFaces) {
+    for (let edge of newFace.edges) {
       EdgeSolveData.markNew(edge);
+      discardedEdges.delete(edge);
     }
+    newFace.analysisFace = newFace;
   }
-  
-  let allPoints = [];
-  for (let edge of destFace.edges) {
-    discardedEdges.delete(edge);
-    allPoints.push(edge.vertexA.point);
-  }
-  if (allPoints.length === null) {
-    destFace.data[MY] = INVALID_FLAG;
-    return;
-  }
-  destFace.surface = createBoundingNurbs(allPoints, destFace.surface.simpleSurface);
-  
-  for (let loop of destFace.loops) {
-    loop.face = destFace;
-  }
-  destFace.data[MY] = {discardedEdges};
-  destFace.analysisFace = destFace;
+  return newFaces;
 }
 
 export function mergeVertices(shell1, shell2) {
@@ -648,7 +623,6 @@ export function loopsToFaces(originFace, loops, out) {
 }
 
 function initSolveData(shell, facesData) {
-  filterInPlace(shell.faces, f => f.data[MY] !== INVALID_FLAG);
   for (let face of shell.faces) {
     const solveData = new FaceSolveData(face);
     facesData.push(solveData);
@@ -1045,10 +1019,27 @@ function isInsideEnclose(normal, testee, inVec, outVec, strict){
   return testeeAngle < enclosureAngle;
 }
 
-export function isCurveEntersEnclose(curve, a, b) {
+export function isCurveEntersEnclose(curve, a, b, checkCoincidence) {
   let pt = a.vertexB.point;
   let normal = a.loop.face.surface.normal(pt);
-  return isInsideEnclose(normal, curve.tangentAtPoint(pt), a.tangentAtEnd(), b.tangentAtStart()); 
+
+
+  let testee = curve.tangentAtPoint(pt);
+  let inVec = a.tangentAtEnd();
+  let outVec = b.tangentAtStart();
+
+  if (checkCoincidence) {
+    if (veq(outVec, testee)) {
+      return true;
+    } else if (veqNeg(outVec, testee)) {
+      return false;
+    } else if (veq(inVec, testee)) {
+      return false;
+    } else if (veqNeg(inVec, testee)) {
+      return true;
+    }
+  }
+  return isInsideEnclose(normal, testee, inVec, outVec); 
 }
 
 export function isCurveEntersEdgeAtPoint(curve, edge, point) {
@@ -1380,5 +1371,4 @@ function assert(name, cond) {
   }
 }
 
-const INVALID_FLAG = 'INVALID_FLAG'; 
 const MY = '__BOOLEAN_ALGORITHM_DATA__'; 
