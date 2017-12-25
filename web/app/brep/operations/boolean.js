@@ -1028,18 +1028,23 @@ export function isCurveEntersEnclose(curve, a, b, checkCoincidence) {
   let inVec = a.tangentAtEnd();
   let outVec = b.tangentAtStart();
 
-  if (checkCoincidence) {
-    if (veq(outVec, testee)) {
-      return true;
-    } else if (veqNeg(outVec, testee)) {
-      return false;
-    } else if (veq(inVec, testee)) {
-      return false;
-    } else if (veqNeg(inVec, testee)) {
-      return true;
-    }
+  let coiIn = veqNeg(inVec, testee);
+  let coiOut = veq(outVec, testee);
+  
+  if (coiIn && coiOut) {
+    return undefined;
   }
-  return isInsideEnclose(normal, testee, inVec, outVec); 
+
+  let negated = coiIn || coiOut; 
+  if (negated) {
+    testee = testee.negate();
+  }
+
+  let insideEnclose = isInsideEnclose(normal, testee, inVec, outVec);
+  if (negated) {
+    insideEnclose = !insideEnclose;
+  }
+  return insideEnclose; 
 }
 
 export function isCurveEntersEdgeAtPoint(curve, edge, point) {
