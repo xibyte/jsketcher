@@ -12,6 +12,7 @@ import pickPointInside2dPolygon from "../utils/pickPointInPolygon";
 import CadError from "../../utils/errors";
 import {createBoundingNurbs} from "../brep-builder";
 import BREP_DEBUG from '../debug/brep-debug';
+import {Face} from "../topo/face";
 
 
 const A = 0, B = 1;
@@ -95,16 +96,18 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
   initVertexFactory(shellA, shellB);
 
   intersectEdges(shellA, shellB);
-  mergeOverlappingFaces(shellA, shellB, type);
-  
+  let mergedFaces = mergeOverlappingFaces(shellA, shellB, type);
+
   initSolveData(shellA, facesData);
   initSolveData(shellB, facesData);
 
   intersectFaces(shellA, shellB, type);
-  
+
+  replaceMergedFaces(facesData, mergedFaces);
   for (let faceData of facesData) {
     faceData.initGraph();
   }
+  
   checkFaceDataForError(facesData);
   
   for (let faceData of facesData) {
@@ -114,6 +117,7 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
   let detectedLoops = new Set();
   for (let faceData of facesData) {
     for (let loop of faceData.detectedLoops) {
+      loop.link();
       detectedLoops.add(loop);
     }
   }
@@ -149,6 +153,24 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
   return result;
 }
 
+function replaceMergedFaces(facesData, mergedFaces) {
+  filterInPlace(facesData, ({face}) => 
+      mergedFaces.find(({originFaces}) => originFaces.indexOf(face) > -1) === undefined
+  );
+  for (let {mergedLoops, originFaces} of mergedFaces) {
+    let fakeFace = new Face(originFaces[0].surface);
+    for (let mergedLoop of mergedLoops) {
+      fakeFace.innerLoops.push(mergedLoop);
+      mergedLoop.face = fakeFace;
+      mergedLoop.link();
+    }
+    facesData.push(initSolveDataForFace(fakeFace));
+    for (let originFace of originFaces) {
+      originFace.data[MY].newEdges.forEach(e => addNewEdge(fakeFace, e));
+    }
+  }
+}
+
 function prepareWorkingCopy(_shell) {
   let workingCopy = _shell.clone();
   setAnalysisFace(_shell, workingCopy);
@@ -181,7 +203,6 @@ function detectLoops(surface, graph) {
       seen.add(edge);
       loop.halfEdges.push(edge);
       if (loop.halfEdges[0].vertexA === edge.vertexB) {
-        loop.link();
         loops.push(loop);
         BREP_DEBUG.booleanLoopDetectionSuccess(loop);
         break;
@@ -251,14 +272,12 @@ function findOverlappingFaces(shell1, shell2) {
 
 function mergeOverlappingFaces(shellA, shellB, opType) {
   let groups = findOverlappingFaces(shellA, shellB);
+  let mergedFaces = [];
   for (let [groupA, groupB] of groups) {
-    filterInPlace(shellA.faces, f => !groupA.has(f));
-    filterInPlace(shellB.faces, f => !groupB.has(f));
-    let newFaces = mergeFaces(Array.from(groupA), Array.from(groupB), opType)
-    for (let newFace of newFaces) {
-      shellA.faces.push(newFace);
-    }
+    let faceMergeInfo = mergeFaces(Array.from(groupA), Array.from(groupB), opType);
+    mergedFaces.push(faceMergeInfo);
   }
+  return mergedFaces;
 }
 
 function mergeFaces(facesA, facesB, opType) {
@@ -277,6 +296,7 @@ function mergeFaces(facesA, facesB, opType) {
 
   function invalidate(face, edgesIndex) {
     for (let edge of face.edges) {
+      markEdgeTransferred(edge.edge);
       let testForReversedDir = edgesIndex.get(edge.vertexB);
       if (!testForReversedDir) {
         continue;
@@ -358,7 +378,7 @@ function mergeFaces(facesA, facesB, opType) {
   }
 
   for (let edge of valid) {
-    EdgeSolveData.markNew(edge);
+    EdgeSolveData.setPriority(edge, 10);
   }
 
   for (let edge of invalid) {
@@ -381,19 +401,16 @@ function mergeFaces(facesA, facesB, opType) {
   }
   
   let detectedLoops = detectLoops(originFace.surface, graph);
-  if (detectedLoops.length === 0) {
-    return;
-  }
-  let newFaces = evolveFace(originFace, detectedLoops);
-
-  for (let newFace of newFaces) {
-    for (let edge of newFace.edges) {
-      EdgeSolveData.markNew(edge);
+  for (let loop of detectedLoops) {
+    for (let edge of loop.halfEdges) {
       discardedEdges.delete(edge);
     }
-    newFace.analysisFace = newFace;
   }
-  return newFaces;
+
+  return {
+    mergedLoops: detectedLoops,
+    originFaces
+  };
 }
 
 export function mergeVertices(shell1, shell2) {
@@ -554,7 +571,7 @@ function filterFacesByNewEdges(faces) {
 
   function isFaceContainNewEdge(face) {
     for (let e of face.edges) {
-      if (isNewNM(e)) {
+      if (getPriority(e) > 0) {
         return true;
       }
     }
@@ -624,13 +641,17 @@ export function loopsToFaces(originFace, loops, out) {
 
 function initSolveData(shell, facesData) {
   for (let face of shell.faces) {
-    const solveData = new FaceSolveData(face);
-    facesData.push(solveData);
-    if (face.data[MY] !== undefined) {
-      Object.assign(solveData, face.data[MY]);
-    }
-    face.data[MY] = solveData;
+    facesData.push(initSolveDataForFace(face));
   }
+}
+
+function initSolveDataForFace(face) {
+  const solveData = new FaceSolveData(face);
+  if (face.data[MY] !== undefined) {
+    Object.assign(solveData, face.data[MY]);
+  }
+  face.data[MY] = solveData;
+  return solveData;
 }
 
 function cleanUpSolveData(shell) {
@@ -652,7 +673,7 @@ function findMaxTurningLeft(pivotEdge, edges, surface) {
   edges.sort((e1, e2) => {
     let delta = leftTurningMeasure(pivot, edgeVector(e1), normal) - leftTurningMeasure(pivot, edgeVector(e2), normal);
     if (ueq(delta, 0)) {
-      return isNew(e1) ? (isNew(e2) ? 0 : -1) : (isNew(e2) ? 1 : 0) 
+      return getPriority(e2) - getPriority(e1); 
     }
     return delta;
   });
@@ -796,9 +817,6 @@ export function chooseValidEdge(edge, face, operationType) {
 
 function transferEdges(faceSource, faceDest, operationType) {
   for (let loop of faceSource.loops) {
-    if (loop === faceSource.data[MY].loopOfNew) {
-      continue;
-    }
     for (let edge of loop.halfEdges) {
       if (isEdgeTransferred(edge.edge)) {
         continue;    
@@ -821,9 +839,8 @@ function transferEdges(faceSource, faceDest, operationType) {
 
 function addNewEdge(face, halfEdge) {
   const data = face.data[MY];
-  data.loopOfNew.halfEdges.push(halfEdge);
-  halfEdge.loop = data.loopOfNew;
-  EdgeSolveData.markNew(halfEdge);
+  data.newEdges.push(halfEdge);
+  EdgeSolveData.setPriority(halfEdge, 100);
   return true;
 }
 
@@ -841,9 +858,6 @@ function nodeByVertex(nodes, vertex, u, curve) {
 
 function collectNodesOfIntersectionOfFace(curve, face, nodes, operand) {
   for (let loop of face.loops) {
-    if (loop === face.data[MY].loopOfNew) {
-      continue;
-    }
     collectNodesOfIntersection(curve, loop, nodes, operand);
   }
 }
@@ -1084,24 +1098,12 @@ EdgeSolveData.transfer = function(from, to) {
   to.data[MY] = from.data[MY];
 };
 
-EdgeSolveData.markNew = function(halfEdge) {
-  EdgeSolveData.createIfEmpty(halfEdge).newEdgeFlag = true;
+EdgeSolveData.setPriority = function(halfEdge) {
+  EdgeSolveData.createIfEmpty(halfEdge).priority = true;
 };
 
-function isNew(edge) {
-  return EdgeSolveData.get(edge).newEdgeFlag === true
-}
-
-function isNewNM(edge) {
-  if (edge.manifold === null) {
-    return isNew(edge);
-  }
-  for (let me of edge.manifold) {
-    if (isNew(me)) {
-      return true;
-    }
-  }
-  return isNew(edge); 
+function getPriority(edge) {
+  return EdgeSolveData.get(edge).priority || 0;
 }
 
 function markEdgeTransferred(edge) {
@@ -1189,9 +1191,7 @@ class FaceSolveData extends EdgeGraph {
   constructor(face) {
     super();
     this.face = face;
-    this.loopOfNew = new Loop(face);
-    this.loopOfNew.face = face;
-    face.innerLoops.push(this.loopOfNew);
+    this.newEdges = [];
     this.errors = [];
   }
 
@@ -1205,6 +1205,9 @@ class FaceSolveData extends EdgeGraph {
   initGraph() {
     this.vertexToEdge.clear();
     for (let he of this.face.edges) {
+      this.addToGraph(he);
+    }
+    for (let he of this.newEdges) {
       this.addToGraph(he);
     }
   }
@@ -1252,24 +1255,6 @@ class FaceSolveData extends EdgeGraph {
       }
     }
     return null;
-  }
-
-
-  isNewOppositeEdge(e1) {
-    if (!isNew(e1)) {
-      return false;
-    }
-    return this.findOppositeEdge(e1) !== null;
-  }
-  
-  removeOppositeEdges() {
-    let toRemove = new Set();
-    for (let e1 of this.graphEdges) {
-    }
-    for (let e of toRemove) {
-      removeFromListInMap(this.vertexToEdge, e.vertexA, e);
-    }
-    this.graphEdges = this.graphEdges.filter(e => !toRemove.has(e));
   }
 }
 
