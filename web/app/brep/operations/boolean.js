@@ -398,18 +398,22 @@ function mergeFaces(facesA, facesB, opType) {
       }
     }
   }
-  
+
+  let allPoints = [];
   let detectedLoops = detectLoops(originFace.surface, graph);
   for (let loop of detectedLoops) {
     for (let edge of loop.halfEdges) {
       EdgeSolveData.setPriority(edge, 1);
       discardedEdges.delete(edge);
+      allPoints.push(edge.vertexA.point);
     }
   }
 
+  let referenceSurface = createBoundingNurbs(allPoints, originFace.surface.simpleSurface);
+
   return {
     mergedLoops: detectedLoops,
-    referenceSurface: originFace.surface,
+    referenceSurface,
     originFaces
   };
 }
