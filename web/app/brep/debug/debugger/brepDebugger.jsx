@@ -5,6 +5,7 @@ import ShellExplorer from './shellExplorer';
 import LoopDetectionExplorer from './loopDetectionExplorer';
 import Section from './section'
 import {EdgeTransferExplorer} from "./edgeTransferExplorer";
+import {FaceFilterExplorer} from "./faceFilterExplorer";
 
 export default class BrepDebugger extends React.PureComponent {
 
@@ -85,11 +86,9 @@ export default class BrepDebugger extends React.PureComponent {
           <Section name='loops validation' accent>
             loops validation...
           </Section>
-          <Section name='loops filter' accent>
-            loops filter...
+          <Section name='face filter' accent>
+            {session.faceFilter && <FaceFilterExplorer {...session.faceFilter} group3d={brepDebugGroup} /> } 
           </Section>
-          
-
         </Section>)}
       </div> 
     </div>;
