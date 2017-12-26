@@ -48,17 +48,10 @@ class HalfEdge extends TopoObject {
     this.loop = null;
     this.next = null;
     this.prev = null;
-    this.manifold = null;
-    this.manifoldHolder = null;
   }
 
   twin() {
-    let twin = this.edge.halfEdge1 === this ? this.edge.halfEdge2 : this.edge.halfEdge1;
-    return twin.manifoldHolder === null ? twin : twin.manifoldHolder; 
-  }
-
-  twins() {
-    return this.manifold === null ? [this.twin()] : [this.twin(), ...this.manifold.map(me => me.twin())];
+    return this.edge.halfEdge1 === this ? this.edge.halfEdge2 : this.edge.halfEdge1;
   }
 
   tangentAtStart() {
@@ -84,15 +77,5 @@ class HalfEdge extends TopoObject {
       res = res.slice().reverse();
     }
     return res;
-  }
-  
-  attachManifold(he) {
-    if (this.manifold === null) {
-      this.manifold = [];
-    }
-    if (this.manifold.indexOf(he) === -1) {
-      this.manifold.push(he);
-    }
-    he.manifoldHolder = this;
   }
 }
