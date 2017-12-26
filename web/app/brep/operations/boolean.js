@@ -156,8 +156,8 @@ function replaceMergedFaces(facesData, mergedFaces) {
   filterInPlace(facesData, ({face}) => 
       mergedFaces.find(({originFaces}) => originFaces.indexOf(face) > -1) === undefined
   );
-  for (let {mergedLoops, originFaces} of mergedFaces) {
-    let fakeFace = new Face(originFaces[0].surface);
+  for (let {mergedLoops, referenceSurface, originFaces} of mergedFaces) {
+    let fakeFace = new Face(referenceSurface);
     for (let mergedLoop of mergedLoops) {
       fakeFace.innerLoops.push(mergedLoop);
       mergedLoop.face = fakeFace;
@@ -409,6 +409,7 @@ function mergeFaces(facesA, facesB, opType) {
 
   return {
     mergedLoops: detectedLoops,
+    referenceSurface: originFace.surface,
     originFaces
   };
 }
