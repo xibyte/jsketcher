@@ -1,7 +1,8 @@
 import React, {Fragment as FR} from 'react';
 import Section from "./section";
 import {
-  ActiveLabel, Controls, getEdgesViewObjects, getEdgeViewObjects, getFaceViewObjects, getLoopsViewObjects,
+  ActiveLabel, Controls, getEdgesViewObjects, getEdgeViewObjects, getFacesViewObjects, getFaceViewObjects,
+  getLoopsViewObjects,
   getLoopViewObjects,
   getVertexViewObjects, InteractiveSection, mapIterable,
   TAB
@@ -11,12 +12,15 @@ export default class ShellExplorer extends React.PureComponent {
 
   render() {
     let {shell, group3d} = this.props;
+
+    let category='default';
+    let context = null;
+    let faces = shell ? shell.faces : [];
     
-    return <div className='shell-explorer'>
-      <Section name={`shell ${shell ? shell.refId : 'UNAVAILABLE'}`} closable>
-        {shell && shell.faces.map(face => <FaceExplorer key={face.refId} {...{face, group3d}} category='default' context={null} />)}
-      </Section>
-    </div>;
+    return <InteractiveSection name={`shell ${shell ? shell.refId : 'UNAVAILABLE'}`} closable defaultClosed={false}
+                               {...{viewObjectsProvider: getFacesViewObjects, topoObj: faces, group3d, category, context}}>
+        {faces.map(face => <FaceExplorer key={face.refId} {...{face, group3d, category, context}} />)}
+    </InteractiveSection>;
   }
 }
 
