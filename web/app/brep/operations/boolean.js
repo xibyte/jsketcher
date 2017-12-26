@@ -137,7 +137,6 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
 
   faces = filterFaces(faces, shellA, shellB, type !== TYPE.UNION);
   
-  
   const result = new Shell();
   faces.forEach(face => {
     face.shell = result;
@@ -403,6 +402,7 @@ function mergeFaces(facesA, facesB, opType) {
   let detectedLoops = detectLoops(originFace.surface, graph);
   for (let loop of detectedLoops) {
     for (let edge of loop.halfEdges) {
+      EdgeSolveData.setPriority(edge, 1);
       discardedEdges.delete(edge);
     }
   }
@@ -561,39 +561,40 @@ function filterFaces(faces, a, b, isIntersection) {
   if (FILTER_STRATEGY === FILTER_STRATEGIES.RAY_CAST) {
     return filterByRayCast(faces, a, b, isIntersection);
   } else if (FILTER_STRATEGY === FILTER_STRATEGIES.NEW_EDGES) {
-    return filterFacesByNewEdges(faces, a, b, isIntersection);
+    return filterFacesByNewEdges(faces);
   } else {
     throw 'unsupported';
   }
 }
 
 function filterFacesByNewEdges(faces) {
-
-  function isFaceContainNewEdge(face) {
+  
+  function doesFaceContainNewEdge(face) {
     for (let e of face.edges) {
-      if (getPriority(e) > 0) {
+      if (getPriority(e) > 0 || getPriority(e.twin()) > 0) {
         return true;
       }
     }
     return false;
   }
   
-  const validFaces = new Set(faces);
-  const result = new Set();
+  const resultSet = new Set();
   for (let face of faces) {
     // __DEBUG__.Clear();
     // __DEBUG__.AddFace(face);
-    traverseFaces(face, validFaces, (it) => {
-      if (result.has(it) || isFaceContainNewEdge(it)) {
-        result.add(face);
+    traverseFaces(face, (it) => {
+      if (resultSet.has(it) || doesFaceContainNewEdge(it)) {
+        resultSet.add(face);
         return true;
       }
     });
   }
+  const result = Array.from(resultSet)
+  BREP_DEBUG.faceFilter(result, faces);
   return result;
 }
 
-function traverseFaces(face, validFaces, callback) {
+function traverseFaces(face, callback) {
   const stack = [face];
   const seen = new Set();
   while (stack.length !== 0) {
@@ -603,14 +604,9 @@ function traverseFaces(face, validFaces, callback) {
     if (callback(face) === true) {
       return;
     }
-    if (!validFaces.has(face)) continue;
     for (let loop of face.loops) {
       for (let halfEdge of loop.halfEdges) {
-        for (let twin of halfEdge.twins()) {
-          if (validFaces.has(twin.loop.face)) {
-            stack.push(twin.loop.face)
-          }
-        }
+        stack.push(halfEdge.twin().loop.face);
       }
     }
   }
@@ -822,10 +818,6 @@ function transferEdges(faceSource, faceDest, operationType) {
         continue;    
       }
       if (edgeCollinearToFace(edge, faceDest)) {
-        //not coincide with an edge
-        if (!faceDest.rayCast(edge.edge.curve.middlePoint()).strictInside) {
-          continue;          
-        }
         let validEdge = chooseValidEdge(edge, faceDest, operationType);
         BREP_DEBUG.transferEdge(edge, faceDest, validEdge);
         let twin = validEdge.twin();

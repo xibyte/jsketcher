@@ -3,6 +3,10 @@ import {AQUA, BLACK, BLUE, cycleColor, DETECTED_EDGE, DISCARDED_EDGE, GREEN, RED
 import {distanceAB3} from "../../../math/math";
 import Section from "./section";
 
+export function getFacesViewObjects(group3d, category, context, out, faces) {
+  forEach(faces, getFaceViewObjects.bind(null, group3d, category, context, out));
+}
+
 export function getFaceViewObjects(group3d, category, context, out, face) {
   return getLoopsViewObjects(group3d, category, context, out, face.loops);
 }
@@ -136,6 +140,14 @@ export function getInitColor(category, obj, context) {
       } else {
         return BLACK;
       }
+    }
+    case 'face-filter': {
+      let {connectedToAffectedFaces, notConnectedToAffectedFaces} = context;
+      if (connectedToAffectedFaces.indexOf(obj.loop.face) > -1) {
+        return WHITE;
+      } else {
+        return BLACK;
+      } 
     }
     default:
       switch (obj.constructor.name) {

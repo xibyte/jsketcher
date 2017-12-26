@@ -50,6 +50,11 @@ class BRepDebug {
   transferEdge(edge, face, chosenEdge) {
     this.currentBooleanSession.transferedEdges.push({edge, face, chosenEdge});
   }
+
+  faceFilter(connectedToAffectedFaces, allFaces) {
+    this.currentBooleanSession.faceFilter.connectedToAffectedFaces = connectedToAffectedFaces;
+    this.currentBooleanSession.faceFilter.allFaces = allFaces;
+  }
 }
 
 class BooleanSession {
@@ -63,6 +68,10 @@ class BooleanSession {
     this.transferedEdges = [];
     this.mergeFacesLoopDetection = [];
     this.currentLoopDetection = null;
+    this.faceFilter = {
+      connectedToAffectedFaces: null,
+      allFaces: null,
+    };
   }
 }
 

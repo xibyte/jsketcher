@@ -161,8 +161,8 @@ function addGlobalDebugActions(app) {
       app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));
       app.viewer.render();
     },
-    Solids: () => {
-      app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));
+    ShowSolids: () => {
+      app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = true));
       app.viewer.render();
     },
     Clear: () => {
