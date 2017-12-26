@@ -58,7 +58,7 @@ export function* enclosesGenerator(halfEdges) {
     const next = halfEdges[j];
     if (curr.vertexB !== next.vertexA) {
       __DEBUG__.AddHalfEdge(curr, 0xff1199);
-      __DEBUG__.AddHalfEdge(curr, 0x99ff11);
+      __DEBUG__.AddHalfEdge(next, 0x99ff11);
       throw 'using enclose generator on invalid Loop';       
     }
     yield [curr, next, curr.vertexB];
