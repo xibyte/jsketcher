@@ -410,7 +410,7 @@ function mergeFaces(facesA, facesB, opType) {
   let detectedLoops = detectLoops(originFace.surface, graph);
   for (let loop of detectedLoops) {
     for (let edge of loop.halfEdges) {
-      EdgeSolveData.setPriority(edge, 1);
+      // EdgeSolveData.setPriority(edge, 1);
       discardedEdges.delete(edge);
       allPoints.push(edge.vertexA.point);
     }
@@ -810,10 +810,11 @@ export function chooseValidEdge(edge, face, operationType) {
 function transferEdges(faceSource, faceDest, operationType) {
   for (let loop of faceSource.loops) {
     for (let edge of loop.halfEdges) {
-      if (isEdgeTransferred(edge.edge)) {
-        continue;    
-      }
       if (edgeCollinearToFace(edge, faceDest)) {
+        if (isEdgeTransferred(edge.edge)) {
+          EdgeSolveData.addPriority(edge.twin(), 1);
+          continue;
+        }
         let validEdge = chooseValidEdge(edge, faceDest, operationType);
         BREP_DEBUG.transferEdge(edge, faceDest, validEdge);
         let twin = validEdge.twin();
@@ -1060,6 +1061,7 @@ export function isCurveEntersEdgeAtPoint(curve, edge, point) {
 
 //TODO: rename to HalfEdgeSolveData
 function EdgeSolveData() {
+  this.priority = 0;
 }
 
 EdgeSolveData.EMPTY = new EdgeSolveData();
@@ -1086,8 +1088,12 @@ EdgeSolveData.transfer = function(from, to) {
   to.data[MY] = from.data[MY];
 };
 
-EdgeSolveData.setPriority = function(halfEdge) {
-  EdgeSolveData.createIfEmpty(halfEdge).priority = true;
+EdgeSolveData.setPriority = function(halfEdge, value) {
+  EdgeSolveData.createIfEmpty(halfEdge).priority = value;
+};
+
+EdgeSolveData.addPriority = function(halfEdge, value) {
+  EdgeSolveData.createIfEmpty(halfEdge).priority += value;
 };
 
 function getPriority(edge) {
