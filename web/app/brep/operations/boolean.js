@@ -114,24 +114,17 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
     faceData.detectedLoops = detectLoops(faceData.face.surface, faceData);
   }
   
-  let detectedLoops = new Set();
   for (let faceData of facesData) {
     for (let loop of faceData.detectedLoops) {
       loop.link();
-      detectedLoops.add(loop);
     }
   }
   
-  let [invalidLoops, invalidEdges] = invalidateLoops(detectedLoops);
-  
-  if (invalidEdges.size !== 0) {
-    throw new CadError('BOOLEAN_INVALID_RESULT', {code: 'MALFORMED_EDGES', payload: Array.from(invalidEdges)});
-  }
+  removeInvalidLoops(facesData);
   
   let faces = [];
   
   for (let faceData of facesData) {
-    // faceData.detectedLoops = faceData.detectedLoops.filter(l => !invalidLoops.has(l));
     loopsToFaces(faceData.face, faceData.detectedLoops, faces);
   }
 
@@ -150,6 +143,20 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
   // __DEBUG__.Clear();
   BREP_DEBUG.setBooleanResult(result);
   return result;
+}
+
+function removeInvalidLoops(facesData) {
+  let detectedLoopsSet = new Set();
+  for (let faceData of facesData) {
+    for (let loop of faceData.detectedLoops) {
+      detectedLoopsSet.add(loop);
+    }
+  }
+
+  for (let faceData of facesData) {
+    faceData.detectedLoops = faceData.detectedLoops.filter(
+      loop => loop.halfEdges.find(e => !detectedLoopsSet.has(e.twin().loop)) === undefined);
+  }
 }
 
 function replaceMergedFaces(facesData, mergedFaces) {
@@ -615,22 +622,6 @@ function traverseFaces(face, callback) {
       }
     }
   }
-}
-
-function invalidateLoops(resultLoops) {
-  // __DEBUG__.Clear();
-  const invalidLoops = new Set();
-  const invalidEdges = new Set();
-  for (let loop of resultLoops) {
-    // __DEBUG__.AddLoop(loop);
-    for (let e of loop.halfEdges) {
-      if (!resultLoops.has(e.twin().loop)) {
-        invalidLoops.add(loop);
-        invalidEdges.add(e);
-      }
-    }
-  }
-  return [invalidLoops, invalidEdges];  
 }
 
 export function loopsToFaces(originFace, loops, out) {
