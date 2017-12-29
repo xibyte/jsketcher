@@ -26,6 +26,7 @@ function addGlobalDebugActions(app) {
   app.viewer.workGroup.add(debugGroup);
   app.viewer.workGroup.add(debugVolumeGroup);
   window.__DEBUG__ = {
+    flag: 0, 
     AddLine: (a, b) => {
       debugGroup.add(createLine(a, b));
       app.viewer.render();

@@ -52,8 +52,10 @@ export class Face extends TopoObject {
     return this.getAnyHalfEdge().vertexA;
   }
   
-  rayCast(pt) {
+  rayCast(pt, surface) {
 
+    surface = surface || this.surface;
+    
     for (let edge of this.edges) {
       if (veq(pt, edge.vertexA.point)) {
         return {
@@ -95,12 +97,12 @@ export class Face extends TopoObject {
       }
     }
     if (veq(closest.pt, closest.edge.vertexA.point)) {
-      enclose = findEnclosure(closest.edge.vertexA);
+      enclose = [closest.edge.prev, closest.edge, closest.edge.vertexA];
     } else if (veq(closest.pt, closest.edge.vertexB.point)) {
-      enclose = findEnclosure(closest.edge.vertexB);
+      enclose = [closest.edge, closest.edge.next, closest.edge.vertexB];
     }
 
-    let normal = this.surface.normal(closest.pt);
+    let normal = surface.normal(closest.pt);
     let testee = (enclose ? enclose[2].point : closest.pt).minus(pt)._normalize();
     
     // __DEBUG__.AddSegment(pt, enclose ? enclose[2].point : closest.pt);

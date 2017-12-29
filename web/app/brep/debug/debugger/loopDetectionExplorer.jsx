@@ -24,6 +24,9 @@ export default class LoopDetectionExplorer extends React.PureComponent {
 
 
     let step = steps[this.state.step];
+    if (!step) {
+      return null;
+    }
     let candidates = null;
     let currEdgeExplorer = null;
     if (step.type === 'NEXT_STEP_ANALYSIS') {
