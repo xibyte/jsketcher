@@ -6,6 +6,7 @@ import LoopDetectionExplorer from './loopDetectionExplorer';
 import Section from './section'
 import {EdgeTransferExplorer} from "./edgeTransferExplorer";
 import {FaceFilterExplorer} from "./faceFilterExplorer";
+import {FaceMergeExplorer} from "./faceMergeExplorer";
 
 export default class BrepDebugger extends React.PureComponent {
 
@@ -76,7 +77,9 @@ export default class BrepDebugger extends React.PureComponent {
             edge intersections...
           </Section>
           <Section name='face merge' accent>
-            face merge...
+            <FaceMergeExplorer 
+              overlappingFacesGroups={session.overlappingFacesGroups.map(grs => grs.map(gr => Array.from(gr)))} 
+              group3d={brepDebugGroup} />
           </Section>
 
           <Section name='face intersections' accent>

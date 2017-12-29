@@ -55,6 +55,10 @@ class BRepDebug {
     this.currentBooleanSession.faceFilter.connectedToAffectedFaces = connectedToAffectedFaces;
     this.currentBooleanSession.faceFilter.allFaces = allFaces;
   }
+
+  setOverlappingFaces(groups) {
+    this.currentBooleanSession.overlappingFacesGroups = groups;
+  }
 }
 
 class BooleanSession {
@@ -68,6 +72,7 @@ class BooleanSession {
     this.transferedEdges = [];
     this.mergeFacesLoopDetection = [];
     this.currentLoopDetection = null;
+    this.overlappingFacesGroups = [];
     this.faceFilter = {
       connectedToAffectedFaces: null,
       allFaces: null,
