@@ -242,11 +242,16 @@ export function someBasis(twoPointsOnPlane, normal) {
 }
 
 export function normalOfCCWSeq(ccwSequence) {
-  var a = ccwSequence[0];
-  var b = ccwSequence[1];
-  var c = ccwSequence[2];
-
-  return b.minus(a).cross(c.minus(a)).normalize();
+  let a = ccwSequence[0];
+  let b = ccwSequence[1];
+  for (let i = 2; i < ccwSequence.length; ++i) {
+    let c = ccwSequence[i];
+    let normal = b.minus(a).cross(c.minus(a)).normalize(); 
+    if (!math.equal(normal.length(), 0)) {
+      return normal;        
+    }
+  }
+  return null;
 }
 
 export function normalOfCCWSeqTHREE(ccwSequence) {

@@ -31,6 +31,7 @@ export default class BrepBuilder {
       this._loop = new Loop();
       this._face.innerLoops.push(this._loop);
     }
+    this._loop.face = this._face;  
     if (vertices) {
       for (let i = 0; i < vertices.length; ++i) {
         this.edge(vertices[i], vertices[(i + 1) % vertices.length]);  

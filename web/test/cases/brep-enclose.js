@@ -95,7 +95,7 @@ function doTest(env, win, app, encA, encB, encC, curveA, curveB, expected) {
   let [a, b] = createEnclosure(app.TPI, encA, encB, encC);
   let curve = createCurve(app.TPI, curveA, curveB);
 
-  let result = app.TPI.brep.bool.isCurveEntersEnclose(curve, a, b);
+  let result = app.TPI.brep.bool.isCurveEntersEnclose(curve, a, b) === 1;
 
   draw(win, curve, a, b, result);
   env.assertTrue(result === expected);

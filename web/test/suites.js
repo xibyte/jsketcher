@@ -27,6 +27,7 @@ export default {
     TestCase('brep-bool'),
     TestCase('brep-bool-wizard-based'),
     TestCase('brep-pip'),
+    TestCase('brep-raycast'),
     TestCase('brep-enclose')
   ],
 
