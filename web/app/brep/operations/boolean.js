@@ -300,9 +300,7 @@ function mergeFaces(facesA, facesB, opType) {
   let allPoints = [];
 
   for (let face of originFaces) {
-    face.__mergeGraph = new Map();
     for (let e of face.edges) {
-      addToListInMap(face.__mergeGraph, e.vertexA, e);
       allPoints.push(e.vertexA.point);
     }
   }
@@ -331,119 +329,64 @@ function mergeFaces(facesA, facesB, opType) {
     }
   }
 
-  function invalidate(face, other) {
-    let edgesIndex = other.__mergeGraph;
-    for (let edge of face.edges) {
-      markEdgeTransferred(edge.edge);
-      let testForReversedDir = edgesIndex.get(edge.vertexB);
-      if (!testForReversedDir) {
-        continue;
-      }
-      for (let testee of testForReversedDir) {
-        if (invalid.has(testee)) {
-          //been annihilated already
-          continue;
-        }
-        if (isSameEdge(testee, edge)) {
-          //annihilation here
-          markEdgeToReplace(testee, edge.twin());
-          invalid.add(testee);
-          invalid.add(edge);
-        }
-      }
-      let testForSameDir = edgesIndex.get(edge.vertexA);
-      if (!testForSameDir) {
-        continue;
-      }
-      for (let testee of testForSameDir) {
-        if (isSameEdge(testee, edge)) {
-          throw new CadError('BOOLEAN_INVALID_RESULT', edgeCollisionError(testee, edge));
+  function invalidate(faceA, faceB) {
+    
+    let coincidentEdges = new Set();
+    
+    function checkCoincidentEdges(edgeA, edgeB) {
+      if (isSameEdge(edgeA, edgeB)) {
+        coincidentEdges.add(edgeA);
+        coincidentEdges.add(edgeB);
+        markEdgeTransferred(edgeA.edge);
+        markEdgeTransferred(edgeB.edge);
+        BREP_DEBUG.markEdge('same edge', edgeA);
+        if (edgeA.vertexA === edgeB.vertexA) {
+          throw new CadError('BOOLEAN_INVALID_RESULT', edgeCollisionError(edgeA, edgeB));
+        } else if (edgeA.vertexA === edgeB.vertexB) {
+
+          invalid.add(edgeA);
+          invalid.add(edgeA);
+          // markEdgeToReplace(testee, edge.twin());
+        } 
+      }  
+    }
+
+
+    function invalidateEdge(face, edge) {
+      let pt = edge.edge.curve.middlePoint();
+      if (face.rayCast(pt).inside) {
+        markEdgeTransferred(edge.edge);
+        if (canEdgeBeTransferred(edge, face, opType)) {
+          EdgeSolveData.setPriority(edge, 10);
+        } else {
+          invalid.push(edge);
         }
       }
     }
     
-    for (let loop of face.loops) {
-      for (let [inEdge, outEdge, v] of loop.encloses) {
-        if (DEBUG.FACE_MERGE) {
-          __DEBUG__.Clear();
-          __DEBUG__.AddFace(face);
-          __DEBUG__.AddHalfEdge(inEdge, 0x0000ff);
-          __DEBUG__.AddHalfEdge(outEdge, 0xffff00);
-        }
-        let edgesToTest = edgesIndex.get(v);
-        if (!edgesToTest) {
+    function invalidateEdges(faceA, faceB) {
+      for (let edgeA of faceA.edges) {
+        if (coincidentEdges.has(edgeA)) {
           continue;
         }
-        for (let testee of edgesToTest) {
-          if (DEBUG.FACE_MERGE) {
-            __DEBUG__.AddHalfEdge(testee, 0xffffff);
-          }
-
-          if (invalid.has(testee)) {
-            //been annihilated already
-            continue;
-          }
-          
-          let inside = isInsideEnclose(originFace.surface.normal(v.point), 
-            testee.tangentAtStart(), inEdge.tangentAtEnd(), outEdge.tangentAtStart(), true);
-          
-          classify(inside, testee);
-        }
+        invalidateEdge(faceB, edgeA); 
       }
     }
-  }
-
-  function invalidateByRayCast(face, other) {
-    for (let testee of other.edges) {
-      if (!invalid.has(testee) && !valid.has(testee)) {
-        let pt = testee.edge.curve.middlePoint();
-        let inside = face.rayCast(pt, referenceSurface).inside;
-        let isValid = classify(inside, testee);
-        let classificationSet = isValid ? valid : invalid;
-        for (let e of testee.loop.halfEdges) {
-          classificationSet.add(e);
-        }
+    
+    for (let edgeA of faceA.edges) {
+      for (let edgeB of faceB.edges) {
+        checkCoincidentEdges(edgeA, edgeB);
       }
     }
+
+    invalidateEdges(faceA, faceB);
+    invalidateEdges(faceB, faceA);
   }
   
   for (let faceA of facesA) {
     for (let faceB of facesB) {
       invalidate(faceA, faceB);
       invalidate(faceB, faceA);
-    }
-  }
-
-  for (let face of originFaces) {
-    for (let loop of face.loops) {
-      loop.link();          
-    }
-  }
-
-  for (let edge of valid) {
-    EdgeSolveData.setPriority(edge, 10);
-  }
-
-  for (let edge of invalid) {
-    edge = edge.next;
-    while (!valid.has(edge) && !invalid.has(edge)) {
-      invalid.add(edge);
-      edge = edge.next;
-    }
-  }
-
-  for (let edge of valid) {
-    edge = edge.next;
-    while (!valid.has(edge) && !invalid.has(edge)) {
-      valid.add(edge);
-      edge = edge.next;
-    }
-  }
-
-  for (let faceA of facesA) {
-    for (let faceB of facesB) {
-      invalidateByRayCast(faceA, faceB);
-      invalidateByRayCast(faceB, faceA);
     }
   }
 
@@ -459,12 +402,12 @@ function mergeFaces(facesA, facesB, opType) {
   }
 
   let detectedLoops = detectLoops(originFace.surface, graph);
-  for (let loop of detectedLoops) {
-    for (let edge of loop.halfEdges) {
-      EdgeSolveData.setPriority(edge, 1);
-      discardedEdges.delete(edge);
-    }
-  }
+  // for (let loop of detectedLoops) {
+  //   for (let edge of loop.halfEdges) {
+  //     // EdgeSolveData.setPriority(edge, 1);
+  //     discardedEdges.delete(edge);
+  //   }
+  // }
 
 
   return {
@@ -720,14 +663,18 @@ function intersectFaces(shellA, shellB, operationType) {
   }
 }
 
-export function chooseValidEdge(edge, face, operationType) {
-  let pt = edge.edge.curve.middlePoint();
-  let edgeTangent = edge.tangent(pt);
-  let edgeFaceNormal = edge.loop.face.surface.normal(pt);
+function canEdgeBeTransferred(edge, face, operationType) {
+  let testPoint = edge.edge.curve.middlePoint();
+  let edgeTangent = edge.tangent(testPoint);
+  let edgeFaceNormal = edge.loop.face.surface.normal(testPoint);
   let edgeFaceDir = edgeTangent.cross(edgeFaceNormal);
-  let faceNormal = face.surface.normal(pt);
+  let faceNormal = face.surface.normal(testPoint);
   let outside = edgeFaceDir.dot(faceNormal);
-  return (operationType === TYPE.INTERSECT) === outside ? edge.twin() : edge;
+  return (operationType === TYPE.INTERSECT) !== outside;
+}
+
+export function chooseValidEdge(edge, face, operationType) {
+  return canEdgeBeTransferred(edge, face, operationType) ? edge : edge.twin();
 }
 
 function transferEdges(faceSource, faceDest, operationType) {
