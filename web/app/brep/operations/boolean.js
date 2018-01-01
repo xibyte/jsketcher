@@ -339,7 +339,6 @@ function mergeFaces(facesA, facesB, opType) {
         coincidentEdges.add(edgeB);
         markEdgeTransferred(edgeA.edge);
         markEdgeTransferred(edgeB.edge);
-        BREP_DEBUG.markEdge('same edge', edgeA);
         if (edgeA.vertexA === edgeB.vertexA) {
           // chooseBetweenEqualEdges();
           // canEdgeBeTransferred(edge, face, opType)
@@ -487,6 +486,9 @@ function traverseFaces(face, callback) {
     for (let loop of face.loops) {
       for (let halfEdge of loop.halfEdges) {
         let twinFace = halfEdge.twin().loop.face;
+        if (twinFace == null) {
+          BREP_DEBUG.markEdge("null face", halfEdge.twin())
+        }
         stack.push(twinFace);
       }
     }
@@ -710,13 +712,13 @@ function addNewEdge(face, halfEdge) {
   return true;
 }
 
-function nodeByVertex(nodes, vertex, u, curve) {
-  let node = nodes.find(n => n.vertex === vertex);
+function nodeByPoint(nodes, point, u, curve, vertex) {
+  let node = nodes.find(n => n.point === point);
   if (!node) {
     if (u === undefined) {
-      u = curve.param(vertex.point);
+      u = curve.param(point);
     }
-    node = new Node(vertex, u);
+    node = new Node(point, u, vertex);
     nodes.push(node);
   }
   return node;
@@ -737,7 +739,7 @@ function collectNodesOfIntersection(curve, loop, nodes, operand) {
       let sameDir = edge.tangentAtStart().dot(curve.tangentAtPoint(edge.vertexA.point)) > 0;
       let vertex = sameDir ? edge.vertexA : edge.vertexB;
       skippedEnclosures.add(vertex);
-      let node = nodeByVertex(nodes, vertex, undefined, curve);
+      let node = nodeByPoint(nodes, vertex.point, undefined, curve, vertex);
       node.leaves[operand] = true;
     }
   }
@@ -746,7 +748,7 @@ function collectNodesOfIntersection(curve, loop, nodes, operand) {
       continue;
     }
     if (curve.passesThrough(v.point)) {
-      let node = nodeByVertex(nodes, v, undefined, curve);
+      let node = nodeByPoint(nodes, v.point, undefined, curve, v);
       if (isCurveEntersEnclose(curve, a, b) === ENCLOSE_CLASSIFICATION.ENTERS) {
         node.enters[operand] = true;
       } else {
@@ -765,15 +767,15 @@ function intersectCurveWithEdge(curve, edge, nodes, operand) {
   const points = edge.edge.curve.intersectCurve(curve);
   for (let point of points) {
     const {u0, u1} = point;
-    let vertex = vertexFactory.create(point.p0, () => null);
-    if (vertex === null) {
+    let existing = vertexFactory.find(point.p0);
+    if (existing !== null) {
       // vertex already exists, means either we hit an end of edge and this case is handled by enclosure analysis
       // 
       continue;
     }
       
-    let node = nodeByVertex(nodes, vertex, u1);
-    if (isCurveEntersEdgeAtPoint(curve, edge, vertex.point)) {
+    let node = nodeByPoint(nodes, point.p0, u1, undefined, null);
+    if (isCurveEntersEdgeAtPoint(curve, edge, node.point)) {
       node.enters[operand] = true;
     } else {
       node.leaves[operand] = true;
@@ -797,8 +799,8 @@ function split(nodes, curve, result, faceA, faceB) {
   // __DEBUG__.AddFace(faceB);
   // __DEBUG__.AddCurve(curve);
   
-  let insideA = faceA.analysisFace.rayCast(initNode.vertex.point).strictInside;
-  let insideB = faceB.analysisFace.rayCast(initNode.vertex.point).strictInside;
+  let insideA = faceA.analysisFace.rayCast(initNode.point).strictInside;
+  let insideB = faceB.analysisFace.rayCast(initNode.point).strictInside;
   let inNode = null;
   let edgesToSplits = new Map();
   function checkNodeForEdgeSplit(node) {
@@ -829,13 +831,15 @@ function split(nodes, curve, result, faceA, faceB) {
     
     if (wasInside && hadLeft) {
       let edgeCurve = curve;
+      let vertexA = inNode.vertex();
+      let vertexB = node.vertex();
       if (!ueq(inNode.u, 0)) {
-        [,edgeCurve] = edgeCurve.split(inNode.vertex.point);
+        [,edgeCurve] = edgeCurve.split(vertexA.point);
       }
       if (!ueq(node.u, 1)) {
-        [edgeCurve] = edgeCurve.split(node.vertex.point);
+        [edgeCurve] = edgeCurve.split(vertexB.point);
       }
-      const edge = new Edge(edgeCurve, inNode.vertex, node.vertex);
+      const edge = new Edge(edgeCurve, vertexA, vertexB);
       result.push(edge);
       checkNodeForEdgeSplit(inNode);
       checkNodeForEdgeSplit(node);
@@ -844,8 +848,8 @@ function split(nodes, curve, result, faceA, faceB) {
   
   for (let [edge, nodes] of edgesToSplits) {
     nodes.sort(({edgeSplitInfo:{u}}) => u);
-    for (let {vertex} of nodes) {
-      [,edge] = splitEdgeByVertex(edge, vertex);
+    for (let node of nodes) {
+      [,edge] = splitEdgeByVertex(edge, node.vertex());
     }
   }
 }
@@ -1021,14 +1025,21 @@ function isEdgeTransferred(edge) {
   return data && data.transfered;
 }
 
-function Node(vertex, u) {
+function Node(point, u, vertex) {
   this.u = u;
-  this.vertex = vertex;
+  this.point = point;
   this.enters = [false, false];
   this.leaves = [false, false];
   this.edgeSplitInfo = null;
+  this._vertex = vertex;
 }
 
+Node.prototype.vertex = function() {
+  if (!this._vertex) {
+    this._vertex = vertexFactory.create(this.point);
+  }  
+  return this._vertex;
+};
 
 let vertexFactory = null;
 function initVertexFactory(shell1, shell2) {
