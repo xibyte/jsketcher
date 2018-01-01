@@ -7,6 +7,7 @@ import Section from './section'
 import {EdgeTransferExplorer} from "./edgeTransferExplorer";
 import {FaceFilterExplorer} from "./faceFilterExplorer";
 import {FaceMergeExplorer} from "./faceMergeExplorer";
+import {MarkedEdgesExplorer} from "./markedEdgesExplorer";
 
 export default class BrepDebugger extends React.PureComponent {
 
@@ -90,7 +91,10 @@ export default class BrepDebugger extends React.PureComponent {
             loops validation...
           </Section>
           <Section name='face filter' accent>
-            {session.faceFilter && <FaceFilterExplorer {...session.faceFilter} group3d={brepDebugGroup} /> } 
+            {session.faceFilter && <FaceFilterExplorer {...session.faceFilter} group3d={brepDebugGroup} /> }
+          </Section>
+          <Section name='misc' accent>
+            {<MarkedEdgesExplorer markedEdges={session.markedEdges} group3d={brepDebugGroup} /> }
           </Section>
         </Section>)}
       </div> 
