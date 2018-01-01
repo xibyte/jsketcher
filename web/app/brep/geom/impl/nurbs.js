@@ -249,7 +249,10 @@ export class NurbsCurve { //TODO: rename to BrepCurve
   }
 
   middlePoint() {
-    return this.point(0.5);
+    if (!this.__middlePoint) {
+      this.__middlePoint = this.point(0.5);
+    }
+    return this.__middlePoint;
   }
 
   passesThrough(point) {
