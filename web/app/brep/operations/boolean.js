@@ -66,8 +66,13 @@ function checkShellForErrors(shell, code) {
   }
 }
 
-export function BooleanAlgorithm( shellA, shellB, type ) {
+let EDGE_REPLACE = [];
 
+export function BooleanAlgorithm( shellA, shellB, type ) {
+  
+  //fixme
+  EDGE_REPLACE = [];
+  
   BREP_DEBUG.startBooleanSession(shellA, shellB, type);
 
   shellA = prepareWorkingCopy(shellA);
@@ -93,6 +98,8 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
 
   intersectFaces(shellA, shellB, type);
 
+  replaceEdges();
+  
   replaceMergedFaces(facesData, mergedFaces);
   for (let faceData of facesData) {
     faceData.initGraph();
@@ -151,6 +158,12 @@ function removeInvalidLoops(facesData) {
   for (let faceData of facesData) {
     faceData.detectedLoops = faceData.detectedLoops.filter(
       loop => loop.halfEdges.find(e => isLoopInvalid(e.twin().loop)) === undefined);
+  }
+}
+
+function replaceEdges() {
+  for (let {from, to} of EDGE_REPLACE) {
+    from.replace(to);
   }
 }
 
@@ -332,6 +345,7 @@ function mergeFaces(facesA, facesB, opType) {
         }
         if (isSameEdge(testee, edge)) {
           //annihilation here
+          markEdgeToReplace(testee, edge.twin());
           invalid.add(testee);
           invalid.add(edge);
         }
@@ -457,6 +471,10 @@ function mergeFaces(facesA, facesB, opType) {
     referenceSurface,
     originFaces
   };
+}
+
+function markEdgeToReplace(from, to) {
+  EDGE_REPLACE.push({from, to});
 }
 
 export function mergeVertices(shell1, shell2) {
@@ -656,7 +674,6 @@ function newEdgeDirectionValidityTest(e, curve) {
 }
 
 function intersectFaces(shellA, shellB, operationType) {
-  const invert = operationType === TYPE.UNION;
   for (let i = 0; i < shellA.faces.length; i++) {
     const faceA = shellA.faces[i];
     if (DEBUG.FACE_FACE_INTERSECTION) {

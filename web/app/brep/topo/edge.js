@@ -78,4 +78,21 @@ class HalfEdge extends TopoObject {
     }
     return res;
   }
+  
+  replace(he) {
+    if (this.edge.halfEdge1 === this) {
+      this.edge.halfEdge1 = he;
+    } else {
+      this.edge.halfEdge2 = he;
+    }
+
+    he.edge = this.edge;
+    he.loop = this.loop;
+    
+    he.prev = this.prev;
+    he.prev.next = he;
+
+    he.next = this.next;
+    he.next.prev = he;
+  }
 }
