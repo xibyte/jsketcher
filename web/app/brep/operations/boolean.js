@@ -341,11 +341,13 @@ function mergeFaces(facesA, facesB, opType) {
         markEdgeTransferred(edgeB.edge);
         BREP_DEBUG.markEdge('same edge', edgeA);
         if (edgeA.vertexA === edgeB.vertexA) {
+          // chooseBetweenEqualEdges();
+          // canEdgeBeTransferred(edge, face, opType)
           throw new CadError('BOOLEAN_INVALID_RESULT', edgeCollisionError(edgeA, edgeB));
         } else if (edgeA.vertexA === edgeB.vertexB) {
 
           invalid.add(edgeA);
-          invalid.add(edgeA);
+          invalid.add(edgeB);
           // markEdgeToReplace(testee, edge.twin());
         } 
       }  
@@ -661,6 +663,12 @@ function intersectFaces(shellA, shellB, operationType) {
       transferEdges(faceB, faceA, operationType);
     }
   }
+}
+
+function chooseBetweenEqualEdges(edgeA, edgeB, operationType) {
+  let twinA = edgeA.twin();
+  let twinB = edgeB.twin();
+  
 }
 
 function canEdgeBeTransferred(edge, face, operationType) {
@@ -1202,12 +1210,8 @@ function edgeCollinearToFace(edge, face) {
     if (!veq(pt1, pt2)) {
       return false;
     }
-
-    if (!face.rayCast(pt2).inside) {
-      return false;
-    }
   }
-  return true;
+  return face.rayCast(edge.edge.curve.middlePoint()).inside;
 }
 
 function edgeCollisionError(e1, e2) {
