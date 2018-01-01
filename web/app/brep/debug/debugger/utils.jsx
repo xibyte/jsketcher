@@ -1,5 +1,8 @@
 import React from 'react';
-import {AQUA, BLACK, BLUE, cycleColor, DETECTED_EDGE, DISCARDED_EDGE, GREEN, RED, SALMON, WHITE} from "./colors";
+import {
+  AQUA, BLACK, BLUE, cycleColor, DETECTED_EDGE, DISCARDED_EDGE, GREEN, RED, SALMON, WHITE,
+  YELLOW
+} from "./colors";
 import {distanceAB3} from "../../../math/math";
 import Section from "./section";
 
@@ -148,6 +151,10 @@ export function getInitColor(category, obj, context) {
       } else {
         return BLACK;
       } 
+    }
+    case 'marked-edges': {
+      let color = context[obj].color;
+      return color === undefined ? YELLOW : color;
     }
     default:
       switch (obj.constructor.name) {
