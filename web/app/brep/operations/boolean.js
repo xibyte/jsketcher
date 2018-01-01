@@ -286,6 +286,7 @@ function findOverlappingFaces(shell1, shell2) {
 
 function mergeOverlappingFaces(shellA, shellB, opType) {
   let groups = findOverlappingFaces(shellA, shellB);
+  BREP_DEBUG.setOverlappingFaces(groups);
   let mergedFaces = [];
   for (let [groupA, groupB] of groups) {
     let faceMergeInfo = mergeFaces(Array.from(groupA), Array.from(groupB), opType);
