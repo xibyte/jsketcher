@@ -652,6 +652,8 @@ function intersectFaces(shellA, shellB, operationType) {
         collectNodesOfIntersectionOfFace(curve, faceA, nodes, A);
         collectNodesOfIntersectionOfFace(curve, faceB, nodes, B);
 
+        BREP_DEBUG.booleanFaceIntersection(faceA, faceB, curve, nodes);
+        
         const newEdges = [];
         split(nodes, curve, newEdges, faceA, faceB);
 
@@ -733,31 +735,46 @@ function collectNodesOfIntersectionOfFace(curve, face, nodes, operand) {
 function collectNodesOfIntersection(curve, loop, nodes, operand) {
   // __DEBUG__.AddCurve(curve, 0xffffff);
   let skippedEnclosures = new Set();
+  let coincidentEdges = new Set();
   
   for (let edge of loop.halfEdges) {
     if (curveAndEdgeCoincident(curve, edge)) {
-      let sameDir = edge.tangentAtStart().dot(curve.tangentAtPoint(edge.vertexA.point)) > 0;
-      let vertex = sameDir ? edge.vertexA : edge.vertexB;
+      coincidentEdges.add(edge);
+    }
+  }
+  let encloses = loop.encloses;
+  for (let [a, b, v] of encloses) {
+    if (coincidentEdges.has(a)) {
+      let sameDir = a.tangentAtStart().dot(curve.tangentAtPoint(a.vertexA.point)) > 0;
+      let vertex = sameDir ? a.vertexA : a.vertexB;
       skippedEnclosures.add(vertex);
       let node = nodeByPoint(nodes, vertex.point, undefined, curve, vertex);
       node.leaves[operand] = true;
     }
   }
-  for (let [a, b, v] of loop.encloses) {
+  for (let [a, b, v] of encloses) {
+    if (coincidentEdges.has(a) && coincidentEdges.has(b)) {
+      continue;
+    }
     if (skippedEnclosures.has(v)) {
       continue;
     }
     if (curve.passesThrough(v.point)) {
-      let node = nodeByPoint(nodes, v.point, undefined, curve, v);
-      if (isCurveEntersEnclose(curve, a, b) === ENCLOSE_CLASSIFICATION.ENTERS) {
-        node.enters[operand] = true;
-      } else {
-        node.leaves[operand] = true;
+      let classification = isCurveEntersEnclose(curve, a, b);
+      if (classification === ENCLOSE_CLASSIFICATION.ENTERS || classification === ENCLOSE_CLASSIFICATION.LEAVES) {
+        let node = nodeByPoint(nodes, v.point, undefined, curve, v);
+        if (classification === ENCLOSE_CLASSIFICATION.ENTERS) {
+          node.enters[operand] = true;
+        } else {
+          node.leaves[operand] = true;
+        }
       }
     }
   }    
   for (let edge of loop.halfEdges) {
-    intersectCurveWithEdge(curve, edge, nodes, operand);
+    if (!coincidentEdges.has(edge)) {
+      intersectCurveWithEdge(curve, edge, nodes, operand);
+    }
   }
 }
 
