@@ -522,6 +522,7 @@ function cleanUpSolveData(shell) {
     delete face.data[MY];
     for (let he of face.edges) {
       EdgeSolveData.clear(he);
+      delete he.edge.data[MY];
     }
   }
 }
