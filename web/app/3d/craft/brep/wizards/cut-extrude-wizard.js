@@ -3,7 +3,7 @@ import {PreviewWizard, SketchBasedPreviewer} from './preview-wizard'
 import {getEncloseDetails} from '../cut-extrude'
 import {TriangulatePolygons} from '../../../tess/triangulation'
 import Vector from '../../../../math/vector'
-import {reversedIndex} from '../../../../utils/utils'
+import {curveTessParams} from "../../../../brep/geom/impl/curve/curve-tess";
 
 
 const METADATA = [
@@ -24,7 +24,7 @@ export class CutWizard extends PreviewWizard {
   }
 
   uiLabel(name) {
-    if ('value' == name) return 'depth';
+    if ('value' === name) return 'depth';
     return super.uiLabel(name);
   }
 }
@@ -39,7 +39,7 @@ export class ExtrudeWizard extends PreviewWizard {
   }
 
   uiLabel(name) {
-    if ('value' == name) return 'height';
+    if ('value' === name) return 'height';
     return super.uiLabel(name);
   }
 }
@@ -61,17 +61,19 @@ export class ExtrudePreviewer extends SketchBasedPreviewer {
       for (let i = 0; i < basePath.length; ++i) {
         let baseNurbs = basePath[i];    
         let lidNurbs = lidPath[i];  
-        const params = verb.eval.Tess.rationalCurveAdaptiveSample(baseNurbs.impl.data, 1,true).map(p => p[0]);  
-        const base = params.map(u => baseNurbs.point(u));
-        const lid = params.map(u => lidNurbs.point(u));
+        
+        let tessCurve = params.prism > 1 ? lidNurbs : baseNurbs;
+        
+        const us = curveTessParams(tessCurve.impl, tessCurve.uMin, tessCurve.uMax);
+        const base = us.map(u => baseNurbs.point(u));
+        const lid = us.map(u => lidNurbs.point(u));
         const n = base.length;
         for (let p = n - 1, q = 0; q < n; p = q ++) {
           triangles.push([ base[p], base[q], lid[q] ]);
           triangles.push([ lid[q], lid[p], base[p] ]);
         }
-        base.forEach(p => basePoints.push(new Vector().set3(p)));
-        lid.forEach(p => lidPoints.push(new Vector().set3(p)));
-
+        base.forEach(p => basePoints.push(p));
+        lid.forEach(p => lidPoints.push(p));
       }
 
       function collectOnSurface(points, normal) {

@@ -413,6 +413,10 @@ export class NurbsSurface extends Surface {
     let normal = this.normalUV(u, v);
     return new Plane(normal, normal.dot(this.point(u, v)));
   }
+
+  tangentPlaneInMiddle() {
+    return this.tangentPlane(0.5, 0.5);
+  }
 }
 
 NurbsSurface.WORKING_POINT_SCALE_FACTOR = 1000;
