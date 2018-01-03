@@ -39,12 +39,23 @@ export function getViewObjectsComposite(providers) {
 }
 
 export const getEdgeViewObjects = findOrCreate.bind(null, (edge, color) => {
-  let obj = new THREE.Object3D();
-  obj.__tcad_debug_materials = [];
   let points = edge.edge.curve.tessellate();
   if (edge.inverted) {
     points.reverse();
   }
+  return createDirectedCurve(points, edge.tangentAtEnd(), edge.vertexB.point, color)
+});
+
+export const getCurveViewObjects = findOrCreate.bind(null, (curve, color) => {
+  let points = curve.tessellate();
+  let end = curve.point(curve.uMax);
+  return createDirectedCurve(points, curve.tangentAtPoint(end), end, color)
+});
+
+function createDirectedCurve(points, arrowDir, arrowTipPos, color) {
+  
+  let obj = new THREE.Object3D();
+  obj.__tcad_debug_materials = [];
 
   let material = new THREE.LineBasicMaterial({color, linewidth: 10});
   let  lg = new THREE.Geometry();
@@ -66,8 +77,8 @@ export const getEdgeViewObjects = findOrCreate.bind(null, (edge, color) => {
   if (arrowLength > edgeLength * 0.5) {
     arrowLength = edgeLength * 0.5;
   }
-  let dir = edge.tangentAtEnd();
-  let pos = edge.vertexB.point.minus(dir.multiply(arrowLength * 0.5));
+  let dir = arrowDir;
+  let pos = arrowTipPos.minus(dir.multiply(arrowLength * 0.5));
   let cone = new THREE.CylinderGeometry( 0, arrowWidth, arrowLength, 10, 1 );
   let arrow = new THREE.Mesh( cone, new THREE.MeshBasicMaterial( { color} ) );
   if ( dir.y > 0.99999 ) {
@@ -82,9 +93,17 @@ export const getEdgeViewObjects = findOrCreate.bind(null, (edge, color) => {
   obj.__tcad_debug_materials.push(arrow.material);
   obj.add(arrow);
   return obj;
-});
+}
 
 export const getVertexViewObjects = findOrCreate.bind(null, ({point: {x,y,z}}, color) => {
+  return createPoint(x,y,z, color)
+});
+
+export const getPointViewObjects = findOrCreate.bind(null, ({x,y,z}, color) => {
+  return createPoint(x,y,z, color)
+});
+
+function createPoint(x,y,z, color) {
   let geometry = new THREE.SphereGeometry( 5, 16, 16 );
   let material = new THREE.MeshBasicMaterial( {color} );
   let sphere = new THREE.Mesh(geometry, material);
@@ -94,15 +113,14 @@ export const getVertexViewObjects = findOrCreate.bind(null, ({point: {x,y,z}}, c
 
   sphere.__tcad_debug_materials = [material];
   return sphere;
-});
+}
 
 export function findOrCreate(creator, group3d, category, context, out, topoObj) {
-  let id = category + '/' + topoObj.refId;
-  let obj = group3d.children.find(obj => obj.__tcad_debug_refId === id);
+  let obj = group3d.children.find(obj => obj.__tcad_debug_category === category && obj.__tcad_debug_topoObj === topoObj);
   if (!obj) {
     obj = creator(topoObj, getInitColor(category, topoObj, context));
     group3d.add(obj);
-    obj.__tcad_debug_refId = id;
+    obj.__tcad_debug_category = category;
     obj.__tcad_debug_topoObj = topoObj;
     obj.visible = false;
   }
@@ -156,6 +174,16 @@ export function getInitColor(category, obj, context) {
       let color = context[obj].color;
       return color === undefined ? YELLOW : color;
     }
+    case 'face-intersections': {
+      let {faceA, faceB} = context;
+      if (obj.constructor.name === 'HalfEdge') {
+        return faceContainsEdge(faceA, obj) ? AQUA : YELLOW;
+      } else if (obj.constructor.name === 'Vector') {
+        return GREEN;
+      } else {
+        return WHITE;
+      }
+    }
     default:
       switch (obj.constructor.name) {
         case 'HalfEdge': return SALMON;
@@ -163,6 +191,15 @@ export function getInitColor(category, obj, context) {
       }
   }
   return WHITE;
+}
+
+function faceContainsEdge(face, edge) {
+  for (let e of face.edges) {
+    if (e === edge) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function mapIterable(it, fn) {
