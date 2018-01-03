@@ -11,6 +11,6 @@ export default class CadError extends Error {
     super(code);
     this.code = code;
     this.payload = payload;
+    this.type = ERROR_TYPE;
   }
 }
-CadError.prototype.type = ERROR_TYPE;

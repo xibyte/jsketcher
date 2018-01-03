@@ -1,5 +1,6 @@
 import * as tk from '../../../../ui/toolkit'
 import {camelCaseSplit} from '../../../../utils/utils'
+import {isTCADError} from "../../../../utils/errors";
 
 export class Wizard {
 
@@ -46,6 +47,7 @@ export class Wizard {
     }
     const buttons = new tk.ButtonRow(["Cancel", "OK"], [() => this.cancelClick(), () => this.okClick()]);
     tk.add(folder, buttons);
+    tk.add(folder, {root: $('<div class="errors-message" />')});
     box.root.keydown((e) => {
       switch (e.keyCode) {
         case 27 : this.cancelClick(); break;
@@ -61,12 +63,32 @@ export class Wizard {
   }
 
   okClick() {
-    this.dispose();
-    this.apply();
+    if (this.apply()) {
+      this.dispose();
+    }
   }
 
   apply() {
-    this.app.craft.modify(this.createRequest(), this.overridingHistory);
+    let errors = this.app.craft.modify(this.createRequest(), this.overridingHistory);
+    if (errors) {
+      this.showErrors(errors);
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  showErrors(error) {
+    this.showErrorText('performing operation with current parameters leads to an invalid object' +
+      '(manifold / self-intersecting / zero-thickness / complete degeneration or unsupported cases)');
+    if (!isTCADError(error)) {
+      console.error('internal error while performing operation');
+      throw error;
+    }
+  }
+
+  showErrorText(message) {
+    this.box.root.find('.errors-message').text(message);  
   }
 
   onUIChange() {}

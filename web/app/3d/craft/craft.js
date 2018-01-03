@@ -67,7 +67,12 @@ Craft.prototype.modifyInternal = function(request) {
   var op = this.operations[request.type];
   if (!op) return;
 
-  const result = op(this.app, request.params);
+  let result;
+  try {
+    result = op(this.app, request.params);
+  } catch(err) {
+    return err;
+  }
 
   for (let solid of result.outdated) {
     solid.vanish();
@@ -89,7 +94,10 @@ Craft.prototype.modifyInternal = function(request) {
 };
 
 Craft.prototype.modify = function(request, overriding) {
-  this.modifyInternal(request);
+  let errors = this.modifyInternal(request);
+  if (errors !== undefined) {
+    return errors;
+  }
   if (!overriding && this._historyPointer != this.history.length) {
     this.history.splice(this._historyPointer + 1, 0, null);
   }
