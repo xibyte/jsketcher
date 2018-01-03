@@ -107,15 +107,32 @@ export function surfaceIntersect(surface0, surface1) {
     });
   });
 
+  let degree = Math.max(surfaceMaxDegree(surface0) === 1 && surfaceMaxDegree(surface1));
+  let inserts = degree - 1; 
+  let nurbses = [];
+  //TODO: temporary workaround. evenly distribute points accordingly to degree. 
+  //TODO: it won't work for ellipses.
+  //TODO: it also creates unnecessary degree if a cylinder is cut by a plane along it's Y axis(heightwise) 
+  for (let pl of exactPls) {
+    let points = pl.map(ip => ip.point);
+    let polyline = verb.eval.Make.polyline(points);
+    let [uMin, uMax] = curveDomain(polyline);
+    let insertStep = (uMax - uMin) / (inserts + 1);
+    let normalizedPoints = [points[0]];
+    for (let i = 0; i < inserts; i++) {
+      let roughPt = curvePoint(polyline, i+insertStep);
+      let uv0 = verb.eval.Analyze.rationalSurfaceClosestParam(surface0, roughPt);
+      let uv1 = verb.eval.Analyze.rationalSurfaceClosestParam(surface1, roughPt);
+      let pt = verb.eval.Intersect.surfacesAtPointWithEstimate(surface0,surface1,uv0,uv1,TOLERANCE);
+      normalizedPoints.push(pt);
+    }
+    normalizedPoints.push(points[points.length - 1]);
 
-  //TODO: temporary workaround
-  return exactPls.map(pl => verb.eval.Make.polyline(pl.map(ip => ip.point)));
+    let nurbs = verb.eval.Make.rationalInterpCurve(normalizedPoints, degree);
+    nurbses.push(nurbs);
+  }
   
-  return exactPls.map(function(x) {
-    return verb.eval.Make.rationalInterpCurve(x.map(function(y) {
-      return y.point;
-    }), surfaceMaxDegree(surface0) === 1 && surfaceMaxDegree(surface1) === 1 ? 1 : x.length - 1);
-  });
+  return nurbses;
 }
 
 function meshesIntersect(mesh0,mesh1, TOLERANCE, TOLERANCE_SQ, TOLERANCE_01) {
