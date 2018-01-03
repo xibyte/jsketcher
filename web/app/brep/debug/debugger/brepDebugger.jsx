@@ -8,6 +8,7 @@ import {EdgeTransferExplorer} from "./edgeTransferExplorer";
 import {FaceFilterExplorer} from "./faceFilterExplorer";
 import {FaceMergeExplorer} from "./faceMergeExplorer";
 import {MarkedEdgesExplorer} from "./markedEdgesExplorer";
+import {FaceIntersectionsExplorer} from "./faceIntersectionsExplorer";
 
 export default class BrepDebugger extends React.PureComponent {
 
@@ -84,7 +85,7 @@ export default class BrepDebugger extends React.PureComponent {
           </Section>
 
           <Section name='face intersections' accent>
-            face intersections...
+            {session.faceIntersections.map((faceIntersection, id) => <FaceIntersectionsExplorer key={id} {...{faceIntersection, id}} group3d={brepDebugGroup} />)}
           </Section>
 
           <Section name='loops validation' accent>
