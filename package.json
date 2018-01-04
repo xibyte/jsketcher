@@ -61,6 +61,7 @@
     "libtess": "1.2.2",
     "numeric": "1.2.6",
     "sprintf": "0.1.5",
-    "classnames": "2.2.5"
+    "classnames": "2.2.5",
+    "three": "0.89.0"
   }
 }

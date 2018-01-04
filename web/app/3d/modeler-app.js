@@ -1,4 +1,5 @@
 import './scene/vector-three-ench'
+import '../utils/three-loader'
 import {Bus} from '../ui/toolkit'
 import {Viewer} from './viewer'
 import {UI} from './ui/ctrl'
