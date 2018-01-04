@@ -10,7 +10,8 @@ import {EllipticalArc} from './shapes/elliptical-arc'
 import {BezierCurve} from './shapes/bezier-curve'
 import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
 import {Constraints} from './parametric'
-import Vector from '../math/vector'
+import {HashTable} from '../utils/hashmap'
+import Vector from 'math/vector';
 
 const Types = {
   END_POINT : 'TCAD.TWO.EndPoint',
@@ -158,8 +159,7 @@ IO.prototype._loadSketch = function(sketch) {
             skobj.edge = obj['edge'];
             maxEdge = Math.max(maxEdge, skobj.edge);
           }
-          layer.objects.push(skobj);
-          skobj.layer = layer;
+          layer.add(skobj);
           index[obj['id']] = skobj;
           
           //reindex non point children to recover constraints
@@ -193,6 +193,10 @@ IO.prototype._loadSketch = function(sketch) {
   if (boundaryNeedsUpdate) {
     this.addNewBoundaryObjects(boundary, maxEdge);
   }
+  const boundaryLayer = this.viewer.findLayerByName(IO.BOUNDARY_LAYER_NAME);
+  if (boundaryLayer != null) {
+    this.linkEndPoints(boundaryLayer.objects);
+  }
 
   var sketchConstraints = sketch['constraints'];
   if (sketchConstraints !== undefined) {
@@ -210,6 +214,24 @@ IO.prototype._loadSketch = function(sketch) {
   if (constants !== undefined) {
     this.viewer.params.constantDefinition = constants;
   }
+};
+
+IO.prototype.linkEndPoints = function(objects) {
+  const index = HashTable.forVector2d();
+  for (let obj of objects) {
+    obj.accept((o) => {
+      if (o._class == Types.END_POINT) {
+        const equalPoint = index.get(o);
+        if (equalPoint == null) {
+          index.put(o, o);
+        } else {
+          o.linked.push(equalPoint);
+          equalPoint.linked.push(o);
+        }
+      }
+      return true;
+    })
+  }  
 };
 
 IO.prototype.synchLine = function(skobj, edgeObj) {

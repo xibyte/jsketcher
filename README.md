@@ -2,16 +2,18 @@ JS.Sketcher
 ===========
 
 JS.Sketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
-<a href='https://www.youtube.com/watch?v=1wpfHc2AmWs'> 
-  <img src='../../wiki/img/2d-sketcher.small.png' width='400px'>
-  <img src='../../wiki/img/mount-plate.small.png' width='400px'> 
+<a href='https://www.youtube.com/watch?v=Vk3TTp8hNxQ&list=PLeoCiKHizvH8PZEyFvThHzVlnTF5XaL-R'> 
+  <img src='../../wiki/img/sample2d.png' width='400px'>
+  <img src='../../wiki/img/sample3d.png' width='400px'> 
 </a>
 
-[YouTube Tutorial Video](https://www.youtube.com/watch?v=1wpfHc2AmWs)
+[YouTube Tutorial Video](https://www.youtube.com/watch?v=Vk3TTp8hNxQ&list=PLeoCiKHizvH8PZEyFvThHzVlnTF5XaL-R)
 
-[Live Sample Demo](http://sketcher.s3-website-us-east-1.amazonaws.com/#sample)
+[Live Sample Demo](http://web-cad.org/?sample)
 
-[2D Sketcher](http://sketcher.s3-website-us-east-1.amazonaws.com/sketcher.html#__sample2D__)
+[2D Sketcher](http://web-cad.org/sketcher.html#__sample2D__)
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=WADW7V7CC32CY&lc=US&item_name=web%2dcad%2eorg&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
 
 Current Status
 ==============

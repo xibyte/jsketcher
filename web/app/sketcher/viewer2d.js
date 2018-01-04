@@ -11,7 +11,7 @@ import {EndPoint} from './shapes/point'
 import {Point} from './shapes/primitives'
 import {ReferencePoint} from './shapes/reference-point'
 import {BasisOrigin} from './shapes/basis-origin'
-import Vector from '../math/vector'
+import Vector from 'math/vector';
 
 import * as draw_utils from './shapes/draw-utils'
 import * as math from '../math/math'
@@ -87,24 +87,20 @@ Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
   var a = new EndPoint(x1, y1);
   var b = new EndPoint(x2, y2);
   var line = new Segment(a, b);
-  layer.objects.push(line);
-  line.layer = layer;
+  layer.add(line);
   return line;
 };
 
 Viewer.prototype.remove = function(obj) {
   if (obj.layer != null) {
-    var idx = obj.layer.objects.indexOf(obj);
-    if (idx != -1) {
+    if (obj.layer.remove(obj)) {
       this.parametricManager.removeConstraintsByObj(obj);
-      obj.layer.objects.splice(idx, 1);
     }
   }
 };
 
 Viewer.prototype.add = function(obj, layer) {
-  layer.objects.push(obj);
-  obj.layer = layer;
+  layer.add(obj);
 };
 
 function isEndPoint(o) {
@@ -435,9 +431,27 @@ function Layer(name, style) {
   this.readOnly = false; // This is actually a mark for boundary layers coming from 3D
 }
 
+Layer.prototype.remove = function(object) {
+  const idx = this.objects.indexOf(object);
+  if (idx != -1) {
+    this.objects.splice(idx, 1);
+    return true; 
+  }
+  return false;
+};
+
 Layer.prototype.add = function(object) {
-  this.objects.push(object);
-  object.layer = this;
+  if (object.layer !== undefined) {
+    if (object.layer != null) {
+      object.layer.remove(object);
+    }
+    if (object.layer !== this) {
+      this.objects.push(object);
+      object.layer = this;
+    }
+  } else {
+    this.objects.push(object);
+  }
 };
 
 Viewer.prototype.fullHeavyUIRefresh = function() {

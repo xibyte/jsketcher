@@ -1,0 +1,26 @@
+{
+  "extends": "eslint:recommended",
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true
+  },
+  "parser": "babel-eslint",
+  "plugins": [
+    "babel"
+  ],
+  "globals" : {
+    "THREE" : true,
+    "CSG" : true,
+    "PNLTRI" : true,
+    "__DEBUG__": true,
+    "$": true
+  },
+  "rules": {
+    "comma-dangle": "off",
+    "no-unused-vars": "off",
+    "max-len": "off",
+    "no-console": "off",
+    "no-extra-boolean-cast": "off"
+  }
+}

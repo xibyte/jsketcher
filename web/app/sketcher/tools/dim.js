@@ -1,5 +1,5 @@
 import {HDimension, VDimension, Dimension, DiameterDimension} from '../shapes/dim'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
 
@@ -41,7 +41,7 @@ export class AddDimTool extends Tool {
     if (this.dim == null) {
       this.viewer.historyManager.checkpoint();
       this.dim = this.dimCreation(p, new EndPoint(p.x, p.y));
-      this.layer.objects.push(this.dim);
+      this.layer.add(this.dim);
       this.viewer.refresh();
     } else {
       this.dim.b = p;

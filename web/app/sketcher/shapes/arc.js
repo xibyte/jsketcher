@@ -1,6 +1,6 @@
 import * as utils from '../../utils/utils';
 import * as math from '../../math/math';
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {Ref} from './ref'
 import {Constraints} from '../parametric'
 import {SketchObject} from './sketch-object'
@@ -126,6 +126,10 @@ export class Arc extends SketchObject {
     this.r.set(this.distanceA());
     viewer.parametricManager._add(new Constraints.P2PDistanceV(this.b, this.c, this.r));
     viewer.parametricManager._add(new Constraints.P2PDistanceV(this.a, this.c, this.r));
+  }
+
+  copy() {
+    return new Arc(this.a.copy(), this.b.copy(), this.c.copy());
   }
 }
 

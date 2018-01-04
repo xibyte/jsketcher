@@ -1,6 +1,6 @@
 import {LoadTemplate} from './utils'
 import {Bind} from './bind'
-import * as Operations from '../operations'
+import * as Operations from '../craft/operations'
 
 export function ModificationsPanel(app) {
   this.app = app;
@@ -12,21 +12,12 @@ export function ModificationsPanel(app) {
   this.historyWizard = null;
 
   this.app.bus.subscribe("craft", () => {
-    let modifications = [];
-    for (let i = 0; i < this.app.craft.history.length; i++) {
-      let op = this.app.craft.history[i];
-      let m = {
-        id : i,
-        info: this.app.ui.getInfoForOp(op),
-        OnBind : (dom, data) => {
-          dom.css('background-image', 'url('+ getIconForOp(op)+')');
-          dom.click(() => this.app.craft.historyPointer = data.id);
-        }
-      };
-      modifications.push(m);
-    }
-    Bind(this.dom, {modifications});
+    this.updateList();
     this.updateHistoryPointer();
+  });
+
+  this.app.bus.subscribe("historyShrink", () => {
+    this.updateList();
   });
 
   this.app.bus.subscribe("refreshSketch", () => {
@@ -41,6 +32,28 @@ export function ModificationsPanel(app) {
 
   Bind(this.dom, {});
 }
+
+ModificationsPanel.prototype.updateList = function() {
+  let modifications = [];
+  for (let i = 0; i < this.app.craft.history.length; i++) {
+    let op = this.app.craft.history[i];
+    let m = {
+      id : i,
+      info: this.app.ui.getInfoForOp(op),
+      OnBind : (dom, data) => {
+        const icon = getIconForOp(op);
+        if (icon) {
+          dom.css('background-image', 'url('+ icon+')');
+        }
+        if (!op.face) {
+          dom.find('.require-face').addClass('action-disabled');
+        }
+      }
+    };
+    modifications.push(m);
+  }
+  Bind(this.dom, {modifications});
+};
 
 ModificationsPanel.prototype.updateHistoryPointer = function() {
   if (this.historyWizard != null) {

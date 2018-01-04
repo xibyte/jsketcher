@@ -1,7 +1,8 @@
-import Vector from './vector'
+import Vector from 'math/vector';
 import BBox from './bbox'
 
 export const TOLERANCE = 1E-6;
+export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 
 export function distanceAB(a, b) {
   return distance(a.x, a.y, b.x, b.y);
@@ -18,10 +19,23 @@ export function distanceAB3(a, b) {
 }
 
 export function distance3(x1, y1, z1, x2, y2, z2) {
+  return Math.sqrt(distanceSquared3(x1, y1, z1, x2, y2, z2));
+}
+
+export function distanceSquaredAB3(a, b) {
+  return distanceSquared3(a.x, a.y, a.z, b.x, b.y, b.z);
+}
+
+export function distanceSquaredANegB3(a, b) {
+  return distanceSquared3(a.x, a.y, a.z, -b.x, -b.y, -b.z);
+}
+
+
+export function distanceSquared3(x1, y1, z1, x2, y2, z2) {
   var dx = x1 - x2;
   var dy = y1 - y2;
   var dz = z1 - z2;
-  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  return dx * dx + dy * dy + dz * dz;
 }
 
 export function circleFromPoints(p1, p2, p3) {
@@ -52,14 +66,20 @@ export function areEqual(v1, v2, tolerance) {
   return Math.abs(v1 - v2) < tolerance;
 }
 
-export function areVectorsEqual(v1, v2, tolerance) {
-  return areEqual(v1.x, v2.x, tolerance) &&
-         areEqual(v1.y, v2.y, tolerance) &&
-         areEqual(v1.z, v2.z, tolerance);
+export function areVectorsEqual(v1, v2, toleranceSQ) {
+  return areEqual(distanceSquaredAB3(v1, v2), 0, toleranceSQ);
+}
+
+export function areNegVectorsEqual(v1, v2, toleranceSQ) {
+  return areEqual(distanceSquaredANegB3(v1, v2), 0, toleranceSQ);
+}
+
+export function areVectorsEqual3(v1, v2, toleranceSQ) {
+  return areEqual(distanceSquared3(v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]), 0, toleranceSQ);
 }
 
 export function vectorsEqual(v1, v2) {
-  return areVectorsEqual(v1, v2, TOLERANCE);
+  return areVectorsEqual(v1, v2, TOLERANCE_SQ);
 }
 
 export function equal(v1, v2) {
@@ -68,6 +88,10 @@ export function equal(v1, v2) {
 
 export function strictEqual(a, b) {
   return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
+export function strictEqual2D(a, b) {
+  return a.x == b.x && a.y == b.y;
 }
 
 export function _vec(size) {
@@ -98,12 +122,12 @@ export function rotateInPlace(px, py, angle, out) {
   return out;
 }
 
-export function polygonOffset( polygon, scale ) {
+export function polygonOffsetXY(polygon, scaleX, scaleY) {
   const origBBox = new BBox();
   const scaledBBox = new BBox();
   const result = [];
   for (let point of polygon) {
-    const scaledPoint = new Vector(point.x, point.y)._multiply(scale);
+    const scaledPoint = new Vector(point.x * scaleX, point.y * scaleY);
     result.push(scaledPoint);
     origBBox.checkPoint(point);
     scaledBBox.checkPoint(scaledPoint);
@@ -113,6 +137,21 @@ export function polygonOffset( polygon, scale ) {
     point._minus(alignVector);
   }
   return result;
+}
+
+
+export function polygonOffset( polygon, scale ) {
+  return polygonOffsetXY( polygon, scale, scale );
+}
+
+export function polygonOffsetByDelta( polygon, delta ) {
+  const origBBox = new BBox();
+  for (let point of polygon) {
+    origBBox.checkPoint(point);
+  }
+  const width = origBBox.width();
+  const height = origBBox.height();
+  return polygonOffsetXY(polygon, (width + delta) / width, (height + delta) / height);
 }
 
 export function isPointInsidePolygon( inPt, inPolygon ) {
@@ -159,5 +198,43 @@ export function isPointInsidePolygon( inPt, inPolygon ) {
 
   return	inside;
 }
+
+// http://en.wikipedia.org/wiki/Shoelace_formula
+export function area(contour) {
+  var n = contour.length;
+  var a = 0.0;
+  for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
+    a += contour[ p ].x * contour[ q ].y - contour[ q ].x * contour[ p ].y;
+  }
+  return a * 0.5;
+}
+
+export function isCCW(path2D) {
+  return area(path2D) >= 0;
+}
+
+export function findLowestLeftPoint(poly) {
+  let heroIdx = 0;
+  for (let i = 1; i< poly.length; ++i) {
+    const point = poly[i];
+    let hero = poly[heroIdx];
+    if (point.y < hero.y) {
+      heroIdx = i;
+    } else if (hero.y == point.y) {
+      if (point.x < hero.x) {
+        heroIdx = i;
+      }
+    }
+  }
+  return heroIdx;
+}
+
+export function makeAngle0_360(angle) {
+  angle %= 2 * Math.PI;
+  if (angle < 0) {
+    angle = 2 * Math.PI + angle;
+  }
+  return angle;
+} 
 
 export const sq = (a) => a * a;

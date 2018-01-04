@@ -9,10 +9,10 @@ export function methodRef(_this, methodName, args) {
   };
 }
 
-export function Box() {
+export function Box(parent) {
   this.root = this.content = $('<div class="tc-box" />');
   this.root.addClass('tc-box tc-scroll');
-  this.root.appendTo('body');
+  this.root.appendTo(parent ? parent : 'body');
 }
 
 Box.prototype.close = function() {
@@ -70,6 +70,11 @@ InlineRadio.prototype.getValue = function() {
   }
   return null;
 };
+
+InlineRadio.prototype.setValue = function(v) {
+  this.root.find('input[value='+v+']').prop('checked', true);
+};
+
 
 InlineRadio.COUNTER = 0;
 
@@ -299,7 +304,11 @@ Bus.prototype.notify = function(event, data, sender) {
       const callback = listenerList[i][0];
       const listenerId = listenerList[i][1];
       if (sender == undefined || listenerId == null  || listenerId != sender) {
-        callback(data);
+        try {
+          callback(data);
+        } catch(e) {
+          console.error(e);
+        }
       }
     }
   }

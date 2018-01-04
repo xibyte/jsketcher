@@ -9,12 +9,16 @@ function createByConstraintName(name, params, values) {
       return new Equal(params);
     case "equalsTo":
       return new EqualsTo(params, values[0]);
+    case "Diff":
+      return new Diff(params, values[0]);
     case "MinLength":
       return new MinLength(params, values[0]);
     case "perpendicular":
       return new Perpendicular(params);
     case "parallel":
       return new Parallel(params);
+    case "P2LDistanceSigned":
+      return new P2LDistanceSigned(params, values[0]);
     case "P2LDistance":
       return new P2LDistance(params, values[0]);
     case "P2LDistanceV":
@@ -41,7 +45,6 @@ function createByConstraintName(name, params, values) {
   }
 }
 
-/** @constructor */
 function Equal(params) {
 
   this.params = params;
@@ -135,15 +138,12 @@ function LockConvex(params) {
   }
 }
 
-
-/** @constructor */
 function ConstantWrapper(constr, mask) {
 
   this.params = [];
   this.grad = [];
-  var j;
   
-  for (j = 0; j < constr.params.length; j++) {
+  for (let j = 0; j < constr.params.length; j++) {
     if (!mask[j]) {
       this.params.push(constr.params[j]);
     }
@@ -158,7 +158,7 @@ function ConstantWrapper(constr, mask) {
     fillArray(this.grad, 0, this.grad.length, 0);
     constr.gradient(this.grad);
     var jj = 0;
-    for (j = 0; j < mask.length; j++) {
+    for (let j = 0; j < mask.length; j++) {
       if (!mask[j]) {
         out[jj ++] = this.grad[j];
       }
@@ -166,7 +166,6 @@ function ConstantWrapper(constr, mask) {
   }
 }
 
-/** @constructor */
 function Weighted(constr, weight) {
 
   this.weight = weight;
@@ -185,8 +184,6 @@ function Weighted(constr, weight) {
   }
 }
 
-
-/** @constructor */
 function EqualsTo(params, value) {
 
   this.params = params;
@@ -201,7 +198,44 @@ function EqualsTo(params, value) {
   };
 }
 
-/** @constructor */
+function Diff(params, value) {
+
+  this.params = params;
+  this.value = value;
+
+  this.error = function() {
+    return this.params[0].get() - this.params[1].get() - this.value;
+  };
+
+  this.gradient = function(out) {
+    out[0] =  1;
+    out[1] = -1;
+  };
+}
+
+function P2LDistanceSigned(params, value) {
+
+  const TX = 0;
+  const TY = 1;
+  const AX = 2;
+  const AY = 3;
+  const BX = 4;
+  const BY = 5;
+
+  this.params = params;
+  this.value = value;
+
+  this.error = function() {
+    const tx = params[TX].get(), ax = params[AX].get(), bx = params[BX].get();
+    const ty = params[TY].get(), ay = params[AY].get(), by = params[BY].get();
+    const d = Math.sqrt(sq(by - ay) + sq(bx - ax));
+    
+    return (-(by - ay) * (tx - ax) ) / d + ((bx - ax) * (ty - ay)) / d - this.value;
+  };
+
+  this.gradient = NumericGradient;
+}
+
 function P2LDistance(params, distance) {
 
   this.params = params;
@@ -252,7 +286,6 @@ function P2LDistance(params, distance) {
   }
 }
 
-/** @constructor */
 function P2LDistanceV(params) {
 
   this.params = params;//.slice(0, params.length -1);
@@ -305,7 +338,7 @@ function P2LDistanceV(params) {
   }
 
 }
-/** @constructor */
+
 function P2PDistance(params, distance) {
 
   this.params = params;
@@ -339,8 +372,6 @@ function P2PDistance(params, distance) {
   }
 }
 
-
-/** @constructor */
 function P2PDistanceV(params) {
 
   this.params = params;
@@ -374,7 +405,6 @@ function P2PDistanceV(params) {
   }
 }
 
-/** @constructor */
 function Parallel(params) {
 
   this.params = params;
@@ -408,7 +438,6 @@ function Parallel(params) {
   }
 }
 
-/** @constructor */
 function Perpendicular(params) {
 
   this.params = params;
@@ -443,7 +472,6 @@ function Perpendicular(params) {
   }
 }
 
-/** @constructor */
 function Angle(params) {
 
   this.params = params;
@@ -505,7 +533,6 @@ function Angle(params) {
   }
 }
 
-/** @constructor */
 function PointOnEllipse(params) {
 
   this.params = params;
@@ -545,7 +572,6 @@ function PointOnEllipse(params) {
   this.gradient = NumericGradient;
 }
 
-/** @constructor */
 function EllipseTangent(params) {
 
   this.params = params;

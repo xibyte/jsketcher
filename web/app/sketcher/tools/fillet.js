@@ -1,4 +1,4 @@
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {Styles} from '../styles'
 import * as fetch from '../fetchers'
 import * as math from '../../math/math'
@@ -12,6 +12,20 @@ export class FilletTool extends Tool {
   constructor(viewer) {
     super('fillet', viewer);  
     this.viewer = viewer;
+  }
+  
+  restart() {
+    for (let master of this.viewer.selected) {
+      if (master instanceof EndPoint) {
+        for (let slave of master.linked) {
+          if (slave instanceof EndPoint) {
+            if (this.breakLinkAndMakeFillet(master, slave)) {
+              this.viewer.toolManager.releaseControl();
+            }
+          }
+        }        
+      }
+    }
   }
   
   makeFillet(point1, point2) {
@@ -50,7 +64,7 @@ export class FilletTool extends Tool {
       new EndPoint(point1.x, point1.y),
       new EndPoint(point2.x, point2.y),
       new EndPoint(vec.x, vec.y));
-    point1.parent.layer.objects.push(arc);
+    point1.parent.layer.add(arc);
     var pm = this.viewer.parametricManager;
     arc.stabilize(this.viewer);
     pm._add(new Constraints.Tangent( arc, point1.parent));
@@ -69,8 +83,8 @@ export class FilletTool extends Tool {
     //pm._add(new Constraints.LockConvex(arc.c, arc.a, otherEnd(point1)));
     //pm._add(new Constraints.LockConvex(otherEnd(point2), arc.b, arc.c));
   
-    var solver = pm.solveWithLock([]);
-  //  var solver = pm.solveWithLock([point1._x, point1._y, point2._x, point2._y]);
+    var solver = pm.solve();
+  //  var solver = pm.solve([point1._x, point1._y, point2._x, point2._y]);
     pm.notify();
     this.viewer.refresh();
   }
@@ -78,24 +92,21 @@ export class FilletTool extends Tool {
   mouseup(e) {
     var candi = this.getCandidate(e);
     if (candi == null) return;
-    var point1 = candi[0];
-    var point2 = candi[1];
+    const point1 = candi[0];
+    const point2 = candi[1];
+    this.breakLinkAndMakeFillet(point1, point2)
+  }
   
-    var pm = this.viewer.parametricManager;
-    for (var i = 0; i < pm.subSystems.length; i++) {
-      var subSys = pm.subSystems[i];
-      for (var j = 0; j < subSys.constraints.length; j++) {
-        var c = subSys.constraints[j];
-        if (c.NAME === 'coi' &&
-          ((c.a.id === point1.id && c.b.id === point2.id) ||
-          (c.b.id === point1.id && c.a.id === point2.id)))   {
-          pm.remove(c);
-          this.makeFillet(point1, point2);
-          this.viewer.deselectAll();
-          return;
-        }
-      }
+  breakLinkAndMakeFillet(point1, point2) {
+    const pm = this.viewer.parametricManager;
+    const coi = pm.findCoincidentConstraint(point1, point2);
+    if (coi != null) {
+      pm.remove(coi);
+      this.makeFillet(point1, point2);
+      this.viewer.deselectAll();
+      return true;
     }
+    return false;
   }
   
   static isLine(line) {

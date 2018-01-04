@@ -1,4 +1,4 @@
-import Vector from './vector';
+import Vector from 'math/vector';
 
 var ORIGIN = new Vector(0, 0, 0);
 
@@ -9,6 +9,13 @@ var AXIS = {
 };
 
 var IDENTITY_BASIS = [AXIS.X, AXIS.Y, AXIS.Z];
+
+export const STANDARD_BASES = {
+  'XY': IDENTITY_BASIS,
+  'XZ': [AXIS.X, AXIS.Z, AXIS.Y],
+  'ZY': [AXIS.Z, AXIS.Y, AXIS.X]
+};
+
 
 /** @constructor */
 function Matrix3() {
@@ -27,6 +34,20 @@ Matrix3.prototype.setBasis = function(basis) {
   this.mxx = b[0].x; this.mxy = b[1].x; this.mxz = b[2].x; this.tx = 0;
   this.myx = b[0].y; this.myy = b[1].y; this.myz = b[2].y; this.ty = 0;
   this.mzx = b[0].z; this.mzy = b[1].z; this.mzz = b[2].z; this.tz = 0;
+  return this;
+};
+
+Matrix3.prototype.scale = function(dx, dy, dz) {
+  this.mxx *= dx;
+  this.myy *= dy;
+  this.mzz *= dz;
+  return this;
+};
+
+Matrix3.prototype.translate = function(dx, dy, dz) {
+  this.tx += dx;
+  this.ty += dy;
+  this.tz += dz;
   return this;
 };
 
@@ -57,6 +78,14 @@ Matrix3.prototype.setMatrix = function(m) {
   this.myx = m.myx; this.myy = m.myy; this.myz = m.myz; this.ty = m.ty;
   this.mzx = m.mzx; this.mzy = m.mzy; this.mzz = m.mzz; this.tz = m.tz;
   return this;
+};
+
+Matrix3.prototype.toArray = function() {
+  return [
+    [this.mxx, this.mxy, this.mxz, this.tx],
+    [this.myx, this.myy, this.myz, this.ty],
+    [this.mzx, this.mzy, this.mzz, this.tz]
+  ];
 };
 
 Matrix3.prototype.invert = function() {
@@ -199,4 +228,16 @@ Matrix3.rotateMatrix = function(angle, axis, pivot) {
   return m;
 };
 
-export {Matrix3, ORIGIN, IDENTITY_BASIS, AXIS}; 
+function BasisForPlane(normal) {
+  let alignPlane, x, y;
+  if (Math.abs(normal.dot(AXIS.Y)) < 0.5) {
+    alignPlane = normal.cross(AXIS.Y);
+  } else {
+    alignPlane = normal.cross(AXIS.Z);
+  }
+  y = alignPlane.cross(normal);
+  x = y.cross(normal);
+  return [x, y, normal];
+}
+
+export {Matrix3, ORIGIN, IDENTITY_BASIS, AXIS, BasisForPlane}; 

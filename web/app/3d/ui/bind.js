@@ -60,6 +60,8 @@ export function BindArray(node, array, policy) {
         domItem = scope.nestedScopes[value.id];
         if (!domItem) {
           domItem = createFromTemplate(value.id);
+        } else {
+          domItem = domItem[0];
         }
         if (domPointer == 0) {
           node.prepend(domItem);
@@ -121,6 +123,7 @@ function setupBindings(bindings, bindingsDefinition, node) {
       const formattedValue = format(def.formatters, value);
       binder.apply(node, formattedValue, policy, def.key);        
     });
+    binder.init(node);
   });
 }
 
@@ -132,10 +135,6 @@ function index(dom) {
     let bindingsDefinition = node.attr('data-bind');
     if (bindingsDefinition) {
       setupBindings(scope.bindings, bindingsDefinition, node)
-      let template = node.text();
-      if (template) {
-        node.attr('data-bind-template', template);
-      }
     }
     node.children().each((i, e) => queue.push($(e)))
   }
@@ -259,23 +258,32 @@ const DEFAULT_BINDER = {
     } else {
       node.show();
     }
+  },
+  init: (node) => {
+    let template = node.text();
+    if (template) {
+      node.attr('data-bind-template', template);
+    }
   }
 };
 
 export const BINDERS = [
   {
     prefix: '@',
-    apply: (node, value, policy, key) => node.attr(key, value)
+    apply: (node, value, policy, key) => node.attr(key, value),
+    init: (node) => {}
   },
   
   {
     prefix: '$',
-    apply: (node, value, policy, key) => node.css(key, value)
+    apply: (node, value, policy, key) => node.css(key, value),
+    init: (node) => {}
   },
   
   {
     prefix: '!',
-    apply: (node, value, policy, key) => value ? node.addClass(key) : node.removeClass(key)
+    apply: (node, value, policy, key) => value ? node.addClass(key) : node.removeClass(key),
+    init: (node) => {}
   },
   
   DEFAULT_BINDER

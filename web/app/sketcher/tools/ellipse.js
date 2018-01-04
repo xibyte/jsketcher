@@ -2,7 +2,7 @@ import {Tool} from './tool'
 import {EndPoint} from '../shapes/point'
 import {Ellipse} from '../shapes/ellipse'
 import {EllipticalArc} from '../shapes/elliptical-arc'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 
 export const STATE_POINT1 = 0;
 export const STATE_POINT2 = 1;
@@ -51,7 +51,7 @@ export class EllipseTool extends Tool {
         const p = this.point(e);
         this.ellipse = this.newEllipse(p);
         this.snapIfNeed(this.ellipse.ep1);
-        this.viewer.activeLayer.objects.push(this.ellipse);
+        this.viewer.activeLayer.add(this.ellipse);
         this.viewer.refresh();
         this.state = STATE_POINT2;
         this.sendHint('specify second major axis point');

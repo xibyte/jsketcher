@@ -1,11 +1,11 @@
-import Vector from '../math/vector'
+import Vector from 'math/vector';
 import BBox from '../math/bbox'
 import {HashTable} from '../utils/hashmap'
 import {Graph} from '../math/graph'
 import * as math from '../math/math'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import Counters from './counters'
-import {Solid} from './solid'
+import {MeshSceneSolid} from './scene/mesh-scene-object'
 import DPR from '../utils/dpr'
 
 export const FACE_COLOR =  0xB0C4DE;
@@ -143,8 +143,7 @@ export function createSolidMaterial() {
 }
 
 export function createSolid(csg, id) {
-  var material = createSolidMaterial();
-  return new Solid(csg, material, undefined, id);
+  return new MeshSceneSolid(csg, undefined, id);
 }
 
 export function intercept(obj, methodName, aspect) {
@@ -174,28 +173,23 @@ export function createPlane(basis, depth) {
   var currentBounds = new BBox();
   var points = boundingPolygon.map(function(p) { p.z = depth; return tr._apply(p); });
   var polygon = new CSG.Polygon(points.map(function(p){return new CSG.Vertex(csgVec(p))}), shared);
-  var plane = new Solid(CSG.fromPolygons([polygon]), material, 'PLANE');
+  var plane = new MeshSceneSolid(CSG.fromPolygons([polygon]), 'PLANE');
   plane.wireframeGroup.visible = false;
   plane.mergeable = false;
-  var _3d = tr.invert();
 
   function setBounds(bbox) {
-    var corner = new Vector(bbox.minX, bbox.minY, 0);
-    var size = new Vector(bbox.width(), bbox.height(), 1);
-    _3d._apply(size);
-    _3d._apply(corner);
-    plane.mesh.scale.set(size.x, size.y, size.z);
-    plane.mesh.position.set(corner.x, corner.y, corner.z);
     currentBounds = bbox;
-    var poly = new CSG.Polygon(bbox.toPolygon().map(function(p){return new CSG.Vertex(csgVec( _3d._apply(p) ))}), shared);
+    const poly = new CSG.Polygon(bbox.toPolygon().map(function(p){p.z = depth; return new CSG.Vertex(csgVec( tr._apply(p) ))}), shared);
     plane.csg = CSG.fromPolygons([poly]);
+    plane.dropGeometry();
+    plane.createGeometry();
   }
   var bb = new BBox();
   bb.checkBounds(-400, -400);
   bb.checkBounds( 400,  400);
   setBounds(bb);
   
-  var sketchFace = plane.polyFaces[0];
+  var sketchFace = plane.sceneFaces[0];
   intercept(sketchFace, 'syncSketches', function(invocation, args) {
     var geom = args[0];
     invocation(geom);
@@ -231,96 +225,6 @@ export function fixCCW(path, normal) {
 
 export const isPointInsidePolygon = math.isPointInsidePolygon;
 
-export function sketchToPolygons(geom) {
-
-  var dict = HashTable.forVector2d();
-  var edges = HashTable.forDoubleArray();
-
-  var lines = geom.connections;
-
-  function edgeKey(a, b) {
-    return [a.x, a.y, b.x, b.y];
-  }
-
-  var size = 0;
-  var points = [];
-  function memDir(a, b) {
-    var dirs = dict.get(a);
-    if (dirs === null) {
-      dirs = [];
-      dict.put(a, dirs);
-      points.push(a);
-    }
-    dirs.push(b);
-  }
-
-  for (var i = 0; i < lines.length; i++) {
-    var a = lines[i].a;
-    var b = lines[i].b;
-
-    memDir(a, b);
-    memDir(b, a);
-    edges.put(edgeKey(a, b), lines[i]);
-  }
-
-  var graph = {
-
-    connections : function(e) {
-      var dirs = dict.get(e);
-      return dirs === null ? [] : dirs;
-    },
-
-    at : function(index) {
-      return points[index];
-    },
-
-    size : function() {
-      return points.length;
-    }
-  };
-
-  var loops = Graph.findAllLoops(graph, dict.hashCodeF, dict.equalsF);
-  var polygons = [];
-  var li, loop, polyPoints;
-  for (li = 0; li < loops.length; ++li) {
-    loop = loops[li];
-    if (!isCCW(loop)) loop.reverse();
-    polyPoints = [];
-    for (var pi = 0; pi < loop.length; ++pi) {
-      var point = loop[pi];
-      var next = loop[(pi + 1) % loop.length];
-
-      var edge = edges.get(edgeKey(point, next));
-      if (edge === null) {
-        edge = edges.get(edgeKey(next, point));
-      }
-      polyPoints.push(point);
-      point.sketchConnectionObject = edge.sketchObject;
-    }
-    if (polyPoints.length >= 3) {
-      polygons.push(polyPoints);
-    } else {
-      console.warn("Points count < 3!");
-    }
-  }
-  for (li = 0; li < geom.loops.length; ++li) {
-    loop = geom.loops[li];
-    polyPoints = loop.slice(0);
-    for (var si = 0; si < polyPoints.length; si++) {
-      var conn = polyPoints[si];
-      //reuse a point and ignore b point since it's a guaranteed loop
-      conn.a.sketchConnectionObject = conn.sketchObject;
-      polyPoints[si] = conn.a;
-    }
-    // we assume that connection object is the same al other the loop. That's why reverse is safe.
-    if (!isCCW(polyPoints)) polyPoints.reverse();
-    if (polyPoints.length >= 3) {
-      polygons.push(polyPoints);
-    }
-  }
-  return polygons;
-}
-
 export function someBasis2(normal) {
   var x = normal.cross(normal.randomNonParallelVector());
   var y = normal.cross(x).unit();
@@ -338,11 +242,16 @@ export function someBasis(twoPointsOnPlane, normal) {
 }
 
 export function normalOfCCWSeq(ccwSequence) {
-  var a = ccwSequence[0];
-  var b = ccwSequence[1];
-  var c = ccwSequence[2];
-
-  return b.minus(a).cross(c.minus(a)).normalize();
+  let a = ccwSequence[0];
+  let b = ccwSequence[1];
+  for (let i = 2; i < ccwSequence.length; ++i) {
+    let c = ccwSequence[i];
+    let normal = b.minus(a).cross(c.minus(a)).normalize(); 
+    if (!math.equal(normal.length(), 0)) {
+      return normal;        
+    }
+  }
+  return null;
 }
 
 export function normalOfCCWSeqTHREE(ccwSequence) {
@@ -353,20 +262,8 @@ export function normalOfCCWSeqTHREE(ccwSequence) {
   return b.sub(a).cross(c.sub(a)).normalize();
 }
 
-
-// http://en.wikipedia.org/wiki/Shoelace_formula
-export function area(contour) {
-  var n = contour.length;
-  var a = 0.0;
-  for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
-    a += contour[ p ].x * contour[ q ].y - contour[ q ].x * contour[ p ].y;
-  }
-  return a * 0.5;
-}
-
-export function isCCW(path2D) {
-  return area(path2D) >= 0;
-}
+export const area = math.area;
+export const isCCW = math.isCCW;
 
 export function calculateExtrudedLid(sourcePolygon, normal, direction, expansionFactor) {
   var lid = [];

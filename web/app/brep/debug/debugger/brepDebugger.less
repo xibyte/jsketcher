@@ -1,0 +1,75 @@
+.brep-debugger {
+
+  & .strike {
+    text-decoration:line-through;
+  }
+  
+  & .grayed {
+    color: lightgray;
+  }
+  
+  & .invisible {
+    visibility: hidden;
+  }
+
+  padding: 0.3em;
+  line-height: 1.5;
+  button {
+    font-size: inherit;
+    padding: 0 0.3em;
+  }
+
+  & .operands-veiew {
+    display: flex;
+    justify-content: space-between;
+    & > * {
+      flex: 1 1;  
+    }
+  }
+
+  & .section {
+
+    &.closable >  .caption {
+      cursor: pointer;
+      & .title {
+        &:hover {
+          color: blue;
+          text-decoration: underline;
+        }
+      }
+    }
+    
+    & .caption {
+      white-space: nowrap;
+      user-select: none;
+      &.accent {
+        background-color: rgb(255, 244, 244);
+        font-weight: bold;
+      }
+      &.centered {
+        text-align: center;
+      }
+      &.operand-a {
+        background-color: rgb(239, 244, 255)
+      }
+    
+      &.operand-b {
+        background-color: rgb(244, 255, 245)
+      }
+      &.result {
+        background-color: rgb(254, 255, 244)
+      }
+    }
+  }
+  .clickable {
+    cursor: pointer;
+    &:hover {
+      color: blue;    
+    }
+  }
+  .button {
+    font-size: 1.3em;
+    .clickable;
+  }
+}
+

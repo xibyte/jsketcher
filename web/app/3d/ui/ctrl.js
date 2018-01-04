@@ -1,18 +1,19 @@
 import * as tk from '../../ui/toolkit'
 import * as cad_utils from '../cad-utils'
 import * as math from '../../math/math'
-import * as workbench from '../workbench'
+import * as workbench from '../craft/mesh/workbench'
 import ToolBar from './toolbar'
 import * as MenuConfig from '../menu/menu-config'
-import * as Operations from '../operations'
+import * as Operations from '../craft/operations'
 import Menu from '../menu/menu'
-import {ExtrudeWizard} from '../wizards/extrude'
-import {RevolveWizard} from '../wizards/revolve'
-import {PlaneWizard} from '../wizards/plane'
-import {BoxWizard} from '../wizards/box'
-import {SphereWizard} from '../wizards/sphere'
-import {TransformWizard} from '../wizards/transform'
-import {ImportWizard} from '../wizards/import'
+import {ExtrudeWizard, CutWizard} from '../craft/brep/wizards/cut-extrude-wizard'
+
+import {RevolveWizard} from '../craft/brep/wizards/revolve-wizard'
+import {PlaneWizard} from '../craft/brep/wizards/plane-wizard'
+import {BoxWizard} from '../craft/brep/wizards/box'
+import {SphereWizard} from '../craft/mesh/wizards/sphere'
+import {TransformWizard} from '../craft/mesh/wizards/transform'
+import {ImportWizard} from '../craft/mesh/wizards/import'
 import {LoadTemplate} from './utils'
 import {BindArray} from './bind'
 import {SolidList} from './solid-list'
@@ -27,26 +28,26 @@ function UI(app) {
   var modelFolder = new tk.Folder("Model");
   this.solidList = new SolidList(this.app);
   modelFolder.content.append(this.solidList.dom);
-  
+
   tk.add(mainBox, modelFolder);
   let modificationsPanel = new ModificationsPanel(this.app);
   mainBox.content.append(modificationsPanel.dom);
 
   var toolbarVertOffset = 10; //this.mainBox.root.position().top;
 
-  this.registerMenuActions(MenuConfig);  
-  
+  this.registerMenuActions(MenuConfig);
+
   this.craftToolBar = this.createCraftToolBar(toolbarVertOffset);
   this.createBoolToolBar(this.craftToolBar.node.position().top + this.craftToolBar.node.height() + 20);
   this.createMiscToolBar(toolbarVertOffset);
   this.fillControlBar();
   var ui = this;
-  
+
   this.app.bus.subscribe("showSketches", (enabled) => {
-    var solids = app.findAllSolids();
+    var solids = app.findAllSolidsOnScene();
     for (var i = 0; i < solids.length; i++) {
-      for (var j = 0; j < solids[i].polyFaces.length; j++) {
-        var face = solids[i].polyFaces[j];
+      for (var j = 0; j < solids[i].sceneFaces.length; j++) {
+        var face = solids[i].sceneFaces[j];
         if (face.sketch3DGroup != null) face.sketch3DGroup.visible = enabled;
       }
     }
@@ -56,17 +57,25 @@ function UI(app) {
   app.bus.subscribe("solid-pick", function(solid) {
     ui.registerWizard(new TransformWizard(app.viewer, solid));
   });
+  registerOperations(app);
+}
+
+function registerOperations(app) {
+  const opNames = Object.keys(Operations);
+  for (let opName of opNames) {
+    console.log('Registering Operation ' + opName);
+    app.craft.registerOperation(opName, Operations[opName].action);
+  }
 }
 
 UI.prototype.createCraftToolBar = function (vertPos) {
   var toolBar = new ToolBar(this.app);
   toolBar.add(this.app.actionManager.actions['PLANE']);
   toolBar.add(this.app.actionManager.actions['EditFace']);
-  toolBar.add(this.app.actionManager.actions['PAD']);
+  toolBar.add(this.app.actionManager.actions['EXTRUDE']);
   toolBar.add(this.app.actionManager.actions['CUT']);
-  toolBar.add(this.app.actionManager.actions['REVOLVE']);  
-  
-  
+  toolBar.add(this.app.actionManager.actions['REVOLVE']);
+
 
   $('#viewer-container').append(toolBar.node);
   toolBar.node.css({left: '10px',top : vertPos + 'px'});
@@ -93,7 +102,7 @@ UI.prototype.createBoolToolBar = function(vertPos) {
   return toolBar;
 };
 
-UI.prototype.registerMenuActions = function(menuConfig) { 
+UI.prototype.registerMenuActions = function(menuConfig) {
   for (let menuName in menuConfig) {
     const m = menuConfig[menuName];
     var action = Object.assign({'type' : 'menu'}, m);
@@ -116,20 +125,21 @@ UI.prototype.fillControlBar = function() {
   this.app.controlBar.add('menu.craft', LEFT);
   this.app.controlBar.add('menu.boolean', LEFT);
   this.app.controlBar.add('menu.primitives', LEFT);
+  this.app.controlBar.add('Donate', LEFT);
+  this.app.controlBar.add('GitHub', LEFT);
 };
 
 UI.prototype.registerWizard = function(wizard, overridingHistory) {
-  wizard.ui.box.root.css({left : (this.mainBox.root.width() + this.craftToolBar.node.width() + 30) + 'px', top : 0});
-  var craft = this.app.craft; 
-  wizard.onRequestReady = function(request) {
-    if (request.invalidAndShouldBeDropped == true) {
-      alert(request.message);   
-    } else {
-      craft.modify(request, overridingHistory);
-    }
-  };
-    
+  wizard.box.root.css({left : (this.mainBox.root.width() + this.craftToolBar.node.width() + 30) + 'px', top : 0});
+  var craft = this.app.craft;
+  wizard.overridingHistory = overridingHistory;
   wizard.focus();
+  if (this.registeredWizard != undefined) {
+    if (!this.registeredWizard.disposed) {
+      this.registeredWizard.dispose();
+    }
+  }
+  this.registeredWizard = wizard;
   return wizard;
 };
 
@@ -148,7 +158,7 @@ UI.prototype.initOperation = function(op) {
 };
 
 UI.prototype.createWizardForOperation = function(op) {
-  var initParams = op.protoParams;
+  var initParams = op.params;
   var face = op.face !== undefined ? this.app.findFace(op.face) : null;
   if (face != null) {
     this.app.viewer.selectionMgr.select(face);
@@ -159,15 +169,15 @@ UI.prototype.createWizardForOperation = function(op) {
 UI.prototype.createWizard = function(type, overridingHistory, initParams, face) {
   let wizard = null;
   if ('CUT' === type) {
-    wizard = new ExtrudeWizard(this.app, face, true, initParams);
-  } else if ('PAD' === type) {
-    wizard = new ExtrudeWizard(this.app, face, false, initParams);
+    wizard = new CutWizard(this.app, initParams);
+  } else if ('EXTRUDE' === type) {
+    wizard = new ExtrudeWizard(this.app, initParams);
   } else if ('REVOLVE' === type) {
     wizard = new RevolveWizard(this.app, face, initParams);
   } else if ('PLANE' === type) {
-    wizard = new PlaneWizard(this.app.viewer, initParams);
+    wizard = new PlaneWizard(this.app, initParams);
   } else if ('BOX' === type) {
-    wizard = new BoxWizard(this.app.viewer, initParams);
+    wizard = new BoxWizard(this.app, initParams);
   } else if ('SPHERE' === type) {
     wizard = new SphereWizard(this.app.viewer, initParams);
   } else if ('IMPORT_STL' === type) {

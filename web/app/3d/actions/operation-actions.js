@@ -1,4 +1,4 @@
-import * as Operations from '../operations'
+import * as Operations from '../craft/operations'
 import * as ActionHelpers from './action-helpers'
 
 function mergeInfo(opName, action) {
@@ -10,60 +10,57 @@ function mergeInfo(opName, action) {
   return action;
 }
 
-export const OperationActions = {
-  
-  'CUT': mergeInfo('CUT', {
-    info: 'makes a cut based on 2D sketch'
-  }),
-  
-  'PAD': mergeInfo('PAD', {
-    info: 'extrudes 2D sketch'
-  }),
+export const CUT = mergeInfo('CUT', {
+  info: 'makes a cut based on 2D sketch'
+});
 
-  'REVOLVE': mergeInfo('REVOLVE', {
-    info: 'revolve 2D sketch'
-  }),
+export const EXTRUDE = mergeInfo('EXTRUDE', {
+  info: 'extrudes 2D sketch'
+});
 
-  'SHELL': mergeInfo('SHELL', {
-    info: 'makes shell using borders'
-  }),
-  
-  'BOX': mergeInfo('BOX', {
-    info: 'creates new object box'
-  }),
+export const REVOLVE = mergeInfo('REVOLVE', {
+  info: 'revolve 2D sketch'
+});
 
-  'PLANE': mergeInfo('PLANE', {
-    info: 'creates new object plane'
-  }),
-  
-  'SPHERE': mergeInfo('SPHERE', {
-    info: 'creates new object sphere'
-  }),
+export const SHELL = mergeInfo('SHELL', {
+  info: 'makes shell using borders'
+});
 
-  'INTERSECTION': mergeInfo('INTERSECTION', {
-    info: 'intersection operation on two solids'
-  }),
-  
-  'DIFFERENCE': mergeInfo('DIFFERENCE', {
-    info: 'difference operation on two solids'
-  }),
-  
-  'UNION': mergeInfo('UNION', {
-    info: 'union operation on two solids'
-  }),
-  
-  'IMPORT_STL': mergeInfo('IMPORT_STL', {
-    info: 'import stl from external location'
-  })
-};
+export const BOX = mergeInfo('BOX', {
+  info: 'creates new object box'
+});
 
-requiresFaceSelection(OperationActions.CUT, 1);
-requiresFaceSelection(OperationActions.PAD, 1);
-requiresFaceSelection(OperationActions.REVOLVE, 1);
+export const PLANE = mergeInfo('PLANE', {
+  info: 'creates new object plane'
+});
 
-requiresSolidSelection(OperationActions.INTERSECTION, 2);
-requiresSolidSelection(OperationActions.DIFFERENCE, 2);
-requiresSolidSelection(OperationActions.UNION, 2);
+export const SPHERE = mergeInfo('SPHERE', {
+  info: 'creates new object sphere'
+});
+
+export const INTERSECTION = mergeInfo('INTERSECTION', {
+  info: 'intersection operation on two solids'
+});
+
+export const DIFFERENCE = mergeInfo('DIFFERENCE', {
+  info: 'difference operation on two solids'
+});
+
+export const UNION = mergeInfo('UNION', {
+  info: 'union operation on two solids'
+});
+
+export const IMPORT_STL = mergeInfo('IMPORT_STL', {
+  info: 'import stl from external location'
+});
+
+requiresFaceSelection(CUT, 1);
+requiresFaceSelection(EXTRUDE, 1);
+requiresFaceSelection(REVOLVE, 1);
+
+requiresSolidSelection(INTERSECTION, 2);
+requiresSolidSelection(DIFFERENCE, 2);
+requiresSolidSelection(UNION, 2);
 
 function requiresFaceSelection(action, amount) {
   action.listens = ['selection'];
