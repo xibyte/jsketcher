@@ -2,7 +2,7 @@ import {checkForSelectedFaces} from './actions/action-helpers'
 import {nurbsToThreeGeom, triangulateToThree} from './scene/brep-scene-object'
 import {createSolidMaterial} from './scene/scene-object'
 import DPR from '../utils/dpr'
-import Vector from "../math/vector";
+import Vector from 'math/vector';
 import {NurbsCurve} from "../brep/geom/impl/nurbs";
 import * as ui from '../ui/ui';
 

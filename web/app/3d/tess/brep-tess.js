@@ -1,4 +1,4 @@
-import Vector from "../../math/vector";
+import Vector from 'math/vector';
 import ClipperLib from 'clipper-lib';
 import libtess from 'libtess'
 

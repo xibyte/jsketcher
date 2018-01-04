@@ -1,5 +1,5 @@
 import {HashTable} from '../../utils/hashmap'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import Counters from '../counters'
 import {findOutline, segmentsToPaths, reconstructSketchBounds} from '../craft/mesh/workbench'
 import {Matrix3, AXIS} from '../../math/l3space'

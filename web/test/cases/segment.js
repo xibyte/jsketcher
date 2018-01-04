@@ -2,7 +2,7 @@ import * as test from '../test'
 import * as sketcher_utils from '../utils/sketcher-utils'
 import * as keyboard from '../utils/keyboard'
 import {TestMouseEvent} from '../utils/mouse-event'
-import Vector from '../../app/math/vector';
+import Vector from 'math/vector';
 
 export default {
   testSegmentWizard: function(env) {

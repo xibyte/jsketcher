@@ -1,4 +1,4 @@
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {Styles} from '../styles'
 import * as fetch from '../fetchers'
 import * as math from '../../math/math'

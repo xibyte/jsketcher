@@ -1,7 +1,7 @@
 import {SketchObject} from './sketch-object'
 import {DrawPoint} from './draw-utils'
 import {Generator} from '../id-generator'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 
 export class EndPoint extends SketchObject {
 

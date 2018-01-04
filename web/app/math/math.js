@@ -1,4 +1,4 @@
-import Vector from './vector'
+import Vector from 'math/vector';
 import BBox from './bbox'
 
 export const TOLERANCE = 1E-6;
