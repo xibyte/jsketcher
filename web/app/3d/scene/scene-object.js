@@ -147,7 +147,7 @@ export class SceneFace {
     const _3dTransformation =  surface.tangentPlane(u, v).get3DTransformation();
     const addSketchObjects = (sketchObjects, material, close) => {
       for (let sketchObject of sketchObjects) {
-        let line = new THREE.Line(undefined, material);
+        let line = new THREE.Line(new THREE.Geometry(), material);
         line.__TCAD_SketchObject = sketchObject;
         const chunks = sketchObject.approximate(10);
         function addLine(p, q) {
