@@ -1,6 +1,6 @@
 import {Matrix3, BasisForPlane, ORIGIN} from '../../../math/l3space'
 import * as math from '../../../math/math'
-import Vector from '../../../math/vector'
+import Vector from 'math/vector';
 import {enclose, iterateSegments} from '../../../brep/brep-enclose'
 import * as stitching from '../../../brep/stitching'
 import {Loop} from '../../../brep/topo/loop'

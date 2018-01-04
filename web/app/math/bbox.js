@@ -1,4 +1,4 @@
-import Vector from './vector'
+import Vector from 'math/vector';
 
 export default class BBox {
   

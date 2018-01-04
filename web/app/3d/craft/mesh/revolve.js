@@ -1,5 +1,5 @@
 import {Matrix3} from '../../../math/l3space'
-import Vector from '../../../math/vector'
+import Vector from 'math/vector';
 import * as math from '../../../math/math'
 import {createShared} from '../../cad-utils'
 

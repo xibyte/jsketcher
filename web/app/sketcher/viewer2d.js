@@ -11,7 +11,7 @@ import {EndPoint} from './shapes/point'
 import {Point} from './shapes/primitives'
 import {ReferencePoint} from './shapes/reference-point'
 import {BasisOrigin} from './shapes/basis-origin'
-import Vector from '../math/vector'
+import Vector from 'math/vector';
 
 import * as draw_utils from './shapes/draw-utils'
 import * as math from '../math/math'

@@ -1,4 +1,4 @@
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {EDGE_AUX, FACE_CHUNK} from '../../brep/stitching'
 import {normalOfCCWSeq} from '../cad-utils'
 import {TriangulateFace} from '../tess/triangulation'

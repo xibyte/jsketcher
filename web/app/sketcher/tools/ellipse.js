@@ -2,7 +2,7 @@ import {Tool} from './tool'
 import {EndPoint} from '../shapes/point'
 import {Ellipse} from '../shapes/ellipse'
 import {EllipticalArc} from '../shapes/elliptical-arc'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 
 export const STATE_POINT1 = 0;
 export const STATE_POINT2 = 1;

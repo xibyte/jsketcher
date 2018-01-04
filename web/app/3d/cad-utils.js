@@ -1,4 +1,4 @@
-import Vector from '../math/vector'
+import Vector from 'math/vector';
 import BBox from '../math/bbox'
 import {HashTable} from '../utils/hashmap'
 import {Graph} from '../math/graph'
