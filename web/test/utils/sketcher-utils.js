@@ -1,5 +1,5 @@
 import {TestMouseEvent} from './mouse-event'
-import Vector from '../../app/math/vector';
+import Vector from 'math/vector';
 
 export function toModel(app, x, y) {
   return app.viewer._screenToModel(x, y);

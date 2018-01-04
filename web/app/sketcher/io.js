@@ -11,7 +11,7 @@ import {BezierCurve} from './shapes/bezier-curve'
 import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
 import {Constraints} from './parametric'
 import {HashTable} from '../utils/hashmap'
-import Vector from '../math/vector'
+import Vector from 'math/vector';
 
 const Types = {
   END_POINT : 'TCAD.TWO.EndPoint',

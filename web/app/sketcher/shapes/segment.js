@@ -1,5 +1,5 @@
 import {SketchObject} from './sketch-object'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {Constraints} from '../parametric'
 import * as math from '../../math/math'
 

@@ -2,7 +2,7 @@ import {Tool} from './tool'
 import {EndPoint} from '../shapes/point'
 import {BezierCurve} from '../shapes/bezier-curve'
 import {Constraints} from '../parametric'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import * as math from '../../math/math'
 
 export class BezierCurveTool extends Tool {

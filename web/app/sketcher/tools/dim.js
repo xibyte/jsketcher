@@ -1,5 +1,5 @@
 import {HDimension, VDimension, Dimension, DiameterDimension} from '../shapes/dim'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
 

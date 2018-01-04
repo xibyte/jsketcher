@@ -1,7 +1,7 @@
 import {Arc} from '../shapes/arc'
 import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import * as math from '../../math/math';
 
 export class AddArcTool extends Tool {

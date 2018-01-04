@@ -1,3 +1,4 @@
+import './scene/vector-three-ench'
 import {Bus} from '../ui/toolkit'
 import {Viewer} from './viewer'
 import {UI} from './ui/ctrl'
@@ -6,7 +7,7 @@ import ControlBar from './ui/control-bar'
 import {InputManager} from './ui/input-manager'
 import {ActionManager} from './actions/actions'
 import * as AllActions from './actions/all-actions'
-import Vector from '../math/vector'
+import Vector from 'math/vector';
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
 import {Craft} from './craft/craft'
 import {ReadSketch}  from './craft/sketch/sketch-reader'

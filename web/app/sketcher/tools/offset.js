@@ -1,7 +1,7 @@
 import {LoopPickTool} from './loop-pick'
 import {Constraints} from '../parametric'
 import * as math from '../../math/math';
-import Vector from '../../math/vector';
+import Vector from 'math/vector';
 import {swap} from '../../utils/utils'
 import {EndPoint} from '../shapes/point'
 import {Arc} from '../shapes/arc'

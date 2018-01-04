@@ -1,6 +1,6 @@
 import * as utils from '../../utils/utils'
 import * as math from '../../math/math'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {SketchObject} from './sketch-object'
 
 class LinearDimension extends SketchObject {

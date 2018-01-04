@@ -3,7 +3,7 @@ import {PreviewWizard, SketchBasedNurbsPreviewer } from './preview-wizard'
 import {TriangulatePolygons} from '../../../tess/triangulation'
 import {revolveToWallNurbs} from '../../../../brep/brep-builder'
 import {evalPivot} from '../revolve'
-import Vector from '../../../../math/vector'
+import Vector from 'math/vector';
 
 const METADATA = [
   ['angle'   , 'number',  5, {min: -360, max: 360, step: 10}],

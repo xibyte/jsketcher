@@ -1,7 +1,7 @@
 import {PreviewWizard, IMAGINARY_SURFACE_MATERIAL} from './preview-wizard'
 import {CURRENT_SELECTION as S} from './wizard'
 import {AXIS, IDENTITY_BASIS, STANDARD_BASES} from '../../../../math/l3space'
-import Vector from '../../../../math/vector'
+import Vector from 'math/vector';
 
 const METADATA = [
   ['orientation', 'choice', 'XY', {options: ['XY', 'XZ', 'ZY']}],

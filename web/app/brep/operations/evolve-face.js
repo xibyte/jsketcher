@@ -1,6 +1,6 @@
 import {Face} from '../topo/face';
 import {Vertex} from '../topo/vertex';
-import Vector from '../../math/vector';
+import Vector from 'math/vector';
 import {isCCW} from '../../math/math';
 import PIP from '../../3d/tess/pip';
 

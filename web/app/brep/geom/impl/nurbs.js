@@ -2,7 +2,7 @@ import {BasisForPlane, Matrix3} from '../../../math/l3space'
 import * as math from  '../../../math/math'
 import {Point} from '../point'
 import {Surface} from "../surface";
-import Vector from "../../../math/vector";
+import Vector from 'math/vector';
 import * as ext from "./nurbs-ext";
 import {EPSILON, eqEps, eqSqTol, TOLERANCE, TOLERANCE_SQ, ueq, veq, veq3, veqNeg} from "../tolerance";
 import curveIntersect from "./curve/curves-isec";

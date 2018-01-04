@@ -1,5 +1,5 @@
 import {HashTable} from '../../utils/hashmap'
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import Counters from '../counters'
 import {Matrix3, BasisForPlane} from '../../math/l3space'
 import {isCurveClass} from '../cad-utils'
