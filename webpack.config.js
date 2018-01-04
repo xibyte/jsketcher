@@ -2,6 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 
 const WEB_APP = path.join(__dirname, 'web/app');
+const MODULES = path.join(__dirname, 'modules');
+const INTEGRATION_TESTS = path.join(__dirname, 'web/test'); 
 
 module.exports = {
   devtool: 'source-map',
@@ -22,13 +24,14 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
   ],
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
+    modules: [MODULES, "node_modules"]
   },
   module: {
     rules: [{
       test: /\.(js|jsx)$/,
       loader: 'babel-loader',
-      include: [WEB_APP, path.join(__dirname, 'web/test')],
+      include: [MODULES, WEB_APP, INTEGRATION_TESTS],
       options: {
         plugins: [
           ['local-styles-transformer', {include: WEB_APP}]
