@@ -1,4 +1,4 @@
-import Vector from '../../../math/vector'
+import Vector from 'math/vector';
 import * as cad_utils from '../../cad-utils'
 import * as math from '../../../math/math'
 import {LUT} from '../../../math/bezier-cubic'

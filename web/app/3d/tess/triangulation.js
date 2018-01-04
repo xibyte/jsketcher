@@ -1,7 +1,7 @@
 import libtess from 'libtess'
 import {Point} from '../../brep/geom/point'
 import {Vertex} from '../../brep/topo/vertex'
-import Vector from "../../math/vector";
+import Vector from 'math/vector';
 
 function initTesselator() {
   // function called for each vertex of tesselator output

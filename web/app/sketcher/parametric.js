@@ -2,7 +2,7 @@ import * as utils from '../utils/utils'
 import {Ref} from './shapes/ref'
 import {Param, prepare} from './constr/solver'
 import {createByConstraintName} from './constr/constraints'
-import Vector from '../math/vector'
+import Vector from 'math/vector';
 import * as math from '../math/math'
 import * as fetch from './fetchers'
 

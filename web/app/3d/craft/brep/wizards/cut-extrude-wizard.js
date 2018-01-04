@@ -2,7 +2,7 @@ import {CURRENT_SELECTION as S} from './wizard'
 import {PreviewWizard, SketchBasedPreviewer} from './preview-wizard'
 import {getEncloseDetails} from '../cut-extrude'
 import {TriangulatePolygons} from '../../../tess/triangulation'
-import Vector from '../../../../math/vector'
+import Vector from 'math/vector';
 import {curveTessParams} from "../../../../brep/geom/impl/curve/curve-tess";
 
 

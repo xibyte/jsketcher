@@ -1,4 +1,4 @@
-import Vector from '../../math/vector'
+import Vector from 'math/vector';
 import {STANDARD_BASES} from '../../math/l3space'
 import {Plane} from '../../brep/geom/impl/plane'
 import {SceneSolid, SceneFace} from './scene-object'

@@ -1,4 +1,4 @@
-import Vector from './vector';
+import Vector from 'math/vector';
 
 var ORIGIN = new Vector(0, 0, 0);
 
