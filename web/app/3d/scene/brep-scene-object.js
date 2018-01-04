@@ -43,7 +43,7 @@ export class BREPSceneSolid extends SceneSolid {
     const visited = new Set();
     for (let edge of this.shell.edges) {
       if (edge.data[EDGE_AUX] === undefined) {
-        const line = new THREE.Line(undefined, WIREFRAME_MATERIAL);
+        const line = new THREE.Line(new THREE.Geometry(), WIREFRAME_MATERIAL);
         const contour = edge.curve.tessellate();
         for (let p of contour) {
           line.geometry.vertices.push(p.three());
