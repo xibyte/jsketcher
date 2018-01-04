@@ -74,7 +74,7 @@ class BREPSceneFace extends SceneFace {
   }
 
   depth() {
-    return this.brepFace.surface.w;
+    return this.brepFace.surface.tangentPlaneInMiddle().w;
   }
 
   surface() {
