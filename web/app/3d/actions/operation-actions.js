@@ -63,11 +63,11 @@ requiresSolidSelection(DIFFERENCE, 2);
 requiresSolidSelection(UNION, 2);
 
 function requiresFaceSelection(action, amount) {
-  action.listens = ['selection'];
+  action.listens = ['selection:face'];
   action.update = ActionHelpers.checkForSelectedFaces(amount)
 }
 
 function requiresSolidSelection(action, amount) {
-  action.listens = ['selection'];
+  action.listens = ['selection:face'];
   action.update = ActionHelpers.checkForSelectedSolids(amount)
 }
