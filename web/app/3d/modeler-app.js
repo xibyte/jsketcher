@@ -110,7 +110,7 @@ App.prototype.getFaceSelection = function() {
 };
 
 App.prototype.getFirstSelectedFace = function() {
-   return this.getSelection()[0];
+   return this.getFaceSelection()[0];
 };
 
 App.prototype.addShellOnScene = function(shell, skin) {

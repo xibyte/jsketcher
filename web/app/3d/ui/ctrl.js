@@ -54,8 +54,10 @@ function UI(app) {
     app.viewer.render();
   });
 
-  app.bus.subscribe("solid-pick", function(solid) {
-    ui.registerWizard(new TransformWizard(app.viewer, solid));
+  app.bus.subscribe('selection:solid', function([solid]) {
+    if (solid) {
+      ui.registerWizard(new TransformWizard(app.viewer, solid));
+    }
   });
   registerOperations(app);
 }
