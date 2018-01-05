@@ -5,7 +5,7 @@ export const EditFace = {
   label: 'sketch',
   icon96: 'img/3d/face-edit96.png',
   info: 'open sketcher for a face/plane',
-  listens: ['selection'],
+  listens: ['selection:face'],
   update: ActionHelpers.checkForSelectedFaces(1),
   invoke: (app) => app.editFace()
 };
