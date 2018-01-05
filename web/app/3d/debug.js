@@ -1,7 +1,7 @@
 import {checkForSelectedFaces} from './actions/action-helpers'
 import {nurbsToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneObject'
 import {createSolidMaterial} from './scene/wrappers/sceneObject'
-import DPR from '../utils/dpr'
+import DPR from 'dpr'
 import Vector from 'math/vector';
 import {NurbsCurve} from "../brep/geom/impl/nurbs";
 import * as ui from '../ui/ui';
@@ -242,7 +242,7 @@ const DebugActions = {
     listens: ['selection'],
     update: checkForSelectedFaces(1),
     invoke: (app) => {
-      var s = app.viewer.selectionMgr.selection[0];
+      var s = app.getFirstSelectedFace();
       console.log(JSON.stringify({
         polygons: s.csgGroup.polygons,
         basis: s._basis
@@ -257,7 +257,7 @@ const DebugActions = {
     listens: ['selection'],
     update: checkForSelectedFaces(1),
     invoke: (app) => {
-      console.log(app.viewer.selectionMgr.selection[0].id);
+      console.log(app.getFirstSelectedFace().id);
     }
   },
   
@@ -268,7 +268,7 @@ const DebugActions = {
     listens: ['selection'],
     update: checkForSelectedFaces(1),
     invoke: (app) => {
-      const faceId = app.viewer.selectionMgr.selection[0].id;
+      const faceId = app.getFirstSelectedFace().id;
       const sketch = JSON.parse(localStorage.getItem(app.faceStorageKey(faceId)));
       const layers = sketch.layers.filter(l => l.name != '__bounds__');
       const data = [];

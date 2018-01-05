@@ -297,7 +297,7 @@ Bus.prototype.unsubscribe = function(event, callback) {
   }
 };
 
-Bus.prototype.notify = function(event, data, sender) {
+Bus.prototype.dispatch = function(event, data, sender) {
   var listenerList = this.listeners[event];
   if (listenerList !== undefined) {
     for (var i = 0; i < listenerList.length; i++) {
@@ -326,7 +326,7 @@ Bus.prototype.defineObservable = function(scope, name, initValue, eventName) {
     get: function() { return observable.value;},
     set: function(value) { 
       observable.value = value;
-      bus.notify(eventName, value);
+      bus.dispatch(eventName, value);
     }
   });
 };
