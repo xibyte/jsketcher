@@ -3,7 +3,7 @@ export default class Bus {
   constructor() {
     this.listeners = {};
     this.state = {};
-    this.recordFor = new Set();
+    this.keepStateFor = new Set();
     this.lock = new Set();
   }
   
@@ -15,7 +15,7 @@ export default class Bus {
     }
     listenerList.push(callback);
     
-    if (this.recordFor.has(key)) {
+    if (this.keepStateFor.has(key)) {
       callback(this.state[key]);
     }
     return callback;
@@ -36,6 +36,9 @@ export default class Bus {
       console.warn('recursive dispatch');
       return
     }
+    if (this.keepStateFor.has(key)) {
+      this.state[key] = data;
+    }
     this.lock.add(key);
     try {
       let listenerList = this.listeners[key];
@@ -51,19 +54,16 @@ export default class Bus {
       }
     } finally {
       this.lock.delete(key);
-      if (this.recordFor.has(key)) {
-        this.state[key] = data;
-      }
     }
   };
 
   enableState(forEvent, initValue) {
-    this.recordFor.add(forEvent);
+    this.keepStateFor.add(forEvent);
     this.state[forEvent] = initValue;
   }
 
   disableState(forEvent) {
-    this.recordFor.delete(forEvent);
+    this.keepStateFor.delete(forEvent);
   }
 }
 

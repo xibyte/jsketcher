@@ -161,7 +161,7 @@ UI.prototype.createWizardForOperation = function(op) {
   var initParams = op.params;
   var face = op.face !== undefined ? this.app.findFace(op.face) : null;
   if (face != null) {
-    this.app.context.bus.dispatch('selection:face', face);
+    this.app.context.bus.dispatch('selection:face', [face]);
   }
   return this.createWizard(op.type, true, initParams, face);
 };
