@@ -153,7 +153,7 @@ UI.prototype.getInfoForOp = function(op) {
 };
 
 UI.prototype.initOperation = function(op) {
-  var selection = this.app.viewer.selectionMgr.selection;
+  var selection = this.app.getFaceSelection();
   return this.createWizard(op, false, undefined, selection[0]);
 };
 
@@ -161,7 +161,7 @@ UI.prototype.createWizardForOperation = function(op) {
   var initParams = op.params;
   var face = op.face !== undefined ? this.app.findFace(op.face) : null;
   if (face != null) {
-    this.app.viewer.selectionMgr.select(face);
+    this.app.context.bus.dispatch('selection:face', face);
   }
   return this.createWizard(op.type, true, initParams, face);
 };
