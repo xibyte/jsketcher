@@ -1,7 +1,7 @@
-import './scene/vector-three-ench'
+import '../../../modules/scene/utils/vectorThreeEnhancement'
 import '../utils/three-loader'
 import {Bus} from '../ui/toolkit'
-import {Viewer} from './viewer'
+import {Viewer} from './viewer/viewer'
 import {UI} from './ui/ctrl'
 import TabSwitcher from './ui/tab-switcher'
 import ControlBar from './ui/control-bar'
@@ -24,7 +24,7 @@ import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import * as BREPBool from '../brep/operations/boolean'
 import {BREPValidator} from '../brep/brep-validator'
-import {BREPSceneSolid} from './scene/brep-scene-object'
+import {BREPSceneSolid} from './scene/wrappers/brepSceneObject'
 import TPI from './tpi'
 import {NurbsCurve, NurbsCurveImpl, NurbsSurface} from "../brep/geom/impl/nurbs";
 import {Circle} from "./craft/sketch/sketch-model";

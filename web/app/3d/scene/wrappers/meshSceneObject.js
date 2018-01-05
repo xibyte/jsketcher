@@ -1,11 +1,11 @@
-import {HashTable} from '../../utils/hashmap'
+import {HashTable} from '../../../utils/hashmap'
 import Vector from 'math/vector';
-import Counters from '../counters'
-import {findOutline, segmentsToPaths, reconstructSketchBounds} from '../craft/mesh/workbench'
-import {Matrix3, AXIS} from '../../math/l3space'
-import {arrFlatten1L, isCurveClass} from '../cad-utils'
-import DPR from '../../utils/dpr'
-import {SceneSolid, SceneFace} from './scene-object'
+import Counters from '../../counters'
+import {findOutline, segmentsToPaths, reconstructSketchBounds} from '../../craft/mesh/workbench'
+import {Matrix3, AXIS} from '../../../math/l3space'
+import {arrFlatten1L, isCurveClass} from '../../cad-utils'
+import DPR from 'dpr'
+import {SceneSolid, SceneFace} from './sceneObject'
 
 export class MeshSceneSolid extends SceneSolid {
   
