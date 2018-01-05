@@ -1,14 +1,14 @@
-import {AXIS} from '../math/l3space'
+import {AXIS} from '../../math/l3space'
 import DPR from 'dpr'
-import * as mask from '../utils/mask';
-import {EdgeSelectionManager, SelectionManager, SketchSelectionManager} from './selection'
+import * as mask from '../../utils/mask';
+import {EdgeSelectionManager, SelectionManager, SketchSelectionManager} from '../selection'
 import {createArrow} from 'scene/objects/auxiliary';
 import Vector from 'math/vector';
 import {OnTopOfAll} from 'scene/materialMixins';
 import SceneSetup from 'scene/sceneSetup';
 import * as SceneGraph from 'scene/sceneGraph';
-import initPickControl from "scene/pickControl";
-import {moveObject3D, setBasisToObject3D} from "../../../modules/scene/objects/transform";
+import {moveObject3D, setBasisToObject3D} from 'scene/objects/transform';
+import {initPickControl} from "./pickControl";
 
 export class Viewer {
   

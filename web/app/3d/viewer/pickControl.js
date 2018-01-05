@@ -1,4 +1,12 @@
-export default function initPickControl(domElement, onPick) {
+
+
+export default class PickControl {
+  constructor(bus) {
+    this.bus = bus;
+  }
+}
+
+export function initPickControl(domElement, onPick) {
   let mouseState = {
     startX: 0,
     startY: 0
