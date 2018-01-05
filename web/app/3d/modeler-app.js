@@ -81,7 +81,7 @@ function App() {
   this.bus.subscribe("craft", function() {
     var historyEditMode = app.craft.historyPointer != app.craft.history.length;
     if (!historyEditMode) {
-      app.viewer.selectionMgr.clear();
+      //app.viewer.selectionMgr.clear();
     }
     app._refreshSketches();
   });
@@ -423,11 +423,10 @@ App.prototype.projectStorageKey = function(polyFaceId) {
 
 
 App.prototype.editFace = function() {
-  if (this.viewer.selectionMgr.selection.length == 0) {
-    return;
+  const polyFace = this.getFirstSelectedFace();
+  if (polyFace) {
+    this.sketchFace(polyFace);
   }
-  const polyFace = this.viewer.selectionMgr.selection[0];
-  this.sketchFace(polyFace);
 };
 
 App.prototype.sketchFace = function(sceneFace) {

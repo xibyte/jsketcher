@@ -154,7 +154,7 @@ function setSketch(win, app, faceId, data) {
 }
 
 function selectFace(app, faceId) {
-  app.viewer.selectionMgr.select(app.findFace(faceId));
+  app.bus.dispatch('selection:face', [app.findFace(faceId)]);
 }
 
 function assertScene(app, env, expected) {

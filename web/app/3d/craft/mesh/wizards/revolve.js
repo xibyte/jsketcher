@@ -16,7 +16,7 @@ export function RevolveWizard(app, face, initParams) {
   this.synch();
   this.autoResoltion = true;
   this.selectionListener = () => {
-    const object = this.app.viewer.sketchSelectionMgr.selection[0];
+    const object = this.app.getFirstSelectedFace();
     if (canBePivot(object, this.face)) {
       this.ui.pivotSketchObjectId.input.val(object.__TCAD_SketchObject.id);
       this.synch();
@@ -31,7 +31,7 @@ function canBePivot(sketchObject, face) {
 
 function findDefaultAxis(app, face) {
   let line;
-  const preSelected = app.viewer.sketchSelectionMgr.selection[0];
+  const preSelected = app.getFirstSelectedFace();
   if (canBePivot(preSelected, face)) {
     line = preSelected;
   } else {
