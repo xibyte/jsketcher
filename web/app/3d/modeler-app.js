@@ -1,7 +1,7 @@
 import '../../../modules/scene/utils/vectorThreeEnhancement'
 import '../utils/three-loader'
 import {Bus} from '../ui/toolkit'
-import {Viewer} from './viewer/viewer'
+import {Viewer} from './scene/viewer'
 import {UI} from './ui/ctrl'
 import TabSwitcher from './ui/tab-switcher'
 import ControlBar from './ui/control-bar'
