@@ -1,7 +1,7 @@
 import Vector from 'math/vector';
-import {STANDARD_BASES} from '../../math/l3space'
-import {Plane} from '../../brep/geom/impl/plane'
-import {SceneSolid, SceneFace} from './scene-object'
+import {STANDARD_BASES} from '../../../math/l3space'
+import {Plane} from '../../../brep/geom/impl/plane'
+import {SceneSolid, SceneFace} from './sceneObject'
 
 const INIT_WIDTH_H  = 750 * 0.5;
 const INIT_HEIGHT_H = 750 * 0.5;

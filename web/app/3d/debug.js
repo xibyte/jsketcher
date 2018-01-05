@@ -1,6 +1,6 @@
 import {checkForSelectedFaces} from './actions/action-helpers'
-import {nurbsToThreeGeom, triangulateToThree} from './scene/brep-scene-object'
-import {createSolidMaterial} from './scene/scene-object'
+import {nurbsToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneObject'
+import {createSolidMaterial} from './scene/wrappers/sceneObject'
 import DPR from '../utils/dpr'
 import Vector from 'math/vector';
 import {NurbsCurve} from "../brep/geom/impl/nurbs";

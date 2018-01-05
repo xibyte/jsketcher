@@ -1,8 +1,8 @@
 import {MESH_OPERATIONS} from './mesh/workbench'
 import {Extrude, Cut} from './brep/cut-extrude'
 import {Revolve} from './brep/revolve'
-import {BREPSceneSolid} from '../scene/brep-scene-object'
-import {PlaneSceneObject} from '../scene/plane-scene-object'
+import {BREPSceneSolid} from '../scene/wrappers/brepSceneObject'
+import {PlaneSceneObject} from '../scene/wrappers/planeSceneObject'
 import {box} from '../../brep/brep-primitives'
 
 export const CUT = {

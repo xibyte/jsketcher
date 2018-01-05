@@ -1,9 +1,9 @@
 import Vector from 'math/vector';
-import {EDGE_AUX, FACE_CHUNK} from '../../brep/stitching'
-import {normalOfCCWSeq} from '../cad-utils'
-import {TriangulateFace} from '../tess/triangulation'
-import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './scene-object'
-import brepTess from '../tess/brep-tess'
+import {EDGE_AUX, FACE_CHUNK} from '../../../brep/stitching'
+import {normalOfCCWSeq} from '../../cad-utils'
+import {TriangulateFace} from '../../tess/triangulation'
+import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './sceneObject'
+import brepTess from '../../tess/brep-tess'
 
 const SMOOTH_RENDERING = false //true;
 
