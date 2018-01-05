@@ -66,7 +66,7 @@ export class ToolManager {
 
   switchTool(tool) {
     this.tool = tool;
-    this.viewer.bus.notify("tool-change");
+    this.viewer.bus.dispatch("tool-change");
   }
 
   releaseControl() {

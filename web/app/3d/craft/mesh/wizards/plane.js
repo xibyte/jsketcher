@@ -16,7 +16,7 @@ export function PlaneWizard(app, initParams) {
     relativeToFaceId: ''
   };
   this.selectionListener = () => {
-    const face = this.app.viewer.selectionMgr.selection[0];
+    const face = this.getFirstSelectedFace();
     if (face) {
       this.ui.relativeToFace.input.val(face.id);
       this.synch();

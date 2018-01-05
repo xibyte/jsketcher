@@ -43,7 +43,7 @@ export class PreviewWizard extends Wizard {
   }
 
   dispose() {
-    this.app.bus.unsubscribe('refreshSketch', this.onSketchUpdate);
+    this.app.bus.unSubscribe('refreshSketch', this.onSketchUpdate);
     this.destroyPreviewObject();
     this.app.viewer.workGroup.remove(this.previewGroup);
     this.app.viewer.render();

@@ -377,7 +377,7 @@ Viewer.prototype.getActiveLayer = function() {
 Viewer.prototype.setActiveLayer = function(layer) {
   if (!layer.readOnly) {
     this._activeLayer = layer;
-    this.bus.notify("activeLayer");
+    this.bus.dispatch("activeLayer");
   }
 };
 

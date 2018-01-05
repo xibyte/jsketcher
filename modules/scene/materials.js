@@ -1,4 +1,5 @@
-import {MeshPhongMaterial, FaceColors, DoubleSide} from 'three';
+import DPR from 'dpr';
+import {MeshPhongMaterial, LineBasicMaterial, FaceColors, DoubleSide} from 'three';
 
 export function createTransparentPhongMaterial(color, opacity) {
   return new MeshPhongMaterial({
@@ -13,4 +14,9 @@ export function createTransparentPhongMaterial(color, opacity) {
   });
 }
 
-
+export function createLineMaterial(color, linewidth) {
+  return new LineBasicMaterial({
+    color,
+    linewidth: linewidth / DPR
+  });
+}
