@@ -54,6 +54,7 @@ export default class PickControl {
     this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, (object, kind) => {
       if (kind === PICK_KIND.FACE) {
         if (!this.selected('selection:face', object)) {
+          this.context.services.cadScene.showBasis(object.basis(), object.depth());
           this.context.bus.dispatch('selection:face', [object]);
           return false;
         }

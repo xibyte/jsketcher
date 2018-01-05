@@ -44,23 +44,24 @@ export default class CadScene {
     }
 
     this.basisGroup = SceneGraph.createGroup();
+
     let xAxis = createBasisArrow(new Vector(1, 0, 0), 0xFF0000);
     let yAxis = createBasisArrow(new Vector(0, 1, 0), 0x00FF00);
     SceneGraph.addToGroup(this.basisGroup, xAxis);
     SceneGraph.addToGroup(this.basisGroup, yAxis);
+    SceneGraph.addToGroup(this.workGroup, this.basisGroup, yAxis);
   }
 
   updateBasis(basis, depth) {
     setBasisToObject3D(this.basisGroup, basis, depth);
   }
 
-  showBasis() {
-    this.workGroup.add(this.basisGroup);
+  showBasis(basis, depth) {
+    this.updateBasis(basis, depth);
+    this.basisGroup.visible = true;
   }
 
   hideBasis() {
-    if (this.basisGroup.parent !== null) {
-      this.basisGroup.parent.remove(this.basisGroup);
-    }
+    this.basisGroup.visible = false;
   }
 }
