@@ -6,7 +6,6 @@ import * as math from '../math/math'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
 import Counters from './counters'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
-import DPR from '../utils/dpr'
 
 export const FACE_COLOR =  0xB0C4DE;
 

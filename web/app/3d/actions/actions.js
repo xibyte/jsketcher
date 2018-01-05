@@ -37,7 +37,7 @@ ActionManager.prototype.notify = function(event) {
   if (actions != undefined) {
     for (let action of actions) {
       this.updateAction(action);
-      this.app.bus.notify('action.update.' + action.id, action.state);
+      this.app.bus.dispatch('action.update.' + action.id, action.state);
     }
   }  
 };

@@ -1,4 +1,4 @@
-import DPR from '../../../../utils/dpr'
+import DPR from 'dpr'
 import * as tk from '../../../../ui/toolkit'
 
 const IMAGINE_MATERIAL = new THREE.LineBasicMaterial({

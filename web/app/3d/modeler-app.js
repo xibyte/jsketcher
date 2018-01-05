@@ -1,6 +1,6 @@
 import '../../../modules/scene/utils/vectorThreeEnhancement'
 import '../utils/three-loader'
-import {Bus} from '../ui/toolkit'
+import Bus from 'bus'
 import {Viewer} from './scene/viewer'
 import {UI} from './ui/ctrl'
 import TabSwitcher from './ui/tab-switcher'
@@ -31,6 +31,7 @@ import {Circle} from "./craft/sketch/sketch-model";
 import {Plane} from "../brep/geom/impl/plane";
 import {enclose} from "../brep/brep-enclose";
 // import {createSphere, rayMarchOntoCanvas, sdfIntersection, sdfSolid, sdfSubtract, sdfTransform, sdfUnion} from "../hds/sdf";
+import Plugins from './plugins';
 
 function App() {
   this.id = this.processHints();
@@ -38,7 +39,11 @@ function App() {
   this.actionManager = new ActionManager(this);
   this.inputManager = new InputManager(this);
   this.state = this.createState();
-  this.viewer = new Viewer(this.bus, document.getElementById('viewer-container'));
+  this.context = this.createPluginContext();
+  this.initPlugins();
+  this.createViewer();
+  this.viewer = this.context.services.viewer;
+  this.viewer.workGroup = this.context.services.cadScene.workGroup;
   this.actionManager.registerActions(AllActions);
   this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
   this.controlBar = new ControlBar(this, $('#control-bar'));
@@ -67,7 +72,7 @@ function App() {
     var sketchFace = app.findFace(sketchFaceId);
     if (sketchFace != null) {
       app.refreshSketchOnFace(sketchFace);
-      app.bus.notify('refreshSketch');
+      app.bus.dispatch('refreshSketch');
       app.viewer.render();
     }
   }
@@ -81,6 +86,32 @@ function App() {
     app._refreshSketches();
   });
 }
+
+App.prototype.createPluginContext = function() {
+  return {
+    bus: this.bus,
+      services: {}
+  };
+};
+
+App.prototype.initPlugins = function() {
+  for (let plugin of Plugins) {
+    plugin.activate(this.context);
+  }  
+};
+
+App.prototype.createViewer = function() {
+  this.context.bus.dispatch('dom:viewerContainer', document.getElementById('viewer-container'));
+};
+
+App.prototype.getFaceSelection = function() {
+  let selection = this.context.bus.state['selection:face'];
+  return selection;    
+};
+
+App.prototype.getFirstSelectedFace = function() {
+   return this.getSelection()[0];
+};
 
 App.prototype.addShellOnScene = function(shell, skin) {
   const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
@@ -320,7 +351,7 @@ App.prototype.lookAtSolid = function(solidId) {
 
 App.prototype.createState = function() {
   const state = {};
-  this.bus.defineObservable(state, 'showSketches', true);
+  // this.bus.defineObservable(state, 'showSketches', true);
   return state;
 };
 
@@ -604,7 +635,7 @@ App.prototype.cut = function() {
 
 App.prototype.refreshSketches = function() {
   this._refreshSketches();
-  this.bus.notify('refreshSketch');
+  this.bus.dispatch('refreshSketch');
   this.viewer.render();
 };
 
