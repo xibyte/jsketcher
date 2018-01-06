@@ -105,7 +105,7 @@ App.prototype.createViewer = function() {
 };
 
 App.prototype.getFaceSelection = function() {
-  let selection = this.context.bus.state['selection:face'];
+  let selection = this.context.bus.state['selection_face'];
   return selection;    
 };
 

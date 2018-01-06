@@ -9,12 +9,12 @@ export class LineMarker extends AbstractSelectionMarker {
   }
   
   mark(obj) {
-    setAttribute(obj, 'selection:defaultMaterial', obj.material);
+    setAttribute(obj, 'selection_defaultMaterial', obj.material);
     obj.material = this.selectionMaterial;
   }
 
   unMark(obj) {
-    obj.material = getAttribute(obj, 'selection:defaultMaterial');
+    obj.material = getAttribute(obj, 'selection_defaultMaterial');
     obj.material = this.selectionMaterial;
   }
 }
