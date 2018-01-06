@@ -50,6 +50,7 @@ export default class CadScene {
     SceneGraph.addToGroup(this.basisGroup, xAxis);
     SceneGraph.addToGroup(this.basisGroup, yAxis);
     SceneGraph.addToGroup(this.workGroup, this.basisGroup, yAxis);
+    this.hideBasis();
   }
 
   updateBasis(basis, depth) {

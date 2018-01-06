@@ -1,6 +1,7 @@
 import DPR from 'dpr';
+import './utils/threeLoader'
 
-export default class SceneSetUp{
+export default class SceneSetUp {
   
   constructor(container) {
     
@@ -17,13 +18,29 @@ export default class SceneSetUp{
   aspect() {
     return this.container.clientWidth / this.container.clientHeight;
   }
+  
+  createOrthographicCamera() {
+    let width = this.container.clientWidth;
+    let height = this.container.clientHeight;
+    this.oCamera = new THREE.OrthographicCamera( width / - 1, width / 1, height / 1, height / - 1, 0.1, 10000);
+    this.oCamera.position.z = 1000;
+    this.oCamera.position.x = -1000;
+    this.oCamera.position.y = 300;
+  }
+
+  createPerspectiveCamera() {
+    this.pCamera = new THREE.PerspectiveCamera( 500*75, this.aspect(), 0.1, 10000 );
+    this.pCamera.position.z = 1000;
+    this.pCamera.position.x = -1000;
+    this.pCamera.position.y = 300;
+  }
 
   setUpCamerasAndLights() {
-    this.camera = new THREE.PerspectiveCamera( 500*75, this.aspect(), 0.1, 10000 );
-    this.camera.position.z = 1000;
-    this.camera.position.x = -1000;
-    this.camera.position.y = 300;
+    this.createOrthographicCamera();
+    this.createPerspectiveCamera();
 
+    this.camera = this.pCamera;
+    
     this.light = new THREE.PointLight( 0xffffff);
     this.light.position.set( 10, 10, 10 );
     this.scene.add(this.light);
@@ -31,15 +48,37 @@ export default class SceneSetUp{
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(DPR);
     this.renderer.setClearColor(0x808080, 1);
-    this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+    this.renderer.setSize( this.container.clientWidth,  this.container.clientHeight );
     this.container.appendChild( this.renderer.domElement );
 
     window.addEventListener( 'resize', () => {
-      this.camera.aspect = this.aspect();
-      this.camera.updateProjectionMatrix();
+      this.pCamera.aspect = this.aspect();
+      this.pCamera.updateProjectionMatrix();
       this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
       this.render();
     }, false );
+  }
+
+  setCamera(camera) {
+    let camPosition = new THREE.Vector3();
+    let camRotation = new THREE.Euler();
+    let tempMatrix = new THREE.Matrix4();
+
+    camPosition.setFromMatrixPosition( this.camera.matrixWorld );
+    camRotation.setFromRotationMatrix( tempMatrix.extractRotation( this.camera.matrixWorld ) );
+    let camDistance = camera.position.length();
+
+    camera.up.copy(this.camera.up);
+    camera.position.copy(camPosition);
+    camera.quaternion.copy(camPosition);
+    this.trackballControls.setCameraMode(camera.isOrthographicCamera);
+    camera.position.normalize();
+    camera.position.multiplyScalar(camDistance);
+    
+    this.camera = camera;
+    this.trackballControls.object = camera;
+    this.transformControls.camera = camera;
+    this.updateControlsAndHelpers();
   }
 
   setUpControls() {

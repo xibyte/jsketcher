@@ -123,6 +123,7 @@ UI.prototype.fillControlBar = function() {
   this.app.controlBar.add('RefreshSketches', RIGHT, {'label': null});
   this.app.controlBar.add('ShowSketches', RIGHT, {'label': 'sketches'});
   this.app.controlBar.add('DeselectAll', RIGHT, {'label': null});
+  this.app.controlBar.add('ToggleCameraMode', RIGHT, {'label': null});
   this.app.controlBar.add('menu.file', LEFT);
   this.app.controlBar.add('menu.craft', LEFT);
   this.app.controlBar.add('menu.boolean', LEFT);
