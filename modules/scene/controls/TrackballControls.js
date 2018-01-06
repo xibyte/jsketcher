@@ -1,4 +1,7 @@
+
 /**
+ * Added support of orthographic camera to original implementation
+ * 
  * @author Eberhard Graether / http://egraether.com/
  * @author Mark Lundin 	/ http://mark-lundin.com
  * @author Simone Manini / http://daron1337.github.io
@@ -38,6 +41,9 @@ THREE.TrackballControls = function ( object, domElement ) {
   // internals
 
   this.target = new THREE.Vector3();
+
+  this.projectionChanged = false;
+  this.projectionZoomSpeed = 0.5;
 
   var EPS = 0.000001;
 
@@ -201,6 +207,11 @@ THREE.TrackballControls = function ( object, domElement ) {
   }() );
 
 
+  this.setCameraMode = function(isOrthographic) {
+    this.noZoom = isOrthographic;
+    this.projectionZoom = isOrthographic;
+  };
+  
   this.zoomCamera = function () {
 
     var factor;
@@ -321,8 +332,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 
     _this.object.lookAt( _this.target );
 
-    if ( lastPosition.distanceToSquared( _this.object.position ) > EPS ) {
+    if ( lastPosition.distanceToSquared( _this.object.position ) > EPS || this.projectionChanged) {
 
+      this.projectionChanged = false;
+      
       _this.dispatchEvent( changeEvent );
 
       lastPosition.copy( _this.object.position );
@@ -473,27 +486,51 @@ THREE.TrackballControls = function ( object, domElement ) {
     event.preventDefault();
     event.stopPropagation();
 
-    switch ( event.deltaMode ) {
+    if (_this.projectionZoom) {
+      let speed = _this.projectionZoomSpeed;
+      switch ( event.deltaMode ) {
 
-      case 2:
-        // Zoom in pages
-        _zoomStart.y -= event.deltaY * 0.025;
-        break;
+        case 2:
+          // Zoom in pages
+          speed *= 10;
+          break;
+        case 1:
+          // Zoom in lines
+          speed *= 3;
+          break;
+      }
+      let step = Math.pow( 0.95, speed);
+      if (event.deltaY < 0) {
+        step = 1 / step;
+      } 
+      _this.object.zoom *= step;
+      _this.object.updateProjectionMatrix();
+      _this.projectionChanged = true;
 
-      case 1:
-        // Zoom in lines
-        _zoomStart.y -= event.deltaY * 0.01;
-        break;
+    } else {
 
-      default:
-        // undefined, 0, assume pixels
-        _zoomStart.y -= event.deltaY * 0.00025;
-        break;
+      switch ( event.deltaMode ) {
 
+        case 2:
+          // Zoom in pages
+          _zoomStart.y -= event.deltaY * 0.025;
+          break;
+
+        case 1:
+          // Zoom in lines
+          _zoomStart.y -= event.deltaY * 0.01;
+          break;
+
+        default:
+          // undefined, 0, assume pixels
+          _zoomStart.y -= event.deltaY * 0.00025;
+          break;
+
+      }
+
+      _this.dispatchEvent( startEvent );
+      _this.dispatchEvent( endEvent );
     }
-
-    _this.dispatchEvent( startEvent );
-    _this.dispatchEvent( endEvent );
 
   }
 
