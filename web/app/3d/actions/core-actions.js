@@ -38,6 +38,16 @@ export const DeselectAll = {
   invoke: (app) => app.viewer.selectionMgr.deselectAll()
 };
 
+export const ToggleCameraMode = {
+  cssIcons: ['video-camera'],
+  label: 'toggle camera',
+  info: 'switch camera mode between perspective and orthographic',
+  invoke: (app) => {
+    app.context.services.viewer.toggleCamera();
+    app.context.services.viewer.render();
+  }
+};
+
 export const Info = {
   cssIcons: ['info-circle'],
   label: 'info',
