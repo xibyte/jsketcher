@@ -6,6 +6,6 @@ import {LineMarker} from "./lineMarker";
 export class SketchSelectionMarker extends LineMarker {
 
   constructor(bus, selectionMaterial) {
-    super(bus, 'selection:sketchObject', selectionMaterial);
+    super(bus, 'selection_sketchObject', selectionMaterial);
   }
 }

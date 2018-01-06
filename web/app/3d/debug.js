@@ -239,7 +239,7 @@ const DebugActions = {
     cssIcons: ['cutlery'],
     label: 'print face',
     info: 'print a face out as JSON',
-    listens: ['selection:face'],
+    listens: ['selection_face'],
     update: checkForSelectedFaces(1),
     invoke: (app) => {
       var s = app.getFirstSelectedFace();
@@ -254,7 +254,7 @@ const DebugActions = {
     cssIcons: ['cutlery'],
     label: 'print face id',
     info: 'print a face id',
-    listens: ['selection:face'],
+    listens: ['selection_face'],
     update: checkForSelectedFaces(1),
     invoke: (app) => {
       console.log(app.getFirstSelectedFace().id);
@@ -265,7 +265,7 @@ const DebugActions = {
     cssIcons: ['cutlery'],
     label: 'print face sketch',
     info: 'print face sketch stripping constraints and boundary',
-    listens: ['selection:face'],
+    listens: ['selection_face'],
     update: checkForSelectedFaces(1),
     invoke: (app) => {
       const faceId = app.getFirstSelectedFace().id;

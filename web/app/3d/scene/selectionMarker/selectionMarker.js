@@ -4,7 +4,7 @@ import {AbstractSelectionMarker, setFacesColor} from "./abstractSelectionMarker"
 export class SelectionMarker extends AbstractSelectionMarker {
 
   constructor(bus, selectionColor, readOnlyColor, defaultColor) {
-    super(bus, 'selection:face');
+    super(bus, 'selection_face');
     this.selectionColor = selectionColor;
     this.defaultColor = defaultColor;
     this.readOnlyColor = readOnlyColor;

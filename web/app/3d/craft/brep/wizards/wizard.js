@@ -134,9 +134,9 @@ export class Wizard {
       });
       return new Field(radio, () => radio.getValue(), (v) => radio.setValue(v));
     } else if (type === 'face') {
-      return selectionWidget(name, label, initValue, this.app.context.bus, 'selection:face',(selection) => selection.id);
+      return selectionWidget(name, label, initValue, this.app.context.bus, 'selection_face',(selection) => selection.id);
     } else if (type === 'sketch.segment') {
-      return selectionWidget(name, label, initValue, this.app.context.bus, 'selection:sketchObject', (selection) => selection.__TCAD_SketchObject.id);
+      return selectionWidget(name, label, initValue, this.app.context.bus, 'selection_sketchObject', (selection) => selection.__TCAD_SketchObject.id);
     }
   }
 }
