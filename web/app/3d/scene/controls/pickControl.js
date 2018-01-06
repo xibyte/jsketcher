@@ -13,10 +13,10 @@ export default class PickControl {
     this.context = context;
     let {bus} = context;
     let domElement = context.services.viewer.sceneSetup.domElement();
-    bus.enableState('selection:solid', []);
-    bus.enableState('selection:face', []);
-    bus.enableState('selection:edge', []);
-    bus.enableState('selection:sketchObject', []);
+    bus.enableState('selection_solid', []);
+    bus.enableState('selection_face', []);
+    bus.enableState('selection_edge', []);
+    bus.enableState('selection_sketchObject', []);
     
     this.mouseState = {
       startX: 0,
@@ -53,19 +53,19 @@ export default class PickControl {
   handlePick(event) {
     this.raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, (object, kind) => {
       if (kind === PICK_KIND.FACE) {
-        if (!this.selected('selection:face', object)) {
+        if (!this.selected('selection_face', object)) {
           this.context.services.cadScene.showBasis(object.basis(), object.depth());
-          this.context.bus.dispatch('selection:face', [object]);
+          this.context.bus.dispatch('selection_face', [object]);
           return false;
         }
       } else if (kind === PICK_KIND.SKETCH) {
-        if (!this.selected('selection:sketchObject', object)) {
-          this.context.bus.dispatch('selection:sketchObject', [object]);
+        if (!this.selected('selection_sketchObject', object)) {
+          this.context.bus.dispatch('selection_sketchObject', [object]);
           return false;
         }
       } else if (kind === PICK_KIND.EDGE) {
-        if (!this.selected('selection:edge', object)) {
-          this.context.bus.dispatch('selection:edge', [object]);
+        if (!this.selected('selection_edge', object)) {
+          this.context.bus.dispatch('selection_edge', [object]);
           return false;
         }
       }
@@ -75,7 +75,7 @@ export default class PickControl {
 
   handleSolidPick(e) {
     this.raycastObjects(e, PICK_KIND.FACE, (sketchFace) => {
-      this.context.bus.dispatch('selection:solid', sketchFace.solid);
+      this.context.bus.dispatch('selection_solid', sketchFace.solid);
       this.context.services.viewer.render();
       return false;
     });

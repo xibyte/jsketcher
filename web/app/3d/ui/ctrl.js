@@ -54,7 +54,7 @@ function UI(app) {
     app.viewer.render();
   });
 
-  app.bus.subscribe('selection:solid', function([solid]) {
+  app.bus.subscribe('selection_solid', function([solid]) {
     if (solid) {
       ui.registerWizard(new TransformWizard(app.viewer, solid));
     }
@@ -163,7 +163,7 @@ UI.prototype.createWizardForOperation = function(op) {
   var initParams = op.params;
   var face = op.face !== undefined ? this.app.findFace(op.face) : null;
   if (face != null) {
-    this.app.context.bus.dispatch('selection:face', [face]);
+    this.app.context.bus.dispatch('selection_face', [face]);
   }
   return this.createWizard(op.type, true, initParams, face);
 };
