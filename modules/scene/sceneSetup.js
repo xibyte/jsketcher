@@ -22,7 +22,11 @@ export default class SceneSetUp {
   createOrthographicCamera() {
     let width = this.container.clientWidth;
     let height = this.container.clientHeight;
-    this.oCamera = new THREE.OrthographicCamera( width / - 1, width / 1, height / 1, height / - 1, 0.1, 10000);
+    let factor = ORTHOGRAPHIC_CAMERA_FACTOR;
+    this.oCamera = new THREE.OrthographicCamera(-width / factor,
+      width / factor,
+      height / factor,
+      -height / factor, 0.1, 10000);
     this.oCamera.position.z = 1000;
     this.oCamera.position.x = -1000;
     this.oCamera.position.y = 300;
@@ -52,13 +56,29 @@ export default class SceneSetUp {
     this.container.appendChild( this.renderer.domElement );
 
     window.addEventListener( 'resize', () => {
-      this.pCamera.aspect = this.aspect();
-      this.pCamera.updateProjectionMatrix();
+      this.updatePerspectiveCameraViewport();
+      this.updateOrthographicCameraViewport();
       this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
       this.render();
     }, false );
   }
 
+  updatePerspectiveCameraViewport() {
+    this.pCamera.aspect = this.aspect();
+    this.pCamera.updateProjectionMatrix();
+  }
+
+  updateOrthographicCameraViewport() {
+    let width = this.container.clientWidth;
+    let height = this.container.clientHeight;
+    let factor = ORTHOGRAPHIC_CAMERA_FACTOR;
+    this.oCamera.left = - width / factor;
+    this.oCamera.right = width / factor;
+    this.oCamera.top = height / factor;
+    this.oCamera.bottom = - height / factor;
+    this.oCamera.updateProjectionMatrix();
+  }
+  
   setCamera(camera) {
     let camPosition = new THREE.Vector3();
     let camRotation = new THREE.Euler();
@@ -168,3 +188,5 @@ export default class SceneSetUp {
     return this.renderer.domElement;   
   }
 }
+
+const ORTHOGRAPHIC_CAMERA_FACTOR = 1;
