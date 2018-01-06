@@ -41,9 +41,14 @@ function App() {
   this.state = this.createState();
   this.context = this.createPluginContext();
   this.initPlugins();
-  this.createViewer();
-  this.viewer = this.context.services.viewer;
-  this.viewer.workGroup = this.context.services.cadScene.workGroup;
+  
+  //old API workaround
+  this.viewer = {
+    render: () => this.context.services.viewer.render(),
+    workGroup: this.context.services.cadScene.workGroup
+  };
+    
+  // this.viewer.workGroup = this.context.services.cadScene.workGroup;
   this.actionManager.registerActions(AllActions);
   this.tabSwitcher = new TabSwitcher($('#tab-switcher'), $('#view-3d'));
   this.controlBar = new ControlBar(this, $('#control-bar'));
@@ -98,10 +103,6 @@ App.prototype.initPlugins = function() {
   for (let plugin of Plugins) {
     plugin.activate(this.context);
   }  
-};
-
-App.prototype.createViewer = function() {
-  this.context.bus.dispatch('dom:viewerContainer', document.getElementById('viewer-container'));
 };
 
 App.prototype.getFaceSelection = function() {
