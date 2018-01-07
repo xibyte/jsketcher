@@ -32,7 +32,6 @@
     "babel-preset-stage-2": "6.24.1",
     "babel-polyfill": "6.26.0",
     "babel-preset-react": "6.24.1",
-    "babel-plugin-local-styles-transformer": "git://github.com/xibyte/babel-plugin-local-styles-transformer.git#0.0.1",
 
     "css-loader": "0.28.7",
     "less-loader": "4.0.5",
