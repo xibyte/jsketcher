@@ -294,6 +294,14 @@ export class NurbsSurface extends Surface {
     this.simpleSurface = simpleSurface || figureOutSimpleSurface(this); 
   }
 
+  domainU() {
+    return this.verb.domainU();
+  }
+
+  domainV() {
+    return this.verb.domainV();
+  }
+
   middle() {
     let {min: uMin, max: uMax} = this.verb.domainU();
     let {min: vMin, max: vMax} = this.verb.domainV();
@@ -370,11 +378,13 @@ export class NurbsSurface extends Surface {
   }
 
   static isMirrored(surface) {
-    //TODO: use domain!
-    let a = surface.point(0, 0);
-    let b = surface.point(1, 0);
-    let c = surface.point(1, 1);
-    return b.minus(a).cross(c.minus(a))._normalize().dot(surface.normalUV(0, 0)) < 0;
+    let {min: uMin} = surface.domainU();
+    let {min: vMin} = surface.domainV();
+
+    let x = surface.isoCurveAlignU(uMin).tangentAtParam(uMin);
+    let y = surface.isoCurveAlignV(vMin).tangentAtParam(vMin);
+
+    return x.cross(y).dot(surface.normalUV(uMin, vMin)) < 0;
   }
 
   intersectSurfaceForSameClass(other) {
