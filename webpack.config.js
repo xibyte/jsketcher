@@ -31,12 +31,7 @@ module.exports = {
     rules: [{
       test: /\.(js|jsx)$/,
       loader: 'babel-loader',
-      include: [MODULES, WEB_APP, INTEGRATION_TESTS],
-      options: {
-        plugins: [
-          ['local-styles-transformer', {include: WEB_APP}]
-        ]
-      }
+      include: [MODULES, WEB_APP, INTEGRATION_TESTS]
     }, {
       test: /\.css$/,
       use: [
