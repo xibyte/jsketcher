@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const generateCSSScopedName = require('./build/cssScoopeGenerator')();
 
 const WEB_APP = path.join(__dirname, 'web/app');
 const MODULES = path.join(__dirname, 'modules');
@@ -43,7 +44,14 @@ module.exports = {
       test: /\.less$/,
       use: [
         'style-loader',
-        'css-loader?-url',
+        {
+          loader: 'css-loader',
+          options: {
+            getLocalIdent: (context, localIdentName, localName) => generateCSSScopedName(localName, context.resourcePath),
+            modules: true,
+            url: false
+          }
+        },
         'less-loader'
       ]    
     },
