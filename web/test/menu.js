@@ -1,4 +1,4 @@
-//import {DefaultMouseEvent} from '../app/3d/ui/utils'
+//import {DefaultMouseEvent} from '../app/cad/ui/utils'
 
 export class Menu {
   

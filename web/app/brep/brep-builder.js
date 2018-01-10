@@ -6,7 +6,7 @@ import {Face} from './topo/face';
 import {Loop} from './topo/loop';
 import {Edge} from './topo/edge';
 import {Vertex} from './topo/vertex';
-import {normalOfCCWSeq} from '../3d/cad-utils';
+import {normalOfCCWSeq} from '../cad/cad-utils';
 import BBox from "../math/bbox";
 
 export default class BrepBuilder {

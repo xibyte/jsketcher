@@ -1,0 +1,48 @@
+@import '../styles/theme';
+
+.root {
+  padding: 0.45em 0;
+}
+
+.item {
+  padding: 0.45em 0.55em 0.45em 0.45em;
+  cursor: pointer;
+  text-transform: capitalize;
+  white-space: nowrap;
+  display: flex;
+  align-items: baseline;
+  
+  &:hover {
+    background-color: #0074D9;
+  }
+  &:active {
+    background-color: #000d7f;
+  }
+
+  &.disabled:hover, &.disbaled:active {
+    background-color: #545454;
+  }
+
+
+  & .hotKey {
+    color: @font-color-suppressed;
+    font-size: 0.8em;
+    padding-left: 1.5em;
+    flex-grow: 1;
+    text-align: right;
+  }
+
+  & .label {
+    padding-left: 0.45em;
+    padding-right: 0.25em;
+  }
+}
+
+.separator {
+  border-top: solid 1px #777;
+}
+
+.disabled {
+  color: @font-color-suppressed;
+}
+

@@ -1,7 +1,6 @@
-//import './utils/jqueryfy'
-import App from './3d/modeler-app'
-import startReact from './3d/dom/startReact';
 
-startReact(() =>{
-  window._TCAD_APP = new App();
+import startApplication from "./cad/init/startApplication";
+
+startApplication(context => {
+  window.__CAD_APP = context;
 });

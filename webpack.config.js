@@ -4,7 +4,9 @@ const generateCSSScopedName = require('./build/cssScoopeGenerator')();
 
 const WEB_APP = path.join(__dirname, 'web/app');
 const MODULES = path.join(__dirname, 'modules');
-const INTEGRATION_TESTS = path.join(__dirname, 'web/test'); 
+const INTEGRATION_TESTS = path.join(__dirname, 'web/test');
+
+const GLOBAL_CSS = path.join(__dirname, 'web/css');
 
 module.exports = {
   devtool: 'source-map',
@@ -34,14 +36,17 @@ module.exports = {
       loader: 'babel-loader',
       include: [MODULES, WEB_APP, INTEGRATION_TESTS]
     }, {
-      test: /\.css$/,
+      test: /\.(less|css)$/,
+      include: GLOBAL_CSS,
       use: [
         'style-loader',
-        'css-loader',
-      ]    
+        'css-loader?-url',
+        'less-loader',
+      ]
     },
     {
-      test: /\.less$/,
+      test: /\.(less|css)$/,
+      include: [MODULES, WEB_APP],
       use: [
         'style-loader',
         {
