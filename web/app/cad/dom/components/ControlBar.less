@@ -1,0 +1,36 @@
+@import "~ui/styles/theme";
+
+.root {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  background-color: @work-area-control-bar-bg-color;
+  color: @work-area-control-bar-font-color;
+}
+
+.button {
+  display: inline-block;
+  cursor: pointer;
+  padding: 0.3em 0.3em 0.4em 0.6em;
+
+  @border: 1px solid @border-color;
+  &.left {
+    border-right: @border;
+  }
+  &.right {
+    border-left: @border;
+  }
+  &:hover {
+    background-color: @work-area-control-bar-bg-color-active;
+  }
+}
+
+.button.disabled {
+  color: @font-color-suppressed;
+  &:hover {
+    background-color: @work-area-control-bar-bg-color;
+  }
+}
