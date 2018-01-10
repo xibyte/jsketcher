@@ -147,7 +147,7 @@ export function load(url, callback) {
   $(function() {   // fire event when iframe is ready
     frame.load(function() {
       const win = frame.get(0).contentWindow;
-      callback(win, win._TCAD_APP)
+      callback(win, win.__CAD_APP)
     });
   });
   frame.attr('src', window.location.origin + url)

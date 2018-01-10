@@ -1,0 +1,36 @@
+@import "../styles/theme";
+
+.root {
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 0.3em;
+  border-radius: 5px;
+}
+
+.button {
+  border-radius: 5px;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 0.8em;
+  padding: 0.3em 0.1em;
+  color: #555;  
+  
+  &:hover {
+    cursor: pointer;
+    background-color: #333;
+    color: #fff;
+  }
+
+  &.disabled {
+    color: #999;
+  }
+
+  &.disabled:hover {
+    color: #aaa;
+    background-color: #888;
+  }
+}
+
+
+
+
+
