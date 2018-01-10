@@ -1,0 +1,35 @@
+@import "../styles/theme";
+
+.root {
+  color: @font-color-suppressed;
+}
+
+.tab {
+  @border: 1px solid @border-color;
+
+  padding: 0.3em 0.3em 0.4em 0.6em;
+  cursor: pointer;
+  border-right: @border;
+  display: inline-block;
+  &:hover {
+    color: @font-color;
+  }
+  &.active {
+    background-color: @bg-color-alt;
+    color: @font-color;
+  }
+  &:first-child {
+   border-left: @border; 
+  }
+}
+
+.expand:hover {
+  color: green;
+}
+.close:hover {
+  color: red;
+}
+
+
+
+
