@@ -27,12 +27,12 @@ export default class View3d extends React.PureComponent {
         {/*<div className={ls.viewer} */}
         <div>
         </div>
-        <Abs left='2em' top='2em' className={ls.leftToolbarGroup}>
+        <Abs left='0.8em' top='0.8em' className={ls.leftToolbarGroup}>
           <PlugableToolbarLeft />
           <PlugableToolbarLeftSecondary />
         </Abs>
-        <Abs right='2em' top='2em'>
-          <PlugableToolbarRight className={ls.smallToolbar}/>
+        <Abs right='0.8em' top='0.8em'>
+          <PlugableToolbarRight />
         </Abs>
         <PlugableControlBar />
       </div>
