@@ -6,16 +6,17 @@ import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import Toolbar, {ToolbarButton} from "../../../../../modules/ui/components/Toolbar";
 import ImgIcon from "../../../../../modules/ui/components/ImgIcon";
 import {toIdAndOverrides} from "../../actions/actionRef";
+import {capitalize} from "../../ui/utils";
 
 
-function ConfigurableToolbar({actions, small}) {
+function ConfigurableToolbar({actions, small, ...props}) {
 
-  return <Toolbar>
+  return <Toolbar small={small}>
     {actions.map(actionRef => {
       let [id, overrides] = toIdAndOverrides(actionRef);
       let Comp = connect(
         [ACTION_TOKENS.actionAppearance(id), ACTION_TOKENS.actionState(id)], 
-        ActionButton, {small, }, 
+        ActionButton, {small}, 
         ([appearance, state]) => Object.assign({}, appearance, state, overrides));
       return <Comp key={id}/>
     })}
@@ -27,11 +28,11 @@ function ActionButton({label, icon96, cssIcons, small, enabled, visible, onClick
     return null;
   }
 
-  let icon = small ? <Fa fa={cssIcons} fw/> : <ImgIcon url={icon96} size={48} />; 
+  let icon = small ? <Fa fa={cssIcons} fw /> : <ImgIcon url={icon96} size={48} />; 
     
   return <ToolbarButton {...{onClick, disabled: !enabled}}>
     {icon}
-    {!small && <div>{label}</div>}
+    {!small && <div>{capitalize(label)}</div>}
   </ToolbarButton>
 }
 
