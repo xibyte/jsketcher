@@ -16,7 +16,7 @@ export function activate({bus, services}) {
         x: undefined,
         y: undefined
       });
-      if (!appearance) {
+      if (!appearance.label) {
         appearance.label = id;
       }
       showMenuActions.push({

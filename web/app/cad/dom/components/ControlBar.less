@@ -12,21 +12,32 @@
 }
 
 .button {
-  display: inline-block;
   cursor: pointer;
-  padding: 0.3em 0.3em 0.4em 0.6em;
+  padding: 0.4em 0.5em;
 
-  @border: 1px solid @border-color;
-  &.left {
-    border-right: @border;
-  }
-  &.right {
-    border-left: @border;
-  }
   &:hover {
     background-color: @work-area-control-bar-bg-color-active;
   }
+  line-height: 1;
 }
+
+.left, .right {
+  display: flex;
+  align-items: baseline;
+}
+
+.right {
+  flex-direction: row-reverse;
+}
+
+@border: 1px solid @border-color;
+.left .button {
+  border-right: @border;
+}
+.right .button {
+  border-left: @border;
+}
+
 
 .button.disabled {
   color: @font-color-suppressed;

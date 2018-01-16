@@ -7,10 +7,10 @@ export default function ControlBar({left, right}) {
 
   return <div className={ls.root}>
     <div className={ls.left}>
-      {right}
+      {left}
     </div>
     <div className={ls.right}>
-      {left}
+      {right}
     </div>
   </div>
 }
