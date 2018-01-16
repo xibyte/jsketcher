@@ -3,8 +3,8 @@ import cx from 'classnames';
 
 import ls from './Toolbar.less';
 
-export default function Toolbar({children, className, ...props}) {
-  return <div className={cx(`${ls.root} disable-selection compact-font`, className)} {...props}>
+export default function Toolbar({children, className, small, ...props}) {
+  return <div className={cx(`${ls.root} disable-selection compact-font`, small && ls.small, className)} {...props}>
     {children}
   </div>; 
 }
