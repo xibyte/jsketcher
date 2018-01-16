@@ -16,7 +16,7 @@ export function activate({bus, services}) {
   bus.dispatch(UI_TOKENS.CONTROL_BAR_RIGHT, [
     ['Info', {label: null}],
     ['RefreshSketches', {label: null}],
-    ['ShowSketches', {label: 'sketches'}], ['DeselectAll', null], ['ToggleCameraMode', null]
+    ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}]
   ]);
 
   bus.dispatch(UI_TOKENS.TOOLBAR_BAR_LEFT, ['PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE']);
