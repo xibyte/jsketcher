@@ -12,6 +12,7 @@ export default function Menu({children, visible, x, y, orientationUp, style, ...
       display: visible ? 'block' : 'none',
       ...style
     }}
+    zIndex={500}
     left={x}
     top={orientationUp ? undefined : y}
     bottom={orientationUp ? y : undefined}
