@@ -1,0 +1,18 @@
+@import '../../styles/theme';
+@import '../../styles/mixins';
+
+.neutral, .accent, .danger {
+  background-color: darken(@color-neutral, 10%);
+}
+
+.neutral {
+  .button-behavior(@color-neutral)
+}
+
+.accent {
+  .button-behavior(@color-accent)
+}
+
+.danger {
+  .button-behavior(@color-danger)
+}

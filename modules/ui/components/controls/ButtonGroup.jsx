@@ -4,6 +4,6 @@ import ls from './ButtonGroup.less'
 
 export default function ButtonGroup({children}) {
 
-  return <div>{children}</div>
+  return <div className={ls.root}>{children}</div>
 
 }
