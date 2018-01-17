@@ -1,12 +1,10 @@
 import React from 'react';
 
-import ls from './Label.less'
+import ls from './Field.less'
 
 export default function Field({children}) {
-  
+ 
   return <div className={ls.root}>
-    {children[0]} {children[1]}
+    {children}
   </div>;
-
-
 }

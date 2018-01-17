@@ -6,21 +6,23 @@ import Fa from "./Fa";
 
 export default class Window extends React.Component {
   
-  constructor({initWidth}) {
+  constructor({initWidth, initLeft, initTop}) {
     super();
     this.state = {
-      width: initWidth
+      width: initWidth,
+      left: initLeft,
+      top: initTop
     }
   }
   
   render() {
-    let {children, title, minimizable } = this.props;
+    let {children, title, minimizable, onClose} = this.props;
     return <div className={ls.root} style={this.getStyle()}>
-      <div className={ls.bar}>
-        {title}
+      <div className={ls.bar + ' disable-selection'}>
+        <div><b>{title.toUpperCase()}</b></div>  
         <div className={ls.controlButtons}>
           {minimizable &&  <span className={ls.button}>_</span>}
-          <span className={ls.button}><Fa icon='close' /></span>
+          <span className={ls.button} onClick={onClose}><Fa fw icon='close' /></span>
       </div>
       </div>
       {children}
@@ -30,10 +32,10 @@ export default class Window extends React.Component {
   
   getStyle() {
     return {
-      width: toPx(this.state.width),
-      height: toPx(this.state.height),
-      left: toPx(this.state.left),
-      top: toPx(this.state.top)
+      width: this.state.width,
+      height: this.state.height,
+      left: this.state.left,
+      top: this.state.top
     }
   }
 }
@@ -42,7 +44,4 @@ Window.defaultProps = {
   minimizable: false,
 };
 
-function toPx(val) {
-  return val === undefined ? undefined : val + 'px';
-}
 

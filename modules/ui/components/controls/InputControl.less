@@ -1,0 +1,20 @@
+@import '../../styles/theme';
+
+.number input {
+  .colorStyling(@control-color-number, @control-bg);
+}
+
+.text input {
+  .colorStyling(@control-color-text, @control-bg);
+}
+
+.colorStyling(@color, @bg) {
+  color: @color;
+  background: @bg;
+  outline: none;
+  border: @bg 1px solid;
+  padding: 0.2em;
+  &:focus {
+    border: #444 1px solid;
+  }
+}

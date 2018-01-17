@@ -1,4 +1,5 @@
 @import "../theme";
+@import "../mixins";
 
 body {
   background-color: @bg-color;
@@ -15,14 +16,16 @@ iframe {
 }
 
 :global(.disable-selection) {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+  .no-selection();
 }
 
 :global(.compact-font) {
   font-family:  'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
 }
 
+button {
+  border: 0;
+  background-color: inherit;
+  color: inherit;
+}
 

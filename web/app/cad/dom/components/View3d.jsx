@@ -14,6 +14,17 @@ import MenuHolder from "../menu/MenuHolder";
 import {TOKENS as MENU_TOKENS} from '../menu/menuPlugin';
 
 
+import WindowSystem from 'ui/WindowSystem';
+import Window from "ui/components/Window";
+import Stack from "ui/components/Stack";
+import Field from "ui/components/controls/Field";
+import Label from "ui/components/controls/Label";
+import NumberControl from "ui/components/controls/NumberControl";
+import ButtonGroup from "ui/components/controls/ButtonGroup";
+import Button from "ui/components/controls/Button";
+import TextControl from './../../../../../modules/ui/components/controls/TextControl';
+
+
 export default class View3d extends React.PureComponent {
   
   render() {
@@ -35,6 +46,25 @@ export default class View3d extends React.PureComponent {
           <PlugableToolbarRight />
         </Abs>
         <PlugableControlBar />
+        
+        <WindowSystem />
+        <Window initWidth={250} initLeft={500} title="Test">
+          <Stack >
+            <Field>
+              <Label>Width</Label>
+              <NumberControl initValue={5} onChange={val => console.log(val)}/>
+            </Field>
+            <Field>
+              <Label>Face</Label>
+              <TextControl initValue='face1' onChange={val => console.log(val)}/>
+            </Field>
+            <ButtonGroup>
+              <Button text='Cancel' />
+              <Button text='OK' type='accent' />
+            </ButtonGroup>
+          </Stack>
+        </Window>
+
       </div>
     </div>
   }
