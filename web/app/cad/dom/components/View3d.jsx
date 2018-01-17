@@ -23,21 +23,19 @@ import NumberControl from "ui/components/controls/NumberControl";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
 import TextControl from './../../../../../modules/ui/components/controls/TextControl';
+import MessageSink from './MessageSink';
+import UISystem from './UISystem';
 
 
 export default class View3d extends React.PureComponent {
   
   render() {
-    return <div className={ls.root} onMouseDown={this.closeAllUpPopups}>
-      <MenuHolder />
+    return <UISystem className={ls.root} >
       <div className={ls.sideBar}>
         <ObjectExplorer/>
         <OperationHistory/>
       </div>
       <div className={ls.viewer} id='viewer-container'>
-        {/*<div className={ls.viewer} */}
-        <div>
-        </div>
         <Abs left='0.8em' top='0.8em' className={ls.leftToolbarGroup}>
           <PlugableToolbarLeft />
           <PlugableToolbarLeftSecondary />
@@ -46,7 +44,7 @@ export default class View3d extends React.PureComponent {
           <PlugableToolbarRight />
         </Abs>
         <PlugableControlBar />
-        
+
         <WindowSystem />
         <Window initWidth={250} initLeft={500} title="Test">
           <Stack >
@@ -64,30 +62,7 @@ export default class View3d extends React.PureComponent {
             </ButtonGroup>
           </Stack>
         </Window>
-
       </div>
-    </div>
+    </UISystem>
   }
-
-  closeAllUpPopups = () => {
-    let openedMenus = this.context.bus.state[MENU_TOKENS.OPENED];
-    if (openedMenus && openedMenus.length !== 0) {
-      this.context.bus.dispatch(MENU_TOKENS.CLOSE_ALL);
-    }
-
-  };
-  
-  getChildContext() {
-    return {
-      closeAllUpPopups: this.closeAllUpPopups
-    }
-  }
-  
-  static contextTypes = {
-    bus: PropTypes.object
-  };
-
-  static childContextTypes = {
-    closeAllUpPopups: PropTypes.func
-  };
 }
