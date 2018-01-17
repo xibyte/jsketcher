@@ -1,19 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import InputControl from './InputControl';
 
-import ls from './NumberControl.less'
-
-export default class NumberControl extends React.Component{
+export default class NumberControl extends React.Component {
   
   render() {
-    let {initValue, } = this.props;
-    
-    return <div className={ls.root}>
-      <input type='text' defaultValue={initValue} 
-             ref={(input) => this.input = input} 
-             onWheel={this.onWheel} 
-             onChange={e => onChange(e.target.value)} />
-    </div>;
+    let {onChange, initValue} = this.props;
+    return <InputControl type='number' 
+              onWheel={this.onWheel} 
+              defaultValue={initValue} 
+              onChange={e => onChange(e.target.value)}
+              inputRef={input => this.input = input} /> 
   }
   
   onWheel = (e) => {

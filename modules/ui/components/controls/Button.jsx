@@ -2,8 +2,16 @@ import React from 'react';
 
 import ls from './Button.less'
 
-export default function Button({text}) {
+export default function Button({text, type}) {
 
-  return <span>{text}</span>
+  return <button className={ls[type]}>{text}</button>
 
 }
+
+Button.defaultProps = {
+  type: 'neutral',
+};
+
+
+
+
