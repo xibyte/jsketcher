@@ -1,0 +1,21 @@
+
+.no-selection() {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.button-behavior(@color) {
+  &:hover {
+    background-color: @color;  
+  }
+  &:active {
+    background-color: darken(@color, 20%);
+  }
+}
+
+.row() {
+  
+  border-bottom: 1px solid @border-color;
+}

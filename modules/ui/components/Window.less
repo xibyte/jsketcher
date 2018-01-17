@@ -1,8 +1,24 @@
+@import '../styles/theme';
+@import '../styles/mixins';
+
 .root {
   position: absolute;
+  background-color: @bg-color-alt;
 }
 
 .bar {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
+  background-color: @bg-color;
+  line-height: 1;
+  cursor: default;
+  border-bottom: 1px solid @border-color;
+  padding-left: 0.5em;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.5em 0.5em 0.6em 0.5em;
+  .button-behavior(@color-danger);
 }

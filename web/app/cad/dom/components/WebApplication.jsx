@@ -7,15 +7,6 @@ import '../../../../css/app3d-legacy.less';
 
 import View3d from './View3d';
 
-import WindowSystem from 'ui/WindowSystem';
-import Window from "ui/components/Window";
-import Folder from "ui/components/Folder";
-import Field from "ui/components/controls/Field";
-import Label from "ui/components/controls/Label";
-import NumberControl from "ui/components/controls/NumberControl";
-import ButtonGroup from "ui/components/controls/ButtonGroup";
-import Button from "ui/components/controls/Button";
-
 import ls from './WebApplication.less';
 import TabSwitcher, {Tab} from 'ui/components/TabSwticher';
 import Card from 'ui/components/Card';
@@ -54,23 +45,6 @@ export default class WebApplication extends React.Component {
                                               onSwitch={this.switchTab} />)}
       </TabSwitcher> 
       <a id='downloader' style={{display: 'none'}}/>
-      {/*<WindowSystem />      */}
-      {/*<Window initWith={250} >*/}
-        {/*<Folder title="Test">*/}
-          {/*<Field>*/}
-            {/*<Label>Width</Label>*/}
-            {/*<NumberControl initValue={5} onChange={val => console.log(val)}/>*/}
-          {/*</Field>*/}
-          {/*<Field>*/}
-            {/*<Label>Width</Label>*/}
-            {/*<NumberControl initValue={6} onChange={val => console.log(val)}/>*/}
-          {/*</Field>*/}
-          {/*<ButtonGroup>*/}
-            {/*<Button text='Cancel' />*/}
-            {/*<Button text='OK' />*/}
-          {/*</ButtonGroup>*/}
-        {/*</Folder>*/}
-      {/*</Window>*/}
     </div>
   }
 
