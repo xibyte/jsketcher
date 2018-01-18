@@ -4,15 +4,14 @@ import MenuHolder from "../menu/MenuHolder";
 import {TOKENS as MENU_TOKENS} from '../menu/menuPlugin';
 
 import WindowSystem from 'ui/WindowSystem';
-import MessageSink from './MessageSink';
-
+import ActionInfo from "../actionInfo/ActionInfo";
 
 export default class UISystem extends React.Component {
   
   render() {
     return <div {...this.props} onMouseDown={this.closeAllUpPopups}>
       <MenuHolder />
-      <MessageSink />
+      <ActionInfo />
       <WindowSystem />
       {this.props.children}
     </div>

@@ -70,6 +70,10 @@ export default class Bus {
     this.dispatch(token, Object.assign({}, this.state[token], partialState));
   }
 
+  getState(fqn) {
+    return this.state[createToken(fqn)];
+  }
+  
   dispatch(key, data) {
     if (this.lock.has(key)) {
       console.warn('recursive dispatch');

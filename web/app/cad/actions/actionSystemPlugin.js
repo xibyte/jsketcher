@@ -40,7 +40,8 @@ export function activate(context) {
     }
     bus.subscribe(TOKENS.actionRun(action.id), (data) => action.invoke(context, data));
   }
-  
+
+  bus.enableState(TOKENS.HINT, null);
   function registerAction(action) {
     register(action);
   }
@@ -48,16 +49,57 @@ export function activate(context) {
   function registerActions(actions) {
     actions.forEach(action => register(action));
   }
-
+  
+  synchActionHint(bus);
+  
   context.services.action = {run, registerAction, registerActions}
 }
 
-export const TOKENS = {
-  ACTION_STATE_NS: 'action.state',
-  ACTION_APPEARANCE_NS: 'action.appearance',
-  ACTION_RUN_NS: 'action.run',
+
+
+function synchActionHint(bus) {
   
-  actionState: (actionId) => createToken(TOKENS.ACTION_STATE_NS, actionId),
-  actionAppearance: (actionId) => createToken(TOKENS.ACTION_APPEARANCE_NS, actionId),
-  actionRun: (actionId) => createToken(TOKENS.ACTION_RUN_NS, actionId),
+  let lastRequest = null;
+  
+  // bus.subscribe(TOKENS.REQUEST_SHOW_HINT_FOR
+  bus.subscribe(TOKENS.SHOW_HINT_FOR, request => {
+    if (lastRequest !== null) {
+      if (request !== null) {
+        if (request[0] === lastRequest[0]) {
+          Object.assign(lastRequest, request);
+          return;
+        }
+      }
+      lastRequest.spoiled = true;
+    }
+    lastRequest = request;
+    if (request) {
+      setTimeout(() => {
+        if (!request.spoiled) {
+          let [actionId, x, y] = request;
+          let actionState = bus.getState(TOKENS.actionState(actionId));
+          let actionAppearance = bus.getState(TOKENS.actionAppearance(actionId));
+          if (actionState && actionAppearance) {
+            bus.dispatch(TOKENS.HINT, {
+              actionId, x: x + 10, y: y + 10,
+              info: actionAppearance.info,
+              hint: actionState.hint
+            });
+          }
+        }
+      }, 500);
+    } else {
+      bus.dispatch(TOKENS.HINT, null);
+    }
+  });
+}
+
+export const ACTION_NS = 'action';
+export const TOKENS = {
+  actionState: (actionId) => createToken(ACTION_NS, 'state', actionId),
+  actionAppearance: (actionId) => createToken(ACTION_NS, 'appearance', actionId),
+  actionRun: (actionId) => createToken(ACTION_NS, 'run', actionId),
+
+  SHOW_HINT_FOR: createToken(ACTION_NS, 'showHintFor'),
+  HINT: createToken(ACTION_NS, 'hint'),
 };

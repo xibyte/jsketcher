@@ -23,7 +23,6 @@ import NumberControl from "ui/components/controls/NumberControl";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
 import TextControl from './../../../../../modules/ui/components/controls/TextControl';
-import MessageSink from './MessageSink';
 import UISystem from './UISystem';
 
 

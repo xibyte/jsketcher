@@ -5,6 +5,7 @@ import Fa from 'ui/components/Fa';
 import {TOKENS as UI_TOKENS} from '../uiEntryPointsPlugin';
 import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import {toIdAndOverrides} from "../../actions/actionRef";
+import {mapActionBehavior} from "../../actions/actionButtonBehavior";
 
 
 export default function PlugableControlBar() {
@@ -14,11 +15,10 @@ export default function PlugableControlBar() {
 function ButtonGroup({actions}) {
   return actions.map(actionRef => { 
     let [id, overrides] = toIdAndOverrides(actionRef);
-    let actionRunToken = ACTION_TOKENS.actionRun(id);
     let Comp = connect([ACTION_TOKENS.actionAppearance(id), ACTION_TOKENS.actionState(id)],
       ActionButton, {actionId: id},
       ([appearance, state]) => Object.assign({}, appearance, state, overrides),
-      dispatch => ({runAction: (data) => dispatch(actionRunToken, data)})
+      mapActionBehavior(id)
     );
     return <Comp key={id}/>;
   });
@@ -31,12 +31,16 @@ function isMenuAction(actionId) {
 class ActionButton extends React.Component {
   
   render() {
-    let {label, cssIcons, runAction, enabled, visible, actionId} = this.props;
+    let {label, cssIcons, enabled, visible, actionId, ...props} = this.props;
     if (!visible) {
       return null;
     }
-    const onClick = e => runAction(isMenuAction(actionId) ? getMenuData(this.el) : undefined);
-    return <ControlBarButton {...{onClick, disabled: !enabled}} onElement={el => this.el = el}>
+    if (isMenuAction(actionId)) {
+      let onClick = props.onClick;
+      props.onClick = e => onClick(getMenuData(this.el));
+    }
+    
+    return <ControlBarButton disabled={!enabled} onElement={el => this.el = el} {...props} >
       {cssIcons && <Fa fa={cssIcons} fw/>} {label}
     </ControlBarButton>;
   }
