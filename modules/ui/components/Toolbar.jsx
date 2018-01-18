@@ -9,8 +9,8 @@ export default function Toolbar({children, className, small, ...props}) {
   </div>; 
 }
 
-export function ToolbarButton({children, disabled}) {
-  return <div className={cx(ls.button, {disabled})}>
+export function ToolbarButton({children, disabled, ...props}) {
+  return <div className={cx(ls.button, disabled && ls.disabled)} {...props}>
     {children}
   </div>;
 }

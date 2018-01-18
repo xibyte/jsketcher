@@ -39,9 +39,12 @@ export default class AdjustableAbs extends React.Component {
   }
   
   render() {
-    let {left, top, right, bottom, children, style, zIndex, ...props} = this.props;
+    let {left, top, right, bottom, children, style, zIndex, visible, ...props} = this.props;
     return <div ref={el => this.el = el} 
-                style={{position: 'absolute', left, top, right, bottom, zIndex, ...style}}  {...props}>
+                style={{
+                  display: visible ? 'block' : 'none',
+                  position: 'absolute', left, top, right, bottom, zIndex, 
+                  ...style}}  {...props}>
       {children}
     </div>;
   }
@@ -49,6 +52,7 @@ export default class AdjustableAbs extends React.Component {
 
 AdjustableAbs.defaultProps = {
   zIndex: 100,
+  visible: true
 };
 
 

@@ -15,9 +15,9 @@ export default function ControlBar({left, right}) {
   </div>
 }
 
-export function ControlBarButton({onClick, onElement, disabled, children}) {
+export function ControlBarButton({onElement, disabled, children, onClick, ...props}) {
   return <span className={cx(ls.button, 'disable-selection', {disabled})} 
-               onClick={disabled || onClick} ref={onElement}>
+               onClick={disabled || onClick} ref={onElement} {...props}>
     {children}
   </span>
 }
