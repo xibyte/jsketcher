@@ -105,6 +105,10 @@ export default class Bus {
     this.state[forToken] = initValue;
   }
 
+  disableState(forToken) {
+    this.keepStateFor.delete(forToken);
+    delete this.state[forToken];
+  }
 }
 
 export function createToken(...fqn) {
