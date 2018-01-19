@@ -15,9 +15,9 @@ const DEFAULT_VIEW = {id: 'view3d',  label: '3D View', Component: View3d};
 
 export default class WebApplication extends React.Component {
 
-  constructor({bus}) {
+  constructor({appContext}) {
     super();
-    this.bus = bus;
+    this.appContext = appContext;
     this.views = [DEFAULT_VIEW, {id: 'XXX',  label: '3D View2', Component: Fragment}];
     this.state = {
       activeView: DEFAULT_VIEW
@@ -49,11 +49,12 @@ export default class WebApplication extends React.Component {
   }
 
   getChildContext() {
-    return {bus: this.bus};
+    return this.appContext;
   }
   
   static childContextTypes = {
-    bus: PropTypes.object
+    bus: PropTypes.object,
+    services: PropTypes.object
   };
 }
 
