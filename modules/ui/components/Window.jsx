@@ -35,7 +35,8 @@ export default class Window extends React.Component {
       width: this.state.width,
       height: this.state.height,
       left: this.state.left,
-      top: this.state.top
+      top: this.state.top,
+      zIndex: 1
     }
   }
 }

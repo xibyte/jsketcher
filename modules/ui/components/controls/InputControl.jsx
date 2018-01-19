@@ -9,7 +9,7 @@ export default class InputControl extends React.Component {
     let {type, inputRef, ...props} = this.props;
     
     return <div className={ls[type]}>
-      <input type='text' ref={inputRef} {...props} spellcheck='false' />
+      <input type='text' ref={inputRef} {...props} spellCheck='false' />
     </div>;
   }
 }

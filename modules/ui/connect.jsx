@@ -1,15 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import shallowEqual from "../gems/shallowEqual";
 
-export default function connect(tokens, WrappedComponent, staticProps, mapper, dispatchMapper) {
+export default function connect(WrappedComponent, tokens, {staticProps, mapProps, mapActions}) {
 
   if (!Array.isArray(tokens)) {
     tokens = [tokens];
   }
 
-  mapper = createMapper(mapper);
+  mapProps = createMapper(mapProps);
 
-  dispatchMapper = dispatchMapper || function(dispatch) {
+  mapActions = mapActions || function(dispatch) {
     return dispatch;
   };
 
@@ -19,7 +20,7 @@ export default function connect(tokens, WrappedComponent, staticProps, mapper, d
       super();
       this.mounted = false;
       this.stateProps = {};
-      this.dispatchProps = dispatchMapper(this.dispatch);
+      this.dispatchProps = mapActions(this.dispatch);
     }
 
     componentWillMount() {
@@ -37,18 +38,26 @@ export default function connect(tokens, WrappedComponent, staticProps, mapper, d
     }
 
     setExternalState = (state) => {
-      this.stateProps = mapper(state);
+      this.stateProps = mapProps(state);
       if (this.mounted) {
         this.forceUpdate();
       }
     };
 
+    shouldComponentUpdate(nextProps, nextState) {
+      return !shallowEqual(this.props, nextProps);
+      
+    }
+    
     dispatch = (event, data) => {
       this.context.bus.dispatch(event, data);
     };
 
     render() {
       return <WrappedComponent {...this.stateProps} {...this.dispatchProps} {...staticProps} />
+    }
+
+    componentDidCatch() {
     }
 
     static contextTypes = {

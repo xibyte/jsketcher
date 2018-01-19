@@ -30,12 +30,6 @@ const OPERATION_ACTIONS = [
     ...requiresFaceSelection(1)
   },
   {
-    id: 'BOX',
-    appearance: {
-      info: 'creates new object box'
-    },
-  },
-  {
     id: 'PLANE',
     appearance: {
       info: 'creates new object plane'
@@ -78,7 +72,7 @@ const OPERATION_ACTIONS = [
 
 function mergeInfo(action) {
   const op = Operations[action.id];
-  action.invoke = app => app.ui.initOperation(action.id);
+  action.invoke = ({services}) => services.operation.startOperation(action.id);
   Object.assign(action.appearance, {
     label: op.label,
     icon32: op.icon + '32.png',

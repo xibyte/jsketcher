@@ -11,19 +11,3 @@ export default class TextControl extends React.Component {
               onChange={e => onChange(e.target.value)}  /> 
   }
 }
-
-TextControl.propTypes = {
-  baseStep: PropTypes.number, 
-  round: PropTypes.number, 
-  min: PropTypes.number, 
-  max: PropTypes.number, 
-  accelerator: PropTypes.number, 
-  initValue: PropTypes.number.isRequired, 
-  onChange: PropTypes.func.isRequired
-};
-
-TextControl.defaultProps = {
-  baseStep: 1,
-  round: 0,
-  accelerator: 100
-};

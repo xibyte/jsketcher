@@ -24,9 +24,15 @@ import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
 import TextControl from './../../../../../modules/ui/components/controls/TextControl';
 import UISystem from './UISystem';
+import WizardManager from './wizard/WizardManager';
 
 
-export default class View3d extends React.PureComponent {
+export default class View3d extends React.Component {
+
+  shouldComponentUpdate() {
+    //we don't want the dom to be updated under any circumstances or we loose the WEB-GL container
+    return false;
+  }
   
   render() {
     return <UISystem className={ls.root} >
@@ -43,8 +49,8 @@ export default class View3d extends React.PureComponent {
           <PlugableToolbarRight />
         </Abs>
         <PlugableControlBar />
+        <WizardManager />
 
-        <WindowSystem />
         <Window initWidth={250} initLeft={500} title="Test">
           <Stack >
             <Field>

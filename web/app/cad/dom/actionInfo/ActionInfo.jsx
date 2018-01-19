@@ -4,7 +4,7 @@ import ls from './ActionInfo.less';
 import AuxWidget from '../../../../../modules/ui/components/AuxWidget';
 import connect from '../../../../../modules/ui/connect';
 import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
-import {TOKENS as KeyboardTokens} from "../../keyboard/keyboardPlugin";
+import {TOKENS as KeyboardTokens} from '../../keyboard/keyboardPlugin';
 
 function ActionInfo({actionId, x, y, info, hint, hotKey}) {
   let visible = !!actionId;
@@ -19,6 +19,7 @@ function ActionInfo({actionId, x, y, info, hint, hotKey}) {
   </AuxWidget>;
 }
 
-export default connect([ACTION_TOKENS.HINT, KeyboardTokens.KEYMAP], ActionInfo, undefined, 
-  ([ hintInfo, keymap ]) => (Object.assign({hotKey: hintInfo && keymap[hintInfo.actionId]}, hintInfo)) ); 
+export default connect(ActionInfo, [ACTION_TOKENS.HINT, KeyboardTokens.KEYMAP], { 
+  mapProps: ([ hintInfo, keymap ]) => (Object.assign({hotKey: hintInfo && keymap[hintInfo.actionId]}, hintInfo)) 
+}); 
 

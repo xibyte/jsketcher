@@ -1,5 +1,6 @@
 import DPR from 'dpr';
-import './utils/threeLoader'
+import './utils/threeLoader';
+import './utils/vectorThreeEnhancement';
 
 export default class SceneSetUp {
   

@@ -10,8 +10,11 @@ import {TOKENS as KeyboardTokens} from "../../keyboard/keyboardPlugin";
 function MenuHolder({menus}) {
   return menus.map(({id, actions}) => {
     let menuToken = MENU_TOKENS.menuState(id);
-    return React.createElement(connect([menuToken, KeyboardTokens.KEYMAP], 
-      ActionMenu, {actions}, [,keymap => ({keymap})]), {key: id});
+    let connectedMenu = connect(ActionMenu, [menuToken, KeyboardTokens.KEYMAP], {
+      staticProps: {actions},
+      mapProps: [,keymap => ({keymap})]
+    });
+    return React.createElement(connectedMenu, {key: id});
   }); 
 }
 
@@ -23,13 +26,12 @@ function ActionMenu({actions, keymap, ...props}) {
       }
       const runToken = ACTION_TOKENS.actionRun(action);
       return React.createElement(
-        connect([ACTION_TOKENS.actionState(action), ACTION_TOKENS.actionAppearance(action)], 
-          ActionMenuItem, 
-          {hotKey: keymap[action]}, undefined,
-          dispatch => ({
+        connect(ActionMenuItem, [ACTION_TOKENS.actionState(action), ACTION_TOKENS.actionAppearance(action)], { 
+          staticProps: {hotKey: keymap[action]}, 
+          mapActions: dispatch => ({
             onClick: () => dispatch(runToken) 
-          })), 
-        {key: action});  
+          })
+        }), {key: action});  
       })}
   </Menu>;
 }
@@ -60,7 +62,9 @@ function ActionMenuItem({label, cssIcons, icon32, icon96, onClick, enabled, hotK
 }
 
 
-export default connect(MENU_TOKENS.MENUS, MenuHolder, undefined, ([menus]) => ({menus}));
+export default connect(MenuHolder, MENU_TOKENS.MENUS, {
+  mapProps: ([menus]) => ({menus})
+});
 
 
 

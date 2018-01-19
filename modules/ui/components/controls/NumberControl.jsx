@@ -15,12 +15,7 @@ export default class NumberControl extends React.Component {
   
   onWheel = (e) => {
     let {baseStep, round, min, max, onChange, accelerator} = this.props;
-    let delta = 0;
-    if ( e.wheelDelta ) { // WebKit / Opera / Explorer 9
-      delta = e.wheelDelta;
-    } else if ( e.detail ) { // Firefox
-      delta = - e.detail;
-    }
+    let delta = e.deltaY;
     let val = e.target.value;
     if (!val) val = 0;
     let step = baseStep * (e.shiftKey ? accelerator : 1);

@@ -1,4 +1,3 @@
-import '../../../modules/scene/utils/vectorThreeEnhancement'
 import Bus from 'bus'
 import {Viewer} from './scene/viewer'
 import {UI} from './ui/ctrl'
