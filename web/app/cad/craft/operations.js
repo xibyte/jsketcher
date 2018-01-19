@@ -1,9 +1,9 @@
 // import {MESH_OPERATIONS} from './mesh/workbench'
 // import {Extrude, Cut} from './brep/cut-extrude'
 // import {Revolve} from './brep/revolve'
-// import {BREPSceneSolid} from '../scene/wrappers/brepSceneObject'
+import {BREPSceneSolid} from '../scene/wrappers/brepSceneObject'
 // import {PlaneSceneObject} from '../scene/wrappers/planeSceneObject'
-// import {box} from '../../brep/brep-primitives'
+import {box} from '../../brep/brep-primitives'
 
 export const CUT = {
   icon: 'img/cad/cut',

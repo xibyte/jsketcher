@@ -15,9 +15,11 @@ function ConfigurableToolbar({actions, small, ...props}) {
     {actions.map(actionRef => {
       let [id, overrides] = toIdAndOverrides(actionRef);
       let Comp = connect(
-        [ACTION_TOKENS.actionAppearance(id), ACTION_TOKENS.actionState(id)], 
-        ActionButton, {small}, 
-        ([appearance, state]) => Object.assign({}, appearance, state, overrides));
+        ActionButton,
+        [ACTION_TOKENS.actionAppearance(id), ACTION_TOKENS.actionState(id)], {
+          staticProps: {small}, 
+          mapProps: ([appearance, state]) => Object.assign({}, appearance, state, overrides)
+        });
       return <Comp key={id}/>
     })}
   </Toolbar>
@@ -37,7 +39,10 @@ function ActionButton({label, icon96, cssIcons, small, enabled, visible, onClick
 }
 
 export function createPlugableToolbar(configToken, small) {
-  return connect(configToken, ConfigurableToolbar, {small}, ([actions]) => ({actions}) );
+  return connect(ConfigurableToolbar, configToken, {
+    staticProps: {small}, 
+    mapProps: ([actions]) => ({actions}) 
+  });
 }
 
 export const PlugableToolbarLeft = createPlugableToolbar(UI_TOKENS.TOOLBAR_BAR_LEFT);

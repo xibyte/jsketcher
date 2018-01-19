@@ -7,6 +7,8 @@ import * as ActionSystemPlugin from '../actions/actionSystemPlugin';
 import * as UiEntryPointsPlugin from '../dom/uiEntryPointsPlugin';
 import * as MenuPlugin from '../dom/menu/menuPlugin';
 import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
+import * as WizardPlugin from '../craft/wizard/wizardPlugin';
+import * as OperationPlugin from '../craft/operationPlugin';
 
 import * as PartModellerPlugin from '../part/partModellerPlugin';
 
@@ -20,7 +22,9 @@ export default function startApplication(callback) {
     ActionSystemPlugin,
     MenuPlugin,
     UiEntryPointsPlugin,
-    KeyboardPlugin
+    KeyboardPlugin,
+    WizardPlugin,
+    OperationPlugin
   ];
   
   let plugins = [
@@ -38,14 +42,14 @@ export default function startApplication(callback) {
 
   activatePlugins(preUIPlugins, context);
 
-  startReact(context.bus, () => {
+  startReact(context, () => {
     activatePlugins(plugins, context);
     context.services.viewer.render();
     callback(context);
   });
 }
 
-function activatePlugins(plugins, context) {
+export function activatePlugins(plugins, context) {
   for (let plugin of plugins) {
     plugin.activate(context);
   }

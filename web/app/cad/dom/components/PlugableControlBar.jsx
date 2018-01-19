@@ -15,10 +15,13 @@ export default function PlugableControlBar() {
 function ButtonGroup({actions}) {
   return actions.map(actionRef => { 
     let [id, overrides] = toIdAndOverrides(actionRef);
-    let Comp = connect([ACTION_TOKENS.actionAppearance(id), ACTION_TOKENS.actionState(id)],
-      ActionButton, {actionId: id},
-      ([appearance, state]) => Object.assign({}, appearance, state, overrides),
-      mapActionBehavior(id)
+    let Comp = connect(ActionButton, 
+      [ACTION_TOKENS.actionAppearance(id), ACTION_TOKENS.actionState(id)], 
+      {
+        staticProps: {actionId: id},
+        mapProps: ([appearance, state]) => Object.assign({}, appearance, state, overrides), 
+        mapActions: mapActionBehavior(id) 
+      }
     );
     return <Comp key={id}/>;
   });
@@ -46,8 +49,12 @@ class ActionButton extends React.Component {
   }
 }
 
-const LeftGroup = connect(UI_TOKENS.CONTROL_BAR_LEFT, ButtonGroup, undefined, ([actions]) => ({actions}));
-const RightGroup = connect(UI_TOKENS.CONTROL_BAR_RIGHT, ButtonGroup, undefined, ([actions]) => ({actions}));
+const BUTTON_CONNECTOR = {
+  mapProps: ([actions]) => ({actions})
+};
+
+const LeftGroup = connect(ButtonGroup, UI_TOKENS.CONTROL_BAR_LEFT, BUTTON_CONNECTOR);
+const RightGroup = connect(ButtonGroup, UI_TOKENS.CONTROL_BAR_RIGHT, BUTTON_CONNECTOR);
 
 function getMenuData(el) {
   //TODO: make more generic
