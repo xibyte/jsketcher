@@ -6,33 +6,20 @@ import Menu, {MenuItem, MenuSeparator} from "../../../../../modules/ui/component
 import Fa from "../../../../../modules/ui/components/Fa";
 import Filler from "../../../../../modules/ui/components/Filler";
 import {TOKENS as KeyboardTokens} from "../../keyboard/keyboardPlugin";
+import {DEFAULT_MAPPER} from "../../../../../modules/ui/connect";
 
 function MenuHolder({menus}) {
-  return menus.map(({id, actions}) => {
-    let menuToken = MENU_TOKENS.menuState(id);
-    let connectedMenu = connect(ActionMenu, [menuToken, KeyboardTokens.KEYMAP], {
-      staticProps: {actions},
-      mapProps: [,keymap => ({keymap})]
-    });
-    return React.createElement(connectedMenu, {key: id});
-  }); 
+  return menus.map(({id, actions}) => <ConnectedActionMenu key={id} menuId={id} actions={actions} />); 
 }
 
-function ActionMenu({actions, keymap, ...props}) {
-  return <Menu {...props}>
-    {actions.map((action, index)=> {
+function ActionMenu({actions, keymap, ...menuState}) {
+  return <Menu {...menuState}>
+    {actions.map((action, index) => {
       if (action === '-') {
         return <MenuSeparator key={index} />
       }
-      const runToken = ACTION_TOKENS.actionRun(action);
-      return React.createElement(
-        connect(ActionMenuItem, [ACTION_TOKENS.actionState(action), ACTION_TOKENS.actionAppearance(action)], { 
-          staticProps: {hotKey: keymap[action]}, 
-          mapActions: dispatch => ({
-            onClick: () => dispatch(runToken) 
-          })
-        }), {key: action});  
-      })}
+      return <ConnectedMenuItem key={action} actionId={action} hotKey={keymap[action]} />;  
+    })}
   </Menu>;
 }
 
@@ -61,6 +48,22 @@ function ActionMenuItem({label, cssIcons, icon32, icon96, onClick, enabled, hotK
   return <MenuItem {...{label, icon,  style, disabled: !enabled, hotKey, onClick}} />;
 }
 
+const ConnectedActionMenu = connect(ActionMenu, 
+  ({menuId}) => [MENU_TOKENS.menuState(menuId), KeyboardTokens.KEYMAP], 
+  {
+    mapProps: ([menuState, keymap], {actions}) => Object.assign({keymap, actions}, menuState)
+  });
+
+
+let ConnectedMenuItem = connect(ActionMenuItem, 
+  ({actionId}) => [ACTION_TOKENS.actionState(actionId), ACTION_TOKENS.actionAppearance(actionId)], 
+  {
+    mapActions: (dispatch, {actionId}) => ({
+      onClick: () => dispatch(ACTION_TOKENS.actionRun(actionId))
+    }),
+    mapSelfProps: ({hotKey}) => ({hotKey})
+  }
+);
 
 export default connect(MenuHolder, MENU_TOKENS.MENUS, {
   mapProps: ([menus]) => ({menus})
