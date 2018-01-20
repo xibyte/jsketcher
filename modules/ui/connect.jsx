@@ -1,12 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import shallowEqual from "../gems/shallowEqual";
 
-export default function connect(WrappedComponent, tokens, {staticProps, mapProps, mapActions}) {
-
-  if (!Array.isArray(tokens)) {
-    tokens = [tokens];
-  }
+export default function connect(WrappedComponent, tokens, {staticProps, mapProps, mapActions, mapSelfProps}) {
 
   mapProps = createMapper(mapProps);
 
@@ -14,20 +9,30 @@ export default function connect(WrappedComponent, tokens, {staticProps, mapProps
     return dispatch;
   };
 
-  return class StateConnector extends React.Component {
+  mapSelfProps = mapSelfProps || (() => undefined);
+  
+  return class StateConnector extends React.PureComponent {
 
-    constructor(context) {
+    constructor(props) {
       super();
       this.mounted = false;
       this.stateProps = {};
-      this.dispatchProps = mapActions(this.dispatch);
+      this.dispatchProps = mapActions(this.dispatch, props);
     }
 
     componentWillMount() {
-      this.externalStateConnection = this.context.bus.connectToState(tokens, this.setExternalState);
+      this.externalStateConnection = this.context.bus.connectToState(this.getTokens(), this.setExternalState);
       this.externalStateConnection();
     }
 
+    getTokens() {
+      let tokensArr = tokens instanceof Function ? tokens(this.props) : tokens; 
+      if (!Array.isArray(tokensArr)) {
+        tokensArr = [tokensArr];
+      }
+      return tokensArr;
+    }
+    
     componentDidMount() {
       this.mounted = true;
     }
@@ -38,23 +43,21 @@ export default function connect(WrappedComponent, tokens, {staticProps, mapProps
     }
 
     setExternalState = (state) => {
-      this.stateProps = mapProps(state);
+      this.stateProps = mapProps(state, this.props);
       if (this.mounted) {
         this.forceUpdate();
       }
     };
 
-    shouldComponentUpdate(nextProps, nextState) {
-      return !shallowEqual(this.props, nextProps);
-      
-    }
-    
     dispatch = (event, data) => {
       this.context.bus.dispatch(event, data);
     };
 
     render() {
-      return <WrappedComponent {...this.stateProps} {...this.dispatchProps} {...staticProps} />
+      return <WrappedComponent {...this.stateProps} 
+                               {...this.dispatchProps} 
+                               {...staticProps} 
+                               {...mapSelfProps(this.props)}/>
     }
 
     componentDidCatch() {
@@ -66,13 +69,9 @@ export default function connect(WrappedComponent, tokens, {staticProps, mapProps
   }
 }
 
-function createMapper(mapper) {
+function createMapper(mapper, comp) {
   if (!mapper) {
-    return function (state) {
-      let props = {};
-      state.forEach(stateItem => Object.assign(props, stateItem));
-      return props;
-    };
+    return DEFAULT_MAPPER;
   } else if (Array.isArray(mapper)) {
     return function (state) {
       let props = {};
@@ -87,5 +86,8 @@ function createMapper(mapper) {
   return mapper;
 }
 
-
-
+export function DEFAULT_MAPPER(state) {
+  let props = {};
+  state.forEach(stateItem => Object.assign(props, stateItem));
+  return props;
+}

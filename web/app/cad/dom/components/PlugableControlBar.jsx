@@ -6,6 +6,7 @@ import {TOKENS as UI_TOKENS} from '../uiEntryPointsPlugin';
 import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import {toIdAndOverrides} from "../../actions/actionRef";
 import {mapActionBehavior} from "../../actions/actionButtonBehavior";
+import {DEFAULT_MAPPER} from "../../../../../modules/ui/connect";
 
 
 export default function PlugableControlBar() {
@@ -15,15 +16,7 @@ export default function PlugableControlBar() {
 function ButtonGroup({actions}) {
   return actions.map(actionRef => { 
     let [id, overrides] = toIdAndOverrides(actionRef);
-    let Comp = connect(ActionButton, 
-      [ACTION_TOKENS.actionAppearance(id), ACTION_TOKENS.actionState(id)], 
-      {
-        staticProps: {actionId: id},
-        mapProps: ([appearance, state]) => Object.assign({}, appearance, state, overrides), 
-        mapActions: mapActionBehavior(id) 
-      }
-    );
-    return <Comp key={id}/>;
+    return <ConnectedActionButton key={id} actionId={id} {...overrides}/>;
   });
 }
 
@@ -55,6 +48,16 @@ const BUTTON_CONNECTOR = {
 
 const LeftGroup = connect(ButtonGroup, UI_TOKENS.CONTROL_BAR_LEFT, BUTTON_CONNECTOR);
 const RightGroup = connect(ButtonGroup, UI_TOKENS.CONTROL_BAR_RIGHT, BUTTON_CONNECTOR);
+
+
+const ConnectedActionButton = connect(ActionButton,
+  props => [ACTION_TOKENS.actionAppearance(props.actionId), 
+            ACTION_TOKENS.actionState(props.actionId)],
+  {
+    mapProps: (state, props) => Object.assign(DEFAULT_MAPPER(state), props),
+    mapActions: mapActionBehavior('actionId'),
+  }
+);
 
 function getMenuData(el) {
   //TODO: make more generic
