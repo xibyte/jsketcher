@@ -1,10 +1,6 @@
-import {HashTable} from '../../../utils/hashmap'
 import Vector from 'math/vector';
-import Counters from '../../counters'
-import {Matrix3, BasisForPlane} from '../../../math/l3space'
-import {isCurveClass} from '../../cad-utils'
+import {BasisForPlane} from '../../../math/l3space'
 import DPR from 'dpr'
-import {ReadSketch, ReadSketchFromFace} from "../../sketch/sketchReader";
 import {setAttribute} from "../../../../../modules/scene/objectData";
 import {genSolidId} from "../../craft/cadRegistryPlugin";
 
@@ -118,17 +114,8 @@ export class SceneFace {
     threeFace.__TCAD_SceneFace = this;
   }
 
-  readSketchGeom(app) {
-    let faceStorageKey = app.faceStorageKey(this.id);
-    let savedFace = localStorage.getItem(faceStorageKey);
-    if (savedFace === null) {
-      return null;
-    }
-    return ReadSketch(JSON.parse(savedFace), this.id, true);
-  }
-
-  updateSketch(app) {
-    this.sketch = this.readSketchGeom(app);
+  updateSketch(sketch) {
+    this.sketch = sketch;
     if (this.sketch !== null) {
       this.syncSketch(this.sketch);
     }

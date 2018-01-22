@@ -89,14 +89,6 @@ export function ReadSketchPoint(arr) {
   return new Vector(arr[1][1], arr[2][1], 0)
 }
 
-export function ReadSketchFromFace(app, face) {
-  const savedFace = localStorage.getItem(app.faceStorageKey(face.id));
-  if (savedFace === null) {
-    return null;
-  }
-  return ReadSketch(JSON.parse(savedFace), face.id, true);
-}
-
 export function FetchContours(geom) {
   const contours = findClosedContours(geom.connections);
   for (let loop of geom.loops) {

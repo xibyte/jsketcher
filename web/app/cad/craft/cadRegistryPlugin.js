@@ -31,9 +31,21 @@ export function activate({bus, services}) {
     SOLIDS_COUNTER = 0;
     update(getAllShells());
   }
-  
+
+  function findFace(faceId) {
+    let shells = getAllShells();
+    for (let shell of shells) {
+      for (let face of shell.sceneFaces) {
+        if (face.id === faceId) {
+          return face;
+        }
+      }
+    }
+    return null;
+  }
+
   services.cadRegistry = {
-    getAllShells, update
+    getAllShells, update, findFace
   }
 }
 
