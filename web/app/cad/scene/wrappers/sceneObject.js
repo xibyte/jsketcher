@@ -4,7 +4,7 @@ import Counters from '../../counters'
 import {Matrix3, BasisForPlane} from '../../../math/l3space'
 import {isCurveClass} from '../../cad-utils'
 import DPR from 'dpr'
-import {ReadSketch, ReadSketchFromFace} from "../../craft/sketch/sketch-reader";
+import {ReadSketch, ReadSketchFromFace} from "../../sketch/sketchReader";
 import {setAttribute} from "../../../../../modules/scene/objectData";
 import {genSolidId} from "../../craft/cadRegistryPlugin";
 
