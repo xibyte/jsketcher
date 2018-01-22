@@ -23,8 +23,6 @@ export function activate(context) {
     actions.push(opAction);
 
     registry[id] = descriptor;
-
-    bus.subscribe(TOKENS.RUN, ({type, params}) => registry[type].run(params));
   }
 
   function registerOperations(operations) {
@@ -50,7 +48,3 @@ export function activate(context) {
   }
 }
 
-
-export const TOKENS = {
-  RUN: createToken('operation', 'run'),
-};
