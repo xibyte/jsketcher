@@ -1,12 +1,9 @@
-import {NurbsCurve, NurbsCurveImpl} from '../../../brep/geom/impl/nurbs'
-import {Point} from '../../../brep/geom/point'
-import {Line} from '../../../brep/geom/impl/line'
-import {LUT} from '../../../math/bezier-cubic'
-import {isCCW} from '../../../math/math'
-import {AXIS} from '../../../math/l3space'
-import {distanceAB, makeAngle0_360} from '../../../math/math'
 import verb from 'verb-nurbs'
-import {normalizeCurveEnds} from "../../../brep/geom/impl/nurbs-ext";
+import {NurbsCurve, NurbsCurveImpl} from '../../brep/geom/impl/nurbs'
+import {Point} from '../../brep/geom/point'
+import {LUT} from '../../math/bezier-cubic'
+import {distanceAB, isCCW, makeAngle0_360} from '../../math/math'
+import {normalizeCurveEnds} from '../../brep/geom/impl/nurbs-ext';
 
 const RESOLUTION = 20;
 
