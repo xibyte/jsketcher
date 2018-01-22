@@ -5,16 +5,19 @@ import {Matrix3, BasisForPlane} from '../../../math/l3space'
 import {isCurveClass} from '../../cad-utils'
 import DPR from 'dpr'
 import {ReadSketch, ReadSketchFromFace} from "../../craft/sketch/sketch-reader";
+import {setAttribute} from "../../../../../modules/scene/objectData";
+import {genSolidId} from "../../craft/cadRegistryPlugin";
 
+//todo: rename to shell
 export class SceneSolid {
   
   constructor(type, id, skin) {
     this.tCadType = type || 'SOLID';
 
     this.cadGroup = new THREE.Object3D();
-    this.cadGroup.__tcad_solid = this;
+    setAttribute(this.cadGroup, 'shell',  this);
 
-    this.tCadId = Counters.solid ++;
+    this.tCadId = genSolidId();
     this.id = id === undefined ? this.tCadId : id; // to keep identity through the history
     this.faceCounter = 0;
 
@@ -45,8 +48,7 @@ export class SceneSolid {
     throw 'not implemented';
   }
 
-  vanish() {
-    this.cadGroup.parent.remove( this.cadGroup );
+  dispose() {
     this.material.dispose();
     this.mesh.geometry.dispose();
   }

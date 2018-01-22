@@ -9,6 +9,8 @@ import * as MenuPlugin from '../dom/menu/menuPlugin';
 import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
 import * as WizardPlugin from '../craft/wizard/wizardPlugin';
 import * as OperationPlugin from '../craft/operationPlugin';
+import * as CadRegistryPlugin from '../craft/cadRegistryPlugin';
+import * as CraftPlugin from '../craft/craftPlugin';
 
 import * as PartModellerPlugin from '../part/partModellerPlugin';
 
@@ -24,7 +26,9 @@ export default function startApplication(callback) {
     UiEntryPointsPlugin,
     KeyboardPlugin,
     WizardPlugin,
-    OperationPlugin
+    OperationPlugin,
+    CadRegistryPlugin,
+    CraftPlugin
   ];
   
   let plugins = [

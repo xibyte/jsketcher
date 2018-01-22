@@ -10,8 +10,9 @@ function WizardManager({wizards, close}, {services}) {
     
     function onOK(params) {
       close();
-      run(type, params);
+      services.craft.modify({type, params});
     }
+    
     previewer = previewer.bind(null, {services});
     return <Wizard key={wizardIndex} previewer={previewer} metadata={metadata}
                    onOK={onOK}
