@@ -1,5 +1,5 @@
 import {BooleanOperation, combineShells} from './boolean-operation'
-import {ReadSketchFromFace} from '../sketch/sketch-reader'
+import {ReadSketchFromFace} from '../../sketch/sketchReader'
 import {revolve} from '../../../brep/brep-builder'
 
 export function Revolve(app, params) {

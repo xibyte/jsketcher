@@ -1,9 +1,9 @@
-import * as sm from './sketch-model'
-import {Matrix3, AXIS, ORIGIN} from '../../../math/l3space'
+import * as sm from './sketchModel'
+import {Matrix3, AXIS, ORIGIN} from '../../math/l3space'
 import Vector from 'math/vector';
-import {Graph} from '../../../math/graph'
-import * as math from '../../../math/math'
-import {HashTable} from '../../../utils/hashmap'
+import {Graph} from '../../math/graph'
+import * as math from '../../math/math'
+import {HashTable} from '../../utils/hashmap'
 
 class SketchGeom {
 
