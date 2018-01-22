@@ -9,7 +9,7 @@ import * as AllActions from './actions/allActions'
 import Vector from 'math/vector';
 import {Matrix3, AXIS, ORIGIN, IDENTITY_BASIS} from '../math/l3space'
 import {Craft} from './craft/craft'
-import {ReadSketch}  from './craft/sketch/sketch-reader'
+import {ReadSketch}  from './sketch/sketchReader'
 import * as workbench  from './craft/mesh/workbench'
 import * as cad_utils from './cad-utils'
 import * as math from '../math/math'
@@ -24,7 +24,7 @@ import {BREPValidator} from '../brep/brep-validator'
 import {BREPSceneSolid} from './scene/wrappers/brepSceneObject'
 import TPI from './tpi'
 import {NurbsCurve, NurbsCurveImpl, NurbsSurface} from "../brep/geom/impl/nurbs";
-import {Circle} from "./craft/sketch/sketch-model";
+import {Circle} from "./sketch/sketchModel";
 import {Plane} from "../brep/geom/impl/plane";
 import {enclose} from "../brep/brep-enclose";
 // import {createSphere, rayMarchOntoCanvas, sdfIntersection, sdfSolid, sdfSubtract, sdfTransform, sdfUnion} from "../hds/sdf";
