@@ -147,7 +147,7 @@ export function load(url, callback) {
   $(function() {   // fire event when iframe is ready
     frame.load(function() {
       const win = frame.get(0).contentWindow;
-      callback(win, win.__CAD_APP)
+      callback(win, {TPI: win.__CAD_APP.services.tpi})
     });
   });
   frame.attr('src', window.location.origin + url)
