@@ -24,3 +24,5 @@ export const TOKENS = {
   OPEN: createToken('wizards', 'open'),
   CLOSE: createToken('wizards', 'close'),
 };
+
+export const CURRENT_SELECTION = {};
