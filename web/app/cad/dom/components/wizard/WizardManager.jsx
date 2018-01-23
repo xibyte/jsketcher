@@ -3,17 +3,18 @@ import PropTypes from 'prop-types';
 import {TOKENS as WIZARD_TOKENS} from '../../../craft/wizard/wizardPlugin';
 import connect from 'ui/connect';
 import Wizard from "./Wizard";
+import {createPreviewer} from "../../../preview/scenePreviewer";
 
 function WizardManager({wizards, close}, {services}) {
   return wizards.map( ({type, initialState}, wizardIndex) => {
-    let {metadata, previewer, run} = services.operation.get(type);
+    let {metadata, previewGeomProvider, run} = services.operation.get(type);
     
     function onOK(params) {
       close();
       services.craft.modify({type, params});
     }
     
-    previewer = previewer.bind(null, {services});
+    let previewer = createPreviewer(previewGeomProvider, {services});
     return <Wizard key={wizardIndex} previewer={previewer} metadata={metadata}
                    onOK={onOK}
                    onCancel={close}

@@ -1,33 +1,22 @@
-import {Matrix3, BasisForPlane, ORIGIN} from '../../../math/l3space'
+import {Matrix3, ORIGIN} from '../../../math/l3space'
 import * as math from '../../../math/math'
-import Vector from 'math/vector';
-import {enclose, iterateSegments} from '../../../brep/brep-enclose'
-import * as stitching from '../../../brep/stitching'
-import {Loop} from '../../../brep/topo/loop'
-import {incRefCounter} from '../../../brep/topo/topo-object'
-import {Line} from '../../../brep/geom/impl/line'
-import {ReadSketchFromFace} from '../../sketch/sketchReader'
-import {Segment} from '../../sketch/sketchModel'
-import {isCurveClass} from '../../cad-utils'
-import {BooleanOperation, combineShells} from './boolean-operation'
+import {enclose} from '../../../brep/brep-enclose'
+import {BooleanOperation, combineShells} from '../booleanOperation'
 
 
-export function Extrude(app, params) {
-  return doOperation(app, params, false);
+export function Extrude(cadRegistry, params) {
+  return doOperation(cadRegistry, params, false);
 }
 
-export function Cut(app, params) {
-  return doOperation(app, params, true);
+export function Cut(cadRegistry, params) {
+  return doOperation(cadRegistry, params, true);
 }
 
-export function doOperation(app, params, cut) {
-  const face = app.findFace(params.face);
+export function doOperation(cadRegistry, params, cut) {
+  const face = cadRegistry.findFace(params.face);
   const solid = face.solid;
 
-  const savedFace = localStorage.getItem(app.faceStorageKey(face.id));
-  if (savedFace == null) return null;
-
-  const sketch = ReadSketchFromFace(app, face);
+  const sketch = face.sketch;
   let plane = face.surface().tangentPlane(0, 0);
   const details = getEncloseDetails(params, sketch.fetchContours(), plane, !cut, false);
   const operand = combineShells(details.map(d => enclose(d.basePath, d.lidPath, d.baseSurface, d.lidSurface)));
@@ -49,10 +38,10 @@ export function getEncloseDetails(params, contours, sketchSurface, invert) {
 
   const targetDir = baseSurfaceNormal.negate();
 
-  if (params.rotation != 0) {
+  if (params.rotation !== 0) {
     const basis = sketchSurface.basis();
     target = Matrix3.rotateMatrix(params.rotation * Math.PI / 180, basis[0], ORIGIN).apply(targetDir);
-    if (params.angle != 0) {
+    if (params.angle !== 0) {
       target = Matrix3.rotateMatrix(params.angle * Math.PI / 180, basis[2], ORIGIN)._apply(target);
     }
     target._multiply(value);
@@ -67,7 +56,7 @@ export function getEncloseDetails(params, contours, sketchSurface, invert) {
     if (invert) contour.reverse();
 
     const lidPath = [];
-    var applyPrism = !math.equal(params.prism, 1);   
+    let applyPrism = !math.equal(params.prism, 1);   
     for (let i = 0; i < basePath.length; ++i) {
       const curve = basePath[i];
       let lidCurve = curve.translate(target);

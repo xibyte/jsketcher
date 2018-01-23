@@ -1,8 +1,8 @@
-import {subtract, union, intersect} from '../../../brep/operations/boolean'
-import {BREPSceneSolid} from '../../scene/wrappers/brepSceneObject'
-import {update as updateStitching} from '../../../brep/stitching'
-import {BREPValidator} from '../../../brep/brep-validator'
-import {Shell} from '../../../brep/topo/shell'
+import {subtract, union, intersect} from '../../brep/operations/boolean'
+import {BREPSceneSolid} from '../scene/wrappers/brepSceneObject'
+import {update as updateStitching} from '../../brep/stitching'
+import {BREPValidator} from '../../brep/brep-validator'
+import {Shell} from '../../brep/topo/shell'
 
 const BoolOpMap = {
   'subtract': subtract,
