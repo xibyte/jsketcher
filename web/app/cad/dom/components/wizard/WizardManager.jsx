@@ -27,7 +27,7 @@ WizardManager.contextTypes = {
 
 export default connect(WizardManager, WIZARD_TOKENS.WIZARDS, {
   mapProps: ([wizards]) => ({wizards}),
-  mapActions: dispatch => ({
+  mapActions: ({dispatch}) => ({
     close: wizard => dispatch(WIZARD_TOKENS.CLOSE, wizard)
   })
 });
