@@ -10,8 +10,8 @@ function WizardManager({wizards, close}, {services}) {
     let {metadata, previewGeomProvider, run} = services.operation.get(type);
     
     function onOK(params) {
-      close();
       services.craft.modify({type, params});
+      close();
     }
     
     let previewer = createPreviewer(previewGeomProvider, {services});

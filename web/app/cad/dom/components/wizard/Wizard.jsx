@@ -11,11 +11,16 @@ import Button from 'ui/components/controls/Button';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
 import FaceSelectionControl from './FaceSelectionControl';
 import {CURRENT_SELECTION} from "../../../craft/wizard/wizardPlugin";
+import {isTCADError} from "../../../../utils/errors";
+
+import ls from './Wizard.less';
+
 
 export default class Wizard extends React.Component {
   
   constructor({initialState, metadata, previewer}, {services: {selection}}) {
     super();
+    this.state = {hasError: false};
     this.params = {};
 
     metadata.forEach(([name, type, v]) => {
@@ -31,19 +36,9 @@ export default class Wizard extends React.Component {
     this.preview = previewer(this.params);
   }
 
-  shouldComponentUpdate() {
-    // all controls are unmanaged and they should keep their state 
-    // if the wizard manager gets updated when a new wizard appears
-    return false;
-  }
-
   render() {
-    let {left, title, metadata, onOK, onCancel} = this.props;
-    let onClose = () => {
-      this.onClose();
-      onCancel();
-    };
-    return <Window initWidth={250} initLeft={left} title={title} onClose={onClose}>
+    let {left, title, metadata} = this.props;
+    return <Window initWidth={250} initLeft={left} title={title} onClose={this.onClose}>
       <Stack >
         {metadata.map(([name, type, , params], index) => {
           return <Field key={index}>
@@ -52,19 +47,42 @@ export default class Wizard extends React.Component {
           </Field>
         } )}
         <ButtonGroup>
-          <Button text='Cancel' onClick={onClose} />
-          <Button text='OK' type='accent' onClick={() => {
-            this.onClose();
-            onOK(this.params);
-          }} />
+          <Button text='Cancel' onClick={this.onClose} />
+          <Button text='OK' type='accent' onClick={this.onOK} />
         </ButtonGroup>
+        {this.state.hasError && <div className={ls.errorMessage}>
+          performing operation with current parameters leads to an invalid object
+          (manifold / self-intersecting / zero-thickness / complete degeneration or unsupported cases)
+          {this.state.code && <span className={ls.errorCode}>{this.state.code}</span>}
+        </div>}
+
       </Stack>
     </Window>;
   }
 
-  onClose() {
+  onClose = () => {
     this.preview.dispose();
-  }
+    this.props.onCancel();
+  };
+  
+  onOK = () => {
+    try {
+      this.props.onOK(this.params);
+      this.onClose();
+    } catch (error) {
+      let state = {
+        hasError: true 
+      };
+      if (!isTCADError(error)) {
+        console.error('internal error while performing operation');
+        console.error(error);
+      } else {
+        state.cadCode = error.code;
+        console.log(error);
+      }
+      this.setState(state);
+    }
+  };
   
   controlForType(name, type, params) {
     const onChange = val => {
