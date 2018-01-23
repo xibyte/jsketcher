@@ -10,12 +10,6 @@ const OPERATION_ACTIONS = [
     ...requiresFaceSelection(1)
   },
   {
-    id: 'EXTRUDE',
-    appearance: {
-      info: 'extrudes 2D sketch',
-    },
-  },
-  {
     id: 'REVOLVE',
     appearance: {
       info: 'revolve 2D sketch',

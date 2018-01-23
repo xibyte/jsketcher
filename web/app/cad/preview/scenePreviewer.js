@@ -3,9 +3,9 @@ import {createTransparentPhongMaterial} from 'scene/materials';
 import {createMesh} from 'scene/objects/mesh';
 
 
-export function createPreviewer(sceneGeometryCreator) {
+export function createPreviewer(sceneGeometryCreator, {services}) {
 
-  return function({services}, initParams) {
+  return function(params) {
     const previewGroup = SceneGraph.createGroup();
     SceneGraph.addToGroup(services.cadScene.workGroup, previewGroup);
     
@@ -21,7 +21,7 @@ export function createPreviewer(sceneGeometryCreator) {
 
     function update(params) {
       destroyPreviewObject();
-      previewObject = createMesh(sceneGeometryCreator(params), IMAGINARY_SURFACE_MATERIAL);
+      previewObject = createMesh(sceneGeometryCreator(params, services), IMAGINARY_SURFACE_MATERIAL);
       previewGroup.add(previewObject);
       services.viewer.render();
     }
@@ -31,19 +31,19 @@ export function createPreviewer(sceneGeometryCreator) {
       SceneGraph.removeFromGroup(services.cadScene.workGroup, previewGroup);
       services.viewer.render();
     }
-    update(initParams);
+    update(params);
     
     return {update, dispose};
   }
 }
 
 
-// function sketchBasedPreviewCreator(params) {
-//   const face = app.findFace(params.face);
-//   if (!face) return null;
-//   const triangles = this.createImpl(app, params, face.sketch.fetchContours(), face);
-//   return createMeshFromTriangles(triangles, IMAGINARY_SURFACE_MATERIAL);
-// }
+function sketchBasedPreviewCreator(params) {
+  const face = app.findFace(params.face);
+  if (!face) return null;
+  const triangles = this.createImpl(app, params, face.sketch.fetchContours(), face);
+  return createMeshFromTriangles(triangles, IMAGINARY_SURFACE_MATERIAL);
+}
 //
 // function sketchBasedNurbsPreviewCreator(params) {
 //   const face = app.findFace(params.face);

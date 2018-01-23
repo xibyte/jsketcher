@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Window from 'ui/components/Window';
 import Stack from 'ui/components/Stack';
 import Field from 'ui/components/controls/Field';
@@ -8,14 +9,22 @@ import NumberControl from 'ui/components/controls/NumberControl';
 import TextControl from 'ui/components/controls/TextControl';
 import Button from 'ui/components/controls/Button';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
+import FaceSelectionControl from './FaceSelectionControl';
+import {CURRENT_SELECTION} from "../../../craft/wizard/wizardPlugin";
 
 export default class Wizard extends React.Component {
   
-  constructor({initialState, metadata, previewer}) {
+  constructor({initialState, metadata, previewer}, {services: {selection}}) {
     super();
     this.params = {};
 
-    metadata.forEach(([name,, v]) => this.params[name] = v);
+    metadata.forEach(([name, type, v]) => {
+      if (type === 'face' && v === CURRENT_SELECTION) {
+        let selectedFace = selection.face()[0];
+        v = selectedFace ? selectedFace.id : '';
+      }
+      this.params[name] = v
+    });
     
     Object.assign(this.params, initialState);
     
@@ -68,10 +77,17 @@ export default class Wizard extends React.Component {
     };
     if (type === 'number') {
       return <NumberControl {...commonProps} />
+    } else if (type === 'face') {
+      return <FaceSelectionControl {...commonProps} />
     } else {
       return <TextControl {...commonProps} />
     }
   }
+  
+  static contextTypes = {
+    services: PropTypes.object
+  };
+
 }
 
 

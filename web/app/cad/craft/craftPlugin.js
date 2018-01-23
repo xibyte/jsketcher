@@ -43,7 +43,7 @@ export function activate({bus, services}) {
 
     let result;
     try {
-      result = op.run(services.cadRegistry.registry, request.params);
+      result = op.run(services.cadRegistry, request.params);
     } catch (err) {
       return err;
     }
