@@ -15,3 +15,17 @@ export function checkForSelectedSolids(amount) {
     }
   }
 }
+
+export function requiresFaceSelection(amount) {
+  return {
+    listens: ['selection_face'],
+    update: checkForSelectedFaces(amount)
+  }
+}
+
+export function requiresSolidSelection(amount) {
+  return {
+    listens: ['selection_face'],
+    update: checkForSelectedSolids(amount)
+  }
+}
