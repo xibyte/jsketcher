@@ -1,9 +1,6 @@
 import * as tk from '../../../../ui/toolkit.js'
-import * as workbench from '../workbench'
-import * as cad_utils from '../../../cad-utils'
-import Vector from 'math/vector';
 import {Wizard} from './wizard-commons'
-import {LoadSTLFromURL} from '../../../io'
+import {LoadSTLFromURL} from '../../../stl/io'
 
 export function ImportWizard(viewer, initParams) {
   Wizard.call(this, viewer, initParams);

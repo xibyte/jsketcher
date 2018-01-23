@@ -4,7 +4,6 @@ import {HashTable} from '../utils/hashmap'
 import {Graph} from '../math/graph'
 import * as math from '../math/math'
 import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
-import Counters from './counters'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
 
 export const FACE_COLOR =  0xB0C4DE;
@@ -548,3 +547,7 @@ export function arrFlatten1L(arr) {
   }
   return result;
 }
+
+const Counters = {
+  shared : 0
+};

@@ -1,11 +1,7 @@
 import {HashTable} from '../../../utils/hashmap'
-import Vector from 'math/vector';
-import Counters from '../../counters'
-import {findOutline, segmentsToPaths, reconstructSketchBounds} from '../../craft/mesh/workbench'
-import {Matrix3, AXIS} from '../../../math/l3space'
-import {arrFlatten1L, isCurveClass} from '../../cad-utils'
-import DPR from 'dpr'
-import {SceneSolid, SceneFace} from './sceneObject'
+import {findOutline, reconstructSketchBounds, segmentsToPaths} from '../../craft/mesh/workbench'
+import {isCurveClass} from '../../cad-utils'
+import {SceneFace, SceneSolid} from './sceneObject'
 
 export class MeshSceneSolid extends SceneSolid {
   
