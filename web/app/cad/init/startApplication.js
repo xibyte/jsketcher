@@ -15,7 +15,7 @@ import * as CraftPlugin from '../craft/craftPlugin';
 import * as StoragePlugin from '../storagePlugin';
 import * as ProjectPlugin from '../projectPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
-import * as tpiPlugin from '../tpiPlugin';
+import * as tpiPlugin from '../tpi/tpiPlugin';
 
 
 import * as PartModellerPlugin from '../part/partModellerPlugin';
