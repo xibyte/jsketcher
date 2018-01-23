@@ -1,8 +1,5 @@
-import Vector from 'math/vector';
-import * as cad_utils from './cad-utils'
-import * as math from '../math/math'
-import {Matrix3, AXIS, ORIGIN} from '../math/l3space'
-import {HashTable} from '../utils/hashmap'
+import * as cad_utils from '../cad-utils'
+import {HashTable} from '../../utils/hashmap'
 
 export function MeshFace() {
   this.polygons = [];
