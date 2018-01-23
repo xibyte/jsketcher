@@ -14,6 +14,6 @@ export function activate({services}) {
   }
 
   services.storage = {
-    set, get
+    set, get, addListener
   }
 }

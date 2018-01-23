@@ -109,6 +109,13 @@ export default class Bus {
     this.keepStateFor.delete(forToken);
     delete this.state[forToken];
   }
+  
+  externalAPI = {
+    setState: this.setState.bind(this),
+    dispatch: this.dispatch.bind(this),
+    updateState: this.updateState.bind(this),
+    updateStates: this.updateStates.bind(this)
+  }
 }
 
 export function createToken(...fqn) {

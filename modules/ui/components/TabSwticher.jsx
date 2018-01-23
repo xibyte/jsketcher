@@ -11,11 +11,12 @@ export default function TabSwitcher({children, className}) {
   </div>  
 }
 
-export function Tab({id, label, active, closable, onSwitch}) {
-  return <span className={cx(ls.tab, active && ls.active)} onClick={() => onSwitch(id)}>
+export function Tab({label, active, readOnly, onSwitch, onDetach, onClose}) {
+  return <span className={cx(ls.tab, active && ls.active)} onClick={onSwitch}>
     {label} 
-    {closable && <Fragment>
-      <Fa fw icon='expand' className={ls.expand} /> <Fa fw icon='close' className={ls.close} />
+    {!readOnly && <Fragment>
+      <Fa fw icon='expand' className={ls.expand} onClick={onDetach}/> 
+      <Fa fw icon='close' className={ls.close} onClick={onClose} />
     </Fragment>}
   </span>;
 }

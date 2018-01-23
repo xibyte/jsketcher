@@ -5,7 +5,7 @@ export default function connect(WrappedComponent, tokens, {staticProps, mapProps
 
   mapProps = createMapper(mapProps);
 
-  mapActions = mapActions || function(dispatch) {
+  mapActions = mapActions || function({dispatch}) {
     return dispatch;
   };
 
@@ -13,11 +13,11 @@ export default function connect(WrappedComponent, tokens, {staticProps, mapProps
   
   return class StateConnector extends React.PureComponent {
 
-    constructor(props) {
+    constructor(props, {bus}) {
       super();
       this.mounted = false;
       this.stateProps = {};
-      this.dispatchProps = mapActions(this.dispatch, props);
+      this.dispatchProps = mapActions(bus.externalAPI, props);
     }
 
     componentWillMount() {
@@ -47,10 +47,6 @@ export default function connect(WrappedComponent, tokens, {staticProps, mapProps
       if (this.mounted) {
         this.forceUpdate();
       }
-    };
-
-    dispatch = (event, data) => {
-      this.context.bus.dispatch(event, data);
     };
 
     render() {

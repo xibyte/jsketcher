@@ -43,20 +43,15 @@ export function activate({bus, services}) {
   function sketchFace(sceneFace) {
     updateSketchBoundaries(sceneFace);
     let sketchURL = services.project.getSketchURL(sceneFace.id);
-    this.tabSwitcher.showSketch(sketchURL, sceneFace.id);
-  } 
-  
-  // sketchFace: (sceneFace) => this.sketchFace(sceneFace),
-  //   editFace: () => this.editFace()  
-}
-
-App.prototype.editFace = function() {
-  const polyFace = this.getFirstSelectedFace();
-  if (polyFace) {
-    this.sketchFace(polyFace);
+    services.appTabs.show(sceneFace.id, 'Sketch ' + sceneFace.id, 'sketcher.html#' + sketchURL);
   }
-};
+  
+  services.sketcher = {
+    sketchFace
+  }
+  
+}
 
 export const TOKENS = {
   SKETCH_UPDATE: createToken('sketcher', 'sketchUpdate')
-}
+};

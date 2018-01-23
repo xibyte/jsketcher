@@ -7,6 +7,8 @@ import Toolbar, {ToolbarButton} from "../../../../../modules/ui/components/Toolb
 import ImgIcon from "../../../../../modules/ui/components/ImgIcon";
 import {toIdAndOverrides} from "../../actions/actionRef";
 import {capitalize} from "../../ui/utils";
+import {mapActionBehavior} from "../../actions/actionButtonBehavior";
+import {DEFAULT_MAPPER} from "../../../../../modules/ui/connect";
 
 
 function ConfigurableToolbar({actions, small, ...props}) {
@@ -14,13 +16,7 @@ function ConfigurableToolbar({actions, small, ...props}) {
   return <Toolbar small={small}>
     {actions.map(actionRef => {
       let [id, overrides] = toIdAndOverrides(actionRef);
-      let Comp = connect(
-        ActionButton,
-        [ACTION_TOKENS.actionAppearance(id), ACTION_TOKENS.actionState(id)], {
-          staticProps: {small}, 
-          mapProps: ([appearance, state]) => Object.assign({}, appearance, state, overrides)
-        });
-      return <Comp key={id}/>
+      return <ConnectedActionButton actionId={id} key={id} small={small} {...overrides} />
     })}
   </Toolbar>
 }
@@ -37,6 +33,12 @@ function ActionButton({label, icon96, cssIcons, small, enabled, visible, onClick
     {!small && <div>{capitalize(label)}</div>}
   </ToolbarButton>
 }
+
+const ConnectedActionButton = connect(ActionButton,  
+  ({actionId}) => [ACTION_TOKENS.actionAppearance(actionId), ACTION_TOKENS.actionState(actionId)], {
+    mapProps: (state, props) => Object.assign(DEFAULT_MAPPER(state), props),
+    mapActions: mapActionBehavior('actionId'),
+  });
 
 export function createPlugableToolbar(configToken, small) {
   return connect(ConfigurableToolbar, configToken, {

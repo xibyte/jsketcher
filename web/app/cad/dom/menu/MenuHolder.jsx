@@ -58,7 +58,7 @@ const ConnectedActionMenu = connect(ActionMenu,
 let ConnectedMenuItem = connect(ActionMenuItem, 
   ({actionId}) => [ACTION_TOKENS.actionState(actionId), ACTION_TOKENS.actionAppearance(actionId)], 
   {
-    mapActions: (dispatch, {actionId}) => ({
+    mapActions: ({dispatch}, {actionId}) => ({
       onClick: () => dispatch(ACTION_TOKENS.actionRun(actionId))
     }),
     mapSelfProps: ({hotKey}) => ({hotKey})

@@ -2,7 +2,7 @@
 const STORAGE_PREFIX = "TCAD.projects.";
 
 
-export function activate({services}) {
+export function activate({services, bus}) {
 
   const id = processHints();
   
@@ -21,8 +21,24 @@ export function activate({services}) {
     return sketchNamespace + sketchId;
   }
   
+  function save() {
+    let data = {};
+    data.history = bus.state[services.craft.TOKENS.MODIFICATIONS].history;
+    services.storage.set(projectStorageKey(), JSON.stringify(data));
+  }
+
+  function load() {
+    let data = services.storage.get(services.project.projectStorageKey());
+    if (data) {
+      let history = JSON.parse(data).history;
+      if (history) {
+        services.craft.reset(history);        
+      }
+    }
+  }
+  
   services.project = {
-    id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL;
+    id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load
   }
 }
 

@@ -1,7 +1,7 @@
 import {TOKENS as ACTION_TOKENS} from "./actionSystemPlugin";
 
 export function mapActionBehavior(actionIdProp) {
-  return (dispatch, props) => {
+  return ({dispatch}, props) => {
     const actionId = props[actionIdProp];
     const actionRunToken = ACTION_TOKENS.actionRun(actionId);
     return {
