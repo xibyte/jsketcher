@@ -1,7 +1,8 @@
 
-import {createToken} from "../../../../modules/bus/index";
-import {ReadSketch} from "./sketchReader";
-import {getSketchBoundaries} from "./sketchBoundaries";
+import {createToken} from '../../../../modules/bus/index';
+import {ReadSketch} from './sketchReader';
+import {getSketchBoundaries} from './sketchBoundaries';
+import {TOKENS as CRAFT_TOKENS} from '../craft/craftPlugin';
 
 export function activate({bus, services}) {
 
@@ -11,10 +12,8 @@ export function activate({bus, services}) {
     let sketchFaceId = evt.key.substring(prefix.length);
     let sketchFace = services.cadRegistry.findFace(sketchFaceId);
     if (sketchFace !== null) {
-      let sketch = readSketch(sketchFace.id);
-      sketchFace.updateSketch(sketch);
-      bus.dispatch(TOKENS.SKETCH_UPDATE, sketchFace.id);
-      services.viewer.render();
+      updateSketchForFace(sketchFace);
+      services.viewer.requestRender();
     }
   });
   
@@ -26,7 +25,21 @@ export function activate({bus, services}) {
     }
     return ReadSketch(JSON.parse(savedSketch), sketchId, true);
   }
+  
+  function updateSketchForFace(sketchFace) {
+    let sketch = readSketch(sketchFace.id);
+    if (sketch !== null) {
+      sketchFace.updateSketch(sketch);
+      bus.dispatch(TOKENS.SKETCH_UPDATE, sketchFace.id);
+    }
+  }
 
+  function updateAllSketches() {
+    let allShells = services.cadRegistry.getAllShells();
+    allShells.forEach(sceneShell => sceneShell.sceneFaces.forEach(sceneFace => updateSketchForFace(sceneFace)));
+    services.viewer.requestRender();
+  }
+  
   function updateSketchBoundaries(sceneFace) {
     
     let sketchStorageKey = services.project.sketchStorageKey(sceneFace.id);
@@ -46,10 +59,11 @@ export function activate({bus, services}) {
     services.appTabs.show(sceneFace.id, 'Sketch ' + sceneFace.id, 'sketcher.html#' + sketchURL);
   }
   
-  services.sketcher = {
-    sketchFace
-  }
+  bus.subscribe(CRAFT_TOKENS.DID_MODIFY, updateAllSketches);
   
+  services.sketcher = {
+    sketchFace, updateAllSketches
+  }
 }
 
 export const TOKENS = {
