@@ -9,7 +9,7 @@ const METADATA = [
   ['depth'   , 'number',  500,  {min: 0}]
 ];
 
-function createBox(solids, {width, height, depth}) {
+function createBox(cadRegistry, {width, height, depth}) {
   return {
     outdated: [],
     created: [new BREPSceneSolid(box(width, height, depth))]
@@ -20,9 +20,10 @@ export default {
   id: 'BOX',
   metadata: METADATA,
   label: 'Box',
+  icon: 'img/cad/box',
   info: 'creates new object box',
   paramsInfo: ({width, height, depth}) => `(${width}, ${height}, ${depth})`,
-  previewer: createPreviewer(({width, height, depth}) => createBoxGeometry(width, height, depth)),
+  previewGeomProvider: ({width, height, depth}) => createBoxGeometry(width, height, depth),
   run: createBox
 };
 
