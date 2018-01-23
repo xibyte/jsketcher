@@ -1,5 +1,5 @@
 import {HashTable} from '../../../utils/hashmap'
-import {findOutline, reconstructSketchBounds, segmentsToPaths} from '../../craft/mesh/workbench'
+import {findOutline, reconstructSketchBounds, segmentsToPaths} from '../../legacy/mesh/workbench'
 import {isCurveClass} from '../../cad-utils'
 import {SceneFace, SceneSolid} from './sceneObject'
 
