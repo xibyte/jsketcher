@@ -1,4 +1,5 @@
 import Bus from 'bus';
+import * as AppTabsPlugin from '../dom/appTabsPlugin';
 import * as DomPlugin from '../dom/domPlugin';
 import * as PickControlPlugin from '../scene/controls/pickControlPlugin';
 import * as ScenePlugin from '../scene/scenePlugin';
@@ -11,6 +12,10 @@ import * as WizardPlugin from '../craft/wizard/wizardPlugin';
 import * as OperationPlugin from '../craft/operationPlugin';
 import * as CadRegistryPlugin from '../craft/cadRegistryPlugin';
 import * as CraftPlugin from '../craft/craftPlugin';
+import * as StoragePlugin from '../storagePlugin';
+import * as ProjectPlugin from '../projectPlugin';
+import * as SketcherPlugin from '../sketch/sketcherPlugin';
+
 
 import * as PartModellerPlugin from '../part/partModellerPlugin';
 
@@ -21,6 +26,9 @@ export default function startApplication(callback) {
   let applicationPlugins = [PartModellerPlugin];
   
   let preUIPlugins = [
+    ProjectPlugin,
+    StoragePlugin,
+    AppTabsPlugin,
     ActionSystemPlugin,
     MenuPlugin,
     UiEntryPointsPlugin,
@@ -28,7 +36,8 @@ export default function startApplication(callback) {
     WizardPlugin,
     OperationPlugin,
     CadRegistryPlugin,
-    CraftPlugin
+    CraftPlugin,
+    SketcherPlugin
   ];
   
   let plugins = [
@@ -48,6 +57,7 @@ export default function startApplication(callback) {
 
   startReact(context, () => {
     activatePlugins(plugins, context);
+    context.services.project.load();
     context.services.viewer.render();
     callback(context);
   });

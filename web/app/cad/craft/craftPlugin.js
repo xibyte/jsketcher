@@ -22,10 +22,9 @@ export function activate({bus, services}) {
   function remove(modificationIndex) {
     bus.updateState(TOKENS.MODIFICATIONS,
       ({history, pointer}) => {
-        let newLength = history.length - modificationIndex;
         return {
-          history: history.slice(modificationIndex, newLength),
-          pointer: Math.min(pointer, newLength)
+          history: history.slice(0, modificationIndex),
+          pointer: Math.min(pointer, modificationIndex - 1)
         }
       });
   }
@@ -49,7 +48,7 @@ export function activate({bus, services}) {
     }
 
     services.cadRegistry.update(result.outdated, result.created);
-    return null;
+    return undefined;
   }
 
   function modify(request) {
@@ -62,13 +61,14 @@ export function activate({bus, services}) {
     bus.updateState(TOKENS.MODIFICATIONS,
       ({history, pointer}) => {
         return {
-          history: history.slice(pointer + 1, 0, request),
+          history: [...history, request],
           pointer: pointer++
         }
       });
   }
+
   services.craft = {
-    modify, remove
+    modify, remove, reset, TOKENS
   }
 }
 

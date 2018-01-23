@@ -6,7 +6,7 @@ export function activate({bus, services}) {
   let registry = new Map();
   
   function getAllShells() {
-    return registry.values();
+    return Array.from(registry.values());
   }
 
   function update(toRemove, toAdd) {
@@ -45,7 +45,7 @@ export function activate({bus, services}) {
   }
 
   services.cadRegistry = {
-    getAllShells, update, findFace
+    getAllShells, update, reset, findFace
   }
 }
 
