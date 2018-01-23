@@ -5,12 +5,23 @@ export default class Viewer {
   constructor(bus, container) {
     this.bus = bus;
     this.sceneSetup = new SceneSetup(container);
+    this.renderRequested = false;
   }
   
   render() {
     this.sceneSetup.render();  
   }
 
+  requestRender() {
+    if (this.renderRequested) {
+      return;
+    }
+    setTimeout(() => {
+      this.renderRequested = false;
+      this.render();
+    });
+  }
+  
   lookAt(obj) {
     this.sceneSetup.lookAt(obj);
   }
@@ -46,3 +57,4 @@ export const CAMERA_MODE = {
   ORTHOGRAPHIC: 'ORTHOGRAPHIC',
   PERSPECTIVE: 'PERSPECTIVE'  
 };
+

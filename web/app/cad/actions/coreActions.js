@@ -42,7 +42,7 @@ export default [
       label: 'Refresh Sketches',
       info: 'refresh all visible sketches',
     },
-    invoke: (context) => context.services.sketcher.refreshSketches()
+    invoke: (context) => context.services.sketcher.updateAllSketches()
   },
 
   {
