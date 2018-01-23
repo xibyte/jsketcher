@@ -1,11 +1,8 @@
 import Vector from 'math/vector';
 import * as cad_utils from '../../cad-utils'
 import * as math from '../../../math/math'
-import {LUT} from '../../../math/bezier-cubic'
-import {Matrix3, AXIS, ORIGIN} from '../../../math/l3space'
 import {HashTable} from '../../../utils/hashmap'
 import {Mesh} from '../../mesh'
-import {LoadSTLFromURL} from '../../io'
 import revolve from './revolve'
 import {Triangulate} from '../../tess/triangulation'
 
