@@ -3,33 +3,32 @@ import {nurbsToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneOb
 import {createSolidMaterial} from './scene/wrappers/sceneObject'
 import DPR from 'dpr'
 import Vector from 'math/vector';
-import {NurbsCurve} from "../brep/geom/impl/nurbs";
 import * as ui from '../ui/ui';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import BrepDebugger from './../brep/debug/debugger/brepDebugger';
+import {TOKENS as UI_TOKENS} from "./dom/uiEntryPointsPlugin";
 
-export const DEBUG = true;
 
-export function AddDebugSupport(app) {
-  if (!DEBUG) return;
-  app.actionManager.registerActions(DebugActions);
-  app.ui.registerMenuActions(DebugMenuConfig);
-  app.controlBar.add('menu.debug', true);
-  addGlobalDebugActions(app);
+export function activate({bus, services}) {
+  addGlobalDebugActions(services);
+  services.action.registerActions(DebugActions);
+  services.menu.registerMenus([DebugMenuConfig]);
+  bus.updateState(UI_TOKENS.CONTROL_BAR_LEFT, actions => [...actions, 'menu.debug']);
 }
 
-function addGlobalDebugActions(app) {
+function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
   const debugGroup = new THREE.Object3D();
   const debugVolumeGroup = new THREE.Object3D();
-  app.viewer.workGroup.add(debugGroup);
-  app.viewer.workGroup.add(debugVolumeGroup);
+
+  cadScene.auxGroup.add(debugGroup);
+  cadScene.auxGroup.add(debugVolumeGroup);
   window.__DEBUG__ = {
     flag: 0, 
     AddLine: (a, b) => {
       debugGroup.add(createLine(a, b));
-      app.viewer.render();
+      viewer.render();
     },
     AddSegment: (a, b, color) => {
       __DEBUG__.AddPolyLine([a, b], color);
@@ -40,11 +39,11 @@ function addGlobalDebugActions(app) {
       }
       debugGroup.add(createPoint(points[0], 0x000088));
       debugGroup.add(createPoint(points[points.length - 1], 0x880000));
-      app.viewer.render();
+      viewer.render();
     },
     AddPoint: (coordinates, or, vector, andColorAtTheEnd) => {
       debugGroup.add(createPoint(coordinates, or, vector, andColorAtTheEnd));
-      app.viewer.render();
+      viewer.render();
     },
     AddPoint3: (arr, color) => {
       __DEBUG__.AddPoint(arr[0], arr[1], arr[2], color);
@@ -69,7 +68,7 @@ function addGlobalDebugActions(app) {
           debugGroup.add(createLine(points[i], points[(i + 1) % points.length], color));
         }
       }
-      app.viewer.render();
+      viewer.render();
     },
 
     AddPlane: (plane) => {
@@ -83,7 +82,7 @@ function addGlobalDebugActions(app) {
         opacity: 0.3, });
       const planeObj = new THREE.Mesh(geo, mat);
       debugGroup.add(planeObj);
-      app.viewer.render();
+      viewer.render();
     },
     AddHalfEdge: (he, color) => {
       const points = he.edge.curve.tessellate();
@@ -111,19 +110,19 @@ function addGlobalDebugActions(app) {
       }));
       debugVolumeGroup.add(mesh);
       // window.__DEBUG__.AddWireframe(shell, color);
-      app.viewer.render();
+      viewer.render();
     },
     AddWireframe: (shell, color) => {
       color = color || 0xffffff;
       const visited = new Set();
       for (let e of shell.edges) {
-        var lg = new THREE.Geometry();
+        let lg = new THREE.Geometry();
         lg.vertices.push(e.halfEdge1.vertexA.point.three());
         lg.vertices.push(e.halfEdge2.vertexA.point.three());
         const line = new THREE.Line(lg,  new THREE.LineBasicMaterial({color, linewidth: 3/DPR}));
         debugVolumeGroup.add(line);
       }
-      app.viewer.render();
+      viewer.render();
     },
     AddNurbs: (nurbs, color) => {
       color = color || 0xffffff;
@@ -137,7 +136,7 @@ function addGlobalDebugActions(app) {
         side: THREE.DoubleSide
       }));
       debugVolumeGroup.add(mesh);
-      app.viewer.render();
+      viewer.render();
     },
     AddCurve: (curve, color) => {
       __DEBUG__.AddPolyLine( curve.tessellate(), color);
@@ -159,22 +158,22 @@ function addGlobalDebugActions(app) {
       __DEBUG__.AddNormal(surface.point(0.5, 0.5), surface.normalInMiddle());
     },
     HideSolids: () => {
-      app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = false));
-      app.viewer.render();
+      cadRegistry.getAllShells().forEach(s => s.cadGroup.traverse(o => o.visible = false));
+      viewer.render();
     },
     ShowSolids: () => {
-      app.findAllSolidsOnScene().forEach(s => s.cadGroup.traverse(o => o.visible = true));
-      app.viewer.render();
+      cadRegistry.getAllShells().forEach(s => s.cadGroup.traverse(o => o.visible = true));
+      viewer.render();
     },
     Clear: () => {
       clearGroup(debugGroup);
-      app.viewer.render();
+      viewer.render();
     },
     ClearVolumes: () => {
       clearGroup(debugVolumeGroup);
-      app.viewer.render();
+      viewer.render();
     },
-    render: () => app.viewer.render()
+    render: () => viewer.render()
   }
 }
 
@@ -204,9 +203,9 @@ export function createPoint(x, y, z, color) {
     x = x.x;
   }
   color = color || 0x00ff00;
-  var geometry = new THREE.SphereGeometry( 5, 16, 16 );
-  var material = new THREE.MeshBasicMaterial( {color} );
-  var sphere = new THREE.Mesh(geometry, material);
+  let geometry = new THREE.SphereGeometry( 5, 16, 16 );
+  let material = new THREE.MeshBasicMaterial( {color} );
+  let sphere = new THREE.Mesh(geometry, material);
   sphere.position.x = x;
   sphere.position.y = y;
   sphere.position.z = z;
@@ -214,35 +213,40 @@ export function createPoint(x, y, z, color) {
 }
 
 const DebugMenuConfig = {
-  debug: {
-    label: 'debug',
-    cssIcons: ['bug'],
-    info: 'set of debug actions',
-    actions: [ 'DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId', 'DebugFaceSketch', 'DebugOpenBrepDebugger']
-  }
+  id: 'debug',
+  label: 'debug',
+  cssIcons: ['bug'],
+  info: 'set of debug actions',
+  actions: ['DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId', 'DebugFaceSketch', 'DebugOpenBrepDebugger']
 };
 
-const DebugActions = {
-  'DebugPrintAllSolids': {
-    cssIcons: ['cutlery'],
-    label: 'print all solids',
-    info: 'print all solids from the proejct as JSON',
-    invoke: (app) => {
-      app.findAllSolids().map(function (o) {
+
+const DebugActions = [
+  {
+    id: 'DebugPrintAllSolids',
+    appearance: {
+      cssIcons: ['cutlery'],
+      label: 'print all solids',
+      info: 'print all solids from the proejct as JSON'
+    },
+    invoke: ({services:{cadRegistry}}) => {
+      cadRegistry.getAllShells().map(function (o) {
         console.log("Solid ID: " + o.tCadId);
-        console.log(JSON.stringify(o.csg));
       });
     }
   },
 
-  'DebugPrintFace': {
-    cssIcons: ['cutlery'],
-    label: 'print face',
-    info: 'print a face out as JSON',
+  {
+    id: 'DebugPrintFace',
+    appearance: {
+      cssIcons: ['cutlery'],
+      label: 'print face',
+      info: 'print a face out as JSON',
+    },
     listens: ['selection_face'],
     update: checkForSelectedFaces(1),
-    invoke: (app) => {
-      var s = app.getFirstSelectedFace();
+    invoke: ({selection}) => {
+      let s = selection.face()[0];
       console.log(JSON.stringify({
         polygons: s.csgGroup.polygons,
         basis: s._basis
@@ -250,27 +254,33 @@ const DebugActions = {
     }
   },
 
-  'DebugFaceId': {
-    cssIcons: ['cutlery'],
-    label: 'print face id',
-    info: 'print a face id',
+  {
+    id: 'DebugFaceId',
+    appearance: {
+      cssIcons: ['cutlery'],
+      label: 'print face id',
+      info: 'print a face id',
+    },
     listens: ['selection_face'],
     update: checkForSelectedFaces(1),
-    invoke: (app) => {
-      console.log(app.getFirstSelectedFace().id);
+    invoke: ({selection}) => {
+      console.log(selection.face()[0].id);
     }
   },
   
-  'DebugFaceSketch': {
-    cssIcons: ['cutlery'],
-    label: 'print face sketch',
-    info: 'print face sketch stripping constraints and boundary',
+  {
+    id: 'DebugFaceSketch',
+    appearance: {
+      cssIcons: ['cutlery'],
+      label: 'print face sketch',
+      info: 'print face sketch stripping constraints and boundary',
+    },
     listens: ['selection_face'],
     update: checkForSelectedFaces(1),
-    invoke: (app) => {
-      const faceId = app.getFirstSelectedFace().id;
-      const sketch = JSON.parse(localStorage.getItem(app.faceStorageKey(faceId)));
-      const layers = sketch.layers.filter(l => l.name != '__bounds__');
+    invoke: ({selection, project}) => {
+      const faceId = selection.face()[0].id;
+      const sketch = JSON.parse(localStorage.getItem(project.faceStorageKey(faceId)));
+      const layers = sketch.layers.filter(l => l.name !== '__bounds__');
       const data = [];
       for (let l of layers) {
         for (let d of l.data) {
@@ -286,11 +296,14 @@ const DebugActions = {
       console.log(JSON.stringify(squashed));
     }
   },
-  'DebugOpenBrepDebugger': {
-    cssIcons: ['cubes'],
-    label: 'open BREP debugger',
-    info: 'open the BREP debugger in a window',
-    invoke: (app) => {
+  {
+    id: 'DebugOpenBrepDebugger',
+    appearance: {
+      cssIcons: ['cubes'],
+      label: 'open BREP debugger',
+      info: 'open the BREP debugger in a window',
+    },
+    invoke: ({cadScene}) => {
 
       let debuggerWinDom = document.getElementById('brep-debugger');
       if (!debuggerWinDom) {
@@ -301,7 +314,7 @@ const DebugActions = {
         document.body.appendChild(debuggerWinDom);
         debuggerWinDom.debuggerWin = new ui.Window($(debuggerWinDom), new ui.WinManager());
         let brepDebugGroup = new THREE.Object3D();
-        app.viewer.workGroup.add(brepDebugGroup);
+        cadScene.auxGroup.add(brepDebugGroup);
       
         ReactDOM.render(
           <BrepDebugger brepDebugGroup={brepDebugGroup}/>,
@@ -311,4 +324,4 @@ const DebugActions = {
       debuggerWinDom.debuggerWin.show();
     }
   }
-};
+];
