@@ -1,14 +1,7 @@
 import * as Operations from '../craft/operations'
-import * as ActionHelpers from './action-helpers'
+import * as ActionHelpers from './actionHelpers'
 
 const OPERATION_ACTIONS = [
-  {
-    id: 'CUT',
-    appearance: {
-      info: 'makes a cut based on 2D sketch',
-    },
-    ...requiresFaceSelection(1)
-  },
   {
     id: 'REVOLVE',
     appearance: {

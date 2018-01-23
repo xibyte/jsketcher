@@ -1,4 +1,4 @@
-import {checkForSelectedFaces} from './actions/action-helpers'
+import {checkForSelectedFaces} from './actions/actionHelpers'
 import {nurbsToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneObject'
 import {createSolidMaterial} from './scene/wrappers/sceneObject'
 import DPR from 'dpr'

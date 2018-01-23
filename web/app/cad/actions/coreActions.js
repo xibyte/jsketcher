@@ -1,4 +1,4 @@
-import * as ActionHelpers from './action-helpers'
+import * as ActionHelpers from './actionHelpers'
 
 export default [
   {
