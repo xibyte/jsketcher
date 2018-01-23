@@ -41,23 +41,13 @@ export function activate({bus, services}) {
     let op = services.operation.registry[request.type];
     if (!op) return `unknown operation ${request.type}`;
 
-    let result;
-    try {
-      result = op.run(services.cadRegistry, request.params);
-    } catch (err) {
-      return err;
-    }
+    let result = op.run(services.cadRegistry, request.params);
 
     services.cadRegistry.update(result.outdated, result.created);
-    return undefined;
   }
 
   function modify(request) {
-    let errors = modifyInternal(request);
-    if (errors !== undefined) {
-      // return errors;
-      throw 'not implemented, should reported by a wizard';
-    }
+    modifyInternal(request);
 
     bus.updateState(TOKENS.MODIFICATIONS,
       ({history, pointer}) => {
