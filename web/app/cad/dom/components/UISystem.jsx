@@ -9,7 +9,7 @@ import ActionInfo from '../actionInfo/ActionInfo';
 export default class UISystem extends React.Component {
   
   render() {
-    return <div {...this.props} onMouseDown={this.closeAllUpPopups}>
+    return <div {...this.props} onMouseDown={this.closeAllUpPopups} >
       <MenuHolder />
       <ActionInfo />
       <WindowSystem />
@@ -27,7 +27,7 @@ export default class UISystem extends React.Component {
       this.context.bus.dispatch(MENU_TOKENS.CLOSE_ALL);
     }
   };
-  
+
   getChildContext() {
     return {
       closeAllUpPopups: this.closeAllUpPopups
@@ -42,3 +42,4 @@ export default class UISystem extends React.Component {
     closeAllUpPopups: PropTypes.func
   };
 }
+

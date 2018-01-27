@@ -5,13 +5,14 @@ import ls from './Menu.less';
 import AuxWidget from "./AuxWidget";
 import cx from 'classnames';
 
-export default function Menu({children, x, y, orientationUp, ...props}) {
+export default function Menu({children, x, y, orientationUp, centered, ...props}) {
   return <AuxWidget 
     className={cx(ls.root, 'disable-selection')}
     zIndex={500}
     left={x}
     top={orientationUp ? undefined : y}
     bottom={orientationUp ? y : undefined}
+    centered={centered}
     {...props}>
     {children}
   </AuxWidget>;

@@ -20,6 +20,23 @@ export default class AdjustableAbs extends React.Component {
       }
     };
 
+    let {left, top, right, bottom, centered} = this.props;
+
+    if (centered) {
+      if (right !== undefined) {
+        this.el.style.right = (right + w * 0.5) + 'px'; 
+      } 
+      if (left !== undefined) {
+        this.el.style.left = (left - w * 0.5) + 'px';
+      }
+      if (bottom !== undefined) {
+        this.el.style.bottom = (bottom + h * 0.5) + 'px';
+      }
+      if (top !== undefined) {
+        this.el.style.top = (top - h * 0.5) + 'px';
+      }
+    }
+    
     fit('left', w, holder.offsetWidth);
     fit('right', w, holder.offsetWidth);
     fit('top',  h, holder.offsetHeight);
@@ -39,7 +56,7 @@ export default class AdjustableAbs extends React.Component {
   }
   
   render() {
-    let {left, top, right, bottom, children, style, zIndex, visible, ...props} = this.props;
+    let {left, top, right, bottom, children, style, zIndex, visible, centered, ...props} = this.props;
     return <div ref={el => this.el = el} 
                 style={{
                   display: visible ? 'block' : 'none',

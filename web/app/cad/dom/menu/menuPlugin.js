@@ -48,3 +48,7 @@ export const TOKENS = {
   OPENED: createToken('menus', 'opened')
 };
 
+export function isMenuAction(actionId) {
+  return actionId.startsWith('menu.');
+}
+
