@@ -7,6 +7,7 @@ import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import {toIdAndOverrides} from "../../actions/actionRef";
 import {mapActionBehavior} from "../../actions/actionButtonBehavior";
 import {DEFAULT_MAPPER} from "../../../../../modules/ui/connect";
+import {isMenuAction} from "../menu/menuPlugin";
 
 
 export default function PlugableControlBar() {
@@ -18,10 +19,6 @@ function ButtonGroup({actions}) {
     let [id, overrides] = toIdAndOverrides(actionRef);
     return <ConnectedActionButton key={id} actionId={id} {...overrides}/>;
   });
-}
-
-function isMenuAction(actionId) {
-  return actionId.startsWith('menu.');
 }
 
 class ActionButton extends React.Component {
