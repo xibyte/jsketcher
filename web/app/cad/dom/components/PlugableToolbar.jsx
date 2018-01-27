@@ -21,14 +21,14 @@ function ConfigurableToolbar({actions, small, ...props}) {
   </Toolbar>
 }
 
-function ActionButton({label, icon96, cssIcons, small, enabled, visible, onClick}) {
+function ActionButton({label, icon96, cssIcons, small, enabled, visible, actionId, ...props}) {
   if (!visible) {
     return null;
   }
 
   let icon = small ? <Fa fa={cssIcons} fw /> : <ImgIcon url={icon96} size={48} />; 
     
-  return <ToolbarButton {...{onClick, disabled: !enabled}}>
+  return <ToolbarButton disabled={!enabled} {...props}>
     {icon}
     {!small && <div>{capitalize(label)}</div>}
   </ToolbarButton>
