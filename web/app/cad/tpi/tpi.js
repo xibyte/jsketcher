@@ -28,6 +28,6 @@ export default {
     topo: {
       HalfEdge, Edge, Loop, Face, Shell, Vertex
     }, 
-    IO
+    IO,
   }
 }
