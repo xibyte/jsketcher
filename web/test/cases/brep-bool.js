@@ -13,7 +13,7 @@ const CASE = {
       const box3 = app.TPI.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
       let result = app.TPI.brep.bool.subtract(box1, box2);
       result = app.TPI.brep.bool.subtract(result, box3);
-      app.addShellOnScene(result);
+      app.TPI.addShellOnScene(result);
       env.done();
     }));
   },
@@ -31,9 +31,9 @@ const CASE = {
       const box2 = app.TPI.brep.primitives.box(100, 100, 100, mat);
       const shell = app.TPI.brep.bool.union(box1, box2);
   
-      // app.addShellOnScene(box1);
-      // app.addShellOnScene(box2);
-      app.addShellOnScene(shell);
+      // app.TPI.addShellOnScene(box1);
+      // app.TPI.addShellOnScene(box2);
+      app.TPI.addShellOnScene(shell);
       env.done();
     }));
   }
@@ -84,7 +84,7 @@ function def(name) {
 function ddt(env, app, name) {
   const input = getInput(name);
   const result = performOperation(app, input);
-  app.addShellOnScene(result);
+  app.TPI.addShellOnScene(result);
   compare(env, app, name, result);
   env.done();
 }
@@ -129,12 +129,12 @@ function performOperation(app, input) {
   const B = materialize(app.TPI, input.B);
   
   if (OPERANDS_MODE) {
-    app.addShellOnScene(A, {  
+    app.TPI.addShellOnScene(A, {  
       color: 0x800080,
       transparent: true,
       opacity: 0.5,
     });
-    app.addShellOnScene(B, {
+    app.TPI.addShellOnScene(B, {
       color: 0xfff44f,
       transparent: true,
       opacity: 0.5,
