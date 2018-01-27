@@ -36,4 +36,8 @@ export default class View3d extends React.Component {
       </div>
     </UISystem>
   }
+  
+  componentWillUnmount() {
+    throw 'big no-no';
+  }
 }
