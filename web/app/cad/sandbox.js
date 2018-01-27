@@ -2,19 +2,10 @@ import {AXIS, Matrix3, ORIGIN} from '../math/l3space'
 
 import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
-import {BREPSceneSolid} from './scene/wrappers/brepSceneObject'
 import {NurbsCurve, NurbsCurveImpl, NurbsSurface} from "../brep/geom/impl/nurbs";
 
 
-function runSandbox({bus, services: {viewer, cadScene, TPI}}) {
-
-
-  function addShellOnScene(shell, skin) {
-    const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
-    cadScene.add(sceneSolid.cadGroup);
-    viewer.render();
-    return sceneSolid;
-  }
+function runSandbox({bus, services: { viewer, cadScene, tpi, tpi: {addShellOnScene} }}) {
 
   function test1() {
 
@@ -55,7 +46,7 @@ function runSandbox({bus, services: {viewer, cadScene, TPI}}) {
 
     const cylinder2 = BREPPrimitives.cylinder(200, 500, Matrix3.rotateMatrix(90, AXIS.Y, ORIGIN));
 
-    let result = TPI.brep.bool.subtract(cylinder1, cylinder2);
+    let result = tpi.brep.bool.subtract(cylinder1, cylinder2);
 
     // addShellOnScene(cylinder1);
     // addShellOnScene(cylinder2);
@@ -90,19 +81,19 @@ function runSandbox({bus, services: {viewer, cadScene, TPI}}) {
     // addShellOnScene(s1);
     // addShellOnScene(s2);
 
-    // let result = TPI.brep.bool.intersect(s1, s2);
+    // let result = tpi.brep.bool.intersect(s1, s2);
     let result = s1;
     addShellOnScene(result);
   }
 
   function test3() {
-    const box1 = TPI.brep.primitives.box(500, 500, 500);
-    const box2 = TPI.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+    const box1 = tpi.brep.primitives.box(500, 500, 500);
+    const box2 = tpi.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
 
-    const box3 = TPI.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
-    // let result = TPI.brep.bool.union(box1, box2);
-    let result = TPI.brep.bool.subtract(box1, box2);
-    result = TPI.brep.bool.subtract(result, box3);
+    const box3 = tpi.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
+    // let result = tpi.brep.bool.union(box1, box2);
+    let result = tpi.brep.bool.subtract(box1, box2);
+    result = tpi.brep.bool.subtract(result, box3);
     // addShellOnScene(box1);
     addShellOnScene(result);
   }
