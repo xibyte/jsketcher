@@ -303,8 +303,8 @@ const DebugActions = [
       label: 'open BREP debugger',
       info: 'open the BREP debugger in a window',
     },
-    invoke: ({cadScene}) => {
-
+    invoke: ({services: {cadScene}}) => {
+      // require('../brep/debug/debugger/brepDebugger.less');
       let debuggerWinDom = document.getElementById('brep-debugger');
       if (!debuggerWinDom) {
         //Temporary hack until win infrastructure is done for 3d
