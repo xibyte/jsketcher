@@ -75,6 +75,8 @@ export default class Bus {
   }
   
   dispatch(key, data) {
+    console.log('dispatch: ' + key + ' -> ' + JSON.stringify(data));
+
     if (this.lock.has(key)) {
       console.warn('recursive dispatch');
       return
