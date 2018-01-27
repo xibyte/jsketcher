@@ -1,4 +1,25 @@
 :global
+#brep-debugger {
+  font-size: 1.2em;
+  position: absolute;
+  z-index: 998;
+  left:10px;
+  top:10px;
+  bottom: 20px;
+  overflow: auto;
+  background: #eee;
+  border: 5px solid rgb(49, 121, 255);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  color: #1a1a1a;
+  & .tool-caption {
+    padding: 0.3em;
+    background-color: rgb(238, 255, 246);
+    cursor: default;
+    user-select: none
+  }
+}
+
+:global
 .brep-debugger {
 
   & .strike {
