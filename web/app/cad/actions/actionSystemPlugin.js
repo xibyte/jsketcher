@@ -59,35 +59,18 @@ export function activate(context) {
 
 function synchActionHint(bus) {
   
-  let lastRequest = null;
-  
-  // bus.subscribe(TOKENS.REQUEST_SHOW_HINT_FOR
   bus.subscribe(TOKENS.SHOW_HINT_FOR, request => {
-    if (lastRequest !== null) {
-      if (request !== null) {
-        if (request[0] === lastRequest[0]) {
-          Object.assign(lastRequest, request);
-          return;
-        }
-      }
-      lastRequest.spoiled = true;
-    }
-    lastRequest = request;
     if (request) {
-      setTimeout(() => {
-        if (!request.spoiled) {
-          let [actionId, x, y] = request;
-          let actionState = bus.getState(TOKENS.actionState(actionId));
-          let actionAppearance = bus.getState(TOKENS.actionAppearance(actionId));
-          if (actionState && actionAppearance) {
-            bus.dispatch(TOKENS.HINT, {
-              actionId, x: x + 10, y: y + 10,
-              info: actionAppearance.info,
-              hint: actionState.hint
-            });
-          }
-        }
-      }, 500);
+      let {actionId, x, y} = request;
+      let actionState = bus.getState(TOKENS.actionState(actionId));
+      let actionAppearance = bus.getState(TOKENS.actionAppearance(actionId));
+      if (actionState && actionAppearance) {
+        bus.dispatch(TOKENS.HINT, {
+          actionId, x, y,
+          info: actionAppearance.info,
+          hint: actionState.hint
+        });
+      }
     } else {
       bus.dispatch(TOKENS.HINT, null);
     }
