@@ -37,7 +37,7 @@ module.exports = {
       include: [MODULES, WEB_APP, INTEGRATION_TESTS]
     }, {
       test: /\.(less|css)$/,
-      include: GLOBAL_CSS,
+      include: [GLOBAL_CSS, INTEGRATION_TESTS],
       use: [
         'style-loader',
         'css-loader?-url',
