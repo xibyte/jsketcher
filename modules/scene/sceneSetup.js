@@ -57,13 +57,19 @@ export default class SceneSetUp {
     this.container.appendChild( this.renderer.domElement );
 
     window.addEventListener( 'resize', () => {
+      this.updateViewportSize();
+    }, false );
+  }
+
+  updateViewportSize() {
+    if (this.container.clientWidth > 0 && this.container.clientHeight > 0) {
       this.updatePerspectiveCameraViewport();
       this.updateOrthographicCameraViewport();
       this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
       this.render();
-    }, false );
+    }
   }
-
+  
   updatePerspectiveCameraViewport() {
     this.pCamera.aspect = this.aspect();
     this.pCamera.updateProjectionMatrix();
