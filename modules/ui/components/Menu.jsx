@@ -23,7 +23,7 @@ export function MenuSeparator() {
 }
 
 
-export function MenuItem({icon, label, hotKey, style, disabled, onClick}, {closeAllUpPopups}) {
+export function MenuItem({icon, label, hotKey, style, disabled, onClick, ...props}, {closeAllUpPopups}) {
 
   if (hotKey) {
     hotKey = hotKey.replace(/\s/g, '');
@@ -36,7 +36,7 @@ export function MenuItem({icon, label, hotKey, style, disabled, onClick}, {close
     onClick();
   };
   return <div className={cx(ls.item, disabled && ls.disabled)} 
-              onMouseDown={e => e.stopPropagation()} style={style} onClick={clickHandler}>
+              onMouseDown={e => e.stopPropagation()} style={style} onClick={clickHandler} {...props}>
     {icon}
     <span className={ls.label}>{label}</span>
     {hotKey && <span className={ls.hotKey}>{hotKey}</span>}

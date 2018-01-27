@@ -37,7 +37,7 @@ function ActionButton({label, icon96, cssIcons, small, enabled, visible, actionI
 const ConnectedActionButton = connect(ActionButton,  
   ({actionId}) => [ACTION_TOKENS.actionAppearance(actionId), ACTION_TOKENS.actionState(actionId)], {
     mapProps: (state, props) => Object.assign(DEFAULT_MAPPER(state), props),
-    mapActions: mapActionBehavior('actionId'),
+    mapActions: mapActionBehavior(props => props.actionId),
   });
 
 export function createPlugableToolbar(configToken, small) {

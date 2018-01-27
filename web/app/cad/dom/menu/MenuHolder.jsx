@@ -7,6 +7,7 @@ import Fa from "../../../../../modules/ui/components/Fa";
 import Filler from "../../../../../modules/ui/components/Filler";
 import {TOKENS as KeyboardTokens} from "../../keyboard/keyboardPlugin";
 import {DEFAULT_MAPPER} from "../../../../../modules/ui/connect";
+import {mapActionBehavior} from "../../actions/actionButtonBehavior";
 
 function MenuHolder({menus}) {
   return menus.map(({id, actions}) => <ConnectedActionMenu key={id} menuId={id} actions={actions} />); 
@@ -23,7 +24,7 @@ function ActionMenu({actions, keymap, ...menuState}) {
   </Menu>;
 }
 
-function ActionMenuItem({label, cssIcons, icon32, icon96, onClick, enabled, hotKey, visible}) {
+function ActionMenuItem({label, cssIcons, icon32, icon96, enabled, hotKey, visible, ...props}) {
   if (!visible) {
     return null;
   }
@@ -45,7 +46,7 @@ function ActionMenuItem({label, cssIcons, icon32, icon96, onClick, enabled, hotK
     icon = <Fa fw fa={cssIcons} />;    
   }
   
-  return <MenuItem {...{label, icon,  style, disabled: !enabled, hotKey, onClick}} />;
+  return <MenuItem {...{label, icon,  style, disabled: !enabled, hotKey, ...props}} />;
 }
 
 const ConnectedActionMenu = connect(ActionMenu, 
@@ -58,9 +59,10 @@ const ConnectedActionMenu = connect(ActionMenu,
 let ConnectedMenuItem = connect(ActionMenuItem, 
   ({actionId}) => [ACTION_TOKENS.actionState(actionId), ACTION_TOKENS.actionAppearance(actionId)], 
   {
-    mapActions: ({dispatch}, {actionId}) => ({
-      onClick: () => dispatch(ACTION_TOKENS.actionRun(actionId))
+    mapProps: ([{enabled, visible}, {label, cssIcons, icon32, icon96}]) => ({
+      enabled, visible, label, cssIcons, icon32, icon96
     }),
+    mapActions: mapActionBehavior(props => props.actionId),
     mapSelfProps: ({hotKey}) => ({hotKey})
   }
 );

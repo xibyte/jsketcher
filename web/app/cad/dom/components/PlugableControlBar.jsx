@@ -52,7 +52,7 @@ const ConnectedActionButton = connect(ActionButton,
             ACTION_TOKENS.actionState(props.actionId)],
   {
     mapProps: (state, props) => Object.assign(DEFAULT_MAPPER(state), props),
-    mapActions: mapActionBehavior('actionId'),
+    mapActions: mapActionBehavior(props => props.actionId),
   }
 );
 
