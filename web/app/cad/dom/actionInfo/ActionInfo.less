@@ -1,4 +1,24 @@
+@import "~ui/styles/theme";
+
 .root {
   display: flex;
   pointer-events:none;
+  padding: 2px 5px;
+  max-width: 400px;
+  color: @font-color-minor;
+  & > * {
+    padding: 3px 0;
+  }
+  white-space: nowrap;
+}
+
+.hotKey {
+  text-align: right;
+  font-style: italic;
+  color: @font-color-suppressed;
+}
+
+.hint {
+  font-style: italic;
+  color: #E1A4A4;
 }
