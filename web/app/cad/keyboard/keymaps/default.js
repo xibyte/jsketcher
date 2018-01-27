@@ -8,5 +8,5 @@ export default {
   'menu.main': 'space',
   'Save': 'ctrl+S',
   'Info': 'F1',
-  'DebugOpenBrepDebugger': 'ctrl+B'
+  'DebugOpenBrepDebugger': 'ctrl+b'
 }; 
