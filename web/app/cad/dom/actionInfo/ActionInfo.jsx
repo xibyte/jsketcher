@@ -12,9 +12,9 @@ function ActionInfo({actionId, x, y, info, hint, hotKey}) {
   return <AuxWidget visible={visible} 
     left={x} top={y} className={ls.root} zIndex={550}>
     {visible && <Fragment>
-      <div className='hint'>{hint}</div>
-      <div className='info'>{info}</div>
-      {hotKey && <div className='hotKey'>hotkey: {hotKey}</div>}
+      {hint && <div className={ls.hint}>{hint}</div>}
+      {info && <div className={ls.info}>{info}</div>}
+      {hotKey && <div className={ls.hotKey}>hotkey: {hotKey}</div>}
     </Fragment>}
   </AuxWidget>;
 }
