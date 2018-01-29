@@ -17,12 +17,6 @@ const OPERATION_ACTIONS = [
     ...requiresFaceSelection(1)
   },
   {
-    id: 'PLANE',
-    appearance: {
-      info: 'creates new object plane'
-    },
-  },
-  {
     id: 'SPHERE',
     appearance: {
       info: 'creates new object sphere'

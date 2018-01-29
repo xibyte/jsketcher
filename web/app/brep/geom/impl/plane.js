@@ -89,6 +89,10 @@ export class Plane extends Surface {
   tangentPlane() {
     return this;
   }
+
+  middle() {
+    return [0, 0]
+  }
 }
 
 Plane.prototype.TYPE = 'plane';

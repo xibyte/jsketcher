@@ -14,6 +14,7 @@ import {CURRENT_SELECTION} from "../../../craft/wizard/wizardPlugin";
 import {isTCADError} from "../../../../utils/errors";
 
 import ls from './Wizard.less';
+import RadioButtons, {RadioButton} from "../../../../../../modules/ui/components/controls/RadioButtons";
 
 
 export default class Wizard extends React.Component {
@@ -90,15 +91,17 @@ export default class Wizard extends React.Component {
       this.preview.update(this.params);
     };
     let initValue = this.params[name];
-    let commonProps = {
-      onChange, initValue, ...params
-    };
+    let commonProps = {onChange, initValue};
     if (type === 'number') {
-      return <NumberControl {...commonProps} />
+      return <NumberControl {...commonProps} {...params} />
     } else if (type === 'face') {
-      return <FaceSelectionControl {...commonProps} />
+      return <FaceSelectionControl {...commonProps} {...params} />
+    } else if (type === 'choice') {
+      return <RadioButtons {...commonProps}>
+        {params.options.map(op => <RadioButton value={op} label={op} />)}
+      </RadioButtons>
     } else {
-      return <TextControl {...commonProps} />
+      return <TextControl {...commonProps} {...params} />
     }
   }
   
