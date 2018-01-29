@@ -7,7 +7,7 @@ import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import {TOKENS as KeyboardTokens} from '../../keyboard/keyboardPlugin';
 
 function ActionInfo({actionId, x, y, info, hint, hotKey}) {
-  let visible = !!actionId;
+  let visible = !!(actionId && (info || hint || hotKey));
   
   return <AuxWidget visible={visible} 
     left={x} top={y} className={ls.root} zIndex={550}>
