@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import 'ui/styles/init/minireset.css';
 import 'ui/styles/init/main.less';
-import '../../../../css/app3d-legacy.less';
 import AppTabs from "./AppTabs";
 
 
