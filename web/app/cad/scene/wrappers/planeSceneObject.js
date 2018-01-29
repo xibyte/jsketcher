@@ -53,21 +53,6 @@ export class PlaneSceneObject extends SceneSolid {
     this.bounds = bounds2d.map(v => tr.apply(v));
     this.createGeometry();
   }
-
-  static create(params, faceResolver) {
-    let face = null;
-    if (params.parallelTo) {
-      face = faceResolver(params.parallelTo);
-    }
-    let plane = null;
-    if (face == null) {
-      const normal = STANDARD_BASES[params.orientation][2];
-      plane = new Plane(normal, params.depth);
-    } else {
-      plane = new Plane(face.normal(), params.depth);
-    }
-    return new PlaneSceneObject(plane);
-  }
 }
 
 class PlaneSceneFace extends SceneFace {

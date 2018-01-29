@@ -7,7 +7,7 @@ export function activate({bus, services}) {
   
   bus.subscribe(APP_TABS_TOKENS.TABS, ({activeTab}) => {
     if (activeTab === 0) {
-      services.viewer.updateViewportSize();
+      services.viewer.sceneSetup.updateViewportSize();
     }
   });
 }

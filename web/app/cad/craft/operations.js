@@ -5,20 +5,6 @@ import {BREPSceneSolid} from '../scene/wrappers/brepSceneObject'
 // import {PlaneSceneObject} from '../scene/wrappers/planeSceneObject'
 import {box} from '../../brep/brep-primitives'
 
-export const CUT = {
-  icon: 'img/cad/cut',
-  label: 'Cut',
-  info: (p) => '(' + r(p.value) + ')',
-  action: (app, params) => Cut(app, params)
-};
-
-export const EXTRUDE = {
-  icon: 'img/cad/extrude',
-  label: 'Extrude',
-  info: (p) => '(' + r(p.value) + ')',
-  action: (app, params) => Extrude(app, params)
-};
-
 export const REVOLVE = {
   icon: 'img/cad/revolve',
   label: 'Revolve',
@@ -30,30 +16,6 @@ export const SHELL = {
   icon: 'img/cad/shell',
   label: 'Shell',
   info: (p) => '(' + p.d + ')'
-};
-
-export const BOX = {
-  icon: 'img/cad/cube',
-  label: 'Box',
-  info: (p) => '(' + p.width + ', ' + p.height + ', ' + p.depth + ')',
-  action: (app, request) => {
-    return {
-      outdated: [],
-      created: [new BREPSceneSolid(box(request.width, request.height, request.depth))]
-    }
-  }
-};
-
-export const PLANE = {
-  icon: 'img/cad/plane',
-  label: 'Plane',
-  info: (p) =>  '(' + p.depth + ')',
-  action: (app, request) => {
-    return {
-      outdated: [],
-      created: [PlaneSceneObject.create(request, (f) => app.findFace(f))]
-    }
-  }
 };
 
 export const SPHERE = {
