@@ -39,7 +39,12 @@ export default class Wizard extends React.Component {
 
   render() {
     let {left, title, metadata} = this.props;
-    return <Window initWidth={250} initLeft={left} title={title} onClose={this.onClose}>
+    return <Window initWidth={250} 
+                   initLeft={left} 
+                   title={title} 
+                   onClose={this.onClose} 
+                   onKeyDown={this.onKeyDown}
+                   onFocus={this.focusFirstInput}>
       <Stack >
         {metadata.map(([name, type, , params], index) => {
           return <Field key={index}>
@@ -61,6 +66,25 @@ export default class Wizard extends React.Component {
     </Window>;
   }
 
+  onKeyDown = e => {
+    switch (e.keyCode) {
+      case 27 :
+        this.onClose();
+        break;
+      case 13 :
+        this.onOK();
+        break;
+    }
+  };
+
+  focusFirstInput = el => {
+    let toFocus = el.querySelector('input, select');
+    if (!toFocus) {
+      toFocus = el;
+    }
+    toFocus.focus()
+  };
+  
   onClose = () => {
     this.preview.dispose();
     this.props.onCancel();
@@ -85,20 +109,20 @@ export default class Wizard extends React.Component {
     }
   };
   
-  controlForType(name, type, params) {
+  controlForType(name, type, params, tabindex) {
     const onChange = val => {
       this.params[name] = val;
       this.preview.update(this.params);
     };
     let initValue = this.params[name];
-    let commonProps = {onChange, initValue};
+    let commonProps = {onChange, initValue, tabindex};
     if (type === 'number') {
       return <NumberControl {...commonProps} {...params} />
     } else if (type === 'face') {
       return <FaceSelectionControl {...commonProps} {...params} />
     } else if (type === 'choice') {
       return <RadioButtons {...commonProps}>
-        {params.options.map(op => <RadioButton value={op} label={op} />)}
+        {params.options.map(op => <RadioButton value={op} label={op} key={op}/>)}
       </RadioButtons>
     } else {
       return <TextControl {...commonProps} {...params} />
