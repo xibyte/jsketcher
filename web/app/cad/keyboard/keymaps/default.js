@@ -1,12 +1,12 @@
 export default {
-  'CUT': 'C',
-  'EXTRUDE': 'E',
+  'CUT': 'c',
+  'EXTRUDE': 'e',
   'ZoomIn': '+',
   'ZoomOut': '-',
-  'menu.craft': 'shift+C',
-  'menu.primitives': 'shift+A',
+  'menu.craft': 'shift+c',
+  'menu.primitives': 'shift+a',
   'menu.main': 'space',
-  'Save': 'ctrl+S',
+  'Save': 'ctrl+s',
   'Info': 'F1',
   'DebugOpenBrepDebugger': 'ctrl+b'
 }; 

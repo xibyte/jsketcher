@@ -1,8 +1,11 @@
 import {createToken} from 'bus';
+import {enableAnonymousActionHint} from "./anonHint";
 
 export function activate(context) {
   
   let {bus} = context;
+  
+  let showAnonymousActionHint = enableAnonymousActionHint(context);
   
   function run(id, data) {
     bus.dispatch(TOKENS.actionRun(id), data);
@@ -38,7 +41,13 @@ export function activate(context) {
         bus.subscribe(event, stateUpdater);
       }
     }
-    bus.subscribe(TOKENS.actionRun(action.id), (data) => action.invoke(context, data));
+    bus.subscribe(TOKENS.actionRun(action.id), data => {
+      if (bus.state[stateToken].enabled) {
+        action.invoke(context, data)
+      } else {
+        showAnonymousActionHint(action.id);
+      }
+    });
   }
 
   bus.enableState(TOKENS.HINT, null);
@@ -51,7 +60,7 @@ export function activate(context) {
   }
   
   synchActionHint(bus);
-  
+
   context.services.action = {run, registerAction, registerActions}
 }
 
