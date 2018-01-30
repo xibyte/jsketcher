@@ -16,8 +16,8 @@ export default class Window extends React.Component {
   }
   
   render() {
-    let {children, title, minimizable, onClose} = this.props;
-    return <div className={ls.root} style={this.getStyle()}>
+    let {initWidth, initLeft, initTop, children, title, minimizable, onClose, ...props} = this.props;
+    return <div className={ls.root} style={this.getStyle()} {...props} ref={this.keepRef}>
       <div className={ls.bar + ' disable-selection'}>
         <div><b>{title.toUpperCase()}</b></div>  
         <div className={ls.controlButtons}>
@@ -39,6 +39,17 @@ export default class Window extends React.Component {
       zIndex: 1
     }
   }
+  
+  componentDidMount() {
+    if (this.props.onFocus) {
+      this.props.onFocus(this.el);
+    } else {
+      this.el.focus();
+    }
+  }
+  
+  keepRef = el => this.el = el;
+  
 }
 
 Window.defaultProps = {
