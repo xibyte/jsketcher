@@ -2,12 +2,11 @@ import React from 'react';
 import PlugableControlBar from './PlugableControlBar';
 
 import ls from './View3d.less';
-import ObjectExplorer from './ObjectExplorer';
-import OperationHistory from './OperationHistory';
 import Abs from 'ui/components/Abs';
-import {PlugableToolbarLeft, PlugableToolbarLeftSecondary, PlugableToolbarRight} from "./PlugableToolbar";
+import {PlugableToolbarLeft, PlugableToolbarLeftSecondary, PlugableToolbarRight} from './PlugableToolbar';
 import UISystem from './UISystem';
 import WizardManager from './wizard/WizardManager';
+import PartPanel from './PartPanel';
 
 
 export default class View3d extends React.Component {
@@ -20,8 +19,7 @@ export default class View3d extends React.Component {
   render() {
     return <UISystem className={ls.root} >
       <div className={ls.sideBar}>
-        <ObjectExplorer/>
-        <OperationHistory/>
+        <PartPanel />
       </div>
       <div className={ls.viewer} id='viewer-container'>
         <Abs left='0.8em' top='0.8em' className={ls.leftToolbarGroup}>
