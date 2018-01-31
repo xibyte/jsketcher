@@ -10,7 +10,7 @@ export default {
   label: 'Extrude',
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
-  paramsInfo:  value => `(${r(value)})`,
+  paramsInfo:  ({value}) => `(${r(value)})`,
   previewGeomProvider: createPreviewGeomProvider(false),
   run: Extrude,
   actionParams: {

@@ -10,7 +10,7 @@ export default {
   label: 'Cut',
   icon: 'img/cad/cut',
   info: 'makes a cut based on 2D sketch',
-  paramsInfo:  value => `(${r(value)})`,
+  paramsInfo:  ({value}) => `(${r(value)})`,
   previewGeomProvider: createPreviewGeomProvider(true),
   run: Cut,
   actionParams: {
