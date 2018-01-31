@@ -1,7 +1,7 @@
 import Mousetrap from 'mousetrap';
 import DefaultKeymap from './keymaps/default';
 
-import {createToken} from "../../../../modules/bus/index";
+import {createToken} from "bus";
 import {TOKENS as ACTION_TOKENS} from "../actions/actionSystemPlugin";
 import {isMenuAction, TOKENS as MENU_TOKENS} from "../dom/menu/menuPlugin";
 
