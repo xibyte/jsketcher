@@ -59,7 +59,7 @@ export function activate({bus, services}) {
     services.appTabs.show(sceneFace.id, 'Sketch ' + sceneFace.id, 'sketcher.html#' + sketchURL);
   }
   
-  bus.subscribe(CRAFT_TOKENS.DID_MODIFY, updateAllSketches);
+  bus.subscribe(CRAFT_TOKENS.MODIFICATIONS, updateAllSketches);
   
   services.sketcher = {
     sketchFace, updateAllSketches

@@ -26,7 +26,7 @@ export default class Folder extends React.Component{
     let {title, closable, children} = this.props;
     return <div className={ls.root}>
       <div className={ls.title} onClick={closable ? this.tweakClose : null}>
-        <Fa fw icon={this.isClosed() ? 'chevron-right' : 'chevron-down'}/> 
+        <span className={ls.handle}><Fa fw icon={this.isClosed() ? 'chevron-right' : 'chevron-down'}/></span> 
         {title}
       </div>
       {!this.isClosed() && children}

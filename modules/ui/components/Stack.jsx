@@ -6,10 +6,6 @@ export default function Stack({children}) {
   return <div className={ls.root}>{children}</div>
 }
 
-Window.defaultProps = {
-  type: 'neutral',
-};
-
 
 
 

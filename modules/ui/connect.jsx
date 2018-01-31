@@ -1,8 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default function connect(WrappedComponent, tokens, {staticProps, mapProps, mapActions, mapSelfProps}) {
-
+export default function connect(WrappedComponent, tokens, config) {
+  if (!config) {
+    config = DEFAULT_CONFIG;
+  }
+  let {staticProps, mapProps, mapActions, mapSelfProps} = config;
+  
   mapProps = createMapper(mapProps);
 
   mapActions = mapActions || function({dispatch}) {
@@ -81,6 +85,8 @@ function createMapper(mapper, comp) {
   }
   return mapper;
 }
+
+const DEFAULT_CONFIG = {};
 
 export function DEFAULT_MAPPER(state) {
   let props = {};
