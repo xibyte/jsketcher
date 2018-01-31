@@ -86,7 +86,7 @@ export function ReadSketch(sketch, faceId, readConstructionSegments) {
 }
 
 export function ReadSketchPoint(arr) {
-  return new Vector(arr[1][1], arr[2][1], 0)
+  return new Vector(readSketchFloat(arr[1][1]), readSketchFloat(arr[2][1]), 0)
 }
 
 export function FetchContours(geom) {
@@ -193,5 +193,21 @@ function findClosedContoursFromGraph(segments, result) {
       contour.add(edge);
     }
     result.push(contour);
+  }
+}
+
+const READ_AS_IS = v => v;
+const READ_AS_INT = v => Math.round(v);
+
+let readSketchFloat = READ_AS_IS;
+
+export function setSketchPrecision(precision) {
+  if (precision === undefined) {
+    readSketchFloat = READ_AS_IS;
+  } else if (precision === 0) {
+    readSketchFloat = READ_AS_INT;
+  } else {
+    const factor = Math.pow(10, precision);
+    readSketchFloat =  v => Math.round(v * factor) / factor;
   }
 }
