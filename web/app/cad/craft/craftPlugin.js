@@ -1,4 +1,4 @@
-import {createToken} from "../../../../modules/bus/index";
+import {createToken} from "bus";
 
 export function activate({bus, services}) {
 

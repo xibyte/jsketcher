@@ -1,12 +1,12 @@
 import {box} from '../../../brep/brep-primitives'
 import {BREPSceneSolid} from '../../scene/wrappers/brepSceneObject';
 import {createPreviewer} from "../../preview/scenePreviewer";
-import {createBoxGeometry, createMeshGeometry} from "../../../../../modules/scene/geoms";
+import {createBoxGeometry, createMeshGeometry} from "scene/geoms";
 import {CURRENT_SELECTION as S} from "../wizard/wizardPlugin";
 import {STANDARD_BASES} from "../../../math/l3space";
 import {Plane} from "../../../brep/geom/impl/plane";
 import {PlaneSceneObject} from "../../scene/wrappers/planeSceneObject";
-import Vector from "../../../../../modules/math/vector";
+import Vector from "math/vector";
 
 const METADATA = [
   ['orientation', 'choice', 'XY', {options: ['XY', 'XZ', 'ZY']}],
