@@ -44,7 +44,7 @@ export default class Wizard extends React.Component {
                    title={title} 
                    onClose={this.onClose} 
                    onKeyDown={this.onKeyDown}
-                   onFocus={this.focusFirstInput}>
+                   setFocus={this.focusFirstInput}>
       <Stack >
         {metadata.map(([name, type, , params], index) => {
           return <Field key={index}>
