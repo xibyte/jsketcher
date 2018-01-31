@@ -1,8 +1,8 @@
 import React, {Fragment} from 'react';
 import ls from './ActionInfo.less';
 
-import AuxWidget from '../../../../../modules/ui/components/AuxWidget';
-import connect from '../../../../../modules/ui/connect';
+import AuxWidget from 'ui/components/AuxWidget';
+import connect from 'ui/connect';
 import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import {TOKENS as KeyboardTokens} from '../../keyboard/keyboardPlugin';
 

@@ -1,5 +1,5 @@
 
-import {createToken} from '../../../../modules/bus/index';
+import {createToken} from 'bus';
 import {ReadSketch} from './sketchReader';
 import {getSketchBoundaries} from './sketchBoundaries';
 import {TOKENS as CRAFT_TOKENS} from '../craft/craftPlugin';
