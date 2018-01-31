@@ -1,7 +1,7 @@
 import {box} from '../../../brep/brep-primitives'
 import {BREPSceneSolid} from '../../scene/wrappers/brepSceneObject';
 import {createPreviewer} from "../../preview/scenePreviewer";
-import {createBoxGeometry} from "../../../../../modules/scene/geoms";
+import {createBoxGeometry} from "scene/geoms";
 
 const METADATA = [
   ['width'   , 'number',  500,  {min: 0}],

@@ -1,6 +1,6 @@
 import {AbstractSelectionMarker} from "./abstractSelectionMarker";
 import {setAttribute} from 'scene/objectData';
-import {getAttribute} from "../../../../../modules/scene/objectData";
+import {getAttribute} from "scene/objectData";
 import {LineMarker} from "./lineMarker";
 
 export class SketchSelectionMarker extends LineMarker {

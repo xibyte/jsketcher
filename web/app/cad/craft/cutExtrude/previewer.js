@@ -1,9 +1,9 @@
 
 import {getEncloseDetails} from "./cutExtrude";
 import {curveTessParams} from "../../../brep/geom/impl/curve/curve-tess";
-import Vector from "../../../../../modules/math/vector";
+import Vector from "math/vector";
 import {TriangulatePolygons} from "../../tess/triangulation";
-import {createMeshGeometry} from "../../../../../modules/scene/geoms";
+import {createMeshGeometry} from "scene/geoms";
 
 
 export function createPreviewGeomProvider(inversed) {

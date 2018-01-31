@@ -14,7 +14,7 @@ import {CURRENT_SELECTION} from "../../../craft/wizard/wizardPlugin";
 import {isTCADError} from "../../../../utils/errors";
 
 import ls from './Wizard.less';
-import RadioButtons, {RadioButton} from "../../../../../../modules/ui/components/controls/RadioButtons";
+import RadioButtons, {RadioButton} from "ui/components/controls/RadioButtons";
 
 
 export default class Wizard extends React.Component {

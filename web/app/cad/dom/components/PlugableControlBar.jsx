@@ -6,7 +6,7 @@ import {TOKENS as UI_TOKENS} from '../uiEntryPointsPlugin';
 import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import {toIdAndOverrides} from "../../actions/actionRef";
 import {mapActionBehavior} from "../../actions/actionButtonBehavior";
-import {DEFAULT_MAPPER} from "../../../../../modules/ui/connect";
+import {DEFAULT_MAPPER} from "ui/connect";
 import {isMenuAction} from "../menu/menuPlugin";
 
 

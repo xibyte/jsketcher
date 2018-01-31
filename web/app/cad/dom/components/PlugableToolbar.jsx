@@ -3,12 +3,12 @@ import connect from 'ui/connect';
 import Fa from 'ui/components/Fa';
 import {TOKENS as UI_TOKENS} from '../uiEntryPointsPlugin';
 import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
-import Toolbar, {ToolbarButton} from '../../../../../modules/ui/components/Toolbar';
-import ImgIcon from '../../../../../modules/ui/components/ImgIcon';
+import Toolbar, {ToolbarButton} from 'ui/components/Toolbar';
+import ImgIcon from 'ui/components/ImgIcon';
 import {toIdAndOverrides} from '../../actions/actionRef';
 import {mapActionBehavior} from '../../actions/actionButtonBehavior';
-import {DEFAULT_MAPPER} from '../../../../../modules/ui/connect';
-import capitalize from '../../../../../modules/gems/capitalize';
+import {DEFAULT_MAPPER} from 'ui/connect';
+import capitalize from 'gems/capitalize';
 
 
 function ConfigurableToolbar({actions, small, ...props}) {

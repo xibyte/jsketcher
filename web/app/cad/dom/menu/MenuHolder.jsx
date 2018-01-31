@@ -1,13 +1,12 @@
-import React, {Fragment} from 'react';
+import React from 'react';
 import connect from 'ui/connect';
 import {TOKENS as MENU_TOKENS} from './menuPlugin';
 import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
-import Menu, {MenuItem, MenuSeparator} from "../../../../../modules/ui/components/Menu";
-import Fa from "../../../../../modules/ui/components/Fa";
-import Filler from "../../../../../modules/ui/components/Filler";
-import {TOKENS as KeyboardTokens} from "../../keyboard/keyboardPlugin";
-import {DEFAULT_MAPPER} from "../../../../../modules/ui/connect";
-import {mapActionBehavior} from "../../actions/actionButtonBehavior";
+import Menu, {MenuItem, MenuSeparator} from 'ui/components/Menu';
+import Filler from 'ui/components/Filler';
+import Fa from 'ui/components/Fa';
+import {TOKENS as KeyboardTokens} from '../../keyboard/keyboardPlugin';
+import {mapActionBehavior} from '../../actions/actionButtonBehavior';
 
 function MenuHolder({menus}) {
   return menus.map(({id, actions}) => <ConnectedActionMenu key={id} menuId={id} actions={actions} />); 

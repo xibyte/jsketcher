@@ -8,7 +8,7 @@ import TabSwitcher, {Tab} from 'ui/components/TabSwticher';
 import connect from 'ui/connect';
 
 import {TOKENS as APP_TABS_TOKENS} from "../appTabsPlugin";
-import Card from "../../../../../modules/ui/components/Card";
+import Card from "ui/components/Card";
 
 function AppTabs({activeTab, tabs, switchTo, close, detach}) {
   return <div className={ls.root}>
