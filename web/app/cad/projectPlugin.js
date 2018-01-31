@@ -1,3 +1,4 @@
+import {setSketchPrecision} from './sketch/sketchReader';
 
 const STORAGE_PREFIX = "TCAD.projects.";
 
@@ -43,12 +44,35 @@ export function activate({services, bus}) {
 }
 
 function processHints() {
-  let id = window.location.hash.substring(1);
-  if (!id) {
-    id = window.location.search.substring(1);
+  let hints = window.location.hash.substring(1);
+  if (!hints) {
+    hints = window.location.search.substring(1);
   }
-  if (!id) {
-    id = "DEFAULT";
+  if (!hints) {
+    hints = "DEFAULT";
   }
+  let [id, params] = parseHints(hints);
+  processParams(params);
   return id;
+}
+
+function parseHints(hints) {
+  let [id, ...paramsArr] = hints.split('&');
+  let params = paramsArr.reduce((params, part) => {
+    let [key, value] = part.split('=');
+    if (key) {
+      if (!value) {
+        value = true;
+      }
+      params[key] = value;
+    }
+    return params;
+  }, {});
+  return [id, params];
+}
+
+function processParams({sketchPrecision}) {
+  if (sketchPrecision) {
+    setSketchPrecision(parseInt(sketchPrecision));
+  }  
 }
