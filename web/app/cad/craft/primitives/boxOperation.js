@@ -9,7 +9,7 @@ const METADATA = [
   ['depth'   , 'number',  500,  {min: 0}]
 ];
 
-function createBox(cadRegistry, {width, height, depth}) {
+function createBox({width, height, depth}) {
   return {
     outdated: [],
     created: [new BREPSceneSolid(box(width, height, depth))]
