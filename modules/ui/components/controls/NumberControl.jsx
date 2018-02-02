@@ -9,9 +9,21 @@ export default class NumberControl extends React.Component {
     return <InputControl type='number' 
               onWheel={this.onWheel} 
               defaultValue={initValue} 
-              onChange={e => onChange(e.target.value)}
+              onChange={this.onChange}
               inputRef={input => this.input = input} /> 
   }
+  
+  onChange = e => {
+    let val;
+    try {
+      val = parseFloat(e.target.value)
+    } catch (ignore) {
+      return;
+    }
+    if (!isNaN(val)) {
+      this.props.onChange(val);
+    }
+  };
   
   onWheel = (e) => {
     let {baseStep, round, min, max, onChange, accelerator} = this.props;
