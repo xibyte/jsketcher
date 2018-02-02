@@ -4,11 +4,11 @@ import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
 
 
-export function Extrude(cadRegistry, params) {
+export function Extrude(params, {cadRegistry}) {
   return doOperation(cadRegistry, params, false);
 }
 
-export function Cut(cadRegistry, params) {
+export function Cut(params, {cadRegistry}) {
   return doOperation(cadRegistry, params, true);
 }
 

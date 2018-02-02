@@ -51,7 +51,7 @@ export function activate({bus, services}) {
     let op = services.operation.registry[request.type];
     if (!op) return `unknown operation ${request.type}`;
 
-    let result = op.run(services.cadRegistry, request.params);
+    let result = op.run(request.params, services);
 
     services.cadRegistry.update(result.outdated, result.created);
   }
