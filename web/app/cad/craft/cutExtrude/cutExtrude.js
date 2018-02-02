@@ -4,19 +4,21 @@ import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
 
 
-export function Extrude(params, {cadRegistry}) {
-  return doOperation(cadRegistry, params, false);
+export function Extrude(params, sketcher) {
+  return doOperation(params, sketcher, false);
 }
 
-export function Cut(params, {cadRegistry}) {
-  return doOperation(cadRegistry, params, true);
+export function Cut(params, sketcher) {
+  return doOperation(params, sketcher, true);
 }
 
-export function doOperation(cadRegistry, params, cut) {
+export function doOperation(params, {cadRegistry, sketcher}, cut) {
   const face = cadRegistry.findFace(params.face);
   const solid = face.solid;
 
-  const sketch = face.sketch;
+  let sketch = sketcher.readSketch(face.id);
+  if (!sketch) throw 'illegal state';
+
   let plane = face.surface().tangentPlane(0, 0);
   const details = getEncloseDetails(params, sketch.fetchContours(), plane, !cut, false);
   const operand = combineShells(details.map(d => enclose(d.basePath, d.lidPath, d.baseSurface, d.lidSurface)));

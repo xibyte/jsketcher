@@ -5,7 +5,7 @@ import {BREPSceneSolid} from "../scene/wrappers/brepSceneObject";
 /*
  * TPI stands for the Test Program Interface
  */
-export function activate({services}) {
+export function activate({bus, services}) {
 
   function addShellOnScene(shell, skin) {
     const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
@@ -14,6 +14,8 @@ export function activate({services}) {
     return sceneSolid;
   }
   services.tpi = Object.assign({
+    bus,
+    services,
     addShellOnScene
   }, TPI);
 }

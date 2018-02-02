@@ -1,6 +1,8 @@
 
-export function toLoops(shell) {
+export function toLoops(shell, presicion) {
 
+  const fl = presicion || (v => v);
+  
   const vertices = [];
   for (let v of shell.vertices) {
     vertices.push(v);
@@ -9,7 +11,7 @@ export function toLoops(shell) {
   sortByXYZ(vertices);
 
   const verticesIndex = new Map();
-  for (var i = 0; i < vertices.length; i++) {
+  for (let i = 0; i < vertices.length; i++) {
     verticesIndex.set(vertices[i], i);
   }
  
@@ -22,7 +24,7 @@ export function toLoops(shell) {
   });
   return {
     format: 'LOOPS',
-    vertices: vertices.map(v => [v.point.x, v.point.y, v.point.z]),
+    vertices: vertices.map(v => [fl(v.point.x), fl(v.point.y), fl(v.point.z)]),
     faces
   };
 }
@@ -30,9 +32,9 @@ export function toLoops(shell) {
 function sortByXYZ(vertices) {
   vertices.sort((v1, v2) => {
     let c = v1.point.x - v2.point.x;
-    if (c == 0) {
+    if (c === 0) {
       c = v1.point.y - v2.point.y;
-      if (c == 0) {
+      if (c === 0) {
         c = v1.point.z - v2.point.z;
       }
     }
