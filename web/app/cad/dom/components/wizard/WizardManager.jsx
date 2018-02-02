@@ -14,7 +14,7 @@ function WizardManager({wizards, close}, {services}) {
       close();
     }
     
-    let previewer = createPreviewer(previewGeomProvider, {services});
+    let previewer = createPreviewer(previewGeomProvider, services);
     return <Wizard key={wizardIndex} previewer={previewer} metadata={metadata}
                    onOK={onOK}
                    onCancel={close}

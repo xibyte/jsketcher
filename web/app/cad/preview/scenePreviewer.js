@@ -3,7 +3,7 @@ import {createTransparentPhongMaterial} from 'scene/materials';
 import {createMesh} from 'scene/objects/mesh';
 
 
-export function createPreviewer(sceneGeometryCreator, {services}) {
+export function createPreviewer(sceneGeometryCreator, services) {
 
   return function(params) {
     const previewGroup = SceneGraph.createGroup();
