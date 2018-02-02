@@ -16,7 +16,14 @@ export function activate({bus, services}) {
       services.viewer.requestRender();
     }
   });
-  
+
+  function getAllSketches() {
+    let nm = services.project.sketchStorageNamespace;
+    return services.storage.getAllKeysFromNamespace(nm).map(fqn => ({
+      fqn, id: fqn.substring(nm.length)
+    }));
+  }
+
   function readSketch(sketchId) {
     let sketchStorageKey = services.project.sketchStorageKey(sketchId);
     let savedSketch = services.storage.get(sketchStorageKey);
@@ -62,7 +69,7 @@ export function activate({bus, services}) {
   bus.subscribe(CRAFT_TOKENS.MODIFICATIONS, updateAllSketches);
   
   services.sketcher = {
-    sketchFace, updateAllSketches
+    sketchFace, updateAllSketches, getAllSketches, readSketch
   }
 }
 

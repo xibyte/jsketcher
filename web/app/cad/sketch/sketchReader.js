@@ -34,16 +34,20 @@ class SketchGeom {
     }
     return _find(this.connections, this.loops, this.constructionSegments);
   }
+  
+  getAllObjects() {
+    return [...this.connections, ...this.loops, ...this.constructionSegments];
+  }
 }
 
-export function ReadSketch(sketch, faceId, readConstructionSegments) {
+export function ReadSketch(sketch, sketchId, readConstructionSegments) {
   function getID(obj) {
-    return faceId + ":" + obj.id;
+    return sketchId + ":" + obj.id;
   }
   const out = new SketchGeom();
   if (sketch.layers !== undefined) {
     for (let layer of sketch.layers) {
-      const isConstructionLayer = layer.name == "_construction_";
+      const isConstructionLayer = layer.name === "_construction_";
       if (isConstructionLayer && !readConstructionSegments) continue;
       for (let obj of layer.data) {
         if (isConstructionLayer && obj._class !== 'TCAD.TWO.Segment') continue;
@@ -64,7 +68,7 @@ export function ReadSketch(sketch, faceId, readConstructionSegments) {
           const ep2 = ReadSketchPoint(obj.ep2);
           const a = ReadSketchPoint(obj.a);
           const b = ReadSketchPoint(obj.b);
-          out.connections.push(new sm.EllipticalArc(getID(obj), ep1, ep2, a, b, obj.r));
+          out.connections.push(new sm.EllipticalArc(getID(obj), ep1, ep2, a, b, readSketchFloat(obj.r)));
         } else if (obj._class === 'TCAD.TWO.BezierCurve') {
           const a = ReadSketchPoint(obj.a);
           const b = ReadSketchPoint(obj.b);
@@ -73,11 +77,11 @@ export function ReadSketch(sketch, faceId, readConstructionSegments) {
           out.connections.push(new sm.BezierCurve(getID(obj), a, b, cp1, cp2));
         } else if (obj._class === 'TCAD.TWO.Circle') {
           const circleCenter = ReadSketchPoint(obj.c);
-          out.loops.push(new sm.Circle(getID(obj), circleCenter, obj.r));
+          out.loops.push(new sm.Circle(getID(obj), circleCenter, readSketchFloat(obj.r)));
         } else if (obj._class === 'TCAD.TWO.Ellipse') {
           const ep1 = ReadSketchPoint(obj.ep1);
           const ep2 = ReadSketchPoint(obj.ep2);
-          out.loops.push(new sm.Ellipse(getID(obj), ep1, ep2, obj.r));
+          out.loops.push(new sm.Ellipse(getID(obj), ep1, ep2, readSketchFloat(obj.r)));
         }
       }
     }
@@ -199,7 +203,7 @@ function findClosedContoursFromGraph(segments, result) {
 const READ_AS_IS = v => v;
 const READ_AS_INT = v => Math.round(v);
 
-let readSketchFloat = READ_AS_IS;
+export let readSketchFloat = READ_AS_IS;
 
 export function setSketchPrecision(precision) {
   if (precision === undefined) {

@@ -9,6 +9,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import BrepDebugger from './../brep/debug/debugger/brepDebugger';
 import {TOKENS as UI_TOKENS} from "./dom/uiEntryPointsPlugin";
+import {IO} from '../sketcher/io';
+import {readSketchFloat} from './sketch/sketchReader';
+import {TOKENS as CRAFT_TOKENS} from './craft/craftPlugin';
+import {toLoops} from '../brep/brep-io';
 
 
 export function activate({bus, services}) {
@@ -217,9 +221,9 @@ const DebugMenuConfig = {
   label: 'debug',
   cssIcons: ['bug'],
   info: 'set of debug actions',
-  actions: ['DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId', 'DebugFaceSketch', 'DebugOpenBrepDebugger']
+  actions: ['DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId', 'DebugFaceSketch', 
+    'DebugSetSketcherIntegerPrecision', 'DebugGenerateTest', 'DebugOpenBrepDebugger']
 };
-
 
 const DebugActions = [
   {
@@ -297,6 +301,72 @@ const DebugActions = [
     }
   },
   {
+    id: 'DebugSetSketcherIntegerPrecision',
+    appearance: {
+      cssIcons: ['gear'],
+      label: 'set sketch precision to 0(integer)',
+      info: 'all points and other parameters from sketches will be rounded to integer, useful for creating topological tests',
+    },
+    invoke: () => {
+      let url = window.location.href;
+      if (url.indexOf('sketchPrecision') !== -1) {
+        url = url.replace(/sketchPrecision=\d+/, 'sketchPrecision=0');  
+      } else {
+        if (url.indexOf('?') !== -1) {
+          url += '&';
+        } else {
+          url += '?';
+        }
+        url += 'sketchPrecision=0';
+      }
+      window.location.href = url;
+    }
+  },
+  {
+    id: 'DebugGenerateTest',
+    appearance: {
+      cssIcons: ['gear'],
+      label: 'generate unit test',
+      info: 'it will generate a unit code code containing sketches and operation sequence and output it to terminal',
+    },
+    invoke: ({bus, services: {project, storage, sketcher, cadRegistry}}) => {
+      
+      const pt = ({x, y}) => [x, y];  
+      
+      let sketches = sketcher.getAllSketches().reduce((sketches, {id, url}) => {
+        let sketch = sketcher.readSketch(id).getAllObjects().reduce((byType, obj) => {
+
+          let type = obj.constructor.name;
+          
+          let arr = byType[type];
+          if (!arr) {
+            arr = [];
+            byType[type] = arr;
+          }
+          
+          if (type === 'Segment' ){
+            arr.push([pt(obj.a), pt(obj.b)]);
+          } else {
+            throw 'unsupported ' + type;
+          }
+          return byType;
+        }, {});
+        sketches[id] = sketch;
+        return sketches;
+      }, {});
+
+      let testMetadata = {
+        name: project.id,
+        state: {
+          sketches,
+          operations: bus.state[CRAFT_TOKENS.MODIFICATIONS].history
+        },
+        expected: toLoops(cadRegistry.getAllShells()[0].shell, readSketchFloat)
+      };
+      console.log(JSON.stringify(testMetadata));
+    }
+  },
+  {
     id: 'DebugOpenBrepDebugger',
     appearance: {
       cssIcons: ['cubes'],
@@ -318,10 +388,11 @@ const DebugActions = [
       
         ReactDOM.render(
           <BrepDebugger brepDebugGroup={brepDebugGroup}/>,
-          debuggerWinDom.getElementsByClassName('content')[0] 
+          debuggerWinDom.getElementsByClassName('content')[0]
         );
       }
       debuggerWinDom.debuggerWin.show();
     }
   }
+
 ];
