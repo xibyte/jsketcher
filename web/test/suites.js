@@ -26,6 +26,8 @@ export default {
   BREP: [
     TestCase('brep-bool'),
     TestCase('brep-bool-wizard-based'),
+    TestCase('brep-bool-smoke'),
+    TestCase('brep-bool-topo'),
     TestCase('brep-pip'),
     TestCase('brep-raycast'),
     TestCase('brep-enclose')
