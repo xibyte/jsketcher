@@ -199,6 +199,7 @@ function setAnalysisFace(originShell, clonedShell) {
 }
 
 function detectLoops(surface, graph) {
+  graph.graphEdges.sort((e1, e2) => getPriority(e1) - getPriority(e2));
   BREP_DEBUG.startBooleanLoopDetection(graph);
   const loops = [];
   const seen = new Set();
@@ -357,10 +358,10 @@ function mergeFaces(facesA, facesB, opType) {
       let pt = edge.edge.curve.middlePoint();
       if (face.rayCast(pt).inside) {
         markEdgeTransferred(edge.edge);
-        if (canEdgeBeTransferred(edge, face, opType)) {
+        if (canEdgeBeTransferred(edge.twin(), face, opType)) {
           EdgeSolveData.setPriority(edge, 10);
         } else {
-          invalid.push(edge);
+          invalid.add(edge);
         }
       }
     }
@@ -468,7 +469,7 @@ function filterFaces(faces) {
       }
     });
   }
-  const result = Array.from(resultSet)
+  const result = Array.from(resultSet);
   BREP_DEBUG.faceFilter(result, faces);
   return result;
 }
@@ -486,10 +487,15 @@ function traverseFaces(face, callback) {
     for (let loop of face.loops) {
       for (let halfEdge of loop.halfEdges) {
         let twinFace = halfEdge.twin().loop.face;
-        if (twinFace == null) {
-          BREP_DEBUG.markEdge("null face", halfEdge.twin())
+        if (twinFace === null) {
+          //this happened because there is no face created for a valid and legit detected loop
+          throw new CadError('BOOLEAN_INVALID_RESULT', {
+            code: 'UNABLE_FACE_EVOLVE', payload: {halfEdge}
+          });
+          // BREP_DEBUG.markEdge("null face", halfEdge.twin())
+        } else {
+          stack.push(twinFace);
         }
-        stack.push(twinFace);
       }
     }
   }
@@ -680,9 +686,16 @@ function canEdgeBeTransferred(edge, face, operationType) {
   let testPoint = edge.edge.curve.middlePoint();
   let edgeTangent = edge.tangent(testPoint);
   let edgeFaceNormal = edge.loop.face.surface.normal(testPoint);
-  let edgeFaceDir = edgeTangent.cross(edgeFaceNormal);
+  let edgeFaceDir = edgeFaceNormal.cross(edgeTangent);
   let faceNormal = face.surface.normal(testPoint);
-  let outside = edgeFaceDir.dot(faceNormal);
+  let outsideMeasure = edgeFaceDir.dot(faceNormal);
+
+  if (eq(outsideMeasure, 0)) {
+    throw 'this case should be considered before calling this method';
+    // return undefined;
+  }
+  
+  let outside = outsideMeasure > 0;
   return (operationType === TYPE.INTERSECT) !== outside;
 }
 
