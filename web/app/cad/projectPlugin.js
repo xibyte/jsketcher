@@ -29,12 +29,16 @@ export function activate({services, bus}) {
   }
 
   function load() {
-    let data = services.storage.get(services.project.projectStorageKey());
-    if (data) {
-      let history = JSON.parse(data).history;
-      if (history) {
-        services.craft.reset(history);        
+    try {
+      let data = services.storage.get(services.project.projectStorageKey());
+      if (data) {
+        let history = JSON.parse(data).history;
+        if (history) {
+          services.craft.reset(history);
+        }
       }
+    } catch (e) {
+      console.error(e);
     }
   }
   
