@@ -168,12 +168,23 @@ function replaceEdges() {
 }
 
 function replaceMergedFaces(facesData, mergedFaces) {
+  function addDecayed(he, out) {
+    let decayed = EdgeSolveData.get(he).decayed;
+    if (decayed) {
+      decayed.forEach(de => addDecayed(de, out));
+    } else {
+      out.push(he);
+    }
+  }
   filterInPlace(facesData, ({face}) => 
       mergedFaces.find(({originFaces}) => originFaces.indexOf(face) > -1) === undefined
   );
   for (let {mergedLoops, referenceSurface, originFaces} of mergedFaces) {
     let fakeFace = new Face(referenceSurface);
     for (let mergedLoop of mergedLoops) {
+      let actualHalfEdges = [];
+      mergedLoop.halfEdges.forEach(he => addDecayed(he, actualHalfEdges));
+      mergedLoop.halfEdges = actualHalfEdges;
       fakeFace.innerLoops.push(mergedLoop);
       mergedLoop.face = fakeFace;
       mergedLoop.link();
@@ -654,6 +665,10 @@ function intersectFaces(shellA, shellB, operationType) {
           __DEBUG__.AddCurve(curve);
         }
         
+        if (hasCoincidentEdge(curve, faceA) || hasCoincidentEdge(curve, faceB)) {
+          continue;
+        }
+
         curve = fixCurveDirection(curve, faceA.surface, faceB.surface, operationType);
         const nodes = [];
         collectNodesOfIntersectionOfFace(curve, faceA, nodes, A);
@@ -740,6 +755,15 @@ function nodeByPoint(nodes, point, u, curve, vertex) {
   return node;
 }
 
+function hasCoincidentEdge(curve, face) {
+  for (let edge of face.edges) {
+    if (curveAndEdgeCoincident(curve, edge)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function collectNodesOfIntersectionOfFace(curve, face, nodes, operand) {
   for (let loop of face.loops) {
     collectNodesOfIntersection(curve, loop, nodes, operand);
@@ -749,27 +773,9 @@ function collectNodesOfIntersectionOfFace(curve, face, nodes, operand) {
 function collectNodesOfIntersection(curve, loop, nodes, operand) {
   // __DEBUG__.AddCurve(curve, 0xffffff);
   let skippedEnclosures = new Set();
-  let coincidentEdges = new Set();
   
-  for (let edge of loop.halfEdges) {
-    if (curveAndEdgeCoincident(curve, edge)) {
-      coincidentEdges.add(edge);
-    }
-  }
   let encloses = loop.encloses;
   for (let [a, b, v] of encloses) {
-    if (coincidentEdges.has(a)) {
-      let sameDir = a.tangentAtStart().dot(curve.tangentAtPoint(a.vertexA.point)) > 0;
-      let vertex = sameDir ? a.vertexA : a.vertexB;
-      skippedEnclosures.add(vertex);
-      let node = nodeByPoint(nodes, vertex.point, undefined, curve, vertex);
-      node.leaves[operand] = true;
-    }
-  }
-  for (let [a, b, v] of encloses) {
-    if (coincidentEdges.has(a) && coincidentEdges.has(b)) {
-      continue;
-    }
     if (skippedEnclosures.has(v)) {
       continue;
     }
@@ -786,9 +792,7 @@ function collectNodesOfIntersection(curve, loop, nodes, operand) {
     }
   }    
   for (let edge of loop.halfEdges) {
-    if (!coincidentEdges.has(edge)) {
-      intersectCurveWithEdge(curve, edge, nodes, operand);
-    }
+    intersectCurveWithEdge(curve, edge, nodes, operand);
   }
 }
 
@@ -909,16 +913,29 @@ function splitEdgeByVertex(edge, vertex) {
 
     h2.next = halfEdge.next;
     h2.next.prev = h2;
+    EdgeSolveData.createIfEmpty(halfEdge).decayed = [h1, h2];
   }
   updateInLoop(edge.halfEdge1, edge1.halfEdge1, edge2.halfEdge1);
   updateInLoop(edge.halfEdge2, edge2.halfEdge2, edge1.halfEdge2);
 
-  EdgeSolveData.transfer(edge.halfEdge1, edge1.halfEdge1);
-  EdgeSolveData.transfer(edge.halfEdge1, edge2.halfEdge1);
+  function transferPriority(from, to) {
+    let priority = getPriority(from);
+    if (priority !== 0) {
+      EdgeSolveData.setPriority(to, priority);
+    }
+  }
 
-  EdgeSolveData.transfer(edge.halfEdge2, edge2.halfEdge2);
-  EdgeSolveData.transfer(edge.halfEdge2, edge1.halfEdge2);
+  transferPriority(edge.halfEdge1, edge1.halfEdge1);
+  transferPriority(edge.halfEdge1, edge2.halfEdge1);
 
+  transferPriority(edge.halfEdge2, edge2.halfEdge2);
+  transferPriority(edge.halfEdge2, edge1.halfEdge2);
+
+  if (isEdgeTransferred(edge)) {
+    markEdgeTransferred(edge1);
+    markEdgeTransferred(edge2);
+  }
+  
   return [edge1, edge2];
 }
 
@@ -1024,10 +1041,6 @@ EdgeSolveData.createIfEmpty = function(edge) {
 
 EdgeSolveData.clear = function(edge) {
   delete edge.data[MY];
-};
-
-EdgeSolveData.transfer = function(from, to) {
-  to.data[MY] = from.data[MY];
 };
 
 EdgeSolveData.setPriority = function(halfEdge, value) {
@@ -1232,13 +1245,19 @@ function isSameEdge(e1, e2) {
 
 function curveAndEdgeCoincident(curve, edge) {
   let tess = edge.tessellate();
-  //Do reverese to optimaze a bit because the first point is usually checked
+  //Do reverse to optimize a bit because the first point is usually checked
+  let touches = 0;
   for (let i = tess.length - 1; i >= 0; i--) {
     let pt1 = tess[i];
     let pt2 = curve.point(curve.param(pt1));
     if (!veq(pt1, pt2)) {
+      if (touches > 1) {
+        //partial tangency should be handled before face-face intersection analysis
+        throw new CadError('BOOLEAN_INVALID_RESULT', {edge});
+      }
       return false;
     }
+    touches++;
   }
   return true;
 }
