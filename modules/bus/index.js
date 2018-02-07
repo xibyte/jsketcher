@@ -75,13 +75,16 @@ export default class Bus {
   }
   
   dispatch(key, data) {
-    // console.log('dispatch: ' + key + ' -> ' + JSON.stringify(data));
+    // console.log('dispatch: %c' + key, 'color: #0a0');
+    // console.log(data);
 
     if (this.lock.has(key)) {
       console.warn('recursive dispatch');
       return
     }
+    let oldValue;
     if (this.keepStateFor.has(key)) {
+      oldValue = this.state[key]; 
       this.state[key] = data;
     }
     this.lock.add(key);
@@ -91,7 +94,7 @@ export default class Bus {
         for (let i = 0; i < listenerList.length; i++) {
           const callback = listenerList[i];
           try {
-            callback(data);
+            callback(data, oldValue);
           } catch(e) {
             console.error(e);
           }
