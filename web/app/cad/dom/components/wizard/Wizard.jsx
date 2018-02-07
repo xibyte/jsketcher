@@ -53,8 +53,8 @@ export default class Wizard extends React.Component {
           </Field>
         } )}
         <ButtonGroup>
-          <Button text='Cancel' onClick={this.onClose} />
-          <Button text='OK' type='accent' onClick={this.onOK} />
+          <Button onClick={this.onClose} >Cancel</Button>
+          <Button type='accent' onClick={this.onOK} >OK</Button>
         </ButtonGroup>
         {this.state.hasError && <div className={ls.errorMessage}>
           performing operation with current parameters leads to an invalid object
