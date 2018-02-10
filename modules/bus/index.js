@@ -93,11 +93,7 @@ export default class Bus {
       if (listenerList !== undefined) {
         for (let i = 0; i < listenerList.length; i++) {
           const callback = listenerList[i];
-          try {
-            callback(data, oldValue);
-          } catch(e) {
-            console.error(e);
-          }
+          callback(data, oldValue);
         }
       }
     } finally {
