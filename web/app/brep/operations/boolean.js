@@ -56,13 +56,12 @@ export function invert( shell ) {
     }
   }
   shell.data.inverted = !shell.data.inverted;
-  checkShellForErrors(shell, 'UNABLE_BOOLEAN_OPERAND_INVERSION');
-}
-
-function checkShellForErrors(shell, code) {
   let errors = BREPValidator.validate(shell);
   if (errors.length !== 0) {
-    throw new CadError(code, errors);
+    throw new CadError({
+      kind: CadError.KIND.INTERNAL_ERROR,
+      code: 'unable to invert'
+    });
   }
 }
 
@@ -354,7 +353,12 @@ function mergeFaces(facesA, facesB, opType) {
         if (edgeA.vertexA === edgeB.vertexA) {
           // chooseBetweenEqualEdges();
           // canEdgeBeTransferred(edge, face, opType)
-          throw new CadError('BOOLEAN_INVALID_RESULT', edgeCollisionError(edgeA, edgeB));
+          throw new CadError({
+            kind: CadError.KIND.UNSUPPORTED_CASE,
+            code: 'edge collision on face merge',
+            relatedTopoObjects: [edgeA, edgeB],
+            userMessage: "edges can't be coincident for this operation"
+          });
         } else if (edgeA.vertexA === edgeB.vertexB) {
 
           invalid.add(edgeA);
@@ -500,8 +504,9 @@ function traverseFaces(face, callback) {
         let twinFace = halfEdge.twin().loop.face;
         if (twinFace === null) {
           //this happened because there is no face created for a valid and legit detected loop
-          throw new CadError('BOOLEAN_INVALID_RESULT', {
-            code: 'UNABLE_FACE_EVOLVE', payload: {halfEdge}
+          throw new CadError({
+            kind: CadError.KIND.INTERNAL_ERROR,
+            relatedTopoObjects: [halfEdge]
           });
           // BREP_DEBUG.markEdge("null face", halfEdge.twin())
         } else {
@@ -947,13 +952,17 @@ export function isInsideEnclose(normal, testee, inVec, outVec, strict){
 
   if (strict && veq(outVec, testee)) {
     //TODO: improve error report
-    throw new CadError('BOOLEAN_INVALID_RESULT');
+    throw new CadError({
+      relatedTopoObjects: [testee]
+    });
   }
 
   let pivot = inVec.negate();
   if (strict && veq(pivot, testee)) {
     //TODO: improve error report 
-    throw new CadError('BOOLEAN_INVALID_RESULT');
+    throw new CadError({
+      relatedTopoObjects: [testee]
+    });
   }
   let enclosureAngle = leftTurningMeasure(pivot, outVec, normal);
   let testeeAngle = leftTurningMeasure(pivot, testee, normal);
@@ -1148,7 +1157,7 @@ class FaceSolveData extends EdgeGraph {
     super();
     this.face = face;
     this.newEdges = [];
-    this.errors = [];
+    this.collidedEdges = [];
   }
 
   markTransferredFrom(edge) {
@@ -1181,7 +1190,7 @@ class FaceSolveData extends EdgeGraph {
       
     let opp = this.findOppositeEdge(he);
     if (opp) {
-      this.errors.push(edgeCollisionError(opp, he));
+      this.collidedEdges.push(opp, he);
     }
     
     let list = this.vertexToEdge.get(he.vertexA);
@@ -1191,7 +1200,7 @@ class FaceSolveData extends EdgeGraph {
     } else {
       for (let ex of list) {
         if (he.vertexB === ex.vertexB && isSameEdge(he, ex)) {
-          this.errors.push(edgeCollisionError(ex, he));
+          this.collidedEdges.push(ex, he);
         //   ex.attachManifold(he);    
         //   return; 
         }          
@@ -1253,7 +1262,11 @@ function curveAndEdgeCoincident(curve, edge) {
     if (!veq(pt1, pt2)) {
       if (touches > 1) {
         //partial tangency should be handled before face-face intersection analysis
-        throw new CadError('BOOLEAN_INVALID_RESULT', {edge});
+        throw new CadError({
+          kind: CadError.KIND.INVALID_INPUT,
+          code: 'edge partial tangency',
+          relatedTopoObjects: [edge]
+        });
       }
       return false;
     }
@@ -1275,21 +1288,19 @@ function edgeCollinearToFace(edge, face) {
   return face.rayCast(edge.edge.curve.middlePoint()).inside;
 }
 
-function edgeCollisionError(e1, e2) {
-  return {
-    code: 'EDGE_COLLISION', payload: {e1, e2}
-  }
-}
-
 function checkFaceDataForError(facesData) {
-  if (facesData.find(f => f.errors.length !== 0)) {
-    let payload = [];    
+  if (facesData.find(f => f.collidedEdges.length !== 0)) {
+    let relatedTopoObjects = [];    
     for (let faceData of facesData) {
-      for (let err of faceData.errors) {
-        payload.push(err);
+      for (let err of faceData.collidedEdges) {
+        relatedTopoObjects.push(err);
       }
     }
-    throw new CadError('BOOLEAN_INVALID_RESULT', payload);
+    throw new CadError({
+      kind: CadError.KIND.INVALID_INPUT,
+      relatedTopoObjects,
+      userMessage: 'unable to process coincident edges for this operation type'
+    });
   }
 }
 
