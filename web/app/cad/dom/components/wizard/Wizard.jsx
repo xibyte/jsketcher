@@ -11,10 +11,10 @@ import Button from 'ui/components/controls/Button';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
 import FaceSelectionControl from './FaceSelectionControl';
 import {CURRENT_SELECTION} from "../../../craft/wizard/wizardPlugin";
-import {isTCADError} from "../../../../utils/errors";
 
 import ls from './Wizard.less';
 import RadioButtons, {RadioButton} from "ui/components/controls/RadioButtons";
+import CadError from '../../../../utils/errors';
 
 
 export default class Wizard extends React.Component {
@@ -59,7 +59,8 @@ export default class Wizard extends React.Component {
         {this.state.hasError && <div className={ls.errorMessage}>
           performing operation with current parameters leads to an invalid object
           (manifold / self-intersecting / zero-thickness / complete degeneration or unsupported cases)
-          {this.state.code && <span className={ls.errorCode}>{this.state.code}</span>}
+          {this.state.code && <div className={ls.errorCode}>{this.state.code}</div>}
+          {this.state.userMessage && <div className={ls.userErrorMessage}>{this.state.userMessage}</div>}
         </div>}
 
       </Stack>
@@ -95,17 +96,22 @@ export default class Wizard extends React.Component {
       this.props.onOK(this.params);
       this.onClose();
     } catch (error) {
-      let state = {
-        hasError: true 
+      let stateUpdate = {
+        hasError: true
       };
-      if (!isTCADError(error)) {
-        console.error('internal error while performing operation');
+      let printError = true;
+      if (error.TYPE === CadError) {
+        let {code, userMessage, kind} = error;
+        printError = !code;
+        if (code && kind === CadError.KIND.INTERNAL_ERROR) {
+          console.warn('Operation Error Code: ' + code);
+        }
+        Object.assign(stateUpdate, {code, userMessage});
+      } 
+      if (printError) {
         console.error(error);
-      } else {
-        state.cadCode = error.code;
-        console.log(error);
       }
-      this.setState(state);
+      this.setState(stateUpdate);
     }
   };
   
