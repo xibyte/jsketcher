@@ -3,6 +3,7 @@ export class TopoObject {
   
   constructor() {
     this.data = {};
+    this.op = null;
     Object.defineProperty(this, "refId", {
       value: REF_COUNTER ++,
       writable: false

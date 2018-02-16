@@ -79,7 +79,7 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
     type = TYPE.INTERSECT;
   }
 
-  let facesData = [];
+  let workingFaces = [];
 
   mergeVertices(shellA, shellB);
   initVertexFactory(shellA, shellB);
@@ -87,34 +87,34 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
   intersectEdges(shellA, shellB);
   let mergedFaces = mergeOverlappingFaces(shellA, shellB, type);
 
-  initSolveData(shellA, facesData);
-  initSolveData(shellB, facesData);
+  initOperationData(shellA, workingFaces);
+  initOperationData(shellB, workingFaces);
 
   intersectFaces(shellA, shellB, type);
 
-  replaceMergedFaces(facesData, mergedFaces);
-  for (let faceData of facesData) {
-    faceData.initGraph();
+  replaceMergedFaces(workingFaces, mergedFaces);
+  for (let workingFace of workingFaces) {
+    workingFace.op.initGraph();
   }
   
-  checkFaceDataForError(facesData);
+  checkFaceDataForError(workingFaces);
   
-  for (let faceData of facesData) {
-    faceData.detectedLoops = detectLoops(faceData.face.surface, faceData);
+  for (let face of workingFaces) {
+    face.op.detectedLoops = detectLoops(face.surface, face.op);
   }
   
-  for (let faceData of facesData) {
-    for (let loop of faceData.detectedLoops) {
+  for (let face of workingFaces) {
+    for (let loop of face.op.detectedLoops) {
       loop.link();
     }
   }
   
-  removeInvalidLoops(facesData);
+  removeInvalidLoops(workingFaces);
   
   let faces = [];
   
-  for (let faceData of facesData) {
-    loopsToFaces(faceData.face, faceData.detectedLoops, faces);
+  for (let face of workingFaces) {
+    loopsToFaces(face, face.op.detectedLoops, faces);
   }
 
   faces = filterFaces(faces);
@@ -125,7 +125,7 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
     result.faces.push(face);
   });
 
-  cleanUpSolveData(result);
+  cleanUpOperationData(result);
   BREPValidator.validateToConsole(result);
 
   // __DEBUG__.ClearVolumes();
@@ -134,10 +134,10 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
   return result;
 }
 
-function removeInvalidLoops(facesData) {
+function removeInvalidLoops(faces) {
   let detectedLoopsSet = new Set();
-  for (let faceData of facesData) {
-    for (let loop of faceData.detectedLoops) {
+  for (let face of faces) {
+    for (let loop of face.op.detectedLoops) {
       detectedLoopsSet.add(loop);
     }
   }
@@ -147,13 +147,13 @@ function removeInvalidLoops(facesData) {
     return !detectedLoopsSet.has(loop);
   }
   
-  for (let faceData of facesData) {
-    faceData.detectedLoops = faceData.detectedLoops.filter(
+  for (let face of faces) {
+    face.op.detectedLoops = face.op.detectedLoops.filter(
       loop => loop.halfEdges.find(e => isLoopInvalid(e.twin().loop)) === undefined);
   }
 }
 
-function replaceMergedFaces(facesData, mergedFaces) {
+function replaceMergedFaces(workingFaces, mergedFaces) {
   function addDecayed(he, out) {
     let decayed = EdgeSolveData.get(he).decayed;
     if (decayed) {
@@ -162,7 +162,7 @@ function replaceMergedFaces(facesData, mergedFaces) {
       out.push(he);
     }
   }
-  filterInPlace(facesData, ({face}) => 
+  filterInPlace(workingFaces, face => 
       mergedFaces.find(({originFaces}) => originFaces.indexOf(face) > -1) === undefined
   );
   for (let {facePrototypes, originFaces} of mergedFaces) {
@@ -176,9 +176,10 @@ function replaceMergedFaces(facesData, mergedFaces) {
         loop.face = fakeFace;
         loop.link();
       }
-      facesData.push(initSolveDataForFace(fakeFace));
+      initOperationDataForFace(fakeFace);
+      workingFaces.push(fakeFace);
       for (let originFace of originFaces) {
-        originFace.data[MY].newEdges.forEach(e => addNewEdge(fakeFace, e));
+        originFace.op.newEdges.forEach(e => addNewEdge(fakeFace, e));
       }
     }
   }
@@ -187,7 +188,7 @@ function replaceMergedFaces(facesData, mergedFaces) {
 function prepareWorkingCopy(_shell) {
   let workingCopy = _shell.clone();
   setAnalysisFace(_shell, workingCopy);
-  cleanUpSolveData(workingCopy);
+  cleanUpOperationData(workingCopy);
   return workingCopy;
 }
 
@@ -521,24 +522,20 @@ export function loopsToFaces(originFace, loops, out) {
   }
 }
 
-function initSolveData(shell, facesData) {
+function initOperationData(shell, faceCollector) {
   for (let face of shell.faces) {
-    facesData.push(initSolveDataForFace(face));
+    initOperationDataForFace(face);
+    faceCollector.push(face);
   }
 }
 
-function initSolveDataForFace(face) {
-  const solveData = new FaceSolveData(face);
-  if (face.data[MY] !== undefined) {
-    Object.assign(solveData, face.data[MY]);
-  }
-  face.data[MY] = solveData;
-  return solveData;
+function initOperationDataForFace(face) {
+  face.op = new FaceOperationData(face);
 }
 
-function cleanUpSolveData(shell) {
+function cleanUpOperationData(shell) {
   for (let face of shell.faces) {
-    delete face.data[MY];
+    face.op = null;
     for (let he of face.edges) {
       EdgeSolveData.clear(he);
       delete he.edge.data[MY];
@@ -730,7 +727,7 @@ function transferEdges(faceSource, faceDest, operationType) {
         let validEdge = chooseValidEdge(edge, faceDest, operationType);
         BREP_DEBUG.transferEdge(edge, faceDest, validEdge);
         let twin = validEdge.twin();
-        twin.loop.face.data[MY].markTransferredFrom(twin);
+        twin.loop.face.op.markTransferredFrom(twin);
         markEdgeTransferred(twin.edge);
         addNewEdge(faceDest, twin);
       }
@@ -739,8 +736,7 @@ function transferEdges(faceSource, faceDest, operationType) {
 }
 
 function addNewEdge(face, halfEdge) {
-  const data = face.data[MY];
-  data.newEdges.push(halfEdge);
+  face.op.newEdges.push(halfEdge);
   EdgeSolveData.setPriority(halfEdge, 100);
   return true;
 }
@@ -1146,12 +1142,6 @@ class VertexFactory {
   }
 }
 
-class SolveData {
-  constructor() {
-    this.faceData = [];
-  }
-}
-
 class EdgeGraph {
   constructor() {
     this.vertexToEdge = new Map();
@@ -1164,7 +1154,7 @@ class EdgeGraph {
   }
 }
 
-class FaceSolveData extends EdgeGraph {
+class FaceOperationData extends EdgeGraph {
   constructor(face) {
     super();
     this.face = face;
@@ -1300,11 +1290,11 @@ function edgeCollinearToFace(edge, face) {
   return face.rayCast(edge.edge.curve.middlePoint()).inside;
 }
 
-function checkFaceDataForError(facesData) {
-  if (facesData.find(f => f.collidedEdges.length !== 0)) {
+function checkFaceDataForError(workingFaces) {
+  if (workingFaces.find(f => f.op.collidedEdges.length !== 0)) {
     let relatedTopoObjects = [];    
-    for (let faceData of facesData) {
-      for (let err of faceData.collidedEdges) {
+    for (let face of workingFaces) {
+      for (let err of face.op.collidedEdges) {
         relatedTopoObjects.push(err);
       }
     }
