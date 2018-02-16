@@ -1,8 +1,32 @@
 .item {
   word-wrap: break-word;
   word-break: break-all;
+  cursor: pointer;
+  &.selected, &:hover {
+    background-color: #780000;
+  }
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  & .buttons {
+    display: none;
+  }
+  &:hover .buttons {
+    display: initial;
+  }
 }
 
 .buttons {
-  
+  display: none;
+  font-size: 1.3rem;
+  & > * {
+    padding: 0 0.3rem;
+    &.danger:hover {
+      color: red;
+    }
+  }
+}
+
+.buttons >  i:hover {
+  color: yellowgreen;
 }
