@@ -15,45 +15,57 @@ import {CURRENT_SELECTION} from "../../../craft/wizard/wizardPlugin";
 import ls from './Wizard.less';
 import RadioButtons, {RadioButton} from "ui/components/controls/RadioButtons";
 import CadError from '../../../../utils/errors';
+import {createPreviewer} from '../../../preview/scenePreviewer';
 
 
 export default class Wizard extends React.Component {
   
-  constructor({initialState, metadata, previewer}, {services: {selection}}) {
+  constructor({initialState, type}, {services}) {
     super();
+    let {metadata, previewGeomProvider} = services.operation.get(type);
+    this.metadata = metadata;
+    this.previewGeomProvider = previewGeomProvider;
+
     this.state = {hasError: false};
     this.params = {};
 
-    metadata.forEach(([name, type, v]) => {
+    this.metadata.forEach(([name, type, v]) => {
       if (type === 'face' && v === CURRENT_SELECTION) {
-        let selectedFace = selection.face()[0];
+        let selectedFace = services.selection.face()[0];
         v = selectedFace ? selectedFace.id : '';
       }
       this.params[name] = v
     });
     
     Object.assign(this.params, initialState);
-    
-    this.preview = previewer(this.params);
+    this.previewer = createPreviewer(previewGeomProvider, services);
+  }
+
+  componentDidMount() {
+    this.preview = this.previewer(this.params);
+  }
+
+  componentWillUnmount() {
+    this.preview.dispose();
   }
 
   render() {
-    let {left, title, metadata} = this.props;
+    let {type, left} = this.props;
     return <Window initWidth={250} 
                    initLeft={left} 
-                   title={title} 
-                   onClose={this.onClose} 
+                   title={type} 
+                   onClose={this.cancel} 
                    onKeyDown={this.onKeyDown}
                    setFocus={this.focusFirstInput}>
       <Stack >
-        {metadata.map(([name, type, , params], index) => {
+        {this.metadata.map(([name, type, , params], index) => {
           return <Field key={index}>
             <Label>{uiLabel(name)}</Label>
             {this.controlForType(name, type, params)}
           </Field>
         } )}
         <ButtonGroup>
-          <Button onClick={this.onClose} >Cancel</Button>
+          <Button onClick={this.cancel} >Cancel</Button>
           <Button type='accent' onClick={this.onOK} >OK</Button>
         </ButtonGroup>
         {this.state.hasError && <div className={ls.errorMessage}>
@@ -70,7 +82,7 @@ export default class Wizard extends React.Component {
   onKeyDown = e => {
     switch (e.keyCode) {
       case 27 :
-        this.onClose();
+        this.cancel()
         break;
       case 13 :
         this.onOK();
@@ -86,34 +98,44 @@ export default class Wizard extends React.Component {
     toFocus.focus()
   };
   
-  onClose = () => {
-    this.preview.dispose();
-    this.props.onCancel();
+  cancel = () => {
+    if (this.props.onCancel) {
+      this.props.onCancel();
+    }
+    this.props.close();
   };
   
   onOK = () => {
     try {
-      this.props.onOK(this.params);
-      this.onClose();
-    } catch (error) {
-      let stateUpdate = {
-        hasError: true
-      };
-      let printError = true;
-      if (error.TYPE === CadError) {
-        let {code, userMessage, kind} = error;
-        printError = !code;
-        if (code && kind === CadError.KIND.INTERNAL_ERROR) {
-          console.warn('Operation Error Code: ' + code);
-        }
-        Object.assign(stateUpdate, {code, userMessage});
-      } 
-      if (printError) {
-        console.error(error);
+      if (this.props.onOK) {
+        this.props.onOK(this.params);
+      } else {
+        this.context.services.craft.modify({type: this.props.type, params: this.params});
       }
-      this.setState(stateUpdate);
+      this.props.close();
+    } catch (error) {
+      this.handleError(error);
     }
   };
+
+  handleError(error) {
+    let stateUpdate = {
+      hasError: true
+    };
+    let printError = true;
+    if (error.TYPE === CadError) {
+      let {code, userMessage, kind} = error;
+      printError = !code;
+      if (code && kind === CadError.KIND.INTERNAL_ERROR) {
+        console.warn('Operation Error Code: ' + code);
+      }
+      Object.assign(stateUpdate, {code, userMessage});
+    }
+    if (printError) {
+      console.error(error);
+    }
+    this.setState(stateUpdate);
+  }
   
   controlForType(name, type, params, tabindex) {
     const onChange = val => {
