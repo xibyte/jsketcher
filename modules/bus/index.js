@@ -76,7 +76,7 @@ export default class Bus {
   
   dispatch(key, data) {
     // console.log('dispatch: %c' + key, 'color: #0a0');
-    // console.log(data);
+    // console.dir(data);
 
     if (this.lock.has(key)) {
       console.warn('recursive dispatch');
