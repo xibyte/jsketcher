@@ -15,7 +15,7 @@ export function activate({bus, services}) {
   });
   
   bus.subscribe(TOKENS.CLOSE, wizard => {
-    bus.updateState(TOKENS.WIZARDS, opened => opened.filter(w => w === wizard));
+    bus.updateState(TOKENS.WIZARDS, opened => opened.filter(w => w !== wizard));
   });
 } 
 
