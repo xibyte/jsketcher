@@ -178,19 +178,21 @@ function replaceMergedFaces(facesData, mergedFaces) {
   filterInPlace(facesData, ({face}) => 
       mergedFaces.find(({originFaces}) => originFaces.indexOf(face) > -1) === undefined
   );
-  for (let {mergedLoops, referenceSurface, originFaces} of mergedFaces) {
-    let fakeFace = new Face(referenceSurface);
-    for (let mergedLoop of mergedLoops) {
-      let actualHalfEdges = [];
-      mergedLoop.halfEdges.forEach(he => addDecayed(he, actualHalfEdges));
-      mergedLoop.halfEdges = actualHalfEdges;
-      fakeFace.innerLoops.push(mergedLoop);
-      mergedLoop.face = fakeFace;
-      mergedLoop.link();
-    }
-    facesData.push(initSolveDataForFace(fakeFace));
-    for (let originFace of originFaces) {
-      originFace.data[MY].newEdges.forEach(e => addNewEdge(fakeFace, e));
+  for (let {facePrototypes, originFaces} of mergedFaces) {
+    for (let {loops, surface} of facePrototypes) {
+      let fakeFace = new Face(surface);
+      for (let loop of loops) {
+        let actualHalfEdges = [];
+        loop.halfEdges.forEach(he => addDecayed(he, actualHalfEdges));
+        loop.halfEdges = actualHalfEdges;
+        fakeFace.innerLoops.push(loop);
+        loop.face = fakeFace;
+        loop.link();
+      }
+      facesData.push(initSolveDataForFace(fakeFace));
+      for (let originFace of originFaces) {
+        originFace.data[MY].newEdges.forEach(e => addNewEdge(fakeFace, e));
+      }
     }
   }
 }
@@ -316,9 +318,6 @@ function mergeFaces(facesA, facesB, opType) {
     }
   }
 
-  let originFace = facesA[0];
-  let referenceSurface = createBoundingNurbs(allPoints, originFace.surface.simpleSurface);
-  
   let valid = new Set();
   let invalid = new Set();
   
@@ -346,6 +345,7 @@ function mergeFaces(facesA, facesB, opType) {
     
     function checkCoincidentEdges(edgeA, edgeB) {
       if (isSameEdge(edgeA, edgeB)) {
+        EdgeSolveData.markCollision(edgeA, edgeB);
         coincidentEdges.add(edgeA);
         coincidentEdges.add(edgeB);
         markEdgeTransferred(edgeA.edge);
@@ -407,29 +407,42 @@ function mergeFaces(facesA, facesB, opType) {
     }
   }
 
-  let graph = new EdgeGraph();
-  let discardedEdges = new Set();
-  for (let face of originFaces) {
-    for (let edge of face.edges) {
-      discardedEdges.add(edge);
-      if (!invalid.has(edge)) {
-        graph.add(edge);
+
+  
+  let facePrototypes = [];
+  let leftovers = null;
+  for (let referenceFace of originFaces) {
+
+    let graph = new EdgeGraph();
+    for (let face of originFaces) {
+      for (let edge of face.edges) {
+        if (!invalid.has(edge) && (leftovers == null || leftovers.has(edge))) {
+          graph.add(edge);
+        }
       }
+    }
+
+    leftovers = new Set(graph.graphEdges);
+    let detectedLoops = detectLoops(referenceFace.surface, graph);
+
+    for (let loop of detectedLoops) {
+      for (let edge of loop.halfEdges) {
+        // EdgeSolveData.setPriority(edge, 1);
+        leftovers.delete(edge);
+      }
+    }
+
+
+    if (detectedLoops.length !== 0) {
+      facePrototypes.push({
+        loops: detectedLoops,
+        surface: createBoundingNurbs(allPoints, referenceFace.surface.simpleSurface),
+      });
     }
   }
 
-  let detectedLoops = detectLoops(originFace.surface, graph);
-  // for (let loop of detectedLoops) {
-  //   for (let edge of loop.halfEdges) {
-  //     // EdgeSolveData.setPriority(edge, 1);
-  //     discardedEdges.delete(edge);
-  //   }
-  // }
-
-
   return {
-    mergedLoops: detectedLoops,
-    referenceSurface,
+    facePrototypes,
     originFaces
   };
 }
@@ -466,7 +479,8 @@ function filterFaces(faces) {
   
   function doesFaceContainNewEdge(face) {
     for (let e of face.edges) {
-      if (getPriority(e) > 0 || getPriority(e.twin()) > 0) {
+      if (getPriority(e) > 0 || getPriority(e.twin()) > 0 || 
+          EdgeSolveData.get(e).affected === true) {
         return true;
       }
     }
@@ -1054,6 +1068,21 @@ EdgeSolveData.clear = function(edge) {
 
 EdgeSolveData.setPriority = function(halfEdge, value) {
   EdgeSolveData.createIfEmpty(halfEdge).priority = value;
+};
+
+EdgeSolveData.markAffected = function(halfEdge) {
+  EdgeSolveData.createIfEmpty(halfEdge).affected = true;
+};
+
+EdgeSolveData.markCollision = function(halfEdge1, halfEdge2) {
+  
+  function markNeighborhoodAffected(edge) {
+    EdgeSolveData.markAffected(edge);
+    EdgeSolveData.markAffected(edge.next);
+    EdgeSolveData.markAffected(edge.prev);
+  }
+  markNeighborhoodAffected(halfEdge1);
+  markNeighborhoodAffected(halfEdge2);
 };
 
 EdgeSolveData.addPriority = function(halfEdge, value) {
