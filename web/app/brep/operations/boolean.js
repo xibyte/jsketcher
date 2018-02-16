@@ -65,12 +65,7 @@ export function invert( shell ) {
   }
 }
 
-let EDGE_REPLACE = [];
-
 export function BooleanAlgorithm( shellA, shellB, type ) {
-  
-  //fixme
-  EDGE_REPLACE = [];
   
   BREP_DEBUG.startBooleanSession(shellA, shellB, type);
 
@@ -97,8 +92,6 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
 
   intersectFaces(shellA, shellB, type);
 
-  replaceEdges();
-  
   replaceMergedFaces(facesData, mergedFaces);
   for (let faceData of facesData) {
     faceData.initGraph();
@@ -157,12 +150,6 @@ function removeInvalidLoops(facesData) {
   for (let faceData of facesData) {
     faceData.detectedLoops = faceData.detectedLoops.filter(
       loop => loop.halfEdges.find(e => isLoopInvalid(e.twin().loop)) === undefined);
-  }
-}
-
-function replaceEdges() {
-  for (let {from, to} of EDGE_REPLACE) {
-    from.replace(to);
   }
 }
 
@@ -445,10 +432,6 @@ function mergeFaces(facesA, facesB, opType) {
     facePrototypes,
     originFaces
   };
-}
-
-function markEdgeToReplace(from, to) {
-  EDGE_REPLACE.push({from, to});
 }
 
 export function mergeVertices(shell1, shell2) {
