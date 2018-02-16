@@ -1,4 +1,5 @@
 import {createToken} from "bus";
+import {addModification} from './craftHistoryUtils';
 
 export function activate({bus, services}) {
 
@@ -7,45 +8,35 @@ export function activate({bus, services}) {
     pointer: -1
   });
 
-  function getHistory() {
-    return bus.state[TOKENS.MODIFICATIONS].history;
+  function isAdditiveChange({history, pointer}, {history:oldHistory, pointer:oldPointer}) {
+    if (pointer < oldPointer) {
+      return false;
+    }
+    
+    for (let i = 0; i <= oldPointer; i++) {
+      let modCurr = history[i];
+      let modPrev = oldHistory[i];
+      if (modCurr !== modPrev) {
+        return false;
+      }
+    }
+    return true;    
   }
-
-  bus.subscribe(TOKENS.HISTORY_POINTER, (pointer) => {
-    let history = getHistory();
-    if (pointer < history.length) {
-      resetInternal(history.slice(0, pointer));
-      bus.setState(TOKENS.MODIFICATIONS, {pointer});
+  
+  bus.subscribe(TOKENS.MODIFICATIONS, (curr, prev) => {
+    let beginIndex;
+    if (isAdditiveChange(curr, prev)) {
+      beginIndex = prev.pointer + 1;
+    } else {
+      services.cadRegistry.reset();
+      beginIndex = 0;
+    }
+    let {history, pointer} = curr;
+    for (let i = beginIndex; i <= pointer; i++) {
+      modifyInternal(history[i]);
     }
   });
 
-  function remove(modificationIndex) {
-    bus.updateState(TOKENS.MODIFICATIONS,
-      ({history, pointer}) => {
-        return {
-          history: history.slice(0, modificationIndex),
-          pointer: Math.min(pointer, modificationIndex - 1)
-        }
-      });
-  }
-
-  function resetInternal(modifications) {
-    services.cadRegistry.reset();
-    for (let request of modifications) {
-      modifyInternal(request);
-    }
-  }
-
-  function reset(modifications) {
-    resetInternal(modifications);
-    bus.updateState(TOKENS.MODIFICATIONS,
-      () => {
-        return {
-          history: modifications,
-          pointer: modifications.length - 1
-        }
-      });
-  }
 
   function modifyInternal(request) {
     let op = services.operation.registry[request.type];
@@ -57,23 +48,21 @@ export function activate({bus, services}) {
   }
 
   function modify(request) {
-    modifyInternal(request);
-
-    bus.updateState(TOKENS.MODIFICATIONS,
-      ({history, pointer}) => {
-        return {
-          history: [...history, request],
-          pointer: pointer++
-        }
-      });
+    bus.updateState(TOKENS.MODIFICATIONS, modifications => addModification(modifications, request));
   }
-
+  
+  function reset(modifications) {
+    bus.dispatch(TOKENS.MODIFICATIONS, {
+      history: modifications,
+      pointer: modifications.length - 1
+    });
+  }
+  
   services.craft = {
-    modify, remove, reset, TOKENS
+    modify, reset, TOKENS
   }
 }
 
 export const TOKENS = {
-  MODIFICATIONS: createToken('craft', 'modifications'),
-  HISTORY_POINTER: createToken('craft', 'historyPointer'),
+  MODIFICATIONS: createToken('craft', 'modifications')
 };

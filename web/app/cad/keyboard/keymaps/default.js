@@ -2,6 +2,7 @@ export default {
   'CUT': 'c',
   'EXTRUDE': 'e',
   'PLANE': 'p',
+  'BOX': 'b',
   'ZoomIn': '+',
   'ZoomOut': '-',
   'menu.craft': 'shift+c',
