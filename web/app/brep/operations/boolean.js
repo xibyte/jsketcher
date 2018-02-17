@@ -79,16 +79,15 @@ export function BooleanAlgorithm( shellA, shellB, type ) {
     type = TYPE.INTERSECT;
   }
 
-  let workingFaces = [];
+  let workingFaces = collectFaces(shellA, shellB);
+
+  initOperationData(workingFaces);
 
   mergeVertices(shellA, shellB);
   initVertexFactory(shellA, shellB);
 
   intersectEdges(shellA, shellB);
   let mergedFaces = mergeOverlappingFaces(shellA, shellB, type);
-
-  initOperationData(shellA, workingFaces);
-  initOperationData(shellB, workingFaces);
 
   intersectFaces(shellA, shellB, type);
 
@@ -239,7 +238,7 @@ function detectLoops(surface, graph) {
 }
 
 
-function findOverlappingFaces(shell1, shell2) {
+function findOverlappingFaces(shellA, shellB) {
 
   function overlapsImpl(face1, face2) {
     function pointOnFace(face, pt) {
@@ -264,21 +263,23 @@ function findOverlappingFaces(shell1, shell2) {
 
   let overlapGroups = [];
 
-  for (let face1 of shell1.faces) {
-    for (let face2 of shell2.faces) {
+  for (let faceA of shellA.faces) {
+    for (let faceB of shellB.faces) {
       if (DEBUG.FACE_MERGE) {
         __DEBUG__.Clear();
-        __DEBUG__.AddFace(face1, 0x0000ff);
-        __DEBUG__.AddFace(face2);
+        __DEBUG__.AddFace(faceA, 0x0000ff);
+        __DEBUG__.AddFace(faceB);
       }
-      if (overlaps(face1, face2) ) {
-        let group = overlapGroups.find(g => g[0].has(face1) || g[1].has(face2));
+      if (overlaps(faceA, faceB) ) {
+        let group = overlapGroups.find(g => g[0].has(faceA) || g[1].has(faceB));
         if (!group) {
           group = [new Set(), new Set()];    
           overlapGroups.push(group);
         } 
-        group[0].add(face1);
-        group[1].add(face2);
+        group[A].add(faceA);
+        group[B].add(faceB);
+        faceA.op.overlaps = group[B];
+        faceB.op.overlaps = group[A];
       }
     }
   }
@@ -341,12 +342,18 @@ function mergeFaces(facesA, facesB, opType) {
         if (edgeA.vertexA === edgeB.vertexA) {
           // chooseBetweenEqualEdges();
           // canEdgeBeTransferred(edge, face, opType)
-          throw new CadError({
-            kind: CadError.KIND.UNSUPPORTED_CASE,
-            code: 'edge collision on face merge',
-            relatedTopoObjects: [edgeA, edgeB],
-            userMessage: "edges can't be coincident for this operation"
-          });
+          let faceAAdjacent = edgeA.twin().loop.face;
+          let faceBAdjacent = edgeB.twin().loop.face;
+          if (faceAAdjacent.op.overlaps && faceAAdjacent.op.overlaps.has(faceBAdjacent)) {
+            invalid.add(edgeB);
+          } else {
+            throw new CadError({
+              kind: CadError.KIND.UNSUPPORTED_CASE,
+              code: 'edge collision on face merge',
+              relatedTopoObjects: [edgeA, edgeB],
+              userMessage: "edges can't be coincident for this operation"
+            });
+          }
         } else if (edgeA.vertexA === edgeB.vertexB) {
 
           invalid.add(edgeA);
@@ -369,12 +376,12 @@ function mergeFaces(facesA, facesB, opType) {
       }
     }
     
-    function invalidateEdges(faceA, faceB) {
-      for (let edgeA of faceA.edges) {
-        if (coincidentEdges.has(edgeA)) {
+    function invalidateEdges(faceX, faceY) {
+      for (let edgeX of faceX.edges) {
+        if (coincidentEdges.has(edgeX)) {
           continue;
         }
-        invalidateEdge(faceB, edgeA); 
+        invalidateEdge(faceY, edgeX); 
       }
     }
     
@@ -391,7 +398,6 @@ function mergeFaces(facesA, facesB, opType) {
   for (let faceA of facesA) {
     for (let faceB of facesB) {
       invalidate(faceA, faceB);
-      invalidate(faceB, faceA);
     }
   }
 
@@ -522,10 +528,21 @@ export function loopsToFaces(originFace, loops, out) {
   }
 }
 
-function initOperationData(shell, faceCollector) {
-  for (let face of shell.faces) {
+function collectFaces(shellA, shellB) {
+  function collect(shell, out) {
+    for (let face of shell.faces) {
+      out.push(face);
+    }
+  }
+  let out = [];
+  collect(shellA, out);
+  collect(shellB, out);
+  return out;
+}
+
+function initOperationData(faces) {
+  for (let face of faces) {
     initOperationDataForFace(face);
-    faceCollector.push(face);
   }
 }
 
@@ -1160,6 +1177,7 @@ class FaceOperationData extends EdgeGraph {
     this.face = face;
     this.newEdges = [];
     this.collidedEdges = [];
+    this.overlaps = null;
   }
 
   markTransferredFrom(edge) {
