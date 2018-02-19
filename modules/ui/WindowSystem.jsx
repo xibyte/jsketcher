@@ -1,25 +1,38 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export default class WindowSystem extends React.Component {
 
   constructor() {
     super();
-    this.state = {
-      windows: []
-    }
+    this.moveHandler = null;
+  }
+
+  componentDidMount() {
+    document.body.onmousemove = e => {
+      if (this.moveHandler !== null) {
+        this.moveHandler(e);
+      }
+    };
+  }
+
+  componentWillUnMount() {
   }
 
   render() {
-    return this.state.windows;
-  }
-  
-  addWindow(window) {
-    this.setState({windows: [...this.state.windows, window]});    
+    return this.props.children;
   }
 
-  removeWindow(window) {
-    let windows = [...this.state.windows];
-    windows.splice(windows.indexOf(window), 1);
-    this.setState({windows});
+  childContext = {
+    setWindowMoveHandler: moveHandler => this.moveHandler = moveHandler
+  };
+  
+  getChildContext() {
+    return this.childContext;
   }
+  
+  static childContextTypes = {
+    setWindowMoveHandler: PropTypes.func
+  }
+  
 }

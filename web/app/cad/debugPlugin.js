@@ -1,18 +1,16 @@
-import {checkForSelectedFaces} from './actions/actionHelpers'
-import {nurbsToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneObject'
-import {createSolidMaterial} from './scene/wrappers/sceneObject'
-import DPR from 'dpr'
+import {checkForSelectedFaces} from './actions/actionHelpers';
+import {nurbsToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneObject';
+import {createSolidMaterial} from './scene/wrappers/sceneObject';
+import DPR from 'dpr';
 import Vector from 'math/vector';
-import * as ui from '../ui/ui';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import BrepDebugger from './../brep/debug/debugger/brepDebugger';
-import {TOKENS as UI_TOKENS} from "./dom/uiEntryPointsPlugin";
-import {IO} from '../sketcher/io';
+import {TOKENS as UI_TOKENS} from './dom/uiEntryPointsPlugin';
 import {readSketchFloat} from './sketch/sketchReader';
 import {TOKENS as CRAFT_TOKENS} from './craft/craftPlugin';
 import {toLoops} from '../brep/brep-io';
+import {contributeComponent} from './dom/components/ContributedComponents';
+import BrepDebuggerWindow, {BREP_DEBUG_WINDOW_VISIBLE} from '../brep/debug/debugger/BrepDebuggerWindow';
 
 
 export function activate({bus, services}) {
@@ -20,6 +18,8 @@ export function activate({bus, services}) {
   services.action.registerActions(DebugActions);
   services.menu.registerMenus([DebugMenuConfig]);
   bus.updateState(UI_TOKENS.CONTROL_BAR_LEFT, actions => [...actions, 'menu.debug']);
+  bus.enableState(BREP_DEBUG_WINDOW_VISIBLE, false);
+  contributeComponent(<BrepDebuggerWindow key='debug.BrepDebuggerWindow' auxGroup={services.cadScene.auxGroup} />);
 }
 
 function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
@@ -384,25 +384,8 @@ const DebugActions = [
       label: 'open BREP debugger',
       info: 'open the BREP debugger in a window',
     },
-    invoke: ({services: {cadScene}}) => {
-      // require('../brep/debug/debugger/brepDebugger.less');
-      let debuggerWinDom = document.getElementById('brep-debugger');
-      if (!debuggerWinDom) {
-        //Temporary hack until win infrastructure is done for 3d
-        debuggerWinDom = document.createElement('div');
-        debuggerWinDom.setAttribute('id', 'brep-debugger');
-        debuggerWinDom.innerHTML = '<div class="tool-caption" ><i class="fa fa-fw fa-bug"></i>Brep Debugger</div><div class="content"></div>';
-        document.body.appendChild(debuggerWinDom);
-        debuggerWinDom.debuggerWin = new ui.Window($(debuggerWinDom), new ui.WinManager());
-        let brepDebugGroup = new THREE.Object3D();
-        cadScene.auxGroup.add(brepDebugGroup);
-      
-        ReactDOM.render(
-          <BrepDebugger brepDebugGroup={brepDebugGroup}/>,
-          debuggerWinDom.getElementsByClassName('content')[0]
-        );
-      }
-      debuggerWinDom.debuggerWin.show();
+    invoke: ({bus}) => {
+      bus.dispatch(BREP_DEBUG_WINDOW_VISIBLE, true);
     }
   }
 
