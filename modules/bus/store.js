@@ -17,7 +17,7 @@ export class Store {
     return callback;
   };
 
-  unSubscribe(key, callback) {
+  unsubscribe(key, callback) {
     const listenerList = this.listeners[key];
     for (let i = 0; i < listenerList.length; i++) {
       if (listenerList[i] === callback) {

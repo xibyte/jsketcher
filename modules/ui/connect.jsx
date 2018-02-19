@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+export const PROPAGATE_SELF_PROPS = v => v;
+
 export default function connect(WrappedComponent, tokens, config) {
   if (!config) {
     config = DEFAULT_CONFIG;

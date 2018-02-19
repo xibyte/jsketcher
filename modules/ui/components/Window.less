@@ -3,7 +3,10 @@
 
 .root {
   position: absolute;
+  z-index: 1;
   background-color: @bg-color-alt;
+  display: flex;
+  flex-direction: column;
 }
 
 .bar {
@@ -21,4 +24,9 @@
   display: inline-block;
   padding: 0.6rem 0.5rem 0.6rem 0.5rem;
   .button-behavior(@color-danger);
+}
+
+.content {
+  overflow-y: auto;
+  flex-grow: 1;
 }

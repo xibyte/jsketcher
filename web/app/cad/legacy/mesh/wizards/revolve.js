@@ -145,7 +145,7 @@ RevolveWizard.prototype.createRequest = function(done) {
 };
 
 RevolveWizard.prototype.dispose = function() {
-  this.app.bus.unSubscribe('selection-sketch-object', this.selectionListener);
+  this.app.bus.unsubscribe('selection-sketch-object', this.selectionListener);
   OpWizard.prototype.dispose.call(this);
 };
 
