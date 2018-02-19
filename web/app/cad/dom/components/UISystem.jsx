@@ -5,6 +5,7 @@ import {TOKENS as MENU_TOKENS} from '../menu/menuPlugin';
 
 import WindowSystem from 'ui/WindowSystem';
 import ActionInfo from '../actionInfo/ActionInfo';
+import ContributedComponents from './ContributedComponents';
 
 export default class UISystem extends React.Component {
   
@@ -12,8 +13,10 @@ export default class UISystem extends React.Component {
     return <div {...this.props} onMouseDown={this.closeAllUpPopups} >
       <MenuHolder />
       <ActionInfo />
-      <WindowSystem />
-      {this.props.children}
+      <WindowSystem>
+        {this.props.children}
+        <ContributedComponents />
+      </WindowSystem>
     </div>
   }
 
