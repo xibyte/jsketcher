@@ -226,7 +226,7 @@ function detectLoops(surface, graph) {
       if (!candidates) {
         break;
       }
-      candidates = candidates.filter(c => c.vertexB !== edge.vertexA);
+      candidates = candidates.filter(c => c.vertexB !== edge.vertexA || !isSameEdge(c, edge));
       edge = findMaxTurningLeft(edge, candidates, surface);
       BREP_DEBUG.booleanLoopDetectionNextStep(candidates, edge);
       if (seen.has(edge)) {
