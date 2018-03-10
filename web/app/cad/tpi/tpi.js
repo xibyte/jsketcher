@@ -10,7 +10,8 @@ import {Face} from '../../brep/topo/face';
 import {Shell} from '../../brep/topo/shell';
 import {Vertex} from '../../brep/topo/vertex';
 import {Point} from '../../brep/geom/point';
-import {NurbsCurve, NurbsSurface} from '../../brep/geom/impl/nurbs';
+import {NurbsSurface} from '../../brep/geom/impl/nurbs';
+import BrepCurve from '../../brep/geom/curves/brepCurve';
 import {Plane} from '../../brep/geom/impl/plane';
 import pip from '../tess/pip';
 
@@ -23,7 +24,7 @@ export default {
     pip,
     validator: BREPValidator,
     geom: {
-      Point, NurbsCurve, Plane, NurbsSurface, createBoundingNurbs
+      Point, BrepCurve, Plane, NurbsSurface, createBoundingNurbs
     },
     topo: {
       HalfEdge, Edge, Loop, Face, Shell, Vertex
