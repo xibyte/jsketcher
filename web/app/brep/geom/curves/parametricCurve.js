@@ -1,24 +1,24 @@
+// @flow
+interface ParametricCurve {
 
-export default class ParametricCurve {
+  domain(): number[];
 
-  domain() { }
+  degree(): number;
+  
+  degree1Tess(): number[][];
 
-  degree() { }
+  eval(u: number, num: number): number[];  
 
-  degree1Tess() {}
+  point(param: number): number[]; 
 
-  eval(u, num) { }
+  param(point: number[]): number;
 
-  point(param) { }
+  transform(tr); 
 
-  param(point) { }
+  optimalSplits(): number;
 
-  transform(tr) { }
+  normalizeParametrization();
 
-  optimalSplits() { }
-
-  normalizeParametrization() { }
-
-  invert() { }
+  invert();
 }
 
