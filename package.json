@@ -32,6 +32,7 @@
     "babel-preset-stage-2": "6.24.1",
     "babel-polyfill": "6.26.0",
     "babel-preset-react": "6.24.1",
+    "babel-preset-flow": "6.23.0",
 
     "css-loader": "0.28.7",
     "less-loader": "4.0.5",
