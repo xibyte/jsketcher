@@ -1,5 +1,6 @@
 import verb from 'verb-nurbs'
-import {NurbsCurve, NurbsCurveImpl} from '../../brep/geom/impl/nurbs'
+import BrepCurve from '../../brep/geom/curves/brepCurve';
+import NurbsCurve from '../../brep/geom/curves/nurbsCurve';
 import {Point} from '../../brep/geom/point'
 import {LUT} from '../../math/bezier-cubic'
 import {distanceAB, isCCW, makeAngle0_360} from '../../math/math'
@@ -38,7 +39,7 @@ class SketchPrimitive {
     normalizeCurveEnds(data);
     verbNurbs = new verb.geom.NurbsCurve(data);
 
-    return new NurbsCurve(new NurbsCurveImpl(verbNurbs));
+    return new BrepCurve(new NurbsCurve(verbNurbs));
   }
 
   toVerbNurbs(plane, _3dtr) {

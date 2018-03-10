@@ -1,4 +1,5 @@
-import {NurbsSurface, NurbsCurve} from './geom/impl/nurbs';
+import {NurbsSurface} from './geom/impl/nurbs';
+import BrepCurve from './geom/curves/brepCurve';
 import {Plane} from './geom/impl/plane';
 import {Point} from './geom/point';
 import {Shell} from './topo/shell';
@@ -53,7 +54,7 @@ export default class BrepBuilder {
     let he = a.edgeFor(b);
     if (he === null) {
       if (!curve) {
-        curve = NurbsCurve.createLinearNurbs(a.point, b.point);
+        curve = BrepCurve.createLinearNurbs(a.point, b.point);
       }
       const e = new Edge(curve, a, b);
       he = e.halfEdge1;
