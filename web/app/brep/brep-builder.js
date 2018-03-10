@@ -54,7 +54,7 @@ export default class BrepBuilder {
     let he = a.edgeFor(b);
     if (he === null) {
       if (!curve) {
-        curve = BrepCurve.createLinearNurbs(a.point, b.point);
+        curve = BrepCurve.createLinearCurve(a.point, b.point);
       }
       const e = new Edge(curve, a, b);
       he = e.halfEdge1;

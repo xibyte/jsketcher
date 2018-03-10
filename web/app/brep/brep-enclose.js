@@ -40,8 +40,8 @@ export function createPrism(basePoints, height) {
 
   for (let i = 0; i < basePoints.length; i++) {
     let j = (i + 1) % basePoints.length;
-    basePath.push(BrepCurve.createLinearNurbs(basePoints[i], basePoints[j]));
-    lidPath.push(BrepCurve.createLinearNurbs(lidPoints[i], lidPoints[j]));
+    basePath.push(BrepCurve.createLinearCurve(basePoints[i], basePoints[j]));
+    lidPath.push(BrepCurve.createLinearCurve(lidPoints[i], lidPoints[j]));
   }
   return enclose(basePath, lidPath, baseSurface, lidSurface);
 }

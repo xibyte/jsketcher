@@ -181,7 +181,7 @@ function degree1OptTessellator(curve, min, max, tessTol, scale) {
   return curveTess(curve, min, max, tessTol, scale);
 }
 
-BrepCurve.createLinearNurbs = function(a, b) {
+BrepCurve.createLinearCurve = function(a, b) {
   let line = verb.geom.NurbsCurve.byKnotsControlPointsWeights( 1, [0,0,1,1], [a.data(), b.data()]);
   return new BrepCurve(new NurbsCurve(line));
 };
