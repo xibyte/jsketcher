@@ -12,7 +12,7 @@ export class Ray {
   }
 
   updateCurve() {
-    this.curve = BrepCurve.createLinearNurbs(this.pt, this.pt.plus(this.dir.multiply(this.reachableDistance)));
+    this.curve = BrepCurve.createLinearCurve(this.pt, this.pt.plus(this.dir.multiply(this.reachableDistance)));
   }
 
   pertrub() {
