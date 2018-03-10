@@ -9,7 +9,7 @@ export function activate({bus, services}) {
 
   function addShellOnScene(shell, skin) {
     const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
-    SceneGraph.addToGroup(services.cadScene.workGroup, sceneSolid.cadGroup);
+    services.cadRegistry.update(null, [sceneSolid]);
     services.viewer.render();
     return sceneSolid;
   }

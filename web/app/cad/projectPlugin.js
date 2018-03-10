@@ -1,12 +1,17 @@
 import {setSketchPrecision} from './sketch/sketchReader';
+import {runSandbox} from './sandbox';
 
 const STORAGE_PREFIX = "TCAD.projects.";
 
 
-export function activate({services, bus}) {
+export function activate(context) {
 
-  const id = processHints();
+  const {services, bus} = context;
   
+  const [id, params] = parseHintsFromLocation();
+
+  processParams(params, context);
+
   const sketchNamespace = id + '.sketch.'; 
   const sketchStorageNamespace = STORAGE_PREFIX + sketchNamespace;
 
@@ -47,7 +52,7 @@ export function activate({services, bus}) {
   }
 }
 
-function processHints() {
+function parseHintsFromLocation() {
   let hints = window.location.hash.substring(1);
   if (!hints) {
     hints = window.location.search.substring(1);
@@ -55,9 +60,7 @@ function processHints() {
   if (!hints) {
     hints = "DEFAULT";
   }
-  let [id, params] = parseHints(hints);
-  processParams(params);
-  return id;
+  return parseHints(hints);
 }
 
 function parseHints(hints) {
@@ -75,8 +78,11 @@ function parseHints(hints) {
   return [id, params];
 }
 
-function processParams({sketchPrecision}) {
+function processParams({sketchPrecision, sandbox}, context) {
   if (sketchPrecision) {
     setSketchPrecision(parseInt(sketchPrecision));
   }  
+  if (sandbox) {
+    setTimeout(() => runSandbox(context));
+  }
 }
