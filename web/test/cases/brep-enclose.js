@@ -128,11 +128,11 @@ function createEnclosure(tpi, a, b, c) {
 }
 
 function createEdge(tpi, a, b) {
-  return new tpi.brep.topo.Edge(tpi.brep.geom.NurbsCurve.createLinearNurbs(a.point, b.point), a, b).halfEdge1;
+  return new tpi.brep.topo.Edge(tpi.brep.geom.BrepCurve.createLinearNurbs(a.point, b.point), a, b).halfEdge1;
 }
 
 function createCurve(tpi, a, b) {
-  return tpi.brep.geom.NurbsCurve.createLinearNurbs(pt(tpi,a), pt(tpi,b));
+  return tpi.brep.geom.BrepCurve.createLinearNurbs(pt(tpi,a), pt(tpi,b));
 }
 
 const pt = (tpi, arr) => new tpi.brep.geom.Point().set3(arr);

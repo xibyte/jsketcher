@@ -1,5 +1,5 @@
 import pertrub from './vector-petrub';
-import {NurbsCurve} from '../geom/impl/nurbs';
+import BrepCurve from '../geom/curves/brepCurve';
 
 
 export class Ray {
@@ -12,7 +12,7 @@ export class Ray {
   }
 
   updateCurve() {
-    this.curve = NurbsCurve.createLinearNurbs(this.pt, this.pt.plus(this.dir.multiply(this.reachableDistance)));
+    this.curve = BrepCurve.createLinearNurbs(this.pt, this.pt.plus(this.dir.multiply(this.reachableDistance)));
   }
 
   pertrub() {

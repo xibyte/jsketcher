@@ -89,10 +89,6 @@ export function __cross(v1, v2, out) {
   return out;
 }
 
-export function _cross(v1, v2) {
-  return __cross(v1, v2);
-}
-
 export function cross(v1, v2) {
   return __cross(v1, v2, []);
 }

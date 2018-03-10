@@ -4,7 +4,8 @@ import {Loop} from './topo/loop'
 import {Face} from './topo/face'
 import {HalfEdge, Edge} from './topo/edge'
 import {Line} from './geom/impl/line'
-import {NurbsSurface, NurbsCurve} from './geom/impl/nurbs'
+import {NurbsSurface} from './geom/impl/nurbs'
+import BrepCurve from './geom/curves/brepCurve';
 import {Plane} from './geom/impl/plane'
 import {Point} from './geom/point'
 import {BasisForPlane, Matrix3} from '../math/l3space'
@@ -39,8 +40,8 @@ export function createPrism(basePoints, height) {
 
   for (let i = 0; i < basePoints.length; i++) {
     let j = (i + 1) % basePoints.length;
-    basePath.push(NurbsCurve.createLinearNurbs(basePoints[i], basePoints[j]));
-    lidPath.push(NurbsCurve.createLinearNurbs(lidPoints[i], lidPoints[j]));
+    basePath.push(BrepCurve.createLinearNurbs(basePoints[i], basePoints[j]));
+    lidPath.push(BrepCurve.createLinearNurbs(lidPoints[i], lidPoints[j]));
   }
   return enclose(basePath, lidPath, baseSurface, lidSurface);
 }
@@ -120,13 +121,7 @@ function bothClassOf(o1, o2, className) {
 }
 
 export function createWall(curve1, curve2) {
-  if (bothClassOf(curve1, curve2, 'Line')) {
-    throw 'unsupported'
-  } else if (bothClassOf(curve1, curve2, 'NurbsCurve')) {
-    return NurbsSurface.loft(curve2, curve1, 1);
-  } else {
-    throw 'unsupported';
-  }
+  return NurbsSurface.loft(curve2, curve1, 1);
 }
 
 

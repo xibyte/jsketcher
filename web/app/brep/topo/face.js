@@ -1,7 +1,6 @@
 import {TopoObject} from './topo-object'
 import {Loop} from './loop'
 import PIP from '../../cad/tess/pip';
-import {NurbsCurve} from "../geom/impl/nurbs";
 import {eqSqTol, veq, veqNeg} from "../geom/tolerance";
 import {
   ENCLOSE_CLASSIFICATION, isCurveEntersEdgeAtPoint, isCurveEntersEnclose, isInsideEnclose,
