@@ -149,17 +149,17 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
       __DEBUG__.AddPolyLine(curve.tessellate().map(p => new Vector().set3(p)), color);
     },
     AddNurbsCorners: (nurbs) => {
-      __DEBUG__.AddPoint(nurbs.point(0, 0), 0xff0000);
-      __DEBUG__.AddPoint(nurbs.point(1, 0), 0x00ff00);
-      __DEBUG__.AddPoint(nurbs.point(1, 1), 0x0000ff);
-      __DEBUG__.AddPoint(nurbs.point(0, 1), 0x00ffff);
+      __DEBUG__.AddPoint(nurbs.southWestPoint(), 0xff0000);
+      __DEBUG__.AddPoint(nurbs.southEastPoint(), 0x00ff00);
+      __DEBUG__.AddPoint(nurbs.northEastPoint(), 0x0000ff);
+      __DEBUG__.AddPoint(nurbs.northWestPoint(), 0x00ffff);
     },
     AddNormal: (atPoint, normal, color, scale) => {
       scale = scale || 100;
       __DEBUG__.AddSegment(atPoint, atPoint.plus(normal.multiply(scale)), color);
     },
     AddSurfaceNormal: (surface) => {     
-      __DEBUG__.AddNormal(surface.point(0.5, 0.5), surface.normalInMiddle());
+      __DEBUG__.AddNormal(surface.pointInMiddle(), surface.normalInMiddle());
     },
     HideSolids: () => {
       cadRegistry.getAllShells().forEach(s => s.cadGroup.traverse(o => o.visible = false));

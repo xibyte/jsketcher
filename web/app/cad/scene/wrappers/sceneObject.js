@@ -132,8 +132,7 @@ export class SceneFace {
     }
 
     let surface = this.surface();
-    let [u, v] = surface.middle();
-    const _3dTransformation =  surface.tangentPlane(u, v).get3DTransformation();
+    const _3dTransformation =  surface.tangentPlaneInMiddle().get3DTransformation();
     const addSketchObjects = (sketchObjects, material, close) => {
       for (let sketchObject of sketchObjects) {
         let line = new THREE.Line(new THREE.Geometry(), material);

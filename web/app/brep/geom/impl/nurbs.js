@@ -1,17 +1,11 @@
-import {BasisForPlane, Matrix3} from '../../../math/l3space'
-import * as math from  '../../../math/math'
-import {Point} from '../point'
-import {Surface} from "../surface";
+import {Point} from '../point';
+import {Surface} from '../surface';
 import Vector from 'math/vector';
-import * as ext from "./nurbs-ext";
-import {EPSILON, eqEps, eqSqTol, TOLERANCE, TOLERANCE_SQ, ueq, veq, veq3, veqNeg} from "../tolerance";
-import curveIntersect from "./curve/curves-isec";
-import curveTess from "./curve/curve-tess";
-import {areEqual} from "../../../math/math";
-import {Plane} from "./plane";
-import BrepCurve from "../curves/brepCurve";
-import NurbsCurve from "../curves/nurbsCurve";
-import cache from "./cache";
+import * as ext from './nurbs-ext';
+import {Plane} from './plane';
+import BrepCurve from '../curves/brepCurve';
+import NurbsCurve from '../curves/nurbsCurve';
+import cache from './cache';
 
 export class NurbsSurface extends Surface {
 
@@ -19,33 +13,18 @@ export class NurbsSurface extends Surface {
     super();
     let {min: uMin, max: uMax} = verbSurface.domainU();
     let {min: vMin, max: vMax} = verbSurface.domainV();
-    
-    if (uMin !== 0 || uMax !== 1 || vMin !== 0 || vMax !== 1) {
-      throw 'only normalized(0..1) parametrization is supported';
-    }
 
+    Object.assign(this, {
+      uMin, uMax, vMin, vMax,
+      uMid: (uMax - uMin) * 0.5,
+      vMid: (vMax - vMin) * 0.5
+    });
+    
     this.data = verbSurface.asNurbs();
     this.verb = verbSurface;
     this.inverted = inverted === true;
     this.mirrored = NurbsSurface.isMirrored(this);
     this.simpleSurface = simpleSurface || figureOutSimpleSurface(this); 
-  }
-
-  domainU() {
-    return this.verb.domainU();
-  }
-
-  domainV() {
-    return this.verb.domainV();
-  }
-
-  middle() {
-    let {min: uMin, max: uMax} = this.verb.domainU();
-    let {min: vMin, max: vMax} = this.verb.domainV();
-    return [
-      (uMax - uMin) * 0.5,
-      (vMax - vMin) * 0.5
-    ];
   }
   
   toNurbs() {
@@ -72,15 +51,28 @@ export class NurbsSurface extends Surface {
   }
 
   normalInMiddle() {
-    //TODO: use domain!
-    return this.normalUV(0.5, 0.5);
+    return this.normalUV(this.uMid, this.vMid);
   }
 
   pointInMiddle() {
-    //TODO: use domain!
-    return this.point(0.5, 0.5);
+    return this.point(this.uMid, this.vMid);
   }
 
+  southWestPoint() {
+    return this.point(this.uMin, this.vMin);
+  }
+
+  southEastPoint() {
+    return this.point(this.uMax, this.vMin);
+  }
+
+  northEastPoint() {
+    return this.point(this.uMax, this.vMax);
+  }
+
+  northWestPoint() {
+    return this.point(this.uMin, this.vMax);
+  }
 
   param(point) {
     return this.verb.closestParam(point.data());
@@ -115,13 +107,11 @@ export class NurbsSurface extends Surface {
   }
 
   static isMirrored(surface) {
-    let {min: uMin} = surface.domainU();
-    let {min: vMin} = surface.domainV();
 
-    let x = surface.isoCurveAlignU(uMin).tangentAtParam(uMin);
-    let y = surface.isoCurveAlignV(vMin).tangentAtParam(vMin);
+    let x = surface.isoCurveAlignU(surface.uMin).tangentAtParam(surface.uMin);
+    let y = surface.isoCurveAlignV(surface.vMin).tangentAtParam(surface.vMin);
 
-    return x.cross(y).dot(surface.normalUV(uMin, vMin)) < 0;
+    return x.cross(y).dot(surface.normalUV(surface.uMin, surface.vMin)) < 0;
   }
 
   intersectSurfaceForSameClass(other) {
@@ -130,7 +120,7 @@ export class NurbsSurface extends Surface {
     if (inverted) {
       curves = curves.map(curve => ext.curveInvert(curve));
     }
-    curves.forEach(curve => ext.normalizeCurveParametrizationIfNeeded(curve))
+    curves.forEach(curve => ext.normalizeCurveParametrizationIfNeeded(curve));
     return curves.map(curve => new BrepCurve(new NurbsCurve(newVerbCurve(curve))));
   }
 
@@ -151,10 +141,6 @@ export class NurbsSurface extends Surface {
   isoCurveAlignV(param) {
     return this.isoCurve(param, false);
   }
-  
-  intersectWithCurve(curve) {
-    return verb.geom.Intersect.curveAndSurface(curve.impl.verb, this.verb, TOLERANCE).map(({uv}) => uv);
-  }
 
   tangentPlane(u, v) {
     let normal = this.normalUV(u, v);
@@ -162,7 +148,7 @@ export class NurbsSurface extends Surface {
   }
 
   tangentPlaneInMiddle() {
-    return this.tangentPlane(0.5, 0.5);
+    return this.tangentPlane(this.uMid, this.vMid);
   }
 }
 
@@ -189,8 +175,7 @@ verb.eval.Tess.rationalSurfaceAdaptive = function(surface, opts) {
 
 function figureOutSimpleSurface(nurbs) {
   if (ext.surfaceMaxDegree(nurbs.data) === 1) {
-    //TODO: use domain!       
-    return nurbs.tangentPlane(0.5, 0.5);    
+    return nurbs.tangentPlane(nurbs.uMid, nurbs.vMid);    
   }
   return null;
 }
