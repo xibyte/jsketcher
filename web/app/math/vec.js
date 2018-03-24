@@ -118,3 +118,15 @@ export function lengthSq(v) {
 export function length(v) {
   return Math.sqrt(lengthSq(v));
 }
+
+export function polynomial(coefs, vectors) {
+  let out = [];
+  out.length = vectors[0].length;
+  out.fill(0);
+  for (let i = 0; i < vectors.length; i++) {
+    for (let j = 0; j < out.length; j++) {
+      out[j] += vectors[i][j] * coefs[i]; 
+    }
+  }
+  return out;
+}

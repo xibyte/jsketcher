@@ -12,18 +12,10 @@ import cache from "../impl/cache";
 export default class BrepCurve { 
 
   constructor(_impl, uMin, uMax) {
-    let [iMin, iMax] = _impl.domain();
-    if (iMin !== 0 || iMax !== 1) {
-      throw 'only normalized(0..1) parametrization is supported';
-    }
     this.impl = _impl;
-    // if (uMin === undefined || uMax === undefined) {
-    //   [uMin, uMax] = this.impl.domain();
-    // }
-    // this.uMin = uMin;
-    // this.uMax = uMax;
-    this.uMin = 0;
-    this.uMax = 1;
+    [uMin, uMax] = this.impl.domain();
+    this.uMin = uMin;
+    this.uMax = uMax;
   }
 
   translate(vector) {
@@ -176,7 +168,7 @@ const CURVE_CACHING_TESSELLATOR = function(curve, min, max, tessTol, scale) {
 
 function degree1OptTessellator(curve, min, max, tessTol, scale) {
   if (curve.degree() === 1) {
-    return curve.degree1Tess().map(u => curve.point(u));
+    return curve.knots().map(u => curve.point(u));
   }
   return curveTess(curve, min, max, tessTol, scale);
 }

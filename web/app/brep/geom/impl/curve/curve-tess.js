@@ -6,19 +6,15 @@ export default function curveTess(curve, min, max, tessTol, scale) {
 
 export function curveTessParams(curve, min, max, tessTol, scale) {
 
-  let [dmin, dmax] = curve.domain();
-
   let out = [];
-  let nSplits = curve.optimalSplits();
-
-  let splitStep = (dmax - dmin) / nSplits;
-  nSplits = Math.round((max - min) / splitStep);
-  splitStep = (max - min) / nSplits;
+  let knots = curve.knots();
 
   let splits = [min];
 
-  for (let i = 1; i < nSplits; ++i) {
-    splits.push(min + i * splitStep);
+  for (let split of knots) {
+    if (split > min && split < max) {
+      splits.push(split);
+    }
   }
   splits.push(max);
 

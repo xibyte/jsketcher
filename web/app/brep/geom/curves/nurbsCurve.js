@@ -1,6 +1,6 @@
 import * as ext from '../impl/nurbs-ext';
 import {newVerbCurve} from "../impl/nurbs";
-
+import {distinctKnots} from '../impl/nurbs-ext';
 
 export default class NurbsCurve { 
 
@@ -11,10 +11,6 @@ export default class NurbsCurve {
 
   domain() {
     return ext.curveDomain(this.data);
-  }
-
-  degree1Tess() {
-    return ext.distinctKnots(this.data);
   }
 
   degree() {
@@ -37,8 +33,8 @@ export default class NurbsCurve {
     return verb.eval.Eval.rationalCurveDerivatives( this.data, u, num );
   }
 
-  optimalSplits() {
-    return this.data.knots.length - 1;
+  knots() {
+    return distinctKnots(this.data);
   }
 
   invert() {
