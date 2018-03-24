@@ -16,6 +16,7 @@ export default class BrepCurve {
     [uMin, uMax] = this.impl.domain();
     this.uMin = uMin;
     this.uMax = uMax;
+    this.uMid = (uMax - uMin) * 0.5;
   }
 
   translate(vector) {
@@ -48,23 +49,10 @@ export default class BrepCurve {
   }
 
   splitByParam(u) {
-    if (ueq(this.uMin) || ueq(this.uMax) || u < this.uMin || u > this.uMax) {
+    if (ueq(u, this.uMin) || ueq(u, this.uMax) || u < this.uMin || u > this.uMax) {
       return null
     }
     let split = this.impl.split(u);
-
-    const splitCheck = (split) => {
-      return (
-        math.equal(this.impl.param(split[0].point(1)), this.impl.param(split[1].point(0))) &&
-        math.equal(this.impl.param(split[0].point(0)), 0) &&
-        math.equal(this.impl.param(split[0].point(1)), u) &&
-        math.equal(this.impl.param(split[1].point(0)), u) &&
-        math.equal(this.impl.param(split[1].point(1)), 1)
-      )
-    };
-    if (!splitCheck(split)) {
-      throw 'wrong split';
-    }
     return split.map(v => new BrepCurve(v));
 
     // return [
@@ -146,11 +134,16 @@ export default class BrepCurve {
     return new BrepCurve(this.impl.invert());
   }
 
+  startPoint() {
+    return this.point(this.uMin);
+  }
+
+  endPoint() {
+    return this.point(this.uMax);
+  }
+
   middlePoint() {
-    if (!this.__middlePoint) {
-      this.__middlePoint = this.point(0.5);
-    }
-    return this.__middlePoint;
+    return this.__middlePoint || (this.__middlePoint = this.point(this.uMid));
   }
 
   passesThrough(point) {

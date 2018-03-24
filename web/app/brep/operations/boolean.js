@@ -628,9 +628,8 @@ function intersectEdges(shell1, shell2) {
   }
 }
 
-
 function fixCurveDirection(curve, surface1, surface2, operationType) {
-  let point = curve.point(0.5);
+  let point = curve.middlePoint();
   let tangent = curve.tangentAtPoint(point);
   let normal1 = surface1.normal(point);
   let normal2 = surface2.normal(point);
@@ -883,10 +882,10 @@ function split(nodes, curve, result, faceA, faceB) {
       let edgeCurve = curve;
       let vertexA = inNode.vertex();
       let vertexB = node.vertex();
-      if (!ueq(inNode.u, 0)) {
+      if (!ueq(inNode.u, curve.uMin)) {
         [,edgeCurve] = edgeCurve.split(vertexA.point);
       }
-      if (!ueq(node.u, 1)) {
+      if (!ueq(node.u, curve.uMax)) {
         [edgeCurve] = edgeCurve.split(vertexB.point);
       }
       const edge = new Edge(edgeCurve, vertexA, vertexB);
