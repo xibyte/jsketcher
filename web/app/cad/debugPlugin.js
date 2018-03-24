@@ -142,8 +142,8 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
       debugVolumeGroup.add(mesh);
       viewer.render();
     },
-    AddCurve: (curve, color) => {
-      __DEBUG__.AddPolyLine( curve.tessellate(), color);
+    AddCurve: (curve, color, scale) => {
+      __DEBUG__.AddPolyLine( curve.tessellate(undefined, scale), color);
     },
     AddVerbCurve: (curve, color) => {
       __DEBUG__.AddPolyLine(curve.tessellate().map(p => new Vector().set3(p)), color);

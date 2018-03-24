@@ -83,6 +83,8 @@ export function curveClosestParam(curve, point) {
   return verb.eval.Analyze.rationalCurveClosestParam(curve, point);
 }
 
+export const surfaceClosestParam = verb.eval.Analyze.rationalSurfaceClosestParam;
+
 export function surfaceIntersect(surface0, surface1) {
   const tess0 = verb.eval.Tess.rationalSurfaceAdaptive(surface0);
   const tess1 = verb.eval.Tess.rationalSurfaceAdaptive(surface1);
@@ -135,7 +137,7 @@ export function surfaceIntersect(surface0, surface1) {
   return nurbses;
 }
 
-function meshesIntersect(mesh0,mesh1, TOLERANCE, TOLERANCE_SQ, TOLERANCE_01) {
+export function meshesIntersect(mesh0,mesh1, TOLERANCE, TOLERANCE_SQ, TOLERANCE_01) {
   let bbtree0 = new verb.core.LazyMeshBoundingBoxTree(mesh0);
   let bbtree1 = new verb.core.LazyMeshBoundingBoxTree(mesh1);
   let bbints = verb.eval.Intersect.boundingBoxTrees(bbtree0,bbtree1,TOLERANCE);

@@ -5,19 +5,15 @@ interface ParametricCurve {
 
   degree(): number;
   
-  degree1Tess(): number[][];
-
   eval(u: number, num: number): number[];  
 
   point(param: number): number[]; 
 
   param(point: number[]): number;
 
-  transform(tr); 
+  transform(tr);
 
-  optimalSplits(): number;
-
-  normalizeParametrization();
+  knots(): number[];
 
   invert();
 }
