@@ -4,9 +4,8 @@ import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import {NurbsSurface} from "../brep/geom/impl/nurbs";
 import BrepCurve from '../brep/geom/curves/brepCurve';
-import {surfaceIntersect} from '../brep/geom/impl/nurbs-ext';
 import NurbsCurve from "../brep/geom/curves/nurbsCurve";
-
+import {surfaceIntersect} from '../brep/geom/intersection/surfaceSurface';
 
 export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi, tpi: {addShellOnScene} }}) {
 
@@ -187,16 +186,22 @@ export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi,
     let surfaceB = cadRegistry.findFace('1:4').brepFace.surface;
 
 
-    let curve = surfaceIntersect(surfaceA.data, surfaceB.data)[0];
+    let curves = surfaceIntersect(surfaceA.data, surfaceB.data);
     // curve.approxPolyline.
-    
-    console.dir(curve);
-    __DEBUG__.AddCurve(curve);
+
+    for (let ic of curves) {
+
+      let curve = new BrepCurve(ic);
+      
+      console.dir(curve);
+      __DEBUG__.AddCurve(curve, 0xffffff, 10);
+      __DEBUG__.HideSolids();
+    }
     
   }
 
   cylinderAndPlaneIntersect();
-  
+  // curvesIntersect();
 }
 
 
