@@ -14,8 +14,8 @@ export class Edge extends TopoObject {
   }
 
   static fromCurve(curve) {
-    const a = new Vertex(curve.point(0));
-    const b = new Vertex(curve.point(1));
+    const a = new Vertex(curve.startPoint());
+    const b = new Vertex(curve.endPoint());
     return new Edge(curve, a, b);
   }
 

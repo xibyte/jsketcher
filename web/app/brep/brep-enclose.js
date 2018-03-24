@@ -53,8 +53,8 @@ export function enclose(basePath, lidPath, basePlane, lidPlane) {
   }
 
   if (basePath.length === 1) {
-    basePath = basePath[0].splitByParam(0.5);
-    lidPath = lidPath[0].splitByParam(0.5);
+    basePath = basePath[0].splitByParam(basePath[0].uMid);
+    lidPath = lidPath[0].splitByParam(lidPath[0].uMid);
   }
 
   const walls = [];
