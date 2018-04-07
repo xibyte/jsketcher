@@ -16,5 +16,7 @@ interface ParametricCurve {
   knots(): number[];
 
   invert();
+
+  split(u: number);
 }
 

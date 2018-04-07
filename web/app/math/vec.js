@@ -1,3 +1,5 @@
+export {dotVM} from 'numeric';
+
 function scalarOperand(v, out, func) {
   for (let i = 0; i < v.length; i++) {
     out[i] = func(v[i]);
@@ -93,7 +95,6 @@ export function cross(v1, v2) {
   return __cross(v1, v2, []);
 }
 
-
 export function __normalize(v, out) {
   const mag = length(v);
   if (mag === 0.0) {
@@ -117,6 +118,20 @@ export function lengthSq(v) {
 
 export function length(v) {
   return Math.sqrt(lengthSq(v));
+}
+
+const sq = v => v * v; 
+
+export function distanceSq(v1, v2) {
+  let dSq = 0;
+  for (let i = 0; i < v1.length; i++) {
+    dSq += sq(v1[i] - v2[i]);
+  }
+  return dSq;
+}
+
+export function distance(v1, v2) {
+  return Math.sqrt(distanceSq(v1, v2));
 }
 
 export function polynomial(coefs, vectors) {
