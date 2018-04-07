@@ -7,7 +7,7 @@ import {evolveFace} from './evolve-face'
 import * as math from '../../math/math';
 import {eqTol, TOLERANCE, ueq, veq, veqNeg} from '../geom/tolerance';
 import CadError from "../../utils/errors";
-import {createBoundingNurbs} from "../brep-builder";
+import {createBoundingSurface} from "../brep-builder";
 import BREP_DEBUG from '../debug/brep-debug';
 import {Face} from "../topo/face";
 
@@ -430,7 +430,7 @@ function mergeFaces(facesA, facesB, opType) {
     if (detectedLoops.length !== 0) {
       facePrototypes.push({
         loops: detectedLoops,
-        surface: createBoundingNurbs(allPoints, referenceFace.surface.simpleSurface),
+        surface: createBoundingSurface(allPoints, referenceFace.surface.simpleSurface),
       });
     }
   }

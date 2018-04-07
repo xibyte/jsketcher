@@ -4,6 +4,7 @@ import {normalOfCCWSeq} from '../../cad-utils'
 import {TriangulateFace} from '../../tess/triangulation'
 import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './sceneObject'
 import brepTess from '../../tess/brep-tess'
+import tessellateSurface from '../../../brep/geom/surfaces/surfaceTess';
 
 const SMOOTH_RENDERING = false //true;
 
@@ -104,7 +105,7 @@ export function triangulateToThree(shell, geom) {
     const polygons = brepTess(brepFace);
     const stitchedSurface = brepFace.data[FACE_CHUNK];
     const nurbs = stitchedSurface ? stitchedSurface.origin : undefined;
-    const isPlane = brepFace.surface.data.degree === 1;
+    const isPlane = brepFace.simpleSurface && brepFace.simpleSurface.isPlane;
     let normalOrNormals;
     if (isPlane) {
       normalOrNormals = threeV(brepFace.surface.normalInMiddle());
@@ -136,9 +137,9 @@ export function triangulateToThree(shell, geom) {
   return result;
 }
 
-export function nurbsToThreeGeom(nurbs, geom) {
+export function surfaceToThreeGeom(srf, geom) {
   const off = geom.vertices.length;
-  const tess = nurbs.tessellate({maxDepth: 3});
+  const tess = tessellateSurface(srf);
   tess.points.forEach(p => geom.vertices.push(new THREE.Vector3().fromArray(p)));
   for (let faceIndices of tess.faces) {
     const face = new THREE.Face3(faceIndices[0] + off, faceIndices[1] + off, faceIndices[2] + off);

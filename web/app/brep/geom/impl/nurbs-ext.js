@@ -24,11 +24,11 @@ export function curveDomain(curve) {
   return [curve.knots[0], curve.knots[curve.knots.length - 1]];
 }
 
-export function distinctKnots(curve) {
-  let out = [curve.knots[0]];
-  for (let i = 1; i < curve.knots.length; ++i) {
-    if (out[out.length - 1] !== curve.knots[i]) {
-      out.push(curve.knots[i]);
+export function distinctKnots(knots) {
+  let out = [knots[0]];
+  for (let i = 1; i < knots.length; ++i) {
+    if (out[out.length - 1] !== knots[i]) {
+      out.push(knots[i]);
     }
   }
   return out;
@@ -37,7 +37,7 @@ export function distinctKnots(curve) {
 export function curveTessellate(curve, min, max, tessTol, scale) {
 
   if (curve.degree === 1) {
-    return distinctKnots(curve);
+    return distinctKnots(curve.knots);
   }
   let domain = curveDomain(curve);
 

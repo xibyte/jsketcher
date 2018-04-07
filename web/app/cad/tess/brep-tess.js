@@ -1,6 +1,7 @@
 import Vector from 'math/vector';
 import ClipperLib from 'clipper-lib';
 import libtess from 'libtess'
+import tessellateSurface from '../../brep/geom/surfaces/surfaceTess';
 
 export default function A(face) {
 
@@ -21,7 +22,7 @@ export default function A(face) {
     }
   }
 
-  let tess = face.surface.verb.tessellate({maxDepth: 3});
+  let tess = tessellateSurface(face.surface.impl);
   let nurbsTriangles = tess.faces.map(f => f.map(i => face.surface.createWorkingPoint(tess.uvs[i], Vector.fromData(tess.points[i]))));
 
   let paths = clip(nurbsTriangles, loops);
@@ -41,7 +42,7 @@ function clip(triangles, loops) {
   // __DEBUG__.AddPointPolygons(triangles, 0xff00ff);
   // __DEBUG__.AddPointPolygons(loops, 0xffffff);
 
-  const scale = 1e3 ;// multiplying by NurbsSurface.WORKING_POINT_SCALE_FACTOR gives 1e6
+  const scale = 1e3 ;// multiplying by BrepSurface.WORKING_POINT_SCALE_FACTOR gives 1e6
 
 
   let clip_paths = convertPoints(loops, p => ({X:p.x, Y:p.y}) );
