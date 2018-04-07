@@ -1,5 +1,4 @@
 import * as ext from '../impl/nurbs-ext';
-import {newVerbCurve} from "../impl/nurbs";
 import {distinctKnots} from '../impl/nurbs-ext';
 
 export default class NurbsCurve { 
@@ -34,7 +33,7 @@ export default class NurbsCurve {
   }
 
   knots() {
-    return distinctKnots(this.data);
+    return distinctKnots(this.data.knots);
   }
 
   invert() {
@@ -57,12 +56,12 @@ export default class NurbsCurve {
     //   }
     // }
 
-    return new NurbsCurve(newVerbCurve(inverted));
+    return new NurbsCurve(new verb.geom.NurbsCurve(inverted));
   }
 
   split(u) {
     let split = verb.eval.Divide.curveSplit(this.data, u);
     split.forEach(n => ext.normalizeCurveParametrization(n));
-    return split.map(c => new NurbsCurve(newVerbCurve(c)));
+    return split.map(c => new NurbsCurve(new verb.geom.NurbsCurve(c)));
   }
 }

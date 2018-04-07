@@ -38,7 +38,7 @@ export default class InvertedCurve {
     if (res.length > 1) {
       vec._negate(res[1]) 
     }
-    return eval;
+    return res;
     
   }
 

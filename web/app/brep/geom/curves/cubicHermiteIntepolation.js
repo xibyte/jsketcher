@@ -1,5 +1,7 @@
 import * as vec from '../../../math/vec';
 import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from './bezierCubic';
+import {closestToCurveParam} from './closestPoint';
+import InvertedCurve from './invertedCurve';
 
 export default function CubicHermiteInterpolation(points, tangents) {
   let n = points.length;
@@ -34,6 +36,9 @@ export default function CubicHermiteInterpolation(points, tangents) {
       pieceIndex = Math.floor(u);
       u = u % 1;
     }
+    if (!beziers[pieceIndex]) {
+      throw 'parameter out of bounds: ' + u;
+    }
     return [pieceIndex, u];
   }
   
@@ -47,18 +52,24 @@ export default function CubicHermiteInterpolation(points, tangents) {
     return out;
   }
 
-  function point(u, num) {
+  function point(u) {
     let [pieceIndex, uL] = localizeParam(u);
     let {p0, p1, p2, p3} = beziers[pieceIndex];
     return cubicBezierPoint(p0, p1, p2, p3, uL);
   }
   
   function param(point) {
-    throw 'unsupported';
+    return closestToCurveParam(this, point);
   }
 
-  function transform(point) {
-    throw 'unsupported';
+  function transform(tr) {
+    return new CubicHermiteInterpolation(
+      points.map(p => vec.dotVM(p, tr)), 
+      tangents.map(p => vec.dotVM(p, tr)));
+  }
+  
+  function invert() {
+    return new InvertedCurve(this);
   }
 
   Object.assign(this, {
@@ -69,6 +80,7 @@ export default function CubicHermiteInterpolation(points, tangents) {
     param,
     transform,
     knots: () => knots,
-    // invert
+    invert,
+    points, tangents
   });
 }

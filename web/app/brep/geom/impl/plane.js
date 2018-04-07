@@ -1,13 +1,11 @@
-import {Surface} from '../surface'
-import {Point} from '../point'
-import {Line} from './line'
-import {Matrix3, AXIS, BasisForPlane} from  '../../../math/l3space'
-import {eqTol, veq} from "../tolerance";
+import {Point} from '../point';
+import {Line} from './line';
+import {AXIS, BasisForPlane, Matrix3} from '../../../math/l3space';
+import {eqTol, veq} from '../tolerance';
 
-export class Plane extends Surface {
+export class Plane {
 
   constructor(normal, w) {
-    super();
     this.normal = normal;
     this.w = w;
   }

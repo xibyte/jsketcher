@@ -11,6 +11,8 @@ export const EPSILON_SQ = EPSILON * EPSILON;
 export const TOLERANCE_01 = TOLERANCE * 1e-2;
 export const TOLERANCE_01_SQ = TOLERANCE * TOLERANCE;
 
+export const NUMERICAL_SOLVE_TOL = 1e-8;
+
 export function eqTol(a, b) {
   return areEqual(a, b, TOLERANCE);
 }
