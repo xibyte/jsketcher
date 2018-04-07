@@ -1,19 +1,14 @@
-import {Shell} from './topo/shell'
-import {Vertex} from './topo/vertex'
-import {Loop} from './topo/loop'
-import {Face} from './topo/face'
-import {HalfEdge, Edge} from './topo/edge'
-import {Line} from './geom/impl/line'
-import {NurbsSurface} from './geom/impl/nurbs'
+import {Shell} from './topo/shell';
+import {Face} from './topo/face';
+import {Edge} from './topo/edge';
 import BrepCurve from './geom/curves/brepCurve';
-import {Plane} from './geom/impl/plane'
-import {Point} from './geom/point'
-import {BasisForPlane, Matrix3} from '../math/l3space'
-import * as cad_utils from '../cad/cad-utils'
-import * as math from '../math/math'
-import mergeNullFace from './null-face-merge'
-import {invert} from './operations/boolean'
-import {createBoundingNurbs} from './brep-builder'
+import {Plane} from './geom/impl/plane';
+import {BasisForPlane, Matrix3} from '../math/l3space';
+import * as cad_utils from '../cad/cad-utils';
+import * as math from '../math/math';
+import {createBoundingSurface} from './brep-builder';
+import NurbsSurface from './geom/surfaces/nurbsSurface';
+import {BrepSurface} from './geom/surfaces/brepSurface';
 
 function isCCW(points, normal) {
   const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();
@@ -108,8 +103,8 @@ function assemble(walls, basePlane, lidPlane) {
   base.outerLoop.link();
   lid.outerLoop.link();
 
-  base.surface = createBoundingNurbs(base.outerLoop.tess(), basePlane);
-  lid.surface = createBoundingNurbs(lid.outerLoop.tess(), lidPlane);
+  base.surface = createBoundingSurface(base.outerLoop.tess(), basePlane);
+  lid.surface = createBoundingSurface(lid.outerLoop.tess(), lidPlane);
 
   shell.faces.push(base, lid);
   shell.faces.forEach(f => f.shell = shell);
@@ -121,7 +116,7 @@ function bothClassOf(o1, o2, className) {
 }
 
 export function createWall(curve1, curve2) {
-  return NurbsSurface.loft(curve2, curve1, 1);
+  return new BrepSurface(NurbsSurface.loft(curve2, curve1, 1));
 }
 
 

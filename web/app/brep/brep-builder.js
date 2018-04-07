@@ -1,4 +1,3 @@
-import {NurbsSurface} from './geom/impl/nurbs';
 import BrepCurve from './geom/curves/brepCurve';
 import {Plane} from './geom/impl/plane';
 import {Point} from './geom/point';
@@ -9,6 +8,8 @@ import {Edge} from './topo/edge';
 import {Vertex} from './topo/vertex';
 import {normalOfCCWSeq} from '../cad/cad-utils';
 import BBox from "../math/bbox";
+import NurbsSurface from './geom/surfaces/nurbsSurface';
+import {BrepSurface} from './geom/surfaces/brepSurface';
 
 export default class BrepBuilder {
 
@@ -73,7 +74,7 @@ export default class BrepBuilder {
         loop.link();    
       }  
       if (face.surface === null) {
-        face.surface = createBoundingNurbs(face.outerLoop.tess());
+        face.surface = createBoundingSurface(face.outerLoop.tess());
       }
     }
     for (let face of this._shell.faces) {
@@ -90,7 +91,7 @@ export default class BrepBuilder {
   }
 }
 
-export function createBoundingNurbs(points, plane) {
+export function createBoundingSurface(points, plane) {
   if (!plane) {
     const normal = normalOfCCWSeq(points);
     const w = points[0].dot(normal);
@@ -115,5 +116,5 @@ export function createBoundingNurbs(points, plane) {
   // __DEBUG__.AddNurbs(nurbs);
   // __DEBUG__.AddSurfaceNormal(nurbs);
 
-  return nurbs;
+  return new BrepSurface(nurbs);
 }

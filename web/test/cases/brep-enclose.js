@@ -120,7 +120,7 @@ function createEnclosure(tpi, a, b, c) {
   let loop = new tpi.brep.topo.Loop();
   loop.halfEdges.push(e1, e2);
   loop.link();
-  let face = new tpi.brep.topo.Face(new tpi.brep.geom.createBoundingNurbs([
+  let face = new tpi.brep.topo.Face(new tpi.brep.geom.createBoundingSurface([
     a.point, b.point, c.point
   ]));
   loop.face = face;

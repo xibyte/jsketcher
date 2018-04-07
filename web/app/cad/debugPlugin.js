@@ -1,5 +1,5 @@
 import {checkForSelectedFaces} from './actions/actionHelpers';
-import {nurbsToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneObject';
+import {surfaceToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneObject';
 import {createSolidMaterial} from './scene/wrappers/sceneObject';
 import DPR from 'dpr';
 import Vector from 'math/vector';
@@ -11,6 +11,7 @@ import {TOKENS as CRAFT_TOKENS} from './craft/craftPlugin';
 import {toLoops} from '../brep/brep-io';
 import {contributeComponent} from './dom/components/ContributedComponents';
 import BrepDebuggerWindow, {BREP_DEBUG_WINDOW_VISIBLE} from '../brep/debug/debugger/BrepDebuggerWindow';
+import curveTess from '../brep/geom/impl/curve/curve-tess';
 
 
 export function activate({bus, services}) {
@@ -36,6 +37,12 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     },
     AddSegment: (a, b, color) => {
       __DEBUG__.AddPolyLine([a, b], color);
+    },
+    AddSegment3: (a, b, color) => {
+      __DEBUG__.AddPolyLine3([a, b], color);
+    },    
+    AddPolyLine3: (points, color) => {
+      __DEBUG__.AddPolyLine(points.map(p => new Vector().set3(p)), color);
     },
     AddPolyLine: (points, color) => {
       for (let i = 1; i < points.length; ++i) {
@@ -128,10 +135,10 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
       }
       viewer.render();
     },
-    AddNurbs: (nurbs, color) => {
+    AddParametricSurface: (srf, color) => {
       color = color || 0xffffff;
       const geometry = new THREE.Geometry();
-      nurbsToThreeGeom(nurbs.verb, geometry);
+      surfaceToThreeGeom(srf, geometry);
       geometry.computeFaceNormals();
       const mesh = new THREE.Mesh(geometry, createSolidMaterial({
         color,
@@ -145,14 +152,18 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     AddCurve: (curve, color, scale) => {
       __DEBUG__.AddPolyLine( curve.tessellate(undefined, scale), color);
     },
+    AddParametricCurve: (curve, color, scale) => {
+      let [uMin, uMax] = curve.domain();
+      __DEBUG__.AddPolyLine3(curveTess(curve, uMin, uMax, undefined, scale), color);
+    },
     AddVerbCurve: (curve, color) => {
       __DEBUG__.AddPolyLine(curve.tessellate().map(p => new Vector().set3(p)), color);
     },
-    AddNurbsCorners: (nurbs) => {
-      __DEBUG__.AddPoint(nurbs.southWestPoint(), 0xff0000);
-      __DEBUG__.AddPoint(nurbs.southEastPoint(), 0x00ff00);
-      __DEBUG__.AddPoint(nurbs.northEastPoint(), 0x0000ff);
-      __DEBUG__.AddPoint(nurbs.northWestPoint(), 0x00ffff);
+    AddSurfaceCorners: (srf) => {
+      __DEBUG__.AddPoint(srf.southWestPoint(), 0xff0000);
+      __DEBUG__.AddPoint(srf.southEastPoint(), 0x00ff00);
+      __DEBUG__.AddPoint(srf.northEastPoint(), 0x0000ff);
+      __DEBUG__.AddPoint(srf.northWestPoint(), 0x00ffff);
     },
     AddNormal: (atPoint, normal, color, scale) => {
       scale = scale || 100;
