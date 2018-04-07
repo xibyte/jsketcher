@@ -4593,6 +4593,16 @@ verb_eval_Intersect.surfaces = function(surface0,surface1,tol) {
 	});
 };
 verb_eval_Intersect.surfacesAtPointWithEstimate = function(surface0,surface1,uv1,uv2,tol) {
+
+  function boundParams(uv, surface) {
+    uv[0] = boundParam(uv[0], surface.knotsU);
+    uv[1] = boundParam(uv[1], surface.knotsV);
+  }
+	
+	function boundParam(u, knots) {
+    return Math.min(knots[knots.length - 1], Math.max(knots[0], u));
+	}
+	
 	var pds;
 	var p;
 	var pn;
@@ -4637,8 +4647,16 @@ verb_eval_Intersect.surfacesAtPointWithEstimate = function(surface0,surface1,uv1
 		var dt = verb_core_Vec.dot(rw,pdif) / verb_core_Vec.dot(rw,pv);
 		var du = verb_core_Vec.dot(sv,qdif) / verb_core_Vec.dot(sv,qu);
 		var dv = verb_core_Vec.dot(su,qdif) / verb_core_Vec.dot(su,qv);
-		uv1 = verb_core_Vec.add([dw,dt],uv1);
-		uv2 = verb_core_Vec.add([du,dv],uv2);
+		var newuv1 = verb_core_Vec.add([dw,dt],uv1);
+    var newuv2 = verb_core_Vec.add([du,dv],uv2);
+    boundParams(newuv1, surface0);
+    boundParams(newuv2, surface1);
+    var eee = 1e-6 * 1e-6;
+    if (verb_core_Vec.distSquared(newuv1, uv1) < eee && verb_core_Vec.distSquared(newuv2, uv2) < eee) {
+    	break;
+		}
+    uv1 = newuv1;
+    uv2 = newuv2;
 		its++;
 	} while(its < maxits);
 	return new verb_core_SurfaceSurfaceIntersectionPoint(uv1,uv2,p,dist);
