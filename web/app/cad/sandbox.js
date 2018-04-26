@@ -1,11 +1,12 @@
 import {AXIS, Matrix3, ORIGIN} from '../math/l3space'
-
+import Vector from 'math/vector';
 import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
-import {NurbsSurface} from "../brep/geom/impl/nurbs";
 import BrepCurve from '../brep/geom/curves/brepCurve';
 import NurbsCurve from "../brep/geom/curves/nurbsCurve";
 import {surfaceIntersect} from '../brep/geom/intersection/surfaceSurface';
+import {closestToCurveParam, findClosestToCurveParamRoughly} from '../brep/geom/curves/closestPoint';
+import NurbsSurface from '../brep/geom/surfaces/nurbsSurface';
 
 export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi, tpi: {addShellOnScene} }}) {
 
@@ -48,10 +49,10 @@ export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi,
 
     const cylinder2 = BREPPrimitives.cylinder(200, 500, Matrix3.rotateMatrix(90, AXIS.Y, ORIGIN));
 
+    addShellOnScene(cylinder1);
+    addShellOnScene(cylinder2);
     let result = tpi.brep.bool.subtract(cylinder1, cylinder2);
 
-    // addShellOnScene(cylinder1);
-    // addShellOnScene(cylinder2);
     addShellOnScene(result);
   }
 
@@ -173,6 +174,33 @@ export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi,
     // viewer.render();
   }
 
+  
+  function surfaceSurfaceIntersect() {
+    const degree = 3
+      , knots = [0, 0, 0, 0, 0.333, 0.666, 1, 1, 1, 1]
+      , pts = [ 	[ [0, 0, -10], 	[10, 0, 0], 	[20, 0, 0], 	[30, 0, 0] , 	[40, 0, 0], [50, 0, 0] ],
+      [ [0, -10, 0], 	[10, -10, 10], 	[20, -10, 10], 	[30, -10, 0] , [40, -10, 0], [50, -10, 0]	],
+      [ [0, -20, 0], 	[10, -20, 10], 	[20, -20, 10], 	[30, -20, 0] , [40, -20, -2], [50, -20, -12] 	],
+      [ [0, -30, 0], 	[10, -30, 0], 	[20, -30, -23], 	[30, -30, 0] , [40, -30, 0], [50, -30, 0]     ],
+      [ [0, -40, 0], 	[10, -40, 0], 	[20, -40, 0], 	[30, -40, 4] , [40, -40, -20], [50, -40, 0]     ],
+      [ [0, -50, 12], [10, -50, 0], 	[20, -50, 20], 	[30, -50, 0] , [50, -50, -10], [50, -50, -15]     ]  ];
+
+    let  srfA = verb.geom.NurbsSurface.byKnotsControlPointsWeights( degree, degree, knots, knots, pts );
+    srfA = srfA.transform(new Matrix3().scale(10,10,10).toArray());
+    let srfB = srfA
+      .transform(new Matrix3().translate(250,250,250).toArray())
+      .transform(Matrix3.rotateMatrix(Math.PI/2, AXIS.X, ORIGIN).toArray());
+    srfA = new NurbsSurface(srfA);
+    srfB = new NurbsSurface(srfB);
+
+    __DEBUG__.AddParametricSurface(srfA);
+    __DEBUG__.AddParametricSurface(srfB);
+
+    
+    
+
+  }
+  
   function cylinderAndPlaneIntersect() {
 
     const cylinder = BREPPrimitives.cylinder(200, 500);
@@ -190,18 +218,27 @@ export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi,
     // curve.approxPolyline.
 
     for (let ic of curves) {
-
+      ic.debug();
       let curve = new BrepCurve(ic);
-      
-      console.dir(curve);
-      __DEBUG__.AddCurve(curve, 0xffffff, 10);
+      let pt = [-50, 220, 0];
+      __DEBUG__.AddPoint3(pt, 0x0000ff);
+      let u = findClosestToCurveParamRoughly(curve.impl.approx, pt);
+      let exactU = closestToCurveParam(curve.impl.approx, pt);
+
+      let clPt = curve.impl.approx.point(u);
+      let exactPt = curve.impl.approx.point(exactU);
+      __DEBUG__.AddPoint3(clPt, 0xffff00);
+      __DEBUG__.AddPoint3(exactPt, 0xff0000);
+      // console.dir(curve);
       __DEBUG__.HideSolids();
     }
     
   }
 
-  cylinderAndPlaneIntersect();
+  // cylinderAndPlaneIntersect();
   // curvesIntersect();
+  // cylTest();
+  surfaceSurfaceIntersect();
 }
 
 
