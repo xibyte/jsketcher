@@ -1,4 +1,4 @@
-import {TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
+import {NUMERICAL_SOLVE_TOL, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
 import {curveDomain, curvePoint, meshesIntersect, surfaceMaxDegree} from '../impl/nurbs-ext';
 import {IntersectionCurve} from '../curves/intersectionCurve';
 import * as vec from '../../../math/vec';
@@ -22,7 +22,7 @@ export function surfaceIntersect(surfaceA, surfaceB) {
 
   const resApprox = meshesIntersect(tessA, tessB, TOLERANCE, TOLERANCE_SQ, TOLERANCE_01);
   const exactPls = resApprox.map(pl => pl.map(inter =>
-    verb.eval.Intersect.surfacesAtPointWithEstimate(surfaceA, surfaceB, inter.uv0, inter.uv1, TOLERANCE)
+    verb.eval.Intersect.surfacesAtPointWithEstimate(surfaceA, surfaceB, inter.uv0, inter.uv1, NUMERICAL_SOLVE_TOL)
   ));
 
   let curves = [];
