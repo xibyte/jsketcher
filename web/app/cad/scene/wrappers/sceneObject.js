@@ -28,22 +28,14 @@ export class SceneSolid {
   }
 
   addLineToScene(a, b) {
-    var lg = new THREE.Geometry();
+    let lg = new THREE.Geometry();
     lg.vertices.push(a);
     lg.vertices.push(b);
-    var line = new THREE.Line(lg, WIREFRAME_MATERIAL);
+    let line = new THREE.Line(lg, WIREFRAME_MATERIAL);
     this.wireframeGroup.add(line);
     return line;
   }
-
-  createGeometry() {
-    throw 'not implemented';
-  }
-
-  dropGeometry() {
-    throw 'not implemented';
-  }
-
+  
   dispose() {
     this.material.dispose();
     this.mesh.geometry.dispose();
@@ -103,8 +95,8 @@ export class SceneFace {
     return this._basis;
   }
 
-  createMeshFace(a, b, c) {
-    const face = new THREE.Face3(a, b, c);
+  createMeshFace(a, b, c, normales) {
+    const face = new THREE.Face3(a, b, c, normales);
     this.registerMeshFace(face);
     return face;
   }

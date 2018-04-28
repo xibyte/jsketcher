@@ -13,6 +13,7 @@ import {Point} from '../../brep/geom/point';
 import BrepCurve from '../../brep/geom/curves/brepCurve';
 import {Plane} from '../../brep/geom/impl/plane';
 import pip from '../tess/pip';
+import {UnmanagedSceneSolid} from '../scene/wrappers/unmanagedSceneObject';
 
 export default {
   brep: {
@@ -29,5 +30,8 @@ export default {
       HalfEdge, Edge, Loop, Face, Shell, Vertex
     }, 
     IO,
+  },
+  scene: {
+    UnmanagedSceneSolid
   }
 }

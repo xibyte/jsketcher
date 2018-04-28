@@ -96,7 +96,6 @@ export function triangulateToThree(shell, geom) {
   let gIdx = 0;
 
   function addFace(face) {
-    face.materialIndex = gIdx++;
     geom.faces.push(face);
   }
 
