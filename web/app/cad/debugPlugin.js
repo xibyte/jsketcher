@@ -12,6 +12,7 @@ import {toLoops} from '../brep/brep-io';
 import {contributeComponent} from './dom/components/ContributedComponents';
 import BrepDebuggerWindow, {BREP_DEBUG_WINDOW_VISIBLE} from '../brep/debug/debugger/BrepDebuggerWindow';
 import curveTess from '../brep/geom/impl/curve/curve-tess';
+import tessellateSurface from '../brep/geom/surfaces/surfaceTess';
 
 
 export function activate({bus, services}) {
@@ -171,6 +172,34 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     },
     AddSurfaceNormal: (surface) => {     
       __DEBUG__.AddNormal(surface.pointInMiddle(), surface.normalInMiddle());
+    },
+    AddTessDump: (triangles, color) => {
+      const vec = arr => new THREE.Vector3().fromArray(arr);
+      color = color || 0xffffff;
+      const geometry = new THREE.Geometry();
+      for (let i = 0; i < triangles.length; ++i) {
+        let off = geometry.vertices.length;
+        let tr = triangles[i], normales;
+        if (Array.isArray(tr)) {
+          normales = tr[1];
+          tr = tr[0];
+          if (normales.find(n => n[0] === null || n[1] === null || n[2] === null)) {
+            normales = undefined;
+          }
+        }
+        tr.forEach(p => geometry.vertices.push(vec(p)));
+        const face = new THREE.Face3(off, off + 1, off + 2, normales && normales.map(vec));
+        geometry.faces.push(face);
+      }
+      geometry.computeFaceNormals();
+      const mesh = new THREE.Mesh(geometry, createSolidMaterial({
+        vertexColors: THREE.FaceColors,
+        color: 0xB0C4DE,
+        shininess: 0,
+        side: THREE.DoubleSide
+      }));
+      debugVolumeGroup.add(mesh);
+      viewer.render();
     },
     HideSolids: () => {
       cadRegistry.getAllShells().forEach(s => s.cadGroup.traverse(o => o.visible = false));

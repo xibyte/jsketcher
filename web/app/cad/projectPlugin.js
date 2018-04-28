@@ -1,7 +1,8 @@
 import {setSketchPrecision} from './sketch/sketchReader';
 import {runSandbox} from './sandbox';
 
-const STORAGE_PREFIX = "TCAD.projects.";
+export const STORAGE_GLOBAL_PREFIX = 'TCAD';
+const STORAGE_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
 
 
 export function activate(context) {
