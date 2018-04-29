@@ -1,7 +1,6 @@
 import Vector from 'math/vector';
-import {STANDARD_BASES} from '../../../math/l3space'
-import {Plane} from '../../../brep/geom/impl/plane'
-import {SceneSolid, SceneFace} from './sceneObject'
+import {SceneFace, SceneSolid} from './sceneObject';
+import {createBoundingSurfaceFrom2DPoints} from '../../../brep/brep-builder';
 
 const INIT_WIDTH_H  = 750 * 0.5;
 const INIT_HEIGHT_H = 750 * 0.5;
@@ -22,6 +21,9 @@ export class PlaneSceneObject extends SceneSolid {
       opacity: 0.5
     }, skin));
     this.plane = plane;
+    this.surface  = createBoundingSurfaceFrom2DPoints([
+      new Vector(0,0,0), new Vector(0,100,0), new Vector(100,100,0), new Vector(100,0,0) 
+    ], plane);
     this.sceneFace = new PlaneSceneFace(this);
     this.sceneFaces.push(this.sceneFace); // as part of the API
     this.updateBounds(INIT_BOUNDS);
@@ -69,7 +71,7 @@ class PlaneSceneFace extends SceneFace {
   }
 
   surface() {
-    return this.solid.plane;
+    return this.solid.surface;
   }    
 
   getBounds() {
