@@ -98,8 +98,12 @@ export function createBoundingSurface(points, plane) {
     plane = new Plane(normal, w);
   }
   let to2D = plane.get2DTransformation();
-
   let points2d = points.map(p => to2D.apply(p));
+
+  return createBoundingSurfaceFrom2DPoints(points2d, plane);
+}
+
+export function createBoundingSurfaceFrom2DPoints(points2d, plane) {
   let bBox = new BBox();
   points2d.forEach(p => bBox.checkPoint(p));
 
@@ -117,4 +121,4 @@ export function createBoundingSurface(points, plane) {
   // __DEBUG__.AddSurfaceNormal(nurbs);
 
   return new BrepSurface(nurbs);
-}
+} 
