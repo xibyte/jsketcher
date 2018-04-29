@@ -69,7 +69,6 @@ class BREPSceneFace extends SceneFace {
     brepFace.data['scene.face'] = this;
   }
 
-
   normal() {
     return this.brepFace.surface.normalInMiddle();
   }
