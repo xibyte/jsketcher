@@ -21,7 +21,7 @@ function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
     const normal = STANDARD_BASES[orientation][2];
     plane = new Plane(normal, depth);
   } else {
-    plane = new Plane(face.brepFace.surface.normalInMiddle(), depth);
+    plane = new Plane(face.surface().normalInMiddle(), depth);
   }
   return plane;
 }
