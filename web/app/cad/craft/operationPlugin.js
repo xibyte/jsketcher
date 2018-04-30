@@ -23,7 +23,7 @@ export function activate(context) {
     actions.push(opAction);
 
     registry[id] = Object.assign({}, descriptor, {
-      run: request => runOperation(request, descriptor, context)
+      run: (request, services) => runOperation(request, descriptor, services)
     });
   }
 
@@ -50,12 +50,12 @@ export function activate(context) {
   }
 }
 
-function runOperation(request, descriptor, context) {
-  for (let engine of context.services.craftEngines.getRegisteredEngines()) {
-    let handler = engine.handler(descriptor.id);
-    if (handler) {
-      return handler(request);
+function runOperation(request, descriptor, services) {
+  for (let engine of services.craftEngines.getRegisteredEngines()) {
+    let result = engine.handler(descriptor.id, request, services);
+    if (result) {
+      return result;
     }
   }
-  return descriptor.run(request)
+  return descriptor.run(request, services)
 }

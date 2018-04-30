@@ -6,6 +6,9 @@ import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './sceneObject'
 import brepTess from '../../tess/brep-tess'
 import tessellateSurface from '../../../brep/geom/surfaces/surfaceTess';
 import NurbsSurface from '../../../brep/geom/surfaces/nurbsSurface';
+import {BrepSurface} from '../../../brep/geom/surfaces/brepSurface';
+import {createBoundingSurfaceFrom2DPoints} from '../../../brep/brep-builder';
+import {Plane} from '../../../brep/geom/impl/plane';
 
 const SMOOTH_RENDERING = false;
 
@@ -14,6 +17,7 @@ export class UnmanagedSceneSolid extends SceneSolid {
   constructor(data, type, skin) {
     super(type, undefined, Object.assign({side : THREE.DoubleSide}, skin));
     this.createGeometry(data);
+    this.externalData = {};
   }
 
   createGeometry(data) {
@@ -76,33 +80,44 @@ export class UnmanagedSceneSolid extends SceneSolid {
 class UnmanagedSceneFace extends SceneFace {
   constructor(faceData, solid) {
     super(solid, faceData.id);
-    this.surface = faceData.surface;
-    // if (this.surface.TYPE === 'B-SPLINE') {
-    //   let s = this.surface; 
-    //   let nurbs = new NurbsSurface(verb.geom.NurbsSurface.byKnotsControlPointsWeights(s.degU, s.degV, s.knotsU, s.knotsV, s.cp, s.weights));
-    //   __DEBUG__.AddParametricSurface(nurbs);
-    // }
+    let s = faceData.surface;
+    if (s.TYPE === 'B-SPLINE') {
+      this._surface = new BrepSurface(NurbsSurface.create(s.degU, s.degV, s.knotsU, s.knotsV, s.cp, s.weights));
+    } else if (s.TYPE === 'PLANE') {
+      //TODO create bounded nurbs from face vertices when they are available
+      let fakeBounds = [
+        new Vector(0,0,0), new Vector(0,100,0), new Vector(100,100,0), new Vector(100,0,0)
+      ];
+      let normal = new Vector().set3(s.normal);
+      let plane = new Plane(normal, normal.dot(new Vector().set3(s.origin)));
+      this._surface = createBoundingSurfaceFrom2DPoints(fakeBounds, plane);
+    } else {
+      this._surface = null;
+      // throw 'unsupported surface type ' + s.TYPE;
+    }
+    if (this._surface !== null ) 
+      this.plane = this._surface.tangentPlaneInMiddle();
   }
 
 
   normal() {
-    return this.surface.normalInMiddle();
+    return this.plane.normal;
   }
 
   depth() {
-    return this.surface.tangentPlaneInMiddle().w;
+    return this.plane.w;
   }
 
   surface() {
-    return this.surface;
+    return this._surface;
   }
 
   getBounds() {
-    return [
-      this.surface.southEastPoint(),
-      this.surface.southWestPoint(),
-      this.surface.northWestPoint(),
-      this.surface.northEastPoint()
-    ];
+    return [[
+      this._surface.southEastPoint(),
+      this._surface.southWestPoint(),
+      this._surface.northWestPoint(),
+      this._surface.northEastPoint()
+    ]];
   }
 }
