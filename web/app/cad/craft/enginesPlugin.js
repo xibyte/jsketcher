@@ -24,12 +24,23 @@ export function activate({services}) {
       engine.handler = handler;
       console.info(`engine "${id}" is ready`);
     }
+    services.lifecycle.loadProjectRequest();
+  }
+  
+  function allEnginesReady() {
+    for (let e of engines) {
+      if (e.handler === NO_OP_HANDLER) {
+        return false;
+      }
+    }
+    return true;
   }
   
   services.craftEngines = {
     registerEngine,
     getRegisteredEngines: () => engines,
-    engineReady
+    engineReady,
+    allEnginesReady
   };
 
   engines.forEach(e => e.handler = NO_OP_HANDLER);
@@ -37,6 +48,8 @@ export function activate({services}) {
 }
 
 function startEngine({id, url}) {
+  console.info(`starting engine "${id}"...`);
+
   let engineScript = document.createElement('script');
   engineScript.setAttribute('src', url);
   document.head.appendChild(engineScript);

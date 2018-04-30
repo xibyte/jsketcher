@@ -1,4 +1,5 @@
 import Bus from 'bus';
+import * as LifecyclePlugin from './lifecyclePlugin';
 import * as AppTabsPlugin from '../dom/appTabsPlugin';
 import * as DomPlugin from '../dom/domPlugin';
 import * as PickControlPlugin from '../scene/controls/pickControlPlugin';
@@ -22,12 +23,14 @@ import * as tpiPlugin from '../tpi/tpiPlugin';
 import * as PartModellerPlugin from '../part/partModellerPlugin';
 
 import startReact from "../dom/startReact";
+import {APP_READY_TOKEN} from './lifecyclePlugin';
 
 export default function startApplication(callback) {
 
   let applicationPlugins = [PartModellerPlugin];
   
   let preUIPlugins = [
+    LifecyclePlugin,
     ProjectPlugin,
     StoragePlugin,
     AppTabsPlugin,
@@ -61,7 +64,7 @@ export default function startApplication(callback) {
 
   startReact(context, () => {
     activatePlugins(plugins, context);
-    context.services.project.load();
+    context.bus.dispatch(APP_READY_TOKEN, true);
     context.services.viewer.render();
     callback(context);
   });
