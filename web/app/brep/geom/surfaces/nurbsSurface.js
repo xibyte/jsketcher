@@ -5,6 +5,11 @@ import NurbsCurve from '../curves/nurbsCurve';
 
 export default class NurbsSurface {
   
+  static create(degU, degV, knotsU, knotsV, controlPoints, weights) {
+    return new NurbsSurface(
+      verb.geom.NurbsSurface.byKnotsControlPointsWeights(degU, degV, knotsU, knotsV, controlPoints, weights));
+  }
+  
   constructor(verbSurface) {
     this.data = verbSurface.asNurbs();
     this.verb = verbSurface;
