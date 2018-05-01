@@ -64,4 +64,13 @@ export default class NurbsCurve {
     split.forEach(n => ext.normalizeCurveParametrization(n));
     return split.map(c => new NurbsCurve(new verb.geom.NurbsCurve(c)));
   }
+  
+  serialize() {
+    return {
+      degree: this.verb.degree(),
+      knots: this.verb.knots(),
+      cp: this.verb.controlPoints(), 
+      weights: this.verb.weights()
+    }
+  }
 }
