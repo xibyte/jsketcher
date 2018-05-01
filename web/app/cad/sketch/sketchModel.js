@@ -27,7 +27,7 @@ class SketchPrimitive {
   }
 
   isCurve() {
-    return this.constructor.name != 'Segment';
+    return this.constructor.name !== 'Segment';
   }
 
   toNurbs(plane) {

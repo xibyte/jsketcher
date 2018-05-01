@@ -47,10 +47,12 @@ export class UnmanagedSceneSolid extends SceneSolid {
           tr = tr[0];
         }
         tr.forEach(p => geom.vertices.push(vec(p)));
-        if (!normales && faceData.surface.TYPE === 'PLANE') {
-          normales = vec(faceData.surface.normal);
-          if (faceData.inverted) {
-            normales.negate();
+        if (!normales) {
+          if (faceData.surface.normal) {
+            normales = vec(faceData.surface.normal);
+            if (faceData.inverted) {
+              normales.negate();
+            }
           }
         } else {
           if (faceData.inverted) {
@@ -61,12 +63,19 @@ export class UnmanagedSceneSolid extends SceneSolid {
             }
           }
         }
-        
-        let testNormal = Array.isArray(normales) ? normalizedSumOfTHREE(normales) : normales;
         let indices = [off, off + 1, off + 2];
         let trNormal = normalOfCCWSeqTHREE(indices.map(i => geom.vertices[i]));
-        if (testNormal.dot(trNormal) < 0) {
-          indices.reverse();
+        if (normales) {
+          let testNormal = Array.isArray(normales) ? normalizedSumOfTHREE(normales) : normales;
+          if (testNormal.dot(trNormal) < 0) {
+            indices.reverse();
+          }
+        } else {
+          normales = trNormal;
+          if (faceData.inverted) {
+            normales.negate();
+            indices.reverse();
+          }          
         }
         let [a, b, c] = indices;
         
