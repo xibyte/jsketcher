@@ -1,6 +1,6 @@
 import Vector from 'math/vector';
 import {EDGE_AUX, FACE_CHUNK} from '../../../brep/stitching'
-import {normalOfCCWSeq} from '../../cad-utils'
+import {normalOfCCWSeq, normalOfCCWSeqTHREE} from '../../cad-utils';
 import {TriangulateFace} from '../../tess/triangulation'
 import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './sceneObject'
 import brepTess from '../../tess/brep-tess'
@@ -15,7 +15,7 @@ const SMOOTH_RENDERING = false;
 export class UnmanagedSceneSolid extends SceneSolid {
 
   constructor(data, type, skin) {
-    super(type, undefined, Object.assign({side : THREE.DoubleSide}, skin));
+    super(type, undefined, skin);
     this.createGeometry(data);
     this.externalData = {};
   }
@@ -49,26 +49,44 @@ export class UnmanagedSceneSolid extends SceneSolid {
         tr.forEach(p => geom.vertices.push(vec(p)));
         if (!normales && faceData.surface.TYPE === 'PLANE') {
           normales = vec(faceData.surface.normal);
+          if (faceData.inverted) {
+            normales.negate();
+          }
+        } else {
+          if (faceData.inverted) {
+            if (Array.isArray(normales)) {
+              tr.forEach(n => n.negate())
+            } else {
+              normales.negate();
+            }
+          }
         }
         
-        const face = sceneFace.createMeshFace(off, off + 1, off + 2, normales);
+        let testNormal = Array.isArray(normales) ? normalizedSumOfTHREE(normales) : normales;
+        let indices = [off, off + 1, off + 2];
+        let trNormal = normalOfCCWSeqTHREE(indices.map(i => geom.vertices[i]));
+        if (testNormal.dot(trNormal) < 0) {
+          indices.reverse();
+        }
+        let [a, b, c] = indices;
+        
+        const face = sceneFace.createMeshFace(a, b, c, normales);
         geom.faces.push(face);
       }
     }
-    if (!SMOOTH_RENDERING) {
-      geom.computeFaceNormals();
-    }
-    //geom.mergeVertices();
+    geom.mergeVertices();
   }
 
   createEdges(faces) {
     for (let faceData of faces) {
-      for (let edgeData of faceData.edges) {
-        const line = new THREE.Line(new THREE.Geometry(), WIREFRAME_MATERIAL);
-        if (edgeData.tess) {
-          edgeData.tess.forEach(p => line.geometry.vertices.push(new THREE.Vector3().fromArray(p)));
+      for (let loop of faceData.loops) {
+        for (let edgeData of loop) {
+          const line = new THREE.Line(new THREE.Geometry(), WIREFRAME_MATERIAL);
+          if (edgeData.tess) {
+            edgeData.tess.forEach(p => line.geometry.vertices.push(new THREE.Vector3().fromArray(p)));
+          }
+          this.wireframeGroup.add(line);
         }
-        this.wireframeGroup.add(line);
       }
     }
   }
@@ -77,12 +95,19 @@ export class UnmanagedSceneSolid extends SceneSolid {
   }
 }
 
+function normalizedSumOfTHREE(vecs) {
+  let out = new THREE.Vector3().copy();
+  vecs.forEach(v => out.add(v));
+  out.normalize();
+  return out;
+}
+
 class UnmanagedSceneFace extends SceneFace {
   constructor(faceData, solid) {
     super(solid, faceData.id);
     let s = faceData.surface;
     if (s.TYPE === 'B-SPLINE') {
-      this._surface = new BrepSurface(NurbsSurface.create(s.degU, s.degV, s.knotsU, s.knotsV, s.cp, s.weights));
+      this._surface = new BrepSurface(NurbsSurface.create(s.degU, s.degV, s.knotsU, s.knotsV, s.cp, s.weights), faceData.inverted);
     } else if (s.TYPE === 'PLANE') {
       //TODO create bounded nurbs from face vertices when they are available
       let fakeBounds = [
@@ -90,13 +115,18 @@ class UnmanagedSceneFace extends SceneFace {
       ];
       let normal = new Vector().set3(s.normal);
       let plane = new Plane(normal, normal.dot(new Vector().set3(s.origin)));
+      if (faceData.inverted) {
+        plane = plane.invert();
+      }
       this._surface = createBoundingSurfaceFrom2DPoints(fakeBounds, plane);
     } else {
       this._surface = null;
       // throw 'unsupported surface type ' + s.TYPE;
     }
-    if (this._surface !== null ) 
+    if (this._surface !== null ) {
       this.plane = this._surface.tangentPlaneInMiddle();
+    }
+    this.bounds = faceData.loops.map(l => l.map(e => new Vector().set3(e.inverted ? e.b : e.a)));
   }
 
 
@@ -113,11 +143,6 @@ class UnmanagedSceneFace extends SceneFace {
   }
 
   getBounds() {
-    return [[
-      this._surface.southEastPoint(),
-      this._surface.southWestPoint(),
-      this._surface.northWestPoint(),
-      this._surface.northEastPoint()
-    ]];
+    return this.bounds;
   }
 }
