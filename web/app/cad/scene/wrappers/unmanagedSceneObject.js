@@ -1,14 +1,14 @@
 import Vector from 'math/vector';
-import {EDGE_AUX, FACE_CHUNK} from '../../../brep/stitching'
-import {normalOfCCWSeq, normalOfCCWSeqTHREE} from '../../cad-utils';
-import {TriangulateFace} from '../../tess/triangulation'
-import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './sceneObject'
-import brepTess from '../../tess/brep-tess'
-import tessellateSurface from '../../../brep/geom/surfaces/surfaceTess';
+import {normalOfCCWSeqTHREE} from '../../cad-utils';
+import {SceneEdge, SceneFace, SceneSolid} from './sceneObject';
 import NurbsSurface from '../../../brep/geom/surfaces/nurbsSurface';
 import {BrepSurface} from '../../../brep/geom/surfaces/brepSurface';
 import {createBoundingSurfaceFrom2DPoints} from '../../../brep/brep-builder';
 import {Plane} from '../../../brep/geom/impl/plane';
+import {setAttribute} from 'scene/objectData';
+import {perpendicularVector} from '../../../math/math';
+import * as vec from '../../../math/vec';
+
 
 const SMOOTH_RENDERING = false;
 
@@ -26,7 +26,6 @@ export class UnmanagedSceneSolid extends SceneSolid {
     this.mesh = new THREE.Mesh(geometry, this.material);
     this.cadGroup.add(this.mesh);
     this.createFaces(data.faces);
-    this.createEdges(data.faces);
     this.createVertices();
   }
 
@@ -36,20 +35,19 @@ export class UnmanagedSceneSolid extends SceneSolid {
       const sceneFace = new UnmanagedSceneFace(faceData, this);
       this.sceneFaces.push(sceneFace);
       let tessellation = faceData.tess;
-      const vec = arr => new THREE.Vector3().fromArray(arr);
       for (let i = 0; i < tessellation.length; ++i) {
         let off = geom.vertices.length;
         let tr = tessellation[i], normales;
         if (Array.isArray(tr)) {
           if (SMOOTH_RENDERING && tr[1] && !tr[1].find(n => n[0] === null || n[1] === null || n[2] === null)) {
-            normales = tr[1].map(vec);
+            normales = tr[1].map(vThree);
           }
           tr = tr[0];
         }
-        tr.forEach(p => geom.vertices.push(vec(p)));
+        tr.forEach(p => geom.vertices.push(vThree(p)));
         if (!normales) {
           if (faceData.surface.normal) {
-            normales = vec(faceData.surface.normal);
+            normales = vThree(faceData.surface.normal);
             if (faceData.inverted) {
               normales.negate();
             }
@@ -57,7 +55,7 @@ export class UnmanagedSceneSolid extends SceneSolid {
         } else {
           if (faceData.inverted) {
             if (Array.isArray(normales)) {
-              tr.forEach(n => n.negate())
+              normales.forEach(n => n.negate())
             } else {
               normales.negate();
             }
@@ -81,22 +79,69 @@ export class UnmanagedSceneSolid extends SceneSolid {
         
         const face = sceneFace.createMeshFace(a, b, c, normales);
         geom.faces.push(face);
+        this.createEdge(sceneFace, faceData);
       }
     }
     geom.mergeVertices();
   }
 
-  createEdges(faces) {
-    for (let faceData of faces) {
-      for (let loop of faceData.loops) {
-        for (let edgeData of loop) {
-          const line = new THREE.Line(new THREE.Geometry(), WIREFRAME_MATERIAL);
-          if (edgeData.tess) {
-            edgeData.tess.forEach(p => line.geometry.vertices.push(new THREE.Vector3().fromArray(p)));
+  createEdge(sceneFace, faceData) {
+    for (let loop of faceData.loops) {
+      const geometry = new THREE.Geometry();
+      geometry.dynamic = true;
+      let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({
+        vertexColors: THREE.FaceColors,
+        color: 0x2B3856,
+        shininess: 0,
+      }));
+      const width = 1;
+      for (let edgeData of loop) {
+        let sceneEdge = new SceneEdge(edgeData.ptr, null);
+        sceneFace.edges.push(sceneEdge);
+        sceneEdge.data.ptr = edgeData.ptr;
+    
+        if (edgeData.tess) {
+          let base = null;
+          for (let i = 1; i < edgeData.tess.length; i++) {
+            
+            let a  = edgeData.tess[i - 1];
+            let b  = edgeData.tess[i];
+            let ab = vec._normalize(vec.sub(b, a));
+            
+            let dirs = [];
+            dirs[0] = perpendicularVector(ab);
+            dirs[1] = vec.cross(ab, dirs[0]);
+            dirs[2] = vec.negate(dirs[0]);
+            dirs[3] = vec.negate(dirs[1]);
+
+            dirs.forEach(d => vec._mul(d, width));
+            if (base === null) {
+              base = dirs.map(d => vec.add(a, d));
+            }
+            let lid = dirs.map(d => vec.add(b, d));
+
+            let off = geometry.vertices.length;
+            base.forEach(p => geometry.vertices.push(vThree(p)))
+            lid.forEach(p => geometry.vertices.push(vThree(p)))
+            base = lid;
+            
+            let faces = [
+              [0, 4, 3],
+              [3, 4, 7],
+              [2, 3, 7],
+              [7, 6, 2],
+              [0, 1, 5],
+              [5, 4, 0],
+              [1, 2, 6],
+              [6, 5, 1],
+            ].forEach(([a, b, c]) => geometry.faces.push(new THREE.Face3(a + off, b + off, c + off)));
           }
-          this.wireframeGroup.add(line);
+
+          setAttribute(mesh, 'edge', sceneEdge);
         }
       }
+      geometry.computeFaceNormals();
+      this.wireframeGroup.add(mesh);
     }
   }
 
@@ -155,3 +200,5 @@ class UnmanagedSceneFace extends SceneFace {
     return this.bounds;
   }
 }
+
+const vThree = arr => new THREE.Vector3().fromArray(arr);
