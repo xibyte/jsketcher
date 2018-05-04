@@ -62,7 +62,7 @@ export class SceneFace {
     } else {
       this.id = propagatedId;
     }
-
+    this.edges = [];
     this.solid = solid;
     this.meshFaces = [];
     this.sketch3DGroup = null;
@@ -160,6 +160,17 @@ export class SceneFace {
     }
     return object.geometry.vertices;
   }
+}
+
+
+export class SceneEdge {
+  
+  constructor(id, curve) {
+    this.id = id;
+    this.curve = curve;
+    this.data = {};
+  }
+  
 }
 
 export const SKETCH_MATERIAL = new THREE.LineBasicMaterial({color: 0xFFFFFF, linewidth: 3/DPR});
