@@ -10,7 +10,7 @@ import {perpendicularVector} from '../../../math/math';
 import * as vec from '../../../math/vec';
 
 
-const SMOOTH_RENDERING = false;
+const SMOOTH_RENDERING = true;
 
 export class UnmanagedSceneSolid extends SceneSolid {
 
@@ -63,9 +63,14 @@ export class UnmanagedSceneSolid extends SceneSolid {
         }
         let indices = [off, off + 1, off + 2];
         let trNormal = normalOfCCWSeqTHREE(indices.map(i => geom.vertices[i]));
-        if (normales) {
-          let testNormal = Array.isArray(normales) ? normalizedSumOfTHREE(normales) : normales;
+        if (Array.isArray(normales)) {
+          let testNormal = normalizedSumOfTHREE(normales);
           if (testNormal.dot(trNormal) < 0) {
+            indices.reverse();
+            normales.reverse();
+          }
+        } else if (normales) {
+          if (normales.dot(trNormal) < 0) {
             indices.reverse();
           }
         } else {
@@ -76,7 +81,6 @@ export class UnmanagedSceneSolid extends SceneSolid {
           }          
         }
         let [a, b, c] = indices;
-        
         const face = sceneFace.createMeshFace(a, b, c, normales);
         geom.faces.push(face);
         this.createEdge(sceneFace, faceData);
@@ -150,7 +154,7 @@ export class UnmanagedSceneSolid extends SceneSolid {
 }
 
 function normalizedSumOfTHREE(vecs) {
-  let out = new THREE.Vector3().copy();
+  let out = new THREE.Vector3();
   vecs.forEach(v => out.add(v));
   out.normalize();
   return out;
