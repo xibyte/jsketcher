@@ -89,8 +89,8 @@ export class PanTool extends Tool {
 
     if (e.wheelDelta) { // WebKit / Opera / Explorer 9
       delta = e.wheelDelta;
-    } else if (e.detail) { // Firefox
-      delta = -e.detail;
+    } else if (e.deltaY) { // Firefox
+      delta = -e.deltaY;
     }
 
     var before = this.viewer.screenToModel(e);

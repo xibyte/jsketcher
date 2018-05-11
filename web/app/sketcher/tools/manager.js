@@ -20,7 +20,7 @@ export class ToolManager {
       e.stopPropagation();
       this.tool.mouseup(e);
     }, false);
-    canvas.addEventListener('mousewheel', (e) => {
+    canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       e.stopPropagation();
       let tool = this.tool;
