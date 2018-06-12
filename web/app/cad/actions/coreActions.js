@@ -11,7 +11,7 @@ export default [
     },
     listens: ['selection_face'],
     update: ActionHelpers.checkForSelectedFaces(1),
-    invoke: ({services}) => services.sketcher.sketchFace(services.selection.face()[0])
+    invoke: ({services}) => services.sketcher.sketchFace(services.selection.face.single)
   },
 
   {

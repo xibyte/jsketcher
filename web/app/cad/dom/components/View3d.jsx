@@ -5,7 +5,7 @@ import ls from './View3d.less';
 import Abs from 'ui/components/Abs';
 import {PlugableToolbarLeft, PlugableToolbarLeftSecondary, PlugableToolbarRight} from './PlugableToolbar';
 import UISystem from './UISystem';
-import WizardManager from './wizard/WizardManager';
+import WizardManager from '../../craft/wizard/components/WizardManager';
 import PartPanel from './PartPanel';
 
 

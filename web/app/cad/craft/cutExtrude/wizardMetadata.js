@@ -1,11 +1,16 @@
-import {CURRENT_SELECTION as S} from "../wizard/wizardPlugin";
+import React from 'react';
+import {NumberField} from '../wizard/components/form/Fields';
+import {Group} from '../wizard/components/form/Form';
+import SingleEntity from '../wizard/components/form/SingleEntity';
 
-export function createWizardMetadata(valueLabel) {
-  return [
-    ['value'   , 'number',  50,  {label: valueLabel}], 
-    ['prism'   , 'number',  1 ,  {min: 0, step: 0.1, round: 1}],
-    ['angle'   , 'number',  0 ,  {}],
-    ['rotation', 'number',  0 ,  {step: 5}],
-    ['face'    , 'face'  ,  S  ]
-  ];
+export function createPrismWizard(valueLabel) {
+  return function PrismWizard() {
+    return <Group>
+      <NumberField name='value' defaultValue={50} label={valueLabel}/>
+      <NumberField name='prism' defaultValue={1} min={0} step={0.1} round={1}/>
+      <NumberField name='angle' defaultValue={0}/>
+      <NumberField name='rotation' defaultValue={0} step={5}/>
+      <SingleEntity entity='face' name='face'/>
+    </Group>;
+  };
 }

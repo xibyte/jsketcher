@@ -154,7 +154,7 @@ function setSketch(win, app, faceId, data) {
 }
 
 function selectFace(app, faceId) {
-  app.bus.dispatch('selection_face', [app.findFace(faceId)]);
+  app.bus.dispatch('selection_face', [faceId]);
 }
 
 function assertScene(app, env, expected) {

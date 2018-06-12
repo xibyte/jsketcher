@@ -5,6 +5,7 @@ import {TriangulateFace} from '../../tess/triangulation'
 import {SceneSolid, SceneFace, WIREFRAME_MATERIAL} from './sceneObject'
 import brepTess from '../../tess/brep-tess'
 import tessellateSurface from '../../../brep/geom/surfaces/surfaceTess';
+import {setAttribute} from '../../../../../modules/scene/objectData';
 
 const SMOOTH_RENDERING = false //true;
 
@@ -50,7 +51,7 @@ export class BREPSceneSolid extends SceneSolid {
           line.geometry.vertices.push(p.three());
         }
         this.wireframeGroup.add(line);
-        line.__TCAD_EDGE = edge;
+        setAttribute(line, 'edge', edge);
         edge.data['scene.edge'] = line;
       }
 

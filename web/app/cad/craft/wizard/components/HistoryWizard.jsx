@@ -1,8 +1,8 @@
 import React from 'react';
 import connect from '../../../../../../modules/ui/connect';
-import {TOKENS as CRAFT_TOKENS} from '../../../craft/craftPlugin';
+import {TOKENS as CRAFT_TOKENS} from '../../craftPlugin';
 import Wizard from './Wizard';
-import {finishHistoryEditing, stepOverridingParams} from '../../../craft/craftHistoryUtils';
+import {finishHistoryEditing, stepOverridingParams} from '../../craftHistoryUtils';
 
 function HistoryWizard({history, pointer, step, cancel, offset}) {
   if (pointer === history.length - 1) {

@@ -103,7 +103,7 @@ export class SceneFace {
 
   registerMeshFace(threeFace) {
     this.meshFaces.push(threeFace);
-    threeFace.__TCAD_SceneFace = this;
+    setAttribute(threeFace, 'face', this);
   }
 
   updateSketch(sketch) {
@@ -165,12 +165,13 @@ export class SceneFace {
 
 export class SceneEdge {
   
-  constructor(id, curve) {
+  constructor(id, curve, face, representation, marker) {
     this.id = id;
     this.curve = curve;
-    this.data = {};
+    this.face = face;
+    this.representation = representation;
+    this.marker = marker;
   }
-  
 }
 
 export const SKETCH_MATERIAL = new THREE.LineBasicMaterial({color: 0xFFFFFF, linewidth: 3/DPR});
