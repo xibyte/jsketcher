@@ -1,9 +1,16 @@
-import {AbstractSelectionMarker} from "./abstractSelectionMarker";
-import {LineMarker} from "./lineMarker";
+import {AbstractSelectionMarker} from './abstractSelectionMarker';
 
-export class EdgeSelectionMarker extends LineMarker {
+export class EdgeSelectionMarker extends AbstractSelectionMarker {
 
-  constructor (bus, selectionMaterial) {
-    super(bus, 'selection_edge', selectionMaterial);
+  constructor (context) {
+    super(context, 'edge');
+  }
+
+  mark(obj) {
+    obj.marker.material.visible = true;
+  }
+
+  unMark(obj) {
+    obj.marker.material.visible = false;
   }
 }

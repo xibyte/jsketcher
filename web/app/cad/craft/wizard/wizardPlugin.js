@@ -23,6 +23,5 @@ export const TOKENS = {
   WIZARDS: createToken('wizards'),
   OPEN: createToken('wizards', 'open'),
   CLOSE: createToken('wizards', 'close'),
+  PARAMS: createToken('wizardParams')
 };
-
-export const CURRENT_SELECTION = {};

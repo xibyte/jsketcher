@@ -33,7 +33,6 @@
     "babel-polyfill": "6.26.0",
     "babel-preset-react": "6.24.1",
     "babel-preset-flow": "6.23.0",
-
     "css-loader": "0.28.7",
     "less-loader": "4.0.5",
     "eslint": "4.13.1",
@@ -47,9 +46,7 @@
     "grunt-contrib-copy": "1.0.0"
   },
   "dependencies": {
-    "react": "16.2.0",
-    "react-dom": "16.2.0",
-    "prop-types": "15.6.0",
+    "classnames": "2.2.5",
     "clipper-lib": "6.2.1",
     "diff-match-patch": "1.0.0",
     "earcut": "2.1.1",
@@ -57,12 +54,15 @@
     "handlebars-loader": "1.6.0",
     "jquery": "2.1.0",
     "json-loader": "0.5.4 ",
-    "mousetrap": "1.6.1",
     "less": "2.7.3",
     "libtess": "1.2.2",
+    "mobx": "^4.3.0",
+    "mousetrap": "1.6.1",
     "numeric": "1.2.6",
+    "prop-types": "15.6.0",
+    "react": "^16.4.0",
+    "react-dom": "^16.4.0",
     "sprintf": "0.1.5",
-    "classnames": "2.2.5",
     "three": "0.89.0"
   }
 }
