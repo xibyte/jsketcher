@@ -3,8 +3,8 @@ import {setAttribute, getAttribute} from 'scene/objectData';
 
 export class LineMarker extends AbstractSelectionMarker {
 
-  constructor(bus, event, selectionMaterial) {
-    super(bus, event);
+  constructor(context, entity, selectionMaterial) {
+    super(context, entity);
     this.selectionMaterial = selectionMaterial;
   }
   

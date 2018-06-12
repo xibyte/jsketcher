@@ -290,7 +290,7 @@ const DebugActions = [
     listens: ['selection_face'],
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection}}) => {
-      let s = selection.face()[0];
+      let s = selection.face.single;
       console.log(JSON.stringify({
         polygons: s.csgGroup.polygons,
         basis: s._basis
@@ -308,7 +308,7 @@ const DebugActions = [
     listens: ['selection_face'],
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection}}) => {
-      console.log(selection.face()[0].id);
+      console.log(selection.face.single.id);
     }
   },
   
@@ -322,7 +322,7 @@ const DebugActions = [
     listens: ['selection_face'],
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection, project}}) => {
-      const faceId = selection.face()[0].id;
+      const faceId = selection.face.single.id;
       const sketch = JSON.parse(localStorage.getItem(project.faceStorageKey(faceId)));
       const layers = sketch.layers.filter(l => l.name !== '__bounds__');
       const data = [];

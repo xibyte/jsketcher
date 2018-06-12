@@ -1,15 +1,9 @@
 import {createMeshGeometry} from 'scene/geoms';
-import {CURRENT_SELECTION as S} from '../wizard/wizardPlugin';
 import {STANDARD_BASES} from '../../../math/l3space';
 import {Plane} from '../../../brep/geom/impl/plane';
 import {PlaneSceneObject} from '../../scene/wrappers/planeSceneObject';
 import Vector from 'math/vector';
-
-const METADATA = [
-  ['orientation', 'choice', 'XY', {options: ['XY', 'XZ', 'ZY']}],
-  ['parallelTo', 'face', S],
-  ['depth', 'number',  0, {}]
-];
+import PlaneWizard from './PlaneWizard';
 
 function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
   let face = null;
@@ -48,12 +42,12 @@ function previewGeomProvider(params, {cadRegistry}) {
 
 export default {
   id: 'PLANE',
-  metadata: METADATA,
   label: 'Plane',
   icon: 'img/cad/plane',
   info: 'creates new object plane',
   paramsInfo: ({depth}) => `(${depth})`,
   previewGeomProvider,
-  run: createPlane
+  run: createPlane,
+  wizard: PlaneWizard
 };
 

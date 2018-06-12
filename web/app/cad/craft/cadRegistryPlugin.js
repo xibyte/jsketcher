@@ -1,5 +1,7 @@
 import {createToken} from "bus";
 import * as SceneGraph from 'scene/sceneGraph';
+import {EDGE, FACE} from '../scene/entites';
+
 
 export function activate({bus, services}) {
 
@@ -44,8 +46,30 @@ export function activate({bus, services}) {
     return null;
   }
 
+  function findEdge(edgeId) {
+    let shells = getAllShells();
+    for (let shell of shells) {
+      for (let face of shell.sceneFaces) {
+        for (let edge of face.edges) {
+          if (edge.id === edgeId) {
+            return edge;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  function findEntity(entity, id) {
+    switch (entity) {
+      case FACE: return findFace(id);
+      case EDGE: return findEdge(id);
+      default: throw 'unsupported';
+    }
+  }
+  
   services.cadRegistry = {
-    getAllShells, update, reset, findFace
+    getAllShells, update, reset, findFace, findEdge, findEntity
   }
 }
 

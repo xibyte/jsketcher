@@ -1,14 +1,17 @@
 import {findDiff} from 'gems/iterables';
+import {entitySelectionToken} from '../controls/pickControlPlugin';
 
 export class AbstractSelectionMarker {
 
-  constructor(bus, event) {
-    this.bus = bus;
+  constructor(context, entity) {
+    this.context = context;
+    this.entity = entity;
     this.selection = [];
-    this.bus.subscribe(event, this.update);
+    this.context.bus.subscribe(entitySelectionToken(entity), this.update);
   }
   
-  update = selection => {
+  update = () => {
+    let selection = this.context.services.selection[this.entity].objects;
     if (!selection) {
       if (this.selection.length !== 0) {
         for (let obj of this.selection) {
@@ -16,7 +19,7 @@ export class AbstractSelectionMarker {
         }
         this.selection = [];
       }
-      this.bus.dispatch('scene:update');
+      this.context.bus.dispatch('scene:update');
       return;
     }
     
@@ -30,7 +33,7 @@ export class AbstractSelectionMarker {
       this.selection.splice(this.selection.indexOf(obj), 1);
       this.unMark(obj);
     }
-    this.bus.dispatch('scene:update');
+    this.context.bus.dispatch('scene:update');
   };
 
   mark(obj) {

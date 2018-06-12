@@ -1,12 +1,15 @@
 import * as mask from 'gems/mask'
+import {getAttribute} from '../../../../../modules/scene/objectData';
+import {TOKENS as UI_TOKENS} from '../../dom/uiEntryPointsPlugin';
+import {FACE, EDGE, SKETCH_OBJECT} from '../entites';
 
 export const PICK_KIND = {
   FACE: mask.type(1),
   SKETCH: mask.type(2),
-  EDGE: mask.type(3),
-  VERTEX: mask.type(4)
+  EDGE: mask.type(3)
 };
 
+const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT];
 
 export function activate(context) {
   initStateAndServices(context);
@@ -46,19 +49,18 @@ export function activate(context) {
   function handlePick(event) {
     raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, (object, kind) => {
       if (kind === PICK_KIND.FACE) {
-        if (!selected('selection_face', object)) {
+        if (!selected('selection_face', object.id)) {
           context.services.cadScene.showBasis(object.basis(), object.depth());
-          context.bus.dispatch('selection_face', [object]);
+          context.bus.dispatch('selection_face', [object.id]);
           return false;
         }
       } else if (kind === PICK_KIND.SKETCH) {
-        if (!selected('selection_sketchObject', object)) {
-          context.bus.dispatch('selection_sketchObject', [object]);
+        if (!selected('selection_sketchObject', object.id)) {
+          context.bus.dispatch('selection_sketchObject', [object.id]);
           return false;
         }
       } else if (kind === PICK_KIND.EDGE) {
-        if (!selected('selection_edge', object)) {
-          context.bus.dispatch('selection_edge', [object]);
+        if (dispatchSelection('selection_edge', object.id, event)) {
           return false;
         }
       }
@@ -66,6 +68,15 @@ export function activate(context) {
     });
   }
 
+  function dispatchSelection(selectionToken, selectee, event) {
+    if (selected(selectionToken, selectee)) {
+      return false;
+    }
+    let multiMode = event.shiftKey;
+    context.bus.updateState(selectionToken, selection => multiMode ? [...selection, selectee] : [selectee]);
+    return true;
+  }
+  
   function handleSolidPick(e) {
     raycastObjects(e, PICK_KIND.FACE, (sketchFace) => {
       context.bus.dispatch('selection_solid', sketchFace.solid);
@@ -85,15 +96,20 @@ export function activate(context) {
         return false;
       },
       (pickResult) => {
-        if (mask.is(kind, PICK_KIND.EDGE) && pickResult.object.__TCAD_EDGE !== undefined) {
-          return !visitor(pickResult.object, PICK_KIND.EDGE);
+        if (mask.is(kind, PICK_KIND.EDGE)) {
+          let cadEdge = getAttribute(pickResult.object, 'edge');
+          if (cadEdge) {
+            return !visitor(cadEdge, PICK_KIND.EDGE);
+          }
         }
         return false;
       },
       (pickResult) => {
-        if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face && pickResult.face.__TCAD_SceneFace !== undefined) {
-          const sketchFace = pickResult.face.__TCAD_SceneFace;
-          return !visitor(sketchFace, PICK_KIND.FACE);
+        if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face) {
+          let sketchFace = getAttribute(pickResult.face, 'face');
+          if (sketchFace) {
+            return !visitor(sketchFace, PICK_KIND.FACE);
+          }
         }
         return false;
       },
@@ -110,20 +126,36 @@ export function activate(context) {
 }
 
 function initStateAndServices({bus, services}) {
-  bus.enableState('selection_solid', []);
-  bus.enableState('selection_face', []);
-  bus.enableState('selection_edge', []);
-  bus.enableState('selection_sketchObject', []);
-
+  
   services.selection = {
-    solid: () => bus.state.selection_solid,
-    face: () => bus.state.selection_face,
-    edge: () => bus.state.selection_edge,
-    sketchObject: () => bus.state.selection_sketchObject
   };
+
+  SELECTABLE_ENTITIES.forEach(entity => {
+    let entitySelectApi = {
+      objects: [],
+      single: undefined
+    };
+    services.selection[entity] = entitySelectApi;
+    let selType = entitySelectionToken(entity);
+    bus.enableState(selType, []);
+    bus.subscribe(selType, selection => {
+      entitySelectApi.objects = selection.map(id => services.cadRegistry.findEntity(entity, id));
+      entitySelectApi.single = entitySelectApi.objects[0]; 
+    });
+    entitySelectApi.select = selection => bus.dispatch(selType, selection);
+  });
 }
 
+const selectionTokenMap = {};
+SELECTABLE_ENTITIES.forEach(e => selectionTokenMap[e] = `selection_${e}`);
 
+export function entitySelectionToken(entity) {
+  let token = selectionTokenMap[entity];
+  if (!token) {
+    throw "entity isn't selectable " + entity;
+  }
+  return token;
+}
 
   
 

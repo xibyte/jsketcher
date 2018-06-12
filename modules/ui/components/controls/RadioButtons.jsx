@@ -24,6 +24,7 @@ export function RadioButton({value, label}, {radioButtonsGroupName, radioButtons
   let onChange = e => {
     radioButtonsOnChange(e.target.value)
   };
+  label = label || value;
   return <label className={ls.radioButton}>
     <input type='radio' name={radioButtonsGroupName} defaultChecked={radioButtonsInitValue === value} 
            value={value} onChange={onChange}/> {label}

@@ -90,62 +90,76 @@ export class UnmanagedSceneSolid extends SceneSolid {
   }
 
   createEdge(sceneFace, faceData) {
-    for (let loop of faceData.loops) {
+    const doEdge = (edgeData, aux, width, color, opacity) => {
       const geometry = new THREE.Geometry();
       geometry.dynamic = true;
-      let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({
+      let materialParams = {
+        color,
         vertexColors: THREE.FaceColors,
-        color: 0x2B3856,
         shininess: 0,
-      }));
-      const width = 1;
-      for (let edgeData of loop) {
-        let sceneEdge = new SceneEdge(edgeData.ptr, null);
-        sceneFace.edges.push(sceneEdge);
-        sceneEdge.data.ptr = edgeData.ptr;
-    
-        if (edgeData.tess) {
-          let base = null;
-          for (let i = 1; i < edgeData.tess.length; i++) {
-            
-            let a  = edgeData.tess[i - 1];
-            let b  = edgeData.tess[i];
-            let ab = vec._normalize(vec.sub(b, a));
-            
-            let dirs = [];
-            dirs[0] = perpendicularVector(ab);
-            dirs[1] = vec.cross(ab, dirs[0]);
-            dirs[2] = vec.negate(dirs[0]);
-            dirs[3] = vec.negate(dirs[1]);
+        visible: !aux
+      };
+      if (opacity !== undefined) {
+        materialParams.transparent = true;
+        materialParams.opacity = opacity;
+      }
+      let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(materialParams));
+      if (edgeData.tess) {
+        let base = null;
+        for (let i = 1; i < edgeData.tess.length; i++) {
 
-            dirs.forEach(d => vec._mul(d, width));
-            if (base === null) {
-              base = dirs.map(d => vec.add(a, d));
-            }
-            let lid = dirs.map(d => vec.add(b, d));
+          let a  = edgeData.tess[i - 1];
+          let b  = edgeData.tess[i];
+          let ab = vec._normalize(vec.sub(b, a));
 
-            let off = geometry.vertices.length;
-            base.forEach(p => geometry.vertices.push(vThree(p)))
-            lid.forEach(p => geometry.vertices.push(vThree(p)))
-            base = lid;
-            
-            let faces = [
-              [0, 4, 3],
-              [3, 4, 7],
-              [2, 3, 7],
-              [7, 6, 2],
-              [0, 1, 5],
-              [5, 4, 0],
-              [1, 2, 6],
-              [6, 5, 1],
-            ].forEach(([a, b, c]) => geometry.faces.push(new THREE.Face3(a + off, b + off, c + off)));
+          let dirs = [];
+          dirs[0] = perpendicularVector(ab);
+          dirs[1] = vec.cross(ab, dirs[0]);
+          dirs[2] = vec.negate(dirs[0]);
+          dirs[3] = vec.negate(dirs[1]);
+
+          dirs.forEach(d => vec._mul(d, width));
+          if (base === null) {
+            base = dirs.map(d => vec.add(a, d));
           }
+          let lid = dirs.map(d => vec.add(b, d));
 
-          setAttribute(mesh, 'edge', sceneEdge);
+          let off = geometry.vertices.length;
+          base.forEach(p => geometry.vertices.push(vThree(p)));
+          lid.forEach(p => geometry.vertices.push(vThree(p)));
+          base = lid;
+
+          [
+            [0, 4, 3],
+            [3, 4, 7],
+            [2, 3, 7],
+            [7, 6, 2],
+            [0, 1, 5],
+            [5, 4, 0],
+            [1, 2, 6],
+            [6, 5, 1],
+          ].forEach(([a, b, c]) => geometry.faces.push(new THREE.Face3(a + off, b + off, c + off)));
         }
+
       }
       geometry.computeFaceNormals();
       this.wireframeGroup.add(mesh);
+      return mesh;
+    };
+    for (let loop of faceData.loops) {
+      for (let edgeData of loop) {
+        let sceneEdge = new SceneEdge(edgeData.ptr, null, sceneFace);
+        sceneFace.edges.push(sceneEdge);
+        
+        let representation = doEdge(edgeData, false,  1, 0x2B3856);
+        let marker = doEdge(edgeData, true, 3, 0xFA8072, 0.8);
+        
+        setAttribute(representation, 'edge', sceneEdge);
+        setAttribute(marker, 'edge', sceneEdge);
+        
+        sceneEdge.representation = representation;
+        sceneEdge.marker = marker;
+      }
     }
   }
 
