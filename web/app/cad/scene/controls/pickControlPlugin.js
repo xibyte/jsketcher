@@ -1,5 +1,5 @@
 import * as mask from 'gems/mask'
-import {getAttribute} from '../../../../../modules/scene/objectData';
+import {getAttribute, setAttribute} from '../../../../../modules/scene/objectData';
 import {TOKENS as UI_TOKENS} from '../../dom/uiEntryPointsPlugin';
 import {FACE, EDGE, SKETCH_OBJECT} from '../entites';
 
@@ -89,9 +89,11 @@ export function activate(context) {
     let pickResults = context.services.viewer.raycast(event, context.services.cadScene.workGroup);
     const pickers = [
       (pickResult) => {
-        if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line &&
-          pickResult.object.__TCAD_SketchObject !== undefined) {
-          return !visitor(pickResult.object, PICK_KIND.SKETCH);
+        if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line) {
+          let sketchObject = getAttribute(pickResult.object, 'sketchObject');
+          if (sketchObject) {
+            return !visitor(sketchObject, PICK_KIND.SKETCH);
+          }
         }
         return false;
       },

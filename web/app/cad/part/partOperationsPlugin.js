@@ -3,6 +3,7 @@ import extrudeOperation from '../craft/cutExtrude/extrudeOperation';
 import cutOperation from '../craft/cutExtrude/cutOperation';
 import planeOperation from '../craft/primitives/planeOperation';
 import filletOperation from '../craft/fillet/filletOperation';
+import revolveOperation from '../craft/revolve/revolveOperation';
 
 export function activate({services}) {
   services.operation.registerOperations([
@@ -10,6 +11,7 @@ export function activate({services}) {
     boxOperation, 
     extrudeOperation,
     cutOperation,
+    revolveOperation,
     filletOperation
   ])
 }
