@@ -42,7 +42,7 @@ class SketchGeom {
 
 export function ReadSketch(sketch, sketchId, readConstructionSegments) {
   function getID(obj) {
-    return sketchId + ":" + obj.id;
+    return sketchId + "/" + obj.id;
   }
   const out = new SketchGeom();
   if (sketch.layers !== undefined) {
