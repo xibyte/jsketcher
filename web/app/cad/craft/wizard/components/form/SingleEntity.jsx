@@ -15,7 +15,7 @@ const SingleEntityImpl = attachToForm(class SingleEntityImpl extends React.Compo
   selectionChanged = selection => {
     let selectedItem = selection[0];
     this.setState({selectedItem});
-    this.onChange(selectedItem);
+    this.props.onChange(selectedItem);
   };
   
   componentDidMount() {

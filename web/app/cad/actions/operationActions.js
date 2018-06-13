@@ -3,13 +3,6 @@ import * as ActionHelpers from './actionHelpers'
 
 const OPERATION_ACTIONS = [
   {
-    id: 'REVOLVE',
-    appearance: {
-      info: 'revolve 2D sketch',
-    },
-    ...requiresFaceSelection(1)
-  },
-  {
     id: 'SHELL',
     appearance: {
       info: 'makes shell using borders',
