@@ -30,6 +30,7 @@ export class UnmanagedSceneSolid extends SceneSolid {
   }
 
   createFaces(faces) {
+    let processedEdges = new Set();
     const geom = this.mesh.geometry;
     for (let faceData of faces) {
       const sceneFace = new UnmanagedSceneFace(faceData, this);
@@ -83,27 +84,28 @@ export class UnmanagedSceneSolid extends SceneSolid {
         let [a, b, c] = indices;
         const face = sceneFace.createMeshFace(a, b, c, normales);
         geom.faces.push(face);
-        this.createEdge(sceneFace, faceData);
+        this.createEdge(sceneFace, faceData, processedEdges);
       }
     }
     geom.mergeVertices();
   }
 
-  createEdge(sceneFace, faceData) {
+  createEdge(sceneFace, faceData, processedEdges) {
     const doEdge = (edgeData, aux, width, color, opacity) => {
       const geometry = new THREE.Geometry();
+      const scaleTargets = []; 
       geometry.dynamic = true;
       let materialParams = {
         color,
         vertexColors: THREE.FaceColors,
         shininess: 0,
-        visible: !aux
+        visible: !aux,
+        morphTargets: true
       };
       if (opacity !== undefined) {
         materialParams.transparent = true;
         materialParams.opacity = opacity;
       }
-      let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(materialParams));
       if (edgeData.tess) {
         let base = null;
         for (let i = 1; i < edgeData.tess.length; i++) {
@@ -127,6 +129,14 @@ export class UnmanagedSceneSolid extends SceneSolid {
           let off = geometry.vertices.length;
           base.forEach(p => geometry.vertices.push(vThree(p)));
           lid.forEach(p => geometry.vertices.push(vThree(p)));
+
+          function addScaleTargets(points, origin) {
+            points.forEach(p => scaleTargets.push(vThree(vec._add(vec._mul(vec.sub(p, origin), 10), origin))));
+          }
+          addScaleTargets(base, a);
+          addScaleTargets(lid, b);
+
+
           base = lid;
 
           [
@@ -140,14 +150,23 @@ export class UnmanagedSceneSolid extends SceneSolid {
             [6, 5, 1],
           ].forEach(([a, b, c]) => geometry.faces.push(new THREE.Face3(a + off, b + off, c + off)));
         }
-
       }
+      geometry.morphTargets.push( { name: "scaleTargets", vertices: scaleTargets } );
       geometry.computeFaceNormals();
+
+      let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(materialParams));
       this.wireframeGroup.add(mesh);
+
+      // mesh.morphTargetInfluences[ 0 ] = 0.2;
       return mesh;
     };
     for (let loop of faceData.loops) {
       for (let edgeData of loop) {
+        let edgeRef = edgeData.edgeRef;
+        if (processedEdges.has(edgeRef)) {
+          continue;
+        }
+        processedEdges.add(edgeRef);
         let sceneEdge = new SceneEdge(edgeData.ptr, null, sceneFace);
         sceneFace.edges.push(sceneEdge);
         
