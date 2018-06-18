@@ -10,17 +10,6 @@ export class Shell extends TopoObject {
     this.defineIterable('edges', () => edgesGenerator(this.faces))
   }
   
-  reindexVertices() {
-    for (let e of this.edges) {
-      e.halfEdge1.vertexA.edges.clear();
-      e.halfEdge1.vertexB.edges.clear();
-    }
-    for (let e of this.edges) {
-      e.halfEdge1.vertexA.edges.add(e.halfEdge1);
-      e.halfEdge2.vertexA.edges.add(e.halfEdge2);
-    }
-  }
-  
   clone() {
     let edgeClones = new Map();
     for (let e of this.edges) {

@@ -17,7 +17,7 @@ export class UnmanagedSceneSolid extends SceneSolid {
   constructor(data, type, skin) {
     super(type, undefined, skin);
     this.createGeometry(data);
-    this.externalData = {};
+    this.externals = {};
   }
 
   createGeometry(data) {
@@ -167,8 +167,7 @@ export class UnmanagedSceneSolid extends SceneSolid {
           continue;
         }
         processedEdges.add(edgeRef);
-        let sceneEdge = new SceneEdge(edgeData.ptr, null, sceneFace);
-        sceneFace.edges.push(sceneEdge);
+        let sceneEdge = new SceneEdge(null, this);
         
         let representation = doEdge(edgeData, false,  1, 0x2B3856);
         let marker = doEdge(edgeData, true, 3, 0xFA8072, 0.8);

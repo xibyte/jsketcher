@@ -8,7 +8,7 @@ import React from 'react';
 import {TOKENS as UI_TOKENS} from './dom/uiEntryPointsPlugin';
 import {readSketchFloat} from './sketch/sketchReader';
 import {TOKENS as CRAFT_TOKENS} from './craft/craftPlugin';
-import {toLoops} from '../brep/brep-io';
+import {toLoops} from '../brep/io/brepLoopsFormat';
 import {contributeComponent} from './dom/components/ContributedComponents';
 import BrepDebuggerWindow, {BREP_DEBUG_WINDOW_VISIBLE} from '../brep/debug/debugger/BrepDebuggerWindow';
 import curveTess from '../brep/geom/impl/curve/curve-tess';

@@ -17,11 +17,13 @@ export class SceneSolid {
     this.tCadId = genSolidId();
     this.id = id === undefined ? this.tCadId : id; // to keep identity through the history
     this.faceCounter = 0;
+    this.edgeCounter = 0;
 
     this.wireframeGroup = new THREE.Object3D();
     this.cadGroup.add(this.wireframeGroup);
     this.mergeable = true;
     this.sceneFaces = [];
+    this.sceneEdges = [];
 
     this.sketch = null;
     
@@ -63,7 +65,6 @@ export class SceneFace {
     } else {
       this.id = propagatedId;
     }
-    this.edges = [];
     this.solid = solid;
     this.meshFaces = [];
     this.sketch3DGroup = null;
@@ -172,10 +173,10 @@ export class SceneFace {
 
 export class SceneEdge {
   
-  constructor(id, curve, face, representation, marker) {
-    this.id = id;
+  constructor(curve, solid, representation, marker) {
+    this.id = solid.tCadId + ":" + (solid.edgeCounter++);
     this.curve = curve;
-    this.face = face;
+    this.solid = solid;
     this.representation = representation;
     this.marker = marker;
   }

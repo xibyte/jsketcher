@@ -2,7 +2,7 @@ import * as BREPPrimitives from '../../brep/brep-primitives'
 import BrepBuilder, {createBoundingSurface} from '../../brep/brep-builder'
 import {createPrism} from '../../brep/brep-enclose'
 import * as BREPBool from '../../brep/operations/boolean'
-import * as IO from '../../brep/brep-io'
+import * as IO from '../../brep/io/brepLoopsFormat'
 import {BREPValidator} from '../../brep/brep-validator'
 import {HalfEdge, Edge} from '../../brep/topo/edge';
 import {Loop} from '../../brep/topo/loop';
@@ -14,6 +14,7 @@ import BrepCurve from '../../brep/geom/curves/brepCurve';
 import {Plane} from '../../brep/geom/impl/plane';
 import pip from '../tess/pip';
 import {UnmanagedSceneSolid} from '../scene/wrappers/unmanagedSceneObject';
+import {readShellEntityFromJson} from '../scene/wrappers/entityIO';
 
 export default {
   brep: {
@@ -32,6 +33,7 @@ export default {
     IO,
   },
   scene: {
-    UnmanagedSceneSolid
+    UnmanagedSceneSolid,
+    readShellEntityFromJson
   }
 }
