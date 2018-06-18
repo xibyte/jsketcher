@@ -2,9 +2,8 @@ import {Point} from '../point';
 import Vector from 'math/vector';
 import {Plane} from '../impl/plane';
 import BrepCurve from '../curves/brepCurve';
-import NurbsCurve from '../curves/nurbsCurve';
-import {surfaceIntersect} from '../intersection/surfaceSurface';
 import {intersectNurbs} from './nurbsSurface';
+import {IsoCurveU, IsoCurveV} from '../curves/IsoCurve';
 
 export class BrepSurface {
 
@@ -20,8 +19,14 @@ export class BrepSurface {
     });
 
     this.inverted = inverted === true;
-    this.mirrored = BrepSurface.isMirrored(this);
-    this.simpleSurface = simpleSurface || figureOutSimpleSurface(this);
+  }
+
+  get simpleSurface() {
+    return this._simpleSurface || (this._simpleSurface = figureOutSimpleSurface(this));
+  }
+
+  get mirrored() {
+    return this._mirrored || (this._mirrored = BrepSurface.isMirrored(this));
   }
 
   normal(point) {
@@ -100,7 +105,10 @@ export class BrepSurface {
   }
 
   static isMirrored(surface) {
-
+    if (surface.impl.isMirrored !== undefined) {
+      return surface.impl.isMirrored;
+    }
+    
     let x = surface.isoCurveAlignU(surface.uMin).tangentAtParam(surface.uMin);
     let y = surface.isoCurveAlignV(surface.vMin).tangentAtParam(surface.vMin);
 
@@ -118,9 +126,13 @@ export class BrepSurface {
   }
 
   isoCurve(param, useV) {
-    const data = verb.eval.Make.surfaceIsocurve(this.impl.verb._data, param, useV);
-    const isoCurve = new verb.geom.NurbsCurve(data);
-    return new BrepCurve(new NurbsCurve(isoCurve));
+    let isoCurve;
+    if (this.impl.isoCurve) {
+      isoCurve = this.impl.isoCurve(param, useV);
+    } else {
+      isoCurve = useV ?  new IsoCurveV(this.impl, param) : new IsoCurveU(this.impl, param);
+    }
+    return new BrepCurve(isoCurve);
   }
 
   isoCurveAlignU(param) {
