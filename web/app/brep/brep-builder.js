@@ -10,13 +10,19 @@ import {normalOfCCWSeq} from '../cad/cad-utils';
 import BBox from "../math/bbox";
 import NurbsSurface from './geom/surfaces/nurbsSurface';
 import {BrepSurface} from './geom/surfaces/brepSurface';
+import EdgeIndex from './edgeIndex';
 
 export default class BrepBuilder {
 
-  constructor() {
+  constructor(edgeStra) {
     this._shell = new Shell();    
     this._face = null;
     this._loop = null;
+    this.edgeIndex = new EdgeIndex();
+  }
+  
+  get lastHalfEdge() {
+    return this._loop.halfEdges[this._loop.halfEdges.length - 1];
   }
 
   face(surface) {
@@ -43,23 +49,18 @@ export default class BrepBuilder {
   }
 
   edgeTrim(a, b, curve) {
-    let u1 = curve.param(a.point);
-    curve = curve.splitByParam(u1)[1];
-    let u2 = curve.param(b.point);
-    curve = curve.splitByParam(u2)[0];
-    this.edge(a, b, curve);
+    const curveCreate = () => {
+      let u1 = curve.param(a.point);
+      curve = curve.splitByParam(u1)[1];
+      let u2 = curve.param(b.point);
+      curve = curve.splitByParam(u2)[0];
+    };
+    this.edge(a, b, curveCreate);
     return this;
   }
 
-  edge(a, b, curve) {
-    let he = a.edgeFor(b);
-    if (he === null) {
-      if (!curve) {
-        curve = BrepCurve.createLinearCurve(a.point, b.point);
-      }
-      const e = new Edge(curve, a, b);
-      he = e.halfEdge1;
-    }
+  edge(a, b, curveCreate, tag) {
+    let he = this.edgeIndex.getHalfEdgeOrCreate(a, b, curveCreate, tag);
     this._loop.halfEdges.push(he);
     return this;   
   }
