@@ -1,6 +1,5 @@
 import {TopoObject} from './topo-object'
 import {Vertex} from "./vertex";
-import {Point} from "../geom/point";
 
 export class Edge extends TopoObject {
 
@@ -9,8 +8,6 @@ export class Edge extends TopoObject {
     this.curve = curve;
     this.halfEdge1 = new HalfEdge(this, false, a, b);
     this.halfEdge2 = new HalfEdge(this, true, b, a);
-    a.edges.add(this.halfEdge1);
-    b.edges.add(this.halfEdge2);
   }
 
   static fromCurve(curve) {
