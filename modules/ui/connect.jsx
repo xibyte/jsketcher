@@ -15,7 +15,7 @@ export default function connect(WrappedComponent, tokens, config) {
     return dispatch;
   };
 
-  mapSelfProps = mapSelfProps || (() => undefined);
+  mapSelfProps = PROPAGATE_SELF_PROPS;
   
   return class StateConnector extends React.PureComponent {
 
