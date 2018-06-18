@@ -13,7 +13,6 @@ import {Point} from '../../brep/geom/point';
 import BrepCurve from '../../brep/geom/curves/brepCurve';
 import {Plane} from '../../brep/geom/impl/plane';
 import pip from '../tess/pip';
-import {UnmanagedSceneSolid} from '../scene/wrappers/unmanagedSceneObject';
 import {readShellEntityFromJson} from '../scene/wrappers/entityIO';
 
 export default {
@@ -33,7 +32,6 @@ export default {
     IO,
   },
   scene: {
-    UnmanagedSceneSolid,
     readShellEntityFromJson
   }
 }
