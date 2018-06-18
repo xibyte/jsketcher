@@ -20,8 +20,7 @@ export default connect(HistoryWizard, CRAFT_TOKENS.MODIFICATIONS, {
   mapActions: ({updateState}) => ({
     step: (params) => updateState(CRAFT_TOKENS.MODIFICATIONS, modifications => stepOverridingParams(modifications, params)),
     cancel: () => updateState(CRAFT_TOKENS.MODIFICATIONS, modifications => finishHistoryEditing(modifications)),
-  }),
-  mapSelfProps: ({offset}) => ({offset})
+  })
 });
 
 const NOOP = () => {};

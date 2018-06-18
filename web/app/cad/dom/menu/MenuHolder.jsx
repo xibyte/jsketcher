@@ -23,7 +23,7 @@ function ActionMenu({actions, keymap, ...menuState}) {
   </Menu>;
 }
 
-function ActionMenuItem({label, cssIcons, icon32, icon96, enabled, hotKey, visible, ...props}) {
+function ActionMenuItem({label, cssIcons, icon32, icon96, enabled, hotKey, visible, actionId, ...props}) {
   if (!visible) {
     return null;
   }
@@ -61,8 +61,7 @@ let ConnectedMenuItem = connect(ActionMenuItem,
     mapProps: ([{enabled, visible}, {label, cssIcons, icon32, icon96}]) => ({
       enabled, visible, label, cssIcons, icon32, icon96
     }),
-    mapActions: mapActionBehavior(props => props.actionId),
-    mapSelfProps: ({hotKey}) => ({hotKey})
+    mapActions: mapActionBehavior(props => props.actionId)
   }
 );
 

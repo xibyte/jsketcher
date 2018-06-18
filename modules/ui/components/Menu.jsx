@@ -5,7 +5,7 @@ import ls from './Menu.less';
 import AuxWidget from "./AuxWidget";
 import cx from 'classnames';
 
-export default function Menu({children, x, y, orientationUp, centered, ...props}) {
+export default function Menu({children, x, y, orientationUp, centered, menuId, ...props}) {
   return <AuxWidget 
     className={cx(ls.root, 'disable-selection')}
     zIndex={500}

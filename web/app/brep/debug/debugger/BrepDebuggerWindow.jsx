@@ -40,6 +40,5 @@ export default connect(BrepDebuggerWindow, BREP_DEBUG_WINDOW_VISIBLE, {
   mapProps: ([visible]) => ({visible}),
   mapActions: ({dispatch}) => ({
     close: () => dispatch(BREP_DEBUG_WINDOW_VISIBLE, false)
-  }),
-  mapSelfProps: PROPAGATE_SELF_PROPS
+  })
 });
