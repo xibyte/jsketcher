@@ -1,6 +1,5 @@
 import NurbsCurve from "./nurbsCurve";
 import {Matrix3} from '../../../math/l3space'
-import * as math from '../../../math/math'
 import {areEqual} from '../../../math/math'
 
 import {eqSqTol, ueq, veq, veq3, veqNeg} from "../tolerance";
@@ -65,8 +64,12 @@ export default class BrepCurve {
     return pt(this.impl.point(u));
   }
 
+  tessellateToData(tessTol, scale) {
+    return CURVE_CACHING_TESSELLATOR(this.impl, this.uMin, this.uMax, tessTol, scale);
+  }
+
   tessellate(tessTol, scale) {
-    return CURVE_CACHING_TESSELLATOR(this.impl, this.uMin, this.uMax, tessTol, scale).map(p => pt(p));
+    return this.tessellateToData(tessTol, scale).map(p => pt(p));
   }
 
   boundary() {
