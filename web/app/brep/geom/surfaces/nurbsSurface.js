@@ -46,6 +46,13 @@ export default class NurbsSurface {
   normal(u, v) {
     return this.verb.normal(u, v);
   }
+
+  isoCurve(param, useV) {
+    const data = verb.eval.Make.surfaceIsocurve(this.data, param, useV);
+    const isoCurve = new verb.geom.NurbsCurve(data);
+    return new NurbsCurve(isoCurve);
+  }
+
 }
 
 NurbsSurface.loft = function(curve1, curve2) {
