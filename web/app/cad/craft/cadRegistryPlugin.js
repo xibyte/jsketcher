@@ -49,11 +49,9 @@ export function activate({bus, services}) {
   function findEdge(edgeId) {
     let shells = getAllShells();
     for (let shell of shells) {
-      for (let face of shell.sceneFaces) {
-        for (let edge of face.edges) {
-          if (edge.id === edgeId) {
-            return edge;
-          }
+      for (let edge of shell.sceneEdges) {
+        if (edge.id === edgeId) {
+          return edge;
         }
       }
     }

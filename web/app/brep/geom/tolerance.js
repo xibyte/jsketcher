@@ -1,4 +1,4 @@
-import {areEqual, areNegVectorsEqual, areVectorsEqual, areVectorsEqual3} from "../../math/math";
+import {areEqual, areNegVectorsEqual, areVectorsEqual, areVectorsEqual3, distanceSquared3} from '../../math/math';
 
 export const TOLERANCE = 1e-3;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
@@ -37,6 +37,9 @@ export function veq3(a, b) {
   return areVectorsEqual3(a, b, TOLERANCE_SQ);
 }
 
+export function veqXYZ(x1, y1, z1, x2, y2, z2) {
+  return distanceSquared3(x1, y1, z1, x2, y2, z2) < TOLERANCE_SQ; 
+}
 
 export function ueq(a, b) {
   return areEqual(a, b, TOLERANCE_01);

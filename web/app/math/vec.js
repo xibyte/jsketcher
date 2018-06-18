@@ -134,6 +134,14 @@ export function distance(v1, v2) {
   return Math.sqrt(distanceSq(v1, v2));
 }
 
+export function normal3(ccwSequence) {
+  let a = ccwSequence[0];
+  let b = ccwSequence[1];
+  let c = ccwSequence[2];
+
+  return _normalize( cross(sub(b, a), sub(c, a) ) );
+}
+
 export function polynomial(coefs, vectors) {
   let out = [];
   out.length = vectors[0].length;
