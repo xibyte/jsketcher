@@ -1,21 +1,17 @@
 import Mousetrap from 'mousetrap';
 import DefaultKeymap from './keymaps/default';
+import {isMenuAction} from '../dom/menu/menuPlugin';
+import {state} from 'lstream';
 
-import {createToken} from "bus";
-import {TOKENS as ACTION_TOKENS} from "../actions/actionSystemPlugin";
-import {isMenuAction, TOKENS as MENU_TOKENS} from "../dom/menu/menuPlugin";
-
-export function activate({bus, services}) {
-  bus.enableState(TOKENS.KEYMAP, DefaultKeymap);
-  
+export function activate({services, streams}) {
+  streams.ui.keymap = state(DefaultKeymap);
   let keymap = DefaultKeymap;
   //to attach to a dom element: Mousetrap(domElement).bind(...
   for (let action of Object.keys(keymap)) {
     const dataProvider = getDataProvider(action, services);
-    let actionToken = ACTION_TOKENS.actionRun(action);
-    Mousetrap.bind(keymap[action], () => bus.dispatch(actionToken, dataProvider ? dataProvider() : undefined));
+    Mousetrap.bind(keymap[action], () => services.action.run(actionToken, dataProvider ? dataProvider() : undefined));
   }
-  Mousetrap.bind('esc', () => bus.dispatch(MENU_TOKENS.CLOSE_ALL));
+  Mousetrap.bind('esc', services.menu.closeAll)
 }
 
 function getDataProvider(action, services) {
@@ -33,6 +29,3 @@ function getDataProvider(action, services) {
 }
 
 
-export const TOKENS = {
-  KEYMAP: createToken('keymap')
-};

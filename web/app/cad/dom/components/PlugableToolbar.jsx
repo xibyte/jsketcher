@@ -1,15 +1,14 @@
-import React, {Fragment} from 'react';
+import React from 'react';
 import connect from 'ui/connect';
 import Fa from 'ui/components/Fa';
-import {TOKENS as UI_TOKENS} from '../uiEntryPointsPlugin';
-import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import Toolbar, {ToolbarButton} from 'ui/components/Toolbar';
 import ImgIcon from 'ui/components/ImgIcon';
 import {toIdAndOverrides} from '../../actions/actionRef';
 import {mapActionBehavior} from '../../actions/actionButtonBehavior';
-import {DEFAULT_MAPPER} from 'ui/connect';
 import capitalize from 'gems/capitalize';
-
+import decoratorChain from 'ui/decoratorChain';
+import {combine, merger} from 'lstream';
+import mapContext from '../../../../../modules/ui/mapContext';
 
 function ConfigurableToolbar({actions, small, ...props}) {
 
@@ -34,19 +33,20 @@ function ActionButton({label, icon96, cssIcons, small, enabled, visible, actionI
   </ToolbarButton>
 }
 
-const ConnectedActionButton = connect(ActionButton,  
-  ({actionId}) => [ACTION_TOKENS.actionAppearance(actionId), ACTION_TOKENS.actionState(actionId)], {
-    mapProps: (state, props) => Object.assign(DEFAULT_MAPPER(state), props),
-    mapActions: mapActionBehavior(props => props.actionId),
-  });
+const ConnectedActionButton = decoratorChain(
+  connect((streams, {actionId})  => combine(streams.action.appearance[actionId], streams.action.state[actionId]).map(merger)),
+  mapContext(mapActionBehavior(props => props.actionId))
+)
+(ActionButton);
 
-export function createPlugableToolbar(configToken, small) {
-  return connect(ConfigurableToolbar, configToken, {
-    staticProps: {small}, 
-    mapProps: ([actions]) => ({actions}) 
-  });
+export function createPlugableToolbar(streamSelector, small) {
+  return decoratorChain(
+    connect(streams => streamSelector(streams).map(actions => ({actions}))),
+    mapContext(mapActionBehavior(props => props.actionId))
+  )
+  (props => <ConfigurableToolbar {...props} small={small} />);
 }
 
-export const PlugableToolbarLeft = createPlugableToolbar(UI_TOKENS.TOOLBAR_BAR_LEFT);
-export const PlugableToolbarLeftSecondary = createPlugableToolbar(UI_TOKENS.TOOLBAR_BAR_LEFT_SECONDARY);
-export const PlugableToolbarRight = createPlugableToolbar(UI_TOKENS.TOOLBAR_BAR_RIGHT, true);
+export const PlugableToolbarLeft = createPlugableToolbar(streams => streams.ui.toolbars.left);
+export const PlugableToolbarLeftSecondary = createPlugableToolbar(streams => streams.ui.toolbars.leftSecondary);
+export const PlugableToolbarRight = createPlugableToolbar(streams => streams.ui.toolbars.right, true);

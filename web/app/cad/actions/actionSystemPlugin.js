@@ -1,56 +1,62 @@
-import {createToken} from 'bus';
-import {enableAnonymousActionHint} from "./anonHint";
+import {enableAnonymousActionHint} from './anonHint';
+import * as stream from 'lstream';
 
 export function activate(context) {
   
-  let {bus} = context;
+  let {bus, streams} = context;
+  
+  streams.action = {
+    appearance: {},
+    state: {},
+    hint: stream.state(null)
+  }; 
+  
+  let runners = {};
   
   let showAnonymousActionHint = enableAnonymousActionHint(context);
   
   function run(id, data) {
-    bus.dispatch(TOKENS.actionRun(id), data);
+    let state = streams.action.state[id].value;
+    let runner = runners[id];
+    if (!state||!runner) {
+      console.warn('request to run nonexistent action')
+      return;
+    } 
+    if (state.enabled) {
+      runner(context, data);
+    } else {
+      showAnonymousActionHint(id);
+    }
   }
 
   function register(action) {
-    bus.enableState(TOKENS.actionAppearance(action.id), action.appearance);
+    streams.action.appearance[action.id] = stream.state(action.appearance);
 
-    let stateToken = TOKENS.actionState(action.id);
+    runners[action.id] = action.invoke;
+
     let initialState = {
       hint: '',
       enabled: true,
       visible: true
     };
-    if (action.update) {
-      action.update(initialState, context);
-    }
-    bus.enableState(stateToken, initialState);
-    
+
+    let actionStateStream = stream.state(initialState);
+    streams.action.state[action.id] = actionStateStream;
+
     if (action.update && action.listens) {
 
-      const stateUpdater = () => {
-        bus.updateState(stateToken, (actionState) => {
-          actionState.hint = '';
-          actionState.enabled = true;
-          actionState.visible = true;
-          action.update(actionState, context);
-          return actionState;
-        });
-      };
-
-      for (let event of action.listens) {
-        bus.subscribe(event, stateUpdater);
-      }
+      action.listens(streams).attach(data => {
+        actionStateStream.mutate(v => {
+          v.hint = '';
+          v.enabled = true;
+          v.visible = true;
+          action.update(v, data, context)
+          return v;
+        })
+      });
     }
-    bus.subscribe(TOKENS.actionRun(action.id), data => {
-      if (bus.state[stateToken].enabled) {
-        action.invoke(context, data)
-      } else {
-        showAnonymousActionHint(action.id);
-      }
-    });
   }
 
-  bus.enableState(TOKENS.HINT, null);
   function registerAction(action) {
     register(action);
   }
@@ -58,40 +64,27 @@ export function activate(context) {
   function registerActions(actions) {
     actions.forEach(action => register(action));
   }
-  
-  synchActionHint(bus);
 
-  context.services.action = {run, registerAction, registerActions}
-}
-
-
-
-function synchActionHint(bus) {
-  
-  bus.subscribe(TOKENS.SHOW_HINT_FOR, request => {
+  function showHintFor(request) {
     if (request) {
-      let {actionId, x, y} = request;
-      let actionState = bus.getState(TOKENS.actionState(actionId));
-      let actionAppearance = bus.getState(TOKENS.actionAppearance(actionId));
+      let {actionId, x, y, requester} = request;
+      let actionState = streams.action.state[actionId].value;
+      let actionAppearance = streams.action.appearance[actionId].value;
       if (actionState && actionAppearance) {
-        bus.dispatch(TOKENS.HINT, {
-          actionId, x, y,
+        streams.action.hint.value = {
+          actionId, x, y, requester,
           info: actionAppearance.info,
           hint: actionState.hint
-        });
+        };
       }
     } else {
-      bus.dispatch(TOKENS.HINT, null);
+      if (streams.action.hint.value !== null) {
+        streams.action.hint.value = null;
+      }
     }
-  });
+  }
+
+  context.services.action = {run, registerAction, registerActions, showHintFor}
 }
 
-export const ACTION_NS = 'action';
-export const TOKENS = {
-  actionState: (actionId) => createToken(ACTION_NS, 'state', actionId),
-  actionAppearance: (actionId) => createToken(ACTION_NS, 'appearance', actionId),
-  actionRun: (actionId) => createToken(ACTION_NS, 'run', actionId),
 
-  SHOW_HINT_FOR: createToken(ACTION_NS, 'showHintFor'),
-  HINT: createToken(ACTION_NS, 'hint'),
-};

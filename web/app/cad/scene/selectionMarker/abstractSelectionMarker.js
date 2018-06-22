@@ -7,7 +7,7 @@ export class AbstractSelectionMarker {
     this.context = context;
     this.entity = entity;
     this.selection = [];
-    this.context.bus.subscribe(entitySelectionToken(entity), this.update);
+    this.context.streams.selection[entity].attach(this.update);
   }
   
   update = () => {
@@ -19,7 +19,7 @@ export class AbstractSelectionMarker {
         }
         this.selection = [];
       }
-      this.context.bus.dispatch('scene:update');
+      this.context.services.viewer.render();
       return;
     }
     
@@ -33,7 +33,7 @@ export class AbstractSelectionMarker {
       this.selection.splice(this.selection.indexOf(obj), 1);
       this.unMark(obj);
     }
-    this.context.bus.dispatch('scene:update');
+    this.context.services.viewer.render();
   };
 
   mark(obj) {

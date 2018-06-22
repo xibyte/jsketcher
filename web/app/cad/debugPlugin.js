@@ -15,11 +15,13 @@ import curveTess from '../brep/geom/impl/curve/curve-tess';
 import tessellateSurface from '../brep/geom/surfaces/surfaceTess';
 
 
-export function activate({bus, services}) {
+export function activate({bus, services, streams}) {
   addGlobalDebugActions(services);
   services.action.registerActions(DebugActions);
   services.menu.registerMenus([DebugMenuConfig]);
-  bus.updateState(UI_TOKENS.CONTROL_BAR_LEFT, actions => [...actions, 'menu.debug']);
+
+  streams.ui.controlBars.left.update(actions => [...actions, 'menu.debug']);
+  
   bus.enableState(BREP_DEBUG_WINDOW_VISIBLE, false);
   contributeComponent(<BrepDebuggerWindow key='debug.BrepDebuggerWindow' auxGroup={services.cadScene.auxGroup} />);
 }
@@ -287,7 +289,7 @@ const DebugActions = [
       label: 'print face',
       info: 'print a face out as JSON',
     },
-    listens: ['selection_face'],
+    listens: streams => streams.selection.face,
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection}}) => {
       let s = selection.face.single;
@@ -305,7 +307,7 @@ const DebugActions = [
       label: 'print face id',
       info: 'print a face id',
     },
-    listens: ['selection_face'],
+    listens: streams => streams.selection.face,
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection}}) => {
       console.log(selection.face.single.id);
@@ -319,7 +321,7 @@ const DebugActions = [
       label: 'print face sketch',
       info: 'print face sketch stripping constraints and boundary',
     },
-    listens: ['selection_face'],
+    listens: streams => streams.selection.face,
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection, project}}) => {
       const faceId = selection.face.single.id;

@@ -9,29 +9,28 @@ import {CURRENT_SELECTION} from '../wizardPlugin';
 import ls from './Wizard.less';
 import CadError from '../../../../utils/errors';
 import {createPreviewer} from '../../../preview/scenePreviewer';
-import {observable} from 'mobx';
-import {entitySelectionToken} from '../../../scene/controls/pickControlPlugin';
-import {EDGE} from '../../../scene/entites';
 import {FormContext} from './form/Form';
 
 export default class Wizard extends React.Component {
 
   state = {hasError: false};
-  
-  constructor({type}) {
+
+  constructor({initialState}) {
     super();
     this.formContext = {
-      data: {},
+      data: initialState || {},
       onChange: noop
     };
   }
-
+  
   componentDidMount() {
     let {services} = this.context;
+
     let {previewGeomProvider} = services.operation.get(this.props.type);
 
     let previewer = createPreviewer(previewGeomProvider, services);
     let preview = previewer(this.formContext.data);
+
     this.formContext.onChange = () => preview.update(this.formContext.data);
     this.dispose = () => {
       preview.dispose();

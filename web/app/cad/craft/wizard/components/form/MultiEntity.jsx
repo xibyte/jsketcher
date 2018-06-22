@@ -4,10 +4,13 @@ import {entitySelectionToken} from '../../../../scene/controls/pickControlPlugin
 import {attachToForm} from './Form';
 import Stack from 'ui/components/Stack';
 import {FormContext} from '../form/Form';
+import mapContext from 'ui/mapContext';
 
-const MultiEntityImpl = attachToForm(class MultiEntityImpl extends React.Component {
+@attachToForm
+@mapContext(({streams}) => ({streams}))
+class MultiEntityImpl extends React.Component {
 
-  constructor({entity, itemName, initValue}, {bus}) {
+  constructor({entity, itemName, initValue}, ) {
     super();
     this.state = {
       value: initValue
@@ -24,11 +27,12 @@ const MultiEntityImpl = attachToForm(class MultiEntityImpl extends React.Compone
   };
 
   componentDidMount() {
-    this.context.bus.subscribe(entitySelectionToken(this.props.entity), this.selectionChanged);
+    let {streams, entity} = this.props;
+    this.detacher = streams.selection[entity].attach(this.selectionChanged);
   }
 
   componentWillUnmount() {
-    this.context.bus.unsubscribe(entitySelectionToken(this.props.entity), this.selectionChanged);
+    this.detacher();
   }
 
   render() {
@@ -51,19 +55,15 @@ const MultiEntityImpl = attachToForm(class MultiEntityImpl extends React.Compone
       }
     </FormContext.Consumer>;
   }
+}
 
-  static contextTypes = {
-    bus: PropTypes.object
-  };
-});
-
-export default function MultiEntity(props, {bus}) {
-  let defaultValue = bus.state[entitySelectionToken(props.entity)].map(id => ({
+export default function MultiEntity(props, {streams}) {
+  let defaultValue = streams.selection[props.entity].value.map(id => ({
     [props.itemName]: id
   }));
   return <MultiEntityImpl defaultValue={defaultValue} {...props}/>
 }
 
 MultiEntity.contextTypes = {
-  bus: PropTypes.object
+  streams: PropTypes.object
 };

@@ -9,7 +9,7 @@ export default [
       icon96: 'img/cad/face-edit96.png',
       info: 'open sketcher for a face/plane',
     },
-    listens: ['selection_face'],
+    listens: streams => streams.selection.face,
     update: ActionHelpers.checkForSelectedFaces(1),
     invoke: ({services}) => services.sketcher.sketchFace(services.selection.face.single)
   },

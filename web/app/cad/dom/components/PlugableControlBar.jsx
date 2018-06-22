@@ -1,14 +1,12 @@
-import React, {Fragment} from 'react';
+import React from 'react';
 import ControlBar, {ControlBarButton} from './ControlBar';
 import connect from 'ui/connect';
 import Fa from 'ui/components/Fa';
-import {TOKENS as UI_TOKENS} from '../uiEntryPointsPlugin';
-import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
-import {toIdAndOverrides} from "../../actions/actionRef";
-import {mapActionBehavior} from "../../actions/actionButtonBehavior";
-import {DEFAULT_MAPPER} from "ui/connect";
-import {isMenuAction} from "../menu/menuPlugin";
-
+import {toIdAndOverrides} from '../../actions/actionRef';
+import {isMenuAction} from '../menu/menuPlugin';
+import {combine, merger} from 'lstream';
+import mapContext from 'ui/mapContext';
+import decoratorChain from '../../../../../modules/ui/decoratorChain';
 
 export default function PlugableControlBar() {
   return <ControlBar left={<LeftGroup />} right={<RightGroup />}/>;
@@ -17,7 +15,7 @@ export default function PlugableControlBar() {
 function ButtonGroup({actions}) {
   return actions.map(actionRef => { 
     let [id, overrides] = toIdAndOverrides(actionRef);
-    return <ConnectedActionButton key={id} actionId={id} {...overrides}/>;
+    return <ConnectedActionButton key={id} actionId={id} {...overrides} />;
   });
 }
 
@@ -39,22 +37,21 @@ class ActionButton extends React.Component {
   }
 }
 
-const BUTTON_CONNECTOR = {
-  mapProps: ([actions]) => ({actions})
-};
+const LeftGroup = connect(streams => streams.ui.controlBars.left.map(actions => ({actions})))(ButtonGroup);
+const RightGroup = connect(streams => streams.ui.controlBars.right.map(actions => ({actions})))(ButtonGroup);
 
-const LeftGroup = connect(ButtonGroup, UI_TOKENS.CONTROL_BAR_LEFT, BUTTON_CONNECTOR);
-const RightGroup = connect(ButtonGroup, UI_TOKENS.CONTROL_BAR_RIGHT, BUTTON_CONNECTOR);
+const ConnectedActionButton = decoratorChain(
 
-
-const ConnectedActionButton = connect(ActionButton,
-  props => [ACTION_TOKENS.actionAppearance(props.actionId), 
-            ACTION_TOKENS.actionState(props.actionId)],
-  {
-    mapProps: (state, props) => Object.assign(DEFAULT_MAPPER(state), props),
-    mapActions: mapActionBehavior(props => props.actionId),
-  }
-);
+  connect(
+    (streams, props) => combine(
+      streams.action.appearance[props.actionId],
+      streams.action.state[props.actionId]).map(merger)),
+    
+    mapContext(({services}, props) => ({
+      onClick: data => services.action.run(props.actionId, data)
+    }))
+)
+(ActionButton);
 
 function getMenuData(el) {
   //TODO: make more generic
