@@ -1,4 +1,3 @@
-import Bus from 'bus';
 import * as LifecyclePlugin from './lifecyclePlugin';
 import * as AppTabsPlugin from '../dom/appTabsPlugin';
 import * as DomPlugin from '../dom/domPlugin';
@@ -19,8 +18,9 @@ import * as ProjectPlugin from '../projectPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
 import * as tpiPlugin from '../tpi/tpiPlugin';
 
-
 import * as PartModellerPlugin from '../part/partModellerPlugin';
+
+import context from 'context';
 
 import startReact from "../dom/startReact";
 import {APP_READY_TOKEN} from './lifecyclePlugin';
@@ -35,8 +35,8 @@ export default function startApplication(callback) {
     StoragePlugin,
     AppTabsPlugin,
     ActionSystemPlugin,
-    MenuPlugin,
     UiEntryPointsPlugin,
+    MenuPlugin,
     KeyboardPlugin,
     WizardPlugin,
     CraftEnginesPlugin,
@@ -54,11 +54,6 @@ export default function startApplication(callback) {
     SelectionMarkerPlugin,
     ...applicationPlugins,
   ];
-
-  let context = {
-    bus: new Bus(),
-    services: {}
-  };
 
   activatePlugins(preUIPlugins, context);
 

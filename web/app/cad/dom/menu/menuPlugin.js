@@ -1,52 +1,53 @@
-import {createToken} from 'bus';
+import {state} from '../../../../../modules/lstream';
 
-export function activate({bus, services}) {
+export function activate({bus, services, streams}) {
 
-  bus.enableState(TOKENS.MENUS, []);
-  bus.enableState(TOKENS.OPENED, []);
+  streams.ui.menu = {
+    all: state([]),
+    opened: state([]),
+    states: {}
+  };
   
   function registerMenus(menus) {
     let menusToAdd = [];
     let showMenuActions = [];
     menus.forEach(({id, actions, ...appearance}) => {
-      let stateToken = TOKENS.menuState(id);
-      bus.enableState(stateToken, {
+      let menuState = state({
         visible: false,
         orientationUp: false,
         x: undefined,
         y: undefined
       });
+      streams.ui.menu.states[id] = menuState;
       if (!appearance.label) {
         appearance.label = id;
       }
       showMenuActions.push({
         id: 'menu.' + id,
         appearance,
-        invoke: (ctx, hints) => bus.updateStates([stateToken, TOKENS.OPENED], 
-          ([state, opened]) => [Object.assign(state, {visible: true}, hints), [id, ...opened]]
-        )
+        invoke: (ctx, hints) => {
+          menuState.mutate(v => {
+            Object.assign(v, hints);
+            v.visible = true;
+          });
+          streams.ui.menu.opened.mutate(v => v.push(id));
+        }
       });
-      
       menusToAdd.push({id, actions});
     });
     services.action.registerActions(showMenuActions);
-    bus.updateState(TOKENS.MENUS, menus => [...menus, ...menusToAdd]);
+    streams.ui.menu.all.update(menus => [...menus, ...menusToAdd]);
   }
 
-  bus.subscribe(TOKENS.CLOSE_ALL, () => {
-    bus.state[TOKENS.OPENED].forEach(openedMenu => bus.setState(TOKENS.menuState(openedMenu), {visible: false}));
-    bus.updateState(TOKENS.OPENED, () => []);
-  });
+  function closeAll() {
+    if (streams.ui.menu.opened.value.length > 0) {
+      streams.ui.menu.opened.value.forEach(id => streams.ui.menu.states[id].mutate(s => s.visible = false));
+      streams.ui.menu.opened.mutate(opened => opened.length = 0);
+    }
+  }
   
-  services.menu = { registerMenus }
+  services.menu = { registerMenus, closeAll }
 }
-
-export const TOKENS = {
-  menuState: id => createToken('menu', 'state', id),
-  MENUS: createToken('menus'),
-  CLOSE_ALL: createToken('menus', 'closeAll'),
-  OPENED: createToken('menus', 'opened')
-};
 
 export function isMenuAction(actionId) {
   return actionId.startsWith('menu.');

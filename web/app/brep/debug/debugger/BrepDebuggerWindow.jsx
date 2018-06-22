@@ -1,7 +1,7 @@
 import React from 'react';
 import Window from 'ui/components/Window';
 import BrepDebugger from './brepDebugger';
-import connect, {PROPAGATE_SELF_PROPS} from 'ui/connect';
+import connect, {PROPAGATE_SELF_PROPS} from 'ui/connectLegacy';
 import {addToGroup, clearGroup, createGroup, removeFromGroup} from 'scene/sceneGraph';
 import {createToken} from 'bus';
 import Fa from 'ui/components/Fa';

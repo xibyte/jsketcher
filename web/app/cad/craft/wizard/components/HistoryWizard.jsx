@@ -1,5 +1,5 @@
 import React from 'react';
-import connect from '../../../../../../modules/ui/connect';
+import connect from '../../../../../../modules/ui/connectLegacy';
 import {TOKENS as CRAFT_TOKENS} from '../../craftPlugin';
 import Wizard from './Wizard';
 import {finishHistoryEditing, stepOverridingParams} from '../../craftHistoryUtils';

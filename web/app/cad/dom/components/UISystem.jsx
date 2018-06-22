@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import MenuHolder from '../menu/MenuHolder';
-import {TOKENS as MENU_TOKENS} from '../menu/menuPlugin';
 
 import WindowSystem from 'ui/WindowSystem';
 import ActionInfo from '../actionInfo/ActionInfo';
@@ -25,10 +24,8 @@ export default class UISystem extends React.Component {
   }
 
   closeAllUpPopups = () => {
-    let openedMenus = this.context.bus.state[MENU_TOKENS.OPENED];
-    if (openedMenus && openedMenus.length !== 0) {
-      this.context.bus.dispatch(MENU_TOKENS.CLOSE_ALL);
-    }
+    this.context.services.menu.closeAll();
+    this.context.services.action.showHintFor(null);
   };
 
   getChildContext() {
@@ -38,7 +35,7 @@ export default class UISystem extends React.Component {
   }
   
   static contextTypes = {
-    bus: PropTypes.object
+    services: PropTypes.object
   };
 
   static childContextTypes = {
