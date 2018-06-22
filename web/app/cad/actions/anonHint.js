@@ -1,21 +1,17 @@
-import {TOKENS} from "./actionSystemPlugin";
 
-export function enableAnonymousActionHint({bus, services}) {
+export function enableAnonymousActionHint({streams, services}) {
  
-  let autoHideCanceled = true;
-  bus.subscribe(TOKENS.SHOW_HINT_FOR, () => autoHideCanceled = true);
-  
   return function(actionId) {
     let {left, top} = services.dom.viewerContainer.getBoundingClientRect();
-    bus.dispatch(TOKENS.SHOW_HINT_FOR, {
+    services.action.showHintFor({
       actionId,
       x: left + 100,
-      y: top + 10
+      y: top + 10,
+      requester: 'anonymous'
     });
-    autoHideCanceled = false; 
     setTimeout(() => {
-      if (!autoHideCanceled) {
-        bus.dispatch(TOKENS.SHOW_HINT_FOR, null);
+      if (!streams.action.hint.value.requester === 'anonymous') {
+        services.action.showHintFor(null);
       }
     }, 1000);
   }

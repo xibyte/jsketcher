@@ -58,14 +58,14 @@ OPERATION_ACTIONS.forEach(action => mergeInfo(action));
 
 function requiresFaceSelection(amount) {
   return {
-    listens: ['selection_face'],
+    listens: streams => streams.selection.face,
     update: ActionHelpers.checkForSelectedFaces(amount)
   }
 }
 
 function requiresSolidSelection(amount) {
   return {
-    listens: ['selection_face'],
+    listens: streams => streams.selection.face,
     update: ActionHelpers.checkForSelectedSolids(amount)
   }
 }

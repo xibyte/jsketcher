@@ -1,13 +1,11 @@
-import {TOKENS as ACTION_TOKENS} from "./actionSystemPlugin";
 
 export function mapActionBehavior(actionIdGetter) {
-  return ({dispatch}, props) => {
+  return ({services}, props) => {
     const actionId = actionIdGetter(props);
-    const actionRunToken = ACTION_TOKENS.actionRun(actionId);
 
     let request = {actionId, x:0, y:0};
     let canceled = true;
-    let showed = false;
+    let shown = false;
 
     function updateCoords({pageX, pageY}) {
       request.x = pageX + 10;
@@ -15,23 +13,23 @@ export function mapActionBehavior(actionIdGetter) {
     }
     
     return {
-      onClick: data => dispatch(actionRunToken, data),
+      onClick: e => services.action.run(actionId, e),
       onMouseEnter: e => {
         updateCoords(e);
         canceled = false;
-        showed = false;
+        shown = false;
         setTimeout(() => {
           if (!canceled) {
-            showed = true;
-            dispatch(ACTION_TOKENS.SHOW_HINT_FOR, request)
+            shown = true;
+            services.action.showHintFor(request)
           }
         }, 500);
       },
       onMouseMove: updateCoords,
       onMouseLeave: () => {
         canceled = true;
-        if (showed) {
-          dispatch(ACTION_TOKENS.SHOW_HINT_FOR, null)
+        if (shown) {
+          services.action.showHintFor(null)
         }
       }
   }};

@@ -2,8 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {entitySelectionToken} from '../../../../scene/controls/pickControlPlugin';
 import {attachToForm} from './Form';
+import mapContext from 'ui/mapContext';
 
-const SingleEntityImpl = attachToForm(class SingleEntityImpl extends React.Component {
+@attachToForm
+@mapContext(({streams}) => ({streams}))  
+class SingleEntityImpl extends React.Component {
 
   constructor({initValue}) {
     super();
@@ -19,11 +22,12 @@ const SingleEntityImpl = attachToForm(class SingleEntityImpl extends React.Compo
   };
   
   componentDidMount() {
-    this.context.bus.subscribe(entitySelectionToken(this.props.entity), this.selectionChanged);
+    let {streams, entity} = this.props;
+    this.detacher = streams.selection[entity].attach(this.selectionChanged);
   }
 
   componentWillUnmount() {
-    this.context.bus.unsubscribe(entitySelectionToken(this.props.entity), this.selectionChanged);
+    this.detacher();
   }
 
   render() {
@@ -31,16 +35,12 @@ const SingleEntityImpl = attachToForm(class SingleEntityImpl extends React.Compo
       {this.props.name}: {this.state.selectedItem}
     </div>;
   }
+}
 
-  static contextTypes = {
-    bus: PropTypes.object
-  };
-});
-
-export default function SingleEntity(props, {bus}) {
-  return <SingleEntityImpl defaultValue={bus.state[entitySelectionToken(props.entity)][0]} {...props}/> 
+export default function SingleEntity(props, {streams}) {
+  return <SingleEntityImpl defaultValue={streams.selection[props.entity].value[0]} {...props}/> 
 }
 
 SingleEntity.contextTypes = {
-  bus: PropTypes.object
+  streams: PropTypes.object
 };

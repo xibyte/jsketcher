@@ -24,6 +24,7 @@ export default class WebApplication extends React.Component {
   
   static childContextTypes = {
     bus: PropTypes.object,
-    services: PropTypes.object
+    services: PropTypes.object,
+    streams: PropTypes.object
   };
 }

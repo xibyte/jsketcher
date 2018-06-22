@@ -1,6 +1,6 @@
 import React, {Fragment} from 'react';
 import {TOKENS as WIZARD_TOKENS} from '../wizardPlugin';
-import connect from 'ui/connect';
+import connect from 'ui/connectLegacy';
 import Wizard from './Wizard';
 import HistoryWizard from './HistoryWizard';
 

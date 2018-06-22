@@ -1,12 +1,12 @@
 import React from 'react';
-import connect from 'ui/connect';
-import {TOKENS as MENU_TOKENS} from './menuPlugin';
-import {TOKENS as ACTION_TOKENS} from '../../actions/actionSystemPlugin';
 import Menu, {MenuItem, MenuSeparator} from 'ui/components/Menu';
 import Filler from 'ui/components/Filler';
 import Fa from 'ui/components/Fa';
-import {TOKENS as KeyboardTokens} from '../../keyboard/keyboardPlugin';
 import {mapActionBehavior} from '../../actions/actionButtonBehavior';
+import connect from 'ui/connect';
+import {combine, merger} from 'lstream';
+import mapContext from 'ui/mapContext';
+import decoratorChain from 'ui/decoratorChain';
 
 function MenuHolder({menus}) {
   return menus.map(({id, actions}) => <ConnectedActionMenu key={id} menuId={id} actions={actions} />); 
@@ -48,26 +48,26 @@ function ActionMenuItem({label, cssIcons, icon32, icon96, enabled, hotKey, visib
   return <MenuItem {...{label, icon,  style, disabled: !enabled, hotKey, ...props}} />;
 }
 
-const ConnectedActionMenu = connect(ActionMenu, 
-  ({menuId}) => [MENU_TOKENS.menuState(menuId), KeyboardTokens.KEYMAP], 
-  {
-    mapProps: ([menuState, keymap], {actions}) => Object.assign({keymap, actions}, menuState)
-  });
+const ConnectedActionMenu = connect((streams, props) =>
+  combine(
+    streams.ui.menu.states[props.menuId],
+    streams.ui.keymap)
+    .map(([s, keymap]) => ({...s, keymap})))
+(ActionMenu);
 
 
-let ConnectedMenuItem = connect(ActionMenuItem, 
-  ({actionId}) => [ACTION_TOKENS.actionState(actionId), ACTION_TOKENS.actionAppearance(actionId)], 
-  {
-    mapProps: ([{enabled, visible}, {label, cssIcons, icon32, icon96}]) => ({
-      enabled, visible, label, cssIcons, icon32, icon96
-    }),
-    mapActions: mapActionBehavior(props => props.actionId)
-  }
-);
+let ConnectedMenuItem = decoratorChain(
 
-export default connect(MenuHolder, MENU_TOKENS.MENUS, {
-  mapProps: ([menus]) => ({menus})
-});
+  connect((streams, {actionId}) =>
+    combine(
+      streams.action.state[actionId], 
+      streams.action.appearance[actionId]).map(merger)),
+  
+  mapContext(mapActionBehavior(props => props.actionId))
+)
+(ActionMenuItem);
+
+export default connect(streams => streams.ui.menu.all.map(menus => ({menus})))(MenuHolder);
 
 
 

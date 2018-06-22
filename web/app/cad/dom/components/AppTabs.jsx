@@ -5,7 +5,7 @@ import View3d from './View3d';
 import ls from './AppTabs.less';
 
 import TabSwitcher, {Tab} from 'ui/components/TabSwticher';
-import connect from 'ui/connect';
+import connect from 'ui/connectLegacy';
 
 import {TOKENS as APP_TABS_TOKENS} from "../appTabsPlugin";
 import Card from "ui/components/Card";
