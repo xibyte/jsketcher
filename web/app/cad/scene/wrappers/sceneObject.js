@@ -9,7 +9,7 @@ import {getAttribute} from '../../../../../modules/scene/objectData';
 export class SceneSolid {
   
   constructor(type, id, skin) {
-    this.tCadType = type || 'SOLID';
+    this.tCadType = type || 'SHELL';
 
     this.cadGroup = new THREE.Object3D();
     setAttribute(this.cadGroup, 'shell',  this);
@@ -132,7 +132,7 @@ export class SceneFace {
         let line = new THREE.Line(new THREE.Geometry(), material);
         let sceneSketchObject = new SceneSketchObject(sketchObject, line);
         setAttribute(line, 'sketchObject', sceneSketchObject);
-        const chunks = sketchObject.approximate(10);
+        const chunks = sketchObject.tessellate(10);
         function addLine(p, q) {
           const lg = line.geometry;
           const a = _3dTransformation.apply(chunks[p]);

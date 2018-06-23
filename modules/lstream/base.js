@@ -1,10 +1,7 @@
-
 export class StreamBase {
-  
-  attach() {}
-  
-  next(value) {}
-  
+
+  attach(observer) {}
+
   map(fn) {
     return new MapStream(this, fn);
   }
@@ -12,39 +9,20 @@ export class StreamBase {
   filter(predicate) {
     return new FilterStream(this, predicate);
   }
-}
 
-
-export class MapStream extends StreamBase {
-
-  constructor(stream, fn) {
-    super();
-    this.stream = stream;
-    this.fn = fn;
-  }
-
-  attach(observer) {
-    return this.stream.attach(val => observer(this.fn(val)));
-  }
-
-  static create = (stream, fn) => new MapStream(stream, fn);
-}
-
-export class FilterStream extends StreamBase {
-
-  constructor(stream, predicate) {
-    super();
-    this.stream = stream;
-    this.predicate = predicate;
-  }
-
-  attach(observer) {
-    return this.stream.attach(val => {
-      if (this.predicate(val)) {
-        observer(val);
-      } 
-    });
+  pairwise(first) {
+    return new PairwiseStream(this, first);
   }
   
-  static create = (stream, predicate) => new FilterStream(stream, predicate);
+  keep() {
+    let stateStream = new StateStream(undefined);
+    this.attach(v => stateStream.next(v));
+    return stateStream;
+  }
 }
+
+const {MapStream} = require('./map');
+const {FilterStream} = require('./filter');
+const {StateStream} = require('./state');
+const {PairwiseStream} = require('./pairwise');
+

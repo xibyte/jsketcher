@@ -27,3 +27,5 @@ export function findDiff(arr1, arr2) {
 
   return [both, firstOnly, secondOnly]
 }
+
+export const EMPTY_ARRAY = Object.freeze([]);

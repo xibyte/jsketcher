@@ -1,0 +1,10 @@
+
+interface IMObject {
+  
+  
+  
+}
+
+IMFace
+
+IMVertex

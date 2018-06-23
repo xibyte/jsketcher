@@ -47,20 +47,19 @@ export function activate(context) {
   }
 
   function handlePick(event) {
-    raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, (object, kind) => {
+    raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, (view, kind) => {
+      let modelId = view.model.id;
       if (kind === PICK_KIND.FACE) {
-        if (!selected(streams.selection.face, object.id)) {
-          services.cadScene.showBasis(object.basis(), object.depth());
-          streams.selection.face.next([object.id]);
+        if (dispatchSelection(streams.selection.face, modelId, event)) {
+          services.cadScene.showBasis(view.model.basis(), view.model.depth());
           return false;
         }
       } else if (kind === PICK_KIND.SKETCH) {
-        if (!selected(streams.selection.sketchObject, object.id)) {
-          streams.selection.sketchObject.next([object.id]);
+        if (dispatchSelection(streams.selection.sketchObject, modelId, event)) {
           return false;
         }
       } else if (kind === PICK_KIND.EDGE) {
-        if (dispatchSelection(streams.selection.edge, object.id, event)) {
+        if (dispatchSelection(streams.selection.edge, modelId, event)) {
           return false;
         }
       }
@@ -90,27 +89,27 @@ export function activate(context) {
     const pickers = [
       (pickResult) => {
         if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line) {
-          let sketchObject = getAttribute(pickResult.object, 'sketchObject');
-          if (sketchObject) {
-            return !visitor(sketchObject, PICK_KIND.SKETCH);
+          let sketchObjectV = getAttribute(pickResult.object, SKETCH_OBJECT);
+          if (sketchObjectV) {
+            return !visitor(sketchObjectV, PICK_KIND.SKETCH);
           }
         }
         return false;
       },
       (pickResult) => {
         if (mask.is(kind, PICK_KIND.EDGE)) {
-          let cadEdge = getAttribute(pickResult.object, 'edge');
-          if (cadEdge) {
-            return !visitor(cadEdge, PICK_KIND.EDGE);
+          let edgeV = getAttribute(pickResult.object, EDGE);
+          if (edgeV) {
+            return !visitor(edgeV, PICK_KIND.EDGE);
           }
         }
         return false;
       },
       (pickResult) => {
         if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face) {
-          let sketchFace = getAttribute(pickResult.face, 'face');
-          if (sketchFace) {
-            return !visitor(sketchFace, PICK_KIND.FACE);
+          let faceV = getAttribute(pickResult.face, FACE);
+          if (faceV) {
+            return !visitor(faceV, PICK_KIND.FACE);
           }
         }
         return false;
@@ -149,6 +148,11 @@ function initStateAndServices({streams, services}) {
     });
     entitySelectApi.select = selection => selectionState.value = selection;
   });
+
+  //withdraw all
+  streams.craft.models.attach(() => {
+    Object.values(streams.selection).forEach(ss => ss.next([]))  
+  })
 }
 
 

@@ -18,12 +18,12 @@ class SketchPrimitive {
     this.inverted = !this.inverted;
   }
 
-  approximate(resolution) {
-    const approximation = this.approximateImpl(resolution);
+  tessellate(resolution) {
+    const tessellation = this.tessellateImpl(resolution);
     if (this.inverted) {
-      approximation.reverse();
+      tessellation.reverse();
     }
-    return approximation;
+    return tessellation;
   }
 
   isCurve() {
@@ -45,6 +45,10 @@ class SketchPrimitive {
   toVerbNurbs(plane, _3dtr) {
     throw 'not implemented'
   }
+
+  tessellateImpl() {
+    throw 'not implemented'
+  }
 }
 
 export class Segment extends SketchPrimitive {
@@ -54,7 +58,7 @@ export class Segment extends SketchPrimitive {
     this.b = b;
   }
 
-  approximateImpl(resolution) {
+  tessellateImpl(resolution) {
     return [this.a, this.b];
   }
 
@@ -71,11 +75,11 @@ export class Arc extends SketchPrimitive {
     this.c = c;
   }
 
-  approximateImpl(resolution) {
-    return Arc.approximateArc(this.a, this.b, this.c, resolution);
+  tessellateImpl(resolution) {
+    return Arc.tessellateArc(this.a, this.b, this.c, resolution);
   }
 
-  static approximateArc(ao, bo, c, resolution) {
+  static tessellateArc(ao, bo, c, resolution) {
     var a = ao.minus(c);
     var b = bo.minus(c);
     var points = [ao];
@@ -129,7 +133,7 @@ export class BezierCurve extends SketchPrimitive {
     this.cp2 = cp2;
   }
 
-  approximateImpl(resolution) {
+  tessellateImpl(resolution) {
     return LUT(this.a, this.b, this.cp1, this.cp2, 10);
   }
 }
@@ -144,11 +148,11 @@ export class EllipticalArc extends SketchPrimitive {
     this.r = r;
   }
 
-  approximateImpl(resolution) {
-    return EllipticalArc.approxEllipticalArc(this.ep1, this.ep2, this.a, this.b, this.r, resolution);
+  tessellateImpl(resolution) {
+    return EllipticalArc.tessEllipticalArc(this.ep1, this.ep2, this.a, this.b, this.r, resolution);
   }
 
-  static approxEllipticalArc(ep1, ep2, ao, bo, radiusY, resolution) {
+  static tessEllipticalArc(ep1, ep2, ao, bo, radiusY, resolution) {
     const axisX = ep2.minus(ep1);
     const radiusX = axisX.length() * 0.5;
     axisX._normalize();
@@ -187,11 +191,11 @@ export class Circle extends SketchPrimitive {
     this.r = r;
   }
 
-  approximateImpl(resolution) {
-    return Circle.approxCircle(this.c, this.r, resolution);
+  tessellateImpl(resolution) {
+    return Circle.tessCircle(this.c, this.r, resolution);
   }
 
-  static approxCircle(c, r, resolution) {
+  static tessCircle(c, r, resolution) {
     var points = [];
     resolution = 1;
     //var step = Math.acos(1 - ((resolution * resolution) / (2 * r * r)));
@@ -220,8 +224,8 @@ export class Ellipse extends SketchPrimitive {
     this.r = r;
   }
 
-  approximateImpl(resolution) {
-    return EllipticalArc.approxEllipticalArc(this.ep1, this.ep2, this.ep1, this.ep1, this.r, resolution);
+  tessellateImpl(resolution) {
+    return EllipticalArc.tessEllipticalArc(this.ep1, this.ep2, this.ep1, this.ep1, this.r, resolution);
   }
 }
 
@@ -235,7 +239,7 @@ export class Contour {
     this.segments.push(obj);
   }
 
-  approximateOnSurface(surface) {
+  tessellateOnSurface(surface) {
     const cc = new CompositeCurve();
     const tr = to3DTrFunc(surface);
 
@@ -243,25 +247,25 @@ export class Contour {
     let firstPoint = null;
     for (let segIdx = 0; segIdx < this.segments.length; ++segIdx) {
       let segment = this.segments[segIdx];
-      let approximation = segment.approximate(RESOLUTION);
+      let tessellation = segment.tessellate(RESOLUTION);
 
-      approximation = approximation.map(p => tr(p));
+      tessellation = tessellation.map(p => tr(p));
 
-      const n = approximation.length;
-      prev = prev == null ? approximation[0] : prev;
-      approximation[0] = prev; // this magic is to keep identity of same vectors
-      if (firstPoint == null) firstPoint = approximation[0];
+      const n = tessellation.length;
+      prev = prev == null ? tessellation[0] : prev;
+      tessellation[0] = prev; // this magic is to keep identity of same vectors
+      if (firstPoint == null) firstPoint = tessellation[0];
 
       if (segIdx == this.segments.length - 1) {
-        approximation[n - 1] = firstPoint;
+        tessellation[n - 1] = firstPoint;
       }
 
       cc.add(segment.toNurbs(surface), prev, segment);
-      prev = approximation[n - 1];
+      prev = tessellation[n - 1];
 
       //It might be an optimization for segments
       // for (let i = 1; i < n; ++i) {
-      //   const curr = approximation[i];
+      //   const curr = tessellation[i];
       //   cc.add(new Line.fromSegment(prev, curr), prev, segment);
       //   prev = curr;
       // }
@@ -281,20 +285,20 @@ export class Contour {
     return cc;
   }
 
-  approximate(resolution) {
-    const approximation = [];
+  tessellate(resolution) {
+    const tessellation = [];
     for (let segment of this.segments) {
-      const segmentApproximation = segment.approximate(resolution);
+      const segmentTessellation = segment.tessellate(resolution);
       //skip last one cuz it's guaranteed to be closed
-      for (let i = 0; i < segmentApproximation.length - 1; ++i) {
-        approximation.push(segmentApproximation[i]);
+      for (let i = 0; i < segmentTessellation.length - 1; ++i) {
+        tessellation.push(segmentTessellation[i]);
       }
     }
-    return approximation;
+    return tessellation;
   }
 
   isCCW() {
-    return isCCW(this.approximate(10));
+    return isCCW(this.tessellate(10));
   }
 
   reverse() {

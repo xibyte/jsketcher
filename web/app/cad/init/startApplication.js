@@ -19,11 +19,11 @@ import * as SketcherPlugin from '../sketch/sketcherPlugin';
 import * as tpiPlugin from '../tpi/tpiPlugin';
 
 import * as PartModellerPlugin from '../part/partModellerPlugin';
+import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
 
 import context from 'context';
 
 import startReact from "../dom/startReact";
-import {APP_READY_TOKEN} from './lifecyclePlugin';
 
 export default function startApplication(callback) {
 
@@ -41,9 +41,8 @@ export default function startApplication(callback) {
     WizardPlugin,
     CraftEnginesPlugin,
     OperationPlugin,
-    CadRegistryPlugin,
     CraftPlugin,
-    SketcherPlugin,
+    CadRegistryPlugin,
     tpiPlugin
   ];
   
@@ -52,14 +51,16 @@ export default function startApplication(callback) {
     ScenePlugin,
     PickControlPlugin,
     SelectionMarkerPlugin,
+    SketcherPlugin,
     ...applicationPlugins,
+    ViewSyncPlugin
   ];
 
   activatePlugins(preUIPlugins, context);
 
   startReact(context, () => {
     activatePlugins(plugins, context);
-    context.bus.dispatch(APP_READY_TOKEN, true);
+    context.services.lifecycle.declareAppReady();
     context.services.viewer.render();
     callback(context);
   });

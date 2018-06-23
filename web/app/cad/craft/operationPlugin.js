@@ -1,11 +1,9 @@
-import {createToken} from 'bus';
-import {TOKENS as WIZARD_TOKENS} from './wizard/wizardPlugin'
 
 export function activate(context) {
-  let {bus, services} = context;
+  let {services} = context;
 
-  let registry = {}; 
-  
+  let registry = {};
+
   function addOperation(descriptor, actions) {
     let {id, label, info, icon, actionParams} = descriptor;
 
@@ -17,7 +15,7 @@ export function activate(context) {
         icon32: icon + '32.png',
         icon96: icon + '96.png',
       },
-      invoke: () => bus.dispatch(WIZARD_TOKENS.OPEN, {type: id}),
+      invoke: () => services.wizard.open({type: id}),
       ...actionParams
     };
     actions.push(opAction);
@@ -34,7 +32,7 @@ export function activate(context) {
     }
     services.action.registerActions(actions);
   }
-  
+
   function get(id) {
     let op = registry[id];
     if (!op) {
@@ -42,12 +40,12 @@ export function activate(context) {
     }
     return op;
   }
-  
+
   services.operation = {
     registerOperations,
     registry,
     get
-  }
+  };
 }
 
 function runOperation(request, descriptor, services) {
@@ -57,5 +55,5 @@ function runOperation(request, descriptor, services) {
       return result;
     }
   }
-  return descriptor.run(request, services)
+  return descriptor.run(request, services);
 }

@@ -1,9 +1,10 @@
 import {createMeshGeometry} from 'scene/geoms';
 import {STANDARD_BASES} from '../../../math/l3space';
 import {Plane} from '../../../brep/geom/impl/plane';
-import {PlaneSceneObject} from '../../scene/wrappers/planeSceneObject';
 import Vector from 'math/vector';
 import PlaneWizard from './PlaneWizard';
+import {MOpenFaceShell} from '../../model/mopenFace';
+import {createBoundingSurfaceFrom2DPoints} from '../../../brep/brep-builder';
 
 function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
   let face = null;
@@ -15,15 +16,18 @@ function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
     const normal = STANDARD_BASES[orientation][2];
     plane = new Plane(normal, depth);
   } else {
-    plane = new Plane(face.surface().normalInMiddle(), depth);
+    plane = new Plane(face.surface.normalInMiddle(), depth);
   }
   return plane;
 }
 
 function createPlane(params, {cadRegistry}) {
+  let surface = createBoundingSurfaceFrom2DPoints([
+    new Vector(0,0,0), new Vector(0,100,0), new Vector(100,100,0), new Vector(100,0,0)
+  ], paramsToPlane(params, cadRegistry));
   return {
     outdated: [],
-    created: [new PlaneSceneObject(paramsToPlane(params, cadRegistry))]
+    created: [new MOpenFaceShell(surface)]
   }
 }
 

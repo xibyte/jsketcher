@@ -1,6 +1,6 @@
 import {state} from 'lstream';
 
-export function activate({bus, streams}) {
+export function activate({streams}) {
 
   streams.ui = {
     controlBars: {

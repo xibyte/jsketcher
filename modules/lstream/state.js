@@ -35,4 +35,3 @@ export class StateStream extends Emitter {
   }
 }
 
-

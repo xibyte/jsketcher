@@ -19,7 +19,7 @@ export function doOperation(params, {cadRegistry, sketcher}, cut) {
   let sketch = sketcher.readSketch(face.id);
   if (!sketch) throw 'illegal state';
 
-  let plane = face.surface().tangentPlane(0, 0);
+  let plane = face.surface.tangentPlane(0, 0);
   const details = getEncloseDetails(params, sketch.fetchContours(), plane, !cut, false);
   const operand = combineShells(details.map(d => enclose(d.basePath, d.lidPath, d.baseSurface, d.lidSurface)));
   return BooleanOperation(face, solid, operand, cut ? 'subtract' : 'union');

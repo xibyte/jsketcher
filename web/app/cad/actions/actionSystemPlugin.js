@@ -3,7 +3,7 @@ import * as stream from 'lstream';
 
 export function activate(context) {
   
-  let {bus, streams} = context;
+  let {streams} = context;
   
   streams.action = {
     appearance: {},

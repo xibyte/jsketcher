@@ -1,27 +1,25 @@
-import {createToken} from 'bus';
+import {state} from '../../../../../modules/lstream';
 
-export function activate({bus, services}) {
+export function activate({streams, services}) {
 
-  bus.enableState(TOKENS.WIZARDS, []);
-  bus.subscribe(TOKENS.OPEN, ({type, initialState, overridingHistory}) => {
-    
-    let wizard = {
-      type,
-      initialState,
-      overridingHistory,
-    };
-    
-    bus.updateState(TOKENS.WIZARDS, opened => [...opened, wizard])
-  });
+  streams.wizards = state([]); 
   
-  bus.subscribe(TOKENS.CLOSE, wizard => {
-    bus.updateState(TOKENS.WIZARDS, opened => opened.filter(w => w !== wizard));
-  });
+  services.wizard = {
+    
+    open: ({type, initialState, overridingHistory}) => {
+
+      let wizard = {
+        type,
+        initialState,
+        overridingHistory,
+      };
+
+      streams.wizards.update(opened => [...opened, wizard]);
+    },
+    
+    close: wizard => {
+      streams.wizards.update(opened => opened.filter(w => w !== wizard));
+    }
+  }
 } 
 
-export const TOKENS = {
-  WIZARDS: createToken('wizards'),
-  OPEN: createToken('wizards', 'open'),
-  CLOSE: createToken('wizards', 'close'),
-  PARAMS: createToken('wizardParams')
-};

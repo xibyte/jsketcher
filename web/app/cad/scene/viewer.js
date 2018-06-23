@@ -2,8 +2,7 @@ import SceneSetup from 'scene/sceneSetup';
 
 export default class Viewer {
   
-  constructor(bus, container) {
-    this.bus = bus;
+  constructor(container) {
     this.sceneSetup = new SceneSetup(container);
     this.renderRequested = false;
   }
@@ -31,13 +30,14 @@ export default class Viewer {
   }
   
   setCameraMode(mode) {
+    if (this.getCameraMode() === mode) {
+      return;
+    }
     if (mode === CAMERA_MODE.PERSPECTIVE) {
-      
       this.sceneSetup.setCamera(this.sceneSetup.pCamera);
     } else {
       this.sceneSetup.setCamera(this.sceneSetup.oCamera);
     }
-    this.bus.dispatch('scene_cameraMode', this.getCameraMode());
   }
 
   getCameraMode() {

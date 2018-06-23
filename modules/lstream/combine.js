@@ -1,4 +1,5 @@
 import {StreamBase} from './base';
+import {NOT_INITIALIZED} from './utils';
 
 export class CombineStream extends StreamBase {
 
@@ -15,8 +16,8 @@ export class CombineStream extends StreamBase {
       detachers[i] = s.attach(value => {
         this.values[i] = value;
         if (!this.ready) {
-          this.ready = this.isReady(); 
-        } 
+          this.ready = this.isReady();
+        }
         if (this.ready) {
           observer(this.values);
         }
@@ -29,10 +30,8 @@ export class CombineStream extends StreamBase {
     for (let val of this.values) {
       if (val === NOT_INITIALIZED) {
         return false;
-      }      
-    }     
+      }
+    }
     return true;
   }
 }
-
-const NOT_INITIALIZED = {};

@@ -1,43 +1,22 @@
-import {createToken} from "bus";
-import * as SceneGraph from 'scene/sceneGraph';
 import {EDGE, FACE, SKETCH_OBJECT} from '../scene/entites';
 
 
-export function activate({bus, services}) {
+export function activate({streams, services}) {
 
-  let registry = new Map();
+  streams.cadRegistry = {
+    shellIndex: streams.craft.models.map(models => models.reduce((i, v)=> i.set(v.id, v), new Map())).keep() 
+  };
+
+  streams.cadRegistry.update = streams.cadRegistry.shellIndex;
   
   function getAllShells() {
-    return Array.from(registry.values());
-  }
-
-  function update(toRemove, toAdd) {
-    if (toRemove) {
-      toRemove.forEach(shell => {
-        registry.delete(shell.tCadId);
-        SceneGraph.removeFromGroup(services.cadScene.workGroup, shell.cadGroup);
-        shell.dispose();
-      });
-    }
-    if (toAdd) {
-      toAdd.forEach(shell => {
-        registry.set(shell.tCadId, shell);
-        SceneGraph.addToGroup(services.cadScene.workGroup, shell.cadGroup);
-      });
-    }
-    services.viewer.render();
-    bus.dispatch(TOKENS.SHELLS, registry);
+    return streams.craft.models.value;
   }
   
-  function reset() {
-    SOLIDS_COUNTER = 0;
-    update(getAllShells());
-  }
-
   function findFace(faceId) {
     let shells = getAllShells();
     for (let shell of shells) {
-      for (let face of shell.sceneFaces) {
+      for (let face of shell.faces) {
         if (face.id === faceId) {
           return face;
         }
@@ -49,7 +28,7 @@ export function activate({bus, services}) {
   function findEdge(edgeId) {
     let shells = getAllShells();
     for (let shell of shells) {
-      for (let edge of shell.sceneEdges) {
+      for (let edge of shell.edges) {
         if (edge.id === edgeId) {
           return edge;
         }
@@ -59,10 +38,10 @@ export function activate({bus, services}) {
   }
 
   function findSketchObject(sketchObjectGlobalId) {
-    let [faceId, sketchObjectId] = sketchObjectGlobalId.split('/');
-    let face = findFace(faceId);
+    let [shellId, faceId, sketchObjectId] = sketchObjectGlobalId.split('/');
+    let face = findFace(shellId+'/'+faceId);
     if (face) {
-      return face.findById(sketchObjectGlobalId);
+      return face.findSketchObjectById(sketchObjectGlobalId);
     }
     return null;
   }
@@ -77,16 +56,11 @@ export function activate({bus, services}) {
   }
   
   services.cadRegistry = {
-    getAllShells, update, reset, findFace, findEdge, findSketchObject, findEntity
+    getAllShells, findFace, findEdge, findSketchObject, findEntity,
+    get shellIndex() {
+      return streams.cadRegistry.shellIndex.value;
+    }
   }
 }
 
 
-export const TOKENS = {
-  SHELLS: createToken('cadRegistry', 'shells'),
-};
-
-let SOLIDS_COUNTER = 0;
-export function genSolidId() {
-  return SOLIDS_COUNTER ++
-}

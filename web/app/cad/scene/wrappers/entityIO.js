@@ -1,6 +1,6 @@
 import {readBrep} from '../../../brep/io/brepIO';
-import {BREPSceneSolid} from './brepSceneObject';
+import {MBrepShell} from '../../model/mshell';
 
 export function readShellEntityFromJson(data) {
-  return new BREPSceneSolid(readBrep(data));  
+  return new MBrepShell(readBrep(data));  
 }

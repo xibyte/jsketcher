@@ -1,5 +1,5 @@
 import TPI from './tpi';
-import {BREPSceneSolid} from '../scene/wrappers/brepSceneObject';
+import {MBrepShell} from '../model/mshell';
 
 /*
  * TPI stands for the Test Program Interface
@@ -7,7 +7,7 @@ import {BREPSceneSolid} from '../scene/wrappers/brepSceneObject';
 export function activate({bus, services}) {
 
   function addShellOnScene(shell, skin) {
-    const sceneSolid = new BREPSceneSolid(shell, undefined, skin);
+    const sceneSolid = new MBrepShell(shell);
     addOnScene(sceneSolid, skin);
     return sceneSolid;
   }

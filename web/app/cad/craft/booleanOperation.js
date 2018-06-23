@@ -1,8 +1,8 @@
-import {subtract, union, intersect} from '../../brep/operations/boolean'
-import {BREPSceneSolid} from '../scene/wrappers/brepSceneObject'
-import {update as updateStitching} from '../../brep/stitching'
-import {BREPValidator} from '../../brep/brep-validator'
-import {Shell} from '../../brep/topo/shell'
+import {intersect, subtract, union} from '../../brep/operations/boolean';
+import {update as updateStitching} from '../../brep/stitching';
+import {BREPValidator} from '../../brep/brep-validator';
+import {Shell} from '../../brep/topo/shell';
+import {MBrepShell} from '../model/mshell';
 
 const BoolOpMap = {
   'subtract': subtract,
@@ -12,7 +12,7 @@ const BoolOpMap = {
 
 export function BooleanOperation(face, solid, operand, operationType) {
   let result;
- if (solid instanceof BREPSceneSolid) {
+ if (solid instanceof MBrepShell) {
    const op = BoolOpMap[operationType];
    result = op(solid.shell, operand);
    for (let newFace of result.faces) {
@@ -25,7 +25,7 @@ export function BooleanOperation(face, solid, operand, operationType) {
    result = operand;
  }
  updateStitching(result);
-  const newSolid = new BREPSceneSolid(result);
+  const newSolid = new MBrepShell(result);
   return {
     outdated: [solid],
     created:  [newSolid]

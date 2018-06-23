@@ -1,13 +1,16 @@
 import Viewer from './viewer';
-import CadScene from "./cadScene";
+import CadScene from './cadScene';
+import {externalState} from '../../../../modules/lstream';
 
-export function activate(context) {
-  let {dom} = context.services;
+export function activate({streams, services}) {
+  let {dom} = services;
   
-  let viewer = new Viewer(context.bus, dom.viewerContainer);
+  let viewer = new Viewer(dom.viewerContainer);
   
-  context.services.viewer = viewer;
-  context.services.cadScene = new CadScene(viewer.sceneSetup.rootGroup);
+  services.viewer = viewer;
+  services.cadScene = new CadScene(viewer.sceneSetup.rootGroup);
 
-  context.bus.subscribe('scene:update', () => viewer.render());
+  streams.cadScene = {
+    cameraMode: externalState(() => viewer.getCameraMode(), mode => viewer.setCameraMode(mode))
+  };
 }

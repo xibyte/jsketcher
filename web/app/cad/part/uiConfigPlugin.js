@@ -3,7 +3,7 @@ import OperationActions from '../actions/operationActions';
 import HistoryActions from '../actions/historyActions';
 import menuConfig from './menuConfig';
 
-export function activate({bus, services, streams}) {
+export function activate({services, streams}) {
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'Donate', 'GitHub'];
   streams.ui.controlBars.right.value = [
     ['Info', {label: null}],

@@ -1,11 +1,15 @@
 
-import {createToken} from 'bus';
 import {ReadSketch} from './sketchReader';
 import {getSketchBoundaries} from './sketchBoundaries';
 import {TOKENS as CRAFT_TOKENS} from '../craft/craftPlugin';
+import {stream} from 'lstream';
 
-export function activate({bus, services}) {
+export function activate({streams, services}) {
 
+  streams.sketcher = {
+    update: stream()
+  };
+  
   services.storage.addListener(evt => {
     let prefix = services.project.sketchStorageNamespace;
     if (evt.key.indexOf(prefix) < 0) return;
@@ -33,17 +37,17 @@ export function activate({bus, services}) {
     return ReadSketch(JSON.parse(savedSketch), sketchId, true);
   }
   
-  function updateSketchForFace(sketchFace) {
-    let sketch = readSketch(sketchFace.id);
+  function updateSketchForFace(mFace) {
+    let sketch = readSketch(mFace.id);
     if (sketch !== null) {
-      sketchFace.updateSketch(sketch);
-      bus.dispatch(TOKENS.SKETCH_UPDATE, sketchFace.id);
+      mFace.setSketch(sketch);
+      streams.sketcher.update.next(mFace);
     }
   }
 
   function updateAllSketches() {
     let allShells = services.cadRegistry.getAllShells();
-    allShells.forEach(sceneShell => sceneShell.sceneFaces.forEach(sceneFace => updateSketchForFace(sceneFace)));
+    allShells.forEach(mShell => mShell.faces.forEach(mFace => updateSketchForFace(mFace)));
     services.viewer.requestRender();
   }
   
@@ -66,13 +70,9 @@ export function activate({bus, services}) {
     services.appTabs.show(sceneFace.id, 'Sketch ' + sceneFace.id, 'sketcher.html#' + sketchURL);
   }
   
-  bus.subscribe(CRAFT_TOKENS.MODIFICATIONS, updateAllSketches);
+  streams.craft.modifications.attach(updateAllSketches);
   
   services.sketcher = {
     sketchFace, updateAllSketches, getAllSketches, readSketch
   }
 }
-
-export const TOKENS = {
-  SKETCH_UPDATE: createToken('sketcher', 'sketchUpdate')
-};
