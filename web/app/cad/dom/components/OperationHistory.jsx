@@ -1,24 +1,23 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Stack from 'ui/components/Stack';
-import connect from 'ui/connectLegacy';
+import connect from 'ui/connect';
 import Fa from 'ui/components/Fa';
 import ImgIcon from 'ui/components/ImgIcon';
 import ls from './OperationHistory.less';
 import cx from 'classnames';
+import ButtonGroup from 'ui/components/controls/ButtonGroup';
+import Button from 'ui/components/controls/Button';
+import {finishHistoryEditing, removeAndDropDependants} from '../../craft/craftHistoryUtils';
+import mapContext from 'ui/mapContext';
+import decoratorChain from 'ui/decoratorChain';
 
-import {TOKENS as CRAFT_TOKENS} from '../../craft/craftPlugin';
-import ButtonGroup from '../../../../../modules/ui/components/controls/ButtonGroup';
-import Button from '../../../../../modules/ui/components/controls/Button';
-import {removeAndDropDependants} from '../../craft/craftHistoryUtils';
-
-function OperationHistory({history, pointer, setHistoryPointer, remove}, {services: {operation: operationService}}) {
+function OperationHistory({history, pointer, setHistoryPointer, remove, operationRegistry}) {
   let lastMod = history.length - 1;
   return <Stack>
 
     {history.map(({type, params}, index) => {
 
-      let {appearance, paramsInfo} = getDescriptor(type, operationService.registry);
+      let {appearance, paramsInfo} = getDescriptor(type, operationRegistry);
       return <div key={index} onClick={() => setHistoryPointer(index - 1)} 
                   className={cx(ls.item, pointer + 1 === index && ls.selected)}>
         {appearance && <ImgIcon url={appearance.icon32} size={16}/>}
@@ -45,13 +44,12 @@ function getDescriptor(type, registry) {
   return descriptor;
 }
 
-OperationHistory.contextTypes = {
-  services: PropTypes.object
-};
+export default decoratorChain(
+  connect(streams => streams.craft.modifications),
+  mapContext(({streams, services}) => ({
+    remove: atIndex => streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, atIndex)),
+    cancel: () => streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
+    operationRegistry: services.operation.registry
+  }))
+)(OperationHistory);
 
-export default connect(OperationHistory, CRAFT_TOKENS.MODIFICATIONS, {
-  mapActions: ({setState, updateState}) => ({
-    setHistoryPointer: pointer => setState(CRAFT_TOKENS.MODIFICATIONS, {pointer}),
-    remove: atIndex => updateState(CRAFT_TOKENS.MODIFICATIONS, modifications => removeAndDropDependants(modifications, atIndex))
-  })
-});

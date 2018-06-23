@@ -1,20 +1,23 @@
-import {createToken} from '../../../../modules/bus';
+import {state} from '../../../../modules/lstream';
 
-export function activate({bus, services}) {
+export function activate({streams, services}) {
   const startTime = performance.now();
-  bus.enableState(APP_READY_TOKEN, false);
-  bus.enableState(APP_PROJECT_LOADED, false);
+  streams.lifecycle = {
+    appReady: state(false),
+    projectLoaded: state(false)
+  };
   services.lifecycle = {
     loadProjectRequest: () => {
-      if (bus.state[APP_READY_TOKEN] && !bus.state[APP_PROJECT_LOADED] && services.craftEngines.allEnginesReady()) {
+      if (streams.lifecycle.appReady.value && 
+        !streams.lifecycle.projectLoaded.value && 
+        services.craftEngines.allEnginesReady()) {
+        
         services.project.load();
-        bus.dispatch(APP_PROJECT_LOADED, true);
+        streams.lifecycle.projectLoaded.value = true;
         const onLoadTime = performance.now();
         console.log("project loaded, took: " + ((onLoadTime - startTime) / 1000).toFixed(2) + ' sec');
       }
-    }
+    },
+    declareAppReady: () => streams.lifecycle.appReady.value = true
   }
 }
-
-export const APP_READY_TOKEN = createToken('app', 'ready');
-export const APP_PROJECT_LOADED = createToken('app', 'projectLoaded');

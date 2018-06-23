@@ -1,12 +1,12 @@
-import {box} from '../../../brep/brep-primitives'
-import {BREPSceneSolid} from '../../scene/wrappers/brepSceneObject';
-import {createBoxGeometry} from "scene/geoms";
+import {box} from '../../../brep/brep-primitives';
+import {createBoxGeometry} from 'scene/geoms';
 import BoxWizard from './BoxWizard';
+import {MBrepShell} from '../../model/mshell';
 
 function createBox({width, height, depth}) {
   return {
     outdated: [],
-    created: [new BREPSceneSolid(box(width, height, depth))]
+    created: [new MBrepShell(box(width, height, depth))]
   }
 }
 

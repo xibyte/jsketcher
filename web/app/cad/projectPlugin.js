@@ -7,7 +7,7 @@ const STORAGE_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
 
 export function activate(context) {
 
-  const {services, bus} = context;
+  const {streams, services} = context;
   
   const [id, params] = parseHintsFromLocation();
 
@@ -30,7 +30,7 @@ export function activate(context) {
   
   function save() {
     let data = {};
-    data.history = bus.state[services.craft.TOKENS.MODIFICATIONS].history;
+    data.history = streams.craft.modifications.value.history;
     services.storage.set(projectStorageKey(), JSON.stringify(data));
   }
 
