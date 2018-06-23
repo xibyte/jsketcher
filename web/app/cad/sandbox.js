@@ -210,8 +210,8 @@ export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi,
     addShellOnScene(cylinder);
     addShellOnScene(box);
 
-    let surfaceA = cadRegistry.findFace('0:0').surface();
-    let surfaceB = cadRegistry.findFace('1:4').surface();
+    let surfaceA = cadRegistry.findFace('0:0').surface;
+    let surfaceB = cadRegistry.findFace('1:4').surface;
 
 
     let curves = surfaceIntersect(surfaceA.data, surfaceB.data);

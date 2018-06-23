@@ -4,7 +4,6 @@ import Window from 'ui/components/Window';
 import Stack from 'ui/components/Stack';
 import Button from 'ui/components/controls/Button';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
-import {CURRENT_SELECTION} from '../wizardPlugin';
 
 import ls from './Wizard.less';
 import CadError from '../../../../utils/errors';
@@ -42,7 +41,15 @@ export default class Wizard extends React.Component {
     this.formContext.onChange = noop;
   }
 
+  componentDidCatch() {
+    this.setState({hasInternalError: true});
+  }
+
+
   render() {
+    if (this.state.hasInternalError) {
+      return <span>operation error</span>;
+    }
     let {type, left} = this.props;
     let {wizard: WizardImpl} = this.context.services.operation.get(type);
 
@@ -62,7 +69,7 @@ export default class Wizard extends React.Component {
         </ButtonGroup>
         {this.state.hasError && <div className={ls.errorMessage}>
           performing operation with current parameters leads to an invalid object
-          (manifold / self-intersecting / zero-thickness / complete degeneration or unsupported cases)
+          (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
           {this.state.code && <div className={ls.errorCode}>{this.state.code}</div>}
           {this.state.userMessage && <div className={ls.userErrorMessage}>{this.state.userMessage}</div>}
         </div>}
@@ -131,8 +138,7 @@ export default class Wizard extends React.Component {
 
 
   static contextTypes = {
-    services: PropTypes.object,
-    bus: PropTypes.object
+    services: PropTypes.object
   };
 
 }

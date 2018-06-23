@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {entitySelectionToken} from '../../../../scene/controls/pickControlPlugin';
 import {attachToForm} from './Form';
 import mapContext from 'ui/mapContext';
 
@@ -17,8 +16,10 @@ class SingleEntityImpl extends React.Component {
   
   selectionChanged = selection => {
     let selectedItem = selection[0];
-    this.setState({selectedItem});
-    this.props.onChange(selectedItem);
+    if (selectedItem) {
+      this.setState({selectedItem});
+      this.props.onChange(selectedItem);
+    }
   };
   
   componentDidMount() {

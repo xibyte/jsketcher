@@ -1,9 +1,14 @@
-export const SOLID = 'solid';
-export const FACE = 'face';
-export const EDGE = 'edge';
-export const VERTEX = 'vertex';
-export const SKETCH_OBJECT = 'sketchObject';
+import {MShell} from '../model/mshell';
+import {MFace} from '../model/mface';
+import {MEdge} from '../model/medge';
+import {MVertex} from '../model/mvertex';
+import {MSketchObject} from '../model/msketchObject';
 
-const ENTITIES = [SOLID, FACE, EDGE, VERTEX, SKETCH_OBJECT];
+export const SHELL = MShell.TYPE;
+export const FACE = MFace.TYPE;
+export const EDGE = MEdge.TYPE;
+export const VERTEX = MVertex.TYPE;
+export const SKETCH_OBJECT = MSketchObject.TYPE;
 
-export default ENTITIES;
+export const PART_MODELING_ENTITIES = [SHELL, FACE, EDGE, VERTEX, SKETCH_OBJECT];
+export const ASSEMBLY_ENTITIES = [SHELL, FACE, EDGE, VERTEX];

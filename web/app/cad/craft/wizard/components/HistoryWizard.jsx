@@ -1,8 +1,10 @@
 import React from 'react';
-import connect from '../../../../../../modules/ui/connectLegacy';
-import {TOKENS as CRAFT_TOKENS} from '../../craftPlugin';
+import connect from 'ui/connect';
 import Wizard from './Wizard';
 import {finishHistoryEditing, stepOverridingParams} from '../../craftHistoryUtils';
+import {NOOP} from 'gems/func';
+import decoratorChain from 'ui/decoratorChain';
+import mapContext from 'ui/mapContext';
 
 function HistoryWizard({history, pointer, step, cancel, offset}) {
   if (pointer === history.length - 1) {
@@ -16,11 +18,10 @@ function HistoryWizard({history, pointer, step, cancel, offset}) {
 
 }
 
-export default connect(HistoryWizard, CRAFT_TOKENS.MODIFICATIONS, {
-  mapActions: ({updateState}) => ({
-    step: (params) => updateState(CRAFT_TOKENS.MODIFICATIONS, modifications => stepOverridingParams(modifications, params)),
-    cancel: () => updateState(CRAFT_TOKENS.MODIFICATIONS, modifications => finishHistoryEditing(modifications)),
-  })
-});
-
-const NOOP = () => {};
+export default decoratorChain(
+  connect(streams => streams.craft.modifications),
+  mapContext(({streams}) => ({
+    step: params => streams.craft.modifications.update(modifications => stepOverridingParams(modifications, params)),
+    cancel: () => streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
+  }))
+)(HistoryWizard);

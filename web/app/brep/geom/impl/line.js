@@ -47,7 +47,7 @@ export class Line {
     return new Line(this.p0.plus(vector), this.v);
   }
 
-  approximate(resolution, from, to, path) {
+  tessellate(resolution, from, to, path) {
   }
   
   offset() {};

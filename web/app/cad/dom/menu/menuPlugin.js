@@ -1,6 +1,6 @@
 import {state} from '../../../../../modules/lstream';
 
-export function activate({bus, services, streams}) {
+export function activate({services, streams}) {
 
   streams.ui.menu = {
     all: state([]),
