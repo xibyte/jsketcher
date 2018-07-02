@@ -1,8 +1,9 @@
 import {roundValueForPresentation as r} from '../operationHelper';
-import {createPrismWizard, createWizardMetadata} from './wizardMetadata';
 import {createPreviewGeomProvider} from './previewer';
 import {Extrude} from './cutExtrude';
 import {requiresFaceSelection} from '../../actions/actionHelpers';
+import form from './form';
+import schema from './schema';
 
 export default {
   id: 'EXTRUDE',
@@ -15,6 +16,7 @@ export default {
   actionParams: {
     ...requiresFaceSelection(1)
   },
-  wizard: createPrismWizard('height')
+  form: form('height'),
+  schema
 };
 

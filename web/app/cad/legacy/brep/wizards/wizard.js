@@ -1,10 +1,9 @@
-import * as tk from '../../../../ui/toolkit'
-import {camelCaseSplit} from '../../../../utils/utils'
-import {isTCADError} from "../../../../utils/errors";
+import * as tk from '../../../../ui/toolkit';
+import {isTCADError} from '../../../../utils/errors';
 
 export class Wizard {
 
-  constructor(app, opearation, metadata, initialState) {
+  constructor(app, opearation, initialState) {
     this.app = app;
     this.metadata = metadata;
     this.formFields = {};

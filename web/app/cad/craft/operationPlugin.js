@@ -36,7 +36,7 @@ export function activate(context) {
   function get(id) {
     let op = registry[id];
     if (!op) {
-      this `operation ${id} is not registered`;
+      throw `operation ${id} is not registered`;
     }
     return op;
   }

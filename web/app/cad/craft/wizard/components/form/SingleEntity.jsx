@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {attachToForm} from './Form';
+import {attachToForm, formFieldDecorator} from './Form';
 import mapContext from 'ui/mapContext';
+import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 
 @attachToForm
-@mapContext(({streams}) => ({streams}))  
-class SingleEntityImpl extends React.Component {
+@mapContext(({streams}) => ({streams}))
+export default class SingleEntity extends React.Component {
 
   constructor({initValue}) {
     super();
@@ -33,15 +34,7 @@ class SingleEntityImpl extends React.Component {
 
   render() {
     return <div>
-      {this.props.name}: {this.state.selectedItem}
+      {camelCaseSplitToStr(this.props.name)}: {this.state.selectedItem}
     </div>;
   }
 }
-
-export default function SingleEntity(props, {streams}) {
-  return <SingleEntityImpl defaultValue={streams.selection[props.entity].value[0]} {...props}/> 
-}
-
-SingleEntity.contextTypes = {
-  streams: PropTypes.object
-};

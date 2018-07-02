@@ -1,4 +1,5 @@
-import FilletWizard from './FilletWizard';
+import FilletForm from './FilletForm';
+import schema from './schema';
 
 export default {
   id: 'FILLET',
@@ -8,7 +9,7 @@ export default {
   paramsInfo: ({edges}) => edges.map(o => o.thikness).join(' ,'),
   previewGeomProvider: () => new THREE.Geometry(),
   run: (request) => console.dir(request),
-  wizard: FilletWizard,
+  form: FilletForm,
+  schema
 };
-
 

@@ -10,48 +10,51 @@ import CadError from '../../../../utils/errors';
 import {createPreviewer} from '../../../preview/scenePreviewer';
 import {FormContext} from './form/Form';
 
-export default class Wizard extends React.Component {
+export default class Wizard extends React.PureComponent {
 
-  state = {hasError: false};
+  state = {
+    hasError: false,
+    validationErrors: [],
+  };
 
-  constructor({initialState}) {
-    super();
-    this.formContext = {
-      data: initialState || {},
-      onChange: noop
-    };
+  updatePreview() {
+    if (this.previewer) {
+      this.previewer.update(this.props.params);
+    }
   }
   
   componentDidMount() {
-    let {services} = this.context;
-
-    let {previewGeomProvider} = services.operation.get(this.props.type);
-
-    let previewer = createPreviewer(previewGeomProvider, services);
-    let preview = previewer(this.formContext.data);
-
-    this.formContext.onChange = () => preview.update(this.formContext.data);
-    this.dispose = () => {
-      preview.dispose();
-    };
+    this.previewer = this.props.createPreviewer();
+    this.updatePreview();
   }
-  
+
+  componentDidUpdate() {
+    this.previewer.dispose();
+    this.previewer = this.props.createPreviewer();
+    this.updatePreview();
+  }
+
   componentWillUnmount() {
-    this.dispose();
-    this.formContext.onChange = noop;
+    this.previewer.dispose()
   }
 
   componentDidCatch() {
     this.setState({hasInternalError: true});
   }
-
-
+  
   render() {
     if (this.state.hasInternalError) {
       return <span>operation error</span>;
     }
-    let {type, left} = this.props;
-    let {wizard: WizardImpl} = this.context.services.operation.get(type);
+    let {left, type} = this.props;
+
+    let formContext = {
+      data: this.props.params,
+      validationErrors: this.state.validationErrors,
+      onChange: () => this.updatePreview()
+    };
+
+    let Form = this.props.form;
 
     return <Window initWidth={250}
                    initLeft={left}
@@ -59,8 +62,8 @@ export default class Wizard extends React.Component {
                    onClose={this.cancel}
                    onKeyDown={this.onKeyDown}
                    setFocus={this.focusFirstInput}>
-      <FormContext.Provider value={this.formContext}>
-        <WizardImpl />
+      <FormContext.Provider value={formContext}>
+        <Form />
       </FormContext.Provider>
       <Stack>
         <ButtonGroup>
@@ -72,6 +75,9 @@ export default class Wizard extends React.Component {
           (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
           {this.state.code && <div className={ls.errorCode}>{this.state.code}</div>}
           {this.state.userMessage && <div className={ls.userErrorMessage}>{this.state.userMessage}</div>}
+        </div>}
+        {this.state.validationErrors.length !== 0 && <div className={ls.errorMessage}>
+          {this.state.validationErrors.map((err, i) => <div key={i}> {err.path.join(' ')} {err.message}</div>)}
         </div>}
 
       </Stack>
@@ -106,10 +112,15 @@ export default class Wizard extends React.Component {
 
   onOK = () => {
     try {
+      let validationErrors = this.props.validate(this.props.params);
+      if (validationErrors.length !== 0) {
+        this.setState({validationErrors})
+        return;
+      }
       if (this.props.onOK) {
-        this.props.onOK(this.formContext.data);
+        this.props.onOK(this.props.params);
       } else {
-        this.context.services.craft.modify({type: this.props.type, params: this.formContext.data});
+        this.context.services.craft.modify({type: this.props.type, params: this.props.params});
       }
       this.props.close();
     } catch (error) {
@@ -140,7 +151,6 @@ export default class Wizard extends React.Component {
   static contextTypes = {
     services: PropTypes.object
   };
-
 }
 
-const noop = () => {};
+
