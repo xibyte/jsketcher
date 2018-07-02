@@ -5,23 +5,37 @@ import {finishHistoryEditing, stepOverridingParams} from '../../craftHistoryUtil
 import {NOOP} from 'gems/func';
 import decoratorChain from 'ui/decoratorChain';
 import mapContext from 'ui/mapContext';
+import {createPreviewer} from '../../../preview/scenePreviewer';
 
-function HistoryWizard({history, pointer, step, cancel, offset}) {
+function HistoryWizard({history, pointer, step, cancel, offset, getOperation, previewerCreator, createValidator}) {
   if (pointer === history.length - 1) {
     return null;
   }
+
+  let {type, params} = history[pointer + 1];
   
-  let {type, params: initialState} = history[pointer + 1];
+  let operation = getOperation(type);
+  if (operation === null) {
+    //unknown operation
+    return null;
+  }
   return <Wizard type={type}
-                 onCancel={cancel} onOK={step} close={NOOP}
-                 initialState={initialState} left={offset} />
+                 validate={createValidator(operation)}
+                 createPreviewer={previewerCreator(operation)}
+                 params={clone(params)}
+                 form={operation.form}
+                 onCancel={cancel} onOK={step} close={NOOP} left={offset} />
 
 }
 
 export default decoratorChain(
   connect(streams => streams.craft.modifications),
-  mapContext(({streams}) => ({
+  mapContext(({streams, services}) => ({
     step: params => streams.craft.modifications.update(modifications => stepOverridingParams(modifications, params)),
     cancel: () => streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
   }))
 )(HistoryWizard);
+
+function clone(params) {
+  return JSON.parse(JSON.stringify(params));
+}

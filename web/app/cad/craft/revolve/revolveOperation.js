@@ -1,4 +1,5 @@
-import RevolveWizard from './RevolveWizard';
+import RevolveForm from './RevolveForm';
+import schema from './schema';
 
 export default {
   id: 'REVOLVE',
@@ -8,7 +9,8 @@ export default {
   paramsInfo: ({angle}) => angle,
   previewGeomProvider: () => new THREE.Geometry(),
   run: (request) => console.dir(request),
-  wizard: RevolveWizard,
+  form: RevolveForm,
+  schema
 };
 
 

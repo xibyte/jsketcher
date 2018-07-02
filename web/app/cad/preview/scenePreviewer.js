@@ -4,37 +4,33 @@ import {createMesh} from 'scene/objects/mesh';
 
 
 export function createPreviewer(sceneGeometryCreator, services) {
-
-  return function(params) {
-    const previewGroup = SceneGraph.createGroup();
-    SceneGraph.addToGroup(services.cadScene.workGroup, previewGroup);
-    
-    let previewObject = null;
-    function destroyPreviewObject() {
-      if (previewObject === null) {
-        return;
-      }
-      previewGroup.remove(previewObject);
-      previewObject.geometry.dispose();
-      previewObject = null;
+  const previewGroup = SceneGraph.createGroup();
+  SceneGraph.addToGroup(services.cadScene.workGroup, previewGroup);
+  
+  let previewObject = null;
+  function destroyPreviewObject() {
+    if (previewObject === null) {
+      return;
     }
-
-    function update(params) {
-      destroyPreviewObject();
-      previewObject = createMesh(sceneGeometryCreator(params, services), IMAGINARY_SURFACE_MATERIAL);
-      previewGroup.add(previewObject);
-      services.viewer.render();
-    }
-
-    function dispose() {
-      destroyPreviewObject();
-      SceneGraph.removeFromGroup(services.cadScene.workGroup, previewGroup);
-      services.viewer.render();
-    }
-    update(params);
-    
-    return {update, dispose};
+    previewGroup.remove(previewObject);
+    previewObject.geometry.dispose();
+    previewObject = null;
   }
+
+  function update(params) {
+    destroyPreviewObject();
+    previewObject = createMesh(sceneGeometryCreator(params, services), IMAGINARY_SURFACE_MATERIAL);
+    previewGroup.add(previewObject);
+    services.viewer.render();
+  }
+
+  function dispose() {
+    destroyPreviewObject();
+    SceneGraph.removeFromGroup(services.cadScene.workGroup, previewGroup);
+    services.viewer.render();
+  }
+  
+  return {update, dispose};
 }
 
 

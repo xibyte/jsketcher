@@ -7,12 +7,12 @@ import {RadioButton} from 'ui/components/controls/RadioButtons';
 
 export default function PlaneWizard() {
   return <Group>
-    <RadioButtonsField name='orientation' defaultValue='XY'>
+    <RadioButtonsField name='orientation'>
       <RadioButton value='XY' />
       <RadioButton value='XZ' />
       <RadioButton value='ZY' />
     </RadioButtonsField>
     <SingleEntity name='parallelTo' entity='face' />
-    <NumberField name='depth'  defaultValue={0} />
+    <NumberField name='depth' />
   </Group>;
 }

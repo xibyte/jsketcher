@@ -6,12 +6,10 @@ export function activate({streams, services}) {
   
   services.wizard = {
     
-    open: ({type, initialState, overridingHistory}) => {
+    open: ({type}) => {
 
       let wizard = {
-        type,
-        initialState,
-        overridingHistory,
+        type
       };
 
       streams.wizards.update(opened => [...opened, wizard]);

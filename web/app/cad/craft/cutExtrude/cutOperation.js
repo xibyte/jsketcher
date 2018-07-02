@@ -1,8 +1,9 @@
 import {roundValueForPresentation as r} from '../operationHelper';
-import {createPrismWizard, createWizardMetadata} from './wizardMetadata';
+import form from './form';
 import {createPreviewGeomProvider} from './previewer';
 import {Cut} from './cutExtrude';
 import {requiresFaceSelection} from '../../actions/actionHelpers';
+import schema from './schema';
 
 export default {
   id: 'CUT',
@@ -15,5 +16,6 @@ export default {
   actionParams: {
     ...requiresFaceSelection(1)
   },
-  wizard: createPrismWizard('depth')
+  form: form('depth'),
+  schema
 };

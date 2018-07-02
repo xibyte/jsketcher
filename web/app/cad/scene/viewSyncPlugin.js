@@ -25,7 +25,7 @@ function sceneSynchronizer({services: {cadScene, cadRegistry}}) {
           SceneGraph.removeFromGroup(cadScene.workGroup, obj);
           shellView.dispose();
         } else {
-          existent.add(shellView.shell.id);
+          existent.add(shellView.model.id);
         }
       }
     }

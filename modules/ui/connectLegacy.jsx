@@ -62,9 +62,6 @@ export default function connect(WrappedComponent, tokens, config) {
                                {...mapSelfProps(this.props)}/>
     }
 
-    componentDidCatch() {
-    }
-
     static contextTypes = {
       bus: PropTypes.object
     };

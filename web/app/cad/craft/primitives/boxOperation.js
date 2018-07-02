@@ -1,6 +1,6 @@
 import {box} from '../../../brep/brep-primitives';
 import {createBoxGeometry} from 'scene/geoms';
-import BoxWizard from './BoxWizard';
+import BoxForm from './BoxForm';
 import {MBrepShell} from '../../model/mshell';
 
 function createBox({width, height, depth}) {
@@ -18,6 +18,6 @@ export default {
   paramsInfo: ({width, height, depth}) => `(${width}, ${height}, ${depth})`,
   previewGeomProvider: ({width, height, depth}) => createBoxGeometry(width, height, depth),
   run: createBox,
-  wizard: BoxWizard
+  form: BoxForm
 };
 

@@ -5,6 +5,7 @@ import Vector from 'math/vector';
 import PlaneWizard from './PlaneWizard';
 import {MOpenFaceShell} from '../../model/mopenFace';
 import {createBoundingSurfaceFrom2DPoints} from '../../../brep/brep-builder';
+import schema from './planeOpSchema';
 
 function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
   let face = null;
@@ -52,6 +53,9 @@ export default {
   paramsInfo: ({depth}) => `(${depth})`,
   previewGeomProvider,
   run: createPlane,
-  wizard: PlaneWizard
+  form: PlaneWizard,
+  schema
 };
+
+
 

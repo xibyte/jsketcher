@@ -2,6 +2,7 @@ import React from 'react';
 import Label from 'ui/components/controls/Label';
 import Field from 'ui/components/controls/Field';
 import Stack from 'ui/components/Stack';
+import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 
 export const FormContext = React.createContext({});
 
@@ -14,14 +15,14 @@ export function Group({children}) {
 export function formField(Control) {
   return function FormPrimitive({label, name, ...props}) {
     return <Field>
-      <Label>{label || name}</Label>
+      <Label>{label || camelCaseSplitToStr(name)}</Label>
       <Control {...props} />
     </Field>;
   }
 }
 
 export function attachToForm(Control) {
-  return function FormField({name, label, defaultValue, ...props}) {
+  return function FormField({name, label, ...props}) {
     return <FormContext.Consumer>
       {
         ctx => {
@@ -29,26 +30,12 @@ export function attachToForm(Control) {
             ctx.data[name] = val;
             ctx.onChange();
           };
-          let dataValue = ctx.data[name];
-          let initValue = dataValue === undefined ? defaultValue : dataValue;
+          let initValue = ctx.data[name];
           return <React.Fragment>
-            <ValueInitializer name={name} data={ctx.data} value={initValue} />
             <Control initValue={initValue} onChange={onChange} name={name} {...props} />
           </React.Fragment>;
         }
       }
     </FormContext.Consumer>;
   };
-}
-
-export class ValueInitializer extends React.Component {
-  
-  componentDidMount() {
-    let {name, data, value} = this.props;
-    data[name] = value;
-  }
-  
-  render() {
-    return null;
-  }
 }
