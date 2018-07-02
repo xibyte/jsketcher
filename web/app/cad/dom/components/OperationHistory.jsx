@@ -49,7 +49,8 @@ export default decoratorChain(
   mapContext(({streams, services}) => ({
     remove: atIndex => streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, atIndex)),
     cancel: () => streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
-    operationRegistry: services.operation.registry
+    operationRegistry: services.operation.registry,
+    setHistoryPointer: pointer => streams.craft.modifications.update(({history}) => ({history, pointer}))
   }))
 )(OperationHistory);
 

@@ -1,15 +1,16 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {attachToForm} from './Form';
 import Stack from 'ui/components/Stack';
 import {FormContext} from '../form/Form';
 import mapContext from 'ui/mapContext';
+import PropTypes from 'prop-types';
+import initializeBySchema from '../../../intializeBySchema';
 
 @attachToForm
 @mapContext(({streams}) => ({streams}))
-class MultiEntityImpl extends React.Component {
+export default class MultiEntity extends React.Component {
 
-  constructor({entity, itemName, initValue}, ) {
+  constructor({initValue}) {
     super();
     this.state = {
       value: initValue
@@ -17,9 +18,14 @@ class MultiEntityImpl extends React.Component {
   }
 
   selectionChanged = selection => {
+    let {itemField, schema, context} = this.props;
     let value = selection.map(id => {
-      let item = this.state.value.find(i => i[this.props.itemName] === id);
-      return item || {[this.props.itemName]: id};
+      let item = this.state.value.find(i => i[itemField] === id);
+      if (!item) {
+        item = initializeBySchema(schema, context);
+        item[itemField] = id;
+      }
+      return item;
     });
     this.setState({value});
     this.props.onChange(value);
@@ -38,14 +44,15 @@ class MultiEntityImpl extends React.Component {
 
     return <FormContext.Consumer>
       {
-        ({onChange}) => this.state.value.map((data, i) => {
+        ({onChange}) => this.state.value.map(data => {
           let subContext = {
             data,
             onChange
           };
-          let entityId = data[this.props.itemName];
+          let {itemField} = this.props;
+          let entityId = data[itemField];
           return <Stack key={entityId}>
-            <div>{this.props.itemName}: {entityId}</div>
+            <div>{itemField}: {entityId}</div>
             <FormContext.Provider value={subContext}>
               {this.props.children}
             </FormContext.Provider>
@@ -56,13 +63,8 @@ class MultiEntityImpl extends React.Component {
   }
 }
 
-export default function MultiEntity(props, {streams}) {
-  let defaultValue = streams.selection[props.entity].value.map(id => ({
-    [props.itemName]: id
-  }));
-  return <MultiEntityImpl defaultValue={defaultValue} {...props}/>
-}
-
-MultiEntity.contextTypes = {
-  streams: PropTypes.object
+MultiEntity.propTypes = {
+  itemField: PropTypes.string.isRequired,
+  entity: PropTypes.string.isRequired,
+  schema: PropTypes.object.isRequired
 };

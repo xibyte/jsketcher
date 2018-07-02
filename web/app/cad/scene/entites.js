@@ -10,5 +10,7 @@ export const EDGE = MEdge.TYPE;
 export const VERTEX = MVertex.TYPE;
 export const SKETCH_OBJECT = MSketchObject.TYPE;
 
+
+export const ENTITIES = [SHELL, FACE, EDGE, VERTEX, SKETCH_OBJECT];
 export const PART_MODELING_ENTITIES = [SHELL, FACE, EDGE, VERTEX, SKETCH_OBJECT];
 export const ASSEMBLY_ENTITIES = [SHELL, FACE, EDGE, VERTEX];

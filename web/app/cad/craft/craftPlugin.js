@@ -4,13 +4,11 @@ import {MShell} from '../model/mshell';
 
 export function activate({streams, services}) {
 
-  let initialState = {
-    history: [],
-    pointer: -1
-  };
-
   streams.craft = {
-    modifications: state(initialState),
+    modifications: state({
+      history: [],
+      pointer: -1
+    }),
     models: state([]),
     update: stream()
   };
@@ -30,20 +28,18 @@ export function activate({streams, services}) {
     modify, reset
   };
 
-  streams.craft.modifications.pairwise(initialState).attach(([prev, curr]) => {
+  streams.craft.modifications.pairwise().attach(([prev, curr]) => {
     let models;
     let beginIndex;
     if (isAdditiveChange(prev, curr)) {
       beginIndex = prev.pointer + 1;
-      models = new Set(streams.craft.models.value);
     } else {
       MShell.ID_COUNTER = 0;
       beginIndex = 0;
-      models = new Set()
+      streams.craft.models.next([]);
     }
-    if (prev === curr) {
-      return Array.from(models);
-    }
+    
+    models = new Set(streams.craft.models.value);
     let {history, pointer} = curr;
     for (let i = beginIndex; i <= pointer; i++) {
       let request = history[i];

@@ -23,3 +23,11 @@ export default function camelCaseSplit(str) {
   }
   return words;
 }
+
+export function camelCaseSplitToStr(str) {
+  let words = camelCaseSplit(str);
+  if (words.length !== 0) {
+    return words.map(w => w.toLowerCase()).join(' ');
+  }
+  return str;
+}
