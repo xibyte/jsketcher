@@ -8,9 +8,8 @@ export function activate({streams}) {
       right: state([])
     },
     toolbars: {
-      left: state([]),
-      leftSecondary: state([]),
-      right: state([])
+      headsUp: state([]),
+      auxiliary: state([])
     }
   };
 
