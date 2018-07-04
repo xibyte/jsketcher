@@ -3,7 +3,10 @@ import PlugableControlBar from './PlugableControlBar';
 
 import ls from './View3d.less';
 import Abs from 'ui/components/Abs';
-import {PlugableToolbarLeft, PlugableToolbarLeftSecondary, PlugableToolbarRight} from './PlugableToolbar';
+import {
+  AuxiliaryToolbar, HeadsUpToolbar, PlugableToolbarLeft, PlugableToolbarLeftSecondary,
+  PlugableToolbarRight
+} from './PlugableToolbar';
 import UISystem from './UISystem';
 import WizardManager from '../../craft/wizard/components/WizardManager';
 import PartPanel from './PartPanel';
@@ -22,12 +25,11 @@ export default class View3d extends React.Component {
         <PartPanel />
       </div>
       <div className={ls.viewer} id='viewer-container'>
-        <Abs left='0.8em' top='0.8em' className={ls.leftToolbarGroup}>
-          <PlugableToolbarLeft />
-          <PlugableToolbarLeftSecondary />
+        <Abs left='0.8em' top='0.8em'>
+          <HeadsUpToolbar />
         </Abs>
         <Abs right='0.8em' top='0.8em'>
-          <PlugableToolbarRight />
+          <AuxiliaryToolbar small vertical/>
         </Abs>
         <PlugableControlBar />
         <WizardManager />
