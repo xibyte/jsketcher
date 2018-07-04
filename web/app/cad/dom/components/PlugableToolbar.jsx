@@ -12,7 +12,7 @@ import mapContext from '../../../../../modules/ui/mapContext';
 
 function ConfigurableToolbar({actions, small, ...props}) {
 
-  return <Toolbar small={small}>
+  return <Toolbar small={small} {...props}>
     {actions.map(actionRef => {
       let [id, overrides] = toIdAndOverrides(actionRef);
       return <ConnectedActionButton actionId={id} key={id} small={small} {...overrides} />
@@ -39,14 +39,13 @@ const ConnectedActionButton = decoratorChain(
 )
 (ActionButton);
 
-export function createPlugableToolbar(streamSelector, small) {
+export function createPlugableToolbar(streamSelector) {
   return decoratorChain(
     connect(streams => streamSelector(streams).map(actions => ({actions}))),
     mapContext(mapActionBehavior(props => props.actionId))
   )
-  (props => <ConfigurableToolbar {...props} small={small} />);
+  (props => <ConfigurableToolbar {...props} />);
 }
 
-export const PlugableToolbarLeft = createPlugableToolbar(streams => streams.ui.toolbars.left);
-export const PlugableToolbarLeftSecondary = createPlugableToolbar(streams => streams.ui.toolbars.leftSecondary);
-export const PlugableToolbarRight = createPlugableToolbar(streams => streams.ui.toolbars.right, true);
+export const HeadsUpToolbar = createPlugableToolbar(streams => streams.ui.toolbars.headsUp);
+export const AuxiliaryToolbar = createPlugableToolbar(streams => streams.ui.toolbars.auxiliary);
