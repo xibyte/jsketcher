@@ -13,6 +13,7 @@ import * as OperationPlugin from '../craft/operationPlugin';
 import * as CraftEnginesPlugin from '../craft/enginesPlugin';
 import * as CadRegistryPlugin from '../craft/cadRegistryPlugin';
 import * as CraftPlugin from '../craft/craftPlugin';
+import * as CraftUiPlugin from '../craft/craftUiPlugin';
 import * as StoragePlugin from '../storagePlugin';
 import * as ProjectPlugin from '../projectPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
@@ -42,6 +43,7 @@ export default function startApplication(callback) {
     CraftEnginesPlugin,
     OperationPlugin,
     CraftPlugin,
+    CraftUiPlugin,
     CadRegistryPlugin,
     tpiPlugin
   ];

@@ -1,28 +1,33 @@
+import {state} from 'lstream';
 
 export function activate(context) {
   let {services} = context;
 
-  let registry = {};
-
+  context.streams.operation = {
+    registry: state({})
+  };
+  
+  let registry$ = context.streams.operation.registry;
+  
   function addOperation(descriptor, actions) {
     let {id, label, info, icon, actionParams} = descriptor;
-
-    let opAction = {
-      id: id,
-      appearance: {
-        label,
+    let appearance = {
+      label,
         info,
         icon32: icon + '32.png',
         icon96: icon + '96.png',
-      },
+    };
+    let opAction = {
+      id: id,
+      appearance,
       invoke: () => services.wizard.open({type: id}),
       ...actionParams
     };
     actions.push(opAction);
 
-    registry[id] = Object.assign({}, descriptor, {
+    registry$.mutate(registry => registry[id] = Object.assign({appearance}, descriptor, {
       run: (request, services) => runOperation(request, descriptor, services)
-    });
+    }));
   }
 
   function registerOperations(operations) {
@@ -34,7 +39,7 @@ export function activate(context) {
   }
 
   function get(id) {
-    let op = registry[id];
+    let op = registry$.value[id];
     if (!op) {
       throw `operation ${id} is not registered`;
     }
@@ -43,7 +48,6 @@ export function activate(context) {
 
   services.operation = {
     registerOperations,
-    registry,
     get
   };
 }

@@ -11,7 +11,7 @@ export function activate({services, streams}) {
     ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}]
   ];
 
-  streams.ui.toolbars.headsUp.value = ['PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', 'INTERSECTION', 'DIFFERENCE', 'UNION'];
+  streams.ui.toolbars.headsUp.value = ['PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', 'FILLET', 'INTERSECTION', 'DIFFERENCE', 'UNION'];
   streams.ui.toolbars.auxiliary.value = ['Save', 'StlExport'];
   
   services.action.registerActions(CoreActions);

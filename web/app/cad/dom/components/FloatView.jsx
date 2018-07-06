@@ -1,10 +1,10 @@
 import React, {Fragment} from 'react';
-import ObjectExplorer from './ObjectExplorer';
-import OperationHistory from './OperationHistory';
+import ObjectExplorer from '../../craft/ui/ObjectExplorer';
+import OperationHistory from '../../craft/ui/OperationHistory';
 import Folder from 'ui/components/Folder';
 import Fa from '../../../../../modules/ui/components/Fa';
 
-export default function PartPanel() {
+export default function FloatView() {
   return <Fragment>
     <Folder title={<span> <Fa fw icon='cubes' /> Model</span>}>
       <ObjectExplorer/>

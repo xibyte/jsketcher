@@ -44,7 +44,7 @@ export function activate({streams, services}) {
     for (let i = beginIndex; i <= pointer; i++) {
       let request = history[i];
 
-      let op = services.operation.registry[request.type];
+      let op = services.operation.get(request.type);
       if (!op) {
         console.log(`unknown operation ${request.type}`);
       }

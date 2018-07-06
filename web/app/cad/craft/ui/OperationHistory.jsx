@@ -7,17 +7,18 @@ import ls from './OperationHistory.less';
 import cx from 'classnames';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
 import Button from 'ui/components/controls/Button';
-import {finishHistoryEditing, removeAndDropDependants} from '../../craft/craftHistoryUtils';
+import {finishHistoryEditing, removeAndDropDependants} from '../craftHistoryUtils';
 import mapContext from 'ui/mapContext';
 import decoratorChain from 'ui/decoratorChain';
+import {EMPTY_OBJECT} from '../../../../../modules/gems/objects';
 
-function OperationHistory({history, pointer, setHistoryPointer, remove, operationRegistry}) {
+function OperationHistory({history, pointer, setHistoryPointer, remove, getOperation}) {
   let lastMod = history.length - 1;
   return <Stack>
 
     {history.map(({type, params}, index) => {
 
-      let {appearance, paramsInfo} = getDescriptor(type, operationRegistry);
+      let {appearance, paramsInfo} = getOperation(type)||EMPTY_OBJECT;
       return <div key={index} onClick={() => setHistoryPointer(index - 1)} 
                   className={cx(ls.item, pointer + 1 === index && ls.selected)}>
         {appearance && <ImgIcon url={appearance.icon32} size={16}/>}
@@ -35,21 +36,12 @@ function OperationHistory({history, pointer, setHistoryPointer, remove, operatio
   </Stack>;
 }
 
-const EMPTY_DESCRIPTOR = {};
-function getDescriptor(type, registry) {
-  let descriptor = registry[type];
-  if (!descriptor) {
-    descriptor = EMPTY_DESCRIPTOR;
-  }
-  return descriptor;
-}
-
 export default decoratorChain(
   connect(streams => streams.craft.modifications),
   mapContext(({streams, services}) => ({
     remove: atIndex => streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, atIndex)),
     cancel: () => streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
-    operationRegistry: services.operation.registry,
+    getOperation: services.operation.get,
     setHistoryPointer: pointer => streams.craft.modifications.update(({history}) => ({history, pointer}))
   }))
 )(OperationHistory);

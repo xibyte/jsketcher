@@ -11,31 +11,32 @@ import initializeBySchema from '../../intializeBySchema';
 import validateParams from '../../validateParams';
 
 class WizardManager extends React.Component {
-  
-  render() {
-    let {wizards, close} = this.props;
-    return <React.Fragment>
-      {wizards.map((wizardRef, wizardIndex) => {
-        let {type} = wizardRef;
-        let operation = this.props.getOperation(type);
-        if (!operation) {
-          throw 'unknown operation ' + type;
-        }
 
-        let params = this.props.initializeOperation(operation);
-        let validator = this.props.createValidator(operation);
-        const closeInstance = () => close(wizardRef);
-        return <Wizard key={wizardIndex}
-                       type={type}
-                       createPreviewer={this.props.previewerCreator(operation)}
-                       form={operation.form}
-                       params={params}
-                       validate={validator}
-                       close={closeInstance}
-                       left={offset(wizardIndex)} />
-      })}
-      <HistoryWizard offset={offset(wizards.length)}
-                     createValidator={this.props.createValidator}
+  render() {
+    let {wizard, close} = this.props;
+    if (!wizard) {
+      return null;
+    }
+
+    let {type} = wizard;
+    let operation = this.props.getOperation(type);
+    if (!operation) {
+      throw 'unknown operation ' + type;
+    }
+
+    let params = this.props.initializeOperation(operation);
+    let validator = this.props.createValidator(operation);
+    const closeInstance = () => close(wizard);
+    return <React.Fragment>
+
+      <Wizard type={type}
+              createPreviewer={this.props.previewerCreator(operation)}
+              form={operation.form}
+              params={params}
+              validate={validator}
+              close={closeInstance}/>
+
+      <HistoryWizard createValidator={this.props.createValidator}
                      getOperation={this.props.getOperation}
                      previewerCreator={this.props.previewerCreator}/>
     </React.Fragment>;
@@ -43,15 +44,15 @@ class WizardManager extends React.Component {
 }
 
 function offset(wizardIndex) {
-  return 70 + (wizardIndex * (250 + 20)); 
+  return 70 + (wizardIndex * (250 + 20));
 }
 
 export default decoratorChain(
-  connect(streams => streams.wizards.map(wizards => ({wizards}))),
+  connect(streams => streams.wizard.map(wizard => ({wizard}))),
   mapContext(ctx => ({
-    close: wizard => ctx.services.wizard.close(wizard),
+    close: () => ctx.services.wizard.close(),
     reset: () => {
-      ctx.streams.wizards.value = [];
+      ctx.streams.wizard.value = null;
       ctx.streams.craft.modifications.update(modifications => finishHistoryEditing(modifications));
     },
     getOperation: type => ctx.services.operation.get(type),

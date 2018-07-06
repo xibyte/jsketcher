@@ -5,7 +5,6 @@ import {finishHistoryEditing, stepOverridingParams} from '../../craftHistoryUtil
 import {NOOP} from 'gems/func';
 import decoratorChain from 'ui/decoratorChain';
 import mapContext from 'ui/mapContext';
-import {createPreviewer} from '../../../preview/scenePreviewer';
 
 function HistoryWizard({history, pointer, step, cancel, offset, getOperation, previewerCreator, createValidator}) {
   if (pointer === history.length - 1) {
