@@ -1,5 +1,5 @@
 @import "./flatEdges.less";
-@border-radius: 3px;
+@border-radius: 5px;
 
 .root {
   color: #fff;
@@ -12,7 +12,7 @@
   ._flatBottom(@border-radius);
 }
 
-.flatTop {
+.flatTop {  
   ._flatTop(@border-radius);
 }
 
@@ -24,3 +24,27 @@
   ._flatLeft(@border-radius);
 }
 
+//IMPL
+
+.root {
+  padding: 5px 5px 10px 15px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 16px;
+}
+
+.headerButtons {
+  font-size: 20px;
+  margin-left: 10px;
+}
+
+.content {
+  padding-top: 5px;
+}

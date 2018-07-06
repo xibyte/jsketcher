@@ -4,7 +4,7 @@ import {EDGE, FACE, SKETCH_OBJECT} from '../scene/entites';
 export function activate({streams, services}) {
 
   streams.cadRegistry = {
-    shellIndex: streams.craft.models.map(models => models.reduce((i, v)=> i.set(v.id, v), new Map())).keep() 
+    shellIndex: streams.craft.models.map(models => models.reduce((i, v)=> i.set(v.id, v), new Map())).remember() 
   };
 
   streams.cadRegistry.update = streams.cadRegistry.shellIndex;

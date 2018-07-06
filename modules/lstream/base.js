@@ -13,8 +13,12 @@ export class StreamBase {
   pairwise(first) {
     return new PairwiseStream(this, first);
   }
+
+  scan(initAccumulator) {
+    return new ScanStream(this, initAccumulator);
+  }
   
-  keep() {
+  remember() {
     let stateStream = new StateStream(undefined);
     this.attach(v => stateStream.next(v));
     return stateStream;
@@ -25,4 +29,4 @@ const {MapStream} = require('./map');
 const {FilterStream} = require('./filter');
 const {StateStream} = require('./state');
 const {PairwiseStream} = require('./pairwise');
-
+const {ScanStream} = require('./scan');
