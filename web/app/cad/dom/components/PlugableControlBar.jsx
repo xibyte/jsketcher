@@ -7,6 +7,7 @@ import {isMenuAction} from '../menu/menuPlugin';
 import {combine, merger} from 'lstream';
 import mapContext from 'ui/mapContext';
 import decoratorChain from '../../../../../modules/ui/decoratorChain';
+import {menuAboveElementHint} from '../menu/menuUtils';
 
 export default function PlugableControlBar() {
   return <ControlBar left={<LeftGroup />} right={<RightGroup />}/>;
@@ -28,7 +29,7 @@ class ActionButton extends React.Component {
     }
     if (isMenuAction(actionId)) {
       let onClick = props.onClick;
-      props.onClick = e => onClick(getMenuData(this.el));
+      props.onClick = e => onClick(menuAboveElementHint(this.el));
     }
     
     return <ControlBarButton disabled={!enabled} onElement={el => this.el = el} {...props} >
@@ -53,12 +54,3 @@ const ConnectedActionButton = decoratorChain(
 )
 (ActionButton);
 
-function getMenuData(el) {
-  //TODO: make more generic
-  return {
-    orientationUp: true,
-    flatBottom: true,
-    x: el.offsetParent.offsetParent.offsetLeft + el.offsetLeft,
-    y: el.offsetParent.offsetHeight - el.offsetTop
-  };
-}

@@ -2,7 +2,7 @@ import {state} from '../../../../../modules/lstream';
 
 export function activate({streams, services}) {
 
-  streams.wizards = state([]); 
+  streams.wizard = state(null); 
   
   services.wizard = {
     
@@ -12,11 +12,11 @@ export function activate({streams, services}) {
         type
       };
 
-      streams.wizards.update(opened => [...opened, wizard]);
+      streams.wizard.value = wizard;
     },
     
     close: wizard => {
-      streams.wizards.update(opened => opened.filter(w => w !== wizard));
+      streams.wizard = null;
     }
   }
 } 

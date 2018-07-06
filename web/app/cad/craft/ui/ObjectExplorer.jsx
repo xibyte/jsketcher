@@ -1,7 +1,6 @@
 import React from 'react';
 import connect from '../../../../../modules/ui/connect';
 import {Section} from '../../../../../modules/ui/components/Section';
-import {MShell} from '../../model/mshell';
 
 export default connect(streams => streams.craft.models.map(models => ({models})))
 (function ObjectExplorer({models}) {

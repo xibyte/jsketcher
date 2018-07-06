@@ -1,0 +1,30 @@
+@import '../../styles/theme.less';
+
+.symbolButton {
+  &:active {
+    transition: 100ms;
+  }
+  cursor: pointer;
+}
+
+.neutral {
+  .symbolButton;
+  color: #fff;
+  &:hover {
+    color: #EFEFEF;
+  }
+  &:active {
+    color: #9cdaf7;
+  }
+}
+
+.danger {
+  .symbolButton;
+  color: #fff;
+  &:hover {
+    color: @color-danger;
+  }
+  &:active {
+    color: lighten(@color-danger, 20%);
+  }
+}
