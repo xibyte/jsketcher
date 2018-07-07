@@ -15,8 +15,8 @@ export function activate({streams, services}) {
       streams.wizard.value = wizard;
     },
     
-    close: wizard => {
-      streams.wizard = null;
+    close: () => {
+      streams.wizard.value = null;
     }
   }
 } 

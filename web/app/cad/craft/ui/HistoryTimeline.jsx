@@ -5,36 +5,48 @@ import decoratorChain from '../../../../../modules/ui/decoratorChain';
 import {finishHistoryEditing, removeAndDropDependants} from '../craftHistoryUtils';
 import mapContext from '../../../../../modules/ui/mapContext';
 import ImgIcon from 'ui/components/ImgIcon';
-import {getDescriptor} from './OperationHistory';
 import cx from 'classnames';
 import Fa from '../../../../../modules/ui/components/Fa';
 import {menuAboveElementHint} from '../../dom/menu/menuUtils';
 import {combine} from 'lstream';
 import {EMPTY_OBJECT} from '../../../../../modules/gems/objects';
-import {VIEWER_SELECTOR} from '../../dom/components/View3d';
 import {aboveElement} from '../../../../../modules/ui/positionUtils';
 
-
-
-class HistoryTimeline extends React.Component {
+@connect(streams => combine(streams.craft.modifications, streams.operation.registry, streams.wizard)
+  .map(([modifications, operationRegistry, wizard]) => ({
+    ...modifications,
+    operationRegistry,
+    inProgressOperation: wizard&&wizard.type,
+    getOperation: type => operationRegistry[type]||EMPTY_OBJECT
+  })))
+@mapContext(({streams}) => ({
+  remove: atIndex => streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, atIndex)),
+  cancel: () => streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
+  setHistoryPointer: pointer => streams.craft.modifications.update(({history}) => ({history, pointer}))
+}))
+export default class HistoryTimeline extends React.Component {
 
   render() {
-    let {history, pointer, setHistoryPointer, remove, getOperation} = this.props;
+    let {history, pointer, setHistoryPointer, remove, getOperation, inProgressOperation} = this.props;
     let scrolly;
+    let eof = history.length-1;
     return <div className={ls.root} ref={this.keepRef}>
-      <Controls pointer={pointer} eoh={history.length-1} setHistoryPointer={this.setHistoryPointerAndRequestScroll}/>
+      <Controls pointer={pointer} eoh={eof} setHistoryPointer={this.setHistoryPointerAndRequestScroll}/>
       <div className={ls.scroller} onClick={e => scrolly.scrollLeft -= 60}><Fa icon='caret-left'/></div>
       <div className={ls.history} ref={el => scrolly = el}>
         {history.map((m, i) => <React.Fragment key={i}>
           <Timesplitter active={i-1 === pointer} onClick={() => setHistoryPointer(i-1)} />
+          {
+            inProgressOperation && i-1 === pointer && <FutureItem appearance={getOperation(inProgressOperation).appearance}/>      
+          }
           <HistoryItem index={i} modification={m} getOperation={getOperation}
                        disabled={pointer < i}
-                       inProgress={pointer === i-1} />
+                       inProgress={!inProgressOperation && pointer === i-1} />
         </React.Fragment>)}
-        <Timesplitter eoh active={history.length-1 === pointer} onClick={() => setHistoryPointer(history.length-1)}/>
+        <Timesplitter eoh active={eof === pointer} onClick={() => setHistoryPointer(eof)}/>
+        {inProgressOperation && eof === pointer && <FutureItem appearance={getOperation(inProgressOperation).appearance}/>}
       </div>
       <div className={ls.scroller} onClick={e => scrolly.scrollLeft += 60}><Fa icon='caret-right'/></div>
-      <InProgressOperation getOperation={getOperation}/>
       <AddButton />
     </div>;
   }
@@ -51,9 +63,9 @@ class HistoryTimeline extends React.Component {
   componentDidUpdate() {
     // this.scrollInProgressToVisibleRequest = false;
     setTimeout(() => {
-      let item = this.el.querySelector(`.${ls.historyItem}.${ls.inProgress}`);
+      let item = this.el.querySelector(`.${ls.history} .${ls.inProgress}`);
       if (item) {
-        item.scrollIntoView({behavior: "smooth", inline: "center"});
+        item.scrollIntoView({behavior: "smooth", inline: "center",  block: "end"});
       } else {
         let history = this.el.querySelector(`.${ls.history}`);
         history.scrollLeft = history.scrollWidth; 
@@ -62,18 +74,13 @@ class HistoryTimeline extends React.Component {
   }
 }
 
-const InProgressOperation = connect(streams => streams.wizard.map(wizard => ({wizard})))(
-  function InProgressOperation({wizard, getOperation}) {
-    if (!wizard) {
-      return null;
-    }
-    let {appearance} = getOperation(wizard.type);
-    return <div className={ls.inProgressItem}>
-      <ImgIcon url={appearance&&appearance.icon96} size={24} />
-    </div>;
 
-  }
-);
+function FutureItem({appearance}) {
+  return <div className={cx(ls.futureItem, ls.inProgress)}>
+    <ImgIcon url={appearance&&appearance.icon96} size={24} />
+  </div>;
+
+}
 
 function Timesplitter({active, eoh, onClick}) {
   
@@ -139,21 +146,6 @@ const AddButton = mapContext(({services}) => ({
     </div>;
   }
 );
-
-
-export default decoratorChain(
-  connect(streams => combine(streams.craft.modifications, streams.operation.registry)
-    .map(([modifications, operationRegistry]) => ({
-      ...modifications,
-      operationRegistry,
-      getOperation: type => operationRegistry[type]||EMPTY_OBJECT 
-    }))),
-  mapContext(({streams}) => ({
-    remove: atIndex => streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, atIndex)),
-    cancel: () => streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
-    setHistoryPointer: pointer => streams.craft.modifications.update(({history}) => ({history, pointer}))
-  }))
-)(HistoryTimeline);
 
 
  
