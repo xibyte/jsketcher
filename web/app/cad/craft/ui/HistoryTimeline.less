@@ -3,8 +3,9 @@
 .root {
   background-color: rgba(0, 0, 0, 0.1);
   display: flex;
-  align-items: stretch;
-  height: 34px;
+
+  align-items: flex-end;
+  height: 48px;
   //&:hover .timesplitter .handlePoly {
   //  visibility: visible;
   //}
@@ -14,11 +15,35 @@
   width: 4px;
   height: 100%;
   cursor: pointer;
+  align-items: flex-end;
   .handle {
-    margin-top: -15px;
+    //margin-top: -15px;
     margin-left: -4px;
     font-size: 20px;
   }
+}
+
+.history {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  overflow-x: hidden;
+  padding: 0 5px;
+}
+.scroller {
+  padding: 0 5px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  &:hover {
+    background-color: #BFBFBF;
+  }
+  &:active {
+    background-color: #7e7e7e;
+    transition: 100ms;
+  }
+  
 }
 
 .timesplitter.active:not(.eoh) {
@@ -50,6 +75,8 @@
 //ITEMS
 
 .item {
+  height: 30px;
+  flex-shrink: 0;
   margin: 2px 0;
   padding: 2px;
   border: #2e2e2e 1px solid;
