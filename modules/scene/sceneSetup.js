@@ -55,12 +55,8 @@ export default class SceneSetUp {
     this.renderer.setClearColor(0x808080, 1);
     this.renderer.setSize( this.container.clientWidth,  this.container.clientHeight );
     this.container.appendChild( this.renderer.domElement );
-
-    window.addEventListener( 'resize', () => {
-      this.updateViewportSize();
-    }, false );
   }
-
+  
   updateViewportSize() {
     if (this.container.clientWidth > 0 && this.container.clientHeight > 0) {
       this.updatePerspectiveCameraViewport();
@@ -69,7 +65,16 @@ export default class SceneSetUp {
       this.render();
     }
   }
-  
+
+  updateViewportSizeIfNeeded() {
+    if (this._prevContainerWidth !== this.container.clientWidth || 
+        this._prevContainerHeight !== this.container.clientHeight) {
+      this.updateViewportSize();
+      this._prevContainerWidth = this.container.clientWidth;
+      this._prevContainerHeight = this.container.clientHeight;
+    }
+  }
+
   updatePerspectiveCameraViewport() {
     this.pCamera.aspect = this.aspect();
     this.pCamera.updateProjectionMatrix();
@@ -184,6 +189,7 @@ export default class SceneSetUp {
   animate() {
     requestAnimationFrame( () => this.animate() );
     this.updateControlsAndHelpers();
+    this.updateViewportSizeIfNeeded();
   };
 
   render() {
