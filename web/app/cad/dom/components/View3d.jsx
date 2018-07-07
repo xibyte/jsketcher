@@ -21,7 +21,8 @@ export default class View3d extends React.Component {
   render() {
     return <UISystem className={ls.root}>
       <FloatView />
-      <div className={ls.viewer} id='viewer-container'>
+      <div className={ls.viewer} >
+        <div id='viewer-container' />
         <Abs left='0.8em' top='0.8em'>
           <HeadsUpToolbar/>
         </Abs>
