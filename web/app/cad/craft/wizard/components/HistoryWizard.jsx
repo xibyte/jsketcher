@@ -7,8 +7,8 @@ import decoratorChain from 'ui/decoratorChain';
 import mapContext from 'ui/mapContext';
 
 function HistoryWizard({history, pointer, step, cancel, offset, getOperation, previewerCreator, createValidator}) {
+  return null;
   if (pointer === history.length - 1) {
-    return null;
   }
 
   let {type, params} = history[pointer + 1];
