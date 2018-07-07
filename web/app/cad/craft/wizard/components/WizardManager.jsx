@@ -9,57 +9,50 @@ import {createPreviewer} from '../../../preview/scenePreviewer';
 import errorBoundary from 'ui/errorBoundary';
 import initializeBySchema from '../../intializeBySchema';
 import validateParams from '../../validateParams';
+import {combine} from 'lstream';
 
 class WizardManager extends React.Component {
 
   render() {
-    let {wizard, close} = this.props;
-    if (!wizard) {
-      return null;
-    }
+    
+    
+    let {insertOperation, registry, close} = this.props;
 
-    let {type} = wizard;
-    let operation = this.props.getOperation(type);
-    if (!operation) {
-      throw 'unknown operation ' + type;
-    }
+    if (insertOperation) {
+      let operation = registry[insertOperation];
+      if (!operation) {
+        throw 'unknown operation ' + type;
+      }
 
-    let params = this.props.initializeOperation(operation);
-    let validator = this.props.createValidator(operation);
-    const closeInstance = () => close(wizard);
-    return <React.Fragment>
-
-      <Wizard type={type}
+      let params = this.props.initializeOperation(operation);
+      let validator = this.props.createValidator(operation);
+      let closeInstance = close;
+      return <Wizard type={insertOperation}
               createPreviewer={this.props.previewerCreator(operation)}
               form={operation.form}
               params={params}
               validate={validator}
               close={closeInstance}/>
-
-      <HistoryWizard createValidator={this.props.createValidator}
-                     getOperation={this.props.getOperation}
-                     previewerCreator={this.props.previewerCreator}/>
-    </React.Fragment>;
+      
+    } else {
+      return <HistoryWizard createValidator={this.props.createValidator}
+                            getOperation={this.props.getOperation}
+                            previewerCreator={this.props.previewerCreator}/>;
+    }
   }
 }
 
-function offset(wizardIndex) {
-  return 70 + (wizardIndex * (250 + 20));
-}
-
 export default decoratorChain(
-  connect(streams => streams.wizard.map(wizard => ({wizard}))),
+  connect(streams => combine(
+    streams.wizard,
+    streams.craft.modifications,
+    streams.operation.registry,
+  ).map(([w, {pointer}, registry]) => ({insertOperation: w&&w.type, pointer, registry}))),
   mapContext(ctx => ({
-    close: () => ctx.services.wizard.close(),
-    reset: () => {
-      ctx.streams.wizard.value = null;
-      ctx.streams.craft.modifications.update(modifications => finishHistoryEditing(modifications));
-    },
-    getOperation: type => ctx.services.operation.get(type),
+    close: ctx.services.wizard.close,
     initializeOperation: operation => initializeBySchema(operation.schema, ctx),
     previewerCreator: operation => () => createPreviewer(operation.previewGeomProvider, ctx.services),
     createValidator: operatation => params => validateParams(ctx.services, params, operatation.schema)
-  })),
-  errorBoundary(({reset}) => reset())
+  }))
 )
 (WizardManager);
