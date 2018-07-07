@@ -5,7 +5,6 @@ import decoratorChain from '../../../../../modules/ui/decoratorChain';
 import {combine, merger} from '../../../../../modules/lstream';
 import ls from './SelectedModificationInfo.less';
 import ImgIcon from 'ui/components/ImgIcon';
-import YAML from 'yamljs';
 import mapContext from 'ui/mapContext';
 import {EMPTY_OBJECT} from '../../../../../modules/gems/objects';
 import ButtonGroup from '../../../../../modules/ui/components/controls/ButtonGroup';
