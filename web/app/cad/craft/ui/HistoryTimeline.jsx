@@ -14,19 +14,52 @@ import {EMPTY_OBJECT} from '../../../../../modules/gems/objects';
 import {VIEWER_SELECTOR} from '../../dom/components/View3d';
 import {aboveElement} from '../../../../../modules/ui/positionUtils';
 
-function HistoryTimeline({history, pointer, setHistoryPointer, remove, getOperation}) {
-  return <div className={ls.root}>
-    <Controls pointer={pointer} eoh={history.length-1} setHistoryPointer={setHistoryPointer}/>
-    {history.map((m, i) => <React.Fragment key={i}>
-      <Timesplitter active={i-1 === pointer} onClick={() => setHistoryPointer(i-1)} />  
-      <HistoryItem index={i} modification={m} getOperation={getOperation} 
-                   disabled={pointer < i}
-                   inProgress={pointer === i-1} />
-    </React.Fragment>)}
-    <Timesplitter eoh active={history.length-1 === pointer} onClick={() => setHistoryPointer(history.length-1)}/>
-    <InProgressOperation getOperation={getOperation}/>
-    <AddButton />
-  </div>;  
+
+
+class HistoryTimeline extends React.Component {
+
+  render() {
+    let {history, pointer, setHistoryPointer, remove, getOperation} = this.props;
+    let scrolly;
+    return <div className={ls.root} ref={this.keepRef}>
+      <Controls pointer={pointer} eoh={history.length-1} setHistoryPointer={this.setHistoryPointerAndRequestScroll}/>
+      <div className={ls.scroller} onClick={e => scrolly.scrollLeft -= 60}><Fa icon='caret-left'/></div>
+      <div className={ls.history} ref={el => scrolly = el}>
+        {history.map((m, i) => <React.Fragment key={i}>
+          <Timesplitter active={i-1 === pointer} onClick={() => setHistoryPointer(i-1)} />
+          <HistoryItem index={i} modification={m} getOperation={getOperation}
+                       disabled={pointer < i}
+                       inProgress={pointer === i-1} />
+        </React.Fragment>)}
+        <Timesplitter eoh active={history.length-1 === pointer} onClick={() => setHistoryPointer(history.length-1)}/>
+      </div>
+      <div className={ls.scroller} onClick={e => scrolly.scrollLeft += 60}><Fa icon='caret-right'/></div>
+      <InProgressOperation getOperation={getOperation}/>
+      <AddButton />
+    </div>;
+  }
+  
+  // scrollInProgressToVisibleRequest = false;
+
+  setHistoryPointerAndRequestScroll = (pointer) => {
+    // this.scrollInProgressToVisibleRequest = true;
+    this.props.setHistoryPointer(pointer);
+  };
+
+  keepRef = el => this.el = el;
+
+  componentDidUpdate() {
+    // this.scrollInProgressToVisibleRequest = false;
+    setTimeout(() => {
+      let item = this.el.querySelector(`.${ls.historyItem}.${ls.inProgress}`);
+      if (item) {
+        item.scrollIntoView({behavior: "smooth", inline: "center"});
+      } else {
+        let history = this.el.querySelector(`.${ls.history}`);
+        history.scrollLeft = history.scrollWidth; 
+      }
+    })
+  }
 }
 
 const InProgressOperation = connect(streams => streams.wizard.map(wizard => ({wizard})))(
