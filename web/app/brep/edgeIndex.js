@@ -44,7 +44,13 @@ export default class EdgeIndex {
   getHalfEdgeOrCreate(a, b, curveCreate, invertedToCurve, tag) {
     let he = this.getHalfEdge(a, b, tag);
     if (he === null) {
-      let curve = curveCreate ? curveCreate() : BrepCurve.createLinearCurve(a.point, b.point); 
+      let curve;
+      if (curveCreate) {
+        curve = curveCreate();
+      }
+      if (!curve) {
+        curve = BrepCurve.createLinearCurve(a.point, b.point);
+      }
       const e = new Edge(curve, invertedToCurve?b:a, invertedToCurve?a:b);
       he = invertedToCurve ? e.halfEdge2 : e.halfEdge1;
       this.addEdge(e, tag);

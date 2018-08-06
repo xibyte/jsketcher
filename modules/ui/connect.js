@@ -5,19 +5,15 @@ export default function connect(streamProvider) {
   return function (Component) {
     return class Connected extends React.Component {
       
-      state = {hasError: false};
+      state = {hasError: false, streamProps: {}};
       
-      streamProps = {};
-
       componentWillMount() {
         let stream = streamProvider(context.streams, this.props);
         this.detacher = stream.attach(data =>  {
-          this.streamProps = data;
-          if (this.state.hasError) {
-            this.setState({hasError: false});
-            return;
-          }
-          this.forceUpdate();
+          this.setState({
+            hasError: false,
+            streamProps: this.state.streamProps === data ? {...data} : data,
+          });
         });
       }
 
@@ -29,8 +25,7 @@ export default function connect(streamProvider) {
         if (this.state.hasError) {
           return null;
         }
-        
-        return <Component {...this.streamProps}
+        return <Component {...this.state.streamProps}
                           {...this.props} />;
 
       }

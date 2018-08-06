@@ -6,24 +6,24 @@ export const TabContext = React.createContext(0);
 
 export class Section extends React.PureComponent {
 
-  constructor({defaultClosed}) {
+  constructor({defaultOpen}) {
     super();
     this.state = {
-      closed: defaultClosed
-    }
+      closed: !defaultOpen
+    };
   }
 
   render() {
-    let {label, closable, children} = this.props;
+    let {label, nonClosable, children} = this.props;
     let closed = this.isClosed();
     return <TabContext.Consumer>
       {
         tabs => <div className={ls.section} style={{paddingLeft: 10}}>
           <TabContext.Provider value={tabs + 1}>
-            <div className={ls.header}>
-            <span className={ls.handle} onClick={closable ? this.tweakClose : undefined}>
-              <Fa fw icon={closable && children ? ('caret-' + (closed ? 'right' : 'down')) : null}/>
-            </span>
+            <div className='sectionHeader'>
+              <span className={ls.handle} onClick={!nonClosable ? this.tweakClose : undefined}>
+                <Fa fw icon={!nonClosable && children && children.length !== 0 ? ('caret-' + (closed ? 'right' : 'down')) : null}/>
+              </span>
               <span className={ls.label}>{label}</span>
             </div>
             {!closed && children}
@@ -34,14 +34,14 @@ export class Section extends React.PureComponent {
   }
 
   isClosed() {
-    let {closable} = this.props;
-    if (!closable) return false;
-    return closable && this.state.closed;
+    let {nonClosable} = this.props;
+    if (nonClosable) return false;
+    return this.state.closed;
   }
 
   tweakClose = () => {
     this.setState({closed: !this.isClosed()});
-  }
+  };
 }
 
 

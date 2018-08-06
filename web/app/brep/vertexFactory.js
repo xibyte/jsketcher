@@ -8,14 +8,16 @@ export default class VertexFactory {
     this.vertices = [];
   }
 
-  get(_x, _z, _y) {
+  get(_x, _y, _z) {
     for (let vertex of this.vertices) {
       let {x, y, z} = vertex.point;
       if (veqXYZ(_x, _y, _z, x, y, z)) {
         return vertex;
       }
     }
-    return new Vertex(new Point(_x, _z, _y));
+    let v = new Vertex(new Point(_x, _y, _z));
+    this.vertices.push(v);
+    return v;
   }
 
   getPoint({x, y, z}) {

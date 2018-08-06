@@ -1,27 +1,47 @@
 import React from 'react';
-import connect from '../../../../../modules/ui/connect';
-import {Section} from '../../../../../modules/ui/components/Section';
+import connect from 'ui/connect';
+import {Section} from 'ui/components/Section';
+import Fa from '../../../../../modules/ui/components/Fa';
+import {constant} from '../../../../../modules/lstream';
+import ls from './ObjectExplorer.less';
+import cx from 'classnames';
 
 export default connect(streams => streams.craft.models.map(models => ({models})))
 (function ObjectExplorer({models}) {
 
-  return models.map(m => <Section label={'shell ' + m.id}>
-    <Section label='faces'>
+  return models.map(m => <ModelSection type='shell' model={m} defaultOpen={true}>
+    <Section label='faces' defaultOpen={true}>
       {
-        m.faces.map(f => <Section label={'face ' + f.id}>
-          <Section label='sketch'>
+        m.faces.map(f => <ModelSection type='face' model={f}>
+          <Section label={f.sketchObjects.length ? 'sketch' : <span className={ls.hint}>{'<no sketch assigned>'}</span>}>
             {f.sketchObjects.map(o => <div>{o.id + ':' + o.sketchPrimitive.constructor.name}</div>)}
           </Section>
-        </Section>)
+        </ModelSection>)
       }
     </Section>
-    <Section label='edges'>
-      {
-        m.faces.map(e => <Section label={'edge ' + e.id}>
-        </Section>)
-      }
+    <Section label='edges' defaultOpen={true}>
+      {m.edges.map(e => <ModelSection type='edge' model={e} />)}
     </Section>
 
-  </Section>);
+  </ModelSection>);
 
 });
+
+const ModelSection = connect((streams, props) => (streams.selection[props.type]||constant([])).map(selection => ({selection})))
+(
+  function ModelSection({model, type, selection, ...props}) {
+    let labelClasses = cx(ls.modelLabel, {
+      [ls.selected]: selection.indexOf(model.id) !== -1
+    });
+    let label = <span className={labelClasses}><CommonControls /> 
+      {type} {model.id}
+    </span>;
+    return <Section label={label} {...props}/> 
+  }
+);
+
+function CommonControls() {
+  return <React.Fragment>
+    <Fa fw icon='crosshairs'/>
+  </React.Fragment>;
+}
