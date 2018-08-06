@@ -40,6 +40,6 @@ function getIcon(id) {
   if (id === 'history') {
     return <Fa fw icon='history'/>;
   } else if (id === 'project') {
-    return <Fa fw icon='file-o'/>;
+    return <Fa fw icon='cubes'/>;
   }
 }

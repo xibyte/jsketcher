@@ -7,8 +7,9 @@ import UISystem from './UISystem';
 import WizardManager from '../../craft/wizard/components/WizardManager';
 import FloatView from './FloatView';
 import HistoryTimeline from '../../craft/ui/HistoryTimeline';
-import BottomStack from './BottomStack';
 import SelectedModificationInfo from '../../craft/ui/SelectedModificationInfo';
+import Explorer from './Explorer';
+import BottomStack from './BottomStack';
 
 
 export default class View3d extends React.Component {
@@ -21,13 +22,13 @@ export default class View3d extends React.Component {
   render() {
     return <UISystem className={ls.root}>
       <FloatView />
-      <div className={ls.viewer} >
+      <div className={ls.mainArea} >
         <div id='viewer-container' />
-        <Abs left='0.8em' top='0.8em'>
+        <Abs right={5} top={5}>
           <HeadsUpToolbar/>
-        </Abs>
-        <Abs right='0.8em' top='0.8em'>
-          <AuxiliaryToolbar small vertical/>
+          <Abs right={0} top='calc(100% + 15px)'>
+            <AuxiliaryToolbar small vertical/>
+          </Abs>
         </Abs>
         <BottomStack>
           <HistoryTimeline />

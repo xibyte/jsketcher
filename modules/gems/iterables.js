@@ -28,4 +28,17 @@ export function findDiff(arr1, arr2) {
   return [both, firstOnly, secondOnly]
 }
 
+export function flatten(arr, result = [], depth, _currLevel) {
+  _currLevel = _currLevel || 1;
+  for (let i = 0, length = arr.length; i < length; i++) {
+    const value = arr[i];
+    if (Array.isArray(value) && depth && _currLevel !== depth) {
+      flatten(value, result, depth, _currLevel ++);
+    } else {
+      result.push(value);
+    }
+  }
+  return result;
+}
+
 export const EMPTY_ARRAY = Object.freeze([]);

@@ -1,13 +1,11 @@
-import BrepCurve from './geom/curves/brepCurve';
 import {Plane} from './geom/impl/plane';
 import {Point} from './geom/point';
 import {Shell} from './topo/shell';
 import {Face} from './topo/face';
 import {Loop} from './topo/loop';
-import {Edge} from './topo/edge';
 import {Vertex} from './topo/vertex';
 import {normalOfCCWSeq} from '../cad/cad-utils';
-import BBox from "../math/bbox";
+import BBox from '../math/bbox';
 import NurbsSurface from './geom/surfaces/nurbsSurface';
 import {BrepSurface} from './geom/surfaces/brepSurface';
 import EdgeIndex from './edgeIndex';
@@ -59,8 +57,8 @@ export default class BrepBuilder {
     return this;
   }
 
-  edge(a, b, curveCreate, tag) {
-    let he = this.edgeIndex.getHalfEdgeOrCreate(a, b, curveCreate, tag);
+  edge(a, b, curveCreate, invertedToCurve, tag) {
+    let he = this.edgeIndex.getHalfEdgeOrCreate(a, b, curveCreate, invertedToCurve, tag);
     this._loop.halfEdges.push(he);
     return this;   
   }
