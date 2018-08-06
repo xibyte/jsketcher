@@ -7,23 +7,7 @@ import decoratorChain from 'ui/decoratorChain';
 import mapContext from 'ui/mapContext';
 
 function HistoryWizard({history, pointer, step, cancel, offset, getOperation, previewerCreator, createValidator}) {
-  return null;
-  if (pointer === history.length - 1) {
-  }
 
-  let {type, params} = history[pointer + 1];
-  
-  let operation = getOperation(type);
-  if (operation === null) {
-    //unknown operation
-    return null;
-  }
-  return <Wizard type={type}
-                 validate={createValidator(operation)}
-                 createPreviewer={previewerCreator(operation)}
-                 params={clone(params)}
-                 form={operation.form}
-                 onCancel={cancel} onOK={step} close={NOOP} left={offset} />
 
 }
 
@@ -35,6 +19,3 @@ export default decoratorChain(
   }))
 )(HistoryWizard);
 
-function clone(params) {
-  return JSON.parse(JSON.stringify(params));
-}
