@@ -1,19 +1,7 @@
-import Vector from '../../../../../modules/math/vector';
 import {setAttribute} from '../../../../../modules/scene/objectData';
 import {FACE, SHELL} from '../entites';
 import {SELECTION_COLOR, setFacesColor, SketchingView} from './faceView';
 import {View} from './view';
-
-const INIT_WIDTH_H  = 750 * 0.5;
-const INIT_HEIGHT_H = 750 * 0.5;
-
-export const INIT_BOUNDS = [
-  new Vector(-INIT_WIDTH_H, -INIT_HEIGHT_H, 0),
-  new Vector( INIT_WIDTH_H, -INIT_HEIGHT_H, 0),
-  new Vector( INIT_WIDTH_H,  INIT_HEIGHT_H, 0),
-  new Vector(-INIT_WIDTH_H,  INIT_HEIGHT_H, 0)
-];
-
 
 export class OpenFaceShellView extends View {
 
@@ -47,7 +35,7 @@ export class OpenFaceView extends SketchingView {
       transparent: true,
       opacity: 0.5
     });
-    this.updateBounds(INIT_BOUNDS);
+    this.updateBounds();
   }
 
   dropGeometry() {
@@ -69,20 +57,24 @@ export class OpenFaceView extends SketchingView {
     this.rootGroup.add(this.mesh);
   }
 
-  updateBounds(bounds2d) {
+  updateBounds() {
     this.dropGeometry();
-    const tr = this.model.sketchToWorldTransformation;
-    this.bounds = bounds2d.map(v => tr.apply(v));
+
+
+    let bounds2d = [];
+    for (let mSketchObject of this.model.sketchObjects) {
+      mSketchObject.sketchPrimitive.tessellate().forEach(p => bounds2d.push(p));
+    }
+    let surface = this.model.shell.surfacePrototype.boundTo(bounds2d, 750, 750, 50);
+    this.bounds = [surface.southWestPoint(), surface.southEastPoint(), 
+      surface.northEastPoint(), surface.northWestPoint()]; 
+
     this.createGeometry();
   }
 
   updateSketch() {
     super.updateSketch();
-    // let bounds2d = ... 
-    // for (let mSketchObject of this.model.sketchObjects) {
-    //    mSketchObject.sketchPrimitive.tessellate(...to bounds2d)
-    // }
-    // this.updateBounds(bounds2d)
+    this.updateBounds();
   }
 
   mark(color) {
