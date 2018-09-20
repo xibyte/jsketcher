@@ -4,8 +4,8 @@ import {Plane} from '../../../brep/geom/impl/plane';
 import Vector from 'math/vector';
 import PlaneWizard from './PlaneWizard';
 import {MOpenFaceShell} from '../../model/mopenFace';
-import {createBoundingSurfaceFrom2DPoints} from '../../../brep/brep-builder';
 import schema from './planeOpSchema';
+import {PlaneSurfacePrototype} from '../../model/surfacePrototype';
 
 function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
   let face = null;
@@ -23,25 +23,22 @@ function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
 }
 
 function createPlane(params, {cadRegistry}) {
-  let surface = createBoundingSurfaceFrom2DPoints([
-    new Vector(0,0,0), new Vector(0,100,0), new Vector(100,100,0), new Vector(100,0,0)
-  ], paramsToPlane(params, cadRegistry));
   return {
     outdated: [],
-    created: [new MOpenFaceShell(surface)]
+    created: [new MOpenFaceShell(new PlaneSurfacePrototype(paramsToPlane(params, cadRegistry)))]
   }
 }
 
 function previewGeomProvider(params, {cadRegistry}) {
   let plane = paramsToPlane(params, cadRegistry);
-  let _3DTransformation = plane.get3DTransformation();
+  let tr = plane.get3DTransformation();
   const w = 375, h = 375;
-  const a = new Vector(-w, -h, 0);
-  const b = new Vector( w, -h, 0);
-  const c = new Vector( w,  h, 0);
-  const d = new Vector(-w,  h, 0);
+  const a = tr._apply(new Vector(-w, -h, 0));
+  const b = tr._apply(new Vector( w, -h, 0));
+  const c = tr._apply(new Vector( w,  h, 0));
+  const d = tr._apply(new Vector(-w,  h, 0));
+  
   let trs = [[a, b, c], [a, c, d]];
-  trs.forEach(tr => tr.forEach(p => _3DTransformation._apply(p)));
   return createMeshGeometry(trs);
 }
 

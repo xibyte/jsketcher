@@ -3,6 +3,8 @@ import Vector from 'math/vector';
 import {BasisForPlane} from '../../math/l3space';
 import {MSketchObject} from './msketchObject';
 import {EMPTY_ARRAY} from 'gems/iterables';
+import {PointOnSurface} from '../../brep/geom/pointOnSurface';
+import CSys from '../../math/csys';
 
 export class MFace extends MObject {
 

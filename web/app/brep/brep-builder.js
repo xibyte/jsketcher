@@ -102,10 +102,26 @@ export function createBoundingSurface(points, plane) {
   return createBoundingSurfaceFrom2DPoints(points2d, plane);
 }
 
-export function createBoundingSurfaceFrom2DPoints(points2d, plane) {
+export function createBoundingSurfaceFrom2DPoints(points2d, plane, minWidth, minHeight, offset = 0, ) {
   let bBox = new BBox();
   points2d.forEach(p => bBox.checkPoint(p));
 
+  if (minWidth && bBox.width() < minWidth) {
+    bBox.checkBounds(  minWidth * 0.5, 0);
+    bBox.checkBounds(- minWidth * 0.5, 0);
+  }
+  if (minHeight && bBox.height() < minHeight) {
+    bBox.checkBounds(0,   minHeight * 0.5);
+    bBox.checkBounds(0, - minHeight * 0.5);
+  }
+
+  if (offset !== 0) {
+    bBox.maxX += offset * 0.5;
+    bBox.minX -= offset * 0.5;
+    bBox.maxY += offset * 0.5;
+    bBox.minY -= offset * 0.5;
+  }
+  
   let to3D = plane.get3DTransformation();
   let polygon = bBox.toPolygon();
   polygon = polygon.map(p => to3D._apply(p).data());

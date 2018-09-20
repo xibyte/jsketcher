@@ -3,9 +3,11 @@ import {MFace} from './mface';
 
 export class MOpenFaceShell extends MShell {
   
-  constructor(surface) {
+  constructor(surfacePrototype) {
     super();
-    this.faces.push(new MFace(this.id + '/SURFACE', this, surface))
+    this.surfacePrototype = surfacePrototype;
+    this.faces.push(new MFace(this.id + '/SURFACE', this, 
+      surfacePrototype.boundTo([], 100, 100)));
   }
   
   get face() {
