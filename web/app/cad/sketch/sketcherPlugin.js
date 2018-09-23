@@ -1,16 +1,24 @@
-
 import {ReadSketch} from './sketchReader';
 import {getSketchBoundaries} from './sketchBoundaries';
-import {TOKENS as CRAFT_TOKENS} from '../craft/craftPlugin';
-import {stream} from 'lstream';
+import {state, stream} from 'lstream';
+import {InPlaceSketcher} from './inPlaceSketcher';
+import {CAMERA_MODE} from '../scene/viewer';
+import sketcherUIContrib from './sketcherUIContrib';
 
-export function activate({streams, services}) {
-
-  streams.sketcher = {
-    update: stream()
-  };
+export function activate(ctx) {
   
-  services.storage.addListener(evt => {
+  let {streams, services} = ctx;
+  
+  sketcherUIContrib(ctx);
+  
+  streams.sketcher = {
+    update: stream(),
+    sketchingFace: state(null)
+  };
+
+  streams.sketcher.sketchingFace.attach(face => streams.ui.toolbars.sketcherToolbarsVisible.value = !!face);
+  
+  const onSketchUpdate = evt => {
     let prefix = services.project.sketchStorageNamespace;
     if (evt.key.indexOf(prefix) < 0) return;
     let sketchFaceId = evt.key.substring(prefix.length);
@@ -19,7 +27,9 @@ export function activate({streams, services}) {
       updateSketchForFace(sketchFace);
       services.viewer.requestRender();
     }
-  });
+  };
+  
+  services.storage.addListener(onSketchUpdate);
 
   function getAllSketches() {
     let nm = services.project.sketchStorageNamespace;
@@ -63,16 +73,24 @@ export function activate({streams, services}) {
     services.storage.set(sketchStorageKey, JSON.stringify(data));
   }
 
+  let inPlaceEditor = new InPlaceSketcher(ctx, onSketchUpdate);
+  function sketchFace(face) {
+    updateSketchBoundaries(face);
+    if (inPlaceEditor.inEditMode) {
+      inPlaceEditor.exit();
+    }
+    inPlaceEditor.enter(face);
+  }
   
-  function sketchFace(sceneFace) {
-    updateSketchBoundaries(sceneFace);
-    let sketchURL = services.project.getSketchURL(sceneFace.id);
-    services.appTabs.show(sceneFace.id, 'Sketch ' + sceneFace.id, 'sketcher.html#' + sketchURL);
+  function sketchFace2D(face) {
+    updateSketchBoundaries(face);
+    let sketchURL = services.project.getSketchURL(face.id);
+    services.appTabs.show(face.id, 'Sketch ' + face.id, 'sketcher.html#' + sketchURL);
   }
   
   streams.craft.modifications.attach(updateAllSketches);
   
   services.sketcher = {
-    sketchFace, updateAllSketches, getAllSketches, readSketch
+    sketchFace, sketchFace2D, updateAllSketches, getAllSketches, readSketch, inPlaceEditor
   }
 }
