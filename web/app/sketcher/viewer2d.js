@@ -1,20 +1,18 @@
-import {Generator} from './id-generator'
-import {Styles} from './styles'
-import {Parameters, Bus} from '../ui/toolkit'
-import {ParametricManager} from './parametric'
-import {HistoryManager} from './history'
-import {ToolManager} from './tools/manager'
-import {PanTool} from './tools/pan'
-import {DragTool} from './tools/drag'
-import {Segment} from './shapes/segment'
-import {EndPoint} from './shapes/point'
-import {Point} from './shapes/primitives'
-import {ReferencePoint} from './shapes/reference-point'
-import {BasisOrigin} from './shapes/basis-origin'
+import {Styles} from './styles';
+import {Bus, Parameters} from '../ui/toolkit';
+import {ParametricManager} from './parametric';
+import {HistoryManager} from './history';
+import {ToolManager} from './tools/manager';
+import {PanTool} from './tools/pan';
+import {Segment} from './shapes/segment';
+import {EndPoint} from './shapes/point';
+import {Point} from './shapes/primitives';
+import {ReferencePoint} from './shapes/reference-point';
+import {BasisOrigin} from './shapes/basis-origin';
 import Vector from 'math/vector';
 
-import * as draw_utils from './shapes/draw-utils'
-import * as math from '../math/math'
+import * as draw_utils from './shapes/draw-utils';
+import {Matrix3} from '../math/l3space';
 
 /** @constructor */
 function Viewer(canvas, IO) {
@@ -76,8 +74,27 @@ function Viewer(canvas, IO) {
   this.snapped = null;
   
   this.historyManager = new HistoryManager(this);
+  this.transformation = null;
+  this.screenToModelMatrix = null;
   this.refresh();
 }
+
+Viewer.prototype.dispose = function() {
+  this.toolManager.dispose();
+};
+
+Viewer.prototype.setTransformation = function(a, b, c, d, e, f, zoom) {
+  this.transformation = [a, b, c, d, e, f];
+  this.scale = zoom;
+  if (this.screenToModelMatrix === null) {
+    this.screenToModelMatrix = new Matrix3();
+  }
+  this.screenToModelMatrix.set34(
+    a, c, 0, e,
+    b, d, 0, f,
+    0, 0, 1, 0
+  )._invert();
+};
 
 Viewer.prototype.roundToPrecision = function(value) {
   return value.toFixed(this.presicion);
@@ -181,14 +198,18 @@ Viewer.prototype.repaint = function() {
 
   const ctx = this.ctx;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   
-  ctx.fillStyle = "#808080";
-  ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-  
-  //Order is important!
   ctx.transform(1, 0, 0, -1, 0, this.canvas.height );
-  ctx.transform(1, 0, 0, 1, this.translate.x , this.translate.y );
-  ctx.transform(this.scale, 0, 0, this.scale, 0, 0);
+
+  if (this.transformation) {
+    let [a, b, c, d, e, f] = this.transformation;
+    ctx.transform(a, b, c, d, e, f);
+  } else {
+    ctx.transform(1, 0, 0, 1, this.translate.x , this.translate.y );
+    ctx.transform(this.scale, 0, 0, this.scale, 0, 0);
+  }
 
   this.__prevStyle = null;
 
@@ -280,15 +301,19 @@ Viewer.prototype.showBounds = function(x1, y1, x2, y2, offset) {
 };
 
 Viewer.prototype.screenToModel2 = function(x, y, out) {
-
   out.x = x * this.retinaPxielRatio;
   out.y = this.canvas.height - y * this.retinaPxielRatio;
 
-  out.x -= this.translate.x;
-  out.y -= this.translate.y;
+  if (this.transformation) {
+    out.z = 0;
+    this.screenToModelMatrix._apply(out);
+  } else {
+    out.x -= this.translate.x;
+    out.y -= this.translate.y;
 
-  out.x /= this.scale;
-  out.y /= this.scale;
+    out.x /= this.scale;
+    out.y /= this.scale;
+  }
 };
 
 Viewer.prototype.screenToModel = function(e) {

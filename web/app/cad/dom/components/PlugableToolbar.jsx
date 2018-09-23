@@ -20,12 +20,27 @@ function ConfigurableToolbar({actions, small, ...props}) {
   </Toolbar>
 }
 
-function ActionButton({label, icon96, cssIcons, small, enabled, visible, actionId, ...props}) {
+function ActionButton({label, icon96, icon32, cssIcons, symbol, small, enabled, visible, actionId, ...props}) {
   if (!visible) {
     return null;
   }
 
-  let icon = small ? <Fa fa={cssIcons} fw /> : <ImgIcon url={icon96} size={48} />; 
+  let icon;
+  if (small) {
+    if (cssIcons) {
+      icon = <Fa fa={cssIcons} fw />;  
+    } else if (icon32) {
+      icon = <ImgIcon url={icon32} size={16} />;
+    }
+  } else {
+    icon = <ImgIcon url={icon96} size={48} />; 
+  }
+  if (!icon) {
+    icon = <span>{symbol||(label&&label.charAt(0))}</span>;
+    if (!icon) {
+      icon = '?';
+    }
+  }
     
   return <ToolbarButton disabled={!enabled} {...props}>
     {icon}
@@ -41,11 +56,11 @@ const ConnectedActionButton = decoratorChain(
 
 export function createPlugableToolbar(streamSelector) {
   return decoratorChain(
-    connect(streams => streamSelector(streams).map(actions => ({actions}))),
-    mapContext(mapActionBehavior(props => props.actionId))
+    connect(streams => streamSelector(streams).map(actions => ({actions})))
   )
   (props => <ConfigurableToolbar {...props} />);
 }
 
 export const HeadsUpToolbar = createPlugableToolbar(streams => streams.ui.toolbars.headsUp);
 export const AuxiliaryToolbar = createPlugableToolbar(streams => streams.ui.toolbars.auxiliary);
+

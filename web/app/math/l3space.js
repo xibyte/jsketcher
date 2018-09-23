@@ -89,6 +89,14 @@ Matrix3.prototype.toArray = function() {
 };
 
 Matrix3.prototype.invert = function() {
+  return this.__invert(new Matrix3());
+};
+
+Matrix3.prototype._invert = function() {
+  return this.__invert(this);
+};
+
+Matrix3.prototype.__invert = function(out) {
 
   var det =
     this.mxx * (this.myy * this.mzz - this.mzy * this.myz) +
@@ -118,20 +126,19 @@ Matrix3.prototype.invert = function() {
     - this.mxy * (this.ty  * this.mzx - this.tz  * this.myx)
     - this.tx  * (this.myx * this.mzy - this.mzx * this.myy);
 
-  var result = new Matrix3();
-  result.mxx = cxx / det;
-  result.mxy = cxy / det;
-  result.mxz = cxz / det;
-  result.tx = cxt / det;
-  result.myx = cyx / det;
-  result.myy = cyy / det;
-  result.myz = cyz / det;
-  result.ty = cyt / det;
-  result.mzx = czx / det;
-  result.mzy = czy / det;
-  result.mzz = czz / det;
-  result.tz = czt / det;
-  return result;
+  out.mxx = cxx / det;
+  out.mxy = cxy / det;
+  out.mxz = cxz / det;
+  out.tx = cxt / det;
+  out.myx = cyx / det;
+  out.myy = cyy / det;
+  out.myz = cyz / det;
+  out.ty = cyt / det;
+  out.mzx = czx / det;
+  out.mzy = czy / det;
+  out.mzz = czz / det;
+  out.tz = czt / det;
+  return out;
 };
 
 Matrix3.prototype.combine = function(transform) {
@@ -174,13 +181,13 @@ Matrix3.prototype._apply = function(vector) {
 };
 
 Matrix3.prototype.__apply = function(vector, out) {
-  var x = vector.x;
-  var y = vector.y;
-  var z = vector.z;
-  return out.set(
-    this.mxx * x + this.mxy * y + this.mxz * z + this.tx,
-    this.myx * x + this.myy * y + this.myz * z + this.ty,
-    this.mzx * x + this.mzy * y + this.mzz * z + this.tz);
+  let x = vector.x;
+  let y = vector.y;
+  let z = vector.z;
+  out.x = this.mxx * x + this.mxy * y + this.mxz * z + this.tx;
+  out.y = this.myx * x + this.myy * y + this.myz * z + this.ty;
+  out.z = this.mzx * x + this.mzy * y + this.mzz * z + this.tz;
+  return out;
 };
 
 Matrix3.rotateMatrix = function(angle, axis, pivot) {
