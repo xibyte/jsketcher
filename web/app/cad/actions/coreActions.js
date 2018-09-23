@@ -62,8 +62,8 @@ export default [
       label: 'toggle camera',
       info: 'switch camera mode between perspective and orthographic',
     },
-    invoke: (app) => {
-      let viewer = app.context.services.viewer;
+    invoke: context => {
+      let viewer = context.services.viewer;
       viewer.toggleCamera();
       viewer.render();
     }

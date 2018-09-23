@@ -2,7 +2,7 @@ import React from 'react';
 import PlugableControlBar from './PlugableControlBar';
 import ls from './View3d.less';
 import Abs from 'ui/components/Abs';
-import {AuxiliaryToolbar, HeadsUpToolbar} from './PlugableToolbar';
+import {AuxiliaryToolbar, HeadsUpToolbar, SketcherToolbarConstraints, SketcherToolbarGeneral} from './PlugableToolbar';
 import UISystem from './UISystem';
 import WizardManager from '../../craft/wizard/components/WizardManager';
 import FloatView from './FloatView';
@@ -10,6 +10,7 @@ import HistoryTimeline from '../../craft/ui/HistoryTimeline';
 import SelectedModificationInfo from '../../craft/ui/SelectedModificationInfo';
 import Explorer from './Explorer';
 import BottomStack from './BottomStack';
+import SketcherToolbars from './SketcherToolbars';
 
 
 export default class View3d extends React.Component {
@@ -24,6 +25,7 @@ export default class View3d extends React.Component {
       <FloatView />
       <div className={ls.mainArea} >
         <div id='viewer-container' />
+        <SketcherToolbars />
         <Abs right={5} top={5}>
           <HeadsUpToolbar/>
           <Abs right={0} top='calc(100% + 15px)'>
