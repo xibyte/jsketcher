@@ -1,6 +1,6 @@
 import {setAttribute} from '../../../../../modules/scene/objectData';
 import {FACE, SHELL} from '../entites';
-import {SELECTION_COLOR, setFacesColor, SketchingView} from './faceView';
+import {NULL_COLOR, SELECTION_COLOR, setFacesColor, SketchingView} from './faceView';
 import {View} from './view';
 
 export class OpenFaceShellView extends View {
@@ -58,9 +58,9 @@ export class OpenFaceView extends SketchingView {
   }
 
   updateBounds() {
+    let markedColor = this.color;
     this.dropGeometry();
-
-
+    
     let bounds2d = [];
     for (let mSketchObject of this.model.sketchObjects) {
       mSketchObject.sketchPrimitive.tessellate().forEach(p => bounds2d.push(p));
@@ -70,6 +70,9 @@ export class OpenFaceView extends SketchingView {
       surface.northEastPoint(), surface.northWestPoint()]; 
 
     this.createGeometry();
+    if (markedColor) {
+      this.mark(markedColor);
+    }
   }
 
   updateSketch() {
@@ -88,6 +91,14 @@ export class OpenFaceView extends SketchingView {
   setColor(color) {
     setFacesColor(this.mesh.geometry.faces, color);
     this.mesh.geometry.colorsNeedUpdate = true;
+  }
+  
+  get color() {
+    let face = this.mesh && this.mesh.geometry && this.mesh.geometry.faces[0];
+    if (face) {
+      return face.color === NULL_COLOR ? null : face.color;
+    }
+    return null;
   }
 
   dispose() {
