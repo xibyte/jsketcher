@@ -190,6 +190,21 @@ Matrix3.prototype.__apply = function(vector, out) {
   return out;
 };
 
+Matrix3.prototype.apply3 = function(data) {
+  return this.__apply3(data, [])
+};
+
+Matrix3.prototype._apply3 = function(data) {
+  return this.__apply3(data, data);
+};
+
+Matrix3.prototype.__apply3 = function([x, y, z], out) {
+  out[0] = this.mxx * x + this.mxy * y + this.mxz * z + this.tx;
+  out[1] = this.myx * x + this.myy * y + this.myz * z + this.ty; 
+  out[2] = this.mzx * x + this.mzy * y + this.mzz * z + this.tz;
+  return out;
+};
+
 Matrix3.rotateMatrix = function(angle, axis, pivot) {
   var sin = Math.sin(angle);
   var cos = Math.cos(angle);
