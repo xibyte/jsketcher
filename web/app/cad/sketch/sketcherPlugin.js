@@ -88,7 +88,7 @@ export function activate(ctx) {
     services.appTabs.show(face.id, 'Sketch ' + face.id, 'sketcher.html#' + sketchURL);
   }
   
-  streams.craft.modifications.attach(updateAllSketches);
+  streams.craft.models.attach(updateAllSketches);
   
   services.sketcher = {
     sketchFace, sketchFace2D, updateAllSketches, getAllSketches, readSketch, inPlaceEditor
