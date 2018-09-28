@@ -3,20 +3,18 @@ import {surfaceToThreeGeom, triangulateToThree} from './scene/wrappers/brepScene
 import {createSolidMaterial} from './scene/wrappers/sceneObject';
 import DPR from 'dpr';
 import Vector from 'math/vector';
-
+import * as vec from '../math/vec';
 import React from 'react';
-import {TOKENS as UI_TOKENS} from './dom/uiEntryPointsPlugin';
 import {readSketchFloat} from './sketch/sketchReader';
-import {TOKENS as CRAFT_TOKENS} from './craft/craftPlugin';
 import {toLoops} from '../brep/io/brepLoopsFormat';
 import {contributeComponent} from './dom/components/ContributedComponents';
 import BrepDebuggerWindow, {BREP_DEBUG_WINDOW_VISIBLE} from '../brep/debug/debugger/BrepDebuggerWindow';
 import curveTess from '../brep/geom/impl/curve/curve-tess';
-import tessellateSurface from '../brep/geom/surfaces/surfaceTess';
 
 
 export function activate({bus, services, streams}) {
   addGlobalDebugActions(services);
+  addDebugSelectors(services);
   services.action.registerActions(DebugActions);
   services.menu.registerMenus([DebugMenuConfig]);
 
@@ -171,6 +169,10 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     AddNormal: (atPoint, normal, color, scale) => {
       scale = scale || 100;
       __DEBUG__.AddSegment(atPoint, atPoint.plus(normal.multiply(scale)), color);
+    },
+    AddNormal3: (atPoint, normal, color, scale) => {
+      scale = scale || 100;
+      __DEBUG__.AddSegment3(atPoint, vec.add(atPoint, vec.mul(normal, scale)), color);
     },
     AddSurfaceNormal: (surface) => {     
       __DEBUG__.AddNormal(surface.pointInMiddle(), surface.normalInMiddle());
@@ -432,3 +434,8 @@ const DebugActions = [
   }
 
 ];
+
+function addDebugSelectors(services) {
+  window.$f = services.cadRegistry.findFace;
+  window.$e = services.cadRegistry.findEdge;
+}
