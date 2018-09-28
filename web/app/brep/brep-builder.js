@@ -122,6 +122,10 @@ export function createBoundingSurfaceFrom2DPoints(points2d, plane, minWidth, min
     bBox.minY -= offset * 0.5;
   }
   
+  return createBoundingSurfaceFromBBox(bBox, plane);
+} 
+
+export function createBoundingSurfaceFromBBox(bBox, plane) {
   let to3D = plane.get3DTransformation();
   let polygon = bBox.toPolygon();
   polygon = polygon.map(p => to3D._apply(p).data());
@@ -136,4 +140,5 @@ export function createBoundingSurfaceFrom2DPoints(points2d, plane, minWidth, min
   // __DEBUG__.AddSurfaceNormal(nurbs);
 
   return new BrepSurface(nurbs);
-} 
+  
+}

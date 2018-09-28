@@ -1,4 +1,4 @@
-import BrepBuilder, {createBoundingSurfaceFrom2DPoints} from '../brep-builder';
+import BrepBuilder, {createBoundingSurfaceFrom2DPoints, createBoundingSurfaceFromBBox} from '../brep-builder';
 import VertexFactory from '../vertexFactory';
 import NurbsSurface from '../geom/surfaces/nurbsSurface';
 import * as vec from '../../math/vec';
@@ -6,6 +6,7 @@ import {BrepSurface} from '../geom/surfaces/brepSurface';
 import {Plane} from '../geom/impl/plane';
 import Vector from '../../../../modules/math/vector';
 import NullSurface from '../geom/surfaces/nullSurface';
+import BBox from '../../math/bbox';
 
 export function readBrep(data) {
   
@@ -13,10 +14,12 @@ export function readBrep(data) {
   let vf = new VertexFactory();
   
   for (let faceData of data.faces) {
-    bb.face(readSurface(faceData.surface, faceData.inverted));
+    bb.face();
+    let nonDirect = faceData.surface.direct === false; // left handed coordinate system for planes
+    let inverted = faceData.inverted !== nonDirect;
     bb._face.data.tesselation = {
       format: 'verbose',
-      data: normalizeTesselationData(faceData.tess, faceData.inverted, faceData.surface.normal)
+      data: normalizeTesselationData(faceData.tess, inverted, faceData.surface.normal)
     };
       
     for (let loop of faceData.loops) {
@@ -32,6 +35,7 @@ export function readBrep(data) {
         };
       }
     }
+    bb._face.surface = readSurface(faceData.surface, inverted, bb._face)
   }
   //todo: data should provide full externals object
   bb._shell.data.externals = {
@@ -40,21 +44,26 @@ export function readBrep(data) {
   return bb.build();
 }
 
-function readSurface(s, inverted) {
+function readSurface(s, inverted, face) {
   let surface;
   if (s.TYPE === 'B-SPLINE') {
     surface = new BrepSurface(NurbsSurface.create(s.degU, s.degV, s.knotsU, s.knotsV, s.cp, s.weights), inverted);
   } else if (s.TYPE === 'PLANE') {
-    //TODO create bounded nurbs from face vertices when they are available
-    let fakeBounds = [
-      new Vector(0,0,0), new Vector(0,100,0), new Vector(100,100,0), new Vector(100,0,0)
-    ];
+    
     let normal = new Vector().set3(s.normal);
     let plane = new Plane(normal, normal.dot(new Vector().set3(s.origin)));
     if (inverted) {
       plane = plane.invert();
     }
-    surface = createBoundingSurfaceFrom2DPoints(fakeBounds, plane);
+    let bBox = new BBox();
+
+    let tr = plane.get2DTransformation();
+    for (let he of face.outerLoop.halfEdges) {
+      let tess = he.edge.data.tesselation ? he.edge.data.tesselation : he.edge.curve.tessellateToData();
+      tess.forEach(p => bBox.checkData(tr.apply3(p)));
+    }
+    bBox.expand(10);
+    surface = createBoundingSurfaceFromBBox(bBox, plane);
   } else {
     surface = new BrepSurface(new NullSurface());
   }
