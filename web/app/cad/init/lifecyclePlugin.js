@@ -18,6 +18,9 @@ export function activate({streams, services}) {
         console.log("project loaded, took: " + ((onLoadTime - startTime) / 1000).toFixed(2) + ' sec');
       }
     },
-    declareAppReady: () => streams.lifecycle.appReady.value = true
+    declareAppReady: () => {
+      streams.lifecycle.appReady.value = true
+      services.lifecycle.loadProjectRequest();
+    }
   }
 }
