@@ -14,6 +14,8 @@ import BrepCurve from '../../brep/geom/curves/brepCurve';
 import {Plane} from '../../brep/geom/impl/plane';
 import pip from '../tess/pip';
 import {readShellEntityFromJson} from '../scene/wrappers/entityIO';
+import * as vec from '../../math/vec'
+
 
 export default {
   brep: {
@@ -33,5 +35,8 @@ export default {
   },
   scene: {
     readShellEntityFromJson
+  },
+  math: {
+    vec
   }
 }
