@@ -5,6 +5,7 @@ import {Point} from '../../brep/geom/point'
 import {LUT} from '../../math/bezier-cubic'
 import {distanceAB, isCCW, makeAngle0_360} from '../../math/math'
 import {normalizeCurveEnds} from '../../brep/geom/impl/nurbs-ext';
+import Vector from '../../../../modules/math/vector';
 
 const RESOLUTION = 20;
 
@@ -120,7 +121,8 @@ export class Arc extends SketchPrimitive {
     const yAxis = pointAtAngle(startAngle + Math.PI * 0.5);
 
     let arc = new verb.geom.Arc(_3dtr(this.c).data(), xAxis.data(), yAxis.data(), distanceAB(this.c, this.a), 0, Math.abs(angle));
-    return arc;
+    
+    return adjustEnds(arc, _3dtr(this.a), _3dtr(this.b))
   }
 }
 
@@ -181,7 +183,18 @@ export class EllipticalArc extends SketchPrimitive {
     points.push(bo);
     return points;
   }
+  
+  toVerbNurbs(plane, _3dtr) {
+    const xAxis = this.ep2.minus(this.ep1)._multiply(0.5);
+    const yAxis = new Vector(xAxis.y, xAxis.x)._normalize()._multiply(this.r) ;
+    const center = this.ep1.plus(xAxis);
 
+    const startAngle = makeAngle0_360(Math.atan2(this.a.y - center.y, this.a.x - center.x));
+    const endAngle = makeAngle0_360(Math.atan2(this.b.y - center.y, this.b.x - center.x));
+    
+    let arc = new verb.geom.EllipseArc(_3dtr(center).data(), _3dtr(xAxis).data(), _3dtr(yAxis).data(), startAngle, endAngle);
+    return adjustEnds(arc, _3dtr(this.a), _3dtr(this.b))
+  }
 }
 
 export class Circle extends SketchPrimitive {
@@ -327,5 +340,20 @@ class CompositeCurve {
     this.points.push(point);
     this.groups.push(group);
   }
+}
+
+function adjustEnds(arc, a, b) {
+  let data = arc.asNurbs();
+
+  function setHomoPoint(homoPoint, vector) {
+    homoPoint[0] = vector.x * homoPoint[3];
+    homoPoint[1] = vector.y * homoPoint[3];
+    homoPoint[2] = vector.z * homoPoint[3];
+  }
+
+  setHomoPoint(data.controlPoints[0], a);
+  setHomoPoint(data.controlPoints[data.controlPoints.length - 1], b);
+
+  return new verb.geom.NurbsCurve(data);
 }
 
