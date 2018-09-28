@@ -4,6 +4,8 @@ import Vector from 'math/vector';
 import {Graph} from '../../math/graph'
 import * as math from '../../math/math'
 import {HashTable} from '../../utils/hashmap'
+import {Constraints} from '../../sketcher/parametric';
+import Joints from '../../../../modules/gems/joints';
 
 class SketchGeom {
 
@@ -45,6 +47,31 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
     return sketchId + "/" + obj.id;
   }
   const out = new SketchGeom();
+
+  let coiJoints = new Joints();
+  
+  if (sketch.constraints !== undefined) {
+    for (let i = 0; i < sketch.constraints.length; ++i) {
+      let c = sketch.constraints[i];
+      let name = c[0];
+      let ps = c[1];
+      if (name === 'coi') {
+        coiJoints.connect(ps[0], ps[1]);
+      }
+    }
+  }
+
+  let pointsById = new Map();
+  function ReadSketchPoint(arr) {
+    let pointId = arr[0];
+    pointId = coiJoints.master(pointId);
+    let point = pointsById.get(pointId);
+    if (!point) {
+      point = new Vector(readSketchFloat(arr[1][1]), readSketchFloat(arr[2][1]), 0);
+      pointsById.set(pointId, point);
+    }
+    return point;
+  }
   if (sketch.layers !== undefined) {
     for (let layer of sketch.layers) {
       const isConstructionLayer = layer.name === "_construction_";
@@ -87,10 +114,6 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
     }
   }
   return out;
-}
-
-export function ReadSketchPoint(arr) {
-  return new Vector(readSketchFloat(arr[1][1]), readSketchFloat(arr[2][1]), 0)
 }
 
 export function FetchContours(geom) {
