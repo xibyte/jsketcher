@@ -25,6 +25,10 @@ export default class BBox {
     this.checkBounds(p.x, p.y, p.z);
   }
 
+  checkData([x, y, z]) {
+    this.checkBounds(x, y, z);
+  }
+
   center() {
     return new Vector(this.minX + (this.maxX - this.minX) / 2, 
                       this.minY + (this.maxY - this.minY) / 2,
