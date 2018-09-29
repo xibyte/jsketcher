@@ -798,7 +798,7 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
     for (let p = 0; p < sdata[1].length; ++p) {
       const param = sdata[1][p];
       const solverParam = getSolverParam(param);
-      solverParam.aux = auxDict[param.id] !== undefined;
+      solverParam.aux = auxDict[solverParam._backingParam.id] !== undefined;
       params.push(solverParam);
     }
     if (reduceInfo.reducedConstraints[i] === true) continue;
