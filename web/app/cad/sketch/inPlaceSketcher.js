@@ -1,10 +1,10 @@
 import {Viewer} from '../../sketcher/viewer2d';
 import {IO} from '../../sketcher/io';
-import {AddSegmentTool} from '../../sketcher/tools/segment';
-import {DelegatingPanTool, PanTool} from '../../sketcher/tools/pan';
+import {DelegatingPanTool} from '../../sketcher/tools/pan';
 import {Matrix4} from 'three/src/math/Matrix4';
 import {ORIGIN} from '../../math/l3space';
 import {CAMERA_MODE} from '../scene/viewer';
+import DPR from 'dpr';
 
 export class InPlaceSketcher {
   
@@ -80,8 +80,8 @@ export class InPlaceSketcher {
 
     sketchOrigin = sketchOrigin.three().applyMatrix4(_projScreenMatrix);
 
-    let width = sceneSetup.container.clientWidth;
-    let height = sceneSetup.container.clientHeight;
+    let width = sceneSetup.container.clientWidth * DPR / 2;
+    let height = sceneSetup.container.clientHeight * DPR /2;
 
     xx.sub(o);
     yy.sub(o);
