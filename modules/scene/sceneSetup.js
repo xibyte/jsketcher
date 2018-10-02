@@ -4,12 +4,13 @@ import './utils/vectorThreeEnhancement';
 
 export default class SceneSetUp {
   
-  constructor(container) {
+  constructor(container, onRendered) {
     
     this.container = container;
     this.scene = new THREE.Scene();
     this.rootGroup = this.scene;
-
+    this.onRendered = onRendered;
+    
     this.setUpCamerasAndLights();
     this.setUpControls();
 
@@ -195,6 +196,7 @@ export default class SceneSetUp {
   render() {
     this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
     this.renderer.render(this.scene, this.camera);
+    this.onRendered();
   };
 
   domElement() {
