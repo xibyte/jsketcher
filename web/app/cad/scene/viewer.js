@@ -2,8 +2,8 @@ import SceneSetup from 'scene/sceneSetup';
 
 export default class Viewer {
   
-  constructor(container) {
-    this.sceneSetup = new SceneSetup(container);
+  constructor(container, onRendered) {
+    this.sceneSetup = new SceneSetup(container, onRendered);
     this.renderRequested = false;
   }
   

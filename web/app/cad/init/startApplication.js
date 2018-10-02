@@ -57,7 +57,11 @@ export default function startApplication(callback) {
     ...applicationPlugins,
     ViewSyncPlugin
   ];
+  
+  let allPlugins = [...preUIPlugins, ...plugins];
 
+  defineStreams(allPlugins, context);
+  
   activatePlugins(preUIPlugins, context);
 
   startReact(context, () => {
@@ -66,6 +70,14 @@ export default function startApplication(callback) {
     context.services.viewer.render();
     callback(context);
   });
+}
+
+export function defineStreams(plugins, context) {
+  for (let plugin of plugins) {
+    if (plugin.defineStreams) {
+      plugin.defineStreams(context);
+    }
+  }
 }
 
 export function activatePlugins(plugins, context) {

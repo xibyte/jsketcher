@@ -1,20 +1,22 @@
 import Vector from 'math/vector';
 
-var ORIGIN = new Vector(0, 0, 0);
+const freeze = Object.freeze;
 
-var AXIS = {
-  X : new Vector(1, 0, 0),
-  Y : new Vector(0, 1, 0),
-  Z : new Vector(0, 0, 1)
-};
+const ORIGIN = freeze(new Vector(0, 0, 0));
 
-var IDENTITY_BASIS = [AXIS.X, AXIS.Y, AXIS.Z];
+const AXIS = freeze({
+  X : freeze(new Vector(1, 0, 0)),
+  Y : freeze(new Vector(0, 1, 0)),
+  Z : freeze(new Vector(0, 0, 1))
+});
 
-export const STANDARD_BASES = {
+const IDENTITY_BASIS = Object.freeze([AXIS.X, AXIS.Y, AXIS.Z]);
+
+export const STANDARD_BASES = freeze({
   'XY': IDENTITY_BASIS,
   'XZ': [AXIS.X, AXIS.Z, AXIS.Y],
   'ZY': [AXIS.Z, AXIS.Y, AXIS.X]
-};
+});
 
 
 /** @constructor */
