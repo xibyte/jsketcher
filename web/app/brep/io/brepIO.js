@@ -21,7 +21,12 @@ export function readBrep(data) {
       format: 'verbose',
       data: normalizeTesselationData(faceData.tess, inverted, faceData.surface.normal)
     };
-      
+    if (faceData.ref !== undefined) {
+      bb._face.data.externals = {
+        ref: faceData.ref
+      }  
+    }  
+    
     for (let loop of faceData.loops) {
       bb.loop();
       for (let edgeData of loop) {

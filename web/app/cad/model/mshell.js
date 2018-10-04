@@ -27,7 +27,7 @@ export class MBrepShell extends MShell {
     let vertexCounter = 0;
 
     for (let brepFace of this.brepShell.faces) {
-      const mFace = new MBrepFace(this.id + '/F:' + faceCounter++, this, brepFace);
+      const mFace = new MBrepFace(brepFace.data.id || (this.id + '/F:' + faceCounter++), this, brepFace);
       this.faces.push(mFace);
     }
 
