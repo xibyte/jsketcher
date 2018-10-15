@@ -19,8 +19,8 @@ export default {
 
   ],
 
-  ModellerOperations: [
-
+  Craft: [
+    TestCase('craft'),
   ],
 
   BREP: [

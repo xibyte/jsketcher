@@ -51,7 +51,13 @@ export class TestEnv {
       }
     }
   }
-  
+
+  testTPI(testBlock) {
+    return this.test(function(win, app) {
+      testBlock(app.TPI);
+    });
+  }
+
   assertTrue(stmt, msg) {
     if (!stmt) {
       this.fail('assertTrue fails.', msg);
@@ -139,15 +145,15 @@ function checkSimilarity(data1, data2) {
 
 }
 
-export function load(url, callback) {
+export function load(url, callback, apiGet) {
   const sandbox = $('#sandbox');
   sandbox.empty();
   const frame = $('<iframe>');
   sandbox.append(frame);
   $(function() {   // fire event when iframe is ready
-    frame.load(function() {
+    frame.on('load', function() {
       const win = frame.get(0).contentWindow;
-      callback(win, {TPI: win.__CAD_APP.services.tpi})
+      callback(win, apiGet(win))
     });
   });
   frame.attr('src', window.location.origin + url)
@@ -156,17 +162,20 @@ export function load(url, callback) {
 const TEST_PROJECT = '$$$__test__$$$';
 const STORAGE_PREFIX_SKETCH = "TCAD.projects.";
 
+const SKETCHER_API = win => win.__CAD_APP;
+const MODELLER_API = win => ({TPI: win.__CAD_APP.services.tpi});
+
 export function emptySketch(callback) {
   localStorage.removeItem(STORAGE_PREFIX_SKETCH + TEST_PROJECT);
   sketch(callback);
 }
 
 export function sketch(callback) {
-  load('/sketcher.html#' + TEST_PROJECT, callback);
+  load('/sketcher.html#' + TEST_PROJECT, callback, SKETCHER_API);
 }
 
 export function modeller(callback) {
-  load('/index.html#' + TEST_PROJECT, callback);
+  load('/index.html#' + TEST_PROJECT, callback, MODELLER_API);
 }
 
 export function emptyModeller(callback) {

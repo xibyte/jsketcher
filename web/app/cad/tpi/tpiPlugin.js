@@ -4,7 +4,7 @@ import {MBrepShell} from '../model/mshell';
 /*
  * TPI stands for the Test Program Interface
  */
-export function activate({bus, services}) {
+export function activate({streams, services}) {
 
   function addShellOnScene(shell, skin) {
     const sceneSolid = new MBrepShell(shell);
@@ -16,7 +16,7 @@ export function activate({bus, services}) {
     services.viewer.render();
   }
   services.tpi = Object.assign({
-    bus,
+    streams,
     services,
     addShellOnScene,
     addOnScene
