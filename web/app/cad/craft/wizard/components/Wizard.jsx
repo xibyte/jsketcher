@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Window from 'ui/components/Window';
 import Stack from 'ui/components/Stack';
 import Button from 'ui/components/controls/Button';
@@ -7,63 +6,65 @@ import ButtonGroup from 'ui/components/controls/ButtonGroup';
 
 import ls from './Wizard.less';
 import CadError from '../../../../utils/errors';
-import {createPreviewer} from '../../../preview/scenePreviewer';
 import {FormContext} from './form/Form';
+import connect from 'ui/connect';
+import mapContext from 'ui/mapContext';
 
-export default class Wizard extends React.PureComponent {
+@connect(streams => streams.wizard.workingRequest)
+@mapContext(ctx => ({
+  updateParam: (name, value) => {
+    let workingRequest$ = ctx.streams.wizard.workingRequest;
+    if (workingRequest$.value.params && workingRequest$.value.type) {
+      workingRequest$.mutate(data => data.params[name] = value)
+    }
+  }
+}))
+export default class Wizard extends React.Component {
 
   state = {
     hasError: false,
     validationErrors: [],
   };
 
-  updatePreview() {
-    if (this.previewer) {
-      this.previewer.update(this.props.params);
-    }
-  }
-  
-  componentDidMount() {
-    this.previewer = this.props.createPreviewer();
-    this.updatePreview();
-  }
-
-  componentDidUpdate() {
-    this.previewer.dispose();
-    this.previewer = this.props.createPreviewer();
-    this.updatePreview();
-  }
-
-  componentWillUnmount() {
-    this.previewer.dispose()
-  }
 
   componentDidCatch() {
     this.setState({hasInternalError: true});
   }
-  
+
   render() {
     if (this.state.hasInternalError) {
       return <span>operation error</span>;
     }
-    let {left, type} = this.props;
+
+    let {left, type, params, resolveOperation, updateParam} = this.props;
+    if (!type) {
+      return null;
+    }
+
+    let operation = resolveOperation(type);
+    if (!operation) {
+      console.error('unknown operation ' + type);
+      return null;
+    }
+
+    let title = (operation.label || type).toUpperCase();
 
     let formContext = {
-      data: this.props.params,
+      data: params,
       validationErrors: this.state.validationErrors,
-      onChange: () => this.updatePreview()
+      updateParam,
     };
 
-    let Form = this.props.form;
+    let Form = operation.form;
 
     return <Window initWidth={250}
-                   initLeft={left}
-                   title={type}
+                   initLeft={left || 25}
+                   title={title}
                    onClose={this.cancel}
                    onKeyDown={this.onKeyDown}
                    setFocus={this.focusFirstInput}>
       <FormContext.Provider value={formContext}>
-        <Form />
+        <Form/>
       </FormContext.Provider>
       <Stack>
         <ButtonGroup>
@@ -104,25 +105,23 @@ export default class Wizard extends React.PureComponent {
   };
 
   cancel = () => {
-    if (this.props.onCancel) {
-      this.props.onCancel();
-    }
-    this.props.close();
+    this.props.onCancel();
   };
 
   onOK = () => {
     try {
-      let validationErrors = this.props.validate(this.props.params);
+      let {type, params, resolveOperation, validator} = this.props;
+      if (!type) {
+        return null;
+      }
+
+      let operation = resolveOperation(type);
+      let validationErrors = validator(params, operation.schema);
       if (validationErrors.length !== 0) {
-        this.setState({validationErrors})
+        this.setState({validationErrors});
         return;
       }
-      if (this.props.onOK) {
-        this.props.onOK(this.props.params);
-      } else {
-        this.context.services.craft.modify({type: this.props.type, params: this.props.params});
-      }
-      this.props.close();
+      this.props.onOK();
     } catch (error) {
       this.handleError(error);
     }
@@ -146,11 +145,6 @@ export default class Wizard extends React.PureComponent {
       throw error;
     }
   }
-
-
-  static contextTypes = {
-    services: PropTypes.object
-  };
 }
 
 

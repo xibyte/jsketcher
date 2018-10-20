@@ -11,7 +11,7 @@ export default class Viewer {
     this.sceneSetup.render();  
   }
 
-  requestRender() {
+  requestRender = () => {
     if (this.renderRequested) {
       return;
     }
@@ -19,14 +19,21 @@ export default class Viewer {
       this.renderRequested = false;
       this.render();
     });
-  }
+  };
+  
+  setVisualProp = (obj, prop, value) => {
+    if (obj[prop] !== value) {
+      obj[prop] = value;
+      this.requestRender();
+    }
+  };
   
   lookAt(obj) {
     this.sceneSetup.lookAt(obj);
   }
   
-  raycast(event, group) {
-    return this.sceneSetup.raycast(event, group);
+  raycast(event, objects) {
+    return this.sceneSetup.raycast(event, objects);
   }
   
   setCameraMode(mode) {

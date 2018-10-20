@@ -6,6 +6,10 @@ export default class CSys {
     return new CSys(origin, dir, normal.cross(dir), normal)  
   }
   
+  static origin() {
+    return new CSys(ORIGIN.copy(), AXIS.X.copy(), AXIS.Y.copy(), AXIS.Z.copy());
+  }
+  
   constructor(origin, x, y, z) {
     this.origin = origin;
     this.x = x;
@@ -32,9 +36,22 @@ export default class CSys {
     return this._outTr;
   }
   
-  copy() {
-    return CSys(this.origin, this.x, this.y, this.z);
+  copy(csys) {
+    this.origin.setV(csys.origin);
+    this.x.setV(csys.x);
+    this.y.setV(csys.y);
+    this.z.setV(csys.z);
+    return this;
   }
+
+  clone() {
+    return new CSys(this.origin.copy(), this.x.copy(), this.y.copy(), this.z.copy());
+  }
+
+  move(x, y, z) {
+    this.origin.set(x, y, z);
+    return this;
+  }
+  
 }
 
-CSys.ORIGIN = new CSys(ORIGIN, AXIS.X, AXIS.Y, AXIS.Z);

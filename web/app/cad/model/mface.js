@@ -37,6 +37,14 @@ export class MFace extends MObject {
     return this._basis;
   }
 
+  get csys() {
+    if (!this._csys) {
+      let [x,y,z] = this.basis();
+      this._csys = new CSys(this.normal().multiply(this.depth()), x, y, z);
+    }
+    return this._csys;
+  }
+  
   setSketch(sketch) {
     this.sketch = sketch;
     this.sketchObjects = [];

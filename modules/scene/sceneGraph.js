@@ -20,5 +20,16 @@ export function clearGroup(group) {
     group.remove(o);
   }
 }
- 
 
+
+export function findAncestor( obj, predicate, includeItself ) {
+  let parent = includeItself ? obj : obj.parent;
+  if ( parent !== null ) {
+    if (predicate(parent)) {
+      return parent;
+    } else {
+      return findAncestor( parent, predicate, false )
+    }
+  }
+  return null;
+}
