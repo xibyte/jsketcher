@@ -1,6 +1,7 @@
-import {addModification} from './craftHistoryUtils';
+import {addModification, stepOverriding} from './craftHistoryUtils';
 import {state, stream} from 'lstream';
 import {MShell} from '../model/mshell';
+import {MDatum} from '../model/mdatum';
 
 export function activate({streams, services}) {
 
@@ -13,10 +14,33 @@ export function activate({streams, services}) {
     update: stream()
   };
 
-  function modify(request) {
-    streams.craft.modifications.update(modifications => addModification(modifications, request));
+  let preRun = null;
+
+  function modifyWithPreRun(request, modificationsUpdater, onAccepted) {
+    preRun = {
+      request
+    };
+    try {
+      preRun.result = runRequest(request);
+      if (onAccepted) {
+        onAccepted();
+      }
+      modificationsUpdater(request);
+    } finally {
+      preRun = null;
+    }
   }
   
+  function modify(request, onAccepted) {
+    modifyWithPreRun(request, 
+        request => streams.craft.modifications.update(modifications => addModification(modifications, request)), onAccepted);
+  }
+
+  function modifyInHistoryAndStep(request, onAccepted) {
+    modifyWithPreRun(request,
+      request => streams.craft.modifications.update(modifications => stepOverriding(modifications, request)), onAccepted);
+  }
+
   function reset(modifications) {
     streams.craft.modifications.next({
       history: modifications,
@@ -24,8 +48,25 @@ export function activate({streams, services}) {
     });
   }
   
+  function runRequest(request) {
+    let op = services.operation.get(request.type);
+    if (!op) {
+      throw(`unknown operation ${request.type}`);
+    }
+
+    return op.run(request.params, services);
+  }
+  
+  function runOrGetPreRunResults(request) {
+    if (preRun !== null && preRun.request === request) {
+      return preRun.result;
+    } else {
+      return runRequest(request);
+    }
+  }
+  
   services.craft = {
-    modify, reset
+    modify, modifyInHistoryAndStep, reset, runRequest
   };
 
   streams.craft.modifications.pairwise().attach(([prev, curr]) => {
@@ -35,6 +76,7 @@ export function activate({streams, services}) {
       beginIndex = prev.pointer + 1;
     } else {
       MShell.ID_COUNTER = 0;
+      MDatum.ID_COUNTER = 0;
       beginIndex = 0;
       streams.craft.models.next([]);
     }
@@ -43,14 +85,7 @@ export function activate({streams, services}) {
     let {history, pointer} = curr;
     for (let i = beginIndex; i <= pointer; i++) {
       let request = history[i];
-
-      let op = services.operation.get(request.type);
-      if (!op) {
-        console.log(`unknown operation ${request.type}`);
-      }
-
-      let {outdated, created} = op.run(request.params, services);
-
+      let {outdated, created} = runOrGetPreRunResults(request);
       outdated.forEach(m => models.delete(m));
       created.forEach(m => models.add(m));
       streams.craft.models.next(Array.from(models).sort(m => m.id));

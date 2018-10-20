@@ -22,17 +22,13 @@ export function formField(Control) {
 }
 
 export function attachToForm(Control) {
-  return function FormField({name, label, ...props}) {
+  return function FormField({name, ...props}) {
     return <FormContext.Consumer>
       {
         ctx => {
-          const onChange = val => {
-            ctx.data[name] = val;
-            ctx.onChange();
-          };
-          let initValue = ctx.data[name];
+          const onChange = val => ctx.updateParam(name, val);
           return <React.Fragment>
-            <Control initValue={initValue} onChange={onChange} name={name} {...props} />
+            <Control value={ctx.data[name]} onChange={onChange} name={name} {...props} />
           </React.Fragment>;
         }
       }

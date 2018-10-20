@@ -16,7 +16,7 @@ export function activate({streams, services}) {
         model.ext.view.mark();
       }
     });
-    services.viewer.render();
+    services.viewer.requestRender();
   };
 
   streams.selection.face.pairwise([]).attach(selectionSync(FACE));

@@ -1,13 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import InputControl from './InputControl';
 
 export default class CheckboxControl extends React.Component {
   
   render() {
-    let {onChange, initValue} = this.props;
+    let {onChange, value} = this.props;
     return <input type='checkbox' 
-              defaultValue={initValue} 
+              defaultValue={value} 
               onChange={e => onChange(e.target.value)}  /> 
   }
 }

@@ -5,10 +5,10 @@ import InputControl from './InputControl';
 export default class NumberControl extends React.Component {
   
   render() {
-    let {onChange, initValue} = this.props;
+    let {onChange, value} = this.props;
     return <InputControl type='number' 
               onWheel={this.onWheel} 
-              defaultValue={initValue} 
+              value={ Math.round(value * 1000) / 1000 } 
               onChange={this.onChange}
               inputRef={input => this.input = input} /> 
   }
@@ -54,7 +54,7 @@ NumberControl.propTypes = {
   min: PropTypes.number, 
   max: PropTypes.number, 
   accelerator: PropTypes.number, 
-  initValue: PropTypes.number.isRequired, 
+  value: PropTypes.number.isRequired, 
   onChange: PropTypes.func.isRequired
 };
 

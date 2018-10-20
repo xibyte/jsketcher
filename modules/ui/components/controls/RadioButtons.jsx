@@ -12,7 +12,7 @@ export default class RadioButtons extends React.Component {
   getChildContext() {
     return {
       radioButtonsGroupName: this.groupId,
-      radioButtonsInitValue: this.props.initValue,
+      radioButtonsValue: this.props.value,
       radioButtonsOnChange: this.props.onChange
     }
   }
@@ -20,13 +20,13 @@ export default class RadioButtons extends React.Component {
   groupId = 'group_' + GROUP_COUNTER++;
 }
 
-export function RadioButton({value, label}, {radioButtonsGroupName, radioButtonsInitValue, radioButtonsOnChange}) {
+export function RadioButton({value, label}, {radioButtonsGroupName, radioButtonsValue, radioButtonsOnChange}) {
   let onChange = e => {
     radioButtonsOnChange(e.target.value)
   };
   label = label || value;
   return <label className={ls.radioButton}>
-    <input type='radio' name={radioButtonsGroupName} defaultChecked={radioButtonsInitValue === value} 
+    <input type='radio' name={radioButtonsGroupName} checked={radioButtonsValue === value} 
            value={value} onChange={onChange}/> {label}
     
   </label>
@@ -35,7 +35,7 @@ export function RadioButton({value, label}, {radioButtonsGroupName, radioButtons
 
 RadioButtons.childContextTypes = {
   radioButtonsGroupName: PropTypes.string.isRequired,
-  radioButtonsInitValue: PropTypes.string.isRequired,
+  radioButtonsValue: PropTypes.string.isRequired,
   radioButtonsOnChange: PropTypes.func.isRequired
 };
 

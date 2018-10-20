@@ -4,6 +4,8 @@ import cutOperation from '../craft/cutExtrude/cutOperation';
 import planeOperation from '../craft/primitives/planeOperation';
 import filletOperation from '../craft/fillet/filletOperation';
 import revolveOperation from '../craft/revolve/revolveOperation';
+import createDatumOperation from '../craft/datum/create/createDatumOperation';
+import moveDatumOperation from '../craft/datum/move/moveDatumOperation';
 
 export function activate({services}) {
   services.operation.registerOperations([
@@ -12,6 +14,8 @@ export function activate({services}) {
     extrudeOperation,
     cutOperation,
     revolveOperation,
-    filletOperation
+    filletOperation,
+    createDatumOperation,
+    moveDatumOperation
   ])
 }

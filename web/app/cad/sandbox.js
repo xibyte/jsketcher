@@ -7,8 +7,10 @@ import NurbsCurve from "../brep/geom/curves/nurbsCurve";
 import {surfaceIntersect} from '../brep/geom/intersection/surfaceSurface';
 import {closestToCurveParam, findClosestToCurveParamRoughly} from '../brep/geom/curves/closestPoint';
 import NurbsSurface from '../brep/geom/surfaces/nurbsSurface';
+import DatumObject3D from './craft/datum/datumObject';
+import CSys from '../math/csys';
 
-export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi, tpi: {addShellOnScene} }}) {
+export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, tpi, tpi: {addShellOnScene} }}) {
 
   function test1() {
 
@@ -238,7 +240,18 @@ export function runSandbox({bus, services: { viewer, cadScene, cadRegistry, tpi,
   // cylinderAndPlaneIntersect();
   // curvesIntersect();
   // cylTest();
-  surfaceSurfaceIntersect();
+  // surfaceSurfaceIntersect();
+  
+  
+  // let o1 = new DatumObject3D(CSys.origin().move(new Vector(200, 200, 200)), viewer.sceneSetup);
+  // o1.setMoveMode(DatumObject3D.AXIS.Y);
+  // cadScene.auxGroup.add(o1);
+  // let o2 = new DatumObject3D(CSys.origin().move(new Vector(-200, -200, -200)), viewer.sceneSetup);
+  // o2.setMoveMode(DatumObject3D.AXIS.Z);
+  // cadScene.auxGroup.add(o2);
+
+  services.action.run('DATUM_CREATE');
+  
 }
 
 

@@ -20,7 +20,7 @@ export function activate(context) {
     let opAction = {
       id: id,
       appearance,
-      invoke: () => services.wizard.open({type: id}),
+      invoke: () => services.wizard.open(id),
       ...actionParams
     };
     actions.push(opAction);

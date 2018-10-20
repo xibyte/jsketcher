@@ -5,6 +5,10 @@ import {MOpenFaceShell} from '../model/mopenFace';
 import {EDGE, FACE, SHELL, SKETCH_OBJECT} from './entites';
 import {OpenFaceShellView} from './views/openFaceView';
 import {findDiff} from '../../../../modules/gems/iterables';
+import {MShell} from '../model/mshell';
+import {MDatum} from '../model/mdatum';
+import DatumView from './views/datumView';
+import {View} from './views/view';
 
 export function activate(context) {
   let {streams} = context;
@@ -12,15 +16,15 @@ export function activate(context) {
   streams.sketcher.update.attach(mFace => mFace.ext.view.updateSketch());
 }
 
-function sceneSynchronizer({services: {cadScene, cadRegistry}}) {
+function sceneSynchronizer({services: {cadScene, cadRegistry, viewer, wizard, action}}) {
   return function() {
     let wgChildren = cadScene.workGroup.children;
     let existent = new Set();
     for (let i = wgChildren.length - 1; i >= 0; --i) {
       let obj = wgChildren[i];
-      let shellView = getAttribute(obj, SHELL);
+      let shellView = getAttribute(obj, View.MARKER);
       if (shellView) {
-        let exists = cadRegistry.shellIndex.has(shellView.model.id);
+        let exists = cadRegistry.modelIndex.has(shellView.model.id);
         if (!exists) {
           SceneGraph.removeFromGroup(cadScene.workGroup, obj);
           shellView.dispose();
@@ -30,17 +34,19 @@ function sceneSynchronizer({services: {cadScene, cadRegistry}}) {
       }
     }
 
-    let allShells = cadRegistry.getAllShells();
-
-    for (let shell of allShells) {
-      if (!existent.has(shell.id)) {
-        let shellView;
-        if (shell instanceof MOpenFaceShell) {
-          shellView = new OpenFaceShellView(shell);
+    for (let model of cadRegistry.models) {
+      if (!existent.has(model.id)) {
+        let modelView;
+        if (model instanceof MOpenFaceShell) {
+          modelView = new OpenFaceShellView(model);
+        } else if (model instanceof MShell) {
+          modelView = new ShellView(model);
+        } else if (model instanceof MDatum) {
+          modelView = new DatumView(model, viewer, wizard.open, (e) => action.run('menu.datum', e));
         } else {
-          shellView = new ShellView(shell);
+          console.warn('unsupported model ' + model);
         }
-        SceneGraph.addToGroup(cadScene.workGroup, shellView.rootGroup);
+        SceneGraph.addToGroup(cadScene.workGroup, modelView.rootGroup);
       }
     }
   }

@@ -12,11 +12,11 @@ import {combine} from 'lstream';
 import {EMPTY_OBJECT} from '../../../../../modules/gems/objects';
 import {aboveElement} from '../../../../../modules/ui/positionUtils';
 
-@connect(streams => combine(streams.craft.modifications, streams.operation.registry, streams.wizard)
-  .map(([modifications, operationRegistry, wizard]) => ({
+@connect(streams => combine(streams.craft.modifications, streams.operation.registry, streams.wizard.insertOperation)
+  .map(([modifications, operationRegistry, insertOperationReq]) => ({
     ...modifications,
     operationRegistry,
-    inProgressOperation: wizard&&wizard.type,
+    inProgressOperation: insertOperationReq.type,
     getOperation: type => operationRegistry[type]||EMPTY_OBJECT
   })))
 @mapContext(({streams}) => ({

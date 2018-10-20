@@ -18,8 +18,11 @@ export class StreamBase {
     return new ScanStream(this, initAccumulator);
   }
   
-  remember() {
-    let stateStream = new StateStream(undefined);
+  remember(initialValue, usingStream) {
+    if (!usingStream) {
+      usingStream = StateStream;
+    }
+    let stateStream = new usingStream(initialValue);
     this.attach(v => stateStream.next(v));
     return stateStream;
   }

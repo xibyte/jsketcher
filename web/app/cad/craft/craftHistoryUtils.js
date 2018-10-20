@@ -19,11 +19,8 @@ export function addModification({history, pointer}, request) {
   }
 }
 
-export function stepOverridingParams({history, pointer}, params) {
-  history[pointer + 1] = {
-    type: history[pointer + 1].type,
-    params
-  };
+export function stepOverriding({history, pointer}, request) {
+  history[pointer + 1] = request;
   return {
     history,
     pointer: ++pointer

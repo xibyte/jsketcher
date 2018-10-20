@@ -1,5 +1,7 @@
 export class View {
   
+  static MARKER = 'ModelView';
+  
   constructor(model) {
     this.model = model;
     model.ext.view = this;

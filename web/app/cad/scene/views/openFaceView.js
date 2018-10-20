@@ -8,7 +8,8 @@ export class OpenFaceShellView extends View {
   constructor(shell) {
     super(shell);
     this.openFace = new OpenFaceView(shell.face);
-    setAttribute(this.rootGroup, SHELL, this)
+    setAttribute(this.rootGroup, SHELL, this);
+    setAttribute(this.rootGroup, View.MARKER, this);
   }
   
   get rootGroup() {

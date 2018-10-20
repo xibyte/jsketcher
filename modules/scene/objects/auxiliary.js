@@ -1,6 +1,9 @@
 import DPR from 'dpr';
 import {ArrowHelper, CylinderBufferGeometry, Mesh, MeshBasicMaterial, Object3D, Vector3} from 'three';
 import {createMeshLineGeometry} from './meshLine';
+import {Sphere} from 'three/src/math/Sphere';
+import {Matrix4} from 'three/src/math/Matrix4';
+import {Ray} from 'three/src/math/Ray';
 
 export function createArrow(length, arrowLength, arrowHead, axis, color, opacity, materialMixins) {
   let arrow = new ArrowHelper(new Vector3().copy(axis), new Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
@@ -24,7 +27,7 @@ let lineGeometry = null;
 
 export class MeshArrow extends Object3D {
 
-  constructor(dir, color, length, headLength, headWidth, lineWidth) {
+  constructor({dir, color, length, headLength, headWidth, lineWidth, materialCreate, createHandle, handleMaterial}) {
     super();
 
     if (color === undefined) color = 0xffff00;
@@ -32,7 +35,8 @@ export class MeshArrow extends Object3D {
     if (headLength === undefined) headLength = 0.2 * length;
     if (headWidth === undefined) headWidth = 0.2 * headLength;
     if (lineWidth === undefined) lineWidth = 0.2 * headWidth;
-
+    if (materialCreate === undefined) materialCreate = params => new MeshBasicMaterial(params);
+    
     if (!tipGeometry) {
       tipGeometry = new CylinderBufferGeometry(0, 0.5, 1, 5, 1);
       tipGeometry.translate(0, -0.5, 0);
@@ -41,14 +45,20 @@ export class MeshArrow extends Object3D {
 
     // dir is assumed to be normalized
 
-    let cone = new Mesh(tipGeometry, new MeshBasicMaterial({color}));
-    let line = new Mesh(lineGeometry, new MeshBasicMaterial({color}));
-
-    line.matrixAutoUpdate = false;
+    let cone = new Mesh(tipGeometry, materialCreate({color}));
     cone.matrixAutoUpdate = false;
-
-    this.add(line);
     this.add(cone);
+
+    let line = new Mesh(lineGeometry, materialCreate({color}));
+    line.matrixAutoUpdate = false;
+    this.add(line);
+    
+    let handle = null;
+    if (createHandle) {
+      handle = new Mesh(lineGeometry, handleMaterial? handleMaterial() : new MeshBasicMaterial());
+      handle.matrixAutoUpdate = false;
+      this.add(handle);
+    }
 
     if (dir.y > 0.99999) {
       this.quaternion.set(0, 0, 0, 1);
@@ -65,16 +75,25 @@ export class MeshArrow extends Object3D {
     line.scale.set(lineWidth, Math.max(0, length - headLength), lineWidth);
     line.updateMatrix();
 
+    if (handle) {
+      handle.scale.set(lineWidth * 5, length, lineWidth * 5);
+      handle.updateMatrix();
+    }
+
     cone.scale.set(headWidth, headLength, headWidth);
     cone.position.y = length;
     cone.updateMatrix();
     
     this.cone = cone;
     this.line = line;
+    this.handle = handle;
   }
   
   dispose() {
     this.cone.material.dispose();
     this.line.material.dispose();
+    if (this.handle) {
+      this.handle.material.dispose();
+    }
   }
 }

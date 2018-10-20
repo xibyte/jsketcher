@@ -7,7 +7,14 @@ import {AXIS} from '../../web/app/math/l3space';
 export default function(container) {
 
   function createBasisArrow(axis, color) {
-    return new MeshArrow(axis, color, 1, 0.3, 0.15, 0.02);
+    return new MeshArrow({
+      dir: axis,
+      color,
+      length: 1, 
+      headLength: 0.3, 
+      headWidth: 0.15, 
+      lineWidth: 0.02
+    });
   }
 
   let xAxis = createBasisArrow(AXIS.X, 0xFF0000);

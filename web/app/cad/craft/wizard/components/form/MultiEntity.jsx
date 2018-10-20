@@ -10,30 +10,24 @@ import initializeBySchema from '../../../intializeBySchema';
 @mapContext(({streams}) => ({streams}))
 export default class MultiEntity extends React.Component {
 
-  constructor({initValue}) {
-    super();
-    this.state = {
-      value: initValue
-    };
-  }
-
   selectionChanged = selection => {
     let {itemField, schema, context} = this.props;
     let value = selection.map(id => {
-      let item = this.state.value.find(i => i[itemField] === id);
+      let item = this.props.value.find(i => i[itemField] === id);
       if (!item) {
         item = initializeBySchema(schema, context);
         item[itemField] = id;
       }
       return item;
     });
-    this.setState({value});
     this.props.onChange(value);
   };
 
   componentDidMount() {
     let {streams, entity} = this.props;
-    this.detacher = streams.selection[entity].attach(this.selectionChanged);
+    let selection$ = streams.selection[entity];
+    this.selectionChanged(selection$.value);
+    this.detacher = selection$.attach(this.selectionChanged);
   }
 
   componentWillUnmount() {
@@ -44,7 +38,7 @@ export default class MultiEntity extends React.Component {
 
     return <FormContext.Consumer>
       {
-        ({onChange}) => this.state.value.map(data => {
+        ({onChange}) => this.props.value.map(data => {
           let subContext = {
             data,
             onChange

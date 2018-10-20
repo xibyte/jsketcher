@@ -5,11 +5,13 @@ import Fa from '../../../../../modules/ui/components/Fa';
 import {constant} from '../../../../../modules/lstream';
 import ls from './ObjectExplorer.less';
 import cx from 'classnames';
+import {MShell} from '../../model/mshell';
+import {MDatum} from '../../model/mdatum';
 
 export default connect(streams => streams.craft.models.map(models => ({models})))
 (function ObjectExplorer({models}) {
 
-  return models.map(m => <ModelSection type='shell' model={m} defaultOpen={true}>
+  return models.map(m => (m instanceof MShell) ? <ModelSection type='shell' model={m} defaultOpen={true}>
     <Section label='faces' defaultOpen={true}>
       {
         m.faces.map(f => <ModelSection type='face' model={f}>
@@ -23,7 +25,7 @@ export default connect(streams => streams.craft.models.map(models => ({models}))
       {m.edges.map(e => <ModelSection type='edge' model={e} />)}
     </Section>
 
-  </ModelSection>);
+  </ModelSection> : (m instanceof MDatum) ? <ModelSection type='datum' model={m} defaultOpen={true}/> : null);
 
 });
 
