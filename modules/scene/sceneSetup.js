@@ -6,6 +6,7 @@ export default class SceneSetUp {
   
   constructor(container, onRendered) {
     
+    this.workingSphere = 10000;
     this.container = container;
     this.scene = new THREE.Scene();
     this.rootGroup = this.scene;
@@ -35,7 +36,7 @@ export default class SceneSetUp {
   }
 
   createPerspectiveCamera() {
-    this.pCamera = new THREE.PerspectiveCamera( 500*75, this.aspect(), 0.1, 10000 );
+    this.pCamera = new THREE.PerspectiveCamera( 60, this.aspect(), 0.1, 10000 );
     this.pCamera.position.z = 1000;
     this.pCamera.position.x = -1000;
     this.pCamera.position.y = 300;
@@ -159,17 +160,35 @@ export default class SceneSetUp {
     };
   }
 
-  raycast(event, group) {
+  createRaycaster(viewX, viewY) {
     let raycaster = new THREE.Raycaster();
     raycaster.linePrecision = 12 * (this._zoomMeasure() * 0.8);
-    let x = ( event.offsetX / this.container.clientWidth ) * 2 - 1;
-    let y = - ( event.offsetY / this.container.clientHeight ) * 2 + 1;
+    let x = ( viewX / this.container.clientWidth ) * 2 - 1;
+    let y = - ( viewY / this.container.clientHeight ) * 2 + 1;
 
     let mouse = new THREE.Vector3( x, y, 1 );
     raycaster.setFromCamera( mouse, this.camera );
-    return raycaster.intersectObjects( group.children, true );
+    return raycaster;
+  }
+  
+  raycast(event, objects) {
+    let raycaster = this.createRaycaster(event.offsetX, event.offsetY);
+    return raycaster.intersectObjects( objects, true );
   }
 
+  modelToScreen(pos) {
+    let width = this.container.clientWidth, height = this.container.clientHeight;
+    let widthHalf = width / 2, heightHalf = height / 2;
+
+    let vector = new THREE.Vector3();
+    vector.copy(pos);
+    vector.project(this.camera);
+
+    vector.x = ( vector.x * widthHalf ) + widthHalf;
+    vector.y = - ( vector.y * heightHalf ) + heightHalf;
+    return vector;
+  }
+  
   lookAt(obj) {
     let box = new THREE.Box3();
     box.setFromObject(obj);

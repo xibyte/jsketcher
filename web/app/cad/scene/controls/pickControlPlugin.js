@@ -1,7 +1,7 @@
 import * as mask from 'gems/mask'
-import {getAttribute, setAttribute} from '../../../../../modules/scene/objectData';
+import {getAttribute, setAttribute} from 'scene/objectData';
 import {FACE, EDGE, SKETCH_OBJECT} from '../entites';
-import {state} from '../../../../../modules/lstream';
+import {state} from 'lstream';
 
 export const PICK_KIND = {
   FACE: mask.type(1),
@@ -85,7 +85,7 @@ export function activate(context) {
   }
 
   function raycastObjects(event, kind, visitor) {
-    let pickResults = services.viewer.raycast(event, services.cadScene.workGroup);
+    let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children);
     const pickers = [
       (pickResult) => {
         if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line) {
@@ -126,36 +126,39 @@ export function activate(context) {
   }
 }
 
-function initStateAndServices({streams, services}) {
-  
-  services.selection = {
-  };
-
+export function defineStreams({streams}) {
   streams.selection = {
   };
-  
+  SELECTABLE_ENTITIES.forEach(entity => {
+    let selectionState = state([]);
+    streams.selection[entity] = state([]);
+  });
+
+}
+
+function initStateAndServices({streams, services}) {
+
+  services.selection = {};
+
   SELECTABLE_ENTITIES.forEach(entity => {
     let entitySelectApi = {
       objects: [],
       single: undefined
     };
     services.selection[entity] = entitySelectApi;
-    let selectionState = state([]);
-    streams.selection[entity] = selectionState;
+    let selectionState = streams.selection[entity];
     selectionState.attach(selection => {
       entitySelectApi.objects = selection.map(id => services.cadRegistry.findEntity(entity, id));
-      entitySelectApi.single = entitySelectApi.objects[0]; 
+      entitySelectApi.single = entitySelectApi.objects[0];
     });
     entitySelectApi.select = selection => selectionState.value = selection;
   });
 
-  //withdraw all
   streams.craft.models.attach(() => {
-    Object.values(streams.selection).forEach(ss => ss.next([]))  
-  })
+    withdrawAll(streams.selection)
+  });
 }
 
-
-
-
-
+export function withdrawAll(selectionStreams) {
+  Object.values(selectionStreams).forEach(stream => stream.next([]))
+}

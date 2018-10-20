@@ -2,6 +2,7 @@ import * as LifecyclePlugin from './lifecyclePlugin';
 import * as AppTabsPlugin from '../dom/appTabsPlugin';
 import * as DomPlugin from '../dom/domPlugin';
 import * as PickControlPlugin from '../scene/controls/pickControlPlugin';
+import * as MouseEventSystemPlugin from '../scene/controls/mouseEventSystemPlugin';
 import * as ScenePlugin from '../scene/scenePlugin';
 import * as SelectionMarkerPlugin from '../scene/selectionMarker/selectionMarkerPlugin';
 import * as ActionSystemPlugin from '../actions/actionSystemPlugin';
@@ -9,6 +10,7 @@ import * as UiEntryPointsPlugin from '../dom/uiEntryPointsPlugin';
 import * as MenuPlugin from '../dom/menu/menuPlugin';
 import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
 import * as WizardPlugin from '../craft/wizard/wizardPlugin';
+import * as PreviewPlugin from '../preview/previewPlugin';
 import * as OperationPlugin from '../craft/operationPlugin';
 import * as CraftEnginesPlugin from '../craft/enginesPlugin';
 import * as CadRegistryPlugin from '../craft/cadRegistryPlugin';
@@ -39,10 +41,11 @@ export default function startApplication(callback) {
     UiEntryPointsPlugin,
     MenuPlugin,
     KeyboardPlugin,
-    WizardPlugin,
     CraftEnginesPlugin,
     OperationPlugin,
     CraftPlugin,
+    WizardPlugin,
+    PreviewPlugin,
     CraftUiPlugin,
     CadRegistryPlugin,
     tpiPlugin
@@ -51,6 +54,7 @@ export default function startApplication(callback) {
   let plugins = [
     DomPlugin,
     ScenePlugin,
+    MouseEventSystemPlugin,
     PickControlPlugin,
     SelectionMarkerPlugin,
     SketcherPlugin,

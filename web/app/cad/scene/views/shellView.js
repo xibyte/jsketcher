@@ -1,11 +1,10 @@
 import {View} from './view';
 import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
-import {genSolidId} from '../../craft/cadRegistryPlugin';
 import {setAttribute} from '../../../../../modules/scene/objectData';
 import {createSolidMaterial} from '../wrappers/sceneObject';
 import {FaceView} from './faceView';
-import {SHELL} from '../entites';
 import {EdgeView} from './edgeView';
+import {SHELL} from '../entites';
 
 export class ShellView extends View {
 
@@ -24,6 +23,7 @@ export class ShellView extends View {
     SceneGraph.addToGroup(this.rootGroup, this.vertexGroup);
 
     setAttribute(this.rootGroup, SHELL, this);
+    setAttribute(this.rootGroup, View.MARKER, this);
 
     const geometry = new THREE.Geometry();
     geometry.dynamic = true;

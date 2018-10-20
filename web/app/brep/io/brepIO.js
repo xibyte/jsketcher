@@ -77,6 +77,9 @@ function readSurface(s, inverted, face) {
 
 function readCurve(curve) {
   switch (curve.TYPE) {
+    case 'B-SPLINE':
+      console.dir(curve);
+      
     case 'CONIC':
       //...
     case 'LINE':
