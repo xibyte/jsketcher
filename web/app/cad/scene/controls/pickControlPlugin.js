@@ -1,6 +1,6 @@
 import * as mask from 'gems/mask'
 import {getAttribute, setAttribute} from 'scene/objectData';
-import {FACE, EDGE, SKETCH_OBJECT} from '../entites';
+import {FACE, EDGE, SKETCH_OBJECT, DATUM} from '../entites';
 import {state} from 'lstream';
 
 export const PICK_KIND = {
@@ -9,7 +9,7 @@ export const PICK_KIND = {
   EDGE: mask.type(3)
 };
 
-const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT];
+const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM];
 
 export function activate(context) {
   const {services, streams} = context;
@@ -130,10 +130,8 @@ export function defineStreams({streams}) {
   streams.selection = {
   };
   SELECTABLE_ENTITIES.forEach(entity => {
-    let selectionState = state([]);
     streams.selection[entity] = state([]);
   });
-
 }
 
 function initStateAndServices({streams, services}) {

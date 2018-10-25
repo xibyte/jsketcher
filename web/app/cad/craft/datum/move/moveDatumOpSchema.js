@@ -1,6 +1,7 @@
 export default {
   datum: {
-    type: 'datum'
+    type: 'datum',
+    defaultValue: {type: 'selection'}
   },
   x: {
     type: 'number',

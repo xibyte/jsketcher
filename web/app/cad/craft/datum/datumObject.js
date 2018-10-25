@@ -3,7 +3,6 @@ import {Geometry, Line, LineBasicMaterial, MeshBasicMaterial, Object3D, Vector3}
 
 import CSysObject3D from './csysObject';
 import {NOOP} from 'gems/func';
-import {findAncestor} from '../../../../../modules/scene/sceneGraph';
 
 export default class DatumObject3D extends Object3D {
 
@@ -32,6 +31,7 @@ export default class DatumObject3D extends Object3D {
     this.add(this.csysObj);
     this.exitEditMode = NOOP;
     this.beingDraggedAxis = null;
+    this.freezeDragging = false;
   }
   
   setMoveMode(axis) {
@@ -136,6 +136,9 @@ export default class DatumObject3D extends Object3D {
 function addOnHoverBehaviour(handle, viewer) {
   handle.onMouseDown = function(e, hits, startDrag) {
     let datum = this.parent.parent.parent;
+    if (datum.freezeDraggin) {
+      return;
+    }
     startDrag(datum);
     datum.dragStart(e, this.parent);
   };
