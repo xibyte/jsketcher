@@ -245,4 +245,6 @@ export function perpendicularVector(v) {
       .sort((a, b) => vec.lengthSq(b) - vec.lengthSq(a))[0];
 }
 
+export const DEG_RAD = Math.PI / 180.0;
+
 export const sq = (a) => a * a;
