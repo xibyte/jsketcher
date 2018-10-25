@@ -39,6 +39,13 @@ Matrix3.prototype.setBasis = function(basis) {
   return this;
 };
 
+Matrix3.prototype.setBasisAxises = function(x, y, z) {
+  this.mxx = x.x; this.mxy = y.x; this.mxz = z.x; this.tx = 0;
+  this.myx = x.y; this.myy = y.y; this.myz = z.y; this.ty = 0;
+  this.mzx = x.z; this.mzy = y.z; this.mzz = z.z; this.tz = 0;
+  return this;
+};
+
 Matrix3.prototype.scale = function(dx, dy, dz) {
   this.mxx *= dx;
   this.myy *= dy;
@@ -143,7 +150,7 @@ Matrix3.prototype.__invert = function(out) {
   return out;
 };
 
-Matrix3.prototype.combine = function(transform) {
+Matrix3.prototype.combine = function(transform, out) {
   var txx = transform.mxx;
   var txy = transform.mxy;
   var txz = transform.mxz;
@@ -157,7 +164,7 @@ Matrix3.prototype.combine = function(transform) {
   var tzz = transform.mzz;
   var ttz = transform.tz;
 
-  var m = new Matrix3();
+  var m = out || new Matrix3();
   m.mxx = (this.mxx * txx + this.mxy * tyx + this.mxz * tzx);
   m.mxy = (this.mxx * txy + this.mxy * tyy + this.mxz * tzy);
   m.mxz = (this.mxx * txz + this.mxy * tyz + this.mxz * tzz);
@@ -207,11 +214,15 @@ Matrix3.prototype.__apply3 = function([x, y, z], out) {
   return out;
 };
 
-Matrix3.rotateMatrix = function(angle, axis, pivot) {
+Matrix3.prototype.rotate = function(angle, axis, pivot) {
+  return Matrix3.rotateMatrix(angle, axis, pivot, this);  
+};
+
+Matrix3.rotateMatrix = function(angle, axis, pivot, matrix) {
   var sin = Math.sin(angle);
   var cos = Math.cos(angle);
   var axisX, axisY, axisZ;
-  var m = new Matrix3();
+  var m = matrix || new Matrix3();
 
   if (axis === AXIS.X || axis === AXIS.Y || axis === AXIS.Z) {
     axisX = axis.x;

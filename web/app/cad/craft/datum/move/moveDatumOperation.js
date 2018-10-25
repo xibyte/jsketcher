@@ -51,11 +51,7 @@ function previewer(ctx, initialParams, updateParams) {
   function dispose() {
     datum3D.csys.copy(mDatum.csys);
     datum3D.finishOperation();
-    datum3D.operationStarted = false;
-    datum3D.exitEditMode();
-    datum3D.applyMove = NOOP; 
   }
-
 
   update(initialParams);
 
