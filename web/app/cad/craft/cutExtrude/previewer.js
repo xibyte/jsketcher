@@ -14,7 +14,7 @@ export function createPreviewGeomProvider(inversed) {
     if (!face) return null;
     let sketch = face.sketch.fetchContours();
 
-    const encloseDetails = getEncloseDetails(params, sketch, face.surface.tangentPlane(0, 0), !inversed);
+    const encloseDetails = getEncloseDetails(params, sketch, face.csys, face.surface, !inversed);
     const triangles = [];
 
     for (let {basePath, lidPath, baseSurface, lidSurface} of encloseDetails) {

@@ -102,7 +102,7 @@ export function createBoundingSurface(points, plane) {
   return createBoundingSurfaceFrom2DPoints(points2d, plane);
 }
 
-export function createBoundingSurfaceFrom2DPoints(points2d, plane, minWidth, minHeight, offset = 0, ) {
+export function createBoundingSurfaceFrom2DPoints(points2d, plane, minWidth, minHeight, offset = 0) {
   let bBox = new BBox();
   points2d.forEach(p => bBox.checkPoint(p));
 
