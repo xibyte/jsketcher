@@ -10,39 +10,62 @@ export class MFace extends MObject {
 
   static TYPE = 'face';
 
-  constructor(id, shell, surface) {
+  constructor(id, shell, surface, csys) {
     super(id);
     this.id = id;
     this.shell = shell;
     this.surface = surface;
     this.sketchObjects = [];
+    this._csys = csys
   }
 
   normal() {
-    return this.surface.normalInMiddle();
+    return this.csys.z;
   }
 
   depth() {
-    return this.surface.tangentPlaneInMiddle().w;
+    this.evalCSys();
+    return this.w;
   }
-
-  calcBasis() {
-    return BasisForPlane(this.normal());
-  };
 
   basis() {
     if (!this._basis) {
-      this._basis = this.calcBasis();
+      this._basis = [this.csys.x, this.csys.y, this.csys.z];
     }
     return this._basis;
   }
 
   get csys() {
-    if (!this._csys) {
-      let [x,y,z] = this.basis();
-      this._csys = new CSys(this.normal().multiply(this.depth()), x, y, z);
-    }
+    this.evalCSys();
     return this._csys;
+  }
+
+  get isPlaneBased() {
+    return this.surface.simpleSurface && this.surface.simpleSurface.isPlane;
+  }
+  
+  evalCSys() {
+    if (!this._csys) {
+      if (this.isPlaneBased) {
+        let [x, y, z] = this.surface.simpleSurface.basis();
+        let origin = z.multiply(this.surface.simpleSurface.w);
+        this._csys = new CSys(origin, x, y, z);
+      } else {
+        let origin = this.surface.southWestPoint();
+        let z = this.surface.normalUV(0, 0);
+        let derivatives = this.surface.impl.eval(0, 0, 1);
+        let x = new Vector().set3(derivatives[1][0])._normalize();
+        let y = new Vector().set3(derivatives[0][1])._normalize();
+
+        if (this.surface.inverted) {
+          const t = x;
+          x = y;
+          y = t;
+        }
+        this._csys = new CSys(origin, x, y, z);
+      }
+      this.w = this.csys.w();
+    }
   }
   
   setSketch(sketch) {
@@ -76,14 +99,22 @@ export class MFace extends MObject {
 
   get sketchToWorldTransformation() {
     if (!this._sketchToWorldTransformation) {
-      this._sketchToWorldTransformation = this.surface.tangentPlaneInMiddle().get3DTransformation();
+      if (this.isPlaneBased) {
+        this._sketchToWorldTransformation = this.csys.outTransformation;
+      } else {
+        throw 'sketches are supported only for planes yet';
+      }
     }
     return this._sketchToWorldTransformation;
   }
   
   get worldToSketchTransformation() {
     if (!this._worldToSketchTransformation) {
-      this._worldToSketchTransformation = this.sketchToWorldTransformation.invert();
+      if (this.isPlaneBased) {
+        this._worldToSketchTransformation = this.csys.inTransformation;
+      } else {
+        throw 'sketches are supported only for planes yet';
+      }
     }
     return this._worldToSketchTransformation;
   }

@@ -19,32 +19,26 @@ export function doOperation(params, {cadRegistry, sketcher}, cut) {
   let sketch = sketcher.readSketch(face.id);
   if (!sketch) throw 'illegal state';
 
-  let plane = face.surface.tangentPlane(0, 0);
-  const details = getEncloseDetails(params, sketch.fetchContours(), plane, !cut, false);
+  const details = getEncloseDetails(params, sketch.fetchContours(), face.csys, face.surface, !cut, false);
   const operand = combineShells(details.map(d => enclose(d.basePath, d.lidPath, d.baseSurface, d.lidSurface)));
   return BooleanOperation(face, solid, operand, cut ? 'subtract' : 'union');
 }
 
-export function getEncloseDetails(params, contours, sketchSurface, invert) {
+export function getEncloseDetails(params, contours, csys, sketchSurface, invert) {
   let value = params.value;
   if (value < 0) {
     value = Math.abs(value);
     invert = !invert;
   }
 
-  const baseSurface = invert ? sketchSurface.invert() : sketchSurface;
-
-  let target;
+  const targetDir = invert ? csys.z : csys.z.negate();
   
-  let baseSurfaceNormal = baseSurface.normal;
-
-  const targetDir = baseSurfaceNormal.negate();
+  let target;
 
   if (params.rotation !== 0) {
-    const basis = sketchSurface.basis();
-    target = Matrix3.rotateMatrix(params.rotation * Math.PI / 180, basis[0], ORIGIN).apply(targetDir);
+    target = Matrix3.rotateMatrix(params.rotation * Math.PI / 180, csys.x, ORIGIN).apply(targetDir);
     if (params.angle !== 0) {
-      target = Matrix3.rotateMatrix(params.angle * Math.PI / 180, basis[2], ORIGIN)._apply(target);
+      target = Matrix3.rotateMatrix(params.angle * Math.PI / 180, csys.z, ORIGIN)._apply(target);
     }
     target._multiply(value);
   } else {
@@ -54,7 +48,7 @@ export function getEncloseDetails(params, contours, sketchSurface, invert) {
   let details = [];
   for (let contour of contours) {
     if (invert) contour.reverse();
-    const basePath = contour.transferOnSurface(sketchSurface);
+    const basePath = contour.transferInCoordinateSystem(csys);
     if (invert) contour.reverse();
 
     const lidPath = [];
@@ -68,6 +62,7 @@ export function getEncloseDetails(params, contours, sketchSurface, invert) {
       lidPath.push(lidCurve);
     }
 
+    const baseSurface = sketchSurface.tangentPlane(0, 0);
     const lidSurface = baseSurface.translate(target).invert();
     details.push({basePath, lidPath, baseSurface, lidSurface});
   }
