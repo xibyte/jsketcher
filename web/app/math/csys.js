@@ -22,22 +22,22 @@ export default class CSys {
   }
   
   get outTransformation() {
-    if (!this._inTr) {
+    if (!this._outTr) {
       const basis = new Matrix3().setBasis([this.x, this.y, this.z]);
       const translate = new Matrix3();
       basis.tx = this.origin.x;
       basis.ty = this.origin.y;
       basis.tz = this.origin.z;
-      this._inTr = basis;//basis.combine(translate);
+      this._outTr = basis;//basis.combine(translate);
     }
-    return this._inTr;
+    return this._outTr;
   }
 
   get inTransformation() {
-    if (!this._outTr) {
-      this._outTr = this.outTransformation.invert();
+    if (!this._inTr) {
+      this._inTr = this.outTransformation.invert();
     }
-    return this._outTr;
+    return this._inTr;
   }
   
   copy(csys) {
@@ -59,3 +59,9 @@ export default class CSys {
   
 }
 
+CSys.ORIGIN = CSys.origin();
+
+Object.freeze(CSys.ORIGIN.origin);
+Object.freeze(CSys.ORIGIN.x);
+Object.freeze(CSys.ORIGIN.y);
+Object.freeze(CSys.ORIGIN.z);
