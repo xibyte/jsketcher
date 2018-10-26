@@ -17,21 +17,25 @@ export default class CSys {
     this.z = z;
   }
   
-  get inTransformation() {
+  w() {
+    return this.z.dot(this.origin);
+  }
+  
+  get outTransformation() {
     if (!this._inTr) {
       const basis = new Matrix3().setBasis([this.x, this.y, this.z]);
       const translate = new Matrix3();
-      translate.tx = this.origin.x;
-      translate.ty = this.origin.y;
-      translate.tz = this.origin.z;
-      this._inTr = basis.combine(translate);
+      basis.tx = this.origin.x;
+      basis.ty = this.origin.y;
+      basis.tz = this.origin.z;
+      this._inTr = basis;//basis.combine(translate);
     }
     return this._inTr;
   }
 
-  get outTransformation() {
+  get inTransformation() {
     if (!this._outTr) {
-      this._outTr = this.inTransformation().invert();
+      this._outTr = this.outTransformation.invert();
     }
     return this._outTr;
   }

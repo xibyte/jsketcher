@@ -19,9 +19,12 @@ export const STANDARD_BASES = freeze({
 });
 
 
-/** @constructor */
-function Matrix3() {
-  this.reset();
+class Matrix3 {
+  constructor() {
+    this.reset();
+  }
+
+  apply = vector => this.__apply(vector, new Vector());
 }
 
 Matrix3.prototype.reset = function() {
@@ -179,10 +182,6 @@ Matrix3.prototype.combine = function(transform, out) {
   m.tz  = (this.mzx * ttx + this.mzy * tty + this.mzz * ttz + this.tz);
 
   return m;
-};
-
-Matrix3.prototype.apply = function(vector) {
-  return this.__apply(vector, new Vector())
 };
 
 Matrix3.prototype._apply = function(vector) {

@@ -6,6 +6,7 @@ import {LUT} from '../../math/bezier-cubic'
 import {distanceAB, isCCW, makeAngle0_360} from '../../math/math'
 import {normalizeCurveEnds} from '../../brep/geom/impl/nurbs-ext';
 import Vector from '../../../../modules/math/vector';
+import {AXIS, ORIGIN} from '../../math/l3space';
 
 const RESOLUTION = 20;
 
@@ -31,8 +32,8 @@ class SketchPrimitive {
     return this.constructor.name !== 'Segment';
   }
 
-  toNurbs(plane) {
-    let verbNurbs = this.toVerbNurbs(plane, to3DTrFunc(plane));
+  toNurbs(csys) {
+    let verbNurbs = this.toVerbNurbs(csys.outTransformation.apply, csys);
     if (this.inverted) {
       verbNurbs = verbNurbs.reverse();
     }
@@ -43,7 +44,7 @@ class SketchPrimitive {
     return new BrepCurve(new NurbsCurve(verbNurbs));
   }
 
-  toVerbNurbs(plane, _3dtr) {
+  toVerbNurbs(tr) {
     throw 'not implemented'
   }
 
@@ -63,8 +64,8 @@ export class Segment extends SketchPrimitive {
     return [this.a, this.b];
   }
 
-  toVerbNurbs(plane, _3dtr) {
-    return new verb.geom.Line(_3dtr(this.a).data(), _3dtr(this.b).data());
+  toVerbNurbs(tr) {
+    return new verb.geom.Line(tr(this.a).data(), tr(this.b).data());
   }
 }
 
@@ -103,8 +104,11 @@ export class Arc extends SketchPrimitive {
     return points;
   }
 
-  toVerbNurbs(plane, _3dtr) {
-    const basis = plane.basis();
+  toVerbNurbs(tr, csys) {
+    
+    const basisX = csys.x;
+    const basisY = csys.y;
+    
     const startAngle = makeAngle0_360(Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x));
     const endAngle = makeAngle0_360(Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x));
 
@@ -113,16 +117,16 @@ export class Arc extends SketchPrimitive {
       angle = Math.PI * 2 + angle;
     }
     function pointAtAngle(angle) {
-      const dx = basis[0].multiply(Math.cos(angle));
-      const dy = basis[1].multiply(Math.sin(angle));
+      const dx = basisX.multiply(Math.cos(angle));
+      const dy = basisY.multiply(Math.sin(angle));
       return dx.plus(dy);
     }
     const xAxis = pointAtAngle(startAngle);
     const yAxis = pointAtAngle(startAngle + Math.PI * 0.5);
 
-    let arc = new verb.geom.Arc(_3dtr(this.c).data(), xAxis.data(), yAxis.data(), distanceAB(this.c, this.a), 0, Math.abs(angle));
+    let arc = new verb.geom.Arc(tr(this.c).data(), xAxis.data(), yAxis.data(), distanceAB(this.c, this.a), 0, Math.abs(angle));
     
-    return adjustEnds(arc, _3dtr(this.a), _3dtr(this.b))
+    return adjustEnds(arc, tr(this.a), tr(this.b))
   }
 }
 
@@ -184,7 +188,7 @@ export class EllipticalArc extends SketchPrimitive {
     return points;
   }
   
-  toVerbNurbs(plane, _3dtr) {
+  toVerbNurbs(tr) {
     const xAxis = this.ep2.minus(this.ep1)._multiply(0.5);
     const yAxis = new Vector(xAxis.y, xAxis.x)._normalize()._multiply(this.r) ;
     const center = this.ep1.plus(xAxis);
@@ -192,8 +196,8 @@ export class EllipticalArc extends SketchPrimitive {
     const startAngle = makeAngle0_360(Math.atan2(this.a.y - center.y, this.a.x - center.x));
     const endAngle = makeAngle0_360(Math.atan2(this.b.y - center.y, this.b.x - center.x));
     
-    let arc = new verb.geom.EllipseArc(_3dtr(center).data(), _3dtr(xAxis).data(), _3dtr(yAxis).data(), startAngle, endAngle);
-    return adjustEnds(arc, _3dtr(this.a), _3dtr(this.b))
+    let arc = new verb.geom.EllipseArc(tr(center).data(), tr(xAxis).data(), tr(yAxis).data(), startAngle, endAngle);
+    return adjustEnds(arc, tr(this.a), tr(this.b))
   }
 }
 
@@ -223,9 +227,10 @@ export class Circle extends SketchPrimitive {
   }
 
 
-  toVerbNurbs(plane, _3dtr) {
-    const basis = plane.basis();
-    return new verb.geom.Circle(_3dtr(this.c).data(), basis[0].data(), basis[1].data(), this.r);
+  toVerbNurbs(tr, csys) {
+    const basisX = csys.x;
+    const basisY = csys.y;
+    return new verb.geom.Circle(tr(this.c).data(), basisX.data(), basisY.data(), this.r);
   }
 }
 
@@ -252,9 +257,9 @@ export class Contour {
     this.segments.push(obj);
   }
 
-  tessellateOnSurface(surface) {
+  tessellateOnSurface(csys) {
     const cc = new CompositeCurve();
-    const tr = to3DTrFunc(surface);
+    const tr = csys.outTransformation;
 
     let prev = null;
     let firstPoint = null;
@@ -273,7 +278,7 @@ export class Contour {
         tessellation[n - 1] = firstPoint;
       }
 
-      cc.add(segment.toNurbs(surface), prev, segment);
+      cc.add(segment.toNurbs(csys), prev, segment);
       prev = tessellation[n - 1];
 
       //It might be an optimization for segments
@@ -286,14 +291,11 @@ export class Contour {
     return cc;
   }
 
-  transferOnSurface(surface) {
+  transferInCoordinateSystem(csys) {
     const cc = [];
-
-    let prev = null;
-    let firstPoint = null;
     for (let segIdx = 0; segIdx < this.segments.length; ++segIdx) {
       let segment = this.segments[segIdx];
-      cc.push(segment.toNurbs(surface));
+      cc.push(segment.toNurbs(csys));
     }
     return cc;
   }
@@ -317,13 +319,6 @@ export class Contour {
   reverse() {
     this.segments.reverse();
     this.segments.forEach(s => s.invert());
-  }
-}
-
-function to3DTrFunc(surface) {
-  const _3dTransformation = surface.get3DTransformation();
-  return function (v) {
-    return _3dTransformation.apply(v);
   }
 }
 

@@ -40,7 +40,7 @@ export default class NurbsSurface {
   }
 
   eval(u, v, order) {
-    this.verb.derivatives(u, v, order);
+    return this.verb.derivatives(u, v, order);
   }
   
   normal(u, v) {
