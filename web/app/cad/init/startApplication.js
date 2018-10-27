@@ -12,7 +12,7 @@ import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
 import * as WizardPlugin from '../craft/wizard/wizardPlugin';
 import * as PreviewPlugin from '../preview/previewPlugin';
 import * as OperationPlugin from '../craft/operationPlugin';
-import * as CraftEnginesPlugin from '../craft/enginesPlugin';
+import * as ExtensionsPlugin from '../craft/extensionsPlugin';
 import * as CadRegistryPlugin from '../craft/cadRegistryPlugin';
 import * as CraftPlugin from '../craft/craftPlugin';
 import * as CraftUiPlugin from '../craft/craftUiPlugin';
@@ -41,7 +41,7 @@ export default function startApplication(callback) {
     UiEntryPointsPlugin,
     MenuPlugin,
     KeyboardPlugin,
-    CraftEnginesPlugin,
+    ExtensionsPlugin,
     OperationPlugin,
     CraftPlugin,
     WizardPlugin,
