@@ -2,14 +2,13 @@ import {SphereGeometry} from 'three';
 import schema from './sphereOpSchema';
 import primitivePreviewer from '../primitivePreviewer';
 import SphereWizard from './SphereWizard';
+import datumConsumingOperation from '../datumConsumingOperation';
 
 function run(params, services) {
-  let mDatum = params.datum && services.cadRegistry.findDatum(params.datum);
-
-  return {
-    outdated: mDatum ? [mDatum] : [],
-    created: []
-  }
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createSphere({
+    csys,
+    radius: params.radius,
+  }));
 }
 
 export default {
