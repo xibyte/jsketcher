@@ -132,6 +132,12 @@ export default class Vector {
   toArray() {
     return [this.x, this.y, this.z];
   }
+
+  copyToData(data) {
+    data[0] = this.x;
+    data[1] = this.y;
+    data[2] = this.z;
+  }
   
   static fromData(arr) {
     return new Vector().set3(arr);

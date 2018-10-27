@@ -4,14 +4,14 @@ import TorusWizard from './TorusWizard';
 import {IMAGINARY_SURFACE_MATERIAL} from '../../../preview/scenePreviewer';
 import CSys from '../../../../math/csys';
 import * as SceneGraph from '../../../../../../modules/scene/sceneGraph';
+import datumConsumingOperation from '../datumConsumingOperation';
 
 function run(params, services) {
-  let mDatum = params.datum && services.cadRegistry.findDatum(params.datum);
-
-  return {
-    outdated: mDatum ? [mDatum] : [],
-    created: []
-  }
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createTorus({
+    csys,
+    radius: params.radius,
+    tube: params.tube
+  }));
 }
 
 function previewer(ctx, initialParams) {

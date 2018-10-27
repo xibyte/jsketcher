@@ -120,6 +120,25 @@ export function length(v) {
   return Math.sqrt(lengthSq(v));
 }
 
+export function copy(to, from) {
+  for (let i = 0; i < v.length; i++) {
+    to[i] = from(v[i]);
+  }
+  return to;
+}
+
+export function clone(v) {
+  return copy(create(v.length), v);
+}
+
+export function create(dim) {
+  let out = [];
+  for (let i = 0; i < dim; i++) {
+    out[i] = 0;
+  }
+  return out;
+}
+
 const sq = v => v * v; 
 
 export function distanceSq(v1, v2) {

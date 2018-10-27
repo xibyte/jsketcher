@@ -2,14 +2,14 @@ import {CylinderGeometry} from 'three';
 import schema from './cylinderOpSchema';
 import primitivePreviewer from '../primitivePreviewer';
 import CylinderWizard from './CylinderWizard';
+import datumConsumingOperation from '../datumConsumingOperation';
 
 function run(params, services) {
-  let mDatum = params.datum && services.cadRegistry.findDatum(params.datum);
-
-  return {
-    outdated: mDatum ? [mDatum] : [],
-    created: []
-  }
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createCylinder({
+    csys,
+    radius: params.radius,
+    height: params.height
+  }));
 }
 
 export default {
