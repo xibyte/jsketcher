@@ -1,4 +1,5 @@
 import {state} from '../../../../modules/lstream';
+import context from '../../../../modules/context';
 
 export function activate({streams, services}) {
   const startTime = performance.now();
@@ -10,8 +11,9 @@ export function activate({streams, services}) {
     loadProjectRequest: () => {
       if (streams.lifecycle.appReady.value && 
         !streams.lifecycle.projectLoaded.value && 
-        services.craftEngines.allEnginesReady()) {
+        services.extension.allExtensionsReady()) {
         
+        services.extension.activateAllExtensions();
         services.project.load();
         streams.lifecycle.projectLoaded.value = true;
         const onLoadTime = performance.now();

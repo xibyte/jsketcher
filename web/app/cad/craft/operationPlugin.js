@@ -46,18 +46,21 @@ export function activate(context) {
     return op;
   }
 
+  let handlers = [];
+
+  function runOperation(request, descriptor, services) {
+    for (let handler of handlers) {
+      let result = handler(descriptor.id, request, services);
+      if (result) {
+        return result;
+      }
+    }
+    return descriptor.run(request, services);
+  }
+  
   services.operation = {
     registerOperations,
-    get
+    get,
+    handlers
   };
-}
-
-function runOperation(request, descriptor, services) {
-  for (let engine of services.craftEngines.getRegisteredEngines()) {
-    let result = engine.handler(descriptor.id, request, services);
-    if (result) {
-      return result;
-    }
-  }
-  return descriptor.run(request, services);
 }
