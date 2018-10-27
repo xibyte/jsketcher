@@ -2,14 +2,16 @@ import BoxWizard from './BoxWizard';
 import {BoxGeometry} from 'three';
 import schema from './boxOpSchema';
 import primitivePreviewer from '../primitivePreviewer';
+import CSys from '../../../../math/csys';
+import datumConsumingOperation from '../datumConsumingOperation';
 
 function run(params, services) {
-  let mDatum = params.datum && services.cadRegistry.findDatum(params.datum);
-
-  return {
-    outdated: mDatum ? [mDatum] : [],
-    created: []
-  }
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createBox({
+    csys,
+    width: params.width,
+    height: params.height,
+    depth: params.depth
+  }));
 }
 
 export default {
