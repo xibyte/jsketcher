@@ -85,8 +85,8 @@ export function activate({streams, services}) {
     let {history, pointer} = curr;
     for (let i = beginIndex; i <= pointer; i++) {
       let request = history[i];
-      let {outdated, created} = runOrGetPreRunResults(request);
-      outdated.forEach(m => models.delete(m));
+      let {consumed, created} = runOrGetPreRunResults(request);
+      consumed.forEach(m => models.delete(m));
       created.forEach(m => models.add(m));
       streams.craft.models.next(Array.from(models).sort(m => m.id));
     }
