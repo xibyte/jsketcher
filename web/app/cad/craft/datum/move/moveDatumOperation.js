@@ -15,7 +15,7 @@ function move(params, {cadRegistry}) {
   csys.origin.z += params.z;
   
   return {
-    outdated: [mDatum],
+    consumed: [mDatum],
     created: [new MDatum(csys)]
   }
 }

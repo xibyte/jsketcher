@@ -27,7 +27,7 @@ export function BooleanOperation(face, solid, operand, operationType) {
  updateStitching(result);
   const newSolid = new MBrepShell(result);
   return {
-    outdated: [solid],
+    consumed: [solid],
     created:  [newSolid]
   }
 }
