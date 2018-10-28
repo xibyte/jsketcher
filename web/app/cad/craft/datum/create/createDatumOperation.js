@@ -25,7 +25,7 @@ function create(params, {cadRegistry}) {
   updateCSys(csys, params, cadRegistry.findFace);
 
   return {
-    outdated: [],
+    consumed: [],
     created: [new MDatum(csys)]
   }
 }

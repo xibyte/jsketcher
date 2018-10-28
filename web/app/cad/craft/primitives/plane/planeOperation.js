@@ -13,7 +13,7 @@ function createPlane(params, services) {
   let mDatum = services.cadRegistry.findDatum(params.datum);
 
   return {
-    outdated: [mDatum],
+    consumed: [mDatum],
     created: [new MOpenFaceShell(new CSysPlaneSurfacePrototype(mDatum.csys), mDatum.csys)]
   }
 }

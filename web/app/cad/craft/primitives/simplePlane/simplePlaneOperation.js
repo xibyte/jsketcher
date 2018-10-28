@@ -25,7 +25,7 @@ function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
 
 function createPlane(params, {cadRegistry}) {
   return {
-    outdated: [],
+    consumed: [],
     created: [new MOpenFaceShell(new PlaneSurfacePrototype(paramsToPlane(params, cadRegistry)))]
   }
 }

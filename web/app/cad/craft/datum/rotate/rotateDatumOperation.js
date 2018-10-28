@@ -16,7 +16,7 @@ function rotate(params, {cadRegistry}) {
   applyRotation(mDatum.csys, csys, params.angle, axis);
 
   return {
-    outdated: [mDatum],
+    consumed: [mDatum],
     created: [new MDatum(csys)]
   }
 }
