@@ -3,12 +3,15 @@ import schema from './sphereOpSchema';
 import primitivePreviewer from '../primitivePreviewer';
 import SphereWizard from './SphereWizard';
 import datumConsumingOperation from '../datumConsumingOperation';
+import {assignBooleanParams} from '../booleanOptionHelper';
 
 function run(params, services) {
-  return datumConsumingOperation(params, services, csys => services.craftEngine.createSphere({
-    csys,
-    radius: params.radius,
-  }));
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createSphere(
+    assignBooleanParams({
+      csys,
+      radius: params.radius,
+    }, params, services.cadRegistry.getAllShells)
+  ));
 }
 
 export default {

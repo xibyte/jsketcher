@@ -5,13 +5,16 @@ import {IMAGINARY_SURFACE_MATERIAL} from '../../../preview/scenePreviewer';
 import CSys from '../../../../math/csys';
 import * as SceneGraph from '../../../../../../modules/scene/sceneGraph';
 import datumConsumingOperation from '../datumConsumingOperation';
+import {assignBooleanParams} from '../booleanOptionHelper';
 
 function run(params, services) {
-  return datumConsumingOperation(params, services, csys => services.craftEngine.createTorus({
-    csys,
-    radius: params.radius,
-    tube: params.tube
-  }));
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createTorus(    
+    assignBooleanParams({
+      csys,
+      radius: params.radius,
+      tube: params.tube
+    }, params, services.cadRegistry.getAllShells)
+  ));
 }
 
 function previewer(ctx, initialParams) {

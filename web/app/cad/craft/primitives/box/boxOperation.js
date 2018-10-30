@@ -2,16 +2,18 @@ import BoxWizard from './BoxWizard';
 import {BoxGeometry} from 'three';
 import schema from './boxOpSchema';
 import primitivePreviewer from '../primitivePreviewer';
-import CSys from '../../../../math/csys';
 import datumConsumingOperation from '../datumConsumingOperation';
+import {assignBooleanParams} from '../booleanOptionHelper';
 
 function run(params, services) {
-  return datumConsumingOperation(params, services, csys => services.craftEngine.createBox({
-    csys,
-    width: params.width,
-    height: params.height,
-    depth: params.depth
-  }));
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createBox(
+    assignBooleanParams({
+      csys,
+      width: params.width,
+      height: params.height,
+      depth: params.depth
+    }, params, services.cadRegistry.getAllShells)
+  ));
 }
 
 export default {

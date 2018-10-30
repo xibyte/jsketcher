@@ -3,13 +3,16 @@ import schema from './cylinderOpSchema';
 import primitivePreviewer from '../primitivePreviewer';
 import CylinderWizard from './CylinderWizard';
 import datumConsumingOperation from '../datumConsumingOperation';
+import {assignBooleanParams} from '../booleanOptionHelper';
 
 function run(params, services) {
-  return datumConsumingOperation(params, services, csys => services.craftEngine.createCylinder({
-    csys,
-    radius: params.radius,
-    height: params.height
-  }));
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createCylinder(
+    assignBooleanParams({
+      csys,
+      radius: params.radius,
+      height: params.height
+    }, params, services.cadRegistry.getAllShells)
+  ));
 }
 
 export default {

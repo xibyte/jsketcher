@@ -5,14 +5,17 @@ import {IMAGINARY_SURFACE_MATERIAL} from '../../../preview/scenePreviewer';
 import CSys from '../../../../math/csys';
 import * as SceneGraph from '../../../../../../modules/scene/sceneGraph';
 import datumConsumingOperation from '../datumConsumingOperation';
+import {assignBooleanParams} from '../booleanOptionHelper';
 
 function run(params, services) {
-  return datumConsumingOperation(params, services, csys => services.craftEngine.createCone({
-    csys,
-    radius: params.radius,
-    frustum: params.frustum,
-    height: params.height
-  }));
+  return datumConsumingOperation(params, services, csys => services.craftEngine.createCone(
+    assignBooleanParams({
+      csys,
+      radius: params.radius,
+      frustum: params.frustum,
+      height: params.height
+    }, params, services.cadRegistry.getAllShells)
+  ));
 }
 
 function previewer(ctx, initialParams) {
