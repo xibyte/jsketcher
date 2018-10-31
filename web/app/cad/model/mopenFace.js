@@ -6,6 +6,7 @@ export class MOpenFaceShell extends MShell {
   constructor(surfacePrototype, csys) {
     super();
     this.surfacePrototype = surfacePrototype;
+    this.csys = csys;
     this.faces.push(new MFace(this.id + '/SURFACE', this, 
       surfacePrototype.boundTo([], 100, 100), csys));
   }
