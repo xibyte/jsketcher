@@ -23,12 +23,11 @@ export default class CSys {
   
   get outTransformation() {
     if (!this._outTr) {
-      const basis = new Matrix3().setBasis([this.x, this.y, this.z]);
-      const translate = new Matrix3();
-      basis.tx = this.origin.x;
-      basis.ty = this.origin.y;
-      basis.tz = this.origin.z;
-      this._outTr = basis;//basis.combine(translate);
+      const mx = new Matrix3().setBasisAxises(this.x, this.y, this.z);
+      mx.tx = this.origin.x;
+      mx.ty = this.origin.y;
+      mx.tz = this.origin.z;
+      this._outTr = mx;
     }
     return this._outTr;
   }
