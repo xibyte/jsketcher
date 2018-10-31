@@ -31,7 +31,7 @@ export default [
       label: 'STL Export',
       info: 'export model to STL file',
     },
-    invoke: (context) => context.services.project.stlExport()
+    invoke: (context) => context.services.export.stlAscii()
   },
 
 

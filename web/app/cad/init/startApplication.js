@@ -19,7 +19,8 @@ import * as CraftUiPlugin from '../craft/craftUiPlugin';
 import * as StoragePlugin from '../storagePlugin';
 import * as ProjectPlugin from '../projectPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
-import * as tpiPlugin from '../tpi/tpiPlugin';
+import * as ExportPlugin from '../exportPlugin';
+import * as TpiPlugin from '../tpi/tpiPlugin';
 
 import * as PartModellerPlugin from '../part/partModellerPlugin';
 import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
@@ -48,7 +49,8 @@ export default function startApplication(callback) {
     PreviewPlugin,
     CraftUiPlugin,
     CadRegistryPlugin,
-    tpiPlugin
+    ExportPlugin,
+    TpiPlugin
   ];
   
   let plugins = [
