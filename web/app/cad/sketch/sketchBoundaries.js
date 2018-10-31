@@ -15,8 +15,8 @@ export function getSketchBoundaries(sceneFace) {
   let paths = sceneFace.getBounds();
 
   //sceneFace.polygon.collectPaths(paths);
-  let _3dTransformation = new Matrix3().setBasis(sceneFace.basis());
-  let _2dTr = _3dTransformation.invert();
+  
+  let w2sTr = sceneFace.worldToSketchTransformation; 
 
   function addSegment(a, b) {
     boundary.lines.push({
@@ -107,7 +107,7 @@ export function getSketchBoundaries(sceneFace) {
   function trPath(path) {
     let out = [];
     for (let i = 0; i < path.length; i++) {
-      out.push(_2dTr.apply(path[i]));
+      out.push(w2sTr.apply(path[i]));
     }
     return out;
   }
@@ -129,7 +129,7 @@ export function getSketchBoundaries(sceneFace) {
     iteratePath(path, shift + 1, function (a, b, ai, bi, iterNumber, path) {
       let isArc = a.sketchConnectionObject !== undefined &&
         (a.sketchConnectionObject._class === 'TCAD.TWO.Arc' || a.sketchConnectionObject._class === 'TCAD.TWO.Circle'); //if circle gets splitted
-      let a2d = _2dTr.apply(a);
+      let a2d = w2sTr.apply(a);
       if (isArc) {
         if (currSko !== a.sketchConnectionObject.id) {
           currSko = a.sketchConnectionObject.id;
@@ -141,7 +141,7 @@ export function getSketchBoundaries(sceneFace) {
         }
         arc.push(a2d);
         if (iterNumber === path.length - 1) {
-          arc.push(_2dTr.apply(b));
+          arc.push(w2sTr.apply(b));
           addArc(arc);
         }
       } else {
@@ -151,7 +151,7 @@ export function getSketchBoundaries(sceneFace) {
           arc = null;
         }
         currSko = null;
-        addSegment(a2d, _2dTr.apply(b));
+        addSegment(a2d, w2sTr.apply(b));
       }
       return true;
     });
