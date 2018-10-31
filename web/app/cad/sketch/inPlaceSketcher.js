@@ -70,15 +70,22 @@ export class InPlaceSketcher {
     _projScreenMatrix.multiplyMatrices( sceneSetup.oCamera.projectionMatrix,
       sceneSetup.oCamera.matrixWorldInverse );
 
-    let [x, y, z] = face.basis();
-    let sketchToWorld = face.sketchToWorldTransformation;
-    let sketchOrigin = sketchToWorld.apply(ORIGIN);
+    let csys = face.csys;
+
+    // let sketchToWorld = face.sketchToWorldTransformation;
+    // let sketchOrigin = sketchToWorld.apply(ORIGIN);
+    // let basisX = sketchToWorld.apply(AXIS.X);
+    // let basisY = sketchToWorld.apply(AXIS.Y);
+
+    let sketchOrigin = csys.origin;
+    let basisX = csys.x;
+    let basisY = csys.y;
 
     let o = ORIGIN.three().applyMatrix4(_projScreenMatrix);
-    let xx = x.three().applyMatrix4(_projScreenMatrix);
-    let yy = y.three().applyMatrix4(_projScreenMatrix);
+    let xx = basisX.three().applyMatrix4(_projScreenMatrix);
+    let yy = basisY.three().applyMatrix4(_projScreenMatrix);
 
-    sketchOrigin = sketchOrigin.three().applyMatrix4(_projScreenMatrix);
+    let sketchOriginDelta = sketchOrigin.three().applyMatrix4(_projScreenMatrix);
 
     let width = sceneSetup.container.clientWidth * DPR / 2;
     let height = sceneSetup.container.clientHeight * DPR /2;
@@ -87,8 +94,8 @@ export class InPlaceSketcher {
     yy.sub(o);
 
     this.viewer.setTransformation(xx.x * width, xx.y * height, yy.x * width, yy.y* height,
-      (sketchOrigin.x) * width + width,
-      (sketchOrigin.y) * height + height, sceneSetup.oCamera.zoom);
+      (sketchOriginDelta.x) * width + width,
+      (sketchOriginDelta.y) * height + height, sceneSetup.oCamera.zoom);
   };
   
   save() {
