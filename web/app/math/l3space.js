@@ -262,12 +262,12 @@ Matrix3.rotateMatrix = function(angle, axis, pivot, matrix) {
   return m;
 };
 
-function BasisForPlane(normal) {
+function BasisForPlane(normal, alignY = AXIS.Y, alignZ = AXIS.Z) {
   let alignPlane, x, y;
-  if (Math.abs(normal.dot(AXIS.Y)) < 0.5) {
-    alignPlane = normal.cross(AXIS.Y);
+  if (Math.abs(normal.dot(alignY)) < 0.5) {
+    alignPlane = normal.cross(alignY);
   } else {
-    alignPlane = normal.cross(AXIS.Z);
+    alignPlane = normal.cross(alignZ);
   }
   y = alignPlane.cross(normal);
   x = y.cross(normal);

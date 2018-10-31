@@ -47,8 +47,11 @@ export class MFace extends MObject {
   evalCSys() {
     if (!this._csys) {
       if (this.isPlaneBased) {
-        let [x, y, z] = this.surface.simpleSurface.basis();
-        let origin = z.multiply(this.surface.simpleSurface.w);
+        let alignCsys = (this.shell && this.shell.csys) || CSys.ORIGIN;
+        let [x, y, z] = BasisForPlane(this.surface.simpleSurface.normal, alignCsys.y, alignCsys.z);
+        let proj = z.dot(alignCsys.origin);
+        proj -= this.surface.simpleSurface.w;
+        let origin  = alignCsys.origin.minus(z.multiply(proj));
         this._csys = new CSys(origin, x, y, z);
       } else {
         let origin = this.surface.southWestPoint();

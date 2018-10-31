@@ -1,7 +1,8 @@
 import {readBrep} from '../../../brep/io/brepIO';
 import {MBrepShell} from '../../model/mshell';
+import CSys from '../../../math/csys';
 
-export function readShellEntityFromJson(data, consumed) {
+export function readShellEntityFromJson(data, consumed, csys) {
   
   let refIndex = indexFacesByRef(consumed);
 
@@ -15,7 +16,7 @@ export function readShellEntityFromJson(data, consumed) {
       }
     }
   }
-  return new MBrepShell(shell);  
+  return new MBrepShell(shell, csys);  
 }
 
 function indexFacesByRef(shells) {
