@@ -5,6 +5,7 @@ import {OnTopOfAll} from 'scene/materialMixins';
 import {moveObject3D, setBasisToObject3D} from 'scene/objects/transform';
 
 import * as SceneGraph from 'scene/sceneGraph';
+import {setCsysToViewMatrix} from '../../../../modules/scene/objects/transform';
 
 export default class CadScene {
 
@@ -44,25 +45,27 @@ export default class CadScene {
     }
 
     this.basisGroup = SceneGraph.createGroup();
+    this.basisGroup.matrixAutoUpdate = false;
 
     let xAxis = createBasisArrow(new Vector(1, 0, 0), 0xFF0000);
     let yAxis = createBasisArrow(new Vector(0, 1, 0), 0x00FF00);
     SceneGraph.addToGroup(this.basisGroup, xAxis);
     SceneGraph.addToGroup(this.basisGroup, yAxis);
     SceneGraph.addToGroup(this.workGroup, this.basisGroup, yAxis);
-    this.hideBasis();
+    this.hideGlobalCsys();
   }
 
-  updateBasis(basis, depth) {
-    setBasisToObject3D(this.basisGroup, basis, depth);
+  updateGlobalCsys(csys) {
+    setCsysToViewMatrix(csys, this.basisGroup.matrix);
+    this.basisGroup.matrixWorldNeedsUpdate = true;
   }
 
-  showBasis(basis, depth) {
-    this.updateBasis(basis, depth);
+  showGlobalCsys(csys) {
+    this.updateGlobalCsys(csys);
     this.basisGroup.visible = true;
   }
 
-  hideBasis() {
+  hideGlobalCsys() {
     this.basisGroup.visible = false;
   }
 }
