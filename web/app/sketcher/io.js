@@ -12,6 +12,7 @@ import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim
 import {Constraints} from './parametric'
 import {HashTable} from '../utils/hashmap'
 import Vector from 'math/vector';
+import exportTextData from 'gems/exportTextData';
 
 const Types = {
   END_POINT : 'TCAD.TWO.EndPoint',
@@ -739,12 +740,6 @@ IO.prototype.dxfExport = function () {
   return out.data;
 };
 
-IO.exportTextData = function(data, fileName) {
-  var link = document.getElementById("downloader");
-  link.href = "data:application/octet-stream;charset=utf-8;base64," + btoa(data);
-  link.download = fileName;
-  link.click();
-  //console.log(app.viewer.io.svgExport());
-};
+IO.exportTextData = exportTextData;
 
 export {IO, BBox, Types};
