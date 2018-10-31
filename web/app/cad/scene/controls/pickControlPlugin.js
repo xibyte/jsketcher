@@ -51,7 +51,7 @@ export function activate(context) {
       let modelId = view.model.id;
       if (kind === PICK_KIND.FACE) {
         if (dispatchSelection(streams.selection.face, modelId, event)) {
-          services.cadScene.showBasis(view.model.basis(), view.model.depth());
+          services.cadScene.showGlobalCsys(view.model.csys);
           return false;
         }
       } else if (kind === PICK_KIND.SKETCH) {
