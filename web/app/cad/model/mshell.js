@@ -2,6 +2,7 @@ import {MObject} from './mobject';
 import {MBrepFace, MFace} from './mface';
 import {MEdge} from './medge';
 import {MVertex} from './mvertex';
+import CSys from '../../math/csys';
 
 export class MShell extends MObject {
 
@@ -18,9 +19,10 @@ export class MShell extends MObject {
 
 export class MBrepShell extends MShell {
 
-  constructor(shell) {
+  constructor(shell, csys) {
     super();
     this.brepShell = shell;
+    this.csys = csys || CSys.ORIGIN;
     
     let faceCounter = 0;
     let edgeCounter = 0;
