@@ -69,6 +69,9 @@ export function activate({streams, services}) {
     },
     get models() {
       return streams.craft.models.value;
+    },
+    get shells() {
+      return getAllShells();
     }
   }
 }
