@@ -8,7 +8,11 @@ export function activate({services}) {
   function get(key) {
     return localStorage.getItem(key);
   }
-  
+
+  function remove(key) {
+    return localStorage.removeItem(key);
+  }
+
   function getAllKeysFromNamespace(namespace) {
     let keys = [];
     for(let i = localStorage.length - 1; i >= 0 ; i--) {
@@ -25,6 +29,6 @@ export function activate({services}) {
   }
 
   services.storage = {
-    set, get, addListener, getAllKeysFromNamespace
+    set, get, remove, addListener, getAllKeysFromNamespace
   }
 }

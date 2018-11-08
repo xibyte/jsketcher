@@ -15,6 +15,19 @@ export default [
   },
 
   {
+    id: 'ReassignSketch',
+    appearance: {
+      cssIcons: ['share'],
+      label: 'reassign sketch',
+      icon96: 'img/cad/face-edit96.png',
+      info: 'open sketcher for a face/plane',
+    },
+    listens: streams => streams.selection.face,
+    update: ActionHelpers.checkForSelectedFaces(1),
+    invoke: ctx => ctx.services.sketcher.reassignSketchMode.enter(ctx.services.selection.face.single.id)
+  },
+
+  {
     id: 'Save',
     appearance: {
       cssIcons: ['floppy-o'],
