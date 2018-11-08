@@ -2,8 +2,8 @@ import {ReadSketch} from './sketchReader';
 import {getSketchBoundaries} from './sketchBoundaries';
 import {state, stream} from 'lstream';
 import {InPlaceSketcher} from './inPlaceSketcher';
-import {CAMERA_MODE} from '../scene/viewer';
 import sketcherUIContrib from './sketcherUIContrib';
+import initReassignSketchMode from './reassignSketchMode';
 
 export function activate(ctx) {
   
@@ -23,10 +23,8 @@ export function activate(ctx) {
     if (evt.key.indexOf(prefix) < 0) return;
     let sketchFaceId = evt.key.substring(prefix.length);
     let sketchFace = services.cadRegistry.findFace(sketchFaceId);
-    if (sketchFace !== null) {
-      updateSketchForFace(sketchFace);
-      services.viewer.requestRender();
-    }
+    updateSketchForFace(sketchFace);
+    services.viewer.requestRender();
   };
   
   services.storage.addListener(onSketchUpdate);
@@ -38,21 +36,43 @@ export function activate(ctx) {
     }));
   }
 
-  function readSketch(sketchId) {
+  function getSketchData(sketchId) {
     let sketchStorageKey = services.project.sketchStorageKey(sketchId);
-    let savedSketch = services.storage.get(sketchStorageKey);
+    return services.storage.get(sketchStorageKey);
+  }
+  
+  function setSketchData(sketchId, data) {
+    let sketchStorageKey = services.project.sketchStorageKey(sketchId);
+    return services.storage.set(sketchStorageKey, data);
+  }
+
+  function removeSketchData(sketchId) {
+    let sketchStorageKey = services.project.sketchStorageKey(sketchId);
+    return services.storage.remove(sketchStorageKey);
+  }
+
+  function readSketch(sketchId) {
+    let savedSketch = getSketchData(sketchId);
     if (savedSketch === null) {
       return null;
     }
-    return ReadSketch(JSON.parse(savedSketch), sketchId, true);
+    try {
+      return ReadSketch(JSON.parse(savedSketch), sketchId, true);  
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   }
-  
+
+  function hasSketch(sketchId) {
+    let sketchStorageKey = services.project.sketchStorageKey(sketchId);
+    return !!services.storage.get(sketchStorageKey);
+  }
+
   function updateSketchForFace(mFace) {
     let sketch = readSketch(mFace.id);
-    if (sketch !== null) {
-      mFace.setSketch(sketch);
-      streams.sketcher.update.next(mFace);
-    }
+    mFace.setSketch(sketch);
+    streams.sketcher.update.next(mFace);
   }
 
   function updateAllSketches() {
@@ -88,9 +108,22 @@ export function activate(ctx) {
     services.appTabs.show(face.id, 'Sketch ' + face.id, 'sketcher.html#' + sketchURL);
   }
   
+  function reassignSketch(fromId, toId) {
+    let sketchData = getSketchData(fromId);
+    if (!sketchData) {
+      return;
+    }
+    setSketchData(toId, sketchData);
+    removeSketchData(fromId);
+    updateSketchForFace(services.cadRegistry.findFace(fromId));
+    updateSketchForFace(services.cadRegistry.findFace(toId));
+    services.viewer.requestRender();
+  }
+  
   streams.craft.models.attach(updateAllSketches);
   
   services.sketcher = {
-    sketchFace, sketchFace2D, updateAllSketches, getAllSketches, readSketch, inPlaceEditor
+    sketchFace, sketchFace2D, updateAllSketches, getAllSketches, readSketch, hasSketch, inPlaceEditor, reassignSketch,
+    reassignSketchMode: initReassignSketchMode(ctx)
   }
 }
