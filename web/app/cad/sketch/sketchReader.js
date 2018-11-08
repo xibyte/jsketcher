@@ -124,7 +124,9 @@ export function FetchContours(geom) {
     contours.push(contour);
   }
   for (let contour of contours) {
-    if (!contour.isCCW()) contour.reverse();
+    if (!contour.isCCW()) {
+      contour.reverse();
+    }
   }
   return contours;
 }

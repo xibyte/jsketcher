@@ -114,7 +114,11 @@ export default class Vector {
   };
 
   cross(a) {
-    return new Vector(
+    return this.copy()._cross(a);
+  };
+
+  _cross(a) {
+    return this.set(
       this.y * a.z - this.z * a.y,
       this.z * a.x - this.x * a.z,
       this.x * a.y - this.y * a.x
@@ -127,6 +131,10 @@ export default class Vector {
 
   _negate() {
     return this._multiply(-1);
+  }
+
+  _perpXY() {
+    return this.set(-this.y, this.x, this.z);
   }
 
   toArray() {
