@@ -38,10 +38,13 @@ export default class MultiEntity extends React.Component {
 
     return <FormContext.Consumer>
       {
-        ({onChange}) => this.props.value.map(data => {
+        ctx => this.props.value.map(data => {
           let subContext = {
             data,
-            onChange
+            updateParam: (name, value) => {
+              data[name] = value;
+              ctx.updateParam(this.props.name, this.props.value);
+            }
           };
           let {itemField} = this.props;
           let entityId = data[itemField];
