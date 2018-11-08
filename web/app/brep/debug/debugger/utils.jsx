@@ -43,7 +43,7 @@ export const getEdgeViewObjects = findOrCreate.bind(null, (edge, color) => {
   if (edge.inverted) {
     points.reverse();
   }
-  return createDirectedCurve(points, edge.tangentAtEnd(), edge.vertexB.point, color)
+  return createDirectedCurve(points, edge.tangentAtEnd(), points[points.length - 1], color)
 });
 
 export const getCurveViewObjects = findOrCreate.bind(null, (curve, color) => {
