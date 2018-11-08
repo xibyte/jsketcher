@@ -6,7 +6,7 @@ import * as MouseEventSystemPlugin from '../scene/controls/mouseEventSystemPlugi
 import * as ScenePlugin from '../scene/scenePlugin';
 import * as SelectionMarkerPlugin from '../scene/selectionMarker/selectionMarkerPlugin';
 import * as ActionSystemPlugin from '../actions/actionSystemPlugin';
-import * as UiEntryPointsPlugin from '../dom/uiEntryPointsPlugin';
+import * as UiPlugin from '../dom/uiPlugin';
 import * as MenuPlugin from '../dom/menu/menuPlugin';
 import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
 import * as WizardPlugin from '../craft/wizard/wizardPlugin';
@@ -39,7 +39,7 @@ export default function startApplication(callback) {
     StoragePlugin,
     AppTabsPlugin,
     ActionSystemPlugin,
-    UiEntryPointsPlugin,
+    UiPlugin,
     MenuPlugin,
     KeyboardPlugin,
     OperationPlugin,
