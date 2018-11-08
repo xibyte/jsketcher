@@ -75,6 +75,10 @@ export class MFace extends MObject {
     this.sketch = sketch;
     this.sketchObjects = [];
 
+    if (!sketch) {
+      return;
+    }
+    
     const addSketchObjects = sketchObjects => {
       let isConstruction = sketchObjects === sketch.constructionSegments;
       for (let sketchObject of sketchObjects) {
@@ -131,6 +135,17 @@ export class MBrepFace extends MFace {
     this.brepFace = brepFace;
   }
 
+  get edges() {
+    let out = [];
+    for (let he of this.brepFace.edges) {
+      let edge = this.shell.brepRegistry.get(he.edge);
+      if (edge) {
+        out.push(edge);
+      }
+    }
+    return out;
+  }
+  
   getBounds() {
     const bounds = [];
     for (let loop of this.brepFace.loops) {

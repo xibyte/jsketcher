@@ -23,6 +23,7 @@ export class MBrepShell extends MShell {
     super();
     this.brepShell = shell;
     this.csys = csys || CSys.ORIGIN;
+    this.brepRegistry = new Map();
     
     let faceCounter = 0;
     let edgeCounter = 0;
@@ -31,16 +32,19 @@ export class MBrepShell extends MShell {
     for (let brepFace of this.brepShell.faces) {
       const mFace = new MBrepFace(brepFace.data.id || (this.id + '/F:' + faceCounter++), this, brepFace);
       this.faces.push(mFace);
+      this.brepRegistry.set(brepFace, mFace);
     }
 
     for (let brepEdge of this.brepShell.edges) {
       const mEdge = new MEdge(this.id + '/E:' + edgeCounter++, this, brepEdge);
       this.edges.push(mEdge);
+      this.brepRegistry.set(brepEdge, mEdge);
     }
 
     for (let brepVertex of this.brepShell.vertices) {
       const mVertex = new MVertex(this.id + '/V:' + vertexCounter++, this, brepVertex);
       this.vertices.push(mVertex);
+      this.brepRegistry.set(brepVertex, mVertex);
     }
   }
 }
