@@ -85,10 +85,19 @@ export function activate({streams, services}) {
     let {history, pointer} = curr;
     for (let i = beginIndex; i <= pointer; i++) {
       let request = history[i];
-      let {consumed, created} = runOrGetPreRunResults(request);
-      consumed.forEach(m => models.delete(m));
-      created.forEach(m => models.add(m));
-      streams.craft.models.next(Array.from(models).sort(m => m.id));
+      try {
+        let {consumed, created} = runOrGetPreRunResults(request);
+        consumed.forEach(m => models.delete(m));
+        created.forEach(m => models.add(m));
+        streams.craft.models.next(Array.from(models).sort(m => m.id));
+      } catch(e) {
+        console.error(e);
+        setTimeout(() => streams.craft.modifications.next({
+          ...curr,
+          pointer: i-1
+        }));
+        break;
+      } 
     }
   })
 }
