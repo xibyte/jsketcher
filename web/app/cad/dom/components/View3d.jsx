@@ -11,6 +11,7 @@ import SelectedModificationInfo from '../../craft/ui/SelectedModificationInfo';
 import BottomStack from './BottomStack';
 import SketcherToolbars from './SketcherToolbars';
 import CameraControl from './CameraControl';
+import HeadsUpHelper from './HeadsUpHelper';
 
 
 export default class View3d extends React.Component {
@@ -32,6 +33,7 @@ export default class View3d extends React.Component {
             <AuxiliaryToolbar small vertical/>
           </Abs>
         </Abs>
+        <HeadsUpHelper/>
         <BottomStack>
           <CameraControl />
           <HistoryTimeline />

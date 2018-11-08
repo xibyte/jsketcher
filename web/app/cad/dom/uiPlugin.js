@@ -1,6 +1,6 @@
 import {state} from 'lstream';
 
-export function activate({streams}) {
+export function defineStreams({streams}) {
 
   streams.ui = {
     controlBars: {
@@ -15,8 +15,18 @@ export function activate({streams}) {
       sketcherControl: state([]),
       sketcherToolbarsVisible: state(false)
     },
+    sockets: {}
   };
 
 }
 
-
+export function activate({services}) {
+  
+  let components = new Map();
+  const registerComponent = (id, Component) => components.set(id, Component);
+  const getComponent = id => components.get(id);
+  
+  services.ui = {
+    registerComponent, getComponent
+  }
+}
