@@ -28,6 +28,9 @@ export default class BrepDebugger extends React.PureComponent {
         <i className='fa fa-fw fa-cubes button' onClick={() => __DEBUG__.ShowSolids()} />
         <i className='fa fa-fw fa-refresh button' onClick={() => this.forceUpdate()} />
       </div>
+      <Section name='SCENE' defaultClosed={true} closable accent captionStyles={['centered']}>
+        {__CAD_APP.services.cadRegistry.shells.filter(s => s.brepShell).map(shell => <ShellExplorer shell={shell.brepShell} group3d={brepDebugGroup}/>)}
+      </Section>
 
       <div className='section boolean-sessions'>
       {booleanSessions.map(session => 
