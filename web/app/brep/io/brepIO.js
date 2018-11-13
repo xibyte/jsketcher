@@ -7,6 +7,8 @@ import {Plane} from '../geom/impl/plane';
 import Vector from '../../../../modules/math/vector';
 import NullSurface from '../geom/surfaces/nullSurface';
 import BBox from '../../math/bbox';
+import NurbsCurve from '../geom/curves/nurbsCurve';
+import BrepCurve from '../geom/curves/brepCurve';
 
 export function readBrep(data) {
   
@@ -78,8 +80,7 @@ function readSurface(s, inverted, face) {
 function readCurve(curve) {
   switch (curve.TYPE) {
     case 'B-SPLINE':
-      console.dir(curve);
-      
+      return new BrepCurve(NurbsCurve.create(curve.deg, curve.knots, curve.cp, curve.weights));
     case 'CONIC':
       //...
     case 'LINE':
