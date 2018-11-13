@@ -1,9 +1,21 @@
-import {Matrix3} from "../../math/l3space";
-import {circleFromPoints, distanceAB, TOLERANCE} from "../../math/math";
-import {iteratePath} from "../cad-utils";
+import {circleFromPoints, distanceAB, TOLERANCE} from '../../math/math';
+import {iteratePath} from '../cad-utils';
+import NurbsCurve from '../../brep/geom/curves/nurbsCurve';
 
 export function getSketchBoundaries(sceneFace) {
-  const boundary = {lines: [], arcs: [], circles: []};
+  const boundary = {lines: [], arcs: [], circles: [], nurbses: []};
+  let w2sTr = sceneFace.worldToSketchTransformation;
+  let _w2sTrArr = null;
+  let w2sTrArr = () => _w2sTrArr || (_w2sTrArr = w2sTr.toArray()); 
+  for (let he of sceneFace.brepFace.edges) {
+    if (he.edge.curve.impl.constructor.name ===  'NurbsCurve' && he.edge.curve.impl.degree() !== 1) {
+      boundary.nurbses.push(he.edge.curve.impl.transform(w2sTrArr()).serialize())
+    } else {
+      addSegment(w2sTr.apply(he.vertexA.point), w2sTr.apply(he.vertexB.point));
+    }
+  }
+  return boundary;
+
 
   function sameSketchObject(a, b) {
     if (a.sketchConnectionObject === undefined || b.sketchConnectionObject === undefined) {
@@ -15,8 +27,6 @@ export function getSketchBoundaries(sceneFace) {
   let paths = sceneFace.getBounds();
 
   //sceneFace.polygon.collectPaths(paths);
-  
-  let w2sTr = sceneFace.worldToSketchTransformation; 
 
   function addSegment(a, b) {
     boundary.lines.push({
