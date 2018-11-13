@@ -287,10 +287,13 @@ ParametricManager.prototype.lockConvex = function(objs, warnCallback) {
 };
 
 ParametricManager.prototype.tangent = function(objs) {
+  const curves = fetch.generic(objs, ['TCAD.TWO.NurbsObject'], 0);
   const ellipses = fetch.generic(objs, ['TCAD.TWO.Ellipse', 'TCAD.TWO.EllipticalArc'], 0);
   const lines = fetch.generic(objs, ['TCAD.TWO.Segment'], 1);
   if (ellipses.length > 0) {
     this.add(new Constraints.EllipseTangent(lines[0], ellipses[0]));
+  } else if (curves.length > 0) {
+    this.add(new Constraints.CurveTangent(lines[0], curves[0]));
   } else {
     const arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
     this.add(new Constraints.Tangent(arcs[0], lines[0]));
@@ -351,10 +354,13 @@ ParametricManager.prototype.symmetry = function(objs) {
 
 ParametricManager.prototype.pointOnArc = function(objs) {
   const points = fetch.generic(objs, ['TCAD.TWO.EndPoint'], 1);
-  const arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle', 'TCAD.TWO.Ellipse', 'TCAD.TWO.EllipticalArc'], 1);
+  const arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle', 'TCAD.TWO.Ellipse', 
+                                    'TCAD.TWO.EllipticalArc', 'TCAD.TWO.NurbsObject'], 1);
   const arc = arcs[0];
-  if (arc._class == 'TCAD.TWO.Ellipse' || arc._class == 'TCAD.TWO.EllipticalArc') {
+  if (arc._class === 'TCAD.TWO.Ellipse' || arc._class === 'TCAD.TWO.EllipticalArc') {
     this.add(new Constraints.PointOnEllipse(points[0], arc));
+  } else if (arc._class === 'TCAD.TWO.NurbsObject') {
+    this.add(new Constraints.PointOnCurve(points[0], arc));
   } else {
     this.add(new Constraints.PointOnArc(points[0], arc));
   }
@@ -1471,6 +1477,35 @@ Constraints.PointOnArc.prototype.getObjects = function() {
 // ------------------------------------------------------------------------------------------------------------------ //
 
 /** @constructor */
+Constraints.PointOnCurve = function(point, curveObject) {
+  this.point = point;
+  this.curveObject = curveObject;
+};
+
+Constraints.PointOnCurve.prototype.NAME = 'PointOnCurve';
+Constraints.PointOnCurve.prototype.UI_NAME = 'Point On Curve';
+
+Constraints.PointOnCurve.prototype.getSolveData = function() {
+  const params = [];
+  this.point.collectParams(params);
+  return [['PointOnCurve', params, [this.curveObject.curve]]];
+};
+
+Constraints.PointOnCurve.prototype.serialize = function() {
+  return [this.NAME, [this.point.id, this.curveObject.id]];
+};
+
+Constraints.Factory[Constraints.PointOnCurve.prototype.NAME] = function(refs, data) {
+  return new Constraints.PointOnCurve(refs(data[0]), refs(data[1]));
+};
+
+Constraints.PointOnCurve.prototype.getObjects = function() {
+  return [this.point, this.curveObject];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
 Constraints.PointOnEllipseInternal = function(point, ellipse) {
   this.point = point;
   this.ellipse= ellipse;
@@ -1546,6 +1581,42 @@ Constraints.Factory[Constraints.EllipseTangent.prototype.NAME] = function(refs, 
 
 Constraints.EllipseTangent.prototype.getObjects = function() {
   return [this.line, this.ellipse];
+};
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+/** @constructor */
+Constraints.CurveTangent = function(line, curveObject) {
+  this.line = line;
+  this.curveObject = curveObject;
+  let [uMin, uMax] = this.curveObject.curve.domain();
+  let initPoint = this.curveObject.curve.point(0.5 * (uMin + uMax));
+  this.tx = new Ref(initPoint[0]);
+  this.ty = new Ref(initPoint[1]);
+};
+
+Constraints.CurveTangent.prototype.NAME = 'CurveTangent';
+Constraints.CurveTangent.prototype.UI_NAME = 'Curve Curve';
+
+Constraints.CurveTangent.prototype.getSolveData = function() {
+  const params = [];
+  this.line.collectParams(params);
+  params.push(this.tx);
+  params.push(this.ty);
+  return [['CurveTangent', params, [this.curveObject.curve]]];
+
+};
+
+Constraints.CurveTangent.prototype.serialize = function() {
+  return [this.NAME, [this.line.id, this.curveObject.id]];
+};
+
+Constraints.Factory[Constraints.CurveTangent.prototype.NAME] = function(refs, data) {
+  return new Constraints.CurveTangent(refs(data[0]), refs(data[1]));
+};
+
+Constraints.CurveTangent.prototype.getObjects = function() {
+  return [this.line, this.curveObject];
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //

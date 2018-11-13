@@ -245,6 +245,12 @@ export function perpendicularVector(v) {
       .sort((a, b) => vec.lengthSq(b) - vec.lengthSq(a))[0];
 }
 
+export function radiusOfCurvature(d1, d2) {
+  let r1lsq = vec.lengthSq(d1);
+  let r1l = Math.sqrt(r1lsq);
+  return r1lsq * r1l / vec.length(vec.cross(d1, d2));
+}
+
 export const DEG_RAD = Math.PI / 180.0;
 
 export const sq = (a) => a * a;
