@@ -3,6 +3,14 @@ import {distinctKnots} from '../impl/nurbs-ext';
 
 export default class NurbsCurve { 
 
+  static create(degree, knots, cp, weights) {
+    return new NurbsCurve(verb.geom.NurbsCurve.byKnotsControlPointsWeights(degree, knots, cp, weights));
+  }
+
+  static deserialize({degree, knots, cp, weights}) {
+    return NurbsCurve.create(degree, knots, cp, weights);
+  }
+
   constructor(verbCurve) {
     this.verb = verbCurve;
     this.data = verbCurve.asNurbs();

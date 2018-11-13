@@ -289,8 +289,8 @@ Viewer.prototype.cleanSnap = function() {
 };
 
 Viewer.prototype.showBounds = function(x1, y1, x2, y2, offset) {
-  var dx = x2 - x1;
-  var dy = y2 - y1;
+  var dx = Math.max(x2 - x1, 1);
+  var dy = Math.max(y2 - y1, 1);
   if (this.canvas.width > this.canvas.height) {
     this.scale = this.canvas.height / dy;
   } else {

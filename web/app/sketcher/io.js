@@ -13,6 +13,8 @@ import {Constraints} from './parametric'
 import {HashTable} from '../utils/hashmap'
 import Vector from 'math/vector';
 import exportTextData from 'gems/exportTextData';
+import NurbsCurve from '../brep/geom/curves/nurbsCurve';
+import {NurbsObject} from './shapes/nurbsObject';
 
 const Types = {
   END_POINT : 'TCAD.TWO.EndPoint',
@@ -22,6 +24,7 @@ const Types = {
   ELLIPSE   : 'TCAD.TWO.Ellipse',
   ELL_ARC   : 'TCAD.TWO.EllipticalArc',
   BEZIER    : 'TCAD.TWO.BezierCurve',
+  NURBS     : 'TCAD.TWO.NurbsObject',
   DIM       : 'TCAD.TWO.Dimension',
   HDIM      : 'TCAD.TWO.HDimension',
   VDIM      : 'TCAD.TWO.VDimension',
@@ -298,6 +301,12 @@ IO.prototype.addNewBoundaryObjects = function(boundary, maxEdge) {
     circle.r.set(obj.r);
     boundaryLayer.objects.push(circle);
     __processAux(circle);
+  }
+  for (i = 0; i < boundary.nurbses.length; ++i) {
+    let nurbsData = boundary.nurbses[i];
+    let nurbs = new NurbsObject(NurbsCurve.deserialize(nurbsData), new EndPoint(), new EndPoint());
+    boundaryLayer.objects.push(nurbs);
+    __processAux(nurbs);
   }
 };
 

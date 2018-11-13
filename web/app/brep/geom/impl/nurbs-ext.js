@@ -43,7 +43,6 @@ export function curveTessellate(curve, min, max, tessTol, scale) {
 
   let [dmin, dmax] = domain;
 
-  let out = [];
   let nSplits = curve.knots.length - 1;
 
   let splitStep = (dmax - dmin) / nSplits;
@@ -53,25 +52,29 @@ export function curveTessellate(curve, min, max, tessTol, scale) {
   let splits = [min];
   
   for (let i = 1; i < nSplits; ++i) {
-    splits.push(i * splitStep);
+    splits.push(min + i * splitStep);
   }
   splits.push(max);
+  return curveRefineTessellation(curve, splits, tessTol, scale)
+}
 
-  function refine(u1, u2, step) {   
+export function curveRefineTessellation(curve, tess, tessTol, scale) {
+  let out = [];
+  function refine(u1, u2, step) {
     if (step <  u2 - u1) {
-      let mid = u1 + (u2 - u1) * 0.5;    
+      let mid = u1 + (u2 - u1) * 0.5;
       refine(u1, mid, step);
       out.push(mid);
       refine(mid, u2, curveStep(curve, mid, tessTol, scale));
     }
   }
-  for (let i = 1; i < splits.length; ++i) {
-    let u1 = splits[i - 1];
+  for (let i = 1; i < tess.length; ++i) {
+    let u1 = tess[i - 1];
     out.push(u1);
-    refine(u1, splits[i], curveStep(curve, u1, tessTol, scale));
+    refine(u1, tess[i], curveStep(curve, u1, tessTol, scale));
   }
 
-  out.push(max);
+  out.push(tess[tess.length - 1]);
   return out;
 }
 

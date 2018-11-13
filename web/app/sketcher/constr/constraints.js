@@ -29,8 +29,12 @@ function createByConstraintName(name, params, values) {
       return new P2PDistanceV(params);
     case "PointOnEllipse":
       return new PointOnEllipse(params);
+    case "PointOnCurve":
+      return new PointOnCurve(params, values[0]);
     case "EllipseTangent":
       return new EllipseTangent(params);
+    case "CurveTangent":
+      return new CurveTangent(params, values[0]);
     case "angle":
       return new Angle(params);
     case "angleConst":
@@ -567,6 +571,64 @@ function PointOnEllipse(params) {
     
     const L = Math.sqrt(1/( sq(Math.cos(polarAngle)/radiusX) + sq(Math.sin(polarAngle)/radiusY)));
     return L - polarRadius
+  };
+
+  this.gradient = NumericGradient;
+}
+
+function PointOnCurve(params, curve) {
+
+  this.params = params;
+
+  const PX = 0;
+  const PY = 1;
+  
+  let pt = [0,0,0];
+  
+  this.error = function() {
+    const px = params[PX].get();
+    const py = params[PY].get();
+    pt[0] = px;
+    pt[1] = py;
+    let u = curve.param(pt);
+    let p = curve.point(u);
+    return Math.sqrt( sq(p[0] - px) + sq(p[1] - py) )
+  };
+
+  this.gradient = NumericGradient;
+}
+
+function CurveTangent(params, curve) {
+
+  this.params = params;
+
+  let tmp = [0,0,0];
+
+  const P1X = 0;
+  const P1Y = 1;
+  const P2X = 2;
+  const P2Y = 3;
+  const TX = 4;
+  const TY = 5;
+  
+  this.error = function() {
+    let x1 = params[P1X].get();
+    let y1 = params[P1Y].get();
+    let x2 = params[P2X].get();
+    let y2 = params[P2Y].get();
+    let tx = params[TX].get();
+    let ty = params[TY].get();
+
+    tmp[0] = tx;
+    tmp[1] = ty;
+    let t = curve.param(tmp);
+    let [P, D] = curve.eval(t, 1);
+
+    let l = Math.sqrt(sq(D[0]) + sq(D[1]));
+    
+    let vx = - D[1] / l;
+    let vy = D[0] / l;
+    return Math.abs(vx * (P[0] - x1) + vy * (P[1] - y1)) + Math.abs(vx * (P[0] - x2) + vy * (P[1] - y2));  
   };
 
   this.gradient = NumericGradient;

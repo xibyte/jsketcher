@@ -64,6 +64,10 @@ export default class Vector {
     return this.minus(a).lengthSquared();
   }
 
+  distanceTo(a) {
+    return Math.sqrt(this.distanceToSquared(a));
+  }
+
   minus(vector) {
     return new Vector(this.x - vector.x, this.y - vector.y, this.z - vector.z);
   }
