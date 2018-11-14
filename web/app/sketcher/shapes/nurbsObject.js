@@ -8,7 +8,6 @@ export class NurbsObject extends SketchObject {
 
   constructor(curve, a, b) {
     super();
-    //make it lazy
     this.curve = curve;
     this.a = a;
     this.b = b;
