@@ -1,11 +1,7 @@
-import {
-  Geometry, Line, LineBasicMaterial, MeshBasicMaterial, MeshLambertMaterial, Object3D, Quaternion,
-  Vector3
-} from 'three';
+import {MeshLambertMaterial, Object3D} from 'three';
 import {AXIS} from '../../../math/l3space';
 import {MeshArrow} from 'scene/objects/auxiliary';
-import {OnTopOfAll} from 'scene/materialMixins';
-import DPR from 'dpr';
+import {viewScaleFactor} from '../../../../../modules/scene/scaleHelper';
 
 export default class CSysObject3D extends Object3D {
 
@@ -41,7 +37,7 @@ export default class CSysObject3D extends Object3D {
   updateMatrix() {
     let {origin: o, x, y, z} = this.csys;
 
-    let k = this.viewScaleFactor();
+    let k = viewScaleFactor(this.sceneSetup, this.csys.origin, SIZE_PX, CSYS_SIZE_MODEL);
     this.matrix.set(
       k*x.x, k*y.x, k*z.x, o.x,
       k*x.y, k*y.y, k*z.y, o.y,
@@ -51,26 +47,6 @@ export default class CSysObject3D extends Object3D {
 
     // this.scale.set(k, k, k);
     // super.updateMatrix();
-  }
-
-  viewScaleFactor() {
-    let container = this.sceneSetup.container;
-    let viewHeight = container.clientHeight;
-    let camera = this.sceneSetup.camera;
-
-    if (camera.isOrthographicCamera) {
-      return viewHeight / (camera.top - camera.bottom)  / camera.zoom * 2 * DPR * SIZE_PX / CSYS_SIZE_MODEL;
-    } else {
-      let p = new Vector3().copy(this.csys.origin);
-      let cp = new Vector3().copy(camera.position);
-      let z = p.sub(cp).length();
-      let tanHFov = Math.atan((camera.fov / 2) / 180 * Math.PI);
-      let fitUnits = tanHFov * z * 2;
-
-      let modelTakingPart = CSYS_SIZE_MODEL / fitUnits;
-      let modelActualSizePx = viewHeight * modelTakingPart;
-      return SIZE_PX / modelActualSizePx;
-    }
   }
   
   dispose() {

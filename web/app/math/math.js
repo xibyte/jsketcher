@@ -240,9 +240,7 @@ export function makeAngle0_360(angle) {
 
 export function perpendicularVector(v) {
   v = vec.normalize(v);
-  return [[1,0,0], [0,1,0], [0,0,1]]
-      .map(axis => vec.cross(axis, v))
-      .sort((a, b) => vec.lengthSq(b) - vec.lengthSq(a))[0];
+  return vec.BASIS3.map(axis => vec.cross(axis, v)).sort((a, b) => vec.lengthSq(b) - vec.lengthSq(a))[0];
 }
 
 export function radiusOfCurvature(d1, d2) {
