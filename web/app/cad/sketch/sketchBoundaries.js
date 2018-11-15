@@ -3,6 +3,7 @@ import * as vec from '../../math/vec';
 import {iteratePath} from '../cad-utils';
 import NurbsCurve from '../../brep/geom/curves/nurbsCurve';
 import {veqXYZ} from '../../brep/geom/tolerance';
+import curveTess, {curveTessParams} from '../../brep/geom/impl/curve/curve-tess';
 
 export function getSketchBoundaries(sceneFace) {
   const boundary = {lines: [], arcs: [], circles: [], nurbses: []};
@@ -208,7 +209,8 @@ function findArcRadius(curve) {
   if (curve.degree() !== 2) {
     return null;
   }
-  let knots = curve.knots();
+  let [uMin, uMax] = curve.domain();
+  let knots = curveTessParams(curve, uMin, uMax);
   let prevRadCur = null;
   for (let knot of knots) {
     let [P, D, DD] = curve.eval(knot, 2);
