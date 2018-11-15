@@ -172,3 +172,9 @@ export function polynomial(coefs, vectors) {
   }
   return out;
 }
+
+export const AXIS_X3 = [1,0,0];
+export const AXIS_Y3 = [0,1,0];
+export const AXIS_Z3 = [0,0,1];
+export const ORIGIN3 = [0,0,0];
+export const BASIS3 = [AXIS_X3, AXIS_Y3, AXIS_Z3];
