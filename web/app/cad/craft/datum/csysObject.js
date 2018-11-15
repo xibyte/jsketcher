@@ -5,6 +5,7 @@ import {
 import {AXIS} from '../../../math/l3space';
 import {MeshArrow} from 'scene/objects/auxiliary';
 import {OnTopOfAll} from 'scene/materialMixins';
+import DPR from 'dpr';
 
 export default class CSysObject3D extends Object3D {
 
@@ -58,7 +59,7 @@ export default class CSysObject3D extends Object3D {
     let camera = this.sceneSetup.camera;
 
     if (camera.isOrthographicCamera) {
-      return viewHeight / (camera.top - camera.bottom)  / camera.zoom * 2;
+      return viewHeight / (camera.top - camera.bottom)  / camera.zoom * 2 * DPR * SIZE_PX / CSYS_SIZE_MODEL;
     } else {
       let p = new Vector3().copy(this.csys.origin);
       let cp = new Vector3().copy(camera.position);
