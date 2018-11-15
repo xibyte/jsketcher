@@ -11,6 +11,7 @@ export default class SceneSetUp {
     this.scene = new THREE.Scene();
     this.rootGroup = this.scene;
     this.onRendered = onRendered;
+    this.scene.userData.sceneSetUp = this;
     
     this.setUpCamerasAndLights();
     this.setUpControls();
@@ -221,6 +222,16 @@ export default class SceneSetUp {
   domElement() {
     return this.renderer.domElement;   
   }
+}
+
+export function getSceneSetup(object3D) {
+  do {
+    if (object3D.userData.sceneSetUp) {
+      return object3D.userData.sceneSetUp;
+    }
+    object3D = object3D.parent;
+  } while(object3D);
+  return null;
 }
 
 const ORTHOGRAPHIC_CAMERA_FACTOR = 1;
