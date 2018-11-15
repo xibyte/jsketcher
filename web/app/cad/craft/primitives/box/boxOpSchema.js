@@ -1,6 +1,7 @@
 export default {
   datum: {
     type: 'datum',
+    optional: true,
     defaultValue: {type: 'selection'}
   },
   width: {
