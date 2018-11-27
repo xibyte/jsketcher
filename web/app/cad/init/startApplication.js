@@ -21,9 +21,9 @@ import * as ProjectPlugin from '../projectPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
 import * as ExportPlugin from '../exportPlugin';
 import * as TpiPlugin from '../tpi/tpiPlugin';
-
-import * as PartModellerPlugin from '../part/partModellerPlugin';
 import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
+
+import PartModellerPlugins from '../part/partModelerPlugins';
 
 import context from 'context';
 
@@ -31,7 +31,7 @@ import startReact from "../dom/startReact";
 
 export default function startApplication(callback) {
 
-  let applicationPlugins = [PartModellerPlugin];
+  let applicationPlugins = PartModellerPlugins;
   
   let preUIPlugins = [
     LifecyclePlugin,

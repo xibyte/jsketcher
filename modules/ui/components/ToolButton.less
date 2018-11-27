@@ -1,0 +1,38 @@
+@import "../styles/theme.less";
+
+.root {
+
+  border: 1px solid @bg-color;
+  margin: 3px;
+  border-radius: 3px;
+
+  padding: 5px 2px;
+  cursor: pointer;
+  background-color: @bg-color;
+
+  outline: none;
+
+  &:hover {
+    background-color: #9c9c9c !important;
+  }     
+  &:active {
+    transition: 200ms;
+    background-color: #BFBFBF !important;
+  }
+  &.pressed {
+    background-color: #7d7d7d;
+  }
+}
+
+.accent {
+  background-color: @color-accent;
+}
+
+.highlight {
+  background-color: @color-highlight;
+}
+
+.danger {
+  background-color: @color-danger;
+}
+

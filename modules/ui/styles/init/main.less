@@ -1,8 +1,10 @@
 @import "../theme.less";
 @import "../mixins.less";
 
+@fontSize: 11px;
+
 html, pre {
-  font: 11px 'Lucida Grande', sans-serif;
+  font: @fontSize 'Lucida Grande', sans-serif;
 }
 
 body {
@@ -30,4 +32,8 @@ button {
 
 pre {
   line-height: 1.5;
+}
+
+table {
+  font-size: @fontSize;  
 }

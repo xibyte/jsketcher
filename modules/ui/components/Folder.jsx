@@ -2,6 +2,7 @@ import React from 'react';
 
 import ls from './Folder.less'
 import Fa from "./Fa";
+import cx from 'classnames';
 
 export default class Folder extends React.Component{
   
@@ -23,11 +24,11 @@ export default class Folder extends React.Component{
   };
   
   render() {
-    let {title, closable, children} = this.props;
-    return <div className={ls.root}>
+    let {title, closable, className, children} = this.props;
+    return <div className={cx(ls.root, className)}>
       <div className={ls.title} onClick={closable ? this.tweakClose : null}>
         <span className={ls.handle}><Fa fw icon={this.isClosed() ? 'chevron-right' : 'chevron-down'}/></span> 
-        {title}
+        {' '}{title}
       </div>
       {!this.isClosed() && children}
     </div>
