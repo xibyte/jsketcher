@@ -2,6 +2,8 @@ import {addModification, stepOverriding} from './craftHistoryUtils';
 import {state, stream} from 'lstream';
 import {MShell} from '../model/mshell';
 import {MDatum} from '../model/mdatum';
+import materializeParams from './materializeParams';
+import CadError from '../../utils/errors';
 
 export function activate({streams, services}) {
 
@@ -54,7 +56,17 @@ export function activate({streams, services}) {
       throw(`unknown operation ${request.type}`);
     }
 
-    return op.run(request.params, services);
+    let params = {};
+    let errors = [];
+    materializeParams(services, request.params, op.schema, params, errors);
+    if (errors.length) {
+      throw new CadError({
+        kind: CadError.KIND.INVALID_PARAMS,
+        userMessage: errors.map(err => `${err.path.join('.')}: ${err.message}`).join('\n')
+      });
+    }
+    
+    return op.run(params, services);
   }
   
   function runOrGetPreRunResults(request) {
@@ -92,6 +104,7 @@ export function activate({streams, services}) {
         streams.craft.models.next(Array.from(models).sort(m => m.id));
       } catch(e) {
         console.error(e);
+        //TODO: need to find a way to propagate the error to the wizard.
         setTimeout(() => streams.craft.modifications.next({
           ...curr,
           pointer: i-1

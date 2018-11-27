@@ -41,4 +41,10 @@ export function flatten(arr, result = [], depth, _currLevel) {
   return result;
 }
 
+export function indexArray(array, getKey, getValue = v => v) {
+  let obj = {};
+  array.forEach(item => obj[getKey(item)] = getValue(item))
+  return obj;
+}
+
 export const EMPTY_ARRAY = Object.freeze([]);

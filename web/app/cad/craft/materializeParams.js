@@ -1,8 +1,7 @@
 import {ENTITIES} from '../scene/entites';
 
-export default function validateParams(services, params, schema, errors, parentPath) {
+export default function materializeParams(services, params, schema, result, errors, parentPath) {
 
-  errors = errors || [];
   parentPath = parentPath || ROOT_PATH; 
 
   for (let field of Object.keys(schema)) {
@@ -17,18 +16,20 @@ export default function validateParams(services, params, schema, errors, parentP
       }
     } else {
       if (md.type === 'number') {
-        if (typeof value !== 'number') {
-          errors.push({path: [...parentPath, field], message: 'not a number type'});
-        } else {
-          if (md.min !== undefined ) {
-            if (value < md.min) {
-              errors.push({path: [...parentPath, field], message: 'less than allowed'});
-            }
+        try {
+          value = services.expressions.evaluateExpression(value);  
+        } catch (e) {
+          errors.push({path: [...parentPath, field], message: 'unable to evaluate expression'});
+        }
+        
+        if (md.min !== undefined ) {
+          if (value < md.min) {
+            errors.push({path: [...parentPath, field], message: 'less than allowed'});
           }
-          if (md.max !== undefined ) {
-            if (value > md.max) {
-              errors.push({path: [...parentPath, field], message: 'greater than allowed'});
-            }
+        }
+        if (md.max !== undefined ) {
+          if (value > md.max) {
+            errors.push({path: [...parentPath, field], message: 'greater than allowed'});
           }
         }
       } else if (md.type === 'string') {
@@ -55,12 +56,14 @@ export default function validateParams(services, params, schema, errors, parentP
         if (!Array.isArray(value)) {
           errors.push({path: [...parentPath, field], message: 'not an array type'});
         }
-        value.forEach((item , i) => {
-          validateParams(services, item, md.schema, errors, [...parentPath, i]);
+        value = value.map((item , i) => {
+          let itemResult = {};
+          materializeParams(services, item, md.schema, item, errors, [...parentPath, i]);
+          return itemResult;
         });
       }
+      result[field] = value;
     }
-    return errors;
   }
 }
 

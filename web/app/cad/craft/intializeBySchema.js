@@ -25,6 +25,8 @@ export default function initializeBySchema(schema, context) {
       val = context.streams.selection[md.type].value[0];
     } else if (md.type === 'object') {
       val = initializeBySchema(md.schema, context);
+    } else if (md.type === 'number') {
+      val = md.defaultValue + '';
     } else {
       val = md.defaultValue;
     }
