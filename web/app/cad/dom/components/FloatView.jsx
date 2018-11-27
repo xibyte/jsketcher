@@ -1,11 +1,15 @@
 import React from 'react';
-import ObjectExplorer from '../../craft/ui/ObjectExplorer';
-import OperationHistory from '../../craft/ui/OperationHistory';
 import Folder from 'ui/components/Folder';
-import Fa from '../../../../../modules/ui/components/Fa';
 import ls from './FloatView.less';
-import cx from 'classnames';
+import connect from 'ui/connect';
+import mapContext from 'ui/mapContext';
+import Fa from 'ui/components/Fa';
+import ToolButton from 'ui/components/ToolButton';
 
+@connect(state => state.ui.floatViews.map(views => ({views})))
+@mapContext(ctx => ({
+  getDescriptor: ctx.services.ui.getFloatView
+}))
 export default class FloatView extends React.Component {
 
   state = {
@@ -13,33 +17,32 @@ export default class FloatView extends React.Component {
   };
 
   render() {
+    let {views, getDescriptor} = this.props;
+    
+    function view(id) {
+      let {title, icon, Component} = getDescriptor(id);
+      return <Folder className={ls.folder} title={<span> <Fa fw icon={icon}/> {title}</span>}>
+        <Component/>
+      </Folder>;
+    }
+
+    function icon(id) {
+      let {Icon} = getDescriptor(id);
+      return <Icon />
+    }
+
     return <div className={ls.root}>
       <div className={ls.tabs}>
-        {['project', 'history'].map(tabId => <Tab selected={this.state.selected === tabId} key={tabId}
-                                                  onClick={() => this.setState({selected: this.state.selected === tabId ? null : tabId})}>{getIcon(tabId)}</Tab>)}
+        {views.map(tabId => <ToolButton pressed={this.state.selected === tabId} 
+                                        key={tabId}
+                                        onClick={() => this.setState({selected: this.state.selected === tabId ? null : tabId})}>
+          {<Fa fw icon={getDescriptor(tabId).icon}/>}
+        </ToolButton>)}
       </div>
       
       {this.state.selected && <div className={ls.main}>
-        {this.state.selected === 'project' && <Folder title={<span> <Fa fw icon='cubes'/> Model</span>}>
-          <ObjectExplorer/>
-        </Folder>}
-        {this.state.selected === 'history' && <Folder title={<span> <Fa fw icon='history'/> Modifications</span>}>
-          <OperationHistory/>
-        </Folder>}
-
+        {view(this.state.selected)}
       </div>}
     </div>;
-  }
-}
-
-function Tab({children, selected, onClick}) {
-  return <div className={cx(ls.tab, selected && ls.selected)} onClick={onClick}>{children}</div>;
-}
-
-function getIcon(id) {
-  if (id === 'history') {
-    return <Fa fw icon='history'/>;
-  } else if (id === 'project') {
-    return <Fa fw icon='cubes'/>;
   }
 }

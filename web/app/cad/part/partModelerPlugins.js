@@ -1,14 +1,11 @@
 import * as UIConfigPlugin from './uiConfigPlugin';
 import * as PartOperationsPlugin from './partOperationsPlugin';
 import * as DebugPlugin from '../debugPlugin';
-import {activatePlugins} from "../init/startApplication";
+import * as ExpressionsPlugin from '../expressions/expressionsPlugin';
 
-const PART_MODELLER_PLUGINS = [
+export default [
   UIConfigPlugin,
   DebugPlugin,
+  ExpressionsPlugin,
   PartOperationsPlugin
 ];
-
-export function activate(context) {
-  activatePlugins(PART_MODELLER_PLUGINS, context);
-}

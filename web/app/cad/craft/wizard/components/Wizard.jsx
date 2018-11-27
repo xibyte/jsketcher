@@ -23,7 +23,6 @@ export default class Wizard extends React.Component {
 
   state = {
     hasError: false,
-    validationErrors: [],
   };
 
 
@@ -51,8 +50,7 @@ export default class Wizard extends React.Component {
 
     let formContext = {
       data: params,
-      validationErrors: this.state.validationErrors,
-      updateParam,
+      updateParam
     };
 
     let Form = operation.form;
@@ -72,15 +70,13 @@ export default class Wizard extends React.Component {
           <Button type='accent' onClick={this.onOK}>OK</Button>
         </ButtonGroup>
         {this.state.hasError && <div className={ls.errorMessage}>
-          performing operation with current parameters leads to an invalid object
-          (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
+          {this.state.algorithmError && <span>
+            performing operation with current parameters leads to an invalid object
+            (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
+          </span>}
           {this.state.code && <div className={ls.errorCode}>{this.state.code}</div>}
           {this.state.userMessage && <div className={ls.userErrorMessage}>{this.state.userMessage}</div>}
         </div>}
-        {this.state.validationErrors.length !== 0 && <div className={ls.errorMessage}>
-          {this.state.validationErrors.map((err, i) => <div key={i}> {err.path.join(' ')} {err.message}</div>)}
-        </div>}
-
       </Stack>
     </Window>;
   }
@@ -110,17 +106,6 @@ export default class Wizard extends React.Component {
 
   onOK = () => {
     try {
-      let {type, params, resolveOperation, validator} = this.props;
-      if (!type) {
-        return null;
-      }
-
-      let operation = resolveOperation(type);
-      let validationErrors = validator(params, operation.schema);
-      if (validationErrors.length !== 0) {
-        this.setState({validationErrors});
-        return;
-      }
       this.props.onOK();
     } catch (error) {
       this.handleError(error);
@@ -135,6 +120,9 @@ export default class Wizard extends React.Component {
     if (error.TYPE === CadError) {
       let {code, userMessage, kind} = error;
       printError = !code;
+      if (CadError.ALGORITMTHM_ERROR_KINDS.includes(kind)) {
+        stateUpdate.algorithmError = true
+      }
       if (code && kind === CadError.KIND.INTERNAL_ERROR) {
         console.warn('Operation Error Code: ' + code);
       }

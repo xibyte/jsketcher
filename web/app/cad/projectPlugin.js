@@ -31,16 +31,20 @@ export function activate(context) {
   function save() {
     let data = {};
     data.history = streams.craft.modifications.value.history;
+    data.expressions = streams.expressions.script.value;
     services.storage.set(projectStorageKey(), JSON.stringify(data));
   }
 
   function load() {
     try {
-      let data = services.storage.get(services.project.projectStorageKey());
-      if (data) {
-        let history = JSON.parse(data).history;
-        if (history) {
-          services.craft.reset(history);
+      let dataStr = services.storage.get(services.project.projectStorageKey());
+      if (dataStr) {
+        let data = JSON.parse(dataStr);
+        if (data.history) {
+          services.craft.reset(data.history);
+        }
+        if (data.expressions) {
+          services.expressions.load(data.expressions);
         }
       }
     } catch (e) {

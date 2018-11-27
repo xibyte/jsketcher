@@ -2,6 +2,10 @@ import CoreActions from '../actions/coreActions';
 import OperationActions from '../actions/operationActions';
 import HistoryActions from '../actions/historyActions';
 import menuConfig from './menuConfig';
+import ObjectExplorer from '../craft/ui/ObjectExplorer';
+import React from 'react';
+import OperationHistory from '../craft/ui/OperationHistory';
+import Expressions from '../expressions/Expressions';
 
 export function activate({services, streams}) {
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'Donate', 'GitHub'];
@@ -19,4 +23,8 @@ export function activate({services, streams}) {
   services.action.registerActions(HistoryActions);
 
   services.menu.registerMenus(menuConfig);
+
+  services.ui.registerFloatView('project', ObjectExplorer, 'Model', 'cubes');
+  services.ui.registerFloatView('history', OperationHistory, 'Modifications', 'history');
+  services.ui.registerFloatView('expressions', Expressions, 'Expressions', 'percent');
 }
