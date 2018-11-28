@@ -10,14 +10,19 @@ export default function materializeParams(services, params, schema, result, erro
       continue;
     }
     let value = params[field];
-    if (value === undefined) {
+    if (value === undefined || value === null || value === '') {
       if (!md.optional) {
         errors.push({path: [...parentPath, field], message: 'required'});
       }
     } else {
       if (md.type === 'number') {
         try {
-          value = services.expressions.evaluateExpression(value);  
+          const valueType =  typeof value;
+          if (valueType === 'string') {
+            value = services.expressions.evaluateExpression(value);  
+          } else if (valueType !== 'number') {
+            errors.push({path: [...parentPath, field], message: 'invalid value'});
+          }
         } catch (e) {
           errors.push({path: [...parentPath, field], message: 'unable to evaluate expression'});
         }
