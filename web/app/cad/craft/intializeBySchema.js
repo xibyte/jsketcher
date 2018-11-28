@@ -26,7 +26,7 @@ export default function initializeBySchema(schema, context) {
     } else if (md.type === 'object') {
       val = initializeBySchema(md.schema, context);
     } else if (md.type === 'number') {
-      val = md.defaultValue + '';
+      val = md.defaultValue;
     } else {
       val = md.defaultValue;
     }
