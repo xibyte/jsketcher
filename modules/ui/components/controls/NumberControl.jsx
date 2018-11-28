@@ -46,7 +46,6 @@ NumberControl.propTypes = {
   min: PropTypes.number, 
   max: PropTypes.number, 
   accelerator: PropTypes.number, 
-  value: PropTypes.number.isRequired, 
   onChange: PropTypes.func.isRequired
 };
 
