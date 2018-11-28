@@ -5,7 +5,7 @@ import * as BREPPrimitives from '../brep/brep-primitives'
 import BrepCurve from '../brep/geom/curves/brepCurve';
 import NurbsCurve from "../brep/geom/curves/nurbsCurve";
 import {surfaceIntersect} from '../brep/geom/intersection/surfaceSurface';
-import {closestToCurveParam, findClosestToCurveParamRoughly} from '../brep/geom/curves/closestPoint';
+import {closestToCurveParam} from '../brep/geom/curves/closestPoint';
 import NurbsSurface from '../brep/geom/surfaces/nurbsSurface';
 import DatumObject3D from './craft/datum/datumObject';
 import CSys from '../math/csys';
@@ -224,15 +224,15 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
       let curve = new BrepCurve(ic);
       let pt = [-50, 220, 0];
       __DEBUG__.AddPoint3(pt, 0x0000ff);
-      let u = findClosestToCurveParamRoughly(curve.impl.approx, pt);
-      let exactU = closestToCurveParam(curve.impl.approx, pt);
-
-      let clPt = curve.impl.approx.point(u);
-      let exactPt = curve.impl.approx.point(exactU);
-      __DEBUG__.AddPoint3(clPt, 0xffff00);
-      __DEBUG__.AddPoint3(exactPt, 0xff0000);
+      // let u = findClosestToCurveParamRoughly(curve.impl.approx, pt);
+      // let exactU = closestToCurveParam(curve.impl.approx, pt);
+      //
+      // let clPt = curve.impl.approx.point(u);
+      // let exactPt = curve.impl.approx.point(exactU);
+      // __DEBUG__.AddPoint3(clPt, 0xffff00);
+      // __DEBUG__.AddPoint3(exactPt, 0xff0000);
       // console.dir(curve);
-      __DEBUG__.HideSolids();
+      // __DEBUG__.HideSolids();
     }
     
   }

@@ -8,13 +8,15 @@ import {getAttribute} from '../../../../../modules/scene/objectData';
 //todo: rename to shell
 export class SceneSolid {
   
+  ID = 0;
+  
   constructor(type, id, skin) {
     this.tCadType = type || 'SHELL';
 
     this.cadGroup = new THREE.Object3D();
     setAttribute(this.cadGroup, 'shell',  this);
 
-    this.tCadId = genSolidId();
+    this.tCadId = SceneSolid.ID++;
     this.id = id === undefined ? this.tCadId : id; // to keep identity through the history
     this.faceCounter = 0;
     this.edgeCounter = 0;

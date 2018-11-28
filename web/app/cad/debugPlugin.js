@@ -1,5 +1,5 @@
 import {checkForSelectedFaces} from './actions/actionHelpers';
-import {surfaceToThreeGeom, triangulateToThree} from './scene/wrappers/brepSceneObject';
+import {brepFaceToGeom, surfaceToThreeGeom} from './scene/wrappers/brepSceneObject';
 import {createSolidMaterial} from './scene/wrappers/sceneObject';
 import DPR from 'dpr';
 import Vector from 'math/vector';
@@ -112,6 +112,7 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     AddVolume: (shell, color) => {
       color = color || 0xffffff;
       const geometry = new THREE.Geometry();
+      shell.faces.forEach(f => brepFaceToGeom(f, geometry));
       triangulateToThree(shell, geometry);
       const mesh = new THREE.Mesh(geometry, createSolidMaterial({
         color,

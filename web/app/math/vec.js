@@ -139,6 +139,8 @@ export function create(dim) {
   return out;
 }
 
+export {create as newVector};
+
 const sq = v => v * v; 
 
 export function distanceSq(v1, v2) {
