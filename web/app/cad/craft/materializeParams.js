@@ -58,7 +58,7 @@ export default function materializeParams(services, params, schema, result, erro
         }
         value = value.map((item , i) => {
           let itemResult = {};
-          materializeParams(services, item, md.schema, item, errors, [...parentPath, i]);
+          materializeParams(services, item, md.schema, itemResult, errors, [...parentPath, i]);
           return itemResult;
         });
       }
