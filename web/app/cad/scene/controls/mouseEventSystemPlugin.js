@@ -8,7 +8,7 @@ export function activate(context) {
   domElement.addEventListener('mouseup', mouseup, false);
   domElement.addEventListener('mousemove', mousemove, false);
 
-  let performRaycast = e => services.viewer.raycast(e, services.viewer.sceneSetup.scene.children);
+  let performRaycast = e => services.viewer.raycast(e, services.cadScene.workGroup.children);
 
   let toDrag = null;
   let pressed = new Set();
