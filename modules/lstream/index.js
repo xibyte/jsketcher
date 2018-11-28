@@ -1,11 +1,12 @@
 import {CombineStream} from './combine';
 import {StateStream} from './state';
 import {Emitter} from './emitter';
-import {FilterStream, MapStream} from './base';
 import {ExternalStateStream} from './external';
 import {MergeStream} from './merge';
 import {NeverStream} from './never';
 import {ConstantStream} from './constant';
+import {MapStream} from './map';
+import {FilterStream} from './filter';
 
 export function stream() {
   return new Emitter();

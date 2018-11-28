@@ -4,6 +4,7 @@ import QR from '../../math/qr'
 import LMOptimizer from '../../math/lm'
 import {ConstantWrapper, EqualsTo} from './constraints'
 import {dog_leg} from '../../math/optim'
+import {newVector} from '../../math/vec';
 
 /** @constructor */
 function Param(id, value, readOnly) {
@@ -291,7 +292,7 @@ var prepare = function(constrs, locked) {
 };
 
 var solve_lm = function(sys, model, jacobian, rough) {
-  var opt = new LMOptimizer(sys.getParams(), math.vec(sys.constraints.length), model, jacobian);
+  var opt = new LMOptimizer(sys.getParams(), newVector(sys.constraints.length), model, jacobian);
   opt.evalMaximalCount = 100 * sys.params.length;
   var eps = rough ? 0.001 : 0.00000001;
   opt.init0(eps, eps, eps);
