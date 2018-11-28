@@ -4,7 +4,7 @@ import {createPrism} from '../../brep/brep-enclose'
 import * as BREPBool from '../../brep/operations/boolean'
 import * as IO from '../../brep/io/brepLoopsFormat'
 import {BREPValidator} from '../../brep/brep-validator'
-import {HalfEdge, Edge} from '../../brep/topo/edge';
+import {Edge} from '../../brep/topo/edge';
 import {Loop} from '../../brep/topo/loop';
 import {Face} from '../../brep/topo/face';
 import {Shell} from '../../brep/topo/shell';
@@ -29,7 +29,7 @@ export default {
       Point, BrepCurve, Plane, createBoundingSurface
     },
     topo: {
-      HalfEdge, Edge, Loop, Face, Shell, Vertex
+      Edge, Loop, Face, Shell, Vertex
     }, 
     IO,
   },

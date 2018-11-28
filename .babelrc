@@ -1,4 +1,7 @@
 {
-  "presets": ["es2015", "stage-2", "react", "flow"],
-  "plugins": ["transform-decorators-legacy"]
+  "presets": ["@babel/env", "@babel/react", "@babel/flow"],
+  "plugins": [
+    "@babel/proposal-class-properties",
+    ["@babel/plugin-proposal-decorators", { "legacy": true }]
+  ]
 }

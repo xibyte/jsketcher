@@ -9,6 +9,7 @@ const INTEGRATION_TESTS = path.join(__dirname, 'web/test');
 const GLOBAL_CSS = path.join(__dirname, 'web/css');
 
 module.exports = {
+  mode: 'development',
   devtool: 'source-map',
   entry: {
     index: ['babel-polyfill', './web/app/index'],
@@ -72,5 +73,15 @@ module.exports = {
   devServer: {
     hot: false,
     inline: false,
+    before: function(app) {
+      app.get('*.wasm', function(req, res) {
+        res.sendFile(req.url, {
+          root: path.join(__dirname, 'web'),
+          headers: {
+            'Content-Type': 'application/wasm'
+          }
+        });
+      });
+    },
   }
 };
