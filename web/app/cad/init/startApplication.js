@@ -22,6 +22,7 @@ import * as SketcherPlugin from '../sketch/sketcherPlugin';
 import * as ExportPlugin from '../exportPlugin';
 import * as TpiPlugin from '../tpi/tpiPlugin';
 import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
+import * as E0Plugin from '../craft/e0/e0Plugin';
 
 import PartModellerPlugins from '../part/partModelerPlugins';
 
@@ -50,7 +51,8 @@ export default function startApplication(callback) {
     CraftUiPlugin,
     CadRegistryPlugin,
     ExportPlugin,
-    TpiPlugin
+    TpiPlugin,
+    E0Plugin
   ];
   
   let plugins = [

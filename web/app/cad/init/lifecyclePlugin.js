@@ -1,17 +1,27 @@
 import {state} from '../../../../modules/lstream';
-import context from '../../../../modules/context';
 
 export function activate({streams, services}) {
+  const asyncInitializingJobs = new Set();
   const startTime = performance.now();
   streams.lifecycle = {
     appReady: state(false),
     projectLoaded: state(false)
   };
   services.lifecycle = {
+    startAsyncInitializingJob : job => {
+      if (!streams.lifecycle.projectLoaded.value) {
+        asyncInitializingJobs.add(job);
+      }
+    },
+    finishAsyncInitializingJob : job => {
+      asyncInitializingJobs.delete(job);
+      services.lifecycle.loadProjectRequest();
+    },
     loadProjectRequest: () => {
       if (streams.lifecycle.appReady.value && 
         !streams.lifecycle.projectLoaded.value && 
-        services.extension.allExtensionsReady()) {
+        services.extension.allExtensionsReady() &&
+        asyncInitializingJobs.size === 0) {
         
         services.extension.activateAllExtensions();
         services.project.load();
