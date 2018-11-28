@@ -1,3 +1,5 @@
+import booleanOptionSchema from '../booleanOptionSchema';
+
 export default {
   datum: {
     type: 'datum',
@@ -9,4 +11,5 @@ export default {
     defaultValue: 250,
     min: 0
   },
+  boolean: booleanOptionSchema
 }
