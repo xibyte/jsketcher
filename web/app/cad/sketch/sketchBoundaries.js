@@ -26,7 +26,8 @@ export function getSketchBoundaries(sceneFace) {
         let mA = vec.normalize(DA);
 
         if (veqXYZ(A[0], A[1], 0, B[0], B[1], 0)) {
-          let c = vec.mul(mA, arcRadius);
+          let centripetal = perpXY(vec.mul(mA, arcRadius));
+          let c = vec._add(centripetal, A);
           boundary.circles.push({
             c: {x: c[0], y: c[1]},
             r: arcRadius
@@ -231,4 +232,5 @@ function perpXY(v) {
 
   v[0] = - y;
   v[1] =   x;
+  return v;
 }
