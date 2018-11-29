@@ -10,6 +10,9 @@ export function getSketchBoundaries(sceneFace) {
   let w2sTr = sceneFace.worldToSketchTransformation;
   let _w2sTrArr = null;
   let w2sTrArr = () => _w2sTrArr || (_w2sTrArr = w2sTr.toArray()); 
+  if (!sceneFace.brepFace) {
+    return boundary;
+  }
   for (let he of sceneFace.brepFace.edges) {
     let curve = he.edge.curve.impl;
     if (curve.constructor.name === 'NurbsCurve' && curve.degree() !== 1) {
