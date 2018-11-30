@@ -17,7 +17,7 @@ const selectionMode = {
 
 export const intersectionOperation = {
   id: 'INTERSECTION',
-  label: 'intersection',
+  label: 'boolean',
   icon: 'img/cad/intersection',
   info: 'intersection operation on two shells',
   paramsInfo,
@@ -29,7 +29,7 @@ export const intersectionOperation = {
 
 export const subtractOperation = {
   id: 'SUBTRACT',
-  label: 'subtract',
+  label: 'boolean',
   icon: 'img/cad/subtract',
   info: 'subtract operation on two shells',
   paramsInfo,
@@ -41,7 +41,7 @@ export const subtractOperation = {
 
 export const unionOperation = {
   id: 'UNION',
-  label: 'union',
+  label: 'boolean',
   icon: 'img/cad/union',
   info: 'union operation on two shells',
   paramsInfo,
