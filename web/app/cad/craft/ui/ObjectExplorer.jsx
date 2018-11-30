@@ -38,9 +38,9 @@ function FaceSection({face}) {
     <Section label={face.sketchObjects.length ? 'sketch' : <span className={ls.hint}>{'<no sketch assigned>'}</span>}>
       {face.sketchObjects.map(o => <div key={o.id}>{o.id + ':' + o.sketchPrimitive.constructor.name}</div>)}
     </Section>
-    <Section label='edges' defaultOpen={false}>
+    {face.edges && <Section label='edges' defaultOpen={false}>
       {face.edges.map(e => <EdgeSection edge={e} key={e.id}/>)}
-    </Section>
+    </Section>}
   </ModelSection>;
 }
 
