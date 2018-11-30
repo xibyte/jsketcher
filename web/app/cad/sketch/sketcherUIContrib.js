@@ -48,6 +48,6 @@ export default function ({services, streams}) {
     'sketchConstraint_lockConvex'
   ];
   streams.ui.toolbars.sketcherControl.value = [
-    'sketchSaveAndExit', 'sketchOpenInTab'
+    'sketchSaveAndExit', 'sketchOpenInTab', 'sketchExit'
   ];
 }
