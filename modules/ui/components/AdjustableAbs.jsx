@@ -1,8 +1,15 @@
 import React from 'react';
 
-export default class AdjustableAbs extends React.Component {
+export default function AdjustableAbs(props) {
+  if (!props.visible) {
+    return null;
+  }
+  return <Adjuster {...props}/>
+}
+
+export class Adjuster extends React.Component {
   
-  fit() {
+  fit = () => {
     if (!this.el) {
       return;
     }
@@ -14,9 +21,9 @@ export default class AdjustableAbs extends React.Component {
       let pos = this.props[prop];
       if (pos !== undefined) {
         if (pos + dim > holderDim) {
-          pos = holderDim - dim;
-          this.el.style[prop] = pos + 'px';
+          pos = (holderDim - dim) - 5;
         }
+        this.el.style[prop] = pos + 'px';
       }
     };
 
@@ -41,14 +48,11 @@ export default class AdjustableAbs extends React.Component {
     fit('right', w, holder.offsetWidth);
     fit('top',  h, holder.offsetHeight);
     fit('bottom', h, holder.offsetHeight);
-  }
+    this.el.style.visibility = 'visible';
+  };
   
   componentDidMount() {
-    this.fit();
-  }
-
-  componentDidUpdate() {
-    this.fit();
+    setTimeout(this.fit);
   }
 
   componentWillUnmount() {
@@ -59,8 +63,8 @@ export default class AdjustableAbs extends React.Component {
     let {left, top, right, bottom, children, style, zIndex, visible, centered, ...props} = this.props;
     return <div ref={el => this.el = el} 
                 style={{
-                  display: visible ? 'block' : 'none',
-                  position: 'absolute', left, top, right, bottom, zIndex, 
+                  visibility: 'hidden',
+                  position: 'absolute', zIndex,
                   ...style}}  {...props}>
       {children}
     </div>;
