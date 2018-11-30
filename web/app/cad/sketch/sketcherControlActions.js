@@ -12,6 +12,17 @@ export default [
     }
   },
   {
+    id: 'sketchExit',
+    appearance: {
+      info: 'drop sketch changes and exit',
+      label: 'exit sketch',
+      cssIcons: ['times'],
+    },
+    invoke: ({services}) => {
+      services.sketcher.inPlaceEditor.exit();
+    }
+  },
+  {
     id: 'sketchOpenInTab',
     appearance: {
       info: 'save changes and open sketch 2D in a tab',
