@@ -1,21 +1,21 @@
 import React from 'react';
-
-import {toIdAndOverrides} from '../../actions/actionRef';
 import connect from 'ui/connect';
 import Toolbar from 'ui/components/Toolbar';
 import {ConnectedActionButton, ToolbarActionButtons} from './PlugableToolbar';
 import ls from './HeadsUpToolbar.less';
+import {combine} from '../../../../../modules/lstream';
 
-export const HeadsUpToolbar = connect(streams => streams.ui.toolbars.headsUp.map(actions => ({actions})))(
-  function HeadsUpToolbar({actions}) {
+export const HeadsUpToolbar = connect(streams => combine(
+    streams.ui.toolbars.headsUp, 
+    streams.ui.toolbars.headsUpQuickActions).map(([actions, quickActions]) => ({actions, quickActions})))(
+  function HeadsUpToolbar({actions, quickActions}) {
     return <Toolbar flat>
       <div className={ls.mainActions}>
         <ToolbarActionButtons actions={actions} />
       </div>
 
       <div className={ls.quickButtons}>
-        <ConnectedActionButton size='small' actionId='Save' />
-        <ConnectedActionButton size='small' actionId='StlExport' />
+        {quickActions.map(actionId => <ConnectedActionButton size='small' key={actionId} actionId={actionId} />)}
       </div>
     </Toolbar>
   }
