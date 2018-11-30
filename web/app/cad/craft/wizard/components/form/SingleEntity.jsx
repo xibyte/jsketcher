@@ -7,6 +7,7 @@ import Fa from 'ui/components/Fa';
 import Button from 'ui/components/controls/Button';
 import {attachToForm} from './Form';
 import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
+import NumberControl from '../../../../../../../modules/ui/components/controls/NumberControl';
 
 @attachToForm
 @mapContext(({streams, services}) => ({
@@ -16,12 +17,14 @@ import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 export default class SingleEntity extends React.Component {
 
   componentDidMount() {
-    let {streams, entity, onChange, value, findEntity} = this.props;
+    let {streams, entity, onChange, value, selectionIndex, findEntity} = this.props;
     let selection$ = streams.selection[entity];
     if (findEntity(entity, value)) {
-      selection$.next([value]);
+      if (selectionIndex === 0) {
+        selection$.next([value]);
+      }
     }
-    this.detacher = selection$.attach(selection => onChange(selection[0]));
+    this.detacher = selection$.attach(selection => onChange(selection[selectionIndex]));
   }
 
   componentWillUnmount() {
@@ -34,8 +37,8 @@ export default class SingleEntity extends React.Component {
   };
   
   render() {
-    let {name, label, streams, entity} = this.props;
-    let selection = streams.selection[entity].value[0];
+    let {name, label, streams, selectionIndex, entity} = this.props;
+    let selection = streams.selection[entity].value[selectionIndex];
     return <Field>
       <Label>{label||camelCaseSplitToStr(name)}:</Label> 
       <div>{selection ? 
@@ -44,3 +47,7 @@ export default class SingleEntity extends React.Component {
     </Field>;
   }
 }
+
+SingleEntity.defaultProps = {
+  selectionIndex: 0
+};

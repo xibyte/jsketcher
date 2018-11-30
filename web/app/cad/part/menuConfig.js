@@ -22,14 +22,14 @@ export default [
     label: 'bool',
     cssIcons: ['pie-chart'],
     info: 'set of available boolean operations',
-    actions: ['INTERSECTION', 'DIFFERENCE', 'UNION']
+    actions: ['INTERSECTION', 'SUBTRACT', 'UNION']
   },
   {
     id: 'main',
     label: 'start',
     cssIcons: ['rocket'],
     info: 'common set of actions',
-    actions: ['EXTRUDE', 'CUT', 'SHELL', '-', 'INTERSECTION', 'DIFFERENCE', 'UNION', '-', 'PLANE', 'BOX', 'SPHERE', '-',
+    actions: ['EXTRUDE', 'CUT', 'SHELL', '-', 'INTERSECTION', 'SUBTRACT', 'UNION', '-', 'PLANE', 'BOX', 'SPHERE', '-',
       'EditFace', '-', 'DeselectAll', 'RefreshSketches']
   },
   {
