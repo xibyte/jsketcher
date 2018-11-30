@@ -56,7 +56,7 @@ export default class Wizard extends React.Component {
     let Form = operation.form;
 
     return <Window initWidth={250}
-                   initLeft={left || 25}
+                   initLeft={left || 15}
                    title={title}
                    onClose={this.cancel}
                    onKeyDown={this.onKeyDown}
