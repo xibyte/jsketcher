@@ -1,6 +1,7 @@
-import * as Operations from '../craft/operations'
-import * as ActionHelpers from './actionHelpers'
+import * as Operations from '../craft/operations';
+import * as ActionHelpers from './actionHelpers';
 
+// L E G A C Y
 const OPERATION_ACTIONS = [
   {
     id: 'SHELL',
@@ -8,33 +9,6 @@ const OPERATION_ACTIONS = [
       info: 'makes shell using borders',
     },
     ...requiresFaceSelection(1)
-  },
-  {
-    id: 'SPHERE',
-    appearance: {
-      info: 'creates new object sphere'
-    },
-  },
-  {
-    id: 'INTERSECTION',
-    appearance: {
-      info: 'intersection operation on two solids',
-    },
-    ...requiresSolidSelection(2)
-  },
-  {
-    id: 'DIFFERENCE',
-    appearance: {
-      info: 'difference operation on two solids',
-    },
-    ...requiresSolidSelection(2)
-  },
-  {
-    id: 'UNION',
-    appearance: {
-      info: 'union operation on two solids',
-    },
-    ...requiresSolidSelection(2)
   },
   {
     id: 'IMPORT_STL',

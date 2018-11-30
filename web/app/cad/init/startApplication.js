@@ -10,6 +10,7 @@ import * as UiPlugin from '../dom/uiPlugin';
 import * as MenuPlugin from '../dom/menu/menuPlugin';
 import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
 import * as WizardPlugin from '../craft/wizard/wizardPlugin';
+import * as WizardSelectionModeSwitcherPlugin from '../craft/wizard/wizardSelectionModeSwitcherPlugin';
 import * as PreviewPlugin from '../preview/previewPlugin';
 import * as OperationPlugin from '../craft/operationPlugin';
 import * as ExtensionsPlugin from '../craft/extensionsPlugin';
@@ -63,7 +64,8 @@ export default function startApplication(callback) {
     SelectionMarkerPlugin,
     SketcherPlugin,
     ...applicationPlugins,
-    ViewSyncPlugin
+    ViewSyncPlugin,
+    WizardSelectionModeSwitcherPlugin
   ];
   
   let allPlugins = [...preUIPlugins, ...plugins];

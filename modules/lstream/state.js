@@ -35,3 +35,12 @@ export class StateStream extends Emitter {
   }
 }
 
+export class DistinctStateStream extends StateStream {
+
+  next(v) {
+    if (this._value === v) {
+      return;
+    }
+    super.next(v);
+  }
+}
