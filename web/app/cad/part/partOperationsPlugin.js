@@ -12,6 +12,7 @@ import sphereOperation from '../craft/primitives/sphere/sphereOperation';
 import cylinderOperation from '../craft/primitives/cylinder/cylinderOperation';
 import torusOperation from '../craft/primitives/torus/torusOperation';
 import coneOperation from '../craft/primitives/cone/coneOperation';
+import {intersectionOperation, subtractOperation, unionOperation} from '../craft/boolean/booleanOperation';
 
 export function activate({services}) {
   services.operation.registerOperations([
@@ -28,6 +29,9 @@ export function activate({services}) {
     sphereOperation,
     cylinderOperation,
     torusOperation,
-    coneOperation
+    coneOperation,
+    intersectionOperation,
+    subtractOperation,
+    unionOperation
   ])
 }

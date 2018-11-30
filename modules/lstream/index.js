@@ -1,5 +1,5 @@
 import {CombineStream} from './combine';
-import {StateStream} from './state';
+import {DistinctStateStream, StateStream} from './state';
 import {Emitter} from './emitter';
 import {ExternalStateStream} from './external';
 import {MergeStream} from './merge';
@@ -22,6 +22,10 @@ export function merge(...streams) {
 
 export function state(initialValue) {
   return new StateStream(initialValue);
+}
+
+export function distinctState(initialValue) {
+  return new DistinctStateStream(initialValue);
 }
 
 export function externalState(get, set) {

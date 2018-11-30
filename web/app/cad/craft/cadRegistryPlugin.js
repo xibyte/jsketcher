@@ -1,4 +1,4 @@
-import {DATUM, EDGE, FACE, SKETCH_OBJECT} from '../scene/entites';
+import {DATUM, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../scene/entites';
 import {MShell} from '../model/mshell';
 
 
@@ -14,7 +14,17 @@ export function activate({streams, services}) {
   function getAllShells() {
     return streams.cadRegistry.shells.value;
   }
-  
+
+  function findShell(shellId) {
+    let shells = getAllShells();
+    for (let shell of shells) {
+      if (shell.id === shellId) {
+        return shell;
+      }
+    }
+    return null;
+  }
+
   function findFace(faceId) {
     let shells = getAllShells();
     for (let shell of shells) {
@@ -55,6 +65,7 @@ export function activate({streams, services}) {
   function findEntity(entity, id) {
     switch (entity) {
       case FACE: return findFace(id);
+      case SHELL: return findShell(id);
       case EDGE: return findEdge(id);
       case SKETCH_OBJECT: return findSketchObject(id);
       case DATUM: return findDatum(id);
@@ -63,7 +74,7 @@ export function activate({streams, services}) {
   }
   
   services.cadRegistry = {
-    getAllShells, findFace, findEdge, findSketchObject, findEntity, findDatum,
+    getAllShells, findShell, findFace, findEdge, findSketchObject, findEntity, findDatum,
     get modelIndex() {
       return streams.cadRegistry.modelIndex.value;
     },

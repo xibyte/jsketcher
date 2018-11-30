@@ -1,7 +1,8 @@
 import * as mask from 'gems/mask'
 import {getAttribute, setAttribute} from 'scene/objectData';
-import {FACE, EDGE, SKETCH_OBJECT, DATUM} from '../entites';
+import {FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL} from '../entites';
 import {state} from 'lstream';
+import {distinctState} from '../../../../../modules/lstream';
 
 export const PICK_KIND = {
   FACE: mask.type(1),
@@ -9,7 +10,16 @@ export const PICK_KIND = {
   EDGE: mask.type(3)
 };
 
-const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM];
+const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
+
+const DEFAULT_SELECTION_MODE = Object.freeze({
+  shell: false,
+  vertex: false,
+  face: true,
+  edge: true,
+  sketchObject: true,
+  datum: true  
+});
 
 export function activate(context) {
   const {services, streams} = context;
@@ -48,11 +58,18 @@ export function activate(context) {
 
   function handlePick(event) {
     raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, (view, kind) => {
+      let selectionMode = streams.pickControl.selectionMode.value;
       let modelId = view.model.id;
       if (kind === PICK_KIND.FACE) {
-        if (dispatchSelection(streams.selection.face, modelId, event)) {
-          services.cadScene.showGlobalCsys(view.model.csys);
-          return false;
+        if (selectionMode.shell) {
+          if (dispatchSelection(streams.selection.shell, view.model.shell.id, event)) {
+            return false;
+          }
+        } else {
+          if (dispatchSelection(streams.selection.face, modelId, event)) {
+            services.cadScene.showGlobalCsys(view.model.csys);
+            return false;
+          }
         }
       } else if (kind === PICK_KIND.SKETCH) {
         if (dispatchSelection(streams.selection.sketchObject, modelId, event)) {
@@ -132,10 +149,35 @@ export function defineStreams({streams}) {
   SELECTABLE_ENTITIES.forEach(entity => {
     streams.selection[entity] = state([]);
   });
+  streams.pickControl = {
+    selectionMode: distinctState(DEFAULT_SELECTION_MODE)
+  }
 }
 
 function initStateAndServices({streams, services}) {
 
+  streams.pickControl.selectionMode.pairwise().attach(([prev, curr]) => {
+    SELECTABLE_ENTITIES.forEach(entity => {
+      if (prev[entity] !== curr[entity]) {
+        streams.selection[entity].next([]);
+      }
+    });
+  });
+  
+  function setSelectionMode(selectionMode) {
+    streams.pickControl.selectionMode.next({
+      ...DEFAULT_SELECTION_MODE, ...selectionMode
+    });
+  }
+
+  function switchToDefaultSelectionMode() {
+    streams.pickControl.selectionMode.next(DEFAULT_SELECTION_MODE);
+  }
+  
+  services.pickControl = {
+    setSelectionMode, switchToDefaultSelectionMode
+  };
+  
   services.selection = {};
 
   SELECTABLE_ENTITIES.forEach(entity => {

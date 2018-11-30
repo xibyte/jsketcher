@@ -2,7 +2,7 @@ import {View} from './view';
 import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
 import {setAttribute} from '../../../../../modules/scene/objectData';
 import {createSolidMaterial} from '../wrappers/sceneObject';
-import {FaceView} from './faceView';
+import {FaceView, SELECTION_COLOR} from './faceView';
 import {EdgeView} from './edgeView';
 import {SHELL} from '../entites';
 
@@ -44,8 +44,16 @@ export class ShellView extends View {
       SceneGraph.addToGroup(this.edgeGroup, edgeView.rootGroup);
       this.edgeViews.push(edgeView);
     }
-  }    
-  
+  }
+
+  mark(color) {
+    this.faceViews.forEach(faceView => faceView.setColor(color || SELECTION_COLOR));
+  }
+
+  withdraw(color) {
+    this.faceViews.forEach(faceView => faceView.setColor(null));
+  }
+
   dispose() {
     for (let faceView of this.faceViews) {
       faceView.dispose();

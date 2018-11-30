@@ -1,4 +1,4 @@
-import {EDGE, FACE, SKETCH_OBJECT} from '../entites';
+import {EDGE, FACE, SHELL, SKETCH_OBJECT} from '../entites';
 import {findDiff} from '../../../../../modules/gems/iterables';
 
 export function activate({streams, services}) {
@@ -20,10 +20,8 @@ export function activate({streams, services}) {
   };
 
   streams.selection.face.pairwise([]).attach(selectionSync(FACE));
+  streams.selection.shell.pairwise([]).attach(selectionSync(SHELL));
   streams.selection.edge.pairwise([]).attach(selectionSync(EDGE));
   streams.selection.sketchObject.pairwise([]).attach(selectionSync(SKETCH_OBJECT));
-  // new SelectionMarker(context, 0xFAFAD2, 0xFF0000, null);
-  // new SketchSelectionMarker(context, createLineMaterial(0xFF0000, 6 / DPR));
-  // new EdgeSelectionMarker(context, 0xFA8072);
 }
 

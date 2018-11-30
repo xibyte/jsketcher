@@ -23,12 +23,15 @@ export function activate(ctx) {
   loadWasm(ctx);
   
   ctx.services.operation.handlers.push(operationHandler);
+  function shellsToPointers(shells) {
+    return shells.filter(managedByE0).map(m => m.brepShell.data.externals.ptr);
+  }
   function booleanBasedOperation(engineParams, params, impl) {
     engineParams.deflection = DEFLECTION;
     if (params.boolean && BOOLEAN_TYPES[params.boolean.type] > 0) {
       engineParams.boolean = {
         type: BOOLEAN_TYPES[params.boolean.type],
-        operands: params.boolean.operands.filter(managedByE0).map(m => m.brepShell.data.externals.ptr),
+        operands: shellsToPointers(params.boolean.operands),
         tolerance: TOLERANCE,
       }
     }
@@ -83,6 +86,21 @@ export function activate(ctx) {
         csys: writeCsys(params.csys),
         r: params.radius,
       }, params, Module._SPI_sphere);
+    },
+    boolean: function({type, operandsA, operandsB}) {
+      let engineParams = {
+        type: BOOLEAN_TYPES[type],
+        operandsA: shellsToPointers(operandsA),
+        operandsB: shellsToPointers(operandsB),
+        tolerance: TOLERANCE,
+        deflection: DEFLECTION,
+      };
+      let data = callEngine(engineParams, Module._SPI_boolean);
+      let consumed = [...operandsA, ...operandsB];
+      return {
+        consumed,
+        created: [readShellData(data.result, consumed, operandsA[0].csys)]
+      }
     }
   }
 }
