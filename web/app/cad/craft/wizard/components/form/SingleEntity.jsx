@@ -19,7 +19,7 @@ export default class SingleEntity extends React.Component {
   componentDidMount() {
     let {streams, entity, onChange, value, selectionIndex, findEntity} = this.props;
     let selection$ = streams.selection[entity];
-    if (findEntity(entity, value)) {
+    if (value && findEntity(entity, value)) {
       if (selectionIndex === 0) {
         selection$.next([value]);
       }
