@@ -16,6 +16,7 @@ export function activate({services, streams}) {
   ];
 
   streams.ui.toolbars.headsUp.value = ['PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', '-', 'FILLET', '-', 'INTERSECTION', 'SUBTRACT', 'UNION'];
+  streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport'];
   
   services.action.registerActions(CoreActions);
   services.action.registerActions(OperationActions);

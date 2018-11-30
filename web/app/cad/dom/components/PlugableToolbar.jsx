@@ -18,9 +18,9 @@ function ConfigurableToolbar({actions, size, ...props}) {
 }
 
 export function ToolbarActionButtons({actions, size}) {
-  return actions.map(actionRef => {
+  return actions.map((actionRef, i) => {
     if (actionRef === '-') {
-      return <ToolbarSplitter />;
+      return <ToolbarSplitter key={'ToolbarSplitter' + i}/>;
     }
     let [id, overrides] = toIdAndOverrides(actionRef);
     return <ConnectedActionButton actionId={id} key={id} size={size} {...overrides} />
