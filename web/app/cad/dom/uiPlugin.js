@@ -9,7 +9,6 @@ export function defineStreams({streams}) {
     },
     toolbars: {
       headsUp: state([]),
-      auxiliary: state([]),
       sketcherGeneral: state([]),
       sketcherConstraints: state([]),
       sketcherControl: state([]),

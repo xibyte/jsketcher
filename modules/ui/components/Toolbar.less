@@ -5,6 +5,11 @@
   padding: 3px;
   border-radius: 5px;
   display: flex;
+  &.flat {
+    border-radius: 0;
+  }
+  overflow: auto;
+  align-content: center;
 }
 
 .vertical {
@@ -18,7 +23,6 @@
   font-size: 10px;
   padding: 3px 7px;
   color: #555;  
-  
   &:hover {
     cursor: pointer;
     background-color: #333;
@@ -40,7 +44,17 @@
   padding: 5px 2px;
 }
 
+.medium > * {
+  font-size: 20px;
+  padding: 6px 3px;
+}
 
+.splitter {
+  align-self: stretch;
+  width: 1px;
+  background-color: #a0a0a0;
+  margin: 0 2px;
+}
 
 
 

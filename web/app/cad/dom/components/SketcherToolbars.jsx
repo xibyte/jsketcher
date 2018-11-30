@@ -9,10 +9,10 @@ function SketcherToolbars({visible}) {
   if (!visible) {
     return null;
   }
-  return <Abs left={5} top={5} className={ls.sketcherToolbars}>
-    <SketcherToolbarGeneral small vertical/>
-    <SketcherToolbarConstraints small vertical/>
-    <SketcherToolbarControl small/>
+  return <Abs right={0} className={ls.sketcherToolbars}>
+    <SketcherToolbarControl size='small'/>
+    <SketcherToolbarConstraints size='medium' vertical/>
+    <SketcherToolbarGeneral size='medium' vertical/>
   </Abs>;
 })
 
