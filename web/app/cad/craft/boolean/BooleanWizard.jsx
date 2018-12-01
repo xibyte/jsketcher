@@ -7,6 +7,5 @@ export default function BooleanWizard() {
   return <Group>
     <SingleEntity name='operandA' label='operand A' entity='shell' selectionIndex={0} />
     <SingleEntity name='operandB' label='operand B' entity='shell' selectionIndex={1} />
-    <BooleanChoice name='type' strict/>
   </Group>;
 }

@@ -1,4 +1,4 @@
-export default defaultValue => ({
+export default {
   operandA: {
     type: 'shell',
     defaultValue: {type: 'selection'}
@@ -6,10 +6,5 @@ export default defaultValue => ({
   operandB: {
     type: 'shell',
     defaultValue: {type: 'selection'}
-  },
-  type: {
-    type: 'enum',
-    values: ['INTERSECT', 'SUBTRACT', 'UNION'], 
-    defaultValue
   }
-})
+};
