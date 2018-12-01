@@ -17,13 +17,12 @@ export class Adjuster extends React.Component {
     let h = this.el.offsetHeight;
     let holder = this.el.parentNode;
 
-    const fit = (prop, dim, holderDim) => {
-      let pos = this.props[prop];
+    const fit = (prop, pos, dim, holderDim) => {
       if (pos !== undefined) {
         if (pos + dim > holderDim) {
           pos = (holderDim - dim) - 5;
         }
-        this.el.style[prop] = pos + 'px';
+        this.el.style[prop] = Math.round(pos) + 'px';
       }
     };
 
@@ -31,23 +30,23 @@ export class Adjuster extends React.Component {
 
     if (centered) {
       if (right !== undefined) {
-        this.el.style.right = (right + w * 0.5) + 'px'; 
+        right = (right + w * 0.5); 
       } 
       if (left !== undefined) {
-        this.el.style.left = (left - w * 0.5) + 'px';
+        left = (left - w * 0.5);
       }
       if (bottom !== undefined) {
-        this.el.style.bottom = (bottom + h * 0.5) + 'px';
+        bottom = (bottom + h * 0.5);
       }
       if (top !== undefined) {
-        this.el.style.top = (top - h * 0.5) + 'px';
+        top = (top - h * 0.5);
       }
     }
     
-    fit('left', w, holder.offsetWidth);
-    fit('right', w, holder.offsetWidth);
-    fit('top',  h, holder.offsetHeight);
-    fit('bottom', h, holder.offsetHeight);
+    fit('left', left, w, holder.offsetWidth);
+    fit('right', right,w, holder.offsetWidth);
+    fit('top',  top, h, holder.offsetHeight);
+    fit('bottom', bottom, h, holder.offsetHeight);
     this.el.style.visibility = 'visible';
   };
   

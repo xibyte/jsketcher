@@ -9,7 +9,7 @@ export function activate({services, streams}) {
   //to attach to a dom element: Mousetrap(domElement).bind(...
   for (let action of Object.keys(keymap)) {
     const dataProvider = getDataProvider(action, services);
-    Mousetrap.bind(keymap[action], () => services.action.run(actionToken, dataProvider ? dataProvider() : undefined));
+    Mousetrap.bind(keymap[action], () => services.action.run(action, dataProvider ? dataProvider() : undefined));
   }
   Mousetrap.bind('esc', services.menu.closeAll)
 }
