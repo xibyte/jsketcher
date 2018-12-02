@@ -21,7 +21,7 @@ const TOLERANCE = 1e-3;
 export function activate(ctx) {
 
   loadWasm(ctx);
-  
+
   ctx.services.operation.handlers.push(operationHandler);
   function shellsToPointers(shells) {
     return shells.filter(managedByE0).map(m => m.brepShell.data.externals.ptr);
@@ -288,7 +288,7 @@ window.__E0_ENGINE_EXCHANGE = function(objStr) {
 };
 
 function instantiateEngine(importObject, callback) {
-  const url = '/wasm/e0/main.wasm';
+  const url = './wasm/e0/main.wasm';
   WebAssembly.instantiateStreaming(fetch(url), importObject).then(results => {
     callback(results.instance);
   });
@@ -311,12 +311,7 @@ function loadWasm(ctx) {
   };
 
   let mainScript = document.createElement('script');
-  mainScript.setAttribute('src', '/wasm/e0/main.js');
+  mainScript.setAttribute('src', './wasm/e0/main.js');
   mainScript.setAttribute('async', 'async');
   document.head.appendChild(mainScript);
 }
-
-
-
-
-
