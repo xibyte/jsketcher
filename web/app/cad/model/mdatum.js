@@ -6,8 +6,7 @@ export class MDatum extends MObject {
   static ID_COUNTER = 0; // TODO: reset the counter
   
   constructor(csys) {
-    super();
-    this.id = 'D:' + (MDatum.ID_COUNTER++);
+    super(MDatum.TYPE, 'D:' + (MDatum.ID_COUNTER++));
     this.csys = csys;
   }
 }

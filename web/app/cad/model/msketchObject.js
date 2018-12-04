@@ -5,8 +5,7 @@ export class MSketchObject extends MObject {
   static TYPE = 'sketchObject';
   
   constructor(face, sketchPrimitive) {
-    super();
-    this.id = sketchPrimitive.id;
+    super(MSketchObject.TYPE, sketchPrimitive.id);
     this.face = face;
     this.sketchPrimitive = sketchPrimitive;
     this.construction = false;

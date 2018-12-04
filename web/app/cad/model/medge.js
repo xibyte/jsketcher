@@ -5,8 +5,7 @@ export class MEdge extends MObject {
   static TYPE = 'edge';
 
   constructor(id, shell, brepEdge) {
-    super();
-    this.id = id;
+    super(MEdge.TYPE, id);
     this.shell = shell;
     this.brepEdge = brepEdge;
   }

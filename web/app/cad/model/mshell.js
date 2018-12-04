@@ -10,7 +10,10 @@ export class MShell extends MObject {
 
   static ID_COUNTER = 0;
 
-  id = 'S:' + (MShell.ID_COUNTER++);
+  constructor() {
+    super(MShell.TYPE, 'S:' + (MShell.ID_COUNTER++))  
+  }
+  
   shell;
   faces = [];
   edges = [];

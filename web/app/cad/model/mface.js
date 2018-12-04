@@ -3,7 +3,6 @@ import Vector from 'math/vector';
 import {BasisForPlane} from '../../math/l3space';
 import {MSketchObject} from './msketchObject';
 import {EMPTY_ARRAY} from 'gems/iterables';
-import {PointOnSurface} from '../../brep/geom/pointOnSurface';
 import CSys from '../../math/csys';
 
 export class MFace extends MObject {
@@ -11,8 +10,7 @@ export class MFace extends MObject {
   static TYPE = 'face';
 
   constructor(id, shell, surface, csys) {
-    super(id);
-    this.id = id;
+    super(MFace.TYPE, id);
     this.shell = shell;
     this.surface = surface;
     this.sketchObjects = [];
