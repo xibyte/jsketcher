@@ -10,7 +10,7 @@ export const PICK_KIND = {
   EDGE: mask.type(3)
 };
 
-const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
+export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
 
 const DEFAULT_SELECTION_MODE = Object.freeze({
   shell: false,
@@ -23,7 +23,36 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
 
 export function activate(context) {
   const {services, streams} = context;
-  initStateAndServices(context);
+
+  const defaultHandler = (model, event) => {
+    const type = model.TYPE;
+    let selectionMode = DEFAULT_SELECTION_MODE;
+    let modelId = model.id;
+    if (type === FACE) {
+      if (selectionMode.shell) {
+        if (dispatchSelection(SHELL, model.shell.id, event)) {
+          return false;
+        }
+      } else {
+        if (dispatchSelection(FACE, modelId, event)) {
+          services.cadScene.showGlobalCsys(model.csys);
+          return false;
+        }
+      }
+    } else if (type === SKETCH_OBJECT) {
+      if (dispatchSelection(SKETCH_OBJECT, modelId, event)) {
+        return false;
+      }
+    } else if (type === EDGE) {
+      if (dispatchSelection(EDGE, modelId, event)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  let pickHandler = defaultHandler;
+  
   let domElement = services.viewer.sceneSetup.domElement();
   
   domElement.addEventListener('mousedown', mousedown, false);
@@ -52,44 +81,33 @@ export function activate(context) {
     }
   }
 
-  function selected(selection, object) {
-    return selection.value.indexOf(object) !== -1;
+  function setPickHandler(handler) {
+    pickHandler = handler || defaultHandler;
+    services.marker.clear();
   }
+
+  const deselectAll = () => services.marker.clear();
 
   function handlePick(event) {
-    raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, (view, kind) => {
-      let selectionMode = streams.pickControl.selectionMode.value;
-      let modelId = view.model.id;
-      if (kind === PICK_KIND.FACE) {
-        if (selectionMode.shell) {
-          if (dispatchSelection(streams.selection.shell, view.model.shell.id, event)) {
-            return false;
-          }
-        } else {
-          if (dispatchSelection(streams.selection.face, modelId, event)) {
-            services.cadScene.showGlobalCsys(view.model.csys);
-            return false;
-          }
-        }
-      } else if (kind === PICK_KIND.SKETCH) {
-        if (dispatchSelection(streams.selection.sketchObject, modelId, event)) {
-          return false;
-        }
-      } else if (kind === PICK_KIND.EDGE) {
-        if (dispatchSelection(streams.selection.edge, modelId, event)) {
-          return false;
-        }
-      }
-      return true;
-    });
+    raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, pickHandler);
   }
 
-  function dispatchSelection(selection, selectee, event) {
-    if (selected(selection, selectee)) {
+  function pick(obj) {
+    pickHandler(obj, null);
+  }
+  
+  function dispatchSelection(entityType, selectee, event) {
+    let marker = services.marker;
+    if (marker.isMarked(selectee)) {
       return false;
     }
-    let multiMode = event.shiftKey;
-    selection.update(value => multiMode ? [...value, selectee] : [selectee]);
+    let multiMode = event && event.shiftKey;
+    
+    if (multiMode) {
+      marker.markAdding(entityType, selectee)
+    } else {
+      marker.markExclusively(entityType, selectee)
+    }
     return true;
   }
   
@@ -108,7 +126,7 @@ export function activate(context) {
         if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line) {
           let sketchObjectV = getAttribute(pickResult.object, SKETCH_OBJECT);
           if (sketchObjectV) {
-            return !visitor(sketchObjectV, PICK_KIND.SKETCH);
+            return !visitor(sketchObjectV.model, event);
           }
         }
         return false;
@@ -117,7 +135,7 @@ export function activate(context) {
         if (mask.is(kind, PICK_KIND.EDGE)) {
           let edgeV = getAttribute(pickResult.object, EDGE);
           if (edgeV) {
-            return !visitor(edgeV, PICK_KIND.EDGE);
+            return !visitor(edgeV.model, event);
           }
         }
         return false;
@@ -126,7 +144,7 @@ export function activate(context) {
         if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face) {
           let faceV = getAttribute(pickResult.face, FACE);
           if (faceV) {
-            return !visitor(faceV, PICK_KIND.FACE);
+            return !visitor(faceV.model, event);
           }
         }
         return false;
@@ -141,64 +159,7 @@ export function activate(context) {
       }
     }
   }
-}
-
-export function defineStreams({streams}) {
-  streams.selection = {
-  };
-  SELECTABLE_ENTITIES.forEach(entity => {
-    streams.selection[entity] = state([]);
-  });
-  streams.pickControl = {
-    selectionMode: distinctState(DEFAULT_SELECTION_MODE)
-  }
-}
-
-function initStateAndServices({streams, services}) {
-
-  streams.pickControl.selectionMode.pairwise().attach(([prev, curr]) => {
-    SELECTABLE_ENTITIES.forEach(entity => {
-      if (prev[entity] !== curr[entity]) {
-        streams.selection[entity].next([]);
-      }
-    });
-  });
-  
-  function setSelectionMode(selectionMode) {
-    streams.pickControl.selectionMode.next({
-      ...DEFAULT_SELECTION_MODE, ...selectionMode
-    });
-  }
-
-  function switchToDefaultSelectionMode() {
-    streams.pickControl.selectionMode.next(DEFAULT_SELECTION_MODE);
-  }
-  
   services.pickControl = {
-    setSelectionMode, switchToDefaultSelectionMode
+    setPickHandler, deselectAll, pick
   };
-  
-  services.selection = {};
-
-  SELECTABLE_ENTITIES.forEach(entity => {
-    let entitySelectApi = {
-      objects: [],
-      single: undefined
-    };
-    services.selection[entity] = entitySelectApi;
-    let selectionState = streams.selection[entity];
-    selectionState.attach(selection => {
-      entitySelectApi.objects = selection.map(id => services.cadRegistry.findEntity(entity, id));
-      entitySelectApi.single = entitySelectApi.objects[0];
-    });
-    entitySelectApi.select = selection => selectionState.value = selection;
-  });
-
-  streams.craft.models.attach(() => {
-    withdrawAll(streams.selection)
-  });
-}
-
-export function withdrawAll(selectionStreams) {
-  Object.values(selectionStreams).forEach(stream => stream.next([]))
 }

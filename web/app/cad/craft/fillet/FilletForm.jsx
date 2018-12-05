@@ -1,16 +1,11 @@
 import React from 'react';
-import MultiEntity from '../wizard/components/form/MultiEntity';
 import {NumberField} from '../wizard/components/form/Fields';
-import filletSchema from './schema';
+import EntityList from '../wizard/components/form/EntityList';
+import {Group} from '../wizard/components/form/Form';
 
 export default function FilletWizard() {
-  
-  let {defaultValue: {itemField, entity}, schema} = filletSchema.edges;
-
-  return <MultiEntity schema={schema} 
-                      entity={entity}
-                      itemField={itemField}
-                      name='edges'>
+  return <Group>
+    <EntityList name='edges' entity='edge' />
     <NumberField name='thickness' />
-  </MultiEntity>;
+  </Group>;
 }

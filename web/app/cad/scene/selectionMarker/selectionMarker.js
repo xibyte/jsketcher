@@ -3,15 +3,15 @@ import {AbstractSelectionMarker, setFacesColor} from "./abstractSelectionMarker"
 
 export class SelectionMarker extends AbstractSelectionMarker {
 
-  constructor(context, selectionColor, readOnlyColor, defaultColor) {
+  constructor(context, markColor, readOnlyColor, defaultColor) {
     super(context, 'face');
-    this.selectionColor = selectionColor;
+    this.markColor = markColor;
     this.defaultColor = defaultColor;
     this.readOnlyColor = readOnlyColor;
   }
 
   mark(sceneFace) {
-    this.setColor(sceneFace, this.selectionColor, this.readOnlyColor);
+    this.setColor(sceneFace, this.markColor, this.readOnlyColor);
   }
 
   unMark(sceneFace) {
