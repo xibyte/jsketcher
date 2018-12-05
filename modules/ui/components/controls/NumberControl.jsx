@@ -5,11 +5,12 @@ import InputControl from './InputControl';
 export default class NumberControl extends React.Component {
   
   render() {
-    let {onChange, value} = this.props;
+    let {onChange, onFocus, value} = this.props;
     return <InputControl type='number' 
               onWheel={this.onWheel} 
               value={ value } 
-              onChange={this.onChange}
+              onChange={this.onChange} 
+              onFocus={onFocus}
               inputRef={input => this.input = input} /> 
   }
   

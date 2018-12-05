@@ -15,9 +15,13 @@ import mapContext from 'ui/mapContext';
   updateParam: (name, value) => {
     let workingRequest$ = ctx.streams.wizard.workingRequest;
     if (workingRequest$.value.params && workingRequest$.value.type) {
-      workingRequest$.mutate(data => data.params[name] = value)
+      workingRequest$.mutate(data => {
+        data.params[name] = value;
+        data.state.activeParam = name; 
+      })
     }
-  }
+  },
+  setActiveParam: name => ctx.streams.wizard.workingRequest.mutate(data => data.state && (data.state.activeParam = name))
 }))
 export default class Wizard extends React.Component {
 
@@ -35,7 +39,7 @@ export default class Wizard extends React.Component {
       return <span>operation error</span>;
     }
 
-    let {left, type, params, resolveOperation, updateParam} = this.props;
+    let {left, type, params, state, resolveOperation, updateParam, setActiveParam} = this.props;
     if (!type) {
       return null;
     }
@@ -50,6 +54,8 @@ export default class Wizard extends React.Component {
 
     let formContext = {
       data: params,
+      activeParam: state.activeParam,
+      setActiveParam,
       updateParam
     };
 

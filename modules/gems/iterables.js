@@ -47,4 +47,21 @@ export function indexArray(array, getKey, getValue = v => v) {
   return obj;
 }
 
+export function addToListInMap(map, key, value) {
+  let list = map.get(key);
+  if (!list) {
+    list = [];
+    map.set(key, list);
+  }
+  list.push(value);
+}
+
+export function removeInPlace(arr, val) {
+  let index = arr.indexOf(val);
+  if (index !== -1) {
+    arr.splice(index, 1);
+  }
+  return arr;
+}
+
 export const EMPTY_ARRAY = Object.freeze([]);

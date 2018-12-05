@@ -11,7 +11,7 @@ export function createPreviewGeomProvider(inversed) {
   return function previewGeomProvider(params, services) {
 
     const face = services.cadRegistry.findFace(params.face);
-    if (!face) return null;
+    if (!face || !face.sketch) return null;
     let sketch = face.sketch.fetchContours();
 
     const encloseDetails = getEncloseDetails(params, sketch, face.csys, face.surface, !inversed);

@@ -1,4 +1,5 @@
 import {state} from 'lstream';
+import {isEntityType} from './schemaUtils';
 
 export function activate(context) {
   let {services} = context;
@@ -25,7 +26,9 @@ export function activate(context) {
     };
     actions.push(opAction);
 
-    registry$.mutate(registry => registry[id] = Object.assign({appearance}, descriptor, {
+    let schemaIndex = createSchemaIndex(descriptor.schema);
+    
+    registry$.mutate(registry => registry[id] = Object.assign({appearance, schemaIndex}, descriptor, {
       run: (request, services) => runOperation(request, descriptor, services)
     }));
   }
@@ -62,5 +65,29 @@ export function activate(context) {
     registerOperations,
     get,
     handlers
+  };
+}
+
+function createSchemaIndex(schema) {
+  const entitiesByType = {};
+  const entitiesByParam = {};
+  const entityParams = [];
+  for (let field of Object.keys(schema)) {
+    let md = schema[field];
+    let entityType = md.type === 'array' ? md.itemType : md.type;
+
+    if (isEntityType(entityType)) {
+      let byType = entitiesByType[entityType];
+      if (!byType) {
+        byType = [];
+        entitiesByType[entityType] = byType;
+      }
+      byType.push(field);
+      entitiesByParam[field] = entityType;
+      entityParams.push(field);
+    }
+  }
+  return {entitiesByType, entitiesByParam,
+    entityParams: Object.keys(entitiesByParam)
   };
 }

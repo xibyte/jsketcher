@@ -26,6 +26,10 @@ export class StreamBase {
     this.attach(v => stateStream.next(v));
     return stateStream;
   }
+  
+  distinct() {
+    return new DistinctStream(this);
+  }
 }
 
 const {MapStream} = require('./map');
@@ -33,3 +37,4 @@ const {FilterStream} = require('./filter');
 const {StateStream} = require('./state');
 const {PairwiseStream} = require('./pairwise');
 const {ScanStream} = require('./scan');
+const {DistinctStream} = require('./distinct');

@@ -13,8 +13,8 @@ export function Group({children}) {
 }
 
 export function formField(Control) {
-  return function FormPrimitive({label, name, ...props}) {
-    return <Field>
+  return function FormPrimitive({label, name, active, setActive, ...props}) {
+    return <Field active={active} onFocus={setActive} onClick={setActive}>
       <Label>{label || camelCaseSplitToStr(name)}</Label>
       <Control {...props} />
     </Field>;
@@ -27,8 +27,13 @@ export function attachToForm(Control) {
       {
         ctx => {
           const onChange = val => ctx.updateParam(name, val);
+          const setActive = val => ctx.setActiveParam(name);
           return <React.Fragment>
-            <Control value={ctx.data[name]} onChange={onChange} name={name} {...props} />
+            <Control value={ctx.data[name]} 
+                     onChange={onChange} 
+                     name={name} {...props}
+                     setActive={setActive}
+                     active={ctx.activeParam === name} />
           </React.Fragment>;
         }
       }

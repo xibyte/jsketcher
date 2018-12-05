@@ -10,7 +10,8 @@ export function enableAnonymousActionHint({streams, services}) {
       requester: 'anonymous'
     });
     setTimeout(() => {
-      if (!streams.action.hint.value.requester === 'anonymous') {
+      let value = streams.action.hint.value;
+      if (value && value.requester !== 'anonymous') {
         services.action.showHintFor(null);
       }
     }, 1000);

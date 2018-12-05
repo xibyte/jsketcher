@@ -11,10 +11,6 @@ const run = type => (params, services) => {
 
 const paramsInfo = ({operandA, operandB}) => `(${operandA}, ${operandB})`;
 
-const selectionMode = {
-  shell: true
-};
-
 export const intersectionOperation = {
   id: 'INTERSECTION',
   label: 'intersection',
@@ -24,7 +20,6 @@ export const intersectionOperation = {
   form: BooleanWizard,
   schema,
   run: run('INTERSECTION'),
-  selectionMode 
 };
 
 export const subtractOperation = {
@@ -36,7 +31,6 @@ export const subtractOperation = {
   form: BooleanWizard,
   schema,
   run: run('SUBTRACT'),
-  selectionMode
 };
 
 export const unionOperation = {
@@ -48,5 +42,4 @@ export const unionOperation = {
   form: BooleanWizard,
   schema,
   run: run('UNION'),
-  selectionMode
 };
