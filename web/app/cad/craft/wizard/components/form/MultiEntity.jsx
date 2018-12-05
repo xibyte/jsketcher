@@ -44,7 +44,8 @@ export default class MultiEntity extends React.Component {
             updateParam: (name, value) => {
               data[name] = value;
               ctx.updateParam(this.props.name, this.props.value);
-            }
+            },
+            ...ctx
           };
           let {itemField} = this.props;
           let entityId = data[itemField];

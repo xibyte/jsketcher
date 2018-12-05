@@ -12,6 +12,8 @@ export function stream() {
   return new Emitter();
 }
 
+export const eventStream = stream;
+
 export function combine(...streams) {
   return new CombineStream(streams);
 }

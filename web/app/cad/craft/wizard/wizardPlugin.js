@@ -1,4 +1,4 @@
-import {state} from 'lstream';
+import {stream, state} from 'lstream';
 import initializeBySchema from '../intializeBySchema';
 import {clone, EMPTY_OBJECT} from 'gems/objects';
 
@@ -45,24 +45,29 @@ export function activate(ctx) {
     gotoEditHistoryModeIfNeeded(mod);
   });
 
+  streams.wizard.workingRequestChanged = stream();
+  
   streams.wizard.workingRequest = streams.wizard.effectiveOperation.map(opRequest => {
-    if (!opRequest.type) {
-      return EMPTY_OBJECT;
-    }
-    let operation = ctx.services.operation.get(opRequest.type);
-    let params;
-    if (opRequest.changingHistory) {
-      params = clone(opRequest.params)
-    } else {
-      params = initializeBySchema(operation.schema, ctx);
-      if (opRequest.initialOverrides) {
-        applyOverrides(params, opRequest.initialOverrides);
+    let request = EMPTY_OBJECT;
+    if (opRequest.type) {
+      let operation = ctx.services.operation.get(opRequest.type);
+      let params;
+      if (opRequest.changingHistory) {
+        params = clone(opRequest.params)
+      } else {
+        params = initializeBySchema(operation.schema, ctx);
+        if (opRequest.initialOverrides) {
+          applyOverrides(params, opRequest.initialOverrides);
+        }
       }
+      request = {
+        type: opRequest.type,
+        params,
+        state: {}
+      };
     }
-    return {
-      type: opRequest.type,
-      params,
-    }
+    streams.wizard.workingRequestChanged.next(request);
+    return request
   }).remember(EMPTY_OBJECT);
 
   services.wizard = {
@@ -80,7 +85,8 @@ export function activate(ctx) {
     },
     
     applyWorkingRequest: () => {
-      let request = clone(streams.wizard.workingRequest.value);
+      let {type, params} = streams.wizard.workingRequest.value;
+      let request = clone({type, params});
       if (streams.wizard.insertOperation.value.type) {
         ctx.services.craft.modify(request, () => streams.wizard.insertOperation.value = EMPTY_OBJECT);
       } else {

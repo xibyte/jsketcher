@@ -143,13 +143,15 @@ function operationHandler(id, request, services) {
       return singleShellRespone(face.shell, data);
     }
     case 'FILLET': {
-      let edge = services.cadRegistry.findEdge(request.edges[0].edge);
-
-      let engineReq = Object.assign({}, request, {
+      let edge = services.cadRegistry.findEdge(request.edges[0]);
+      let engineReq = {
         deflection: DEFLECTION,
         solid: edge.shell.brepShell.data.externals.ptr,
-        edges: request.edges.map(e => Object.assign({}, e, {edge: services.cadRegistry.findEdge(e.edge).brepEdge.data.externals.ptr}))
-      });
+        edges: request.edges.map(e => ({
+          edge: services.cadRegistry.findEdge(e).brepEdge.data.externals.ptr,
+          thickness: request.thickness
+        }))
+      };
 
       let data = callEngine(engineReq, Module._SPI_fillet);
       return singleShellRespone(edge.shell, data);

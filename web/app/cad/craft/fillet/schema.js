@@ -1,19 +1,13 @@
 export default {
   edges: {
     type: 'array',
+    itemType: 'edge',
     defaultValue: {
       type: 'selection',
-      entity: 'edge',
-      itemField: 'edge'
-    },
-    schema: {
-      edge: {
-        type: 'edge',
-      },
-      thickness: {
-        type: 'number',
-        defaultValue: 20
-      }
     }
+  },
+  thickness: {
+    type: 'number',
+    defaultValue: 20
   }
 }
