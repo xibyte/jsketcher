@@ -80,6 +80,8 @@ function Viewer(canvas, IO) {
 }
 
 Viewer.prototype.dispose = function() {
+  window.removeEventListener( 'resize', this.onWindowResize, false );
+  this.canvas = null;
   this.toolManager.dispose();
 };
 
