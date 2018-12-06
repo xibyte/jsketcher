@@ -52,8 +52,8 @@ export class InPlaceSketcher {
     let viewer3d = this.ctx.services.viewer;
     viewer3d.sceneSetup.trackballControls.removeEventListener( 'change', this.onCameraChange);
     this.face = null;
-    this.viewer.dispose();
     this.viewer.canvas.parentNode.removeChild(this.viewer.canvas);
+    this.viewer.dispose();
     this.ctx.streams.sketcher.sketchingFace.value = null;
     viewer3d.requestRender();
   }

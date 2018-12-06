@@ -46,7 +46,7 @@ function FaceSection({face}) {
 
 const ModelSection = decoratorChain(
   mapContext((ctx, props) => ({
-    select: () => ctx.services.selection[props.type].select([props.model.id])
+    select: () => ctx.services.pickControl.pick(props.model)
   })),
   connect((streams, props) => (streams.selection[props.type] || constant([])).map(selection => ({selection}))))
 (

@@ -4,13 +4,13 @@ import * as DomPlugin from '../dom/domPlugin';
 import * as PickControlPlugin from '../scene/controls/pickControlPlugin';
 import * as MouseEventSystemPlugin from '../scene/controls/mouseEventSystemPlugin';
 import * as ScenePlugin from '../scene/scenePlugin';
-import * as SelectionMarkerPlugin from '../scene/selectionMarker/selectionMarkerPlugin';
+import * as MarkerPlugin from '../scene/selectionMarker/markerPlugin';
 import * as ActionSystemPlugin from '../actions/actionSystemPlugin';
 import * as UiPlugin from '../dom/uiPlugin';
 import * as MenuPlugin from '../dom/menu/menuPlugin';
 import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
 import * as WizardPlugin from '../craft/wizard/wizardPlugin';
-import * as WizardSelectionModeSwitcherPlugin from '../craft/wizard/wizardSelectionModeSwitcherPlugin';
+import * as WizardSelectionPlugin from '../craft/wizard/wizardSelectionPlugin';
 import * as PreviewPlugin from '../preview/previewPlugin';
 import * as OperationPlugin from '../craft/operationPlugin';
 import * as ExtensionsPlugin from '../craft/extensionsPlugin';
@@ -23,6 +23,7 @@ import * as SketcherPlugin from '../sketch/sketcherPlugin';
 import * as ExportPlugin from '../exportPlugin';
 import * as TpiPlugin from '../tpi/tpiPlugin';
 import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
+import * as EntityContextPlugin from '../scene/entityContextPlugin';
 import * as E0Plugin from '../craft/e0/e0Plugin';
 
 import PartModellerPlugins from '../part/partModelerPlugins';
@@ -60,12 +61,13 @@ export default function startApplication(callback) {
     DomPlugin,
     ScenePlugin,
     MouseEventSystemPlugin,
+    MarkerPlugin,
     PickControlPlugin,
-    SelectionMarkerPlugin,
+    EntityContextPlugin,
     SketcherPlugin,
     ...applicationPlugins,
     ViewSyncPlugin,
-    WizardSelectionModeSwitcherPlugin
+    WizardSelectionPlugin
   ];
   
   let allPlugins = [...preUIPlugins, ...plugins];

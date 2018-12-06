@@ -1,4 +1,4 @@
-import {ENTITIES} from '../scene/entites';
+import {isEntityType} from './schemaUtils';
 
 export default function materializeParams(services, params, schema, result, errors, parentPath) {
 
@@ -45,7 +45,7 @@ export default function materializeParams(services, params, schema, result, erro
         if (md.values.indexOf(value) === -1) {
           errors.push({path: [...parentPath, field], message: 'invalid value'});
         }
-      } else if (ENTITIES.indexOf(md.type) !== -1) {
+      } else if (isEntityType(md.type)) {
         if (typeof value !== 'string') {
           errors.push({path: [...parentPath, field], message: 'not a valid model reference'});
         }
@@ -55,17 +55,27 @@ export default function materializeParams(services, params, schema, result, erro
         }
         let model = services.cadRegistry.findEntity(md.type, ref);
         if (!model) {
-          errors.push({path: [...parentPath, field], message: 'referrers to nonexistent ' + md.entity});
+          errors.push({path: [...parentPath, field], message: 'referrers to nonexistent ' + md.type});
         }
       } else if (md.type === 'array') {
         if (!Array.isArray(value)) {
           errors.push({path: [...parentPath, field], message: 'not an array type'});
         }
-        value = value.map((item , i) => {
-          let itemResult = {};
-          materializeParams(services, item, md.schema, itemResult, errors, [...parentPath, i]);
-          return itemResult;
-        });
+        if (md.itemType === 'object') {
+          value = value.map((item , i) => {
+            let itemResult = {};
+            materializeParams(services, item, md.schema, itemResult, errors, [...parentPath, i]);
+            return itemResult;
+          });
+        } else {
+          if (isEntityType(md.itemType)) {
+            value.forEach(ref => {
+              if (!services.cadRegistry.findEntity(md.itemType, ref)) {
+                errors.push({path: [...parentPath, field], message: 'referrers to nonexistent ' + md.itemType});
+              }
+            })
+          }
+        }
       }
       result[field] = value;
     }

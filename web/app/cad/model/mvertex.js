@@ -5,8 +5,7 @@ export class MVertex extends MObject {
   static TYPE = 'vertex';
   
   constructor(id, shell, brepVertex) {
-    super();
-    this.id = id;
+    super(MVertex.TYPE, id);
     this.shell = shell;
     this.brepVertex = brepVertex;
   }

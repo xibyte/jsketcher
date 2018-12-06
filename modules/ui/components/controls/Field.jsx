@@ -1,10 +1,8 @@
 import React from 'react';
 
 import ls from './Field.less'
+import cx from 'classnames';
 
-export default function Field({children}) {
- 
-  return <div className={ls.root}>
-    {children}
-  </div>;
+export default function Field({active, ...props}) {
+  return <div className={cx(ls.root, active&&ls.active)} {...props} />
 }

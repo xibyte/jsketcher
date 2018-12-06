@@ -1,11 +1,10 @@
 import React from 'react';
 import {Group} from '../wizard/components/form/Form';
-import BooleanChoice from '../wizard/components/form/BooleanChioce';
-import SingleEntity from '../wizard/components/form/SingleEntity';
+import EntityList from '../wizard/components/form/EntityList';
 
 export default function BooleanWizard() {
   return <Group>
-    <SingleEntity name='operandA' label='operand A' entity='shell' selectionIndex={0} />
-    <SingleEntity name='operandB' label='operand B' entity='shell' selectionIndex={1} />
+    <EntityList name='operandA' label='operand A' entity='shell' selectionIndex={0} />
+    <EntityList name='operandB' label='operand B' entity='shell' selectionIndex={1} />
   </Group>;
 }
