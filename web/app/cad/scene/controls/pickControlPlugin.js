@@ -47,6 +47,10 @@ export function activate(context) {
       if (dispatchSelection(EDGE, modelId, event)) {
         return false;
       }
+    } else if (type === DATUM) {
+      if (dispatchSelection(DATUM, modelId, event)) {
+        return false;
+      }
     }
     return true;
   };

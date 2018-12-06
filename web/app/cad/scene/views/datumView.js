@@ -4,7 +4,6 @@ import {DATUM} from '../entites';
 import {setAttribute} from 'scene/objectData';
 import {Mesh, MeshBasicMaterial, PolyhedronGeometry, SphereGeometry} from 'three';
 import {CSYS_SIZE_MODEL} from '../../craft/datum/csysObject';
-import {NOOP} from '../../../../../modules/gems/func';
 
 export default class DatumView extends View {
 
@@ -55,7 +54,7 @@ export default class DatumView extends View {
       }
 
       onMouseClick(e) {
-        selectDatum(datum.id);
+        selectDatum(datum);
         showDatumMenu({
           x: e.offsetX,
           y: e.offsetY
@@ -103,9 +102,8 @@ export default class DatumView extends View {
 
       dragStart(e, axis) {
         if (!this.operationStarted) {
-          selectDatum(datum.id);
+          selectDatum(datum);
           beginOperation('DATUM_MOVE');
-          this.beginOperation();
         }
         super.dragStart(e, axis);
       }

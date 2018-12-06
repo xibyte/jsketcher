@@ -5,6 +5,7 @@ import {RadioButton} from 'ui/components/controls/RadioButtons';
 
 export default function RotateDatumWizard() {
   return <Group>
+    <ReadOnlyValueField name='datum'/>
     <RadioButtonsField name='axis'>
       <RadioButton value='X' />
       <RadioButton value='Y' />
