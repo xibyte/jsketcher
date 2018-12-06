@@ -16,7 +16,7 @@ export function activate(context) {
   streams.sketcher.update.attach(mFace => mFace.ext.view.updateSketch());
 }
 
-function sceneSynchronizer({services: {cadScene, cadRegistry, viewer, wizard, action, selection}}) {
+function sceneSynchronizer({services: {cadScene, cadRegistry, viewer, wizard, action, pickControl}}) {
   return function() {
     let wgChildren = cadScene.workGroup.children;
     let existent = new Set();
@@ -44,7 +44,7 @@ function sceneSynchronizer({services: {cadScene, cadRegistry, viewer, wizard, ac
         } else if (model instanceof MDatum) {
           modelView = new DatumView(model, viewer, 
             wizard.open,
-            datumId => selection.datum.select([datumId]),
+            datum => pickControl.pick(datum),
             e => action.run('menu.datum', e));
         } else {
           console.warn('unsupported model ' + model);

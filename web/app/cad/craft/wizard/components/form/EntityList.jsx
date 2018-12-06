@@ -20,14 +20,14 @@ export default class EntityList extends React.Component {
   };
   
   render() {
-    let {name, label, active, setActive, value} = this.props;
+    let {name, label, active, setActive, value, placeholder} = this.props;
     if (!Array.isArray(value)) {
       value = value ? asArray(value) : EMPTY_ARRAY;
     }
     return <Field active={active} onClick={setActive}>
       <Label>{label||camelCaseSplitToStr(name)}:</Label> 
       <div>{value.length === 0 ? 
-        <span className={ls.emptySelection}>{'<not selected>'}</span> :
+        <span className={ls.emptySelection}>{placeholder || '<not selected>'}</span> :
         value.map((entity, i) => <span className={ls.entityRef} key={i}>
           {entity} <span className={ls.rm} onClick={() => this.deselect(entity)}> <Fa icon='times'/></span>
         </span>)}
