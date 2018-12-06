@@ -5,6 +5,7 @@ import DatumObject3D from '../datumObject';
 import * as SceneGraph from 'scene/sceneGraph';
 import CSys from '../../../../math/csys';
 import {MDatum} from '../../../model/mdatum';
+import {roundInteractiveInput} from '../../wizard/roundUtils';
 
 function updateCSys(csys, params, findFace) {
   csys.move(0, 0, 0);
@@ -37,17 +38,20 @@ function previewer(ctx, initialParams, updateParams) {
   datum3D.onMove = (begin, end, delta) => {
     updateParams(params => {
       
-      params.x = end.x;
-      params.y = end.y;
-      params.z = end.z;
+      let x = end.x;
+      let y = end.y;
+      let z = end.z;
       if (params.face) {
         let face = ctx.services.cadRegistry.findFace(params.face);
         if (face) {
-          params.x -= face.csys.origin.x;
-          params.y -= face.csys.origin.y;
-          params.z -= face.csys.origin.z;
+          x -= face.csys.origin.x;
+          y -= face.csys.origin.y;
+          z -= face.csys.origin.z;
         }
       }
+      params.x = roundInteractiveInput(x);
+      params.y = roundInteractiveInput(y);
+      params.z = roundInteractiveInput(z);
     })
   };
   

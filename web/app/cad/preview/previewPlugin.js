@@ -10,7 +10,7 @@ export function activate(ctx) {
     previewer: null
   };
 
-  streams.wizard.workingRequest.attach(({type, params}) => {
+  streams.wizard.materializedWorkingRequest.attach(({type, params}) => {
     if (!type) {
       if (previewContext.previewer) {
         previewContext.previewer.dispose();
