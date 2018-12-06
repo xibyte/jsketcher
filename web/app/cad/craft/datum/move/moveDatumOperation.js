@@ -2,7 +2,7 @@ import schema from './moveDatumOpSchema';
 import {renderPoint} from 'renders';
 import {MDatum} from '../../../model/mdatum';
 import MoveDatumWizard from './MoveDatumWizard';
-import {NOOP} from 'gems/func';
+import {roundInteractiveInput} from '../../wizard/roundUtils';
 
 
 function move(params, {cadRegistry}) {
@@ -35,9 +35,9 @@ function previewer(ctx, initialParams, updateParams) {
   datum3D.beginOperation();
   datum3D.onMove = (begin, end, delta) => {
     updateParams(params => {
-      params.x = end.x - mDatum.csys.origin.x;
-      params.y = end.y - mDatum.csys.origin.y;
-      params.z = end.z - mDatum.csys.origin.z;
+      params.x = roundInteractiveInput(end.x - mDatum.csys.origin.x);
+      params.y = roundInteractiveInput(end.y - mDatum.csys.origin.y);
+      params.z = roundInteractiveInput(end.z - mDatum.csys.origin.z);
     })
   };
 

@@ -113,6 +113,11 @@ export default class DatumObject3D extends Object3D {
 
       let delta = dir.multiply(u);
       this.csys.origin._plus(delta);
+      
+      if (e.shiftKey) {
+        roundVector(this.csys.origin);
+      }
+      
       this.viewer.requestRender();
 
       this.onMove(this.dragInfo.csysOrigin, this.csys.origin, delta);
@@ -136,7 +141,7 @@ export default class DatumObject3D extends Object3D {
 function addOnHoverBehaviour(handle, viewer) {
   handle.onMouseDown = function(e, hits, startDrag) {
     let datum = this.parent.parent.parent;
-    if (datum.freezeDraggin) {
+    if (datum.freezeDragging) {
       return;
     }
     startDrag(datum);
@@ -148,4 +153,10 @@ function addOnHoverBehaviour(handle, viewer) {
   handle.onMouseLeave = function() {
     viewer.setVisualProp(handle.material, 'visible', false);
   };
+}
+
+function roundVector(v) {
+  v.x = Math.round(v.x);
+  v.y = Math.round(v.y);
+  v.z = Math.round(v.z);
 }

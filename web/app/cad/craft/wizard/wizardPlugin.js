@@ -1,6 +1,7 @@
 import {stream, state} from 'lstream';
 import initializeBySchema from '../intializeBySchema';
 import {clone, EMPTY_OBJECT} from 'gems/objects';
+import materializeParams from '../materializeParams';
 
 export function activate(ctx) {
 
@@ -70,6 +71,24 @@ export function activate(ctx) {
     return request
   }).remember(EMPTY_OBJECT);
 
+  streams.wizard.materializedWorkingRequest = streams.wizard.workingRequest.map(req => {
+    if (req.type) {
+      let operation = ctx.services.operation.get(req.type);
+      let params = {};
+      let errors = [];
+      materializeParams(ctx.services, req.params, operation.schema, params, errors, []);
+      if (errors.length !== 0) {
+        console.log(errors);
+        return INVALID_REQUEST;
+      }
+      return {
+        type: req.type,
+        params
+      };
+    }
+    return EMPTY_OBJECT;
+  }).filter(r => r !== INVALID_REQUEST).remember();
+
   services.wizard = {
 
     open: (type, initialOverrides) => {
@@ -99,3 +118,5 @@ export function activate(ctx) {
 function applyOverrides(params, initialOverrides) {
   Object.assign(params, initialOverrides);
 }
+
+const INVALID_REQUEST = {};
