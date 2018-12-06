@@ -3,6 +3,7 @@ import {renderPoint} from 'renders';
 import {MDatum} from '../../../model/mdatum';
 import MoveDatumWizard from './MoveDatumWizard';
 import {roundInteractiveInput} from '../../wizard/roundUtils';
+import {EMPTY_ARRAY} from '../../../../../../modules/gems/iterables';
 
 
 function move(params, {cadRegistry}) {
@@ -15,7 +16,7 @@ function move(params, {cadRegistry}) {
   csys.origin.z += params.z;
   
   return {
-    consumed: [mDatum],
+    consumed: params.copy ? EMPTY_ARRAY : [mDatum],
     created: [new MDatum(csys)]
   }
 }

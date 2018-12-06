@@ -1,7 +1,6 @@
 import React from 'react';
 import {Group} from '../../wizard/components/form/Form';
 import {CheckboxField, NumberField, ReadOnlyValueField} from '../../wizard/components/form/Fields';
-import ReadOnlyValueControl from 'ui/components/controls/ReadOnlyValueControl';
 
 export default function MoveDatumWizard() {
   return <Group>
