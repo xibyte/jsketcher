@@ -54,7 +54,8 @@ export function activate(ctx) {
       let operation = ctx.services.operation.get(opRequest.type);
 
       let params;
-      if (opRequest.changingHistory) {
+      let changingHistory = opRequest.changingHistory;
+      if (changingHistory) {
         params = clone(opRequest.params)
       } else {
         params = initializeBySchema(operation.schema, ctx);
@@ -86,7 +87,8 @@ export function activate(ctx) {
       const updateState = mutator => state$.mutate(state => mutator(state));
       const disposerList = createFunctionList();
       wizCtx = {
-        workingRequest$, materializedWorkingRequest$, state$, operation, updateParams, updateState,
+        workingRequest$, materializedWorkingRequest$, state$, updateParams, updateState,
+        operation, changingHistory,
         addDisposer: disposerList.add,
         dispose: disposerList.call,
         ID: ++REQUEST_COUNTER,
