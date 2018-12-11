@@ -63,15 +63,15 @@ function createPickHandlerFromSchema(wizCtx) {
 
     function select(param, entity, md, id) {
       const updater = md.type === 'array' ? arrayUpdater : singleUpdater;
-      let paramToMakeActive = getNextActiveParam(param, md);
+      let paramToMakeActive = getNextActiveParam(param, entity, md);
       update(params => {
         updater(params, param, id);
       }, paramToMakeActive);
     }
 
-    function getNextActiveParam(currParam, currMd) {
+    function getNextActiveParam(currParam, entity, currMd) {
       if (currMd.type !== 'array') {
-        let entityGroup = entitiesByType[activeEntity];
+        let entityGroup = entitiesByType[entity];
         if (entityGroup) {
           const index = entityGroup.indexOf(currParam);
           const nextIndex = (index + 1) % entityGroup.length;
