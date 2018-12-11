@@ -1,7 +1,8 @@
-import {stream, state} from 'lstream';
+import {state} from 'lstream';
 import initializeBySchema from '../intializeBySchema';
 import {clone, EMPTY_OBJECT} from 'gems/objects';
 import materializeParams from '../materializeParams';
+import {createFunctionList} from 'gems/func';
 
 export function activate(ctx) {
 
@@ -46,12 +47,12 @@ export function activate(ctx) {
     gotoEditHistoryModeIfNeeded(mod);
   });
 
-  streams.wizard.workingRequestChanged = stream();
-  
-  streams.wizard.workingRequest = streams.wizard.effectiveOperation.map(opRequest => {
-    let request = EMPTY_OBJECT;
+  streams.wizard.wizardContext = streams.wizard.effectiveOperation.map(opRequest => {
+    let wizCtx = null;
     if (opRequest.type) {
+      
       let operation = ctx.services.operation.get(opRequest.type);
+
       let params;
       if (opRequest.changingHistory) {
         params = clone(opRequest.params)
@@ -61,34 +62,45 @@ export function activate(ctx) {
           applyOverrides(params, opRequest.initialOverrides);
         }
       }
-      request = {
+
+      let workingRequest$ = state({
         type: opRequest.type,
-        params,
-        state: {}
-      };
-    }
-    streams.wizard.workingRequestChanged.next(request);
-    return request
-  }).remember(EMPTY_OBJECT);
-
-  streams.wizard.materializedWorkingRequest = streams.wizard.workingRequest.map(req => {
-    if (req.type) {
-      let operation = ctx.services.operation.get(req.type);
-      let params = {};
-      let errors = [];
-      materializeParams(ctx.services, req.params, operation.schema, params, errors, []);
-      if (errors.length !== 0) {
-        console.log(errors);
-        return INVALID_REQUEST;
-      }
-      return {
-        type: req.type,
         params
+      });
+      
+      let materializedWorkingRequest$ = workingRequest$.map(req => {
+        let params = {};
+        let errors = [];
+        materializeParams(ctx.services, req.params, operation.schema, params, errors, []);
+        if (errors.length !== 0) {
+          console.log(errors);
+          return INVALID_REQUEST;
+        }
+        return {
+          type: req.type,
+          params
+        };
+      }).filter(r => r !== INVALID_REQUEST).remember();
+      const state$ = state({});
+      const updateParams = mutator => workingRequest$.mutate(data => mutator(data.params));
+      const updateState = mutator => state$.mutate(state => mutator(state));
+      const disposerList = createFunctionList();
+      wizCtx = {
+        workingRequest$, materializedWorkingRequest$, state$, operation, updateParams, updateState,
+        addDisposer: disposerList.add,
+        dispose: disposerList.call,
+        ID: ++REQUEST_COUNTER,
       };
     }
-    return EMPTY_OBJECT;
-  }).filter(r => r !== INVALID_REQUEST).remember();
+    return wizCtx;
+  }).remember(null);
 
+  streams.wizard.wizardContext.pairwise().attach(([oldContext, newContext]) => {
+    if (oldContext) {
+      oldContext.dispose();
+    } 
+  });
+  
   services.wizard = {
 
     open: (type, initialOverrides) => {
@@ -104,7 +116,7 @@ export function activate(ctx) {
     },
     
     applyWorkingRequest: () => {
-      let {type, params} = streams.wizard.workingRequest.value;
+      let {type, params} = streams.wizard.wizardContext.value.workingRequest$.value;
       let request = clone({type, params});
       if (streams.wizard.insertOperation.value.type) {
         ctx.services.craft.modify(request, () => streams.wizard.insertOperation.value = EMPTY_OBJECT);
@@ -120,3 +132,4 @@ function applyOverrides(params, initialOverrides) {
 }
 
 const INVALID_REQUEST = {};
+let REQUEST_COUNTER = 0;

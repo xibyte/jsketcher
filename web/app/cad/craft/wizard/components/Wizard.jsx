@@ -8,27 +8,26 @@ import ls from './Wizard.less';
 import CadError from '../../../../utils/errors';
 import {FormContext} from './form/Form';
 import connect from 'ui/connect';
-import mapContext from 'ui/mapContext';
+import {combine} from 'lstream';
 
-@connect(streams => streams.wizard.workingRequest)
-@mapContext(ctx => ({
-  updateParam: (name, value) => {
-    let workingRequest$ = ctx.streams.wizard.workingRequest;
-    if (workingRequest$.value.params && workingRequest$.value.type) {
-      workingRequest$.mutate(data => {
-        data.params[name] = value;
-        data.state.activeParam = name; 
-      })
-    }
-  },
-  setActiveParam: name => ctx.streams.wizard.workingRequest.mutate(data => data.state && (data.state.activeParam = name))
-}))
+@connect((streams, props) => combine(props.context.workingRequest$, props.context.state$)
+  .map(([workingRequest, state]) => ({
+    ...workingRequest,
+    activeParam: state.activeParam
+  })))
 export default class Wizard extends React.Component {
 
   state = {
     hasError: false,
   };
 
+  updateParam = (name, value) => {
+    this.props.context.updateParams(params => params[name] = value);
+  };
+
+  setActiveParam = param => {
+    this.props.context.updateState(state => state.activeParam = param);
+  };
 
   componentDidCatch() {
     this.setState({hasInternalError: true});
@@ -39,24 +38,16 @@ export default class Wizard extends React.Component {
       return <span>operation error</span>;
     }
 
-    let {left, type, params, state, resolveOperation, updateParam, setActiveParam} = this.props;
-    if (!type) {
-      return null;
-    }
-
-    let operation = resolveOperation(type);
-    if (!operation) {
-      console.error('unknown operation ' + type);
-      return null;
-    }
+    let {left, type, params, state, context} = this.props;
+    let operation = context.operation;
 
     let title = (operation.label || type).toUpperCase();
 
     let formContext = {
       data: params,
-      activeParam: state.activeParam,
-      setActiveParam,
-      updateParam
+      activeParam: this.props.activeParam,
+      setActiveParam: this.setActiveParam,
+      updateParam: this.updateParam
     };
 
     let Form = operation.form;
@@ -127,7 +118,7 @@ export default class Wizard extends React.Component {
       let {code, userMessage, kind} = error;
       printError = !code;
       if (CadError.ALGORITMTHM_ERROR_KINDS.includes(kind)) {
-        stateUpdate.algorithmError = true
+        stateUpdate.algorithmError = true;
       }
       if (code && kind === CadError.KIND.INTERNAL_ERROR) {
         console.warn('Operation Error Code: ' + code);
