@@ -80,7 +80,7 @@ export function activate(ctx) {
           type: req.type,
           params
         };
-      }).filter(r => r !== INVALID_REQUEST).remember();
+      }).remember(INVALID_REQUEST).filter(r => r !== INVALID_REQUEST);
       const state$ = state({});
       const updateParams = mutator => workingRequest$.mutate(data => mutator(data.params));
       const updateState = mutator => state$.mutate(state => mutator(state));
