@@ -18,11 +18,11 @@ function OperationHistory({history, pointer, setHistoryPointer, remove, getOpera
 
     {history.map(({type, params}, index) => {
 
-      let {appearance, paramsInfo} = getOperation(type)||EMPTY_OBJECT;
+      let {appearance, label, paramsInfo, paramsInfoComponent: PIComp} = getOperation(type)||EMPTY_OBJECT;
       return <div key={index} onClick={() => setHistoryPointer(index - 1)} 
                   className={cx(ls.item, pointer + 1 === index && ls.selected)}>
         {appearance && <ImgIcon url={appearance.icon32} size={16}/>}
-        <span>{type} {paramsInfo && paramsInfo(params)} </span>
+        <span className={ls.opLabel}>{label} {PIComp ? <PIComp params={params}/> : (paramsInfo && paramsInfo(params))} </span>
         <span className={ls.buttons}>
           <Fa icon='edit' />
           <Fa icon='image' />
