@@ -1,11 +1,12 @@
 import DatumWizard from './CreateDatumWizard';
 import schema from './createDatumOpSchema';
-import {renderPoint} from 'renders';
 import DatumObject3D from '../datumObject';
 import * as SceneGraph from 'scene/sceneGraph';
 import CSys from '../../../../math/csys';
 import {MDatum} from '../../../model/mdatum';
 import {roundInteractiveInput} from '../../wizard/roundUtils';
+import {DatumParamsRenderer} from '../DatumParamsRenderer';
+import {pointAsText} from '../../../../../../modules/renders';
 
 function updateCSys(csys, params, findFace) {
   csys.move(0, 0, 0);
@@ -77,7 +78,8 @@ export default {
   label: 'Create Datum',
   icon: 'img/cad/plane',
   info: 'originates a new datum from origin or off of a selected face',
-  paramsInfo: renderPoint,
+  paramsInfoComponent: DatumParamsRenderer,
+  paramsInfo: pointAsText,
   previewer,
   run: create,
   form: DatumWizard,

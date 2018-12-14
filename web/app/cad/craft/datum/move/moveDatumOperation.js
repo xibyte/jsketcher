@@ -1,9 +1,10 @@
 import schema from './moveDatumOpSchema';
-import {renderPoint} from 'renders';
 import {MDatum} from '../../../model/mdatum';
 import MoveDatumWizard from './MoveDatumWizard';
 import {roundInteractiveInput} from '../../wizard/roundUtils';
 import {EMPTY_ARRAY} from '../../../../../../modules/gems/iterables';
+import {pointAsText} from '../../../../../../modules/renders';
+import {DatumParamsRenderer} from '../DatumParamsRenderer';
 
 
 function move(params, {cadRegistry}) {
@@ -66,7 +67,8 @@ export default {
   label: 'Move Datum',
   icon: 'img/cad/plane',
   info: 'moves a datum',
-  paramsInfo: renderPoint,
+  paramsInfoComponent: DatumParamsRenderer,
+  paramsInfo: pointAsText,
   previewer,
   run: move,
   form: MoveDatumWizard,
