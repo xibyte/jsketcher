@@ -8,6 +8,6 @@ export default function CreateDatumWizard() {
     <NumberField name='x' label='X' />
     <NumberField name='y' label='Y' />
     <NumberField name='z' label='Z' />
-    <EntityList name='face' label='off of' entity='face' />
+    <EntityList name='originatingFace' label='off of' entity='face' />
   </Group>;
 }

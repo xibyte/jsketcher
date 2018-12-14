@@ -1,8 +1,8 @@
 import React from 'react';
 import {Group} from '../../wizard/components/form/Form';
 import {NumberField, RadioButtonsField} from '../../wizard/components/form/Fields';
-import EntityList from '../../wizard/components/form/EntityList';
 import {RadioButton} from 'ui/components/controls/RadioButtons';
+import Entity from '../../wizard/components/form/Entity';
 
 
 export default function PlaneWizard() {
@@ -12,7 +12,7 @@ export default function PlaneWizard() {
       <RadioButton value='XZ' />
       <RadioButton value='ZY' />
     </RadioButtonsField>
-    <EntityList name='parallelTo' entity='face' />
+    <Entity name='parallelTo' />
     <NumberField name='depth' />
   </Group>;
 }

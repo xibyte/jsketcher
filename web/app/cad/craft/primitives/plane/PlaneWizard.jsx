@@ -1,10 +1,10 @@
 import React from 'react';
 import {Group} from '../../wizard/components/form/Form';
-import {ReadOnlyValueField} from '../../wizard/components/form/Fields';
+import Entity from '../../wizard/components/form/Entity';
 
 
 export default function PlaneWizard() {
   return <Group>
-    <ReadOnlyValueField name='datum'/>
+    <Entity name='datum' placeholder='origin'/>
   </Group>;
 }

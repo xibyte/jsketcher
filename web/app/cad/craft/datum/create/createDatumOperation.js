@@ -9,9 +9,9 @@ import {DatumParamsRenderer} from '../DatumParamsRenderer';
 import {pointAsText} from '../../../../../../modules/renders';
 
 function updateCSys(csys, params, findFace) {
-  csys.move(0, 0, 0);
-  if (params.face) {
-    const face = findFace(params.face);
+  csys.copy(CSys.ORIGIN);
+  if (params.originatingFace) {
+    const face = findFace(params.originatingFace);
     if (face) {
       csys.copy(face.csys);
     }
@@ -42,8 +42,8 @@ function previewer(ctx, initialParams, updateParams) {
       let x = end.x;
       let y = end.y;
       let z = end.z;
-      if (params.face) {
-        let face = ctx.services.cadRegistry.findFace(params.face);
+      if (params.originatingFace) {
+        let face = ctx.services.cadRegistry.findFace(params.originatingFace);
         if (face) {
           x -= face.csys.origin.x;
           y -= face.csys.origin.y;

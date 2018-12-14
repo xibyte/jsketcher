@@ -1,12 +1,12 @@
 import React from 'react';
 import {Group} from '../../wizard/components/form/Form';
-import {NumberField, ReadOnlyValueField} from '../../wizard/components/form/Fields';
+import {NumberField} from '../../wizard/components/form/Fields';
 import BooleanChoice from '../../wizard/components/form/BooleanChioce';
-import EntityList from '../../wizard/components/form/EntityList';
+import Entity from '../../wizard/components/form/Entity';
 
 export default function BoxWizard() {
   return <Group>
-    <EntityList name='datum' placeholder='origin'/>
+    <Entity name='datum' placeholder='origin'/>
     <NumberField name='width' />
     <NumberField name='height' />
     <NumberField name='depth' />
