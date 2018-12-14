@@ -1,4 +1,4 @@
-import {EDGE, FACE, SHELL, SKETCH_OBJECT} from '../../scene/entites';
+import {DATUM, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../../scene/entites';
 
 export function activate(ctx) {
   ctx.streams.wizard.wizardContext.attach(wizCtx => {
@@ -143,6 +143,12 @@ function createPickHandlerFromSchema(wizCtx) {
         selectActive(model.id);
       } else {
         selectToFirst(EDGE, model.id);
+      }
+    } else if (modelType === DATUM) {
+      if (activeEntity === DATUM) {
+        selectActive(model.id);
+      } else {
+        selectToFirst(DATUM, model.id);
       }
     }
     return false;
