@@ -47,7 +47,7 @@ export function activate(ctx) {
     }
     return {
       consumed,
-      created: data.created.map(shape => readShellData(shape))
+      created: data.created.map(shape => readShellData(shape, consumed, params.csys))
     }
   }
   ctx.services.craftEngine = {
