@@ -74,7 +74,6 @@ export function activate(ctx) {
         let errors = [];
         materializeParams(ctx.services, req.params, operation.schema, params, errors, []);
         if (errors.length !== 0) {
-          console.log(errors);
           return INVALID_REQUEST;
         }
         return {
