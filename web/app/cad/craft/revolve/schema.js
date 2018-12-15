@@ -13,7 +13,8 @@ export default {
   },
   boolean: {
     type: 'enum',
-    values: ['union', 'subtract', 'intersect', 'none'],
-    defaultValue: 'none'
+    values: ['INTERSECT', 'SUBTRACT', 'UNION'],
+    defaultValue: 'UNION',
+    optional: true
   }
 }

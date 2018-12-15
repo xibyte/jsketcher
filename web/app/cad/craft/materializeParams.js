@@ -43,7 +43,7 @@ export default function materializeParams(services, params, schema, result, erro
         }
       } else if (md.type === 'enum') {
         if (md.values.indexOf(value) === -1) {
-          errors.push({path: [...parentPath, field], message: 'invalid value'});
+          value = md.defaultValue || md.values[0]; 
         }
       } else if (isEntityType(md.type)) {
         if (typeof value !== 'string') {
