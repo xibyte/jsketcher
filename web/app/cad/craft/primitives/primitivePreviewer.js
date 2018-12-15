@@ -5,9 +5,6 @@ import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
 
 export default function primitivePreviewer(createThreePrimitiveGeometry, paramsToScales, shift) {
   return function previewer(ctx, initialParams) {
-    let mDatum = initialParams.datum && ctx.services.cadRegistry.findDatum(initialParams.datum);
-    let cs = mDatum ? mDatum.csys : CSys.ORIGIN;
-    let o = cs.origin;
 
     let geometry = createThreePrimitiveGeometry();
     let mesh = new Mesh(geometry, IMAGINARY_SURFACE_MATERIAL);
@@ -17,6 +14,10 @@ export default function primitivePreviewer(createThreePrimitiveGeometry, paramsT
     let auxMatrix = new Matrix4();
 
     function update(params) {
+      let mDatum = params.datum && ctx.services.cadRegistry.findDatum(params.datum);
+      let cs = mDatum ? mDatum.csys : CSys.ORIGIN;
+      let o = cs.origin;
+
       let {dx, dy, dz} = paramsToScales(params);
       mesh.matrix.set(
         dx*cs.x.x, dy*cs.y.x, dz*cs.z.x, o.x,

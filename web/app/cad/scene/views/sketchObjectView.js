@@ -10,8 +10,8 @@ export class SketchObjectView extends View {
   constructor(mSketchObject, _3dTransformation) {
     super(mSketchObject);
 
-    let material = mSketchObject.construction ? SKETCH_CONSTRUCTION_MATERIAL : SKETCH_MATERIAL;
-    let line = new THREE.Line(new THREE.Geometry(), material);
+    this.material = mSketchObject.construction ? SKETCH_CONSTRUCTION_MATERIAL : SKETCH_MATERIAL;
+    let line = new THREE.Line(new THREE.Geometry(), this.material);
     setAttribute(line, SKETCH_OBJECT, this);
     const chunks = mSketchObject.sketchPrimitive.tessellate(10);
     function addLine(p, q) {
@@ -31,13 +31,12 @@ export class SketchObjectView extends View {
 
   mark(color) {
     let line = this.rootGroup;
-    setAttribute(line, 'selection.defaultMaterial', line.material);
     line.material = SKETCH_SELECTION_MATERIAL;
   }
 
   withdraw(color) {
     let line = this.rootGroup;
-    line.material = getAttribute(line, 'selection.defaultMaterial');
+    line.material = this.material;
   }
 
   dispose() {

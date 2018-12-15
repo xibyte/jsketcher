@@ -5,20 +5,20 @@ import decoratorChain from 'ui/decoratorChain';
 import mapContext from 'ui/mapContext';
 import {finishHistoryEditing} from '../../craftHistoryUtils';
 
-function WizardManager({type, changingHistory, resolve, cancel, stepHistory, insertOperation, cancelHistoryEdit, applyWorkingRequest}) {
-  if (!type) {
+function WizardManager({wizardContext, type, cancel, cancelHistoryEdit, applyWorkingRequest}) {
+  if (!wizardContext) {
     return null;
   }
-  return <Wizard resolveOperation={resolve}
-                 onCancel={changingHistory ? cancelHistoryEdit : cancel}
+  return <Wizard key={wizardContext.ID}
+                 context={wizardContext}
+                 onCancel={wizardContext.changingHistory ? cancelHistoryEdit : cancel}
                  onOK={applyWorkingRequest} />
 }
 
 export default decoratorChain(
-  connect(streams => streams.wizard.effectiveOperation),
-  mapContext((ctx, props) => ({
+  connect(streams => streams.wizard.wizardContext.map(wizardContext => ({wizardContext}))),
+  mapContext(ctx => ({
     cancel: ctx.services.wizard.cancel,
-    resolve: type => ctx.services.operation.get(type),
     cancelHistoryEdit: () => ctx.streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
     applyWorkingRequest: ctx.services.wizard.applyWorkingRequest 
   }))

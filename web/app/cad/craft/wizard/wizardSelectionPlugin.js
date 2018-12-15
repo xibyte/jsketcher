@@ -1,36 +1,33 @@
-import {EDGE, FACE, SHELL, SKETCH_OBJECT} from '../../scene/entites';
+import {DATUM, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../../scene/entites';
 
 export function activate(ctx) {
-  const wizardPickHandler = createPickHandlerFromSchema(ctx);
-  
-  ctx.streams.wizard.workingRequestChanged.attach(({type, params}) => {
+  ctx.streams.wizard.wizardContext.attach(wizCtx => {
     ctx.services.marker.clear();
-    if (type) {
+    if (wizCtx) {
+      const wizardPickHandler = createPickHandlerFromSchema(wizCtx);
       ctx.services.pickControl.setPickHandler(wizardPickHandler);
+      wizCtx.workingRequest$.attach(({type, params}) => {
+        const marker = ctx.services.marker;
+        marker.startSession();
+        let {schema, schemaIndex} = wizCtx.operation;
+        schemaIndex.entityParams.forEach(param => {
+          let color = schema[param].markColor;
+          let val = params[param];
+          let entity = schemaIndex.entitiesByParam[param];
+          if (Array.isArray(val)) {
+            val.forEach(id => marker.mark(entity, id, color));
+          } else {
+            if (val) {
+              marker.mark(entity, val, color);
+            }
+          }
+        });
+        marker.commit();
+      });
+
     } else {
       ctx.services.pickControl.setPickHandler(null);
     }
-  });
-
-  ctx.streams.wizard.workingRequest.attach(({type, params}) => {
-    const marker = ctx.services.marker;
-    marker.startSession();
-    if (type && params) {
-      let {schema, schemaIndex} = ctx.services.operation.get(type);
-      schemaIndex.entityParams.forEach(param => {
-        let color = schema[param].markColor;
-        let val = params[param];
-        let entity = schemaIndex.entitiesByParam[param];
-        if (Array.isArray(val)) {
-          val.forEach(id => marker.mark(entity, id, color));
-        } else {
-          if (val) {
-            marker.mark(entity, val, color);
-          }
-        }
-      });
-    }
-    marker.commit();
   });
 }
 
@@ -45,11 +42,20 @@ const arrayUpdater = (params, param, id) =>  {
   }
 };
 
-function createPickHandlerFromSchema(ctx) {
+function createPickHandlerFromSchema(wizCtx) {
+  function update(paramsMutator, paramToMakeActive) {
+    wizCtx.updateParams(paramsMutator);
+    wizCtx.updateState(state => {
+      state.activeParam = paramToMakeActive;
+    });
+  }
   return model => {
     const modelType = model.TYPE;
-    const {type: opType, state, params} = ctx.streams.wizard.workingRequest.value;
-    let {schema, schemaIndex} = ctx.services.operation.get(opType);
+    
+    const params = wizCtx.workingRequest$.value.params;
+    const state = wizCtx.state$.value;
+    
+    let {schema, schemaIndex} = wizCtx.operation;
     const {entitiesByType, entitiesByParam, entityParams} = schemaIndex;
 
     const activeMd = state.activeParam && schema[state.activeParam];
@@ -57,16 +63,15 @@ function createPickHandlerFromSchema(ctx) {
 
     function select(param, entity, md, id) {
       const updater = md.type === 'array' ? arrayUpdater : singleUpdater;
-      let paramToMakeActive = getNextActiveParam(param, md);
-      ctx.streams.wizard.workingRequest.mutate(r => {
-        updater(r.params, param, id);
-        r.state.activeParam = paramToMakeActive;
-      });
+      let paramToMakeActive = getNextActiveParam(param, entity, md);
+      update(params => {
+        updater(params, param, id);
+      }, paramToMakeActive);
     }
 
-    function getNextActiveParam(currParam, currMd) {
+    function getNextActiveParam(currParam, entity, currMd) {
       if (currMd.type !== 'array') {
-        let entityGroup = entitiesByType[currMd.type];
+        let entityGroup = entitiesByType[entity];
         if (entityGroup) {
           const index = entityGroup.indexOf(currParam);
           const nextIndex = (index + 1) % entityGroup.length;
@@ -93,23 +98,20 @@ function createPickHandlerFromSchema(ctx) {
       for (let param of entityParams) {
         let val = params[param];
         if (val === id) {
-          ctx.streams.wizard.workingRequest.mutate(r => {
-            r.params[param] = undefined;
-            r.state.activeParam = param;
-          });
+          update(params => {
+            params[param] = undefined;
+          }, param);
           return true;
         } else if (Array.isArray(val)) {
           let index = val.indexOf(id);
           if (index !== -1) {
-            ctx.streams.wizard.workingRequest.mutate(r => {
-              r.params[param].splice(index, 1);
-              r.state.activeParam = param;
-            });
+            update(params => {
+              params[param].splice(index, 1)
+            }, param);
             return true;
           }
         }
       }
-      
     }
 
     if (deselectIfNeeded(model.id)) {
@@ -141,6 +143,12 @@ function createPickHandlerFromSchema(ctx) {
         selectActive(model.id);
       } else {
         selectToFirst(EDGE, model.id);
+      }
+    } else if (modelType === DATUM) {
+      if (activeEntity === DATUM) {
+        selectActive(model.id);
+      } else {
+        selectToFirst(DATUM, model.id);
       }
     }
     return false;

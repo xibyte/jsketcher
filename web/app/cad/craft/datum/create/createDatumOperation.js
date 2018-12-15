@@ -1,15 +1,17 @@
 import DatumWizard from './CreateDatumWizard';
 import schema from './createDatumOpSchema';
-import {renderPoint} from 'renders';
 import DatumObject3D from '../datumObject';
 import * as SceneGraph from 'scene/sceneGraph';
 import CSys from '../../../../math/csys';
 import {MDatum} from '../../../model/mdatum';
+import {roundInteractiveInput} from '../../wizard/roundUtils';
+import {DatumParamsRenderer} from '../DatumParamsRenderer';
+import {pointAsText} from '../../../../../../modules/renders';
 
 function updateCSys(csys, params, findFace) {
-  csys.move(0, 0, 0);
-  if (params.face) {
-    const face = findFace(params.face);
+  csys.copy(CSys.ORIGIN);
+  if (params.originatingFace) {
+    const face = findFace(params.originatingFace);
     if (face) {
       csys.copy(face.csys);
     }
@@ -37,17 +39,20 @@ function previewer(ctx, initialParams, updateParams) {
   datum3D.onMove = (begin, end, delta) => {
     updateParams(params => {
       
-      params.x = end.x;
-      params.y = end.y;
-      params.z = end.z;
-      if (params.face) {
-        let face = ctx.services.cadRegistry.findFace(params.face);
+      let x = end.x;
+      let y = end.y;
+      let z = end.z;
+      if (params.originatingFace) {
+        let face = ctx.services.cadRegistry.findFace(params.originatingFace);
         if (face) {
-          params.x -= face.csys.origin.x;
-          params.y -= face.csys.origin.y;
-          params.z -= face.csys.origin.z;
+          x -= face.csys.origin.x;
+          y -= face.csys.origin.y;
+          z -= face.csys.origin.z;
         }
       }
+      params.x = roundInteractiveInput(x);
+      params.y = roundInteractiveInput(y);
+      params.z = roundInteractiveInput(z);
     })
   };
   
@@ -73,7 +78,8 @@ export default {
   label: 'Create Datum',
   icon: 'img/cad/plane',
   info: 'originates a new datum from origin or off of a selected face',
-  paramsInfo: renderPoint,
+  paramsInfoComponent: DatumParamsRenderer,
+  paramsInfo: pointAsText,
   previewer,
   run: create,
   form: DatumWizard,

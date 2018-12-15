@@ -3,46 +3,38 @@ import {createPreviewer} from './scenePreviewer';
 export function activate(ctx) {
   let {streams, services} = ctx;
   
-  const updateParams = mutator => streams.wizard.workingRequest.mutate(data => mutator(data.params));
-  
-  let previewContext = {
-    operation: null,
-    previewer: null
-  };
-
-  streams.wizard.workingRequest.attach(({type, params}) => {
-    if (!type) {
-      if (previewContext.previewer) {
-        previewContext.previewer.dispose();
-        previewContext.previewer = null;
-        previewContext.operation = null;
-        ctx.services.viewer.requestRender();
-      }
+  streams.wizard.wizardContext.attach(wizCtx => {
+    if (!wizCtx) {
       return;
     }
-    if (type !== previewContext.operation) {
-      if (previewContext.previewer != null) {
-        previewContext.previewer.dispose();
+    let {operation, materializedWorkingRequest$} = wizCtx; 
+    if (operation.previewGeomProvider || operation.previewer) {
+      let previewer = null;
+      materializedWorkingRequest$.attach(({type, params}) => {
+        if (previewer === null) {
+          try {
+            if (operation.previewGeomProvider) {
+              previewer = createPreviewer(operation.previewGeomProvider, services, params);
+            } else if (operation.previewer) {
+              previewer = operation.previewer(ctx, params, wizCtx.updateParams);
+            }
+          } catch (e) {
+            console.error(e);
+            return;
+          }
+          wizCtx.addDisposer(() => {
+            previewer.dispose();
+            ctx.services.viewer.requestRender();
+          });
+        } else {
+          try {
+            previewer.update(params);
+          } catch (e) {
+            console.error(e);
+          }
+        }
         ctx.services.viewer.requestRender();
-        previewContext.previewer = null;
-      }
-      let operation = services.operation.get(type);
-
-      if (operation.previewGeomProvider) {
-        previewContext.previewer = createPreviewer(operation.previewGeomProvider, services, params);
-        ctx.services.viewer.requestRender();
-      } else if (operation.previewer) {
-        previewContext.previewer = operation.previewer(ctx, params, updateParams);
-        ctx.services.viewer.requestRender();
-      } else {
-        previewContext.previewer = null;
-      }
-      previewContext.operation = type;
-    } else {
-      if (previewContext.previewer) {
-        previewContext.previewer.update(params);
-        ctx.services.viewer.requestRender();
-      }
+      });
     }
   });
 }

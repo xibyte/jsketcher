@@ -23,9 +23,6 @@ export function activate(ctx) {
   loadWasm(ctx);
 
   ctx.services.operation.handlers.push(operationHandler);
-  function shellsToPointers(shells) {
-    return shells.filter(managedByE0).map(m => m.brepShell.data.externals.ptr);
-  }
   function booleanBasedOperation(engineParams, params, impl) {
     engineParams.deflection = DEFLECTION;
     if (params.boolean && BOOLEAN_TYPES[params.boolean.type] > 0) {
@@ -47,7 +44,7 @@ export function activate(ctx) {
     }
     return {
       consumed,
-      created: data.created.map(shape => readShellData(shape))
+      created: data.created.map(shape => readShellData(shape, consumed, params.csys))
     }
   }
   ctx.services.craftEngine = {
@@ -105,6 +102,10 @@ export function activate(ctx) {
   }
 }
 
+function shellsToPointers(shells) {
+  return shells.filter(managedByE0).map(m => m.brepShell.data.externals.ptr);
+}
+
 function writeCsys(csys, swapToY) {
   return {
     origin: csys.origin.data(),
@@ -133,12 +134,6 @@ function operationHandler(id, request, services) {
     }
     case 'REVOLVE': {
       let {request: engineReq, face} = createRevolveCommand(request, services);
-      if (managedByE0(face.shell)) {
-        engineReq.boolean = {
-          type: request.subtract ? BOOLEAN_TYPES.SUBTRACT : BOOLEAN_TYPES.UNION,
-          operand: face.shell.brepShell.data.externals.ptr
-        }
-      }
       let data = callEngine(engineReq, Module._SPI_revolve);
       return singleShellRespone(face.shell, data);
     }
@@ -252,7 +247,7 @@ function createRevolveCommand(request, {cadRegistry, sketcher}) {
   let axisOrigin = tr._apply3(pivot.a.data());
   let axisDir = vec._normalize(vec._sub(tr._apply3(pivot.b.data()), axisOrigin))
 
-  return {
+  let res = {
     face,
     request: {
       axisOrigin,
@@ -263,6 +258,13 @@ function createRevolveCommand(request, {cadRegistry, sketcher}) {
       deflection: DEFLECTION
     }
   };
+  if (managedByE0(face.shell) && request.boolean && BOOLEAN_TYPES[request.boolean] > 0) {
+    res.request.boolean = {
+      type: BOOLEAN_TYPES[request.boolean],
+      operand:  face.shell.brepShell.data.externals.ptr 
+    }
+  }
+  return res;
 }
 
 

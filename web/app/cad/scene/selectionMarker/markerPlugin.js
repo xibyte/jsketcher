@@ -21,6 +21,9 @@ function createMarker(findEntity, requestRender) {
 
   function doMark(entity, id, color) {
     let mObj = findEntity(entity, id);
+    if (!mObj) {
+      throw 'illegal state';
+    }
     marked.set(id, mObj);
     mObj.ext.view && mObj.ext.view.mark(color);
   }

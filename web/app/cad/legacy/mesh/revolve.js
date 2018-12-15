@@ -2,6 +2,7 @@ import {Matrix3} from '../../../math/l3space'
 import Vector from 'math/vector';
 import * as math from '../../../math/math'
 import {createShared} from '../../cad-utils'
+import {TriangulatePolygons} from '../../tess/triangulation';
 
 function Group(derivedFrom) {
   this.polygons = [];
@@ -68,10 +69,11 @@ export function revolveToWireframe(polygons, axisSegment, angle, resolution) {
   return out;
 }
 
-export function revolveToTriangles(polygons, axisSegment, angle, resolution) {
+export function revolveToTriangles(polygons, axisSegment, angle, resolution, triangulateBases) {
   const out = [];
+  let lidNormal = null, baseNormal = null;
   //add initial polygon
-  revolveIterator(polygons, axisSegment, angle, resolution, (pOrig, pRot, p, q) => {
+  let lids = revolveIterator(polygons, axisSegment, angle, resolution, (pOrig, pRot, p, q, r, id, i, length) => {
     //skip point if they are on the axis of revolving
     if (!math.equal(0, math.distanceAB3(pOrig[q], pRot[q]))) {
       out.push( [pOrig[p], pOrig[q], pRot[q]] );
@@ -79,7 +81,24 @@ export function revolveToTriangles(polygons, axisSegment, angle, resolution) {
     if (!math.equal(0, math.distanceAB3(pOrig[p], pRot[p]))) {
       out.push( [ pRot[q],  pRot[p], pOrig[p]] );
     }
+    let last = i === length - 1
+    if (last && !lidNormal) {
+      lidNormal = pRot[q].minus(pOrig[q])._normalize();
+    }
+    if (i === 0 && !baseNormal) {
+      baseNormal = pRot[q].minus(pOrig[q])._normalize()
+    }
   });
+  if (triangulateBases && lidNormal && baseNormal) {
+    function triangulatePolygons(polygons, normal) {
+      TriangulatePolygons(polygons, normal, (v) => v.toArray(), (arr) => new Vector().set3(arr))
+        .forEach(tr => out.push(tr));
+    }
+    triangulatePolygons(lids, lidNormal);
+    triangulatePolygons(polygons, baseNormal);
+    
+  }
+
   if (angle < 0) {
     out.forEach(tr => tr.reverse());
   }
@@ -107,7 +126,7 @@ export function revolveIterator(polygons, axisSegment, angle, resolution, callba
       const pRot = rotatedPolygons[i];
       const n = pOrig.length;
       for (let p = n - 1, q = 0; q < n; p = q ++) {
-        callback(pOrig, pRot, p, q, reverse, segmentId ++);
+        callback(pOrig, pRot, p, q, reverse, segmentId ++, resIndex, resolution);
       }
     }
     polygons = rotatedPolygons;

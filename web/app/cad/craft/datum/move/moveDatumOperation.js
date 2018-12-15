@@ -1,8 +1,10 @@
 import schema from './moveDatumOpSchema';
-import {renderPoint} from 'renders';
 import {MDatum} from '../../../model/mdatum';
 import MoveDatumWizard from './MoveDatumWizard';
-import {NOOP} from 'gems/func';
+import {roundInteractiveInput} from '../../wizard/roundUtils';
+import {EMPTY_ARRAY} from '../../../../../../modules/gems/iterables';
+import {pointAsText} from '../../../../../../modules/renders';
+import {DatumParamsRenderer} from '../DatumParamsRenderer';
 
 
 function move(params, {cadRegistry}) {
@@ -15,7 +17,7 @@ function move(params, {cadRegistry}) {
   csys.origin.z += params.z;
   
   return {
-    consumed: [mDatum],
+    consumed: params.copy ? EMPTY_ARRAY : [mDatum],
     created: [new MDatum(csys)]
   }
 }
@@ -35,9 +37,9 @@ function previewer(ctx, initialParams, updateParams) {
   datum3D.beginOperation();
   datum3D.onMove = (begin, end, delta) => {
     updateParams(params => {
-      params.x = end.x - mDatum.csys.origin.x;
-      params.y = end.y - mDatum.csys.origin.y;
-      params.z = end.z - mDatum.csys.origin.z;
+      params.x = roundInteractiveInput(end.x - mDatum.csys.origin.x);
+      params.y = roundInteractiveInput(end.y - mDatum.csys.origin.y);
+      params.z = roundInteractiveInput(end.z - mDatum.csys.origin.z);
     })
   };
 
@@ -65,7 +67,8 @@ export default {
   label: 'Move Datum',
   icon: 'img/cad/plane',
   info: 'moves a datum',
-  paramsInfo: renderPoint,
+  paramsInfoComponent: DatumParamsRenderer,
+  paramsInfo: pointAsText,
   previewer,
   run: move,
   form: MoveDatumWizard,
