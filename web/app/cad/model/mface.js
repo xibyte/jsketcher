@@ -70,6 +70,11 @@ export class MFace extends MObject {
   }
   
   setSketch(sketch) {
+    
+    if (!this.isPlaneBased) {
+      return;
+    }
+    
     this.sketch = sketch;
     this.sketchObjects = [];
 
@@ -104,22 +109,14 @@ export class MFace extends MObject {
 
   get sketchToWorldTransformation() {
     if (!this._sketchToWorldTransformation) {
-      if (this.isPlaneBased) {
-        this._sketchToWorldTransformation = this.csys.outTransformation;
-      } else {
-        throw 'sketches are supported only for planes yet';
-      }
+      this._sketchToWorldTransformation = this.csys.outTransformation;
     }
     return this._sketchToWorldTransformation;
   }
   
   get worldToSketchTransformation() {
     if (!this._worldToSketchTransformation) {
-      if (this.isPlaneBased) {
-        this._worldToSketchTransformation = this.csys.inTransformation;
-      } else {
-        throw 'sketches are supported only for planes yet';
-      }
+      this._worldToSketchTransformation = this.csys.inTransformation;
     }
     return this._worldToSketchTransformation;
   }
