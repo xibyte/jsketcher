@@ -1,13 +1,15 @@
 import * as mask from 'gems/mask'
 import {getAttribute, setAttribute} from 'scene/objectData';
-import {FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL} from '../entites';
+import {FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL, DATUM_AXIS} from '../entites';
 import {state} from 'lstream';
 import {distinctState} from '../../../../../modules/lstream';
 
 export const PICK_KIND = {
   FACE: mask.type(1),
   SKETCH: mask.type(2),
-  EDGE: mask.type(3)
+  EDGE: mask.type(3),
+  DATUM: mask.type(4),
+  DATUM_AXIS: mask.type(5)
 };
 
 export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
@@ -93,7 +95,7 @@ export function activate(context) {
   const deselectAll = () => services.marker.clear();
 
   function handlePick(event) {
-    raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE, pickHandler);
+    raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS, pickHandler);
   }
 
   function pick(obj) {
@@ -149,6 +151,15 @@ export function activate(context) {
           let faceV = getAttribute(pickResult.face, FACE);
           if (faceV) {
             return !visitor(faceV.model, event);
+          }
+        }
+        return false;
+      },
+      (pickResult) => {
+        if (mask.is(kind, PICK_KIND.DATUM_AXIS)) {
+          let datumAxisV = getAttribute(pickResult.object, DATUM_AXIS);
+          if (datumAxisV) {
+            return !visitor(datumAxisV.model, event);
           }
         }
         return false;

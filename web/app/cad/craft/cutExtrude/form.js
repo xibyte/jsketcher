@@ -8,9 +8,8 @@ export default function (valueLabel) {
     return <Group>
       <NumberField name='value' defaultValue={50} label={valueLabel}/>
       <NumberField name='prism' defaultValue={1} min={0} step={0.1} round={1}/>
-      <NumberField name='angle' defaultValue={0}/>
-      <NumberField name='rotation' defaultValue={0} step={5}/>
-      <Entity entity='face' name='face'/>
+      <Entity name='face'/>
+      <Entity name='vector' />
     </Group>;
   };
 }

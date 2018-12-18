@@ -124,7 +124,9 @@ export function activate(ctx) {
       } else {
         ctx.services.craft.modifyInHistoryAndStep(request, () => streams.wizard.effectiveOperation.value = EMPTY_OBJECT);
       }
-    }
+    },
+    
+    isInProgress: () => streams.wizard.wizardContext.value !== null
   };
 }
 

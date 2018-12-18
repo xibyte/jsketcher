@@ -1,13 +1,13 @@
 import {View} from './view';
 import DatumObject3D from '../../craft/datum/datumObject';
-import {DATUM} from '../entites';
+import {DATUM, DATUM_AXIS} from '../entites';
 import {setAttribute} from 'scene/objectData';
 import {Mesh, MeshBasicMaterial, PolyhedronGeometry, SphereGeometry} from 'three';
 import {CSYS_SIZE_MODEL} from '../../craft/datum/csysObject';
 
 export default class DatumView extends View {
 
-  constructor(datum, viewer, beginOperation, selectDatum, showDatumMenu) {
+  constructor(datum, viewer, beginOperation, selectDatum, showDatumMenu, isReadOnly) {
     super(datum);
 
     class MenuButton extends Mesh {
@@ -101,7 +101,7 @@ export default class DatumView extends View {
       }
 
       dragStart(e, axis) {
-        if (!this.operationStarted) {
+        if (!isReadOnly() && !this.operationStarted) {
           selectDatum(datum);
           beginOperation('DATUM_MOVE');
         }
@@ -127,15 +127,24 @@ export default class DatumView extends View {
         this.menuButton.dispose();
       }
     }
-    this.rootGroup = new StartingOperationDatumObject3D(datum.csys, viewer);
+
+    let dv = new StartingOperationDatumObject3D(datum.csys, viewer);
+    this.rootGroup = dv;
     
     setAttribute(this.rootGroup, DATUM, this);
     setAttribute(this.rootGroup, View.MARKER, this);
+
+    this.xAxisView = new DatumAxisView(this.model.xAxis, dv.csysObj.xAxis);
+    this.yAxisView = new DatumAxisView(this.model.yAxis, dv.csysObj.yAxis);
+    this.zAxisView = new DatumAxisView(this.model.zAxis, dv.csysObj.zAxis);
   }
 
   dispose() {
     super.dispose();
     this.rootGroup.dispose();
+    this.xAxisView.dispose();
+    this.yAxisView.dispose();
+    this.zAxisView.dispose();
   }
 }
 
@@ -161,5 +170,22 @@ class AffordanceBox extends Mesh {
   dispose() {
     this.geometry.dispose();
     this.material.dispose();
+  }
+}
+
+class DatumAxisView extends View {
+
+  constructor(model, axisArrow) {
+    super(model);
+    this.axisArrow = axisArrow;
+    setAttribute(this.axisArrow.handle, DATUM_AXIS, this);
+  }
+  
+  mark(color = 0x68FFE2) {
+    this.axisArrow.handle.setSelected(color);
+  }
+
+  withdraw() {
+    this.axisArrow.handle.setSelected(null);
   }
 }
