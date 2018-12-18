@@ -1,6 +1,7 @@
 /**
  * This is an internal alternative to native engine. It overrides basic 3d part design operations
  */
+import {resolveExtrudeVector} from '../cutExtrude/cutExtrude';
 
 let BOOLEAN_TYPES = {
   UNION : 1,
@@ -221,15 +222,11 @@ function readSketch(face, request, sketcher) {
 function createExtrudeCommand(request, {cadRegistry, sketcher}, invert) {
   const face = cadRegistry.findFace(request.face);
   const paths = readSketch(face, request, sketcher);
-
-  let val = request.value;
-  if (invert) {
-    val *= -1;
-  }
+  
   return {
     face,
     request: {
-      vector: face.csys.z.multiply(val).data(),
+      vector: resolveExtrudeVector(cadRegistry, face, request, !invert).data(),
       sketch: paths,
       tolerance: TOLERANCE,
       deflection: DEFLECTION

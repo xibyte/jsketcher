@@ -1,4 +1,3 @@
-import {ENTITIES} from '../scene/entites';
 import {isEntityType} from './schemaUtils';
 
 export default function initializeBySchema(schema, context) {
@@ -25,7 +24,10 @@ export default function initializeBySchema(schema, context) {
         }
       } else if (isEntityType(md.itemType)) {
         if (md.defaultValue && md.defaultValue.type === 'selection') {
-          val = [...context.streams.selection[md.itemType].value];
+          let entityContext = context.streams.selection[md.itemType];
+          if (entityContext) {
+            val = [...entityContext.value];
+          }
         } else {
           val = []
         }
@@ -33,7 +35,10 @@ export default function initializeBySchema(schema, context) {
         throw 'unsupport';
       }
     } else if (isEntityType(md.type) && md.defaultValue && md.defaultValue.type === 'selection') {
-      val = context.streams.selection[md.type].value[0];
+      const entityContext = context.streams.selection[md.type];
+      if (entityContext) {
+        val = entityContext.value[0];
+      }
     } else if (md.type === 'object') {
       val = initializeBySchema(md.schema, context);
     } else if (md.type === 'number') {
