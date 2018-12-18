@@ -1,4 +1,4 @@
-import {DATUM, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../scene/entites';
+import {DATUM, DATUM_AXIS, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../scene/entites';
 import {MShell} from '../model/mshell';
 
 
@@ -62,6 +62,15 @@ export function activate({streams, services}) {
     return streams.cadRegistry.modelIndex.value.get(datumId)||null;
   }
 
+  function findDatumAxis(datumAxisId) {
+    const [datumId, axisLiteral] = datumAxisId.split('/');  
+    let datum = streams.cadRegistry.modelIndex.value.get(datumId);
+    if (!datum) {
+      return null;
+    }
+    return datum.getAxisByLiteral(axisLiteral);
+  }
+
   function findEntity(entity, id) {
     switch (entity) {
       case FACE: return findFace(id);
@@ -69,12 +78,13 @@ export function activate({streams, services}) {
       case EDGE: return findEdge(id);
       case SKETCH_OBJECT: return findSketchObject(id);
       case DATUM: return findDatum(id);
+      case DATUM_AXIS: return findDatumAxis(id);
       default: throw 'unsupported';
     }
   }
   
   services.cadRegistry = {
-    getAllShells, findShell, findFace, findEdge, findSketchObject, findEntity, findDatum,
+    getAllShells, findShell, findFace, findEdge, findSketchObject, findEntity, findDatum, findDatumAxis,
     get modelIndex() {
       return streams.cadRegistry.modelIndex.value;
     },
