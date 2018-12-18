@@ -14,6 +14,7 @@ import {RectangleTool} from './tools/rectangle'
 import {OffsetTool} from './tools/offset'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
+import genSerpinski from '../utils/genSerpinski';
 
 function App2D() {
   var app = this;
@@ -274,6 +275,11 @@ function App2D() {
     app.fit();
     app.viewer.refresh();
   });
+
+  this.registerAction('genSerpinski', "Generate Serpinki Triangle off of a segment", function () {
+    genSerpinski(app);
+  });
+
 }
 
 App2D.views = [
