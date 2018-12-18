@@ -1,5 +1,5 @@
 
-import {getEncloseDetails} from "./cutExtrude";
+import {getEncloseDetails, resolveExtrudeVector} from './cutExtrude';
 import {curveTessParams} from "../../../brep/geom/impl/curve/curve-tess";
 import Vector from "math/vector";
 import {TriangulatePolygons} from "../../tess/triangulation";
@@ -13,8 +13,8 @@ export function createPreviewGeomProvider(inversed) {
     const face = services.cadRegistry.findFace(params.face);
     if (!face || !face.sketch) return null;
     let sketch = face.sketch.fetchContours();
-
-    const encloseDetails = getEncloseDetails(params, sketch, face.csys, face.surface, !inversed);
+    let vector = resolveExtrudeVector(services.cadRegistry, face, params, !inversed);
+    const encloseDetails = getEncloseDetails(params, sketch, vector, face.csys, face.surface, !inversed);
     const triangles = [];
 
     for (let {basePath, lidPath, baseSurface, lidSurface} of encloseDetails) {

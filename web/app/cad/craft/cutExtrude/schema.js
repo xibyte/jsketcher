@@ -19,5 +19,10 @@ export default {
   face: {
     type: 'face',
     defaultValue: {type: 'selection'}
+  },
+  vector: {
+    type: 'datumAxis',
+    optional: true,
+    defaultValue: {type: 'selection'}
   }
 }

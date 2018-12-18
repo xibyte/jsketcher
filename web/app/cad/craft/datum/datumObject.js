@@ -3,6 +3,7 @@ import {Geometry, Line, LineBasicMaterial, MeshBasicMaterial, Object3D, Vector3}
 
 import CSysObject3D from './csysObject';
 import {NOOP} from 'gems/func';
+import {createExpensiveSetter, createReactiveState} from 'scene/utils/stateUpdater';
 
 export default class DatumObject3D extends Object3D {
 
@@ -147,12 +148,32 @@ function addOnHoverBehaviour(handle, viewer) {
     startDrag(datum);
     datum.dragStart(e, this.parent);
   };
+  
+  let defaultColor = handle.material.color.getHex();
+  let setColor = createExpensiveSetter(color => handle.material.color.setHex(color));
+
+  const handleState = createReactiveState({
+      selected: null,
+      visible: true
+    }, 
+    state => {
+      if (state.selected !== null) {
+        handle.material.visible = true;
+        setColor(state.selected);
+      } else {
+        setColor(defaultColor);
+        handle.material.visible = state.hovered;  
+      }
+      viewer.requestRender();
+    });
+
   handle.onMouseEnter = function() {
-    viewer.setVisualProp(handle.material, 'visible', true);
+    handleState('hovered', true);
   };
   handle.onMouseLeave = function() {
-    viewer.setVisualProp(handle.material, 'visible', false);
+    handleState('hovered', false);
   };
+  handle.setSelected = value => handleState('selected', value);
 }
 
 function roundVector(v) {

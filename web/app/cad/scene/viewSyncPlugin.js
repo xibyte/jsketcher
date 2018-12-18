@@ -45,7 +45,8 @@ function sceneSynchronizer({services: {cadScene, cadRegistry, viewer, wizard, ac
           modelView = new DatumView(model, viewer, 
             wizard.open,
             datum => pickControl.pick(datum),
-            e => action.run('menu.datum', e));
+            e => action.run('menu.datum', e),
+            wizard.isInProgress);
         } else {
           console.warn('unsupported model ' + model);
         }

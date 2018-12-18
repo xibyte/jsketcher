@@ -19,32 +19,40 @@ export function doOperation(params, {cadRegistry, sketcher}, cut) {
   let sketch = sketcher.readSketch(face.id);
   if (!sketch) throw 'illegal state';
 
-  const details = getEncloseDetails(params, sketch.fetchContours(), face.csys, face.surface, !cut, false);
+  let vector = resolveExtrudeVector(cadRegistry, face, params, !cut);
+  const details = getEncloseDetails(params, sketch.fetchContours(), vector, face.csys, face.surface, !cut, false);
   const operand = combineShells(details.map(d => enclose(d.basePath, d.lidPath, d.baseSurface, d.lidSurface)));
   return BooleanOperation(face, solid, operand, cut ? 'subtract' : 'union');
 }
 
-export function getEncloseDetails(params, contours, csys, sketchSurface, invert) {
+export function resolveExtrudeVector(cadRegistry, face, params, invert) {
+  let vector = null;
+  if (params.vector) {
+    const datumAxis = cadRegistry.findDatumAxis(params.vector);
+    if (datumAxis) {
+      vector = datumAxis.dir;
+      invert = false;
+    }
+  }
+  if (!vector) {
+    invert = !invert;  
+    vector = face.csys.z; 
+  }
+  
   let value = params.value;
   if (value < 0) {
     value = Math.abs(value);
     invert = !invert;
   }
 
-  const targetDir = invert ? csys.z : csys.z.negate();
-  
-  let target;
-
-  if (params.rotation !== 0) {
-    target = Matrix3.rotateMatrix(params.rotation * Math.PI / 180, csys.x, ORIGIN).apply(targetDir);
-    if (params.angle !== 0) {
-      target = Matrix3.rotateMatrix(params.angle * Math.PI / 180, csys.z, ORIGIN)._apply(target);
-    }
-    target._multiply(value);
-  } else {
-    target = targetDir.multiply(value);
+  if (invert) {
+    vector = vector.negate();
   }
+  
+  return vector.multiply(value);
+}
 
+export function getEncloseDetails(params, contours, target, csys, sketchSurface, invert) {
   let details = [];
   for (let contour of contours) {
     if (invert) contour.reverse();
