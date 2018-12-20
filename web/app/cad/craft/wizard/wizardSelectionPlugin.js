@@ -31,20 +31,20 @@ export function activate(ctx) {
   });
 }
 
-const singleUpdater = (params, param, id) =>  params[param] = id;
-const arrayUpdater = (params, param, id) =>  {
-  let arr = params[param];
+const singleValue = (id, current) =>  id;
+const arrayValue = (id, arr) =>  {
   if (!arr) {
-    params[param] = [id];
+    return [id];
   } 
   if (arr.indexOf(id) === -1) {
     arr.push(id);
   }
+  return arr;
 };
 
 function createPickHandlerFromSchema(wizCtx) {
-  function update(paramsMutator, paramToMakeActive) {
-    wizCtx.updateParams(paramsMutator);
+  function update(param, value, paramToMakeActive) {
+    wizCtx.updateParam(param, value);
     wizCtx.updateState(state => {
       state.activeParam = paramToMakeActive;
     });
@@ -62,11 +62,9 @@ function createPickHandlerFromSchema(wizCtx) {
     const activeEntity = state.activeParam && entitiesByParam[state.activeParam];
 
     function select(param, entity, md, id) {
-      const updater = md.type === 'array' ? arrayUpdater : singleUpdater;
+      const valueGetter = md.type === 'array' ? arrayValue : singleValue;
       let paramToMakeActive = getNextActiveParam(param, entity, md);
-      update(params => {
-        updater(params, param, id);
-      }, paramToMakeActive);
+      update(param, valueGetter(id, params[param]), paramToMakeActive);
     }
 
     function getNextActiveParam(currParam, entity, currMd) {
@@ -98,16 +96,12 @@ function createPickHandlerFromSchema(wizCtx) {
       for (let param of entityParams) {
         let val = params[param];
         if (val === id) {
-          update(params => {
-            params[param] = undefined;
-          }, param);
+          update(param, undefined, param);
           return true;
         } else if (Array.isArray(val)) {
           let index = val.indexOf(id);
           if (index !== -1) {
-            update(params => {
-              params[param].splice(index, 1)
-            }, param);
+            update(param, params[param].splice(index, 1), param);
             return true;
           }
         }

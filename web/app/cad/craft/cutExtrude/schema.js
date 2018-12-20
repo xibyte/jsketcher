@@ -20,9 +20,22 @@ export default {
     type: 'face',
     defaultValue: {type: 'selection'}
   },
-  vector: {
+  datumAxisVector: {
     type: 'datumAxis',
+    optional: true
+  },
+  edgeVector: {
+    type: 'edge',
     optional: true,
-    defaultValue: {type: 'selection'}
+    accept: edge => edge.brepEdge.curve.degree === 1
+  },
+  sketchSegmentVector: {
+    type: 'sketchObject',
+    optional: true,
+    accept: obj => obj.isSegment
+  },
+  flip: {
+    type: 'boolean',
+    defaultValue: false,
   }
 }
