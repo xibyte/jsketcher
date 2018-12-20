@@ -1,52 +1,10 @@
-import {View} from './view';
-import {getAttribute, setAttribute} from 'scene/objectData';
-import staticResource from 'scene/staticResource';
-import {SKETCH_OBJECT} from '../entites';
-import Vector from 'math/vector';
-import {createLineMaterial} from 'scene/materials';
+import {CurveBasedView} from './curveBasedView';
 
-export class SketchObjectView extends View {
+export class SketchObjectView extends CurveBasedView {
   
-  constructor(mSketchObject, _3dTransformation) {
-    super(mSketchObject);
-
-    this.material = mSketchObject.construction ? SKETCH_CONSTRUCTION_MATERIAL : SKETCH_MATERIAL;
-    let line = new THREE.Line(new THREE.Geometry(), this.material);
-    setAttribute(line, SKETCH_OBJECT, this);
-    const chunks = mSketchObject.sketchPrimitive.tessellate(10);
-    function addLine(p, q) {
-      const lg = line.geometry;
-      const a = _3dTransformation.apply(chunks[p]);
-      const b = _3dTransformation.apply(chunks[q]);
-
-      lg.vertices.push(a._plus(OFF_LINES_VECTOR).three());
-      lg.vertices.push(b._plus(OFF_LINES_VECTOR).three());
-    }
-    for (let q = 1; q < chunks.length; q ++) {
-      addLine(q - 1, q);
-    }
-    
-    this.rootGroup = line;
-  }
-
-  mark(color) {
-    let line = this.rootGroup;
-    line.material = SKETCH_SELECTION_MATERIAL;
-  }
-
-  withdraw(color) {
-    let line = this.rootGroup;
-    line.material = this.material;
-  }
-
-  dispose() {
-    this.rootGroup.geometry.dispose();
-    super.dispose();
+  constructor(mSketchObject, sketchToWorldTransformation) {
+    const color = mSketchObject.construction ? 0x777777 : 0xFFFFFF;
+    const tess = mSketchObject.sketchPrimitive.tessellate(10).map(sketchToWorldTransformation.apply).map(v => v.data());
+    super(mSketchObject, tess, 0.3, 1, color, 0x49FFA5);
   }
 }
-
-const OFF_LINES_VECTOR = new Vector();//normal.multiply(0); // disable it. use polygon offset feature of material
-
-const SKETCH_MATERIAL = staticResource(createLineMaterial(0xFFFFFF, 3));
-const SKETCH_CONSTRUCTION_MATERIAL = staticResource(createLineMaterial(0x777777, 2));
-const SKETCH_SELECTION_MATERIAL = staticResource(createLineMaterial(0xFF0000, 6));
