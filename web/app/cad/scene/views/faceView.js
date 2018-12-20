@@ -16,14 +16,14 @@ export class SketchingView extends View {
   }
 
   updateSketch() {
-    SceneGraph.clearGroup(this.sketchGroup);
+    SceneGraph.emptyGroup(this.sketchGroup);
     this.disposeSketch();
-    this.sketchObjectViews = [];
 
     const sketchTr =  this.model.sketchToWorldTransformation;
     for (let sketchObject of this.model.sketchObjects) {
       let sov = new SketchObjectView(sketchObject, sketchTr);
       SceneGraph.addToGroup(this.sketchGroup, sov.rootGroup);
+      this.sketchObjectViews.push(sov);
     }
   }
   
@@ -31,6 +31,7 @@ export class SketchingView extends View {
     for (let sov of this.sketchObjectViews) {
       sov.dispose();
     }
+    this.sketchObjectViews = [];
   }
 
   dispose() {
