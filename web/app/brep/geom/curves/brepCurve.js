@@ -18,8 +18,16 @@ export default class BrepCurve {
     this.uMid = (uMax - uMin) * 0.5;
   }
 
+  get degree() {
+    return this.impl.degree();
+  }
+  
   translate(vector) {
     const tr = new Matrix3().translate(vector.x, vector.y, vector.z);
+    return this.transform(tr);
+  }
+
+  transform(tr) {
     return new BrepCurve(this.impl.transform(tr.toArray()), this.uMin, this.uMax);
   }
 

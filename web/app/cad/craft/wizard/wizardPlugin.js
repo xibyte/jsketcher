@@ -3,6 +3,8 @@ import initializeBySchema from '../intializeBySchema';
 import {clone, EMPTY_OBJECT} from 'gems/objects';
 import materializeParams from '../materializeParams';
 import {createFunctionList} from 'gems/func';
+import {onParamsUpdate} from '../cutExtrude/extrudeOperation';
+import {propsChangeTracker} from '../../../../../modules/lstream/utils';
 
 export function activate(ctx) {
 
@@ -84,9 +86,18 @@ export function activate(ctx) {
       const state$ = state({});
       const updateParams = mutator => workingRequest$.mutate(data => mutator(data.params));
       const updateState = mutator => state$.mutate(state => mutator(state));
+      const updateParam = (name, value) => {
+        updateParams(params => {
+          if (operation.onParamsUpdate) {
+            operation.onParamsUpdate(params, name, value, params[name]);
+          }  
+          params[name] = value;
+        });
+      };
+
       const disposerList = createFunctionList();
       wizCtx = {
-        workingRequest$, materializedWorkingRequest$, state$, updateParams, updateState,
+        workingRequest$, materializedWorkingRequest$, state$, updateParams, updateParam, updateState,
         operation, changingHistory,
         addDisposer: disposerList.add,
         dispose: disposerList.call,

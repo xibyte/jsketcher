@@ -11,7 +11,7 @@ export default function materializeParams(services, params, schema, result, erro
     }
     let value = params[field];
     if (value === undefined || value === null || value === '') {
-      if (!md.optional) {
+      if (!md.optional && !md.hasOwnProperty('defaultValue')) {
         errors.push({path: [...parentPath, field], message: 'required'});
       }
     } else {
@@ -41,6 +41,8 @@ export default function materializeParams(services, params, schema, result, erro
         if (typeof value !== 'string') {
           errors.push({path: [...parentPath, field], message: 'not a string type'});
         }
+      } else if (md.type === 'boolean') {
+        value = !!value;
       } else if (md.type === 'enum') {
         if (md.values.indexOf(value) === -1) {
           value = md.defaultValue || md.values[0]; 

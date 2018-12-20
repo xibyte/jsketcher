@@ -65,7 +65,7 @@ export default [
       label: 'deselect all',
       info: 'deselect everything',
     },
-    invoke: (context) => context.services.selection.deselectAll()
+    invoke: (context) => context.services.pickControl.deselectAll()
   },
 
   {

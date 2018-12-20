@@ -188,7 +188,7 @@ function readSketch(face, request, sketcher) {
   let paths = sketch.fetchContours().map(c => {
     let path = [];
     c.segments.forEach(s => {
-      if (s.isCurve()) {
+      if (s.isCurve) {
         if (s.constructor.name === 'Circle') {
           const dir = face.csys.z.data();
           path.push({TYPE: CURVE_TYPES.CIRCLE, c: tr.apply(s.c).data(), dir, r: s.r});
