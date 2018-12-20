@@ -88,6 +88,7 @@ function createSchemaIndex(schema) {
     }
   }
   return {entitiesByType, entitiesByParam,
-    entityParams: Object.keys(entitiesByParam)
+    entityParams: Object.keys(entitiesByParam),
+    params: Object.keys(schema)
   };
 }
