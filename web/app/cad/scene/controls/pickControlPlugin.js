@@ -129,7 +129,7 @@ export function activate(context) {
     let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children);
     const pickers = [
       (pickResult) => {
-        if (mask.is(kind, PICK_KIND.SKETCH) && pickResult.object instanceof THREE.Line) {
+        if (mask.is(kind, PICK_KIND.SKETCH)) {
           let sketchObjectV = getAttribute(pickResult.object, SKETCH_OBJECT);
           if (sketchObjectV) {
             return !visitor(sketchObjectV.model, event);
