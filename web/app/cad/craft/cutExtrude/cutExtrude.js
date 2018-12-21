@@ -27,16 +27,40 @@ export function doOperation(params, {cadRegistry, sketcher}, cut) {
 
 export function resolveExtrudeVector(cadRegistry, face, params, invert) {
   let vector = null;
-  if (params.vector) {
-    const datumAxis = cadRegistry.findDatumAxis(params.vector);
+  if (params.datumAxisVector) {
+    const datumAxis = cadRegistry.findDatumAxis(params.datumAxisVector);
     if (datumAxis) {
       vector = datumAxis.dir;
+      invert = false;
+    }
+  } else if (params.edgeVector) {
+    const edge = cadRegistry.findEdge(params.edgeVector);
+    const curve = edge.brepEdge.curve;
+    if (curve.degree === 1) {
+      vector = edge.brepEdge.curve.tangentAtParam(edge.brepEdge.curve.uMin);
+      if (vector.dot(face.csys.z) < 0 === invert) {
+        vector = vector.negate();
+      }
+      invert = false;
+    }
+  } else if (params.sketchSegmentVector) {
+    const mSegment = cadRegistry.findSketchObject(params.sketchSegmentVector);
+    if (mSegment.sketchPrimitive.isSegment) {
+      let [a, b] = mSegment.sketchPrimitive.tessellate().map(mSegment.face.sketchToWorldTransformation.apply);
+      vector = b.minus(a)._normalize();
+      if (vector.dot(face.csys.z) < 0 === invert) {
+        vector._negate();
+      }
       invert = false;
     }
   }
   if (!vector) {
     invert = !invert;  
     vector = face.csys.z; 
+  }
+  
+  if (params.flip) {
+    invert = !invert;
   }
   
   let value = params.value;
@@ -60,12 +84,17 @@ export function getEncloseDetails(params, contours, target, csys, sketchSurface,
     if (invert) contour.reverse();
 
     const lidPath = [];
-    let applyPrism = !math.equal(params.prism, 1);   
+    let applyPrism = !math.equal(params.prism, 1);
+    let prismTr = null;
+    if (applyPrism) {
+      prismTr = new Matrix3();
+      prismTr.scale(params.prism, params.prism, params.prism);
+    }
     for (let i = 0; i < basePath.length; ++i) {
       const curve = basePath[i];
       let lidCurve = curve.translate(target);
       if (applyPrism) {
-        lidCurve = lidCurve.offset(params.prism);
+        lidCurve = lidCurve.transform(prismTr);
       }
       lidPath.push(lidCurve);
     }

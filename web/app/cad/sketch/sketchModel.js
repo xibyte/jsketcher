@@ -28,8 +28,12 @@ class SketchPrimitive {
     return tessellation;
   }
 
-  isCurve() {
+  get isCurve() {
     return this.constructor.name !== 'Segment';
+  }
+
+  get isSegment() {
+    return !this.isCurve;
   }
 
   toNurbs(csys) {

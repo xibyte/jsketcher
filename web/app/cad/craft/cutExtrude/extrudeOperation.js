@@ -11,6 +11,7 @@ export default {
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
   paramsInfo:  ({value}) => `(${r(value)})`,
+  onParamsUpdate,
   previewGeomProvider: createPreviewGeomProvider(false),
   run: Extrude,
   actionParams: {
@@ -20,3 +21,14 @@ export default {
   schema
 };
 
+const INVARIANT = ['datumAxisVector', 'edgeVector', 'sketchSegmentVector'];
+
+export function onParamsUpdate(params, name, value) {
+  if (INVARIANT.includes(name)) {
+    INVARIANT.forEach(param => {
+      if (param !== name) {
+        delete params[param];
+      }
+    })
+  }
+}

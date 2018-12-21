@@ -22,7 +22,7 @@ export default class Wizard extends React.Component {
   };
 
   updateParam = (name, value) => {
-    this.props.context.updateParams(params => params[name] = value);
+    this.props.context.updateParam(name, value);
   };
 
   setActiveParam = param => {
