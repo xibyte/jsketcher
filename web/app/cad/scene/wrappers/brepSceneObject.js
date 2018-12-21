@@ -184,10 +184,15 @@ export function tessDataToGeom(tessellation, geom) {
 
 export function brepFaceToGeom(brepFace, geom) {
   const polygons = brepTess(brepFace);
-  const isPlane = brepFace.simpleSurface && brepFace.simpleSurface.isPlane;
+  return surfaceAndPolygonsToGeom(brepFace.surface, polygons, geom);
+}
+
+export function surfaceAndPolygonsToGeom(surface, polygons, geom) {
+  
+  const isPlane = surface.simpleSurface && surface.simpleSurface.isPlane;
   let normalOrNormals;
   if (isPlane) {
-    normalOrNormals = brepFace.surface.normalInMiddle().three();
+    normalOrNormals = surface.normalInMiddle().three();
   }
   for (let p = 0; p < polygons.length; ++p) {
     const off = geom.vertices.length;
@@ -204,7 +209,7 @@ export function brepFaceToGeom(brepFace, geom) {
       const c = i + off;
 
       if (!isPlane) {
-        normalOrNormals = [firstVertex, poly[i - 1], poly[i]].map(v => brepFace.surface.normal(v));
+        normalOrNormals = [firstVertex, poly[i - 1], poly[i]].map(v => surface.normal(v));
       }
       const face = new THREE.Face3(a, b, c, normalOrNormals);
       geom.faces.push(face);

@@ -4,6 +4,8 @@ import {BasisForPlane} from '../../math/l3space';
 import {MSketchObject} from './msketchObject';
 import {EMPTY_ARRAY} from 'gems/iterables';
 import CSys from '../../math/csys';
+import {MSketchLoop} from './mloop';
+import {sketchObjects} from '../../sketcher/fetchers';
 
 export class MFace extends MObject {
 
@@ -14,6 +16,7 @@ export class MFace extends MObject {
     this.shell = shell;
     this.surface = surface;
     this.sketchObjects = [];
+    this.sketchLoops = [];
     this._csys = csys
   }
 
@@ -93,6 +96,17 @@ export class MFace extends MObject {
     addSketchObjects(sketch.constructionSegments);
     addSketchObjects(sketch.connections);
     addSketchObjects(sketch.loops);
+    
+    
+    
+    const index = new Map();
+    this.sketchObjects.forEach(o => index.set(o.sketchPrimitive, o));
+    
+    this.sketchLoops = sketch.fetchContours().map((contour, i) => {
+      let loopSketchObjects = contour.segments.map(s => index.get(s));
+      return new MSketchLoop(this.id + '/L:' + i, this, loopSketchObjects, contour);
+    });
+    
   }
 
   findSketchObjectById(sketchObjectId) {

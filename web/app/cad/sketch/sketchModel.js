@@ -261,38 +261,14 @@ export class Contour {
     this.segments.push(obj);
   }
 
-  tessellateOnSurface(csys) {
-    const cc = new CompositeCurve();
-    const tr = csys.outTransformation;
-
-    let prev = null;
-    let firstPoint = null;
+  tessellateInCoordinateSystem(csys) {
+    let out = [];
     for (let segIdx = 0; segIdx < this.segments.length; ++segIdx) {
       let segment = this.segments[segIdx];
-      let tessellation = segment.tessellate(RESOLUTION);
-
-      tessellation = tessellation.map(p => tr(p));
-
-      const n = tessellation.length;
-      prev = prev == null ? tessellation[0] : prev;
-      tessellation[0] = prev; // this magic is to keep identity of same vectors
-      if (firstPoint == null) firstPoint = tessellation[0];
-
-      if (segIdx == this.segments.length - 1) {
-        tessellation[n - 1] = firstPoint;
-      }
-
-      cc.add(segment.toNurbs(csys), prev, segment);
-      prev = tessellation[n - 1];
-
-      //It might be an optimization for segments
-      // for (let i = 1; i < n; ++i) {
-      //   const curr = tessellation[i];
-      //   cc.add(new Line.fromSegment(prev, curr), prev, segment);
-      //   prev = curr;
-      // }
+      segment.toNurbs(csys).tessellate().forEach(p => out.push(p));
+      out.pop();
     }
-    return cc;
+    return out;
   }
 
   transferInCoordinateSystem(csys) {
