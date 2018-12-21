@@ -4,32 +4,36 @@ import libtess from 'libtess'
 import tessellateSurface from '../../brep/geom/surfaces/surfaceTess';
 
 export default function A(face) {
+  return tessellateLoopsOnSurface(face.surface, face.loops, loop => loop, seg => e.edge.curve, seg => seg.inverted)
+}
+
+export function tessellateLoopsOnSurface(surface, curveContours, getLoop, getCurve, isInverted) {
 
   let loops = [];
-  for (let loop of face.loops) {
+  for (let contour of curveContours) {
     let pipLoop = [];
     loops.push(pipLoop);
-    for (let e of loop.halfEdges) {
-      let curvePoints = e.edge.curve.tessellate();
-      if (e.inverted) {
+    for (let segment of getLoop(contour)) {
+      let curvePoints = getCurve(segment).tessellate();
+      if (isInverted(segment)) {
         curvePoints.reverse();
       }
       curvePoints.pop();
       for (let point of curvePoints) {
-        let wp = face.surface.workingPoint(point);
+        let wp = surface.workingPoint(point);
         pipLoop.push(wp);
       }
     }
   }
 
-  let tess = tessellateSurface(face.surface.impl);
-  let nurbsTriangles = tess.faces.map(f => f.map(i => face.surface.createWorkingPoint(tess.uvs[i], Vector.fromData(tess.points[i]))));
+  let tess = tessellateSurface(surface.impl);
+  let nurbsTriangles = tess.faces.map(f => f.map(i => surface.createWorkingPoint(tess.uvs[i], Vector.fromData(tess.points[i]))));
 
   let paths = clip(nurbsTriangles, loops);
 
   let triangles = tessPaths(paths);
 
-  let out = convertPoints(triangles, p => face.surface.workingPointTo3D(p) );
+  let out = convertPoints(triangles, p => surface.workingPointTo3D(p) );
   // __DEBUG__.AddPointPolygons(out, 0x00ffff);
   return out;
 }

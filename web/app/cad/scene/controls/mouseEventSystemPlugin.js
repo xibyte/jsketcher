@@ -1,9 +1,11 @@
-import {findAncestor} from 'scene/sceneGraph';
 
 export function activate(context) {
   const {services, streams} = context;
-  let domElement = services.viewer.sceneSetup.domElement();
-
+  const domElement = services.viewer.sceneSetup.domElement();
+  const event = {
+    viewer: services.viewer
+  };
+  
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('mouseup', mouseup, false);
   domElement.addEventListener('mousemove', mousemove, false);
@@ -13,50 +15,56 @@ export function activate(context) {
   let toDrag = null;
   let pressed = new Set();
   
-  function startDrag(objectToDrag, e) {
+  event.startDrag = objectToDrag => {
     if (toDrag) {
-      stopDrag(e);
+      stopDrag();
     } 
     toDrag = objectToDrag;
     services.viewer.sceneSetup.trackballControls.enabled = false;
-  }
+  };
   
-  function stopDrag(e) {
-    toDrag.dragDrop(e);
+  function stopDrag() {
+    toDrag.dragDrop(event);
     toDrag = null;
     services.viewer.sceneSetup.trackballControls.enabled = true;
   }
   
   function mousedown(e) {
+    event.mouseEvent = e;
     pressed.clear();
     let hits = performRaycast(e);
+    event.hits = hits;
+    
     for (let hit of hits) {
       let obj = hit.object;
       if (obj && obj.onMouseDown) {
-        obj.onMouseDown(e, hits, objectToDrag => startDrag(objectToDrag, e));
+        obj.onMouseDown(event);
       }
       pressed.add(obj);
-      if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(e, hits)) {
+      if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
         break;
       }
     }
   }
 
   function mouseup(e) {
+    event.mouseEvent = e;
     if (toDrag) {
       stopDrag(e);
       mousemove(e);
     } else {
       let hits = performRaycast(e);
+      event.hits = hits;
+      
       for (let hit of hits) {
         let obj = hit.object;
         if (obj && obj.onMouseUp) {
-          obj.onMouseUp(e, hits);
+          obj.onMouseUp(event);
         }
         if (pressed.has(obj) && obj.onMouseClick) {
-          obj.onMouseClick(e, hits);
+          obj.onMouseClick(event);
         }
-        if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(e, hits)) {
+        if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
           break;
         }
       }
@@ -68,32 +76,34 @@ export function activate(context) {
   let valid = new Set();
   
   function mousemove(e) {
-    
+    event.mouseEvent = e;
+
     if (toDrag) {
-      toDrag.dragMove(e);
+      toDrag.dragMove(event);
     } else {
       let hits = performRaycast(e);
-      
+      event.hits = hits;
+
       valid.clear();
       for (let hit of hits) {
         valid.add(hit.object);
-        if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(e, hits)) {
+        if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
           break;
         }
       }
 
-      entered.forEach(e => {
-        if (!valid.has(e) && e.onMouseLeave) {
-          e.onMouseLeave(e, hits);
+      entered.forEach(el => {
+        if (!valid.has(el) && el.onMouseLeave) {
+          el.onMouseLeave(event);
         }
       });
       
-      valid.forEach(e => {
-        if (!entered.has(e) && e.onMouseEnter) {
-          e.onMouseEnter(e, hits);
+      valid.forEach(el => {
+        if (!entered.has(el) && el.onMouseEnter) {
+          el.onMouseEnter(event);
         }
-        if (e.onMouseMove) {
-          e.onMouseMove(e, hits);
+        if (el.onMouseMove) {
+          el.onMouseMove(event);
         }
       });
       

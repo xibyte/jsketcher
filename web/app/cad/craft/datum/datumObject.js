@@ -94,7 +94,7 @@ export default class DatumObject3D extends Object3D {
     }
   }
 
-  dragMove(e) {
+  dragMove({mouseEvent: e}) {
     if (this.beingDraggedAxis) {
       let dir = this.beingDraggedAxis;
 
@@ -128,7 +128,7 @@ export default class DatumObject3D extends Object3D {
   onMove(begin, end, delta) {
   }
   
-  dragDrop(e) {
+  dragDrop() {
     this.exitEditMode();
     this.viewer.requestRender();
   }
@@ -140,13 +140,13 @@ export default class DatumObject3D extends Object3D {
 }
 
 function addOnHoverBehaviour(handle, viewer) {
-  handle.onMouseDown = function(e, hits, startDrag) {
+  handle.onMouseDown = function(e) {
     let datum = this.parent.parent.parent;
     if (datum.freezeDragging) {
       return;
     }
-    startDrag(datum);
-    datum.dragStart(e, this.parent);
+    e.startDrag(datum);
+    datum.dragStart(e.mouseEvent, this.parent);
   };
   
   let defaultColor = handle.material.color.getHex();

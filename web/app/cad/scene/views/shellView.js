@@ -55,6 +55,8 @@ export class ShellView extends View {
   }
 
   dispose() {
+    this.mesh.material.dispose();
+    this.mesh.geometry.dispose();
     for (let faceView of this.faceViews) {
       faceView.dispose();
     }
