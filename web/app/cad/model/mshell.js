@@ -1,4 +1,4 @@
-import {MObject} from './mobject';
+import {MObject, MObjectIdGenerator} from './mobject';
 import {MBrepFace, MFace} from './mface';
 import {MEdge} from './medge';
 import {MVertex} from './mvertex';
@@ -8,10 +8,8 @@ export class MShell extends MObject {
 
   static TYPE = 'shell';
 
-  static ID_COUNTER = 0;
-
   constructor() {
-    super(MShell.TYPE, 'S:' + (MShell.ID_COUNTER++))  
+    super(MShell.TYPE, 'S:' + MObjectIdGenerator.next(MShell.TYPE))  
   }
   
   shell;

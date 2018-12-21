@@ -1,12 +1,11 @@
-import {MObject} from './mobject';
+import {MObject, MObjectIdGenerator} from './mobject';
 
 export class MDatum extends MObject {
 
   static TYPE = 'datum';
-  static ID_COUNTER = 0; // TODO: reset the counter
   
   constructor(csys) {
-    super(MDatum.TYPE, 'D:' + (MDatum.ID_COUNTER++));
+    super(MDatum.TYPE, 'D:' + MObjectIdGenerator.next(MDatum.TYPE));
     this.csys = csys;
     this.xAxis = new MDatumAxis(this.id + '/X', this.csys.origin, this.csys.x);
     this.yAxis = new MDatumAxis(this.id + '/Y', this.csys.origin, this.csys.y);
