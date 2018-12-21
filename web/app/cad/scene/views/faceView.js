@@ -4,6 +4,7 @@ import {FACE} from '../entites';
 import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
 import {SketchObjectView} from './sketchObjectView';
 import {View} from './view';
+import {SketchLoopView} from './sketchLoopView';
 
 export class SketchingView extends View {
   
@@ -11,26 +12,33 @@ export class SketchingView extends View {
     super(face);
     this.sketchGroup = SceneGraph.createGroup();
     this.sketchObjectViews = [];
+    this.sketchLoopViews = [];
     this.rootGroup = SceneGraph.createGroup();
     SceneGraph.addToGroup(this.rootGroup, this.sketchGroup);
   }
 
   updateSketch() {
-    SceneGraph.clearGroup(this.sketchGroup);
+    SceneGraph.emptyGroup(this.sketchGroup);
     this.disposeSketch();
-    this.sketchObjectViews = [];
 
     const sketchTr =  this.model.sketchToWorldTransformation;
     for (let sketchObject of this.model.sketchObjects) {
       let sov = new SketchObjectView(sketchObject, sketchTr);
       SceneGraph.addToGroup(this.sketchGroup, sov.rootGroup);
+      this.sketchObjectViews.push(sov);
     }
+    this.model.sketchLoops.forEach(mLoop => {
+      let loopView = new SketchLoopView(mLoop);
+      SceneGraph.addToGroup(this.sketchGroup, loopView.rootGroup);
+      this.sketchLoopViews.push(loopView);  
+    });
   }
   
   disposeSketch() {
-    for (let sov of this.sketchObjectViews) {
-      sov.dispose();
-    }
+    this.sketchObjectViews.forEach(o => o.dispose());
+    this.sketchLoopViews.forEach(o => o.dispose());
+    this.sketchObjectViews = [];
+    this.sketchLoopViews = [];
   }
 
   dispose() {

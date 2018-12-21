@@ -36,7 +36,7 @@ export default class DatumView extends View {
         viewer.requestRender();
       }
 
-      onMouseLeave(e, hits, behindHits) {
+      onMouseLeave(e) {
         this.mouseInside = false;
         this.updateVisibility();
         this.material.color.setHex(0xFFFFFF);
@@ -53,7 +53,7 @@ export default class DatumView extends View {
         viewer.requestRender();
       }
 
-      onMouseClick(e) {
+      onMouseClick({mouseEvent: e}) {
         selectDatum(datum);
         showDatumMenu({
           x: e.offsetX,
@@ -72,18 +72,18 @@ export default class DatumView extends View {
 
       mouseInside;
       
-      onMouseEnter(e, hits) {
+      onMouseEnter(e) {
         this.mouseInside = true;
         this.parent.parent.menuButton.updateVisibility();
         
       }
       
-      onMouseLeave(e, hits) {
+      onMouseLeave(e) {
         this.mouseInside = false;
         this.parent.parent.menuButton.updateVisibility();
       }
 
-      passMouseEvent(e, hits) {
+      passMouseEvent(e) {
         return true;
       }
     }

@@ -4,6 +4,7 @@ import {MShell} from '../model/mshell';
 import {MDatum} from '../model/mdatum';
 import materializeParams from './materializeParams';
 import CadError from '../../utils/errors';
+import {MObjectIdGenerator} from '../model/mobject';
 
 export function activate({streams, services}) {
 
@@ -87,8 +88,7 @@ export function activate({streams, services}) {
     if (isAdditiveChange(prev, curr)) {
       beginIndex = prev.pointer + 1;
     } else {
-      MShell.ID_COUNTER = 0;
-      MDatum.ID_COUNTER = 0;
+      MObjectIdGenerator.reset();
       beginIndex = 0;
       streams.craft.models.next([]);
     }
