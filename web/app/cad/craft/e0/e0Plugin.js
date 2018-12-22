@@ -195,11 +195,15 @@ function readSketch(face, request, sketcher) {
         } else if (s.constructor.name === 'Arc') {
           let a = s.inverted ? s.b : s.a;
           let b = s.inverted ? s.a : s.b;
+          let tangent = tr._apply(s.c.minus(a))._cross(face.csys.z)._normalize();
+          if (s.inverted) {
+            tangent._negate();
+          }
           path.push({
             TYPE: CURVE_TYPES.ARC,
             a: tr.apply(a).data(),
             b: tr.apply(b).data(),
-            tangent: tr._apply(a.minus(s.c))._cross(face.csys.z)._normalize()._negate().data()
+            tangent: tangent.data()
           });
         } else {
           let nurbs = s.toNurbs(face.csys).impl;
