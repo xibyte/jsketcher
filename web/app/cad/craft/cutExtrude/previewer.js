@@ -34,8 +34,10 @@ export function createPreviewGeomProvider(inversed) {
           triangles.push([base[p], base[q], lid[q]]);
           triangles.push([lid[q], lid[p], base[p]]);
         }
-        base.forEach(p => basePoints.push(p));
-        lid.forEach(p => lidPoints.push(p));
+        for (let j = 0; j < base.length - 1; j++) {
+          basePoints.push(base[j]);
+          lidPoints.push(base[j]);
+        }
       }
 
       function collectOnSurface(points, normal) {
