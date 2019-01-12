@@ -20,11 +20,28 @@ export function getSketchBoundaries(sceneFace) {
       let arcRadius = findArcRadius(curve2d);
       if (arcRadius !== null){
         let [from, to] = curve2d.domain();
-        let [A, DA] = curve2d.eval(from, 1);
+        let [A, DA, DDA] = curve2d.eval(from, 2);
         let [B, DB] = curve2d.eval(to, 1);
 
         let mA = vec.normalize(DA);
+        let mmA = vec.normalize(DDA);
 
+        let orient = mA[0] * mmA[1] - mA[1] * mmA[0];
+        
+        if (orient < 0) {
+          let t;
+          
+          t = B;
+          B = A;
+          A = t;
+          
+          t = DB;
+          DB = DA;
+          DA = t;
+          
+          mA = vec.normalize(DA);
+        }
+        
         if (veqXYZ(A[0], A[1], 0, B[0], B[1], 0)) {
           let centripetal = perpXY(vec.mul(mA, arcRadius));
           let c = vec._add(centripetal, A);
