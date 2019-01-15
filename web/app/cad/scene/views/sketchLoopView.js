@@ -6,6 +6,8 @@ import {DoubleSide, Geometry, Mesh} from 'three';
 import {surfaceAndPolygonsToGeom} from '../wrappers/brepSceneObject';
 import {TriangulatePolygons} from '../../tess/triangulation';
 import Vector from '../../../../../modules/math/vector';
+import {LOOP} from '../entites';
+import {setAttribute} from '../../../../../modules/scene/objectData';
 
 export class SketchLoopView extends View {
   constructor(mLoop) {
@@ -35,6 +37,11 @@ export class SketchLoopView extends View {
     
     surfaceAndPolygonsToGeom(surface, tess, this.mesh.geometry);
     this.mesh.geometry.mergeVertices();
+    for (let i = 0; i < geometry.faces.length; i++) {
+      const meshFace = geometry.faces[i];
+      setAttribute(meshFace, LOOP, this);
+    }
+
     this.rootGroup.add(this.mesh);
     this.mesh.onMouseEnter = (e) => {
       this.mesh.material.visible = true;
