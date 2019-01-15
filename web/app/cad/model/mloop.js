@@ -10,9 +10,7 @@ export class MLoop extends MObject {
 
 }
 
-export class MSketchLoop extends MObject {
-
-  static TYPE = 'loop';
+export class MSketchLoop extends MLoop {
 
   constructor(id, face, sketchObjects, contour) {
     super(id);

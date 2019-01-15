@@ -1,7 +1,10 @@
 import {state} from 'lstream';
-import {SELECTABLE_ENTITIES} from './controls/pickControlPlugin';
+
 import {addToListInMap} from 'gems/iterables';
 import {EMPTY_ARRAY} from '../../../../modules/gems/iterables';
+import {DATUM, FACE, SHELL, SKETCH_OBJECT, EDGE} from './entites';
+
+export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
 
 export function defineStreams(ctx) {
   ctx.streams.selection = {};

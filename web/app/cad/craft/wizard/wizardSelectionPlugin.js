@@ -1,4 +1,4 @@
-import {DATUM, DATUM_AXIS, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../../scene/entites';
+import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from '../../scene/entites';
 
 export function activate(ctx) {
   ctx.streams.wizard.wizardContext.attach(wizCtx => {
@@ -149,6 +149,12 @@ function createPickHandlerFromSchema(wizCtx) {
         selectActive(model.id);
       } else {
         selectToFirst(DATUM_AXIS, model.id);
+      }
+    } else if (modelType === LOOP) {
+      if (activeEntity === LOOP) {
+        selectActive(model.id);
+      } else {
+        selectToFirst(LOOP, model.id);
       }
     }
     return false;

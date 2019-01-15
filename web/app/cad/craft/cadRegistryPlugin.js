@@ -1,4 +1,4 @@
-import {DATUM, DATUM_AXIS, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../scene/entites';
+import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from '../scene/entites';
 import {MShell} from '../model/mshell';
 
 
@@ -70,6 +70,19 @@ export function activate({streams, services}) {
     }
     return datum.getAxisByLiteral(axisLiteral);
   }
+  
+  function findLoop(loopId) {
+    let [shellId, faceId, loopLocalId] = loopId.split('/');
+    let face = findFace(shellId+'/'+faceId);
+    if (face) {
+      for (let loop of face.sketchLoops) {
+        if (loop.id === loopId) {
+          return loop;
+        }
+      }
+    }
+    return null;
+  }
 
   function findEntity(entity, id) {
     switch (entity) {
@@ -79,12 +92,13 @@ export function activate({streams, services}) {
       case SKETCH_OBJECT: return findSketchObject(id);
       case DATUM: return findDatum(id);
       case DATUM_AXIS: return findDatumAxis(id);
+      case LOOP: return findLoop(id);
       default: throw 'unsupported';
     }
   }
   
   services.cadRegistry = {
-    getAllShells, findShell, findFace, findEdge, findSketchObject, findEntity, findDatum, findDatumAxis,
+    getAllShells, findShell, findFace, findEdge, findSketchObject, findEntity, findDatum, findDatumAxis, findLoop,
     get modelIndex() {
       return streams.cadRegistry.modelIndex.value;
     },

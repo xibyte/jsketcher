@@ -99,6 +99,24 @@ export function activate(ctx) {
         consumed,
         created: [readShellData(data.result, consumed, operandsA[0].csys)]
       }
+    },
+    loft: function(params) {
+      let engineParams = {
+        sections: params.sections.map(sec => readSketchContour(sec.contour, sec.face)),
+        preview: params.preview,
+        tolerance: TOLERANCE,
+        deflection: DEFLECTION,
+      };
+      let data = callEngine(engineParams, Module._SPI_loft);
+      if (params.preview) {
+        return data;
+      }
+      throw 'unsupported';
+      // let consumed = [...operandsA, ...operandsB];
+      // return {
+      //   consumed,
+      //   created: [readShellData(data.result, consumed, operandsA[0].csys)]
+      // }
     }
   }
 }
@@ -180,47 +198,47 @@ function managedByE0(mShell) {
   return externals && externals.engine === 'e0';
 }
 
+function readSketchContour(contour, face) {
+  let tr = face.csys.outTransformation;
+  let path = [];
+  contour.segments.forEach(s => {
+    if (s.isCurve) {
+      if (s.constructor.name === 'Circle') {
+        const dir = face.csys.z.data();
+        path.push({TYPE: CURVE_TYPES.CIRCLE, c: tr.apply(s.c).data(), dir, r: s.r});
+      } else if (s.constructor.name === 'Arc') {
+        let a = s.inverted ? s.b : s.a;
+        let b = s.inverted ? s.a : s.b;
+        let tangent = tr._apply(s.c.minus(a))._cross(face.csys.z)._normalize();
+        if (s.inverted) {
+          tangent._negate();
+        }
+        path.push({
+          TYPE: CURVE_TYPES.ARC,
+          a: tr.apply(a).data(),
+          b: tr.apply(b).data(),
+          tangent: tangent.data()
+        });
+      } else {
+        let nurbs = s.toNurbs(face.csys).impl;
+        path.push(Object.assign({TYPE: CURVE_TYPES.B_SPLINE}, nurbs.serialize()));
+      }
+    } else {
+      let ab = [s.a, s.b];
+      if (s.inverted) {
+        ab.reverse();
+      }
+      ab = ab.map(v => tr.apply(v).data());
+      path.push({TYPE: CURVE_TYPES.SEGMENT, a: ab[0], b: ab[1]});
+    }
+  });
+  return path;
+}
+
 function readSketch(face, request, sketcher) {
   let sketch = sketcher.readSketch(face.id);
   if (!sketch) throw 'illegal state';
-
-  let tr = face.csys.outTransformation;
-  let paths = sketch.fetchContours().map(c => {
-    let path = [];
-    c.segments.forEach(s => {
-      if (s.isCurve) {
-        if (s.constructor.name === 'Circle') {
-          const dir = face.csys.z.data();
-          path.push({TYPE: CURVE_TYPES.CIRCLE, c: tr.apply(s.c).data(), dir, r: s.r});
-        } else if (s.constructor.name === 'Arc') {
-          let a = s.inverted ? s.b : s.a;
-          let b = s.inverted ? s.a : s.b;
-          let tangent = tr._apply(s.c.minus(a))._cross(face.csys.z)._normalize();
-          if (s.inverted) {
-            tangent._negate();
-          }
-          path.push({
-            TYPE: CURVE_TYPES.ARC,
-            a: tr.apply(a).data(),
-            b: tr.apply(b).data(),
-            tangent: tangent.data()
-          });
-        } else {
-          let nurbs = s.toNurbs(face.csys).impl;
-          path.push(Object.assign({TYPE: CURVE_TYPES.B_SPLINE}, nurbs.serialize()));
-        }
-      } else {
-        let ab = [s.a, s.b];
-        if (s.inverted) {
-          ab.reverse();
-        }
-        ab = ab.map(v => tr.apply(v).data());
-        path.push({TYPE: CURVE_TYPES.SEGMENT, a: ab[0], b: ab[1]});
-      }
-    });
-    return path;
-  });
-  return paths;
+  return sketch.fetchContours().map(c => readSketchContour(c, face));
 }
 
 function createExtrudeCommand(request, {cadRegistry, sketcher}, invert) {
