@@ -250,7 +250,7 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
   // o2.setMoveMode(DatumObject3D.AXIS.Z);
   // cadScene.auxGroup.add(o2);
 
-  services.action.run('DATUM_CREATE');
+  services.action.run('SPATIAL_CURVE');
   
 }
 
