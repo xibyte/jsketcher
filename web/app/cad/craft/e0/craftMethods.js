@@ -5,6 +5,7 @@ import {
 } from './common';
 import {callEngine} from './interact';
 import {resolveExtrudeVector} from '../cutExtrude/cutExtrude';
+import {MOpenFaceShell} from '../../model/mopenFace';
 
 export function boolean({type, operandsA, operandsB}) {
   let engineParams = {
@@ -137,11 +138,14 @@ export function loftPreview(params) {
 }
 
 export function loft(params) {
-  let result = callEngine(mapLoftParams(params), Module._SPI_loftPreview);
-  throw 'unsupported';
-  // let consumed = [...operandsA, ...operandsB];
-  // return {
-  //   consumed,
-  //   created: [readShellData(data.result, consumed, operandsA[0].csys)]
-  // }
+  let data = callEngine(mapLoftParams(params), Module._SPI_loft);
+  let baseShell = params.sections[0].face.shell;
+  let consumed = params.sections
+    .filter(s => (!(s.face.shell instanceof MOpenFaceShell) || s.face.sketchLoops.length === 1))
+    .map(s => s.face.shell);
+  
+  return {
+    consumed,
+    created: [readShellData(data, consumed, baseShell.csys)]
+  }
 }
