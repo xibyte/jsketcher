@@ -17,9 +17,8 @@ export default {
 
 
 function runLoft(params, services) {
-  
-  services.craftEngine.loft(assignBooleanParams({
-    sections: params.sections.map(services.cadRegistry.findLoop),
-  }, params, services.cadRegistry.getAllShells));
+  return services.craftEngine.loft({
+    sections: params.sections.map(services.cadRegistry.findLoop)
+  });
 }
 
