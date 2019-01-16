@@ -2,6 +2,7 @@ import {setAttribute} from '../../../../../modules/scene/objectData';
 import {FACE, SHELL} from '../entites';
 import {NULL_COLOR, SELECTION_COLOR, setFacesColor, SketchingView} from './faceView';
 import {View} from './view';
+import {SketchMesh} from './shellView';
 
 export class OpenFaceShellView extends View {
 
@@ -54,7 +55,7 @@ export class OpenFaceView extends SketchingView {
     geometry.faces.push(new THREE.Face3(0, 2, 3));
     geometry.faces.forEach(f => setAttribute(f, FACE, this));
     geometry.computeFaceNormals();
-    this.mesh = new THREE.Mesh(geometry, this.material);
+    this.mesh = new SketchMesh(geometry, this.material);
     this.rootGroup.add(this.mesh);
   }
 
