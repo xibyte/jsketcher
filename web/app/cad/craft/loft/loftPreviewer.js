@@ -2,7 +2,7 @@ import {createSmoothMeshGeometryFromData} from '../../../../../modules/scene/geo
 
 export function loftPreviewGeomProvider(params, services) {
 
-  const tessInfo = services.craftEngine.loft({
+  const tessInfo = services.craftEngine.loftPreview({
     sections: params.sections.map(services.cadRegistry.findLoop),
     preview: true
   });
