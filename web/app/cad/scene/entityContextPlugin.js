@@ -2,7 +2,7 @@ import {state} from 'lstream';
 
 import {addToListInMap} from 'gems/iterables';
 import {EMPTY_ARRAY} from '../../../../modules/gems/iterables';
-import {DATUM, FACE, SHELL, SKETCH_OBJECT, EDGE} from './entites';
+import {DATUM, FACE, SHELL, SKETCH_OBJECT, EDGE, LOOP} from './entites';
 
 export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
 
@@ -34,7 +34,13 @@ export function activate(ctx) {
   ctx.services.marker.$markedEntities.attach(marked => {
     let byType = new Map();
     marked.forEach((obj) => {
-      addToListInMap(byType, obj.TYPE, obj);
+      if (obj.TYPE === LOOP) {
+        if (byType[FACE] && !byType[FACE].includes(obj.face)) {
+          addToListInMap(byType, FACE, obj.face);
+        }
+      } else {
+        addToListInMap(byType, obj.TYPE, obj);
+      }
     });
     SELECTABLE_ENTITIES.forEach(entityType => {
       let entities = byType.get(entityType);

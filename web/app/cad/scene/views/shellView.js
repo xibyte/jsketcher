@@ -1,10 +1,11 @@
 import {View} from './view';
 import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
-import {setAttribute} from '../../../../../modules/scene/objectData';
+import {getAttribute, setAttribute} from '../../../../../modules/scene/objectData';
 import {createSolidMaterial} from '../wrappers/sceneObject';
 import {FaceView, SELECTION_COLOR} from './faceView';
 import {EdgeView} from './edgeView';
-import {SHELL} from '../entites';
+import {FACE, SHELL} from '../entites';
+import {Mesh} from 'three';
 
 export class ShellView extends View {
 
@@ -27,7 +28,7 @@ export class ShellView extends View {
 
     const geometry = new THREE.Geometry();
     geometry.dynamic = true;
-    this.mesh = new THREE.Mesh(geometry, this.material);
+    this.mesh = new SketchMesh(geometry, this.material);
     this.rootGroup.add(this.mesh);
     
 
@@ -68,4 +69,30 @@ export class ShellView extends View {
     }
     super.dispose();
   }
+}
+
+export class SketchMesh extends Mesh {
+  
+  constructor(geometry, material) {
+    super(geometry, material);
+  }
+
+  passRayCast(hits) {
+    for (let hit of hits) {
+      if (hit.object === this && hit.face) {
+        let faceView = getAttribute(hit.face, FACE);
+        if (faceView) {
+          if (faceView.sketchLoopViews.find(v => hits.find(h => v.mesh.geometry.faces.indexOf(h.face) !== -1))) {
+            return true;
+          }
+        }
+
+      }
+    }
+  }
+  
+  passMouseEvent(e) {
+    return this.passRayCast(e.hits);
+  };
+
 }

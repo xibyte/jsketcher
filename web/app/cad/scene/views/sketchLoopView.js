@@ -1,4 +1,4 @@
-import {View} from './view';
+import {MarkTracker, View} from './view';
 import * as SceneGraph from 'scene/sceneGraph';
 import {tessellateLoopsOnSurface} from '../../tess/brep-tess';
 import {createSolidMaterial} from '../wrappers/sceneObject';
@@ -9,7 +9,7 @@ import Vector from '../../../../../modules/math/vector';
 import {LOOP} from '../entites';
 import {setAttribute} from '../../../../../modules/scene/objectData';
 
-export class SketchLoopView extends View {
+export class SketchLoopView extends MarkTracker(View) {
   constructor(mLoop) {
     super(mLoop);
     this.rootGroup = SceneGraph.createGroup();
@@ -17,11 +17,13 @@ export class SketchLoopView extends View {
     const geometry = new Geometry();
     geometry.dynamic = true;
     this.mesh = new Mesh(geometry, createSolidMaterial({
-      color: 0xDBFFD9,
+      color: SKETCH_LOOP_DEFAULT_HIGHLIGHT_COLOR,
       side: DoubleSide,
+      // transparent: true,
+      depthTest: true,
+      depthWrite: false,
       polygonOffset: true,
-      polygonOffsetFactor: 1,
-      polygonOffsetUnits: 0.1,
+      polygonOffsetFactor: -4,
       visible: false
     }));
     let surface = mLoop.face.surface;
@@ -44,21 +46,26 @@ export class SketchLoopView extends View {
 
     this.rootGroup.add(this.mesh);
     this.mesh.onMouseEnter = (e) => {
-      this.mesh.material.visible = true;
+      this.mark(SKETCH_LOOP_DEFAULT_HIGHLIGHT_COLOR, 5);
       e.viewer.requestRender();
     };
     this.mesh.onMouseLeave = (e) => {
-      this.mesh.material.visible = false;
+      this.withdraw(5);
       e.viewer.requestRender();
     };
   }
 
-  mark(color) {
-    
+  mark(color = SKETCH_LOOP_DEFAULT_SELECT_COLOR, priority = 10) {
+    super.mark(color, priority);
+  }
+  
+  markImpl(color) {
+    this.mesh.material.visible = true;
+    this.mesh.material.color.setHex(color)
   }
 
-  withdraw(color) {
-    
+  withdrawImpl() {
+    this.mesh.material.visible = false;
   }
 
   dispose() {
@@ -67,3 +74,6 @@ export class SketchLoopView extends View {
     super.dispose();
   }
 }
+
+const SKETCH_LOOP_DEFAULT_HIGHLIGHT_COLOR = 0xDBFFD9;
+const SKETCH_LOOP_DEFAULT_SELECT_COLOR = 0xCCEFCA;
