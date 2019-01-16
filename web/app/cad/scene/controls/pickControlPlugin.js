@@ -174,6 +174,9 @@ export function activate(context) {
     for (let i = 0; i < pickResults.length; i++) {
       const pickResult = pickResults[i];
       for (let picker of pickers) {
+        if (pickResult.object && pickResult.object.passRayCast && pickResult.object.passRayCast(pickResults)) {
+          // continue;
+        }
         if (picker(pickResult)) {
           return;
         }
