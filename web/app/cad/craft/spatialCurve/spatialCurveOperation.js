@@ -1,11 +1,8 @@
 import CSys from '../../../math/csys';
 import {MDatum} from '../../model/mdatum';
-import DatumObject3D from '../datum/datumObject';
-import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
-import SpatialCurveOpSchema from './SpatialCurveOpSchema';
+
 import spatialCurveOpSchema from './spatialCurveOpSchema';
 import SpatialCurveWizard from './SpatialCurveWizard';
-import ControlPointObject3D from './editor/controlPointObject';
 import spatialCurveEditor from './editor/spatialCurveEditor';
 
 function updateCSys(csys, params, findFace) {
