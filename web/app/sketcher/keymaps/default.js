@@ -1,7 +1,7 @@
 export const keymap = {
-  'save': 'ctrl+S',
-  'open': 'ctrl+O',
-  'new' : 'ctrl+N',
+  'save': 'ctrl+s',
+  'open': 'ctrl+o',
+  'new' : 'ctrl+n',
   'terminal': '`',
   'info': 'F1'
 }; 
