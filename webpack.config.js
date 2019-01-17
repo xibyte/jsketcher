@@ -64,10 +64,6 @@ module.exports = {
     {
       test: /\.html$/,
       use: 'handlebars-loader?helperDirs[]=' + __dirname + '/web/app/ui/helpers'
-    },
-    {
-      test: /\.json$/,
-      use: 'json-loader'      
     }]
   },
   devServer: {
