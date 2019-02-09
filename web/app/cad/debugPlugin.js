@@ -10,7 +10,7 @@ import {toLoops} from '../brep/io/brepLoopsFormat';
 import {contributeComponent} from './dom/components/ContributedComponents';
 import BrepDebuggerWindow, {BREP_DEBUG_WINDOW_VISIBLE} from '../brep/debug/debugger/BrepDebuggerWindow';
 import curveTess from '../brep/geom/impl/curve/curve-tess';
-import {DEBUG_FLAGS} from './debugFlags';
+import {LOG_FLAGS} from './logFlags';
 
 
 export function activate({bus, services, streams}) {
@@ -19,7 +19,7 @@ export function activate({bus, services, streams}) {
   services.action.registerActions(DebugActions);
   services.menu.registerMenus([DebugMenuConfig]);
   services.debug = {
-    FLAGS: DEBUG_FLAGS  
+    LOG_FLAGS  
   };
   streams.ui.controlBars.left.update(actions => [...actions, 'menu.debug']);
   
