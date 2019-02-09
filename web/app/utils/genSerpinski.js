@@ -1,6 +1,6 @@
 import Vector from '../../../modules/math/vector';
 
-export default function genSerpinski(app) {
+export default function genSerpinski(viewer) {
   function serpinskiStep(a, b) {
     a = new Vector().setV(a);
     b = new Vector().setV(b);
@@ -26,11 +26,11 @@ export default function genSerpinski(app) {
 
   function addLineOnScene(line) {
     let [a, b] = line;
-    app.viewer.addSegment(a.x, a.y, b.x, b.y, app.viewer.activeLayer)
+    viewer.addSegment(a.x, a.y, b.x, b.y, viewer.activeLayer)
   }
 
 
-  let [line] = app.viewer.selected;
+  let [line] = viewer.selected;
 
   function generate(a, b, depth) {
     let lines = serpinskiStep(a, b);
@@ -50,6 +50,6 @@ export default function genSerpinski(app) {
 
   lines.forEach(l => addLineOnScene(l));
 
-  app.viewer.remove(line);
-  app.viewer.refresh();
+  viewer.remove(line);
+  viewer.refresh();
 }
