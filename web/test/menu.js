@@ -11,7 +11,7 @@ export class Menu {
       .on('click', (e) => this.popup.hide())
       .on('contextmenu', (e) => {
         const target = $(e.target).closest('.right-click-menu');
-        if (target.length == 0) return true;
+        if (target.length === 0) return true;
         return this.onShowMenu(e, target);
       });
   }

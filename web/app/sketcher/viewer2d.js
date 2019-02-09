@@ -85,6 +85,10 @@ Viewer.prototype.dispose = function() {
   this.toolManager.dispose();
 };
 
+Viewer.prototype.isDisposed = function() {
+  return this.canvas === null;
+};
+
 Viewer.prototype.setTransformation = function(a, b, c, d, e, f, zoom) {
   this.transformation = [a, b, c, d, e, f];
   this.scale = zoom;
@@ -190,9 +194,11 @@ Viewer.prototype._createServiceLayers = function() {
 };
 
 Viewer.prototype.refresh = function() {
-  var viewer = this;
-  window.requestAnimationFrame( function() {
-    viewer.repaint();     
+  const viewer = this;
+  window.requestAnimationFrame(function() {
+    if (!viewer.isDisposed()) {
+      viewer.repaint();
+    }
   });  
 };
 

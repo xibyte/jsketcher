@@ -72,6 +72,10 @@ export class MFace extends MObject {
     }
   }
   
+  get defaultSketchId() {
+    return this.id;
+  }
+
   setSketch(sketch) {
     
     if (!this.isPlaneBased) {

@@ -72,6 +72,7 @@ export function readSketchContour(contour, face) {
       ab = ab.map(v => tr.apply(v).data());
       path.push({TYPE: CURVE_TYPES.SEGMENT, a: ab[0], b: ab[1]});
     }
+    path[path.length - 1].id = s.id;
   });
   return path;
 }
