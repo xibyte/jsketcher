@@ -1,5 +1,6 @@
 import {setSketchPrecision} from './sketch/sketchReader';
 import {runSandbox} from './sandbox';
+import {LOG_FLAGS} from './logFlags';
 
 export const STORAGE_GLOBAL_PREFIX = 'TCAD';
 const STORAGE_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
@@ -96,11 +97,18 @@ function parseHints(hints) {
   return [id, params];
 }
 
-function processParams({sketchPrecision, sandbox}, context) {
-  if (sketchPrecision) {
+function processParams(params, context) {
+  if (params.sketchPrecision) {
     setSketchPrecision(parseInt(sketchPrecision));
   }  
-  if (sandbox) {
+  if (params.sandbox) {
     setTimeout(() => runSandbox(context));
   }
+  
+  const DEBUG_FLAGS_PREFIX = "DEBUG.";
+  Object.keys(params).forEach(key => {
+    if (key.startsWith(DEBUG_FLAGS_PREFIX)) {
+      LOG_FLAGS[key.substring(DEBUG_FLAGS_PREFIX.length)] = true
+    }
+  })
 }

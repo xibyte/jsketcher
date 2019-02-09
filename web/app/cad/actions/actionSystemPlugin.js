@@ -1,6 +1,6 @@
 import {enableAnonymousActionHint} from './anonHint';
 import * as stream from 'lstream';
-import {DEBUG_FLAGS} from '../debugFlags';
+import {LOG_FLAGS} from '../logFlags';
 
 export function activate(context) {
   
@@ -24,7 +24,7 @@ export function activate(context) {
       return;
     } 
     if (state.enabled) {
-      if (DEBUG_FLAGS.ACTION_RUN) {
+      if (LOG_FLAGS.ACTION_RUN) {
         console.log("RUNNING ACTION: " + id);
       }
       runner(context, data);

@@ -1,6 +1,7 @@
 import * as mask from 'gems/mask'
 import {getAttribute, setAttribute} from 'scene/objectData';
 import {FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL, DATUM_AXIS, LOOP} from '../entites';
+import {LOG_FLAGS} from '../../logFlags';
 
 export const PICK_KIND = {
   FACE: mask.type(1),
@@ -23,7 +24,10 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
 export function activate(context) {
   const {services, streams} = context;
 
-  const defaultHandler = (model, event) => {
+  const defaultHandler = (model, event, rayCastData) => {
+    if (LOG_FLAGS.PICK) {
+      printPickInfo(model, rayCastData);
+    }
     const type = model.TYPE;
     let selectionMode = DEFAULT_SELECTION_MODE;
     let modelId = model.id;
@@ -129,7 +133,7 @@ export function activate(context) {
         if (mask.is(kind, PICK_KIND.SKETCH)) {
           let sketchObjectV = getAttribute(pickResult.object, SKETCH_OBJECT);
           if (sketchObjectV) {
-            return !visitor(sketchObjectV.model, event);
+            return !visitor(sketchObjectV.model, event, pickResult);
           }
         }
         return false;
@@ -138,7 +142,7 @@ export function activate(context) {
         if (mask.is(kind, PICK_KIND.EDGE)) {
           let edgeV = getAttribute(pickResult.object, EDGE);
           if (edgeV) {
-            return !visitor(edgeV.model, event);
+            return !visitor(edgeV.model, event, pickResult);
           }
         }
         return false;
@@ -147,7 +151,7 @@ export function activate(context) {
         if (mask.is(kind, PICK_KIND.LOOP) && !!pickResult.face) {
           let faceV = getAttribute(pickResult.face, LOOP);
           if (faceV) {
-            return !visitor(faceV.model, event);
+            return !visitor(faceV.model, event, pickResult);
           }
         }
         return false;
@@ -156,7 +160,7 @@ export function activate(context) {
         if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face) {
           let faceV = getAttribute(pickResult.face, FACE);
           if (faceV) {
-            return !visitor(faceV.model, event);
+            return !visitor(faceV.model, event, pickResult);
           }
         }
         return false;
@@ -165,7 +169,7 @@ export function activate(context) {
         if (mask.is(kind, PICK_KIND.DATUM_AXIS)) {
           let datumAxisV = getAttribute(pickResult.object, DATUM_AXIS);
           if (datumAxisV) {
-            return !visitor(datumAxisV.model, event);
+            return !visitor(datumAxisV.model, event, pickResult);
           }
         }
         return false;
@@ -186,4 +190,11 @@ export function activate(context) {
   services.pickControl = {
     setPickHandler, deselectAll, pick
   };
+}
+
+function printPickInfo(model, rayCastData) {
+  console.log("PICKED MODEL:");
+  console.dir(model);
+  console.log("PICK RAYCAST INFO:");
+  console.dir(rayCastData);
 }
