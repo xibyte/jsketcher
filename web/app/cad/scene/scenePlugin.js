@@ -24,3 +24,7 @@ export function activate({streams, services}) {
   // services.viewer.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
   
 }
+
+export function dispose(ctx) {
+  ctx.services.viewer.dispose();
+}

@@ -46,6 +46,14 @@ export function addSegment(app, aX, aY, bX, bY) {
   return segment;
 }
 
+export function addSegmentInModel(app, aX, aY, bX, bY) {
+  
+  [aX, aY] = modelToScreen(app.viewer, aX, aY);
+  [bX, bY] = modelToScreen(app.viewer, bX, bY);
+
+  return addSegment(app, aX, aY, bX, bY);
+}
+
 export function polyLine(app) {
   app.actions['addMultiSegment'].action();
   const tool = app.viewer.toolManager.tool;
@@ -79,4 +87,13 @@ export class TestSegment {
   add(app) {
     return addSegment(app, this.a.x, this.a.y, this.b.x, this.b.y);
   }
+}
+
+function modelToScreen(viewer, x, y) {
+
+  let modelToScreenMx = viewer.screenToModelMatrix.invert();
+  [x, y] = modelToScreenMx.apply3([x, y, 0]);
+  x /= viewer.retinaPxielRatio;
+  y = (viewer.canvas.height - y) / viewer.retinaPxielRatio;
+  return [x, y];
 }

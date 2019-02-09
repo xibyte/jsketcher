@@ -38,5 +38,6 @@ export default {
   },
   math: {
     vec
-  }
+  },
+  THREE: THREE
 }

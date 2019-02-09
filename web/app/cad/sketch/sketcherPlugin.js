@@ -23,8 +23,10 @@ export function activate(ctx) {
     if (evt.key.indexOf(prefix) < 0) return;
     let sketchFaceId = evt.key.substring(prefix.length);
     let sketchFace = services.cadRegistry.findFace(sketchFaceId);
-    updateSketchForFace(sketchFace);
-    services.viewer.requestRender();
+    if (sketchFace) {
+      updateSketchForFace(sketchFace);
+      services.viewer.requestRender();
+    }
   };
   
   services.storage.addListener(onSketchUpdate);
@@ -70,7 +72,7 @@ export function activate(ctx) {
   }
 
   function updateSketchForFace(mFace) {
-    let sketch = readSketch(mFace.id);
+    let sketch = readSketch(mFace.defaultSketchId);
     mFace.setSketch(sketch);
     streams.sketcher.update.next(mFace);
   }

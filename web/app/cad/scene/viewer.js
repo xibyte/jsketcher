@@ -58,6 +58,10 @@ export default class Viewer {
       this.setCameraMode(CAMERA_MODE.PERSPECTIVE);
     }
   }
+  
+  dispose() {
+    this.sceneSetup.renderer.dispose();
+  }
 }
 
 export const CAMERA_MODE = {

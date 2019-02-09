@@ -23,6 +23,7 @@ export function readBrep(data) {
       format: 'verbose',
       data: normalizeTesselationData(faceData.tess, inverted, faceData.surface.normal)
     };
+    bb._face.data.productionInfo = faceData.productionInfo;
     if (faceData.ref !== undefined) {
       bb._face.data.externals = {
         ref: faceData.ref

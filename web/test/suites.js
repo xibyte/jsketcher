@@ -1,3 +1,6 @@
+import * as test from './test';
+import * as modes from './modes';
+
 export default {
   SketcherObjects: [
     TestCase('segment'),
@@ -20,7 +23,8 @@ export default {
   ],
 
   Craft: [
-    TestCase('craft'),
+    TestCase('craftPlane'),
+    TestCase('craftExtrude'),
   ],
 
   BREP: [
@@ -36,11 +40,22 @@ export default {
 };
 
 function TestCase(name) {
-  let tests = require('./cases/' + name).default;
-  tests = Object.keys(tests).filter(key => key.startsWith('test')).map(key => ({
-    name: key,
-    func: tests[key]
-  }));
+  let testModule = require('./cases/' + name);
+  let tests;
+  function registerTests(testsHolder, helperWrapper) {
+    tests = testsHolder;
+    tests = Object.keys(tests).filter(key => key.startsWith('test')).map(key => ({
+      name: key,
+      func: helperWrapper(tests[key])
+    }));
+
+  }
+  let mode = modes[testModule.TEST_MODE];
+  if (mode) {
+    registerTests(testModule, mode);
+  } else {
+    registerTests(testModule.default, func => env => func(env));
+  }
   return {
     name, tests
   }

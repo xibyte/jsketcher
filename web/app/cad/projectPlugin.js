@@ -9,9 +9,9 @@ export function activate(context) {
 
   const {streams, services} = context;
   
-  const [id, params] = parseHintsFromLocation();
+  const [id, hints] = parseHintsFromLocation();
 
-  processParams(params, context);
+  processParams(hints, context);
 
   const sketchNamespace = id + '.sketch.'; 
   const sketchStorageNamespace = STORAGE_PREFIX + sketchNamespace;
@@ -40,20 +40,33 @@ export function activate(context) {
       let dataStr = services.storage.get(services.project.projectStorageKey());
       if (dataStr) {
         let data = JSON.parse(dataStr);
-        if (data.history) {
-          services.craft.reset(data.history);
-        }
-        if (data.expressions) {
-          services.expressions.load(data.expressions);
-        }
+        loadData(data);
       }
     } catch (e) {
       console.error(e);
     }
   }
-  
+
+
+  function loadData(data) {
+    if (data.history) {
+      services.craft.reset(data.history);
+    }
+    if (data.expressions) {
+      services.expressions.load(data.expressions);
+    }
+  }
+
+  function empty() {
+    loadData({
+      history: [],
+      expressions: ""
+    });
+  }
+
   services.project = {
-    id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load
+    id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, empty,
+    hints
   }
 }
 

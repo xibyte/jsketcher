@@ -6,6 +6,7 @@ import * as math from '../../math/math'
 import {HashTable} from '../../utils/hashmap'
 import {Constraints} from '../../sketcher/parametric';
 import Joints from '../../../../modules/gems/joints';
+import sketchObjectGlobalId from './sketchObjectGlobalId';
 
 class SketchGeom {
 
@@ -43,9 +44,7 @@ class SketchGeom {
 }
 
 export function ReadSketch(sketch, sketchId, readConstructionSegments) {
-  function getID(obj) {
-    return sketchId + "/" + obj.id;
-  }
+  const getID = obj => sketchObjectGlobalId(sketchId, obj.id);
   const out = new SketchGeom();
 
   let coiJoints = new Joints();

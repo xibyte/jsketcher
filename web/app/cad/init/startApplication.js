@@ -71,6 +71,7 @@ export default function startApplication(callback) {
   ];
   
   let allPlugins = [...preUIPlugins, ...plugins];
+  context.services.plugin = createPluginService(allPlugins, context);
 
   defineStreams(allPlugins, context);
   
@@ -98,3 +99,16 @@ export function activatePlugins(plugins, context) {
   }
 }
 
+function createPluginService(plugins, context) {
+  function disposePlugins() {
+    for (let plugin of plugins) {
+      if (plugin.dispose) {
+        plugin.dispose(context);
+      }
+    }
+  }
+
+  return {
+    disposePlugins
+  };
+}
