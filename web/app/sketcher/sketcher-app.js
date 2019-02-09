@@ -277,7 +277,7 @@ function App2D() {
   });
 
   this.registerAction('genSerpinski', "Generate Serpinki Triangle off of a segment", function () {
-    genSerpinski(app);
+    genSerpinski(app.viewer);
   });
 
 }
