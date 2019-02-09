@@ -52,18 +52,18 @@ export class TestEnv {
     }
   }
 
-  testTPI(testBlock) {
-    return this.test(function(win, app) {
-      testBlock(app.TPI);
-    });
-  }
-
   assertTrue(stmt, msg) {
     if (!stmt) {
       this.fail('assertTrue fails.', msg);
     }
   }
-  
+
+  assertEmpty(array, msg) {
+    if (array.length !== 0) {
+      this.fail('assertEmpty fails. Array length = ' + array.length, msg);
+    }
+  }
+
   assertFalse(stmt, msg) {
     if (stmt) {
       this.fail('assertFalse fails.', msg);
@@ -95,7 +95,7 @@ export class TestEnv {
   assertData(expected, actual) {
     const expectedJSON = JSON.stringify(expected).replace(/\s/g, '');
     const actualJSON = JSON.stringify(actual).replace(/\s/g, '');
-    if (actualJSON != expectedJSON) {
+    if (actualJSON !== expectedJSON) {
       console.log('EXPECTED:');
       console.log(this.prettyJSON(expected));
       console.log('ACTUAL:');
@@ -141,7 +141,7 @@ function checkSimilarity(data1, data2) {
   const info1 = info(data1);
   const info2 = info(data2);
   console.log(info1 + " : " + info2);
-  return info1 == info2; 
+  return info1 === info2; 
 
 }
 
@@ -174,8 +174,22 @@ export function sketch(callback) {
   load('/sketcher.html#' + TEST_PROJECT, callback, SKETCHER_API);
 }
 
+let ModellerWin = null;
 export function modeller(callback) {
-  load('/index.html#' + TEST_PROJECT, callback, MODELLER_API);
+  if (ModellerWin != null) {
+    ModellerWin.__CAD_APP.services.project.empty();
+    callback(ModellerWin, MODELLER_API(ModellerWin));
+    return;
+  }
+  load('/index.html#' + TEST_PROJECT, (win, api) => {
+    ModellerWin = win;
+    let ctx = win.__CAD_APP;
+    ctx.streams.lifecycle.projectLoaded.attach(loaded => {
+      if (loaded) {
+        callback(win, api);
+      }
+    })
+  }, MODELLER_API);
 }
 
 export function emptyModeller(callback) {

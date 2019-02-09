@@ -4,17 +4,19 @@ body {
 }
 
 #sandbox {
+  position: fixed;
   border: 3px plum solid;
   box-sizing: border-box;
-  width: 100%;
-  height: 60%;
+  right: 0;
+  bottom: 0;
+  height: 40%;
+  max-height: 500px;
+  width: 40%;
+  max-width: 500px;
   background-color: #233930;
 }
 
 #test-list {
-  width: 100%;
-  height: ~"calc(40% - 22px)";
-  overflow-y: scroll;
 }
 
 #sandbox iframe {
