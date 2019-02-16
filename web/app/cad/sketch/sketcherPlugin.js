@@ -123,6 +123,13 @@ export function activate(ctx) {
   }
   
   streams.craft.models.attach(updateAllSketches);
+  streams.craft.models.attach(() => {
+    if (inPlaceEditor.inEditMode) {
+      if (!inPlaceEditor.face.ext.view) {
+        inPlaceEditor.exit();
+      }
+    }
+  });
   
   services.sketcher = {
     sketchFace, sketchFace2D, updateAllSketches, getAllSketches, readSketch, hasSketch, inPlaceEditor, reassignSketch,
