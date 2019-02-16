@@ -2,6 +2,13 @@ import * as test from './test';
 import * as modes from './modes';
 
 export default {
+
+  Craft: [
+    TestCase('craftPlane'),
+    TestCase('craftExtrudeBasicShapes'),
+    TestCase('craftExtrudeOptions'),
+  ],
+
   SketcherObjects: [
     TestCase('segment'),
     TestCase('arc'),
@@ -20,11 +27,6 @@ export default {
   
   Sketcher: [
 
-  ],
-
-  Craft: [
-    TestCase('craftPlane'),
-    TestCase('craftExtrude'),
   ],
 
   BREP: [

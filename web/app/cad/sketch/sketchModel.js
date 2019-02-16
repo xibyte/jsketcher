@@ -146,6 +146,10 @@ export class BezierCurve extends SketchPrimitive {
   tessellateImpl(resolution) {
     return LUT(this.a, this.b, this.cp1, this.cp2, 10);
   }
+
+  toVerbNurbs(tr) {
+    return new verb.geom.BezierCurve([tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()], null);
+  }
 }
 
 export class EllipticalArc extends SketchPrimitive {
