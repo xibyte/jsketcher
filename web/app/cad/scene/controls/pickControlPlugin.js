@@ -197,4 +197,6 @@ function printPickInfo(model, rayCastData) {
   console.dir(model);
   console.log("PICK RAYCAST INFO:");
   console.dir(rayCastData);
+  let pt = rayCastData.point;
+  console.log('POINT: ' + pt.x + ', ' + pt.y + ',' + pt.z);
 }
