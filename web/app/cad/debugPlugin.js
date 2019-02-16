@@ -19,7 +19,8 @@ export function activate({bus, services, streams}) {
   services.action.registerActions(DebugActions);
   services.menu.registerMenus([DebugMenuConfig]);
   services.debug = {
-    LOG_FLAGS  
+    LOG_FLAGS,
+    utils: window.__DEBUG__
   };
   streams.ui.controlBars.left.update(actions => [...actions, 'menu.debug']);
   
