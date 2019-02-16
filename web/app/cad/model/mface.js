@@ -5,7 +5,7 @@ import {MSketchObject} from './msketchObject';
 import {EMPTY_ARRAY} from 'gems/iterables';
 import CSys from '../../math/csys';
 import {MSketchLoop} from './mloop';
-import {sketchObjects} from '../../sketcher/fetchers';
+import {ProductionInfo} from './productionInfo';
 
 export class MFace extends MObject {
 
@@ -137,6 +137,14 @@ export class MFace extends MObject {
       this._worldToSketchTransformation = this.csys.inTransformation;
     }
     return this._worldToSketchTransformation;
+  }
+  
+  get productionInfo() {
+    if (this._productionInfo === undefined) {
+      this._productionInfo = !this.brepFace.data.productionInfo ? null :
+        ProductionInfo.fromRawData(this.brepFace.data.productionInfo);
+    }
+    return this._productionInfo;
   }
 }
 
