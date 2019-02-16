@@ -48,7 +48,9 @@ export class InPlaceSketcher {
   }
 
   exit() {
-    this.face.ext.view.sketchGroup.visible = true;
+    if (this.face.ext.view) {
+      this.face.ext.view.sketchGroup.visible = true;
+    }
     let viewer3d = this.ctx.services.viewer;
     viewer3d.sceneSetup.trackballControls.removeEventListener( 'change', this.onCameraChange);
     this.face = null;
