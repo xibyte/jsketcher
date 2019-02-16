@@ -35,6 +35,9 @@ function EdgeSection({edge}) {
 
 function FaceSection({face}) {
   return <ModelSection type='face' model={face} key={face.id}>
+
+    {(face.productionInfo && face.productionInfo.role) && <Section label={<span>role: {face.productionInfo.role}</span>} />}
+    {(face.productionInfo && face.productionInfo.originatedFromPrimitive) && <Section label={<span>origin: {face.productionInfo.originatedFromPrimitive}</span>} />}
     <Section label={face.sketchObjects.length ? 'sketch' : <span className={ls.hint}>{'<no sketch assigned>'}</span>}>
       {face.sketchObjects.map(o => <div key={o.id}>{o.id + ':' + o.sketchPrimitive.constructor.name}</div>)}
     </Section>
