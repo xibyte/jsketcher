@@ -141,9 +141,9 @@ function findClosedContoursFromPairedCurves(segments, result) {
   for (let i = 0; i < segments.length; i++) {
     const s1 = segments[i];
     for (let j = i; j < segments.length; j++) {
-      if (i == j) continue;
+      if (i === j) continue;
       const s2 = segments[j];
-      if (s1.isCurve && s2.isCurve) {
+      if (s1.isCurve || s2.isCurve) {
         let paired = false;
         if (math.strictEqual2D(s1.a, s2.a) && math.strictEqual2D(s1.b, s2.b)) {
           paired = true;
