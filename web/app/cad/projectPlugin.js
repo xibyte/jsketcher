@@ -105,10 +105,10 @@ function processParams(params, context) {
     setTimeout(() => runSandbox(context));
   }
   
-  const DEBUG_FLAGS_PREFIX = "DEBUG.";
+  const LOG_FLAGS_PREFIX = "LOG.";
   Object.keys(params).forEach(key => {
-    if (key.startsWith(DEBUG_FLAGS_PREFIX)) {
-      LOG_FLAGS[key.substring(DEBUG_FLAGS_PREFIX.length)] = true
+    if (key.startsWith(LOG_FLAGS_PREFIX)) {
+      LOG_FLAGS[key.substring(LOG_FLAGS_PREFIX.length)] = true
     }
   })
 }
