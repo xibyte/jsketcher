@@ -1,4 +1,5 @@
 import {FailError} from '../test';
+import sketchObjectGlobalId from '../../app/cad/sketch/sketchObjectGlobalId';
 
 export function fail(msg, optionalMsg) {
   throw new FailError(msg + (optionalMsg === undefined ? '' : ' ' + optionalMsg));
@@ -46,4 +47,13 @@ export function assertPoint2DEquals(expected, actial, msg) {
 
 export function assertFaceIsPlane(face) {
   assertTrue(face.shell.surfacePrototype !== undefined);
+}
+
+export function assertFaceOrigination(face, sketchId, primitiveId) {
+  assertEquals(sketchObjectGlobalId(sketchId, primitiveId), 
+    face.productionInfo.originatedFromPrimitive);
+}
+
+export function assertFaceRole(face, expectedRole) {
+  assertEquals(expectedRole, face.productionInfo.role);
 }

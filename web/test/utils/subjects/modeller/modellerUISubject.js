@@ -1,4 +1,3 @@
-import {TestMouseEvent} from '../../mouse-event';
 import {getAttribute} from '../../../../../modules/scene/objectData';
 import {FACE} from '../../../../app/cad/scene/entites';
 import {createSubjectFromInPlaceSketcher} from './sketcherUISubject';
@@ -71,11 +70,20 @@ export default ctx => {
     ctx.services.action.run('sketchSaveAndExit');
   }
   
+  function createPlaneAndOpenSketcher() {
+    openWizard('PLANE');
+    wizardOK();
+    selectFaces([0, 0, -10], [0, 0, 10]);
+    return openSketcher();
+  }
+  
   return {
     context: ctx,
     openWizard, wizardOK, sceneMouseEvent, clickOnScene, 
     rayCastFaces, selectFaces, openSketcher, commitSketch,
-    get wizardContext() { return getWizardContext()}
+    get wizardContext() { return getWizardContext()},
+    createPlaneAndOpenSketcher,
+    __DEBUG__: ctx.services.debug.utils
   };
 }
 
