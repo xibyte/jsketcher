@@ -249,6 +249,13 @@ export class Ellipse extends SketchPrimitive {
   tessellateImpl(resolution) {
     return EllipticalArc.tessEllipticalArc(this.ep1, this.ep2, this.ep1, this.ep1, this.r, resolution);
   }
+
+  toVerbNurbs(tr) {
+    const xAxis = this.ep2.minus(this.ep1)._multiply(0.5);
+    const yAxis = new Vector(xAxis.y, xAxis.x)._normalize()._multiply(this.r) ;
+    const center = this.ep1.plus(xAxis);
+    return new verb.geom.Ellipse(tr(center).data(), tr(xAxis).data(), tr(yAxis).data());
+  }
 }
 
 export class Contour {
