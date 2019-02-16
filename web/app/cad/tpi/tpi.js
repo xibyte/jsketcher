@@ -15,6 +15,7 @@ import {Plane} from '../../brep/geom/impl/plane';
 import pip from '../tess/pip';
 import {readShellEntityFromJson} from '../scene/wrappers/entityIO';
 import * as vec from '../../math/vec'
+import NurbsSurface from '../../brep/geom/surfaces/nurbsSurface';
 
 
 export default {
@@ -26,7 +27,9 @@ export default {
     pip,
     validator: BREPValidator,
     geom: {
-      Point, BrepCurve, Plane, createBoundingSurface
+      Point, BrepCurve, 
+      Plane, createBoundingSurface,
+      NurbsSurface
     },
     topo: {
       Edge, Loop, Face, Shell, Vertex
