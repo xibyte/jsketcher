@@ -1,6 +1,9 @@
-import {getAttribute} from '../../../../../modules/scene/objectData';
-import {FACE} from '../../../../app/cad/scene/entites';
 import {createSubjectFromInPlaceSketcher} from './sketcherUISubject';
+import {
+  ALL_EXCLUDING_SOLID_KINDS,
+  PICK_KIND,
+  traversePickResults
+} from '../../../../app/cad/scene/controls/pickControlPlugin';
 
 export default ctx => {
 
@@ -24,37 +27,25 @@ export default ctx => {
     sceneMouseEvent('mouseup', x, y);
   }
 
-  function rayCast(from3, to3) {
-    const THREE = ctx.services.tpi.THREE;
-    let raycaster = new THREE.Raycaster();
-    let from = new THREE.Vector3().fromArray(from3);
-    let to = new THREE.Vector3().fromArray(to3);
-    let dir = to.sub(from);
-    let dist = dir.length();
-    raycaster.set(from, dir.normalize());
-    return raycaster.intersectObjects( ctx.services.cadScene.workGroup.children, true ).filter(h => h.distance <= dist);
-  }
-
   function rayCastFaces(from, to) {
-    let models = rayCast(from, to).map(h => {
-      if (h.face) {
-        let faceV = getAttribute(h.face, FACE);
-        if (faceV && faceV.model) {
-          return faceV.model;
-        }
-      }
-    });
+    let rawObjects = ctx.services.viewer.customRaycast(from, to, ctx.services.cadScene.workGroup.children);
+    let faces = [];
+    traversePickResults(null, rawObjects, PICK_KIND.FACE, face => faces.push(face));
     let out = [];
-    models.forEach(m => {
-      if (!!m && !out.includes(m)) {
-        out.push(m);
+    faces.forEach(face => {
+      if (!out.includes(face)) {
+        out.push(face);
       }
     });
     return out;
   }
 
   function selectFaces(from, to) {
-    rayCastFaces(from, to).forEach(face => ctx.services.pickControl.pick(face));
+    ctx.services.pickControl.pickFromRay(from, to, PICK_KIND.FACE);
+  }
+  
+  function select(from, to) {
+    ctx.services.pickControl.pickFromRay(from, to, ALL_EXCLUDING_SOLID_KINDS);
   }
 
   function getWizardContext() {
@@ -70,19 +61,11 @@ export default ctx => {
     ctx.services.action.run('sketchSaveAndExit');
   }
   
-  function createPlaneAndOpenSketcher() {
-    openWizard('PLANE');
-    wizardOK();
-    selectFaces([0, 0, -10], [0, 0, 10]);
-    return openSketcher();
-  }
-  
   return {
     context: ctx,
     openWizard, wizardOK, sceneMouseEvent, clickOnScene, 
-    rayCastFaces, selectFaces, openSketcher, commitSketch,
+    rayCastFaces, select, selectFaces, openSketcher, commitSketch,
     get wizardContext() { return getWizardContext()},
-    createPlaneAndOpenSketcher,
     __DEBUG__: ctx.services.debug.utils
   };
 }
