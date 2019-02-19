@@ -2,9 +2,7 @@ export default {
   sections: {
     type: 'array',
     itemType: 'loop',
-    defaultValue: {
-      type: 'selection',
-    }
+    initializeBySelection: true
   },
   boolean: {
     type: 'enum',

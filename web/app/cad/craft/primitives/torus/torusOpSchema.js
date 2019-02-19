@@ -4,7 +4,7 @@ export default {
   datum: {
     type: 'datum',
     optional: true,
-    defaultValue: {type: 'selection'}
+    initializeBySelection: 0
   },
   radius: {
     type: 'number',

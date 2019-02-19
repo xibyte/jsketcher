@@ -1,7 +1,7 @@
 export default {
   datum: {
     type: 'datum',
-    defaultValue: {type: 'selection'}
+    initializeBySelection: 0
   },
   axis: {
     type: 'enum',

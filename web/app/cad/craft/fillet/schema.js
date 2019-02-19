@@ -2,9 +2,7 @@ export default {
   edges: {
     type: 'array',
     itemType: 'edge',
-    defaultValue: {
-      type: 'selection',
-    }
+    initializeBySelection: true
   },
   thickness: {
     type: 'number',

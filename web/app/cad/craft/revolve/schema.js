@@ -5,11 +5,11 @@ export default {
   },
   face: {
     type: 'face',
-    defaultValue: {type: 'selection'}
+    initializeBySelection: 0
   },
   axis: {
     type: 'sketchObject',
-    defaultValue: {type: 'selection'}
+    initializeBySelection: 0
   },
   boolean: {
     type: 'enum',

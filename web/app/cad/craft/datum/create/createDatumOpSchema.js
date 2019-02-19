@@ -1,7 +1,7 @@
 export default {
   originatingFace: {
     type: 'face',
-    defaultValue: {type: 'selection'},
+    initializeBySelection: 0,
     optional: true
   },
   x: {
