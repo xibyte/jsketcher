@@ -2,7 +2,8 @@ export default {
   sections: {
     type: 'array',
     itemType: 'loop',
-    initializeBySelection: true
+    initializeBySelection: true,
+    min: 2
   },
   boolean: {
     type: 'enum',
