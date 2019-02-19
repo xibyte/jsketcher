@@ -177,6 +177,16 @@ export default class SceneSetUp {
     return raycaster.intersectObjects( objects, true );
   }
 
+  customRaycast(from3, to3, objects) {
+    let raycaster = new THREE.Raycaster();
+    let from = new THREE.Vector3().fromArray(from3);
+    let to = new THREE.Vector3().fromArray(to3);
+    let dir = to.sub(from);
+    let dist = dir.length();
+    raycaster.set(from, dir.normalize());
+    return raycaster.intersectObjects(objects, true ).filter(h => h.distance <= dist);
+  }
+  
   modelToScreen(pos) {
     let width = this.container.clientWidth, height = this.container.clientHeight;
     let widthHalf = width / 2, heightHalf = height / 2;
