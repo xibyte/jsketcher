@@ -7,7 +7,7 @@ export function testCutMid(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(-50, -50, 50, 50);
+  sui.addRectangle(-50, -50, 50, 50);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -22,7 +22,7 @@ export function testCutCOI1Faces(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, 0, 80, 100);
+  sui.addRectangle(0, 0, 80, 100);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -37,7 +37,7 @@ export function testCutCOI2Faces(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, 0, 100, 100);
+  sui.addRectangle(0, 0, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -52,7 +52,7 @@ export function testCutCOI3Faces(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, -100, 100, 100);
+  sui.addRectangle(0, -100, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -67,7 +67,7 @@ export function testCutCOI4Faces(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(-100, -100, 100, 100);
+  sui.addRectangle(-100, -100, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -84,7 +84,7 @@ export function testCutMidAllWay(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(-50, -50, 50, 50);
+  sui.addRectangle(-50, -50, 50, 50);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -99,7 +99,7 @@ export function testCutCOI1FacesAllWay(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, 0, 80, 100);
+  sui.addRectangle(0, 0, 80, 100);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -114,7 +114,7 @@ export function testCutCOI2FacesAllWay(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, 0, 100, 100);
+  sui.addRectangle(0, 0, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -129,7 +129,7 @@ export function testCutCOI3FacesAllWay(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, -100, 100, 100);
+  sui.addRectangle(0, -100, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('CUT');
@@ -144,7 +144,7 @@ export function testCutCOI4FacesAllWay(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(-100, -100, 100, 100);
+  sui.addRectangle(-100, -100, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('CUT');

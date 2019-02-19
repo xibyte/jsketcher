@@ -6,7 +6,7 @@ export const TEST_MODE = 'modellerUI';
 export function testExtrudePrism(env, ui) {
   let sketcherUI = createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
-  let [S1, S2, S3, S4] = sketcherUI.addPolygon(-100, -100, 100, 100);
+  let [S1, S2, S3, S4] = sketcherUI.addRectangle(-100, -100, 100, 100);
   
   // let gauge = ui.prismSurfaceGauge([-100, -100, 0], [100, -100, 0], [50, 50, 0], [-50, 50, 0] );
   //
