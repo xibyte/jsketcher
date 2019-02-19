@@ -62,6 +62,13 @@ export default function materializeParams(services, params, schema, result, erro
       } else if (md.type === 'array') {
         if (!Array.isArray(value)) {
           errors.push({path: [...parentPath, field], message: 'not an array type'});
+          continue;
+        }
+        if (md.min !== undefined && value.length < md.min) {
+          errors.push({path: [...parentPath, field], message: 'required minimum ' + md.min + ' elements'});
+        }
+        if (md.max !== undefined && value.length > md.max) {
+          errors.push({path: [...parentPath, field], message: 'required maximum ' + md.max + ' elements'});
         }
         if (md.itemType === 'object') {
           value = value.map((item , i) => {
