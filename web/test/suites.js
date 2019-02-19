@@ -13,6 +13,7 @@ export default {
     TestCase('craftFillet'),
     TestCase('craftLoft'),
     TestCase('craftDatum'),
+    TestCase('craftBoolean'),
   ],
 
   SketcherObjects: [
