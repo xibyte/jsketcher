@@ -19,15 +19,6 @@ function initializeSketcherApplication() {
   app.loadFromLocalStorage();
   app.fit();
 
-  function addLayer(name, style) {
-    if (app.viewer.findLayerByName(name) === null) {
-      app.viewer.layers.push(new Layer(name, style));
-    }
-  }
-
-  addLayer("sketch", Styles.DEFAULT);
-  addLayer("_construction_", Styles.CONSTRUCTION);
-
   var actionsWin = new ui.Window($('#actions'), app.winManager);
 
   ui.bindOpening( $('#showActions'), actionsWin );

@@ -53,7 +53,10 @@ function Viewer(canvas, IO) {
   this.bus = new Bus();
   this.ctx = this.canvas.getContext("2d");
   this._activeLayer = null;
-  this.layers = [];
+  this.layers = [  
+    new Layer("sketch", Styles.DEFAULT),
+    new Layer("_construction_", Styles.CONSTRUCTION) 
+  ];
   this.dimLayer = new Layer("_dim", Styles.DIM);
   this.dimLayers = [this.dimLayer];
   this.bus.defineObservable(this, 'dimScale', 1);
@@ -401,10 +404,19 @@ Viewer.prototype.getActiveLayer = function() {
     }
   }
   if (layer == null) {
-    layer = new Layer("JustALayer", Styles.DEFAULT);
+    layer = new Layer("sketch", Styles.DEFAULT);
     this.layers.push(layer);
   }
   return layer;
+};
+
+Viewer.prototype.setActiveLayerName = function(layerName) {
+  let layer = this.findLayerByName(layerName);  
+  if (layer) {
+    this.activeLayer = layer;
+  } else {
+    console.warn("layer doesn't exist: " + layerName);
+  }
 };
 
 Viewer.prototype.setActiveLayer = function(layer) {
