@@ -37,7 +37,7 @@ export function createSubjectFromInPlaceSketcher(ctx) {
     ];
   } 
 
-  function addSerpinski([ax, ay], [bx, by], depth) {
+  function addSerpinski(ax, ay, bx, by, depth) {
     genSerpinskiImpl(ctx.services.sketcher.inPlaceEditor.viewer, {x: ax, y: ay}, {x: bx, y: by}, depth);
     let jointWidth = distance(ax, ay, bx, by) / (depth + 1) / 2;
     let dx = bx - ax;
@@ -52,10 +52,12 @@ export function createSubjectFromInPlaceSketcher(ctx) {
     addSegment(bx, by, bx-ddx, by-ddy);
   }
   
-  function addPolygon(points) {
-    let p, q, n = points.length;
+  function addPolygon() {
+    let p, q, n = arguments.length;
     for(p = n - 1, q = 0; q < n; p = q++) {
-      addSegment(p, q);
+      let [ax, ay] = arguments[p];
+      let [bx, by] = arguments[q];
+      addSegment(ax, ay, bx, by);
     }
   }
   
