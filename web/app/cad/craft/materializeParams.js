@@ -11,7 +11,7 @@ export default function materializeParams(services, params, schema, result, erro
     }
     let value = params[field];
     if (value === undefined || value === null || value === '') {
-      if (!md.optional && !md.hasOwnProperty('defaultValue')) {
+      if (!md.optional) {
         errors.push({path: [...parentPath, field], message: 'required'});
       }
     } else {
