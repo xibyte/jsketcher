@@ -2,11 +2,11 @@ export default {
   operandA: {
     type: 'shell',
     markColor: 0xC9FFBC,
-    defaultValue: {type: 'selection'}
+    initializeBySelection: 0
   },
   operandB: {
     type: 'shell',
     markColor: 0xFFBEB4,
-    defaultValue: {type: 'selection'}
+    initializeBySelection: 1
   }
 };

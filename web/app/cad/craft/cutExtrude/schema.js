@@ -18,7 +18,7 @@ export default {
   },
   face: {
     type: 'face',
-    defaultValue: {type: 'selection'}
+    initializeBySelection: 0
   },
   datumAxisVector: {
     type: 'datumAxis',
