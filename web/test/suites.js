@@ -7,6 +7,11 @@ export default {
     TestCase('craftPlane'),
     TestCase('craftExtrudeBasicShapes'),
     TestCase('craftExtrudeOptions'),
+    TestCase('craftExtrude'),
+    TestCase('craftCut'),
+    TestCase('craftRevolve'),
+    TestCase('craftFillet'),
+    TestCase('craftLoft'),
   ],
 
   SketcherObjects: [
