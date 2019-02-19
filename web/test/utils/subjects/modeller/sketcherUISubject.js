@@ -28,7 +28,7 @@ export function createSubjectFromInPlaceSketcher(ctx) {
   const addEllipticalArc = sketcher_utils.addEllipticalArc.bind(this, oldStyleSketcherApp);
   const addBezier = sketcher_utils.addBezier.bind(this, oldStyleSketcherApp);
   const move = sketcher_utils.moveInModel.bind(this, oldStyleSketcherApp);
-  function addPolygon(x0, y0, x1, y1) {
+  function addRectangle(x0, y0, x1, y1) {
     return [
       addSegment(x0, y0, x1, y0),
       addSegment(x1, y0, x1, y1),
@@ -40,22 +40,23 @@ export function createSubjectFromInPlaceSketcher(ctx) {
   function addSerpinski([ax, ay], [bx, by], depth) {
     genSerpinskiImpl(ctx.services.sketcher.inPlaceEditor.viewer, {x: ax, y: ay}, {x: bx, y: by}, depth);
     let jointWidth = distance(ax, ay, bx, by) / (depth + 1) / 2;
-
     let dx = bx - ax;
     let dy = by - ay;
-    
     let D = Math.sqrt(dx*dx + dy*dy);
-
     dx /= D;
     dy /= D;
-
     let ddx = -dy * jointWidth;
     let ddy =  dx * jointWidth;
-
-
     genSerpinskiImpl(ctx.services.sketcher.inPlaceEditor.viewer, {x: bx-ddx, y: by-ddy}, {x: ax-ddx, y: ay-ddy}, depth);
     addSegment(ax, ay, ax-ddx, ay-ddy);
     addSegment(bx, by, bx-ddx, by-ddy);
+  }
+  
+  function addPolygon(points) {
+    let p, q, n = points.length;
+    for(p = n - 1, q = 0; q < n; p = q++) {
+      addSegment(p, q);
+    }
   }
   
   function changeLayer(layerName) {
@@ -71,8 +72,8 @@ export function createSubjectFromInPlaceSketcher(ctx) {
   }
 
   return {
-    addSegment, addPolygon, addArc, addCircle, addEllipse, addEllipticalArc, addSerpinski, addBezier, 
-    move, changeLayer, changeToConstructionLayer, changeToDefaultLayer, 
+    addSegment, addRectangle, addArc, addCircle, addEllipse, addEllipticalArc, addSerpinski, addBezier, addPolygon, 
+    move, changeLayer, changeToConstructionLayer, changeToDefaultLayer
   }
   
 }

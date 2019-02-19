@@ -5,7 +5,7 @@ export const TEST_MODE = 'modellerUI';
 export function testRevolveHalfWay(env, ui) {
   createPlaneAndOpenSketcher(ui);
   let sui = ui.openSketcher();
-  sui.addPolygon(20, -50, 50, 50);
+  sui.addRectangle(20, -50, 50, 50);
   sui.changeToConstructionLayer();
   sui.addSegment(0, -50, 0, 50);
   ui.commitSketch();
@@ -21,7 +21,7 @@ export function testRevolveHalfWay(env, ui) {
 export function testRevolveAllWay(env, ui) {
   createPlaneAndOpenSketcher(ui);
   let sui = ui.openSketcher();
-  sui.addPolygon(20, -50, 50, 50);
+  sui.addRectangle(20, -50, 50, 50);
   sui.changeToConstructionLayer();
   sui.addSegment(0, -50, 0, 50);
   ui.commitSketch();

@@ -4,7 +4,7 @@ export const TEST_MODE = 'modellerUI';
 
 export function testLoftOver2Sections(env, ui) {
   let sui = createPlaneAndOpenSketcher(ui);
-  sui.addPolygon(-100, -100, 100, 100);
+  sui.addRectangle(-100, -100, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('PLANE');
@@ -12,7 +12,7 @@ export function testLoftOver2Sections(env, ui) {
   ui.wizardOK();
   ui.selectFaces([0, 0, 290], [0, 0, 310]);
   sui = ui.openSketcher();
-  sui.addSerpinski([-100, 0], [100, 0], 2);
+  sui.addRectangle([0, -100], [100, 100], [-100, 100]);
   ui.commitSketch();
 
   ui.openWizard('LOFT');

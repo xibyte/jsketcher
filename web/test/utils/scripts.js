@@ -8,7 +8,7 @@ export function createPlaneAndOpenSketcher(ui) {
 
 export function extrudeCube(ui) {
   let sketcherUI = createPlaneAndOpenSketcher(ui);
-  sketcherUI.addPolygon(-100, -100, 100, 100);
+  sketcherUI.addRectangle(-100, -100, 100, 100);
   ui.commitSketch();
   ui.selectFaces([0, 0, -10], [0, 0, 10]);
   ui.openWizard('EXTRUDE');
