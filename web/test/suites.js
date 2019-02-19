@@ -12,6 +12,7 @@ export default {
     TestCase('craftRevolve'),
     TestCase('craftFillet'),
     TestCase('craftLoft'),
+    TestCase('craftDatum'),
   ],
 
   SketcherObjects: [

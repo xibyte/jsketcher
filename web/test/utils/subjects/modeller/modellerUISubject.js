@@ -4,6 +4,7 @@ import {
   PICK_KIND,
   traversePickResults
 } from '../../../../app/cad/scene/controls/pickControlPlugin';
+import {DATUM} from '../../../../app/cad/scene/entites';
 
 export default ctx => {
 
@@ -27,12 +28,12 @@ export default ctx => {
     sceneMouseEvent('mouseup', x, y);
   }
 
-  function rayCastFaces(from, to) {
+  function rayCastByType(from, to, kind) {
     let rawObjects = ctx.services.viewer.customRaycast(from, to, ctx.services.cadScene.workGroup.children);
-    let faces = [];
-    traversePickResults(null, rawObjects, PICK_KIND.FACE, face => faces.push(face));
+    let models = [];
+    traversePickResults(null, rawObjects, kind, face => models.push(face));
     let out = [];
-    faces.forEach(face => {
+    models.forEach(face => {
       if (!out.includes(face)) {
         out.push(face);
       }
@@ -40,6 +41,14 @@ export default ctx => {
     return out;
   }
 
+  function rayCastFaces(from, to) {
+    return rayCastByType(from, to, PICK_KIND.FACE);
+  }
+
+  function rayCast(from, to) {
+    return rayCastByType(from, to, ALL_EXCLUDING_SOLID_KINDS);
+  }
+  
   function selectFaces(from, to) {
     ctx.services.pickControl.pickFromRay(from, to, PICK_KIND.FACE);
   }
@@ -48,6 +57,10 @@ export default ctx => {
     ctx.services.pickControl.pickFromRay(from, to, ALL_EXCLUDING_SOLID_KINDS);
   }
 
+  function selectFirst(type) {
+    ctx.services.pickControl.pick(ctx.services.cadRegistry.models.find(m => m.TYPE === type));
+  }
+  
   function getWizardContext() {
     return ctx.streams.wizard.wizardContext.value
   }
@@ -63,8 +76,8 @@ export default ctx => {
   
   return {
     context: ctx,
-    openWizard, wizardOK, sceneMouseEvent, clickOnScene, 
-    rayCastFaces, select, selectFaces, openSketcher, commitSketch,
+    openWizard, wizardOK, sceneMouseEvent, clickOnScene,
+    rayCast, rayCastFaces, select, selectFaces, selectFirst, openSketcher, commitSketch,
     get wizardContext() { return getWizardContext()},
     __DEBUG__: ctx.services.debug.utils
   };

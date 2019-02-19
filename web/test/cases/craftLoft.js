@@ -16,8 +16,8 @@ export function testLoftOver2Sections(env, ui) {
   ui.commitSketch();
 
   ui.openWizard('LOFT');
-  ui.select([-3, -3, 310], [-3, -3, 290]);
-  ui.select([-3, -3, -10], [-3, -3, 10]);
+  ui.select([0, 0, 310], [0, 0, 290]);
+  ui.select([0, 0, -10], [0, 0, 10]);
   ui.wizardOK();
   env.done();
 }
@@ -46,9 +46,9 @@ export function testLoftOver3Sections(env, ui) {
 
 
   ui.openWizard('LOFT');
-  ui.select([-3, -3, 610], [-3, -3, 590]);
-  ui.select([-3, -3, 310], [-3, -3, 290]);
-  ui.select([-3, -3, -10], [-3, -3, 10]);
+  ui.select([0, 0, 610], [0, 0, 590]);
+  ui.select([0, 0, 310], [0, 0, 290]);
+  ui.select([0, 0, -10], [0, 0, 10]);
   ui.wizardOK();
   env.done();
 }
@@ -68,8 +68,8 @@ export function testLoftCircleSections(env, ui) {
   ui.commitSketch();
   
   ui.openWizard('LOFT');
-  ui.select([-3, -3, 310], [-3, -3, 290]);
-  ui.select([-3, -3, -10], [-3, -3, 10]);
+  ui.select([0, 0, 310], [0, 0, 290]);
+  ui.select([0, 0, -10], [0, 0, 10]);
   ui.wizardOK();
   env.done();
 }
