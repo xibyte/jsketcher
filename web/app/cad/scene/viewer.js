@@ -36,6 +36,10 @@ export default class Viewer {
     return this.sceneSetup.raycast(event, objects);
   }
   
+  customRaycast(from3, to3, objects) {
+    return this.sceneSetup.customRaycast(from3, to3, objects);
+  }
+  
   setCameraMode(mode) {
     if (this.getCameraMode() === mode) {
       return;
