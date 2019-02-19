@@ -7,7 +7,7 @@ export function testExtrudeMid(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(-50, -50, 50, 50);
+  sui.addRectangle(-50, -50, 50, 50);
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
@@ -22,7 +22,7 @@ export function testExtrudeCOI1Faces(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, 0, 80, 100);
+  sui.addRectangle(0, 0, 80, 100);
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
@@ -37,7 +37,7 @@ export function testExtrudeCOI2Faces(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, 0, 100, 100);
+  sui.addRectangle(0, 0, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
@@ -52,7 +52,7 @@ export function testExtrudeCOI3Faces(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(0, -100, 100, 100);
+  sui.addRectangle(0, -100, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
@@ -67,7 +67,7 @@ export function testExtrudeCOI4Faces(env, ui) {
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
-  sui.addPolygon(-100, -100, 100, 100);
+  sui.addRectangle(-100, -100, 100, 100);
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
