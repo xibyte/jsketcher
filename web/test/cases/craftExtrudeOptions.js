@@ -1,9 +1,10 @@
 import {assertFaceOrigination, assertFaceRole} from '../utils/asserts';
+import {createPlaneAndOpenSketcher} from '../utils/scripts';
 
 export const TEST_MODE = 'modellerUI';
 
 export function testExtrudePrism(env, ui) {
-  let sketcherUI = ui.createPlaneAndOpenSketcher();
+  let sketcherUI = createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let [S1, S2, S3, S4] = sketcherUI.addPolygon(-100, -100, 100, 100);
   

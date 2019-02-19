@@ -1,9 +1,10 @@
 import {assertFaceOrigination, assertFaceRole} from '../utils/asserts';
+import {createPlaneAndOpenSketcher} from '../utils/scripts';
 
 export const TEST_MODE = 'modellerUI';
 
 export function testExtrudeFromSketch(env, ui) {
-  let sketcherUI = ui.createPlaneAndOpenSketcher();
+  let sketcherUI = createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let seg1 = sketcherUI.addSegment(-100, -100, 100, -100);
   let seg2 = sketcherUI.addSegment(100, -100, 100, 100);
@@ -47,7 +48,7 @@ export function testExtrudeFromSketch(env, ui) {
 }
 
 export function testExtrudeArc(env, ui) {
-  let sketcherUI = ui.createPlaneAndOpenSketcher();
+  let sketcherUI = createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let arc = sketcherUI.addArc(0, 0, 100, 0, -100, 0);
   let segment = sketcherUI.addSegment(100, 0, -100, 0);
@@ -85,7 +86,7 @@ export function testExtrudeArc(env, ui) {
 }
 
 export function testExtrudeCircle(env, ui) {
-  let sketcherUI = ui.createPlaneAndOpenSketcher(); 
+  let sketcherUI = createPlaneAndOpenSketcher(ui); 
   let sketchedFace = ui.context.services.selection.face.single;
   let circle = sketcherUI.addCircle(100, 100, 100);
 
@@ -115,7 +116,7 @@ export function testExtrudeCircle(env, ui) {
 }
 
 export function testExtrudeEllipse(env, ui) {
-  let sketcherUI = ui.createPlaneAndOpenSketcher();
+  let sketcherUI = createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let ellipse = sketcherUI.addEllipse(-100, 100, 100, 100, 0, 150);
 
@@ -145,7 +146,7 @@ export function testExtrudeEllipse(env, ui) {
 }
 
 export function testExtrudeEllipticalArc(env, ui) {
-  let sketcherUI = ui.createPlaneAndOpenSketcher();
+  let sketcherUI = createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let eArc = sketcherUI.addEllipticalArc(-100, 100, 100, 100, 0, 150);
   sketcherUI.move(100, 100, -50, 170);
@@ -177,7 +178,7 @@ export function testExtrudeEllipticalArc(env, ui) {
 }
 
 export function testExtrudeBezier(env, ui) {
-  let sketcherUI = ui.createPlaneAndOpenSketcher();
+  let sketcherUI = createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let bezier = sketcherUI.addBezier(-100, 100, 100, 100, 0, 150);
   sketcherUI.move(bezier.cp2.x, bezier.cp2.y, bezier.cp2.x, bezier.cp1.y);
