@@ -51,7 +51,7 @@ export default class CadScene {
     let yAxis = createBasisArrow(new Vector(0, 1, 0), 0x00FF00);
     SceneGraph.addToGroup(this.basisGroup, xAxis);
     SceneGraph.addToGroup(this.basisGroup, yAxis);
-    SceneGraph.addToGroup(this.workGroup, this.basisGroup, yAxis);
+    SceneGraph.addToGroup(this.auxGroup, this.basisGroup, yAxis);
     this.hideGlobalCsys();
   }
 
