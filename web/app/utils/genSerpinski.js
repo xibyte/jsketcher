@@ -1,6 +1,13 @@
 import Vector from '../../../modules/math/vector';
 
-export default function genSerpinski(viewer) {
+export default function genSerpinski(viewer, depthLimit = 7) {
+  let [line] = viewer.selected;
+  genSerpinskiImpl(viewer, line.a, line.b, depthLimit);
+  viewer.remove(line);
+  viewer.refresh();
+}
+
+export function genSerpinskiImpl(viewer, aInit, bInit, depthLimit) {
   function serpinskiStep(a, b) {
     a = new Vector().setV(a);
     b = new Vector().setV(b);
@@ -30,11 +37,9 @@ export default function genSerpinski(viewer) {
   }
 
 
-  let [line] = viewer.selected;
-
   function generate(a, b, depth) {
     let lines = serpinskiStep(a, b);
-    if (depth === 7) {
+    if (depth === depthLimit) {
       return lines;
     }
     let subLines = [];
@@ -46,10 +51,7 @@ export default function genSerpinski(viewer) {
     return subLines;
   }
 
-  let lines = generate(line.a, line.b, 1);
+  let lines = generate(aInit, bInit, 1);
 
   lines.forEach(l => addLineOnScene(l));
-
-  viewer.remove(line);
-  viewer.refresh();
 }
