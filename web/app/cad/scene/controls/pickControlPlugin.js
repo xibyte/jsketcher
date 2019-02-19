@@ -21,6 +21,8 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
   datum: true  
 });
 
+export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;
+
 export function activate(context) {
   const {services, streams} = context;
 
@@ -96,11 +98,17 @@ export function activate(context) {
   const deselectAll = () => services.marker.clear();
 
   function handlePick(event) {
-    raycastObjects(event, PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP, pickHandler);
+    let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children);
+    traversePickResults(event, pickResults, ALL_EXCLUDING_SOLID_KINDS, pickHandler);
   }
 
-  function pick(obj) {
-    pickHandler(obj, null);
+  function pickFromRay(from3, to3, kind, event = null) {
+    let pickResults = services.viewer.customRaycast(from3, to3, services.cadScene.workGroup.children);
+    return traversePickResults(event, pickResults, kind, pickHandler);
+  }
+
+  function pick(obj, event = null) {
+    pickHandler(obj, event);
   }
   
   function dispatchSelection(entityType, selectee, event) {
@@ -119,84 +127,88 @@ export function activate(context) {
   }
   
   function handleSolidPick(e) {
-    raycastObjects(e, PICK_KIND.FACE, (sketchFace) => {
+    let pickResults = services.viewer.raycast(e, services.cadScene.workGroup.children);
+    traversePickResults(e, pickResults, PICK_KIND.FACE, (sketchFace) => {
       streams.selection.solid.next([sketchFace.solid]);
       services.viewer.render();
       return false;
     });
   }
+  
+  services.pickControl = {
+    setPickHandler, deselectAll, pick, pickFromRay
+  };
+}
 
-  function raycastObjects(event, kind, visitor) {
-    let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children);
-    const pickers = [
-      (pickResult) => {
-        if (mask.is(kind, PICK_KIND.SKETCH)) {
-          let sketchObjectV = getAttribute(pickResult.object, SKETCH_OBJECT);
-          if (sketchObjectV) {
-            return !visitor(sketchObjectV.model, event, pickResult);
-          }
+export function traversePickResults(event, pickResults, kind, visitor) {
+  const pickers = [
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.SKETCH)) {
+        let sketchObjectV = getAttribute(pickResult.object, SKETCH_OBJECT);
+        if (sketchObjectV) {
+          return !visitor(sketchObjectV.model, event, pickResult);
         }
-        return false;
-      },
-      (pickResult) => {
-        if (mask.is(kind, PICK_KIND.EDGE)) {
-          let edgeV = getAttribute(pickResult.object, EDGE);
-          if (edgeV) {
-            return !visitor(edgeV.model, event, pickResult);
-          }
+      }
+      return false;
+    },
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.EDGE)) {
+        let edgeV = getAttribute(pickResult.object, EDGE);
+        if (edgeV) {
+          return !visitor(edgeV.model, event, pickResult);
         }
-        return false;
-      },
-      (pickResult) => {
-        if (mask.is(kind, PICK_KIND.LOOP) && !!pickResult.face) {
-          let faceV = getAttribute(pickResult.face, LOOP);
-          if (faceV) {
-            return !visitor(faceV.model, event, pickResult);
-          }
+      }
+      return false;
+    },
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.LOOP) && !!pickResult.face) {
+        let faceV = getAttribute(pickResult.face, LOOP);
+        if (faceV) {
+          return !visitor(faceV.model, event, pickResult);
         }
-        return false;
-      },
-      (pickResult) => {
-        if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face) {
-          let faceV = getAttribute(pickResult.face, FACE);
-          if (faceV) {
-            return !visitor(faceV.model, event, pickResult);
-          }
+      }
+      return false;
+    },
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face) {
+        let faceV = getAttribute(pickResult.face, FACE);
+        if (faceV) {
+          return !visitor(faceV.model, event, pickResult);
         }
-        return false;
-      },
-      (pickResult) => {
-        if (mask.is(kind, PICK_KIND.DATUM_AXIS)) {
-          let datumAxisV = getAttribute(pickResult.object, DATUM_AXIS);
-          if (datumAxisV) {
-            return !visitor(datumAxisV.model, event, pickResult);
-          }
+      }
+      return false;
+    },
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.DATUM_AXIS)) {
+        let datumAxisV = getAttribute(pickResult.object, DATUM_AXIS);
+        if (datumAxisV) {
+          return !visitor(datumAxisV.model, event, pickResult);
         }
-        return false;
-      },
-    ];
-    for (let i = 0; i < pickResults.length; i++) {
-      const pickResult = pickResults[i];
-      for (let picker of pickers) {
-        if (pickResult.object && pickResult.object.passRayCast && pickResult.object.passRayCast(pickResults)) {
-          // continue;
-        }
-        if (picker(pickResult)) {
-          return;
-        }
+      }
+      return false;
+    },
+  ];
+  for (let i = 0; i < pickResults.length; i++) {
+    const pickResult = pickResults[i];
+    for (let picker of pickers) {
+      if (pickResult.object && pickResult.object.passRayCast && pickResult.object.passRayCast(pickResults)) {
+        // continue;
+      }
+      if (picker(pickResult)) {
+        return;
       }
     }
   }
-  services.pickControl = {
-    setPickHandler, deselectAll, pick
-  };
 }
+
 
 function printPickInfo(model, rayCastData) {
   console.log("PICKED MODEL:");
   console.dir(model);
   console.log("PICK RAYCAST INFO:");
-  console.dir(rayCastData);
-  let pt = rayCastData.point;
-  console.log('POINT: ' + pt.x + ', ' + pt.y + ',' + pt.z);
+  if (rayCastData) {
+    console.dir(rayCastData);
+    let pt = rayCastData.point;
+    console.log('POINT: ' + pt.x + ', ' + pt.y + ',' + pt.z);
+  }
 }
