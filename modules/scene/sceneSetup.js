@@ -1,6 +1,7 @@
 import DPR from 'dpr';
 import './utils/threeLoader';
 import './utils/vectorThreeEnhancement';
+import {CADTrackballControls} from './controls/CADTrackballControls';
 
 export default class SceneSetUp {
   
@@ -118,7 +119,7 @@ export default class SceneSetUp {
 
   setUpControls() {
     //  controls = new THREE.OrbitControls( camera , renderer.domElement);
-    let trackballControls = new THREE.TrackballControls(this.camera , this.renderer.domElement);
+    let trackballControls = new CADTrackballControls(this.camera , this.renderer.domElement);
 
     // document.addEventListener( 'mousemove', function(){
 
@@ -200,7 +201,7 @@ export default class SceneSetUp {
     return vector;
   }
   
-  lookAt(obj) {
+  lookAtObject(obj) {
     let box = new THREE.Box3();
     box.setFromObject(obj);
     let size = box.size();

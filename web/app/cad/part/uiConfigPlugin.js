@@ -1,6 +1,7 @@
 import CoreActions from '../actions/coreActions';
 import OperationActions from '../actions/operationActions';
 import HistoryActions from '../actions/historyActions';
+import UsabilityActions from '../actions/usabilityActions';
 import menuConfig from './menuConfig';
 import ObjectExplorer from '../craft/ui/ObjectExplorer';
 import React from 'react';
@@ -21,6 +22,7 @@ export function activate({services, streams}) {
   services.action.registerActions(CoreActions);
   services.action.registerActions(OperationActions);
   services.action.registerActions(HistoryActions);
+  services.action.registerActions(UsabilityActions);
 
   services.menu.registerMenus(menuConfig);
 
