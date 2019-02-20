@@ -8,7 +8,7 @@
  * @author Luca Antiga 	/ http://lantiga.github.io
  */
 
-THREE.TrackballControls = function ( object, domElement ) {
+export function CADTrackballControls( object, domElement ) {
 
   var _this = this;
   var STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
@@ -485,10 +485,14 @@ THREE.TrackballControls = function ( object, domElement ) {
 
     event.preventDefault();
     event.stopPropagation();
+    _this.zoomStep(event.deltaMode, event.deltaY);
+  }
+  
+  this.zoomStep = function( deltaMode, delta ) {
 
     if (_this.projectionZoom) {
       let speed = _this.projectionZoomSpeed;
-      switch ( event.deltaMode ) {
+      switch ( deltaMode ) {
 
         case 2:
           // Zoom in pages
@@ -500,7 +504,7 @@ THREE.TrackballControls = function ( object, domElement ) {
           break;
       }
       let step = Math.pow( 0.95, speed);
-      if (event.deltaY < 0) {
+      if (delta < 0) {
         step = 1 / step;
       } 
       _this.object.zoom *= step;
@@ -509,21 +513,21 @@ THREE.TrackballControls = function ( object, domElement ) {
 
     } else {
 
-      switch ( event.deltaMode ) {
+      switch ( deltaMode ) {
 
         case 2:
           // Zoom in pages
-          _zoomStart.y -= event.deltaY * 0.025;
+          _zoomStart.y -= delta * 0.025;
           break;
 
         case 1:
           // Zoom in lines
-          _zoomStart.y -= event.deltaY * 0.01;
+          _zoomStart.y -= delta * 0.01;
           break;
 
         default:
           // undefined, 0, assume pixels
-          _zoomStart.y -= event.deltaY * 0.00025;
+          _zoomStart.y -= delta * 0.00025;
           break;
 
       }
@@ -532,7 +536,7 @@ THREE.TrackballControls = function ( object, domElement ) {
       _this.dispatchEvent( endEvent );
     }
 
-  }
+  };
 
   function touchstart( event ) {
 
@@ -658,5 +662,5 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 };
 
-THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
-THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;
+CADTrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+CADTrackballControls.prototype.constructor = CADTrackballControls;

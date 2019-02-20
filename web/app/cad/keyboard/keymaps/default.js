@@ -3,8 +3,12 @@ export default {
   'EXTRUDE': 'e',
   'PLANE': 'p',
   'BOX': 'b',
-  'ZoomIn': '+',
+  'ZoomIn': '=', //it has plus symbol
   'ZoomOut': '-',
+  'LookAtFace': '0',
+  'CycleFacesNext': ']',
+  'CycleFacesPrev': '[',
+  'ToggleCameraMode': '/',
   'menu.craft': 'shift+c',
   'menu.primitives': 'shift+a',
   'menu.main': 'space',

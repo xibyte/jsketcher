@@ -27,9 +27,9 @@ export default class Viewer {
       this.requestRender();
     }
   };
-  
-  lookAt(obj) {
-    this.sceneSetup.lookAt(obj);
+
+  lookAtObject(obj) {
+    this.sceneSetup.lookAtObject(obj);
   }
   
   raycast(event, objects) {
@@ -63,6 +63,28 @@ export default class Viewer {
     }
   }
   
+  zoomIn() {
+    this.sceneSetup.trackballControls.zoomStep(1, -5);
+  }
+
+  zoomOut() {
+    this.sceneSetup.trackballControls.zoomStep(1, 5);
+  }
+
+  lookAt(target, normal, up, dist) {
+    let obj = this.sceneSetup.trackballControls.object;
+    if (up) {
+      obj.up.copy(up);
+    }
+    if (dist === undefined) {
+      dist = target.distanceTo(obj.position);
+    }
+    obj.position.copy(target);
+    obj.position.addScaledVector(normal, dist);
+    this.sceneSetup.trackballControls.target.copy(target);
+    this.sceneSetup.trackballControls.update();
+  }
+
   dispose() {
     this.sceneSetup.renderer.dispose();
   }
