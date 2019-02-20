@@ -1,3 +1,10 @@
+import {AXIS, ORIGIN} from '../../math/l3space';
+import Vector from 'math/vector';
+
+const NEG_X = AXIS.X.negate();
+const NEG_Y = AXIS.Y.negate();
+const NEG_Z = AXIS.Z.negate();
+const DIR_3_WAY_VIEW =  new Vector(1, 1, 1).normalize(); 
 
 function lookAtFace(viewer, face, currFace) {
   let dist = currFace ? currFace.csys.origin.distanceTo(viewer.sceneSetup.camera.position) : undefined;
@@ -86,6 +93,54 @@ export default [
       }
     }
   },
-
+  {
+    id: 'StandardViewFront',
+    invoke: ctx => {
+      ctx.services.viewer.lookAt(ORIGIN, AXIS.Z, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'StandardViewBack',
+    invoke: ctx => {
+      ctx.services.viewer.lookAt(ORIGIN, NEG_Z, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'StandardViewLeft',
+    invoke: ctx => {
+      ctx.services.viewer.lookAt(ORIGIN, NEG_X, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'StandardViewRight',
+    invoke: ctx => {
+      ctx.services.viewer.lookAt(ORIGIN, AXIS.X, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'StandardViewTop',
+    invoke: ctx => {
+      ctx.services.viewer.lookAt(ORIGIN, AXIS.Y, NEG_Z, ctx.services.viewer.sceneSetup.camera.position.length());
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'StandardViewBottom',
+    invoke: ctx => {
+      ctx.services.viewer.lookAt(ORIGIN, NEG_Y, AXIS.Z, ctx.services.viewer.sceneSetup.camera.position.length());
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'StandardView3Way',
+    invoke: ctx => {
+      ctx.services.viewer.lookAt(ORIGIN, DIR_3_WAY_VIEW, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
+      ctx.services.viewer.requestRender();
+    }
+  },
 
 ]
