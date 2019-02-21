@@ -2,20 +2,28 @@ export default [
   {
     id: 'file',
     cssIcons: ['file'],
-    actions: ['Save', 'StlExport', '-', 'IMPORT_STL']
+    actions: ['Save', 'StlExport', '-', 'IMPORT_STL', '-', 'ReassignSketch']
   },
   {
     id: 'craft',
     cssIcons: ['magic'],
     info: 'set of available craft operations on a solid',
-    actions: ['EXTRUDE', 'CUT', 'REVOLVE', 'LOFT', 'SHELL', 'FILLET', 'DATUM_CREATE', 'ReassignSketch']
+    actions: ['EXTRUDE', 'CUT', 'REVOLVE', 'LOFT', 'SHELL', 'FILLET', 'DATUM_CREATE']
   },
   {
     id: 'primitives',
     label: 'add',
     cssIcons: ['cube', 'plus'],
     info: 'set of available solid creation operations',
-    actions: ['PLANE', 'BOX', 'SPHERE']
+    actions: ['PLANE', 'BOX', 'SPHERE', 'CONE', 'CYLINDER', 'TORUS']
+  },
+  {
+    id: 'views',
+    label: 'views',
+    cssIcons: ['camera'],
+    info: 'switching camera views',
+    actions: ['StandardViewFront', 'StandardViewBack', 'StandardViewLeft', 'StandardViewRight', 
+      'StandardViewTop', 'StandardViewBottom', 'StandardView3Way']
   },
   {
     id: 'boolean',
@@ -29,8 +37,9 @@ export default [
     label: 'start',
     cssIcons: ['rocket'],
     info: 'common set of actions',
-    actions: ['EXTRUDE', 'CUT', 'SHELL', '-', 'INTERSECTION', 'SUBTRACT', 'UNION', '-', 'PLANE', 'BOX', 'SPHERE', '-',
-      'EditFace', '-', 'DeselectAll', 'RefreshSketches']
+    actions: ['EXTRUDE', 'CUT', 'REVOLVE', 'LOFT', 'FILLET', '-', 
+      'PLANE', 'BOX', 'SPHERE', 'CONE', 'CYLINDER', 'TORUS', '-',
+      'EditFace']
   },
   {
     id: 'SolidContext',
