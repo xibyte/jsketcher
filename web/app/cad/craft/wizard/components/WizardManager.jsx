@@ -11,6 +11,7 @@ function WizardManager({wizardContext, type, cancel, cancelHistoryEdit, applyWor
   }
   return <Wizard key={wizardContext.ID}
                  context={wizardContext}
+                 noFocus={wizardContext.noWizardFocus}
                  onCancel={wizardContext.changingHistory ? cancelHistoryEdit : cancel}
                  onOK={applyWorkingRequest} />
 }

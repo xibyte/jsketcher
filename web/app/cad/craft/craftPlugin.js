@@ -79,7 +79,8 @@ export function activate({streams, services}) {
   }
   
   services.craft = {
-    modify, modifyInHistoryAndStep, reset, runRequest
+    modify, modifyInHistoryAndStep, reset, runRequest, 
+    historyTravel: historyTravel(streams.craft.modifications)
   };
 
   streams.craft.modifications.pairwise().attach(([prev, curr]) => {
@@ -129,3 +130,30 @@ function isAdditiveChange({history:oldHistory, pointer:oldPointer}, {history, po
   }
   return true;
 }
+
+function historyTravel(modifications$) {
+  
+  return {
+    setPointer: function(pointer, hints) {
+      let mod = modifications$.value;
+      if (pointer >= mod.history.length || pointer < -1) {
+        return;
+      }
+      modifications$.update(({history}) => ({history, pointer, hints}));
+    },
+    begin: function(hints) {
+      this.setPointer(-1, hints);
+    },
+    end: function(hints) {
+      this.setPointer(modifications$.value.history.length - 1, hints);
+    },
+    forward: function(hints) {
+      this.setPointer(modifications$.value.pointer + 1, hints);
+    },
+    backward: function (hints) {
+      this.setPointer(modifications$.value.pointer - 1, hints);
+    },
+  }
+
+} 
+

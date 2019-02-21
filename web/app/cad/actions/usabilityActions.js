@@ -142,5 +142,23 @@ export default [
       ctx.services.viewer.requestRender();
     }
   },
-
+  {
+    id: 'StandardView3Way',
+    invoke: ctx => {
+      ctx.services.viewer.lookAt(ORIGIN, DIR_3_WAY_VIEW, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'HistoryBackward',
+    invoke: ctx => ctx.services.craft.historyTravel.backward({
+      noWizardFocus: true
+    })
+  },
+  {
+    id: 'HistoryForward',
+    invoke: ctx => ctx.services.craft.historyTravel.forward({
+      noWizardFocus: true
+    })
+  },
 ]

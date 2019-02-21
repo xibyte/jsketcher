@@ -90,6 +90,9 @@ export default class Wizard extends React.Component {
   };
 
   focusFirstInput = el => {
+    if (this.props.noFocus) {
+      return;
+    }
     let toFocus = el.querySelector('input, select');
     if (!toFocus) {
       toFocus = el;

@@ -16,6 +16,8 @@ export default {
   'StandardViewTop': '5',
   'StandardViewBottom': '6',
   'StandardView3Way': '7',
+  'HistoryBackward': ',',
+  'HistoryForward': '.',
   'menu.craft': 'shift+c',
   'menu.primitives': 'shift+a',
   'menu.main': 'space',
