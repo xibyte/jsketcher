@@ -95,6 +95,9 @@ export default [
   },
   {
     id: 'StandardViewFront',
+    appearance: {
+      label: 'front'
+    },
     invoke: ctx => {
       ctx.services.viewer.lookAt(ORIGIN, AXIS.Z, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
       ctx.services.viewer.requestRender();
@@ -102,6 +105,9 @@ export default [
   },
   {
     id: 'StandardViewBack',
+    appearance: {
+      label: 'back'
+    },
     invoke: ctx => {
       ctx.services.viewer.lookAt(ORIGIN, NEG_Z, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
       ctx.services.viewer.requestRender();
@@ -109,6 +115,9 @@ export default [
   },
   {
     id: 'StandardViewLeft',
+    appearance: {
+      label: 'left'
+    },
     invoke: ctx => {
       ctx.services.viewer.lookAt(ORIGIN, NEG_X, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
       ctx.services.viewer.requestRender();
@@ -116,6 +125,9 @@ export default [
   },
   {
     id: 'StandardViewRight',
+    appearance: {
+      label: 'right'
+    },
     invoke: ctx => {
       ctx.services.viewer.lookAt(ORIGIN, AXIS.X, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
       ctx.services.viewer.requestRender();
@@ -123,6 +135,9 @@ export default [
   },
   {
     id: 'StandardViewTop',
+    appearance: {
+      label: 'top'
+    },
     invoke: ctx => {
       ctx.services.viewer.lookAt(ORIGIN, AXIS.Y, NEG_Z, ctx.services.viewer.sceneSetup.camera.position.length());
       ctx.services.viewer.requestRender();
@@ -130,6 +145,9 @@ export default [
   },
   {
     id: 'StandardViewBottom',
+    appearance: {
+      label: 'bottom'
+    },
     invoke: ctx => {
       ctx.services.viewer.lookAt(ORIGIN, NEG_Y, AXIS.Z, ctx.services.viewer.sceneSetup.camera.position.length());
       ctx.services.viewer.requestRender();
@@ -137,13 +155,9 @@ export default [
   },
   {
     id: 'StandardView3Way',
-    invoke: ctx => {
-      ctx.services.viewer.lookAt(ORIGIN, DIR_3_WAY_VIEW, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
-      ctx.services.viewer.requestRender();
-    }
-  },
-  {
-    id: 'StandardView3Way',
+    appearance: {
+      label: 'three way'
+    },
     invoke: ctx => {
       ctx.services.viewer.lookAt(ORIGIN, DIR_3_WAY_VIEW, AXIS.Y, ctx.services.viewer.sceneSetup.camera.position.length());
       ctx.services.viewer.requestRender();
