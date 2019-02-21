@@ -1,12 +1,8 @@
-import React, {Fragment} from 'react';
+import React from 'react';
 
 import {mapActionBehavior} from './actionButtonBehavior';
+import mapContext from '../../../../modules/ui/mapContext';
 
 export function actionDecorator(actionId) {
-  let actionBehavior = mapActionBehavior(actionId);
-  return function (Component) {
-    return function ActionDecorator(props) {
-      return <Component {...actionBehavior} {...props}/>;  
-    }
-  }
+  return mapContext(mapActionBehavior(actionId));
 }

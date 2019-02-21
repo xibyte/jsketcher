@@ -8,6 +8,7 @@ import {combine, merger} from 'lstream';
 import mapContext from 'ui/mapContext';
 import decoratorChain from '../../../../../modules/ui/decoratorChain';
 import {menuAboveElementHint} from '../menu/menuUtils';
+import {actionDecorator} from '../../actions/actionDecorators';
 
 export default function PlugableControlBar() {
   return <ControlBar left={<LeftGroup />} right={<RightGroup />}/>;
@@ -48,9 +49,7 @@ const ConnectedActionButton = decoratorChain(
       streams.action.appearance[props.actionId],
       streams.action.state[props.actionId]).map(merger)),
     
-    mapContext(({services}, props) => ({
-      onClick: data => services.action.run(props.actionId, data)
-    }))
+    actionDecorator(props => props.actionId)
 )
 (ActionButton);
 
