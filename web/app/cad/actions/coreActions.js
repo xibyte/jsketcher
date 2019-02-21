@@ -46,6 +46,16 @@ export default [
     },
     invoke: (context) => context.services.export.stlAscii()
   },
+  
+  {
+    id: 'ImagePngExport',
+    appearance: {
+      cssIcons: ['image'],
+      label: 'PNG Export',
+      info: 'export model as png image/render a snapshot',
+    },
+    invoke: (context) => context.services.export.imagePng()
+  },
 
 
   {

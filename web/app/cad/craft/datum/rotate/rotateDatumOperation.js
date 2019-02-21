@@ -66,7 +66,7 @@ function applyRotation(origCsys, csys, angle, axis) {
 export default {
   id: 'DATUM_ROTATE',
   label: 'Rotate Datum',
-  icon: 'img/cad/plane',
+  icon: 'img/cad/datum-rotate',
   info: 'rotates a datum',
   paramsInfo: ({axis, angle}) => `${axis} - ${angle}`,
   previewer,
