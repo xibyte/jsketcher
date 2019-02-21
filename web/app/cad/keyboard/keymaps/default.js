@@ -18,6 +18,8 @@ export default {
   'StandardView3Way': '7',
   'HistoryBackward': ',',
   'HistoryForward': '.',
+  'EditFace': 's',
+  'DeselectAll': 'ctrl+d',
   'menu.craft': 'shift+c',
   'menu.primitives': 'shift+a',
   'menu.main': 'space',
