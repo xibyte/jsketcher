@@ -24,6 +24,7 @@ export default {
   'menu.primitives': 'shift+a',
   'menu.main': 'space',
   'Save': 'ctrl+s',
+  'ImagePngExport': 'shift+3',
   'Info': 'F1',
   'DebugOpenBrepDebugger': 'ctrl+b'
 }; 
