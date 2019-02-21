@@ -3,7 +3,7 @@ export default {
   'EXTRUDE': 'e',
   'PLANE': 'p',
   'BOX': 'b',
-  'ZoomIn': '=', //it has plus symbol
+  'ZoomIn': '=',
   'ZoomOut': '-',
   'LookAtFace': '0',
   'CycleFacesNext': ']',

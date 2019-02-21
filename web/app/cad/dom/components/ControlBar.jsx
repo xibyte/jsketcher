@@ -16,6 +16,7 @@ export default function ControlBar({left, right}) {
 }
 
 export function ControlBarButton({onElement, disabled, children, onClick, ...props}) {
+  // mapActionBehavior
   return <span className={cx(ls.button, 'disable-selection', {disabled})} 
                onClick={disabled || onClick} ref={onElement} {...props}>
     {children}

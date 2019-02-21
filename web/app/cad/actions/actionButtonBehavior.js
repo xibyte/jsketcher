@@ -1,7 +1,7 @@
 
 export function mapActionBehavior(actionIdGetter) {
   return ({services}, props) => {
-    const actionId = actionIdGetter(props);
+    const actionId = typeof actionIdGetter === 'string' ? actionIdGetter : actionIdGetter(props);
 
     let request = {actionId, x:0, y:0};
     let canceled = true;
