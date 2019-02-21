@@ -28,12 +28,13 @@ export function activate(ctx) {
     }
   });
   
-  function gotoEditHistoryModeIfNeeded({pointer, history}) {
+  function gotoEditHistoryModeIfNeeded({pointer, history, hints}) {
     if (pointer !== history.length - 1) {
       let {type, params} = history[pointer + 1];
       streams.wizard.effectiveOperation.value =  {
         type,
         params,
+        noWizardFocus: hints && hints.noWizardFocus,
         changingHistory: true
       };
     } else {
@@ -56,7 +57,7 @@ export function activate(ctx) {
       let operation = ctx.services.operation.get(opRequest.type);
 
       let params;
-      let changingHistory = opRequest.changingHistory;
+      let {changingHistory, noWizardFocus} = opRequest;
       if (changingHistory) {
         params = clone(opRequest.params)
       } else {
@@ -98,7 +99,7 @@ export function activate(ctx) {
       const disposerList = createFunctionList();
       wizCtx = {
         workingRequest$, materializedWorkingRequest$, state$, updateParams, updateParam, updateState,
-        operation, changingHistory,
+        operation, changingHistory, noWizardFocus, 
         addDisposer: disposerList.add,
         dispose: disposerList.call,
         ID: ++REQUEST_COUNTER,
