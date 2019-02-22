@@ -16,7 +16,8 @@ export function activate({services, streams}) {
     ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}]
   ];
 
-  streams.ui.toolbars.headsUp.value = ['DATUM_CREATE', 'PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', '-', 'FILLET', '-', 'INTERSECTION', 'SUBTRACT', 'UNION'];
+  streams.ui.toolbars.headsUp.value = ['DATUM_CREATE', 'PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', 'LOFT',
+    '-', 'FILLET', '-', 'INTERSECTION', 'SUBTRACT', 'UNION'];
   streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport'];
   
   services.action.registerActions(CoreActions);

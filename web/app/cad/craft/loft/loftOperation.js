@@ -6,7 +6,7 @@ import LoftForm from './LoftForm';
 export default {
   id: 'LOFT',
   label: 'Loft',
-  icon: 'img/cad/revolve',
+  icon: 'img/cad/loft',
   info: 'creates a loft cross selected sections shape',
   paramsInfo: () => '',
   previewGeomProvider: loftPreviewGeomProvider,
