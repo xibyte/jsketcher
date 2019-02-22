@@ -65,7 +65,7 @@ function previewer(ctx, initialParams, updateParams) {
 export default {
   id: 'DATUM_MOVE',
   label: 'Move Datum',
-  icon: 'img/cad/plane',
+  icon: 'img/cad/datum-move',
   info: 'moves a datum',
   paramsInfoComponent: DatumParamsRenderer,
   paramsInfo: pointAsText,
