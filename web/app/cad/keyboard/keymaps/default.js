@@ -16,6 +16,7 @@ export default {
   'StandardViewTop': '5',
   'StandardViewBottom': '6',
   'StandardView3Way': '7',
+  'StandardView3WayBack': '8',
   'HistoryBackward': ',',
   'HistoryForward': '.',
   'EditFace': 's',
