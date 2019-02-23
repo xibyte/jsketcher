@@ -3,10 +3,13 @@ import exportTextData from 'gems/exportTextData';
 
 export function activate(ctx) {
 
-  function stlAscii() {
+  function toStlAsciiString() {
     let meshes = ctx.services.cadRegistry.shells.map(mShell => mShell.ext.view && mShell.ext.view.mesh).filter(m => !!m);
-    let result = stlExporter(meshes);
-    exportTextData(result, ctx.services.project.id + ".stl");
+    return stlExporter(meshes);
+  }
+
+  function stlAscii() {
+    exportTextData(toStlAsciiString(), ctx.services.project.id + ".stl");
   }
   
   function imagePng() {
@@ -31,6 +34,6 @@ export function activate(ctx) {
   } 
   
   ctx.services.export = {
-    stlAscii, imagePng
+    stlAscii, imagePng, toStlAsciiString
   };
 }
