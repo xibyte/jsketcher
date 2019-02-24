@@ -26,15 +26,15 @@ export default class Folder extends React.Component{
   render() {
     let {title, closable, className, children} = this.props;
     return <div className={cx(ls.root, className)}>
-      <Title title={title} onClick={closable ? this.tweakClose : null} isClosed={this.isClosed()}/>
+      <Title onClick={closable ? this.tweakClose : null} isClosed={this.isClosed()}>{title}</Title>
       {!this.isClosed() && children}
     </div>
   }
 }
 
-export function Title({title, isClosed, onClick}) {
+export function Title({children, isClosed, onClick}) {
   return <div className={ls.title} onClick={onClick}>
     <span className={ls.handle}><Fa fw icon={isClosed ? 'chevron-right' : 'chevron-down'}/></span>
-    {' '}{title}
+    {' '}{children}
   </div>;
 }
