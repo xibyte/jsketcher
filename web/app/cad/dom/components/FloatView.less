@@ -16,16 +16,19 @@
   font-size: 13px;
 }
 
-.main {
-  display: flex;
-  flex-direction: column;
-  width: 235px;
-  flex: 1;
-  overflow-y: scroll;
-}
-
 .folder {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.folderContent {
+  flex: 1;
+  display: flex;
+  width: 235px;
+  overflow: auto;
+}
+
+.folderContent > * {
+  flex: 1;    
 }
