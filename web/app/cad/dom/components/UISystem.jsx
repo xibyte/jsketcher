@@ -5,8 +5,11 @@ import MenuHolder from '../menu/MenuHolder';
 import WindowSystem from 'ui/WindowSystem';
 import ActionInfo from '../actionInfo/ActionInfo';
 import ContributedComponents from './ContributedComponents';
+import {stream} from '../../../../../modules/lstream';
 
 export default class UISystem extends React.Component {
+  
+  onCloseAll = stream();
   
   render() {
     return <div {...this.props} onMouseDown={this.closeAllUpPopups} >
@@ -26,11 +29,13 @@ export default class UISystem extends React.Component {
   closeAllUpPopups = () => {
     this.context.services.menu.closeAll();
     this.context.services.action.showHintFor(null);
+    this.onCloseAll.next();
   };
 
   getChildContext() {
     return {
-      closeAllUpPopups: this.closeAllUpPopups
+      closeAllUpPopups: this.closeAllUpPopups,
+      onCloseAll: this.onCloseAll
     }
   }
   
@@ -39,7 +44,8 @@ export default class UISystem extends React.Component {
   };
 
   static childContextTypes = {
-    closeAllUpPopups: PropTypes.func
+    closeAllUpPopups: PropTypes.func,
+    onCloseAll: PropTypes.object
   };
 }
 

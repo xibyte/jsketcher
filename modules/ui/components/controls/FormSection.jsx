@@ -6,7 +6,7 @@ export class StackSection extends React.Component {
   render() {
     const {title, children} = this.props;
     return <React.Fragment>
-      <Title title={title} />
+      <Title>{title}</Title>
       {children}
     </React.Fragment>;
   }
