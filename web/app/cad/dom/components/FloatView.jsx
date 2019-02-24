@@ -8,13 +8,19 @@ import ToolButton from 'ui/components/ToolButton';
 
 @connect(state => state.ui.floatViews.map(views => ({views})))
 @mapContext(ctx => ({
-  getDescriptor: ctx.services.ui.getFloatView
+  getDescriptor: ctx.services.ui.getFloatView,
+  initialView: ctx.services.project.hints.FloatView || null
 }))
 export default class FloatView extends React.Component {
 
-  state = {
-    selected: null
-  };
+  
+  constructor(props) {
+    super();
+    this.state = {
+      selected: props.initialView
+    };
+  }
+  
 
   render() {
     let {views, getDescriptor} = this.props;
@@ -22,7 +28,7 @@ export default class FloatView extends React.Component {
     function view(id) {
       let {title, icon, Component} = getDescriptor(id);
       return <Folder className={ls.folder} title={<span> <Fa fw icon={icon}/> {title}</span>}>
-        <Component/>
+        <div className={ls.folderContent}><Component/></div>
       </Folder>;
     }
 
@@ -31,18 +37,19 @@ export default class FloatView extends React.Component {
       return <Icon />
     }
 
+    let selected = this.state.selected;
+    
     return <div className={ls.root}>
       <div className={ls.tabs}>
-        {views.map(tabId => <ToolButton pressed={this.state.selected === tabId} 
+        {views.map(tabId => <ToolButton pressed={selected === tabId} 
                                         key={tabId}
-                                        onClick={() => this.setState({selected: this.state.selected === tabId ? null : tabId})}>
+                                        onClick={() => this.setState({selected: selected === tabId ? null : tabId})}>
           {<Fa fw icon={getDescriptor(tabId).icon}/>}
         </ToolButton>)}
       </div>
       
-      {this.state.selected && <div className={ls.main}>
-        {view(this.state.selected)}
-      </div>}
+      {selected && view(selected)}
+        
     </div>;
   }
 }

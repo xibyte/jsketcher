@@ -1,5 +1,12 @@
+import {stream} from '../../../modules/lstream';
 
-export function activate({services}) {
+export function defineStreams(ctx) {
+  ctx.streams.storage = {
+    update: stream()
+  }
+}
+
+export function activate({services, streams}) {
 
   function set(key, value) {
     localStorage.setItem(key, value);
@@ -11,6 +18,10 @@ export function activate({services}) {
 
   function remove(key) {
     return localStorage.removeItem(key);
+  }
+
+  function exists(key) {
+    return localStorage.hasOwnProperty(key);
   }
 
   function getAllKeysFromNamespace(namespace) {
@@ -27,8 +38,10 @@ export function activate({services}) {
   function addListener(handler) {
     window.addEventListener('storage', handler, false);
   }
+  
+  addListener(() => streams.storage.update.next(Date.now));
 
   services.storage = {
-    set, get, remove, addListener, getAllKeysFromNamespace
+    set, get, remove, addListener, getAllKeysFromNamespace, exists
   }
 }

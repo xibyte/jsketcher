@@ -3,7 +3,8 @@ import {runSandbox} from './sandbox';
 import {LOG_FLAGS} from './logFlags';
 
 export const STORAGE_GLOBAL_PREFIX = 'TCAD';
-const STORAGE_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
+export const PROJECTS_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
+export const SKETCH_SUFFIX = '.sketch.';
 
 
 export function activate(context) {
@@ -14,15 +15,15 @@ export function activate(context) {
 
   processParams(hints, context);
 
-  const sketchNamespace = id + '.sketch.'; 
-  const sketchStorageNamespace = STORAGE_PREFIX + sketchNamespace;
+  const sketchNamespace = id + SKETCH_SUFFIX; 
+  const sketchStorageNamespace = PROJECTS_PREFIX + sketchNamespace;
 
   function sketchStorageKey(faceId) {
     return sketchStorageNamespace + faceId;
   }
 
   function projectStorageKey() {
-    return STORAGE_PREFIX + id;
+    return PROJECTS_PREFIX + id;
   }
 
   function getSketchURL(sketchId) {

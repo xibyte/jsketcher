@@ -57,7 +57,26 @@ export default [
     invoke: (context) => context.services.export.imagePng()
   },
 
+  {
+    id: 'NativeFormatExport',
+    appearance: {
+      cssIcons: ['book'],
+      label: 'Download Bundle',
+      info: 'export model and its sketches as a json bundle',
+    },
+    invoke: (context) => context.services.export.nativeFormat()
+  },
 
+  {
+    id: 'NativeFormatImport',
+    appearance: {
+      cssIcons: ['book'],
+      label: 'Import Bundle',
+      info: 'import native format json(model and its sketches)',
+    },
+    invoke: (context) => context.services.projectManager.importProject()
+  },
+  
   {
     id: 'RefreshSketches',
     appearance: {

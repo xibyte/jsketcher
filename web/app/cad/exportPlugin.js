@@ -33,7 +33,11 @@ export function activate(ctx) {
     ctx.services.viewer.sceneSetup.render();
   } 
   
+  function nativeFormat() {
+    ctx.services.projectManager.exportProject(ctx.services.project.id);
+  }
+  
   ctx.services.export = {
-    stlAscii, imagePng, toStlAsciiString
+    stlAscii, imagePng, toStlAsciiString, nativeFormat
   };
 }
