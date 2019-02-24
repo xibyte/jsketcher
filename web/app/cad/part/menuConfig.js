@@ -2,7 +2,7 @@ export default [
   {
     id: 'file',
     cssIcons: ['file'],
-    actions: ['Save', 'StlExport', 'ImagePngExport', '-', 'IMPORT_STL', '-', 'ReassignSketch']
+    actions: ['Save', 'StlExport', 'ImagePngExport', 'NativeFormatExport', '-', 'NativeFormatImport', '-', 'ReassignSketch']
   },
   {
     id: 'craft',
