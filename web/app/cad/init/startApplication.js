@@ -19,6 +19,7 @@ import * as CraftPlugin from '../craft/craftPlugin';
 import * as CraftUiPlugin from '../craft/craftUiPlugin';
 import * as StoragePlugin from '../storagePlugin';
 import * as ProjectPlugin from '../projectPlugin';
+import * as ProjectManagerPlugin from '../projectManager/projectManagerPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
 import * as ExportPlugin from '../exportPlugin';
 import * as TpiPlugin from '../tpi/tpiPlugin';
@@ -54,7 +55,8 @@ export default function startApplication(callback) {
     CadRegistryPlugin,
     ExportPlugin,
     TpiPlugin,
-    E0Plugin
+    E0Plugin,
+    ProjectManagerPlugin
   ];
   
   let plugins = [
