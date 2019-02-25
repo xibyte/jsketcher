@@ -31,7 +31,7 @@ function SelectedModificationInfo({ history, index,
   let indexNumber = index + 1;
   return <Widget visible={visible}
                  left={lh && lh.x}
-                 bottom={75}
+                 bottom={95}
                  flatRight={!lh}
                  title={m.type + ' operation #' + indexNumber}
                  onClose={close}>
