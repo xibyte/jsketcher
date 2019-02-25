@@ -3,9 +3,8 @@ import {ProjectManager} from './ProjectManager';
 import exportTextData from '../../../../modules/gems/exportTextData';
 
 export function activate(ctx) {
-
-  function importProject() {
-    // let uploader = document.getElementById("uploader");
+  
+  function importProjectImpl(getId, onDone) {
     let uploader = document.createElement('input');
     uploader.setAttribute('type', 'file');
     uploader.style.display = 'none';
@@ -17,21 +16,14 @@ export function activate(ctx) {
       reader.onload = () => {
         try {
           let bundle = JSON.parse(reader.result);
-          
-          let promptedId = uploader.value;
-          let iof = promptedId.search(/([^/\\]+)$/);
-          if (iof !== -1) {
-            promptedId = promptedId.substring(iof).replace(/\.json$/, '');
-          }
-          
-          
 
-          let projectId = prompt("New Project Name", promptedId);
-          if (projectId && !checkExistence(projectId)) {
+          let projectId = getId(uploader.value, bundle);
+          
+          if (projectId) {
             let sketchesNamespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
             ctx.services.storage.set(PROJECTS_PREFIX + projectId, JSON.stringify(bundle.model));
             bundle.sketches.forEach(s => ctx.services.storage.set(sketchesNamespace + s.id, JSON.stringify(s.data)));
-            openProject(projectId);
+            onDone(projectId);
           }
         } finally {
           document.body.removeChild(uploader);
@@ -42,6 +34,30 @@ export function activate(ctx) {
     uploader.addEventListener('change', read, false);
   }
 
+  function importProjectAs() {
+    function promptId(fileName, bundle) {
+      let promptedId = fileName;
+      let iof = promptedId.search(/([^/\\]+)$/);
+      if (iof !== -1) {
+        promptedId = promptedId.substring(iof).replace(/\.json$/, '');
+      }
+
+      let projectId = prompt("New Project Name", promptedId);
+      if (!projectId && !checkExistence(projectId)) {
+        return null
+      }
+      return projectId;
+    }
+    importProjectImpl(promptId, openProject);
+  }
+  
+  function importProject() {
+    if (confirm('Current project will be wiped off and replaced with the being imported one. Continue?')) {
+      ctx.services.project.empty();
+      importProjectImpl(() => ctx.services.project.id, ctx.services.project.load);  
+    }
+  }
+  
   function exportProject(id) {
     let modelData = ctx.services.storage.get(PROJECTS_PREFIX + id);
     if (modelData) {
@@ -63,19 +79,31 @@ export function activate(ctx) {
     return false;
   }
   
-  function cloneProject(oldId, newId) {
+  function cloneProjectImpl(oldId, newId) {
     if (checkExistence(newId)) {
       return 
     }
     let data = ctx.services.storage.get(PROJECTS_PREFIX + oldId);
     if (data) {
-      ctx.services.storage.set(PROJECTS_PREFIX + newId);
+      ctx.services.storage.set(PROJECTS_PREFIX + newId, data);
       let sketchesNamespace = PROJECTS_PREFIX + oldId + SKETCH_SUFFIX;
       let sketchKeys = ctx.services.storage.getAllKeysFromNamespace(sketchesNamespace);
       sketchKeys.forEach(key => {
         ctx.services.storage.set(PROJECTS_PREFIX + newId + SKETCH_SUFFIX + key.substring(sketchesNamespace.length), ctx.services.storage.get(key));
       });
     }
+  }
+
+  function cloneProject(oldProjectId, silent) {
+    let newProjectId = prompt("New Project Name", oldProjectId);
+    if (newProjectId) {
+      cloneProjectImpl(oldProjectId, newProjectId);
+      if (!silent) {
+        openProject(newProjectId);
+      }
+      return true;
+    }
+    return false;
   }
 
   function exists(projectId) {
@@ -114,35 +142,42 @@ export function activate(ctx) {
     return Object.keys(projects).sort().map(key => projects[key]);
   }
 
+  function deleteProjectImpl(projectId) {
+    ctx.services.storage.remove(PROJECTS_PREFIX + projectId);
+    let sketchesNamespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
+    ctx.services.storage.getAllKeysFromNamespace(sketchesNamespace).forEach(key => ctx.services.storage.remove(key));
+  }
+  
   function deleteProject(projectId) {
     if (confirm(`Project ${projectId} will be deleted. Continue?`)) {
-      ctx.services.storage.remove(PROJECTS_PREFIX + projectId);
+      deleteProjectImpl(projectId)
     } 
   }
-
-  function renameProject(oldProjectId, newProjectId) {
-    if (checkExistence(newProjectId)) {
-      return
+  
+  function renameProject(oldProjectId, silent) {
+    if (cloneProject(oldProjectId, silent)) {
+      deleteProjectImpl(oldProjectId);
     }
-    cloneProject(oldProjectId, newProjectId);
-    deleteProject(oldProjectId);
   }
 
-  function newProject(newProjectId) {
-    if (checkExistence(newProjectId)) {
-      return
+  function newProject() {
+    let newProjectId = prompt("New Project Name");
+    if (newProjectId) {
+      if (checkExistence(newProjectId)) {
+        return
+      }
+      openProject(newProjectId);
     }
-    openProject(newProjectId);
   }
 
   function openProject(projectId) {
     window.open('?' + projectId);
   }
 
-  ctx.services.ui.registerFloatView('ProjectManager', ProjectManager, 'Project Manager', 'book'); 
+  ctx.services.ui.registerFloatView('ProjectManager', ProjectManager, 'Project Manager', 'database'); 
   
   ctx.services.projectManager = {
     listProjects, openProject, newProject, renameProject, deleteProject, 
-    exists, cloneProject, exportProject, importProject
+    exists, cloneProject, exportProject, importProjectAs, importProject 
   }
 }

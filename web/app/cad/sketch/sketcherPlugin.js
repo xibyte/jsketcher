@@ -95,7 +95,7 @@ export function activate(ctx) {
     services.storage.set(sketchStorageKey, JSON.stringify(data));
   }
 
-  let inPlaceEditor = new InPlaceSketcher(ctx, onSketchUpdate);
+  let inPlaceEditor = new InPlaceSketcher(ctx);
   function sketchFace(face) {
     updateSketchBoundaries(face);
     if (inPlaceEditor.inEditMode) {

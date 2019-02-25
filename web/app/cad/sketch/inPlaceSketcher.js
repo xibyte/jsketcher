@@ -8,10 +8,9 @@ import DPR from 'dpr';
 
 export class InPlaceSketcher {
   
-  constructor(ctx, onSketchUpdate) {
+  constructor(ctx) {
     this.face = null; // should be only one in the state
     this.ctx = ctx;
-    this.onSketchUpdate = onSketchUpdate;
   }
 
   get inEditMode() {
@@ -37,7 +36,7 @@ export class InPlaceSketcher {
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
     viewer3d.sceneSetup.trackballControls.addEventListener( 'change', this.onCameraChange);
 
-    let sketchData = localStorage.getItem(this.sketchStorageKey);
+    let sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
     this.viewer.historyManager.init(sketchData);
     this.viewer.io.loadSketch(sketchData);
     this.ctx.streams.sketcher.sketchingFace.value = face;
@@ -101,8 +100,7 @@ export class InPlaceSketcher {
   };
   
   save() {
-    localStorage.setItem(this.sketchStorageKey, this.viewer.io.serializeSketch());
-    this.onSketchUpdate({key: this.sketchStorageKey});
+    this.ctx.services.storage.set(this.sketchStorageKey, this.viewer.io.serializeSketch());
   }
 }
 
