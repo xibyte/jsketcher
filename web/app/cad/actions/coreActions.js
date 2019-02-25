@@ -61,7 +61,7 @@ export default [
     id: 'NativeFormatExport',
     appearance: {
       cssIcons: ['book'],
-      label: 'Download Bundle',
+      label: 'Download Project',
       info: 'export model and its sketches as a json bundle',
     },
     invoke: (context) => context.services.export.nativeFormat()
@@ -70,13 +70,43 @@ export default [
   {
     id: 'NativeFormatImport',
     appearance: {
-      cssIcons: ['book'],
-      label: 'Import Bundle',
-      info: 'import native format json(model and its sketches)',
+      cssIcons: ['download', 'flip-vertical'],
+      label: 'Import Project',
+      info: 'empty current project and import replacing with native format json(model and its sketches)',
     },
     invoke: (context) => context.services.projectManager.importProject()
   },
   
+  {
+    id: 'NativeFormatImportAs',
+    appearance: {
+      cssIcons: ['download', 'flip-vertical'],
+      label: 'Import Project as...',
+      info: 'import native format json(model and its sketches) as a new project',
+    },
+    invoke: (context) => context.services.projectManager.importProjectAs()
+  },
+
+  {
+    id: 'NewProject',
+    appearance: {
+      cssIcons: ['file-o'],
+      label: 'New Project...',
+      info: 'create new project and open in a new tab',
+    },
+    invoke: (context) => context.services.projectManager.newProject()
+  },
+  
+  {
+    id: 'CloneCurrentProject',
+    appearance: {
+      cssIcons: ['copy'],
+      label: 'Clone Project...',
+      info: 'clone current project and open in a new tab',
+    },
+    invoke: (context) => context.services.projectManager.cloneProject(context.services.project.id)
+  },
+
   {
     id: 'RefreshSketches',
     appearance: {

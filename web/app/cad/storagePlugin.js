@@ -10,6 +10,7 @@ export function activate({services, streams}) {
 
   function set(key, value) {
     localStorage.setItem(key, value);
+    notify(key);
   }
 
   function get(key) {
@@ -17,11 +18,22 @@ export function activate({services, streams}) {
   }
 
   function remove(key) {
-    return localStorage.removeItem(key);
+    try {
+      return localStorage.removeItem(key);  
+    } finally {
+      notify(key);
+    }
   }
 
   function exists(key) {
     return localStorage.hasOwnProperty(key);
+  }
+  
+  function notify(key) {
+    streams.storage.update.next({
+      key,
+      timestamp: Date.now
+    });
   }
 
   function getAllKeysFromNamespace(namespace) {
@@ -35,11 +47,9 @@ export function activate({services, streams}) {
     return keys;
   }
 
-  function addListener(handler) {
-    window.addEventListener('storage', handler, false);
-  }
+  window.addEventListener('storage', evt => notify(evt.key), false);
   
-  addListener(() => streams.storage.update.next(Date.now));
+  const addListener = listener => streams.storage.update.attach(listener);
 
   services.storage = {
     set, get, remove, addListener, getAllKeysFromNamespace, exists
