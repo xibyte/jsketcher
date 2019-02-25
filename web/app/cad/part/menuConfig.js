@@ -2,7 +2,8 @@ export default [
   {
     id: 'file',
     cssIcons: ['file'],
-    actions: ['Save', 'StlExport', 'ImagePngExport', 'NativeFormatExport', '-', 'NativeFormatImport', '-', 'ReassignSketch']
+    actions: ['NewProject', '-', 'Save', 'StlExport', 'ImagePngExport', 'NativeFormatExport', '-', 'NativeFormatImport', 
+              'NativeFormatImportAs', '-', 'CloneCurrentProject', '-', 'ReassignSketch']
   },
   {
     id: 'craft',
@@ -13,7 +14,7 @@ export default [
   {
     id: 'primitives',
     label: 'add',
-    cssIcons: ['cube', 'plus'],
+    cssIcons: ['cube'],
     info: 'set of available solid creation operations',
     actions: ['PLANE', 'BOX', 'SPHERE', 'CONE', 'CYLINDER', 'TORUS']
   },
