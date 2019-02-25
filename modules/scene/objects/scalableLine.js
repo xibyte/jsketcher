@@ -23,7 +23,7 @@ export default class ScalableLine extends Mesh {
     let modelSize = 1;
     let modelSizePx = this.width;
     let k = viewScaleFactor(sceneSetup, ORIGIN, modelSizePx, modelSize);
-    let morphDistance = (k * modelSize - modelSize) / 2;
+    let morphDistance = k * modelSize / 2 - modelSize;
     this.morphTargetInfluences[0] = morphDistance / morphBase;
     super.updateMatrix();
   }
@@ -54,7 +54,6 @@ function createGeometry(tessellation, smooth) {
   const width = 1;
   const geometry = new Geometry();
   const scaleTargets = [];
-  const morphBase = 10;
   geometry.dynamic = true;
   let tess = tessellation;
 
