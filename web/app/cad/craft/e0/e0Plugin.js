@@ -15,7 +15,7 @@ export function activate(ctx) {
 }
 
 function instantiateEngine(importObject, callback) {
-  const url = '/wasm/e0/main.wasm';
+  const url = './wasm/e0/main.wasm';
   WebAssembly.instantiateStreaming(fetch(url), importObject).then(results => {
     callback(results.instance);
   });
@@ -38,7 +38,7 @@ function loadWasm(ctx) {
   };
 
   let mainScript = document.createElement('script');
-  mainScript.setAttribute('src', '/wasm/e0/main.js');
+  mainScript.setAttribute('src', './wasm/e0/main.js');
   mainScript.setAttribute('async', 'async');
   document.head.appendChild(mainScript);
 }
