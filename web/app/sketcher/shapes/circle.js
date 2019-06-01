@@ -16,10 +16,10 @@ export class Circle extends SketchObject {
     this.r = new Ref(0);
     this.r.obj = this;
   }
-    
-  collectParams(params) {
-    this.c.collectParams(params);
-    params.push(this.r);
+
+  visitParams(callback) {
+    this.c.visitParams(callback);
+    callback(this.r);
   }
   
   getReferencePoint() {

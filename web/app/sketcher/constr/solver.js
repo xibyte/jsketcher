@@ -2,7 +2,7 @@ import * as utils from '../../utils/utils'
 import * as math from '../../math/math'
 import QR from '../../math/qr'
 import LMOptimizer from '../../math/lm'
-import {ConstantWrapper, EqualsTo} from './constraints'
+import {ConstantWrapper, EqualsTo} from './solverConstraints'
 import {dog_leg} from '../../math/optim'
 import {newVector} from '../../math/vec';
 
@@ -17,8 +17,8 @@ Param.prototype.reset = function(value) {
   this.aux = false;
 };
 
-Param.prototype.set = function(value) {
-  if (this.aux) return;
+Param.prototype.set = function(value, force) {
+  if (this.aux && !force) return;
   this.value = value;
 };
 
@@ -139,7 +139,9 @@ System.prototype.calcGrad = function(out) {
     var cParams = c.params;
     var grad = [];
     utils.fillArray(grad, 0, cParams.length, 0);
-       for (var p = 0; p < cParams.length; p++) {
+    c.gradient(grad);
+
+    for (var p = 0; p < cParams.length; p++) {
       var param = cParams[p];
       var j = param.j;
       out[j] += this.constraints[i].error() * grad[p]; // (10.4) 

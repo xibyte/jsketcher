@@ -1,7 +1,8 @@
 
-export function FailError(msg) {
-  this.msg = msg;
-  this.stack = (new Error()).stack;
+export function createFailError(msg) {
+  let error = new Error(msg);
+  error.assertionFail = true;
+  return error;
 }
 
 export class TestEnv {
@@ -27,7 +28,7 @@ export class TestEnv {
     this.failed = true;
     this.error = msg + (optionalMsg === undefined ? '' : ' ' + optionalMsg);
     this.done();
-    throw new FailError(this.error);
+    throw createFailError(this.error);
   }
 
   terminateOnError(error) {
@@ -46,8 +47,7 @@ export class TestEnv {
         if (!env.finished) {
           env.terminateOnError(e);
         }
-        console.error(e.stack);
-        throw e;
+        console.error(e);
       }
     }
   }

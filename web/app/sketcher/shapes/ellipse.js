@@ -30,11 +30,11 @@ export class Ellipse extends SketchObject {
     }
     return recovered;
   }
-  
-  collectParams(params) {
-    this.ep1.collectParams(params);
-    this.ep2.collectParams(params);
-    params.push(this.r);
+
+  visitParams(callback) {
+    this.ep1.visitParams(callback);
+    this.ep2.visitParams(callback);
+    callback(this.r);
   }
 
 

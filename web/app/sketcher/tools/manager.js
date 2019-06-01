@@ -50,9 +50,7 @@ export class ToolManager {
       } else if (e.keyCode === 46 || e.keyCode === 8) {
         let selection = viewer.selected.slice();
         viewer.deselectAll();
-        for (let i = 0; i < selection.length; i++) {
-          viewer.remove(selection[i]);
-        }
+        viewer.removeAll(selection);
         viewer.refresh();
       }
     }, false);

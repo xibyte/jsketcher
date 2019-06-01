@@ -31,6 +31,20 @@ module.exports = {
     extensions: ['.js', '.jsx'],
     modules: [MODULES, "node_modules"]
   },
+  devServer: {
+    hot: false,
+    inline: false,
+    before: function(app) {
+      app.get('*.wasm', function(req, res) {
+        res.sendFile(req.url, {
+          root: path.join(__dirname, 'web'),
+          headers: {
+            'Content-Type': 'application/wasm'
+          }
+        });
+      });
+    },
+  },
   module: {
     rules: [{
       test: /\.(js|jsx)$/,
@@ -45,39 +59,25 @@ module.exports = {
         'less-loader',
       ]
     },
-    {
-      test: /\.(less|css)$/,
-      include: [MODULES, WEB_APP],
-      use: [
-        'style-loader',
-        {
-          loader: 'css-loader',
-          options: {
-            getLocalIdent: (context, localIdentName, localName) => generateCSSScopedName(localName, context.resourcePath),
-            modules: true,
-            url: false
-          }
-        },
-        'less-loader'
-      ]    
-    },
-    {
-      test: /\.html$/,
-      use: 'handlebars-loader?helperDirs[]=' + __dirname + '/web/app/ui/helpers'
-    }]
-  },
-  devServer: {
-    hot: false,
-    inline: false,
-    before: function(app) {
-      app.get('*.wasm', function(req, res) {
-        res.sendFile(req.url, {
-          root: path.join(__dirname, 'web'),
-          headers: {
-            'Content-Type': 'application/wasm'
-          }
-        });
-      });
-    },
+      {
+        test: /\.(less|css)$/,
+        include: [MODULES, WEB_APP],
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              getLocalIdent: (context, localIdentName, localName) => generateCSSScopedName(localName, context.resourcePath),
+              modules: true,
+              url: false
+            }
+          },
+          'less-loader'
+        ]
+      },
+      {
+        test: /\.html$/,
+        use: 'handlebars-loader?helperDirs[]=' + __dirname + '/web/app/ui/helpers'
+      }]
   }
 };
