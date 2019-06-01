@@ -51,8 +51,8 @@ function initializeSketcherApplication() {
   var constrList = new ui.List('constrs', {
     items : function() {
       var theItems = [];
-      for (var j = 0; j < pm.subSystems.length; j++) {
-        var sub = pm.subSystems[j];
+      for (var j = 0; j < pm.system.subSystems.length; j++) {
+        var sub = pm.system.subSystems[j];
         for (var i = 0; i < sub.constraints.length; ++i) {
           var constr = sub.constraints[i];
           if (constr.aux !== true && app.constraintFilter[constr.NAME] != true) {

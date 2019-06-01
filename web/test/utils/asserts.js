@@ -1,17 +1,23 @@
-import {FailError} from '../test';
+import {createFailError} from '../test';
 import sketchObjectGlobalId from '../../app/cad/sketch/sketchObjectGlobalId';
 
 export function fail(msg, optionalMsg) {
-  throw new FailError(msg + (optionalMsg === undefined ? '' : ' ' + optionalMsg));
+  throw createFailError(msg + (optionalMsg === undefined ? '' : ' ' + optionalMsg));
 }
 
 export function assertTrue(stmt, msg) {
+  if (typeof stmt === 'string') {
+    throw 'wrong assertion usage, mixed up arguments';
+  }
   if (!stmt) {
     fail('assertTrue fails.', msg);
   }
 }
 
 export function assertEmpty(array, msg) {
+  if (typeof stmt === 'string') {
+    throw 'wrong assertion usage, mixed up arguments';
+  }
   if (array.length !== 0) {
     fail('assertEmpty fails. Array length = ' + array.length, msg);
   }

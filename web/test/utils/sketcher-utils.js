@@ -10,11 +10,7 @@ export function toModelP(app, point) {
 }
 
 export function getConstraints(app) {
-  const subSystems = app.viewer.parametricManager.subSystems;
-  if (subSystems.length == 0) {
-    return [];
-  }
-  return subSystems[0].constraints;
+  return app.viewer.parametricManager.system.constraints;
 }
 
 export function click(app, point, attrs) {
@@ -170,10 +166,11 @@ export class TestSegment {
   }
 }
 
-function modelToScreen(viewer, x, y) {
-
-  let modelToScreenMx = viewer.screenToModelMatrix.invert();
-  [x, y] = modelToScreenMx.apply3([x, y, 0]);
+export function modelToScreen(viewer, x, y) {
+  if (viewer.screenToModelMatrix) {
+    let modelToScreenMx = viewer.screenToModelMatrix.invert();
+    [x, y] = modelToScreenMx.apply3([x, y, 0]);
+  }
   x /= viewer.retinaPxielRatio;
   y = (viewer.canvas.height - y) / viewer.retinaPxielRatio;
   return [x, y];

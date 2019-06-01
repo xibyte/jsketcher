@@ -3,7 +3,7 @@ import * as math from '../../math/math';
 import Vector from 'math/vector';
 import {Ref} from './ref'
 import {Constraints} from '../parametric'
-import {SketchObject} from './sketch-object'
+import {pointIterator, SketchObject} from './sketch-object';
 
 export class Arc extends SketchObject {
   
@@ -20,14 +20,14 @@ export class Arc extends SketchObject {
     this.r.value = this.distanceA();
     this.r.obj = this;
   }
-    
-  collectParams(params) {
-    this.a.collectParams(params);
-    this.b.collectParams(params);
-    this.c.collectParams(params);
-    params.push(this.r);
+
+  visitParams(callback) {
+    this.a.visitParams(callback);
+    this.b.visitParams(callback);
+    this.c.visitParams(callback);
+    callback(this.r);
   }
-  
+
   getReferencePoint() {
     return this.c;
   }
@@ -130,6 +130,12 @@ export class Arc extends SketchObject {
 
   copy() {
     return new Arc(this.a.copy(), this.b.copy(), this.c.copy());
+  }
+
+  mirror(dest, mirroringFunc) {
+    this.a.mirror(dest.b, mirroringFunc);
+    this.b.mirror(dest.a, mirroringFunc);
+    this.c.mirror(dest.c, mirroringFunc);
   }
 }
 

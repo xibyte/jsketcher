@@ -55,7 +55,6 @@ export class DragTool extends Tool {
 
   solveRequest(rough) {
     this.solver.solve(rough, 1);
-    this.solver.sync();
 
     var paramsToUpdate = [];
     this.viewer.accept(function (obj) {
@@ -72,7 +71,6 @@ export class DragTool extends Tool {
         this.solver.updateParameter(paramsToUpdate[i]);
       }
       this.solver.solve(rough, 1);
-      this.solver.sync();
     }
   }
 

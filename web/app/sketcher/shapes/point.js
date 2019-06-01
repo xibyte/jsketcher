@@ -13,25 +13,25 @@ export class EndPoint extends SketchObject {
     this._x = new Param(this, 'x');
     this._y = new Param(this, 'y');
   }
-  
-  collectParams(params) {
-    params.push(this._x);
-    params.push(this._y);
+
+  visitParams(callback) {
+    callback(this._x);
+    callback(this._y);
   }
-  
+
   normalDistance(aim) {
     return aim.minus(new Vector(this.x, this.y)).length();
   }
-  
+
   getReferencePoint() {
     return this;
   }
-  
+
   translateImpl(dx, dy) {
     this.x += dx;
     this.y += dy;
   }
-  
+
   drawImpl(ctx, scale) {
     DrawPoint(ctx, this.x, this.y, 3, scale)
   }
@@ -48,13 +48,19 @@ export class EndPoint extends SketchObject {
   setFromArray(arr) {
     this.setXY(arr[0], arr[1]);
   }
-  
+
   toVector() {
     return new Vector(this.x, this.y);
   }
-  
+
   copy() {
     return new EndPoint(this.x, this.y);
+  }
+
+  mirror(dest, mirroringFunc) {
+    let {x, y} = mirroringFunc(this.x, this.y);
+    dest.x = x;
+    dest.y = y;
   }
 }
 EndPoint.prototype._class = 'TCAD.TWO.EndPoint';

@@ -4,7 +4,11 @@ export const Styles = {
     strokeStyle : "#ffffff",
     fillStyle : "#000000"
   },
-
+  VIRTUAL: {
+    lineWidth : 2,
+    strokeStyle : "#ffffff88",
+    fillStyle : "#00000088"
+  }, 
   SERVICE : {
     lineWidth : 0.3,
     strokeStyle : "#ff0000",
