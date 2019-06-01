@@ -19,9 +19,9 @@ export class NurbsObject extends SketchObject {
     this.bezierPieces = this.calcBezierPiecewise();
   }
 
-  collectParams(params) {
-    this.a.collectParams(params);
-    this.b.collectParams(params);
+  visitParams(callback) {
+    this.a.visitParams(callback);
+    this.b.visitParams(callback);
   }
 
   normalDistance(aim) {

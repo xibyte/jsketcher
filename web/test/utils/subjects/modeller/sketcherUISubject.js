@@ -4,7 +4,6 @@ import genSerpinski, {genSerpinskiImpl} from '../../../../app/utils/genSerpinski
 import {distance, distanceAB} from '../../../../app/math/math';
 
 export function createSubjectFromInPlaceSketcher(ctx) {
-  
   let actions = {};
   for (const actionId of Object.keys(ctx.streams.action.state)) {
     if (actionId.startsWith('sketch')) {
@@ -15,19 +14,27 @@ export function createSubjectFromInPlaceSketcher(ctx) {
       actions.addBezierCurve = actions.addCubicBezierSpline;
     }
   }
-  
+
   const oldStyleSketcherApp = {
     viewer: ctx.services.sketcher.inPlaceEditor.viewer,
     actions
   };
+  
+  return createSketcherSubject(oldStyleSketcherApp); 
+}
 
-  const addSegment = sketcher_utils.addSegmentInModel.bind(this, oldStyleSketcherApp);
-  const addArc = sketcher_utils.addArc.bind(this, oldStyleSketcherApp);
-  const addCircle = sketcher_utils.addCircle.bind(this, oldStyleSketcherApp);
-  const addEllipse = sketcher_utils.addEllipse.bind(this, oldStyleSketcherApp);
-  const addEllipticalArc = sketcher_utils.addEllipticalArc.bind(this, oldStyleSketcherApp);
-  const addBezier = sketcher_utils.addBezier.bind(this, oldStyleSketcherApp);
-  const move = sketcher_utils.moveInModel.bind(this, oldStyleSketcherApp);
+export function createSketcherSubject(sketcherApp) {
+
+  const viewer = sketcherApp.viewer;
+  viewer.parametricManager.messageSink = msg => console.log(msg);
+  
+  const addSegment = sketcher_utils.addSegmentInModel.bind(this, sketcherApp);
+  const addArc = sketcher_utils.addArc.bind(this, sketcherApp);
+  const addCircle = sketcher_utils.addCircle.bind(this, sketcherApp);
+  const addEllipse = sketcher_utils.addEllipse.bind(this, sketcherApp);
+  const addEllipticalArc = sketcher_utils.addEllipticalArc.bind(this, sketcherApp);
+  const addBezier = sketcher_utils.addBezier.bind(this, sketcherApp);
+  const move = sketcher_utils.moveInModel.bind(this, sketcherApp);
   function addRectangle(x0, y0, x1, y1) {
     return [
       addSegment(x0, y0, x1, y0),
@@ -38,7 +45,7 @@ export function createSubjectFromInPlaceSketcher(ctx) {
   } 
 
   function addSerpinski(ax, ay, bx, by, depth) {
-    genSerpinskiImpl(ctx.services.sketcher.inPlaceEditor.viewer, {x: ax, y: ay}, {x: bx, y: by}, depth);
+    genSerpinskiImpl(viewer, {x: ax, y: ay}, {x: bx, y: by}, depth);
     let jointWidth = distance(ax, ay, bx, by) / (depth + 1) / 2;
     let dx = bx - ax;
     let dy = by - ay;
@@ -47,7 +54,7 @@ export function createSubjectFromInPlaceSketcher(ctx) {
     dy /= D;
     let ddx = -dy * jointWidth;
     let ddy =  dx * jointWidth;
-    genSerpinskiImpl(ctx.services.sketcher.inPlaceEditor.viewer, {x: bx-ddx, y: by-ddy}, {x: ax-ddx, y: ay-ddy}, depth);
+    genSerpinskiImpl(viewer, {x: bx-ddx, y: by-ddy}, {x: ax-ddx, y: ay-ddy}, depth);
     addSegment(ax, ay, ax-ddx, ay-ddy);
     addSegment(bx, by, bx-ddx, by-ddy);
   }
@@ -62,7 +69,7 @@ export function createSubjectFromInPlaceSketcher(ctx) {
   }
   
   function changeLayer(layerName) {
-    ctx.services.sketcher.inPlaceEditor.viewer.setActiveLayerName(layerName);
+    viewer.setActiveLayerName(layerName);
   }
 
   function changeToConstructionLayer() {
@@ -73,9 +80,24 @@ export function createSubjectFromInPlaceSketcher(ctx) {
     changeLayer('sketch');
   }
 
+  function click(modelX, modelY, attrs) {
+    let [x, y] = sketcher_utils.modelToScreen(viewer, modelX, modelY);
+    sketcher_utils.clickXY(sketcherApp, x, y, attrs);
+  }
+
+  function select(objects, inclusive) {
+    sketcherApp.viewer.select(objects, !inclusive);
+  }
+
+  function runAction(id) {
+    sketcherApp.actions[id].action();
+  }
+  
   return {
     addSegment, addRectangle, addArc, addCircle, addEllipse, addEllipticalArc, addSerpinski, addBezier, addPolygon, 
-    move, changeLayer, changeToConstructionLayer, changeToDefaultLayer
+    move, changeLayer, changeToConstructionLayer, changeToDefaultLayer, 
+    click, select, runAction,
+    viewer
   }
   
 }

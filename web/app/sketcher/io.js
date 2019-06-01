@@ -15,6 +15,7 @@ import Vector from 'math/vector';
 import exportTextData from 'gems/exportTextData';
 import NurbsCurve from '../brep/geom/curves/nurbsCurve';
 import {NurbsObject} from './shapes/nurbsObject';
+import {System} from './system';
 
 const Types = {
   END_POINT : 'TCAD.TWO.EndPoint',
@@ -319,8 +320,8 @@ IO.prototype.cleanUpData = function() {
   }
   this.viewer.deselectAll();
   Generator.resetIDGenerator(0);
-  if (this.viewer.parametricManager.subSystems.length != 0) {
-    this.viewer.parametricManager.subSystems = [];
+  if (this.viewer.parametricManager.system.subSystems.length !== 0) {
+    this.viewer.parametricManager.system = new System();
     this.viewer.parametricManager.notify();
   }
 };
@@ -386,7 +387,7 @@ IO.prototype._serializeSketch = function() {
   }
 
   var constrs = sketch['constraints'] = [];
-  var subSystems = this.viewer.parametricManager.subSystems;
+  var subSystems = this.viewer.parametricManager.system.subSystems;
   for (var j = 0; j < subSystems.length; j++) {
     var sub = subSystems[j];
     for (i = 0; i < sub.constraints.length; ++i) {

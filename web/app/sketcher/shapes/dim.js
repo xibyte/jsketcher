@@ -11,8 +11,8 @@ class LinearDimension extends SketchObject {
     this.b = b;
     this.flip = false;
   }
-  
-  collectParams(params) {
+
+  visitParams(callback) {
   }
   
   getReferencePoint() {
@@ -164,8 +164,8 @@ export class DiameterDimension extends SketchObject {
     this.obj = obj;
     this.angle = Math.PI / 4;
   }
-     
-  collectParams(params) {
+
+  visitParams(callback) {
   }
   
   getReferencePoint() {

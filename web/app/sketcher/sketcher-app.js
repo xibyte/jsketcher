@@ -76,6 +76,10 @@ function App2D() {
   }
   checkForTerminalVisibility();
   
+  this.registerAction('new', "Create New Sketch", function () {
+    app.newSketch();
+  });
+  
   this.registerAction('terminal', "Open/Close Terminal Window", function () {
     app.commandsWin.toggle();
     checkForTerminalVisibility();
@@ -214,6 +218,10 @@ function App2D() {
     app.viewer.parametricManager.p2lDistance(app.viewer.selected, prompt);
   });
 
+  this.registerAction('mirrorConstraint', "Mirror Constraint", function () {
+    app.viewer.parametricManager.mirror(app.viewer.selected);
+  });
+
   this.registerAction('P2PDistanceConstraint', "Distance Between two Points", function () {
     app.viewer.parametricManager.p2pDistance(app.viewer.selected, prompt);
   });
@@ -294,6 +302,10 @@ App2D.views = [
   {
     name: 'Constraints',
     icon: 'cogs'
+  },
+  {
+    name: 'Mirroring',
+    icon: 'mirror'
   }
 ];
 

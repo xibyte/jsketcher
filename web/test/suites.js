@@ -24,6 +24,7 @@ export default {
   SketcherSolver: [
     TestCase('constraints'),
     TestCase('parametric'),
+    TestCase('solveSystems'),
     
   ],
 

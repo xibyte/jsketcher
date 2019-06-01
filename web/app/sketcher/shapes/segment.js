@@ -24,10 +24,10 @@ export class Segment extends SketchObject {
       return true;
     }
   }
-  
-  collectParams(params) {
-    this.a.collectParams(params);
-    this.b.collectParams(params);
+
+  visitParams(callback) {
+    this.a.visitParams(callback);
+    this.b.visitParams(callback);
   }
 
   normalDistance(aim) {
@@ -70,6 +70,16 @@ export class Segment extends SketchObject {
   //  ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.stroke();
   //  ctx.restore();
+  }
+
+  opposite(endPoint) {
+    if (endPoint === this.a) {
+      return this.b;
+    } else if (endPoint === this.b) {
+      return this.a;
+    } else {
+      return null;
+    }
   }
 
   copy() {

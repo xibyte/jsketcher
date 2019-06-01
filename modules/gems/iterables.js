@@ -56,6 +56,26 @@ export function addToListInMap(map, key, value) {
   list.push(value);
 }
 
+export function addToSetInMap(map, key, value) {
+  let set = map.get(key);
+  if (!set) {
+    set = new Set();
+    map.set(key, set);
+  }
+  set.add(value);
+}
+
+export function removeFromSetInMap(map, key, value) {
+  let set = map.get(key);
+  if (set) {
+    set.delete(value);
+    if (set.size === 0) {
+      map.delete(key);
+    }
+  }
+}
+
+
 export function removeInPlace(arr, val) {
   let index = arr.indexOf(val);
   if (index !== -1) {

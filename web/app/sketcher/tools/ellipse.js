@@ -113,6 +113,5 @@ export class EllipseTool extends Tool {
   solveRequest(rough) {
     this.solver = this.viewer.parametricManager.prepare([this.ellipse.r]);
     this.solver.solve(rough, 1);
-    this.solver.sync();
   }
 }

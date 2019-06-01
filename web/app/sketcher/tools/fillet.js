@@ -67,11 +67,20 @@ export class FilletTool extends Tool {
     point1.parent.layer.add(arc);
     var pm = this.viewer.parametricManager;
     arc.stabilize(this.viewer);
-    pm._add(new Constraints.Tangent( arc, point1.parent));
-    pm._add(new Constraints.Tangent( arc, point2.parent));
-    pm._add(new Constraints.Coincident( arc.a, point1));
-    pm._add(new Constraints.Coincident( arc.b, point2));
-  
+    pm._add(new Constraints.Fillet( point1, point2, arc));
+    
+    this.viewer.validators.push(() => {
+      function validOn(p, left) {
+        let op = p.parent.opposite(p);
+        let opV = op.toVector();
+        let dir = p.toVector()._minus(opV)._normalize();
+        let centerDir = arc.c.toVector()._minus(opV)._normalize();
+        let z = centerDir.cross(dir).z;
+        
+        return left ? z < 0.1 : z > -0.1;
+      }
+      return validOn(point1, true) && validOn(point2, false);       
+    });
     //function otherEnd(point) {
     //  if (point.parent.a.id === point.id) {
     //    return point.parent.b;
@@ -114,15 +123,18 @@ export class FilletTool extends Tool {
   }
   
   getCandidate(e) {
-    var picked = this.viewer.pick(e);
+    
+    let preferSketchLayer = (a, b) => (a.effectiveLayer === b.effectiveLayer)? 0 : a.effectiveLayer.name === 'sketch' ? -1 : 1;
+    
+    let picked = this.viewer.pick(e);
     if (picked.length > 0) {
-      var res = fetch.sketchObjects(picked, true, ['TCAD.TWO.EndPoint']);
+      let res = fetch.sketchObjects(picked, true, ['TCAD.TWO.EndPoint']);
       if (res == null) return null;
-      var point1 = res[0];
+      let point1 = res.sort(preferSketchLayer)[0];
       if (!FilletTool.isLine(point1.parent)) return;
-      var line2 = null;
-      for (var i = 0; i < point1.linked.length; i++) {
-        var point2 = point1.linked[i];
+      let linked = [...point1.linked].sort(preferSketchLayer);
+      for (let i = 0; i < linked.length; i++) {
+        let point2 = linked[i];
         if (FilletTool.isLine(point2.parent)) {
           return [point1, point2];
         }

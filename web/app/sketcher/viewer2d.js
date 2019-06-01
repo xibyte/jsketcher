@@ -79,6 +79,7 @@ function Viewer(canvas, IO) {
   this.historyManager = new HistoryManager(this);
   this.transformation = null;
   this.screenToModelMatrix = null;
+  this.validators = [];
   this.refresh();
 }
 
@@ -118,11 +119,11 @@ Viewer.prototype.addSegment = function(x1, y1, x2, y2, layer) {
 };
 
 Viewer.prototype.remove = function(obj) {
-  if (obj.layer != null) {
-    if (obj.layer.remove(obj)) {
-      this.parametricManager.removeConstraintsByObj(obj);
-    }
-  }
+  this.removeAll([obj]);
+};
+
+Viewer.prototype.removeAll = function(objects) {
+  this.parametricManager.removeObjects(objects);
 };
 
 Viewer.prototype.add = function(obj, layer) {
@@ -470,7 +471,8 @@ function Layer(name, style) {
   this.name = name;
   this.style = style;
   this.stylesByRoles = {
-    'construction': Styles.CONSTRUCTION_OF_OBJECT  
+    'construction': Styles.CONSTRUCTION_OF_OBJECT,
+    'virtual': Styles.VIRTUAL
   };
   this.objects = [];
   this.readOnly = false; // This is actually a mark for boundary layers coming from 3D

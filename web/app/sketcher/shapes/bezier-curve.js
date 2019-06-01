@@ -24,11 +24,11 @@ export class BezierCurve extends SketchObject {
     }
   }
 
-  collectParams(params) {
-    this.a.collectParams(params);
-    this.b.collectParams(params);
-    this.cp1.collectParams(params);
-    this.cp2.collectParams(params);
+  visitParams(callback) {
+    this.a.visitParams(callback);
+    this.b.visitParams(callback);
+    this.cp1.visitParams(callback);
+    this.cp2.visitParams(callback);
   }
 
   normalDistance(aim, scale) {
