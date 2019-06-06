@@ -106,8 +106,8 @@ IO.prototype._loadSketch = function(sketch) {
         var role = obj['role'];
         
         //support legacy format
-        if (!role && layerName === '_construction_') {
-          role = 'construction';
+        if (!role) {
+          role = layerName === '_construction_' ? 'construction' : null;
         }
         
         if (boundaryProcessing) {
