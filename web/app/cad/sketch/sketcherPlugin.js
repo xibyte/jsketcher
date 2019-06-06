@@ -4,19 +4,21 @@ import {state, stream} from 'lstream';
 import {InPlaceSketcher} from './inPlaceSketcher';
 import sketcherUIContrib from './sketcherUIContrib';
 import initReassignSketchMode from './reassignSketchMode';
+import sketcherStreams from '../../sketcher/sketcherStreams';
+
+export function defineStreams(ctx) {
+  ctx.streams.sketcher = {
+    update: stream(),
+    sketchingFace: state(null)
+  };
+  ctx.streams.sketcher.sketchingMode = ctx.streams.sketcher.sketchingFace.map(face => !!face);
+}
 
 export function activate(ctx) {
   
   let {streams, services} = ctx;
   
   sketcherUIContrib(ctx);
-  
-  streams.sketcher = {
-    update: stream(),
-    sketchingFace: state(null)
-  };
-
-  streams.sketcher.sketchingFace.attach(face => streams.ui.toolbars.sketcherToolbarsVisible.value = !!face);
   
   const onSketchUpdate = evt => {
     let prefix = services.project.sketchStorageNamespace;
