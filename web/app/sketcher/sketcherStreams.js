@@ -12,6 +12,8 @@ export default function(viewer) {
   }).remember([]);
 
   streams.addingRoleMode = state(null);
+  streams.selection = state([]);
+  streams.objectUpdate = stream();
   
   return streams;
 };
