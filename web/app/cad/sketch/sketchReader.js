@@ -74,15 +74,18 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
   if (sketch.layers !== undefined) {
     for (let layer of sketch.layers) {
       const isConstructionLayer = layer.name === "_construction_";
-      if (isConstructionLayer && !readConstructionSegments) continue;
+      
       for (let obj of layer.data) {
-        if (isConstructionLayer && obj._class !== 'TCAD.TWO.Segment') continue;
+        let isConstructionObject = isConstructionLayer || obj.role === 'construction';
+        if (isConstructionObject && !readConstructionSegments) continue;
+        // if (isConstructionObject && obj._class !== 'TCAD.TWO.Segment') continue;
+        
         if (obj.edge !== undefined) continue;
         if (!!obj.aux) continue;
         if (obj._class === 'TCAD.TWO.Segment') {
           const segA = ReadSketchPoint(obj.points[0]);
           const segB = ReadSketchPoint(obj.points[1]);
-          const pushOn = isConstructionLayer ? out.constructionSegments : out.connections;
+          const pushOn = isConstructionObject ? out.constructionSegments : out.connections;
           pushOn.push(new sm.Segment(getID(obj), segA, segB));
         } else if (obj._class === 'TCAD.TWO.Arc') {
           const arcA = ReadSketchPoint(obj.points[0]);

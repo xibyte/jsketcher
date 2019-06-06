@@ -73,11 +73,11 @@ export function createSketcherSubject(sketcherApp) {
   }
 
   function changeToConstructionLayer() {
-    changeLayer('_construction_');
+    viewer.addingRoleMode = 'construction';
   }
 
   function changeToDefaultLayer() {
-    changeLayer('sketch');
+    viewer.addingRoleMode = null;
   }
 
   function click(modelX, modelY, attrs) {

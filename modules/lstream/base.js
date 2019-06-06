@@ -30,6 +30,10 @@ export class StreamBase {
   distinct() {
     return new DistinctStream(this);
   }
+  
+  throttle(delay, accumulator) {
+    return new ThrottleStream(this, delay, accumulator);
+  }
 }
 
 const {MapStream} = require('./map');
@@ -38,3 +42,4 @@ const {StateStream} = require('./state');
 const {PairwiseStream} = require('./pairwise');
 const {ScanStream} = require('./scan');
 const {DistinctStream} = require('./distinct');
+const {ThrottleStream} = require('./throttle');

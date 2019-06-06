@@ -12,8 +12,7 @@ export function defineStreams({streams}) {
       headsUpQuickActions: state([]),
       sketcherGeneral: state([]),
       sketcherConstraints: state([]),
-      sketcherControl: state([]),
-      sketcherToolbarsVisible: state(false)
+      sketcherControl: state([])
     },
     floatViews: state([]),
     sockets: {}
