@@ -12,6 +12,8 @@ import SketcherToolbars from './SketcherToolbars';
 import CameraControl from './CameraControl';
 import HeadsUpHelper from './HeadsUpHelper';
 import {HeadsUpToolbar} from './HeadsUpToolbar';
+import {SketchObjectExplorer} from '../../../sketcher/components/SketchObjectExplorer';
+import SketcherMode from './SketcherMode';
 
 
 export default class View3d extends React.Component {
@@ -26,17 +28,37 @@ export default class View3d extends React.Component {
       <FloatView />
       <div className={ls.mainArea} >
         <div id='viewer-container' />
-        <Abs left={0} right={0} top={0}>
-          <HeadsUpToolbar/>
-          <HeadsUpHelper/>
-          <WizardManager/>
-          <SketcherToolbars />
-        </Abs>
-        <BottomStack>
-          <CameraControl />
-          <HistoryTimeline />
-          <PlugableControlBar/>
-        </BottomStack>
+        
+        <div className={ls.mainLayout}>
+          <div className={ls.headsUp}>
+            <HeadsUpToolbar/>
+            <HeadsUpHelper/>
+          </div>
+
+          <div className={ls.middleSection}>
+            <SketcherMode>
+              <div className={ls.overlayingPanel} >
+                <SketchObjectExplorer />
+              </div>
+            </SketcherMode>
+            <div className={ls.wizardArea} >
+              <WizardManager/>
+            </div>
+            <SketcherMode>
+              <div className={ls.spring} />
+              <div className={ls.middleRight}>
+                <SketcherToolbars />
+              </div>
+            </SketcherMode>
+          </div>
+
+          <div className={ls.bottomStack}>
+            <CameraControl />
+            <HistoryTimeline />
+            <PlugableControlBar/>
+          </div>
+          
+        </div>
       </div>
       <SelectedModificationInfo />
     </UISystem>;

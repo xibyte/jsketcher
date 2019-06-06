@@ -145,6 +145,14 @@ function initializeSketcherApplication() {
   app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
   constrList.refresh();
 
+
+  var addingModeRadio = new toolkit.InlineRadio(['sketch', 'construction'], ['sketch', 'construction'], 0);
+  app.dock.views['Properties'].node.append('<div>Adding Mode</div>').append(addingModeRadio.root);
+
+  addingModeRadio.root.find('input:radio').change(() => {
+    app.viewer.addingRoleMode = addingModeRadio.getValue();   
+  });
+
   var layerSelection = new toolkit.Combo('layerSelection', 'Layer');
   app.dock.views['Properties'].node.append(layerSelection.root);
 

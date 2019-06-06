@@ -80,7 +80,7 @@ IO.prototype._loadSketch = function(sketch) {
         }
       }
     }
-    var layer = new Layer(name, Styles.DEFAULT);
+    var layer = viewer.createLayer(name, Styles.DEFAULT);
     viewer.layers.push(layer);
     return layer;
   }
@@ -103,6 +103,12 @@ IO.prototype._loadSketch = function(sketch) {
         var skobj = null;
         var _class = obj['_class'];
         var aux = !!obj['aux'];
+        var role = obj['role'];
+        
+        //support legacy format
+        if (!role && layerName === '_construction_') {
+          role = 'construction';
+        }
         
         if (boundaryProcessing) {
           if (_class === T.SEGMENT && boundary.lines.length == 0) continue;
@@ -158,6 +164,7 @@ IO.prototype._loadSketch = function(sketch) {
           skobj = new DiameterDimension(obj['obj']);
         }
         if (skobj != null) {
+          skobj.role = role;
           if (!aux) skobj.stabilize(this.viewer);
           if (aux) skobj.accept(function(o){o.aux = true; return true;});
           if (obj['edge'] !== undefined) {
@@ -265,7 +272,7 @@ IO.prototype.addNewBoundaryObjects = function(boundary, maxEdge) {
   var boundaryLayer = this.viewer.findLayerByName(IO.BOUNDARY_LAYER_NAME);
 
   if (boundaryLayer === null) {
-    boundaryLayer = new Layer(IO.BOUNDARY_LAYER_NAME, Styles.BOUNDS);
+    boundaryLayer = this.viewer.createLayer(IO.BOUNDARY_LAYER_NAME, Styles.BOUNDS);
     this.viewer.layers.splice(0, 0, boundaryLayer);
   } 
 
@@ -343,7 +350,7 @@ IO.prototype._serializeSketch = function() {
       sketch['layers'].push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
-        var to = {'id': obj.id, '_class': obj._class};
+        var to = {'id': obj.id, '_class': obj._class, role: obj.role};
         if (obj.aux) to.aux = obj.aux;
         if (obj.edge !== undefined) to.edge = obj.edge;
         toLayer['data'].push(to);

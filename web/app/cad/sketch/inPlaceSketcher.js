@@ -5,12 +5,14 @@ import {Matrix4} from 'three/src/math/Matrix4';
 import {ORIGIN} from '../../math/l3space';
 import {CAMERA_MODE} from '../scene/viewer';
 import DPR from 'dpr';
+import sketcherStreams from '../../sketcher/sketcherStreams';
 
 export class InPlaceSketcher {
   
   constructor(ctx) {
     this.face = null; // should be only one in the state
     this.ctx = ctx;
+    this.viewer = null;
   }
 
   get inEditMode() {
@@ -32,6 +34,8 @@ export class InPlaceSketcher {
 
     container.appendChild(canvas);
     this.viewer = new Viewer(canvas, IO);
+    this.ctx.streams.sketcherApp = this.viewer.streams;
+
     this.syncWithCamera();
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
     viewer3d.sceneSetup.trackballControls.addEventListener( 'change', this.onCameraChange);
@@ -55,7 +59,9 @@ export class InPlaceSketcher {
     this.face = null;
     this.viewer.canvas.parentNode.removeChild(this.viewer.canvas);
     this.viewer.dispose();
+    this.viewer = null;
     this.ctx.streams.sketcher.sketchingFace.value = null;
+    this.ctx.streams.sketcherApp = null;
     viewer3d.requestRender();
   }
 

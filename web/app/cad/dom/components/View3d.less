@@ -22,3 +22,52 @@
   overflow: hidden;
   position: absolute;
 }
+
+.mainLayout {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  
+  display: flex;
+  flex-direction: column;
+  
+  pointer-events: none;
+}
+
+.headsUp {
+  display: flex;
+  flex-direction: column;
+}
+
+.middleSection {
+  display: flex;
+  align-items: flex-start;
+  flex-grow: 1;
+}
+
+.overlayingPanel {
+  align-self: stretch;
+}
+
+.wizardArea {
+  pointer-events: auto;
+  position: relative;
+}
+
+.spring {
+  flex-grow: 1;
+}
+
+.middleRight {
+  height: 100%;
+  margin: 5px 0;
+}
+
+.bottomStack {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  pointer-events: auto;
+}

@@ -20,7 +20,7 @@ export class BezierCurve extends SketchObject {
     this.addChild(new Segment(a, cp1));
     this.addChild(new Segment(b, cp2));
     for (let c of this.children) {
-      c.role = 'construction';
+      c.role = 'objectConstruction';
     }
   }
 

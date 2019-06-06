@@ -113,6 +113,10 @@ export class SketchObject extends Shape {
     this.visitParams(p => params.push(p));
   }
   
+  get simpleClassName() {
+    return this._class.replace('TCAD.TWO.', '');
+  }
+  
   get effectiveLayer() {
     let shape = this;
     while (shape) {
