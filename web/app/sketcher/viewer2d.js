@@ -381,6 +381,7 @@ class Viewer {
 
     if (this.selected.indexOf(obj) == -1) {
       this.selected.push(obj);
+      this.streams.selection.next(this.selected);
     }
   };
 
@@ -426,6 +427,7 @@ class Viewer {
         break;
       }
     }
+    this.streams.selection.next(this.selected);
   };
 
   deselectAll() {
@@ -433,6 +435,7 @@ class Viewer {
       this.selected[i].marked = null;
     }
     while (this.selected.length > 0) this.selected.pop();
+    this.streams.selection.next(this.selected);
   };
 
   equalizeLinkedEndpoints() {
