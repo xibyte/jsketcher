@@ -82,6 +82,7 @@ export class System extends Index{
     this.subSystems = [];
     this.constraintToSubSystem.clear();
     this.paramToSubSystem.clear();
+    COUNTER = 0;
   }
   
   _collectDependenciesForSubSystemFromConstraint(subSystem, constr) {

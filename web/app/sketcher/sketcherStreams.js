@@ -14,6 +14,8 @@ export default function(viewer) {
   streams.addingRoleMode = state(null);
   streams.selection = state([]);
   streams.objectUpdate = stream();
-  
+
+  streams.constraintsUpdate = stream();
+
   return streams;
 };
