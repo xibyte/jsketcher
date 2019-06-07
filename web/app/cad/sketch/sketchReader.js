@@ -7,6 +7,7 @@ import {HashTable} from '../../utils/hashmap'
 import {Constraints} from '../../sketcher/parametric';
 import Joints from '../../../../modules/gems/joints';
 import sketchObjectGlobalId from './sketchObjectGlobalId';
+import VectorFactory from '../../../../modules/math/vectorFactory';
 
 class SketchGeom {
 
@@ -59,14 +60,14 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
       }
     }
   }
-
+  let vectorFactory = new VectorFactory();
   let pointsById = new Map();
   function ReadSketchPoint(arr) {
     let pointId = arr[0];
     pointId = coiJoints.master(pointId);
     let point = pointsById.get(pointId);
     if (!point) {
-      point = new Vector(readSketchFloat(arr[1][1]), readSketchFloat(arr[2][1]), 0);
+      point = vectorFactory.create(readSketchFloat(arr[1][1]), readSketchFloat(arr[2][1]), 0);
       pointsById.set(pointId, point);
     }
     return point;
@@ -81,7 +82,7 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
         // if (isConstructionObject && obj._class !== 'TCAD.TWO.Segment') continue;
         
         if (obj.edge !== undefined) continue;
-        if (!!obj.aux) continue;
+        if (!!obj.aux && obj.role !== 'virtual') continue;
         if (obj._class === 'TCAD.TWO.Segment') {
           const segA = ReadSketchPoint(obj.points[0]);
           const segB = ReadSketchPoint(obj.points[1]);
