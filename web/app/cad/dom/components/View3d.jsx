@@ -14,12 +14,12 @@ import HeadsUpHelper from './HeadsUpHelper';
 import {HeadsUpToolbar} from './HeadsUpToolbar';
 import {SketchObjectExplorer} from '../../../sketcher/components/SketchObjectExplorer';
 import SketcherMode from './SketcherMode';
+import {ConstraintExplorer} from '../../../sketcher/components/ConstraintExplorer';
 
 
 export default class View3d extends React.Component {
 
   shouldComponentUpdate() {
-    //we don't want the dom to be updated under any circumstances or we loose the WEB-GL container
     return false;
   }
 
@@ -27,7 +27,7 @@ export default class View3d extends React.Component {
     return <UISystem className={ls.root}>
       <FloatView />
       <div className={ls.mainArea} >
-        <div id='viewer-container' />
+        <div id='viewer-container' key='viewer-container' />
         
         <div className={ls.mainLayout}>
           <div className={ls.headsUp}>
@@ -39,6 +39,7 @@ export default class View3d extends React.Component {
             <SketcherMode>
               <div className={ls.overlayingPanel} >
                 <SketchObjectExplorer />
+                <ConstraintExplorer />
               </div>
             </SketcherMode>
             <div className={ls.wizardArea} >

@@ -142,7 +142,7 @@ function initializeSketcherApplication() {
   }
   configureConstraintsFilter();
   constraintsView.node.append(constrList.ul);
-  app.viewer.parametricManager.listeners.push(function() {constrList.refresh()});
+  app.viewer.streams.constraintsUpdate.attach(() => constrList.refresh());
   constrList.refresh();
 
 

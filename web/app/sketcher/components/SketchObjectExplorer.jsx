@@ -35,14 +35,17 @@ export class SketchObjectExplorer extends React.Component {
 
   render() {
     const {objects} = this.props;
-    return <div>
-      {objects.map(o => <div key={o.id} className={cx(ls.objectItem, getClassName(o))}>
-        <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg' /></span>
-        {this.getObjectRole(o)}
-        <span onClick={e => this.tweakSelection(o, e.shiftKey)} className={cx(ls.objectTag, o.marked&&ls.selected)}>{o.simpleClassName} <span>{o.id}</span> </span>
-        <span className={ls.menuButton}>...</span>
-      </div>)}
-    </div>
+    return <React.Fragment>
+      <div className={ls.titleBar}>Objects</div>
+      <div className={ls.scrollableArea}>
+        {objects.map(o => <div key={o.id} className={cx(ls.objectItem, getClassName(o))}>
+          <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg' /></span>
+          {this.getObjectRole(o)}
+          <span onClick={e => this.tweakSelection(o, e.shiftKey)} className={cx(ls.objectTag, o.marked&&ls.selected)}>{o.simpleClassName} <span>{o.id}</span> </span>
+          <span className={ls.menuButton}>...</span>
+        </div>)}
+      </div>
+    </React.Fragment>
   }
 
   tweakSelection(obj, shiftKey) {
