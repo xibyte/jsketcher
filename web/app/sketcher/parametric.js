@@ -14,7 +14,6 @@ class ParametricManager {
   constructor(viewer) {
     this.viewer = viewer;
     this.system = new System();
-    this.listeners = [];
     this.constantTable = {};
 
     this.viewer.params.define('constantDefinition', null);
@@ -42,10 +41,7 @@ ParametricManager.prototype.createConstantResolver = function() {
 };
 
 ParametricManager.prototype.notify = function(event) {
-  for (var i = 0; i < this.listeners.length; ++i) {
-    var l = this.listeners[i];
-    l(event);
-  }
+  this.viewer.streams.constraintsUpdate.next(event); 
 };
 
 ParametricManager.prototype.rebuildConstantTable = function(constantDefinition) {

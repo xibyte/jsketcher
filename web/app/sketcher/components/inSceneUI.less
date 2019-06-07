@@ -1,0 +1,28 @@
+@itemRadius: 5px;
+@alt-color: #9c9c9c;
+
+.titleBar {
+  background: rgba(0,0,0,0.7);
+  color: white;
+  text-transform: uppercase;
+  padding: 3px 5px;
+  pointer-events: auto;
+  flex: 0 0 ;
+  margin-top: 4px;
+}
+
+.scrollableArea {
+  overflow-y: auto;
+  flex: 1 1;
+  pointer-events: auto;
+}
+
+.button {
+  cursor: pointer;
+  &:hover {
+    background-color: #0074D9;
+  }
+  &:active {
+    background-color: #000d7f;
+  }
+}
