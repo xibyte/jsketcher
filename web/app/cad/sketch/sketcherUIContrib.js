@@ -45,6 +45,7 @@ export default function ({services, streams}) {
     'sketchConstraint_pointInMiddle',
     'sketchConstraint_llAngle',
     'sketchConstraint_symmetry',
+    'sketchConstraint_mirror',
     'sketchConstraint_lockConvex'
   ];
   streams.ui.toolbars.sketcherControl.value = [
