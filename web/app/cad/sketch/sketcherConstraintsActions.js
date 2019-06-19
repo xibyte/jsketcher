@@ -212,6 +212,18 @@ export default [
     }
   },
   {
+    id: 'sketchConstraint_mirror',
+    appearance: {
+      info: 'Mirror Objects off of a Line',
+      label: 'mirror',
+      cssIcons: ['star-half-o']
+    },
+    invoke: ({services}) => {
+      let viewer = services.sketcher.inPlaceEditor.viewer;
+      viewer.parametricManager.mirror(viewer.selected);
+    }
+  },
+  {
     id: 'sketchConstraint_lockConvex',
     appearance: {
       info: 'Lock Convexity',

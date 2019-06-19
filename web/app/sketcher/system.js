@@ -184,7 +184,7 @@ export class System extends Index{
     let toMerge = Array.from(affectedSubsystems).sort((a, b) => a._internaOrder - b._internaOrder);
     let master;
     if (toMerge.length === 0 ) {
-      console.error("system has circular dependencies");
+      // console.error("system has circular dependencies");
       master = this.createSubSystem();
     } else {
       [master, ...toMerge] = toMerge;
