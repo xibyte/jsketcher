@@ -276,7 +276,7 @@ function visitParams(constraint, skipAux, callback) {
   if (constraint.visitParams) {
     constraint.visitParams(callback);
   } else {
-    constraint.getSolveData().forEach(([, sParams]) => sParams.forEach(callback));
+    constraint.getSolveData(FAKE_RESOLVER).forEach(([, sParams]) => sParams.forEach(callback));
   }
 }
 
@@ -287,5 +287,7 @@ function isAuxParam(param) {
 const GOT_NOTHING = {
   has: () => false 
 };
+
+const FAKE_RESOLVER = () => 0;
 
 let COUNTER = 0;
