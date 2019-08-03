@@ -872,5 +872,20 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
   return solver; 
 };
 
+ParametricManager.prototype.updateConstraintConstants = function(constr) {
+  let c = constr;
+  if (c.SettableFields === undefined) return;
+  for (let f in c.SettableFields) {
+    let value = c[f];
+    let intro = c.SettableFields[f];
+    value = askNumber(intro, typeof(value) === "number" ? value.toFixed(4) : value, prompt, this.constantResolver);
+    if (value != null) {
+      c[f] = value;
+    }
+  }
+  this.viewer.parametricManager.refresh();
+};
+
 import {Constraints} from './constraints';
+import {askNumber} from '../utils/utils';
 export {Constraints, ParametricManager}

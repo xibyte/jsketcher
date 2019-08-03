@@ -84,19 +84,7 @@ function initializeSketcherApplication() {
     },
 
     click : function(item) {
-      var c = item.constr;
-      if (c.SettableFields === undefined) return;
-      for (var f in c.SettableFields) {
-        var value = c[f];
-        var intro = c.SettableFields[f];
-
-
-        value = askNumber(intro, typeof(value) == "number" ? value.toFixed(4) : value, prompt, pm.constantResolver);
-        if (value != null) {
-          c[f] = value;
-        }
-      }
-      app.viewer.parametricManager.refresh();
+      pm.updateConstraintConstants(item.constr);
     }
   });
   var constraintsView = app.dock.views['Constraints'];
