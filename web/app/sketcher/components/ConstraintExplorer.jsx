@@ -23,7 +23,8 @@ import Fa from 'ui/components/Fa';
     viewer.deselectAll();
     viewer.refresh();
   },
-  constraints: ctx.services.sketcher.inPlaceEditor.viewer.parametricManager.system.constraints
+  constraints: ctx.services.sketcher.inPlaceEditor.viewer.parametricManager.system.constraints,
+  updateConstraintConstants: c => ctx.services.sketcher.inPlaceEditor.viewer.parametricManager.updateConstraintConstants(c)
 }))
 export class ConstraintExplorer extends React.Component {
 
@@ -33,6 +34,7 @@ export class ConstraintExplorer extends React.Component {
       <div className={ls.titleBar}>Constraints</div>
       <div className={ls.scrollableArea}>
         {constraints.map((c, i) => <div key={c.id} className={ls.objectItem} 
+                                        onClick={() => this.props.updateConstraintConstants(c)}
                                         onMouseEnter={() => this.props.highlight(c)}
                                         onMouseLeave={() => this.props.withdraw(c)}>
           <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>
