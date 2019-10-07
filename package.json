@@ -64,7 +64,7 @@
     "numeric": "1.2.6",
     "prop-types": "15.6.0",
     "react": "^16.4.0",
-    "react-dom": "^16.4.0",
+    "react-dom": "^16.4.2",
     "sprintf": "0.1.5",
     "three": "0.89.0"
   }
