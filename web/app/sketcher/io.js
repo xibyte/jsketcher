@@ -43,8 +43,8 @@ IO.prototype.loadSketch = function(sketchData) {
   return this._loadSketch(JSON.parse(sketchData));
 };
 
-IO.prototype.serializeSketch = function() {
-  return JSON.stringify(this._serializeSketch());
+IO.prototype.serializeSketch = function(metadata) {
+  return JSON.stringify(this._serializeSketch(metadata));
 };
 
 IO.prototype._loadSketch = function(sketch) {
@@ -333,7 +333,7 @@ IO.prototype.cleanUpData = function() {
   }
 };
 
-IO.prototype._serializeSketch = function() {
+IO.prototype._serializeSketch = function(metadata) {
   var sketch = {};
   //sketch.boundary = boundary;
   sketch['layers'] = [];
@@ -408,6 +408,7 @@ IO.prototype._serializeSketch = function() {
   if (constantDefinition !== undefined && constantDefinition != null && !/^\s*$/.test(constantDefinition)) {
     sketch['constants'] = constantDefinition;
   }
+  sketch.metadata = metadata;
   return sketch;
 };
 

@@ -50,6 +50,12 @@ export function activate({streams, services}) {
       pointer: modifications.length - 1
     });
   }
+
+  function rebuild() {
+    const mods = streams.craft.modifications.value;
+    reset([]);
+    streams.craft.modifications.next(mods);
+  }
   
   function runRequest(request) {
     let op = services.operation.get(request.type);
@@ -79,7 +85,7 @@ export function activate({streams, services}) {
   }
   
   services.craft = {
-    modify, modifyInHistoryAndStep, reset, runRequest, 
+    modify, modifyInHistoryAndStep, reset, runRequest, rebuild,
     historyTravel: historyTravel(streams.craft.modifications)
   };
 

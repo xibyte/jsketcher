@@ -12,7 +12,7 @@ export function activate({streams, services}) {
     return sceneSolid;
   }
   function addOnScene(sceneSolid, skin) {
-    services.cadRegistry.update(null, [sceneSolid]);
+    streams.craft.models.next([sceneSolid]);
     services.viewer.render();
   }
   services.tpi = Object.assign({
