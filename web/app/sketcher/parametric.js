@@ -19,6 +19,7 @@ class ParametricManager {
     this.viewer.params.define('constantDefinition', null);
     this.viewer.params.subscribe('constantDefinition', 'parametricManager', this.onConstantsExternalChange, this)();
     this.constantResolver = this.createConstantResolver();
+    this.externalConstantResolver = null;
     this.messageSink = msg => alert(msg);
   }
   
@@ -28,9 +29,11 @@ class ParametricManager {
 }
 
 ParametricManager.prototype.createConstantResolver = function() {
-  var pm = this;
-  return function(value) {
-    var _value = pm.constantTable[value];
+  return value => {
+    var _value = this.constantTable[value];
+    if (_value === undefined && this.externalConstantResolver) {
+      _value = this.externalConstantResolver(value);
+    }
     if (_value !== undefined) {
       value = _value;
     } else if (typeof(value) != 'number') {
