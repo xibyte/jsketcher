@@ -42,7 +42,7 @@ export function activate(ctx) {
     reevaluateExpressions, load, evaluateExpression,
     signature: ''
   };
-  ctx.streams.expressions.list.attach(list => ctx.services.expressions.signature = Date.now() + '');
+  ctx.streams.expressions.table.attach(() => ctx.services.expressions.signature = Date.now() + '');
   ctx.services.action.registerAction({
     id: 'expressionsUpdateTable',
     appearance: {
