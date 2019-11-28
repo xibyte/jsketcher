@@ -1,4 +1,4 @@
-import {state} from '../../../../modules/lstream';
+import {state} from 'lstream';
 
 export function activate({streams, services}) {
   const asyncInitializingJobs = new Set();
@@ -31,7 +31,7 @@ export function activate({streams, services}) {
       }
     },
     declareAppReady: () => {
-      streams.lifecycle.appReady.value = true
+      streams.lifecycle.appReady.value = true;
       services.lifecycle.loadProjectRequest();
     }
   }

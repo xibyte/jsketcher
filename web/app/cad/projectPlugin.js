@@ -51,11 +51,11 @@ export function activate(context) {
 
 
   function loadData(data) {
-    if (data.history) {
-      services.craft.reset(data.history);
-    }
     if (data.expressions) {
       services.expressions.load(data.expressions);
+    }
+    if (data.history) {
+      services.craft.reset(data.history);
     }
   }
 
