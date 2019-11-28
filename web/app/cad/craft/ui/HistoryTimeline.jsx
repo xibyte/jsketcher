@@ -107,9 +107,9 @@ function Controls({rebuild, history, pointer, eoh, setHistoryPointer, }) {
   const noB = pointer===-1;
   const noF = pointer===eoh;
   return <React.Fragment>
-    <button disabled={!history.length} className={cx(ls.controlBtn)} onClick={rebuild}>
+    <div className={cx(ls.controlBtn, !history.length&&ls.disabled)} onClick={rebuild}>
       <Fa icon='repeat' fw/>
-    </button>
+    </div>
     <div className={cx(ls.controlBtn, noB&&ls.disabled)} onClick={noB?undefined :() => setHistoryPointer(pointer-1)}>
       <Fa icon='step-backward' fw/>
     </div>
