@@ -5,6 +5,9 @@ import {InPlaceSketcher} from './inPlaceSketcher';
 import sketcherUIContrib from './sketcherUIContrib';
 import initReassignSketchMode from './reassignSketchMode';
 import sketcherStreams from '../../sketcher/sketcherStreams';
+import {Viewer} from "../../sketcher/viewer2d";
+import {IO} from "../../sketcher/io";
+import {DelegatingPanTool} from "../../sketcher/tools/pan";
 
 export function defineStreams(ctx) {
   ctx.streams.sketcher = {
@@ -55,11 +58,34 @@ export function activate(ctx) {
     return services.storage.remove(sketchStorageKey);
   }
 
+  const headlessCanvas = document.createElement('canvas');
+  document.createElement('div').appendChild(headlessCanvas);
+
   function readSketch(sketchId) {
     let savedSketch = getSketchData(sketchId);
     if (savedSketch === null) {
       return null;
     }
+
+    let signature = services.expressions.signature;
+    if (savedSketch && (!savedSketch.metadata || savedSketch.expressionsSignature !== signature)) {
+      try {
+        const viewer = new Viewer(headlessCanvas, IO);
+        viewer.parametricManager.externalConstantResolver = services.expressions.evaluateExpression;
+        viewer.historyManager.init(savedSketch);
+        viewer.io.loadSketch(savedSketch);
+        viewer.parametricManager.refresh();
+        services.storage.set(services.project.sketchStorageKey(sketchId), viewer.io.serializeSketch({
+          expressionsSignature: signature
+        }), true);
+        savedSketch = getSketchData(sketchId);
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    }
+
+
     try {
       return ReadSketch(JSON.parse(savedSketch), sketchId, true);  
     } catch (e) {
@@ -132,7 +158,14 @@ export function activate(ctx) {
       }
     }
   });
-  
+  streams.expressions.table.attach(() => {
+    if (inPlaceEditor.viewer !== null) {
+      inPlaceEditor.viewer.parametricManager.refresh();
+    }
+    updateAllSketches();
+  });
+
+
   services.sketcher = {
     sketchFace, sketchFace2D, updateAllSketches, getAllSketches, readSketch, hasSketch, inPlaceEditor, reassignSketch,
     reassignSketchMode: initReassignSketchMode(ctx)

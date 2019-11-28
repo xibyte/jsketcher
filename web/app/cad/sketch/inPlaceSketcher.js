@@ -19,7 +19,7 @@ export class InPlaceSketcher {
     return !!this.face    
   }
   
-  enter(face) {
+  enter(face, headless) {
     let viewer3d = this.ctx.services.viewer;
     this.face = face;
     this.face.ext.view.sketchGroup.visible = false;
@@ -34,6 +34,7 @@ export class InPlaceSketcher {
 
     container.appendChild(canvas);
     this.viewer = new Viewer(canvas, IO);
+    this.viewer.parametricManager.externalConstantResolver = this.ctx.services.expressions.evaluateExpression;
     this.ctx.streams.sketcherApp = this.viewer.streams;
 
     this.syncWithCamera();
@@ -45,7 +46,7 @@ export class InPlaceSketcher {
     this.viewer.io.loadSketch(sketchData);
     this.ctx.streams.sketcher.sketchingFace.value = face;
   }
-  
+
   get sketchStorageKey() {
     return this.ctx.services.project.sketchStorageKey(this.face.id);
   }
@@ -106,7 +107,9 @@ export class InPlaceSketcher {
   };
   
   save() {
-    this.ctx.services.storage.set(this.sketchStorageKey, this.viewer.io.serializeSketch());
+    this.ctx.services.storage.set(this.sketchStorageKey, this.viewer.io.serializeSketch({
+      expressionsSignature: this.ctx.services.expressions.signature
+    }));
   }
 }
 

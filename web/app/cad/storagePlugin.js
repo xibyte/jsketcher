@@ -8,9 +8,11 @@ export function defineStreams(ctx) {
 
 export function activate({services, streams}) {
 
-  function set(key, value) {
+  function set(key, value, quiet) {
     localStorage.setItem(key, value);
-    notify(key);
+    if (!quiet) {
+      notify(key);
+    }
   }
 
   function get(key) {

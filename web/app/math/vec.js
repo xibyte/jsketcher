@@ -1,6 +1,6 @@
 export {dotVM} from 'numeric';
 
-function scalarOperand(v, out, func) {
+export function scalarOperand(v, out, func) {
   for (let i = 0; i < v.length; i++) {
     out[i] = func(v[i]);
   }

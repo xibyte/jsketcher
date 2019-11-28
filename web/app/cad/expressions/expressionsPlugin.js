@@ -1,6 +1,6 @@
-import {state, stream, merge} from 'lstream';
-import {indexArray} from '../../../../modules/gems/iterables';
-import {NOOP} from '../../../../modules/gems/func';
+import {merge, state} from 'lstream';
+import {indexArray} from 'gems/iterables';
+import {NOOP} from 'gems/func';
 
 export function defineStreams(ctx) {
   const script = state('');
@@ -39,8 +39,10 @@ export function activate(ctx) {
     return value;
   }
   ctx.services.expressions = {
-    reevaluateExpressions, load, evaluateExpression
+    reevaluateExpressions, load, evaluateExpression,
+    signature: ''
   };
+  ctx.streams.expressions.list.attach(list => ctx.services.expressions.signature = Date.now() + '');
   ctx.services.action.registerAction({
     id: 'expressionsUpdateTable',
     appearance: {

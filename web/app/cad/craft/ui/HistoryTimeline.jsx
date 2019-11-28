@@ -19,19 +19,20 @@ import {aboveElement} from '../../../../../modules/ui/positionUtils';
     inProgressOperation: insertOperationReq.type,
     getOperation: type => operationRegistry[type]||EMPTY_OBJECT
   })))
-@mapContext(({streams}) => ({
+@mapContext(({streams, services}) => ({
   remove: atIndex => streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, atIndex)),
   cancel: () => streams.craft.modifications.update(modifications => finishHistoryEditing(modifications)),
-  setHistoryPointer: pointer => streams.craft.modifications.update(({history}) => ({history, pointer}))
+  setHistoryPointer: pointer => streams.craft.modifications.update(({history}) => ({history, pointer})),
+  rebuild: () => services.craft.rebuild()
 }))
 export default class HistoryTimeline extends React.Component {
 
   render() {
-    let {history, pointer, setHistoryPointer, remove, getOperation, inProgressOperation} = this.props;
+    let {history, pointer, setHistoryPointer, rebuild, getOperation, inProgressOperation} = this.props;
     let scrolly;
     let eof = history.length-1;
     return <div className={ls.root} ref={this.keepRef}>
-      <Controls pointer={pointer} eoh={eof} setHistoryPointer={this.setHistoryPointerAndRequestScroll}/>
+      <Controls rebuild={rebuild} history={history} pointer={pointer} eoh={eof} setHistoryPointer={this.setHistoryPointerAndRequestScroll}/>
       <div className={ls.scroller} onClick={e => scrolly.scrollLeft -= 60}><Fa icon='caret-left'/></div>
       <div className={ls.history} ref={el => scrolly = el}>
         {history.map((m, i) => <React.Fragment key={i}>
@@ -102,10 +103,13 @@ function Handle() {
   </svg>;
 }
 
-function Controls({pointer, eoh, setHistoryPointer}) {
+function Controls({rebuild, history, pointer, eoh, setHistoryPointer, }) {
   const noB = pointer===-1;
   const noF = pointer===eoh;
   return <React.Fragment>
+    <button disabled={!history.length} className={cx(ls.controlBtn)} onClick={rebuild}>
+      <Fa icon='repeat' fw/>
+    </button>
     <div className={cx(ls.controlBtn, noB&&ls.disabled)} onClick={noB?undefined :() => setHistoryPointer(pointer-1)}>
       <Fa icon='step-backward' fw/>
     </div>
