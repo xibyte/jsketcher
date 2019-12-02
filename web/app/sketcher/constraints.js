@@ -562,6 +562,44 @@ Constraints.Tangent.prototype.getObjects = function() {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+export class SignedPerpendicular extends AbstractConstraint {
+
+  static deserialize(refs, data) {
+    return new SignedPerpendicular(refs(data[0]), refs(data[1]), refs(data[2]), refs(data[3]));
+  };
+
+  constructor(p1, p2, p3, p4) {
+    super();
+    this.points = [p1, p2, p3, p4];
+  };
+
+
+  getSolveData() {
+    const params = [];
+    this.points.forEach(p => p.collectParams(params));
+    return [['signedPerpendicular', params, []]];
+  }
+
+  serialize() {
+    return [this.NAME, this.points.map(p => p.id)];
+  }
+
+  getObjects() {
+    const collector = new Constraints.ParentsCollector();
+    this.points.forEach(p =>  collector.check(p));
+    return collector.parents;
+  }
+}
+
+Constraints.SignedPerpendicular = SignedPerpendicular;
+Constraints.SignedPerpendicular.prototype.NAME = 'SignedPerpendicular';
+Constraints.SignedPerpendicular.prototype.UI_NAME = 'SignedPerpendicular';
+
+Constraints.Factory[SignedPerpendicular.prototype.NAME] = Coincident.deserialize;
+
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
 /** @constructor */
 Constraints.PointOnLine = function(point, line) {
   this.point = point;
@@ -1023,9 +1061,13 @@ Constraints.Fillet = function(point1, point2, arc) {
   this.point1 = point1;
   this.point2 = point2;
   this.arc = arc;
+
+  const line1 = point1.parent;
+  const line2 = point2.parent;
+
   this.contraints = [
-    new Constraints.Tangent( arc, point1.parent),
-    new Constraints.Tangent( arc, point2.parent),
+    new Constraints.SignedPerpendicular( arc.a, arc.c, point1, line1.opposite(point1)),
+    new Constraints.SignedPerpendicular( arc.b, arc.c, line2.opposite(point2), point2),
     new Constraints.Coincident( arc.a, point1),
     new Constraints.Coincident( arc.b, point2)
   ];
