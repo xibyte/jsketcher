@@ -69,18 +69,6 @@ export class FilletTool extends Tool {
     arc.stabilize(this.viewer);
     pm._add(new Constraints.Fillet( point1, point2, arc));
     
-    this.viewer.validators.push(() => {
-      function validOn(p, left) {
-        let op = p.parent.opposite(p);
-        let opV = op.toVector();
-        let dir = p.toVector()._minus(opV)._normalize();
-        let centerDir = arc.c.toVector()._minus(opV)._normalize();
-        let z = centerDir.cross(dir).z;
-        
-        return left ? z < 0.1 : z > -0.1;
-      }
-      return validOn(point1, true) && validOn(point2, false);       
-    });
     //function otherEnd(point) {
     //  if (point.parent.a.id === point.id) {
     //    return point.parent.b;
