@@ -86,7 +86,6 @@ class Viewer {
     this.historyManager = new HistoryManager(this);
     this.transformation = null;
     this.screenToModelMatrix = null;
-    this.validators = [];
     this.refresh();
   }
 

@@ -17,6 +17,8 @@ function createByConstraintName(name, params, values) {
       return new Perpendicular(params);
     case "parallel":
       return new Parallel(params);
+    case "signedPerpendicular":
+      return new SignedPerpendicular(params);
     case "P2LDistanceSigned":
       return new P2LDistanceSigned(params, values[0]);
     case "P2LDistance":
@@ -408,6 +410,77 @@ function P2PDistanceV(params) {
     out[D] = -1;
   }
 }
+
+function SignedPerpendicular(params) {
+
+  this.params = params;
+
+  const X1 = 0;
+  const Y1 = 1;
+  const X2 = 2;
+  const Y2 = 3;
+  const X3 = 4;
+  const Y3 = 5;
+  const X4 = 6;
+  const Y4 = 7;
+
+  this.error = function() {
+    let x1 = params[X1].get();
+    let x2 = params[X2].get();
+    let y1 = params[Y1].get();
+    let y2 = params[Y2].get();
+    let x3 = params[X3].get();
+    let x4 = params[X4].get();
+    let y4 = params[Y4].get();
+    let y3 = params[Y3].get();
+
+    const dx1 = y1 - y2;
+    const dy1 = x2 - x1;
+
+    const dx2 = x4 - x3;
+    const dy2 = y4 - y3;
+
+    let c1 = Math.sqrt(sq(dx1) + sq(dy1));
+    let c2 = Math.sqrt(sq(dx2) + sq(dy2));
+
+    return dx1*dx2 + dy1*dy2 - c1 * c2;
+  };
+
+  //d(((x-a) * (b - c))^2 ) / dx
+
+  this.gradient = function (out) {
+    let x1 = params[X1].get();
+    let x2 = params[X2].get();
+    let y1 = params[Y1].get();
+    let y2 = params[Y2].get();
+
+    let x3 = params[X3].get();
+    let x4 = params[X4].get();
+    let y3 = params[Y3].get();
+    let y4 = params[Y4].get();
+
+    let dx1 = y1 - y2;
+    let dy1 = x2 - x1;
+
+    let dx2 = x4 - x3;
+    let dy2 = y4 - y3;
+
+    let c1 = Math.max(Math.sqrt(sq(dx1) + sq(dy1)), 0.001);
+    let c2 = Math.max(Math.sqrt(sq(dx2) + sq(dy2)), 0.001);
+
+    out[X1] = y3 - y4 + (c2 * (x2 - x1)) / c1;
+    out[X2] = y4 - y3 - (c2 * (x2 - x1)) / c1;
+    out[Y1] = x4 - x3 - (c2 * (y1 - y2)) / c1;
+    out[Y2] = x3 - x4 + (c2 * (y1 - y2)) / c1;
+    out[X3] = y2 - y1 + (c1 * (x4 - x3)) / c2;
+    out[X4] = y1 - y2 - (c1 * (x4 - x3)) / c2;
+    out[Y3] = x1 - x2 + (c1 * (y4 - y3)) / c2;
+    out[Y4] = x2 - x1 - (c1 * (y4 - y3)) / c2;
+  }
+  this.gradient = NumericGradient;
+
+}
+
 
 function Parallel(params) {
 
