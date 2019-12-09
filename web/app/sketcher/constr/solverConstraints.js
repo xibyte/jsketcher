@@ -477,7 +477,7 @@ function SignedPerpendicular(params) {
     out[Y3] = x1 - x2 + (c1 * (y4 - y3)) / c2;
     out[Y4] = x2 - x1 - (c1 * (y4 - y3)) / c2;
   }
-  this.gradient = NumericGradient;
+  // this.gradient = NumericGradient;
 
 }
 
@@ -793,7 +793,7 @@ function GreaterThan(params, limit) {
 }
 
 
-function NumericGradient(out) {
+export function NumericGradient(out) {
   const h = 1;
   const approx = (param) => {
     const fx = this.error();
@@ -803,7 +803,7 @@ function NumericGradient(out) {
     return (fhx - fx) / h;
   };
 
-  for (var i = 0; i < out.length; i++) {
+  for (let i = 0; i < out.length; i++) {
     out[i] = approx(i);
   }
 }

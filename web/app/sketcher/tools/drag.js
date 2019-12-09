@@ -18,17 +18,15 @@ export class DragTool extends Tool {
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
     var dx = this._point.x - x;
     var dy = this._point.y - y;
-    for (var i = 0; i < this.lockedShifts.length; i += 2) {
-      this.lockedValues[i] = this._point.x - this.lockedShifts[i];
-      this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
-    }
-    this.solver.updateLock(this.lockedValues);
-    if (!Tool.dumbMode(e)) {
-      this.solveRequest(true);
-    } else {
-      this.obj.translate(dx, dy);
-    }
+    // for (var i = 0; i < this.lockedShifts.length; i += 2) {
+    //   this.lockedValues[i] = this._point.x - this.lockedShifts[i];
+    //   this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
+    // }
+    this.obj.translate(dx, dy);
 
+    if (!Tool.dumbMode(e)) {
+      this.solverTransaction.solve(true);
+    }
     this.viewer.refresh();
   }
 
@@ -36,11 +34,13 @@ export class DragTool extends Tool {
     this.origin.x = e.offsetX;
     this.origin.y = e.offsetY;
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
-    this.prepareSolver([]);
+
+    this.solverTransaction = this.viewer.parametricManager.seacSystem.startTransaction([this.obj.gcPoint]);
+
   }
 
   mouseup(e) {
-    this.solveRequest(false);
+    this.solverTransaction.solve(false);
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
     var traveled = math.distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
@@ -54,8 +54,6 @@ export class DragTool extends Tool {
   }
 
   solveRequest(rough) {
-    this.solver.solve(rough, 1);
-
     var paramsToUpdate = [];
     this.viewer.accept(function (obj) {
       if (obj.aux !== true) {

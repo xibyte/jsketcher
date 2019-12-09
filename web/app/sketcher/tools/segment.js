@@ -1,4 +1,6 @@
 import {Tool} from './tool'
+import {Constraints} from "../constraints";
+import {distanceAB} from "../../math/math";
 
 export class AddSegmentTool extends Tool {
 
@@ -61,6 +63,7 @@ export class AddSegmentTool extends Tool {
   
   nextPointPicked() {
     this.pointPicked(this.line.b.x, this.line.b.y);
+    this.viewer.parametricManager.add(new Constraints.P2PDistance(this.line.a, this.line.b, distanceAB(this.line.a, this.line.b)));
     if (this.multi) {
       const b = this.line.b;
       this.line = this.viewer.addSegment(b.x, b.y, b.x, b.y, this.viewer.activeLayer);
@@ -114,6 +117,5 @@ export class AddSegmentTool extends Tool {
     }
     this.viewer.refresh();
   }
-
 }
 

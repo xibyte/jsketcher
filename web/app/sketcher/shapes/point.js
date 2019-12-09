@@ -2,16 +2,41 @@ import {SketchObject} from './sketch-object'
 import {DrawPoint} from './draw-utils'
 import {Generator} from '../id-generator'
 import Vector from 'math/vector';
+import {GCPoint} from "../constr/constractibles";
 
 export class EndPoint extends SketchObject {
 
   constructor(x, y) {
     super();
+    this.parent = null;
+    this.gcPoint = new GCPoint();
+    this._x = this.gcPoint.x; // legacy - yet to remove
+    this._y = this.gcPoint.y;
     this.x = x;
     this.y = y;
-    this.parent = null;
-    this._x = new Param(this, 'x');
-    this._y = new Param(this, 'y');
+  }
+
+  get x() {
+    return this.gcPoint.x.get();
+  }
+
+  set x(val) {
+    return this.gcPoint.x.set(val);
+  }
+
+  get y() {
+    return this.gcPoint.y.get();
+  }
+
+  set y(val) {
+    return this.gcPoint.y.set(val);
+  }
+
+  coincideWith(gcPoint) {
+    if (!this.parkedOwnGeometry) {
+      this.parkedOwnGeometry = this.gcPoint;
+    }
+    this.gcPoint = gcPoint;
   }
 
   visitParams(callback) {
