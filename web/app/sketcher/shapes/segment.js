@@ -2,6 +2,9 @@ import {SketchObject} from './sketch-object'
 import Vector from 'math/vector';
 import {Constraints} from '../parametric'
 import * as math from '../../math/math'
+import {GCLine} from "../constr/constractibles";
+import {Styles} from "../styles";
+import * as draw_utils from "./draw-utils";
 
 export class Segment extends SketchObject {
 
@@ -11,6 +14,20 @@ export class Segment extends SketchObject {
     this.b = b;
     a.parent = this;
     b.parent = this;
+    this.gcLine = new GCLine();
+
+
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const l = Math.sqrt(dx*dx + dy*dy);
+
+    let nx = - dy / l;
+    let ny = dx / l;
+    const ang = Math.atan2(ny, nx);
+
+    this.gcLine.ang.set(ang);
+    this.gcLine.w.set(nx * a.x + ny * a.y);
+
     this.children.push(a, b);
   }
   
@@ -70,6 +87,22 @@ export class Segment extends SketchObject {
   //  ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.stroke();
   //  ctx.restore();
+
+
+    let ang = this.gcLine.ang.get();
+    let nx = Math.cos(ang) ;
+    let ny = Math.sin(ang) ;
+    let w = this.gcLine.w.get();
+
+    ctx.save();
+    draw_utils.SetStyle(Styles.CONSTRUCTION_OF_OBJECT, ctx, scale );
+    ctx.beginPath();
+    ctx.moveTo(nx * w + ny * 1000, ny * w - nx * 1000);
+    ctx.lineTo(nx * w - ny * 1000, ny * w + nx * 1000);
+    ctx.stroke();
+    ctx.restore();
+
+
   }
 
   opposite(endPoint) {

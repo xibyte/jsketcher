@@ -7,18 +7,18 @@ import {dog_leg} from '../../math/optim'
 import {newVector} from '../../math/vec';
 
 /** @constructor */
-function Param(id, value, readOnly) {
+function Param(value) {
   this.reset(value);
+  this.constant = false;
+  this.j = -1;
 }
 
 Param.prototype.reset = function(value) {
-  this.set(value);
-  this.j = -1;
-  this.aux = false;
+  this.value = value;
 };
 
-Param.prototype.set = function(value, force) {
-  if (this.aux && !force) return;
+Param.prototype.set = function(value) {
+  if (this.constant) return;
   this.value = value;
 };
 
@@ -192,14 +192,14 @@ System.prototype.getValues = function() {
   return values;
 };
 
-function wrapAux(constrs) {
+function wrapConstants(constrs) {
   for (let i = 0; i < constrs.length; i++) {
     const c = constrs[i];
     const mask = [];
     let needWrap = false;
     for (let j = 0; j < c.params.length; j++) {
       const param = c.params[j];
-      mask[j] = param.aux === true;
+      mask[j] = param.constant === true;
       needWrap = needWrap || mask[j];
     }
     if (needWrap) {
@@ -207,8 +207,8 @@ function wrapAux(constrs) {
     }
   }
   for (let constr of constrs) {
-    if (constr.params.length == 0) {
-      return constrs.filter(c => c.params.length != 0);
+    if (constr.params.length === 0) {
+      return constrs.filter(c => c.params.length !== 0);
     }
   }
   return constrs;
@@ -223,7 +223,7 @@ var lock2Equals2 = function(constrs, locked) {
 };
 
 var diagnose = function(sys) {
-  if (sys.constraints.length == 0 || sys.params.length == 0) {
+  if (sys.constraints.length === 0 || sys.params.length === 0) {
     return {
       conflict : false,
       dof : 0
@@ -245,7 +245,7 @@ var prepare = function(constrs, locked) {
     Array.prototype.push.apply( constrs, lockingConstrs );
   }
 
-  constrs = wrapAux(constrs);
+  constrs = wrapConstants(constrs);
   var sys = new System(constrs);
   
   var model = function(point) {
@@ -265,8 +265,8 @@ var prepare = function(constrs, locked) {
 
   function solve(rough, alg) {
     //if (simpleMode) return nullResult;
-    if (constrs.length == 0) return nullResult;
-    if (sys.params.length == 0) return nullResult;
+    if (constrs.length === 0) return nullResult;
+    if (sys.params.length === 0) return nullResult;
     switch (alg) {
       case 2:
         return solve_lm(sys, model, jacobian, rough);
