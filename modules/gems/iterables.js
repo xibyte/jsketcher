@@ -84,4 +84,10 @@ export function removeInPlace(arr, val) {
   return arr;
 }
 
+export function indexById(array) {
+  const out = {};
+  array.forEach(i => out[i.id] = i);
+  return out;
+}
+
 export const EMPTY_ARRAY = Object.freeze([]);

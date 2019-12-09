@@ -5,16 +5,18 @@ import {EditCircleTool} from '../tools/circle'
 import {EndPoint} from './point'
 import {Ref} from './ref'
 import {SketchObject} from './sketch-object'
+import {GCCircle} from "../constr/constractibles";
 
 export class Circle extends SketchObject {
   
   constructor(c) {
     super();
+    this.gcCircle = new GCCircle();
     this.c = c;
     c.parent = this;
     this.children.push(c);
-    this.r = new Ref(0);
-    this.r.obj = this;
+    this.r = this.gcCircle.r;
+    this.c.coincideWith(this.gcCircle.c)
   }
 
   visitParams(callback) {
@@ -32,7 +34,7 @@ export class Circle extends SketchObject {
   
   drawImpl(ctx, scale) {
     ctx.beginPath();
-    ctx.arc(this.c.x, this.c.y, this.r.get(), 0, 2 * Math.PI);
+    ctx.arc(this.gcCircle.c.x.get(), this.gcCircle.c.y.get(), this.gcCircle.r.get(), 0, 2 * Math.PI);
     ctx.stroke();
   }
   

@@ -14,6 +14,7 @@ class ParametricManager {
   constructor(viewer) {
     this.viewer = viewer;
     this.system = new System();
+    this.seacSystem = new SEACSystem();
     this.constantTable = {};
 
     this.viewer.params.define('constantDefinition', null);
@@ -21,11 +22,68 @@ class ParametricManager {
     this.constantResolver = this.createConstantResolver();
     this.externalConstantResolver = null;
     this.messageSink = msg => alert(msg);
+
+    setTimeout(() => {
+
+      let s1 = viewer.addSegment(100, 100, 300, 300, viewer.activeLayer);
+      let s2 = viewer.addSegment(200, 100, 400, 300, viewer.activeLayer);
+      let c1 = new Circle(new EndPoint(500, 500));
+      c1.r.set(500);
+      viewer.add(c1, viewer.activeLayer);
+      let c2 = new Circle(new EndPoint(0, 0));
+      c2.r.set(50);
+      viewer.add(c2, viewer.activeLayer);
+
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s1, c1], {
+        inverted: false
+      }));
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s2, c1], {
+        inverted: true
+      }));
+
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s1, c2], {
+        inverted: false
+      }));
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s2, c2], {
+        inverted: true
+      }));
+
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.PointOnLine, [s1.a, s1]));
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.PointOnLine, [s1.b, s1]));
+
+
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.PointOnLine, [s2.a, s2]));
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.PointOnLine, [s2.b, s2]));
+
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.DistancePP, [s1.a, s1.b], {
+        distance: 350
+      }));
+
+
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.DistancePP, [s2.a, s2.b], {
+        distance: 500
+      }));
+
+      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.DistancePP, [c1.c, c2.c], {
+        distance: 700
+      }));
+
+
+      this.refresh();
+
+    });
+
   }
   
   get subSystems() {
     return this.system.subSystems;
   }
+
+  addSEAC(constr) {
+    this.seacSystem.addConstraint(constr);
+    this.refresh();
+  }
+
 }
 
 ParametricManager.prototype.createConstantResolver = function() {
@@ -278,7 +336,7 @@ ParametricManager.prototype.tangent = function(objs) {
     this.add(new Constraints.CurveTangent(lines[0], curves[0]));
   } else {
     const arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
-    this.add(new Constraints.Tangent(arcs[0], lines[0]));
+    this.addSEAC(new TangentLC(lines[0], arcs[0], falses));
   }
 };
 
@@ -789,7 +847,7 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
     var _p = solverParamsDict[p.id];
     if (_p === undefined && !doNotCreate) {
       if (p.__cachedParam__ === undefined) {
-        _p = new Param(p.id, p.get());
+        _p = new Param(p.get());
         p.__cachedParam__ = _p;
       } else {
         _p = p.__cachedParam__;
@@ -825,7 +883,7 @@ ParametricManager.prototype.prepareForSubSystem = function(locked, subSystemCons
     for (let p = 0; p < sdata[1].length; ++p) {
       const param = sdata[1][p];
       const solverParam = getSolverParam(param);
-      solverParam.aux = auxDict[solverParam._backingParam.id] !== undefined;
+      solverParam.constant = auxDict[solverParam._backingParam.id] !== undefined;
       params.push(solverParam);
     }
     if (reduceInfo.reducedConstraints[i] === true) continue;
@@ -891,4 +949,8 @@ ParametricManager.prototype.updateConstraintConstants = function(constr) {
 
 import {Constraints} from './constraints';
 import {askNumber} from '../utils/utils';
+import {SEACSystem} from "./constr/SEACSystem";
+import {ConstraintDefinitions, SEACConstraint, TangentLC} from "./constr/SEACConstraints";
+import {Circle} from "./shapes/circle";
+import {EndPoint} from "./shapes/point";
 export {Constraints, ParametricManager}
