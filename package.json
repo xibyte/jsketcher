@@ -55,7 +55,7 @@
     "clipper-lib": "6.2.1",
     "diff-match-patch": "1.0.0",
     "earcut": "2.1.1",
-    "handlebars": "^4.1.2",
+    "handlebars": "^4.3.0",
     "handlebars-loader": "1.7.1",
     "jquery": "^3.4.1",
     "less": "^3.8.1",
