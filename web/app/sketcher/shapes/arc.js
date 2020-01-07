@@ -4,6 +4,7 @@ import Vector from 'math/vector';
 import {Ref} from './ref'
 import {Constraints} from '../parametric'
 import {pointIterator, SketchObject} from './sketch-object';
+import {EndPoint} from "./point";
 
 export class Arc extends SketchObject {
   
@@ -140,3 +141,4 @@ export class Arc extends SketchObject {
 }
 
 Arc.prototype._class = 'TCAD.TWO.Arc';
+Arc.prototype.TYPE = 'ARC';

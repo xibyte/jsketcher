@@ -7,14 +7,15 @@ import {dog_leg} from '../../math/optim'
 import {newVector} from '../../math/vec';
 
 /** @constructor */
-function Param(value) {
+function Param(value, objectParam) {
   this.reset(value);
-  this.constant = false;
-  this.j = -1;
+  this.objectParam = objectParam;
 }
 
 Param.prototype.reset = function(value) {
-  this.value = value;
+  this.set(value);
+  this.constant = false;
+  this.j = -1;
 };
 
 Param.prototype.set = function(value) {

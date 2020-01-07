@@ -131,7 +131,7 @@ export class SketchObject extends Shape {
 
 export function pointIterator(shape, func) {
   shape.accept(o => {
-    if (o._class === Types.END_POINT) {
+    if (o._class === Types.POINT) {
       func(o);
     }
     return true;

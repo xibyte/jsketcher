@@ -1,5 +1,18 @@
-import {NumericGradient} from "./solverConstraints";
 import {sq} from "../../math/math";
+
+export function R_Equal(params, [value]) {
+
+  return {
+
+    params,
+
+    error: () => params[0].get() - value,
+
+    gradient: out => {
+      out[0] = 1;
+    }
+  };
+}
 
 export function R_TangentLC(params, [inverted]) {
 

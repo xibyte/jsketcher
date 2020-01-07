@@ -3,6 +3,8 @@ import {SketchObject} from './sketch-object'
 import {Constraints} from '../parametric'
 
 import * as math from '../../math/math';
+import {Circle} from "./circle";
+import {EndPoint} from "./point";
 
 export class Ellipse extends SketchObject {
 
@@ -91,6 +93,7 @@ export class Ellipse extends SketchObject {
   }
 }
 Ellipse.prototype._class = 'TCAD.TWO.Ellipse';
+Ellipse.prototype.TYPE = 'ELLIPSE';
 
 const sq = (a) => a * a;
 const RECOVER_LENGTH = 100;

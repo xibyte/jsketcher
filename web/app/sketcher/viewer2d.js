@@ -121,6 +121,7 @@ class Viewer {
     var b = new EndPoint(x2, y2);
     var line = new Segment(a, b);
     layer.add(line);
+    line.stabilize(this);
     return line;
   };
 
@@ -329,7 +330,7 @@ class Viewer {
     return out;
   };
 
-  accept(visitor) {
+  accept = visitor => {
     for (let layer of this.layers) {
       for (let object of layer.objects) {
         if (!object.accept(visitor)) {

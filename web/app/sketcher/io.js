@@ -16,9 +16,10 @@ import exportTextData from 'gems/exportTextData';
 import NurbsCurve from '../brep/geom/curves/nurbsCurve';
 import {NurbsObject} from './shapes/nurbsObject';
 import {System} from './system';
+import {AlgNumConstraint} from "./constr/ANConstraints";
 
 const Types = {
-  END_POINT : 'TCAD.TWO.EndPoint',
+  POINT     : 'TCAD.TWO.EndPoint',
   SEGMENT   : 'TCAD.TWO.Segment',
   ARC       : 'TCAD.TWO.Arc',
   CIRCLE    : 'TCAD.TWO.Circle',
@@ -51,22 +52,22 @@ IO.prototype._loadSketch = function(sketch) {
 
   this.cleanUpData();
 
-  var index = {};
+  const index = {};
 
   function endPoint(p) {
-    var id = p[0];
-    var ep = index[id];
+    const [id, [xref, x], [yref, y]] = p;
+    let ep = index[id];
     if (ep !== undefined) {
-      return
+      return;
     }
-    ep = new EndPoint(p[1][1], p[2][1]);
-    index[p[1][0]] = ep._x;
-    index[p[2][0]] = ep._y;
+    ep = new EndPoint(x, y);
+    index[xref] = ep.params.x;
+    index[yref] = ep.params.y;
     index[id] = ep;
     return ep;
   }
 
-  var layerIdGen = 0;
+  let layerIdGen = 0;
   function getLayer(viewer, name) {
     if (name === undefined) {
       name = "layer_" + layerIdGen++;
@@ -74,7 +75,7 @@ IO.prototype._loadSketch = function(sketch) {
       if (name === viewer.dimLayer.name) {
         return viewer.dimLayer;
       }
-      for (var i = 0; i < viewer.layers.length; ++i) {
+      for (let i = 0; i < viewer.layers.length; ++i) {
         if (name === viewer.layers[i].name) {
           return viewer.layers[i];
         }
@@ -84,6 +85,7 @@ IO.prototype._loadSketch = function(sketch) {
     viewer.layers.push(layer);
     return layer;
   }
+  const version = sketch.version || 1;
   var T = Types;
   var maxEdge = 0;
   var sketchLayers = sketch['layers'];
@@ -93,7 +95,7 @@ IO.prototype._loadSketch = function(sketch) {
     for (var l = 0; l < sketchLayers.length; ++l) {
       var ioLayer = sketchLayers[l];
       var layerName = ioLayer['name'];
-      var boundaryProcessing = layerName == IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
+      var boundaryProcessing = layerName === IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
       var layer = getLayer(this.viewer, layerName);
       if (!!ioLayer.style) layer.style = ioLayer.style;
       layer.readOnly = !!ioLayer.readOnly;
@@ -111,28 +113,28 @@ IO.prototype._loadSketch = function(sketch) {
         }
         
         if (boundaryProcessing) {
-          if (_class === T.SEGMENT && boundary.lines.length == 0) continue;
-          else if (_class === T.ARC && boundary.arcs.length == 0) continue;
-          else if (_class === T.CIRCLE && boundary.circles.length == 0) continue;
+          if (_class === T.SEGMENT && boundary.lines.length === 0) continue;
+          else if (_class === T.ARC && boundary.arcs.length === 0) continue;
+          else if (_class === T.CIRCLE && boundary.circles.length === 0) continue;
         }
         
         if (_class === T.SEGMENT) {
-          const points = obj['points'];
-          const a = endPoint(points[0]);
-          const b = endPoint(points[1]);
+          const [aRef, bRef] = obj.points;
+          const a = endPoint(aRef);
+          const b = endPoint(bRef);
           skobj = new Segment(a, b);
-        } else if (_class === T.END_POINT) {
-          skobj = endPoint(obj['location']);
+        } else if (_class === T.POINT) {
+          skobj = endPoint(obj.location);
         } else if (_class === T.ARC) {
-          const points = obj['points'];
+          const points = obj.points;
           const a = endPoint(points[0]);
           const b = endPoint(points[1]);
           const c = endPoint(points[2]);
           skobj = new Arc(a, b, c);
         } else if (_class === T.CIRCLE) {
-          const c = endPoint(obj['c']);
+          const c = endPoint(obj.c);
           skobj = new Circle(c);
-          skobj.r.set(obj['r']);
+          skobj.r.set(obj.r);
         } else if (_class === T.ELLIPSE) {
           const ep1 = endPoint(obj['ep1']);
           const ep2 = endPoint(obj['ep2']);
@@ -214,8 +216,12 @@ IO.prototype._loadSketch = function(sketch) {
   if (sketchConstraints !== undefined) {
     for (var i = 0; i < sketchConstraints.length; ++i) {
       try {
-        const c = this.parseConstr(sketchConstraints[i], index);
-        this.viewer.parametricManager._add(c);
+        if (version > 1) {
+          this.viewer.parametricManager.algnNumSystem.addConstraint(AlgNumConstraint.read(sketchConstraints[i], index));
+        } else {
+          const c = this.parseConstr(sketchConstraints[i], index);
+          this.viewer.parametricManager._add(c);
+        }
       } catch (msg) {
         console.info("Skipping. " + msg);
       }
@@ -232,7 +238,7 @@ IO.prototype.linkEndPoints = function(objects) {
   const index = HashTable.forVector2d();
   for (let obj of objects) {
     obj.accept((o) => {
-      if (o._class == Types.END_POINT) {
+      if (o._class == Types.POINT) {
         const equalPoint = index.get(o);
         if (equalPoint == null) {
           index.put(o, o);
@@ -336,9 +342,9 @@ IO.prototype.cleanUpData = function() {
 IO.prototype._serializeSketch = function(metadata) {
   var sketch = {};
   //sketch.boundary = boundary;
-  sketch['layers'] = [];
+  sketch.layers = [];
   function point(p) {
-    return [ p.id, [p._x.id, p.x], [p._y.id, p.y] ];
+    return [ p.id, [p.params.x.id, p.x], [p.params.y.id, p.y] ];
   }
   var T = Types;
   var toSave = [this.viewer.dimLayers, this.viewer.layers];
@@ -346,76 +352,74 @@ IO.prototype._serializeSketch = function(metadata) {
     var layers = toSave[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
-      var toLayer = {'name' : layer.name, style : layer.style, readOnly: layer.readOnly, 'data' : []};
-      sketch['layers'].push(toLayer);
+      var toLayer = {name : layer.name, style : layer.style, readOnly: layer.readOnly, data : []};
+      sketch.layers.push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
-        var to = {'id': obj.id, '_class': obj._class, role: obj.role};
+        var to = {id: obj.id, _class: obj._class, role: obj.role};
         if (obj.aux) to.aux = obj.aux;
         if (obj.edge !== undefined) to.edge = obj.edge;
-        toLayer['data'].push(to);
+        toLayer.data.push(to);
         if (obj._class === T.SEGMENT) {
-          to['points'] = [point(obj.a), point(obj.b)];
-        } else if (obj._class === T.END_POINT) {
-          to['location'] = point(obj);
+          to.points = [point(obj.a), point(obj.b)];
+        } else if (obj._class === T.POINT) {
+          to.location = point(obj);
         } else if (obj._class === T.ARC) {
-          to['points'] = [point(obj.a), point(obj.b), point(obj.c)];
+          to.points = [point(obj.a), point(obj.b), point(obj.c)];
         } else if (obj._class === T.CIRCLE) {
-          to['c'] = point(obj.c);
-          to['r'] = obj.r.get();
+          to.c = point(obj.c);
+          to.r = obj.r.get();
         } else if (obj._class === T.ELLIPSE) {
-          to['ep1'] = point(obj.ep1);
-          to['ep2'] = point(obj.ep2);
-          to['r'] = obj.r.get();
+          to.ep1 = point(obj.ep1);
+          to.ep2 = point(obj.ep2);
+          to.r = obj.r.get();
         } else if (obj._class === T.ELL_ARC) {
-          to['ep1'] = point(obj.ep1);
-          to['ep2'] = point(obj.ep2);
-          to['a'] = point(obj.a);
-          to['b'] = point(obj.b);
-          to['r'] = obj.r.get();
+          to.ep1 = point(obj.ep1);
+          to.ep2 = point(obj.ep2);
+          to.a = point(obj.a);
+          to.b = point(obj.b);
+          to.r = obj.r.get();
         } else if (obj._class === T.BEZIER) {
-          to['a'] = point(obj.a);
-          to['b'] = point(obj.b);
-          to['cp1'] = point(obj.cp1);
-          to['cp2'] = point(obj.cp2);
+          to.a = point(obj.a);
+          to.b = point(obj.b);
+          to.cp1 = point(obj.cp1);
+          to.cp2 = point(obj.cp2);
         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
-          to['a'] = obj.a.id;
-          to['b'] = obj.b.id;
-          to['flip'] = obj.flip;
+          to.a = obj.a.id;
+          to.b = obj.b.id;
+          to.flip = obj.flip;
         } else if (obj._class === T.DDIM) {
-          to['obj'] = obj.obj.id;
+          to.obj = obj.obj.id;
         }
         const children = nonPointChildren(obj).map(c => c.id);
-        if (children.length != 0) {
-          to['children'] = children;
+        if (children.length !== 0) {
+          to.children = children;
         }
       }
     }
   }
 
-  var constrs = sketch['constraints'] = [];
-  var subSystems = this.viewer.parametricManager.system.subSystems;
-  for (var j = 0; j < subSystems.length; j++) {
-    var sub = subSystems[j];
-    for (i = 0; i < sub.constraints.length; ++i) {
-      if (!sub.constraints[i].aux) {
-        constrs.push(this.serializeConstr(sub.constraints[i]));
-      }
+  sketch.constraints = [];
+  const systemConstraints = this.viewer.parametricManager.algnNumSystem.constraints;
+  for (let sc of systemConstraints) {
+    if (!sc.internal) {
+      sketch.constraints.push(sc.write());
     }
   }
 
   var constantDefinition = this.viewer.params.constantDefinition;
   if (constantDefinition !== undefined && constantDefinition != null && !/^\s*$/.test(constantDefinition)) {
-    sketch['constants'] = constantDefinition;
+    sketch.constants = constantDefinition;
   }
   sketch.metadata = metadata;
+  sketch.version = 2;
   return sketch;
 };
 
 function nonPointChildren(obj){
   const children = [];
   obj.accept((o) => {
-    if (o._class !== Types.END_POINT) {
+    if (o._class !== Types.POINT) {
       children.push(o);
     }
     return true;
@@ -440,9 +444,6 @@ IO.prototype.parseConstr = function (c, index) {
   return constrCreate(find, ps);
 };
 
-IO.prototype.serializeConstr = function (c) {
-  return c.serialize();
-};
 
 function _format(str, args) {
   if (args.length == 0) return str;
@@ -499,7 +500,7 @@ function BBox() {
     if (obj._class === T.SEGMENT) {
       this.checkBounds(obj.a.x, obj.a.y);
       this.checkBounds(obj.b.x, obj.b.y);
-    } else if (obj._class === T.END_POINT) {
+    } else if (obj._class === T.POINT) {
       this.checkBounds(obj.x, obj.y);
     } else if (obj._class === T.ARC) {
       this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
@@ -509,7 +510,7 @@ function BBox() {
       this.checkCircBounds(obj.centerX, obj.centerY, Math.max(obj.radiusX, obj.radiusY));
     } else if (obj) {
       obj.accept((o) => {
-        if (o._class == T.END_POINT) {
+        if (o._class == T.POINT) {
           this.checkBounds(o.x, o.y);
         }
         return true;
@@ -589,7 +590,7 @@ IO.prototype.svgExport = function () {
     out.fline('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
     for (var i = 0; i < layer.objects.length; ++i) {
       var obj = layer.objects[i];
-      if (obj._class !== T.END_POINT) bbox.check(obj);
+      if (obj._class !== T.POINT) bbox.check(obj);
       if (obj._class === T.SEGMENT) {
         out.fline('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
       } else if (obj._class === T.ARC) {
@@ -686,7 +687,7 @@ IO.prototype.dxfExport = function () {
     var layer = toExport[l];
     for (i = 0; i < layer.objects.length; ++i) {
       var obj = layer.objects[i];
-      if (obj._class === T.END_POINT) {
+      if (obj._class === T.POINT) {
         out.line("0");
         out.line("POINT");
         out.line("8");
