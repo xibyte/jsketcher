@@ -25,6 +25,10 @@ class SubSystem {
     });
     other.nativeParams.forEach(p => this.nativeParams.add(p));
   }
+
+  prepare() {
+
+  }
 }
 
 class Index {

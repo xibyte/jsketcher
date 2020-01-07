@@ -14,7 +14,7 @@ class ParametricManager {
   constructor(viewer) {
     this.viewer = viewer;
     this.system = new System();
-    this.seacSystem = new SEACSystem();
+    this.algnNumSystem = new AlgNumSubSystem();
     this.constantTable = {};
 
     this.viewer.params.define('constantDefinition', null);
@@ -23,55 +23,76 @@ class ParametricManager {
     this.externalConstantResolver = null;
     this.messageSink = msg => alert(msg);
 
-    setTimeout(() => {
-
-      let s1 = viewer.addSegment(100, 100, 300, 300, viewer.activeLayer);
-      let s2 = viewer.addSegment(200, 100, 400, 300, viewer.activeLayer);
-      let c1 = new Circle(new EndPoint(500, 500));
-      c1.r.set(500);
-      viewer.add(c1, viewer.activeLayer);
-      let c2 = new Circle(new EndPoint(0, 0));
-      c2.r.set(50);
-      viewer.add(c2, viewer.activeLayer);
-
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s1, c1], {
-        inverted: false
-      }));
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s2, c1], {
-        inverted: true
-      }));
-
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s1, c2], {
-        inverted: false
-      }));
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s2, c2], {
-        inverted: true
-      }));
-
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.PointOnLine, [s1.a, s1]));
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.PointOnLine, [s1.b, s1]));
-
-
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.PointOnLine, [s2.a, s2]));
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.PointOnLine, [s2.b, s2]));
-
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.DistancePP, [s1.a, s1.b], {
-        distance: 350
-      }));
-
-
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.DistancePP, [s2.a, s2.b], {
-        distance: 500
-      }));
-
-      this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.DistancePP, [c1.c, c2.c], {
-        distance: 700
-      }));
-
-
-      this.refresh();
-
-    });
+    // setTimeout(() => {
+    //
+    //   let s1 = viewer.addSegment(-100, 0, -100, 600, viewer.activeLayer);
+    //   let s2 = viewer.addSegment(700, 0, 700, 600, viewer.activeLayer);
+    //
+    //   let s3 = viewer.addSegment(0, -100, 600, -100, viewer.activeLayer);
+    //   let s4 = viewer.addSegment(0, 700, 600, 700, viewer.activeLayer);
+    //
+    //   const newCircle = (cx, cy) => {
+    //     let c1 = new Circle(new EndPoint(cx, cy));
+    //     c1.r.set(100);
+    //     viewer.add(c1, viewer.activeLayer);
+    //     return c1;
+    //   };
+    //
+    //   const c1 = newCircle(600, 600);
+    //
+    //   let c2 = newCircle(0, 0);
+    //
+    //
+    //   let c3 = newCircle(600, 0);
+    //   let c4 = newCircle(0, 600);
+    //
+    //   //
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s1, c4], {
+    //   //   inverted: true
+    //   // }));
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s1, c2], {
+    //   //   inverted: true
+    //   // }));
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s2, c1], {
+    //   //   inverted: false
+    //   // }));
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s2, c3], {
+    //   //   inverted: false
+    //   // }));
+    //   //
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s4, c4], {
+    //   //   inverted: true
+    //   // }));
+    //   //
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s4, c1], {
+    //   //   inverted: true
+    //   // }));
+    //   //
+    //   //
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s3, c2], {
+    //   //   inverted: false
+    //   // }));
+    //   //
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.TangentLC, [s3, c3], {
+    //   //   inverted: false
+    //   // }));
+    //
+    //
+    //
+    //   //
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.DistancePP, [s1.a, s1.b], {
+    //   //   distance: 350
+    //   // }));
+    //
+    //
+    //   // this.seacSystem.addConstraint(new SEACConstraint(ConstraintDefinitions.DistancePP, [s2.a, s2.b], {
+    //   //   distance: 500
+    //   // }));
+    //
+    //
+    //   this.refresh();
+    //
+    // });
 
   }
   
@@ -79,8 +100,8 @@ class ParametricManager {
     return this.system.subSystems;
   }
 
-  addSEAC(constr) {
-    this.seacSystem.addConstraint(constr);
+  addAlgNum(constr) {
+    this.algnNumSystem.addConstraint(constr);
     this.refresh();
   }
 
@@ -336,7 +357,14 @@ ParametricManager.prototype.tangent = function(objs) {
     this.add(new Constraints.CurveTangent(lines[0], curves[0]));
   } else {
     const arcs = fetch.generic(objs, ['TCAD.TWO.Arc', 'TCAD.TWO.Circle'], 1);
-    this.addSEAC(new TangentLC(lines[0], arcs[0], falses));
+
+    this.addAlgNum(
+      new AlgNumConstraint(ConstraintDefinitions.TangentLC, [lines[0], arcs[0]], {
+          inverted: false
+        }
+      )
+    );
+
   }
 };
 
@@ -537,10 +565,21 @@ ParametricManager.prototype.findCoincidentConstraint = function(point1, point2) 
 };
 
 ParametricManager.prototype.coincident = function(objs) {
-  if (objs.length == 0) return;
-  this.linkObjects(objs);
-  this.solve();
-  this.viewer.refresh();
+
+  const [first, ...others] = objs;
+
+  for (let obj of others) {
+    this.algnNumSystem.addConstraint(
+      new AlgNumConstraint(ConstraintDefinitions.PCoincident, [first, obj])
+    );
+  }
+
+  this.refresh();
+
+  // if (objs.length === 0) return;
+  // this.linkObjects(objs);
+  // this.solve();
+  // this.viewer.refresh();
 };
 
 ParametricManager.prototype.getSolveData = function() {
@@ -563,9 +602,9 @@ ParametricManager.prototype.__getSolveData = function(constraints, out) {
   return out;
 };
 
-ParametricManager.prototype.solve = function(lock, extraConstraints, disabledObjects) {
-  const solver = this.prepare(lock, extraConstraints, disabledObjects);
-  solver.solve(false);
+ParametricManager.prototype.solve = function() {
+  this.algnNumSystem.prepare();
+  this.algnNumSystem.solve(false);
 };
 
 ParametricManager.prototype.prepare = function(locked, extraConstraints, disabledObjects) {
@@ -949,8 +988,8 @@ ParametricManager.prototype.updateConstraintConstants = function(constr) {
 
 import {Constraints} from './constraints';
 import {askNumber} from '../utils/utils';
-import {SEACSystem} from "./constr/SEACSystem";
-import {ConstraintDefinitions, SEACConstraint, TangentLC} from "./constr/SEACConstraints";
+import {ConstraintDefinitions, AlgNumConstraint, TangentLC} from "./constr/ANConstraints";
 import {Circle} from "./shapes/circle";
 import {EndPoint} from "./shapes/point";
+import {AlgNumSubSystem} from "./constr/AlgNumSystem";
 export {Constraints, ParametricManager}

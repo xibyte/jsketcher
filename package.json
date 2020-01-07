@@ -55,7 +55,7 @@
     "clipper-lib": "6.2.1",
     "diff-match-patch": "1.0.0",
     "earcut": "2.1.1",
-    "handlebars": "^4.1.2",
+    "handlebars": "^4.5.3",
     "handlebars-loader": "1.7.1",
     "jquery": "^3.4.1",
     "less": "^3.8.1",
@@ -63,8 +63,8 @@
     "mousetrap": "1.6.1",
     "numeric": "1.2.6",
     "prop-types": "15.6.0",
-    "react": "^16.4.0",
-    "react-dom": "^16.4.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "sprintf": "0.1.5",
     "three": "0.89.0"
   }

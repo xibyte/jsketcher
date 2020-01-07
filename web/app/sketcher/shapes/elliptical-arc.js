@@ -52,3 +52,4 @@ export class EllipticalArc extends Ellipse {
 }
 
 EllipticalArc.prototype._class = 'TCAD.TWO.EllipticalArc';
+EllipticalArc.prototype.TYPE = 'ELLIPTICAL_ARC';

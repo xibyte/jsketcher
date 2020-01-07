@@ -6,6 +6,8 @@ import {ConvexHull2D} from '../../math/convex-hull'
 
 import * as draw_utils from '../shapes/draw-utils'
 import * as math from '../../math/math';
+import {Arc} from "./arc";
+import {EndPoint} from "./point";
 
 
 export class BezierCurve extends SketchObject {
@@ -77,5 +79,6 @@ export class BezierCurve extends SketchObject {
   }
 }
 BezierCurve.prototype._class = 'TCAD.TWO.BezierCurve';
+BezierCurve.prototype.TYPE = 'BEZIER';
 
 const RECOVER_LENGTH = 100;
