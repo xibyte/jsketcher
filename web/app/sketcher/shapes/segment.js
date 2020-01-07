@@ -1,10 +1,12 @@
 import {SketchObject} from './sketch-object'
 import Vector from 'math/vector';
-import {Constraints} from '../parametric'
 import * as math from '../../math/math'
-import {GCLine} from "../constr/constractibles";
 import {Styles} from "../styles";
 import * as draw_utils from "./draw-utils";
+import {Param} from "./param";
+import {Constraints} from "../constraints";
+import {ConstraintDefinitions, AlgNumConstraint} from "../constr/ANConstraints";
+import {Ellipse} from "./ellipse";
 
 export class Segment extends SketchObject {
 
@@ -14,23 +16,36 @@ export class Segment extends SketchObject {
     this.b = b;
     a.parent = this;
     b.parent = this;
-    this.gcLine = new GCLine();
+    this.children.push(a, b);
+    this.params = {
+      ang: new Param(undefined),
+      w: new Param(undefined)
+    }
+  }
 
-
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
+  syncLine() {
+    const dx = this.b.x - this.a.x;
+    const dy = this.b.y - this.a.y;
     const l = Math.sqrt(dx*dx + dy*dy);
 
-    let nx = - dy / l;
-    let ny = dx / l;
+    let nx = (- dy / l) || 0;
+    let ny = (dx / l) || 0;
     const ang = Math.atan2(ny, nx);
 
-    this.gcLine.ang.set(ang);
-    this.gcLine.w.set(nx * a.x + ny * a.y);
-
-    this.children.push(a, b);
+    this.params.ang.set(ang||0);
+    this.params.w.set(nx * this.a.x + ny * this.a.y);
   }
-  
+
+  stabilize(viewer) {
+    this.syncLine();
+    const c1 = new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [this.a, this]);
+    const c2 = new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [this.b, this]);
+    c1.internal = true;
+    c2.internal = true;
+    viewer.parametricManager.addAlgNum(c1);
+    viewer.parametricManager.addAlgNum(c2);
+  }
+
   recoverIfNecessary() {
     if (math.distanceAB(this.a, this.b) > math.TOLERANCE) {
       return false;
@@ -45,6 +60,8 @@ export class Segment extends SketchObject {
   visitParams(callback) {
     this.a.visitParams(callback);
     this.b.visitParams(callback);
+    callback(this.params.ang);
+    callback(this.params.w);
   }
 
   normalDistance(aim) {
@@ -89,10 +106,10 @@ export class Segment extends SketchObject {
   //  ctx.restore();
 
 
-    let ang = this.gcLine.ang.get();
+    let ang = this.params.ang.get();
     let nx = Math.cos(ang) ;
     let ny = Math.sin(ang) ;
-    let w = this.gcLine.w.get();
+    let w = this.params.w.get();
 
     ctx.save();
     draw_utils.SetStyle(Styles.CONSTRUCTION_OF_OBJECT, ctx, scale );
@@ -122,3 +139,4 @@ export class Segment extends SketchObject {
 
 Segment.prototype._class = 'TCAD.TWO.Segment';
 
+Segment.prototype.TYPE = 'SEGMENT';

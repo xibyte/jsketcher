@@ -1,6 +1,7 @@
 import {SketchObject} from './sketch-object'
 import * as vec from '../../math/vec';
 import {curveTessellate} from '../../brep/geom/impl/nurbs-ext';
+import {Ellipse} from "./ellipse";
 
 const __v = [0, 0, 0];
 
@@ -89,3 +90,4 @@ export class NurbsObject extends SketchObject {
 }
 
 NurbsObject.prototype._class = 'TCAD.TWO.NurbsObject';
+NurbsObject.prototype.TYPE = 'NURBS';

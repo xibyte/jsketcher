@@ -1,0 +1,348 @@
+import {eqEps} from "../../brep/geom/tolerance";
+import {sq} from "../../math/math";
+
+export class Polynomial {
+
+  monomials = [];
+  constant = 0;
+
+  constructor(constant) {
+    this.constant = constant;
+  }
+
+  term(p, fn) {
+    this.monomials[this.monomials.length - 1].addParam(p, fn);
+    return this;
+  }
+
+  monomial(k = 1) {
+    this.monomials.push(new Monomial(k));
+    return this;
+  }
+
+  eliminate(param, value) {
+    for (let m of this.monomials) {
+      for (let i = 0; i < m.terms.length; ++i) {
+        if (m.terms[i].param === param) {
+          m.eliminate(i, value);
+        }
+      }
+    }
+  }
+
+  substitute(param, toParam, dotConstant) {
+    for (let m of this.monomials) {
+      for (let i = 0; i < m.terms.length; ++i) {
+        if (m.terms[i].param === param) {
+          m.substitute(i, toParam, dotConstant);
+        }
+      }
+    }
+  }
+
+  linerSub(param, toParam, b, c) {
+    // for (let m of this.monomials) {
+    //   for (let i = 0; i < m.terms.length; ++i) {
+    //     if (m.terms[i].param === param) {
+    //       m.substitute(i, toParam, dotConstant);
+    //     }
+    //   }
+    // }
+  }
+
+
+  compact() {
+    for (let i = 0; i < this.monomials.length; ++i) {
+      const m1 = this.monomials[i];
+      if (m1 === null) {
+        continue;
+      }
+      for (let j = i + 1; j < this.monomials.length; ++j) {
+        const m2 = this.monomials[j];
+        if (m2 === null) {
+          continue;
+        }
+
+        if (m1.equalVars(m2)) {
+          m1.constant += m2.constant;
+          this.monomials[j] = null;
+        }
+      }
+      if (eqEps(m1.constant, 0)) {
+        this.monomials[i] = null;
+      } else if (m1.terms.length === 0) {
+        this.constant += m1.constant;
+        this.monomials[i] = null;
+      }
+    }
+    this.monomials = this.monomials.filter(m => m !== null);
+  }
+
+  get isLinear() {
+    for (let m of this.monomials) {
+      if (m.terms.length !== 1 || m.terms[0].fn.degree !== 1) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  value(valueFn = GET_VALUE) {
+    let res = this.constant;
+    for (let m of this.monomials) {
+      res += m.value(valueFn);
+    }
+    return res;
+  }
+
+  asResidual() {
+
+    const paramsSet = new Set();
+
+    for (let m of this.monomials) {
+      for (let t of m.terms) {
+        paramsSet.add(t.param.solverParam);
+      }
+    }
+
+    const params = Array.from(paramsSet);
+
+    const solverValue = p => p.solverParam.get();
+
+    return {
+
+      params,
+
+      error: () => this.value(solverValue),
+
+      gradient: out => {
+
+        for (let i = 0; i < params.length; i++) {
+
+          out[i] = 0;
+
+          for (let m of this.monomials) {
+            out[i] += m.differentiate(params[i].objectParam, solverValue);
+          }
+        }
+
+      },
+
+    };
+
+
+  }
+
+  toString() {
+
+    return this.monomials.map(m => {
+
+        let out = '';
+        if (m.constant === 1) {
+          out += '+';
+        } else if (m.constant === -1) {
+          out += '-';
+        } else {
+          out += (m.constant >= 0 ? '+' : '') + m.constant.toFixed(2);
+          if (m.terms.length) {
+            out += '*';
+          }
+        }
+
+        out += m.terms.map(t => {
+          let out = 'X' + t.param.id;
+          if (t.fn.degree === 1) {
+
+          } else if (t.fn.degree !== Infinity) {
+            out += t.fn.id;
+          } else {
+            out = t.fn.id + '(' + out + ')';
+          }
+          return out;
+        }).join('*');
+
+        return out;
+      }
+    ).join(' ') + (this.constant >= 0 ? ' + ' : ' ') + this.constant.toFixed(2);
+
+  }
+
+}
+
+export class Monomial {
+
+  terms = [];
+  constant = 1;
+
+  constructor(constant) {
+    this.constant = constant;
+  }
+
+  addParam(param, fn) {
+    this.terms.push({param, fn});
+    this.terms.sort(t => t.param.id);
+  }
+
+  eliminate(i, value) {
+    const fn = this.terms[i].fn;
+    this.constant *= fn.apply(value);
+    this.terms.splice(i, 1);
+  }
+
+  substitute(i, toParam, dotConstant) {
+    this.constant *= dotConstant;
+    let wasMerge = false;
+    for (let i = 0; i < this.terms.length; ++i) {
+      const merger = this.terms[i];
+      if (!merger) {
+        continue;
+      }
+      for (let j = i + 1; j < this.terms.length; ++j) {
+        const term = this.terms[j];
+        if (merger.param === term.param) {
+          let mergedFn = merger.fn.merge(term.fn);
+          if (mergedFn) {
+            merger.fn = mergedFn;
+            this.terms[j] = null;
+            wasMerge = true;
+          }
+        }
+      }
+    }
+    if (wasMerge) {
+      this.terms = this.terms.filter(t => t);
+    }
+
+  }
+
+  equalVars(other) {
+    if (this.terms.length !== other.terms.length) {
+      return false;
+    }
+
+    for (let i = 0; i < this.terms.length; ++i) {
+      const t1 = this.terms[i];
+      const t2 = other.terms[i];
+      if (t1.fn.id !== t2.fn.id || t1.param.id !== t2.param.id) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  differentiate(partialParam, valueFn = GET_VALUE) {
+
+    let cnst = this.constant;
+
+    let diffProduct = 0;
+    let freeProduct = 1;
+
+    for (let term of this.terms) {
+      const pVal = valueFn(term.param);
+      const d0 = term.fn.apply(pVal);
+      if (partialParam === term.param) {
+        const d1 = term.fn.derivative1(pVal);
+        diffProduct = diffProduct*d0 + freeProduct * d1;
+        freeProduct *= d0;
+      } else {
+        cnst *= d0;
+      }
+    }
+
+    return cnst * diffProduct;
+  }
+
+  value(valueFn) {
+    let res = this.constant;
+    for (let t of this.terms) {
+      res *= t.fn.apply(valueFn(t.param));
+    }
+    return res;
+  }
+}
+
+export class ToThePowerFunction {
+
+  degree = 1;
+
+  static get(degree) {
+    switch (degree) {
+      case 0: return POW_0_FN;
+      case 1: return POW_1_FN;
+      case 2: return POW_2_FN;
+      case 3: return POW_3_FN;
+      case 4: return POW_4_FN;
+      default: return new ToThePowerFunction(degree, x => {
+        let val = 1;
+        for (let i = 0; i < degree; ++i) {
+          val *= x;
+        }
+        return val
+      })
+    }
+  }
+
+  constructor(degree, fn, d1) {
+    this.fn = fn;
+    this.d1 = d1;
+    this.id = '^' + degree;
+  }
+
+  apply(x) {
+    return this.fn(x);
+  }
+
+  merge(fn) {
+    if (fn.constructor.name === this.constructor.name) {
+      return ToThePowerFunction.get(fn.degree + this.degree);
+    }
+    return null;
+  }
+
+  derivative1(x) {
+    return this.d1(x)
+  }
+
+}
+
+
+export class FreeFunction {
+
+  fn;
+
+  constructor(fn, d1, id) {
+    this.fn = fn;
+    this.d1 = d1;
+    this.id = id;
+  }
+
+  apply(x) {
+    return this.fn(x);
+  }
+
+  get degree() {
+    return Infinity;
+  }
+
+  merge(fn) {
+    return null;
+  }
+
+  derivative1(x) {
+    return this.d1(x)
+  }
+}
+
+
+const GET_VALUE = param => param.get();
+
+export const POW_0_FN = new ToThePowerFunction(0, x => 1, x => 0);
+export const POW_1_FN = new ToThePowerFunction(1, x => x,  x => 1);
+export const POW_2_FN = new ToThePowerFunction(2, x => x*x, x => 2*x);
+export const POW_3_FN = new ToThePowerFunction(3, x => x*x*x, x => 3*x*x);
+export const POW_4_FN = new ToThePowerFunction(3, x => x*x*x*x, x => 4*x*x*x);
+
+export const COS_FN = new FreeFunction(x => Math.cos(x), x => -Math.sin(x), 'cos');
+export const SIN_FN = new FreeFunction(x => Math.sin(x), x =>  Math.cos(x), 'sin');
+
+

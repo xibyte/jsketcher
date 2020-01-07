@@ -17,5 +17,7 @@ export default function(viewer) {
 
   streams.constraintsUpdate = stream();
 
+  streams.constraintEditRequest = state(null);
+
   return streams;
 };

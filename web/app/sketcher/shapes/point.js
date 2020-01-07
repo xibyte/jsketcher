@@ -2,46 +2,39 @@ import {SketchObject} from './sketch-object'
 import {DrawPoint} from './draw-utils'
 import {Generator} from '../id-generator'
 import Vector from 'math/vector';
-import {GCPoint} from "../constr/constractibles";
+import {Param} from "./param";
+
 
 export class EndPoint extends SketchObject {
 
   constructor(x, y) {
     super();
     this.parent = null;
-    this.gcPoint = new GCPoint();
-    this._x = this.gcPoint.x; // legacy - yet to remove
-    this._y = this.gcPoint.y;
-    this.x = x;
-    this.y = y;
+    this.params  = {
+      x: new Param(x),
+      y: new Param(y)
+    };
   }
 
   get x() {
-    return this.gcPoint.x.get();
+    return this.params.x.get();
   }
 
   set x(val) {
-    return this.gcPoint.x.set(val);
+    return this.params.x.set(val);
   }
 
   get y() {
-    return this.gcPoint.y.get();
+    return this.params.y.get();
   }
 
   set y(val) {
-    return this.gcPoint.y.set(val);
-  }
-
-  coincideWith(gcPoint) {
-    if (!this.parkedOwnGeometry) {
-      this.parkedOwnGeometry = this.gcPoint;
-    }
-    this.gcPoint = gcPoint;
+    return this.params.y.set(val);
   }
 
   visitParams(callback) {
-    callback(this._x);
-    callback(this._y);
+    callback(this.params.x);
+    callback(this.params.y);
   }
 
   normalDistance(aim) {
@@ -88,20 +81,7 @@ export class EndPoint extends SketchObject {
     dest.y = y;
   }
 }
+
 EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
+EndPoint.prototype.TYPE = 'POINT';
 
-export class Param {
-  constructor(obj, prop) {
-    this.id = Generator.genID();
-    this.obj = obj;
-    this.prop = prop;
-  }
-
-  set(value) {
-    this.obj[this.prop] = value;
-  }
-
-  get() {
-    return this.obj[this.prop];
-  }
-}

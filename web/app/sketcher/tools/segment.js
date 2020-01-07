@@ -1,6 +1,4 @@
 import {Tool} from './tool'
-import {Constraints} from "../constraints";
-import {distanceAB} from "../../math/math";
 
 export class AddSegmentTool extends Tool {
 
@@ -45,7 +43,7 @@ export class AddSegmentTool extends Tool {
       }
       this.line = this.viewer.addSegment(a.x, a.y, b.x, b.y, this.viewer.activeLayer);
       if (needSnap) {
-        this.viewer.parametricManager.linkObjects([this.line.a, a]);
+        this.line.a.coincideWith(a);
       }
       this.firstPointPicked();
       this.viewer.refresh();
@@ -55,7 +53,7 @@ export class AddSegmentTool extends Tool {
         this.viewer.cleanSnap();
         this.line.b.x = p.x;
         this.line.b.y = p.y;
-        this.viewer.parametricManager.linkObjects([this.line.b, p]);
+        this.line.b.coincideWith(p);
       }
       this.nextPointPicked();
     }
@@ -63,11 +61,10 @@ export class AddSegmentTool extends Tool {
   
   nextPointPicked() {
     this.pointPicked(this.line.b.x, this.line.b.y);
-    this.viewer.parametricManager.add(new Constraints.P2PDistance(this.line.a, this.line.b, distanceAB(this.line.a, this.line.b)));
     if (this.multi) {
       const b = this.line.b;
       this.line = this.viewer.addSegment(b.x, b.y, b.x, b.y, this.viewer.activeLayer);
-      this.viewer.parametricManager.linkObjects([this.line.a, b]);
+      this.line.a.coincideWith(b);
     } else {
       this.restart()
     }
@@ -87,7 +84,7 @@ export class AddSegmentTool extends Tool {
   }
 
   keydown(e) {
-    if (e.keyCode == 27) {
+    if (e.keyCode === 27) {
       this.cancelSegment();
     }
   }
