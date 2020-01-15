@@ -19,25 +19,44 @@ export class Segment extends SketchObject {
     this.children.push(a, b);
     this.params = {
       ang: new Param(undefined),
-      w: new Param(undefined)
-    }
+      w: new Param(undefined),
+      t: new Param(undefined)
+    };
+    this.syncGeometry();
   }
 
-  syncLine() {
+  get ang() {
+    return this.params.ang.get();
+  }
+
+  get w() {
+    return this.params.w.get();
+  }
+
+  get t() {
+    return this.params.t.get();
+  }
+
+  syncGeometry() {
     const dx = this.b.x - this.a.x;
     const dy = this.b.y - this.a.y;
     const l = Math.sqrt(dx*dx + dy*dy);
 
     let nx = (- dy / l) || 0;
     let ny = (dx / l) || 0;
-    const ang = Math.atan2(ny, nx);
+
+    let ang = Math.atan2(ny, nx);
+
+    if (this.ang !== undefined && Math.abs(ang - this.ang) > Math.PI) {
+      ang = Math.atan2(-ny, -nx);
+    }
 
     this.params.ang.set(ang||0);
     this.params.w.set(nx * this.a.x + ny * this.a.y);
   }
 
   stabilize(viewer) {
-    this.syncLine();
+    this.syncGeometry();
     const c1 = new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [this.a, this]);
     const c2 = new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [this.b, this]);
     c1.internal = true;
@@ -94,17 +113,10 @@ export class Segment extends SketchObject {
   translateImpl(dx, dy) {
     this.a.translate(dx, dy);
     this.b.translate(dx, dy);
+    this.params.w.set(Math.cos(this.ang) * this.a.x + Math.sin(this.ang) * this.a.y);
   }
   
   drawImpl(ctx, scale) {
-    ctx.beginPath();
-    ctx.moveTo(this.a.x, this.a.y);
-    ctx.lineTo(this.b.x, this.b.y);
-  //  ctx.save();
-  //  ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.stroke();
-  //  ctx.restore();
-
 
     let ang = this.params.ang.get();
     let nx = Math.cos(ang) ;
@@ -119,6 +131,13 @@ export class Segment extends SketchObject {
     ctx.stroke();
     ctx.restore();
 
+    ctx.beginPath();
+    ctx.moveTo(this.a.x, this.a.y);
+    ctx.lineTo(this.b.x, this.b.y);
+    //  ctx.save();
+    //  ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.stroke();
+    //  ctx.restore();
 
   }
 
