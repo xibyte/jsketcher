@@ -3,8 +3,8 @@ import {Param, prepare} from "./solver";
 import {findConstructionCluster} from "./constructions";
 import {GCCircle, GCPoint} from "./constractibles";
 import {eqEps, eqTol} from "../../brep/geom/tolerance";
-import {Polynomial} from "./polynomial";
-import {NOOP} from "../../../../modules/gems/func";
+import {Polynomial, POW_1_FN} from "./polynomial";
+import {compositeFn, NOOP} from "../../../../modules/gems/func";
 
 export class AlgNumSubSystem {
 
@@ -60,7 +60,8 @@ export class AlgNumSubSystem {
       this.polynomials.forEach(p => this.polyToConstr.set(p, c))
     });
 
-
+    console.log('reducing system:');
+    this.polynomials.forEach(p => console.log(p.toString()));
 
     const toEliminate = Array.from(this.readOnlyParams);
 
@@ -98,14 +99,12 @@ export class AlgNumSubSystem {
           const [m1, m2] = polynomial.monomials;
 
           const constant = - m2.constant / m1.constant;
-          if (!eqEps(polynomial.constant, 0)) {
-            toSubstitute.push([m1.param, m2.param, constant]);
-            this.substitutedParams.push([m1.param, new Polynomial().monomial(constant).addParam(m2.param)]);
+          if (eqEps(polynomial.constant, 0)) {
+            toSubstitute.push([m1.linearParam, m2.linearParam, constant]);
+            this.substitutedParams.push([m1.linearParam, new Polynomial().monomial(constant).term(m2.linearParam, POW_1_FN)]);
           } else {
-            // linearSub.push([m1.param, m2.param, constant, - polynomial.constant / m1.constant]);
+            linearSub.push([m1.param, m2.param, constant, - polynomial.constant / m1.constant]);
           }
-
-
           this.polynomials[i] = null;
         }
       }
@@ -129,27 +128,34 @@ export class AlgNumSubSystem {
         }
       }
 
+      if (linearSub.length) {
+        while (linearSub.length) {
+          const [param, toParam, k, b] = linearSub.pop();
+
+          let transaction = compositeFn();
+          for (let polynomial of this.polynomials) {
+            if (polynomial) {
+              const polyTransaction = polynomial.linearSubstitution(param, toParam, k, b);
+              if (!polyTransaction) {
+                transaction = null;
+                break;
+              }
+              transaction.push(polyTransaction);
+              transaction.push(() => this.substitutedParams.push(param, new Polynomial(b).monomial(k).term(toParam, POW_1_FN)));
+            }
+          }
+          if (transaction) {
+            requirePass = true;
+            transaction();
+          }
+        }
+      }
+
       if (requirePass) {
         this.polynomials.forEach(polynomial => polynomial && polynomial.compact());
       }
     }
 
-
-
-
-    while (toEliminate.length || toSubstitute.length) {
-
-
-      // while (linearSub.length) {
-      //   const [param, toParam, b, c] = linearSub.pop();
-      //   for (let polynomial of polynomials) {
-      //     if (polynomial) {
-      //       polynomial.linerSub(param, toParam, b, c);
-      //     }
-      //   }
-      // }
-
-    }
 
     this.polynomials = this.polynomials.filter(p => p);
 
@@ -159,10 +165,14 @@ export class AlgNumSubSystem {
   prepare() {
 
     this.reset();
+
     this.evaluatePolynomials();
 
     console.log('solving system:');
     this.polynomials.forEach(p => console.log(p.toString()));
+    console.log('with respect to:');
+    this.substitutedParams.forEach(([x, expr]) => console.log('X' + x.id  + ' = ' + expr.toString()));
+
 
     const residuals = [];
 
@@ -194,7 +204,7 @@ export class AlgNumSubSystem {
     });
     for (let i = this.substitutedParams.length - 1; i >= 0; i--) {
       let [param, expression] = this.substitutedParams[i];
-      param.set(expression.value);
+      param.set(expression.value());
     }
   }
 

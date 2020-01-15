@@ -1,17 +1,23 @@
 import {eqEps} from "../../brep/geom/tolerance";
 import {sq} from "../../math/math";
+import {polynomial} from "../../math/vec";
+import {compositeFn} from "../../../../modules/gems/func";
 
 export class Polynomial {
 
   monomials = [];
   constant = 0;
 
-  constructor(constant) {
+  constructor(constant = 0) {
     this.constant = constant;
   }
 
+  get lastMonomial() {
+    return this.monomials[this.monomials.length - 1];
+  }
+
   term(p, fn) {
-    this.monomials[this.monomials.length - 1].addParam(p, fn);
+    this.lastMonomial.addParam(p, fn);
     return this;
   }
 
@@ -40,16 +46,38 @@ export class Polynomial {
     }
   }
 
-  linerSub(param, toParam, b, c) {
-    // for (let m of this.monomials) {
-    //   for (let i = 0; i < m.terms.length; ++i) {
-    //     if (m.terms[i].param === param) {
-    //       m.substitute(i, toParam, dotConstant);
-    //     }
-    //   }
-    // }
-  }
+  linearSubstitution(param, toParam, k, b) {
+    const transaction = compositeFn();
+    for (let mi = this.monomials.length - 1; mi >= 0 ; --mi) {
+      const m = this.monomials[mi];
+      for (let i = 0; i < m.terms.length; ++i) {
+        if (m.terms[i].param === param) {
+          const polynomial = m.terms[i].fn.linearSubstitution(k, toParam, b);
+          if (polynomial) {
+            transaction.push(() => {
+              for (let k = 0; k < polynomial.monomials.length; ++k) {
+                let monomialToExpand = polynomial.monomials[k];
+                this.monomial(monomialToExpand.constant * m.constant);
+                this.lastMonomial.terms = monomialToExpand.terms.slice();
 
+                for (let termToJoin of m.terms) {
+                  if (termToJoin !== m.terms[i]) {
+                    this.lastMonomial.terms.push({...termToJoin});
+                  }
+                }
+                this.lastMonomial.sort();
+              }
+              m.constant *= polynomial.constant;
+              m.terms.splice(i, 1);
+            });
+          } else {
+            return null;
+          }
+        }
+      }
+    }
+    return transaction;
+  }
 
   compact() {
     for (let i = 0; i < this.monomials.length; ++i) {
@@ -155,6 +183,8 @@ export class Polynomial {
 
           } else if (t.fn.degree !== Infinity) {
             out += t.fn.id;
+          } else if (t.fn.render) {
+            out = t.fn.render(out);
           } else {
             out = t.fn.id + '(' + out + ')';
           }
@@ -174,12 +204,20 @@ export class Monomial {
   terms = [];
   constant = 1;
 
-  constructor(constant) {
+  constructor(constant = 1) {
     this.constant = constant;
+  }
+
+  get linearParam() {
+    return this.terms[0].param;
   }
 
   addParam(param, fn) {
     this.terms.push({param, fn});
+    this.sort();
+  }
+
+  sort() {
     this.terms.sort(t => t.param.id);
   }
 
@@ -303,6 +341,16 @@ export class ToThePowerFunction {
     return this.d1(x)
   }
 
+  linearSubstitution(k, x, b) {
+    if (this.degree === 1) {
+      return new Polynomial(b).monomial(k).term(x, POW_1_FN);
+    } else if (this.degree === 2) {
+      return new Polynomial(b*b).monomial(k*k).term(x, POW_2_FN).monomial(2*k).term(x, POW_1_FN);
+    } else {
+      return null;
+    }
+  }
+
 }
 
 
@@ -331,8 +379,79 @@ export class FreeFunction {
   derivative1(x) {
     return this.d1(x)
   }
+
+  linearSubstitution(k, x, b) {
+    return null;
+  }
+
 }
 
+export class CosineOfSum {
+
+  constructor(k, b) {
+    this.k = k;
+    this.b = b;
+    this.id = 'cos(' + k + 'x + ' + b + ')';
+  }
+
+  apply(x) {
+    return Math.cos(this.k * x + this.b);
+  }
+
+  get degree() {
+    return Infinity;
+  }
+
+  merge(fn) {
+    return null;
+  }
+
+  derivative1(x) {
+    return - this.k * Math.sin(this.k * x + this.b);
+  }
+
+  linearSubstitution(k, x, b) {
+    return new Polynomial(0).monomial(1).term(x, new CosineOfSum(this.k * k, this.k * b + this.b));
+  }
+
+  render(x) {
+    return 'cos(' + this.k.toFixed(2) + x + ' + ' + this.b.toFixed(2) + ')';
+  }
+
+}
+
+export class SineOfSum {
+
+  constructor(k, b) {
+    this.k = k;
+    this.b = b;
+    this.id = 'sin(' + k + 'x + ' + b + ')';
+  }
+
+  apply(x) {
+    return Math.sin(this.k * x + this.b);
+  }
+
+  get degree() {
+    return Infinity;
+  }
+
+  merge(fn) {
+    return null;
+  }
+
+  derivative1(x) {
+    return this.k * Math.cos(this.k * x + this.b);
+  }
+
+  linearSubstitution(k, x, b) {
+    return new Polynomial(0).monomial(1).term(x, new SineOfSum(this.k * k, this.k * b + this.b));
+  }
+
+  render(x) {
+    return 'sin(' + this.k.toFixed(2) + x + ' + ' + this.b.toFixed(2) + ')';
+  }
+}
 
 const GET_VALUE = param => param.get();
 
@@ -342,7 +461,7 @@ export const POW_2_FN = new ToThePowerFunction(2, x => x*x, x => 2*x);
 export const POW_3_FN = new ToThePowerFunction(3, x => x*x*x, x => 3*x*x);
 export const POW_4_FN = new ToThePowerFunction(3, x => x*x*x*x, x => 4*x*x*x);
 
-export const COS_FN = new FreeFunction(x => Math.cos(x), x => -Math.sin(x), 'cos');
-export const SIN_FN = new FreeFunction(x => Math.sin(x), x =>  Math.cos(x), 'sin');
+export const COS_FN = new FreeFunction(x => Math.cos(x), x => -Math.sin(x) ,'cos', (k, x, b) => new Polynomial(0).monomial(1).term(x, new CosineOfSum(k, b)));
+export const SIN_FN = new FreeFunction(x => Math.sin(x), x =>  Math.cos(x), 'sin', (k, x, b) => new Polynomial(0).monomial(1).term(x, new SineOfSum(k, b)));
 
 

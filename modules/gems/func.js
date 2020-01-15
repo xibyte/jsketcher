@@ -16,3 +16,23 @@ export function createFunctionList() {
     add, call
   }
 }
+
+export function compositeFn() {
+
+  const funcs = [];
+
+  const fn = () => {
+    funcs.forEach(fn => fn());
+  };
+
+  fn.functionList = funcs;
+
+  function push(fn) {
+    if (fn.functionList) {
+      fn.functionList.forEach(fn2 => push(fn2));
+    } else {
+      funcs.push(fn);
+    }
+  }
+  return fn
+}
