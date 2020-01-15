@@ -40,7 +40,11 @@ export const ConstraintDefinitions = indexById([
       inverted: {
         type: 'boolean',
         description: 'whether the circle attached from the opposite side',
-        initialValue: () => false
+        initialValue: ({objects: [line, circle]}) => {
+          const ang = line.params.ang.get();
+          const w = line.params.w.get();
+          return Math.cos(ang) * circle.c.x + Math.sin(ang) * circle.c.y < w;
+        }
       }
     },
 
@@ -105,8 +109,8 @@ export const ConstraintDefinitions = indexById([
         type: 'number',
         description: 'the distance between two points',
         initialValue: (constraint) => {
-          const [a, b] = constraint.object;
-          return distanceAB(a, b).toFixed(2) + '';
+          const [a, b] = constraint.objects;
+          return distanceAB(a, b);
         }
       }
     },
@@ -153,8 +157,7 @@ export const ConstraintDefinitions = indexById([
         description: 'line angle',
         initialValue: (constraint) => {
           let degrees = constraint.objects[0].params.ang.get() / DEG_RAD;
-          degrees = (degrees + 360 - 90) % 360;
-          return degrees.toFixed(2) + '';
+          return (degrees + 360 - 90) % 360;
         },
         transform: degree => ( (degree + 90) % 360 ) * DEG_RAD
       }
@@ -166,6 +169,35 @@ export const ConstraintDefinitions = indexById([
 
     collectPolynomials: (polynomials, [x], {angle}) => {
       polynomials.push(new Polynomial( - angle).monomial(1).term(x, POW_1_FN));
+    },
+  },
+
+  {
+    id: 'AngleBetween',
+    name: 'Angle Between Two Lines',
+    constants: {
+      angle: {
+        type: 'number',
+        description: 'line angle',
+        initialValue: (constraint) => {
+          const [segment1, segment2] = constraint.objects;
+          const a1 = segment1.params.ang.get();
+          const a2 = segment2.params.ang.get();
+
+          let degrees = (a2 - a1) / DEG_RAD;
+          return (degrees + 360) % 360;
+        },
+        transform: degree => degree * DEG_RAD
+      }
+    },
+
+    defineParamsScope: ([segment1, segment2], callback) => {
+      callback(segment1.params.ang);
+      callback(segment2.params.ang);
+    },
+
+    collectPolynomials: (polynomials, [x1, x2], {angle}) => {
+      polynomials.push(new Polynomial( - angle).monomial(1).term(x1, POW_1_FN).monomial(-1).term(x2, POW_1_FN));
     },
   },
 
@@ -230,7 +262,12 @@ export class AlgNumConstraint {
     if (this.schema.constants) {
       this.constants = {};
       Object.keys(this.schema.constants).map(name => {
-        this.constants[name] = this.schema.constants[name].initialValue(this);
+        let val = this.schema.constants[name].initialValue(this);
+        if (typeof val === 'number') {
+          val = val.toFixed(2) + '';
+        }
+        this.constants[name] = val;
+
       });
     }
   }

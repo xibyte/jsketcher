@@ -6,7 +6,7 @@ import mapContext from "../../../../modules/ui/mapContext";
 
 export const ContextualControls =
   mapContext(ctx => ({
-    invokeAction: action => action.invoke(ctx.viewer)
+    invokeAction: action => action.invoke(ctx)
   }))(
   connect(streams => streams.sketcherApp.selection.map(selection => ({selection})))(
 

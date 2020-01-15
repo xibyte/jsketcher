@@ -3,6 +3,7 @@ import {EndPoint} from "../shapes/point";
 import {Circle} from "../shapes/circle";
 import {Segment} from "../shapes/segment";
 import {matchAll, matchTypes, sortSelectionByType} from "./matchUtils";
+import constraints from "../../../test/cases/constraints";
 
 export default [
 
@@ -12,7 +13,8 @@ export default [
     description: 'Point Coincident',
     selectionMatcher: (selection, sortedByType) => matchAll(selection, EndPoint, 2),
 
-    invoke: viewer => {
+    invoke: ctx => {
+      const {viewer} = ctx;
       const [first, ...others] = viewer.selected;
       let pm = viewer.parametricManager;
       for (let obj of others) {
@@ -29,16 +31,16 @@ export default [
     description: 'Tangent Between Line And Circle',
     selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, Circle, 1, Segment, 1),
 
-    invoke: viewer => {
-      const [circle, line] = sortSelectionByType(viewer.selected);
-      let pm = viewer.parametricManager;
-      const ang = line.params.ang.get();
-      const w = line.params.w.get();
-      const inverted = Math.cos(ang) * circle.c.x + Math.sin(ang) * circle.c.y < w ;
+    invoke: ctx => {
 
-      pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.TangentLC, [line, circle], {
-        inverted
-      }));
+      const {viewer} = ctx;
+      const [circle, line] = sortSelectionByType(viewer.selected);
+
+      const constraint = new AlgNumConstraint(ConstraintDefinitions.TangentLC, [line, circle]);
+      constraint.initConstants();
+      const pm = viewer.parametricManager;
+      pm.addConstraint(constraint);
+      pm.refresh();
     }
 
   },
@@ -48,7 +50,8 @@ export default [
     description: 'Point On Line',
     selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, EndPoint, 1, Segment, 1),
 
-    invoke: viewer => {
+    invoke: ctx => {
+      const {viewer} = ctx;
       const [pt, line] = sortSelectionByType(viewer.selected);
       let pm = viewer.parametricManager;
       pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [pt, line]));
@@ -60,30 +63,63 @@ export default [
     description: 'Angle',
     selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 1),
 
-    invoke: viewer => {
+    invoke: ctx => {
+      const {viewer} = ctx;
 
       const firstSegment = viewer.selected[0];
 
       const firstConstr = new AlgNumConstraint(ConstraintDefinitions.Angle, [firstSegment]);
       firstConstr.initConstants();
 
-      viewer.streams.constraintEditRequest.next({
-        constraint: firstConstr,
-        onCancel: () => viewer.streams.constraintEditRequest.next(null),
-        onApply: () => {
-          viewer.streams.constraintEditRequest.next(null);
-          const pm = viewer.parametricManager;
-          pm.algnNumSystem.addConstraint(firstConstr);
-          for (let i = 1; i < viewer.selected.length; ++i) {
-            pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.Angle, viewer.selected[i], {...firstConstr.constants}));
-          }
-          pm.refresh();
+      editConstraint(ctx, firstConstr, () => {
+        const pm = viewer.parametricManager;
+        pm.algnNumSystem.addConstraint(firstConstr);
+        for (let i = 1; i < viewer.selected.length; ++i) {
+          pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.Angle, [viewer.selected[i]], {...firstConstr.constants}));
         }
+        pm.refresh();
       });
+    }
+  },
 
+  {
+    shortName: 'Angle Between',
+    description: 'Angle Between Lines',
+    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const [firstSegment, secondSegment] = viewer.selected;
+
+      const firstConstr = new AlgNumConstraint(ConstraintDefinitions.AngleBetween, [firstSegment, secondSegment]);
+      firstConstr.initConstants();
+
+      editConstraint(ctx, firstConstr, () => {
+        const pm = viewer.parametricManager;
+        pm.algnNumSystem.addConstraint(firstConstr);
+        for (let i = 2; i < viewer.selected.length; ++i) {
+          pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.Angle,
+            [viewer.selected[i-1], viewer.selected[i]], {...firstConstr.constants}));
+        }
+        pm.refresh();
+      });
     }
   }
 
-
-
 ];
+
+
+function editConstraint(ctx, constraint, onApply) {
+
+  const rqStream = ctx.streams.sketcherApp.constraintEditRequest;
+  rqStream.next({
+    constraint,
+    onCancel: () => rqStream.next(null),
+    onApply: () => {
+      rqStream.next(null);
+      onApply();
+    }
+  });
+
+}

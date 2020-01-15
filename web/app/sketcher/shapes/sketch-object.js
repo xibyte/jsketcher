@@ -34,6 +34,9 @@ export class SketchObject extends Shape {
   stabilize(viewer) {
   }
 
+  syncGeometry() {
+  }
+
   recoverIfNecessary() {
     return false;
   }
