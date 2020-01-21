@@ -105,6 +105,10 @@ class ParametricManager {
     this.refresh();
   }
 
+  coincidePoints(pt1, pt2) {
+    this.addAlgNum(new AlgNumConstraint(ConstraintDefinitions.PCoincident, [pt1, pt2]));
+  }
+
 }
 
 ParametricManager.prototype.createConstantResolver = function() {

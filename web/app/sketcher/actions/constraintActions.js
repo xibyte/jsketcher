@@ -105,6 +105,46 @@ export default [
         pm.refresh();
       });
     }
+  },
+
+  {
+    shortName: 'Length',
+    description: 'Segment Length',
+    selectionMatcher: (selection) => matchAll(selection, Segment, 1),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const [firstSegment, ...others] = viewer.selected;
+
+      const firstConstr = new AlgNumConstraint(ConstraintDefinitions.SegmentLength, [firstSegment]);
+      firstConstr.initConstants();
+
+      editConstraint(ctx, firstConstr, () => {
+        const pm = viewer.parametricManager;
+        pm.algnNumSystem.addConstraint(firstConstr);
+        for (let other of others) {
+          pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.SegmentLength, [other], {...firstConstr.constants}));
+        }
+        pm.refresh();
+      });
+    }
+  },
+
+  {
+    shortName: 'Lock',
+    description: 'Lock Point',
+    selectionMatcher: (selection) => matchTypes(selection, EndPoint, 1),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const [point] = viewer.selected;
+
+      const constr = new AlgNumConstraint(ConstraintDefinitions.LockPoint, [point]);
+      constr.initConstants();
+      editConstraint(ctx, constr, () => viewer.parametricManager.addAlgNum(constr));
+    }
   }
 
 ];
