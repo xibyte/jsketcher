@@ -1,6 +1,7 @@
 import {Generator} from '../id-generator'
 import {Shape} from './shape'
 import {Types} from '../io';
+import {Styles} from "../styles";
 
 export class SketchObject extends Shape {
   constructor() {
@@ -11,6 +12,7 @@ export class SketchObject extends Shape {
     this.children = [];
     this.linked = [];
     this.layer = null;
+    this.fullyConstrained = false;
   }
 
   normalDistance(aim, scale) {
@@ -86,8 +88,12 @@ export class SketchObject extends Shape {
       ctx.save();
       viewer.setStyle(this.marked, ctx);
     }
+    if (this.fullyConstrained) {
+      ctx.save();
+      viewer.setStyle(Styles.FULLY_CONSTRAINED, ctx);
+    }
     this.drawImpl(ctx, scale, viewer);
-    if (this.marked != null) ctx.restore();
+    if (this.marked != null || this.fullyConstrained) ctx.restore();
   }
   
   copy() {

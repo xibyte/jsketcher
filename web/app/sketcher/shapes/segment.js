@@ -47,18 +47,15 @@ export class Segment extends SketchObject {
 
     let ang = Math.atan2(ny, nx);
 
-    if (this.ang !== undefined && Math.abs(ang - this.ang) > Math.PI) {
-      ang = Math.atan2(-ny, -nx);
-    }
-
     this.params.ang.set(ang||0);
     this.params.w.set(nx * this.a.x + ny * this.a.y);
+    this.params.t.set(l);
   }
 
   stabilize(viewer) {
     this.syncGeometry();
     const c1 = new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [this.a, this]);
-    const c2 = new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [this.b, this]);
+    const c2 = new AlgNumConstraint(ConstraintDefinitions.Polar, [this, this.a, this.b]);
     c1.internal = true;
     c2.internal = true;
     viewer.parametricManager.addAlgNum(c1);

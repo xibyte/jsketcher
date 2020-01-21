@@ -38,10 +38,15 @@ export class Polynomial {
 
   substitute(param, toParam, dotConstant) {
     for (let m of this.monomials) {
+      let touched = false;
       for (let i = 0; i < m.terms.length; ++i) {
         if (m.terms[i].param === param) {
           m.substitute(i, toParam, dotConstant);
+          touched = true;
         }
+      }
+      if (touched) {
+        m.mergeTerms();
       }
     }
   }
@@ -161,6 +166,14 @@ export class Polynomial {
 
   }
 
+  visitParams(callback) {
+    for (let m of this.monomials) {
+      for (let t of m.terms) {
+        callback(t.param);
+      }
+    }
+  }
+
   toString() {
 
     return this.monomials.map(m => {
@@ -227,8 +240,12 @@ export class Monomial {
     this.terms.splice(i, 1);
   }
 
-  substitute(i, toParam, dotConstant) {
+  substitute(index, toParam, dotConstant) {
+    this.terms[index].param = toParam;
     this.constant *= dotConstant;
+  }
+
+  mergeTerms() {
     let wasMerge = false;
     for (let i = 0; i < this.terms.length; ++i) {
       const merger = this.terms[i];
@@ -250,7 +267,6 @@ export class Monomial {
     if (wasMerge) {
       this.terms = this.terms.filter(t => t);
     }
-
   }
 
   equalVars(other) {
@@ -321,6 +337,7 @@ export class ToThePowerFunction {
   }
 
   constructor(degree, fn, d1) {
+    this.degree = degree;
     this.fn = fn;
     this.d1 = d1;
     this.id = '^' + degree;
@@ -358,10 +375,11 @@ export class FreeFunction {
 
   fn;
 
-  constructor(fn, d1, id) {
+  constructor(fn, d1, id, linearSubstitutionFn) {
     this.fn = fn;
     this.d1 = d1;
     this.id = id;
+    this.linearSubstitutionFn = linearSubstitutionFn || null;
   }
 
   apply(x) {
@@ -381,7 +399,7 @@ export class FreeFunction {
   }
 
   linearSubstitution(k, x, b) {
-    return null;
+    return this.linearSubstitutionFn(k, x, b);
   }
 
 }
@@ -415,7 +433,7 @@ export class CosineOfSum {
   }
 
   render(x) {
-    return 'cos(' + this.k.toFixed(2) + x + ' + ' + this.b.toFixed(2) + ')';
+    return 'cos(' + this.k.toFixed(2) + '*' + x + ' + ' + this.b.toFixed(2) + ')';
   }
 
 }
@@ -449,7 +467,7 @@ export class SineOfSum {
   }
 
   render(x) {
-    return 'sin(' + this.k.toFixed(2) + x + ' + ' + this.b.toFixed(2) + ')';
+    return 'sin(' + this.k.toFixed(2) + '*' + x + ' + ' + this.b.toFixed(2) + ')';
   }
 }
 

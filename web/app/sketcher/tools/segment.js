@@ -19,7 +19,7 @@ export class AddSegmentTool extends Tool {
   }
 
   mousemove(e) {
-    var p = this.viewer.screenToModel(e);
+    let p = this.viewer.screenToModel(e);
     if (this.line != null) {
       this.viewer.snap(p.x, p.y, [this.line.a, this.line.b]);
       this.line.b.x = p.x;
@@ -35,7 +35,7 @@ export class AddSegmentTool extends Tool {
     if (this.line == null) {
       const b = this.viewer.screenToModel(e);
       let a = b;
-      var needSnap = false;
+      let needSnap = false;
       if (this.viewer.snapped != null) {
         a = this.viewer.snapped;
         this.viewer.cleanSnap();
@@ -43,7 +43,7 @@ export class AddSegmentTool extends Tool {
       }
       this.line = this.viewer.addSegment(a.x, a.y, b.x, b.y, this.viewer.activeLayer);
       if (needSnap) {
-        this.line.a.coincideWith(a);
+        this.viewer.parametricManager.coincidePoints(this.line.a, a);
       }
       this.firstPointPicked();
       this.viewer.refresh();
@@ -53,7 +53,7 @@ export class AddSegmentTool extends Tool {
         this.viewer.cleanSnap();
         this.line.b.x = p.x;
         this.line.b.y = p.y;
-        this.line.b.coincideWith(p);
+        this.viewer.parametricManager.coincidePoints(this.line.b, p);
       }
       this.nextPointPicked();
     }
@@ -61,10 +61,11 @@ export class AddSegmentTool extends Tool {
   
   nextPointPicked() {
     this.pointPicked(this.line.b.x, this.line.b.y);
+    this.line.stabilize(this.viewer);
     if (this.multi) {
       const b = this.line.b;
       this.line = this.viewer.addSegment(b.x, b.y, b.x, b.y, this.viewer.activeLayer);
-      this.line.a.coincideWith(b);
+      this.viewer.parametricManager.coincidePoints(this.line.a, b);
     } else {
       this.restart()
     }

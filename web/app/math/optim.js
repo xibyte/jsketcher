@@ -1,6 +1,9 @@
 import numeric from 'numeric';
 import {_vec, _matrix} from './math'
 
+const SUCCESS = 1, ITER_LIMIT = 2, SMALL_DELTA = 3, SMALL_STEP = 4, DIVERGENCE = 5, INVALID_STATE = 6;
+
+
 //Added strong wolfe condition to numeric's uncmin
 export function fmin_bfgs(f,x0,tol,gradient,maxit,callback,options) {
   var grad = numeric.gradient;
@@ -256,9 +259,10 @@ var inv = function inv(A) {
 };
 
 var _result = function(evalCount, error, returnCode) {
-  this.evalCount = evalCount;
-  this.error = error;
-  this.returnCode = returnCode;
+  return {
+    evalCount, error, returnCode,
+    success: returnCode === SUCCESS
+  };
 };
 
 var dog_leg = function (subsys, rough) {
@@ -279,7 +283,7 @@ var dog_leg = function (subsys, rough) {
   var csize = subsys.constraints.length;
 
   if (xsize == 0) {
-    return new _result(0, 0, 1);
+    return _result(0, 0, 1);
   }
 
   var vec = _vec;
@@ -330,8 +334,6 @@ var dog_leg = function (subsys, rough) {
   var iter = 0, returnCode = 0;
   //var log = [];
 
-  var SUCCESS = 1, ITER_LIMIT = 2, SMALL_DELTA = 3, SMALL_STEP = 4, DIVERGENCE = 5, INVALID_STATE = 6;
-  
   while (returnCode === 0) {
     optim.DEBUG_HANDLER(iter, err);
 
@@ -457,7 +459,7 @@ var dog_leg = function (subsys, rough) {
   }
   //log.push(returnCode);
   //window.___log(log);
-  return new _result(iter, err, returnCode);
+  return _result(iter, err, returnCode);
 };
 
 var cg = function(A, x, b, tol, maxIt) {

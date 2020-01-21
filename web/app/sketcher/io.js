@@ -400,7 +400,7 @@ IO.prototype._serializeSketch = function(metadata) {
   }
 
   sketch.constraints = [];
-  const systemConstraints = this.viewer.parametricManager.algnNumSystem.constraints;
+  const systemConstraints = this.viewer.parametricManager.algnNumSystem.allConstraints;
   for (let sc of systemConstraints) {
     if (!sc.internal) {
       sketch.constraints.push(sc.write());

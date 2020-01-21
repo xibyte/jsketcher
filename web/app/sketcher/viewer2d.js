@@ -121,7 +121,6 @@ class Viewer {
     var b = new EndPoint(x2, y2);
     var line = new Segment(a, b);
     layer.add(line);
-    line.stabilize(this);
     return line;
   };
 
