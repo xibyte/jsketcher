@@ -39,6 +39,12 @@ export const Styles = {
     fillStyle : "#000000"
   },
 
+  FULLY_CONSTRAINED: {
+    lineWidth : 2,
+    strokeStyle : "#d7e6ff",
+    fillStyle : "#424e56"
+  },
+
   CONSTRUCTION : {
     lineWidth : 1,
     strokeStyle : "#aaaaaa",

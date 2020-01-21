@@ -111,18 +111,13 @@ export const ConstraintDefinitions = indexById([
         initialValue: (constraint) => {
           const [a, b] = constraint.objects;
           return distanceAB(a, b);
-        }
+        },
       }
     },
 
-    defineParamsScope: ([pt, segment], callback) => {
-      pt.visitParams(callback);
-      callback(segment.params.ang);
-      callback(segment.params.w);
-    },
-
-    collectResiduals: (residuals, params, {distance}) => {
-      residuals.push([R_DistancePP, params, [distance]]);
+    defineParamsScope: ([pt1, pt2], callback) => {
+      pt1.visitParams(callback);
+      pt2.visitParams(callback);
     },
 
     collectPolynomials: (polynomials, [x1, y1, x2, y2], {distance}) => {
@@ -200,6 +195,85 @@ export const ConstraintDefinitions = indexById([
       polynomials.push(new Polynomial( - angle).monomial(1).term(x1, POW_1_FN).monomial(-1).term(x2, POW_1_FN));
     },
   },
+
+  {
+    id: 'SegmentLength',
+    name: 'Segment Length',
+    constants: {
+      length: {
+        type: 'number',
+        description: 'length of the segment',
+        initialValue: (constraint) => {
+          const [segment] = constraint.objects;
+          const dx = segment.b.x - segment.a.x;
+          const dy = segment.b.y - segment.a.y;
+          return Math.sqrt(dx*dx + dy*dy);
+        },
+
+        // transform: length => length * length
+      }
+    },
+
+    defineParamsScope: ([segment], callback) => {
+      callback(segment.params.t);
+    },
+
+    collectPolynomials: (polynomials, [t], {length}) => {
+      polynomials.push(new Polynomial( - length).monomial(1).term(t, POW_1_FN));
+    },
+  },
+
+  {
+    id: 'Polar',
+    name: 'Polar Coordinate',
+
+    defineParamsScope: ([segment, originPt, targetPt], callback) => {
+      callback(segment.params.ang);
+      callback(segment.params.t);
+      originPt.visitParams(callback);
+      targetPt.visitParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [ang, t, x1, y1, x2, y2]) => {
+
+
+      //  v = [sin(ang), - cos(ang)]
+      //  v * t = pt2 -  pt1
+
+      //sin(ang) * t  - x2 + x1
+      //-cos(ang) * t  - y2 + y1
+
+      polynomials.push(new Polynomial().monomial()  .term(ang, SIN_FN).term(t, POW_1_FN).monomial(-1).term(x2, POW_1_FN).monomial(1).term(x1, POW_1_FN));
+      polynomials.push(new Polynomial().monomial(-1).term(ang, COS_FN).term(t, POW_1_FN).monomial(-1).term(y2, POW_1_FN).monomial(1).term(y1, POW_1_FN));
+    },
+  },
+
+
+  {
+    id: 'LockPoint',
+    name: 'Lock Point',
+    constants: {
+      x: {
+        type: 'number',
+        description: 'X Coordinate',
+        initialValue: (constraint) => constraint.objects[0].x,
+      },
+      y: {
+        type: 'number',
+        description: 'y Coordinate',
+        initialValue: (constraint) => constraint.objects[0].y,
+      }
+    },
+
+    defineParamsScope: ([pt], callback) => {
+      pt.visitParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [px, py], {x, y}) => {
+      polynomials.push(new Polynomial(-x).monomial().term(px, POW_1_FN));
+      polynomials.push(new Polynomial(-y).monomial().term(py, POW_1_FN));
+    },
+  }
 
 ]);
 

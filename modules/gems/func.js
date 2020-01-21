@@ -34,5 +34,6 @@ export function compositeFn() {
       funcs.push(fn);
     }
   }
+  fn.push = push;
   return fn
 }
