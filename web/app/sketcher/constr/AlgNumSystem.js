@@ -5,6 +5,7 @@ import {GCCircle, GCPoint} from "./constractibles";
 import {eqEps, eqTol} from "../../brep/geom/tolerance";
 import {Polynomial, POW_1_FN} from "./polynomial";
 import {compositeFn, NOOP} from "../../../../modules/gems/func";
+import {sq} from "../../math/math";
 
 export class AlgNumSubSystem {
 
@@ -19,7 +20,7 @@ export class AlgNumSubSystem {
 
   generatedParams = new Set();
 
-  beingSolvedParams = new Set();
+  paramToIsolation = new Map();
 
   eliminatedParams = new Map();
 
@@ -37,8 +38,14 @@ export class AlgNumSubSystem {
 
   dof = 0;
 
-  SubSystem(generator) {
+  constructor(generator = NOOP) {
     this.generator = generator;
+
+    this.solveStatus = {
+      error: 0,
+      success: true
+    }
+
   }
 
 
@@ -122,8 +129,8 @@ export class AlgNumSubSystem {
     this.polynomials = [];
     this.substitutedParams = [];
     this.eliminatedParams.clear();
-    this.beingSolvedParams.clear();
     this.polyToConstr.clear();
+    this.paramToIsolation.clear();
   }
 
   evaluatePolynomials() {
@@ -235,71 +242,78 @@ export class AlgNumSubSystem {
 
     this.evaluatePolynomials();
 
-    // this.polynomialClusters = splitByIsolatedClusters(this.polynomials);
+    this.polynomialIsolations = this.splitByIsolatedClusters(this.polynomials);
+    this.polynomialIsolations.forEach(iso => {
+      iso.beingSolvedParams.forEach(solverParam => this.paramToIsolation.set(solverParam.objectParam, iso))
+    });
 
     console.log('solving system:');
-    this.polynomials.forEach(p => console.log(p.toString()));
+    this.polynomialIsolations.forEach((iso, i) => {
+      console.log(i + ". ISOLATION, DOF: " + iso.dof);
+      iso.polynomials.forEach(p => console.log(p.toString()));
+    });
+
     console.log('with respect to:');
     this.substitutedParams.forEach(([x, expr]) => console.log('X' + x.id  + ' = ' + expr.toString()));
-
-    const residuals = [];
-
-    this.polynomials.forEach(p => residuals.push(p.asResidual()));
-
-    for (let residual of residuals) {
-      residual.params.forEach(solverParam => {
-        if (!this.beingSolvedParams.has(solverParam)) {
-          solverParam.reset(solverParam.objectParam.get());
-          this.beingSolvedParams.add(solverParam);
-        }
-      });
-    }
-    this.numericalSolver = prepare(residuals);
   }
 
   splitByIsolatedClusters(polynomials) {
 
-    const graph = [polynomials.length];
-    const params = [];
-    const paramMap = new Map();
-    polynomials.forEach((pl, i) => pl.visitParams(p => {
-      let pIndex = paramMap.get(p);
-      if (pIndex === undefined) {
-        pIndex = paramMap.size;
-        paramMap.set(p, pIndex);
-        params.push(p);
+
+    const graph = new Map();
+
+    function link(a, b) {
+      let list = graph.get(a);
+      if (!list) {
+        list = [];
+        graph.set(a, list);
       }
-      graph[i][pIndex] = 1;
-    }));
+      list.push(b);
+    }
 
     const visited = new Set();
+
+    polynomials.forEach(pl => {
+      visited.clear();
+      pl.visitParams(p => {
+        if (visited.has(p)) {
+          return;
+        }
+        visited.add(p);
+        link(p, pl);
+        link(pl, p);
+      })
+    });
+
+    visited.clear();
+
     const clusters = [];
 
-    for (let param of params) {
-      if (visited.has(param)) {
+    for (let initPl of polynomials) {
+      if (visited.has(initPl)) {
         continue
       }
-      const stack = [param];
+      const stack = [initPl];
       const isolation = [];
       while (stack.length) {
-        const p = stack.pop();
-        if (visited.has(p)) {
+        const pl = stack.pop();
+        if (visited.has(pl)) {
           continue;
         }
-        isolation.push(p);
-        const index = paramMap.get(p);
-        for (let i = 0; i < graph.length; ++i) {
-          if (graph[i][index] === 1) {
-            for (let j = 0; j < params.length; j ++) {
-              if (j !== index) {
-                stack.push(params[j]);
-              }
+        isolation.push(pl);
+        visited.add(pl);
+        const params = graph.get(pl);
+        for (let p of params) {
+          let linkedPolynomials = graph.get(p);
+          for (let linkedPolynomial of linkedPolynomials) {
+            if (linkedPolynomial !== pl) {
+              stack.push(linkedPolynomial);
             }
           }
         }
       }
       if (isolation.length) {
-        clusters.push(new Cluster(isolation));
+        clusters.push(new Isolation(isolation));
       }
     }
 
@@ -318,23 +332,27 @@ export class AlgNumSubSystem {
   solve(rough) {
     this.generator();
 
-    this.beingSolvedParams.forEach(solverParam => {
-      solverParam.set(solverParam.objectParam.get());
+    this.polynomialIsolations.forEach(iso => {
+      iso.solve(rough);
     });
 
-    const solveStatus = this.numericalSolver.solveSystem(rough);
     if (!rough) {
-      this.solveStatus = solveStatus;
+
+      this.solveStatus.error = 0;
+      this.solveStatus.success = true;
+
+      this.polynomialIsolations.forEach(iso => {
+        this.solveStatus.error = Math.max(this.solveStatus.error, iso.solveStatus.error);
+        this.solveStatus.success = this.solveStatus.success && iso.solveStatus.success;
+      });
+
+      console.log('numerical result: ' + this.solveStatus.success);
     }
-    console.log('numerical result: ' + solveStatus.success);
 
     for (let [p, val] of this.eliminatedParams) {
       p.set(val);
     }
 
-    this.beingSolvedParams.forEach(solverParam => {
-      solverParam.objectParam.set(solverParam.get());
-    });
     for (let i = this.substitutedParams.length - 1; i >= 0; i--) {
       let [param, expression] = this.substitutedParams[i];
       param.set(expression.value());
@@ -344,6 +362,8 @@ export class AlgNumSubSystem {
   updateFullyConstrainedObjects() {
 
 
+    const substitutedParamsLookup =  new Set();
+    this.substitutedParams.forEach(([p]) => substitutedParamsLookup.add(p));
 
     this.validConstraints(c => {
 
@@ -353,7 +373,10 @@ export class AlgNumSubSystem {
 
         obj.visitParams(p => {
 
-          if (!this.eliminatedParams.has(p)) {
+          const eliminated = this.eliminatedParams.has(p);
+          const substituted = substitutedParamsLookup.has(p);
+          const iso = this.paramToIsolation.get(p);
+          if (!eliminated && !substituted && (!iso || !iso.fullyConstrained)) {
             allLocked = false;
           }
         });
@@ -377,7 +400,7 @@ export class AlgNumSubSystem {
 }
 
 
-class Cluster {
+class Isolation {
 
   constructor(polynomials) {
     this.polynomials = polynomials;
@@ -394,7 +417,25 @@ class Cluster {
         }
       });
     }
+    this.dof = this.beingSolvedParams.size - polynomials.length;
 
+    let penaltyFunction = new PolynomialResidual();
+    this.beingSolvedParams.forEach(sp => {
+      const param = sp.objectParam;
+      if (param.constraints) {
+        param.constraints.forEach(pc => penaltyFunction.add(sp, pc))
+      }
+    });
+
+    if (penaltyFunction.params.length) {
+      residuals.push(penaltyFunction);
+    }
+
+    this.numericalSolver = prepare(residuals);
+  }
+
+  get fullyConstrained() {
+    return this.dof === 0;
   }
 
   solve(rough) {
@@ -411,26 +452,31 @@ class Cluster {
 
 }
 
+class PolynomialResidual {
 
-export class AlgNumSystem {
-  constraints = [];
-  generators = [];
-  locked = new Set();
-  constantParams = new Set();
+  params = [];
+  functions = [];
 
-  constructor(visitAllObjects) {
-    this.visitAllObjects = visitAllObjects;
+  add(param, fn) {
+    this.params.push(param);
+    this.functions.push(fn);
+
   }
 
-  addConstraint(constraint) {
-    this.constraints.push(constraint);
-    if (constraint.schema.generator) {
+  error() {
+    let err = 0;
+    for (let i = 0 ; i < this.params.length; ++i) {
+      err += this.functions[i].d0(this.params[i].get());
+    }
 
+    return err;
+  }
+
+  gradient(out) {
+    for (let i = 0 ; i < this.params.length; ++i) {
+      out[i] = this.functions[i].d1(this.params[i].get());
     }
   }
 
-  startTransaction(interactiveLock = []) {
-    this.systemTransaction.prepare(interactiveLock);
-    return this.systemTransaction;
-  }
 }
+

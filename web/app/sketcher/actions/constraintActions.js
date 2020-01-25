@@ -39,7 +39,7 @@ export default [
       const constraint = new AlgNumConstraint(ConstraintDefinitions.TangentLC, [line, circle]);
       constraint.initConstants();
       const pm = viewer.parametricManager;
-      pm.addConstraint(constraint);
+      pm.algnNumSystem.addConstraint(constraint);
       pm.refresh();
     }
 

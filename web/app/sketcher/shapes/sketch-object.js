@@ -87,11 +87,11 @@ export class SketchObject extends Shape {
     if (this.marked != null) {
       ctx.save();
       viewer.setStyle(this.marked, ctx);
-    }
-    if (this.fullyConstrained) {
+    } else if (this.fullyConstrained) {
       ctx.save();
       viewer.setStyle(Styles.FULLY_CONSTRAINED, ctx);
     }
+
     this.drawImpl(ctx, scale, viewer);
     if (this.marked != null || this.fullyConstrained) ctx.restore();
   }
