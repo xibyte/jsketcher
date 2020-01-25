@@ -1,10 +1,9 @@
-import * as utils from '../../utils/utils';
 import * as math from '../../math/math';
-import {EditCircleTool} from '../tools/circle'
-
-import {EndPoint} from './point'
-import {Ref} from './ref'
 import {SketchObject} from './sketch-object'
+import {Param} from "./param";
+import {greaterThanConstraint} from "../constr/barriers";
+
+const MIN_RADIUS = 100;
 
 export class Circle extends SketchObject {
 
@@ -13,8 +12,8 @@ export class Circle extends SketchObject {
     this.c = c;
     c.parent = this;
     this.children.push(c);
-    this.r = new Ref(0);
-    this.r.obj = this;
+    this.r = new Param(MIN_RADIUS + 0.001);
+    this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
   }
 
   visitParams(callback) {

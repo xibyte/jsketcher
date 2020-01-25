@@ -1,6 +1,4 @@
 import {eqEps} from "../../brep/geom/tolerance";
-import {sq} from "../../math/math";
-import {polynomial} from "../../math/vec";
 import {compositeFn} from "../../../../modules/gems/func";
 
 export class Polynomial {
