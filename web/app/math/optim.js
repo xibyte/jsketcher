@@ -315,10 +315,10 @@ var dog_leg = function (subsys, rough) {
   function lsolve(A, b) {
     if (csize < xsize) {
       var At = n.transpose(A);
-      var sol = n.solve(n.dot(A, At), b, true);
+      var sol = lu_solve(n.dot(A, At), b, true);
       return n.dot(At, sol);
     } else {
-      return n.solve(A, b, false);
+      return lu_solve(A, b, false);
     }
   }
 
@@ -351,7 +351,7 @@ var dog_leg = function (subsys, rough) {
       returnCode = INVALID_STATE;
     }
 
-    if (returnCode != 0) {
+    if (returnCode !== 0) {
       break;
     }
 
@@ -461,6 +461,143 @@ var dog_leg = function (subsys, rough) {
   //window.___log(log);
   return _result(iter, err, returnCode);
 };
+
+function gaussElimination(A) {
+  let h = 0;
+  let k = 0;
+  const m = A.length;
+  const n = A[0].length;
+
+  while (h < m && k  < n) {
+
+    let i_max = h;
+
+    for (let i = h + 1; i < m; i++) {
+      if (Math.abs(A[i][k]) > Math.abs(A[i_max][k]) ) {
+        i_max = i;
+      }
+    }
+
+    if (A[i_max][k] === 0) {
+      /* No pivot in this column, pass to next column */
+      k ++;
+    } else {
+      let t = A[h];
+      A[h] = A[i_max];
+      A[i_max] = t;
+
+
+      for (let i = h + 1; i < m; i++) {
+        let f = A[i][k] / A[h][k]; //it cant be 0 here see condition up
+        A[i][k] = 0;
+        for (let j = k + 1; j < n; j++) {
+          A[i][j] = A[i][j] - A[h][j] * f;
+        }
+      }
+      h ++;
+      k ++;
+    }
+  }
+
+}
+
+function LU(A, fast) {
+  fast = fast || false;
+
+  var abs = Math.abs;
+  var i, j, k, absAjk, Akk, Ak, Pk, Ai;
+  var max;
+  var n = A.length, n1 = n-1;
+  var P = new Array(n);
+  if(!fast) A = numeric.clone(A);
+
+  for (k = 0; k < n; ++k) {
+    Pk = k;
+    Ak = A[k];
+    max = abs(Ak[k]);
+    for (j = k + 1; j < n; ++j) {
+      absAjk = abs(A[j][k]);
+      if (max < absAjk) {
+        max = absAjk;
+        Pk = j;
+      }
+    }
+    P[k] = Pk;
+
+    if (Pk != k) {
+      A[k] = A[Pk];
+      A[Pk] = Ak;
+      Ak = A[k];
+    }
+
+    Akk = Ak[k];
+
+    if (Akk === 0) {
+      Akk = 0.0000001;
+    }
+
+    for (i = k + 1; i < n; ++i) {
+      A[i][k] /= Akk;
+    }
+
+    for (i = k + 1; i < n; ++i) {
+      Ai = A[i];
+      for (j = k + 1; j < n1; ++j) {
+        Ai[j] -= Ai[k] * Ak[j];
+        ++j;
+        Ai[j] -= Ai[k] * Ak[j];
+      }
+      if(j===n1) Ai[j] -= Ai[k] * Ak[j];
+    }
+  }
+
+  return {
+    LU: A,
+    P:  P
+  };
+}
+
+function LUsolve(LUP, b) {
+  var i, j;
+  var LU = LUP.LU;
+  var n   = LU.length;
+  var x = numeric.clone(b);
+  var P   = LUP.P;
+  var Pi, LUi, LUii, tmp;
+
+  for (i=n-1;i!==-1;--i) x[i] = b[i];
+  for (i = 0; i < n; ++i) {
+    Pi = P[i];
+    if (P[i] !== i) {
+      tmp = x[i];
+      x[i] = x[Pi];
+      x[Pi] = tmp;
+    }
+
+    LUi = LU[i];
+    for (j = 0; j < i; ++j) {
+      x[i] -= x[j] * LUi[j];
+    }
+  }
+
+  for (i = n - 1; i >= 0; --i) {
+    LUi = LU[i];
+    for (j = i + 1; j < n; ++j) {
+      x[i] -= x[j] * LUi[j];
+    }
+    if (LUi[i] !== 0) { // We want it because it 99% of the time happens when penalty function returns ZERO gradient, so we just ignore zero-rows
+      x[i] /= LUi[i];
+    }
+  }
+
+  return x;
+}
+
+function lu_solve(A, b, fast) {
+  const lu = LU(A,fast);
+  return LUsolve(lu, b);
+}
+
 
 var cg = function(A, x, b, tol, maxIt) {
 
