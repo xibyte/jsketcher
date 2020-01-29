@@ -1,32 +1,28 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Widget from "ui/components/Widget";
 import NumberControl from "ui/components/controls/NumberControl";
-import {DEG_RAD} from "../../math/math";
 import Stack from "ui/components/Stack";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
-import connect from "../../../../modules/ui/connect";
+import {useStream} from "../../../../modules/ui/effects";
 
+export function ConstraintEditor() {
 
-export const ConstraintEditor = connect(streams => streams.sketcherApp.constraintEditRequest)(
-  function ConstraintEditor({constraint, onCancel, onApply}) {
-    return <ConstraintEditorImpl constraint={constraint}
-                                 onCancel={onCancel}
-                                 onApply={onApply} />
-  }
-);
+  const req = useStream(ctx => ctx.ui.$constraintEditRequest);
 
-export function ConstraintEditorImpl({constraint, onCancel, onApply}) {
+  const [values, setValues] = useState(null);
 
-  if (!constraint) {
-    return null;
-  }
-
-  const [values, setValues] = useState({...constraint.constants});
+  useEffect(() => setValues(req && {...req.constraint.constants}), [req]);
 
   const setValue = (name, value) => {
     setValues({...value, [name]: value});
   };
+
+  if (!req || !values) {
+    return null;
+  }
+
+  const {constraint, onCancel, onApply} = req;
 
   const apply = () => {
     Object.keys(constraint.schema.constants).map(name => {
@@ -49,9 +45,9 @@ export function ConstraintEditorImpl({constraint, onCancel, onApply}) {
             const def = constraint.schema.constants[name];
             const val = values[name];
             if (def.type === 'number') {
-              return <NumberControl value={val} onChange={value => setValue(name, value)} />
+              return <NumberControl value={val} onChange={value => setValue(name, value)}/>
             } else {
-              return <span >{val}</span>;
+              return <span>{val}</span>;
             }
 
           })()
