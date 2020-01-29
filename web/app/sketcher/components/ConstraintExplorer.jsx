@@ -1,51 +1,56 @@
-import React from 'react';
-import cx from 'classnames';
+import React, {useContext} from 'react';
 import ls from './ConstraintExplorer.less';
-
-import connect from 'ui/connect';
-import mapContext from 'ui/mapContext';
 import Fa from 'ui/components/Fa';
+import {useStream} from "../../../../modules/ui/effects";
+import {SketcherAppContext} from "./SketcherApp";
+import cx from 'classnames';
 
-@connect(streams => streams.sketcherApp.constraintsUpdate)
-@mapContext(ctx => ({
-  remove: constr => {
-    let viewer = ctx.services.sketcher.inPlaceEditor.viewer;
-    viewer.parametricManager.remove(constr);
-    viewer.refresh();
-  },
-  highlight: constr => {
-    let viewer = ctx.services.sketcher.inPlaceEditor.viewer;
-    viewer.select(constr.getObjects(), true);
-    viewer.refresh();
-  },
-  withdraw: constr => {
-    let viewer = ctx.services.sketcher.inPlaceEditor.viewer;
-    viewer.deselectAll();
-    viewer.refresh();
-  },
-  constraints: ctx.services.sketcher.inPlaceEditor.viewer.parametricManager.system.constraints,
-  updateConstraintConstants: c => ctx.services.sketcher.inPlaceEditor.viewer.parametricManager.updateConstraintConstants(c)
-}))
-export class ConstraintExplorer extends React.Component {
 
-  render() {
-    const {constraints} = this.props;
-    return <React.Fragment>
-      <div className={ls.titleBar}>Constraints</div>
-      <div className={ls.scrollableArea}>
-        {constraints.map((c, i) => <div key={c.id} className={ls.objectItem} 
-                                        onClick={() => this.props.updateConstraintConstants(c)}
-                                        onMouseEnter={() => this.props.highlight(c)}
-                                        onMouseLeave={() => this.props.withdraw(c)}>
-          <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>
-          <span className={ls.objectTag}>
-            {i}. {c.UI_NAME}
-          </span>
-          <span className={ls.removeButton} onClick={() => this.props.remove(c)}><Fa icon='times'/></span>
-          
-        </div>)}
-      </div>
-    </React.Fragment>;
-  }
+export function ConstraintExplorer(props) {
+  return <React.Fragment>
+    <div className={ls.titleBar}>Constraints</div>
+    <div className={ls.scrollableArea}>
+      <ConstraintList props={props} />
+    </div>
+  </React.Fragment>;
 }
 
+export function ConstraintList() {
+
+  const constraints = useStream(ctx => ctx.viewer.parametricManager.$constraints);
+
+  const {viewer} = useContext(SketcherAppContext);
+
+  const remove = constr => {
+    viewer.parametricManager.remove(constr);
+    viewer.refresh();
+  };
+
+  const highlight = constr => {
+    viewer.select(constr.objects, true);
+    viewer.refresh();
+  };
+
+  const withdraw = constr => {
+    viewer.deselectAll();
+    viewer.refresh();
+  };
+
+
+  return constraints.map((c, i) => {
+    const conflicting = viewer.parametricManager.algnNumSystem.conflicting.has(c);
+    const redundant = viewer.parametricManager.algnNumSystem.redundant.has(c);
+
+    return <div key={c.id} className={cx(ls.objectItem, conflicting&&ls.conflicting, redundant&&ls.redundant)}
+         onClick={() => viewer.parametricManager.updateConstraintConstants(c)}
+         onMouseEnter={() => highlight(c)}
+         onMouseLeave={() => withdraw(c)}>
+      <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>
+      <span className={ls.objectTag}>
+        {i}. {c.schema.name}
+      </span>
+      <span className={ls.removeButton} onClick={() => remove(c)}><Fa icon='times'/></span>
+
+    </div>
+  })
+}

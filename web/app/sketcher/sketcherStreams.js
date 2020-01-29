@@ -15,9 +15,5 @@ export default function(viewer) {
   streams.selection = state([]);
   streams.objectUpdate = stream();
 
-  streams.constraintsUpdate = stream();
-
-  streams.constraintEditRequest = state(null);
-
   return streams;
 };

@@ -36,7 +36,6 @@ export class AlgNumSubSystem {
 
   snapshot = new Map();
 
-  dof = 0;
 
   constructor(generator = NOOP) {
     this.generator = generator;
@@ -89,31 +88,27 @@ export class AlgNumSubSystem {
     //   this.conflicting.add(constraint);
     //   this.redundant.add(constraint);
     } else {
-      this.updateDOF();
       this.updateFullyConstrainedObjects();
     }
-
   }
+
+
+  removeConstraint(constraint) {
+    let index = this.allConstraints.indexOf(constraint);
+    if (index !== -1) {
+      this.allConstraints.splice(index, 1);
+      this.conflicting.delete(constraint);
+      this.redundant.delete(constraint);
+      this.prepare();
+      this.prepare();
+      this.solveFine();
+      this.updateFullyConstrainedObjects();
+    }
+  }
+
 
   isConflicting(constraint) {
     return this.conflicting.has(constraint);
-  }
-
-  updateDOF() {
-
-    let vars = 0;
-    let equations = 0;
-
-    this.validConstraints(c => {
-      equations ++;
-      c.params.forEach(p => {
-        if (!this.readOnlyParams.has(p)) {
-          vars++
-        }
-      })
-    });
-
-    this.dof = vars - equations;
   }
 
   makeSnapshot() {

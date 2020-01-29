@@ -1,4 +1,5 @@
 import {AXIS, Matrix3, ORIGIN} from '../math/l3space'
+import * as vec from '../math/vec'
 import Vector from 'math/vector';
 import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
@@ -9,6 +10,7 @@ import {closestToCurveParam} from '../brep/geom/curves/closestPoint';
 import NurbsSurface from '../brep/geom/surfaces/nurbsSurface';
 import DatumObject3D from './craft/datum/datumObject';
 import CSys from '../math/csys';
+import {createOctreeFromSurface, sphereOctree, traverseOctree} from "../../../modules/voxels/octree";
 
 export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, tpi, tpi: {addShellOnScene} }}) {
 
@@ -237,6 +239,48 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
     
   }
 
+  function voxelTest(size = 8) {
+
+    const degree = 3
+      , knots = [0, 0, 0, 0, 0.333, 0.666, 1, 1, 1, 1]
+      , pts = [ 	[ [0, 0, -10], 	[10, 0, 0], 	[20, 0, 0], 	[30, 0, 0] , 	[40, 0, 0], [50, 0, 0] ],
+      [ [0, -10, 0], 	[10, -10, 10], 	[20, -10, 10], 	[30, -10, 0] , [40, -10, 0], [50, -10, 0]	],
+      [ [0, -20, 0], 	[10, -20, 10], 	[20, -20, 10], 	[30, -20, 0] , [40, -20, -2], [50, -20, -12] 	],
+      [ [0, -30, 0], 	[10, -30, 0], 	[20, -30, -23], 	[30, -30, 0] , [40, -30, 0], [50, -30, 0]     ],
+      [ [0, -40, 0], 	[10, -40, 0], 	[20, -40, 0], 	[30, -40, 4] , [40, -40, -20], [50, -40, 0]     ],
+      [ [0, -50, 12], [10, -50, 0], 	[20, -50, 20], 	[30, -50, 0] , [50, -50, -10], [50, -50, -15]     ]  ];
+
+    let  srf = verb.geom.NurbsSurface.byKnotsControlPointsWeights( degree, degree, knots, knots, pts );
+    srf = srf.transform(new Matrix3().scale(10,10,10).toArray());
+    srf = new NurbsSurface(srf);
+    __DEBUG__.AddParametricSurface(srf);
+
+    const origin = [0,-500,-250];
+    const treeSize = size;
+    const sceneSize = 512;
+    const r = sceneSize / treeSize;
+    const octree = createOctreeFromSurface(origin, sceneSize, treeSize, srf, 1);
+    traverseOctree(octree, treeSize,  (x, y, z, size, tag) => {
+      if (size === 1 && tag === 1) {
+
+        // const base = [x, y, z];
+        // vec._mul(base, r);
+        // vec._add(base, origin);
+        // __DEBUG__.AddPolyLine3([
+        //   vec.add(base, [0, r, 0]),
+        //   vec.add(base, [0, r, r]),
+        //   vec.add(base, [0, 0, r]),
+        //   base,
+        //   vec.add(base, [r, r, 0]),
+        //   vec.add(base, [r, r, r]),
+        //   vec.add(base, [r, 0, r]),
+        //   vec.add(base, [0, 0, 0]),
+        // ], 0xff0000);
+      }
+    });
+    console.log("done")
+  }
+
   // cylinderAndPlaneIntersect();
   // curvesIntersect();
   // cylTest();
@@ -250,8 +294,8 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
   // o2.setMoveMode(DatumObject3D.AXIS.Z);
   // cadScene.auxGroup.add(o2);
 
-  services.action.run('LOFT');
-  
+  // services.action.run('LOFT');
+  window.voxelTest = voxelTest;
 }
 
 
