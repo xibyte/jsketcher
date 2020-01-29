@@ -1,12 +1,14 @@
 import App2D from './sketcher/sketcher-app';
-import {Styles} from './sketcher/styles'
 import {Layer} from './sketcher/viewer2d';
 import * as ui from './ui/ui.js';
 import * as toolkit from './ui/toolkit';
-import {askNumber} from './utils/utils';
 import {Constraints} from './sketcher/parametric'
 import './utils/jqueryfy'
 import '../css/app.less'
+import ReactDOM from "react-dom";
+import {SketcherApp} from "./sketcher/components/SketcherApp";
+import React from "react";
+import {stream} from "lstream";
 
 function initializeSketcherApplication() {
   var app = new App2D();
@@ -47,91 +49,49 @@ function initializeSketcherApplication() {
     return info;
   }
 
-  var pm = app.viewer.parametricManager;
-  var constrList = new ui.List('constrs', {
-    items : function() {
-      var theItems = [];
-      for (var j = 0; j < pm.system.subSystems.length; j++) {
-        var sub = pm.system.subSystems[j];
-        for (var i = 0; i < sub.constraints.length; ++i) {
-          var constr = sub.constraints[i];
-          if (constr.aux !== true && app.constraintFilter[constr.NAME] != true) {
-            theItems.push({name : constr.UI_NAME + infoStr(constr), constr : constr});
-          }
-        }
-      }
-      theItems.sort(function (a, b) {
-        if (a.constr.NAME == 'coi') {
-          return b.constr.NAME == 'coi' ? 0 : 1;
-        }
-        return a.constr.NAME.localeCompare(b.constr.NAME)
-      });
-      return theItems;
-    },
+  const constraintsView = app.dock.views['Constraints'];
 
-    remove : function(item) {
-      pm.remove(item.constr);
-    },
-
-    mouseleave : function(item) {
-      app.viewer.deselectAll();
-      app.viewer.refresh();
-    },
-
-    hover : function(item) {
-      app.viewer.select(item.constr.getObjects(), true);
-      app.viewer.refresh();
-    },
-
-    click : function(item) {
-      pm.updateConstraintConstants(item.constr);
-    }
-  });
-  var constraintsView = app.dock.views['Constraints'];
-
-  function configureConstraintsFilter() {
-    var constraintsCaption = constraintsView.node.find('.tool-caption');
-    var constraintsFilterBtn = ui.faBtn("filter");
-    constraintsFilterBtn.css({'float': 'right', 'margin-right': '10px', cursor: 'pointer'});
-    constraintsCaption.append(constraintsFilterBtn);
-    var constraintsFilterWin = new ui.Window($('#constrFilter'), app.winManager);
-    ui.bindOpening(constraintsFilterBtn, constraintsFilterWin);
-    var content = constraintsFilterWin.root.find('.content');
-
-    var constrTypes = [], constrType;
-    for (var cname in Constraints) {
-      c = Constraints[cname];
-      if (c.prototype !== undefined && c.prototype.UI_NAME !== undefined && !c.prototype.aux) {
-        constrTypes.push(c);
-      }
-    }
-    constrTypes.sort(function (a, b) {
-      if (a.prototype.NAME == 'coi') {
-        return b.prototype.NAME == 'coi' ? 0 : -1;
-      }
-      return a.prototype.UI_NAME.localeCompare(b.prototype.UI_NAME)
-    });
-    for (var i = 0; i < constrTypes.length; i++) {
-      var c = constrTypes[i];
-      if (c.prototype !== undefined && c.prototype.UI_NAME !== undefined && !c.prototype.aux) {
-        var checkbox = $('<input>', {type : 'checkbox', checked : 'checked', value : c.prototype.NAME});
-        content.append(
-          $('<label>', { css : {display : 'block', 'white-space' : 'nowrap'}})
-            .append(checkbox)
-            .append(c.prototype.UI_NAME)
-        );
-        checkbox.change(function(){
-          var checkbox = $(this);
-          app.constraintFilter[checkbox.val()] = checkbox.is(':checked') != true;
-          constrList.refresh();
-        });
-      }
-    }
-  }
-  configureConstraintsFilter();
-  constraintsView.node.append(constrList.ul);
-  app.viewer.streams.constraintsUpdate.attach(() => constrList.refresh());
-  constrList.refresh();
+  // function configureConstraintsFilter() {
+  //   var constraintsCaption = constraintsView.node.find('.tool-caption');
+  //   var constraintsFilterBtn = ui.faBtn("filter");
+  //   constraintsFilterBtn.css({'float': 'right', 'margin-right': '10px', cursor: 'pointer'});
+  //   constraintsCaption.append(constraintsFilterBtn);
+  //   var constraintsFilterWin = new ui.Window($('#constrFilter'), app.winManager);
+  //   ui.bindOpening(constraintsFilterBtn, constraintsFilterWin);
+  //   var content = constraintsFilterWin.root.find('.content');
+  //
+  //   var constrTypes = [], constrType;
+  //   for (var cname in Constraints) {
+  //     c = Constraints[cname];
+  //     if (c.prototype !== undefined && c.prototype.UI_NAME !== undefined && !c.prototype.aux) {
+  //       constrTypes.push(c);
+  //     }
+  //   }
+  //   constrTypes.sort(function (a, b) {
+  //     if (a.prototype.NAME == 'coi') {
+  //       return b.prototype.NAME == 'coi' ? 0 : -1;
+  //     }
+  //     return a.prototype.UI_NAME.localeCompare(b.prototype.UI_NAME)
+  //   });
+  //   for (var i = 0; i < constrTypes.length; i++) {
+  //     var c = constrTypes[i];
+  //     if (c.prototype !== undefined && c.prototype.UI_NAME !== undefined && !c.prototype.aux) {
+  //       var checkbox = $('<input>', {type : 'checkbox', checked : 'checked', value : c.prototype.NAME});
+  //       content.append(
+  //         $('<label>', { css : {display : 'block', 'white-space' : 'nowrap'}})
+  //           .append(checkbox)
+  //           .append(c.prototype.UI_NAME)
+  //       );
+  //       checkbox.change(function(){
+  //         var checkbox = $(this);
+  //         app.constraintFilter[checkbox.val()] = checkbox.is(':checked') != true;
+  //         constrList.refresh();
+  //       });
+  //     }
+  //   }
+  // }
+  // configureConstraintsFilter();
+  constraintsView.node.append($('<div id="constraint-list"></div>'));
 
 
   var addingModeRadio = new toolkit.InlineRadio(['sketch', 'construction'], ['sketch', 'construction'], 0);
@@ -189,6 +149,32 @@ function initializeSketcherApplication() {
   });
 
   app.dock.views['Dimensions'].node.append(constantTextArea);
+
+  startReact(app.viewer);
 }
+
+function startReact(viewer) {
+  const appCtx = createAppContext(viewer)
+
+  let reactControls = document.getElementById('react-controls');
+  reactControls.onkeydown = e => {
+    e.stopPropagation();
+    // e.preventDefault();
+  };
+  ReactDOM.render(
+    <SketcherApp applicationContext={appCtx} />,
+    reactControls
+  );
+}
+
+function createAppContext(viewer) {
+  return {
+    viewer,
+    ui: {
+      $constraintEditRequest: stream()
+    }
+  };
+}
+
 
 $( () => initializeSketcherApplication() );

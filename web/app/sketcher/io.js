@@ -333,8 +333,8 @@ IO.prototype.cleanUpData = function() {
   }
   this.viewer.deselectAll();
   Generator.resetIDGenerator(0);
-  if (this.viewer.parametricManager.system.subSystems.length !== 0) {
-    this.viewer.parametricManager.system = new System();
+  if (this.viewer.parametricManager.algnNumSystem.allConstraints.length !== 0) {
+    this.viewer.parametricManager.reset();
     this.viewer.parametricManager.notify();
   }
 };

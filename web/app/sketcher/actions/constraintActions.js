@@ -152,7 +152,7 @@ export default [
 
 function editConstraint(ctx, constraint, onApply) {
 
-  const rqStream = ctx.streams.sketcherApp.constraintEditRequest;
+  const rqStream = ctx.ui.$constraintEditRequest;
   rqStream.next({
     constraint,
     onCancel: () => rqStream.next(null),

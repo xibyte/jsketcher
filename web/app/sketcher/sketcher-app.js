@@ -18,7 +18,7 @@ import genSerpinski from '../utils/genSerpinski';
 import context from 'context';
 import ReactDOM from "react-dom";
 import React from "react";
-import {RightSideControls} from "./components/RightSideControls";
+import {SketcherApp} from "./components/SketcherApp";
 
 function App2D() {
   var app = this;
@@ -58,8 +58,6 @@ function App2D() {
   this.terminalHandler = undefined;
   this.terminal = new Terminal(this.commandsWin, (command) => this.handleTerminalInput(command), () => this.getAllCommandList());
   this.bindToolsToTerminal();
-
-  startReact(this.viewer);
 
   this.winManager.registerResize(dockEl, ui.DIRECTIONS.EAST, function() {$('body').trigger('layout'); });
   $('body').on('layout', this.viewer.onWindowResize);
@@ -474,20 +472,6 @@ App2D.prototype.handleTerminalInput = function(commandStr) {
     }
   }
 };
-
-function startReact(viewer) {
-  context.streams.sketcherApp = viewer.streams;
-  context.viewer = viewer;
-  let reactControls = document.getElementById('react-controls');
-  reactControls.onkeydown = e => {
-    e.stopPropagation();
-    // e.preventDefault();
-  };
-  ReactDOM.render(
-    <RightSideControls />,
-    reactControls
-  );
-}
 
 App2D.STORAGE_PREFIX = "TCAD.projects.";
 
