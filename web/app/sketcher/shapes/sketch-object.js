@@ -7,12 +7,13 @@ export class SketchObject extends Shape {
   constructor() {
     super();
     this.id = Generator.genID();
-    this.aux = false;
     this.marked = null;
     this.children = [];
     this.linked = [];
     this.layer = null;
     this.fullyConstrained = false;
+    this.managedBy = null;
+    this.solveSystem = null;
   }
 
   normalDistance(aim, scale) {

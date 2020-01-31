@@ -38,8 +38,8 @@ export function ConstraintList() {
 
 
   return constraints.map((c, i) => {
-    const conflicting = viewer.parametricManager.algnNumSystem.conflicting.has(c);
-    const redundant = viewer.parametricManager.algnNumSystem.redundant.has(c);
+    const conflicting = false; //viewer.parametricManager.algNumSystem.conflicting.has(c);
+    const redundant = false; //viewer.parametricManager.algNumSystem.redundant.has(c);
 
     return <div key={c.id} className={cx(ls.objectItem, conflicting&&ls.conflicting, redundant&&ls.redundant)}
          onClick={() => viewer.parametricManager.updateConstraintConstants(c)}

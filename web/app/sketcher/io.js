@@ -100,7 +100,7 @@ IO.prototype._loadSketch = function(sketch) {
       if (!!ioLayer.style) layer.style = ioLayer.style;
       layer.readOnly = !!ioLayer.readOnly;
       var layerData = ioLayer['data'];
-      for (i = 0; i < layerData.length; ++i) {
+      for (let i = 0; i < layerData.length; ++i) {
         var obj = layerData[i];
         var skobj = null;
         var _class = obj['_class'];
@@ -194,7 +194,7 @@ IO.prototype._loadSketch = function(sketch) {
     }
   }
 
-  for (i = 0; i < this.viewer.dimLayer.objects.length; ++i) {
+  for (let i = 0; i < this.viewer.dimLayer.objects.length; ++i) {
     obj = this.viewer.dimLayer.objects[i];
     if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
       obj.a = index[obj.a];
@@ -212,15 +212,14 @@ IO.prototype._loadSketch = function(sketch) {
     this.linkEndPoints(boundaryLayer.objects);
   }
 
-  var sketchConstraints = sketch['constraints'];
+  let sketchConstraints = sketch['constraints'];
   if (sketchConstraints !== undefined) {
-    for (var i = 0; i < sketchConstraints.length; ++i) {
+    for (let i = 0; i < sketchConstraints.length; ++i) {
       try {
         if (version > 1) {
-          this.viewer.parametricManager.algnNumSystem.addConstraint(AlgNumConstraint.read(sketchConstraints[i], index));
+          this.viewer.parametricManager._add(AlgNumConstraint.read(sketchConstraints[i], index));
         } else {
-          const c = this.parseConstr(sketchConstraints[i], index);
-          this.viewer.parametricManager._add(c);
+          console.error("old format - need an upgrade");
         }
       } catch (msg) {
         console.info("Skipping. " + msg);
@@ -228,7 +227,7 @@ IO.prototype._loadSketch = function(sketch) {
     }
     this.viewer.parametricManager.notify();
   }
-  var constants = sketch['constants'];
+  let constants = sketch['constants'];
   if (constants !== undefined) {
     this.viewer.params.constantDefinition = constants;
   }
@@ -333,10 +332,10 @@ IO.prototype.cleanUpData = function() {
   }
   this.viewer.deselectAll();
   Generator.resetIDGenerator(0);
-  if (this.viewer.parametricManager.algnNumSystem.allConstraints.length !== 0) {
-    this.viewer.parametricManager.reset();
-    this.viewer.parametricManager.notify();
-  }
+
+  this.viewer.parametricManager.reset();
+  this.viewer.parametricManager.notify();
+
 };
 
 IO.prototype._serializeSketch = function(metadata) {
@@ -400,7 +399,7 @@ IO.prototype._serializeSketch = function(metadata) {
   }
 
   sketch.constraints = [];
-  const systemConstraints = this.viewer.parametricManager.algnNumSystem.allConstraints;
+  const systemConstraints = this.viewer.parametricManager.allConstraints;
   for (let sc of systemConstraints) {
     if (!sc.internal) {
       sketch.constraints.push(sc.write());

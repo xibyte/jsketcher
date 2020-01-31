@@ -2,7 +2,7 @@ import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 import {EndPoint} from "../shapes/point";
 import {Circle} from "../shapes/circle";
 import {Segment} from "../shapes/segment";
-import {matchAll, matchTypes, sortSelectionByType} from "./matchUtils";
+import {isInstanceOf, matchAll, matchTypes, sortSelectionByType} from "./matchUtils";
 import constraints from "../../../test/cases/constraints";
 
 export default [
@@ -18,11 +18,11 @@ export default [
       const [first, ...others] = viewer.selected;
       let pm = viewer.parametricManager;
       for (let obj of others) {
-        pm.algnNumSystem.addConstraint(
+        pm._add(
           new AlgNumConstraint(ConstraintDefinitions.PCoincident, [first, obj])
         );
       }
-      pm.refresh();
+      pm.commit();
     }
   },
 
@@ -39,8 +39,7 @@ export default [
       const constraint = new AlgNumConstraint(ConstraintDefinitions.TangentLC, [line, circle]);
       constraint.initConstants();
       const pm = viewer.parametricManager;
-      pm.algnNumSystem.addConstraint(constraint);
-      pm.refresh();
+      pm.add(constraint);
     }
 
   },
@@ -54,7 +53,7 @@ export default [
       const {viewer} = ctx;
       const [pt, line] = sortSelectionByType(viewer.selected);
       let pm = viewer.parametricManager;
-      pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [pt, line]));
+      pm.add(new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [pt, line]));
     }
   },
 
@@ -73,11 +72,11 @@ export default [
 
       editConstraint(ctx, firstConstr, () => {
         const pm = viewer.parametricManager;
-        pm.algnNumSystem.addConstraint(firstConstr);
+        pm._add(firstConstr);
         for (let i = 1; i < viewer.selected.length; ++i) {
-          pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.Angle, [viewer.selected[i]], {...firstConstr.constants}));
+          pm._add(new AlgNumConstraint(ConstraintDefinitions.Angle, [viewer.selected[i]], {...firstConstr.constants}));
         }
-        pm.refresh();
+        pm.commit();
       });
     }
   },
@@ -97,12 +96,12 @@ export default [
 
       editConstraint(ctx, firstConstr, () => {
         const pm = viewer.parametricManager;
-        pm.algnNumSystem.addConstraint(firstConstr);
+        pm._add(firstConstr);
         for (let i = 2; i < viewer.selected.length; ++i) {
-          pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.Angle,
+          pm._add(new AlgNumConstraint(ConstraintDefinitions.Angle,
             [viewer.selected[i-1], viewer.selected[i]], {...firstConstr.constants}));
         }
-        pm.refresh();
+        pm.commit();
       });
     }
   },
@@ -122,11 +121,11 @@ export default [
 
       editConstraint(ctx, firstConstr, () => {
         const pm = viewer.parametricManager;
-        pm.algnNumSystem.addConstraint(firstConstr);
+        pm._add(firstConstr);
         for (let other of others) {
-          pm.algnNumSystem.addConstraint(new AlgNumConstraint(ConstraintDefinitions.SegmentLength, [other], {...firstConstr.constants}));
+          pm._add(new AlgNumConstraint(ConstraintDefinitions.SegmentLength, [other], {...firstConstr.constants}));
         }
-        pm.refresh();
+        pm.commit();
       });
     }
   },
@@ -143,7 +142,35 @@ export default [
 
       const constr = new AlgNumConstraint(ConstraintDefinitions.LockPoint, [point]);
       constr.initConstants();
-      editConstraint(ctx, constr, () => viewer.parametricManager.addAlgNum(constr));
+      editConstraint(ctx, constr, () => viewer.parametricManager.add(constr));
+    }
+  },
+
+  {
+    shortName: 'Mirror',
+    description: 'Mirror Objects',
+    selectionMatcher: selection => isInstanceOf(selection[0], Segment) && selection.length > 1,
+
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const objects = viewer.selected;
+      const managedObjects = [];
+      for (let i = 1; i < objects.length; i++) {
+        let obj = objects[i];
+        const copy = obj.copy();
+        obj.layer.add(copy);
+        managedObjects.push(copy);
+      }
+
+      ConstraintDefinitions.Mirror.modify(objects, managedObjects);
+
+
+      // const constr = new AlgNumConstraint(ConstraintDefinitions.Mirror, [...objects, ...managedObjects]);
+
+      // viewer.parametricManager.addModifier(constr);
+
     }
   }
 

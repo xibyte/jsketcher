@@ -83,5 +83,4 @@ export class EndPoint extends SketchObject {
 }
 
 EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
-EndPoint.prototype.TYPE = 'POINT';
 

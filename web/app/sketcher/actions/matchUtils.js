@@ -33,6 +33,10 @@ export function matchTypes(selection) {
   return si === selection.length && i === arguments.length;
 }
 
+export function isInstanceOf(obj, shapeConstructor) {
+  return obj._class === shapeConstructor.prototype._class;
+}
+
 export function sortSelectionByType(selection) {
   return [...selection].sort((a, b) => a._class.localeCompare(b._class))
 }
