@@ -79,6 +79,5 @@ export class BezierCurve extends SketchObject {
   }
 }
 BezierCurve.prototype._class = 'TCAD.TWO.BezierCurve';
-BezierCurve.prototype.TYPE = 'BEZIER';
 
 const RECOVER_LENGTH = 100;

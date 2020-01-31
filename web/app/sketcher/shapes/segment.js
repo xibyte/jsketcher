@@ -154,5 +154,3 @@ export class Segment extends SketchObject {
 }
 
 Segment.prototype._class = 'TCAD.TWO.Segment';
-
-Segment.prototype.TYPE = 'SEGMENT';

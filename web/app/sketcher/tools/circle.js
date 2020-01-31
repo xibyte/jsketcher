@@ -32,8 +32,8 @@ export class EditCircleTool extends Tool {
   }
 
   solveRequest(rough) {
-    this.solver = this.viewer.parametricManager.prepare([this.circle.r]);
-    this.solver.solve(rough, 1);
+    // this.viewer.parametricManager.prepare([this.circle.r]);
+    this.viewer.parametricManager.solve(rough);
   }
 
   mouseup(e) {
