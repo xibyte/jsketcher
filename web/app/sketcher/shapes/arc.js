@@ -141,4 +141,3 @@ export class Arc extends SketchObject {
 }
 
 Arc.prototype._class = 'TCAD.TWO.Arc';
-Arc.prototype.TYPE = 'ARC';

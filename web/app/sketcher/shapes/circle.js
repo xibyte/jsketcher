@@ -38,7 +38,12 @@ export class Circle extends SketchObject {
   normalDistance(aim) {
     return Math.abs(math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.r.get());
   }
+
+  copy() {
+    const circle = new Circle(this.c.copy());
+    circle.r.set(this.r.get());
+    return circle;
+  }
 }
 
 Circle.prototype._class = 'TCAD.TWO.Circle';
-Circle.prototype.TYPE = 'CIRCLE';

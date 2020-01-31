@@ -90,4 +90,3 @@ export class NurbsObject extends SketchObject {
 }
 
 NurbsObject.prototype._class = 'TCAD.TWO.NurbsObject';
-NurbsObject.prototype.TYPE = 'NURBS';

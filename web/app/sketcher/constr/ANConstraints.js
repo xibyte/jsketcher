@@ -3,6 +3,8 @@ import {indexById} from "../../../../modules/gems/iterables";
 import {DEG_RAD, distanceAB} from "../../math/math";
 import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, SIN_FN} from "./polynomial";
 import {Types} from "../io";
+import {Constraints} from "../constraints";
+import Vector from "../../../../modules/math/vector";
 
 export const ConstraintDefinitions = indexById([
 
@@ -273,6 +275,36 @@ export const ConstraintDefinitions = indexById([
       polynomials.push(new Polynomial(-x).monomial().term(px, POW_1_FN));
       polynomials.push(new Polynomial(-y).monomial().term(py, POW_1_FN));
     },
+  },
+
+
+  {
+    id: 'Mirror',
+    name: 'Mirror Objects',
+
+    modify: (referenceObjects, managedObjects) => {
+
+      const reflectionLine = referenceObjects[0];
+
+      const dir = new Vector();
+      dir.set(-(reflectionLine.b.y - reflectionLine.a.y), reflectionLine.b.x - reflectionLine.a.x, 0)._normalize();
+
+      for (let i = 0; i < managedObjects.length; i++) {
+        let origin = reflectionLine.a.toVector();
+
+        const pointMirroring = (x, y) => {
+          let pt = new Vector(x, y, 0);
+          let proj = dir.dot(pt.minus(origin));
+          return dir.multiply(- proj * 2)._plus(pt);
+        };
+
+        referenceObjects[i+1].mirror(managedObjects[i], pointMirroring);
+      }
+    },
+
+    referenceObjects: objects => objects.slice(0, (objects.length >> 1) + 1),
+    managedObjects: objects => objects.slice((objects.length + 1) >> 1)
+
   }
 
 ]);
@@ -289,8 +321,26 @@ export class AlgNumConstraint {
     this.internal = false;
     this.schema = schema;
     this.params = [];
-    this.schema.defineParamsScope(this.objects, p => this.params.push(p));
-    // this.paramSet = new Set(this.params);
+    if (this.schema.defineParamsScope) {
+      this.schema.defineParamsScope(this.objects, p => this.params.push(p));
+    }
+
+    this.modifier = this.schema.modify !== undefined;
+    if (this.modifier) {
+      this.referenceObjects = this.schema.referenceObjects(this.objects);
+      this.managedObjects = this.schema.managedObjects(this.objects);
+      this.managedObjects.forEach(o => {
+        if (o.managedBy) {
+          throw 'there can be only one managing modifier for an object';
+        }
+        o.managedBy = this;
+      });
+    }
+  }
+
+  modify() {
+    this.resolveConstants();
+    this.schema.modify(this.referenceObjects, this.managedObjects, this.resolvedConstants);
   }
 
   collectPolynomials(polynomials) {

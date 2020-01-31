@@ -2,23 +2,29 @@ import {askNumber} from '../utils/utils';
 import {Constraints} from './constraints';
 import {AlgNumConstraint, ConstraintDefinitions} from "./constr/ANConstraints";
 import {AlgNumSubSystem} from "./constr/AlgNumSystem";
-import {stream} from "../../../modules/lstream";
+import {state, stream} from "../../../modules/lstream";
 
 export {Constraints, ParametricManager}
 
 class ParametricManager {
 
-  algnNumSystem;
   constantTable = {};
   externalConstantResolver = null;
 
-  $constraints = stream().remember([]);
+  solveSystems;
+
+  $update = stream();
+
+  $constraints = this.$update.map(layers => layers.reduce((all, layer) => {
+    layer.allConstraints.forEach(c => all.push(c));
+    layer.modifiers.forEach(c => all.push(c));
+    return all
+  }, []).sort((c1, c2) => c1.id - c2.id)).remember([]);
 
   constructor(viewer) {
     this.viewer = viewer;
 
     this.reset();
-
 
     this.viewer.params.define('constantDefinition', null);
     this.viewer.params.subscribe('constantDefinition', 'parametricManager', this.onConstantsExternalChange, this)();
@@ -27,12 +33,12 @@ class ParametricManager {
 
   }
 
-  reset() {
-    this.algnNumSystem = new AlgNumSubSystem();
+  get allConstraints() {
+    return this.$constraints.value;
   }
 
-  get subSystems() {
-    return this.system.subSystems;
+  reset() {
+    this.solveSystems = [new AlgNumSubSystem()];
   }
 
   addAlgNum(constr) {
@@ -81,7 +87,7 @@ class ParametricManager {
 
   onConstantsExternalChange(constantDefinition) {
     this.rebuildConstantTable(constantDefinition);
-    this.refresh();
+   // this.refresh();
   };
 
   defineNewConstant(name, value) {
@@ -111,24 +117,50 @@ class ParametricManager {
     this.viewer.parametricManager.refresh();
   };
 
-  notify(event) {
-    this.$constraints.next(this.algnNumSystem.allConstraints);
+  notify() {
+    this.$update.next(this.solveSystems);
   };
 
-  refresh() {
-    console.log("calling non existent method");
-  };
-
-  _add(constr) {
-    this.viewer.historyManager.checkpoint();
-    this.algnNumSystem.addConstraint(constr);
+  commit() {
     this.notify();
     this.viewer.refresh();
   };
 
+  getPlacementLayerIndex(objects) {
+    for (let i = this.solveSystems.length - 1; i >= 0; --i) {
+
+      const system = this.solveSystems[i];
+
+      for (let o of objects) {
+        if (o.solveSystem === system) {
+          return i;
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  _add(constr) {
+
+    if (constr.modifier) {
+      throw 'use addModifier instead';
+    }
+
+    let system = this.solveSystems[this.getPlacementLayerIndex(constr.objects)];
+
+    for (let o of constr.objects) {
+      if (!o.solveSystem) {
+        o.solveSystem = system;
+      }
+    }
+
+    system.addConstraint(constr);
+  };
+
   add(constr) {
     this.viewer.historyManager.checkpoint();
-    this.algnNumSystem.addConstraint(constr);
+    this._add(constr);
     this.notify();
     this.viewer.refresh();
   };
@@ -136,7 +168,7 @@ class ParametricManager {
   addAll(constrs) {
     this.viewer.historyManager.checkpoint();
     for (let i = 0; i < constrs.length; i++) {
-      this.algnNumSystem.addConstraint(constrs[i]);
+      this._add(constrs[i]);
     }
     this.notify();
     this.viewer.refresh();
@@ -144,7 +176,7 @@ class ParametricManager {
 
   remove(constr) {
     this.viewer.historyManager.checkpoint();
-    this.algnNumSystem.removeConstraint(constr);
+    // this.algNumSystem.removeConstraint(constr);
     this.refresh();
   };
 
@@ -154,7 +186,7 @@ class ParametricManager {
     let toRemove = new Set();
 
     objects.forEach(obj => obj.visitParams(p => {
-      this.algnNumSystem.allConstraints.forEach(c => {
+      this.algNumSystem.allConstraints.forEach(c => {
         c.objects.forEach(o => {
 
         })
@@ -190,6 +222,34 @@ class ParametricManager {
       this.removeObjects(dependants);
     }
   };
+
+  prepare() {
+    this.solveSystems.forEach(system => system.prepare());
+  }
+
+  solve(rough) {
+    this.solveSystems.forEach(system => system.solve(rough));
+  }
+
+  addModifier(modifier) {
+
+    modifier.managedObjects.forEach(o => {
+      if (o.solveSystem) {
+        throw 'adding modifiers to already constrained objects isn not supported yet';
+      }
+    });
+
+    this.viewer.historyManager.checkpoint();
+    let index = this.getPlacementLayerIndex(modifier.referenceObjects) + 1;
+    if (index === this.solveSystems.length) {
+      this.solveSystems.push(new AlgNumSubSystem());
+    }
+    const solveSystem = this.solveSystems[index];
+    solveSystem.modifiers.push(modifier);
+
+    modifier.managedObjects.forEach(go => go.solveSystem = solveSystem);
+
+    this.notify();
+    this.viewer.refresh();
+  }
 }
-
-

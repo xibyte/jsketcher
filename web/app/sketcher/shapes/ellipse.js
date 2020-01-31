@@ -93,7 +93,6 @@ export class Ellipse extends SketchObject {
   }
 }
 Ellipse.prototype._class = 'TCAD.TWO.Ellipse';
-Ellipse.prototype.TYPE = 'ELLIPSE';
 
 const sq = (a) => a * a;
 const RECOVER_LENGTH = 100;

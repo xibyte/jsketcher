@@ -25,7 +25,7 @@ export class DragTool extends Tool {
     this.obj.translate(dx, dy);
     (this.obj.parent || this.obj).syncGeometry();
     if (!Tool.dumbMode(e)) {
-      this.viewer.parametricManager.algnNumSystem.solve(true);
+      this.viewer.parametricManager.solve(true);
     }
     this.viewer.refresh();
   }
@@ -35,12 +35,12 @@ export class DragTool extends Tool {
     this.origin.y = e.offsetY;
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
 
-    this.viewer.parametricManager.algnNumSystem.prepare();
+    this.viewer.parametricManager.prepare();
 
   }
 
   mouseup(e) {
-    this.viewer.parametricManager.algnNumSystem.solve(false);
+    this.viewer.parametricManager.solve(false);
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
     var traveled = math.distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
