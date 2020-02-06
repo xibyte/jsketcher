@@ -58,8 +58,8 @@ export class Segment extends SketchObject {
     const c2 = new AlgNumConstraint(ConstraintDefinitions.Polar, [this, this.a, this.b]);
     c1.internal = true;
     c2.internal = true;
-    viewer.parametricManager.addAlgNum(c1);
-    viewer.parametricManager.addAlgNum(c2);
+    viewer.parametricManager._add(c1);
+    viewer.parametricManager._add(c2);
   }
 
   recoverIfNecessary() {

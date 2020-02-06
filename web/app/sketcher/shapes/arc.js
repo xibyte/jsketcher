@@ -1,10 +1,10 @@
-import * as utils from '../../utils/utils';
 import * as math from '../../math/math';
 import Vector from 'math/vector';
-import {Ref} from './ref'
-import {Constraints} from '../parametric'
-import {pointIterator, SketchObject} from './sketch-object';
-import {EndPoint} from "./point";
+import {SketchObject} from './sketch-object';
+import {Param} from "./param";
+import {greaterThanConstraint} from "../constr/barriers";
+import {MIN_RADIUS} from "./circle";
+import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
 export class Arc extends SketchObject {
   
@@ -17,16 +17,29 @@ export class Arc extends SketchObject {
     b.parent = this;
     c.parent = this;
     this.children.push(a, b, c);
-    this.r = new Ref(0);
-    this.r.value = this.distanceA();
-    this.r.obj = this;
+
+    this.r = new Param(MIN_RADIUS + 0.001);
+    this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
+
+    this.ang1 = new Param(0);
+    this.ang2 = new Param(0);
+
+    this.syncGeometry();
+  }
+
+  syncGeometry() {
+    this.ang1.set(this.calcStartAng());
+    this.ang2.set(this.calcEndAng());
+    this.r.set(this.distanceA());
   }
 
   visitParams(callback) {
+    callback(this.r);
+    callback(this.ang1);
+    callback(this.ang2);
     this.a.visitParams(callback);
     this.b.visitParams(callback);
     this.c.visitParams(callback);
-    callback(this.r);
   }
 
   getReferencePoint() {
@@ -41,7 +54,7 @@ export class Arc extends SketchObject {
   
   
   radiusForDrawing() {
-    return this.distanceA();
+    return this.r.get();
   }
   
   distanceA() {
@@ -51,20 +64,28 @@ export class Arc extends SketchObject {
   distanceB() {
     return math.distance(this.b.x, this.b.y, this.c.x, this.c.y);
   }
-  
-  getStartAngle() {
+
+  calcStartAng() {
     return Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x);
+  }
+
+  calcEndAng() {
+    return Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
+  }
+
+  getStartAngle() {
+    return this.ang1.get();
   }
   
   getEndAngle() {
-    return Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x);
+    return this.ang2.get();
   }
   
   drawImpl(ctx, scale) {
     ctx.beginPath();
-    var r = this.radiusForDrawing();
-    var startAngle = this.getStartAngle();
-    var endAngle;
+    let r = this.radiusForDrawing();
+    let startAngle = this.getStartAngle();
+    let endAngle;
     if (math.areEqual(this.a.x, this.b.x, math.TOLERANCE) &&
         math.areEqual(this.a.y, this.b.y, math.TOLERANCE)) {
       endAngle = startAngle + 2 * Math.PI;
@@ -72,9 +93,9 @@ export class Arc extends SketchObject {
       endAngle = this.getEndAngle();
     }
     ctx.arc(this.c.x, this.c.y, r, startAngle, endAngle);
-    var distanceB = this.distanceB();
+    let distanceB = this.distanceB();
     if (Math.abs(r - distanceB) * scale > 1) {
-      var adj = r / distanceB;
+      let adj = r / distanceB;
       ctx.save();
       ctx.setLineDash([7 / scale]);
       ctx.lineTo(this.b.x, this.b.y);
@@ -124,9 +145,10 @@ export class Arc extends SketchObject {
   }
   
   stabilize(viewer) {
-    this.r.set(this.distanceA());
-    viewer.parametricManager._add(new Constraints.P2PDistanceV(this.b, this.c, this.r));
-    viewer.parametricManager._add(new Constraints.P2PDistanceV(this.a, this.c, this.r));
+    this.syncGeometry();
+    const constr = new AlgNumConstraint(ConstraintDefinitions.ArcConsistency, [this]);
+    constr.internal = true;
+    viewer.parametricManager._add(constr);
   }
 
   copy() {

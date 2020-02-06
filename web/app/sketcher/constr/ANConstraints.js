@@ -6,9 +6,9 @@ import {Types} from "../io";
 import {Constraints} from "../constraints";
 import Vector from "../../../../modules/math/vector";
 
-export const ConstraintDefinitions = indexById([
+export const ConstraintDefinitions = {
 
-  {
+  PCoincident : {
     id: 'PCoincident',
     name: 'Two Points Coincidence',
 
@@ -35,7 +35,7 @@ export const ConstraintDefinitions = indexById([
   },
 
 
-  {
+  TangentLC: {
     id: 'TangentLC',
     name: 'Line & Circle Tangency',
     constants: {
@@ -59,22 +59,11 @@ export const ConstraintDefinitions = indexById([
 
 
     collectPolynomials: (polynomials, [ang, w, cx, cy, r], {inverted}) => {
-      polynomials.push(new Polynomial(0)
-        .monomial(1)
-          .term(cx, POW_1_FN)
-          .term(ang, COS_FN)
-        .monomial(1)
-          .term(cy, POW_1_FN)
-          .term(ang, SIN_FN)
-        .monomial(-1)
-          .term(w, POW_1_FN)
-        .monomial(- (inverted ? -1 : 1))
-          .term(r, POW_1_FN)
-      );
+      polynomials.push(tangentLCPolynomial(ang, w, cx, cy, r, inverted));
     },
   },
 
-  {
+  PointOnLine: {
     id: 'PointOnLine',
     name: 'Point On Line',
 
@@ -103,7 +92,7 @@ export const ConstraintDefinitions = indexById([
 
   },
 
-  {
+  DistancePP: {
     id: 'DistancePP',
     name: 'Distance Between Two Point',
     constants: {
@@ -145,7 +134,7 @@ export const ConstraintDefinitions = indexById([
 
   },
 
-  {
+  Angle: {
     id: 'Angle',
     name: 'Absolute Line Angle',
     constants: {
@@ -169,7 +158,7 @@ export const ConstraintDefinitions = indexById([
     },
   },
 
-  {
+  AngleBetween: {
     id: 'AngleBetween',
     name: 'Angle Between Two Lines',
     constants: {
@@ -198,7 +187,7 @@ export const ConstraintDefinitions = indexById([
     },
   },
 
-  {
+  SegmentLength: {
     id: 'SegmentLength',
     name: 'Segment Length',
     constants: {
@@ -225,7 +214,7 @@ export const ConstraintDefinitions = indexById([
     },
   },
 
-  {
+  Polar: {
     id: 'Polar',
     name: 'Polar Coordinate',
 
@@ -251,7 +240,7 @@ export const ConstraintDefinitions = indexById([
   },
 
 
-  {
+  LockPoint: {
     id: 'LockPoint',
     name: 'Lock Point',
     constants: {
@@ -277,8 +266,60 @@ export const ConstraintDefinitions = indexById([
     },
   },
 
+  ArcConsistency: {
+    id: 'ArcConsistency',
+    name: 'Arc Consistency',
 
-  {
+    defineParamsScope: ([arc], callback) => {
+      arc.visitParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [r, ang1, ang2, ax, ay, bx, by, cx, cy]) => {
+      polynomials.push(new Polynomial()
+        .monomial(-1).term(ax, POW_1_FN)
+        .monomial().term(cx, POW_1_FN).monomial().term(r, POW_1_FN).term(ang1, COS_FN) );
+      polynomials.push(new Polynomial()
+        .monomial(-1).term(ay, POW_1_FN)
+        .monomial().term(cy, POW_1_FN).monomial().term(r, POW_1_FN).term(ang1, SIN_FN) );
+
+      polynomials.push(new Polynomial()
+        .monomial(-1).term(bx, POW_1_FN)
+        .monomial().term(cx, POW_1_FN).monomial().term(r, POW_1_FN).term(ang2, COS_FN) );
+      polynomials.push(new Polynomial()
+        .monomial(-1).term(by, POW_1_FN)
+        .monomial().term(cy, POW_1_FN).monomial().term(r, POW_1_FN).term(ang2, SIN_FN) );
+    },
+  },
+
+  Fillet: {
+    id: 'Fillet',
+    name: 'Fillet Between Two Lines',
+
+    constants: {
+      inverted1: {
+        type: 'boolean',
+        initialValue: () => false,
+      },
+      inverted2: {
+        type: 'boolean',
+        initialValue: () => false,
+      }
+    },
+
+    defineParamsScope: ([l1, l2, arc], callback) => {
+      l1.collectParams(callback);
+      l2.collectParams(callback);
+      arc.collectParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [ang1, w1, cx1, cy1, r1, ang2, w2, cx2, cy2, r2], {inverted1, inverted2}) => {
+      polynomials.push(tangentLCPolynomial(ang1, w1, cx1, cy1, r1, inverted1));
+      polynomials.push(tangentLCPolynomial(ang2, w2, cx2, cy2, r2, inverted2));
+    },
+
+  },
+
+  Mirror: {
     id: 'Mirror',
     name: 'Mirror Objects',
 
@@ -307,7 +348,22 @@ export const ConstraintDefinitions = indexById([
 
   }
 
-]);
+};
+
+
+function tangentLCPolynomial(ang, w, cx, cy, r, inverted) {
+  return new Polynomial(0)
+    .monomial(1)
+      .term(cx, POW_1_FN)
+      .term(ang, COS_FN)
+    .monomial(1)
+      .term(cy, POW_1_FN)
+      .term(ang, SIN_FN)
+    .monomial(-1)
+      .term(w, POW_1_FN)
+    .monomial(- (inverted ? -1 : 1))
+      .term(r, POW_1_FN);
+}
 
 export class AlgNumConstraint {
 

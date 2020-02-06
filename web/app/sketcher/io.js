@@ -207,10 +207,6 @@ IO.prototype._loadSketch = function(sketch) {
   if (boundaryNeedsUpdate) {
     this.addNewBoundaryObjects(boundary, maxEdge);
   }
-  const boundaryLayer = this.viewer.findLayerByName(IO.BOUNDARY_LAYER_NAME);
-  if (boundaryLayer != null) {
-    this.linkEndPoints(boundaryLayer.objects);
-  }
 
   let sketchConstraints = sketch['constraints'];
   if (sketchConstraints !== undefined) {
@@ -233,23 +229,6 @@ IO.prototype._loadSketch = function(sketch) {
   }
 };
 
-IO.prototype.linkEndPoints = function(objects) {
-  const index = HashTable.forVector2d();
-  for (let obj of objects) {
-    obj.accept((o) => {
-      if (o._class == Types.POINT) {
-        const equalPoint = index.get(o);
-        if (equalPoint == null) {
-          index.put(o, o);
-        } else {
-          o.linked.push(equalPoint);
-          equalPoint.linked.push(o);
-        }
-      }
-      return true;
-    })
-  }  
-};
 
 IO.prototype.synchLine = function(skobj, edgeObj) {
   skobj.a.x = edgeObj.a.x;

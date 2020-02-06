@@ -2,6 +2,8 @@ import {Generator} from '../id-generator'
 import {Shape} from './shape'
 import {Types} from '../io';
 import {Styles} from "../styles";
+import {dfs} from 'gems/traverse';
+import {ConstraintDefinitions} from "../constr/ANConstraints";
 
 export class SketchObject extends Shape {
   constructor() {
@@ -9,11 +11,9 @@ export class SketchObject extends Shape {
     this.id = Generator.genID();
     this.marked = null;
     this.children = [];
-    this.linked = [];
     this.layer = null;
     this.fullyConstrained = false;
-    this.managedBy = null;
-    this.solveSystem = null;
+    this.constraints = new Set();
   }
 
   normalDistance(aim, scale) {
@@ -43,32 +43,28 @@ export class SketchObject extends Shape {
   recoverIfNecessary() {
     return false;
   }
-  
-  isAuxOrLinkedTo() {
-    if (!!this.aux) {
-      return true;
-    }
-    for (var i = 0; i < this.linked.length; ++i) {
-      if (!!this.linked[i].aux) {
-        return true;
+
+  visitLinked(cb) {
+    dfs(this, (obj, chCb) => obj.constraints.forEach(c => {
+      if (c.schema.id === ConstraintDefinitions.PCoincident.id) {
+        c.objects.forEach(chCb);
       }
-    }
-    return false;
+    }), cb);
   }
-  
+
   _translate(dx, dy, translated) {
     translated[this.id] = 'x';
-    for (var i = 0; i < this.linked.length; ++i) {
-      if (translated[this.linked[i].id] != 'x') {
-        this.linked[i]._translate(dx, dy, translated);
+    this.visitLinked(l => {
+      if (translated[l.id] !== 'x') {
+        l._translate(dx, dy, translated);
       }
-    }
+    });
     this.translateImpl(dx, dy);
   };
   
   translate(dx, dy) {
   //  this.translateImpl(dx, dy);
-    if (this.isAuxOrLinkedTo()) {
+    if (this.fullyConstrained) {
       return;
     }
     this._translate(dx, dy, {});
