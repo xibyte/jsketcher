@@ -34,6 +34,7 @@ export class AddArcTool extends Tool {
       } else {
         this.demoSecondPoint();
       }
+      this.arc.syncGeometry();
 
       this.viewer.snap(p.x, p.y, [this.arc.a, this.arc.b, this.arc.c]);
       this.viewer.refresh();
@@ -80,7 +81,7 @@ export class AddArcTool extends Tool {
   finishStep() {
     this.arc.stabilize(this.viewer);
     this.pointPicked(this.arc.b.x, this.arc.b.y);
-    this.viewer.refresh();
+    this.viewer.parametricManager.refresh();
     this.viewer.toolManager.releaseControl();
   }
 

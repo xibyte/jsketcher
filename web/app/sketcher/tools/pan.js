@@ -38,7 +38,7 @@ export class BasePanTool extends Tool {
             }
           }
           this.viewer.select([toSelect], true);
-          if (!toSelect.isAuxOrLinkedTo()) {
+          if (!toSelect.fullyConstrained) {
             const tool = GetShapeEditTool(this.viewer, toSelect, e.altKey);
             tool.mousedown(e);
             this.viewer.toolManager.switchTool(tool);
