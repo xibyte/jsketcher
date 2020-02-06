@@ -14,7 +14,9 @@ export class AlgNumSubSystem {
   eliminatedParams = new Map();
 
   polynomials = [];
-  substitutedParams = [];
+  substitutedParams = new Map();
+  substitutionOrder = [];
+
   polyToConstr = new Map();
 
   conflicting = new Set();
@@ -66,24 +68,31 @@ export class AlgNumSubSystem {
     //   this.conflicting.add(constraint);
     //   this.redundant.add(constraint);
     } else {
+      constraint.objects.forEach(o => o.constraints.add(constraint));
       this.updateFullyConstrainedObjects();
     }
   }
 
+  invalidate() {
+    this.prepare();
+    this.solveFine();
+    this.updateFullyConstrainedObjects();
+  }
 
   removeConstraint(constraint) {
+    this._removeConstraint(constraint);
+    this.invalidate();
+  }
+
+  _removeConstraint(constraint) {
     let index = this.allConstraints.indexOf(constraint);
     if (index !== -1) {
       this.allConstraints.splice(index, 1);
       this.conflicting.delete(constraint);
       this.redundant.delete(constraint);
-      this.prepare();
-      this.prepare();
-      this.solveFine();
-      this.updateFullyConstrainedObjects();
+      constraint.objects.forEach(o => o.constraints.delete(constraint));
     }
   }
-
 
   isConflicting(constraint) {
     return this.conflicting.has(constraint);
@@ -100,7 +109,8 @@ export class AlgNumSubSystem {
 
   reset() {
     this.polynomials = [];
-    this.substitutedParams = [];
+    this.substitutedParams.clear();
+    this.substitutionOrder = [];
     this.eliminatedParams.clear();
     this.polyToConstr.clear();
     this.paramToIsolation.clear();
@@ -169,8 +179,9 @@ export class AlgNumSubSystem {
                 polynomial.substitute(p1, p2, constant);
               }
             }
-            this.substitutedParams.push([p1, new Polynomial().monomial(constant).term(p2, POW_1_FN)]);
+            this.substitute(p1, new Polynomial().monomial(constant).term(p2, POW_1_FN));
             this.polynomials[i] = null;
+
             requirePass = true;
           } else {
             const b = - polynomial.constant / m1.constant;
@@ -185,7 +196,7 @@ export class AlgNumSubSystem {
                 }
                 transaction.push(polyTransaction);
                 transaction.push(() => {
-                  this.substitutedParams.push([p1, new Polynomial(b).monomial(constant).term(p2, POW_1_FN)]);
+                  this.substitute(p1, new Polynomial(b).monomial(constant).term(p2, POW_1_FN));
                   this.polynomials[i] = null;
                 });
               }
@@ -208,10 +219,13 @@ export class AlgNumSubSystem {
 
   }
 
+  substitute(param, overPolynomial) {
+    this.substitutionOrder.push(param);
+    this.substitutedParams.set(param, overPolynomial);
+  }
+
 
   prepare() {
-
-    this.isDirty = false;
 
     this.reset();
 
@@ -229,7 +243,7 @@ export class AlgNumSubSystem {
     });
 
     console.log('with respect to:');
-    this.substitutedParams.forEach(([x, expr]) => console.log('X' + x.id  + ' = ' + expr.toString()));
+    this.substitutionOrder.forEach(x => console.log('X' + x.id  + ' = ' + this.substitutedParams.get(x).toString()));
   }
 
   splitByIsolatedClusters(polynomials) {
@@ -330,17 +344,14 @@ export class AlgNumSubSystem {
       p.set(val);
     }
 
-    for (let i = this.substitutedParams.length - 1; i >= 0; i--) {
-      let [param, expression] = this.substitutedParams[i];
+    for (let i = this.substitutionOrder.length - 1; i >= 0; i--) {
+      const param = this.substitutionOrder[i];
+      const expression = this.substitutedParams.get(param);
       param.set(expression.value());
     }
   }
 
   updateFullyConstrainedObjects() {
-
-
-    const substitutedParamsLookup =  new Set();
-    this.substitutedParams.forEach(([p]) => substitutedParamsLookup.add(p));
 
     this.validConstraints(c => {
 
@@ -349,11 +360,7 @@ export class AlgNumSubSystem {
         let allLocked = true;
 
         obj.visitParams(p => {
-
-          const eliminated = this.eliminatedParams.has(p);
-          const substituted = substitutedParamsLookup.has(p);
-          const iso = this.paramToIsolation.get(p);
-          if (!eliminated && !substituted && (!iso || !iso.fullyConstrained)) {
+          if (!this.isParamFullyConstrained(p)) {
             allLocked = false;
           }
         });
@@ -361,6 +368,27 @@ export class AlgNumSubSystem {
         obj.fullyConstrained = allLocked;
       });
     });
+  }
+
+  isParamShallowConstrained(p) {
+    const iso = this.paramToIsolation.get(p);
+    return this.eliminatedParams.has(p) || (iso && iso.fullyConstrained);
+  }
+
+  isParamFullyConstrained(p) {
+    const stack = [p];
+    while (stack.length) {
+      const param = stack.pop();
+      if (!this.isParamShallowConstrained(param)) {
+        return false;
+      }
+
+      const substitution = this.substitutedParams.get(p);
+      if (substitution) {
+        substitution.visitParams(p => stack.push(p));
+      }
+    }
+    return true;
   }
 
 }

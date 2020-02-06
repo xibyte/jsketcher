@@ -50,7 +50,6 @@
     "webpack-dev-server": "^3.7.2"
   },
   "dependencies": {
-    "@dagrejs/graphlib": "^2.1.4",
     "classnames": "2.2.5",
     "clipper-lib": "6.2.1",
     "diff-match-patch": "1.0.0",

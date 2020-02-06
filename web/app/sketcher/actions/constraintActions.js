@@ -4,6 +4,7 @@ import {Circle} from "../shapes/circle";
 import {Segment} from "../shapes/segment";
 import {isInstanceOf, matchAll, matchTypes, sortSelectionByType} from "./matchUtils";
 import constraints from "../../../test/cases/constraints";
+import {Arc} from "../shapes/arc";
 
 export default [
 
@@ -29,7 +30,10 @@ export default [
   {
     shortName: 'Tangent',
     description: 'Tangent Between Line And Circle',
-    selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, Circle, 1, Segment, 1),
+    selectionMatcher: [
+      (selection, sortedByType) => matchTypes(sortedByType, Circle, 1, Segment, 1),
+      (selection, sortedByType) => matchTypes(sortedByType, Arc, 1, Segment, 1),
+    ],
 
     invoke: ctx => {
 
@@ -134,6 +138,28 @@ export default [
     shortName: 'Lock',
     description: 'Lock Point',
     selectionMatcher: (selection) => matchTypes(selection, EndPoint, 1),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const [point] = viewer.selected;
+
+      const constr = new AlgNumConstraint(ConstraintDefinitions.LockPoint, [point]);
+      constr.initConstants();
+      editConstraint(ctx, constr, () => viewer.parametricManager.add(constr));
+    }
+  },
+
+  {
+    shortName: 'Fillet',
+    description: 'Add a Fillet',
+    selectionMatcher: (selection) => {
+      if (matchTypes(selection, EndPoint, 1)) {
+
+      } else {
+        return false;
+      }
+    },
 
     invoke: ctx => {
       const {viewer} = ctx;

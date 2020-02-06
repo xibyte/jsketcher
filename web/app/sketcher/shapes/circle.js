@@ -3,7 +3,7 @@ import {SketchObject} from './sketch-object'
 import {Param} from "./param";
 import {greaterThanConstraint} from "../constr/barriers";
 
-const MIN_RADIUS = 100;
+export const MIN_RADIUS = 100;
 
 export class Circle extends SketchObject {
 

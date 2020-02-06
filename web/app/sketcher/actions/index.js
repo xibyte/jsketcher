@@ -14,9 +14,19 @@ export function matchAvailableActions(selection) {
 
   if (selection.length) {
     for (let action of  ALL_CONTEXTUAL_ACTIONS) {
-      if (action.selectionMatcher(selection, sortedByType)) {
-        matched.push(action);
+
+      if (Array.isArray(action.selectionMatcher)) {
+        action.selectionMatcher.forEach(matcher => {
+          if (matcher(selection, sortedByType)) {
+            matched.push(action);
+          }
+        })
+      } else {
+        if (action.selectionMatcher(selection, sortedByType)) {
+          matched.push(action);
+        }
       }
+
     }
   }
 
