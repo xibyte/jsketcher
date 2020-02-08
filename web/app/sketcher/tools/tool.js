@@ -48,7 +48,7 @@ export class Tool {
       const snapWith = this.viewer.snapped;
       this.viewer.cleanSnap();
       p.setFromPoint(snapWith);
-      this.viewer.parametricManager.linkObjects([p, snapWith]);
+      this.viewer.parametricManager.coincidePoints(p, snapWith);
       this.viewer.parametricManager.refresh();
     }
   }

@@ -43,7 +43,7 @@ HistoryManager.prototype.lightCheckpoint = function (weight) {
 
 HistoryManager.prototype.checkpoint = function () {
   try {
-    this._checkpoint();
+    // this._checkpoint();
   } catch(e) {
     console.log(e);
   }

@@ -34,6 +34,9 @@ export function matchTypes(selection) {
 }
 
 export function isInstanceOf(obj, shapeConstructor) {
+  if (!obj) {
+    return false;
+  }
   return obj._class === shapeConstructor.prototype._class;
 }
 
