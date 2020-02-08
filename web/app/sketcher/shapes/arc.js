@@ -5,6 +5,7 @@ import {Param} from "./param";
 import {greaterThanConstraint} from "../constr/barriers";
 import {MIN_RADIUS} from "./circle";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
+import {makeAngle0_360} from "../../math/math";
 
 export class Arc extends SketchObject {
   
@@ -20,7 +21,6 @@ export class Arc extends SketchObject {
 
     this.r = new Param(MIN_RADIUS + 0.001);
     this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
-
     this.ang1 = new Param(0);
     this.ang2 = new Param(0);
 
@@ -84,13 +84,13 @@ export class Arc extends SketchObject {
   drawImpl(ctx, scale) {
     ctx.beginPath();
     let r = this.radiusForDrawing();
-    let startAngle = this.getStartAngle();
+    let startAngle = makeAngle0_360(this.getStartAngle());
     let endAngle;
     if (math.areEqual(this.a.x, this.b.x, math.TOLERANCE) &&
         math.areEqual(this.a.y, this.b.y, math.TOLERANCE)) {
       endAngle = startAngle + 2 * Math.PI;
     } else {
-      endAngle = this.getEndAngle();
+      endAngle = makeAngle0_360(this.getEndAngle());
     }
     ctx.arc(this.c.x, this.c.y, r, startAngle, endAngle);
     let distanceB = this.distanceB();

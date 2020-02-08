@@ -3,6 +3,8 @@ import {eqEps} from "../../brep/geom/tolerance";
 import {Polynomial, POW_1_FN} from "./polynomial";
 import {compositeFn} from "gems/func";
 
+const DEBUG = true;
+
 export class AlgNumSubSystem {
 
   modifiers = [];
@@ -54,7 +56,6 @@ export class AlgNumSubSystem {
     this.prepare();
     if (!this.isConflicting(constraint)) {
       this.solveFine();
-      console.log(this.solveStatus);
       if (!this.solveStatus.success) {
         console.log("adding to conflicts");
         this.conflicting.add(constraint);
@@ -121,9 +122,10 @@ export class AlgNumSubSystem {
       c.collectPolynomials(this.polynomials);
       this.polynomials.forEach(p => this.polyToConstr.set(p, c))
     });
-
-    console.log('reducing system:');
-    this.polynomials.forEach(p => console.log(p.toString()));
+    if (DEBUG) {
+      console.log('reducing system:');
+      this.polynomials.forEach(p => console.log(p.toString()));
+    }
 
     let requirePass = true;
 
@@ -137,10 +139,12 @@ export class AlgNumSubSystem {
 
         if (polynomial.monomials.length === 0) {
           this.conflicting.add(this.polyToConstr.get(polynomial));
-          console.log("CONFLICT: " + polynomial.toString());
+          if (DEBUG) {
+            console.log("CONFLICT: " + polynomial.toString());
+          }
           if (eqEps(polynomial.constant, 0)) {
             this.redundant.add(this.polyToConstr.get(polynomial));
-            console.log("REDUNDANT");
+            // console.log("REDUNDANT");
           }
           this.polynomials[i] = null;
         } else if (polynomial.isLinear && polynomial.monomials.length === 1) {
@@ -236,14 +240,16 @@ export class AlgNumSubSystem {
       iso.beingSolvedParams.forEach(solverParam => this.paramToIsolation.set(solverParam.objectParam, iso))
     });
 
-    console.log('solving system:');
-    this.polynomialIsolations.forEach((iso, i) => {
-      console.log(i + ". ISOLATION, DOF: " + iso.dof);
-      iso.polynomials.forEach(p => console.log(p.toString()));
-    });
+    if (DEBUG) {
+      console.log('solving system:');
+      this.polynomialIsolations.forEach((iso, i) => {
+        console.log(i + ". ISOLATION, DOF: " + iso.dof);
+        iso.polynomials.forEach(p => console.log(p.toString()));
+      });
 
-    console.log('with respect to:');
-    this.substitutionOrder.forEach(x => console.log('X' + x.id  + ' = ' + this.substitutedParams.get(x).toString()));
+      console.log('with respect to:');
+      this.substitutionOrder.forEach(x => console.log('X' + x.id + ' = ' + this.substitutedParams.get(x).toString()));
+    }
   }
 
   splitByIsolatedClusters(polynomials) {
@@ -337,7 +343,9 @@ export class AlgNumSubSystem {
         this.solveStatus.success = this.solveStatus.success && iso.solveStatus.success;
       });
 
-      console.log('numerical result: ' + this.solveStatus.success);
+      if (DEBUG) {
+        console.log('numerical result: ' + this.solveStatus.success);
+      }
     }
 
     for (let [p, val] of this.eliminatedParams) {
@@ -422,7 +430,7 @@ class Isolation {
     });
 
     if (penaltyFunction.params.length) {
-      residuals.push(penaltyFunction);
+      // residuals.push(penaltyFunction);
     }
 
     this.numericalSolver = prepare(residuals);

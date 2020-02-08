@@ -239,6 +239,19 @@ export const ConstraintDefinitions = {
     },
   },
 
+  EqualRadius: {
+    id: 'EqualRadius',
+    name: 'Equal Radius',
+
+    defineParamsScope: ([c1, c2], callback) => {
+      callback(c1.r);
+      callback(c2.r);
+    },
+
+    collectPolynomials: (polynomials, [r1, r2]) => {
+      polynomials.push(new Polynomial().monomial().term(r1, POW_1_FN).monomial(-1).term(r2, POW_1_FN).monomial(1));
+    },
+  },
 
   LockPoint: {
     id: 'LockPoint',
@@ -307,14 +320,17 @@ export const ConstraintDefinitions = {
     },
 
     defineParamsScope: ([l1, l2, arc], callback) => {
-      l1.collectParams(callback);
-      l2.collectParams(callback);
-      arc.collectParams(callback);
+      callback(l1.params.ang);
+      callback(l1.params.w);
+      callback(l2.params.ang);
+      callback(l2.params.w);
+      arc.c.visitParams(callback);
+      callback(arc.r);
     },
 
-    collectPolynomials: (polynomials, [ang1, w1, cx1, cy1, r1, ang2, w2, cx2, cy2, r2], {inverted1, inverted2}) => {
-      polynomials.push(tangentLCPolynomial(ang1, w1, cx1, cy1, r1, inverted1));
-      polynomials.push(tangentLCPolynomial(ang2, w2, cx2, cy2, r2, inverted2));
+    collectPolynomials: (polynomials, [ang1, w1, ang2, w2, cx, cy, r], {inverted1, inverted2}) => {
+      polynomials.push(tangentLCPolynomial(ang1, w1, cx, cy, r, inverted1));
+      polynomials.push(tangentLCPolynomial(ang2, w2, cx, cy, r, inverted2));
     },
 
   },
@@ -411,13 +427,14 @@ export class AlgNumConstraint {
       }
       Object.keys(this.constants).map(name => {
         let def = this.schema.constants[name];
+        let val = this.constants[name];
         if (def.type === 'number') {
-          let val = parseFloat(this.constants[name]);
-          if (def.transform) {
-            val = def.transform(val);
-          }
-          this.resolvedConstants[name] = val;
+          val = parseFloat(val);
         }
+        if (def.transform) {
+          val = def.transform(val);
+        }
+        this.resolvedConstants[name] = val;
       });
     }
   }
