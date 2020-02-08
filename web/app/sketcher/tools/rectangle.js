@@ -53,10 +53,10 @@ export class RectangleTool extends Tool {
       this.alignSegments(p);
       
       if (this.viewer.snapped != null) {
-        this.viewer.parametricManager.linkObjects([this.rectangle[2].a, this.viewer.snapped]);
+        this.viewer.parametricManager.coincidePoints(this.rectangle[2].a, this.viewer.snapped);
       }
       if (this.firstPointSnap != null) {
-        this.viewer.parametricManager.linkObjects([this.rectangle[0].a, this.firstPointSnap]);
+        this.viewer.parametricManager.coincidePoints(this.rectangle[0].a, this.firstPointSnap);
       }
       
       this.viewer.cleanSnap();
