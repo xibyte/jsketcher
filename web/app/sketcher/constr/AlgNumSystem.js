@@ -24,6 +24,8 @@ export class AlgNumSubSystem {
   conflicting = new Set();
   redundant  = new Set();
 
+  interactiveParams = new Set();
+
   snapshot = new Map();
 
   constructor() {
@@ -126,6 +128,7 @@ export class AlgNumSubSystem {
     this.eliminatedParams.clear();
     this.polyToConstr.clear();
     this.paramToIsolation.clear();
+    this.interactiveParams.clear();
   }
 
   evaluatePolynomials() {
@@ -182,7 +185,14 @@ export class AlgNumSubSystem {
 
           this.polynomials[i] = null;
         } else if (polynomial.monomials.length === 2 && polynomial.isLinear) {
-          const [m1, m2] = polynomial.monomials;
+          let [m1, m2] = polynomial.monomials;
+
+          if (this.interactiveParams.has(m1.linearParam)) {
+            const t = m1;
+            m1 = m2;
+            m2 = t;
+          }
+
           let p1 = m1.linearParam;
           let p2 = m2.linearParam;
 
@@ -240,9 +250,10 @@ export class AlgNumSubSystem {
   }
 
 
-  prepare() {
+  prepare(interactiveObjects = []) {
 
     this.reset();
+    interactiveObjects.forEach(obj => obj.visitParams(p => this.interactiveParams.add(p)));
 
     this.validConstraints(c => c.params.forEach(p => p.normalizer && p.set(p.normalizer(p.get()))));
 

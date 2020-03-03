@@ -5,6 +5,7 @@ export default [
 
 
   {
+    id: 'Mirror',
     shortName: 'Mirror',
     description: 'Mirror Objects',
     selectionMatcher: selection => isInstanceOf(selection[0]) && selection.length > 1,

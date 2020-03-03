@@ -292,12 +292,12 @@ class Viewer {
   };
 
   showBounds(x1, y1, x2, y2, offset) {
-    var dx = Math.max(x2 - x1, 1);
-    var dy = Math.max(y2 - y1, 1);
-    if (this.canvas.width > this.canvas.height) {
-      this.scale = this.canvas.height / dy;
+    const dx = Math.max(x2 - x1, 1);
+    const dy = Math.max(y2 - y1, 1);
+    if (dx > dy) {
+      this.scale = this.canvas.height / dx;
     } else {
-      this.scale = this.canvas.width / dx;
+      this.scale = this.canvas.width / dy;
     }
     this.translate.x = -x1 * this.scale;
     this.translate.y = -y1 * this.scale;

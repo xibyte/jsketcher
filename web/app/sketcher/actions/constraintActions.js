@@ -12,6 +12,7 @@ export default [
 
 
   {
+    id: 'Coincident',
     shortName: 'Coincident',
     description: 'Point Coincident',
     selectionMatcher: (selection, sortedByType) => matchAll(selection, EndPoint, 2),
@@ -30,6 +31,7 @@ export default [
   },
 
   {
+    id: 'Tangent',
     shortName: 'Tangent',
     description: 'Tangent Between Line And Circle',
     selectionMatcher: [
@@ -51,7 +53,8 @@ export default [
   },
 
   {
-    shortName: 'EqualRadius',
+    id: 'EqualRadius',
+    shortName: 'Equal Radius',
     description: 'Equal Radius Between Two Circle',
     selectionMatcher: selection => {
       for (let obj of selection) {
@@ -76,7 +79,8 @@ export default [
   },
 
   {
-    shortName: 'EqualLength',
+    id: 'EqualLength',
+    shortName: 'Equal Length',
     description: 'Equal Length Between Two Segments',
     selectionMatcher: selection => matchAll(selection, Segment, 2),
 
@@ -92,6 +96,7 @@ export default [
   },
 
   {
+    id: 'PointOnLine',
     shortName: 'Point On Line',
     description: 'Point On Line',
     selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, EndPoint, 1, Segment, 1),
@@ -105,6 +110,7 @@ export default [
   },
 
   {
+    id: 'Angle',
     shortName: 'Angle',
     description: 'Angle',
     selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 1),
@@ -129,6 +135,26 @@ export default [
   },
 
   {
+    id: 'Vertical',
+    shortName: 'Vertical',
+    description: 'Vertical',
+    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 1),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+      const pm = viewer.parametricManager;
+
+      viewer.selected.forEach(obj => {
+        const constr = new AlgNumConstraint(ConstraintDefinitions.Vertical, [obj]);
+        constr.initConstants();
+        pm._add(constr);
+      });
+      pm.commit();
+    }
+  },
+
+  {
+    id: 'AngleBetween',
     shortName: 'Angle Between',
     description: 'Angle Between Lines',
     selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
@@ -154,6 +180,7 @@ export default [
   },
 
   {
+    id: 'Perpendicular',
     shortName: 'Perpendicular',
     description: 'Perpendicularity between two lines',
     selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
@@ -180,6 +207,7 @@ export default [
   },
 
   {
+    id: 'Length',
     shortName: 'Length',
     description: 'Segment Length',
     selectionMatcher: (selection) => matchAll(selection, Segment, 1),
@@ -204,6 +232,7 @@ export default [
   },
 
   {
+    id: 'Lock',
     shortName: 'Lock',
     description: 'Lock Point',
     selectionMatcher: (selection) => matchTypes(selection, EndPoint, 1),
@@ -220,6 +249,7 @@ export default [
   },
 
   {
+    id: 'Fillet',
     shortName: 'Fillet',
     description: 'Add a Fillet',
     selectionMatcher: (selection) => {
@@ -254,34 +284,6 @@ export default [
 
     }
   },
-
-  {
-    shortName: 'Mirror',
-    description: 'Mirror Objects',
-    selectionMatcher: selection => isInstanceOf(selection[0], Segment) && selection.length > 1,
-
-
-    invoke: ctx => {
-      const {viewer} = ctx;
-
-      const objects = viewer.selected;
-      const managedObjects = [];
-      for (let i = 1; i < objects.length; i++) {
-        let obj = objects[i];
-        const copy = obj.copy();
-        obj.layer.add(copy);
-        managedObjects.push(copy);
-      }
-
-      ConstraintDefinitions.Mirror.modify(objects, managedObjects);
-
-
-      // const constr = new AlgNumConstraint(ConstraintDefinitions.Mirror, [...objects, ...managedObjects]);
-
-      // viewer.parametricManager.addModifier(constr);
-
-    }
-  }
 
 ];
 

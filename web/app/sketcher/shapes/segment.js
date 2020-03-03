@@ -18,7 +18,6 @@ export class Segment extends SketchObject {
     this.children.push(a, b);
     this.params = {
       ang: new Param(undefined),
-      w: new Param(undefined),
       t: new Param(undefined)
     };
     this.params.ang.normalizer = makeAngle0_360;
@@ -31,16 +30,24 @@ export class Segment extends SketchObject {
   }
 
   get w() {
-    return this.params.w.get();
+    return this.nx*this.a.x + this.ny*this.a.y;
   }
 
   get t() {
     return this.params.t.get();
   }
 
+  get nx() {
+    return -Math.sin(this.ang);
+  }
+
+  get ny() {
+    return Math.cos(this.ang);
+  }
+
   getAngleFromNormal() {
     const degrees = this.params.ang.get() / DEG_RAD;
-    return (degrees + 360 - 90) % 360;
+    return (degrees + 360) % 360;
   }
 
   syncGeometry() {
@@ -48,24 +55,20 @@ export class Segment extends SketchObject {
     const dy = this.b.y - this.a.y;
     const l = Math.sqrt(dx*dx + dy*dy);
 
-    let nx = (- dy / l) || 0;
-    let ny = (dx / l) || 0;
+    let ux = (dx / l) || 0;
+    let uy = (dy / l) || 0;
 
-    let ang = Math.atan2(ny, nx);
+    let ang = Math.atan2(uy, ux);
 
     this.params.ang.set(makeAngle0_360(ang||0));
-    this.params.w.set(nx * this.a.x + ny * this.a.y);
     this.params.t.set(l);
   }
 
   stabilize(viewer) {
     this.syncGeometry();
-    const c1 = new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [this.a, this]);
-    const c2 = new AlgNumConstraint(ConstraintDefinitions.Polar, [this, this.a, this.b]);
-    c1.internal = true;
-    c2.internal = true;
-    viewer.parametricManager._add(c1);
-    viewer.parametricManager._add(c2);
+    const c = new AlgNumConstraint(ConstraintDefinitions.Polar, [this, this.a, this.b]);
+    c.internal = true;
+    viewer.parametricManager._add(c);
   }
 
   recoverIfNecessary() {
@@ -83,7 +86,7 @@ export class Segment extends SketchObject {
     this.a.visitParams(callback);
     this.b.visitParams(callback);
     callback(this.params.ang);
-    callback(this.params.w);
+    callback(this.params.t);
   }
 
   normalDistance(aim) {
@@ -116,15 +119,14 @@ export class Segment extends SketchObject {
   translateImpl(dx, dy) {
     this.a.translate(dx, dy);
     this.b.translate(dx, dy);
-    this.params.w.set(Math.cos(this.ang) * this.a.x + Math.sin(this.ang) * this.a.y);
   }
   
   drawImpl(ctx, scale) {
 
     let ang = this.params.ang.get();
-    let nx = Math.cos(ang) ;
-    let ny = Math.sin(ang) ;
-    let w = this.params.w.get();
+    let nx = -Math.sin(ang);
+    let ny =  Math.cos(ang);
+    let w = this.w;
 
     ctx.save();
     draw_utils.SetStyle(Styles.CONSTRUCTION_OF_OBJECT, ctx, scale );

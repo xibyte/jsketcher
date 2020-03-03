@@ -43,23 +43,21 @@ export const ConstraintDefinitions = {
         type: 'boolean',
         description: 'whether the circle attached from the opposite side',
         initialValue: ([line, circle]) => {
-          const ang = line.params.ang.get();
-          const w = line.params.w.get();
-          return Math.cos(ang) * circle.c.x + Math.sin(ang) * circle.c.y < w;
+          return line.nx * circle.c.x + line.ny * circle.c.y < line.w;
         }
       }
     },
 
     defineParamsScope: ([segment, circle], callback) => {
       callback(segment.params.ang);
-      callback(segment.params.w);
+      segment.a.visitParams(callback);
       circle.c.visitParams(callback);
       callback(circle.r);
     },
 
 
-    collectPolynomials: (polynomials, [ang, w, cx, cy, r], {inverted}) => {
-      polynomials.push(tangentLCPolynomial(ang, w, cx, cy, r, inverted));
+    collectPolynomials: (polynomials, [ang, ax, ay, cx, cy, r], {inverted}) => {
+      polynomials.push(tangentLCPolynomial(ang, ax, ay, cx, cy, r, inverted));
     },
   },
 
@@ -69,15 +67,11 @@ export const ConstraintDefinitions = {
 
     defineParamsScope: ([pt, segment], callback) => {
       pt.visitParams(callback);
+      segment.a.visitParams(callback);
       callback(segment.params.ang);
-      callback(segment.params.w);
     },
 
-    collectResiduals: (residuals, params) => {
-      residuals.push([R_PointOnLine, params, []]);
-    },
-
-    collectPolynomials: (polynomials, [x, y, ang, w]) => {
+    collectPolynomials: (polynomials, [x, y, ax, ay, ang]) => {
       polynomials.push(new Polynomial(0)
         .monomial(1)
           .term(x, POW_1_FN)
@@ -85,8 +79,12 @@ export const ConstraintDefinitions = {
         .monomial(1)
           .term(y, POW_1_FN)
           .term(ang, SIN_FN)
+        .monomial(1)
+          .term(ax, POW_1_FN)
+          .term(ang, SIN_FN)
         .monomial(-1)
-          .term(w, POW_1_FN)
+          .term(ay, POW_1_FN)
+          .term(ang, COS_FN)
       );
     },
 
@@ -141,7 +139,7 @@ export const ConstraintDefinitions = {
         type: 'number',
         description: 'line angle',
         initialValue: ([seg]) => seg.getAngleFromNormal(),
-        transform: degree => ( (degree + 90) % 360 ) * DEG_RAD
+        transform: degree => ( (degree) % 360 ) * DEG_RAD
       }
     },
 
@@ -155,6 +153,31 @@ export const ConstraintDefinitions = {
 
     setConstantsFromGeometry: ([seg], constants) => {
       constants.angle = seg.getAngleFromNormal();
+    }
+  },
+
+  Vertical: {
+    id: 'Vertical',
+    name: 'Line Verticality',
+    constants: {
+      angle: {
+        readOnly: true,
+        type: 'number',
+        description: 'line angle',
+        initialValue: ([seg]) => {
+          const angleFromNormal = seg.getAngleFromNormal();
+          return Math.abs(270 - angleFromNormal) > Math.abs(90 - angleFromNormal) ? 90 : 270;
+        },
+        transform: degree => ( (degree ) % 360 ) * DEG_RAD
+      }
+    },
+
+    defineParamsScope: (objs, cb) => {
+      ConstraintDefinitions.Angle.defineParamsScope(objs, cb);
+    },
+
+    collectPolynomials: (polynomials, params, constants) => {
+      ConstraintDefinitions.Angle.collectPolynomials(polynomials, params, constants);
     }
   },
 
@@ -255,16 +278,8 @@ export const ConstraintDefinitions = {
     },
 
     collectPolynomials: (polynomials, [ang, t, x1, y1, x2, y2]) => {
-
-
-      //  v = [sin(ang), - cos(ang)]
-      //  v * t = pt2 -  pt1
-
-      //sin(ang) * t  - x2 + x1
-      //-cos(ang) * t  - y2 + y1
-
-      polynomials.push(new Polynomial().monomial()  .term(ang, SIN_FN).term(t, POW_1_FN).monomial(-1).term(x2, POW_1_FN).monomial(1).term(x1, POW_1_FN));
-      polynomials.push(new Polynomial().monomial(-1).term(ang, COS_FN).term(t, POW_1_FN).monomial(-1).term(y2, POW_1_FN).monomial(1).term(y1, POW_1_FN));
+      polynomials.push(new Polynomial().monomial(1).term(x1, POW_1_FN).monomial(1).term(ang, COS_FN).term(t, POW_1_FN).monomial(-1).term(x2, POW_1_FN));
+      polynomials.push(new Polynomial().monomial(1).term(y1, POW_1_FN).monomial(1).term(ang, SIN_FN).term(t, POW_1_FN).monomial(-1).term(y2, POW_1_FN));
     },
   },
 
@@ -369,16 +384,16 @@ export const ConstraintDefinitions = {
 
     defineParamsScope: ([l1, l2, arc], callback) => {
       callback(l1.params.ang);
-      callback(l1.params.w);
+      l1.a.visitParams(callback);
       callback(l2.params.ang);
-      callback(l2.params.w);
+      l2.a.visitParams(callback);
       arc.c.visitParams(callback);
       callback(arc.r);
     },
 
-    collectPolynomials: (polynomials, [ang1, w1, ang2, w2, cx, cy, r], {inverted1, inverted2}) => {
-      polynomials.push(tangentLCPolynomial(ang1, w1, cx, cy, r, inverted1));
-      polynomials.push(tangentLCPolynomial(ang2, w2, cx, cy, r, inverted2));
+    collectPolynomials: (polynomials, [ang1, ax1, ay1, ang2, ax2, ay2, cx, cy, r], {inverted1, inverted2}) => {
+      polynomials.push(tangentLCPolynomial(ang1, ax1, ay1, cx, cy, r, inverted1));
+      polynomials.push(tangentLCPolynomial(ang2, ax2, ay2, cx, cy, r, inverted2));
     },
 
   },
@@ -415,7 +430,7 @@ export const ConstraintDefinitions = {
 };
 
 
-function tangentLCPolynomial(ang, w, cx, cy, r, inverted) {
+function tangentLCPolynomial(ang, ax, ay, cx, cy, r, inverted) {
   return new Polynomial(0)
     .monomial(1)
       .term(cx, POW_1_FN)
@@ -423,8 +438,12 @@ function tangentLCPolynomial(ang, w, cx, cy, r, inverted) {
     .monomial(1)
       .term(cy, POW_1_FN)
       .term(ang, SIN_FN)
+    .monomial(1)
+      .term(ax, POW_1_FN)
+      .term(ang, SIN_FN)
     .monomial(-1)
-      .term(w, POW_1_FN)
+      .term(ay, POW_1_FN)
+      .term(ang, COS_FN)
     .monomial(- (inverted ? -1 : 1))
       .term(r, POW_1_FN);
 }

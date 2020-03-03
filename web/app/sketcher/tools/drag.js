@@ -26,7 +26,7 @@ export class DragTool extends Tool {
     this.obj.translate(dx, dy);
     // this.viewer.parametricManager.setConstantsFromGeometry(this.obj);
     if (!Tool.dumbMode(e)) {
-      this.viewer.parametricManager.prepare();
+      // this.viewer.parametricManager.prepare();
       this.viewer.parametricManager.solve(true);
     }
     this.viewer.refresh();
@@ -37,8 +37,7 @@ export class DragTool extends Tool {
     this.origin.y = e.offsetY;
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
 
-    this.viewer.parametricManager.prepare();
-
+    this.viewer.parametricManager.prepare([this.obj]);
   }
 
   mouseup(e) {

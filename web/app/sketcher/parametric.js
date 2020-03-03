@@ -153,8 +153,8 @@ class ParametricManager {
     this.refresh();
   };
 
-  prepare() {
-    this.algNumSystem.prepare();
+  prepare(interactiveObjects) {
+    this.algNumSystem.prepare(interactiveObjects);
   }
 
   solve(rough) {

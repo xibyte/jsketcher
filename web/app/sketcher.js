@@ -150,11 +150,10 @@ function initializeSketcherApplication() {
 
   app.dock.views['Dimensions'].node.append(constantTextArea);
 
-  startReact(app.viewer);
+  startReact(app.context);
 }
 
-function startReact(viewer) {
-  const appCtx = createAppContext(viewer)
+function startReact(appCtx) {
 
   let reactControls = document.getElementById('react-controls');
   reactControls.onkeydown = e => {
@@ -166,15 +165,5 @@ function startReact(viewer) {
     reactControls
   );
 }
-
-function createAppContext(viewer) {
-  return {
-    viewer,
-    ui: {
-      $constraintEditRequest: stream()
-    }
-  };
-}
-
 
 $( () => initializeSketcherApplication() );
