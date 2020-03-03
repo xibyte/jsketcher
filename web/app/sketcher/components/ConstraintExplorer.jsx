@@ -24,7 +24,9 @@ export function ConstraintList() {
   const {viewer, ui} = useContext(SketcherAppContext);
 
   const edit = (constraint) => {
-    editConstraint(ui.$constraintEditRequest, constraint, NOOP);
+    if (constraint.editable) {
+      editConstraint(ui.$constraintEditRequest, constraint, NOOP);
+    }
   };
 
   const remove = constr => {
@@ -44,6 +46,9 @@ export function ConstraintList() {
 
 
   return constraints.map((c, i) => {
+    if (c.internal) {
+      return null;
+    }
     const conflicting = viewer.parametricManager.algNumSystem.conflicting.has(c);
     const redundant = viewer.parametricManager.algNumSystem.redundant.has(c);
 
