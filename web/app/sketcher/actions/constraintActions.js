@@ -264,6 +264,48 @@ export default [
   },
 
   {
+    id: 'DistancePL',
+    shortName: 'Point to Line Distance',
+    description: 'Distance between Point and Line',
+    selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, EndPoint, 1, Segment, 1),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const [pt, seg] = sortSelectionByType(viewer.selected);
+
+      const constr = new AlgNumConstraint(ConstraintDefinitions.DistancePL, [pt, seg]);
+      constr.initConstants();
+
+      editConstraint(ctx, constr, () => {
+        const pm = viewer.parametricManager;
+        pm.add(constr);
+      });
+    }
+  },
+
+  {
+    id: 'DistancePP',
+    shortName: 'Two Point Distance',
+    description: 'Distance between two Points',
+    selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, EndPoint, 2),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const [p1, p2] = sortSelectionByType(viewer.selected);
+
+      const constr = new AlgNumConstraint(ConstraintDefinitions.DistancePP, [p1, p2]);
+      constr.initConstants();
+
+      editConstraint(ctx, constr, () => {
+        const pm = viewer.parametricManager;
+        pm.add(constr);
+      });
+    }
+  },
+
+  {
     id: 'Lock',
     shortName: 'Lock',
     description: 'Lock Point',

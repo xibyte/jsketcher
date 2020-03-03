@@ -131,6 +131,51 @@ export const ConstraintDefinitions = {
 
   },
 
+  DistancePL: {
+    id: 'DistancePL',
+    name: 'Distance Between Point And Line',
+    constants: {
+      distance: {
+        type: 'number',
+        description: 'the distance between two points',
+        initialValue: ([p, l]) => {
+          return Math.abs(l.nx * p.x + l.ny* p.y - l.nx * l.a.x - l.ny * l.a.y);
+        },
+      },
+      inverted: {
+        type: 'boolean',
+        description: 'whether constraint is being calculated on opposite side of the line',
+        initialValue: ([p, l]) => {
+          return l.nx * p.x + l.ny* p.y - l.nx * l.a.x - l.ny * l.a.y < 0;
+        },
+      }
+
+    },
+
+    defineParamsScope: ([p, l], callback) => {
+      p.visitParams(callback);
+      callback(l.params.ang);
+      l.a.visitParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [x, y, ang, ax, ay], {distance, inverted}) => {
+      polynomials.push(new Polynomial( - (inverted ? -1:1) * distance )
+        .monomial(-1)
+          .term(x, POW_1_FN)
+          .term(ang, SIN_FN)
+        .monomial(1)
+          .term(y, POW_1_FN)
+          .term(ang, COS_FN)
+        .monomial(1)
+          .term(ax, POW_1_FN)
+          .term(ang, SIN_FN)
+        .monomial(-1)
+          .term(ay, POW_1_FN)
+          .term(ang, COS_FN));
+    },
+
+  },
+
   Angle: {
     id: 'Angle',
     name: 'Absolute Line Angle',
@@ -490,12 +535,12 @@ export const ConstraintDefinitions = {
 
 function tangentLCPolynomial(ang, ax, ay, cx, cy, r, inverted) {
   return new Polynomial(0)
-    .monomial(1)
+    .monomial(-1)
       .term(cx, POW_1_FN)
-      .term(ang, COS_FN)
+      .term(ang, SIN_FN)
     .monomial(1)
       .term(cy, POW_1_FN)
-      .term(ang, SIN_FN)
+      .term(ang, COS_FN)
     .monomial(1)
       .term(ax, POW_1_FN)
       .term(ang, SIN_FN)

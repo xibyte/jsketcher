@@ -5,6 +5,7 @@ import Stack from "ui/components/Stack";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
 import {useStream} from "../../../../modules/ui/effects";
+import CheckboxControl from "../../../../modules/ui/components/controls/CheckboxControl";
 
 export function ConstraintEditor() {
 
@@ -46,6 +47,8 @@ export function ConstraintEditor() {
             const val = values[name];
             if (def.type === 'number') {
               return <NumberControl value={val} onChange={value => setValue(name, value)}/>
+            } else if (def.type === 'boolean') {
+              return <CheckboxControl value={val} onChange={value => setValue(name, value)}/>
             } else {
               return <span>{val}</span>;
             }
