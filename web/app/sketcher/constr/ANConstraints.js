@@ -369,6 +369,29 @@ export const ConstraintDefinitions = {
     }
   },
 
+
+  RadiusLength: {
+    id: 'RaduisLength',
+    name: 'Raduis Length',
+    constants: {
+      length: {
+        type: 'number',
+        description: 'length of the raduis',
+        initialValue: ([c]) => {
+          return c.r.get();
+        },
+      },
+    },
+    defineParamsScope: ([c], callback) => {
+      callback(c.r);
+    },
+
+    collectPolynomials: (polynomials, [r], {length}) => {
+      polynomials.push(new Polynomial(-length).monomial(1).term(r, POW_1_FN));
+    },
+
+  },
+
   Polar: {
     id: 'Polar',
     name: 'Polar Coordinate',
