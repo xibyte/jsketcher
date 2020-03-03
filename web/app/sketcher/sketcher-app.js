@@ -218,7 +218,7 @@ function App2D() {
   });
 
   this.registerAction('P2LDistanceConstraint', "Distance Between Point and Line", function () {
-    app.viewer.parametricManager.p2lDistance(app.viewer.selected, prompt);
+    getActionIfAvailable('DistancePL', app.viewer.selected, action => action.invoke(app.context));
   });
 
   this.registerAction('mirrorConstraint', "Mirror Constraint", function () {
@@ -226,7 +226,7 @@ function App2D() {
   });
 
   this.registerAction('P2PDistanceConstraint', "Distance Between two Points", function () {
-    app.viewer.parametricManager.p2pDistance(app.viewer.selected, prompt);
+    getActionIfAvailable('DistancePP', app.viewer.selected, action => action.invoke(app.context));
   });
 
   this.registerAction('RadiusConstraint', "Radius Constraint", function () {
