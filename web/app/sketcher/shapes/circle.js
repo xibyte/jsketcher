@@ -32,7 +32,10 @@ export class Circle extends SketchObject {
   
   drawImpl(ctx, scale) {
     ctx.beginPath();
-    ctx.arc(this.c.x, this.c.y, this.r.get(), 0, 2 * Math.PI);
+    let r = this.r.get();
+    if (r > 0) {
+      ctx.arc(this.c.x, this.c.y, r, 0, 2 * Math.PI);
+    }
     ctx.stroke();
   }
   

@@ -46,9 +46,14 @@ export class Segment extends SketchObject {
   }
 
   getAngleFromNormal() {
+    return this.angleDeg();
+  }
+
+  angleDeg() {
     const degrees = this.params.ang.get() / DEG_RAD;
     return (degrees + 360) % 360;
   }
+
 
   syncGeometry() {
     const dx = this.b.x - this.a.x;

@@ -26,6 +26,8 @@ export class AlgNumSubSystem {
 
   interactiveParams = new Set();
 
+  controlBounds = false;
+
   snapshot = new Map();
 
   constructor() {
@@ -332,7 +334,7 @@ export class AlgNumSubSystem {
         }
       }
       if (isolation.length) {
-        clusters.push(new Isolation(isolation));
+        clusters.push(new Isolation(isolation, this));
       }
     }
 
@@ -428,7 +430,8 @@ export class AlgNumSubSystem {
 
 class Isolation {
 
-  constructor(polynomials) {
+  constructor(polynomials, system) {
+    this.system = system;
     this.polynomials = polynomials;
     this.beingSolvedParams = new Set();
     const residuals = [];
@@ -468,8 +471,10 @@ class Isolation {
     this.beingSolvedParams.forEach(solverParam => {
       let val = solverParam.objectParam.get();
 
-      if (solverParam.objectParam.min && val < solverParam.objectParam.min) {
-        val = solverParam.objectParam.min;
+      if (this.system.controlBounds) {
+        if (solverParam.objectParam.min && val < solverParam.objectParam.min) {
+          val = solverParam.objectParam.min;
+        }
       }
       solverParam.set(val);
     });

@@ -94,7 +94,9 @@ export class Arc extends SketchObject {
     } else {
       endAngle = makeAngle0_360(this.getEndAngle());
     }
-    ctx.arc(this.c.x, this.c.y, r, startAngle, endAngle);
+    if (r > 0) {
+      ctx.arc(this.c.x, this.c.y, r, startAngle, endAngle);
+    }
     let distanceB = this.distanceB();
     if (Math.abs(r - distanceB) * scale > 1) {
       let adj = r / distanceB;
