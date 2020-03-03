@@ -47,8 +47,8 @@ export class EndPoint extends SketchObject {
   }
 
   translateImpl(dx, dy) {
-    this.x = dx;
-    this.y = dy;
+    this.x += dx;
+    this.y += dy;
   }
 
   visitLinked(cb) {
