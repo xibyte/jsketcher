@@ -50,8 +50,7 @@ export class Segment extends SketchObject {
   }
 
   angleDeg() {
-    const degrees = this.params.ang.get() / DEG_RAD;
-    return (degrees + 360) % 360;
+    return makeAngle0_360(this.params.ang.get()) / DEG_RAD;
   }
 
 

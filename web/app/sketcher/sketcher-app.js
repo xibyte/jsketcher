@@ -206,15 +206,15 @@ function App2D() {
   });
 
   this.registerAction('horizontalConstraint', "Horizontal Constraint", function () {
-    app.viewer.parametricManager.horizontal(app.viewer.selected);
+    getActionIfAvailable('Horizontal', app.viewer.selected, action => action.invoke(app.context));
   });
 
   this.registerAction('parallelConstraint', "Parallel Constraint", function () {
-    app.viewer.parametricManager.parallel(app.viewer.selected);
+    getActionIfAvailable('Parallel', app.viewer.selected, action => action.invoke(app.context));
   });
 
   this.registerAction('perpendicularConstraint', "Perpendicular Constraint", function () {
-    app.viewer.parametricManager.perpendicular(app.viewer.selected);
+    getActionIfAvailable('Perpendicular', app.viewer.selected, action => action.invoke(app.context));
   });
 
   this.registerAction('P2LDistanceConstraint', "Distance Between Point and Line", function () {
