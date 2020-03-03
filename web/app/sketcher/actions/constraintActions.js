@@ -154,6 +154,25 @@ export default [
   },
 
   {
+    id: 'Horizontal',
+    shortName: 'Horizontal',
+    description: 'Horizontal',
+    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 1),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+      const pm = viewer.parametricManager;
+
+      viewer.selected.forEach(obj => {
+        const constr = new AlgNumConstraint(ConstraintDefinitions.Horizontal, [obj]);
+        constr.initConstants();
+        pm._add(constr);
+      });
+      pm.commit();
+    }
+  },
+
+  {
     id: 'AngleBetween',
     shortName: 'Angle Between',
     description: 'Angle Between Lines',

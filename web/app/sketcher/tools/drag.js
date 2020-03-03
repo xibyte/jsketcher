@@ -37,12 +37,14 @@ export class DragTool extends Tool {
     this.origin.y = e.offsetY;
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
 
+    this.viewer.parametricManager.algNumSystem.controlBounds = true;
     this.viewer.parametricManager.prepare([this.obj]);
   }
 
   mouseup(e) {
     this.viewer.parametricManager.solve(false);
     this.viewer.refresh();
+    this.viewer.parametricManager.algNumSystem.controlBounds = false;
     this.viewer.toolManager.releaseControl();
     var traveled = math.distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
     if (traveled >= 10) {

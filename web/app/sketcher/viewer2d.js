@@ -239,7 +239,11 @@ class Viewer {
             obj.accept((obj) => {
               if (!obj.visible) return true;
               if (drawPredicate(obj)) {
-                this.__draw(ctx, layer, obj);
+                try {
+                  this.__draw(ctx, layer, obj);
+                } catch (e) {
+                  console.log(e);
+                }
               }
               return true;
             });
