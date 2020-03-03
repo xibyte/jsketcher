@@ -21,6 +21,8 @@ export class Arc extends SketchObject {
 
     this.r = new Param(MIN_RADIUS + 0.001);
     this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
+    this.r.min = MIN_RADIUS;
+
     this.ang1 = new Param(0);
     this.ang2 = new Param(0);
 
