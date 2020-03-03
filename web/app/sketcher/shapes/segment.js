@@ -1,12 +1,11 @@
 import {SketchObject} from './sketch-object'
 import Vector from 'math/vector';
 import * as math from '../../math/math'
+import {DEG_RAD, makeAngle0_360} from '../../math/math'
 import {Styles} from "../styles";
 import * as draw_utils from "./draw-utils";
 import {Param} from "./param";
-import {Constraints} from "../constraints";
-import {ConstraintDefinitions, AlgNumConstraint} from "../constr/ANConstraints";
-import {Ellipse} from "./ellipse";
+import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
 export class Segment extends SketchObject {
 
@@ -22,6 +21,8 @@ export class Segment extends SketchObject {
       w: new Param(undefined),
       t: new Param(undefined)
     };
+    this.params.ang.normalizer = makeAngle0_360;
+    this.params.t.min = 100;
     this.syncGeometry();
   }
 
@@ -37,6 +38,11 @@ export class Segment extends SketchObject {
     return this.params.t.get();
   }
 
+  getAngleFromNormal() {
+    const degrees = this.params.ang.get() / DEG_RAD;
+    return (degrees + 360 - 90) % 360;
+  }
+
   syncGeometry() {
     const dx = this.b.x - this.a.x;
     const dy = this.b.y - this.a.y;
@@ -47,7 +53,7 @@ export class Segment extends SketchObject {
 
     let ang = Math.atan2(ny, nx);
 
-    this.params.ang.set(ang||0);
+    this.params.ang.set(makeAngle0_360(ang||0));
     this.params.w.set(nx * this.a.x + ny * this.a.y);
     this.params.t.set(l);
   }

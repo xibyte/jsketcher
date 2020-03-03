@@ -2,6 +2,8 @@ import {SketchObject} from './sketch-object'
 import {DrawPoint} from './draw-utils'
 import Vector from 'math/vector';
 import {Param} from "./param";
+import {ConstraintDefinitions} from "../constr/ANConstraints";
+import {dfs} from "../../../../modules/gems/traverse";
 
 
 export class EndPoint extends SketchObject {
@@ -45,8 +47,16 @@ export class EndPoint extends SketchObject {
   }
 
   translateImpl(dx, dy) {
-    this.x += dx;
-    this.y += dy;
+    this.x = dx;
+    this.y = dy;
+  }
+
+  visitLinked(cb) {
+    dfs(this, (obj, chCb) => obj.constraints.forEach(c => {
+      if (c.schema.id === ConstraintDefinitions.PCoincident.id) {
+        c.objects.forEach(chCb);
+      }
+    }), cb);
   }
 
   drawImpl(ctx, scale) {

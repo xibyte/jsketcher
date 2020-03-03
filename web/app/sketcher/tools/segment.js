@@ -1,4 +1,5 @@
 import {Tool} from './tool'
+import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
 export class AddSegmentTool extends Tool {
 
@@ -32,11 +33,12 @@ export class AddSegmentTool extends Tool {
   }
   
   mouseup(e) {
+    const snapped = this.viewer.snapped != null;
     if (this.line == null) {
       const b = this.viewer.screenToModel(e);
       let a = b;
       let needSnap = false;
-      if (this.viewer.snapped != null) {
+      if (snapped) {
         a = this.viewer.snapped;
         this.viewer.cleanSnap();
         needSnap = true;
@@ -44,24 +46,30 @@ export class AddSegmentTool extends Tool {
       this.line = this.viewer.addSegment(a.x, a.y, b.x, b.y, this.viewer.activeLayer);
       if (needSnap) {
         this.viewer.parametricManager.coincidePoints(this.line.a, a);
+      } else {
+        // this.viewer.parametricManager.lockPoint(this.line.a);
       }
       this.firstPointPicked();
       this.viewer.refresh();
     } else {
-      if (this.viewer.snapped != null) {
-        var p = this.viewer.snapped;
+      if (snapped) {
+        let p = this.viewer.snapped;
         this.viewer.cleanSnap();
         this.line.b.x = p.x;
         this.line.b.y = p.y;
         this.viewer.parametricManager.coincidePoints(this.line.b, p);
       }
-      this.nextPointPicked();
+      this.nextPointPicked(snapped);
     }
   }
   
-  nextPointPicked() {
+  nextPointPicked(snapped) {
     this.pointPicked(this.line.b.x, this.line.b.y);
     this.line.stabilize(this.viewer);
+    if (!snapped) {
+      // this.viewer.parametricManager.lockAngle(this.line);
+      // this.viewer.parametricManager.lockLength(this.line);
+    }
     if (this.multi) {
       const b = this.line.b;
       this.line = this.viewer.addSegment(b.x, b.y, b.x, b.y, this.viewer.activeLayer);
