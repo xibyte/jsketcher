@@ -14,6 +14,7 @@ export class Circle extends SketchObject {
     this.children.push(c);
     this.r = new Param(MIN_RADIUS + 0.001);
     this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
+    this.r.min = MIN_RADIUS;
   }
 
   visitParams(callback) {

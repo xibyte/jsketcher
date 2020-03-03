@@ -22,9 +22,11 @@ export class DragTool extends Tool {
     //   this.lockedValues[i] = this._point.x - this.lockedShifts[i];
     //   this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
     // }
-    this.obj.translate(dx, dy);
-    (this.obj.parent || this.obj).syncGeometry();
+
+    this.obj.translate(this._point.x, this._point.y);
+    // this.viewer.parametricManager.setConstantsFromGeometry(this.obj);
     if (!Tool.dumbMode(e)) {
+      this.viewer.parametricManager.prepare();
       this.viewer.parametricManager.solve(true);
     }
     this.viewer.refresh();

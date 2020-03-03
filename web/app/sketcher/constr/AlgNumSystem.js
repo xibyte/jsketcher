@@ -47,7 +47,7 @@ export class AlgNumSubSystem {
     });
   }
 
-  addConstraint(constraint, _ancestorParams) {
+  addConstraint(constraint) {
 
     this.makeSnapshot();
 
@@ -72,6 +72,17 @@ export class AlgNumSubSystem {
       constraint.objects.forEach(o => o.constraints.add(constraint));
       this.updateFullyConstrainedObjects();
     }
+  }
+
+  addConstraints(constraints) {
+    constraints.forEach(constraint => {
+      if (constraint) {
+        constraint.objects.forEach(o => o.constraints.add(constraint));
+        this.allConstraints.push(constraint);
+      }
+    });
+    this.prepare();
+    this.updateFullyConstrainedObjects();
   }
 
   invalidate() {
@@ -232,6 +243,8 @@ export class AlgNumSubSystem {
   prepare() {
 
     this.reset();
+
+    this.validConstraints(c => c.params.forEach(p => p.normalizer && p.set(p.normalizer(p.get()))));
 
     this.evaluatePolynomials();
 
@@ -442,7 +455,12 @@ class Isolation {
 
   solve(rough) {
     this.beingSolvedParams.forEach(solverParam => {
-      solverParam.set(solverParam.objectParam.get());
+      let val = solverParam.objectParam.get();
+
+      if (solverParam.objectParam.min && val < solverParam.objectParam.min) {
+        val = solverParam.objectParam.min;
+      }
+      solverParam.set(val);
     });
 
     this.solveStatus = this.numericalSolver.solveSystem(rough);

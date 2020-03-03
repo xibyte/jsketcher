@@ -1,6 +1,6 @@
 import {R_DistancePP, R_Equal, R_PointOnLine} from "./residuals";
 import {indexById} from "../../../../modules/gems/iterables";
-import {DEG_RAD, distanceAB} from "../../math/math";
+import {_270, _90, DEG_RAD, distanceAB, makeAngle0_360} from "../../math/math";
 import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, SIN_FN} from "./polynomial";
 import {Types} from "../io";
 import {Constraints} from "../constraints";
@@ -42,7 +42,7 @@ export const ConstraintDefinitions = {
       inverted: {
         type: 'boolean',
         description: 'whether the circle attached from the opposite side',
-        initialValue: ({objects: [line, circle]}) => {
+        initialValue: ([line, circle]) => {
           const ang = line.params.ang.get();
           const w = line.params.w.get();
           return Math.cos(ang) * circle.c.x + Math.sin(ang) * circle.c.y < w;
@@ -99,8 +99,7 @@ export const ConstraintDefinitions = {
       distance: {
         type: 'number',
         description: 'the distance between two points',
-        initialValue: (constraint) => {
-          const [a, b] = constraint.objects;
+        initialValue: ([a, b]) => {
           return distanceAB(a, b);
         },
       }
@@ -141,10 +140,7 @@ export const ConstraintDefinitions = {
       angle: {
         type: 'number',
         description: 'line angle',
-        initialValue: (constraint) => {
-          let degrees = constraint.objects[0].params.ang.get() / DEG_RAD;
-          return (degrees + 360 - 90) % 360;
-        },
+        initialValue: ([seg]) => seg.getAngleFromNormal(),
         transform: degree => ( (degree + 90) % 360 ) * DEG_RAD
       }
     },
@@ -156,6 +152,10 @@ export const ConstraintDefinitions = {
     collectPolynomials: (polynomials, [x], {angle}) => {
       polynomials.push(new Polynomial( - angle).monomial(1).term(x, POW_1_FN));
     },
+
+    setConstantsFromGeometry: ([seg], constants) => {
+      constants.angle = seg.getAngleFromNormal();
+    }
   },
 
   AngleBetween: {
@@ -165,8 +165,7 @@ export const ConstraintDefinitions = {
       angle: {
         type: 'number',
         description: 'line angle',
-        initialValue: (constraint) => {
-          const [segment1, segment2] = constraint.objects;
+        initialValue: ([segment1, segment2]) => {
           const a1 = segment1.params.ang.get();
           const a2 = segment2.params.ang.get();
 
@@ -183,8 +182,33 @@ export const ConstraintDefinitions = {
     },
 
     collectPolynomials: (polynomials, [x1, x2], {angle}) => {
-      polynomials.push(new Polynomial( - angle).monomial(1).term(x1, POW_1_FN).monomial(-1).term(x2, POW_1_FN));
+      polynomials.push(new Polynomial( - angle).monomial(1).term(x2, POW_1_FN).monomial(-1).term(x1, POW_1_FN));
     },
+  },
+
+  Perpendicular: {
+    id: 'Perpendicular',
+    name: 'Perpendicular',
+
+    constants: {
+      angle: {
+        type: 'number',
+        description: 'line angle',
+        internal: true,
+        initialValue: ([segment1, segment2]) => {
+          const a1 = segment1.params.ang.get();
+          const a2 = segment2.params.ang.get();
+          const deg = makeAngle0_360(a2 - a1);
+
+          return deg < Math.PI ? _90 : _270;
+        },
+      }
+    },
+
+    // defineParamsScope: ConstraintDefinitions.AngleBetween.defineParamsScope,
+
+    // collectPolynomials: ConstraintDefinitions.AngleBetween.collectPolynomials,
+
   },
 
   SegmentLength: {
@@ -194,8 +218,7 @@ export const ConstraintDefinitions = {
       length: {
         type: 'number',
         description: 'length of the segment',
-        initialValue: (constraint) => {
-          const [segment] = constraint.objects;
+        initialValue: ([segment]) => {
           const dx = segment.b.x - segment.a.x;
           const dy = segment.b.y - segment.a.y;
           return Math.sqrt(dx*dx + dy*dy);
@@ -212,6 +235,12 @@ export const ConstraintDefinitions = {
     collectPolynomials: (polynomials, [t], {length}) => {
       polynomials.push(new Polynomial( - length).monomial(1).term(t, POW_1_FN));
     },
+
+    setConstantsFromGeometry: ([segment], constants) => {
+      const dx = segment.b.x - segment.a.x;
+      const dy = segment.b.y - segment.a.y;
+      constants.length = Math.sqrt(dx*dx + dy*dy);
+    }
   },
 
   Polar: {
@@ -249,7 +278,21 @@ export const ConstraintDefinitions = {
     },
 
     collectPolynomials: (polynomials, [r1, r2]) => {
-      polynomials.push(new Polynomial().monomial().term(r1, POW_1_FN).monomial(-1).term(r2, POW_1_FN).monomial(1));
+      polynomials.push(new Polynomial().monomial().term(r1, POW_1_FN).monomial(-1).term(r2, POW_1_FN));
+    },
+  },
+
+  EqualLength: {
+    id: 'EqualLength',
+    name: 'Equal Length',
+
+    defineParamsScope: ([s1, s2], callback) => {
+      callback(s1.params.t);
+      callback(s2.params.t);
+    },
+
+    collectPolynomials: (polynomials, [t1, t2]) => {
+      polynomials.push(new Polynomial().monomial().term(t1, POW_1_FN).monomial(-1).term(t2, POW_1_FN));
     },
   },
 
@@ -260,12 +303,12 @@ export const ConstraintDefinitions = {
       x: {
         type: 'number',
         description: 'X Coordinate',
-        initialValue: (constraint) => constraint.objects[0].x,
+        initialValue: ([pt]) => pt.x,
       },
       y: {
         type: 'number',
         description: 'y Coordinate',
-        initialValue: (constraint) => constraint.objects[0].y,
+        initialValue: ([pt]) => pt.y,
       }
     },
 
@@ -277,6 +320,11 @@ export const ConstraintDefinitions = {
       polynomials.push(new Polynomial(-x).monomial().term(px, POW_1_FN));
       polynomials.push(new Polynomial(-y).monomial().term(py, POW_1_FN));
     },
+
+    setConstantsFromGeometry: ([pt], constants) => {
+      constants.x = pt.x + '';
+      constants.y = pt.y + '';
+    }
   },
 
   ArcConsistency: {
@@ -455,11 +503,11 @@ export class AlgNumConstraint {
     return new AlgNumConstraint(schema, objects.map(oId => index[oId]), constants);
   }
 
-  initConstants() {
+   initConstants() {
     if (this.schema.constants) {
       this.constants = {};
       Object.keys(this.schema.constants).map(name => {
-        let val = this.schema.constants[name].initialValue(this);
+        let val = this.schema.constants[name].initialValue(this.objects);
         if (typeof val === 'number') {
           val = val.toFixed(2) + '';
         }
@@ -468,5 +516,12 @@ export class AlgNumConstraint {
       });
     }
   }
+
+  setConstantsFromGeometry() {
+    if (this.schema.setConstantsFromGeometry) {
+      this.schema.setConstantsFromGeometry(this.objects, this.constants);
+    }
+  }
+
 }
 

@@ -6,6 +6,7 @@ import {isInstanceOf, matchAll, matchTypes, sortSelectionByType} from "./matchUt
 import constraints from "../../../test/cases/constraints";
 import {Arc} from "../shapes/arc";
 import {FilletTool} from "../tools/fillet";
+import {editConstraint as _editConstraint} from "../components/ConstraintEditor";
 
 export default [
 
@@ -75,6 +76,22 @@ export default [
   },
 
   {
+    shortName: 'EqualLength',
+    description: 'Equal Length Between Two Segments',
+    selectionMatcher: selection => matchAll(selection, Segment, 2),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+      const pm = viewer.parametricManager;
+      for (let i = 1; i < viewer.selected.length; ++i) {
+        pm._add(new AlgNumConstraint(ConstraintDefinitions.EqualLength, [viewer.selected[i-1], viewer.selected[i]]));
+      }
+      pm.commit();
+    }
+
+  },
+
+  {
     shortName: 'Point On Line',
     description: 'Point On Line',
     selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, EndPoint, 1, Segment, 1),
@@ -131,6 +148,32 @@ export default [
           pm._add(new AlgNumConstraint(ConstraintDefinitions.Angle,
             [viewer.selected[i-1], viewer.selected[i]], {...firstConstr.constants}));
         }
+        pm.commit();
+      });
+    }
+  },
+
+  {
+    shortName: 'Perpendicular',
+    description: 'Perpendicularity between two lines',
+    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const pm = viewer.parametricManager;
+
+      for (let i = 1; i < viewer.selected.length; ++i) {
+        // ConstraintDefinitions.Perpendicular, [viewer.selected[i-1], viewer.selected[i]]);
+        // pm._add(new AlgNumConstraint();
+      }
+
+
+      const firstConstr = new AlgNumConstraint(ConstraintDefinitions.Perpendicular, [firstSegment, secondSegment]);
+      firstConstr.initConstants();
+
+      editConstraint(ctx, firstConstr, () => {
+        pm._add(firstConstr);
         pm.commit();
       });
     }
@@ -242,17 +285,6 @@ export default [
 
 ];
 
-
 function editConstraint(ctx, constraint, onApply) {
-
-  const rqStream = ctx.ui.$constraintEditRequest;
-  rqStream.next({
-    constraint,
-    onCancel: () => rqStream.next(null),
-    onApply: () => {
-      rqStream.next(null);
-      onApply();
-    }
-  });
-
+  _editConstraint(ctx.ui.$constraintEditRequest, constraint, onApply)
 }

@@ -326,7 +326,7 @@ var dog_leg = function (subsys, rough) {
   var g_inf = n.norminf(g);
   var fx_inf = n.norminf(fx);
   
-  var iterLimit = rough ? 1000 : 10000;
+  var iterLimit = rough ? 100 : 500;
   var divergenceLimit = 1e6 * (err + 1e6);
 
   var delta = 10;

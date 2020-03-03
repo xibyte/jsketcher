@@ -41,10 +41,6 @@ class ParametricManager {
     this.add(constr);
   }
 
-  coincidePoints(pt1, pt2) {
-    this.addAlgNum(new AlgNumConstraint(ConstraintDefinitions.PCoincident, [pt1, pt2]));
-  }
-
   createConstantResolver() {
     return value => {
       var _value = this.constantTable[value];
@@ -100,16 +96,6 @@ class ParametricManager {
   };
 
   updateConstraintConstants(constr) {
-    let c = constr;
-    if (c.SettableFields === undefined) return;
-    for (let f in c.SettableFields) {
-      let value = c[f];
-      let intro = c.SettableFields[f];
-      value = askNumber(intro, typeof(value) === "number" ? value.toFixed(4) : value, prompt, this.constantResolver);
-      if (value != null) {
-        c[f] = value;
-      }
-    }
     this.viewer.parametricManager.refresh();
   };
 
@@ -168,7 +154,7 @@ class ParametricManager {
   };
 
   prepare() {
-    //backward comp.
+    this.algNumSystem.prepare();
   }
 
   solve(rough) {
@@ -178,5 +164,38 @@ class ParametricManager {
   addModifier(modifier) {
     this.algNumSystem.addModifier(modifier);
     this.refresh();
+  }
+
+  coincidePoints(pt1, pt2) {
+    this.add(new AlgNumConstraint(ConstraintDefinitions.PCoincident, [pt1, pt2]));
+  }
+
+  lockPoint(pt) {
+    const lockConstr = new AlgNumConstraint(ConstraintDefinitions.LockPoint, [pt]);
+    lockConstr.initConstants();
+    this.add(lockConstr);
+  }
+
+  lockAngle(segment) {
+    const constr = new AlgNumConstraint(ConstraintDefinitions.Angle, [segment]);
+    constr.initConstants();
+    this.add(constr);
+  }
+
+  lockLength(segment) {
+    const constr = new AlgNumConstraint(ConstraintDefinitions.SegmentLength, [segment]);
+    constr.initConstants();
+    this.add(constr);
+  }
+
+  setConstantsFromGeometry(obj) {
+    obj.visitLinked(o => {
+      o.ancestry(ao => {
+        ao.syncGeometry();
+        ao.constraints.forEach(c => {
+          c.setConstantsFromGeometry && c.setConstantsFromGeometry()
+        })
+      });
+    });
   }
 }

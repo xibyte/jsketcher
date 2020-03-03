@@ -209,24 +209,25 @@ IO.prototype._loadSketch = function(sketch) {
   }
 
   let sketchConstraints = sketch['constraints'];
-  if (sketchConstraints !== undefined) {
-    for (let i = 0; i < sketchConstraints.length; ++i) {
+  if (version > 1) {
+    this.viewer.parametricManager.algNumSystem.addConstraints(sketchConstraints.map(constr => {
       try {
-        if (version > 1) {
-          this.viewer.parametricManager._add(AlgNumConstraint.read(sketchConstraints[i], index));
-        } else {
-          console.error("old format - need an upgrade");
-        }
-      } catch (msg) {
-        console.info("Skipping. " + msg);
+        return AlgNumConstraint.read(constr, index)
+      } catch (e) {
+        console.error(e);
+        console.error("skipping errant constraint: " + constr&&constr.typeId);
       }
-    }
-    this.viewer.parametricManager.notify();
+    }));
+  } else {
+    console.error("old format - need an upgrade");
   }
+
   let constants = sketch['constants'];
   if (constants !== undefined) {
     this.viewer.params.constantDefinition = constants;
   }
+
+  this.viewer.parametricManager.notify();
 };
 
 

@@ -67,3 +67,14 @@ export function ConstraintEditor() {
   </Widget>;
 
 }
+
+export function editConstraint(rqStream, constraint, onApply) {
+  rqStream.next({
+    constraint,
+    onCancel: () => rqStream.next(null),
+    onApply: () => {
+      rqStream.next(null);
+      onApply();
+    }
+  });
+}

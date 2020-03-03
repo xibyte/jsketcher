@@ -4,6 +4,8 @@ import Fa from 'ui/components/Fa';
 import {useStream} from "../../../../modules/ui/effects";
 import {SketcherAppContext} from "./SketcherApp";
 import cx from 'classnames';
+import {editConstraint} from "./ConstraintEditor";
+import {NOOP} from "../../../../modules/gems/func";
 
 
 export function ConstraintExplorer(props) {
@@ -19,7 +21,11 @@ export function ConstraintList() {
 
   const constraints = useStream(ctx => ctx.viewer.parametricManager.$constraints);
 
-  const {viewer} = useContext(SketcherAppContext);
+  const {viewer, ui} = useContext(SketcherAppContext);
+
+  const edit = (constraint) => {
+    editConstraint(ui.$constraintEditRequest, constraint, NOOP);
+  };
 
   const remove = constr => {
     viewer.parametricManager.remove(constr);
@@ -38,11 +44,11 @@ export function ConstraintList() {
 
 
   return constraints.map((c, i) => {
-    const conflicting = false; //viewer.parametricManager.algNumSystem.conflicting.has(c);
-    const redundant = false; //viewer.parametricManager.algNumSystem.redundant.has(c);
+    const conflicting = viewer.parametricManager.algNumSystem.conflicting.has(c);
+    const redundant = viewer.parametricManager.algNumSystem.redundant.has(c);
 
     return <div key={c.id} className={cx(ls.objectItem, conflicting&&ls.conflicting, redundant&&ls.redundant)}
-         onClick={() => viewer.parametricManager.updateConstraintConstants(c)}
+         onClick={() => c.schema.constants && edit(c)}
          onMouseEnter={() => highlight(c)}
          onMouseLeave={() => withdraw(c)}>
       <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>

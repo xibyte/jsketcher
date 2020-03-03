@@ -14,6 +14,7 @@ export class SketchObject extends Shape {
     this.layer = null;
     this.fullyConstrained = false;
     this.constraints = new Set();
+    this.readOnly = false;
   }
 
   normalDistance(aim, scale) {
@@ -45,29 +46,18 @@ export class SketchObject extends Shape {
   }
 
   visitLinked(cb) {
-    dfs(this, (obj, chCb) => obj.constraints.forEach(c => {
-      if (c.schema.id === ConstraintDefinitions.PCoincident.id) {
-        c.objects.forEach(chCb);
-      }
-    }), cb);
+    cb(this);
   }
 
-  _translate(dx, dy, translated) {
-    translated[this.id] = 'x';
-    this.visitLinked(l => {
-      if (translated[l.id] !== 'x') {
-        l._translate(dx, dy, translated);
-      }
-    });
-    this.translateImpl(dx, dy);
-  };
-  
   translate(dx, dy) {
   //  this.translateImpl(dx, dy);
-    if (this.fullyConstrained) {
+    if (this.readOnly) {
       return;
     }
-    this._translate(dx, dy, {});
+    this.visitLinked(obj => {
+      obj.translateImpl(dx, dy);
+      obj.ancestry(a => a.syncGeometry());
+    });
   }
 
   translateImpl(dx, dy) {
@@ -132,6 +122,23 @@ export class SketchObject extends Shape {
       shape = shape.parent;
     }
     return null;
+  }
+
+  getConstraintByType(typeId) {
+    for (let c of this.constraints) {
+      if (c.schema.id === typeId) {
+        return c;
+      }
+    }
+    return null;
+  }
+
+  ancestry(cb) {
+    let obj = this;
+    while (obj) {
+      cb(obj);
+      obj = obj.parent;
+    }
   }
 }
 
