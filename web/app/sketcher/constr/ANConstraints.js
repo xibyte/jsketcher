@@ -217,8 +217,7 @@ export const ConstraintDefinitions = {
           const a1 = segment1.params.ang.get();
           const a2 = segment2.params.ang.get();
 
-          let degrees = (a2 - a1) / DEG_RAD;
-          return (degrees + 360) % 360;
+          return makeAngle0_360(a2 - a1) / DEG_RAD;
         },
         transform: degree => degree * DEG_RAD
       }
@@ -247,17 +246,51 @@ export const ConstraintDefinitions = {
           const a1 = segment1.params.ang.get();
           const a2 = segment2.params.ang.get();
           const deg = makeAngle0_360(a2 - a1);
-
-          return deg < Math.PI ? _90 : _270;
+          return Math.abs(270 - deg) > Math.abs(90 - deg) ? 90 : 270;
         },
+        transform: degree => degree * DEG_RAD
       }
     },
 
-    // defineParamsScope: ConstraintDefinitions.AngleBetween.defineParamsScope,
+    defineParamsScope: (objs, cb) => {
+      ConstraintDefinitions.AngleBetween.defineParamsScope(objs, cb);
+    },
 
-    // collectPolynomials: ConstraintDefinitions.AngleBetween.collectPolynomials,
+    collectPolynomials: (polynomials, params, constants) => {
+      ConstraintDefinitions.AngleBetween.collectPolynomials(polynomials, params, constants);
+    }
 
   },
+
+  Parallel: {
+    id: 'Parallel',
+    name: 'Parallel',
+
+    constants: {
+      angle: {
+        type: 'number',
+        description: 'line angle',
+        internal: true,
+        initialValue: ([segment1, segment2]) => {
+          const a1 = segment1.params.ang.get();
+          const a2 = segment2.params.ang.get();
+          const ang = makeAngle0_360(a2 - a1);
+          return Math.abs(180 - ang) > Math.min(Math.abs(360 - ang), Math.abs(0 - ang)) ? 0 : 180;
+        },
+        transform: degree => degree * DEG_RAD
+      }
+    },
+
+    defineParamsScope: (objs, cb) => {
+      ConstraintDefinitions.AngleBetween.defineParamsScope(objs, cb);
+    },
+
+    collectPolynomials: (polynomials, params, constants) => {
+      ConstraintDefinitions.AngleBetween.collectPolynomials(polynomials, params, constants);
+    }
+
+  },
+
 
   SegmentLength: {
     id: 'SegmentLength',
@@ -559,6 +592,19 @@ export class AlgNumConstraint {
 
       });
     }
+  }
+
+  get editable() {
+    if (!this.schema.constants) {
+      return false;
+    }
+    const defs = Object.values(this.schema.constants);
+    for (let cd of defs) {
+      if (cd.readOnly) {
+        return false;
+      }
+    }
+    return true;
   }
 
   setConstantsFromGeometry() {

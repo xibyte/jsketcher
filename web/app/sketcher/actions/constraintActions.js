@@ -201,7 +201,7 @@ export default [
   {
     id: 'Perpendicular',
     shortName: 'Perpendicular',
-    description: 'Perpendicularity between two lines',
+    description: 'Perpendicularity between two or more lines',
     selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
 
     invoke: ctx => {
@@ -210,18 +210,31 @@ export default [
       const pm = viewer.parametricManager;
 
       for (let i = 1; i < viewer.selected.length; ++i) {
-        // ConstraintDefinitions.Perpendicular, [viewer.selected[i-1], viewer.selected[i]]);
-        // pm._add(new AlgNumConstraint();
+        const constr = new AlgNumConstraint(ConstraintDefinitions.Perpendicular, [viewer.selected[i-1], viewer.selected[i]]);
+        constr.initConstants();
+        pm._add(constr);
       }
+      pm.commit();
+    }
+  },
 
+  {
+    id: 'Parallel',
+    shortName: 'Parallel',
+    description: 'Parallelism between two or more lines',
+    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
 
-      const firstConstr = new AlgNumConstraint(ConstraintDefinitions.Perpendicular, [firstSegment, secondSegment]);
-      firstConstr.initConstants();
+    invoke: ctx => {
+      const {viewer} = ctx;
 
-      editConstraint(ctx, firstConstr, () => {
-        pm._add(firstConstr);
-        pm.commit();
-      });
+      const pm = viewer.parametricManager;
+
+      for (let i = 1; i < viewer.selected.length; ++i) {
+        const constr = new AlgNumConstraint(ConstraintDefinitions.Parallel, [viewer.selected[i-1], viewer.selected[i]]);
+        constr.initConstants();
+        pm._add(constr);
+      }
+      pm.commit();
     }
   },
 
