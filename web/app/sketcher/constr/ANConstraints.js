@@ -165,10 +165,35 @@ export const ConstraintDefinitions = {
         type: 'number',
         description: 'line angle',
         initialValue: ([seg]) => {
-          const angleFromNormal = seg.getAngleFromNormal();
+          const angleFromNormal = seg.angleDeg();
           return Math.abs(270 - angleFromNormal) > Math.abs(90 - angleFromNormal) ? 90 : 270;
         },
-        transform: degree => ( (degree ) % 360 ) * DEG_RAD
+        transform: degree => degree * DEG_RAD
+      }
+    },
+
+    defineParamsScope: (objs, cb) => {
+      ConstraintDefinitions.Angle.defineParamsScope(objs, cb);
+    },
+
+    collectPolynomials: (polynomials, params, constants) => {
+      ConstraintDefinitions.Angle.collectPolynomials(polynomials, params, constants);
+    }
+  },
+
+  Horizontal: {
+    id: 'Horizontal',
+    name: 'Line Horizontality',
+    constants: {
+      angle: {
+        readOnly: true,
+        type: 'number',
+        description: 'line angle',
+        initialValue: ([seg]) => {
+          const ang = seg.angleDeg();
+          return Math.abs(180 - ang) > Math.min(Math.abs(360 - ang), Math.abs(0 - ang)) ? 0 : 180;
+        },
+        transform: degree => degree * DEG_RAD
       }
     },
 
