@@ -69,8 +69,8 @@ export class FilletTool extends Tool {
     const s1 = point1.parent;
     const s2 = point2.parent;
 
-    const inverted1 = Math.cos(s1.ang) * arc.c.x + Math.sin(s1.ang) * arc.c.y < s1.w;
-    const inverted2 = Math.cos(s2.ang) * arc.c.x + Math.sin(s2.ang) * arc.c.y < s2.w;
+    const inverted1 = s1.nx * arc.c.x + s1.ny * arc.c.y < s1.w;
+    const inverted2 = s2.nx * arc.c.x + s2.ny * arc.c.y < s2.w;
     arc.stabilize(this.viewer);
 
     pm.add(new AlgNumConstraint(ConstraintDefinitions.Fillet, [point1.parent, point2.parent, arc], {
