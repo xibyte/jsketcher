@@ -320,7 +320,7 @@ export const ConstraintDefinitions = {
           const a1 = segment1.params.ang.get();
           const a2 = segment2.params.ang.get();
           const ang = makeAngle0_360(a2 - a1);
-          return Math.abs(180 - ang) > Math.min(Math.abs(360 - ang), Math.abs(0 - ang)) ? 0 : 180;
+          return Math.abs(180 - ang) > Math.min(Math.abs(360 - ang), Math.abs(0 - ang)) ? 180 : 0;
         },
         transform: degree => degree * DEG_RAD
       }
