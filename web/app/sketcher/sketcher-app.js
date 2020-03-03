@@ -15,15 +15,15 @@ import {OffsetTool} from './tools/offset'
 import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 import genSerpinski from '../utils/genSerpinski';
-import context from 'context';
-import ReactDOM from "react-dom";
 import React from "react";
-import {SketcherApp} from "./components/SketcherApp";
+import {getActionIfAvailable} from "./actions";
+import {stream} from "../../../modules/lstream";
 
 function App2D() {
   var app = this;
 
   this.viewer = new Viewer(document.getElementById('viewer'), IO);
+  this.context = createAppContext(this.viewer);
   this.winManager = new ui.WinManager();
   this.inputManager = new InputManager(this); 
   
@@ -198,11 +198,11 @@ function App2D() {
   });
 
   this.registerAction('coincident', "Coincident", function () {
-    app.viewer.parametricManager.coincident(app.viewer.selected);
+    getActionIfAvailable('Coincident', app.viewer.selected, action => action.invoke(app.context));
   });
 
   this.registerAction('verticalConstraint', "Vertical Constraint", function () {
-    app.viewer.parametricManager.vertical(app.viewer.selected);
+    getActionIfAvailable('Vertical', app.viewer.selected, action => action.invoke(app.context));
   });
 
   this.registerAction('horizontalConstraint', "Horizontal Constraint", function () {
@@ -473,6 +473,16 @@ App2D.prototype.handleTerminalInput = function(commandStr) {
   }
 };
 
+function createAppContext(viewer) {
+  return {
+    viewer,
+    ui: {
+      $constraintEditRequest: stream()
+    }
+  };
+}
+
 App2D.STORAGE_PREFIX = "TCAD.projects.";
 
 export default App2D;
+

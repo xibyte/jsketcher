@@ -33,3 +33,13 @@ export function matchAvailableActions(selection) {
   return matched;
 
 }
+
+
+//For backward compatibility
+export function getActionIfAvailable(actionId, selection, cb) {
+  matchAvailableActions(selection).forEach(a => {
+    if (a.id === actionId) {
+      cb(a);
+    }
+  })
+}
