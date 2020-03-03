@@ -264,6 +264,38 @@ export default [
   },
 
   {
+    id: 'RadiusLength',
+    shortName: 'RadiusLength',
+    description: 'Radius Length',
+    selectionMatcher: (selection) => {
+      for (let obj of selection) {
+        if (!(isInstanceOf(obj, Circle) || isInstanceOf(obj, Arc))) {
+          return false;
+        }
+      }
+      return true;
+    },
+
+    invoke: ctx => {
+      const {viewer} = ctx;
+
+      const [firstCircle, ...others] = viewer.selected;
+
+      const firstConstr = new AlgNumConstraint(ConstraintDefinitions.RadiusLength, [firstCircle]);
+      firstConstr.initConstants();
+
+      editConstraint(ctx, firstConstr, () => {
+        const pm = viewer.parametricManager;
+        pm._add(firstConstr);
+        for (let other of others) {
+          pm._add(new AlgNumConstraint(ConstraintDefinitions.RadiusLength, [other], {...firstConstr.constants}));
+        }
+        pm.commit();
+      });
+    }
+  },
+
+  {
     id: 'DistancePL',
     shortName: 'Point to Line Distance',
     description: 'Distance between Point and Line',
