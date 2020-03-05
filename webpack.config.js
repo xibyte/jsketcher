@@ -4,6 +4,7 @@ const generateCSSScopedName = require('./build/cssScoopeGenerator')();
 
 const WEB_APP = path.join(__dirname, 'web/app');
 const MODULES = path.join(__dirname, 'modules');
+const NODE_MODULES = path.join(__dirname, 'node_modules');
 const INTEGRATION_TESTS = path.join(__dirname, 'web/test');
 
 const GLOBAL_CSS = path.join(__dirname, 'web/css');
@@ -59,6 +60,14 @@ module.exports = {
         'less-loader',
       ]
     },
+      {
+        test: /\.(css)$/,
+        include: [NODE_MODULES],
+        use: [
+          'style-loader',
+          'css-loader',
+        ]
+      },
       {
         test: /\.(less|css)$/,
         include: [MODULES, WEB_APP],

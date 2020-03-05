@@ -127,18 +127,18 @@ export class Segment extends SketchObject {
   
   drawImpl(ctx, scale) {
 
-    let ang = this.params.ang.get();
-    let nx = -Math.sin(ang);
-    let ny =  Math.cos(ang);
-    let w = this.w;
-
-    ctx.save();
-    draw_utils.SetStyle(Styles.CONSTRUCTION_OF_OBJECT, ctx, scale );
-    ctx.beginPath();
-    ctx.moveTo(nx * w + ny * 1000, ny * w - nx * 1000);
-    ctx.lineTo(nx * w - ny * 1000, ny * w + nx * 1000);
-    ctx.stroke();
-    ctx.restore();
+    // let ang = this.params.ang.get();
+    // let nx = -Math.sin(ang);
+    // let ny =  Math.cos(ang);
+    // let w = this.w;
+    //
+    // ctx.save();
+    // draw_utils.SetStyle(Styles.CONSTRUCTION_OF_OBJECT, ctx, scale );
+    // ctx.beginPath();
+    // ctx.moveTo(nx * w + ny * 1000, ny * w - nx * 1000);
+    // ctx.lineTo(nx * w - ny * 1000, ny * w + nx * 1000);
+    // ctx.stroke();
+    // ctx.restore();
 
     ctx.beginPath();
     ctx.moveTo(this.a.x, this.a.y);

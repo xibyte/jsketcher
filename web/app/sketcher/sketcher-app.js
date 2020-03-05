@@ -16,7 +16,7 @@ import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 import genSerpinski from '../utils/genSerpinski';
 import React from "react";
-import {getActionIfAvailable} from "./actions";
+import {runActionOrToastWhyNot} from "./actions";
 import {stream} from "../../../modules/lstream";
 
 function App2D() {
@@ -25,8 +25,8 @@ function App2D() {
   this.viewer = new Viewer(document.getElementById('viewer'), IO);
   this.context = createAppContext(this.viewer);
   this.winManager = new ui.WinManager();
-  this.inputManager = new InputManager(this); 
-  
+  this.inputManager = new InputManager(this);
+
   this.initSketchManager();
   this._exportWin = new ui.Window($('#exportManager'), app.winManager);
 
@@ -61,7 +61,7 @@ function App2D() {
 
   this.winManager.registerResize(dockEl, ui.DIRECTIONS.EAST, function() {$('body').trigger('layout'); });
   $('body').on('layout', this.viewer.onWindowResize);
-  
+
   this.registerAction = function(id, desc, action, command) {
     app.actions[id] = {id, desc, action};
     if (command) {
@@ -69,7 +69,7 @@ function App2D() {
     }
     app._actionsOrder.push(id);
   };
-  
+
   function checkForTerminalVisibility() {
     const terminalVisible = app.commandsWin.root.is(':visible');
     if (terminalVisible) {
@@ -78,11 +78,11 @@ function App2D() {
     app.viewer.referencePoint.visible = terminalVisible;
   }
   checkForTerminalVisibility();
-  
+
   this.registerAction('new', "Create New Sketch", function () {
     app.newSketch();
   });
-  
+
   this.registerAction('terminal', "Open/Close Terminal Window", function () {
     app.commandsWin.toggle();
     checkForTerminalVisibility();
@@ -109,7 +109,7 @@ function App2D() {
   this.registerAction('exportDXF', "Export To DXF", function () {
     IO.exportTextData(app.viewer.io.dxfExport(), app.getSketchId() + ".dxf");
   });
-  
+
   this.registerAction('undo', "Undo", function () {
     app.viewer.historyManager.undo();
   });
@@ -129,7 +129,7 @@ function App2D() {
   this.registerAction('addPoint', "Add Point", function () {
     app.viewer.toolManager.takeControl(new AddPointTool(app.viewer));
   }, "point");
-  
+
   this.registerAction('addSegment', "Add Segment", function () {
     app.viewer.toolManager.takeControl(new AddSegmentTool(app.viewer, false));
   }, 'line');
@@ -157,7 +157,7 @@ function App2D() {
   this.registerAction('addBezierCurve', "Add Bezier Curve", function () {
     app.viewer.toolManager.takeControl(new BezierCurveTool(app.viewer));
   });
-  
+
   this.registerAction('addRectangle', "Add Rectangle", function () {
     app.viewer.toolManager.takeControl(new RectangleTool(app.viewer));
   }, 'rect');
@@ -169,7 +169,7 @@ function App2D() {
   this.registerAction('pan', "Pan", function () {
     app.viewer.toolManager.releaseControl();
   });
-  
+
   this.registerAction('addFillet', "Add Fillet", function () {
     app.viewer.toolManager.takeControl(new FilletTool(app.viewer));
   });
@@ -177,11 +177,11 @@ function App2D() {
   this.registerAction('addDim', "Add Dimension", function () {
     app.viewer.toolManager.takeControl(new AddFreeDimTool(app.viewer, app.viewer.dimLayer));
   });
-  
+
   this.registerAction('addHDim', "Add Horizontal Dimension", function () {
     app.viewer.toolManager.takeControl(new AddHorizontalDimTool(app.viewer, app.viewer.dimLayer));
   });
-  
+
   this.registerAction('addVDim', "Add Vertical Dimension", function () {
     app.viewer.toolManager.takeControl(new AddVerticalDimTool(app.viewer, app.viewer.dimLayer));
   });
@@ -198,27 +198,27 @@ function App2D() {
   });
 
   this.registerAction('coincident', "Coincident", function () {
-    getActionIfAvailable('Coincident', app.viewer.selected, action => action.invoke(app.context));
+    runActionOrToastWhyNot('Coincident', app.viewer.selected, app.context);
   });
 
   this.registerAction('verticalConstraint', "Vertical Constraint", function () {
-    getActionIfAvailable('Vertical', app.viewer.selected, action => action.invoke(app.context));
+    runActionOrToastWhyNot('Vertical', app.viewer.selected, app.context);
   });
 
   this.registerAction('horizontalConstraint', "Horizontal Constraint", function () {
-    getActionIfAvailable('Horizontal', app.viewer.selected, action => action.invoke(app.context));
+    runActionOrToastWhyNot('Horizontal', app.viewer.selected, app.context);
   });
 
   this.registerAction('parallelConstraint', "Parallel Constraint", function () {
-    getActionIfAvailable('Parallel', app.viewer.selected, action => action.invoke(app.context));
+    runActionOrToastWhyNot('Parallel', app.viewer.selected, app.context);
   });
 
   this.registerAction('perpendicularConstraint', "Perpendicular Constraint", function () {
-    getActionIfAvailable('Perpendicular', app.viewer.selected, action => action.invoke(app.context));
+    runActionOrToastWhyNot('Perpendicular', app.viewer.selected, app.context);
   });
 
   this.registerAction('P2LDistanceConstraint', "Distance Between Point and Line", function () {
-    getActionIfAvailable('DistancePL', app.viewer.selected, action => action.invoke(app.context));
+    runActionOrToastWhyNot('DistancePL', app.viewer.selected, app.context);
   });
 
   this.registerAction('mirrorConstraint', "Mirror Constraint", function () {
@@ -226,7 +226,7 @@ function App2D() {
   });
 
   this.registerAction('P2PDistanceConstraint', "Distance Between two Points", function () {
-    getActionIfAvailable('DistancePP', app.viewer.selected, action => action.invoke(app.context));
+    runActionOrToastWhyNot('DistancePP', app.viewer.selected, app.context);
   });
 
   this.registerAction('RadiusConstraint', "Radius Constraint", function () {

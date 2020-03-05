@@ -3,6 +3,7 @@ import ls from './ContextualControls.less';
 import {matchAvailableActions} from "../actions";
 import {useStream} from "../../../../modules/ui/effects";
 import {SketcherAppContext} from "./SketcherApp";
+import {MatchIndex, matchSelection} from "../selectionMatcher";
 
 export function ContextualControls() {
 
@@ -25,7 +26,7 @@ export function ContextualControls() {
     <div className={ls.hr}>AVAILABLE ACTIONS:</div>
 
     {
-      availableActions.map(a => <button onClick={() => a.invoke(ctx)}
+      availableActions.map(a => <button onClick={() => a.invoke(ctx, matchSelection(a.selectionMatcher, new MatchIndex(selection), false))}
                                         title={a.description}>{a.shortName}</button>)
     }
 

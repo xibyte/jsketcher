@@ -2,8 +2,7 @@ import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 import {EndPoint} from "../shapes/point";
 import {Circle} from "../shapes/circle";
 import {Segment} from "../shapes/segment";
-import {isInstanceOf, matchAll, matchTypes, sortSelectionByType} from "./matchUtils";
-import constraints from "../../../test/cases/constraints";
+import {isInstanceOf, matchAll, matchTypes} from "./matchUtils";
 import {Arc} from "../shapes/arc";
 import {FilletTool} from "../tools/fillet";
 import {editConstraint as _editConstraint} from "../components/ConstraintEditor";
@@ -13,13 +12,17 @@ export default [
 
   {
     id: 'Coincident',
-    shortName: 'Coincident',
+    shortName: 'Coincident Constraint',
     description: 'Point Coincident',
-    selectionMatcher: (selection, sortedByType) => matchAll(selection, EndPoint, 2),
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [EndPoint],
+      minQuantity: 2
+    },
 
-    invoke: ctx => {
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
-      const [first, ...others] = viewer.selected;
+      const [first, ...others] = matchedObjects;
       let pm = viewer.parametricManager;
       for (let obj of others) {
         pm._add(
@@ -32,17 +35,26 @@ export default [
 
   {
     id: 'Tangent',
-    shortName: 'Tangent',
+    shortName: 'Tangent Constraint',
     description: 'Tangent Between Line And Circle',
-    selectionMatcher: [
-      (selection, sortedByType) => matchTypes(sortedByType, Circle, 1, Segment, 1),
-      (selection, sortedByType) => matchTypes(sortedByType, Arc, 1, Segment, 1),
-    ],
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [Circle, Arc],
+          quantity: 1
+        },
+        {
+          types: [Segment],
+          quantity: 1
+        },
+      ]
+    },
 
-    invoke: ctx => {
+    invoke: (ctx, matchedObjects) => {
 
       const {viewer} = ctx;
-      const [circle, line] = sortSelectionByType(viewer.selected);
+      const [circle, line] = matchedObjects;
 
       const constraint = new AlgNumConstraint(ConstraintDefinitions.TangentLC, [line, circle]);
       constraint.initConstants();
@@ -54,24 +66,21 @@ export default [
 
   {
     id: 'EqualRadius',
-    shortName: 'Equal Radius',
+    shortName: 'Equal Radius Constraint',
     description: 'Equal Radius Between Two Circle',
-    selectionMatcher: selection => {
-      for (let obj of selection) {
-        if (!(isInstanceOf(obj, Circle) || isInstanceOf(obj, Arc))) {
-          return false;
-        }
-      }
-      return true;
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Circle, Arc],
+      minQuantity: 2
     },
 
-    invoke: ctx => {
+    invoke: (ctx, matchedObjects) => {
 
       const {viewer} = ctx;
 
       const pm = viewer.parametricManager;
-      for (let i = 1; i < viewer.selected.length; ++i) {
-        pm._add(new AlgNumConstraint(ConstraintDefinitions.EqualRadius, [viewer.selected[i-1], viewer.selected[i]]));
+      for (let i = 1; i < matchedObjects.length; ++i) {
+        pm._add(new AlgNumConstraint(ConstraintDefinitions.EqualRadius, [matchedObjects[i-1], matchedObjects[i]]));
       }
       pm.commit();
     }
@@ -80,15 +89,18 @@ export default [
 
   {
     id: 'EqualLength',
-    shortName: 'Equal Length',
+    shortName: 'Equal Length Constraint',
     description: 'Equal Length Between Two Segments',
-    selectionMatcher: selection => matchAll(selection, Segment, 2),
-
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Segment],
+      minQuantity: 2
+    },
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
       const pm = viewer.parametricManager;
-      for (let i = 1; i < viewer.selected.length; ++i) {
-        pm._add(new AlgNumConstraint(ConstraintDefinitions.EqualLength, [viewer.selected[i-1], viewer.selected[i]]));
+      for (let i = 1; i < matchedObjects.length; ++i) {
+        pm._add(new AlgNumConstraint(ConstraintDefinitions.EqualLength, [matchedObjects[i-1], matchedObjects[i]]));
       }
       pm.commit();
     }
@@ -97,13 +109,25 @@ export default [
 
   {
     id: 'PointOnLine',
-    shortName: 'Point On Line',
+    shortName: 'Point On Line Constraint',
     description: 'Point On Line',
-    selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, EndPoint, 1, Segment, 1),
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [EndPoint],
+          quantity: 1
+        },
+        {
+          types: [Segment],
+          quantity: 1
+        },
+      ]
+    },
 
-    invoke: ctx => {
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
-      const [pt, line] = sortSelectionByType(viewer.selected);
+      const [pt, line] = matchedObjects;
       let pm = viewer.parametricManager;
       pm.add(new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [pt, line]));
     }
@@ -111,14 +135,17 @@ export default [
 
   {
     id: 'Angle',
-    shortName: 'Angle',
+    shortName: 'Angle Constraint',
     description: 'Angle',
-    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 1),
-
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Segment],
+      minQuantity: 1
+    },
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
-      const firstSegment = viewer.selected[0];
+      const firstSegment = matchedObjects[0];
 
       const firstConstr = new AlgNumConstraint(ConstraintDefinitions.Angle, [firstSegment]);
       firstConstr.initConstants();
@@ -126,8 +153,8 @@ export default [
       editConstraint(ctx, firstConstr, () => {
         const pm = viewer.parametricManager;
         pm._add(firstConstr);
-        for (let i = 1; i < viewer.selected.length; ++i) {
-          pm._add(new AlgNumConstraint(ConstraintDefinitions.Angle, [viewer.selected[i]], {...firstConstr.constants}));
+        for (let i = 1; i < matchedObjects.length; ++i) {
+          pm._add(new AlgNumConstraint(ConstraintDefinitions.Angle, [matchedObjects[i]], {...firstConstr.constants}));
         }
         pm.commit();
       });
@@ -136,15 +163,20 @@ export default [
 
   {
     id: 'Vertical',
-    shortName: 'Vertical',
+    shortName: 'Vertical Constraint',
     description: 'Vertical',
-    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 1),
 
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Segment],
+      minQuantity: 1
+    },
+
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
       const pm = viewer.parametricManager;
 
-      viewer.selected.forEach(obj => {
+      matchedObjects.forEach(obj => {
         const constr = new AlgNumConstraint(ConstraintDefinitions.Vertical, [obj]);
         constr.initConstants();
         pm._add(constr);
@@ -155,15 +187,20 @@ export default [
 
   {
     id: 'Horizontal',
-    shortName: 'Horizontal',
+    shortName: 'Horizontal Constraint',
     description: 'Horizontal',
-    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 1),
 
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Segment],
+      minQuantity: 1
+    },
+
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
       const pm = viewer.parametricManager;
 
-      viewer.selected.forEach(obj => {
+      matchedObjects.forEach(obj => {
         const constr = new AlgNumConstraint(ConstraintDefinitions.Horizontal, [obj]);
         constr.initConstants();
         pm._add(constr);
@@ -174,14 +211,19 @@ export default [
 
   {
     id: 'AngleBetween',
-    shortName: 'Angle Between',
+    shortName: 'Angle Between Constraint',
     description: 'Angle Between Lines',
-    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
 
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Segment],
+      minQuantity: 2
+    },
+
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
-      const [firstSegment, secondSegment] = viewer.selected;
+      const [firstSegment, secondSegment] = matchedObjects;
 
       const firstConstr = new AlgNumConstraint(ConstraintDefinitions.AngleBetween, [firstSegment, secondSegment]);
       firstConstr.initConstants();
@@ -189,9 +231,9 @@ export default [
       editConstraint(ctx, firstConstr, () => {
         const pm = viewer.parametricManager;
         pm._add(firstConstr);
-        for (let i = 2; i < viewer.selected.length; ++i) {
+        for (let i = 2; i < matchedObjects.length; ++i) {
           pm._add(new AlgNumConstraint(ConstraintDefinitions.Angle,
-            [viewer.selected[i-1], viewer.selected[i]], {...firstConstr.constants}));
+            [matchedObjects[i-1], matchedObjects[i]], {...firstConstr.constants}));
         }
         pm.commit();
       });
@@ -200,17 +242,22 @@ export default [
 
   {
     id: 'Perpendicular',
-    shortName: 'Perpendicular',
+    shortName: 'Perpendicular Constraint',
     description: 'Perpendicularity between two or more lines',
-    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
 
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Segment],
+      minQuantity: 2
+    },
+
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
       const pm = viewer.parametricManager;
 
-      for (let i = 1; i < viewer.selected.length; ++i) {
-        const constr = new AlgNumConstraint(ConstraintDefinitions.Perpendicular, [viewer.selected[i-1], viewer.selected[i]]);
+      for (let i = 1; i < matchedObjects.length; ++i) {
+        const constr = new AlgNumConstraint(ConstraintDefinitions.Perpendicular, [matchedObjects[i-1], matchedObjects[i]]);
         constr.initConstants();
         pm._add(constr);
       }
@@ -220,17 +267,22 @@ export default [
 
   {
     id: 'Parallel',
-    shortName: 'Parallel',
+    shortName: 'Parallel Constraint',
     description: 'Parallelism between two or more lines',
-    selectionMatcher: (selection, sortedByType) => matchAll(sortedByType, Segment, 2),
 
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Segment],
+      minQuantity: 2
+    },
+
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
       const pm = viewer.parametricManager;
 
-      for (let i = 1; i < viewer.selected.length; ++i) {
-        const constr = new AlgNumConstraint(ConstraintDefinitions.Parallel, [viewer.selected[i-1], viewer.selected[i]]);
+      for (let i = 1; i < matchedObjects.length; ++i) {
+        const constr = new AlgNumConstraint(ConstraintDefinitions.Parallel, [matchedObjects[i-1], matchedObjects[i]]);
         constr.initConstants();
         pm._add(constr);
       }
@@ -240,14 +292,19 @@ export default [
 
   {
     id: 'Length',
-    shortName: 'Length',
+    shortName: 'Length Constraint',
     description: 'Segment Length',
-    selectionMatcher: (selection) => matchAll(selection, Segment, 1),
 
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Segment],
+      minQuantity: 1
+    },
+
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
-      const [firstSegment, ...others] = viewer.selected;
+      const [firstSegment, ...others] = matchedObjects;
 
       const firstConstr = new AlgNumConstraint(ConstraintDefinitions.SegmentLength, [firstSegment]);
       firstConstr.initConstants();
@@ -265,21 +322,19 @@ export default [
 
   {
     id: 'RadiusLength',
-    shortName: 'RadiusLength',
+    shortName: 'Radius Length Constraint',
     description: 'Radius Length',
-    selectionMatcher: (selection) => {
-      for (let obj of selection) {
-        if (!(isInstanceOf(obj, Circle) || isInstanceOf(obj, Arc))) {
-          return false;
-        }
-      }
-      return true;
+
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: [Circle, Arc],
+      minQuantity: 1
     },
 
-    invoke: ctx => {
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
-      const [firstCircle, ...others] = viewer.selected;
+      const [firstCircle, ...others] = matchedObjects;
 
       const firstConstr = new AlgNumConstraint(ConstraintDefinitions.RadiusLength, [firstCircle]);
       firstConstr.initConstants();
@@ -297,14 +352,28 @@ export default [
 
   {
     id: 'DistancePL',
-    shortName: 'Point to Line Distance',
+    shortName: 'Point to Line Distance Constraint',
     description: 'Distance between Point and Line',
-    selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, EndPoint, 1, Segment, 1),
 
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [EndPoint],
+          quantity: 1
+        },
+        {
+          types: [Segment],
+          quantity: 1
+        },
+      ]
+    },
+
+
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
-      const [pt, seg] = sortSelectionByType(viewer.selected);
+      const [pt, seg] = matchedObjects;
 
       const constr = new AlgNumConstraint(ConstraintDefinitions.DistancePL, [pt, seg]);
       constr.initConstants();
@@ -318,14 +387,23 @@ export default [
 
   {
     id: 'DistancePP',
-    shortName: 'Two Point Distance',
+    shortName: 'Two Point Distance Constraint',
     description: 'Distance between two Points',
-    selectionMatcher: (selection, sortedByType) => matchTypes(sortedByType, EndPoint, 2),
 
-    invoke: ctx => {
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [EndPoint],
+          quantity: 2
+        }
+      ]
+    },
+
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
-      const [p1, p2] = sortSelectionByType(viewer.selected);
+      const [p1, p2] = matchedObjects;
 
       const constr = new AlgNumConstraint(ConstraintDefinitions.DistancePP, [p1, p2]);
       constr.initConstants();
@@ -339,14 +417,22 @@ export default [
 
   {
     id: 'Lock',
-    shortName: 'Lock',
+    shortName: 'Lock Point Constraint',
     description: 'Lock Point',
-    selectionMatcher: (selection) => matchTypes(selection, EndPoint, 1),
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [EndPoint],
+          quantity: 1
+        }
+      ]
+    },
 
-    invoke: ctx => {
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
 
-      const [point] = viewer.selected;
+      const [point] = matchedObjects;
 
       const constr = new AlgNumConstraint(ConstraintDefinitions.LockPoint, [point]);
       constr.initConstants();
@@ -356,32 +442,33 @@ export default [
 
   {
     id: 'Fillet',
-    shortName: 'Fillet',
+    shortName: 'Fillet Tool',
     description: 'Add a Fillet',
-    selectionMatcher: (selection) => {
-      if (matchTypes(selection, EndPoint, 1)) {
-        const [point] = selection;
-        if (isInstanceOf(point.parent, Segment)) {
-          let pair = null;
-          point.visitLinked(l => {
-            if (l !== point && isInstanceOf(l.parent, Segment)) {
-              pair = l;
+    selectionMatcher: {
+      selector: 'function',
+      match: (selection) => {
+        if (matchTypes(selection, EndPoint, 1)) {
+          const [point] = selection;
+          if (isInstanceOf(point.parent, Segment)) {
+            let pair = null;
+            point.visitLinked(l => {
+              if (l !== point && isInstanceOf(l.parent, Segment)) {
+                pair = l;
+                return true;
+              }
+            });
+            if (pair) {
               return true;
             }
-          });
-          if (pair) {
-            return true;
           }
         }
-      }
-      return false;
+        return false;
+      },
+      description: 'a point linking two segment'
     },
 
-    invoke: ctx => {
+    invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
-
-
-
       const filletTool = new FilletTool(ctx.viewer);
       const cands = filletTool.getCandidateFromSelection(viewer.selected);
       if (cands) {
