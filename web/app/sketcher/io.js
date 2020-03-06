@@ -52,6 +52,8 @@ IO.prototype._loadSketch = function(sketch) {
 
   this.cleanUpData();
 
+  this.viewer.parametricManager.algNumSystem.startTransaction();
+
   const index = {};
 
   function endPoint(p) {
@@ -210,14 +212,15 @@ IO.prototype._loadSketch = function(sketch) {
 
   let sketchConstraints = sketch['constraints'];
   if (version > 1) {
-    this.viewer.parametricManager.algNumSystem.addConstraints(sketchConstraints.map(constr => {
+    sketchConstraints.forEach(constr => {
       try {
-        return AlgNumConstraint.read(constr, index)
+        const constraint = AlgNumConstraint.read(constr, index);
+        this.viewer.parametricManager.algNumSystem.addConstraint(constraint);
       } catch (e) {
         console.error(e);
         console.error("skipping errant constraint: " + constr&&constr.typeId);
       }
-    }));
+    });
   } else {
     console.error("old format - need an upgrade");
   }
@@ -227,6 +230,7 @@ IO.prototype._loadSketch = function(sketch) {
     this.viewer.params.constantDefinition = constants;
   }
 
+  this.viewer.parametricManager.algNumSystem.finishTransaction();
   this.viewer.parametricManager.notify();
 };
 

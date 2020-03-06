@@ -30,6 +30,8 @@ export class AlgNumSubSystem {
 
   snapshot = new Map();
 
+  inTransaction = false;
+
   constructor() {
 
     this.solveStatus = {
@@ -52,6 +54,12 @@ export class AlgNumSubSystem {
   }
 
   addConstraint(constraint) {
+
+    if (this.inTransaction) {
+      constraint.objects.forEach(o => o.constraints.add(constraint));
+      this.allConstraints.push(constraint);
+      return;
+    }
 
     this.makeSnapshot();
 
@@ -78,16 +86,16 @@ export class AlgNumSubSystem {
     }
   }
 
-  addConstraints(constraints) {
-    constraints.forEach(constraint => {
-      if (constraint) {
-        constraint.objects.forEach(o => o.constraints.add(constraint));
-        this.allConstraints.push(constraint);
-      }
-    });
+  startTransaction() {
+    this.inTransaction = true;
+  }
+
+  finishTransaction() {
+    this.inTransaction = false;
     this.prepare();
     this.updateFullyConstrainedObjects();
   }
+
 
   invalidate() {
     this.prepare();
@@ -409,20 +417,30 @@ export class AlgNumSubSystem {
     return this.eliminatedParams.has(p) || (iso && iso.fullyConstrained);
   }
 
-  isParamFullyConstrained(p) {
-    const stack = [p];
-    while (stack.length) {
-      const param = stack.pop();
-      if (!this.isParamShallowConstrained(param)) {
-        return false;
-      }
+  isParamFullyConstrained(sourceParam) {
 
-      const substitution = this.substitutedParams.get(p);
-      if (substitution) {
-        substitution.visitParams(p => stack.push(p));
+    const visited = new Set();
+
+    const dfs = param => {
+      if (visited.has(param)) {
+        return;
       }
-    }
-    return true;
+      visited.add(param);
+      if (this.isParamShallowConstrained(param)) {
+        return true;
+      }
+      const substitution = this.substitutedParams.get(param);
+      let res = false;
+      if (substitution) {
+        substitution.visitParams(p => {
+          if (dfs(p)) {
+            res = true;
+          }
+        });
+      }
+      return res;
+    };
+    return dfs(sourceParam);
   }
 
 }

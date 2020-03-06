@@ -20,7 +20,7 @@ export function ContextualControls() {
   return <div className={ls.root}>
 
     {
-      selection.map(s => <div className={ls.item}>{s.simpleClassName}: {s.id}</div>)
+      selection.map(s => <div onDoubleClick={debugEgg(s)} className={ls.item}>{s.simpleClassName}: {s.id}</div>)
     }
 
     <div className={ls.hr}>AVAILABLE ACTIONS:</div>
@@ -32,4 +32,10 @@ export function ContextualControls() {
 
   </div>;
 
+}
+
+function debugEgg(obj) {
+  return e => {
+    obj.visitParams(p => console.log(p.toString()));
+  }
 }
