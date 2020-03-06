@@ -12,7 +12,7 @@ export class Circle extends SketchObject {
     this.c = c;
     c.parent = this;
     this.children.push(c);
-    this.r = new Param(MIN_RADIUS + 0.001);
+    this.r = new Param(MIN_RADIUS + 0.001, 'R');
     this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
     this.r.min = MIN_RADIUS;
   }
