@@ -36,7 +36,7 @@ export function runActionOrToastWhyNot(actionId, selection, ctx) {
     if (matched) {
       action.invoke(ctx, matched)
     } else {
-      toast('The action "' + action.shortName + '" requires selection of ' +  getDescription(action.selectionMatcher));
+      toast('The action "' + action.shortName + ' ' + action.kind + '" requires selection of ' +  getDescription(action.selectionMatcher));
     }
   }
   matchAvailableActions(selection).forEach(a => {

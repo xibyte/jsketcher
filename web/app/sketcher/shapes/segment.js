@@ -17,8 +17,8 @@ export class Segment extends SketchObject {
     b.parent = this;
     this.children.push(a, b);
     this.params = {
-      ang: new Param(undefined),
-      t: new Param(undefined)
+      ang: new Param(undefined, 'A'),
+      t: new Param(undefined, 'T')
     };
     this.params.ang.normalizer = makeAngle0_360;
     this.params.t.min = 100;

@@ -19,12 +19,12 @@ export class Arc extends SketchObject {
     c.parent = this;
     this.children.push(a, b, c);
 
-    this.r = new Param(MIN_RADIUS + 0.001);
+    this.r = new Param(MIN_RADIUS + 0.001, 'R');
     this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
     this.r.min = MIN_RADIUS;
 
-    this.ang1 = new Param(0);
-    this.ang2 = new Param(0);
+    this.ang1 = new Param(0, 'A');
+    this.ang2 = new Param(0, 'A');
 
     this.syncGeometry();
   }

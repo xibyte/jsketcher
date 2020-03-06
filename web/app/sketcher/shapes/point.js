@@ -12,8 +12,8 @@ export class EndPoint extends SketchObject {
     super();
     this.parent = null;
     this.params  = {
-      x: new Param(x),
-      y: new Param(y)
+      x: new Param(x, 'X'),
+      y: new Param(y, 'Y')
     };
   }
 

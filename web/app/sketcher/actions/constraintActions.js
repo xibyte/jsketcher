@@ -12,7 +12,8 @@ export default [
 
   {
     id: 'Coincident',
-    shortName: 'Coincident Constraint',
+    shortName: 'Coincident',
+    kind: 'Constraint',
     description: 'Point Coincident',
     selectionMatcher: {
       selector: 'matchAll',
@@ -35,7 +36,8 @@ export default [
 
   {
     id: 'Tangent',
-    shortName: 'Tangent Constraint',
+    shortName: 'Tangent',
+    kind: 'Constraint',
     description: 'Tangent Between Line And Circle',
     selectionMatcher: {
       selector: 'matchSequence',
@@ -66,7 +68,8 @@ export default [
 
   {
     id: 'EqualRadius',
-    shortName: 'Equal Radius Constraint',
+    shortName: 'Equal Radius',
+    kind: 'Constraint',
     description: 'Equal Radius Between Two Circle',
     selectionMatcher: {
       selector: 'matchAll',
@@ -89,7 +92,8 @@ export default [
 
   {
     id: 'EqualLength',
-    shortName: 'Equal Length Constraint',
+    shortName: 'Equal Length',
+    kind: 'Constraint',
     description: 'Equal Length Between Two Segments',
     selectionMatcher: {
       selector: 'matchAll',
@@ -109,7 +113,8 @@ export default [
 
   {
     id: 'PointOnLine',
-    shortName: 'Point On Line Constraint',
+    shortName: 'Point On Line',
+    kind: 'Constraint',
     description: 'Point On Line',
     selectionMatcher: {
       selector: 'matchSequence',
@@ -135,7 +140,8 @@ export default [
 
   {
     id: 'Angle',
-    shortName: 'Angle Constraint',
+    shortName: 'Angle',
+    kind: 'Constraint',
     description: 'Angle',
     selectionMatcher: {
       selector: 'matchAll',
@@ -163,7 +169,8 @@ export default [
 
   {
     id: 'Vertical',
-    shortName: 'Vertical Constraint',
+    shortName: 'Vertical',
+    kind: 'Constraint',
     description: 'Vertical',
 
     selectionMatcher: {
@@ -187,7 +194,8 @@ export default [
 
   {
     id: 'Horizontal',
-    shortName: 'Horizontal Constraint',
+    shortName: 'Horizontal',
+    kind: 'Constraint',
     description: 'Horizontal',
 
     selectionMatcher: {
@@ -211,7 +219,8 @@ export default [
 
   {
     id: 'AngleBetween',
-    shortName: 'Angle Between Constraint',
+    shortName: 'Angle Between',
+    kind: 'Constraint',
     description: 'Angle Between Lines',
 
     selectionMatcher: {
@@ -242,7 +251,8 @@ export default [
 
   {
     id: 'Perpendicular',
-    shortName: 'Perpendicular Constraint',
+    shortName: 'Perpendicular',
+    kind: 'Constraint',
     description: 'Perpendicularity between two or more lines',
 
     selectionMatcher: {
@@ -267,7 +277,8 @@ export default [
 
   {
     id: 'Parallel',
-    shortName: 'Parallel Constraint',
+    shortName: 'Parallel',
+    kind: 'Constraint',
     description: 'Parallelism between two or more lines',
 
     selectionMatcher: {
@@ -292,7 +303,8 @@ export default [
 
   {
     id: 'Length',
-    shortName: 'Length Constraint',
+    shortName: 'Length',
+    kind: 'Constraint',
     description: 'Segment Length',
 
     selectionMatcher: {
@@ -322,7 +334,8 @@ export default [
 
   {
     id: 'RadiusLength',
-    shortName: 'Radius Length Constraint',
+    shortName: 'Radius Length',
+    kind: 'Constraint',
     description: 'Radius Length',
 
     selectionMatcher: {
@@ -352,7 +365,8 @@ export default [
 
   {
     id: 'DistancePL',
-    shortName: 'Point to Line Distance Constraint',
+    shortName: 'Point to Line Distance',
+    kind: 'Constraint',
     description: 'Distance between Point and Line',
 
     selectionMatcher: {
@@ -387,7 +401,8 @@ export default [
 
   {
     id: 'DistancePP',
-    shortName: 'Two Point Distance Constraint',
+    shortName: 'Two Point Distance',
+    kind: 'Constraint',
     description: 'Distance between two Points',
 
     selectionMatcher: {
@@ -417,7 +432,8 @@ export default [
 
   {
     id: 'Lock',
-    shortName: 'Lock Point Constraint',
+    shortName: 'Lock Point',
+    kind: 'Constraint',
     description: 'Lock Point',
     selectionMatcher: {
       selector: 'matchSequence',
@@ -442,7 +458,8 @@ export default [
 
   {
     id: 'Fillet',
-    shortName: 'Fillet Tool',
+    shortName: 'Fillet',
+    kind: 'Tool',
     description: 'Add a Fillet',
     selectionMatcher: {
       selector: 'function',
