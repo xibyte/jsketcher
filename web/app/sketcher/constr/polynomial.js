@@ -189,7 +189,7 @@ export class Polynomial {
         }
 
         out += m.terms.map(t => {
-          let out = 'X' + t.param.id;
+          let out = t.param.debugSymbol + t.param.id;
           if (t.fn.degree === 1) {
 
           } else if (t.fn.degree !== Infinity) {
