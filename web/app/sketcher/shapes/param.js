@@ -18,4 +18,8 @@ export class Param {
     return this.value;
   }
 
+  toString() {
+    return this.debugSymbol + this.id;
+  }
+
 }
