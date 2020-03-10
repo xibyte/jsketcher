@@ -104,7 +104,7 @@ export class MatchIndex {
     for (let type of types) {
       const info = this.typeMap.get(type.prototype._class);
       if (!info) {
-        return false;
+        continue;
       }
       const toAdd = Math.min(quantity, info.objects.length - info.hits);
       if (this.result) {
