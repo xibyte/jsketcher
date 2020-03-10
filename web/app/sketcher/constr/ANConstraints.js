@@ -73,12 +73,12 @@ export const ConstraintDefinitions = {
 
     collectPolynomials: (polynomials, [x, y, ax, ay, ang]) => {
       polynomials.push(new Polynomial(0)
-        .monomial(1)
+        .monomial(-1)
           .term(x, POW_1_FN)
-          .term(ang, COS_FN)
+          .term(ang, SIN_FN)
         .monomial(1)
           .term(y, POW_1_FN)
-          .term(ang, SIN_FN)
+          .term(ang, COS_FN)
         .monomial(1)
           .term(ax, POW_1_FN)
           .term(ang, SIN_FN)
