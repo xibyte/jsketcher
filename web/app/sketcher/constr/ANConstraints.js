@@ -3,8 +3,8 @@ import {indexById} from "../../../../modules/gems/iterables";
 import {_270, _90, DEG_RAD, distanceAB, makeAngle0_360} from "../../math/math";
 import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, SIN_FN} from "./polynomial";
 import {Types} from "../io";
-import {Constraints} from "../constraints";
-import Vector from "../../../../modules/math/vector";
+
+import Vector from "math/vector";
 
 export const ConstraintDefinitions = {
 
@@ -88,6 +88,99 @@ export const ConstraintDefinitions = {
       );
     },
 
+  },
+
+  PointOnCircle: {
+    id: 'PointOnCircle',
+    name: 'Point On Circle',
+
+    defineParamsScope: ([pt, circle], callback) => {
+      pt.visitParams(callback);
+      circle.c.visitParams(callback);
+      callback(circle.r);
+    },
+
+    collectPolynomials: (polynomials, [x1, y1, x2, y2, r]) => {
+      polynomials.push(new Polynomial()
+        .monomial(-1)
+          .term(r, POW_2_FN)
+        .monomial(1)
+          .term(x1, POW_2_FN)
+        .monomial(1)
+          .term(x2, POW_2_FN)
+        .monomial(-2)
+          .term(x1, POW_1_FN)
+          .term(x2, POW_1_FN)
+
+        .monomial(1)
+          .term(y1, POW_2_FN)
+        .monomial(1)
+          .term(y2, POW_2_FN)
+        .monomial(-2)
+          .term(y1, POW_1_FN)
+          .term(y2, POW_1_FN)
+
+      );
+    },
+
+  },
+
+  PointInMiddle: {
+    id: 'PointInMiddle',
+    name: 'Middle Point',
+
+    defineParamsScope: ([pt, segment], callback) => {
+      segment.a.visitParams(callback);
+      pt.visitParams(callback);
+      segment.b.visitParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [x1, y1, x2, y2, x3, y3]) => {
+      polynomials.push(new Polynomial()
+        .monomial(1)
+         .term(x1, POW_2_FN)
+        .monomial(-2)
+         .term(x1, POW_1_FN)
+          .term(x2, POW_1_FN)
+
+        .monomial(1)
+          .term(y1, POW_2_FN)
+
+        .monomial(-2)
+          .term(y1, POW_1_FN)
+          .term(y2, POW_1_FN)
+
+        .monomial(-1)
+          .term(x3, POW_2_FN)
+        .monomial(2)
+          .term(x3, POW_1_FN)
+          .term(x2, POW_1_FN)
+
+        .monomial(-1)
+         .term(y3, POW_2_FN)
+
+        .monomial(2)
+         .term(y3, POW_1_FN)
+         .term(y2, POW_1_FN)
+      );
+    },
+  },
+
+  Symmetry: {
+    id: 'Symmetry',
+    name: 'Symmetry',
+
+    defineParamsScope: ([pt, segment], callback) => {
+      segment.a.visitParams(callback);
+      pt.visitParams(callback);
+      segment.b.visitParams(callback);
+      callback(segment.params.ang);
+    },
+
+    collectPolynomials: (polynomials, [x1, y1, x2, y2, x3, y3, ang]) => {
+      ConstraintDefinitions.PointInMiddle.collectPolynomials(polynomials, [x1, y1, x2, y2, x3, y3]);
+      ConstraintDefinitions.PointOnLine.collectPolynomials(polynomials, [x2, y2, x1, y1, ang]);
+    },
   },
 
   DistancePP: {
