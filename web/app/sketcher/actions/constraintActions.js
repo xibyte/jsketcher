@@ -139,6 +139,83 @@ export default [
   },
 
   {
+    id: 'PointOnCircle',
+    shortName: 'Point On Circle',
+    kind: 'Constraint',
+    description: 'Point On Circle',
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [EndPoint],
+          quantity: 1
+        },
+        {
+          types: [Circle, Arc],
+          quantity: 1
+        },
+      ]
+    },
+
+    invoke: (ctx, matchedObjects) => {
+      const {viewer} = ctx;
+      const [pt, circle] = matchedObjects;
+      let pm = viewer.parametricManager;
+      pm.add(new AlgNumConstraint(ConstraintDefinitions.PointOnCircle, [pt, circle]));
+    }
+  },
+
+  {
+    id: 'PointInMiddle',
+    shortName: 'Middle Point',
+    kind: 'Constraint',
+    description: 'Point In The Middle',
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [EndPoint],
+          quantity: 1
+        },
+        {
+          types: [Segment],
+          quantity: 1
+        },
+      ]
+    },
+
+    invoke: (ctx, matchedObjects) => {
+      const {viewer} = ctx;
+      viewer.parametricManager.add(new AlgNumConstraint(ConstraintDefinitions.PointInMiddle, matchedObjects));
+    }
+  },
+
+  {
+    id: 'Symmetry',
+    shortName: 'Symmetry',
+    kind: 'Constraint',
+    description: 'Symmetry of two points against middle point',
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [EndPoint],
+          quantity: 1
+        },
+        {
+          types: [Segment],
+          quantity: 1
+        },
+      ]
+    },
+
+    invoke: (ctx, matchedObjects) => {
+      const {viewer} = ctx;
+      viewer.parametricManager.add(new AlgNumConstraint(ConstraintDefinitions.Symmetry, matchedObjects));
+    }
+  },
+
+  {
     id: 'Angle',
     shortName: 'Angle',
     kind: 'Constraint',
