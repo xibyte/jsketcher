@@ -1,11 +1,10 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import ls from './ConstraintExplorer.less';
 import Fa from 'ui/components/Fa';
-import {useStream} from "../../../../modules/ui/effects";
+import {useStream} from "ui/effects";
 import {SketcherAppContext} from "./SketcherApp";
 import cx from 'classnames';
 import {editConstraint} from "./ConstraintEditor";
-import {NOOP} from "../../../../modules/gems/func";
 
 
 export function ConstraintExplorer(props) {
@@ -21,11 +20,25 @@ export function ConstraintList() {
 
   const constraints = useStream(ctx => ctx.viewer.parametricManager.$constraints);
 
+  let i = 0;
+  return constraints.map((c) => {
+    if (c.internal) {
+      return null;
+    }
+    i ++;
+    return <ConstraintButton prefix={i+'.'} constraint={c} />
+  })
+}
+
+export function ConstraintButton({prefix='', constraint: c, ...props}) {
+
   const {viewer, ui} = useContext(SketcherAppContext);
 
   const edit = (constraint) => {
     if (constraint.editable) {
-      editConstraint(ui.$constraintEditRequest, constraint, NOOP);
+      editConstraint(ui.$constraintEditRequest, constraint, () => {
+        viewer.parametricManager.reSolve();
+      });
     }
   };
 
@@ -35,33 +48,31 @@ export function ConstraintList() {
   };
 
   const highlight = constr => {
-    viewer.select(constr.objects, true);
+    viewer.capture('highlight', constr.objects, true);
     viewer.refresh();
   };
 
-  const withdraw = constr => {
-    viewer.deselectAll();
+  const withdraw = () => {
+    viewer.withdrawAll('highlight');
     viewer.refresh();
   };
 
+  useEffect(() => withdraw, [c]);
 
-  return constraints.map((c, i) => {
-    if (c.internal) {
-      return null;
-    }
-    const conflicting = viewer.parametricManager.algNumSystem.conflicting.has(c);
-    const redundant = viewer.parametricManager.algNumSystem.redundant.has(c);
+  const conflicting = viewer.parametricManager.algNumSystem.conflicting.has(c);
+  const redundant = viewer.parametricManager.algNumSystem.redundant.has(c);
 
-    return <div key={c.id} className={cx(ls.objectItem, conflicting&&ls.conflicting, redundant&&ls.redundant)}
-         onClick={() => c.schema.constants && edit(c)}
-         onMouseEnter={() => highlight(c)}
-         onMouseLeave={() => withdraw(c)}>
-      <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>
-      <span className={ls.objectTag}>
-        {i}. {c.schema.name}
+  return <div key={c.id} className={cx(ls.objectItem, conflicting&&ls.conflicting, redundant&&ls.redundant)}
+              onClick={() => c.schema.constants && edit(c)}
+              onMouseEnter={() => highlight(c)}
+              onMouseLeave={() => withdraw(c)}
+              {...props}>
+    <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>
+    <span className={ls.objectTag}>
+        {prefix} {c.schema.name}
       </span>
-      <span className={ls.removeButton} onClick={() => remove(c)}><Fa icon='times'/></span>
+    <span className={ls.removeButton} onClick={() => remove(c)}><Fa icon='times'/></span>
 
-    </div>
-  })
+  </div>
+
 }

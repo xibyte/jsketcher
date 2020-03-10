@@ -3,7 +3,7 @@ import {eqEps} from "../../brep/geom/tolerance";
 import {Polynomial, POW_1_FN} from "./polynomial";
 import {compositeFn} from "gems/func";
 
-const DEBUG = true;
+const DEBUG = false;
 
 export class AlgNumSubSystem {
 
@@ -32,7 +32,11 @@ export class AlgNumSubSystem {
 
   inTransaction = false;
 
-  constructor() {
+  visualLimit = 100;
+
+  constructor(calcVisualLimit) {
+
+    this.calcVisualLimit = calcVisualLimit;
 
     this.solveStatus = {
       error: 0,
@@ -274,6 +278,8 @@ export class AlgNumSubSystem {
       iso.beingSolvedParams.forEach(solverParam => this.paramToIsolation.set(solverParam.objectParam, iso))
     });
 
+    this.visualLimit = this.calcVisualLimit();
+
     if (DEBUG) {
       console.log('solving system:');
       this.polynomialIsolations.forEach((iso, i) => {
@@ -490,8 +496,8 @@ class Isolation {
       let val = solverParam.objectParam.get();
 
       if (this.system.controlBounds) {
-        if (solverParam.objectParam.min && val < solverParam.objectParam.min) {
-          val = solverParam.objectParam.min;
+        if (solverParam.objectParam.enforceVisualLimit && val < this.system.visualLimit) {
+          val = this.system.visualLimit;
         }
       }
       solverParam.set(val);

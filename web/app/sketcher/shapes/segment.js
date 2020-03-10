@@ -21,7 +21,7 @@ export class Segment extends SketchObject {
       t: new Param(undefined, 'T')
     };
     this.params.ang.normalizer = makeAngle0_360;
-    this.params.t.min = 100;
+    this.params.t.enforceVisualLimit = true;
     this.syncGeometry();
   }
 
