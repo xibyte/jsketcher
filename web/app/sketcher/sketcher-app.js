@@ -18,6 +18,7 @@ import genSerpinski from '../utils/genSerpinski';
 import React from "react";
 import {runActionOrToastWhyNot} from "./actions";
 import {stream} from "../../../modules/lstream";
+import {toast} from "react-toastify";
 
 function App2D() {
   var app = this;
@@ -230,11 +231,15 @@ function App2D() {
   });
 
   this.registerAction('RadiusConstraint', "Radius Constraint", function () {
-    app.viewer.parametricManager.radius(app.viewer.selected, prompt);
+    runActionOrToastWhyNot('RadiusLength', app.viewer.selected, app.context);
   });
 
   this.registerAction('EntityEqualityConstraint', "Radius Equals Constraint", function () {
-    app.viewer.parametricManager.entityEquality(app.viewer.selected);
+    const fail1 = runActionOrToastWhyNot('EqualRadius', app.viewer.selected, app.context, true);
+    const fail2 = runActionOrToastWhyNot('EqualLength', app.viewer.selected, app.context, true);
+    if (fail1 && fail2) {
+      toast('Requires selection of either segments or circles and arcs');
+    }
   });
 
   this.registerAction('tangentConstraint', "Tangent Constraint", function () {
