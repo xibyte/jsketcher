@@ -247,28 +247,29 @@ function App2D() {
   });
 
   this.registerAction('lockConstraint', "Lock Constraint", function () {
-    app.viewer.parametricManager.lock(app.viewer.selected);
+    runActionOrToastWhyNot('Lock', app.viewer.selected, app.context);
   });
 
   this.registerAction('pointOnLine', "Point On Line", function () {
-    app.viewer.parametricManager.pointOnLine(app.viewer.selected);
+    runActionOrToastWhyNot('PointOnLine', app.viewer.selected, app.context);
   });
 
   this.registerAction('pointOnArc', "Point On Arc / Ellipse", function () {
-    app.viewer.parametricManager.pointOnArc(app.viewer.selected);
+    runActionOrToastWhyNot('PointOnCircle', app.viewer.selected, app.context);
   });
   
   this.registerAction('pointInMiddle', "Point In the Middle", function () {
-    app.viewer.parametricManager.pointInMiddle(app.viewer.selected);
+    runActionOrToastWhyNot('PointInMiddle', app.viewer.selected, app.context);
   });
 
   this.registerAction('llAngle', "Angle Between 2 Lines", function () {
-    app.viewer.parametricManager.llAngle(app.viewer.selected, prompt);
+    runActionOrToastWhyNot('AngleBetween', app.viewer.selected, app.context);
   });
   
   this.registerAction('symmetry', "Symmetry", function () {
-    app.viewer.parametricManager.symmetry(app.viewer.selected, prompt);
+    runActionOrToastWhyNot('Symmetry', app.viewer.selected, app.context);
   });
+
   this.registerAction('lockConvex', "Lock Convexity", function () {
     app.viewer.parametricManager.lockConvex(app.viewer.selected, alert);
   });

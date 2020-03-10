@@ -119,6 +119,7 @@ export class FilletTool extends Tool {
     if (coi != null) {
       pm.remove(coi);
       this.makeFillet(point1, point2);
+      this.viewer.withdrawAll('tool');
       this.viewer.deselectAll();
       return true;
     }
@@ -161,13 +162,13 @@ export class FilletTool extends Tool {
   
   mousemove(e) {
     var needRefresh = false;
-    if (this.viewer.selected.length !== 0) {
-      this.viewer.deselectAll();
+    if (this.viewer.captured.tool.length !== 0) {
+      this.viewer.withdrawAll('tool');
       needRefresh = true;
     }
     var candi = this.getCandidate(e);
     if (candi != null) {
-      this.lastCandidate.addStyle(Styles.SNAP);
+      this.viewer.capture('tool', [candi[0]], true);
       needRefresh = true;
     }
     if (needRefresh) {
