@@ -1,8 +1,7 @@
 import React, {Fragment} from 'react';
 import PropTypes from 'prop-types';
 
-import 'ui/styles/init/minireset.css';
-import 'ui/styles/init/main.less';
+import 'ui/styles/init/index.less';
 import AppTabs from "./AppTabs";
 
 

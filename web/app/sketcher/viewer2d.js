@@ -15,7 +15,6 @@ import * as draw_utils from './shapes/draw-utils';
 import {Matrix3} from '../math/l3space';
 import sketcherStreams from './sketcherStreams';
 
-
 class Viewer {
 
   constructor(canvas, IO) {
@@ -80,13 +79,23 @@ class Viewer {
     this.translate = {x: 0.0, y: 0.0};
     this.scale = 1.0;
 
-    this.selected = [];
-    this.snapped = null;
+    this.captured = {
+    };
+    Object.keys(CAPTURES).forEach(key => this.captured[key] = []);
+
 
     this.historyManager = new HistoryManager(this);
     this.transformation = null;
     this.screenToModelMatrix = null;
     this.refresh();
+  }
+
+  get selected() {
+    return this.captured.selection;
+  }
+
+  get snapped() {
+    return this.captured.tool[0] || null;
   }
 
   dispose() {
@@ -280,19 +289,15 @@ class Viewer {
 
   snap(x, y, excl) {
     this.cleanSnap();
-    var snapTo = this.search(x, y, 20 / this.scale, true, true, excl);
+    const snapTo = this.search(x, y, 20 / this.scale, true, true, excl);
     if (snapTo.length > 0) {
-      this.snapped = snapTo[0];
-      this.mark(this.snapped, Styles.SNAP);
+      this.capture('tool', [snapTo[0]], true);
     }
     return this.snapped;
   };
 
   cleanSnap() {
-    if (this.snapped != null) {
-      this.deselect(this.snapped);
-      this.snapped = null;
-    }
+    this.withdrawAll('tool')
   };
 
   showBounds(x1, y1, x2, y2, offset) {
@@ -328,7 +333,7 @@ class Viewer {
   };
 
   _screenToModel(x, y) {
-    var out = {x: 0, y: 0};
+    const out = {x: 0, y: 0};
     this.screenToModel2(x, y, out);
     return out;
   };
@@ -365,27 +370,66 @@ class Viewer {
   };
 
   select(objs, exclusive) {
-    if (exclusive) this.deselectAll();
-    for (var i = 0; i < objs.length; i++) {
-      this.mark(objs[i]);
+    this.capture('selection', objs, exclusive);
+    this.streams.selection.next(this.selected);
+  }
+
+  capture(type, objs, exclusive) {
+    if (exclusive) this.withdrawAll(type);
+    const captured = this.captured[type];
+    for (let i = 0; i < objs.length; i++) {
+      const obj = objs[i];
+      if (captured.indexOf(obj) === -1) {
+        captured.push(obj);
+        obj.addMarker(CAPTURES[type]);
+      }
     }
   };
+
+
+  withdraw(type, obj) {
+    let captured = this.captured[type];
+    for (let i = 0; i < captured.length; i++) {
+      if (obj === captured[i]) {
+        captured.splice(i, 1)[0].removeMarker(CAPTURES[type]);
+        break;
+      }
+    }
+  };
+
+  withdrawAll(type) {
+    const captured = this.captured[type];
+    for (let i = 0; i < captured.length; i++) {
+      captured[i].removeMarker(CAPTURES[type]);
+    }
+    while (captured.length > 0) captured.pop();
+  };
+
+  deselect(obj) {
+    this.withdraw('selection', obj);
+    this.streams.selection.next(this.selected);
+  };
+
+  deselectAll() {
+    this.withdrawAll('selection');
+    this.streams.selection.next(this.selected);
+  };
+
+  highlight(objs, exclusive) {
+    this.capture('highlight', objs, exclusive);
+  }
+
+  unHighlightAll(objs) {
+    this.withdrawAll('highlight');
+  }
+
+  unHighlight(objs) {
+    this.withdrawAll('highlight', objs);
+  }
 
   pick(e) {
     var m = this.screenToModel(e);
     return this.search(m.x, m.y, 20 / this.scale, true, false, []);
-  };
-
-  mark(obj, style) {
-    if (style === undefined) {
-      style = Styles.MARK;
-    }
-    obj.marked = style;
-
-    if (this.selected.indexOf(obj) == -1) {
-      this.selected.push(obj);
-      this.streams.selection.next(this.selected);
-    }
   };
 
   getActiveLayer() {
@@ -421,24 +465,6 @@ class Viewer {
       this._activeLayer = layer;
       this.bus.dispatch("activeLayer");
     }
-  };
-
-  deselect(obj) {
-    for (var i = 0; i < this.selected.length; i++) {
-      if (obj === this.selected[i]) {
-        this.selected.splice(i, 1)[0].marked = null;
-        break;
-      }
-    }
-    this.streams.selection.next(this.selected);
-  };
-
-  deselectAll() {
-    for (var i = 0; i < this.selected.length; i++) {
-      this.selected[i].marked = null;
-    }
-    while (this.selected.length > 0) this.selected.pop();
-    this.streams.selection.next(this.selected);
   };
 
   equalizeLinkedEndpoints() {
@@ -484,11 +510,11 @@ class Viewer {
   }
 
   static __SKETCH_DRAW_PIPELINE = [
-    (obj) => !isEndPoint(obj) && obj.marked === null && isConstruction(obj),
-    (obj) => !isEndPoint(obj) && obj.marked === null && !isConstruction(obj),
-    (obj) => !isEndPoint(obj) && obj.marked !== null,
-    (obj) => isEndPoint(obj) && obj.marked === null,
-    (obj) => isEndPoint(obj) && obj.marked !== null
+    (obj) => !isEndPoint(obj) && !obj.marked && isConstruction(obj),
+    (obj) => !isEndPoint(obj) && !obj.marked && !isConstruction(obj),
+    (obj) => !isEndPoint(obj) && obj.marked,
+    (obj) => isEndPoint(obj) && !obj.marked,
+    (obj) => isEndPoint(obj) && obj.marked
   ];
   
   static __SIMPLE_DRAW_PIPELINE = [
@@ -546,5 +572,21 @@ class Layer {
     this.viewer.objectsUpdate();    
   }
 }
+
+const CAPTURES = {
+  tool: {
+    ...Styles.TOOL_HELPER,
+    priority: 1
+  },
+  highlight: {
+    ...Styles.HIGHLIGHT,
+    priority: 2
+
+  },
+  selection: {
+    ...Styles.SELECTION,
+    priority: 3
+  },
+};
 
 export {Viewer, Styles}

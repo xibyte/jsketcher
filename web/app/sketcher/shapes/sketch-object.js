@@ -9,12 +9,12 @@ export class SketchObject extends Shape {
   constructor() {
     super();
     this.id = Generator.genID();
-    this.marked = null;
+    this.markers = [];
     this.children = [];
     this.layer = null;
-    this.fullyConstrained = false;
     this.constraints = new Set();
     this.readOnly = false;
+    this.fullyConstrained = false;
   }
 
   normalDistance(aim, scale) {
@@ -68,19 +68,33 @@ export class SketchObject extends Shape {
       return true;
     });
   }
-  
+
+  addMarker(style) {
+    this.markers.push(style);
+    this.markers.sort((a, b) => (a.priority||99999) - (b.priority||99999))
+  }
+
+  removeMarker(style) {
+    const index = this.markers.indexOf(style);
+    if (index !== -1) {
+      this.markers.splice(index, 1);
+    }
+  }
+
+  get marked() {
+    return this.markers.length !== 0;
+  }
+
   draw(ctx, scale, viewer) {
     if (!this.visible) return;
-    if (this.marked != null) {
+    const customStyle = this.markers.length !== 0 ? this.markers[0] : (this.fullyConstrained ? Styles.FULLY_CONSTRAINED : null);
+    if (customStyle !== null) {
       ctx.save();
-      viewer.setStyle(this.marked, ctx);
-    } else if (this.fullyConstrained) {
-      ctx.save();
-      viewer.setStyle(Styles.FULLY_CONSTRAINED, ctx);
+      viewer.setStyle(customStyle, ctx);
     }
 
     this.drawImpl(ctx, scale, viewer);
-    if (this.marked != null || this.fullyConstrained) ctx.restore();
+    if (customStyle !== null) ctx.restore();
   }
   
   copy() {

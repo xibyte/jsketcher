@@ -74,7 +74,7 @@ const Script = bind(streams => streams.expressions.script)(
 
 const VarTable = bind(streams => streams.expressions.list)(
   function VarTable({value}) {
-    return <table className={cx(cmn.fullWidth, cmn.stripedTable, cmn.delineatedTable)}>
+    return <table className={cx(cmn.fullWidth, 'striped', 'delineated')}>
       <thead>
         <tr>
           <th>Name</th>

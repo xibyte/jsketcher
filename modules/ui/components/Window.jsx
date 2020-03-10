@@ -5,16 +5,16 @@ import Fa from "./Fa";
 import WindowSystem from '../WindowSystem';
 import cx from 'classnames';
 
-
 export default class Window extends React.Component {
   
-  constructor({initWidth, initLeft, initTop, initHeight}) {
+  constructor({initWidth, initLeft, initTop, initRight, initHeight}) {
     super();
     this.state = {
       width: initWidth,
       height: initHeight,
       left: initLeft,
-      top: initTop
+      top: initTop,
+      right: initRight
     };
     this.dragOrigin = null;
   }
@@ -56,11 +56,22 @@ export default class Window extends React.Component {
 
   startDrag = e => {
     this.dragOrigin = {x : e.pageX, y : e.pageY};
+    let left = this.state.left;
+    let top = this.state.top;
+    if (left === undefined) {
+      left = this.el.offsetLeft;
+    }
+    if (top === undefined) {
+      top = this.el.offsetTop;
+    }
     this.originLocation = {
-      left: this.state.left,
-      top: this.state.top
+      left,
+      top,
+      right: undefined
     };
-    this.context.setWindowMoveHandler(this.doDrag);
+
+    this.handlerToRestore = document.body.onmousemove;
+    document.body.onmousemove = this.doDrag;
   };
   
   doDrag = e => {
@@ -73,12 +84,10 @@ export default class Window extends React.Component {
 
   stopDrag = e => {
     this.dragOrigin = null;
-    this.context.setWindowMoveHandler(null);
+    document.body.onmousemove = this.handlerToRestore;
   };
 
   keepRef = el => this.el = el;
-  
-  static contextTypes = WindowSystem.childContextTypes;
   
 }
 

@@ -1,6 +1,8 @@
-@import "./theme.less";
+table {
+  font-size: @font-size;
+}
 
-.stripedTable {
+table.striped {
   & tr:nth-child(even), & th {
     background-color: @bg-color
   }
@@ -12,7 +14,7 @@
   }
 }
 
-.delineatedTable {
+table.delineated {
   border-collapse: collapse;
   border-spacing: 0;
   & td, & th {

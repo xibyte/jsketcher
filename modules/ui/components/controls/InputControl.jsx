@@ -1,14 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import ls from './InputControl.less'
-
 export default class InputControl extends React.Component {
   
   render() {
     let {type, inputRef, ...props} = this.props;
     
-    return <div className={ls[type]}>
+    return <div className={type}>
       <input type='text' ref={inputRef} {...props} spellCheck='false' />
     </div>;
   }

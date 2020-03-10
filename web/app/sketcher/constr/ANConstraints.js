@@ -286,7 +286,7 @@ export const ConstraintDefinitions = {
       angle: {
         type: 'number',
         description: 'line angle',
-        internal: true,
+        readOnly: true,
         initialValue: ([segment1, segment2]) => {
           const a1 = segment1.params.ang.get();
           const a2 = segment2.params.ang.get();
@@ -315,7 +315,7 @@ export const ConstraintDefinitions = {
       angle: {
         type: 'number',
         description: 'line angle',
-        internal: true,
+        readOnly: true,
         initialValue: ([segment1, segment2]) => {
           const a1 = segment1.params.ang.get();
           const a2 = segment2.params.ang.get();

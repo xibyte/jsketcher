@@ -1,11 +1,14 @@
-import React, {useEffect, useState} from 'react';
-import Widget from "ui/components/Widget";
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import NumberControl from "ui/components/controls/NumberControl";
 import Stack from "ui/components/Stack";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
-import {useStream} from "../../../../modules/ui/effects";
-import CheckboxControl from "../../../../modules/ui/components/controls/CheckboxControl";
+import {useStream} from "ui/effects";
+import CheckboxControl from "ui/components/controls/CheckboxControl";
+import Window from "ui/components/Window";
+import Field from "ui/components/controls/Field";
+import Label from "../../../../modules/ui/components/controls/Label";
+import {SketcherAppContext} from "./SketcherApp";
 
 export function ConstraintEditor() {
 
@@ -13,7 +16,17 @@ export function ConstraintEditor() {
 
   const [values, setValues] = useState(null);
 
-  useEffect(() => setValues(req && {...req.constraint.constants}), [req]);
+  useEffect(() => {
+    setValues(req && {...req.constraint.constants})
+    return () => {
+      if (req) {
+        viewer.unHighlight(req.constraint.objects);
+        viewer.refresh();
+      }
+    }
+  }, [req]);
+
+  const {viewer} = useContext(SketcherAppContext);
 
   const setValue = (name, value) => {
     setValues({...value, [name]: value});
@@ -25,6 +38,17 @@ export function ConstraintEditor() {
 
   const {constraint, onCancel, onApply} = req;
 
+  const highlight = () => {
+    viewer.highlight(constraint.objects, true);
+    viewer.refresh();
+  };
+
+  const unHighlight = () => {
+    viewer.unHighlightAll();
+    viewer.refresh();
+  };
+
+
   const apply = () => {
     Object.keys(constraint.schema.constants).map(name => {
       const val = values[name];
@@ -35,12 +59,14 @@ export function ConstraintEditor() {
     onApply();
   };
 
-  return <Widget>
+  return <Window initWidth={250} initLeft={5} initTop={5} title={constraint.schema.name} onClose={onCancel}
+                 onMouseEnter={highlight}
+                 onMouseLeave={unHighlight}>
 
     <Stack>
 
-      {Object.keys(constraint.schema.constants).sort().map(name => <div key={name}>
-
+      {Object.keys(constraint.schema.constants).sort().map(name => <Field key={name}>
+        <Label>{name}</Label>
         {
           (() => {
             const def = constraint.schema.constants[name];
@@ -57,7 +83,7 @@ export function ConstraintEditor() {
 
         }
 
-      </div>)}
+      </Field>)}
 
 
       <ButtonGroup>
@@ -67,7 +93,7 @@ export function ConstraintEditor() {
 
     </Stack>
 
-  </Widget>;
+  </Window>;
 
 }
 

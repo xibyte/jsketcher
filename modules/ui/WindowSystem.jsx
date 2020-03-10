@@ -1,19 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {NOOP} from "../gems/func";
 
+//TODO: remove it
 export default class WindowSystem extends React.Component {
 
   constructor() {
     super();
-    this.moveHandler = null;
   }
 
   componentDidMount() {
-    document.body.onmousemove = e => {
-      if (this.moveHandler !== null) {
-        this.moveHandler(e);
-      }
-    };
   }
 
   componentWillUnMount() {
@@ -24,7 +20,7 @@ export default class WindowSystem extends React.Component {
   }
 
   childContext = {
-    setWindowMoveHandler: moveHandler => this.moveHandler = moveHandler
+    setWindowMoveHandler: NOOP
   };
   
   getChildContext() {
