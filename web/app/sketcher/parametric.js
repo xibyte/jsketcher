@@ -1,14 +1,13 @@
-import {askNumber} from '../utils/utils';
 import {Constraints} from './constraints';
 import {AlgNumConstraint, ConstraintDefinitions} from "./constr/ANConstraints";
 import {AlgNumSubSystem} from "./constr/AlgNumSystem";
-import {state, stream} from "../../../modules/lstream";
+import {stream} from "../../../modules/lstream";
 
 export {Constraints, ParametricManager}
 
 class ParametricManager {
 
-  algNumSystem = new AlgNumSubSystem();
+  algNumSystem = null;;
 
   constantTable = {};
   externalConstantResolver = null;
@@ -26,7 +25,7 @@ class ParametricManager {
     this.viewer.params.subscribe('constantDefinition', 'parametricManager', this.onConstantsExternalChange, this)();
     this.constantResolver = this.createConstantResolver();
     this.messageSink = msg => alert(msg);
-
+    this.reset();
   }
 
   get allConstraints() {
@@ -34,7 +33,16 @@ class ParametricManager {
   }
 
   reset() {
-    this.algNumSystem = new AlgNumSubSystem();
+    const pt = {x:0,y:0};
+    const limit = 30; //px
+    this.algNumSystem = new AlgNumSubSystem(() => {
+      //100 px limit
+      this.viewer.screenToModel2(0, 0, pt);
+      const x1 = pt.x;
+      this.viewer.screenToModel2(limit, 0, pt);
+      const x2 = pt.x;
+      return Math.abs(x2 - x1);
+    });
   }
 
   addAlgNum(constr) {
@@ -159,6 +167,11 @@ class ParametricManager {
 
   solve(rough) {
     this.algNumSystem.solve(rough);
+  }
+
+  reSolve() {
+    this.prepare();
+    this.solve(false);
   }
 
   addModifier(modifier) {

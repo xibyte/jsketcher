@@ -105,7 +105,6 @@ export class FilletTool extends Tool {
     const point2 = candi[1];
     this.breakLinkAndMakeFillet(point1, point2)
   }
-  
   breakLinkAndMakeFillet(point1, point2) {
     const pm = this.viewer.parametricManager;
     let coi = null;
@@ -168,7 +167,7 @@ export class FilletTool extends Tool {
     }
     var candi = this.getCandidate(e);
     if (candi != null) {
-      this.viewer.mark(candi[0], Styles.SNAP);
+      this.lastCandidate.addStyle(Styles.SNAP);
       needRefresh = true;
     }
     if (needRefresh) {

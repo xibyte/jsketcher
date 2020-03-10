@@ -15,13 +15,19 @@ export const Styles = {
     fillStyle : "#FF0000"
   },
 
-  MARK : {
+  SELECTION : {
     lineWidth : 2,
     strokeStyle : "#ff0000",
     fillStyle : "#FF0000"
   },
 
-  SNAP : {
+  HIGHLIGHT : {
+    lineWidth : 2,
+    strokeStyle : "#f1ff3a",
+    fillStyle : "#f1ff3a"
+  },
+
+  TOOL_HELPER : {
     lineWidth : 2,
     strokeStyle : "#00FF00",
     fillStyle : "#00FF00"

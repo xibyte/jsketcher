@@ -5,6 +5,8 @@ import * as toolkit from './ui/toolkit';
 import {Constraints} from './sketcher/parametric'
 import './utils/jqueryfy'
 import '../css/app.less'
+import 'ui/styles/init/index.less';
+
 import ReactDOM from "react-dom";
 import {SketcherApp} from "./sketcher/components/SketcherApp";
 import React from "react";

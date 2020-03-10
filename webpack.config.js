@@ -69,20 +69,33 @@ module.exports = {
         ]
       },
       {
-        test: /\.(less|css)$/,
-        include: [MODULES, WEB_APP],
-        use: [
-          'style-loader',
+        oneOf: [
           {
-            loader: 'css-loader',
-            options: {
-              getLocalIdent: (context, localIdentName, localName) => generateCSSScopedName(localName, context.resourcePath),
-              modules: true,
-              url: false
-            }
+            test: /\.(less|css)$/,
+            include: [path.resolve(MODULES, 'ui/styles/init')],
+            use: [
+              'style-loader',
+              'css-loader',
+              'less-loader'
+            ]
           },
-          'less-loader'
-        ]
+          {
+            test: /\.(less|css)$/,
+            include: [MODULES, WEB_APP],
+            use: [
+              'style-loader',
+              {
+                loader: 'css-loader',
+                options: {
+                  getLocalIdent: (context, localIdentName, localName) => generateCSSScopedName(localName, context.resourcePath),
+                  modules: true,
+                  url: false
+                }
+              },
+              'less-loader'
+            ]
+          }
+        ],
       },
       {
         test: /\.html$/,
