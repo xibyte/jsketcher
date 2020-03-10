@@ -27,21 +27,25 @@ export function matchAvailableActions(selection) {
   return matched;
 }
 
+export function getSketcherAction(actionId) {
+  return index[actionId];
+}
 
 //For backward compatibility
-export function runActionOrToastWhyNot(actionId, selection, ctx) {
+export function runActionOrToastWhyNot(actionId, selection, ctx, silent) {
   const action = index[actionId];
   if (action) {
     const matched = matchSelection(action.selectionMatcher, new MatchIndex(selection), false);
     if (matched) {
       action.invoke(ctx, matched)
     } else {
-      toast('The action "' + action.shortName + ' ' + action.kind + '" requires selection of ' +  getDescription(action.selectionMatcher));
+
+      const msg = 'The action "' + action.shortName + ' ' + action.kind + '" requires selection of ' +  getDescription(action.selectionMatcher);
+      if (silent) {
+        return msg;
+      } else {
+        toast(msg);
+      }
     }
   }
-  matchAvailableActions(selection).forEach(a => {
-    if (a.id === actionId) {
-      cb(a);
-    }
-  })
 }
