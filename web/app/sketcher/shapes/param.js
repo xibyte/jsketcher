@@ -22,4 +22,8 @@ export class Param {
     return this.debugSymbol + this.id;
   }
 
+  visitParams(callback) {
+    callback(this);
+  }
+
 }
