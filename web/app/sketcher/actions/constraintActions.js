@@ -6,6 +6,7 @@ import {isInstanceOf, matchAll, matchTypes} from "./matchUtils";
 import {Arc} from "../shapes/arc";
 import {FilletTool} from "../tools/fillet";
 import {editConstraint as _editConstraint} from "../components/ConstraintEditor";
+import {BezierCurve} from "../shapes/bezier-curve";
 
 export default [
 
@@ -162,6 +163,33 @@ export default [
       const [pt, circle] = matchedObjects;
       let pm = viewer.parametricManager;
       pm.add(new AlgNumConstraint(ConstraintDefinitions.PointOnCircle, [pt, circle]));
+    }
+  },
+
+  {
+    id: 'PointOnCurve',
+    shortName: 'Point On Curve',
+    kind: 'Constraint',
+    description: 'Point On Curve',
+    selectionMatcher: {
+      selector: 'matchSequence',
+      sequence: [
+        {
+          types: [EndPoint],
+          quantity: 1
+        },
+        {
+          types: [BezierCurve],
+          quantity: 1
+        },
+      ]
+    },
+
+    invoke: (ctx, matchedObjects) => {
+      const {viewer} = ctx;
+      const [pt, curve] = matchedObjects;
+      let pm = viewer.parametricManager;
+      pm.add(new AlgNumConstraint(ConstraintDefinitions.PointOnBezier, [pt, curve]));
     }
   },
 

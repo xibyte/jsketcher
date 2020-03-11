@@ -1,7 +1,8 @@
+import {Param} from '../shapes/param';
 import {R_DistancePP, R_Equal, R_PointOnLine} from "./residuals";
 import {indexById} from "../../../../modules/gems/iterables";
 import {_270, _90, DEG_RAD, distanceAB, makeAngle0_360} from "../../math/math";
-import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, SIN_FN} from "./polynomial";
+import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polynomial";
 import {Types} from "../io";
 
 import Vector from "math/vector";
@@ -121,6 +122,60 @@ export const ConstraintDefinitions = {
           .term(y2, POW_1_FN)
 
       );
+    },
+
+  },
+
+  PointOnBezier: {
+    id: 'PointOnBezier',
+    name: 'Point On Bezier Curve',
+
+    defineParamsScope: ([pt, curve], callback) => {
+      curve.visitParams(callback);
+      callback(new Param(0.5, 't'));
+      pt.visitParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [p0x,p0y, p3x,p3y, p1x,p1y, p2x,p2y, t, px, py]) => {
+      const bz3Poly = (p, t, p0, p1, p2, p3) => new Polynomial()
+        .monomial(-1)
+          .term(t, POW_3_FN)
+          .term(p0, POW_1_FN)
+        .monomial(3)
+          .term(t, POW_2_FN)
+          .term(p0, POW_1_FN)
+        .monomial(-3)
+          .term(t, POW_1_FN)
+          .term(p0, POW_1_FN)
+        .monomial(1)
+          .term(p0, POW_1_FN)
+
+        .monomial(3)
+          .term(t, POW_3_FN)
+          .term(p1, POW_1_FN)
+        .monomial(-6)
+          .term(t, POW_2_FN)
+          .term(p1, POW_1_FN)
+        .monomial(3)
+          .term(t, POW_1_FN)
+          .term(p1, POW_1_FN)
+
+        .monomial(-3)
+          .term(t, POW_3_FN)
+          .term(p2, POW_1_FN)
+        .monomial(3)
+          .term(t, POW_2_FN)
+          .term(p2, POW_1_FN)
+
+        .monomial(1)
+          .term(t, POW_3_FN)
+          .term(p3, POW_1_FN)
+
+        .monomial(-1)
+          .term(p, POW_1_FN);
+
+      polynomials.push(bz3Poly(px, t, p0x, p1x, p2x, p3x));
+      polynomials.push(bz3Poly(py, t, p0y, p1y, p2y, p3y));
     },
 
   },
