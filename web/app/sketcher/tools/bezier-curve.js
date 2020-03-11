@@ -4,6 +4,7 @@ import {BezierCurve} from '../shapes/bezier-curve'
 import {Constraints} from '../parametric'
 import Vector from 'math/vector';
 import * as math from '../../math/math'
+import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
 export class BezierCurveTool extends Tool {
 
@@ -35,12 +36,16 @@ export class BezierCurveTool extends Tool {
       this.viewer.activeLayer.add(this.curve);
       this.viewer.refresh();
     } else {
+      this.viewer.parametricManager.startTransaction();
       this.snapIfNeed(this.curve.b);
       if (this.otherCurveEndPoint != null) {
-        this.viewer.parametricManager.add(new Constraints.Parallel(this.otherCurveEndPoint.parent, this.curve.a.parent));
+        const smoothingConstr = new AlgNumConstraint(ConstraintDefinitions.Parallel, [this.otherCurveEndPoint.parent, this.curve.a.parent]);
+        smoothingConstr.initConstants();
+        this.viewer.parametricManager.add(smoothingConstr);
       }
+      this.curve.stabilize(this.viewer);
+      this.viewer.parametricManager.finishTransaction();
       this.viewer.toolManager.releaseControl();
-      this.viewer.refresh();
     }
   }
 

@@ -1,7 +1,6 @@
 import {Tool} from './tool'
 import {EndPoint} from '../shapes/point'
 import {Segment} from '../shapes/segment'
-import {Constraints} from '../parametric'
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
 

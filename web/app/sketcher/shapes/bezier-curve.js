@@ -1,4 +1,3 @@
-import {Ref} from './ref'
 import {SketchObject} from './sketch-object'
 import {Segment} from './segment'
 import {LUT} from '../../math/bezier-cubic'
@@ -6,8 +5,6 @@ import {ConvexHull2D} from '../../math/convex-hull'
 
 import * as draw_utils from '../shapes/draw-utils'
 import * as math from '../../math/math';
-import {Arc} from "./arc";
-import {EndPoint} from "./point";
 
 
 export class BezierCurve extends SketchObject {
@@ -24,6 +21,10 @@ export class BezierCurve extends SketchObject {
     for (let c of this.children) {
       c.role = 'objectConstruction';
     }
+  }
+
+  stabilize(viewer) {
+    this.children.forEach(c => c.stabilize(viewer));
   }
 
   visitParams(callback) {
