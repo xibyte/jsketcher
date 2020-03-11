@@ -1,10 +1,7 @@
-import {Ref} from './ref'
 import {SketchObject} from './sketch-object'
-import {Constraints} from '../parametric'
 
 import * as math from '../../math/math';
-import {Circle} from "./circle";
-import {EndPoint} from "./point";
+import {Param} from "./param";
 
 export class Ellipse extends SketchObject {
 
@@ -14,9 +11,9 @@ export class Ellipse extends SketchObject {
     this.ep2 = ep2;
     this.addChild(this.ep1);
     this.addChild(this.ep2);
-    this.r = new Ref(0);
+    this.r = new Param(0, 'R');
+    this.r.enforceVisualLimit = true;
     this.r.set(this.radiusX * 0.5);
-    this.r.obj = this;
   }
 
   recoverIfNecessary() {

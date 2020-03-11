@@ -180,6 +180,27 @@ export const ConstraintDefinitions = {
 
   },
 
+  PointOnEllipse: {
+    id: 'PointOnEllipse',
+    name: 'Point On Ellipse',
+
+    defineParamsScope: ([pt, ellipse], callback) => {
+      ellipse.visitParams(callback);
+      callback(new Param(0, 't'));
+      pt.visitParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [p1x,p1y, p2x,p2y, r, t, px, py]) => {
+      const ellipsePoly = (p, t, p0, p1, p2, p3) => new Polynomial()
+        .monomial(-1);
+
+
+      polynomials.push(ellipsePoly());
+      polynomials.push(ellipsePoly());
+    },
+
+  },
+
   PointInMiddle: {
     id: 'PointInMiddle',
     name: 'Middle Point',
