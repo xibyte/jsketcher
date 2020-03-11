@@ -4,11 +4,17 @@ import {eqEps, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
 import {fmin_bfgs} from "../../../math/optim";
 
 export function curveStep(curve, u, tessTol, scale) {
-  tessTol = tessTol || 1;
-  scale = scale || 1;
+
   let ders = verb.eval.Eval.rationalCurveDerivatives( curve, u, 2 );
-  let r1 = ders[1];
-  let r2 = ders[2];
+  let d1 = ders[1];
+  let d2 = ders[2];
+
+  return genericCurveStep(d1, d2, tessTol, scale);
+}
+
+export function genericCurveStep(d1, d2, tessTol = 1, scale = 1) {
+  let r1 = d1;
+  let r2 = d2;
 
   let r1lsq = vec.lengthSq(r1);
   let r1l = Math.sqrt(r1lsq);
@@ -19,6 +25,7 @@ export function curveStep(curve, u, tessTol, scale) {
   let step = 2 * Math.sqrt(tol*(2*r -  tol)) / r1l;
   return step;
 }
+
 
 export function curveDomain(curve) {
   return [curve.knots[0], curve.knots[curve.knots.length - 1]];

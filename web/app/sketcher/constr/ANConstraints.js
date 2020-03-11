@@ -6,8 +6,10 @@ import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polyno
 import {Types} from "../io";
 
 import Vector from "math/vector";
-import {cubicBezierDer2, cubicBezierPoint} from "../../brep/geom/curves/bezierCubic";
+import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from "../../brep/geom/curves/bezierCubic";
 import {greaterThanConstraint, lessThanConstraint} from "./barriers";
+import {genericCurveStep} from "../../brep/geom/impl/nurbs-ext";
+import {_normalize} from "../../math/vec";
 
 export const ConstraintDefinitions = {
 
@@ -151,16 +153,53 @@ export const ConstraintDefinitions = {
     id: 'TangentLineBezier',
     name: 'Line & Bezier Tangency',
 
+    initialGuess([p0x,p0y, p3x,p3y, p1x,p1y, p2x,p2y, _t, px,py, nx,ny, _ang, ax,ay]) {
+
+      const ang = _ang.get();
+      const p0 = [p0x.get(), p0y.get()];
+      const p1 = [p1x.get(),p1y.get()];
+      const p2 = [p2x.get(),p2y.get()];
+      const p3 = [p3x.get(),p3y.get()];
+
+      let t = 0;
+      let bestT = 0.5;
+      let best = -1;
+      while (t <= 1) {
+
+        const d1 = cubicBezierDer1(p0, p1, p2, p3, t);
+        const d2 = cubicBezierDer2(p0, p1, p2, p3, t);
+
+        t = Math.min(1, t + (genericCurveStep(d1, d2)||0.1));
+        _normalize(d2);
+
+        const measure = Math.abs(d1[0] * Math.cos(ang) + d1[1] * Math.sin(ang));
+        if (measure > best) {
+          best = measure;
+          bestT = t;
+        }
+
+        if (t === 1) {
+          break;
+        }
+      }
+
+      _t.set(bestT);
+      const [_px, _py] = cubicBezierPoint(p0, p1, p2, p3, bestT);
+      px.set(_px);
+      px.set(_py);
+    },
+
     defineParamsScope: ([segment, curve], callback) => {
       const t0 = new Param(0.5, 't');
       t0.constraints = [greaterThanConstraint(0), lessThanConstraint(1)];
-      const [p0, p1, p2, p3] = [curve.p0, curve.p1, curve.p2, curve.p3].map(p => p.toVectorArray());
-      const [x0, y0] = cubicBezierPoint(p0, p1, p2, p3, t0.get());
-      const [nx0, ny0] = cubicBezierDer2(p0, p1, p2, p3, t0.get());
+
+      const px = new Param(0, 'X');
+      const py = new Param(0, 'Y');
+
       curve.visitParams(callback);
       callback(t0);
-      callback(new Param(x0, 'X'));
-      callback(new Param(y0, 'Y'));
+      callback(px);
+      callback(py);
       callback(new Param(nx0, 'X'));
       callback(new Param(ny0, 'Y'));
       callback(segment.params.ang);
@@ -942,6 +981,12 @@ export class AlgNumConstraint {
   setConstantsFromGeometry() {
     if (this.schema.setConstantsFromGeometry) {
       this.schema.setConstantsFromGeometry(this.objects, this.constants);
+    }
+  }
+
+  initialGuess() {
+    if (this.schema.initialGuess) {
+      this.schema.initialGuess(this.params);
     }
   }
 

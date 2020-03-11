@@ -458,9 +458,13 @@ class Isolation {
     this.system = system;
     this.polynomials = polynomials;
     this.beingSolvedParams = new Set();
+    this.beingSolvedConstraints = new Set();
     const residuals = [];
 
-    this.polynomials.forEach(p => residuals.push(p.asResidual()));
+    this.polynomials.forEach(p => {
+      residuals.push(p.asResidual());
+      this.beingSolvedConstraints.add(system.polyToConstr.get(p));
+    });
 
     for (let residual of residuals) {
       residual.params.forEach(solverParam => {
@@ -495,6 +499,9 @@ class Isolation {
   }
 
   solve(rough) {
+
+    this.beingSolvedConstraints.forEach(c => c.initialGuess())
+
     this.beingSolvedParams.forEach(solverParam => {
       let val = solverParam.objectParam.get();
 
