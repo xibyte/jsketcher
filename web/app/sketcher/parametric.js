@@ -14,6 +14,8 @@ class ParametricManager {
 
   $update = stream();
 
+  inTransaction = false;
+
   $constraints = this.$update
     .map(() => [...this.algNumSystem.allConstraints, ...this.algNumSystem.modifiers].sort((c1, c2) => c1.id - c2.id))
     .remember([]);
@@ -26,6 +28,17 @@ class ParametricManager {
     this.constantResolver = this.createConstantResolver();
     this.messageSink = msg => alert(msg);
     this.reset();
+  }
+
+  startTransaction() {
+    this.inTransaction = true;
+    this.algNumSystem.startTransaction();
+  }
+
+  finishTransaction() {
+    this.inTransaction = false;
+    this.algNumSystem.finishTransaction();
+    this.refresh();
   }
 
   get allConstraints() {
@@ -112,8 +125,7 @@ class ParametricManager {
   };
 
   commit() {
-    this.notify();
-    this.viewer.refresh();
+    this.refresh();
   };
 
   _add(constr) {
@@ -124,6 +136,9 @@ class ParametricManager {
   };
 
   refresh() {
+    if (this.inTransaction) {
+      return;
+    }
     this.notify();
     this.viewer.refresh();
   }
