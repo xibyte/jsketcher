@@ -1,8 +1,8 @@
 import {Tool} from './tool'
-import * as math from '../../math/math';
 import {EndPoint} from '../shapes/point'
 import {Segment} from '../shapes/segment'
 import {Constraints} from '../parametric'
+import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
 
 export class RectangleTool extends Tool {
@@ -92,19 +92,22 @@ export class RectangleTool extends Tool {
 
   stepFinish(p) {
     this.pointPicked(p.x, p.y);
-    var pm = this.viewer.parametricManager;
-    pm.linkObjects([this.rectangle[3].b, this.rectangle[0].a]);
-    pm.linkObjects([this.rectangle[0].b, this.rectangle[1].a]);
-    pm.linkObjects([this.rectangle[1].b, this.rectangle[2].a]);
-    pm.linkObjects([this.rectangle[2].b, this.rectangle[3].a]);
+    const pm = this.viewer.parametricManager;
+    pm.startTransaction();
+    pm.coincidePoints(this.rectangle[3].b, this.rectangle[0].a);
+    pm.coincidePoints(this.rectangle[0].b, this.rectangle[1].a);
+    pm.coincidePoints(this.rectangle[1].b, this.rectangle[2].a);
+    pm.coincidePoints(this.rectangle[2].b, this.rectangle[3].a);
     const constraints = [
-      new Constraints.Horizontal(this.rectangle[0]),
-      new Constraints.Horizontal(this.rectangle[2]),
-      new Constraints.Vertical(this.rectangle[3]),
-      new Constraints.Vertical(this.rectangle[1])
+      new AlgNumConstraint(ConstraintDefinitions.Horizontal, [this.rectangle[0]], {angle: 0}),
+      new AlgNumConstraint(ConstraintDefinitions.Horizontal, [this.rectangle[2]], {angle: 180}),
+      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[3]], {angle: 270}),
+      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[1]], {angle: 90}),
     ];
+    // constraints.forEach(c => c.initConstants());
+    this.rectangle.forEach(s => s.stabilize(this.viewer));
     pm.addAll(constraints);
-    this.viewer.refresh();
+    pm.finishTransaction();
     this.viewer.toolManager.releaseControl();
   }
 
