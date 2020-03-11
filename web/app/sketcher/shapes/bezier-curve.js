@@ -23,6 +23,19 @@ export class BezierCurve extends SketchObject {
     }
   }
 
+  get p0() {
+    return this.a;
+  }
+  get p1() {
+    return this.cp1;
+  }
+  get p2() {
+    return this.cp2;
+  }
+  get p3() {
+    return this.b;
+  }
+
   stabilize(viewer) {
     this.children.forEach(c => c.stabilize(viewer));
   }
