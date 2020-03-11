@@ -1,7 +1,6 @@
 import * as math from '../../math/math';
 import {SketchObject} from './sketch-object'
 import {Param} from "./param";
-import {greaterThanConstraint} from "../constr/barriers";
 
 export const MIN_RADIUS = 100;
 
@@ -13,7 +12,6 @@ export class Circle extends SketchObject {
     c.parent = this;
     this.children.push(c);
     this.r = new Param(0, 'R');
-    this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
     this.r.enforceVisualLimit = true;
   }
 

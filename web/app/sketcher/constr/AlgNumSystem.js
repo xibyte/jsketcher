@@ -3,7 +3,7 @@ import {eqEps} from "../../brep/geom/tolerance";
 import {Polynomial, POW_1_FN} from "./polynomial";
 import {compositeFn} from "gems/func";
 
-const DEBUG = false;
+const DEBUG = true;
 
 export class AlgNumSubSystem {
 
@@ -472,17 +472,20 @@ class Isolation {
     }
     this.dof = this.beingSolvedParams.size - polynomials.length;
 
-    let penaltyFunction = new PolynomialResidual();
     this.beingSolvedParams.forEach(sp => {
       const param = sp.objectParam;
       if (param.constraints) {
-        param.constraints.forEach(pc => penaltyFunction.add(sp, pc))
+        param.constraints.forEach(pc => {
+          let penaltyFunction = new PolynomialResidual();
+          penaltyFunction.add(sp, pc);
+          residuals.push(penaltyFunction);
+        })
       }
     });
 
-    if (penaltyFunction.params.length) {
-      // residuals.push(penaltyFunction);
-    }
+    // if (penaltyFunction.params.length) {
+    //   residuals.push(penaltyFunction);
+    // }
 
     this.numericalSolver = prepare(residuals);
   }

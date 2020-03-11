@@ -2,8 +2,6 @@ import * as math from '../../math/math';
 import Vector from 'math/vector';
 import {SketchObject} from './sketch-object';
 import {Param} from "./param";
-import {greaterThanConstraint} from "../constr/barriers";
-import {MIN_RADIUS} from "./circle";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 import {makeAngle0_360} from "../../math/math";
 
@@ -20,7 +18,6 @@ export class Arc extends SketchObject {
     this.children.push(a, b, c);
 
     this.r = new Param(0, 'R');
-    this.r.constraints = [greaterThanConstraint(MIN_RADIUS)];
     this.r.enforceVisualLimit = true;
 
     this.ang1 = new Param(0, 'A');

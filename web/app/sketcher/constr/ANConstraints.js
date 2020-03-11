@@ -6,6 +6,8 @@ import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polyno
 import {Types} from "../io";
 
 import Vector from "math/vector";
+import {cubicBezierDer2, cubicBezierPoint} from "../../brep/geom/curves/bezierCubic";
+import {greaterThanConstraint, lessThanConstraint} from "./barriers";
 
 export const ConstraintDefinitions = {
 
@@ -131,51 +133,107 @@ export const ConstraintDefinitions = {
     name: 'Point On Bezier Curve',
 
     defineParamsScope: ([pt, curve], callback) => {
+      const t = new Param(0.5, 't');
+      t.constraints = [greaterThanConstraint(0), lessThanConstraint(1)];
       curve.visitParams(callback);
-      callback(new Param(0.5, 't'));
+      callback(t);
       pt.visitParams(callback);
     },
 
     collectPolynomials: (polynomials, [p0x,p0y, p3x,p3y, p1x,p1y, p2x,p2y, t, px, py]) => {
-      const bz3Poly = (p, t, p0, p1, p2, p3) => new Polynomial()
-        .monomial(-1)
-          .term(t, POW_3_FN)
-          .term(p0, POW_1_FN)
-        .monomial(3)
-          .term(t, POW_2_FN)
-          .term(p0, POW_1_FN)
-        .monomial(-3)
-          .term(t, POW_1_FN)
-          .term(p0, POW_1_FN)
-        .monomial(1)
-          .term(p0, POW_1_FN)
+      polynomials.push(bezier3Polynomial(px, t, p0x, p1x, p2x, p3x));
+      polynomials.push(bezier3Polynomial(py, t, p0y, p1y, p2y, p3y));
+    },
 
-        .monomial(3)
-          .term(t, POW_3_FN)
-          .term(p1, POW_1_FN)
+  },
+
+  TangentLineBezier: {
+    id: 'TangentLineBezier',
+    name: 'Line & Bezier Tangency',
+
+    defineParamsScope: ([segment, curve], callback) => {
+      const t0 = new Param(0.5, 't');
+      t0.constraints = [greaterThanConstraint(0), lessThanConstraint(1)];
+      const [p0, p1, p2, p3] = [curve.p0, curve.p1, curve.p2, curve.p3].map(p => p.toVectorArray());
+      const [x0, y0] = cubicBezierPoint(p0, p1, p2, p3, t0.get());
+      const [nx0, ny0] = cubicBezierDer2(p0, p1, p2, p3, t0.get());
+      curve.visitParams(callback);
+      callback(t0);
+      callback(new Param(x0, 'X'));
+      callback(new Param(y0, 'Y'));
+      callback(new Param(nx0, 'X'));
+      callback(new Param(ny0, 'Y'));
+      callback(segment.params.ang);
+      segment.a.visitParams(callback);
+    },
+
+    collectPolynomials: (polynomials, [p0x,p0y, p3x,p3y, p1x,p1y, p2x,p2y, t, px,py, nx,ny, ang, ax,ay]) => {
+      polynomials.push(bezier3Polynomial(px, t, p0x, p1x, p2x, p3x));
+      polynomials.push(bezier3Polynomial(py, t, p0y, p1y, p2y, p3y));
+      //expanded second derivative: -6 P0 t + 6 P0 + 18 P1 t - 12 P1 - 18 P2 t + 6 P2 + 6 P3 t
+      const bzCubeD2 = (p, t, p0, p1, p2, p3) => new Polynomial()
         .monomial(-6)
-          .term(t, POW_2_FN)
-          .term(p1, POW_1_FN)
-        .monomial(3)
+          .term(p0, POW_1_FN)
           .term(t, POW_1_FN)
+        .monomial(6)
+          .term(p0, POW_1_FN)
+        .monomial(18)
           .term(p1, POW_1_FN)
-
-        .monomial(-3)
-          .term(t, POW_3_FN)
+          .term(t, POW_1_FN)
+        .monomial(-12)
+          .term(p1, POW_1_FN)
+        .monomial(-18)
           .term(p2, POW_1_FN)
-        .monomial(3)
-          .term(t, POW_2_FN)
+          .term(t, POW_1_FN)
+        .monomial(6)
           .term(p2, POW_1_FN)
-
-        .monomial(1)
-          .term(t, POW_3_FN)
+        .monomial(6)
           .term(p3, POW_1_FN)
-
-        .monomial(-1)
+          .term(t, POW_1_FN)
+      .monomial(-1)
           .term(p, POW_1_FN);
+      //expanded first derivative: -3 P0 t^2 + 6 P0 t - 3 P0 + 9 P1 t^2 - 12 P1 t + 3 P1 - 9 P2 t^2 + 6 P2 t + 3 P3 t^2
+      const bzCubeD1 = (p, t, p0, p1, p2, p3) => new Polynomial()
+        .monomial(-3)
+        .term(p0, POW_1_FN)
+        .term(t, POW_2_FN)
+        .monomial(6)
+        .term(p0, POW_1_FN)
+        .term(t, POW_1_FN)
+        .monomial(-3)
+        .term(p0, POW_1_FN)
+        .monomial(9)
+        .term(p1, POW_1_FN)
+        .term(t, POW_2_FN)
+        .monomial(-12)
+        .term(p1, POW_1_FN)
+        .term(t, POW_1_FN)
+        .monomial(3)
+        .term(p1, POW_1_FN)
+        .monomial(-9)
+        .term(p2, POW_1_FN)
+        .term(t, POW_2_FN)
+        .monomial(6)
+        .term(p2, POW_1_FN)
+        .term(t, POW_1_FN)
+        .monomial(3)
+        .term(p3, POW_1_FN)
+        .term(t, POW_2_FN)
+        .monomial(-1)
+        .term(p, POW_1_FN);
 
-      polynomials.push(bz3Poly(px, t, p0x, p1x, p2x, p3x));
-      polynomials.push(bz3Poly(py, t, p0y, p1y, p2y, p3y));
+
+      polynomials.push(bzCubeD1(nx, t, p0x, p1x, p2x, p3x));
+      polynomials.push(bzCubeD1(ny, t, p0y, p1y, p2y, p3y));
+      polynomials.push(new Polynomial()
+        .monomial(-1)
+          .term(ny, POW_1_FN)
+          .term(ang, COS_FN)
+        .monomial()
+          .term(nx, POW_1_FN)
+          .term(ang, SIN_FN)
+      );
+      ConstraintDefinitions.PointOnLine.collectPolynomials(polynomials, [px, py, ax, ay, ang]);
     },
 
   },
@@ -742,6 +800,43 @@ function tangentLCPolynomial(ang, ax, ay, cx, cy, r, inverted) {
     .monomial(- (inverted ? -1 : 1))
       .term(r, POW_1_FN);
 }
+
+const bezier3Polynomial = (p, t, p0, p1, p2, p3) => new Polynomial()
+  .monomial(-1)
+    .term(t, POW_3_FN)
+    .term(p0, POW_1_FN)
+  .monomial(3)
+    .term(t, POW_2_FN)
+    .term(p0, POW_1_FN)
+  .monomial(-3)
+    .term(t, POW_1_FN)
+    .term(p0, POW_1_FN)
+  .monomial(1)
+  .term(p0, POW_1_FN)
+
+  .monomial(3)
+    .term(t, POW_3_FN)
+    .term(p1, POW_1_FN)
+  .monomial(-6)
+    .term(t, POW_2_FN)
+    .term(p1, POW_1_FN)
+  .monomial(3)
+    .term(t, POW_1_FN)
+    .term(p1, POW_1_FN)
+
+  .monomial(-3)
+    .term(t, POW_3_FN)
+    .term(p2, POW_1_FN)
+  .monomial(3)
+    .term(t, POW_2_FN)
+    .term(p2, POW_1_FN)
+
+  .monomial(1)
+    .term(t, POW_3_FN)
+    .term(p3, POW_1_FN)
+
+  .monomial(-1)
+    .term(p, POW_1_FN);
 
 export class AlgNumConstraint {
 

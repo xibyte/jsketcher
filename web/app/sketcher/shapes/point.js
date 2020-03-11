@@ -76,6 +76,10 @@ export class EndPoint extends SketchObject {
     this.setXY(arr[0], arr[1]);
   }
 
+  toVectorArray() {
+    return [this.x, this.y];
+  }
+
   toVector() {
     return new Vector(this.x, this.y);
   }

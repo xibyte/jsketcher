@@ -44,7 +44,7 @@ export default [
       selector: 'matchSequence',
       sequence: [
         {
-          types: [Circle, Arc],
+          types: [Circle, Arc, BezierCurve],
           quantity: 1
         },
         {
@@ -57,9 +57,13 @@ export default [
     invoke: (ctx, matchedObjects) => {
 
       const {viewer} = ctx;
-      const [circle, line] = matchedObjects;
-
-      const constraint = new AlgNumConstraint(ConstraintDefinitions.TangentLC, [line, circle]);
+      const [curve, line] = matchedObjects;
+      let constraint;
+      if (isInstanceOf(curve, BezierCurve) ) {
+        constraint = new AlgNumConstraint(ConstraintDefinitions.TangentLineBezier, [line, curve]);
+      } else {
+        constraint = new AlgNumConstraint(ConstraintDefinitions.TangentLC, [line, curve]);
+      }
       constraint.initConstants();
       const pm = viewer.parametricManager;
       pm.add(constraint);
