@@ -475,21 +475,17 @@ class Isolation {
       });
     }
     this.dof = this.beingSolvedParams.size - polynomials.length;
-
+    const penaltyFunction = new PolynomialResidual();
     this.beingSolvedParams.forEach(sp => {
       const param = sp.objectParam;
       if (param.constraints) {
-        param.constraints.forEach(pc => {
-          let penaltyFunction = new PolynomialResidual();
-          penaltyFunction.add(sp, pc);
-          residuals.push(penaltyFunction);
-        })
+        penaltyFunction.add(sp, param.constraints);
       }
     });
 
-    // if (penaltyFunction.params.length) {
-    //   residuals.push(penaltyFunction);
-    // }
+    if (penaltyFunction.params.length) {
+      residuals.push(penaltyFunction);
+    }
 
     this.numericalSolver = prepare(residuals);
   }
@@ -500,7 +496,7 @@ class Isolation {
 
   solve(rough) {
 
-    this.beingSolvedConstraints.forEach(c => c.initialGuess())
+    this.beingSolvedConstraints.forEach(c => c.initialGuess());
 
     this.beingSolvedParams.forEach(solverParam => {
       let val = solverParam.objectParam.get();
@@ -527,24 +523,34 @@ class PolynomialResidual {
   params = [];
   functions = [];
 
-  add(param, fn) {
+  add(param, fns) {
     this.params.push(param);
-    this.functions.push(fn);
-
+    this.functions.push(fns);
   }
 
   error() {
     let err = 0;
     for (let i = 0 ; i < this.params.length; ++i) {
-      err += this.functions[i].d0(this.params[i].get());
+      const val = this.params[i].get();
+      const paramFunctions = this.functions[i];
+      for (let fn of paramFunctions) {
+        const d0 = fn.d0(val);
+        err += d0;// * d0;
+      }
     }
 
-    return err;
+    return err;//0.5 * err;
   }
 
   gradient(out) {
     for (let i = 0 ; i < this.params.length; ++i) {
-      out[i] = this.functions[i].d1(this.params[i].get());
+      const val = this.params[i].get();
+      const paramFunctions = this.functions[i];
+      for (let fn of paramFunctions) {
+        // const d0 = fn.d0(val);
+        const d1 = fn.d1(val);
+        out[i] += d1; //d0 * d1; //degenerated chain rule
+      }
     }
   }
 

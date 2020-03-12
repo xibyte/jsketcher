@@ -134,6 +134,16 @@ export const ConstraintDefinitions = {
     id: 'PointOnBezier',
     name: 'Point On Bezier Curve',
 
+    initialGuess: ([p0x,p0y, p3x,p3y, p1x,p1y, p2x,p2y, t, px, py]) => {
+      const _t = t.get();
+      if (_t < 0.001) {
+        t.set(0);
+      }
+      if (_t > 0.999) {
+        t.set(1);
+      }
+    },
+
     defineParamsScope: ([pt, curve], callback) => {
       const t = new Param(0.5, 't');
       t.constraints = [greaterThanConstraint(0), lessThanConstraint(1)];
@@ -154,12 +164,11 @@ export const ConstraintDefinitions = {
     name: 'Line & Bezier Tangency',
 
     initialGuess([p0x,p0y, p3x,p3y, p1x,p1y, p2x,p2y, _t, px,py, nx,ny, _ang, ax,ay]) {
-
       const ang = _ang.get();
-      const p0 = [p0x.get(), p0y.get()];
-      const p1 = [p1x.get(),p1y.get()];
-      const p2 = [p2x.get(),p2y.get()];
-      const p3 = [p3x.get(),p3y.get()];
+      const p0 = [p0x.get(), p0y.get(), 0];
+      const p1 = [p1x.get(),p1y.get(), 0];
+      const p2 = [p2x.get(),p2y.get(), 0];
+      const p3 = [p3x.get(),p3y.get(), 0];
 
       let t = 0;
       let bestT = 0.5;
@@ -183,25 +192,31 @@ export const ConstraintDefinitions = {
         }
       }
 
+      //otherwise it gets stuck in the straight areas
+      if (Math.abs(bestT - _t.get()) < 0.2) {
+        return;
+      }
+
       _t.set(bestT);
       const [_px, _py] = cubicBezierPoint(p0, p1, p2, p3, bestT);
+      const [_nx, _ny] = cubicBezierDer1(p0, p1, p2, p3, bestT);
       px.set(_px);
-      px.set(_py);
+      py.set(_py);
+
+      nx.set(_nx);
+      ny.set(_ny);
     },
 
     defineParamsScope: ([segment, curve], callback) => {
       const t0 = new Param(0.5, 't');
       t0.constraints = [greaterThanConstraint(0), lessThanConstraint(1)];
 
-      const px = new Param(0, 'X');
-      const py = new Param(0, 'Y');
-
       curve.visitParams(callback);
       callback(t0);
-      callback(px);
-      callback(py);
-      callback(new Param(nx0, 'X'));
-      callback(new Param(ny0, 'Y'));
+      callback(new Param(0, 'X'));
+      callback(new Param(0, 'Y'));
+      callback(new Param(0, 'X'));
+      callback(new Param(0, 'Y'));
       callback(segment.params.ang);
       segment.a.visitParams(callback);
     },
