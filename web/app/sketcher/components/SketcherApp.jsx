@@ -8,6 +8,7 @@ import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import SketcherOperationWizard from "./SketcherOperationWizard";
 import {StageControl} from "./StageControl";
+import {Scope} from "./Scope";
 
 export const SketcherAppContext = React.createContext({});
 
@@ -15,9 +16,9 @@ export function SketcherApp({applicationContext}) {
   return <SketcherAppContext.Provider value={applicationContext}>
     <StreamsContext.Provider value={applicationContext}>
       <ToastContainer />
-      <RightSideControls />
+      <Scope><RightSideControls /></Scope>
       {ReactDOM.createPortal(
-        <ConstraintList />,
+        <Scope><ConstraintList /></Scope>,
         document.getElementById('constraint-list')
       )}
     </StreamsContext.Provider>
@@ -27,9 +28,9 @@ export function SketcherApp({applicationContext}) {
 
 function RightSideControls() {
   return <React.Fragment>
-    <ContextualControls />
-    <ConstraintEditor />
-    <SketcherOperationWizard />
-    <StageControl />
+    <Scope><ContextualControls /></Scope>
+    <Scope><ConstraintEditor /></Scope>
+    <Scope><SketcherOperationWizard /></Scope>
+    <Scope><StageControl /></Scope>
   </React.Fragment>
 }
