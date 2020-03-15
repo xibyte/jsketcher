@@ -17,6 +17,7 @@ import NurbsCurve from '../brep/geom/curves/nurbsCurve';
 import {NurbsObject} from './shapes/nurbsObject';
 import {System} from './system';
 import {AlgNumConstraint} from "./constr/ANConstraints";
+import {SketchGenerator} from "./generators/sketchGenerator";
 
 const Types = {
   POINT     : 'TCAD.TWO.EndPoint',
@@ -52,7 +53,7 @@ IO.prototype._loadSketch = function(sketch) {
 
   this.cleanUpData();
 
-  this.viewer.parametricManager.algNumSystem.startTransaction();
+  this.viewer.parametricManager.startTransaction();
 
   const index = {};
 
@@ -68,6 +69,14 @@ IO.prototype._loadSketch = function(sketch) {
     index[id] = ep;
     return ep;
   }
+
+  const getStage = pointer => {
+    if (pointer === undefined) {
+      return this.viewer.parametricManager.stage;
+    }
+    this.viewer.parametricManager.accommodateStages(pointer);
+    return this.viewer.parametricManager.getStage(pointer);
+  };
 
   let layerIdGen = 0;
   function getLayer(viewer, name) {
@@ -99,7 +108,7 @@ IO.prototype._loadSketch = function(sketch) {
       var layerName = ioLayer['name'];
       var boundaryProcessing = layerName === IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
       var layer = getLayer(this.viewer, layerName);
-      if (!!ioLayer.style) layer.style = ioLayer.style;
+      // if (!!ioLayer.style) layer.style = ioLayer.style;
       layer.readOnly = !!ioLayer.readOnly;
       var layerData = ioLayer['data'];
       for (let i = 0; i < layerData.length; ++i) {
@@ -169,6 +178,7 @@ IO.prototype._loadSketch = function(sketch) {
         }
         if (skobj != null) {
           skobj.role = role;
+          getStage(obj.stage).assignObject(skobj);
           if (!aux) skobj.stabilize(this.viewer);
           if (aux) skobj.accept(function(o){o.aux = true; return true;});
           if (obj['edge'] !== undefined) {
@@ -210,27 +220,48 @@ IO.prototype._loadSketch = function(sketch) {
     this.addNewBoundaryObjects(boundary, maxEdge);
   }
 
-  let sketchConstraints = sketch['constraints'];
-  if (version > 1) {
-    sketchConstraints.forEach(constr => {
-      try {
-        const constraint = AlgNumConstraint.read(constr, index);
-        this.viewer.parametricManager.algNumSystem.addConstraint(constraint);
-      } catch (e) {
-        console.error(e);
-        console.error("skipping errant constraint: " + constr&&constr.typeId);
+  if (sketch.constraints && !sketch.stages) {
+    sketch.stages = [
+      {
+        constraints: sketch.constraints,
+        generators: []
       }
-    });
-  } else {
-    console.error("old format - need an upgrade");
+    ]
   }
 
+  if (sketch.stages) {
+    for (let stage of sketch.stages) {
+
+      for (let constr of stage.constraints) {
+        try {
+          const constraint = AlgNumConstraint.read(constr, index);
+          const stage = getStage(constr.stage||0);
+          stage.addConstraint(constraint);
+        } catch (e) {
+          console.error(e);
+          console.error("skipping errant constraint: " + constr&&constr.typeId);
+        }
+      }
+      for (let gen of stage.generators) {
+        try {
+          const generator = SketchGenerator.read(gen, index);
+          const stage = getStage(gen.stage||0);
+          stage.addGenerator(generator);
+        } catch (e) {
+          console.error(e);
+          console.error("skipping errant generator: " + gen&&gen.typeId);
+        }
+      }
+
+    }
+
+  }
   let constants = sketch['constants'];
   if (constants !== undefined) {
     this.viewer.params.constantDefinition = constants;
   }
 
-  this.viewer.parametricManager.algNumSystem.finishTransaction();
+  this.viewer.parametricManager.finishTransaction();
   this.viewer.parametricManager.notify();
 };
 
@@ -335,13 +366,14 @@ IO.prototype._serializeSketch = function(metadata) {
     var layers = toSave[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
-      var toLayer = {name : layer.name, style : layer.style, readOnly: layer.readOnly, data : []};
+      var toLayer = {name : layer.name, readOnly: layer.readOnly, data : []};
       sketch.layers.push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
         var to = {id: obj.id, _class: obj._class, role: obj.role};
         if (obj.aux) to.aux = obj.aux;
         if (obj.edge !== undefined) to.edge = obj.edge;
+        to.stage = this.viewer.parametricManager.getStageIndex(obj.stage);
         toLayer.data.push(to);
         if (obj._class === T.SEGMENT) {
           to.points = [point(obj.a), point(obj.b)];
@@ -382,12 +414,25 @@ IO.prototype._serializeSketch = function(metadata) {
     }
   }
 
-  sketch.constraints = [];
-  const systemConstraints = this.viewer.parametricManager.allConstraints;
-  for (let sc of systemConstraints) {
-    if (!sc.internal) {
-      sketch.constraints.push(sc.write());
+  sketch.stages = [];
+
+  for (let stage of this.viewer.parametricManager.stages) {
+    const stageOut = {
+      constraints: [],
+      generators: [],
+    };
+    const systemConstraints = stage.algNumSystem.allConstraints;
+    for (let sc of systemConstraints) {
+      if (!sc.internal) {
+        stageOut.constraints.push(sc.write());
+      }
     }
+
+    for (let gen of stage.generators) {
+      stageOut.generators.push(gen.write());
+    }
+
+    sketch.stages.push(stageOut);
   }
 
   var constantDefinition = this.viewer.params.constantDefinition;

@@ -25,13 +25,16 @@ export class Polynomial {
   }
 
   eliminate(param, value) {
+    let touched = false;
     for (let m of this.monomials) {
       for (let i = 0; i < m.terms.length; ++i) {
         if (m.terms[i].param === param) {
           m.eliminate(i, value);
+          touched = true;
         }
       }
     }
+    return touched;
   }
 
   substitute(param, toParam, dotConstant) {

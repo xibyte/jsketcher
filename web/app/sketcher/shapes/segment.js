@@ -2,8 +2,6 @@ import {SketchObject} from './sketch-object'
 import Vector from 'math/vector';
 import * as math from '../../math/math'
 import {DEG_RAD, makeAngle0_360} from '../../math/math'
-import {Styles} from "../styles";
-import * as draw_utils from "./draw-utils";
 import {Param} from "./param";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
@@ -72,7 +70,7 @@ export class Segment extends SketchObject {
     this.syncGeometry();
     const c = new AlgNumConstraint(ConstraintDefinitions.Polar, [this, this.a, this.b]);
     c.internal = true;
-    viewer.parametricManager._add(c);
+    this.stage.addConstraint(c);
   }
 
   recoverIfNecessary() {

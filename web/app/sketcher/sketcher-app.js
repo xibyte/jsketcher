@@ -16,7 +16,7 @@ import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 import genSerpinski from '../utils/genSerpinski';
 import React from "react";
-import {runActionOrToastWhyNot} from "./actions";
+import {runActionOrToastWhyNot, startOperation} from "./actions";
 import {stream} from "../../../modules/lstream";
 import {toast} from "react-toastify";
 
@@ -222,8 +222,8 @@ function App2D() {
     runActionOrToastWhyNot('DistancePL', app.viewer.selected, app.context);
   });
 
-  this.registerAction('mirrorConstraint', "Mirror Constraint", function () {
-    app.viewer.parametricManager.mirror(app.viewer.selected);
+  this.registerAction('mirrorConstraint', "Mirror Modifier", function () {
+    startOperation(app.context, 'Mirror');
   });
 
   this.registerAction('P2PDistanceConstraint', "Distance Between two Points", function () {
@@ -483,7 +483,9 @@ function createAppContext(viewer) {
   return {
     viewer,
     ui: {
-      $constraintEditRequest: stream()
+      $constraintEditRequest: stream(),
+      $wizardRequest: stream()
+
     }
   };
 }

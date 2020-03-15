@@ -896,14 +896,16 @@ export class AlgNumConstraint {
 
   static Counter = 0;
 
-  constructor(schema, objects, constants) {
+  constructor(schema, objects, constants, internal = false) {
     this.id = schema.id + ':' + (AlgNumConstraint.Counter ++); // only for debug purposes - not persisted
     this.objects = objects;
     this.constants = constants;
     this.resolvedConstants = undefined;
-    this.internal = false;
+    this.internal = internal;
     this.schema = schema;
     this.params = [];
+    this.stage = null;
+
     if (this.schema.defineParamsScope) {
       this.schema.defineParamsScope(this.objects, p => this.params.push(p));
     }
@@ -954,7 +956,8 @@ export class AlgNumConstraint {
     return {
       typeId: this.schema.id,
       objects: this.objects.map(o => o.id),
-      constants: this.constants
+      constants: this.constants,
+      stage: this.stage&&this.stage.index
     }
   }
 

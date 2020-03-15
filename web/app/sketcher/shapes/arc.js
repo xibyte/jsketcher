@@ -149,7 +149,7 @@ export class Arc extends SketchObject {
     this.syncGeometry();
     const constr = new AlgNumConstraint(ConstraintDefinitions.ArcConsistency, [this]);
     constr.internal = true;
-    viewer.parametricManager._add(constr);
+    this.stage.addConstraint(constr);
   }
 
   copy() {

@@ -7,8 +7,6 @@ const DEBUG = true;
 
 export class AlgNumSubSystem {
 
-  modifiers = [];
-
   allConstraints = [];
 
   paramToIsolation = new Map();
@@ -34,9 +32,12 @@ export class AlgNumSubSystem {
 
   visualLimit = 100;
 
-  constructor(calcVisualLimit) {
+  stage = null;
+
+  constructor(calcVisualLimit, stage) {
 
     this.calcVisualLimit = calcVisualLimit;
+    this.stage = stage;
 
     this.solveStatus = {
       error: 0,
@@ -45,8 +46,16 @@ export class AlgNumSubSystem {
 
   }
 
+  get ownTopObjects() {
+    return this.stage.objects;
+  }
+
   get fullyConstrained() {
     return this.dof === 0;
+  }
+
+  owns(obj) {
+    return this.stage === obj.stage;
   }
 
   validConstraints(callback) {
@@ -136,20 +145,36 @@ export class AlgNumSubSystem {
   }
 
   reset() {
-    this.polynomials = [];
-    this.substitutedParams.clear();
-    this.substitutionOrder = [];
-    this.eliminatedParams.clear();
     this.polyToConstr.clear();
-    this.paramToIsolation.clear();
     this.interactiveParams.clear();
+    this.requiresHardSolve = false;
   }
 
   evaluatePolynomials() {
+
     this.validConstraints(c => {
+      let i = this.polynomials.length;
       c.collectPolynomials(this.polynomials);
-      this.polynomials.forEach(p => this.polyToConstr.set(p, c))
+      for (; i<this.polynomials.length; i++) {
+        const polynomial = this.polynomials[i];
+        this.polyToConstr.set(polynomial, c);
+
+        let touched = false;
+        c.objects.forEach(obj => {
+          if (!this.owns(obj)) {
+            obj.visitParams(p => {
+              if (polynomial.eliminate(p, p.get())) {
+                touched = true;
+              }
+            });
+          }
+        });
+        if (touched) {
+          polynomial.compact();
+        }
+      }
     });
+
     if (DEBUG) {
       console.log('reducing system:');
       this.polynomials.forEach(p => console.log(p.toString()));
@@ -269,14 +294,13 @@ export class AlgNumSubSystem {
     this.reset();
     interactiveObjects.forEach(obj => obj.visitParams(p => this.interactiveParams.add(p)));
 
-    this.validConstraints(c => c.params.forEach(p => p.normalizer && p.set(p.normalizer(p.get()))));
+    this.validConstraints(c => c.objects.forEach(obj => {
+      if (!this.owns(obj)) {
+        this.requiresHardSolve = true;
+      }
+    }));
 
-    this.evaluatePolynomials();
-
-    this.polynomialIsolations = this.splitByIsolatedClusters(this.polynomials);
-    this.polynomialIsolations.forEach(iso => {
-      iso.beingSolvedParams.forEach(solverParam => this.paramToIsolation.set(solverParam.objectParam, iso))
-    });
+    this.evaluateAndBuildSolver();
 
     this.visualLimit = this.calcVisualLimit();
 
@@ -290,6 +314,23 @@ export class AlgNumSubSystem {
       console.log('with respect to:');
       this.substitutionOrder.forEach(x => console.log('X' + x.id + ' = ' + this.substitutedParams.get(x).toString()));
     }
+  }
+
+  evaluateAndBuildSolver() {
+    this.polynomials = [];
+    this.substitutedParams.clear();
+    this.substitutionOrder = [];
+    this.eliminatedParams.clear();
+    this.paramToIsolation.clear();
+
+    this.validConstraints(c => c.params.forEach(p => p.normalizer && p.set(p.normalizer(p.get()))));
+
+    this.evaluatePolynomials();
+
+    this.polynomialIsolations = this.splitByIsolatedClusters(this.polynomials);
+    this.polynomialIsolations.forEach(iso => {
+      iso.beingSolvedParams.forEach(solverParam => this.paramToIsolation.set(solverParam.objectParam, iso))
+    });
   }
 
   splitByIsolatedClusters(polynomials) {
@@ -366,8 +407,9 @@ export class AlgNumSubSystem {
 
   solve(rough) {
 
-    // this.modifiers.forEach(m => m.modify());
-    // this.prepare();
+    if (this.requiresHardSolve) {
+      this.evaluateAndBuildSolver();
+    }
 
     this.polynomialIsolations.forEach(iso => {
       iso.solve(rough);

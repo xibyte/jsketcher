@@ -6,6 +6,8 @@ import {ConstraintList} from './ConstraintExplorer';
 import {StreamsContext} from 'ui/streamsContext';
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import SketcherOperationWizard from "./SketcherOperationWizard";
+import {StageControl} from "./StageControl";
 
 export const SketcherAppContext = React.createContext({});
 
@@ -27,5 +29,7 @@ function RightSideControls() {
   return <React.Fragment>
     <ContextualControls />
     <ConstraintEditor />
+    <SketcherOperationWizard />
+    <StageControl />
   </React.Fragment>
 }

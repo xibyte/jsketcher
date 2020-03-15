@@ -59,6 +59,7 @@
     "jquery": "^3.4.1",
     "less": "^3.8.1",
     "libtess": "1.2.2",
+    "lodash": "^4.17.15",
     "mousetrap": "1.6.1",
     "numeric": "1.2.6",
     "prop-types": "15.6.0",
