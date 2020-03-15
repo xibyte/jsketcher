@@ -207,6 +207,7 @@ export class AlgNumSubSystem {
           }
           this.polynomials[i] = null;
         } else if (polynomial.isLinear && polynomial.monomials.length === 1) {
+          this.polynomials[i] = null;
           const monomial = polynomial.monomials[0];
           const terms = monomial.terms;
           if (terms.length === 1) {
@@ -218,9 +219,9 @@ export class AlgNumSubSystem {
 
               this.eliminatedParams.set(p, val);
 
-              for (let polynomial of this.polynomials) {
-                if (polynomial) {
-                  polynomial.eliminate(p, val);
+              for (let otherPolynomial of this.polynomials) {
+                if (otherPolynomial) {
+                  otherPolynomial.eliminate(p, val);
                 }
               }
 
@@ -228,7 +229,6 @@ export class AlgNumSubSystem {
             }
           }
 
-          this.polynomials[i] = null;
         } else if (polynomial.monomials.length === 2 && polynomial.isLinear) {
           let [m1, m2] = polynomial.monomials;
 
@@ -244,22 +244,21 @@ export class AlgNumSubSystem {
           const constant = - m2.constant / m1.constant;
           if (eqEps(polynomial.constant, 0)) {
 
-            for (let polynomial of this.polynomials) {
-              if (polynomial) {
-                polynomial.substitute(p1, p2, constant);
+            this.polynomials[i] = null;
+            this.substitute(p1, new Polynomial().monomial(constant).term(p2, POW_1_FN));
+            for (let otherPolynomial of this.polynomials) {
+              if (otherPolynomial) {
+                otherPolynomial.substitute(p1, p2, constant);
               }
             }
-            this.substitute(p1, new Polynomial().monomial(constant).term(p2, POW_1_FN));
-            this.polynomials[i] = null;
-
             requirePass = true;
           } else {
             const b = - polynomial.constant / m1.constant;
 
             let transaction = compositeFn();
-            for (let polynomial of this.polynomials) {
-              if (polynomial) {
-                const polyTransaction = polynomial.linearSubstitution(p1, p2, constant, b);
+            for (let otherPolynomial of this.polynomials) {
+              if (otherPolynomial && otherPolynomial !== polynomial) {
+                const polyTransaction = otherPolynomial.linearSubstitution(p1, p2, constant, b);
                 if (!polyTransaction) {
                   transaction = null;
                   break;

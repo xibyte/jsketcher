@@ -363,7 +363,7 @@ export class ToThePowerFunction {
     if (this.degree === 1) {
       return new Polynomial(b).monomial(k).term(x, POW_1_FN);
     } else if (this.degree === 2) {
-      return new Polynomial(b*b).monomial(k*k).term(x, POW_2_FN).monomial(2*k).term(x, POW_1_FN);
+      return new Polynomial(b*b).monomial(k*k).term(x, POW_2_FN).monomial(2*k*b).term(x, POW_1_FN);
     } else {
       return null;
     }
