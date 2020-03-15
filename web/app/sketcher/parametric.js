@@ -200,6 +200,7 @@ class ParametricManager {
   };
 
   removeGenerator(generator) {
+    this.viewer.deselectAll();
     this.startTransaction();
     this._removeGenerator(generator);
     this.finishTransaction();
@@ -407,7 +408,7 @@ class SolveStage {
 
   removeGenerator(generator) {
     this.generators.delete(generator);
-    generator.sourceObjects(obj => obj.generators.delete(this.generators))
+    generator.sourceObjects(obj => obj.generators.delete(generator))
   }
 
   createAlgNumSystem() {
