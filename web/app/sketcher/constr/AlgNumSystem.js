@@ -34,9 +34,10 @@ export class AlgNumSubSystem {
 
   stage = null;
 
-  constructor(calcVisualLimit, stage) {
+  constructor(calcVisualLimit, expressionResolver, stage) {
 
     this.calcVisualLimit = calcVisualLimit;
+    this.expressionResolver = expressionResolver;
     this.stage = stage;
 
     this.solveStatus = {
@@ -97,6 +98,11 @@ export class AlgNumSubSystem {
       constraint.objects.forEach(o => o.constraints.add(constraint));
       this.updateFullyConstrainedObjects();
     }
+  }
+
+  revalidateConstraint(constraint) {
+    this.conflicting.delete(constraint);
+    this.redundant.delete(constraint);
   }
 
   startTransaction() {
@@ -299,6 +305,8 @@ export class AlgNumSubSystem {
         this.requiresHardSolve = true;
       }
     }));
+
+    this.validConstraints(c => c.resolveConstants(this.expressionResolver));
 
     this.evaluateAndBuildSolver();
 
