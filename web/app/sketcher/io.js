@@ -99,24 +99,24 @@ IO.prototype._loadSketch = function(sketch) {
   const version = sketch.version || 1;
   var T = Types;
   var maxEdge = 0;
-  var sketchLayers = sketch['layers'];
-  var boundary = sketch['boundary'];
+  var sketchLayers = sketch.layers;
+  var boundary = sketch.boundary;
   var boundaryNeedsUpdate = !(boundary === undefined || boundary == null);
   if (sketchLayers !== undefined) {
     for (var l = 0; l < sketchLayers.length; ++l) {
       var ioLayer = sketchLayers[l];
-      var layerName = ioLayer['name'];
+      var layerName = ioLayer.name;
       var boundaryProcessing = layerName === IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
       var layer = getLayer(this.viewer, layerName);
       // if (!!ioLayer.style) layer.style = ioLayer.style;
       layer.readOnly = !!ioLayer.readOnly;
-      var layerData = ioLayer['data'];
+      var layerData = ioLayer.data;
       for (let i = 0; i < layerData.length; ++i) {
         var obj = layerData[i];
         var skobj = null;
-        var _class = obj['_class'];
-        var aux = !!obj['aux'];
-        var role = obj['role'];
+        var _class = obj._class;
+        var aux = !!obj.aux;
+        var role = obj.role;
         
         //support legacy format
         if (!role) {
@@ -147,49 +147,49 @@ IO.prototype._loadSketch = function(sketch) {
           skobj = new Circle(c);
           skobj.r.set(obj.r);
         } else if (_class === T.ELLIPSE) {
-          const ep1 = endPoint(obj['ep1']);
-          const ep2 = endPoint(obj['ep2']);
+          const ep1 = endPoint(obj.ep1);
+          const ep2 = endPoint(obj.ep2);
           skobj = new Ellipse(ep1, ep2);
-          skobj.r.set(obj['r']);
+          skobj.r.set(obj.r);
         } else if (_class === T.ELL_ARC) {
-          const ep1 = endPoint(obj['ep1']);
-          const ep2 = endPoint(obj['ep2']);
-          const a = endPoint(obj['a']);
-          const b = endPoint(obj['b']);
+          const ep1 = endPoint(obj.ep1);
+          const ep2 = endPoint(obj.ep2);
+          const a = endPoint(obj.a);
+          const b = endPoint(obj.b);
           skobj = new EllipticalArc(ep1, ep2, a, b);
-          skobj.r.set(obj['r']);
+          skobj.r.set(obj.r);
         } else if (_class === T.BEZIER) {
-          const a = endPoint(obj['a']);
-          const b = endPoint(obj['b']);
-          const cp1 = endPoint(obj['cp1']);
-          const cp2 = endPoint(obj['cp2']);
+          const a = endPoint(obj.a);
+          const b = endPoint(obj.b);
+          const cp1 = endPoint(obj.cp1);
+          const cp2 = endPoint(obj.cp2);
           skobj = new BezierCurve(a, b, cp1, cp2);
         } else if (_class === T.HDIM) {
-          skobj = new HDimension(obj['a'], obj['b']);
-          skobj.flip = obj['flip'];
+          skobj = new HDimension(obj.a, obj.b);
+          skobj.flip = obj.flip;
         } else if (_class === T.VDIM) {
-          skobj = new VDimension(obj['a'], obj['b']);
-          skobj.flip = obj['flip'];
+          skobj = new VDimension(obj.a, obj.b);
+          skobj.flip = obj.flip;
         } else if (_class === T.DIM) {
-          skobj = new Dimension(obj['a'], obj['b']);
-          skobj.flip = obj['flip'];
+          skobj = new Dimension(obj.a, obj.b);
+          skobj.flip = obj.flip;
         } else if (_class === T.DDIM) {
-          skobj = new DiameterDimension(obj['obj']);
+          skobj = new DiameterDimension(obj.obj);
         }
         if (skobj != null) {
           skobj.role = role;
           getStage(obj.stage).assignObject(skobj);
           if (!aux) skobj.stabilize(this.viewer);
           if (aux) skobj.accept(function(o){o.aux = true; return true;});
-          if (obj['edge'] !== undefined) {
-            skobj.edge = obj['edge'];
+          if (obj.edge !== undefined) {
+            skobj.edge = obj.edge;
             maxEdge = Math.max(maxEdge, skobj.edge);
           }
           layer.add(skobj);
-          index[obj['id']] = skobj;
+          index[obj.id] = skobj;
           
           //reindex non point children to recover constraints
-          const childrenIds = obj['children'];
+          const childrenIds = obj.children;
           if (childrenIds) {
             const children = nonPointChildren(skobj);
             for (let childIdx = 0; childIdx < childrenIds.length; childIdx++) {
@@ -256,7 +256,7 @@ IO.prototype._loadSketch = function(sketch) {
     }
 
   }
-  let constants = sketch['constants'];
+  let constants = sketch.constants;
   if (constants !== undefined) {
     this.viewer.params.constantDefinition = constants;
   }
