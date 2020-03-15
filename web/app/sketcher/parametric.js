@@ -30,10 +30,10 @@ class ParametricManager {
 
   constructor(viewer) {
     this.viewer = viewer;
-    this.reset();
     this.viewer.params.define('constantDefinition', null);
     this.viewer.params.subscribe('constantDefinition', 'parametricManager', this.onConstantsExternalChange, this)();
-    this.constantResolver = this.createConstantResolver();
+
+    this.reset();
 
     this.$stages.pipe(this.$update);
     this.$stages.attach(() => this.viewer.refresh());
@@ -43,7 +43,7 @@ class ParametricManager {
 
   reset() {
     this.$stages.next({
-      list: [new SolveStage(this.viewer)],
+      list: [new SolveStage(this)],
       pointer: 0
     });
   }
@@ -84,33 +84,29 @@ class ParametricManager {
     this.add(constr);
   }
 
-  createConstantResolver() {
-    return value => {
-      var _value = this.constantTable[value];
-      if (_value === undefined && this.externalConstantResolver) {
-        _value = this.externalConstantResolver(value);
-      }
-      if (_value !== undefined) {
-        value = _value;
-      } else if (typeof(value) != 'number') {
-        console.error("unable to resolve constant " + value);
-      }
-      return value;
+  constantResolver = value => {
+    let _value = this.constantTable[value];
+    if (_value === undefined && this.externalConstantResolver) {
+      _value = this.externalConstantResolver(value);
     }
-  }
+    if (_value !== undefined) {
+      value = _value;
+    }
+    return value;
+  };
 
   rebuildConstantTable(constantDefinition) {
     this.constantTable = {};
     if (constantDefinition == null) return;
-    var lines = constantDefinition.split('\n');
-    var prefix = "(function() { \n";
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i];
-      var m = line.match(/^\s*([^\s]+)\s*=(.+)$/);
+    let lines = constantDefinition.split('\n');
+    let prefix = "(function() { \n";
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+      let m = line.match(/^\s*([^\s]+)\s*=(.+)$/);
       if (m != null && m.length === 3) {
-        var constant = m[1];
+        let constant = m[1];
         try {
-          var value = eval(prefix + "return " + m[2] + "; \n})()");
+          let value = eval(prefix + "return " + m[2] + "; \n})()");
           this.constantTable[constant] = value;
           prefix += "const " + constant + " = " + value + ";\n"
         } catch(e) {
@@ -226,7 +222,9 @@ class ParametricManager {
 
   _removeObjects(objects, force = false) {
     objects.forEach(obj => {
-      this._removeObject(obj, force);
+      if (obj.isRoot) {
+        this._removeObject(obj, force);
+      }
     });
   };
 
@@ -238,13 +236,15 @@ class ParametricManager {
     if (obj.isGenerated && !force) {
       return;
     }
-    obj.constraints.forEach(c => c.stage.algNumSystem._removeConstraint(c));
+
+    obj.traverse(o => o.constraints.forEach(c => c.stage.algNumSystem._removeConstraint(c)));
+
     if (obj.layer != null) {
       obj.layer.remove(obj);
     }
-    obj.generators.forEach(gen => {
-      gen.removeObject(obj, o => this._removeObject(o, true), () => this._removeGenerator(gen));
-    });
+    obj.traverse(co => co.generators.forEach(gen => {
+      gen.removeObject(co, o => this._removeObject(o, true), () => this._removeGenerator(gen));
+    }));
     obj.constraints.clear();
     obj.generators.clear();
   };
@@ -253,6 +253,11 @@ class ParametricManager {
     for (let stage of this.stages) {
       stage.algNumSystem.invalidate();
     }
+  }
+
+  revalidateConstraint(constraint) {
+    constraint.stage.algNumSystem.revalidateConstraint(constraint);
+    this.notify();
   }
 
   prepare(interactiveObjects) {
@@ -268,11 +273,6 @@ class ParametricManager {
         gen.regenerate(this.viewer);
       })
     }
-  }
-
-  reSolve() {
-    this.prepare();
-    this.solve(false);
   }
 
   addGenerator(generator) {
@@ -342,7 +342,7 @@ class ParametricManager {
   newStage() {
     this.$stages.update(s => ({
       pointer: s.pointer + 1,
-      list: [...s.list, new SolveStage(this.viewer)]
+      list: [...s.list, new SolveStage(this)]
     }));
   }
 
@@ -354,7 +354,7 @@ class ParametricManager {
     let i = list.length;
     const createdStages = [];
     for (;i<=uptoIndex;i++) {
-      createdStages.push(new SolveStage(this.viewer));
+      createdStages.push(new SolveStage(this));
     }
     this.$stages.update(s => ({
       pointer: uptoIndex,
@@ -376,9 +376,13 @@ class SolveStage {
   generators = new Set();
   objects = new Set();
 
-  constructor(viewer) {
-    this.viewer = viewer;
+  constructor(parametricManager) {
+    this.parametricManager = parametricManager;
     this.algNumSystem = this.createAlgNumSystem();
+  }
+
+  get viewer() {
+    return this.parametricManager.viewer;
   }
 
   assignObject(object) {
@@ -418,7 +422,7 @@ class SolveStage {
       return Math.abs(x2 - x1);
     };
 
-    return new AlgNumSubSystem(calcVisualLimit, this);
+    return new AlgNumSubSystem(calcVisualLimit, this.parametricManager.constantResolver, this);
   }
 
   get index() {

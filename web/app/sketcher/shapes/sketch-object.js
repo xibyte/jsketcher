@@ -10,6 +10,7 @@ export class SketchObject extends Shape {
   constructor() {
     super();
     this.id = Generator.genID();
+    this.parent = null;
     this.markers = [];
     this.children = [];
     this.layer = null;
@@ -62,6 +63,13 @@ export class SketchObject extends Shape {
       }
     }
     return visitor(this);
+  }
+
+  traverse(visitor) {
+    for (let child of this.children) {
+      child.accept(visitor);
+    }
+    visitor(this);
   }
 
   stabilize(viewer) {
@@ -214,6 +222,18 @@ export class SketchObject extends Shape {
       cb(obj);
       obj = obj.parent;
     }
+  }
+
+  root() {
+    let obj = this;
+    while (obj.parent) {
+      obj = obj.parent;
+    }
+    return obj;
+  }
+
+  get isRoot() {
+    return this.parent === null;
   }
 }
 

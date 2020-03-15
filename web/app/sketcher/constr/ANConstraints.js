@@ -804,36 +804,6 @@ export const ConstraintDefinitions = {
     },
 
   },
-
-  Mirror: {
-    id: 'Mirror',
-    name: 'Mirror Objects',
-
-    modify: (referenceObjects, managedObjects) => {
-
-      const reflectionLine = referenceObjects[0];
-
-      const dir = new Vector();
-      dir.set(-(reflectionLine.b.y - reflectionLine.a.y), reflectionLine.b.x - reflectionLine.a.x, 0)._normalize();
-
-      for (let i = 0; i < managedObjects.length; i++) {
-        let origin = reflectionLine.a.toVector();
-
-        const pointMirroring = (x, y) => {
-          let pt = new Vector(x, y, 0);
-          let proj = dir.dot(pt.minus(origin));
-          return dir.multiply(- proj * 2)._plus(pt);
-        };
-
-        referenceObjects[i+1].mirror(managedObjects[i], pointMirroring);
-      }
-    },
-
-    referenceObjects: objects => objects.slice(0, (objects.length >> 1) + 1),
-    managedObjects: objects => objects.slice((objects.length + 1) >> 1)
-
-  }
-
 };
 
 
@@ -923,17 +893,11 @@ export class AlgNumConstraint {
     }
   }
 
-  modify() {
-    this.resolveConstants();
-    this.schema.modify(this.referenceObjects, this.managedObjects, this.resolvedConstants);
-  }
-
   collectPolynomials(polynomials) {
-    this.resolveConstants();
     this.schema.collectPolynomials(polynomials, this.params, this.resolvedConstants);
   }
 
-  resolveConstants() {
+  resolveConstants(expressionResolver) {
     if (this.constants) {
       if (!this.resolvedConstants) {
         this.resolvedConstants = {};
@@ -941,6 +905,7 @@ export class AlgNumConstraint {
       Object.keys(this.constants).map(name => {
         let def = this.schema.constants[name];
         let val = this.constants[name];
+        val = expressionResolver(val);
         if (def.type === 'number') {
           val = parseFloat(val);
         }

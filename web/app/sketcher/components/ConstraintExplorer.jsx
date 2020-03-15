@@ -47,7 +47,8 @@ export function ConstraintButton({prefix='', constraint: c, ...props}) {
   const edit = (constraint) => {
     if (constraint.editable) {
       editConstraint(ui.$constraintEditRequest, constraint, () => {
-        viewer.parametricManager.reSolve();
+        viewer.parametricManager.revalidateConstraint(c);
+        viewer.parametricManager.invalidate();
       });
     }
   };
