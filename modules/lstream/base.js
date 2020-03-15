@@ -34,6 +34,10 @@ export class StreamBase {
   throttle(delay, accumulator) {
     return new ThrottleStream(this, delay, accumulator);
   }
+
+  pipe(otherStream) {
+    return this.attach(v => otherStream.next(v));
+  }
 }
 
 const {MapStream} = require('./map');

@@ -370,6 +370,10 @@ class Viewer {
   };
 
   select(objs, exclusive) {
+    if (this.customSelectionHandler) {
+      this.customSelectionHandler(objs, exclusive);
+      return;
+    }
     this.capture('selection', objs, exclusive);
     this.streams.selection.next(this.selected);
   }
@@ -403,6 +407,11 @@ class Viewer {
       captured[i].removeMarker(CAPTURES[type]);
     }
     while (captured.length > 0) captured.pop();
+  };
+
+  withdrawGlobal() {
+    Object.keys(this.captured).forEach(type => this.withdrawAll(type));
+    this.streams.selection.next(this.selected);
   };
 
   deselect(obj) {
@@ -544,6 +553,7 @@ class Layer {
     const idx = this.objects.indexOf(object);
     if (idx !== -1) {
       this.objects.splice(idx, 1);
+      object.stage.unassignObject(object);
       this.viewer.objectsUpdate();
       return true;
     }
@@ -569,7 +579,10 @@ class Layer {
       object.role = this.viewer.addingRoleMode; 
     }
     this.objects.push(object);
-    this.viewer.objectsUpdate();    
+    if (!object.stage) {
+      this.viewer.parametricManager.stage.assignObject(object);
+    }
+    this.viewer.objectsUpdate();
   }
 }
 

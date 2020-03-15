@@ -1,9 +1,11 @@
 import constraintActions from "./constraintActions";
 import {getDescription, MatchIndex, matchSelection} from "../selectionMatcher";
 import {toast} from "react-toastify";
+import operationActions from "./operationActions";
 
 const ALL_CONTEXTUAL_ACTIONS = [
   ...constraintActions,
+  ...operationActions
   //keep going here
 ];
 
@@ -18,7 +20,7 @@ export function matchAvailableActions(selection) {
 
   if (selection.length) {
     for (let action of  ALL_CONTEXTUAL_ACTIONS) {
-      if (matchSelection(action.selectionMatcher, matchIndex, true)) {
+      if (action.selectionMatcher && matchSelection(action.selectionMatcher, matchIndex, true)) {
         matched.push(action);
       }
     }
@@ -48,4 +50,17 @@ export function runActionOrToastWhyNot(actionId, selection, ctx, silent) {
       }
     }
   }
+}
+
+export function startOperation(ctx, actionId) {
+
+  const action = index[actionId];
+  if (action.wizard) {
+    ctx.ui.$wizardRequest.next({
+      title: action.shortName,
+      schema: action.wizard,
+      onApply: (params) => action.invoke(ctx, params)
+    })
+  }
+
 }
