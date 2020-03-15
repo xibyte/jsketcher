@@ -32,7 +32,6 @@ export class EditCircleTool extends Tool {
   }
 
   solveRequest(rough) {
-    // this.viewer.parametricManager.prepare([this.circle.r]);
     this.viewer.parametricManager.solve(rough);
   }
 
@@ -55,6 +54,7 @@ export class EditCircleTool extends Tool {
     this.pointPicked(this.circle.c.x, this.circle.c.y);
     this.sendHint('specify radius');
     this.viewer.activeLayer.add(this.circle);
+    this.viewer.parametricManager.prepare([this.circle]);
     this.viewer.refresh();
   }
 

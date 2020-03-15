@@ -243,7 +243,7 @@ function App2D() {
   });
 
   this.registerAction('tangentConstraint', "Tangent Constraint", function () {
-    app.viewer.parametricManager.tangent(app.viewer.selected);
+    runActionOrToastWhyNot('Tangent', app.viewer.selected, app.context);
   });
 
   this.registerAction('lockConstraint', "Lock Constraint", function () {

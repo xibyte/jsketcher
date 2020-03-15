@@ -49,7 +49,6 @@ export class ToolManager {
         this.releaseControl();
       } else if (e.keyCode === 46 || e.keyCode === 8) {
         let selection = viewer.selected.slice();
-        viewer.deselectAll();
         viewer.removeAll(selection);
         viewer.refresh();
       }

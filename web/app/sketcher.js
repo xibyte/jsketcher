@@ -12,6 +12,7 @@ import {SketcherApp} from "./sketcher/components/SketcherApp";
 import React from "react";
 import {stream} from "lstream";
 import {loadUIState, saveUIState} from "./sketcher/uiState";
+import {Scope} from "./sketcher/components/Scope";
 
 function initializeSketcherApplication() {
   var app = new App2D();
@@ -156,7 +157,7 @@ function startReact(appCtx) {
     // e.preventDefault();
   };
   ReactDOM.render(
-    <SketcherApp applicationContext={appCtx} />,
+    <Scope><SketcherApp applicationContext={appCtx} /></Scope>,
     reactControls
   );
 }

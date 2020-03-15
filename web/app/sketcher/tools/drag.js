@@ -1,6 +1,7 @@
 import {Tool} from './tool'
 import {optim} from '../../math/optim'
 import * as math from '../../math/math'
+import {toast} from "react-toastify";
 
 export class DragTool extends Tool {
   
@@ -33,6 +34,9 @@ export class DragTool extends Tool {
   }
 
   mousedown(e) {
+    if (this.obj.isGenerated) {
+      toast("You cannot drag generated object. To move them, drag the objects they are generated off of ")
+    }
     this.origin.x = e.offsetX;
     this.origin.y = e.offsetY;
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);

@@ -138,6 +138,7 @@ class Viewer {
   };
 
   removeAll(objects) {
+    this.deselectAll();
     this.parametricManager.removeObjects(objects);
   };
 

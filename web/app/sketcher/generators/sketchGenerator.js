@@ -73,7 +73,7 @@ export class SketchGenerator {
       if (!restoredObject) {
         throw 'generator refers to non existent object';
       }
-      restoredObject.generator = this;
+      restoredObject.generator = sketchGenerator;
       return restoredObject;
     });
     sketchGenerator.init();
