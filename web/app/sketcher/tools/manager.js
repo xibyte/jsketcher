@@ -18,7 +18,7 @@ export class ToolManager {
     }, false);
     canvas.addEventListener('mouseup', (e) => {
       e.preventDefault();
-      e.stopPropagation();
+      // e.stopPropagation(); // allow propagation for move in sake of dynamic layout
       this.tool.mouseup(e);
     }, false);
     window.addEventListener('touchstart', (e) => {

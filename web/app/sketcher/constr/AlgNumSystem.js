@@ -3,7 +3,7 @@ import {eqEps} from "../../brep/geom/tolerance";
 import {Polynomial, POW_1_FN} from "./polynomial";
 import {compositeFn} from "gems/func";
 
-const DEBUG = true;
+const DEBUG = false;
 
 export class AlgNumSubSystem {
 

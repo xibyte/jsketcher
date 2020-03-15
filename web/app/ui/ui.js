@@ -91,15 +91,15 @@ Window.prototype.tileUpPolicy = function(firstTime, relativeEl) {
 function WinManager() {
   this.moveHandler = null;
   var wm = this;
-  $('body').mousemove(function(e) {
+  document.body.addEventListener("mousemove", function( e ) {
     if (wm.moveHandler != null) {
       wm.moveHandler(e);
       e.preventDefault();
     }
-  });
-  $('body').mouseup(function(e) {
+  }, false);
+  document.body.addEventListener("mouseup", function( e ) {
     wm.moveHandler = null;
-  });
+  }, false);
 }
 
 WinManager.prototype.captureDrag = function(el, e) {
@@ -115,7 +115,7 @@ WinManager.prototype.captureDrag = function(el, e) {
 WinManager.prototype.captureResize = function(el, dirMask, e, onResize) {
   
   var origin = {x : e.pageX, y : e.pageY};
-  var originSize = {x : el.width(), y : el.height()};
+  var originSize = {x : el.outerWidth(), y : el.height()};
   var originLocation = el.offset();
   var north = _maskTest(dirMask, DIRECTIONS.NORTH);
   var south = _maskTest(dirMask, DIRECTIONS.SOUTH);
@@ -233,7 +233,7 @@ WinManager.prototype.registerResize = function(el, dirMask, onResize) {
     } else if (west && onWestEdge(e, $this)) {
       el.css('cursor', 'ew-resize');
     } else {
-      el.css('cursor', 'inherited');
+      el.css('cursor', "");
     }
   });
 };
@@ -381,6 +381,20 @@ Dock.prototype.hide = function(viewName) {
 
 Dock.prototype.isVisible = function(viewName) {
   return this.views[viewName].switchBtn.hasClass('selected');
+};
+
+Dock.prototype.setState = function(state) {
+  state.forEach(viewName => this.show(viewName));
+};
+
+Dock.prototype.getState = function() {
+  const state = [];
+  Object.keys(this.views).forEach(viewName => {
+    if (this.isVisible(viewName)) {
+      state.push(viewName);
+    }
+  });
+  return state;
 };
 
 function _maskTest(mask, value) {

@@ -17,7 +17,7 @@ export function StageControl() {
 
 
   return  <div className={ls.root}>
-    {stages.list.map((stage, i) => <div><button onClick={() => setStage(i)}>{i}.</button></div>)}
+    {stages.list.map((stage, i) => <div key={stage.index}><button onClick={() => setStage(i)}>{i}.</button></div>)}
     <div><button onClick={createStage}>+</button></div>
   </div>
 }
