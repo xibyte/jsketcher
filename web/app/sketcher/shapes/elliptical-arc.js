@@ -19,8 +19,8 @@ export class EllipticalArc extends Ellipse {
   }
 
   stabilize(viewer) {
-    viewer.parametricManager._add(new Constraints.PointOnEllipseInternal(this.b, this));
-    viewer.parametricManager._add(new Constraints.PointOnEllipseInternal(this.a, this));
+    this.stage.addConstraint(new Constraints.PointOnEllipseInternal(this.b, this));
+    this.stage.addConstraint(new Constraints.PointOnEllipseInternal(this.a, this));
   }
 
   drawImpl(ctx, scale) {

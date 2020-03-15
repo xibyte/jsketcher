@@ -44,6 +44,17 @@ export const Styles = {
     strokeStyle : "#fff5c3",
     fillStyle : "#000000"
   },
+  PAST: {
+    lineWidth : 2,
+    strokeStyle : "#fff5c3",
+    fillStyle : "#000000"
+  },
+
+  FUTURE: {
+    lineWidth : 2,
+    strokeStyle : "#576a85",
+    fillStyle : "#000000"
+  },
 
   FULLY_CONSTRAINED: {
     lineWidth : 2,
@@ -61,5 +72,10 @@ export const Styles = {
     lineWidth : 1,
     strokeStyle : "#888888",
     fillStyle : "#000000"
+  },
+  GENERATED: {
+    lineWidth : 2,
+    strokeStyle : "#c5bbff",
+    fillStyle : "#8252bc"
   }
 };

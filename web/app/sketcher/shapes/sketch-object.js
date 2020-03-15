@@ -6,6 +6,7 @@ import {dfs} from 'gems/traverse';
 import {ConstraintDefinitions} from "../constr/ANConstraints";
 
 export class SketchObject extends Shape {
+
   constructor() {
     super();
     this.id = Generator.genID();
@@ -15,6 +16,34 @@ export class SketchObject extends Shape {
     this.constraints = new Set();
     this.readOnly = false;
     this.fullyConstrained = false;
+    this.generator = null;
+    this.generators = new Set();
+    this._stage = null;
+  }
+
+  get isGenerated() {
+    let obj = this;
+    while (obj) {
+      if (obj.generator) {
+        return true;
+      }
+      obj = obj.parent;
+    }
+    return false;
+  }
+
+  get stage() {
+    if (this._stage) {
+      return this._stage;
+    }
+    if (this.parent) {
+      return this.parent.stage;
+    }
+    return null;
+  }
+
+  set stage(value) {
+    this._stage = value;
   }
 
   normalDistance(aim, scale) {
@@ -87,7 +116,7 @@ export class SketchObject extends Shape {
 
   draw(ctx, scale, viewer) {
     if (!this.visible) return;
-    const customStyle = this.markers.length !== 0 ? this.markers[0] : (this.fullyConstrained ? Styles.FULLY_CONSTRAINED : null);
+    const customStyle = this.getCustomStyle();
     if (customStyle !== null) {
       ctx.save();
       viewer.setStyle(customStyle, ctx);
@@ -96,7 +125,39 @@ export class SketchObject extends Shape {
     this.drawImpl(ctx, scale, viewer);
     if (customStyle !== null) ctx.restore();
   }
-  
+
+  getCustomStyle() {
+    const productionKind = this.classify();
+    if (this.markers.length !== 0) {
+      return this.markers[0];
+    } else if (productionKind === PAST) {
+      return Styles.PAST;
+    } else if (productionKind === FUTURE) {
+      return Styles.FUTURE;
+    } else if (this.isGenerated) {
+      return Styles.GENERATED;
+    } else if (this.fullyConstrained) {
+      return Styles.FULLY_CONSTRAINED;
+    } else {
+    }
+    return null;
+  }
+
+  classify() {
+    if (!this.stage) {
+      return CURRENT;
+    }
+    const thisIndex = this.stage.index;
+    const activeIndex = this.stage.viewer.parametricManager.stage.index;
+    if (thisIndex < activeIndex) {
+      return PAST;
+    } else if (thisIndex > activeIndex) {
+      return FUTURE;
+    } else {
+      return CURRENT;
+    }
+  }
+
   copy() {
     throw 'method not implemented';
   }
@@ -165,3 +226,6 @@ export function pointIterator(shape, func) {
   });
 }
 
+const PAST = 1;
+const CURRENT = 2;
+const FUTURE = 3;
