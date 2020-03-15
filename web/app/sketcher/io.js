@@ -18,6 +18,7 @@ import {NurbsObject} from './shapes/nurbsObject';
 import {System} from './system';
 import {AlgNumConstraint} from "./constr/ANConstraints";
 import {SketchGenerator} from "./generators/sketchGenerator";
+import {getUIState} from "./uiState";
 
 const Types = {
   POINT     : 'TCAD.TWO.EndPoint',
