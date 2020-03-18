@@ -18,7 +18,7 @@ export default [
     id: 'CoincidentGlobal',
     shortName: 'Coincident',
     kind: 'Constraint',
-    description: 'Point Coincident Constraint',
+    description: 'point coincident constraint',
     icon: CoincidentConstraintIcon,
 
     invoke: (ctx) => {
@@ -30,7 +30,7 @@ export default [
     id: 'VerticalGlobal',
     shortName: 'Vertical',
     kind: 'Constraint',
-    description: 'Vertical Constraint',
+    description: 'vertical constraint',
     icon: VerticalConstraintIcon,
 
     invoke: (ctx) => {
@@ -42,7 +42,7 @@ export default [
     id: 'HorizontalGlobal',
     shortName: 'Horizontal',
     kind: 'Constraint',
-    description: 'Horizontal Constraint',
+    description: 'horizontal constraint',
     icon: HorizontalConstraintIcon,
 
     invoke: (ctx) => {
@@ -54,7 +54,7 @@ export default [
     id: 'ParallelGlobal',
     shortName: 'Parallel',
     kind: 'Constraint',
-    description: 'Parallel Constraint',
+    description: 'parallel constraint',
     icon: ParallelConstraintIcon,
 
     invoke: (ctx) => {
@@ -66,7 +66,7 @@ export default [
     id: 'PerpendicularGlobal',
     shortName: 'Perpendicular',
     kind: 'Constraint',
-    description: 'Perpendicular Constraint',
+    description: 'perpendicular constraint',
     icon: PerpendicularConstraintIcon,
 
     invoke: (ctx) => {
@@ -78,7 +78,7 @@ export default [
     id: 'DistancePLGlobal',
     shortName: 'Point to Line Distance',
     kind: 'Constraint',
-    description: 'Distance Between Point and Line',
+    description: 'distance between point and line',
     icon: DistancePLConstraintIcon,
 
     invoke: (ctx) => {
@@ -90,7 +90,7 @@ export default [
     id: 'DistanceGlobal',
     shortName: 'Point to Point Distance',
     kind: 'Constraint',
-    description: 'Distance Between Two Points',
+    description: 'distance between two points',
     icon: DistanceConstraintIcon,
 
     invoke: (ctx) => {
@@ -102,7 +102,7 @@ export default [
     id: 'EntityEqualityGlobal',
     shortName: 'Entity Equality',
     kind: 'Constraint',
-    description: 'Equal Length or Equal Radius',
+    description: 'equal length or equal radius',
     icon: EqualConstraintIcon,
 
     invoke: (ctx) => {
@@ -118,7 +118,7 @@ export default [
     id: 'PointOnLineGlobal',
     shortName: 'Point On Line',
     kind: 'Constraint',
-    description: 'Point On Line',
+    description: 'point on line',
     icon: PointOnLineConstraintIcon,
 
     invoke: (ctx) => {
@@ -130,7 +130,7 @@ export default [
     id: 'TangentGlobal',
     shortName: 'Tangent',
     kind: 'Constraint',
-    description: 'Tangent Between Different Curves',
+    description: 'tangent between different curves',
     icon: TangentConstraintIcon,
 
     invoke: (ctx) => {
@@ -142,7 +142,7 @@ export default [
     id: 'RadiusGlobal',
     shortName: 'Radius',
     kind: 'Constraint',
-    description: 'Radius of a Circle or Arc',
+    description: 'radius of a circle or arc',
     icon: RadiusConstraintIcon,
 
     invoke: (ctx) => {
@@ -154,7 +154,7 @@ export default [
     id: 'PointOnCurveGlobal',
     shortName: 'Point On Curve',
     kind: 'Constraint',
-    description: 'Point On Curve',
+    description: 'point on curve',
     icon: PointOnCurveConstraintIcon,
 
     invoke: (ctx) => {
@@ -166,7 +166,7 @@ export default [
     id: 'PointInMiddleGlobal',
     shortName: 'Point In Middle',
     kind: 'Constraint',
-    description: 'Point In Middle',
+    description: 'point in middle',
     icon: PointInMiddleConstraintIcon,
 
     invoke: (ctx) => {
@@ -178,7 +178,7 @@ export default [
     id: 'SymmetryGlobal',
     shortName: 'Symmetry',
     kind: 'Constraint',
-    description: 'Symmetry',
+    description: 'symmetry',
     icon: SymmetryConstraintIcon,
 
     invoke: (ctx) => {
@@ -190,7 +190,7 @@ export default [
     id: 'AngleBetweenGlobal',
     shortName: 'Angle Between',
     kind: 'Constraint',
-    description: 'Angle Between',
+    description: 'angle between',
     icon: AngleBetweenConstraintIcon,
 
     invoke: (ctx) => {
@@ -202,7 +202,7 @@ export default [
     id: 'AngleGlobal',
     shortName: 'Angle',
     kind: 'Constraint',
-    description: 'Angle of a Line',
+    description: 'angle of a line',
     icon: AngleConstraintIcon,
 
     invoke: (ctx) => {
@@ -214,7 +214,7 @@ export default [
     id: 'LockGlobal',
     shortName: 'Lock',
     kind: 'Constraint',
-    description: 'Locks a point',
+    description: 'locks a point',
     icon: LockConstraintIcon,
 
     invoke: (ctx) => {
@@ -226,7 +226,7 @@ export default [
     id: 'FilletGlobal',
     shortName: 'Fillet',
     kind: 'Constraint',
-    description: 'Make a Fillet',
+    description: 'make a fillet',
     icon: FilletConstraintIcon,
 
     invoke: (ctx) => {
@@ -235,10 +235,10 @@ export default [
   },
 
   {
-    id: 'Mirror',
+    id: 'MirrorStart',
     shortName: 'Mirror',
     kind: 'Constraint',
-    description: 'Make a Fillet',
+    description: 'adds mirror generator',
     icon: MirrorGeneratorIcon,
 
     invoke: (ctx) => {

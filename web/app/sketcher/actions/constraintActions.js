@@ -7,6 +7,25 @@ import {Arc} from "../shapes/arc";
 import {FilletTool} from "../tools/fillet";
 import {editConstraint as _editConstraint} from "../components/ConstraintEditor";
 import {BezierCurve} from "../shapes/bezier-curve";
+import {
+  AngleBetweenConstraintIcon,
+  AngleConstraintIcon,
+  CoincidentConstraintIcon,
+  DistanceConstraintIcon,
+  DistancePLConstraintIcon,
+  EqualConstraintIcon, FilletConstraintIcon,
+  HorizontalConstraintIcon,
+  LockConstraintIcon,
+  ParallelConstraintIcon,
+  PerpendicularConstraintIcon,
+  PointInMiddleConstraintIcon,
+  PointOnCurveConstraintIcon,
+  PointOnLineConstraintIcon,
+  RadiusConstraintIcon,
+  SymmetryConstraintIcon,
+  TangentConstraintIcon,
+  VerticalConstraintIcon
+} from "../icons/constraints/ConstraintIcons";
 
 export default [
 
@@ -16,6 +35,7 @@ export default [
     shortName: 'Coincident',
     kind: 'Constraint',
     description: 'Point Coincident',
+    icon: CoincidentConstraintIcon,
     selectionMatcher: {
       selector: 'matchAll',
       types: [EndPoint],
@@ -40,6 +60,7 @@ export default [
     shortName: 'Tangent',
     kind: 'Constraint',
     description: 'Tangent Between Line And Circle',
+    icon: TangentConstraintIcon,
     selectionMatcher: {
       selector: 'matchSequence',
       sequence: [
@@ -76,6 +97,7 @@ export default [
     shortName: 'Equal Radius',
     kind: 'Constraint',
     description: 'Equal Radius Between Two Circle',
+    icon: EqualConstraintIcon,
     selectionMatcher: {
       selector: 'matchAll',
       types: [Circle, Arc],
@@ -100,6 +122,7 @@ export default [
     shortName: 'Equal Length',
     kind: 'Constraint',
     description: 'Equal Length Between Two Segments',
+    icon: EqualConstraintIcon,
     selectionMatcher: {
       selector: 'matchAll',
       types: [Segment],
@@ -121,6 +144,7 @@ export default [
     shortName: 'Point On Line',
     kind: 'Constraint',
     description: 'Point On Line',
+    icon: PointOnLineConstraintIcon,
     selectionMatcher: {
       selector: 'matchSequence',
       sequence: [
@@ -148,6 +172,7 @@ export default [
     shortName: 'Point On Circle',
     kind: 'Constraint',
     description: 'Point On Circle',
+    icon: PointOnCurveConstraintIcon,
     selectionMatcher: {
       selector: 'matchSequence',
       sequence: [
@@ -175,6 +200,7 @@ export default [
     shortName: 'Point On Curve',
     kind: 'Constraint',
     description: 'Point On Curve',
+    icon: PointOnCurveConstraintIcon,
     selectionMatcher: {
       selector: 'matchSequence',
       sequence: [
@@ -202,6 +228,7 @@ export default [
     shortName: 'Middle Point',
     kind: 'Constraint',
     description: 'Point In The Middle',
+    icon: PointInMiddleConstraintIcon,
     selectionMatcher: {
       selector: 'matchSequence',
       sequence: [
@@ -227,6 +254,7 @@ export default [
     shortName: 'Symmetry',
     kind: 'Constraint',
     description: 'Symmetry of two points against middle point',
+    icon: SymmetryConstraintIcon,
     selectionMatcher: {
       selector: 'matchSequence',
       sequence: [
@@ -252,6 +280,7 @@ export default [
     shortName: 'Angle',
     kind: 'Constraint',
     description: 'Angle',
+    icon: AngleConstraintIcon,
     selectionMatcher: {
       selector: 'matchAll',
       types: [Segment],
@@ -281,6 +310,7 @@ export default [
     shortName: 'Vertical',
     kind: 'Constraint',
     description: 'Vertical',
+    icon: VerticalConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchAll',
@@ -306,6 +336,7 @@ export default [
     shortName: 'Horizontal',
     kind: 'Constraint',
     description: 'Horizontal',
+    icon: HorizontalConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchAll',
@@ -331,6 +362,7 @@ export default [
     shortName: 'Angle Between',
     kind: 'Constraint',
     description: 'Angle Between Lines',
+    icon: AngleBetweenConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchAll',
@@ -363,6 +395,7 @@ export default [
     shortName: 'Perpendicular',
     kind: 'Constraint',
     description: 'Perpendicularity between two or more lines',
+    icon: PerpendicularConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchAll',
@@ -389,6 +422,7 @@ export default [
     shortName: 'Parallel',
     kind: 'Constraint',
     description: 'Parallelism between two or more lines',
+    icon: ParallelConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchAll',
@@ -415,6 +449,7 @@ export default [
     shortName: 'Length',
     kind: 'Constraint',
     description: 'Segment Length',
+    icon: DistanceConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchAll',
@@ -446,6 +481,7 @@ export default [
     shortName: 'Radius Length',
     kind: 'Constraint',
     description: 'Radius Length',
+    icon: RadiusConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchAll',
@@ -477,6 +513,7 @@ export default [
     shortName: 'Point to Line Distance',
     kind: 'Constraint',
     description: 'Distance between Point and Line',
+    icon: DistancePLConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchSequence',
@@ -513,6 +550,7 @@ export default [
     shortName: 'Two Point Distance',
     kind: 'Constraint',
     description: 'Distance between two Points',
+    icon: DistanceConstraintIcon,
 
     selectionMatcher: {
       selector: 'matchSequence',
@@ -544,6 +582,8 @@ export default [
     shortName: 'Lock Point',
     kind: 'Constraint',
     description: 'Lock Point',
+    icon: LockConstraintIcon,
+
     selectionMatcher: {
       selector: 'matchSequence',
       sequence: [
@@ -570,6 +610,8 @@ export default [
     shortName: 'Fillet',
     kind: 'Tool',
     description: 'Make a Fillet',
+    icon: FilletConstraintIcon,
+
     selectionMatcher: {
       selector: 'function',
       match: (selection) => {

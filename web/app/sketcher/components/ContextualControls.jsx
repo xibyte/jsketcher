@@ -5,6 +5,8 @@ import {useStream} from "../../../../modules/ui/effects";
 import {SketcherAppContext} from "./SketcherApp";
 import {MatchIndex, matchSelection} from "../selectionMatcher";
 import {ConstraintButton, GeneratorButton} from "./ConstraintExplorer";
+import {Columnizer} from "../../../../modules/ui/components/Columnizer";
+import {NoIcon} from "../icons/NoIcon";
 
 export function ContextualControls() {
 
@@ -32,19 +34,23 @@ export function ContextualControls() {
     <div className={ls.hr}>AVAILABLE ACTIONS:</div>
 
     <div style={{
-      display: 'flex',
-      maxWidth: 200,
-      flexWrap: 'wrap',
     }}>
-      {
-        availableActions.map(a => <button
-          key={a.id}
-          style={{
-            margin: 3
-          }}
-          onClick={() => a.invoke(ctx, matchSelection(a.selectionMatcher, new MatchIndex(selection), false))}
-          title={a.description}>{a.shortName}</button>)
-      }
+      <Columnizer columns={3} spacing={3}>
+        {
+          availableActions.map(a => {
+            const Icon = a.icon || NoIcon;
+
+            return <button
+              className='icon-button'
+              key={a.id}
+              style={{
+                width: '100%'
+              }}
+              onClick={() => a.invoke(ctx, matchSelection(a.selectionMatcher, new MatchIndex(selection), false))}
+              title={a.description}><Icon size={16}/>{a.shortName}</button>
+          })
+        }
+      </Columnizer>
     </div>
     {
       nonInternalConstraints && nonInternalConstraints.length !== 0 && <>
