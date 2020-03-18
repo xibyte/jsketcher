@@ -2,10 +2,12 @@ import constraintActions from "./constraintActions";
 import {getDescription, MatchIndex, matchSelection} from "../selectionMatcher";
 import {toast} from "react-toastify";
 import operationActions from "./operationActions";
+import constraintGlobalActions from "./constraintGlobalActions";
 
 const ALL_CONTEXTUAL_ACTIONS = [
   ...constraintActions,
-  ...operationActions
+  ...operationActions,
+  ...constraintGlobalActions
   //keep going here
 ];
 
@@ -34,7 +36,8 @@ export function getSketcherAction(actionId) {
 }
 
 //For backward compatibility
-export function runActionOrToastWhyNot(actionId, selection, ctx, silent) {
+export function runActionOrToastWhyNot(actionId, ctx, silent) {
+  const selection = ctx.viewer.selected;
   const action = index[actionId];
   if (action) {
     const matched = matchSelection(action.selectionMatcher, new MatchIndex(selection), false);

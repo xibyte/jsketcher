@@ -1,0 +1,31 @@
+
+@focus-color: #0065dc;
+@focus-color-secondary: rgba(3, 102, 214, .3);
+
+.root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  button {
+
+    background: #606060;
+    border: 1px solid #606060;
+    outline: none;
+    &:focus {
+      border-color: @focus-color;
+      box-shadow: 0 0 0 2px @focus-color-secondary;
+      outline: none;
+    }
+    margin: 2px 4px;
+    padding: 1px;
+    flex-basis: 36px;
+  }
+
+  svg {
+    width: 36px;
+    height: 36px;
+  }
+
+}

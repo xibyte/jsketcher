@@ -1,0 +1,17 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="gray">
+
+  <g>
+    <circle class="point" cx="9" cy="32" r="5" />
+    <circle class="point" cx="55" cy="32" r="5" />
+    <path class="annotation" d="M 50 32 L 15 32" />
+    <polygon class="annotation arrow" points="48,32 41,28 41,36"  />
+    <polygon class="annotation arrow" points="16,32 23,28 23,36"  />
+
+  </g>
+</svg>

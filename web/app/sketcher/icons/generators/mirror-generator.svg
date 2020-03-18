@@ -1,0 +1,16 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="none">
+
+  <g>
+    <path class="line"      d="M 32 18 L 18 18 18 48 32 48"  />
+    <path class="generated" d="M 32 18 L 48 18 48 48 32 48"  />
+    <path class="construction" d="M 32 8 L 32 57" />
+    <circle class="point" cx="18" cy="18" r="5" />
+    <circle class="point" cx="18" cy="48" r="5" />
+  </g>
+</svg>

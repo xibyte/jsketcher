@@ -44,7 +44,9 @@
     "grunt": "^1.0.4",
     "grunt-contrib-copy": "1.0.0",
     "less-loader": "^4.1.0",
+    "raw-loader": "^4.0.0",
     "style-loader": "0.13.1",
+    "svg-inline-loader": "^0.8.2",
     "webpack": "^4.26.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.7.2"

@@ -126,21 +126,21 @@ WinManager.prototype.captureResize = function(el, dirMask, e, onResize) {
     var dx = e.pageX - origin.x;
     var dy = e.pageY - origin.y;
     if (east) {
-      el.css('width', (originSize.x + dx) + 'px');
+      el.css('width', Math.round(originSize.x + dx) + 'px');
     }
     var top = originLocation.top;
     var left = originLocation.left;
     var setLoc = false;
     if (west) {
-      el.css('width', (originSize.x - dx) + 'px');
+      el.css('width', Math.round(originSize.x - dx) + 'px');
       left += dx;
       setLoc = true;
     }
     if (south) {
-      el.css('height', (originSize.y + dy) + 'px');
+      el.css('height', Math.round(originSize.y + dy) + 'px');
     }
     if (north) {
-      el.css('height', (originSize.y - dy) + 'px');
+      el.css('height', Math.round(originSize.y - dy) + 'px');
       top += dy;
       setLoc = true;
     }

@@ -1,0 +1,13 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="gray">
+
+  <g>
+    <path d="M18,23 H45" class="equal" stroke-linecap="round" />
+    <path d="M18,40 H45" class="equal" stroke-linecap="round" />
+  </g>
+</svg>
