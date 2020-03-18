@@ -9,8 +9,20 @@ button {
   background-color: darken(@color-neutral, 10%);
   color: @font-color;
   white-space: nowrap;
-  .button-behavior(@color-neutral)
-  //line-height: 1.5;
+  .button-behavior(@color-neutral);
+
+
+  &.icon-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+    svg {
+      width: 16px;
+      height: 16px;
+      margin: -4px 4px -4px -2px;
+    }
+  }
 }
 
 button.neutral {
