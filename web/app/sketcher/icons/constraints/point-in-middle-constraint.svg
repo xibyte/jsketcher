@@ -1,0 +1,20 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="gray">
+
+  <g>
+    <path class="construction" d="M 32 10 L 32 55" />
+    <path class="line" d="M 10 55 L 55 55" />
+    <circle class="point" cx="8" cy="55" r="5" />
+    <circle class="point" cx="57" cy="55" r="5" />
+    <circle class="point" cx="32" cy="10" r="5" />
+    <path class="annotation" d="M 19 62 L 24 47" />
+    <path class="annotation" d="M 39 62 L 45 47" />
+
+
+  </g>
+</svg>

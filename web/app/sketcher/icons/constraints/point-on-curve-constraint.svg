@@ -1,0 +1,18 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  >
+  <g>
+    <path
+      class="line"
+      fill="none"
+      d="M 32 55 A 23 23 0 1 1 48.3 15.7"
+    />
+    <circle class="point" cx="32" cy="55" r="5" />
+    <circle class="point" cx="48.3" cy="15.7" r="5" />
+    <circle class="point" cx="11" cy="23.2" r="5" />
+  </g>
+</svg>

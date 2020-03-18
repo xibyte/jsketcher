@@ -569,7 +569,7 @@ export default [
     id: 'Fillet',
     shortName: 'Fillet',
     kind: 'Tool',
-    description: 'Add a Fillet',
+    description: 'Make a Fillet',
     selectionMatcher: {
       selector: 'function',
       match: (selection) => {

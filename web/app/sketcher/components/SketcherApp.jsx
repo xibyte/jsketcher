@@ -9,17 +9,23 @@ import 'react-toastify/dist/ReactToastify.css';
 import SketcherOperationWizard from "./SketcherOperationWizard";
 import {StageControl} from "./StageControl";
 import {Scope} from "./Scope";
+import {SketcherToolbar} from "./SketcherToolbar";
+import {sketcherRightToolbarConfig} from "../uiConfig";
 
 export const SketcherAppContext = React.createContext({});
 
 export function SketcherApp({applicationContext}) {
   return <SketcherAppContext.Provider value={applicationContext}>
     <StreamsContext.Provider value={applicationContext}>
-      <ToastContainer />
+      <Scope><ToastContainer /></Scope>
       <Scope><RightSideControls /></Scope>
       {ReactDOM.createPortal(
         <Scope><ConstraintList /></Scope>,
         document.getElementById('constraint-list')
+      )}
+      {ReactDOM.createPortal(
+        <Scope><SketcherToolbar actions={sketcherRightToolbarConfig}/></Scope>,
+        document.getElementById('right-toolbar')
       )}
     </StreamsContext.Provider>
   </SketcherAppContext.Provider>;
