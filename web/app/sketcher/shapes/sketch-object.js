@@ -1,9 +1,7 @@
 import {Generator} from '../id-generator'
 import {Shape} from './shape'
-import {Types} from '../io';
 import {Styles} from "../styles";
-import {dfs} from 'gems/traverse';
-import {ConstraintDefinitions} from "../constr/ANConstraints";
+import {SketchTypes} from "./sketch-types";
 
 export class SketchObject extends Shape {
 
@@ -239,7 +237,7 @@ export class SketchObject extends Shape {
 
 export function pointIterator(shape, func) {
   shape.accept(o => {
-    if (o._class === Types.POINT) {
+    if (o._class === SketchTypes.POINT) {
       func(o);
     }
     return true;

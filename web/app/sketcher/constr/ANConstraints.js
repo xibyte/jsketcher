@@ -1,21 +1,36 @@
 import {Param} from '../shapes/param';
-import {R_DistancePP, R_Equal, R_PointOnLine} from "./residuals";
-import {indexById} from "../../../../modules/gems/iterables";
 import {_270, _90, DEG_RAD, distanceAB, makeAngle0_360} from "../../math/math";
 import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polynomial";
-import {Types} from "../io";
 
-import Vector from "math/vector";
 import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from "../../brep/geom/curves/bezierCubic";
 import {greaterThanConstraint, lessThanConstraint} from "./barriers";
 import {genericCurveStep} from "../../brep/geom/impl/nurbs-ext";
 import {_normalize} from "../../math/vec";
+import {
+  AngleBetweenConstraintIcon,
+  AngleConstraintIcon,
+  CoincidentConstraintIcon,
+  DistanceConstraintIcon,
+  DistancePLConstraintIcon,
+  EqualConstraintIcon, FilletConstraintIcon, GenericConstraintIcon,
+  HorizontalConstraintIcon, LockConstraintIcon,
+  ParallelConstraintIcon,
+  PerpendicularConstraintIcon,
+  PointInMiddleConstraintIcon,
+  PointOnCurveConstraintIcon,
+  PointOnLineConstraintIcon,
+  RadiusConstraintIcon,
+  SymmetryConstraintIcon,
+  TangentConstraintIcon,
+  VerticalConstraintIcon
+} from "../icons/constraints/ConstraintIcons";
 
 export const ConstraintDefinitions = {
 
   PCoincident : {
     id: 'PCoincident',
     name: 'Two Points Coincidence',
+    icon: CoincidentConstraintIcon,
 
     defineParamsScope: ([p1, p2], callback) => {
       p1.visitParams(callback);
@@ -43,6 +58,8 @@ export const ConstraintDefinitions = {
   TangentLC: {
     id: 'TangentLC',
     name: 'Line & Circle Tangency',
+    icon: TangentConstraintIcon,
+
     constants: {
       inverted: {
         type: 'boolean',
@@ -69,6 +86,7 @@ export const ConstraintDefinitions = {
   PointOnLine: {
     id: 'PointOnLine',
     name: 'Point On Line',
+    icon: PointOnLineConstraintIcon,
 
     defineParamsScope: ([pt, segment], callback) => {
       pt.visitParams(callback);
@@ -98,6 +116,7 @@ export const ConstraintDefinitions = {
   PointOnCircle: {
     id: 'PointOnCircle',
     name: 'Point On Circle',
+    icon: PointOnCurveConstraintIcon,
 
     defineParamsScope: ([pt, circle], callback) => {
       pt.visitParams(callback);
@@ -133,6 +152,7 @@ export const ConstraintDefinitions = {
   PointOnBezier: {
     id: 'PointOnBezier',
     name: 'Point On Bezier Curve',
+    icon: PointOnCurveConstraintIcon,
 
     initialGuess: ([p0x,p0y, p3x,p3y, p1x,p1y, p2x,p2y, t, px, py]) => {
       const _t = t.get();
@@ -162,6 +182,7 @@ export const ConstraintDefinitions = {
   TangentLineBezier: {
     id: 'TangentLineBezier',
     name: 'Line & Bezier Tangency',
+    icon: TangentConstraintIcon,
 
     initialGuess([p0x,p0y, p3x,p3y, p1x,p1y, p2x,p2y, _t, px,py, nx,ny, _ang, ax,ay]) {
       const ang = _ang.get();
@@ -295,6 +316,7 @@ export const ConstraintDefinitions = {
   PointOnEllipse: {
     id: 'PointOnEllipse',
     name: 'Point On Ellipse',
+    icon: PointOnCurveConstraintIcon,
 
     defineParamsScope: ([pt, ellipse], callback) => {
       ellipse.visitParams(callback);
@@ -316,6 +338,7 @@ export const ConstraintDefinitions = {
   PointInMiddle: {
     id: 'PointInMiddle',
     name: 'Middle Point',
+    icon: PointInMiddleConstraintIcon,
 
     defineParamsScope: ([pt, segment], callback) => {
       segment.a.visitParams(callback);
@@ -357,6 +380,7 @@ export const ConstraintDefinitions = {
   Symmetry: {
     id: 'Symmetry',
     name: 'Symmetry',
+    icon: SymmetryConstraintIcon,
 
     defineParamsScope: ([pt, segment], callback) => {
       segment.a.visitParams(callback);
@@ -374,6 +398,8 @@ export const ConstraintDefinitions = {
   DistancePP: {
     id: 'DistancePP',
     name: 'Distance Between Two Point',
+    icon: DistanceConstraintIcon,
+
     constants: {
       distance: {
         type: 'number',
@@ -415,6 +441,8 @@ export const ConstraintDefinitions = {
   DistancePL: {
     id: 'DistancePL',
     name: 'Distance Between Point And Line',
+    icon: DistancePLConstraintIcon,
+
     constants: {
       distance: {
         type: 'number',
@@ -460,6 +488,8 @@ export const ConstraintDefinitions = {
   Angle: {
     id: 'Angle',
     name: 'Absolute Line Angle',
+    icon: AngleConstraintIcon,
+
     constants: {
       angle: {
         type: 'number',
@@ -485,6 +515,8 @@ export const ConstraintDefinitions = {
   Vertical: {
     id: 'Vertical',
     name: 'Line Verticality',
+    icon: VerticalConstraintIcon,
+
     constants: {
       angle: {
         readOnly: true,
@@ -510,6 +542,8 @@ export const ConstraintDefinitions = {
   Horizontal: {
     id: 'Horizontal',
     name: 'Line Horizontality',
+    icon: HorizontalConstraintIcon,
+
     constants: {
       angle: {
         readOnly: true,
@@ -535,6 +569,8 @@ export const ConstraintDefinitions = {
   AngleBetween: {
     id: 'AngleBetween',
     name: 'Angle Between Two Lines',
+    icon: AngleBetweenConstraintIcon,
+
     constants: {
       angle: {
         type: 'number',
@@ -562,6 +598,7 @@ export const ConstraintDefinitions = {
   Perpendicular: {
     id: 'Perpendicular',
     name: 'Perpendicular',
+    icon: PerpendicularConstraintIcon,
 
     constants: {
       angle: {
@@ -591,6 +628,7 @@ export const ConstraintDefinitions = {
   Parallel: {
     id: 'Parallel',
     name: 'Parallel',
+    icon: ParallelConstraintIcon,
 
     constants: {
       angle: {
@@ -621,6 +659,8 @@ export const ConstraintDefinitions = {
   SegmentLength: {
     id: 'SegmentLength',
     name: 'Segment Length',
+    icon: DistanceConstraintIcon,
+
     constants: {
       length: {
         type: 'number',
@@ -654,6 +694,8 @@ export const ConstraintDefinitions = {
   RadiusLength: {
     id: 'RaduisLength',
     name: 'Raduis Length',
+    icon: RadiusConstraintIcon,
+
     constants: {
       length: {
         type: 'number',
@@ -693,6 +735,7 @@ export const ConstraintDefinitions = {
   EqualRadius: {
     id: 'EqualRadius',
     name: 'Equal Radius',
+    icon: EqualConstraintIcon,
 
     defineParamsScope: ([c1, c2], callback) => {
       callback(c1.r);
@@ -707,6 +750,7 @@ export const ConstraintDefinitions = {
   EqualLength: {
     id: 'EqualLength',
     name: 'Equal Length',
+    icon: EqualConstraintIcon,
 
     defineParamsScope: ([s1, s2], callback) => {
       callback(s1.params.t);
@@ -721,6 +765,8 @@ export const ConstraintDefinitions = {
   LockPoint: {
     id: 'LockPoint',
     name: 'Lock Point',
+    icon: LockConstraintIcon,
+
     constants: {
       x: {
         type: 'number',
@@ -752,6 +798,7 @@ export const ConstraintDefinitions = {
   ArcConsistency: {
     id: 'ArcConsistency',
     name: 'Arc Consistency',
+    icon: GenericConstraintIcon,
 
     defineParamsScope: ([arc], callback) => {
       arc.visitParams(callback);
@@ -777,6 +824,7 @@ export const ConstraintDefinitions = {
   Fillet: {
     id: 'Fillet',
     name: 'Fillet Between Two Lines',
+    icon: FilletConstraintIcon,
 
     constants: {
       inverted1: {

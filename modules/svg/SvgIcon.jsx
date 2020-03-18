@@ -1,8 +1,10 @@
 import React, {useEffect, useMemo, useRef} from 'react';
 
-export function SvgIcon({content, ...props}) {
+export function SvgIcon({content, size, ...props}) {
 
   const divEl = useRef(null);
+
+  const className = size&&'icon-'+size;
 
   useEffect(() => {
     if (divEl.current) {
@@ -17,7 +19,7 @@ export function SvgIcon({content, ...props}) {
     };
   }, [props.style]);
 
-  return <div ref={divEl} {...props} style={style}/>
+  return <div className={className} ref={divEl} {...props} style={style}/>
 
 
 }

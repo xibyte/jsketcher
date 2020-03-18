@@ -1,6 +1,7 @@
 import {Generator} from "../id-generator";
 import {SketchGenerator} from "../generators/sketchGenerator";
 import {MirrorGeneratorSchema} from "../generators/mirrorGenerator";
+import {MirrorGeneratorIcon} from "../icons/generators/GeneratorIcons";
 
 export default [
 
@@ -9,6 +10,7 @@ export default [
     shortName: 'Mirror',
     kind: 'Generator',
     description: 'Mirror Objects',
+    icon: MirrorGeneratorIcon,
 
     wizard: MirrorGeneratorSchema.params ,
 

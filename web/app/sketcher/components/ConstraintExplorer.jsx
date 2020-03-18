@@ -5,6 +5,7 @@ import {useStream} from "ui/effects";
 import {SketcherAppContext} from "./SketcherApp";
 import cx from 'classnames';
 import {editConstraint} from "./ConstraintEditor";
+import {NoIcon} from "../icons/NoIcon";
 
 
 export function ConstraintExplorer(props) {
@@ -73,12 +74,14 @@ export function ConstraintButton({prefix='', constraint: c, ...props}) {
   const conflicting = c.stage.algNumSystem.conflicting.has(c);
   const redundant = c.stage.algNumSystem.redundant.has(c);
 
+  const Icon = c.schema.icon || NoIcon;
+
   return <div key={c.id} className={cx(ls.objectItem, conflicting&&ls.conflicting, redundant&&ls.redundant)}
               onClick={() => c.schema.constants && edit(c)}
               onMouseEnter={() => highlight(c)}
               onMouseLeave={() => withdraw(c)}
               {...props}>
-    <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>
+    <span className={ls.objectIcon}><Icon size={16} /></span>
     <span className={ls.objectTag}>
         {prefix} {c.schema.name}
       </span>
@@ -107,6 +110,8 @@ export function GeneratorButton({prefix='', generator: c, ...props}) {
     viewer.refresh();
   };
 
+  const Icon = c.schema.icon || NoIcon;
+
   useEffect(() => withdraw, [c]);
 
   return <div key={c.id} className={cx(ls.objectItem)}
@@ -114,7 +119,7 @@ export function GeneratorButton({prefix='', generator: c, ...props}) {
               onMouseEnter={() => highlight(c)}
               onMouseLeave={() => withdraw(c)}
               {...props}>
-    <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>
+    <span className={ls.objectIcon}><Icon size={16} /></span>
     <span className={ls.objectTag}>
         {prefix} {c.schema.title}
       </span>

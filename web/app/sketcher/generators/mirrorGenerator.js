@@ -1,11 +1,13 @@
 import Vector from "math/vector";
 import {Segment} from "../shapes/segment";
+import {MirrorGeneratorIcon} from "../icons/generators/GeneratorIcons";
 
 export const MirrorGeneratorSchema = {
 
   id: 'Mirror',
   title: 'Mirror',
-  description: 'Reflects objects against a given line',
+  description: 'Reflects objects off of a given line',
+  icon: MirrorGeneratorIcon,
 
   params: [
     {

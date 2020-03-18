@@ -8,32 +8,17 @@ import {Circle} from './shapes/circle'
 import {Ellipse} from './shapes/ellipse'
 import {EllipticalArc} from './shapes/elliptical-arc'
 import {BezierCurve} from './shapes/bezier-curve'
-import {HDimension, VDimension, Dimension, DiameterDimension} from './shapes/dim'
+import {DiameterDimension, Dimension, HDimension, VDimension} from './shapes/dim'
 import {Constraints} from './parametric'
-import {HashTable} from '../utils/hashmap'
 import Vector from 'math/vector';
 import exportTextData from 'gems/exportTextData';
 import NurbsCurve from '../brep/geom/curves/nurbsCurve';
 import {NurbsObject} from './shapes/nurbsObject';
-import {System} from './system';
 import {AlgNumConstraint} from "./constr/ANConstraints";
 import {SketchGenerator} from "./generators/sketchGenerator";
-import {getUIState} from "./uiState";
+import {SketchTypes} from "./shapes/sketch-types";
 
-const Types = {
-  POINT     : 'TCAD.TWO.EndPoint',
-  SEGMENT   : 'TCAD.TWO.Segment',
-  ARC       : 'TCAD.TWO.Arc',
-  CIRCLE    : 'TCAD.TWO.Circle',
-  ELLIPSE   : 'TCAD.TWO.Ellipse',
-  ELL_ARC   : 'TCAD.TWO.EllipticalArc',
-  BEZIER    : 'TCAD.TWO.BezierCurve',
-  NURBS     : 'TCAD.TWO.NurbsObject',
-  DIM       : 'TCAD.TWO.Dimension',
-  HDIM      : 'TCAD.TWO.HDimension',
-  VDIM      : 'TCAD.TWO.VDimension',
-  DDIM      : 'TCAD.TWO.DiameterDimension'
-};
+const Types = SketchTypes;
 
 IO.BOUNDARY_LAYER_NAME = "__bounds__";
 
@@ -790,4 +775,4 @@ IO.prototype.dxfExport = function () {
 
 IO.exportTextData = exportTextData;
 
-export {IO, BBox, Types};
+export {IO, BBox};
