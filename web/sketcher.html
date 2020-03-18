@@ -43,37 +43,17 @@
     --><button class="btn tbtn act-addCircleDim" style="background-image: url(img/ddim.png);" type="submit" value=""></button><!--
     -->
   </div>
-  <div style="width: 100%; height: calc(100% - 59px);">
+  <div style="width: 100%; height: calc(100% - 59px); display: flex;">
 
-    <div id="dock" class="panel b-right scroll" style="float: left; width: 245px; height: 100%;"></div>
-    <div id="right-toolbar" class="panel b-left scroll" style="width: 50px; float: right; height: 100%; ">
-      <div style="width:50%; height: 2px"></div>
-      <button class="btn rbtn act-coincident" style="background-image: url(img/coi.png);"></button>
-      <button class="btn rbtn act-verticalConstraint" style="background-image: url(img/vert.png);"></button>
-      <button class="btn rbtn act-horizontalConstraint" style="background-image: url(img/hor.png);"></button>
-      <button class="btn rbtn act-parallelConstraint" style="background-image: url(img/par.png);"></button>
-      <button class="btn rbtn act-perpendicularConstraint" style="background-image: url(img/per.png);"></button>
-      <button class="btn rbtn act-P2LDistanceConstraint" style="background-image: url(img/p2l.png);"></button>
-      <button class="btn rbtn act-P2PDistanceConstraint" style="background-image: url(img/p2p.png);"></button>
-      <button class="btn rbtn act-EntityEqualityConstraint" style="background-image: url(img/eq.png);"></button>
-      <button class="btn rbtn act-tangentConstraint" style="background-image: url(img/tgn.png);"></button>
-      <button class="btn rbtn act-RadiusConstraint" style="background-image: url(img/rad.png);"></button>
-      <button class="btn rbtn act-pointOnLine" style="background-image: url(img/vec/pointOnLine.svg);"></button>
-      <button class="btn rbtn act-pointOnArc" style="background-image: url(img/vec/pointOnArc.svg);" ></button>
-      <button class="btn rbtn act-pointInMiddle" style="background-image: url(img/vec/pointInMiddle.svg);"></button>
-      <button class="btn rbtn act-llAngle" style="background-image: url(img/vec/angle.svg);"></button>
-      <button class="btn rbtn act-symmetry" style="background-image: url(img/vec/symmetry.svg);"></button>
-      <button class="btn rbtn act-mirrorConstraint fa fa-star-half-o"></button>
-      <button class="btn rbtn act-lockConvex" style="background-image: url(img/vec/convex.svg);"></button>
-      <button class="btn rbtn act-lockConstraint" ><i class="fa fa-lock"></i></button>
-      <div style="height: 10px;"></div>
-      <button class="btn rbtn act-addFillet" style="background-image: url(img/vec/fillet.svg);"></button>
-    </div>
-    <div id="viewer-container" style="background: #808080; overflow: hidden; height: 100%; position: relative">
+    <div id="dock" class="panel b-right scroll" style="width: 245px; height: 100%; flex-shrink: 0;"></div>
+
+    <div id="viewer-container" style="background: #808080; overflow: hidden; height: 100%; position: relative; flex-grow: 1;">
       <div class="tool-hint" style="position: absolute; bottom: 5px; right: 5px;"></div>
       <canvas width="300" height="300" id="viewer"></canvas>
       <div id="react-controls" style="position: absolute; top: 0; right: 0; left: 0; height: 0;"></div>
     </div>
+    <div id="right-toolbar" class="panel b-left scroll" style="height: 100%; flex-shrink: 0"></div>
+
   </div>
   
   <div id="status" class="panel b-top" style="width: 100%; height:22px;">

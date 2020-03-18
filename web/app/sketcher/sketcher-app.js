@@ -104,7 +104,7 @@ function App2D() {
   });
 
   this.registerAction('exportSVG', "Export To SVG", function () {
-    IO.exportTextData(app.viewer.io.svgExport(), app.getSketchId() + ".svg");
+    IO.exportTextData(app.viewer.io.svgExport(), app.getSketchId() + ".ui.styles.init.svg");
   });
 
   this.registerAction('exportDXF', "Export To DXF", function () {
@@ -196,78 +196,6 @@ function App2D() {
       var sketchId = app.getSketchId();
       localStorage.setItem(app.getSketchId(), sketchData);
       app.viewer.historyManager.checkpoint();
-  });
-
-  this.registerAction('coincident', "Coincident", function () {
-    runActionOrToastWhyNot('Coincident', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('verticalConstraint', "Vertical Constraint", function () {
-    runActionOrToastWhyNot('Vertical', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('horizontalConstraint', "Horizontal Constraint", function () {
-    runActionOrToastWhyNot('Horizontal', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('parallelConstraint', "Parallel Constraint", function () {
-    runActionOrToastWhyNot('Parallel', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('perpendicularConstraint', "Perpendicular Constraint", function () {
-    runActionOrToastWhyNot('Perpendicular', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('P2LDistanceConstraint', "Distance Between Point and Line", function () {
-    runActionOrToastWhyNot('DistancePL', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('mirrorConstraint', "Mirror Modifier", function () {
-    startOperation(app.context, 'Mirror');
-  });
-
-  this.registerAction('P2PDistanceConstraint', "Distance Between two Points", function () {
-    runActionOrToastWhyNot('DistancePP', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('RadiusConstraint', "Radius Constraint", function () {
-    runActionOrToastWhyNot('RadiusLength', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('EntityEqualityConstraint', "Radius Equals Constraint", function () {
-    const fail1 = runActionOrToastWhyNot('EqualRadius', app.viewer.selected, app.context, true);
-    const fail2 = runActionOrToastWhyNot('EqualLength', app.viewer.selected, app.context, true);
-    if (fail1 && fail2) {
-      toast('Requires selection of either segments or circles and arcs');
-    }
-  });
-
-  this.registerAction('tangentConstraint', "Tangent Constraint", function () {
-    runActionOrToastWhyNot('Tangent', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('lockConstraint', "Lock Constraint", function () {
-    runActionOrToastWhyNot('Lock', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('pointOnLine', "Point On Line", function () {
-    runActionOrToastWhyNot('PointOnLine', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('pointOnArc', "Point On Arc / Ellipse", function () {
-    runActionOrToastWhyNot('PointOnCircle', app.viewer.selected, app.context);
-  });
-  
-  this.registerAction('pointInMiddle', "Point In the Middle", function () {
-    runActionOrToastWhyNot('PointInMiddle', app.viewer.selected, app.context);
-  });
-
-  this.registerAction('llAngle', "Angle Between 2 Lines", function () {
-    runActionOrToastWhyNot('AngleBetween', app.viewer.selected, app.context);
-  });
-  
-  this.registerAction('symmetry', "Symmetry", function () {
-    runActionOrToastWhyNot('Symmetry', app.viewer.selected, app.context);
   });
 
   this.registerAction('lockConvex', "Lock Convexity", function () {
