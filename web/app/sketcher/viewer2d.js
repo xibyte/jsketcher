@@ -588,18 +588,21 @@ class Layer {
 }
 
 const CAPTURES = {
+  highlight2: {
+    ...Styles.HIGHLIGHT2,
+    priority: 1
+  },
   tool: {
     ...Styles.TOOL_HELPER,
-    priority: 1
+    priority: 2
   },
   highlight: {
     ...Styles.HIGHLIGHT,
-    priority: 2
-
+    priority: 3
   },
   selection: {
     ...Styles.SELECTION,
-    priority: 3
+    priority: 4
   },
 };
 
