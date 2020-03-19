@@ -105,6 +105,8 @@ export default function SketcherOperationWizard({}) {
             if (field.type === 'selection') {
               return <Entity name={field.name} title={field.title || field.name}
                              placeholder={schema.placeholder} key={field.name}
+                             onEntityEnter={obj => {viewer.capture('highlight2', [obj], true); viewer.refresh();}}
+                             onEntityLeave={obj => {viewer.withdrawAll('highlight2');viewer.refresh();}}
                              entityRenderer={entityRenderer}/>
             }
           })();
