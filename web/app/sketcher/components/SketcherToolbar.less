@@ -1,12 +1,32 @@
 
 @focus-color: #0065dc;
 @focus-color-secondary: rgba(3, 102, 214, .3);
+@separator: 15px;
 
 .root {
   height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
+
+  &.vertical {
+    flex-direction: column;
+    button {
+      margin: 2px 4px;
+    }
+    .separator {
+      height: @separator;
+    }
+  }
+
+
+  &.horizontal {
+    button {
+      margin: 4px 2px;
+    }
+    .separator {
+      width: @separator;
+    }
+  }
 
   button {
 
@@ -18,14 +38,25 @@
       box-shadow: 0 0 0 2px @focus-color-secondary;
       outline: none;
     }
-    margin: 2px 4px;
     padding: 1px;
     flex-basis: 36px;
+    display: flex;
   }
 
   svg {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
   }
 
+  &.compact svg {
+    width: 28px;
+    height: 28px;
+    transform: scale(0.9);
+  }
+
+  :global(.action-kind-Common) {
+    svg {
+      transform: scale(0.7);
+    }
+  }
 }

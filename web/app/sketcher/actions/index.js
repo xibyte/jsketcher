@@ -3,16 +3,30 @@ import {getDescription, MatchIndex, matchSelection} from "../selectionMatcher";
 import {toast} from "react-toastify";
 import operationActions from "./operationActions";
 import constraintGlobalActions from "./constraintGlobalActions";
+import measureActions from "./measureActions";
+import toolActions from "./toolActions";
+import commonActions from "./commonActions";
 
 const ALL_CONTEXTUAL_ACTIONS = [
   ...constraintActions,
   ...operationActions,
-  ...constraintGlobalActions
+];
+
+const ACTIONS = [
+  ...constraintGlobalActions,
+  ...measureActions,
+  ...toolActions,
+  ...commonActions
   //keep going here
 ];
 
+const ALL_ACTIONS = [
+  ...ALL_CONTEXTUAL_ACTIONS,
+  ...ACTIONS
+];
+
 const index = {};
-ALL_CONTEXTUAL_ACTIONS.forEach(a => index[a.id] = a);
+ALL_ACTIONS.forEach(a => index[a.id] = a);
 Object.freeze(index);
 
 export function matchAvailableActions(selection) {

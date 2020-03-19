@@ -1,0 +1,16 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="none">
+
+  <g>
+
+
+    <ellipse cx="0" cy="0" rx="10" ry="20" class="line"
+           transform="translate(32,32) scale(1.5) rotate(-45)  " />
+
+  </g>
+</svg>

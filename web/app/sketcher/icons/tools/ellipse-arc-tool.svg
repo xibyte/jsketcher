@@ -1,0 +1,20 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="none">
+
+  <g>
+
+
+    <path class="line" d="M 0 10
+           A 20 10 0 1 0 20 0" transform="translate(22,-0) scale(1.5) rotate(45)  " />
+
+    <!--    <circle class="point" cx="42" cy="54" r="5" />-->
+    <!--    <circle class="point" cx="21" cy="54" r="5" />-->
+
+
+  </g>
+</svg>

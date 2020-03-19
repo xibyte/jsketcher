@@ -1,0 +1,14 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="none">
+
+  <g>
+    <path d="M 10 10 L 21 54" class="construction" />
+    <path d="M 42 54 L 54 10" class="construction" />
+    <path d="M 10 10 C 21 54, 42 54, 54 10" class="line" />
+  </g>
+</svg>
