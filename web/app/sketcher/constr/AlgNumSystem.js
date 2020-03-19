@@ -270,7 +270,7 @@ export class AlgNumSubSystem {
                 });
               }
             }
-            if (transaction) {
+            if (transaction && transaction.functionList.length !== 0) {
               transaction();
               requirePass = true;
             }
