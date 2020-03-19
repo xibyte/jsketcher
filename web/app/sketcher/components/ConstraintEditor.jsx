@@ -65,7 +65,9 @@ export function ConstraintEditor() {
 
     <Stack>
 
-      {Object.keys(constraint.schema.constants).sort().map(name => <Field key={name}>
+      {Object.keys(constraint.schema.constants)
+        .filter(key => !constraint.schema.constants[key].readOnly)
+        .sort().map(name => <Field key={name}>
         <Label>{name}</Label>
         {
           (() => {

@@ -1,5 +1,5 @@
 import {Param} from '../shapes/param';
-import {_270, _90, DEG_RAD, distanceAB, makeAngle0_360} from "../../math/math";
+import {DEG_RAD, distanceAB, makeAngle0_360} from "../../math/math";
 import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polynomial";
 
 import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from "../../brep/geom/curves/bezierCubic";
@@ -12,8 +12,11 @@ import {
   CoincidentConstraintIcon,
   DistanceConstraintIcon,
   DistancePLConstraintIcon,
-  EqualConstraintIcon, FilletConstraintIcon, GenericConstraintIcon,
-  HorizontalConstraintIcon, LockConstraintIcon,
+  EqualConstraintIcon,
+  FilletConstraintIcon,
+  GenericConstraintIcon,
+  HorizontalConstraintIcon,
+  LockConstraintIcon,
   ParallelConstraintIcon,
   PerpendicularConstraintIcon,
   PointInMiddleConstraintIcon,
@@ -642,6 +645,13 @@ export const ConstraintDefinitions = {
           return Math.abs(180 - ang) > Math.min(Math.abs(360 - ang), Math.abs(0 - ang)) ? 180 : 0;
         },
         transform: degree => degree * DEG_RAD
+      },
+      flip: {
+        type: 'boolean',
+        description: 'flips the ends',
+        initialValue: () => {
+          return false;
+        },
       }
     },
 
@@ -650,6 +660,12 @@ export const ConstraintDefinitions = {
     },
 
     collectPolynomials: (polynomials, params, constants) => {
+      if (constants.flip) {
+        constants = {
+          ...constants,
+          angle: (constants.angle === 0 ? 180 : 0)
+        };
+      }
       ConstraintDefinitions.AngleBetween.collectPolynomials(polynomials, params, constants);
     }
 
@@ -1002,11 +1018,11 @@ export class AlgNumConstraint {
     }
     const defs = Object.values(this.schema.constants);
     for (let cd of defs) {
-      if (cd.readOnly) {
-        return false;
+      if (!cd.readOnly) {
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   setConstantsFromGeometry() {
