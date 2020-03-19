@@ -1,0 +1,23 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="none">
+
+  <g>
+    <path class="annotation" d="M 32 8 l 0 48" />
+
+    <path class="annotation" d="M 23 8 l 18 0" />
+    <path class="annotation" d="M 23 56 l 18 0" />
+
+    <polygon class="annotation arrow" points="0,0 -7,-4 -7,4"
+             transform="translate(32 8) rotate(270 0 0)" />
+
+    <polygon class="annotation arrow" points="0,0 -7,-4 -7,4"
+             transform="translate(32 56) rotate(90 0 0)" />
+
+
+  </g>
+</svg>

@@ -33,6 +33,12 @@ export const Styles = {
     fillStyle : "#00FF00"
   },
 
+  HIGHLIGHT2 : {
+    lineWidth : 2,
+    strokeStyle : "#ff961f",
+    fillStyle : "#ff961f"
+  },
+
   DIM : {
     lineWidth : 1,
     strokeStyle : "#bcffc1",

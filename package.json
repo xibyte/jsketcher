@@ -67,6 +67,7 @@
     "prop-types": "15.6.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-icons": "3.9.0",
     "react-toastify": "^5.5.0",
     "sprintf": "0.1.5",
     "three": "0.89.0"

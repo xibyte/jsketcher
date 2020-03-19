@@ -25,17 +25,11 @@ export class LoopPickTool extends Tool {
  }
 
   clearMarked() {
-    for (let obj of this.marked) {
-      obj.marked = null;
-    }
-    this.marked.clear();
+    this.viewer.withdrawAll('tool');
   }
 
   mark(obj) {
-    if (!this.marked.has(obj)) {
-      obj.marked = Styles.SNAP;
-      this.marked.add(obj);
-    }
+    this.viewer.capture('tool', obj);
   }
 
   otherEnd(point) {
@@ -59,7 +53,8 @@ export class LoopPickTool extends Tool {
     const graph = {
 
       connections : (p) => {
-        const conns = p.linked.slice();
+        const conns = []
+        p.visitLinked(l => conns.push(l));
         conns.push(this.otherEnd(p));
         return conns;
       },

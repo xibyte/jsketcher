@@ -10,7 +10,7 @@ import SketcherOperationWizard from "./SketcherOperationWizard";
 import {StageControl} from "./StageControl";
 import {Scope} from "./Scope";
 import {SketcherToolbar} from "./SketcherToolbar";
-import {sketcherRightToolbarConfig} from "../uiConfig";
+import {sketcherRightToolbarConfig, sketcherTopToolbarConfig} from "../uiConfig";
 
 export const SketcherAppContext = React.createContext({});
 
@@ -26,6 +26,10 @@ export function SketcherApp({applicationContext}) {
       {ReactDOM.createPortal(
         <Scope><SketcherToolbar actions={sketcherRightToolbarConfig}/></Scope>,
         document.getElementById('right-toolbar')
+      )}
+      {ReactDOM.createPortal(
+        <Scope><SketcherToolbar actions={sketcherTopToolbarConfig} horizontal compact/></Scope>,
+        document.getElementById('top-toolbar')
       )}
     </StreamsContext.Provider>
   </SketcherAppContext.Provider>;
