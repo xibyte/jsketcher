@@ -24,7 +24,7 @@ function App2D() {
   var app = this;
 
   this.viewer = new Viewer(document.getElementById('viewer'), IO);
-  this.context = createAppContext(this.viewer);
+  this.context = createAppContext(this.viewer, this);
   this.winManager = new ui.WinManager();
   this.inputManager = new InputManager(this);
 
@@ -80,27 +80,10 @@ function App2D() {
   }
   checkForTerminalVisibility();
 
-  this.registerAction('new', "Create New Sketch", function () {
-    app.newSketch();
-  });
-
   this.registerAction('terminal', "Open/Close Terminal Window", function () {
     app.commandsWin.toggle();
     checkForTerminalVisibility();
     app.viewer.refresh();
-  });
-
-  this.registerAction('open', "Open Sketch", function (e) {
-    app._sketchesList.refresh();
-    ui.openWin(app._sketchesWin, e);
-  });
-
-  this.registerAction('clone', "Clone Sketch", function () {
-    app.cloneSketch();
-  });
-
-  this.registerAction('export', "Export", function (e) {
-    ui.openWin(app._exportWin, e);
   });
 
   this.registerAction('exportSVG', "Export To SVG", function () {
@@ -123,88 +106,7 @@ function App2D() {
     app.viewer.historyManager.checkpoint();
   });
 
-  this.registerAction('referencePoint', "Set Reference Point", function () {
-    app.viewer.toolManager.takeControl(new ReferencePointTool(app.viewer));
-  }, "origin");
 
-  this.registerAction('addPoint', "Add Point", function () {
-    app.viewer.toolManager.takeControl(new AddPointTool(app.viewer));
-  }, "point");
-
-  this.registerAction('addSegment', "Add Segment", function () {
-    app.viewer.toolManager.takeControl(new AddSegmentTool(app.viewer, false));
-  }, 'line');
-
-  this.registerAction('addMultiSegment', "Add Multi Segment", function () {
-    app.viewer.toolManager.takeControl(new AddSegmentTool(app.viewer, true));
-  }, 'mline');
-
-  this.registerAction('addArc', "Add Arc", function () {
-    app.viewer.toolManager.takeControl(new AddArcTool(app.viewer));
-  }, 'arc');
-
-  this.registerAction('addCircle', "Add Circle", function () {
-    app.viewer.toolManager.takeControl(new EditCircleTool(app.viewer));
-  }, 'circle');
-
-  this.registerAction('addEllipse', "Add Ellipse", function () {
-    app.viewer.toolManager.takeControl(new EllipseTool(app.viewer, false));
-  });
-
-  this.registerAction('addEllipticalArc', "Add Elliptical Arc", function () {
-    app.viewer.toolManager.takeControl(new EllipseTool(app.viewer, true));
-  });
-
-  this.registerAction('addBezierCurve', "Add Bezier Curve", function () {
-    app.viewer.toolManager.takeControl(new BezierCurveTool(app.viewer));
-  });
-
-  this.registerAction('addRectangle', "Add Rectangle", function () {
-    app.viewer.toolManager.takeControl(new RectangleTool(app.viewer));
-  }, 'rect');
-
-  this.registerAction('offsetTool', "Polygon Offset", function () {
-    app.viewer.toolManager.takeControl(new OffsetTool(app.viewer));
-  });
-
-  this.registerAction('pan', "Pan", function () {
-    app.viewer.toolManager.releaseControl();
-  });
-
-  this.registerAction('addFillet', "Add Fillet", function () {
-    app.viewer.toolManager.takeControl(new FilletTool(app.viewer));
-  });
-
-  this.registerAction('addDim', "Add Dimension", function () {
-    app.viewer.toolManager.takeControl(new AddFreeDimTool(app.viewer, app.viewer.dimLayer));
-  });
-
-  this.registerAction('addHDim', "Add Horizontal Dimension", function () {
-    app.viewer.toolManager.takeControl(new AddHorizontalDimTool(app.viewer, app.viewer.dimLayer));
-  });
-
-  this.registerAction('addVDim', "Add Vertical Dimension", function () {
-    app.viewer.toolManager.takeControl(new AddVerticalDimTool(app.viewer, app.viewer.dimLayer));
-  });
-
-  this.registerAction('addCircleDim', "Add Circle Dimension", function () {
-    app.viewer.toolManager.takeControl(new AddCircleDimTool(app.viewer, app.viewer.dimLayer));
-  });
-
-  this.registerAction('save', "Save", function () {
-      var sketchData = app.viewer.io.serializeSketch();
-      var sketchId = app.getSketchId();
-      localStorage.setItem(app.getSketchId(), sketchData);
-      app.viewer.historyManager.checkpoint();
-  });
-
-  this.registerAction('lockConvex', "Lock Convexity", function () {
-    app.viewer.parametricManager.lockConvex(app.viewer.selected, alert);
-  });
-  
-  this.registerAction('analyzeConstraint', "Analyze Constraint", function () {
-    app.viewer.parametricManager.analyze(alert);
-  });
 
   this.registerAction('solve', "Solve System", function () {
     app.viewer.parametricManager.solve();
@@ -216,10 +118,6 @@ function App2D() {
     app.viewer.refresh();
   });
 
-  this.registerAction('fit', "Fit Sketch On Screen", function () {
-    app.fit();
-    app.viewer.refresh();
-  });
 
   this.registerAction('genSerpinski', "Generate Serpinki Triangle off of a segment", function () {
     genSerpinski(app.viewer);
@@ -407,13 +305,13 @@ App2D.prototype.handleTerminalInput = function(commandStr) {
   }
 };
 
-function createAppContext(viewer) {
+function createAppContext(viewer, app) {
   return {
     viewer,
+    app,
     ui: {
       $constraintEditRequest: stream(),
       $wizardRequest: stream()
-
     }
   };
 }

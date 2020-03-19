@@ -1,0 +1,19 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  stroke="black"
+  fill="none">
+
+  <g>
+
+    <path
+      class="line"
+      fill="none"
+      d="M 55 32 A 23 23 0 1 1 32 9"
+    />
+
+
+  </g>
+</svg>
