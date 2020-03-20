@@ -11,6 +11,7 @@ import {StageControl} from "./StageControl";
 import {Scope} from "./Scope";
 import {SketcherToolbar} from "./SketcherToolbar";
 import {sketcherRightToolbarConfig, sketcherTopToolbarConfig} from "../uiConfig";
+import {SketchManager} from "./SketchManager";
 
 export const SketcherAppContext = React.createContext({});
 
@@ -31,6 +32,12 @@ export function SketcherApp({applicationContext}) {
         <Scope><SketcherToolbar actions={sketcherTopToolbarConfig} horizontal compact/></Scope>,
         document.getElementById('top-toolbar')
       )}
+      {ReactDOM.createPortal(
+        <Scope><SketchManager /></Scope>,
+        document.getElementById('global-windows')
+      )}
+
+
     </StreamsContext.Provider>
   </SketcherAppContext.Provider>;
 

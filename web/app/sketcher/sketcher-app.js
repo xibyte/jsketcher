@@ -2,23 +2,10 @@ import {Viewer} from './viewer2d.js'
 import * as ui from '../ui/ui'
 import {Terminal} from '../ui/terminal'
 import {BBox, IO} from './io'
-import {AddCircleDimTool, AddFreeDimTool, AddHorizontalDimTool, AddVerticalDimTool} from './tools/dim'
-import {AddPointTool} from './tools/point'
-import {AddSegmentTool} from './tools/segment'
-import {AddArcTool} from './tools/arc'
-import {EditCircleTool} from './tools/circle'
-import {FilletTool} from './tools/fillet'
-import {EllipseTool} from './tools/ellipse'
-import {BezierCurveTool} from './tools/bezier-curve'
-import {RectangleTool} from './tools/rectangle'
-import {OffsetTool} from './tools/offset'
-import {ReferencePointTool} from './tools/origin'
 import {InputManager} from './input-manager'
 import genSerpinski from '../utils/genSerpinski';
 import React from "react";
-import {runActionOrToastWhyNot, startOperation} from "./actions";
 import {stream} from "../../../modules/lstream";
-import {toast} from "react-toastify";
 
 function App2D() {
   var app = this;
@@ -28,7 +15,6 @@ function App2D() {
   this.winManager = new ui.WinManager();
   this.inputManager = new InputManager(this);
 
-  this.initSketchManager();
   this._exportWin = new ui.Window($('#exportManager'), app.winManager);
 
   $('#exportManager li').click(function() {ui.closeWin(app._exportWin);});
@@ -200,43 +186,6 @@ App2D.prototype.newSketch = function() {
   }
 };
 
-App2D.prototype.initSketchManager = function(data, ext) {
-  this._sketchesWin = new ui.Window($('#sketchManager'), this.winManager);
-  var app = this;
-  var sketchesList = new ui.List('sketchList', {
-    items : function() {
-      var theItems = [];
-      for (var name in localStorage) {
-        if (!localStorage.hasOwnProperty(name)) {
-          continue;
-        }
-        if (name.indexOf(App2D.STORAGE_PREFIX) === 0) {
-          name = name.substring(App2D.STORAGE_PREFIX.length);
-        }
-        theItems.push({name : name});
-      }
-      return theItems;
-    },
-
-    remove : function(item) {
-      if (confirm("Selected sketch will be REMOVED! Are you sure?")) {
-        localStorage.removeItem(App2D.STORAGE_PREFIX + item.name);
-        sketchesList.refresh();
-      }
-    },
-
-    mouseleave : function(item) {},
-    hover : function(item) {},
-
-    click : function(item) {
-      app.openSketch(item.name);
-    }
-  });
-  $('#sketchManager').find('.content').append(sketchesList.ul);
-  sketchesList.refresh();
-  this._sketchesList = sketchesList;
-};
-
 App2D.prototype.loadFromLocalStorage = function() {
   var sketchId = this.getSketchId();
   var sketchData = localStorage.getItem(sketchId);
@@ -311,7 +260,8 @@ function createAppContext(viewer, app) {
     app,
     ui: {
       $constraintEditRequest: stream(),
-      $wizardRequest: stream()
+      $wizardRequest: stream(),
+      $sketchManagerRequest: stream()
     }
   };
 }
