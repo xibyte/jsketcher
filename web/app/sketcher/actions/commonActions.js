@@ -36,8 +36,10 @@ export default [
     icon: AiOutlineFolderOpen,
 
     invoke: (ctx, e) => {
-      ctx.app._sketchesList.refresh();
-      ui.openWin(ctx.app._sketchesWin, e);
+      ctx.ui.$sketchManagerRequest.next({
+        x: e.pageX,
+        y: e.pageY
+      });
     }
   },
 

@@ -4,25 +4,18 @@ import ls from './Window.less'
 import Fa from "./Fa";
 import WindowSystem from '../WindowSystem';
 import cx from 'classnames';
+import {NOOP} from "../../gems/func";
 
 export default class Window extends React.Component {
   
-  constructor({initWidth, initLeft, initTop, initRight, initHeight}) {
-    super();
-    this.state = {
-      width: initWidth,
-      height: initHeight,
-      left: initLeft,
-      top: initTop,
-      right: initRight
-    };
-    this.dragOrigin = null;
-  }
-  
+
+  resizeHelper = new ResizeHelper();
+
   render() {
-    let {initWidth, initHeight, initLeft, initTop, setFocus, className, 
+    let {initWidth, initHeight, initLeft, initTop, setFocus, className,
+      resizeCapturingBuffer, resize,
       children, title, icon, minimizable, onClose, ...props} = this.props;
-    return <div className={cx(ls.root, className)} style={this.getStyle()} {...props} ref={this.keepRef}>
+    return <div className={cx(ls.root, className)} {...props} ref={this.keepRef}>
       <div className={ls.bar + ' disable-selection'} onMouseDown={this.startDrag} onMouseUp={this.stopDrag}>
         <div>{icon}<b>{title.toUpperCase()}</b></div>  
         <div className={ls.controlButtons}>
@@ -30,21 +23,13 @@ export default class Window extends React.Component {
           <span className={ls.button} onClick={onClose}><Fa fw icon='close' /></span>
         </div>
       </div>
-      <div className={ls.content}>
+      <div className={cx(ls.content, 'compact-scroll')}>
         {children}
       </div>
     </div>
 
   }
-  
-  getStyle() {
-    return {
-      width: this.state.width,
-      height: this.state.height,
-      left: this.state.left,
-      top: this.state.top
-    }
-  }
+
   
   componentDidMount() {
     if (this.props.setFocus) {
@@ -52,12 +37,35 @@ export default class Window extends React.Component {
     } else {
       this.el.focus();
     }
+    document.body.addEventListener("mousemove", this.moveListener, false);
+    document.body.addEventListener("mouseup", this.mouseupListener, false);
   }
+
+  componentWillUnmount() {
+    document.body.removeEventListener("mousemove", this.moveListener, false);
+    document.body.removeEventListener("mouseup", this.mouseupListener, false);
+  }
+
+  mouseupListener = e => {
+    if (this.dragOrigin) {
+      this.stopDrag(e);
+    } else if (this.resizeHelper.moveHandler) {
+      this.resizeHelper.moveHandler = null;
+    }
+  };
+
+  moveListener = e => {
+    if (this.dragOrigin) {
+      this.doDrag(e);
+    } else if (this.resizeHelper.moveHandler) {
+      this.resizeHelper.moveHandler(e);
+    }
+  };
 
   startDrag = e => {
     this.dragOrigin = {x : e.pageX, y : e.pageY};
-    let left = this.state.left;
-    let top = this.state.top;
+    let left = this.el.offsetLeft;
+    let top = this.el.offsetTop;
     if (left === undefined) {
       left = this.el.offsetLeft;
     }
@@ -69,25 +77,43 @@ export default class Window extends React.Component {
       top,
       right: undefined
     };
-
-    this.handlerToRestore = document.body.onmousemove;
-    document.body.onmousemove = this.doDrag;
   };
   
   doDrag = e => {
     if (this.dragOrigin) {
       let dx = e.pageX - this.dragOrigin.x;
       let dy = e.pageY - this.dragOrigin.y;
-      this.setState({left : this.originLocation.left + dx, top : this.originLocation.top + dy});
+
+      this.el.style.left = this.originLocation.left + dx + 'px';
+      this.el.style.top = this.originLocation.top + dy + 'px';
     }
   };
 
   stopDrag = e => {
     this.dragOrigin = null;
-    document.body.onmousemove = this.handlerToRestore;
   };
 
-  keepRef = el => this.el = el;
+  keepRef = el => {
+    if (el === null) {
+      return;
+    }
+    let {initWidth, initHeight, initLeft, initTop, resize, resizeCapturingBuffer, onResize, ...props} = this.props;
+    if (initWidth) {
+      el.style.width = initWidth + 'px';
+    }
+    if (initHeight) {
+      el.style.height = initHeight + 'px';
+    }
+    if (initLeft) {
+      el.style.left = initLeft + 'px';
+
+    }
+    if (initTop) {
+      el.style.top = initTop + 'px';
+    }
+    this.resizeHelper.registerResize(el, resize, resizeCapturingBuffer);
+    this.el = el;
+  }
   
 }
 
@@ -95,4 +121,134 @@ Window.defaultProps = {
   minimizable: false,
 };
 
+class ResizeHelper {
 
+  constructor () {
+    this.moveHandler = null;
+  }
+
+  captureResize(el, dirMask, e, onResize) {
+
+    let origin = {x : e.pageX, y : e.pageY};
+    const bcr = el.getBoundingClientRect();
+
+    let north = _maskTest(dirMask, DIRECTIONS.NORTH);
+    let south = _maskTest(dirMask, DIRECTIONS.SOUTH);
+    let west = _maskTest(dirMask, DIRECTIONS.WEST);
+    let east = _maskTest(dirMask, DIRECTIONS.EAST);
+
+    this.moveHandler = function(e) {
+      let dx = e.pageX - origin.x;
+      let dy = e.pageY - origin.y;
+      if (east) {
+        el.style.width = Math.round(bcr.width + dx) + 'px';
+      }
+      let top = bcr.top;
+      let left = bcr.left;
+      let setLoc = false;
+      if (west) {
+        el.style.width = Math.round(bcr.width - dx) + 'px';
+        left += dx;
+        setLoc = true;
+      }
+      if (south) {
+        el.style.height = Math.round(bcr.height + dy) + 'px';
+      }
+      if (north) {
+        el.style.height = Math.round(bcr.height - dy) + 'px';
+        top += dy;
+        setLoc = true;
+      }
+      if (setLoc) {
+        el.style.left = left + 'px';
+        el.style.top = top + 'px';
+      }
+      if (onResize !== undefined) {
+        onResize();
+      }
+    }
+  };
+
+
+  registerResize (el, dirMask, capturingBuffer = 5, onResize = NOOP) {
+    let wm = this;
+    let north = _maskTest(dirMask, DIRECTIONS.NORTH);
+    let south = _maskTest(dirMask, DIRECTIONS.SOUTH);
+    let west = _maskTest(dirMask, DIRECTIONS.WEST);
+    let east = _maskTest(dirMask, DIRECTIONS.EAST);
+
+    let borderTop = capturingBuffer;
+    let borderLeft = capturingBuffer;
+
+    function onNorthEdge(e) {
+      return e.pageY < el.offsetTop + borderTop;
+    }
+
+    function onSouthEdge(e) {
+      return e.pageY > el.offsetTop + el.offsetHeight - borderTop;
+    }
+
+    function onWestEdge(e) {
+      return e.pageX < el.offsetLeft + borderLeft;
+    }
+
+    function onEastEdge(e) {
+      return e.pageX > el.offsetLeft + el.offsetWidth - borderLeft;
+    }
+
+
+    el.addEventListener('mousedown', function(e) {
+      if (north && east && onNorthEdge(e) && onEastEdge(e)) {
+        wm.captureResize(el, DIRECTIONS.NORTH | DIRECTIONS.EAST, e, onResize);
+      } else if (north && west && onNorthEdge(e) && onWestEdge(e)) {
+        wm.captureResize(el, DIRECTIONS.NORTH | DIRECTIONS.WEST, e, onResize);
+      } else if (south && east && onSouthEdge(e) && onEastEdge(e)) {
+        wm.captureResize(el, DIRECTIONS.SOUTH | DIRECTIONS.EAST, e, onResize);
+      } else if (south && west && onSouthEdge(e) && onWestEdge(e)) {
+        wm.captureResize(el, DIRECTIONS.SOUTH | DIRECTIONS.WEST, e, onResize);
+      } else if (north && onNorthEdge(e)) {
+        wm.captureResize(el, DIRECTIONS.NORTH, e, onResize);
+      } else if (south && onSouthEdge(e)) {
+        wm.captureResize(el, DIRECTIONS.SOUTH, e, onResize);
+      } else if (west && onWestEdge(e)) {
+        wm.captureResize(el, DIRECTIONS.WEST, e, onResize);
+      } else if (east && onEastEdge(e)) {
+        wm.captureResize(el, DIRECTIONS.EAST, e, onResize);
+      }
+    });
+
+    el.addEventListener('mousemove', function(e) {
+      if (north && east && onNorthEdge(e) && onEastEdge(e)) {
+        el.style.cursor = 'nesw-resize';
+      } else if (north && west && onNorthEdge(e) && onWestEdge(e)) {
+        el.style.cursor = 'nwse-resize';
+      } else if (south && east && onSouthEdge(e) && onEastEdge(e)) {
+        el.style.cursor = 'nwse-resize';
+      } else if (south && west && onSouthEdge(e) && onWestEdge(e)) {
+        el.style.cursor = 'nesw-resize';
+      } else if (south && onSouthEdge(e)) {
+        el.style.cursor = 'ns-resize';
+      } else if (north && onNorthEdge(e)) {
+        el.style.cursor = 'ns-resize';
+      } else if (east && onEastEdge(e)) {
+        el.style.cursor = 'ew-resize';
+      } else if (west && onWestEdge(e)) {
+        el.style.cursor = 'ew-resize';
+      } else {
+        el.style.cursor = '';
+      }
+    });
+  };
+}
+
+export const DIRECTIONS = {
+  NORTH : 0x0001,
+  SOUTH : 0x0010,
+  WEST :  0x0100,
+  EAST :  0x1000,
+};
+
+
+function _maskTest(mask, value) {
+  return (mask & value) === value;
+}
