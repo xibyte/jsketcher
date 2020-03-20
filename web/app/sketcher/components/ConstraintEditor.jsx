@@ -9,6 +9,8 @@ import Window from "ui/components/Window";
 import Field from "ui/components/controls/Field";
 import Label from "../../../../modules/ui/components/controls/Label";
 import {SketcherAppContext} from "./SketcherApp";
+import {EMPTY_OBJECT} from "../../../../modules/gems/objects";
+import identity from 'lodash';
 
 export function ConstraintEditor() {
 
@@ -53,7 +55,7 @@ export function ConstraintEditor() {
     Object.keys(constraint.schema.constants).map(name => {
       const val = values[name];
       if (val !== undefined) {
-        constraint.constants[name] = val;
+        constraint.updateConstant(name, val + '');
       }
     });
     onApply();
@@ -65,27 +67,30 @@ export function ConstraintEditor() {
 
     <Stack>
 
-      {Object.keys(constraint.schema.constants)
+      {constraint.constantKeys
         .filter(key => !constraint.schema.constants[key].readOnly)
-        .sort().map(name => <Field key={name}>
-        <Label>{name}</Label>
-        {
-          (() => {
-            const def = constraint.schema.constants[name];
-            const val = values[name];
-            if (def.type === 'number') {
-              return <NumberControl value={val} onChange={value => setValue(name, value)}/>
-            } else if (def.type === 'boolean') {
-              return <CheckboxControl value={val} onChange={value => setValue(name, value)}/>
-            } else {
-              return <span>{val}</span>;
+        .sort().map(name => {
+          const def = constraint.schema.constants[name];
+          const presentation = def.presentation || EMPTY_OBJECT;
+          const onChange = value => setValue(name, (presentation.transformIn||identity)(value));
+
+          const val = (presentation.transformOut||identity)(values[name]);
+          const type = presentation.type || def.type;
+          return <Field key={presentation.label||name}>
+            <Label>{name}</Label>
+            {
+              (() => {
+                if (type === 'number') {
+                  return <NumberControl value={val} onChange={onChange}/>
+                } else if (type === 'boolean') {
+                  return <CheckboxControl value={val} onChange={onChange}/>
+                } else {
+                  return <span>{val}</span>;
+                }
+              })()
             }
-
-          })()
-
-        }
-
-      </Field>)}
+          </Field>
+        })}
 
 
       <ButtonGroup>
