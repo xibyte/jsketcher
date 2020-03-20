@@ -65,9 +65,11 @@ export default [
     icon: AiOutlineExport,
 
     invoke: (ctx, e) => {
-      ui.openWin(ctx.app._exportWin, e);
+      ctx.ui.$exportDialogRequest.next({
+        x: e.pageX,
+        y: e.pageY
+      });
     }
-
   },
 
   {

@@ -15,10 +15,6 @@ function App2D() {
   this.winManager = new ui.WinManager();
   this.inputManager = new InputManager(this);
 
-  this._exportWin = new ui.Window($('#exportManager'), app.winManager);
-
-  $('#exportManager li').click(function() {ui.closeWin(app._exportWin);});
-
   this.constraintFilter = {};
   this.actions = {};
   this.commands = {};
@@ -70,14 +66,6 @@ function App2D() {
     app.commandsWin.toggle();
     checkForTerminalVisibility();
     app.viewer.refresh();
-  });
-
-  this.registerAction('exportSVG', "Export To SVG", function () {
-    IO.exportTextData(app.viewer.io.svgExport(), app.getSketchId() + ".ui.styles.init.svg");
-  });
-
-  this.registerAction('exportDXF', "Export To DXF", function () {
-    IO.exportTextData(app.viewer.io.dxfExport(), app.getSketchId() + ".dxf");
   });
 
   this.registerAction('undo', "Undo", function () {
@@ -261,7 +249,8 @@ function createAppContext(viewer, app) {
     ui: {
       $constraintEditRequest: stream(),
       $wizardRequest: stream(),
-      $sketchManagerRequest: stream()
+      $sketchManagerRequest: stream(),
+      $exportDialogRequest: stream()
     }
   };
 }

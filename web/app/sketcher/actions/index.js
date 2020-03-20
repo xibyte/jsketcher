@@ -6,6 +6,7 @@ import constraintGlobalActions from "./constraintGlobalActions";
 import measureActions from "./measureActions";
 import toolActions from "./toolActions";
 import commonActions from "./commonActions";
+import exportActions from "./exportActions";
 
 const ALL_CONTEXTUAL_ACTIONS = [
   ...constraintActions,
@@ -16,7 +17,8 @@ const ACTIONS = [
   ...constraintGlobalActions,
   ...measureActions,
   ...toolActions,
-  ...commonActions
+  ...commonActions,
+  ...exportActions
   //keep going here
 ];
 

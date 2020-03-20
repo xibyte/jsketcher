@@ -52,12 +52,12 @@ function SketchList() {
     {items.map(item => <div key={item} style={listStyle} className='hover'
                             onClick={() => app.openSketch(item)}>
       {item}
-      {' '}
-      <Button type='danger'><RiDeleteBinLine onClick={e => {
+
+      <Button style={{marginLeft: 5}} type='danger'><RiDeleteBinLine onClick={e => {
+        e.stopPropagation();
         if (confirm("Selected sketch will be REMOVED! Are you sure?")) {
           localStorage.removeItem(App2D.STORAGE_PREFIX + item);
           setModification(m => m + 1);
-          e.stopPropagation();
         }
       }}/> </Button>
     </div>)}

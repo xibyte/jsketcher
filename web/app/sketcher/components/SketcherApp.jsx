@@ -12,6 +12,7 @@ import {Scope} from "./Scope";
 import {SketcherToolbar} from "./SketcherToolbar";
 import {sketcherRightToolbarConfig, sketcherTopToolbarConfig} from "../uiConfig";
 import {SketchManager} from "./SketchManager";
+import {ExportDialog} from "./ExportDialog";
 
 export const SketcherAppContext = React.createContext({});
 
@@ -33,7 +34,10 @@ export function SketcherApp({applicationContext}) {
         document.getElementById('top-toolbar')
       )}
       {ReactDOM.createPortal(
-        <Scope><SketchManager /></Scope>,
+        <React.Fragment>
+          <Scope><SketchManager /></Scope>
+          <Scope><ExportDialog /></Scope>
+        </React.Fragment>,
         document.getElementById('global-windows')
       )}
 
