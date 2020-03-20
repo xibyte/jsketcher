@@ -637,22 +637,20 @@ export const ConstraintDefinitions = {
       angle: {
         type: 'number',
         description: 'line angle',
-        readOnly: true,
         initialValue: ([segment1, segment2]) => {
           const a1 = segment1.params.ang.get();
           const a2 = segment2.params.ang.get();
           const ang = makeAngle0_360(a2 - a1);
           return Math.abs(180 - ang) > Math.min(Math.abs(360 - ang), Math.abs(0 - ang)) ? 180 : 0;
         },
-        transform: degree => degree * DEG_RAD
+        transform: degree => degree * DEG_RAD,
+        presentation: {
+          label: 'flip',
+          type: 'boolean',
+          transformOut: value => value === '180',
+          transformIn: value => value ? '180' : '0',
+        }
       },
-      flip: {
-        type: 'boolean',
-        description: 'flips the ends',
-        initialValue: () => {
-          return false;
-        },
-      }
     },
 
     defineParamsScope: (objs, cb) => {
@@ -660,12 +658,6 @@ export const ConstraintDefinitions = {
     },
 
     collectPolynomials: (polynomials, params, constants) => {
-      if (constants.flip) {
-        constants = {
-          ...constants,
-          angle: (constants.angle === 0 ? 180 : 0)
-        };
-      }
       ConstraintDefinitions.AngleBetween.collectPolynomials(polynomials, params, constants);
     }
 
@@ -1001,13 +993,12 @@ export class AlgNumConstraint {
    initConstants() {
     if (this.schema.constants) {
       this.constants = {};
-      Object.keys(this.schema.constants).map(name => {
+      this.constantKeys.map(name => {
         let val = this.schema.constants[name].initialValue(this.objects);
         if (typeof val === 'number') {
           val = val.toFixed(2) + '';
         }
-        this.constants[name] = val;
-
+        this.updateConstant(name, val);
       });
     }
   }
@@ -1033,9 +1024,16 @@ export class AlgNumConstraint {
 
   initialGuess() {
     if (this.schema.initialGuess) {
-      this.schema.initialGuess(this.params);
+      this.schema.initialGuess(this.params, this.resolvedConstants);
     }
   }
 
+  get constantKeys() {
+    return Object.keys(this.schema.constants);
+  }
+
+  updateConstant(key, value) {
+    this.constants[key] = value + ''; // only string are allowed here
+  }
 }
 
