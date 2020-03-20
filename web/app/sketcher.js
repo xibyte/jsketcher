@@ -1,11 +1,12 @@
+import '../css/app.less'
+import 'ui/styles/init/index.less';
+
 import App2D from './sketcher/sketcher-app';
 import {Layer} from './sketcher/viewer2d';
 import * as ui from './ui/ui.js';
 import * as toolkit from './ui/toolkit';
 import {Constraints} from './sketcher/parametric'
 import './utils/jqueryfy'
-import '../css/app.less'
-import 'ui/styles/init/index.less';
 
 import ReactDOM from "react-dom";
 import {SketcherApp} from "./sketcher/components/SketcherApp";
@@ -25,16 +26,6 @@ function initializeSketcherApplication() {
   app.loadFromLocalStorage();
   app.fit();
 
-  var actionsWin = new ui.Window($('#actions'), app.winManager);
-
-  ui.bindOpening( $('#showActions'), actionsWin );
-  var addAction = ui.createActionsWinBuilder(actionsWin);
-
-  for (var p = 0; p < app._actionsOrder.length; ++p) {
-    var act = app.actions[app._actionsOrder[p]];
-    addAction(act.desc, act.action);
-    $('.act-' + act.id).click(act.action).attr('title', act.desc);
-  }
 
 
   const constraintsView = app.dock.views['Constraints'];

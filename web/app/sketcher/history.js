@@ -4,7 +4,8 @@ import diff_match_patch from 'diff-match-patch';
 function HistoryManager(viewer) {
   this.viewer = viewer;
   this.dmp = new diff_match_patch();
-  this.init(this.viewer.io.serializeSketch());
+  this.init({});
+  // this.init(this.viewer.io.serializeSketch());
 }
 
 HistoryManager.prototype.init = function(sketchData) {

@@ -17,7 +17,7 @@
        <span class="logo" style="float:left">sketcher <sup> 2D</sup></span>
         <div style="display: flex" id="top-toolbar"></div>
   </div>
-  <div style="width: 100%; height: calc(100% - 59px); display: flex;">
+  <div style="width: 100%; height: calc(100% - 65px); display: flex;">
 
     <div id="dock" class="panel b-right scroll" style="width: 245px; height: 100%; flex-shrink: 0;"></div>
 
@@ -32,7 +32,6 @@
   
   <div id="status" class="panel b-top" style="width: 100%; height:22px;">
     <div class="button-group" style="float: left">
-      <span id='showActions' class="dock-btn" ><i class="fa fa-slack"></i></span>
     </div>
     <div class="status-item coordinates-info">0.000:0.000</div>
     <div class="status-item tool-info"></div>
@@ -41,22 +40,6 @@
   <div style="width: 0; height: 0" id="global-windows">
   </div>
 
-  <div id="actions" class="scroll win" style="display: none;">
-    <div class="tool-caption" >ACTIONS</div>
-    <div class="content">
-      <div><input class="btn txt-btn" style="width: 100%;" type="submit" value="$value$"></div>
-    </div>
-  </div>
-
-  <div id="exportManager" class="scroll win" style="display: none;">
-    <div class="tool-caption" >FORMAT</div>
-    <div class="content panel" style="padding: 0;">
-      <ul class="tlist">
-        <li class="act-exportSVG">SVG</li>
-        <li class="act-exportDXF">DXF</li>
-      </ul>
-    </div>
-  </div>
 
   <div id="commands" class="win" style="display: none; height: 200px; width: 700px;">
     <div class="tool-caption" >COMMANDS</div>
