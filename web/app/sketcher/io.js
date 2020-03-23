@@ -244,7 +244,7 @@ IO.prototype._loadSketch = function(sketch) {
   }
   let constants = sketch.constants;
   if (constants !== undefined) {
-    this.viewer.params.constantDefinition = constants;
+    this.viewer.parametricManager.$constantDefinition.next(constants);
   }
 
   this.viewer.parametricManager.finishTransaction();
@@ -421,10 +421,15 @@ IO.prototype._serializeSketch = function(metadata) {
     sketch.stages.push(stageOut);
   }
 
-  var constantDefinition = this.viewer.params.constantDefinition;
+  const constantDefinition = this.viewer.parametricManager.constantDefinition;
   if (constantDefinition !== undefined && constantDefinition != null && !/^\s*$/.test(constantDefinition)) {
     sketch.constants = constantDefinition;
   }
+  sketch.scene = {
+    dx: this.viewer.translate.x,
+    dy: this.viewer.translate.y,
+    scale: this.viewer.scale,
+  };
   sketch.metadata = metadata;
   sketch.version = 2;
   return sketch;

@@ -1,12 +1,10 @@
-import React, {useContext, useEffect, useMemo, useState} from 'react';
+import React, {useContext, useMemo, useState} from 'react';
 import {SketcherAppContext} from "./SketcherApp";
 import {useStreamWithUpdater} from "ui/effects";
-import Window from "../../../../modules/ui/components/Window";
-import * as ui from "../../ui/ui";
+import Window, {DIRECTIONS} from "ui/components/Window";
 import App2D from "../sketcher-app";
-import Stack from "../../../../modules/ui/components/Stack";
-import {DIRECTIONS} from "../../ui/ui";
-import Button from "../../../../modules/ui/components/controls/Button";
+import Stack from "ui/components/Stack";
+import Button from "ui/components/controls/Button";
 import {RiDeleteBinLine} from "react-icons/ri";
 
 export function SketchManager() {
