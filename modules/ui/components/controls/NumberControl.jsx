@@ -36,7 +36,7 @@ export default class NumberControl extends React.Component {
     }
     this.input.value = val;
     onChange(val);
-    e.preventDefault();
+    // e.preventDefault();
     e.stopPropagation();
   }
 }

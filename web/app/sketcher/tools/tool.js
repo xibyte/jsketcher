@@ -26,11 +26,11 @@ export class Tool {
   keyup(e) {};
 
   sendMessage(text) {
-    this.viewer.bus.dispatch('tool-message', text);
+    this.viewer.streams.tool.$message.next(text);
   };
   
   sendHint(hint) {
-    this.viewer.bus.dispatch('tool-hint', hint);
+    this.viewer.streams.tool.$hint.next(hint);
   };
 
   sendSpecifyPointHint() {

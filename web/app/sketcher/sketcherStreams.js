@@ -14,6 +14,12 @@ export default function(viewer) {
   streams.addingRoleMode = state(null);
   streams.selection = state([]);
   streams.objectUpdate = stream();
+  streams.dimScale = state(1);
+  streams.tool = {
+    $change: stream(),
+    $message: stream(),
+    $hint: stream()
+  };
 
   return streams;
 };

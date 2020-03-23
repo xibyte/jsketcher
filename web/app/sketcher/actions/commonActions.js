@@ -1,6 +1,6 @@
 import {MdZoomOutMap} from "react-icons/md";
 import {AiOutlineCopy, AiOutlineExport, AiOutlineFile, AiOutlineFolderOpen, AiOutlineSave} from "react-icons/ai";
-import * as ui from "../../ui/ui";
+import {NoIcon} from "../icons/NoIcon";
 
 export default [
 
@@ -83,6 +83,19 @@ export default [
       ctx.viewer.toolManager.releaseControl();
       ctx.app.fit();
       ctx.viewer.refresh();
+    }
+
+  },
+
+  {
+    id: 'ToggleTerminal',
+    shortName: 'Toggle Terminal',
+    kind: 'Common',
+    description: 'Open/Close Terminal Window',
+    icon: NoIcon,
+
+    invoke: (ctx) => {
+      ctx.ui.$showTerminalRequest.update(shown => shown ? null : 'please open');
     }
 
   },

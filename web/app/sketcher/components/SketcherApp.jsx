@@ -13,6 +13,9 @@ import {SketcherToolbar} from "./SketcherToolbar";
 import {sketcherRightToolbarConfig, sketcherTopToolbarConfig} from "../uiConfig";
 import {SketchManager} from "./SketchManager";
 import {ExportDialog} from "./ExportDialog";
+import {SketcherPropertiesView} from "./SketcherPropertiesView";
+import {SketcherDimensionView} from "./SketcherDimensionsView";
+import {SketcherTerminal} from "./TerminalView";
 
 export const SketcherAppContext = React.createContext({});
 
@@ -26,6 +29,14 @@ export function SketcherApp({applicationContext}) {
         document.getElementById('constraint-list')
       )}
       {ReactDOM.createPortal(
+        <Scope><SketcherPropertiesView /></Scope>,
+        document.getElementById('properties-view')
+      )}
+      {ReactDOM.createPortal(
+        <Scope><SketcherDimensionView /></Scope>,
+        document.getElementById('dimension-view')
+      )}
+      {ReactDOM.createPortal(
         <Scope><SketcherToolbar actions={sketcherRightToolbarConfig}/></Scope>,
         document.getElementById('right-toolbar')
       )}
@@ -37,6 +48,7 @@ export function SketcherApp({applicationContext}) {
         <React.Fragment>
           <Scope><SketchManager /></Scope>
           <Scope><ExportDialog /></Scope>
+          <Scope><SketcherTerminal /></Scope>
         </React.Fragment>,
         document.getElementById('global-windows')
       )}

@@ -12,7 +12,7 @@ export default class Window extends React.Component {
   resizeHelper = new ResizeHelper();
 
   render() {
-    let {initWidth, initHeight, initLeft, initTop, setFocus, className,
+    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, setFocus, className,
       resizeCapturingBuffer, resize,
       children, title, icon, minimizable, onClose, ...props} = this.props;
     return <div className={cx(ls.root, className)} {...props} ref={this.keepRef}>
@@ -97,7 +97,7 @@ export default class Window extends React.Component {
     if (el === null) {
       return;
     }
-    let {initWidth, initHeight, initLeft, initTop, resize, resizeCapturingBuffer, onResize, ...props} = this.props;
+    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, resize, resizeCapturingBuffer, onResize, ...props} = this.props;
     if (initWidth) {
       el.style.width = initWidth + 'px';
     }
@@ -106,10 +106,13 @@ export default class Window extends React.Component {
     }
     if (initLeft) {
       el.style.left = initLeft + 'px';
-
+    } else if (initRight) {
+      el.style.left = (window.innerWidth - el.offsetWidth - initRight) + 'px';
     }
     if (initTop) {
       el.style.top = initTop + 'px';
+    } else if (initBottom) {
+      el.style.top = (window.innerHeight - el.offsetHeight - initBottom) + 'px';
     }
     this.resizeHelper.registerResize(el, resize, resizeCapturingBuffer);
     this.el = el;
@@ -121,10 +124,11 @@ Window.defaultProps = {
   minimizable: false,
 };
 
-class ResizeHelper {
+export class ResizeHelper {
 
-  constructor () {
+  constructor (controlGlobalListeners = false) {
     this.moveHandler = null;
+    this.controlGlobalListeners = controlGlobalListeners;
   }
 
   captureResize(el, dirMask, e, onResize) {
@@ -166,6 +170,20 @@ class ResizeHelper {
       if (onResize !== undefined) {
         onResize();
       }
+    };
+    if (this.controlGlobalListeners) {
+      const moveListener = e => {
+        if (this.moveHandler) {
+          this.moveHandler(e);
+        }
+      };
+      const quitListener = e => {
+        this.moveHandler = null;
+        document.removeEventListener("mousemove", moveListener);
+        document.removeEventListener("mouseup", quitListener);
+      };
+      document.addEventListener("mousemove", moveListener);
+      document.addEventListener("mouseup", quitListener);
     }
   };
 

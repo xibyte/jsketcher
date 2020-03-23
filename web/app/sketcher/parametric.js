@@ -28,10 +28,12 @@ class ParametricManager {
     pointer: -1
   });
 
+  $constantDefinition = state('');
+
   constructor(viewer) {
     this.viewer = viewer;
-    this.viewer.params.define('constantDefinition', null);
-    this.viewer.params.subscribe('constantDefinition', 'parametricManager', this.onConstantsExternalChange, this)();
+
+    this.$constantDefinition.attach((def) => this.rebuildConstantTable(def))
 
     this.reset();
 
@@ -59,6 +61,10 @@ class ParametricManager {
 
   get algNumSystem() {
     return this.stage.algNumSystem;
+  }
+
+  get constantDefinition() {
+    return this.$constantDefinition.value;
   }
 
   startTransaction() {
@@ -110,7 +116,6 @@ class ParametricManager {
           this.constantTable[constant] = value;
           prefix += "const " + constant + " = " + value + ";\n"
         } catch(e) {
-          console.log(e);
         }
       }
     }
@@ -122,16 +127,14 @@ class ParametricManager {
   };
 
   defineNewConstant(name, value) {
-    let constantDefinition = this.viewer.params.constantDefinition;
+    let constantDefinition = this.constantDefinition;
     let constantText = name + ' = ' + value;
     if (constantDefinition) {
       constantDefinition += '\n' + constantText;
     } else {
       constantDefinition = constantText;
     }
-    this.rebuildConstantTable(constantDefinition);
-    //disabling onConstantsExternalChange since we don't need re-solve
-    this.viewer.params.set('constantDefinition', constantDefinition, 'parametricManager');
+    this.$constantDefinition.next(constantDefinition);
   };
 
   updateConstraintConstants(constr) {

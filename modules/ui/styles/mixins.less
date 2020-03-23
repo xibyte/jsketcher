@@ -8,10 +8,12 @@
 
 .button-behavior(@color) {
   &:hover {
-    background-color: @color;  
+    background-color: @color;
+    border-color: @color;
   }
   &:active {
     background-color: darken(@color, 20%);
+    border-color: darken(@color, 20%);
   }
 }
 

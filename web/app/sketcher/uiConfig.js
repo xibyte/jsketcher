@@ -2,6 +2,7 @@ import constraintGlobalActions from "./actions/constraintGlobalActions";
 import measureActions from "./actions/measureActions";
 import toolActions from "./actions/toolActions";
 import commonActions from "./actions/commonActions";
+import {removeInPlace} from "../../../modules/gems/iterables";
 
 export const sketcherRightToolbarConfig = constraintGlobalActions.map(a => a.id);
 
@@ -23,3 +24,5 @@ function insertAfter(arr, item, toAdd) {
     arr.splice(index+1, 0, toAdd);
   }
 }
+
+removeInPlace(sketcherTopToolbarConfig, 'ToggleTerminal');

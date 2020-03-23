@@ -18,10 +18,6 @@ html, body {
   font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
 }
 
-.mono {
-  font-family: Monaco, monospace;
-}
-
 .logo {
   color: #bbb;
   font-size: 16px;
@@ -275,62 +271,6 @@ html, body {
   color: #fff;
 }
 
-#commands {
-  .mono;
-}
-
-#commands .content {
-  color: #C4E1A4;
-  font-size: 11px
-}
-
-.terminal-output-area {
-  height: ~"calc(100% - 30px)"; //escape less processing
-  display: flex;
-  flex-direction: column;
-}
-
-.terminal-output {
-  flex: 1;
-}
-
-.terminal-pusher {
-  height: 100%;
-}
-
-.terminal-input {
-  height: 30px;
-}
-
-.terminal-input input {
-  color: #C4E1A4;
-  background: inherit;
-  outline: none;
-  border: 0;
-  margin-top: 4px;
-  padding: 3px;
-  width: 100%;
-  box-sizing: border-box;
-  padding-left: 0;
-}
-
-.terminal-input input::-webkit-input-placeholder {
-  color: #777777;
-  font-style: italic;
-}  
-
-.terminal-commandText {
-  color: #777777;
-}
-
-.autocomplete-area {
-  font-style: italic;
-}
-
-input[type=checkbox], input[type=radio] {
-  vertical-align: middle;
-}
-
 #status {
   .helvetica;
   color: #fff;
@@ -356,4 +296,12 @@ input[type=checkbox], input[type=radio] {
   font-size: 11px;
   cursor: default;
   pointer-events: none;
+}
+
+#top-toolbar:empty {
+  height: 40px;
+}
+
+#right-toolbar:empty {
+  width: 50px;
 }

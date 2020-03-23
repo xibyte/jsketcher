@@ -5,7 +5,9 @@ import suites from './suites'
 import {Menu} from './menu'
 import {TestEnv} from './test'
 import DurationFormat from './utils/duration-format'
+import $ from "jquery";
 
+window.jQuery = window.$ = $;
 
 $(() => {
   $(document).on('click', '.action-item', (e) => {

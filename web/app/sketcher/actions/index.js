@@ -22,10 +22,11 @@ const ACTIONS = [
   //keep going here
 ];
 
-const ALL_ACTIONS = [
+export const ALL_ACTIONS = [
   ...ALL_CONTEXTUAL_ACTIONS,
   ...ACTIONS
 ];
+Object.freeze(ALL_ACTIONS);
 
 const index = {};
 ALL_ACTIONS.forEach(a => index[a.id] = a);
@@ -49,6 +50,10 @@ export function matchAvailableActions(selection) {
 
 export function getSketcherAction(actionId) {
   return index[actionId];
+}
+
+export function getAllSketcherActions() {
+  return ALL_ACTIONS;
 }
 
 //For backward compatibility
