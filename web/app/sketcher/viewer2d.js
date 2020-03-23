@@ -1,5 +1,4 @@
 import {Styles} from './styles';
-import {Bus, Parameters} from '../ui/toolkit';
 import {ParametricManager} from './parametric';
 import {HistoryManager} from './history';
 import {ToolManager} from './tools/manager';
@@ -25,15 +24,14 @@ class Viewer {
     // used to keep all internal data with such precision transforming the input from user
     this.presicion = 3;
     this.canvas = canvas;
-    this.params = new Parameters();
     this.io = new IO(this);
     this.streams = sketcherStreams(this);
-    var viewer = this;
+    const viewer = this;
     this.retinaPxielRatio = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
 
     function updateCanvasSize() {
-      var canvasWidth = canvas.parentNode.offsetWidth;
-      var canvasHeight = canvas.parentNode.offsetHeight;
+      const canvasWidth = canvas.parentNode.offsetWidth;
+      const canvasHeight = canvas.parentNode.offsetHeight;
 
       canvas.width = canvasWidth * viewer.retinaPxielRatio;
       canvas.height = canvasHeight * viewer.retinaPxielRatio;
@@ -54,7 +52,6 @@ class Viewer {
       set: viewer.setActiveLayer
     });
 
-    this.bus = new Bus();
     this.ctx = this.canvas.getContext("2d");
     this._activeLayer = null;
     this.layers = [
@@ -63,10 +60,7 @@ class Viewer {
     ];
     this.dimLayer = this.createLayer("_dim", Styles.DIM);
     this.dimLayers = [this.dimLayer];
-    this.bus.defineObservable(this, 'dimScale', 1);
-    this.bus.subscribe('dimScale', function () {
-      viewer.refresh();
-    });
+    this.streams.dimScale.attach(() => this.refresh());
 
     this._workspace = [this.layers, this.dimLayers];
 
@@ -88,6 +82,10 @@ class Viewer {
     this.transformation = null;
     this.screenToModelMatrix = null;
     this.refresh();
+  }
+
+  get dimScale() {
+    return this.streams.dimScale.value;
   }
 
   get selected() {
@@ -304,10 +302,12 @@ class Viewer {
   showBounds(x1, y1, x2, y2, offset) {
     const dx = Math.max(x2 - x1, 1);
     const dy = Math.max(y2 - y1, 1);
-    if (dx > dy) {
-      this.scale = this.canvas.height / dx;
+    const cRatio = this.canvas.width / this.canvas.height;
+
+    if (dy * cRatio >= dx) {
+      this.scale = this.canvas.height / dy;
     } else {
-      this.scale = this.canvas.width / dy;
+      this.scale = this.canvas.width / dx;
     }
     this.translate.x = -x1 * this.scale;
     this.translate.y = -y1 * this.scale;
@@ -473,7 +473,6 @@ class Viewer {
   setActiveLayer(layer) {
     if (!layer.readOnly) {
       this._activeLayer = layer;
-      this.bus.dispatch("activeLayer");
     }
   };
 

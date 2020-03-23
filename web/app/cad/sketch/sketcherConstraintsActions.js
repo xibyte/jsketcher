@@ -152,7 +152,7 @@ export default [
     appearance: {
       info: 'Point On Line',
       label: 'point & line',
-      icon32: 'ui.styles.init.svg'
+      icon32: 'img/vec/pointOnLine.svg'
     },
     invoke: ({services}) => {
       let viewer = services.sketcher.inPlaceEditor.viewer;
@@ -165,7 +165,7 @@ export default [
     appearance: {
       info: 'Point On Arc / Ellipse',
       label: 'point & arc',
-      icon32: 'ui.styles.init.svg'
+      icon32: 'img/vec/pointOnArc.svg'
     },
     invoke: ({services}) => {
       let viewer = services.sketcher.inPlaceEditor.viewer;
@@ -178,7 +178,7 @@ export default [
     appearance: {
       info: 'Point In the Middle',
       label: 'point @ middle',
-      icon32: 'ui.styles.init.svg'
+      icon32: 'img/vec/pointInMiddle.svg'
     },
     invoke: ({services}) => {
       let viewer = services.sketcher.inPlaceEditor.viewer;
@@ -191,7 +191,7 @@ export default [
     appearance: {
       info: 'Angle Between 2 Lines',
       label: 'angle',
-      icon32: 'ui.styles.init.svg'
+      icon32: 'img/vec/angle.svg'
     },
     invoke: ({services}) => {
       let viewer = services.sketcher.inPlaceEditor.viewer;
@@ -204,7 +204,7 @@ export default [
     appearance: {
       info: 'Symmetry',
       label: 'symmetry',
-      icon32: 'ui.styles.init.svg'
+      icon32: 'img/vec/symmetry.svg'
     },
     invoke: ({services}) => {
       let viewer = services.sketcher.inPlaceEditor.viewer;
@@ -228,7 +228,7 @@ export default [
     appearance: {
       info: 'Lock Convexity',
       label: 'convex',
-      icon32: 'ui.styles.init.svg'
+      icon32: 'img/vec/convex.svg'
     },
     invoke: ({services}) => {
       let viewer = services.sketcher.inPlaceEditor.viewer;

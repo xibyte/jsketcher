@@ -128,3 +128,45 @@ export function GeneratorButton({prefix='', generator: c, ...props}) {
   </div>
 
 }
+
+
+// function configureConstraintsFilter() {
+//   var constraintsCaption = constraintsView.node.find('.tool-caption');
+//   var constraintsFilterBtn = ui.faBtn("filter");
+//   constraintsFilterBtn.css({'float': 'right', 'margin-right': '10px', cursor: 'pointer'});
+//   constraintsCaption.append(constraintsFilterBtn);
+//   var constraintsFilterWin = new ui.Window($('#constrFilter'), app.winManager);
+//   ui.bindOpening(constraintsFilterBtn, constraintsFilterWin);
+//   var content = constraintsFilterWin.root.find('.content');
+//
+//   var constrTypes = [], constrType;
+//   for (var cname in Constraints) {
+//     c = Constraints[cname];
+//     if (c.prototype !== undefined && c.prototype.UI_NAME !== undefined && !c.prototype.aux) {
+//       constrTypes.push(c);
+//     }
+//   }
+//   constrTypes.sort(function (a, b) {
+//     if (a.prototype.NAME == 'coi') {
+//       return b.prototype.NAME == 'coi' ? 0 : -1;
+//     }
+//     return a.prototype.UI_NAME.localeCompare(b.prototype.UI_NAME)
+//   });
+//   for (var i = 0; i < constrTypes.length; i++) {
+//     var c = constrTypes[i];
+//     if (c.prototype !== undefined && c.prototype.UI_NAME !== undefined && !c.prototype.aux) {
+//       var checkbox = $('<input>', {type : 'checkbox', checked : 'checked', value : c.prototype.NAME});
+//       content.append(
+//         $('<label>', { css : {display : 'block', 'white-space' : 'nowrap'}})
+//           .append(checkbox)
+//           .append(c.prototype.UI_NAME)
+//       );
+//       checkbox.change(function(){
+//         var checkbox = $(this);
+//         app.constraintFilter[checkbox.val()] = checkbox.is(':checked') != true;
+//         constrList.refresh();
+//       });
+//     }
+//   }
+// }
+// configureConstraintsFilter();

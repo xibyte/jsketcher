@@ -1,3 +1,5 @@
+@import "~ui/styles/theme.less";
+@import "~ui/styles/mixins.less";
 
 @focus-color: #0065dc;
 @focus-color-secondary: rgba(3, 102, 214, .3);
@@ -38,6 +40,8 @@
       box-shadow: 0 0 0 2px @focus-color-secondary;
       outline: none;
     }
+    .button-behavior(@color-neutral);
+
     padding: 1px;
     flex-basis: 36px;
     display: flex;
