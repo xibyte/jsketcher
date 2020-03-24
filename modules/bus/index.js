@@ -1,3 +1,4 @@
+// @deprecated - use streams
 export default class Bus {
   
   constructor() {
