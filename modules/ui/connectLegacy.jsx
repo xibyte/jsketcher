@@ -26,7 +26,7 @@ export default function connect(WrappedComponent, tokens, config) {
       this.dispatchProps = mapActions(bus.externalAPI, props);
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
       this.externalStateConnection = this.context.bus.connectToState(this.getTokens(), this.setExternalState);
       this.externalStateConnection();
     }
@@ -65,7 +65,7 @@ export default function connect(WrappedComponent, tokens, config) {
     static contextTypes = {
       bus: PropTypes.object
     };
-  }
+  };
 }
 
 function createMapper(mapper, comp) {

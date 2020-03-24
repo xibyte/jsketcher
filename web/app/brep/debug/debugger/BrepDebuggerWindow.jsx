@@ -12,7 +12,7 @@ export const BREP_DEBUG_WINDOW_VISIBLE = createToken('debug', 'brepDebugWindowVi
 
 class BrepDebuggerWindow extends React.Component {
   
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.brepDebugGroup = createGroup();
     addToGroup(this.props.auxGroup, this.brepDebugGroup);
   }
