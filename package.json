@@ -48,7 +48,6 @@
     "less-loader": "^4.1.0",
     "raw-loader": "^4.0.0",
     "style-loader": "0.13.1",
-    "svg-inline-loader": "^0.8.2",
     "webpack": "^4.26.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.7.2"
@@ -58,9 +57,6 @@
     "clipper-lib": "6.2.1",
     "diff-match-patch": "1.0.0",
     "earcut": "2.1.1",
-    "handlebars": "^4.5.3",
-    "handlebars-loader": "1.7.1",
-    "jquery": "^3.4.1",
     "less": "^3.8.1",
     "libtess": "1.2.2",
     "lodash": "^4.17.15",
