@@ -87,8 +87,10 @@ module.exports = {
               {
                 loader: 'css-loader',
                 options: {
-                  getLocalIdent: (context, localIdentName, localName) => generateCSSScopedName(localName, context.resourcePath),
-                  modules: true,
+                  modules: {
+                    mode: 'local',
+                    getLocalIdent: (context, localIdentName, localName) => generateCSSScopedName(localName, context.resourcePath),
+                  },
                   url: false
                 }
               },
