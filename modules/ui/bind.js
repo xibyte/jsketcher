@@ -9,7 +9,7 @@ export default function bind(streamProvider) {
       
       onChange = value => streamProvider(context.streams, this.props).next(value);
       
-      componentWillMount() {
+      UNSAFE_componentWillMount() {
         this.stream = streamProvider(context.streams, this.props);
         this.detacher = this.stream.attach(value => {
           this.setState({
@@ -37,5 +37,5 @@ export default function bind(streamProvider) {
         this.setState({hasError: true});
       }
     };
-  }
+  };
 }
