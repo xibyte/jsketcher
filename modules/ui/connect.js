@@ -7,7 +7,7 @@ export default function connect(streamProvider) {
       
       state = {hasError: false, streamProps: {}};
       
-      componentWillMount() {
+      UNSAFE_componentWillMount() {
         let stream = streamProvider(context.streams, this.props);
         this.detacher = stream.attach(data =>  {
           this.setState({
@@ -34,5 +34,5 @@ export default function connect(streamProvider) {
         this.setState({hasError: true});
       }
     };
-  }
+  };
 }
