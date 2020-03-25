@@ -2,10 +2,11 @@ import React, {useContext, useMemo, useState} from 'react';
 import {SketcherAppContext} from "./SketcherApp";
 import {useStreamWithUpdater} from "ui/effects";
 import Window, {DIRECTIONS} from "ui/components/Window";
-import App2D from "../sketcher-app";
+import App2D from "../sketcherContext";
 import Stack from "ui/components/Stack";
 import Button from "ui/components/controls/Button";
 import {RiDeleteBinLine} from "react-icons/ri";
+import {SKETCHER_STORAGE_PREFIX} from "../project";
 
 export function SketchManager() {
 
@@ -29,7 +30,7 @@ export function SketchManager() {
 
 function SketchList() {
   const [modification, setModification] = useState( 0);
-  const {app} = useContext(SketcherAppContext);
+  const {project} = useContext(SketcherAppContext);
 
   const items = useMemo(() => {
     let theItems = [];
@@ -37,8 +38,8 @@ function SketchList() {
       if (!localStorage.hasOwnProperty(name)) {
         continue;
       }
-      if (name.indexOf(App2D.STORAGE_PREFIX) === 0) {
-        name = name.substring(App2D.STORAGE_PREFIX.length);
+      if (name.indexOf(SKETCHER_STORAGE_PREFIX) === 0) {
+        name = name.substring(SKETCHER_STORAGE_PREFIX.length);
       }
       theItems.push(name);
     }
@@ -48,13 +49,13 @@ function SketchList() {
 
   return <Stack>
     {items.map(item => <div key={item} style={listStyle} className='hover'
-                            onClick={() => app.openSketch(item)}>
+                            onClick={() => project.openSketch(item)}>
       {item}
 
       <Button style={{marginLeft: 5}} type='danger'><RiDeleteBinLine onClick={e => {
         e.stopPropagation();
         if (confirm("Selected sketch will be REMOVED! Are you sure?")) {
-          localStorage.removeItem(App2D.STORAGE_PREFIX + item);
+          localStorage.removeItem(SKETCHER_STORAGE_PREFIX + item);
           setModification(m => m + 1);
         }
       }}/> </Button>

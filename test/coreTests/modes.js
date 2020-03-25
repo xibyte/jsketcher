@@ -1,5 +1,5 @@
-import modellerUISubject from "./subjects/modellerUISubject";
-import {createSketcherSubject} from "./subjects/sketcherUISubject";
+import modellerUISubject from "./subjects/modellerTPI";
+import {createSketcherSubject} from "./subjects/sketcherTPI";
 
 export const ModesConfig = {
   modellerUI: {

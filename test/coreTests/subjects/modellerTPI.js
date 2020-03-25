@@ -1,10 +1,9 @@
-import {createSubjectFromInPlaceSketcher} from './sketcherUISubject';
+import {createSubjectFromInPlaceSketcher} from './sketcherTPI';
 import {
   ALL_EXCLUDING_SOLID_KINDS,
   PICK_KIND,
   traversePickResults
 } from '../../../web/app/cad/scene/controls/pickControlPlugin';
-import {DATUM} from '../../../web/app/cad/scene/entites';
 
 export default ctx => {
 

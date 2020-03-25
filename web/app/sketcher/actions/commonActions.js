@@ -12,7 +12,7 @@ export default [
     icon: AiOutlineFile,
 
     invoke: (ctx) => {
-      ctx.app.newSketch();
+      ctx.project.newSketch();
     }
   },
 
@@ -24,7 +24,7 @@ export default [
     icon: AiOutlineCopy,
 
     invoke: (ctx, e) => {
-      ctx.app.cloneSketch();
+      ctx.project.cloneSketch();
     }
   },
 
@@ -52,7 +52,7 @@ export default [
 
     invoke: (ctx) => {
       const sketchData = ctx.viewer.io.serializeSketch();
-      const sketchId = ctx.app.getSketchId();
+      const sketchId = ctx.project.getSketchId();
       localStorage.setItem(sketchId, sketchData);
     }
   },
@@ -81,7 +81,7 @@ export default [
 
     invoke: (ctx) => {
       ctx.viewer.toolManager.releaseControl();
-      ctx.app.fit();
+      ctx.viewer.fit();
       ctx.viewer.refresh();
     }
 
