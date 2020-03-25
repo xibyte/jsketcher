@@ -357,6 +357,16 @@ class Viewer {
     return out;
   };
 
+  modelToScreen(x, y) {
+    if (this.screenToModelMatrix) {
+      let modelToScreenMx = this.screenToModelMatrix.invert();
+      [x, y] = modelToScreenMx.apply3([x, y, 0]);
+    }
+    x /= this.retinaPxielRatio;
+    y = (this.canvas.height - y) / this.retinaPxielRatio;
+    return [x, y];
+  }
+
   accept = visitor => {
     for (let layer of this.layers) {
       for (let object of layer.objects) {

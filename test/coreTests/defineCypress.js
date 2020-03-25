@@ -18,7 +18,7 @@ export function defineCypressTests(groupName, module) {
       name: camelCaseSplitToStr(key.substring("test".length)),
       funcName: key,
       func,
-      ...ModesConfig[module.TEST_MODE]
+      ...ModesConfig[module.TEST_MODE],
     };
   });
 
@@ -33,11 +33,25 @@ export function defineCypressTests(groupName, module) {
         cy.window().then(win => {
           return new Promise((resolve, reject) => {
             const subject = test.testSubject(win);
-            const testEnv = new TestEnv(() => {
+
+            const onDone = () => {
               cy.log("took: " + durationFormat(testEnv.took));
               resolve();
-            });
-            win.__CAD_APP.streams.lifecycle.projectLoaded.attach(ready => {
+            };
+
+            const navigate = url => {
+              return new Promise((resolve) => {
+                cy.visit(url, {
+                  onLoad: (contentWindow) => {
+                    resolve(contentWindow);
+                  }
+                });
+              });
+            };
+
+            const testEnv = new TestEnv(test.startPage, navigate, onDone);
+
+            test.loadStream(win).attach(ready => {
               if (ready) {
                 test.func(testEnv, subject);
               }
