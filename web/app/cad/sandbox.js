@@ -12,7 +12,7 @@ import DatumObject3D from './craft/datum/datumObject';
 import CSys from '../math/csys';
 import {createOctreeFromSurface, sphereOctree, traverseOctree} from "../../../modules/voxels/octree";
 
-export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, tpi, tpi: {addShellOnScene} }}) {
+export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, exposure, exposure: {addShellOnScene} }}) {
 
   function test1() {
 
@@ -55,7 +55,7 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
 
     addShellOnScene(cylinder1);
     addShellOnScene(cylinder2);
-    let result = tpi.brep.bool.subtract(cylinder1, cylinder2);
+    let result = exposure.brep.bool.subtract(cylinder1, cylinder2);
 
     addShellOnScene(result);
   }
@@ -88,19 +88,19 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
     // addShellOnScene(s1);
     // addShellOnScene(s2);
 
-    // let result = tpi.brep.bool.intersect(s1, s2);
+    // let result = exposure.brep.bool.intersect(s1, s2);
     let result = s1;
     addShellOnScene(result);
   }
 
   function test3() {
-    const box1 = tpi.brep.primitives.box(500, 500, 500);
-    const box2 = tpi.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+    const box1 = exposure.brep.primitives.box(500, 500, 500);
+    const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
 
-    const box3 = tpi.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
-    // let result = tpi.brep.bool.union(box1, box2);
-    let result = tpi.brep.bool.subtract(box1, box2);
-    result = tpi.brep.bool.subtract(result, box3);
+    const box3 = exposure.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
+    // let result = exposure.brep.bool.union(box1, box2);
+    let result = exposure.brep.bool.subtract(box1, box2);
+    result = exposure.brep.bool.subtract(result, box3);
     // addShellOnScene(box1);
     addShellOnScene(result);
   }

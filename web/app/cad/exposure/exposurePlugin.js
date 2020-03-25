@@ -1,8 +1,8 @@
-import TPI from './tpi';
+import exposure from './exposure';
 import {MBrepShell} from '../model/mshell';
 
 /*
- * TPI stands for the Test Program Interface
+ * exposure stands for the Test Program Interface
  */
 export function activate({streams, services}) {
 
@@ -15,10 +15,10 @@ export function activate({streams, services}) {
     streams.craft.models.next([sceneSolid]);
     services.viewer.render();
   }
-  services.tpi = Object.assign({
+  services.exposure = Object.assign({
     streams,
     services,
     addShellOnScene,
     addOnScene
-  }, TPI);
+  }, exposure);
 }
