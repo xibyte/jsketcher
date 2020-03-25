@@ -11,19 +11,19 @@ import * as LoftTests from '../../../coreTests/testCases/craftLoft';
 import * as DatumTests from '../../../coreTests/testCases/craftDatum';
 import * as BooleanTests from '../../../coreTests/testCases/craftBoolean';
 
-import {defineCypressTest} from "../../../coreTests/defineCypress";
+import {defineCypressTests} from "../../../coreTests/defineCypress";
 
 describe("Craft Operations", () => {
-  defineCypressTest("Plane Operation", PlaneTests);
-  defineCypressTest("Extrude - all sketcher objects", ExtrudeBasicShapesTests);
-  defineCypressTest("Extrude Options", ExtrudeOptionsTests);
-  defineCypressTest("Extrude Operation", ExtrudeTests);
-  defineCypressTest("Cut Operation", CutTests);
-  defineCypressTest("Revolve Operation", RevolveTests);
-  defineCypressTest("Fillet Operation", FilletTests);
-  defineCypressTest("Loft Operation", LoftTests);
-  defineCypressTest("Datum Operation", DatumTests);
-  defineCypressTest("General Boolean Operation", BooleanTests);
+  defineCypressTests("Plane Operation", PlaneTests);
+  defineCypressTests("Extrude - all sketcher objects", ExtrudeBasicShapesTests);
+  defineCypressTests("Extrude Options", ExtrudeOptionsTests);
+  defineCypressTests("Extrude Operation", ExtrudeTests);
+  defineCypressTests("Cut Operation", CutTests);
+  defineCypressTests("Revolve Operation", RevolveTests);
+  defineCypressTests("Fillet Operation", FilletTests);
+  defineCypressTests("Loft Operation", LoftTests);
+  defineCypressTests("Datum Operation", DatumTests);
+  defineCypressTests("General Boolean Operation", BooleanTests);
 });
 
 

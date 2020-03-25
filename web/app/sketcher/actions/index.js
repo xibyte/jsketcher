@@ -56,6 +56,10 @@ export function getAllSketcherActions() {
   return ALL_ACTIONS;
 }
 
+export function getSketcherActionIndex() {
+  return index;
+}
+
 //For backward compatibility
 export function runActionOrToastWhyNot(actionId, ctx, silent) {
   const selection = ctx.viewer.selected;

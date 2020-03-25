@@ -2,7 +2,7 @@ import {camelCaseSplitToStr} from "gems/camelCaseSplit";
 import {TestEnv} from "./test";
 import {ModesConfig} from "./modes";
 
-export function defineCypressTest(groupName, module) {
+export function defineCypressTests(groupName, module) {
 
   if (!module.TEST_MODE) {
     throw 'modules should have a mode defined';
