@@ -1,30 +1,29 @@
 import Vector from 'math/vector';
+import {assertEquals, assertPoint2DEquals} from "../utils/asserts";
 
 export const TEST_MODE = 'sketcherUI';
 
-export function testSegmentWizard(env, test) {
-  env.assertEquals(0, test.viewer.activeLayer.objects.length);
-  test.addSegment(10, 10, 100, 100);
+export function testSegmentWizard(env, tpi) {
+  env.assertEquals(0, tpi.viewer.activeLayer.objects.length);
+  tpi.addSegment(10, 10, 100, 100);
 
-  env.assertEquals(1, test.viewer.activeLayer.objects.length);
-  const segment = test.viewer.activeLayer.objects[0];
-  env.assertEquals('TCAD.TWO.Segment', segment._class);
-  env.assertPoint2DEquals(test.toModel(10, 10), segment.a);
-  env.assertPoint2DEquals(test.toModel(100, 100), segment.b);
+  assertEquals(1, tpi.viewer.activeLayer.objects.length);
+  const segment = tpi.viewer.activeLayer.objects[0];
+  assertEquals('TCAD.TWO.Segment', segment._class);
+  assertPoint2DEquals(tpi.toModel(10, 10), segment.a);
+  assertPoint2DEquals(tpi.toModel(100, 100), segment.b);
   env.done();
 }
-
-// testSaveLoad: function(env) {
-//   test.emptySketch(env.test((win, app) => {
-//     env.assertEquals(0, app.viewer.activeLayer.objects.length);
-//     sketcher_utils.addSegment(app, 10, 10, 100, 100);
-//     app.actions['save'].action();
-//     test.sketch(env.test((win, app) => {
-//       env.assertEquals(1, app.viewer.activeLayer.objects.length);
-//       const segment = app.viewer.activeLayer.objects[0];
-//       env.assertEquals('TCAD.TWO.Segment', segment._class);
-//       env.done();
-//     }));
+//
+// function testSaveLoad(env, tpi) {
+//   env.assertEquals(0, app.viewer.activeLayer.objects.length);
+//   tpi.addSegment(10, 10, 100, 100);
+//   app.actions['save'].action();
+//   test.sketch(env.test((win, app) => {
+//     env.assertEquals(1, app.viewer.activeLayer.objects.length);
+//     const segment = app.viewer.activeLayer.objects[0];
+//     env.assertEquals('TCAD.TWO.Segment', segment._class);
+//     env.done();
 //   }));
 // },
 //

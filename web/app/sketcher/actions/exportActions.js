@@ -12,7 +12,7 @@ export default [
     icon: AiOutlineExport,
 
     invoke: (ctx) => {
-      IO.exportTextData(ctx.viewer.io.svgExport(), ctx.app.getSketchId() + ".svg");
+      IO.exportTextData(ctx.viewer.io.svgExport(), ctx.project.getSketchId() + ".svg");
     }
   },
 
@@ -24,7 +24,7 @@ export default [
     icon: AiOutlineExport,
 
     invoke: (ctx) => {
-      IO.exportTextData(ctx.viewer.io.dxfExport(), ctx.app.getSketchId() + ".dxf");
+      IO.exportTextData(ctx.viewer.io.dxfExport(), ctx.project.getSketchId() + ".dxf");
     }
 
   },
