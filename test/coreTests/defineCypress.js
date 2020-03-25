@@ -27,17 +27,21 @@ export function defineCypressTests(groupName, module) {
 
     for (let test of tests) {
       (test.func.only ? it.only : it)(test.name, () => {
+        cy.log("Core Test: " + test.funcName);
         cy.visit(test.startPage);
 
         cy.window().then(win => {
-          cy.log("Core Test: " + test.funcName);
           return new Promise((resolve, reject) => {
             const subject = test.testSubject(win);
             const testEnv = new TestEnv(() => {
               cy.log("took: " + durationFormat(testEnv.took));
               resolve();
             });
-            test.func(testEnv, subject);
+            win.__CAD_APP.streams.lifecycle.projectLoaded.attach(ready => {
+              if (ready) {
+                test.func(testEnv, subject);
+              }
+            });
           });
         })
       });
