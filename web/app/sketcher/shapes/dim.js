@@ -26,9 +26,12 @@ class LinearDimension extends SketchObject {
   getB() { return this.b }
   
   drawImpl(ctx, scale, viewer) {
-  
-    var off = 30 * viewer.dimScale;
-    var textOff = getTextOff(viewer.dimScale);
+
+    const dimScale = viewer.dimScale;
+
+    const unscale = 1 /scale;
+    const off = unscale * 15;
+    const textOff = unscale * 3; // getTextOff(dimScale);
   
     var a, b, startA, startB;
     if (this.flip) {
@@ -43,7 +46,7 @@ class LinearDimension extends SketchObject {
       startB = this.b;
     }
     
-    var d = math.distanceAB(a, b);
+    const d = math.distanceAB(a, b);
   
     var _vx = - (b.y - a.y);
     var _vy = b.x - a.x;
@@ -69,7 +72,7 @@ class LinearDimension extends SketchObject {
     function drawRef(start, x, y) {
       var vec = new Vector(x - start.x, y - start.y);
       vec._normalize();
-      vec._multiply(7 * viewer.dimScale);
+      vec._multiply(7 * unscale);
       
       ctx.moveTo(start.x, start.y );
       ctx.lineTo(x, y);
@@ -81,41 +84,79 @@ class LinearDimension extends SketchObject {
   
     ctx.closePath();
     ctx.stroke();
-  
-    function drawArrow(x, y) {
-      var s1 = 50;
-      var s2 = 20;
-      ctx.lineCap = 'round';
+
+    const arrowWpx = 15;
+    const arrowW = arrowWpx * unscale;
+    const arrowH = 4 * unscale;
+
+    function drawArrow(x, y, nx, ny) {
       ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x - s1, y - s2);
+      ctx.moveTo(x, y, 0);
+      ctx.lineTo(x + ny * arrowW + nx * arrowH, y + -nx * arrowW + ny * arrowH );
+      ctx.lineTo(x + ny * arrowW - nx * arrowH, y + -nx * arrowW - ny * arrowH);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawExtensionLine(x, y, nx, ny, width) {
+      ctx.beginPath();
+      ctx.moveTo(x + ny * arrowW, y + -nx * arrowW);
+      ctx.lineTo(x + ny * (arrowW + width), y + -nx * (arrowW + width));
       ctx.closePath();
       ctx.stroke();
     }
-  
-  //  drawArrow(_ax, _ay);
-  //  drawArrow(_bx, _by);
-  
-    ctx.font= (12 * viewer.dimScale) + "px Arial";
-    var txt = d.toFixed(2);
-    var h = d / 2 - ctx.measureText(txt).width / 2;
-  
-    if (h > 0) {
-      var tx = (_ax + _vxn * textOff) - (- _vyn) * h;
-      var ty = (_ay + _vyn * textOff) - (  _vxn) * h;
-      ctx.save();
-      ctx.translate(tx, ty);
-      ctx.rotate(	- Math.atan2(_vxn, _vyn));
-      ctx.scale(1, -1);
-      ctx.fillText(txt, 0, 0);
-      ctx.restore();
+
+    ctx.font = (12) + "px Arial";
+    const txt = d.toFixed(2);
+    const textMetrics = ctx.measureText(txt);
+
+    const arrowToTextPaddingPx = 2;
+    const takenByArrow = viewer.screenToModelDistance(2 * (arrowWpx + arrowToTextPaddingPx));
+
+    const availableArea = d - takenByArrow;
+
+    const modelTextWidth = viewer.screenToModelDistance(textMetrics.width);
+
+    const innerMode = modelTextWidth <= availableArea;
+
+    let tx, ty;
+
+    if (innerMode) {
+      drawArrow(_ax, _ay, _vxn, _vyn);
+      drawArrow(_bx, _by, -_vxn, -_vyn);
+
+      const h = d/2 - modelTextWidth/2;
+      tx = (_ax + _vxn * textOff) - (- _vyn) * h;
+      ty = (_ay + _vyn * textOff) - (  _vxn) * h;
+    } else {
+      drawArrow(_ax, _ay, -_vxn, -_vyn);
+      drawArrow(_bx, _by, _vxn, _vyn);
+      const outerArrowToTextPaddingPx = 6;
+
+      drawExtensionLine(_bx, _by, _vxn, _vyn,  modelTextWidth + 2 * outerArrowToTextPaddingPx * unscale);
+      drawExtensionLine(_ax, _ay, -_vxn, -_vyn,  outerArrowToTextPaddingPx * unscale);
+
+
+      tx = (_bx + _vxn * textOff) - (- _vyn) * (arrowWpx + outerArrowToTextPaddingPx) * unscale;
+      ty = (_by + _vyn * textOff) - (  _vxn) * (arrowWpx + outerArrowToTextPaddingPx) * unscale;
     }
+    ctx.save();
+    ctx.translate(tx, ty);
+    ctx.rotate(	- Math.atan2(_vxn, _vyn));
+    ctx.scale(unscale, -unscale);
+    ctx.fillText(txt, 0, 0);
+    ctx.restore();
+
   }
   
   normalDistance(aim) {
     return -1;
   }
 }
+
+
+
+
 
 export class Dimension extends LinearDimension {
   constructor(a, b) {
