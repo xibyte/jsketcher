@@ -28,8 +28,8 @@ export function singleShellRespone(oldShell, newShellData) {
 }
 
 export function readShellData(data, consumed, csys) {
-  let tpi = __CAD_APP.services.tpi;
-  let model = new tpi.scene.readShellEntityFromJson(data, consumed, csys);
+  let exposure = __CAD_APP.services.exposure;
+  let model = new exposure.scene.readShellEntityFromJson(data, consumed, csys);
   model.brepShell.data.externals.engine = 'e0';
   return model;
 }

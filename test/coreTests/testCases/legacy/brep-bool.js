@@ -31,8 +31,8 @@ const CASE = {
       const box2 = app.TPI.brep.primitives.box(100, 100, 100, mat);
       const shell = app.TPI.brep.bool.union(box1, box2);
   
-      // app.TPI.addShellOnScene(box1);
-      // app.TPI.addShellOnScene(box2);
+      // app.exposure.addShellOnScene(box1);
+      // app.exposure.addShellOnScene(box2);
       app.TPI.addShellOnScene(shell);
       env.done();
     }));
