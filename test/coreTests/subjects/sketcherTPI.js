@@ -20,21 +20,21 @@ export function createSubjectFromInPlaceSketcher(ctx) {
     actions
   };
   
-  return createSketcherSubject(oldStyleSketcherApp); 
+  return createSketcherTPI(oldStyleSketcherApp);
 }
 
-export function createSketcherSubject(sketcherApp) {
+export function createSketcherTPI(context) {
 
-  const viewer = sketcherApp.viewer;
+  const viewer = context.viewer;
   viewer.parametricManager.messageSink = msg => console.log(msg);
   
-  const addSegment = sketcher_utils.addSegmentInModel.bind(this, sketcherApp);
-  const addArc = sketcher_utils.addArc.bind(this, sketcherApp);
-  const addCircle = sketcher_utils.addCircle.bind(this, sketcherApp);
-  const addEllipse = sketcher_utils.addEllipse.bind(this, sketcherApp);
-  const addEllipticalArc = sketcher_utils.addEllipticalArc.bind(this, sketcherApp);
-  const addBezier = sketcher_utils.addBezier.bind(this, sketcherApp);
-  const move = sketcher_utils.moveInModel.bind(this, sketcherApp);
+  const addSegment = sketcher_utils.addSegmentInModel.bind(this, context);
+  const addArc = sketcher_utils.addArc.bind(this, context);
+  const addCircle = sketcher_utils.addCircle.bind(this, context);
+  const addEllipse = sketcher_utils.addEllipse.bind(this, context);
+  const addEllipticalArc = sketcher_utils.addEllipticalArc.bind(this, context);
+  const addBezier = sketcher_utils.addBezier.bind(this, context);
+  const move = sketcher_utils.moveInModel.bind(this, context);
   function addRectangle(x0, y0, x1, y1) {
     return [
       addSegment(x0, y0, x1, y0),
@@ -82,24 +82,32 @@ export function createSketcherSubject(sketcherApp) {
 
   function click(modelX, modelY, attrs) {
     let [x, y] = sketcher_utils.modelToScreen(viewer, modelX, modelY);
-    sketcher_utils.clickXY(sketcherApp, x, y, attrs);
+    sketcher_utils.clickXY(context, x, y, attrs);
   }
 
   function select(objects, inclusive) {
-    sketcherApp.viewer.select(objects, !inclusive);
+    context.viewer.select(objects, !inclusive);
   }
 
-  function runAction(id) {
-    sketcherApp.actions[id].action();
+  function runAction(id, actionContext) {
+    const action = context.actions[id];
+    if (!action ) {
+      throw `action ${id} doesn't exist`;
+    }
+    action.invoke(context, actionContext);
   }
 
   function toModel(x, y) {
-    return sketcher_utils.toModel(sketcherApp, x, y);
+    return sketcher_utils.toModel(context, x, y);
   }
-  
+
+  function toScreen(x, y) {
+    return sketcher_utils.modelToScreen(context.viewer, x, y);
+  }
+
   return {
     addSegment, addRectangle, addArc, addCircle, addEllipse, addEllipticalArc, addSerpinski, addBezier, addPolygon, 
-    move, changeLayer, changeToConstructionLayer, changeToDefaultLayer, toModel,
+    move, changeLayer, changeToConstructionLayer, changeToDefaultLayer, toModel, toScreen,
     click, select, runAction,
     viewer
   }

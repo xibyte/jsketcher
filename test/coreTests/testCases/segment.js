@@ -1,31 +1,41 @@
 import Vector from 'math/vector';
 import {assertEquals, assertPoint2DEquals} from "../utils/asserts";
+import {createSketcherTPI} from "../subjects/sketcherTPI";
 
 export const TEST_MODE = 'sketcherUI';
 
 export function testSegmentWizard(env, tpi) {
-  env.assertEquals(0, tpi.viewer.activeLayer.objects.length);
+  assertEquals(0, tpi.viewer.activeLayer.objects.length);
   tpi.addSegment(10, 10, 100, 100);
 
   assertEquals(1, tpi.viewer.activeLayer.objects.length);
   const segment = tpi.viewer.activeLayer.objects[0];
   assertEquals('TCAD.TWO.Segment', segment._class);
-  assertPoint2DEquals(tpi.toModel(10, 10), segment.a);
-  assertPoint2DEquals(tpi.toModel(100, 100), segment.b);
+  const [asx, asy] = tpi.toScreen(10, 10);
+  const [bsx, bsy] = tpi.toScreen(100, 100);
+  assertPoint2DEquals(tpi.toModel(asx, asy), segment.a);
+  assertPoint2DEquals(tpi.toModel(bsx, bsy), segment.b);
   env.done();
 }
-//
-// function testSaveLoad(env, tpi) {
-//   env.assertEquals(0, app.viewer.activeLayer.objects.length);
-//   tpi.addSegment(10, 10, 100, 100);
-//   app.actions['save'].action();
-//   test.sketch(env.test((win, app) => {
-//     env.assertEquals(1, app.viewer.activeLayer.objects.length);
-//     const segment = app.viewer.activeLayer.objects[0];
-//     env.assertEquals('TCAD.TWO.Segment', segment._class);
-//     env.done();
-//   }));
-// },
+
+export function testSaveLoad(env, tpi) {
+  assertEquals(0, tpi.viewer.activeLayer.objects.length);
+  tpi.addSegment(10, 10, 100, 100);
+  tpi.runAction('Save');
+  cy.visit('http://localhost:3000');
+  cy.window().then(win => {
+    env.done();
+  });
+  // env.navigate('http://google.com').then(win => {
+  //   const tpi = createSketcherTPI(win.__CAD_APP);
+  //   assertEquals(1, tpi.viewer.activeLayer.objects.length);
+  //   const segment = tpi.viewer.activeLayer.objects[0];
+  //   assertEquals('TCAD.TWO.Segment', segment._class);
+  //
+  // });
+
+}
+testSaveLoad.only = true;
 //
 // testSelection: function(env) {
 //   test.emptySketch(env.test((win, app) => {
