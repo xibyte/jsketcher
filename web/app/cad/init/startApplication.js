@@ -22,7 +22,7 @@ import * as ProjectPlugin from '../projectPlugin';
 import * as ProjectManagerPlugin from '../projectManager/projectManagerPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
 import * as ExportPlugin from '../exportPlugin';
-import * as TpiPlugin from '../tpi/tpiPlugin';
+import * as ExposurePlugin from '../exposure/exposurePlugin';
 import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
 import * as EntityContextPlugin from '../scene/entityContextPlugin';
 import * as E0Plugin from '../craft/e0/e0Plugin';
@@ -54,7 +54,7 @@ export default function startApplication(callback) {
     CraftUiPlugin,
     CadRegistryPlugin,
     ExportPlugin,
-    TpiPlugin,
+    ExposurePlugin,
     E0Plugin,
     ProjectManagerPlugin
   ];
