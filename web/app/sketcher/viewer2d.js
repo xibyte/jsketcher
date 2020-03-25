@@ -327,7 +327,7 @@ class Viewer {
 
     const bounds = bbox.bbox;
     this.showBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
-    bbox.inc(20 / this.viewer.scale);
+    bbox.inc(20 / this.scale);
     this.showBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
   }
 
@@ -357,14 +357,13 @@ class Viewer {
     return out;
   };
 
-  modelToScreen(x, y) {
-    if (this.screenToModelMatrix) {
-      let modelToScreenMx = this.screenToModelMatrix.invert();
-      [x, y] = modelToScreenMx.apply3([x, y, 0]);
-    }
-    x /= this.retinaPxielRatio;
-    y = (this.canvas.height - y) / this.retinaPxielRatio;
-    return [x, y];
+  screenToModelDistance(dist) {
+    measurer.x = 0;
+    measurer.y = 0;
+    this.screenToModel2(0,0,measurer);
+    const x0 = measurer.x;
+    this.screenToModel2(dist,0,measurer);
+    return Math.abs(measurer.x - x0);
   }
 
   accept = visitor => {
@@ -632,5 +631,7 @@ const CAPTURES = {
     priority: 4
   },
 };
+
+const measurer = {x: 0, y: 0, z: 0};
 
 export {Viewer, Styles}
