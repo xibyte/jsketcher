@@ -1,7 +1,7 @@
 import * as sketcher_utils from '../utils/sketcherUtils'
 import {decapitalize} from '../../../modules/gems/capitalize';
-import genSerpinski, {genSerpinskiImpl} from '../../../web/app/utils/genSerpinski';
-import {distance, distanceAB} from '../../../web/app/math/math';
+import {genSerpinskiImpl} from '../../../web/app/utils/genSerpinski';
+import {distance} from '../../../web/app/math/math';
 
 export function createSubjectFromInPlaceSketcher(ctx) {
   let actions = {};
@@ -92,10 +92,14 @@ export function createSketcherSubject(sketcherApp) {
   function runAction(id) {
     sketcherApp.actions[id].action();
   }
+
+  function toModel(x, y) {
+    return sketcher_utils.toModel(sketcherApp, x, y);
+  }
   
   return {
     addSegment, addRectangle, addArc, addCircle, addEllipse, addEllipticalArc, addSerpinski, addBezier, addPolygon, 
-    move, changeLayer, changeToConstructionLayer, changeToDefaultLayer, 
+    move, changeLayer, changeToConstructionLayer, changeToDefaultLayer, toModel,
     click, select, runAction,
     viewer
   }

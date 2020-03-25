@@ -5,7 +5,7 @@ import React from "react";
 import {stream, state} from "lstream";
 import {Dock, dockBtn} from "./components/Dock";
 import {DIRECTIONS, ResizeHelper} from "../../../modules/ui/components/Window";
-import {getSketcherAction} from "./actions";
+import {getAllSketcherActions, getSketcherAction, getSketcherActionIndex} from "./actions";
 
 class App2D {
 
@@ -15,9 +15,11 @@ class App2D {
     this.context = createAppContext(this.viewer, this);
     this.inputManager = new InputManager(this);
 
-    this.actions = {};
-
     this.initNonReactUIParts();
+  }
+
+  get actions() {
+    return getSketcherActionIndex();
   }
 
   fit() {

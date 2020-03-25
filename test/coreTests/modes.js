@@ -8,6 +8,6 @@ export const ModesConfig = {
   },
   sketcherUI: {
     testSubject: win => createSketcherSubject(win.__CAD_APP),
-    startPage: 'http://localhost:3000/index.html#TestProject'
+    startPage: 'http://localhost:3000/sketcher.html#TestProject'
   },
 };
