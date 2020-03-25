@@ -13,6 +13,7 @@ import Vector from 'math/vector';
 import * as draw_utils from './shapes/draw-utils';
 import {Matrix3} from '../math/l3space';
 import sketcherStreams from './sketcherStreams';
+import {BBox} from "./io";
 
 class Viewer {
 
@@ -312,6 +313,23 @@ class Viewer {
     this.translate.x = -x1 * this.scale;
     this.translate.y = -y1 * this.scale;
   };
+
+  fit() {
+
+    const bbox = new BBox();
+    this.accept(obj => {
+      bbox.check(obj);
+      return true;
+    });
+    if (!bbox.isValid()) {
+      return;
+    }
+
+    const bounds = bbox.bbox;
+    this.showBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
+    bbox.inc(20 / this.viewer.scale);
+    this.showBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
+  }
 
   screenToModel2(x, y, out) {
     out.x = x * this.retinaPxielRatio;
