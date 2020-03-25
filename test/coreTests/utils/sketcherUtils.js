@@ -47,7 +47,7 @@ export function moveInModel(app, fromX, fromY, toX, toY) {
 
 
 export function addSegment(app, aX, aY, bX, bY) {
-  app.actions['addSegment'].action();
+  app.actions.SegmentTool.invoke(app.context);
   const tool = app.viewer.toolManager.tool;
   tool.mousemove(new TestMouseEvent(aX, aY));
   tool.mousedown(new TestMouseEvent(aX, aY));
