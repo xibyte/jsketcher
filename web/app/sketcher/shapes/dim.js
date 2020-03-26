@@ -1,7 +1,10 @@
-import * as utils from '../../utils/utils'
 import * as math from '../../math/math'
 import Vector from 'math/vector';
 import {SketchObject} from './sketch-object'
+import {Styles} from "../styles";
+import {_90} from "../../math/math";
+import {_270} from "../../math/math";
+import {makeAngle0_360} from "../../math/math";
 
 class LinearDimension extends SketchObject {
   
@@ -10,6 +13,9 @@ class LinearDimension extends SketchObject {
     this.a = a;
     this.b = b;
     this.flip = false;
+    this.offset = 15;
+    this.pickA = [];
+    this.pickB = [];
   }
 
   visitParams(callback) {
@@ -20,6 +26,20 @@ class LinearDimension extends SketchObject {
   }
   
   translateImpl(dx, dy) {
+
+    const [_ax, _ay]  = this.pickA;
+    const [_bx, _by]  = this.pickB;
+
+    let _vx = - (_by - _ay);
+    let _vy = _bx - _ax;
+
+    const d = math.distance(_ax, _ay, _bx, _by);
+
+    //normalize
+    let _vxn = _vx / d;
+    let _vyn = _vy / d;
+
+    this.offset += (dx *  _vxn + dy * _vyn) * this.unscale;
   }
   
   getA() { return this.a }
@@ -27,43 +47,45 @@ class LinearDimension extends SketchObject {
   
   drawImpl(ctx, scale, viewer) {
 
+    const marked = this.markers.length !== 0;
+
+    if (marked) {
+      ctx.save();
+      viewer.setStyle(Styles.HIGHLIGHT, ctx);
+    }
+
     const dimScale = viewer.dimScale;
 
     const unscale = 1 /scale;
-    const off = unscale * 15;
+    const off = unscale * this.offset;
     const textOff = unscale * 3; // getTextOff(dimScale);
-  
-    var a, b, startA, startB;
-    if (this.flip) {
-      a = this.getB();
-      b = this.getA();
-      startA = this.b;
-      startB = this.a;
-    } else {
-      a = this.getA();
-      b = this.getB();
-      startA = this.a;
-      startB = this.b;
-    }
-    
+
+    this.unscale = scale;
+
+    let a, b, startA, startB;
+    a = this.getB();
+    b = this.getA();
+    startA = this.b;
+    startB = this.a;
+
     const d = math.distanceAB(a, b);
-  
-    var _vx = - (b.y - a.y);
-    var _vy = b.x - a.x;
+
+    let _vx = - (b.y - a.y);
+    let _vy = b.x - a.x;
   
     //normalize
-    var _vxn = _vx / d;
-    var _vyn = _vy / d;
+    let _vxn = _vx / d;
+    let _vyn = _vy / d;
   
     _vx = _vxn * off;
     _vy = _vyn * off;
   
     ctx.beginPath();
-  
-    var _ax = a.x + _vx;
-    var _ay = a.y + _vy;
-    var _bx = b.x + _vx;
-    var _by = b.y + _vy;
+
+    let _ax = a.x + _vx;
+    let _ay = a.y + _vy;
+    let _bx = b.x + _vx;
+    let _by = b.y + _vy;
   
     ctx.moveTo(_ax, _ay);
     ctx.lineTo(_bx, _by);
@@ -98,10 +120,14 @@ class LinearDimension extends SketchObject {
       ctx.fill();
     }
 
-    function drawExtensionLine(x, y, nx, ny, width) {
+    function drawExtensionLine(x, y, nx, ny, width, tip) {
       ctx.beginPath();
       ctx.moveTo(x + ny * arrowW, y + -nx * arrowW);
-      ctx.lineTo(x + ny * (arrowW + width), y + -nx * (arrowW + width));
+
+      tip[0] = x + ny * (arrowW + width);
+      tip[1] = y + -nx * (arrowW + width);
+
+      ctx.lineTo(tip[0], tip[1]);
       ctx.closePath();
       ctx.stroke();
     }
@@ -119,11 +145,19 @@ class LinearDimension extends SketchObject {
 
     const innerMode = modelTextWidth <= availableArea;
 
+    let rot = makeAngle0_360(Math.atan2(-_vxn, _vyn));
+    const flip = rot > _90 && rot < _270;
+    if (flip) {
+      rot += Math.PI;
+    }
     let tx, ty;
 
     if (innerMode) {
       drawArrow(_ax, _ay, _vxn, _vyn);
       drawArrow(_bx, _by, -_vxn, -_vyn);
+
+      this.pickA[0] = _ax; this.pickA[1] = _ay;
+      this.pickB[0] = _bx; this.pickB[1] = _by;
 
       const h = d/2 - modelTextWidth/2;
       tx = (_ax + _vxn * textOff) - (- _vyn) * h;
@@ -133,24 +167,59 @@ class LinearDimension extends SketchObject {
       drawArrow(_bx, _by, _vxn, _vyn);
       const outerArrowToTextPaddingPx = 6;
 
-      drawExtensionLine(_bx, _by, _vxn, _vyn,  modelTextWidth + 2 * outerArrowToTextPaddingPx * unscale);
-      drawExtensionLine(_ax, _ay, -_vxn, -_vyn,  outerArrowToTextPaddingPx * unscale);
-
+      drawExtensionLine(_ax, _ay, -_vxn, -_vyn,  outerArrowToTextPaddingPx * unscale, this.pickA);
+      drawExtensionLine(_bx, _by, _vxn, _vyn,  modelTextWidth + 2 * outerArrowToTextPaddingPx * unscale, this.pickB);
 
       tx = (_bx + _vxn * textOff) - (- _vyn) * (arrowWpx + outerArrowToTextPaddingPx) * unscale;
       ty = (_by + _vyn * textOff) - (  _vxn) * (arrowWpx + outerArrowToTextPaddingPx) * unscale;
     }
+
     ctx.save();
     ctx.translate(tx, ty);
-    ctx.rotate(	- Math.atan2(_vxn, _vyn));
+    if (flip) {
+      ctx.translate(_vyn * modelTextWidth - _vxn * 2 *textOff,  -_vxn * modelTextWidth - _vyn * 2*textOff);
+    }
+
+    ctx.rotate(rot);
     ctx.scale(unscale, -unscale);
     ctx.fillText(txt, 0, 0);
     ctx.restore();
 
+    if (marked) {
+      ctx.restore();
+    }
+
   }
   
-  normalDistance(aim) {
-    return -1;
+  normalDistance(aim, scale) {
+
+    const [_ax, _ay]  = this.pickA;
+    const [_bx, _by]  = this.pickB;
+
+    let _vx = - (_by - _ay);
+    let _vy = _bx - _ax;
+
+    const d = math.distance(_ax, _ay, _bx, _by);
+
+    //normalize
+    let _vxn = _vx / d;
+    let _vyn = _vy / d;
+
+    let avx = aim.x - _ax;
+    let avy = aim.y - _ay;
+
+    const proj = avx *  _vyn + avy * (-_vxn);
+
+    //Check if vector b lays on the vector ab
+    if (proj > d) {
+      return -1;
+    }
+
+    if (proj < 0) {
+      return -1;
+    }
+
+    return Math.abs(avx *  _vxn + avy * _vyn);
   }
 }
 

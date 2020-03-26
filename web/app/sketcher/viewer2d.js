@@ -163,29 +163,31 @@ class Viewer {
       return false;
     }
 
-    for (var i = 0; i < this.layers.length; i++) {
-      var objs = this.layers[i].objects;
-      for (var j = 0; j < objs.length; j++) {
-        var l = unreachable + 1;
-        var before = pickResult.length;
-        objs[j].accept((o) => {
-          if (!o.visible) return true;
-          if (onlyPoints && !isEndPoint(o)) {
+    for (let layers of this._workspace) {
+      for (let i = 0; i < layers.length; i++) {
+        var objs = layers[i].objects;
+        for (var j = 0; j < objs.length; j++) {
+          var l = unreachable + 1;
+          var before = pickResult.length;
+          objs[j].accept((o) => {
+            if (!o.visible) return true;
+            if (onlyPoints && !isEndPoint(o)) {
+              return true;
+            }
+            l = o.normalDistance(aim, this.scale / this.retinaPxielRatio);
+            if (l >= 0 && l <= buffer && !isFiltered(o)) {
+              pickResult.push(o);
+              return false;
+            }
             return true;
-          }
-          l = o.normalDistance(aim, this.scale);
-          if (l >= 0 && l <= buffer && !isFiltered(o)) {
-            pickResult.push(o);
-            return false;
-          }
-          return true;
-        });
-        var hit = before - pickResult.length != 0;
-        if (hit) {
-          if (!deep && pickResult.length != 0) return pickResult;
-          if (l >= 0 && l < heroLength) {
-            heroLength = l;
-            heroIdx = pickResult.length - 1;
+          });
+          var hit = before - pickResult.length != 0;
+          if (hit) {
+            if (!deep && pickResult.length != 0) return pickResult;
+            if (l >= 0 && l < heroLength) {
+              heroLength = l;
+              heroIdx = pickResult.length - 1;
+            }
           }
         }
       }
