@@ -39,6 +39,12 @@ export function distanceSquared3(x1, y1, z1, x2, y2, z2) {
   return dx * dx + dy * dy + dz * dz;
 }
 
+export function distanceSquared(x1, y1, x2, y2) {
+  const dx = x1 - x2;
+  const dy = y1 - y2;
+  return dx * dx + dy * dy;
+}
+
 export function circleFromPoints(p1, p2, p3) {
   var center = new Vector();
   var offset = p2.x*p2.x + p2.y*p2.y;
