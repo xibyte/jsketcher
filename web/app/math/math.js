@@ -259,6 +259,31 @@ export function radiusOfCurvature(d1, d2) {
   return r1lsq * r1l / vec.length(vec.cross(d1, d2));
 }
 
+export function pointToLineSignedDistance(ax, ay, bx, by, px, py) {
+  let nx = - (by - ay);
+  let ny = bx - ax;
+
+  const d = distance(ax, ay, bx, by);
+
+  nx /= d;
+  ny /= d;
+
+  let vx = px - ax;
+  let vy = py - ay;
+
+  const proj = vx *  ny + vy * (-nx);
+
+  //Check if vector b lays on the vector ab
+  if (proj > d) {
+    return Number.NaN;
+  }
+
+  if (proj < 0) {
+    return Number.NaN;
+  }
+  return vx * nx + vy * ny;
+}
+
 export const DEG_RAD = Math.PI / 180.0;
 
 export const sq = (a) => a * a;

@@ -5,6 +5,8 @@ import {Styles} from "../styles";
 import {_90} from "../../math/math";
 import {_270} from "../../math/math";
 import {makeAngle0_360} from "../../math/math";
+import {pointToLineSignedDistance} from "../../math/math";
+import {_negate} from "../../math/vec";
 
 class LinearDimension extends SketchObject {
   
@@ -12,10 +14,11 @@ class LinearDimension extends SketchObject {
     super();
     this.a = a;
     this.b = b;
-    this.flip = false;
-    this.offset = 15;
+    this.fontSize = 12;
+    this.offset = 20;
     this.pickA = [];
     this.pickB = [];
+    this.textRect = [];
   }
 
   visitParams(callback) {
@@ -132,7 +135,7 @@ class LinearDimension extends SketchObject {
       ctx.stroke();
     }
 
-    ctx.font = (12) + "px Arial";
+    ctx.font = (this.fontSize) + "px Arial";
     const txt = d.toFixed(2);
     const textMetrics = ctx.measureText(txt);
 
@@ -175,10 +178,28 @@ class LinearDimension extends SketchObject {
     }
 
     ctx.save();
-    ctx.translate(tx, ty);
+    
+    const modelTextHeight = viewer.screenToModelDistance(this.fontSize);
+
+    let dtx = [modelTextWidth * _vyn,  -_vxn * modelTextWidth];
+    let dty = [modelTextHeight * _vxn, _vyn * modelTextHeight];
+
     if (flip) {
-      ctx.translate(_vyn * modelTextWidth - _vxn * 2 *textOff,  -_vxn * modelTextWidth - _vyn * 2*textOff);
+      const dx = _vyn * modelTextWidth - _vxn * 2 *textOff;
+      const dy = -_vxn * modelTextWidth - _vyn * 2*textOff;
+      tx += dx;
+      ty += dy;
+      _negate(dtx);
+      _negate(dty);
     }
+
+    this.saveTextRect(tx, ty,
+      tx + dtx[0], ty + dtx[1],
+      tx + dtx[0] + dty[0], ty + dtx[1] + dty[1],
+      tx + dty[0], ty + dty[1],
+    );
+
+    ctx.translate(tx, ty);
 
     ctx.rotate(rot);
     ctx.scale(unscale, -unscale);
@@ -190,36 +211,46 @@ class LinearDimension extends SketchObject {
     }
 
   }
-  
+
+  saveTextRect(ax, ay, bx, by, cx, cy, dx, dy) {
+    this.textRect[0] = ax;
+    this.textRect[1] = ay;
+    this.textRect[2] = bx;
+    this.textRect[3] = by;
+    this.textRect[4] = cx;
+    this.textRect[5] = cy;
+    this.textRect[6] = dx;
+    this.textRect[7] = dy;
+  }
+
   normalDistance(aim, scale) {
+
+
+    const [ax, ay, bx, by, cx, cy, dx, dy] = this.textRect;
+
+    let d1 = pointToLineSignedDistance(ax, ay, bx, by, aim.x, aim.y);
+    if (d1 >= 0) {
+      const d2 = pointToLineSignedDistance(bx, by, cx, cy, aim.x, aim.y);
+      if (d2 >= 0) {
+        const d3 = pointToLineSignedDistance(cx, cy, dx, dy, aim.x, aim.y);
+        if (d3 >= 0) {
+          const d4 = pointToLineSignedDistance(dx, dy, ax, ay, aim.x, aim.y);
+          if (d4 >= 0) {
+            return 0;
+          }
+        }
+      }
+    }
 
     const [_ax, _ay]  = this.pickA;
     const [_bx, _by]  = this.pickB;
 
-    let _vx = - (_by - _ay);
-    let _vy = _bx - _ax;
-
-    const d = math.distance(_ax, _ay, _bx, _by);
-
-    //normalize
-    let _vxn = _vx / d;
-    let _vyn = _vy / d;
-
-    let avx = aim.x - _ax;
-    let avy = aim.y - _ay;
-
-    const proj = avx *  _vyn + avy * (-_vxn);
-
-    //Check if vector b lays on the vector ab
-    if (proj > d) {
+    const sdist = pointToLineSignedDistance(_ax, _ay, _bx, _by, aim.x, aim.y);
+    if (sdist !== sdist) {
       return -1;
     }
+    return Math.abs(sdist);
 
-    if (proj < 0) {
-      return -1;
-    }
-
-    return Math.abs(avx *  _vxn + avy * _vyn);
   }
 }
 
