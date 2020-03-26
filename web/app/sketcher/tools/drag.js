@@ -19,11 +19,6 @@ export class DragTool extends Tool {
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
     let dx = this._point.x - x;
     let dy = this._point.y - y;
-    // for (let i = 0; i < this.lockedShifts.length; i += 2) {
-    //   this.lockedValues[i] = this._point.x - this.lockedShifts[i];
-    //   this.lockedValues[i + 1] = this._point.y - this.lockedShifts[i + 1];
-    // }
-
     this.obj.translate(dx, dy);
     // this.viewer.parametricManager.setConstantsFromGeometry(this.obj);
     if (!Tool.dumbMode(e) || this.obj.constraints.length !== 0) {
@@ -47,15 +42,16 @@ export class DragTool extends Tool {
   }
 
   mouseup(e) {
-    this.viewer.parametricManager.solve(false);
+    if (this.obj.constraints.length !== 0) {
+      this.viewer.parametricManager.solve(false);
+      this.viewer.parametricManager.algNumSystem.controlBounds = false;
+    }
     this.viewer.refresh();
-    this.viewer.parametricManager.algNumSystem.controlBounds = false;
     this.viewer.toolManager.releaseControl();
     let traveled = math.distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
     if (traveled >= 10) {
       this.viewer.historyManager.lightCheckpoint(10);
     }
-    //this.animateSolution();
   }
 
   mousewheel(e) {

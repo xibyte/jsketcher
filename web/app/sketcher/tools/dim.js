@@ -2,6 +2,7 @@ import {HDimension, VDimension, Dimension, DiameterDimension} from '../shapes/di
 import Vector from 'math/vector';
 import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
+import {DragTool} from "./drag";
 
 export class AddDimTool extends Tool {
 
@@ -25,12 +26,6 @@ export class AddDimTool extends Tool {
 
   mouseup(e) {
 
-    if (e.button > 0 && this.dim != null) {
-      this.dim.flip = !this.dim.flip;
-      this.viewer.refresh();
-      return;
-    }
-
     if (this.viewer.snapped == null) {
       return;
     }
@@ -41,11 +36,13 @@ export class AddDimTool extends Tool {
     if (this.dim == null) {
       this.viewer.historyManager.checkpoint();
       this.dim = this.dimCreation(p, new EndPoint(p.x, p.y));
+      this.dim.offset = 0;
       this.layer.add(this.dim);
       this.viewer.refresh();
     } else {
       this.dim.b = p;
-      this.viewer.toolManager.releaseControl();
+      this.viewer.toolManager.switchTool(new DragTool(this.dim, this.viewer));
+      this.viewer.toolManager.tool.mousedown(e);
       this.viewer.refresh();
     }
   }

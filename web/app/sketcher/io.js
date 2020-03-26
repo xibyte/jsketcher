@@ -152,13 +152,13 @@ IO.prototype._loadSketch = function(sketch) {
           skobj = new BezierCurve(a, b, cp1, cp2);
         } else if (_class === T.HDIM) {
           skobj = new HDimension(obj.a, obj.b);
-          skobj.flip = obj.flip;
+          obj.offset !== undefined && (skobj.offset = obj.offset);
         } else if (_class === T.VDIM) {
           skobj = new VDimension(obj.a, obj.b);
-          skobj.flip = obj.flip;
+          obj.offset !== undefined && (skobj.offset = obj.offset);
         } else if (_class === T.DIM) {
           skobj = new Dimension(obj.a, obj.b);
-          skobj.flip = obj.flip;
+          obj.offset !== undefined && (skobj.offset = obj.offset);
         } else if (_class === T.DDIM) {
           skobj = new DiameterDimension(obj.obj);
         }
@@ -388,7 +388,7 @@ IO.prototype._serializeSketch = function(metadata) {
         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
           to.a = obj.a.id;
           to.b = obj.b.id;
-          to.flip = obj.flip;
+          to.offset = obj.offset;
         } else if (obj._class === T.DDIM) {
           to.obj = obj.obj.id;
         }
