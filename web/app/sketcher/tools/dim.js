@@ -5,6 +5,7 @@ import {Tool} from './tool'
 import {DragTool} from "./drag";
 import {isInstanceOf} from "../actions/matchUtils";
 import {Segment} from "../shapes/segment";
+import {DEFAULT_SEARCH_BUFFER} from "../viewer2d";
 
 export class AddDimTool extends Tool {
 
@@ -92,7 +93,7 @@ export class AddCircleDimTool extends Tool {
 
   mousemove(e) {
     var p = this.viewer.screenToModel(e);
-    var objects = this.viewer.search(p.x, p.y, 20, true, false, []).filter(function (o) {
+    var objects = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []).filter(function (o) {
       return o._class === 'TCAD.TWO.Circle' || o._class === 'TCAD.TWO.Arc';
     });
 
