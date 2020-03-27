@@ -293,7 +293,7 @@ class Viewer {
 
   snap(x, y, excl) {
     this.cleanSnap();
-    const snapTo = this.search(x, y, 20, true, true, excl);
+    const snapTo = this.search(x, y, DEFAULT_SEARCH_BUFFER, true, true, excl);
     if (snapTo.length > 0) {
       this.capture('tool', [snapTo[0]], true);
     }
@@ -470,7 +470,7 @@ class Viewer {
 
   pick(e) {
     const m = this.screenToModel(e);
-    return this.search(m.x, m.y, 20, true, false, []);
+    return this.search(m.x, m.y, DEFAULT_SEARCH_BUFFER, true, false, []);
   };
 
   getActiveLayer() {
@@ -637,5 +637,7 @@ const CAPTURES = {
 };
 
 const measurer = {x: 0, y: 0, z: 0};
+
+export const DEFAULT_SEARCH_BUFFER = 20;
 
 export {Viewer, Styles}

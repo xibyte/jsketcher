@@ -1,6 +1,7 @@
 import {Tool} from './tool'
 import {Graph} from '../../math/graph'
 import {Styles} from '../styles'
+import {DEFAULT_SEARCH_BUFFER} from "../viewer2d";
 
 export class LoopPickTool extends Tool {
 
@@ -104,7 +105,7 @@ export class LoopPickTool extends Tool {
   };
 
   pickLoop(p) {
-    const pickResult = this.viewer.search(p.x, p.y, 20, true, false, []);
+    const pickResult = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []);
     for (let obj of pickResult) {
       for (let point of [obj.a, obj.b]) {
         const loop = this.loops.get(point);
