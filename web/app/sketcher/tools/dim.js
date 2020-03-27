@@ -3,6 +3,8 @@ import Vector from 'math/vector';
 import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
 import {DragTool} from "./drag";
+import {isInstanceOf} from "../actions/matchUtils";
+import {Segment} from "../shapes/segment";
 
 export class AddDimTool extends Tool {
 
@@ -27,6 +29,20 @@ export class AddDimTool extends Tool {
   mouseup(e) {
 
     if (this.viewer.snapped == null) {
+      if (this.dim === null) {
+        const result = this.viewer.pick(e);
+        if (result.length >= 0) {
+          const segment = result.find(e => isInstanceOf(e, Segment));
+          if (segment) {
+            this.dim = this.dimCreation(segment.a, segment.b);
+            this.dim.offset = 0;
+            this.layer.add(this.dim);
+            this.viewer.toolManager.switchTool(new DragTool(this.dim, this.viewer));
+            this.viewer.toolManager.tool.mousedown(e);
+            this.viewer.refresh();
+          }
+        }
+      }
       return;
     }
 
