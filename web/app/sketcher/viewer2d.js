@@ -148,6 +148,7 @@ class Viewer {
 
   search(x, y, buffer, deep, onlyPoints, filter) {
 
+    buffer /= this.scale / this.retinaPxielRatio;
     buffer *= 0.5;
 
     var pickResult = [];
@@ -292,7 +293,7 @@ class Viewer {
 
   snap(x, y, excl) {
     this.cleanSnap();
-    const snapTo = this.search(x, y, 20 / this.scale, true, true, excl);
+    const snapTo = this.search(x, y, 20, true, true, excl);
     if (snapTo.length > 0) {
       this.capture('tool', [snapTo[0]], true);
     }
@@ -469,7 +470,7 @@ class Viewer {
 
   pick(e) {
     const m = this.screenToModel(e);
-    return this.search(m.x, m.y, 20 / this.scale, true, false, []);
+    return this.search(m.x, m.y, 20, true, false, []);
   };
 
   getActiveLayer() {
