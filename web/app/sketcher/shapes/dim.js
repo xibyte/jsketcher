@@ -1,12 +1,37 @@
 import * as math from '../../math/math'
+import {pointToLineSignedDistance} from '../../math/math'
 import Vector from 'math/vector';
 import {SketchObject} from './sketch-object'
 import {Styles} from "../styles";
-import {_90} from "../../math/math";
-import {_270} from "../../math/math";
-import {makeAngle0_360} from "../../math/math";
-import {pointToLineSignedDistance} from "../../math/math";
-import {_negate} from "../../math/vec";
+import {TextHelper} from "./textHelper";
+import {isInstanceOf} from "../actions/matchUtils";
+import {Arc} from "./arc";
+
+const ARROW_W_PX = 15;
+const ARROW_H_PX = 4;
+const ARROW_TO_TEXT_PAD_PX = 2;
+const TEXT_H_OFFSET = 3;
+const OUTER_ARROW_TO_TEXT_PAD_PX = 6;
+
+function drawArrow(ctx, x, y, nx, ny, arrowW, arrowH) {
+  ctx.beginPath();
+  ctx.moveTo(x, y, 0);
+  ctx.lineTo(x + ny * arrowW + nx * arrowH, y + -nx * arrowW + ny * arrowH );
+  ctx.lineTo(x + ny * arrowW - nx * arrowH, y + -nx * arrowW - ny * arrowH);
+  ctx.fill();
+}
+
+function drawExtensionLine(ctx, x, y, nx, ny, width, tip, arrowW) {
+  ctx.beginPath();
+  ctx.moveTo(x + ny * arrowW, y + -nx * arrowW);
+
+  tip[0] = x + ny * (arrowW + width);
+  tip[1] = y + -nx * (arrowW + width);
+
+  ctx.lineTo(tip[0], tip[1]);
+
+  ctx.stroke();
+}
 
 class LinearDimension extends SketchObject {
   
@@ -14,11 +39,10 @@ class LinearDimension extends SketchObject {
     super();
     this.a = a;
     this.b = b;
-    this.fontSize = 12;
     this.offset = 20;
     this.pickA = [];
     this.pickB = [];
-    this.textRect = [];
+    this.textHelper = new TextHelper()
   }
 
   visitParams(callback) {
@@ -57,11 +81,9 @@ class LinearDimension extends SketchObject {
       viewer.setStyle(Styles.HIGHLIGHT, ctx);
     }
 
-    const dimScale = viewer.dimScale;
-
     const unscale = 1 /scale;
     const off = unscale * this.offset;
-    const textOff = unscale * 3; // getTextOff(dimScale);
+    const textOff = unscale * TEXT_H_OFFSET; // getTextOff(dimScale);
 
     this.unscale = scale;
 
@@ -106,58 +128,29 @@ class LinearDimension extends SketchObject {
   
     drawRef(startA, _ax, _ay);
     drawRef(startB, _bx, _by);
-  
-    ctx.closePath();
+
     ctx.stroke();
 
-    const arrowWpx = 15;
+    const arrowWpx = ARROW_W_PX;
     const arrowW = arrowWpx * unscale;
-    const arrowH = 4 * unscale;
+    const arrowH = ARROW_H_PX * unscale;
 
-    function drawArrow(x, y, nx, ny) {
-      ctx.beginPath();
-      ctx.moveTo(x, y, 0);
-      ctx.lineTo(x + ny * arrowW + nx * arrowH, y + -nx * arrowW + ny * arrowH );
-      ctx.lineTo(x + ny * arrowW - nx * arrowH, y + -nx * arrowW - ny * arrowH);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    function drawExtensionLine(x, y, nx, ny, width, tip) {
-      ctx.beginPath();
-      ctx.moveTo(x + ny * arrowW, y + -nx * arrowW);
-
-      tip[0] = x + ny * (arrowW + width);
-      tip[1] = y + -nx * (arrowW + width);
-
-      ctx.lineTo(tip[0], tip[1]);
-      ctx.closePath();
-      ctx.stroke();
-    }
-
-    ctx.font = (this.fontSize) + "px Arial";
     const txt = d.toFixed(2);
-    const textMetrics = ctx.measureText(txt);
 
-    const arrowToTextPaddingPx = 2;
-    const takenByArrow = viewer.screenToModelDistance(2 * (arrowWpx + arrowToTextPaddingPx));
+    this.textHelper.prepare(txt, ctx, viewer);
+    const takenByArrow = viewer.screenToModelDistance(2 * (arrowWpx + ARROW_TO_TEXT_PAD_PX));
 
     const availableArea = d - takenByArrow;
 
-    const modelTextWidth = viewer.screenToModelDistance(textMetrics.width);
+    const modelTextWidth = this.textHelper.modelTextWidth;
 
     const innerMode = modelTextWidth <= availableArea;
 
-    let rot = makeAngle0_360(Math.atan2(-_vxn, _vyn));
-    const flip = rot > _90 && rot < _270;
-    if (flip) {
-      rot += Math.PI;
-    }
     let tx, ty;
 
     if (innerMode) {
-      drawArrow(_ax, _ay, _vxn, _vyn);
-      drawArrow(_bx, _by, -_vxn, -_vyn);
+      drawArrow(ctx, _ax, _ay, _vxn, _vyn, arrowW, arrowH);
+      drawArrow(ctx, _bx, _by, -_vxn, -_vyn, arrowW, arrowH);
 
       this.pickA[0] = _ax; this.pickA[1] = _ay;
       this.pickB[0] = _bx; this.pickB[1] = _by;
@@ -166,45 +159,17 @@ class LinearDimension extends SketchObject {
       tx = (_ax + _vxn * textOff) - (- _vyn) * h;
       ty = (_ay + _vyn * textOff) - (  _vxn) * h;
     } else {
-      drawArrow(_ax, _ay, -_vxn, -_vyn);
-      drawArrow(_bx, _by, _vxn, _vyn);
-      const outerArrowToTextPaddingPx = 6;
+      drawArrow(ctx, _ax, _ay, -_vxn, -_vyn, arrowW, arrowH);
+      drawArrow(ctx, _bx, _by, _vxn, _vyn, arrowW, arrowH);
 
-      drawExtensionLine(_ax, _ay, -_vxn, -_vyn,  outerArrowToTextPaddingPx * unscale, this.pickA);
-      drawExtensionLine(_bx, _by, _vxn, _vyn,  modelTextWidth + 2 * outerArrowToTextPaddingPx * unscale, this.pickB);
+      drawExtensionLine(ctx, _ax, _ay, -_vxn, -_vyn,  OUTER_ARROW_TO_TEXT_PAD_PX * unscale, this.pickA, arrowW);
+      drawExtensionLine(ctx, _bx, _by, _vxn, _vyn,  modelTextWidth + 2 * OUTER_ARROW_TO_TEXT_PAD_PX * unscale, this.pickB, arrowW);
 
-      tx = (_bx + _vxn * textOff) - (- _vyn) * (arrowWpx + outerArrowToTextPaddingPx) * unscale;
-      ty = (_by + _vyn * textOff) - (  _vxn) * (arrowWpx + outerArrowToTextPaddingPx) * unscale;
+      tx = (_bx + _vxn * textOff) - (- _vyn) * (arrowWpx + OUTER_ARROW_TO_TEXT_PAD_PX) * unscale;
+      ty = (_by + _vyn * textOff) - (  _vxn) * (arrowWpx + OUTER_ARROW_TO_TEXT_PAD_PX) * unscale;
     }
 
-    ctx.save();
-    
-    const modelTextHeight = viewer.screenToModelDistance(this.fontSize);
-
-    let dtx = [modelTextWidth * _vyn,  -_vxn * modelTextWidth];
-    let dty = [modelTextHeight * _vxn, _vyn * modelTextHeight];
-
-    if (flip) {
-      const dx = _vyn * modelTextWidth - _vxn * 2 *textOff;
-      const dy = -_vxn * modelTextWidth - _vyn * 2*textOff;
-      tx += dx;
-      ty += dy;
-      _negate(dtx);
-      _negate(dty);
-    }
-
-    this.saveTextRect(tx, ty,
-      tx + dtx[0], ty + dtx[1],
-      tx + dtx[0] + dty[0], ty + dtx[1] + dty[1],
-      tx + dty[0], ty + dty[1],
-    );
-
-    ctx.translate(tx, ty);
-
-    ctx.rotate(rot);
-    ctx.scale(unscale, -unscale);
-    ctx.fillText(txt, 0, 0);
-    ctx.restore();
+    this.textHelper.draw(tx, ty, _vxn, _vyn, ctx, unscale, viewer, textOff);
 
     if (marked) {
       ctx.restore();
@@ -212,34 +177,12 @@ class LinearDimension extends SketchObject {
 
   }
 
-  saveTextRect(ax, ay, bx, by, cx, cy, dx, dy) {
-    this.textRect[0] = ax;
-    this.textRect[1] = ay;
-    this.textRect[2] = bx;
-    this.textRect[3] = by;
-    this.textRect[4] = cx;
-    this.textRect[5] = cy;
-    this.textRect[6] = dx;
-    this.textRect[7] = dy;
-  }
-
   normalDistance(aim, scale) {
 
+    const textDist = this.textHelper.normalDistance(aim);
 
-    const [ax, ay, bx, by, cx, cy, dx, dy] = this.textRect;
-
-    let d1 = pointToLineSignedDistance(ax, ay, bx, by, aim.x, aim.y);
-    if (d1 >= 0) {
-      const d2 = pointToLineSignedDistance(bx, by, cx, cy, aim.x, aim.y);
-      if (d2 >= 0) {
-        const d3 = pointToLineSignedDistance(cx, cy, dx, dy, aim.x, aim.y);
-        if (d3 >= 0) {
-          const d4 = pointToLineSignedDistance(dx, dy, ax, ay, aim.x, aim.y);
-          if (d4 >= 0) {
-            return 0;
-          }
-        }
-      }
+    if (textDist !== -1) {
+      return textDist;
     }
 
     const [_ax, _ay]  = this.pickA;
@@ -304,6 +247,9 @@ export class DiameterDimension extends SketchObject {
     super();
     this.obj = obj;
     this.angle = Math.PI / 4;
+    this.textHelper = new TextHelper();
+    this.pickA = [];
+    this.pickB = [];
   }
 
   visitParams(callback) {
@@ -311,131 +257,121 @@ export class DiameterDimension extends SketchObject {
   
   getReferencePoint() {
   }
-  
+
+  drag(x, y, dx, dy) {
+    this.angle = Math.atan2(y - this.obj.c.y, x - this.obj.c.x)
+  }
+
   translateImpl(dx, dy) {
   }
   
   drawImpl(ctx, scale, viewer) {
     if (this.obj == null) return;
-    if (this.obj._class === 'TCAD.TWO.Circle') {
-      this.drawForCircle(ctx, scale, viewer);  
-    } else if (this.obj._class === 'TCAD.TWO.Arc') { 
-      this.drawForArc(ctx, scale, viewer);
-    }
-  }
-  
-  drawForCircle(ctx, scale, viewer) {
-    var c = new Vector().setV(this.obj.c);
-    var r = this.obj.r.get();
-    var angled = new Vector(r * Math.cos(this.angle), r * Math.sin(this.angle), 0);
-    var a = c.minus(angled);
-    var b = c.plus(angled);
-    var textOff = getTextOff(viewer.dimScale);
-  
-    var d = 2 * r;
-  
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.closePath();
-    ctx.stroke();
-  
-    var fontSize = 12 * viewer.dimScale;
-    ctx.font = (fontSize) + "px Arial";
-    var txt = String.fromCharCode(216) + ' ' + d.toFixed(2);
-    var textWidth = ctx.measureText(txt).width;
-    var h = d / 2 - textWidth / 2; 
-    
-    var _vx = - (b.y - a.y);
-    var _vy = b.x - a.x;
-  
-    //normalize
-    var _vxn = _vx / d;
-    var _vyn = _vy / d;
-  
-    function drawText(tx, ty) {
+
+    const marked = this.markers.length !== 0;
+
+    if (marked) {
       ctx.save();
-      ctx.translate(tx, ty);
-      ctx.rotate(-Math.atan2(_vxn, _vyn));
-      ctx.scale(1, -1);
-      ctx.fillText(txt, 0, 0);
-      ctx.restore();
+      viewer.setStyle(Styles.HIGHLIGHT, ctx);
     }
-    
-    var tx, ty; 
-    if (h - fontSize * .3 > 0) { // take into account font size to not have circle overlap symbols
-      tx = (a.x + _vxn * textOff) - (-_vyn) * h;
-      ty = (a.y + _vyn * textOff) - (  _vxn) * h;
-      drawText(tx, ty);
-    } else {
-      var off = 2 * viewer.dimScale;
-      angled._normalize();
-      var extraLine = angled.multiply(textWidth + off * 2);
-      ctx.beginPath();
-      ctx.moveTo(b.x, b.y);
-      ctx.lineTo(b.x + extraLine.x, b.y + extraLine.y);
-      ctx.closePath();
-      ctx.stroke();
-      angled._multiply(off);
-      
-      tx = (b.x + _vxn * textOff) + angled.x;
-      ty = (b.y + _vyn * textOff) + angled.y;
-      drawText(tx, ty);
-    }
-  }
-  
-  drawForArc(ctx, scale, viewer) {
-  
-    var r = this.obj.distanceA();
-  
-    var hxn = Math.cos(this.angle);
-    var hyn = Math.sin(this.angle);
-  
-    var vxn = - hyn;
-    var vyn = hxn;
-  
+
+    const unscale = 1 /scale;
+    const textOff = unscale * TEXT_H_OFFSET;
+
+    let r = this.obj.distanceA ? this.obj.distanceA() : this.obj.r.get();
+
+    let hxn = Math.cos(this.angle);
+    let hyn = Math.sin(this.angle);
+
     //fix angle if needed
-    if (!this.obj.isPointInsideSector(this.obj.c.x + hxn, this.obj.c.y + hyn)) {
-      var cosA = hxn * (this.obj.a.x - this.obj.c.x) + hyn * (this.obj.a.y - this.obj.c.y);
-      var cosB = hxn * (this.obj.b.x - this.obj.c.x) + hyn * (this.obj.b.y - this.obj.c.y);
+    if (isInstanceOf(this.obj, Arc) &&  !this.obj.isPointInsideSector(this.obj.c.x + hxn, this.obj.c.y + hyn)) {
+      let cosA = hxn * (this.obj.a.x - this.obj.c.x) + hyn * (this.obj.a.y - this.obj.c.y);
+      let cosB = hxn * (this.obj.b.x - this.obj.c.x) + hyn * (this.obj.b.y - this.obj.c.y);
       if (cosA - hxn > cosB - hxn) {
         this.angle = this.obj.getStartAngle();
       } else {
         this.angle = this.obj.getEndAngle();
       }
+      hxn = Math.cos(this.angle);
+      hyn = Math.sin(this.angle);
     }
-  
-    var vertOff = getTextOff(viewer.dimScale);
-    var horOff = 5 * viewer.dimScale;
-  
-    var fontSize = 12 * viewer.dimScale;
-    ctx.font = (fontSize) + "px Arial";
-    var txt = 'R ' + r.toFixed(2);
-    var textWidth = ctx.measureText(txt).width;
-  
-    var startX = this.obj.c.x + hxn * r;
-    var startY = this.obj.c.y + hyn * r;
-    var lineLength = textWidth + horOff * 2;
-  
+
+    let _vxn = - hyn;
+    let _vyn = hxn;
+
+    const txt = 'R ' + r.toFixed(2);
+    const _ax = this.obj.c.x;
+    const _ay = this.obj.c.y;
+    const _bx = this.obj.c.x + r * Math.cos(this.angle);
+    const _by = this.obj.c.y + r * Math.sin(this.angle);
+
     ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(startX + hxn * lineLength, startY + hyn * lineLength);
-    ctx.closePath();
+    ctx.moveTo(_ax, _ay);
+    ctx.lineTo(_bx, _by);
+
     ctx.stroke();
-  
-    var tx = startX + vxn * vertOff + hxn * horOff;
-    var ty = startY + vyn * vertOff + hyn * horOff;
-    ctx.save();
-    ctx.translate(tx, ty);
-    ctx.rotate(-Math.atan2(vxn, vyn));
-    ctx.scale(1, -1);
-    ctx.fillText(txt, 0, 0);
-    ctx.restore();
+
+    const arrowWpx = ARROW_W_PX;
+    const arrowW = arrowWpx * unscale;
+    const arrowH = ARROW_H_PX * unscale;
+
+    this.textHelper.prepare(txt, ctx, viewer);
+    const takenByArrow = viewer.screenToModelDistance(arrowWpx + ARROW_TO_TEXT_PAD_PX);
+
+    const availableArea = r - takenByArrow;
+
+    const modelTextWidth = this.textHelper.modelTextWidth;
+
+    const innerMode = modelTextWidth <= availableArea;
+
+    let tx, ty;
+
+    if (innerMode) {
+      drawArrow(ctx, _bx, _by, -_vxn, -_vyn, arrowW, arrowH);
+
+      this.pickA[0] = _ax; this.pickA[1] = _ay;
+      this.pickB[0] = _bx; this.pickB[1] = _by;
+
+      const h = r/2 - modelTextWidth/2 - arrowW/2;
+      tx = (_ax + _vxn * textOff) - (- _vyn) * h;
+      ty = (_ay + _vyn * textOff) - (  _vxn) * h;
+    } else {
+      drawArrow(ctx, _bx, _by, _vxn, _vyn, arrowW, arrowH);
+      this.pickA[0] = _ax;
+      this.pickB[0] = _bx;
+
+      drawExtensionLine(ctx, _bx, _by, _vxn, _vyn,  modelTextWidth + 2 * OUTER_ARROW_TO_TEXT_PAD_PX * unscale, this.pickB, arrowW);
+
+      tx = (_bx + _vxn * textOff) - (- _vyn) * (arrowWpx + OUTER_ARROW_TO_TEXT_PAD_PX) * unscale;
+      ty = (_by + _vyn * textOff) - (  _vxn) * (arrowWpx + OUTER_ARROW_TO_TEXT_PAD_PX) * unscale;
+    }
+
+    this.textHelper.draw(tx, ty, _vxn, _vyn, ctx, unscale, viewer, textOff);
+
+    if (marked) {
+      ctx.restore();
+    }
   }
   
   normalDistance(aim) {
-    return -1;
+
+    const textDist = this.textHelper.normalDistance(aim);
+
+    if (textDist !== -1) {
+      return textDist;
+    }
+
+    const [_ax, _ay]  = this.pickA;
+    const [_bx, _by]  = this.pickB;
+
+    const sdist = pointToLineSignedDistance(_ax, _ay, _bx, _by, aim.x, aim.y);
+    if (sdist !== sdist) {
+      return -1;
+    }
+    return Math.abs(sdist);
+
   }
+
 }
 DiameterDimension.prototype._class = 'TCAD.TWO.DiameterDimension';
 

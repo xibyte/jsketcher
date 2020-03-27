@@ -66,6 +66,7 @@ class Viewer {
     this._workspace = [this.layers, this.dimLayers];
 
     this.referencePoint = new ReferencePoint();
+    this.referencePoint.visible = false;
     this._serviceWorkspace = [this._createServiceLayers()];
 
     this.toolManager = new ToolManager(this, new PanTool(this));
