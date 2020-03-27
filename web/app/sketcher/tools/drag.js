@@ -19,7 +19,11 @@ export class DragTool extends Tool {
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
     let dx = this._point.x - x;
     let dy = this._point.y - y;
-    this.obj.translate(dx, dy);
+    if (this.obj.drag) {
+      this.obj.drag(this._point.x, this._point.y, dx, dy);
+    } else {
+      this.obj.translate(dx, dy);
+    }
     // this.viewer.parametricManager.setConstantsFromGeometry(this.obj);
     if (!Tool.dumbMode(e) || this.obj.constraints.length !== 0) {
       // this.viewer.parametricManager.prepare();
