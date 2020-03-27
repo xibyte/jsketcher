@@ -92,14 +92,16 @@ export class AddCircleDimTool extends Tool {
 
   mousemove(e) {
     var p = this.viewer.screenToModel(e);
-    var objects = this.viewer.search(p.x, p.y, 20 / this.viewer.scale, true, false, []).filter(function (o) {
+    var objects = this.viewer.search(p.x, p.y, 20, true, false, []).filter(function (o) {
       return o._class === 'TCAD.TWO.Circle' || o._class === 'TCAD.TWO.Arc';
     });
 
     if (objects.length != 0) {
       this.dim.obj = objects[0];
+      this.viewer.capture('tool', [this.dim.obj], true);
     } else {
       this.dim.obj = null;
+      this.viewer.withdrawAll('tool');
     }
     if (this.dim.obj != null) {
       this.dim.angle = Math.atan2(p.y - this.dim.obj.c.y, p.x - this.dim.obj.c.x);
@@ -113,6 +115,8 @@ export class AddCircleDimTool extends Tool {
     } else {
       this.viewer.remove(this.dim);
     }
+    this.viewer.withdrawAll('tool');
+    this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
   }
 }
