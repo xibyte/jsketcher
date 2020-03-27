@@ -104,7 +104,7 @@ export class LoopPickTool extends Tool {
   };
 
   pickLoop(p) {
-    const pickResult = this.viewer.search(p.x, p.y, 20 / this.viewer.scale, true, false, []);
+    const pickResult = this.viewer.search(p.x, p.y, 20, true, false, []);
     for (let obj of pickResult) {
       for (let point of [obj.a, obj.b]) {
         const loop = this.loops.get(point);
