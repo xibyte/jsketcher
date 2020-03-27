@@ -467,7 +467,7 @@ class Viewer {
   }
 
   pick(e) {
-    var m = this.screenToModel(e);
+    const m = this.screenToModel(e);
     return this.search(m.x, m.y, 20 / this.scale, true, false, []);
   };
 
