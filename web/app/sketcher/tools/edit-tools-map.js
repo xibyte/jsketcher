@@ -1,9 +1,10 @@
 import {Ellipse} from '../shapes/ellipse'
-import {EllipticalArc} from '../shapes/elliptical-arc'
 import {Circle} from '../shapes/circle'
 import {EditCircleTool} from './circle'
 import {DragTool} from './drag'
 import {EllipseTool, STATE_RADIUS} from './ellipse'
+import {AngleBetweenDimension} from "../shapes/dim";
+import {AddAngleBetweenDimTool} from "./dim";
 
 export function GetShapeEditTool(viewer, obj, alternative) {
   if (obj instanceof Circle && !alternative) {
@@ -17,6 +18,11 @@ export function GetShapeEditTool(viewer, obj, alternative) {
     const tool = new EllipseTool(viewer, false);  
     tool.ellipse = obj;
     tool.state = STATE_RADIUS;
+    return tool;
+  } else if (obj instanceof AngleBetweenDimension && !alternative) {
+    const tool = new AddAngleBetweenDimTool(viewer, viewer.dimLayer);
+    tool.a = obj.a;
+    tool.dim = obj;
     return tool;
   } else {
     return new DragTool(obj, viewer);
