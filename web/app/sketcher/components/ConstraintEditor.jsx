@@ -10,7 +10,6 @@ import Field from "ui/components/controls/Field";
 import Label from "../../../../modules/ui/components/controls/Label";
 import {SketcherAppContext} from "./SketcherApp";
 import {EMPTY_OBJECT} from "../../../../modules/gems/objects";
-import identity from 'lodash';
 
 export function ConstraintEditor() {
 
@@ -19,7 +18,7 @@ export function ConstraintEditor() {
   const [values, setValues] = useState(null);
 
   useEffect(() => {
-    setValues(req && {...req.constraint.constants})
+    setValues(req && {...req.constraint.constants});
     return () => {
       if (req) {
         viewer.unHighlight(req.constraint.objects);
@@ -72,10 +71,10 @@ export function ConstraintEditor() {
         .sort().map(name => {
           const def = constraint.schema.constants[name];
           const presentation = def.presentation || EMPTY_OBJECT;
-          const onChange = value => setValue(name, (presentation.transformIn||identity)(value));
-
-          const val = (presentation.transformOut||identity)(values[name]);
           const type = presentation.type || def.type;
+          const onChange = value => setValue(name, (presentation.transformIn||transformInByType(type))(value));
+
+          const val = (presentation.transformOut||transformOutByType(type))(values[name]);
           return <Field key={presentation.label||name}>
             <Label>{name}</Label>
             {
@@ -114,3 +113,20 @@ export function editConstraint(rqStream, constraint, onApply) {
     }
   });
 }
+
+const NO_TR = v => v;
+
+function transformInByType(type) {
+  if ('boolean' === type) {
+    return value => value ? 'true' : 'false';
+  }
+  return NO_TR;
+}
+
+function transformOutByType(type) {
+  if ('boolean' === type) {
+    return value => value === 'true';
+  }
+  return NO_TR;
+}
+

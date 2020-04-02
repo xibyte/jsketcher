@@ -103,6 +103,10 @@ export function __normalize(v, out) {
   return __div(v, mag, out)
 }
 
+export function cross2d(v1, v2) {
+  return v1[0] * v2[1] - v1[1] * v2[0];
+}
+
 export function _normalize(v) {
   return __normalize(v, v);
 }
@@ -153,6 +157,20 @@ export function distanceSq(v1, v2) {
 
 export function distance(v1, v2) {
   return Math.sqrt(distanceSq(v1, v2));
+}
+
+export function perp2d(v) {
+  return __perp2d(v, []);
+}
+
+export function _perp2d(v) {
+  return __perp2d(v, v);
+}
+
+export function __perp2d([x, y], out) {
+  out[0] = -y;
+  out[1] = x;
+  return out;
 }
 
 export function normal3(ccwSequence) {

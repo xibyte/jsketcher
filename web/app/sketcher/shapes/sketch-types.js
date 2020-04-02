@@ -10,5 +10,6 @@ export const SketchTypes = {
   DIM       : 'TCAD.TWO.Dimension',
   HDIM      : 'TCAD.TWO.HDimension',
   VDIM      : 'TCAD.TWO.VDimension',
-  DDIM      : 'TCAD.TWO.DiameterDimension'
+  DDIM      : 'TCAD.TWO.DiameterDimension',
+  ANGLE_BW  : 'TCAD.TWO.AngleBetweenDimension'
 };

@@ -240,6 +240,9 @@ class Viewer {
 
     this.__prevStyle = null;
 
+    this.interactiveScale = this.scale / this.retinaPxielRatio;
+    this.unscale = 1 / this.interactiveScale;
+
     this.__drawWorkspace(ctx, this._workspace, Viewer.__SKETCH_DRAW_PIPELINE);
     this.__drawWorkspace(ctx, this._serviceWorkspace, Viewer.__SIMPLE_DRAW_PIPELINE);
   };

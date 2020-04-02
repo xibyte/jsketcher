@@ -25,7 +25,7 @@ export class DragTool extends Tool {
       this.obj.translate(dx, dy);
     }
     // this.viewer.parametricManager.setConstantsFromGeometry(this.obj);
-    if (!Tool.dumbMode(e) || this.obj.constraints.length !== 0) {
+    if (!Tool.dumbMode(e) && this.obj.constraints.length !== 0) {
       // this.viewer.parametricManager.prepare();
       this.viewer.parametricManager.solve(true);
     }

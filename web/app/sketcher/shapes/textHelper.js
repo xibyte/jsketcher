@@ -15,7 +15,7 @@ export class TextHelper {
     this.txt = txt;
   }
 
-  draw(tx, ty, nx, ny, ctx, unscale, viewer, flipOffset) {
+  draw(tx, ty, nx, ny, ctx, unscale, viewer, flipOffset, staticFlip = false) {
 
     ctx.save();
     let rot = makeAngle0_360(Math.atan2(-nx, ny));
@@ -31,10 +31,12 @@ export class TextHelper {
     let dty = [modelTextHeight * nx, ny * modelTextHeight];
 
     if (flip) {
-      const dx = ny * modelTextWidth - nx * 2 *flipOffset;
-      const dy = -nx * modelTextWidth - ny * 2*flipOffset;
-      tx += dx;
-      ty += dy;
+      tx +=  ny * modelTextWidth;
+      ty += -nx * modelTextWidth;
+      const k = staticFlip ? 1.5 : -1;
+      tx += k * nx * 2 *flipOffset;
+      ty += k * ny * 2 *flipOffset;
+
       _negate(dtx);
       _negate(dty);
     }

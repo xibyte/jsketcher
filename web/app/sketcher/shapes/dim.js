@@ -1,5 +1,6 @@
 import * as math from '../../math/math'
-import {pointToLineSignedDistance} from '../../math/math'
+import * as vec from '../../math/vec'
+import {DEG_RAD, lineLineIntersection2d, makeAngle0_360, pointToLineSignedDistance} from '../../math/math'
 import Vector from 'math/vector';
 import {SketchObject} from './sketch-object'
 import {Styles} from "../styles";
@@ -12,12 +13,22 @@ const ARROW_H_PX = 4;
 const ARROW_TO_TEXT_PAD_PX = 2;
 const TEXT_H_OFFSET = 3;
 const OUTER_ARROW_TO_TEXT_PAD_PX = 6;
+const EXT_LINEAR_WIDTH_PX = 7;
+const EXT_ANGULAR_WIDTH_PX = 10;
 
 function drawArrow(ctx, x, y, nx, ny, arrowW, arrowH) {
   ctx.beginPath();
   ctx.moveTo(x, y, 0);
   ctx.lineTo(x + ny * arrowW + nx * arrowH, y + -nx * arrowW + ny * arrowH );
   ctx.lineTo(x + ny * arrowW - nx * arrowH, y + -nx * arrowW - ny * arrowH);
+  ctx.fill();
+}
+
+function drawArrowForArc(ctx, px, py, x, y, nx, ny, arrowW, arrowH) {
+  ctx.beginPath();
+  ctx.moveTo(x, y, 0);
+  ctx.lineTo(px + nx * arrowH, py + ny * arrowH );
+  ctx.lineTo(px - nx * arrowH, py - ny * arrowH);
   ctx.fill();
 }
 
@@ -119,7 +130,7 @@ class LinearDimension extends SketchObject {
     function drawRef(start, x, y) {
       var vec = new Vector(x - start.x, y - start.y);
       vec._normalize();
-      vec._multiply(7 * unscale);
+      vec._multiply(EXT_LINEAR_WIDTH_PX * unscale);
       
       ctx.moveTo(start.x, start.y );
       ctx.lineTo(x, y);
@@ -375,9 +386,337 @@ export class DiameterDimension extends SketchObject {
 }
 DiameterDimension.prototype._class = 'TCAD.TWO.DiameterDimension';
 
+export class AngleBetweenDimension extends SketchObject {
 
-function getTextOff(scale) {
-  return 3 * scale;
+  constructor(a, b) {
+    super();
+    this.a = a;
+    this.b = b;
+    this.offset = 20;
+    this.pickA = [];
+    this.pickB = [];
+    this.textHelper = new TextHelper();
+    this.configuration = [this.a.a, this.a.b, this.b.a, this.b.b];
+    this.pickInfo = [];
+  }
+
+  visitParams(callback) {
+  }
+
+  getReferencePoint() {
+    return this.a;
+  }
+
+  translateImpl(dx, dy) {
+
+    const [_ax, _ay]  = this.pickA;
+    const [_bx, _by]  = this.pickB;
+
+    let _vx = - (_by - _ay);
+    let _vy = _bx - _ax;
+
+    const d = math.distance(_ax, _ay, _bx, _by);
+
+    //normalize
+    let _vxn = _vx / d;
+    let _vyn = _vy / d;
+
+    this.offset += (dx *  _vxn + dy * _vyn);
+  }
+
+  drawImpl(ctx, scale, viewer) {
+    const marked = this.markers.length !== 0;
+
+    if (marked) {
+      ctx.save();
+      viewer.setStyle(Styles.HIGHLIGHT, ctx);
+    }
+    this.drawDimension(ctx, scale, viewer)
+
+    if (marked) {
+      ctx.restore();
+    }
+  }
+
+  drawDimension(ctx, scale, viewer) {
+
+    const unscale = viewer.unscale;
+    let off = this.offset;
+    const MIN_OFFSET_PX = 20;
+    if (off * scale < MIN_OFFSET_PX) {
+      off = MIN_OFFSET_PX * unscale;
+    }
+    const textOff = unscale * TEXT_H_OFFSET;
+
+    let [aa, ab, ba, bb] = this.configuration;
+
+    let aAng = makeAngle0_360(Math.atan2(ab.y - aa.y, ab.x - aa.x));
+    let bAng = makeAngle0_360(Math.atan2(bb.y - ba.y, bb.x - ba.x));
+    let ang = makeAngle0_360(bAng - aAng);
+    if (ang > Math.PI) {
+      this.configuration.reverse();
+      [aa, ab, ba, bb] = this.configuration;
+      aAng = makeAngle0_360(Math.atan2(ab.y - aa.y, ab.x - aa.x));
+      bAng = makeAngle0_360(Math.atan2(bb.y - ba.y, bb.x - ba.x));
+      ang = makeAngle0_360(bAng - aAng);
+    }
+    // this.a.syncGeometry();
+    // this.b.syncGeometry && this.b.syncGeometry();
+
+    let avx = Math.cos(aAng);
+    let avy = Math.sin(aAng);
+    let bvx = Math.cos(bAng);
+    let bvy = Math.sin(bAng);
+
+
+    this.center = findCenter(aa, ab, ba, bb, avx, avy, bvx, bvy);
+
+    if (!this.center) {
+      return;
+    }
+
+    const [cx, cy] = this.center;
+
+    // if (distanceSquared(aa.x, aa.y, cx, cy) > distanceSquared(ab.x, ab.y, cx, cy)) {
+    //   aAng = makeAngle0_360(aAng + Math.PI);
+    //   avx *= -1;
+    //   avy *= -1;
+    // }
+    // if (distanceSquared(ba.x, ba.y, cx, cy) > distanceSquared(bb.x, bb.y, cx, cy)) {
+    //   bAng = makeAngle0_360(bAng + Math.PI);
+    //   bvx *= -1;
+    //   bvy *= -1;
+    //
+    // }
+    const halfAng = 0.5 * ang;
+
+    let _ax = cx + off * avx;
+    let _ay = cy + off * avy;
+    let _bx = cx + off * bvx;
+    let _by = cy + off * bvy;
+
+
+    const _vxn =  Math.cos(aAng + halfAng);
+    const _vyn =  Math.sin(aAng + halfAng);
+
+    const mx = cx + off * _vxn;
+    const my = cy + off * _vyn;
+
+    const arrowWpx = ARROW_W_PX;
+    const arrowW = arrowWpx * unscale;
+    const arrowH = ARROW_H_PX * unscale;
+
+    const txt = (1 / DEG_RAD * ang).toFixed(2) + '°';
+
+    this.textHelper.prepare(txt, ctx, viewer);
+
+    let sinPhi =  arrowW / off;
+    const cosPhi =  Math.sqrt(1 - sinPhi * sinPhi);
+
+    if (cosPhi !== cosPhi) {
+      return;
+    }
+
+    let arrLxV = avx * cosPhi - avy * sinPhi;
+    let arrLyV = avx * sinPhi + avy * cosPhi;
+
+    let arrLx = cx + off*(arrLxV);
+    let arrLy = cy + off*(arrLyV);
+
+    sinPhi *=  -1;
+
+    let arrRxV = bvx * cosPhi - bvy * sinPhi;
+    let arrRyV = bvx * sinPhi + bvy * cosPhi;
+
+    let arrRx = cx + off*(arrRxV);
+    let arrRy = cy + off*(arrRyV);
+
+
+    const availableArea = math.distance(arrLx, arrLy, arrRx, arrRy);
+
+    const modelTextWidth = this.textHelper.modelTextWidth;
+
+    const innerMode = modelTextWidth <= availableArea;
+
+    let tx, ty;
+
+    if (innerMode) {
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, off, Math.atan2(arrLyV, arrLxV), Math.atan2(arrRyV, arrRxV));
+      ctx.stroke();
+
+      drawArrowForArc(ctx, arrLx, arrLy, _ax, _ay, -arrLxV, -arrLyV, arrowW, arrowH);
+      drawArrowForArc(ctx, arrRx, arrRy, _bx, _by, arrRxV, arrRyV, arrowW, arrowH);
+
+      const h = modelTextWidth/2;
+      tx = (mx + _vxn * textOff) + (- _vyn) * h;
+      ty = (my + _vyn * textOff) + (  _vxn) * h;
+      this.textHelper.draw(tx, ty, _vxn, _vyn, ctx, unscale, viewer, textOff, true);
+
+    } else {
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, off, aAng, bAng);
+      ctx.stroke();
+
+      //sin is inverted by this time
+
+      arrLxV = avx * cosPhi - avy * sinPhi;
+      arrLyV = avx * sinPhi + avy * cosPhi;
+
+      arrLx = cx + off*(arrLxV);
+      arrLy = cy + off*(arrLyV);
+
+      sinPhi *=  -1;
+
+      arrRxV = bvx * cosPhi - bvy * sinPhi;
+      arrRyV = bvx * sinPhi + bvy * cosPhi;
+
+      arrRx = cx + off*(arrRxV);
+      arrRy = cy + off*(arrRyV);
+
+      drawArrowForArc(ctx, arrLx, arrLy, _ax, _ay, -arrLxV, -arrLyV, arrowW, arrowH);
+      drawArrowForArc(ctx, arrRx, arrRy, _bx, _by, arrRxV, arrRyV, arrowW, arrowH);
+
+      const longExt = modelTextWidth + 2 * OUTER_ARROW_TO_TEXT_PAD_PX * unscale;
+      const shortExt = OUTER_ARROW_TO_TEXT_PAD_PX * unscale;
+
+      ctx.beginPath();
+      ctx.moveTo(arrLx, arrLy);
+      ctx.lineTo(arrLx + arrLyV * longExt, arrLy - arrLxV  * longExt);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(arrRx, arrRy);
+      ctx.lineTo(arrRx - arrRyV * shortExt, arrRy + arrRxV * shortExt);
+      ctx.stroke();
+
+
+      tx = arrLx - ( -arrLyV) * OUTER_ARROW_TO_TEXT_PAD_PX * unscale + arrLxV * textOff;
+      ty = arrLy - (  arrLxV) * OUTER_ARROW_TO_TEXT_PAD_PX * unscale + arrLyV * textOff;
+
+      this.textHelper.draw(tx, ty, arrLxV, arrLyV, ctx, unscale, viewer, textOff, true);
+    }
+
+    this.setPickInfo(cx, cy, _ax, _ay, _bx, _by, off);
+
+    function drawRef(a, b, px, py, vx, vy) {
+
+      const abx = b.x - a.x;
+      const aby = b.y - a.y;
+
+      const apx = px - a.x;
+      const apy = py - a.y;
+
+      const dot = abx * apx + aby * apy;
+
+
+      if (dot < 0) {
+        ctx.save();
+        viewer.setStyle(Styles.CONSTRUCTION, ctx);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(px - vx * EXT_ANGULAR_WIDTH_PX * unscale, py - vy * EXT_ANGULAR_WIDTH_PX * unscale);
+        ctx.stroke();
+        ctx.restore();
+      } else if (apx * apx + apy * apy > abx * abx + aby * aby) {
+        ctx.save();
+        viewer.setStyle(Styles.CONSTRUCTION, ctx);
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(px + vx * EXT_ANGULAR_WIDTH_PX * unscale, py + vy * EXT_ANGULAR_WIDTH_PX * unscale);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    drawRef(aa, ab, _ax, _ay, avx, avy);
+    drawRef(ba, bb, _bx, _by, bvx, bvy);
+  }
+
+  setPickInfo(cx, cy, ax, ay, bx, by, rad) {
+    for (let i = 0; i < arguments.length; ++i) {
+      this.pickInfo[i] = arguments[i];
+    }
+  }
+
+  normalDistance(aim, scale) {
+
+    const textDist = this.textHelper.normalDistance(aim);
+
+    if (textDist !== -1) {
+      return textDist;
+    }
+
+    if (this.pickInfo.length === 0) {
+      return;
+    }
+
+    const [cx, cy, ax, ay, bx, by, rad] = this.pickInfo;
+
+    function isPointInsideSector(x, y) {
+      const ca = [ax - cx, ay - cy];
+      const cb = [bx - cx, by - cy];
+      const ct = [x - cx, y - cy];
+
+      vec._normalize(ca);
+      vec._normalize(cb);
+      vec._normalize(ct);
+      const cosAB = vec.dot(ca, cb);
+      const cosAT = vec.dot(ca, ct);
+
+      const isInside = cosAT >= cosAB;
+      const abInverse = vec.cross2d(ca, cb) < 0;
+      const atInverse = vec.cross2d(ca, ct) < 0;
+
+      let result;
+      if (abInverse) {
+        result = !atInverse || !isInside;
+      } else {
+        result = !atInverse && isInside;
+      }
+      return result;
+    }
+
+    const isInsideSector = isPointInsideSector(aim.x, aim.y);
+    if (isInsideSector) {
+      return Math.abs(math.distance(aim.x, aim.y, cx, cy) - rad);
+    } else {
+      return Math.min(
+        math.distance(aim.x, aim.y, ax, ay),
+        math.distance(aim.x, aim.y, bx, by)
+      );
+    }
+  }
 }
+
+export function findCenter(aa, ab, ba, bb, avx, avy, bvx, bvy) {
+  let center = lineLineIntersection2d([aa.x, aa.y], [ba.x, ba.y], [avx, avy], [bvx, bvy]);
+
+  if (!center) {
+    let commonPt = null;
+    aa.visitLinked(p => {
+      if (ba === p || bb === p) {
+        commonPt = aa;
+      }
+    });
+    if (!commonPt) {
+      ab.visitLinked(p => {
+        if (ba === p || bb === p) {
+          commonPt = ab;
+        }
+      });
+
+    }
+    if (!commonPt) {
+      return null;
+    }
+    center = commonPt.toVectorArray();
+  }
+  return center;
+}
+
+AngleBetweenDimension.prototype._class = 'TCAD.TWO.AngleBetweenDimension';
 
 

@@ -1,7 +1,12 @@
-import {MirrorGeneratorIcon} from "../icons/generators/GeneratorIcons";
-import {MirrorGeneratorSchema} from "../generators/mirrorGenerator";
-import {AddCircleDimTool, AddFreeDimTool, AddHorizontalDimTool, AddVerticalDimTool} from "../tools/dim";
 import {
+  AddAngleBetweenDimTool,
+  AddCircleDimTool,
+  AddFreeDimTool,
+  AddHorizontalDimTool,
+  AddVerticalDimTool
+} from "../tools/dim";
+import {
+  MeasureAngleBetweenAngle,
   MeasureCircleToolIcon,
   MeasureFreeToolIcon,
   MeasureHorizontalToolIcon,
@@ -59,6 +64,19 @@ export default [
 
     invoke: (ctx) => {
       ctx.viewer.toolManager.takeControl(new AddCircleDimTool(ctx.viewer, ctx.viewer.dimLayer));
+    }
+
+  },
+
+  {
+    id: 'MeasureAngleBetween',
+    shortName: 'Measure Angle Between',
+    kind: 'Tool',
+    description: 'Measure angle between',
+    icon: MeasureAngleBetweenAngle,
+
+    invoke: (ctx) => {
+      ctx.viewer.toolManager.takeControl(new AddAngleBetweenDimTool(ctx.viewer, ctx.viewer.dimLayer));
     }
 
   },
