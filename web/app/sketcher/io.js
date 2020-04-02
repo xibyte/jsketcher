@@ -8,7 +8,7 @@ import {Circle} from './shapes/circle'
 import {Ellipse} from './shapes/ellipse'
 import {EllipticalArc} from './shapes/elliptical-arc'
 import {BezierCurve} from './shapes/bezier-curve'
-import {DiameterDimension, Dimension, HDimension, VDimension} from './shapes/dim'
+import {AngleBetweenDimension, DiameterDimension, Dimension, HDimension, VDimension} from './shapes/dim'
 import {Constraints} from './parametric'
 import Vector from 'math/vector';
 import exportTextData from 'gems/exportTextData';
@@ -78,31 +78,32 @@ IO.prototype._loadSketch = function(sketch) {
         }
       }
     }
-    var layer = viewer.createLayer(name, Styles.DEFAULT);
+    let layer = viewer.createLayer(name, Styles.DEFAULT);
     viewer.layers.push(layer);
     return layer;
   }
   const version = sketch.version || 1;
-  var T = Types;
-  var maxEdge = 0;
-  var sketchLayers = sketch.layers;
-  var boundary = sketch.boundary;
-  var boundaryNeedsUpdate = !(boundary === undefined || boundary == null);
+  let T = Types;
+  let maxEdge = 0;
+  let sketchLayers = sketch.layers;
+  let boundary = sketch.boundary;
+  let boundaryNeedsUpdate = !(boundary === undefined || boundary == null);
+  const dimensions = [];
   if (sketchLayers !== undefined) {
-    for (var l = 0; l < sketchLayers.length; ++l) {
-      var ioLayer = sketchLayers[l];
-      var layerName = ioLayer.name;
-      var boundaryProcessing = layerName === IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
-      var layer = getLayer(this.viewer, layerName);
+    for (let l = 0; l < sketchLayers.length; ++l) {
+      let ioLayer = sketchLayers[l];
+      let layerName = ioLayer.name;
+      let boundaryProcessing = layerName === IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
+      let layer = getLayer(this.viewer, layerName);
       // if (!!ioLayer.style) layer.style = ioLayer.style;
       layer.readOnly = !!ioLayer.readOnly;
-      var layerData = ioLayer.data;
+      let layerData = ioLayer.data;
       for (let i = 0; i < layerData.length; ++i) {
-        var obj = layerData[i];
-        var skobj = null;
-        var _class = obj._class;
-        var aux = !!obj.aux;
-        var role = obj.role;
+        let obj = layerData[i];
+        let skobj = null;
+        let _class = obj._class;
+        let aux = !!obj.aux;
+        let role = obj.role;
         
         //support legacy format
         if (!role) {
@@ -150,17 +151,8 @@ IO.prototype._loadSketch = function(sketch) {
           const cp1 = endPoint(obj.cp1);
           const cp2 = endPoint(obj.cp2);
           skobj = new BezierCurve(a, b, cp1, cp2);
-        } else if (_class === T.HDIM) {
-          skobj = new HDimension(obj.a, obj.b);
-          obj.offset !== undefined && (skobj.offset = obj.offset);
-        } else if (_class === T.VDIM) {
-          skobj = new VDimension(obj.a, obj.b);
-          obj.offset !== undefined && (skobj.offset = obj.offset);
-        } else if (_class === T.DIM) {
-          skobj = new Dimension(obj.a, obj.b);
-          obj.offset !== undefined && (skobj.offset = obj.offset);
-        } else if (_class === T.DDIM) {
-          skobj = new DiameterDimension(obj.obj);
+        } else {
+          dimensions.push(obj);
         }
         if (skobj != null) {
           skobj.role = role;
@@ -192,14 +184,27 @@ IO.prototype._loadSketch = function(sketch) {
     }
   }
 
-  for (let i = 0; i < this.viewer.dimLayer.objects.length; ++i) {
-    obj = this.viewer.dimLayer.objects[i];
-    if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
-      obj.a = index[obj.a];
-      obj.b = index[obj.b];
-    } else if (obj._class === T.DDIM) {
-      obj.obj = index[obj.obj];
+  for (let obj of dimensions) {
+    let _class = obj._class;
+    let skobj = null;
+    if (_class === T.HDIM) {
+      skobj = new HDimension(index[obj.a], index[obj.b]);
+      obj.offset !== undefined && (skobj.offset = obj.offset);
+    } else if (_class === T.VDIM) {
+      skobj = new VDimension(index[obj.a], index[obj.b]);
+      obj.offset !== undefined && (skobj.offset = obj.offset);
+    } else if (_class === T.DIM) {
+      skobj = new Dimension(index[obj.a], index[obj.b]);
+      obj.offset !== undefined && (skobj.offset = obj.offset);
+    } else if (_class === T.DDIM) {
+      skobj = new DiameterDimension(index[obj.obj]);
+      skobj.angle = obj.angle;
+    } else if (_class === T.ANGLE_BW) {
+      skobj = new AngleBetweenDimension(index[obj.a], index[obj.b]);
+      skobj.offset = obj.offset;
     }
+    this.viewer.dimLayer.add(skobj);
+    index[obj.id] = skobj;
   }
 
   if (boundaryNeedsUpdate) {
@@ -391,6 +396,11 @@ IO.prototype._serializeSketch = function(metadata) {
           to.offset = obj.offset;
         } else if (obj._class === T.DDIM) {
           to.obj = obj.obj.id;
+          to.angle = obj.obj.angle;
+        } else if (obj._class === T.ANGLE_BW) {
+          to.a = obj.a.id;
+          to.b = obj.b.id;
+          to.offset = obj.offset;
         }
         const children = nonPointChildren(obj).map(c => c.id);
         if (children.length !== 0) {

@@ -1,6 +1,8 @@
 import Vector from 'math/vector';
 import BBox from './bbox'
 import * as vec from './vec';
+import {perp2d} from "./vec";
+import {eqTol} from "../brep/geom/tolerance";
 
 export const TOLERANCE = 1E-6;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
@@ -282,6 +284,20 @@ export function pointToLineSignedDistance(ax, ay, bx, by, px, py) {
     return Number.NaN;
   }
   return vx * nx + vy * ny;
+}
+
+export function lineLineIntersection2d(p1, p2, v1, v2) {
+
+  // const n1 = perp2d(v1);
+  const n2 = perp2d(v2);
+  const cos = vec.dot(n2, v1);
+  if (eqTol(cos, 0)) {
+    return null;
+  }
+  const u1 = vec.dot(n2, vec.sub(p2, p1)) / cos;
+  // const u2 = vec.dot(n1, vec.sub(p1, p2)) / vec.dot(n1, v2);
+
+  return [p1[0] + v1[0] * u1, p1[1] + v1[1] * u1];
 }
 
 export const DEG_RAD = Math.PI / 180.0;

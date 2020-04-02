@@ -964,6 +964,8 @@ export class AlgNumConstraint {
         val = expressionResolver(val);
         if (def.type === 'number') {
           val = parseFloat(val);
+        } else if (def.type === 'boolean') {
+          val = val === 'true' || val === true;
         }
         if (def.transform) {
           val = def.transform(val);
@@ -996,9 +998,9 @@ export class AlgNumConstraint {
       this.constantKeys.map(name => {
         let val = this.schema.constants[name].initialValue(this.objects);
         if (typeof val === 'number') {
-          val = val.toFixed(2) + '';
+          val = val.toFixed(2);
         }
-        this.updateConstant(name, val);
+        this.updateConstant(name, val + '');
       });
     }
   }

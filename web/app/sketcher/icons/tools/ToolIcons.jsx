@@ -4,6 +4,7 @@ import measureCircleContent from './measure-circle-tool.svg';
 import measureFreeContent from './measure-free-tool.svg';
 import measureHorizontalContent from './measure-horizontal-tool.svg';
 import measureVerticalContent from './measure-vertical-tool.svg';
+import measureAngleBetweenContent from './measure-angle-between.svg';
 import rectangleContent from './rectangle-tool.svg';
 import bezierContent from './bezier-tool.svg';
 import ellipseContent from './ellipse-tool.svg';
@@ -32,6 +33,11 @@ export function MeasureHorizontalToolIcon(props) {
 export function MeasureVerticalToolIcon(props) {
 
   return <SvgIcon content={measureVerticalContent} {...props}/>
+}
+
+export function MeasureAngleBetweenAngle(props) {
+
+  return <SvgIcon content={measureAngleBetweenContent} {...props}/>
 }
 
 export function RectangleToolIcon(props) {
