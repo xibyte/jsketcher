@@ -202,6 +202,9 @@ IO.prototype._loadSketch = function(sketch) {
     } else if (_class === T.ANGLE_BW) {
       skobj = new AngleBetweenDimension(index[obj.a], index[obj.b]);
       skobj.offset = obj.offset;
+      if (obj.configuration) {
+        skobj.configuration = obj.configuration.map(o => index[o]);
+      }
     }
     this.viewer.dimLayer.add(skobj);
     index[obj.id] = skobj;
@@ -401,6 +404,7 @@ IO.prototype._serializeSketch = function(metadata) {
           to.a = obj.a.id;
           to.b = obj.b.id;
           to.offset = obj.offset;
+          to.configuration = obj.configuration.map(o => o.id);
         }
         const children = nonPointChildren(obj).map(c => c.id);
         if (children.length !== 0) {
