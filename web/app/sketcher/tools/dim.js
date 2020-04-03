@@ -141,15 +141,23 @@ export class AddAngleTool extends Tool {
     const [segment] = result;
 
     if (this.dim) {
-      let [center, configuration] = this.classify(p.x, p.y);
-      if (configuration) {
-        this.dim.configuration = configuration;
+      let center;
+      if (!this.dim.isAnnotation) {
+        let configuration;
+        [center, configuration] = this.classify(p.x, p.y);
+        if (configuration) {
+          this.dim.configuration = configuration;
+        }
+      } else {
+        const line1 = this.dim.a, line2 = this.dim.b;
+        const v1 = [line1.ny, - line1.nx];
+        const v2 = [line2.ny, - line2.nx];
+        center = findCenter(line1.a, line1.b, line2.a, line2.b, v1[0], v1[1], v2[0], v2[1]);
       }
       if (!center) {
         center = segment.a;
       }
-
-      const [cx, cy] = center;
+      let [cx, cy] = center;
       this.dim.offset = distance(cx, cy, p.x, p.y);
 
     } else {
