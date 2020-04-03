@@ -27,6 +27,12 @@ import {
   TangentConstraintIcon,
   VerticalConstraintIcon
 } from "../icons/constraints/ConstraintIcons";
+import {
+  AngleAbsoluteAnnotation,
+  AngleBetweenAnnotation,
+  LengthAnnotation,
+  RadiusLengthAnnotation
+} from "../shapes/annotations/angleAnnotation";
 
 export const ConstraintDefinitions = {
 
@@ -512,6 +518,10 @@ export const ConstraintDefinitions = {
 
     setConstantsFromGeometry: ([seg], constants) => {
       constants.angle = seg.getAngleFromNormal();
+    },
+
+    createAnnotations: ([segment], constraintInstance) => {
+      return [new AngleAbsoluteAnnotation(segment, constraintInstance)];
     }
   },
 
@@ -596,6 +606,10 @@ export const ConstraintDefinitions = {
     collectPolynomials: (polynomials, [x1, x2], {angle}) => {
       polynomials.push(new Polynomial( - angle).monomial(1).term(x2, POW_1_FN).monomial(-1).term(x1, POW_1_FN));
     },
+
+    createAnnotations: ([segment1, segment2], constraintInstance) => {
+      return [new AngleBetweenAnnotation(segment1, segment2, constraintInstance)];
+    }
   },
 
   Perpendicular: {
@@ -695,19 +709,23 @@ export const ConstraintDefinitions = {
       const dx = segment.b.x - segment.a.x;
       const dy = segment.b.y - segment.a.y;
       constants.length = Math.sqrt(dx*dx + dy*dy);
+    },
+
+    createAnnotations: ([segment], constraintInstance) => {
+      return [new LengthAnnotation(segment, constraintInstance)];
     }
   },
 
 
   RadiusLength: {
-    id: 'RaduisLength',
-    name: 'Raduis Length',
+    id: 'RadiusLength',
+    name: 'Radius Length',
     icon: RadiusConstraintIcon,
 
     constants: {
       length: {
         type: 'number',
-        description: 'length of the raduis',
+        description: 'length of the radius',
         initialValue: ([c]) => {
           return c.r.get();
         },
@@ -721,6 +739,10 @@ export const ConstraintDefinitions = {
       polynomials.push(new Polynomial(-length).monomial(1).term(r, POW_1_FN));
     },
 
+
+    createAnnotations: ([segment], constraintInstance) => {
+      return [new RadiusLengthAnnotation(segment, constraintInstance)];
+    }
   },
 
   Polar: {
@@ -947,6 +969,12 @@ export class AlgNumConstraint {
         o.managedBy = this;
       });
     }
+
+    if (!this.internal && this.schema.createAnnotations) {
+      this.annotations = this.schema.createAnnotations(this.objects, this);
+    } else {
+      this.annotations = [];
+    }
   }
 
   collectPolynomials(polynomials) {
@@ -980,16 +1008,21 @@ export class AlgNumConstraint {
       typeId: this.schema.id,
       objects: this.objects.map(o => o.id),
       constants: this.constants,
-      stage: this.stage&&this.stage.index
+      stage: this.stage&&this.stage.index,
+      annotations: this.annotations.map(ann => ann.save())
     }
   }
 
-  static read({typeId, objects, constants}, index) {
+  static read({typeId, objects, constants, annotations}, index) {
     const schema = ConstraintDefinitions[typeId];
     if (!schema) {
-      throw "constraint schema ' + typeId + ' doesn't exist";
+      throw "constraint schema " + typeId + " doesn't exist";
     }
-    return new AlgNumConstraint(schema, objects.map(oId => index[oId]), constants);
+    const constraint = new AlgNumConstraint(schema, objects.map(oId => index[oId]), constants);
+    if (annotations) {
+      constraint.annotations.forEach((ann, i) => ann.load(annotations[i]));
+    }
+    return constraint;
   }
 
    initConstants() {

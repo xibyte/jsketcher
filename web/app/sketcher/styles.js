@@ -45,6 +45,12 @@ export const Styles = {
     fillStyle : "#00FF00"
   },
 
+  ANNOTATIONS: {
+    lineWidth : 1,
+    strokeStyle : "#101010",
+    fillStyle : "#000000"
+  },
+
   BOUNDS : {
     lineWidth : 2,
     strokeStyle : "#fff5c3",

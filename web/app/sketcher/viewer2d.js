@@ -60,7 +60,8 @@ class Viewer {
       // this.createLayer("_construction_", Styles.CONSTRUCTION) 
     ];
     this.dimLayer = this.createLayer("_dim", Styles.DIM);
-    this.dimLayers = [this.dimLayer];
+    this.annotationLayer = this.createLayer("_annotations", Styles.ANNOTATIONS);
+    this.dimLayers = [this.dimLayer, this.annotationLayer];
     this.streams.dimScale.attach(() => this.refresh());
 
     this._workspace = [this.layers, this.dimLayers];
