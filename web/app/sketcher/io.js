@@ -206,8 +206,10 @@ IO.prototype._loadSketch = function(sketch) {
         skobj.configuration = obj.configuration.map(o => index[o]);
       }
     }
-    this.viewer.dimLayer.add(skobj);
-    index[obj.id] = skobj;
+    if (skobj !== null) {
+      this.viewer.dimLayer.add(skobj);
+      index[obj.id] = skobj;
+    }
   }
 
   if (boundaryNeedsUpdate) {
@@ -363,8 +365,11 @@ IO.prototype._serializeSketch = function(metadata) {
       var toLayer = {name : layer.name, readOnly: layer.readOnly, data : []};
       sketch.layers.push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {
-        var obj = layer.objects[i];
-        var to = {id: obj.id, _class: obj._class, role: obj.role};
+        const obj = layer.objects[i];
+        if (obj.isAnnotation) {
+          continue;
+        }
+        const to = {id: obj.id, _class: obj._class, role: obj.role};
         if (obj.aux) to.aux = obj.aux;
         if (obj.edge !== undefined) to.edge = obj.edge;
         to.stage = this.viewer.parametricManager.getStageIndex(obj.stage);
@@ -399,7 +404,7 @@ IO.prototype._serializeSketch = function(metadata) {
           to.offset = obj.offset;
         } else if (obj._class === T.DDIM) {
           to.obj = obj.obj.id;
-          to.angle = obj.obj.angle;
+          to.angle = obj.angle;
         } else if (obj._class === T.ANGLE_BW) {
           to.a = obj.a.id;
           to.b = obj.b.id;

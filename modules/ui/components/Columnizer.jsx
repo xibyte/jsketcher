@@ -11,8 +11,9 @@ export function Columnizer({columns, children, spacing, ...props}) {
     <tbody>
       {_.times(rows, () => {
         let key = '';
-        for (let i = itemsCounter; i < columns; i++) {
-          key += items[i] ? items[i].key : '';
+        for (let i = 0; i < columns; i++) {
+          const idx = itemsCounter + i;
+          key += items[idx] ? items[idx].key : '';
           key += ':';
         }
         return <tr key={key}>

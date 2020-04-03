@@ -393,35 +393,12 @@ export class AngleBetweenDimension extends SketchObject {
     this.a = a;
     this.b = b;
     this.offset = 20;
-    this.pickA = [];
-    this.pickB = [];
     this.textHelper = new TextHelper();
     this.configuration = [this.a.a, this.a.b, this.b.a, this.b.b];
     this.pickInfo = [];
   }
 
   visitParams(callback) {
-  }
-
-  getReferencePoint() {
-    return this.a;
-  }
-
-  translateImpl(dx, dy) {
-
-    const [_ax, _ay]  = this.pickA;
-    const [_bx, _by]  = this.pickB;
-
-    let _vx = - (_by - _ay);
-    let _vy = _bx - _ax;
-
-    const d = math.distance(_ax, _ay, _bx, _by);
-
-    //normalize
-    let _vxn = _vx / d;
-    let _vyn = _vy / d;
-
-    this.offset += (dx *  _vxn + dy * _vyn);
   }
 
   drawImpl(ctx, scale, viewer) {
@@ -453,7 +430,7 @@ export class AngleBetweenDimension extends SketchObject {
     let aAng = makeAngle0_360(Math.atan2(ab.y - aa.y, ab.x - aa.x));
     let bAng = makeAngle0_360(Math.atan2(bb.y - ba.y, bb.x - ba.x));
     let ang = makeAngle0_360(bAng - aAng);
-    if (ang > Math.PI) {
+    if (ang > Math.PI && !this.isAnnotation) {
       this.configuration.reverse();
       [aa, ab, ba, bb] = this.configuration;
       aAng = makeAngle0_360(Math.atan2(ab.y - aa.y, ab.x - aa.x));
@@ -536,7 +513,7 @@ export class AngleBetweenDimension extends SketchObject {
 
     const modelTextWidth = this.textHelper.modelTextWidth;
 
-    const innerMode = modelTextWidth <= availableArea;
+    const innerMode = ang > Math.PI || modelTextWidth <= availableArea;
 
     let tx, ty;
 
@@ -584,55 +561,54 @@ export class AngleBetweenDimension extends SketchObject {
 
       ctx.beginPath();
       ctx.moveTo(arrLx, arrLy);
-      ctx.lineTo(arrLx + arrLyV * longExt, arrLy - arrLxV  * longExt);
+      ctx.lineTo(arrLx + arrLyV * shortExt, arrLy - arrLxV  * shortExt);
       ctx.stroke();
 
       ctx.beginPath();
       ctx.moveTo(arrRx, arrRy);
-      ctx.lineTo(arrRx - arrRyV * shortExt, arrRy + arrRxV * shortExt);
+      ctx.lineTo(arrRx - arrRyV * longExt, arrRy + arrRxV * longExt);
       ctx.stroke();
 
 
-      tx = arrLx - ( -arrLyV) * OUTER_ARROW_TO_TEXT_PAD_PX * unscale + arrLxV * textOff;
-      ty = arrLy - (  arrLxV) * OUTER_ARROW_TO_TEXT_PAD_PX * unscale + arrLyV * textOff;
+      tx = arrRx + ( -arrRyV) * OUTER_ARROW_TO_TEXT_PAD_PX * unscale - arrRxV * textOff;
+      ty = arrRy + (  arrRxV) * OUTER_ARROW_TO_TEXT_PAD_PX * unscale - arrRyV * textOff;
 
-      this.textHelper.draw(tx, ty, arrLxV, arrLyV, ctx, unscale, viewer, textOff, true);
+      this.textHelper.draw(tx, ty, -arrRxV, -arrRyV, ctx, unscale, viewer, textOff, false);
     }
 
     this.setPickInfo(cx, cy, _ax, _ay, _bx, _by, off);
 
-    function drawRef(a, b, px, py, vx, vy) {
+    this.drawRef(ctx, aa, ab, _ax, _ay, avx, avy, viewer, unscale, true);
+    this.drawRef(ctx, ba, bb, _bx, _by, bvx, bvy, viewer, unscale, false);
+  }
 
-      const abx = b.x - a.x;
-      const aby = b.y - a.y;
+  drawRef(ctx, a, b, px, py, vx, vy, viewer, unscale, first) {
 
-      const apx = px - a.x;
-      const apy = py - a.y;
+    const abx = b.x - a.x;
+    const aby = b.y - a.y;
 
-      const dot = abx * apx + aby * apy;
+    const apx = px - a.x;
+    const apy = py - a.y;
 
+    const dot = abx * apx + aby * apy;
 
-      if (dot < 0) {
-        ctx.save();
-        viewer.setStyle(Styles.CONSTRUCTION, ctx);
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(px - vx * EXT_ANGULAR_WIDTH_PX * unscale, py - vy * EXT_ANGULAR_WIDTH_PX * unscale);
-        ctx.stroke();
-        ctx.restore();
-      } else if (apx * apx + apy * apy > abx * abx + aby * aby) {
-        ctx.save();
-        viewer.setStyle(Styles.CONSTRUCTION, ctx);
-        ctx.beginPath();
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(px + vx * EXT_ANGULAR_WIDTH_PX * unscale, py + vy * EXT_ANGULAR_WIDTH_PX * unscale);
-        ctx.stroke();
-        ctx.restore();
-      }
+    if (dot < 0) {
+      ctx.save();
+      viewer.setStyle(Styles.CONSTRUCTION, ctx);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(px - vx * EXT_ANGULAR_WIDTH_PX * unscale, py - vy * EXT_ANGULAR_WIDTH_PX * unscale);
+      ctx.stroke();
+      ctx.restore();
+    } else if (apx * apx + apy * apy > abx * abx + aby * aby) {
+      ctx.save();
+      viewer.setStyle(Styles.CONSTRUCTION, ctx);
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(px + vx * EXT_ANGULAR_WIDTH_PX * unscale, py + vy * EXT_ANGULAR_WIDTH_PX * unscale);
+      ctx.stroke();
+      ctx.restore();
     }
-
-    drawRef(aa, ab, _ax, _ay, avx, avy);
-    drawRef(ba, bb, _bx, _by, bvx, bvy);
   }
 
   setPickInfo(cx, cy, ax, ay, bx, by, rad) {

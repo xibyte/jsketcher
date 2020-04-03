@@ -199,6 +199,7 @@ class ParametricManager {
   remove(constr) {
     this.viewer.historyManager.checkpoint();
     constr.stage.algNumSystem.removeConstraint(constr);
+    constr.annotations.forEach(ann => ann.layer.remove(ann));
     this.refresh();
   };
 
@@ -401,6 +402,7 @@ class SolveStage {
 
   addConstraint(constraint) {
     constraint.stage = this;
+    constraint.annotations.forEach(ann => this.viewer.annotationLayer.add(ann));
     this.algNumSystem.addConstraint(constraint)
   }
 
