@@ -1,18 +1,22 @@
-import {Viewer} from '../../sketcher/viewer2d';
-import {IO} from '../../sketcher/io';
 import {DelegatingPanTool} from '../../sketcher/tools/pan';
 import {Matrix4} from 'three/src/math/Matrix4';
 import {ORIGIN} from '../../math/l3space';
 import {CAMERA_MODE} from '../scene/viewer';
 import DPR from 'dpr';
-import sketcherStreams from '../../sketcher/sketcherStreams';
+import {SKETCHER_MODE_HEADS_UP_ACTIONS} from "./sketcherUIContrib";
+import {createEssentialAppContext} from "../../sketcher/sketcherContext";
+import {STANDARD_MODE_HEADS_UP_TOOLBAR} from "../part/uiConfigPlugin";
 
 export class InPlaceSketcher {
   
   constructor(ctx) {
     this.face = null; // should be only one in the state
     this.ctx = ctx;
-    this.viewer = null;
+    this.sketcherAppContext = null;
+  }
+
+  get viewer() {
+    return this.sketcherAppContext ? this.sketcherAppContext.viewer : null;
   }
 
   get inEditMode() {
@@ -33,18 +37,21 @@ export class InPlaceSketcher {
     canvas.style.bottom = 0;
 
     container.appendChild(canvas);
-    this.viewer = new Viewer(canvas, IO);
+    this.sketcherAppContext = createEssentialAppContext(canvas);
     this.viewer.parametricManager.externalConstantResolver = this.ctx.services.expressions.evaluateExpression;
-    this.ctx.streams.sketcherApp = this.viewer.streams;
 
     this.syncWithCamera();
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
     viewer3d.sceneSetup.trackballControls.addEventListener( 'change', this.onCameraChange);
 
+    this.ctx.streams.ui.toolbars.headsUp.next(SKETCHER_MODE_HEADS_UP_ACTIONS);
+    this.ctx.streams.ui.toolbars.headsUpShowTitles.next(false);
+
     let sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
     this.viewer.historyManager.init(sketchData);
     this.viewer.io.loadSketch(sketchData);
-    this.ctx.streams.sketcher.sketchingFace.value = face;
+    this.ctx.streams.sketcher.sketchingFace.next(face);
+    this.ctx.streams.sketcher.sketcherAppContext.next(this.sketcherAppContext);
   }
 
   get sketchStorageKey() {
@@ -60,9 +67,11 @@ export class InPlaceSketcher {
     this.face = null;
     this.viewer.canvas.parentNode.removeChild(this.viewer.canvas);
     this.viewer.dispose();
-    this.viewer = null;
-    this.ctx.streams.sketcher.sketchingFace.value = null;
-    this.ctx.streams.sketcherApp = null;
+    this.sketcherAppContext = null;
+    this.ctx.streams.sketcher.sketchingFace.next(null);
+    this.ctx.streams.sketcher.sketcherAppContext.next(null);
+    this.ctx.streams.ui.toolbars.headsUp.next(STANDARD_MODE_HEADS_UP_TOOLBAR);
+    this.ctx.streams.ui.toolbars.headsUpShowTitles.next(true);
     viewer3d.requestRender();
   }
 

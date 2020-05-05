@@ -7,13 +7,16 @@ import {Project} from "./project";
 
 
 export function createAppContext() {
+  const ctx = createEssentialAppContext(document.getElementById('viewer'));
+  ctx.project = new Project(ctx.viewer);
+  return ctx;
+}
 
-  const viewer = new Viewer(document.getElementById('viewer'), IO);
+export function createEssentialAppContext(canvas) {
 
   return {
 
-    viewer,
-    project: new Project(viewer),
+    viewer: new Viewer(canvas, IO),
 
     get actions() {
       return getSketcherActionIndex();
@@ -33,6 +36,5 @@ export function createAppContext() {
     }
   };
 }
-
 
 

@@ -17,7 +17,9 @@ import {SketcherPropertiesView} from "./SketcherPropertiesView";
 import {SketcherDimensionView} from "./SketcherDimensionsView";
 import {SketcherTerminal} from "./TerminalView";
 
-export const SketcherAppContext = React.createContext({});
+import {SketcherAppContext} from './SketcherAppContext';
+
+export {SketcherAppContext};
 
 export function SketcherApp({applicationContext}) {
   return <SketcherAppContext.Provider value={applicationContext}>

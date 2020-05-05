@@ -1,6 +1,6 @@
 import {getSketcherAction} from "../actions";
 import React, {useContext} from "react";
-import {SketcherAppContext} from "./SketcherApp";
+import {SketcherAppContext} from "./SketcherAppContext";
 
 export function SketcherActionButton({actionId, text=false}) {
 

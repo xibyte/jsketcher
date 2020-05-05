@@ -90,4 +90,11 @@ export function indexById(array) {
   return out;
 }
 
+export function insertAfter(arr, item, toAdd) {
+  const index = arr.indexOf(item);
+  if (index !== -1) {
+    arr.splice(index+1, 0, toAdd);
+  }
+}
+
 export const EMPTY_ARRAY = Object.freeze([]);

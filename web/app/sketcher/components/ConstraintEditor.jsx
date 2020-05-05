@@ -8,8 +8,8 @@ import CheckboxControl from "ui/components/controls/CheckboxControl";
 import Window from "ui/components/Window";
 import Field from "ui/components/controls/Field";
 import Label from "../../../../modules/ui/components/controls/Label";
-import {SketcherAppContext} from "./SketcherApp";
 import {EMPTY_OBJECT} from "../../../../modules/gems/objects";
+import {SketcherAppContext} from "./SketcherAppContext";
 
 export function ConstraintEditor() {
 

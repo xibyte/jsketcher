@@ -1,8 +1,9 @@
 import React from 'react';
 
-import {mapActionBehavior} from './actionButtonBehavior';
-import mapContext from '../../../../modules/ui/mapContext';
+import {ActionButtonBehavior} from './ActionButtonBehavior';
 
 export function actionDecorator(actionId) {
-  return mapContext(mapActionBehavior(actionId));
+  return Comp => props => <ActionButtonBehavior actionId={actionId} >
+    {bProps => <Comp {...bProps} {...props} />}
+  </ActionButtonBehavior>;
 }

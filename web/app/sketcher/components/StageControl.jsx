@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
-import {useStream, useStreamWithUpdater} from "../../../../modules/ui/effects";
+import {useStreamWithUpdater} from "../../../../modules/ui/effects";
 import ls from "./ContextualControls.less";
-import {SketcherAppContext} from "./SketcherApp";
+import {SketcherAppContext} from "./SketcherAppContext";
 
 export function StageControl() {
 

@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 
 import 'ui/styles/init/index.less';
 import AppTabs from "./AppTabs";
+import {StreamsContext} from "../../../../../modules/ui/streamsContext";
+import {AppContext} from "./AppContext";
 
 
 export default class WebApplication extends React.Component {
@@ -14,7 +16,12 @@ export default class WebApplication extends React.Component {
 
   
   render() {
-    return <AppTabs />
+    const {appContext} = this.props;
+    return <StreamsContext.Provider value={appContext}>
+      <AppContext.Provider value={appContext}>
+        <AppTabs />
+      </AppContext.Provider>
+    </StreamsContext.Provider>
   }
 
   getChildContext() {

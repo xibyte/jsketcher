@@ -2,11 +2,10 @@ import React, {useContext, useEffect} from 'react';
 import ls from './ConstraintExplorer.less';
 import Fa from 'ui/components/Fa';
 import {useStream} from "ui/effects";
-import {SketcherAppContext} from "./SketcherApp";
 import cx from 'classnames';
 import {editConstraint} from "./ConstraintEditor";
 import {NoIcon} from "../icons/NoIcon";
-
+import {SketcherAppContext} from "./SketcherAppContext";
 
 export function ConstraintExplorer(props) {
   return <React.Fragment>

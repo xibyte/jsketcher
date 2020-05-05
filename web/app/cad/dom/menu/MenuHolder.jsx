@@ -2,11 +2,10 @@ import React from 'react';
 import Menu, {MenuItem, MenuSeparator} from 'ui/components/Menu';
 import Filler from 'ui/components/Filler';
 import Fa from 'ui/components/Fa';
-import {mapActionBehavior} from '../../actions/actionButtonBehavior';
+import {ActionButtonBehavior} from '../../actions/ActionButtonBehavior';
 import connect from 'ui/connect';
 import {combine, merger} from 'lstream';
-import mapContext from 'ui/mapContext';
-import decoratorChain from 'ui/decoratorChain';
+import {useStream} from "../../../../../modules/ui/effects";
 
 function MenuHolder({menus}) {
   return menus.map(({id, actions}) => <ConnectedActionMenu key={id} menuId={id} actions={actions} />); 
@@ -55,17 +54,21 @@ const ConnectedActionMenu = connect((streams, props) =>
     .map(([s, keymap]) => ({...s, keymap})))
 (ActionMenu);
 
+export function ConnectedMenuItem(props) {
 
-let ConnectedMenuItem = decoratorChain(
+  const actionId = props.actionId;
+  const stream = useStream(ctx => combine(ctx.streams.action.appearance[actionId], ctx.streams.action.state[actionId]));
+  if (!stream) {
+    return null;
+  }
+  const [actionAppearance, actionState] = stream;
 
-  connect((streams, {actionId}) =>
-    combine(
-      streams.action.state[actionId], 
-      streams.action.appearance[actionId]).map(merger)),
-  
-  mapContext(mapActionBehavior(props => props.actionId))
-)
-(ActionMenuItem);
+  return <ActionButtonBehavior actionId={actionId}>
+    {behaviourProps => <ActionMenuItem {...behaviourProps} {...actionAppearance} {...actionState} {...props} />}
+  </ActionButtonBehavior>;
+
+}
+
 
 export default connect(streams => streams.ui.menu.all.map(menus => ({menus})))(MenuHolder);
 

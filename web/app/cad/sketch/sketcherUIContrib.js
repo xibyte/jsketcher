@@ -1,54 +1,61 @@
-import SketcherToolActions from './sketcherToolActions';
-import SketcherConstrainsActions from './sketcherConstraintsActions';
-import SketcherControlActions from './sketcherControlActions';
-import {state} from '../../../../modules/lstream';
+import {startOperation} from "../../sketcher/actions";
+import objectToolActions from '../../sketcher/actions/objectToolActions';
+import measureActions from '../../sketcher/actions/measureActions';
+import {insertAfter} from '../../../../modules/gems/iterables';
+import operationActions from "../../sketcher/actions/operationActions";
+import constraintGlobalActions from "../../sketcher/actions/constraintGlobalActions";
+import generalToolActions from "../../sketcher/actions/generalToolActions";
+import sketcherControlActions from "./sketcherControlActions";
 
 export default function ({services, streams}) {
+  services.action.registerActions(sketcherControlActions);
+  services.action.registerActions([
+    ...constraintGlobalActions,
+    ...measureActions,
+    ...generalToolActions,
+    ...objectToolActions,
+    ...operationActions,
 
-  services.action.registerActions(SketcherToolActions);
-  services.action.registerActions(SketcherConstrainsActions);
-  services.action.registerActions(SketcherControlActions);
-  
-  streams.ui.toolbars.sketcherGeneral.value = [
-    'sketchReferencePoint',
-    'sketchPanTool',
-    'sketchAddPoint',
-    'sketchAddSegment',
-    'sketchAddMultiSegment',
-    'sketchAddArc',
-    'sketchAddCircle',
-    'sketchAddEllipse',
-    'sketchAddEllipticalArc',
-    'sketchAddCubicBezierSpline',
-    'sketchAddRectangle',
-    'sketchOffsetTool',
-    'sketchAddFillet',
-    'sketchAddDim',
-    'sketchAddHDim',
-    'sketchAddVDim',
-    'sketchCircleDim',
-  ];
-  streams.ui.toolbars.sketcherConstraints.value = [
-    'sketchConstraint_coincident',
-    'sketchConstraint_verticalConstraint',
-    'sketchConstraint_horizontalConstraint',
-    'sketchConstraint_parallelConstraint',
-    'sketchConstraint_perpendicularConstraint',
-    'sketchConstraint_P2LDistanceConstraint',
-    'sketchConstraint_P2PDistanceConstraint',
-    'sketchConstraint_RadiusConstraint',
-    'sketchConstraint_EntityEqualityConstraint',
-    'sketchConstraint_tangentConstraint',
-    'sketchConstraint_lockConstraint',
-    'sketchConstraint_pointOnLine',
-    'sketchConstraint_pointOnArc',
-    'sketchConstraint_pointInMiddle',
-    'sketchConstraint_llAngle',
-    'sketchConstraint_symmetry',
-    'sketchConstraint_mirror',
-    'sketchConstraint_lockConvex'
-  ];
-  streams.ui.toolbars.sketcherControl.value = [
-    'sketchSaveAndExit', 'sketchOpenInTab', 'sketchExit'
-  ];
+  ].map(convertSketcherAction));
+
 }
+
+const SKETCHER_PREFIX = 'sketcher.';
+
+function toSketcherActionId(id) {
+  return SKETCHER_PREFIX + id;
+}
+
+function convertSketcherAction(action) {
+
+  return   {
+    id: toSketcherActionId(action.id),
+    appearance: {
+      icon: action.icon,
+      label: action.shortName,
+      info: action.description,
+    },
+    invoke: ({services}, e) => action.invoke(services.sketcher.inPlaceEditor.sketcherAppContext)
+  }
+}
+export const SKETCHER_MODE_HEADS_UP_ACTIONS = [
+  ['sketchSaveAndExit', 'sketchExit'],
+  '-',
+  generalToolActions.map(a => toSketcherActionId(a.id)),
+  '-',
+  [
+    ...objectToolActions.map(a => toSketcherActionId(a.id)),
+    toSketcherActionId('Offset'),
+  ],
+  '-',
+  measureActions.map(a => toSketcherActionId(a.id)),
+  '-',
+  constraintGlobalActions.map(a => toSketcherActionId(a.id)),
+  '-',
+  ['sketchOpenInTab']
+];
+
+insertAfter(SKETCHER_MODE_HEADS_UP_ACTIONS, SKETCHER_PREFIX + 'Export', '-');
+insertAfter(SKETCHER_MODE_HEADS_UP_ACTIONS, SKETCHER_PREFIX + 'PanTool', '-');
+insertAfter(SKETCHER_MODE_HEADS_UP_ACTIONS, SKETCHER_PREFIX + 'BezierTool', '-');
+
