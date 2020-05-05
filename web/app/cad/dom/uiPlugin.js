@@ -9,6 +9,7 @@ export function defineStreams({streams}) {
     },
     toolbars: {
       headsUp: state([]),
+      headsUpShowTitles: state(true),
       headsUpQuickActions: state([]),
       sketcherGeneral: state([]),
       sketcherConstraints: state([]),

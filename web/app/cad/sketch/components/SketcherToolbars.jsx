@@ -1,6 +1,7 @@
 import React from 'react';
 import ls from './SketcherToolbars.less';
-import {createPlugableToolbar} from './PlugableToolbar';
+import {createPlugableToolbar} from '../../dom/components/PlugableToolbar';
+import '../../../sketcher/actions';
 
 export default function SketcherToolbars({visible}) {
   return <div className={ls.sketcherToolbars}>

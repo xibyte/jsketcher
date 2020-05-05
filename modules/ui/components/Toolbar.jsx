@@ -21,3 +21,13 @@ export function ToolbarButton({children, disabled, ...props}) {
 export function ToolbarSplitter() {
   return <div className={ls.splitter} />
 }
+
+export function ToolbarBraker() {
+  return <div className={ls.braker} />
+}
+
+export function ToolbarGroup({children}) {
+  return <div className={ls.group} >
+    {children}
+  </div>;
+}

@@ -12,7 +12,8 @@ import {DelegatingPanTool} from "../../sketcher/tools/pan";
 export function defineStreams(ctx) {
   ctx.streams.sketcher = {
     update: stream(),
-    sketchingFace: state(null)
+    sketchingFace: state(null),
+    sketcherAppContext: state(null)
   };
   ctx.streams.sketcher.sketchingMode = ctx.streams.sketcher.sketchingFace.map(face => !!face);
 }

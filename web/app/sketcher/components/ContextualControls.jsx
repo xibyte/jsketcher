@@ -2,11 +2,11 @@ import React, {useContext} from 'react';
 import ls from './ContextualControls.less';
 import {matchAvailableActions} from "../actions";
 import {useStream} from "../../../../modules/ui/effects";
-import {SketcherAppContext} from "./SketcherApp";
 import {MatchIndex, matchSelection} from "../selectionMatcher";
 import {ConstraintButton, GeneratorButton} from "./ConstraintExplorer";
 import {Columnizer} from "../../../../modules/ui/components/Columnizer";
 import {NoIcon} from "../icons/NoIcon";
+import {SketcherAppContext} from "./SketcherAppContext";
 
 export function ContextualControls() {
 

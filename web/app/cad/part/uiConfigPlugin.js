@@ -8,6 +8,9 @@ import React from 'react';
 import OperationHistory from '../craft/ui/OperationHistory';
 import Expressions from '../expressions/Expressions';
 
+export const STANDARD_MODE_HEADS_UP_TOOLBAR = ['DATUM_CREATE', 'PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', 'LOFT',
+  '-', 'FILLET', '-', 'INTERSECTION', 'SUBTRACT', 'UNION'];
+
 export function activate({services, streams}) {
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'menu.views', 'Donate', 'GitHub'];
   streams.ui.controlBars.right.value = [
@@ -16,8 +19,7 @@ export function activate({services, streams}) {
     ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}]
   ];
 
-  streams.ui.toolbars.headsUp.value = ['DATUM_CREATE', 'PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', 'LOFT',
-    '-', 'FILLET', '-', 'INTERSECTION', 'SUBTRACT', 'UNION'];
+  streams.ui.toolbars.headsUp.value = STANDARD_MODE_HEADS_UP_TOOLBAR;
   streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport'];
   
   services.action.registerActions(CoreActions);
