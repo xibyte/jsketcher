@@ -1,10 +1,14 @@
+import {FcCancel, FcCheckmark} from "react-icons/fc";
+import {RiExternalLinkLine} from "react-icons/ri";
+
 export default [
   {
     id: 'sketchSaveAndExit',
     appearance: {
       info: 'save sketch changes and exit',
       label: 'commit',
-      cssIcons: ['check'],
+      icon: FcCheckmark,
+
     },
     invoke: ({services}) => {
       services.sketcher.inPlaceEditor.save();
@@ -16,7 +20,7 @@ export default [
     appearance: {
       info: 'drop sketch changes and exit',
       label: 'exit sketch',
-      cssIcons: ['times'],
+      icon: FcCancel,
     },
     invoke: ({services}) => {
       services.sketcher.inPlaceEditor.exit();
@@ -27,7 +31,7 @@ export default [
     appearance: {
       info: 'save changes and open sketch 2D in a tab',
       label: '2D',
-      cssIcons: ['external-link'],
+      icon: RiExternalLinkLine,
     },
     invoke: ({services}) => {
       let face = services.sketcher.inPlaceEditor.face;

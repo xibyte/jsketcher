@@ -6,12 +6,13 @@ import ls from './HeadsUpToolbar.less';
 import {combine} from '../../../../../modules/lstream';
 
 export const HeadsUpToolbar = connect(streams => combine(
-    streams.ui.toolbars.headsUp, 
-    streams.ui.toolbars.headsUpQuickActions).map(([actions, quickActions]) => ({actions, quickActions})))(
-  function HeadsUpToolbar({actions, quickActions}) {
+    streams.ui.toolbars.headsUp,
+    streams.ui.toolbars.headsUpShowTitles,
+    streams.ui.toolbars.headsUpQuickActions).map(([actions, showTitles, quickActions]) => ({actions, showTitles, quickActions})))(
+  function HeadsUpToolbar({actions, showTitles, quickActions}) {
     return <Toolbar flat>
       <div className={ls.mainActions}>
-        <ToolbarActionButtons actions={actions} />
+        <ToolbarActionButtons actions={actions} showTitles={showTitles}/>
       </div>
 
       <div className={ls.quickButtons}>

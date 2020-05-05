@@ -5,8 +5,8 @@ import Window from "ui/components/Window";
 import Stack from "ui/components/Stack";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
-import {SketcherAppContext} from "./SketcherApp";
 import {useStreamWithUpdater} from "../../../../modules/ui/effects";
+import {SketcherAppContext} from "./SketcherAppContext";
 
 
 export default function SketcherOperationWizard({}) {

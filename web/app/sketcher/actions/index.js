@@ -4,9 +4,10 @@ import {toast} from "react-toastify";
 import operationActions from "./operationActions";
 import constraintGlobalActions from "./constraintGlobalActions";
 import measureActions from "./measureActions";
-import toolActions from "./toolActions";
+import objectToolActions from "./objectToolActions";
 import commonActions from "./commonActions";
 import exportActions from "./exportActions";
+import generalToolActions from "./generalToolActions";
 
 const ALL_CONTEXTUAL_ACTIONS = [
   ...constraintActions,
@@ -16,7 +17,8 @@ const ALL_CONTEXTUAL_ACTIONS = [
 const ACTIONS = [
   ...constraintGlobalActions,
   ...measureActions,
-  ...toolActions,
+  ...generalToolActions,
+  ...objectToolActions,
   ...commonActions,
   ...exportActions
   //keep going here

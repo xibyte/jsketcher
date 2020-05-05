@@ -1,20 +1,19 @@
 import React from 'react';
 import PlugableControlBar from './PlugableControlBar';
 import ls from './View3d.less';
-import Abs from 'ui/components/Abs';
 import UISystem from './UISystem';
 import WizardManager from '../../craft/wizard/components/WizardManager';
 import FloatView from './FloatView';
 import HistoryTimeline from '../../craft/ui/HistoryTimeline';
 import SelectedModificationInfo from '../../craft/ui/SelectedModificationInfo';
-import BottomStack from './BottomStack';
-import SketcherToolbars from './SketcherToolbars';
 import CameraControl from './CameraControl';
 import HeadsUpHelper from './HeadsUpHelper';
 import {HeadsUpToolbar} from './HeadsUpToolbar';
 import {SketchObjectExplorer} from '../../../sketcher/components/SketchObjectExplorer';
-import SketcherMode from './SketcherMode';
+import SketcherMode from '../../sketch/components/SketcherMode';
 import {ConstraintExplorer} from '../../../sketcher/components/ConstraintExplorer';
+import {Scope} from "../../../sketcher/components/Scope";
+import {InplaceSketcher} from "../../sketch/components/InplaceSketcher";
 
 
 export default class View3d extends React.Component {
@@ -37,20 +36,16 @@ export default class View3d extends React.Component {
 
           <div className={ls.middleSection}>
             <SketcherMode>
-              <div className={ls.overlayingPanel} >
-                <SketchObjectExplorer />
-                <ConstraintExplorer />
-              </div>
+              <InplaceSketcher>
+                <div className={ls.overlayingPanel} >
+                  <Scope><SketchObjectExplorer /></Scope>
+                  <Scope><ConstraintExplorer /></Scope>
+                </div>
+              </InplaceSketcher>
             </SketcherMode>
             <div className={ls.wizardArea} >
               <WizardManager/>
             </div>
-            <SketcherMode>
-              <div className={ls.spring} />
-              <div className={ls.middleRight}>
-                <SketcherToolbars />
-              </div>
-            </SketcherMode>
           </div>
 
           <div className={ls.bottomStack}>

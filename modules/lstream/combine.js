@@ -5,6 +5,11 @@ export class CombineStream extends StreamBase {
 
   constructor(streams) {
     super();
+    streams.forEach(stream => {
+      if (!stream) {
+        throw 'stream is undefined';
+      }
+    });
     this.streams = streams;
     this.values = this.streams.map(() => NOT_INITIALIZED);
     this.ready = false;

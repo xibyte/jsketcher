@@ -1,15 +1,12 @@
 import React from 'react';
-import connect from 'ui/connect';
 import Fa from 'ui/components/Fa';
-import Toolbar, {ToolbarButton} from 'ui/components/Toolbar';
+import Toolbar, {ToolbarBraker, ToolbarButton, ToolbarGroup, ToolbarSplitter} from 'ui/components/Toolbar';
 import ImgIcon from 'ui/components/ImgIcon';
 import {toIdAndOverrides} from '../../actions/actionRef';
-import {mapActionBehavior} from '../../actions/actionButtonBehavior';
+import {ActionButtonBehavior} from '../../actions/ActionButtonBehavior';
 import capitalize from 'gems/capitalize';
-import decoratorChain from 'ui/decoratorChain';
-import {combine, merger} from 'lstream';
-import mapContext from 'ui/mapContext';
-import {ToolbarSplitter} from 'ui/components/Toolbar';
+import {combine} from 'lstream';
+import {useStream} from "../../../../../modules/ui/effects";
 
 function ConfigurableToolbar({actions, size, ...props}) {
   return <Toolbar size={size} {...props}>
@@ -17,31 +14,43 @@ function ConfigurableToolbar({actions, size, ...props}) {
   </Toolbar>
 }
 
-export function ToolbarActionButtons({actions, size}) {
+export function ToolbarActionButtons({actions, showTitles, size}) {
   return actions.map((actionRef, i) => {
     if (actionRef === '-') {
-      return <ToolbarSplitter key={'ToolbarSplitter' + i}/>;
+      return <ToolbarSplitter key={'ToolbarSplitter' + i} />;
+    } else if (actionRef === '|') {
+      return <ToolbarBraker key={'ToolbarBraker' + i} />;
+    } else if (Array.isArray(actionRef)) {
+      return <div key={'ToolbarGroup' + i}>
+        <ToolbarGroup><ToolbarActionButtons actions={actionRef.slice(0, actionRef.length / 2)} showTitles={showTitles} size={size} /></ToolbarGroup>
+        <ToolbarGroup><ToolbarActionButtons actions={actionRef.slice(actionRef.length / 2, actionRef.length)} showTitles={showTitles} size={size} /></ToolbarGroup>
+      </div>;
     }
     let [id, overrides] = toIdAndOverrides(actionRef);
-    return <ConnectedActionButton actionId={id} key={id} size={size} {...overrides} />
+    return <ConnectedActionButton actionId={id} key={id} size={size} {...overrides} noLabel={!showTitles}/>
   });
 }
 
-function ActionButton({label, icon96, icon32, cssIcons, symbol, size, noLabel, enabled, visible, actionId, ...props}) {
+function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size, noLabel, enabled, visible, actionId, ...props}) {
   if (!visible) {
     return null;
   }
 
   let smallOrMedium = size === 'medium' || size === 'small';
-  let icon;
-  if (smallOrMedium) {
-    if (cssIcons) {
-      icon = <Fa fa={cssIcons} fw />;  
-    } else if (icon32) {
-      icon = <ImgIcon url={icon32} size={size === 'small' ? 16 : 24} />;
+  if (icon) {
+    const Icon = icon;
+    icon = <Icon />;
+  }
+  if (!icon) {
+    if (smallOrMedium) {
+      if (cssIcons) {
+        icon = <Fa fa={cssIcons} fw />;
+      } else if (icon32) {
+        icon = <ImgIcon url={icon32} size={size === 'small' ? 16 : 24} />;
+      }
+    } else {
+      icon = <ImgIcon url={icon96} size={48} />;
     }
-  } else {
-    icon = <ImgIcon url={icon96} size={48} />; 
   }
   if (!icon) {
     icon = <span>{symbol||(label&&label.charAt(0))}</span>;
@@ -56,15 +65,27 @@ function ActionButton({label, icon96, icon32, cssIcons, symbol, size, noLabel, e
   </ToolbarButton>
 }
 
-export const ConnectedActionButton = decoratorChain(
-  connect((streams, {actionId})  => combine(streams.action.appearance[actionId], streams.action.state[actionId]).map(merger)),
-  mapContext(mapActionBehavior(props => props.actionId))
-)
-(ActionButton);
+export function ConnectedActionButton(props) {
+
+  const actionId = props.actionId;
+  const stream = useStream(ctx => combine(ctx.streams.action.appearance[actionId], ctx.streams.action.state[actionId]));
+  if (!stream) {
+    return null;
+  }
+  const [actionAppearance, actionState] = stream;
+
+  return<ActionButtonBehavior actionId={actionId}>
+    {behaviourProps => <ActionButton {...behaviourProps} {...actionAppearance} {...actionState} {...props} />}
+  </ActionButtonBehavior>;
+
+}
 
 export function createPlugableToolbar(streamSelector) {
-  return decoratorChain(
-    connect(streams => streamSelector(streams).map(actions => ({actions})))
-  )
-  (props => <ConfigurableToolbar {...props} />);
+  return function (props) {
+    const actions = useStream(ctx => streamSelector(ctx.streams));
+    if (!actions) {
+      return null;
+    }
+    return <ConfigurableToolbar actions={actions} {...props} />;
+  }
 }
