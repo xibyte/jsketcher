@@ -6,7 +6,7 @@ export function useStream(getStream) {
   const basicStreams = useContext(StreamsContext);
   const [state, setState] = useState();
 
-  const stream = getStream(basicStreams);
+  const stream = typeof getStream === 'function' ? getStream(basicStreams) : getStream;
 
   if (!stream) {
     console.log(getStream);
@@ -24,7 +24,7 @@ export function useStreamWithUpdater(getStream) {
   const data = useStream(getStream);
   const basicStreams = useContext(StreamsContext);
 
-  const stream = getStream(basicStreams);
+  const stream = typeof getStream === 'function' ? getStream(basicStreams) : getStream;
 
   const updater = useCallback((val) => {
 
