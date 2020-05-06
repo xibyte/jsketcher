@@ -1,10 +1,9 @@
 import React from 'react';
 
 import ls from './Window.less'
-import Fa from "./Fa";
-import WindowSystem from '../WindowSystem';
 import cx from 'classnames';
-import {NOOP} from "../../gems/func";
+import {NOOP} from '../../gems/func';
+import {FaTimes} from 'react-icons/fa';
 
 export default class Window extends React.Component {
   
@@ -12,15 +11,17 @@ export default class Window extends React.Component {
   resizeHelper = new ResizeHelper();
 
   render() {
+
     let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, setFocus, className,
-      resizeCapturingBuffer, resize,
-      children, title, icon, minimizable, onClose, ...props} = this.props;
-    return <div className={cx(ls.root, className)} {...props} ref={this.keepRef}>
+      resizeCapturingBuffer, resize, enableResize, children, title, icon, minimizable, onClose, controlButtons, ...props} = this.props;
+
+    return <div className={cx(ls.root, this.resizeConfig&&ls.mandatoryBorder, className)} {...props} ref={this.keepRef}>
       <div className={ls.bar + ' disable-selection'} onMouseDown={this.startDrag} onMouseUp={this.stopDrag}>
         <div>{icon}<b>{title.toUpperCase()}</b></div>  
         <div className={ls.controlButtons}>
-          {minimizable &&  <span className={ls.button}>_</span>}
-          <span className={ls.button} onClick={onClose}><Fa fw icon='close' /></span>
+          {controlButtons}
+          {minimizable &&  <WindowControlButton onClick={onClose}>_</WindowControlButton>}
+          <WindowControlButton danger={true} onClick={onClose}><FaTimes /></WindowControlButton>
         </div>
       </div>
       <div className={cx(ls.content, 'compact-scroll')}>
@@ -86,6 +87,7 @@ export default class Window extends React.Component {
 
       this.el.style.left = this.originLocation.left + dx + 'px';
       this.el.style.top = this.originLocation.top + dy + 'px';
+      e.preventDefault();
     }
   };
 
@@ -97,7 +99,8 @@ export default class Window extends React.Component {
     if (el === null) {
       return;
     }
-    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, resize, resizeCapturingBuffer, onResize, ...props} = this.props;
+    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, resizeCapturingBuffer, onResize, ...props} = this.props;
+
     if (initWidth) {
       el.style.width = initWidth + 'px';
     }
@@ -114,10 +117,17 @@ export default class Window extends React.Component {
     } else if (initBottom) {
       el.style.top = (window.innerHeight - el.offsetHeight - initBottom) + 'px';
     }
-    this.resizeHelper.registerResize(el, resize, resizeCapturingBuffer);
+    this.resizeHelper.registerResize(el, this.resizeConfig, resizeCapturingBuffer, onResize);
     this.el = el;
+  };
+
+  get resizeConfig() {
+    let {resize, enableResize} = this.props;
+    if (enableResize) {
+      resize= DIRECTIONS.NORTH | DIRECTIONS.SOUTH | DIRECTIONS.WEST | DIRECTIONS.EAST;
+    }
+    return resize;
   }
-  
 }
 
 Window.defaultProps = {
@@ -168,8 +178,9 @@ export class ResizeHelper {
         el.style.top = top + 'px';
       }
       if (onResize !== undefined) {
-        onResize();
+        onResize(el);
       }
+      e.preventDefault();
     };
     if (this.controlGlobalListeners) {
       const moveListener = e => {
@@ -269,4 +280,8 @@ export const DIRECTIONS = {
 
 function _maskTest(mask, value) {
   return (mask & value) === value;
+}
+
+export function WindowControlButton({danger, ...props}) {
+  return <span className={cx(ls.button, danger&&ls.danger)} {...props} />;
 }
