@@ -11,9 +11,13 @@
   min-height: 20px;
 }
 
+.mandatoryBorder {
+  border: 5px solid #444444;
+}
+
 .bar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   background-color: @bg-color;
   line-height: 1;
@@ -25,6 +29,14 @@
 .button {
   display: inline-block;
   padding: 6px 5px 6px 5px;
+  .button-behavior(@color-accent);
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.danger {
   .button-behavior(@color-danger);
 }
 
