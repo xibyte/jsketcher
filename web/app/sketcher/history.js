@@ -1,9 +1,8 @@
-import diff_match_patch from 'diff-match-patch';
 
 /** @constructor */
 function HistoryManager(viewer) {
   this.viewer = viewer;
-  this.dmp = new diff_match_patch();
+  // this.dmp = new diff_match_patch();
   this.init({});
   // this.init(this.viewer.io.serializeSketch());
 }
@@ -80,9 +79,9 @@ HistoryManager.prototype.redo = function () {
 };
 
 HistoryManager.prototype.applyDiff = function (text1, diff) {
-  var dmp = this.dmp;
-  var results = dmp.patch_apply(diff, text1);
-  return results[0];
+  // var dmp = this.dmp;
+  // var results = dmp.patch_apply(diff, text1);
+  // return results[0];
 };
 
 HistoryManager.prototype.applyDiffInv = function (text1, diff) {
@@ -103,17 +102,17 @@ HistoryManager.prototype.reversePatch = function (plist) {
 };
 
 HistoryManager.prototype.getDiff = function (text1, text2) {
-  var dmp = this.dmp;
-  var diff = dmp.diff_main(text1, text2, true);
-
-  if (diff.length > 2) {
-    dmp.diff_cleanupSemantic(diff);
-  }
-
-  var patch_list = dmp.patch_make(text1, text2, diff);
-  //var patch_text = dmp.patch_toText(patch_list);
-  //console.log(patch_list);
-  return patch_list;
+  // var dmp = this.dmp;
+  // var diff = dmp.diff_main(text1, text2, true);
+  //
+  // if (diff.length > 2) {
+  //   dmp.diff_cleanupSemantic(diff);
+  // }
+  //
+  // var patch_list = dmp.patch_make(text1, text2, diff);
+  // //var patch_text = dmp.patch_toText(patch_list);
+  // //console.log(patch_list);
+  // return patch_list;
 };
 
 export {HistoryManager}

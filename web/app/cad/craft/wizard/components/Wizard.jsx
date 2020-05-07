@@ -1,5 +1,5 @@
 import React from 'react';
-import Window from 'ui/components/Window';
+import Window, {WindowControlButton} from 'ui/components/Window';
 import Stack from 'ui/components/Stack';
 import Button from 'ui/components/controls/Button';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
@@ -9,6 +9,8 @@ import CadError from '../../../../utils/errors';
 import {FormContext} from './form/Form';
 import connect from 'ui/connect';
 import {combine} from 'lstream';
+import {DocumentationTopic$} from "../../../../../../modules/doc/DocumentationWindow";
+import {IoMdHelp} from "react-icons/io";
 
 @connect((streams, props) => combine(props.context.workingRequest$, props.context.state$)
   .map(([workingRequest, state]) => ({
@@ -57,7 +59,16 @@ export default class Wizard extends React.Component {
                    title={title}
                    onClose={this.cancel}
                    onKeyDown={this.onKeyDown}
-                   setFocus={this.focusFirstInput}>
+                   setFocus={this.focusFirstInput}
+                   controlButtons={<>
+                     <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({
+                       topic: operation.id,
+                       x: e.pageX + 40,
+                       y: e.pageY
+                     })}>
+                       <IoMdHelp />
+                     </WindowControlButton>
+                   </>}>
       <FormContext.Provider value={formContext}>
         <Form/>
       </FormContext.Provider>

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "lib": ["es2018", "dom"],
+    "sourceMap": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES5",
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "modules/*",
+        "node_modules/*"
+      ]
+    }
+  }
+}
