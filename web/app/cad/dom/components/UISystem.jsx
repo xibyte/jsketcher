@@ -2,10 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MenuHolder from '../menu/MenuHolder';
 
-import WindowSystem from 'ui/WindowSystem';
 import ActionInfo from '../actionInfo/ActionInfo';
 import ContributedComponents from './ContributedComponents';
-import {stream} from '../../../../../modules/lstream';
+import {stream} from 'lstream';
+import {DocumentationWindow} from 'doc/DocumentationWindow';
+import {Scope} from "../../../sketcher/components/Scope";
+import {ContextualControls} from "../../../sketcher/components/ContextualControls";
+import {ConstraintEditor} from "../../../sketcher/components/ConstraintEditor";
+import SketcherOperationWizard from "../../../sketcher/components/SketcherOperationWizard";
+import {StageControl} from "../../../sketcher/components/StageControl";
 
 export default class UISystem extends React.Component {
   
@@ -15,10 +20,9 @@ export default class UISystem extends React.Component {
     return <div {...this.props} onMouseDown={this.closeAllUpPopups} >
       <MenuHolder />
       <ActionInfo />
-      <WindowSystem>
-        {this.props.children}
-        <ContributedComponents />
-      </WindowSystem>
+      {this.props.children}
+      <ContributedComponents />
+      <Scope><DocumentationWindow /></Scope>
     </div>
   }
 
