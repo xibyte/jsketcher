@@ -23,12 +23,6 @@ export default class UISystem extends React.Component {
       {this.props.children}
       <ContributedComponents />
       <Scope><DocumentationWindow /></Scope>
-      <React.Fragment>
-      <Scope><ContextualControls /></Scope>
-      <Scope><ConstraintEditor /></Scope>
-      <Scope><SketcherOperationWizard /></Scope>
-      <Scope><StageControl /></Scope>
-    </React.Fragment>
     </div>
   }
 
