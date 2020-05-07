@@ -29,7 +29,7 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
   ],
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', ".ts", ".tsx"],
     modules: [MODULES, "node_modules"]
   },
   devServer: {
@@ -48,7 +48,7 @@ module.exports = {
   },
   module: {
     rules: [{
-      test: /\.(js|jsx)$/,
+      test: /\.(js|jsx|ts|tsx)$/,
       loader: 'babel-loader',
       include: [MODULES, WEB_APP, INTEGRATION_TESTS]
     }, {
