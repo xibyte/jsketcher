@@ -14,6 +14,10 @@ import SketcherMode from '../../sketch/components/SketcherMode';
 import {ConstraintExplorer} from '../../../sketcher/components/ConstraintExplorer';
 import {Scope} from "../../../sketcher/components/Scope";
 import {InplaceSketcher} from "../../sketch/components/InplaceSketcher";
+import {ContextualControls} from "../../../sketcher/components/ContextualControls";
+import {ConstraintEditor} from "../../../sketcher/components/ConstraintEditor";
+import SketcherOperationWizard from "../../../sketcher/components/SketcherOperationWizard";
+import {StageControl} from "../../../sketcher/components/StageControl";
 
 
 export default class View3d extends React.Component {
@@ -40,6 +44,10 @@ export default class View3d extends React.Component {
                 <div className={ls.overlayingPanel} >
                   <Scope><SketchObjectExplorer /></Scope>
                   <Scope><ConstraintExplorer /></Scope>
+                  <Scope><ContextualControls /></Scope>
+                  <Scope><ConstraintEditor /></Scope>
+                  <Scope><SketcherOperationWizard /></Scope>
+                  <Scope><StageControl /></Scope>
                 </div>
               </InplaceSketcher>
             </SketcherMode>
