@@ -17,6 +17,7 @@ import {NurbsObject} from './shapes/nurbsObject';
 import {AlgNumConstraint} from "./constr/ANConstraints";
 import {SketchGenerator} from "./generators/sketchGenerator";
 import {SketchTypes} from "./shapes/sketch-types";
+import {NOOP} from "../../../modules/gems/func";
 
 const Types = SketchTypes;
 
@@ -84,16 +85,17 @@ IO.prototype._loadSketch = function(sketch) {
   }
   const version = sketch.version || 1;
   let T = Types;
-  let maxEdge = 0;
   let sketchLayers = sketch.layers;
   let boundary = sketch.boundary;
-  let boundaryNeedsUpdate = !(boundary === undefined || boundary == null);
+
   const dimensions = [];
   if (sketchLayers !== undefined) {
     for (let l = 0; l < sketchLayers.length; ++l) {
       let ioLayer = sketchLayers[l];
       let layerName = ioLayer.name;
-      let boundaryProcessing = layerName === IO.BOUNDARY_LAYER_NAME && boundaryNeedsUpdate;
+      if (layerName === IO.BOUNDARY_LAYER_NAME) {
+        continue;
+      }
       let layer = getLayer(this.viewer, layerName);
       // if (!!ioLayer.style) layer.style = ioLayer.style;
       layer.readOnly = !!ioLayer.readOnly;
@@ -108,12 +110,6 @@ IO.prototype._loadSketch = function(sketch) {
         //support legacy format
         if (!role) {
           role = layerName === '_construction_' ? 'construction' : null;
-        }
-        
-        if (boundaryProcessing) {
-          if (_class === T.SEGMENT && boundary.lines.length === 0) continue;
-          else if (_class === T.ARC && boundary.arcs.length === 0) continue;
-          else if (_class === T.CIRCLE && boundary.circles.length === 0) continue;
         }
         
         if (_class === T.SEGMENT) {
@@ -159,10 +155,6 @@ IO.prototype._loadSketch = function(sketch) {
           getStage(obj.stage).assignObject(skobj);
           if (!aux) skobj.stabilize(this.viewer);
           if (aux) skobj.accept(function(o){o.aux = true; return true;});
-          if (obj.edge !== undefined) {
-            skobj.edge = obj.edge;
-            maxEdge = Math.max(maxEdge, skobj.edge);
-          }
           layer.add(skobj);
           index[obj.id] = skobj;
           
@@ -174,11 +166,6 @@ IO.prototype._loadSketch = function(sketch) {
               index[childrenIds[childIdx]] = children[childIdx];
             }
           }
-        }
-        if (boundaryProcessing) {
-          if (_class === T.SEGMENT) this.synchLine(skobj, boundary.lines.shift());
-          else if (_class === T.ARC) this.synchArc(skobj, boundary.arcs.shift());
-          else if (_class === T.CIRCLE) this.synchCircle(skobj, boundary.circles.shift());
         }
       }
     }
@@ -212,8 +199,8 @@ IO.prototype._loadSketch = function(sketch) {
     }
   }
 
-  if (boundaryNeedsUpdate) {
-    this.addNewBoundaryObjects(boundary, maxEdge);
+  if (boundary) {
+    this.createBoundaryObjects(boundary);
   }
 
   if (sketch.constraints && !sketch.stages) {
@@ -284,8 +271,9 @@ IO.prototype.synchCircle = function(skobj, edgeObj) {
   skobj.r.set(edgeObj.r);
 };
 
-IO.prototype.addNewBoundaryObjects = function(boundary, maxEdge) {
-  var boundaryLayer = this.viewer.findLayerByName(IO.BOUNDARY_LAYER_NAME);
+IO.prototype.createBoundaryObjects = function(boundary) {
+  const groundStage = this.viewer.parametricManager.groundStage;
+  let boundaryLayer = this.viewer.findLayerByName(IO.BOUNDARY_LAYER_NAME);
 
   if (boundaryLayer === null) {
     boundaryLayer = this.viewer.createLayer(IO.BOUNDARY_LAYER_NAME, Styles.BOUNDS);
@@ -295,49 +283,55 @@ IO.prototype.addNewBoundaryObjects = function(boundary, maxEdge) {
   boundaryLayer.readOnly = true;
   boundaryLayer.style = Styles.BOUNDS;
 
-  var i, obj, id = maxEdge + 1;
-  function __processAux(obj) {
-    obj.edge = id ++;
-    obj.accept(function(o){
-      o.aux = true;
-      return true;
+  let i, obj;
+  function setId(obj, id) {
+    obj.id = id;
+    let counter = 0;
+    obj.accept(child => {
+      if (child !== obj) {
+        child.id = id + '/' + (++counter);
+      }
     });
+    obj.visitParams(param => {
+      param.set = NOOP;
+    });
+    obj.stage = groundStage;
   }
 
   for (i = 0; i < boundary.lines.length; ++i) {
-    var edge = boundary.lines[i];
-    var seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, boundaryLayer);
-    __processAux(seg);
+    let edge = boundary.lines[i];
+    let seg = this.viewer.addSegment(edge.a.x, edge.a.y, edge.b.x, edge.b.y, boundaryLayer);
+    setId(seg, edge.id);
   }
   for (i = 0; i < boundary.arcs.length; ++i) {
-    var a = boundary.arcs[i];
-    var arc = new Arc(
+    const a = boundary.arcs[i];
+    const arc = new Arc(
       new EndPoint(a.a.x, a.a.y),
       new EndPoint(a.b.x, a.b.y),
       new EndPoint(a.c.x, a.c.y)
     );
     boundaryLayer.objects.push(arc);
-    __processAux(arc);
+    setId(arc, a.id);
   }
   for (i = 0; i < boundary.circles.length; ++i) {
     obj = boundary.circles[i];
-    var circle = new Circle(new EndPoint(obj.c.x, obj.c.y));
+    const circle = new Circle(new EndPoint(obj.c.x, obj.c.y));
     circle.r.set(obj.r);
     boundaryLayer.objects.push(circle);
-    __processAux(circle);
+    setId(circle, obj.id);
   }
   for (i = 0; i < boundary.nurbses.length; ++i) {
     let nurbsData = boundary.nurbses[i];
     let nurbs = new NurbsObject(NurbsCurve.deserialize(nurbsData), new EndPoint(), new EndPoint());
     boundaryLayer.objects.push(nurbs);
-    __processAux(nurbs);
+    setId(nurbs, nurbsData.id);
   }
 };
 
 IO.prototype.cleanUpData = function() {
   for (var l = 0; l < this.viewer.layers.length; ++l) {
     var layer = this.viewer.layers[l];
-    if (layer.objects.length != 0) {
+    if (layer.objects.length !== 0) {
       layer.objects = [];
     }
   }
@@ -362,6 +356,9 @@ IO.prototype._serializeSketch = function(metadata) {
     var layers = toSave[t];
     for (var l = 0; l < layers.length; ++l) {
       var layer = layers[l];
+      if (layer.name === IO.BOUNDARY_LAYER_NAME) {
+        continue;
+      }
       var toLayer = {name : layer.name, readOnly: layer.readOnly, data : []};
       sketch.layers.push(toLayer);
       for (var i = 0; i < layer.objects.length; ++i) {

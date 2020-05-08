@@ -121,7 +121,7 @@ export function activate(ctx) {
     let data = sketch === null ? {} : JSON.parse(sketch);
 
     data.boundary = getSketchBoundaries(sceneFace);
-    services.storage.set(sketchStorageKey, JSON.stringify(data));
+    services.storage.set(sketchStorageKey, JSON.stringify(data), true);
   }
 
   let inPlaceEditor = new InPlaceSketcher(ctx);
