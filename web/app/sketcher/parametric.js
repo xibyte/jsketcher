@@ -30,6 +30,8 @@ class ParametricManager {
 
   $constantDefinition = state('');
 
+  groundStage = new SolveStage(this);
+
   constructor(viewer) {
     this.viewer = viewer;
 
