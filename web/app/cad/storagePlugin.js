@@ -1,18 +1,18 @@
 import {stream} from '../../../modules/lstream';
 
+const updates$ = stream();
+
 export function defineStreams(ctx) {
   ctx.streams.storage = {
-    update: stream()
+    update: updates$.throttle(100)
   }
 }
 
 export function activate({services, streams}) {
 
-  function set(key, value, quiet) {
+  function set(key, value) {
+    console.log("Saving: " + key);
     localStorage.setItem(key, value);
-    if (!quiet) {
-      notify(key);
-    }
   }
 
   function get(key) {
@@ -32,7 +32,7 @@ export function activate({services, streams}) {
   }
   
   function notify(key) {
-    streams.storage.update.next({
+    updates$.next({
       key,
       timestamp: Date.now
     });
