@@ -18,8 +18,8 @@ export function activate(context) {
   const sketchNamespace = id + SKETCH_SUFFIX; 
   const sketchStorageNamespace = PROJECTS_PREFIX + sketchNamespace;
 
-  function sketchStorageKey(faceId) {
-    return sketchStorageNamespace + faceId;
+  function sketchStorageKey(sketchIdId) {
+    return sketchStorageNamespace + sketchIdId;
   }
 
   function projectStorageKey() {
