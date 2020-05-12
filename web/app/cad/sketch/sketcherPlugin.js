@@ -68,30 +68,48 @@ export function activate(ctx) {
       return null;
     }
 
-    let signature = services.expressions.signature;
-    if (savedSketch && (!savedSketch.metadata || savedSketch.expressionsSignature !== signature)) {
-      try {
-        const viewer = new Viewer(headlessCanvas, IO);
-        viewer.parametricManager.externalConstantResolver = services.expressions.evaluateExpression;
-        viewer.historyManager.init(savedSketch);
-        viewer.io.loadSketch(savedSketch);
-        viewer.parametricManager.refresh();
-        services.storage.set(services.project.sketchStorageKey(sketchId), viewer.io.serializeSketch({
-          expressionsSignature: signature
-        }), true);
-        savedSketch = getSketchData(sketchId);
-      } catch (e) {
-        console.error(e);
-        return null;
-      }
-    }
-
-
     try {
       return ReadSketch(JSON.parse(savedSketch), sketchId, true);  
     } catch (e) {
       console.error(e);
       return null;
+    }
+  }
+
+  function reevaluateAllSketches() {
+    let allShells = services.cadRegistry.getAllShells();
+    allShells.forEach(mShell => mShell.faces.forEach(mFace => reevaluateSketch(mFace.defaultSketchId)));
+  }
+
+  function reevaluateSketch(sketchId) {
+    let savedSketch = getSketchData(sketchId);
+    if (savedSketch === null) {
+      return null;
+    }
+
+    let sketch;
+    try {
+      sketch = JSON.parse(savedSketch);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+
+    let signature = services.expressions.signature;
+    if (sketch && (!sketch.metadata || sketch.metadata.expressionsSignature !== signature)) {
+      try {
+        const viewer = new Viewer(headlessCanvas, IO);
+        viewer.parametricManager.externalConstantResolver = services.expressions.evaluateExpression;
+        // viewer.historyManager.init(savedSketch);
+        viewer.io._loadSketch(sketch);
+        viewer.parametricManager.refresh();
+        services.storage.set(services.project.sketchStorageKey(sketchId), viewer.io.serializeSketch({
+          expressionsSignature: signature
+        }));
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
     }
   }
 
@@ -121,7 +139,7 @@ export function activate(ctx) {
     let data = sketch === null ? {} : JSON.parse(sketch);
 
     data.boundary = getSketchBoundaries(sceneFace);
-    services.storage.set(sketchStorageKey, JSON.stringify(data), true);
+    services.storage.set(sketchStorageKey, JSON.stringify(data));
   }
 
   let inPlaceEditor = new InPlaceSketcher(ctx);
@@ -163,7 +181,7 @@ export function activate(ctx) {
     if (inPlaceEditor.viewer !== null) {
       inPlaceEditor.viewer.parametricManager.refresh();
     }
-    updateAllSketches();
+    reevaluateAllSketches();
   });
 
 
