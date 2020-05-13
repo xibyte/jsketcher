@@ -22,7 +22,13 @@ export function activate({streams, services}) {
   
   // let sketcher3D = new Sketcher3D(dom.viewerContainer);
   // services.viewer.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
-  
+
+  document.addEventListener('contextmenu', e => {
+    if (e.target.closest('#viewer-container')) {
+      e.preventDefault();
+    }
+  });
+
 }
 
 export function dispose(ctx) {

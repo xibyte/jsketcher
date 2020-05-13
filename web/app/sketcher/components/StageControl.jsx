@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {useStreamWithUpdater} from "../../../../modules/ui/effects";
-import ls from "./ContextualControls.less";
+import ls from "./StageControl.less";
 import {SketcherAppContext} from "./SketcherAppContext";
 
 export function StageControl() {
@@ -16,7 +16,7 @@ export function StageControl() {
   const createStage = () => viewer.parametricManager.newStage();
 
 
-  return  <div className={ls.root}>
+  return <div className={ls.root}>
     {stages.list.map((stage, i) => <div key={stage.index}><button onClick={() => setStage(i)}>{i}.</button></div>)}
     <div><button onClick={createStage}>+</button></div>
   </div>

@@ -45,6 +45,11 @@ export default class View3d extends React.Component {
                   <Scope><SketchObjectExplorer /></Scope>
                   <Scope><ConstraintExplorer /></Scope>
                 </div>
+                <div className={ls.sketcherViewport} >
+                  <Scope><ContextualControls /></Scope>
+                  <Scope><ConstraintEditor leftOffset/></Scope>
+                  <Scope><SketcherOperationWizard /></Scope>
+                </div>
               </InplaceSketcher>
             </SketcherMode>
             <div className={ls.wizardArea} >
@@ -61,17 +66,6 @@ export default class View3d extends React.Component {
         </div>
       </div>
       <SelectedModificationInfo />
-      <SketcherMode>
-        <InplaceSketcher>
-
-          <Scope><ContextualControls /></Scope>
-          <Scope><ConstraintEditor /></Scope>
-          <Scope><SketcherOperationWizard /></Scope>
-          <Scope><StageControl /></Scope>
-
-        </InplaceSketcher>
-      </SketcherMode>
-
     </UISystem>;
   }
 
