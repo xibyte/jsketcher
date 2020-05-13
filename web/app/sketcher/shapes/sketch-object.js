@@ -65,7 +65,7 @@ export class SketchObject extends Shape {
 
   traverse(visitor) {
     for (let child of this.children) {
-      child.accept(visitor);
+      child.traverse(visitor);
     }
     visitor(this);
   }
