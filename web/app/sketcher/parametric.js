@@ -205,6 +205,11 @@ class ParametricManager {
     this.refresh();
   };
 
+  _removeConstraint(constr) {
+    constr.stage.algNumSystem.removeConstraint(constr);
+    constr.annotations.forEach(ann => ann.layer.remove(ann));
+  };
+
   removeGenerator(generator) {
     this.viewer.deselectAll();
     this.startTransaction();
@@ -244,16 +249,27 @@ class ParametricManager {
       return;
     }
 
-    obj.traverse(o => o.constraints.forEach(c => c.stage.algNumSystem._removeConstraint(c)));
+    obj.traverse(o => o.constraints.forEach(c => this._removeConstraint(c)));
 
     if (obj.layer != null) {
       obj.layer.remove(obj);
     }
+
     obj.traverse(co => co.generators.forEach(gen => {
       gen.removeObject(co, o => this._removeObject(o, true), () => this._removeGenerator(gen));
     }));
     obj.constraints.clear();
     obj.generators.clear();
+
+    this.viewer.dimLayer.traverse(dim => {
+      obj.accept(o => {
+        if (dim.dependsOn && dim.dependsOn(o)) {
+          this._removeObject(dim);
+          return false;
+        }
+        return true;
+      });
+    });
   };
 
   invalidate() {

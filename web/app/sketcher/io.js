@@ -48,7 +48,7 @@ IO.prototype._loadSketch = function(sketch) {
     const [id, [xref, x], [yref, y]] = p;
     let ep = index[id];
     if (ep !== undefined) {
-      return;
+      return ep;
     }
     ep = new EndPoint(x, y);
     index[xref] = ep.params.x;
@@ -93,7 +93,7 @@ IO.prototype._loadSketch = function(sketch) {
     for (let l = 0; l < sketchLayers.length; ++l) {
       let ioLayer = sketchLayers[l];
       let layerName = ioLayer.name;
-      if (layerName === IO.BOUNDARY_LAYER_NAME) {
+      if (layerName === IO.BOUNDARY_LAYER_NAME && boundary) {
         continue;
       }
       let layer = getLayer(this.viewer, layerName);
@@ -366,51 +366,55 @@ IO.prototype._serializeSketch = function(metadata) {
         if (obj.isAnnotation) {
           continue;
         }
-        const to = {id: obj.id, _class: obj._class, role: obj.role};
-        if (obj.aux) to.aux = obj.aux;
-        if (obj.edge !== undefined) to.edge = obj.edge;
-        to.stage = this.viewer.parametricManager.getStageIndex(obj.stage);
-        toLayer.data.push(to);
-        if (obj._class === T.SEGMENT) {
-          to.points = [point(obj.a), point(obj.b)];
-        } else if (obj._class === T.POINT) {
-          to.location = point(obj);
-        } else if (obj._class === T.ARC) {
-          to.points = [point(obj.a), point(obj.b), point(obj.c)];
-        } else if (obj._class === T.CIRCLE) {
-          to.c = point(obj.c);
-          to.r = obj.r.get();
-        } else if (obj._class === T.ELLIPSE) {
-          to.ep1 = point(obj.ep1);
-          to.ep2 = point(obj.ep2);
-          to.r = obj.r.get();
-        } else if (obj._class === T.ELL_ARC) {
-          to.ep1 = point(obj.ep1);
-          to.ep2 = point(obj.ep2);
-          to.a = point(obj.a);
-          to.b = point(obj.b);
-          to.r = obj.r.get();
-        } else if (obj._class === T.BEZIER) {
-          to.a = point(obj.a);
-          to.b = point(obj.b);
-          to.cp1 = point(obj.cp1);
-          to.cp2 = point(obj.cp2);
-        } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
-          to.a = obj.a.id;
-          to.b = obj.b.id;
-          to.offset = obj.offset;
-        } else if (obj._class === T.DDIM) {
-          to.obj = obj.obj.id;
-          to.angle = obj.angle;
-        } else if (obj._class === T.ANGLE_BW) {
-          to.a = obj.a.id;
-          to.b = obj.b.id;
-          to.offset = obj.offset;
-          to.configuration = obj.configuration.map(o => o.id);
-        }
-        const children = nonPointChildren(obj).map(c => c.id);
-        if (children.length !== 0) {
-          to.children = children;
+        try {
+          const to = {id: obj.id, _class: obj._class, role: obj.role};
+          if (obj.aux) to.aux = obj.aux;
+          if (obj.edge !== undefined) to.edge = obj.edge;
+          to.stage = this.viewer.parametricManager.getStageIndex(obj.stage);
+          if (obj._class === T.SEGMENT) {
+            to.points = [point(obj.a), point(obj.b)];
+          } else if (obj._class === T.POINT) {
+            to.location = point(obj);
+          } else if (obj._class === T.ARC) {
+            to.points = [point(obj.a), point(obj.b), point(obj.c)];
+          } else if (obj._class === T.CIRCLE) {
+            to.c = point(obj.c);
+            to.r = obj.r.get();
+          } else if (obj._class === T.ELLIPSE) {
+            to.ep1 = point(obj.ep1);
+            to.ep2 = point(obj.ep2);
+            to.r = obj.r.get();
+          } else if (obj._class === T.ELL_ARC) {
+            to.ep1 = point(obj.ep1);
+            to.ep2 = point(obj.ep2);
+            to.a = point(obj.a);
+            to.b = point(obj.b);
+            to.r = obj.r.get();
+          } else if (obj._class === T.BEZIER) {
+            to.a = point(obj.a);
+            to.b = point(obj.b);
+            to.cp1 = point(obj.cp1);
+            to.cp2 = point(obj.cp2);
+          } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+            to.a = obj.a.id;
+            to.b = obj.b.id;
+            to.offset = obj.offset;
+          } else if (obj._class === T.DDIM) {
+            to.obj = obj.obj.id;
+            to.angle = obj.angle;
+          } else if (obj._class === T.ANGLE_BW) {
+            to.a = obj.a.id;
+            to.b = obj.b.id;
+            to.offset = obj.offset;
+            to.configuration = obj.configuration.map(o => o.id);
+          }
+          const children = nonPointChildren(obj).map(c => c.id);
+          if (children.length !== 0) {
+            to.children = children;
+          }
+          toLayer.data.push(to);
+          } catch (e) {
+          console.error(e);
         }
       }
     }

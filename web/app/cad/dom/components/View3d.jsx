@@ -44,10 +44,6 @@ export default class View3d extends React.Component {
                 <div className={ls.overlayingPanel} >
                   <Scope><SketchObjectExplorer /></Scope>
                   <Scope><ConstraintExplorer /></Scope>
-                  <Scope><ContextualControls /></Scope>
-                  <Scope><ConstraintEditor /></Scope>
-                  <Scope><SketcherOperationWizard /></Scope>
-                  <Scope><StageControl /></Scope>
                 </div>
               </InplaceSketcher>
             </SketcherMode>
@@ -65,6 +61,17 @@ export default class View3d extends React.Component {
         </div>
       </div>
       <SelectedModificationInfo />
+      <SketcherMode>
+        <InplaceSketcher>
+
+          <Scope><ContextualControls /></Scope>
+          <Scope><ConstraintEditor /></Scope>
+          <Scope><SketcherOperationWizard /></Scope>
+          <Scope><StageControl /></Scope>
+
+        </InplaceSketcher>
+      </SketcherMode>
+
     </UISystem>;
   }
 

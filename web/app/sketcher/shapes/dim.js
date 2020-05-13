@@ -82,7 +82,11 @@ class LinearDimension extends SketchObject {
   
   getA() { return this.a }
   getB() { return this.b }
-  
+
+  dependsOn(obj) {
+    return this.a === obj || this.b === obj;
+  }
+
   drawImpl(ctx, scale, viewer) {
 
     const marked = this.markers.length !== 0;

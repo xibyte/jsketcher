@@ -55,7 +55,7 @@ export class InPlaceSketcher {
   }
 
   get sketchStorageKey() {
-    return this.ctx.services.project.sketchStorageKey(this.face.id);
+    return this.ctx.services.project.sketchStorageKey(this.face.defaultSketchId);
   }
 
   exit() {

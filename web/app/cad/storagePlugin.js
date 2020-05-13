@@ -13,6 +13,7 @@ export function activate({services, streams}) {
   function set(key, value) {
     console.log("Saving: " + key);
     localStorage.setItem(key, value);
+    notify(key);
   }
 
   function get(key) {
