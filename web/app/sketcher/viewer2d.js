@@ -19,10 +19,6 @@ class Viewer {
 
   constructor(canvas, IO) {
 
-    // 1/1000'' aka 1 mil is a standard precision for the imperial system(for engeneering) 
-    // this precision also covers the metric system which is supposed to be ~0.01
-    // this field is used only for displaying purposes now, although in future it could be
-    // used to keep all internal data with such precision transforming the input from user
     this.presicion = 3;
     this.canvas = canvas;
     this.io = new IO(this);
@@ -384,6 +380,15 @@ class Viewer {
     }
   };
 
+  //same as accept but without controlling when to break the flow
+  traverse(visitor) {
+    for (let layer of this.layers) {
+      for (let object of layer.objects) {
+        object.traverse(visitor);
+      }
+    }
+  }
+
   findLayerByName(name) {
     for (var i = 0; i < this.layers.length; i++) {
       if (this.layers[i].name == name) {
@@ -608,6 +613,10 @@ class Layer {
       this._addAndNotify(object);
     }
   };
+
+  traverse(callback) {
+    this.objects.forEach(o => o.traverse(callback));
+  }
   
   _addAndNotify(object) {
     if (this.viewer.addingRoleMode) {
