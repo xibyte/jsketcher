@@ -6,6 +6,8 @@ import cx from 'classnames';
 import {editConstraint} from "./ConstraintEditor";
 import {NoIcon} from "../icons/NoIcon";
 import {SketcherAppContext} from "./SketcherAppContext";
+import {StageControl} from "./StageControl";
+import {Scope} from "./Scope";
 
 export function ConstraintExplorer(props) {
   return <React.Fragment>
@@ -24,6 +26,9 @@ export function ConstraintList() {
   let i = 0;
 
   return <React.Fragment>
+    <div className={ls.titleBar}>Stages</div>
+    <Scope><StageControl /></Scope>
+
     {constraints.map((c) => {
       if (c.internal) {
         return null;
@@ -36,7 +41,6 @@ export function ConstraintList() {
       i ++;
       return <GeneratorButton prefix={i+'.'} generator={c} key={c.id}/>
     })}
-
   </React.Fragment>
 }
 
