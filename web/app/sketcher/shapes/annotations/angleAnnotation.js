@@ -1,4 +1,4 @@
-import {AngleBetweenDimension, DiameterDimension, Dimension} from "../dim";
+import {AngleBetweenDimension, DiameterDimension, LinearDimension} from "../dim";
 import {Styles} from "../../styles";
 
 export class AngleBetweenAnnotation extends AngleBetweenDimension {
@@ -22,6 +22,8 @@ export class AngleBetweenAnnotation extends AngleBetweenDimension {
     this.offset = params.offset;
   }
 }
+
+AngleBetweenAnnotation.prototype.TYPE = 'AngleBetweenAnnotation';
 
 AngleBetweenAnnotation.prototype._class = 'TCAD.TWO.AngleBetweenAnnotation';
 
@@ -85,10 +87,10 @@ export class AngleAbsoluteAnnotation extends AngleBetweenDimension {
   }
 }
 
-AngleAbsoluteAnnotation.prototype._class = 'TCAD.TWO.AngleAbsoluteAnnotation';
+AngleAbsoluteAnnotation.prototype._class = 'AngleAbsoluteAnnotation';
 
 
-export class LengthAnnotation extends Dimension {
+export class LengthAnnotation extends LinearDimension {
 
   constructor(segment, constraint) {
     super(segment.a, segment.b);
@@ -109,6 +111,8 @@ export class LengthAnnotation extends Dimension {
     this.offset = params.offset;
   }
 }
+
+LengthAnnotation.prototype.TYPE = 'LengthAnnotation';
 
 LengthAnnotation.prototype._class = 'TCAD.TWO.LengthAnnotation';
 
@@ -133,5 +137,7 @@ export class RadiusLengthAnnotation extends DiameterDimension {
     this.angle = params.angle;
   }
 }
+
+RadiusLengthAnnotation.prototype.TYPE = 'RadiusLengthAnnotation';
 
 RadiusLengthAnnotation.prototype._class = 'TCAD.TWO.RadiusLengthAnnotation';

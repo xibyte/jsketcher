@@ -31,8 +31,14 @@ export class BezierCurveTool extends Tool {
   mouseup(e) {
     if (this.curve == null) {
       this.checkIfConnectedToOtherCurve();
-      const p = this.endpoint(e);
-      this.curve = new BezierCurve(p, p.copy(), p.copy(), p.copy());
+
+      const p = this.viewer.screenToModel(e);
+
+      this.curve = new BezierCurve(p.x, p.y, p.x, p.y, p.x, p.y, p.x, p.y);
+      if (this.viewer.snapped != null) {
+        this.snapIfNeed(this.curve.a);
+      }
+
       this.viewer.activeLayer.add(this.curve);
       this.viewer.refresh();
     } else {

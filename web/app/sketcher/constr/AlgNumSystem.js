@@ -319,7 +319,7 @@ export class AlgNumSubSystem {
       });
 
       console.log('with respect to:');
-      this.substitutionOrder.forEach(x => console.log('X' + x.id + ' = ' + this.substitutedParams.get(x).toString()));
+      this.substitutionOrder.forEach(x => console.log(x.toString() + ' = ' + this.substitutedParams.get(x).toString()));
     }
   }
 

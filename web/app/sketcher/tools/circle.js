@@ -47,9 +47,7 @@ export class EditCircleTool extends Tool {
     this.viewer.historyManager.checkpoint();
     const needSnap = tryToSnap && this.viewer.snapped != null;
     const p = needSnap ? this.viewer.snapped : center;
-    this.circle = new Circle(
-      new EndPoint(p.x, p.y)
-    );
+    this.circle = new Circle(p.x, p.y);
     this.pointPicked(this.circle.c.x, this.circle.c.y);
     this.sendHint('specify radius');
     this.viewer.activeLayer.add(this.circle);

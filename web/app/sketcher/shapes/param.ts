@@ -3,6 +3,13 @@ import {Param as SolverParam} from '../constr/solver';
 
 export class Param {
 
+  id: number;
+  value: number;
+  solverParam: any;
+  private readonly debugSymbol: string;
+  normalizer: (number) => any;
+  enforceVisualLimit: boolean = false;
+
   constructor(value, debugSymbol) {
     this.id = Generator.genID();
     this.value = value;

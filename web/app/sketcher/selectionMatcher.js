@@ -70,7 +70,7 @@ export function getDescription(definition) {
 }
 
 function stringifyTypes(types, minQuantity) {
-  return types.map(t => t.prototype._class.replace('TCAD.TWO.', '') + (minQuantity > 1 ? 's' : '')).join(' or ');
+  return types.map(t => t.prototype.TYPE + (minQuantity > 1 ? 's' : '')).join(' or ');
 }
 
 export class MatchIndex {

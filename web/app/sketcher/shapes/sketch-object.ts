@@ -1,27 +1,32 @@
 import {Generator} from '../id-generator'
 import {Shape} from './shape'
 import {Styles} from "../styles";
-import {SketchTypes} from "./sketch-types";
+import {NoIcon} from "../icons/NoIcon";
+import {Layer, Viewer} from "../viewer2d";
 
-export class SketchObject extends Shape {
+export abstract class SketchObject extends Shape {
 
-  constructor() {
+  ref: string;
+  id: string;
+  parent: SketchObject = null;
+  markers: any[] = [];
+  children: SketchObject[] =[];
+  layer: Layer = null;
+  constraints: Set<any> = new Set();
+  readOnly: boolean = false;
+  fullyConstrained: boolean = false;
+  generator: any = null;
+  generators: Set<any> = new Set();
+  _stage: any = null;
+
+  constructor(id: string) {
     super();
-    this.id = Generator.genID();
-    this.parent = null;
-    this.markers = [];
-    this.children = [];
-    this.layer = null;
-    this.constraints = new Set();
-    this.readOnly = false;
-    this.fullyConstrained = false;
-    this.generator = null;
-    this.generators = new Set();
-    this._stage = null;
+    this.ref= Generator.genID();
+    this.id = id || this.ref;
   }
 
   get isGenerated() {
-    let obj = this;
+    let obj: SketchObject = this;
     while (obj) {
       if (obj.generator) {
         return true;
@@ -97,7 +102,7 @@ export class SketchObject extends Shape {
 
   translateImpl(dx, dy) {
     this.accept(function (obj) {
-      if (obj._class === 'TCAD.TWO.EndPoint') {
+      if (obj.TYPE === 'Point') {
         obj.translate(dx, dy);
       }
       return true;
@@ -120,7 +125,9 @@ export class SketchObject extends Shape {
     return this.markers.length !== 0;
   }
 
-  draw(ctx, scale, viewer) {
+  abstract drawImpl(ctx: CanvasRenderingContext2D, scale: number, viewer: Viewer);
+
+  draw(ctx: CanvasRenderingContext2D, scale: number, viewer: Viewer) {
     if (!this.visible) return;
     const customStyle = this.getCustomStyle();
     if (customStyle !== null) {
@@ -191,11 +198,11 @@ export class SketchObject extends Shape {
   }
   
   get simpleClassName() {
-    return this._class.replace('TCAD.TWO.', '');
+    return this.TYPE;
   }
   
   get effectiveLayer() {
-    let shape = this;
+    let shape: SketchObject = this;
     while (shape) {
       if (shape.layer) {
         return shape.layer;
@@ -215,7 +222,7 @@ export class SketchObject extends Shape {
   }
 
   ancestry(cb) {
-    let obj = this;
+    let obj: SketchObject = this;
     while (obj) {
       cb(obj);
       obj = obj.parent;
@@ -223,7 +230,7 @@ export class SketchObject extends Shape {
   }
 
   root() {
-    let obj = this;
+    let obj: SketchObject = this;
     while (obj.parent) {
       obj = obj.parent;
     }
@@ -233,11 +240,21 @@ export class SketchObject extends Shape {
   get isRoot() {
     return this.parent === null;
   }
+
+  get icon() {
+    return NoIcon;
+  }
+
+  abstract write(): SketchObjectSerializationData;
+}
+
+export interface SketchObjectSerializationData {
+
 }
 
 export function pointIterator(shape, func) {
   shape.accept(o => {
-    if (o._class === SketchTypes.POINT) {
+    if (o.TYPE === 'Point') {
       func(o);
     }
     return true;

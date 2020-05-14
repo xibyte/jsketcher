@@ -32,8 +32,8 @@ export class EllipseTool extends Tool {
   }
   
   newEllipse(p) {
-    const ep = () => new EndPoint(p.x, p.y);
-    return this.arc ? new EllipticalArc(ep(), ep(), ep(), ep()) : new Ellipse(ep(), ep());
+
+    return this.arc ? new EllipticalArc(p.x, p.y, p.x, p.y, p.x, p.y, p.x, p.y) : new Ellipse(p.x, p.y, p.x, p.y);
   }
   
   demoBPoint() {

@@ -62,58 +62,47 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
   }
   let vectorFactory = new VectorFactory();
   let pointsById = new Map();
-  function ReadSketchPoint(arr) {
-    let pointId = arr[0];
-    pointId = coiJoints.master(pointId);
-    let point = pointsById.get(pointId);
-    if (!point) {
-      point = vectorFactory.create(readSketchFloat(arr[1][1]), readSketchFloat(arr[2][1]), 0);
-      pointsById.set(pointId, point);
-    }
-    return point;
+  function ReadSketchPoint(pt) {
+    return vectorFactory.create(pt.x, pt.y, 0);
   }
-  if (sketch.layers !== undefined) {
-    for (let layer of sketch.layers) {
-      const isConstructionLayer = layer.name === "_construction_";
-      
-      for (let obj of layer.data) {
-        let isConstructionObject = isConstructionLayer || obj.role === 'construction';
-        if (isConstructionObject && !readConstructionSegments) continue;
-        // if (isConstructionObject && obj._class !== 'TCAD.TWO.Segment') continue;
-        
-        if (obj.edge !== undefined) continue;
-        if (!!obj.aux && obj.role !== 'virtual') continue;
-        if (obj._class === 'TCAD.TWO.Segment') {
-          const segA = ReadSketchPoint(obj.points[0]);
-          const segB = ReadSketchPoint(obj.points[1]);
-          const pushOn = isConstructionObject ? out.constructionSegments : out.connections;
-          pushOn.push(new sm.Segment(getID(obj), segA, segB));
-        } else if (obj._class === 'TCAD.TWO.Arc') {
-          const arcA = ReadSketchPoint(obj.points[0]);
-          const arcB = ReadSketchPoint(obj.points[1]);
-          const arcCenter = ReadSketchPoint(obj.points[2]);
-          out.connections.push(new sm.Arc(getID(obj), arcA, arcB, arcCenter));
-        } else if (obj._class === 'TCAD.TWO.EllipticalArc') {
-          const ep1 = ReadSketchPoint(obj.ep1);
-          const ep2 = ReadSketchPoint(obj.ep2);
-          const a = ReadSketchPoint(obj.a);
-          const b = ReadSketchPoint(obj.b);
-          out.connections.push(new sm.EllipticalArc(getID(obj), ep1, ep2, a, b, readSketchFloat(obj.r)));
-        } else if (obj._class === 'TCAD.TWO.BezierCurve') {
-          const a = ReadSketchPoint(obj.a);
-          const b = ReadSketchPoint(obj.b);
-          const cp1 = ReadSketchPoint(obj.cp1);
-          const cp2 = ReadSketchPoint(obj.cp2);
-          out.connections.push(new sm.BezierCurve(getID(obj), a, b, cp1, cp2));
-        } else if (obj._class === 'TCAD.TWO.Circle') {
-          const circleCenter = ReadSketchPoint(obj.c);
-          out.loops.push(new sm.Circle(getID(obj), circleCenter, readSketchFloat(obj.r)));
-        } else if (obj._class === 'TCAD.TWO.Ellipse') {
-          const ep1 = ReadSketchPoint(obj.ep1);
-          const ep2 = ReadSketchPoint(obj.ep2);
-          out.loops.push(new sm.Ellipse(getID(obj), ep1, ep2, readSketchFloat(obj.r)));
-        }
-      }
+  if (sketch.version !== 3) {
+    return out;
+  }
+  for (let obj of sketch.objects) {
+    let isConstructionObject = obj.role === 'construction';
+    if (isConstructionObject && !readConstructionSegments) continue;
+    // if (isConstructionObject && obj._class !== 'TCAD.TWO.Segment') continue;
+
+    const data = obj.data;
+    if (obj.type === 'Segment') {
+      const segA = ReadSketchPoint(data.a);
+      const segB = ReadSketchPoint(data.b);
+      const pushOn = isConstructionObject ? out.constructionSegments : out.connections;
+      pushOn.push(new sm.Segment(getID(obj), segA, segB));
+    } else if (obj.type === 'Arc') {
+      const arcA = ReadSketchPoint(data.a);
+      const arcB = ReadSketchPoint(data.b);
+      const arcCenter = ReadSketchPoint(data.c);
+      out.connections.push(new sm.Arc(getID(obj), arcA, arcB, arcCenter));
+    } else if (obj.type === 'EllipticalArc') {
+      const ep1 = ReadSketchPoint(data.ep1);
+      const ep2 = ReadSketchPoint(data.ep2);
+      const a = ReadSketchPoint(data.a);
+      const b = ReadSketchPoint(data.b);
+      out.connections.push(new sm.EllipticalArc(getID(obj), ep1, ep2, a, b, readSketchFloat(data.r)));
+    } else if (obj.type === 'BezierCurve') {
+      const a = ReadSketchPoint(data.cp1);
+      const b = ReadSketchPoint(data.cp4);
+      const cp1 = ReadSketchPoint(data.cp2);
+      const cp2 = ReadSketchPoint(data.cp3);
+      out.connections.push(new sm.BezierCurve(getID(obj), a, b, cp1, cp2));
+    } else if (obj.type === 'Circle') {
+      const circleCenter = ReadSketchPoint(data.c);
+      out.loops.push(new sm.Circle(getID(obj), circleCenter, readSketchFloat(data.r)));
+    } else if (obj.type === 'Ellipse') {
+      const ep1 = ReadSketchPoint(data.ep1);
+      const ep2 = ReadSketchPoint(data.ep2);
+      out.loops.push(new sm.Ellipse(getID(obj), ep1, ep2, readSketchFloat(data.r)));
     }
   }
   return out;

@@ -1,23 +1,28 @@
-import {SketchObject} from './sketch-object'
+import {SketchObject, SketchObjectSerializationData} from './sketch-object'
 import Vector from 'math/vector';
 import * as math from '../../math/math'
 import {DEG_RAD, makeAngle0_360} from '../../math/math'
 import {Param} from "./param";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
+import {EndPoint, SketchPointSerializationData} from "./point";
 
 export class Segment extends SketchObject {
 
-  constructor(a, b) {
-    super();
-    this.a = a;
-    this.b = b;
-    a.parent = this;
-    b.parent = this;
-    this.children.push(a, b);
-    this.params = {
-      ang: new Param(undefined, 'A'),
-      t: new Param(undefined, 'T')
-    };
+  a: EndPoint;
+  b: EndPoint;
+
+  params = {
+    ang: new Param(undefined, 'A'),
+    t: new Param(undefined, 'T')
+  };
+
+  constructor(x1:number, y1:number, x2:number, y2:number, id?: string) {
+    super(id);
+    this.a = new EndPoint(x1, y1, this.id + ':A');
+    this.b = new EndPoint(x2, y2, this.id + ':B');
+    this.a.parent = this;
+    this.b.parent = this;
+    this.children.push(this.a, this.b);
     this.params.ang.normalizer = makeAngle0_360;
     this.params.t.enforceVisualLimit = true;
     this.syncGeometry();
@@ -159,8 +164,31 @@ export class Segment extends SketchObject {
   }
 
   copy() {
-    return new Segment(this.a.copy(), this.b.copy());
+    return new Segment(this.a.x, this.a.y, this.b.x, this.b.y);
+  }
+
+  write(): SketchSegmentSerializationData {
+    return {
+      a: this.a.write(),
+      b: this.b.write()
+    }
+  }
+
+  static read(id: string, data: SketchSegmentSerializationData): Segment {
+    return new Segment(
+      data.a.x,
+      data.a.y,
+      data.b.x,
+      data.b.y,
+      id
+    )
   }
 }
 
+export interface SketchSegmentSerializationData extends SketchObjectSerializationData {
+  a: SketchPointSerializationData;
+  b: SketchPointSerializationData;
+}
+
 Segment.prototype._class = 'TCAD.TWO.Segment';
+Segment.prototype.TYPE = 'Segment';

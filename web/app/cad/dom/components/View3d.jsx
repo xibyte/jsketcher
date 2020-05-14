@@ -17,8 +17,8 @@ import {InplaceSketcher} from "../../sketch/components/InplaceSketcher";
 import {ContextualControls} from "../../../sketcher/components/ContextualControls";
 import {ConstraintEditor} from "../../../sketcher/components/ConstraintEditor";
 import SketcherOperationWizard from "../../../sketcher/components/SketcherOperationWizard";
-import {StageControl} from "../../../sketcher/components/StageControl";
-
+import {ToastContainer} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default class View3d extends React.Component {
 
@@ -28,6 +28,7 @@ export default class View3d extends React.Component {
 
   render() {
     return <UISystem className={ls.root}>
+      <ToastContainer />
       <FloatView />
       <div className={ls.mainArea} >
         <div id='viewer-container' key='viewer-container' />

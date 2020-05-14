@@ -18,7 +18,7 @@ export class OffsetTool extends LoopPickTool {
     const length = loopEdges.length;
 
     for (let obj of loopEdges) {
-      if (!SUPPORTED_OBJECTS.has(obj._class)) {
+      if (!SUPPORTED_OBJECTS.has(obj.TYPE)) {
         alert(obj._class + " isn't supported for offsets");
         return;
       }
@@ -43,14 +43,14 @@ export class OffsetTool extends LoopPickTool {
     for (let i = 0; i < length; ++i) {
       const edge = edges[i];
       const origEdge = loopEdges[i];
-      const edgeInverse = loopPoints[i] != origEdge.a;
-      const inverse = mainInverse != edgeInverse;
+      const edgeInverse = loopPoints[i] !== origEdge.a;
+      const inverse = mainInverse !== edgeInverse;
       
       this.viewer.activeLayer.add(edge);
-      if (edge._class == 'TCAD.TWO.Segment') {
+      if (edge.TYPE === 'Segment') {
         pm._add(new Constraints.Parallel(origEdge, edge));
         pm._add(new Constraints.P2LDistanceSigned(origEdge.a, inverse?edge.b:edge.a, inverse?edge.a:edge.b, offsetConstant));
-      } else if (edge._class == 'TCAD.TWO.Arc') {
+      } else if (edge.TYPE === 'Arc') {
         edge.stabilize(this.viewer);
         pm._linkObjects([edge.c, origEdge.c]);
         pm._add(new Constraints.RadiusOffset(inverse?origEdge:edge, inverse?edge:origEdge, offsetConstant));
@@ -59,13 +59,13 @@ export class OffsetTool extends LoopPickTool {
     
     for (let i = 0; i < edges.length; i++) {
       const next = ((i + 1) % edges.length);
-      if (loopEdges[i].a.linked.indexOf(loopEdges[next].a) != -1) {
+      if (loopEdges[i].a.linked.indexOf(loopEdges[next].a) !== -1) {
         pm._linkObjects([edges[i].a, edges[next].a]);
-      } else if (loopEdges[i].a.linked.indexOf(loopEdges[next].b) != -1) {
+      } else if (loopEdges[i].a.linked.indexOf(loopEdges[next].b) !== -1) {
         pm._linkObjects([edges[i].a, edges[next].b]);
-      } else if (loopEdges[i].b.linked.indexOf(loopEdges[next].a) != -1) {
+      } else if (loopEdges[i].b.linked.indexOf(loopEdges[next].a) !== -1) {
         pm._linkObjects([edges[i].b, edges[next].a]);
-      } else if (loopEdges[i].b.linked.indexOf(loopEdges[next].b) != -1) {
+      } else if (loopEdges[i].b.linked.indexOf(loopEdges[next].b) !== -1) {
         pm._linkObjects([edges[i].b, edges[next].b]);
       }
     }
@@ -76,10 +76,10 @@ export class OffsetTool extends LoopPickTool {
   
   twoConnectedArcs() {
     function isArc(edge) {
-      return edge._class == 'TCAD.TWO.Arc';
+      return edge._class === 'Arc';
     }
     const edges = this.pickedLoop.edges;
-    return edges.length == 2 && isArc(edges[0]) && isArc(edges[1]);
+    return edges.length === 2 && isArc(edges[0]) && isArc(edges[1]);
   }
 }
 
@@ -89,8 +89,8 @@ function segmentToVector(segment) {
 }
 
 const SUPPORTED_OBJECTS = new Set();
-SUPPORTED_OBJECTS.add('TCAD.TWO.Segment');
-SUPPORTED_OBJECTS.add('TCAD.TWO.Arc');
+SUPPORTED_OBJECTS.add('Segment');
+SUPPORTED_OBJECTS.add('Arc');
 
 function SimpleEdge(a, b) {
   this.a = a;

@@ -1,4 +1,10 @@
-import {AngleBetweenDimension, DiameterDimension, Dimension, findCenter, HDimension, VDimension,} from '../shapes/dim'
+import {
+  AngleBetweenDimension,
+  DiameterDimension,
+  findCenter,
+  HDimension, LinearDimension,
+  VDimension,
+} from '../shapes/dim'
 import Vector from 'math/vector';
 import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
@@ -69,7 +75,7 @@ export class AddDimTool extends Tool {
 
 export class AddFreeDimTool extends AddDimTool {
   constructor(viewer, layer) {
-    super('free dimension', viewer, layer, (a, b) => new Dimension(a, b));
+    super('free dimension', viewer, layer, (a, b) => new LinearDimension(a, b));
   }
 }
 
@@ -96,7 +102,7 @@ export class AddCircleDimTool extends Tool {
   mousemove(e) {
     var p = this.viewer.screenToModel(e);
     var objects = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []).filter(function (o) {
-      return o._class === 'TCAD.TWO.Circle' || o._class === 'TCAD.TWO.Arc';
+      return o.TYPE === 'Circle' || o.TYPE === 'Arc';
     });
 
     if (objects.length !== 0) {
@@ -137,7 +143,7 @@ export class AddAngleTool extends Tool {
   mousemove(e) {
     const p = this.viewer.screenToModel(e);
 
-    const result = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []).filter(o => o._class === 'TCAD.TWO.Segment');
+    const result = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []).filter(o => o.TYPE === 'Segment');
     const [segment] = result;
 
     if (this.dim) {

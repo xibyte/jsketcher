@@ -2,18 +2,19 @@ import {SketchObject} from './sketch-object'
 
 import * as math from '../../math/math';
 import {Param} from "./param";
+import {SketchSegmentSerializationData} from "./segment";
+import {EndPoint} from "./point";
 
 export class Ellipse extends SketchObject {
 
-  constructor(ep1, ep2) {
-    super();
-    this.ep1 = ep1;
-    this.ep2 = ep2;
+  constructor(x1, y1, x2, y2, r, id) {
+    super(id);
+    this.ep1 = new EndPoint(x1, y1, this.id + ':1');
+    this.ep2 = new EndPoint(x2, y2, this.id + ':2');
     this.addChild(this.ep1);
     this.addChild(this.ep2);
-    this.r = new Param(0, 'R');
+    this.r = new Param(r === undefined ? 0 : this.radiusX * 0.5, 'R');
     this.r.enforceVisualLimit = true;
-    this.r.set(this.radiusX * 0.5);
   }
 
   recoverIfNecessary() {
@@ -88,8 +89,29 @@ export class Ellipse extends SketchObject {
   static findMinorRadius(majorRadius, pntRadius, pntAngle) {
     return Math.abs( Math.sin(pntAngle) /  Math.sqrt(1 / sq(pntRadius) - sq(Math.cos(pntAngle) / majorRadius)) );
   }
+
+  write() {
+    return {
+      ep1: this.ep1.write(),
+      ep2: this.ep2.write(),
+      r: this.r.get()
+    };
+  }
+
+  static read(id, data) {
+    return new Ellipse(
+      data.ep1.x,
+      data.ep1.y,
+      data.ep2.x,
+      data.ep2.y,
+      data.r,
+      id
+    )
+  }
+
 }
 Ellipse.prototype._class = 'TCAD.TWO.Ellipse';
+Ellipse.prototype.TYPE = 'Ellipse';
 
 const sq = (a) => a * a;
 const RECOVER_LENGTH = 100;
