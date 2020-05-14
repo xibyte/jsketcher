@@ -34,7 +34,7 @@ export class LoopPickTool extends Tool {
   }
 
   otherEnd(point) {
-    if (point.parent.a.id == point.id) {
+    if (point.parent.a.id === point.id) {
       return point.parent.b;
     } else {
       return point.parent.a;
@@ -45,8 +45,8 @@ export class LoopPickTool extends Tool {
     this.loops.clear();
     const points = [];
     this.viewer.accept((obj) => {
-      if (obj._class == 'TCAD.TWO.EndPoint' && obj.parent && 
-          obj.parent.a && obj.parent.b && (obj.parent.a == obj || obj.parent.b == obj)) {
+      if (obj.TYPE === 'Point' && obj.parent &&
+          obj.parent.a && obj.parent.b && (obj.parent.a === obj || obj.parent.b === obj)) {
         points.push(obj);
       }
       return true;
@@ -68,7 +68,7 @@ export class LoopPickTool extends Tool {
         return points.length;
       }
     };
-    const loopPoints = Graph.findAllLoops(graph, (p) => p.id, (a, b) => a.id == b.id);
+    const loopPoints = Graph.findAllLoops(graph, (p) => p.id, (a, b) => a.id === b.id);
     const loops = loopPoints.map(l => this.cleanLoop(l));
     for (let loop of loops) {
       for (let point of loop.points) {

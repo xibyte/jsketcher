@@ -60,9 +60,9 @@ export class AddArcTool extends Tool {
   createArcStep(p) {
     this.viewer.historyManager.checkpoint();
     this.arc = new Arc(
-      new EndPoint(p.x, p.y),
-      new EndPoint(p.x, p.y),
-      new EndPoint(p.x, p.y)
+      p.x, p.y,
+      p.x, p.y,
+      p.x, p.y
     );
     this.point = this.arc.a;
     this.viewer.activeLayer.add(this.arc);

@@ -5,19 +5,23 @@ import {ConvexHull2D} from '../../math/convex-hull'
 
 import * as draw_utils from '../shapes/draw-utils'
 import * as math from '../../math/math';
+import {EndPoint} from "./point";
 
 
 export class BezierCurve extends SketchObject {
 
-  constructor(a, b, cp1, cp2) {
-    super();
-    this.a = a;
-    this.b = b;
-    this.cp1 = cp1;
-    this.cp2 = cp2;
+  constructor(ax, ay, bx, by, cp1x, cp1y, cp2x, cp2y, id) {
+    super(id);
+    const s1 = new Segment(ax, ay, cp1x, cp1y, this.id + ':1');
+    const s2 = new Segment(bx, by, cp2x, cp2y, this.id + ':2');
+    this.addChild(s1);
+    this.addChild(s2);
+
+    this.a = this.s1.a;
+    this.b = this.s2.b;
+    this.cp1 = this.s1.b;
+    this.cp2 = this.s2.a;
     
-    this.addChild(new Segment(a, cp1));
-    this.addChild(new Segment(b, cp2));
     for (let c of this.children) {
       c.role = 'objectConstruction';
     }
@@ -61,8 +65,8 @@ export class BezierCurve extends SketchObject {
     let hero = -1;
     for (let p = segments.length - 1, q = 0; q < segments.length; p = q ++) {
       const dist = Math.min(Segment.calcNormalDistance(aim, segments[p], segments[q]));
-      if (dist != -1) {
-        hero = hero == -1 ? dist : Math.min(dist, hero);
+      if (dist !== -1) {
+        hero = hero === -1 ? dist : Math.min(dist, hero);
       }
     }
     return hero;
@@ -91,7 +95,33 @@ export class BezierCurve extends SketchObject {
       ctx.stroke();
     }
   }
+
+  write() {
+    return {
+      cp1: this.a.write(),
+      cp2: this.cp1.write(),
+      cp3: this.cp2.write(),
+      cp4: this.b.write()
+    };
+  }
+
+  static read(id, data) {
+    return new BezierCurve(
+      data.cp1.x,
+      data.cp1.y,
+      data.cp2.x,
+      data.cp2.y,
+      data.cp3.x,
+      data.cp3.y,
+      data.cp4.x,
+      data.cp4.y,
+      id
+    )
+  }
 }
+
+BezierCurve.prototype.TYPE = 'BezierCurve';
+
 BezierCurve.prototype._class = 'TCAD.TWO.BezierCurve';
 
 const RECOVER_LENGTH = 100;

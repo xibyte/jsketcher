@@ -1,21 +1,30 @@
 import * as math from '../../math/math';
 import Vector from 'math/vector';
-import {SketchObject} from './sketch-object';
+import {SketchObject, SketchObjectSerializationData} from './sketch-object';
 import {Param} from "./param";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 import {makeAngle0_360} from "../../math/math";
+import {EndPoint, SketchPointSerializationData} from "./point";
 
 export class Arc extends SketchObject {
+
+  a: EndPoint;
+  b: EndPoint;
+  c: EndPoint;
+  r: Param;
+  ang1: Param;
+  ang2: Param;
   
-  constructor(a, b, c) {
-    super();
-    this.a = a;
-    this.b = b;
-    this.c = c;
-    a.parent = this;
-    b.parent = this;
-    c.parent = this;
-    this.children.push(a, b, c);
+  constructor(ax, ay, bx, by, cx, cy, id?: string) {
+    super(id);
+    this.a = new EndPoint(ax, ay, this.id + ':A');
+    this.b = new EndPoint(bx, by, this.id + ':B');
+    this.c = new EndPoint(cx, cy, this.id + ':C');
+
+    this.a.parent = this;
+    this.b.parent = this;
+    this.c.parent = this;
+    this.children.push(this.a, this.b, this.c);
 
     this.r = new Param(0, 'R');
     this.r.enforceVisualLimit = true;
@@ -153,7 +162,7 @@ export class Arc extends SketchObject {
   }
 
   copy() {
-    return new Arc(this.a.copy(), this.b.copy(), this.c.copy());
+    return new Arc(this.a.x, this.a.y, this.b.x, this.b.y, this.c.x, this.c.y);
   }
 
   mirror(dest, mirroringFunc) {
@@ -161,6 +170,34 @@ export class Arc extends SketchObject {
     this.b.mirror(dest.a, mirroringFunc);
     this.c.mirror(dest.c, mirroringFunc);
   }
+
+  write(): SketchArcSerializationData {
+    return {
+      a: this.a.write(),
+      b: this.b.write(),
+      c: this.c.write()
+    };
+  }
+
+  static read(id: string, data: SketchArcSerializationData): Arc {
+    return new Arc(
+      data.a.x,
+      data.a.y,
+      data.b.x,
+      data.b.y,
+      data.c.x,
+      data.c.y,
+      id
+    )
+  }
 }
+
+export interface SketchArcSerializationData extends SketchObjectSerializationData {
+  a: SketchPointSerializationData;
+  b: SketchPointSerializationData;
+  c: SketchPointSerializationData;
+}
+
+Arc.prototype.TYPE = 'Arc';
 
 Arc.prototype._class = 'TCAD.TWO.Arc';

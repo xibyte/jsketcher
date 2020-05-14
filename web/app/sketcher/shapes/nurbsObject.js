@@ -2,21 +2,18 @@ import {SketchObject} from './sketch-object'
 import * as vec from '../../math/vec';
 import {curveTessellate} from '../../brep/geom/impl/nurbs-ext';
 import {Ellipse} from "./ellipse";
+import {EndPoint} from "./point";
 
 const __v = [0, 0, 0];
 
 export class NurbsObject extends SketchObject {
 
-  constructor(curve, a, b) {
-    super();
+  constructor(curve, id) {
+    super(id);
     this.curve = curve;
-    this.a = a;
-    this.b = b;
     let cp = curve.data.controlPoints;
-    this.a.x = cp[0].x;
-    this.a.y = cp[0].y;
-    this.b.x = cp[cp.length - 1].x;
-    this.b.y = cp[cp.length - 1].y;
+    this.a = new EndPoint(cp[0].x, cp[0].y, this.id + ":A");
+    this.b = new EndPoint(cp[cp.length - 1].x, cp[cp.length - 1].y, this.id + ":B");
     this.bezierPieces = this.calcBezierPiecewise();
   }
 
@@ -90,3 +87,4 @@ export class NurbsObject extends SketchObject {
 }
 
 NurbsObject.prototype._class = 'TCAD.TWO.NurbsObject';
+NurbsObject.prototype.TYPE = 'NurbsObject';

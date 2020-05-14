@@ -68,7 +68,7 @@ export function SketchObjectExplorer() {
     <div className={ls.titleBar}>Objects</div>
     <div className={ls.scrollableArea}>
       {objects.map(o => <div key={o.id} className={cx(ls.objectItem, getClassName(o))}>
-        <span className={ls.objectIcon}><img width="15px" src='img/vec/pointOnArc.svg'/></span>
+        <span className={ls.objectIcon}><ObjectIcon object={o}/></span>
         {getObjectRole(o)}
         <span onClick={e => tweakSelection(o, e.shiftKey)}
               className={cx(ls.objectTag, o.marked && ls.selected)}>{o.simpleClassName} <span>{o.id}</span> </span>
@@ -79,8 +79,8 @@ export function SketchObjectExplorer() {
 }
 
 function ObjectIcon({object}) {
-
-  return null;
+  const Icon = object.icon;
+  return <Icon />;
 }
 
 function getClassName() {

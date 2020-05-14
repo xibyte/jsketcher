@@ -60,9 +60,9 @@ export class FilletTool extends Tool {
     vec._plus(point1);
   
     const arc = new Arc(
-      new EndPoint(point1.x, point1.y),
-      new EndPoint(point2.x, point2.y),
-      new EndPoint(vec.x, vec.y));
+      point1.x, point1.y,
+      point2.x, point2.y,
+      vec.x, vec.y);
     point1.parent.layer.add(arc);
     const pm = this.viewer.parametricManager;
 
@@ -127,7 +127,7 @@ export class FilletTool extends Tool {
   }
   
   static isLine(line) {
-    return line != null && line._class === 'TCAD.TWO.Segment';
+    return line != null && line.TYPE === 'Segment';
   }
 
   getCandidate(e) {

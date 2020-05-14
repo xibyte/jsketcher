@@ -1,21 +1,57 @@
-import {Styles} from './styles';
 import {ParametricManager} from './parametric';
 import {HistoryManager} from './history';
 import {ToolManager} from './tools/manager';
 import {PanTool} from './tools/pan';
 import {Segment} from './shapes/segment';
 import {EndPoint} from './shapes/point';
-import {Point} from './shapes/primitives';
 import {ReferencePoint} from './shapes/reference-point';
 import {BasisOrigin} from './shapes/basis-origin';
 import Vector from 'math/vector';
 
 import * as draw_utils from './shapes/draw-utils';
 import {Matrix3} from '../math/l3space';
-import sketcherStreams from './sketcherStreams';
-import {BBox} from "./io";
+import sketcherStreams, {SketcherStreams} from './sketcherStreams';
+import {BBox, IO} from "./io";
+import {NOOP} from "../../../modules/gems/func";
+import {Shape} from "./shapes/shape";
+import {SketchObject} from "./shapes/sketch-object";
+import {Styles} from './styles';
+import {Dimension} from "./shapes/dim";
 
-class Viewer {
+export class Viewer {
+
+  presicion: number;
+  canvas: any;
+  io: IO;
+  streams: SketcherStreams;
+  retinaPxielRatio: number;
+  ctx: CanvasRenderingContext2D;
+  onWindowResize: () => void;
+  private _activeLayer: Layer;
+  layers: Layer<SketchObject>[];
+  dimLayer: Layer<Dimension>;
+  annotationLayer: Layer<Dimension>;
+  dimLayers: Layer<Dimension>[];
+  private readonly _workspace: Layer[][];
+  referencePoint: Shape;
+  toolManager: any;
+  parametricManager: any;
+  translate: { x: number; y: number };
+  scale: number;
+  captured: {
+    highlight2: any[],
+    tool: any[],
+    highlight: any[],
+    selection: any[]
+  };
+  historyManager: any;
+  transformation: any;
+  screenToModelMatrix: any;
+  private readonly _serviceWorkspace: Layer<Shape>[][];
+  private __prevStyle: null;
+  interactiveScale: number;
+  unscale: number;
+  customSelectionHandler: any;
 
   constructor(canvas, IO) {
 
@@ -44,19 +80,15 @@ class Viewer {
     updateCanvasSize();
     window.addEventListener('resize', this.onWindowResize, false);
 
-    Object.defineProperty(this, "activeLayer", {
-      get: viewer.getActiveLayer,
-      set: viewer.setActiveLayer
-    });
-
     this.ctx = this.canvas.getContext("2d");
     this._activeLayer = null;
     this.layers = [
-      this.createLayer("sketch", Styles.DEFAULT)
+      this.createLayer(PREDEFINED_LAYERS.GROUND, Styles.DEFAULT),
+      this.createLayer(PREDEFINED_LAYERS.SKETCH, Styles.DEFAULT)
       // this.createLayer("_construction_", Styles.CONSTRUCTION) 
     ];
     this.dimLayer = this.createLayer("_dim", Styles.DIM);
-    this.annotationLayer = this.createLayer("_annotations", Styles.ANNOTATIONS);
+    this.annotationLayer = this.createLayer<Dimension>("_annotations", Styles.ANNOTATIONS);
     this.dimLayers = [this.dimLayer, this.annotationLayer];
     this.streams.dimScale.attach(() => this.refresh());
 
@@ -64,7 +96,6 @@ class Viewer {
 
     this.referencePoint = new ReferencePoint();
     this.referencePoint.visible = false;
-    this._serviceWorkspace = [this._createServiceLayers()];
 
     this.toolManager = new ToolManager(this, new PanTool(this));
     this.parametricManager = new ParametricManager(this);
@@ -72,14 +103,17 @@ class Viewer {
     this.translate = {x: 0.0, y: 0.0};
     this.scale = 1.0;
 
+    // @ts-ignore
     this.captured = {
     };
     Object.keys(CAPTURES).forEach(key => this.captured[key] = []);
 
-
     this.historyManager = new HistoryManager(this);
     this.transformation = null;
     this.screenToModelMatrix = null;
+
+    this._serviceWorkspace = [this._createServiceLayers()];
+
     this.refresh();
   }
 
@@ -123,9 +157,7 @@ class Viewer {
   };
 
   addSegment(x1, y1, x2, y2, layer) {
-    var a = new EndPoint(x1, y1);
-    var b = new EndPoint(x2, y2);
-    var line = new Segment(a, b);
+    var line = new Segment(x1, y1, x2, y2);
     layer.add(line);
     return line;
   };
@@ -199,14 +231,21 @@ class Viewer {
     return pickResult;
   };
 
-  _createServiceLayers() {
-    let layer = this.createLayer("_service", Styles.SERVICE);
+  _createServiceLayers(): Layer<Shape>[] {
+    let layer = this.createLayer<Shape>("_service", Styles.SERVICE);
 //  layer.objects.push(new CrossHair(0, 0, 20));
-    layer.objects.push(new Point(0, 0, 2));
+//  layer.objects.push(new Point(0, 0, 2));
     layer.objects.push(this.referencePoint);
     layer.objects.push(new BasisOrigin(null, this));
-    return [layer];
 
+    const origin = new EndPoint(0, 0);
+    origin.id = 'ORIGIN';
+    layer.objects.push(origin);
+    origin.stage = this.parametricManager.groundStage;
+    origin.visitParams(param => {
+      param.set = NOOP;
+    });
+    return [layer];
   };
 
   refresh() {
@@ -304,7 +343,7 @@ class Viewer {
     this.withdrawAll('tool')
   };
 
-  showBounds(x1, y1, x2, y2, offset) {
+  showBounds(x1, y1, x2, y2) {
     const dx = Math.max(x2 - x1, 1);
     const dy = Math.max(y2 - y1, 1);
     const cRatio = this.canvas.width / this.canvas.height;
@@ -383,9 +422,7 @@ class Viewer {
   //same as accept but without controlling when to break the flow
   traverse(visitor) {
     for (let layer of this.layers) {
-      for (let object of layer.objects) {
-        object.traverse(visitor);
-      }
+      layer.traverseSketchObjects(visitor)
     }
   }
 
@@ -409,6 +446,12 @@ class Viewer {
     });
     return result;
   };
+
+  createIndex() {
+    const index = {};
+    this.traverse(o => index[o.id] = o);
+    return index;
+  }
 
   select(objs, exclusive) {
     if (this.customSelectionHandler) {
@@ -474,7 +517,7 @@ class Viewer {
   }
 
   unHighlight(objs) {
-    this.withdrawAll('highlight', objs);
+    this.withdraw('highlight', objs);
   }
 
   pick(e) {
@@ -482,29 +525,25 @@ class Viewer {
     return this.search(m.x, m.y, DEFAULT_SEARCH_BUFFER, true, false, []);
   };
 
-  getActiveLayer() {
-    var layer = this._activeLayer;
+  get activeLayer() {
+    let layer = this._activeLayer;
     if (layer == null || layer.readOnly) {
       layer = null;
-      for (var i = 0; i < this.layers.length; i++) {
-        var l = this.layers[i];
+      for (let i = 0; i < this.layers.length; i++) {
+        let l = this.layers[i];
         if (!l.readOnly) {
           layer = l;
           break;
         }
       }
     }
-    if (layer == null) {
-      layer = this.createLayer("sketch", Styles.DEFAULT);
-      this.layers.push(layer);
-    }
-    return layer;
+    return this.findLayerByName(PREDEFINED_LAYERS.SKETCH);
   };
 
-  setActiveLayerName(layerName) {
+  set activeLayerName(layerName) {
     let layer = this.findLayerByName(layerName);
     if (layer) {
-      this.activeLayer = layer;
+      this._activeLayer = layer;
     } else {
       console.warn("layer doesn't exist: " + layerName);
     }
@@ -516,36 +555,13 @@ class Viewer {
     }
   };
 
-  equalizeLinkedEndpoints() {
-    const visited = new Set();
-
-    function equalize(obj) {
-      if (visited.has(obj.id)) return;
-      visited.add(obj.id);
-      for (let link of obj.linked) {
-        if (isEndPoint(link)) {
-          equalize(obj, link);
-          link.setFromPoint(obj);
-          equalize(link);
-        }
-      }
-    }
-
-    this.accept((obj) => {
-      if (isEndPoint(obj)) {
-        equalize(obj);
-      }
-      return true;
-    });
-  };
-
   fullHeavyUIRefresh() {
     this.refresh();
     this.parametricManager.notify();
   };
 
-  createLayer(name, style, onUpdate) {
-    return new Layer(name, style, this)
+  createLayer<T>(name, style) {
+    return new Layer<T>(name, style, this)
   };
 
   objectsUpdate = () => this.streams.objectsUpdate.next();
@@ -574,7 +590,14 @@ class Viewer {
 const isEndPoint = o => o._class === 'TCAD.TWO.EndPoint';
 const isConstruction = o => o.role === 'construction';
 
-class Layer {
+export class Layer<T = Shape> {
+
+  name: any;
+  style: any;
+  stylesByRoles: { virtual: any; objectConstruction: any; construction: any };
+  objects: T[];
+  readOnly: boolean;
+  viewer: Viewer;
 
   constructor(name, style, viewer) {
     this.name = name;
@@ -614,8 +637,12 @@ class Layer {
     }
   };
 
-  traverse(callback) {
-    this.objects.forEach(o => o.traverse(callback));
+  traverseSketchObjects(callback) {
+    this.objects.forEach(o => {
+      if (o instanceof SketchObject) {
+        o.traverse(callback)
+      }
+    });
   }
   
   _addAndNotify(object) {
@@ -653,4 +680,9 @@ const measurer = {x: 0, y: 0, z: 0};
 
 export const DEFAULT_SEARCH_BUFFER = 20;
 
-export {Viewer, Styles}
+export const PREDEFINED_LAYERS = {
+  SKETCH: "sketch",
+  GROUND: "ground",
+};
+
+export {Styles};

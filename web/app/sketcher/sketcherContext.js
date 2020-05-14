@@ -1,4 +1,4 @@
-import {Viewer} from './viewer2d.js'
+import {Viewer} from './viewer2d'
 import {IO} from './io'
 import React from "react";
 import {state, stream} from "lstream";

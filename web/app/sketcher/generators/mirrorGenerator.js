@@ -8,6 +8,7 @@ export const MirrorGeneratorSchema = {
   title: 'Mirror',
   description: 'Reflects objects off of a given line',
   icon: MirrorGeneratorIcon,
+  persistGeneratedObjects: true,
 
   params: [
     {
@@ -56,7 +57,7 @@ export const MirrorGeneratorSchema = {
     state.dir = new Vector();
   },
 
-  generate: (params, viewer, state, onCreate) => {
+  generate: (params, state) => {
 
     const {reflectionLine: [reflectionLine], objects} = params;
 
@@ -64,15 +65,12 @@ export const MirrorGeneratorSchema = {
 
     return objects.map(o => {
       const copy = o.copy();
-
-      onCreate(copy);
-      o.layer.add(copy);
       reflect(state.dir, reflectionLine, o, copy);
       return copy;
     });
   },
 
-  regenerate: (params, generatedObjects, viewer, state) => {
+  regenerate: (params, generatedObjects, state) => {
 
     const {reflectionLine: [reflectionLine], objects} = params;
 

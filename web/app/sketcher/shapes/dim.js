@@ -2,11 +2,11 @@ import * as math from '../../math/math'
 import * as vec from '../../math/vec'
 import {DEG_RAD, lineLineIntersection2d, makeAngle0_360, pointToLineSignedDistance} from '../../math/math'
 import Vector from 'math/vector';
-import {SketchObject} from './sketch-object'
 import {Styles} from "../styles";
 import {TextHelper} from "./textHelper";
 import {isInstanceOf} from "../actions/matchUtils";
 import {Arc} from "./arc";
+import {SketchObject} from "./sketch-object";
 
 const ARROW_W_PX = 15;
 const ARROW_H_PX = 4;
@@ -44,10 +44,17 @@ function drawExtensionLine(ctx, x, y, nx, ny, width, tip, arrowW) {
   ctx.stroke();
 }
 
-class LinearDimension extends SketchObject {
+export class Dimension extends SketchObject {
+
+  constructor(id) {
+    super(id);
+  }
+}
+
+export class LinearDimension extends Dimension {
   
-  constructor(a, b) {
-    super();
+  constructor(a, b, id) {
+    super(id);
     this.a = a;
     this.b = b;
     this.offset = 20;
@@ -210,23 +217,32 @@ class LinearDimension extends SketchObject {
     return Math.abs(sdist);
 
   }
-}
 
+  write() {
+    return {
+      a: this.a.id,
+      b: this.b.id,
+      offset: this.offset
+    }
+  }
 
-
-
-
-export class Dimension extends LinearDimension {
-  constructor(a, b) {
-    super(a, b);
+  static load(constr, id, data, index) {
+    const dim = new constr(
+      index[data.a],
+      index[data.b],
+      id
+    );
+    dim.offset = data.offset;
+    return dim;
   }
 }
-Dimension.prototype._class = 'TCAD.TWO.Dimension';
 
+LinearDimension.prototype._class = 'TCAD.TWO.LinearDimension';
+LinearDimension.prototype.TYPE = 'LinearDimension';
 
 export class HDimension extends LinearDimension {
-  constructor(a, b) {
-    super(a, b);
+  constructor(a, b, id) {
+    super(a, b, id);
   }
 
   getA() {
@@ -238,11 +254,12 @@ export class HDimension extends LinearDimension {
   }
 }
 HDimension.prototype._class = 'TCAD.TWO.HDimension';
+HDimension.prototype.TYPE = 'HDimension';
 
 export class VDimension extends LinearDimension {
   
-  constructor(a, b) {
-    super(a, b);
+  constructor(a, b, id) {
+    super(a, b, id);
   }
 
   getA() {
@@ -254,12 +271,13 @@ export class VDimension extends LinearDimension {
   }
 }
 VDimension.prototype._class = 'TCAD.TWO.VDimension';
+VDimension.prototype.TYPE = 'VDimension';
 
 
-export class DiameterDimension extends SketchObject {
+export class DiameterDimension extends Dimension {
   
-  constructor(obj) {
-    super();
+  constructor(obj, id) {
+    super(id);
     this.obj = obj;
     this.angle = Math.PI / 4;
     this.textHelper = new TextHelper();
@@ -387,13 +405,29 @@ export class DiameterDimension extends SketchObject {
 
   }
 
+  write() {
+    return {
+      obj: this.obj.id,
+      angle: this.angle
+    }
+  }
+
+  static load(constr, id, data, index) {
+    const dim = new DiameterDimension(
+      index[data.obj],
+      id
+    );
+    dim.angle = data.angle;
+    return dim;
+  }
 }
 DiameterDimension.prototype._class = 'TCAD.TWO.DiameterDimension';
+DiameterDimension.prototype.TYPE = 'DiameterDimension';
 
-export class AngleBetweenDimension extends SketchObject {
+export class AngleBetweenDimension extends Dimension {
 
-  constructor(a, b) {
-    super();
+  constructor(a, b, id) {
+    super(id);
     this.a = a;
     this.b = b;
     this.offset = 20;
@@ -669,6 +703,26 @@ export class AngleBetweenDimension extends SketchObject {
       );
     }
   }
+
+  write() {
+    return {
+      a: this.a.id,
+      b: this.b.id,
+      offset: this.offset,
+      configuration: this.configuration.map(o => o.id)
+    }
+  }
+
+  static load(constr, id, data, index) {
+    const dim = new AngleBetweenDimension(
+      index[data.a],
+      index[data.b],
+      id
+    );
+    dim.offset = data.offset;
+    dim.configuration = data.configuration.map(id => index[id]);
+    return dim;
+  }
 }
 
 export function findCenter(aa, ab, ba, bb, avx, avy, bvx, bvy) {
@@ -698,5 +752,6 @@ export function findCenter(aa, ab, ba, bb, avx, avy, bvx, bvy) {
 }
 
 AngleBetweenDimension.prototype._class = 'TCAD.TWO.AngleBetweenDimension';
+AngleBetweenDimension.prototype.TYPE = 'AngleBetweenDimension';
 
 

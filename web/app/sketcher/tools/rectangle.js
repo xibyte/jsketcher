@@ -64,19 +64,18 @@ export class RectangleTool extends Tool {
   }
 
   createRectangle(v) {
-    const p = new EndPoint(v.x, v.y);
     //from top, clockwise
     this.rectangle = [
-      new Segment(p, p.copy()),
-      new Segment(p.copy(), p.copy()),
-      new Segment(p.copy(), p.copy()),
-      new Segment(p.copy(), p.copy())
+      new Segment(v.x, v.y, v.x, v.y),
+      new Segment(v.x, v.y, v.x, v.y),
+      new Segment(v.x, v.y, v.x, v.y),
+      new Segment(v.x, v.y, v.x, v.y)
     ];
     for (let s of this.rectangle) {
       this.viewer.activeLayer.add(s);
       this.snapExclude.push(s.a, s.b);
     }
-    this.pointPicked(p.x, p.y);
+    this.pointPicked(v.x, v.y);
     this.viewer.refresh();
   }
   

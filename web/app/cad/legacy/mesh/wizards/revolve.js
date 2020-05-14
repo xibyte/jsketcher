@@ -150,7 +150,7 @@ RevolveWizard.prototype.dispose = function() {
 };
 
 function isSketchSegment(line) {
-  return line.__TCAD_SketchObject && line.__TCAD_SketchObject._class === 'TCAD.TWO.Segment';
+  return line.__TCAD_SketchObject && line.__TCAD_SketchObject.TYPE === 'Segment';
 }
 function firstSegment(objects) {
   for (let line of objects) {

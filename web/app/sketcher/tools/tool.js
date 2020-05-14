@@ -53,16 +53,6 @@ export class Tool {
     }
   }
 
-  endpoint(e) {
-    const ep = new EndPoint(0, 0);
-    if (this.viewer.snapped != null) {
-      this.snapIfNeed(ep);
-    } else {
-      ep.setFromPoint(this.viewer.screenToModel(e))
-    }
-    return ep;
-  }
-
   static dumbMode(e) {
     return e.ctrlKey || e.metaKey || e.altKey;
   }

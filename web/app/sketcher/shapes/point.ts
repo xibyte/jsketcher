@@ -1,16 +1,20 @@
-import {SketchObject} from './sketch-object'
+import {SketchObject, SketchObjectSerializationData} from './sketch-object'
 import {DrawPoint} from './draw-utils'
 import Vector from 'math/vector';
 import {Param} from "./param";
 import {ConstraintDefinitions} from "../constr/ANConstraints";
 import {dfs} from "../../../../modules/gems/traverse";
-
+import {SketchSegmentSerializationData} from "./segment";
 
 export class EndPoint extends SketchObject {
 
-  constructor(x, y) {
-    super();
-    this.parent = null;
+  params : {
+    x: Param,
+    y: Param
+  };
+
+  constructor(x, y, id?) {
+    super(id);
     this.params  = {
       x: new Param(x, 'X'),
       y: new Param(y, 'Y')
@@ -22,7 +26,7 @@ export class EndPoint extends SketchObject {
   }
 
   set x(val) {
-    return this.params.x.set(val);
+    this.params.x.set(val);
   }
 
   get y() {
@@ -30,7 +34,7 @@ export class EndPoint extends SketchObject {
   }
 
   set y(val) {
-    return this.params.y.set(val);
+    this.params.y.set(val);
   }
 
   visitParams(callback) {
@@ -93,7 +97,29 @@ export class EndPoint extends SketchObject {
     dest.x = x;
     dest.y = y;
   }
+
+  write(): SketchPointSerializationData {
+    return {
+      x: this.x,
+      y: this.y
+    }
+  }
+
+  static read(id: string, data: SketchPointSerializationData): EndPoint {
+    return new EndPoint(
+      data.x,
+      data.y,
+      id
+    )
+  }
+}
+
+export interface SketchPointSerializationData extends SketchObjectSerializationData {
+  x: number;
+  y: number;
 }
 
 EndPoint.prototype._class = 'TCAD.TWO.EndPoint';
+EndPoint.prototype.TYPE = 'Point';
+
 
