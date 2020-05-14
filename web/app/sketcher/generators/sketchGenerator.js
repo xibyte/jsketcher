@@ -2,6 +2,7 @@ import {NOOP} from "gems/func";
 import {MirrorGeneratorSchema} from "./mirrorGenerator";
 import {memoize} from "lodash/function";
 import {indexArray} from "gems/iterables";
+import {PREDEFINED_LAYERS} from "../viewer2d";
 
 const SCHEMAS = [
   MirrorGeneratorSchema,
@@ -34,12 +35,18 @@ export class SketchGenerator {
 
   generate(viewer) {
     this.init();
-    this.generatedObjects = this.schema.generate(this.params, viewer, this.internalState, obj => obj.generator = this);
-    this.generatedObjects.forEach(obj => obj.syncGeometry());
+    let layer = viewer.findLayerByName(PREDEFINED_LAYERS.SKETCH);
+    this.generatedObjects = this.schema.generate(this.params, this.internalState);
+    this.generatedObjects.forEach(obj => {
+      obj.generator = this;
+      this.stage.assignObject(obj);
+      layer.objects.push(obj);
+      obj.syncGeometry()
+    });
   }
 
   regenerate(viewer) {
-    this.schema.regenerate(this.params, this.generatedObjects, viewer, this.internalState);
+    this.schema.regenerate(this.params, this.generatedObjects, this.internalState);
     this.generatedObjects.forEach(obj => obj.syncGeometry());
   }
 
@@ -102,7 +109,7 @@ export class SketchGenerator {
       typeId: schema.id,
       params,
       stage: this.stage&&this.stage.index,
-      generatedObjects: this.generatedObjects.map(obj => obj.id)
+      generatedObjects: this.schema.persistGeneratedObjects ? this.generatedObjects.map(obj => obj.id) : undefined
     };
   }
 }

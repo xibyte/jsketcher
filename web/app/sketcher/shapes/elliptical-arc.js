@@ -3,15 +3,16 @@ import {Constraints} from '../parametric'
 
 import * as math from '../../math/math';
 import {swap} from '../../utils/utils'
+import {EndPoint} from "./point";
 
 export class EllipticalArc extends Ellipse {
 
-  constructor(ep1, ep2, a, b) {
-    super(ep1, ep2);
-    this.a = a;
-    this.b = b;
-    this.addChild(a);
-    this.addChild(b);
+  constructor(x1, y1, x2, y2, ax, ay, bx, by, r, id) {
+    super(x1, y1, x2, y2, r, id);
+    this.a = new EndPoint(ax, ay, this.id + ':A');
+    this.b = new EndPoint(bx, by, this.id + ':B');
+    this.addChild(this.a);
+    this.addChild(this.b);
     
     //we'd like to have angles points have higher selection order 
     swap(this.children, 0, this.children.length - 2);
@@ -49,7 +50,32 @@ export class EllipticalArc extends Ellipse {
     xx *= deformScale;
     return Math.atan2(yy, xx);
   }
+
+  write() {
+    return {
+      ep1: this.ep1.write(),
+      ep2: this.ep2.write(),
+      a: this.a.write(),
+      b: this.b.write(),
+      r: this.r.get()
+    }
+  }
+
+  static read(id, data) {
+    return new EllipticalArc(
+      data.ep1.x,
+      data.ep1.y,
+      data.ep2.x,
+      data.ep2.y,
+      data.a.x,
+      data.a.y,
+      data.b.x,
+      data.b.y,
+      data.r,
+      id
+    );
+  }
 }
 
 EllipticalArc.prototype._class = 'TCAD.TWO.EllipticalArc';
-EllipticalArc.prototype.TYPE = 'ELLIPTICAL_ARC';
+EllipticalArc.prototype.TYPE = 'EllipticalArc';

@@ -261,7 +261,7 @@ class ParametricManager {
     obj.constraints.clear();
     obj.generators.clear();
 
-    this.viewer.dimLayer.traverse(dim => {
+    this.viewer.dimLayer.traverseSketchObjects(dim => {
       obj.accept(o => {
         if (dim.dependsOn && dim.dependsOn(o)) {
           this._removeObject(dim);
@@ -284,22 +284,20 @@ class ParametricManager {
   }
 
   prepare(interactiveObjects) {
+    this.groundStage.prepare(interactiveObjects);
     for (let stage of this.stages) {
-      stage.algNumSystem.prepare(interactiveObjects);
+      stage.prepare(interactiveObjects);
     }
   }
 
   solve(rough) {
+    this.groundStage.solve(rough);
     for (let stage of this.stages) {
-      stage.algNumSystem.solve(rough);
-      stage.generators.forEach(gen => {
-        gen.regenerate(this.viewer);
-      })
+      stage.solve(rough);
     }
   }
 
   addGenerator(generator) {
-    generator.generate(this.viewer);
 
     let highestStage = this.stages[0];
 
@@ -309,9 +307,20 @@ class ParametricManager {
       }
     });
 
+    this.addGeneratorToStage(generator, highestStage);
+
+    if (highestStage !== this.stage && !this.inTransaction) {
+      toast("Generator's been added to stage " + highestStage.index + "!")
+    }
+
+    this.refresh();
+  }
+
+  addGeneratorToStage(generator, stage) {
+
     let fail = false;
     generator.sourceObjects(obj => {
-      if (obj.isGenerated && obj.stage === highestStage) {
+      if (obj.isGenerated && obj.stage === stage) {
         toast("Cannot refer to a generated object from the same stage is being added to.");
       }
     });
@@ -320,13 +329,8 @@ class ParametricManager {
       return;
     }
 
-    highestStage.addGenerator(generator);
-
-    if (highestStage !== this.stage && !this.inTransaction) {
-      toast("Generator's been added to stage " + highestStage.index + "!")
-    }
-
-    this.refresh();
+    stage.addGenerator(generator);
+    generator.generate(this.viewer);
   }
 
   coincidePoints(pt1, pt2) {
@@ -447,6 +451,17 @@ class SolveStage {
     };
 
     return new AlgNumSubSystem(calcVisualLimit, this.parametricManager.constantResolver, this);
+  }
+
+  prepare(interactiveObjects) {
+    this.algNumSystem.prepare(interactiveObjects);
+  }
+
+  solve(rough) {
+    this.algNumSystem.solve(rough);
+    this.generators.forEach(gen => {
+      gen.regenerate(this.viewer);
+    })
   }
 
   get index() {

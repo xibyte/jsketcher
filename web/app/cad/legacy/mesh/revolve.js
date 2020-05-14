@@ -32,9 +32,9 @@ export default function revolve(polygons, axisSegment, angle, resolution) {
     let shared = createShared();
     let sketchConnectionObject = pOrig[p].sketchConnectionObject;
     if (sketchConnectionObject) {
-      if (sketchConnectionObject._class == 'TCAD.TWO.Segment') {
+      if (sketchConnectionObject.TYPE === 'Segment') {
         sketchConnectionObject = Object.assign({}, sketchConnectionObject, {
-          _class: 'TCAD.TWO.Arc',
+          TYPE: 'Arc',
           id: sketchConnectionObject.id + ":REVOLVED" // just avoid having object with the same ID but different classes
         });
       }

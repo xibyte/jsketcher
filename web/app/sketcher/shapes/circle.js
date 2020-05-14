@@ -1,17 +1,18 @@
 import * as math from '../../math/math';
 import {SketchObject} from './sketch-object'
 import {Param} from "./param";
+import {EndPoint} from "./point";
 
 export const MIN_RADIUS = 100;
 
 export class Circle extends SketchObject {
 
-  constructor(c) {
-    super();
-    this.c = c;
-    c.parent = this;
-    this.children.push(c);
-    this.r = new Param(0, 'R');
+  constructor(cx, cy, r = 0, id) {
+    super(id);
+    this.c = new EndPoint(cx, cy, this.id + ':C');
+    this.c.parent = this;
+    this.children.push(this.c);
+    this.r = new Param(r, 'R');
     this.r.enforceVisualLimit = true;
   }
 
@@ -46,6 +47,24 @@ export class Circle extends SketchObject {
     circle.r.set(this.r.get());
     return circle;
   }
+
+  write() {
+    return {
+      c: this.c.write(),
+      r: this.r.get()
+    }
+  }
+
+  static read(id, data) {
+    return new Circle(
+      data.c.x,
+      data.c.y,
+      data.r,
+      id
+    )
+  }
+
 }
 
 Circle.prototype._class = 'TCAD.TWO.Circle';
+Circle.prototype.TYPE = 'Circle';

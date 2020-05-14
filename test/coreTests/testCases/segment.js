@@ -10,7 +10,7 @@ export function testSegmentWizard(env, tpi) {
 
   assertEquals(1, tpi.viewer.activeLayer.objects.length);
   const segment = tpi.viewer.activeLayer.objects[0];
-  assertEquals('TCAD.TWO.Segment', segment._class);
+  assertEquals('Segment', segment.TYPE);
   const [asx, asy] = tpi.toScreen(10, 10);
   const [bsx, bsy] = tpi.toScreen(100, 100);
   assertPoint2DEquals(tpi.toModel(asx, asy), segment.a);
