@@ -52,6 +52,8 @@ export const SKETCHER_MODE_HEADS_UP_ACTIONS = [
   '-',
   constraintGlobalActions.map(a => toSketcherActionId(a.id)),
   '-',
+  ['LookAtFace'],
+  '-',
   ['sketchOpenInTab']
 ];
 

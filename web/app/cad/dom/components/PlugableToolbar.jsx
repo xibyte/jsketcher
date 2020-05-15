@@ -7,6 +7,7 @@ import {ActionButtonBehavior} from '../../actions/ActionButtonBehavior';
 import capitalize from 'gems/capitalize';
 import {combine} from 'lstream';
 import {useStream} from "../../../../../modules/ui/effects";
+import {NoIcon} from "../../../sketcher/icons/NoIcon";
 
 function ConfigurableToolbar({actions, size, ...props}) {
   return <Toolbar size={size} {...props}>
@@ -53,10 +54,8 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size, noLa
     }
   }
   if (!icon) {
-    icon = <span>{symbol||(label&&label.charAt(0))}</span>;
-    if (!icon) {
-      icon = '?';
-    }
+    const txtStub = symbol||(label&&label.charAt(0));
+    icon = txtStub ?  <span>{txtStub}</span> : <NoIcon />;
   }
     
   return <ToolbarButton disabled={!enabled} {...props}>

@@ -1,5 +1,6 @@
 import {AXIS, ORIGIN} from '../../math/l3space';
 import Vector from 'math/vector';
+import {RiCamera2Line} from "react-icons/ri";
 
 const NEG_X = AXIS.X.negate();
 const NEG_Y = AXIS.Y.negate();
@@ -63,6 +64,12 @@ export default [
   },  
   {
     id: 'LookAtFace',
+    appearance: {
+      icon: RiCamera2Line,
+      info: 'move camera to show selected face',
+      label: 'Look at'
+    },
+
     invoke: ctx => {
       let face = ctx.services.selection.face.single;
       if (face) {
