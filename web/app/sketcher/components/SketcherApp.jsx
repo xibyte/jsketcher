@@ -7,7 +7,6 @@ import {StreamsContext} from 'ui/streamsContext';
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import SketcherOperationWizard from "./SketcherOperationWizard";
-import {StageControl} from "./StageControl";
 import {Scope} from "./Scope";
 import {SketcherToolbar} from "./SketcherToolbar";
 import {sketcherRightToolbarConfig, sketcherTopToolbarConfig} from "../uiConfig";
@@ -66,6 +65,5 @@ function RightSideControls() {
     <Scope><ContextualControls /></Scope>
     <Scope><ConstraintEditor /></Scope>
     <Scope><SketcherOperationWizard /></Scope>
-    <Scope><StageControl /></Scope>
   </React.Fragment>
 }
