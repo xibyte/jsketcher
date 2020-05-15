@@ -42,7 +42,10 @@ export interface SketchFormat_V3 {
     }[];
 
     constraints: {
-      typeId: string
+      typeId: string,
+      objects: string[],
+      constants: {[key: string]: string},
+      annotations: any
     }[];
 
   }[];
@@ -193,6 +196,7 @@ export class IO {
       }
 
     } finally {
+      this.viewer.createGroundObjects();
       this.viewer.parametricManager.finishTransaction();
       this.viewer.parametricManager.notify();
     }

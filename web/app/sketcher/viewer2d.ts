@@ -17,6 +17,8 @@ import {Shape} from "./shapes/shape";
 import {SketchObject} from "./shapes/sketch-object";
 import {Styles} from './styles';
 import {Dimension} from "./shapes/dim";
+import {GroundObjectsGeneratorSchema} from "./generators/groundObjectsGenerator";
+import {SketchGenerator} from "./generators/sketchGenerator";
 
 export class Viewer {
 
@@ -237,16 +239,13 @@ export class Viewer {
 //  layer.objects.push(new Point(0, 0, 2));
     layer.objects.push(this.referencePoint);
     layer.objects.push(new BasisOrigin(null, this));
-
-    const origin = new EndPoint(0, 0);
-    origin.id = 'ORIGIN';
-    layer.objects.push(origin);
-    origin.stage = this.parametricManager.groundStage;
-    origin.visitParams(param => {
-      param.set = NOOP;
-    });
     return [layer];
   };
+
+  createGroundObjects() {
+    const groundObjectsGenerator = new SketchGenerator({}, GroundObjectsGeneratorSchema);
+    this.parametricManager.addGeneratorToStage(groundObjectsGenerator, this.parametricManager.groundStage);
+  }
 
   refresh() {
     const viewer = this;

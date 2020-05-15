@@ -1,7 +1,5 @@
 import {NoIcon} from "../icons/NoIcon";
-import {NOOP} from "../../../../modules/gems/func";
 import {Arc} from "../shapes/arc";
-import {EndPoint} from "../shapes/point";
 import {Circle} from "../shapes/circle";
 import {NurbsObject} from "../shapes/nurbsObject";
 import NurbsCurve from "../../brep/geom/curves/nurbsCurve";
@@ -41,9 +39,7 @@ export const BoundaryGeneratorSchema = {
 
     let i, obj;
     function process(obj) {
-      obj.visitParams(param => {
-        param.set = NOOP;
-      });
+      obj.freeze();
       out.push(obj);
     }
 

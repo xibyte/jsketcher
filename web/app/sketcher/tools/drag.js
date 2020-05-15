@@ -14,6 +14,11 @@ export class DragTool extends Tool {
   }
   
   mousemove(e) {
+    if (this.generatedCaptured) {
+      toast("You cannot drag generated object. To move them, drag the objects they are generated off of ")
+      this.viewer.toolManager.releaseControl();
+      return;
+    }
     let x = this._point.x;
     let y = this._point.y;
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
@@ -33,8 +38,9 @@ export class DragTool extends Tool {
   }
 
   mousedown(e) {
-    if (this.obj.isGenerated) {
-      toast("You cannot drag generated object. To move them, drag the objects they are generated off of ")
+    this.generatedCaptured = this.obj.isGenerated;
+    if (this.generatedCaptured) {
+      return;
     }
     this.origin.x = e.offsetX;
     this.origin.y = e.offsetY;
@@ -46,6 +52,11 @@ export class DragTool extends Tool {
   }
 
   mouseup(e) {
+    if (this.generatedCaptured) {
+      this.viewer.toolManager.releaseControl();
+      return;
+    }
+
     if (this.obj.constraints.length !== 0) {
       this.viewer.parametricManager.solve(false);
       this.viewer.parametricManager.algNumSystem.controlBounds = false;

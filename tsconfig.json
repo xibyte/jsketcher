@@ -4,6 +4,7 @@
     "sourceMap": true,
     "jsx": "react",
     "esModuleInterop": true,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES5",
     "baseUrl": ".",
