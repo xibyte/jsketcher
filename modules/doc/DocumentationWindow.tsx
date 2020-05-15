@@ -3,6 +3,8 @@ import {stream} from "lstream";
 import Window from "ui/components/Window";
 import {useStream} from "ui/effects";
 import marked from 'marked';
+import {AiOutlineHome} from "react-icons/ai";
+import {RiArrowGoBackLine} from "react-icons/ri";
 
 export const DocumentationTopic$ = stream();
 export const DocumentationUIState$ = stream();
@@ -17,6 +19,7 @@ export function DocumentationWindow() {
   
   const request: DocumentationRequest = useStream(DocumentationTopic$);
   const [content, setContent] = useState(null);
+
   useEffect(() => {
     window.__CAD_APP.DocumentationTopic$ = DocumentationTopic$;
     if (!request) {
@@ -64,6 +67,10 @@ export function DocumentationWindow() {
                  enableResize={true}
                  onClose={() => DocumentationTopic$.next(null)}
                  onResize={el => DocumentationUIState$.next(el)}>
+    <div className='documentation-toolbar'>
+      <button onClick={() => DocumentationTopic$.next({topic: 'index'})}><AiOutlineHome /> </button>
+      <button onClick={() => alert("men at work")}><RiArrowGoBackLine /></button>
+    </div>
     <p className='documentation-content' dangerouslySetInnerHTML={{__html: content}} />
   </Window>
 
