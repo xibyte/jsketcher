@@ -412,7 +412,7 @@ export class DiameterDimension extends Dimension {
     }
   }
 
-  static load(constr, id, data, index) {
+  static load(id, data, index) {
     const dim = new DiameterDimension(
       index[data.obj],
       id
@@ -713,7 +713,7 @@ export class AngleBetweenDimension extends Dimension {
     }
   }
 
-  static load(constr, id, data, index) {
+  static load(id, data, index) {
     const dim = new AngleBetweenDimension(
       index[data.a],
       index[data.b],

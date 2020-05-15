@@ -137,20 +137,22 @@ export class IO {
         }
       }
 
+      const index = this.viewer.createIndex();
+
       for (let obj of sketch.dimensions) {
         try {
           let type = obj.type;
           let skobj = null;
           if (type === HDimension.prototype.TYPE) {
-            skobj = LinearDimension.load(HDimension, obj.id, obj.data);
+            skobj = LinearDimension.load(HDimension, obj.id, obj.data, index);
           } else if (type === VDimension.prototype.TYPE) {
-            skobj = LinearDimension.load(VDimension, obj.id, obj.data);
+            skobj = LinearDimension.load(VDimension, obj.id, obj.data, index);
           } else if (type === LinearDimension.prototype.TYPE) {
-            skobj = LinearDimension.load(LinearDimension, obj.id, obj.data);
+            skobj = LinearDimension.load(LinearDimension, obj.id, obj.data, index);
           } else if (type === DiameterDimension.prototype.TYPE) {
-            skobj = DiameterDimension.load(obj.id, obj.data);
+            skobj = DiameterDimension.load(obj.id, obj.data, index);
           } else if (type === AngleBetweenDimension.prototype.TYPE) {
-            skobj = AngleBetweenDimension.load(obj.id, obj.data);
+            skobj = AngleBetweenDimension.load(obj.id, obj.data, index);
           }
           if (skobj !== null) {
             this.viewer.dimLayer.add(skobj);
@@ -161,9 +163,6 @@ export class IO {
           console.error("Failed loading " + obj.type + " " + obj.id);
         }
       }
-
-
-      const index = this.viewer.createIndex();
 
       for (let i = 0; i < sketch.stages.length; i++) {
         let dataStage = sketch.stages[i];
