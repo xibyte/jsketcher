@@ -71,7 +71,7 @@ export function SketchObjectExplorer() {
         <span className={ls.objectIcon}><ObjectIcon object={o}/></span>
         {getObjectRole(o)}
         <span onClick={e => tweakSelection(o, e.shiftKey)}
-              className={cx(ls.objectTag, o.marked && ls.selected)}>{o.simpleClassName} <span>{o.id}</span> </span>
+              className={cx(ls.objectTag, o.marked && ls.selected)}>{o.simpleClassName}&nbsp;<span>{o.id}</span> </span>
         <span className={ls.menuButton}>...</span>
       </div>)}
     </div>
