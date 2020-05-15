@@ -99,8 +99,8 @@ export class RectangleTool extends Tool {
     const constraints = [
       new AlgNumConstraint(ConstraintDefinitions.Horizontal, [this.rectangle[0]], {angle: 0}),
       new AlgNumConstraint(ConstraintDefinitions.Horizontal, [this.rectangle[2]], {angle: 180}),
-      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[3]], {angle: 270}),
-      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[1]], {angle: 90}),
+      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[3]], {angle: 90}),
+      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[1]], {angle: 270}),
     ];
     // constraints.forEach(c => c.initConstants());
     this.rectangle.forEach(s => s.stabilize(this.viewer));
