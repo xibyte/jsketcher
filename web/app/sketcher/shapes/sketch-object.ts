@@ -3,6 +3,7 @@ import {Shape} from './shape'
 import {Styles} from "../styles";
 import {NoIcon} from "../icons/NoIcon";
 import {Layer, Viewer} from "../viewer2d";
+import {NOOP} from "gems/func";
 
 export abstract class SketchObject extends Shape {
 
@@ -19,9 +20,9 @@ export abstract class SketchObject extends Shape {
   generators: Set<any> = new Set();
   _stage: any = null;
 
-  constructor(id: string) {
+  protected constructor(id: string) {
     super();
-    this.ref= Generator.genID();
+    this.ref= Generator.genID() + '';
     this.id = id || this.ref;
   }
 
@@ -143,12 +144,12 @@ export abstract class SketchObject extends Shape {
     const productionKind = this.classify();
     if (this.markers.length !== 0) {
       return this.markers[0];
+    } else if (this.isGenerated) {
+      return Styles.GENERATED;
     } else if (productionKind === PAST) {
       return Styles.PAST;
     } else if (productionKind === FUTURE) {
       return Styles.FUTURE;
-    } else if (this.isGenerated) {
-      return Styles.GENERATED;
     } else if (this.fullyConstrained) {
       return Styles.FULLY_CONSTRAINED;
     } else {
@@ -243,6 +244,12 @@ export abstract class SketchObject extends Shape {
 
   get icon() {
     return NoIcon;
+  }
+
+  freeze() {
+    this.visitParams(param => {
+      param.set = NOOP;
+    });
   }
 
   abstract write(): SketchObjectSerializationData;
