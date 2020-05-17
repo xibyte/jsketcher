@@ -1,14 +1,10 @@
 import React from 'react';
 import Window from 'ui/components/Window';
 import BrepDebugger from './brepDebugger';
-import connect, {PROPAGATE_SELF_PROPS} from 'ui/connectLegacy';
 import {addToGroup, clearGroup, createGroup, removeFromGroup} from 'scene/sceneGraph';
-import {createToken} from 'bus';
 import Fa from 'ui/components/Fa';
 
 import ls from './BrepDebuggerWindow.less';
-
-export const BREP_DEBUG_WINDOW_VISIBLE = createToken('debug', 'brepDebugWindowVisible')
 
 class BrepDebuggerWindow extends React.Component {
   
@@ -35,10 +31,3 @@ class BrepDebuggerWindow extends React.Component {
     </Window>;
   }
 }
-
-export default connect(BrepDebuggerWindow, BREP_DEBUG_WINDOW_VISIBLE, {
-  mapProps: ([visible]) => ({visible}),
-  mapActions: ({dispatch}) => ({
-    close: () => dispatch(BREP_DEBUG_WINDOW_VISIBLE, false)
-  })
-});

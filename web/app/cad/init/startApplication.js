@@ -17,7 +17,7 @@ import * as ExtensionsPlugin from '../craft/extensionsPlugin';
 import * as CadRegistryPlugin from '../craft/cadRegistryPlugin';
 import * as CraftPlugin from '../craft/craftPlugin';
 import * as CraftUiPlugin from '../craft/craftUiPlugin';
-import * as StoragePlugin from '../storagePlugin';
+import * as StoragePlugin from '../storage/storagePlugin';
 import * as ProjectPlugin from '../projectPlugin';
 import * as ProjectManagerPlugin from '../projectManager/projectManagerPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
