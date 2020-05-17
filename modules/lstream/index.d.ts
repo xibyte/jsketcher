@@ -1,6 +1,9 @@
-interface StreamBase<T> {
 
+interface Observable<T> {
   attach(callback: (value: T) => any): () => void
+}
+
+interface Stream<T> extends Observable<T> {
 
   map<T, V>(fn: (value: T) => V);
 
@@ -19,23 +22,25 @@ interface StreamBase<T> {
   pipe(otherStream): () => void;
 }
 
-interface Stream<T> extends StreamBase<T> {
-
-
-}
-
-interface StateStream<T> extends Stream<T> {
-
-  value: T;
+interface Emitter<T> extends Stream<T> {
 
   next(value?: T) : void;
 
 }
 
+interface StateStream<T> extends Emitter<T> {
 
-export function stream<T>(): Stream<T>;
+  value: T;
 
-export function eventStream<T>(): Stream<T>;
+  update(updater: (T) => T): void;
+
+  mutate(mutator: (T) => void): void;
+}
+
+
+export function stream<T>(): Emitter<T>;
+
+export function eventStream<T>(): Emitter<T>;
 
 export function combine(...streams: Stream<any>[]): Stream<any[]>;
 

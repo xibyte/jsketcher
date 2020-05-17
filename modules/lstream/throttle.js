@@ -1,5 +1,4 @@
 import {StreamBase} from './base';
-import {Emitter} from './emitter';
 
 export class ThrottleStream extends StreamBase {
 
@@ -13,7 +12,7 @@ export class ThrottleStream extends StreamBase {
   attach(observer) {
     let scheduled = false;
     let value = undefined;
-    this.stream.attach(val => {
+    return this.stream.attach(val => {
       value = this.accumulator(val);
       if (!scheduled) {
         setTimeout(() => {

@@ -1,16 +1,31 @@
-import React, {Fragment} from 'react';
+import React, {useContext} from 'react';
 
 import View3d from './View3d';
 
 import ls from './AppTabs.less';
 
 import TabSwitcher, {Tab} from 'ui/components/TabSwticher';
-import connect from 'ui/connectLegacy';
-
-import {TOKENS as APP_TABS_TOKENS} from "../appTabsPlugin";
 import Card from "ui/components/Card";
+import {useStreamWithUpdater} from "../../../../../modules/ui/effects";
+import {AppContext} from "./AppContext";
 
-function AppTabs({activeTab, tabs, switchTo, close, detach}) {
+export default function AppTabs({}) {
+
+  const [{tabs, activeTab}, updateTabs] = useStreamWithUpdater(ctx => ctx.appTabsService.tabs$);
+  const ctx = useContext(AppContext);
+
+  const switchTo = index => updateTabs(({tabs}) => ({tabs, activeTab: index}));
+
+  const close = index => updateTabs(({activeTab, tabs}) => {
+    tabs.splice(index, 1);
+    return {
+      activeTab: (activeTab === index ? -1 : activeTab),
+      tabs
+    };
+  });
+
+  const detach = index => ctx.detach(index);
+
   return <div className={ls.root}>
 
     <div className={ls.content}>
@@ -43,20 +58,6 @@ function AppTabs({activeTab, tabs, switchTo, close, detach}) {
     </TabSwitcher>
   </div>
 }
-
-export default connect(AppTabs, APP_TABS_TOKENS.TABS, {
-  mapActions: ({dispatch, updateState}) => ({
-    switchTo: index => updateState(APP_TABS_TOKENS.TABS, ({tabs}) => ({tabs, activeTab: index})),
-    close: index => updateState(APP_TABS_TOKENS.TABS, ({activeTab, tabs}) => {
-      tabs.splice(index, 1);
-      return {
-        activeTab: (activeTab === index ? -1 : activeTab),
-        tabs
-      };
-    }),
-    detach: index => dispatch(APP_TABS_TOKENS.DETACH, index)
-  })
-});
 
 export function FrameView({url}) {
   return <iframe src={url} style={{width: '100%', height: '100%'}}/>

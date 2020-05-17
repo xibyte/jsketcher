@@ -101,6 +101,7 @@ export class Viewer {
 
     this.toolManager = new ToolManager(this, new PanTool(this));
     this.parametricManager = new ParametricManager(this);
+    this.createGroundObjects();
 
     this.translate = {x: 0.0, y: 0.0};
     this.scale = 1.0;
