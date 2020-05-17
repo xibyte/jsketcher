@@ -21,6 +21,7 @@ export function DocumentationWindow() {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
+    // @ts-ignore
     window.__CAD_APP.DocumentationTopic$ = DocumentationTopic$;
     if (!request) {
       setContent(null);
@@ -76,6 +77,7 @@ export function DocumentationWindow() {
 
 }
 DocumentationUIState$.throttle(3000).attach(el => {
+  // @ts-ignore
   const rect = el.getBoundingClientRect();
   sessionStorage.setItem('DocumentationWindow', JSON.stringify({
     width: rect.width,

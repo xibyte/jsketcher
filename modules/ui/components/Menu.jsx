@@ -1,10 +1,12 @@
-import React from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 
 import ls from './Menu.less';
 import AuxWidget from "./AuxWidget";
 import cx from 'classnames';
 import Fa from './Fa';
+import {UISystemContext} from "../../../web/app/cad/dom/components/UISystem";
+import {useStream} from "../effects";
 
 export default function Menu({children, x, y, orientationUp, centered, menuId, ...props}) {
   return <AuxWidget 
@@ -24,7 +26,9 @@ export function MenuSeparator() {
 }
 
 
-export function MenuItem({icon, label, hotKey, style, disabled, onClick, children, ...props}, {closeAllUpPopups}) {
+export function MenuItem({icon, label, hotKey, style, disabled, onClick, children, ...props}) {
+
+  const {closeAllUpPopups} = useContext(UISystemContext);
 
   if (hotKey) {
     hotKey = hotKey.replace(/\s/g, '');
@@ -44,69 +48,46 @@ export function MenuItem({icon, label, hotKey, style, disabled, onClick, childre
   </div>;
 }
 
-export class ContextMenu extends React.Component {
+const ContextMenuContext = React.createContext(null);
 
-  state = {
+export function ContextMenu(props) {
+
+  const [state, setState] = useState({
     active: false
-  };
+  });
 
-  onClick = e => {
+  const {onCloseAll} = useContext(UISystemContext);
+
+  useEffect(() => onCloseAll.attach(close));
+
+  const onClick = e => {
     e.preventDefault();
-    this.setState({
+    setState({
       active: true,
       x: e.clientX,
       y: e.clientY
     });
   };
 
-  close = () => {
-    this.setState({active: false})
+  const close = () => {
+    setState({active: false})
   };
-  
-  componentDidMount() {
-    this.detacher = this.context.onCloseAll.attach(this.close);
-  }
 
-  componentWillUnmount() {
-    this.detacher();
-  }
-
-  render() {
-    return <span className={ls.contextMenu}>
-      <span onContextMenu={this.onClick}>{this.props.children}</span>
-      <span onClick={this.onClick} className={ls.contextMenuBtn}><Fa fw icon='ellipsis-h'/></span>
-      {this.state.active && <Menu x={this.state.x} y={this.state.y}>
-        {this.props.items}
+  return <ContextMenuContext.Provider value={close}>
+    <span className={ls.contextMenu}>
+      <span onContextMenu={onClick}>{props.children}</span>
+      <span onClick={onClick} className={ls.contextMenuBtn}><Fa fw icon='ellipsis-h'/></span>
+      {state.active && <Menu x={state.x} y={state.y}>
+        {props.items}
       </Menu>}
     </span>
-  }
-
-  getChildContext() {
-    return {
-      closeMenu: this.close
-    };
-  }
-  
-  static contextTypes = {
-    onCloseAll: PropTypes.object
-  };
-
-  static childContextTypes = {
-    closeMenu: PropTypes.func
-  };
+  </ContextMenuContext.Provider>;
 }
 
-export function ContextMenuItem({onClick, ...props}, {closeMenu}) {
+export function ContextMenuItem({onClick, ...props}) {
+  const closeMenu = useContext(ContextMenuContext);
   return <MenuItem onClick={() => {
     closeMenu();
     onClick();
   }} {...props}/>;
 }
-
-ContextMenuItem.contextTypes = {
-  closeMenu: PropTypes.func
-};
-
-MenuItem.contextTypes = {
-  closeAllUpPopups: PropTypes.func
-};

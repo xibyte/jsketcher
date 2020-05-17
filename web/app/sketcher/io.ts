@@ -101,6 +101,7 @@ export class IO {
       if (sketch.boundary) {
         this.createBoundaryObjects(sketch.boundary);
       }
+      this.viewer.createGroundObjects();
 
       if (sketch.version !== 3) {
         return;
@@ -196,7 +197,6 @@ export class IO {
       }
 
     } finally {
-      this.viewer.createGroundObjects();
       this.viewer.parametricManager.finishTransaction();
       this.viewer.parametricManager.notify();
     }

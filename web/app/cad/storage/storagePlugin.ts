@@ -1,4 +1,5 @@
-import {stream} from '../../../modules/lstream';
+import {stream} from 'lstream';
+import {ApplicationContext} from "context";
 
 const updates$ = stream();
 
@@ -8,7 +9,9 @@ export function defineStreams(ctx) {
   }
 }
 
-export function activate({services, streams}) {
+export function activate(ctx: ApplicationContext) {
+
+  const {services, streams} = ctx;
 
   function set(key, value) {
     console.log("Saving: " + key);
@@ -54,7 +57,35 @@ export function activate({services, streams}) {
   
   const addListener = listener => streams.storage.update.attach(listener);
 
-  services.storage = {
+  ctx.storageService = {
     set, get, remove, addListener, getAllKeysFromNamespace, exists
+  };
+
+  services.storage = ctx.storageService;
+
+}
+
+
+export interface StorageService {
+
+  set(path: string, content: string): void;
+
+  get(path: string): string;
+
+  remove(path: string): void;
+
+  getAllKeysFromNamespace(path: string): string[];
+
+  exists(path: string): boolean;
+
+  addListener(callback: (StorageUpdateEvent) => void);
+
+}
+
+declare module 'context' {
+  interface ApplicationContext {
+
+    storageService: StorageService;
   }
 }
+

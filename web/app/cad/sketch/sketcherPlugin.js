@@ -34,7 +34,7 @@ export function activate(ctx) {
       services.viewer.requestRender();
     }
   };
-  
+
   services.storage.addListener(onSketchUpdate);
 
   function getAllSketches() {
@@ -154,7 +154,7 @@ export function activate(ctx) {
   function sketchFace2D(face) {
     updateSketchBoundaries(face);
     let sketchURL = services.project.getSketchURL(face.id);
-    services.appTabs.show(face.id, 'Sketch ' + face.id, 'sketcher.html#' + sketchURL);
+    ctx.appTabsService.show(face.id, 'Sketch ' + face.id, 'sketcher.html#' + sketchURL);
   }
   
   function reassignSketch(fromId, toId) {
@@ -190,3 +190,4 @@ export function activate(ctx) {
     reassignSketchMode: initReassignSketchMode(ctx)
   }
 }
+

@@ -7,13 +7,13 @@ import * as vec from '../math/vec';
 import React from 'react';
 import {readSketchFloat} from './sketch/sketchReader';
 import {toLoops} from '../brep/io/brepLoopsFormat';
-import {contributeComponent} from './dom/components/ContributedComponents';
-import BrepDebuggerWindow, {BREP_DEBUG_WINDOW_VISIBLE} from '../brep/debug/debugger/BrepDebuggerWindow';
 import curveTess from '../brep/geom/impl/curve/curve-tess';
 import {LOG_FLAGS} from './logFlags';
+import {state} from "lstream";
 
+const BREP_DEBUG_WINDOW_VISIBLE$ = state(false);
 
-export function activate({bus, services, streams}) {
+export function activate({services, streams}) {
   addGlobalDebugActions(services);
   addDebugSelectors(services);
   services.action.registerActions(DebugActions);
@@ -24,8 +24,7 @@ export function activate({bus, services, streams}) {
   };
   streams.ui.controlBars.left.update(actions => [...actions, 'menu.debug']);
   
-  bus.enableState(BREP_DEBUG_WINDOW_VISIBLE, false);
-  contributeComponent(<BrepDebuggerWindow key='debug.BrepDebuggerWindow' auxGroup={services.cadScene.auxGroup} />);
+  // contributeComponent(<BrepDebuggerWindow key='debug.BrepDebuggerWindow' auxGroup={services.cadScene.auxGroup} />);
 }
 
 function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
@@ -434,7 +433,7 @@ const DebugActions = [
       info: 'open the BREP debugger in a window',
     },
     invoke: ({bus}) => {
-      bus.dispatch(BREP_DEBUG_WINDOW_VISIBLE, true);
+      BREP_DEBUG_WINDOW_VISIBLE$.next(true);
     }
   }
 
