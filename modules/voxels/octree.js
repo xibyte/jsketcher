@@ -1,4 +1,4 @@
-import * as vec from "../../web/app/math/vec";
+import * as vec from "math/vec";
 
 export class Node {
 

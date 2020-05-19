@@ -5,7 +5,7 @@ import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polyno
 import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from "../../brep/geom/curves/bezierCubic";
 import {greaterThanConstraint, lessThanConstraint} from "./barriers";
 import {genericCurveStep} from "../../brep/geom/impl/nurbs-ext";
-import {_normalize} from "../../math/vec";
+import {_normalize} from "math/vec";
 import {
   AngleBetweenConstraintIcon,
   AngleConstraintIcon,

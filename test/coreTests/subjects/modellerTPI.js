@@ -53,7 +53,7 @@ export default ctx => {
   }
   
   function select(from, to) {
-    ctx.services.pickControl.pickFromRay(from, to, ALL_EXCLUDING_SOLID_KINDS);
+    ctx.services.pickControl.simulatePickFromRay(from, to);
   }
 
   function selectFirst(type) {

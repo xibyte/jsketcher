@@ -14,7 +14,7 @@ import BrepCurve from '../../brep/geom/curves/brepCurve';
 import {Plane} from '../../brep/geom/impl/plane';
 import pip from '../tess/pip';
 import {readShellEntityFromJson} from '../scene/wrappers/entityIO';
-import * as vec from '../../math/vec'
+import * as vec from 'math/vec'
 import NurbsSurface from '../../brep/geom/surfaces/nurbsSurface';
 
 

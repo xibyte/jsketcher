@@ -3,7 +3,7 @@ import {brepFaceToGeom, surfaceToThreeGeom} from './scene/wrappers/brepSceneObje
 import {createSolidMaterial} from './scene/wrappers/sceneObject';
 import DPR from 'dpr';
 import Vector from 'math/vector';
-import * as vec from '../math/vec';
+import * as vec from 'math/vec';
 import React from 'react';
 import {readSketchFloat} from './sketch/sketchReader';
 import {toLoops} from '../brep/io/brepLoopsFormat';

@@ -1,7 +1,7 @@
 import BrepBuilder, {createBoundingSurfaceFrom2DPoints, createBoundingSurfaceFromBBox} from '../brep-builder';
 import VertexFactory from '../vertexFactory';
 import NurbsSurface from '../geom/surfaces/nurbsSurface';
-import * as vec from '../../math/vec';
+import * as vec from 'math/vec';
 import {BrepSurface} from '../geom/surfaces/brepSurface';
 import {Plane} from '../geom/impl/plane';
 import Vector from '../../../../modules/math/vector';

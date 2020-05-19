@@ -1,4 +1,4 @@
-import * as vec from '../../../math/vec';
+import * as vec from 'math/vec';
 import newtonIterations, {newtonIterationsOnInterval} from './newtonIterations';
 import {curveTessParams} from '../impl/curve/curve-tess';
 

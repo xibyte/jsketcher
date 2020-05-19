@@ -73,7 +73,7 @@ export function addArc(ctx, cX, cY, aX, aY, bX, bY) {
   [bX, bY] = modelToScreen(ctx.viewer, bX, bY);
   [cX, cY] = modelToScreen(ctx.viewer, cX, cY);
 
-  ctx.actions['addArc'].action();
+  ctx.actions.ArcTool.invoke(ctx);
 
   moveAndClickXY(ctx, cX, cY);
   moveAndClickXY(ctx, aX, aY);
@@ -166,12 +166,12 @@ export class TestSegment {
   }
 }
 
-export function modelToScreen(x, y) {
-  if (this.screenToModelMatrix) {
-    let modelToScreenMx = this.screenToModelMatrix.invert();
+export function modelToScreen(viewer, x, y) {
+  if (viewer.screenToModelMatrix) {
+    let modelToScreenMx = viewer.screenToModelMatrix.invert();
     [x, y] = modelToScreenMx.apply3([x, y, 0]);
   }
-  x /= this.retinaPxielRatio;
-  y = (this.canvas.height - y) / this.retinaPxielRatio;
+  x /= viewer.retinaPxielRatio;
+  y = (viewer.canvas.height - y) / viewer.retinaPxielRatio;
   return [x, y];
 }
