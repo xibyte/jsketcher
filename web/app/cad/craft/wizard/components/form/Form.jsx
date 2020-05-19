@@ -14,7 +14,7 @@ export function Group({children}) {
 
 export function formField(Control) {
   return function FormPrimitive({label, name, active, setActive, ...props}) {
-    return <Field active={active} onFocus={setActive} onClick={setActive}>
+    return <Field active={active} name={name} onFocus={setActive} onClick={setActive}>
       <Label>{label || camelCaseSplitToStr(name)}</Label>
       <Control {...props} />
     </Field>;

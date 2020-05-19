@@ -1,5 +1,5 @@
 import {SketchObject} from './sketch-object'
-import * as vec from '../../math/vec';
+import * as vec from 'math/vec';
 import {curveTessellate} from '../../brep/geom/impl/nurbs-ext';
 import {Ellipse} from "./ellipse";
 import {EndPoint} from "./point";

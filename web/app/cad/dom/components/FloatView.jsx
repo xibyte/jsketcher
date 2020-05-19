@@ -24,18 +24,26 @@ export default class FloatView extends React.Component {
 
   render() {
     let {views, getDescriptor} = this.props;
-    
+
+    function renderedIcon(icon) {
+      if (typeof icon === 'string') {
+        return <Fa fw icon={icon}/>;
+      }  else {
+        const I = icon;
+        return <I />;
+      }
+    }
+
     function view(id) {
       let {title, icon, Component} = getDescriptor(id);
-      return <Folder className={ls.folder} title={<span> <Fa fw icon={icon}/> {title}</span>}>
+
+
+      return <Folder className={ls.folder} title={<span> {renderedIcon(icon)} {title}</span>}>
         <div className={ls.folderContent}><Component/></div>
       </Folder>;
     }
 
-    function icon(id) {
-      let {Icon} = getDescriptor(id);
-      return <Icon />
-    }
+
 
     let selected = this.state.selected;
     
@@ -43,8 +51,10 @@ export default class FloatView extends React.Component {
       <div className={ls.tabs}>
         {views.map(tabId => <ToolButton pressed={selected === tabId} 
                                         key={tabId}
+                                        className='float-view-btn'
+                                        data-view={tabId}
                                         onClick={() => this.setState({selected: selected === tabId ? null : tabId})}>
-          {<Fa fw icon={getDescriptor(tabId).icon}/>}
+          {renderedIcon(getDescriptor(tabId).icon)}
         </ToolButton>)}
       </div>
       

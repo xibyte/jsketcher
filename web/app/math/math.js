@@ -1,7 +1,7 @@
 import Vector from 'math/vector';
 import BBox from './bbox'
-import * as vec from './vec';
-import {perp2d} from "./vec";
+import * as vec from 'math/vec';
+import {perp2d} from "math/vec";
 import {eqTol} from "../brep/geom/tolerance";
 
 export const TOLERANCE = 1E-6;

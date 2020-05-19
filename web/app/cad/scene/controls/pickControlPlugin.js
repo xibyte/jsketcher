@@ -2,6 +2,7 @@ import * as mask from 'gems/mask'
 import {getAttribute, setAttribute} from 'scene/objectData';
 import {FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL, DATUM_AXIS, LOOP} from '../entites';
 import {LOG_FLAGS} from '../../logFlags';
+import * as vec from 'math/vec';
 
 export const PICK_KIND = {
   FACE: mask.type(1),
@@ -20,6 +21,8 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
   sketchObject: true,
   datum: true  
 });
+
+let RayCastDebugInfo;
 
 export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;
 
@@ -98,13 +101,17 @@ export function activate(context) {
   const deselectAll = () => services.marker.clear();
 
   function handlePick(event) {
-    let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children);
+    let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo);
     traversePickResults(event, pickResults, ALL_EXCLUDING_SOLID_KINDS, pickHandler);
   }
 
   function pickFromRay(from3, to3, kind, event = null) {
     let pickResults = services.viewer.customRaycast(from3, to3, services.cadScene.workGroup.children);
     return traversePickResults(event, pickResults, kind, pickHandler);
+  }
+
+  function simulatePickFromRay(from3, to3, event = null) {
+    return pickFromRay(from3, to3, ALL_EXCLUDING_SOLID_KINDS, event);
   }
 
   function pick(obj, event = null) {
@@ -136,8 +143,12 @@ export function activate(context) {
   }
   
   services.pickControl = {
-    setPickHandler, deselectAll, pick, pickFromRay
+    setPickHandler, deselectAll, pick, pickFromRay, simulatePickFromRay
   };
+
+  if (LOG_FLAGS.PICK) {
+    RayCastDebugInfo = {};
+  }
 }
 
 export function traversePickResults(event, pickResults, kind, visitor) {
@@ -210,5 +221,12 @@ function printPickInfo(model, rayCastData) {
     console.dir(rayCastData);
     let pt = rayCastData.point;
     console.log('POINT: ' + pt.x + ', ' + pt.y + ',' + pt.z);
+    if (RayCastDebugInfo && RayCastDebugInfo.ray) {
+      //generating test data
+      const BUFFER = 100;
+      const r = vec.fromXYZ(pt).map(Math.round);
+      const dir = vec._mul(vec.fromXYZ(RayCastDebugInfo.ray.direction), BUFFER);
+      console.log('cy.selectRaycasting(['+ vec.sub(r, dir).map(Math.round).join(', ') + '], [' + vec.add(r, dir).map(Math.round).join(', ') + '])');
+    }
   }
 }

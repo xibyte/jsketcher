@@ -1,4 +1,4 @@
-import * as vec from "../../../math/vec";
+import * as vec from "math/vec";
 import * as math from  '../../../math/math'
 import {eqEps, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
 import {fmin_bfgs} from "../../../math/optim";

@@ -16,13 +16,37 @@ import {defineCypressTests} from "../../../coreTests/defineCypress";
 describe("Wizrds", () => {
 
 
-  afterEach(() => {
-    cy.screenshot();
+  beforeEach(() => {
+    cy.openModeller();
   });
 
-  it("plane wizrd should open", () => {
-    createDatum();
+  // afterEach(() => {
+  //   cy.screenshot();
+  // });
 
+  it("plane wizard should open", () => {
+    cy.getActionButton('PLANE').click();
+    cy.get('.wizard').should('have.attr', 'data-operation-id', 'PLANE');
+    cy.getActiveWizardField('depth').find('input').type('100');
+    cy.get('.wizard .dialog-ok').click();
+    cy.selectRaycasting([-119, 29, 167], [23, -15, 33])
+  });
+
+  it("extrube wizard should work", () => {
+    cy.getActionButton('PLANE').click();
+    cy.get('.wizard').should('have.attr', 'data-operation-id', 'PLANE');
+    cy.getActiveWizardField('depth').find('input').type('100');
+    cy.get('.wizard .dialog-ok').click();
+    cy.selectRaycasting([-119, 29, 167], [23, -15, 33]);
+    cy.openSketcher().then(sketcher => {
+      sketcher.addRectangle(0, 0, 80, 100);
+      cy.commitSketch();
+    });
+    cy.getActionButton('EXTRUDE').click();
+    cy.get('.wizard .dialog-ok').click();
+    cy.selectRaycasting([-18, 67, 219], [120, 25, 81]);
+    cy.get('.float-view-btn[data-view="selection"]').click();
+    cy.get('.selection-view [data-entity="face"] li').should('have.text', 'S:1/F:5');
 
   });
 

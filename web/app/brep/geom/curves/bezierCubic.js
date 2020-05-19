@@ -1,4 +1,4 @@
-import * as vec from '../../../math/vec';
+import * as vec from 'math/vec';
 
 export function cubicBezierPoint(p0, p1, p2, p3, t) {
   const mt = 1 - t;

@@ -13,7 +13,7 @@ import {isInstanceOf} from "../actions/matchUtils";
 import {Segment} from "../shapes/segment";
 import {DEFAULT_SEARCH_BUFFER} from "../viewer2d";
 import {distance} from "../../math/math";
-import {_negate, cross2d} from "../../math/vec";
+import {_negate, cross2d} from "math/vec";
 
 export class AddDimTool extends Tool {
 
