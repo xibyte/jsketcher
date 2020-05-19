@@ -18,6 +18,7 @@ export function ActionButtonBehavior({children, actionId}) {
   const actionService = ctx.services.action;
 
   return children({
+    'data-action-id': actionId,
     onClick: e => actionService.run(actionId, e),
     onMouseEnter: e => {
       updateCoords(e);

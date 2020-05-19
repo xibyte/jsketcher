@@ -1,5 +1,5 @@
 import * as math from '../../math/math'
-import * as vec from '../../math/vec'
+import * as vec from 'math/vec'
 import {DEG_RAD, lineLineIntersection2d, makeAngle0_360, pointToLineSignedDistance} from '../../math/math'
 import Vector from 'math/vector';
 import {Styles} from "../styles";

@@ -1,5 +1,5 @@
 import {AXIS, Matrix3, ORIGIN} from '../math/l3space'
-import * as vec from '../math/vec'
+import * as vec from 'math/vec'
 import Vector from 'math/vector';
 import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'

@@ -1,26 +1,9 @@
 import * as sketcher_utils from '../utils/sketcherUtils'
-import {decapitalize} from '../../../modules/gems/capitalize';
 import {genSerpinskiImpl} from '../../../web/app/utils/genSerpinski';
 import {distance} from '../../../web/app/math/math';
 
 export function createSubjectFromInPlaceSketcher(ctx) {
-  let actions = {};
-  for (const actionId of Object.keys(ctx.streams.action.state)) {
-    if (actionId.startsWith('sketch')) {
-      let oldId = decapitalize(actionId.substring(6));
-      actions[oldId] = {
-        action: () =>  ctx.services.action.run(actionId)
-      };
-      actions.addBezierCurve = actions.addCubicBezierSpline;
-    }
-  }
-
-  const oldStyleSketcherApp = {
-    viewer: ctx.services.sketcher.inPlaceEditor.viewer,
-    actions
-  };
-  
-  return createSketcherTPI(oldStyleSketcherApp);
+  return createSketcherTPI(ctx.services.sketcher.inPlaceEditor.sketcherAppContext);
 }
 
 export function createSketcherTPI(context) {

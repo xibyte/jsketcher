@@ -1,5 +1,5 @@
 import {_270, _90, makeAngle0_360, pointToLineSignedDistance} from "../../math/math";
-import {_negate} from "../../math/vec";
+import {_negate} from "math/vec";
 
 export class TextHelper {
 

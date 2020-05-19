@@ -1,4 +1,4 @@
-import * as vec from '../../../math/vec';
+import * as vec from 'math/vec';
 import {perpendicularVector} from '../../../math/math';
 
 export function frenetFrame(D1, D2) {

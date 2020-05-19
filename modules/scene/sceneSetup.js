@@ -173,8 +173,11 @@ export default class SceneSetUp {
     return raycaster;
   }
   
-  raycast(event, objects) {
-    let raycaster = this.createRaycaster(event.offsetX, event.offsetY);
+  raycast(event, objects, logInfoOut = null) {
+    const raycaster = this.createRaycaster(event.offsetX, event.offsetY);
+    if (logInfoOut !== null) {
+      logInfoOut.ray = raycaster.ray
+    }
     return raycaster.intersectObjects( objects, true );
   }
 

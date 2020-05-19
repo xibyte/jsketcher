@@ -1,4 +1,4 @@
-import * as vec from '../../../web/app/math/vec';
+import * as vec from 'math/vec';
 import {perpendicularVector} from '../../../web/app/math/math';
 import {Face3, Geometry, Vector3} from 'three';
 

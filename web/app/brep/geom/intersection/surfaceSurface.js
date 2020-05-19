@@ -1,7 +1,7 @@
 import {NUMERICAL_SOLVE_TOL, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
 import {curveDomain, curvePoint, meshesIntersect, surfaceMaxDegree} from '../impl/nurbs-ext';
 import {IntersectionCurve} from '../curves/intersectionCurve';
-import * as vec from '../../../math/vec';
+import * as vec from 'math/vec';
 
 export function surfaceIntersect(surfaceA, surfaceB) {
   const tessA = verb.eval.Tess.rationalSurfaceAdaptive(surfaceA);

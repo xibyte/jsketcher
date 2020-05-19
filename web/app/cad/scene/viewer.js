@@ -32,8 +32,8 @@ export default class Viewer {
     this.sceneSetup.lookAtObject(obj);
   }
   
-  raycast(event, objects) {
-    return this.sceneSetup.raycast(event, objects);
+  raycast(event, objects, logInfoOut) {
+    return this.sceneSetup.raycast(event, objects, logInfoOut);
   }
   
   customRaycast(from3, to3, objects) {

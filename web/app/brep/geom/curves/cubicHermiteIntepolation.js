@@ -1,4 +1,4 @@
-import * as vec from '../../../math/vec';
+import * as vec from 'math/vec';
 import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from './bezierCubic';
 import {closestToCurveParam} from './closestPoint';
 import InvertedCurve from './invertedCurve';

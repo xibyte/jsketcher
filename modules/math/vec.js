@@ -193,6 +193,10 @@ export function polynomial(coefs, vectors) {
   return out;
 }
 
+export function fromXYZ({x, y, z}) {
+  return [x, y, z];
+}
+
 export const AXIS_X3 = [1,0,0];
 export const AXIS_Y3 = [0,1,0];
 export const AXIS_Z3 = [0,0,1];

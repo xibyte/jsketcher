@@ -1,4 +1,4 @@
-import * as vec from "../../../../math/vec";
+import * as vec from "math/vec";
 
 export default function curveTess(curve, min, max, tessTol, scale) {
   return curveTessParams(curve, min, max, tessTol, scale).map(u => curve.point(u));

@@ -24,7 +24,7 @@ export default class EntityList extends React.Component {
     if (!Array.isArray(value)) {
       value = value ? asArray(value) : EMPTY_ARRAY;
     }
-    return <Field active={active} onClick={setActive}>
+    return <Field active={active} name={name} onClick={setActive}>
       <Label>{label||camelCaseSplitToStr(name)}:</Label> 
       <div>{value.length === 0 ? 
         <span className={ls.emptySelection}>{placeholder || '<not selected>'}</span> :

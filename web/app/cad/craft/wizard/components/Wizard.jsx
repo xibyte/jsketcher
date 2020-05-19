@@ -60,6 +60,8 @@ export default class Wizard extends React.Component {
                    onClose={this.cancel}
                    onKeyDown={this.onKeyDown}
                    setFocus={this.focusFirstInput}
+                   className='Wizard'
+                   data-operation-id={operation.id}
                    controlButtons={<>
                      <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({
                        topic: operation.id,
@@ -74,8 +76,8 @@ export default class Wizard extends React.Component {
       </FormContext.Provider>
       <Stack>
         <ButtonGroup>
-          <Button onClick={this.cancel}>Cancel</Button>
-          <Button type='accent' onClick={this.onOK}>OK</Button>
+          <Button className='dialog-cancel' onClick={this.cancel}>Cancel</Button>
+          <Button className='dialog-ok' type='accent' onClick={this.onOK}>OK</Button>
         </ButtonGroup>
         {this.state.hasError && <div className={ls.errorMessage}>
           {this.state.algorithmError && <span>

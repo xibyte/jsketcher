@@ -4,7 +4,7 @@ import QR from '../../math/qr'
 import LMOptimizer from '../../math/lm'
 import {ConstantWrapper, EqualsTo} from './solverConstraints'
 import {dog_leg} from '../../math/optim'
-import {newVector} from '../../math/vec';
+import {newVector} from 'math/vec';
 
 /** @constructor */
 function Param(value, objectParam) {

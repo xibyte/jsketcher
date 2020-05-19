@@ -1,4 +1,4 @@
-import * as vec from '../../../math/vec';
+import * as vec from 'math/vec';
 import InvertedCurve from './invertedCurve';
 
 export default class BoundedCurve {

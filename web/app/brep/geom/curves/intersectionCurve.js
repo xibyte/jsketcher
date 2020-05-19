@@ -1,6 +1,6 @@
 import {TOLERANCE, veq3} from '../tolerance';
 import {surfaceClosestParam} from '../impl/nurbs-ext';
-import * as vec from '../../../math/vec';
+import * as vec from 'math/vec';
 import CubicHermiteInterpolation from './cubicHermiteIntepolation';
 import InvertedCurve from './invertedCurve';
 import {genericCurveSplit} from './boundedCurve';
