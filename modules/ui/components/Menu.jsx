@@ -16,6 +16,7 @@ export default function Menu({children, x, y, orientationUp, centered, menuId, .
     top={orientationUp ? undefined : y}
     bottom={orientationUp ? y : undefined}
     centered={centered}
+    data-menu-id={menuId}
     {...props}>
     {children}
   </AuxWidget>;
