@@ -50,15 +50,20 @@ describe("Wizrds", () => {
 
   });
 
-  it("move datum", () => {
+  it.only("move datum", () => {
     createDatum();
+    cy.simulateClickByRayCast([10, 15, 76], [154, -25, -56]);
+    cy.getMenu('datum').within(() => {
+      cy.getActionButton('DATUM_ROTATE').click()
+    })
+
 
   });
 
 });
 
 function createDatum() {
-  cy.visit("http://localhost:3000");
+
   cy.get('[info="originates a new datum from origin or off of a selected face"]').click();
   cy.get('.x-Field-active > .number > input').type("100");
 
