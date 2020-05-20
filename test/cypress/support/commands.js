@@ -2,7 +2,7 @@ import modellerUISubject from "../../coreTests/subjects/modellerTPI";
 
 
 Cypress.Commands.add("openModeller", () => {
-  return cy.visit("http://localhost:3000?test&LOG.PICK=true");;
+  return cy.visit("http://localhost:3000?test&LOG.PICK=true");
 });
 
 
@@ -10,6 +10,9 @@ Cypress.Commands.add("getActionButton", (actionId) => {
   return cy.get(`[data-action-id='${actionId}']`);
 });
 
+Cypress.Commands.add("getMenu", (menuId) => {
+  return cy.get(`[data-menu-id='${menuId}']`);
+});
 
 Cypress.Commands.add("getActiveWizardField", (fieldName) => {
 
@@ -22,6 +25,14 @@ Cypress.Commands.add("selectRaycasting", (from, to) => {
     win.__CAD_APP.services.pickControl.simulatePickFromRay(from, to);
     win.__DEBUG__.AddSegment3(from, to);
   });
+});
+
+Cypress.Commands.add("simulateClickByRayCast", (from, to) => {
+  cy.getModellerTPI().then(tpi => {
+    tpi.simulateClickByRayCast(from, to);
+    tpi.__DEBUG__.AddSegment3(from, to);
+  });
+
 });
 
 Cypress.Commands.add("openSketcher", () => {

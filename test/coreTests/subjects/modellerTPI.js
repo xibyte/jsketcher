@@ -4,6 +4,7 @@ import {
   PICK_KIND,
   traversePickResults
 } from '../../../web/app/cad/scene/controls/pickControlPlugin';
+import {Vector3} from "three";
 
 export default ctx => {
 
@@ -59,11 +60,22 @@ export default ctx => {
   function selectFirst(type) {
     ctx.services.pickControl.pick(ctx.services.cadRegistry.models.find(m => m.TYPE === type));
   }
-  
+
+  function simulateClickByRayCast(from, to) {
+    ctx.services.pickControl.simulatePickFromRay(from, to);
+
+    const {x, y} = ctx.services.viewer.sceneSetup.modelToScreen( new Vector3().fromArray(from) );
+
+    const hits = ctx.services.viewer.customRaycast(from, to, ctx.services.cadScene.workGroup.children);
+    ctx.services.modelMouseEventSystem.dispatchMousemove(mouseEvent('mousemove', x, y), hits);
+    ctx.services.modelMouseEventSystem.dispatchMousedown(mouseEvent('mousedown', x, y), hits);
+    ctx.services.modelMouseEventSystem.dispatchMouseup(mouseEvent('mouseup', x, y), hits);
+  }
+
   function getWizardContext() {
     return ctx.streams.wizard.wizardContext.value
   }
-  
+
   function openSketcher() {
     ctx.services.action.run('EditFace');
     return createSubjectFromInPlaceSketcher(ctx);
@@ -75,7 +87,7 @@ export default ctx => {
   
   return {
     context: ctx,
-    openWizard, wizardOK, sceneMouseEvent, clickOnScene,
+    openWizard, wizardOK, sceneMouseEvent, clickOnScene, simulateClickByRayCast,
     rayCast, rayCastFaces, select, selectFaces, selectFirst, openSketcher, commitSketch,
     get wizardContext() { return getWizardContext()},
     __DEBUG__: ctx.services.debug.utils

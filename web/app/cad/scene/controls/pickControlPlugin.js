@@ -3,6 +3,7 @@ import {getAttribute, setAttribute} from 'scene/objectData';
 import {FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL, DATUM_AXIS, LOOP} from '../entites';
 import {LOG_FLAGS} from '../../logFlags';
 import * as vec from 'math/vec';
+import {initRayCastDebug, printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
 
 export const PICK_KIND = {
   FACE: mask.type(1),
@@ -22,7 +23,6 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
   datum: true  
 });
 
-let RayCastDebugInfo;
 
 export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;
 
@@ -147,7 +147,7 @@ export function activate(context) {
   };
 
   if (LOG_FLAGS.PICK) {
-    RayCastDebugInfo = {};
+    initRayCastDebug();
   }
 }
 
@@ -212,7 +212,6 @@ export function traversePickResults(event, pickResults, kind, visitor) {
   }
 }
 
-
 function printPickInfo(model, rayCastData) {
   console.log("PICKED MODEL:");
   console.dir(model);
@@ -221,12 +220,6 @@ function printPickInfo(model, rayCastData) {
     console.dir(rayCastData);
     let pt = rayCastData.point;
     console.log('POINT: ' + pt.x + ', ' + pt.y + ',' + pt.z);
-    if (RayCastDebugInfo && RayCastDebugInfo.ray) {
-      //generating test data
-      const BUFFER = 100;
-      const r = vec.fromXYZ(pt).map(Math.round);
-      const dir = vec._mul(vec.fromXYZ(RayCastDebugInfo.ray.direction), BUFFER);
-      console.log('cy.selectRaycasting(['+ vec.sub(r, dir).map(Math.round).join(', ') + '], [' + vec.add(r, dir).map(Math.round).join(', ') + '])');
-    }
+    printRaycastDebugInfo('selection', rayCastData);
   }
 }
