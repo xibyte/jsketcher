@@ -54,6 +54,9 @@ export default class DatumView extends View {
       }
 
       onMouseClick({mouseEvent: e}) {
+        if (!this.material.visible) {
+          return;
+        }
         selectDatum(datum);
         showDatumMenu({
           x: e.offsetX,
