@@ -1,10 +1,12 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import {useCallback, useContext, useEffect, useState} from 'react';
 import {StreamsContext} from "./streamsContext";
+import {ApplicationContext} from "context";
+import {Emitter, Stream} from "lstream";
 
-export function useStream(getStream) {
+export function useStream<T>(getStream: (ctx: ApplicationContext) => Stream<T>) : T {
 
   const basicStreams = useContext(StreamsContext);
-  const [state, setState] = useState();
+  const [state, setState] = useState<{data: T}>();
 
   const stream = typeof getStream === 'function' ? getStream(basicStreams) : getStream;
 
@@ -15,11 +17,11 @@ export function useStream(getStream) {
 
   useEffect(() => stream.attach(data => setState({data})), EMPTY_ARR);
 
-  return state ? state.data : (stream.value ? stream.value : null);
-
+  // @ts-ignore
+  return state ? state.data : (stream.value !== undefined  ? stream.value : null);
 }
 
-export function useStreamWithUpdater(getStream) {
+export function useStreamWithUpdater<T>(getStream: (ctx: ApplicationContext) => Emitter<T>) : [T, (val: T|((T) => T)) => void] {
 
   const data = useStream(getStream);
   const basicStreams = useContext(StreamsContext);
