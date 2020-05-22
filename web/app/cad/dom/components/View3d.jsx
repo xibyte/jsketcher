@@ -39,7 +39,7 @@ export default class View3d extends React.Component {
             <HeadsUpHelper/>
           </div>
 
-          <div className={ls.middleSection}>
+          <div className={ls.middleSection + ' small-typography'}>
             <SketcherMode>
               <InplaceSketcher>
                 <div className={ls.overlayingPanel} >
