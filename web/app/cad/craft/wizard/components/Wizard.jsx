@@ -60,7 +60,7 @@ export default class Wizard extends React.Component {
                    onClose={this.cancel}
                    onKeyDown={this.onKeyDown}
                    setFocus={this.focusFirstInput}
-                   className='Wizard'
+                   className='Wizard mid-typography'
                    data-operation-id={operation.id}
                    controlButtons={<>
                      <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({

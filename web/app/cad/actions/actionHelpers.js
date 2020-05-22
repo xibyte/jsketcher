@@ -18,14 +18,14 @@ export function checkForSelectedSolids(amount) {
 
 export function requiresFaceSelection(amount) {
   return {
-    listens: streams => streams.selection.face,
+    listens: ctx => ctx.streams.selection.face,
     update: checkForSelectedFaces(amount)
   }
 }
 
 export function requiresSolidSelection(amount) {
   return {
-    listens: streams => streams.selection.face,
+    listens: ctx => ctx.streams.selection.face,
     update: checkForSelectedSolids(amount)
   }
 }

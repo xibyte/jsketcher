@@ -31,7 +31,7 @@ export default class HistoryTimeline extends React.Component {
     let {history, pointer, setHistoryPointer, rebuild, getOperation, inProgressOperation} = this.props;
     let scrolly;
     let eof = history.length-1;
-    return <div className={ls.root} ref={this.keepRef}>
+    return <div className={cx(ls.root, ' small-typography')} ref={this.keepRef}>
       <Controls rebuild={rebuild} history={history} pointer={pointer} eoh={eof} setHistoryPointer={this.setHistoryPointerAndRequestScroll}/>
       <div className={ls.scroller} onClick={e => scrolly.scrollLeft -= 60}><Fa icon='caret-left'/></div>
       <div className={ls.history} ref={el => scrolly = el}>

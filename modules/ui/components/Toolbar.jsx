@@ -5,7 +5,7 @@ import ls from './Toolbar.less';
 
 export default function Toolbar({children, className, size, medium, vertical, flat, ...props}) {
   return <div
-    className={cx(`${ls.root} disable-selection compact-font`, ls[size], 
+    className={cx(`${ls.root} disable-selection condensed`, ls[size],
                vertical && ls.vertical, flat && ls.flat, className)} 
     {...props}>
     {children}
