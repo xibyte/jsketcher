@@ -1,13 +1,27 @@
-@bg-color: #000;
-@bg-color-alt: #1a1a1a;
 
-@font-color: #eee;
-@font-color-minor: #ccc;
+@hue-prim: 200;
+@saturation: 6%;
 
-@font-color-suppressed: #aaa;
-@font-color-disabled: #888;
+@bg-color-0: hsl(@hue-prim, @saturation, 7%);
+@bg-color-1: hsl(@hue-prim, @saturation, 12%);
+@bg-color-2: hsl(@hue-prim, @saturation, 17%);
+@bg-color-3: hsl(@hue-prim, @saturation, 23%);
+@bg-color-4: hsl(@hue-prim, @saturation, 28%);
+@bg-color-5: hsl(@hue-prim, @saturation, 33%);
+@bg-color-6: hsl(@hue-prim, @saturation, 38%);
+@bg-color-7: hsl(@hue-prim, @saturation, 43%);
+@bg-color-8: hsl(@hue-prim, @saturation, 48%);
+@bg-color-9: hsl(@hue-prim, @saturation, 53%);
 
-@border-color: #2c2c2c;
+@bg-base-color: @bg-color-1;
+
+@font-color-empph: #fff;
+@font-color: hsl(0, 0, 90%);
+@font-color-minor: hsl(0, 0, 80%);
+@font-color-suppressed: hsl(0, 0, 65%);
+@font-color-disabled: hsl(0, 0, 55%);
+
+@border-color: @bg-color-6;
 
 @control-color-number: #2fa1d6;
 @control-color-text: #9cdaf7;
@@ -21,11 +35,11 @@
 
 @color-danger: #b00;
 @color-accent: #2B7D2B;
+
 @color-neutral: #66727d;
 @color-highlight: #003f5d;
 
-@color-text-highlight: #9cdaf7;
+@color-btn-selected: hsl(@hue-prim, 55%, 46%);
 
+@color-text-highlight: hsl(@hue-prim, 85%, 85%);
 
-//@work-area-toolbar-bg-color: ;
-//@work-area-toolbar-font-color: ;
