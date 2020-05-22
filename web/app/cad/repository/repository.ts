@@ -5,15 +5,18 @@ export interface StorageUpdateEvent {
   timestamp: number
 }
 
-export interface Storage extends Observable<StorageUpdateEvent> {
+export interface Repository extends Observable<StorageUpdateEvent> {
 
   set(path: string, content: string): Promise<void>;
 
-  get(path: string): Promise<string>;
+  get(path: string): Promise<Response>;
 
   remove(path: string): Promise<void>;
 
-  list(path: string): Promise<string[]>;
+  list(path: string): Promise<{
+    name: string,
+    path: string,
+    type: string}[]>;
 
   exists(path: string): Promise<boolean>;
 

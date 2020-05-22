@@ -1,29 +1,15 @@
 import React from 'react';
+import {useStream} from 'ui/effects';
+import {state} from 'lstream';
+import {Scope} from "../../../sketcher/components/Scope";
 
-const CONTRIBUTED_COMPONENTS = [];
+const CONTRIBUTED_COMPONENTS$ = state([]);
 
-const mounted = new Set();
-
-export default class ContributedComponents extends React.Component {
-
-
-  componentDidMount() {
-    mounted.add(this);
-  }
-  
-  
-  componentWillUnmount() {
-    mounted.delete(this);
-  }
-
-  render() {
-    return CONTRIBUTED_COMPONENTS;
-  }
+export function ContributedComponents() {
+  const contrib = useStream(CONTRIBUTED_COMPONENTS$);
+  return contrib.map((Comp, i) => <Scope><Comp key={i} /></Scope> );
 }
 
-
-
 export function contributeComponent(comp) {
-  CONTRIBUTED_COMPONENTS.push(comp);
-  mounted.forEach(c => c.forceUpdate());
+  CONTRIBUTED_COMPONENTS$.update(contrib => [...contrib, comp]);
 }

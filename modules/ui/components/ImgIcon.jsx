@@ -1,7 +1,7 @@
 import React from 'react';
 
 export default function ImgIcon({url, size, style, ...props}) {
-  return <span style={{
+  return <span className='img-icon' style={{
     display: 'inline-block',
     backgroundImage: 'url('+url+')',
     backgroundRepeat: 'no-repeat',

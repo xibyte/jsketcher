@@ -5,7 +5,7 @@ import cx from 'classnames';
 
 export default function ControlBar({left, right}) {
 
-  return <div className={ls.root}>
+  return <div className={cx(ls.root, 'mid-typography')}>
     <div className={ls.left}>
       {left}
     </div>

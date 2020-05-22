@@ -1,8 +1,8 @@
-import {Storage, StorageUpdateEvent} from "./storage";
+import {Repository, StorageUpdateEvent} from "./repository";
 import {stream} from "lstream";
 
 
-export class BrowserLocalStorage implements Storage {
+export class GoogleDriveRepository implements Repository {
 
   readonly prefix: string;
 
