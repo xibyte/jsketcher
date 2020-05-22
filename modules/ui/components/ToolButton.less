@@ -2,25 +2,25 @@
 
 .root {
 
-  border: 1px solid @bg-color;
+  //border: 1px solid @bg-color-6;
   margin: 3px;
   border-radius: 3px;
 
-  padding: 5px 2px;
+  padding: 0.4em 0.3em;
   cursor: pointer;
-  background-color: @bg-color;
-
+  background-color: @bg-color-6;
+  color: @font-color-empph;
   outline: none;
 
   &:hover {
-    background-color: #9c9c9c !important;
-  }     
+    background-color: @bg-color-5 !important;
+  }
   &:active {
     transition: 200ms;
-    background-color: #BFBFBF !important;
+    background-color: @bg-color-7 !important;
   }
   &.pressed {
-    background-color: #7d7d7d;
+    background-color: @color-btn-selected !important;
   }
 }
 

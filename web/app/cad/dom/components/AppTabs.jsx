@@ -40,7 +40,7 @@ export default function AppTabs({}) {
         </Card>)}
     </div>
 
-    <TabSwitcher className={ls.contentSwitcher}>
+    <TabSwitcher className={ls.contentSwitcher + ' small-typography'}>
 
       <Tab label='3D View' active={activeTab < 0} readOnly={true} onSwitch={switchTo.bind(null, -1)}/>
 
