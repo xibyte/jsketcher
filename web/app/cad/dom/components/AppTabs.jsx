@@ -6,7 +6,7 @@ import ls from './AppTabs.less';
 
 import TabSwitcher, {Tab} from 'ui/components/TabSwticher';
 import Card from "ui/components/Card";
-import {useStreamWithUpdater} from "../../../../../modules/ui/effects";
+import {useStreamWithUpdater} from "ui/effects";
 import {AppContext} from "./AppContext";
 
 export default function AppTabs({}) {
@@ -24,7 +24,7 @@ export default function AppTabs({}) {
     };
   });
 
-  const detach = index => ctx.detach(index);
+  const detach = index => ctx.appTabsService.detach(index);
 
   return <div className={ls.root}>
 

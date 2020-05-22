@@ -9,7 +9,7 @@ export default [
       icon96: 'img/cad/face-edit96.png',
       info: 'open sketcher for a face/plane',
     },
-    listens: streams => streams.selection.face,
+    listens: ctx => ctx.streams.selection.face,
     update: ActionHelpers.checkForSelectedFaces(1),
     invoke: ({services}) => services.sketcher.sketchFace(services.selection.face.single)
   },
@@ -22,7 +22,7 @@ export default [
       icon96: 'img/cad/face-edit96.png',
       info: 'open sketcher for a face/plane',
     },
-    listens: streams => streams.selection.face,
+    listens: ctx => ctx.streams.selection.face,
     update: ActionHelpers.checkForSelectedFaces(1),
     invoke: ctx => ctx.services.sketcher.reassignSketchMode.enter(ctx.services.selection.face.single.id)
   },

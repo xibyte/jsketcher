@@ -1,4 +1,4 @@
-import 'ui/styles/init/index.less';
+import 'ui/styles/global/index.less';
 import '../css/app.less'
 
 import {createAppContext} from './sketcher/sketcherContext';

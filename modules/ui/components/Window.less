@@ -18,22 +18,31 @@
 
 .bar {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   background-color: @bg-color;
-  line-height: 1;
   cursor: default;
   border-bottom: 1px solid @border-color;
-  padding-left: 6px;
+}
+
+.title {
+  padding: 0.3em 0 0.3em 0.5em;
+  font-size: 1.1em;
+}
+
+.controlButtons {
+  display: flex;
+  align-items: stretch;
 }
 
 .button {
-  display: inline-block;
-  padding: 6px 5px 6px 5px;
+  padding: 0 0.5em;
   .button-behavior(@color-accent);
+  display: flex;
+  align-items: center;
   svg {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
   }
 }
 

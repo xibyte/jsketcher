@@ -10,7 +10,7 @@ import {useStream} from "../effects";
 
 export default function Menu({children, x, y, orientationUp, centered, menuId, ...props}) {
   return <AuxWidget 
-    className={cx(ls.root, 'disable-selection')}
+    className={cx(ls.root, 'disable-selection', 'small-typography')}
     zIndex={500}
     left={x}
     top={orientationUp ? undefined : y}

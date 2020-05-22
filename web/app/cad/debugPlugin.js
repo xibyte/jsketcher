@@ -295,7 +295,7 @@ const DebugActions = [
       label: 'print face',
       info: 'print a face out as JSON',
     },
-    listens: streams => streams.selection.face,
+    listens: ctx => ctx.streams.selection.face,
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection}}) => {
       let s = selection.face.single;
@@ -313,7 +313,7 @@ const DebugActions = [
       label: 'print face id',
       info: 'print a face id',
     },
-    listens: streams => streams.selection.face,
+    listens: ctx => ctx.streams.selection.face,
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection}}) => {
       console.log(selection.face.single.id);
@@ -327,7 +327,7 @@ const DebugActions = [
       label: 'print face sketch',
       info: 'print face sketch stripping constraints and boundary',
     },
-    listens: streams => streams.selection.face,
+    listens: ctx => ctx.streams.selection.face,
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection, project}}) => {
       const faceId = selection.face.single.id;

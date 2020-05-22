@@ -2,22 +2,54 @@ import React from 'react';
 
 import ls from './Window.less'
 import cx from 'classnames';
-import {NOOP} from '../../gems/func';
+import {NOOP} from 'gems/func';
 import {FaTimes} from 'react-icons/fa';
 
-export default class Window extends React.Component {
+export interface WindowProps {
+
+  initWidth?: number;
+  initHeight?: number;
+  initLeft?: number;
+  initTop?: number;
+  initRight?: number;
+  initBottom?: number;
+  centerScreen?: boolean
+  setFocus?: (HTMLElement) => void;
+  className?: string;
+  resizeCapturingBuffer?: number;
+  resize?: number;
+  onResize?: () => void;
+  enableResize?: boolean;
+  children?: any;
+  title: string,
+  icon?: JSX.Element,
+  controlButtons?: JSX.Element;
+  minimizable?: boolean;
+  onClose: () => void;
+  props?: JSX.IntrinsicAttributes;
+  footer?: JSX.Element;
+}
+
+export default class Window extends React.Component<WindowProps> {
   
 
   resizeHelper = new ResizeHelper();
+  dragOrigin: { x: any; y: any };
+  el: HTMLElement;
+  originLocation: {
+    left: number,
+    top: number,
+    right: number
+  };
 
   render() {
 
-    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, setFocus, className,
-      resizeCapturingBuffer, resize, enableResize, children, title, icon, minimizable, onClose, controlButtons, ...props} = this.props;
+    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, centerScreen, setFocus, className, resizeCapturingBuffer,
+      resize, enableResize, children, title, icon, minimizable = false, onClose, controlButtons, footer, ...props} = this.props;
 
     return <div className={cx(ls.root, this.resizeConfig&&ls.mandatoryBorder, className)} {...props} ref={this.keepRef}>
       <div className={ls.bar + ' disable-selection'} onMouseDown={this.startDrag} onMouseUp={this.stopDrag}>
-        <div>{icon}<b>{title.toUpperCase()}</b></div>  
+        <div className={ls.title}>{icon}<b>{title.toUpperCase()}</b></div>
         <div className={ls.controlButtons}>
           {controlButtons}
           {minimizable &&  <WindowControlButton onClick={onClose}>_</WindowControlButton>}
@@ -27,6 +59,7 @@ export default class Window extends React.Component {
       <div className={cx(ls.content, 'compact-scroll')}>
         {children}
       </div>
+      <>{footer}</>
     </div>
 
   }
@@ -99,7 +132,7 @@ export default class Window extends React.Component {
     if (el === null) {
       return;
     }
-    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, resizeCapturingBuffer, onResize, ...props} = this.props;
+    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, resizeCapturingBuffer, onResize, centerScreen, ...props} = this.props;
 
     if (initWidth) {
       el.style.width = initWidth + 'px';
@@ -117,6 +150,12 @@ export default class Window extends React.Component {
     } else if (initBottom) {
       el.style.top = (window.innerHeight - el.offsetHeight - initBottom) + 'px';
     }
+
+    if (centerScreen) {
+      el.style.left = (window.innerWidth/2 - el.offsetWidth/2) + 'px';
+      el.style.top = (window.innerHeight/2 - el.offsetHeight/2) + 'px';
+    }
+
     this.resizeHelper.registerResize(el, this.resizeConfig, resizeCapturingBuffer, onResize);
     this.el = el;
   };
@@ -130,11 +169,10 @@ export default class Window extends React.Component {
   }
 }
 
-Window.defaultProps = {
-  minimizable: false,
-};
-
 export class ResizeHelper {
+
+  moveHandler: any;
+  controlGlobalListeners: boolean;
 
   constructor (controlGlobalListeners = false) {
     this.moveHandler = null;
@@ -282,6 +320,10 @@ function _maskTest(mask, value) {
   return (mask & value) === value;
 }
 
-export function WindowControlButton({danger, ...props}) {
+export function WindowControlButton({danger, ...props}: {
+  danger?: boolean;
+  children: any;
+  onClick: () => void;
+  } & JSX.IntrinsicAttributes) {
   return <span className={cx(ls.button, danger&&ls.danger)} {...props} />;
 }

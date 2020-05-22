@@ -15,5 +15,8 @@
         "node_modules/*"
       ]
     }
-  }
+  },
+  "includes": [
+    "./externals.d.ts"
+  ]
 }

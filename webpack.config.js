@@ -35,8 +35,8 @@ module.exports = {
   devServer: {
     hot: false,
     inline: false,
-    before: function(app) {
-      app.get('*.wasm', function(req, res) {
+    before: function (app) {
+      app.get('*.wasm', function (req, res) {
         res.sendFile(req.url, {
           root: path.join(__dirname, 'web'),
           headers: {
@@ -47,19 +47,21 @@ module.exports = {
     },
   },
   module: {
-    rules: [{
-      test: /\.(js|jsx|ts|tsx)$/,
-      loader: 'babel-loader',
-      include: [MODULES, WEB_APP, INTEGRATION_TESTS]
-    }, {
-      test: /\.(less|css)$/,
-      include: [GLOBAL_CSS, INTEGRATION_TESTS],
-      use: [
-        'style-loader',
-        'css-loader?-url',
-        'less-loader',
-      ]
-    },
+    rules: [
+      {
+        test: /\.(js|jsx|ts|tsx)$/,
+        loader: 'babel-loader',
+        include: [MODULES, WEB_APP, INTEGRATION_TESTS]
+      },
+      {
+        test: /\.(less|css)$/,
+        include: [GLOBAL_CSS, INTEGRATION_TESTS],
+        use: [
+          'style-loader',
+          'css-loader?-url',
+          'less-loader',
+        ]
+      },
       {
         test: /\.(css)$/,
         include: [NODE_MODULES],
@@ -72,7 +74,7 @@ module.exports = {
         oneOf: [
           {
             test: /\.(less|css)$/,
-            include: [path.resolve(MODULES, 'ui/styles/init')],
+            include: [path.resolve(MODULES, 'ui/styles/global')],
             use: [
               'style-loader',
               'css-loader',
