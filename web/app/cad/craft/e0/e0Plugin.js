@@ -11,7 +11,8 @@ export function activate(ctx) {
   ctx.services.operation.handlers.push(operationHandler);
   ctx.services.craftEngine = {
     ...craftMethods
-  }
+  };
+  ctx.craftEngine = ctx.services.craftEngine;
 }
 
 function instantiateEngine(importObject, callback) {

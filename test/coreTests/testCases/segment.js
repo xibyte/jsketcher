@@ -4,7 +4,7 @@ import {createSketcherTPI} from "../subjects/sketcherTPI";
 
 export const TEST_MODE = 'sketcherUI';
 
-export function testSegmentWizard(env, tpi) {
+export async function testSegmentWizard(env, tpi) {
   assertEquals(0, tpi.viewer.activeLayer.objects.length);
   tpi.addSegment(10, 10, 100, 100);
 
@@ -15,16 +15,16 @@ export function testSegmentWizard(env, tpi) {
   const [bsx, bsy] = tpi.toScreen(100, 100);
   assertPoint2DEquals(tpi.toModel(asx, asy), segment.a);
   assertPoint2DEquals(tpi.toModel(bsx, bsy), segment.b);
-  env.done();
+
 }
 
-export function testSaveLoad(env, tpi) {
+export async function testSaveLoad(env, tpi) {
   assertEquals(0, tpi.viewer.activeLayer.objects.length);
   tpi.addSegment(10, 10, 100, 100);
   tpi.runAction('Save');
   cy.visit('http://localhost:3000');
   cy.window().then(win => {
-    env.done();
+
   });
   // env.navigate('http://google.com').then(win => {
   //   const tpi = createSketcherTPI(win.__CAD_APP);
@@ -43,7 +43,7 @@ testSaveLoad.only = true;
 //     env.assertEquals(0, app.viewer.selected.length);
 //     sketcher_utils.clickXY(app, 50, 50);
 //     env.assertEquals(1, app.viewer.selected.length);
-//     env.done();
+//
 //   }));
 // },
 //
@@ -55,7 +55,7 @@ testSaveLoad.only = true;
 //     sketcher_utils.clickXY(app, 55, 50);
 //     env.assertEquals(1, app.viewer.selected.length);
 //     env.assertEquals('TCAD.TWO.Segment', app.viewer.selected[0]._class);
-//     env.done();
+//
 //   }));
 // },
 //
@@ -67,7 +67,7 @@ testSaveLoad.only = true;
 //     const keyboardEvent = keyboard.keyCode('keydown', 8);
 //     win.dispatchEvent(keyboardEvent);
 //     env.assertEquals(0, app.viewer.activeLayer.objects.length);
-//     env.done();
+//
 //   }));
 // },
 //
@@ -82,7 +82,7 @@ testSaveLoad.only = true;
 //     env.assertEquals(1, s2.a.linked.length);
 //     env.assertEquals(s1.b.linked[0], s2.a);
 //     env.assertEquals(s2.a.linked[0], s1.b);
-//     env.done();
+//
 //   }));
 // },
 //
@@ -97,7 +97,7 @@ testSaveLoad.only = true;
 //     env.assertEquals(1, s2.b.linked.length);
 //     env.assertEquals(s1.b.linked[0], s2.b);
 //     env.assertEquals(s2.b.linked[0], s1.b);
-//     env.done();
+//
 //   }));
 // },
 //
@@ -109,7 +109,7 @@ testSaveLoad.only = true;
 //     env.assertPoint2DEquals(sketcher_utils.toModel(app, 10, 10), segment.a);
 //     //should be moved
 //     env.assertPoint2DEquals(sketcher_utils.toModel(app, 200, 150), segment.b);
-//     env.done();
+//
 //   }));
 // },
 //
@@ -124,7 +124,7 @@ testSaveLoad.only = true;
 //     env.assertPoint2DEquals(sketcher_utils.toModelP(app, initA.plus(moveDelta)), segment.a);
 //     env.assertPoint2DEquals(sketcher_utils.toModelP(app, initB.plus(moveDelta)), segment.b);
 //     env.assertEquals('TCAD.TWO.Segment', app.viewer.selected[0]._class);
-//     env.done();
+//
 //   }));
 // }
 

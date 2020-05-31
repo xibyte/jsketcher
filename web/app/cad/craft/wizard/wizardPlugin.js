@@ -131,10 +131,11 @@ export function activate(ctx) {
     applyWorkingRequest: () => {
       let {type, params} = streams.wizard.wizardContext.value.workingRequest$.value;
       let request = clone({type, params});
+      const setError = error => streams.wizard.wizardContext.mutate(ctx => ctx.state$.mutate(state => state.error = error));
       if (streams.wizard.insertOperation.value.type) {
-        ctx.services.craft.modify(request, () => streams.wizard.insertOperation.value = EMPTY_OBJECT);
+        ctx.services.craft.modify(request, () => streams.wizard.insertOperation.value = EMPTY_OBJECT, setError );
       } else {
-        ctx.services.craft.modifyInHistoryAndStep(request, () => streams.wizard.effectiveOperation.value = EMPTY_OBJECT);
+        ctx.services.craft.modifyInHistoryAndStep(request, () => streams.wizard.effectiveOperation.value = EMPTY_OBJECT, setError);
       }
     },
     

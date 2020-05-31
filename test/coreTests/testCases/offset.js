@@ -7,7 +7,7 @@ export default {
   testRefreshHappensOnce: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
@@ -16,7 +16,7 @@ export default {
       win.prompt = function() {
         setTimeout(() => {
           env.assertEquals('OFFSET0 = 30', app.viewer.params.constantDefinition);
-          env.done();
+
         });
         return 30;
       };
@@ -34,7 +34,7 @@ export default {
       win.prompt = function() {
         setTimeout(() => {
           env.assertEquals('OFFSET0 = 100\nOFFSET1 = 30', app.viewer.params.constantDefinition);
-          env.done();
+
         });
         return 30;
       };
@@ -49,49 +49,49 @@ export default {
   testConstantsInwardArc: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
   
   testCWAndCCWSame: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testNonConvex: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testStart: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testTwoArcs: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testThreeArcs: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testCircle: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
@@ -108,7 +108,7 @@ export default {
       app.actions['offsetTool'].action();
       app.viewer.toolManager.tool.mousemove(new TestMouseEvent(302, 106));
       env.assertEquals(0, findMarked(app).length);
-      env.done();
+
     }));
   },
 
@@ -116,49 +116,49 @@ export default {
     test.emptySketch(env.test((win, app) => {
       win.prompt = function() {
       };
-      env.done();
+
     }));
   },
 
   testPentagon: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testHexagon: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testAfterRectangleTool: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testRectWithFillet: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testAgainstBoundary: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   },
 
   testDegradingGeom: function (env) {
     test.emptySketch(env.test((win, app) => {
       env.fail('implement me');
-      env.done();
+
     }));
   }
 }

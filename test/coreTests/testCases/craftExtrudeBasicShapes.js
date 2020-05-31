@@ -3,8 +3,8 @@ import {createPlaneAndOpenSketcher} from '../utils/scripts';
 
 export const TEST_MODE = 'modellerUI';
 
-export function testExtrudeFromSketch(env, ui) {
-  let sketcherUI = createPlaneAndOpenSketcher(ui);
+export async function testExtrudeFromSketch(env, ui) {
+  let sketcherUI = await createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let seg1 = sketcherUI.addSegment(-100, -100, 100, -100);
   let seg2 = sketcherUI.addSegment(100, -100, 100, 100);
@@ -18,7 +18,7 @@ export function testExtrudeFromSketch(env, ui) {
   
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 200);
-  ui.wizardOK();
+  await ui.wizardOK();
 
   let [leftFace] = ui.rayCastFaces([-110, 0, 100], [-90, 0, 100]);
   let [rightFace] = ui.rayCastFaces([110, 0, 100], [90, 0, 100]);
@@ -44,11 +44,11 @@ export function testExtrudeFromSketch(env, ui) {
   assertFaceOrigination(topFace, sketchId, seg3.id);
   assertFaceOrigination(leftFace, sketchId, seg4.id);
 
-  env.done();
+
 }
 
-export function testExtrudeArc(env, ui) {
-  let sketcherUI = createPlaneAndOpenSketcher(ui);
+export async function testExtrudeArc(env, ui) {
+  let sketcherUI = await createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let arc = sketcherUI.addArc(0, 0, 100, 0, -100, 0);
   let segment = sketcherUI.addSegment(100, 0, -100, 0);
@@ -64,7 +64,7 @@ export function testExtrudeArc(env, ui) {
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 200);
   
-  ui.wizardOK();
+  await ui.wizardOK();
 
   let [curvedFace] = ui.rayCastFaces([0, 110, 100], [0, 90, 100]);
   let [flatFace] = ui.rayCastFaces([0, -10, 100], [0, 10, 100]);
@@ -82,11 +82,11 @@ export function testExtrudeArc(env, ui) {
   assertFaceOrigination(curvedFace, sketchId, arc.id);
   assertFaceOrigination(flatFace, sketchId, segment.id);
 
-  env.done();
+
 }
 
-export function testExtrudeCircle(env, ui) {
-  let sketcherUI = createPlaneAndOpenSketcher(ui); 
+export async function testExtrudeCircle(env, ui) {
+  let sketcherUI = await createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let circle = sketcherUI.addCircle(100, 100, 100);
 
@@ -97,7 +97,7 @@ export function testExtrudeCircle(env, ui) {
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 200);
 
-  ui.wizardOK();
+  await ui.wizardOK();
 
   let [curvedFace] = ui.rayCastFaces([100, -10, 100], [100, 10, 100]);
   let [topFace] = ui.rayCastFaces([100, 100, 210], [100, 100, 190]);
@@ -112,11 +112,11 @@ export function testExtrudeCircle(env, ui) {
 
   assertFaceOrigination(curvedFace, sketchId, circle.id);
 
-  env.done();
+
 }
 
-export function testExtrudeEllipse(env, ui) {
-  let sketcherUI = createPlaneAndOpenSketcher(ui);
+export async function testExtrudeEllipse(env, ui) {
+  let sketcherUI = await createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let ellipse = sketcherUI.addEllipse(-100, 100, 100, 100, 0, 150);
 
@@ -127,7 +127,7 @@ export function testExtrudeEllipse(env, ui) {
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 200);
 
-  ui.wizardOK();
+  await ui.wizardOK();
 
   let [curvedFace] = ui.rayCastFaces([0, 151, 100], [0, 149, 100]);
   let [topFace] = ui.rayCastFaces([0, 100, 201],[0, 100, 199]);
@@ -142,11 +142,11 @@ export function testExtrudeEllipse(env, ui) {
 
   assertFaceOrigination(curvedFace, sketchId, ellipse.id);
 
-  env.done();
+
 }
 
-export function testExtrudeEllipticalArc(env, ui) {
-  let sketcherUI = createPlaneAndOpenSketcher(ui);
+export async function testExtrudeEllipticalArc(env, ui) {
+  let sketcherUI = await createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let eArc = sketcherUI.addEllipticalArc(-100, 100, 100, 100, 0, 150);
   sketcherUI.move(100, 100, -50, 170);
@@ -159,7 +159,7 @@ export function testExtrudeEllipticalArc(env, ui) {
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 200);
 
-  ui.wizardOK();
+  await ui.wizardOK();
 
   let [curvedFace] = ui.rayCastFaces([-110, 100, 100], [-90, 100, 100]);
   let [topFace] = ui.rayCastFaces([0, 100, 201],[0, 100, 199]);
@@ -174,11 +174,11 @@ export function testExtrudeEllipticalArc(env, ui) {
 
   assertFaceOrigination(curvedFace, sketchId, eArc.id);
 
-  env.done();
+
 }
 
-export function testExtrudeBezier(env, ui) {
-  let sketcherUI = createPlaneAndOpenSketcher(ui);
+export async function testExtrudeBezier(env, ui) {
+  let sketcherUI = await createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let bezier = sketcherUI.addBezier(-100, 100, 100, 100, 0, 150);
   sketcherUI.move(bezier.cp2.x, bezier.cp2.y, bezier.cp2.x, bezier.cp1.y);
@@ -193,7 +193,7 @@ export function testExtrudeBezier(env, ui) {
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 200);
 
-  ui.wizardOK();
+  await ui.wizardOK();
 
   let [curvedFace] = ui.rayCastFaces([0, 178, 50], [0, 170, 50]);
   let [topFace] = ui.rayCastFaces([0, 100, 201],[0, 100, 199]);
@@ -208,5 +208,5 @@ export function testExtrudeBezier(env, ui) {
 
   assertFaceOrigination(curvedFace, sketchId, bezier.id);
 
-  env.done();
+
 }
