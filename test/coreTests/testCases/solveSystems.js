@@ -3,7 +3,7 @@ import {NOOP} from '../../../modules/gems/func';
 
 export const TEST_MODE = 'sketcherUI';
 
-export function testEqualConstraints(env, ui) {
+export async function testEqualConstraints(env, ui) {
 
   ui.addRectangle(10, 10, 100, 100);
 
@@ -11,10 +11,10 @@ export function testEqualConstraints(env, ui) {
   assertEquals(4, ui.viewer.parametricManager.system.constraints.length);
   assertEquals(1, ui.viewer.parametricManager.system.subSystems[0].constraints.length);
 
-  env.done();
+
 }
 
-export function testBuildGraphBasics(env, ui) {
+export async function testBuildGraphBasics(env, ui) {
 
   const seg1 = ui.addSegment(10, 10, 10, 100);
   const seg2 = ui.addSegment(200, 10, 200, 100);
@@ -36,10 +36,10 @@ export function testBuildGraphBasics(env, ui) {
   assertEquals(1, ui.viewer.parametricManager.system.subSystems[0].constraints.length);
   assertEquals(1, ui.viewer.parametricManager.system.subSystems[1].constraints.length);
   
-  env.done();
+
 }
 
-export function testThreeConnectedConstraints(env, ui) {
+export async function testThreeConnectedConstraints(env, ui) {
 
   const seg1 = ui.addSegment(10, 10, 10, 100);
   const seg2 = ui.addSegment(200, 10, 200, 100);
@@ -68,10 +68,10 @@ export function testThreeConnectedConstraints(env, ui) {
   assertEquals(3, ui.viewer.parametricManager.system.constraints.length);
   assertEquals(3, ui.viewer.parametricManager.system.subSystems[0].constraints.length);
 
-  env.done();
+
 }
 
-export function testIgnoreBoundaries(env, ui) {
+export async function testIgnoreBoundaries(env, ui) {
 
   const boundary = ui.addSegment(500, 10, 500, 100);
   boundary.aux = true;
@@ -90,10 +90,10 @@ export function testIgnoreBoundaries(env, ui) {
   assertEquals(2, ui.viewer.parametricManager.system.constraints.length);
   assertEquals(2, ui.viewer.parametricManager.system.subSystems[0].constraints.length);
 
-  env.done();
+
 }
 
-export function testMirroring(env, ui) {
+export async function testMirroring(env, ui) {
 
   const seg1 = ui.addSegment(10, 10, 10, 100);
   const seg2 = ui.addSegment(200, 10, 200, 100);
@@ -112,10 +112,10 @@ export function testMirroring(env, ui) {
   const subSystem1 = system.constraintToSubSystem.get(system.constraints[1]);
   assertTrue( subSystem1.dependencies[0] === subSystem0, "Second subsystem depends on first one");
   
-  env.done();
+
 }
 
-export function testCircularDependencies(env, ui) {
+export async function testCircularDependencies(env, ui) {
 
   const seg1 = ui.addSegment(10, 10, 10, 100);
   const seg2 = ui.addSegment(200, 10, 200, 100);
@@ -138,11 +138,11 @@ export function testCircularDependencies(env, ui) {
   assertEquals(2, ui.viewer.parametricManager.system.subSystems.length);
   assertTrue(isCircular, "System should contain circular depending subsystems");
 
-  env.done();
+
 }
 
 
-export function testSimpleRemove(env, ui) {
+export async function testSimpleRemove(env, ui) {
 
   const seg1 = ui.addSegment(10, 10, 10, 100);
   const seg2 = ui.addSegment(200, 10, 200, 100);
@@ -168,10 +168,10 @@ export function testSimpleRemove(env, ui) {
   assertEquals(1, ui.viewer.parametricManager.system.subSystems.length);
   assertEquals(2, ui.viewer.parametricManager.system.constraints.length);
 
-  env.done();
+
 }
 
-export function testMirroringRemove(env, ui) {
+export async function testMirroringRemove(env, ui) {
 
   const seg1 = ui.addSegment(10, 10, 10, 100);
   const seg2 = ui.addSegment(200, 10, 200, 100);
@@ -187,10 +187,10 @@ export function testMirroringRemove(env, ui) {
   ui.viewer.remove(seg1);
   assertEquals(0, ui.viewer.parametricManager.system.subSystems.length);
 
-  env.done();
+
 }
 
-export function testDoubleAngle(env, ui) {
+export async function testDoubleAngle(env, ui) {
 
   const seg1 = ui.addSegment(100, 100, 100, 200);
   const seg2 = ui.addSegment(100, 200, 200, 200);
@@ -212,5 +212,5 @@ export function testDoubleAngle(env, ui) {
 
   assertFalse(isCircular, "shouldn't be circular");
 
-  env.done();
+
 }

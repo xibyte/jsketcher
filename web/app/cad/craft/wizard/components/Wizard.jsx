@@ -15,12 +15,13 @@ import {IoMdHelp} from "react-icons/io";
 @connect((streams, props) => combine(props.context.workingRequest$, props.context.state$)
   .map(([workingRequest, state]) => ({
     ...workingRequest,
-    activeParam: state.activeParam
+    activeParam: state.activeParam,
+    error: state.error
   })))
 export default class Wizard extends React.Component {
 
   state = {
-    hasError: false,
+    hasInternalError: false,
   };
 
   updateParam = (name, value) => {
@@ -54,15 +55,16 @@ export default class Wizard extends React.Component {
 
     let Form = operation.form;
 
+    const error = this.props.error;
     return <Window initWidth={250}
-                   initLeft={left || 15}
-                   title={title}
-                   onClose={this.cancel}
-                   onKeyDown={this.onKeyDown}
-                   setFocus={this.focusFirstInput}
-                   className='Wizard mid-typography'
-                   data-operation-id={operation.id}
-                   controlButtons={<>
+                                                  initLeft={left || 15}
+                                                  title={title}
+                                                  onClose={this.cancel}
+                                                  onKeyDown={this.onKeyDown}
+                                                  setFocus={this.focusFirstInput}
+                                                  className='Wizard mid-typography'
+                                                  data-operation-id={operation.id}
+                                                  controlButtons={<>
                      <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({
                        topic: operation.id,
                        x: e.pageX + 40,
@@ -79,13 +81,13 @@ export default class Wizard extends React.Component {
           <Button className='dialog-cancel' onClick={this.cancel}>Cancel</Button>
           <Button className='dialog-ok' type='accent' onClick={this.onOK}>OK</Button>
         </ButtonGroup>
-        {this.state.hasError && <div className={ls.errorMessage}>
-          {this.state.algorithmError && <span>
+        {error && <div className={ls.errorMessage}>
+          {CadError.ALGORITMTHM_ERROR_KINDS.includes(error.kind) && <span>
             performing operation with current parameters leads to an invalid object
             (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
           </span>}
-          {this.state.code && <div className={ls.errorCode}>{this.state.code}</div>}
-          {this.state.userMessage && <div className={ls.userErrorMessage}>{this.state.userMessage}</div>}
+          {error.code && <div className={ls.errorCode}>{error.code}</div>}
+          {error.userMessage && <div className={ls.userErrorMessage}>{error.userMessage}</div>}
         </div>}
       </Stack>
     </Window>;
@@ -118,34 +120,8 @@ export default class Wizard extends React.Component {
   };
 
   onOK = () => {
-    try {
-      this.props.onOK();
-    } catch (error) {
-      this.handleError(error);
-    }
+    this.props.onOK();
   };
-
-  handleError(error) {
-    let stateUpdate = {
-      hasError: true
-    };
-    let printError = true;
-    if (error.TYPE === CadError) {
-      let {code, userMessage, kind} = error;
-      printError = !code;
-      if (CadError.ALGORITMTHM_ERROR_KINDS.includes(kind)) {
-        stateUpdate.algorithmError = true;
-      }
-      if (code && kind === CadError.KIND.INTERNAL_ERROR) {
-        console.warn('Operation Error Code: ' + code);
-      }
-      Object.assign(stateUpdate, {code, userMessage});
-    }
-    this.setState(stateUpdate);
-    if (printError) {
-      throw error;
-    }
-  }
 }
 
 

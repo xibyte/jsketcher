@@ -6,14 +6,38 @@ import {
 } from '../../../web/app/cad/scene/controls/pickControlPlugin';
 import {Vector3} from "three";
 
+function waitFor(checkFn) {
+  return new Promise((resolve, reject) => {
+    const tick = () => {
+      const res = checkFn();
+      if (res) {
+        resolve(res)
+      } else {
+        setTimeout(tick, 100);
+      }
+    };
+    tick();
+  });
+}
+
+
 export default ctx => {
 
   function openWizard(operationId) {
     ctx.services.action.run(operationId);
   }
 
-  function wizardOK() {
+  async function wizardOK() {
+    const handles = Cypress.$('.x-HistoryTimeline-handle');
+    const handle = Cypress.$('.x-HistoryTimeline-active .x-HistoryTimeline-handle')[0];
+    const index = handles.index(handle);
     ctx.services.wizard.applyWorkingRequest();
+    return waitFor(() => {
+      const handles = Cypress.$('.x-HistoryTimeline-handle');
+      const handle = Cypress.$('.x-HistoryTimeline-active .x-HistoryTimeline-handle')[0];
+      const newIndex = handles.index(handle);
+      return newIndex !== index;
+    });
   }
 
   function sceneMouseEvent(type, x, y) {

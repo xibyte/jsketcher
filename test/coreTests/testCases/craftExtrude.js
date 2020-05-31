@@ -2,8 +2,8 @@ import {extrudeCube} from '../utils/scripts';
 
 export const TEST_MODE = 'modellerUI';
 
-export function testExtrudeMid(env, ui) {
-  extrudeCube(ui);
+export async function testExtrudeMid(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -12,13 +12,13 @@ export function testExtrudeMid(env, ui) {
 
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testExtrudeCOI1Faces(env, ui) {
-  extrudeCube(ui);
+export async function testExtrudeCOI1Faces(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -27,13 +27,13 @@ export function testExtrudeCOI1Faces(env, ui) {
 
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testExtrudeCOI2Faces(env, ui) {
-  extrudeCube(ui);
+export async function testExtrudeCOI2Faces(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -42,13 +42,13 @@ export function testExtrudeCOI2Faces(env, ui) {
 
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testExtrudeCOI3Faces(env, ui) {
-  extrudeCube(ui);
+export async function testExtrudeCOI3Faces(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -57,13 +57,13 @@ export function testExtrudeCOI3Faces(env, ui) {
 
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testExtrudeCOI4Faces(env, ui) {
-  extrudeCube(ui);
+export async function testExtrudeCOI4Faces(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -72,7 +72,7 @@ export function testExtrudeCOI4Faces(env, ui) {
 
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }

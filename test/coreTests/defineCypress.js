@@ -22,6 +22,10 @@ export function defineCypressTests(groupName, module) {
     };
   });
 
+  if (!hasOnly) {
+    hasOnly = !!module.only;
+  }
+
 
   (hasOnly ? describe.only : describe)(groupName, () => {
 
@@ -53,7 +57,9 @@ export function defineCypressTests(groupName, module) {
 
             test.loadStream(win).attach(ready => {
               if (ready) {
-                test.func(testEnv, subject);
+                test.func(testEnv, subject).then(() => {
+                  onDone();
+                });
               }
             });
           });

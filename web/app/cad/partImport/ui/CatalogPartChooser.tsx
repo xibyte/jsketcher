@@ -5,7 +5,8 @@ import {AppContext} from "../../dom/components/AppContext";
 import {Dialog} from "ui/components/Dialog";
 import {useDataLoader} from "ui/useDataLoader";
 import {WhenDataReady} from "ui/components/WhenDataReady";
-import {GiPuzzle} from "react-icons/gi";
+import {GrCubes} from "react-icons/gr";
+import theme from "ui/styles/theme";
 
 export function CatalogPartChooser() {
 
@@ -28,14 +29,15 @@ export function CatalogPartChooser() {
                  title='PART CATALOG'
                  enableResize={true}
                  onClose={close}
-                 onOK={() => {
-                   setReq(null);
-                   req.onDone(chosen);
-                 }}
+                 cancelText='Close'
+
 
   >
     <WhenDataReady loader={loader}>
-      {catalogs => catalogs.map(([partCatalog, descriptor]) => <PartCatalog root={partCatalog} initCollapsed={false} name={descriptor.name + descriptor.description} icon={<GiPuzzle />} />)}
+      {catalogs => catalogs.map(([partCatalog, descriptor]) => {
+        const Icon = descriptor.icon || GrCubes;
+        return <PartCatalog root={partCatalog} initCollapsed={false} name={descriptor.name + descriptor.description} icon={<Icon color={theme.onColorHighlightVariantPink}/>} />
+      })}
     </WhenDataReady>
 
   </Dialog>

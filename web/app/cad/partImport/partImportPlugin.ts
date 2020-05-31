@@ -5,26 +5,13 @@ import {WEB_CAD_ORG_COMMONS} from "./partCatalogConfig";
 import {Emitter, stream} from "lstream";
 import {ShowDialogRequest} from "ui/showDialogRequest";
 import {CatalogPartChooser} from "./ui/CatalogPartChooser";
-import {GrCloudDownload} from "react-icons/gr";
+import {ImportPartOperation} from "./importPartOperation/importPartOperation";
 
 export function activate(ctx: ApplicationContext) {
 
   ctx.domService.contributeComponent(CatalogPartChooser);
 
-  ctx.actionService.registerAction({
-    id: 'IMPORT_PART',
-    appearance: {
-      info: 'opens a dialog to import parts from the catalog',
-      label: 'import part',
-      icon: GrCloudDownload
-    },
-    invoke: (ctx: ApplicationContext) => {
-      ctx.partImportService.choosePartRequest$.next({
-        centerScreen: true,
-        onDone: () => {}
-      })
-    },
-  });
+  ctx.operationService.registerOperations([ImportPartOperation]);
 
   function loadDefinedCatalogs(): Promise<[CatalogCategory, PartsCatalog][]> {
 

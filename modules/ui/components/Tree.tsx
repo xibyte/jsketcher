@@ -21,12 +21,12 @@ export function Tree({children, icon, label, initCollapsed = false, className} :
           <GoTriangleDown/>}</span>) :
         <span className='tree-placeholder'><GoPrimitiveDot /></span>
       }
-      <span className='tree-icon'>${icon}</span>
-      <span className='tree-label'>${label}</span>
+      <span className='tree-icon'>{icon}</span>
+      <span className='tree-label'>{label}</span>
     </div>}
 
     {children && <div className='tree-content'>{children}</div>}
-`
+
   </div>;
 
 }
