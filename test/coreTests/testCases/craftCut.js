@@ -2,8 +2,8 @@ import {extrudeCube} from '../utils/scripts';
 
 export const TEST_MODE = 'modellerUI';
 
-export function testCutMid(env, ui) {
-  extrudeCube(ui);
+export async function testCutMid(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -12,13 +12,13 @@ export function testCutMid(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testCutCOI1Faces(env, ui) {
-  extrudeCube(ui);
+export async function testCutCOI1Faces(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -27,13 +27,13 @@ export function testCutCOI1Faces(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testCutCOI2Faces(env, ui) {
-  extrudeCube(ui);
+export async function testCutCOI2Faces(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -42,13 +42,13 @@ export function testCutCOI2Faces(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testCutCOI3Faces(env, ui) {
-  extrudeCube(ui);
+export async function testCutCOI3Faces(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -57,13 +57,13 @@ export function testCutCOI3Faces(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testCutCOI4Faces(env, ui) {
-  extrudeCube(ui);
+export async function testCutCOI4Faces(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -72,15 +72,15 @@ export function testCutCOI4Faces(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 50);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
 // all the way cuts
 
-export function testCutMidAllWay(env, ui) {
-  extrudeCube(ui);
+export async function testCutMidAllWay(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -89,13 +89,13 @@ export function testCutMidAllWay(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 200);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testCutCOI1FacesAllWay(env, ui) {
-  extrudeCube(ui);
+export async function testCutCOI1FacesAllWay(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -104,13 +104,13 @@ export function testCutCOI1FacesAllWay(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 200);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testCutCOI2FacesAllWay(env, ui) {
-  extrudeCube(ui);
+export async function testCutCOI2FacesAllWay(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -119,13 +119,13 @@ export function testCutCOI2FacesAllWay(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 200);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testCutCOI3FacesAllWay(env, ui) {
-  extrudeCube(ui);
+export async function testCutCOI3FacesAllWay(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -134,13 +134,13 @@ export function testCutCOI3FacesAllWay(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 200);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 
-export function testCutCOI4FacesAllWay(env, ui) {
-  extrudeCube(ui);
+export async function testCutCOI4FacesAllWay(env, ui) {
+  await extrudeCube(ui);
   ui.selectFaces([0, 0, 210], [0, 0, 190]);
 
   let sui = ui.openSketcher();
@@ -149,8 +149,8 @@ export function testCutCOI4FacesAllWay(env, ui) {
 
   ui.openWizard('CUT');
   ui.wizardContext.updateParam('value', 200);
-  ui.wizardOK();
+  await ui.wizardOK();
 
-  env.done();
+  
 }
 

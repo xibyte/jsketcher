@@ -1,47 +1,45 @@
 import {addModification, stepOverriding} from './craftHistoryUtils';
 import {state, stream} from 'lstream';
-import {MShell} from '../model/mshell';
-import {MDatum} from '../model/mdatum';
 import materializeParams from './materializeParams';
 import CadError from '../../utils/errors';
 import {MObjectIdGenerator} from '../model/mobject';
+import {intercept} from "../../../../modules/lstream/intercept";
 
-export function activate({streams, services}) {
-
+export function activate(ctx) {
+  const {streams, services} = ctx;
   streams.craft = {
+
     modifications: state({
       history: [],
       pointer: -1
     }),
+
     models: state([]),
     update: stream()
   };
 
   let preRun = null;
 
-  function modifyWithPreRun(request, modificationsUpdater, onAccepted) {
-    preRun = {
-      request
-    };
-    try {
-      preRun.result = runRequest(request);
-      if (onAccepted) {
-        onAccepted();
-      }
+  function modifyWithPreRun(request, modificationsUpdater, onAccepted, onError) {
+
+    runRequest(request).then(result => {
+      onAccepted();
+      preRun = {
+        request,
+        result
+      };
       modificationsUpdater(request);
-    } finally {
-      preRun = null;
-    }
+    }).catch(onError);
   }
   
-  function modify(request, onAccepted) {
+  function modify(request, onAccepted, onError) {
     modifyWithPreRun(request, 
-        request => streams.craft.modifications.update(modifications => addModification(modifications, request)), onAccepted);
+        request => streams.craft.modifications.update(modifications => addModification(modifications, request)), onAccepted, onError);
   }
 
-  function modifyInHistoryAndStep(request, onAccepted) {
+  function modifyInHistoryAndStep(request, onAccepted, onError) {
     modifyWithPreRun(request,
-      request => streams.craft.modifications.update(modifications => stepOverriding(modifications, request)), onAccepted);
+      request => streams.craft.modifications.update(modifications => stepOverriding(modifications, request)), onAccepted, onError);
   }
 
   function reset(modifications) {
@@ -60,25 +58,28 @@ export function activate({streams, services}) {
   function runRequest(request) {
     let op = services.operation.get(request.type);
     if (!op) {
-      throw(`unknown operation ${request.type}`);
+      return Promise.reject(new Error(`unknown operation ${request.type}`));
     }
 
     let params = {};
     let errors = [];
     materializeParams(services, request.params, op.schema, params, errors);
     if (errors.length) {
-      throw new CadError({
+      return Promise.reject(new CadError({
         kind: CadError.KIND.INVALID_PARAMS,
         userMessage: errors.map(err => `${err.path.join('.')}: ${err.message}`).join('\n')
-      });
+      }));
     }
-    
-    return op.run(params, services);
+
+    const result = op.run(params, ctx);
+    return result.then ? result : Promise.resolve(result);
   }
   
   function runOrGetPreRunResults(request) {
     if (preRun !== null && preRun.request === request) {
-      return preRun.result;
+      const result = preRun.result;
+      preRun = null;
+      return Promise.resolve(result);
     } else {
       return runRequest(request);
     }
@@ -89,7 +90,13 @@ export function activate({streams, services}) {
     historyTravel: historyTravel(streams.craft.modifications)
   };
 
-  streams.craft.modifications.pairwise().attach(([prev, curr]) => {
+  let locked = false;
+  intercept(streams.craft.modifications, (curr, stream, next) => {
+    const prev = stream.value;
+    if (locked) {
+      console.error('concurrent modification');
+    }
+    locked = true;
     let models;
     let beginIndex;
     if (isAdditiveChange(prev, curr)) {
@@ -102,23 +109,34 @@ export function activate({streams, services}) {
     
     models = new Set(streams.craft.models.value);
     let {history, pointer} = curr;
-    for (let i = beginIndex; i <= pointer; i++) {
+
+    function runPromise(i) {
+      if (i > pointer) {
+        locked = false;
+        next(curr);
+        return;
+      }
+
       let request = history[i];
-      try {
-        let {consumed, created} = runOrGetPreRunResults(request);
+      const promise = runOrGetPreRunResults(request)
+      promise.then(({consumed, created}) => {
+
         consumed.forEach(m => models.delete(m));
         created.forEach(m => models.add(m));
         streams.craft.models.next(Array.from(models).sort(m => m.id));
-      } catch(e) {
+
+        runPromise(i + 1);
+      }).catch(e => {
+        locked = false;
         console.error(e);
         //TODO: need to find a way to propagate the error to the wizard.
-        setTimeout(() => streams.craft.modifications.next({
+        next({
           ...curr,
           pointer: i-1
-        }));
-        break;
-      } 
+        });
+      })
     }
+    runPromise(beginIndex);
   })
 }
 

@@ -4,19 +4,19 @@ import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
 
 
-export function Extrude(params, sketcher) {
-  return doOperation(params, sketcher, false);
+export function Extrude(params, ctx) {
+  return doOperation(params, ctx, false);
 }
 
-export function Cut(params, sketcher) {
-  return doOperation(params, sketcher, true);
+export function Cut(params, ctx) {
+  return doOperation(params, ctx, true);
 }
 
-export function doOperation(params, {cadRegistry, sketcher}, cut) {
+export function doOperation(params, {cadRegistry, sketcherService}, cut) {
   const face = cadRegistry.findFace(params.face);
   const solid = face.solid;
 
-  let sketch = sketcher.readSketch(face.id);
+  let sketch = sketcherService.readSketch(face.id);
   if (!sketch) throw 'illegal state';
 
   let vector = resolveExtrudeVector(cadRegistry, face, params, !cut);

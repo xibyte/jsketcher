@@ -1,7 +1,9 @@
 import React, {ReactNode} from "react";
 import {CatalogCategory, CatalogPart} from "../partImportPlugin";
 import {Tree} from "ui/components/Tree";
-import {TiFolder, TiPuzzleOutline} from "react-icons/ti";
+import {FiBox} from "react-icons/fi";
+import {GrCubes} from "react-icons/gr";
+import theme from "ui/styles/theme";
 
 export function PartCatalog({root, initCollapsed, name, icon} : {
   root: CatalogCategory,
@@ -17,13 +19,13 @@ export function PartCatalog({root, initCollapsed, name, icon} : {
 
         const category = entry as CatalogCategory;
 
-        return <PartCatalog root={category} initCollapsed={true} name={category.name} icon={<TiFolder />}/>
+        return <PartCatalog root={category} initCollapsed={true} name={category.name} icon={<GrCubes color={theme.onColorHighlightVariantYellow}/>}/>
 
       } else if (entry.type === 'part') {
 
         const part = entry as CatalogPart;
 
-        return <Tree label={part.name} icon={<TiPuzzleOutline />}/>
+        return <Tree label={part.name} icon={<FiBox color={theme.onColorHighlightVariantGreen}/>}/>
       }
     })}
 

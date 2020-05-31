@@ -3,8 +3,8 @@ import {createPlaneAndOpenSketcher} from '../utils/scripts';
 
 export const TEST_MODE = 'modellerUI';
 
-export function testExtrudePrism(env, ui) {
-  let sketcherUI = createPlaneAndOpenSketcher(ui);
+export async function testExtrudePrism(env, ui) {
+  let sketcherUI = await createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;
   let [S1, S2, S3, S4] = sketcherUI.addRectangle(-100, -100, 100, 100);
   
@@ -19,7 +19,7 @@ export function testExtrudePrism(env, ui) {
   ui.openWizard('EXTRUDE');
   ui.wizardContext.updateParam('value', 2000);
   ui.wizardContext.updateParam('prism', 0.1);
-  ui.wizardOK();
+  await ui.wizardOK();
   env.fail();
-  env.done();
+
 }

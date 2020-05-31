@@ -1,10 +1,10 @@
 
 export class MObject {
 
-  TYPE;
+  TYPE: string;
   
-  id;
-  ext = {};  
+  id: string;
+  ext: any = {};
  
   constructor(TYPE, id) {
     this.TYPE = TYPE;

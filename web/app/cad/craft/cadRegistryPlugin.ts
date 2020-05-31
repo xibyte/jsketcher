@@ -1,8 +1,13 @@
 import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from '../scene/entites';
 import {MShell} from '../model/mshell';
+import {Emitter} from "lstream";
+import {ShowDialogRequest} from "ui/showDialogRequest";
+import {CatalogCategory, CatalogPart, PartsCatalog} from "../partImport/partImportPlugin";
+import {MObject} from "../model/mobject";
 
 
-export function activate({streams, services}) {
+export function activate(ctx) {
+  const {streams, services} = ctx;
 
   streams.cadRegistry = {
     shells: streams.craft.models.map(models => models.filter(m => m instanceof MShell)).remember(),
@@ -108,7 +113,32 @@ export function activate({streams, services}) {
     get shells() {
       return getAllShells();
     }
-  }
+  };
+  ctx.cadRegistry = services.cadRegistry;
 }
 
 
+export interface CadRegistry {
+
+  getAllShells(): MObject[];
+  findShell(id: string): MObject;
+  findFace(id: string): MObject;
+  findEdge(id: string): MObject;
+  findSketchObject(id: string): MObject;
+  findEntity(id: string): MObject;
+  findEntity(id: string): MObject;
+  findDatum(id: string): MObject;
+  findDatumAxis(id: string): MObject;
+  findLoop(id: string): MObject;
+  modelIndex: Map<String, MObject>;
+  models: MObject[];
+  shells: MObject[];
+
+}
+
+declare module 'context' {
+  interface ApplicationContext {
+
+    cadRegistry: CadRegistry;
+  }
+}

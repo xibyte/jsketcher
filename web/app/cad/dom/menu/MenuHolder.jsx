@@ -34,8 +34,8 @@ function ActionMenuItem({label, cssIcons, icon32, icon96, enabled, hotKey, visib
       backgroundImage: `url(${icon32 || icon96})`,
       backgroundRepeat: 'no-repeat',
       backgroundSize: `${size}px ${size}px`,
-      backgroundPositionY: 6,
       backgroundPositionX: 5,
+      backgroundPositionY: 4,
     };
     if (!enabled) {
       style.filter = 'grayscale(90%)';

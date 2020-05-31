@@ -8,6 +8,8 @@ import sketcherStreams from '../../sketcher/sketcherStreams';
 import {Viewer} from "../../sketcher/viewer2d";
 import {IO} from "../../sketcher/io";
 import {DelegatingPanTool} from "../../sketcher/tools/pan";
+import {CadRegistry} from "../craft/cadRegistryPlugin";
+import {MObject} from "../model/mobject";
 
 export function defineStreams(ctx) {
   ctx.streams.sketcher = {
@@ -188,6 +190,18 @@ export function activate(ctx) {
   services.sketcher = {
     sketchFace, sketchFace2D, updateAllSketches, getAllSketches, readSketch, hasSketch, inPlaceEditor, reassignSketch,
     reassignSketchMode: initReassignSketchMode(ctx)
-  }
+  };
+  ctx.sketcherService = services.sketcher;
 }
 
+export interface SketcherService {
+
+}
+
+
+declare module 'context' {
+  interface ApplicationContext {
+
+    sketcherService: SketcherService;
+  }
+}
