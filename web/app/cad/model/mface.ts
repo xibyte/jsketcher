@@ -160,10 +160,10 @@ export class MFace extends MObject {
     return this._productionInfo;
   }
 
-  traverse(callback: (obj: MObject) => {}) {
+  traverse(callback: (obj: MObject) => void) {
     callback(this);
-    this.sketchObjects.forEach(callback);
-    this.sketchLoops.forEach(callback);
+    this.sketchObjects.forEach(i => i.traverse(callback));
+    this.sketchLoops.forEach(i => i.traverse(callback));
   }
 
 }

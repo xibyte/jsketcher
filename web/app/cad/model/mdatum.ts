@@ -27,7 +27,7 @@ export class MDatum extends MObject {
     }
   }
 
-  traverse(callback: (obj: MObject) => {}) {
+  traverse(callback: (obj: MObject) => void) {
     super.traverse(callback);
     this.xAxis.traverse(callback);
     this.yAxis.traverse(callback);

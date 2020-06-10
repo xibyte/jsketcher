@@ -7,22 +7,23 @@ import CSys from '../../math/csys';
 export class MShell extends MObject {
 
   static TYPE = 'shell';
+
   csys: CSys;
 
-  constructor() {
-    super(MShell.TYPE, MObjectIdGenerator.next(MShell.TYPE, 'S'))
-  }
-  
   shell;
   faces = [];
   edges = [];
   vertices = [];
 
-  traverse(callback: (obj: MObject) => {}) {
+  constructor() {
+    super(MShell.TYPE, MObjectIdGenerator.next(MShell.TYPE, 'S'))
+  }
+
+  traverse(callback: (obj: MObject) => void): void {
     callback(this);
-    this.faces.forEach(callback);
-    this.edges.forEach(callback);
-    this.vertices.forEach(callback);
+    this.faces.forEach(i => i.traverse(callback));
+    this.edges.forEach(i => i.traverse(callback));
+    this.vertices.forEach(i => i.traverse(callback));
   }
 }
 
