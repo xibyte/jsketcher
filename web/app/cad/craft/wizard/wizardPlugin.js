@@ -75,7 +75,7 @@ export function activate(ctx) {
       let materializedWorkingRequest$ = workingRequest$.map(req => {
         let params = {};
         let errors = [];
-        materializeParams(ctx.services, req.params, operation.schema, params, errors, []);
+        materializeParams(ctx, req.params, operation.schema, params, errors, []);
         if (errors.length !== 0) {
           return INVALID_REQUEST;
         }

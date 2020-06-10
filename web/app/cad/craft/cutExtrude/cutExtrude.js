@@ -1,4 +1,4 @@
-import {Matrix3, ORIGIN} from '../../../math/l3space'
+import {Matrix3} from '../../../math/l3space'
 import * as math from '../../../math/math'
 import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
@@ -12,12 +12,13 @@ export function Cut(params, ctx) {
   return doOperation(params, ctx, true);
 }
 
-export function doOperation(params, {cadRegistry, sketcherService}, cut) {
+export function doOperation(params, ctx, cut) {
+  const {cadRegistry, sketchStorageService} = ctx;
   const face = cadRegistry.findFace(params.face);
   const solid = face.solid;
 
-  let sketch = sketcherService.readSketch(face.id);
-  if (!sketch) throw 'illegal state';
+  let sketch = sketchStorageService.readSketch(face.id);
+  if (!sketch) throw 'sketch not found for the face ' + face.id;
 
   let vector = resolveExtrudeVector(cadRegistry, face, params, !cut);
   const details = getEncloseDetails(params, sketch.fetchContours(), vector, face.csys, face.surface, !cut, false);

@@ -2,6 +2,8 @@ import {MShell} from './mshell';
 import {MFace} from './mface';
 
 export class MOpenFaceShell extends MShell {
+
+  private surfacePrototype: any;
   
   constructor(surfacePrototype, csys) {
     super();

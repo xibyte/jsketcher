@@ -6,7 +6,7 @@ import {PartRefField} from "../ui/PartRefControl";
 export function ImportPartForm() {
 
   return <Group>
-    <PartRefField name='part' openIfEmpty={true}/>
+    <PartRefField name='partRef' label='part' openIfEmpty={true}/>
     <EntityList name='datum' entity='datum' />
   </Group>;
 }

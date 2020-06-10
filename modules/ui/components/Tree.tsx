@@ -2,12 +2,14 @@ import React, {useState, ReactNode} from "react";
 import cx from 'classnames';
 import {GoPrimitiveDot, GoTriangleDown, GoTriangleRight} from "react-icons/go";
 
-export function Tree({children, icon, label, initCollapsed = false, className} : {
+export function Tree({children, icon, label, initCollapsed = false, className, onClick, ...props} : {
   initCollapsed?: boolean
   children?: ReactNode,
   icon?: ReactNode,
   label?: ReactNode,
   className?: string
+  onClick?: (e: any) => void,
+  props?: JSX.IntrinsicAttributes
 }) {
 
   const headless = !label;
@@ -22,7 +24,7 @@ export function Tree({children, icon, label, initCollapsed = false, className} :
         <span className='tree-placeholder'><GoPrimitiveDot /></span>
       }
       <span className='tree-icon'>{icon}</span>
-      <span className='tree-label'>{label}</span>
+      <span onClick={onClick} className='tree-label text-button' {...props}>{label}</span>
     </div>}
 
     {children && <div className='tree-content'>{children}</div>}

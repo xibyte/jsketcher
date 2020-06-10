@@ -1,4 +1,6 @@
 import {MObject} from './mobject';
+import {MFace} from "./mface";
+import {MSketchObject} from "./msketchObject";
 
 export class MLoop extends MObject {
   
@@ -11,6 +13,9 @@ export class MLoop extends MObject {
 }
 
 export class MSketchLoop extends MLoop {
+  face: MFace;
+  sketchObjects: MSketchObject[];
+  contour: any;
 
   constructor(id, face, sketchObjects, contour) {
     super(id);

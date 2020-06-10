@@ -7,7 +7,7 @@ const CONTRIBUTED_COMPONENTS$ = state([]);
 
 export function ContributedComponents() {
   const contrib = useStream(CONTRIBUTED_COMPONENTS$);
-  return contrib.map((Comp, i) => <Scope><Comp key={i} /></Scope> );
+  return contrib.map((Comp, i) => <Scope key={i}><Comp /></Scope> );
 }
 
 export function contributeComponent(comp) {

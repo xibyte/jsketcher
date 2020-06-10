@@ -7,18 +7,30 @@ import CSys from '../../math/csys';
 export class MShell extends MObject {
 
   static TYPE = 'shell';
+  csys: CSys;
 
   constructor() {
-    super(MShell.TYPE, 'S:' + MObjectIdGenerator.next(MShell.TYPE))  
+    super(MShell.TYPE, MObjectIdGenerator.next(MShell.TYPE, 'S'))
   }
   
   shell;
   faces = [];
   edges = [];
   vertices = [];
+
+  traverse(callback: (obj: MObject) => {}) {
+    callback(this);
+    this.faces.forEach(callback);
+    this.edges.forEach(callback);
+    this.vertices.forEach(callback);
+  }
 }
 
 export class MBrepShell extends MShell {
+
+  brepShell: any;
+  csys: CSys;
+  brepRegistry: Map<string, MObject>;
 
   constructor(shell, csys) {
     super();
@@ -48,4 +60,5 @@ export class MBrepShell extends MShell {
       this.brepRegistry.set(brepVertex, mVertex);
     }
   }
+
 }

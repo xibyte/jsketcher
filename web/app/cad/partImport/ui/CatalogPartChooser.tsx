@@ -10,33 +10,43 @@ import theme from "ui/styles/theme";
 
 export function CatalogPartChooser() {
 
-  const [req, setReq] = useStreamWithUpdater(ctx => ctx.partImportService.choosePartRequest$);
+  const [req, setReq] = useStreamWithUpdater(ctx => ctx.remotePartsService.choosePartRequest$);
   const ctx = useContext(AppContext);
-  const [chosen, setChosen] = useState(null);
+  const loader = useDataLoader('parts', () => ctx.remotePartsService.loadDefinedCatalogs());
 
-  const loader = useDataLoader('parts', () => ctx.partImportService.loadDefinedCatalogs());
+  if (!req) {
+    return null;
+  }
 
   const close = () => {
     setReq(null);
     req.onDone(null);
   };
 
-  if (!req) {
-    return null;
-  }
+  const partChosen = part => {
+    setReq(null);
+    req.onDone(part);
+  };
 
   return <Dialog initWidth={800} initHeight={600} centerScreen={req.centerScreen} initLeft={req.x} initTop={req.y}
                  title='PART CATALOG'
                  enableResize={true}
                  onClose={close}
                  cancelText='Close'
-
+                 className='part-catalog-chooser'
 
   >
     <WhenDataReady loader={loader}>
-      {catalogs => catalogs.map(([partCatalog, descriptor]) => {
-        const Icon = descriptor.icon || GrCubes;
-        return <PartCatalog root={partCatalog} initCollapsed={false} name={descriptor.name + descriptor.description} icon={<Icon color={theme.onColorHighlightVariantPink}/>} />
+      {catalogs => catalogs.map(([entry, partCatalog]) => {
+        const Icon = partCatalog.icon || GrCubes;
+        return <PartCatalog key={partCatalog.id}
+                            root={entry}
+                            initCollapsed={false}
+                            catalogId={partCatalog.id}
+                            name={partCatalog.name + partCatalog.description}
+                            icon={<Icon color={theme.onColorHighlightVariantPink}/>}
+                            onChoose={partChosen}
+        />
       })}
     </WhenDataReady>
 

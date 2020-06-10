@@ -1,5 +1,5 @@
 
-export class MObject {
+export abstract class MObject {
 
   TYPE: string;
   
@@ -10,15 +10,43 @@ export class MObject {
     this.TYPE = TYPE;
     this.id = id;
   }
+
+  traverse(callback: (obj: MObject) => {}) {
+    callback(this);
+  }
 }
 
-const ID_REGISTRY = new Map();
-
 export const MObjectIdGenerator = {
-  next: entityType => {
-    const id = ID_REGISTRY.get(entityType) || 0;
-    ID_REGISTRY.set(entityType, id + 1);
-    return id;
+
+  contexts: [{
+    namespace: '',
+    ID_REGISTRY: new Map()
+  }],
+
+  get context() {
+    return this.contexts[this.contexts.length - 1];
   },
-  reset: () => ID_REGISTRY.clear()
+
+  next(entityType, prefix) {
+    const context = this.context;
+    const id = context.ID_REGISTRY.get(entityType) || 0;
+    context.ID_REGISTRY.set(entityType, id + 1);
+    return (context.namespace && '|') + prefix + ':' + id;
+  },
+
+  reset() {
+    this.context.ID_REGISTRY.clear()
+  },
+
+  pushContext(namespace: string) {
+    this.contexts.push({
+      namespace,
+      ID_REGISTRY: new Map()
+    })
+  },
+
+  popContext() {
+    this.contexts.pop();
+  }
+
 };

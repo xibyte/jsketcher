@@ -41,9 +41,9 @@ export default function operationHandler(id, request, services) {
   }
 }
 
-function createExtrudeCommand(request, {cadRegistry, sketcherService}, invert) {
+function createExtrudeCommand(request, {cadRegistry, sketchStorageService}, invert) {
   const face = cadRegistry.findFace(request.face);
-  const paths = readSketch(face, request, sketcherService);
+  const paths = readSketch(face, request, sketchStorageService);
 
   return {
     face,
@@ -56,9 +56,9 @@ function createExtrudeCommand(request, {cadRegistry, sketcherService}, invert) {
   };
 }
 
-function createRevolveCommand(request, {cadRegistry, sketcherService}) {
+function createRevolveCommand(request, {cadRegistry, sketchStorageService}) {
   const face = cadRegistry.findFace(request.face);
-  const paths = readSketch(face, request, sketcherService);
+  const paths = readSketch(face, request, sketchStorageService);
 
   let pivot = cadRegistry.findSketchObject(request.axis).sketchPrimitive;
   let tr = face.csys.outTransformation;

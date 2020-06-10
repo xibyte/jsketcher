@@ -84,7 +84,7 @@ export function removeInPlace(arr, val) {
   return arr;
 }
 
-export function indexById(array) {
+export function indexById<T extends {id: string}>(array: T[]): {[id: string]: T} {
   const out = {};
   array.forEach(i => out[i.id] = i);
   return out;

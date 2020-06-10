@@ -1,10 +1,9 @@
 import {GrCloudDownload} from "react-icons/gr";
 import {ImportPartForm} from "./ImportPartForm";
 import importPartSchema from "./importPartSchema";
-import {OperationDescriptor, OperationResult} from "../../craft/operationPlugin";
-import CSys from "../../../math/csys";
-import {MDatum} from "../../model/mdatum";
+import {OperationDescriptor} from "../../craft/operationPlugin";
 import {ApplicationContext} from "context";
+import {OperationResult} from "../../craft/craftPlugin";
 
 export interface ImportPartOperationParams {
   partRef: string,
@@ -26,28 +25,31 @@ export const ImportPartOperation: OperationDescriptor<ImportPartOperationParams>
 };
 
 
-function runImportOperation(params: ImportPartOperationParams, ctx: ApplicationContext):  OperationResult {
+function runImportOperation(params: ImportPartOperationParams, ctx: ApplicationContext):  Promise<OperationResult> {
 
-
-  const {cadRegistry, partImportService} = ctx;
+  const {cadRegistry, remotePartsService} = ctx;
 
   let mDatum = params.datum && cadRegistry.findDatum(params.datum);
-
 
   const res =  {
     consumed: [],
     created: []
   };
 
-  // partImportService.resolvePartReference(params.);
+  return remotePartsService.resolvePartReference(params.partRef).then(parts => {
 
-  if (mDatum) {
+    parts.forEach(part => res.created.push(part));
 
-    if (params.consumeDatum) {
-      res.consumed.push(mDatum);
+    if (mDatum) {
+
+      if (params.consumeDatum) {
+        res.consumed.push(mDatum);
+      }
+
     }
 
-  }
+    return res;
 
-  return res;
+  });
+
 }

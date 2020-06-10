@@ -1,6 +1,6 @@
 import {isEntityType} from './schemaUtils';
 
-export default function materializeParams(services, params, schema, result, errors, parentPath) {
+export default function materializeParams(ctx, params, schema, result, errors, parentPath) {
 
   parentPath = parentPath || ROOT_PATH; 
 
@@ -19,7 +19,7 @@ export default function materializeParams(services, params, schema, result, erro
         try {
           const valueType =  typeof value;
           if (valueType === 'string') {
-            value = services.expressions.evaluateExpression(value);  
+            value = ctx.expressionService.evaluateExpression(value);
           } else if (valueType !== 'number') {
             errors.push({path: [...parentPath, field], message: 'invalid value'});
           }
@@ -55,7 +55,7 @@ export default function materializeParams(services, params, schema, result, erro
         if (!ref && !md.optional) {
           errors.push({path: [...parentPath, field], message: 'required'});
         }
-        let model = services.cadRegistry.findEntity(md.type, ref);
+        let model = ctx.cadRegistry.findEntity(md.type, ref);
         if (!model) {
           errors.push({path: [...parentPath, field], message: 'referrers to nonexistent ' + md.type});
         }
@@ -73,13 +73,13 @@ export default function materializeParams(services, params, schema, result, erro
         if (md.itemType === 'object') {
           value = value.map((item , i) => {
             let itemResult = {};
-            materializeParams(services, item, md.schema, itemResult, errors, [...parentPath, i]);
+            materializeParams(ctx, item, md.schema, itemResult, errors, [...parentPath, i]);
             return itemResult;
           });
         } else {
           if (isEntityType(md.itemType)) {
             value.forEach(ref => {
-              if (!services.cadRegistry.findEntity(md.itemType, ref)) {
+              if (!ctx.cadRegistry.findEntity(md.itemType, ref)) {
                 errors.push({path: [...parentPath, field], message: 'referrers to nonexistent ' + md.itemType});
               }
             })

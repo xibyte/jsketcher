@@ -9,7 +9,7 @@ export function activate(ctx) {
   }
 
   function stlAscii() {
-    exportTextData(toStlAsciiString(), ctx.services.project.id + ".stl");
+    exportTextData(toStlAsciiString(), ctx.projectService.id + ".stl");
   }
   
   function imagePng() {
@@ -23,7 +23,7 @@ export function activate(ctx) {
 
     let link = document.getElementById("downloader");
     link.href = renderer.domElement.toDataURL('image/png');
-    link.download = ctx.services.project.id + "-snapshot.png";
+    link.download = ctx.projectService.id + "-snapshot.png";
     link.click();
 
     renderer.preserveDrawingBuffer = false;
@@ -34,7 +34,7 @@ export function activate(ctx) {
   } 
   
   function nativeFormat() {
-    ctx.services.projectManager.exportProject(ctx.services.project.id);
+    ctx.services.projectManager.exportProject(ctx.projectService.id);
   }
   
   ctx.services.export = {

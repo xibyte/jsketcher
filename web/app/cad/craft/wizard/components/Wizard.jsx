@@ -57,14 +57,14 @@ export default class Wizard extends React.Component {
 
     const error = this.props.error;
     return <Window initWidth={250}
-                                                  initLeft={left || 15}
-                                                  title={title}
-                                                  onClose={this.cancel}
-                                                  onKeyDown={this.onKeyDown}
-                                                  setFocus={this.focusFirstInput}
-                                                  className='Wizard mid-typography'
-                                                  data-operation-id={operation.id}
-                                                  controlButtons={<>
+                   initLeft={left || 15}
+                   title={title}
+                   onClose={this.cancel}
+                   onKeyDown={this.onKeyDown}
+                   setFocus={this.focusFirstInput}
+                   className='Wizard mid-typography'
+                   data-operation-id={operation.id}
+                   controlButtons={<>
                      <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({
                        topic: operation.id,
                        x: e.pageX + 40,
@@ -88,6 +88,7 @@ export default class Wizard extends React.Component {
           </span>}
           {error.code && <div className={ls.errorCode}>{error.code}</div>}
           {error.userMessage && <div className={ls.userErrorMessage}>{error.userMessage}</div>}
+          {!error.userMessage && <div>internal error processing operation, check the log</div>}
         </div>}
       </Stack>
     </Window>;

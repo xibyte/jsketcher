@@ -1,21 +1,28 @@
 import {setSketchPrecision} from './sketch/sketchReader';
 import {runSandbox} from './sandbox';
 import {LOG_FLAGS} from './logFlags';
+import {CoreContext} from "context";
+import {SketchFormat_V3} from "../sketcher/io";
+import {OperationRequest} from "./craft/craftPlugin";
+import {ProjectModel} from "./projectManager/projectManagerPlugin";
 
 export const STORAGE_GLOBAL_PREFIX = 'TCAD';
 export const PROJECTS_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
 export const SKETCH_SUFFIX = '.sketch.';
 
 
-export function activate(context) {
+export function activate(ctx: CoreContext) {
 
-  const {streams, services} = context;
-  
   const [id, hints] = parseHintsFromLocation();
 
-  processParams(hints, context);
+  initProjectService(ctx, id, hints);
+}
 
-  const sketchNamespace = id + SKETCH_SUFFIX; 
+export function initProjectService(ctx: CoreContext, id: string, hints: any) {
+
+  processParams(hints, ctx);
+
+  const sketchNamespace = id + SKETCH_SUFFIX;
   const sketchStorageNamespace = PROJECTS_PREFIX + sketchNamespace;
 
   function sketchStorageKey(sketchIdId) {
@@ -29,17 +36,18 @@ export function activate(context) {
   function getSketchURL(sketchId) {
     return sketchNamespace + sketchId;
   }
-  
+
   function save() {
-    let data = {};
-    data.history = streams.craft.modifications.value.history;
-    data.expressions = streams.expressions.script.value;
-    services.storage.set(projectStorageKey(), JSON.stringify(data));
+    let data = {
+      history: ctx.craftService.modifications$.value.history,
+      expressions: ctx.expressionService.script$.value
+    };
+    ctx.storageService.set(projectStorageKey(), JSON.stringify(data));
   }
 
   function load() {
     try {
-      let dataStr = services.storage.get(services.project.projectStorageKey());
+      let dataStr = ctx.storageService.get(ctx.projectService.projectStorageKey());
       if (dataStr) {
         let data = JSON.parse(dataStr);
         loadData(data);
@@ -50,12 +58,12 @@ export function activate(context) {
   }
 
 
-  function loadData(data) {
+  function loadData(data: ProjectModel) {
     if (data.expressions) {
-      services.expressions.load(data.expressions);
+      ctx.expressionService.load(data.expressions);
     }
     if (data.history) {
-      services.craft.reset(data.history);
+      ctx.craftService.reset(data.history);
     }
   }
 
@@ -66,10 +74,11 @@ export function activate(context) {
     });
   }
 
-  services.project = {
-    id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, empty,
+  ctx.projectService = {
+    id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, loadData, empty,
     hints
-  }
+  };
+
 }
 
 function parseHintsFromLocation() {
@@ -100,7 +109,7 @@ function parseHints(hints) {
 
 function processParams(params, context) {
   if (params.sketchPrecision) {
-    setSketchPrecision(parseInt(sketchPrecision));
+    setSketchPrecision(parseInt(params.sketchPrecision));
   }  
   if (params.sandbox) {
     setTimeout(() => runSandbox(context));
@@ -113,3 +122,36 @@ function processParams(params, context) {
     }
   })
 }
+
+export interface ProjectService {
+
+  readonly id: string;
+
+  readonly sketchStorageNamespace: string;
+
+  hints: any;
+
+  sketchStorageKey(sketchId: string): string;
+
+  projectStorageKey(): string
+
+  getSketchURL(sketchId: string): string
+
+  save(): void;
+
+  load(): void
+
+  loadData(data: ProjectModel);
+
+  empty(): void;
+
+}
+
+declare module 'context' {
+  interface CoreContext {
+
+    projectService: ProjectService;
+  }
+}
+
+

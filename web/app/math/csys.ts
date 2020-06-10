@@ -1,7 +1,17 @@
 import {AXIS, Matrix3, ORIGIN} from './l3space';
+import Vector from "math/vector";
 
 export default class CSys {
-  
+
+  static ORIGIN: CSys;
+
+  origin: Vector;
+  x: Vector;
+  y: Vector;
+  z: Vector;
+  private _outTr: Matrix3;
+  private _inTr: Matrix3;
+
   static fromNormalAndDir(origin, normal, dir) {
     return new CSys(origin, dir, normal.cross(dir), normal)  
   }

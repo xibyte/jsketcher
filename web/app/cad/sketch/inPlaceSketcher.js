@@ -38,7 +38,7 @@ export class InPlaceSketcher {
 
     container.appendChild(canvas);
     this.sketcherAppContext = createEssentialAppContext(canvas);
-    this.viewer.parametricManager.externalConstantResolver = this.ctx.services.expressions.evaluateExpression;
+    this.viewer.parametricManager.externalConstantResolver = this.ctx.expressionService.evaluateExpression;
 
     this.syncWithCamera();
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
@@ -55,7 +55,7 @@ export class InPlaceSketcher {
   }
 
   get sketchStorageKey() {
-    return this.ctx.services.project.sketchStorageKey(this.face.defaultSketchId);
+    return this.ctx.projectService.sketchStorageKey(this.face.defaultSketchId);
   }
 
   exit() {
@@ -117,7 +117,7 @@ export class InPlaceSketcher {
   
   save() {
     this.ctx.services.storage.set(this.sketchStorageKey, this.viewer.io.serializeSketch({
-      expressionsSignature: this.ctx.services.expressions.signature
+      expressionsSignature: this.ctx.expressionService.signature
     }));
   }
 }

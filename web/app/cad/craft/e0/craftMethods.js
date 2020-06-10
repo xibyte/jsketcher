@@ -91,9 +91,9 @@ function booleanBasedOperation(engineParams, params, impl) {
 
 function cutExtrude(isCut, request) {
 
-  function createExtrudeCommand(request, {cadRegistry, sketcherService}, invert) {
+  function createExtrudeCommand(request, {cadRegistry, sketchStorageService}, invert) {
     const face = cadRegistry.findFace(request.face);
-    const paths = readSketch(face, request, sketcherService);
+    const paths = readSketch(face, request, sketchStorageService);
 
     return {
       face,

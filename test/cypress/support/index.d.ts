@@ -9,15 +9,20 @@ declare namespace Cypress {
     simulateClickByRayCast(from :vec3, to: vec3): Chainable<any>;
     openSketcher(): Chainable<SketcherTPI>;
     commitSketch(): Chainable<void>;
+    wizardOK(): Chainable<void>;
     getModellerTPI(): Chainable<ModellerTPI>;
+
+    showEntitySelection(): Chainable<Element>;
+    getEntitySelection(type: string): Chainable<Element>;
 
   }
   export interface ModellerTPI {
+    wizardOK(): void;
 
   }
 
   export interface SketcherTPI {
-    addRectangle(x1: number, y1: number, x2: number, y2: number);
+    addRectangle(x1: number, y1: number, x2: number, y2: number): any;
 
   }
 

@@ -1,15 +1,10 @@
-import {ReadSketch} from './sketchReader';
 import {getSketchBoundaries} from './sketchBoundaries';
 import {state, stream} from 'lstream';
 import {InPlaceSketcher} from './inPlaceSketcher';
 import sketcherUIContrib from './sketcherUIContrib';
 import initReassignSketchMode from './reassignSketchMode';
-import sketcherStreams from '../../sketcher/sketcherStreams';
 import {Viewer} from "../../sketcher/viewer2d";
 import {IO} from "../../sketcher/io";
-import {DelegatingPanTool} from "../../sketcher/tools/pan";
-import {CadRegistry} from "../craft/cadRegistryPlugin";
-import {MObject} from "../model/mobject";
 
 export function defineStreams(ctx) {
   ctx.streams.sketcher = {
@@ -17,7 +12,7 @@ export function defineStreams(ctx) {
     sketchingFace: state(null),
     sketcherAppContext: state(null)
   };
-  ctx.streams.sketcher.sketchingMode = ctx.streams.sketcher.sketchingFace.map(face => !!face);
+  ctx.streams.sketcher.sketchingMode = ctx.streams.sketcher.sketcherAppContext.map(ctx => !!ctx);
 }
 
 export function activate(ctx) {
@@ -27,7 +22,7 @@ export function activate(ctx) {
   sketcherUIContrib(ctx);
   
   const onSketchUpdate = evt => {
-    let prefix = services.project.sketchStorageNamespace;
+    let prefix = ctx.projectService.sketchStorageNamespace;
     if (evt.key.indexOf(prefix) < 0) return;
     let sketchFaceId = evt.key.substring(prefix.length);
     let sketchFace = services.cadRegistry.findFace(sketchFaceId);
@@ -39,44 +34,8 @@ export function activate(ctx) {
 
   services.storage.addListener(onSketchUpdate);
 
-  function getAllSketches() {
-    let nm = services.project.sketchStorageNamespace;
-    return services.storage.getAllKeysFromNamespace(nm).map(fqn => ({
-      fqn, id: fqn.substring(nm.length)
-    }));
-  }
-
-  function getSketchData(sketchId) {
-    let sketchStorageKey = services.project.sketchStorageKey(sketchId);
-    return services.storage.get(sketchStorageKey);
-  }
-  
-  function setSketchData(sketchId, data) {
-    let sketchStorageKey = services.project.sketchStorageKey(sketchId);
-    return services.storage.set(sketchStorageKey, data);
-  }
-
-  function removeSketchData(sketchId) {
-    let sketchStorageKey = services.project.sketchStorageKey(sketchId);
-    return services.storage.remove(sketchStorageKey);
-  }
-
   const headlessCanvas = document.createElement('canvas');
   document.createElement('div').appendChild(headlessCanvas);
-
-  function readSketch(sketchId) {
-    let savedSketch = getSketchData(sketchId);
-    if (savedSketch === null) {
-      return null;
-    }
-
-    try {
-      return ReadSketch(JSON.parse(savedSketch), sketchId, true);  
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  }
 
   function reevaluateAllSketches() {
     let allShells = services.cadRegistry.getAllShells();
@@ -84,7 +43,7 @@ export function activate(ctx) {
   }
 
   function reevaluateSketch(sketchId) {
-    let savedSketch = getSketchData(sketchId);
+    let savedSketch = ctx.sketchStorageService.getSketchData(sketchId);
     if (savedSketch === null) {
       return null;
     }
@@ -97,7 +56,7 @@ export function activate(ctx) {
       return null;
     }
 
-    let signature = services.expressions.signature;
+    let signature = ctx.expressionService.signature;
     if (sketch && (!sketch.metadata || sketch.metadata.expressionsSignature !== signature)) {
       try {
         const viewer = new Viewer(headlessCanvas, IO);
@@ -105,7 +64,7 @@ export function activate(ctx) {
         // viewer.historyManager.init(savedSketch);
         viewer.io._loadSketch(sketch);
         viewer.parametricManager.refresh();
-        services.storage.set(services.project.sketchStorageKey(sketchId), viewer.io.serializeSketch({
+        services.storage.set(ctx.projectService.sketchStorageKey(sketchId), viewer.io.serializeSketch({
           expressionsSignature: signature
         }));
       } catch (e) {
@@ -115,13 +74,8 @@ export function activate(ctx) {
     }
   }
 
-  function hasSketch(sketchId) {
-    let sketchStorageKey = services.project.sketchStorageKey(sketchId);
-    return !!services.storage.get(sketchStorageKey);
-  }
-
   function updateSketchForFace(mFace) {
-    let sketch = readSketch(mFace.defaultSketchId);
+    let sketch = ctx.sketchStorageService.readSketch(mFace.defaultSketchId);
     mFace.setSketch(sketch);
     streams.sketcher.update.next(mFace);
   }
@@ -134,7 +88,7 @@ export function activate(ctx) {
   
   function updateSketchBoundaries(sceneFace) {
     
-    let sketchStorageKey = services.project.sketchStorageKey(sceneFace.id);
+    let sketchStorageKey = ctx.projectService.sketchStorageKey(sceneFace.id);
 
     let sketch = services.storage.get(sketchStorageKey);
 
@@ -155,17 +109,17 @@ export function activate(ctx) {
   
   function sketchFace2D(face) {
     updateSketchBoundaries(face);
-    let sketchURL = services.project.getSketchURL(face.id);
+    let sketchURL = ctx.projectService.getSketchURL(face.id);
     ctx.appTabsService.show(face.id, 'Sketch ' + face.id, 'sketcher.html#' + sketchURL);
   }
   
   function reassignSketch(fromId, toId) {
-    let sketchData = getSketchData(fromId);
+    let sketchData = ctx.sketchStorageService.getSketchData(fromId);
     if (!sketchData) {
       return;
     }
-    setSketchData(toId, sketchData);
-    removeSketchData(fromId);
+    ctx.sketchStorageService.setSketchData(toId, sketchData);
+    ctx.sketchStorageService.removeSketchData(fromId);
     updateSketchForFace(services.cadRegistry.findFace(fromId));
     updateSketchForFace(services.cadRegistry.findFace(toId));
     services.viewer.requestRender();
@@ -179,7 +133,7 @@ export function activate(ctx) {
       }
     }
   });
-  streams.expressions.table.attach(() => {
+  ctx.expressionService.table$.attach(() => {
     if (inPlaceEditor.viewer !== null) {
       inPlaceEditor.viewer.parametricManager.refresh();
     }
@@ -188,7 +142,7 @@ export function activate(ctx) {
 
 
   services.sketcher = {
-    sketchFace, sketchFace2D, updateAllSketches, getAllSketches, readSketch, hasSketch, inPlaceEditor, reassignSketch,
+    sketchFace, sketchFace2D, updateAllSketches, inPlaceEditor, reassignSketch,
     reassignSketchMode: initReassignSketchMode(ctx)
   };
   ctx.sketcherService = services.sketcher;

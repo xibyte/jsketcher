@@ -9,7 +9,7 @@ import ToolButton from 'ui/components/ToolButton';
 @connect(state => state.ui.floatViews.map(views => ({views})))
 @mapContext(ctx => ({
   getDescriptor: ctx.services.ui.getFloatView,
-  initialView: ctx.services.project.hints.FloatView || null
+  initialView: ctx.projectService.hints.FloatView || null
 }))
 export default class FloatView extends React.Component {
 

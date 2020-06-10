@@ -6,12 +6,26 @@ import {EMPTY_ARRAY} from 'gems/iterables';
 import CSys from '../../math/csys';
 import {MSketchLoop} from './mloop';
 import {ProductionInfo} from './productionInfo';
+import {MBrepShell, MShell} from "./mshell";
 
 export class MFace extends MObject {
 
   static TYPE = 'face';
+  shell: MShell;
+  surface: any;
+  sketchObjects: MSketchObject[];
+  sketchLoops: MSketchLoop[];
+  sketch: any;
+  brepFace: any;
 
-  constructor(id, shell, surface, csys) {
+  private _csys: any;
+  private w: number;
+  private _basis: [Vector, Vector, Vector];
+  private _sketchToWorldTransformation: any;
+  private _worldToSketchTransformation: any;
+  private _productionInfo: any;
+
+  constructor(id, shell, surface, csys?) {
     super(MFace.TYPE, id);
     this.shell = shell;
     this.surface = surface;
@@ -100,8 +114,7 @@ export class MFace extends MObject {
     addSketchObjects(sketch.constructionSegments);
     addSketchObjects(sketch.connections);
     addSketchObjects(sketch.loops);
-    
-    
+
     
     const index = new Map();
     this.sketchObjects.forEach(o => index.set(o.sketchPrimitive, o));
@@ -146,6 +159,13 @@ export class MFace extends MObject {
     }
     return this._productionInfo;
   }
+
+  traverse(callback: (obj: MObject) => {}) {
+    callback(this);
+    this.sketchObjects.forEach(callback);
+    this.sketchLoops.forEach(callback);
+  }
+
 }
 
 export class MBrepFace extends MFace {
@@ -159,7 +179,7 @@ export class MBrepFace extends MFace {
   get edges() {
     let out = [];
     for (let he of this.brepFace.edges) {
-      let edge = this.shell.brepRegistry.get(he.edge);
+      let edge = (this.shell as MBrepShell).brepRegistry.get(he.edge);
       if (edge) {
         out.push(edge);
       }

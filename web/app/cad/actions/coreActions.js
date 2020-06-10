@@ -34,7 +34,7 @@ export default [
       label: 'save',
       info: 'save project to storage',
     },
-    invoke: (context) => context.services.project.save()
+    invoke: (context) => context.projectService.save()
   },
 
   {
@@ -104,7 +104,7 @@ export default [
       label: 'Clone Project...',
       info: 'clone current project and open in a new tab',
     },
-    invoke: (context) => context.services.projectManager.cloneProject(context.services.project.id)
+    invoke: (context) => context.services.projectManager.cloneProject(context.projectService.id)
   },
 
   {
