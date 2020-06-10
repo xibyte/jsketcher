@@ -23,6 +23,7 @@ function createMarker(findEntity, requestRender) {
     let mObj = findEntity(entity, id);
     if (!mObj) {
       console.warn('no entity found to highlight: ' + entity + ' ' + id);
+      return;
     }
     marked.set(id, mObj);
     mObj.ext.view && mObj.ext.view.mark(color);

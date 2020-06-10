@@ -15,6 +15,7 @@ export class SketchingView extends View {
     this.sketchLoopViews = [];
     this.rootGroup = SceneGraph.createGroup();
     SceneGraph.addToGroup(this.rootGroup, this.sketchGroup);
+    this.updateSketch();
   }
 
   updateSketch() {

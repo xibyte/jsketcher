@@ -2,9 +2,7 @@ import * as SceneGraph from '../../../../modules/scene/sceneGraph';
 import {ShellView} from './views/shellView';
 import {getAttribute} from '../../../../modules/scene/objectData';
 import {MOpenFaceShell} from '../model/mopenFace';
-import {EDGE, FACE, SHELL, SKETCH_OBJECT} from './entites';
 import {OpenFaceShellView} from './views/openFaceView';
-import {findDiff} from '../../../../modules/gems/iterables';
 import {MShell} from '../model/mshell';
 import {MDatum} from '../model/mdatum';
 import DatumView from './views/datumView';
@@ -53,5 +51,6 @@ function sceneSynchronizer({services: {cadScene, cadRegistry, viewer, wizard, ac
         SceneGraph.addToGroup(cadScene.workGroup, modelView.rootGroup);
       }
     }
+    viewer.requestRender();
   }
 }

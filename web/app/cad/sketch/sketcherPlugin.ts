@@ -125,7 +125,6 @@ export function activate(ctx) {
     services.viewer.requestRender();
   }
   
-  streams.craft.models.attach(updateAllSketches);
   streams.craft.models.attach(() => {
     if (inPlaceEditor.inEditMode) {
       if (!inPlaceEditor.face.ext.view) {
