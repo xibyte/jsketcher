@@ -1,8 +1,11 @@
 import {MObject} from './mobject';
+import {MBrepShell, MShell} from "./mshell";
 
 export class MEdge extends MObject {
 
   static TYPE = 'edge';
+  shell: MBrepShell;
+  brepEdge: any;
 
   constructor(id, shell, brepEdge) {
     super(MEdge.TYPE, id);
@@ -22,5 +25,4 @@ export class MEdge extends MObject {
     }
     return out;
   }
-  
 }

@@ -45,6 +45,20 @@ Cypress.Commands.add("commitSketch", () => {
 });
 
 
+Cypress.Commands.add("wizardOK", () => {
+  cy.getModellerTPI().then(tpi => tpi.wizardOK())
+});
+
 Cypress.Commands.add("getModellerTPI", () => {
   return cy.window().then(win => modellerUISubject(win.__CAD_APP));
 });
+
+Cypress.Commands.add("showEntitySelection", () => {
+  return cy.get('.float-view-btn[data-view="selection"]').click();
+});
+
+Cypress.Commands.add("getEntitySelection", (type) => {
+  return cy.get(`.selection-view [data-entity="${type}"] li`);
+});
+
+

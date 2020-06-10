@@ -1,8 +1,11 @@
 import {PROJECTS_PREFIX, SKETCH_SUFFIX} from '../projectPlugin';
 import {ProjectManager} from './ProjectManager';
 import exportTextData from '../../../../modules/gems/exportTextData';
+import {SketchFormat_V3} from "../../sketcher/io";
+import {ApplicationContext} from "context";
+import {OperationRequest} from "../craft/craftPlugin";
 
-export function activate(ctx) {
+export function activate(ctx: ApplicationContext) {
   
   function importProjectImpl(getId, onDone) {
     let uploader = document.createElement('input');
@@ -15,14 +18,12 @@ export function activate(ctx) {
       let reader = new FileReader();
       reader.onload = () => {
         try {
-          let bundle = JSON.parse(reader.result);
 
-          let projectId = getId(uploader.value, bundle);
+          const bundle = JSON.parse(reader.result as string);
+          const projectId = getId(uploader.value, bundle);
           
           if (projectId) {
-            let sketchesNamespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
-            ctx.services.storage.set(PROJECTS_PREFIX + projectId, JSON.stringify(bundle.model));
-            bundle.sketches.forEach(s => ctx.services.storage.set(sketchesNamespace + s.id, JSON.stringify(s.data)));
+            importBundle(projectId, bundle);
             onDone(projectId);
           }
         } finally {
@@ -32,6 +33,12 @@ export function activate(ctx) {
       reader.readAsText(uploader.files[0]);
     }
     uploader.addEventListener('change', read, false);
+  }
+
+  function importBundle(projectId: string, bundle: ModelBundle) {
+    let sketchesNamespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
+    ctx.services.storage.set(PROJECTS_PREFIX + projectId, JSON.stringify(bundle.model));
+    bundle.sketches.forEach(sketch => ctx.services.storage.set(sketchesNamespace + sketch.id, JSON.stringify(sketch.data)));
   }
 
   function importProjectAs() {
@@ -53,11 +60,16 @@ export function activate(ctx) {
   
   function importProject() {
     if (confirm('Current project will be wiped off and replaced with the being imported one. Continue?')) {
-      ctx.services.project.empty();
-      importProjectImpl(() => ctx.services.project.id, ctx.services.project.load);  
+      ctx.projectService.empty();
+      importProjectImpl(() => ctx.projectService.id, ctx.projectService.load);
     }
   }
-  
+
+  function loadExternalProject(projectId: string): ProjectModel {
+    const dataStr = ctx.services.storage.get(PROJECTS_PREFIX + projectId);
+    return JSON.parse(dataStr) as ProjectModel;
+  }
+
   function exportProject(id) {
     let modelData = ctx.services.storage.get(PROJECTS_PREFIX + id);
     if (modelData) {
@@ -174,10 +186,66 @@ export function activate(ctx) {
     window.open('?' + projectId);
   }
 
-  ctx.services.ui.registerFloatView('ProjectManager', ProjectManager, 'Project Manager', 'database'); 
-  
-  ctx.services.projectManager = {
-    listProjects, openProject, newProject, renameProject, deleteProject, 
-    exists, cloneProject, exportProject, importProjectAs, importProject 
+  ctx.services.ui.registerFloatView('ProjectManager', ProjectManager, 'Project Manager', 'database');
+
+  ctx.projectManager = {
+    listProjects, openProject, newProject, renameProject, deleteProject, importBundle,
+    exists, cloneProject, exportProject, importProjectAs, importProject, loadExternalProject
+  };
+
+  ctx.services.projectManager = ctx.projectManager;
+}
+
+export interface ProjectModel {
+
+  history: OperationRequest[],
+
+  expressions: string
+
+}
+
+export interface ModelBundle {
+
+  model: ProjectModel,
+
+  sketches: {
+    id: string,
+    data: SketchFormat_V3
+  }[];
+
+}
+
+interface IProjectManager {
+
+  importBundle(projectId: string, dataJson: ModelBundle): void;
+
+  importProjectAs(): void;
+
+  importProject(): void;
+
+  exportProject(id: string): void;
+
+  cloneProject(oldProjectId: string, silent?: boolean): void;
+
+  exists(projectId: string): boolean;
+
+  listProjects(): string[];
+
+  deleteProject(projectId: string): void;
+
+  renameProject(oldProjectId: string, silent: boolean): void
+
+  newProject(): void;
+
+  openProject(projectId: string): void;
+
+  loadExternalProject(projectId: string): ProjectModel;
+
+}
+
+declare module 'context' {
+  interface ApplicationContext {
+
+    projectManager: IProjectManager;
   }
 }

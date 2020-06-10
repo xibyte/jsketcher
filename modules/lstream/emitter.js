@@ -32,10 +32,20 @@ export class Emitter extends StreamBase {
     try {
       this.state = EMITTING;
       for (let i = 0; i < this.observers.length; i++) {
-        this.observers[i](value);
+        callObserver(this.observers[i], value);
       }
     } finally {
       this.state = READY;
     }
+  }
+}
+
+export function callObserver(observer, value) {
+  try {
+    observer(value);
+  } catch (e) {
+    console.error('Error while observer call:');
+    console.error(observer);
+    console.error(e);
   }
 }

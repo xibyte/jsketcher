@@ -1,5 +1,5 @@
 import {stream} from 'lstream';
-import {ApplicationContext} from "context";
+import {CoreContext} from "context";
 
 const updates$ = stream();
 
@@ -9,7 +9,7 @@ export function defineStreams(ctx) {
   }
 }
 
-export function activate(ctx: ApplicationContext) {
+export function activate(ctx: CoreContext) {
 
   const {services, streams} = ctx;
 
@@ -83,7 +83,7 @@ export interface StorageService {
 }
 
 declare module 'context' {
-  interface ApplicationContext {
+  interface CoreContext {
 
     storageService: StorageService;
   }

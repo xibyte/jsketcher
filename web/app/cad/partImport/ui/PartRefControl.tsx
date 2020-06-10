@@ -5,10 +5,10 @@ import {AppContext} from "../../dom/components/AppContext";
 
 export function PartRefControl(props) {
 
-  let {onChange, initValue, onFocus, openIfEmpty} = props;
+  let {onChange, value, onFocus, openIfEmpty} = props;
   useEffect(() => {
 
-    if (openIfEmpty && !initValue) {
+    if (openIfEmpty && !value) {
       openChooser(undefined);
     }
 
@@ -18,9 +18,11 @@ export function PartRefControl(props) {
 
   const openChooser = e => {
 
-    ctx.partImportService.choosePartRequest$.next({
+    ctx.remotePartsService.choosePartRequest$.next({
       centerScreen: true,
-      onDone: () => {}
+      onDone: (partId: string) => {
+        onChange(partId);
+      }
     })
   };
 
@@ -28,7 +30,7 @@ export function PartRefControl(props) {
     display: 'flex',
   }}>
     <InputControl type='text'
-                  defaultValue={initValue}
+                  value={value || ''}
                   onChange={e => onChange(e.target.value)}
                   onFocus={onFocus}
                   style={{

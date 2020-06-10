@@ -22,7 +22,7 @@ function createMarker(findEntity, requestRender) {
   function doMark(entity, id, color) {
     let mObj = findEntity(entity, id);
     if (!mObj) {
-      throw 'illegal state';
+      console.warn('no entity found to highlight: ' + entity + ' ' + id);
     }
     marked.set(id, mObj);
     mObj.ext.view && mObj.ext.view.mark(color);

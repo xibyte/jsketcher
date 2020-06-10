@@ -43,6 +43,7 @@ export class SketchGenerator {
       layer.objects.push(obj);
       obj.syncGeometry()
     });
+    viewer.objectsUpdate();
   }
 
   regenerate(viewer) {

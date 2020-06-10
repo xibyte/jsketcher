@@ -1,15 +1,17 @@
 import React, {ReactNode} from "react";
-import {CatalogCategory, CatalogPart} from "../partImportPlugin";
+import {CatalogCategory, CatalogPart} from "../remotePartsPlugin";
 import {Tree} from "ui/components/Tree";
 import {FiBox} from "react-icons/fi";
 import {GrCubes} from "react-icons/gr";
 import theme from "ui/styles/theme";
 
-export function PartCatalog({root, initCollapsed, name, icon} : {
+export function PartCatalog({catalogId, root, initCollapsed, name, icon, onChoose} : {
+  catalogId: string,
   root: CatalogCategory,
   initCollapsed: boolean,
   name: string,
-  icon: ReactNode
+  icon: ReactNode,
+  onChoose: (part: string) => void
 }) {
 
   return <Tree initCollapsed={initCollapsed} label={name} icon={icon}>
@@ -19,13 +21,20 @@ export function PartCatalog({root, initCollapsed, name, icon} : {
 
         const category = entry as CatalogCategory;
 
-        return <PartCatalog root={category} initCollapsed={true} name={category.name} icon={<GrCubes color={theme.onColorHighlightVariantYellow}/>}/>
+        return <PartCatalog key={entry.name} root={category} initCollapsed={true}
+                            name={category.name} catalogId={catalogId} onChoose={onChoose}
+                            icon={<GrCubes color={theme.onColorHighlightVariantYellow}/>}/>
 
       } else if (entry.type === 'part') {
 
         const part = entry as CatalogPart;
 
-        return <Tree label={part.name} icon={<FiBox color={theme.onColorHighlightVariantGreen}/>}/>
+        const partRef = catalogId + '/' + part.id;
+        return <Tree key={entry.name}
+                     label={part.name}
+                     onClick={(e) => onChoose(partRef)}
+                     data-part-ref={partRef}
+                     icon={<FiBox color={theme.onColorHighlightVariantGreen}/>}/>
       }
     })}
 

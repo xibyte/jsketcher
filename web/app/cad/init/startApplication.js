@@ -16,27 +16,30 @@ import * as OperationPlugin from '../craft/operationPlugin';
 import * as ExtensionsPlugin from '../craft/extensionsPlugin';
 import * as CadRegistryPlugin from '../craft/cadRegistryPlugin';
 import * as CraftPlugin from '../craft/craftPlugin';
+import * as RemotePartsPlugin from '../partImport/remotePartsPlugin';
 import * as CraftUiPlugin from '../craft/craftUiPlugin';
 import * as StoragePlugin from '../storage/storagePlugin';
 import * as ProjectPlugin from '../projectPlugin';
 import * as ProjectManagerPlugin from '../projectManager/projectManagerPlugin';
 import * as SketcherPlugin from '../sketch/sketcherPlugin';
+import * as SketcherStoragePlugin from '../sketch/sketchStoragePlugin';
 import * as ExportPlugin from '../exportPlugin';
 import * as ExposurePlugin from '../exposure/exposurePlugin';
 import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
 import * as EntityContextPlugin from '../scene/entityContextPlugin';
 import * as E0Plugin from '../craft/e0/e0Plugin';
 
-import PartModellerPlugins from '../part/partModelerPlugins';
-
 import context from 'context';
 
 import startReact from "../dom/startReact";
+import * as UIConfigPlugin from "../part/uiConfigPlugin";
+import * as DebugPlugin from "../debugPlugin";
+import * as ExpressionsPlugin from "../expressions/expressionsPlugin";
+import * as PartOperationsPlugin from "../part/partOperationsPlugin";
+
 
 export default function startApplication(callback) {
 
-  let applicationPlugins = PartModellerPlugins;
-  
   let preUIPlugins = [
     LifecyclePlugin,
     ProjectPlugin,
@@ -46,9 +49,11 @@ export default function startApplication(callback) {
     UiPlugin,
     MenuPlugin,
     KeyboardPlugin,
+    ExpressionsPlugin,
     OperationPlugin,
     CraftPlugin,
     ExtensionsPlugin,
+    SketcherStoragePlugin,
     WizardPlugin,
     PreviewPlugin,
     CraftUiPlugin,
@@ -67,7 +72,10 @@ export default function startApplication(callback) {
     PickControlPlugin,
     EntityContextPlugin,
     SketcherPlugin,
-    ...applicationPlugins,
+    UIConfigPlugin,
+    DebugPlugin,
+    PartOperationsPlugin,
+    RemotePartsPlugin,
     ViewSyncPlugin,
     WizardSelectionPlugin
   ];

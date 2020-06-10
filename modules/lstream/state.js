@@ -1,4 +1,4 @@
-import {Emitter} from './emitter';
+import {callObserver, Emitter} from './emitter';
 
 export class StateStream extends Emitter {
 
@@ -30,7 +30,7 @@ export class StateStream extends Emitter {
   }
 
   attach(observer) {
-    observer(this._value);
+    callObserver(observer, this._value);
     return super.attach(observer);
   }
 }

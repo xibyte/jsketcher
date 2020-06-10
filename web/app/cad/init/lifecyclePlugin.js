@@ -1,6 +1,7 @@
 import {state} from 'lstream';
 
-export function activate({streams, services}) {
+export function activate(ctx) {
+  const {streams, services} = ctx;
   const asyncInitializingJobs = new Set();
   const startTime = performance.now();
   streams.lifecycle = {
@@ -24,7 +25,7 @@ export function activate({streams, services}) {
         asyncInitializingJobs.size === 0) {
         
         services.extension.activateAllExtensions();
-        services.project.load();
+        ctx.projectService.load();
         streams.lifecycle.projectLoaded.value = true;
         const onLoadTime = performance.now();
         console.log("project loaded, took: " + ((onLoadTime - startTime) / 1000).toFixed(2) + ' sec');

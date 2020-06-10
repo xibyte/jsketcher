@@ -3,17 +3,16 @@ import {state} from 'lstream';
 import {IconType} from "react-icons";
 import {isEntityType} from './schemaUtils';
 import {ActionAppearance} from "../actions/actionSystemPlugin";
-import {MObject} from "../model/mobject";
-import {ApplicationContext} from "context";
+import {ApplicationContext, CoreContext} from "context";
+import {OperationResult} from "./craftPlugin";
 
-export function activate(context) {
-  let {services} = context;
+export function activate(ctx: ApplicationContext) {
 
-  context.streams.operation = {
-    registry: state({})
+  const registry$ = state({});
+
+  ctx.streams.operation = {
+    registry:registry$
   };
-  
-  let registry$ = context.streams.operation.registry;
   
   function addOperation(descriptor, actions) {
     let {id, label, info, icon, actionParams} = descriptor;
@@ -30,7 +29,7 @@ export function activate(context) {
     let opAction = {
       id: id,
       appearance,
-      invoke: () => services.wizard.open(id),
+      invoke: () => ctx.services.wizard.open(id),
       ...actionParams
     };
     actions.push(opAction);
@@ -47,10 +46,10 @@ export function activate(context) {
     for (let op of operations) {
       addOperation(op, actions);
     }
-    services.action.registerActions(actions);
+    ctx.actionService.registerActions(actions);
   }
 
-  function get(id) {
+  function get<T>(id: string): Operation<T> {
     let op = registry$.value[id];
     if (!op) {
       throw `operation ${id} is not registered`;
@@ -70,13 +69,13 @@ export function activate(context) {
     return descriptor.run(request, opContext);
   }
 
-  services.operation = {
+  ctx.operationService = {
     registerOperations,
     get,
     handlers
   };
 
-  context.operationService = services.operation;
+  ctx.services.operation = ctx.operationService;
 }
 
 export interface Operation<R> extends OperationDescriptor<R>{
@@ -128,7 +127,7 @@ export interface OperationDescriptor<R> {
   info: string;
   icon: IconType | string;
   actionParams?: any;
-  run: (request: R, opContext: OperationContext) => OperationResult;
+  run: (request: R, opContext: CoreContext) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,
   previewGeomProvider: (params: R) => OperationGeometryProvider,
   form: () => React.ReactNode,
@@ -137,11 +136,11 @@ export interface OperationDescriptor<R> {
 
 export interface OperationService {
   registerOperations(descriptior: OperationDescriptor<any>[]);
-  get(operationId: string): Operation<any>;
+  get<T>(operationId: string): Operation<T>;
   handlers: ((
     id: string,
     request: any,
-    opContext: OperationContext
+    opContext: CoreContext
   ) => void)[]
 }
 
@@ -149,19 +148,8 @@ export interface OperationGeometryProvider {
 
 }
 
-export interface OperationResult {
-
-  consumed: MObject[];
-  created: MObject[];
-
-}
-
-export interface OperationContext {
-  cadRegistry: any
-}
-
 declare module 'context' {
-  interface ApplicationContext {
+  interface CoreContext {
 
     operationService: OperationService;
   }
