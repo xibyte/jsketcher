@@ -5,6 +5,7 @@ import CadError from '../../utils/errors';
 import {MObject, MObjectIdGenerator} from '../model/mobject';
 import {intercept} from "lstream/intercept";
 import {CoreContext} from "context";
+import {MFace} from "../model/mface";
 
 export function activate(ctx: CoreContext) {
 
@@ -16,6 +17,13 @@ export function activate(ctx: CoreContext) {
 
   const models$ = state<MObject[]>([]);
   const update$ = stream<void>();
+
+  models$.attach(models => models.forEach(model => model.traverse(m => {
+    if (m instanceof MFace) {
+      let sketch = ctx.sketchStorageService.readSketch(m.defaultSketchId);
+      m.setSketch(sketch);
+    }
+  })));
 
   let preRun = null;
 

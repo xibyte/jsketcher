@@ -11,7 +11,7 @@ export abstract class MObject {
     this.id = id;
   }
 
-  traverse(callback: (obj: MObject) => {}) {
+  traverse(callback: (obj: MObject) => void): void {
     callback(this);
   }
 }
