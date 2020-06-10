@@ -1,41 +1,16 @@
-import React from 'react';
-import context from 'context';
+import React, {useContext} from 'react';
+import {useStreamWithUpdater} from "./effects";
+import {AppContext} from "../../web/app/cad/dom/components/AppContext";
 
 export default function bind(streamProvider) {
   return function (Component) {
-    return class Connected extends React.Component {
-      
-      state = {hasError: false, value: null};
-      
-      onChange = value => streamProvider(context.streams, this.props).next(value);
-      
-      UNSAFE_componentWillMount() {
-        this.stream = streamProvider(context.streams, this.props);
-        this.detacher = this.stream.attach(value => {
-          this.setState({
-            hasError: false,
-            value
-          });
-        });
-      }
+    return function Connected (props) {
 
-      componentWillUnmount() {
-        this.detacher();
-      }
-      
-      render() {
-        if (this.state.hasError) {
-          return null;
-        }
-        return <Component value={this.state.value}
-                          onChange={this.onChange}
-                          {...this.props} />;
+      const context = useContext(AppContext);
+      const [value, updater] = useStreamWithUpdater(streamProvider(context, props));
 
-      }
 
-      componentDidCatch() {
-        this.setState({hasError: true});
-      }
+      return <Component value={value} onChange={updater} {...props} />;
     };
   };
 }

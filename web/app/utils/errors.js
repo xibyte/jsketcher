@@ -2,7 +2,7 @@
 export default class CadError extends Error {
   
   constructor({kind, code, relatedTopoObjects, userMessage} = __EMPTY) {
-    super();
+    super(`[${kind}] ${code||''} ${userMessage}`);
     this.kind = kind || CadError.KIND.INTERNAL_ERROR;
     this.code = code;
     this.relatedTopoObjects = relatedTopoObjects;

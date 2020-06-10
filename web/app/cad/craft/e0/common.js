@@ -77,9 +77,9 @@ export function readSketchContour(contour, face) {
   return path;
 }
 
-export function readSketch(face, request, sketcher) {
-  let sketch = sketcher.readSketch(face.id);
-  if (!sketch) throw 'illegal state';
+export function readSketch(face, request, sketchStorageService) {
+  let sketch = sketchStorageService.readSketch(face.id);
+  if (!sketch) throw 'sketch not found for the face ' + face.id;
   return sketch.fetchContours().map(c => readSketchContour(c, face));
 }
 

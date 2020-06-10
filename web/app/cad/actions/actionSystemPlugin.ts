@@ -2,10 +2,10 @@ import {enableAnonymousActionHint} from './anonHint';
 import * as stream from 'lstream';
 import {state, StateStream, Stream} from 'lstream';
 import {LOG_FLAGS} from '../logFlags';
-import {ApplicationContext} from "context";
+import {CoreContext} from "context";
 import {IconType} from "react-icons";
 
-export function activate(context: ApplicationContext) {
+export function activate(context: CoreContext) {
   
   let {streams} = context;
 
@@ -157,7 +157,7 @@ export interface ActionService {
 }
 
 declare module 'context' {
-  interface ApplicationContext {
+  interface CoreContext {
 
     actionService: ActionService;
   }

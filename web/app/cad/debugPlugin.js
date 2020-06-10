@@ -388,12 +388,12 @@ const DebugActions = [
       label: 'generate unit test',
       info: 'it will generate a unit code code containing sketches and operation sequence and output it to terminal',
     },
-    invoke: ({bus, services: {project, storage, sketcher, cadRegistry}}) => {
+    invoke: ({bus, services: {project, storage, sketchStorageService, cadRegistry}}) => {
       
       const pt = ({x, y}) => [x, y];  
       
-      let sketches = sketcher.getAllSketches().reduce((sketches, {id, url}) => {
-        let sketch = sketcher.readSketch(id).getAllObjects().reduce((byType, obj) => {
+      let sketches = sketchStorageService.getAllSketches().reduce((sketches, {id, url}) => {
+        let sketch = sketchStorageService.readSketch(id).getAllObjects().reduce((byType, obj) => {
 
           let type = obj.constructor.name;
           
