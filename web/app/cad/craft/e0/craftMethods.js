@@ -64,6 +64,18 @@ export function createSphere(params) {
   }, params, Module._SPI_sphere);
 }
 
+export function stepImport(params) {
+
+  let shape = callEngine({
+    file: params.file
+  }, Module._SPI_stepImport);
+
+  return {
+    consumed: [], created: [readShellData(shape, [], undefined)]
+  }
+}
+
+
 function booleanBasedOperation(engineParams, params, impl) {
   engineParams.deflection = DEFLECTION;
   if (params.boolean && BOOLEAN_TYPES[params.boolean.type] > 0) {

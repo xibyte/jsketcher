@@ -43,7 +43,12 @@ export function readBrep(data) {
         };
       }
     }
-    bb._face.surface = readSurface(faceData.surface, inverted, bb._face)
+    try {
+      bb._face.surface = readSurface(faceData.surface, inverted, bb._face);
+    } catch (e) {
+      console.error(e);
+      bb._face.surface = new BrepSurface(new NullSurface());
+    }
   }
   //todo: data should provide full externals object
   bb._shell.data.externals = {
