@@ -66,24 +66,28 @@ export function activate(ctx: CoreContext) {
   }
   
   function runRequest(request): Promise<OperationResult> {
-    let op = ctx.operationService.get(request.type);
-    if (!op) {
-      return Promise.reject(new Error(`unknown operation ${request.type}`));
-    }
+    try {
+      let op = ctx.operationService.get(request.type);
+      if (!op) {
+        return Promise.reject(new Error(`unknown operation ${request.type}`));
+      }
 
-    let params = {};
-    let errors = [];
-    materializeParams(ctx, request.params, op.schema, params, errors);
-    if (errors.length) {
-      return Promise.reject(new CadError({
-        kind: CadError.KIND.INVALID_PARAMS,
-        userMessage: errors.map(err => `${err.path.join('.')}: ${err.message}`).join('\n')
-      }));
-    }
+      let params = {};
+      let errors = [];
+      materializeParams(ctx, request.params, op.schema, params, errors);
+      if (errors.length) {
+        return Promise.reject(new CadError({
+          kind: CadError.KIND.INVALID_PARAMS,
+          userMessage: errors.map(err => `${err.path.join('.')}: ${err.message}`).join('\n')
+        }));
+      }
 
-    const result = op.run(params, ctx);
-    // @ts-ignore
-    return result.then ? result : Promise.resolve(result);
+      const result = op.run(params, ctx);
+      // @ts-ignore
+      return result.then ? result : Promise.resolve(result);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
   
   function runOrGetPreRunResults(request) {

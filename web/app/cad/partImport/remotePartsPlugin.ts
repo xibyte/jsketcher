@@ -16,12 +16,13 @@ import {activate as activateExpressionsPlugin} from '../expressions/expressionsP
 import {activate as activateCadRegistryPlugin} from '../craft/cadRegistryPlugin';
 import {activate as activateStoragePlugin} from '../storage/storagePlugin';
 import {activate as activateSketchStoragePlugin} from '../sketch/sketchStoragePlugin';
+import {ImportStepOperation} from "./importStepOperation/importStepOperation";
 
 export function activate(ctx: ApplicationContext) {
 
   ctx.domService.contributeComponent(CatalogPartChooser);
 
-  ctx.operationService.registerOperations([ImportPartOperation]);
+  ctx.operationService.registerOperations([ImportPartOperation, ImportStepOperation]);
 
   function loadDefinedCatalogs(): Promise<[CatalogCategory, PartsCatalog][]> {
 

@@ -6,6 +6,7 @@ export default {
   createCylinder: params => notImplemented,
   createTorus: params => notImplemented,
   boolean: params =>  notImplemented,
+  stepImport: params =>  notImplemented,
 }
 
 function notImplemented() {
