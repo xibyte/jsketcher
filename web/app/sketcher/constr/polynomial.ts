@@ -1,5 +1,6 @@
 import {eqEps} from "../../brep/geom/tolerance";
-import {compositeFn} from "../../../../modules/gems/func";
+import {compositeFn} from "gems/func";
+import {SolverParam} from "./solverParam";
 
 export class Polynomial {
 
@@ -131,7 +132,7 @@ export class Polynomial {
 
   asResidual() {
 
-    const paramsSet = new Set();
+    const paramsSet: Set<SolverParam> = new Set();
 
     for (let m of this.monomials) {
       for (let t of m.terms) {
@@ -316,9 +317,16 @@ export class Monomial {
   }
 }
 
-export class ToThePowerFunction {
+export abstract class PolynomialFunction {
 
-  degree = 1;
+  id: string;
+  abstract get degree(): number;
+  abstract apply(x: number): number;
+  abstract merge(fn: PolynomialFunction): PolynomialFunction;
+  abstract derivative1(x: number): number
+}
+
+export class ToThePowerFunction extends PolynomialFunction {
 
   static get(degree) {
     switch (degree) {
@@ -327,21 +335,39 @@ export class ToThePowerFunction {
       case 2: return POW_2_FN;
       case 3: return POW_3_FN;
       case 4: return POW_4_FN;
-      default: return new ToThePowerFunction(degree, x => {
-        let val = 1;
-        for (let i = 0; i < degree; ++i) {
-          val *= x;
+      default: return new ToThePowerFunction(degree,
+        x => {
+          let val = 1;
+          for (let i = 0; i < degree; ++i) {
+            val *= x;
+          }
+          return val
+        },
+        x => {
+          let val = 1;
+          for (let i = 0; i < degree - 1; ++i) {
+            val *= x;
+          }
+          return degree * val
         }
-        return val
-      })
+      )
     }
   }
 
+  _degree: number;
+  fn: (number) => number;
+  d1: (number) => number;
+
   constructor(degree, fn, d1) {
-    this.degree = degree;
+    super();
+    this._degree = degree;
     this.fn = fn;
     this.d1 = d1;
     this.id = '^' + degree;
+  }
+
+  get degree() {
+    return this._degree;
   }
 
   apply(x) {
@@ -372,11 +398,14 @@ export class ToThePowerFunction {
 }
 
 
-export class FreeFunction {
+export class FreeFunction extends PolynomialFunction {
 
-  fn;
+  fn: (number) => number;
+  d1: (number) => number;
+  linearSubstitutionFn: (k: number, param: any, b :number) => Polynomial;
 
   constructor(fn, d1, id, linearSubstitutionFn) {
+    super();
     this.fn = fn;
     this.d1 = d1;
     this.id = id;
@@ -405,9 +434,13 @@ export class FreeFunction {
 
 }
 
-export class CosineOfSum {
+export class CosineOfSum extends PolynomialFunction {
+
+  k: number;
+  b: number;
 
   constructor(k, b) {
+    super();
     this.k = k;
     this.b = b;
     this.id = 'cos(' + k + 'x + ' + b + ')';
@@ -439,9 +472,13 @@ export class CosineOfSum {
 
 }
 
-export class SineOfSum {
+export class SineOfSum extends PolynomialFunction {
+
+  k: number;
+  b: number;
 
   constructor(k, b) {
+    super();
     this.k = k;
     this.b = b;
     this.id = 'sin(' + k + 'x + ' + b + ')';
