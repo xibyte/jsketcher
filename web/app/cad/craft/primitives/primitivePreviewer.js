@@ -1,6 +1,6 @@
 import {BoxGeometry, Matrix4, Mesh} from 'three';
 import {IMAGINARY_SURFACE_MATERIAL} from '../../preview/scenePreviewer';
-import CSys from '../../../math/csys';
+import CSys from '../../../../../modules/math/csys';
 import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
 
 export default function primitivePreviewer(createThreePrimitiveGeometry, paramsToScales, shift) {

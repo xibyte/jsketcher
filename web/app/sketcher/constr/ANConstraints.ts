@@ -33,8 +33,15 @@ import {
   LengthAnnotation,
   RadiusLengthAnnotation
 } from "../shapes/annotations/angleAnnotation";
+import {ISolveStage, SolvableObject} from "./solvableObject";
+import {SketchObject} from "../shapes/sketch-object";
+import {IconType} from "react-icons";
 
-export const ConstraintDefinitions = {
+export const ConstraintDefinitions
+  // : {
+  //   [key: string]: ConstraintSchema
+  // }
+= {
 
   PCoincident : {
     id: 'PCoincident',
@@ -338,8 +345,8 @@ export const ConstraintDefinitions = {
         .monomial(-1);
 
 
-      polynomials.push(ellipsePoly());
-      polynomials.push(ellipsePoly());
+      // polynomials.push(ellipsePoly());
+      // polynomials.push(ellipsePoly());
     },
 
   },
@@ -814,12 +821,12 @@ export const ConstraintDefinitions = {
       pt.visitParams(callback);
     },
 
-    collectPolynomials: (polynomials, [px, py], {x, y}) => {
+    collectPolynomials: (polynomials, [px, py], {x, y}: ResolvedConstants) => {
       polynomials.push(new Polynomial(-x).monomial().term(px, POW_1_FN));
       polynomials.push(new Polynomial(-y).monomial().term(py, POW_1_FN));
     },
 
-    setConstantsFromGeometry: ([pt], constants) => {
+    setConstantsFromGeometry: ([pt], constants: ConstantsDefinitions) => {
       constants.x = pt.x + '';
       constants.y = pt.y + '';
     }
@@ -940,11 +947,51 @@ const bezier3Polynomial = (p, t, p0, p1, p2, p3) => new Polynomial()
   .monomial(-1)
     .term(p, POW_1_FN);
 
+
+export type ResolvedConstants = { [p: string]: any };
+export type ConstantsDefinitions = { [p: string]: string };
+
+export interface ConstraintSchema {
+
+  id: string;
+  name: string,
+  icon: IconType,
+  constants?: {
+    [name: string]: {
+      readOnly?: boolean;
+      type: string,
+      description?: string,
+      transform?: (string) => any,
+      initialValue(objects: SolvableObject[]): any;
+    }
+  };
+
+  createAnnotations?: (objects: SolvableObject[], constraintInstance: AlgNumConstraint) =>  SketchObject[];
+
+  defineParamsScope: (object: SolvableObject[], cb: (param: Param) => void) => void;
+
+  collectPolynomials(polynomials: Polynomial[], params: Param[], resolvedConstants: ResolvedConstants, objects: SolvableObject[]): void;
+
+  setConstantsFromGeometry?: (object: SolvableObject[], resolvedConstants: ConstantsDefinitions) => void;
+
+  initialGuess?(params: Param[], resolvedConstants: ResolvedConstants): void;
+}
+
 export class AlgNumConstraint {
 
   static Counter = 0;
 
-  constructor(schema, objects, constants, internal = false) {
+  id: string;
+  objects: SolvableObject[];
+  constants: ConstantsDefinitions;
+  resolvedConstants: ResolvedConstants;
+  internal: boolean;
+  schema: ConstraintSchema;
+  params: Param[];
+  stage: ISolveStage;
+  private annotations: SketchObject[];
+
+  constructor(schema: ConstraintSchema, objects: SolvableObject[], constants?: ConstantsDefinitions, internal?: boolean = false) {
     this.id = schema.id + ':' + (AlgNumConstraint.Counter ++); // only for debug purposes - not persisted
     this.objects = objects;
     this.constants = constants;
@@ -958,18 +1005,6 @@ export class AlgNumConstraint {
       this.schema.defineParamsScope(this.objects, p => this.params.push(p));
     }
 
-    this.modifier = this.schema.modify !== undefined;
-    if (this.modifier) {
-      this.referenceObjects = this.schema.referenceObjects(this.objects);
-      this.managedObjects = this.schema.managedObjects(this.objects);
-      this.managedObjects.forEach(o => {
-        if (o.managedBy) {
-          throw 'there can be only one managing modifier for an object';
-        }
-        o.managedBy = this;
-      });
-    }
-
     if (!this.internal && this.schema.createAnnotations) {
       this.annotations = this.schema.createAnnotations(this.objects, this);
     } else {
@@ -977,8 +1012,8 @@ export class AlgNumConstraint {
     }
   }
 
-  collectPolynomials(polynomials) {
-    this.schema.collectPolynomials(polynomials, this.params, this.resolvedConstants);
+  collectPolynomials(polynomials: Polynomial[]) {
+    this.schema.collectPolynomials(polynomials, this.params, this.resolvedConstants, this.objects);
   }
 
   resolveConstants(expressionResolver) {
@@ -988,7 +1023,7 @@ export class AlgNumConstraint {
       }
       Object.keys(this.constants).map(name => {
         let def = this.schema.constants[name];
-        let val = this.constants[name];
+        let val: any = this.constants[name];
         val = expressionResolver(val);
         if (def.type === 'number') {
           val = parseFloat(val);
@@ -1071,4 +1106,3 @@ export class AlgNumConstraint {
     this.constants[key] = value + ''; // only string are allowed here
   }
 }
-

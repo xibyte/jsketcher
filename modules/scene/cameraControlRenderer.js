@@ -2,7 +2,7 @@ import {AmbientLight, PerspectiveCamera, Scene, SpotLight, WebGLRenderer} from '
 import DPR from '../dpr';
 import {MeshArrow} from './objects/auxiliary';
 import * as SceneGraph from './sceneGraph';
-import {AXIS} from '../../web/app/math/l3space';
+import {AXIS} from '../math/l3space';
 
 export default function(container) {
 

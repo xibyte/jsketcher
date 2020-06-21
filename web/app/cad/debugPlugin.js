@@ -181,6 +181,12 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     AddSurfaceNormal: (surface) => {     
       __DEBUG__.AddNormal(surface.pointInMiddle(), surface.normalInMiddle());
     },
+    AddCSys: (csys, scale) => {
+      scale = scale || 100;
+      __DEBUG__.AddNormal(csys.origin, csys.x, 0xff0000, scale)
+      __DEBUG__.AddNormal(csys.origin, csys.y, 0x00ff00, scale)
+      __DEBUG__.AddNormal(csys.origin, csys.z, 0x0000ff, scale)
+    },
     AddTessDump: (triangles, color) => {
       const vec = arr => new THREE.Vector3().fromArray(arr);
       color = color || 0xffffff;

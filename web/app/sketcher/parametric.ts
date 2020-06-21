@@ -3,6 +3,8 @@ import {AlgNumConstraint, ConstraintDefinitions} from "./constr/ANConstraints";
 import {AlgNumSubSystem} from "./constr/AlgNumSystem";
 import {state, stream} from 'lstream';
 import {toast} from "react-toastify";
+import {ISolveStage, SolvableObject} from "./constr/solvableObject";
+import {Viewer} from "./viewer2d";
 
 export {Constraints, ParametricManager}
 
@@ -31,6 +33,8 @@ class ParametricManager {
   $constantDefinition = state('');
 
   groundStage = new SolveStage(this);
+  viewer: Viewer;
+  messageSink: (msg) => void;
 
   constructor(viewer) {
     this.viewer = viewer;
@@ -240,7 +244,7 @@ class ParametricManager {
     });
   };
 
-  _removeObject = (obj, force) => {
+  _removeObject = (obj, force?) => {
     if (obj.__disposed) {
       return;
     }
@@ -398,10 +402,12 @@ class ParametricManager {
   }
 }
 
-class SolveStage {
+class SolveStage implements ISolveStage{
 
   generators = new Set();
-  objects = new Set();
+  objects = new Set<SolvableObject>();
+  private parametricManager: ParametricManager;
+  private algNumSystem: AlgNumSubSystem;
 
   constructor(parametricManager) {
     this.parametricManager = parametricManager;
@@ -460,6 +466,7 @@ class SolveStage {
   solve(rough) {
     this.algNumSystem.solve(rough);
     this.generators.forEach(gen => {
+      // @ts-ignore
       gen.regenerate(this.viewer);
     })
   }

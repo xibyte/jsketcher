@@ -57,11 +57,14 @@ const ConnectedActionMenu = connect((streams, props) =>
 export function ConnectedMenuItem(props) {
 
   const actionId = props.actionId;
-  const stream = useStream(ctx => combine(ctx.streams.action.appearance[actionId], ctx.streams.action.state[actionId]));
-  if (!stream) {
+
+  const actionAppearance = useStream(ctx => ctx.streams.action.appearance[actionId]);
+  const actionState = useStream(ctx => ctx.streams.action.state[actionId]);
+
+
+  if (!actionAppearance || !actionState) {
     return null;
   }
-  const [actionAppearance, actionState] = stream;
 
   return <ActionButtonBehavior actionId={actionId}>
     {behaviourProps => <ActionMenuItem {...behaviourProps} {...actionAppearance} {...actionState} {...props} />}

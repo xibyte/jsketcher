@@ -15,4 +15,8 @@ export class MSketchObject extends MObject {
     this.construction = false;
   }
 
+  get parent() {
+    return this.face;
+  }
+
 }

@@ -1,4 +1,4 @@
-import {Matrix3} from '../../../math/l3space'
+import {Matrix3} from '../../../../../modules/math/l3space'
 import * as math from '../../../math/math'
 import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'

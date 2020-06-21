@@ -323,7 +323,7 @@ function _maskTest(mask, value) {
 export function WindowControlButton({danger, ...props}: {
   danger?: boolean;
   children: any;
-  onClick: () => void;
-  } & JSX.IntrinsicAttributes) {
+  onClick: (e: any) => any;
+  } & React.HTMLAttributes<HTMLSpanElement>) {
   return <span className={cx(ls.button, danger&&ls.danger)} {...props} />;
 }

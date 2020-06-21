@@ -38,7 +38,7 @@ function sceneSynchronizer({services: {cadScene, cadRegistry, viewer, wizard, ac
         if (model instanceof MOpenFaceShell) {
           modelView = new OpenFaceShellView(model);
         } else if (model instanceof MShell) {
-          modelView = new ShellView(model);
+          modelView = new ShellView(model, undefined, viewer);
         } else if (model instanceof MDatum) {
           modelView = new DatumView(model, viewer, 
             wizard.open,

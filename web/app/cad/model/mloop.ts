@@ -10,6 +10,9 @@ export class MLoop extends MObject {
     super(MLoop.TYPE, id);
   }
 
+  get parent() {
+    return null;
+  }
 }
 
 export class MSketchLoop extends MLoop {
@@ -22,6 +25,10 @@ export class MSketchLoop extends MLoop {
     this.face = face;
     this.sketchObjects = sketchObjects;
     this.contour = contour;
+  }
+
+  get parent() {
+    return this.face;
   }
 
 }

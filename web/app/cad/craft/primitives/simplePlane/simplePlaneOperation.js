@@ -1,5 +1,5 @@
 import {createMeshGeometry} from 'scene/geoms';
-import {STANDARD_BASES} from '../../../../math/l3space';
+import {STANDARD_BASES} from '../../../../../../modules/math/l3space';
 import {Plane} from '../../../../brep/geom/impl/plane';
 import Vector from 'math/vector';
 import PlaneWizard from './SimplePlaneWizard';

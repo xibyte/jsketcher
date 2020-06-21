@@ -69,6 +69,7 @@ export function activate(context) {
   
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('mouseup', mouseup, false);
+  domElement.addEventListener('dblclick', mousedblclick, false);
 
   let mouseState = {
     startX: 0,
@@ -91,6 +92,10 @@ export function activate(context) {
         handlePick(e);
       }
     }
+  }
+
+  function mousedblclick(e) {
+    handleSolidPick(e);
   }
 
   function setPickHandler(handler) {
@@ -136,8 +141,7 @@ export function activate(context) {
   function handleSolidPick(e) {
     let pickResults = services.viewer.raycast(e, services.cadScene.workGroup.children);
     traversePickResults(e, pickResults, PICK_KIND.FACE, (sketchFace) => {
-      streams.selection.solid.next([sketchFace.solid]);
-      services.viewer.render();
+      context.locationService.edit(sketchFace.shell);
       return false;
     });
   }

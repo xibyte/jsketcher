@@ -1,4 +1,4 @@
-import {AXIS, IDENTITY_BASIS} from '../../../../math/l3space'
+import {AXIS, IDENTITY_BASIS} from '../../../../../../modules/math/l3space'
 import * as tk from '../../../../ui/toolkit.js'
 import {FACE_COLOR} from '../../../cad-utils'
 import {Wizard} from './wizard-commons'
