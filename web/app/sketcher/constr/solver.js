@@ -6,28 +6,6 @@ import {ConstantWrapper, EqualsTo} from './solverConstraints'
 import {dog_leg} from '../../math/optim'
 import {newVector} from 'math/vec';
 
-/** @constructor */
-function Param(value, objectParam) {
-  this.reset(value);
-  this.objectParam = objectParam;
-}
-
-Param.prototype.reset = function(value) {
-  this.set(value);
-  this.constant = false;
-  this.j = -1;
-};
-
-Param.prototype.set = function(value) {
-  if (this.constant) return;
-  this.value = value;
-};
-
-Param.prototype.get = function() {
-  return this.value;
-};
-
-Param.prototype.nop = function() {};
 
 /** @constructor */
 function System(constraints) {
@@ -313,4 +291,4 @@ var solve_lm = function(sys, model, jacobian, rough) {
   };
 };
 
-export {Param, prepare}
+export {prepare}

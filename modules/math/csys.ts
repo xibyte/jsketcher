@@ -30,25 +30,27 @@ export default class CSys {
   w() {
     return this.z.dot(this.origin);
   }
-  
+
+  get outTransformation3x3() {
+    return new Matrix3().setBasisAxises(this.x, this.y, this.z);
+  }
+
   get outTransformation() {
-    if (!this._outTr) {
-      const mx = new Matrix3().setBasisAxises(this.x, this.y, this.z);
-      mx.tx = this.origin.x;
-      mx.ty = this.origin.y;
-      mx.tz = this.origin.z;
-      this._outTr = mx;
-    }
-    return this._outTr;
+    const mx = new Matrix3().setBasisAxises(this.x, this.y, this.z);
+    mx.tx = this.origin.x;
+    mx.ty = this.origin.y;
+    mx.tz = this.origin.z;
+    return mx;
+  }
+
+  get inTransformation3x3() {
+    return this.outTransformation3x3.invert();
   }
 
   get inTransformation() {
-    if (!this._inTr) {
-      this._inTr = this.outTransformation.invert();
-    }
-    return this._inTr;
+    return this.outTransformation.invert();
   }
-  
+
   copy(csys) {
     this.origin.setV(csys.origin);
     this.x.setV(csys.x);
@@ -65,7 +67,16 @@ export default class CSys {
     this.origin.set(x, y, z);
     return this;
   }
-  
+
+  invert() {
+    const tr = this.inTransformation;
+    return new CSys(
+      new Vector(tr.tx,  tr.ty,  tr.tz),
+      new Vector(tr.mxx, tr.myx, tr.mzx),
+      new Vector(tr.mxy, tr.myy, tr.mzy),
+      new Vector(tr.mxz, tr.myz, tr.mzz)
+    );
+  }
 }
 
 CSys.ORIGIN = CSys.origin();

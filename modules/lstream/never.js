@@ -6,6 +6,9 @@ export class NeverStream extends StreamBase {
   attach(observer) {
     return NOOP;
   }
+
+  next(value) {
+  }
 }
 
 NeverStream.INSTANCE = new NeverStream();

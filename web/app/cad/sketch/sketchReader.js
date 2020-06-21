@@ -1,5 +1,5 @@
 import * as sm from './sketchModel'
-import {Matrix3, AXIS, ORIGIN} from '../../math/l3space'
+import {Matrix3, AXIS, ORIGIN} from '../../../../modules/math/l3space'
 import Vector from 'math/vector';
 import {Graph} from '../../math/graph'
 import * as math from '../../math/math'

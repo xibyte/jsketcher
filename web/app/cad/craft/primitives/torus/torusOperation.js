@@ -2,7 +2,7 @@ import {Mesh, TorusGeometry} from 'three';
 import schema from './torusOpSchema';
 import TorusWizard from './TorusWizard';
 import {IMAGINARY_SURFACE_MATERIAL} from '../../../preview/scenePreviewer';
-import CSys from '../../../../math/csys';
+import CSys from '../../../../../../modules/math/csys';
 import * as SceneGraph from '../../../../../../modules/scene/sceneGraph';
 import datumConsumingOperation from '../datumConsumingOperation';
 import {assignBooleanParams} from '../booleanOptionHelper';

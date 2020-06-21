@@ -1,4 +1,4 @@
-import {AXIS, ORIGIN} from '../../math/l3space';
+import {AXIS, ORIGIN} from '../../../../modules/math/l3space';
 import Vector from 'math/vector';
 import {RiCamera2Line} from "react-icons/ri";
 

@@ -9,12 +9,13 @@ import {SketcherAppContext} from "./SketcherAppContext";
 export function SketchObjectExplorer() {
 
   const [modification, setModification] = useState(0);
-  const stream = useStream(ctx => combine(ctx.viewer.streams.objects, ctx.viewer.streams.selection));
+  const objects = useStream(ctx => ctx.viewer.streams.objects);
+  const selection = useStream(ctx.viewer.streams.selection);
   const ctx = useContext(SketcherAppContext);
-  if (!stream) {
+
+  if (!objects || !selection) {
     return null
   }
-  const [objects, selection] = stream;
 
   const select = (obj, exclusive) => {
     let viewer = ctx.viewer;

@@ -36,7 +36,7 @@ import * as UIConfigPlugin from "../part/uiConfigPlugin";
 import * as DebugPlugin from "../debugPlugin";
 import * as ExpressionsPlugin from "../expressions/expressionsPlugin";
 import * as PartOperationsPlugin from "../part/partOperationsPlugin";
-
+import * as LocationPlugin from "../location/locationPlugin";
 
 export default function startApplication(callback) {
 
@@ -75,6 +75,7 @@ export default function startApplication(callback) {
     UIConfigPlugin,
     DebugPlugin,
     PartOperationsPlugin,
+    LocationPlugin,
     RemotePartsPlugin,
     ViewSyncPlugin,
     WizardSelectionPlugin

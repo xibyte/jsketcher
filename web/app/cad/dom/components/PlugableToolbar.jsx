@@ -67,11 +67,11 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size, noLa
 export function ConnectedActionButton(props) {
 
   const actionId = props.actionId;
-  const stream = useStream(ctx => combine(ctx.streams.action.appearance[actionId], ctx.streams.action.state[actionId]));
-  if (!stream) {
+  const actionAppearance = useStream(ctx => ctx.streams.action.appearance[actionId]);
+  const actionState = useStream(ctx => ctx.streams.action.state[actionId]);
+  if (!actionAppearance || !actionState) {
     return null;
   }
-  const [actionAppearance, actionState] = stream;
 
   return<ActionButtonBehavior actionId={actionId}>
     {behaviourProps => <ActionButton {...behaviourProps} {...actionAppearance} {...actionState} {...props} />}

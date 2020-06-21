@@ -1,5 +1,5 @@
 import {MeshLambertMaterial, Object3D} from 'three';
-import {AXIS} from '../../../math/l3space';
+import {AXIS} from '../../../../../modules/math/l3space';
 import {MeshArrow} from 'scene/objects/auxiliary';
 import {viewScaleFactor} from '../../../../../modules/scene/scaleHelper';
 

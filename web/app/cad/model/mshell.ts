@@ -1,8 +1,11 @@
 import {MObject, MObjectIdGenerator} from './mobject';
-import {MBrepFace, MFace} from './mface';
+import {MBrepFace} from './mface';
 import {MEdge} from './medge';
 import {MVertex} from './mvertex';
-import CSys from '../../math/csys';
+import CSys from 'math/csys';
+import {Matrix3} from "math/l3space";
+import {state, StateStream} from "lstream";
+import {AssemblyCSysNode} from "../assembly/assembly";
 
 export class MShell extends MObject {
 
@@ -15,8 +18,20 @@ export class MShell extends MObject {
   edges = [];
   vertices = [];
 
+  location$: StateStream<CSys> = state(CSys.origin());
+  locationMatrix$ = this.location$.map((csys: CSys) => csys.outTransformation).remember();
+
+  assemblyNodes: {
+    location: AssemblyCSysNode
+  };
+
   constructor() {
-    super(MShell.TYPE, MObjectIdGenerator.next(MShell.TYPE, 'S'))
+    super(MShell.TYPE, MObjectIdGenerator.next(MShell.TYPE, 'S'));
+    // @ts-ignore
+    this.assemblyNodes = {
+      location: new AssemblyCSysNode( this, () => new Matrix3() )
+    };
+
   }
 
   traverse(callback: (obj: MObject) => void): void {
@@ -24,6 +39,10 @@ export class MShell extends MObject {
     this.faces.forEach(i => i.traverse(callback));
     this.edges.forEach(i => i.traverse(callback));
     this.vertices.forEach(i => i.traverse(callback));
+  }
+
+  get parent() {
+    return null;
   }
 }
 

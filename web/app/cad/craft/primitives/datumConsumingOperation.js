@@ -1,4 +1,4 @@
-import CSys from '../../../math/csys';
+import CSys from '../../../../../modules/math/csys';
 
 export default function datumConsumingOperation(params, services, run) {
   let mDatum = params.datum && services.cadRegistry.findDatum(params.datum);

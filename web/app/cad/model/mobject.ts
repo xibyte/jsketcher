@@ -1,11 +1,10 @@
-
 export abstract class MObject {
 
   TYPE: string;
   
   id: string;
   ext: any = {};
- 
+
   constructor(TYPE, id) {
     this.TYPE = TYPE;
     this.id = id;
@@ -13,6 +12,16 @@ export abstract class MObject {
 
   traverse(callback: (obj: MObject) => void): void {
     callback(this);
+  }
+
+  abstract get parent();
+
+  get root(): MObject {
+    let obj = this;
+    while (obj.parent) {
+      obj = obj.parent;
+    }
+    return obj;
   }
 }
 
@@ -50,3 +59,4 @@ export const MObjectIdGenerator = {
   }
 
 };
+

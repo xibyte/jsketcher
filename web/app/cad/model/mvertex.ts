@@ -13,4 +13,8 @@ export class MVertex extends MObject {
     this.brepVertex = brepVertex;
   }
 
+  get parent() {
+    return this.shell;
+  }
+
 }

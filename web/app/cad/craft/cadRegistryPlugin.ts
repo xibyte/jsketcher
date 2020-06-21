@@ -56,9 +56,13 @@ export function activate(ctx: ApplicationContext) {
   function findEntity(entity, id) {
     return index().get(id);
   }
-  
+
+  function find(id) {
+    return index().get(id);
+  }
+
   services.cadRegistry = {
-    getAllShells, findShell, findFace, findEdge, findSketchObject, findEntity, findDatum, findDatumAxis, findLoop,
+    getAllShells, findShell, findFace, findEdge, findSketchObject, findEntity, findDatum, findDatumAxis, findLoop, find,
     get modelIndex() {
       return streams.cadRegistry.modelIndex.value;
     },
@@ -85,6 +89,7 @@ export interface CadRegistry {
   findDatum(id: string): MObject;
   findDatumAxis(id: string): MObject;
   findLoop(id: string): MObject;
+  find(id: string): MObject;
   modelIndex: Map<String, MObject>;
   models: MObject[];
   shells: MObject[];

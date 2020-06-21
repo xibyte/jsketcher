@@ -1,7 +1,7 @@
 import schema from './rotateDatumOpSchema';
 import {MDatum} from '../../../model/mdatum';
 import RotateDatumWizard from './RotateDatumWizard';
-import {Matrix3, ORIGIN} from '../../../../math/l3space';
+import {Matrix3, ORIGIN} from '../../../../../../modules/math/l3space';
 import {DEG_RAD} from '../../../../math/math';
 
 

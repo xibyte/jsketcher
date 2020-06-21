@@ -31,7 +31,6 @@ export default function UISystem({children, ...props}) {
       <MenuHolder/>
       <ActionInfo/>
         {children}
-      <ContributedComponents/>
       <Scope><DocumentationWindow/></Scope>
     </div>
   </UISystemContext.Provider>;

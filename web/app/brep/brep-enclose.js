@@ -3,7 +3,7 @@ import {Face} from './topo/face';
 import {Edge} from './topo/edge';
 import BrepCurve from './geom/curves/brepCurve';
 import {Plane} from './geom/impl/plane';
-import {BasisForPlane, Matrix3} from '../math/l3space';
+import {BasisForPlane, Matrix3} from 'math/l3space';
 import * as cad_utils from '../cad/cad-utils';
 import * as math from '../math/math';
 import {createBoundingSurface} from './brep-builder';

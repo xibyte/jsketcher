@@ -1,12 +1,13 @@
 import {MObject} from './mobject';
 import Vector from 'math/vector';
-import {BasisForPlane} from '../../math/l3space';
+import {BasisForPlane} from 'math/l3space';
 import {MSketchObject} from './msketchObject';
 import {EMPTY_ARRAY} from 'gems/iterables';
-import CSys from '../../math/csys';
+import CSys from 'math/csys';
 import {MSketchLoop} from './mloop';
 import {ProductionInfo} from './productionInfo';
 import {MBrepShell, MShell} from "./mshell";
+import {AssemblyUnitVectorNode} from "../assembly/assembly";
 
 export class MFace extends MObject {
 
@@ -17,6 +18,10 @@ export class MFace extends MObject {
   sketchLoops: MSketchLoop[];
   sketch: any;
   brepFace: any;
+
+  assemblyNodes: {
+    normal: AssemblyUnitVectorNode
+  };
 
   private _csys: any;
   private w: number;
@@ -31,7 +36,10 @@ export class MFace extends MObject {
     this.surface = surface;
     this.sketchObjects = [];
     this.sketchLoops = [];
-    this._csys = csys
+    this._csys = csys;
+    this.assemblyNodes = {
+      normal: new AssemblyUnitVectorNode(this, () => this.normal())
+    };
   }
 
   normal() {
@@ -164,6 +172,10 @@ export class MFace extends MObject {
     callback(this);
     this.sketchObjects.forEach(i => i.traverse(callback));
     this.sketchLoops.forEach(i => i.traverse(callback));
+  }
+
+  get parent() {
+    return this.shell;
   }
 
 }

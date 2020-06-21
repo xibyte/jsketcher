@@ -19,6 +19,8 @@ import {ConstraintEditor} from "../../../sketcher/components/ConstraintEditor";
 import SketcherOperationWizard from "../../../sketcher/components/SketcherOperationWizard";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import {ContributedComponents} from "./ContributedComponents";
+import {ModellerContextualActions} from "./ModellerContextualActions";
 
 export default class View3d extends React.Component {
 
@@ -56,6 +58,8 @@ export default class View3d extends React.Component {
             <div className={ls.wizardArea} >
               <WizardManager/>
             </div>
+            <ContributedComponents/>
+            <Scope><ModellerContextualActions /></Scope>
           </div>
 
           <div className={ls.bottomStack}>

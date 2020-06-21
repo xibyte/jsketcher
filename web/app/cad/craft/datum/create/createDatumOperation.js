@@ -2,7 +2,7 @@ import DatumWizard from './CreateDatumWizard';
 import schema from './createDatumOpSchema';
 import DatumObject3D from '../datumObject';
 import * as SceneGraph from 'scene/sceneGraph';
-import CSys from '../../../../math/csys';
+import CSys from '../../../../../../modules/math/csys';
 import {MDatum} from '../../../model/mdatum';
 import {roundInteractiveInput} from '../../wizard/roundUtils';
 import {DatumParamsRenderer} from '../DatumParamsRenderer';

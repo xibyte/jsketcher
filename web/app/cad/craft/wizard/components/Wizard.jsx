@@ -1,5 +1,4 @@
 import React from 'react';
-import Window, {WindowControlButton} from 'ui/components/Window';
 import Stack from 'ui/components/Stack';
 import Button from 'ui/components/controls/Button';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
@@ -9,8 +8,7 @@ import CadError from '../../../../utils/errors';
 import {FormContext} from './form/Form';
 import connect from 'ui/connect';
 import {combine} from 'lstream';
-import {DocumentationTopic$} from "../../../../../../modules/doc/DocumentationWindow";
-import {IoMdHelp} from "react-icons/io";
+import {GenericWizard} from "ui/components/GenericWizard";
 
 @connect((streams, props) => combine(props.context.workingRequest$, props.context.state$)
   .map(([workingRequest, state]) => ({
@@ -56,42 +54,31 @@ export default class Wizard extends React.Component {
     let Form = operation.form;
 
     const error = this.props.error;
-    return <Window initWidth={250}
-                   initLeft={left || 15}
+    return <GenericWizard
+                   left={left}
                    title={title}
                    onClose={this.cancel}
                    onKeyDown={this.onKeyDown}
                    setFocus={this.focusFirstInput}
-                   className='Wizard mid-typography'
+                   className='Wizard'
                    data-operation-id={operation.id}
-                   controlButtons={<>
-                     <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({
-                       topic: operation.id,
-                       x: e.pageX + 40,
-                       y: e.pageY
-                     })}>
-                       <IoMdHelp />
-                     </WindowControlButton>
-                   </>}>
+                   topicId={operation.id}
+                   onCancel={this.cancel}
+                   onOK={this.onOK}
+                   infoText={error && <div className={ls.errorMessage}>
+                     {CadError.ALGORITHM_ERROR_KINDS.includes(error.kind) && <span>
+                        performing operation with current parameters leads to an invalid object
+                        (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
+                      </span>}
+                     {error.code && <div className={ls.errorCode}>{error.code}</div>}
+                     {error.userMessage && <div className={ls.userErrorMessage}>{error.userMessage}</div>}
+                     {!error.userMessage && <div>internal error processing operation, check the log</div>}
+                   </div>}
+    >
       <FormContext.Provider value={formContext}>
         <Form/>
       </FormContext.Provider>
-      <Stack>
-        <ButtonGroup>
-          <Button className='dialog-cancel' onClick={this.cancel}>Cancel</Button>
-          <Button className='dialog-ok' type='accent' onClick={this.onOK}>OK</Button>
-        </ButtonGroup>
-        {error && <div className={ls.errorMessage}>
-          {CadError.ALGORITMTHM_ERROR_KINDS.includes(error.kind) && <span>
-            performing operation with current parameters leads to an invalid object
-            (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
-          </span>}
-          {error.code && <div className={ls.errorCode}>{error.code}</div>}
-          {error.userMessage && <div className={ls.userErrorMessage}>{error.userMessage}</div>}
-          {!error.userMessage && <div>internal error processing operation, check the log</div>}
-        </div>}
-      </Stack>
-    </Window>;
+    </GenericWizard>;
   }
 
   onKeyDown = e => {

@@ -2,8 +2,10 @@ import {prepare} from "./solver";
 import {eqEps} from "../../brep/geom/tolerance";
 import {Polynomial, POW_1_FN} from "./polynomial";
 import {compositeFn} from "gems/func";
+import {AlgNumConstraint} from "./ANConstraints";
+import {SolverParam} from "./solverParam";
 
-const DEBUG = false;
+const DEBUG = true;
 
 export class AlgNumSubSystem {
 
@@ -33,6 +35,18 @@ export class AlgNumSubSystem {
   visualLimit = 100;
 
   stage = null;
+
+  dof: number = 0;
+
+  requiresHardSolve: boolean = false;
+
+  polynomialIsolations: Isolation[];
+
+  calcVisualLimit: () => number;
+
+  expressionResolver: (string) => any;
+
+  solveStatus: SolveStatus;
 
   constructor(calcVisualLimit, expressionResolver, stage) {
 
@@ -182,7 +196,7 @@ export class AlgNumSubSystem {
     });
 
     if (DEBUG) {
-      console.log('reducing system:');
+      console.log('reducing system(of', this.polynomials.length, '):');
       this.polynomials.forEach(p => console.log(p.toString()));
     }
 
@@ -502,6 +516,13 @@ export class AlgNumSubSystem {
 
 
 class Isolation {
+  polynomials: Polynomial[];
+  system: AlgNumSubSystem;
+  beingSolvedParams: Set<SolverParam>;
+  beingSolvedConstraints: Set<AlgNumConstraint>;
+  dof: number;
+  solveStatus: SolveStatus;
+  numericalSolver: { system; diagnose; solveSystem; error; updateLock };
 
   constructor(polynomials, system) {
     this.system = system;
@@ -605,3 +626,7 @@ class PolynomialResidual {
 
 }
 
+interface SolveStatus {
+  success: boolean;
+  error: number
+}

@@ -9,7 +9,7 @@ import {Mesh} from 'three';
 
 export class ShellView extends View {
 
-  constructor(shell, skin) {
+  constructor(shell, skin, viewer) {
     super(shell);
 
     this.material = createSolidMaterial(skin);
@@ -45,6 +45,15 @@ export class ShellView extends View {
       SceneGraph.addToGroup(this.edgeGroup, edgeView.rootGroup);
       this.edgeViews.push(edgeView);
     }
+
+    this.rootGroup.matrixAutoUpdate = false;
+
+    this.model.locationMatrix$.attach(loc => {
+      loc.setToMatrix(this.rootGroup.matrix);
+      this.rootGroup.matrixWorldNeedsUpdate = true;
+      viewer.requestRender();
+    });
+
   }
 
   mark(color) {

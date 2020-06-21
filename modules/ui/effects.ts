@@ -8,14 +8,14 @@ export function useStream<T>(getStream: (ctx: ApplicationContext) => Stream<T>) 
   const basicStreams = useContext(StreamsContext);
   const [state, setState] = useState<{data: T}>();
 
-  const stream = typeof getStream === 'function' ? getStream(basicStreams) : getStream;
+  const stream = resolveStream(getStream, basicStreams);
 
   if (!stream) {
     console.log(getStream);
     throw "no stream ^";
   }
 
-  useEffect(() => stream.attach(data => setState({data})), EMPTY_ARR);
+  useEffect(() => stream.attach(data => setState({data})), [stream]);
 
   // @ts-ignore
   return state ? state.data : (stream.value !== undefined  ? stream.value : null);
@@ -26,7 +26,7 @@ export function useStreamWithUpdater<T>(getStream: (ctx: ApplicationContext) => 
   const data = useStream(getStream);
   const basicStreams = useContext(StreamsContext);
 
-  const stream = typeof getStream === 'function' ? getStream(basicStreams) : getStream;
+  const stream = resolveStream(getStream, basicStreams);
 
   const updater = useCallback((val) => {
 
@@ -41,5 +41,6 @@ export function useStreamWithUpdater<T>(getStream: (ctx: ApplicationContext) => 
 
 }
 
-
-const EMPTY_ARR = [];
+function resolveStream(getStream, basicStreams) {
+  return typeof getStream === 'function' ? getStream(basicStreams) : getStream
+}

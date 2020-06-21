@@ -9,7 +9,7 @@ import {BasisOrigin} from './shapes/basis-origin';
 import Vector from 'math/vector';
 
 import * as draw_utils from './shapes/draw-utils';
-import {Matrix3} from '../math/l3space';
+import {Matrix3} from 'math/l3space';
 import sketcherStreams, {SketcherStreams} from './sketcherStreams';
 import {BBox, IO} from "./io";
 import {NOOP} from "../../../modules/gems/func";
@@ -358,13 +358,14 @@ export class Viewer {
   };
 
   fit() {
-
+    let count = 0;
     const bbox = new BBox();
     this.accept(obj => {
+      count ++;
       bbox.check(obj);
       return true;
     });
-    if (!bbox.isValid()) {
+    if (count < 2 || !bbox.isValid()) {
       return;
     }
 

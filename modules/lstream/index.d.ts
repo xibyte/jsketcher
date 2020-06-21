@@ -52,7 +52,7 @@ export function distinctState<T>(initialValue: T): StateStream<T>;
 
 export function externalState<T>(get: any, set: any): StateStream<T>;
 
-export function never<T>(): Stream<T>
+export function never<T>(): Emitter<T>
 
 export function constant<T>(value: T): Stream<T>
 

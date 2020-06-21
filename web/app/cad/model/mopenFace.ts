@@ -16,5 +16,8 @@ export class MOpenFaceShell extends MShell {
   get face() {
     return this.faces[0];
   }
-  
+
+  get parent() {
+    return null;
+  }
 }

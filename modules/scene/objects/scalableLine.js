@@ -3,7 +3,7 @@ import {advancePseudoFrenetFrame, frenetFrame, pseudoFrenetFrame} from '../../..
 import * as vec from 'math/vec';
 import {viewScaleFactor} from '../scaleHelper';
 import {arrToThree} from 'math/vectorAdapters';
-import {ORIGIN} from '../../../web/app/math/l3space';
+import {ORIGIN} from '../../math/l3space';
 import {getSceneSetup} from '../sceneSetup';
 import calcFaceNormal from '../utils/calcFaceNormal';
 
