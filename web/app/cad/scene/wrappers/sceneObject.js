@@ -1,5 +1,5 @@
 import Vector from 'math/vector';
-import {BasisForPlane} from '../../../math/l3space'
+import {BasisForPlane} from '../../../../../modules/math/l3space'
 import DPR from 'dpr'
 import {setAttribute} from "scene/objectData";
 import {genSolidId} from "../../craft/cadRegistryPlugin";

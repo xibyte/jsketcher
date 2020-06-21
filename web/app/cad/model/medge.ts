@@ -1,5 +1,5 @@
 import {MObject} from './mobject';
-import {MBrepShell, MShell} from "./mshell";
+import {MBrepShell} from "./mshell";
 
 export class MEdge extends MObject {
 
@@ -24,5 +24,9 @@ export class MEdge extends MObject {
       out.push(face);
     }
     return out;
+  }
+
+  get parent() {
+    return this.shell;
   }
 }

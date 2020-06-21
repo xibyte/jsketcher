@@ -1,6 +1,6 @@
 import {readBrep} from '../../../brep/io/brepIO';
 import {MBrepShell} from '../../model/mshell';
-import CSys from '../../../math/csys';
+import CSys from '../../../../../modules/math/csys';
 
 export function readShellEntityFromJson(data, consumed, csys) {
   

@@ -1,5 +1,5 @@
 import NurbsCurve from "./nurbsCurve";
-import {Matrix3} from '../../../math/l3space'
+import {Matrix3} from '../../../../../modules/math/l3space'
 import {areEqual} from '../../../math/math'
 
 import {eqSqTol, ueq, veq, veq3, veqNeg} from "../tolerance";

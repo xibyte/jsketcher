@@ -1,6 +1,6 @@
 import * as test from '../../test'
 import {deepMerge} from '../coreTests/utils/deep-merge'
-import {Matrix3} from '../../../../web/app/math/l3space'
+import {Matrix3} from '../../../../modules/math/l3space'
 
 const OPERANDS_MODE = false;
 

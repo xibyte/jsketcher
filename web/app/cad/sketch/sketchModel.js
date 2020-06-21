@@ -6,7 +6,7 @@ import {LUT} from '../../math/bezier-cubic'
 import {distanceAB, isCCW, makeAngle0_360} from '../../math/math'
 import {normalizeCurveEnds} from '../../brep/geom/impl/nurbs-ext';
 import Vector from '../../../../modules/math/vector';
-import {AXIS, ORIGIN} from '../../math/l3space';
+import {AXIS, ORIGIN} from '../../../../modules/math/l3space';
 
 const RESOLUTION = 20;
 

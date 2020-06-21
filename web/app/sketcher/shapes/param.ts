@@ -1,14 +1,17 @@
 import {Generator} from "../id-generator";
-import {Param as SolverParam} from '../constr/solver';
+import {SolverParam} from "../constr/solverParam";
 
 export class Param {
 
   id: number;
   value: number;
-  solverParam: any;
+  solverParam: SolverParam;
   private readonly debugSymbol: string;
   normalizer: (number) => any;
   enforceVisualLimit: boolean = false;
+
+  //penalty function constraints
+  constraints?: any[];
 
   constructor(value, debugSymbol) {
     this.id = Generator.genID();
