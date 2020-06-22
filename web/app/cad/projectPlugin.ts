@@ -40,7 +40,10 @@ export function initProjectService(ctx: CoreContext, id: string, hints: any) {
   function save() {
     let data = {
       history: ctx.craftService.modifications$.value.history,
-      expressions: ctx.expressionService.script$.value
+      expressions: ctx.expressionService.script$.value,
+
+      // @ts-ignore we deliberately don't uplift the type to the ApplicationContext in order to be able to use ProjectService in the headless mode
+      assembly: ctx.assemblyService && ctx.assemblyService.getConstraints()
     };
     ctx.storageService.set(projectStorageKey(), JSON.stringify(data));
   }
@@ -65,6 +68,13 @@ export function initProjectService(ctx: CoreContext, id: string, hints: any) {
     if (data.history) {
       ctx.craftService.reset(data.history);
     }
+
+    // @ts-ignore we deliberately don't uplift the type to the ApplicationContext in order to be able to use ProjectService in the headless mode
+    if (data.assembly && ctx.assemblyService) {
+      // @ts-ignore
+      ctx.assemblyService.loadConstraints(data.assembly);
+    }
+
   }
 
   function empty() {

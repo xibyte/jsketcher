@@ -1,3 +1,20 @@
+
+export function matchAvailableSubjects(selection, subjects) {
+
+  let matched = [];
+  let matchIndex = new MatchIndex(selection);
+
+  if (selection.length) {
+    for (let action of  subjects) {
+      if (action.selectionMatcher && matchSelection(action.selectionMatcher, matchIndex, true)) {
+        matched.push(action);
+      }
+    }
+  }
+
+  return matched;
+}
+
 export function matchSelection(definition, matchIndex, fast) {
   const selection = matchIndex.selection;
   if (definition.selector === 'function') {
@@ -12,7 +29,7 @@ export function matchSelection(definition, matchIndex, fast) {
 
       let hit = false;
       for (let constructor of types) {
-        if (constructor.prototype._class === obj._class) {
+        if (typeToString(constructor) === obj.TYPE) {
           hit = true;
           break;
         }
@@ -70,7 +87,7 @@ export function getDescription(definition) {
 }
 
 function stringifyTypes(types, minQuantity) {
-  return types.map(t => t.prototype.TYPE + (minQuantity > 1 ? 's' : '')).join(' or ');
+  return types.map(t => typeToString(t) + (minQuantity > 1 ? 's' : '')).join(' or ');
 }
 
 export class MatchIndex {
@@ -82,13 +99,13 @@ export class MatchIndex {
   constructor(selection) {
     this.selection = selection;
     selection.forEach(obj => {
-      let info = this.typeMap.get(obj._class);
+      let info = this.typeMap.get(obj.TYPE);
       if (!info) {
         info = {
           hits: 0,
           objects: []
         };
-        this.typeMap.set(obj._class, info);
+        this.typeMap.set(obj.TYPE, info);
       }
       info.objects.push(obj);
     })
@@ -102,7 +119,7 @@ export class MatchIndex {
 
   mark(types, quantity) {
     for (let type of types) {
-      const info = this.typeMap.get(type.prototype._class);
+      const info = this.typeMap.get(typeToString(type));
       if (!info) {
         continue;
       }
@@ -123,4 +140,12 @@ export class MatchIndex {
     return this.selection.length === this.overallHits;
   }
 
+}
+
+function typeToString(type) {
+  if (typeof type === 'string') {
+    return type;
+  } else {
+    return type.prototype.TYPE;
+  }
 }

@@ -36,6 +36,7 @@ import {
 import {ISolveStage, SolvableObject} from "./solvableObject";
 import {SketchObject} from "../shapes/sketch-object";
 import {IconType} from "react-icons";
+import {ConstraintAnnotation} from "./constraintAnnotation";
 
 export const ConstraintDefinitions
   // : {
@@ -966,7 +967,7 @@ export interface ConstraintSchema {
     }
   };
 
-  createAnnotations?: (objects: SolvableObject[], constraintInstance: AlgNumConstraint) =>  SketchObject[];
+  createAnnotations?: (objects: SolvableObject[], constraintInstance: AlgNumConstraint) =>  ConstraintAnnotation<any>[];
 
   defineParamsScope: (object: SolvableObject[], cb: (param: Param) => void) => void;
 
@@ -989,9 +990,9 @@ export class AlgNumConstraint {
   schema: ConstraintSchema;
   params: Param[];
   stage: ISolveStage;
-  private annotations: SketchObject[];
+  annotations: ConstraintAnnotation<any>[];
 
-  constructor(schema: ConstraintSchema, objects: SolvableObject[], constants?: ConstantsDefinitions, internal?: boolean = false) {
+  constructor(schema: ConstraintSchema, objects: SolvableObject[], constants?: ConstantsDefinitions, internal: boolean = false) {
     this.id = schema.id + ':' + (AlgNumConstraint.Counter ++); // only for debug purposes - not persisted
     this.objects = objects;
     this.constants = constants;
@@ -1038,7 +1039,7 @@ export class AlgNumConstraint {
     }
   }
 
-  write() {
+  write(): ConstraintSerialization {
     return {
       typeId: this.schema.id,
       objects: this.objects.map(o => o.id),
@@ -1048,7 +1049,7 @@ export class AlgNumConstraint {
     }
   }
 
-  static read({typeId, objects, constants, annotations}, index) {
+  static read({typeId, objects, constants, annotations}: ConstraintSerialization, index: {[key: string]: SolvableObject}) {
     const schema = ConstraintDefinitions[typeId];
     if (!schema) {
       throw "constraint schema " + typeId + " doesn't exist";
@@ -1105,4 +1106,13 @@ export class AlgNumConstraint {
   updateConstant(key, value) {
     this.constants[key] = value + ''; // only string are allowed here
   }
+}
+
+
+export interface ConstraintSerialization {
+  typeId: string;
+  objects: string[];
+  constants: ConstantsDefinitions;
+  stage: number;
+  annotations?: any
 }

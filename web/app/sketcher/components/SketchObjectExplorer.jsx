@@ -10,7 +10,7 @@ export function SketchObjectExplorer() {
 
   const [modification, setModification] = useState(0);
   const objects = useStream(ctx => ctx.viewer.streams.objects);
-  const selection = useStream(ctx.viewer.streams.selection);
+  const selection = useStream(ctx => ctx.viewer.streams.selection);
   const ctx = useContext(SketcherAppContext);
 
   if (!objects || !selection) {

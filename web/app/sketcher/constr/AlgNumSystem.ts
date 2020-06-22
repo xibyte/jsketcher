@@ -626,7 +626,7 @@ class PolynomialResidual {
 
 }
 
-interface SolveStatus {
+export interface SolveStatus {
   success: boolean;
-  error: number
+  error: number;
 }

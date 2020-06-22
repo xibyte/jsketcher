@@ -7,6 +7,7 @@ import {TextHelper} from "./textHelper";
 import {isInstanceOf} from "../actions/matchUtils";
 import {Arc} from "./arc";
 import {SketchObject} from "./sketch-object";
+import {ConstraintAnnotation} from "../constr/constraintAnnotation";
 
 const ARROW_W_PX = 15;
 const ARROW_H_PX = 4;

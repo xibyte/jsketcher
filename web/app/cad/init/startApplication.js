@@ -37,6 +37,7 @@ import * as DebugPlugin from "../debugPlugin";
 import * as ExpressionsPlugin from "../expressions/expressionsPlugin";
 import * as PartOperationsPlugin from "../part/partOperationsPlugin";
 import * as LocationPlugin from "../location/locationPlugin";
+import * as AssemblyPlugin from "../assembly/assemblyPlugin";
 
 export default function startApplication(callback) {
 
@@ -76,6 +77,7 @@ export default function startApplication(callback) {
     DebugPlugin,
     PartOperationsPlugin,
     LocationPlugin,
+    AssemblyPlugin,
     RemotePartsPlugin,
     ViewSyncPlugin,
     WizardSelectionPlugin

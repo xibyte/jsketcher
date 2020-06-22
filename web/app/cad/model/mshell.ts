@@ -5,7 +5,7 @@ import {MVertex} from './mvertex';
 import CSys from 'math/csys';
 import {Matrix3} from "math/l3space";
 import {state, StateStream} from "lstream";
-import {AssemblyCSysNode} from "../assembly/assembly";
+import {AssemblyCSysNode} from "../assembly/nodes/assemblyCSysNode";
 
 export class MShell extends MObject {
 

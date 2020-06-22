@@ -3,6 +3,7 @@ import {state} from 'lstream';
 import {addToListInMap} from 'gems/iterables';
 import {EMPTY_ARRAY} from '../../../../modules/gems/iterables';
 import {DATUM, FACE, SHELL, SKETCH_OBJECT, EDGE, LOOP} from './entites';
+import {combine} from "../../../../modules/lstream";
 
 export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
 
@@ -11,6 +12,7 @@ export function defineStreams(ctx) {
   SELECTABLE_ENTITIES.forEach(entity => {
     ctx.streams.selection[entity] = state([]);
   });
+  ctx.streams.selection.all = combine(...Object.values(ctx.streams.selection)).map(selection => [].concat(...selection)).throttle();
 }
 
 export function activate(ctx) {

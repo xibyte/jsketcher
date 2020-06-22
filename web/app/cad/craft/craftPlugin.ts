@@ -99,11 +99,16 @@ export function activate(ctx: CoreContext) {
       return runRequest(request);
     }
   }
-  
+
+  function isEditingHistory() {
+    const mods = this.modifications$.value;
+    return mods && mods.pointer !== mods.history.length - 1;
+  }
+
    ctx.craftService  = {
     modify, modifyInHistoryAndStep, reset, rebuild, runRequest, runPipeline,
     historyTravel: historyTravel(modifications$),
-    modifications$, models$, update$
+    modifications$, models$, update$, isEditingHistory
   };
 
   // @ts-ignore
@@ -256,7 +261,9 @@ interface CraftService {
 
   runRequest(request: OperationRequest): Promise<OperationResult>;
 
-  runPipeline(history: OperationRequest[], beginIndex: number, endIndex: number): Promise<void>
+  runPipeline(history: OperationRequest[], beginIndex: number, endIndex: number): Promise<void>;
+
+  isEditingHistory(): boolean;
 }
 
 interface HistoryTravel {

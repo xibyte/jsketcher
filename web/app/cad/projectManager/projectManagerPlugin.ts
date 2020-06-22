@@ -4,6 +4,7 @@ import exportTextData from '../../../../modules/gems/exportTextData';
 import {SketchFormat_V3} from "../../sketcher/io";
 import {ApplicationContext} from "context";
 import {OperationRequest} from "../craft/craftPlugin";
+import {AssemblyConstraintDefinition} from "../assembly/assemblyConstraintDefinition";
 
 export function activate(ctx: ApplicationContext) {
   
@@ -201,6 +202,8 @@ export interface ProjectModel {
   history: OperationRequest[],
 
   expressions: string
+
+  assembly?: AssemblyConstraintDefinition[][];
 
 }
 

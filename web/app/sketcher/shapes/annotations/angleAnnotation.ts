@@ -1,7 +1,11 @@
 import {AngleBetweenDimension, DiameterDimension, LinearDimension} from "../dim";
 import {Styles} from "../../styles";
+import {ConstraintAnnotation} from "../../constr/constraintAnnotation";
+import {AlgNumConstraint} from "../../constr/ANConstraints";
 
-export class AngleBetweenAnnotation extends AngleBetweenDimension {
+export class AngleBetweenAnnotation extends AngleBetweenDimension implements ConstraintAnnotation<{offset: number}> {
+
+  constraint: AlgNumConstraint;
 
   constructor(a, b, constraint) {
     super(a, b);
@@ -27,7 +31,9 @@ AngleBetweenAnnotation.prototype.TYPE = 'AngleBetweenAnnotation';
 
 AngleBetweenAnnotation.prototype._class = 'TCAD.TWO.AngleBetweenAnnotation';
 
-export class AngleAbsoluteAnnotation extends AngleBetweenDimension {
+export class AngleAbsoluteAnnotation extends AngleBetweenDimension implements ConstraintAnnotation<{offset: number}> {
+
+  constraint: AlgNumConstraint;
 
   constructor(segment, constraint) {
     super({
@@ -90,7 +96,9 @@ export class AngleAbsoluteAnnotation extends AngleBetweenDimension {
 AngleAbsoluteAnnotation.prototype._class = 'AngleAbsoluteAnnotation';
 
 
-export class LengthAnnotation extends LinearDimension {
+export class LengthAnnotation extends LinearDimension implements ConstraintAnnotation<{offset: number}>  {
+
+  constraint: AlgNumConstraint;
 
   constructor(segment, constraint) {
     super(segment.a, segment.b);
@@ -116,7 +124,9 @@ LengthAnnotation.prototype.TYPE = 'LengthAnnotation';
 
 LengthAnnotation.prototype._class = 'TCAD.TWO.LengthAnnotation';
 
-export class RadiusLengthAnnotation extends DiameterDimension {
+export class RadiusLengthAnnotation extends DiameterDimension implements ConstraintAnnotation<{angle: number}>  {
+
+  constraint: AlgNumConstraint;
 
   constructor(obj, constraint) {
     super(obj);

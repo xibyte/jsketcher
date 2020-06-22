@@ -3,6 +3,11 @@ import {NoIcon} from "../../sketcher/icons/NoIcon";
 import {AlgNumConstraint, ConstantsDefinitions, ConstraintSchema} from "../../sketcher/constr/ANConstraints";
 import {MObject} from "../model/mobject";
 import {SolvableObject} from "../../sketcher/constr/solvableObject";
+import {AssemblyNode} from "./assembly";
+import {EndPoint} from "../../sketcher/shapes/point";
+import {Circle} from "../../sketcher/shapes/circle";
+import {Arc} from "../../sketcher/shapes/arc";
+
 
 export const Constraints3D = {
 
@@ -47,13 +52,70 @@ export const Constraints3D = {
 
   },
 
+  FaceToFace: {
+    id: 'FaceToFace',
+    name: 'Face To Face',
+    icon: NoIcon,
+
+    selectionMatcher: {
+      selector: 'matchAll',
+      types: ['face'],
+      minQuantity: 2
+    },
+
+    defineAssemblyScope: ([face1, face2]) => {
+      return [
+        face1.assemblyNodes.plane,
+        face2.assemblyNodes.plane,
+      ];
+    },
+
+    defineParamsScope: ([plane1, plane2], cb) => {
+      plane1.visitParams(cb);
+      plane2.visitParams(cb);
+    },
+
+    collectPolynomials: (polynomials, params) => {
+
+      const [
+        nx1, ny1, nz1, w1, nx2, ny2, nz2, w2
+      ] = params;
+
+      polynomials.push(
+        new Polynomial(1)
+          .monomial()
+            .term(nx1, POW_1_FN)
+            .term(nx2, POW_1_FN)
+          .monomial()
+            .term(ny1, POW_1_FN)
+            .term(ny2, POW_1_FN)
+          .monomial()
+            .term(nz1, POW_1_FN)
+            .term(nz2, POW_1_FN)
+
+      );
+      polynomials.push(
+        new Polynomial()
+          .monomial()
+            .term(w1, POW_1_FN)
+          .monomial()
+            .term(w2, POW_1_FN)
+      );
+
+    }
+
+  },
+
   UnitVectorConsistency: {
     id: 'UnitVectorConsistency',
     name: 'UnitVectorConsistency',
     icon: NoIcon,
 
     defineParamsScope: ([vec], cb) => {
-      vec.visitParams(cb);
+      //don't change to generic way it can a plane
+      cb(vec.x);
+      cb(vec.y);
+      cb(vec.z);
     },
 
     collectPolynomials: (polynomials, params) => {
@@ -162,6 +224,80 @@ export const Constraints3D = {
     },
   },
 
+  RigidBodyPlaneLink: {
+    id: 'RigidBodyPlaneLink',
+    name: 'RigidBodyPlaneLink',
+    icon: NoIcon,
+
+    defineParamsScope: ([csys, plane], cb) => {
+      csys.visitParams(cb);
+      plane.visitParams(cb);
+    },
+
+    collectPolynomials: (polynomials, params, _, objects) => {
+      const [csys, plane] = objects;
+
+      const n = plane.getNormal();
+      const wStar = plane.getDepth();
+
+      const {x: xStar, y: yStar, z: zStar} = n.multiply(wStar);
+
+      const [ox, oy, oz, ix, iy, iz, jx, jy, jz, kx, ky, kz, x, y, z, w] = params;
+
+      // out.x = this.mxx * x + this.mxy * y + this.mxz * z + this.tx;
+      // out.y = this.myx * x + this.myy * y + this.myz * z + this.ty;
+      // out.z = this.mzx * x + this.mzy * y + this.mzz * z + this.tz;
+
+      polynomials.push(
+        new Polynomial(0)
+          .monomial(-1)
+            .term(x, POW_1_FN)
+            .term(w, POW_1_FN)
+          .monomial(xStar)
+            .term(ix, POW_1_FN)
+          .monomial(yStar)
+            .term(jx, POW_1_FN)
+          .monomial(zStar)
+            .term(kx, POW_1_FN)
+          .monomial()
+            .term(ox, POW_1_FN)
+      );
+
+      polynomials.push(
+        new Polynomial(0)
+          .monomial(-1)
+            .term(y, POW_1_FN)
+            .term(w, POW_1_FN)
+          .monomial(xStar)
+            .term(iy, POW_1_FN)
+          .monomial(yStar)
+            .term(jy, POW_1_FN)
+          .monomial(zStar)
+            .term(ky, POW_1_FN)
+          .monomial()
+            .term(oy, POW_1_FN)
+
+      );
+
+      polynomials.push(
+        new Polynomial(0)
+          .monomial(-1)
+            .term(z, POW_1_FN)
+            .term(w, POW_1_FN)
+          .monomial(xStar)
+            .term(iz, POW_1_FN)
+          .monomial(yStar)
+            .term(jz, POW_1_FN)
+          .monomial(zStar)
+            .term(kz, POW_1_FN)
+          .monomial()
+            .term(oz, POW_1_FN)
+
+      );
+
+    }
+  },
+
   RigidBodyLink3x3: {
     id: 'RigidBodyLink3x3',
     name: 'RigidBodyLink3x3',
@@ -231,18 +367,103 @@ export const Constraints3D = {
     }
   },
 
+  RigidBodyLink4x4: {
+    id: 'RigidBodyLink4x4',
+    name: 'RigidBodyLink4x4',
+    icon: NoIcon,
+
+    defineParamsScope: ([csys, vec], cb) => {
+      cb(csys.ox);
+      cb(csys.oy);
+      cb(csys.oz);
+      cb(csys.ix);
+      cb(csys.iy);
+      cb(csys.iz);
+      cb(csys.jx);
+      cb(csys.jy);
+      cb(csys.jz);
+      cb(csys.kx);
+      cb(csys.ky);
+      cb(csys.kz);
+      vec.visitParams(cb);
+    },
+
+    collectPolynomials: (polynomials, params, _, objects) => {
+      const [csys, vec] = objects;
+
+      const {x: xStar, y: yStar, z: zStar} = vec.getVector();
+
+      const [ox, oy, oz, ix, iy, iz, jx, jy, jz, kx, ky, kz, x, y, z] = params;
+
+      // out.x = this.mxx * x + this.mxy * y + this.mxz * z + this.tx;
+      // out.y = this.myx * x + this.myy * y + this.myz * z + this.ty;
+      // out.z = this.mzx * x + this.mzy * y + this.mzz * z + this.tz;
+
+      polynomials.push(
+        new Polynomial(0)
+          .monomial(-1)
+            .term(x, POW_1_FN)
+          .monomial(xStar)
+            .term(ix, POW_1_FN)
+          .monomial(yStar)
+            .term(jx, POW_1_FN)
+          .monomial(zStar)
+            .term(kx, POW_1_FN)
+          .monomial()
+            .term(ox, POW_1_FN)
+
+      );
+
+      polynomials.push(
+        new Polynomial(0)
+          .monomial(-1)
+            .term(y, POW_1_FN)
+          .monomial(xStar)
+            .term(iy, POW_1_FN)
+          .monomial(yStar)
+            .term(jy, POW_1_FN)
+          .monomial(zStar)
+            .term(ky, POW_1_FN)
+          .monomial()
+            .term(oy, POW_1_FN)
+
+
+      );
+
+      polynomials.push(
+        new Polynomial(0)
+          .monomial(-1)
+            .term(z, POW_1_FN)
+          .monomial(xStar)
+            .term(iz, POW_1_FN)
+          .monomial(yStar)
+            .term(jz, POW_1_FN)
+          .monomial(zStar)
+            .term(kz, POW_1_FN)
+          .monomial()
+            .term(oz, POW_1_FN)
+
+      );
+
+    }
+  },
 };
 
 
 export interface AssemblyConstraintSchema extends ConstraintSchema {
-  defineAssemblyScope: (objects: MObject[]) => SolvableObject[],
+  selectionMatcher?: {
+    selector: string,
+    types: any[],
+    minQuantity: number
+  };
+  defineAssemblyScope: (objects: MObject[]) => AssemblyNode[],
 }
 
 
 export function createAssemblyConstraint(schema: AssemblyConstraintSchema,
                                          objects: MObject[],
                                          constants?: ConstantsDefinitions,
-                                         internal?: boolean = false) {
+                                         internal: boolean = false) {
 
   return new AlgNumConstraint(schema, schema.defineAssemblyScope(objects), constants, internal);
 }

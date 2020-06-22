@@ -1,5 +1,5 @@
 import constraintActions from "./constraintActions";
-import {getDescription, MatchIndex, matchSelection} from "../selectionMatcher";
+import {getDescription, matchAvailableSubjects, MatchIndex, matchSelection} from "../selectionMatcher";
 import {toast} from "react-toastify";
 import operationActions from "./operationActions";
 import constraintGlobalActions from "./constraintGlobalActions";
@@ -35,19 +35,7 @@ ALL_ACTIONS.forEach(a => index[a.id] = a);
 Object.freeze(index);
 
 export function matchAvailableActions(selection) {
-
-  let matched = [];
-  let matchIndex = new MatchIndex(selection);
-
-  if (selection.length) {
-    for (let action of  ALL_CONTEXTUAL_ACTIONS) {
-      if (action.selectionMatcher && matchSelection(action.selectionMatcher, matchIndex, true)) {
-        matched.push(action);
-      }
-    }
-  }
-
-  return matched;
+  return matchAvailableSubjects(selection, ALL_CONTEXTUAL_ACTIONS);
 }
 
 export function getSketcherAction(actionId) {
