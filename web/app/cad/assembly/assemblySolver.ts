@@ -1,17 +1,18 @@
 import {AlgNumConstraint} from "../../sketcher/constr/ANConstraints";
-import {AlgNumSubSystem} from "../../sketcher/constr/AlgNumSystem";
+import {AlgNumSubSystem, SolveStatus} from "../../sketcher/constr/AlgNumSystem";
 import Vector from "math/vector";
 import CSys from "math/csys";
-import {AssemblyCSysNode, AssemblyNode} from "./assembly";
+import {AssemblyNode} from "./assembly";
 import {ISolveStage} from "../../sketcher/constr/solvableObject";
-import {MObject} from "../model/mobject";
 import {MShell} from "../model/mshell";
-import {Constraints3D} from "./constraints3d";
+import {AssemblyCSysNode} from "./nodes/assemblyCSysNode";
 
-export function solveAssembly(constraints: AlgNumConstraint[]) {
+export function solveAssembly(stages: AlgNumConstraint[][]): SolveStatus {
+
+  // temporary solve everything in one stage
+  const constraints = [].concat(...stages);
 
   const objects = new Set<AssemblyNode>();
-
   constraints.forEach(c => c.objects.forEach(o => objects.add(o)));
 
   const stage: ISolveStage = {
@@ -33,11 +34,8 @@ export function solveAssembly(constraints: AlgNumConstraint[]) {
     o.reset();
   });
 
-  // const algNumConstraint = new AlgNumConstraint(Constraints3D.FaceParallel, objects);
 
   const system = new AlgNumSubSystem(() => 0.001, val => val, stage);
-  // __DEBUG__.AddNormal(face1.csys.origin, new Vector().set3(objects[0].normal.map(p => p.get())))
-  // __DEBUG__.AddNormal(face2.csys.origin, new Vector().set3(objects[1].normal.map(p => p.get())))
 
   system.startTransaction();
   constraints.forEach(c => system.addConstraint(c));
@@ -60,17 +58,18 @@ export function solveAssembly(constraints: AlgNumConstraint[]) {
     }
   });
 
-  system.prepare();
-  system.solveFine();
   system.finishTransaction();
+  system.solveFine();
 
-  // __DEBUG__.AddNormal(face1.csys.origin, new Vector().set3(objects[0].normal.map(p => p.get())))
-  // __DEBUG__.AddNormal(face2.csys.origin, new Vector().set3(objects[1].normal.map(p => p.get())))
+  if (system.solveStatus.success) {
+    roots.forEach(root => {
+      applyResults(root, root.assemblyNodes.location);
+    });
+  } else {
+    console.log("Assembly system haven't been solved, locations won't be updated");
+  }
 
-  roots.forEach(root => {
-    applyResults(root, root.assemblyNodes.location);
-  });
-
+  return system.solveStatus;
 }
 
 

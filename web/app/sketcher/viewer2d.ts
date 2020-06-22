@@ -19,6 +19,7 @@ import {Styles} from './styles';
 import {Dimension} from "./shapes/dim";
 import {GroundObjectsGeneratorSchema} from "./generators/groundObjectsGenerator";
 import {SketchGenerator} from "./generators/sketchGenerator";
+import {Generator} from "./id-generator";
 
 export class Viewer {
 
@@ -136,6 +137,7 @@ export class Viewer {
     window.removeEventListener('resize', this.onWindowResize, false);
     this.canvas = null;
     this.toolManager.dispose();
+    Generator.resetIDGenerator();
   };
 
   isDisposed() {
