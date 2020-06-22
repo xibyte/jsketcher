@@ -5,6 +5,7 @@ import sketcherUIContrib from './sketcherUIContrib';
 import initReassignSketchMode from './reassignSketchMode';
 import {Viewer} from "../../sketcher/viewer2d";
 import {IO} from "../../sketcher/io";
+import {Generator} from "../../sketcher/id-generator";
 
 export function defineStreams(ctx) {
   ctx.streams.sketcher = {
@@ -67,6 +68,7 @@ export function activate(ctx) {
         services.storage.set(ctx.projectService.sketchStorageKey(sketchId), viewer.io.serializeSketch({
           expressionsSignature: signature
         }));
+        Generator.resetIDGenerator();
       } catch (e) {
         console.error(e);
         return null;
