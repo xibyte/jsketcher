@@ -179,19 +179,14 @@ export class AlgNumSubSystem {
         const polynomial = this.polynomials[i];
         this.polyToConstr.set(polynomial, c);
 
-        let touched = false;
         c.objects.forEach(obj => {
           if (!this.owns(obj)) {
             obj.visitParams(p => {
-              if (polynomial.eliminate(p, p.get())) {
-                touched = true;
-              }
+              polynomial.eliminate(p, p.get());
             });
           }
         });
-        if (touched) {
-          polynomial.compact();
-        }
+        polynomial.compact();
       }
     });
 
