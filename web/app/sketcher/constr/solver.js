@@ -246,6 +246,7 @@ var prepare = function(constrs, locked) {
     //if (simpleMode) return nullResult;
     if (constrs.length === 0) return nullResult;
     if (sys.params.length === 0) return nullResult;
+    // return solve_lm(sys, model, jacobian, rough);
     switch (alg) {
       case 2:
         return solve_lm(sys, model, jacobian, rough);
@@ -274,7 +275,7 @@ var prepare = function(constrs, locked) {
 
 var solve_lm = function(sys, model, jacobian, rough) {
   var opt = new LMOptimizer(sys.getParams(), newVector(sys.constraints.length), model, jacobian);
-  opt.evalMaximalCount = 100 * sys.params.length;
+  opt.evalMaximalCount = 100000; //100 * sys.params.length;
   var eps = rough ? 0.001 : 0.00000001;
   opt.init0(eps, eps, eps);
   var returnCode = 1;
@@ -283,10 +284,19 @@ var solve_lm = function(sys, model, jacobian, rough) {
   } catch (e) {
     returnCode = 2;
   }
-  sys.setParams(res[0]);
+  if (returnCode === 1) {
+    sys.setParams(res[0]);
+  }
+  console.log("LM result: ")
+  console.log({
+    evalCount : opt.evalCount,
+    error : sys.error(),
+  });
+
   return {
     evalCount : opt.evalCount,
     error : sys.error(),
+    success: returnCode === 1 && sys.error() < 1e-3,
     returnCode : returnCode
   };
 };

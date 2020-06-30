@@ -353,6 +353,13 @@ export class Matrix3 {
   };
 
   apply = vector => this.__apply(vector, new Vector());
+
+  setTranslation(tx, ty, tz) {
+    this.tx = tx;
+    this.ty = ty;
+    this.tz = tz;
+    return this;
+  }
 }
 
 

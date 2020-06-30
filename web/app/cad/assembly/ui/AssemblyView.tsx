@@ -1,8 +1,8 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {useStream} from "ui/effects";
 import {Status} from "ui/components/Status";
 import Folder from "ui/components/Folder";
-import {Constraints3D} from "../constraints3d";
+import {AssemblyConstraints, Constraints3D} from "../constraints3d";
 import {AppContext} from "../../dom/components/AppContext";
 import cx from 'classnames';
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
@@ -10,6 +10,8 @@ import ls from "../../../sketcher/components/ConstraintExplorer.less";
 import Fa from "ui/components/Fa";
 import {AssemblyConstraintDefinition} from "../assemblyConstraintDefinition";
 import {ApplicationContext} from "context";
+import {AssemblyProcess} from "../assemblySolver";
+import {StepByStepSimulation} from "./StepByStepSimulation";
 
 
 export function AssemblyView() {
@@ -23,9 +25,8 @@ export function AssemblyView() {
     <div>
       Status: <Status success={status.success} />
     </div>
-    {constraints.map((stage, i) => <Folder key={i} title={'Stage' + (i + 1)}>
-      {stage.map((constr, j) => <AssemblyConstraintButton key={j} prefix={j + '.'} constraint={constr} />) }
-    </Folder>)}
+    {constraints.map((constr, i) => <AssemblyConstraintButton key={i} prefix={(i+1) + '.'} constraint={constr} />)}
+    <StepByStepSimulation />
   </div>
 
 }
@@ -64,7 +65,7 @@ export function AssemblyConstraintButton({prefix='', constraint: c, ...props}: {
 
   useEffect(() => withdraw, [c]);
 
-  const schema = Constraints3D[c.typeId];
+  const schema = AssemblyConstraints[c.typeId];
   if (schema === null) {
     return <div className='warning-text'>Invalid Constraint {c.typeId} </div>
   }

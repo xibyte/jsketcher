@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {AppContext} from "../../dom/components/AppContext";
 import {useStream} from "ui/effects";
 import {Dialog} from "ui/components/Dialog";
-import {AssemblyConstraintSchema, Constraints3D} from "../constraints3d";
+import {AssemblyConstraints, AssemblyConstraintSchema, Constraints3D} from "../constraints3d";
 import {matchAvailableSubjects, MatchIndex, matchSelection} from "../../../sketcher/selectionMatcher";
 
 export function ModellerContextualActions() {
@@ -17,7 +17,7 @@ export function ModellerContextualActions() {
 
   const entities = selection.map(ctx.cadRegistry.find);
 
-  const allConstraints = Object.values(Constraints3D) as AssemblyConstraintSchema[];
+  const allConstraints = Object.values(AssemblyConstraints) as AssemblyConstraintSchema[];
   const availableConstraints = matchAvailableSubjects(entities, allConstraints) as AssemblyConstraintSchema[];
 
   if (availableConstraints.length === 0) {

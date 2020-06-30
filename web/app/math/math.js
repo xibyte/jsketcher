@@ -303,3 +303,8 @@ export function lineLineIntersection2d(p1, p2, v1, v2) {
 export const DEG_RAD = Math.PI / 180.0;
 
 export const sq = (a) => a * a;
+
+
+export function clamp(num, min, max) {
+  return Math.min(max, Math.max(num, min))
+}

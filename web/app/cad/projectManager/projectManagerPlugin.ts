@@ -203,7 +203,7 @@ export interface ProjectModel {
 
   expressions: string
 
-  assembly?: AssemblyConstraintDefinition[][];
+  assembly?: AssemblyConstraintDefinition[];
 
 }
 

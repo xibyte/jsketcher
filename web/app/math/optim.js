@@ -326,7 +326,7 @@ var dog_leg = function (subsys, rough) {
   var g_inf = n.norminf(g);
   var fx_inf = n.norminf(fx);
   
-  var iterLimit = rough ? 100 : 500;
+  var iterLimit = rough ? 100 : 50000;
   var divergenceLimit = 1e6 * (err + 1e6);
 
   var delta = 10;
@@ -338,8 +338,6 @@ var dog_leg = function (subsys, rough) {
     optim.DEBUG_HANDLER(iter, err);
 
     if (fx_inf <= tolf) {
-      returnCode = SUCCESS;
-    } else if (g_inf <= tolg) {
       returnCode = SUCCESS;
     } else if (iter >= iterLimit) {
       returnCode = ITER_LIMIT;
@@ -442,7 +440,7 @@ var dog_leg = function (subsys, rough) {
     }
     //log.push([stepKind,err,  delta,rho]);
 
-    if (acceptCandidate) {
+    const step = () => {
       x = n.clone(x_new);
       J = n.clone(J_new);
       fx = n.clone(fx_new);
@@ -453,12 +451,25 @@ var dog_leg = function (subsys, rough) {
       // get infinity norms
       g_inf = n.norminf(g);
       fx_inf = n.norminf(fx);
+    };
+
+    if (acceptCandidate) {
+      step();
+    }
+
+    if (g_inf <= tolg) {
+      for (let i = 0; i < x_new.length; ++i) {
+        x_new[i] += 1;
+      }
+      err_new = subsys.calcResidual(fx_new);
+      step();
     }
 
     iter++;
   }
   //log.push(returnCode);
   //window.___log(log);
+  console.log("DOGLE: " +  iter)
   return _result(iter, err, returnCode);
 };
 

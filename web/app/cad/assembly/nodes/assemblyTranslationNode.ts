@@ -4,9 +4,9 @@ import {MObject} from "../../model/mobject";
 import {AlgNumConstraint} from "../../../sketcher/constr/ANConstraints";
 import {Constraints3D} from "../constraints3d";
 import {AssemblyNode} from "../assembly";
-import {AssemblyOrientationNode} from "./assemblyOrientationNode";
+import {AssemblyCSysNode} from "./assemblyCSysNode";
 
-export class AssemblyUnitVectorNode extends AssemblyNode {
+export class AssemblyTranslationNode extends AssemblyNode {
 
   x = new Param(0, 'X');
   y = new Param(0, 'Y');
@@ -31,15 +31,10 @@ export class AssemblyUnitVectorNode extends AssemblyNode {
     this.z.set(z);
   }
 
-  createConsistencyConstraints() {
+  createRigidBodyLink(body: AssemblyCSysNode) {
     return [
-      new AlgNumConstraint(Constraints3D.UnitVectorConsistency, [this])
+
     ];
   }
-
-  createRigidBodyOrientationRelationship(orientationNode: AssemblyOrientationNode): AlgNumConstraint[] {
-    return [new AlgNumConstraint(Constraints3D.RigidBodyLink3x3, [orientationNode, this])];
-  }
-
 
 }
