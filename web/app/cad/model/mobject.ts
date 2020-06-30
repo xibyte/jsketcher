@@ -1,9 +1,15 @@
+import {AssemblyNode} from "../assembly/assembly";
+
 export abstract class MObject {
 
   TYPE: string;
   
   id: string;
   ext: any = {};
+
+  assemblyNodes?: {
+    [key: string]: AssemblyNode
+  };
 
   constructor(TYPE, id) {
     this.TYPE = TYPE;

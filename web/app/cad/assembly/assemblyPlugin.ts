@@ -2,44 +2,46 @@ import {ApplicationContext} from "context";
 import {ModellerContextualActions} from "./ui/ModellerContextualActions";
 import {state, StateStream} from "lstream";
 import {AssemblyConstraintDefinition} from "./assemblyConstraintDefinition";
-import {solveAssembly as solveAssemblyImpl} from "./assemblySolver";
-import {Constraints3D, createAssemblyConstraint} from "./constraints3d";
+import {AssemblyProcess, launchAssembly} from "./assemblySolver";
 import {SolveStatus} from "../../sketcher/constr/AlgNumSystem";
 import {ConstantsDefinitions} from "../../sketcher/constr/ANConstraints";
 import {AssemblyView} from "./ui/AssemblyView";
 import {IoMdConstruct} from "react-icons/io";
+import {AssemblyConstraints, Constraints3D} from "./constraints3d";
 
 export function activate(ctx: ApplicationContext) {
 
-  const constraints$ = state<AssemblyConstraintDefinition[][]>([]);
+  const constraints$ = state<AssemblyConstraintDefinition[]>([]);
   const status$ = state<SolveStatus>(null);
 
-  function getConstraints(): AssemblyConstraintDefinition[][] {
+  function getConstraints(): AssemblyConstraintDefinition[] {
     return constraints$.value;
   }
 
-  function loadConstraints(inData: AssemblyConstraintDefinition[][]): void {
+  function loadConstraints(inData: AssemblyConstraintDefinition[]): void {
+    inData = inData.filter(constr => {
+      const shouldBeFiltered = !AssemblyConstraints[constr.typeId];
+      if (shouldBeFiltered) {
+        console.log('Unknown constraint ' + constr.typeId + ' will be skipped');
+      }
+      return !shouldBeFiltered;
+    });
     constraints$.next(inData);
   }
 
   function addConstraint(typeId: string, objects: string[], constants?: ConstantsDefinitions): void {
-    constraints$.mutate(stages => {
-      if (stages.length === 0) {
-        stages.push([])
-      }
-      stages[stages.length - 1].push({
+    constraints$.mutate(constraints => {
+      constraints.push({
         typeId, objects, constants
       });
     })
   }
 
   function removeConstraint(constr: AssemblyConstraintDefinition) {
-    constraints$.mutate(stages => {
-      for (let constrs of stages) {
-        const index = constrs.indexOf(constr);
-        if (index !== -1) {
-          constrs.splice(index, 1);
-        }
+    constraints$.mutate(constrs => {
+      const index = constrs.indexOf(constr);
+      if (index !== -1) {
+        constrs.splice(index, 1);
       }
     })
   }
@@ -50,27 +52,13 @@ export function activate(ctx: ApplicationContext) {
       return;
     }
 
-    const stages = constraints$.value.map(stage => stage.map(constr => {
-      const schema = Constraints3D[constr.typeId];
-      if (!schema) {
-        console.error('reference to nonexistent constraint ' + constr.typeId);
-        return null;
-      }
-      const objects = [];
-      for (const id of constr.objects) {
-        const modelObject = ctx.cadRegistry.find(id);
-        if (!modelObject) {
-          console.warn('skipping constraint referring to nonexistent object ' + id);
-          return null;
-        }
-        objects.push(modelObject);
-      }
-      return createAssemblyConstraint(schema, objects)
-    } ).filter(x => x) );
+    const constraints = constraints$.value;
 
-    const solveStatus = solveAssemblyImpl(stages);
+    const assemblyProcess = new AssemblyProcess(ctx.cadRegistry, constraints);
 
-    status$.next(solveStatus);
+    launchAssembly(assemblyProcess);
+
+    status$.next(assemblyProcess.solveStatus);
   }
 
   constraints$.attach(solveAssembly);
@@ -93,7 +81,7 @@ export function activate(ctx: ApplicationContext) {
 
 export interface AssemblyService {
 
-  constraints$: StateStream<AssemblyConstraintDefinition[][]>;
+  constraints$: StateStream<AssemblyConstraintDefinition[]>;
 
   status$: StateStream<SolveStatus>;
 
@@ -103,9 +91,9 @@ export interface AssemblyService {
 
   solveAssembly(): void;
 
-  loadConstraints(constraints: AssemblyConstraintDefinition[][]);
+  loadConstraints(constraints: AssemblyConstraintDefinition[]);
 
-  getConstraints(): AssemblyConstraintDefinition[][];
+  getConstraints(): AssemblyConstraintDefinition[];
 
 }
 

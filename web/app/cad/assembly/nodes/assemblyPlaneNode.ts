@@ -5,12 +5,13 @@ import {AlgNumConstraint} from "../../../sketcher/constr/ANConstraints";
 import {Constraints3D} from "../constraints3d";
 import {AssemblyNode} from "../assembly";
 import {AssemblyCSysNode} from "./assemblyCSysNode";
+import {clamp} from "../../../math/math";
+import {AssemblyLocationNode} from "./assemblyLocationNode";
 
 export class AssemblyPlaneNode extends AssemblyNode {
 
-  x = new Param(0, 'X');
-  y = new Param(0, 'Y');
-  z = new Param(0, 'Z');
+  theta = new Param(0, 'T');
+  phi  = new Param(0, 'P');
   w = new Param(0, 'W');
   getNormal: () => Vector;
   getDepth: () => number;
@@ -22,32 +23,46 @@ export class AssemblyPlaneNode extends AssemblyNode {
   }
 
   visitParams(cb) {
-    cb(this.x);
-    cb(this.y);
-    cb(this.z);
+    cb(this.theta);
+    cb(this.phi);
     cb(this.w);
   }
 
   reset() {
     const {x, y, z} = this.getNormal();
     const w = this.getDepth();
-    this.x.set(x);
-    this.y.set(y);
-    this.z.set(z);
+    const phi = Math.atan2(y, x);
+    const theta = Math.acos(clamp(z, -1, 1));
+
+    this.theta.set(theta);
+    this.phi.set(phi);
+
     this.w.set(w);
+  }
+
+  toNormalVector() {
+    const theta = this.theta.get();
+    const phi = this.phi.get();
+    return new Vector(
+      Math.sin(theta) * Math.cos(phi),
+      Math.sin(theta) * Math.sin(phi),
+      Math.cos(theta),
+    )
   }
 
   createConsistencyConstraints() {
     return [
-      new AlgNumConstraint(Constraints3D.UnitVectorConsistency, [this])
+
     ];
   }
 
 
-  createRigidBodyLink(body: AssemblyCSysNode) {
-    return [
-      new AlgNumConstraint(Constraints3D.RigidBodyPlaneLink, [body, this])
-    ];
+  createOrientationRelationship(location: AssemblyLocationNode): AlgNumConstraint[] {
+    return [new AlgNumConstraint(Constraints3D.PlaneNormalLink, [location, this])];
+  }
+
+  createTranslationRelationship(location: AssemblyLocationNode): AlgNumConstraint[] {
+    return [new AlgNumConstraint(Constraints3D.PlaneDepthLink, [location, this])];
   }
 
 }

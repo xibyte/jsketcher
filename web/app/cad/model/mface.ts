@@ -23,7 +23,7 @@ export class MFace extends MObject {
   brepFace: any;
 
   assemblyNodes: {
-    // normal: AssemblyUnitVectorNode
+    normal: AssemblyUnitVectorNode
     plane: AssemblyPlaneNode,
     // w: AssemblyScalarNode
   };
@@ -43,7 +43,7 @@ export class MFace extends MObject {
     this.sketchLoops = [];
     this._csys = csys;
     this.assemblyNodes = {
-      // normal: new AssemblyUnitVectorNode(this, () => this.normal()),
+      normal: new AssemblyUnitVectorNode(this, () => this.normal()),
       // w: new AssemblyScalarNode(this, 'W', () => this.depth())
       plane: new AssemblyPlaneNode(this, () => this.normal(), () => this.depth())
     };

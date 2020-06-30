@@ -3,6 +3,9 @@ import {Param} from "../../sketcher/shapes/param";
 import {ISolveStage, SolvableObject} from "../../sketcher/constr/solvableObject";
 import {AlgNumConstraint} from "../../sketcher/constr/ANConstraints";
 import {AssemblyCSysNode} from "./nodes/assemblyCSysNode";
+import {AssemblyOrientationNode} from "./nodes/assemblyOrientationNode";
+import {Constraints3D} from "./constraints3d";
+import {AssemblyLocationNode} from "./nodes/assemblyLocationNode";
 
 export abstract class AssemblyNode implements SolvableObject {
 
@@ -27,7 +30,11 @@ export abstract class AssemblyNode implements SolvableObject {
     return [];
   }
 
-  createRigidBodyLink(body: AssemblyCSysNode): AlgNumConstraint[] {
+  createOrientationRelationship(location: AssemblyLocationNode): AlgNumConstraint[] {
+    return [];
+  }
+
+  createTranslationRelationship(location: AssemblyLocationNode): AlgNumConstraint[] {
     return [];
   }
 
