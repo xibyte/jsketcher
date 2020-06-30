@@ -6,6 +6,10 @@ import CSys from 'math/csys';
 import {Matrix3} from "math/l3space";
 import {state, StateStream} from "lstream";
 import {AssemblyCSysNode} from "../assembly/nodes/assemblyCSysNode";
+import {AssemblyOrientationNode} from "../assembly/nodes/assemblyOrientationNode";
+import {AssemblyVectorNode} from "../assembly/nodes/assemblyVectorNode";
+import {AssemblyTranslationNode} from "../assembly/nodes/assemblyTranslationNode";
+import {AssemblyLocationNode} from "../assembly/nodes/assemblyLocationNode";
 
 export class MShell extends MObject {
 
@@ -18,18 +22,20 @@ export class MShell extends MObject {
   edges = [];
   vertices = [];
 
-  location$: StateStream<CSys> = state(CSys.origin());
-  locationMatrix$ = this.location$.map((csys: CSys) => csys.outTransformation).remember();
+  location$: StateStream<Matrix3> = state(new Matrix3());
 
   assemblyNodes: {
-    location: AssemblyCSysNode
+    location: AssemblyLocationNode,
+    orientation: AssemblyOrientationNode,
+    translation: AssemblyTranslationNode,
   };
 
   constructor() {
     super(MShell.TYPE, MObjectIdGenerator.next(MShell.TYPE, 'S'));
     // @ts-ignore
     this.assemblyNodes = {
-      location: new AssemblyCSysNode( this, () => new Matrix3() )
+      location: new AssemblyLocationNode(this, () => new Matrix3() ),
+      orientation: new AssemblyOrientationNode( this, () => new Matrix3() )
     };
 
   }

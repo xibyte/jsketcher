@@ -29,6 +29,7 @@ export class ShellView extends View {
     const geometry = new THREE.Geometry();
     geometry.dynamic = true;
     this.mesh = new SketchMesh(geometry, this.material);
+    // this.mesh.visible  = false;
     this.rootGroup.add(this.mesh);
     
 
@@ -48,7 +49,7 @@ export class ShellView extends View {
 
     this.rootGroup.matrixAutoUpdate = false;
 
-    this.model.locationMatrix$.attach(loc => {
+    this.model.location$.attach(loc => {
       loc.setToMatrix(this.rootGroup.matrix);
       this.rootGroup.matrixWorldNeedsUpdate = true;
       viewer.requestRender();

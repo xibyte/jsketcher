@@ -1,9 +1,6 @@
 import {AssemblyNode} from "../assembly";
 import {Param} from "../../../sketcher/shapes/param";
 import {MObject} from "../../model/mobject";
-import {AlgNumConstraint} from "../../../sketcher/constr/ANConstraints";
-import {Constraints3D} from "../constraints3d";
-import {AssemblyCSysNode} from "./assemblyCSysNode";
 
 export class AssemblyScalarNode extends AssemblyNode {
 
@@ -22,12 +19,6 @@ export class AssemblyScalarNode extends AssemblyNode {
 
   visitParams(cb) {
     cb(this.param);
-  }
-
-  createRigidBodyLink(body: AssemblyCSysNode) {
-    return [
-      // new AlgNumConstraint(Constraints3D.RigidTest, [body, this.model.assemblyNodes.normal, this])
-    ];
   }
 
 }

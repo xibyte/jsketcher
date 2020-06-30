@@ -4,13 +4,9 @@ import {MObject} from "../../model/mobject";
 import {AlgNumConstraint} from "../../../sketcher/constr/ANConstraints";
 import {Constraints3D} from "../constraints3d";
 import {AssemblyNode} from "../assembly";
-import Vector from "math/vector";
 
-export class AssemblyCSysNode extends AssemblyNode {
+export class AssemblyOrientationNode extends AssemblyNode {
 
-  ox = new Param(0, 'X');
-  oy = new Param(0, 'Y');
-  oz = new Param(0, 'Z');
   ix = new Param(1, 'X');
   iy = new Param(0, 'Y');
   iz = new Param(0, 'Z');
@@ -28,9 +24,6 @@ export class AssemblyCSysNode extends AssemblyNode {
   }
 
   visitParams(cb) {
-    cb(this.ox);
-    cb(this.oy);
-    cb(this.oz);
     cb(this.ix);
     cb(this.iy);
     cb(this.iz);
@@ -44,9 +37,6 @@ export class AssemblyCSysNode extends AssemblyNode {
 
   reset() {
     const mx = this.getTransformation();
-    this.ox.set(mx.tx);
-    this.oy.set(mx.ty);
-    this.oz.set(mx.tz);
 
     this.ix.set(mx.mxx);
     this.iy.set(mx.myx);
@@ -59,20 +49,6 @@ export class AssemblyCSysNode extends AssemblyNode {
     this.kx.set(mx.mxz);
     this.ky.set(mx.myz);
     this.kz.set(mx.mzz);
-
-  }
-
-
-  rotationMatrix() {
-    const {
-      ix, iy, iz, jx, jy, jz, kx, ky, kz
-      } = this;
-
-    return new Matrix3().setBasis([
-      new Vector(ix.get(), iy.get(), iz.get()),
-      new Vector(jx.get(), jy.get(), jz.get()),
-      new Vector(kx.get(), ky.get(), kz.get()),
-    ]);
 
   }
 
