@@ -54,10 +54,13 @@ export default class View3d extends React.Component {
                 </div>
               </InplaceSketcher>
             </SketcherMode>
+
             <div className={ls.wizardArea} >
               <WizardManager/>
             </div>
-            <ContributedComponents/>
+            <div className='regular-typography'>
+              <ContributedComponents/>
+            </div>
           </div>
 
           <div className={ls.bottomStack}>
