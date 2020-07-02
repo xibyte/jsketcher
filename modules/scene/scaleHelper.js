@@ -1,4 +1,4 @@
-import {Vector3} from 'three';
+import {Object3D, Vector3} from 'three';
 import DPR from '../dpr';
 
 export function viewScaleFactor(sceneSetup, origin, SIZE_PX, SIZE_MODEL) {
@@ -19,4 +19,29 @@ export function viewScaleFactor(sceneSetup, origin, SIZE_PX, SIZE_MODEL) {
     let modelActualSizePx = viewHeight * modelTakingPart;
     return SIZE_PX / modelActualSizePx;
   }
+}
+
+export class ConstantScaleGroup extends Object3D {
+
+  sizePx;
+  sizeModel;
+  getOrigin;
+
+  constructor(sceneSetup, sizePx, sizeModel, getOrigin) {
+    super();
+    this.sceneSetup = sceneSetup;
+    this.sizePx = sizePx;
+    this.sizeModel = sizeModel;
+    this.getOrigin = getOrigin;
+  }
+
+  updateMatrix() {
+    // let {origin: o, x, y, z} = this.csys;
+    //
+    let k = viewScaleFactor(this.sceneSetup, this.getOrigin(), this.sizePx, this.sizeModel);
+
+    this.scale.set(k,k,k);
+    super.updateMatrix();
+  }
+
 }
