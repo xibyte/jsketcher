@@ -6,6 +6,7 @@ import {FaceView, SELECTION_COLOR} from './faceView';
 import {EdgeView} from './edgeView';
 import {FACE, SHELL} from '../entites';
 import {Mesh} from 'three';
+import {VertexView} from "./vertexView";
 
 export class ShellView extends View {
 
@@ -47,6 +48,11 @@ export class ShellView extends View {
       this.edgeViews.push(edgeView);
     }
 
+    for (let vertex of shell.vertices) {
+      const vertexView = new VertexView(vertex, viewer);
+      SceneGraph.addToGroup(this.vertexGroup, vertexView.rootGroup);
+      this.vertexViews.push(vertexView);
+    }
     this.rootGroup.matrixAutoUpdate = false;
 
     this.model.location$.attach(loc => {
