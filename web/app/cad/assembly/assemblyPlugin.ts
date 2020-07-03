@@ -1,13 +1,15 @@
 import {ApplicationContext} from "context";
 import {ModellerContextualActions} from "./ui/ModellerContextualActions";
 import {state, StateStream} from "lstream";
-import {AssemblyConstraintDefinition} from "./assemblyConstraintDefinition";
+
 import {AssemblyProcess, launchAssembly} from "./assemblySolver";
 import {SolveStatus} from "../../sketcher/constr/AlgNumSystem";
 import {ConstantsDefinitions} from "../../sketcher/constr/ANConstraints";
 import {AssemblyView} from "./ui/AssemblyView";
 import {IoMdConstruct} from "react-icons/io";
-import {AssemblyConstraints, Constraints3D} from "./constraints3d";
+import {AssemblyConstraintDefinition} from "./assemblyConstraint";
+import {AssemblyConstraintsSchemas} from "./assemblySchemas";
+
 
 export function activate(ctx: ApplicationContext) {
 
@@ -20,7 +22,7 @@ export function activate(ctx: ApplicationContext) {
 
   function loadConstraints(inData: AssemblyConstraintDefinition[]): void {
     inData = inData.filter(constr => {
-      const shouldBeFiltered = !AssemblyConstraints[constr.typeId];
+      const shouldBeFiltered = !AssemblyConstraintsSchemas[constr.typeId];
       if (shouldBeFiltered) {
         console.log('Unknown constraint ' + constr.typeId + ' will be skipped');
       }

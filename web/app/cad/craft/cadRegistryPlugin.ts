@@ -1,12 +1,13 @@
 import {MShell} from '../model/mshell';
 import {MObject} from "../model/mobject";
 import {ApplicationContext} from "context";
+import {Stream} from "lstream";
 
 
 export function activate(ctx: ApplicationContext) {
   const {streams, services} = ctx;
 
-  const shells$ = streams.craft.models.map(models => models.filter(m => m instanceof MShell)).remember();
+  const shells$: Stream<MShell> = streams.craft.models.map(models => models.filter(m => m instanceof MShell)).remember();
   const modelIndex$ = streams.craft.models.map(models => {
     const index = new Map();
     models.forEach(model => model.traverse(m => index.set(m.id, m)));
@@ -21,7 +22,7 @@ export function activate(ctx: ApplicationContext) {
 
   const index = () => modelIndex$.value;
 
-  function getAllShells() {
+  function getAllShells(): MShell[] {
     return streams.cadRegistry.shells.value;
   }
 
@@ -79,7 +80,7 @@ export function activate(ctx: ApplicationContext) {
 
 export interface CadRegistry {
 
-  getAllShells(): MObject[];
+  getAllShells(): MShell[];
   findShell(id: string): MObject;
   findFace(id: string): MObject;
   findEdge(id: string): MObject;

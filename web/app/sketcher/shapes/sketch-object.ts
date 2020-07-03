@@ -4,7 +4,7 @@ import {Styles} from "../styles";
 import {NoIcon} from "../icons/NoIcon";
 import {Layer, Viewer} from "../viewer2d";
 import {NOOP} from "gems/func";
-import {SolvableObject} from "../constr/solveObject";
+import {SolvableObject} from "../constr/solvableObject";
 
 export abstract class SketchObject extends Shape implements SolvableObject {
 
