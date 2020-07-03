@@ -1,6 +1,7 @@
-import {MObject, MObjectIdGenerator} from './mobject';
+import {MObject, MObjectIdGenerator, MRootObject} from './mobject';
 import CSys from "math/csys";
 import Vector from "math/vector";
+import {Matrix3} from "math/l3space";
 
 export class MDatum extends MObject {
 

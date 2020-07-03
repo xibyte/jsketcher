@@ -1,4 +1,5 @@
 import {AssemblyNode} from "../assembly/assembly";
+import {IDENTITY_MATRIX, Matrix3} from "math/l3space";
 
 export abstract class MObject {
 
@@ -28,6 +29,10 @@ export abstract class MObject {
       obj = obj.parent;
     }
     return obj;
+  }
+
+  get location() {
+    return IDENTITY_MATRIX;
   }
 }
 

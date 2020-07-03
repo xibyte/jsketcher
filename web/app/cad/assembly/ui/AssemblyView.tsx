@@ -1,17 +1,15 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {useStream} from "ui/effects";
 import {Status} from "ui/components/Status";
-import Folder from "ui/components/Folder";
-import {AssemblyConstraints, Constraints3D} from "../constraints3d";
 import {AppContext} from "../../dom/components/AppContext";
 import cx from 'classnames';
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
 import ls from "../../../sketcher/components/ConstraintExplorer.less";
 import Fa from "ui/components/Fa";
-import {AssemblyConstraintDefinition} from "../assemblyConstraintDefinition";
 import {ApplicationContext} from "context";
-import {AssemblyProcess} from "../assemblySolver";
 import {StepByStepSimulation} from "./StepByStepSimulation";
+import {AssemblyConstraintDefinition} from "../assemblyConstraint";
+import {AssemblyConstraintsSchemas} from "../assemblySchemas";
 
 
 export function AssemblyView() {
@@ -65,8 +63,8 @@ export function AssemblyConstraintButton({prefix='', constraint: c, ...props}: {
 
   useEffect(() => withdraw, [c]);
 
-  const schema = AssemblyConstraints[c.typeId];
-  if (schema === null) {
+  const schema = AssemblyConstraintsSchemas[c.typeId];
+  if (!schema) {
     return <div className='warning-text'>Invalid Constraint {c.typeId} </div>
   }
 

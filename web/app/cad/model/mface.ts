@@ -1,16 +1,13 @@
 import {MObject} from './mobject';
 import Vector from 'math/vector';
-import {BasisForPlane} from 'math/l3space';
+import {Basis, BasisForPlane} from 'math/l3space';
 import {MSketchObject} from './msketchObject';
 import {EMPTY_ARRAY} from 'gems/iterables';
 import CSys from 'math/csys';
 import {MSketchLoop} from './mloop';
 import {ProductionInfo} from './productionInfo';
 import {MBrepShell, MShell} from "./mshell";
-import {AssemblyUnitVectorNode} from "../assembly/nodes/assemblyUnitVectorNode";
-import {AssemblyScalarNode} from "../assembly/nodes/assemblyScalarNode";
-import {AssemblyVectorNode} from "../assembly/nodes/assemblyVectorNode";
-import {AssemblyPlaneNode} from "../assembly/nodes/assemblyPlaneNode";
+import BBox from "../../math/bbox";
 
 export class MFace extends MObject {
 
@@ -21,12 +18,6 @@ export class MFace extends MObject {
   sketchLoops: MSketchLoop[];
   sketch: any;
   brepFace: any;
-
-  assemblyNodes: {
-    normal: AssemblyUnitVectorNode
-    plane: AssemblyPlaneNode,
-    // w: AssemblyScalarNode
-  };
 
   private _csys: any;
   private w: number;
@@ -42,11 +33,6 @@ export class MFace extends MObject {
     this.sketchObjects = [];
     this.sketchLoops = [];
     this._csys = csys;
-    this.assemblyNodes = {
-      normal: new AssemblyUnitVectorNode(this, () => this.normal()),
-      // w: new AssemblyScalarNode(this, 'W', () => this.depth())
-      plane: new AssemblyPlaneNode(this, () => this.normal(), () => this.depth())
-    };
   }
 
   normal(): Vector {
@@ -58,19 +44,19 @@ export class MFace extends MObject {
     return this.w;
   }
 
-  basis() {
+  basis(): Basis {
     if (!this._basis) {
       this._basis = [this.csys.x, this.csys.y, this.csys.z];
     }
     return this._basis;
   }
 
-  get csys() {
+  get csys(): CSys {
     this.evalCSys();
     return this._csys;
   }
 
-  get isPlaneBased() {
+  get isPlaneBased(): boolean {
     return this.surface.simpleSurface && this.surface.simpleSurface.isPlane;
   }
   
@@ -185,9 +171,14 @@ export class MFace extends MObject {
     return this.shell;
   }
 
+  get favorablePoint() {
+    return this.csys.origin;    
+  }
 }
 
 export class MBrepFace extends MFace {
+
+  #favorablePoint: Vector;
 
   constructor(id, shell, brepFace) {
     super(id, shell, brepFace.surface);
@@ -212,5 +203,22 @@ export class MBrepFace extends MFace {
       bounds.push(loop.asPolygon().map(p => new Vector().setV(p)));
     }
     return bounds;
+  }
+
+  get favorablePoint() {
+    if (!this.#favorablePoint) {
+      const bbox = new BBox();
+      const outerPoly = this.brepFace.outerLoop.asPolygon();
+      if (outerPoly) {
+        outerPoly.forEach(pt => {
+          const pt2d = this.csys.outTransformation.apply(pt);
+          bbox.checkPoint(pt2d);
+        });
+        this.#favorablePoint = this.csys.inTransformation.apply(bbox.center());
+      } else {
+        this.#favorablePoint = this.surface.pointInMiddle;
+      }
+    }
+    return this.#favorablePoint;
   }
 }

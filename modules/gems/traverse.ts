@@ -1,7 +1,9 @@
+export function dfs<T>(node:T,
+                       children: (node: T, consumer: (node: T) => void) => void,
+                       callback: (node) => any): boolean {
 
+  const visited = new Set<T>();
 
-export function dfs(node, children, callback) {
-  const visited = new Set();
   const stack = [];
   stack.push(node);
   while (stack.length) {
@@ -17,8 +19,11 @@ export function dfs(node, children, callback) {
   }
 }
 
-export function bfs(node, children, callback) {
-  const visited = new Set();
+export function bfs<T>(node:T,
+                       children: (node: T, consumer: (node: T) => void) => void,
+                       callback: (node) => any): boolean {
+
+  const visited = new Set<T>();
   const queue = [];
   queue.unshift(node);
   while (queue.length) {

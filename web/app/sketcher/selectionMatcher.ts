@@ -1,4 +1,14 @@
 
+export interface  SelectionMatcher {
+
+  selector: string,
+
+  types: any[],
+
+  minQuantity: number
+
+}
+
 export function matchAvailableSubjects(selection, subjects) {
 
   let matched = [];
@@ -95,6 +105,8 @@ export class MatchIndex {
   typeMap = new Map();
 
   overallHits = 0;
+  result: any[];
+  selection: any;
 
   constructor(selection) {
     this.selection = selection;
