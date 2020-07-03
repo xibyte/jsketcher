@@ -1,11 +1,19 @@
+import Vector from "math/vector";
 
 export class Line {
+  p0: Vector;
+  v: Vector;
+
+  private _pointsCache: Map<any, Vector>;
+  
+  isLine: boolean;
+
+  static fromTwoPlanesIntersection: (plane1, plane2) => Line;
+  static fromSegment: (a, b) => Line;
 
   constructor(p0, v) {
-    throw 'only nurbs for now'
     this.p0 = p0;
     this.v = v;
-    this._pointsCache = new Map();
   }
 
   intersectSurface(surface) {
@@ -13,7 +21,8 @@ export class Line {
       const s0 = surface.normal.multiply(surface.w);
       return surface.normal.dot(s0.minus(this.p0)) / surface.normal.dot(this.v); // 4.7.4
     } else {
-      return super.intersectSurface(surface);
+      throw 'unsupported';
+      // return super.intersectSurface(surface);
     }
   }
 
@@ -22,7 +31,8 @@ export class Line {
       const otherNormal = surface.normal.cross(curve.v)._normalize();
       return otherNormal.dot(curve.p0.minus(this.p0)) / otherNormal.dot(this.v); // (4.8.3)    
     }
-    return super.intersectCurve(curve, surface);
+    throw 'unsupported';
+    // return super.intersectCurve(curve, surface);
   }
 
   point(t) {
@@ -34,6 +44,9 @@ export class Line {
   }
   
   pointOfSurfaceIntersection(surface) {
+    if (!this._pointsCache) {
+      this._pointsCache = new Map();
+    }
     let point = this._pointsCache.get(surface);
     if (!point) {
       const t = this.intersectSurface(surface);
@@ -55,7 +68,7 @@ export class Line {
 
 Line.prototype.isLine = true;
 
-Line.fromTwoPlanesIntersection = function(plane1, plane2) {
+Line.fromTwoPlanesIntersection = function(plane1, plane2): Line {
   const n1 = plane1.normal;
   const n2 = plane2.normal;
   const v = n1.cross(n2)._normalize();

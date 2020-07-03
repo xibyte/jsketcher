@@ -17,12 +17,7 @@ export function StepByStepSimulation() {
   function stepByStepSimulation() {
     if (process === null || process.isDone()) {
       const newProcess = new AssemblyProcess(ctx.cadRegistry, constraints);
-      newProcess.queue.forEach(rb => {
-        if (rb.model.root instanceof MShell) {
-          rb.model.root.location$.next(new Matrix3());
-        }
-      });
-      newProcess.step();
+      newProcess.begin();
       setProcess(newProcess);
     } else {
       process.step();

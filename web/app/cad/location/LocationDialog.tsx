@@ -20,17 +20,17 @@ export function LocationDialog() {
   const [location, setLocation] = useStreamWithUpdater(() => req ? req.shell.location$ : never<CSys>());
 
   const setX = useCallback(x => {
-    location.origin.x = parseFloat(x);
+    location.tx = parseFloat(x);
     setLocation(location);
   }, [setLocation]);
 
   const setY = useCallback(y => {
-    location.origin.y = parseFloat(y);
+    location.ty = parseFloat(y);
     setLocation(location);
   }, [setLocation]);
 
   const setZ = useCallback(z => {
-    location.origin.z = parseFloat(z);
+    location.tz = parseFloat(z);
     setLocation(location);
   }, [setLocation]);
   //
@@ -81,15 +81,15 @@ export function LocationDialog() {
       <Group>
         <Field active={false} name='X'>
           <Label>X:</Label>
-          <NumberControl onChange={setX} value={location.origin.x} />
+          <NumberControl onChange={setX} value={location.tx} />
         </Field>
         <Field active={false} name='Y'>
           <Label>Y:</Label>
-          <NumberControl onChange={setY} value={location.origin.y} />
+          <NumberControl onChange={setY} value={location.ty} />
         </Field>
         <Field active={false} name='Z'>
           <Label>Z:</Label>
-          <NumberControl onChange={setZ} value={location.origin.z} />
+          <NumberControl onChange={setZ} value={location.tz} />
         </Field>
       </Group>
     </Folder>
