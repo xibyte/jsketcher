@@ -361,13 +361,13 @@ export class Matrix3 {
     return Matrix3.rotateMatrix(angle, axis, pivot, this);
   };
 
-  static rotateMatrix(angle: number, axis: Vector, pivot: Vector, matrix: Matrix3): Matrix3 {
+  static rotateMatrix(angle: number, axis: Vector, pivot: Vector, matrix?: Matrix3): Matrix3 {
     const sin = Math.sin(angle);
     const cos = Math.cos(angle);
     return Matrix3.rotationMatrix(cos, sin, axis, pivot, matrix);
   }
 
-  static rotationFromVectorToVector(from: Vector, to: Vector, pivot: Vector, matrix: Matrix3): Matrix3 {
+  static rotationFromVectorToVector(from: Vector, to: Vector, pivot: Vector, matrix?: Matrix3): Matrix3 {
 
     const axis = from.cross(to);
 
@@ -378,7 +378,7 @@ export class Matrix3 {
 
   }
 
-  static rotationMatrix(cos: number, sin: number, axis: Vector, pivot: Vector, matrix: Matrix3): Matrix3 {
+  static rotationMatrix(cos: number, sin: number, axis: Vector, pivot: Vector, matrix?: Matrix3): Matrix3 {
     var axisX, axisY, axisZ;
     var m = matrix || new Matrix3();
 

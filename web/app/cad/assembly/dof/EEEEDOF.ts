@@ -6,15 +6,19 @@ import { AssemblyDOF, ModificationResponse } from "./assemblyDOF";
 import { ConflictDOF } from './conflictDOF';
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 
-export class PPPPDOF implements AssemblyDOF {
+export class EEEEDOF implements AssemblyDOF {
 
-  plane1: Plane;
-  plane2: Plane;
-  description = 'plane to plane twice';
+  description = 'edge to edge twice';
+  origin1: Vector;
+  dir1: Vector;
+  origin2: Vector;
+  dir2: Vector;
 
-  constructor(plane1: Plane, plane2: Plane) {
-    this.plane1 = plane1;
-    this.plane2 = plane2;
+  constructor(origin1: Vector, dir1: Vector, origin2: Vector, dir2: Vector) {
+    this.origin1 = origin1;
+    this.dir1 = dir1;
+    this.origin2 = origin2;
+    this.dir2 = dir2;
   }
 
   rotate(axis: Vector, angle: number, location: Matrix3, strict: boolean): ModificationResponse {

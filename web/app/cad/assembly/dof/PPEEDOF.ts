@@ -6,7 +6,7 @@ import { AssemblyDOF, ModificationResponse } from "./assemblyDOF";
 import { ConflictDOF } from './conflictDOF';
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 
-export class PPPPDOF implements AssemblyDOF {
+export class PPEEDOF implements AssemblyDOF {
 
   plane1: Plane;
   plane2: Plane;

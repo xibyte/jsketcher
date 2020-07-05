@@ -62,7 +62,7 @@ function createRevolveCommand(request, {cadRegistry, sketchStorageService}) {
 
   let pivot = cadRegistry.findSketchObject(request.axis).sketchPrimitive;
   let tr = face.csys.outTransformation;
-  let vec = __CAD_APP.services.exposure.math.vec;
+  let vec = __CAD_APP.services.exposure.math.dir;
   let axisOrigin = tr._apply3(pivot.a.data());
   let axisDir = vec._normalize(vec._sub(tr._apply3(pivot.b.data()), axisOrigin))
 
