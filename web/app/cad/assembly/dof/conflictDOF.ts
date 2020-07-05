@@ -4,6 +4,7 @@ import Vector from "math/vector";
 import { AssemblyConstraint } from '../assemblyConstraint';
 import { FaceTouchAlignConstraint } from "../constraints/faceTouchAlign";
 import { AssemblyDOF, ModificationResponse } from "./assemblyDOF";
+import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 
 export class ConflictDOF implements AssemblyDOF {
 
@@ -17,17 +18,20 @@ export class ConflictDOF implements AssemblyDOF {
     this.infoMessage = infoMessage;
   }
 
-
-  applyTouchAlign(constr: FaceTouchAlignConstraint): AssemblyDOF {
-    return this;
-  }
-
   rotate(axis: Vector, angle: number, location: Matrix3, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 
   translate(dir: Vector, location: Matrix3, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
+  }
+
+  applyTouchAlign(constr: FaceTouchAlignConstraint): AssemblyDOF {
+    return this;
+  }
+
+  applyEdgeAlign(constr: EdgeAlignConstraint): AssemblyDOF {
+    return this;
   }
 
 }

@@ -26,6 +26,10 @@ export class MEdge extends MObject {
     return out;
   }
 
+  get favorablePoint() {
+    return this.brepEdge.curve.middlePoint();
+  }
+
   get parent() {
     return this.shell;
   }

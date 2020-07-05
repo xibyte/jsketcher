@@ -1,3 +1,4 @@
+import {clamp} from "../../web/app/math/math";
 
 export default class Vector {
 
@@ -153,6 +154,12 @@ export default class Vector {
     data[0] = this.x;
     data[1] = this.y;
     data[2] = this.z;
+  }
+
+  angleBetween(vecB: Vector) {
+    const cosA = clamp(this.dot(vecB), -1, 1);
+    const sinA = clamp(this.cross(vecB).length(), -1, 1);
+    return Math.atan2(sinA, cosA);
   }
   
   static fromData(arr: [number, number, number]): Vector {
