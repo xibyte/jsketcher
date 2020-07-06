@@ -4,7 +4,7 @@ import {eqTol} from "../../../brep/geom/tolerance";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {Plane} from './../../../brep/geom/impl/plane';
 import {AssemblyDOF, ModificationResponse} from "./assemblyDOF";
-import {areEqual, clamp, DEG_RAD} from "../../../math/math";
+import {areEqual, clamp, DEG_RAD, lineLineIntersection2d, lineLineIntersection} from "../../../math/math";
 import {ConflictDOF} from "./conflictDOF";
 import {PPPPDOF} from "./PPPPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
@@ -90,13 +90,16 @@ export class EEDOF implements AssemblyDOF {
 
     rot.combine(location, location);
 
-
-    const ptFixed = constr.fixedPart.location.apply(constr.fixedEdge.favorablePoint);
     const ptMoving = constr.movingPart.location.apply(constr.movingEdge.favorablePoint);
+    const ptFixed = constr.fixedPart.location.apply(constr.fixedEdge.favorablePoint);
 
-    const dir = ptFixed._minus(ptMoving);
+    const isec1 = lineLineIntersection(this.origin, ptMoving, this.dir, vecA);
+    const isec2 = lineLineIntersection(this.origin, ptFixed, this.dir, vecB);
 
-    // constr.movingPart.location.translateVec(dir);
+
+    const dir = this.dir.multiply(isec2.u1 - isec1.u1);
+
+    constr.movingPart.location.translateVec(dir);
 
     return new EEEEDOF(this.origin, this.dir, constr.fixedEdge.favorablePoint, vecB);
   }

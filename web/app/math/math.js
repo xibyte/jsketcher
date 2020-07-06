@@ -300,6 +300,16 @@ export function lineLineIntersection2d(p1, p2, v1, v2) {
   return [p1[0] + v1[0] * u1, p1[1] + v1[1] * u1];
 }
 
+export function lineLineIntersection(p1, p2, v1, v2) {
+  let zAx = v1.cross(v2);
+  const n1 = zAx.cross(v1)._normalize();
+  const n2 = zAx.cross(v2)._normalize();
+  return {
+    u1: n2.dot(p2.minus(p1)) / n2.dot(v1),
+    u2: n1.dot(p1.minus(p2)) / n1.dot(v2),
+  }
+}
+
 export const DEG_RAD = Math.PI / 180.0;
 
 export const sq = (a) => a * a;
