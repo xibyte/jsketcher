@@ -1,4 +1,4 @@
-import React, {useCallback, useContext} from 'react';
+import React, {useCallback, useContext, useEffect} from 'react';
 import {useStreamWithUpdater} from "ui/effects";
 import {AppContext} from "../dom/components/AppContext";
 import {GenericWizard} from "ui/components/GenericWizard";
@@ -8,16 +8,28 @@ import Label from "ui/components/controls/Label";
 import Folder from "ui/components/Folder";
 import {never} from "lstream";
 import NumberControl from "ui/components/controls/NumberControl";
-import {Location} from "../model/location";
-import {DEG_RAD} from "../../math/math";
-import CSys from "math/csys";
+import {Matrix3} from "math/l3space";
+
+import {LocationControl} from "./LocationControl";
 
 export function LocationDialog() {
+
+  const ctx = useContext(AppContext);
 
   const [req, setReq] = useStreamWithUpdater(ctx => ctx.locationService.editLocationRequest$);
 
 
-  const [location, setLocation] = useStreamWithUpdater(() => req ? req.shell.location$ : never<CSys>());
+  const [location, setLocation] = useStreamWithUpdater(() => req ? req.shell.location$ : never<Matrix3>());
+
+  useEffect(() => {
+    if (!req) {
+      return;
+    }
+
+    // const locationControl = new LocationControl();
+    // ctx.cadScene.workGroup.add(locationControl);
+    // return () => ctx.cadScene.workGroup.add(locationControl);
+  });
 
   const setX = useCallback(x => {
     location.tx = parseFloat(x);
@@ -49,7 +61,6 @@ export function LocationDialog() {
   //   setLocation(location);
   // }, [setLocation]);
 
-  const ctx = useContext(AppContext);
 
   if (!req) {
     return null;
