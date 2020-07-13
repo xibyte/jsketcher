@@ -6,13 +6,14 @@ import {arrToThree} from 'math/vectorAdapters';
 import {ORIGIN} from '../../math/l3space';
 import {getSceneSetup} from '../sceneSetup';
 import calcFaceNormal from '../utils/calcFaceNormal';
+import {BufferGeometry} from "three/src/core/BufferGeometry";
 
 export default class ScalableLine extends Mesh {
 
   constructor(tesselation, width, color, opacity, smooth, ambient) {
     super(createGeometry(tesselation, smooth), createMaterial(color, opacity, ambient));
     this.width = width;
-    this.morphTargetInfluences[0] = 0;
+    this.morphTargetInfluences = [0];
   }
 
   updateMatrix() {
@@ -123,8 +124,10 @@ function createGeometry(tessellation, smooth) {
   geometry.faces.push(new Face3(n - 2, n - 1, n, endNormal));
   geometry.faces.push(new Face3(n, n - 3, n - 2, endNormal));
 
+
   geometry.morphTargets.push({name: 'scaleTargets', vertices: scaleTargets});
-  return geometry;
+
+  return new BufferGeometry().fromGeometry(geometry);
 }
 
 const morphBase = 10;

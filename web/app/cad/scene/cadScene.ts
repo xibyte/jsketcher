@@ -2,12 +2,17 @@ import {AXIS} from '../../../../modules/math/l3space'
 import {createArrow} from 'scene/objects/auxiliary';
 import Vector from 'math/vector';
 import {OnTopOfAll} from 'scene/materialMixins';
-import {moveObject3D, setBasisToObject3D} from 'scene/objects/transform';
+import {moveObject3D} from 'scene/objects/transform';
 
 import * as SceneGraph from 'scene/sceneGraph';
-import {setCsysToViewMatrix} from '../../../../modules/scene/objects/transform';
+import {setCsysToViewMatrix} from 'scene/objects/transform';
+import {Object3D} from "three";
 
 export default class CadScene {
+
+  workGroup: Object3D;
+  auxGroup: Object3D;
+  basisGroup: Object3D;
 
   constructor(rootGroup) {
     this.workGroup = SceneGraph.createGroup();

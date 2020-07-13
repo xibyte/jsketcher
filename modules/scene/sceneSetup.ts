@@ -2,14 +2,41 @@ import DPR from 'dpr';
 import './utils/threeLoader';
 import './utils/vectorThreeEnhancement';
 import {CADTrackballControls} from './controls/CADTrackballControls';
+import {
+  Object3D,
+  Scene,
+  OrthographicCamera,
+  PerspectiveCamera,
+  PointLight,
+  WebGLRenderer,
+  Vector3,
+  Euler,
+  Matrix4, Raycaster, Box3
+} from "three";
+import {TransformControls} from "three/examples/jsm/controls/TransformControls";
 
 export default class SceneSetUp {
+  workingSphere: number;
+  container: HTMLElement;
+  scene: Scene;
+  rootGroup: Object3D;
+  onRendered: any;
+  oCamera: OrthographicCamera;
+  pCamera: PerspectiveCamera;
+  camera: PerspectiveCamera;
+  light: PointLight;
+  renderer: WebGLRenderer;
+  private _prevContainerWidth: number;
+  private _prevContainerHeight: number;
+  trackballControls: CADTrackballControls;
+  transformControls: TransformControls;
+  updateControlsAndHelpers: () => void;
   
   constructor(container, onRendered) {
     
     this.workingSphere = 10000;
     this.container = container;
-    this.scene = new THREE.Scene();
+    this.scene = new Scene();
     this.rootGroup = this.scene;
     this.onRendered = onRendered;
     this.scene.userData.sceneSetUp = this;
@@ -28,7 +55,7 @@ export default class SceneSetUp {
     let width = this.container.clientWidth;
     let height = this.container.clientHeight;
     let factor = ORTHOGRAPHIC_CAMERA_FACTOR;
-    this.oCamera = new THREE.OrthographicCamera(-width / factor,
+    this.oCamera = new OrthographicCamera(-width / factor,
       width / factor,
       height / factor,
       -height / factor, 0.1, 10000);
@@ -38,7 +65,7 @@ export default class SceneSetUp {
   }
 
   createPerspectiveCamera() {
-    this.pCamera = new THREE.PerspectiveCamera( 60, this.aspect(), 0.1, 10000 );
+    this.pCamera = new PerspectiveCamera( 60, this.aspect(), 0.1, 10000 );
     this.pCamera.position.z = 1000;
     this.pCamera.position.x = -1000;
     this.pCamera.position.y = 300;
@@ -50,11 +77,11 @@ export default class SceneSetUp {
 
     this.camera = this.pCamera;
     
-    this.light = new THREE.PointLight( 0xffffff);
+    this.light = new PointLight( 0xffffff);
     this.light.position.set( 10, 10, 10 );
     this.scene.add(this.light);
 
-    this.renderer = new THREE.WebGLRenderer();
+    this.renderer = new WebGLRenderer();
     this.renderer.setPixelRatio(DPR);
     this.renderer.setClearColor(0x808080, 1);
     this.renderer.setSize( this.container.clientWidth,  this.container.clientHeight );
@@ -96,9 +123,9 @@ export default class SceneSetUp {
   }
   
   setCamera(camera) {
-    let camPosition = new THREE.Vector3();
-    let camRotation = new THREE.Euler();
-    let tempMatrix = new THREE.Matrix4();
+    let camPosition = new Vector3();
+    let camRotation = new Euler();
+    let tempMatrix = new Matrix4();
 
     camPosition.setFromMatrixPosition( this.camera.matrixWorld );
     camRotation.setFromRotationMatrix( tempMatrix.extractRotation( this.camera.matrixWorld ) );
@@ -119,7 +146,7 @@ export default class SceneSetUp {
 
   setUpControls() {
     //  controls = new THREE.OrbitControls( camera , renderer.domElement);
-    let trackballControls = new CADTrackballControls(this.camera , this.renderer.domElement);
+    let trackballControls: any = new CADTrackballControls(this.camera , this.renderer.domElement);
 
     // document.addEventListener( 'mousemove', function(){
 
@@ -139,7 +166,7 @@ export default class SceneSetUp {
     trackballControls.keys = [ 65, 83, 68 ];
     trackballControls.addEventListener( 'change', () => this.render());
 
-    let transformControls = new THREE.TransformControls( this.camera, this.renderer.domElement );
+    let transformControls: any = new TransformControls( this.camera, this.renderer.domElement );
     transformControls.addEventListener( 'change', () => this.render() );
     this.scene.add( transformControls );
     
@@ -163,12 +190,12 @@ export default class SceneSetUp {
   }
 
   createRaycaster(viewX, viewY) {
-    let raycaster = new THREE.Raycaster();
-    raycaster.linePrecision = 12 * (this._zoomMeasure() * 0.8);
+    let raycaster = new Raycaster();
+    raycaster.params.Line.threshold = 12 * (this._zoomMeasure() * 0.8);
     let x = ( viewX / this.container.clientWidth ) * 2 - 1;
     let y = - ( viewY / this.container.clientHeight ) * 2 + 1;
 
-    let mouse = new THREE.Vector3( x, y, 1 );
+    let mouse = new Vector3( x, y, 1 );
     raycaster.setFromCamera( mouse, this.camera );
     return raycaster;
   }
@@ -182,9 +209,9 @@ export default class SceneSetUp {
   }
 
   customRaycast(from3, to3, objects) {
-    let raycaster = new THREE.Raycaster();
-    let from = new THREE.Vector3().fromArray(from3);
-    let to = new THREE.Vector3().fromArray(to3);
+    let raycaster = new Raycaster();
+    let from = new Vector3().fromArray(from3);
+    let to = new Vector3().fromArray(to3);
     let dir = to.sub(from);
     let dist = dir.length();
     raycaster.set(from, dir.normalize());
@@ -195,7 +222,7 @@ export default class SceneSetUp {
     let width = this.container.clientWidth, height = this.container.clientHeight;
     let widthHalf = width / 2, heightHalf = height / 2;
 
-    let vector = new THREE.Vector3();
+    let vector = new Vector3();
     vector.copy(pos);
     vector.project(this.camera);
 
@@ -205,16 +232,16 @@ export default class SceneSetUp {
   }
   
   lookAtObject(obj) {
-    let box = new THREE.Box3();
+    let box = new Box3();
     box.setFromObject(obj);
-    let size = box.size();
+    let size = box.getSize(new Vector3());
     //this.camera.position.set(0,0,0);
-    box.center(this.camera.position);
+    box.getCenter(this.camera.position);
     const maxSize = Math.max(size.x, size.z);
     const dist = maxSize / 2 / Math.tan(Math.PI * this.camera.fov / 360);
     this.camera.position.addScaledVector(this.camera.position.normalize(), 5000);
     //this.camera.position.sub(new THREE.Vector3(0, 0, dist));
-    this.camera.up = new THREE.Vector3(0, 1, 0);
+    this.camera.up = new Vector3(0, 1, 0);
   }
 
   _zoomMeasure() {

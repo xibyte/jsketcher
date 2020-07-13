@@ -1,8 +1,19 @@
 import SceneSetup from 'scene/sceneSetup';
+import {Emitter, externalState, StateStream, stream} from "lstream";
+import SceneSetUp from "scene/sceneSetup";
 
 export default class Viewer {
-  
+
+  sceneRendered$: Emitter<any> = stream();
+  cameraMode$: StateStream<any>;
+  sceneSetup: SceneSetUp;
+  renderRequested: boolean;
+
+
   constructor(container, onRendered) {
+
+    this.cameraMode$ = externalState(() => this.getCameraMode(), mode => this.setCameraMode(mode))
+
     this.sceneSetup = new SceneSetup(container, onRendered);
     this.renderRequested = false;
   }
