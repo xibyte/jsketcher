@@ -1,0 +1,1 @@
+main.wasm contains assembled with emscripten opencascade library
