@@ -1,13 +1,28 @@
 import * as ext from '../impl/nurbs-ext';
-import {distinctKnots} from '../impl/nurbs-ext';
+import {distinctKnots, NurbsCurveData} from '../impl/nurbs-ext';
+import {ParametricCurve} from "./parametricCurve";
+import {Matrix3x4Data, Vec3} from "math/l3space";
 
-export default class NurbsCurve { 
 
-  static create(degree, knots, cp, weights) {
+//in fact the sketcher format
+export interface NurbsSerializaionFormat {
+  degree: number,
+  cp: Vec3[],
+ 	knots: number[],
+  weights: number[]
+}
+
+export default class NurbsCurve implements ParametricCurve {
+
+  verb: any;
+  data: NurbsCurveData;
+
+  static create(degree: number, knots: number[], cp: Vec3[], weights: number[]): NurbsCurve {
+    // @ts-ignore
     return new NurbsCurve(verb.geom.NurbsCurve.byKnotsControlPointsWeights(degree, knots, cp, weights));
   }
 
-  static deserialize({degree, knots, cp, weights}) {
+  static deserialize({degree, knots, cp, weights}: NurbsSerializaionFormat): NurbsCurve {
     return NurbsCurve.create(degree, knots, cp, weights);
   }
 
@@ -16,35 +31,35 @@ export default class NurbsCurve {
     this.data = verbCurve.asNurbs();
   }
 
-  domain() {
+  domain(): [number, number] {
     return ext.curveDomain(this.data);
   }
 
-  degree() {
+  degree(): number {
     return this.data.degree;
   }
 
-  transform(tr) {
+  transform(tr: Matrix3x4Data): ParametricCurve {
     return new NurbsCurve(this.verb.transform(tr));
   }
 
-  point(u) {
+  point(u: number): Vec3 {
     return this.verb.point(u);
   }
 
-  param(point) {
+  param(point: Vec3): number {
     return this.verb.closestParam(point);
   }
 
-  eval(u, num) {
+  eval(u: number, num: number): Vec3[] {
     return verb.eval.Eval.rationalCurveDerivatives( this.data, u, num );
   }
 
-  knots() {
+  knots(): number[] {
     return distinctKnots(this.data.knots);
   }
 
-  invert() {
+  invert(): ParametricCurve {
 
     let inverted = ext.curveInvert(this.data);
     ext.normalizeCurveParametrizationIfNeeded(inverted);
@@ -67,13 +82,13 @@ export default class NurbsCurve {
     return new NurbsCurve(new verb.geom.NurbsCurve(inverted));
   }
 
-  split(u) {
+  split(u: number): [ParametricCurve, ParametricCurve] {
     let split = verb.eval.Divide.curveSplit(this.data, u);
     split.forEach(n => ext.normalizeCurveParametrization(n));
     return split.map(c => new NurbsCurve(new verb.geom.NurbsCurve(c)));
   }
   
-  serialize() {
+  serialize(): NurbsSerializaionFormat {
     return {
       degree: this.verb.degree(),
       knots: this.verb.knots(),

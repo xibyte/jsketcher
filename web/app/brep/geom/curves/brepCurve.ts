@@ -1,16 +1,25 @@
 import NurbsCurve from "./nurbsCurve";
-import {Matrix3} from '../../../../../modules/math/l3space'
+import {Matrix3, Vec3} from 'math/l3space'
 import {areEqual} from '../../../math/math'
 
 import {eqSqTol, ueq, veq, veq3, veqNeg} from "../tolerance";
 import curveIntersect from "../impl/curve/curves-isec";
 import curveTess from "../impl/curve/curve-tess";
 import Point from 'math/vector';
+import Vector from 'math/vector';
 import cache from "../impl/cache";
+import {Tessellation1D} from "../../../cad/craft/engine/tessellation";
 
-export default class BrepCurve { 
+export default class BrepCurve {
 
-  constructor(_impl, uMin, uMax) {
+  impl: any;
+
+  uMin: number;
+  uMax: number;
+  uMid: number;
+  private __middlePoint: Vector;
+
+  constructor(_impl: NurbsCurve, uMin?: number, uMax?: number) {
     this.impl = _impl;
     [uMin, uMax] = this.impl.domain();
     this.uMin = uMin;
@@ -18,20 +27,20 @@ export default class BrepCurve {
     this.uMid = (uMax - uMin) * 0.5;
   }
 
-  get degree() {
+  get degree(): number {
     return this.impl.degree();
   }
   
-  translate(vector) {
+  translate(vector: Vector): BrepCurve {
     const tr = new Matrix3().translate(vector.x, vector.y, vector.z);
     return this.transform(tr);
   }
 
-  transform(tr) {
+  transform(tr: Matrix3): BrepCurve {
     return new BrepCurve(this.impl.transform(tr.toArray()), this.uMin, this.uMax);
   }
 
-  tangentAtPoint(point) {
+  tangentAtPoint(point: Vector): Vector {
     let u = this.impl.param(point.data());
     if (areEqual(u, this.uMax, 1e-3)) { // we don't need much tolerance here
       //TODO:
@@ -42,20 +51,20 @@ export default class BrepCurve {
     return this.tangentAtParam(u);
   }
 
-  tangentAtParam(u) {
+  tangentAtParam(u: number) {
     const dr = this.impl.eval(u, 1);
     return pt(dr[1])._normalize();
   }
 
-  param(point) {
+  param(point: Vector): number {
     return this.impl.param(point.data());
   }
 
-  split(point) {
+  split(point: Vector): [BrepCurve, BrepCurve] {
     return this.splitByParam(this.param(point));
   }
 
-  splitByParam(u) {
+  splitByParam(u: number): [BrepCurve, BrepCurve]  {
     if (ueq(u, this.uMin) || ueq(u, this.uMax) || u < this.uMin || u > this.uMax) {
       return null
     }
@@ -68,19 +77,19 @@ export default class BrepCurve {
     // ];
   }
 
-  point(u) {
+  point(u: number): Vector {
     return pt(this.impl.point(u));
   }
 
-  tessellateToData(tessTol, scale) {
+  tessellateToData(tessTol: number, scale: number): Tessellation1D<Vec3> {
     return CURVE_CACHING_TESSELLATOR(this.impl, this.uMin, this.uMax, tessTol, scale);
   }
 
-  tessellate(tessTol, scale) {
+  tessellate(tessTol?: number, scale?: number): Tessellation1D<Vector> {
     return this.tessellateToData(tessTol, scale).map(p => pt(p));
   }
 
-  boundary() {
+  boundary(): [number, number] {
     return [this.uMin, this.uMax];
   }
 
@@ -122,7 +131,7 @@ export default class BrepCurve {
     curveIntersect(
       this.impl, other.impl,
       this.boundary(), other.boundary(),
-      CURVE_CACHING_TESSELLATOR, CURVE_CACHING_TESSELLATOR
+      CURVE_CACHING_TESSELLATOR
     ).forEach(i => add(i));
 
     isecs.forEach(i => {
@@ -137,29 +146,35 @@ export default class BrepCurve {
     return isecs;
   }
 
-  isInside(u) {
+  isInside(u: number): boolean {
     return  u >= this.uMin && u <= this.uMax;
   }
 
-  invert() {
+  invert(): BrepCurve {
     return new BrepCurve(this.impl.invert());
   }
 
-  startPoint() {
+  startPoint(): Vector {
     return this.point(this.uMin);
   }
 
-  endPoint() {
+  endPoint(): Vector {
     return this.point(this.uMax);
   }
 
-  middlePoint() {
+  middlePoint(): Vector {
     return this.__middlePoint || (this.__middlePoint = this.point(this.uMid));
   }
 
-  passesThrough(point) {
+  passesThrough(point: Vector): boolean {
     return eqSqTol(0, point.distanceToSquared(this.point(this.param(point))));
   }
+
+  static createLinearCurve = function(a: Vector, b: Vector): BrepCurve {
+    let line = verb.geom.NurbsCurve.byKnotsControlPointsWeights( 1, [0,0,1,1], [a.data(), b.data()]);
+    return new BrepCurve(new NurbsCurve(line));
+  };
+
 }
 
 function pt(data) {
@@ -177,9 +192,5 @@ function degree1OptTessellator(curve, min, max, tessTol, scale) {
   return curveTess(curve, min, max, tessTol, scale);
 }
 
-BrepCurve.createLinearCurve = function(a, b) {
-  let line = verb.geom.NurbsCurve.byKnotsControlPointsWeights( 1, [0,0,1,1], [a.data(), b.data()]);
-  return new BrepCurve(new NurbsCurve(line));
-};
 
 

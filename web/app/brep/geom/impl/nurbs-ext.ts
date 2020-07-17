@@ -2,6 +2,22 @@ import * as vec from "math/vec";
 import * as math from  '../../../math/math'
 import {eqEps, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
 import {fmin_bfgs} from "../../../math/optim";
+import {Vec3} from "math/l3space";
+
+export interface NurbsCurveData {
+  degree: number,
+ 	controlPoints: Vec3[],
+ 	knots: number[],
+  weights: number[]
+}
+
+export interface NurbsSurfaceData {
+  degreeU: number,
+  degreeV: number,
+ 	controlPoints: Vec3[][],
+ 	knots: number[][],
+  weights: number[][]
+}
 
 export function curveStep(curve, u, tessTol, scale) {
 
@@ -27,7 +43,7 @@ export function genericCurveStep(d1, d2, tessTol = 1, scale = 1) {
 }
 
 
-export function curveDomain(curve) {
+export function curveDomain(curve: NurbsCurveData): [number, number] {
   return [curve.knots[0], curve.knots[curve.knots.length - 1]];
 }
 
@@ -41,7 +57,7 @@ export function distinctKnots(knots) {
   return out;
 }
 
-export function curveTessellate(curve, min, max, tessTol, scale) {
+export function curveTessellate(curve: NurbsCurveData, min?: number, max?: number, tessTol?: number, scale?: number) {
 
   if (curve.degree === 1) {
     return distinctKnots(curve.knots);
@@ -189,7 +205,7 @@ export function curveIntersect(curve1, curve2) {
       let b2 = segs2[j + 1];
 
       //TODO: minimize
-      let isec = intersectSegs(a1, b1, a2, b2, TOLERANCE);
+      let isec = intersectSegs(a1, b1, a2, b2);
       if (isec !== null) {
         let {point1, point2, l1, l2} = isec;
 

@@ -1,11 +1,17 @@
 import {TopoObject} from './topo-object'
-import {Point} from '../geom/point'
 
 import * as math from '../../math/math'
+import {Face} from "./face";
+import {BrepSurface} from "../geom/surfaces/brepSurface";
+import {HalfEdge} from "./edge";
 
 export class Loop extends TopoObject {
 
-  constructor(face) {
+  face: Face;
+  halfEdges: HalfEdge[];
+  encloses: any;
+
+  constructor(face: Face) {
     super();
     this.face = face;
     this.halfEdges = [];
@@ -13,7 +19,7 @@ export class Loop extends TopoObject {
     this.defineIterable('encloses', () => enclosesGenerator(this.halfEdges));
   }
 
-  isCCW(surface) {
+  isCCW(surface: BrepSurface) {
     return Loop.isPolygonCCWOnSurface(this.asPolygon(), surface);
   }
   
@@ -48,6 +54,19 @@ export class Loop extends TopoObject {
     }
     return out;
   }
+
+  private static isPolygonCCWOnSurface(polygon: any[], surface: BrepSurface) {
+    const tr = surface.simpleSurface.get2DTransformation();
+    const polygon2d = polygon.map(p => tr.apply(p));
+    const lowestLeftIdx = math.findLowestLeftPoint(polygon2d);
+    const n = polygon.length;
+    const nextIdx = ((lowestLeftIdx + 1) % n);
+    const prevIdx = ((n + lowestLeftIdx - 1) % n);
+    const o = polygon[lowestLeftIdx];
+    const first = polygon[nextIdx].minus(o);
+    const last = o.minus(polygon[prevIdx]);
+    return last.cross(first).dot(surface.normal) >= 0;
+  };
 }
 
 export function* enclosesGenerator(halfEdges) {
@@ -57,7 +76,9 @@ export function* enclosesGenerator(halfEdges) {
     const curr = halfEdges[i];
     const next = halfEdges[j];
     if (curr.vertexB !== next.vertexA) {
+      // @ts-ignore
       __DEBUG__.AddHalfEdge(curr, 0xff1199);
+      // @ts-ignore
       __DEBUG__.AddHalfEdge(next, 0x99ff11);
       throw 'using enclose generator on invalid Loop';       
     }
@@ -66,15 +87,3 @@ export function* enclosesGenerator(halfEdges) {
 }
 
 
-Loop.isPolygonCCWOnSurface = function(polygon, surface) {
-  const tr = surface.get2DTransformation();
-  const polygon2d = polygon.map(p => tr.apply(p));
-  const lowestLeftIdx = math.findLowestLeftPoint(polygon2d);
-  const n = polygon.length;
-  const nextIdx = ((lowestLeftIdx + 1) % n);
-  const prevIdx = ((n + lowestLeftIdx - 1) % n);
-  const o = polygon[lowestLeftIdx];
-  const first = polygon[nextIdx].minus(o);
-  const last = o.minus(polygon[prevIdx]);
-  return last.cross(first).dot(surface.normal) >= 0;
-};
