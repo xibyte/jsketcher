@@ -1,8 +1,13 @@
 import * as vec from 'math/vec';
+import {ParametricCurve} from "./parametricCurve";
 
-export default class InvertedCurve {
+export default class InvertedCurve implements ParametricCurve {
 
-  constructor(curve) {
+  curve: ParametricCurve;
+  uMin: number;
+  uMax: number;
+
+  constructor(curve: ParametricCurve) {
     this.curve = curve;
     let [uMin, uMax] = this.curve.domain();
     this.uMin = uMin;
@@ -50,7 +55,8 @@ export default class InvertedCurve {
     return this.curve;
   }
 
-  split(u) {
-    return this.curve.split(this.wrapParam(u)).map(c => new InvertedCurve(c)).reverse();
+  split(u: number): [ParametricCurve, ParametricCurve] {
+    const invertedCurves = this.curve.split(this.wrapParam(u)).map(c => new InvertedCurve(c)).reverse();
+    return invertedCurves as any;
   }
 }

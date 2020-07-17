@@ -1,6 +1,9 @@
 
 export class TopoObject {
-  
+
+  data: {};
+  op: OperationTemporaryData;
+
   constructor() {
     this.data = {};
     this.op = null;
@@ -15,5 +18,7 @@ export class TopoObject {
     this[name][Symbol.iterator] = iteratorFactory;
   }
 }
+
+export type OperationTemporaryData = any;
 
 let REF_COUNTER = 0;

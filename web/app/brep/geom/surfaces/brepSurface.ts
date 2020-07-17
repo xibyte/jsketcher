@@ -4,10 +4,25 @@ import {Plane} from '../impl/plane';
 import BrepCurve from '../curves/brepCurve';
 import {intersectNurbs} from './nurbsSurface';
 import {IsoCurveU, IsoCurveV} from '../curves/IsoCurve';
+import {ParametricSurface, UV} from "./parametricSurface";
 
 export class BrepSurface {
 
-  constructor(surface, inverted, simpleSurface) {
+  impl: ParametricSurface;
+  inverted: boolean;
+
+  private _simpleSurface: Plane;
+  private _mirrored: boolean;
+
+  uMin: number;
+  uMax: number;
+  vMin: number;
+  vMax: number;
+
+  uMid: number;
+  vMid: number;
+
+  constructor(surface: ParametricSurface, inverted?: boolean) {
     this.impl = surface;
     let [uMin, uMax] = surface.domainU;
     let [vMin, vMax] = surface.domainV;
@@ -29,7 +44,7 @@ export class BrepSurface {
     return this._mirrored || (this._mirrored = BrepSurface.isMirrored(this));
   }
 
-  normal(point) {
+  normal(point: Vector): Vector {
     let uv = this.impl.param(point.data());
     let normal = pt(this.impl.normal(uv[0], uv[1]));
     if (this.inverted) {
@@ -39,7 +54,7 @@ export class BrepSurface {
     return normal;
   }
 
-  normalUV(u, v) {
+  normalUV(u: number, v: number): Vector {
     let normal = pt(this.impl.normal(u, v));
     if (this.inverted) {
       normal._negate();
@@ -48,27 +63,27 @@ export class BrepSurface {
     return normal;
   }
 
-  normalInMiddle() {
+  normalInMiddle(): Vector {
     return this.normalUV(this.uMid, this.vMid);
   }
 
-  pointInMiddle() {
+  pointInMiddle(): Vector {
     return this.point(this.uMid, this.vMid);
   }
 
-  southWestPoint() {
+  southWestPoint(): Vector {
     return this.point(this.uMin, this.vMin);
   }
 
-  southEastPoint() {
+  southEastPoint(): Vector {
     return this.point(this.uMax, this.vMin);
   }
 
-  northEastPoint() {
+  northEastPoint(): Vector {
     return this.point(this.uMax, this.vMax);
   }
 
-  northWestPoint() {
+  northWestPoint(): Vector {
     return this.point(this.uMin, this.vMax);
   }
 
@@ -76,15 +91,15 @@ export class BrepSurface {
     return this.impl.param(point.data());
   }
 
-  point(u, v) {
+  point(u: number, v: number): Vector {
     return pt(this.impl.point(u, v));
   }
 
-  workingPoint(point) {
+  workingPoint(point: Vector): Vector {
     return this.createWorkingPoint(this.impl.param(point.data()), point);
   }
 
-  createWorkingPoint(uv, pt3d) {
+  createWorkingPoint(uv: UV, pt3d: Vector): Vector {
     const wp = new Vector(uv[0], uv[1], 0)._multiply(BrepSurface.WORKING_POINT_SCALE_FACTOR);
     if (this.mirrored) {
       wp.x *= -1;
@@ -93,7 +108,7 @@ export class BrepSurface {
     return wp;
   }
 
-  workingPointTo3D(wp) {
+  workingPointTo3D(wp: Vector): Vector {
     if (wp.__3D === undefined) {
       const uv = wp.multiply(BrepSurface.WORKING_POINT_UNSCALE_FACTOR);
       if (this.mirrored) {
@@ -127,7 +142,9 @@ export class BrepSurface {
 
   isoCurve(param, useV) {
     let isoCurve;
+    // @ts-ignore
     if (this.impl.isoCurve) {
+      // @ts-ignore
       isoCurve = this.impl.isoCurve(param, useV);
     } else {
       isoCurve = useV ?  new IsoCurveV(this.impl, param) : new IsoCurveU(this.impl, param);
@@ -151,10 +168,13 @@ export class BrepSurface {
   tangentPlaneInMiddle() {
     return this.tangentPlane(this.uMid, this.vMid);
   }
+
+  static WORKING_POINT_SCALE_FACTOR = 1000;
+
+  static WORKING_POINT_UNSCALE_FACTOR = 1 / BrepSurface.WORKING_POINT_SCALE_FACTOR;
+
 }
 
-BrepSurface.WORKING_POINT_SCALE_FACTOR = 1000;
-BrepSurface.WORKING_POINT_UNSCALE_FACTOR = 1 / BrepSurface.WORKING_POINT_SCALE_FACTOR;
 
 function pt(data) {
   return new Point().set3(data);
@@ -165,4 +185,11 @@ function figureOutSimpleSurface(srf) {
     return srf.tangentPlane(srf.uMid, srf.vMid);
   }
   return null;
+}
+
+declare module 'math/vector' {
+  export default interface Vector {
+
+    __3D: Vector;
+  }
 }
