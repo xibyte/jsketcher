@@ -1,0 +1,28 @@
+import {Vec3} from "math/l3space";
+
+export interface CurveData {
+
+  TYPE: string;
+
+}
+
+export interface CurveBSplineData extends CurveData {
+
+  TYPE: "B-SPLINE";
+  deg: number;
+  knots: number[];
+  weights: number[];
+  cp: Vec3[];
+
+}
+
+export interface CurveLineData extends CurveData {
+
+  TYPE: "LINE";
+
+}
+export interface CurveUnknownData extends CurveData {
+
+  TYPE: "UNKNOWN";
+
+}

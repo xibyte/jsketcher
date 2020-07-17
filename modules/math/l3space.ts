@@ -4,6 +4,8 @@ export type Basis = [Vector, Vector, Vector];
 
 export type Vec3 = [number, number, number];
 
+export type Matrix3x4Data = [number, number, number, number, number, number, number, number, number, number, number, number];
+
 const freeze = Object.freeze;
 
 const ORIGIN = freeze(new Vector(0, 0, 0));

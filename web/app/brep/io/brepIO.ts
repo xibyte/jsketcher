@@ -9,8 +9,9 @@ import NullSurface from '../geom/surfaces/nullSurface';
 import BBox from '../../math/bbox';
 import NurbsCurve from '../geom/curves/nurbsCurve';
 import BrepCurve from '../geom/curves/brepCurve';
+import {BREPData} from "../../cad/craft/engine/brepData";
 
-export function readBrep(data) {
+export function readBrep(data: BREPData) {
   
   let bb = new BrepBuilder();
   let vf = new VertexFactory();
@@ -21,7 +22,7 @@ export function readBrep(data) {
     let inverted = faceData.inverted !== nonDirect;
     bb._face.data.tesselation = {
       format: 'verbose',
-      data: normalizeTesselationData(faceData.tess, inverted, faceData.surface.normal)
+      data: normalizeTesselationData(faceData.tess, inverted, faceData.surface.TYPE === 'PLANE' ? faceData.surface.normal : undefined)
     };
     bb._face.data.productionInfo = faceData.productionInfo;
     if (faceData.ref !== undefined) {

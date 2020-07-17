@@ -1,18 +1,24 @@
 import BoundedCurve from './boundedCurve';
 import InvertedCurve from './invertedCurve';
+import {ParametricSurface} from "../surfaces/parametricSurface";
+import {ParametricCurve} from "./parametricCurve";
+import {Matrix3x4Data} from "math/l3space";
 
-export class IsoCurveU {
+export class IsoCurveU implements ParametricCurve {
+
+  surface: ParametricSurface;
+  u: number;
 
   constructor(surface, u) {
     this.surface = surface;
     this.u = u;
   }
 
-  domain() {
+  domain(): [number, number] {
     return [this.surface.vMin, this.surface.vMax];
   }
 
-  transform() {
+  transform(tr: Matrix3x4Data): ParametricCurve {
     throw 'unsupported';
   }
 
@@ -41,23 +47,31 @@ export class IsoCurveU {
     return new InvertedCurve(this);
   }
 
-  split(u) {
+  split(u): [ParametricCurve, ParametricCurve] {
     return BoundedCurve.splitCurve(this, u);
   }
+
+  degree(): number {
+    return this.surface.degreeV();
+  }
+
 }
 
-export class IsoCurveV {
+export class IsoCurveV implements ParametricCurve {
+
+  surface: ParametricSurface;
+  v: number;
 
   constructor(surface, v) {
     this.surface = surface;
     this.v = v;
   }
 
-  domain() {
+  domain(): [number, number] {
     return [this.surface.uMin, this.surface.uMax];
   }
 
-  transform() {
+  transform(tr: Matrix3x4Data): ParametricCurve {
     throw 'unsupported';
   }
 
@@ -70,16 +84,27 @@ export class IsoCurveV {
   }
 
   eval(u, num) {
-    let hes = this.surface.eval(this.u, u, num);
+    let hes = this.surface.eval(u, this.v, num);
     let out = [];
     for (let i = 0; i < num; ++i) {
-      out[i] = hes[i][0];
+      out[i] = hes[i][1];
     }
     return out;
   }
 
   knots() {
-    return this.surface.knotsV;
+    return this.surface.knotsU;
   }
 
+  invert() {
+    return new InvertedCurve(this);
+  }
+
+  split(u): [ParametricCurve, ParametricCurve] {
+    return BoundedCurve.splitCurve(this, u);
+  }
+
+  degree(): number {
+    return this.surface.degreeU();
+  }
 }

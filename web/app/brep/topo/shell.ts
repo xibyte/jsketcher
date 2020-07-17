@@ -1,8 +1,13 @@
 import {TopoObject} from './topo-object'
 import {Face} from "./face";
 import {Loop} from "./loop";
+import {Edge} from "./edge";
 
 export class Shell extends TopoObject {
+
+  faces: Face[];
+  edges: Edge[];
+
   constructor() {
     super();
     this.faces = [];
@@ -10,7 +15,7 @@ export class Shell extends TopoObject {
     this.defineIterable('edges', () => edgesGenerator(this.faces))
   }
   
-  clone() {
+  clone(): Shell {
     let edgeClones = new Map();
     for (let e of this.edges) {
       edgeClones.set(e, e.clone());
@@ -20,14 +25,14 @@ export class Shell extends TopoObject {
     for (let face of this.faces) {
       let faceClone = new Face(face.surface);
       Object.assign(faceClone.data, face.data);
-      function cloneLoop(loop, loopClone) {
+      const cloneLoop = (loop, loopClone) => {
         for (let he of loop.halfEdges) {
           let edgeClone = edgeClones.get(he.edge);
           loopClone.halfEdges.push(he.inverted ? edgeClone.halfEdge2 : edgeClone.halfEdge1);
         }
         loopClone.link();
         Object.assign(loopClone.data, loop.data);
-      }
+      };
       cloneLoop(face.outerLoop, faceClone.outerLoop);
       for (let loop of face.innerLoops) {
         let loopClone = new Loop(faceClone);
@@ -43,7 +48,7 @@ export class Shell extends TopoObject {
   }
 }
 
-export function* verticesGenerator(shell) {
+export function* verticesGenerator(shell: Shell) {
   const seen = new Set();
   for (let face of shell.faces) {
     for (let edge of face.edges) {
@@ -55,7 +60,7 @@ export function* verticesGenerator(shell) {
   }
 }
 
-export function* edgesGenerator(faces) {
+export function* edgesGenerator(faces: Face[]) {
   const visited = new Set();
   for (let face of faces) {
     for (let halfEdge of face.edges) {

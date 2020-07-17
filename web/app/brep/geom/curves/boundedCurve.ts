@@ -1,22 +1,29 @@
-import * as vec from 'math/vec';
 import InvertedCurve from './invertedCurve';
+import {ParametricCurve} from "./parametricCurve";
+import {Matrix3x4Data} from "math/l3space";
 
-export default class BoundedCurve {
+export default class BoundedCurve implements ParametricCurve {
+
+  curve: ParametricCurve;
+  boundA: number;
+  boundB: number;
+  _knots: number[];
 
   constructor(curve, boundA, boundB) {
     this.curve = curve;
     this.boundA = boundA;
     this.boundB = boundB;
-    this.knots = [boundA];
-    curve.knots().forEach(u => u > boundA && u < boundB && this.knots.push(u));
-    this.knots.push(boundB);
+
+    this._knots = [boundA];
+    curve.knots().forEach(u => u > boundA && u < boundB && this._knots.push(u));
+    this._knots.push(boundB);
   }
 
   boundParam(u) {
     return Math.min(this.boundB, Math.max(this.boundA, u));
   }
   
-  domain() {
+  domain(): [number, number] {
     return [this.boundA, this.boundB];
   }
 
@@ -24,7 +31,7 @@ export default class BoundedCurve {
     return this.curve.degree();
   }
 
-  transform(tr) {
+  transform(tr: Matrix3x4Data): ParametricCurve {
     return new BoundedCurve(this.curve.transform(tr), this.boundA, this.boundB);
   }
 
@@ -37,16 +44,11 @@ export default class BoundedCurve {
   }
 
   eval(u, num) {
-    let res = this.curve.eval(this.boundParam(u), num);
-    if (res.length > 1) {
-      vec._negate(res[1])
-    }
-    return eval;
-
+    return this.curve.eval(this.boundParam(u), num);
   }
 
   knots() {
-    return this.knots;
+    return this._knots;
   }
 
   invert() {
@@ -57,10 +59,10 @@ export default class BoundedCurve {
     return [
       new BoundedCurve(this.curve, this.boundA, u),
       new BoundedCurve(this.curve, u, this.boundB)
-    ];
+    ] as [ParametricCurve, ParametricCurve];
   }
   
-  static splitCurve(curve, u) {
+  static splitCurve(curve, u): [BoundedCurve, BoundedCurve] {
     let [uMin, uMax] = curve.domain();
     return [
       new BoundedCurve(curve, uMin, u),

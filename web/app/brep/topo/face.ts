@@ -1,15 +1,41 @@
 import {TopoObject} from './topo-object'
 import {Loop} from './loop'
 import PIP from '../../cad/tess/pip';
-import {eqSqTol, veq, veqNeg} from "../geom/tolerance";
-import {
-  ENCLOSE_CLASSIFICATION, isCurveEntersEdgeAtPoint, isCurveEntersEnclose, isInsideEnclose,
-  isOnPositiveHalfPlaneFromVec
-} from "../operations/boolean";
+import {veq} from "../geom/tolerance";
+import {isOnPositiveHalfPlaneFromVec} from "../operations/boolean";
+import {BrepSurface} from "../geom/surfaces/brepSurface";
+import {Shell} from "./shell";
+import {ProductionInfo} from "../../cad/craft/engine/productionInfo";
+
+declare module './face' {
+
+  interface Face {
+    loops: any;
+    edges: any;
+    data: {
+      id: string,
+      productionInfo: ProductionInfo,
+      tesselation: {
+        format: string,
+        data: any;
+      }
+      externals: {
+        ref: number
+      }
+    }
+  }
+}
 
 export class Face extends TopoObject {
 
-  constructor(surface) {
+
+  surface: BrepSurface;
+  shell: Shell;
+  outerLoop: Loop;
+  innerLoops: Loop[];
+  private __2d: any;
+
+  constructor(surface: BrepSurface) {
     super();
     this.surface = surface;
     this.shell = null;
@@ -17,10 +43,14 @@ export class Face extends TopoObject {
     this.innerLoops = [];
     this.defineIterable('loops', () => loopsGenerator(this));
     this.defineIterable('edges', () => halfEdgesGenerator(this));
-    Object.defineProperty(this, "id", {
-      get: () => this.data.id,
-      set: (value) => this.data.id = value,
-    });
+  }
+
+  get id(): string {
+    return this.data.id;
+  }
+
+  set id(value: string) {
+    this.data.id = value
   }
 
   createWorkingPolygon() {
