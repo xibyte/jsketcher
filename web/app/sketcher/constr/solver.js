@@ -1,5 +1,4 @@
 import * as utils from '../../utils/utils'
-import * as math from '../../math/math'
 import QR from '../../math/qr'
 import LMOptimizer from '../../math/lm'
 import {ConstantWrapper, EqualsTo} from './solverConstraints'
@@ -171,6 +170,12 @@ System.prototype.getValues = function() {
   return values;
 };
 
+System.prototype.rollback = function() {
+  for (var p = 0; p < this.params.length; p++) {
+    this.params[p].rollback();
+  }
+};
+
 function wrapConstants(constrs) {
   for (let i = 0; i < constrs.length; i++) {
     const c = constrs[i];
@@ -247,13 +252,14 @@ var prepare = function(constrs, locked) {
     if (constrs.length === 0) return nullResult;
     if (sys.params.length === 0) return nullResult;
     // return solve_lm(sys, model, jacobian, rough);
-    switch (alg) {
-      case 2:
-        return solve_lm(sys, model, jacobian, rough);
-      case 1:
-      default:    
-        return dog_leg(sys, rough);
+
+    let result = dog_leg(sys, rough);
+    if (!result.success) {
+      console.log('dog leg failed, giving levenberg marquardt a shot');
+      sys.rollback();
+      result = solve_lm(sys, model, jacobian, rough)
     }
+    return result;
   }
   var systemSolver = {
     diagnose : function() {return diagnose(sys)},
@@ -287,11 +293,11 @@ var solve_lm = function(sys, model, jacobian, rough) {
   if (returnCode === 1) {
     sys.setParams(res[0]);
   }
-  console.log("LM result: ")
-  console.log({
-    evalCount : opt.evalCount,
-    error : sys.error(),
-  });
+  // console.log("LM result: ")
+  // console.log({
+  //   evalCount : opt.evalCount,
+  //   error : sys.error(),
+  // });
 
   return {
     evalCount : opt.evalCount,
