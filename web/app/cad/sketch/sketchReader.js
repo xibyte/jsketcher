@@ -85,11 +85,16 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
       const arcCenter = ReadSketchPoint(data.c);
       out.connections.push(new sm.Arc(getID(obj), arcA, arcB, arcCenter));
     } else if (obj.type === 'EllipticalArc') {
-      const ep1 = ReadSketchPoint(data.ep1);
-      const ep2 = ReadSketchPoint(data.ep2);
+      if (data.ep1) {
+        continue;
+      }
+      const c = ReadSketchPoint(data.c);
+      const rx = readSketchFloat(data.rx);
+      const ry = readSketchFloat(data.ry);
+      const rot = readSketchFloat(data.rot);
       const a = ReadSketchPoint(data.a);
       const b = ReadSketchPoint(data.b);
-      out.connections.push(new sm.EllipticalArc(getID(obj), ep1, ep2, a, b, readSketchFloat(data.r)));
+      out.loops.push(new sm.EllipticalArc(getID(obj), c, rx, ry, rot, a, b));
     } else if (obj.type === 'BezierCurve') {
       const a = ReadSketchPoint(data.cp1);
       const b = ReadSketchPoint(data.cp4);
@@ -100,9 +105,14 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
       const circleCenter = ReadSketchPoint(data.c);
       out.loops.push(new sm.Circle(getID(obj), circleCenter, readSketchFloat(data.r)));
     } else if (obj.type === 'Ellipse') {
-      const ep1 = ReadSketchPoint(data.ep1);
-      const ep2 = ReadSketchPoint(data.ep2);
-      out.loops.push(new sm.Ellipse(getID(obj), ep1, ep2, readSketchFloat(data.r)));
+      if (data.ep1) {
+        continue;
+      }
+      const c = ReadSketchPoint(data.c);
+      const rx = readSketchFloat(data.rx);
+      const ry = readSketchFloat(data.ry);
+      const rot = readSketchFloat(data.rot);
+      out.loops.push(new sm.Ellipse(getID(obj), c, rx, ry, rot));
     }
   }
   return out;

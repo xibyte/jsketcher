@@ -1,26 +1,25 @@
 import {Tool} from './tool'
-import {EndPoint} from '../shapes/point'
 import {Ellipse} from '../shapes/ellipse'
 import {EllipticalArc} from '../shapes/elliptical-arc'
-import Vector from 'math/vector';
 
-export const STATE_POINT1 = 0;
-export const STATE_POINT2 = 1;
-export const STATE_RADIUS = 2;
+export const CENTER = 0;
+export const RADIUS_X = 1;
+export const RADIUS_Y = 2;
+
 
 export class EllipseTool extends Tool {
 
   constructor(viewer, arc) {
-    super(arc ? 'ellipse' : 'elliptical arc', viewer);
+    super(arc ? 'elliptical arc' : 'ellipse', viewer);
     this.arc = arc;
     this.ellipse = null;
-    this.state = STATE_POINT1;
+    this.state = CENTER;
   }
   
   restart() {
     this.ellipse = null;
-    this.state = STATE_POINT1;
-    this.sendHint('specify first major axis point')
+    this.state = CENTER;
+    this.sendHint('specify a center of the ellipse')
   }
 
   cleanup(e) {
@@ -32,8 +31,7 @@ export class EllipseTool extends Tool {
   }
   
   newEllipse(p) {
-
-    return this.arc ? new EllipticalArc(p.x, p.y, p.x, p.y, p.x, p.y, p.x, p.y) : new Ellipse(p.x, p.y, p.x, p.y);
+    return this.arc ? new EllipticalArc(p.x, p.y, 0, 0, 0, p.x, p.y, p.x, p.y) : new Ellipse(p.x, p.y, 0, 0, 0);
   }
   
   demoBPoint() {
@@ -47,26 +45,22 @@ export class EllipseTool extends Tool {
   
   mouseup(e) {
     switch (this.state) {
-      case STATE_POINT1: {
+      case CENTER: {
         const p = this.point(e);
         this.ellipse = this.newEllipse(p);
-        this.snapIfNeed(this.ellipse.ep1);
+        this.snapIfNeed(this.ellipse.c);
         this.viewer.activeLayer.add(this.ellipse);
         this.viewer.refresh();
-        this.state = STATE_POINT2;
-        this.sendHint('specify second major axis point');
+        this.state = RADIUS_X;
+        this.sendHint('specify major radius');
         break;
       }
-      case STATE_POINT2: {
-        const p = this.point(e);
-        this.ellipse.ep2.setFromPoint(p);
-        this.snapIfNeed(this.ellipse.ep2);
-        this.viewer.refresh();
-        this.state = STATE_RADIUS;
-        this.sendHint('specify minor axis radius');
+      case RADIUS_X: {
+        this.state = RADIUS_Y;
+        this.sendHint('specify minor radius');
         break;
       }
-      case STATE_RADIUS:
+      case RADIUS_Y:
         if (this.arc) {
           this.ellipse.stabilize(this.viewer);
         }
@@ -77,41 +71,47 @@ export class EllipseTool extends Tool {
   mousemove(e) {
     const p = this.viewer.screenToModel(e);
     switch (this.state) {
-      case STATE_POINT1:
+      case CENTER: {
         this.viewer.snap(p.x, p.y, []);
         break;
-      case STATE_POINT2:
-        this.ellipse.ep2.setFromPoint(this.viewer.screenToModel(e));
-        this.ellipse.r.value = this.ellipse.radiusX * 0.5;
-        this.viewer.snap(p.x, p.y, this.ellipse.children);
+      }
+      case RADIUS_X: {
+
+        const dx = p.x - this.ellipse.c.x;
+        const dy = p.y - this.ellipse.c.y;
+
+        const rot = Math.atan2(dy, dx);
+        const rx = Math.sqrt(dx*dx + dy*dy);
+
+        this.ellipse.rx.set(rx);
+        this.ellipse.rot.set(rot);
+
         if (this.arc) {
-          this.ellipse.a.setFromPoint(this.ellipse.ep2);
+          this.ellipse.a.setFromPoint(p);
           this.demoBPoint();
         }
         break;
-      case STATE_RADIUS:
-        const polarPoint = this.ellipse.toEllipseCoordinateSystem(p);
-        let minorRadius = Ellipse.findMinorRadius(this.ellipse.radiusX, polarPoint.radius, polarPoint.angle);
-        if (isNaN(minorRadius)) {
-          const projAxis = new Vector(-(this.ellipse.ep2.y - this.ellipse.ep1.y), this.ellipse.ep2.x - this.ellipse.ep1.x);
-          projAxis._normalize();
-          const v = new Vector(this.ellipse.ep2.x - p.x, this.ellipse.ep2.y - p.y);
-          minorRadius = Math.abs(projAxis.dot(v));
-        }
-        this.ellipse.r.set(minorRadius);
-        if (!Tool.dumbMode(e)) {
-          this.solveRequest(true);
-        }
+      }
+      case RADIUS_Y: {
+
+        const dx = p.x - this.ellipse.c.x;
+        const dy = p.y - this.ellipse.c.y;
+
+        const rot = this.ellipse.rotation;
+        const axisX = - Math.sin(rot);
+        const axisY =   Math.cos(rot);
+
+
+        const ry = Math.abs(dx * axisX + dy * axisY);
+
+        this.ellipse.ry.set(ry);
+
         if (this.arc) {
           this.demoBPoint();
         }
         break;
+      }
     } 
     this.viewer.refresh();
-  }
-
-  solveRequest(rough) {
-    this.viewer.parametricManager.prepare([this.ellipse.r]);
-    this.viewer.parametricManager.solve(rough);
   }
 }
