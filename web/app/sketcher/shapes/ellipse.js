@@ -2,60 +2,64 @@ import {SketchObject} from './sketch-object'
 
 import * as math from '../../math/math';
 import {Param} from "./param";
-import {SketchSegmentSerializationData} from "./segment";
 import {EndPoint} from "./point";
 
 export class Ellipse extends SketchObject {
 
-  constructor(x1, y1, x2, y2, r, id) {
+  constructor(cx, cy, rx, ry, rot, id) {
     super(id);
-    this.ep1 = new EndPoint(x1, y1, this.id + ':1');
-    this.ep2 = new EndPoint(x2, y2, this.id + ':2');
-    this.addChild(this.ep1);
-    this.addChild(this.ep2);
-    this.r = new Param(r === undefined ? 0 : this.radiusX * 0.5, 'R');
-    this.r.enforceVisualLimit = true;
+
+    this.c = new EndPoint(cx, cy, this.id + ':C');
+
+    this.addChild(this.c);
+
+    this.rot = new Param(rot, 'A');
+    this.rx = new Param(rx, 'Rx');
+    this.ry = new Param(ry, 'Rx');
+
+    this.rx.enforceVisualLimit = true;
+    this.ry.enforceVisualLimit = true;
   }
 
   recoverIfNecessary() {
     let recovered = false;
-    if (math.distanceAB(this.ep1, this.ep2) <= math.TOLERANCE) {
-      this.ep1.translate(-RECOVER_LENGTH, -RECOVER_LENGTH);
-      this.ep2.translate(RECOVER_LENGTH, RECOVER_LENGTH);
+    if (this.radiusX <= 0.1) {
+      this.rx.set(RECOVER_LENGTH);
       recovered = true;
     }
     if (this.radiusY <= 0.1) {
-      this.r.set(RECOVER_LENGTH);
+      this.ry.set(RECOVER_LENGTH);
       recovered = true;
     }
     return recovered;
   }
 
   visitParams(callback) {
-    this.ep1.visitParams(callback);
-    this.ep2.visitParams(callback);
-    callback(this.r);
+    this.c.visitParams(callback);
+    callback(this.rx);
+    callback(this.ry);
+    callback(this.rot);
   }
 
 
   get rotation() {
-    return Math.atan2(this.ep2.y - this.ep1.y, this.ep2.x - this.ep1.x);
+    return this.rot.get();
   }
 
   get radiusX() {
-    return math.distance(this.ep1.x, this.ep1.y, this.ep2.x, this.ep2.y) * 0.5;
+    return this.rx.get();
   }
 
   get radiusY() {
-    return this.r.get();
+    return this.ry.get();
   }
 
   get centerX() {
-    return this.ep1.x + (this.ep2.x - this.ep1.x) * 0.5; 
+    return this.c.x;
   }
 
   get centerY() {
-    return this.ep1.y + (this.ep2.y - this.ep1.y) * 0.5;
+    return this.c.y;
   }
 
   drawImpl(ctx, scale) {
@@ -92,19 +96,23 @@ export class Ellipse extends SketchObject {
 
   write() {
     return {
-      ep1: this.ep1.write(),
-      ep2: this.ep2.write(),
-      r: this.r.get()
+      c: this.c.write(),
+      rx: this.rx.get(),
+      ry: this.ry.get(),
+      rot: this.rot.get(),
     };
   }
 
   static read(id, data) {
+    if (data.ep1) {
+      return readFormatV1(id, data);
+    }
     return new Ellipse(
-      data.ep1.x,
-      data.ep1.y,
-      data.ep2.x,
-      data.ep2.y,
-      data.r,
+      data.c.x,
+      data.c.y,
+      data.rx,
+      data.ry,
+      data.rot,
       id
     )
   }
@@ -115,3 +123,14 @@ Ellipse.prototype.TYPE = 'Ellipse';
 
 const sq = (a) => a * a;
 const RECOVER_LENGTH = 100;
+
+function readFormatV1(id, data) {
+
+  const cx = data.ep1.x + (data.ep2.x - data.ep1.x) * 0.5;
+  const cy = data.ep1.y + (data.ep2.y - data.ep1.y) * 0.5;
+  const rx = math.distance(data.ep1.x, data.ep1.y, data.ep2.x, data.ep2.y) * 0.5;
+  const ry = data.r;
+  const rot = Math.atan2(data.ep2.y - data.ep1.y, data.ep2.x - data.ep1.x);
+
+  return new Ellipse(cx, cy, rx, ry, rot, id);
+}

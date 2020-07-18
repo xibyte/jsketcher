@@ -7,6 +7,7 @@ import {distanceAB, isCCW, makeAngle0_360} from '../../math/math'
 import {normalizeCurveEnds} from '../../brep/geom/impl/nurbs-ext';
 import Vector from '../../../../modules/math/vector';
 import {AXIS, ORIGIN} from '../../../../modules/math/l3space';
+import CSys from "../../../../modules/math/csys";
 
 const RESOLUTION = 20;
 
@@ -21,11 +22,14 @@ class SketchPrimitive {
   }
 
   tessellate(resolution) {
-    const tessellation = this.tessellateImpl(resolution);
-    if (this.inverted) {
-      tessellation.reverse();
-    }
-    return tessellation;
+    return this.toNurbs(CSys.ORIGIN).tessellate();
+    // return brepCurve.impl.verb.tessellate().map(p => new Vector().set3(p) );
+
+    // const tessellation = this.tessellateImpl(resolution);
+    // if (this.inverted) {
+    //   tessellation.reverse();
+    // }
+    // return tessellation;
   }
 
   get isCurve() {
@@ -64,7 +68,7 @@ export class Segment extends SketchPrimitive {
     this.b = b;
   }
 
-  tessellateImpl(resolution) {
+  tessellate(resolution) {
     return [this.a, this.b];
   }
 
@@ -79,33 +83,6 @@ export class Arc extends SketchPrimitive {
     this.a = a;
     this.b = b;
     this.c = c;
-  }
-
-  tessellateImpl(resolution) {
-    return Arc.tessellateArc(this.a, this.b, this.c, resolution);
-  }
-
-  static tessellateArc(ao, bo, c, resolution) {
-    var a = ao.minus(c);
-    var b = bo.minus(c);
-    var points = [ao];
-    var abAngle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
-    if (abAngle > Math.PI * 2) abAngle = Math.PI / 2 - abAngle;
-    if (abAngle < 0) abAngle = Math.PI * 2 + abAngle;
-
-    var r = a.length();
-    resolution = 1;
-    //var step = Math.acos(1 - ((resolution * resolution) / (2 * r * r)));
-    var step = resolution / (2 * Math.PI);
-    var k = Math.round(abAngle / step);
-    var angle = Math.atan2(a.y, a.x) + step;
-
-    for (var i = 0; i < k - 1; ++i) {
-      points.push(new Point(c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)));
-      angle += step;
-    }
-    points.push(bo);
-    return points;
   }
 
   toVerbNurbs(tr, csys) {
@@ -143,69 +120,42 @@ export class BezierCurve extends SketchPrimitive {
     this.cp2 = cp2;
   }
 
-  tessellateImpl(resolution) {
-    return LUT(this.a, this.b, this.cp1, this.cp2, 10);
-  }
-
   toVerbNurbs(tr) {
     return new verb.geom.BezierCurve([tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()], null);
   }
 }
 
 export class EllipticalArc extends SketchPrimitive {
-  constructor(id, ep1, ep2, a, b, r) {
+  constructor(id, c, rx, ry, rot, a, b) {
     super(id);
-    this.ep1 = ep1;
-    this.ep2 = ep2;
+    this.c = c;
+    this.rx = rx;
+    this.ry = ry;
+    this.rot = rot;
     this.a = a;
     this.b = b;
-    this.r = r;
   }
 
-  tessellateImpl(resolution) {
-    return EllipticalArc.tessEllipticalArc(this.ep1, this.ep2, this.a, this.b, this.r, resolution);
-  }
+  toVerbNurbs(tr, csys) {
+    const ax = Math.cos(this.rot);
+    const ay = Math.sin(this.rot);
 
-  static tessEllipticalArc(ep1, ep2, ao, bo, radiusY, resolution) {
-    const axisX = ep2.minus(ep1);
-    const radiusX = axisX.length() * 0.5;
-    axisX._normalize();
-    const c = ep1.plus(axisX.multiply(radiusX));
-    const a = ao.minus(c);
-    const b = bo.minus(c);
-    const points = [ao];
-    const rotation = Math.atan2(axisX.y, axisX.x);
-    let abAngle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
-    if (abAngle > Math.PI * 2) abAngle = Math.PI / 2 - abAngle;
-    if (abAngle < 0) abAngle = Math.PI * 2 + abAngle;
+    const xAxis = new Vector(ax, ay)._multiply(this.rx);
+    const yAxis = new Vector(-ay, ax)._multiply(this.ry);
 
-    const sq = (a) => a * a;
+    const startAngle = Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x) - this.rot;
+    const endAngle  = Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x) - this.rot;
 
-    resolution = 1;
+    if (startAngle > endAngle) {
 
-    const step = resolution / (2 * Math.PI);
-    const k = Math.round(abAngle / step);
-    let angle = Math.atan2(a.y, a.x) + step - rotation;
-
-    for (let i = 0; i < k - 1; ++i) {
-      const r = Math.sqrt(1/( sq(Math.cos(angle)/radiusX) + sq(Math.sin(angle)/radiusY)));
-      points.push(new Point(c.x + r*Math.cos(angle + rotation), c.y + r*Math.sin(angle + rotation)));
-      angle += step;
     }
-    points.push(bo);
-    return points;
-  }
-  
-  toVerbNurbs(tr) {
-    const xAxis = this.ep2.minus(this.ep1)._multiply(0.5);
-    const yAxis = new Vector(xAxis.y, xAxis.x)._normalize()._multiply(this.r) ;
-    const center = this.ep1.plus(xAxis);
 
-    const startAngle = makeAngle0_360(Math.atan2(this.a.y - center.y, this.a.x - center.x));
-    const endAngle = makeAngle0_360(Math.atan2(this.b.y - center.y, this.b.x - center.x));
-    
-    let arc = new verb.geom.EllipseArc(tr(center).data(), tr(xAxis).data(), tr(yAxis).data(), startAngle, endAngle);
-    return adjustEnds(arc, tr(this.a), tr(this.b))
+    // let arc = new verb.geom.EllipseArc(tr(this.c).data(), tr(xAxis).data(), tr(yAxis).data(), startAngle, endAngle);
+    let arc = new verb.geom.EllipseArc(this.c.data(), xAxis.data(), yAxis.data(), startAngle, endAngle);
+    arc = arc.transform(csys.outTransformation.toArray());
+
+    return arc;
+    // return adjustEnds(arc, tr(this.a), tr(this.b))
   }
 }
 
@@ -216,25 +166,6 @@ export class Circle extends SketchPrimitive {
     this.r = r;
   }
 
-  tessellateImpl(resolution) {
-    return Circle.tessCircle(this.c, this.r, resolution);
-  }
-
-  static tessCircle(c, r, resolution) {
-    var points = [];
-    resolution = 1;
-    //var step = Math.acos(1 - ((resolution * resolution) / (2 * r * r)));
-    var step = resolution / (2 * Math.PI);
-    var k = Math.round((2 * Math.PI) / step);
-
-    for (var i = 0, angle = 0; i < k; ++i, angle += step) {
-      points.push(new Point(c.x + r*Math.cos(angle), c.y + r*Math.sin(angle)));
-    }
-    points.push(points[0]); // close it
-    return points;
-  }
-
-
   toVerbNurbs(tr, csys) {
     const basisX = csys.x;
     const basisY = csys.y;
@@ -243,22 +174,23 @@ export class Circle extends SketchPrimitive {
 }
 
 export class Ellipse extends SketchPrimitive {
-  constructor(id, ep1, ep2, r) {
+  constructor(id, c, rx, ry, rot) {
     super(id);
-    this.ep1 = ep1;
-    this.ep2 = ep2;
-    this.r = r;
-  }
-
-  tessellateImpl(resolution) {
-    return EllipticalArc.tessEllipticalArc(this.ep1, this.ep2, this.ep1, this.ep1, this.r, resolution);
+    this.c = c;
+    this.rx = rx;
+    this.ry = ry;
+    this.rot = rot;
   }
 
   toVerbNurbs(tr) {
-    const xAxis = this.ep2.minus(this.ep1)._multiply(0.5);
-    const yAxis = new Vector(xAxis.y, xAxis.x)._normalize()._multiply(this.r) ;
-    const center = this.ep1.plus(xAxis);
-    return new verb.geom.Ellipse(tr(center).data(), tr(xAxis).data(), tr(yAxis).data());
+
+    const ax = Math.cos(this.rot);
+    const ay = Math.sin(this.rot);
+
+    const xAxis = new Vector(ax, ay)._multiply(this.rx);
+    const yAxis = new Vector(-ay, ax)._multiply(this.ry);
+
+    return new verb.geom.Ellipse(tr(this.c).data(), tr(xAxis).data(), tr(yAxis).data());
   }
 }
 
@@ -295,7 +227,7 @@ export class Contour {
     const tessellation = [];
     for (let segment of this.segments) {
       const segmentTessellation = segment.tessellate(resolution);
-      //skip last one cuz it's guaranteed to be closed
+      //skip last one because it's guaranteed to be closed
       for (let i = 0; i < segmentTessellation.length - 1; ++i) {
         tessellation.push(segmentTessellation[i]);
       }

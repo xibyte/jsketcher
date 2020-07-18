@@ -86,7 +86,7 @@ export function addArc(ctx, cX, cY, aX, aY, bX, bY) {
 export function addCircle(ctx, cX, cY, R) {
   let [rX, rY] = modelToScreen(ctx.viewer, cX + R, cY);
   [cX, cY] = modelToScreen(ctx.viewer, cX, cY);
-  ctx.actions['addCircle'].action();
+  ctx.actions.CircleTool.invoke(ctx);
   moveAndClickXY(ctx, cX, cY);
   let circle = ctx.viewer.toolManager.tool.circle;
   moveAndClickXY(ctx, rX, rY);
@@ -98,7 +98,7 @@ export function addEllipse(ctx, aX, aY, bX, bY, rX, rY) {
   [aX, aY] = modelToScreen(ctx.viewer, aX, aY);
   [bX, bY] = modelToScreen(ctx.viewer, bX, bY);
   [rX, rY] = modelToScreen(ctx.viewer, rX, rY);
-  ctx.actions['addEllipse'].action();
+  ctx.actions.EllipseTool.invoke(ctx);
   moveAndClickXY(ctx, aX, aY);
   let ellipse = ctx.viewer.toolManager.tool.ellipse;
   moveAndClickXY(ctx, bX, bY);
@@ -111,7 +111,7 @@ export function addEllipticalArc(ctx, aX, aY, bX, bY, rX, rY) {
   [aX, aY] = modelToScreen(ctx.viewer, aX, aY);
   [bX, bY] = modelToScreen(ctx.viewer, bX, bY);
   [rX, rY] = modelToScreen(ctx.viewer, rX, rY);
-  ctx.actions['addEllipticalArc'].action();
+  ctx.actions.EllipseArcTool.invoke(ctx);
   moveAndClickXY(ctx, aX, aY);
   let ellipse = ctx.viewer.toolManager.tool.ellipse;
   moveAndClickXY(ctx, bX, bY);
