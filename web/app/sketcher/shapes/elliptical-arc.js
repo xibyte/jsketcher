@@ -1,14 +1,14 @@
 import {Ellipse} from './ellipse'
-import {Constraints} from '../parametric'
 
 import * as math from '../../math/math';
 import {swap} from '../../utils/utils'
 import {EndPoint} from "./point";
+import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
 export class EllipticalArc extends Ellipse {
 
-  constructor(x1, y1, x2, y2, ax, ay, bx, by, r, id) {
-    super(x1, y1, x2, y2, r, id);
+  constructor(cx, cy, rx, ry, rot, ax, ay, bx, by, id) {
+    super(cx, cy, rx, ry, rot, id);
     this.a = new EndPoint(ax, ay, this.id + ':A');
     this.b = new EndPoint(bx, by, this.id + ':B');
     this.addChild(this.a);
@@ -20,8 +20,14 @@ export class EllipticalArc extends Ellipse {
   }
 
   stabilize(viewer) {
-    this.stage.addConstraint(new Constraints.PointOnEllipseInternal(this.b, this));
-    this.stage.addConstraint(new Constraints.PointOnEllipseInternal(this.a, this));
+    const c1 = new AlgNumConstraint(ConstraintDefinitions.PointOnEllipse, [this.b, this]);
+    c1.internal = true;
+
+    const c2 = new AlgNumConstraint(ConstraintDefinitions.PointOnEllipse, [this.a, this]);
+    c2.internal = true;
+
+    this.stage.addConstraint(c1);
+    this.stage.addConstraint(c2);
   }
 
   drawImpl(ctx, scale) {
@@ -53,28 +59,40 @@ export class EllipticalArc extends Ellipse {
 
   write() {
     return {
-      ep1: this.ep1.write(),
-      ep2: this.ep2.write(),
+      c: this.c.write(),
+      rx: this.rx.get(),
+      ry: this.ry.get(),
+      rot: this.rot.get(),
       a: this.a.write(),
-      b: this.b.write(),
-      r: this.r.get()
-    }
+      b: this.b.write()
+    };
   }
 
   static read(id, data) {
+    if (data.ep1) {
+      return readFormatV1(id, data);
+    }
     return new EllipticalArc(
-      data.ep1.x,
-      data.ep1.y,
-      data.ep2.x,
-      data.ep2.y,
-      data.a.x,
-      data.a.y,
-      data.b.x,
-      data.b.y,
-      data.r,
+      data.c.x,
+      data.c.y,
+      data.rx,
+      data.ry,
+      data.rot,
+      data.a.x, data.a.y, data.b.x, data.b.y,
       id
-    );
+    )
   }
+}
+
+function readFormatV1(id, data) {
+
+  const cx = data.ep1.x + (data.ep2.x - data.ep1.x) * 0.5;
+  const cy = data.ep1.y + (data.ep2.y - data.ep1.y) * 0.5;
+  const rx = math.distance(data.ep1.x, data.ep1.y, data.ep2.x, data.ep2.y) * 0.5;
+  const ry = data.r;
+  const rot = Math.atan2(data.ep2.y - data.ep1.y, data.ep2.x - data.ep1.x);
+
+  return new EllipticalArc(cx, cy, rx, ry, rot, data.a.x, data.a.y, data.b.x, data.b.y, id);
 }
 
 EllipticalArc.prototype._class = 'TCAD.TWO.EllipticalArc';

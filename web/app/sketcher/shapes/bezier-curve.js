@@ -10,17 +10,17 @@ import {EndPoint} from "./point";
 
 export class BezierCurve extends SketchObject {
 
-  constructor(ax, ay, bx, by, cp1x, cp1y, cp2x, cp2y, id) {
+  constructor(ax, ay, cp1x, cp1y, cp2x, cp2y, bx, by, id) {
     super(id);
     const s1 = new Segment(ax, ay, cp1x, cp1y, this.id + ':1');
     const s2 = new Segment(bx, by, cp2x, cp2y, this.id + ':2');
     this.addChild(s1);
     this.addChild(s2);
 
-    this.a = this.s1.a;
-    this.b = this.s2.b;
-    this.cp1 = this.s1.b;
-    this.cp2 = this.s2.a;
+    this.a = s1.a;
+    this.b = s2.b;
+    this.cp1 = s1.b;
+    this.cp2 = s2.a;
     
     for (let c of this.children) {
       c.role = 'objectConstruction';
