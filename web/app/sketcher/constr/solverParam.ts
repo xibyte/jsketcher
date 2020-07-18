@@ -31,5 +31,9 @@ export class SolverParam {
     return this.value;
   }
 
+  rollback() {
+    this.set(this.objectParam.get());
+  }
+
 }
 
