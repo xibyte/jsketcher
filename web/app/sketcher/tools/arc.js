@@ -1,8 +1,7 @@
 import {Arc} from '../shapes/arc'
-import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
 import Vector from 'math/vector';
-import * as math from '../../../../modules/math/commons';
+import {distance} from "../../../../modules/math/distance";
 
 export class AddArcTool extends Tool {
 
@@ -94,7 +93,7 @@ export class AddArcTool extends Tool {
   }
 
   radiusOfFirstPoint() {
-    return math.distance(this.arc.a.x, this.arc.a.y, this.arc.c.x, this.arc.c.y);
+    return distance(this.arc.a.x, this.arc.a.y, this.arc.c.x, this.arc.c.y);
   }
 
   processCommand(command) {

@@ -1,14 +1,10 @@
 import Vector from 'math/vector';
-import {Styles} from '../styles'
 import * as fetch from '../fetchers'
-import * as math from '../../../../modules/math/commons'
-import {EndPoint} from '../shapes/point'
 import {Arc} from '../shapes/arc'
-import {Constraints} from '../parametric'
 import {Tool} from './tool'
-import {isInstanceOf} from "../actions/matchUtils";
 import {Segment} from "../shapes/segment";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
+import {distanceAB} from "../../../../modules/math/distance";
 
 export class FilletTool extends Tool {
   
@@ -37,7 +33,7 @@ export class FilletTool extends Tool {
         a = point1.parent.a;
         b = point1.parent.b;
       }
-      const d = math.distanceAB(a, b);
+      const d = distanceAB(a, b);
       const k = 4 / 5;
       b.x = a.x + (b.x - a.x) * k;
       b.y = a.y + (b.y - a.y) * k;

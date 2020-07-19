@@ -4,6 +4,7 @@ import * as math from '../../../../modules/math/commons';
 import {swap} from '../../utils/utils'
 import {EndPoint} from "./point";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
+import {distance} from "../../../../modules/math/distance";
 
 export class EllipticalArc extends Ellipse {
 
@@ -88,7 +89,7 @@ function readFormatV1(id, data) {
 
   const cx = data.ep1.x + (data.ep2.x - data.ep1.x) * 0.5;
   const cy = data.ep1.y + (data.ep2.y - data.ep1.y) * 0.5;
-  const rx = math.distance(data.ep1.x, data.ep1.y, data.ep2.x, data.ep2.y) * 0.5;
+  const rx = distance(data.ep1.x, data.ep1.y, data.ep2.x, data.ep2.y) * 0.5;
   const ry = data.r;
   const rot = Math.atan2(data.ep2.y - data.ep1.y, data.ep2.x - data.ep1.x);
 

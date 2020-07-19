@@ -12,8 +12,8 @@ import {DragTool} from "./drag";
 import {isInstanceOf} from "../actions/matchUtils";
 import {Segment} from "../shapes/segment";
 import {DEFAULT_SEARCH_BUFFER} from "../viewer2d";
-import {distance} from "../../../../modules/math/commons";
 import {_negate, cross2d} from "math/vec";
+import {distance} from "../../../../modules/math/distance";
 
 export class AddDimTool extends Tool {
 

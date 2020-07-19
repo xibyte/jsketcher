@@ -1,13 +1,17 @@
-import * as math from '../../../../modules/math/commons'
+import {
+  DEG_RAD,
+  lineLineIntersection2d,
+  makeAngle0_360,
+  pointToLineSignedDistance
+} from '../../../../modules/math/commons'
 import * as vec from 'math/vec'
-import {DEG_RAD, lineLineIntersection2d, makeAngle0_360, pointToLineSignedDistance} from '../../../../modules/math/commons'
 import Vector from 'math/vector';
 import {Styles} from "../styles";
 import {TextHelper} from "./textHelper";
 import {isInstanceOf} from "../actions/matchUtils";
 import {Arc} from "./arc";
 import {SketchObject} from "./sketch-object";
-import {ConstraintAnnotation} from "../constr/constraintAnnotation";
+import {distance, distanceAB} from "../../../../modules/math/distance";
 
 const ARROW_W_PX = 15;
 const ARROW_H_PX = 4;
@@ -79,7 +83,7 @@ export class LinearDimension extends Dimension {
     let _vx = - (_by - _ay);
     let _vy = _bx - _ax;
 
-    const d = math.distance(_ax, _ay, _bx, _by);
+    const d = distance(_ax, _ay, _bx, _by);
 
     //normalize
     let _vxn = _vx / d;
@@ -116,7 +120,7 @@ export class LinearDimension extends Dimension {
     startA = this.b;
     startB = this.a;
 
-    const d = math.distanceAB(a, b);
+    const d = distanceAB(a, b);
 
     let _vx = - (b.y - a.y);
     let _vy = b.x - a.x;
@@ -548,7 +552,7 @@ export class AngleBetweenDimension extends Dimension {
     let arrRy = cy + off*(arrRyV);
 
 
-    const availableArea = math.distance(arrLx, arrLy, arrRx, arrRy);
+    const availableArea = distance(arrLx, arrLy, arrRx, arrRy);
 
     const modelTextWidth = this.textHelper.modelTextWidth;
 
@@ -696,11 +700,11 @@ export class AngleBetweenDimension extends Dimension {
 
     const isInsideSector = isPointInsideSector(aim.x, aim.y);
     if (isInsideSector) {
-      return Math.abs(math.distance(aim.x, aim.y, cx, cy) - rad);
+      return Math.abs(distance(aim.x, aim.y, cx, cy) - rad);
     } else {
       return Math.min(
-        math.distance(aim.x, aim.y, ax, ay),
-        math.distance(aim.x, aim.y, bx, by)
+        distance(aim.x, aim.y, ax, ay),
+        distance(aim.x, aim.y, bx, by)
       );
     }
   }
