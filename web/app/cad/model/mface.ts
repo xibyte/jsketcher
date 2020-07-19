@@ -1,6 +1,5 @@
 import {MObject} from './mobject';
 import Vector from 'math/vector';
-import {Basis, BasisForPlane} from 'math/l3space';
 import {MSketchObject} from './msketchObject';
 import {EMPTY_ARRAY} from 'gems/iterables';
 import CSys from 'math/csys';
@@ -8,6 +7,7 @@ import {MSketchLoop} from './mloop';
 import {ProductionInfo} from './productionInfo';
 import {MBrepShell, MShell} from "./mshell";
 import BBox from "../../math/bbox";
+import {Basis, BasisForPlane} from "math/basis";
 
 export class MFace extends MObject {
 

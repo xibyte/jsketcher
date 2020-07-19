@@ -3,13 +3,13 @@ import {Face} from './topo/face';
 import {Edge} from './topo/edge';
 import BrepCurve from './geom/curves/brepCurve';
 import {Plane} from './geom/impl/plane';
-import {BasisForPlane} from 'math/l3space';
 import * as cad_utils from '../cad/cad-utils';
 import * as math from '../../../modules/math/commons';
 import {createBoundingSurface} from './brep-builder';
 import NurbsSurface from './geom/surfaces/nurbsSurface';
 import {BrepSurface} from './geom/surfaces/brepSurface';
 import {Matrix3} from 'math/matrix';
+import {BasisForPlane} from "math/basis";
 
 function isCCW(points, normal) {
   const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();

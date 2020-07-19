@@ -1,7 +1,8 @@
-import {AXIS, IDENTITY_BASIS} from 'math/l3space'
+import {AXIS} from 'math/l3space'
 import * as tk from '../../../../ui/toolkit.js'
 import {FACE_COLOR} from '../../../cad-utils'
 import {Wizard} from './wizard-commons'
+import {IDENTITY_BASIS} from 'math/basis';
 
 export function PlaneWizard(app, initParams) {
   Wizard.call(this, app.viewer, initParams);

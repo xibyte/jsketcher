@@ -1,8 +1,9 @@
 import {Point} from '../point';
 import {Line} from './line';
-import {AXIS, BasisForPlane} from '../../../../../modules/math/l3space';
+import {AXIS} from 'math/l3space';
 import {eqTol, veq} from '../tolerance';
-import {Matrix3} from "math/matrix";
+import {Matrix3} from 'math/matrix';
+import {BasisForPlane} from 'math/basis';
 
 
 export class Plane {
