@@ -1,8 +1,10 @@
 export {dotVM} from 'numeric';
 
+export type VectorData = number[];
+export type Vec3 = [number, number, number];
+
 type UnaryFn = (number) => number;
 type BinaryFn = (n1: number, n2: number) => number;
-export type VectorData = number[];
 
 export function scalarOperand<T extends VectorData>(v: T, out: T, func: UnaryFn) {
   for (let i = 0; i < v.length; i++) {

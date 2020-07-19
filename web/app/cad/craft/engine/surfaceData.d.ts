@@ -1,4 +1,4 @@
-import {Vec3} from "math/l3space";
+import {Vec3} from "math/vec";
 
 export interface SurfaceData {
 
