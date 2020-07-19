@@ -1,7 +1,8 @@
-import {AXIS, IDENTITY_BASIS} from '../../../../../../modules/math/l3space'
+import {AXIS} from '../../../../../../modules/math/l3space'
 import * as tk from '../../../../ui/toolkit.js'
 import {FACE_COLOR} from '../../../cad-utils'
 import {Wizard} from './wizard-commons'
+import {IDENTITY_BASIS} from "../../../../../../modules/math/basis";
 
 export function BoxWizard(viewer, initParams) {
   Wizard.call(this, viewer, initParams);
