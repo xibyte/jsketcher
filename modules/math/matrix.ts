@@ -1,5 +1,5 @@
-import {AXIS, Vec3} from "math/l3space";
-import Vector from "math/vector";
+import {Vec3} from "math/l3space";
+import Vector, {AXIS} from "math/vector";
 
 export type Matrix3x4Data = [[number, number, number, number], [number, number, number, number], [number, number, number, number]];
 

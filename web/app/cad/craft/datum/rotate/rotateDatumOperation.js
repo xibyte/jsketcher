@@ -1,9 +1,9 @@
 import schema from './rotateDatumOpSchema';
 import {MDatum} from '../../../model/mdatum';
 import RotateDatumWizard from './RotateDatumWizard';
-import {ORIGIN} from '../../../../../../modules/math/l3space';
 import {DEG_RAD} from '../../../../../../modules/math/commons';
 import {Matrix3} from "../../../../../../modules/math/matrix";
+import {ORIGIN} from "../../../../../../modules/math/vector";
 
 
 function rotate(params, {cadRegistry}) {

@@ -1,6 +1,5 @@
-import {AXIS} from '../../../../modules/math/l3space'
 import {createArrow} from 'scene/objects/auxiliary';
-import Vector from 'math/vector';
+import Vector, {AXIS} from 'math/vector';
 import {OnTopOfAll} from 'scene/materialMixins';
 import {moveObject3D} from 'scene/objects/transform';
 

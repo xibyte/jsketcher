@@ -1,11 +1,11 @@
 import {DelegatingPanTool} from '../../sketcher/tools/pan';
 import {Matrix4} from 'three/src/math/Matrix4';
-import {ORIGIN} from '../../../../modules/math/l3space';
 import {CAMERA_MODE} from '../scene/viewer';
 import DPR from 'dpr';
 import {SKETCHER_MODE_HEADS_UP_ACTIONS} from "./sketcherUIContrib";
 import {createEssentialAppContext} from "../../sketcher/sketcherContext";
 import {STANDARD_MODE_HEADS_UP_TOOLBAR} from "../part/uiConfigPlugin";
+import {ORIGIN} from "../../../../modules/math/vector";
 
 export class InPlaceSketcher {
   

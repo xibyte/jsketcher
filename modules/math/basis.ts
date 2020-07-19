@@ -1,8 +1,11 @@
-import {AXIS} from "math/l3space";
-import Vector from "math/vector";
+import Vector, {AXIS} from "math/vector";
+import {AXIS_X3, AXIS_Y3, AXIS_Z3, VectorData} from "math/vec";
 
 export type Basis = [Vector, Vector, Vector];
+
 export const IDENTITY_BASIS: Basis = Object.freeze([AXIS.X, AXIS.Y, AXIS.Z]) as Basis;
+export const IDENTITY_BASIS3 = Object.freeze([AXIS_X3, AXIS_Y3, AXIS_Z3]) as VectorData[];
+
 export const STANDARD_BASES = Object.freeze({
   'XY': IDENTITY_BASIS,
   'XZ': [AXIS.X, AXIS.Z, AXIS.Y],
