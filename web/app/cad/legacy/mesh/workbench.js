@@ -6,6 +6,7 @@ import {Mesh} from '../mesh'
 import revolve from './revolve'
 import {Triangulate} from '../../tess/triangulation'
 import {distanceAB3} from "../../../../../modules/math/distance";
+import {areEqual, equal, strictEqual} from "../../../../../modules/math/equality";
 
 export function sortPolygons(polygons) {
   function Loop(polygon) {
@@ -139,7 +140,7 @@ function _pointOnLine(p, a, b) {
   var abLength = ab.length();
   var apLength = ap.length();
 
-  return apLength > 0 && apLength < abLength && math.areEqual(abLength * apLength, dp, 1E-6);
+  return apLength > 0 && apLength < abLength && areEqual(abLength * apLength, dp, 1E-6);
 }
 
 export function polygonsToSegments(polygons) {
@@ -179,8 +180,8 @@ export function reconstructSketchBounds(csg, face, strict) {
   var planePolygons = [];
   for (var pi = 0; pi < polygons.length; pi++) {
     var poly = polygons[pi];
-    if (math.equal(poly.plane.normal.dot(plane.normal), 1)) {
-      if (math.equal(plane.w, poly.plane.w) && (!strict || !!poly.shared.__tcad && poly.shared.__tcad.faceId  === face.id)) {
+    if (equal(poly.plane.normal.dot(plane.normal), 1)) {
+      if (equal(plane.w, poly.plane.w) && (!strict || !!poly.shared.__tcad && poly.shared.__tcad.faceId  === face.id)) {
         planePolygons.push(poly);
       }
       continue;
@@ -189,9 +190,9 @@ export function reconstructSketchBounds(csg, face, strict) {
     for(p = n - 1, q = 0; q < n; p = q ++) {
       var a = poly.vertices[p];
       var b = poly.vertices[q];
-      var pointAOnPlane = math.equal(plane.signedDistanceToPoint(a.pos), 0);
+      var pointAOnPlane = equal(plane.signedDistanceToPoint(a.pos), 0);
       if (!pointAOnPlane) continue;
-      var pointBOnPlane = math.equal(plane.signedDistanceToPoint(b.pos), 0);
+      var pointBOnPlane = equal(plane.signedDistanceToPoint(b.pos), 0);
       if (pointBOnPlane) {
         outerEdges.push([a.pos, b.pos, poly]);
       }
@@ -206,12 +207,12 @@ export function reconstructSketchBounds(csg, face, strict) {
 }
 
 function pickUpCraftInfo(outline, outerEdges) {
-  var eq = math.strictEqual;
+  var eq = strictEqual;
   for (var psi1 = 0; psi1 < outline.length; psi1++) {
     var s1 = outline[psi1];
     for (var psi2 = 0; psi2 < outerEdges.length; psi2++) {
       var s2 = outerEdges[psi2];
-      if (math.equal(Math.abs(s1[0].minus(s1[1]).unit().dot(s2[0].minus(s2[1]).unit())), 1) &&
+      if (equal(Math.abs(s1[0].minus(s1[1]).unit().dot(s2[0].minus(s2[1]).unit())), 1) &&
           (eq(s1[0], s2[0]) || eq(s1[1], s2[1]) || eq(s1[0], s2[1]) || eq(s1[1], s2[0]) ||
           _pointOnLine(s1[0], s2[0], s2[1]) || _pointOnLine(s1[1], s2[0], s2[1]))) {
           s1[2] = s2[2];
@@ -221,13 +222,13 @@ function pickUpCraftInfo(outline, outerEdges) {
 }
 
 function getOutlineByCollision(segments, outerEdges) {
-  var eq = math.strictEqual;
+  var eq = strictEqual;
   var outline = [];
   for (var psi1 = 0; psi1 < segments.length; psi1++) {
     var s1 = segments[psi1];
     for (var psi2 = 0; psi2 < outerEdges.length; psi2++) {
       var s2 = outerEdges[psi2];
-      if (math.equal(Math.abs(s1[0].minus(s1[1]).unit().dot(s2[0].minus(s2[1]).unit())), 1) &&
+      if (equal(Math.abs(s1[0].minus(s1[1]).unit().dot(s2[0].minus(s2[1]).unit())), 1) &&
         (eq(s1[0], s2[0]) || eq(s1[1], s2[1]) || eq(s1[0], s2[1]) || eq(s1[1], s2[0]) ||
         _pointOnLine(s1[0], s2[0], s2[1]) || _pointOnLine(s1[1], s2[0], s2[1]))) {
         outline.push(s1);
@@ -249,7 +250,7 @@ export function findOutline (planePolygons) {
 
 function removeSharedEdges(segments) {
   segments = segments.slice();
-  var eq = math.strictEqual;
+  var eq = strictEqual;
   for (var psi1 = 0; psi1 < segments.length; psi1++) {
     var s1 = segments[psi1];
     if (s1 == null) continue;
@@ -311,7 +312,7 @@ function removeTJoints(segments) {
   }
   
   var points = pointIndex.getKeys();
-  var eq = math.strictEqual;
+  var eq = strictEqual;
   for (var pi1 = 0; pi1 < points.length; ++pi1) {
     var point = points[pi1];
     var best = null, bestFactor;
@@ -341,7 +342,7 @@ function deleteRedundantPoints(path) {
     var a = path[pi];
     var b = path[bIdx];
     var c = path[(pi + 2) % pathLength];
-    var eq = math.areEqual;
+    var eq = areEqual;
     if (!skipMode) cleanedPath.push(a);
     skipMode = eq(a.minus(b).unit().dot(b.minus(c).unit()), 1, 1E-9);
   }
@@ -350,7 +351,7 @@ function deleteRedundantPoints(path) {
 
 export function segmentsToPaths(segments) {
 
-  var veq = math.strictEqual;
+  var veq = strictEqual;
   var paths = [];
   var index = HashTable.forVector3d();
   var csgIndex = HashTable.forEdge();
@@ -469,7 +470,7 @@ function splitTwoSegments(a, b) {
     // lines are not coplanar
     return null;
   }
-  var veq = math.strictEqual;
+  var veq = strictEqual;
   if (veq(a[0], b[0]) || veq(a[0], b[1]) || veq(a[1], b[0]) || veq(a[1], b[1])) {
     return null;
   }
@@ -494,7 +495,7 @@ function splitTwoSegments(a, b) {
 }
 
 function attract(vectors, precision) {
-  var eq = math.areEqual();
+  var eq = areEqual();
   var dist = distanceAB3;
   vectors = vectors.slice();
   for (var i = 0; i < vectors.length; i++) {

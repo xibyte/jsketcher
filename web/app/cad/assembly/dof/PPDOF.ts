@@ -3,11 +3,12 @@ import {eqTol} from "../../../brep/geom/tolerance";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {Plane} from './../../../brep/geom/impl/plane';
 import {ANGULAR_ALLOWANCE, AssemblyDOF, ModificationResponse} from "./assemblyDOF";
-import {areEqual, clamp, DEG_RAD} from "math/commons";
+import {clamp, DEG_RAD} from "math/commons";
 import {ConflictDOF} from "./conflictDOF";
 import {PPPPDOF} from "./PPPPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 import {Matrix3} from "math/matrix";
+import {areEqual} from "math/equality";
 
 export class PPDOF implements AssemblyDOF {
 
