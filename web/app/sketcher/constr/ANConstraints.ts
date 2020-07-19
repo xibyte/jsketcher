@@ -1,5 +1,5 @@
 import {Param} from '../shapes/param';
-import {DEG_RAD, distanceAB, makeAngle0_360} from "../../math/math";
+import {DEG_RAD, distanceAB, makeAngle0_360} from "math/commons";
 import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polynomial";
 
 import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from "../../brep/geom/curves/bezierCubic";

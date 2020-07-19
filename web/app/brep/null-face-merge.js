@@ -1,4 +1,4 @@
-import * as math from '../math/math'
+import * as math from '../../../modules/math/commons'
 import {Edge} from './topo/edge'
 
 export default function({curve, start}) {

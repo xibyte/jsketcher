@@ -1,4 +1,4 @@
-import {areEqual} from "../../math/math";
+import {areEqual} from "../../../../modules/math/commons";
 
 export default function(outerLoop, innerLoops, tol) {
 

@@ -1,4 +1,4 @@
-import {areEqual, areNegVectorsEqual, areVectorsEqual, areVectorsEqual3, distanceSquared3} from '../../math/math';
+import {areEqual, areNegVectorsEqual, areVectorsEqual, areVectorsEqual3, distanceSquared3} from 'math/commons';
 
 export const TOLERANCE = 1e-3;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;

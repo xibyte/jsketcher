@@ -1,5 +1,5 @@
 import pip from "./pip";
-import {isCCW} from "../../math/math";
+import {isCCW} from "../../../../modules/math/commons";
 
 export default function(loops) {
   const loops = loops.map(loop => new NestedLoop(loop));

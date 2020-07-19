@@ -2,7 +2,7 @@ import {Arc} from '../shapes/arc'
 import {EndPoint} from '../shapes/point'
 import {Tool} from './tool'
 import Vector from 'math/vector';
-import * as math from '../../math/math';
+import * as math from '../../../../modules/math/commons';
 
 export class AddArcTool extends Tool {
 

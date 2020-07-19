@@ -1,6 +1,6 @@
 import Vector from 'math/vector';
 import BBox from '../math/bbox'
-import * as math from '../math/math'
+import * as math from '../../../modules/math/commons'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
 import {Matrix3} from 'math/matrix';
 

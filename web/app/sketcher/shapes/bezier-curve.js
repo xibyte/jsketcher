@@ -4,7 +4,7 @@ import {LUT} from '../../math/bezier-cubic'
 import {ConvexHull2D} from '../../math/convex-hull'
 
 import * as draw_utils from '../shapes/draw-utils'
-import * as math from '../../math/math';
+import * as math from '../../../../modules/math/commons';
 import {EndPoint} from "./point";
 
 

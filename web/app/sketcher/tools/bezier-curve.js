@@ -3,7 +3,7 @@ import {EndPoint} from '../shapes/point'
 import {BezierCurve} from '../shapes/bezier-curve'
 import {Constraints} from '../parametric'
 import Vector from 'math/vector';
-import * as math from '../../math/math'
+import * as math from '../../../../modules/math/commons'
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 
 export class BezierCurveTool extends Tool {

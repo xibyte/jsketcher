@@ -1,5 +1,5 @@
 import Vector from 'math/vector';
-import * as math from '../../../math/math'
+import * as math from '../../../../../modules/math/commons'
 import {createShared} from '../../cad-utils'
 import {TriangulatePolygons} from '../../tess/triangulation';
 import {Matrix3} from "../../../../../modules/math/matrix";

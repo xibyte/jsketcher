@@ -1,5 +1,5 @@
 import {fillArray} from '../utils/utils'
-import * as math from './math'
+import * as math from '../../../modules/math/commons'
 
 /** @constructor */
 function QR(matrix) {

@@ -1,4 +1,4 @@
-import * as math from '../../math/math';
+import * as math from '../../../../modules/math/commons';
 import {SketchObject} from './sketch-object'
 import {Param} from "./param";
 import {EndPoint} from "./point";

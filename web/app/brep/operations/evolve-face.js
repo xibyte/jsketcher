@@ -1,7 +1,7 @@
 import {Face} from '../topo/face';
 import {Vertex} from '../topo/vertex';
 import Vector from 'math/vector';
-import {isCCW} from '../../math/math';
+import {isCCW} from '../../../../modules/math/commons';
 import PIP from '../../cad/tess/pip';
 
 export function evolveFace(originFace, loops) {

@@ -4,7 +4,7 @@ import {Loop} from '../topo/loop';
 import {Shell} from '../topo/shell';
 import {Vertex} from '../topo/vertex';
 import {evolveFace} from './evolve-face'
-import * as math from '../../math/math';
+import * as math from '../../../../modules/math/commons';
 import {eqTol, TOLERANCE, ueq, veq, veqNeg} from '../geom/tolerance';
 import CadError from "../../utils/errors";
 import {createBoundingSurface} from "../brep-builder";

@@ -1,7 +1,7 @@
 import Vector from 'math/vector';
 import {Styles} from '../styles'
 import * as fetch from '../fetchers'
-import * as math from '../../math/math'
+import * as math from '../../../../modules/math/commons'
 import {EndPoint} from '../shapes/point'
 import {Arc} from '../shapes/arc'
 import {Constraints} from '../parametric'
