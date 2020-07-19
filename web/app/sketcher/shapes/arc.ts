@@ -1,10 +1,11 @@
 import * as math from 'math/commons';
+import {makeAngle0_360} from 'math/commons';
 import Vector from 'math/vector';
 import {SketchObject, SketchObjectSerializationData} from './sketch-object';
 import {Param} from "./param";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
-import {makeAngle0_360} from "math/commons";
 import {EndPoint, SketchPointSerializationData} from "./point";
+import {distance} from "math/distance";
 
 export class Arc extends SketchObject {
 
@@ -66,11 +67,11 @@ export class Arc extends SketchObject {
   }
   
   distanceA() {
-    return math.distance(this.a.x, this.a.y, this.c.x, this.c.y);
+    return distance(this.a.x, this.a.y, this.c.x, this.c.y);
   }
   
   distanceB() {
-    return math.distance(this.b.x, this.b.y, this.c.x, this.c.y);
+    return distance(this.b.x, this.b.y, this.c.x, this.c.y);
   }
 
   calcStartAng() {
@@ -145,11 +146,11 @@ export class Arc extends SketchObject {
   
     var isInsideSector = this.isPointInsideSector(aim.x, aim.y);
     if (isInsideSector) {
-      return Math.abs(math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
+      return Math.abs(distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
     } else {
       return Math.min(
-        math.distance(aim.x, aim.y, this.a.x, this.a.y),
-        math.distance(aim.x, aim.y, this.b.x, this.b.y)
+        distance(aim.x, aim.y, this.a.x, this.a.y),
+        distance(aim.x, aim.y, this.b.x, this.b.y)
       );
     }
   }

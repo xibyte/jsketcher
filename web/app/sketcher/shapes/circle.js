@@ -1,7 +1,7 @@
-import * as math from '../../../../modules/math/commons';
 import {SketchObject} from './sketch-object'
 import {Param} from "./param";
 import {EndPoint} from "./point";
+import {distance} from "../../../../modules/math/distance";
 
 export const MIN_RADIUS = 100;
 
@@ -39,7 +39,7 @@ export class Circle extends SketchObject {
   }
   
   normalDistance(aim) {
-    return Math.abs(math.distance(aim.x, aim.y, this.c.x, this.c.y) - this.r.get());
+    return Math.abs(distance(aim.x, aim.y, this.c.x, this.c.y) - this.r.get());
   }
 
   copy() {

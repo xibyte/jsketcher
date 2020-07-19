@@ -1,7 +1,6 @@
 import {Tool} from './tool'
-import * as math from '../../../../modules/math/commons';
-import {EndPoint} from '../shapes/point'
 import {Circle} from '../shapes/circle'
+import {distance} from "../../../../modules/math/distance";
 
 export class EditCircleTool extends Tool {
   constructor(viewer) {
@@ -20,7 +19,7 @@ export class EditCircleTool extends Tool {
   mousemove(e) {
     var p = this.viewer.screenToModel(e);
     if (this.circle != null) {
-      var r = math.distance(p.x, p.y, this.circle.c.x, this.circle.c.y);
+      var r = distance(p.x, p.y, this.circle.c.x, this.circle.c.y);
       this.circle.r.set(r);
       if (!Tool.dumbMode(e)) {
         this.solveRequest(true);

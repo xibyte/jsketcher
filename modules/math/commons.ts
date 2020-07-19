@@ -1,52 +1,14 @@
 import Vector from 'math/vector';
 import BBox from '../../web/app/math/bbox'
 import * as vec from 'math/vec';
-import {perp2d} from "math/vec";
+import {perp2d} from 'math/vec';
 import {eqTol} from "../../web/app/brep/geom/tolerance";
 import {IDENTITY_BASIS3} from "math/basis";
+import {distance, distanceSquared3, distanceSquaredAB3, distanceSquaredANegB3} from "math/distance";
 
 export const TOLERANCE = 1E-6;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 
-export function distanceAB(a, b) {
-  return distance(a.x, a.y, b.x, b.y);
-}
-
-export function distance(x1, y1, x2, y2) {
-  var dx = x1 - x2;
-  var dy = y1 - y2;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-export function distanceAB3(a, b) {
-  return distance3(a.x, a.y, a.z, b.x, b.y, b.z);
-}
-
-export function distance3(x1, y1, z1, x2, y2, z2) {
-  return Math.sqrt(distanceSquared3(x1, y1, z1, x2, y2, z2));
-}
-
-export function distanceSquaredAB3(a, b) {
-  return distanceSquared3(a.x, a.y, a.z, b.x, b.y, b.z);
-}
-
-export function distanceSquaredANegB3(a, b) {
-  return distanceSquared3(a.x, a.y, a.z, -b.x, -b.y, -b.z);
-}
-
-
-export function distanceSquared3(x1, y1, z1, x2, y2, z2) {
-  var dx = x1 - x2;
-  var dy = y1 - y2;
-  var dz = z1 - z2;
-  return dx * dx + dy * dy + dz * dz;
-}
-
-export function distanceSquared(x1, y1, x2, y2) {
-  const dx = x1 - x2;
-  const dy = y1 - y2;
-  return dx * dx + dy * dy;
-}
 
 export function circleFromPoints(p1, p2, p3) {
   var center = new Vector();

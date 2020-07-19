@@ -1,8 +1,7 @@
 import {SketchObject} from './sketch-object'
-
-import * as math from '../../../../modules/math/commons';
 import {Param} from "./param";
 import {EndPoint} from "./point";
+import {distance} from "../../../../modules/math/distance";
 
 export class Ellipse extends SketchObject {
 
@@ -74,7 +73,7 @@ export class Ellipse extends SketchObject {
     let x = point.x - this.centerX;
     let y = point.y - this.centerY;
     const angle = Math.atan2(y, x) - this.rotation;
-    const radius = math.distance(0, 0, x, y);
+    const radius = distance(0, 0, x, y);
     x = radius * Math.cos(angle);
     y = radius * Math.sin(angle);
     return {x, y, angle, radius};
@@ -128,7 +127,7 @@ function readFormatV1(id, data) {
 
   const cx = data.ep1.x + (data.ep2.x - data.ep1.x) * 0.5;
   const cy = data.ep1.y + (data.ep2.y - data.ep1.y) * 0.5;
-  const rx = math.distance(data.ep1.x, data.ep1.y, data.ep2.x, data.ep2.y) * 0.5;
+  const rx = distance(data.ep1.x, data.ep1.y, data.ep2.x, data.ep2.y) * 0.5;
   const ry = data.r;
   const rot = Math.atan2(data.ep2.y - data.ep1.y, data.ep2.x - data.ep1.x);
 

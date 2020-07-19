@@ -3,8 +3,8 @@ import {
   AQUA, BLACK, BLUE, cycleColor, DETECTED_EDGE, DISCARDED_EDGE, GREEN, RED, SALMON, WHITE,
   YELLOW
 } from "./colors";
-import {distanceAB3} from "../../../../../modules/math/commons";
 import Section from "./section";
+import {distanceAB3} from "../../../../../modules/math/distance";
 
 export function getFacesViewObjects(group3d, category, context, out, faces) {
   forEach(faces, getFaceViewObjects.bind(null, group3d, category, context, out));

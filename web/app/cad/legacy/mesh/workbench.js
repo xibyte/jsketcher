@@ -5,6 +5,7 @@ import {HashTable} from '../../../utils/hashmap'
 import {Mesh} from '../mesh'
 import revolve from './revolve'
 import {Triangulate} from '../../tess/triangulation'
+import {distanceAB3} from "../../../../../modules/math/distance";
 
 export function sortPolygons(polygons) {
   function Loop(polygon) {
@@ -494,7 +495,7 @@ function splitTwoSegments(a, b) {
 
 function attract(vectors, precision) {
   var eq = math.areEqual();
-  var dist = math.distanceAB3;
+  var dist = distanceAB3;
   vectors = vectors.slice();
   for (var i = 0; i < vectors.length; i++) {
     var v1 = vectors[i];
