@@ -66,24 +66,6 @@ export function strictEqual2D(a, b) {
   return a.x == b.x && a.y == b.y;
 }
 
-export function _vec(size) {
-  var out = [];
-  out.length = size;
-  for (var i = 0; i < size; ++i) {
-    out[i] = 0;
-  }
-  return out;
-}
-
-export function _matrix(m, n) {
-  var out = [];
-  out.length = m;
-  for (var i = 0; i < m; ++i) {
-    out[i] = _vec(n);
-  }
-  return out;
-}
-
 export function rotate(px, py, angle) {
   return rotateInPlace(px, py, angle, new Vector());
 }

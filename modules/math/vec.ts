@@ -202,6 +202,17 @@ export function fromXYZ({x, y, z}: {
   return [x, y, z];
 }
 
+export const _vec = create;
+
+export function _matrix(m, n) {
+  const out = [];
+  out.length = m;
+  for (let i = 0; i < m; ++i) {
+    out[i] = _vec(n);
+  }
+  return out;
+}
+
 export const AXIS_X3 = [1,0,0];
 export const AXIS_Y3 = [0,1,0];
 export const AXIS_Z3 = [0,0,1];

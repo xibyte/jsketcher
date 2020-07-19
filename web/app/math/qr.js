@@ -1,9 +1,9 @@
 import {fillArray} from '../utils/utils'
-import * as math from '../../../modules/math/commons'
+import {_vec} from "../../../modules/math/vec";
 
 /** @constructor */
 function QR(matrix) {
-  var vec = math._vec;
+  var vec = _vec;
   this.matrix = matrix;
   var nR = this.matrix.length;
   var nC = nR == 0 ? 0 : this.matrix[0].length;
@@ -108,7 +108,7 @@ QR.prototype.solve = function(qy) {
   var nR = this.matrix.length;
   var nC = this.matrix[0].length;
 
-  var vec = math._vec;
+  var vec = _vec;
   
   var diag = vec(nC);
   var lmDiag = vec(nC);
