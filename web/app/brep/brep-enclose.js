@@ -7,12 +7,12 @@ import * as cad_utils from '../cad/cad-utils';
 import {createBoundingSurface} from './brep-builder';
 import NurbsSurface from './geom/surfaces/nurbsSurface';
 import {BrepSurface} from './geom/surfaces/brepSurface';
-import {Matrix3} from 'math/matrix';
+import {Matrix3x4} from 'math/matrix';
 import {BasisForPlane} from "math/basis";
 import {isCCW as isCCWtest} from "math/euclidean";
 
 function isCCW(points, normal) {
-  const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();
+  const tr2d = new Matrix3x4().setBasis(BasisForPlane(normal)).invert();
   const points2d = points.map(p => tr2d.apply(p));
   return isCCWtest(points2d);
 }

@@ -1,5 +1,5 @@
 import Vector from "math/vector";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 export class Location {
 
@@ -9,7 +9,7 @@ export class Location {
 
   translation: Vector = new Vector();
 
-  __mx = new Matrix3();
+  __mx = new Matrix3x4();
 
   toTransformationMatrix() {
     this.__mx.rotateWithSphericalAxis(

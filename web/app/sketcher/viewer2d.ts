@@ -19,7 +19,7 @@ import {Dimension} from "./shapes/dim";
 import {GroundObjectsGeneratorSchema} from "./generators/groundObjectsGenerator";
 import {SketchGenerator} from "./generators/sketchGenerator";
 import {Generator} from "./id-generator";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 export class Viewer {
 
@@ -148,7 +148,7 @@ export class Viewer {
     this.transformation = [a, b, c, d, e, f];
     this.scale = zoom;
     if (this.screenToModelMatrix === null) {
-      this.screenToModelMatrix = new Matrix3();
+      this.screenToModelMatrix = new Matrix3x4();
     }
     this.screenToModelMatrix.set34(
       a, c, 0, e,

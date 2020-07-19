@@ -3,7 +3,7 @@ import * as workbench from '../workbench'
 import * as cad_utils from '../../../cad-utils'
 import Vector, {ORIGIN} from 'math/vector';
 import {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL} from './wizard-commons'
-import {Matrix3} from 'math/matrix';
+import {Matrix3x4} from 'math/matrix';
 
 export function ExtrudeWizard(app, face, invert, initParams) {
   this.invert = invert; // title depends on invert flag
@@ -36,9 +36,9 @@ ExtrudeWizard.prototype.update = function(depth, scale, deflection, angle) {
   if (deflection != 0) {
     target = normal.copy();
     if (depth < 0) target._negate();
-    target = Matrix3.rotateMatrix(deflection * Math.PI / 180, basis[0], ORIGIN)._apply(target);
+    target = Matrix3x4.rotateMatrix(deflection * Math.PI / 180, basis[0], ORIGIN)._apply(target);
     if (angle != 0) {
-      target = Matrix3.rotateMatrix(angle * Math.PI / 180, basis[2], ORIGIN)._apply(target);
+      target = Matrix3x4.rotateMatrix(angle * Math.PI / 180, basis[2], ORIGIN)._apply(target);
     }
     target._multiply(Math.abs(depth));
   } else {

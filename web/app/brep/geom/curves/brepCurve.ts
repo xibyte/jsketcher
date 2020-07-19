@@ -7,7 +7,7 @@ import Point from 'math/vector';
 import Vector from 'math/vector';
 import cache from "../impl/cache";
 import {Tessellation1D} from "../../../cad/craft/engine/tessellation";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 import {areEqual} from "math/equality";
 import {Vec3} from "math/vec";
 
@@ -33,11 +33,11 @@ export default class BrepCurve {
   }
   
   translate(vector: Vector): BrepCurve {
-    const tr = new Matrix3().translate(vector.x, vector.y, vector.z);
+    const tr = new Matrix3x4().translate(vector.x, vector.y, vector.z);
     return this.transform(tr);
   }
 
-  transform(tr: Matrix3): BrepCurve {
+  transform(tr: Matrix3x4): BrepCurve {
     return new BrepCurve(this.impl.transform(tr.toArray()), this.uMin, this.uMax);
   }
 

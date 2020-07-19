@@ -3,7 +3,7 @@ import {Plane} from './geom/impl/plane'
 import {createPrism, enclose} from './brep-enclose'
 import {Circle} from '../cad/sketch/sketchModel'
 import CSys from 'math/csys';
-import {Matrix3} from 'math/matrix';
+import {Matrix3x4} from 'math/matrix';
 import {AXIS} from "../../../modules/math/vector";
 
 export function box(w, h, d, tr) {
@@ -34,4 +34,4 @@ export function cylinder(r, h, tr) {
 }
 
 
-const IDENTITY = new Matrix3();
+const IDENTITY = new Matrix3x4();

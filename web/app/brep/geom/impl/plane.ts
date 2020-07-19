@@ -1,7 +1,7 @@
 import {Point} from '../point';
 import {Line} from './line';
 import {eqTol, veq} from '../tolerance';
-import {Matrix3} from 'math/matrix';
+import {Matrix3x4} from 'math/matrix';
 import {BasisForPlane} from 'math/basis';
 import {AXIS} from "math/vector";
 
@@ -55,8 +55,8 @@ export class Plane {
 
   get3DTransformation() {
     if (!this.#_3dTr) {
-      const basis = new Matrix3().setBasis(this.basis());
-      const translate = new Matrix3();
+      const basis = new Matrix3x4().setBasis(this.basis());
+      const translate = new Matrix3x4();
       translate.tz = this.w;
       this.#_3dTr = basis.combine(translate);
 //      this.#_3dTr.tz = this.w;

@@ -1,6 +1,6 @@
 import * as test from '../../test'
 import {deepMerge} from '../coreTests/utils/deep-merge'
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 const OPERANDS_MODE = false;
 
@@ -9,8 +9,8 @@ const CASE = {
   testSmokedSalmon: function (env) {
     test.modeller(env.test((win, app) => {
       const box1 = app.TPI.brep.primitives.box(500, 500, 500);
-      const box2 = app.TPI.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
-      const box3 = app.TPI.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
+      const box2 = app.TPI.brep.primitives.box(250, 250, 750, new Matrix3x4().translate(25, 25, 0));
+      const box3 = app.TPI.brep.primitives.box(150, 600, 350, new Matrix3x4().translate(25, 25, -250));
       let result = app.TPI.brep.bool.subtract(box1, box2);
       result = app.TPI.brep.bool.subtract(result, box3);
       app.TPI.addShellOnScene(result);
@@ -24,7 +24,7 @@ const CASE = {
   testFacesAreInSamePlane_BUG_47: function(env) {
     test.modeller(env.test((win, app) => {
 
-      const mat = new Matrix3();
+      const mat = new Matrix3x4();
       const m = mat.translate(0, 0, 10);
       
       const box1 = app.TPI.brep.primitives.box(100, 100, 100, undefined);

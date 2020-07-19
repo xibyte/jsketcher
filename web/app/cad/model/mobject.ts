@@ -1,4 +1,4 @@
-import {IDENTITY_MATRIX, Matrix3} from "math/matrix";
+import {IDENTITY_MATRIX, Matrix3x4} from "math/matrix";
 
 export abstract class MObject {
 

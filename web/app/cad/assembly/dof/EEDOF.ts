@@ -6,7 +6,7 @@ import {ConflictDOF} from "./conflictDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 import {PPEEDOF} from "./PPEEDOF";
 import {EEEEDOF} from "./EEEEDOF";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 import {areEqual} from "math/equality";
 import {lineLineIntersection} from "math/euclidean";
 
@@ -24,11 +24,11 @@ export class EEDOF implements AssemblyDOF {
     this.dir = dir;
   }
 
-  rotate(axis: Vector, angle: number, location: Matrix3, strict: boolean): ModificationResponse {
+  rotate(axis: Vector, angle: number, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 
-  translate(dir: Vector, location: Matrix3, strict: boolean): ModificationResponse {
+  translate(dir: Vector, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 
@@ -55,9 +55,9 @@ export class EEDOF implements AssemblyDOF {
 
     const location = constr.movingPart.root.location;
 
-    const rot = new Matrix3();
+    const rot = new Matrix3x4();
 
-    Matrix3.rotationFromVectorToVector(vecA, vecB, this.origin, rot);
+    Matrix3x4.rotationFromVectorToVector(vecA, vecB, this.origin, rot);
 
     rot.combine(location, location);
 
@@ -83,9 +83,9 @@ export class EEDOF implements AssemblyDOF {
 
     const location = constr.movingPart.root.location;
 
-    const rot = new Matrix3();
+    const rot = new Matrix3x4();
 
-    Matrix3.rotationFromVectorToVector(vecA, vecB, this.origin, rot);
+    Matrix3x4.rotationFromVectorToVector(vecA, vecB, this.origin, rot);
 
     rot.combine(location, location);
 

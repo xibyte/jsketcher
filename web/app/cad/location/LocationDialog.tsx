@@ -10,7 +10,7 @@ import {never} from "lstream";
 import NumberControl from "ui/components/controls/NumberControl";
 
 import {LocationControl} from "./LocationControl";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 export function LocationDialog() {
 
@@ -19,7 +19,7 @@ export function LocationDialog() {
   const [req, setReq] = useStreamWithUpdater(ctx => ctx.locationService.editLocationRequest$);
 
 
-  const [location, setLocation] = useStreamWithUpdater(() => req ? req.shell.location$ : never<Matrix3>());
+  const [location, setLocation] = useStreamWithUpdater(() => req ? req.shell.location$ : never<Matrix3x4>());
 
   useEffect(() => {
     if (!req) {

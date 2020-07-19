@@ -4,7 +4,7 @@ import { AssemblyConstraint } from '../assemblyConstraint';
 import { FaceTouchAlignConstraint } from "../constraints/faceTouchAlign";
 import { AssemblyDOF, ModificationResponse } from "./assemblyDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 export class ConflictDOF implements AssemblyDOF {
 
@@ -18,11 +18,11 @@ export class ConflictDOF implements AssemblyDOF {
     this.infoMessage = infoMessage;
   }
 
-  rotate(axis: Vector, angle: number, location: Matrix3, strict: boolean): ModificationResponse {
+  rotate(axis: Vector, angle: number, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 
-  translate(dir: Vector, location: Matrix3, strict: boolean): ModificationResponse {
+  translate(dir: Vector, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 

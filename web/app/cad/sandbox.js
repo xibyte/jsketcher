@@ -5,7 +5,7 @@ import NurbsCurve from "../brep/geom/curves/nurbsCurve";
 import {surfaceIntersect} from '../brep/geom/intersection/surfaceSurface';
 import NurbsSurface from '../brep/geom/surfaces/nurbsSurface';
 import {createOctreeFromSurface, traverseOctree} from "../../../modules/voxels/octree";
-import {Matrix3} from 'math/matrix';
+import {Matrix3x4} from 'math/matrix';
 import {AXIS, ORIGIN} from "../../../modules/math/vector";
 
 export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, exposure, exposure: {addShellOnScene} }}) {
@@ -47,7 +47,7 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
     //   })();
 
 
-    const cylinder2 = BREPPrimitives.cylinder(200, 500, Matrix3.rotateMatrix(90, AXIS.Y, ORIGIN));
+    const cylinder2 = BREPPrimitives.cylinder(200, 500, Matrix3x4.rotateMatrix(90, AXIS.Y, ORIGIN));
 
     addShellOnScene(cylinder1);
     addShellOnScene(cylinder2);
@@ -91,9 +91,9 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
 
   function test3() {
     const box1 = exposure.brep.primitives.box(500, 500, 500);
-    const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3().translate(25, 25, 0));
+    const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3x4().translate(25, 25, 0));
 
-    const box3 = exposure.brep.primitives.box(150, 600, 350, new Matrix3().translate(25, 25, -250));
+    const box3 = exposure.brep.primitives.box(150, 600, 350, new Matrix3x4().translate(25, 25, -250));
     // let result = exposure.brep.bool.union(box1, box2);
     let result = exposure.brep.bool.subtract(box1, box2);
     result = exposure.brep.bool.subtract(result, box3);
@@ -113,7 +113,7 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
       [ [0, -50, 12], [10, -50, 0], 	[20, -50, 20], 	[30, -50, 0] , [50, -50, -10], [50, -50, -15]     ]  ];
 
     let  srf = verb.geom.NurbsSurface.byKnotsControlPointsWeights( degree, degree, knots, knots, pts );
-    srf = srf.transform(new Matrix3().scale(10,10,10).toArray());
+    srf = srf.transform(new Matrix3x4().scale(10,10,10).toArray());
     srf = new NurbsSurface(srf);
     // __DEBUG__.AddNurbs(srf);
 
@@ -186,10 +186,10 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
       [ [0, -50, 12], [10, -50, 0], 	[20, -50, 20], 	[30, -50, 0] , [50, -50, -10], [50, -50, -15]     ]  ];
 
     let  srfA = verb.geom.NurbsSurface.byKnotsControlPointsWeights( degree, degree, knots, knots, pts );
-    srfA = srfA.transform(new Matrix3().scale(10,10,10).toArray());
+    srfA = srfA.transform(new Matrix3x4().scale(10,10,10).toArray());
     let srfB = srfA
-      .transform(new Matrix3().translate(250,250,250).toArray())
-      .transform(Matrix3.rotateMatrix(Math.PI/2, AXIS.X, ORIGIN).toArray());
+      .transform(new Matrix3x4().translate(250,250,250).toArray())
+      .transform(Matrix3x4.rotateMatrix(Math.PI/2, AXIS.X, ORIGIN).toArray());
     srfA = new NurbsSurface(srfA);
     srfB = new NurbsSurface(srfB);
 
@@ -247,7 +247,7 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
       [ [0, -50, 12], [10, -50, 0], 	[20, -50, 20], 	[30, -50, 0] , [50, -50, -10], [50, -50, -15]     ]  ];
 
     let  srf = verb.geom.NurbsSurface.byKnotsControlPointsWeights( degree, degree, knots, knots, pts );
-    srf = srf.transform(new Matrix3().scale(10,10,10).toArray());
+    srf = srf.transform(new Matrix3x4().scale(10,10,10).toArray());
     srf = new NurbsSurface(srf);
     __DEBUG__.AddParametricSurface(srf);
 

@@ -1,7 +1,7 @@
 import Vector from 'math/vector';
 import BBox from '../math/bbox'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
-import {Matrix3} from 'math/matrix';
+import {Matrix3x4} from 'math/matrix';
 import {equal} from 'math/equality';
 import {area, isCCW, isPointInsidePolygon} from "math/euclidean";
 
@@ -169,7 +169,7 @@ export function createPlane(basis, depth) {
   material.opacity = 0.5;
   material.side = THREE.DoubleSide;
 
-  var tr = new Matrix3().setBasis(basis);
+  var tr = new Matrix3x4().setBasis(basis);
   var currentBounds = new BBox();
   var points = boundingPolygon.map(function(p) { p.z = depth; return tr._apply(p); });
   var polygon = new CSG.Polygon(points.map(function(p){return new CSG.Vertex(csgVec(p))}), shared);
@@ -210,7 +210,7 @@ export function createPlane(basis, depth) {
 }
 
 export function fixCCW(path, normal) {
-  var _2DTransformation = new Matrix3().setBasis(someBasis(path, normal)).invert();
+  var _2DTransformation = new Matrix3x4().setBasis(someBasis(path, normal)).invert();
   var path2D = [];
   for (var i = 0; i < path.length; ++i) {
     path2D[i] = _2DTransformation.apply(path[i]);
@@ -270,7 +270,7 @@ export function calculateExtrudedLid(sourcePolygon, normal, direction, expansion
     var source2d = [];
     work = [];
 
-    var _3dTr = new Matrix3().setBasis(someBasis2(new CSG.Vector3D(normal))); // use passed basis
+    var _3dTr = new Matrix3x4().setBasis(someBasis2(new CSG.Vector3D(normal))); // use passed basis
     var _2dTr = _3dTr.invert();
     var sourceBBox = new BBox();
     var workBBox = new BBox();
@@ -358,7 +358,7 @@ export function extrude(source, sourceNormal, target, expansionFactor) {
 }
 
 export function triangulate(path, normal) {
-  var _3dTransformation = new Matrix3().setBasis(someBasis2(normal));
+  var _3dTransformation = new Matrix3x4().setBasis(someBasis2(normal));
   var _2dTransformation = _3dTransformation.invert();
   var i;
   var shell = [];
@@ -439,7 +439,7 @@ Polygon.prototype.shift = function(target) {
 };
 
 Polygon.prototype.get2DTransformation = function() {
-  var _3dTransformation = new Matrix3().setBasis(someBasis(this.shell, this.normal));
+  var _3dTransformation = new Matrix3x4().setBasis(someBasis(this.shell, this.normal));
   var _2dTransformation = _3dTransformation.invert();
   return _2dTransformation;
 };
