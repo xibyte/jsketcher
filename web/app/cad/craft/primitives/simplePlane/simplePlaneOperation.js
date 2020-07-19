@@ -1,11 +1,11 @@
 import {createMeshGeometry} from 'scene/geoms';
-import {STANDARD_BASES} from '../../../../../../modules/math/l3space';
 import {Plane} from '../../../../brep/geom/impl/plane';
 import Vector from 'math/vector';
 import PlaneWizard from './SimplePlaneWizard';
 import {MOpenFaceShell} from '../../../model/mopenFace';
 import schema from './simplePlaneOpSchema';
 import {PlaneSurfacePrototype} from '../../../model/surfacePrototype';
+import {STANDARD_BASES} from 'math/basis';
 
 function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
   let face = null;

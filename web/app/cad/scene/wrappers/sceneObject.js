@@ -1,9 +1,7 @@
 import Vector from 'math/vector';
-import {BasisForPlane} from '../../../../../modules/math/l3space'
 import DPR from 'dpr'
-import {setAttribute} from "scene/objectData";
-import {genSolidId} from "../../craft/cadRegistryPlugin";
-import {getAttribute} from '../../../../../modules/scene/objectData';
+import {getAttribute, setAttribute} from "scene/objectData";
+import {BasisForPlane} from 'math/basis';
 
 //todo: rename to shell
 export class SceneSolid {
