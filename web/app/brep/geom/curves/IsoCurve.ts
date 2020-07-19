@@ -2,7 +2,7 @@ import BoundedCurve from './boundedCurve';
 import InvertedCurve from './invertedCurve';
 import {ParametricSurface} from "../surfaces/parametricSurface";
 import {ParametricCurve} from "./parametricCurve";
-import {Matrix3x4Data} from "math/l3space";
+import {Matrix3x4Data} from "math/matrix";
 
 export class IsoCurveU implements ParametricCurve {
 

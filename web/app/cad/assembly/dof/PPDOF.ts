@@ -1,4 +1,4 @@
-import {Matrix3, ORIGIN} from "math/l3space";
+import {ORIGIN} from "math/l3space";
 import Vector from "math/vector";
 import {eqTol} from "../../../brep/geom/tolerance";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
@@ -8,6 +8,7 @@ import {areEqual, clamp, DEG_RAD} from "../../../math/math";
 import {ConflictDOF} from "./conflictDOF";
 import {PPPPDOF} from "./PPPPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
+import {Matrix3} from "math/matrix";
 
 export class PPDOF implements AssemblyDOF {
 

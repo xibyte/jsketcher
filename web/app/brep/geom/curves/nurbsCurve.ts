@@ -1,7 +1,8 @@
 import * as ext from '../impl/nurbs-ext';
 import {distinctKnots, NurbsCurveData} from '../impl/nurbs-ext';
 import {ParametricCurve} from "./parametricCurve";
-import {Matrix3x4Data, Vec3} from "math/l3space";
+import {Vec3} from "math/l3space";
+import {Matrix3x4Data} from "math/matrix";
 
 
 //in fact the sketcher format

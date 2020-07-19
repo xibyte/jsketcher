@@ -1,7 +1,7 @@
-import {Matrix3} from '../../../../../modules/math/l3space'
 import * as math from '../../../math/math'
 import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
+import {Matrix3} from 'math/matrix';
 
 
 export function Extrude(params, ctx) {

@@ -1,5 +1,5 @@
 import Vector from "math/vector";
-import {Matrix3} from "math/l3space";
+import {Matrix3} from "math/matrix";
 
 export class Location {
 
