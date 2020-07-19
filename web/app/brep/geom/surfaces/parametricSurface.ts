@@ -1,5 +1,5 @@
-import {Vec3} from "math/l3space";
 import {Matrix3x4Data} from "math/matrix";
+import {Vec3} from "math/vec";
 
 export type UV = [number, number];
 

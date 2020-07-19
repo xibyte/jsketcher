@@ -1,8 +1,8 @@
 import * as vec from "math/vec";
 import {eqEps, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
-import {Vec3} from "math/l3space";
 import {fmin_bfgs} from "math/optim/bfgs";
 import {areEqual} from "math/equality";
+import {Vec3} from "math/vec";
 
 export interface NurbsCurveData {
   degree: number,
