@@ -4,12 +4,12 @@ import {Loop} from '../topo/loop';
 import {Shell} from '../topo/shell';
 import {Vertex} from '../topo/vertex';
 import {evolveFace} from './evolve-face'
-import * as math from '../../../../modules/math/commons';
 import {eqTol, TOLERANCE, ueq, veq, veqNeg} from '../geom/tolerance';
 import CadError from "../../utils/errors";
 import {createBoundingSurface} from "../brep-builder";
 import BREP_DEBUG from '../debug/brep-debug';
 import {Face} from "../topo/face";
+import {vectorsEqual} from "../../../../modules/math/equality";
 
 
 const A = 0, B = 1;
@@ -650,8 +650,8 @@ function fixCurveDirection(curve, surface1, surface2, operationType) {
 function newEdgeDirectionValidityTest(e, curve) {
   let point = e.halfEdge1.vertexA.point;
   let tangent = curve.tangentAtPoint(point);
-  assert('tangent of originated curve and first halfEdge should be the same', math.vectorsEqual(tangent, e.halfEdge1.tangent(point)));
-  assert('tangent of originated curve and second halfEdge should be the opposite', math.vectorsEqual(tangent._negate(), e.halfEdge2.tangent(point)));
+  assert('tangent of originated curve and first halfEdge should be the same', vectorsEqual(tangent, e.halfEdge1.tangent(point)));
+  assert('tangent of originated curve and second halfEdge should be the opposite', vectorsEqual(tangent._negate(), e.halfEdge2.tangent(point)));
 }
 
 function intersectFaces(shellA, shellB, operationType) {

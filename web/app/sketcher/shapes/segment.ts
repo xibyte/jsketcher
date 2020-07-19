@@ -1,11 +1,11 @@
 import {SketchObject, SketchObjectSerializationData} from './sketch-object'
 import Vector from 'math/vector';
-import * as math from 'math/commons'
 import {DEG_RAD, makeAngle0_360} from 'math/commons'
 import {Param} from "./param";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 import {EndPoint, SketchPointSerializationData} from "./point";
 import {distanceAB} from "math/distance";
+import {TOLERANCE} from "math/equality";
 
 export class Segment extends SketchObject {
 
@@ -80,7 +80,7 @@ export class Segment extends SketchObject {
   }
 
   recoverIfNecessary() {
-    if (distanceAB(this.a, this.b) > math.TOLERANCE) {
+    if (distanceAB(this.a, this.b) > TOLERANCE) {
       return false;
     } else {
       const recoverLength = 100;

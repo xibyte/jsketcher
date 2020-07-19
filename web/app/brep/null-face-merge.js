@@ -1,5 +1,5 @@
-import * as math from '../../../modules/math/commons'
 import {Edge} from './topo/edge'
+import {equal} from "math/equality";
 
 export default function({curve, start}) {
 
@@ -14,7 +14,7 @@ export default function({curve, start}) {
     const aTip = curve.closestParam(aE.vertexA.point.data());
     const bTip = curve.closestParam(bE.vertexB.point.data());
 
-    if (math.equal(aTip, bTip)) {
+    if (equal(aTip, bTip)) {
       //swap vertex everywhere
       updateVertex(bE, bE, aE.vertexA);
     } else if (aTip > bTip) {

@@ -1,8 +1,8 @@
 import * as vec from "math/vec";
-import * as math from 'math/commons'
 import {eqEps, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
 import {Vec3} from "math/l3space";
 import {fmin_bfgs} from "math/optim/bfgs";
+import {areEqual} from "math/equality";
 
 export interface NurbsCurveData {
   degree: number,
@@ -219,10 +219,10 @@ export function curveIntersect(curve1, curve2) {
           p0: point1,
           p1: point2
         });
-        if (math.areEqual(u1, l1, TOLERANCE )) {
+        if (areEqual(u1, l1, TOLERANCE )) {
           i ++;
         }
-        if (math.areEqual(u2, l2, TOLERANCE )) {
+        if (areEqual(u2, l2, TOLERANCE )) {
           j ++;
         }
       }
@@ -270,8 +270,8 @@ function intersectSegs(a1, b1, a2, b2) {
   let point1 = vec.add(a1, vec.mul(v1, u1));
   let point2 = vec.add(a2, vec.mul(v2, u2));
   let p2p = vec.lengthSq(vec.sub(point1, point2));
-  let eq = (a, b) => math.areEqual(a, b, TOLERANCE);
-  if (u1 !== Infinity && u2 !== Infinity && math.areEqual(p2p, 0, TOLERANCE_SQ) &&
+  let eq = (a, b) => areEqual(a, b, TOLERANCE);
+  if (u1 !== Infinity && u2 !== Infinity && areEqual(p2p, 0, TOLERANCE_SQ) &&
     ((u1 >0 && u1 < l1) || eq(u1, 0) || eq(u1, l1)) &&
     ((u2 >0 && u2 < l2) || eq(u2, 0) || eq(u2, l2))
   ) {

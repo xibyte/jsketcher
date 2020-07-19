@@ -1,7 +1,7 @@
-import * as math from '../../../../../modules/math/commons'
 import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
 import {Matrix3} from 'math/matrix';
+import {equal} from 'math/equality';
 
 
 export function Extrude(params, ctx) {
@@ -85,7 +85,7 @@ export function getEncloseDetails(params, contours, target, csys, sketchSurface,
     if (invert) contour.reverse();
 
     const lidPath = [];
-    let applyPrism = !math.equal(params.prism, 1);
+    let applyPrism = !equal(params.prism, 1);
     let prismTr = null;
     if (applyPrism) {
       prismTr = new Matrix3();

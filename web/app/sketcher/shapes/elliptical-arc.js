@@ -1,10 +1,9 @@
 import {Ellipse} from './ellipse'
-
-import * as math from '../../../../modules/math/commons';
 import {swap} from '../../utils/utils'
 import {EndPoint} from "./point";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
-import {distance} from "../../../../modules/math/distance";
+import {distance} from "math/distance";
+import {areEqual, TOLERANCE} from "math/equality";
 
 export class EllipticalArc extends Ellipse {
 
@@ -37,8 +36,8 @@ export class EllipticalArc extends Ellipse {
     const radiusY = Math.max(this.radiusY, 1e-8);
     let aAngle = this.drawAngle(this.a);
     let bAngle;
-    if (math.areEqual(this.a.x, this.b.x, math.TOLERANCE) &&
-      math.areEqual(this.a.y, this.b.y, math.TOLERANCE)) {
+    if (areEqual(this.a.x, this.b.x, TOLERANCE) &&
+      areEqual(this.a.y, this.b.y, TOLERANCE)) {
       bAngle = aAngle + 2 * Math.PI;
     } else {
       bAngle = this.drawAngle(this.b)

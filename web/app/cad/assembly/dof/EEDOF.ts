@@ -1,12 +1,13 @@
 import Vector from "math/vector";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {AssemblyDOF, ModificationResponse} from "./assemblyDOF";
-import {areEqual, clamp, DEG_RAD, lineLineIntersection} from "math/commons";
+import {clamp, DEG_RAD, lineLineIntersection} from "math/commons";
 import {ConflictDOF} from "./conflictDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 import {PPEEDOF} from "./PPEEDOF";
 import {EEEEDOF} from "./EEEEDOF";
 import {Matrix3} from "math/matrix";
+import {areEqual} from "math/equality";
 
 const ANGULAR_ALLOWANCE = 10 * DEG_RAD;
 

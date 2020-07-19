@@ -1,10 +1,10 @@
 import * as sm from './sketchModel'
 import {Graph} from '../../math/graph'
-import * as math from '../../../../modules/math/commons'
 import {HashTable} from '../../utils/hashmap'
 import Joints from '../../../../modules/gems/joints';
 import sketchObjectGlobalId from './sketchObjectGlobalId';
 import VectorFactory from '../../../../modules/math/vectorFactory';
+import {strictEqual2D} from "../../../../modules/math/equality";
 
 class SketchGeom {
 
@@ -145,10 +145,10 @@ function findClosedContoursFromPairedCurves(segments, result) {
       const s2 = segments[j];
       if (s1.isCurve || s2.isCurve) {
         let paired = false;
-        if (math.strictEqual2D(s1.a, s2.a) && math.strictEqual2D(s1.b, s2.b)) {
+        if (strictEqual2D(s1.a, s2.a) && strictEqual2D(s1.b, s2.b)) {
           paired = true;
           s2.invert();
-        } else if (math.strictEqual2D(s1.a, s2.b) && math.strictEqual2D(s1.b, s2.a)) {
+        } else if (strictEqual2D(s1.a, s2.b) && strictEqual2D(s1.b, s2.a)) {
           paired = true;
         }
         if (paired) {
