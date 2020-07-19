@@ -1,9 +1,8 @@
 import {TopoObject} from './topo-object'
-
-import * as math from 'math/commons'
 import {Face} from "./face";
 import {BrepSurface} from "../geom/surfaces/brepSurface";
 import {HalfEdge} from "./edge";
+import {findLowestLeftPoint} from "math/euclidean";
 
 export class Loop extends TopoObject {
 
@@ -58,7 +57,7 @@ export class Loop extends TopoObject {
   private static isPolygonCCWOnSurface(polygon: any[], surface: BrepSurface) {
     const tr = surface.simpleSurface.get2DTransformation();
     const polygon2d = polygon.map(p => tr.apply(p));
-    const lowestLeftIdx = math.findLowestLeftPoint(polygon2d);
+    const lowestLeftIdx = findLowestLeftPoint(polygon2d);
     const n = polygon.length;
     const nextIdx = ((lowestLeftIdx + 1) % n);
     const prevIdx = ((n + lowestLeftIdx - 1) % n);
