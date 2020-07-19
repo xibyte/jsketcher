@@ -1,6 +1,6 @@
 import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
-import {Matrix3} from 'math/matrix';
+import {Matrix3x4} from 'math/matrix';
 import {equal} from 'math/equality';
 
 
@@ -88,7 +88,7 @@ export function getEncloseDetails(params, contours, target, csys, sketchSurface,
     let applyPrism = !equal(params.prism, 1);
     let prismTr = null;
     if (applyPrism) {
-      prismTr = new Matrix3();
+      prismTr = new Matrix3x4();
       prismTr.scale(params.prism, params.prism, params.prism);
     }
     for (let i = 0; i < basePath.length; ++i) {

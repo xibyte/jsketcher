@@ -1,5 +1,5 @@
 import Vector, {AXIS, ORIGIN} from "math/vector";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 export default class CSys {
 
@@ -9,8 +9,8 @@ export default class CSys {
   x: Vector;
   y: Vector;
   z: Vector;
-  private _outTr: Matrix3;
-  private _inTr: Matrix3;
+  private _outTr: Matrix3x4;
+  private _inTr: Matrix3x4;
 
   static fromNormalAndDir(origin, normal, dir) {
     return new CSys(origin, dir, normal.cross(dir), normal)  
@@ -32,11 +32,11 @@ export default class CSys {
   }
 
   get outTransformation3x3() {
-    return new Matrix3().setBasisAxises(this.x, this.y, this.z);
+    return new Matrix3x4().setBasisAxises(this.x, this.y, this.z);
   }
 
   get outTransformation() {
-    const mx = new Matrix3().setBasisAxises(this.x, this.y, this.z);
+    const mx = new Matrix3x4().setBasisAxises(this.x, this.y, this.z);
     mx.tx = this.origin.x;
     mx.ty = this.origin.y;
     mx.tz = this.origin.z;

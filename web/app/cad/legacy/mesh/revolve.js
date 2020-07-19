@@ -1,7 +1,7 @@
 import Vector from 'math/vector';
 import {createShared} from '../../cad-utils'
 import {TriangulatePolygons} from '../../tess/triangulation';
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 import {distanceAB3} from "math/distance";
 import {equal} from "math/equality";
 
@@ -117,7 +117,7 @@ export function revolveIterator(polygons, axisSegment, angle, resolution, callba
   
   const angleStep = angle / resolution * (reverse ? -1 : 1);
   const axis = new Vector().setV(axisSegment[1])._minus(axisSegment[0]);
-  const tr = Matrix3.rotateMatrix(angleStep, axis, axisSegment[0]);
+  const tr = Matrix3x4.rotateMatrix(angleStep, axis, axisSegment[0]);
   
   for (let resIndex = 0; resIndex < resolution; resIndex++) {
     let rotatedPolygons = polygons.map(poly => poly.map(point => tr.apply(point)));

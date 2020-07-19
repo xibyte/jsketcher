@@ -3,7 +3,7 @@ import {Vec3} from "math/vec";
 
 export type Matrix3x4Data = [[number, number, number, number], [number, number, number, number], [number, number, number, number]];
 
-export class Matrix3 {
+export class Matrix3x4 {
 
   mxx: number = 1;
   mxy: number = 0;
@@ -18,7 +18,7 @@ export class Matrix3 {
   mzz: number = 1;
   tz: number = 0;
 
-  reset(): Matrix3 {
+  reset(): Matrix3x4 {
     this.mxx = 1;
     this.mxy = 0;
     this.mxz = 0;
@@ -34,7 +34,7 @@ export class Matrix3 {
     return this;
   };
 
-  setBasis(basis: [Vector, Vector, Vector]): Matrix3 {
+  setBasis(basis: [Vector, Vector, Vector]): Matrix3x4 {
     var b = basis;
     this.mxx = b[0].x;
     this.mxy = b[1].x;
@@ -51,7 +51,7 @@ export class Matrix3 {
     return this;
   };
 
-  setBasisAxises(x: Vector, y: Vector, z: Vector): Matrix3 {
+  setBasisAxises(x: Vector, y: Vector, z: Vector): Matrix3x4 {
     this.mxx = x.x;
     this.mxy = y.x;
     this.mxz = z.x;
@@ -67,7 +67,7 @@ export class Matrix3 {
     return this;
   };
 
-  setBasisAndTranslation(basis: [Vector, Vector, Vector], translation: Vector): Matrix3 {
+  setBasisAndTranslation(basis: [Vector, Vector, Vector], translation: Vector): Matrix3x4 {
     this.setBasis(basis);
     this.tx = translation.x;
     this.ty = translation.y;
@@ -75,21 +75,21 @@ export class Matrix3 {
     return this;
   };
 
-  scale(dx: number, dy: number, dz: number): Matrix3 {
+  scale(dx: number, dy: number, dz: number): Matrix3x4 {
     this.mxx *= dx;
     this.myy *= dy;
     this.mzz *= dz;
     return this;
   };
 
-  translate(dx: number, dy: number, dz: number): Matrix3 {
+  translate(dx: number, dy: number, dz: number): Matrix3x4 {
     this.tx += dx;
     this.ty += dy;
     this.tz += dz;
     return this;
   };
 
-  translateVec({x, y, z}: Vector): Matrix3 {
+  translateVec({x, y, z}: Vector): Matrix3x4 {
     this.tx += x;
     this.ty += y;
     this.tz += z;
@@ -100,7 +100,7 @@ export class Matrix3 {
     mxx: number, mxy: number, mxz: number,
     myx: number, myy: number, myz: number,
     mzx: number, mzy: number, mzz: number
-  ): Matrix3 {
+  ): Matrix3x4 {
     this.mxx = mxx;
     this.mxy = mxy;
     this.mxz = mxz;
@@ -117,7 +117,7 @@ export class Matrix3 {
     mxx: number, mxy: number, mxz: number, tx: number,
     myx: number, myy: number, myz: number, ty: number,
     mzx: number, mzy: number, mzz: number, tz: number
-  ): Matrix3 {
+  ): Matrix3x4 {
     this.mxx = mxx;
     this.mxy = mxy;
     this.mxz = mxz;
@@ -133,7 +133,7 @@ export class Matrix3 {
     return this;
   };
 
-  setMatrix(m: Matrix3): Matrix3 {
+  setMatrix(m: Matrix3x4): Matrix3x4 {
     this.mxx = m.mxx;
     this.mxy = m.mxy;
     this.mxz = m.mxz;
@@ -166,15 +166,15 @@ export class Matrix3 {
     ];
   };
 
-  invert(): Matrix3 {
-    return this.__invert(new Matrix3());
+  invert(): Matrix3x4 {
+    return this.__invert(new Matrix3x4());
   };
 
-  _invert(): Matrix3 {
+  _invert(): Matrix3x4 {
     return this.__invert(this);
   };
 
-  __invert(out: Matrix3): Matrix3 {
+  __invert(out: Matrix3x4): Matrix3x4 {
 
     var det =
       this.mxx * (this.myy * this.mzz - this.mzy * this.myz) +
@@ -219,7 +219,7 @@ export class Matrix3 {
     return out;
   };
 
-  combine(transform: Matrix3, out?: Matrix3): Matrix3 {
+  combine(transform: Matrix3x4, out?: Matrix3x4): Matrix3x4 {
     var txx = transform.mxx;
     var txy = transform.mxy;
     var txz = transform.mxz;
@@ -233,7 +233,7 @@ export class Matrix3 {
     var tzz = transform.mzz;
     var ttz = transform.tz;
 
-    var m = out || new Matrix3();
+    var m = out || new Matrix3x4();
     m.mxx = (this.mxx * txx + this.mxy * tyx + this.mxz * tzx);
     m.mxy = (this.mxx * txy + this.mxy * tyy + this.mxz * tzy);
     m.mxz = (this.mxx * txz + this.mxy * tyz + this.mxz * tzz);
@@ -250,7 +250,7 @@ export class Matrix3 {
     return m;
   };
 
-  combine3x3(transform: Matrix3, out?: Matrix3): Matrix3 {
+  combine3x3(transform: Matrix3x4, out?: Matrix3x4): Matrix3x4 {
     var txx = transform.mxx;
     var txy = transform.mxy;
     var txz = transform.mxz;
@@ -264,7 +264,7 @@ export class Matrix3 {
     var tzz = transform.mzz;
 
 
-    var m = out || new Matrix3();
+    var m = out || new Matrix3x4();
     m.mxx = (this.mxx * txx + this.mxy * tyx + this.mxz * tzx);
     m.mxy = (this.mxx * txy + this.mxy * tyy + this.mxz * tzy);
     m.mxz = (this.mxx * txz + this.mxy * tyz + this.mxz * tzz);
@@ -334,33 +334,33 @@ export class Matrix3 {
       Math.cos(axisAzimuth)
     );
 
-    return Matrix3.rotateMatrix(angle, axis, pivot, this);
+    return Matrix3x4.rotateMatrix(angle, axis, pivot, this);
   };
 
   rotate(angle: number, axis: Vector, pivot: Vector) {
-    return Matrix3.rotateMatrix(angle, axis, pivot, this);
+    return Matrix3x4.rotateMatrix(angle, axis, pivot, this);
   };
 
-  static rotateMatrix(angle: number, axis: Vector, pivot: Vector, matrix?: Matrix3): Matrix3 {
+  static rotateMatrix(angle: number, axis: Vector, pivot: Vector, matrix?: Matrix3x4): Matrix3x4 {
     const sin = Math.sin(angle);
     const cos = Math.cos(angle);
-    return Matrix3.rotationMatrix(cos, sin, axis, pivot, matrix);
+    return Matrix3x4.rotationMatrix(cos, sin, axis, pivot, matrix);
   }
 
-  static rotationFromVectorToVector(from: Vector, to: Vector, pivot: Vector, matrix?: Matrix3): Matrix3 {
+  static rotationFromVectorToVector(from: Vector, to: Vector, pivot: Vector, matrix?: Matrix3x4): Matrix3x4 {
 
     const axis = from.cross(to);
 
     const cos = from.dot(to);
     const sin = axis.length();
 
-    return Matrix3.rotationMatrix(cos, sin, axis, pivot, matrix);
+    return Matrix3x4.rotationMatrix(cos, sin, axis, pivot, matrix);
 
   }
 
-  static rotationMatrix(cos: number, sin: number, axis: Vector, pivot: Vector, matrix?: Matrix3): Matrix3 {
+  static rotationMatrix(cos: number, sin: number, axis: Vector, pivot: Vector, matrix?: Matrix3x4): Matrix3x4 {
     var axisX, axisY, axisZ;
-    var m = matrix || new Matrix3();
+    var m = matrix || new Matrix3x4();
 
     if (axis === AXIS.X || axis === AXIS.Y || axis === AXIS.Z) {
       axisX = axis.x;
@@ -412,4 +412,4 @@ export class Matrix3 {
 
 }
 
-export const IDENTITY_MATRIX = Object.freeze(new Matrix3());
+export const IDENTITY_MATRIX = Object.freeze(new Matrix3x4());
