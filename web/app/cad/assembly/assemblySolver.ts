@@ -2,12 +2,12 @@ import {SolveStatus} from "../../sketcher/constr/AlgNumSystem";
 import {MShell} from "../model/mshell";
 import {MObject} from "../model/mobject";
 import {CadRegistry} from "../craft/cadRegistryPlugin";
-import {Matrix3} from "math/l3space";
 import {AssemblyConstraint, AssemblyConstraintDefinition} from "./assemblyConstraint";
 import {AssemblyConstraintsSchemas} from "./assemblySchemas";
 import {dfs} from "gems/traverse";
 import {SixDOF} from "./dof/sixDOF";
 import {AssemblyDOF} from "./dof/assemblyDOF";
+import {Matrix3} from "math/matrix";
 
 declare module '../model/mshell' {
   

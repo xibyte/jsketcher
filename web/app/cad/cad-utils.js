@@ -1,10 +1,8 @@
 import Vector from 'math/vector';
 import BBox from '../math/bbox'
-import {HashTable} from '../utils/hashmap'
-import {Graph} from '../math/graph'
 import * as math from '../math/math'
-import {Matrix3, AXIS, ORIGIN} from '../../../modules/math/l3space'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
+import {Matrix3} from 'math/matrix';
 
 export const FACE_COLOR =  0xB0C4DE;
 

@@ -1,10 +1,10 @@
-import { Matrix3 } from "math/l3space";
 import Vector from "math/vector";
 import { FaceTouchAlignConstraint } from "../constraints/faceTouchAlign";
 import { Plane } from './../../../brep/geom/impl/plane';
 import { AssemblyDOF, ModificationResponse } from "./assemblyDOF";
 import { ConflictDOF } from './conflictDOF';
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
+import {Matrix3} from "math/matrix";
 
 export class EEEEDOF implements AssemblyDOF {
 

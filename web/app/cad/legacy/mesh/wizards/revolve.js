@@ -1,10 +1,7 @@
 import * as tk from '../../../../ui/toolkit.js'
 import * as workbench from '../workbench'
-import * as cad_utils from '../../../cad-utils'
-import Vector from 'math/vector';
-import {Matrix3, ORIGIN} from '../../../../../../modules/math/l3space'
 import {revolveToTriangles} from '../revolve'
-import {OpWizard, IMAGINARY_SURFACE_MATERIAL, } from './wizard-commons'
+import {IMAGINARY_SURFACE_MATERIAL, OpWizard,} from './wizard-commons'
 
 export function RevolveWizard(app, face, initParams) {
   if (face.sketch3DGroup == null) app.refreshSketchOnFace(face);

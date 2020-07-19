@@ -1,5 +1,6 @@
 import {AssemblyNode} from "../assembly/assembly";
-import {IDENTITY_MATRIX, Matrix3} from "math/l3space";
+import {IDENTITY_MATRIX} from "math/l3space";
+import {Matrix3} from "math/matrix";
 
 export abstract class MObject {
 
