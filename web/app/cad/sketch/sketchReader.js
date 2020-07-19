@@ -1,6 +1,6 @@
 import * as sm from './sketchModel'
 import {Graph} from '../../math/graph'
-import * as math from '../../math/math'
+import * as math from '../../../../modules/math/commons'
 import {HashTable} from '../../utils/hashmap'
 import Joints from '../../../../modules/gems/joints';
 import sketchObjectGlobalId from './sketchObjectGlobalId';

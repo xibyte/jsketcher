@@ -4,7 +4,7 @@ import {eqTol} from "../../../brep/geom/tolerance";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {Plane} from './../../../brep/geom/impl/plane';
 import {ANGULAR_ALLOWANCE, AssemblyDOF, ModificationResponse} from "./assemblyDOF";
-import {areEqual, clamp, DEG_RAD} from "../../../math/math";
+import {areEqual, clamp, DEG_RAD} from "math/commons";
 import {ConflictDOF} from "./conflictDOF";
 import {PPPPDOF} from "./PPPPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";

@@ -1,5 +1,5 @@
 import {Tool} from './tool'
-import * as math from '../../math/math';
+import * as math from '../../../../modules/math/commons';
 import {EndPoint} from '../shapes/point'
 import {Circle} from '../shapes/circle'
 

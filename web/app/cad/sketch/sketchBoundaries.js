@@ -1,4 +1,4 @@
-import {areEqual, circleFromPoints, distanceAB, radiusOfCurvature, TOLERANCE} from '../../math/math';
+import {areEqual, circleFromPoints, distanceAB, radiusOfCurvature, TOLERANCE} from '../../../../modules/math/commons';
 import * as vec from 'math/vec';
 import {iteratePath} from '../cad-utils';
 import NurbsCurve from '../../brep/geom/curves/nurbsCurve';

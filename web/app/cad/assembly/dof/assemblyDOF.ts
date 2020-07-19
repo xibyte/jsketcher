@@ -1,7 +1,7 @@
 import Vector from "math/vector";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
-import {DEG_RAD} from "../../../math/math";
+import {DEG_RAD} from "math/commons";
 import {Matrix3} from "math/matrix";
 
 export const ANGULAR_ALLOWANCE = 10 * DEG_RAD;

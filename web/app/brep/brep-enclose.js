@@ -5,7 +5,7 @@ import BrepCurve from './geom/curves/brepCurve';
 import {Plane} from './geom/impl/plane';
 import {BasisForPlane} from 'math/l3space';
 import * as cad_utils from '../cad/cad-utils';
-import * as math from '../math/math';
+import * as math from '../../../modules/math/commons';
 import {createBoundingSurface} from './brep-builder';
 import NurbsSurface from './geom/surfaces/nurbsSurface';
 import {BrepSurface} from './geom/surfaces/brepSurface';

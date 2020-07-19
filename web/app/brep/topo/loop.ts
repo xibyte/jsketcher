@@ -1,6 +1,6 @@
 import {TopoObject} from './topo-object'
 
-import * as math from '../../math/math'
+import * as math from 'math/commons'
 import {Face} from "./face";
 import {BrepSurface} from "../geom/surfaces/brepSurface";
 import {HalfEdge} from "./edge";

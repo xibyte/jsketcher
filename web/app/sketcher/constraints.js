@@ -1,5 +1,5 @@
 import {Ref} from './shapes/ref';
-import * as math from '../math/math';
+import * as math from '../../../modules/math/commons';
 import Vector from '../../../modules/math/vector';
 
 class AbstractConstraint {

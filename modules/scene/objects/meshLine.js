@@ -1,5 +1,5 @@
 import * as vec from 'math/vec';
-import {perpendicularVector} from '../../../web/app/math/math';
+import {perpendicularVector} from '../../math/commons';
 import {Face3, Geometry, Vector3} from 'three';
 
 export function createMeshLineGeometry(points, width) {

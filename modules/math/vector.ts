@@ -1,4 +1,4 @@
-import {clamp} from "../../web/app/math/math";
+import {clamp} from "math/commons";
 
 export default class Vector {
 
