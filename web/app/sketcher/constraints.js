@@ -1,6 +1,6 @@
 import {Ref} from './shapes/ref';
-import * as math from '../../../modules/math/commons';
 import Vector from '../../../modules/math/vector';
+import {distanceAB} from "../../../modules/math/distance";
 
 class AbstractConstraint {
   
@@ -444,7 +444,7 @@ Constraints.RR.prototype.getObjects = function() {
 Constraints.LL = function(line1, line2) {
   this.line1 = line1;
   this.line2 = line2;
-  this.length = new Ref(math.distanceAB(line1.a, line1.b));
+  this.length = new Ref(distanceAB(line1.a, line1.b));
 };
 
 Constraints.LL.prototype.NAME = 'LL';
@@ -810,7 +810,7 @@ Constraints.CurveTangent.prototype.getObjects = function() {
 Constraints.PointInMiddle = function(point, line) {
   this.point = point;
   this.line = line;
-  this.length = new Ref(math.distanceAB(line.a, line.b) / 2);
+  this.length = new Ref(distanceAB(line.a, line.b) / 2);
 };
 
 Constraints.PointInMiddle.prototype.NAME = 'PointInMiddle';
@@ -852,7 +852,7 @@ Constraints.PointInMiddle.prototype.getObjects = function() {
 Constraints.Symmetry = function(point, line) {
   this.point = point;
   this.line = line;
-  this.length = new Ref(math.distanceAB(line.a, line.b) / 2);
+  this.length = new Ref(distanceAB(line.a, line.b) / 2);
 };
 
 Constraints.Symmetry.prototype.NAME = 'Symmetry';

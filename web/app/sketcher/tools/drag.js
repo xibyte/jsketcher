@@ -1,6 +1,6 @@
 import {Tool} from './tool'
-import * as math from 'math/commons'
 import {toast} from "react-toastify";
+import {distance} from "../../../../modules/math/distance";
 
 export class DragTool extends Tool {
   
@@ -62,7 +62,7 @@ export class DragTool extends Tool {
     }
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
-    let traveled = math.distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
+    let traveled = distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
     if (traveled >= 10) {
       this.viewer.historyManager.lightCheckpoint(10);
     }

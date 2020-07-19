@@ -1,5 +1,5 @@
 import {Param} from '../shapes/param';
-import {DEG_RAD, distanceAB, makeAngle0_360} from "math/commons";
+import {DEG_RAD, makeAngle0_360} from "math/commons";
 import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polynomial";
 
 import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from "../../brep/geom/curves/bezierCubic";
@@ -37,6 +37,7 @@ import {ISolveStage, SolvableObject} from "./solvableObject";
 import {SketchObject} from "../shapes/sketch-object";
 import {IconType} from "react-icons";
 import {ConstraintAnnotation} from "./constraintAnnotation";
+import {distanceAB} from "math/distance";
 
 export const ConstraintDefinitions
   // : {
