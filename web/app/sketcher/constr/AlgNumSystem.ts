@@ -5,7 +5,7 @@ import {compositeFn} from "gems/func";
 import {AlgNumConstraint} from "./ANConstraints";
 import {SolverParam} from "./solverParam";
 
-const DEBUG = true;
+const DEBUG = false;
 
 export class AlgNumSubSystem {
 

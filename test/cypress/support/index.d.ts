@@ -22,8 +22,10 @@ declare namespace Cypress {
   }
 
   export interface SketcherTPI {
+
     addRectangle(x1: number, y1: number, x2: number, y2: number): any;
 
+    addCircle(x: number, y: number, r: number): any;
   }
 
   type vec3 = [number, number, number];

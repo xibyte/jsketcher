@@ -1,6 +1,5 @@
 import {Generator} from './id-generator'
 import {Viewer} from './viewer2d'
-import {Styles} from './styles'
 import {Arc} from './shapes/arc'
 import {EndPoint} from './shapes/point'
 import {Segment} from './shapes/segment'
@@ -8,10 +7,17 @@ import {Circle} from './shapes/circle'
 import {Ellipse} from './shapes/ellipse'
 import {EllipticalArc} from './shapes/elliptical-arc'
 import {BezierCurve} from './shapes/bezier-curve'
-import {LinearDimension, AngleBetweenDimension, DiameterDimension, Dimension, HDimension, VDimension} from './shapes/dim'
+import {
+  AngleBetweenDimension,
+  DiameterDimension,
+  Dimension,
+  HDimension,
+  LinearDimension,
+  VDimension
+} from './shapes/dim'
 import Vector from 'math/vector';
 import exportTextData from 'gems/exportTextData';
-import {AlgNumConstraint} from "./constr/ANConstraints";
+import {AlgNumConstraint, ConstraintSerialization} from "./constr/ANConstraints";
 import {SketchGenerator} from "./generators/sketchGenerator";
 import {BoundaryGeneratorSchema} from "./generators/boundaryGenerator";
 import {SketchTypes} from "./shapes/sketch-types";
@@ -41,12 +47,7 @@ export interface SketchFormat_V3 {
       typeId: string
     }[];
 
-    constraints: {
-      typeId: string,
-      objects: string[],
-      constants: {[key: string]: string},
-      annotations: any
-    }[];
+    constraints: ConstraintSerialization[];
 
   }[];
 
@@ -125,7 +126,7 @@ export class IO {
             skobj = Ellipse.read(obj.id, obj.data);
           } else if (type === EllipticalArc.prototype.TYPE) {
             skobj = EllipticalArc.read(obj.id, obj.data);
-          } else if (type === EllipticalArc.prototype.TYPE) {
+          } else if (type === BezierCurve.prototype.TYPE) {
             skobj = BezierCurve.read(obj.id, obj.data);
           }
           if (skobj != null) {

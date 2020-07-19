@@ -123,7 +123,7 @@ export function addEllipticalArc(ctx, aX, aY, bX, bY, rX, rY) {
 export function addBezier(ctx, aX, aY, bX, bY) {
   [aX, aY] = modelToScreen(ctx.viewer, aX, aY);
   [bX, bY] = modelToScreen(ctx.viewer, bX, bY);
-  ctx.actions['addBezierCurve'].action();
+  ctx.actions.BezierTool.invoke(ctx);
   moveAndClickXY(ctx, aX, aY);
   let curve = ctx.viewer.toolManager.tool.curve;
   moveAndClickXY(ctx, bX, bY);
