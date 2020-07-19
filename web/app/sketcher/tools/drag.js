@@ -1,6 +1,5 @@
 import {Tool} from './tool'
-import {optim} from '../../math/optim'
-import * as math from '../../../../modules/math/commons'
+import * as math from 'math/commons'
 import {toast} from "react-toastify";
 
 export class DragTool extends Tool {

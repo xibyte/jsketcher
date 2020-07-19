@@ -1,5 +1,5 @@
 import numeric from 'numeric';
-import {_vec, _matrix} from '../../../modules/math/commons'
+import {_vec, _matrix} from 'math/commons'
 
 const SUCCESS = 1, ITER_LIMIT = 2, SMALL_DELTA = 3, SMALL_STEP = 4, DIVERGENCE = 5, INVALID_STATE = 6;
 
