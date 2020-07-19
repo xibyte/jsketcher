@@ -1,5 +1,4 @@
-import {AXIS, ORIGIN} from './l3space';
-import Vector from "math/vector";
+import Vector, {AXIS, ORIGIN} from "math/vector";
 import {Matrix3} from "math/matrix";
 
 export default class CSys {
