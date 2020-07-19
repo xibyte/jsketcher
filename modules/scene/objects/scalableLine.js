@@ -3,10 +3,10 @@ import {advancePseudoFrenetFrame, frenetFrame, pseudoFrenetFrame} from '../../..
 import * as vec from 'math/vec';
 import {viewScaleFactor} from '../scaleHelper';
 import {arrToThree} from 'math/vectorAdapters';
-import {ORIGIN} from '../../math/l3space';
 import {getSceneSetup} from '../sceneSetup';
 import calcFaceNormal from '../utils/calcFaceNormal';
 import {BufferGeometry} from "three/src/core/BufferGeometry";
+import {ORIGIN} from "../../math/vector";
 
 export default class ScalableLine extends Mesh {
 

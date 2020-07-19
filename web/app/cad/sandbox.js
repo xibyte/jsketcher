@@ -1,4 +1,3 @@
-import {AXIS, ORIGIN} from '../../../modules/math/l3space'
 import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import BrepCurve from '../brep/geom/curves/brepCurve';
@@ -7,6 +6,7 @@ import {surfaceIntersect} from '../brep/geom/intersection/surfaceSurface';
 import NurbsSurface from '../brep/geom/surfaces/nurbsSurface';
 import {createOctreeFromSurface, traverseOctree} from "../../../modules/voxels/octree";
 import {Matrix3} from 'math/matrix';
+import {AXIS, ORIGIN} from "../../../modules/math/vector";
 
 export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, exposure, exposure: {addShellOnScene} }}) {
 

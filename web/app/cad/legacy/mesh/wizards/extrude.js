@@ -1,8 +1,7 @@
 import * as tk from '../../../../ui/toolkit.js'
 import * as workbench from '../workbench'
 import * as cad_utils from '../../../cad-utils'
-import Vector from 'math/vector';
-import {ORIGIN} from '../../../../../../modules/math/l3space'
+import Vector, {ORIGIN} from 'math/vector';
 import {OpWizard, IMAGINE_MATERIAL, BASE_MATERIAL} from './wizard-commons'
 import {Matrix3} from 'math/matrix';
 

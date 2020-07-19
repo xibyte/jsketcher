@@ -1,12 +1,8 @@
-import {ORIGIN} from "math/l3space";
 import Vector from "math/vector";
-import {eqTol} from "../../../brep/geom/tolerance";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
-import {Plane} from './../../../brep/geom/impl/plane';
 import {AssemblyDOF, ModificationResponse} from "./assemblyDOF";
-import {areEqual, clamp, DEG_RAD, lineLineIntersection2d, lineLineIntersection} from "math/commons";
+import {areEqual, clamp, DEG_RAD, lineLineIntersection} from "math/commons";
 import {ConflictDOF} from "./conflictDOF";
-import {PPPPDOF} from "./PPPPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 import {PPEEDOF} from "./PPEEDOF";
 import {EEEEDOF} from "./EEEEDOF";

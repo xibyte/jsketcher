@@ -1,7 +1,6 @@
 import { Plane } from './../../../brep/geom/impl/plane';
 import {AssemblyDOF, ModificationResponse} from "./assemblyDOF";
-import Vector from "math/vector";
-import {ORIGIN} from "math/l3space";
+import Vector, {ORIGIN} from "math/vector";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {PPDOF} from "./PPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";

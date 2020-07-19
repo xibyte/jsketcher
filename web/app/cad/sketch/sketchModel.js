@@ -5,8 +5,7 @@ import {Point} from '../../brep/geom/point'
 import {LUT} from '../../math/bezier-cubic'
 import {distanceAB, isCCW, makeAngle0_360} from '../../../../modules/math/commons'
 import {normalizeCurveEnds} from '../../brep/geom/impl/nurbs-ext';
-import Vector from '../../../../modules/math/vector';
-import {AXIS, ORIGIN} from '../../../../modules/math/l3space';
+import Vector, {AXIS, ORIGIN} from '../../../../modules/math/vector';
 import CSys from "../../../../modules/math/csys";
 
 const RESOLUTION = 20;

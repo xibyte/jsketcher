@@ -1,5 +1,4 @@
-import {ORIGIN} from "math/l3space";
-import Vector from "math/vector";
+import Vector, {ORIGIN} from "math/vector";
 import {eqTol} from "../../../brep/geom/tolerance";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {Plane} from './../../../brep/geom/impl/plane';

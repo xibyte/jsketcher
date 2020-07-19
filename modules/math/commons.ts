@@ -3,6 +3,7 @@ import BBox from '../../web/app/math/bbox'
 import * as vec from 'math/vec';
 import {perp2d} from "math/vec";
 import {eqTol} from "../../web/app/brep/geom/tolerance";
+import {IDENTITY_BASIS3} from "math/basis";
 
 export const TOLERANCE = 1E-6;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
@@ -252,7 +253,7 @@ export function makeAngle0_360(angle) {
 
 export function perpendicularVector(v) {
   v = vec.normalize(v);
-  return vec.BASIS3.map(axis => vec.cross(axis, v)).sort((a, b) => vec.lengthSq(b) - vec.lengthSq(a))[0];
+  return IDENTITY_BASIS3.map(axis => vec.cross(axis, v)).sort((a, b) => vec.lengthSq(b) - vec.lengthSq(a))[0];
 }
 
 export function radiusOfCurvature(d1, d2) {
