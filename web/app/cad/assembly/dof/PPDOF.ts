@@ -7,7 +7,7 @@ import {clamp, DEG_RAD} from "math/commons";
 import {ConflictDOF} from "./conflictDOF";
 import {PPPPDOF} from "./PPPPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 import {areEqual} from "math/equality";
 
 export class PPDOF implements AssemblyDOF {
@@ -20,11 +20,11 @@ export class PPDOF implements AssemblyDOF {
     this.plane = plane;
   }
 
-  rotate(axis: Vector, angle: number, location: Matrix3, strict: boolean): ModificationResponse {
+  rotate(axis: Vector, angle: number, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 
-  translate(dir: Vector, location: Matrix3, strict: boolean): ModificationResponse {
+  translate(dir: Vector, location: Matrix3x4, strict: boolean): ModificationResponse {
 
     const normal = this.plane.normal;
     const illegalTranslation = !eqTol(normal.dot(dir), 0);
@@ -70,9 +70,9 @@ export class PPDOF implements AssemblyDOF {
 
     const location = constr.movingPart.root.location;
 
-    const rot = new Matrix3();
+    const rot = new Matrix3x4();
 
-    Matrix3.rotationFromVectorToVector(vecA, vecB,  ORIGIN, rot);
+    Matrix3x4.rotationFromVectorToVector(vecA, vecB,  ORIGIN, rot);
 
     rot.combine3x3(location, location);
 

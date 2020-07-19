@@ -7,7 +7,7 @@ import {AssemblyConstraintsSchemas} from "./assemblySchemas";
 import {dfs} from "gems/traverse";
 import {SixDOF} from "./dof/sixDOF";
 import {AssemblyDOF} from "./dof/assemblyDOF";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 declare module '../model/mshell' {
   
@@ -219,7 +219,7 @@ export function launchAssembly(assemblyProcess: AssemblyProcess): void {
 
 }
 
-function solve(constraints: AssemblyConstraint[], freeBody: MShell, location: Matrix3): SolveStatus {
+function solve(constraints: AssemblyConstraint[], freeBody: MShell, location: Matrix3x4): SolveStatus {
 
   for (let constr of constraints) {
 

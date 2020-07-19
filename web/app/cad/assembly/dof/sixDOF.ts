@@ -5,17 +5,17 @@ import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {PPDOF} from "./PPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 import {EEDOF} from "./EEDOF";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 export class SixDOF implements AssemblyDOF {
 
   description = 'full freedom';
 
-  rotate(axis: Vector, angle: number, location: Matrix3, strict: boolean): ModificationResponse {
+  rotate(axis: Vector, angle: number, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 
-  translate(dir: Vector, location: Matrix3, strict: boolean): ModificationResponse {
+  translate(dir: Vector, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 
@@ -26,7 +26,7 @@ export class SixDOF implements AssemblyDOF {
 
     const location = constr.movingPart.root.location;
 
-    Matrix3.rotationFromVectorToVector(vecA, vecB, ORIGIN, location);
+    Matrix3x4.rotationFromVectorToVector(vecA, vecB, ORIGIN, location);
 
     const ptFixed = constr.fixedPart.location.apply(constr.fixedFace.favorablePoint);
     const ptMoving = constr.movingPart.location.apply(constr.movingFace.favorablePoint);
@@ -48,7 +48,7 @@ export class SixDOF implements AssemblyDOF {
 
     const location = constr.movingPart.root.location;
 
-    Matrix3.rotationFromVectorToVector(vecA, vecB, ORIGIN, location);
+    Matrix3x4.rotationFromVectorToVector(vecA, vecB, ORIGIN, location);
 
     const ptFixed = constr.fixedPart.location.apply(constr.fixedEdge.favorablePoint);
     const ptMoving = constr.movingPart.location.apply(constr.movingEdge.favorablePoint);

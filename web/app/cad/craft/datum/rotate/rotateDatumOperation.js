@@ -2,7 +2,7 @@ import schema from './rotateDatumOpSchema';
 import {MDatum} from '../../../model/mdatum';
 import RotateDatumWizard from './RotateDatumWizard';
 import {DEG_RAD} from '../../../../../../modules/math/commons';
-import {Matrix3} from "../../../../../../modules/math/matrix";
+import {Matrix3x4} from "../../../../../../modules/math/matrix";
 import {ORIGIN} from "../../../../../../modules/math/vector";
 
 
@@ -22,7 +22,7 @@ function rotate(params, {cadRegistry}) {
   }
 }
 
-let auxMatrix = new Matrix3();
+let auxMatrix = new Matrix3x4();
 
 function previewer(ctx, initialParams) {
 

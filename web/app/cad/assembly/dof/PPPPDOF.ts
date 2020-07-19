@@ -4,7 +4,7 @@ import { Plane } from './../../../brep/geom/impl/plane';
 import { AssemblyDOF, ModificationResponse } from "./assemblyDOF";
 import { ConflictDOF } from './conflictDOF';
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 export class PPPPDOF implements AssemblyDOF {
 
@@ -17,11 +17,11 @@ export class PPPPDOF implements AssemblyDOF {
     this.plane2 = plane2;
   }
 
-  rotate(axis: Vector, angle: number, location: Matrix3, strict: boolean): ModificationResponse {
+  rotate(axis: Vector, angle: number, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 
-  translate(dir: Vector, location: Matrix3, strict: boolean): ModificationResponse {
+  translate(dir: Vector, location: Matrix3x4, strict: boolean): ModificationResponse {
     return ModificationResponse.REJECTED;
   }
 

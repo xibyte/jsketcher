@@ -4,7 +4,7 @@ import {MEdge} from './medge';
 import {MVertex} from './mvertex';
 import CSys from 'math/csys';
 import {state, StateStream} from "lstream";
-import {Matrix3} from "math/matrix";
+import {Matrix3x4} from "math/matrix";
 
 export class MShell extends MObject {
 
@@ -17,7 +17,7 @@ export class MShell extends MObject {
   edges = [];
   vertices = [];
 
-  location$: StateStream<Matrix3> = state(new Matrix3());
+  location$: StateStream<Matrix3x4> = state(new Matrix3x4());
 
   constructor() {
     super(MShell.TYPE, MObjectIdGenerator.next(MShell.TYPE, 'S'));
