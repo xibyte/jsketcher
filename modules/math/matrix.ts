@@ -96,7 +96,7 @@ export class Matrix3x4 {
     return this;
   };
 
-  set3(
+  set3x3(
     mxx: number, mxy: number, mxz: number,
     myx: number, myy: number, myz: number,
     mzx: number, mzy: number, mzz: number
@@ -113,7 +113,7 @@ export class Matrix3x4 {
     return this;
   };
 
-  set34(
+  set3x4(
     mxx: number, mxy: number, mxz: number, tx: number,
     myx: number, myy: number, myz: number, ty: number,
     mzx: number, mzy: number, mzz: number, tz: number
@@ -149,7 +149,7 @@ export class Matrix3x4 {
     return this;
   };
 
-  setToMatrix(m: any): void {
+  setToMatrix4x4(m: any): void {
     m.set(
       this.mxx, this.mxy, this.mxz, this.tx,
       this.myx, this.myy, this.myz, this.ty,

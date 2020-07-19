@@ -56,7 +56,7 @@ export class ShellView extends View {
     this.rootGroup.matrixAutoUpdate = false;
 
     this.model.location$.attach(loc => {
-      loc.setToMatrix(this.rootGroup.matrix);
+      loc.setToMatrix4x4(this.rootGroup.matrix);
       this.rootGroup.matrixWorldNeedsUpdate = true;
       viewer.requestRender();
     });

@@ -150,7 +150,7 @@ export class Viewer {
     if (this.screenToModelMatrix === null) {
       this.screenToModelMatrix = new Matrix3x4();
     }
-    this.screenToModelMatrix.set34(
+    this.screenToModelMatrix.set3x4(
       a, c, 0, e,
       b, d, 0, f,
       0, 0, 1, 0
