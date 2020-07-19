@@ -3,6 +3,7 @@ import BBox from '../math/bbox'
 import * as math from '../../../modules/math/commons'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
 import {Matrix3} from 'math/matrix';
+import {equal} from 'math/equality';
 
 export const FACE_COLOR =  0xB0C4DE;
 
@@ -243,7 +244,7 @@ export function normalOfCCWSeq(ccwSequence) {
   for (let i = 2; i < ccwSequence.length; ++i) {
     let c = ccwSequence[i];
     let normal = b.minus(a).cross(c.minus(a)).normalize(); 
-    if (!math.equal(normal.length(), 0)) {
+    if (!equal(normal.length(), 0)) {
       return normal;        
     }
   }

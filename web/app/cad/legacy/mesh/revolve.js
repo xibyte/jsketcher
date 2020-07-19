@@ -1,9 +1,9 @@
 import Vector from 'math/vector';
-import * as math from '../../../../../modules/math/commons'
 import {createShared} from '../../cad-utils'
 import {TriangulatePolygons} from '../../tess/triangulation';
-import {Matrix3} from "../../../../../modules/math/matrix";
-import {distanceAB3} from "../../../../../modules/math/distance";
+import {Matrix3} from "math/matrix";
+import {distanceAB3} from "math/distance";
+import {equal} from "math/equality";
 
 function Group(derivedFrom) {
   this.polygons = [];
@@ -17,10 +17,10 @@ export default function revolve(polygons, axisSegment, angle, resolution) {
     const polygon = [pOrig[p], pOrig[q]];
     
     //skip point if they are on the axis of revolving
-    if (!math.equal(0, distanceAB3(pOrig[q], pRot[q]))) {
+    if (!equal(0, distanceAB3(pOrig[q], pRot[q]))) {
       polygon.push(pRot[q]);
     }
-    if (!math.equal(0, distanceAB3(pOrig[p], pRot[p]))) {
+    if (!equal(0, distanceAB3(pOrig[p], pRot[p]))) {
       polygon.push(pRot[p]);
     }
     if (polygon.length < 3) {
@@ -46,7 +46,7 @@ export default function revolve(polygons, axisSegment, angle, resolution) {
     const face = csgPolygon(polygon, shared);
     out.push(face);
   });
-  if (!math.equal(_360, angle)) {
+  if (!equal(_360, angle)) {
     if (angle < 0) {
       let t = lids;
       lids = polygons;
@@ -76,10 +76,10 @@ export function revolveToTriangles(polygons, axisSegment, angle, resolution, tri
   //add initial polygon
   let lids = revolveIterator(polygons, axisSegment, angle, resolution, (pOrig, pRot, p, q, r, id, i, length) => {
     //skip point if they are on the axis of revolving
-    if (!math.equal(0, distanceAB3(pOrig[q], pRot[q]))) {
+    if (!equal(0, distanceAB3(pOrig[q], pRot[q]))) {
       out.push( [pOrig[p], pOrig[q], pRot[q]] );
     }
-    if (!math.equal(0, distanceAB3(pOrig[p], pRot[p]))) {
+    if (!equal(0, distanceAB3(pOrig[p], pRot[p]))) {
       out.push( [ pRot[q],  pRot[p], pOrig[p]] );
     }
     let last = i === length - 1
@@ -137,7 +137,7 @@ export function revolveIterator(polygons, axisSegment, angle, resolution, callba
 
 
 function addIfNonZero(out, seg) {
-  if (!math.equal(0, distanceAB3(seg[0], seg[1]))) {
+  if (!equal(0, distanceAB3(seg[0], seg[1]))) {
     out.push(seg);
   }
 }

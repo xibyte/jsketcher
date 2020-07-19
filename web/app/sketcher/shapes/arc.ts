@@ -1,4 +1,3 @@
-import * as math from 'math/commons';
 import {makeAngle0_360} from 'math/commons';
 import Vector from 'math/vector';
 import {SketchObject, SketchObjectSerializationData} from './sketch-object';
@@ -6,6 +5,7 @@ import {Param} from "./param";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 import {EndPoint, SketchPointSerializationData} from "./point";
 import {distance} from "math/distance";
+import {areEqual, TOLERANCE} from "math/equality";
 
 export class Arc extends SketchObject {
 
@@ -95,8 +95,8 @@ export class Arc extends SketchObject {
     let r = this.radiusForDrawing();
     let startAngle = makeAngle0_360(this.getStartAngle());
     let endAngle;
-    if (math.areEqual(this.a.x, this.b.x, math.TOLERANCE) &&
-        math.areEqual(this.a.y, this.b.y, math.TOLERANCE)) {
+    if (areEqual(this.a.x, this.b.x, TOLERANCE) &&
+        areEqual(this.a.y, this.b.y, TOLERANCE)) {
       endAngle = startAngle + 2 * Math.PI;
     } else {
       endAngle = makeAngle0_360(this.getEndAngle());
