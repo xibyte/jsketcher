@@ -1,8 +1,8 @@
-import {Matrix3} from '../../../../../modules/math/l3space'
 import Vector from 'math/vector';
 import * as math from '../../../math/math'
 import {createShared} from '../../cad-utils'
 import {TriangulatePolygons} from '../../tess/triangulation';
+import {Matrix3} from "../../../../../modules/math/matrix";
 
 function Group(derivedFrom) {
   this.polygons = [];

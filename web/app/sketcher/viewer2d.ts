@@ -9,7 +9,6 @@ import {BasisOrigin} from './shapes/basis-origin';
 import Vector from 'math/vector';
 
 import * as draw_utils from './shapes/draw-utils';
-import {Matrix3} from 'math/l3space';
 import sketcherStreams, {SketcherStreams} from './sketcherStreams';
 import {BBox, IO} from "./io";
 import {NOOP} from "../../../modules/gems/func";
@@ -20,6 +19,7 @@ import {Dimension} from "./shapes/dim";
 import {GroundObjectsGeneratorSchema} from "./generators/groundObjectsGenerator";
 import {SketchGenerator} from "./generators/sketchGenerator";
 import {Generator} from "./id-generator";
+import {Matrix3} from "math/matrix";
 
 export class Viewer {
 

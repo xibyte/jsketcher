@@ -1,4 +1,4 @@
-import {Matrix3, ORIGIN} from "math/l3space";
+import {ORIGIN} from "math/l3space";
 import Vector from "math/vector";
 import {eqTol} from "../../../brep/geom/tolerance";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
@@ -10,6 +10,7 @@ import {PPPPDOF} from "./PPPPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 import {PPEEDOF} from "./PPEEDOF";
 import {EEEEDOF} from "./EEEEDOF";
+import {Matrix3} from "math/matrix";
 
 const ANGULAR_ALLOWANCE = 10 * DEG_RAD;
 

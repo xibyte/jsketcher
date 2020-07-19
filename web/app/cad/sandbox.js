@@ -1,16 +1,12 @@
-import {AXIS, Matrix3, ORIGIN} from '../../../modules/math/l3space'
-import * as vec from 'math/vec'
-import Vector from 'math/vector';
+import {AXIS, ORIGIN} from '../../../modules/math/l3space'
 import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
 import BrepCurve from '../brep/geom/curves/brepCurve';
 import NurbsCurve from "../brep/geom/curves/nurbsCurve";
 import {surfaceIntersect} from '../brep/geom/intersection/surfaceSurface';
-import {closestToCurveParam} from '../brep/geom/curves/closestPoint';
 import NurbsSurface from '../brep/geom/surfaces/nurbsSurface';
-import DatumObject3D from './craft/datum/datumObject';
-import CSys from '../../../modules/math/csys';
-import {createOctreeFromSurface, sphereOctree, traverseOctree} from "../../../modules/voxels/octree";
+import {createOctreeFromSurface, traverseOctree} from "../../../modules/voxels/octree";
+import {Matrix3} from 'math/matrix';
 
 export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, exposure, exposure: {addShellOnScene} }}) {
 

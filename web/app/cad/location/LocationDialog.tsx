@@ -8,9 +8,9 @@ import Label from "ui/components/controls/Label";
 import Folder from "ui/components/Folder";
 import {never} from "lstream";
 import NumberControl from "ui/components/controls/NumberControl";
-import {Matrix3} from "math/l3space";
 
 import {LocationControl} from "./LocationControl";
+import {Matrix3} from "math/matrix";
 
 export function LocationDialog() {
 

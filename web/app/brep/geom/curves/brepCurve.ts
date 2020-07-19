@@ -1,5 +1,5 @@
 import NurbsCurve from "./nurbsCurve";
-import {Matrix3, Vec3} from 'math/l3space'
+import {Vec3} from 'math/l3space'
 import {areEqual} from '../../../math/math'
 
 import {eqSqTol, ueq, veq, veq3, veqNeg} from "../tolerance";
@@ -9,6 +9,7 @@ import Point from 'math/vector';
 import Vector from 'math/vector';
 import cache from "../impl/cache";
 import {Tessellation1D} from "../../../cad/craft/engine/tessellation";
+import {Matrix3} from "math/matrix";
 
 export default class BrepCurve {
 

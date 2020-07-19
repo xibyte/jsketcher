@@ -4,7 +4,7 @@ import {AssemblyProcess} from "../assemblySolver";
 import {useStream} from "ui/effects";
 import {MShell} from "../../model/mshell";
 import CSys from "math/csys";
-import {Matrix3} from "math/l3space";
+import {Matrix3} from "math/matrix";
 
 export function StepByStepSimulation() {
 

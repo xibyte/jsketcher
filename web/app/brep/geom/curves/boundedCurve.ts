@@ -1,6 +1,6 @@
 import InvertedCurve from './invertedCurve';
 import {ParametricCurve} from "./parametricCurve";
-import {Matrix3x4Data} from "math/l3space";
+import {Matrix3x4Data} from "math/matrix";
 
 export default class BoundedCurve implements ParametricCurve {
 

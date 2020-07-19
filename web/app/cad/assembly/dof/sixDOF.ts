@@ -1,11 +1,12 @@
 import { Plane } from './../../../brep/geom/impl/plane';
 import {AssemblyDOF, ModificationResponse} from "./assemblyDOF";
 import Vector from "math/vector";
-import {Matrix3, ORIGIN} from "math/l3space";
+import {ORIGIN} from "math/l3space";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
 import {PPDOF} from "./PPDOF";
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";
 import {EEDOF} from "./EEDOF";
+import {Matrix3} from "math/matrix";
 
 export class SixDOF implements AssemblyDOF {
 

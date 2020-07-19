@@ -1,5 +1,6 @@
 import {ParametricSurface, UV} from "./parametricSurface";
-import {Matrix3x4Data, Vec3} from "math/l3space";
+import {Vec3} from "math/l3space";
+import {Matrix3x4Data} from "math/matrix";
 
 export default class NullSurface implements ParametricSurface {
 

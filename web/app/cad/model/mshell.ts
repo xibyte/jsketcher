@@ -3,8 +3,8 @@ import {MBrepFace} from './mface';
 import {MEdge} from './medge';
 import {MVertex} from './mvertex';
 import CSys from 'math/csys';
-import {Matrix3} from "math/l3space";
 import {state, StateStream} from "lstream";
+import {Matrix3} from "math/matrix";
 
 export class MShell extends MObject {
 

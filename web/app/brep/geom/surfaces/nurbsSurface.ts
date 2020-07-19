@@ -3,8 +3,9 @@ import cache from '../impl/cache';
 import * as ext from '../impl/nurbs-ext';
 import NurbsCurve from '../curves/nurbsCurve';
 import {ParametricSurface, UV} from "./parametricSurface";
-import {Matrix3x4Data, Vec3} from "math/l3space";
+import {Vec3} from "math/l3space";
 import {ParametricCurve} from "../curves/parametricCurve";
+import {Matrix3x4Data} from "math/matrix";
 
 export default class NurbsSurface implements ParametricSurface {
 
