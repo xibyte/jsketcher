@@ -1,5 +1,4 @@
 import Vector from 'math/vector';
-import {Matrix3} from "math/matrix";
 
 export type Basis = [Vector, Vector, Vector];
 
@@ -36,7 +35,5 @@ function BasisForPlane(normal: Vector, alignY: Vector = AXIS.Y, alignZ: Vector =
   x = y.cross(normal);
   return [x, y, normal];
 }
-
-export const IDENTITY_MATRIX = Object.freeze(new Matrix3());
 
 export {ORIGIN, IDENTITY_BASIS, AXIS, BasisForPlane};
