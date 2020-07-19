@@ -2,7 +2,7 @@ import * as utils from '../../utils/utils'
 import QR from '../../math/qr'
 import LMOptimizer from 'math/optim/lm'
 import {ConstantWrapper, EqualsTo} from './solverConstraints'
-import {dog_leg} from 'math/optim/optim'
+import {dog_leg} from 'math/optim/dogleg'
 import {newVector} from 'math/vec';
 
 

@@ -1,6 +1,4 @@
-import {AssemblyNode} from "../assembly/assembly";
-import {IDENTITY_MATRIX} from "math/l3space";
-import {Matrix3} from "math/matrix";
+import {IDENTITY_MATRIX, Matrix3} from "math/matrix";
 
 export abstract class MObject {
 
@@ -8,10 +6,6 @@ export abstract class MObject {
   
   id: string;
   ext: any = {};
-
-  assemblyNodes?: {
-    [key: string]: AssemblyNode
-  };
 
   constructor(TYPE, id) {
     this.TYPE = TYPE;

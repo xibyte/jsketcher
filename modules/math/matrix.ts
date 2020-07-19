@@ -411,3 +411,5 @@ export class Matrix3 {
   }
 
 }
+
+export const IDENTITY_MATRIX = Object.freeze(new Matrix3());
