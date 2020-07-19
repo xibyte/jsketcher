@@ -1,9 +1,7 @@
-import {createPlaneAndOpenSketcher, extrudeCube} from '../utils/scripts';
-import {testExtrudeCOI1Faces} from "./craftExtrude";
+import {createPlaneAndOpenSketcher} from '../utils/scripts';
 
 export const TEST_MODE = 'modellerUI';
 
-testRevolveHalfWay.only = true;
 export async function testRevolveHalfWay(env, ui) {
   await createPlaneAndOpenSketcher(ui);
   let sui = ui.openSketcher();
