@@ -336,17 +336,43 @@ export const ConstraintDefinitions
     icon: PointOnCurveConstraintIcon,
 
     defineParamsScope: ([pt, ellipse], callback) => {
-      ellipse.visitParams(callback);
-      callback(new Param(0, 't'));
       pt.visitParams(callback);
+      ellipse.visitParams(callback);
+      callback(new Param(Math.atan2(pt.y - ellipse.c.y, pt.x - ellipse.c.x), 't'));
     },
 
-    collectPolynomials: (polynomials, [p1x,p1y, p2x,p2y, r, t, px, py]) => {
-      const ellipsePoly = (p, t, p0, p1, p2, p3) => new Polynomial()
-        .monomial(-1);
+    collectPolynomials: (polynomials, [px,py, cx,cy, rx,ry, rot, t]) => {
 
+      polynomials.push(new Polynomial()
+        .monomial(-1)
+          .term(px, POW_1_FN)
+        .monomial()
+          .term(cx, POW_1_FN)
+        .monomial()
+          .term(rx, POW_1_FN)
+          .term(rot, COS_FN)
+          .term(t, COS_FN)
+        .monomial(-1)
+          .term(ry, POW_1_FN)
+          .term(rot, SIN_FN)
+          .term(t, SIN_FN)
+      );
 
-      // polynomials.push(ellipsePoly());
+      polynomials.push(new Polynomial()
+        .monomial(-1)
+          .term(py, POW_1_FN)
+        .monomial()
+          .term(cy, POW_1_FN)
+        .monomial()
+          .term(rx, POW_1_FN)
+          .term(rot, SIN_FN)
+          .term(t, COS_FN)
+        .monomial()
+          .term(ry, POW_1_FN)
+          .term(rot, COS_FN)
+          .term(t, SIN_FN)
+      );
+
       // polynomials.push(ellipsePoly());
     },
 
@@ -956,7 +982,7 @@ export interface ConstraintSchema {
 
   id: string;
   name: string,
-  icon: IconType,
+  icon?: IconType,
   constants?: {
     [name: string]: {
       readOnly?: boolean;

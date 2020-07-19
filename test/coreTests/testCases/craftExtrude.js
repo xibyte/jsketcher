@@ -1,4 +1,5 @@
 import {extrudeCube} from '../utils/scripts';
+import {testExtrudeBezier} from "./craftExtrudeBasicShapes";
 
 export const TEST_MODE = 'modellerUI';
 

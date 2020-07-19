@@ -4,7 +4,7 @@ export type Basis = [Vector, Vector, Vector];
 
 export type Vec3 = [number, number, number];
 
-export type Matrix3x4Data = [number, number, number, number, number, number, number, number, number, number, number, number];
+export type Matrix3x4Data = [[number, number, number, number],[number, number, number, number],[number, number, number, number]];
 
 const freeze = Object.freeze;
 
@@ -180,7 +180,7 @@ export class Matrix3 {
     );
   };
 
-  toArray(): [[number, number, number, number],[number, number, number, number],[number, number, number, number]] {
+  toArray(): Matrix3x4Data {
     return [
       [this.mxx, this.mxy, this.mxz, this.tx],
       [this.myx, this.myy, this.myz, this.ty],
