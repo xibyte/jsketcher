@@ -6,6 +6,7 @@ import initReassignSketchMode from './reassignSketchMode';
 import {Viewer} from "../../sketcher/viewer2d";
 import {IO} from "../../sketcher/io";
 import {Generator} from "../../sketcher/id-generator";
+import {NOOP} from "gems/func";
 
 export function defineStreams(ctx) {
   ctx.streams.sketcher = {
@@ -79,6 +80,7 @@ export function activate(ctx) {
   function updateSketchForFace(mFace) {
     let sketch = ctx.sketchStorageService.readSketch(mFace.defaultSketchId);
     mFace.setSketch(sketch);
+    ctx.craftService.models$.mutate(NOOP);// to reindex all entities
     streams.sketcher.update.next(mFace);
   }
 
