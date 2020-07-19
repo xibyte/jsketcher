@@ -1,9 +1,12 @@
 import Vector from 'math/vector';
 import BBox from '../math/bbox'
-import * as math from '../../../modules/math/commons'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
 import {Matrix3} from 'math/matrix';
 import {equal} from 'math/equality';
+import {area, isCCW, isPointInsidePolygon} from "math/euclidean";
+
+export {area, isCCW, isPointInsidePolygon};
+
 
 export const FACE_COLOR =  0xB0C4DE;
 
@@ -220,8 +223,6 @@ export function fixCCW(path, normal) {
   return path;
 }
 
-export const isPointInsidePolygon = math.isPointInsidePolygon;
-
 export function someBasis2(normal) {
   var x = normal.cross(normal.randomNonParallelVector());
   var y = normal.cross(x).unit();
@@ -258,9 +259,6 @@ export function normalOfCCWSeqTHREE(ccwSequence) {
 
   return b.sub(a).cross(c.sub(a)).normalize();
 }
-
-export const area = math.area;
-export const isCCW = math.isCCW;
 
 export function calculateExtrudedLid(sourcePolygon, normal, direction, expansionFactor) {
   var lid = [];

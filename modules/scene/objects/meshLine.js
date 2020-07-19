@@ -1,6 +1,6 @@
 import * as vec from 'math/vec';
-import {perpendicularVector} from '../../math/commons';
 import {Face3, Geometry, Vector3} from 'three';
+import {perpendicularVector} from "../../math/euclidean";
 
 export function createMeshLineGeometry(points, width) {
   const vThree = arr => new Vector3().fromArray(arr);

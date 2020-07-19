@@ -1,10 +1,8 @@
 import {Tool} from './tool'
-import {EndPoint} from '../shapes/point'
 import {BezierCurve} from '../shapes/bezier-curve'
-import {Constraints} from '../parametric'
 import Vector from 'math/vector';
-import * as math from '../../../../modules/math/commons'
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
+import {rotate} from "math/euclidean";
 
 export class BezierCurveTool extends Tool {
 
@@ -61,7 +59,7 @@ export class BezierCurveTool extends Tool {
       this.curve.b.setFromPoint(p);
       const axis = this._v.set(this.curve.b.x - this.curve.a.x, this.curve.b.y - this.curve.a.y)._multiply(0.7);
       //controlSegment = {x: -controlSegment.y, y: controlSegment.x};
-      const controlSegment = math.rotate(- axis.y, axis.x, - Math.PI * 0.25);
+      const controlSegment = rotate(- axis.y, axis.x, - Math.PI * 0.25);
       if (this.otherCurveEndPoint != null) {
         const ctrlLength = axis.length();
         this.curve.cp1.x = this.curve.a.x + this.snappedControl.x * ctrlLength;

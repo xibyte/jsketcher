@@ -1,12 +1,12 @@
 import Vector from 'math/vector';
 import * as cad_utils from '../../cad-utils'
-import * as math from '../../../../../modules/math/commons'
 import {HashTable} from '../../../utils/hashmap'
 import {Mesh} from '../mesh'
 import revolve from './revolve'
 import {Triangulate} from '../../tess/triangulation'
 import {distanceAB3} from "../../../../../modules/math/distance";
 import {areEqual, equal, strictEqual} from "../../../../../modules/math/equality";
+import {isPointInsidePolygon} from "../../../../../modules/math/euclidean";
 
 export function sortPolygons(polygons) {
   function Loop(polygon) {
@@ -16,7 +16,7 @@ export function sortPolygons(polygons) {
   }
   function contains(polygon, other) {
     for (let point of other._2D) {
-      if (!math.isPointInsidePolygon(point, polygon._2D)) {
+      if (!isPointInsidePolygon(point, polygon._2D)) {
         return false;
       }
     }
