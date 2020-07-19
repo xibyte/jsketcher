@@ -173,3 +173,13 @@ export default class Vector {
   scale: (scalar: number) => Vector = Vector.prototype.multiply;
   _scale: (scalar: number) => Vector = Vector.prototype._multiply;
 }
+
+const freeze = Object.freeze;
+
+export const ORIGIN = freeze(new Vector(0, 0, 0));
+
+export const AXIS = freeze({
+  X: freeze(new Vector(1, 0, 0)),
+  Y: freeze(new Vector(0, 1, 0)),
+  Z: freeze(new Vector(0, 0, 1))
+});

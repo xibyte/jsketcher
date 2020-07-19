@@ -4,7 +4,7 @@ import brepTess from '../../tess/brep-tess';
 import tessellateSurface from '../../../brep/geom/surfaces/surfaceTess';
 import {setAttribute} from '../../../../../modules/scene/objectData';
 import * as vec from 'math/vec';
-import {perpendicularVector} from '../../../../../modules/math/commons';
+import {perpendicularVector} from "math/euclidean";
 
 const SMOOTH_RENDERING = true;
 

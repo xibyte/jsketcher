@@ -1,5 +1,5 @@
 import * as vec from 'math/vec';
-import {perpendicularVector} from '../../../../../modules/math/commons';
+import {perpendicularVector} from "../../../../../modules/math/euclidean";
 
 export function frenetFrame(D1, D2) {
   let T = vec.normalize(D1);

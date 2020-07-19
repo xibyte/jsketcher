@@ -4,17 +4,17 @@ import {Edge} from './topo/edge';
 import BrepCurve from './geom/curves/brepCurve';
 import {Plane} from './geom/impl/plane';
 import * as cad_utils from '../cad/cad-utils';
-import * as math from '../../../modules/math/commons';
 import {createBoundingSurface} from './brep-builder';
 import NurbsSurface from './geom/surfaces/nurbsSurface';
 import {BrepSurface} from './geom/surfaces/brepSurface';
 import {Matrix3} from 'math/matrix';
 import {BasisForPlane} from "math/basis";
+import {isCCW as isCCWtest} from "math/euclidean";
 
 function isCCW(points, normal) {
   const tr2d = new Matrix3().setBasis(BasisForPlane(normal)).invert();
   const points2d = points.map(p => tr2d.apply(p));
-  return math.isCCW(points2d);
+  return isCCWtest(points2d);
 }
 
 function checkCCW(points, normal) {

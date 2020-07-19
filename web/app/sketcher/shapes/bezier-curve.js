@@ -4,8 +4,7 @@ import {LUT} from '../../math/bezier-cubic'
 import {ConvexHull2D} from '../../math/convex-hull'
 
 import * as draw_utils from '../shapes/draw-utils'
-import * as math from '../../../../modules/math/commons';
-import {EndPoint} from "./point";
+import {isPointInsidePolygon, polygonOffset} from "../../../../modules/math/euclidean";
 
 
 export class BezierCurve extends SketchObject {
@@ -53,8 +52,8 @@ export class BezierCurve extends SketchObject {
 
   normalDistance(aim, scale) {
     this.hull = ConvexHull2D([this.a, this.b, this.cp1, this.cp2]);
-    this.hull = math.polygonOffset(this.hull, 1 + (0.3 / scale));
-    if (math.isPointInsidePolygon(aim, this.hull)) {
+    this.hull = polygonOffset(this.hull, 1 + (0.3 / scale));
+    if (isPointInsidePolygon(aim, this.hull)) {
       this.lut = LUT(this.a, this.b, this.cp1, this.cp2, scale);
       return this.closestNormalDistance(aim, this.lut)
     }

@@ -1,10 +1,8 @@
 import {LoopPickTool} from './loop-pick'
 import {Constraints} from '../parametric'
-import * as math from '../../../../modules/math/commons';
 import Vector from 'math/vector';
-import {swap} from '../../utils/utils'
-import {EndPoint} from '../shapes/point'
 import {Arc} from '../shapes/arc'
+import {isCCW} from "../../../../modules/math/euclidean";
 
 export class OffsetTool extends LoopPickTool {
 
@@ -36,7 +34,7 @@ export class OffsetTool extends LoopPickTool {
       return (i + low) % length;
     }
     
-    const mainInverse = !this.twoConnectedArcs() && math.isCCW([loopPoints[pos(0)], loopPoints[pos(1)], loopPoints[pos(length - 1)]]);    
+    const mainInverse = !this.twoConnectedArcs() && isCCW([loopPoints[pos(0)], loopPoints[pos(1)], loopPoints[pos(length - 1)]]);
 
     const pm = this.viewer.parametricManager;
     const offsetConstant = createOffsetConstant(pm, delta);
