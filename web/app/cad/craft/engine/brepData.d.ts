@@ -1,9 +1,9 @@
-import {Vec3} from "math/l3space";
 import {Tessellation1D, Tessellation2D} from "./tessellation";
 import {ProductionInfo} from "./productionInfo";
 import {Handle} from "./handle";
 import {SurfaceBSplineData, SurfacePlaneData, SurfaceUnknownData} from "./surfaceData";
 import {CurveBSplineData, CurveLineData, CurveUnknownData} from "./curveData";
+import {Vec3} from "math/vec";
 
 export interface BREPData {
 
