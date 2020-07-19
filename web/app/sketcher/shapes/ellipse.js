@@ -1,6 +1,6 @@
 import {SketchObject} from './sketch-object'
 
-import * as math from '../../math/math';
+import * as math from '../../../../modules/math/commons';
 import {Param} from "./param";
 import {EndPoint} from "./point";
 

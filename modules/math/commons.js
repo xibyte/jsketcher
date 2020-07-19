@@ -1,8 +1,8 @@
 import Vector from 'math/vector';
-import BBox from './bbox'
+import BBox from '../../web/app/math/bbox'
 import * as vec from 'math/vec';
 import {perp2d} from "math/vec";
-import {eqTol} from "../brep/geom/tolerance";
+import {eqTol} from "../../web/app/brep/geom/tolerance";
 
 export const TOLERANCE = 1E-6;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;

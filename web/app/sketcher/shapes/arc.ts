@@ -1,9 +1,9 @@
-import * as math from '../../math/math';
+import * as math from 'math/commons';
 import Vector from 'math/vector';
 import {SketchObject, SketchObjectSerializationData} from './sketch-object';
 import {Param} from "./param";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
-import {makeAngle0_360} from "../../math/math";
+import {makeAngle0_360} from "math/commons";
 import {EndPoint, SketchPointSerializationData} from "./point";
 
 export class Arc extends SketchObject {

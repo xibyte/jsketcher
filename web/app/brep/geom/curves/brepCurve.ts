@@ -1,6 +1,6 @@
 import NurbsCurve from "./nurbsCurve";
 import {Vec3} from 'math/l3space'
-import {areEqual} from '../../../math/math'
+import {areEqual} from 'math/commons'
 
 import {eqSqTol, ueq, veq, veq3, veqNeg} from "../tolerance";
 import curveIntersect from "../impl/curve/curves-isec";

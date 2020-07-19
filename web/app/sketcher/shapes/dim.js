@@ -1,6 +1,6 @@
-import * as math from '../../math/math'
+import * as math from '../../../../modules/math/commons'
 import * as vec from 'math/vec'
-import {DEG_RAD, lineLineIntersection2d, makeAngle0_360, pointToLineSignedDistance} from '../../math/math'
+import {DEG_RAD, lineLineIntersection2d, makeAngle0_360, pointToLineSignedDistance} from '../../../../modules/math/commons'
 import Vector from 'math/vector';
 import {Styles} from "../styles";
 import {TextHelper} from "./textHelper";

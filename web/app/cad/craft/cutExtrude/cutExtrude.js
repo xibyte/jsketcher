@@ -1,4 +1,4 @@
-import * as math from '../../../math/math'
+import * as math from '../../../../../modules/math/commons'
 import {enclose} from '../../../brep/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
 import {Matrix3} from 'math/matrix';

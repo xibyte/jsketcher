@@ -3,7 +3,7 @@ import BrepCurve from '../../brep/geom/curves/brepCurve';
 import NurbsCurve from '../../brep/geom/curves/nurbsCurve';
 import {Point} from '../../brep/geom/point'
 import {LUT} from '../../math/bezier-cubic'
-import {distanceAB, isCCW, makeAngle0_360} from '../../math/math'
+import {distanceAB, isCCW, makeAngle0_360} from '../../../../modules/math/commons'
 import {normalizeCurveEnds} from '../../brep/geom/impl/nurbs-ext';
 import Vector from '../../../../modules/math/vector';
 import {AXIS, ORIGIN} from '../../../../modules/math/l3space';

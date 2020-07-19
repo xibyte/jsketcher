@@ -1,6 +1,6 @@
 import {Ellipse} from './ellipse'
 
-import * as math from '../../math/math';
+import * as math from '../../../../modules/math/commons';
 import {swap} from '../../utils/utils'
 import {EndPoint} from "./point";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";

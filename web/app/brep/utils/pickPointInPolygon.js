@@ -1,5 +1,5 @@
 import libtess from 'libtess'
-import {area} from "../../math/math";
+import {area} from "../../../../modules/math/commons";
 
 export default function pickPointInside2dPolygon(polygon) {
   function vertexCallback(data, tr) {

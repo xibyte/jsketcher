@@ -1,6 +1,6 @@
 import Vector from 'math/vector';
 import * as cad_utils from '../../cad-utils'
-import * as math from '../../../math/math'
+import * as math from '../../../../../modules/math/commons'
 import {HashTable} from '../../../utils/hashmap'
 import {Mesh} from '../mesh'
 import revolve from './revolve'
