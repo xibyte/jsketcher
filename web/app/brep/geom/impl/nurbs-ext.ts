@@ -1,7 +1,7 @@
 import * as vec from "math/vec";
 import * as math from 'math/commons'
 import {eqEps, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
-import {fmin_bfgs} from "../../../math/optim";
+import {fmin_bfgs} from "math/optim/optim";
 import {Vec3} from "math/l3space";
 
 export interface NurbsCurveData {
