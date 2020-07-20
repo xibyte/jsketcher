@@ -24,11 +24,6 @@ export const extend = function(func, parent) {
   }
 };
 
-export function fillArray(a, fromIndex, toIndex,val) {
-  for (var i = fromIndex; i < toIndex; i++)
-    a[i] = val;
-}
-
 export function constRef(value) {
   return function() {
     return value;

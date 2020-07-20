@@ -97,4 +97,9 @@ export function insertAfter(arr, item, toAdd) {
   }
 }
 
+export function fillArray(a, fromIndex, toIndex,val) {
+  for (let i = fromIndex; i < toIndex; i++)
+    a[i] = val;
+}
+
 export const EMPTY_ARRAY = Object.freeze([]);

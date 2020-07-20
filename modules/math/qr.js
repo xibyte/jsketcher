@@ -1,5 +1,5 @@
-import {fillArray} from '../utils/utils'
-import {_vec} from "../../../modules/math/vec";
+import {_vec} from "./vec";
+import {fillArray} from "gems/iterables";
 
 /** @constructor */
 function QR(matrix) {
