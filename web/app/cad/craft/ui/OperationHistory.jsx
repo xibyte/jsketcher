@@ -10,7 +10,7 @@ import Button from 'ui/components/controls/Button';
 import {finishHistoryEditing, removeAndDropDependants} from '../craftHistoryUtils';
 import mapContext from 'ui/mapContext';
 import decoratorChain from 'ui/decoratorChain';
-import {EMPTY_OBJECT} from '../../../../../modules/gems/objects';
+import {EMPTY_OBJECT} from 'gems/objects';
 
 function OperationHistory({history, pointer, setHistoryPointer, remove, getOperation}) {
   let lastMod = history.length - 1;

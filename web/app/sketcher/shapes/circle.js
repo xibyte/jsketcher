@@ -1,7 +1,7 @@
 import {SketchObject} from './sketch-object'
 import {Param} from "./param";
 import {EndPoint} from "./point";
-import {distance} from "../../../../modules/math/distance";
+import {distance} from "math/distance";
 
 export const MIN_RADIUS = 100;
 

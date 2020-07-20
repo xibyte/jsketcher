@@ -1,6 +1,6 @@
 import Vector from 'math/vector';
 import {SceneFace, SceneSolid} from './sceneObject';
-import {createBoundingSurfaceFrom2DPoints} from '../../../../../modules/brep/brep-builder';
+import {createBoundingSurfaceFrom2DPoints} from 'brep/brep-builder';
 
 const INIT_WIDTH_H  = 750 * 0.5;
 const INIT_HEIGHT_H = 750 * 0.5;

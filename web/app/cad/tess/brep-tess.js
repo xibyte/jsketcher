@@ -1,7 +1,7 @@
 import Vector from 'math/vector';
 import ClipperLib from 'clipper-lib';
 import libtess from 'libtess'
-import tessellateSurface from '../../../../modules/geom/surfaces/surfaceTess';
+import tessellateSurface from 'geom/surfaces/surfaceTess';
 
 export default function A(face) {
   return tessellateLoopsOnSurface(face.surface, face.loops, loop => loop, seg => e.edge.curve, seg => seg.inverted)

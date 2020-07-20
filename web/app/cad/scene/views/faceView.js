@@ -1,7 +1,7 @@
-import {setAttribute} from '../../../../../modules/scene/objectData';
+import {setAttribute} from 'scene/objectData';
 import {brepFaceToGeom, tessDataToGeom} from '../wrappers/brepSceneObject';
 import {FACE} from '../entites';
-import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
+import * as SceneGraph from 'scene/sceneGraph';
 import {SketchObjectView} from './sketchObjectView';
 import {View} from './view';
 import {SketchLoopView} from './sketchLoopView';

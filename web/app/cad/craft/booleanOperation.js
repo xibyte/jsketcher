@@ -1,7 +1,7 @@
-import {intersect, subtract, union} from '../../../../modules/brep/operations/boolean';
-import {update as updateStitching} from '../../../../modules/brep/stitching';
-import {BREPValidator} from '../../../../modules/brep/brep-validator';
-import {Shell} from '../../../../modules/brep/topo/shell';
+import {intersect, subtract, union} from 'brep/operations/boolean';
+import {update as updateStitching} from 'brep/stitching';
+import {BREPValidator} from 'brep/brep-validator';
+import {Shell} from 'brep/topo/shell';
 import {MBrepShell} from '../model/mshell';
 
 const BoolOpMap = {

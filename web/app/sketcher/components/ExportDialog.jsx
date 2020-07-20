@@ -1,7 +1,7 @@
 import React from 'react';
 import {useStreamWithUpdater} from "ui/effects";
-import Window from "../../../../modules/ui/components/Window";
-import Stack from "../../../../modules/ui/components/Stack";
+import Window from "ui/components/Window";
+import Stack from "ui/components/Stack";
 import {SketcherActionButton} from "./SketcherActionButton";
 
 export function ExportDialog() {

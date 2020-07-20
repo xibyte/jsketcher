@@ -1,11 +1,11 @@
 import * as vec from 'math/vec';
 import {iteratePath} from '../cad-utils';
-import NurbsCurve from '../../../../modules/geom/curves/nurbsCurve';
-import {veqXYZ} from '../../../../modules/geom/tolerance';
-import curveTess, {curveTessParams} from '../../../../modules/geom/impl/curve/curve-tess';
+import NurbsCurve from 'geom/curves/nurbsCurve';
+import {veqXYZ} from 'geom/tolerance';
+import curveTess, {curveTessParams} from 'geom/impl/curve/curve-tess';
 import {distanceAB} from "math/distance";
 import {areEqual, TOLERANCE} from "math/equality";
-import {circleFromPoints, radiusOfCurvature} from "../../../../modules/geom/euclidean";
+import {circleFromPoints, radiusOfCurvature} from "geom/euclidean";
 
 export function getSketchBoundaries(sceneFace) {
   const boundary = {lines: [], arcs: [], circles: [], nurbses: []};

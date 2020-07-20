@@ -2,7 +2,7 @@ import {LoopPickTool} from './loop-pick'
 import {Constraints} from '../parametric'
 import Vector from 'math/vector';
 import {Arc} from '../shapes/arc'
-import {isCCW} from "../../../../modules/geom/euclidean";
+import {isCCW} from "geom/euclidean";
 
 export class OffsetTool extends LoopPickTool {
 

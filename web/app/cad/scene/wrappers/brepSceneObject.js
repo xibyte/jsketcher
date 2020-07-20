@@ -1,8 +1,8 @@
 import Vector from 'math/vector';
 import {SceneEdge, SceneFace, SceneSolid} from './sceneObject';
 import brepTess from '../../tess/brep-tess';
-import tessellateSurface from '../../../../../modules/geom/surfaces/surfaceTess';
-import {setAttribute} from '../../../../../modules/scene/objectData';
+import tessellateSurface from 'geom/surfaces/surfaceTess';
+import {setAttribute} from 'scene/objectData';
 import * as vec from 'math/vec';
 import {perpendicularVector} from "geom/euclidean";
 
