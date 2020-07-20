@@ -3,19 +3,21 @@ import {Face} from "./face";
 import {BrepSurface} from "geom/surfaces/brepSurface";
 import {HalfEdge} from "./edge";
 import {findLowestLeftPoint} from "geom/euclidean";
+import {Vertex} from "brep/topo/vertex";
 
 export class Loop extends TopoObject {
 
   face: Face;
   halfEdges: HalfEdge[];
-  encloses: any;
+
+  encloses = {
+    [Symbol.iterator]: () => enclosesGenerator(this.halfEdges)
+  };
 
   constructor(face: Face) {
     super();
     this.face = face;
     this.halfEdges = [];
-    this.encloses = undefined;
-    this.defineIterable('encloses', () => enclosesGenerator(this.halfEdges));
   }
 
   isCCW(surface: BrepSurface) {
@@ -68,7 +70,7 @@ export class Loop extends TopoObject {
   };
 }
 
-export function* enclosesGenerator(halfEdges) {
+export function* enclosesGenerator(halfEdges): Generator<[HalfEdge, HalfEdge, Vertex]> {
   let length = halfEdges.length;
   for (let i = 0; i < halfEdges.length; i++) {
     let j = (i + 1) % length;

@@ -13,10 +13,6 @@ export class TopoObject {
     });
   }
   
-  defineIterable(name, iteratorFactory) {
-    this[name] = {};
-    this[name][Symbol.iterator] = iteratorFactory;
-  }
 }
 
 export type OperationTemporaryData = any;

@@ -1,20 +1,27 @@
 import {TopoObject} from './topo-object'
 import {Face} from "./face";
 import {Loop} from "./loop";
-import {Edge} from "./edge";
+import {Vertex} from "brep/topo/vertex";
+import {Edge} from "brep/topo/edge";
+
 
 export class Shell extends TopoObject {
 
   faces: Face[];
-  edges: Edge[];
+
+  vertices = {
+    [Symbol.iterator]: () => verticesGenerator(this)
+  };
+
+  edges = {
+    [Symbol.iterator]: () => edgesGenerator(this.faces)
+  };
 
   constructor() {
     super();
     this.faces = [];
-    this.defineIterable('vertices', () => verticesGenerator(this));
-    this.defineIterable('edges', () => edgesGenerator(this.faces))
   }
-  
+
   clone(): Shell {
     let edgeClones = new Map();
     for (let e of this.edges) {
@@ -48,7 +55,7 @@ export class Shell extends TopoObject {
   }
 }
 
-export function* verticesGenerator(shell: Shell) {
+export function* verticesGenerator(shell: Shell): Generator<Vertex> {
   const seen = new Set();
   for (let face of shell.faces) {
     for (let edge of face.edges) {
@@ -60,7 +67,7 @@ export function* verticesGenerator(shell: Shell) {
   }
 }
 
-export function* edgesGenerator(faces: Face[]) {
+export function* edgesGenerator(faces: Face[]): Generator<Edge> {
   const visited = new Set();
   for (let face of faces) {
     for (let halfEdge of face.edges) {

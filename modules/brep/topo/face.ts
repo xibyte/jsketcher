@@ -4,8 +4,9 @@ import PIP from '../../../web/app/cad/tess/pip';
 import {veq} from "geom/tolerance";
 import {isOnPositiveHalfPlaneFromVec} from "../operations/boolean";
 import {BrepSurface} from "geom/surfaces/brepSurface";
-import {Shell} from "./shell";
+import {edgesGenerator, Shell} from "./shell";
 import {ProductionInfo} from "../../../web/app/cad/craft/engine/productionInfo";
+import {HalfEdge} from "brep/topo/edge";
 
 declare module './face' {
 
@@ -35,14 +36,20 @@ export class Face extends TopoObject {
   innerLoops: Loop[];
   private __2d: any;
 
+  loops = {
+    [Symbol.iterator]: () => loopsGenerator(this)
+  };
+  edges = {
+    [Symbol.iterator]: () => halfEdgesGenerator(this)
+  };
+
+
   constructor(surface: BrepSurface) {
     super();
     this.surface = surface;
     this.shell = null;
     this.outerLoop = new Loop(this);
     this.innerLoops = [];
-    this.defineIterable('loops', () => loopsGenerator(this));
-    this.defineIterable('edges', () => halfEdgesGenerator(this));
   }
 
   get id(): string {
@@ -153,7 +160,7 @@ export class Face extends TopoObject {
   }
 }
 
-export function* loopsGenerator(face) {
+export function* loopsGenerator(face): Generator<Loop> {
   if (face.outerLoop !== null) {
     yield face.outerLoop;
   }
@@ -162,7 +169,7 @@ export function* loopsGenerator(face) {
   }
 }
 
-export function* halfEdgesGenerator(face) {
+export function* halfEdgesGenerator(face): Generator<HalfEdge> {
   for (let loop of face.loops) {
     for (let halfEdge of loop.halfEdges) {
       yield halfEdge;
