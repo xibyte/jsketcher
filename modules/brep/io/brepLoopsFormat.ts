@@ -1,13 +1,14 @@
-import {Loop} from "brep/topo/loop";
 import {Shell} from "brep/topo/shell";
 import {Vec3} from "math/vec";
 import {Vertex} from "brep/topo/vertex";
 
+/**
+ * Format with loosing information used in unit tests for evaluation expected results
+ */
 export interface BREPLoopsFormat {
   format: 'LOOPS';
   vertices: Vec3[];
   faces: number[][];
-
 }
 
 export function toLoops(shell: Shell, precisionFn: (number) => number): BREPLoopsFormat {
