@@ -4,26 +4,8 @@ import PIP from '../../../web/app/cad/tess/pip';
 import {veq} from "geom/tolerance";
 import {isOnPositiveHalfPlaneFromVec} from "../operations/boolean";
 import {BrepSurface} from "geom/surfaces/brepSurface";
-import {edgesGenerator, Shell} from "./shell";
-import {ProductionInfo} from "../../../web/app/cad/craft/engine/productionInfo";
+import {Shell} from "./shell";
 import {HalfEdge} from "brep/topo/edge";
-
-declare module './face' {
-
-  interface Face {
-    data: {
-      id: string,
-      productionInfo: ProductionInfo,
-      tessellation: {
-        format: string,
-        data: any;
-      }
-      externals: {
-        ref: number
-      }
-    }
-  }
-}
 
 export class Face extends TopoObject {
 

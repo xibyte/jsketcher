@@ -29,14 +29,14 @@ export default class BrepBuilder {
     return this._loop.halfEdges[this._loop.halfEdges.length - 1];
   }
 
-  face(surface?: BrepSurface = null): BrepBuilder {
+  face(surface?: BrepSurface): BrepBuilder {
     this._face = new Face(surface ? surface : null);
     this._shell.faces.push(this._face);
     this._loop = null;
     return this;  
   }
 
-  loop(vertices: Vertex[]): BrepBuilder {
+  loop(vertices?: Vertex[]): BrepBuilder {
     if (this._loop === null) {
       this._loop = this._face.outerLoop;
     } else {
