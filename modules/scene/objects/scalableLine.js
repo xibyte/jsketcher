@@ -10,8 +10,8 @@ import {ORIGIN} from "math/vector";
 
 export default class ScalableLine extends Mesh {
 
-  constructor(tesselation, width, color, opacity, smooth, ambient) {
-    super(createGeometry(tesselation, smooth), createMaterial(color, opacity, ambient));
+  constructor(tessellation, width, color, opacity, smooth, ambient) {
+    super(createGeometry(tessellation, smooth), createMaterial(color, opacity, ambient));
     this.width = width;
     this.morphTargetInfluences = [0];
   }
