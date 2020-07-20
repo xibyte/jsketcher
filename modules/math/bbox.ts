@@ -20,8 +20,7 @@ export default class BBox {
     this.maxZ = -Number.MAX_VALUE;
   }
   
-  checkBounds(x: number, y: number, z: number): void {
-    z = z || 0;
+  checkBounds(x: number, y: number, z: number = 0): void {
     this.minX = Math.min(this.minX, x);
     this.minY = Math.min(this.minY, y);
     this.minZ = Math.min(this.minZ, z);
