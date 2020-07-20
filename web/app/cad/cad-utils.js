@@ -1,5 +1,5 @@
 import Vector from 'math/vector';
-import BBox from '../math/bbox'
+import BBox from 'math/bbox'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
 import {Matrix3x4} from 'math/matrix';
 import {equal} from 'math/equality';
