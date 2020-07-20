@@ -1,9 +1,9 @@
-import * as utils from '../../utils/utils'
-import QR from '../../math/qr'
+import QR from 'math/qr'
 import LMOptimizer from 'math/optim/lm'
 import {ConstantWrapper, EqualsTo} from './solverConstraints'
 import {dog_leg} from 'math/optim/dogleg'
 import {newVector} from 'math/vec';
+import {fillArray} from "gems/iterables";
 
 
 /** @constructor */
@@ -38,7 +38,7 @@ System.prototype.makeJacobian = function() {
 
     var cParams = c.params;
     var grad = [];
-    utils.fillArray(grad, 0, cParams.length, 0);
+    fillArray(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (var p = 0; p < cParams.length; p++) {
@@ -56,7 +56,7 @@ System.prototype.fillJacobian = function(jacobi) {
 
     var cParams = c.params;
     var grad = [];
-    utils.fillArray(grad, 0, cParams.length, 0);
+    fillArray(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (var p = 0; p < cParams.length; p++) {
@@ -94,7 +94,7 @@ System.prototype.calcGrad_ = function(out) {
 
     var cParams = c.params;
     var grad = [];
-    utils.fillArray(grad, 0, cParams.length, 0);
+    fillArray(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (var p = 0; p < cParams.length; p++) {
@@ -116,7 +116,7 @@ System.prototype.calcGrad = function(out) {
 
     var cParams = c.params;
     var grad = [];
-    utils.fillArray(grad, 0, cParams.length, 0);
+    fillArray(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (var p = 0; p < cParams.length; p++) {
