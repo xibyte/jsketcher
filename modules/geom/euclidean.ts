@@ -1,9 +1,8 @@
-import BBox from "../math/bbox";
+import BBox from "math/bbox";
 
-import {TOLERANCE} from "math/equality";
 import * as vec from "math/vec";
 import {perp2d} from "math/vec";
-import {eqTol} from "geom/tolerance";
+import {TIGHT_TOLERANCE, eqTol} from "geom/tolerance";
 import {distance} from "math/distance";
 import {IDENTITY_BASIS3} from "math/basis";
 import Vector from "math/vector";
@@ -15,7 +14,7 @@ export function circleFromPoints(p1, p2, p3) {
   var cd = (offset - p3.x * p3.x - p3.y * p3.y) / 2.0;
   var det = (p1.x - p2.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p2.y);
 
-  if (Math.abs(det) < TOLERANCE) {
+  if (Math.abs(det) < 1e-6) {
     return null;
   }
 
@@ -68,7 +67,7 @@ export function polygonOffsetByDelta(polygon, delta) {
 }
 
 export function isPointInsidePolygon(inPt, inPolygon) {
-  var EPSILON = TOLERANCE;
+  var EPSILON = TIGHT_TOLERANCE;
 
   var polyLen = inPolygon.length;
 
