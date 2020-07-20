@@ -1,6 +1,7 @@
 import {clamp} from "math/commons";
+import {XYZ} from "math/xyz";
 
-export default class Vector {
+export default class Vector implements XYZ {
 
   x: number;
   y: number;
@@ -26,7 +27,7 @@ export default class Vector {
     return this;
   }
 
-  setV(data: Vector): Vector {
+  setV(data: XYZ): Vector {
     this.x = data.x;
     this.y = data.y;
     this.z = data.z;
@@ -49,7 +50,7 @@ export default class Vector {
     return this.set(this.x / scalar, this.y / scalar, this.z / scalar);
   }
 
-  dot(vector: Vector): number {
+  dot(vector: XYZ): number {
     return this.x * vector.x + this.y * vector.y + this.z * vector.z;
   }
 
@@ -65,19 +66,19 @@ export default class Vector {
     return this.dot(this);
   }
 
-  distanceToSquared(a: Vector): number {
+  distanceToSquared(a: XYZ): number {
     return this.minus(a).lengthSquared();
   }
 
-  distanceTo(a: Vector): number {
+  distanceTo(a: XYZ): number {
     return Math.sqrt(this.distanceToSquared(a));
   }
 
-  minus(vector: Vector): Vector {
+  minus(vector: XYZ): Vector {
     return new Vector(this.x - vector.x, this.y - vector.y, this.z - vector.z);
   }
 
-  _minus(vector: Vector): Vector {
+  _minus(vector: XYZ): Vector {
     this.x -= vector.x;
     this.y -= vector.y;
     this.z -= vector.z;
@@ -95,18 +96,18 @@ export default class Vector {
     return new Vector(this.x + x, this.y + y, this.z + z);
   }
 
-  plus(vector: Vector): Vector {
+  plus(vector: XYZ): Vector {
     return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z);
   }
 
-  _plus(vector: Vector): Vector {
+  _plus(vector: XYZ): Vector {
     this.x += vector.x;
     this.y += vector.y;
     this.z += vector.z;
     return this;
   }
 
-  normalize() {
+  normalize(): Vector {
     let mag = this.length();
     if (mag === 0.0) {
       return new Vector(0.0, 0.0, 0.0);
@@ -114,7 +115,7 @@ export default class Vector {
     return new Vector(this.x / mag, this.y / mag, this.z / mag);
   }
 
-  _normalize() {
+  _normalize(): Vector {
     let mag = this.length();
     if (mag === 0.0) {
       return this.set(0, 0, 0)
@@ -122,11 +123,11 @@ export default class Vector {
     return this.set(this.x / mag, this.y / mag, this.z / mag)
   };
 
-  cross(a: Vector): Vector {
+  cross(a: XYZ): Vector {
     return this.copy()._cross(a);
   };
 
-  _cross(a: Vector): Vector {
+  _cross(a: XYZ): Vector {
     return this.set(
       this.y * a.z - this.z * a.y,
       this.z * a.x - this.x * a.z,
@@ -150,13 +151,13 @@ export default class Vector {
     return [this.x, this.y, this.z];
   }
 
-  copyToData(data) {
+  copyToData(data: [number, number, number]): void {
     data[0] = this.x;
     data[1] = this.y;
     data[2] = this.z;
   }
 
-  angleBetween(vecB: Vector) {
+  angleBetween(vecB: XYZ): number {
     const cosA = clamp(this.dot(vecB), -1, 1);
     const sinA = clamp(this.cross(vecB).length(), -1, 1);
     return Math.atan2(sinA, cosA);

@@ -6,7 +6,7 @@ import CSys from 'math/csys';
 import {MSketchLoop} from './mloop';
 import {ProductionInfo} from './productionInfo';
 import {MBrepShell, MShell} from "./mshell";
-import BBox from "../../math/bbox";
+import BBox from "math/bbox";
 import {Basis, BasisForPlane} from "math/basis";
 
 export class MFace extends MObject {

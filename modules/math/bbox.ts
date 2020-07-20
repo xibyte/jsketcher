@@ -1,7 +1,16 @@
 import Vector from 'math/vector';
+import {XYZ} from "math/xyz";
+import {Vec3} from "math/vec";
 
 export default class BBox {
-  
+
+  minX: number;
+  minY: number;
+  minZ: number;
+  maxX: number;
+  maxY: number;
+  maxZ: number;
+
   constructor() {
     this.minX = Number.MAX_VALUE;
     this.minY = Number.MAX_VALUE;
@@ -11,7 +20,7 @@ export default class BBox {
     this.maxZ = -Number.MAX_VALUE;
   }
   
-  checkBounds(x, y, z) {
+  checkBounds(x: number, y: number, z: number): void {
     z = z || 0;
     this.minX = Math.min(this.minX, x);
     this.minY = Math.min(this.minY, y);
@@ -21,41 +30,41 @@ export default class BBox {
     this.maxZ = Math.max(this.maxZ, z);
   }
 
-  checkPoint(p) {
+  checkPoint(p: XYZ): void {
     this.checkBounds(p.x, p.y, p.z);
   }
 
-  checkData([x, y, z]) {
+  checkData([x, y, z]: Vec3): void {
     this.checkBounds(x, y, z);
   }
 
-  center() {
+  center(): Vector {
     return new Vector(this.minX + (this.maxX - this.minX) / 2, 
                       this.minY + (this.maxY - this.minY) / 2,
                       this.minZ + (this.maxZ - this.minZ) / 2)
   }
 
-  min() {
+  min(): Vector {
     return new Vector(this.minX, this.minY, this.minZ)
   }
 
-  max() {
+  max(): Vector {
     return new Vector(this.maxX, this.maxY, this.maxZ)
   }
 
-  width() {
+  width(): number {
     return this.maxX - this.minX;
   }
 
-  height() {
+  height(): number {
     return this.maxY - this.minY;
   }
 
-  depth() {
+  depth(): number {
     return this.maxZ - this.minZ;
   }
 
-  expand(delta) {
+  expand(delta: number): void {
     this.minX -= delta;
     this.minY -= delta;
     this.minZ -= delta;
@@ -64,7 +73,7 @@ export default class BBox {
     this.maxZ += delta;
   }
 
-  toPolygon() {
+  toPolygon(): [Vector, Vector, Vector, Vector] {
     return [
       new Vector(this.minX, this.minY, 0),
       new Vector(this.maxX, this.minY, 0),

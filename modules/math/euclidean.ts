@@ -1,4 +1,4 @@
-import BBox from "../../web/app/math/bbox";
+import BBox from "./bbox";
 
 import {TOLERANCE} from "math/equality";
 import * as vec from "math/vec";
