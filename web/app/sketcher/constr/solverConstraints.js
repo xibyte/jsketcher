@@ -1,8 +1,9 @@
-import {fillArray} from '../../utils/utils'
+import {fillArray} from "gems/iterables";
 
 /**
  * This intermediate layer should be eliminated since constraint server isn't used anymore
  */
+
 function createByConstraintName(name, params, values) {
   switch (name) {
     case "equal":
