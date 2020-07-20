@@ -1,6 +1,6 @@
 import {Ref} from './shapes/ref';
-import Vector from '../../../modules/math/vector';
-import {distanceAB} from "../../../modules/math/distance";
+import Vector from 'math/vector';
+import {distanceAB} from "math/distance";
 
 class AbstractConstraint {
   

@@ -1,4 +1,4 @@
-import {createSmoothMeshGeometryFromData} from '../../../../../modules/scene/geoms';
+import {createSmoothMeshGeometryFromData} from 'scene/geoms';
 
 export function loftPreviewGeomProvider(params, services) {
 

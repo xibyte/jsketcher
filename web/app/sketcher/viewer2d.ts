@@ -11,7 +11,7 @@ import Vector from 'math/vector';
 import * as draw_utils from './shapes/draw-utils';
 import sketcherStreams, {SketcherStreams} from './sketcherStreams';
 import {BBox, IO} from "./io";
-import {NOOP} from "../../../modules/gems/func";
+import {NOOP} from "gems/func";
 import {Shape} from "./shapes/shape";
 import {SketchObject} from "./shapes/sketch-object";
 import {Styles} from './styles';

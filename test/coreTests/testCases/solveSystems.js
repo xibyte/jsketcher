@@ -1,5 +1,5 @@
 import {assertEquals, assertFalse, assertTrue} from '../utils/asserts';
-import {NOOP} from '../../../modules/gems/func';
+import {NOOP} from 'gems/func';
 
 export const TEST_MODE = 'sketcherUI';
 

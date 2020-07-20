@@ -7,8 +7,8 @@ import {useStream} from "ui/effects";
 import CheckboxControl from "ui/components/controls/CheckboxControl";
 import Window from "ui/components/Window";
 import Field from "ui/components/controls/Field";
-import Label from "../../../../modules/ui/components/controls/Label";
-import {EMPTY_OBJECT} from "../../../../modules/gems/objects";
+import Label from "ui/components/controls/Label";
+import {EMPTY_OBJECT} from "gems/objects";
 import {SketcherAppContext} from "./SketcherAppContext";
 
 export function ConstraintEditor() {

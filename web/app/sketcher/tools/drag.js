@@ -1,6 +1,6 @@
 import {Tool} from './tool'
 import {toast} from "react-toastify";
-import {distance} from "../../../../modules/math/distance";
+import {distance} from "math/distance";
 
 export class DragTool extends Tool {
   

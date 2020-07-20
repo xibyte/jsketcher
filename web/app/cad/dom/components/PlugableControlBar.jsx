@@ -5,7 +5,7 @@ import Fa from 'ui/components/Fa';
 import {toIdAndOverrides} from '../../actions/actionRef';
 import {isMenuAction} from '../menu/menuPlugin';
 import {menuAboveElementHint} from '../menu/menuUtils';
-import {useStream} from "../../../../../modules/ui/effects";
+import {useStream} from "ui/effects";
 import {ActionButtonBehavior} from "../../actions/ActionButtonBehavior";
 
 export default function PlugableControlBar() {

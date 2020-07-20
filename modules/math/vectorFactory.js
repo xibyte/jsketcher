@@ -1,4 +1,4 @@
-import {veqXYZ} from '../geom/tolerance';
+import {veqXYZ} from 'geom/tolerance';
 import Vector from './vector';
 
 export default class VectorFactory {

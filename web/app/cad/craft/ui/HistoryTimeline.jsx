@@ -1,16 +1,16 @@
 import React from 'react';
 import ls from './HistoryTimeline.less';
 import connect from 'ui/connect';
-import decoratorChain from '../../../../../modules/ui/decoratorChain';
+import decoratorChain from 'ui/decoratorChain';
 import {finishHistoryEditing, removeAndDropDependants} from '../craftHistoryUtils';
-import mapContext from '../../../../../modules/ui/mapContext';
+import mapContext from 'ui/mapContext';
 import ImgIcon from 'ui/components/ImgIcon';
 import cx from 'classnames';
-import Fa from '../../../../../modules/ui/components/Fa';
+import Fa from 'ui/components/Fa';
 import {menuAboveElementHint} from '../../dom/menu/menuUtils';
 import {combine} from 'lstream';
-import {EMPTY_OBJECT} from '../../../../../modules/gems/objects';
-import {aboveElement} from '../../../../../modules/ui/positionUtils';
+import {EMPTY_OBJECT} from 'gems/objects';
+import {aboveElement} from 'ui/positionUtils';
 
 @connect(streams => combine(streams.craft.modifications, streams.operation.registry, streams.wizard.insertOperation)
   .map(([modifications, operationRegistry, insertOperationReq]) => ({

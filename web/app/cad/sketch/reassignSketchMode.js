@@ -1,6 +1,6 @@
 import React from 'react';
-import mapContext from '../../../../modules/ui/mapContext';
-import Button from '../../../../modules/ui/components/controls/Button';
+import mapContext from 'ui/mapContext';
+import Button from 'ui/components/controls/Button';
 
 export default function initReassignSketchMode(ctx) {
   ctx.services.ui.registerComponent('ReassignSketchTool', ReassignSketchTool);

@@ -2,7 +2,7 @@ import React from 'react';
 
 import 'ui/styles/global/index.less';
 import AppTabs from "./AppTabs";
-import {StreamsContext} from "../../../../../modules/ui/streamsContext";
+import {StreamsContext} from "ui/streamsContext";
 import {AppContext} from "./AppContext";
 
 export default function WebApplication(props) {

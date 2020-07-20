@@ -3,7 +3,7 @@ import connect from 'ui/connect';
 import Toolbar from 'ui/components/Toolbar';
 import {ConnectedActionButton, ToolbarActionButtons} from './PlugableToolbar';
 import ls from './HeadsUpToolbar.less';
-import {combine} from '../../../../../modules/lstream';
+import {combine} from 'lstream';
 
 export const HeadsUpToolbar = connect(streams => combine(
     streams.ui.toolbars.headsUp,

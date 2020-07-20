@@ -4,7 +4,7 @@ import {clone, EMPTY_OBJECT} from 'gems/objects';
 import materializeParams from '../materializeParams';
 import {createFunctionList} from 'gems/func';
 import {onParamsUpdate} from '../cutExtrude/extrudeOperation';
-import {propsChangeTracker} from '../../../../../modules/lstream/utils';
+import {propsChangeTracker} from 'lstream/utils';
 
 export function activate(ctx) {
 

@@ -1,6 +1,6 @@
 
 import {getEncloseDetails, resolveExtrudeVector} from './cutExtrude';
-import {curveTessParams} from "../../../../../modules/geom/impl/curve/curve-tess";
+import {curveTessParams} from "geom/impl/curve/curve-tess";
 import Vector from "math/vector";
 import {TriangulatePolygons} from "../../tess/triangulation";
 import {createMeshGeometry} from "scene/geoms";

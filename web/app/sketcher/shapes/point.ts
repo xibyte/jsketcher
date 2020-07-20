@@ -3,7 +3,7 @@ import {DrawPoint} from './draw-utils'
 import Vector from 'math/vector';
 import {Param} from "./param";
 import {ConstraintDefinitions} from "../constr/ANConstraints";
-import {dfs} from "../../../../modules/gems/traverse";
+import {dfs} from "gems/traverse";
 import {SketchSegmentSerializationData} from "./segment";
 
 export class EndPoint extends SketchObject {

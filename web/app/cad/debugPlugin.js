@@ -6,8 +6,8 @@ import Vector from 'math/vector';
 import * as vec from 'math/vec';
 import React from 'react';
 import {readSketchFloat} from './sketch/sketchReader';
-import {toLoops} from '../../../modules/brep/io/brepLoopsFormat';
-import curveTess from '../../../modules/geom/impl/curve/curve-tess';
+import {toLoops} from 'brep/io/brepLoopsFormat';
+import curveTess from 'geom/impl/curve/curve-tess';
 import {LOG_FLAGS} from './logFlags';
 import {state} from "lstream";
 

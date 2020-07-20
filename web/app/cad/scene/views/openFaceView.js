@@ -1,4 +1,4 @@
-import {setAttribute} from '../../../../../modules/scene/objectData';
+import {setAttribute} from 'scene/objectData';
 import {FACE, SHELL} from '../entites';
 import {NULL_COLOR, SELECTION_COLOR, setFacesColor, SketchingView} from './faceView';
 import {View} from './view';

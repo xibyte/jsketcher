@@ -12,7 +12,7 @@ import {Scope} from "./sketcher/components/Scope";
 import {createElement} from "./utils/domUtils";
 import {SKETCHER_STORAGE_PREFIX} from "./sketcher/project";
 import {Dock, dockBtn} from "./sketcher/components/Dock";
-import {DIRECTIONS, ResizeHelper} from "../../modules/ui/components/Window";
+import {DIRECTIONS, ResizeHelper} from "ui/components/Window";
 import {getSketcherAction} from "./sketcher/actions";
 import {initShortkeys} from "./sketcher/shortkeys";
 

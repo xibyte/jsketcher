@@ -1,6 +1,6 @@
 import {PROJECTS_PREFIX, SKETCH_SUFFIX} from '../projectPlugin';
 import {ProjectManager} from './ProjectManager';
-import exportTextData from '../../../../modules/gems/exportTextData';
+import exportTextData from 'gems/exportTextData';
 import {SketchFormat_V3} from "../../sketcher/io";
 import {ApplicationContext} from "context";
 import {OperationRequest} from "../craft/craftPlugin";

@@ -2,8 +2,8 @@ import schema from './moveDatumOpSchema';
 import {MDatum} from '../../../model/mdatum';
 import MoveDatumWizard from './MoveDatumWizard';
 import {roundInteractiveInput} from '../../wizard/roundUtils';
-import {EMPTY_ARRAY} from '../../../../../../modules/gems/iterables';
-import {pointAsText} from '../../../../../../modules/renders';
+import {EMPTY_ARRAY} from 'gems/iterables';
+import {pointAsText} from 'renders';
 import {DatumParamsRenderer} from '../DatumParamsRenderer';
 
 

@@ -1,7 +1,7 @@
 import {Arc} from '../shapes/arc'
 import {Tool} from './tool'
 import Vector from 'math/vector';
-import {distance} from "../../../../modules/math/distance";
+import {distance} from "math/distance";
 
 export class AddArcTool extends Tool {
 

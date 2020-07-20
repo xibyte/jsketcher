@@ -1,12 +1,12 @@
 import verb from 'verb-nurbs'
-import BrepCurve from '../../../../modules/geom/curves/brepCurve';
-import NurbsCurve from '../../../../modules/geom/curves/nurbsCurve';
-import {makeAngle0_360} from '../../../../modules/math/commons'
-import {normalizeCurveEnds} from '../../../../modules/geom/impl/nurbs-ext';
-import Vector from '../../../../modules/math/vector';
-import CSys from "../../../../modules/math/csys";
-import {distanceAB} from "../../../../modules/math/distance";
-import {isCCW} from "../../../../modules/geom/euclidean";
+import BrepCurve from 'geom/curves/brepCurve';
+import NurbsCurve from 'geom/curves/nurbsCurve';
+import {makeAngle0_360} from 'math/commons'
+import {normalizeCurveEnds} from 'geom/impl/nurbs-ext';
+import Vector from 'math/vector';
+import CSys from "math/csys";
+import {distanceAB} from "math/distance";
+import {isCCW} from "geom/euclidean";
 
 const RESOLUTION = 20;
 

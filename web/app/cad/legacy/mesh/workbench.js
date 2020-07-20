@@ -4,9 +4,9 @@ import {HashTable} from '../../../utils/hashmap'
 import {Mesh} from '../mesh'
 import revolve from './revolve'
 import {Triangulate} from '../../tess/triangulation'
-import {distanceAB3} from "../../../../../modules/math/distance";
-import {areEqual, equal, strictEqual} from "../../../../../modules/math/equality";
-import {isPointInsidePolygon} from "../../../../../modules/geom/euclidean";
+import {distanceAB3} from "math/distance";
+import {areEqual, equal, strictEqual} from "math/equality";
+import {isPointInsidePolygon} from "geom/euclidean";
 
 export function sortPolygons(polygons) {
   function Loop(polygon) {

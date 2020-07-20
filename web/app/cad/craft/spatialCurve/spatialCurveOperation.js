@@ -1,4 +1,4 @@
-import CSys from '../../../../../modules/math/csys';
+import CSys from 'math/csys';
 import {MDatum} from '../../model/mdatum';
 
 import spatialCurveOpSchema from './spatialCurveOpSchema';

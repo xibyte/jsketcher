@@ -3,7 +3,7 @@ import {Loop} from './loop'
 import PIP from '../../../web/app/cad/tess/pip';
 import {veq} from "geom/tolerance";
 import {isOnPositiveHalfPlaneFromVec} from "../operations/boolean";
-import {BrepSurface} from "../../geom/surfaces/brepSurface";
+import {BrepSurface} from "geom/surfaces/brepSurface";
 import {Shell} from "./shell";
 import {ProductionInfo} from "../../../web/app/cad/craft/engine/productionInfo";
 

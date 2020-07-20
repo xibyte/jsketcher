@@ -1,4 +1,4 @@
-import {sq} from "../../../../modules/math/commons";
+import {sq} from "math/commons";
 
 export function greaterThanConstraint(val) {
   const K = 100;

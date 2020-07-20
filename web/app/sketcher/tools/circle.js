@@ -1,6 +1,6 @@
 import {Tool} from './tool'
 import {Circle} from '../shapes/circle'
-import {distance} from "../../../../modules/math/distance";
+import {distance} from "math/distance";
 
 export class EditCircleTool extends Tool {
   constructor(viewer) {

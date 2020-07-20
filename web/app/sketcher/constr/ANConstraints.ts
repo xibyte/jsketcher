@@ -2,9 +2,9 @@ import {Param} from '../shapes/param';
 import {DEG_RAD, makeAngle0_360} from "math/commons";
 import {COS_FN, Polynomial, POW_1_FN, POW_2_FN, POW_3_FN, SIN_FN} from "./polynomial";
 
-import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from "../../../../modules/geom/curves/bezierCubic";
+import {cubicBezierDer1, cubicBezierDer2, cubicBezierPoint} from "geom/curves/bezierCubic";
 import {greaterThanConstraint, lessThanConstraint} from "./barriers";
-import {genericCurveStep} from "../../../../modules/geom/impl/nurbs-ext";
+import {genericCurveStep} from "geom/impl/nurbs-ext";
 import {_normalize} from "math/vec";
 import {
   AngleBetweenConstraintIcon,

@@ -6,7 +6,7 @@ import {
   SphereGeometry, Vector2, Vector3
 } from 'three';
 import {CSYS_SIZE_MODEL} from '../../datum/csysObject';
-import {DisposableMesh} from '../../../../../../modules/scene/objects/disposableMesh';
+import {DisposableMesh} from 'scene/objects/disposableMesh';
 
 export default class ControlPointObject3D extends DatumObject3D {
   

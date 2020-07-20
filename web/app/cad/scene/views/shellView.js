@@ -1,6 +1,6 @@
 import {View} from './view';
-import * as SceneGraph from '../../../../../modules/scene/sceneGraph';
-import {getAttribute, setAttribute} from '../../../../../modules/scene/objectData';
+import * as SceneGraph from 'scene/sceneGraph';
+import {getAttribute, setAttribute} from 'scene/objectData';
 import {createSolidMaterial} from '../wrappers/sceneObject';
 import {FaceView, SELECTION_COLOR} from './faceView';
 import {EdgeView} from './edgeView';

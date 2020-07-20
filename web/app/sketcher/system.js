@@ -1,4 +1,4 @@
-import {addToSetInMap, removeFromSetInMap, removeInPlace} from '../../../modules/gems/iterables';
+import {addToSetInMap, removeFromSetInMap, removeInPlace} from 'gems/iterables';
 import {ParametricManager} from './parametric';
 
 

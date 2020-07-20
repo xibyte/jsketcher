@@ -5,7 +5,7 @@ import Fa from 'ui/components/Fa';
 import {ActionButtonBehavior} from '../../actions/ActionButtonBehavior';
 import connect from 'ui/connect';
 import {combine, merger} from 'lstream';
-import {useStream} from "../../../../../modules/ui/effects";
+import {useStream} from "ui/effects";
 
 function MenuHolder({menus}) {
   return menus.map(({id, actions}) => <ConnectedActionMenu key={id} menuId={id} actions={actions} />); 

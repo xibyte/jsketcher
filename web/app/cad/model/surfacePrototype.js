@@ -1,6 +1,6 @@
-import {createBoundingSurfaceFrom2DPoints} from '../../../../modules/brep/brep-builder';
-import NurbsSurface from '../../../../modules/geom/surfaces/nurbsSurface';
-import {BrepSurface} from '../../../../modules/geom/surfaces/brepSurface';
+import {createBoundingSurfaceFrom2DPoints} from 'brep/brep-builder';
+import NurbsSurface from 'geom/surfaces/nurbsSurface';
+import {BrepSurface} from 'geom/surfaces/brepSurface';
 
 export class SurfacePrototype {
   

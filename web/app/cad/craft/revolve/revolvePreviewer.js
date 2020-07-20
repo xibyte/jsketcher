@@ -1,5 +1,5 @@
 import {createMeshGeometry} from 'scene/geoms';
-import {DEG_RAD} from '../../../../../modules/math/commons';
+import {DEG_RAD} from 'math/commons';
 import {revolveToTriangles} from '../../legacy/mesh/revolve';
 
 let cache = {};

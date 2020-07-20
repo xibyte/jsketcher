@@ -1,4 +1,4 @@
-import {state} from '../../../../../modules/lstream';
+import {state} from 'lstream';
 
 export function activate({services, streams}) {
 
