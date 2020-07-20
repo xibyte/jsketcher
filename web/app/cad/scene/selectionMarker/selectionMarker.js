@@ -1,4 +1,4 @@
-import * as stitching from 'brep/stitching'
+import * as stitching from 'brep/operations/stitching'
 import {AbstractSelectionMarker, setFacesColor} from "./abstractSelectionMarker";
 
 export class SelectionMarker extends AbstractSelectionMarker {

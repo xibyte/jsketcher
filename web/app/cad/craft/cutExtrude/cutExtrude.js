@@ -1,4 +1,4 @@
-import {enclose} from 'brep/brep-enclose'
+import {enclose} from 'brep/operations/brep-enclose'
 import {BooleanOperation, combineShells} from '../booleanOperation'
 import {Matrix3x4} from 'math/matrix';
 import {equal} from 'math/equality';

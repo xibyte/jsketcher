@@ -1,4 +1,4 @@
-import {Edge} from './topo/edge'
+import {Edge} from '../topo/edge'
 import {equal} from "math/equality";
 
 export default function({curve, start}) {

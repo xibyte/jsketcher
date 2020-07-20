@@ -29,7 +29,7 @@ export default class BrepBuilder {
     return this._loop.halfEdges[this._loop.halfEdges.length - 1];
   }
 
-  face(surface: BrepSurface): BrepBuilder {
+  face(surface?: BrepSurface = null): BrepBuilder {
     this._face = new Face(surface ? surface : null);
     this._shell.faces.push(this._face);
     this._loop = null;
