@@ -1,7 +1,18 @@
+import {Loop} from "brep/topo/loop";
+import {Shell} from "brep/topo/shell";
+import {Vec3} from "math/vec";
+import {Vertex} from "brep/topo/vertex";
 
-export function toLoops(shell, presicion) {
+export interface BREPLoopsFormat {
+  format: 'LOOPS';
+  vertices: Vec3[];
+  faces: number[][];
 
-  const fl = presicion || (v => v);
+}
+
+export function toLoops(shell: Shell, precisionFn: (number) => number): BREPLoopsFormat {
+
+  const fl = precisionFn || (v => v);
   
   const vertices = [];
   for (let v of shell.vertices) {
@@ -29,7 +40,7 @@ export function toLoops(shell, presicion) {
   };
 }
 
-function sortByXYZ(vertices) {
+function sortByXYZ(vertices: Vertex[]) {
   vertices.sort((v1, v2) => {
     let c = v1.point.x - v2.point.x;
     if (c === 0) {
