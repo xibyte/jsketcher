@@ -6,7 +6,7 @@ import {BrepSurface} from '../geom/surfaces/brepSurface';
 import {Plane} from '../geom/impl/plane';
 import Vector from '../../../../modules/math/vector';
 import NullSurface from '../geom/surfaces/nullSurface';
-import BBox from '../../math/bbox';
+import BBox from 'math/bbox';
 import NurbsCurve from '../geom/curves/nurbsCurve';
 import BrepCurve from '../geom/curves/brepCurve';
 import {BREPData} from "../../cad/craft/engine/brepData";

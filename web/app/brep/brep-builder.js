@@ -5,7 +5,7 @@ import {Face} from './topo/face';
 import {Loop} from './topo/loop';
 import {Vertex} from './topo/vertex';
 import {normalOfCCWSeq} from '../cad/cad-utils';
-import BBox from '../math/bbox';
+import BBox from '../../../modules/math/bbox';
 import NurbsSurface from './geom/surfaces/nurbsSurface';
 import {BrepSurface} from './geom/surfaces/brepSurface';
 import EdgeIndex from './edgeIndex';
