@@ -1,15 +1,4 @@
-export const BOOLEAN_TYPES = {
-  UNION : 1,
-  SUBTRACT: 2,
-  INTERSECT: 3
-};
-
-export const CURVE_TYPES = {
-  SEGMENT: 1,
-  B_SPLINE: 2,
-  CIRCLE: 3,
-  ARC: 4
-};
+import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 
 export const DEFLECTION = 2;
 export const E0_TOLERANCE = 1e-3;
@@ -46,7 +35,7 @@ export function readSketchContour(contour, face) {
     if (s.isCurve) {
       if (s.constructor.name === 'Circle') {
         const dir = face.csys.z.data();
-        path.push({TYPE: CURVE_TYPES.CIRCLE, c: tr.apply(s.c).data(), dir, r: s.r});
+        path.push({TYPE: PRIMITIVE_TYPES.CIRCLE, c: tr.apply(s.c).data(), dir, r: s.r});
       } else if (s.constructor.name === 'Arc') {
         let a = s.inverted ? s.b : s.a;
         let b = s.inverted ? s.a : s.b;
@@ -55,14 +44,14 @@ export function readSketchContour(contour, face) {
           tangent._negate();
         }
         path.push({
-          TYPE: CURVE_TYPES.ARC,
+          TYPE: PRIMITIVE_TYPES.ARC,
           a: tr.apply(a).data(),
           b: tr.apply(b).data(),
           tangent: tangent.data()
         });
       } else {
         let nurbs = s.toNurbs(face.csys).impl;
-        path.push(Object.assign({TYPE: CURVE_TYPES.B_SPLINE}, nurbs.serialize()));
+        path.push(Object.assign({TYPE: PRIMITIVE_TYPES.B_SPLINE}, nurbs.serialize()));
       }
     } else {
       let ab = [s.a, s.b];
@@ -70,7 +59,7 @@ export function readSketchContour(contour, face) {
         ab.reverse();
       }
       ab = ab.map(v => tr.apply(v).data());
-      path.push({TYPE: CURVE_TYPES.SEGMENT, a: ab[0], b: ab[1]});
+      path.push({TYPE: PRIMITIVE_TYPES.SEGMENT, a: ab[0], b: ab[1]});
     }
     path[path.length - 1].id = s.id;
   });

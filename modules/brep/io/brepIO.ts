@@ -10,9 +10,9 @@ import NullSurface from 'geom/surfaces/nullSurface';
 import BBox from 'math/bbox';
 import NurbsCurve from 'geom/curves/nurbsCurve';
 import BrepCurve from 'geom/curves/brepCurve';
-import {BREPData} from "../../../web/app/cad/craft/engine/brepData";
-import {ProductionInfo} from "../../../web/app/cad/craft/engine/productionInfo";
-import {Tessellation1D} from "../../../web/app/cad/craft/engine/tessellation";
+import {BREPData} from "engine/data/brepData";
+import {ProductionInfo} from "engine/productionInfo";
+import {Tessellation1D} from "engine/tessellation";
 
 //Extensions for topo objects
 declare module '../topo/shell' {
