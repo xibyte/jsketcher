@@ -1,5 +1,5 @@
 import {Tool} from './tool'
-import {Graph} from '../../math/graph'
+import {Graph} from '../../utils/graph'
 import {Styles} from '../styles'
 import {DEFAULT_SEARCH_BUFFER} from "../viewer2d";
 
