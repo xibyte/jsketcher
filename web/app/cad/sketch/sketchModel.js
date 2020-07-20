@@ -1,11 +1,9 @@
 import verb from 'verb-nurbs'
 import BrepCurve from '../../brep/geom/curves/brepCurve';
 import NurbsCurve from '../../brep/geom/curves/nurbsCurve';
-import {Point} from '../../brep/geom/point'
-import {LUT} from '../../math/bezier-cubic'
 import {makeAngle0_360} from '../../../../modules/math/commons'
 import {normalizeCurveEnds} from '../../brep/geom/impl/nurbs-ext';
-import Vector, {AXIS, ORIGIN} from '../../../../modules/math/vector';
+import Vector from '../../../../modules/math/vector';
 import CSys from "../../../../modules/math/csys";
 import {distanceAB} from "../../../../modules/math/distance";
 import {isCCW} from "../../../../modules/math/euclidean";
