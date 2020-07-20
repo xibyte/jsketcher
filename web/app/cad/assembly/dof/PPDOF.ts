@@ -1,7 +1,7 @@
 import Vector, {ORIGIN} from "math/vector";
-import {eqTol} from "../../../brep/geom/tolerance";
+import {eqTol} from "geom/tolerance";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";
-import {Plane} from './../../../brep/geom/impl/plane';
+import {Plane} from '../../../../../modules/geom/impl/plane';
 import {ANGULAR_ALLOWANCE, AssemblyDOF, ModificationResponse} from "./assemblyDOF";
 import {clamp, DEG_RAD} from "math/commons";
 import {ConflictDOF} from "./conflictDOF";

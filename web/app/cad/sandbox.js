@@ -1,9 +1,9 @@
 import BrepBuilder from '../brep/brep-builder'
 import * as BREPPrimitives from '../brep/brep-primitives'
-import BrepCurve from '../brep/geom/curves/brepCurve';
-import NurbsCurve from "../brep/geom/curves/nurbsCurve";
-import {surfaceIntersect} from '../brep/geom/intersection/surfaceSurface';
-import NurbsSurface from '../brep/geom/surfaces/nurbsSurface';
+import BrepCurve from '../../../modules/geom/curves/brepCurve';
+import NurbsCurve from "../../../modules/geom/curves/nurbsCurve";
+import {surfaceIntersect} from '../../../modules/geom/intersection/surfaceSurface';
+import NurbsSurface from '../../../modules/geom/surfaces/nurbsSurface';
 import {createOctreeFromSurface, traverseOctree} from "../../../modules/voxels/octree";
 import {Matrix3x4} from 'math/matrix';
 import {AXIS, ORIGIN} from "../../../modules/math/vector";
