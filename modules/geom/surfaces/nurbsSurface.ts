@@ -1,4 +1,4 @@
-import {distinctKnots, NurbsSurfaceData} from '../impl/nurbs-ext';
+import {distinctKnots} from '../impl/nurbs-ext';
 import cache from '../impl/cache';
 import * as ext from '../impl/nurbs-ext';
 import NurbsCurve from '../curves/nurbsCurve';
@@ -6,6 +6,7 @@ import {ParametricSurface, UV} from "./parametricSurface";
 import {ParametricCurve} from "../curves/parametricCurve";
 import {Matrix3x4Data} from "math/matrix";
 import {Vec3} from "math/vec";
+import {NurbsSurfaceData} from "geom/surfaces/nurbsSurfaceData";
 
 export default class NurbsSurface implements ParametricSurface {
 

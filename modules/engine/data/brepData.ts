@@ -1,5 +1,5 @@
-import {Tessellation1D, Tessellation2D} from "./tessellation";
-import {ProductionInfo} from "./productionInfo";
+import {Tessellation1D, Tessellation2D} from "../tessellation";
+import {ProductionInfo} from "../productionInfo";
 import {Handle} from "./handle";
 import {SurfaceBSplineData, SurfacePlaneData, SurfaceUnknownData} from "./surfaceData";
 import {CurveBSplineData, CurveLineData, CurveUnknownData} from "./curveData";

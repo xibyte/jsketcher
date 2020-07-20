@@ -1,15 +1,16 @@
 import {
-  BOOLEAN_TYPES, DEFLECTION, E0_TOLERANCE, managedByE0, readShellData, readSketch, readSketchContour, shellsToPointers,
+  DEFLECTION, E0_TOLERANCE, managedByE0, readShellData, readSketch, readSketchContour, shellsToPointers,
   singleShellRespone,
   writeCsys
 } from './common';
 import {callEngine} from './interact';
 import {resolveExtrudeVector} from '../cutExtrude/cutExtrude';
 import {MOpenFaceShell} from '../../model/mopenFace';
+import {BooleanType} from "engine/api";
 
 export function boolean({type, operandsA, operandsB}) {
   let engineParams = {
-    type: BOOLEAN_TYPES[type],
+    type: BooleanType[type],
     operandsA: shellsToPointers(operandsA),
     operandsB: shellsToPointers(operandsB),
     tolerance: E0_TOLERANCE,
@@ -78,9 +79,9 @@ export function stepImport(params) {
 
 function booleanBasedOperation(engineParams, params, impl) {
   engineParams.deflection = DEFLECTION;
-  if (params.boolean && BOOLEAN_TYPES[params.boolean.type] > 0) {
+  if (params.boolean && BooleanType[params.boolean.type] > 0) {
     engineParams.boolean = {
-      type: BOOLEAN_TYPES[params.boolean.type],
+      type: BooleanType[params.boolean.type],
       operands: shellsToPointers(params.boolean.operands),
       tolerance: E0_TOLERANCE,
     }
@@ -121,7 +122,7 @@ function cutExtrude(isCut, request) {
   let {request: engineReq, face} = createExtrudeCommand(request, services, isCut);
   if (managedByE0(face.shell)) {
     engineReq.boolean = {
-      type: isCut ? BOOLEAN_TYPES.SUBTRACT : BOOLEAN_TYPES.UNION,
+      type: isCut ? BooleanType.SUBTRACT : BooleanType.UNION,
       operand: face.shell.brepShell.data.externals.ptr
     }
   }
