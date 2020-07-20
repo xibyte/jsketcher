@@ -1,4 +1,4 @@
-import {HashTable} from '../utils/hashmap'
+import {HashTable} from './hashmap'
 
 /** @constructor */
 function Graph(data) {
