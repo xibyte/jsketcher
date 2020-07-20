@@ -1,6 +1,6 @@
 import {Point} from 'geom/point'
 import {Plane} from 'geom/impl/plane'
-import {createPrism, enclose} from './brep-enclose'
+import {createPrism, enclose} from './operations/brep-enclose'
 import {Circle} from '../../web/app/cad/sketch/sketchModel'
 import CSys from 'math/csys';
 import {Matrix3x4} from 'math/matrix';

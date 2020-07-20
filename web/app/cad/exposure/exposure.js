@@ -1,6 +1,6 @@
 import * as BREPPrimitives from 'brep/brep-primitives'
 import BrepBuilder, {createBoundingSurface} from 'brep/brep-builder'
-import {createPrism} from 'brep/brep-enclose'
+import {createPrism} from 'brep/operations/brep-enclose'
 import * as BREPBool from 'brep/operations/boolean'
 import * as IO from 'brep/io/brepLoopsFormat'
 import {BREPValidator} from 'brep/brep-validator'
