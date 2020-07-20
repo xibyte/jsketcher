@@ -241,7 +241,7 @@ function curveExactIntersection(curve1, curve2, u1, u2) {
     let d2 = verb.eval.Eval.rationalCurveDerivatives(curve2, u2, 1);
     let r = vec.sub(d1[0], d2[0]);
     let drdu = d1[1];
-    let drdt = vec.mul(-1, d2[1]);
+    let drdt = vec.mul(d2[1], -1);
     return [2 * vec.dot(drdu, r), 2 * vec.dot(drdt,r)];
   }
   let params = [u1, u2];

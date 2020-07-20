@@ -9,32 +9,38 @@ import BBox from 'math/bbox';
 import NurbsSurface from 'geom/surfaces/nurbsSurface';
 import {BrepSurface} from 'geom/surfaces/brepSurface';
 import EdgeIndex from './edgeIndex';
+import {HalfEdge} from "brep/topo/edge";
+import Vector from "math/vector";
 
 export default class BrepBuilder {
+  _shell: Shell;
+  _face: Face;
+  _loop: Loop;
+  edgeIndex: EdgeIndex;
 
-  constructor(edgeStra) {
+  constructor() {
     this._shell = new Shell();    
     this._face = null;
     this._loop = null;
     this.edgeIndex = new EdgeIndex();
   }
   
-  get lastHalfEdge() {
+  get lastHalfEdge(): HalfEdge {
     return this._loop.halfEdges[this._loop.halfEdges.length - 1];
   }
 
-  face(surface) {
+  face(surface: BrepSurface): BrepBuilder {
     this._face = new Face(surface ? surface : null);
     this._shell.faces.push(this._face);
     this._loop = null;
     return this;  
   }
 
-  loop(vertices) {
+  loop(vertices: Vertex[]): BrepBuilder {
     if (this._loop === null) {
       this._loop = this._face.outerLoop;
     } else {
-      this._loop = new Loop();
+      this._loop = new Loop(null);
       this._face.innerLoops.push(this._loop);
     }
     this._loop.face = this._face;  
@@ -57,17 +63,17 @@ export default class BrepBuilder {
     return this;
   }
 
-  edge(a, b, curveCreate, invertedToCurve, tag) {
+  edge(a, b, curveCreate?, invertedToCurve?, tag?): BrepBuilder {
     let he = this.edgeIndex.getHalfEdgeOrCreate(a, b, curveCreate, invertedToCurve, tag);
     this._loop.halfEdges.push(he);
     return this;   
   }
 
-  vertex(x, y, z) {
+  vertex(x: number, y: number, z: number): Vertex {
     return new Vertex(new Point(x, y, z));
   }
 
-  build() {
+  build(): Shell {
     for (let face of this._shell.faces) {
       for (let loop of face.loops) {
         loop.link();    
@@ -90,7 +96,7 @@ export default class BrepBuilder {
   }
 }
 
-export function createBoundingSurface(points, plane) {
+export function createBoundingSurface(points: Vector[], plane?: Plane): BrepSurface {
   if (!plane) {
     const normal = normalOfCCWSeq(points);
     const w = points[0].dot(normal);
@@ -102,7 +108,7 @@ export function createBoundingSurface(points, plane) {
   return createBoundingSurfaceFrom2DPoints(points2d, plane);
 }
 
-export function createBoundingSurfaceFrom2DPoints(points2d, plane, minWidth, minHeight, offset = 0) {
+export function createBoundingSurfaceFrom2DPoints(points2d: Vector[], plane: Plane, minWidth?: number, minHeight?: number, offset = 0): BrepSurface {
   let bBox = new BBox();
   points2d.forEach(p => bBox.checkPoint(p));
 
@@ -125,9 +131,9 @@ export function createBoundingSurfaceFrom2DPoints(points2d, plane, minWidth, min
   return createBoundingSurfaceFromBBox(bBox, plane);
 } 
 
-export function createBoundingSurfaceFromBBox(bBox, plane) {
+export function createBoundingSurfaceFromBBox(bBox: BBox, plane: Plane): BrepSurface {
   let to3D = plane.get3DTransformation();
-  let polygon = bBox.toPolygon();
+  let polygon = bBox.toPolygon() as Vector[];
   polygon = polygon.map(p => to3D._apply(p).data());
 
   let planeNurbs = verb.geom.NurbsSurface.byKnotsControlPointsWeights( 1, 1, [0,0,1,1], [0,0,1,1],
