@@ -3,7 +3,7 @@ import {Vertex} from "./vertex";
 import BrepCurve from "geom/curves/brepCurve";
 import {Loop} from "./loop";
 import Vector from "math/vector";
-import {Tessellation1D} from "../../../web/app/cad/craft/engine/tessellation";
+import {Tessellation1D} from "engine/tessellation";
 
 export class Edge extends TopoObject {
 

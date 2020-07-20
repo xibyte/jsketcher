@@ -2,22 +2,7 @@ import * as vec from "math/vec";
 import {eqEps, TOLERANCE, TOLERANCE_01, TOLERANCE_SQ} from '../tolerance';
 import {fmin_bfgs} from "math/optim/bfgs";
 import {areEqual} from "math/equality";
-import {Vec3} from "math/vec";
-
-export interface NurbsCurveData {
-  degree: number,
- 	controlPoints: Vec3[],
- 	knots: number[],
-  weights: number[]
-}
-
-export interface NurbsSurfaceData {
-  degreeU: number,
-  degreeV: number,
- 	controlPoints: Vec3[][],
- 	knots: number[][],
-  weights: number[][]
-}
+import {NurbsCurveData} from "geom/curves/nurbsCurveData";
 
 export function curveStep(curve, u, tessTol, scale) {
 

@@ -1,4 +1,5 @@
-import {BOOLEAN_TYPES, DEFLECTION, E0_TOLERANCE, managedByE0, readSketch, singleShellRespone} from './common';
+import {DEFLECTION, E0_TOLERANCE, managedByE0, readSketch, singleShellRespone} from './common';
+import {BooleanType} from "engine/api";
 import {callEngine} from './interact';
 import {resolveExtrudeVector} from '../cutExtrude/cutExtrude';
 
@@ -10,7 +11,7 @@ export default function operationHandler(id, request, services) {
       let {request: engineReq, face} = createExtrudeCommand(request, services, isCut);
       if (managedByE0(face.shell)) {
         engineReq.boolean = {
-          type: isCut ? BOOLEAN_TYPES.SUBTRACT : BOOLEAN_TYPES.UNION,
+          type: isCut ? BooleanType.SUBTRACT : BooleanType.UNION,
           operand: face.shell.brepShell.data.externals.ptr
         }
       }
@@ -77,9 +78,9 @@ function createRevolveCommand(request, {cadRegistry, sketchStorageService}) {
       deflection: DEFLECTION
     }
   };
-  if (managedByE0(face.shell) && request.boolean && BOOLEAN_TYPES[request.boolean] > 0) {
+  if (managedByE0(face.shell) && request.boolean && BooleanType[request.boolean] > 0) {
     res.request.boolean = {
-      type: BOOLEAN_TYPES[request.boolean],
+      type: BooleanType[request.boolean],
       operand:  face.shell.brepShell.data.externals.ptr
     }
   }
