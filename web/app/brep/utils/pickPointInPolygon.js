@@ -1,5 +1,5 @@
 import libtess from 'libtess'
-import {area} from "../../../../modules/math/euclidean";
+import {area} from "../../../../modules/geom/euclidean";
 
 export default function pickPointInside2dPolygon(polygon) {
   function vertexCallback(data, tr) {

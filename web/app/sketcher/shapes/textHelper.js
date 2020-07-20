@@ -1,6 +1,6 @@
 import {_270, _90, makeAngle0_360} from "../../../../modules/math/commons";
 import {_negate} from "math/vec";
-import {pointToLineSignedDistance} from "../../../../modules/math/euclidean";
+import {pointToLineSignedDistance} from "../../../../modules/geom/euclidean";
 
 export class TextHelper {
 

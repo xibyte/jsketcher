@@ -2,7 +2,7 @@ import {TopoObject} from './topo-object'
 import {Face} from "./face";
 import {BrepSurface} from "../../../../modules/geom/surfaces/brepSurface";
 import {HalfEdge} from "./edge";
-import {findLowestLeftPoint} from "math/euclidean";
+import {findLowestLeftPoint} from "geom/euclidean";
 
 export class Loop extends TopoObject {
 

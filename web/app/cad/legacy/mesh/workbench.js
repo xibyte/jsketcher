@@ -6,7 +6,7 @@ import revolve from './revolve'
 import {Triangulate} from '../../tess/triangulation'
 import {distanceAB3} from "../../../../../modules/math/distance";
 import {areEqual, equal, strictEqual} from "../../../../../modules/math/equality";
-import {isPointInsidePolygon} from "../../../../../modules/math/euclidean";
+import {isPointInsidePolygon} from "../../../../../modules/geom/euclidean";
 
 export function sortPolygons(polygons) {
   function Loop(polygon) {

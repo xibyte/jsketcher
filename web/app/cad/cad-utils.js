@@ -3,7 +3,7 @@ import BBox from 'math/bbox'
 import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
 import {Matrix3x4} from 'math/matrix';
 import {equal} from 'math/equality';
-import {area, isCCW, isPointInsidePolygon} from "math/euclidean";
+import {area, isCCW, isPointInsidePolygon} from "geom/euclidean";
 
 export {area, isCCW, isPointInsidePolygon};
 

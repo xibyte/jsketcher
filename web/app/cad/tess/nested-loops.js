@@ -1,5 +1,5 @@
 import pip from "./pip";
-import {isCCW} from "../../../../modules/math/euclidean";
+import {isCCW} from "../../../../modules/geom/euclidean";
 
 export default function(loops) {
   const loops = loops.map(loop => new NestedLoop(loop));

@@ -2,7 +2,7 @@ import {Tool} from './tool'
 import {BezierCurve} from '../shapes/bezier-curve'
 import Vector from 'math/vector';
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
-import {rotate} from "math/euclidean";
+import {rotate} from "geom/euclidean";
 
 export class BezierCurveTool extends Tool {
 

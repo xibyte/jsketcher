@@ -6,7 +6,7 @@ import {normalizeCurveEnds} from '../../../../modules/geom/impl/nurbs-ext';
 import Vector from '../../../../modules/math/vector';
 import CSys from "../../../../modules/math/csys";
 import {distanceAB} from "../../../../modules/math/distance";
-import {isCCW} from "../../../../modules/math/euclidean";
+import {isCCW} from "../../../../modules/geom/euclidean";
 
 const RESOLUTION = 20;
 
