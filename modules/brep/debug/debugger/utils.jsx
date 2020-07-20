@@ -4,7 +4,7 @@ import {
   YELLOW
 } from "./colors";
 import Section from "./section";
-import {distanceAB3} from "../../../math/distance";
+import {distanceAB3} from "math/distance";
 
 export function getFacesViewObjects(group3d, category, context, out, faces) {
   forEach(faces, getFaceViewObjects.bind(null, group3d, category, context, out));

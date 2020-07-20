@@ -1,7 +1,7 @@
 import {CURRENT_SELECTION as S} from './wizard'
 import {PreviewWizard, SketchBasedNurbsPreviewer } from './preview-wizard'
 import {TriangulatePolygons} from '../../../tess/triangulation'
-import {revolveToWallNurbs} from '../../../../../../modules/brep/brep-builder'
+import {revolveToWallNurbs} from 'brep/brep-builder'
 import {evalPivot} from '../revolve'
 import Vector from 'math/vector';
 

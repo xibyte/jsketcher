@@ -1,6 +1,6 @@
-import * as SceneGraph from '../../../../modules/scene/sceneGraph';
+import * as SceneGraph from 'scene/sceneGraph';
 import {ShellView} from './views/shellView';
-import {getAttribute} from '../../../../modules/scene/objectData';
+import {getAttribute} from 'scene/objectData';
 import {MOpenFaceShell} from '../model/mopenFace';
 import {OpenFaceShellView} from './views/openFaceView';
 import {MShell} from '../model/mshell';

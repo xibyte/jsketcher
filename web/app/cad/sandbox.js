@@ -1,12 +1,12 @@
-import BrepBuilder from '../../../modules/brep/brep-builder'
-import * as BREPPrimitives from '../../../modules/brep/brep-primitives'
-import BrepCurve from '../../../modules/geom/curves/brepCurve';
-import NurbsCurve from "../../../modules/geom/curves/nurbsCurve";
-import {surfaceIntersect} from '../../../modules/geom/intersection/surfaceSurface';
-import NurbsSurface from '../../../modules/geom/surfaces/nurbsSurface';
-import {createOctreeFromSurface, traverseOctree} from "../../../modules/voxels/octree";
+import BrepBuilder from 'brep/brep-builder'
+import * as BREPPrimitives from 'brep/brep-primitives'
+import BrepCurve from 'geom/curves/brepCurve';
+import NurbsCurve from "geom/curves/nurbsCurve";
+import {surfaceIntersect} from 'geom/intersection/surfaceSurface';
+import NurbsSurface from 'geom/surfaces/nurbsSurface';
+import {createOctreeFromSurface, traverseOctree} from "voxels/octree";
 import {Matrix3x4} from 'math/matrix';
-import {AXIS, ORIGIN} from "../../../modules/math/vector";
+import {AXIS, ORIGIN} from "math/vector";
 
 export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, exposure, exposure: {addShellOnScene} }}) {
 

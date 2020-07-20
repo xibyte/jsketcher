@@ -1,4 +1,4 @@
-import {state} from '../../../../../modules/lstream';
+import {state} from 'lstream';
 import {DATUM, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../entites';
 
 const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];

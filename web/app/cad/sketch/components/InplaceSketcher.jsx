@@ -1,6 +1,6 @@
 import React from 'react';
-import {useStream} from "../../../../../modules/ui/effects";
-import {StreamsContext} from "../../../../../modules/ui/streamsContext";
+import {useStream} from "ui/effects";
+import {StreamsContext} from "ui/streamsContext";
 import {SketcherAppContext} from "../../../sketcher/components/SketcherAppContext";
 import {Scope} from "../../../sketcher/components/Scope";
 

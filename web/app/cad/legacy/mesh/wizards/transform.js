@@ -1,8 +1,8 @@
 import * as tk from '../../../../ui/toolkit.js'
 import {FACE_COLOR} from '../../../cad-utils'
 import {Wizard} from './wizard-commons'
-import {IDENTITY_BASIS} from "../../../../../../modules/math/basis";
-import {AXIS} from "../../../../../../modules/math/vector";
+import {IDENTITY_BASIS} from "math/basis";
+import {AXIS} from "math/vector";
 
 export function TransformWizard(viewer, solid, initParams) {
   Wizard.call(this, viewer, initParams);

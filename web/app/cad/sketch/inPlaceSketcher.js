@@ -5,7 +5,7 @@ import DPR from 'dpr';
 import {SKETCHER_MODE_HEADS_UP_ACTIONS} from "./sketcherUIContrib";
 import {createEssentialAppContext} from "../../sketcher/sketcherContext";
 import {STANDARD_MODE_HEADS_UP_TOOLBAR} from "../part/uiConfigPlugin";
-import {ORIGIN} from "../../../../modules/math/vector";
+import {ORIGIN} from "math/vector";
 
 export class InPlaceSketcher {
   

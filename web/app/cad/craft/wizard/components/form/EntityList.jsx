@@ -5,7 +5,7 @@ import Field from 'ui/components/controls/Field';
 import Fa from 'ui/components/Fa';
 import {attachToForm} from './Form';
 import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
-import {EMPTY_ARRAY, removeInPlace} from '../../../../../../../modules/gems/iterables';
+import {EMPTY_ARRAY, removeInPlace} from 'gems/iterables';
 
 @attachToForm
 export default class EntityList extends React.Component {

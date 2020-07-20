@@ -1,7 +1,7 @@
 import {MeshLambertMaterial, Object3D} from 'three';
 import {MeshArrow} from 'scene/objects/auxiliary';
-import {viewScaleFactor} from '../../../../../modules/scene/scaleHelper';
-import {AXIS} from "../../../../../modules/math/vector";
+import {viewScaleFactor} from 'scene/scaleHelper';
+import {AXIS} from "math/vector";
 
 export default class CSysObject3D extends Object3D {
 

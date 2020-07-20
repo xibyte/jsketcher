@@ -6,7 +6,7 @@ import {toIdAndOverrides} from '../../actions/actionRef';
 import {ActionButtonBehavior} from '../../actions/ActionButtonBehavior';
 import capitalize from 'gems/capitalize';
 import {combine} from 'lstream';
-import {useStream} from "../../../../../modules/ui/effects";
+import {useStream} from "ui/effects";
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
 
 function ConfigurableToolbar({actions, size, ...props}) {

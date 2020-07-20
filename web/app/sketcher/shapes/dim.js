@@ -1,6 +1,6 @@
 import {
   DEG_RAD,
-  makeAngle0_360} from '../../../../modules/math/commons'
+  makeAngle0_360} from 'math/commons'
 import * as vec from 'math/vec'
 import Vector from 'math/vector';
 import {Styles} from "../styles";
@@ -8,8 +8,8 @@ import {TextHelper} from "./textHelper";
 import {isInstanceOf} from "../actions/matchUtils";
 import {Arc} from "./arc";
 import {SketchObject} from "./sketch-object";
-import {distance, distanceAB} from "../../../../modules/math/distance";
-import {lineLineIntersection2d, pointToLineSignedDistance} from "../../../../modules/geom/euclidean";
+import {distance, distanceAB} from "math/distance";
+import {lineLineIntersection2d, pointToLineSignedDistance} from "geom/euclidean";
 
 const ARROW_W_PX = 15;
 const ARROW_H_PX = 4;

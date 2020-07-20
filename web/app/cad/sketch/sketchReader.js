@@ -1,10 +1,10 @@
 import * as sm from './sketchModel'
 import {Graph} from '../../utils/graph'
 import {HashTable} from '../../utils/hashmap'
-import Joints from '../../../../modules/gems/joints';
+import Joints from 'gems/joints';
 import sketchObjectGlobalId from './sketchObjectGlobalId';
-import VectorFactory from '../../../../modules/math/vectorFactory';
-import {strictEqual2D} from "../../../../modules/math/equality";
+import VectorFactory from 'math/vectorFactory';
+import {strictEqual2D} from "math/equality";
 
 class SketchGeom {
 

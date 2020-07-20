@@ -1,9 +1,9 @@
 import {state} from 'lstream';
 
 import {addToListInMap} from 'gems/iterables';
-import {EMPTY_ARRAY} from '../../../../modules/gems/iterables';
+import {EMPTY_ARRAY} from 'gems/iterables';
 import {DATUM, FACE, SHELL, SKETCH_OBJECT, EDGE, LOOP} from './entites';
-import {combine} from "../../../../modules/lstream";
+import {combine} from "lstream";
 
 export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
 

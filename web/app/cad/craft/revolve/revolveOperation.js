@@ -1,7 +1,7 @@
 import RevolveForm from './RevolveForm';
 import schema from './schema';
 import {createRevolvePreviewGeomProvider, revolvePreviewGeomProvider} from './revolvePreviewer';
-import {NOOP} from '../../../../../modules/gems/func';
+import {NOOP} from 'gems/func';
 
 export default {
   id: 'REVOLVE',

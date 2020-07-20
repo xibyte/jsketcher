@@ -4,7 +4,7 @@ import {Arc} from '../shapes/arc'
 import {Tool} from './tool'
 import {Segment} from "../shapes/segment";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
-import {distanceAB} from "../../../../modules/math/distance";
+import {distanceAB} from "math/distance";
 
 export class FilletTool extends Tool {
   

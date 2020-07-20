@@ -1,10 +1,10 @@
 import {NoIcon} from "../icons/NoIcon";
-import {NOOP} from "../../../../modules/gems/func";
+import {NOOP} from "gems/func";
 import {Arc} from "../shapes/arc";
 import {EndPoint} from "../shapes/point";
 import {Circle} from "../shapes/circle";
 import {NurbsObject} from "../shapes/nurbsObject";
-import NurbsCurve from "../../../../modules/geom/curves/nurbsCurve";
+import NurbsCurve from "geom/curves/nurbsCurve";
 import {Segment} from "../shapes/segment";
 
 export const GroundObjectsGeneratorSchema = {

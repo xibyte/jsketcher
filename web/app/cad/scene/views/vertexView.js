@@ -1,7 +1,7 @@
 import {View} from './view';
 import {Mesh, MeshBasicMaterial, SphereGeometry} from 'three';
 import {CSYS_SIZE_MODEL} from '../../craft/datum/csysObject';
-import {ConstantScaleGroup} from "../../../../../modules/scene/scaleHelper";
+import {ConstantScaleGroup} from "scene/scaleHelper";
 
 export class VertexView extends View {
 

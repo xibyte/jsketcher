@@ -1,5 +1,5 @@
 import React from 'react';
-import {useStream} from "../../../../../modules/ui/effects";
+import {useStream} from "ui/effects";
 
 export default function SketcherMode({children}) {
 

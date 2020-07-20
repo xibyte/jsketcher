@@ -1,4 +1,4 @@
-import Vector from '../../../modules/math/vector';
+import Vector from 'math/vector';
 
 export default function genSerpinski(viewer, depthLimit = 7) {
   let [line] = viewer.selected;
