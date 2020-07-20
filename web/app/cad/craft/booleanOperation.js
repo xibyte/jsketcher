@@ -1,5 +1,5 @@
 import {intersect, subtract, union} from 'brep/operations/boolean';
-import {update as updateStitching} from 'brep/stitching';
+import {update as updateStitching} from 'brep/operations/stitching';
 import {BREPValidator} from 'brep/brep-validator';
 import {Shell} from 'brep/topo/shell';
 import {MBrepShell} from '../model/mshell';

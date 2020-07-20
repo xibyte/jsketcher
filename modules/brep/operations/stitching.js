@@ -1,4 +1,4 @@
-import {DoubleKeyMap} from '../../web/app/utils/utils'
+import {DoubleKeyMap} from '../../../web/app/utils/utils'
 
 export const FACE_CHUNK = 'stitching.face.chunk';
 export const EDGE_CHUNK = 'stitching.edge.chunk';
