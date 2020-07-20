@@ -1,5 +1,5 @@
 import {Point} from './point'
-import {defineIterable} from '../../utils/utils'
+import {defineIterable} from '../../web/app/utils/utils'
 
 class Path {
   

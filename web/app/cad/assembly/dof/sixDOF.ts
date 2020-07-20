@@ -1,4 +1,4 @@
-import { Plane } from './../../../brep/geom/impl/plane';
+import { Plane } from '../../../../../modules/geom/impl/plane';
 import {AssemblyDOF, ModificationResponse} from "./assemblyDOF";
 import Vector, {ORIGIN} from "math/vector";
 import {FaceTouchAlignConstraint} from "../constraints/faceTouchAlign";

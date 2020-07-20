@@ -1,4 +1,4 @@
-import {eqEps} from "../../brep/geom/tolerance";
+import {eqEps} from "geom/tolerance";
 import {compositeFn} from "gems/func";
 import {SolverParam} from "./solverParam";
 

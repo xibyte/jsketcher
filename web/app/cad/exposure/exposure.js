@@ -9,13 +9,13 @@ import {Loop} from '../../brep/topo/loop';
 import {Face} from '../../brep/topo/face';
 import {Shell} from '../../brep/topo/shell';
 import {Vertex} from '../../brep/topo/vertex';
-import {Point} from '../../brep/geom/point';
-import BrepCurve from '../../brep/geom/curves/brepCurve';
-import {Plane} from '../../brep/geom/impl/plane';
+import {Point} from '../../../../modules/geom/point';
+import BrepCurve from '../../../../modules/geom/curves/brepCurve';
+import {Plane} from '../../../../modules/geom/impl/plane';
 import pip from '../tess/pip';
 import {readShellEntityFromJson} from '../scene/wrappers/entityIO';
 import * as vec from 'math/vec'
-import NurbsSurface from '../../brep/geom/surfaces/nurbsSurface';
+import NurbsSurface from '../../../../modules/geom/surfaces/nurbsSurface';
 
 
 export default {

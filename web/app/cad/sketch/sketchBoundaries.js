@@ -1,8 +1,8 @@
 import * as vec from 'math/vec';
 import {iteratePath} from '../cad-utils';
-import NurbsCurve from '../../brep/geom/curves/nurbsCurve';
-import {veqXYZ} from '../../brep/geom/tolerance';
-import curveTess, {curveTessParams} from '../../brep/geom/impl/curve/curve-tess';
+import NurbsCurve from '../../../../modules/geom/curves/nurbsCurve';
+import {veqXYZ} from '../../../../modules/geom/tolerance';
+import curveTess, {curveTessParams} from '../../../../modules/geom/impl/curve/curve-tess';
 import {distanceAB} from "math/distance";
 import {areEqual, TOLERANCE} from "math/equality";
 import {circleFromPoints, radiusOfCurvature} from "../../../../modules/math/euclidean";

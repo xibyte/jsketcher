@@ -1,12 +1,12 @@
 import {Shell} from './topo/shell';
 import {Face} from './topo/face';
 import {Edge} from './topo/edge';
-import BrepCurve from './geom/curves/brepCurve';
-import {Plane} from './geom/impl/plane';
+import BrepCurve from '../../../modules/geom/curves/brepCurve';
+import {Plane} from '../../../modules/geom/impl/plane';
 import * as cad_utils from '../cad/cad-utils';
 import {createBoundingSurface} from './brep-builder';
-import NurbsSurface from './geom/surfaces/nurbsSurface';
-import {BrepSurface} from './geom/surfaces/brepSurface';
+import NurbsSurface from '../../../modules/geom/surfaces/nurbsSurface';
+import {BrepSurface} from '../../../modules/geom/surfaces/brepSurface';
 import {Matrix3x4} from 'math/matrix';
 import {BasisForPlane} from "math/basis";
 import {isCCW as isCCWtest} from "math/euclidean";
