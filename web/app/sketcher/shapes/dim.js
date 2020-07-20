@@ -9,7 +9,7 @@ import {isInstanceOf} from "../actions/matchUtils";
 import {Arc} from "./arc";
 import {SketchObject} from "./sketch-object";
 import {distance, distanceAB} from "../../../../modules/math/distance";
-import {lineLineIntersection2d, pointToLineSignedDistance} from "../../../../modules/math/euclidean";
+import {lineLineIntersection2d, pointToLineSignedDistance} from "../../../../modules/geom/euclidean";
 
 const ARROW_W_PX = 15;
 const ARROW_H_PX = 4;

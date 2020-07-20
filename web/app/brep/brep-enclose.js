@@ -9,7 +9,7 @@ import NurbsSurface from '../../../modules/geom/surfaces/nurbsSurface';
 import {BrepSurface} from '../../../modules/geom/surfaces/brepSurface';
 import {Matrix3x4} from 'math/matrix';
 import {BasisForPlane} from "math/basis";
-import {isCCW as isCCWtest} from "math/euclidean";
+import {isCCW as isCCWtest} from "geom/euclidean";
 
 function isCCW(points, normal) {
   const tr2d = new Matrix3x4().setBasis(BasisForPlane(normal)).invert();

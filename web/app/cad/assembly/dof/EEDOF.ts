@@ -8,7 +8,7 @@ import {PPEEDOF} from "./PPEEDOF";
 import {EEEEDOF} from "./EEEEDOF";
 import {Matrix3x4} from "math/matrix";
 import {areEqual} from "math/equality";
-import {lineLineIntersection} from "math/euclidean";
+import {lineLineIntersection} from "geom/euclidean";
 
 const ANGULAR_ALLOWANCE = 10 * DEG_RAD;
 
