@@ -1,7 +1,8 @@
-import BrepBuilder, {createBoundingSurfaceFrom2DPoints, createBoundingSurfaceFromBBox} from '../brep-builder';
+import BrepBuilder, {createBoundingSurfaceFromBBox} from '../brep-builder';
 import VertexFactory from '../vertexFactory';
 import NurbsSurface from 'geom/surfaces/nurbsSurface';
 import * as vec from 'math/vec';
+import {Vec3} from 'math/vec';
 import {BrepSurface} from 'geom/surfaces/brepSurface';
 import {Plane} from 'geom/impl/plane';
 import Vector from 'math/vector';
@@ -10,6 +11,49 @@ import BBox from 'math/bbox';
 import NurbsCurve from 'geom/curves/nurbsCurve';
 import BrepCurve from 'geom/curves/brepCurve';
 import {BREPData} from "../../../web/app/cad/craft/engine/brepData";
+import {ProductionInfo} from "../../../web/app/cad/craft/engine/productionInfo";
+import {Tessellation1D} from "../../../web/app/cad/craft/engine/tessellation";
+
+//Extensions for topo objects
+declare module '../topo/shell' {
+
+  interface Shell {
+    data: {
+      externals: {
+        ptr?: number
+      }
+    }
+  }
+}
+
+declare module '../topo/face' {
+
+  interface Face {
+    data: {
+      id: string,
+      productionInfo: ProductionInfo,
+      tessellation: {
+        format: string,
+        data: any;
+      }
+      externals: {
+        ref: number
+      }
+    }
+  }
+}
+
+declare module '../topo/edge' {
+
+  interface Edge {
+    data: {
+      tessellation: Tessellation1D<Vec3>
+      externals: {
+        ptr?: number
+      }
+    }
+  }
+}
 
 export function readBrep(data: BREPData) {
   
