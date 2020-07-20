@@ -33,8 +33,8 @@ export class BREPSceneSolid extends SceneSolid {
       const sceneFace = new BREPSceneFace(brepFace, this);
       this.sceneFaces.push(sceneFace);
       let off = geom.faces.length;
-      if (brepFace.data.tesselation) {
-        tessDataToGeom(brepFace.data.tesselation.data, geom)
+      if (brepFace.data.tessellation) {
+        tessDataToGeom(brepFace.data.tessellation.data, geom)
       } else {
         brepFaceToGeom(brepFace, geom);
       }
@@ -67,7 +67,7 @@ export class BREPSceneSolid extends SceneSolid {
         materialParams.transparent = true;
         materialParams.opacity = opacity;
       }
-      let tess = edge.data.tesselation ? edge.data.tesselation : edge.curve.tessellateToData();
+      let tess = edge.data.tessellation ? edge.data.tessellation : edge.curve.tessellateToData();
       let base = null;
       for (let i = 1; i < tess.length; i++) {
 

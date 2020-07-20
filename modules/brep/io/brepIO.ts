@@ -20,9 +20,9 @@ export function readBrep(data: BREPData) {
     bb.face();
     let nonDirect = faceData.surface.direct === false; // left handed coordinate system for planes
     let inverted = faceData.inverted !== nonDirect;
-    bb._face.data.tesselation = {
+    bb._face.data.tessellation = {
       format: 'verbose',
-      data: normalizeTesselationData(faceData.tess, inverted, faceData.surface.TYPE === 'PLANE' ? faceData.surface.normal : undefined)
+      data: normalizetessellationData(faceData.tess, inverted, faceData.surface.TYPE === 'PLANE' ? faceData.surface.normal : undefined)
     };
     bb._face.data.productionInfo = faceData.productionInfo;
     if (faceData.ref !== undefined) {
@@ -37,7 +37,7 @@ export function readBrep(data: BREPData) {
         let a = vf.getData(edgeData.inverted ? edgeData.b : edgeData.a);
         let b = vf.getData(edgeData.inverted ? edgeData.a : edgeData.b);
         bb.edge(a, b, () => readCurve(edgeData.curve), edgeData.inverted,  edgeData.edgeRef);
-        bb.lastHalfEdge.edge.data.tesselation = edgeData.tess;
+        bb.lastHalfEdge.edge.data.tessellation = edgeData.tess;
         //todo: data should provide full externals object
         bb.lastHalfEdge.edge.data.externals = {
           ptr: edgeData.ptr
@@ -73,7 +73,7 @@ function readSurface(s, inverted, face) {
 
     let tr = plane.get2DTransformation();
     for (let he of face.outerLoop.halfEdges) {
-      let tess = he.edge.data.tesselation ? he.edge.data.tesselation : he.edge.curve.tessellateToData();
+      let tess = he.edge.data.tessellation ? he.edge.data.tessellation : he.edge.curve.tessellateToData();
       tess.forEach(p => bBox.checkData(tr.apply3(p)));
     }
     bBox.expand(10);
@@ -96,7 +96,7 @@ function readCurve(curve) {
   }
 }
 
-export function normalizeTesselationData(tessellation, inverted, surfaceNormal) {
+export function normalizetessellationData(tessellation, inverted, surfaceNormal) {
   let tess = [];
   for (let i = 0; i < tessellation.length; ++i) {
     let [tr, normales] = tessellation[i];
