@@ -1,14 +1,14 @@
-import * as BREPPrimitives from '../../brep/brep-primitives'
-import BrepBuilder, {createBoundingSurface} from '../../brep/brep-builder'
-import {createPrism} from '../../brep/brep-enclose'
-import * as BREPBool from '../../brep/operations/boolean'
-import * as IO from '../../brep/io/brepLoopsFormat'
-import {BREPValidator} from '../../brep/brep-validator'
-import {Edge} from '../../brep/topo/edge';
-import {Loop} from '../../brep/topo/loop';
-import {Face} from '../../brep/topo/face';
-import {Shell} from '../../brep/topo/shell';
-import {Vertex} from '../../brep/topo/vertex';
+import * as BREPPrimitives from '../../../../modules/brep/brep-primitives'
+import BrepBuilder, {createBoundingSurface} from '../../../../modules/brep/brep-builder'
+import {createPrism} from '../../../../modules/brep/brep-enclose'
+import * as BREPBool from '../../../../modules/brep/operations/boolean'
+import * as IO from '../../../../modules/brep/io/brepLoopsFormat'
+import {BREPValidator} from '../../../../modules/brep/brep-validator'
+import {Edge} from '../../../../modules/brep/topo/edge';
+import {Loop} from '../../../../modules/brep/topo/loop';
+import {Face} from '../../../../modules/brep/topo/face';
+import {Shell} from '../../../../modules/brep/topo/shell';
+import {Vertex} from '../../../../modules/brep/topo/vertex';
 import {Point} from '../../../../modules/geom/point';
 import BrepCurve from '../../../../modules/geom/curves/brepCurve';
 import {Plane} from '../../../../modules/geom/impl/plane';

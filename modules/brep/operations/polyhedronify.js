@@ -1,11 +1,11 @@
-import {TriangulateFace} from '../../cad/tess/triangulation'
+import {TriangulateFace} from '../../../web/app/cad/tess/triangulation'
 import {Shell} from '../topo/shell'
 import {HalfEdge} from '../topo/edge'
 import {Loop} from '../topo/loop'
 import {Face} from '../topo/face'
 import {BREPValidator} from '../brep-validator';
 import {linkSegments} from '../brep-builder';
-import {Line} from '../../../../modules/geom/impl/line'
+import {Line} from '../../geom/impl/line'
 
 export function polyhedronify(shell) {
   shell.reindexVertices();

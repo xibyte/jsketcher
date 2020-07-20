@@ -1,4 +1,4 @@
-import {readBrep} from '../../../brep/io/brepIO';
+import {readBrep} from '../../../../../modules/brep/io/brepIO';
 import {MBrepShell} from '../../model/mshell';
 import CSys from '../../../../../modules/math/csys';
 
