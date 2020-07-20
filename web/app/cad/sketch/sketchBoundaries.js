@@ -5,7 +5,7 @@ import {veqXYZ} from '../../../../modules/geom/tolerance';
 import curveTess, {curveTessParams} from '../../../../modules/geom/impl/curve/curve-tess';
 import {distanceAB} from "math/distance";
 import {areEqual, TOLERANCE} from "math/equality";
-import {circleFromPoints, radiusOfCurvature} from "../../../../modules/math/euclidean";
+import {circleFromPoints, radiusOfCurvature} from "../../../../modules/geom/euclidean";
 
 export function getSketchBoundaries(sceneFace) {
   const boundary = {lines: [], arcs: [], circles: [], nurbses: []};
