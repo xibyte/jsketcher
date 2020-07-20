@@ -1,9 +1,9 @@
 import {TopoObject} from './topo-object'
 import {Vertex} from "./vertex";
-import BrepCurve from "../../../../modules/geom/curves/brepCurve";
+import BrepCurve from "../../geom/curves/brepCurve";
 import {Loop} from "./loop";
 import Vector from "math/vector";
-import {Tessellation1D} from "../../cad/craft/engine/tessellation";
+import {Tessellation1D} from "../../../web/app/cad/craft/engine/tessellation";
 
 export class Edge extends TopoObject {
 

@@ -1,5 +1,5 @@
 import pertrub from './vector-petrub';
-import BrepCurve from '../../../../modules/geom/curves/brepCurve';
+import BrepCurve from '../../geom/curves/brepCurve';
 
 
 export class Ray {

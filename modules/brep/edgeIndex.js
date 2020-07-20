@@ -1,5 +1,5 @@
 import {Edge} from './topo/edge';
-import BrepCurve from '../../../modules/geom/curves/brepCurve';
+import BrepCurve from '../geom/curves/brepCurve';
 
 export default class EdgeIndex {
   

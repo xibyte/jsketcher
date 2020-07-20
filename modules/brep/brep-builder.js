@@ -1,13 +1,13 @@
-import {Plane} from '../../../modules/geom/impl/plane';
-import {Point} from '../../../modules/geom/point';
+import {Plane} from '../geom/impl/plane';
+import {Point} from '../geom/point';
 import {Shell} from './topo/shell';
 import {Face} from './topo/face';
 import {Loop} from './topo/loop';
 import {Vertex} from './topo/vertex';
-import {normalOfCCWSeq} from '../cad/cad-utils';
-import BBox from '../../../modules/math/bbox';
-import NurbsSurface from '../../../modules/geom/surfaces/nurbsSurface';
-import {BrepSurface} from '../../../modules/geom/surfaces/brepSurface';
+import {normalOfCCWSeq} from '../../web/app/cad/cad-utils';
+import BBox from '../math/bbox';
+import NurbsSurface from '../geom/surfaces/nurbsSurface';
+import {BrepSurface} from '../geom/surfaces/brepSurface';
 import EdgeIndex from './edgeIndex';
 
 export default class BrepBuilder {
