@@ -11,8 +11,6 @@ import {HalfEdge} from "brep/topo/edge";
 declare module './face' {
 
   interface Face {
-    loops: any;
-    edges: any;
     data: {
       id: string,
       productionInfo: ProductionInfo,
