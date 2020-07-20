@@ -43,8 +43,8 @@ function errorcallback(errno) {
 
 export function Triangulate(contours, normal) {
   const tessy = initTesselator();
-  // libtess will take 3d verts and flatten to a plane for tesselation
-  // since only doing 2d tesselation here, provide z=1 normal to skip
+  // libtess will take 3d verts and flatten to a plane for tessellation
+  // since only doing 2d tessellation here, provide z=1 normal to skip
   // iterating over verts only to get the same answer.
   // comment out to test normal-generation code
   //tessy.gluTessNormal(0, 0, 1);

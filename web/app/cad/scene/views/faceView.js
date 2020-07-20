@@ -56,8 +56,8 @@ export class FaceView extends SketchingView {
     this.geometry = geometry;
     this.meshFaces = [];
     let off = geometry.faces.length;
-    if (face.brepFace.data.tesselation) {
-      tessDataToGeom(face.brepFace.data.tesselation.data, geometry)
+    if (face.brepFace.data.tessellation) {
+      tessDataToGeom(face.brepFace.data.tessellation.data, geometry)
     } else {
       brepFaceToGeom(face, geometry);
     }

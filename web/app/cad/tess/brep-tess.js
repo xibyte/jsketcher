@@ -124,6 +124,6 @@ function begincallback(type) {
   }
 }
 function errorcallback(errno) {
-  console.log('tesselation error');
+  console.log('tessellation error');
   console.log('error number: ' + errno);
 }

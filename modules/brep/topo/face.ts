@@ -14,7 +14,7 @@ declare module './face' {
     data: {
       id: string,
       productionInfo: ProductionInfo,
-      tesselation: {
+      tessellation: {
         format: string,
         data: any;
       }
