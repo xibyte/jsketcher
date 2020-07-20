@@ -1,13 +1,18 @@
-import {Edge} from './topo/edge';
+import {Edge, HalfEdge} from './topo/edge';
 import BrepCurve from 'geom/curves/brepCurve';
+import {Vertex} from "brep/topo/vertex";
+
+export type Tag = string | number;
 
 export default class EdgeIndex {
+
+  index: Map<Vertex, Set<[HalfEdge, Tag]>>;
   
   constructor() {
     this.index = new Map();
   }
 
-  addEdge(edge, tag) {
+  addEdge(edge: Edge, tag: Tag) {
     if (edge.halfEdge1) {
       this.addHalfEdge(edge.halfEdge1, tag);
     }
@@ -16,11 +21,11 @@ export default class EdgeIndex {
     }
   }
 
-  addHalfEdge(he, tag) {
+  addHalfEdge(he: HalfEdge, tag: Tag) {
     this._edgesForVertex(he.vertexA).add([he, tag]);
   }
 
-  _edgesForVertex(v) {
+  _edgesForVertex(v: Vertex): Set<[HalfEdge, Tag]> {
     let edges = this.index.get(v);
     if (!edges) {
       edges = new Set();
@@ -29,7 +34,7 @@ export default class EdgeIndex {
     return edges;
   }
 
-  getHalfEdge(a, b, tag) {
+  getHalfEdge(a: Vertex, b: Vertex, tag?: Tag): HalfEdge {
     let edges = this.index.get(a);
     if (edges) {
       for (let [he, _tag] of edges) {
@@ -41,7 +46,7 @@ export default class EdgeIndex {
     return null;
   }
 
-  getHalfEdgeOrCreate(a, b, curveCreate, invertedToCurve, tag) {
+  getHalfEdgeOrCreate(a: Vertex, b: Vertex, curveCreate?: () => BrepCurve, invertedToCurve?: boolean, tag?: Tag): HalfEdge {
     let he = this.getHalfEdge(a, b, tag);
     if (he === null) {
       let curve;
