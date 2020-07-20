@@ -1,6 +1,6 @@
 import Vector from "math/vector";
 import { FaceTouchAlignConstraint } from "../constraints/faceTouchAlign";
-import { Plane } from './../../../brep/geom/impl/plane';
+import { Plane } from '../../../../../modules/geom/impl/plane';
 import { AssemblyDOF, ModificationResponse } from "./assemblyDOF";
 import { ConflictDOF } from './conflictDOF';
 import {EdgeAlignConstraint} from "../constraints/edgeAlign";

@@ -1,7 +1,7 @@
 import * as vec from "math/vec";
 import {TOLERANCE, TOLERANCE_SQ} from '../../tolerance';
 import {fmin_bfgs} from 'math/optim/bfgs';
-import {areEqual} from "../../../../../../modules/math/equality";
+import {areEqual} from "../../../math/equality";
 
 export default function curveIntersect(curve1, curve2, isecRange1, isecRange2, tesselator) {
   

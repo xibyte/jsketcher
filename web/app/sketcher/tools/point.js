@@ -4,7 +4,7 @@ import {Tool} from './tool'
 export class AddPointTool extends Tool {
   
   constructor(viewer) {
-    super('point', viewer);
+    super('geom.point', viewer);
   }
 
   restart() {

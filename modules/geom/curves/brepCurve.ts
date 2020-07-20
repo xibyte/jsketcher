@@ -6,7 +6,7 @@ import curveTess from "../impl/curve/curve-tess";
 import Point from 'math/vector';
 import Vector from 'math/vector';
 import cache from "../impl/cache";
-import {Tessellation1D} from "../../../cad/craft/engine/tessellation";
+import {Tessellation1D} from "../../../web/app/cad/craft/engine/tessellation";
 import {Matrix3x4} from "math/matrix";
 import {areEqual} from "math/equality";
 import {Vec3} from "math/vec";

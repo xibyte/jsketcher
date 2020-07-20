@@ -1,5 +1,5 @@
-import {Point} from './geom/point'
-import {Plane} from './geom/impl/plane'
+import {Point} from '../../../modules/geom/point'
+import {Plane} from '../../../modules/geom/impl/plane'
 import {createPrism, enclose} from './brep-enclose'
 import {Circle} from '../cad/sketch/sketchModel'
 import CSys from 'math/csys';

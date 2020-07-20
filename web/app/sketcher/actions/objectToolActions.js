@@ -25,7 +25,7 @@ export default [
     kind: 'Tool',
     description: 'Add a point',
     icon: PointToolIcon,
-    command: 'point',
+    command: 'geom.point',
     invoke: (ctx) => {
       ctx.viewer.toolManager.takeControl(new AddPointTool(ctx.viewer));
 

@@ -5,7 +5,7 @@ import {Loop} from '../topo/loop'
 import {Face} from '../topo/face'
 import {BREPValidator} from '../brep-validator';
 import {linkSegments} from '../brep-builder';
-import {Line} from '../geom/impl/line'
+import {Line} from '../../../../modules/geom/impl/line'
 
 export function polyhedronify(shell) {
   shell.reindexVertices();

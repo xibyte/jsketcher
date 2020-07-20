@@ -1,5 +1,5 @@
 import {prepare} from "./solver";
-import {eqEps} from "../../brep/geom/tolerance";
+import {eqEps} from "geom/tolerance";
 import {Polynomial, POW_1_FN} from "./polynomial";
 import {compositeFn} from "gems/func";
 import {AlgNumConstraint} from "./ANConstraints";

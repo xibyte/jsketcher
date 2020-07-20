@@ -1,5 +1,5 @@
 import {Face3, FaceColors, Geometry, Mesh, MeshBasicMaterial, MeshPhongMaterial} from 'three';
-import {advancePseudoFrenetFrame, frenetFrame, pseudoFrenetFrame} from '../../../web/app/brep/geom/curves/frenetFrame';
+import {advancePseudoFrenetFrame, frenetFrame, pseudoFrenetFrame} from '../../geom/curves/frenetFrame';
 import * as vec from 'math/vec';
 import {viewScaleFactor} from '../scaleHelper';
 import {arrToThree} from 'math/vectorAdapters';

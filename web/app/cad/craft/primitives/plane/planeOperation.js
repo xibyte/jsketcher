@@ -1,5 +1,5 @@
 import {createMeshGeometry} from 'scene/geoms';
-import {Plane} from '../../../../brep/geom/impl/plane';
+import {Plane} from '../../../../../../modules/geom/impl/plane';
 import Vector from 'math/vector';
 import PlaneWizard from './PlaneWizard';
 import {MOpenFaceShell} from '../../../model/mopenFace';

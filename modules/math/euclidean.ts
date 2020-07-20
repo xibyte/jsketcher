@@ -3,7 +3,7 @@ import BBox from "./bbox";
 import {TOLERANCE} from "math/equality";
 import * as vec from "math/vec";
 import {perp2d} from "math/vec";
-import {eqTol} from "../../web/app/brep/geom/tolerance";
+import {eqTol} from "geom/tolerance";
 import {distance} from "math/distance";
 import {IDENTITY_BASIS3} from "math/basis";
 import Vector from "math/vector";

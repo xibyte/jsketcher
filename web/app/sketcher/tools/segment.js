@@ -85,7 +85,7 @@ export class AddSegmentTool extends Tool {
 
   firstPointPicked() {
     this.pointPicked(this.line.a.x, this.line.a.y);
-    this.sendHint('specify ' + (this.multi ? 'next' : 'end') +' point');
+    this.sendHint('specify ' + (this.multi ? 'next' : 'end') +' geom.point');
   }
 
   dblclick(e) {
