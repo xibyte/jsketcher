@@ -1,5 +1,5 @@
-import BrepBuilder from '../brep/brep-builder'
-import * as BREPPrimitives from '../brep/brep-primitives'
+import BrepBuilder from '../../../modules/brep/brep-builder'
+import * as BREPPrimitives from '../../../modules/brep/brep-primitives'
 import BrepCurve from '../../../modules/geom/curves/brepCurve';
 import NurbsCurve from "../../../modules/geom/curves/nurbsCurve";
 import {surfaceIntersect} from '../../../modules/geom/intersection/surfaceSurface';

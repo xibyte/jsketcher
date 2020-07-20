@@ -1,15 +1,15 @@
 import BrepBuilder, {createBoundingSurfaceFrom2DPoints, createBoundingSurfaceFromBBox} from '../brep-builder';
 import VertexFactory from '../vertexFactory';
-import NurbsSurface from '../../../../modules/geom/surfaces/nurbsSurface';
+import NurbsSurface from '../../geom/surfaces/nurbsSurface';
 import * as vec from 'math/vec';
-import {BrepSurface} from '../../../../modules/geom/surfaces/brepSurface';
-import {Plane} from '../../../../modules/geom/impl/plane';
-import Vector from '../../../../modules/math/vector';
-import NullSurface from '../../../../modules/geom/surfaces/nullSurface';
+import {BrepSurface} from '../../geom/surfaces/brepSurface';
+import {Plane} from '../../geom/impl/plane';
+import Vector from '../../math/vector';
+import NullSurface from '../../geom/surfaces/nullSurface';
 import BBox from 'math/bbox';
-import NurbsCurve from '../../../../modules/geom/curves/nurbsCurve';
-import BrepCurve from '../../../../modules/geom/curves/brepCurve';
-import {BREPData} from "../../cad/craft/engine/brepData";
+import NurbsCurve from '../../geom/curves/nurbsCurve';
+import BrepCurve from '../../geom/curves/brepCurve';
+import {BREPData} from "../../../web/app/cad/craft/engine/brepData";
 
 export function readBrep(data: BREPData) {
   

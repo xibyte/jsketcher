@@ -1,6 +1,6 @@
 import libtess from 'libtess'
 import {Point} from '../../../../modules/geom/point'
-import {Vertex} from '../../brep/topo/vertex'
+import {Vertex} from '../../../../modules/brep/topo/vertex'
 import Vector from 'math/vector';
 
 function initTesselator() {

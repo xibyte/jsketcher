@@ -1,6 +1,6 @@
 import {Vertex} from './topo/vertex';
-import {veqXYZ} from '../../../modules/geom/tolerance';
-import {Point} from '../../../modules/geom/point';
+import {veqXYZ} from '../geom/tolerance';
+import {Point} from '../geom/point';
 
 export default class VertexFactory {
 

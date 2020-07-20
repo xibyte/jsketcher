@@ -1,8 +1,8 @@
 import {Face} from '../topo/face';
 import {Vertex} from '../topo/vertex';
 import Vector from 'math/vector';
-import PIP from '../../cad/tess/pip';
-import {isCCW} from "../../../../modules/geom/euclidean";
+import PIP from '../../../web/app/cad/tess/pip';
+import {isCCW} from "../../geom/euclidean";
 
 export function evolveFace(originFace, loops) {
   let out = [];

@@ -4,12 +4,12 @@ import {Loop} from '../topo/loop';
 import {Shell} from '../topo/shell';
 import {Vertex} from '../topo/vertex';
 import {evolveFace} from './evolve-face'
-import {eqTol, TOLERANCE, ueq, veq, veqNeg} from '../../../../modules/geom/tolerance';
-import CadError from "../../utils/errors";
+import {eqTol, TOLERANCE, ueq, veq, veqNeg} from '../../geom/tolerance';
+import CadError from "../../../web/app/utils/errors";
 import {createBoundingSurface} from "../brep-builder";
 import BREP_DEBUG from '../debug/brep-debug';
 import {Face} from "../topo/face";
-import {vectorsEqual} from "../../../../modules/math/equality";
+import {vectorsEqual} from "../../math/equality";
 
 
 const A = 0, B = 1;

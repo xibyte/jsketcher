@@ -1,10 +1,10 @@
-import {Point} from '../../../modules/geom/point'
-import {Plane} from '../../../modules/geom/impl/plane'
+import {Point} from '../geom/point'
+import {Plane} from '../geom/impl/plane'
 import {createPrism, enclose} from './brep-enclose'
-import {Circle} from '../cad/sketch/sketchModel'
+import {Circle} from '../../web/app/cad/sketch/sketchModel'
 import CSys from 'math/csys';
 import {Matrix3x4} from 'math/matrix';
-import {AXIS} from "../../../modules/math/vector";
+import {AXIS} from "../math/vector";
 
 export function box(w, h, d, tr) {
   const wh = w * 0.5;
