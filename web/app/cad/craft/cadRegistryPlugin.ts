@@ -2,6 +2,11 @@ import {MShell} from '../model/mshell';
 import {MObject} from "../model/mobject";
 import {ApplicationContext} from "context";
 import {Stream} from "lstream";
+import {MFace} from "../model/mface";
+import {MEdge} from "../model/medge";
+import {MSketchObject} from "../model/msketchObject";
+import {MDatum, MDatumAxis} from "../model/mdatum";
+import {MLoop} from "../model/mloop";
 
 
 export function activate(ctx: ApplicationContext) {
@@ -81,15 +86,14 @@ export function activate(ctx: ApplicationContext) {
 export interface CadRegistry {
 
   getAllShells(): MShell[];
-  findShell(id: string): MObject;
-  findFace(id: string): MObject;
-  findEdge(id: string): MObject;
-  findSketchObject(id: string): MObject;
+  findShell(id: string): MShell;
+  findFace(id: string): MFace;
+  findEdge(id: string): MEdge;
+  findSketchObject(id: string): MSketchObject;
   findEntity(id: string): MObject;
-  findEntity(id: string): MObject;
-  findDatum(id: string): MObject;
-  findDatumAxis(id: string): MObject;
-  findLoop(id: string): MObject;
+  findDatum(id: string): MDatum;
+  findDatumAxis(id: string): MDatumAxis;
+  findLoop(id: string): MLoop;
   find(id: string): MObject;
   modelIndex: Map<String, MObject>;
   models: MObject[];
