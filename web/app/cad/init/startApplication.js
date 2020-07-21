@@ -27,7 +27,7 @@ import * as ExportPlugin from '../exportPlugin';
 import * as ExposurePlugin from '../exposure/exposurePlugin';
 import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
 import * as EntityContextPlugin from '../scene/entityContextPlugin';
-import * as E0Plugin from '../craft/e0/e0Plugin';
+import * as OCCTPlugin from '../craft/e0/occtPlugin';
 
 import context from 'context';
 
@@ -61,7 +61,7 @@ export default function startApplication(callback) {
     CadRegistryPlugin,
     ExportPlugin,
     ExposurePlugin,
-    E0Plugin,
+    OCCTPlugin,
     ProjectManagerPlugin
   ];
   

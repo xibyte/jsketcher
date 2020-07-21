@@ -1,17 +1,14 @@
-/**
- * This is an internal alternative to native engine. It overrides basic 3d part design operations
- */
-import * as craftMethods from './craftMethods';
-import operationHandler from './operationHandler';
+
+import {GenericWASMEngine_V1} from "../../../../../modules/engine/impl/wasm/GenericWASMEngine_V1";
+import {CraftEngine} from "./craftEngine";
 
 export function activate(ctx) {
 
   loadWasm(ctx);
-  
-  ctx.services.operation.handlers.push(operationHandler);
-  ctx.services.craftEngine = {
-    ...craftMethods
-  };
+
+  const wasmEngine = new GenericWASMEngine_V1();
+
+  ctx.services.craftEngine = new CraftEngine(wasmEngine, ctx);
   ctx.craftEngine = ctx.services.craftEngine;
 }
 

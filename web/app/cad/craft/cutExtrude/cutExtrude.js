@@ -5,11 +5,16 @@ import {equal} from 'math/equality';
 
 
 export function Extrude(params, ctx) {
-  return doOperation(params, ctx, false);
+  // return doOperation(params, ctx, false);
+
+  return ctx.craftEngine.cutExtrude(false, params);
 }
 
 export function Cut(params, ctx) {
-  return doOperation(params, ctx, true);
+
+  // return doOperation(params, ctx, true);
+
+  return ctx.craftEngine.cutExtrude(true, params);
 }
 
 export function doOperation(params, ctx, cut) {
