@@ -1,8 +1,8 @@
-import {OperationResult} from "../../web/app/cad/craft/craftPlugin";
 import {BREPData} from "./data/brepData";
 import {Handle} from "./data/handle";
 import {Vec3} from "math/vec";
 import {PrimitiveData} from "engine/data/primitiveData";
+import {Tessellation2D} from "engine/tessellation";
 
 export enum BooleanType {
   UNION = 1,
@@ -35,30 +35,147 @@ export interface EngineAPI_V1 {
     sketch: PrimitiveData[][];
 
     /**
-     * Engine operation tolerance.
+     * Engine operation tolerance
      */
     tolerance: number;
 
     /**
-     * Tessellation detail parameter.
+     * Tessellation detail parameter
      */
     deflection: number;
 
     /**
      * extruded object can be used as a boolean modifier on a given shell
      */
-    boolean: {
-
-      type: BooleanType;
-
-      /**
-       * An operand on which the boolean operation will be performed
-       */
-      operand: Handle;
-    }
+    boolean: UnaryBooleanOptions;
 
   }): BREPResponse;
 
+
+  /**
+   * Revolves a set of 2d paths to 3d object along with the given direction
+   */
+  revolve(params: {
+
+    /**
+     * Rotation axis origin point or rotation pivot
+     */
+    axisOrigin: Vec3;
+
+    /**
+     * Rotation axis direction around which the rotation is performed
+     */
+    axisDir: Vec3,
+
+    /**
+     * Angle of rotation. In radians
+     */
+    angle: number;
+
+    /**
+     * Primitive paths to be revolved
+     */
+    sketch: PrimitiveData[][];
+
+    /**
+     * Engine operation tolerance
+     */
+    tolerance: number;
+
+    /**
+     * Tessellation detail parameter
+     */
+    deflection: number;
+
+    /**
+     * extruded object can be used as a boolean modifier on a given shell
+     */
+    boolean: UnaryBooleanOptions;
+
+  }): BREPResponse;
+
+
+  /**
+   * Loft operation through list of primitive paths. Doesn't support to be a boolean modifier in this version of the API
+   */
+  loft(params: {
+
+    /**
+     * Primitive loops though which the loft object is created
+     */
+    sections: PrimitiveData[][];
+
+    /**
+     * Engine operation tolerance
+     */
+    tolerance: number;
+
+    /**
+     * Tessellation detail parameter
+     */
+    deflection: number;
+
+
+  }): BREPResponse;
+
+
+  /**
+   * Lightweight loft operation returning only tessellation info. Meant to be used as a preview in wizards
+   */
+  loftPreview(params: {
+
+    /**
+     * Primitive loops though which the loft object is created
+     */
+    sections: PrimitiveData[][];
+
+    /**
+     * Engine operation tolerance
+     */
+    tolerance: number;
+
+    /**
+     * Tessellation detail parameter
+     */
+    deflection: number;
+
+
+  }): Tessellation2D<Vec3>;
+
+
+  /**
+   * Creates a set of fillets on given edges
+   */
+  fillet(params: {
+
+    /**
+     * Edges parent model
+     */
+    solid: Handle,
+
+    /**
+     * List of edges on which the operation performes
+     */
+    edges: {
+
+      edge: Handle;
+
+      /**
+       * thickness of the fillet from one edge to another
+       */
+      thickness: number;
+    }
+
+    /**
+     * Tessellation detail parameter
+     */
+    deflection: number;
+
+  }): BREPResponse;
+
+  /**
+   * Generic boolean operation on given operands
+   */
   boolean(params: {
 
     type: BooleanType;
@@ -68,29 +185,174 @@ export interface EngineAPI_V1 {
     operandsB: Handle[],
 
     /**
-     * Engine operation tolerance.
+     * Engine operation tolerance
      */
     tolerance: number;
 
     /**
-     * Tessellation detail parameter.
+     * Tessellation detail parameter
      */
     deflection: number;
 
   }): BREPResponse;
 
-  createBox(params: {}): OperationResult;
 
-  createSphere(params: {}): OperationResult;
+  /**
+   * Creates a box
+   */
+  createBox(params: {
 
-  createCone(params: {}): OperationResult;
+    /**
+     * Coordinate system in which the box will be created.
+     */
+    csys: CSysOptions,
 
-  createCylinder(params: {}): OperationResult;
+    /**
+     * width of the box
+     */
+    dx: number;
 
-  createTorus(params: {}): OperationResult;
+    /**
+     * height of the box
+     */
+    dy: number;
+
+    /**
+     * depth of the box
+     */
+    dz: number;
+
+    /**
+     * created object can be used as a boolean modifier on given models
+     */
+    boolean: BooleanOptions
 
 
-  stepImport(params: {}): OperationResult;
+  }): BREPResponse;
+
+
+  /**
+   * Creates a sphere
+   */
+  createSphere(params: {
+
+    /**
+     * Coordinate system in which the sphere will be created.
+     */
+    csys: CSysOptions,
+
+    /**
+     * radius of the sphere
+     */
+    r: number;
+
+    /**
+     * created object can be used as a boolean modifier on given models
+     */
+    boolean: BooleanOptions
+
+  }): BREPResponse;
+
+
+  /**
+   * Creates a cone
+   */
+  createCone(params: {
+
+    /**
+     * Coordinate system in which the cone will be created.
+     */
+    csys: CSysOptions,
+
+    /**
+     * radius of the cone
+     */
+    r1: number;
+
+    /**
+     * frustum of the cone
+     */
+    r2: number;
+
+    /**
+     * height of the cone
+     */
+    h: number;
+
+    /**
+     * created object can be used as a boolean modifier on given models
+     */
+    boolean: BooleanOptions
+
+  }): BREPResponse;
+
+  /**
+   * Creates a cylinder
+   */
+  createCylinder(params: {
+
+    /**
+     * Coordinate system in which the cylinder will be created.
+     */
+    csys: CSysOptions,
+
+    /**
+     * radius of the cylinder
+     */
+    r: number;
+
+    /**
+     * radius of the cylinder
+     */
+    h: number,
+
+    /**
+     * created object can be used as a boolean modifier on given models
+     */
+    boolean: BooleanOptions
+
+  }): BREPResponse;
+
+  /**
+   * Creates a torus
+   */
+  createTorus(params: {
+
+    /**
+     * Coordinate system in which the torus will be created.
+     */
+    csys: CSysOptions,
+
+    /**
+     * main radius
+     */
+    r1: number,
+
+    /**
+     * tube radius
+     */
+    r2: number
+
+    /**
+     * created object can be used as a boolean modifier on given models
+     */
+    boolean: BooleanOptions
+
+  }): BREPResponse;
+
+  /**
+   * Imports a step file by its 'file reference'. The usage of this API is implementation specific. In webassembly environments
+   * the file should exists on the virtual file system before calling this API
+   */
+  stepImport(params: {
+
+    /**
+     * File reference. The notion depends on the implementation. In webassmebly it can be a path to file on the virtual file
+     * system. On Server side environments it can be a URL
+     */
+    file: string
+
+  }): BREPResponse;
 
 }
 
@@ -100,5 +362,58 @@ export interface EngineSession {
 
   dispose(): void;
 
+}
+
+
+export interface BooleanOptions {
+
+  type: BooleanType;
+
+  /**
+   * Array operand on which the boolean operation will be performed
+   */
+  operands: Handle[];
+
+  /**
+   * Boolean operation tolerance. Since it's operation can be a complementary operation to some main operation
+   * we may control the tolerance separately for the boolean operation
+   */
+  tolerance: number;
+
+}
+
+/**
+ * Unlike generic boolean options unary boolean options don't control the tolerance separately. The tolerance of
+ * the operation it's embedded into will be used
+ */
+export interface UnaryBooleanOptions {
+
+  type: BooleanType;
+
+  /**
+   * An operand on which the boolean operation will be performed
+   */
+  operand: Handle;
+}
+
+/**
+ * A coordinate system parameters.
+ */
+export interface CSysOptions {
+
+  /**
+   * Origin(center) of the coordinate system
+   */
+  origin: Vec3;
+
+  /**
+   * Z axis direction
+   */
+  normal: Vec3;
+
+  /**
+   * X axis direction
+   */
+  xDir: Vec3;
 }
 
