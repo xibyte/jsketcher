@@ -1,7 +1,6 @@
 import RevolveForm from './RevolveForm';
 import schema from './schema';
-import {createRevolvePreviewGeomProvider, revolvePreviewGeomProvider} from './revolvePreviewer';
-import {NOOP} from 'gems/func';
+import {revolvePreviewGeomProvider} from './revolvePreviewer';
 
 export default {
   id: 'REVOLVE',
@@ -10,7 +9,7 @@ export default {
   info: 'creates a solid based on revolve surfaces',
   paramsInfo: ({angle}) => angle,
   previewGeomProvider: revolvePreviewGeomProvider,
-  run: NOOP,
+  run: (request, ctx) => ctx.craftEngine.revolve(request),
   form: RevolveForm,
   schema
 };

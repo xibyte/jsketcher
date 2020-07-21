@@ -15,7 +15,20 @@ export interface OperationError {
   message?: string;
 }
 
-export type BREPResponse = BREPData | OperationError
+export type GenericResponse = OperationError | {
+
+  /**
+   * List of consumed objects
+   */
+  consumed: Handle[];
+
+  /**
+   * List of create by the boolean operation objects
+   */
+  created: BREPData[];
+}
+
+export type SingleResponse = OperationError | BREPData;
 
 export interface EngineAPI_V1 {
 
@@ -49,7 +62,7 @@ export interface EngineAPI_V1 {
      */
     boolean: UnaryBooleanOptions;
 
-  }): BREPResponse;
+  }): SingleResponse;
 
 
   /**
@@ -92,7 +105,7 @@ export interface EngineAPI_V1 {
      */
     boolean: UnaryBooleanOptions;
 
-  }): BREPResponse;
+  }): SingleResponse;
 
 
   /**
@@ -116,7 +129,7 @@ export interface EngineAPI_V1 {
     deflection: number;
 
 
-  }): BREPResponse;
+  }): GenericResponse;
 
 
   /**
@@ -164,14 +177,14 @@ export interface EngineAPI_V1 {
        * thickness of the fillet from one edge to another
        */
       thickness: number;
-    }
+    }[]
 
     /**
      * Tessellation detail parameter
      */
     deflection: number;
 
-  }): BREPResponse;
+  }): SingleResponse;
 
   /**
    * Generic boolean operation on given operands
@@ -194,7 +207,9 @@ export interface EngineAPI_V1 {
      */
     deflection: number;
 
-  }): BREPResponse;
+  }): OperationError | {
+    result: BREPData
+  };
 
 
   /**
@@ -228,7 +243,7 @@ export interface EngineAPI_V1 {
     boolean: BooleanOptions
 
 
-  }): BREPResponse;
+  }): GenericResponse;
 
 
   /**
@@ -251,7 +266,7 @@ export interface EngineAPI_V1 {
      */
     boolean: BooleanOptions
 
-  }): BREPResponse;
+  }): GenericResponse;
 
 
   /**
@@ -284,7 +299,7 @@ export interface EngineAPI_V1 {
      */
     boolean: BooleanOptions
 
-  }): BREPResponse;
+  }): GenericResponse;
 
   /**
    * Creates a cylinder
@@ -311,7 +326,7 @@ export interface EngineAPI_V1 {
      */
     boolean: BooleanOptions
 
-  }): BREPResponse;
+  }): GenericResponse;
 
   /**
    * Creates a torus
@@ -338,7 +353,7 @@ export interface EngineAPI_V1 {
      */
     boolean: BooleanOptions
 
-  }): BREPResponse;
+  }): GenericResponse;
 
   /**
    * Imports a step file by its 'file reference'. The usage of this API is implementation specific. In webassembly environments
@@ -352,7 +367,7 @@ export interface EngineAPI_V1 {
      */
     file: string
 
-  }): BREPResponse;
+  }): GenericResponse;
 
 }
 
