@@ -5,7 +5,7 @@ import {SurfaceBSplineData, SurfacePlaneData, SurfaceUnknownData} from "./surfac
 import {CurveBSplineData, CurveLineData, CurveUnknownData} from "./curveData";
 import {Vec3} from "math/vec";
 
-export interface BREPData {
+export interface BrepOutputData {
 
   error: boolean;
 

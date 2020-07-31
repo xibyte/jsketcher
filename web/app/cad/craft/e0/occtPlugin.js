@@ -1,5 +1,5 @@
 
-import {GenericWASMEngine_V1} from "../../../../../modules/engine/impl/wasm/GenericWASMEngine_V1";
+import {GenericWASMEngine_V1} from "engine/impl/wasm/GenericWASMEngine_V1";
 import {CraftEngine} from "./craftEngine";
 
 export function activate(ctx) {

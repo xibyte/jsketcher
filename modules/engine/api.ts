@@ -1,8 +1,9 @@
-import {BREPData} from "./data/brepData";
+import {BrepOutputData} from "./data/brepOutputData";
 import {Handle} from "./data/handle";
 import {Vec3} from "math/vec";
 import {PrimitiveData} from "engine/data/primitiveData";
 import {Tessellation2D} from "engine/tessellation";
+import {BrepInputData} from "engine/data/brepInputData";
 
 export enum BooleanType {
   UNION = 1,
@@ -25,10 +26,10 @@ export type GenericResponse = OperationError | {
   /**
    * List of create by the boolean operation objects
    */
-  created: BREPData[];
+  created: BrepOutputData[];
 }
 
-export type SingleResponse = OperationError | BREPData;
+export type SingleResponse = OperationError | BrepOutputData;
 
 export interface EngineAPI_V1 {
 
@@ -208,7 +209,7 @@ export interface EngineAPI_V1 {
     deflection: number;
 
   }): OperationError | {
-    result: BREPData
+    result: BrepOutputData
   };
 
 
@@ -368,6 +369,11 @@ export interface EngineAPI_V1 {
     file: string
 
   }): GenericResponse;
+
+  /**
+   * Load arbitrary BREP data into the engine
+   */
+  loadModel(brep: BrepInputData): GenericResponse;
 
 }
 

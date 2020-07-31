@@ -7,8 +7,14 @@ import NurbsSurface from 'geom/surfaces/nurbsSurface';
 import {createOctreeFromSurface, traverseOctree} from "voxels/octree";
 import {Matrix3x4} from 'math/matrix';
 import {AXIS, ORIGIN} from "math/vector";
+import {BrepInputData} from "engine/data/brepInputData";
+import {Vec3} from "math/vec";
+import {ApplicationContext} from "context";
+import {readShellEntityFromJson} from "./scene/wrappers/entityIO";
 
-export function runSandbox({bus, services, services: { viewer, cadScene, cadRegistry, exposure, exposure: {addShellOnScene} }}) {
+export function runSandbox(ctx: ApplicationContext) {
+
+  const {services, services: { viewer, cadScene, cadRegistry, exposure, exposure: {addShellOnScene} }} = ctx;
 
   function test1() {
 
@@ -277,6 +283,110 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
     console.log("done")
   }
 
+  function testLoadBrep() {
+
+    const box: BrepInputData = {
+      vertices: {
+        A: [0,0,500],
+        B: [500,0,500],
+        C: [500,500,500],
+        D: [0,500,500],
+
+        AA: [0,0,0],
+        BB: [500,0,0],
+        CC: [500,500,0],
+        DD: [0,500,0]
+      },
+
+      // curves: {},
+      surfaces: {
+        top: {
+          TYPE: 'PLANE',
+          normal: [0,0,1],
+          origin: [0,0,500]
+        },
+        bottom: {
+          TYPE: 'PLANE',
+          normal: [0,0,-1],
+          origin: [0,0,0]
+        },
+        wall1: {
+          TYPE: 'PLANE',
+          normal: [0,-1,0],
+          origin: [0,0,0]
+        },
+        wall2: {
+          TYPE: 'PLANE',
+          normal: [1,0,0],
+          origin: [500,0,0]
+        },
+        wall3: {
+          TYPE: 'PLANE',
+          normal: [0,1,0],
+          origin: [0,500,0]
+        },
+        wall4: {
+          TYPE: 'PLANE',
+          normal: [-1,0,0],
+          origin: [0,0,0]
+        },
+      },
+
+      edges: {
+        AB: {a: 'A', b: 'B'},
+        BC: {a: 'B', b: 'C'},
+        CD: {a: 'C', b: 'D'},
+        DA: {a: 'D', b: 'A'},
+
+        AA_BB: {a: 'AA', b: 'BB'},
+        BB_CC: {a: 'BB', b: 'CC'},
+        CC_DD: {a: 'CC', b: 'DD'},
+        DD_AA: {a: 'DD', b: 'AA'},
+
+        A_AA: {a: 'A', b: 'AA'},
+        B_BB: {a: 'B', b: 'BB'},
+        C_CC: {a: 'C', b: 'CC'},
+        D_DD: {a: 'D', b: 'DD'},
+      },
+
+      faces: [
+        {
+          surface: 'top',
+          loops: [['AB', 'BC', 'CD', 'DA']]
+        },
+        {
+          surface: 'bottom',
+          loops: [['AA_BB', 'BB_CC', 'CC_DD', 'DD_AA']]
+        },
+        {
+          surface: 'wall1',
+          loops: [['AB', 'B_BB', 'AA_BB', 'A_AA']]
+        },
+        {
+          surface: 'wall2',
+          loops: [['BC', 'C_CC', 'BB_CC', 'B_BB']]
+        },
+        {
+          surface: 'wall3',
+          loops: [['CD', 'D_DD', 'CC_DD', 'C_CC']]
+        },
+        {
+          surface: 'wall4',
+          loops: [['DA', 'A_AA', 'DD_AA', 'D_DD']]
+        },
+      ]
+
+    };
+
+    const data = ctx.craftEngine.modellingEngine.loadModel(box);
+
+    const mBrepShell = readShellEntityFromJson(data);
+
+    services.exposure.addOnScene(mBrepShell);
+
+  }
+
+
   // cylinderAndPlaneIntersect();
   // curvesIntersect();
   // cylTest();
@@ -291,7 +401,14 @@ export function runSandbox({bus, services, services: { viewer, cadScene, cadRegi
   // cadScene.auxGroup.add(o2);
 
   // services.action.run('LOFT');
-  window.voxelTest = voxelTest;
+  // window.voxelTest = voxelTest;
+  ctx.streams.lifecycle.projectLoaded.attach(ready => {
+    if (ready) {
+      testLoadBrep()
+
+    }
+  });
+
 }
 
 

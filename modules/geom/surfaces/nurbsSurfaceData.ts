@@ -3,7 +3,8 @@ import {Vec3} from "math/vec";
 export interface NurbsSurfaceData {
   degreeU: number,
   degreeV: number,
- 	controlPoints: Vec3[][],
- 	knots: number[][],
+  knotsV: number[];
+  knotsU: number[];
+  controlPoints: Vec3[][],
   weights: number[][]
 }
