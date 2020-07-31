@@ -380,6 +380,14 @@ export function runSandbox(ctx: ApplicationContext) {
 
     const data = ctx.craftEngine.modellingEngine.loadModel(box);
 
+    const tessellation = ctx.craftEngine.modellingEngine.tessellate({
+      model: data.ptr,
+      deflection: 3
+    });
+
+    console.log(tessellation);
+
+
     const mBrepShell = readShellEntityFromJson(data);
 
     services.exposure.addOnScene(mBrepShell);
