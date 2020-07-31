@@ -14,4 +14,5 @@ declare var Module: {
   _SPI_fillet: Function;
   _SPI_loadModel: Function;
   _SPI_tessellate: Function;
+  _SPI_transform: Function;
 };
