@@ -4,6 +4,7 @@ import {Vec3} from "math/vec";
 import {PrimitiveData} from "engine/data/primitiveData";
 import {EdgeTessellation, FaceTessellation, Tessellation2D} from "engine/tessellation";
 import {BrepInputData} from "engine/data/brepInputData";
+import {Matrix3x4FlatData} from "math/matrix";
 
 export enum BooleanType {
   UNION = 1,
@@ -372,11 +373,12 @@ export interface EngineAPI_V1 {
 
   /**
    * Load arbitrary BREP data into the engine
+   * See example at @BrepInputData
    */
   loadModel(brep: BrepInputData): BrepOutputData;
 
   /**
-   * Load arbitrary BREP data into the engine
+   * Load arbitrary BREP data into the engine.
    */
   tessellate(request: {
 
@@ -397,6 +399,23 @@ export interface EngineAPI_V1 {
     edges: EdgeTessellation[];
 
   };
+
+  /**
+   * Applying transformation matrix
+   */
+  transform(request: {
+
+    /**
+     * Engine object reference ot transform
+     */
+    model: Handle,
+
+    /**
+     * Transformation matrix represented as a flat array
+     */
+    matrix: Matrix3x4FlatData;
+
+  }): BrepOutputData;
 
 }
 
