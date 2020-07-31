@@ -2,18 +2,28 @@ import {
   DEFLECTION,
   E0_TOLERANCE,
   managedByE0,
-  readShellData, readSketch,
+  readShellData,
+  readSketch,
   readSketchContour,
-  shellsToPointers, singleShellRespone,
+  shellsToPointers,
+  singleShellRespone,
   writeCsys
 } from './common';
 import * as vec from 'math/vec';
 import {MOpenFaceShell} from '../../model/mopenFace';
 import {BooleanType, EngineAPI_V1} from "engine/api";
-import {callEngine} from "engine/impl/wasm/interact";
 import {resolveExtrudeVector} from "../cutExtrude/cutExtrude";
 import {ApplicationContext} from "context";
 import {MBrepShell} from "../../model/mshell";
+
+declare module 'context' {
+
+  interface CoreContext {
+
+    craftEngine: CraftEngine;
+  }
+}
+
 
 /**
  * Temporary dump of "bridging" functions between external engines and modeller world
@@ -106,7 +116,7 @@ export class CraftEngine {
       }
     }
 
-    let data = callEngine(engineReq, Module._SPI_extrude);
+    let data = this.modellingEngine.extrude(engineReq);
 
     return singleShellRespone(face.shell, data);
   }

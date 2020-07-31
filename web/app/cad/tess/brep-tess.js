@@ -4,7 +4,7 @@ import libtess from 'libtess'
 import tessellateSurface from 'geom/surfaces/surfaceTess';
 
 export default function A(face) {
-  return tessellateLoopsOnSurface(face.surface, face.loops, loop => loop, seg => e.edge.curve, seg => seg.inverted)
+  return tessellateLoopsOnSurface(face.surface, face.loops, loop => loop.halfEdges, seg => seg.edge.curve, seg => seg.inverted)
 }
 
 export function tessellateLoopsOnSurface(surface, curveContours, getLoop, getCurve, isInverted) {
