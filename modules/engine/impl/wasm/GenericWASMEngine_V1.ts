@@ -61,4 +61,8 @@ export class GenericWASMEngine_V1 implements EngineAPI_V1 {
     return callEngine(params, Module._SPI_tessellate);
   }
 
+  transform(params) {
+    return callEngine(params, Module._SPI_transform);
+  }
+
 }

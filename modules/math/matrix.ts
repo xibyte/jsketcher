@@ -2,6 +2,7 @@ import Vector, {AXIS} from "math/vector";
 import {Vec3} from "math/vec";
 
 export type Matrix3x4Data = [[number, number, number, number], [number, number, number, number], [number, number, number, number]];
+export type Matrix3x4FlatData = [number, number, number, number, number, number, number, number, number, number, number, number];
 
 export class Matrix3x4 {
 
@@ -163,6 +164,14 @@ export class Matrix3x4 {
       [this.mxx, this.mxy, this.mxz, this.tx],
       [this.myx, this.myy, this.myz, this.ty],
       [this.mzx, this.mzy, this.mzz, this.tz]
+    ];
+  };
+
+  toFlatArray(): Matrix3x4FlatData {
+    return [
+      this.mxx, this.mxy, this.mxz, this.tx,
+      this.myx, this.myy, this.myz, this.ty,
+      this.mzx, this.mzy, this.mzz, this.tz
     ];
   };
 
