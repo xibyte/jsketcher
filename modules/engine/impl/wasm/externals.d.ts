@@ -13,4 +13,5 @@ declare var Module: {
   _SPI_loft: Function;
   _SPI_fillet: Function;
   _SPI_loadModel: Function;
+  _SPI_tessellate: Function;
 };

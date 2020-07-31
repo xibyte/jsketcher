@@ -7,7 +7,7 @@ import {Vec3} from "math/vec";
 
 export interface BrepOutputData {
 
-  error: boolean;
+  valid: boolean;
 
   ptr: Handle;
 
