@@ -2,7 +2,7 @@ import {BrepOutputData} from "./data/brepOutputData";
 import {Handle} from "./data/handle";
 import {Vec3} from "math/vec";
 import {PrimitiveData} from "engine/data/primitiveData";
-import {Tessellation2D} from "engine/tessellation";
+import {EdgeTessellation, FaceTessellation, Tessellation2D} from "engine/tessellation";
 import {BrepInputData} from "engine/data/brepInputData";
 
 export enum BooleanType {
@@ -373,7 +373,30 @@ export interface EngineAPI_V1 {
   /**
    * Load arbitrary BREP data into the engine
    */
-  loadModel(brep: BrepInputData): GenericResponse;
+  loadModel(brep: BrepInputData): BrepOutputData;
+
+  /**
+   * Load arbitrary BREP data into the engine
+   */
+  tessellate(request: {
+
+    /**
+     * Engine object reference
+     */
+    model: Handle,
+
+    /**
+     * Tessellation detail parameter
+     */
+    deflection: number;
+
+  }): {
+
+    faces: FaceTessellation[];
+
+    edges: EdgeTessellation[];
+
+  };
 
 }
 
