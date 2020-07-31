@@ -12,4 +12,5 @@ declare var Module: {
   _SPI_loftPreview: Function;
   _SPI_loft: Function;
   _SPI_fillet: Function;
+  _SPI_loadModel: Function;
 };

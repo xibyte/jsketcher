@@ -10,9 +10,10 @@ import NullSurface from 'geom/surfaces/nullSurface';
 import BBox from 'math/bbox';
 import NurbsCurve from 'geom/curves/nurbsCurve';
 import BrepCurve from 'geom/curves/brepCurve';
-import {BREPData} from "engine/data/brepData";
+import {BrepOutputData, EdgeData, FaceData} from "engine/data/brepOutputData";
 import {ProductionInfo} from "engine/productionInfo";
 import {Tessellation1D} from "engine/tessellation";
+import {Shell} from "brep/topo/shell";
 
 //Extensions for topo objects
 declare module '../topo/shell' {
@@ -55,7 +56,7 @@ declare module '../topo/edge' {
   }
 }
 
-export function readBrep(data: BREPData) {
+export function readBrep(data: BrepOutputData) {
   
   let bb = new BrepBuilder();
   let vf = new VertexFactory();
@@ -89,7 +90,7 @@ export function readBrep(data: BREPData) {
       }
     }
     try {
-      bb._face.surface = readSurface(faceData.surface, inverted, bb._face);
+      bb._face.surface = readSurface(faceData.surface, faceData.inverted, inverted, bb._face);
     } catch (e) {
       console.error(e);
       bb._face.surface = new BrepSurface(new NullSurface());
@@ -102,15 +103,16 @@ export function readBrep(data: BREPData) {
   return bb.build();
 }
 
-function readSurface(s, inverted, face) {
+function readSurface(s, faceInverted, effectivelyInverted, face) {
   let surface;
   if (s.TYPE === 'B-SPLINE') {
-    surface = new BrepSurface(NurbsSurface.create(s.degU, s.degV, s.knotsU, s.knotsV, s.cp, s.weights), inverted);
+    surface = new BrepSurface(NurbsSurface.create(s.degU, s.degV, s.knotsU, s.knotsV, s.cp, s.weights), faceInverted);
+    surface._mirrored = !s.direct;
   } else if (s.TYPE === 'PLANE') {
     
     let normal = new Vector().set3(s.normal);
     let plane = new Plane(normal, normal.dot(new Vector().set3(s.origin)));
-    if (inverted) {
+    if (effectivelyInverted) {
       plane = plane.invert();
     }
     let bBox = new BBox();
@@ -139,6 +141,83 @@ function readCurve(curve) {
       return undefined;
   }
 }
+
+
+// export function writeBrep(shell: Shell): BrepOutputData {
+//
+//   const brepData: BrepOutputData = {
+//     faces: []
+//   };
+//
+//   for (let f of shell.faces) {
+//     const faceData: FaceData = {
+//       surface: writeSurface(f.surface),
+//       inverted: f.surface.inverted,
+//       loops: []
+//     };
+//
+//     brepData.faces.push(faceData);
+//
+//     for (let l of f.loops) {
+//       const loop = [];
+//       faceData.loops.push(loop);
+//
+//
+//
+//       for (let he of l.halfEdges) {
+//         const vs = [he.vertexA, he.vertexB];
+//         if (he.inverted) {
+//           vs.reverse();
+//         }
+//         const [a, b] = vs;
+//         const curve = he.edge.curve;
+//         const edgeData: EdgeData = {
+//           a: a.point.toArray(),
+//           b: b.point.toArray(),
+//
+//           inverted: he.inverted,
+//           curveBounds: curve.domain,
+//
+//           curve: writeCurve(curve)
+//
+//         };
+//         loop.push(edgeData);
+//       }
+//
+//     }
+//   }
+//   return brepData;
+// }
+//
+//
+// function writeSurface(surface: BrepSurface) {
+//   const impl = surface.impl;
+//   if (impl instanceof NurbsSurface) {
+//     const {
+//       degreeU,
+//       degreeV,
+//       controlPoints,
+//       knotsU,
+//       knotsV,
+//       weights
+//     } = impl.data;
+//     return {
+//
+//       TYPE: "B-SPLINE",
+//
+//       direct: surface.mirrored,
+//
+//       degU: degreeU,
+//       degV: degreeV,
+//       knotsU: number[],
+//       knotsV: number[],
+//       weights: number[][],
+//       cp: controlPoints
+//     }
+//   } else {
+//     throw 'only nurbs';
+//   }
+// }
 
 export function normalizetessellationData(tessellation, inverted, surfaceNormal) {
   let tess = [];
