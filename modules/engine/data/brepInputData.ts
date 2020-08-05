@@ -100,7 +100,8 @@ export const CubeExample: () => BrepInputData = () => ({
   faces: [
     {
       surface: 'top',
-      loops: [['AB', 'BC', 'CD', 'DA']]
+      loops: [
+        ['AB', 'BC', 'CD', 'DA']]
     },
     {
       surface: 'bottom',

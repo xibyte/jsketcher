@@ -65,4 +65,19 @@ export class GenericWASMEngine_V1 implements EngineAPI_V1 {
     return callEngine(params, Module._SPI_transform);
   }
 
+  getLocation(params) {
+    return callEngine(params, Module._SPI_getLocation);
+  }
+
+  setLocation(params) {
+    return callEngine(params, Module._SPI_setLocation);
+  }
+
+  getModelData(params) {
+    return callEngine(params, Module._SPI_getModelData);
+  }
+
+  dispose(params) {
+    return callEngine(params, Module._SPI_dispose);
+  }
 }

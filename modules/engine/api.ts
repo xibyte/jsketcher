@@ -406,7 +406,7 @@ export interface EngineAPI_V1 {
   transform(request: {
 
     /**
-     * Engine object reference ot transform
+     * Engine object reference to transform
      */
     model: Handle,
 
@@ -416,6 +416,61 @@ export interface EngineAPI_V1 {
     matrix: Matrix3x4FlatData;
 
   }): BrepOutputData;
+
+  /**
+   * Sets the location for a model. Unlike the transform this method doesn't update the original geometry
+   * but virtually moves/rotates the model.
+   */
+  setLocation(request: {
+
+    /**
+     * Engine object reference
+     */
+    model: Handle,
+
+    /**
+     * Location matrix represented as a flat array
+     */
+    matrix: Matrix3x4FlatData;
+
+  }): void;
+
+  /**
+   * Gets the location assign to the model
+   * @see setLocation method
+   */
+  getLocation(request: {
+
+    /**
+     * Engine object reference
+     */
+    model: Handle,
+
+  }): Matrix3x4FlatData;
+
+  /**
+   * Returns the model's data
+   */
+  getModelData(request: {
+
+    /**
+     * Engine object reference
+     */
+    model: Handle,
+
+  }): BrepOutputData;
+
+  /**
+   * Deletes a given model from memory
+   */
+  dispose(request: {
+
+    /**
+     * Engine object reference
+     */
+    model: Handle,
+
+  }): void;
 
 }
 
