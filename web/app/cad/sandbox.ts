@@ -290,9 +290,13 @@ export function runSandbox(ctx: ApplicationContext) {
 
     let data = ctx.craftEngine.modellingEngine.loadModel(box);
 
-    data = ctx.craftEngine.modellingEngine.transform({
+    ctx.craftEngine.modellingEngine.setLocation({
       model: data.ptr,
       matrix: Matrix3x4.rotateMatrix(45 * DEG_RAD, AXIS.Y, ORIGIN).toFlatArray()
+    });
+
+    data = ctx.craftEngine.modellingEngine.getModelData({
+      model: data.ptr,
     });
 
     const tessellation = ctx.craftEngine.modellingEngine.tessellate({
@@ -300,7 +304,23 @@ export function runSandbox(ctx: ApplicationContext) {
       deflection: 3
     });
 
+    const location = ctx.craftEngine.modellingEngine.getLocation({
+      model: data.ptr
+    });
+
+    console.log("Location: ->>> ");
+    console.log(location);
+
+    console.log("Tesselation: ->>> ");
     console.log(tessellation);
+
+    // ctx.craftEngine.modellingEngine.dispose({
+    //   model: data.ptr
+    // });
+    //
+    // ctx.craftEngine.modellingEngine.getLocation({
+    //   model: data.ptr
+    // });
 
 
     const mBrepShell = readShellEntityFromJson(data);

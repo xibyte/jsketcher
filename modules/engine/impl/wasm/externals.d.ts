@@ -15,4 +15,8 @@ declare var Module: {
   _SPI_loadModel: Function;
   _SPI_tessellate: Function;
   _SPI_transform: Function;
+  _SPI_getLocation: Function;
+  _SPI_setLocation: Function;
+  _SPI_getModelData: Function;
+  _SPI_dispose: Function;
 };
