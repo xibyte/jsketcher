@@ -4,6 +4,7 @@ import {ParametricCurve} from "./parametricCurve";
 import {Matrix3x4Data} from "math/matrix";
 import {Vec3} from "math/vec";
 import {NurbsCurveData} from "geom/curves/nurbsCurveData";
+import {CurveBSplineData} from "engine/data/curveData";
 
 
 //in fact the sketcher format
@@ -95,6 +96,16 @@ export default class NurbsCurve implements ParametricCurve {
       degree: this.verb.degree(),
       knots: this.verb.knots(),
       cp: this.verb.controlPoints(), 
+      weights: this.verb.weights()
+    }
+  }
+
+  asCurveBSplineData(): CurveBSplineData {
+    return {
+      TYPE: "B-SPLINE",
+      degree: this.verb.degree(),
+      knots: this.verb.knots(),
+      cp: this.verb.controlPoints(),
       weights: this.verb.weights()
     }
   }

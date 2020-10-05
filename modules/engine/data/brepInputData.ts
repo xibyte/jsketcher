@@ -1,7 +1,19 @@
 import {SurfaceData} from "./surfaceData";
 import {CurveData} from "./curveData";
 import {Vec3} from "math/vec";
+import {SurfaceType} from "engine/data/brepOutputData";
 
+export interface BrepInputFaceData {
+  surface?: string;
+  loops: string[][];
+  inverted?: boolean;
+}
+
+export interface BrepInputEdgeData {
+  a: string;
+  b: string;
+  curve?: string;
+}
 
 export interface BrepInputData {
 
@@ -14,22 +26,14 @@ export interface BrepInputData {
   },
 
   surfaces?: {
-    [id: string]: SurfaceData;
+    [id: string]: SurfaceType;
   };
 
   edges: {
-    [id: string]: {
-      a: string;
-      b: string;
-      curve?: string;
-      inverted?: boolean;
-    };
+    [id: string]: BrepInputEdgeData;
   };
 
-  faces: {
-    surface?: string;
-    loops: string[][];
-  }[];
+  faces: BrepInputFaceData[];
 
 }
 

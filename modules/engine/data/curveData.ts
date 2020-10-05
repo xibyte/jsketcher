@@ -9,7 +9,12 @@ export interface CurveData {
 export interface CurveBSplineData extends CurveData {
 
   TYPE: "B-SPLINE";
-  deg: number;
+
+  degree?: number;
+
+  //backward compat
+  deg?: number;
+
   knots: number[];
   weights: number[];
   cp: Vec3[];
