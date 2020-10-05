@@ -3,9 +3,6 @@ import {Vec3} from "math/vec";
 export interface SurfaceData {
 
   TYPE: string;
-
-  direct: boolean;
-
 }
 
 export interface SurfacePlaneData extends SurfaceData {
@@ -16,17 +13,23 @@ export interface SurfacePlaneData extends SurfaceData {
 
   origin: Vec3;
 
+  direct?: boolean;
 }
 
 export interface SurfaceBSplineData extends SurfaceData {
 
-  TYPE: "B-SPLINE",
+  TYPE: "B-SPLINE"
 
-  degU: number
-  degV: number
-  knotsU: number[],
-  knotsV: number[],
-  weights: number[][],
+  degreeU?: number
+  degreeV?: number
+
+  //backward compat
+  degU?: number
+  degV?: number
+
+  knotsU: number[]
+  knotsV: number[]
+  weights: number[][]
   cp: Vec3[][]
 }
 

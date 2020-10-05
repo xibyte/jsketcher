@@ -13,7 +13,7 @@ import {Vec3} from "math/vec";
 
 export default class BrepCurve {
 
-  impl: any;
+  impl: NurbsCurve;
 
   uMin: number;
   uMax: number;

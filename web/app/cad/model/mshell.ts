@@ -5,6 +5,8 @@ import {MVertex} from './mvertex';
 import CSys from 'math/csys';
 import {state, StateStream} from "lstream";
 import {Matrix3x4} from "math/matrix";
+import {Shell} from "brep/topo/shell";
+import {TopoObject} from "brep/topo/topo-object";
 
 export class MShell extends MObject {
 
@@ -41,9 +43,9 @@ export class MShell extends MObject {
 
 export class MBrepShell extends MShell {
 
-  brepShell: any;
+  brepShell: Shell;
   csys: CSys;
-  brepRegistry: Map<string, MObject>;
+  brepRegistry: Map<TopoObject, MObject>;
 
   constructor(shell, csys) {
     super();
