@@ -15,13 +15,15 @@ export interface BrepOutputData {
 
 }
 
+export type SurfaceType = SurfacePlaneData | SurfaceBSplineData | SurfaceUnknownData;
+
 export interface FaceData {
 
   ref: number;
 
   ptr: Handle;
 
-  surface: SurfacePlaneData | SurfaceBSplineData | SurfaceUnknownData;
+  surface: SurfaceType;
   inverted: boolean;
   tess?: Tessellation2D<Vec3>;
   productionInfo: ProductionInfo;

@@ -10,10 +10,14 @@ import NullSurface from 'geom/surfaces/nullSurface';
 import BBox from 'math/bbox';
 import NurbsCurve from 'geom/curves/nurbsCurve';
 import BrepCurve from 'geom/curves/brepCurve';
-import {BrepOutputData, EdgeData, FaceData} from "engine/data/brepOutputData";
+import {BrepOutputData} from "engine/data/brepOutputData";
 import {ProductionInfo} from "engine/productionInfo";
 import {Tessellation1D} from "engine/tessellation";
 import {Shell} from "brep/topo/shell";
+import {BrepInputData} from "engine/data/brepInputData";
+import {Vertex} from "brep/topo/vertex";
+import {Edge} from "brep/topo/edge";
+import {ParametricSurface} from "geom/surfaces/parametricSurface";
 
 //Extensions for topo objects
 declare module '../topo/shell' {
@@ -63,6 +67,7 @@ export function readBrep(data: BrepOutputData) {
   
   for (let faceData of data.faces) {
     bb.face();
+    // @ts-ignore
     let nonDirect = faceData.surface.direct === false; // left handed coordinate system for planes
     let inverted = faceData.inverted !== nonDirect;
     bb._face.data.tessellation = {
@@ -143,81 +148,86 @@ function readCurve(curve) {
 }
 
 
-// export function writeBrep(shell: Shell): BrepOutputData {
-//
-//   const brepData: BrepOutputData = {
-//     faces: []
-//   };
-//
-//   for (let f of shell.faces) {
-//     const faceData: FaceData = {
-//       surface: writeSurface(f.surface),
-//       inverted: f.surface.inverted,
-//       loops: []
-//     };
-//
-//     brepData.faces.push(faceData);
-//
-//     for (let l of f.loops) {
-//       const loop = [];
-//       faceData.loops.push(loop);
-//
-//
-//
-//       for (let he of l.halfEdges) {
-//         const vs = [he.vertexA, he.vertexB];
-//         if (he.inverted) {
-//           vs.reverse();
-//         }
-//         const [a, b] = vs;
-//         const curve = he.edge.curve;
-//         const edgeData: EdgeData = {
-//           a: a.point.toArray(),
-//           b: b.point.toArray(),
-//
-//           inverted: he.inverted,
-//           curveBounds: curve.domain,
-//
-//           curve: writeCurve(curve)
-//
-//         };
-//         loop.push(edgeData);
-//       }
-//
-//     }
-//   }
-//   return brepData;
-// }
-//
-//
-// function writeSurface(surface: BrepSurface) {
-//   const impl = surface.impl;
-//   if (impl instanceof NurbsSurface) {
-//     const {
-//       degreeU,
-//       degreeV,
-//       controlPoints,
-//       knotsU,
-//       knotsV,
-//       weights
-//     } = impl.data;
-//     return {
-//
-//       TYPE: "B-SPLINE",
-//
-//       direct: surface.mirrored,
-//
-//       degU: degreeU,
-//       degV: degreeV,
-//       knotsU: number[],
-//       knotsV: number[],
-//       weights: number[][],
-//       cp: controlPoints
-//     }
-//   } else {
-//     throw 'only nurbs';
-//   }
-// }
+export function writeBrep(shell: Shell): BrepInputData {
+
+  const brepData: BrepInputData = {
+    vertices: {},
+    curves: {},
+    surfaces: {},
+    edges: {},
+    faces: []
+  };
+
+  const surfaces = new Map<ParametricSurface, string>();
+  const curves = new Map<BrepCurve, string>();
+  const verts = new Map<Vertex, string>();
+  const edges = new Map<Edge, string>();
+
+  let vid = 0;
+  for (let v of shell.vertices) {
+    const id = 'v' + (vid++);
+    brepData.vertices[id] = v.point.data();
+    verts.set(v, id);
+  }
+
+  let cid = 0;
+  for (let e of shell.edges) {
+    e.curve.impl.asCurveBSplineData()
+    let curveId = curves.get(e.curve);
+    if (!curveId) {
+      curveId = 'c' + (cid++);
+      brepData.curves[curveId] = e.curve.impl.asCurveBSplineData();
+      curves.set(e.curve, curveId);
+    }
+
+    const a = verts.get(e.halfEdge1.vertexA);
+    const b = verts.get(e.halfEdge1.vertexB);
+    const edgeId = a + '_' + b;
+
+    brepData.edges[edgeId] = {
+      a, b,
+      curve: curveId
+    }
+
+    edges.set(e, edgeId);
+
+  }
+
+  let sid = 0;
+  for (let face of shell.faces) {
+
+    let surfaceId = surfaces.get(face.surface.impl);
+    if (!surfaceId) {
+      surfaceId = 's' + (sid++);
+
+      brepData.surfaces[surfaceId] = {
+        ... (face.surface.impl as NurbsSurface).asSurfaceBSplineData()
+      }
+
+      //direct needed only for planes
+      //direct: face.surface.mirrored ? false : undefined
+
+      surfaces.set(face.surface.impl, surfaceId);
+    }
+  }
+
+
+  for (let face of shell.faces) {
+    const loops = [];
+    for (let loop of face.loops) {
+      loops.push(loop.halfEdges.map(he => edges.get(he.edge)));
+    }
+
+    brepData.faces.push({
+      surface: surfaces.get(face.surface.impl),
+      inverted: face.surface.inverted,
+      loops
+    })
+  }
+  return brepData;
+}
+
+
 
 export function normalizetessellationData(tessellation, inverted, surfaceNormal) {
   let tess = [];

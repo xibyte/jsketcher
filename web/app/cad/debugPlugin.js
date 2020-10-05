@@ -10,6 +10,7 @@ import {toLoops} from 'brep/io/brepLoopsFormat';
 import curveTess from 'geom/impl/curve/curve-tess';
 import {LOG_FLAGS} from './logFlags';
 import {state} from "lstream";
+import {BufferGeometry, BufferAttribute, Float32BufferAttribute, Int32BufferAttribute} from 'three';
 
 const BREP_DEBUG_WINDOW_VISIBLE$ = state(false);
 
@@ -194,7 +195,7 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
       for (let i = 0; i < triangles.length; ++i) {
         let off = geometry.vertices.length;
         let tr = triangles[i], normales;
-        if (Array.isArray(tr)) {
+        if (Array.isArray(tr[0][0])) {
           normales = tr[1];
           tr = tr[0];
           if (normales.find(n => n[0] === null || n[1] === null || n[2] === null)) {
@@ -213,6 +214,39 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
         side: THREE.DoubleSide
       }));
       debugVolumeGroup.add(mesh);
+      viewer.render();
+    },
+    AddFacesTessellation: (faces) => {
+      const dump = [];
+      faces.forEach(face => {
+
+        for (let i = 0; i < face.indices.length; i += 3) {
+
+          const a = (face.indices[i + 0] - 1) * 3;
+          const b = (face.indices[i + 1] - 1) * 3;
+          const c = (face.indices[i + 2] - 1) * 3;
+
+          dump.push([
+            [
+              face.positions[a + 0],
+              face.positions[a + 1],
+              face.positions[a + 2]
+            ],
+            [
+              face.positions[b + 0],
+              face.positions[b + 1],
+              face.positions[b + 2]
+            ],
+            [
+              face.positions[c + 0],
+              face.positions[c + 1],
+              face.positions[c + 2]
+            ],
+          ]);
+        }
+
+      })
+      __DEBUG__.AddTessDump(dump);
       viewer.render();
     },
     HideSolids: () => {

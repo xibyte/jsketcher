@@ -7,6 +7,7 @@ import {ParametricCurve} from "../curves/parametricCurve";
 import {Matrix3x4Data} from "math/matrix";
 import {Vec3} from "math/vec";
 import {NurbsSurfaceData} from "geom/surfaces/nurbsSurfaceData";
+import {SurfaceBSplineData} from "engine/data/surfaceData";
 
 export default class NurbsSurface implements ParametricSurface {
 
@@ -84,6 +85,17 @@ export default class NurbsSurface implements ParametricSurface {
     throw 'unimplemented';
   }
 
+  asSurfaceBSplineData(): SurfaceBSplineData {
+    return {
+      TYPE: "B-SPLINE",
+      degreeU: this.verb.degreeU(),
+      degreeV: this.verb.degreeV(),
+      knotsU: this.verb.knotsU(),
+      knotsV: this.verb.knotsV(),
+      weights: this.verb.weights(),
+      cp: this.verb.controlPoints()
+    }
+  }
 }
 
 const surTess = verb.eval.Tess.rationalSurfaceAdaptive;

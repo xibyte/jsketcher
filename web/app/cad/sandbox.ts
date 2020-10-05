@@ -12,6 +12,9 @@ import {Vec3} from "math/vec";
 import {ApplicationContext} from "context";
 import {readShellEntityFromJson} from "./scene/wrappers/entityIO";
 import {DEG_RAD} from "math/commons";
+import {DEFLECTION, E0_TOLERANCE} from "./craft/e0/common";
+import {readBrep, writeBrep} from "brep/io/brepIO";
+import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 
 export function runSandbox(ctx: ApplicationContext) {
 
@@ -325,10 +328,65 @@ export function runSandbox(ctx: ApplicationContext) {
 
     const mBrepShell = readShellEntityFromJson(data);
 
-    services.exposure.addOnScene(mBrepShell);
+    const serialized = writeBrep(mBrepShell.brepShell);
+    console.log(serialized);
+    let fromSerialization = ctx.craftEngine.modellingEngine.loadModel(serialized);
+    const mBrepShell2 = readShellEntityFromJson(data);
+
+    services.exposure.addOnScene(mBrepShell2);
 
   }
 
+  function testTess() {
+
+    	let direction = [0, 0, 100];
+
+    	let sketch = [[
+        {
+          TYPE: PRIMITIVE_TYPES.SEGMENT,
+          a: [0, 0, 0],
+          b: [100, 0, 0],
+        },
+        {
+          TYPE: PRIMITIVE_TYPES.SEGMENT,
+          a: [100, 0, 0],
+          b: [100, 100, 0],
+        },
+        {
+          TYPE: PRIMITIVE_TYPES.SEGMENT,
+          a: [100, 100, 0],
+          b: [0, 100, 0],
+        },
+        {
+          TYPE: PRIMITIVE_TYPES.SEGMENT,
+          a: [0, 100, 0],
+          b: [0, 0, 0],
+        },
+    	]]
+
+    	let data = ctx.craftEngine.modellingEngine.extrude({
+    		vector: direction,
+    		sketch: sketch,
+    		tolerance: E0_TOLERANCE,
+    		deflection: DEFLECTION
+    	})
+
+    	let brep = readBrep(data);
+    	let tess = ctx.craftEngine.modellingEngine.tessellate({
+    		model: data.ptr,
+    		deflection: DEFLECTION
+    	})
+
+      __DEBUG__.AddFacesTessellation(tess.faces)
+
+      console.dir(tess.faces)
+
+      // const mBrepShell = readShellEntityFromJson(data);
+
+      // services.exposure.addOnScene(mBrepShell);
+
+
+    }
 
   // cylinderAndPlaneIntersect();
   // curvesIntersect();
@@ -347,7 +405,7 @@ export function runSandbox(ctx: ApplicationContext) {
   // window.voxelTest = voxelTest;
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
     if (ready) {
-      testLoadBrep()
+      testLoadBrep();
 
     }
   });
