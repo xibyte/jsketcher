@@ -290,48 +290,56 @@ export function runSandbox(ctx: ApplicationContext) {
   function testLoadBrep() {
 
     const box: BrepInputData = CubeExample();
-
+    //
     let data = ctx.craftEngine.modellingEngine.loadModel(box);
-
-    ctx.craftEngine.modellingEngine.setLocation({
-      model: data.ptr,
-      matrix: Matrix3x4.rotateMatrix(45 * DEG_RAD, AXIS.Y, ORIGIN).toFlatArray()
-    });
-
-    data = ctx.craftEngine.modellingEngine.getModelData({
-      model: data.ptr,
-    });
-
-    const tessellation = ctx.craftEngine.modellingEngine.tessellate({
-      model: data.ptr,
-      deflection: 3
-    });
-
-    const location = ctx.craftEngine.modellingEngine.getLocation({
-      model: data.ptr
-    });
-
-    console.log("Location: ->>> ");
-    console.log(location);
-
-    console.log("Tesselation: ->>> ");
-    console.log(tessellation);
-
-    // ctx.craftEngine.modellingEngine.dispose({
+    //
+    // ctx.craftEngine.modellingEngine.setLocation({
+    //   model: data.ptr,
+    //   matrix: Matrix3x4.rotateMatrix(45 * DEG_RAD, AXIS.Y, ORIGIN).toFlatArray()
+    // });
+    //
+    // data = ctx.craftEngine.modellingEngine.getModelData({
+    //   model: data.ptr,
+    // });
+    //
+    // const tessellation = ctx.craftEngine.modellingEngine.tessellate({
+    //   model: data.ptr,
+    //   deflection: 3
+    // });
+    //
+    // const location = ctx.craftEngine.modellingEngine.getLocation({
     //   model: data.ptr
     // });
     //
-    // ctx.craftEngine.modellingEngine.getLocation({
-    //   model: data.ptr
-    // });
+    // console.log("Location: ->>> ");
+    // console.log(location);
+    //
+    // console.log("Tesselation: ->>> ");
+    // console.log(tessellation);
+    //
+    // // ctx.craftEngine.modellingEngine.dispose({
+    // //   model: data.ptr
+    // // });
+    // //
+    // // ctx.craftEngine.modellingEngine.getLocation({
+    // //   model: data.ptr
+    // // });
+
+    console.log("DATA:");
+    console.log(data);
 
 
     const mBrepShell = readShellEntityFromJson(data);
-
+// debugger
     const serialized = writeBrep(mBrepShell.brepShell);
+    console.log("SERAIL:");
     console.log(serialized);
     let fromSerialization = ctx.craftEngine.modellingEngine.loadModel(serialized);
-    const mBrepShell2 = readShellEntityFromJson(data);
+
+    console.log("FROM:");
+    console.log(fromSerialization);
+
+    const mBrepShell2 = readShellEntityFromJson(fromSerialization);
 
     services.exposure.addOnScene(mBrepShell2);
 
