@@ -199,10 +199,19 @@ export function writeBrep(shell: Shell): BrepInputData {
     let surfaceId = surfaces.get(face.surface.impl);
     if (!surfaceId) {
       surfaceId = 's' + (sid++);
-
-      brepData.surfaces[surfaceId] = {
-        ... (face.surface.impl as NurbsSurface).asSurfaceBSplineData()
+      const plane = face.surface.simpleSurface as Plane;
+      if (plane !== null) {
+        brepData.surfaces[surfaceId] = {
+          TYPE: 'PLANE',
+          normal: plane.normal.data(),
+          origin: plane.normal.multiply(plane.w).data()
+        }
+      } else {
+        brepData.surfaces[surfaceId] = {
+          ... (face.surface.impl as NurbsSurface).asSurfaceBSplineData()
+        }
       }
+
 
       //direct needed only for planes
       //direct: face.surface.mirrored ? false : undefined
