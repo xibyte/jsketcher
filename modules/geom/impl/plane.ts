@@ -3,12 +3,12 @@ import {Line} from './line';
 import {eqTol, veq} from '../tolerance';
 import {Matrix3x4} from 'math/matrix';
 import {BasisForPlane} from 'math/basis';
-import {AXIS} from "math/vector";
+import Vector, {AXIS} from "math/vector";
 
 
 export class Plane {
-  normal: any;
-  w: any;
+  normal: Vector;
+  w: number;
   #basis: any;
   #_2dTr: any;
   #_3dTr: any;
@@ -18,7 +18,7 @@ export class Plane {
   static XZ = new Plane(AXIS.Y, 0);
   static YZ = new Plane(AXIS.X, 0);
 
-  constructor(normal, w) {
+  constructor(normal: Vector, w: number) {
     this.normal = normal;
     this.w = w;
   }
