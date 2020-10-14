@@ -15,6 +15,7 @@ import {DEG_RAD} from "math/commons";
 import {DEFLECTION, E0_TOLERANCE} from "./craft/e0/common";
 import {readBrep, writeBrep} from "brep/io/brepIO";
 import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
+import {pullFace} from "brep/operations/directMod";
 
 export function runSandbox(ctx: ApplicationContext) {
 
@@ -287,6 +288,28 @@ export function runSandbox(ctx: ApplicationContext) {
     console.log("done")
   }
 
+  function testPullFace() {
+
+    const box: BrepInputData = CubeExample();
+    //
+    let data = ctx.craftEngine.modellingEngine.loadModel(box);
+
+
+    const shell = readShellEntityFromJson(data);
+    services.exposure.addOnScene(shell);
+
+    pullFace(shell.brepShell.faces[0], 700);
+
+    const ser = writeBrep(shell.brepShell);
+    ser.curves = {};
+    console.log(ser);
+    let fromSerialization = ctx.craftEngine.modellingEngine.loadModel(ser);
+
+    const mBrepShell2 = readShellEntityFromJson(fromSerialization);
+    services.exposure.addOnScene(mBrepShell2);
+
+  }
+
   function testLoadBrep() {
 
     const box: BrepInputData = CubeExample();
@@ -330,6 +353,9 @@ export function runSandbox(ctx: ApplicationContext) {
 
 
     const mBrepShell = readShellEntityFromJson(data);
+    // services.exposure.addOnScene(mBrepShell);
+
+    // return ;
 // debugger
     const serialized = writeBrep(mBrepShell.brepShell);
     console.log("SERAIL:");
@@ -413,7 +439,7 @@ export function runSandbox(ctx: ApplicationContext) {
   // window.voxelTest = voxelTest;
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
     if (ready) {
-      testLoadBrep();
+      testPullFace();
 
     }
   });
