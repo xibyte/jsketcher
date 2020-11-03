@@ -5,6 +5,7 @@ import BrepCurve from '../curves/brepCurve';
 import {intersectNurbs} from './nurbsSurface';
 import {IsoCurveU, IsoCurveV} from '../curves/IsoCurve';
 import {ParametricSurface, UV} from "./parametricSurface";
+import {Matrix3x4} from "math/matrix";
 
 export class BrepSurface {
 
@@ -167,6 +168,12 @@ export class BrepSurface {
 
   tangentPlaneInMiddle() {
     return this.tangentPlane(this.uMid, this.vMid);
+  }
+
+  transform(tr: Matrix3x4): BrepSurface {
+    const trArr = tr.toArray();
+    // trArr.push([0, 0, 0, 1]);
+    return new BrepSurface(this.impl.transform(trArr), this.inverted);
   }
 
   static WORKING_POINT_SCALE_FACTOR = 1000;

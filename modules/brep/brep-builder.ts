@@ -75,6 +75,7 @@ export default class BrepBuilder {
 
   build(): Shell {
     for (let face of this._shell.faces) {
+      face.shell = this._shell;
       for (let loop of face.loops) {
         loop.link();    
       }  

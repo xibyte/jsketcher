@@ -10,17 +10,18 @@ import {Tessellation1D} from "engine/tessellation";
 import {Matrix3x4} from "math/matrix";
 import {areEqual} from "math/equality";
 import {Vec3} from "math/vec";
+import {ParametricCurve} from "geom/curves/parametricCurve";
 
 export default class BrepCurve {
 
-  impl: NurbsCurve;
+  impl: ParametricCurve;
 
   uMin: number;
   uMax: number;
   uMid: number;
   private __middlePoint: Vector;
 
-  constructor(_impl: NurbsCurve, uMin?: number, uMax?: number) {
+  constructor(_impl: ParametricCurve, uMin?: number, uMax?: number) {
     this.impl = _impl;
     [uMin, uMax] = this.impl.domain();
     this.uMin = uMin;
@@ -70,7 +71,7 @@ export default class BrepCurve {
       return null
     }
     let split = this.impl.split(u);
-    return split.map(v => new BrepCurve(v));
+    return split.map(v => new BrepCurve(v)) as [BrepCurve, BrepCurve];
 
     // return [
     //   new BrepCurve(this.impl, this.uMin, u),
