@@ -3,6 +3,7 @@ import {Face} from "./face";
 import {Loop} from "./loop";
 import {Vertex} from "brep/topo/vertex";
 import {Edge} from "brep/topo/edge";
+import {Matrix3x4} from "math/matrix";
 
 
 export class Shell extends TopoObject {
@@ -53,6 +54,33 @@ export class Shell extends TopoObject {
     Object.assign(clone.data, this.data);
     return clone;
   }
+
+  /**
+   * Mutates the original shell applying the transformation. Transformation can be non-uniform.
+   */
+  transform(tr: Matrix3x4) {
+
+    for (let v of this.vertices) {
+      v.point = tr.apply(v.point);
+    }
+
+    const visited = new Set<any>();
+    for (let e of this.edges) {
+      if (visited.has(e.curve)) {
+        continue;
+      }
+      visited.add(e.curve);
+      e.curve = e.curve.transform(tr);
+    }
+    for (let face of this.faces) {
+      if (visited.has(face.surface)) {
+        continue;
+      }
+      visited.add(face.surface);
+      face.surface = face.surface.transform(tr);
+    }
+  }
+
 }
 
 export function* verticesGenerator(shell: Shell): Generator<Vertex> {
