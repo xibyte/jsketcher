@@ -43,7 +43,8 @@ export default class NurbsCurve implements ParametricCurve {
   }
 
   transform(tr: Matrix3x4Data): ParametricCurve {
-    return new NurbsCurve(this.verb.transform(tr));
+    const verbCurveTr = this.verb.transform(tr);
+    return new NurbsCurve(verbCurveTr);
   }
 
   point(u: number): Vec3 {

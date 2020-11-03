@@ -82,7 +82,7 @@ export default class NurbsSurface implements ParametricSurface {
   };
 
   transform(tr: Matrix3x4Data): ParametricSurface {
-    throw 'unimplemented';
+    return new NurbsSurface(this.verb.transform(tr));
   }
 
   asSurfaceBSplineData(): SurfaceBSplineData {

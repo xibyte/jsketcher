@@ -172,9 +172,9 @@ export function writeBrep(shell: Shell): BrepInputData {
 
   let cid = 0;
   for (let e of shell.edges) {
-    e.curve.impl.asCurveBSplineData()
     let curveId = curves.get(e.curve);
-    if (!curveId) {
+    // since we it can't be non smooth splines without a vertex - simple just skip it
+    if (!curveId && e.curve.degree != 1) {
       curveId = 'c' + (cid++);
       brepData.curves[curveId] = e.curve.impl.asCurveBSplineData();
       curves.set(e.curve, curveId);

@@ -16,6 +16,7 @@ import {DEFLECTION, E0_TOLERANCE} from "./craft/e0/common";
 import {readBrep, writeBrep} from "brep/io/brepIO";
 import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 import {pullFace} from "brep/operations/directMod";
+import {Shell} from "brep/topo/shell";
 
 export function runSandbox(ctx: ApplicationContext) {
 
@@ -310,6 +311,28 @@ export function runSandbox(ctx: ApplicationContext) {
 
   }
 
+  function nonUniformScale() {
+
+    const box: BrepInputData = CubeExample();
+
+    let data = ctx.craftEngine.modellingEngine.loadModel(box);
+    // data = ctx.craftEngine.modellingEngine.transform({
+    //   model: data.ptr,
+    //   matrix: new Matrix3x4().scale(1,2,1).toFlatArray()
+    // });
+
+    const mShell = readShellEntityFromJson(data);
+    const shell = mShell.brepShell as Shell;
+    shell.transform(new Matrix3x4().scale(1,2,1));
+
+    const scaledInput = writeBrep(shell);
+    console.dir(scaledInput);
+    let data2 = ctx.craftEngine.modellingEngine.loadModel(scaledInput);
+
+    const mShell2 = readShellEntityFromJson(data2);
+    services.exposure.addOnScene(mShell2);
+  }
+
   function testLoadBrep() {
 
     const box: BrepInputData = CubeExample();
@@ -439,7 +462,7 @@ export function runSandbox(ctx: ApplicationContext) {
   // window.voxelTest = voxelTest;
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
     if (ready) {
-      testPullFace();
+      nonUniformScale();
 
     }
   });
