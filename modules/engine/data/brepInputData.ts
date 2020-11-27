@@ -39,7 +39,7 @@ export interface BrepInputData {
 
 export const CubeExample: () => BrepInputData = () => ({
   vertices: {
-    A: [0,0,500],
+    A: [0,-100,750],
     B: [500,0,500],
     C: [500,500,500],
     D: [0,500,500],
@@ -104,6 +104,7 @@ export const CubeExample: () => BrepInputData = () => ({
   faces: [
     {
       surface: 'top',
+      plate: true,
       loops: [
         ['AB', 'BC', 'CD', 'DA']]
     },
