@@ -15,8 +15,9 @@ import {DEG_RAD} from "math/commons";
 import {DEFLECTION, E0_TOLERANCE} from "./craft/e0/common";
 import {readBrep, writeBrep} from "brep/io/brepIO";
 import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
-import {pullFace} from "brep/operations/directMod";
+import {pullFace} from "brep/operations/directMod/pullFace";
 import {Shell} from "brep/topo/shell";
+import { testVertexMoving } from 'brep/operations/directMod/vertexMoving';
 
 export function runSandbox(ctx: ApplicationContext) {
 
@@ -102,15 +103,75 @@ export function runSandbox(ctx: ApplicationContext) {
   }
 
   function test3() {
+  
+  
+      	let direction = [0, 0, 500];
+  
+      	let sketch = [[
+          {
+            TYPE: PRIMITIVE_TYPES.SEGMENT,
+            a: [0, 0, 0],
+            b: [500, 0, 0],
+          },
+          {
+            TYPE: PRIMITIVE_TYPES.SEGMENT,
+            a: [500, 0, 0],
+            b: [500, 500, 0],
+          },
+          {
+            TYPE: PRIMITIVE_TYPES.SEGMENT,
+            a: [500, 500, 0],
+            b: [0, 500, 0],
+          },
+          {
+            TYPE: PRIMITIVE_TYPES.SEGMENT,
+            a: [0, 500, 0],
+            b: [0, 0, 0],
+          },
+      	]]
+  
+      	let data = ctx.craftEngine.modellingEngine.extrude({
+      		vector: direction,
+      		sketch: sketch,
+      		tolerance: E0_TOLERANCE,
+      		deflection: DEFLECTION
+      	})
+  
+      	let box1 = readBrep(data);
+  
+//     const box1 = exposure.brep.primitives.box(500, 500, 500);
+    const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3x4().translate(25, 25, 0));
+
+//     const box3 = exposure.brep.primitives.box(150, 600, 350, new Matrix3x4().translate(25, 25, -250));
+    // let result = exposure.brep.bool.union(box1, box2);
+    let result = exposure.brep.bool.subtract(box1, box2);
+    result = exposure.brep.bool.subtract(result, box3);
+    // addShellOnScene(box1);
+    addShellOnScene(result);
+  }
+
+  function test4() {
     const box1 = exposure.brep.primitives.box(500, 500, 500);
     const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3x4().translate(25, 25, 0));
 
     const box3 = exposure.brep.primitives.box(150, 600, 350, new Matrix3x4().translate(25, 25, -250));
     // let result = exposure.brep.bool.union(box1, box2);
     let result = exposure.brep.bool.subtract(box1, box2);
-    result = exposure.brep.bool.subtract(result, box3);
-    // addShellOnScene(box1);
-    addShellOnScene(result);
+
+    const serialized = writeBrep(result);
+    console.log("SERAIL:");
+    console.log(serialized);
+    let fromSerialization = ctx.craftEngine.modellingEngine.loadModel(serialized);
+
+    console.log("FROM:");
+    console.log(fromSerialization);
+
+    const mBrepShell2 = readShellEntityFromJson(fromSerialization);
+
+    services.exposure.addOnScene(mBrepShell2);
+
+
+//     addShellOnScene(result);
   }
 
   function test5() {
@@ -322,15 +383,15 @@ export function runSandbox(ctx: ApplicationContext) {
     // });
 
     const mShell = readShellEntityFromJson(data);
-    const shell = mShell.brepShell as Shell;
-    shell.transform(new Matrix3x4().scale(1,2,1));
+    // const shell = mShell.brepShell as Shell;
+    // // shell.transform(new Matrix3x4().scale(1,2,1));
 
-    const scaledInput = writeBrep(shell);
-    console.dir(scaledInput);
-    let data2 = ctx.craftEngine.modellingEngine.loadModel(scaledInput);
+    // const scaledInput = writeBrep(shell);
+    // console.dir(scaledInput);
+    // let data2 = ctx.craftEngine.modellingEngine.loadModel(scaledInput);
 
-    const mShell2 = readShellEntityFromJson(data2);
-    services.exposure.addOnScene(mShell2);
+    // const mShell2 = readShellEntityFromJson(data2);
+    services.exposure.addOnScene(mShell);
   }
 
   function testLoadBrep() {
@@ -462,8 +523,8 @@ export function runSandbox(ctx: ApplicationContext) {
   // window.voxelTest = voxelTest;
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
     if (ready) {
-      nonUniformScale();
-
+      //testVertexMoving(ctx);
+      test4();
     }
   });
 
