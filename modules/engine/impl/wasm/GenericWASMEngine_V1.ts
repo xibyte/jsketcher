@@ -49,6 +49,10 @@ export class GenericWASMEngine_V1 implements EngineAPI_V1 {
     return callEngine(params, Module._SPI_revolve);
   }
 
+  splitFace(params) {
+    return callEngine(params, Module._SPI_splitFace);
+  }
+
   stepImport(params) {
     return callEngine(params, Module._SPI_stepImport);
   }
