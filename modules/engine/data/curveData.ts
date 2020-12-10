@@ -1,12 +1,8 @@
 import {Vec3} from "math/vec";
 
-export interface CurveData {
+export type CurveData = CurveBSplineData | CurveLineData | CurveUnknownData;
 
-  TYPE: string;
-
-}
-
-export interface CurveBSplineData extends CurveData {
+export interface CurveBSplineData {
 
   TYPE: "B-SPLINE";
 
@@ -21,12 +17,15 @@ export interface CurveBSplineData extends CurveData {
 
 }
 
-export interface CurveLineData extends CurveData {
+export interface CurveLineData {
 
   TYPE: "LINE";
 
+  a: Vec3;
+  b: Vec3;
+
 }
-export interface CurveUnknownData extends CurveData {
+export interface CurveUnknownData {
 
   TYPE: "UNKNOWN";
 

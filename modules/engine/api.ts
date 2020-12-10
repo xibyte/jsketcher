@@ -5,6 +5,7 @@ import {PrimitiveData} from "engine/data/primitiveData";
 import {EdgeTessellation, FaceTessellation, Tessellation2D} from "engine/tessellation";
 import {BrepInputData} from "engine/data/brepInputData";
 import {Matrix3x4FlatData} from "math/matrix";
+import {CurveData} from "engine/data/curveData";
 
 export enum BooleanType {
   UNION = 1,
@@ -133,6 +134,50 @@ export interface EngineAPI_V1 {
 
   }): GenericResponse;
 
+  /**
+   * Split face by edge
+   */
+  splitFace(params: {
+
+    /**
+     * Base shape containing face to split
+     */
+    shape: Handle;
+
+    /**
+     * Face to split
+     */
+    face: Handle;
+
+    /**
+     * Splitting edge
+     */
+    edge:  {
+
+      /**
+       * Curve definition
+       */
+      curve: CurveData;
+
+      /**
+       * Optional bounds for the splitting curve. If uMin supplied uMax should be supplied as well
+       */
+      uMin?: number;
+
+      /**
+       * Optional bounds for the splitting curve. If uMax supplied uMin should be supplied as well
+       */
+      uMax?: number;
+
+    };
+
+    /**
+     * Tessellation detail parameter
+     */
+    deflection: number;
+
+
+  }): GenericResponse;
 
   /**
    * Lightweight loft operation returning only tessellation info. Meant to be used as a preview in wizards

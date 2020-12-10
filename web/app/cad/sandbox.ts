@@ -174,6 +174,32 @@ export function runSandbox(ctx: ApplicationContext) {
 //     addShellOnScene(result);
   }
 
+  function testSplitFace() {
+    const box1 = exposure.brep.primitives.box(500, 500, 500);
+
+    const serialized = writeBrep(box1);
+    const loaded = ctx.craftEngine.modellingEngine.loadModel(serialized);
+    const face = loaded.faces[0];
+    const [e1, e2]  = face.loops[0];
+
+    const splitted = ctx.craftEngine.modellingEngine.splitFace({
+      deflection: DEFLECTION,
+      shape: loaded.ptr,
+      face: face.ptr,
+      edge: {
+        curve: {
+          TYPE: 'LINE',
+          a: [-250, -250, -250],
+          b: [ 250, -250,  250]
+        }
+      }
+    })
+
+    services.exposure.addOnScene(readShellEntityFromJson(splitted));
+
+//     addShellOnScene(result);
+  }
+
   function test5() {
 
     const degree = 3
@@ -523,8 +549,9 @@ export function runSandbox(ctx: ApplicationContext) {
   // window.voxelTest = voxelTest;
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
     if (ready) {
-      //testVertexMoving(ctx);
-      test4();
+      // testVertexMoving(ctx);
+      // test4();
+      testSplitFace();
     }
   });
 
