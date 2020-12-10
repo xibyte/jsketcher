@@ -4,6 +4,8 @@ import {Loop} from "./loop";
 import {Vertex} from "brep/topo/vertex";
 import {Edge} from "brep/topo/edge";
 import {Matrix3x4} from "math/matrix";
+import {BREPValidator} from "brep/brep-validator";
+import CadError from "../../../web/app/utils/errors";
 
 
 export class Shell extends TopoObject {
@@ -81,6 +83,30 @@ export class Shell extends TopoObject {
     }
   }
 
+  invert( shell ) {
+    for (let face of this.faces) {
+      face.surface = face.surface.invert();
+      for (let edge of this.edges) {
+        edge.invert();
+      }
+      for (let loop of face.loops) {
+        for (let i = 0; i < loop.halfEdges.length; i++) {
+          loop.halfEdges[i] = loop.halfEdges[i].twin();
+        }
+        loop.halfEdges.reverse();
+        loop.link();
+      }
+    }
+    // @ts-ignore
+    this.data.inverted = !this.data.inverted;
+    let errors = BREPValidator.validate(this);
+    if (errors.length !== 0) {
+      throw new CadError({
+        kind: CadError.KIND.INTERNAL_ERROR,
+        code: 'unable to invert'
+      });
+    }
+  }
 }
 
 export function* verticesGenerator(shell: Shell): Generator<Vertex> {

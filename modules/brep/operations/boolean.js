@@ -42,27 +42,7 @@ export function subtract( shell1, shell2 ) {
 }
 
 export function invert( shell ) {
-  for (let face of shell.faces) {
-    face.surface = face.surface.invert();
-    for (let edge of shell.edges) {
-      edge.invert();
-    }
-    for (let loop of face.loops) {
-      for (let i = 0; i < loop.halfEdges.length; i++) {
-        loop.halfEdges[i] = loop.halfEdges[i].twin();
-      }
-      loop.halfEdges.reverse();
-      loop.link();
-    }
-  }
-  shell.data.inverted = !shell.data.inverted;
-  let errors = BREPValidator.validate(shell);
-  if (errors.length !== 0) {
-    throw new CadError({
-      kind: CadError.KIND.INTERNAL_ERROR,
-      code: 'unable to invert'
-    });
-  }
+  shell.invert();
 }
 
 export function BooleanAlgorithm( shellA, shellB, type ) {
