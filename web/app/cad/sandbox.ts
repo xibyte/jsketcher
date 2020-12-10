@@ -18,6 +18,7 @@ import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 import {pullFace} from "brep/operations/directMod/pullFace";
 import {Shell} from "brep/topo/shell";
 import { testVertexMoving } from 'brep/operations/directMod/vertexMoving';
+import {DefeatureWizard} from "./craft/defeature/DefeatureWizard";
 
 export function runSandbox(ctx: ApplicationContext) {
 
@@ -198,6 +199,21 @@ export function runSandbox(ctx: ApplicationContext) {
     services.exposure.addOnScene(readShellEntityFromJson(splitted));
 
 //     addShellOnScene(result);
+  }
+
+  function testRemoveFaces() {
+
+    const box1 = exposure.brep.primitives.box(500, 500, 500);
+    const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3x4().translate(25, 25, 0));
+
+    let withHole = ctx.craftEngine.modellingEngine.loadModel(writeBrep(exposure.brep.bool.subtract(box1, box2)));
+    services.exposure.addOnScene(readShellEntityFromJson(withHole));
+
+
+
+
+    ctx.domService.contributeComponent(DefeatureWizard);
+
   }
 
   function test5() {
@@ -551,7 +567,8 @@ export function runSandbox(ctx: ApplicationContext) {
     if (ready) {
       // testVertexMoving(ctx);
       // test4();
-      testSplitFace();
+      // testSplitFace();
+      testRemoveFaces();
     }
   });
 
