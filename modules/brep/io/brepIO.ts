@@ -42,7 +42,8 @@ declare module '../topo/face' {
         data: any;
       }
       externals: {
-        ref: number
+        ref: number,
+        ptr: number
       }
     }
   }
@@ -77,7 +78,8 @@ export function readBrep(data: BrepOutputData) {
     bb._face.data.productionInfo = faceData.productionInfo;
     if (faceData.ref !== undefined) {
       bb._face.data.externals = {
-        ref: faceData.ref
+        ref: faceData.ref,
+        ptr: faceData.ptr
       }  
     }  
     

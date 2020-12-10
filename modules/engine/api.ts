@@ -180,6 +180,29 @@ export interface EngineAPI_V1 {
   }): GenericResponse;
 
   /**
+   * Defeature a shape by removing faces
+   */
+  defeatureFaces(params: {
+
+    /**
+     * Base shape containing faces to remove
+     */
+    shape: Handle;
+
+    /**
+     * Faces to remove
+     */
+    faces: Handle[];
+
+    /**
+     * Tessellation detail parameter
+     */
+    deflection: number;
+
+
+  }): GenericResponse;
+
+  /**
    * Lightweight loft operation returning only tessellation info. Meant to be used as a preview in wizards
    */
   loftPreview(params: {

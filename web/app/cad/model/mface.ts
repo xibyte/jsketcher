@@ -8,6 +8,7 @@ import {ProductionInfo} from './productionInfo';
 import {MBrepShell, MShell} from "./mshell";
 import BBox from "math/bbox";
 import {Basis, BasisForPlane} from "math/basis";
+import {Face} from "brep/topo/face";
 
 export class MFace extends MObject {
 
@@ -17,7 +18,7 @@ export class MFace extends MObject {
   sketchObjects: MSketchObject[];
   sketchLoops: MSketchLoop[];
   sketch: any;
-  brepFace: any;
+  brepFace: Face;
 
   private _csys: any;
   private w: number;
