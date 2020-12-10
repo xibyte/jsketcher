@@ -17,11 +17,6 @@ export function DefeatureWizard() {
     <button onClick={() => {
       ctx.craftService.models$.update((models) => {
         const [cube] = models;
-
-
-
-        debugger;
-
         const result = ctx.craftEngine.modellingEngine.defeatureFaces({
           deflection: DEFLECTION,
           shape: cube.brepShell.data.externals.ptr,
