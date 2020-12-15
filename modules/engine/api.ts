@@ -180,6 +180,40 @@ export interface EngineAPI_V1 {
   }): GenericResponse;
 
   /**
+   * Split a shape by plane
+   */
+  splitByPlane(params: {
+
+    /**
+     * Base shape containing face to split
+     */
+    shape: Handle;
+
+    /**
+     * Splitting plane
+     */
+    plane:  {
+
+      /**
+       * Plane's point
+       */
+      point: Vec3;
+
+      /**
+       * Plane's normal
+       */
+      dir: Vec3;
+    };
+
+    /**
+     * Tessellation detail parameter
+     */
+    deflection: number;
+
+
+  }): GenericResponse;
+
+  /**
    * Defeature a shape by removing faces
    */
   defeatureFaces(params: {

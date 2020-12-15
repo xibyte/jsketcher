@@ -7,7 +7,7 @@ import {DEFLECTION} from "../e0/common";
 import {MFace} from "../../model/mface";
 
 
-export function DefeatureWizard() {
+export function DefeatureFaceWizard() {
 
   const ctx = useContext(AppContext);
 

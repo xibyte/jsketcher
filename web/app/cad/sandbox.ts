@@ -8,17 +8,15 @@ import {createOctreeFromSurface, traverseOctree} from "voxels/octree";
 import {Matrix3x4} from 'math/matrix';
 import {AXIS, ORIGIN} from "math/vector";
 import {BrepInputData, CubeExample} from "engine/data/brepInputData";
-import {Vec3} from "math/vec";
 import {ApplicationContext} from "context";
 import {readShellEntityFromJson} from "./scene/wrappers/entityIO";
-import {DEG_RAD} from "math/commons";
 import {DEFLECTION, E0_TOLERANCE} from "./craft/e0/common";
 import {readBrep, writeBrep} from "brep/io/brepIO";
 import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 import {pullFace} from "brep/operations/directMod/pullFace";
-import {Shell} from "brep/topo/shell";
-import { testVertexMoving } from 'brep/operations/directMod/vertexMoving';
-import {DefeatureWizard} from "./craft/defeature/DefeatureWizard";
+import {DefeatureFaceWizard} from "./craft/defeature/DefeatureFaceWizard";
+import {defeatureByVertex} from "brep/operations/directMod/defeaturing";
+import {testVertexMoving} from "brep/operations/directMod/vertexMoving";
 
 export function runSandbox(ctx: ApplicationContext) {
 
@@ -212,9 +210,25 @@ export function runSandbox(ctx: ApplicationContext) {
 
 
 
-    ctx.domService.contributeComponent(DefeatureWizard);
+    ctx.domService.contributeComponent(DefeatureFaceWizard);
 
   }
+
+  function testRemoveVertex() {
+
+    const boxData = ctx.craftEngine.modellingEngine.loadModel(writeBrep(exposure.brep.primitives.box(500, 500, 500)));
+    const box = readShellEntityFromJson(boxData);
+    services.exposure.addOnScene(box);
+    box.vertices.forEach(v => v.ext.view.rootGroup.sphere.onMouseClick = () => {
+      ctx.craftService.models$.update((models) => {
+        const [cube] = models;
+        const result = defeatureByVertex(cube.brepShell, v.brepVertex, ctx.craftEngine.modellingEngine);
+        const mShell = readShellEntityFromJson(result);
+        return [mShell];
+      });
+    });
+  }
+
 
   function test5() {
 
@@ -568,7 +582,8 @@ export function runSandbox(ctx: ApplicationContext) {
       // testVertexMoving(ctx);
       // test4();
       // testSplitFace();
-      testRemoveFaces();
+      // testRemoveFaces();
+      testRemoveVertex();
     }
   });
 

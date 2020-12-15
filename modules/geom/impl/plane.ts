@@ -18,6 +18,14 @@ export class Plane {
   static XZ = new Plane(AXIS.Y, 0);
   static YZ = new Plane(AXIS.X, 0);
 
+  static by3Points(a: Vector, b: Vector, c: Vector): Plane {
+    const ab = b.minus(a);
+    const ac = c.minus(a);
+    const n = ab.cross(ac)._normalize();
+    const w = a.dot(n);
+    return new Plane(n, w);
+  }
+
   constructor(normal: Vector, w: number) {
     this.normal = normal;
     this.w = w;

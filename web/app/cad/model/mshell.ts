@@ -1,5 +1,5 @@
 import {MObject, MObjectIdGenerator} from './mobject';
-import {MBrepFace} from './mface';
+import {MBrepFace, MFace} from './mface';
 import {MEdge} from './medge';
 import {MVertex} from './mvertex';
 import CSys from 'math/csys';
@@ -15,9 +15,9 @@ export class MShell extends MObject {
   csys: CSys;
 
   shell;
-  faces = []; 
-  edges = [];
-  vertices = [];
+  faces: MFace[] = [];
+  edges: MEdge[] = [];
+  vertices: MVertex[]  = [];
 
   location$: StateStream<Matrix3x4> = state(new Matrix3x4());
 
