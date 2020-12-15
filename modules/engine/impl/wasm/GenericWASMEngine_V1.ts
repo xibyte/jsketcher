@@ -53,6 +53,10 @@ export class GenericWASMEngine_V1 implements EngineAPI_V1 {
     return callEngine(params, Module._SPI_splitFace);
   }
 
+  splitByPlane(params) {
+    return callEngine(params, Module._SPI_splitByPlane);
+  }
+
   defeatureFaces(params) {
     return callEngine(params, Module._SPI_defeatureFaces);
   }
