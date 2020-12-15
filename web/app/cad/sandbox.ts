@@ -17,6 +17,7 @@ import {pullFace} from "brep/operations/directMod/pullFace";
 import {DefeatureFaceWizard} from "./craft/defeature/DefeatureFaceWizard";
 import {defeatureByVertex} from "brep/operations/directMod/defeaturing";
 import {BooleanType} from "engine/api";
+import { testEdgeSplit } from 'brep/operations/directMod/edgeSplit';
 
 export function runSandbox(ctx: ApplicationContext) {
 
@@ -588,7 +589,8 @@ export function runSandbox(ctx: ApplicationContext) {
   // window.voxelTest = voxelTest;
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
     if (ready) {
-      // testVertexMoving(ctx);
+      // testEdgeSplit(ctx);
+      //testVertexMoving(ctx);
       test4();
       // testSplitFace();
       // testRemoveFaces();

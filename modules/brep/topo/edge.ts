@@ -4,6 +4,9 @@ import BrepCurve from "geom/curves/brepCurve";
 import {Loop} from "./loop";
 import Vector from "math/vector";
 import {Tessellation1D} from "engine/tessellation";
+import _ from 'lodash';
+import {Point} from 'geom/point';
+import { BREPValidator } from 'brep/brep-validator';
 
 export class Edge extends TopoObject {
 
@@ -39,6 +42,32 @@ export class Edge extends TopoObject {
     Object.assign(clone.halfEdge1.data, this.halfEdge1.data);
     Object.assign(clone.halfEdge2.data, this.halfEdge2.data);
     return clone;
+  }
+
+  splitByPoint(pt: Point) {
+
+    const [c1, c2] = this.curve.split(pt);
+    
+    const e1 = Edge.fromCurve(c1);
+    const e2 = Edge.fromCurve(c2);
+
+    this.halfEdge1.insertAfter(e1.halfEdge1);
+    e1.halfEdge1.insertAfter(e2.halfEdge1);
+
+    let anchorIndex = this.halfEdge2.loop.halfEdges.indexOf(this.halfEdge2) - 1;
+    if (anchorIndex == -1) {
+      anchorIndex = this.halfEdge2.loop.halfEdges.length - 1;
+    }
+    
+    const anchor = this.halfEdge2.loop.halfEdges[anchorIndex];
+    
+    anchor.insertAfter(e2.halfEdge2);
+    e2.halfEdge2.insertAfter(e1.halfEdge2);
+
+    this.halfEdge2.delete();
+    this.halfEdge1.delete();
+    // const errors = BREPValidator.validate(this.halfEdge1.loop.face.shell);
+    // console.log(errors);
   }
 }
 
@@ -92,6 +121,25 @@ export class HalfEdge extends TopoObject {
     return res;
   }
   
+  insertAfter(he: HalfEdge) {
+    he.loop = this.loop;
+    const next = this.next;    
+    this.next = he;
+    he.next = next;
+    next.prev = he;
+    he.prev = this;
+    const index = this.loop.halfEdges.indexOf(this);
+    this.loop.halfEdges.splice(index + 1, 0, he);
+  }
+
+  delete() {
+    const next = this.next;    
+    const prev = this.prev;
+    prev.next = next;
+    next.prev = prev;
+    _.pull(this.loop.halfEdges, this);    
+  }
+
   replace(he: HalfEdge) {
     if (this.edge.halfEdge1 === this) {
       this.edge.halfEdge1 = he;
