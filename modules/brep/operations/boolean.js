@@ -1138,7 +1138,7 @@ class VertexFactory {
   }
 }
 
-class EdgeGraph {
+export class EdgeGraph {
   constructor() {
     this.vertexToEdge = new Map();
     this.graphEdges = [];

@@ -10,6 +10,7 @@ declare var Module: {
   _SPI_stepImport: Function;
   _SPI_revolve: Function;
   _SPI_splitFace: Function;
+  _SPI_splitByPlane: Function;
   _SPI_defeatureFaces: Function;
   _SPI_loftPreview: Function;
   _SPI_loft: Function;
