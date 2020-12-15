@@ -223,9 +223,13 @@ export function writeBrep(shell: Shell): BrepInputData {
   }
 
 
+  FACES:
   for (let face of shell.faces) {
     const loops = [];
     for (let loop of face.loops) {
+      if (loop.halfEdges.length == 0) {
+        continue FACES;    
+      }
       loops.push(loop.halfEdges.map(he => edges.get(he.edge)));
     }
 
