@@ -16,7 +16,7 @@ import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 import {pullFace} from "brep/operations/directMod/pullFace";
 import {DefeatureFaceWizard} from "./craft/defeature/DefeatureFaceWizard";
 import {defeatureByVertex} from "brep/operations/directMod/defeaturing";
-import {testVertexMoving} from "brep/operations/directMod/vertexMoving";
+import {BooleanType} from "engine/api";
 
 export function runSandbox(ctx: ApplicationContext) {
 
@@ -151,26 +151,35 @@ export function runSandbox(ctx: ApplicationContext) {
 
   function test4() {
     const box1 = exposure.brep.primitives.box(500, 500, 500);
-    const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3x4().translate(25, 25, 0));
+    const box2 = exposure.brep.primitives.box(250, 250, 750);
 
-    const box3 = exposure.brep.primitives.box(150, 600, 350, new Matrix3x4().translate(25, 25, -250));
-    // let result = exposure.brep.bool.union(box1, box2);
-    let result = exposure.brep.bool.subtract(box1, box2);
+    console.dir(writeBrep(box1));
+    let l1 = ctx.craftEngine.modellingEngine.loadModel(writeBrep(box1));
+    let l2 = ctx.craftEngine.modellingEngine.loadModel(writeBrep(box2));
 
-    const serialized = writeBrep(result);
-    console.log("SERAIL:");
-    console.log(serialized);
-    let fromSerialization = ctx.craftEngine.modellingEngine.loadModel(serialized);
-
-    console.log("FROM:");
-    console.log(fromSerialization);
-
-    const mBrepShell2 = readShellEntityFromJson(fromSerialization);
-
-    services.exposure.addOnScene(mBrepShell2);
+    // let l11 = ctx.craftEngine.modellingEngine.getModelData({model: l1.ptr});
 
 
-//     addShellOnScene(result);
+    console.dir(l1);
+    console.dir(l2);
+    // console.dir(l11);
+    //
+    // console.dir(writeBrep(box1));
+    // console.dir(writeBrep(readShellEntityFromJson(l1).brepShell));
+
+    const result = ctx.craftEngine.modellingEngine.boolean({
+      deflection: DEFLECTION,
+      operandsA: [l1.ptr],
+      operandsB: [l2.ptr],
+      tolerance: E0_TOLERANCE,
+      type: BooleanType.SUBTRACT
+    });
+
+    ctx.streams.craft.models.next([
+      // readShellEntityFromJson(l1),
+      // readShellEntityFromJson(l2),
+      readShellEntityFromJson(result.result)
+    ]);
   }
 
   function testSplitFace() {
@@ -580,10 +589,10 @@ export function runSandbox(ctx: ApplicationContext) {
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
     if (ready) {
       // testVertexMoving(ctx);
-      // test4();
+      test4();
       // testSplitFace();
       // testRemoveFaces();
-      testRemoveVertex();
+      // testRemoveVertex();
     }
   });
 
