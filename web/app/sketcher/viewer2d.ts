@@ -23,7 +23,7 @@ import {Matrix3x4} from "math/matrix";
 
 export class Viewer {
 
-  presicion: number;
+  precision: number;
   canvas: any;
   io: IO;
   streams: SketcherStreams;
@@ -58,7 +58,7 @@ export class Viewer {
 
   constructor(canvas, IO) {
 
-    this.presicion = 3;
+    this.precision = 3;
     this.canvas = canvas;
     this.io = new IO(this);
     this.streams = sketcherStreams(this);
@@ -158,7 +158,7 @@ export class Viewer {
   };
 
   roundToPrecision(value) {
-    return value.toFixed(this.presicion);
+    return value.toFixed(this.precision);
   };
 
   addSegment(x1, y1, x2, y2, layer) {
