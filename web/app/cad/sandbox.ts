@@ -15,7 +15,7 @@ import {readBrep, writeBrep} from "brep/io/brepIO";
 import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 import {pullFace} from "brep/operations/directMod/pullFace";
 import {DefeatureFaceWizard} from "./craft/defeature/DefeatureFaceWizard";
-import {defeatureByVertex} from "brep/operations/directMod/defeaturing";
+import {defeatureByVertex, defeatureByEdge} from "brep/operations/directMod/defeaturing";
 import {BooleanType} from "engine/api";
 import { testEdgeSplit } from 'brep/operations/directMod/edgeSplit';
 
@@ -239,6 +239,20 @@ export function runSandbox(ctx: ApplicationContext) {
     });
   }
 
+  function testRemoveEdge() {
+
+    const boxData = ctx.craftEngine.modellingEngine.loadModel(writeBrep(exposure.brep.primitives.box(500, 500, 500)));
+    const box = readShellEntityFromJson(boxData);
+    services.exposure.addOnScene(box);
+    box.edges.forEach(e => e.ext.view.picker.onMouseClick = () => {
+      ctx.craftService.models$.update((models) => {
+        const [cube] = models;
+        const result = defeatureByEdge(cube.brepShell, e.brepEdge, ctx.craftEngine.modellingEngine);
+        const mShell = readShellEntityFromJson(result);
+        return [mShell];
+      });
+    });
+  }
 
   function test5() {
 
@@ -591,10 +605,11 @@ export function runSandbox(ctx: ApplicationContext) {
     if (ready) {
       // testEdgeSplit(ctx);
       //testVertexMoving(ctx);
-      test4();
-      // testSplitFace();
-      // testRemoveFaces();
-      // testRemoveVertex();
+       test4();
+      //testSplitFace();
+      //testRemoveFaces();
+     //testRemoveVertex();
+     testRemoveEdge();
     }
   });
 
