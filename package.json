@@ -78,6 +78,6 @@
     "react-icons": "^4.2.0",
     "react-toastify": "^5.5.0",
     "sprintf": "0.1.5",
-    "three": "^0.118.3"
+    "three": "^0.125.0"
   }
 }
