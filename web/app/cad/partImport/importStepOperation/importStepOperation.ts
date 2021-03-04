@@ -4,10 +4,20 @@ import {OperationDescriptor} from "../../craft/operationPlugin";
 import {ApplicationContext} from "context";
 import {OperationResult} from "../../craft/craftPlugin";
 import {GiLunarModule} from "react-icons/gi";
+import {BiCubeAlt} from "react-icons/bi";
 import {checkHttpResponseStatus} from "network/checkHttpResponseStatus";
+import { LocalFile } from "ui/components/controls/FileControl";
+import { ImportStepLocalForm } from "./ImportStepLocalForm";
+import { string } from "prop-types";
 
 export interface ImportStepOperationParams {
   url: string,
+}
+
+export interface ImportStepFromLocalOperationParams {
+
+  file: LocalFile;
+
 }
 
 export const ImportStepOperation: OperationDescriptor<ImportStepOperationParams> = {
@@ -23,6 +33,30 @@ export const ImportStepOperation: OperationDescriptor<ImportStepOperationParams>
   schema: importStepSchema
 };
 
+export const ImportStepFromLocalFileOperation: OperationDescriptor<ImportStepFromLocalOperationParams> = {
+
+  id: 'IMPORT_STEP_LOCAL_FILE',
+  label: 'import local step file',
+  icon: BiCubeAlt,
+  info: 'import step file from local file',
+  paramsInfo: ({file}) => file && file.fileName,
+  previewGeomProvider: null,
+  run: importStepLocalFile,
+  form: ImportStepLocalForm,
+  schema: {
+    file: {
+      type: 'object',
+      schema: {
+        fileName: {
+          type: 'string',
+        },
+        constent: {
+          type: 'string',
+        }
+      }
+    }
+  }
+};
 
 function importStepFile(params: ImportStepOperationParams, ctx: ApplicationContext):  Promise<OperationResult> {
 
@@ -38,5 +72,18 @@ function importStepFile(params: ImportStepOperationParams, ctx: ApplicationConte
     });
   })
 
+
+}
+
+function importStepLocalFile(params: ImportStepFromLocalOperationParams, ctx: ApplicationContext):  Promise<OperationResult> {
+
+  const {cadRegistry, remotePartsService} = ctx;
+
+  console.log(params.file.content);
+  FS.writeFile('/tmp/test', params.file.content);
+
+  return ctx.services.craftEngine.stepImport({
+    file: '/tmp/test'
+  });
 
 }

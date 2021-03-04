@@ -62,13 +62,47 @@ export function activate(ctx) {
     if (sketch && (!sketch.metadata || sketch.metadata.expressionsSignature !== signature)) {
       try {
         const viewer = new Viewer(headlessCanvas, IO);
-        viewer.parametricManager.externalConstantResolver = services.expressions.evaluateExpression;
+        viewer.parametricManager.externalConstantResolver = ctx.expressionService.evaluateExpression;
         // viewer.historyManager.init(savedSketch);
         viewer.io._loadSketch(sketch);
         viewer.parametricManager.refresh();
         services.storage.set(ctx.projectService.sketchStorageKey(sketchId), viewer.io.serializeSketch({
           expressionsSignature: signature
         }));
+        Generator.resetIDGenerator();
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    }
+  }
+
+  function exportFaceToDXF(sceneFace) {
+    const sketchId = sceneFace.id;
+    updateSketchBoundaries(sceneFace);
+
+    let savedSketch = ctx.sketchStorageService.getSketchData(sketchId);
+
+    if (savedSketch === null) {
+      return null;
+    }
+
+    let sketch;
+    try {
+      sketch = JSON.parse(savedSketch);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+
+    if (sketch) {
+      try {
+        const viewer = new Viewer(headlessCanvas, IO);
+
+        viewer.parametricManager.externalConstantResolver = ctx.expressionService.evaluateExpression;
+        // viewer.historyManager.init(savedSketch);
+        viewer.io._loadSketch(sketch);
+        IO.exportTextData(viewer.io.dxfExport(), ctx.projectService.id + "_" + sketchId + ".dxf");
         Generator.resetIDGenerator();
       } catch (e) {
         console.error(e);
@@ -146,6 +180,7 @@ export function activate(ctx) {
 
   services.sketcher = {
     sketchFace, sketchFace2D, updateAllSketches, inPlaceEditor, reassignSketch,
+    exportFaceToDXF,
     reassignSketchMode: initReassignSketchMode(ctx)
   };
   ctx.sketcherService = services.sketcher;

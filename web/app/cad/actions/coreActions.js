@@ -1,4 +1,5 @@
 import * as ActionHelpers from './actionHelpers'
+import {AiOutlineExport} from "react-icons/ai";
 
 export default [
   {
@@ -197,6 +198,18 @@ export default [
     appearance: {
       label: 'no icon'
     }
-  }
+  },
+
+  {
+    id: 'ExportFaceToDXF',
+    appearance: {
+      icon: AiOutlineExport,
+      label: 'export face DXF',
+      info: 'export a selected face to a DXF file',
+    },
+    listens: ctx => ctx.streams.selection.face,
+    update: ActionHelpers.checkForSelectedFaces(1),
+    invoke: ({services}) => services.sketcher.exportFaceToDXF(services.selection.face.single)
+  },
 ]
 
