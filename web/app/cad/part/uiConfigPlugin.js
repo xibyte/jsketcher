@@ -11,7 +11,8 @@ import {SelectionView} from "../dom/components/SelectionView";
 import {GrSelect} from "react-icons/gr";
 
 export const STANDARD_MODE_HEADS_UP_TOOLBAR = ['DATUM_CREATE', 'PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', 'LOFT',
-  '-', 'FILLET', '-', 'INTERSECTION', 'SUBTRACT', 'UNION', '-', 'IMPORT_PART', "IMPORT_STEP_FILE"];
+  '-', 'FILLET', '-', 'INTERSECTION', 'SUBTRACT', 'UNION', '-', 'IMPORT_PART', "IMPORT_STEP_FILE", "IMPORT_STEP_LOCAL_FILE", 
+  "ExportFaceToDXF"];
 
 export function activate({services, streams}) {
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'menu.views', 'Donate', 'GitHub'];
