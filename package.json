@@ -68,7 +68,7 @@
     "earcut": "2.1.1",
     "less": "^3.11.1",
     "libtess": "1.2.2",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "marked": "^1.0.0",
     "mousetrap": "1.6.1",
     "numeric": "1.2.6",
