@@ -15,13 +15,16 @@ import coneOperation from '../craft/primitives/cone/coneOperation';
 import spatialCurveOperation from '../craft/spatialCurve/spatialCurveOperation';
 import loftOperation from '../craft/loft/loftOperation';
 import {intersectionOperation, subtractOperation, unionOperation} from '../craft/boolean/booleanOperation';
+import { loadMDFCommand } from '../mdf/mdf';
+import { MDF_EXTRUDE_EXAMPLE } from '../mdf/mdfExtrudeExample';
 
 
 export function activate({services}) {
   services.operation.registerOperations([
     planeOperation,
     boxOperation, 
-    extrudeOperation,
+    // extrudeOperation,
+    loadMDFCommand(MDF_EXTRUDE_EXAMPLE),
     cutOperation,
     revolveOperation,
     filletOperation,
