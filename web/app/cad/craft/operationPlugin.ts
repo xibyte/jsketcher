@@ -129,9 +129,10 @@ export interface OperationDescriptor<R> {
   actionParams?: any;
   run: (request: R, opContext: CoreContext) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,
-  previewGeomProvider: (params: R) => OperationGeometryProvider,
+  previewGeomProvider?: (params: R) => OperationGeometryProvider,
   form: () => React.ReactNode,
-  schema: any
+  schema: any,
+  onParamsUpdate?: (params, name, value) => void
 }
 
 export interface OperationService {
