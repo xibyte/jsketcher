@@ -4,7 +4,7 @@ import {CraftEngine} from "./craftEngine";
 
 export function activate(ctx) {
 
-  loadWasm(ctx);
+  // loadWasm(ctx);
 
   const wasmEngine = new GenericWASMEngine_V1();
 
