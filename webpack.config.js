@@ -34,17 +34,7 @@ module.exports = {
   },
   devServer: {
     hot: false,
-    inline: false,
-    before: function (app) {
-      app.get('*.wasm', function (req, res) {
-        res.sendFile(req.url, {
-          root: path.join(__dirname, 'web'),
-          headers: {
-            'Content-Type': 'application/wasm'
-          }
-        });
-      });
-    },
+    inline: false
   },
   module: {
     rules: [
@@ -102,8 +92,17 @@ module.exports = {
         ],
       },
       {
+        test: /\.wasm$/,
+        type: "javascript/auto",
+        loader: "file-loader"
+      },
+      {
         test: /\.svg$/,
         loader: 'raw-loader'
-      }]
+      }
+    ],
+  },
+  node: {
+    fs: "empty"
   }
 };
