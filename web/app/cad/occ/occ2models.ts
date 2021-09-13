@@ -4,6 +4,7 @@ import VertexFactory from "brep/vertexFactory";
 import { BrepSurface } from "geom/surfaces/brepSurface";
 import NullSurface from "geom/surfaces/nullSurface";
 
+
 export function occ2brep(aShape: any, oc: any) {
 
   let bb = new BrepBuilder();
@@ -155,19 +156,19 @@ export function occ2brep(aShape: any, oc: any) {
 
         const edgePolHandler = oc.BRep_Tool.PolygonOnTriangulation_1(aEdge, aTrHandler, aLocation);  
         if(!edgePolHandler.IsNull())  {
-          const edgePol = edgePolHandler.get();
+          // const edgePol = edgePolHandler.get();
 
       //     const TColStd_Array1OfInteger& edgeIndices = edgePol->Nodes(); 
       //     for( Standard_Integer j = 1; j <= edgeIndices.Length(); j++ ) {
       //       gp_Pnt edgePoint = fPoints(edgeIndices(j));
       //       edgeTessOut.append(pntWrite(edgePoint));        
       //     }
-            const eNodes = edgePol.Nodes();
-            const points = [];
-            for (let i = 0; i < eNodes.Length(); i++) {
-              let p = eNodes.Value(i + 1).Transformed(aLocation.Transformation());
-              points.push([p.X(), p.Y(), p.Z()]);
-            }
+            // const eNodes = edgePol.Nodes();
+            // const points = [];
+            // for (let i = 0; i < eNodes.Length(); i++) {
+            //   let p = eNodes.Value(i + 1).Transformed(aLocation.Transformation());
+            //   points.push([p.X(), p.Y(), p.Z()]);
+            // }
 
 
         } else {

@@ -47,7 +47,7 @@ export class MBrepShell extends MShell {
   csys: CSys;
   brepRegistry: Map<TopoObject, MObject>;
 
-  constructor(shell, csys) {
+  constructor(shell, csys?) {
     super();
     this.brepShell = shell;
     this.csys = csys || CSys.ORIGIN;

@@ -17,6 +17,7 @@ import loftOperation from '../craft/loft/loftOperation';
 import {intersectionOperation, subtractOperation, unionOperation} from '../craft/boolean/booleanOperation';
 import { loadMDFCommand } from '../mdf/mdf';
 import { MDF_EXTRUDE_EXAMPLE } from '../mdf/mdfExtrudeExample';
+import { OCC_BOTTLE_OPERATION } from '3d-party/occ-bottle/bottleOperation';
 
 
 export function activate({services}) {
@@ -40,6 +41,7 @@ export function activate({services}) {
     loftOperation,
     intersectionOperation,
     subtractOperation,
-    unionOperation
+    unionOperation,    
+    loadMDFCommand(OCC_BOTTLE_OPERATION)
   ])
 }
