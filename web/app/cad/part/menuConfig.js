@@ -16,7 +16,7 @@ export default [
     label: 'add',
     cssIcons: ['cube'],
     info: 'set of available solid creation operations',
-    actions: ['PLANE', 'BOX', 'SPHERE', 'CONE', 'CYLINDER', 'TORUS']
+    actions: ['PLANE', "primitive_cylinder", "primitive_box", "primitive_cone", "primitive_sphere", "primitive_torus"]
   },
   {
     id: 'views',

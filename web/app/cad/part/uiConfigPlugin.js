@@ -12,7 +12,7 @@ import {GrSelect} from "react-icons/gr";
 
 export const STANDARD_MODE_HEADS_UP_TOOLBAR = ['DATUM_CREATE', 'PLANE', 'EditFace', 'EXTRUDE', 'CUT', 'REVOLVE', 'LOFT',
   '-', 'FILLET', '-', 'INTERSECTION', 'SUBTRACT', 'UNION', '-', 'IMPORT_PART', "IMPORT_STEP_FILE", "IMPORT_STEP_LOCAL_FILE", 
-  "ExportFaceToDXF", 'OCC_BOTTLE'];
+  "ExportFaceToDXF", 'OCC_BOTTLE', "primitive_cylinder", "primitive_box", "primitive_cone", "primitive_sphere","primitive_torus"];
 
 export function activate({services, streams}) {
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'menu.views', 'Donate', 'GitHub'];
