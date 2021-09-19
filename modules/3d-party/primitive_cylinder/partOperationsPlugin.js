@@ -21,8 +21,8 @@ import { OCC_BOTTLE_OPERATION } from '3d-party/occ-bottle/bottleOperation';
 import { primitive_cylinder } from '3d-party/primitive_cylinder/index';
 import { primitive_box } from '3d-party/primitive_box/index';
 import { primitive_cone } from '3d-party/primitive_cone/index';
-import { primitive_sphere } from '3d-party/primitive_sphere/index';
-import { primitive_torus } from '3d-party/primitive_torus/index';
+//import { primitive_box } from '3d-party/primitive_sphere/index';
+//import { primitive_box } from '3d-party/primitive_torus/index';
 
 
 export function activate({services}) {
@@ -52,6 +52,6 @@ export function activate({services}) {
     loadMDFCommand(primitive_box),
     loadMDFCommand(primitive_cone),
     loadMDFCommand(primitive_sphere),
-    loadMDFCommand(primitive_torus),
+    //loadMDFCommand(primitive_torus),
   ])
 }
