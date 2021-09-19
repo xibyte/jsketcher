@@ -125,7 +125,7 @@ export interface OperationDescriptor<R> {
   id: string;
   label: string;
   info: string;
-  icon: IconType | string;
+  icon: IconType | string | ((props: any) => JSX.Element);
   actionParams?: any;
   run: (request: R, opContext: CoreContext) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,

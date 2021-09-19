@@ -16,21 +16,13 @@ import spatialCurveOperation from '../craft/spatialCurve/spatialCurveOperation';
 import loftOperation from '../craft/loft/loftOperation';
 import {intersectionOperation, subtractOperation, unionOperation} from '../craft/boolean/booleanOperation';
 import { loadMDFCommand } from '../mdf/mdf';
-import { MDF_EXTRUDE_EXAMPLE } from '../mdf/mdfExtrudeExample';
-import { OCC_BOTTLE_OPERATION } from '3d-party/occ-bottle/bottleOperation';
-import { primitive_cylinder } from '3d-party/primitive_cylinder/index';
-import { primitive_box } from '3d-party/primitive_box/index';
-import { primitive_cone } from '3d-party/primitive_cone/index';
-import { primitive_sphere } from '3d-party/primitive_sphere/index';
-import { primitive_torus } from '3d-party/primitive_torus/index';
-
+import WorkbenchRegistry from 'workbenches/registry';
 
 export function activate({services}) {
   services.operation.registerOperations([
     planeOperation,
     boxOperation, 
     // extrudeOperation,
-    loadMDFCommand(MDF_EXTRUDE_EXAMPLE),
     cutOperation,
     revolveOperation,
     filletOperation,
@@ -47,11 +39,8 @@ export function activate({services}) {
     intersectionOperation,
     subtractOperation,
     unionOperation,    
-    loadMDFCommand(OCC_BOTTLE_OPERATION),
-    loadMDFCommand(primitive_cylinder),
-    loadMDFCommand(primitive_box),
-    loadMDFCommand(primitive_cone),
-    loadMDFCommand(primitive_sphere),
-    loadMDFCommand(primitive_torus),
-  ])
+  ]);
+  WorkbenchRegistry.forEach(w => {
+    services.operation.registerOperations(w.features.map(loadMDFCommand));
+  });
 }
