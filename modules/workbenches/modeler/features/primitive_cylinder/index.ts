@@ -1,9 +1,9 @@
 import { ApplicationContext } from 'context';
-import { MBrepShell } from '../../../web/app/cad/model/mshell';
-import { roundValueForPresentation as r } from '../../../web/app/cad/craft/operationHelper';
-import { occ2brep } from '../../../web/app/cad/occ/occ2models';
+import { MBrepShell } from 'cad/model/mshell';
+import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
+import { occ2brep } from 'cad/occ/occ2models';
 
-export const primitive_cylinder = {
+export default {
     id: 'primitive_cylinder',
     label: 'primitive_cylinder',
     icon: 'img/cad/extrude',

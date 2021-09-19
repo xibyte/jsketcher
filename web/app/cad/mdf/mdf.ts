@@ -3,6 +3,7 @@ import { IconType } from "react-icons";
 import { OperationResult } from "../craft/craftPlugin";
 import { OperationDescriptor } from "../craft/operationPlugin";
 import { generateForm } from "./generateForm";
+import { resolveMDFIcon } from "./mdfIconResolver";
 
 
 interface MDFCommand<R> {
@@ -33,7 +34,7 @@ export function loadMDFCommand<R>(mdfCommand: MDFCommand<R>): OperationDescripto
   return {
     id: mdfCommand.id,
     label: mdfCommand.label,
-    icon: mdfCommand.icon,
+    icon: resolveMDFIcon(mdfCommand.icon),
     info: mdfCommand.info,
     paramsInfo: mdfCommand.paramsInfo,
     onParamsUpdate: (params, name, value) => {

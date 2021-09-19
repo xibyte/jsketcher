@@ -1,6 +1,9 @@
 import React, {useMemo} from 'react';
 
-export function SvgIcon({content, size, ...props}) {
+export function SvgIcon({content, size, ...props}: {
+  content: string,
+  size?: number|string
+} & React.HTMLAttributes<HTMLDivElement>) {
 
   const className = size&&'icon-'+size;
 
