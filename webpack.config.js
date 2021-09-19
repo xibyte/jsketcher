@@ -30,7 +30,7 @@ module.exports = {
   ],
   resolve: {
     extensions: ['.js', '.jsx', ".ts", ".tsx"],
-    modules: [MODULES, "node_modules"]
+    modules: [MODULES, "node_modules", WEB_APP]
   },
   devServer: {
     hot: false,

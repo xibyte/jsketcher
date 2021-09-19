@@ -13,6 +13,7 @@
     "paths": {
       "*": [
         "modules/*",
+        "web/app/*",
         "node_modules/*"
       ]
     }
