@@ -2,11 +2,12 @@ import { ApplicationContext } from 'context';
 import { MBrepShell } from 'cad/model/mshell';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { occ2brep } from 'cad/occ/occ2models';
+import icon from './icon.png';
 
 export default {
     id: 'primitive_torus',
     label: 'primitive_torus',
-    icon: 'img/cad/extrude',
+    icon,
     info: 'primitive_torus',
     mutualExclusiveFields: [],
     paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} ${r(tubeRadius)} )`,

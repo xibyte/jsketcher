@@ -2,11 +2,12 @@ import { ApplicationContext } from 'context';
 import { MBrepShell } from 'cad/model/mshell';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { occ2brep } from 'cad/occ/occ2models';
+import icon from './icon.svg';
 
 export default {
     id: 'primitive_sphere',
     label: 'primitive_sphere',
-    icon: 'img/cad/extrude',
+    icon,
     info: 'primitive_sphere',
     mutualExclusiveFields: [],
     paramsInfo: ({ diameter }) => `(${r(diameter)} )`,

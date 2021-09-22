@@ -2,11 +2,12 @@ import { ApplicationContext } from 'context';
 import { MBrepShell } from 'cad/model/mshell';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { occ2brep } from 'cad/occ/occ2models';
+import icon from './icon.svg';
 
 export default {
     id: 'primitive_box',
     label: 'primitive_box',
-    icon: 'img/cad/extrude',
+    icon,
     info: 'primitive_box',
     mutualExclusiveFields: [],
     paramsInfo: ({ boxX, boxY, boxZ }) => `(${r(boxX)} ${r(boxY)})  ${r(boxZ)})`,
