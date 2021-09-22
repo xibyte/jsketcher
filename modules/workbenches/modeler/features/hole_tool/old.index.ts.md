@@ -5,13 +5,13 @@ import { occ2brep } from 'cad/occ/occ2models';
 import icon from './icon.svg';
 
 export default {
-    id: 'primitive_cylinder',
-    label: 'primitive_cylinder',
+    id: 'hole',
+    label: 'hole',
     icon,
-    info: 'primitive_cylinder',
+    info: 'hole',
     mutualExclusiveFields: [],
-    paramsInfo: ({ diameter, height }) => `(${r(diameter)} ${r(height)})`,
-    run: ({ diameter, height, }, ctx: ApplicationContext) => {
+    paramsInfo: ({ diameter, depth, counterBoreDiameter, counterBoreDepth, countersinkDiameter, countersinkAngle,}) => `(${r(diameter)} ${r(depth)})`,
+    run: ({ diameter, depth, counterBoreDiameter, counterBoreDepth, countersinkDiameter, countersinkAngle, }, ctx: ApplicationContext) => {
         //const occObj = createCylinder(diameter, height, ctx.occService.occContext);
         const oc = ctx.occService.occContext;
 
@@ -20,13 +20,16 @@ export default {
         const cylinderOrientationAndLocation = new oc.gp_Ax2_3(myLocation, cylinderCenterline);
 
 
-        let myBody = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, diameter, height,);
+        let primaryHole = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, diameter, depth,);
+
+
+
         //let myBody = new oc.BRepPrimAPI_Make
 
         const aRes = new oc.TopoDS_Compound();
         const aBuilder = new oc.BRep_Builder();
         aBuilder.MakeCompound(aRes);
-        aBuilder.Add(aRes, myBody.Shape());
+        aBuilder.Add(aRes, primaryHole.Shape());
 
 
 
@@ -39,14 +42,41 @@ export default {
     schema: {
         diameter: {
             type: 'number',
+            defaultValue: 10,
+            label: 'diameter'
+        },
+        depth: {
+            type: 'number',
+            defaultValue: 100,
+            label: 'depth'
+        },
+        
+
+
+        counterBoreDiameter: {
+            type: 'number',
             defaultValue: 200,
             label: 'diameter'
         },
-        height: {
+        counterBoreDepth: {
             type: 'number',
             defaultValue: 280,
-            label: 'height'
+            label: 'counterBoreDepth'
         },
+
+
+
+        countersinkDiameter: {
+            type: 'number',
+            defaultValue: 200,
+            label: 'countersinkDiameter'
+        },
+        countersinkAngle: {
+            type: 'number',
+            defaultValue: 90,
+            label: 'Countersink Angle'
+        },
+
     }
 }
 

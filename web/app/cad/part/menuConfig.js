@@ -9,7 +9,7 @@ export default [
     id: 'craft',
     cssIcons: ['magic'],
     info: 'set of available craft operations on a solid',
-    actions: ['EXTRUDE', 'CUT', 'REVOLVE', 'LOFT', 'SHELL', 'FILLET', 'DATUM_CREATE']
+    actions: ['EXTRUDE', 'CUT', 'REVOLVE', 'LOFT', 'SHELL', 'FILLET', 'DATUM_CREATE', ]
   },
   {
     id: 'primitives',
