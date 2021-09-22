@@ -99,6 +99,9 @@ module.exports = {
       {
         test: /\.svg$/,
         loader: 'raw-loader'
+      }, {
+        test: /\.png$/,
+        loader: 'url-loader?mimetype=image/png'
       }
     ],
   },
