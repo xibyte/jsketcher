@@ -83,14 +83,14 @@ export default {
         let myBody = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, diameter / 2, depth,);
 
 
-        if (holeType.toUpperCase()  == "counterbore") {
+        if (holeType.toUpperCase()  == "COUNTERBORE") {
             let counterboreItem = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, counterBoreDiameter, counterBoreDepth,);
             myBody = new oc.BRepAlgoAPI_Fuse_3(myBody.Shape(), counterboreItem.Shape());
         }
 
 
 
-        if (holeType.toUpperCase()  == "countersink") {
+        if (holeType.toUpperCase()  == "COUNTERSINK") {
             let heightFromDiameterAndAngle = (countersinkDiameter - diameter) / (2 * Math.tan((countersinkAngle / 180 * Math.PI) / 2));
             let countersinkItem = new oc.BRepPrimAPI_MakeCone_1(countersinkDiameter / 2, diameter / 2, heightFromDiameterAndAngle);
             myBody = new oc.BRepAlgoAPI_Fuse_3(myBody.Shape(), countersinkItem.Shape());
