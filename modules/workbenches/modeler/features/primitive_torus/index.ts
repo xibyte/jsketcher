@@ -2,7 +2,7 @@ import { ApplicationContext } from 'context';
 import { MBrepShell } from 'cad/model/mshell';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { occ2brep } from 'cad/occ/occ2models';
-import icon from './icon.png';
+import icon from './icon.svg';
 
 export default {
     id: 'primitive_torus',
@@ -11,6 +11,18 @@ export default {
     info: 'primitive_torus',
     mutualExclusiveFields: [],
     paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} ${r(tubeRadius)} )`,
+    schema: {
+        radius: {
+            type: 'number',
+            defaultValue: 200,
+            label: 'radius'
+        },
+        tubeRadius: {
+            type: 'number',
+            defaultValue: 50,
+            label: 'tube radius'
+        },
+    },
     run: ({ radius, tubeRadius  }, ctx: ApplicationContext) => {
 
         const oc = ctx.occService.occContext;
@@ -36,17 +48,5 @@ export default {
             created: [mobject]
         };
     },
-    schema: {
-        radius : {
-            type: 'number',
-            defaultValue: 200,
-            label: 'radius'
-        },
-        tubeRadius: {
-            type: 'number',
-            defaultValue: 50,
-            label: 'tube radius'
-        },
-    }
 }
 
