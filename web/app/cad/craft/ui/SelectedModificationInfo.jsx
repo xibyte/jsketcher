@@ -43,8 +43,8 @@ function SelectedModificationInfo({ history, index,
     </div>
     <div>
       <ButtonGroup>
-        <Button onClick={edit}>EDIT OPERATION</Button>
-        <Button type='danger' onClick={drop}>DROP OPERATION</Button>
+        <Button onClick={edit}>🖉EDIT</Button>
+        <Button type='danger' onClick={drop}>🗑DELETE</Button>
       </ButtonGroup>
     </div>
   </Widget>;
