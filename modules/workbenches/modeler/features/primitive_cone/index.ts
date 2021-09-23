@@ -10,24 +10,37 @@ export default {
     icon,
     info: 'primitive_cone',
     mutualExclusiveFields: [],
-    paramsInfo: ({ diameter, height }) => `(${r(diameter)} ${r(height)})`,
-    run: ({ diameter, height, }, ctx: ApplicationContext) => {
-        //const occObj = createcone(diameter, height, ctx.occService.occContext);
+    paramsInfo: ({ diameter_A, diameter_B, height }) => `(${r(diameter_A)} ${r(diameter_A)}  ${r(height)})`,
+    schema: {
+        diameter_A: {
+            type: 'number',
+            defaultValue: 50,
+            label: 'Diameter A'
+        },
+        diameter_B: {
+            type: 'number',
+            defaultValue: 100,
+            label: 'Diameter B'
+        },
+        height: {
+            type: 'number',
+            defaultValue: 200,
+            label: 'height'
+        },
+    },
+    run: ({ diameter_A, diameter_B, height, }, ctx: ApplicationContext) => {
         const oc = ctx.occService.occContext;
 
         const myLocation = new oc.gp_Pnt_3(0, 0, 0);
         const coneCenterline = oc.gp.DZ();
         const coneOrientationAndLocation = new oc.gp_Ax2_3(myLocation, coneCenterline);
 
-        let myBody = new oc.BRepPrimAPI_MakeCone_1(10,20,100);
-        //let myBody = new oc.BRepPrimAPI_Make
+        let myBody = new oc.BRepPrimAPI_MakeCone_1(diameter_A, diameter_B, height);
 
         const aRes = new oc.TopoDS_Compound();
         const aBuilder = new oc.BRep_Builder();
         aBuilder.MakeCompound(aRes);
         aBuilder.Add(aRes, myBody.Shape());
-
-
 
         const mobject = new MBrepShell(occ2brep(aRes, ctx.occService.occContext));
         return {
@@ -35,17 +48,5 @@ export default {
             created: [mobject]
         };
     },
-    schema: {
-        diameter: {
-            type: 'number',
-            defaultValue: 200,
-            label: 'diameter'
-        },
-        height: {
-            type: 'number',
-            defaultValue: 280,
-            label: 'height'
-        },
-    }
 }
 

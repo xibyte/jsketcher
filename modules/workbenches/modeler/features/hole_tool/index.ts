@@ -10,59 +10,20 @@ export default {
     icon,
     info: 'hole_tool',
     mutualExclusiveFields: [],
-    paramsInfo: ({ diameter,
-        depth,
-        counterBoreDiameter,
-        counterBoreDepth,
-        countersinkDiameter,
-        countersinkAngle,
-        holeType, }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
-    run: ({
-        diameter,
-        depth,
-        counterBoreDiameter,
-        counterBoreDepth,
-        countersinkDiameter,
-        countersinkAngle,
-        holeType,
-    }, ctx: ApplicationContext) => {
-        const oc = ctx.occService.occContext;
-
-        const myLocation = new oc.gp_Pnt_3(0, 0, 0);
-        const cylinderCenterline = oc.gp.DZ();
-        const cylinderOrientationAndLocation = new oc.gp_Ax2_3(myLocation, cylinderCenterline);
-
-
-        let myBody = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, diameter / 2, depth,);
-
-
-        if (holeType == "counterbore") {
-            let counterboreItem = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, counterBoreDiameter, counterBoreDepth,);
-            myBody = new oc.BRepAlgoAPI_Fuse_3(myBody.Shape(), counterboreItem.Shape());
-        }
-
-
-
-        if (holeType == "countersink") {
-            let heightFromDiameterAndAngle = (countersinkDiameter - diameter) / (2 * Math.tan((countersinkAngle / 180 * Math.PI) / 2));
-            let countersinkItem = new oc.BRepPrimAPI_MakeCone_1(countersinkDiameter / 2, diameter / 2, heightFromDiameterAndAngle);
-            myBody = new oc.BRepAlgoAPI_Fuse_3(myBody.Shape(), countersinkItem.Shape());
-        }
-
-
-        const aRes = new oc.TopoDS_Compound();
-        const aBuilder = new oc.BRep_Builder();
-        aBuilder.MakeCompound(aRes);
-        aBuilder.Add(aRes, myBody.Shape());
-
-
-        const mobject = new MBrepShell(occ2brep(aRes, ctx.occService.occContext));
-        return {
-            consumed: [],
-            created: [mobject]
-        };
-    },
+    paramsInfo: ({ diameter, depth, counterBoreDiameter, counterBoreDepth, countersinkDiameter, countersinkAngle, holeType, }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
     schema: {
+        holeType: {
+            type: 'TextField',
+            defaultValue: "counterbore",
+            label: 'HoleType',
+            children: [
+                "counterbore",
+                "countersink",
+                "normal",
+            ],
+        },
+
+        
         diameter: {
             type: 'number',
             defaultValue: 10,
@@ -74,17 +35,6 @@ export default {
             label: 'Hole ↧'
         },
 
-
-        holeType: {
-            type: 'TextField',
-            defaultValue: "counterbore",
-            label: 'HoleType',
-            children: [
-                "counterbore",
-                "countersink",
-                "normal",
-            ],
-        },
 
 
         counterBoreDiameter: {
@@ -110,21 +60,54 @@ export default {
             defaultValue: 90,
             label: '⌵ Angle'
         },
-    }
+    },
+
+
+
+    run: ({
+        diameter,
+        depth,
+        counterBoreDiameter,
+        counterBoreDepth,
+        countersinkDiameter,
+        countersinkAngle,
+        holeType,
+    }, ctx: ApplicationContext) => {
+        const oc = ctx.occService.occContext;
+
+        const myLocation = new oc.gp_Pnt_3(0, 0, 0);
+        const cylinderCenterline = oc.gp.DZ();
+        const cylinderOrientationAndLocation = new oc.gp_Ax2_3(myLocation, cylinderCenterline);
+
+
+        let myBody = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, diameter / 2, depth,);
+
+
+        if (holeType.toUpperCase()  == "counterbore") {
+            let counterboreItem = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, counterBoreDiameter, counterBoreDepth,);
+            myBody = new oc.BRepAlgoAPI_Fuse_3(myBody.Shape(), counterboreItem.Shape());
+        }
+
+
+
+        if (holeType.toUpperCase()  == "countersink") {
+            let heightFromDiameterAndAngle = (countersinkDiameter - diameter) / (2 * Math.tan((countersinkAngle / 180 * Math.PI) / 2));
+            let countersinkItem = new oc.BRepPrimAPI_MakeCone_1(countersinkDiameter / 2, diameter / 2, heightFromDiameterAndAngle);
+            myBody = new oc.BRepAlgoAPI_Fuse_3(myBody.Shape(), countersinkItem.Shape());
+        }
+
+
+        const aRes = new oc.TopoDS_Compound();
+        const aBuilder = new oc.BRep_Builder();
+        aBuilder.MakeCompound(aRes);
+        aBuilder.Add(aRes, myBody.Shape());
+
+
+        const mobject = new MBrepShell(occ2brep(aRes, ctx.occService.occContext));
+        return {
+            consumed: [],
+            created: [mobject]
+        };
+    },
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
