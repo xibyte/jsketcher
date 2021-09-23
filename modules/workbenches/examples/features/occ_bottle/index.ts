@@ -11,17 +11,7 @@ export default {
     icon,
     info: 'create occ bottle',
     mutualExclusiveFields: [],
-
-
     paramsInfo: ({ width, height, thickness }) => `(${r(width)} ${r(height)} ${r(thickness)})`,
-    run: ({ width, height, thickness }, ctx: ApplicationContext) => {
-        const occObj = createOCCBottle(width, height, thickness, ctx.occService.occContext);
-        const mobject = new MBrepShell(occ2brep(occObj, ctx.occService.occContext));      
-        return {
-            consumed: [],
-            created: [mobject]
-        };
-    },
     schema: {
         width: {
             type: 'number',
@@ -39,5 +29,13 @@ export default {
             label: 'thickness',
             defaultValue: 150
         }
-    }
+    },
+    run: ({ width, height, thickness }, ctx: ApplicationContext) => {
+        const occObj = createOCCBottle(width, height, thickness, ctx.occService.occContext);
+        const mobject = new MBrepShell(occ2brep(occObj, ctx.occService.occContext));
+        return {
+            consumed: [],
+            created: [mobject]
+        };
+    },
 }
