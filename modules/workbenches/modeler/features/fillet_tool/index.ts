@@ -10,7 +10,7 @@ export default {
     icon,
     info: 'fillet_tool',
     mutualExclusiveFields: [],
-    paramsInfo: ({ radius, }) => `(${r(radius)} })`,
+    paramsInfo: ({ sizeA, }) => `(${r(sizeA)} })`,
     schema: {
         edgeOperationType: {
             type: 'TextField',
@@ -29,38 +29,47 @@ export default {
             label: 'Edge Selection'
         },
 
-        radius: {
+        sizeA: {
             type: 'number',
             defaultValue: 10,
             label: 'radius'
         },
     },
 
-    run: ({ edgeOperationType, edgeSelection, radius, }, ctx: ApplicationContext) => {
+    run: ({ edgeOperationType, edgeSelection, sizeA, }, ctx: ApplicationContext) => {
         const oc = ctx.occService.occContext;
 
         let myBody = new oc.BRepPrimAPI_MakeBox_1(200, 200, 200);
 
+        //collection of edges to modify
+        let edgesToModify = [];
+
+
+        const anEdgeExplorer = new oc.TopExp_Explorer_2(myBody.Shape(), oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+        var anEdge = oc.TopoDS.Edge_1(anEdgeExplorer.Current());
+        edgesToModify.push(anEdge);
+
+        anEdgeExplorer.Next()
+        anEdge = oc.TopoDS.Edge_1(anEdgeExplorer.Current());
+        edgesToModify.push(anEdge);
+
+
         if (edgeOperationType.toUpperCase() == "FILLET") {
-
             const mkFillet = new oc.BRepFilletAPI_MakeFillet(myBody.Shape(), oc.ChFi3d_FilletShape.ChFi3d_Rational);
-            const anEdgeExplorer = new oc.TopExp_Explorer_2(myBody.Shape(), oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
-
-            const anEdge = oc.TopoDS.Edge_1(anEdgeExplorer.Current());
 
             // Add edge to fillet 
-            mkFillet.Add_2(radius, anEdge);
+            edgesToModify.forEach(async function (edgeToAdd) {
+                mkFillet.Add_2(sizeA, edgeToAdd);
+            });
             myBody = mkFillet;
 
         } else if (edgeOperationType.toUpperCase() == "CHAMPHER") {
-            // BRepFilletAPI_MakeChamfer()
             const mkChampher = new oc.BRepFilletAPI_MakeChamfer(myBody.Shape());
-            const anEdgeExplorer = new oc.TopExp_Explorer_2(myBody.Shape(), oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
 
-            const anEdge = oc.TopoDS.Edge_1(anEdgeExplorer.Current());
-
-            // Add edge to fillet 
-            mkChampher.Add_2(radius, anEdge);
+            // Add edge to champher 
+            edgesToModify.forEach(async function (edgeToAdd) {
+                mkChampher.Add_2(sizeA, edgeToAdd);
+            });
             myBody = mkChampher;
         }
 
