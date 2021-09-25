@@ -40,7 +40,7 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size, noLa
   let smallOrMedium = size === 'medium' || size === 'small';
   if (icon) {
     const Icon = icon;
-    icon = <Icon />;
+    icon = <Icon size={size}/>;
   }
   if (!icon) {
     if (smallOrMedium) {

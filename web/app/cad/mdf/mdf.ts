@@ -1,3 +1,4 @@
+import { IconDeclaration } from "cad/icons/IconDeclaration";
 import { CoreContext } from "context";
 import { IconType } from "react-icons";
 import { OperationResult } from "../craft/craftPlugin";
@@ -10,7 +11,7 @@ interface MDFCommand<R> {
   id: string;
   label: string;
   info: string;
-  icon: IconType | string;
+  icon: IconType | IconDeclaration;
   run: (request: R, opContext: CoreContext) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,
   schema: OperationSchema,

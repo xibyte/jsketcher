@@ -8,7 +8,10 @@ import icon from './icon.svg';
 export default {
     id: 'OCC_BOTTLE',
     label: 'OCC Bottle',
-    icon,
+    icon: {
+        iconType: 'svg',
+        iconContent: icon
+    },
     info: 'create occ bottle',
     mutualExclusiveFields: [],
     paramsInfo: ({ width, height, thickness }) => `(${r(width)} ${r(height)} ${r(thickness)})`,
