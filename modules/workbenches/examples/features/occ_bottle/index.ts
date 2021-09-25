@@ -33,6 +33,19 @@ export default {
             defaultValue: 150
         }
     },
+    color: {
+        type: 'enum',
+        options: [
+            {
+                label: 'Red',
+                value: 'red'
+            },
+            {
+                label: 'Green',
+                value: 'green'
+            }
+        ]            
+    },        
     run: ({ width, height, thickness }, ctx: ApplicationContext) => {
         const occObj = createOCCBottle(width, height, thickness, ctx.occService.occContext);
         const mobject = new MBrepShell(occ2brep(occObj, ctx.occService.occContext));
@@ -40,5 +53,5 @@ export default {
             consumed: [],
             created: [mobject]
         };
-    },
+    }
 }
