@@ -99,11 +99,16 @@ module.exports = {
       {
         test: /\.svg$/,
         loader: 'raw-loader'
-      }, {
-        test: /\.png$/,
-        loader: 'url-loader?mimetype=image/png'
-      }
-    ],
+      },
+      {
+        test: /\.(png|jpg|gif)$/i,
+        use: [
+          {
+            loader: 'url-loader'
+          },
+        ],
+      },
+    ]
   },
   node: {
     fs: "empty"
