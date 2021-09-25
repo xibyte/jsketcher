@@ -21,7 +21,7 @@ function IconSet(props: IconRenderProps & IconSetDef & React.HTMLAttributes<HTML
 
   const {iconSet} = props;
 
-  let iconDef = iconSet[props.size] | iconSet[IconSize.large] | iconSet[IconSize.medium] | iconSet[IconSize.small]
+  let iconDef = iconSet[props.size] || iconSet[IconSize.large] || iconSet[IconSize.medium] || iconSet[IconSize.small];
 
   return <Icon {...iconDef} {...props} />;
 }

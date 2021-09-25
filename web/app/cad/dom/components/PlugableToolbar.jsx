@@ -32,7 +32,7 @@ export function ToolbarActionButtons({actions, showTitles, size}) {
   });
 }
 
-function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size, noLabel, enabled, visible, actionId, ...props}) {
+function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'large', noLabel, enabled, visible, actionId, ...props}) {
   if (!visible) {
     return null;
   }

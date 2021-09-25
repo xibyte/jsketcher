@@ -25,7 +25,8 @@ export type OperationSchema = {
 };
 
 export interface SchemaField {
-  type: 'number' | 'face' | 'datumAxis' | 'edge' | 'sketchObject' | 'boolean'
+  type: 'number' | 'face' | 'datumAxis' | 'edge' | 'sketchObject' | 'boolean' | 'enum'
+  options: string[] | number[],
   defaultValue: Coercable,
   optional: boolean,
   label?: string
