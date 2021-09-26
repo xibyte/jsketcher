@@ -7,19 +7,31 @@ import icon from './icon.svg';
 export default {
     id: 'hole_tool',
     label: 'hole_tool',
-    icon,
+    icon: {
+        iconType: 'svg',
+        iconContent: icon
+    },
     info: 'hole_tool',
     mutualExclusiveFields: [],
     paramsInfo: ({ diameter, depth, counterBoreDiameter, counterBoreDepth, countersinkDiameter, countersinkAngle, holeType, }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
     schema: {
         holeType: {
-            type: 'TextField',
+            type: 'enum',
             defaultValue: "counterbore",
             label: 'HoleType',
-            children: [
-                "counterbore",
-                "countersink",
-                "normal",
+            options: [
+                {
+                    label: 'Counterbore',
+                    value: 'counterbore'
+                },
+                {
+                    label: 'Countersink',
+                    value: 'countersink'
+                },
+                {
+                    label: 'Normal',
+                    value: 'normal'
+                },
             ],
         },
 
@@ -81,6 +93,8 @@ export default {
 
 
         let myBody = new oc.BRepPrimAPI_MakeCylinder_3(cylinderOrientationAndLocation, diameter / 2, depth,);
+
+        alert(JSON.stringify(holeType));
 
 
         if (holeType.toUpperCase()  == "COUNTERBORE") {
