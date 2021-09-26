@@ -2,12 +2,24 @@ import { ApplicationContext } from 'context';
 import { MBrepShell } from 'cad/model/mshell';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { occ2brep } from 'cad/occ/occ2models';
-import icon from './icon.svg';
+import icon32 from './icon32.png';
+import icon96 from './icon96.png';
 
 export default {
     id: 'fillet_tool',
     label: 'fillet_tool',
-    icon,
+    icon: {
+        iconSet: {
+            medium: {
+                iconType: 'image',
+                iconContent: icon32
+            },
+            large: {
+                iconType: 'image',
+                iconContent: icon96
+            }
+        },
+    },
     info: 'fillet_tool',
     mutualExclusiveFields: [],
     paramsInfo: ({ sizeA, }) => `(${r(sizeA)} })`,
