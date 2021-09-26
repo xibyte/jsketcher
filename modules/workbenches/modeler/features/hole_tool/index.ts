@@ -16,10 +16,10 @@ export default {
     paramsInfo: ({ diameter, depth, counterBoreDiameter, counterBoreDepth, countersinkDiameter, countersinkAngle, holeType, }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
     schema: {
         holeType: {
-            type: 'enum',
+            type: 'string',
             defaultValue: "counterbore",
             label: 'HoleType',
-            options: [
+            enum: [
                 {
                     label: 'Counterbore',
                     value: 'counterbore'

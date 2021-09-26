@@ -25,13 +25,22 @@ export default {
     paramsInfo: ({ sizeA, }) => `(${r(sizeA)} })`,
     schema: {
         edgeOperationType: {
-            type: 'TextField',
+            type: 'string',
             defaultValue: "FILLET",
             label: 'Operation Type',
-            children: [
-                "Fillet",
-                "Champher",
-                "2 Sided Champher",
+            enum: [
+                {
+                    label: "Fillet",
+                    value: "FILLET"
+                },
+                {
+                    label: "Champher",
+                    value: "CHAMPHER"
+                },
+                {
+                    label: "2 Sided Champher",
+                    value: "TWO_SIDED_CHAMPHER"
+                }
             ],
         },
 
