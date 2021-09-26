@@ -33,10 +33,10 @@ export default {
             defaultValue: 150
         },
         color: {
-            type: 'enum',
+            type: 'string',
             defaultValue: "red",
             label: 'Color',
-            options: [
+            enum: [
                 {
                     label: 'Red',
                     value: 'red'

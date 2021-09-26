@@ -47,7 +47,7 @@ function Icon(props: {
 
 }
 
-function getSizeInPx(sizeName: IconSize): number {
+export function getSizeInPx(sizeName: IconSize): number {
   switch (sizeName) {
     case 'small': return 16;
     case 'medium': return 24;
