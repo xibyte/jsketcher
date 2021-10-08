@@ -1,7 +1,7 @@
 
 export class TopoObject {
 
-  data: {};
+  data: any;
   op: OperationTemporaryData;
 
   constructor() {
