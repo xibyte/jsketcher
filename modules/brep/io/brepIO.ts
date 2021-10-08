@@ -20,46 +20,46 @@ import {Edge} from "brep/topo/edge";
 import {ParametricSurface} from "geom/surfaces/parametricSurface";
 
 //Extensions for topo objects
-declare module '../topo/shell' {
-
-  interface Shell {
-    data: {
-      externals: {
-        ptr?: number
-      }
-    }
-  }
-}
-
-declare module '../topo/face' {
-
-  interface Face {
-    data: {
-      id: string,
-      productionInfo: ProductionInfo,
-      tessellation: {
-        format: string,
-        data: any;
-      }
-      externals: {
-        ref: number,
-        ptr: number
-      }
-    }
-  }
-}
-
-declare module '../topo/edge' {
-
-  interface Edge {
-    data: {
-      tessellation: Tessellation1D<Vec3>
-      externals: {
-        ptr?: number
-      }
-    }
-  }
-}
+// declare module '../topo/shell' {
+//
+//   interface Shell {
+//     data: {
+//       externals: {
+//         ptr?: number
+//       }
+//     }
+//   }
+// }
+//
+// declare module '../topo/face' {
+//
+//   interface Face {
+//     data: {
+//       id: string,
+//       productionInfo: ProductionInfo,
+//       tessellation: {
+//         format: string,
+//         data: any;
+//       }
+//       externals: {
+//         ref: number,
+//         ptr: number
+//       }
+//     }
+//   }
+// }
+//
+// declare module '../topo/edge' {
+//
+//   interface Edge {
+//     data: {
+//       tessellation: Tessellation1D<Vec3>
+//       externals: {
+//         ptr?: number
+//       }
+//     }
+//   }
+// }
 
 export function readBrep(data: BrepOutputData) {
   
