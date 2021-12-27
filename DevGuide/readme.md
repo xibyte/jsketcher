@@ -17,9 +17,9 @@ All part history feature commands are added to a folder where you define the:
 When developing or extending existing workbenches each command needs its own folder under the workbench features folder. 
 
 **Template**: jsketcher/workbenches/**{work_bench_name}**/features/**{Feature_Name}**/
+
 **Example** : "jsketcher/workbenches/modeler/features/primitive_box/"
 
-jsketcher/workbenches/modeler/features/primitive_box/index.ts
 With in your feature folder you must create the following files.
  - **./index.ts**
  - **./icon.svg (optional if not using an icon provided in the base package)**
