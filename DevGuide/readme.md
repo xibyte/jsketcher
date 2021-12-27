@@ -1,6 +1,7 @@
+
 # Welcome to the JSketcher workbench developer guide!
 
-This guide will describe how to create work bench commands and dialogs used as steps in the part history. JSKetcher provides a standard way to define new part history commands that create both the new feature geometry and track the user input fields for a particular command. Input fields are standard user interface elements providing text boxes, numeric inputs and drop downs in addition to rich intelligent geometry selection widgets for sketches, edges, faces, ect.
+This guide will describe how to create work bench commands and dialogs used as steps in the part history. JSketcher provides a standard way to define new part history commands that create both the new feature geometry and track the user input fields for a particular command. Input fields are standard user interface elements providing text boxes, numeric inputs and drop downs in addition to rich intelligent geometry selection widgets for sketches, edges, faces, ect.
 
 JSketcher provides a structured mechanism for tracking part history operations and their related inputs. This history can be though of a short program. Each step in the series can generate new geometry and build off of references to the previous steps. Tracking IDs of geometry such as edges, faces and bodies is handled automatically and UI widgets are provided for the selection of these entities from feature command dialogs.
 
@@ -113,7 +114,7 @@ Normal Form widgets for values:
  - **[string](#string-widget)**
  - **[number](#number-widget)**
  - **[boolean](#number-widget)**
- - **select**
+ - **[select](#select-widget)**
 
 Special widgets for interaction with 3d geometry:
  - **[face](#face-widget)**
@@ -180,7 +181,8 @@ Returns a true or false value.
 ```
 ### select widget
 A drop-down menu listing options. 
-Returns a string with the selected options value.
+Options are defined as an array of objects with label and value properties as shown in the example. 
+Returns a string with the selected option value.
 ```
         color: {
             type: 'select',
