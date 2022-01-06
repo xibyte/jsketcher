@@ -10,7 +10,10 @@ import Expressions from '../expressions/Expressions';
 import {SelectionView} from "../dom/components/SelectionView";
 import {GrSelect} from "react-icons/gr";
 
-export const STANDARD_MODE_HEADS_UP_TOOLBAR = ['DATUM_CREATE', 'PLANE', 'EditFace', '-', "OCC_BOTTLE", '-', "primitive_cylinder", "primitive_box", "primitive_cone", "primitive_sphere", "primitive_torus", "hole_tool", "fillet_tool" ];
+export const STANDARD_MODE_HEADS_UP_TOOLBAR = ['DATUM_CREATE', 'PLANE', 'EditFace', '-', "OCC_BOTTLE", '-',
+  "EXTRUDE", "-",
+  "primitive_cylinder", "primitive_box", "primitive_cone", "primitive_sphere", "primitive_torus", "hole_tool",
+  "fillet_tool"];
 
 export function activate({services, streams}) {
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'menu.views', 'Donate', 'GitHub'];

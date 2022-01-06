@@ -756,7 +756,98 @@ export function runSandbox(ctx: ApplicationContext) {
     });
   }
 
+  /**
+
+   */
+  function testOCCT() {
+    // ctx.OCI.box("Se", "0", "0", "0", "50", "30" ,"80")
+
+    let oci = ctx.occCommandInterface;
+    const height = 70;
+    const width = 50;
+    const thickness = 30;
+    const neckradius = thickness/4;
+    const neckheight = height/10;
+    const major = 2*Math.PI;
+    const minor = neckheight/10;
+    let pi = Math.PI;
+
+    oci.box("b1", "10.0", "15.0", "20.0");
+    oci.box("b2", "-min", "5.0", "7.5", "10.0", "-max", "20.0", "25.0", "30.0");
+    oci.bcut("resultOfCut", "b1", "b2");
+    oci.bfuse("resultOfUnion", "b1", "b2");
+    oci.bcommon("resultOfIntersection", "b1", "b2");
+    oci.vertex("v1",-width/2,"0","0")
+    oci.vertex("v2",-width/2,-thickness/4,"0")
+    oci.edge("e1","v1","v2")
+    oci.point("p2",-width/2,-thickness/4,"0")
+    oci.point("p3","0",-thickness/2,"0")
+    oci.point("p4",width/2,-thickness/4,"0")
+    oci.gcarc("arc","cir","p2","p3","p4")
+    oci.mkedge("e2","arc")
+    oci.vertex("v4",width/2,-thickness/4,"0")
+    oci.vertex("v5",width/2,"0","0")
+    oci.edge("e3","v4","v5")
+    oci.wire("w1","e1","e2","e3")
+    oci.copy("w1","w2")
+    oci.tmirror("w2","0","0","0","0","1","0")
+    oci.wire("w3","w1","w2")
+    oci.mkplane("f","w3")
+    oci.prism("p","f","0","0",height)
+    oci.explode("p","e")
+    oci.blend("b", "p",
+      thickness / 12, "p_1",
+      thickness / 12, "p_2",
+      thickness / 12, "p_3",
+      thickness / 12, "p_4",
+      thickness / 12, "p_5",
+      thickness / 12, "p_6",
+      thickness / 12, "p_7",
+      thickness / 12, "p_8",
+      thickness / 12, "p_9",
+      thickness / 12, "p_10",
+      thickness / 12, "p_11",
+      thickness / 12, "p_12",
+      thickness / 12, "p_13",
+      thickness / 12, "p_14",
+      thickness / 12, "p_15",
+      thickness / 12, "p_16",
+      thickness / 12, "p_17",
+      thickness / 12, "p_18")
+    oci.pcylinder("c",neckradius,neckheight)
+    oci.ttranslate("c","0","0",height)
+    oci.bfuse("f","b","c")
+    oci.explode("c","f")
+    oci.offsetshape("body","f",-thickness/50,"1.e-3","c_2")
+    oci.cylinder("c1","0","0",height,"0","0","1",neckradius*0.99)
+    oci.cylinder("c2","0","0",height,"0","0","1",neckradius*1.05)
+    oci.ellipse("el1",2*pi,neckheight/2,2*pi,neckheight/4,major,minor)
+    oci.ellipse("el2",2*pi,neckheight/2,2*pi,neckheight/4,major,minor/4)
+    oci.trim("arc1","el1","0",pi)
+    oci.trim("arc2","el2","0",pi)
+    oci._2dcvalue("el1","0","x1","y1")
+    oci._2dcvalue("el1",pi,"x2","y2")
+    oci.line("l","x1","y1","x2-x1","y2-y1")
+    oci.parameters("l","x2","y2","1.e-9","U")
+    oci.trim("s","l","0","U")
+    oci.mkedge("E1OnS1","arc1","c1","0",pi)
+    oci.mkedge("E2OnS1","s","c1","0","U")
+    oci.mkedge("E1OnS2","arc2","c2","0",pi)
+    oci.mkedge("E2OnS2","s","c2","0","U")
+    oci.wire("tw1","E1OnS1","E2OnS1")
+    oci.wire("tw2","E1OnS2","E2OnS2")
+    oci.mkedgecurve("tw1","1.e-5")
+    oci.mkedgecurve("tw2","1.e-5")
+    oci.thrusections("-N","thread","1","0","tw1","tw2")
+    oci.bop("body","thread")
+    oci.bopfuse("bottle")
+
+    services.exposure.addOnScene(oci.getModel("bottle"));
+
+  }
+
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
+
     if (ready) {
       // testEdgeSplit(ctx);
       //testVertexMoving(ctx);
@@ -765,7 +856,8 @@ export function runSandbox(ctx: ApplicationContext) {
       //testRemoveFaces();
      //testRemoveVertex();
     //  testRemoveEdge();
-    testOJS()
+    // testOJS();
+      setTimeout(testOCCT, 500);
     }
   });
 

@@ -3,17 +3,19 @@ import Vector from './vector';
 
 export default class VectorFactory {
 
+  vectors: Vector[];
+
   constructor(tolerance) {
     this.vectors = [];
   }
 
-  addVertices(vertices) {
+  addVertices(vertices: Vector[]) {
     for (let v of vertices) {
       this.vectors.push(v);
     }
   }
 
-  find(x, y, z) {
+  find(x, y, z): Vector {
     for (let v of this.vectors) {
       if (veqXYZ(v.x, v.y, v.z, x, y, z)) {
         return v;
@@ -22,7 +24,7 @@ export default class VectorFactory {
     return null;
   }
 
-  create(x, y, z, onExistent) {
+  create(x, y, z, onExistent): Vector {
     let vector = this.find(x, y, z);
     if (vector === null) {
       vector = new Vector(x, y, z);

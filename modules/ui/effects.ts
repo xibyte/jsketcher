@@ -3,7 +3,7 @@ import {StreamsContext} from "./streamsContext";
 import {ApplicationContext} from "context";
 import {Emitter, Stream} from "lstream";
 
-export function useStream<T>(getStream: (ctx: ApplicationContext) => Stream<T>) : T {
+export function useStream<T>(getStream: Stream<T> | ((ctx: ApplicationContext) => Stream<T>)) : T {
 
   const basicStreams = useContext(StreamsContext);
   const [state, setState] = useState<{data: T}>();

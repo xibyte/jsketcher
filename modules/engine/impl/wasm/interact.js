@@ -13,11 +13,11 @@ export function callEngine(request, engineFunc) {
 }
 
 
-let __E0_ENGINE_EXCHANGE_VAL = null;
-window.__E0_ENGINE_EXCHANGE = function(objStr) {
-  __E0_ENGINE_EXCHANGE_VAL = JSON.parse(objStr);
-  // let exposure = __CAD_APP.services.exposure;
-  // let sceneObject = new exposure.scene.UnmanagedSceneSolid(data, 'SOLID');
-  // exposure.addOnScene(sceneObject);
-  // __DEBUG__.AddTessDump(obj);
-};
+// let __E0_ENGINE_EXCHANGE_VAL = null;
+// window.__E0_ENGINE_EXCHANGE = function(objStr) {
+//   __E0_ENGINE_EXCHANGE_VAL = JSON.parse(objStr);
+//   // let exposure = __CAD_APP.services.exposure;
+//   // let sceneObject = new exposure.scene.UnmanagedSceneSolid(data, 'SOLID');
+//   // exposure.addOnScene(sceneObject);
+//   // __DEBUG__.AddTessDump(obj);
+// };

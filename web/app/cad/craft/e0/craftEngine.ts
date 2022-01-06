@@ -116,7 +116,7 @@ export class CraftEngine {
       }
     }
 
-    let data = this.modellingEngine.extrude(engineReq);
+    let data = this.modellingEngine.extrude(engineReq as any);
 
     return singleShellRespone(face.shell, data);
   }

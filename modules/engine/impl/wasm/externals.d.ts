@@ -22,4 +22,6 @@ declare var Module: {
   _SPI_setLocation: Function;
   _SPI_getModelData: Function;
   _SPI_dispose: Function;
+  onRuntimeInitialized: Function;
+  instantiateWasm: Function;
 };
