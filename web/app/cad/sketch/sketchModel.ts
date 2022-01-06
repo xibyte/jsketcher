@@ -7,10 +7,17 @@ import Vector from 'math/vector';
 import CSys from "math/csys";
 import {distanceAB} from "math/distance";
 import {isCCW} from "geom/euclidean";
+import {OCCContext} from "cad/craft/occPlugin";
+import {OCC_Geom_TrimmedCurve, OCC_Handle} from "occ/occ";
+import {vectorTo_gp_Pnt} from "occ/occAdapters";
 
 const RESOLUTION = 20;
 
 class SketchPrimitive {
+
+  id: string;
+  inverted: boolean;
+
   constructor(id) {
     this.id = id;
     this.inverted = false;
@@ -58,9 +65,17 @@ class SketchPrimitive {
   tessellateImpl() {
     throw 'not implemented'
   }
+
+  toOCCGeometry(oc: OCCContext): OCC_Geom_TrimmedCurve {
+    throw 'not implemented'
+  }
 }
 
 export class Segment extends SketchPrimitive {
+
+  a: Vector;
+  b: Vector;
+
   constructor(id, a, b) {
     super(id);
     this.a = a;
@@ -73,6 +88,13 @@ export class Segment extends SketchPrimitive {
 
   toVerbNurbs(tr) {
     return new verb.geom.Line(tr(this.a).data(), tr(this.b).data());
+  }
+
+  toOCCGeometry(oc: OCCContext): OCC_Handle<OCC_Geom_TrimmedCurve> {
+    const a = vectorTo_gp_Pnt(oc, this.a);
+    const b = vectorTo_gp_Pnt(oc, this.b);
+
+    return new oc.GC_MakeSegment_1(a, b).Value();
   }
 }
 

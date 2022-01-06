@@ -1,15 +1,24 @@
 
 import {GenericWASMEngine_V1} from "engine/impl/wasm/GenericWASMEngine_V1";
 import {CraftEngine} from "./craftEngine";
+import {OCCInteractions, OCI} from "cad/craft/e0/occtCommandInterface";
+
+declare module 'context' {
+  interface CoreContext {
+    occCommandInterface: OCCCommands & OCCInteractions;
+  }
+}
+
 
 export function activate(ctx) {
 
-  // loadWasm(ctx);
+  loadWasm(ctx);
 
   const wasmEngine = new GenericWASMEngine_V1();
 
   ctx.services.craftEngine = new CraftEngine(wasmEngine, ctx);
   ctx.craftEngine = ctx.services.craftEngine;
+  ctx.occCommandInterface = OCI;
 }
 
 function instantiateEngine(importObject, callback) {
@@ -33,7 +42,7 @@ function loadWasm(ctx) {
       instantiateEngine(importObject, fncReceiveInstance);
       return {};
     }
-  };
+  } as any;
 
   let mainScript = document.createElement('script');
   mainScript.setAttribute('src', './wasm/e0/main.js');

@@ -38,6 +38,7 @@ export function activate(ctx: CoreContext) {
       modificationsUpdater(request);
     }).catch(error => {
       console.error(error);
+      console.error(error.stack);
       onError(error);
     });
   }

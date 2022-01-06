@@ -26,9 +26,9 @@ export function activate(ctx) {
         
         services.extension.activateAllExtensions();
         ctx.projectService.load();
-        streams.lifecycle.projectLoaded.value = true;
         const onLoadTime = performance.now();
         console.log("project loaded, took: " + ((onLoadTime - startTime) / 1000).toFixed(2) + ' sec');
+        streams.lifecycle.projectLoaded.value = true;
       }
     },
     declareAppReady: () => {

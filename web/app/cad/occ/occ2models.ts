@@ -3,7 +3,6 @@ import { normalizetessellationData } from "brep/io/brepIO";
 import VertexFactory from "brep/vertexFactory";
 import { BrepSurface } from "geom/surfaces/brepSurface";
 import NullSurface from "geom/surfaces/nullSurface";
-import {ProductionInfo} from "engine/productionInfo";
 
 export type OCCShape = any;
 

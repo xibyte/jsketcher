@@ -5,6 +5,7 @@ import {CoreContext} from "context";
 import {SketchFormat_V3} from "../sketcher/io";
 import {OperationRequest} from "./craft/craftPlugin";
 import {ProjectModel} from "./projectManager/projectManagerPlugin";
+import {DebugMode$} from "debugger/Debugger";
 
 export const STORAGE_GLOBAL_PREFIX = 'TCAD';
 export const PROJECTS_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
@@ -130,7 +131,11 @@ function processParams(params, context) {
     if (key.startsWith(LOG_FLAGS_PREFIX)) {
       LOG_FLAGS[key.substring(LOG_FLAGS_PREFIX.length)] = true
     }
-  })
+  });
+
+  if (params.debug) {
+    DebugMode$.next(true);
+  }
 }
 
 export interface ProjectService {

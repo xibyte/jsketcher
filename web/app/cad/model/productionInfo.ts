@@ -1,8 +1,8 @@
 export class ProductionInfo {
   
-  role = undefined;
-  originatedFromPrimitive = undefined;
-  
+  role: string = undefined;
+  originatedFromPrimitive: string = undefined;
+
   static fromRawData(rawProductionInfo) {
     let info = new ProductionInfo();
     
