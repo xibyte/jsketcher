@@ -11,6 +11,8 @@ All part history feature commands are added to a folder where you define the:
  - Help file documentation for command
  - Icon file for toolbars and part history
 
+Full list of OCC commands avaiable here: web/app/cad/craft/e0/OCI.d.ts
+
 
 
 ## Files
