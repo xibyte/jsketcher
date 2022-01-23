@@ -5,8 +5,14 @@ import Joints from 'gems/joints';
 import sketchObjectGlobalId from './sketchObjectGlobalId';
 import VectorFactory from 'math/vectorFactory';
 import {strictEqual2D} from "math/equality";
+import {Contour, Segment} from "./sketchModel";
 
-class SketchGeom {
+export class SketchGeom {
+
+  private connections: Segment[];
+  private loops: Segment[];
+  private constructionSegments: Segment[];
+  private _contours: Contour[];
 
   constructor() {
     this.connections = [];
@@ -20,6 +26,10 @@ class SketchGeom {
       this._contours = FetchContours(this);
     }
     return this._contours;
+  }
+
+  get contours(): Contour[] {
+    return this.fetchContours();
   }
 
   findById(id) {
@@ -115,7 +125,7 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
   return out;
 }
 
-export function FetchContours(geom) {
+export function FetchContours(geom): Contour[] {
   const contours = findClosedContours(geom.connections);
   for (let loop of geom.loops) {
     const contour = new sm.Contour();

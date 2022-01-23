@@ -7,9 +7,9 @@ import Vector from 'math/vector';
 import CSys from "math/csys";
 import {distanceAB} from "math/distance";
 import {isCCW} from "geom/euclidean";
-import {OCCContext} from "cad/craft/occPlugin";
-import {OCC_Geom_TrimmedCurve, OCC_Handle} from "occ/occ";
-import {vectorTo_gp_Pnt} from "occ/occAdapters";
+import {OCCService} from "cad/craft/e0/occService";
+import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
+
 
 const RESOLUTION = 20;
 
@@ -66,7 +66,7 @@ class SketchPrimitive {
     throw 'not implemented'
   }
 
-  toOCCGeometry(oc: OCCContext): OCC_Geom_TrimmedCurve {
+  toOCCGeometry(oci: OCCCommandInterface, underName: string) {
     throw 'not implemented'
   }
 }
@@ -90,11 +90,10 @@ export class Segment extends SketchPrimitive {
     return new verb.geom.Line(tr(this.a).data(), tr(this.b).data());
   }
 
-  toOCCGeometry(oc: OCCContext): OCC_Handle<OCC_Geom_TrimmedCurve> {
-    const a = vectorTo_gp_Pnt(oc, this.a);
-    const b = vectorTo_gp_Pnt(oc, this.b);
-
-    return new oc.GC_MakeSegment_1(a, b).Value();
+  toOCCGeometry(oci: OCCCommandInterface, underName: string) {
+    oci.point(underName + "_A", this.a.x, this.a.y, this.a.z);
+    oci.point(underName + "_B", this.b.x, this.b.y, this.b.z);
+    oci.gcarc(underName, "seg", underName + "_A", underName + "_B")
   }
 }
 
@@ -129,6 +128,13 @@ export class Arc extends SketchPrimitive {
     let arc = new verb.geom.Arc(tr(this.c).data(), xAxis.data(), yAxis.data(), distanceAB(this.c, this.a), 0, Math.abs(angle));
     
     return adjustEnds(arc, tr(this.a), tr(this.b))
+  }
+
+  toOCCGeometry(oci: OCCCommandInterface, underName: string) {
+    oci.point(underName + "_A", this.a.x, this.a.y, this.a.z);
+    oci.point(underName + "_B", this.b.x, this.b.y, this.b.z);
+    oci.point(underName + "_C", this.b.x, this.b.y, this.b.z);
+    oci.gcarc(underName, "cir", underName + "_A", underName + "_B", underName + "_C")
   }
 }
 
@@ -216,6 +222,8 @@ export class Ellipse extends SketchPrimitive {
 }
 
 export class Contour {
+
+  segments: SketchPrimitive[];
 
   constructor() {
     this.segments = [];

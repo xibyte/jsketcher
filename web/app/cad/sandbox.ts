@@ -762,7 +762,7 @@ export function runSandbox(ctx: ApplicationContext) {
   function testOCCT() {
     // ctx.OCI.box("Se", "0", "0", "0", "50", "30" ,"80")
 
-    let oci = ctx.occCommandInterface;
+    let oci = ctx.occService.commandInterface;
     const height = 70;
     const width = 50;
     const thickness = 30;
@@ -842,7 +842,7 @@ export function runSandbox(ctx: ApplicationContext) {
     oci.bop("body","thread")
     oci.bopfuse("bottle")
 
-    services.exposure.addOnScene(oci.getModel("bottle"));
+    services.exposure.addOnScene(ctx.occService.io.getShell("bottle"));
 
   }
 
