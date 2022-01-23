@@ -1,5 +1,5 @@
 const ctx = __CAD_APP;
-const oci = ctx.occCommandInterface;
+const {commandInterface: oci, io} = ctx.occService;
 
 const height = 70;
 const width = 50;
@@ -80,4 +80,4 @@ oci.thrusections("-N", "thread", "1", "0", "tw1", "tw2")
 oci.bop("body", "thread")
 oci.bopfuse("bottle")
 
-ctx.services.exposure.addOnScene(oci.getModel("bottle"));
+ctx.services.exposure.addOnScene(io.getShell("bottle"));

@@ -1,14 +1,13 @@
-
 import {GenericWASMEngine_V1} from "engine/impl/wasm/GenericWASMEngine_V1";
 import {CraftEngine} from "./craftEngine";
-import {OCCInteractions, OCI} from "cad/craft/e0/occtCommandInterface";
+import {createOCCService, OCCService} from "cad/craft/e0/occService";
+
 
 declare module 'context' {
   interface CoreContext {
-    occCommandInterface: OCCCommands & OCCInteractions;
+    occService: OCCService;
   }
 }
-
 
 export function activate(ctx) {
 
@@ -18,7 +17,9 @@ export function activate(ctx) {
 
   ctx.services.craftEngine = new CraftEngine(wasmEngine, ctx);
   ctx.craftEngine = ctx.services.craftEngine;
-  ctx.occCommandInterface = OCI;
+
+  // ctx.modellingEngine = OCCModellingEngine(OCI.EngineCommand);
+  ctx.occService = createOCCService(ctx);
 }
 
 function instantiateEngine(importObject, callback) {
@@ -36,6 +37,7 @@ function loadWasm(ctx) {
     //   return SERVER_PATH + file;
     // },
     onRuntimeInitialized: function() {
+      Module._InitCommands();
       ctx.services.lifecycle.finishAsyncInitializingJob('e0:loader');
     },
     instantiateWasm: function (importObject, fncReceiveInstance) {
