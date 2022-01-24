@@ -1,5 +1,6 @@
 import Vector, {AXIS} from "math/vector";
 import {Vec3} from "math/vec";
+import {VectorTransformer} from "math/functions";
 
 export type Matrix3x4Data = [[number, number, number, number], [number, number, number, number], [number, number, number, number]];
 export type Matrix3x4FlatData = [number, number, number, number, number, number, number, number, number, number, number, number];
@@ -410,7 +411,7 @@ export class Matrix3x4 {
     return m;
   };
 
-  apply = vector => this.__apply(vector, new Vector());
+  apply: VectorTransformer = vector => this.__apply(vector, new Vector());
 
   setTranslation(tx, ty, tz) {
     this.tx = tx;

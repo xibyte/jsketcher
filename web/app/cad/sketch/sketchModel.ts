@@ -7,7 +7,6 @@ import Vector from 'math/vector';
 import CSys from "math/csys";
 import {distanceAB} from "math/distance";
 import {isCCW} from "geom/euclidean";
-import {OCCService} from "cad/craft/e0/occService";
 import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
 
 
@@ -46,7 +45,7 @@ class SketchPrimitive {
     return !this.isCurve;
   }
 
-  toNurbs(csys) {
+  toNurbs(csys: CSys) {
     let verbNurbs = this.toVerbNurbs(csys.outTransformation.apply, csys);
     if (this.inverted) {
       verbNurbs = verbNurbs.reverse();
@@ -66,12 +65,12 @@ class SketchPrimitive {
     throw 'not implemented'
   }
 
-  toOCCGeometry(oci: OCCCommandInterface, underName: string) {
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
     throw 'not implemented'
   }
 }
 
-export class Segment extends SketchPrimitive {
+export class Segment<Segment> extends SketchPrimitive {
 
   a: Vector;
   b: Vector;
@@ -90,14 +89,31 @@ export class Segment extends SketchPrimitive {
     return new verb.geom.Line(tr(this.a).data(), tr(this.b).data());
   }
 
-  toOCCGeometry(oci: OCCCommandInterface, underName: string) {
-    oci.point(underName + "_A", this.a.x, this.a.y, this.a.z);
-    oci.point(underName + "_B", this.b.x, this.b.y, this.b.z);
-    oci.gcarc(underName, "seg", underName + "_A", underName + "_B")
+  toGenericForm() {
+    const endpoints = [
+      this.a, //from endpoint
+      this.b, //to endpoint
+    ];
+    if (this.inverted) {
+      endpoints.reverse();
+    }
+    return endpoints
   }
+
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+    const genForm = this.toGenericForm().map(csys.outTransformation.apply);
+    const [A, B] = genForm;
+    oci.point(underName + "_A", A.x, A.y, A.z);
+    oci.point(underName + "_B", B.x, B.y, B.z);
+    oci.gcarc(underName, "seg", underName + "_A", underName + "_B")}
 }
 
 export class Arc extends SketchPrimitive {
+
+  a: Vector;
+  b: Vector;
+  c: Vector;
+
   constructor(id, a, b, c) {
     super(id);
     this.a = a;
@@ -130,11 +146,42 @@ export class Arc extends SketchPrimitive {
     return adjustEnds(arc, tr(this.a), tr(this.b))
   }
 
-  toOCCGeometry(oci: OCCCommandInterface, underName: string) {
-    oci.point(underName + "_A", this.a.x, this.a.y, this.a.z);
-    oci.point(underName + "_B", this.b.x, this.b.y, this.b.z);
-    oci.point(underName + "_C", this.b.x, this.b.y, this.b.z);
-    oci.gcarc(underName, "cir", underName + "_A", underName + "_B", underName + "_C")
+  toGenericForm() {
+    const endpoints = [this.a, this.b];
+    if (this.inverted) {
+      endpoints.reverse();
+    }
+    const [a, b] = endpoints;
+    const tangent = a.minus(this.c)._perpXY() //tangent vector
+    if (this.inverted) {
+      tangent._negate();
+    }
+    return [
+      a, //from endpoint
+      b, //to endpoint
+      tangent //tangent vector
+    ]
+  }
+
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+
+    const tr = csys.outTransformation.apply;
+    const s = this;
+    const a = tr(s.inverted ? s.b : s.a);
+    const b = tr(s.inverted ? s.a : s.b);
+    const c = tr(s.c);
+    const tangent = c.minus(a)._cross(csys.z);//._normalize();
+
+    if (s.inverted) {
+      tangent._negate();
+    }
+
+    const A_TAN = a.plus(tangent);
+    oci.point(underName + "_A", a.x, a.y, a.z);
+    oci.point(underName + "_B", b.x, b.y, b.z);
+    oci.point(underName + "_T1", a.x, a.y, a.z);
+    oci.point(underName + "_T2", A_TAN.x, A_TAN.y, A_TAN.z);
+    oci.gcarc(underName, "cir", underName + "_A", underName + "_T1", underName + "_T2", underName + "_B")
   }
 }
 
@@ -187,6 +234,9 @@ export class EllipticalArc extends SketchPrimitive {
 }
 
 export class Circle extends SketchPrimitive {
+  c: Vector;
+  r: number
+
   constructor(id, c, r) {
     super(id);
     this.c = c;
@@ -197,6 +247,12 @@ export class Circle extends SketchPrimitive {
     const basisX = csys.x;
     const basisY = csys.y;
     return new verb.geom.Circle(tr(this.c).data(), basisX.data(), basisY.data(), this.r);
+  }
+
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+    const C = csys.outTransformation.apply(this.c);
+    const DIR = csys.z;
+    oci.circle(underName, ...C.data(), ...DIR.data(), this.r);
   }
 }
 

@@ -3,12 +3,13 @@ import {Vec3} from "math/vec";
 import {SketchGeom} from "cad/sketch/sketchReader";
 import {OCCService} from "cad/craft/e0/occService";
 import {CoreContext} from "context";
+import CSys from "math/csys";
 
 export interface OCCUtils {
 
   wiresToFaces(wires: string[]): string[];
 
-  sketchToFaces(sketch: SketchGeom): string[];
+  sketchToFaces(sketch: SketchGeom, csys: CSys): string[];
 
   prism(faces: string[], dir: Vec3): string[];
 
@@ -16,9 +17,9 @@ export interface OCCUtils {
 
 export function createOCCUtils(ctx: CoreContext): OCCUtils {
 
-  function sketchToFaces(sketch: SketchGeom): string[] {
+  function sketchToFaces(sketch: SketchGeom, csys: CSys): string[] {
     const occ = ctx.occService;
-    const wires = occ.io.sketchLoader.pushSketchAsWires(sketch.contours);
+    const wires = occ.io.sketchLoader.pushSketchAsWires(sketch.contours, csys);
     return wiresToFaces(wires);
   }
 
