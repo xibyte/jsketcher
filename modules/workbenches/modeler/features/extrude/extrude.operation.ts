@@ -1,6 +1,6 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {ProductionInfo} from "cad/model/productionInfo";
 import {MFace} from "cad/model/mface";
+import {ApplicationContext} from "context";
 
 interface ExtrudeParams {
   length: number;
@@ -14,7 +14,7 @@ export default {
   info: 'extrudes 2D sketch',
   paramsInfo: ({value}) => `(${r(value)})`,
   mutualExclusiveFields: ['datumAxisVector', 'edgeVector', 'sketchSegmentVector'],
-  run: (params: ExtrudeParams, ctx) => {
+  run: (params: ExtrudeParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
@@ -24,7 +24,7 @@ export default {
     let sketch = ctx.sketchStorageService.readSketch(face.id);
     if (!sketch) throw 'sketch not found for the face ' + face.id;
 
-    const occFaces = occ.utils.sketchToFaces(sketch);
+    const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
 
     const shapeNames = occ.utils.prism(occFaces, [0, 0, params.length]);
 
