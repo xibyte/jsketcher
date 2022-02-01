@@ -1,25 +1,27 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "context";
+import {MDFCommand} from "cad/mdf/mdf";
+import {EntityKind} from "cad/model/entities";
 
 interface ExtrudeParams {
   length: number;
   face: MFace;
 }
 
-export default {
+const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
   id: 'EXTRUDE',
   label: 'Extrude',
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
-  paramsInfo: ({value}) => `(${r(value)})`,
+  paramsInfo: ({length}) => `(${r(length)})`,
   mutualExclusiveFields: ['datumAxisVector', 'edgeVector', 'sketchSegmentVector'],
   run: (params: ExtrudeParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    const face = ctx.cadRegistry.findFace(params.face);
+    const face = params.face;
 
     let sketch = ctx.sketchStorageService.readSketch(face.id);
     if (!sketch) throw 'sketch not found for the face ' + face.id;
@@ -36,44 +38,26 @@ export default {
     };
 
   },
-  schema: {
-    length: {
+
+  form: [
+    {
       type: 'number',
+      label: 'length',
+      name: 'length',
       defaultValue: 50,
-      label: 'length'
     },
-
-    face: {
-      type: 'face',
-      initializeBySelection: 0
+    {
+      type: 'selection',
+      name: 'face',
+      capture: [EntityKind.FACE],
+      label: 'face',
+      multi: false,
+      defaultValue: {
+        usePreselection: true,
+        preselectionIndex: 0
+      },
     },
-
-    direction: {
-      type: 'direction',
-      optional: true
-    },
-
-    datumAxisVector: {
-      type: 'datumAxis',
-      optional: true,
-      label: 'datum axis'
-    },
-    edgeVector: {
-      type: 'edge',
-      optional: true,
-      label: 'edge',
-      accept: edge => edge.brepEdge.curve.degree === 1
-    },
-    sketchSegmentVector: {
-      type: 'sketchObject',
-      optional: true,
-      label: 'sketch segment',
-      accept: obj => obj.isSegment
-    },
-    flip: {
-      type: 'boolean',
-      defaultValue: false,
-    }
-
-  }
+  ],
 }
+
+export default ExtrudeOperation;

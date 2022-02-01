@@ -1,10 +1,11 @@
 import {MObject} from './mobject';
 import {MFace} from "./mface";
 import {MSketchObject} from "./msketchObject";
+import {EntityKind} from "cad/model/entities";
 
 export class MLoop extends MObject {
   
-  static TYPE = 'loop';
+  static TYPE = EntityKind.LOOP;
 
   constructor(id) {
     super(MLoop.TYPE, id);

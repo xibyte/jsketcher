@@ -1,6 +1,6 @@
 import {View} from './view';
 import DatumObject3D from '../../craft/datum/datumObject';
-import {DATUM, DATUM_AXIS} from '../entites';
+import {DATUM, DATUM_AXIS} from '../../model/entities';
 import {setAttribute} from 'scene/objectData';
 import {Mesh, MeshBasicMaterial, PolyhedronGeometry, SphereGeometry} from 'three';
 import {CSYS_SIZE_MODEL} from '../../craft/datum/csysObject';

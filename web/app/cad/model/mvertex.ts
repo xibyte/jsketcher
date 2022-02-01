@@ -1,9 +1,10 @@
 import {MObject} from './mobject';
 import {MShell} from "./mshell";
+import {EntityKind} from "cad/model/entities";
 
 export class MVertex extends MObject {
 
-  static TYPE = 'vertex';
+  static TYPE = EntityKind.VERTEX;
   shell: MShell;
   brepVertex: any;
   

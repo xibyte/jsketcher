@@ -1,10 +1,11 @@
 import React from 'react';
 import {state} from 'lstream';
 import {IconType} from "react-icons";
-import {isEntityType} from './schemaUtils';
 import {ActionAppearance} from "../actions/actionSystemPlugin";
 import {ApplicationContext, CoreContext} from "context";
 import {OperationResult} from "./craftPlugin";
+import {OperationSchema} from "cad/craft/schema/schema";
+import {FieldWidgetProps, UIDefinition} from "cad/mdf/ui/uiDefinition";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -14,7 +15,7 @@ export function activate(ctx: ApplicationContext) {
     registry:registry$
   };
   
-  function addOperation(descriptor, actions) {
+  function addOperation(descriptor: OperationDescriptor<any>, actions) {
     let {id, label, info, icon, actionParams} = descriptor;
     let appearance: ActionAppearance = {
       label,
@@ -34,9 +35,7 @@ export function activate(ctx: ApplicationContext) {
     };
     actions.push(opAction);
 
-    let schemaIndex = createSchemaIndex(descriptor.schema);
-    
-    registry$.mutate(registry => registry[id] = Object.assign({appearance, schemaIndex}, descriptor, {
+    registry$.mutate(registry => registry[id] = Object.assign({appearance}, descriptor, {
       run: (request, opContext) => runOperation(request, descriptor, opContext)
     }));
   }
@@ -87,39 +86,7 @@ export interface Operation<R> extends OperationDescriptor<R>{
     icon96: string;
     icon: string|IconType;
   };
-  schemaIndex: {
-    entitiesByType: any;
-    entitiesByParam: any;
-    entityParams: any[];
-    params: any[];
-  },
 }
-
-function createSchemaIndex(schema) {
-  const entitiesByType = {};
-  const entitiesByParam = {};
-  const entityParams = [];
-  for (let field of Object.keys(schema)) {
-    let md = schema[field];
-    let entityType = md.type === 'array' ? md.itemType : md.type;
-
-    if (isEntityType(entityType)) {
-      let byType = entitiesByType[entityType];
-      if (!byType) {
-        byType = [];
-        entitiesByType[entityType] = byType;
-      }
-      byType.push(field);
-      entitiesByParam[field] = entityType;
-      entityParams.push(field);
-    }
-  }
-  return {entitiesByType, entitiesByParam,
-    entityParams: Object.keys(entitiesByParam),
-    params: Object.keys(schema)
-  };
-}
-
 
 export interface OperationDescriptor<R> {
   id: string;
@@ -131,8 +98,9 @@ export interface OperationDescriptor<R> {
   paramsInfo: (params: R) => string,
   previewGeomProvider?: (params: R) => OperationGeometryProvider,
   form: () => React.ReactNode,
-  schema: any,
-  onParamsUpdate?: (params, name, value) => void
+  schema: OperationSchema,
+  formFields: FieldWidgetProps[],
+  onParamsUpdate?: (params, name, value) => void,
 }
 
 export interface OperationService {

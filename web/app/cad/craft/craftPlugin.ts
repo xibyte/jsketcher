@@ -1,11 +1,12 @@
 import {addModification, stepOverriding} from './craftHistoryUtils';
 import {Emitter, state, StateStream, stream} from 'lstream';
-import materializeParams from './materializeParams';
+import materializeParams from './schema/materializeParams';
 import CadError from '../../utils/errors';
 import {MObject, MObjectIdGenerator} from '../model/mobject';
 import {intercept} from "lstream/intercept";
 import {CoreContext} from "context";
 import {MFace} from "../model/mface";
+import {OperationParams} from "cad/craft/schema/schema";
 
 export function activate(ctx: CoreContext) {
 
@@ -229,7 +230,7 @@ function historyTravel(modifications$) {
 
 export interface OperationRequest {
   type: string;
-  params: any;
+  params: OperationParams;
 }
 
 export interface OperationResult {

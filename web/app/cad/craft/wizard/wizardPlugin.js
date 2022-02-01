@@ -1,7 +1,7 @@
 import {state} from 'lstream';
-import initializeBySchema from '../intializeBySchema';
+import initializeBySchema from '../schema/initializeBySchema';
 import {clone, EMPTY_OBJECT} from 'gems/objects';
-import materializeParams from '../materializeParams';
+import materializeParams from '../schema/materializeParams';
 import {createFunctionList} from 'gems/func';
 import {onParamsUpdate} from '../cutExtrude/extrudeOperation';
 import {propsChangeTracker} from 'lstream/utils';

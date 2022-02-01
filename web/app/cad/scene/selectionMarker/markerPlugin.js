@@ -2,7 +2,7 @@ import {OrderedMap} from 'gems/linkedMap';
 import {eventStream} from 'lstream';
 
 export function activate(ctx) {
-  ctx.services.marker = createMarker(ctx.services.cadRegistry.findEntity, ctx.services.viewer.requestRender);
+  ctx.services.marker = createMarker(ctx.services.cadRegistry.find, ctx.services.viewer.requestRender);
   ctx.streams.craft.models.attach(() => {
     ctx.services.marker.clear();
   });
@@ -19,8 +19,8 @@ function createMarker(findEntity, requestRender) {
   const notify = () => $markedEntities.next(marked);
   const isMarked = id => marked.has(id);
 
-  function doMark(entity, id, color) {
-    let mObj = findEntity(entity, id);
+  function doMark(id, color) {
+    let mObj = findEntity(id);
     if (!mObj) {
       console.warn('no entity found to highlight: ' + entity + ' ' + id);
       return;
@@ -57,19 +57,19 @@ function createMarker(findEntity, requestRender) {
   
   function markExclusively(entity, id, color) {
     withdrawAllOfType(entity);
-    doMark(entity, id, color);
+    doMark(id, color);
     onUpdate();
   }
 
   function markArrayExclusively(entity, ids, color) {
     withdrawAllOfType(entity);
-    ids.forEach(id => doMark(entity, id, color));
+    ids.forEach(id => doMark(id, color));
     onUpdate();
   }
 
   function markAdding(entity, id, color) {
     if (!marked.has(id)) {
-      doMark(entity, id, color);
+      doMark(id, color);
       onUpdate();
     }
   }
@@ -81,13 +81,13 @@ function createMarker(findEntity, requestRender) {
     needUpdate = false;
   }
 
-  function mark(entity, id, color) {
+  function mark(id, color) {
     if (!sessionInProgress) {
       throw 'can be called only withing a session';
     }
     markingSession.add(id);
     if (!marked.has(id)) {
-      doMark(entity, id, color);
+      doMark(id, color);
       needUpdate = true;
     }
   }

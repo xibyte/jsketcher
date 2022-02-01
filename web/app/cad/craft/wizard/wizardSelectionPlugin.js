@@ -1,4 +1,5 @@
-import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from '../../scene/entites';
+import {FACE, SHELL} from '../../model/entities';
+import {memoize} from "lodash/function";
 
 export function activate(ctx) {
   ctx.streams.wizard.wizardContext.attach(wizCtx => {
@@ -9,16 +10,22 @@ export function activate(ctx) {
       wizCtx.workingRequest$.attach(({type, params}) => {
         const marker = ctx.services.marker;
         marker.startSession();
-        let {schema, schemaIndex} = wizCtx.operation;
-        schemaIndex.entityParams.forEach(param => {
-          let color = schema[param].markColor;
+        let {schema} = wizCtx.operation;
+        Object.keys(schema).forEach(param => {
+          let md = schema[param];
+
+          if (md.type !== 'entity') {
+            return;
+          }
+
+          //TODO: move to uiDefinition
+          let color = md.markColor;
           let val = params[param];
-          let entity = schemaIndex.entitiesByParam[param];
           if (Array.isArray(val)) {
-            val.forEach(id => marker.mark(entity, id, color));
+            val.forEach(id => marker.mark(id, color));
           } else {
             if (val) {
-              marker.mark(entity, val, color);
+              marker.mark(val, color);
             }
           }
         });
@@ -42,7 +49,10 @@ const arrayValue = (id, arr) =>  {
   return arr;
 };
 
+const getEntityParams = memoize(schema => Object.keys(schema).filter(key => schema[key].type === 'entity'));
+
 function createPickHandlerFromSchema(wizCtx) {
+
   function update(param, value, paramToMakeActive) {
     wizCtx.updateParam(param, value);
     wizCtx.updateState(state => {
@@ -55,44 +65,44 @@ function createPickHandlerFromSchema(wizCtx) {
     const params = wizCtx.workingRequest$.value.params;
     const state = wizCtx.state$.value;
     
-    let {schema, schemaIndex} = wizCtx.operation;
-    const {entitiesByType, entitiesByParam, entityParams} = schemaIndex;
+    let {schema} = wizCtx.operation;
 
     const activeMd = state.activeParam && schema[state.activeParam];
-    const activeEntity = state.activeParam && entitiesByParam[state.activeParam];
+    const activeCanTakeIt = kind => activeMd.allowedKinds && activeMd.allowedKinds.includes(kind);
 
-    function select(param, entity, md, id) {
+    function select(param, md, id) {
       const valueGetter = md.type === 'array' ? arrayValue : singleValue;
-      let paramToMakeActive = getNextActiveParam(param, entity, md);
+      let paramToMakeActive = getNextActiveParam(param, md);
       update(param, valueGetter(id, params[param]), paramToMakeActive);
     }
 
-    function getNextActiveParam(currParam, entity, currMd) {
+    function getNextActiveParam(currParam, currMd) {
       if (currMd.type !== 'array') {
-        let entityGroup = entitiesByType[entity];
-        if (entityGroup) {
-          const index = entityGroup.indexOf(currParam);
-          const nextIndex = (index + 1) % entityGroup.length;
-          return entityGroup[nextIndex];
-        }
+        const entityParams = getEntityParams(schema);
+        const index = entityParams.indexOf(currParam);
+        const nextIndex = (index + 1) % entityParams.length;
+        return entityParams[nextIndex];
       }
       return currParam;
     }
     
     function selectActive(id) {
-      select(state.activeParam, activeEntity, activeMd, id);
+      select(state.activeParam, activeMd, id);
     }
 
     function selectToFirst(entity, id) {
-      let entities = entitiesByType[entity];
-      if (!entities) {
-        return false;
+      const entityParams = getEntityParams(schema);
+      for (let param of entityParams) {
+        const md = schema[param];
+        if (md.allowedKinds.includes(entity)) {
+          select(param, md, id);
+        }
       }
-      let param = entities[0];
-      select(param, entity, schema[param], id);
+      return true;
     }
 
     function deselectIfNeeded(id) {
+      const entityParams = getEntityParams(schema);
       for (let param of entityParams) {
         let val = params[param];
         if (val === id) {
@@ -117,44 +127,20 @@ function createPickHandlerFromSchema(wizCtx) {
     }
     
     if (modelType === FACE) {
-      if (activeEntity === SHELL) {
+      if (activeCanTakeIt(SHELL)) {
         selectActive(model.shell.id);
-      } else if (activeEntity === FACE) {
+      } else if (activeCanTakeIt(FACE)) {
         selectActive(model.id);
       } else {
         if (!selectToFirst(FACE, model.id)) {
           selectToFirst(SHELL, model.shell.id)
         }
       }
-    } else if (modelType === SKETCH_OBJECT) {
-      if (activeEntity === SKETCH_OBJECT) {
+    } else{
+      if (activeCanTakeIt(modelType)) {
         selectActive(model.id);
       } else {
-        selectToFirst(SKETCH_OBJECT, model.id);
-      }
-    } else if (modelType === EDGE) {
-      if (activeEntity === EDGE) {
-        selectActive(model.id);
-      } else {
-        selectToFirst(EDGE, model.id);
-      }
-    } else if (modelType === DATUM) {
-      if (activeEntity === DATUM) {
-        selectActive(model.id);
-      } else {
-        selectToFirst(DATUM, model.id);
-      }
-    } else if (modelType === DATUM_AXIS) {
-      if (activeEntity === DATUM_AXIS) {
-        selectActive(model.id);
-      } else {
-        selectToFirst(DATUM_AXIS, model.id);
-      }
-    } else if (modelType === LOOP) {
-      if (activeEntity === LOOP) {
-        selectActive(model.id);
-      } else {
-        selectToFirst(LOOP, model.id);
+        selectToFirst(modelType, model.id);
       }
     }
     return false;

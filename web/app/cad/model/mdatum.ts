@@ -1,11 +1,11 @@
-import {MObject, MObjectIdGenerator, MRootObject} from './mobject';
+import {MObject, MObjectIdGenerator} from './mobject';
 import CSys from "math/csys";
 import Vector from "math/vector";
-import {Matrix3x4} from "math/matrix";
+import {EntityKind} from "cad/model/entities";
 
 export class MDatum extends MObject {
 
-  static TYPE = 'datum';
+  static TYPE = EntityKind.DATUM;
   csys: CSys;
   xAxis: MDatumAxis;
   yAxis: MDatumAxis;
@@ -42,7 +42,7 @@ export class MDatum extends MObject {
 
 export class MDatumAxis extends MObject {
 
-  static TYPE = 'datumAxis';
+  static TYPE = EntityKind.DATUM_AXIS;
   origin: Vector;
   dir: Vector;
   holder: MObject;

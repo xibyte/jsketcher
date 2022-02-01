@@ -1,6 +1,6 @@
 import {MShell} from '../model/mshell';
 import {MObject} from "../model/mobject";
-import {ApplicationContext} from "context";
+import {ApplicationContext, CoreContext} from "context";
 import {Stream} from "lstream";
 import {MFace} from "../model/mface";
 import {MEdge} from "../model/medge";
@@ -102,7 +102,7 @@ export interface CadRegistry {
 }
 
 declare module 'context' {
-  interface ApplicationContext {
+  interface CoreContext {
 
     cadRegistry: CadRegistry;
   }

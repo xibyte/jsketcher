@@ -4,7 +4,7 @@ import {getAttribute, setAttribute} from 'scene/objectData';
 import {createSolidMaterial} from '../wrappers/sceneObject';
 import {FaceView, SELECTION_COLOR} from './faceView';
 import {EdgeView} from './edgeView';
-import {FACE, SHELL} from '../entites';
+import {FACE, SHELL} from '../../model/entities';
 import {Mesh} from 'three';
 import {VertexView} from "./vertexView";
 

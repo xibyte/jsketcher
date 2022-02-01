@@ -1,13 +1,14 @@
 import {IDENTITY_MATRIX, Matrix3x4} from "math/matrix";
+import {EntityKind} from "cad/model/entities";
 
 export abstract class MObject {
 
-  TYPE: string;
+  TYPE: EntityKind;
   
   id: string;
   ext: any = {};
 
-  constructor(TYPE, id) {
+  protected constructor(TYPE, id) {
     this.TYPE = TYPE;
     this.id = id;
   }

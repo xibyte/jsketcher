@@ -5,15 +5,15 @@ interface Observable<T> {
 
 interface Stream<T> extends Observable<T> {
 
-  map<T, V>(fn: (value: T) => V);
+  map<V>(fn: (value: T) => V);
 
-  filter<T>(stream: Stream<T>, predicate: (T) => boolean): Stream<T>;
+  filter(predicate: (T) => boolean): Stream<T>;
 
   pairwise(first: T): Stream<[T, T]>;
 
   scan(initAccumulator: any): Stream<any>;
 
-  remember(initialValue: T, usingStream: any): Stream<T>
+  remember(initialValue: T, usingStream: any): StateStream<T>
 
   distinct(): Stream<T>;
 

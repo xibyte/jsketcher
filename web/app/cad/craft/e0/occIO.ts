@@ -11,8 +11,6 @@ export interface OCCIO {
 
   pushModel(model: MObject, name: string);
 
-  anchorModel(name: string);
-
   cleanupRegistry();
 
   sketchLoader: OCCSketchLoader
@@ -39,7 +37,7 @@ export function createOCCIO(oci: OCCCommandInterface): OCCIO {
 
 
   return {
-    getShell, pushModel, anchorModel, cleanupRegistry,
+    getShell, pushModel, cleanupRegistry,
     sketchLoader: createOCCSketchLoader(oci)
   }
 

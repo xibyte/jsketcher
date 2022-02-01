@@ -106,7 +106,7 @@ export class GCCircle extends ContractibleObject {
   static TYPE = 'GCCircle';
 
   static newInstance(x, y, r) {
-    return GCCircle().init(new GCPoint(x, y), new GCParam(r))
+    return GCCircle().init(new GCPoint(x, y), md)
   }
 
   init(c, r) {
