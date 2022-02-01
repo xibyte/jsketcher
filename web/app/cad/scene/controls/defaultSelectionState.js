@@ -1,5 +1,5 @@
 import {state} from 'lstream';
-import {DATUM, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../entites';
+import {DATUM, EDGE, FACE, SHELL, SKETCH_OBJECT} from '../../model/entities';
 
 const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
 

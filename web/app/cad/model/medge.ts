@@ -1,9 +1,10 @@
 import {MObject} from './mobject';
 import {MBrepShell} from "./mshell";
+import {EntityKind} from "cad/model/entities";
 
 export class MEdge extends MObject {
 
-  static TYPE = 'edge';
+  static TYPE = EntityKind.EDGE;
   shell: MBrepShell;
   brepEdge: any;
 

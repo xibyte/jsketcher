@@ -98,7 +98,8 @@ export function getEncloseDetails(params, contours, target, csys, sketchSurface,
     }
     for (let i = 0; i < basePath.length; ++i) {
       const curve = basePath[i];
-      let lidCurve = curve.translate(target);
+      let lidCurve = cur
+      ve.translate(target);
       if (applyPrism) {
         lidCurve = lidCurve.transform(prismTr);
       }

@@ -5,7 +5,8 @@ export default {
     defaultValue: 'XY'
   },
   parallelTo: {
-    type: 'face',
+    type: 'entity',
+    allowedKinds: 'face',
     optional: true,
   },
   depth: {

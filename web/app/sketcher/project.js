@@ -47,7 +47,7 @@ export class Project {
     let sketchId = this.getSketchId();
     let sketchData = localStorage.getItem(sketchId);
     if (sketchData != null) {
-      this.viewer.historyManager.init(sketchData);
+      this.viewer.historyManager.init(sketchData, md);
       this.viewer.io.loadSketch(sketchData);
     }
     this.viewer.repaint();

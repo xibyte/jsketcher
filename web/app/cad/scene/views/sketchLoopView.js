@@ -6,7 +6,7 @@ import {DoubleSide, Geometry, Mesh} from 'three';
 import {surfaceAndPolygonsToGeom} from '../wrappers/brepSceneObject';
 import {TriangulatePolygons} from '../../tess/triangulation';
 import Vector from 'math/vector';
-import {LOOP} from '../entites';
+import {LOOP} from '../../model/entities';
 import {setAttribute} from 'scene/objectData';
 
 export class SketchLoopView extends MarkTracker(View) {

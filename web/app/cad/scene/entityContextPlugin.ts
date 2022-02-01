@@ -1,9 +1,10 @@
-import {state} from 'lstream';
+import {state, StateStream} from 'lstream';
 
 import {addToListInMap} from 'gems/iterables';
 import {EMPTY_ARRAY} from 'gems/iterables';
-import {DATUM, FACE, SHELL, SKETCH_OBJECT, EDGE, LOOP} from './entites';
+import {DATUM, FACE, SHELL, SKETCH_OBJECT, EDGE, LOOP} from '../model/entities';
 import {combine} from "lstream";
+import {MObject} from "cad/model/mobject";
 
 export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
 
@@ -12,7 +13,8 @@ export function defineStreams(ctx) {
   SELECTABLE_ENTITIES.forEach(entity => {
     ctx.streams.selection[entity] = state([]);
   });
-  ctx.streams.selection.all = combine(...Object.values(ctx.streams.selection)).map(selection => [].concat(...selection)).throttle();
+  ctx.streams.selection.all = combine(...(Object.values(ctx.streams.selection) as StateStream<string[]>[]))
+    .map(selection => [].concat(...selection)).throttle();
 }
 
 export function activate(ctx) {
@@ -20,8 +22,9 @@ export function activate(ctx) {
   SELECTABLE_ENTITIES.forEach(entity => {
     let entitySelectApi = {
       objects: [],
-      single: undefined
-    };
+      single: undefined,
+      select: null as (ids: string[]) => void
+     };
     ctx.services.selection[entity] = entitySelectApi;
     let selectionState = ctx.streams.selection[entity];
     
@@ -53,4 +56,17 @@ export function activate(ctx) {
       }
     });
   })
+
+  ctx.entityContextService = {
+    selectedEntities: ctx.streams.selection.all.map(ids => ids.map(ctx.cadRegistry.find)).remember()
+  }
+}
+
+declare module 'context' {
+  interface CoreContext {
+
+    entityContextService: {
+      selectedEntities: StateStream<MObject[]>
+    };
+  }
 }

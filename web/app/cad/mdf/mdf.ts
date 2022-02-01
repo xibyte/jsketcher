@@ -1,41 +1,39 @@
-import { IconDeclaration } from "cad/icons/IconDeclaration";
-import { CoreContext } from "context";
-import { IconType } from "react-icons";
-import { OperationResult } from "../craft/craftPlugin";
-import { OperationDescriptor } from "../craft/operationPlugin";
-import { generateForm } from "./generateForm";
-import { resolveMDFIcon } from "./mdfIconResolver";
+import {IconDeclaration} from "cad/icons/IconDeclaration";
+import {CoreContext} from "context";
+import {IconType} from "react-icons";
+import {OperationResult} from "../craft/craftPlugin";
+import {OperationDescriptor} from "../craft/operationPlugin";
+import {resolveMDFIcon} from "./mdfIconResolver";
+import {OperationSchema} from "cad/craft/schema/schema";
+import {
+  DynamicWidgetProps,
+  FieldWidgetProps, FormDefinition,
+  isContainerWidgetProps,
+  isFieldWidgetProps,
+  UIDefinition
+} from "cad/mdf/ui/uiDefinition";
+import {uiDefinitionToReact} from "cad/mdf/ui/render";
+import {DynamicComponents} from "cad/mdf/ui/componentRegistry";
 
-
-interface MDFCommand<R> {
+export interface MDFCommand<R> {
   id: string;
   label: string;
   info: string;
   icon: IconType | IconDeclaration;
   run: (request: R, opContext: CoreContext) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,
-  schema: OperationSchema,
-  mutualExclusiveFields?: string[]
+  mutualExclusiveFields?: string[],
+  form: FormDefinition
 }
 
-export type Coercable = any;
-
-export type OperationSchema = {
-  [key: string]: SchemaField
-};
-
-export interface SchemaField {
-  type: 'number' | 'boolean' | 'string' | 'face' | 'datumAxis' | 'edge' | 'sketchObject',
-  enum?: {
-    value: string;
-    label: string;    
-  }[];
-  defaultValue: Coercable,
-  optional: boolean,
-  label?: string
-}
 
 export function loadMDFCommand<R>(mdfCommand: MDFCommand<R>): OperationDescriptor<R> {
+  const uiDefinition: UIDefinition = {
+    type: 'group',
+    content: mdfCommand.form
+  }
+  const formFields = extractFormFields(uiDefinition);
+  const derivedSchema = deriveSchema(formFields);
   return {
     id: mdfCommand.id,
     label: mdfCommand.label,
@@ -51,10 +49,41 @@ export function loadMDFCommand<R>(mdfCommand: MDFCommand<R>): OperationDescripto
     // actionParams: {
     //   ...requiresFaceSelection(1)
     // },
-    form: generateForm(mdfCommand.schema),
-    schema: mdfCommand.schema 
+    form: uiDefinitionToReact(uiDefinition),
+    formFields,
+    schema: derivedSchema
   }
 }
+
+function extractFormFields(uiDefinition: UIDefinition): FieldWidgetProps[] {
+
+  const fields: FieldWidgetProps[] = [];
+
+  function inorder(comp: DynamicWidgetProps) {
+
+    if (isFieldWidgetProps(comp)) {
+      fields.push(comp);
+    }
+
+    if (isContainerWidgetProps(comp)) {
+      comp.content.forEach(inorder)
+    }
+  }
+
+  inorder(uiDefinition);
+
+  return fields;
+}
+
+export function deriveSchema(formFields: FieldWidgetProps[]): OperationSchema {
+  const schema = {};
+  formFields.forEach(f => {
+    let propsToSchema = DynamicComponents[f.type].propsToSchema;
+    schema[f.name] = propsToSchema(schema, f as any);
+  });
+  return schema;
+}
+
 
 export function handleMutualExclusiveFields(mutualExclusiveFields, params, name, value) {
   if (mutualExclusiveFields.includes(name)) {

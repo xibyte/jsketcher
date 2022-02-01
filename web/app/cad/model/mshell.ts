@@ -7,10 +7,11 @@ import {state, StateStream} from "lstream";
 import {Matrix3x4} from "math/matrix";
 import {Shell} from "brep/topo/shell";
 import {TopoObject} from "brep/topo/topo-object";
+import {EntityKind} from "cad/model/entities";
 
 export class MShell extends MObject {
 
-  static TYPE = 'shell';
+  static TYPE = EntityKind.SHELL;
 
   csys: CSys;
 

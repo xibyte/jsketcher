@@ -4,7 +4,7 @@ import Stack from 'ui/components/Stack';
 import {FormContext} from '../form/Form';
 import mapContext from 'ui/mapContext';
 import PropTypes from 'prop-types';
-import initializeBySchema from '../../../intializeBySchema';
+import initializeBySchema from '../../../schema/initializeBySchema';
 
 @attachToForm
 @mapContext(({streams}) => ({streams}))

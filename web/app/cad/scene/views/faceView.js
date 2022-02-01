@@ -1,6 +1,6 @@
 import {setAttribute} from 'scene/objectData';
 import {brepFaceToGeom, tessDataToGeom} from '../wrappers/brepSceneObject';
-import {FACE} from '../entites';
+import {FACE} from '../../model/entities';
 import * as SceneGraph from 'scene/sceneGraph';
 import {SketchObjectView} from './sketchObjectView';
 import {View} from './view';

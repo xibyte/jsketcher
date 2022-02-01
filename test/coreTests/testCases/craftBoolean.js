@@ -1,4 +1,4 @@
-import {DATUM} from '../../../web/app/cad/scene/entites';
+import {DATUM} from 'cad/model/entities';
 import {assertEquals, assertTrue} from '../utils/asserts';
 
 export const TEST_MODE = 'modellerUI';

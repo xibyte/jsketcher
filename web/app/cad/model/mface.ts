@@ -9,10 +9,11 @@ import {MBrepShell, MShell} from "./mshell";
 import BBox from "math/bbox";
 import {Basis, BasisForPlane} from "math/basis";
 import {Face} from "brep/topo/face";
+import {EntityKind} from "cad/model/entities";
 
 export class MFace extends MObject {
 
-  static TYPE = 'face';
+  static TYPE = EntityKind.FACE;
   shell: MShell;
   surface: any;
   sketchObjects: MSketchObject[];

@@ -48,7 +48,7 @@ export class InPlaceSketcher {
     this.ctx.streams.ui.toolbars.headsUpShowTitles.next(false);
 
     let sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
-    this.viewer.historyManager.init(sketchData);
+    this.viewer.historyManager.init(sketchData, md);
     this.viewer.io.loadSketch(sketchData);
     this.ctx.streams.sketcher.sketchingFace.next(face);
     this.ctx.streams.sketcher.sketcherAppContext.next(this.sketcherAppContext);

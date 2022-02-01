@@ -1,9 +1,10 @@
 import {MObject} from './mobject';
 import {MFace} from "./mface";
+import {EntityKind} from "cad/model/entities";
 
 export class MSketchObject extends MObject {
 
-  static TYPE = 'sketchObject';
+  static TYPE = EntityKind.SKETCH_OBJECT;
   face: MFace;
   sketchPrimitive: any;
   construction: boolean;

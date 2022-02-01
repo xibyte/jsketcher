@@ -21,7 +21,7 @@ export class OrderedMap {
   }
   
   has(key) {
-    this.map.has(key);
+    return this.map.has(key);
   }
 
   delete(key) {
