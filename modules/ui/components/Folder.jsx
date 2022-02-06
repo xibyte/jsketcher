@@ -33,7 +33,10 @@ export default class Folder extends React.Component{
 }
 
 export function Title({children, isClosed, onClick}) {
-  return <div className={ls.title} onClick={onClick}>
+  const titleCss = onClick ? {
+    cursor: 'pointer'
+  } : {};
+  return <div className={ls.title} onClick={onClick}  style={titleCss}>
     <span className={ls.handle}><Fa fw icon={isClosed ? 'chevron-right' : 'chevron-down'}/></span>
     {' '}{children}
   </div>;

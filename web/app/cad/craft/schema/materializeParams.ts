@@ -45,6 +45,12 @@ function materializeParamsImpl(ctx: CoreContext,
       const typeDef = TypeRegistry[md.type];
       value = typeDef.resolve(ctx, value, md as any, reportError.dot(field), materializeParamsImpl);
 
+      if (md.resolve !== undefined) {
+        value = md.resolve(
+          ctx, value, md as any, reportError.dot(field), materializeParamsImpl
+        )
+      }
+
       // if (md.type === Types.NUMBER) {
       //   try {
       //     const valueType = typeof value;

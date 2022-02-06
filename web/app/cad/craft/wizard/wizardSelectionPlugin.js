@@ -10,7 +10,7 @@ export function activate(ctx) {
       wizCtx.workingRequest$.attach(({type, params}) => {
         const marker = ctx.services.marker;
         marker.startSession();
-        let {schema} = wizCtx.operation;
+        let {workingSchema: schema} = wizCtx.operation;
         Object.keys(schema).forEach(param => {
           let md = schema[param];
 
@@ -65,7 +65,7 @@ function createPickHandlerFromSchema(wizCtx) {
     const params = wizCtx.workingRequest$.value.params;
     const state = wizCtx.state$.value;
     
-    let {schema} = wizCtx.operation;
+    let {workingSchema: schema} = wizCtx.operation;
 
     const activeMd = state.activeParam && schema[state.activeParam];
     const activeCanTakeIt = kind => activeMd.allowedKinds && activeMd.allowedKinds.includes(kind);

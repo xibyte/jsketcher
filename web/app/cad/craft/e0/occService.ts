@@ -2,6 +2,7 @@ import {CoreContext} from "context";
 import {OCCCommandInterface, OCI} from "cad/craft/e0/occCommandInterface";
 import {createOCCIO, OCCIO} from "cad/craft/e0/occIO";
 import {createOCCUtils, OCCUtils} from "cad/craft/e0/OCCUtils";
+import {createOCCEngineInterface} from "cad/craft/e0/occEngineInterface";
 
 export interface OCCService {
 
@@ -9,7 +10,9 @@ export interface OCCService {
 
   commandInterface: OCCCommandInterface;
 
-  utils: OCCUtils
+  utils: OCCUtils,
+
+  engineInterface: any
 }
 
 export function createOCCService(ctx: CoreContext): OCCService {
@@ -18,9 +21,11 @@ export function createOCCService(ctx: CoreContext): OCCService {
 
   return {
 
-    io: createOCCIO(oci),
+    io: createOCCIO(ctx),
 
     commandInterface: oci,
+
+    engineInterface: createOCCEngineInterface(oci),
 
     utils: createOCCUtils(ctx)
 

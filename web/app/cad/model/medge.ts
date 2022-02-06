@@ -1,12 +1,14 @@
 import {MObject} from './mobject';
 import {MBrepShell} from "./mshell";
 import {EntityKind} from "cad/model/entities";
+import {Edge} from "brep/topo/edge";
+import Vector from "math/vector";
 
 export class MEdge extends MObject {
 
   static TYPE = EntityKind.EDGE;
   shell: MBrepShell;
-  brepEdge: any;
+  brepEdge: Edge;
 
   constructor(id, shell, brepEdge) {
     super(MEdge.TYPE, id);
@@ -34,4 +36,9 @@ export class MEdge extends MObject {
   get parent() {
     return this.shell;
   }
+
+  toDirection(): Vector {
+    return this.brepEdge.halfEdge1.tangentAtStart();
+  };
+
 }

@@ -8,6 +8,8 @@ export interface ObjectTypeSchema extends BaseSchemaField {
 
   schema: OperationSchema;
 
+  resolver: (input: any) => any;
+
 }
 
 export const ObjectType: Type<any, any, ObjectTypeSchema> = {

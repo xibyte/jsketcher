@@ -6,7 +6,7 @@ export const OCI: OCCCommandInterface = new Proxy({}, {
   get: function (target, prop: string, receiver) {
     return prop in target ? target[prop] : function() {
       prop = prop.replace(/^_/, '');
-      const args = Array.from(arguments).map(a => a + "");
+      const args = Array.from(arguments).map(a => JSON.stringify(a));
       console.log("ARGUMENTS:", args);
       const returnCode = CallCommand(prop, [prop, ...args]);
       // if (returnCode !== 0) {

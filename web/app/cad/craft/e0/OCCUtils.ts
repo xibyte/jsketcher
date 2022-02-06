@@ -4,6 +4,10 @@ import {SketchGeom} from "cad/sketch/sketchReader";
 import {OCCService} from "cad/craft/e0/occService";
 import {CoreContext} from "context";
 import CSys from "math/csys";
+import {OperationResult} from "cad/craft/craftPlugin";
+import {MShell} from "cad/model/mshell";
+import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
+import {bool} from "prop-types";
 
 export interface OCCUtils {
 
@@ -11,8 +15,9 @@ export interface OCCUtils {
 
   sketchToFaces(sketch: SketchGeom, csys: CSys): string[];
 
-  prism(faces: string[], dir: Vec3): string[];
+  // applyBoolean(tools: string[], kind: BooleanKind): string[];
 
+  applyBooleanModifier(tools: string[], booleanDef?: BooleanDefinition): OperationResult;
 }
 
 export function createOCCUtils(ctx: CoreContext): OCCUtils {
@@ -32,39 +37,67 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
     });
   }
 
-  function prism(faces: string[], dir: Vec3): string[] {
-    const oci = ctx.occService.commandInterface;
-    return faces.map((faceName, i) => {
 
-      const shapeName = "Shape:" + i;
+  function applyBoolean(tools: string[], target: string[], kind: BooleanKind): string[] {
 
-      oci.prism(shapeName, faceName, ...dir)
 
-      // occIterateFaces(oc, shape, face => {
-      //   let role;
-      //   if (face.IsSame(prismAPI.FirstShape())) {
-      //     role = "bottom";
-      //   } else if (face.IsSame(prismAPI.LastShape())) {
-      //     role = "top";
-      //   } else {
-      //     role = "sweep";
-      //   }
-      //   getProductionInfo(face).role = role;
-      // });
-      //
-      // occIterateEdges(oc, wire, edge => {
-      //   const generatedList = prismAPI.Generated(edge);
-      //   occIterateListOfShape(oc, generatedList, face => {
-      //     console.log(face);
-      //   })
-      // })
 
-      return shapeName;
-    });
   }
 
+  function applyBooleanModifier(tools: string[], booleanDef?: BooleanDefinition): OperationResult {
+    const occ = ctx.occService;
+    const oci = ctx.occService.commandInterface;
+
+    if (!booleanDef || booleanDef.kind === 'NONE') {
+
+      return {
+        created: tools.map(shapeName => occ.io.getShell(shapeName)),
+        consumed: []
+      }
+
+    } else {
+      const kind = booleanDef.kind;
+
+      let targets = booleanDef.targets;
+      if (targets.length === 0) {
+        targets = ctx.cadRegistry.shells;
+      }
+
+      let targetNames = targets.map((target, i) => {
+        const targetName = 'Target:' + i;
+        ctx.occService.io.pushModel(target, targetName)
+        return targetName;
+      });
+
+      oci.bfuzzyvalue(0.0001);
+      oci.bclearobjects();
+      oci.bcleartools();
+
+      targetNames.forEach(targetName => oci.baddobjects(targetName));
+      tools.forEach(toolName => oci.baddtools(toolName));
+
+      oci.bfillds();
+      oci.bcbuild("BooleanResult");
+
+      // oci.bopcommon("result");
+//oci.bopfuse("result");
+//oci.bopcut("result");
+
+      return {
+        consumed: targets,
+        created: tools.map(shapeName => occ.io.getShell(shapeName), targets)
+      }
+
+
+    }
+
+
+
+  }
+
+
   return {
-    wiresToFaces, sketchToFaces, prism
+    wiresToFaces, sketchToFaces, applyBooleanModifier
   }
 
 }
