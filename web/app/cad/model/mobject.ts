@@ -1,5 +1,6 @@
 import {IDENTITY_MATRIX, Matrix3x4} from "math/matrix";
 import {EntityKind} from "cad/model/entities";
+import Vector from "math/vector";
 
 export abstract class MObject {
 
@@ -18,6 +19,10 @@ export abstract class MObject {
   }
 
   abstract get parent();
+
+  toDirection() {
+    return null;
+  };
 
   get root(): MObject {
     let obj = this;

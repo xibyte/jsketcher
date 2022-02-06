@@ -32,8 +32,7 @@ export function loadMDFCommand<R>(mdfCommand: MDFCommand<R>): OperationDescripto
     type: 'group',
     content: mdfCommand.form
   }
-  const formFields = extractFormFields(uiDefinition);
-  const derivedSchema = deriveSchema(formFields);
+  const {schema: derivedSchema, formFields} = deriveSchema(uiDefinition);
   return {
     id: mdfCommand.id,
     label: mdfCommand.label,
@@ -75,13 +74,20 @@ function extractFormFields(uiDefinition: UIDefinition): FieldWidgetProps[] {
   return fields;
 }
 
-export function deriveSchema(formFields: FieldWidgetProps[]): OperationSchema {
+export function deriveSchema(uiDefinition: UIDefinition): {
+  schema: OperationSchema,
+  formFields: FieldWidgetProps[]
+} {
+  const formFields: FieldWidgetProps[] = extractFormFields(uiDefinition)
   const schema = {};
   formFields.forEach(f => {
     let propsToSchema = DynamicComponents[f.type].propsToSchema;
     schema[f.name] = propsToSchema(schema, f as any);
   });
-  return schema;
+  return {
+    schema,
+    formFields
+  };
 }
 
 

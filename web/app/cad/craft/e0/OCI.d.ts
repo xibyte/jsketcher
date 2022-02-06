@@ -55,6 +55,11 @@ interface OCCCommands {
   BRepIntCS(...args: any[]);
 
   /*
+     Generic webcad engine command
+   */
+  EngineCommand(...args: any[]);
+
+  /*
      XProgress [+|-t] [+|-c] [+|-g]
 		 The options are:
 		   +|-t :  switch on/off output to tcl of Progress Indicator

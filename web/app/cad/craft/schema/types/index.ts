@@ -4,7 +4,8 @@ import {ArrayType} from "cad/craft/schema/types/arrayType";
 import {EntityType} from "cad/craft/schema/types/entityType";
 import {NumberType} from "cad/craft/schema/types/numberType";
 import {ObjectType} from "cad/craft/schema/types/objectType";
-import {EnumType} from "cad/craft/schema/types/enumType";
+import {StringType} from "cad/craft/schema/types/stringType";
+import {BooleanType} from "cad/craft/schema/types/booleanType";
 
 export type Materializer = (ctx: CoreContext,
   params: OperationParams,
@@ -22,16 +23,18 @@ export interface Type<IN, OUT, METADATA extends SchemaField> {
 
 export enum Types {
   array = 'array',
+  object = 'object',
   entity = 'entity',
   number = 'number',
-  object = 'object',
-  enum = 'enum',
+  boolean = 'boolean',
+  string = 'string'
 }
 
 export const TypeRegistry = {
   [Types.array]: ArrayType,
+  [Types.object]: ObjectType,
   [Types.entity]: EntityType,
   [Types.number]: NumberType,
-  [Types.object]: ObjectType,
-  [Types.enum]: EnumType,
+  [Types.boolean]: BooleanType,
+  [Types.string]: StringType,
 };

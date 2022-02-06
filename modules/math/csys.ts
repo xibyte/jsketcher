@@ -35,7 +35,7 @@ export default class CSys {
     return new Matrix3x4().setBasisAxises(this.x, this.y, this.z);
   }
 
-  get outTransformation() {
+  get outTransformation(): Matrix3x4 {
     const mx = new Matrix3x4().setBasisAxises(this.x, this.y, this.z);
     mx.tx = this.origin.x;
     mx.ty = this.origin.y;

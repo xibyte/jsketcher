@@ -4,7 +4,7 @@ import {IconType} from "react-icons";
 import {ActionAppearance} from "../actions/actionSystemPlugin";
 import {ApplicationContext, CoreContext} from "context";
 import {OperationResult} from "./craftPlugin";
-import {OperationSchema} from "cad/craft/schema/schema";
+import {OperationFlattenSchema, OperationSchema, schemaIterator} from "cad/craft/schema/schema";
 import {FieldWidgetProps, UIDefinition} from "cad/mdf/ui/uiDefinition";
 
 export function activate(ctx: ApplicationContext) {
@@ -35,7 +35,9 @@ export function activate(ctx: ApplicationContext) {
     };
     actions.push(opAction);
 
-    registry$.mutate(registry => registry[id] = Object.assign({appearance}, descriptor, {
+    const workingSchema = flattenSchema(descriptor.schema);
+
+    registry$.mutate(registry => registry[id] = Object.assign({appearance, workingSchema}, descriptor, {
       run: (request, opContext) => runOperation(request, descriptor, opContext)
     }));
   }
@@ -86,6 +88,7 @@ export interface Operation<R> extends OperationDescriptor<R>{
     icon96: string;
     icon: string|IconType;
   };
+  workingSchema: OperationFlattenSchema;
 }
 
 export interface OperationDescriptor<R> {
@@ -115,6 +118,14 @@ export interface OperationService {
 
 export interface OperationGeometryProvider {
 
+}
+
+function flattenSchema(schema: OperationSchema): OperationFlattenSchema {
+  const flatSchema = {} as OperationFlattenSchema;
+  schemaIterator(schema, (path, flattenedPath, schemaField) => {
+    flatSchema[flattenedPath] = schemaField;
+  });
+  return flatSchema;
 }
 
 declare module 'context' {

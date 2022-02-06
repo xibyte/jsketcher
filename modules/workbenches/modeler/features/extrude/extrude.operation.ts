@@ -3,10 +3,14 @@ import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "context";
 import {MDFCommand} from "cad/mdf/mdf";
 import {EntityKind} from "cad/model/entities";
+import Vector from "math/vector";
+import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 
 interface ExtrudeParams {
   length: number;
   face: MFace;
+  direction?: Vector,
+  boolean: BooleanDefinition
 }
 
 const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
@@ -28,16 +32,48 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
 
     const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
 
-    const shapeNames = occ.utils.prism(occFaces, [0, 0, params.length]);
+    const dir = (params.direction && params.direction) || face.normal();
 
-    const created = shapeNames.map(shapeName => occ.io.getShell(shapeName));
+    const extrusionVector = dir.normalize()._multiply(params.length).data();
+
+    const tools = occFaces.map((faceName, i) => {
+      const shapeName = "Tool" + i;
+      oci.prism(shapeName, faceName, ...extrusionVector)
+
+      // occIterateFaces(oc, shape, face => {
+      //   let role;
+      //   if (face.IsSame(prismAPI.FirstShape())) {
+      //     role = "bottom";
+      //   } else if (face.IsSame(prismAPI.LastShape())) {
+      //     role = "top";
+      //   } else {
+      //     role = "sweep";
+      //   }
+      //   getProductionInfo(face).role = role;
+      // });
+      //
+      // occIterateEdges(oc, wire, edge => {
+      //   const generatedList = prismAPI.Generated(edge);
+      //   occIterateListOfShape(oc, generatedList, face => {
+      //     console.log(face);
+      //   })
+      // })
+
+      return shapeName;
+    });
 
     return {
-      consumed: [face.parent],
-      created
-    };
+      created: tools.map(shapeName => occ.io.getShell(shapeName)),
+        consumed: []
+    }
+    // return occ.utils.applyBooleanModifier(tools, params.boolean);
 
   },
+
+  // useBoolean: {
+  //   booleanField: 'boolean',
+  //   impliedTargetField: 'face'
+  // },
 
   form: [
     {
@@ -57,6 +93,33 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
         preselectionIndex: 0
       },
     },
+    // {
+    //   type: 'vector',
+    //   name: 'direction',
+    //   label: 'direction'
+    // },
+    // {
+    //   type: 'boolean',
+    //   name: 'boolean',
+    //   label: 'boolean',
+    //   defaultValue: {
+    //     implyItFromField: 'face'
+    //   }
+    // },
+    {
+      type: 'vector',
+      name: 'direction',
+      label: 'direction',
+      optional: true
+    },
+    {
+      type: 'boolean',
+      name: 'boolean',
+      label: 'boolean',
+      optional: true,
+      defaultValue: 'NONE'
+    }
+
   ],
 }
 

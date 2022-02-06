@@ -3,7 +3,8 @@ import { ComboBoxOption } from 'ui/components/controls/ComboBoxControl';
 import Entity from '../craft/wizard/components/form/Entity';
 import { CheckboxField, NumberField, ComboBoxField, TextField } from '../craft/wizard/components/form/Fields';
 import { Group } from '../craft/wizard/components/form/Form';
-import { OperationSchema, SchemaField } from './mdf';
+import {OperationSchema, SchemaField} from "cad/craft/schema/schema";
+
 
 export function generateForm(schema: OperationSchema) {
 

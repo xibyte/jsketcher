@@ -1,7 +1,7 @@
 export default {
   orientation: {
-    type: 'enum',
-    values: ['XY', 'XZ', 'ZY'],
+    type: 'string',
+    enum: ['XY', 'XZ', 'ZY'],
     defaultValue: 'XY'
   },
   parallelTo: {

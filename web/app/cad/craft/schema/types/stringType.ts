@@ -2,25 +2,28 @@ import {Materializer, Type, TypeRegistry, Types} from "cad/craft/schema/types/in
 import {CoreContext} from "context";
 import {BaseSchemaField, OperationParamsErrorReporter} from "cad/craft/schema/schema";
 
-export interface EnumTypeSchema extends BaseSchemaField {
+export interface StringTypeSchema extends BaseSchemaField {
 
   type: Types.number,
 
-  values: string[]
+  enum?: string[]
 
 }
 
-export const EnumType: Type<any, number, EnumTypeSchema> = {
+export const StringType: Type<any, string, StringTypeSchema> = {
 
   resolve(ctx: CoreContext,
           value: any,
-          md: EnumTypeSchema,
+          md: StringTypeSchema,
           reportError: OperationParamsErrorReporter,
-          materializer: Materializer): number {
+          materializer: Materializer): string {
 
-    if (md.values.indexOf(value) === -1) {
-      value = md.defaultValue || md.values[0];
+    value = value + '';
+
+    if (md.enum && md.enum.indexOf(value) === -1) {
+      value = md.defaultValue || md.enum[0];
     }
+
     return value;
   }
 }

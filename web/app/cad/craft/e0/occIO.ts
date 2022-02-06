@@ -1,9 +1,10 @@
-import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
+import {OCI} from "cad/craft/e0/occCommandInterface";
 import {MShell} from "cad/model/mshell";
 import {MObject} from "cad/model/mobject";
 import {Interrogate} from "cad/craft/e0/interact";
 import {readShellEntityFromJson} from "cad/scene/wrappers/entityIO";
 import {createOCCSketchLoader, OCCSketchLoader} from "cad/craft/e0/occSketchLoader";
+import {CoreContext} from "context";
 
 export interface OCCIO {
 
@@ -16,7 +17,7 @@ export interface OCCIO {
   sketchLoader: OCCSketchLoader
 }
 
-export function createOCCIO(oci: OCCCommandInterface): OCCIO {
+export function createOCCIO(ctx: CoreContext): OCCIO {
 
   function getShell(shapeName: string, consumed: MShell[]): MShell {
     const shapeJson = Interrogate(shapeName);
@@ -24,11 +25,10 @@ export function createOCCIO(oci: OCCCommandInterface): OCCIO {
   }
 
   function pushModel(model: MObject, name: string) {
-
-  }
-
-  function anchorModel() {
-
+    ctx.occService.engineInterface.pushModel({
+      name,
+      operand: model.brepShell.data.externals.ptr
+    });
   }
 
   function cleanupRegistry() {
@@ -38,7 +38,7 @@ export function createOCCIO(oci: OCCCommandInterface): OCCIO {
 
   return {
     getShell, pushModel, cleanupRegistry,
-    sketchLoader: createOCCSketchLoader(oci)
+    sketchLoader: createOCCSketchLoader(OCI)
   }
 
 }

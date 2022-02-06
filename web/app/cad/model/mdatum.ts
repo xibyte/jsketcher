@@ -57,4 +57,8 @@ export class MDatumAxis extends MObject {
   get parent() {
     return this.holder;
   }
+
+  toDirection(): Vector {
+    return this.dir;
+  };
 }

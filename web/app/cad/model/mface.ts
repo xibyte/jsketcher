@@ -10,6 +10,7 @@ import BBox from "math/bbox";
 import {Basis, BasisForPlane} from "math/basis";
 import {Face} from "brep/topo/face";
 import {EntityKind} from "cad/model/entities";
+import {Matrix3x4} from "math/matrix";
 
 export class MFace extends MObject {
 
@@ -141,14 +142,14 @@ export class MFace extends MObject {
     return EMPTY_ARRAY;
   }
 
-  get sketchToWorldTransformation() {
+  get sketchToWorldTransformation(): Matrix3x4 {
     if (!this._sketchToWorldTransformation) {
       this._sketchToWorldTransformation = this.csys.outTransformation;
     }
     return this._sketchToWorldTransformation;
   }
   
-  get worldToSketchTransformation() {
+  get worldToSketchTransformation(): Matrix3x4 {
     if (!this._worldToSketchTransformation) {
       this._worldToSketchTransformation = this.csys.inTransformation;
     }
@@ -223,4 +224,9 @@ export class MBrepFace extends MFace {
     }
     return this.#favorablePoint;
   }
+
+  toDirection(): Vector {
+    return this.normal();
+  };
+
 }

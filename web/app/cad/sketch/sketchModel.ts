@@ -70,7 +70,7 @@ class SketchPrimitive {
   }
 }
 
-export class Segment<Segment> extends SketchPrimitive {
+export class Segment extends SketchPrimitive {
 
   a: Vector;
   b: Vector;
@@ -105,7 +105,12 @@ export class Segment<Segment> extends SketchPrimitive {
     const [A, B] = genForm;
     oci.point(underName + "_A", A.x, A.y, A.z);
     oci.point(underName + "_B", B.x, B.y, B.z);
-    oci.gcarc(underName, "seg", underName + "_A", underName + "_B")}
+    oci.gcarc(underName, "seg", underName + "_A", underName + "_B")
+  }
+
+  tangentAtStart(): Vector {
+    return this.b.minus(this.a);
+  }
 }
 
 export class Arc extends SketchPrimitive {
