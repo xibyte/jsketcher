@@ -1,13 +1,9 @@
-import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
-import {Vec3} from "math/vec";
 import {SketchGeom} from "cad/sketch/sketchReader";
-import {OCCService} from "cad/craft/e0/occService";
 import {CoreContext} from "context";
 import CSys from "math/csys";
 import {OperationResult} from "cad/craft/craftPlugin";
-import {MShell} from "cad/model/mshell";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
-import {bool} from "prop-types";
+import {MShell} from "cad/model/mshell";
 
 export interface OCCUtils {
 
@@ -59,17 +55,20 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
       const kind = booleanDef.kind;
 
       let targets = booleanDef.targets;
-      if (targets.length === 0) {
+      if (!targets || targets.length === 0) {
         targets = ctx.cadRegistry.shells;
       }
 
       let targetNames = targets.map((target, i) => {
-        const targetName = 'Target:' + i;
-        ctx.occService.io.pushModel(target, targetName)
+        const targetName = 'Target/' + i;
+        const wasPushed = ctx.occService.io.pushModel(target, targetName);
+        if (!wasPushed) {
+          return null;
+        }
         return targetName;
-      });
+      }).filter(targetName => !!targetName);
 
-      oci.bfuzzyvalue(0.0001);
+      oci.bfuzzyvalue(0.01);
       oci.bclearobjects();
       oci.bcleartools();
 
@@ -77,22 +76,13 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
       tools.forEach(toolName => oci.baddtools(toolName));
 
       oci.bfillds();
-      oci.bcbuild("BooleanResult");
-
-      // oci.bopcommon("result");
-//oci.bopfuse("result");
-//oci.bopcut("result");
+      oci.bbop("BooleanResult", booleanKindToOCCBopType(kind));
 
       return {
         consumed: targets,
-        created: tools.map(shapeName => occ.io.getShell(shapeName), targets)
+        created: [occ.io.getShell("BooleanResult", targets as MShell[])]
       }
-
-
     }
-
-
-
   }
 
 
@@ -100,4 +90,20 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
     wiresToFaces, sketchToFaces, applyBooleanModifier
   }
 
+}
+
+enum OccBBOPTypes {
+  COMMON,
+  FUSE,
+  CUT,
+  CUT21,
+}
+
+function booleanKindToOCCBopType(kind: BooleanKind): number {
+  switch (kind) {
+    case "INTERSECT": return OccBBOPTypes.COMMON;
+    case "UNION": return OccBBOPTypes.FUSE;
+    case "SUBTRACT": return OccBBOPTypes.CUT;
+    default: throw 'unsupported boolean kind: ' + kind;
+  }
 }

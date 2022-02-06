@@ -11,7 +11,7 @@ export function createOCCEngineInterface(oci: OCCCommandInterface) {
     io: {
       pushModel: (params: {
         name: string, operand: number,
-      }) => oci.EngineCommand(params)
+      }) => oci.EngineCommand('io.pushModel', params)
     }
   }
 

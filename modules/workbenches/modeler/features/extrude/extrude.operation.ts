@@ -37,7 +37,7 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
     const extrusionVector = dir.normalize()._multiply(params.length).data();
 
     const tools = occFaces.map((faceName, i) => {
-      const shapeName = "Tool" + i;
+      const shapeName = "Tool/" + i;
       oci.prism(shapeName, faceName, ...extrusionVector)
 
       // occIterateFaces(oc, shape, face => {
@@ -62,11 +62,7 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
       return shapeName;
     });
 
-    return {
-      created: tools.map(shapeName => occ.io.getShell(shapeName)),
-        consumed: []
-    }
-    // return occ.utils.applyBooleanModifier(tools, params.boolean);
+    return occ.utils.applyBooleanModifier(tools, params.boolean);
 
   },
 
