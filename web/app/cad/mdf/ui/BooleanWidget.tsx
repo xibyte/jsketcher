@@ -69,8 +69,8 @@ BooleanWidget.propsToSchema = (consumer: OperationSchema, props: BooleanWidgetPr
       targets: {
         label: 'targets',
         type: Types.array,
-        item: {
-          type: Types.boolean,
+        items: {
+          type: Types.entity,
           allowedKinds: ENTITY_CAPTURE,
         },
         optional: true,

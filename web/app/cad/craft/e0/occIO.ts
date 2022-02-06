@@ -25,10 +25,15 @@ export function createOCCIO(ctx: CoreContext): OCCIO {
   }
 
   function pushModel(model: MObject, name: string) {
-    ctx.occService.engineInterface.pushModel({
+    const ptr = model.brepShell?.data?.externals?.ptr;
+    if (!ptr) {
+      return false;
+    }
+    ctx.occService.engineInterface.io.pushModel({
       name,
-      operand: model.brepShell.data.externals.ptr
+      operand: ptr
     });
+    return true;
   }
 
   function cleanupRegistry() {

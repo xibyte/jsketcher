@@ -1,5 +1,6 @@
 import {FACE, SHELL} from '../../model/entities';
 import {memoize} from "lodash/function";
+import {Types} from "cad/craft/schema/types";
 
 export function activate(ctx) {
   ctx.streams.wizard.wizardContext.attach(wizCtx => {
@@ -14,7 +15,7 @@ export function activate(ctx) {
         Object.keys(schema).forEach(param => {
           let md = schema[param];
 
-          if (md.type !== 'entity') {
+          if (md.type !== 'entity' && !(md.type === 'array' && md.items.type === 'entity')) {
             return;
           }
 
@@ -68,7 +69,8 @@ function createPickHandlerFromSchema(wizCtx) {
     let {workingSchema: schema} = wizCtx.operation;
 
     const activeMd = state.activeParam && schema[state.activeParam];
-    const activeCanTakeIt = kind => activeMd.allowedKinds && activeMd.allowedKinds.includes(kind);
+    const unwrappedActiveMd = activeMd.type === Types.array ? activeMd.items : activeMd;
+    const activeCanTakeIt = kind => unwrappedActiveMd.allowedKinds && unwrappedActiveMd.allowedKinds.includes(kind);
 
     function select(param, md, id) {
       const valueGetter = md.type === 'array' ? arrayValue : singleValue;
