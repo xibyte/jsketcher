@@ -68,7 +68,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
         return targetName;
       }).filter(targetName => !!targetName);
 
-      oci.bfuzzyvalue(0.01);
+      oci.bfuzzyvalue(0.0001);
       oci.bclearobjects();
       oci.bcleartools();
 
