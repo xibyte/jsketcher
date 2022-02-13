@@ -3,6 +3,7 @@ import {MFace} from "./mface";
 import {EntityKind} from "cad/model/entities";
 import Vector from "math/vector";
 import {Segment} from "cad/sketch/sketchModel";
+import Axis from "math/axis";
 
 export class MSketchObject extends MObject {
 
@@ -24,7 +25,23 @@ export class MSketchObject extends MObject {
 
   toDirection(): Vector {
     const tangent = (this.sketchPrimitive as Segment).tangentAtStart();
-    return this.face.sketchToWorldTransformation.apply(tangent);
+    return this.face.sketchToWorldTransformation.apply(tangent)._normalize();
+  };
+
+  toAxis(reverse: boolean): Axis {
+    let seg = this.sketchPrimitive as Segment;
+    let tan;
+    let origin;
+    if (reverse) {
+      tan = seg.tangentAtStart();
+      origin = seg.a;
+    } else {
+      tan = seg.tangentAtEnd();
+      origin = seg.b;
+    }
+    tan = this.face.sketchToWorldTransformation.applyNoTranslation(tan)._normalize();
+    origin = this.face.sketchToWorldTransformation.apply(origin);
+    return new Axis(origin, tan);
   };
 
 }

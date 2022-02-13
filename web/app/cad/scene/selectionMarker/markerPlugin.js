@@ -22,7 +22,7 @@ function createMarker(findEntity, requestRender) {
   function doMark(id, color) {
     let mObj = findEntity(id);
     if (!mObj) {
-      console.warn('no entity found to highlight: ' + entity + ' ' + id);
+      console.warn('no entity found to highlight: ' + id);
       return;
     }
     marked.set(id, mObj);

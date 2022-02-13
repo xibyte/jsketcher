@@ -3,13 +3,13 @@ import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "context";
 import {MDFCommand} from "cad/mdf/mdf";
 import {EntityKind} from "cad/model/entities";
-import Vector from "math/vector";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
+import Axis from "math/axis";
 
 interface ExtrudeParams {
   length: number;
   face: MFace;
-  direction?: Vector,
+  direction?: Axis,
   boolean: BooleanDefinition
 }
 
@@ -32,7 +32,7 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
 
     const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
 
-    const dir = (params.direction && params.direction) || face.normal();
+    const dir = (params.direction && params.direction.direction) || face.normal();
 
     const extrusionVector = dir.normalize()._multiply(params.length).data();
 
@@ -103,7 +103,7 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
     //   }
     // },
     {
-      type: 'vector',
+      type: 'axis',
       name: 'direction',
       label: 'direction',
       optional: true
@@ -113,7 +113,6 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
       name: 'boolean',
       label: 'boolean',
       optional: true,
-      defaultValue: 'NONE'
     }
 
   ],

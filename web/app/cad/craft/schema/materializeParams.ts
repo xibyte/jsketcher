@@ -31,9 +31,10 @@ function materializeParamsImpl(ctx: CoreContext,
                                params: OperationParams,
                                schema: OperationSchema,
                                result: any,
-                               reportError: OperationParamsErrorReporter) {
+                               parentReportError: OperationParamsErrorReporter) {
 
   for (let field of Object.keys(schema)) {
+    const reportError = parentReportError.dot(field);
     const md = schema[field];
     let value = params[field];
 
@@ -43,11 +44,11 @@ function materializeParamsImpl(ctx: CoreContext,
       }
     } else {
       const typeDef = TypeRegistry[md.type];
-      value = typeDef.resolve(ctx, value, md as any, reportError.dot(field), materializeParamsImpl);
+      value = typeDef.resolve(ctx, value, md as any, reportError, materializeParamsImpl);
 
       if (md.resolve !== undefined) {
         value = md.resolve(
-          ctx, value, md as any, reportError.dot(field), materializeParamsImpl
+          ctx, value, md as any, reportError, materializeParamsImpl
         )
       }
 

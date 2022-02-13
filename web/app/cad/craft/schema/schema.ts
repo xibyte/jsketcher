@@ -4,34 +4,46 @@ import {ArrayTypeSchema} from "cad/craft/schema/types/arrayType";
 import {ObjectTypeSchema} from "cad/craft/schema/types/objectType";
 import {StringTypeSchema} from "cad/craft/schema/types/stringType";
 import {BooleanTypeSchema} from "cad/craft/schema/types/booleanType";
+import {Materializer, Types} from "cad/craft/schema/types";
+import {CoreContext} from "context";
+import {ParamsPath} from "cad/craft/wizard/wizardTypes";
 
-export type FlatSchemaField =
-  | ArrayTypeSchema
+export type Coercable = any;
+
+export type PrimitiveSchemaField =
   | EntityTypeSchema
   | NumberTypeSchema
   | StringTypeSchema
-  | BooleanTypeSchema;
+  | BooleanTypeSchema
+  | ArrayTypeSchema;
 
-export type SchemaField = FlatSchemaField | ObjectTypeSchema;
+export type SchemaField = PrimitiveSchemaField | ObjectTypeSchema;
 
 export type OperationSchema = {
   [key: string]: SchemaField;
 };
 
 export type OperationFlattenSchema = {
-  [key: string]: FlatSchemaField;
+  [key: string]: PrimitiveSchemaField;
 };
 
 export interface BaseSchemaField {
-  defaultValue: Coercable,
+  defaultValue: OperationParamValue,
   optional: boolean,
-  label?: string
+  label?: string,
+  resolve?: ValueResolver
 }
 
-export type Coercable = any;
+export type OperationParamPrimitive = number|boolean|string;
+
+export type OperationParamValue = OperationParamPrimitive|OperationParamPrimitive[]|OperationParams;
 
 export type OperationParams = {
-  [key: string]: Coercable
+  [key: string]: OperationParamValue;
+}
+
+export type MaterializedOperationParams = {
+  [key: string]: any;
 }
 
 export type OperationParamsError = {
@@ -43,24 +55,42 @@ export type OperationParamsErrorReporter = ((msg: string) => void) & {
   dot: (pathPart: string|number) => OperationParamsErrorReporter
 };
 
+export type ValueResolver = (ctx: CoreContext,
+                               value: any,
+                               md: SchemaField,
+                               reportError: OperationParamsErrorReporter, materializer: Materializer) => any;
+
+export function flattenPath(path: ParamsPath): string {
+  return path.join('/');
+}
+
 export function schemaIterator(schema: OperationSchema,
-                               callback: (path: string[], flattenedPath: string, field: FlatSchemaField) => void) {
+                               callback: (path: string[], flattenedPath: string, field: PrimitiveSchemaField) => void) {
 
   function inorder(schema: OperationSchema, parentPath: string[]) {
 
     Object.keys(schema).forEach(key => {
       const path = [...parentPath, key]
-      const flattenedPath = path.join('/');
+      const flattenedPath = flattenPath(path);
       const schemaField = schema[key];
 
 
       if (schemaField.type === 'object') {
         inorder(schemaField.schema, path);
       } else {
-        callback(path, flattenedPath, schemaField as FlatSchemaField);
+        callback(path, flattenedPath, schemaField as PrimitiveSchemaField);
       }
     })
 
   }
   inorder(schema, []);
+}
+
+export function unwrapMetadata(fieldMd: SchemaField) {
+  if (fieldMd.type === Types.array) {
+    return unwrapMetadata(fieldMd.items||
+      (fieldMd as any).itemType // backward compatibility, remove me
+    );
+  }
+  return fieldMd;
 }

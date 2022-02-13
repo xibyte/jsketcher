@@ -2,6 +2,7 @@ import {MObject, MObjectIdGenerator} from './mobject';
 import CSys from "math/csys";
 import Vector from "math/vector";
 import {EntityKind} from "cad/model/entities";
+import Axis from "math/axis";
 
 export class MDatum extends MObject {
 
@@ -43,15 +44,21 @@ export class MDatum extends MObject {
 export class MDatumAxis extends MObject {
 
   static TYPE = EntityKind.DATUM_AXIS;
-  origin: Vector;
-  dir: Vector;
+  axis: Axis;
   holder: MObject;
 
   constructor(id, origin, dir, holder) {
     super(MDatumAxis.TYPE, id);
-    this.origin = origin;
-    this.dir = dir;
+    this.axis = new Axis(origin, dir);
     this.holder = holder;
+  }
+
+  get origin(): Vector {
+    return this.axis.origin;
+  }
+
+  get dir(): Vector {
+    return this.axis.direction;
   }
 
   get parent() {
@@ -61,4 +68,12 @@ export class MDatumAxis extends MObject {
   toDirection(): Vector {
     return this.dir;
   };
+
+  toAxis(reverse: boolean): Axis {
+    let axis = this.axis;
+    if (reverse) {
+      axis = axis.invert();
+    }
+    return axis;
+  }
 }

@@ -4,6 +4,8 @@ import {EntityKind} from "cad/model/entities";
 import {Edge} from "brep/topo/edge";
 import Vector from "math/vector";
 import {TopoObject} from "brep/topo/topo-object";
+import Axis from "math/axis";
+import {Segment} from "cad/sketch/sketchModel";
 
 export class MEdge extends MObject {
 
@@ -40,6 +42,20 @@ export class MEdge extends MObject {
 
   toDirection(): Vector {
     return this.brepEdge.halfEdge1.tangentAtStart();
+  };
+
+  toAxis(reverse: boolean): Axis {
+    let tan;
+    let origin;
+    let he = this.brepEdge.halfEdge1;
+    if (reverse) {
+      tan = he.tangentAtStart();
+      origin = he.vertexA.point;
+    } else {
+      tan = he.tangentAtEnd();
+      origin = he.vertexB.point;
+    }
+    return new Axis(origin, tan);
   };
 
   get topology(): TopoObject {

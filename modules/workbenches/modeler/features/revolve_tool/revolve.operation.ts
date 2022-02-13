@@ -5,11 +5,13 @@ import { MDFCommand } from "cad/mdf/mdf";
 import { EntityKind } from "cad/model/entities";
 import Vector from "math/vector";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
+import * as vec from "math/vec";
+import Axis from "math/axis";
 
 interface RevolveParams {
   angle: number;
   face: MFace;
-  direction?: Vector,
+  axis: Axis,
   boolean: BooleanDefinition
 }
  
@@ -31,16 +33,10 @@ const RevolveOperation: MDFCommand<RevolveParams> = {
     if (!sketch) throw 'sketch not found for the face ' + face.id;
     const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
 
-    const dir = params.direction.normalize().data();
-
-    const point = params.direction;
-    console.log(params.direction);
-
-    console.log(dir);
 
     const tools = occFaces.map((faceName, i) => {
       const shapeName = "Tool/" + i;
-      var args = [shapeName, faceName, point.x, point.y, point.z, ...dir, params.angle];
+      var args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
       oci.revol(...args);
 
       return shapeName;
@@ -75,10 +71,10 @@ const RevolveOperation: MDFCommand<RevolveParams> = {
       },
     },
     {
-      type: 'vector',
-      name: 'direction',
-      label: 'direction',
-      optional: true
+      type: 'axis',
+      name: 'axis',
+      label: 'axis',
+      optional: false
     },
     {
       type: 'boolean',

@@ -4,8 +4,11 @@ import {IconType} from "react-icons";
 import {ActionAppearance} from "../actions/actionSystemPlugin";
 import {ApplicationContext, CoreContext} from "context";
 import {OperationResult} from "./craftPlugin";
-import {OperationFlattenSchema, OperationSchema, schemaIterator} from "cad/craft/schema/schema";
-import {FieldWidgetProps, UIDefinition} from "cad/mdf/ui/uiDefinition";
+import {OperationSchema, SchemaField, schemaIterator, unwrapMetadata} from "cad/craft/schema/schema";
+import {FieldWidgetProps} from "cad/mdf/ui/uiDefinition";
+import {Types} from "cad/craft/schema/types";
+import {EntityTypeSchema} from "cad/craft/schema/types/entityType";
+import {FlattenPath, ParamsPath} from "cad/craft/wizard/wizardTypes";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -35,9 +38,8 @@ export function activate(ctx: ApplicationContext) {
     };
     actions.push(opAction);
 
-    const workingSchema = flattenSchema(descriptor.schema);
-
-    registry$.mutate(registry => registry[id] = Object.assign({appearance, workingSchema}, descriptor, {
+    let schemaIndex = createSchemaIndex(descriptor.schema);
+    registry$.mutate(registry => registry[id] = Object.assign({appearance, schemaIndex}, descriptor, {
       run: (request, opContext) => runOperation(request, descriptor, opContext)
     }));
   }
@@ -88,7 +90,7 @@ export interface Operation<R> extends OperationDescriptor<R>{
     icon96: string;
     icon: string|IconType;
   };
-  workingSchema: OperationFlattenSchema;
+  schemaIndex: SchemaIndex
 }
 
 export interface OperationDescriptor<R> {
@@ -102,7 +104,6 @@ export interface OperationDescriptor<R> {
   previewGeomProvider?: (params: R) => OperationGeometryProvider,
   form: () => React.ReactNode,
   schema: OperationSchema,
-  formFields: FieldWidgetProps[],
   onParamsUpdate?: (params, name, value) => void,
 }
 
@@ -116,16 +117,72 @@ export interface OperationService {
   ) => void)[]
 }
 
+export type Index<T> = {
+  [beanPath: string]: T
+};
+
+
+export interface SchemaIndexField {
+  path: ParamsPath,
+  flattenedPath: FlattenPath,
+  metadata: SchemaField
+}
+
+export interface EntityReference {
+  field: SchemaIndexField;
+  metadata: EntityTypeSchema;
+  isArray: boolean;
+}
+
+export interface SchemaIndex {
+  fields: SchemaIndexField[],
+  entities: EntityReference[],
+  fieldsByFlattenedPaths: Index<SchemaIndexField>;
+  entitiesByFlattenedPaths: Index<EntityReference>;
+}
+
 export interface OperationGeometryProvider {
 
 }
 
-function flattenSchema(schema: OperationSchema): OperationFlattenSchema {
-  const flatSchema = {} as OperationFlattenSchema;
-  schemaIterator(schema, (path, flattenedPath, schemaField) => {
-    flatSchema[flattenedPath] = schemaField;
+function createSchemaIndex(schema: OperationSchema): SchemaIndex {
+
+  const index = {
+    fields: [],
+    fieldsByFlattenedPaths: {},
+    entities: [],
+    entitiesByFlattenedPaths: {}
+  } as SchemaIndex;
+
+  schemaIterator(schema, (path, flattenedPath, metadata) => {
+    const indexField = {
+      path: [...path],
+      flattenedPath,
+      metadata
+    };
+    index.fields.push(indexField);
+    index.fieldsByFlattenedPaths[flattenedPath] = indexField;
+
   });
-  return flatSchema;
+
+  index.fields.forEach(f => {
+
+    const unwrappedMd = unwrapMetadata(f.metadata);
+
+    if (unwrappedMd.type !== Types.entity) {
+      return;
+    }
+    const entity: EntityReference= {
+      field: f,
+      isArray: f.metadata.type === Types.array,
+      metadata: unwrappedMd
+    };
+
+    index.entities.push(entity);
+    index.entitiesByFlattenedPaths[f.flattenedPath] = entity;
+  });
+
+  return index;
 }
 
 declare module 'context' {

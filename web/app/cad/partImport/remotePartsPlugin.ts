@@ -103,11 +103,12 @@ export function activate(ctx: ApplicationContext) {
     choosePartRequest$: stream(),
 
     partCatalogs: [
-      WEB_CAD_ORG_COMMONS_CATALOG
+      //causes resolving on loading - must be lazy.
+      // WEB_CAD_ORG_COMMONS_CATALOG
     ],
 
     partRepositories: indexById([
-      WEB_CAD_ORG_PARTS_REPO
+      // WEB_CAD_ORG_PARTS_REPO
     ]),
 
     resolvePartReference,

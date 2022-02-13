@@ -7,13 +7,14 @@ import {resolveMDFIcon} from "./mdfIconResolver";
 import {OperationSchema} from "cad/craft/schema/schema";
 import {
   DynamicWidgetProps,
-  FieldWidgetProps, FormDefinition,
+  FieldWidgetProps,
+  FormDefinition,
   isContainerWidgetProps,
-  isFieldWidgetProps,
+  isFieldWidgetProps, isSubFormWidgetProps,
   UIDefinition
 } from "cad/mdf/ui/uiDefinition";
 import {uiDefinitionToReact} from "cad/mdf/ui/render";
-import {DynamicComponents} from "cad/mdf/ui/componentRegistry";
+import {ComponentLibrary, DynamicComponents} from "cad/mdf/ui/componentRegistry";
 
 export interface MDFCommand<R> {
   id: string;
@@ -32,7 +33,7 @@ export function loadMDFCommand<R>(mdfCommand: MDFCommand<R>): OperationDescripto
     type: 'group',
     content: mdfCommand.form
   }
-  const {schema: derivedSchema, formFields} = deriveSchema(uiDefinition);
+  const derivedSchema = deriveSchema(uiDefinition);
   return {
     id: mdfCommand.id,
     label: mdfCommand.label,
@@ -49,45 +50,50 @@ export function loadMDFCommand<R>(mdfCommand: MDFCommand<R>): OperationDescripto
     //   ...requiresFaceSelection(1)
     // },
     form: uiDefinitionToReact(uiDefinition),
-    formFields,
     schema: derivedSchema
   }
 }
 
-function extractFormFields(uiDefinition: UIDefinition): FieldWidgetProps[] {
-
-  const fields: FieldWidgetProps[] = [];
-
+function traverseUIDefinition(uiDefinition: UIDefinition|UIDefinition[], onField: (comp: FieldWidgetProps) => void) {
   function inorder(comp: DynamicWidgetProps) {
 
+    const libraryItemFn = ComponentLibrary[comp.type];
+
+    if (libraryItemFn) {
+      const libraryItem = libraryItemFn(comp);
+      inorder(libraryItem)
+      return;
+    }
+
     if (isFieldWidgetProps(comp)) {
-      fields.push(comp);
+      onField(comp);
     }
 
     if (isContainerWidgetProps(comp)) {
-      comp.content.forEach(inorder)
+      if (!isSubFormWidgetProps(comp)) {
+        comp.content.forEach(comp => inorder(comp))
+      }
     }
   }
 
-  inorder(uiDefinition);
-
-  return fields;
+  if (Array.isArray(uiDefinition)) {
+    uiDefinition.forEach(def => traverseUIDefinition(def, onField));
+  } else {
+    inorder(uiDefinition);
+  }
 }
 
-export function deriveSchema(uiDefinition: UIDefinition): {
-  schema: OperationSchema,
-  formFields: FieldWidgetProps[]
-} {
-  const formFields: FieldWidgetProps[] = extractFormFields(uiDefinition)
-  const schema = {};
-  formFields.forEach(f => {
-    let propsToSchema = DynamicComponents[f.type].propsToSchema;
-    schema[f.name] = propsToSchema(schema, f as any);
+export function deriveSchema(uiDefinition: UIDefinition): OperationSchema {
+
+  const schema: OperationSchema = {};
+
+  traverseUIDefinition(uiDefinition, (field) => {
+    let propsToSchema = DynamicComponents[field.type].propsToSchema;
+    let fieldSchema = propsToSchema(field as any, deriveSchema);
+    schema[field.name] = fieldSchema;
   });
-  return {
-    schema,
-    formFields
-  };
+
+  return schema;
 }
 
 

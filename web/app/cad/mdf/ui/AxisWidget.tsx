@@ -7,21 +7,19 @@ import {SectionWidgetProps} from "cad/mdf/ui/SectionWidget";
 import {DynamicComponentWidget} from "cad/mdf/ui/DynamicComponentWidget";
 import {AxisResolver} from "cad/craft/schema/resolvers/axisResolver";
 
-export interface BooleanWidgetProps extends FieldBasicProps {
+export interface AxisWidgetProps extends FieldBasicProps {
 
-  type: 'boolean';
+  type: 'axis';
 
 }
 
-const ENTITY_CAPTURE = [EntityKind.SHELL];
+const ENTITY_CAPTURE = [EntityKind.EDGE, EntityKind.SKETCH_OBJECT, EntityKind.DATUM_AXIS, EntityKind.FACE];
 
-const BOOLEAN_OPTIONS = ['NONE', 'UNION', 'SUBTRACT', 'INTERSECT'];
-
-export const BooleanWidgetDefinition = (props: BooleanWidgetProps) => ({
+export const AxisWidgetDefinition = ({name, label}: AxisWidgetProps) => ({
 
   type: 'section',
 
-  title: props.label,
+  title: label || name,
 
   collapsible: true,
 
@@ -29,29 +27,27 @@ export const BooleanWidgetDefinition = (props: BooleanWidgetProps) => ({
 
   content: [
     {
+      name: name,
       type: 'sub-form',
-      name: props.name,
-      optional: props.optional,
+      resolve: AxisResolver,
       content: [
         {
-          name: "kind",
-          label: 'kind',
-          type: "choice",
-          optional: true,
-          defaultValue: 'NONE',
-          values: BOOLEAN_OPTIONS
-        },
-        {
-          name: "targets",
-          label: 'target',
+          name: "vectorEntity",
+          label: 'vector',
           type: "selection",
           capture: ENTITY_CAPTURE,
-          multi: true,
-          optional: true,
+          multi: false,
+          optional: true
+        },
+        {
+          name: "flip",
+          label: 'flip',
+          type: "checkbox",
+          defaultValue: false
         }
-
       ]
     },
-
   ]
 } as SectionWidgetProps);
+
+
