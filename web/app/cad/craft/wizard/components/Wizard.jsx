@@ -5,7 +5,7 @@ import ButtonGroup from 'ui/components/controls/ButtonGroup';
 
 import ls from './Wizard.less';
 import CadError from '../../../../utils/errors';
-import {FormContext} from './form/Form';
+import {FormContext, FormContextData} from './form/Form';
 import connect from 'ui/connect';
 import {combine} from 'lstream';
 import {GenericWizard} from "ui/components/GenericWizard";
@@ -26,10 +26,6 @@ export default class Wizard extends React.Component {
     this.props.context.updateParam(name, value);
   };
 
-  setActiveParam = param => {
-    this.props.context.updateState(state => state.activeParam = param);
-  };
-
   componentDidCatch() {
     this.setState({hasInternalError: true});
   }
@@ -43,13 +39,6 @@ export default class Wizard extends React.Component {
     let operation = context.operation;
 
     let title = (operation.label || type).toUpperCase();
-
-    let formContext = {
-      data: params,
-      activeParam: this.props.activeParam,
-      setActiveParam: this.setActiveParam,
-      updateParam: this.updateParam
-    };
 
     let Form = operation.form;
 
@@ -75,7 +64,7 @@ export default class Wizard extends React.Component {
                      {!error.userMessage && <div>internal error processing operation, check the log</div>}
                    </div>}
     >
-      <FormContext.Provider value={formContext}>
+      <FormContext.Provider value={new FormContextData(this.props.context, [])}>
         <Form/>
       </FormContext.Provider>
     </GenericWizard>;

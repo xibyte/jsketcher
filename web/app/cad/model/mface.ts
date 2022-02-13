@@ -12,6 +12,7 @@ import {Face} from "brep/topo/face";
 import {EntityKind} from "cad/model/entities";
 import {Matrix3x4} from "math/matrix";
 import {TopoObject} from "brep/topo/topo-object";
+import Axis from "math/axis";
 
 export class MFace extends MObject {
 
@@ -233,6 +234,14 @@ export class MBrepFace extends MFace {
 
   toDirection(): Vector {
     return this.normal();
+  };
+
+  toAxis(reverse: boolean): Axis {
+    const dir = this.toDirection();
+    if (reverse) {
+      dir._negate();
+    }
+    return new Axis(this.favorablePoint, dir);
   };
 
 }

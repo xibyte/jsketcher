@@ -1,14 +1,17 @@
-import {Coercable} from "cad/craft/schema/schema";
+import {OperationParamValue, ValueResolver} from "cad/craft/schema/schema";
+import {ParamsPathSegment} from "cad/craft/wizard/wizardTypes";
 
 export interface FieldBasicProps {
 
-  name: string;
+  name: ParamsPathSegment;
 
   label?: string;
 
-  defaultValue?: Coercable;
+  defaultValue?: OperationParamValue;
 
-  optional?: boolean
+  optional?: boolean;
+
+  resolve?: ValueResolver
 }
 
 export function fieldToSchemaGeneric(props: FieldBasicProps) {
@@ -16,5 +19,6 @@ export function fieldToSchemaGeneric(props: FieldBasicProps) {
       label: props.label,
       defaultValue: props.defaultValue,
       optional: !!props.optional,
+      resolve: props.resolve
   }
 }

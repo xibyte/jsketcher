@@ -1,12 +1,17 @@
 import React from 'react';
 
-import {DynamicComponents} from "cad/mdf/ui/componentRegistry";
+import {ComponentLibrary, DynamicComponents} from "cad/mdf/ui/componentRegistry";
 import {DynamicWidgetProps} from "cad/mdf/ui/uiDefinition";
 
 
 export function DynamicComponentWidget(props: DynamicWidgetProps) {
   const ToRender = DynamicComponents[props.type];
   if (!ToRender) {
+    const uiDefinitionTemplate = ComponentLibrary[props.type];
+    if (uiDefinitionTemplate) {
+      const uiDefinition = uiDefinitionTemplate(props);
+      return <DynamicComponentWidget {...uiDefinition} />
+    }
     return <span>Unknown component: {props.type}</span>
   }
   return <ToRender {...props}/>

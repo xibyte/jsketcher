@@ -3,9 +3,10 @@ import initializeBySchema from '../schema/initializeBySchema';
 import {clone, EMPTY_OBJECT} from 'gems/objects';
 import materializeParams from '../schema/materializeParams';
 import {createFunctionList} from 'gems/func';
-import {onParamsUpdate} from '../cutExtrude/extrudeOperation';
-import {propsChangeTracker} from 'lstream/utils';
-import {OperationSchema, schemaIterator} from "cad/craft/schema/schema";
+import {OperationRequest} from "cad/craft/craftPlugin";
+import {ParamsPath, WizardContext, WizardState} from "cad/craft/wizard/wizardTypes";
+import _ from "lodash";
+import {OperationParamValue} from "cad/craft/schema/schema";
 
 export function activate(ctx) {
 
@@ -51,8 +52,8 @@ export function activate(ctx) {
     gotoEditHistoryModeIfNeeded(mod);
   });
 
-  streams.wizard.wizardContext = streams.wizard.effectiveOperation.map(opRequest => {
-    let wizCtx = null;
+  streams.wizard.wizardContext = streams.wizard.effectiveOperation.map((opRequest: OperationRequest) => {
+    let wizCtx: WizardContext = null;
     if (opRequest.type) {
       
       let operation = ctx.services.operation.get(opRequest.type);
@@ -60,9 +61,9 @@ export function activate(ctx) {
       let params;
       let {changingHistory, noWizardFocus} = opRequest;
       if (changingHistory) {
-        params = flattenParams(opRequest.params, operation.schema);
+        params = clone(opRequest.params)
       } else {
-        params = initializeBySchema(operation.workingSchema, ctx);
+        params = initializeBySchema(operation.schema, ctx);
         if (opRequest.initialOverrides) {
           applyOverrides(params, opRequest.initialOverrides);
         }
@@ -76,8 +77,7 @@ export function activate(ctx) {
       let materializedWorkingRequest$ = workingRequest$.map(req => {
         let params = {};
         let errors = [];
-        let unflatten = unflattenParams(req.params, operation.schema);
-        materializeParams(ctx, unflatten, operation.schema, params, errors);
+        materializeParams(ctx, req.params, operation.schema, params, errors);
         if (errors.length !== 0) {
           return INVALID_REQUEST;
         }
@@ -86,22 +86,32 @@ export function activate(ctx) {
           params
         };
       }).remember(INVALID_REQUEST).filter(r => r !== INVALID_REQUEST).throttle(500);
-      const state$ = state({});
+      const state$ = state<WizardState>({
+        activeParam: null
+      });
       const updateParams = mutator => workingRequest$.mutate(data => mutator(data.params));
       const updateState = mutator => state$.mutate(state => mutator(state));
-      const updateParam = (name, value) => {
+      const updateParam = (path: ParamsPath, value: OperationParamValue) => {
         updateParams(params => {
-          if (operation.onParamsUpdate) {
-            operation.onParamsUpdate(params, name, value, params[name]);
-          }  
-          params[name] = value;
+          // if (operation.onParamsUpdate) {
+          //   operation.onParamsUpdate(params, name, value, params[name]);
+          // }
+          if (!Array.isArray(path)) {
+            path = [path]
+          }
+          _.set(params, path, value);
         });
+      };
+
+      const readParam = (path: ParamsPath) => {
+        return _.get(params, path);
       };
 
       const disposerList = createFunctionList();
       wizCtx = {
-        workingRequest$, materializedWorkingRequest$, state$, updateParams, updateParam, updateState,
-        operation, changingHistory, noWizardFocus, 
+        workingRequest$, materializedWorkingRequest$, state$,
+        updateParams, updateParam, readParam, updateState,
+        operation, changingHistory, noWizardFocus,
         addDisposer: disposerList.add,
         dispose: disposerList.call,
         ID: ++REQUEST_COUNTER,
@@ -131,12 +141,8 @@ export function activate(ctx) {
     },
     
     applyWorkingRequest: () => {
-      let wizCtx = streams.wizard.wizardContext.value;
-      let {type, params} = wizCtx.workingRequest$.value;
-      let request = {
-        type,
-        params: unflattenParams(params, wizCtx.operation.schema)
-      };
+      let {type, params} = streams.wizard.wizardContext.value.workingRequest$.value;
+      let request = clone({type, params});
       const setError = error => streams.wizard.wizardContext.mutate(ctx => ctx.state$.mutate(state => state.error = error));
       if (streams.wizard.insertOperation.value.type) {
         ctx.services.craft.modify(request, () => streams.wizard.insertOperation.value = EMPTY_OBJECT, setError );
@@ -148,23 +154,6 @@ export function activate(ctx) {
     isInProgress: () => streams.wizard.wizardContext.value !== null
   };
 }
-
-function flattenParams(params, originalSchema) {
-  const flatParams = {};
-  schemaIterator(originalSchema, (path, flattenedPath, schemaField) => {
-    flatParams[flattenedPath] = _.get(params, path);
-  });
-  return flatParams;
-}
-
-function unflattenParams(params, originalSchema) {
-  const unflatParams = {};
-  schemaIterator(originalSchema, (path, flattenedPath, schemaField) => {
-    _.set(unflatParams, path, params[flattenedPath]);
-  });
-  return unflatParams;
-}
-
 
 function applyOverrides(params, initialOverrides) {
   Object.assign(params, initialOverrides);

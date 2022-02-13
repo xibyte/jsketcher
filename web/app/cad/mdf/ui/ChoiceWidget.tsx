@@ -18,14 +18,14 @@ export interface ChoiceWidgetProps extends FieldBasicProps {
 export function ChoiceWidget(props: ChoiceWidgetProps) {
   if (!props.style || props.style === 'dropdown') {
     return <ComboBoxField name={props.name} defaultValue={props.defaultValue} label={props.label} >
-      {props.values.map(value => <ComboBoxOption value={value}>{value}</ComboBoxOption>)}
+      {props.values.map(value => <ComboBoxOption value={value} key={value}>{value}</ComboBoxOption>)}
     </ComboBoxField>
   } else {
     throw 'implement me';
   }
 }
 
-ChoiceWidget.propsToSchema = (consumer: OperationSchema, props: ChoiceWidgetProps) => {
+ChoiceWidget.propsToSchema = (props: ChoiceWidgetProps) => {
   return {
     type: Types.string,
     enum: props.values,

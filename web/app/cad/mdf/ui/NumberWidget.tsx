@@ -19,7 +19,7 @@ export function NumberWidget(props: NumberWidgetProps) {
   return <NumberField name={props.name} defaultValue={props.defaultValue} label={props.label} />
 }
 
-NumberWidget.propsToSchema = (consumer: OperationSchema, props: NumberWidgetProps) => {
+NumberWidget.propsToSchema = (props: NumberWidgetProps) => {
   return {
     type: Types.number,
     min: props.min,

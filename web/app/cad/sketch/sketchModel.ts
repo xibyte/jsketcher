@@ -111,6 +111,11 @@ export class Segment extends SketchPrimitive {
   tangentAtStart(): Vector {
     return this.b.minus(this.a);
   }
+
+  tangentAtEnd(): Vector {
+    return this.a.minus(this.b);
+  }
+
 }
 
 export class Arc extends SketchPrimitive {

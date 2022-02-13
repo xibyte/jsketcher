@@ -2,6 +2,7 @@ import {IDENTITY_MATRIX, Matrix3x4} from "math/matrix";
 import {EntityKind} from "cad/model/entities";
 import Vector from "math/vector";
 import {TopoObject} from "brep/topo/topo-object";
+import Axis from "math/axis";
 
 export abstract class MObject {
 
@@ -21,9 +22,13 @@ export abstract class MObject {
 
   abstract get parent();
 
-  toDirection() {
+  toDirection(): Vector {
     return null;
   };
+
+  toAxis(reverse: boolean): Axis {
+    return null;
+  }
 
   get root(): MObject {
     let obj = this;

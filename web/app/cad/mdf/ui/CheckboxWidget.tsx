@@ -17,7 +17,7 @@ export function CheckboxWidget(props: CheckboxWidgetProps) {
   return <CheckboxField name={props.name} defaultValue={props.defaultValue} label={props.label} />
 }
 
-CheckboxWidget.propsToSchema = (consumer: OperationSchema, props: CheckboxWidgetProps) => {
+CheckboxWidget.propsToSchema = (props: CheckboxWidgetProps) => {
   return {
     type: Types.boolean,
     ...fieldToSchemaGeneric(props),
