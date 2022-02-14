@@ -3,6 +3,7 @@ import {MBrepShell} from "./mshell";
 import {EntityKind} from "cad/model/entities";
 import {Edge} from "brep/topo/edge";
 import Vector from "math/vector";
+import {TopoObject} from "brep/topo/topo-object";
 
 export class MEdge extends MObject {
 
@@ -40,5 +41,9 @@ export class MEdge extends MObject {
   toDirection(): Vector {
     return this.brepEdge.halfEdge1.tangentAtStart();
   };
+
+  get topology(): TopoObject {
+    return this.brepEdge;
+  }
 
 }

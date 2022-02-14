@@ -11,6 +11,7 @@ import {Basis, BasisForPlane} from "math/basis";
 import {Face} from "brep/topo/face";
 import {EntityKind} from "cad/model/entities";
 import {Matrix3x4} from "math/matrix";
+import {TopoObject} from "brep/topo/topo-object";
 
 export class MFace extends MObject {
 
@@ -177,6 +178,11 @@ export class MFace extends MObject {
   get favorablePoint() {
     return this.csys.origin;    
   }
+
+  get topology(): TopoObject {
+    return this.brepFace;
+  }
+
 }
 
 export class MBrepFace extends MFace {
