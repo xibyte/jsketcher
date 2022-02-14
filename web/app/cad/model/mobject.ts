@@ -1,6 +1,7 @@
 import {IDENTITY_MATRIX, Matrix3x4} from "math/matrix";
 import {EntityKind} from "cad/model/entities";
 import Vector from "math/vector";
+import {TopoObject} from "brep/topo/topo-object";
 
 export abstract class MObject {
 
@@ -35,6 +36,11 @@ export abstract class MObject {
   get location() {
     return IDENTITY_MATRIX;
   }
+
+  get topology(): TopoObject {
+    return null;
+  }
+
 }
 
 export const MObjectIdGenerator = {

@@ -77,4 +77,8 @@ export class MBrepShell extends MShell {
     }
   }
 
+  get topology(): TopoObject {
+    return this.brepShell;
+  }
+
 }

@@ -25,7 +25,7 @@ export function createOCCIO(ctx: CoreContext): OCCIO {
   }
 
   function pushModel(model: MObject, name: string) {
-    const ptr = model.brepShell?.data?.externals?.ptr;
+    const ptr = model.topology?.data?.externals?.ptr;
     if (!ptr) {
       return false;
     }
