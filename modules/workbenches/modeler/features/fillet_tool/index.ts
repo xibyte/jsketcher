@@ -36,7 +36,7 @@ export default {
             name: 'edges',
             capture: [EntityKind.EDGE],
             label: 'edges',
-            multi: false,
+            multi: true,
             defaultValue: {
                 usePreselection: true,
                 preselectionIndex: 0
@@ -49,17 +49,22 @@ export default {
 
         let occ = ctx.occService;
         const oci = occ.commandInterface;
-        // ctx.occService.io.pushModel(params.edges.shell, "bodyToBeFillet");
-        //
-        // ctx.occService.io.pushModel(params.edges, "edgeToFillet");
 
+        var edgesAndValue = [];
 
+        params.edges.forEach((edge) => {
+            edgesAndValue.push(params.size);
+            edgesAndValue.push(edge);
+            
+        });
 
-        oci.blend("b", params.edges.shell, params.size, params.edges);
+        console.log(edgesAndValue);
+
+        oci.blend("b", params.edges[0].shell, ...edgesAndValue);
 
 
         return {
-            consumed: [params.edges.shell],
+            consumed: [params.edges[0].shell],
             created: [occ.io.getShell("b")]
         };    },
 
