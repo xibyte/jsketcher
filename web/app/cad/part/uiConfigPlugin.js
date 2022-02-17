@@ -11,7 +11,7 @@ import {SelectionView} from "../dom/components/SelectionView";
 import {GrSelect} from "react-icons/gr";
 
 export const STANDARD_MODE_HEADS_UP_TOOLBAR = ['DATUM_CREATE', 'PLANE', 'EditFace', '-', "OCC_BOTTLE", '-',
-  "EXTRUDE", "Revolve", "-", "boolean_tool",
+  "EXTRUDE", "Revolve", "-", "boolean_tool", "shell_tool",
   "primitive_cylinder", "primitive_box", "primitive_cone", "primitive_sphere", "primitive_torus", "hole_tool",
   "fillet_tool"];
 

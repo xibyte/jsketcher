@@ -8,6 +8,7 @@ import primitive_torus from './features/primitive_torus';
 import hole_tool from './features/hole_tool';
 import fillet_tool from './features/fillet_tool';
 import boolean_tool from './features/boolean_tool/boolean.operation';
+import ShellOperation from './features/shell_tool/shell.operation';
 
 export default {
 
@@ -23,5 +24,6 @@ export default {
         fillet_tool,
         RevolveOperation,
         boolean_tool,
+        ShellOperation,
     ]
 }
