@@ -26,6 +26,17 @@ export default {
     paramsInfo: ({ size, opperationType, }) => `(${r(size)} ${r(opperationType)}})`,
     form: [
         {
+            type: 'selection',
+            name: 'edges',
+            capture: [EntityKind.EDGE],
+            label: 'edges',
+            multi: true,
+            defaultValue: {
+                usePreselection: true,
+                preselectionIndex: 0
+            },
+        },
+        {
             type: 'choice',
             style: "dropdown",
             label: 'opperationType',
@@ -39,19 +50,6 @@ export default {
             name: 'size',
             defaultValue: 5,
         },
-
-        {
-            type: 'selection',
-            name: 'edges',
-            capture: [EntityKind.EDGE],
-            label: 'edges',
-            multi: true,
-            defaultValue: {
-                usePreselection: true,
-                preselectionIndex: 0
-            },
-        },
-
     ],
 
     run: (params, ctx: ApplicationContext) => {

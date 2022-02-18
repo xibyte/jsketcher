@@ -50,8 +50,7 @@ const ShellOperation: MDFCommand<ShellParams> = {
       console.log(shellToOpperateOn);
 
       var bodyToPerformShellOpperationOn = shellToOpperateOn[0].shell;
-      oci.offsetshape(newShellName, bodyToPerformShellOpperationOn , params.thickness, "1.e-3", ...shellToOpperateOn)
-
+      oci.offsetshape(newShellName, bodyToPerformShellOpperationOn, -params.thickness, "1.e-3", ...shellToOpperateOn)
       returnObject.created.push(occ.io.getShell(newShellName));
     });
 
@@ -62,12 +61,6 @@ const ShellOperation: MDFCommand<ShellParams> = {
   },
   form: [
     {
-      type: 'number',
-      name: 'thickness',
-      label: 'thickness',
-      defaultValue: 5,
-    },
-    {
       type: 'selection',
       name: 'faces',
       capture: [EntityKind.FACE],
@@ -77,6 +70,12 @@ const ShellOperation: MDFCommand<ShellParams> = {
         usePreselection: true,
         preselectionIndex: 0
       },
+    },
+    {
+      type: 'number',
+      name: 'thickness',
+      label: 'thickness',
+      defaultValue: 5,
     },
   ],
 }
