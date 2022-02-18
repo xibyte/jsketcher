@@ -42,7 +42,7 @@ The export default object requires the following things to be defined.
  - **icon**: object
  - **[paramsInfo](#paramsInfo-tool-tip-information)**: Template for history item info popup. Can be used to expose the current values and description info about the operation for tool tips and hover over context cues.
  - **[schema](#Schema-fields-widget-types)**: Model defining the feature dialogs list of input fields, labels and input types. Both the user interface and the feature input properties storage is defined by this unified schema. User interface input widgets are laid out in a vertical stack with in the feature dialog in the order you define here. 
- - **run**: This is the actual code that will be executed when the preview button or the "OK" button in the feature dialog is pressed. The values defined in the schema are passed in and can be referenced by the simplified OpenCASCADE api provided by the JSKetcher OpenCASCADE wasm interface library. You can find more information about the functions exposed by this here (Add link to library docs here).  
+ - **run**: This is the actual code that will be executed when the preview button or the "OK" button in the feature dialog is pressed. The values defined in the schema are passed in and can be referenced by the simplified OpenCASCADE api provided by the JSKetcher OpenCASCADE wasm interface library. You can find more information about the functions exposed by this **[here](../web/app/cad/craft/e0/OCI.d.ts)**.  
  
  **Example index.ts file**:
 ```
@@ -54,7 +54,7 @@ import {EntityKind} from "cad/model/entities";
 import Vector from "math/vector";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 
-//not required but makes things nice for the IDE to know the types o things and provide nice helpful hints.
+//not required but makes things nice for the IDE to know the types of things and provide nice helpful hints.
 interface ExtrudeParams {
   length: number;
   face: MFace;
