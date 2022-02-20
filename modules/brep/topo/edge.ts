@@ -2,7 +2,7 @@ import {TopoObject} from './topo-object'
 import {Vertex} from "./vertex";
 import BrepCurve from "geom/curves/brepCurve";
 import {Loop} from "./loop";
-import Vector from "math/vector";
+import Vector, {UnitVector} from "math/vector";
 import {Tessellation1D} from "engine/tessellation";
 import _ from 'lodash';
 import {Point} from 'geom/point';
@@ -44,7 +44,7 @@ export class Edge extends TopoObject {
     return clone;
   }
 
-  splitByPoint(pt: Point) {
+  splitByPoint(pt: Vector) {
 
     const [c1, c2] = this.curve.split(pt);
     
@@ -96,17 +96,16 @@ export class HalfEdge extends TopoObject {
     return this.edge.halfEdge1 === this ? this.edge.halfEdge2 : this.edge.halfEdge1;
   }
 
-  tangentAtStart(): Vector {
+  tangentAtStart(): UnitVector {
     return this.tangent(this.vertexA.point);
   }
 
-  tangentAtEnd(): Vector {
+  tangentAtEnd(): UnitVector {
     return this.tangent(this.vertexB.point);
   }
 
-  tangent(point: Vector): Vector {
-    let tangent = this.edge.curve.tangentAtPoint(point);
-    tangent._normalize();
+  tangent(point: Vector): UnitVector {
+    let tangent = this.edge.curve.tangentAtPoint(point)._normalize();
     if (this.inverted) {
       tangent._negate();
     }

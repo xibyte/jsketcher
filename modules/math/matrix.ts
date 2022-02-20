@@ -1,4 +1,4 @@
-import Vector, {AXIS} from "math/vector";
+import Vector, {AXIS, UnitVector} from "math/vector";
 import {Vec3} from "math/vec";
 import {VectorTransformer} from "math/functions";
 
@@ -291,6 +291,8 @@ export class Matrix3x4 {
     return m;
   };
 
+  __applyNoTranslation(vector: Vector, out: Vector): Vector;
+  __applyNoTranslation(vector: UnitVector, out: UnitVector): UnitVector;
   __applyNoTranslation(vector: Vector, out: Vector): Vector {
     let x = vector.x;
     let y = vector.y;
@@ -301,11 +303,16 @@ export class Matrix3x4 {
     return out;
   };
 
+  _applyNoTranslation(vector: Vector): Vector;
+  _applyNoTranslation(vector: UnitVector): UnitVector;
   _applyNoTranslation(vector: Vector): Vector {
     return this.__applyNoTranslation(vector, vector);
   };
 
-  applyNoTranslation = vector => this.__applyNoTranslation(vector, new Vector());
+  applyNoTranslation: {
+    (vector: UnitVector): UnitVector;
+    (vector: Vector): Vector;
+  } = (vector: Vector) => this.__applyNoTranslation(vector, new Vector()) as any;
 
   _apply(vector: Vector): Vector {
     return this.__apply(vector, vector);

@@ -48,7 +48,7 @@ function materializeParamsImpl(ctx: CoreContext,
 
       if (md.resolve !== undefined) {
         value = md.resolve(
-          ctx, value, md as any, reportError, materializeParamsImpl
+          ctx, value, md as any, reportError
         )
       }
 

@@ -38,8 +38,16 @@ export default class Vector implements XYZ {
     return new Vector(this.x * scalar, this.y * scalar, this.z * scalar);
   }
 
+  scale(scalar: number): Vector {
+    return this.multiply(scalar);
+  }
+
   _multiply(scalar: number): Vector {
     return this.set(this.x * scalar, this.y * scalar, this.z * scalar);
+  }
+
+  _scale(scalar: number): Vector {
+    return this._multiply(scalar);
   }
 
   divide(scalar: number): Vector {
@@ -107,21 +115,29 @@ export default class Vector implements XYZ {
     return this;
   }
 
-  normalize(): Vector {
+  normalize(): UnitVector {
     let mag = this.length();
     if (mag === 0.0) {
-      return new Vector(0.0, 0.0, 0.0);
+      return new Vector(0.0, 0.0, 0.0) as UnitVector;
     }
-    return new Vector(this.x / mag, this.y / mag, this.z / mag);
+    return new Vector(this.x / mag, this.y / mag, this.z / mag) as UnitVector;
   }
 
-  _normalize(): Vector {
+  unit(): UnitVector {
+    return this.normalize();
+  }
+
+  _normalize(): UnitVector {
     let mag = this.length();
     if (mag === 0.0) {
-      return this.set(0, 0, 0)
+      return this.set(0, 0, 0) as UnitVector;
     }
-    return this.set(this.x / mag, this.y / mag, this.z / mag)
+    return this.set(this.x / mag, this.y / mag, this.z / mag) as UnitVector;
   };
+
+  _unit(): UnitVector {
+    return this._normalize();
+  }
 
   cross(a: XYZ): Vector {
     return this.copy()._cross(a);
@@ -151,6 +167,10 @@ export default class Vector implements XYZ {
     return [this.x, this.y, this.z];
   }
 
+  data (): [number, number, number] {
+    return this.toArray();
+  }
+
   copyToData(data: [number, number, number]): void {
     data[0] = this.x;
     data[1] = this.y;
@@ -166,13 +186,6 @@ export default class Vector implements XYZ {
   static fromData(arr: [number, number, number]): Vector {
     return new Vector().set3(arr);
   }
-
-  data: () => [number, number, number] = Vector.prototype.toArray;
-
-  unit: () => (Vector) = Vector.prototype.normalize;
-  _unit: () => (Vector) = Vector.prototype._normalize;
-  scale: (scalar: number) => Vector = Vector.prototype.multiply;
-  _scale: (scalar: number) => Vector = Vector.prototype._multiply;
 }
 
 const freeze = Object.freeze;
@@ -180,7 +193,24 @@ const freeze = Object.freeze;
 export const ORIGIN = freeze(new Vector(0, 0, 0));
 
 export const AXIS = freeze({
-  X: freeze(new Vector(1, 0, 0)),
-  Y: freeze(new Vector(0, 1, 0)),
-  Z: freeze(new Vector(0, 0, 1))
+  X: freeze(new Vector(1, 0, 0) as UnitVector),
+  Y: freeze(new Vector(0, 1, 0) as UnitVector),
+  Z: freeze(new Vector(0, 0, 1) as UnitVector)
 });
+
+export interface UnitVector extends Vector {
+
+  __UnitVectorTypeSafetyHolder__: "DO NOT REMOVE. It's used to separate types at compile time, it's never used in runtime";
+
+  negate(): UnitVector;
+
+  _negate(): UnitVector;
+
+  _perpXY(): UnitVector;
+
+  cross(a: UnitVector): UnitVector;
+
+  _cross(a: UnitVector): UnitVector;
+
+  copy(): UnitVector;
+}

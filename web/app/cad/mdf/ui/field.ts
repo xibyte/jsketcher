@@ -11,7 +11,7 @@ export interface FieldBasicProps {
 
   optional?: boolean;
 
-  resolve?: ValueResolver
+  resolve?: ValueResolver<any, any>
 }
 
 export function fieldToSchemaGeneric(props: FieldBasicProps) {

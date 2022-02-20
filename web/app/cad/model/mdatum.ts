@@ -1,6 +1,6 @@
 import {MObject, MObjectIdGenerator} from './mobject';
 import CSys from "math/csys";
-import Vector from "math/vector";
+import Vector, {UnitVector} from "math/vector";
 import {EntityKind} from "cad/model/entities";
 import Axis from "math/axis";
 
@@ -57,7 +57,7 @@ export class MDatumAxis extends MObject {
     return this.axis.origin;
   }
 
-  get dir(): Vector {
+  get dir(): UnitVector {
     return this.axis.direction;
   }
 
@@ -65,7 +65,7 @@ export class MDatumAxis extends MObject {
     return this.holder;
   }
 
-  toDirection(): Vector {
+  toDirection(): UnitVector {
     return this.dir;
   };
 

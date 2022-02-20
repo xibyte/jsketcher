@@ -2,7 +2,7 @@ import {MObject, MObjectIdGenerator} from './mobject';
 import {MBrepFace, MFace} from './mface';
 import {MEdge} from './medge';
 import {MVertex} from './mvertex';
-import CSys from 'math/csys';
+import CSys, {CartesianCSys} from 'math/csys';
 import {state, StateStream} from "lstream";
 import {Matrix3x4} from "math/matrix";
 import {Shell} from "brep/topo/shell";
@@ -13,7 +13,7 @@ export class MShell extends MObject {
 
   static TYPE = EntityKind.SHELL;
 
-  csys: CSys;
+  csys: CartesianCSys;
 
   shell;
   faces: MFace[] = [];
@@ -45,7 +45,7 @@ export class MShell extends MObject {
 export class MBrepShell extends MShell {
 
   brepShell: Shell;
-  csys: CSys;
+  csys: CartesianCSys;
   brepRegistry: Map<TopoObject, MObject>;
 
   constructor(shell, csys?) {

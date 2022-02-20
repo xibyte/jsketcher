@@ -2,7 +2,7 @@ import {MObject} from './mobject';
 import {MBrepShell} from "./mshell";
 import {EntityKind} from "cad/model/entities";
 import {Edge} from "brep/topo/edge";
-import Vector from "math/vector";
+import Vector, {UnitVector} from "math/vector";
 import {TopoObject} from "brep/topo/topo-object";
 import Axis from "math/axis";
 import {Segment} from "cad/sketch/sketchModel";
@@ -40,7 +40,7 @@ export class MEdge extends MObject {
     return this.shell;
   }
 
-  toDirection(): Vector {
+  toDirection(): UnitVector {
     return this.brepEdge.halfEdge1.tangentAtStart();
   };
 

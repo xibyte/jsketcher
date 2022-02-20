@@ -31,7 +31,7 @@ export interface BaseSchemaField {
   defaultValue: OperationParamValue,
   optional: boolean,
   label?: string,
-  resolve?: ValueResolver
+  resolve?: ValueResolver<any, any>
 }
 
 export type OperationParamPrimitive = number|boolean|string;
@@ -55,10 +55,10 @@ export type OperationParamsErrorReporter = ((msg: string) => void) & {
   dot: (pathPart: string|number) => OperationParamsErrorReporter
 };
 
-export type ValueResolver = (ctx: CoreContext,
-                               value: any,
+export type ValueResolver<IN, OUT> = (ctx: CoreContext,
+                               value: IN,
                                md: SchemaField,
-                               reportError: OperationParamsErrorReporter, materializer: Materializer) => any;
+                               reportError: OperationParamsErrorReporter) => OUT;
 
 export function flattenPath(path: ParamsPath): string {
   return path.join('/');

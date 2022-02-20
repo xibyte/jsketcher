@@ -58,7 +58,7 @@ interface FormFieldProps {
   name: ParamsPathSegment,
   defaultValue: OperationParamValue,
   label: string,
-  children: any
+  children?: any
 }
 
 export function attachToForm(Control) {
