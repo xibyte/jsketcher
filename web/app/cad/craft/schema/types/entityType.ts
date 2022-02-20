@@ -10,7 +10,10 @@ export interface EntityTypeSchema extends BaseSchemaField {
 
   allowedKinds: EntityKind[];
 
-  initializeBySelection: boolean | number;
+  defaultValue?: {
+    usePreselection: boolean;
+    preselectionIndex: number;
+  }
 }
 
 export const EntityType: Type<string, MObject, EntityTypeSchema> = {

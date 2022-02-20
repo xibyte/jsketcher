@@ -4,7 +4,7 @@ export enum IconSize {
   small = 'small', 
   medium = 'medium', 
   large = 'large'
-}; 
+}
 
 export interface IconSetDef {
   iconType: IconType;

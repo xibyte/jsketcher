@@ -8,12 +8,12 @@ interface IconRenderProps {
   size: IconSize
 }
 
-export function DeclaredIcon(props: IconRenderProps & IconDeclaration & React.HTMLAttributes<HTMLDivElement>) {
+export function DeclaredIcon({iconSet, iconType, ...props}: IconRenderProps & IconDeclaration & React.HTMLAttributes<HTMLDivElement>) {
 
-  if (props.iconSet) {
-    return <IconSet {...props} />
+  if (iconSet) {
+    return <IconSet iconSet={iconSet} {...props} />
   } else {
-    return <Icon {...props} />
+    return <Icon iconType={iconType} {...props} />
   }
 }
 

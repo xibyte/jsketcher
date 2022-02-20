@@ -33,12 +33,14 @@ function materializeParamsImpl(ctx: CoreContext,
                                result: any,
                                parentReportError: OperationParamsErrorReporter) {
 
+  const notProvided = value => value === undefined || value === null || value === '';
+
   for (let field of Object.keys(schema)) {
     const reportError = parentReportError.dot(field);
     const md = schema[field];
     let value = params[field];
 
-    if (value === undefined || value === null || value === '') {
+    if (notProvided(value)) {
       if (!md.optional) {
         reportError('required');
       }
@@ -50,6 +52,9 @@ function materializeParamsImpl(ctx: CoreContext,
         value = md.resolve(
           ctx, value, md as any, reportError
         )
+        if (notProvided(value) && !md.optional) {
+          reportError('required');
+        }
       }
 
       // if (md.type === Types.NUMBER) {

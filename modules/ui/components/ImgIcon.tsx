@@ -1,6 +1,11 @@
 import React from 'react';
 
-export default function ImgIcon({url, size, style, ...props}) {
+type ImgIconParams = { url: string; size: string|number; style?: any; };
+
+export default function ImgIcon(inprops: ImgIconParams) {
+
+  const {url, size, style, ...props} = inprops;
+
   return <span className='img-icon' style={{
     display: 'inline-block',
     backgroundImage: 'url('+url+')',
@@ -10,4 +15,4 @@ export default function ImgIcon({url, size, style, ...props}) {
     height: size + 'px',
     ...style
   }} {...props} />
-};
+}

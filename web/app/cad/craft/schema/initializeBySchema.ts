@@ -10,8 +10,8 @@ export default function initializeBySchema(schema: OperationSchema, context: App
     let md = schema[field] as SchemaField;
 
     if (md.type === Types.array) {
-      if (md.items.type === Types.entity && md.items.defaultValue !== undefined) {
-        const defaultValue = md.items.defaultValue;
+      if (md.items.type === Types.entity && md.defaultValue !== undefined) {
+        const defaultValue = md.defaultValue;
         if (defaultValue.usePreselection === true) {
           const entitySchema = md.items;
           const currentSelection =

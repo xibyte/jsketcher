@@ -1,4 +1,3 @@
-import extrudeOperation from '../craft/cutExtrude/extrudeOperation';
 import cutOperation from '../craft/cutExtrude/cutOperation';
 import planeOperation from '../craft/primitives/simplePlane/simplePlaneOperation';
 import filletOperation from '../craft/fillet/filletOperation';
@@ -15,32 +14,31 @@ import coneOperation from '../craft/primitives/cone/coneOperation';
 import spatialCurveOperation from '../craft/spatialCurve/spatialCurveOperation';
 import loftOperation from '../craft/loft/loftOperation';
 import {intersectionOperation, subtractOperation, unionOperation} from '../craft/boolean/booleanOperation';
-import { loadMDFCommand } from '../mdf/mdf';
 import WorkbenchRegistry from 'workbenches/registry';
 
 export function activate({services}) {
-  services.operation.registerOperations([
-    planeOperation,
-    boxOperation, 
-    // extrudeOperation,
-    cutOperation,
-    revolveOperation,
-    filletOperation,
-    createDatumOperation,
-    moveDatumOperation,
-    rotateDatumOperation,
-    datumOperation,
-    sphereOperation,
-    cylinderOperation,
-    torusOperation,
-    coneOperation,
-    spatialCurveOperation,
-    loftOperation,
-    intersectionOperation,
-    subtractOperation,
-    unionOperation,    
-  ]);
-  WorkbenchRegistry.forEach(w => {
-    services.operation.registerOperations(w.features.map(loadMDFCommand));
-  });
+    services.operation.registerOperations([
+        planeOperation,
+        boxOperation,
+        // extrudeOperation,
+        cutOperation,
+        revolveOperation,
+        filletOperation,
+        createDatumOperation,
+        moveDatumOperation,
+        rotateDatumOperation,
+        datumOperation,
+        sphereOperation,
+        cylinderOperation,
+        torusOperation,
+        coneOperation,
+        spatialCurveOperation,
+        loftOperation,
+        intersectionOperation,
+        subtractOperation,
+        unionOperation,
+    ]);
+    WorkbenchRegistry.forEach(w => {
+        services.operation.registerOperations(w.features);
+    });
 }

@@ -1,10 +1,10 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "context";
-import {MDFCommand} from "cad/mdf/mdf";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {UnitVector} from "math/vector";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
 
 
 interface ExtrudeParams {
@@ -14,13 +14,12 @@ interface ExtrudeParams {
   boolean: BooleanDefinition
 }
 
-const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
+const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   id: 'EXTRUDE',
   label: 'Extrude',
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
   paramsInfo: ({length}) => `(${r(length)})`,
-  mutualExclusiveFields: ['datumAxisVector', 'edgeVector', 'sketchSegmentVector'],
   run: (params: ExtrudeParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
