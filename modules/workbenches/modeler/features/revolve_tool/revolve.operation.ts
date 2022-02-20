@@ -1,12 +1,10 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { MDFCommand } from "cad/mdf/mdf";
-import { EntityKind } from "cad/model/entities";
-import Vector from "math/vector";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import * as vec from "math/vec";
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {MFace} from "cad/model/mface";
+import {ApplicationContext} from "context";
+import {EntityKind} from "cad/model/entities";
+import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import Axis from "math/axis";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
 
 interface RevolveParams {
   angle: number;
@@ -14,14 +12,13 @@ interface RevolveParams {
   axis: Axis,
   boolean: BooleanDefinition
 }
- 
-const RevolveOperation: MDFCommand<RevolveParams> = {
+
+const RevolveOperation: OperationDescriptor<RevolveParams> = {
   id: 'Revolve',
   label: 'Revolve',
   icon: 'img/cad/Revolve',
   info: 'Revolves 2D sketch',
-  paramsInfo: ({ angle }) => `(${r(angle)})`,
-  mutualExclusiveFields: ['datumAxisVector', 'edgeVector', 'sketchSegmentVector'],
+  paramsInfo: ({angle}) => `(${r(angle)})`,
   run: (params: RevolveParams, ctx: ApplicationContext) => {
     console.log(params);
     let occ = ctx.occService;
@@ -41,12 +38,6 @@ const RevolveOperation: MDFCommand<RevolveParams> = {
 
       return shapeName;
     });
-
-
-
-
-
-
 
 
     return occ.utils.applyBooleanModifier(tools, params.boolean);

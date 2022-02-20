@@ -1,8 +1,8 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { MDFCommand } from "cad/mdf/mdf";
-import { EntityKind } from "cad/model/entities";
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {MFace} from "cad/model/mface";
+import {ApplicationContext} from "context";
+import {EntityKind} from "cad/model/entities";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
 
 
 interface ShellParams {
@@ -10,19 +10,16 @@ interface ShellParams {
   faces: [MFace];
 }
 
-const ShellOperation: MDFCommand<ShellParams> = {
+const ShellOperation: OperationDescriptor<ShellParams> = {
   id: 'shell_tool',
   label: 'Shell',
   icon: 'img/cad/Shell',
   info: 'Shells 2D sketch',
-  paramsInfo: ({ thickness }) => `(${r(thickness)})`,
+  paramsInfo: ({thickness}) => `(${r(thickness)})`,
   run: (params: ShellParams, ctx: ApplicationContext) => {
     console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
-
-
-
 
 
     var bodiesToShell = [];

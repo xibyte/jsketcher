@@ -30,7 +30,6 @@ SelectionWidget.propsToSchema = (props: SelectionWidgetProps) => {
   let value = {
     type: Types.entity,
     allowedKinds: props.capture,
-    initializeBySelection: true,
   } as SchemaField;
 
   if (props.multi) {

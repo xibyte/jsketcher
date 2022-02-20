@@ -111,14 +111,15 @@ function createPickHandlerFromSchema(wizCtx: WizardContext) {
 
     function deselectIfNeeded(id) {
       for (let entityRef of schemaIndex.entities) {
-        const val = wizCtx.readParam(entityRef.field.path);
+        let val = wizCtx.readParam(entityRef.field.path);
         if (val === id) {
           update(entityRef.field.path, undefined, entityRef.field.flattenedPath);
           return true;
         } else if (Array.isArray(val)) {
           let index = val.indexOf(id);
           if (index !== -1) {
-            update(entityRef.field.path, val.splice(index, 1), entityRef.field.flattenedPath);
+            val = val.slice(index, 1);
+            update(entityRef.field.path, val, entityRef.field.flattenedPath);
             return true;
           }
         }

@@ -11,6 +11,10 @@ export interface ArrayTypeSchema extends BaseSchemaField {
   min: number;
 
   max: number;
+
+  defaultValue: {
+    usePreselection: boolean;
+  }
 }
 
 export const ArrayType: Type<any[], any[], ArrayTypeSchema> = {

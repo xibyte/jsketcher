@@ -4,7 +4,7 @@ import React from 'react';
 import { AiOutlineQuestion } from 'react-icons/ai';
 import { IconType } from 'react-icons/lib';
 
-export function resolveMDFIcon(iconDef: IconDeclaration | IconType) {
+export function resolveIcon(iconDef: IconDeclaration | IconType) {
     if (iconDef.iconType || iconDef.iconSet) {
         return (props) => <DeclaredIcon {...iconDef} {...props}/>
     } else {

@@ -1,23 +1,20 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { MDFCommand } from "cad/mdf/mdf";
-import { EntityKind } from "cad/model/entities";
-import Vector from "math/vector";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { MShell } from 'cad/model/mshell';
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {ApplicationContext} from "context";
+import {EntityKind} from "cad/model/entities";
+import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
 
 interface BooleanParams {
   tools: [];
   boolean: BooleanDefinition
 }
 
-const BooleanOperation: MDFCommand<BooleanParams> = {
+const BooleanOperation: OperationDescriptor<BooleanParams> = {
   id: 'boolean_tool',
   label: 'Boolean',
   icon: 'img/cad/Boolean',
   info: 'Booleans 2D sketch',
-  paramsInfo: ({ tools, boolean }) => `(${r(tools)} ${r(boolean)})`,
+  paramsInfo: ({tools, boolean}) => `(${r(tools)} ${r(boolean)})`,
   run: (params: BooleanParams, ctx: ApplicationContext) => {
     console.log(params);
     let occ = ctx.occService;
