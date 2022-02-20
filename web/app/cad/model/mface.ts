@@ -1,8 +1,8 @@
 import {MObject} from './mobject';
-import Vector from 'math/vector';
+import Vector, {UnitVector} from 'math/vector';
 import {MSketchObject} from './msketchObject';
 import {EMPTY_ARRAY} from 'gems/iterables';
-import CSys from 'math/csys';
+import CSys, {CartesianCSys} from 'math/csys';
 import {MSketchLoop} from './mloop';
 import {ProductionInfo} from './productionInfo';
 import {MBrepShell, MShell} from "./mshell";
@@ -24,9 +24,9 @@ export class MFace extends MObject {
   sketch: any;
   brepFace: Face;
 
-  private _csys: any;
+  private _csys: CartesianCSys;
   private w: number;
-  private _basis: [Vector, Vector, Vector];
+  private _basis: [UnitVector, UnitVector, UnitVector];
   private _sketchToWorldTransformation: any;
   private _worldToSketchTransformation: any;
   private _productionInfo: any;
@@ -40,7 +40,7 @@ export class MFace extends MObject {
     this._csys = csys;
   }
 
-  normal(): Vector {
+  normal(): UnitVector {
     return this.csys.z;
   }
 
@@ -56,7 +56,7 @@ export class MFace extends MObject {
     return this._basis;
   }
 
-  get csys(): CSys {
+  get csys(): CartesianCSys {
     this.evalCSys();
     return this._csys;
   }
@@ -73,7 +73,7 @@ export class MFace extends MObject {
         let proj = z.dot(alignCsys.origin);
         proj -= this.surface.simpleSurface.w;
         let origin  = alignCsys.origin.minus(z.multiply(proj));
-        this._csys = new CSys(origin, x, y, z);
+        this._csys = new CSys(origin, x, y, z) as CartesianCSys;
       } else {
         let origin = this.surface.southWestPoint();
         let z = this.surface.normalUV(0, 0);
@@ -86,7 +86,7 @@ export class MFace extends MObject {
           x = y;
           y = t;
         }
-        this._csys = new CSys(origin, x, y, z);
+        this._csys = new CSys(origin, x, y, z) as CartesianCSys;
       }
       this.w = this.csys.w();
     }
@@ -232,7 +232,7 @@ export class MBrepFace extends MFace {
     return this.#favorablePoint;
   }
 
-  toDirection(): Vector {
+  toDirection(): UnitVector {
     return this.normal();
   };
 

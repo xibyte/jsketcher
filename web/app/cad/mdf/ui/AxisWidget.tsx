@@ -1,25 +1,60 @@
 import React from "react";
-import {OperationSchema} from "cad/craft/schema/schema";
-import {FieldBasicProps, fieldToSchemaGeneric} from "cad/mdf/ui/field";
-import {Types} from "cad/craft/schema/types";
+import {OperationParamsErrorReporter, ValueResolver} from "cad/craft/schema/schema";
+import {FieldBasicProps} from "cad/mdf/ui/field";
 import {EntityKind} from "cad/model/entities";
 import {SectionWidgetProps} from "cad/mdf/ui/SectionWidget";
-import {DynamicComponentWidget} from "cad/mdf/ui/DynamicComponentWidget";
-import {AxisResolver} from "cad/craft/schema/resolvers/axisResolver";
+import {MObject} from "cad/model/mobject";
+import Axis from "math/axis";
+import {CoreContext} from "context";
+import {ObjectTypeSchema} from "cad/craft/schema/types/objectType";
+
+export interface AxisInput {
+  vectorEntity: MObject,
+  flip: boolean
+}
+
+export const AxisResolver: ValueResolver<AxisInput, Axis> = (ctx: CoreContext,
+                                                             value: AxisInput,
+                                                             md: ObjectTypeSchema,
+                                                             reportError: OperationParamsErrorReporter): Axis => {
+
+  if (!value.vectorEntity) {
+    return null;
+  }
+
+  let axis = value.vectorEntity.toAxis(value.flip);
+  if (!axis) {
+    reportError('unsupported entity type: ' + value.vectorEntity.TYPE);
+    return null;
+  }
+  return axis;
+}
+
+
+export interface AxisBasedWidgetProps extends FieldBasicProps {
+
+  resolve?: ValueResolver<AxisInput, any>;
+}
 
 export interface AxisWidgetProps extends FieldBasicProps {
 
   type: 'axis';
 
+  resolve: ValueResolver<AxisInput, any>;
 }
 
 const ENTITY_CAPTURE = [EntityKind.EDGE, EntityKind.SKETCH_OBJECT, EntityKind.DATUM_AXIS, EntityKind.FACE];
 
-export const AxisWidgetDefinition = ({name, label}: AxisWidgetProps) => ({
+export const AxisWidgetDefinition = (props: AxisWidgetProps) => AxisBasedWidgetDefinition({
+  resolve: AxisResolver,
+  ...props,
+});
+
+export const AxisBasedWidgetDefinition = (props: AxisBasedWidgetProps) => ({
 
   type: 'section',
 
-  title: label || name,
+  title: props.label || props.name,
 
   collapsible: true,
 
@@ -27,9 +62,9 @@ export const AxisWidgetDefinition = ({name, label}: AxisWidgetProps) => ({
 
   content: [
     {
-      name: name,
       type: 'sub-form',
-      resolve: AxisResolver,
+      name: props.name,
+      resolve: props.resolve,
       content: [
         {
           name: "vectorEntity",
@@ -49,5 +84,4 @@ export const AxisWidgetDefinition = ({name, label}: AxisWidgetProps) => ({
     },
   ]
 } as SectionWidgetProps);
-
 

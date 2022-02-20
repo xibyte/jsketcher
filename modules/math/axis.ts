@@ -1,10 +1,10 @@
-import Vector from "math/vector";
+import Vector, {UnitVector} from "math/vector";
 
 export default class Axis {
   origin: Vector;
-  direction: Vector;
+  direction: UnitVector;
 
-  constructor(origin, direction) {
+  constructor(origin: Vector, direction: UnitVector) {
     this.origin = origin;
     this.direction = direction;
   }

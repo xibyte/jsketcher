@@ -8,6 +8,7 @@ import {CheckboxWidget} from "cad/mdf/ui/CheckboxWidget";
 import {ChoiceWidget} from "cad/mdf/ui/ChoiceWidget";
 import {SubFormWidget} from "cad/mdf/ui/SubFormWidget";
 import {BooleanWidgetDefinition} from "cad/mdf/ui/BooleanWidget";
+import {DirectionWidgetDefinition} from "cad/mdf/ui/DirectionWidget";
 
 export const DynamicComponents = {
 
@@ -29,6 +30,11 @@ export const DynamicComponents = {
 }
 
 export const ComponentLibrary = {
+
+  'boolean': BooleanWidgetDefinition,
+
   'axis': AxisWidgetDefinition,
-  'boolean': BooleanWidgetDefinition
+
+  'direction': DirectionWidgetDefinition
+
 };

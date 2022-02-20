@@ -1,9 +1,9 @@
-import Vector, {AXIS, ORIGIN} from "math/vector";
+import Vector, {AXIS, ORIGIN, UnitVector} from "math/vector";
 import {Matrix3x4} from "math/matrix";
 
 export default class CSys {
 
-  static ORIGIN: CSys;
+  static ORIGIN: CartesianCSys;
 
   origin: Vector;
   x: Vector;
@@ -12,12 +12,12 @@ export default class CSys {
   private _outTr: Matrix3x4;
   private _inTr: Matrix3x4;
 
-  static fromNormalAndDir(origin, normal, dir) {
-    return new CSys(origin, dir, normal.cross(dir), normal)  
+  static fromNormalAndDir(origin, normal: UnitVector, dir: UnitVector): CartesianCSys {
+    return new CSys(origin, dir, normal.cross(dir), normal) as CartesianCSys;
   }
   
-  static origin() {
-    return new CSys(ORIGIN.copy(), AXIS.X.copy(), AXIS.Y.copy(), AXIS.Z.copy());
+  static origin(): CartesianCSys {
+    return new CSys(ORIGIN.copy(), AXIS.X.copy(), AXIS.Y.copy(), AXIS.Z.copy()) as CartesianCSys;
   }
   
   constructor(origin, x, y, z) {
@@ -51,7 +51,7 @@ export default class CSys {
     return this.outTransformation.invert();
   }
 
-  copy(csys) {
+  copy(csys: CSys): CSys {
     this.origin.setV(csys.origin);
     this.x.setV(csys.x);
     this.y.setV(csys.y);
@@ -59,16 +59,16 @@ export default class CSys {
     return this;
   }
 
-  clone() {
+  clone(): CSys {
     return new CSys(this.origin.copy(), this.x.copy(), this.y.copy(), this.z.copy());
   }
 
-  move(x, y, z) {
+  move(x, y, z): CSys {
     this.origin.set(x, y, z);
     return this;
   }
 
-  invert() {
+  invert(): CSys {
     const tr = this.inTransformation;
     return new CSys(
       new Vector(tr.tx,  tr.ty,  tr.tz),
@@ -85,3 +85,20 @@ Object.freeze(CSys.ORIGIN.origin);
 Object.freeze(CSys.ORIGIN.x);
 Object.freeze(CSys.ORIGIN.y);
 Object.freeze(CSys.ORIGIN.z);
+
+export interface CartesianCSys extends CSys {
+
+  __CartesianCSysTypeSafetyHolder__: "DO NOT REMOVE. It's used to separate types at compile time, it's never used in runtime";
+
+  x: UnitVector;
+  y: UnitVector;
+  z: UnitVector;
+
+  copy(csys: CartesianCSys): CartesianCSys;
+
+  clone(): CartesianCSys;
+
+  move(x, y, z): CartesianCSys;
+
+  invert(): CartesianCSys;
+}

@@ -1,9 +1,9 @@
-import Vector, {AXIS} from "math/vector";
+import Vector, {AXIS, UnitVector} from "math/vector";
 import {AXIS_X3, AXIS_Y3, AXIS_Z3, VectorData} from "math/vec";
 
 export type Basis = [Vector, Vector, Vector];
 
-export const IDENTITY_BASIS: Basis = Object.freeze([AXIS.X, AXIS.Y, AXIS.Z]) as Basis;
+export const IDENTITY_BASIS: Basis = Object.freeze([AXIS.X, AXIS.Y, AXIS.Z] as Vector[]) as Basis;
 export const IDENTITY_BASIS3 = Object.freeze([AXIS_X3, AXIS_Y3, AXIS_Z3]) as VectorData[];
 
 export const STANDARD_BASES = Object.freeze({
@@ -12,7 +12,7 @@ export const STANDARD_BASES = Object.freeze({
   'ZY': [AXIS.Z, AXIS.Y, AXIS.X]
 });
 
-export function BasisForPlane(normal: Vector, alignY: Vector = AXIS.Y, alignZ: Vector = AXIS.Z): [Vector, Vector, Vector] {
+export function BasisForPlane(normal: UnitVector, alignY: UnitVector = AXIS.Y, alignZ: UnitVector = AXIS.Z): [UnitVector, UnitVector, UnitVector] {
   let alignPlane, x, y;
   if (Math.abs(normal.dot(alignY)) < 0.5) {
     alignPlane = normal.cross(alignY);

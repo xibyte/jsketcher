@@ -1,6 +1,5 @@
 import {NumberField} from "cad/craft/wizard/components/form/Fields";
 import React from "react";
-import {OperationSchema} from "cad/craft/schema/schema";
 import {FieldBasicProps, fieldToSchemaGeneric} from "cad/mdf/ui/field";
 import {Types} from "cad/craft/schema/types";
 
