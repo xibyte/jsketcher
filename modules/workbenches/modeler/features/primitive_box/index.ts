@@ -1,7 +1,6 @@
 import { ApplicationContext } from 'context';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import icon32 from './icon32.png';
-import icon96 from './icon96.png';
+
 import { MDFCommand } from "cad/mdf/mdf";
 import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
@@ -74,7 +73,7 @@ const PrimitiveBoxOperation: MDFCommand<PrimitiveBoxParams> = {
         const oci = occ.commandInterface;
 
 
-        oci.box("b", "20", "20", "20");
+        oci.box("b", params.x,params.y,params.z);
 
         return occ.utils.applyBooleanModifier(["b"], params.boolean);
 
