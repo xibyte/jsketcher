@@ -16,7 +16,7 @@ interface RevolveParams {
 const RevolveOperation: OperationDescriptor<RevolveParams> = {
   id: 'Revolve',
   label: 'Revolve',
-  icon: 'img/cad/Revolve',
+  icon: 'img/cad/revolve',
   info: 'Revolves 2D sketch',
   paramsInfo: ({angle}) => `(${r(angle)})`,
   run: (params: RevolveParams, ctx: ApplicationContext) => {

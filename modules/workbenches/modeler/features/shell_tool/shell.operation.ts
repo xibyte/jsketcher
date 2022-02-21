@@ -13,7 +13,7 @@ interface ShellParams {
 const ShellOperation: OperationDescriptor<ShellParams> = {
   id: 'shell_tool',
   label: 'Shell',
-  icon: 'img/cad/Shell',
+  icon: 'img/cad/shell',
   info: 'Shells 2D sketch',
   paramsInfo: ({thickness}) => `(${r(thickness)})`,
   run: (params: ShellParams, ctx: ApplicationContext) => {
