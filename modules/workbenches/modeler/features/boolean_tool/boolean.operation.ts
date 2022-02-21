@@ -12,7 +12,7 @@ interface BooleanParams {
 const BooleanOperation: OperationDescriptor<BooleanParams> = {
   id: 'boolean_tool',
   label: 'Boolean',
-  icon: 'img/cad/Boolean',
+  icon: 'img/cad/intersection',
   info: 'Booleans 2D sketch',
   paramsInfo: ({tools, boolean}) => `(${r(tools)} ${r(boolean)})`,
   run: (params: BooleanParams, ctx: ApplicationContext) => {

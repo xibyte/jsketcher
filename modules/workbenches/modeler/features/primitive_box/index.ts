@@ -16,7 +16,7 @@ interface PrimitiveBoxParams {
 const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
   id: 'primitive_box',
   label: 'Primitive Box',
-  icon: 'img/cad/extrude',
+  icon: 'img/cad/cube',
   info: 'Primitive Box',
   paramsInfo: ({x, y, z}) => `(${r(x)} , ${r(y)} , ${r(z)})`,
   form: [

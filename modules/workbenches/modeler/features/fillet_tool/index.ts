@@ -2,25 +2,13 @@ import { ApplicationContext } from 'context';
 import { MBrepShell } from 'cad/model/mshell';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { occ2brep } from 'cad/occ/occ2models';
-import icon32 from './icon32.png';
-import icon96 from './icon96.png';
+
 import { EntityKind } from "cad/model/entities";
 
 export default {
     id: 'fillet_tool',
     label: 'Fillet/Chapher',
-    icon: {
-        iconSet: {
-            medium: {
-                iconType: 'image',
-                iconContent: icon32
-            },
-            large: {
-                iconType: 'image',
-                iconContent: icon96
-            }
-        },
-    },
+    icon: 'img/cad/fillet',
     info: 'Fillet/Champher',
     mutualExclusiveFields: [],
     paramsInfo: ({ size, opperationType, }) => `(${r(size)} ${r(opperationType)}})`,
