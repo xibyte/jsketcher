@@ -5,10 +5,12 @@ import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {UnitVector} from "math/vector";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
+import { negate } from 'cypress/types/lodash';
 
 
 interface ExtrudeParams {
   length: number;
+  doubleSided:boolean,
   face: MFace;
   direction?: UnitVector,
   boolean: BooleanDefinition
@@ -35,10 +37,19 @@ const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     const dir: UnitVector = params.direction || face.normal();
 
     const extrusionVector = dir.normalize()._multiply(params.length).data();
+    const extrusionVectorFliped = dir.normalize()._multiply(params.length).negate().data();
+
 
     const tools = occFaces.map((faceName, i) => {
       const shapeName = "Tool/" + i;
-      oci.prism(shapeName, faceName, ...extrusionVector)
+      oci.prism(shapeName, faceName, ...extrusionVector);
+
+      if(params.doubleSided){
+        oci.prism(shapeName + "B", faceName, ...extrusionVectorFliped);
+        oci.bop(shapeName, shapeName + "B");
+        oci.bopfuse(shapeName);
+      }
+
 
       // occIterateFaces(oc, shape, face => {
       //   let role;
@@ -78,6 +89,15 @@ const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       name: 'length',
       defaultValue: 50,
     },
+    {
+      type: 'checkbox',
+      label: 'Double Sided',
+      name: 'doubleSided',
+      defaultValue: false,
+    },
+
+
+    
     {
       type: 'selection',
       name: 'face',
