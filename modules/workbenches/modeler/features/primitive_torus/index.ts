@@ -1,64 +1,70 @@
 import { ApplicationContext } from 'context';
-import { MBrepShell } from 'cad/model/mshell';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { occ2brep } from 'cad/occ/occ2models';
-import icon32 from './icon32.png';
-import icon96 from './icon96.png';
+import { EntityKind } from "cad/model/entities";
+import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
+import { OperationDescriptor } from "cad/craft/operationPlugin";
 
-export default {
+
+interface PrimitiveTorusParams {
+    radius: number,
+    tubeRadius: number,
+    locations: {},
+    boolean: BooleanDefinition,
+}
+
+const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
     id: 'primitive_torus',
-    label: 'primitive_torus',
-    icon: {
-        iconSet: {
-            medium: {
-                iconType: 'image',
-                iconContent: icon32
-            },
-            large: {
-                iconType: 'image',
-                iconContent: icon96
-            }
-        },
-    },
-    info: 'primitive_torus',
-    mutualExclusiveFields: [],
-    paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} ${r(tubeRadius)} )`,
-    schema: {
-        radius: {
+    label: 'Primitive Torus',
+    icon: 'img/cad/torus',
+    info: 'Primitive Torus',
+    paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} , ${r(tubeRadius)} )`,
+    form: [
+        {
             type: 'number',
-            defaultValue: 200,
-            label: 'radius'
-        },
-        tubeRadius: {
-            type: 'number',
+            label: 'Radius',
+            name: 'radius',
             defaultValue: 50,
-            label: 'tube radius'
         },
-    },
-    run: ({ radius, tubeRadius  }, ctx: ApplicationContext) => {
+        {
+            type: 'number',
+            label: 'Tube Radius',
+            name: 'tubeRadius',
+            defaultValue: 50,
+        },
+        {
+            type: 'selection',
+            name: 'locations',
+            capture: [EntityKind.DATUM],
+            label: 'locations',
+            multi: false,
+            optional: true,
+            defaultValue: {
+                usePreselection: true,
+                preselectionIndex: 0
+            },
+        },
 
-        const oc = ctx.occService.occContext;
+        {
+            type: 'boolean',
+            name: 'boolean',
+            label: 'boolean',
+            optional: true,
+        }
 
-        const myLocation = new oc.gp_Pnt_3(0, 0, 0);
-        const torusCenterline = oc.gp.DZ();
-        const torusOrientationAndLocation = new oc.gp_Ax2_3(myLocation, torusCenterline);
-
-
-        let myBody = new oc.BRepPrimAPI_MakeTorus_1(radius, tubeRadius);
-        //let myBody = new oc.BRepPrimAPI_Make
-
-        const aRes = new oc.TopoDS_Compound();
-        const aBuilder = new oc.BRep_Builder();
-        aBuilder.MakeCompound(aRes);
-        aBuilder.Add(aRes, myBody.Shape());
+    ],
 
 
+    run: (params: PrimitiveTorusParams, ctx: ApplicationContext) => {
 
-        const mobject = new MBrepShell(occ2brep(aRes, ctx.occService.occContext));
-        return {
-            consumed: [],
-            created: [mobject]
-        };
+        let occ = ctx.occService;
+        const oci = occ.commandInterface;
+
+        //pTorus cy 5 10
+        oci.ptorus("torus", params.radius, params.tubeRadius);
+
+        return occ.utils.applyBooleanModifier(["torus"], params.boolean);
+
     },
 }
 
+export default PrimitiveTorusOperation;
