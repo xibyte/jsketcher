@@ -29,7 +29,7 @@ const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
             type: 'number',
             label: 'Tube Radius',
             name: 'tubeRadius',
-            defaultValue: 50,
+            defaultValue: 10,
         },
         {
             type: 'selection',

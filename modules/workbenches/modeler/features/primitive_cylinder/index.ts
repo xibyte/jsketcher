@@ -16,7 +16,7 @@ const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderParams> =
     id: 'primitive_cylinder',
     label: 'Primitive cylinder',
     icon: 'img/cad/cylinder',
-    info: 'Primitive Box',
+    info: 'Primitive Cylinder',
     paramsInfo: ({ height, diameter}) => `(${r(height)} , ${r(diameter)} )`,
     form: [
         {
