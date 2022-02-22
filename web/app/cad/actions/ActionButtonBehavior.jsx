@@ -15,7 +15,7 @@ export function ActionButtonBehavior({children, actionId}) {
     request.y = pageY + 10;
   }
 
-  const actionService = ctx.services.action;
+  const actionService = ctx.actionService;
 
   return children({
     'data-action-id': actionId,

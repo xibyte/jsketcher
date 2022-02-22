@@ -15,7 +15,8 @@ export const STANDARD_MODE_HEADS_UP_TOOLBAR = ['DATUM_CREATE', 'PLANE', 'EditFac
   "primitive_cylinder", "primitive_box", "primitive_cone", "primitive_sphere", "primitive_torus", "hole_tool",
   "fillet_tool"];
 
-export function activate({services, streams}) {
+export function activate(ctx) {
+  const {services, streams} = ctx;
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'menu.views', 'Donate', 'GitHub'];
   streams.ui.controlBars.right.value = [
     ['Info', {label: null}],
@@ -26,10 +27,10 @@ export function activate({services, streams}) {
   streams.ui.toolbars.headsUp.value = STANDARD_MODE_HEADS_UP_TOOLBAR;
   streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport'];
   
-  services.action.registerActions(CoreActions);
-  services.action.registerActions(OperationActions);
-  services.action.registerActions(HistoryActions);
-  services.action.registerActions(UsabilityActions);
+  ctx.actionService.registerActions(CoreActions);
+  ctx.actionService.registerActions(OperationActions);
+  ctx.actionService.registerActions(HistoryActions);
+  ctx.actionService.registerActions(UsabilityActions);
 
   services.menu.registerMenus(menuConfig);
 

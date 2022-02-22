@@ -20,7 +20,7 @@ export default function UISystem({children, ...props}) {
   const uiCxt = {
     closeAllUpPopups: () => {
       ctx.services.menu.closeAll();
-      ctx.services.action.showHintFor(null);
+      ctx.actionService.showHintFor(null);
       onCloseAll.next();
     },
     onCloseAll

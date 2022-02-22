@@ -9,49 +9,61 @@ import commonActions from "./commonActions";
 import exportActions from "./exportActions";
 import generalToolActions from "./generalToolActions";
 
-const ALL_CONTEXTUAL_ACTIONS = [
-  ...constraintActions,
-  ...operationActions,
-];
+let ALL_CONTEXTUAL_ACTIONS, ACTIONS, ALL_ACTIONS, index;
 
-const ACTIONS = [
-  ...constraintGlobalActions,
-  ...measureActions,
-  ...generalToolActions,
-  ...objectToolActions,
-  ...commonActions,
-  ...exportActions
-  //keep going here
-];
+function initIfNeeded() {
+  if (ALL_CONTEXTUAL_ACTIONS) {
+    return;
+  }
+  ALL_CONTEXTUAL_ACTIONS = [
+    ...constraintActions,
+    ...operationActions,
+  ];
 
-export const ALL_ACTIONS = [
-  ...ALL_CONTEXTUAL_ACTIONS,
-  ...ACTIONS
-];
-Object.freeze(ALL_ACTIONS);
+  ACTIONS = [
+    ...constraintGlobalActions,
+    ...measureActions,
+    ...generalToolActions,
+    ...objectToolActions,
+    ...commonActions,
+    ...exportActions
+    //keep going here
+  ];
 
-const index = {};
-ALL_ACTIONS.forEach(a => index[a.id] = a);
-Object.freeze(index);
+  ALL_ACTIONS = [
+    ...ALL_CONTEXTUAL_ACTIONS,
+    ...ACTIONS
+  ];
+  Object.freeze(ALL_ACTIONS);
+
+  index = {};
+  ALL_ACTIONS.forEach(a => index[a.id] = a);
+  Object.freeze(index);
+}
 
 export function matchAvailableActions(selection) {
+  initIfNeeded();
   return matchAvailableSubjects(selection, ALL_CONTEXTUAL_ACTIONS);
 }
 
 export function getSketcherAction(actionId) {
+  initIfNeeded();
   return index[actionId];
 }
 
 export function getAllSketcherActions() {
+  initIfNeeded();
   return ALL_ACTIONS;
 }
 
 export function getSketcherActionIndex() {
+  initIfNeeded();
   return index;
 }
 
 //For backward compatibility
 export function runActionOrToastWhyNot(actionId, ctx, silent) {
+  initIfNeeded();
   const selection = ctx.viewer.selected;
   const action = index[actionId];
   if (action) {
@@ -71,7 +83,7 @@ export function runActionOrToastWhyNot(actionId, ctx, silent) {
 }
 
 export function startOperation(ctx, actionId) {
-
+  initIfNeeded();
   const action = index[actionId];
   if (action.wizard) {
     ctx.ui.$wizardRequest.next({

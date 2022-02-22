@@ -1,4 +1,3 @@
-import {startOperation} from "../../sketcher/actions";
 import objectToolActions from '../../sketcher/actions/objectToolActions';
 import measureActions from '../../sketcher/actions/measureActions';
 import {insertAfter} from 'gems/iterables';
@@ -7,9 +6,9 @@ import constraintGlobalActions from "../../sketcher/actions/constraintGlobalActi
 import generalToolActions from "../../sketcher/actions/generalToolActions";
 import sketcherControlActions from "./sketcherControlActions";
 
-export default function ({services, streams}) {
-  services.action.registerActions(sketcherControlActions);
-  services.action.registerActions([
+export default function (ctx) {
+  ctx.actionService.registerActions(sketcherControlActions);
+  ctx.actionService.registerActions([
     ...constraintGlobalActions,
     ...measureActions,
     ...generalToolActions,
