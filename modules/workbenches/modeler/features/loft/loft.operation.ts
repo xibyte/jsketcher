@@ -11,7 +11,8 @@ import {MSketchLoop} from "cad/model/mloop";
 
 interface LoftParams {
   loops: MSketchLoop[];
-  boolean: BooleanDefinition
+  boolean: BooleanDefinition;
+  loftType: string;
 }
 
 const LoftOperation: OperationDescriptor<LoftParams> = {
@@ -25,51 +26,28 @@ const LoftOperation: OperationDescriptor<LoftParams> = {
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    oci.polyline("w1",
-      "0", "0", "0",
-      "5", "0", "0",
-      "5", "5", "0",
-      "2", "3", "0",
-      "0", "0", "0",
-    );
-    oci.polyline("w2",
-      "0", "1", "3",
-      "4", "1", "3",
-      "4", "4", "3",
-      "1", "3", "3",
-      "0", "1", "3",
-    );
-    oci.polyline("w3",
-      "0", "0", "5",
-      "5", "0", "5",
-      "5", "5", "5",
-      "2", "3", "5",
-      "0", "0", "5",
-    );
-    //# create the shape 
-     var wires = [];
-     wires.push("w1");
-    // wires.push("w2");
-    // wires.push("w3");
+
 
     console.log(params.loops);
-    
-    let itterator = 0;
-
-    let loop = params.loops[0];
-    let myReturnWire = occ.io.sketchLoader.pushContourAsWire(loop.contour, itterator, loop.face.csys )
-
-    wires.push(myReturnWire);
 
 
-    oci.thrusections("th", "1", "0", ...wires );
+    const wires = params.loops.map((loop, i) => {
+      const shapeName = "loop/" + i;
+      return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys)
+    });
 
 
+    let loftType = 0;
+    if (params.loftType == "smooth") loftType = 0;
+    if (params.loftType == "sharp") loftType = 1;
 
-    return {
-      created:[occ.io.getShell("th")],
-      consumed:[]
-    }
+
+    oci.thrusections("th", "1", loftType, ...wires );
+
+    let tools = [];
+    tools.push(occ.io.getShell("th"));
+
+    return occ.utils.applyBooleanModifier(tools, params.boolean);
 
   },
 
@@ -79,12 +57,20 @@ const LoftOperation: OperationDescriptor<LoftParams> = {
       type: 'selection',
       name: 'loops',
       capture: [EntityKind.LOOP],
-      label: 'face',
+      label: 'Loops',
       multi: true,
       defaultValue: {
         usePreselection: true,
         preselectionIndex: 0
       },
+    },
+    {
+      type: 'choice',
+      label: 'Loft Type',
+      name: "loftType",
+      style: "dropdown",
+      defaultValue: "smooth",
+      values: ['smooth', 'sharp',],
     },
     {
       type: 'boolean',
