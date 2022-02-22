@@ -143,6 +143,7 @@ export function activate(ctx: CoreContext) {
 
           runPromise(i + 1);
         }).catch(error => {
+          debugger
           reject({
             failIndex: i,
             error
