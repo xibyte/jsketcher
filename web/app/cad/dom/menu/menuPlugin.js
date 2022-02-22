@@ -1,6 +1,8 @@
 import {state} from 'lstream';
 
-export function activate({services, streams}) {
+export function activate(ctx) {
+
+  const {services, streams} = ctx;
 
   streams.ui.menu = {
     all: state([]),
@@ -35,7 +37,7 @@ export function activate({services, streams}) {
       });
       menusToAdd.push({id, actions});
     });
-    services.action.registerActions(showMenuActions);
+    ctx.actionService.registerActions(showMenuActions);
     streams.ui.menu.all.update(menus => [...menus, ...menusToAdd]);
   }
 

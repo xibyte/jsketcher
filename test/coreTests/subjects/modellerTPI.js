@@ -24,7 +24,7 @@ function waitFor(checkFn) {
 export default ctx => {
 
   function openWizard(operationId) {
-    ctx.services.action.run(operationId);
+    ctx.actionService.run(operationId);
   }
 
   async function wizardOK() {
@@ -101,12 +101,12 @@ export default ctx => {
   }
 
   function openSketcher() {
-    ctx.services.action.run('EditFace');
+    ctx.actionService.run('EditFace');
     return createSubjectFromInPlaceSketcher(ctx);
   }
   
   function commitSketch() {
-    ctx.services.action.run('sketchSaveAndExit');
+    ctx.actionService.run('sketchSaveAndExit');
   }
   
   return {

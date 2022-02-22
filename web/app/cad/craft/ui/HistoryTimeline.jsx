@@ -141,8 +141,8 @@ function HistoryItem({index, pointer, modification, getOperation, toggle, select
   </div>;
 });
 
-const AddButton = mapContext(({services}) => ({
-  showCraftMenu: e => services.action.run('menu.craft', menuAboveElementHint(e.currentTarget))
+const AddButton = mapContext((ctx) => ({
+  showCraftMenu: e => ctx.actionService.action.run('menu.craft', menuAboveElementHint(e.currentTarget))
 }))(
   function AddButton({showCraftMenu}) {
     return <div className={ls.add} onClick={showCraftMenu}>

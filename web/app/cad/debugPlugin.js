@@ -14,10 +14,11 @@ import {BufferGeometry, BufferAttribute, Float32BufferAttribute, Int32BufferAttr
 
 const BREP_DEBUG_WINDOW_VISIBLE$ = state(false);
 
-export function activate({services, streams}) {
+export function activate(ctx) {
+  const {services, streams} = ctx;
   addGlobalDebugActions(services);
   addDebugSelectors(services);
-  services.action.registerActions(DebugActions);
+  ctx.actionService.registerActions(DebugActions);
   services.menu.registerMenus([DebugMenuConfig]);
   services.debug = {
     LOG_FLAGS,
