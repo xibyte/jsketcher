@@ -66,14 +66,7 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'la
   </ToolbarButton>
 }
 
-const K = constant({
-  info: "unknown action: ",
-  label: "unknown action ",
-  icon: GrCircleQuestion
-})
-
 export const NonExistentAppearance = memoize((actionId) => {
-  debugger
   return constant({
     info: "unknown action: " + actionId,
     label: "unknown action " + actionId,
