@@ -18,6 +18,7 @@ export function activate(ctx: CoreContext) {
 
   const models$ = state<MObject[]>([]);
   const update$ = stream<void>();
+  const pipelineFailure$ = state<any>(null);
 
   models$.attach(models => models.forEach(model => model.traverse(m => {
     if (m instanceof MFace) {
@@ -110,7 +111,7 @@ export function activate(ctx: CoreContext) {
    ctx.craftService  = {
     modify, modifyInHistoryAndStep, reset, rebuild, runRequest, runPipeline,
     historyTravel: historyTravel(modifications$),
-    modifications$, models$, update$, isEditingHistory
+    modifications$, models$, update$, isEditingHistory, pipelineFailure$
   };
 
   // @ts-ignore
@@ -123,6 +124,8 @@ export function activate(ctx: CoreContext) {
   };
 
   function runPipeline(history: OperationRequest[], beginIndex: number, endIndex: number): Promise<void> {
+
+    pipelineFailure$.next(null);
 
     const models: Set<MObject> = new Set(models$.value);
 
@@ -143,14 +146,14 @@ export function activate(ctx: CoreContext) {
 
           runPromise(i + 1);
         }).catch(error => {
-          debugger
+          pipelineFailure$.next(error)
           reject({
-            failIndex: i,
+            failIndex: i - 1 ,
             error
           });
         })
       }
-      runPromise(beginIndex);
+      return runPromise(beginIndex);
     });
   }
 
@@ -182,7 +185,7 @@ export function activate(ctx: CoreContext) {
         //TODO: need to find a way to propagate the error to the wizard.
         next({
           ...curr,
-          pointer: reason.failIndex
+          pointer: reason.failIndex,
         });
       });
   })
@@ -251,6 +254,7 @@ interface CraftService {
   modifications$: StateStream<CraftHistory>;
   models$: StateStream<MObject[]>;
   update$: Emitter<void>;
+  pipelineFailure$: StateStream<any>
 
   modify(request: OperationRequest, onAccepted: () => void, onError: () => Error);
 
