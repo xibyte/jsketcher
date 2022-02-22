@@ -9,6 +9,7 @@ import hole_tool from './features/hole_tool';
 import fillet_tool from './features/fillet_tool';
 import boolean_tool from './features/boolean_tool/boolean.operation';
 import ShellOperation from './features/shell_tool/shell.operation';
+import loft from './features/loft/loft.operation'
 
 export default {
 
@@ -25,5 +26,6 @@ export default {
         RevolveOperation,
         boolean_tool,
         ShellOperation,
+        loft,
     ]
 }
