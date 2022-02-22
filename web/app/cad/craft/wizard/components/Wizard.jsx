@@ -9,6 +9,8 @@ import {FormContext, FormContextData} from './form/Form';
 import connect from 'ui/connect';
 import {combine} from 'lstream';
 import {GenericWizard} from "ui/components/GenericWizard";
+import * as PropTypes from "prop-types";
+import {useStream} from "ui/effects";
 
 @connect((streams, props) => combine(props.context.workingRequest$, props.context.state$)
   .map(([workingRequest, state]) => ({
@@ -54,19 +56,15 @@ export default class Wizard extends React.Component {
                    topicId={operation.id}
                    onCancel={this.cancel}
                    onOK={this.onOK}
-                   infoText={error && <div className={ls.errorMessage}>
-                     {CadError.ALGORITHM_ERROR_KINDS.includes(error.kind) && <span>
-                        performing operation with current parameters leads to an invalid object
-                        (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
-                      </span>}
-                     {error.code && <div className={ls.errorCode}>{error.code}</div>}
-                     {error.userMessage && <div className={ls.userErrorMessage}>{error.userMessage}</div>}
-                     {!error.userMessage && <div>internal error processing operation, check the log</div>}
-                   </div>}
+                   infoText={<>
+                     {error && <ErrorPrinter error={error}/>}
+                     <PipelineError />
+                   </>}
     >
       <FormContext.Provider value={new FormContextData(this.props.context, [])}>
         <Form/>
       </FormContext.Provider>
+
     </GenericWizard>;
   }
 
@@ -100,5 +98,22 @@ export default class Wizard extends React.Component {
     this.props.onOK();
   };
 }
+function PipelineError() {
+  const pipelineFailure = useStream(ctx => ctx.craftService.pipelineFailure$);
+  if (!pipelineFailure) {
+    return null;
+  }
+  return <ErrorPrinter error={pipelineFailure}/>
+}
 
-
+function ErrorPrinter({error}) {
+  return <div className={ls.errorMessage}>
+    {CadError.ALGORITHM_ERROR_KINDS.includes(error.kind) && <span>
+                        performing operation with current parameters leads to an invalid object
+                        (self-intersecting / zero-thickness / complete degeneration or unsupported cases)
+                      </span>}
+    {error.code && <div className={ls.errorCode}>{error.code}</div>}
+    {error.userMessage && <div className={ls.userErrorMessage}>{error.userMessage}</div>}
+    {!error.userMessage && <div>internal error processing operation, check the log</div>}
+  </div>
+}
