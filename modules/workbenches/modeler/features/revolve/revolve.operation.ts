@@ -13,8 +13,8 @@ interface RevolveParams {
   boolean: BooleanDefinition
 }
 
-const RevolveOperation: OperationDescriptor<RevolveParams> = {
-  id: 'Revolve',
+export const RevolveOperation: OperationDescriptor<RevolveParams> = {
+  id: 'REVOLVE',
   label: 'Revolve',
   icon: 'img/cad/revolve',
   info: 'Revolves 2D sketch',
@@ -77,5 +77,3 @@ const RevolveOperation: OperationDescriptor<RevolveParams> = {
 
   ],
 }
-
-export default RevolveOperation;

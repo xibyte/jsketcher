@@ -14,8 +14,8 @@ interface HoleParams {
   holeType: string;
 }
 
-const HoleOperation: OperationDescriptor<HoleParams> = {
-  id: 'hole_tool',
+export const HoleOperation: OperationDescriptor<HoleParams> = {
+  id: 'HOLE_TOOL',
   label: 'hole',
   icon: 'img/cad/Shell',
   info: 'creates hole features',
@@ -136,5 +136,3 @@ const HoleOperation: OperationDescriptor<HoleParams> = {
     },
   ],
 }
-
-export default HoleOperation;

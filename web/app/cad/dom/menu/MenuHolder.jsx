@@ -6,6 +6,7 @@ import {ActionButtonBehavior} from '../../actions/ActionButtonBehavior';
 import connect from 'ui/connect';
 import {combine, merger} from 'lstream';
 import {useStream} from "ui/effects";
+import {NonExistentAppearance, NonExistentState} from "cad/dom/components/PlugableToolbar";
 
 function MenuHolder({menus}) {
   return menus.map(({id, actions}) => <ConnectedActionMenu key={id} menuId={id} actions={actions} />); 
@@ -58,9 +59,8 @@ export function ConnectedMenuItem(props) {
 
   const actionId = props.actionId;
 
-  const actionAppearance = useStream(ctx => ctx.streams.action.appearance[actionId]);
-  const actionState = useStream(ctx => ctx.streams.action.state[actionId]);
-
+  const actionAppearance = useStream(ctx => (ctx.streams.action.appearance[actionId] || NonExistentAppearance(actionId)));
+  const actionState = useStream(ctx => ctx.streams.action.state[actionId] || NonExistentState);
 
   if (!actionAppearance || !actionState) {
     return null;

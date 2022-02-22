@@ -5,9 +5,11 @@ import ImgIcon from 'ui/components/ImgIcon';
 import {toIdAndOverrides} from '../../actions/actionRef';
 import {ActionButtonBehavior} from '../../actions/ActionButtonBehavior';
 import capitalize from 'gems/capitalize';
-import {combine} from 'lstream';
+import {constant} from 'lstream';
 import {useStream} from "ui/effects";
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
+import {GrCircleQuestion} from "react-icons/all";
+import {memoize} from "lodash/function";
 
 function ConfigurableToolbar({actions, size, ...props}) {
   return <Toolbar size={size} {...props}>
@@ -64,11 +66,32 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'la
   </ToolbarButton>
 }
 
+const K = constant({
+  info: "unknown action: ",
+  label: "unknown action ",
+  icon: GrCircleQuestion
+})
+
+export const NonExistentAppearance = memoize((actionId) => {
+  debugger
+  return constant({
+    info: "unknown action: " + actionId,
+    label: "unknown action " + actionId,
+    icon: () => <span>?{actionId}?</span>
+  })
+})
+
+export const NonExistentState = constant({
+  enabled: true,
+  visible: true
+});
+
+
 export function ConnectedActionButton(props) {
 
   const actionId = props.actionId;
-  const actionAppearance = useStream(ctx => ctx.streams.action.appearance[actionId]);
-  const actionState = useStream(ctx => ctx.streams.action.state[actionId]);
+  const actionAppearance = useStream(ctx => (ctx.streams.action.appearance[actionId] || NonExistentAppearance(actionId)));
+  const actionState = useStream(ctx => ctx.streams.action.state[actionId] || NonExistentState);
   if (!actionAppearance || !actionState) {
     return null;
   }

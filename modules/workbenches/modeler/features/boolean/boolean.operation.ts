@@ -9,8 +9,8 @@ interface BooleanParams {
   boolean: BooleanDefinition
 }
 
-const BooleanOperation: OperationDescriptor<BooleanParams> = {
-  id: 'boolean_tool',
+export const BooleanOperation: OperationDescriptor<BooleanParams> = {
+  id: 'BOOLEAN',
   label: 'Boolean',
   icon: 'img/cad/intersection',
   info: 'Booleans 2D sketch',
@@ -46,5 +46,3 @@ const BooleanOperation: OperationDescriptor<BooleanParams> = {
     },
   ],
 }
-
-export default BooleanOperation;

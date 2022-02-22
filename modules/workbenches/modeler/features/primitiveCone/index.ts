@@ -13,8 +13,8 @@ interface PrimitiveConeParams {
   boolean: BooleanDefinition,
 }
 
-const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = {
-  id: 'primitive_cone',
+export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = {
+  id: 'PRIMITIVE_CONE',
   label: 'Primitive Cone',
   icon: 'img/cad/cone',
   info: 'Primitive Cone',
@@ -73,5 +73,3 @@ const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = {
 
   },
 }
-
-export default PrimitiveConeOperation;

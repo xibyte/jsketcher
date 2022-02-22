@@ -32,12 +32,13 @@ import * as OCCTPlugin from '../craft/e0/occtPlugin';
 import context from 'context';
 
 import startReact from "../dom/startReact";
-import * as UIConfigPlugin from "../part/uiConfigPlugin";
+import * as UIConfigPlugin from "../workbench/uiConfigPlugin";
 import * as DebugPlugin from "../debugPlugin";
 import * as ExpressionsPlugin from "../expressions/expressionsPlugin";
-import * as PartOperationsPlugin from "../part/partOperationsPlugin";
+import {WorkbenchPlugin} from "../workbench/workbenchPlugin";
 import * as LocationPlugin from "../location/LocationPlugin";
 import * as AssemblyPlugin from "../assembly/assemblyPlugin";
+import {WorkbenchesLoaderPlugin} from "cad/workbench/workbenchesLoaderPlugin";
 
 export default function startApplication(callback) {
 
@@ -72,10 +73,11 @@ export default function startApplication(callback) {
     MarkerPlugin,
     PickControlPlugin,
     EntityContextPlugin,
+    WorkbenchPlugin,
     SketcherPlugin,
     UIConfigPlugin,
     DebugPlugin,
-    PartOperationsPlugin,
+    WorkbenchesLoaderPlugin,
     LocationPlugin,
     AssemblyPlugin,
     RemotePartsPlugin,

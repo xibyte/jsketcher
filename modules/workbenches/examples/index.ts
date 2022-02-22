@@ -1,8 +1,13 @@
-import OCC_BOTTLE from './features/occ_bottle'; 
+import OCCBottle from './features/occ_bottle';
+import {WorkbenchConfig} from "cad/workbench/workbenchService";
 
-export default {
-    workbenchId: 'examples',
-    features: [
-        OCC_BOTTLE,
-    ]
+export const ExampleWorkspace: WorkbenchConfig = {
+  workbenchId: 'examples',
+  features: [
+    OCCBottle,
+  ],
+  actions: [],
+  ui: {
+    toolbar: []
+  }
 }

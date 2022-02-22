@@ -1,7 +1,8 @@
-import ModelerWorkbench from './modeler';
-import ExampleWorkbench from './examples';
+import {ModelerWorkspace} from "workbenches/modeler";
+import {ExampleWorkspace} from "workbenches/examples";
+import {WorkbenchConfig} from "cad/workbench/workbenchService";
 
-export default [
-    ModelerWorkbench,
-    ExampleWorkbench,
+export const WorkbenchRegistry: WorkbenchConfig[] = [
+    ModelerWorkspace,
+    // ExampleWorkspace,
 ]

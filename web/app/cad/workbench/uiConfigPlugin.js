@@ -10,11 +10,6 @@ import Expressions from '../expressions/Expressions';
 import {SelectionView} from "../dom/components/SelectionView";
 import {GrSelect} from "react-icons/gr";
 
-export const STANDARD_MODE_HEADS_UP_TOOLBAR = ['DATUM_CREATE', 'PLANE', 'EditFace', '-', "OCC_BOTTLE", '-',
-  "EXTRUDE", "Revolve", "loft","-", "boolean_tool", "shell_tool",
-  "primitive_cylinder", "primitive_box", "primitive_cone", "primitive_sphere", "primitive_torus", "hole_tool",
-  "fillet_tool"];
-
 export function activate(ctx) {
   const {services, streams} = ctx;
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'menu.views', 'Donate', 'GitHub'];
@@ -24,7 +19,6 @@ export function activate(ctx) {
     ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}]
   ];
 
-  streams.ui.toolbars.headsUp.value = STANDARD_MODE_HEADS_UP_TOOLBAR;
   streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport'];
   
   ctx.actionService.registerActions(CoreActions);
