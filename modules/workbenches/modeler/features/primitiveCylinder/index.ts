@@ -5,37 +5,30 @@ import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
 
 
-interface PrimitiveBoxParams {
-  x: Number,
-  y: Number,
-  z: Number,
+interface PrimitiveCylinderParams {
+  diameter: number,
+  height: number,
   locations: {},
   boolean: BooleanDefinition,
 }
 
-const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
-  id: 'primitive_box',
-  label: 'Primitive Box',
-  icon: 'img/cad/cube',
-  info: 'Primitive Box',
-  paramsInfo: ({x, y, z}) => `(${r(x)} , ${r(y)} , ${r(z)})`,
+export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderParams> = {
+  id: 'PRIMITIVE_CYLINDER',
+  label: 'Primitive cylinder',
+  icon: 'img/cad/cylinder',
+  info: 'Primitive Cylinder',
+  paramsInfo: ({height, diameter}) => `(${r(height)} , ${r(diameter)} )`,
   form: [
     {
       type: 'number',
-      label: 'X',
-      name: 'x',
+      label: 'Diameter',
+      name: 'diameter',
       defaultValue: 50,
     },
     {
       type: 'number',
-      label: 'Y',
-      name: 'y',
-      defaultValue: 50,
-    },
-    {
-      type: 'number',
-      label: 'Z',
-      name: 'z',
+      label: 'Height',
+      name: 'height',
       defaultValue: 50,
     },
     {
@@ -61,17 +54,15 @@ const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
   ],
 
 
-  run: (params: PrimitiveBoxParams, ctx: ApplicationContext) => {
+  run: (params: PrimitiveCylinderParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
+    //pcylinder cy 5 10
+    oci.pcylinder("cy", params.diameter / 2, params.height);
 
-    oci.box("b", params.x, params.y, params.z);
-
-    return occ.utils.applyBooleanModifier(["b"], params.boolean);
+    return occ.utils.applyBooleanModifier(["cy"], params.boolean);
 
   },
 }
-
-export default PrimitiveBoxOperation;

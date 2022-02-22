@@ -7,6 +7,7 @@ import {isMenuAction} from '../menu/menuPlugin';
 import {menuAboveElementHint} from '../menu/menuUtils';
 import {useStream} from "ui/effects";
 import {ActionButtonBehavior} from "../../actions/ActionButtonBehavior";
+import {NonExistentAppearance, NonExistentState} from "cad/dom/components/PlugableToolbar";
 
 export default function PlugableControlBar() {
   return <ControlBar left={<LeftGroup />} right={<RightGroup />}/>;
@@ -44,8 +45,8 @@ function ConnectedActionButton(props) {
 
   const actionId = props.actionId;
 
-  const actionAppearance = useStream(ctx => ctx.streams.action.appearance[actionId]);
-  const actionState = useStream(ctx => ctx.streams.action.state[actionId]);
+  const actionAppearance = useStream(ctx => (ctx.streams.action.appearance[actionId] || NonExistentAppearance(actionId)));
+  const actionState = useStream(ctx => ctx.streams.action.state[actionId] || NonExistentState);
 
   if (!actionAppearance || !actionState) {
     return null;

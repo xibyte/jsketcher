@@ -1,11 +1,8 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { UnitVector } from "math/vector";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
-import { negate } from 'cypress/types/lodash';
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {ApplicationContext} from "context";
+import {EntityKind} from "cad/model/entities";
+import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {MSketchLoop} from "cad/model/mloop";
 
 
@@ -15,8 +12,8 @@ interface LoftParams {
   loftType: string;
 }
 
-const LoftOperation: OperationDescriptor<LoftParams> = {
-  id: 'loft',
+export const LoftOperation: OperationDescriptor<LoftParams> = {
+  id: 'LOFT',
   label: 'Loft',
   icon: 'img/cad/loft',
   info: 'Lofts 2D sketch',
@@ -81,5 +78,3 @@ const LoftOperation: OperationDescriptor<LoftParams> = {
 
   ],
 }
-
-export default LoftOperation;

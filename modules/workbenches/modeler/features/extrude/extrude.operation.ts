@@ -5,7 +5,6 @@ import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {UnitVector} from "math/vector";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
-import { negate } from 'cypress/types/lodash';
 
 
 interface ExtrudeParams {
@@ -16,7 +15,7 @@ interface ExtrudeParams {
   boolean: BooleanDefinition
 }
 
-const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
+export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   id: 'EXTRUDE',
   label: 'Extrude',
   icon: 'img/cad/extrude',
@@ -137,5 +136,3 @@ const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
   ],
 }
-
-export default ExtrudeOperation;

@@ -2,13 +2,12 @@ import {enableAnonymousActionHint} from './anonHint';
 import * as stream from 'lstream';
 import {state, StateStream, Stream} from 'lstream';
 import {LOG_FLAGS} from '../logFlags';
-import {CoreContext} from "context";
+import {ApplicationContext} from "context";
 import {IconType} from "react-icons";
 
-export function activate(context: CoreContext) {
+export function activate(context: ApplicationContext) {
   
   let {streams} = context;
-
 
   const appearanceStreams: ActionAppearanceStreams = {};
   const stateStreams: ActionStateStreams = {};

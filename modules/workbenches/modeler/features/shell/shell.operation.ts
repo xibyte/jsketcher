@@ -10,8 +10,8 @@ interface ShellParams {
   faces: [MFace];
 }
 
-const ShellOperation: OperationDescriptor<ShellParams> = {
-  id: 'shell_tool',
+export const ShellOperation: OperationDescriptor<ShellParams> = {
+  id: 'SHELL_TOOL',
   label: 'Shell',
   icon: 'img/cad/shell',
   info: 'Shells 2D sketch',
@@ -76,5 +76,3 @@ const ShellOperation: OperationDescriptor<ShellParams> = {
     },
   ],
 }
-
-export default ShellOperation;

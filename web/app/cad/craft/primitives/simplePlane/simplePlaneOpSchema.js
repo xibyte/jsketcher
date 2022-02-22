@@ -6,7 +6,7 @@ export default {
   },
   parallelTo: {
     type: 'entity',
-    allowedKinds: 'face',
+    allowedKinds: ['face'],
     optional: true,
   },
   depth: {

@@ -1,10 +1,8 @@
-import {DelegatingPanTool} from '../../sketcher/tools/pan';
+import {DelegatingPanTool} from 'sketcher/tools/pan';
 import {Matrix4} from 'three/src/math/Matrix4';
 import {CAMERA_MODE} from '../scene/viewer';
 import DPR from 'dpr';
-import {SKETCHER_MODE_HEADS_UP_ACTIONS} from "./sketcherUIContrib";
-import {createEssentialAppContext} from "../../sketcher/sketcherContext";
-import {STANDARD_MODE_HEADS_UP_TOOLBAR} from "../part/uiConfigPlugin";
+import {createEssentialAppContext} from "sketcher/sketcherContext";
 import {ORIGIN} from "math/vector";
 
 export class InPlaceSketcher {
@@ -44,8 +42,7 @@ export class InPlaceSketcher {
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
     viewer3d.sceneSetup.trackballControls.addEventListener( 'change', this.onCameraChange);
 
-    this.ctx.streams.ui.toolbars.headsUp.next(SKETCHER_MODE_HEADS_UP_ACTIONS);
-    this.ctx.streams.ui.toolbars.headsUpShowTitles.next(false);
+    this.ctx.workbenchService.switchWorkbench('sketcher');
 
     let sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
     this.viewer.historyManager.init(sketchData);
@@ -70,8 +67,7 @@ export class InPlaceSketcher {
     this.sketcherAppContext = null;
     this.ctx.streams.sketcher.sketchingFace.next(null);
     this.ctx.streams.sketcher.sketcherAppContext.next(null);
-    this.ctx.streams.ui.toolbars.headsUp.next(STANDARD_MODE_HEADS_UP_TOOLBAR);
-    this.ctx.streams.ui.toolbars.headsUpShowTitles.next(true);
+    this.ctx.workbenchService.switchToDefaultWorkbench();
     viewer3d.requestRender();
   }
 
