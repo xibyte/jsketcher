@@ -6,10 +6,11 @@ import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
 import { UnitVector } from "math/vector";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
 import { negate } from 'cypress/types/lodash';
+import {MSketchLoop} from "cad/model/mloop";
 
 
 interface LoftParams {
-  faces: MFace;
+  loops: MSketchLoop[];
   boolean: BooleanDefinition
 }
 
@@ -51,11 +52,12 @@ const LoftOperation: OperationDescriptor<LoftParams> = {
     // wires.push("w2");
     // wires.push("w3");
 
-    console.log(params.faces);
+    console.log(params.loops);
     
-    var itterator = 0; 
+    let itterator = 0;
 
-    var myReturnWire = occ.io.sketchLoader.pushContourAsWire(params.faces.sketchLoops[0].contour, itterator, params.faces.csys )
+    let loop = params.loops[0];
+    let myReturnWire = occ.io.sketchLoader.pushContourAsWire(loop.contour, itterator, loop.face.csys )
 
     wires.push(myReturnWire);
 
@@ -75,10 +77,10 @@ const LoftOperation: OperationDescriptor<LoftParams> = {
   form: [
     {
       type: 'selection',
-      name: 'faces',
-      capture: [EntityKind.FACE],
+      name: 'loops',
+      capture: [EntityKind.LOOP],
       label: 'face',
-      multi: false,
+      multi: true,
       defaultValue: {
         usePreselection: true,
         preselectionIndex: 0
