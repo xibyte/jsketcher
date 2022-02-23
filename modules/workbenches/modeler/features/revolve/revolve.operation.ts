@@ -26,9 +26,15 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
 
     const face = params.face;
 
+    let occFaces = [];
+
     let sketch = ctx.sketchStorageService.readSketch(face.id);
-    if (!sketch) throw 'sketch not found for the face ' + face.id;
-    const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+    if (!sketch) {
+      occFaces.push(params.face);
+    }else{
+      occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+    }
+    
 
 
     const tools = occFaces.map((faceName, i) => {
