@@ -1,16 +1,18 @@
-import {ExtrudeOperation} from './features/extrude/extrude.operation';
-import {LoftOperation} from './features/loft/loft.operation'
-import {WorkbenchConfig} from "cad/workbench/workbenchService";
-import {PrimitiveBoxOperation} from "workbenches/modeler/features/primitiveBox";
-import {PrimitiveConeOperation} from "workbenches/modeler/features/primitiveCone";
-import {PrimitiveCylinderOperation} from "workbenches/modeler/features/primitiveCylinder";
-import {PrimitiveSphereOperation} from "workbenches/modeler/features/primitiveSphere";
-import PrimitiveTorusOperation from "workbenches/modeler/features/primitiveTorus";
-import {HoleOperation} from "workbenches/modeler/features/hole";
-import {FilletOperation} from "workbenches/modeler/features/fillet";
-import {BooleanOperation} from "workbenches/modeler/features/boolean/boolean.operation";
-import {RevolveOperation} from "workbenches/modeler/features/revolve/revolve.operation";
-import {ShellOperation} from "workbenches/modeler/features/shell/shell.operation";
+import { ExtrudeOperation } from './features/extrude/extrude.operation';
+import { LoftOperation } from './features/loft/loft.operation'
+import { WorkbenchConfig } from "cad/workbench/workbenchService";
+import { PrimitiveBoxOperation } from "./features/primitiveBox";
+import { PrimitiveConeOperation } from "./features/primitiveCone";
+import { PrimitiveCylinderOperation } from "./features/primitiveCylinder";
+import { PrimitiveSphereOperation } from "./features/primitiveSphere";
+import { PrimitiveTorusOperation } from "./features/primitiveTorus/index";
+import { HoleOperation } from "./features/hole";
+import { FilletOperation } from "./features/fillet";
+import { BooleanOperation } from "./features/boolean/boolean.operation";
+import { RevolveOperation } from "./features/revolve/revolve.operation";
+import { ShellOperation } from "./features/shell/shell.operation";
+import { SweepOperation } from "./features/sweep/sweep.operation";
+import { offsetOperation } from "./features/offsetFace/offsetFace.operation"
 
 export const ModelerWorkspace: WorkbenchConfig = {
 
@@ -28,20 +30,19 @@ export const ModelerWorkspace: WorkbenchConfig = {
     BooleanOperation,
     ShellOperation,
     LoftOperation,
+    SweepOperation,
+    offsetOperation
   ],
   actions: [],
-  ui:{
+  ui: {
     toolbar: [
       'DATUM_CREATE', 'PLANE', 'EditFace', '-',
+      "EXTRUDE", "REVOLVE", "LOFT", "SWEEP", "-", 
+      "BOOLEAN", "-", 
+      "SHELL_TOOL", "FILLET_TOOL", "OFFSET_TOOL", "-",
+      "PRIMITIVE_CYLINDER", "PRIMITIVE_BOX", "PRIMITIVE_CONE", "PRIMITIVE_SPHERE", "PRIMITIVE_TORUS", "-",
+      "HOLE_TOOL", "-",
       "OCC_BOTTLE", '-',
-      "EXTRUDE", "REVOLVE", "LOFT","-", "BOOLEAN", "SHELL_TOOL",
-      "PRIMITIVE_CYLINDER",
-      "PRIMITIVE_BOX",
-      "PRIMITIVE_CONE",
-      "PRIMITIVE_SPHERE",
-      "PRIMITIVE_TORUS",
-      "HOLE_TOOL",
-      "FILLET_TOOL"
     ]
   }
 }

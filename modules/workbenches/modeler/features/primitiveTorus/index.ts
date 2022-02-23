@@ -12,7 +12,7 @@ interface PrimitiveTorusParams {
   boolean: BooleanDefinition,
 }
 
-const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
+export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
   id: 'PRIMITIVE_TORUS',
   label: 'Primitive Torus',
   icon: 'img/cad/torus',
@@ -66,5 +66,3 @@ const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
 
   },
 }
-
-export default PrimitiveTorusOperation;
