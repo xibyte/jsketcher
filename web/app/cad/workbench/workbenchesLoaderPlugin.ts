@@ -16,19 +16,40 @@ import coneOperation from "cad/craft/primitives/cone/coneOperation";
 import spatialCurveOperation from "cad/craft/spatialCurve/spatialCurveOperation";
 import loftOperation from "cad/craft/loft/loftOperation";
 import {intersectionOperation, subtractOperation, unionOperation} from "cad/craft/boolean/booleanOperation";
+import {Plugin} from "plugable/pluginSystem";
+import {WorkbenchService} from "cad/workbench/workbenchService";
+import {OperationService} from "cad/craft/operationPlugin";
+import {checkAllPropsDefined} from "plugable/utils";
 
+export interface WorkbenchesLoaderContext {
+  workbenchService: WorkbenchService,
+  operationService: OperationService
+}
 
-export const WorkbenchesLoaderPlugin = {
+export const WorkbenchesLoaderPlugin: Plugin<ApplicationContext, WorkbenchesLoaderContext> = {
 
-  activate(ctx: ApplicationContext) {
+  readiness(ctx: ApplicationContext): WorkbenchesLoaderContext {
+
+    const {
+      workbenchService,
+      operationService
+    } = ctx;
+
+    return checkAllPropsDefined({
+      workbenchService,
+      operationService
+    })
+  },
+
+  activate(ctx: WorkbenchesLoaderContext) {
     registerCoreOperations(ctx);
     WorkbenchRegistry.forEach(wConfig => ctx.workbenchService.registerWorkbench(wConfig));
     ctx.workbenchService.switchToDefaultWorkbench();
-  }
+  },
 
 }
 
-function registerCoreOperations(ctx: CoreContext) {
+function registerCoreOperations(ctx: WorkbenchesLoaderContext) {
 
   ctx.operationService.registerOperations([
     planeOperation,

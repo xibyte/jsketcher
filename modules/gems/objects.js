@@ -31,3 +31,4 @@ export function traverseObject(root, callback) {
   }
 }
 
+export const allPropsDefined = obj => Object.values(obj).every(x => !!x);

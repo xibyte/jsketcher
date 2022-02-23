@@ -39,6 +39,7 @@ import {WorkbenchPlugin} from "../workbench/workbenchPlugin";
 import * as LocationPlugin from "../location/LocationPlugin";
 import * as AssemblyPlugin from "../assembly/assemblyPlugin";
 import {WorkbenchesLoaderPlugin} from "cad/workbench/workbenchesLoaderPlugin";
+import {PluginSystem} from "plugable/pluginSystem";
 
 export default function startApplication(callback) {
 
@@ -73,11 +74,11 @@ export default function startApplication(callback) {
     MarkerPlugin,
     PickControlPlugin,
     EntityContextPlugin,
+    WorkbenchesLoaderPlugin,
     WorkbenchPlugin,
     SketcherPlugin,
     UIConfigPlugin,
     DebugPlugin,
-    WorkbenchesLoaderPlugin,
     LocationPlugin,
     AssemblyPlugin,
     RemotePartsPlugin,
@@ -86,14 +87,15 @@ export default function startApplication(callback) {
   ];
   
   let allPlugins = [...preUIPlugins, ...plugins];
-  context.services.plugin = createPluginService(allPlugins, context);
+  const pluginSystem = new PluginSystem(context);
+  context.pluginSystem = pluginSystem;
 
   defineStreams(allPlugins, context);
   
-  activatePlugins(preUIPlugins, context);
+  activatePlugins(preUIPlugins, pluginSystem);
 
   startReact(context, () => {
-    activatePlugins(plugins, context);
+    activatePlugins(plugins, pluginSystem);
     context.services.lifecycle.declareAppReady();
     context.services.viewer.render();
     callback(context);
@@ -108,22 +110,26 @@ export function defineStreams(plugins, context) {
   }
 }
 
-export function activatePlugins(plugins, context) {
-  for (let plugin of plugins) {
-    plugin.activate(context);
-  }
-}
+function adapter(oldStylePlugin) {
 
-function createPluginService(plugins, context) {
-  function disposePlugins() {
-    for (let plugin of plugins) {
-      if (plugin.dispose) {
-        plugin.dispose(context);
-      }
-    }
+  if (oldStylePlugin.readiness) {
+    return oldStylePlugin;
   }
 
   return {
-    disposePlugins
-  };
+
+    readiness: ctx => ctx,
+
+    activate: oldStylePlugin.activate,
+
+    deactivate: ctx => {}
+
+  }
+
+}
+
+export function activatePlugins(plugins, pluginSystem) {
+  for (let plugin of plugins) {
+    pluginSystem.load(adapter(plugin));
+  }
 }
