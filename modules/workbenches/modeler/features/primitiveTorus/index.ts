@@ -66,3 +66,6 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
 
   },
 }
+
+
+export default PrimitiveTorusOperation;
