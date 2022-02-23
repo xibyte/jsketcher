@@ -28,10 +28,19 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
     const face = params.face;
 
-    let sketch = ctx.sketchStorageService.readSketch(face.id);
-    if (!sketch) throw 'sketch not found for the face ' + face.id;
+ 
+    let occFaces = [];
 
-    const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+    let sketch = ctx.sketchStorageService.readSketch(face.id);
+    if (!sketch) {
+      occFaces.push(params.face);
+    } else {
+      occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+    }
+
+
+
+
 
     const dir: UnitVector = params.direction || face.normal();
 
