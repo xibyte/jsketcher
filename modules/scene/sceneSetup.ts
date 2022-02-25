@@ -153,9 +153,9 @@ export default class SceneSetUp {
     //   controls.update();
 
     // }, false );
-    trackballControls.rotateSpeed = 3.8;
-    trackballControls.zoomSpeed = 1.2;
-    trackballControls.panSpeed = 0.8;
+    // trackballControls.rotateSpeed = 3.8;
+    // trackballControls.zoomSpeed = 1.2;
+    // trackballControls.panSpeed = 0.8;
 
     trackballControls.noZoom = false;
     trackballControls.noPan = false;
@@ -184,6 +184,19 @@ export default class SceneSetUp {
     };
 
     this.updateControlsAndHelpers = function() {
+      console.log(this.camera.type);
+      if (this.camera.type as any == "OrthographicCamera") {
+        this.trackballControls.rotateSpeed = 3.8;
+        this.trackballControls.projectionZoomSpeed = 5;
+        this.trackballControls.zoomSpeed = 5;
+        this.trackballControls.panSpeed = .1;
+      }
+      if (this.camera.type == "PerspectiveCamera") {
+        this.trackballControls.rotateSpeed = 3.8;
+        this.trackballControls.projectionZoomSpeed = 1;
+        this.trackballControls.zoomSpeed = 1;
+        this.trackballControls.panSpeed = 1;
+      }
       trackballControls.update();
       updateTransformControls();
     };
@@ -255,6 +268,7 @@ export default class SceneSetUp {
   };
 
   render() {
+
     this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
     this.renderer.render(this.scene, this.camera);
     this.onRendered();
