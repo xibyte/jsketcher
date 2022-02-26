@@ -184,7 +184,6 @@ export default class SceneSetUp {
     };
 
     this.updateControlsAndHelpers = function() {
-      console.log(this.camera.type);
       if (this.camera.type as any == "OrthographicCamera") {
         this.trackballControls.rotateSpeed = 3.8;
         this.trackballControls.projectionZoomSpeed = 5;
