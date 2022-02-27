@@ -18,7 +18,7 @@ interface SweepParams {
 export const SweepOperation: OperationDescriptor<SweepParams> = {
   id: 'SWEEP',
   label: 'Sweep',
-  icon: 'img/cad/loft',
+  icon: 'img/cad/sweep',
   info: 'Sweeps 2D profile loop',
   paramsInfo: ({ }) => `(${r()})`,
   run: (params: SweepParams, ctx: ApplicationContext) => {
