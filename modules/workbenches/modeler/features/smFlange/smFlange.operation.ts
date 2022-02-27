@@ -2,7 +2,7 @@ import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { MFace } from "cad/model/mface";
 import { ApplicationContext } from "context";
 import { EntityKind } from "cad/model/entities";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
+import { BooleanDefinition, BooleanKind } from "cad/craft/schema/common/BooleanDefinition";
 import Axis from "math/axis";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
 
@@ -10,7 +10,6 @@ interface smFlangeParams {
   angle: number;
   face: MFace;
   axis: Axis,
-  boolean: BooleanDefinition
 }
 
 export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
@@ -25,6 +24,7 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
     const oci = occ.commandInterface;
 
     const face = params.face;
+    console.log(face);
 
     let occFaces = [face];
 
@@ -36,8 +36,12 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       return shapeName;
     });
 
-
-    return occ.utils.applyBooleanModifier(tools, params.boolean);
+    const  booleanOpperation =   {
+      kind:"UNION",
+      targets:[params.face.shell]
+    }
+    
+    return occ.utils.applyBooleanModifier(tools, booleanOpperation);
 
   },
   form: [
@@ -69,21 +73,12 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
         preselectionIndex: 0
       },
     },
-
-
     {
       type: 'axis',
       name: 'axis',
       label: 'axis',
       optional: false
     },
-    {
-      type: 'boolean',
-      name: 'boolean',
-      label: 'boolean',
-      optional: true,
-      defaultValue: 'UNION'
-    }
 
   ],
 }
