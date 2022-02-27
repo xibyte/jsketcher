@@ -27,8 +27,7 @@ export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
     params.inputBodies.forEach((shellToMirror) => {
       const newShellName = shellToMirror.id + ":mirror";
       oci.copy(shellToMirror, newShellName);
-      params.face.csys.origin.data();
-      oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.origin.normalize().data());
+      oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
       created.push(occ.io.getShell(newShellName));
     });
 
