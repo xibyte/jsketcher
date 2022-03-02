@@ -1,5 +1,5 @@
 import {StateStream} from "lstream";
-import {OperationRequest} from "cad/craft/craftPlugin";
+import {CraftHints, OperationRequest} from "cad/craft/craftPlugin";
 import {MaterializedOperationParams, OperationParamValue, OperationParams} from "cad/craft/schema/schema";
 import {Operation} from "cad/craft/operationPlugin";
 
@@ -10,16 +10,29 @@ export type ParamsPath = ParamsPathSegment[];
 export type FlattenPath = string;
 
 export type WizardState = {
-  activeParam: FlattenPath
+  activeParam?: FlattenPath
+  error?: any
 };
 
-export interface WizardContext {
+export interface WizardService {
 
-  workingRequest$: StateStream<OperationRequest>;
+  workingRequest$: StateStream<OperationRequest&{hints?: CraftHints}>;
 
   materializedWorkingRequest$: StateStream<MaterializedOperationParams>;
 
   state$: StateStream<WizardState>;
+
+  open(type: string, initialOverrides: NewOperationCall);
+
+  cancel();
+
+  applyWorkingRequest();
+
+  isInProgress(): boolean;
+
+  workingRequest: OperationRequest;
+
+  materializedWorkingRequest: any;
 
   updateParams: (mutator: (params: OperationParams) => void) => void;
 
@@ -31,13 +44,11 @@ export interface WizardContext {
 
   operation: Operation<any>;
 
-  changingHistory: boolean;
-
-  noWizardFocus: boolean;
-
   addDisposer: (disposer: () => any|void) => void;
 
-  dispose: () => void;
+}
 
-  ID: number;
+export interface NewOperationCall {
+  type: string;
+  initialOverrides: OperationParams;
 }

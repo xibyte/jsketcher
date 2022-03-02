@@ -1,4 +1,4 @@
-import {addModification, stepOverriding} from './craftHistoryUtils';
+import {addModification, finishHistoryEditing, stepOverriding} from './craftHistoryUtils';
 import {Emitter, state, StateStream, stream} from 'lstream';
 import materializeParams from './schema/materializeParams';
 import CadError from '../../utils/errors';
@@ -103,15 +103,16 @@ export function activate(ctx: CoreContext) {
     }
   }
 
-  function isEditingHistory() {
-    const mods = this.modifications$.value;
-    return mods && mods.pointer !== mods.history.length - 1;
-  }
-
    ctx.craftService  = {
-    modify, modifyInHistoryAndStep, reset, rebuild, runRequest, runPipeline,
+
+     get isEditingHistory() {
+       const mods = this.modifications$.value;
+       return mods && mods.pointer !== mods.history.length - 1;
+     },
+
+     modify, modifyInHistoryAndStep, reset, rebuild, runRequest, runPipeline,
     historyTravel: historyTravel(modifications$),
-    modifications$, models$, update$, isEditingHistory, pipelineFailure$
+    modifications$, models$, update$, pipelineFailure$
   };
 
   // @ts-ignore
@@ -244,9 +245,16 @@ export interface OperationResult {
 
 }
 
-interface CraftHistory {
+export interface CraftHistory {
   history: OperationRequest[];
   pointer: number;
+  hints?: CraftHints;
+}
+
+export interface CraftHints {
+
+  noWizardFocus?: boolean;
+
 }
 
 interface CraftService {
@@ -256,9 +264,9 @@ interface CraftService {
   update$: Emitter<void>;
   pipelineFailure$: StateStream<any>
 
-  modify(request: OperationRequest, onAccepted: () => void, onError: () => Error);
+  modify(request: OperationRequest, onAccepted: () => void, onError: (error) => void);
 
-  modifyInHistoryAndStep(request: OperationRequest, onAccepted: () => void, onError: () => Error);
+  modifyInHistoryAndStep(request: OperationRequest, onAccepted: () => void, onError: (error) => void);
 
   reset(modifications: OperationRequest[]);
 
@@ -270,13 +278,13 @@ interface CraftService {
 
   runPipeline(history: OperationRequest[], beginIndex: number, endIndex: number): Promise<void>;
 
-  isEditingHistory(): boolean;
+  isEditingHistory: boolean;
 }
 
 interface HistoryTravel {
   setPointer(pointer, hints:any);
-  begin(hints: any);
-  end(hints: any);
+  begin(hints?: any);
+  end(hints?: any);
   forward(hints: any);
   backward(hints: any);
 }

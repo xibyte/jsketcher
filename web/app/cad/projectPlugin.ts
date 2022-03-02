@@ -6,6 +6,7 @@ import {SketchFormat_V3} from "../sketcher/io";
 import {OperationRequest} from "./craft/craftPlugin";
 import {ProjectModel} from "./projectManager/projectManagerPlugin";
 import {DebugMode$} from "debugger/Debugger";
+import {fillUpMissingFields} from "cad/craft/schema/initializeBySchema";
 
 export const STORAGE_GLOBAL_PREFIX = 'TCAD';
 export const PROJECTS_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
@@ -54,6 +55,7 @@ export function initProjectService(ctx: CoreContext, id: string, hints: any) {
       let dataStr = ctx.storageService.get(ctx.projectService.projectStorageKey());
       if (dataStr) {
         let data = JSON.parse(dataStr);
+        upgradeIfNeeded(data);
         loadData(data);
       }
     } catch (e) {
@@ -61,6 +63,16 @@ export function initProjectService(ctx: CoreContext, id: string, hints: any) {
     }
   }
 
+  function upgradeIfNeeded(data: ProjectModel) {
+    if (data.history) {
+      data.history.forEach(req => {
+        const operation = ctx.operationService.get(req.type);
+        if (operation) {
+          fillUpMissingFields(req.params, operation.schema, ctx);
+        }
+      });
+    }
+  }
 
   function loadData(data: ProjectModel) {
     if (data.expressions) {

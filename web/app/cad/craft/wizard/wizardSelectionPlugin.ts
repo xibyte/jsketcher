@@ -1,37 +1,36 @@
-import {FACE, SHELL} from '../../model/entities';
+import {FACE, SHELL} from 'cad/model/entities';
 import {memoize} from "lodash/function";
-import {Types} from "cad/craft/schema/types";
 import {OperationRequest} from "cad/craft/craftPlugin";
-import {FlattenPath, ParamsPath, WizardContext} from "cad/craft/wizard/wizardTypes";
-import {OperationParamValue, SchemaField} from "cad/craft/schema/schema";
-import {EntityReference, SchemaIndexField} from "cad/craft/operationPlugin";
+import {FlattenPath, ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
+import {OperationParamValue} from "cad/craft/schema/schema";
+import {EntityReference} from "cad/craft/operationPlugin";
+import {ApplicationContext} from "context";
 
-export function activate(ctx) {
-  ctx.streams.wizard.wizardContext.attach((wizCtx: WizardContext) => {
+export function activate(ctx: ApplicationContext) {
+  const wizardService = ctx.wizardService;
+  wizardService.workingRequest$.attach((opRequest: OperationRequest) => {
     ctx.services.marker.clear();
-    if (wizCtx) {
-      const wizardPickHandler = createPickHandlerFromSchema(wizCtx);
+    if (opRequest) {
+      const wizardPickHandler = createPickHandlerFromSchema(wizardService);
       ctx.services.pickControl.setPickHandler(wizardPickHandler);
-      wizCtx.workingRequest$.attach(({type, params}: OperationRequest) => {
-        const marker = ctx.services.marker;
-        marker.startSession();
-        let {schemaIndex} = wizCtx.operation;
-        schemaIndex.entities.forEach(entityRef => {
-          //TODO: move to uiDefinition
-          let color = entityRef.metadata.markColor;
+      const marker = ctx.services.marker;
+      marker.startSession();
+      let {schemaIndex} = wizardService.operation;
+      schemaIndex.entities.forEach(entityRef => {
+        //TODO: move to uiDefinition
+        let color = entityRef.metadata.markColor;
 
-          let val = wizCtx.readParam(entityRef.field.path);
+        let val = wizardService.readParam(entityRef.field.path);
 
-          if (Array.isArray(val)) {
-            val.forEach(id => marker.mark(id, color));
-          } else {
-            if (val) {
-              marker.mark(val, color);
-            }
+        if (Array.isArray(val)) {
+          val.forEach(id => marker.mark(id, color));
+        } else {
+          if (val) {
+            marker.mark(val, color);
           }
-        });
-        marker.commit();
+        }
       });
+      marker.commit();
 
     } else {
       ctx.services.pickControl.setPickHandler(null);
@@ -52,20 +51,20 @@ const arrayValue = (id, arr) =>  {
 
 const getEntityParams = memoize(schema => Object.keys(schema).filter(key => schema[key].type === 'entity'));
 
-function createPickHandlerFromSchema(wizCtx: WizardContext) {
+function createPickHandlerFromSchema(wizardService: WizardService) {
 
   function update(param: ParamsPath, value: OperationParamValue, paramToMakeActive: FlattenPath) {
-    wizCtx.updateParam(param, value);
-    wizCtx.updateState(state => {
+    wizardService.updateParam(param, value);
+    wizardService.updateState(state => {
       state.activeParam = paramToMakeActive;
     });
   }
   return model => {
     const modelType = model.TYPE;
 
-    let {schemaIndex} = wizCtx.operation;
+    let {schemaIndex} = wizardService.operation;
     let activeEntityRef = () => {
-      const state = wizCtx.state$.value;
+      const state = wizardService.state$.value;
       return schemaIndex.entitiesByFlattenedPaths[state.activeParam];
     }
 
@@ -83,7 +82,7 @@ function createPickHandlerFromSchema(wizCtx: WizardContext) {
       const param = entityRef.field;
       const valueGetter = entityRef.isArray ? arrayValue : singleValue;
       let paramToMakeActive = getNextActiveParam(entityRef);
-      const currentValue = wizCtx.readParam(param.path);
+      const currentValue = wizardService.readParam(param.path);
       update(param.path, valueGetter(id, currentValue), paramToMakeActive.field.flattenedPath);
     }
 
@@ -111,7 +110,7 @@ function createPickHandlerFromSchema(wizCtx: WizardContext) {
 
     function deselectIfNeeded(id) {
       for (let entityRef of schemaIndex.entities) {
-        let val = wizCtx.readParam(entityRef.field.path);
+        let val = wizardService.readParam(entityRef.field.path);
         if (val === id) {
           update(entityRef.field.path, undefined, entityRef.field.flattenedPath);
           return true;

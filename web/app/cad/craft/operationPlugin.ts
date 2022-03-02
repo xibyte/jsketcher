@@ -94,7 +94,7 @@ export interface Operation<R> extends OperationDescriptor<R>{
     icon: string|IconType;
   };
   schemaIndex: SchemaIndex;
-  form: () => React.ReactNode;
+  form: React.FunctionComponent;
   schema: OperationSchema;
 }
 
@@ -107,7 +107,8 @@ export interface OperationDescriptor<R> {
   run: (request: R, opContext: CoreContext) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,
   previewGeomProvider?: (params: R) => OperationGeometryProvider,
-  form: FormDefinition | (() => React.ReactNode),
+  previewer?: any,
+  form: FormDefinition | React.FunctionComponent,
   schema?: OperationSchema,
   onParamsUpdate?: (params, name, value) => void,
 }

@@ -94,3 +94,5 @@ export function unwrapMetadata(fieldMd: SchemaField) {
   }
   return fieldMd;
 }
+
+export const isValueNotProvided = value => value === undefined || value === null || value === '';

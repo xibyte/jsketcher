@@ -16,7 +16,7 @@ import {aboveElement} from 'ui/positionUtils';
   .map(([modifications, operationRegistry, insertOperationReq]) => ({
     ...modifications,
     operationRegistry,
-    inProgressOperation: insertOperationReq.type,
+    inProgressOperation: !!insertOperationReq,
     getOperation: type => operationRegistry[type]||EMPTY_OBJECT
   })))
 @mapContext(({streams, services}) => ({
