@@ -1,8 +1,8 @@
-import {TypeRegistry, Types} from "cad/craft/schema/types";
-import {OperationSchema, SchemaField} from "cad/craft/schema/schema";
-import {ApplicationContext} from "context";
+import {Types} from "cad/craft/schema/types";
+import {isValueNotProvided, OperationSchema, SchemaField} from "cad/craft/schema/schema";
+import {CoreContext} from "context";
 
-export default function initializeBySchema(schema: OperationSchema, context: ApplicationContext) {
+export default function initializeBySchema(schema: OperationSchema, context: CoreContext) {
   let fields = Object.keys(schema);
   let obj = {};
   for (let field of fields) {
@@ -41,4 +41,34 @@ export default function initializeBySchema(schema: OperationSchema, context: App
     obj[field] = val;
   }
   return obj;
+}
+
+
+export function fillUpMissingFields(params: any, schema: OperationSchema, context: CoreContext) {
+  let fields = Object.keys(schema);
+  for (let field of fields) {
+    const md = schema[field] as SchemaField;
+
+    if (md.optional) {
+      continue;
+    }
+
+    let val = params[field];
+
+    const isPrimitive =
+         md.type !== Types.array
+      && md.type !== Types.object
+      && md.type !== Types.entity;
+
+    if (isPrimitive && isValueNotProvided(val)) {
+      params[field] = md.defaultValue;
+    } else if (md.type === Types.object) {
+      if (!val) {
+        val = {};
+        params[field] = val;
+      }
+      fillUpMissingFields(val, md.schema, context);
+    }
+  }
+
 }

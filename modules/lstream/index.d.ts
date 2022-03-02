@@ -9,11 +9,11 @@ interface Stream<T> extends Observable<T> {
 
   filter(predicate: (T) => boolean): Stream<T>;
 
-  pairwise(first: T): Stream<[T, T]>;
+  pairwise(first?: T): Stream<[T, T]>;
 
-  scan(initAccumulator: any): Stream<any>;
+  scan<T>(seed: T, scanFn: (accum: T, current: T) => T): Stream<T>;
 
-  remember(initialValue: T, usingStream: any): StateStream<T>
+  remember(initialValue: T, usingStream?: any): StateStream<T>
 
   distinct(): Stream<T>;
 
@@ -42,7 +42,7 @@ export function stream<T>(): Emitter<T>;
 
 export function eventStream<T>(): Emitter<T>;
 
-export function combine(...streams: Stream<any>[]): Stream<any[]>;
+export function combine<T>(...streams: Stream<any>[]): Stream<T>;
 
 export function merge(...streams: Stream<any>[]): Stream<any>;
 

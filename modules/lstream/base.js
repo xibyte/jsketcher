@@ -14,8 +14,8 @@ export class StreamBase {
     return new PairwiseStream(this, first);
   }
 
-  scan(initAccumulator) {
-    return new ScanStream(this, initAccumulator);
+  scan(initAccumulator, scanFunc) {
+    return new ScanStream(this, initAccumulator, scanFunc);
   }
   
   remember(initialValue, usingStream) {

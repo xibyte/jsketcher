@@ -49,7 +49,7 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function solveAssembly(): void {
-    if (ctx.craftService.isEditingHistory()) {
+    if (ctx.craftService.isEditingHistory) {
       console.log('skipping assembly resolve request in the history mode');
       return;
     }

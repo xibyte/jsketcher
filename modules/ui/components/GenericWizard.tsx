@@ -13,7 +13,8 @@ export function GenericWizard({topicId, title, left, className, children, onCanc
   left?: number,
   onCancel: () => any,
   onOK: () => any,
-  infoText: string
+  onKeyDown: (e) => any,
+  infoText: any
 } & WindowProps ) {
 
   return <Window initWidth={250}

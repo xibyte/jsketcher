@@ -1,6 +1,7 @@
 import {TypeRegistry} from "cad/craft/schema/types";
 import {CoreContext} from "context";
 import {
+  isValueNotProvided,
   OperationParams,
   OperationParamsError,
   OperationParamsErrorReporter,
@@ -33,14 +34,13 @@ function materializeParamsImpl(ctx: CoreContext,
                                result: any,
                                parentReportError: OperationParamsErrorReporter) {
 
-  const notProvided = value => value === undefined || value === null || value === '';
 
   for (let field of Object.keys(schema)) {
     const reportError = parentReportError.dot(field);
     const md = schema[field];
     let value = params[field];
 
-    if (notProvided(value)) {
+    if (isValueNotProvided(value)) {
       if (!md.optional) {
         reportError('required');
       }
@@ -52,7 +52,7 @@ function materializeParamsImpl(ctx: CoreContext,
         value = md.resolve(
           ctx, value, md as any, reportError
         )
-        if (notProvided(value) && !md.optional) {
+        if (isValueNotProvided(value) && !md.optional) {
           reportError('required');
         }
       }

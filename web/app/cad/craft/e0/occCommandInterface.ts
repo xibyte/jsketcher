@@ -8,6 +8,9 @@ const pushedModels = new Set();
 export const OCI: OCCCommandInterface = new Proxy({}, {
   get: function (target, prop: string, receiver) {
     return prop in target ? target[prop] : function() {
+      if (typeof prop !== 'string') {
+        return undefined;
+      }
       prop = prop.replace(/^_/, '');
       const args = Array.from(arguments).map(arg => {
         const type = typeof arg;
