@@ -11,7 +11,7 @@ export const selectionSynchronizer = (entity, findEntity, color) => ([old, curr]
   toMark.forEach(id => {
     let model = findEntity(entity, id);
     if (model) {
-      model.ext.view.mark(color);
+      model.ext.view.mark(id, color);
     }
   });
 };

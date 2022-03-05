@@ -79,7 +79,7 @@ export function LocationDialog() {
   };
 
   return <GenericWizard
-    left={15}
+    left={535}
     title='PART LOCATION'
     onClose={close}
     className='location-dialog'

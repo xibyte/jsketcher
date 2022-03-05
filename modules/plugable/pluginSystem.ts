@@ -1,3 +1,4 @@
+import {WizardSelectionContext} from "cad/craft/wizard/wizardSelectionPlugin";
 
 
 type BagOfPlugins = Set<Plugin<any, any>>;
@@ -22,10 +23,11 @@ export class PluginSystem {
     while (needPass) {
       needPass = false;
       this.waitingQueue.forEach(plugin => {
-        const localContext = plugin.readiness(this.globalContext);
-        if (!!localContext) {
+        const ready = readiness(plugin, this.globalContext);
+        if (ready) {
           try  {
-            plugin.activate(localContext);
+            plugin.activate(this.globalContext);
+            checkActivation(plugin, this.globalContext);
             needPass = true;
             this.plugins.add(plugin);
           } catch (error) {
@@ -42,7 +44,9 @@ export class PluginSystem {
     this.waitingQueue.delete(plugin);
     this.plugins.delete(plugin);
     try {
-      plugin.deactivate(this.globalContext);
+      if (plugin.deactivate) {
+        plugin.deactivate(this.globalContext);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -54,8 +58,8 @@ export class PluginSystem {
         if (!plugin.deactivate) {
           return;
         }
-        const localContext = plugin.readiness(this.globalContext);
-        if (!localContext) {
+        const isReady = readiness(plugin, this.globalContext);
+        if (!isReady) {
           try {
             plugin.deactivate(this.globalContext);
             this.plugins.delete(plugin);
@@ -70,13 +74,40 @@ export class PluginSystem {
   }
 }
 
+function readiness(plugin: Plugin<any, any>, globalContext: any) {
+  const specKeys = Object.keys(plugin.inputContextSpec);
+  for (let key of specKeys) {
+    if (!globalContext[key] && plugin.inputContextSpec[key] === 'required') {
+      return false;
+    }
+  }
+  return true;
+}
 
-export interface Plugin<GlobalContext, WorkingContext> {
+function checkActivation(plugin: Plugin<any, any>, globalContext: any) {
+  const specKeys = Object.keys(plugin.outputContextSpec);
+  for (let key of specKeys) {
+    if (!globalContext[key] && plugin.outputContextSpec[key] === 'required') {
+      console.error("declared service was never activated: " + key);
+    }
+  }
+}
 
-  readiness(ctx: GlobalContext): WorkingContext;
+export type Spec = 'required' | 'optional';
 
-  activate(ctx: WorkingContext);
+export type ContextSpec<T> = {
+  [Property in keyof T]: Spec;
+};
 
-  deactivate?(ctx: WorkingContext);
+
+export interface Plugin<InputContext, OutputContext, WorkingContext = InputContext&OutputContext> {
+
+  inputContextSpec: ContextSpec<InputContext>;
+
+  outputContextSpec: ContextSpec<OutputContext>;
+
+  activate(ctx: InputContext&OutputContext);
+
+  deactivate?(ctx: InputContext&OutputContext);
 
 }

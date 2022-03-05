@@ -14,9 +14,14 @@ export type WizardState = {
   error?: any
 };
 
+export type WorkingRequest = OperationRequest & {
+  hints?: CraftHints,
+  requestKey: number
+}
+
 export interface WizardService {
 
-  workingRequest$: StateStream<OperationRequest&{hints?: CraftHints}>;
+  workingRequest$: StateStream<WorkingRequest>;
 
   materializedWorkingRequest$: StateStream<MaterializedOperationParams>;
 

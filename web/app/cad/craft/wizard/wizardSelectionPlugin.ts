@@ -1,42 +1,65 @@
 import {FACE, SHELL} from 'cad/model/entities';
-import {memoize} from "lodash/function";
 import {OperationRequest} from "cad/craft/craftPlugin";
 import {FlattenPath, ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
 import {OperationParamValue} from "cad/craft/schema/schema";
 import {EntityReference} from "cad/craft/operationPlugin";
-import {ApplicationContext} from "context";
+import {ContextSpec, Plugin, Spec} from "plugable/pluginSystem";
+import {MarkerPluginOutputContext} from "cad/scene/selectionMarker/markerPlugin";
+import {WizardOutputContext} from "cad/craft/wizard/wizardPlugin";
+import {PickControlOutputContext} from "cad/scene/controls/pickControlPlugin";
 
-export function activate(ctx: ApplicationContext) {
-  const wizardService = ctx.wizardService;
-  wizardService.workingRequest$.attach((opRequest: OperationRequest) => {
-    ctx.services.marker.clear();
-    if (opRequest) {
-      const wizardPickHandler = createPickHandlerFromSchema(wizardService);
-      ctx.services.pickControl.setPickHandler(wizardPickHandler);
-      const marker = ctx.services.marker;
-      marker.startSession();
-      let {schemaIndex} = wizardService.operation;
-      schemaIndex.entities.forEach(entityRef => {
-        //TODO: move to uiDefinition
-        let color = entityRef.metadata.markColor;
+export type WizardSelectionInputContext = MarkerPluginOutputContext & WizardOutputContext & PickControlOutputContext;
 
-        let val = wizardService.readParam(entityRef.field.path);
-
-        if (Array.isArray(val)) {
-          val.forEach(id => marker.mark(id, color));
-        } else {
-          if (val) {
-            marker.mark(val, color);
-          }
-        }
-      });
-      marker.commit();
-
-    } else {
-      ctx.services.pickControl.setPickHandler(null);
-    }
-  });
+export interface WizardSelectionOutputContext {
 }
+
+export type WizardSelectionContext = WizardSelectionInputContext & WizardSelectionOutputContext;
+
+export const WizardSelectionPlugin: Plugin<WizardSelectionInputContext, WizardSelectionOutputContext, WizardSelectionContext> = {
+
+  inputContextSpec: {
+    markerService: 'required',
+    pickControlService: 'required',
+    wizardService: 'required'
+  },
+
+  outputContextSpec: {
+  },
+
+  activate(ctx: WizardSelectionContext) {
+    const wizardService = ctx.wizardService;
+    wizardService.workingRequest$.attach((opRequest: OperationRequest) => {
+      ctx.markerService.clear();
+      if (opRequest) {
+        const wizardPickHandler = createPickHandlerFromSchema(wizardService);
+        ctx.pickControlService.setPickHandler(wizardPickHandler);
+        const marker = ctx.markerService;
+        marker.startSession();
+        let {schemaIndex} = wizardService.operation;
+        schemaIndex.entities.forEach(entityRef => {
+          //TODO: move to uiDefinition
+          let color = entityRef.metadata.markColor;
+
+          let val = wizardService.readParam(entityRef.field.path);
+
+          if (Array.isArray(val)) {
+            val.forEach(id => marker.mark(id, color));
+          } else {
+            if (val) {
+              marker.mark(val, color);
+            }
+          }
+        });
+        marker.commit();
+
+      } else {
+        ctx.pickControlService.setPickHandler(null);
+      }
+    });
+  },
+
+}
+
 
 const singleValue = (id, current) =>  id;
 const arrayValue = (id, arr) =>  {
@@ -48,8 +71,6 @@ const arrayValue = (id, arr) =>  {
   }
   return arr;
 };
-
-const getEntityParams = memoize(schema => Object.keys(schema).filter(key => schema[key].type === 'entity'));
 
 function createPickHandlerFromSchema(wizardService: WizardService) {
 

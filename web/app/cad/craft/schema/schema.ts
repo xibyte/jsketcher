@@ -29,7 +29,7 @@ export type OperationFlattenSchema = {
 
 export interface BaseSchemaField {
   defaultValue?: OperationParamValue,
-  optional: boolean,
+  optional?: boolean,
   label?: string,
   resolve?: ValueResolver<any, any>
 }
