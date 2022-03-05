@@ -38,3 +38,11 @@ export function removeAndDropDependants({history}, indexToRemove) {
     pointer: history.length - 1
   }
 }
+
+export function removeFeature({history}, indexToRemove) {
+  history = history.slice(0, indexToRemove);
+  return {
+    history,
+    pointer: history.length - 1
+  }
+}

@@ -57,3 +57,5 @@ export interface NewOperationCall {
   type: string;
   initialOverrides: OperationParams;
 }
+
+export type ValueUpdater = (value: OperationParamValue) => OperationParamValue;
