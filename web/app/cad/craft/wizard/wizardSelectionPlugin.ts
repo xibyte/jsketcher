@@ -1,12 +1,14 @@
 import {FACE, SHELL} from 'cad/model/entities';
 import {OperationRequest} from "cad/craft/craftPlugin";
-import {FlattenPath, ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
-import {OperationParamValue} from "cad/craft/schema/schema";
+import {ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
+import {OperationParamPrimitive, OperationParamValue} from "cad/craft/schema/schema";
 import {EntityReference} from "cad/craft/operationPlugin";
-import {ContextSpec, Plugin, Spec} from "plugable/pluginSystem";
+import {Plugin} from "plugable/pluginSystem";
 import {MarkerPluginContext} from "cad/scene/selectionMarker/markerPlugin";
 import {WizardPluginContext} from "cad/craft/wizard/wizardPlugin";
 import {PickControlPluginContext} from "cad/scene/controls/pickControlPlugin";
+import _ from "lodash";
+import {param} from "cypress/types/jquery";
 
 export type WizardSelectionPluginInputContext = MarkerPluginContext & WizardPluginContext & PickControlPluginContext;
 
@@ -28,11 +30,20 @@ export const WizardSelectionPlugin: Plugin<WizardSelectionPluginInputContext, Wi
 
   activate(ctx: WizardSelectionWorkingContext) {
     const wizardService = ctx.wizardService;
+    let wizardPickHandler = null;
     wizardService.workingRequest$.attach((opRequest: OperationRequest) => {
       ctx.markerService.clear();
       if (opRequest) {
-        const wizardPickHandler = createPickHandlerFromSchema(wizardService);
-        ctx.pickControlService.setPickHandler(wizardPickHandler);
+        if (wizardPickHandler === null) {
+          wizardPickHandler = createPickHandlerFromSchema(wizardService);
+          ctx.pickControlService.setPickHandler(wizardPickHandler);
+          ctx.wizardService.addDisposer(() => {
+            console.log("DISPOSE!!!!");
+            wizardPickHandler = null;
+            ctx.pickControlService.setPickHandler(null);
+          });
+        }
+
         const marker = ctx.markerService;
         marker.startSession();
         let {schemaIndex} = wizardService.operation;
@@ -51,33 +62,28 @@ export const WizardSelectionPlugin: Plugin<WizardSelectionPluginInputContext, Wi
           }
         });
         marker.commit();
-
-      } else {
-        ctx.pickControlService.setPickHandler(null);
       }
     });
   },
 
 }
 
-
-const singleValue = (id, current) =>  id;
-const arrayValue = (id, arr) =>  {
-  if (!arr) {
-    return [id];
-  } 
-  if (arr.indexOf(id) === -1) {
-    arr.push(id);
-  }
-  return arr;
-};
-
 function createPickHandlerFromSchema(wizardService: WizardService) {
-
-  function update(param: ParamsPath, value: OperationParamValue, paramToMakeActive: FlattenPath) {
+  function updateSingle(param: ParamsPath, value: OperationParamPrimitive) {
     wizardService.updateParam(param, value);
-    wizardService.updateState(state => {
-      state.activeParam = paramToMakeActive;
+  }
+
+  function updateMulti(param: ParamsPath, value: OperationParamPrimitive) {
+    wizardService.updateParams(params => {
+      const currVal = _.get(params, param);
+      if (!currVal) {
+        _.set(params, param, [value]);
+      } else {
+        const arr: OperationParamPrimitive[] = Array.isArray(currVal) ? currVal : [currVal];
+        if (arr.indexOf(value) === -1) {
+          arr.push(value);
+        }
+      }
     });
   }
   return model => {
@@ -101,10 +107,15 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
 
     function select(entityRef: EntityReference, id: string) {
       const param = entityRef.field;
-      const valueGetter = entityRef.isArray ? arrayValue : singleValue;
       let paramToMakeActive = getNextActiveParam(entityRef);
-      const currentValue = wizardService.readParam(param.path);
-      update(param.path, valueGetter(id, currentValue), paramToMakeActive.field.flattenedPath);
+      if (entityRef.isArray) {
+        updateMulti(param.path, id);
+      } else {
+        updateSingle(param.path, id);
+      }
+      wizardService.updateState(state => {
+        state.activeParam = paramToMakeActive.field.flattenedPath
+      });
     }
 
     function getNextActiveParam(entityRef: EntityReference): EntityReference {
@@ -132,14 +143,24 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
     function deselectIfNeeded(id) {
       for (let entityRef of schemaIndex.entities) {
         let val = wizardService.readParam(entityRef.field.path);
+
         if (val === id) {
-          update(entityRef.field.path, undefined, entityRef.field.flattenedPath);
+          updateSingle(entityRef.field.path, undefined);
+          wizardService.updateState(state => {
+            state.activeParam = entityRef.field.flattenedPath
+          });
           return true;
         } else if (Array.isArray(val)) {
           let index = val.indexOf(id);
           if (index !== -1) {
-            val = val.slice(index, 1);
-            update(entityRef.field.path, val, entityRef.field.flattenedPath);
+            wizardService.updateParams(params => {
+              const val = _.get(params, entityRef.field.path);
+              let index = val.indexOf(id);
+              val.splice(index, 1);
+            });
+            wizardService.updateState(state => {
+              state.activeParam = entityRef.field.flattenedPath
+            });
             return true;
           }
         }

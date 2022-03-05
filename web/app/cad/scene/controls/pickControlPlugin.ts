@@ -166,7 +166,7 @@ export function activate(context) {
     setPickHandler, deselectAll, pick, pickFromRay, simulatePickFromRay
   };
 
-  services.pickControlService = services.pickControl;
+  context.pickControlService = services.pickControl;
 
   if (LOG_FLAGS.PICK) {
     initRayCastDebug();

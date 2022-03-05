@@ -4,7 +4,14 @@ import {clone} from 'gems/objects';
 import materializeParams from '../schema/materializeParams';
 import {createFunctionList} from 'gems/func';
 import {CraftHistory, OperationRequest} from "cad/craft/craftPlugin";
-import {NewOperationCall, ParamsPath, WizardService, WizardState, WorkingRequest} from "cad/craft/wizard/wizardTypes";
+import {
+  NewOperationCall,
+  ParamsPath,
+  ValueUpdater,
+  WizardService,
+  WizardState,
+  WorkingRequest
+} from "cad/craft/wizard/wizardTypes";
 import _ from "lodash";
 import {OperationParamValue} from "cad/craft/schema/schema";
 import {ApplicationContext} from "context";
@@ -96,6 +103,7 @@ export function activate(ctx: ApplicationContext) {
       if (!Array.isArray(path)) {
         path = [path]
       }
+
       _.set(params, path, value);
     });
   };
@@ -157,7 +165,7 @@ export function activate(ctx: ApplicationContext) {
 
     workingRequest$, materializedWorkingRequest$, state$,
     updateParams, updateParam, readParam, updateState,
-    addDisposer: disposerList.add
+    addDisposer: (disposer) => disposerList.add(disposer)
   };
 
   ctx.wizardService = services.wizard = wizardService;
