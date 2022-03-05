@@ -1,20 +1,15 @@
 import {combine, state, StateStream} from 'lstream';
-import initializeBySchema, {fillUpMissingFields} from '../schema/initializeBySchema';
+import initializeBySchema from '../schema/initializeBySchema';
 import {clone} from 'gems/objects';
 import materializeParams from '../schema/materializeParams';
 import {createFunctionList} from 'gems/func';
-import {CraftHints, CraftHistory, OperationRequest} from "cad/craft/craftPlugin";
-import {NewOperationCall, ParamsPath, WizardService, WizardState} from "cad/craft/wizard/wizardTypes";
+import {CraftHistory, OperationRequest} from "cad/craft/craftPlugin";
+import {NewOperationCall, ParamsPath, WizardService, WizardState, WorkingRequest} from "cad/craft/wizard/wizardTypes";
 import _ from "lodash";
 import {OperationParamValue} from "cad/craft/schema/schema";
 import {ApplicationContext} from "context";
 import {Operation} from "cad/craft/operationPlugin";
 import produce from "immer"
-
-type WorkingRequest = OperationRequest & {
-  hints?: CraftHints,
-  requestKey: number
-}
 
 export function activate(ctx: ApplicationContext) {
 
@@ -85,7 +80,6 @@ export function activate(ctx: ApplicationContext) {
   // reset effect
   workingRequest$.pairwise().attach(([old, curr]) => {
     if (old !== null && old.requestKey !== curr?.requestKey) {
-      console.log("=========> DISPOSE")
       disposerList.call();
       disposerList = createFunctionList();
       state$.next({});
@@ -169,9 +163,12 @@ export function activate(ctx: ApplicationContext) {
   ctx.wizardService = services.wizard = wizardService;
 }
 
+export interface WizardOutputContext {
+  wizardService: WizardService
+}
+
 declare module 'context' {
-  interface ApplicationContext {
-    wizardService: WizardService
+  interface ApplicationContext extends WizardOutputContext {
   }
 }
 

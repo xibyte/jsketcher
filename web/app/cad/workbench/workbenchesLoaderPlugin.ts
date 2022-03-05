@@ -1,4 +1,3 @@
-import {ApplicationContext, CoreContext} from "context";
 import {WorkbenchRegistry} from "workbenches/registry";
 import planeOperation from "cad/craft/primitives/simplePlane/simplePlaneOperation";
 import boxOperation from "cad/craft/primitives/box/boxOperation";
@@ -19,37 +18,30 @@ import {intersectionOperation, subtractOperation, unionOperation} from "cad/craf
 import {Plugin} from "plugable/pluginSystem";
 import {WorkbenchService} from "cad/workbench/workbenchService";
 import {OperationService} from "cad/craft/operationPlugin";
-import {checkAllPropsDefined} from "plugable/utils";
 
-export interface WorkbenchesLoaderContext {
+export interface WorkbenchesLoaderInputContext {
   workbenchService: WorkbenchService,
   operationService: OperationService
 }
 
-export const WorkbenchesLoaderPlugin: Plugin<ApplicationContext, WorkbenchesLoaderContext> = {
+export const WorkbenchesLoaderPlugin: Plugin<WorkbenchesLoaderInputContext, {}> = {
 
-  readiness(ctx: ApplicationContext): WorkbenchesLoaderContext {
-
-    const {
-      workbenchService,
-      operationService
-    } = ctx;
-
-    return checkAllPropsDefined({
-      workbenchService,
-      operationService
-    })
+  inputContextSpec: {
+    workbenchService: 'required',
+    operationService: 'required'
   },
 
-  activate(ctx: WorkbenchesLoaderContext) {
+  outputContextSpec: {},
+
+  activate(ctx) {
     registerCoreOperations(ctx);
     WorkbenchRegistry.forEach(wConfig => ctx.workbenchService.registerWorkbench(wConfig));
     ctx.workbenchService.switchToDefaultWorkbench();
-  },
+  }
 
 }
 
-function registerCoreOperations(ctx: WorkbenchesLoaderContext) {
+function registerCoreOperations(ctx: WorkbenchesLoaderInputContext) {
 
   ctx.operationService.registerOperations([
     planeOperation,
@@ -71,5 +63,5 @@ function registerCoreOperations(ctx: WorkbenchesLoaderContext) {
     intersectionOperation,
     subtractOperation,
     unionOperation,
-  ]);
+  ] as any);
 }

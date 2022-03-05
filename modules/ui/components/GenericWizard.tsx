@@ -13,7 +13,7 @@ export function GenericWizard({topicId, title, left, className, children, onCanc
   left?: number,
   onCancel: () => any,
   onOK: () => any,
-  onKeyDown: (e) => any,
+  onKeyDown?: (e) => any,
   infoText: any
 } & WindowProps ) {
 

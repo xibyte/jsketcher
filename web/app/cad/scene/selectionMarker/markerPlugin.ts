@@ -1,8 +1,34 @@
 import {OrderedMap} from 'gems/linkedMap';
-import {eventStream} from 'lstream';
+import {eventStream, Stream} from 'lstream';
+import {MObject} from "cad/model/mobject";
+
+export interface MarkerService {
+  clear();
+
+  startSession()
+
+  mark(id: any, color: any)
+
+  commit()
+
+  markExclusively()
+
+  markArrayExclusively()
+
+  markAdding()
+
+  isMarked()
+
+  $markedEntities: Stream<MObject>
+}
+
+export interface MarkerPluginOutputContext {
+  markerService: MarkerService;
+}
 
 export function activate(ctx) {
   ctx.services.marker = createMarker(ctx.services.cadRegistry.find, ctx.services.viewer.requestRender);
+  ctx.markerService = ctx.services.marker;
   ctx.streams.craft.models.attach(() => {
     ctx.services.marker.clear();
   });

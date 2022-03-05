@@ -1,6 +1,6 @@
 import * as LifecyclePlugin from './lifecyclePlugin';
 import * as AppTabsPlugin from '../dom/appTabsPlugin';
-import * as DomPlugin from '../dom/domPlugin';
+import {DomPlugin} from '../dom/domPlugin';
 import * as PickControlPlugin from '../scene/controls/pickControlPlugin';
 import * as MouseEventSystemPlugin from '../scene/controls/mouseEventSystemPlugin';
 import * as ScenePlugin from '../scene/scenePlugin';
@@ -10,7 +10,7 @@ import * as UiPlugin from '../dom/uiPlugin';
 import * as MenuPlugin from '../dom/menu/menuPlugin';
 import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
 import * as WizardPlugin from '../craft/wizard/wizardPlugin';
-import * as WizardSelectionPlugin from '../craft/wizard/wizardSelectionPlugin';
+import {WizardSelectionPlugin} from '../craft/wizard/wizardSelectionPlugin';
 import * as PreviewPlugin from '../preview/previewPlugin';
 import * as OperationPlugin from '../craft/operationPlugin';
 import * as ExtensionsPlugin from '../craft/extensionsPlugin';
@@ -112,13 +112,15 @@ export function defineStreams(plugins, context) {
 
 function adapter(oldStylePlugin) {
 
-  if (oldStylePlugin.readiness) {
+  if (oldStylePlugin.inputContextSpec) {
     return oldStylePlugin;
   }
 
   return {
 
-    readiness: ctx => ctx,
+    inputContextSpec: {},
+
+    outputContextSpec: {},
 
     activate: oldStylePlugin.activate,
 

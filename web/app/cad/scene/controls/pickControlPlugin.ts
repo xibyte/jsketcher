@@ -5,6 +5,22 @@ import {LOG_FLAGS} from '../../logFlags';
 import * as vec from 'math/vec';
 import {initRayCastDebug, printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
 
+export interface PickControlService {
+  setPickHandler(wizardPickHandler: (model) => boolean)
+
+  deselectAll()
+
+  pick()
+
+  pickFromRay()
+
+  simulatePickFromRay()
+}
+
+export interface PickControlOutputContext {
+  pickControlService: PickControlService;
+}
+
 export const PICK_KIND = {
   FACE: mask.type(1),
   SKETCH: mask.type(2),
@@ -27,9 +43,9 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
 export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;
 
 export function activate(context) {
-  const {services, streams} = context;
+  const {services} = context;
 
-  const defaultHandler = (model, event, rayCastData) => {
+  const defaultHandler = (model, event, rayCastData?) => {
     if (LOG_FLAGS.PICK) {
       printPickInfo(model, rayCastData);
     }
@@ -150,6 +166,8 @@ export function activate(context) {
     setPickHandler, deselectAll, pick, pickFromRay, simulatePickFromRay
   };
 
+  services.pickControlService = services.pickControl;
+
   if (LOG_FLAGS.PICK) {
     initRayCastDebug();
   }
@@ -216,7 +234,7 @@ export function traversePickResults(event, pickResults, kind, visitor) {
   }
 }
 
-function printPickInfo(model, rayCastData) {
+function printPickInfo(model, rayCastData?) {
   console.log("PICKED MODEL:");
   console.dir(model);
   console.log("PICK RAYCAST INFO:");

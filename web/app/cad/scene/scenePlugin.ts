@@ -1,7 +1,7 @@
 import Viewer from './viewer';
 import CadScene from './cadScene';
 import {externalState, stream} from 'lstream';
-import {AppTabsService} from "../dom/appTabsPlugin";
+import {ApplicationContext} from "context";
 
 export function defineStreams({streams, services}) {
   streams.cadScene = {
@@ -10,7 +10,8 @@ export function defineStreams({streams, services}) {
   };
 }
 
-export function activate({streams, services}) {
+export function activate(ctx: ApplicationContext) {
+  const {streams, services} = ctx;
   let {dom} = services;
   
   const onRendered = () => streams.cadScene.sceneRendered.next(); 
@@ -19,8 +20,10 @@ export function activate({streams, services}) {
   
   services.viewer = viewer;
   services.cadScene = new CadScene(viewer.sceneSetup.rootGroup);
-  
-  
+
+  ctx.viewer = viewer;
+  ctx.cadScene = services.cadScene;
+
   // let sketcher3D = new Sketcher3D(dom.viewerContainer);
   // services.viewer.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
 
