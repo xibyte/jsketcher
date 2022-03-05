@@ -4,18 +4,18 @@ import {FlattenPath, ParamsPath, WizardService} from "cad/craft/wizard/wizardTyp
 import {OperationParamValue} from "cad/craft/schema/schema";
 import {EntityReference} from "cad/craft/operationPlugin";
 import {ContextSpec, Plugin, Spec} from "plugable/pluginSystem";
-import {MarkerPluginOutputContext} from "cad/scene/selectionMarker/markerPlugin";
-import {WizardOutputContext} from "cad/craft/wizard/wizardPlugin";
-import {PickControlOutputContext} from "cad/scene/controls/pickControlPlugin";
+import {MarkerPluginContext} from "cad/scene/selectionMarker/markerPlugin";
+import {WizardPluginContext} from "cad/craft/wizard/wizardPlugin";
+import {PickControlPluginContext} from "cad/scene/controls/pickControlPlugin";
 
-export type WizardSelectionInputContext = MarkerPluginOutputContext & WizardOutputContext & PickControlOutputContext;
+export type WizardSelectionPluginInputContext = MarkerPluginContext & WizardPluginContext & PickControlPluginContext;
 
-export interface WizardSelectionOutputContext {
+export interface WizardSelectionPluginContext {
 }
 
-export type WizardSelectionContext = WizardSelectionInputContext & WizardSelectionOutputContext;
+export type WizardSelectionWorkingContext = WizardSelectionPluginInputContext & WizardSelectionPluginContext;
 
-export const WizardSelectionPlugin: Plugin<WizardSelectionInputContext, WizardSelectionOutputContext, WizardSelectionContext> = {
+export const WizardSelectionPlugin: Plugin<WizardSelectionPluginInputContext, WizardSelectionPluginContext, WizardSelectionWorkingContext> = {
 
   inputContextSpec: {
     markerService: 'required',
@@ -26,7 +26,7 @@ export const WizardSelectionPlugin: Plugin<WizardSelectionInputContext, WizardSe
   outputContextSpec: {
   },
 
-  activate(ctx: WizardSelectionContext) {
+  activate(ctx: WizardSelectionWorkingContext) {
     const wizardService = ctx.wizardService;
     wizardService.workingRequest$.attach((opRequest: OperationRequest) => {
       ctx.markerService.clear();

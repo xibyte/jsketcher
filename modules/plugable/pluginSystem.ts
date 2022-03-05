@@ -1,6 +1,3 @@
-import {WizardSelectionContext} from "cad/craft/wizard/wizardSelectionPlugin";
-
-
 type BagOfPlugins = Set<Plugin<any, any>>;
 
 export class PluginSystem {

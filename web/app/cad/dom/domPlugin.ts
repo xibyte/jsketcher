@@ -10,23 +10,22 @@ export interface DomService {
 
 }
 
-export interface DomInputContext {
+interface DomPluginInputContext {
   appTabsService: AppTabsService;
   services: any;
 }
 
-export interface DomOutputContext {
+export interface DomPluginContext {
   domService: DomService;
 }
 
-export type DomContext = DomInputContext&DomOutputContext;
+type DomPluginWorkingContext = DomPluginInputContext&DomPluginContext;
 
 declare module 'context' {
-  interface ApplicationContext extends DomOutputContext {}
+  interface ApplicationContext extends DomPluginContext {}
 }
 
-
-export const DomPlugin: Plugin<DomInputContext, DomOutputContext, DomContext> = {
+export const DomPlugin: Plugin<DomPluginInputContext, DomPluginContext, DomPluginWorkingContext> = {
 
   inputContextSpec: {
     appTabsService: 'required',
@@ -37,7 +36,7 @@ export const DomPlugin: Plugin<DomInputContext, DomOutputContext, DomContext> = 
     domService: 'required',
   },
 
-  activate(ctx: DomInputContext&DomOutputContext) {
+  activate(ctx: DomPluginInputContext&DomPluginContext) {
     ctx.domService = {
       viewerContainer: document.getElementById('viewer-container'),
       contributeComponent
