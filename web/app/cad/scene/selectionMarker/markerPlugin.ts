@@ -22,7 +22,7 @@ export interface MarkerService {
   $markedEntities: Stream<MObject>
 }
 
-export interface MarkerPluginOutputContext {
+export interface MarkerPluginContext {
   markerService: MarkerService;
 }
 

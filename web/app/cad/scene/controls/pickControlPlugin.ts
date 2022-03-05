@@ -17,7 +17,7 @@ export interface PickControlService {
   simulatePickFromRay()
 }
 
-export interface PickControlOutputContext {
+export interface PickControlPluginContext {
   pickControlService: PickControlService;
 }
 

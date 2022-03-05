@@ -163,12 +163,12 @@ export function activate(ctx: ApplicationContext) {
   ctx.wizardService = services.wizard = wizardService;
 }
 
-export interface WizardOutputContext {
+export interface WizardPluginContext {
   wizardService: WizardService
 }
 
 declare module 'context' {
-  interface ApplicationContext extends WizardOutputContext {
+  interface ApplicationContext extends WizardPluginContext {
   }
 }
 
