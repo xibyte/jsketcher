@@ -52,7 +52,7 @@ export class MEdge extends MObject {
       tan = he.tangentAtStart();
       origin = he.vertexA.point;
     } else {
-      tan = he.tangentAtEnd();
+      tan = he.tangentAtEnd().negate();
       origin = he.vertexB.point;
     }
     return new Axis(origin, tan);

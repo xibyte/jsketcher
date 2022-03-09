@@ -160,7 +160,7 @@ export class MFace extends MObject {
   
   get productionInfo() {
     if (this._productionInfo === undefined) {
-      this._productionInfo = !this.brepFace.data.productionInfo ? null :
+      this._productionInfo = !this.brepFace?.data?.productionInfo ? null :
         ProductionInfo.fromRawData(this.brepFace.data.productionInfo);
     }
     return this._productionInfo;

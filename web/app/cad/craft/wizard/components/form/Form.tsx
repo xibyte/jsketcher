@@ -51,7 +51,7 @@ export function attachToForm(Control): any {
       state.activeParam = isActive ? fullPathFlatten : null;
     });
 
-    const value = _.get(params, fullPath);
+    const value = params[name];
 
     return <React.Fragment>
       <Control value={value}
@@ -65,10 +65,10 @@ export function attachToForm(Control): any {
 
 export function SubForm(props: {name: ParamsPathSegment, children: any}) {
 
-  const formState = useContext(FormStateContext);
+  const formParams = useContext(FormParamsContext);
   const formPath = useContext(FormPathContext);
 
-  return <FormParamsContext.Provider value={formState[props.name]}>
+  return <FormParamsContext.Provider value={formParams[props.name] as any}>
     <FormPathContext.Provider value={[...formPath, props.name]}>
       {props.children}
     </FormPathContext.Provider>

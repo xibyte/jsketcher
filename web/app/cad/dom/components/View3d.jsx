@@ -20,6 +20,7 @@ import SketcherOperationWizard from "../../../sketcher/components/SketcherOperat
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {ContributedComponents} from "./ContributedComponents";
+import {SceneInlineObjectExplorer} from "cad/craft/ui/SceneInlineObjectExplorer";
 
 export default class View3d extends React.Component {
 
@@ -41,7 +42,11 @@ export default class View3d extends React.Component {
           </div>
 
           <div className={ls.middleSection + ' small-typography'}>
-            <SketcherMode>
+            <SketcherMode whenOff={
+              <div className={ls.overlayingPanel} >
+                <SceneInlineObjectExplorer />
+              </div>
+            }>
               <InplaceSketcher>
                 <div className={ls.overlayingPanel} >
                   <Scope><SketchObjectExplorer /></Scope>

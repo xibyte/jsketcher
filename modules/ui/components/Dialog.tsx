@@ -4,16 +4,18 @@ import cx from 'classnames';
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
 
-export function Dialog({children, className, okText, cancelText, onOK, ...props}: WindowProps & {
+export function Dialog({children, compact, className, okText, cancelText, onOK, ...props}: WindowProps & {
   cancelText?: string,
   okText?: string,
-  onOK?: () => void
+  onOK?: () => void,
+  compact?: boolean,
 }) {
 
-  return <Window className={cx(className, 'dialog')}
+  return <Window compact={compact}
+                 className={cx(className, 'dialog')}
                  footer={
                    <ButtonGroup className='dialog-buttons padded'>
-                     <Button onClick={props.onClose}>{cancelText || 'Cancel'}</Button>
+                     {!compact && <Button onClick={props.onClose}>{cancelText || 'Cancel'}</Button>}
                      {onOK && <Button type='accent' onClick={onOK}>{okText || 'OK'}</Button>}
                    </ButtonGroup>
                  }

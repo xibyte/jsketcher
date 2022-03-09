@@ -9,6 +9,7 @@ import OperationHistory from '../craft/ui/OperationHistory';
 import Expressions from '../expressions/Expressions';
 import {SelectionView} from "../dom/components/SelectionView";
 import {GrSelect} from "react-icons/gr";
+import {Explorer} from "cad/dom/components/Explorer";
 
 export function activate(ctx) {
   const {services, streams} = ctx;
@@ -28,7 +29,7 @@ export function activate(ctx) {
 
   services.menu.registerMenus(menuConfig);
 
-  services.ui.registerFloatView('project', ObjectExplorer, 'Model', 'cubes');
+  services.ui.registerFloatView('project', Explorer, 'Model', 'cubes');
   services.ui.registerFloatView('history', OperationHistory, 'Modifications', 'history');
   services.ui.registerFloatView('expressions', Expressions, 'Expressions', 'percent');
   services.ui.registerFloatView('selection', SelectionView, 'Selection', GrSelect);

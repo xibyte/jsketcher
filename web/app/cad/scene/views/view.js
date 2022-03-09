@@ -1,7 +1,13 @@
+import {createFunctionList} from "gems/func";
+import {Color} from "three";
+
 export class View {
   
   static MARKER = 'ModelView';
-  
+
+  disposers = createFunctionList();
+  color = new Color();
+
   constructor(model) {
     this.model = model;
     model.ext.view = this;
@@ -15,8 +21,25 @@ export class View {
 
   withdraw(priority) {
   }
-  
+
+  setColor(color) {
+    if (!color) {
+      this.color = new Color();
+    } else {
+      this.color.setStyle(color);
+    }
+  }
+
+  traverse(visitor) {
+    visitor(this);
+  }
+
+  addDisposer(disposer) {
+    this.disposers.add(disposer);
+  }
+
   dispose() {
+    this.disposers.call();
     this.model.ext.view = null;
     this.model = null;
   };

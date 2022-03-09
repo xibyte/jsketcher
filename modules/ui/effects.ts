@@ -2,13 +2,14 @@ import {useCallback, useContext, useEffect, useState} from 'react';
 import {StreamsContext} from "./streamsContext";
 import {ApplicationContext} from "context";
 import {Emitter, Stream} from "lstream";
+import produce from "immer";
 
 export function useStream<T>(getStream: Stream<T> | ((ctx: ApplicationContext) => Stream<T>)) : T {
 
   const basicStreams = useContext(StreamsContext);
   const [state, setState] = useState<{data: T}>();
 
-  const stream = resolveStream(getStream, basicStreams);
+  const stream: Emitter<T> = resolveStream(getStream, basicStreams);
 
   if (!stream) {
     console.log(getStream);
@@ -41,6 +42,26 @@ export function useStreamWithUpdater<T>(getStream: (ctx: ApplicationContext) => 
 
 }
 
-function resolveStream(getStream, basicStreams) {
+export type Patcher<T> = (draft: T) => void;
+
+export function useStreamWithPatcher<T>(getStream: (ctx: ApplicationContext) => Emitter<T>) : [T, (patcher: Patcher<T>) => void] {
+
+  const data = useStream(getStream);
+  const basicStreams = useContext(StreamsContext);
+
+  const stream: Emitter<T> = resolveStream(getStream, basicStreams);
+
+  const patch = (patcher: Patcher<T>) => {
+    const newData: T = produce(data, (draft:T) => {
+      patcher(draft)
+    })
+    stream.next(newData);
+  }
+
+  return [data, patch];
+
+}
+
+function resolveStream<T>(getStream, basicStreams): Emitter<T> {
   return typeof getStream === 'function' ? getStream(basicStreams) : getStream
 }

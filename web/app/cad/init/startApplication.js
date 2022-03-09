@@ -40,6 +40,7 @@ import * as LocationPlugin from "../location/LocationPlugin";
 import * as AssemblyPlugin from "../assembly/assemblyPlugin";
 import {WorkbenchesLoaderPlugin} from "cad/workbench/workbenchesLoaderPlugin";
 import {PluginSystem} from "plugable/pluginSystem";
+import {AttributesPlugin} from "cad/attributes/attributesPlugin";
 
 export default function startApplication(callback) {
 
@@ -83,7 +84,8 @@ export default function startApplication(callback) {
     AssemblyPlugin,
     RemotePartsPlugin,
     ViewSyncPlugin,
-    WizardSelectionPlugin
+    WizardSelectionPlugin,
+    AttributesPlugin
   ];
   
   let allPlugins = [...preUIPlugins, ...plugins];

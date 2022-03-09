@@ -28,14 +28,14 @@ export class OpenFaceView extends SketchingView {
     super(mFace);
     this.material = new THREE.MeshPhongMaterial({
       vertexColors: THREE.FaceColors,
-      color: 0xB0C4DE,
+      // color: 0xB0C4DE,
       shininess: 0,
       polygonOffset : true,
       polygonOffsetFactor : 1,
       polygonOffsetUnits : 2,
       side : THREE.DoubleSide,
       transparent: true,
-      opacity: 0.5
+      opacity: 0.3
     });
     this.updateBounds();
   }
@@ -60,7 +60,7 @@ export class OpenFaceView extends SketchingView {
   }
 
   updateBounds() {
-    let markedColor = this.color;
+    let markedColor = this.markedColor;
     this.dropGeometry();
     
     let bounds2d = [];
@@ -72,9 +72,11 @@ export class OpenFaceView extends SketchingView {
       surface.northEastPoint(), surface.northWestPoint()]; 
 
     this.createGeometry();
-    if (markedColor) {
-      this.mark(markedColor);
-    }
+    this.updateColor(markedColor || this.color);
+  }
+
+  traverse(visitor) {
+    super.traverse(visitor);
   }
 
   updateSketch() {
@@ -83,19 +85,19 @@ export class OpenFaceView extends SketchingView {
   }
 
   mark(color) {
-    this.setColor(color || SELECTION_COLOR);
+    this.updateColor(color || SELECTION_COLOR);
   }
 
   withdraw(color) {
-    this.setColor(null);
+    this.updateColor(null);
   }
 
-  setColor(color) {
-    setFacesColor(this.mesh.geometry.faces, color);
+  updateColor(color) {
+    setFacesColor(this.mesh.geometry.faces, color||this.color);
     this.mesh.geometry.colorsNeedUpdate = true;
   }
   
-  get color() {
+  get markedColor() {
     let face = this.mesh && this.mesh.geometry && this.mesh.geometry.faces[0];
     if (face) {
       return face.color === NULL_COLOR ? null : face.color;
