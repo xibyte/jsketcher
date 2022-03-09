@@ -5,6 +5,10 @@ export type OCCCommandInterface = OCCCommands;
 
 const pushedModels = new Set();
 
+export function clearImplicitModels() {
+  pushedModels.clear();
+}
+
 export const OCI: OCCCommandInterface = new Proxy({}, {
   get: function (target, prop: string, receiver) {
     return prop in target ? target[prop] : function() {
