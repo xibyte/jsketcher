@@ -48,7 +48,7 @@ export class SceneSolid {
 export function createSolidMaterial(skin) {
   return new THREE.MeshPhongMaterial(Object.assign({
     vertexColors: THREE.FaceColors,
-    color: 0xB0C4DE,
+    // color: 0xB0C4DE,
     shininess: 0,
     polygonOffset : true,
     polygonOffsetFactor : 1,

@@ -7,6 +7,7 @@ import {intercept} from "lstream/intercept";
 import {CoreContext} from "context";
 import {MFace} from "../model/mface";
 import {OperationParams} from "cad/craft/schema/schema";
+import {clearImplicitModels} from "cad/craft/e0/occCommandInterface";
 
 export function activate(ctx: CoreContext) {
 
@@ -69,6 +70,7 @@ export function activate(ctx: CoreContext) {
   }
   
   function runRequest(request): Promise<OperationResult> {
+    clearImplicitModels();
     try {
       let op = ctx.operationService.get(request.type);
       if (!op) {
@@ -90,6 +92,8 @@ export function activate(ctx: CoreContext) {
       return result.then ? result : Promise.resolve(result);
     } catch (e) {
       return Promise.reject(e);
+    } finally {
+      clearImplicitModels();
     }
   }
   

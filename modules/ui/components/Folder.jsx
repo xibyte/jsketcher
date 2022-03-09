@@ -1,42 +1,40 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 import ls from './Folder.less'
 import Fa from "./Fa";
-import cx from 'classnames';
+import cx from "classnames";
 
-export default class Folder extends React.Component{
-  
-  constructor() {
-    super();
-    this.state = {
-      closed: null
-    }    
-  }
+export function InnerFolder(props) {
 
-  isClosed() {
-    let {closable, defaultClosed} = this.props;
+  const [closed, setClosed] = useState(null)
+
+  function isClosed(){
+    let {closable, defaultClosed} = props;
     if (!closable) return false;
-    return closable && (this.state.closed === null ? defaultClosed : this.state.closed)
+    return closable && (closed === null ? defaultClosed : closed)
   }
 
-  tweakClose = () => {
-    this.setState({closed: !this.isClosed()});
-  };
-  
-  render() {
-    let {title, closable, className, children} = this.props;
-    return <div className={cx(ls.root, className)}>
-      <Title onClick={closable ? this.tweakClose : null} isClosed={this.isClosed()}>{title}</Title>
-      {!this.isClosed() && children}
-    </div>
+  function tweakClose(  ) {
+    setClosed(!isClosed())
   }
+
+  const {title, titleClass, closable, children} = props;
+  return <React.Fragment>
+    <Title onClick={closable ? tweakClose : null} isClosed={isClosed()} className={titleClass}>{title}</Title>
+    {!isClosed() && children}
+  </React.Fragment>
 }
 
-export function Title({children, isClosed, onClick}) {
+export default function Folder({className, ...props}) {
+  return <div className={className}>
+    <InnerFolder {...props} />
+  </div>
+}
+export function Title({children, isClosed, onClick, className}) {
   const titleCss = onClick ? {
     cursor: 'pointer'
   } : {};
-  return <div className={ls.title} onClick={onClick}  style={titleCss}>
+  return <div className={cx(ls.title, className)} onClick={onClick}  style={titleCss}>
     <span className={ls.handle}><Fa fw icon={isClosed ? 'chevron-right' : 'chevron-down'}/></span>
     {' '}{children}
   </div>;

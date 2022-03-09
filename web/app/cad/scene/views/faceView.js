@@ -69,15 +69,15 @@ export class FaceView extends SketchingView {
   }
   
   mark(color) {
-    this.setColor(color || SELECTION_COLOR);
+    this.updateColor(color || SELECTION_COLOR);
   }
 
   withdraw(color) {
-    this.setColor(null);
+    this.updateColor(null);
   }
-  
-  setColor(color) {
-    setFacesColor(this.meshFaces, color);
+
+  updateColor(color) {
+    setFacesColor(this.meshFaces, color||this.color);
     this.geometry.colorsNeedUpdate = true;
   }
 }
@@ -93,4 +93,4 @@ export function setFacesColor(faces, color) {
 }
 
 export const NULL_COLOR = new THREE.Color();
-export const SELECTION_COLOR = 0xFAFAD2;
+export const SELECTION_COLOR = 0xffff80;

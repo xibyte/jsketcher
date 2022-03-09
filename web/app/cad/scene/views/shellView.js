@@ -71,6 +71,13 @@ export class ShellView extends View {
     this.faceViews.forEach(faceView => faceView.setColor(null));
   }
 
+  traverse(visitor) {
+    super.traverse(visitor);
+    this.faceViews.forEach(f => f.traverse(visitor));
+    this.edgeViews.forEach(e => e.traverse(visitor));
+    this.vertexViews.forEach(e => e.traverse(visitor));
+  }
+
   dispose() {
     this.mesh.material.dispose();
     this.mesh.geometry.dispose();
