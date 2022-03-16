@@ -9,15 +9,39 @@ import DatumView from './views/datumView';
 import {View} from './views/view';
 import {SketchingView} from "cad/scene/views/faceView";
 
-export function activate(context) {
-  let {streams} = context;
-  streams.cadRegistry.update.attach(sceneSynchronizer(context));
-  streams.sketcher.update.attach(mFace => mFace.ext.view.updateSketch());
+export const ViewSyncPlugin = {
+
+  inputContextSpec: {
+    highlightService: 'required',
+    attributesService: 'required',
+  },
+
+  outputContextSpec: {
+  },
+
+  activate(ctx) {
+    let {streams} = ctx;
+    ctx.highlightService.highlightEvents.attach(id => {
+      const model = ctx.cadRegistry.find(id);
+      model?.ext?.view?.mark('highlight');
+    });
+    ctx.highlightService.unHighlightEvents.attach(id => {
+      const model = ctx.cadRegistry.find(id);
+      model?.ext?.view?.withdraw('highlight');
+    });
+
+    streams.cadRegistry.update.attach(sceneSynchronizer(ctx));
+    streams.sketcher.update.attach(mFace => mFace.ext.view.updateSketch());
+  },
 }
+
 
 function sceneSynchronizer(ctx) {
   const {services: {cadScene, cadRegistry, viewer, wizard, action, pickControl}} = ctx;
+  let xxx = 0;
   return function() {
+    console.log("sceneSynchronizer update" + (xxx++))
+
     let wgChildren = cadScene.workGroup.children;
     let existent = new Set();
     for (let i = wgChildren.length - 1; i >= 0; --i) {
@@ -25,12 +49,12 @@ function sceneSynchronizer(ctx) {
       let shellView = getAttribute(obj, View.MARKER);
       if (shellView) {
         let exists = cadRegistry.modelIndex.has(shellView.model.id);
-        if (!exists) {
+        // if (!exists) {
           SceneGraph.removeFromGroup(cadScene.workGroup, obj);
           shellView.dispose();
-        } else {
-          existent.add(shellView.model.id);
-        }
+        // } else {
+        //   existent.add(shellView.model.id);
+        // }
       }
     }
 
@@ -38,12 +62,11 @@ function sceneSynchronizer(ctx) {
       if (!existent.has(model.id)) {
         let modelView;
         if (model instanceof MOpenFaceShell) {
-          modelView = new OpenFaceShellView(model);
+          modelView = new OpenFaceShellView(ctx, model);
         } else if (model instanceof MShell) {
-          modelView = new ShellView(model, undefined, viewer);
+          modelView = new ShellView(ctx, model, undefined,);
         } else if (model instanceof MDatum) {
-          modelView = new DatumView(model, viewer, 
-            wizard.open,
+          modelView = new DatumView(ctx, model, wizard.open,
             datum => pickControl.pick(datum),
             e => action.run('menu.datum', e),
             wizard.isInProgress);
@@ -69,6 +92,7 @@ function sceneSynchronizer(ctx) {
         SceneGraph.addToGroup(cadScene.workGroup, modelView.rootGroup);
       }
     }
+
     viewer.requestRender();
   }
 }

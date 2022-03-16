@@ -24,13 +24,14 @@ export function ColorControl(props: ColorControlProps) {
   return <React.Fragment>
     <ButtonGroup>
       <span style={{
-        display: 'inline-block',
+        alignItems: 'center',
+        display: 'inline-flex',
         padding: '0 3px',
         fontFamily: 'monospace',
         ...style
       }}>{value||<NoValue/>}</span>
-      <Button onClick={() => onChange(null)}><RiDeleteBack2Line /></Button>
-      <Button onClick={() => setOpen(true)}><CgColorPicker /></Button>
+      <Button compact onClick={() => onChange(null)}><RiDeleteBack2Line /></Button>
+      <Button compact onClick={() => setOpen(true)}><CgColorPicker /></Button>
     </ButtonGroup>
     {open && <ColorDialog value={value||'white'} onChange={onChange} onClose={() => setOpen(false)} title={props.dialogTitle}/>}
   </React.Fragment>

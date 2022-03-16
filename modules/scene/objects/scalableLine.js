@@ -10,8 +10,8 @@ import {ORIGIN} from "math/vector";
 
 export default class ScalableLine extends Mesh {
 
-  constructor(tessellation, width, color, opacity, smooth, ambient) {
-    super(createGeometry(tessellation, smooth), createMaterial(color, opacity, ambient));
+  constructor(tessellation, width, color, opacity, smooth, ambient, offset) {
+    super(createGeometry(tessellation, smooth), createMaterial(color, opacity, ambient, offset));
     this.width = width;
     this.morphTargetInfluences = [0];
   }
@@ -35,12 +35,19 @@ export default class ScalableLine extends Mesh {
   }
 }
 
-function createMaterial(color, opacity, ambient) {
+function createMaterial(color, opacity, ambient, offset) {
   let materialParams = {
     vertexColors: FaceColors,
     morphTargets: true,
     color,
   };
+  if (offset) {
+    Object.assign(materialParams, {
+      polygonOffset: true,
+      polygonOffsetFactor: -2.0,
+      polygonOffsetUnits: -1.0,
+    });
+  }
   if (!ambient) {
     materialParams.shininess = 0;
   }

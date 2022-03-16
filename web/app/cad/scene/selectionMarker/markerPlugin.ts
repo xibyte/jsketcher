@@ -52,12 +52,12 @@ function createMarker(findEntity, requestRender) {
       return;
     }
     marked.set(id, mObj);
-    mObj.ext.view && mObj.ext.view.mark(color);
+    mObj.ext.view && mObj.ext.view.mark('selection');
   }
 
   function doWithdraw(obj) {
     marked.delete(obj.id);
-    obj.ext.view && obj.ext.view.withdraw();
+    obj.ext.view && obj.ext.view.withdraw('selection');
   }
 
   function onUpdate() {
@@ -67,7 +67,7 @@ function createMarker(findEntity, requestRender) {
   
   function clear() {
     if (marked.size !== 0) {
-      marked.forEach(m => m.ext.view && m.ext.view.withdraw());
+      marked.forEach(m => m.ext.view && m.ext.view.withdraw('selection'));
       marked.clear();
       onUpdate();
     }

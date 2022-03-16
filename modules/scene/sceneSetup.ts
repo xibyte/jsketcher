@@ -217,7 +217,31 @@ export default class SceneSetUp {
     if (logInfoOut !== null) {
       logInfoOut.ray = raycaster.ray
     }
-    return raycaster.intersectObjects( objects, true );
+
+    const intersects = [];
+
+    function intersectObject(object) {
+
+      object.raycast( raycaster, intersects );
+
+      const children = object.children;
+
+      if (object.visible) {
+        for ( let i = 0, l = children.length; i < l; i ++ ) {
+          intersectObject(children[ i ]);
+        }
+      }
+    }
+
+    objects.forEach(intersectObject);
+
+    intersects.sort((a, b) => {
+      if (Math.abs(a.distance - b.distance) < 0.01 && (a.object.raycastPriority || b.object.raycastPriority)) {
+        return b.object.raycastPriority||0 - a.object.raycastPriority||0;
+      }
+      return a.distance - b.distance;
+    })
+    return intersects;
   }
 
   customRaycast(from3, to3, objects) {

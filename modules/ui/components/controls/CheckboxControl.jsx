@@ -1,11 +1,12 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import {FieldId} from "ui/components/controls/Field";
 
-export default class CheckboxControl extends React.Component {
-  
-  render() {
-    let {onChange, value} = this.props;
-    return <input type='checkbox' 
-              checked={value}
-              onChange={e => onChange(e.target.checked)}  /> 
-  }
+export default function CheckboxControl(props) {
+  let {onChange, value} = props;
+  const fieldId = useContext(FieldId);
+  return <input id={fieldId}
+                type='checkbox'
+                checked={value}
+                onChange={e => onChange(e.target.checked)}/>
+
 }

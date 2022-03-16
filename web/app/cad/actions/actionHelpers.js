@@ -29,3 +29,13 @@ export function requiresSolidSelection(amount) {
     update: checkForSelectedSolids(amount)
   }
 }
+
+export const RequiresAnyModelSelection = {
+  listens: ctx => ctx.streams.selection.all,
+  update: (state, selection) => {
+    state.enabled = selection.length > 0;
+    if (!state.enabled) {
+      state.hint = 'requires at least one model selected';
+    }
+  }
+}

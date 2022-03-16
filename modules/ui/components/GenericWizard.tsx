@@ -7,18 +7,20 @@ import Stack from "ui/components/Stack";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
 
-export function GenericWizard({topicId, title, left, className, children, onCancel, onOK, infoText, ...props}: {
+export function GenericWizard({topicId, title, left, top, className, children, onCancel, onOK, infoText, ...props}: {
   topicId: string,
   title: string,
   left?: number,
+  top?: number,
   onCancel: () => any,
   onOK: () => any,
   onKeyDown?: (e) => any,
-  infoText: any
+  infoText?: any
 } & WindowProps ) {
 
   return <Window initWidth={250}
                    initLeft={left || 15}
+                   initTop={top}
                    title={(title||'').toUpperCase()}
                    className={cx('mid-typography', className)}
                    controlButtons={<>

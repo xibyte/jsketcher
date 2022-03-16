@@ -26,6 +26,8 @@ interface GenericExplorerNodeProps {
   defaultExpanded?: boolean;
   expandable: boolean;
   select: any;
+  onMouseEnter?: any;
+  onMouseLeave?: any;
 }
 
 export function GenericExplorerNode(props: GenericExplorerNodeProps) {
@@ -36,7 +38,7 @@ export function GenericExplorerNode(props: GenericExplorerNodeProps) {
   const toggle = expandable ? (() => setExpanded(expanded => !expanded)) : undefined;
 
   return <>
-    <div className={ls.objectItem}>
+    <div className={ls.objectItem} onMouseEnter={props.onMouseEnter} onMouseLeave={props.onMouseLeave}>
     <span className={expandable ? ls.expandHandle : ls.expandHandleInactive} onClick={toggle}>
       {expandable ? (expanded ? <AiFillCaretDown/> : <AiFillCaretRight/>)
         : <BsDot/>}

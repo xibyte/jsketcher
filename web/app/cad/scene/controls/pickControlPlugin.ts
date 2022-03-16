@@ -1,8 +1,7 @@
 import * as mask from 'gems/mask'
-import {getAttribute, setAttribute} from 'scene/objectData';
+import {getAttribute} from 'scene/objectData';
 import {FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL, DATUM_AXIS, LOOP} from '../../model/entities';
-import {LOG_FLAGS} from '../../logFlags';
-import * as vec from 'math/vec';
+import {LOG_FLAGS} from 'cad/logFlags';
 import {initRayCastDebug, printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
 
 export interface PickControlService {
@@ -157,7 +156,9 @@ export function activate(context) {
   function handleSolidPick(e) {
     let pickResults = services.viewer.raycast(e, services.cadScene.workGroup.children);
     traversePickResults(e, pickResults, PICK_KIND.FACE, (sketchFace) => {
-      context.locationService.edit(sketchFace.shell);
+      const shell = sketchFace.shell;
+      services.marker.markExclusively(shell.TYPE, shell.id);
+      context.locationService.edit(shell);
       return false;
     });
   }

@@ -9,21 +9,40 @@ import Vector from 'math/vector';
 import {LOOP} from '../../model/entities';
 import {setAttribute} from 'scene/objectData';
 
-export class SketchLoopView extends MarkTracker(View) {
-  constructor(mLoop) {
-    super(mLoop);
+const HIGHLIGHT_COLOR = 0xDBFFD9;
+const SELECT_COLOR = 0xCCEFCA;
+
+const MarkerTable = [
+  {
+    type: 'selection',
+    priority: 10,
+    colors: [SELECT_COLOR],
+  },
+  {
+    type: 'highlight',
+    priority: 1,
+    colors: [HIGHLIGHT_COLOR],
+  },
+];
+
+
+export class SketchLoopView extends View {
+
+  constructor(ctx, mLoop) {
+    super(ctx, mLoop, MarkerTable);
     this.rootGroup = SceneGraph.createGroup();
 
     const geometry = new Geometry();
     geometry.dynamic = true;
     this.mesh = new Mesh(geometry, createSolidMaterial({
-      color: SKETCH_LOOP_DEFAULT_HIGHLIGHT_COLOR,
+      // color: HIGHLIGHT_COLOR,
       side: DoubleSide,
       // transparent: true,
-      depthTest: true,
-      depthWrite: false,
+      // depthTest: true,
+      // depthWrite: false,
       polygonOffset: true,
-      polygonOffsetFactor: -4,
+      polygonOffsetFactor: -1.0, // should less than offset of loop lines
+      polygonOffsetUnits: -1.0,
       visible: false
     }));
     let surface = mLoop.face.surface;
@@ -45,27 +64,23 @@ export class SketchLoopView extends MarkTracker(View) {
     }
 
     this.rootGroup.add(this.mesh);
-    this.mesh.onMouseEnter = (e) => {
-      this.mark(SKETCH_LOOP_DEFAULT_HIGHLIGHT_COLOR, 5);
-      e.viewer.requestRender();
-    };
-    this.mesh.onMouseLeave = (e) => {
-      this.withdraw(5);
-      e.viewer.requestRender();
-    };
+    this.mesh.onMouseEnter = () => {
+      this.ctx.highlightService.highlight(this.model.id);
+    }
+    this.mesh.onMouseLeave = () => {
+      this.ctx.highlightService.unHighlight(this.model.id);
+    }
+    this.mesh.raycastPriority = 10;
   }
 
-  mark(color = SKETCH_LOOP_DEFAULT_SELECT_COLOR, priority = 10) {
-    super.mark(color, priority);
-  }
-  
-  markImpl(color) {
-    this.mesh.material.visible = true;
-    this.mesh.material.color.setHex(color)
-  }
-
-  withdrawImpl() {
-    this.mesh.material.visible = false;
+  updateVisuals() {
+    const markColor = this.markColor;
+    if (!markColor) {
+      this.mesh.material.visible = false;
+    } else {
+      this.mesh.material.color.set(markColor);
+      this.mesh.material.visible = true;
+    }
   }
 
   dispose() {
@@ -74,6 +89,3 @@ export class SketchLoopView extends MarkTracker(View) {
     super.dispose();
   }
 }
-
-const SKETCH_LOOP_DEFAULT_HIGHLIGHT_COLOR = 0xDBFFD9;
-const SKETCH_LOOP_DEFAULT_SELECT_COLOR = 0xCCEFCA;
