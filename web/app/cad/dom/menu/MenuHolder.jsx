@@ -23,29 +23,34 @@ function ActionMenu({actions, keymap, ...menuState}) {
   </Menu>;
 }
 
-function ActionMenuItem({label, cssIcons, icon32, icon96, enabled, hotKey, visible, actionId, ...props}) {
+function ActionMenuItem({label, cssIcons, icon, icon32, icon96, enabled, hotKey, visible, actionId, ...props}) {
   if (!visible) {
     return null;
   }
-  let icon, style;
-  if (icon32 || icon96) {
-    let size = 16;
-    icon = <Filler width={size} height='1.18em'/>;
-    style = {
-      backgroundImage: `url(${icon32 || icon96})`,
-      backgroundRepeat: 'no-repeat',
-      backgroundSize: `${size}px ${size}px`,
-      backgroundPositionX: 5,
-      backgroundPositionY: 4,
-    };
-    if (!enabled) {
-      style.filter = 'grayscale(90%)';
+  let renderedIcon, style;
+  if (icon) {
+    const Icon = icon;
+    renderedIcon = <Icon />;
+  } else {
+    if (icon32 || icon96) {
+      let size = 16;
+      renderedIcon = <Filler width={size} height='1.18em'/>;
+      style = {
+        backgroundImage: `url(${icon32 || icon96})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: `${size}px ${size}px`,
+        backgroundPositionX: 5,
+        backgroundPositionY: 4,
+      };
+      if (!enabled) {
+        style.filter = 'grayscale(90%)';
+      }
+    } else if (cssIcons) {
+      renderedIcon = <Fa fw fa={cssIcons} />;
     }
-  } else if (cssIcons) {
-    icon = <Fa fw fa={cssIcons} />;    
   }
-  
-  return <MenuItem {...{label, icon,  style, disabled: !enabled, hotKey, ...props}} />;
+
+  return <MenuItem icon={renderedIcon} {...{label, style, disabled: !enabled, hotKey, ...props}} />;
 }
 
 const ConnectedActionMenu = connect((streams, props) =>

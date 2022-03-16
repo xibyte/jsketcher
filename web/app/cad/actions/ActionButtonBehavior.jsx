@@ -19,7 +19,10 @@ export function ActionButtonBehavior({children, actionId}) {
 
   return children({
     'data-action-id': actionId,
-    onClick: e => actionService.run(actionId, e),
+    onClick: e => {
+      canceled = true;
+      actionService.run(actionId, e);
+    },
     onMouseEnter: e => {
       updateCoords(e);
       canceled = false;

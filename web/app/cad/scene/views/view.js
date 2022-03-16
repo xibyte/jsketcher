@@ -1,37 +1,73 @@
 import {createFunctionList} from "gems/func";
-import {Color} from "three";
+import {createIndex} from "gems/indexed";
+
+const MarkerTable = [
+  {
+    type: 'selection',
+    priority: 10,
+    colors: [0xffff80],
+  },
+  {
+    type: 'highlight',
+    priority: 1,
+    colors: [0xffebcd, 0xffdf00],
+  },
+];
+
 
 export class View {
   
   static MARKER = 'ModelView';
 
   disposers = createFunctionList();
-  color = new Color();
 
-  constructor(model) {
+  constructor(ctx, model, parent, markerTable = MarkerTable) {
+    this.ctx = ctx;
     this.model = model;
+    this.parent = parent;
     model.ext.view = this;
+    this.marks = [];
+    this.markerTable = createIndex(markerTable, i => i.type);
+  }
+
+  setColor(color) {
+  }
+
+  get markColor() {
+    if (this.marks.length !== 0) {
+      const baseMark = this.marks[0];
+      return baseMark.colors[Math.min(baseMark.colors.length, this.marks.length) - 1];
+    } else {
+      return null;
+    }
   }
 
   setVisible(value) {
   }
 
-  mark(color, priority) {
-  }
-
-  withdraw(priority) {
-  }
-
-  setColor(color) {
-    if (!color) {
-      this.color = new Color();
-    } else {
-      this.color.setStyle(color);
+  mark(type = 'selection') {
+    const marker = this.markerTable[type];
+    const found = this.marks.find(c => c.type === marker.type);
+    if (found) {
+      return;
     }
+    this.marks.push(marker);
+    this.marks.sort((c1, c2) => c1.priority - c2.priority);
+    this.updateVisuals();
   }
 
-  traverse(visitor) {
-    visitor(this);
+  withdraw(type) {
+    this.marks = this.marks.filter(c => c.type !== type)
+    this.updateVisuals();
+  }
+
+  updateVisuals() {
+  }
+
+  traverse(visitor, includeSelf = true) {
+    if (includeSelf) {
+      visitor(this);
+    }
   }
 
   addDisposer(disposer) {
@@ -48,8 +84,8 @@ export class View {
 
 export const MarkTracker = ViewClass => class extends ViewClass {
   
-  constructor(model) {
-    super(model);
+  constructor(ctx, model) {
+    super(ctx, model);
     this.marks = new Map();
   }
 

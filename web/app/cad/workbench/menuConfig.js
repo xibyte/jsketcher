@@ -57,5 +57,11 @@ export default [
     // actions: ['DATUM_MOVE', 'DATUM_ROTATE', 'DATUM_REBASE', '-', 'PLANE_FROM_DATUM', 'BOX', 'SPHERE', 'TORUS', 
     //   'CONE', 'CYLINDER']
   },
-
+  {
+    id: 'contextual',
+    label: 'contextual',
+    cssIcons: ['magic'],
+    info: 'contextual actions',
+    actions: ['ModelDisplayOptions', 'ModelAttributesEditor']
+  }
 ];

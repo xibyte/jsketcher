@@ -25,7 +25,7 @@ import * as SketcherPlugin from '../sketch/sketcherPlugin';
 import * as SketcherStoragePlugin from '../sketch/sketchStoragePlugin';
 import * as ExportPlugin from '../exportPlugin';
 import * as ExposurePlugin from '../exposure/exposurePlugin';
-import * as ViewSyncPlugin from '../scene/viewSyncPlugin';
+import {ViewSyncPlugin} from '../scene/viewSyncPlugin';
 import * as EntityContextPlugin from '../scene/entityContextPlugin';
 import * as OCCTPlugin from '../craft/e0/occtPlugin';
 
@@ -41,6 +41,7 @@ import * as AssemblyPlugin from "../assembly/assemblyPlugin";
 import {WorkbenchesLoaderPlugin} from "cad/workbench/workbenchesLoaderPlugin";
 import {PluginSystem} from "plugable/pluginSystem";
 import {AttributesPlugin} from "cad/attributes/attributesPlugin";
+import {HighlightPlugin} from "cad/scene/highlightPlugin";
 
 export default function startApplication(callback) {
 
@@ -85,7 +86,8 @@ export default function startApplication(callback) {
     RemotePartsPlugin,
     ViewSyncPlugin,
     WizardSelectionPlugin,
-    AttributesPlugin
+    AttributesPlugin,
+    HighlightPlugin
   ];
   
   let allPlugins = [...preUIPlugins, ...plugins];

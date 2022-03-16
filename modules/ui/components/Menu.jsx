@@ -37,9 +37,9 @@ export function MenuItem({icon, label, hotKey, style, disabled, onClick, childre
       hotKey = null;
     }
   }
-  let clickHandler = disabled ?  undefined : () => {
+  let clickHandler = disabled ?  undefined : (e) => {
     closeAllUpPopups();
-    onClick();
+    onClick(e);
   };
   return <div className={cx(ls.item, disabled && ls.disabled)} 
               onMouseDown={e => e.stopPropagation()} style={style} onClick={clickHandler} {...props}>

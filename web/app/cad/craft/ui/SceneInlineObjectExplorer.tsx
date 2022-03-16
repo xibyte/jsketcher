@@ -23,7 +23,7 @@ export function SceneInlineObjectExplorer() {
 
   return <SceneInlineSection title='OBJECTS'> {models.map(m => {
     if (m instanceof MOpenFaceShell) {
-      return <OpenFaceSection shell={m} />
+      return <OpenFaceSection shell={m} key={m.id} />
     } else if (m instanceof MShell) {
       return <ModelSection type='shell' model={m} key={m.id} controlVisibility>
         <Section label='faces' defaultOpen={true}>
@@ -101,6 +101,8 @@ function ModelSection({model, type, typeLabel, expandable = true, controlVisibil
                               label={label}
                               selected={selected}
                               select={select}
+                              onMouseEnter={() => ctx.highlightService.highlight(model.id)}
+                              onMouseLeave={() => ctx.highlightService.unHighlight(model.id)}
                               controls={
                                 <>
                                   {controlVisibility && <VisibleSwitch modelId={visibilityOf.id}/>}

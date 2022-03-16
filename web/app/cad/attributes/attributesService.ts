@@ -1,4 +1,11 @@
 import {LazyStreams} from "lstream/lazyStreams";
+import {state} from "lstream";
+
+export interface ModelAttributes {
+  hidden: boolean;
+  label: string;
+  color: string;
+}
 
 export class AttributesService {
 
@@ -8,12 +15,28 @@ export class AttributesService {
     color: null
   }));
 
+  displayOptionsEditors$ = state<EditorSet>({});
+
+  attributesEditors$ = state<EditorSet>({});
+
+  openDisplayOptionsEditor(modelIds: string[], e: any) {
+    this.displayOptionsEditors$.mutate(editors => {
+      const copy = [...modelIds].sort();
+      editors[copy.join(':')] = {
+        x: e.pageX,
+        y: e.pageY,
+        models: copy
+      };
+    });
+  }
+
 }
 
-export interface ModelAttributes {
-  hidden: boolean;
-  label: string;
-  color: string;
+export type EditorSet = {
+  [key: string]: {
+    x: number,
+    y: number,
+    models: string[]
+  }
 }
-
 

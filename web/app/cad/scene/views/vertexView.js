@@ -5,9 +5,9 @@ import {ConstantScaleGroup} from "scene/scaleHelper";
 
 export class VertexView extends View {
 
-  constructor(vertex, viewer) {
-    super(vertex);
-    this.rootGroup = new VertexObject(viewer, 50, 100, () => this.rootGroup.position);
+  constructor(ctx, vertex) {
+    super(ctx, vertex);
+    this.rootGroup = new VertexObject(ctx.viewer, 50, 100, () => this.rootGroup.position);
 
     this.rootGroup.position.x = vertex.brepVertex.point.x;
     this.rootGroup.position.y = vertex.brepVertex.point.y;

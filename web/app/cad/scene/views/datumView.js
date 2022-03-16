@@ -7,8 +7,10 @@ import {CSYS_SIZE_MODEL} from '../../craft/datum/csysObject';
 
 export default class DatumView extends View {
 
-  constructor(datum, viewer, beginOperation, selectDatum, showDatumMenu, isReadOnly) {
-    super(datum);
+  constructor(ctx, datum, beginOperation, selectDatum, showDatumMenu, isReadOnly) {
+    super(ctx, datum);
+
+    const viewer = ctx.viewer;
 
     class MenuButton extends Mesh {
 
@@ -137,9 +139,9 @@ export default class DatumView extends View {
     setAttribute(this.rootGroup, DATUM, this);
     setAttribute(this.rootGroup, View.MARKER, this);
 
-    this.xAxisView = new DatumAxisView(this.model.xAxis, dv.csysObj.xAxis);
-    this.yAxisView = new DatumAxisView(this.model.yAxis, dv.csysObj.yAxis);
-    this.zAxisView = new DatumAxisView(this.model.zAxis, dv.csysObj.zAxis);
+    this.xAxisView = new DatumAxisView(ctx, this.model.xAxis, dv.csysObj.xAxis);
+    this.yAxisView = new DatumAxisView(ctx, this.model.yAxis, dv.csysObj.yAxis);
+    this.zAxisView = new DatumAxisView(ctx, this.model.zAxis, dv.csysObj.zAxis);
   }
 
   dispose() {
@@ -178,8 +180,8 @@ class AffordanceBox extends Mesh {
 
 class DatumAxisView extends View {
 
-  constructor(model, axisArrow) {
-    super(model);
+  constructor(ctx, model, axisArrow) {
+    super(ctx, model);
     this.axisArrow = axisArrow;
     setAttribute(this.axisArrow.handle, DATUM_AXIS, this);
   }

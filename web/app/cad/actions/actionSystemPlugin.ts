@@ -155,10 +155,12 @@ export interface ActionService {
   hint$: StateStream<Hint>;
 }
 
-declare module 'context' {
-  interface CoreContext {
+export interface ActionSystemPlugin {
+  actionService: ActionService;
+}
 
-    actionService: ActionService;
-  }
+
+declare module 'context' {
+  interface CoreContext extends ActionSystemPlugin {}
 }
 

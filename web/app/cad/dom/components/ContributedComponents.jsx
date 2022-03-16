@@ -1,7 +1,7 @@
 import React from 'react';
 import {useStream} from 'ui/effects';
 import {state} from 'lstream';
-import {Scope} from "../../../sketcher/components/Scope";
+import {Scope} from "sketcher/components/Scope";
 
 const CONTRIBUTED_COMPONENTS$ = state([]);
 

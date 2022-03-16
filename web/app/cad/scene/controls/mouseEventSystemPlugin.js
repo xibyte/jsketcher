@@ -1,8 +1,8 @@
 import {printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
 import {LOG_FLAGS} from "../../logFlags";
 
-export function activate(context) {
-  const {services, streams} = context;
+export function activate(ctx) {
+  const {services, streams} = ctx;
   const domElement = services.viewer.sceneSetup.domElement();
   const event = {
     viewer: services.viewer
@@ -11,8 +11,22 @@ export function activate(context) {
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('mouseup', mouseup, false);
   domElement.addEventListener('mousemove', mousemove, false);
+  domElement.addEventListener('contextmenu', (e) => ctx.actionService.run('menu.contextual', {
+    x: e.offsetX,
+    y: e.offsetY
+  }), false);
 
-  let performRaycast = e => services.viewer.raycast(e, services.cadScene.workGroup.children, RayCastDebugInfo);
+
+  let performRaycast = e => {
+    const hits = services.viewer.raycast(e, services.cadScene.workGroup.children, RayCastDebugInfo);
+    hits.sort((a, b) => {
+      if (Math.abs(a.distance - b.distance) < 0.01 && (a.object.raycastPriority || b.object.raycastPriority)) {
+        return b.object.raycastPriority||0 - a.object.raycastPriority||0;
+      }
+      return a.distance - b.distance;
+    })
+    return hits;
+  }
 
   let toDrag = null;
   let pressed = new Set();
@@ -102,35 +116,6 @@ export function activate(context) {
     } else {
       let hits = performRaycast(e);
       dispatchMousemove(e, hits)
-      event.hits = hits;
-
-      valid.clear();
-      for (let hit of hits) {
-        valid.add(hit.object);
-        if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
-          break;
-        }
-      }
-
-      entered.forEach(el => {
-        if (!valid.has(el) && el.onMouseLeave) {
-          el.onMouseLeave(event);
-        }
-      });
-      
-      valid.forEach(el => {
-        if (!entered.has(el) && el.onMouseEnter) {
-          el.onMouseEnter(event);
-        }
-        if (el.onMouseMove) {
-          el.onMouseMove(event);
-        }
-      });
-      
-      let t = valid;
-      valid = entered;
-      entered = t;
-      valid.clear();
     }
   }
 
@@ -147,7 +132,8 @@ export function activate(context) {
     }
 
     entered.forEach(el => {
-      if (!valid.has(el) && el.onMouseLeave) {
+      //need to check parent in case of object removed
+      if (!valid.has(el) && el.onMouseLeave && el.parent) {
         el.onMouseLeave(event);
       }
     });
@@ -167,7 +153,7 @@ export function activate(context) {
     valid.clear();
   }
 
-  context.services.modelMouseEventSystem = {
+  ctx.services.modelMouseEventSystem = {
     dispatchMousedown, dispatchMouseup, dispatchMousemove
   }
 }

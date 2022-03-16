@@ -1,14 +1,14 @@
 import {setAttribute} from 'scene/objectData';
 import {FACE, SHELL} from '../../model/entities';
-import {NULL_COLOR, SELECTION_COLOR, setFacesColor, SketchingView} from './faceView';
+import {SketchingView} from './faceView';
 import {View} from './view';
 import {SketchMesh} from './shellView';
 
 export class OpenFaceShellView extends View {
 
-  constructor(shell) {
-    super(shell);
-    this.openFace = new OpenFaceView(shell.face);
+  constructor(ctx, shell) {
+    super(ctx, shell);
+    this.openFace = new OpenFaceView(ctx, shell.face, this);
     setAttribute(this.rootGroup, SHELL, this);
     setAttribute(this.rootGroup, View.MARKER, this);
   }
@@ -24,8 +24,8 @@ export class OpenFaceShellView extends View {
 
 export class OpenFaceView extends SketchingView {
 
-  constructor(mFace) {
-    super(mFace);
+  constructor(ctx, mFace, parent) {
+    super(ctx, mFace, parent);
     this.material = new THREE.MeshPhongMaterial({
       vertexColors: THREE.FaceColors,
       // color: 0xB0C4DE,
@@ -57,10 +57,15 @@ export class OpenFaceView extends SketchingView {
     geometry.computeFaceNormals();
     this.mesh = new SketchMesh(geometry, this.material);
     this.rootGroup.add(this.mesh);
+    this.mesh.onMouseEnter = () => {
+      this.ctx.highlightService.highlight(this.model.id);
+    }
+    this.mesh.onMouseLeave = () => {
+      this.ctx.highlightService.unHighlight(this.model.id);
+    }
   }
 
   updateBounds() {
-    let markedColor = this.markedColor;
     this.dropGeometry();
     
     let bounds2d = [];
@@ -72,7 +77,7 @@ export class OpenFaceView extends SketchingView {
       surface.northEastPoint(), surface.northWestPoint()]; 
 
     this.createGeometry();
-    this.updateColor(markedColor || this.color);
+    this.updateVisuals();
   }
 
   traverse(visitor) {
@@ -82,27 +87,6 @@ export class OpenFaceView extends SketchingView {
   updateSketch() {
     super.updateSketch();
     this.updateBounds();
-  }
-
-  mark(color) {
-    this.updateColor(color || SELECTION_COLOR);
-  }
-
-  withdraw(color) {
-    this.updateColor(null);
-  }
-
-  updateColor(color) {
-    setFacesColor(this.mesh.geometry.faces, color||this.color);
-    this.mesh.geometry.colorsNeedUpdate = true;
-  }
-  
-  get markedColor() {
-    let face = this.mesh && this.mesh.geometry && this.mesh.geometry.faces[0];
-    if (face) {
-      return face.color === NULL_COLOR ? null : face.color;
-    }
-    return null;
   }
 
   dispose() {
