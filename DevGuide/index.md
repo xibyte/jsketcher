@@ -49,26 +49,26 @@ The export default object requires the following things to be defined.
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "context";
-import {MDFCommand} from "cad/mdf/mdf";
 import {EntityKind} from "cad/model/entities";
-import Vector from "math/vector";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
+import {UnitVector} from "math/vector";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
 
-//not required but makes things nice for the IDE to know the types of things and provide nice helpful hints.
+
 interface ExtrudeParams {
   length: number;
+  doubleSided:boolean,
   face: MFace;
-  direction?: Vector,
+  direction?: UnitVector,
   boolean: BooleanDefinition
 }
 
-const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
+export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   id: 'EXTRUDE',
   label: 'Extrude',
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
   paramsInfo: ({length}) => `(${r(length)})`,
-  mutualExclusiveFields: ['datumAxisVector', 'edgeVector', 'sketchSegmentVector'],
   run: (params: ExtrudeParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
@@ -76,22 +76,37 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
 
     const face = params.face;
 
+ 
+    let occFaces = [];
+
     let sketch = ctx.sketchStorageService.readSketch(face.id);
-    if (!sketch) throw 'sketch not found for the face ' + face.id;
+    if (!sketch) {
+      occFaces.push(params.face);
+    } else {
+      occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+    }
 
-    const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
 
-    const dir = (params.direction && params.direction) || face.normal();
+    const dir: UnitVector = params.direction || face.normal();
 
     const extrusionVector = dir.normalize()._multiply(params.length).data();
+    const extrusionVectorFliped = dir.normalize()._multiply(params.length).negate().data();
+
 
     const tools = occFaces.map((faceName, i) => {
       const shapeName = "Tool/" + i;
-      oci.prism(shapeName, faceName, ...extrusionVector)
+      oci.prism(shapeName, faceName, ...extrusionVector);
+
+      if(params.doubleSided){
+        oci.prism(shapeName + "B", faceName, ...extrusionVectorFliped);
+        oci.bop(shapeName, shapeName + "B");
+        oci.bopfuse(shapeName);
+      }
       return shapeName;
     });
 
     return occ.utils.applyBooleanModifier(tools, params.boolean);
+
   },
 
   form: [
@@ -100,6 +115,12 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
       label: 'length',
       name: 'length',
       defaultValue: 50,
+    },
+    {
+      type: 'checkbox',
+      label: 'Double Sided',
+      name: 'doubleSided',
+      defaultValue: false,
     },
     {
       type: 'selection',
@@ -113,7 +134,7 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
       },
     },
     {
-      type: 'vector',
+      type: 'direction',
       name: 'direction',
       label: 'direction',
       optional: true
@@ -123,14 +144,9 @@ const ExtrudeOperation: MDFCommand<ExtrudeParams> = {
       name: 'boolean',
       label: 'boolean',
       optional: true,
-      defaultValue: 'NONE'
     }
-
   ],
 }
-
-export default ExtrudeOperation;
-
 ```
 
 # Schema fields widget types
@@ -155,15 +171,14 @@ Example of adding a field to the schema. What ever order you place the items in 
 ```
 export default {
  //. . .
-  schema: {
-  //fields go here
+  form: [
+    //fields go here
     {
       type: 'number',
-      defaultValue: 200,
-      label: 'width',
-      name: 'width'
+      label: 'length',
+      name: 'length',
+      defaultValue: 50,
     },
-  }
   //. . . 
 }
 ```
@@ -173,36 +188,36 @@ export default {
 A simple text entry text entry field. 
 Returns a string.
 ```
-        someText: {
-            type: 'string',
-            defaultValue: "strings are great",
-            label: 'A string input here'
-        },
+  {
+    type: 'string',
+    label: 'String Field',
+    name: 'exampleString',
+    defaultValue: "hello world",
+  },
 ```
 ## number widget
 A simple numeric value entry field. 
 Optionally if style property is set can be used as a spinner or slider instead of the regular textbox if left undefined.
 Returns a string.
 ```
-        width: {
-            type: 'number',
-            style: "slider", //optional modifier to set the input style
-            defaultValue: 200,
-            minValue: 0, //Required for spinner or slider styles only
-            maxValue: 500, //Required for spinner or slider styles only
-            label: 'width'
-        },
+  {
+    type: 'number',
+    label: 'length',
+    style: 'slider',
+    name: 'length',
+    defaultValue: 50,
+  },
 ```
 ## checkbox widget
 A simple checkbox. 
 Returns a true or false value.
 ```
-        {
-            type: 'checkbox',
-            defaultValue: false,
-            label: 'Rounded corners',
-            name:'rounded'
-        },
+  {
+    type: 'checkbox',
+    label: 'Double Sided',
+    name: 'doubleSided',
+    defaultValue: false,
+  },
 ```
 ## choice widget
 A choice selection widget providing two styles,
@@ -211,25 +226,25 @@ The style property can be either "dropdown" or "radio".
 
 Dropdown example:
 ```
-        {
-            type: 'choice',
-            style: "dropdown",
-            label: 'operationType',
-            name: 'operationType',
-            values: ["Fillet", "Champher"],
-            defaultValue: "Fillet",
-        },
+  {
+    type: 'choice',
+    style: "dropdown",
+    label: 'Corner Style',
+    name: 'cornerStyle',
+    values: ["Round", "Sharp"],
+    defaultValue: "Round",
+  },
 ```
 Radio example:
 ```
-        {
-            type: 'choice',
-            style: "dropdown",
-            label: 'operationType',
-            name: 'operationType',
-            values: ["Fillet", "Champher"],
-            defaultValue: "Fillet",
-        },
+  {
+      type: 'choice',
+      style: "dropdown",
+      label: 'operationType',
+      name: 'operationType',
+      values: ["Fillet", "Champher"],
+      defaultValue: "Fillet",
+  },
 ```
 
 ## Select widget
@@ -243,17 +258,17 @@ Default value is optional and provides a way to allow user selection performed b
 
 example:
 ```
-    {
-      type: 'selection',
-      name: 'face',
-      capture: [EntityKind.FACE],
-      label: 'face',
-      multi: false,
-      defaultValue: {
-        usePreselection: true,
-        preselectionIndex: 0
-      },
+  {
+    type: 'selection',
+    name: 'face',
+    capture: [EntityKind.FACE],
+    label: 'face',
+    multi: false,
+    defaultValue: {
+      usePreselection: true,
+      preselectionIndex: 0,
     },
+  },
 ```
 
 
@@ -268,12 +283,12 @@ A checkbox is also provided with his widget that allows the user to invert or "f
 
 example:
 ```
-    {
-      type: 'vector',
-      name: 'direction',
-      label: 'direction',
-      optional: true
-    },
+  {
+    type: 'vector',
+    name: 'direction',
+    label: 'direction',
+    optional: true,
+  },
 ```
 
 ## boolean widget
@@ -282,13 +297,12 @@ A drop down menu is provided to pick the type of boolean operation with the foll
 
 example:
 ```
-    {
-      type: 'boolean',
-      name: 'boolean',
-      label: 'boolean',
-      optional: true,
-      defaultValue: 'NONE'
-    }
+  {
+    type: 'boolean',
+    name: 'boolean',
+    label: 'boolean',
+    optional: true,
+  }
 ```
 
 There is a special function that is ued in conjunction with the boolean widget placed as the return from the run section of the feature code:
