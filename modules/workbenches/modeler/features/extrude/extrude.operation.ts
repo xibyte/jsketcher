@@ -103,9 +103,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       name: 'doubleSided',
       defaultValue: false,
     },
-
-
-    
     {
       type: 'selection',
       name: 'face',
@@ -117,19 +114,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
         preselectionIndex: 0
       },
     },
-    // {
-    //   type: 'vector',
-    //   name: 'direction',
-    //   label: 'direction'
-    // },
-    // {
-    //   type: 'boolean',
-    //   name: 'boolean',
-    //   label: 'boolean',
-    //   defaultValue: {
-    //     implyItFromField: 'face'
-    //   }
-    // },
     {
       type: 'direction',
       name: 'direction',
