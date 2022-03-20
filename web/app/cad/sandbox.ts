@@ -17,8 +17,7 @@ import {pullFace} from "brep/operations/directMod/pullFace";
 import {DefeatureFaceWizard} from "./craft/defeature/DefeatureFaceWizard";
 import {defeatureByVertex, defeatureByEdge} from "brep/operations/directMod/defeaturing";
 import {BooleanType} from "engine/api";
-import { testEdgeSplit } from 'brep/operations/directMod/edgeSplit';
-import {initOpenCascade} from "opencascade.js";
+
 import VertexFactory from 'brep/vertexFactory';
 import { BrepSurface } from 'geom/surfaces/brepSurface';
 import NullSurface from 'geom/surfaces/nullSurface';
