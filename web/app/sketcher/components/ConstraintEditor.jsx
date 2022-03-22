@@ -30,15 +30,7 @@ export function ConstraintEditor() {
   const {viewer} = useContext(SketcherAppContext);
 
   const setValue = (name, value) => {
-    //setValues({...value, [name]: value});Bug! not working in case of object or multiple field like LockPoint. 
-      let newValues= {};
-      
-      for (const [key, value] of Object.entries(values)) {
-        //console.log(`${key}: ${value}`);
-        newValues[key]=value;
-      }
-      newValues[name]=value;
-      setValues(newValues);
+     setValues({...values, [name]: value});
     
   };
 
