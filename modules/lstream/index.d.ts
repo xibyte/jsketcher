@@ -11,7 +11,7 @@ interface Stream<T> extends Observable<T> {
 
   pairwise(first?: T): Stream<[T, T]>;
 
-  scan<T>(seed: T, scanFn: (accum: T, current: T) => T): Stream<T>;
+  scan<R>(seed: R, scanFn: (accum: R, current: T) => R): Stream<R>;
 
   remember(initialValue: T, usingStream?: any): StateStream<T>
 

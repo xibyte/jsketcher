@@ -9,6 +9,8 @@ export interface MarkerService {
 
   mark(id: any, color: any)
 
+  withdraw(id: any);
+
   commit()
 
   markExclusively()
@@ -48,7 +50,7 @@ function createMarker(findEntity, requestRender) {
   function doMark(id, color) {
     let mObj = findEntity(id);
     if (!mObj) {
-      console.warn('no entity found to highlight: ' + id);
+      console.warn('no entity found to select: ' + id);
       return;
     }
     marked.set(id, mObj);
@@ -58,6 +60,16 @@ function createMarker(findEntity, requestRender) {
   function doWithdraw(obj) {
     marked.delete(obj.id);
     obj.ext.view && obj.ext.view.withdraw('selection');
+  }
+
+  function withdraw(id) {
+    let mObj = findEntity(id);
+    if (!mObj) {
+      console.warn('no entity found to deselect: ' + id);
+      return;
+    }
+    doWithdraw(mObj);
+    onUpdate();
   }
 
   function onUpdate() {
@@ -134,7 +146,8 @@ function createMarker(findEntity, requestRender) {
   }
 
   return {
-    clear, startSession, mark, commit, markExclusively, markArrayExclusively, markAdding, isMarked, $markedEntities
+    clear, startSession, mark, commit, markExclusively, markArrayExclusively, markAdding, isMarked, $markedEntities,
+    withdraw
   };
 }
 

@@ -38,10 +38,6 @@ export class SketchingView extends View {
     });
   }
 
-  setColor(color) {
-    this.color = color;
-  }
-
   updateVisuals() {
     this.mesh.material.color.set(this.markColor||this.parent.markColor||this.color||this.parent.color||NULL_COLOR);
   }

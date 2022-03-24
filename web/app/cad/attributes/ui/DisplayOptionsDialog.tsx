@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useContext, useEffect} from "react";
 import {useStreamWithPatcher, useStreamWithUpdater} from "ui/effects";
 import Stack from "ui/components/Stack";
 import Field from "ui/components/controls/Field";
@@ -8,6 +8,7 @@ import CheckboxControl from "ui/components/controls/CheckboxControl";
 import {AppContext} from "cad/dom/components/AppContext";
 import {ModelAttributes} from "cad/attributes/attributesService";
 import {GenericWizard} from "ui/components/GenericWizard";
+import {View} from "cad/scene/views/view";
 
 export function DisplayOptionsDialogManager() {
 
@@ -46,12 +47,20 @@ export function DisplayOptionsView(props: DisplayOptionsViewProps) {
   const ctx = useContext(AppContext);
   const streamsAndPatchers: [ModelAttributes, any][] = [];
 
+  useEffect(()=>{
+    return () => {
+      View.SUPPRESS_HIGHLIGHTS = false;
+      ctx.viewer.requestRender();
+    }
+  }, []);
+
   for (let modelId of props.modelIds) {
     const streamAndPatcher = useStreamWithPatcher(ctx => ctx.attributesService.streams.get(modelId));
     streamsAndPatchers.push(streamAndPatcher);
   }
 
   function patchAttrs(mutator) {
+    View.SUPPRESS_HIGHLIGHTS = true;
     for (let [model, patch] of streamsAndPatchers) {
       patch(mutator);
     }
@@ -69,7 +78,7 @@ export function DisplayOptionsView(props: DisplayOptionsViewProps) {
     <Field active={false} name='label' onFocus={DO_NOTHING} onClick={DO_NOTHING}>
       <Label>Color</Label>
       <ColorControl
-        dialogTitle={`Color for `}
+        dialogTitle={`Color for ${props.modelIds.length} object${props.modelIds.length>0?'s':''}`}
         value={attrs.color} onChange={val => patchAttrs(attrs => attrs.color = val)}/>
     </Field>
   </Stack>;

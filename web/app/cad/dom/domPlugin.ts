@@ -8,6 +8,8 @@ export interface DomService {
 
   contributeComponent: (comp: () => JSX.Element) => void
 
+  setCursor(cursor: string);
+
 }
 
 interface DomPluginInputContext {
@@ -39,7 +41,14 @@ export const DomPlugin: Plugin<DomPluginInputContext, DomPluginContext, DomPlugi
   activate(ctx: DomPluginInputContext&DomPluginContext) {
     ctx.domService = {
       viewerContainer: document.getElementById('viewer-container'),
-      contributeComponent
+      contributeComponent,
+      setCursor(cursor: string) {
+        if (cursor) {
+          ctx.domService.viewerContainer.style.cursor = cursor;
+        } else {
+          ctx.domService.viewerContainer.style.removeProperty('cursor');
+        }
+      }
     };
 
     ctx.services.dom = ctx.domService;

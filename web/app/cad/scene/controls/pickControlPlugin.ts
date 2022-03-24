@@ -1,8 +1,13 @@
 import * as mask from 'gems/mask'
 import {getAttribute} from 'scene/objectData';
-import {FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL, DATUM_AXIS, LOOP} from '../../model/entities';
+import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from '../../model/entities';
 import {LOG_FLAGS} from 'cad/logFlags';
 import {initRayCastDebug, printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
+import {PickListDialog, PickListDialogRequest$} from "cad/scene/controls/PickListDialog";
+import {contributeComponent} from "cad/dom/components/ContributedComponents";
+import {MObject} from "cad/model/mobject";
+import {MFace} from "cad/model/mface";
+import {MOpenFaceShell} from "cad/model/mopenFace";
 
 export interface PickControlService {
   setPickHandler(wizardPickHandler: (model) => boolean)
@@ -40,9 +45,11 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
 
 
 export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;
-
+export const ALL_POSSIBLE_KIND = Number.MAX_SAFE_INTEGER;
 export function activate(context) {
   const {services} = context;
+
+  context.domService.contributeComponent(PickListDialog);
 
   const defaultHandler = (model, event, rayCastData?) => {
     if (LOG_FLAGS.PICK) {
@@ -61,6 +68,10 @@ export function activate(context) {
           services.cadScene.showGlobalCsys(model.csys);
           return false;
         }
+      }
+    } else if (type === SHELL) {
+      if (dispatchSelection(SHELL, modelId, event)) {
+        return false;
       }
     } else if (type === SKETCH_OBJECT) {
       if (dispatchSelection(SKETCH_OBJECT, modelId, event)) {
@@ -85,11 +96,29 @@ export function activate(context) {
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('mouseup', mouseup, false);
   domElement.addEventListener('dblclick', mousedblclick, false);
+  domElement.addEventListener('mousemove', mousemove, false);
 
   let mouseState = {
     startX: 0,
     startY: 0
   };
+
+  let timeoutId = null;
+  let pickListDialogMode = false;
+
+  function mousemove(e) {
+    if (pickListDialogMode) {
+      context.domService.setCursor(null);
+      pickListDialogMode = false;
+    }
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      pickListDialogMode = true;
+      context.domService.setCursor('crosshair');
+    }, 500);
+  }
 
   function mousedown(e) {
     mouseState.startX = e.offsetX;
@@ -122,6 +151,25 @@ export function activate(context) {
 
   function handlePick(event) {
     let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo);
+    if (pickListDialogMode) {
+      const capture = new Set<MObject>();
+      traversePickResults(event, pickResults, ALL_POSSIBLE_KIND, (model) => {
+        if (!(model.parent instanceof MOpenFaceShell)) {
+          capture.add(model);
+        }
+        if (model instanceof MFace) {
+          capture.add(model.shell);
+        }
+        return true;
+      });
+      PickListDialogRequest$.next({
+        x: event.offsetX,
+        y: event.offsetY,
+        token: Date.now(),
+        capture: Array.from(capture)
+      });
+      return;
+    }
     traversePickResults(event, pickResults, ALL_EXCLUDING_SOLID_KINDS, pickHandler);
   }
 
@@ -141,7 +189,8 @@ export function activate(context) {
   function dispatchSelection(entityType, selectee, event) {
     let marker = services.marker;
     if (marker.isMarked(selectee)) {
-      return false;
+      marker.withdraw(selectee);
+      return true;
     }
     let multiMode = event && event.shiftKey;
     
@@ -158,7 +207,7 @@ export function activate(context) {
     traversePickResults(e, pickResults, PICK_KIND.FACE, (sketchFace) => {
       const shell = sketchFace.shell;
       services.marker.markExclusively(shell.TYPE, shell.id);
-      context.locationService.edit(shell);
+      // context.locationService.edit(shell);
       return false;
     });
   }
