@@ -60,9 +60,9 @@ export class ShellView extends View {
     this.vertexViews.forEach(e => e.traverse(visitor));
   }
 
-  updateVisuals(color) {
-    super.updateVisuals(color);
-    this.faceViews.forEach(f => f.updateVisuals(color));
+  updateVisuals() {
+    super.updateVisuals();
+    this.faceViews.forEach(f => f.updateVisuals());
   }
 
   dispose() {

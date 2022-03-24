@@ -10,6 +10,7 @@ export class ScanStream extends StreamBase {
   }
 
   attach(observer) {
+    observer(this.value);
     return this.stream.attach(v => {
       this.value = this.scanFunc(this.value, v);
       observer(this.value);

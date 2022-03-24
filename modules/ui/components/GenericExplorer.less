@@ -1,17 +1,17 @@
+
+.button() {
+  cursor: pointer;
+  &:hover {
+    background-color: #0074D9;
+  }
+  &:active {
+    background-color: #000d7f;
+  }
+}
+
 .objectItem {
   @itemRadius: 5px;
   @alt-color: #9c9c9c;
-
-  .button {
-    cursor: pointer;
-    &:hover {
-      background-color: #0074D9;
-    }
-    &:active {
-      background-color: #000d7f;
-    }
-  }
-
 
   background-color: rgba(0,0,0, 0.6);
   border: 1px solid #000;
@@ -48,25 +48,27 @@
     &.selected {
       background: linear-gradient(#59acff, #0074D9);
     }
-  }
-
-  .onOffButton {
-    display: flex;
-    align-items: center;
-    padding: 0 4px;
-  }
-
-  .onOffButton.on {
-    cursor: pointer;
-    background-color: #005e82;
-    .button;
-  }
-  .onOffButton.off {
-    cursor: pointer;
-    background-color: #5f5f5f;
-    .button;
+    &.highlighted {
+      background-color: #0074D9;
+    }
   }
 
 }
 
 
+.onOffButton {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.onOffButton.on {
+  cursor: pointer;
+  background-color: #005e82;
+  .button;
+}
+.onOffButton.off {
+  cursor: pointer;
+  background-color: #5f5f5f;
+  .button;
+}

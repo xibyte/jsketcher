@@ -23,6 +23,7 @@ interface GenericExplorerNodeProps {
   controls: any;
   label: any;
   selected: boolean;
+  highlighted: boolean;
   defaultExpanded?: boolean;
   expandable: boolean;
   select: any;
@@ -46,7 +47,7 @@ export function GenericExplorerNode(props: GenericExplorerNodeProps) {
       {props.controls}
 
       <span onClick={props.select}
-            className={cx(ls.objectLabel, props.selected && ls.selected)}>
+            className={cx(ls.objectLabel, props.selected && ls.selected, props.highlighted && ls.highlighted)}>
       {props.label}
     </span>
 

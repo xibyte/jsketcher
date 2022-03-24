@@ -5,7 +5,7 @@ const MarkerTable = [
   {
     type: 'selection',
     priority: 10,
-    colors: [0xffff80],
+      colors: [0xffff80],
   },
   {
     type: 'highlight',
@@ -14,9 +14,10 @@ const MarkerTable = [
   },
 ];
 
-
 export class View {
-  
+
+  static SUPPRESS_HIGHLIGHTS = false
+
   static MARKER = 'ModelView';
 
   disposers = createFunctionList();
@@ -31,9 +32,14 @@ export class View {
   }
 
   setColor(color) {
+    this.color = color;
+    this.updateVisuals();
   }
 
   get markColor() {
+    if (View.SUPPRESS_HIGHLIGHTS) {
+      return null;
+    }
     if (this.marks.length !== 0) {
       const baseMark = this.marks[0];
       return baseMark.colors[Math.min(baseMark.colors.length, this.marks.length) - 1];
