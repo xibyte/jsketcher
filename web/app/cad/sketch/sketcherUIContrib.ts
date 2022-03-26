@@ -26,12 +26,13 @@ export default function (ctx: ApplicationContext) {
     [
       ...objectToolActions.map(a => toSketcherActionId(a.id)),
       toSketcherActionId('Offset'),
+      toSketcherActionId('MirrorStart'),
     ],
     '-',
     measureActions.map(a => toSketcherActionId(a.id)),
     '-',
-    constraintGlobalActions.map(a => toSketcherActionId(a.id)),
-    '-',
+    //constraintGlobalActions.map(a => toSketcherActionId(a.id)),
+    //'-',
     ['LookAtFace'],
     '-',
     ['sketchOpenInTab']
