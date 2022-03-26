@@ -3,7 +3,6 @@ import OperationActions from '../actions/operationActions';
 import HistoryActions from '../actions/historyActions';
 import UsabilityActions from '../actions/usabilityActions';
 import menuConfig from './menuConfig';
-import ObjectExplorer from '../craft/ui/ObjectExplorer';
 import React from 'react';
 import OperationHistory from '../craft/ui/OperationHistory';
 import Expressions from '../expressions/Expressions';

@@ -45,7 +45,7 @@ function registerCoreOperations(ctx: WorkbenchesLoaderInputContext) {
 
   ctx.operationService.registerOperations([
     planeOperation,
-    boxOperation,
+    // boxOperation,
     // extrudeOperation,
     cutOperation,
     revolveOperation,
@@ -54,10 +54,10 @@ function registerCoreOperations(ctx: WorkbenchesLoaderInputContext) {
     moveDatumOperation,
     rotateDatumOperation,
     datumOperation,
-    sphereOperation,
-    cylinderOperation,
-    torusOperation,
-    coneOperation,
+    // sphereOperation,
+    // cylinderOperation,
+    // torusOperation,
+    // coneOperation,
     spatialCurveOperation,
     loftOperation,
     intersectionOperation,

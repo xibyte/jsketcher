@@ -3,19 +3,21 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
+import CSys from "math/csys";
+import {MDatum} from "cad/model/mdatum";
 
 
 interface PrimitiveBoxParams {
   x: Number,
   y: Number,
   z: Number,
-  locations: {},
+  locations: MDatum,
   boolean: BooleanDefinition,
 }
 
 export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
-  id: 'PRIMITIVE_BOX',
-  label: 'Primitive Box',
+  id: 'BOX',
+  label: 'Box',
   icon: 'img/cad/cube',
   info: 'Primitive Box',
   paramsInfo: ({x, y, z}) => `(${r(x)} , ${r(y)} , ${r(z)})`,
@@ -66,10 +68,16 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
+    const csys = params.locations?.csys || CSys.ORIGIN;
 
-    oci.box("b", params.x, params.y, params.z);
+    oci.box("box",
+      "-min", csys.origin.x, csys.origin.y, csys.origin.z,
+      "-size", params.x, params.y, params.z,
+      "-dir", csys.z.x, csys.z.y, csys.z.z,
+      "-xdir", csys.x.x, csys.x.y, csys.x.z
+    );
 
-    return occ.utils.applyBooleanModifier(["b"], params.boolean);
+    return occ.utils.applyBooleanModifier(["box"], params.boolean);
 
   },
 }
