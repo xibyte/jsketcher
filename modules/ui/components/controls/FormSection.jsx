@@ -1,14 +1,19 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Title} from '../Folder';
 
-export class StackSection extends React.Component {
-  
-  render() {
-    const {title, children, isClosed, onTitleClick} = this.props;
-    return <React.Fragment>
-      <Title isClosed={isClosed} onClick={onTitleClick}>{title}</Title>
-      {!isClosed && children}
-    </React.Fragment>;
+export function StackSection(props) {
+  let {title, initialCollapse, collapsible, children} = props;
+
+  if (collapsible === undefined) {
+    collapsible = true;
   }
-  
+
+  const [visible, setVisible] = useState(!initialCollapse);
+
+  const onTitleClick = collapsible ? () => setVisible(visible => !visible) : undefined;
+
+  return <React.Fragment>
+    <Title isClosed={!visible} onClick={onTitleClick}>{title}</Title>
+    {visible && children}
+  </React.Fragment>;
 }

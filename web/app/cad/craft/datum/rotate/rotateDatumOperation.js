@@ -57,7 +57,7 @@ function previewer(ctx, initialParams) {
   }
 }
 
-function applyRotation(origCsys, csys, angle, axis) {
+export function applyRotation(origCsys, csys, angle, axis) {
   auxMatrix.rotate(angle * DEG_RAD, axis, ORIGIN);
   auxMatrix.__apply(origCsys.x, csys.x);
   auxMatrix.__apply(origCsys.y, csys.y);

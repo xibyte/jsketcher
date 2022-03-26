@@ -146,7 +146,10 @@ export function activate(ctx: CoreContext) {
         promise.then(({consumed, created}) => {
 
           consumed.forEach(m => models.delete(m));
-          created.forEach(m => models.add(m));
+          created.forEach(m => {
+            m.originatingOperation = i;
+            models.add(m)
+          });
           models$.next(Array.from(models).sort((m1, m2) => (m1.id||'').localeCompare(m2.id)));
 
           runPromise(i + 1);
