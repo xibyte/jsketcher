@@ -16,4 +16,22 @@ export default {
     type: 'number',
     defaultValue: 0
   },
+  rotations: {
+    type: 'array',
+    defaultValue: [],
+    items: {
+      type: 'object',
+      schema: {
+        axis: {
+          type: 'string',
+          enum: ['X', 'Y', 'Z']
+        },
+        angle: {
+          type: 'number',
+          min: 0,
+          max: 360
+        }
+      }
+    }
+  }
 }

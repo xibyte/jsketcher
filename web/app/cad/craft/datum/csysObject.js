@@ -11,7 +11,7 @@ export default class CSysObject3D extends Object3D {
     this.csys = csys;
     this.sceneSetup = sceneSetup;
 
-    function createBasisArrow(axis, color) {
+    function createBasisArrow(name, axis, color) {
       let meshArrow = new MeshArrow({
         dir: axis,
         color,
@@ -22,12 +22,13 @@ export default class CSysObject3D extends Object3D {
         materialCreate: p => new MeshLambertMaterial(p),
         ...arrowParams
       });
+      meshArrow.name = name;
       return meshArrow;
     }
 
-    this.xAxis = createBasisArrow(AXIS.X, 0xFF0000);
-    this.yAxis = createBasisArrow(AXIS.Y, 0x00FF00);
-    this.zAxis = createBasisArrow(AXIS.Z, 0x0000FF);
+    this.xAxis = createBasisArrow('X', AXIS.X, 0xFF0000);
+    this.yAxis = createBasisArrow('Y', AXIS.Y, 0x00FF00);
+    this.zAxis = createBasisArrow('Z', AXIS.Z, 0x0000FF);
 
     this.add(this.xAxis);
     this.add(this.yAxis);

@@ -9,6 +9,7 @@ export abstract class MObject {
   TYPE: EntityKind;
   
   id: string;
+  originatingOperation: number = -1;
   ext: any = {};
 
   protected constructor(TYPE, id) {

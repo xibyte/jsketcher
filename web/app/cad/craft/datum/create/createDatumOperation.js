@@ -7,6 +7,7 @@ import {MDatum} from '../../../model/mdatum';
 import {roundInteractiveInput} from '../../wizard/roundUtils';
 import {DatumParamsRenderer} from '../DatumParamsRenderer';
 import {pointAsText} from 'renders';
+import {applyRotation} from "cad/craft/datum/rotate/rotateDatumOperation";
 
 function updateCSys(csys, params, findFace) {
   csys.copy(CSys.ORIGIN);
@@ -16,6 +17,12 @@ function updateCSys(csys, params, findFace) {
       csys.copy(face.csys);
     }
   }
+
+  params.rotations.forEach(r => {
+    let axis = csys[r.axis.toLowerCase()];
+    applyRotation(csys, csys, r.angle, axis);
+  });
+
 
   csys.origin.x += params.x;
   csys.origin.y += params.y;
@@ -33,7 +40,7 @@ function create(params, {cadRegistry}) {
 }
 
 function previewer(ctx, initialParams, updateParams) {
-  
+
   let datum3D = new DatumObject3D(CSys.origin(), ctx.services.viewer);
 
   datum3D.onMove = (begin, end, delta) => {
@@ -55,7 +62,7 @@ function previewer(ctx, initialParams, updateParams) {
       params.z = roundInteractiveInput(z);
     })
   };
-  
+
   function update(params) {
     updateCSys(datum3D.csys, params, ctx.services.cadRegistry.findFace);
   }
@@ -67,6 +74,23 @@ function previewer(ctx, initialParams, updateParams) {
 
   update(initialParams);
   SceneGraph.addToGroup(ctx.services.cadScene.workGroup, datum3D);
+
+  const modifications = ctx.craftService.modifications$.value;
+  const preDrag = modifications.hints?.preDrag;
+  if (preDrag) {
+    let axis;
+    if ('X' === preDrag.axis) {
+      axis = datum3D.csysObj.xAxis;
+    } else if ('Y' === preDrag.axis) {
+      axis = datum3D.csysObj.yAxis;
+    } else if ('Z' === preDrag.axis) {
+      axis = datum3D.csysObj.zAxis;
+    }
+
+    if (axis) {
+      ctx.services.modelMouseEventSystem.dispatchMousedown(preDrag.event, [{object: axis.handle}]);
+    }
+  }
 
   return {
     update, dispose    

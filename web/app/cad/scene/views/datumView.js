@@ -105,12 +105,18 @@ export default class DatumView extends View {
         this.csysObj.add(this.menuButton);
       }
 
-      dragStart(e, axis) {
-        if (!isReadOnly() && !this.operationStarted) {
-          selectDatum(datum);
-          beginOperation('DATUM_MOVE');
-        }
-        super.dragStart(e, axis);
+      dragStart(event, axis) {
+        ctx.craftService.historyTravel.setPointer(datum.originatingOperation - 1, {
+          preDrag: {
+            event, axis: axis.name
+          }
+        });
+        // if (!isReadOnly() && !this.operationStarted) {
+          // const history = ctx.craftService.modifications$.value.history;
+          // selectDatum(datum);
+          // beginOperation('DATUM_MOVE');
+        // }
+        // super.dragStart(event, axis);
       }
 
       beginOperation(freezeDragging = false) {

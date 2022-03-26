@@ -18,12 +18,8 @@ export interface SectionWidgetProps extends ContainerBasicProps {
 }
 
 export function SectionWidget(props: SectionWidgetProps) {
-  const [visible, setVisible] = useState(!props.initialCollapse);
-
-  const onTitleClick = props.collapsible ? () => setVisible(visible => !visible) : undefined;
-
-  return <StackSection title={props.title} onTitleClick={onTitleClick} isClosed={!visible}>
-    {visible && <ContainerWidget content={props.content} />}
+  return <StackSection title={props.title}>
+    <ContainerWidget content={props.content} />
   </StackSection>
 }
 
