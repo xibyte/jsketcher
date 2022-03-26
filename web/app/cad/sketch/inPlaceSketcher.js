@@ -4,6 +4,7 @@ import {CAMERA_MODE} from '../scene/viewer';
 import DPR from 'dpr';
 import {createEssentialAppContext} from "sketcher/sketcherContext";
 import {ORIGIN} from "math/vector";
+import {lookAtFace} from "cad/actions/usabilityActions";
 
 export class InPlaceSketcher {
   
@@ -26,6 +27,7 @@ export class InPlaceSketcher {
     this.face = face;
     this.face.ext.view.sketchGroup.visible = false;
     viewer3d.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
+    lookAtFace(this.ctx.viewer, face);
     viewer3d.render(); // updates camera projection matrix
     
     let container = viewer3d.sceneSetup.container;

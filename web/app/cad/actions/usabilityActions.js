@@ -7,7 +7,7 @@ const NEG_Z = AXIS.Z.negate();
 const DIR_3_WAY_VIEW =  new Vector(1, 1, 1).normalize();
 const DIR_3_WAY_BACK_VIEW =  new Vector(-1, 1, -1).normalize();
 
-function lookAtFace(viewer, face, currFace) {
+export function lookAtFace(viewer, face, currFace) {
   let dist = currFace ? currFace.csys.origin.distanceTo(viewer.sceneSetup.camera.position) : undefined;
   viewer.lookAt(face.csys.origin, face.csys.z, face.csys.y, dist);
   viewer.requestRender();
