@@ -12,7 +12,7 @@ export default function PlaneWizard() {
       <RadioButton value='XZ' />
       <RadioButton value='ZY' />
     </RadioButtonsField>
-    <Entity name='parallelTo' />
+    <Entity name='datum' />
     <NumberField name='depth' />
   </Group>;
 }

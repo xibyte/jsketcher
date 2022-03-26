@@ -23,6 +23,7 @@ export default function initializeBySchema(schema: OperationSchema, context: Cor
       }
     } else if (md.type === Types.entity && md.defaultValue !== undefined) {
       const defaultValue = md.defaultValue;
+      console.log(defaultValue)
       if (defaultValue.usePreselection === true && defaultValue.preselectionIndex !== undefined) {
         const allowedKinds = md.allowedKinds;
         const currentSelection =

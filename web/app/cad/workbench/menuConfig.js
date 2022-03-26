@@ -53,7 +53,7 @@ export default [
     label: 'datum',
     cssIcons: ['magic'],
     info: 'operations on datum',
-    actions: ['DATUM_ROTATE', 'DATUM_MOVE', '-', 'PLANE_FROM_DATUM', '-', 'BOX', 'SPHERE', 'CYLINDER', 'TORUS', 'CONE']
+    actions: ['PLANE', '-', 'BOX', 'SPHERE', 'CYLINDER', 'TORUS', 'CONE']
     // actions: ['DATUM_MOVE', 'DATUM_ROTATE', 'DATUM_REBASE', '-', 'PLANE_FROM_DATUM', 'BOX', 'SPHERE', 'TORUS', 
     //   'CONE', 'CYLINDER']
   },
