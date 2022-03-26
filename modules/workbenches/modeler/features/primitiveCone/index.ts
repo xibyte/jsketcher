@@ -3,21 +3,23 @@ import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
+import {MDatum} from "cad/model/mdatum";
+import CSys from "math/csys";
 
 
 interface PrimitiveConeParams {
   diameterA: number,
   diameterB: number,
   height: number,
-  locations: {},
+  locations: MDatum,
   boolean: BooleanDefinition,
 }
 
 export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = {
-  id: 'PRIMITIVE_CONE',
-  label: 'Primitive Cone',
+  id: 'CONE',
+  label: 'Cone',
   icon: 'img/cad/cone',
-  info: 'Primitive Cone',
+  info: 'Cone',
   paramsInfo: ({ height, diameterA, diameterB }) => `(${r(height)} , ${r(diameterA)} , ${r(diameterB)} )`,
   form: [
     {
@@ -66,8 +68,19 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    //pCone cy 5 10
-    oci.pcone("cone", params.diameterA / 2, params.diameterB / 2, params.height);
+    const csys = params.locations?.csys || CSys.ORIGIN;
+    oci.plane("csys",
+      csys.origin.x,
+      csys.origin.y,
+      csys.origin.z,
+      csys.x.x,
+      csys.x.y,
+      csys.x.z,
+      csys.y.x,
+      csys.y.y,
+      csys.y.z);
+
+    oci.pcone("cone", "csys", params.diameterA / 2, params.diameterB / 2, params.height);
 
     return occ.utils.applyBooleanModifier(["cone"], params.boolean);
 

@@ -46,9 +46,8 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "EXTRUDE", "REVOLVE", "LOFT", "SWEEP", "-", 
       "BOOLEAN", "-", 
       "SHELL_TOOL", "FILLET_TOOL", "OFFSET_TOOL", "MIRROR_BODY",  "-",
-      "PRIMITIVE_CYLINDER", "PRIMITIVE_BOX", "PRIMITIVE_CONE", "PRIMITIVE_SPHERE", "PRIMITIVE_TORUS", "-",
+      "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
       "HOLE_TOOL", "-",
-      "OCC_BOTTLE", '-',
       "SM_TAB","SM_FLANGE"
     ]
   }

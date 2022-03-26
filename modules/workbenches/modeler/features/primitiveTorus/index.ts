@@ -3,18 +3,20 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {MDatum} from "cad/model/mdatum";
+import CSys from "math/csys";
 
 
 interface PrimitiveTorusParams {
   radius: number,
   tubeRadius: number,
-  locations: {},
+  locations: MDatum,
   boolean: BooleanDefinition,
 }
 
 export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
-  id: 'PRIMITIVE_TORUS',
-  label: 'Primitive Torus',
+  id: 'TORUS',
+  label: 'Torus',
   icon: 'img/cad/torus',
   info: 'Primitive Torus',
   paramsInfo: ({radius, tubeRadius}) => `(${r(radius)} , ${r(tubeRadius)} )`,
@@ -59,8 +61,19 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    //pTorus cy 5 10
-    oci.ptorus("torus", params.radius, params.tubeRadius);
+    const csys = params.locations?.csys || CSys.ORIGIN;
+    oci.plane("csys",
+      csys.origin.x,
+      csys.origin.y,
+      csys.origin.z,
+      csys.x.x,
+      csys.x.y,
+      csys.x.z,
+      csys.y.x,
+      csys.y.y,
+      csys.y.z);
+
+    oci.ptorus("torus", "csys", params.radius, params.tubeRadius);
 
     return occ.utils.applyBooleanModifier(["torus"], params.boolean);
 
