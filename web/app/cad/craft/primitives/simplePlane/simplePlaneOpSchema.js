@@ -4,10 +4,14 @@ export default {
     enum: ['XY', 'XZ', 'ZY'],
     defaultValue: 'XY'
   },
-  parallelTo: {
+  datum: {
     type: 'entity',
-    allowedKinds: ['face'],
+    allowedKinds: ['face', 'datum'],
     optional: true,
+    defaultValue: {
+      usePreselection:  true,
+      preselectionIndex: 0,
+    }
   },
   depth: {
     type: 'number',

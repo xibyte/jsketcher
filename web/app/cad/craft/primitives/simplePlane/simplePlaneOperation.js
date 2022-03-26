@@ -6,21 +6,25 @@ import {MOpenFaceShell} from '../../../model/mopenFace';
 import schema from './simplePlaneOpSchema';
 import {PlaneSurfacePrototype} from '../../../model/surfacePrototype';
 import {STANDARD_BASES} from 'math/basis';
+import {MFace} from "cad/model/mface";
+import CSys from "math/csys";
+import {MDatum} from "cad/model/mdatum";
 
-function paramsToPlane({orientation, parallelTo, depth}, cadRegistry) {
-  let face = null;
-  if (parallelTo) {
-    face = cadRegistry.findFace(parallelTo);
-  }
-  let plane = null;
-  if (face === null) {
-    const normal = STANDARD_BASES[orientation][2];
-    plane = new Plane(normal, depth);
+function paramsToPlane({orientation, datum, depth}, cadRegistry) {
+  const csys = datum ? datum.csys : CSys.ORIGIN;
+
+  let axis;
+  if (orientation === 'XY') {
+    axis = csys.z;
+  } else if (orientation === 'XZ') {
+    axis = csys.y;
   } else {
-    let base = face.surface.tangentPlaneInMiddle();
-    plane = new Plane(base.normal, base.w + depth);
+    axis = csys.x;
   }
-  return plane;
+
+  const w = axis.multiply(depth)._plus(csys.origin).dot(axis);
+
+  return new Plane(axis, w);
 }
 
 function createPlane(params, {cadRegistry}) {
