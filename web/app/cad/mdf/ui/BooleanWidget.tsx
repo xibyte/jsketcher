@@ -34,7 +34,7 @@ export const BooleanWidgetDefinition = (props: BooleanWidgetProps) => ({
           label: 'kind',
           type: "choice",
           optional: true,
-          defaultValue: 'NONE',
+          defaultValue: props.defaultValue,
           values: BOOLEAN_OPTIONS
         },
         {
