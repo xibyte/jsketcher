@@ -5,14 +5,14 @@ import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {UnitVector} from "math/vector";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
-import {MLoop} from "cad/model/mloop";
+import {MObject} from "cad/model/mobject";
 
 
 interface ExtrudeParams {
   length: number;
   doubleSided:boolean,
   face: MFace;
-  loops: MLoop[];
+  profiles: MObject[];
   direction?: UnitVector,
   boolean: BooleanDefinition
 }
@@ -33,9 +33,9 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
  
     let occFaces = [];
 
-    if (params.loops?.length > 0) {
+    if (params.profiles?.length > 0) {
 
-      params.loops
+      params.profiles
 
     }
 
@@ -124,9 +124,10 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     },
     {
       type: 'selection',
-      name: 'loops',
-      capture: [EntityKind.LOOP],
-      label: 'loops',
+      name: 'profiles',
+      capture: [EntityKind.FACE, EntityKind.LOOP],
+      label: 'profiles',
+      optional: true,
       multi: true
     },
     {

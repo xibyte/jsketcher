@@ -18,6 +18,7 @@ export default {
   },
   rotations: {
     type: 'array',
+    optional: true,
     defaultValue: [],
     items: {
       type: 'object',

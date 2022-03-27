@@ -18,7 +18,7 @@ function updateCSys(csys, params, findFace) {
     }
   }
 
-  params.rotations.forEach(r => {
+  (params.rotations||[]).forEach(r => {
     let axis = csys[r.axis.toLowerCase()];
     applyRotation(csys, csys, r.angle, axis);
   });

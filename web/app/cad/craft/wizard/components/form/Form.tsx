@@ -68,7 +68,7 @@ export function SubForm(props: {name: ParamsPathSegment, children: any}) {
   const formParams = useContext(FormParamsContext);
   const formPath = useContext(FormPathContext);
 
-  return <FormParamsContext.Provider value={formParams[props.name] as any}>
+  return <FormParamsContext.Provider value={formParams[props.name]||{} as any}>
     <FormPathContext.Provider value={[...formPath, props.name]}>
       {props.children}
     </FormPathContext.Provider>
