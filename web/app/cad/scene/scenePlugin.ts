@@ -24,6 +24,26 @@ export function activate(ctx: ApplicationContext) {
   ctx.viewer = viewer;
   ctx.cadScene = services.cadScene;
 
+
+
+  let showMenu = true;
+  dom.viewerContainer.addEventListener('mousedown', (e) => {
+    showMenu = true;
+  });
+
+  dom.viewerContainer.addEventListener('mousemove', (e) => {
+    showMenu = false;
+  });
+
+  dom.viewerContainer.addEventListener('mouseup', (e) => {
+    if (showMenu) {
+    ctx.actionService.run('menu.contextual', {
+        x: e.offsetX,
+        y: e.offsetY
+      })
+    }
+  }, false);
+
   // let sketcher3D = new Sketcher3D(dom.viewerContainer);
   // services.viewer.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
 

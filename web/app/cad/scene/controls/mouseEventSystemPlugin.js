@@ -11,10 +11,6 @@ export function activate(ctx) {
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('mouseup', mouseup, false);
   domElement.addEventListener('mousemove', mousemove, false);
-  domElement.addEventListener('contextmenu', (e) => ctx.actionService.run('menu.contextual', {
-    x: e.offsetX,
-    y: e.offsetY
-  }), false);
 
 
   let performRaycast = e => {
