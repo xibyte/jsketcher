@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext, useEffect} from 'react';
 import connect from 'ui/connect';
 import Widget from 'ui/components/Widget';
 import decoratorChain from 'ui/decoratorChain';
@@ -11,12 +11,26 @@ import ButtonGroup from 'ui/components/controls/ButtonGroup';
 import Button from 'ui/components/controls/Button';
 import {removeAndDropDependants} from '../craftHistoryUtils';
 import RenderObject from 'ui/components/RenderObject';
+import {AppContext} from "cad/dom/components/AppContext";
 
 function SelectedModificationInfo({ history, index,
                                     operationRegistry,
                                     locationHint: lh,
                                     drop, edit,
                                     close}) {
+  const ctx = useContext(AppContext);
+
+  useEffect(() => {
+
+    function clickAwayHandler() {
+      ctx.streams.ui.craft.modificationSelection.next(EMPTY_OBJECT);
+    }
+
+    ctx.domService.viewerContainer.addEventListener('click', clickAwayHandler);
+    return () => {
+      ctx.domService.viewerContainer.removeEventListener('click', clickAwayHandler);
+    }
+  }, []);
   let m = history[index];
   let visible = !!m;
   if (!visible) {
@@ -57,8 +71,14 @@ export default decoratorChain(
   ).map(merger)),
   mapContext((ctx, props) => ({
     close: () => ctx.streams.ui.craft.modificationSelection.next(EMPTY_OBJECT),
-    drop: () => ctx.streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, props.index)),
-    edit: () => ctx.streams.craft.modifications.update(({history}) => ({history, pointer: props.index - 1}))
+    drop: () => {
+      ctx.streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, props.index))
+      ctx.streams.ui.craft.modificationSelection.next(EMPTY_OBJECT);
+    },
+    edit: () => {
+      ctx.streams.craft.modifications.update(({history}) => ({history, pointer: props.index - 1}))
+      ctx.streams.ui.craft.modificationSelection.next(EMPTY_OBJECT);
+    }
   }))
 )(SelectedModificationInfo);
   
