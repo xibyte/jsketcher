@@ -5,12 +5,14 @@ import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {UnitVector} from "math/vector";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {MLoop} from "cad/model/mloop";
 
 
 interface ExtrudeParams {
   length: number;
   doubleSided:boolean,
   face: MFace;
+  loops: MLoop[];
   direction?: UnitVector,
   boolean: BooleanDefinition
 }
@@ -30,6 +32,12 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
  
     let occFaces = [];
+
+    if (params.loops?.length > 0) {
+
+      params.loops
+
+    }
 
     let sketch = ctx.sketchStorageService.readSketch(face.id);
     if (!sketch) {
@@ -113,6 +121,13 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
         usePreselection: true,
         preselectionIndex: 0
       },
+    },
+    {
+      type: 'selection',
+      name: 'loops',
+      capture: [EntityKind.LOOP],
+      label: 'loops',
+      multi: true
     },
     {
       type: 'direction',
