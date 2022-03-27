@@ -5,6 +5,7 @@ import DPR from 'dpr';
 import {createEssentialAppContext} from "sketcher/sketcherContext";
 import {ORIGIN} from "math/vector";
 import {lookAtFace} from "cad/actions/usabilityActions";
+import {Styles} from "sketcher/styles";
 
 export class InPlaceSketcher {
   
@@ -12,6 +13,7 @@ export class InPlaceSketcher {
     this.face = null; // should be only one in the state
     this.ctx = ctx;
     this.sketcherAppContext = null;
+    Styles.DEFAULT.strokeStyle = '#3477eb';
   }
 
   get viewer() {
