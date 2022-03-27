@@ -26,9 +26,11 @@ export function activate(ctx: ApplicationContext) {
 
 
 
-  let showMenu = true;
+  let showMenu = false;
   dom.viewerContainer.addEventListener('mousedown', (e) => {
-    showMenu = true;
+    if (e.which == 3 || e.button == 2) {
+      showMenu = true;
+    }
   });
 
   dom.viewerContainer.addEventListener('mousemove', (e) => {
@@ -37,7 +39,7 @@ export function activate(ctx: ApplicationContext) {
 
   dom.viewerContainer.addEventListener('mouseup', (e) => {
     if (showMenu) {
-    ctx.actionService.run('menu.contextual', {
+      ctx.actionService.run('menu.contextual', {
         x: e.offsetX,
         y: e.offsetY
       })
