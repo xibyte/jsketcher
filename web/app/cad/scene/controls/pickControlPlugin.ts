@@ -96,7 +96,7 @@ export function activate(context) {
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('mouseup', mouseup, false);
   domElement.addEventListener('dblclick', mousedblclick, false);
-  domElement.addEventListener('mousemove', mousemove, false);
+  document.addEventListener('mousemove', mousemove, false);
 
   let mouseState = {
     startX: 0,
