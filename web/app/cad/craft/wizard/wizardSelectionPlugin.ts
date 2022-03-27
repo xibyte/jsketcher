@@ -1,14 +1,13 @@
 import {FACE, SHELL} from 'cad/model/entities';
 import {OperationRequest} from "cad/craft/craftPlugin";
 import {ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
-import {OperationParamPrimitive, OperationParamValue} from "cad/craft/schema/schema";
+import {OperationParamPrimitive} from "cad/craft/schema/schema";
 import {EntityReference} from "cad/craft/operationPlugin";
 import {Plugin} from "plugable/pluginSystem";
 import {MarkerPluginContext} from "cad/scene/selectionMarker/markerPlugin";
 import {WizardPluginContext} from "cad/craft/wizard/wizardPlugin";
 import {PickControlPluginContext} from "cad/scene/controls/pickControlPlugin";
 import _ from "lodash";
-import {param} from "cypress/types/jquery";
 
 export type WizardSelectionPluginInputContext = MarkerPluginContext & WizardPluginContext & PickControlPluginContext;
 

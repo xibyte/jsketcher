@@ -1,11 +1,7 @@
 import React from "react";
-import {OperationSchema} from "cad/craft/schema/schema";
-import {FieldBasicProps, fieldToSchemaGeneric} from "cad/mdf/ui/field";
-import {Types} from "cad/craft/schema/types";
+import {FieldBasicProps} from "cad/mdf/ui/field";
 import {EntityKind} from "cad/model/entities";
 import {SectionWidgetProps} from "cad/mdf/ui/SectionWidget";
-import {DynamicComponentWidget} from "cad/mdf/ui/DynamicComponentWidget";
-import {AxisResolver} from "cad/craft/schema/resolvers/axisResolver";
 
 export interface BooleanWidgetProps extends FieldBasicProps {
 

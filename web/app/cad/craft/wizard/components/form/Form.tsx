@@ -4,7 +4,7 @@ import Field from 'ui/components/controls/Field';
 import Stack from 'ui/components/Stack';
 import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 import {ParamsPath, ParamsPathSegment, WizardState} from "cad/craft/wizard/wizardTypes";
-import {OperationParams, OperationParamValue} from "cad/craft/schema/schema";
+import {flattenPath, OperationParams, OperationParamValue} from "cad/craft/schema/schema";
 import {AppContext} from "cad/dom/components/AppContext";
 import _ from "lodash";
 
@@ -45,7 +45,7 @@ export function attachToForm(Control): any {
     const params = useContext(FormParamsContext);
 
     const fullPath = [...formPath, name];
-    const fullPathFlatten = fullPath.join('.');
+    const fullPathFlatten = flattenPath(fullPath);
     const onChange = value => ctx.wizardService.updateParam(fullPath, value);
     const setActive = (isActive) => ctx.wizardService.updateState(state => {
       state.activeParam = isActive ? fullPathFlatten : null;
