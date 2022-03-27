@@ -7,6 +7,7 @@ import {attachToForm} from './Form';
 import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 import {EMPTY_ARRAY, removeInPlace} from 'gems/iterables';
 import {AppContext} from "cad/dom/components/AppContext";
+import produce from "immer";
 
 
 function EntityList(props) {
@@ -18,7 +19,7 @@ function EntityList(props) {
   const deselect = (entityId) => {
     let {value, onChange} = props;
     if (Array.isArray(value)) {
-      onChange(removeInPlace(value, entityId));
+      onChange(produce(value, value => removeInPlace(value, entityId)));
     } else {
       onChange(undefined);
     }
