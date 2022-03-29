@@ -37,7 +37,6 @@ export const WizardSelectionPlugin: Plugin<WizardSelectionPluginInputContext, Wi
           wizardPickHandler = createPickHandlerFromSchema(wizardService);
           ctx.pickControlService.setPickHandler(wizardPickHandler);
           ctx.wizardService.addDisposer(() => {
-            console.log("DISPOSE!!!!");
             wizardPickHandler = null;
             ctx.pickControlService.setPickHandler(null);
           });
@@ -106,23 +105,23 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
 
     function select(entityRef: EntityReference, id: string) {
       const param = entityRef.field;
-      let paramToMakeActive = getNextActiveParam(entityRef);
       if (entityRef.isArray) {
         updateMulti(param.path, id);
       } else {
         updateSingle(param.path, id);
       }
+      let paramToMakeActive = getNextActiveParam(entityRef);
       wizardService.updateState(state => {
         state.activeParam = paramToMakeActive.field.flattenedPath
       });
     }
 
     function getNextActiveParam(entityRef: EntityReference): EntityReference {
-      if (!entityRef.isArray) {
-        const index = schemaIndex.entities.indexOf(entityRef);
-        const nextIndex = (index + 1) % schemaIndex.entities.length;
-        return schemaIndex.entities[nextIndex];
-      }
+      // if (!entityRef.isArray && entityRef.metadata.cycleSelection) {
+      //   const index = schemaIndex.entities.indexOf(entityRef);
+      //   const nextIndex = (index + 1) % schemaIndex.entities.length;
+      //   return schemaIndex.entities[nextIndex];
+      // }
       return entityRef;
     }
     
@@ -134,9 +133,10 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
       for (let eRef of schemaIndex.entities) {
         if (eRef.metadata.allowedKinds.includes(entity)) {
           select(eRef, id);
+          return true;
         }
       }
-      return true;
+      return false;
     }
 
     function deselectIfNeeded(id) {
