@@ -5,13 +5,15 @@ export class ToolManager {
     this.tool = defaultTool;
     this.viewer = viewer;
     this.disposers = [];
-    const canvas = viewer.canvas;
+    const canvas = viewer.canvas
+    viewer.canvas.setAttribute('tabindex','0'); // makes it focusable
     canvas.addEventListener('mousemove', (e) => {
       e.preventDefault();
       //e.stopPropagation(); // allow propagation for move in sake of dynamic layout 
       this.tool.mousemove(e);
     }, false);
     canvas.addEventListener('mousedown', (e) => {
+      canvas.focus();
       e.preventDefault();
       e.stopPropagation();
       this.tool.mousedown(e);
@@ -24,7 +26,6 @@ export class ToolManager {
     window.addEventListener('touchstart', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log(111)
     }, false);
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -43,7 +44,7 @@ export class ToolManager {
       this.tool.dblclick(e);
     }, false);
 
-    this.addEventListener(window, "keydown", (e) => {
+    this.addEventListener(canvas, "keydown", (e) => {
       this.tool.keydown(e);
       if (e.keyCode === 27) {
         this.releaseControl();
@@ -53,10 +54,10 @@ export class ToolManager {
         viewer.refresh();
       }
     }, false);
-    this.addEventListener(window, "keypress", (e) => {
+    this.addEventListener(canvas, "keypress", (e) => {
       this.tool.keydown(e);
     }, false);
-    this.addEventListener(window, "keyup", (e) => {
+    this.addEventListener(canvas, "keyup", (e) => {
       this.tool.keydown(e);
     }, false);
   }
