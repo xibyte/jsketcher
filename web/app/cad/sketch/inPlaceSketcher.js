@@ -6,6 +6,7 @@ import {createEssentialAppContext} from "sketcher/sketcherContext";
 import {ORIGIN} from "math/vector";
 import {lookAtFace} from "cad/actions/usabilityActions";
 import {Styles} from "sketcher/styles";
+import {createFunctionList} from "gems/func";
 
 export class InPlaceSketcher {
   
@@ -35,6 +36,8 @@ export class InPlaceSketcher {
     let container = viewer3d.sceneSetup.container;
     let canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
+    canvas.style.left = 0;
+    canvas.style.top = 0;
     canvas.style.right = 0;
     canvas.style.bottom = 0;
 
@@ -53,6 +56,11 @@ export class InPlaceSketcher {
     this.viewer.io.loadSketch(sketchData);
     this.ctx.streams.sketcher.sketchingFace.next(face);
     this.ctx.streams.sketcher.sketcherAppContext.next(this.sketcherAppContext);
+
+    this.disposers = createFunctionList();
+    this.disposers.add(
+      this.ctx.viewer.sceneSetup.viewportSizeUpdate$.attach(this.onCameraChange)
+    );
   }
 
   get sketchStorageKey() {
@@ -72,6 +80,7 @@ export class InPlaceSketcher {
     this.ctx.streams.sketcher.sketchingFace.next(null);
     this.ctx.streams.sketcher.sketcherAppContext.next(null);
     this.ctx.workbenchService.switchToDefaultWorkbench();
+    this.disposers.call();
     viewer3d.requestRender();
   }
 

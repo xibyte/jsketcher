@@ -14,6 +14,7 @@ import {
   Matrix4, Raycaster, Box3
 } from "three";
 import {TransformControls} from "three/examples/jsm/controls/TransformControls";
+import {stream} from "lstream";
 
 export default class SceneSetUp {
   workingSphere: number;
@@ -31,6 +32,7 @@ export default class SceneSetUp {
   trackballControls: CADTrackballControls;
   transformControls: TransformControls;
   updateControlsAndHelpers: () => void;
+  viewportSizeUpdate$ = stream();
   
   constructor(container, onRendered) {
     
@@ -93,6 +95,7 @@ export default class SceneSetUp {
       this.updatePerspectiveCameraViewport();
       this.updateOrthographicCameraViewport();
       this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+      this.viewportSizeUpdate$.next();
       this.render();
     }
   }
