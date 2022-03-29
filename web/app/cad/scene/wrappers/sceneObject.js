@@ -2,6 +2,7 @@ import Vector from 'math/vector';
 import DPR from 'dpr'
 import {getAttribute, setAttribute} from "scene/objectData";
 import {BasisForPlane} from 'math/basis';
+import {DoubleSide} from "three";
 
 //todo: rename to shell
 export class SceneSolid {
@@ -52,7 +53,8 @@ export function createSolidMaterial(skin) {
     shininess: 0,
     polygonOffset : true,
     polygonOffsetFactor : 1,
-    polygonOffsetUnits : 2
+    polygonOffsetUnits : 2,
+    side: DoubleSide,
   }, skin));
 }
 
