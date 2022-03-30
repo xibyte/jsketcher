@@ -142,6 +142,11 @@ export function activate(context) {
     handleSolidPick(e);
   }
 
+  function clickaway() {
+    PickListDialogRequest$.next(null);
+    domElement.removeEventListener('click', clickaway, false);
+  }
+
   function setPickHandler(handler) {
     pickHandler = handler || defaultHandler;
     services.marker.clear();
@@ -168,6 +173,7 @@ export function activate(context) {
         token: Date.now(),
         capture: Array.from(capture)
       });
+      setTimeout(() => domElement.addEventListener('click', clickaway, false), 100);
       return;
     }
     traversePickResults(event, pickResults, ALL_EXCLUDING_SOLID_KINDS, pickHandler);
