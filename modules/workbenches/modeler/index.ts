@@ -13,8 +13,6 @@ import { RevolveOperation } from "./features/revolve/revolve.operation";
 import { ShellOperation } from "./features/shell/shell.operation";
 import { SweepOperation } from "./features/sweep/sweep.operation";
 import { offsetOperation } from "./features/offsetFace/offsetFace.operation";
-import { smTabOperation } from "./features/smTab/smTab.operation";
-import { smFlangeOperation } from "./features/smFlange/smFlange.operation";
 import { MirrorBodyOperation} from "./features/mirrorBody/mirrorBody.operation";
 
 export const ModelerWorkspace: WorkbenchConfig = {
@@ -35,8 +33,6 @@ export const ModelerWorkspace: WorkbenchConfig = {
     LoftOperation,
     SweepOperation,
     offsetOperation,
-    smTabOperation,
-    smFlangeOperation,
     MirrorBodyOperation
   ],
   actions: [],
@@ -48,7 +44,6 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "SHELL_TOOL", "FILLET_TOOL", "OFFSET_TOOL", "MIRROR_BODY",  "-",
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
       "HOLE_TOOL", "-",
-      "SM_TAB","SM_FLANGE"
     ]
   }
 }
