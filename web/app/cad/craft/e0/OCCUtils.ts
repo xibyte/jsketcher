@@ -58,6 +58,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
       if (!targets || targets.length === 0) {
         targets = ctx.cadRegistry.shells;
       }
+      
 
       let targetNames = targets.map((target, i) => {
         const targetName = 'Target/' + i;
