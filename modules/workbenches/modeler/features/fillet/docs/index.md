@@ -1,1 +1,2 @@
-place holder
+# FILLET
+The FILLET command allows for section of edges of a solid body. the selected edges can be broken with a specified radius or if champer option is selected a broken corner with flat surface offset by the specified size.
