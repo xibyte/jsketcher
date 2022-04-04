@@ -20,10 +20,14 @@ export class CurveBasedView extends View {
     this.rootGroup.add(this.marker);
     this.rootGroup.add(this.picker);
     this.picker.onMouseEnter = () => {
-      this.ctx.highlightService.highlight(this.model.id);
+      if (!this.isDisposed) {
+        this.ctx.highlightService.highlight(this.model.id);
+      }
     }
     this.picker.onMouseLeave = () => {
-      this.ctx.highlightService.unHighlight(this.model.id);
+      if (!this.isDisposed) {
+        this.ctx.highlightService.unHighlight(this.model.id);
+      }
     }
   }
 
