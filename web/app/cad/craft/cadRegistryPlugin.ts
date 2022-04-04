@@ -1,6 +1,6 @@
 import {MShell} from '../model/mshell';
 import {MObject} from "../model/mobject";
-import {ApplicationContext, CoreContext} from "context";
+import {ApplicationContext} from "context";
 import {Stream} from "lstream";
 import {MFace} from "../model/mface";
 import {MEdge} from "../model/medge";
@@ -18,6 +18,12 @@ export function activate(ctx: ApplicationContext) {
     models.forEach(model => model.traverse(m => index.set(m.id, m)));
     return index;
   }).remember();
+
+  function reindexFace(face: MFace) {
+    face.traverseSketchRelatedEntities(obj => {
+      modelIndex$.value.set(obj.id, obj);
+    })
+  }
 
   streams.cadRegistry = {
     shells: shells$, modelIndex: modelIndex$
@@ -69,6 +75,7 @@ export function activate(ctx: ApplicationContext) {
 
   services.cadRegistry = {
     getAllShells, findShell, findFace, findEdge, findSketchObject, findEntity, findDatum, findDatumAxis, findLoop, find,
+    reindexFace,
     get modelIndex() {
       return streams.cadRegistry.modelIndex.value;
     },
@@ -98,7 +105,7 @@ export interface CadRegistry {
   modelIndex: Map<String, MObject>;
   models: MObject[];
   shells: MObject[];
-
+  reindexFace(face: MFace);
 }
 
 declare module 'context' {

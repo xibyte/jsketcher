@@ -3,10 +3,10 @@ import {state, stream} from 'lstream';
 import {InPlaceSketcher} from './inPlaceSketcher';
 import sketcherUIContrib from './sketcherUIContrib';
 import initReassignSketchMode from './reassignSketchMode';
-import {Viewer} from "../../sketcher/viewer2d";
-import {IO} from "../../sketcher/io";
-import {Generator} from "../../sketcher/id-generator";
-import {NOOP} from "gems/func";
+import {Viewer} from "sketcher/viewer2d";
+import {IO} from "sketcher/io";
+import {Generator} from "sketcher/id-generator";
+import {MFace} from "cad/model/mface";
 
 export function defineStreams(ctx) {
   ctx.streams.sketcher = {
@@ -111,11 +111,20 @@ export function activate(ctx) {
     }
   }
 
+  ctx.craftService.models$.attach(models => models.forEach(model => model.traverse(m => {
+    if (m instanceof MFace) {
+      if (!m.ext.sketchInitialized) {
+        m.ext.sketchInitialized = true;
+        updateSketchForFace(m);
+      }
+    }
+  })));
+
   function updateSketchForFace(mFace) {
     let sketch = ctx.sketchStorageService.readSketch(mFace.defaultSketchId);
     mFace.setSketch(sketch);
-    ctx.craftService.models$.mutate(NOOP);// to reindex all entities
-    streams.sketcher.update.next(mFace);
+    ctx.cadRegistry.reindexFace(mFace);
+    streams.sketcher.update.next(mFace); // updates UI face views
   }
 
   function updateAllSketches() {

@@ -7,7 +7,6 @@ import {MShell} from '../model/mshell';
 import {MDatum} from '../model/mdatum';
 import DatumView from './views/datumView';
 import {View} from './views/view';
-import {SketchingView} from "cad/scene/views/faceView";
 
 export const ViewSyncPlugin = {
 
@@ -38,9 +37,7 @@ export const ViewSyncPlugin = {
 
 function sceneSynchronizer(ctx) {
   const {services: {cadScene, cadRegistry, viewer, wizard, action, pickControl}} = ctx;
-  let xxx = 0;
   return function() {
-    console.log("sceneSynchronizer update" + (xxx++))
 
     let wgChildren = cadScene.workGroup.children;
     let existent = new Set();
@@ -49,12 +46,12 @@ function sceneSynchronizer(ctx) {
       let shellView = getAttribute(obj, View.MARKER);
       if (shellView) {
         let exists = cadRegistry.modelIndex.has(shellView.model.id);
-        // if (!exists) {
+        if (!exists) {
           SceneGraph.removeFromGroup(cadScene.workGroup, obj);
           shellView.dispose();
-        // } else {
-        //   existent.add(shellView.model.id);
-        // }
+        } else {
+          existent.add(shellView.model.id);
+        }
       }
     }
 
@@ -73,22 +70,6 @@ function sceneSynchronizer(ctx) {
         } else {
           console.warn('unsupported model ' + model);
         }
-        const attrStream = ctx.attributesService.streams.get(model.id);
-        const disposer = attrStream.attach(attrs => {
-          modelView.rootGroup.visible = !attrs.hidden
-          viewer.requestRender();
-        });
-
-        modelView.traverse(view => {
-          if (view instanceof SketchingView) {
-            const stream = ctx.attributesService.streams.get(view.model.id);
-            modelView.addDisposer(stream.attach(attr => {
-              view.setColor(attr.color);
-              viewer.requestRender();
-            }))
-          }
-        });
-        modelView.addDisposer(disposer)
         SceneGraph.addToGroup(cadScene.workGroup, modelView.rootGroup);
       }
     }

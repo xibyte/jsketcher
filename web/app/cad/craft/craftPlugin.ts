@@ -21,13 +21,6 @@ export function activate(ctx: CoreContext) {
   const update$ = stream<void>();
   const pipelineFailure$ = state<any>(null);
 
-  models$.attach(models => models.forEach(model => model.traverse(m => {
-    if (m instanceof MFace) {
-      let sketch = ctx.sketchStorageService.readSketch(m.defaultSketchId);
-      m.setSketch(sketch);
-    }
-  })));
-
   let preRun = null;
 
   function modifyWithPreRun(request, modificationsUpdater, onAccepted, onError) {
