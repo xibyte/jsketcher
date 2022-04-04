@@ -3,15 +3,18 @@ import './utils/threeLoader';
 import './utils/vectorThreeEnhancement';
 import {CADTrackballControls} from './controls/CADTrackballControls';
 import {
+  AmbientLight,
+  Box3,
+  DirectionalLight,
+  Euler,
+  Matrix4,
   Object3D,
-  Scene,
   OrthographicCamera,
   PerspectiveCamera,
-  PointLight,
-  WebGLRenderer,
+  Raycaster,
+  Scene,
   Vector3,
-  Euler,
-  Matrix4, Raycaster, Box3
+  WebGLRenderer
 } from "three";
 import {TransformControls} from "three/examples/jsm/controls/TransformControls";
 import {stream} from "lstream";
@@ -25,7 +28,7 @@ export default class SceneSetUp {
   oCamera: OrthographicCamera;
   pCamera: PerspectiveCamera;
   camera: PerspectiveCamera;
-  light: PointLight;
+  light: DirectionalLight;
   renderer: WebGLRenderer;
   private _prevContainerWidth: number;
   private _prevContainerHeight: number;
@@ -60,14 +63,14 @@ export default class SceneSetUp {
     this.oCamera = new OrthographicCamera(-width / factor,
       width / factor,
       height / factor,
-      -height / factor, 0.1, 10000);
+      -height / factor, 0.1, 1000000);
     this.oCamera.position.z = 1000;
     this.oCamera.position.x = -1000;
     this.oCamera.position.y = 300;
   }
 
   createPerspectiveCamera() {
-    this.pCamera = new PerspectiveCamera( 60, this.aspect(), 0.1, 10000 );
+    this.pCamera = new PerspectiveCamera( 60, this.aspect(), 0.1, 1000000 );
     this.pCamera.position.z = 1000;
     this.pCamera.position.x = -1000;
     this.pCamera.position.y = 300;
@@ -79,9 +82,11 @@ export default class SceneSetUp {
 
     this.camera = this.pCamera;
     
-    this.light = new PointLight( 0xffffff);
+    this.light = new DirectionalLight( 0xffffff );
     this.light.position.set( 10, 10, 10 );
     this.scene.add(this.light);
+
+    this.scene.add( new AmbientLight( 0xffffff, 0.25 ) );
 
     this.renderer = new WebGLRenderer();
     this.renderer.setPixelRatio(DPR);
