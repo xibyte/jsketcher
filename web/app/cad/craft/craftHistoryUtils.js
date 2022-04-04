@@ -40,7 +40,8 @@ export function removeAndDropDependants({history}, indexToRemove) {
 }
 
 export function removeFeature({history}, indexToRemove) {
-  history = history.slice(0, indexToRemove);
+  history = [...history];
+  history.splice(indexToRemove, 1);
   return {
     history,
     pointer: history.length - 1
