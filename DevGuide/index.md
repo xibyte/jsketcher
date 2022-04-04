@@ -42,7 +42,15 @@ The export default object requires the following things to be defined.
  - **icon**: object
  - **[paramsInfo](#paramsInfo-tool-tip-information)**: Template for history item info popup. Can be used to expose the current values and description info about the operation for tool tips and hover over context cues.
  - **[schema](#Schema-fields-widget-types)**: Model defining the feature dialogs list of input fields, labels and input types. Both the user interface and the feature input properties storage is defined by this unified schema. User interface input widgets are laid out in a vertical stack with in the feature dialog in the order you define here. 
- - **run**: This is the actual code that will be executed when the preview button or the "OK" button in the feature dialog is pressed. The values defined in the schema are passed in and can be referenced by the simplified OpenCASCADE api provided by the JSKetcher OpenCASCADE wasm interface library. You can find more information about the functions exposed by this **[here](../web/app/cad/craft/e0/OCI.d.ts)**.  
+ - **run**: This is the actual code that will be executed when the preview button or the "OK" button in the feature dialog is pressed. The values defined in the schema are passed in and can be referenced by the simplified OpenCASCADE api provided by the JSKetcher OpenCASCADE wasm interface library. You can find more information about the functions exposed by this **[here](../web/app/cad/craft/e0/OCI.d.ts)**. The run function must return an object with the following format. This format for the return object is required for all feature commands.
+ ```
+ let resultsOfCommand ={
+ created:[],
+ consumed:[]
+ }
+ return resultsOfCommand;
+ ```
+ 
  
  **Example index.ts file**:
 ```
