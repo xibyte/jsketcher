@@ -208,26 +208,28 @@ function isAdditiveChange({history:oldHistory, pointer:oldPointer}, {history, po
 }
 
 function historyTravel(modifications$) {
-  
+
+  function setPointer(pointer, hints) {
+    let mod = modifications$.value;
+    if (pointer >= mod.history.length || pointer < -1) {
+      return;
+    }
+    modifications$.update(({history}) => ({history, pointer, hints}));
+  }
+
   return {
-    setPointer: function(pointer, hints) {
-      let mod = modifications$.value;
-      if (pointer >= mod.history.length || pointer < -1) {
-        return;
-      }
-      modifications$.update(({history}) => ({history, pointer, hints}));
-    },
+    setPointer,
     begin: function(hints) {
-      this.setPointer(-1, hints);
+      setPointer(-1, hints);
     },
     end: function(hints) {
-      this.setPointer(modifications$.value.history.length - 1, hints);
+      setPointer(modifications$.value.history.length - 1, hints);
     },
     forward: function(hints) {
-      this.setPointer(modifications$.value.pointer + 1, hints);
+      setPointer(modifications$.value.pointer + 1, hints);
     },
     backward: function (hints) {
-      this.setPointer(modifications$.value.pointer - 1, hints);
+      setPointer(modifications$.value.pointer - 1, hints);
     },
   }
 

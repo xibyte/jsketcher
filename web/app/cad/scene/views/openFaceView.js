@@ -14,7 +14,7 @@ export class OpenFaceShellView extends View {
   }
   
   get rootGroup() {
-    return this.openFace.rootGroup
+    return this.openFace?.rootGroup
   }
   
   dispose() {
