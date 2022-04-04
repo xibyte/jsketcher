@@ -95,6 +95,10 @@ export class View {
     this.model.ext.view = null;
     this.model = null;
   };
+
+  get isDisposed() {
+    return this.model === null;
+  }
 }
 
 

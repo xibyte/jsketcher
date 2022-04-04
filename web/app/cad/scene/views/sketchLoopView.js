@@ -65,12 +65,19 @@ export class SketchLoopView extends View {
 
     this.rootGroup.add(this.mesh);
     this.mesh.onMouseEnter = () => {
-      this.ctx.highlightService.highlight(this.model.id);
+      if (!this.isDisposed) {
+        this.ctx.highlightService.highlight(this.model.id);
+      }
     }
     this.mesh.onMouseLeave = () => {
-      this.ctx.highlightService.unHighlight(this.model.id);
+      if (!this.isDisposed) {
+        this.ctx.highlightService.unHighlight(this.model.id);
+      }
     }
     this.mesh.raycastPriority = 10;
+    this.mesh.onDblclick = () => {
+      ctx.sketcherService.sketchFace(this.model.face);
+    }
   }
 
   updateVisuals() {

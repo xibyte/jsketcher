@@ -11,6 +11,7 @@ export function activate(ctx) {
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('mouseup', mouseup, false);
   domElement.addEventListener('mousemove', mousemove, false);
+  domElement.addEventListener('dblclick', dblclick, false);
 
 
   let performRaycast = e => {
@@ -149,8 +150,31 @@ export function activate(ctx) {
     valid.clear();
   }
 
+  function dblclick(e) {
+    let hits = performRaycast(e);
+    dispatchDblclick(e, hits);
+  }
+
+  function dispatchDblclick(e, hits) {
+    event.mouseEvent = e;
+    event.hits = hits;
+    for (let hit of hits) {
+      if (LOG_FLAGS.PICK) {
+        printRaycastDebugInfo('dblclick', hit);
+      }
+      let obj = hit.object;
+      if (obj && obj.onDblclick) {
+        obj.onDblclick(event);
+      }
+      if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
+        break;
+      }
+    }
+  }
+
+
   ctx.services.modelMouseEventSystem = {
-    dispatchMousedown, dispatchMouseup, dispatchMousemove
+    dispatchMousedown, dispatchMouseup, dispatchMousemove, dispatchDblclick
   }
 }
 

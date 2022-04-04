@@ -131,7 +131,7 @@ export function activate(context) {
     let TOL = 1;
     if (dx < TOL && dy < TOL) {
       if (e.button !== 0) {
-        handleSolidPick(e);
+        // handleSolidPick(e);
       } else {
         handlePick(e);
       }
@@ -139,7 +139,7 @@ export function activate(context) {
   }
 
   function mousedblclick(e) {
-    handleSolidPick(e);
+    // handleSolidPick(e);
   }
 
   function clickaway() {
