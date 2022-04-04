@@ -64,7 +64,7 @@ export class MFace extends MObject {
   get isPlaneBased(): boolean {
     return this.surface.simpleSurface && this.surface.simpleSurface.isPlane;
   }
-  
+
   evalCSys() {
     if (!this._csys) {
       if (this.isPlaneBased) {
@@ -72,7 +72,7 @@ export class MFace extends MObject {
         let [x, y, z] = BasisForPlane(this.surface.simpleSurface.normal, alignCsys.y, alignCsys.z);
         let proj = z.dot(alignCsys.origin);
         proj -= this.surface.simpleSurface.w;
-        let origin  = alignCsys.origin.minus(z.multiply(proj));
+        let origin = alignCsys.origin.minus(z.multiply(proj));
         this._csys = new CSys(origin, x, y, z) as CartesianCSys;
       } else {
         let origin = this.surface.southWestPoint();
@@ -91,24 +91,24 @@ export class MFace extends MObject {
       this.w = this.csys.w();
     }
   }
-  
+
   get defaultSketchId() {
     return this.id;
   }
 
   setSketch(sketch) {
-    
+
     if (!this.isPlaneBased) {
       return;
     }
-    
+
     this.sketch = sketch;
     this.sketchObjects = [];
 
     if (!sketch) {
       return;
     }
-    
+
     const addSketchObjects = sketchObjects => {
       let isConstruction = sketchObjects === sketch.constructionSegments;
       for (let sketchObject of sketchObjects) {
@@ -121,15 +121,15 @@ export class MFace extends MObject {
     addSketchObjects(sketch.connections);
     addSketchObjects(sketch.loops);
 
-    
+
     const index = new Map();
     this.sketchObjects.forEach(o => index.set(o.sketchPrimitive, o));
-    
+
     this.sketchLoops = sketch.fetchContours().map((contour, i) => {
       let loopSketchObjects = contour.segments.map(s => index.get(s));
       return new MSketchLoop(this.id + '/L:' + i, this, loopSketchObjects, contour);
     });
-    
+
   }
 
   findSketchObjectById(sketchObjectId) {
@@ -150,14 +150,14 @@ export class MFace extends MObject {
     }
     return this._sketchToWorldTransformation;
   }
-  
+
   get worldToSketchTransformation(): Matrix3x4 {
     if (!this._worldToSketchTransformation) {
       this._worldToSketchTransformation = this.csys.inTransformation;
     }
     return this._worldToSketchTransformation;
   }
-  
+
   get productionInfo() {
     if (this._productionInfo === undefined) {
       this._productionInfo = !this.brepFace?.data?.productionInfo ? null :
@@ -168,6 +168,10 @@ export class MFace extends MObject {
 
   traverse(callback: (obj: MObject) => void) {
     callback(this);
+    this.traverseSketchRelatedEntities(callback);
+  }
+
+  traverseSketchRelatedEntities(callback: (obj: MObject) => void) {
     this.sketchObjects.forEach(i => i.traverse(callback));
     this.sketchLoops.forEach(i => i.traverse(callback));
   }

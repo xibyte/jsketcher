@@ -1,6 +1,6 @@
 import {setAttribute} from 'scene/objectData';
 import {brepFaceToGeom, tessDataToGeom} from '../wrappers/brepSceneObject';
-import {FACE} from '../../model/entities';
+import {FACE} from 'cad/model/entities';
 import * as SceneGraph from 'scene/sceneGraph';
 import {SketchObjectView} from './sketchObjectView';
 import {View} from './view';
@@ -19,6 +19,14 @@ export class SketchingView extends View {
     this.rootGroup = SceneGraph.createGroup();
     SceneGraph.addToGroup(this.rootGroup, this.sketchGroup);
     this.updateSketch();
+
+    const stream = ctx.attributesService.streams.get(this.model.id);
+    this.addDisposer(stream.attach(attr => {
+      if (this.mesh) {
+        this.setColor(attr.color);
+        ctx.viewer.requestRender();
+      }
+    }));
   }
 
   updateSketch() {
@@ -105,5 +113,5 @@ export function setFacesColor(faces, color) {
   }
 }
 
-export const NULL_COLOR = new THREE.Color();
+export const NULL_COLOR = new THREE.Color(0xbfbfbf);
 

@@ -1,5 +1,5 @@
 import {setAttribute} from 'scene/objectData';
-import {FACE, SHELL} from '../../model/entities';
+import {FACE, SHELL} from 'cad/model/entities';
 import {SketchingView} from './faceView';
 import {View} from './view';
 import {SketchMesh} from './shellView';

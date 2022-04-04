@@ -29,6 +29,16 @@ export class View {
     model.ext.view = this;
     this.marks = [];
     this.markerTable = createIndex(markerTable, i => i.type);
+
+    if (!parent) {
+      const attrStream = ctx.attributesService.streams.get(model.id);
+      this.addDisposer(attrStream.attach(attrs => {
+        if (this.rootGroup) {
+          this.rootGroup.visible = !attrs.hidden
+          ctx.viewer.requestRender();
+        }
+      }));
+    }
   }
 
   setColor(color) {
