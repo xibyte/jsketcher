@@ -9,7 +9,7 @@ import mapContext from 'ui/mapContext';
 import {EMPTY_OBJECT} from 'gems/objects';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
 import Button from 'ui/components/controls/Button';
-import {removeAndDropDependants} from '../craftHistoryUtils';
+import {removeAndDropDependants, removeFeature} from '../craftHistoryUtils';
 import RenderObject from 'ui/components/RenderObject';
 import {AppContext} from "cad/dom/components/AppContext";
 
@@ -57,7 +57,7 @@ function SelectedModificationInfo({ history, index,
     </div>
     <div>
       <ButtonGroup>
-        <Button onClick={edit}>🖉EDIT</Button>
+        <Button onClick={edit}>✏️EDIT</Button>
         <Button type='danger' onClick={drop}>🗑DELETE</Button>
       </ButtonGroup>
     </div>
@@ -72,7 +72,7 @@ export default decoratorChain(
   mapContext((ctx, props) => ({
     close: () => ctx.streams.ui.craft.modificationSelection.next(EMPTY_OBJECT),
     drop: () => {
-      ctx.streams.craft.modifications.update(modifications => removeAndDropDependants(modifications, props.index))
+      ctx.streams.craft.modifications.update(modifications => removeFeature(modifications, props.index))
       ctx.streams.ui.craft.modificationSelection.next(EMPTY_OBJECT);
     },
     edit: () => {
