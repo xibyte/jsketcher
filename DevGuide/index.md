@@ -312,10 +312,28 @@ return occ.utils.applyBooleanModifier(tools, params.boolean);
 Normally the return would consist of an object containing the arrays for consumed and created objects. This bit of code takes care of the business of populating these arrays and is the preferred method for performing all boolean operations in JSketcher. 
 ## image widget
 Allows for an image to be inserted in to the command dialog to illustrate a commands intent. For example you might show an illustration of what each parameter the user sets would be used in generating a feature.
+```
+  {
+    type: 'image',
+    name: 'figure1',
+    img: imageStringLoadedFromImport,
+  }
+```
+
+You must add an import at the top of the command typescript file to use an image in a dialog. 
+```
+import imageStringLoadedFromImport from './icon.svg';
+```
+
 ## text widget
 Allows for text to be added to the dialog with instructions or more sophisticated descriptions of an operation to be shown to the user. 
-
-
+```
+  {
+    type: 'text',
+    name: 'descriptiveText',
+    label: 'This is a custom text that can be used to show extra info about what particulart parts of the command are to be used.',
+  }
+```
 # paramsInfo tool tip information 
 The paramsInfo section is used to define a string that shows up when you mouse over a feature from the time line. You can pass in items defined in the schema and use them to form the string template for the tool top text. The tooltip text is displayed when mousing over the feature in the part history. 
 ```
