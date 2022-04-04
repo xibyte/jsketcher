@@ -4,8 +4,8 @@ import exportTextData from 'gems/exportTextData';
 export function activate(ctx) {
 
   function toStlAsciiString() {
-    let meshes = ctx.services.cadRegistry.shells.map(mShell => mShell.ext.view && mShell.ext.view.mesh).filter(m => !!m);
-    return stlExporter(meshes);
+    let views = ctx.services.cadRegistry.shells.map(mShell => mShell.ext.view).filter(m => !!m);
+    return stlExporter(views);
   }
 
   function stlAscii() {

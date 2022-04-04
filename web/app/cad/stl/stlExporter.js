@@ -8,61 +8,69 @@ import {BufferGeometry, Geometry, Matrix3, Mesh, Vector3} from 'three';
 let vector = new Vector3();
 let normalMatrixWorld = new Matrix3();
 
-export default function (objects) {
+export default function (shellViews) {
 
   let output = '';
 
-  output += 'solid exported\n';
+  shellViews.forEach(view => {
 
-  objects.forEach(object => {
+    if (!view.faceViews) {
+      return;
+    }
 
-    if (object instanceof Mesh) {
+    output += `solid ${view.model.id}\n`;
 
-      let geometry = object.geometry;
-      let matrixWorld = object.matrixWorld;
+    view.faceViews.forEach(faceView => {
+      const mesh = faceView.mesh;
+      if (mesh instanceof Mesh) {
 
-      if (geometry instanceof BufferGeometry) {
+        let geometry = mesh.geometry;
+        let matrixWorld = mesh.matrixWorld;
 
-        geometry = new Geometry().fromBufferGeometry(geometry);
+        if (geometry instanceof BufferGeometry) {
 
-      }
+          geometry = new Geometry().fromBufferGeometry(geometry);
 
-      if (geometry instanceof Geometry) {
+        }
 
-        let vertices = geometry.vertices;
-        let faces = geometry.faces;
+        if (geometry instanceof Geometry) {
 
-        normalMatrixWorld.getNormalMatrix(matrixWorld);
+          let vertices = geometry.vertices;
+          let faces = geometry.faces;
 
-        for (let i = 0, l = faces.length; i < l; i++) {
+          normalMatrixWorld.getNormalMatrix(matrixWorld);
 
-          let face = faces[i];
+          for (let i = 0, l = faces.length; i < l; i++) {
 
-          vector.copy(face.normal).applyMatrix3(normalMatrixWorld).normalize();
+            let face = faces[i];
 
-          output += '\tfacet normal ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
-          output += '\t\touter loop\n';
+            vector.copy(face.normal).applyMatrix3(normalMatrixWorld).normalize();
 
-          let indices = [face.a, face.b, face.c];
+            output += '\tfacet normal ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
+            output += '\t\touter loop\n';
 
-          for (let j = 0; j < 3; j++) {
+            let indices = [face.a, face.b, face.c];
 
-            vector.copy(vertices[indices[j]]).applyMatrix4(matrixWorld);
+            for (let j = 0; j < 3; j++) {
 
-            output += '\t\t\tvertex ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
+              vector.copy(vertices[indices[j]]).applyMatrix4(matrixWorld);
+
+              output += '\t\t\tvertex ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
+
+            }
+
+            output += '\t\tendloop\n';
+            output += '\tendfacet\n';
 
           }
-
-          output += '\t\tendloop\n';
-          output += '\tendfacet\n';
 
         }
 
       }
+    })
 
-    }
-
+    output += `endsolid ${view.model.id}\n`;
   });
-  output += 'endsolid exported\n';
+
   return output;
 }
