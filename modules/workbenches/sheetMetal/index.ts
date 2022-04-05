@@ -1,6 +1,12 @@
 import { WorkbenchConfig } from "cad/workbench/workbenchService";
+
+//imports of feature history type commands
 import { smTabOperation } from "./features/smTab/smTab.operation";
 import { smFlangeOperation } from "./features/smFlange/smFlange.operation";
+
+
+//imports of action type commands
+
 
 
 export const sheetMetalWorkspace: WorkbenchConfig = {
