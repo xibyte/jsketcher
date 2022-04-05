@@ -1,4 +1,10 @@
-import {FormContext, Group} from "../../cad/craft/wizard/components/form/Form";
+import {
+  FormEditContext,
+  FormParamsContext,
+  FormPathContext,
+  FormStateContext,
+  Group
+} from "cad/craft/wizard/components/form/Form";
 import Entity from "../../cad/craft/wizard/components/form/EntityList";
 import React, {useContext, useEffect, useState} from "react";
 import Window from "ui/components/Window";
@@ -83,38 +89,42 @@ export default function SketcherOperationWizard({}) {
   const {title, schema} = operationRequest;
   const {activeParam, params} = state;
 
-  let formContext = {
-    data: params,
-    activeParam,
-    setActiveParam: (activeParam) => setState(state => ({...state, activeParam})),
-    updateParam: (name, val) => setState(state => ({...state, params: {...params, name: val}}))
+  const formEdit = {
+    onChange: (name, val) => setState(state => ({...state, params: {...params, name: val}})),
+    setActive: (fullPathFlatten, isActive) => setState(state => ({...state,
+      activeParam: isActive ? fullPathFlatten : null
+    }))
   };
-
-
 
   return <Window initWidth={250} initLeft={255} initTop={5}
                  title={title.toUpperCase()}
                  onClose={onClose}>
 
-    <FormContext.Provider value={formContext}>
 
-      <Group>
-        {schema.map(field => {
-          return (() => {
+    <FormParamsContext.Provider value={params}>
+      <FormPathContext.Provider value={[]}>
+        <FormStateContext.Provider value={state}>
+          <FormEditContext.Provider value={formEdit}>
+            <Group>
+            {schema.map(field => {
+              return (() => {
 
-            if (field.type === 'selection') {
-              return <Entity name={field.name} title={field.title || field.name}
-                             placeholder={schema.placeholder} key={field.name}
-                             onEntityEnter={obj => {viewer.capture('highlight2', [obj], true); viewer.refresh();}}
-                             onEntityLeave={obj => {viewer.withdrawAll('highlight2');viewer.refresh();}}
-                             entityRenderer={entityRenderer}/>
-            }
-          })();
+                if (field.type === 'selection') {
+                  return <Entity name={field.name} title={field.title || field.name}
+                                 placeholder={schema.placeholder} key={field.name}
+                                 onEntityEnter={obj => {viewer.capture('highlight2', [obj], true); viewer.refresh();}}
+                                 onEntityLeave={obj => {viewer.withdrawAll('highlight2');viewer.refresh();}}
+                                 entityRenderer={entityRenderer}/>
+                }
+              })();
 
-        })}
-      </Group>
+            })}
+          </Group>
+          </FormEditContext.Provider>
+        </FormStateContext.Provider>
+      </FormPathContext.Provider>
+    </FormParamsContext.Provider>
 
-    </FormContext.Provider>
     <Stack>
       <ButtonGroup>
         <Button onClick={onClose}>Cancel</Button>

@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 
 import ls from './Wizard.less';
 import CadError from '../../../../utils/errors';
-import {FormParamsContext, FormPathContext, FormStateContext} from './form/Form';
+import {FormEditContext, FormParamsContext, FormPathContext, FormStateContext} from './form/Form';
 import {GenericWizard} from "ui/components/GenericWizard";
 import {useStream} from "ui/effects";
 import {AppContext} from "cad/dom/components/AppContext";
@@ -22,6 +22,13 @@ export default function Wizard(props: WizardProps) {
   const ctx = useContext(AppContext);
   const state = useStream(ctx => ctx.wizardService.state$);
   const workingRequest = useStream(ctx =>  ctx.wizardService.workingRequest$);
+
+  const formEdit = {
+    onChange: (fullPath, value) => ctx.wizardService.updateParam(fullPath, value),
+    setActive: (fullPathFlatten, isActive) => ctx.wizardService.updateState(state => {
+      state.activeParam = isActive ? fullPathFlatten : null;
+    })
+  };
 
   if (!workingRequest) {
     return;
@@ -92,7 +99,9 @@ export default function Wizard(props: WizardProps) {
     <FormParamsContext.Provider value={workingRequest.params}>
       <FormPathContext.Provider value={[]}>
         <FormStateContext.Provider value={state}>
-          <Form/>
+          <FormEditContext.Provider value={formEdit}>
+            <Form/>
+          </FormEditContext.Provider>
         </FormStateContext.Provider>
       </FormPathContext.Provider>
     </FormParamsContext.Provider>

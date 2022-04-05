@@ -6,11 +6,16 @@ import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 import {ParamsPath, ParamsPathSegment, WizardState} from "cad/craft/wizard/wizardTypes";
 import {flattenPath, OperationParams, OperationParamValue} from "cad/craft/schema/schema";
 import {AppContext} from "cad/dom/components/AppContext";
-import _ from "lodash";
+
+interface FormEdit {
+  onChange: any;
+  setActive: any
+}
 
 export const FormStateContext: React.Context<WizardState> = React.createContext(null);
 export const FormParamsContext: React.Context<OperationParams> = React.createContext(null);
 export const FormPathContext: React.Context<ParamsPath> = React.createContext([]);
+export const FormEditContext: React.Context<FormEdit> = React.createContext(null);
 
 
 export function Group({children}) {
@@ -39,17 +44,16 @@ export function attachToForm(Control): any {
 
   return function FormField({name, ...props}: FormFieldProps) {
 
-    const ctx = useContext(AppContext);
     const formPath = useContext(FormPathContext);
     const formState = useContext(FormStateContext);
     const params = useContext(FormParamsContext);
+    const formEdit = useContext(FormEditContext);
 
     const fullPath = [...formPath, name];
     const fullPathFlatten = flattenPath(fullPath);
-    const onChange = value => ctx.wizardService.updateParam(fullPath, value);
-    const setActive = (isActive) => ctx.wizardService.updateState(state => {
-      state.activeParam = isActive ? fullPathFlatten : null;
-    });
+
+    const onChange = value => formEdit.onChange(fullPath, value);
+    const setActive = (isActive) => formEdit.setActive(fullPathFlatten, isActive);
 
     const value = params[name];
 

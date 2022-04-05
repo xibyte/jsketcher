@@ -18,7 +18,7 @@ export interface WindowProps {
   className?: string;
   resizeCapturingBuffer?: number;
   resize?: number;
-  onResize?: () => void;
+  onResize?: any;
   enableResize?: boolean;
   children?: any;
   title: string,
@@ -46,7 +46,8 @@ export default class Window extends React.Component<WindowProps> {
   render() {
 
     let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, centerScreen, setFocus, className, resizeCapturingBuffer,
-      resize, enableResize, children, title, icon, minimizable = false, onClose, controlButtons, footer, compact, ...props} = this.props;
+      resize, enableResize, children, title, icon, minimizable = false, onClose, controlButtons, footer, compact,
+      onResize, ...props} = this.props;
 
     return <div className={cx(ls.root, this.resizeConfig&&ls.mandatoryBorder, compact&&ls.compact, className)} {...props} ref={this.keepRef}>
       <div className={ls.bar + ' disable-selection'} onMouseDown={this.startDrag} onMouseUp={this.stopDrag}>
