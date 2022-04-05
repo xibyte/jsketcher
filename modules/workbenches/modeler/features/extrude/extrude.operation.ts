@@ -38,34 +38,25 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       params.profiles
 
     }
+    const dir: UnitVector = (params.direction || face.normal()).normalize();
+    let extrusionVector = dir._multiply(params.length);
 
     let sketch = ctx.sketchStorageService.readSketch(face.id);
     if (!sketch) {
       occFaces.push(params.face);
     } else {
-      occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+      let csys = face.csys;
+      if (params.doubleSided) {
+        csys = csys.clone();
+        csys.origin._minus(extrusionVector);
+        extrusionVector._scale(2);
+      }
+      occFaces = occ.utils.sketchToFaces(sketch, csys);
     }
-
-
-
-
-
-    const dir: UnitVector = params.direction || face.normal();
-
-    const extrusionVector = dir.normalize()._multiply(params.length).data();
-    const extrusionVectorFliped = dir.normalize()._multiply(params.length).negate().data();
-
 
     const tools = occFaces.map((faceName, i) => {
       const shapeName = "Tool/" + i;
-      oci.prism(shapeName, faceName, ...extrusionVector);
-
-      if(params.doubleSided){
-        oci.prism(shapeName + "B", faceName, ...extrusionVectorFliped);
-        oci.bop(shapeName, shapeName + "B");
-        oci.bopfuse(shapeName);
-      }
-
+      oci.prism(shapeName, faceName, ...extrusionVector.data());
 
       // occIterateFaces(oc, shape, face => {
       //   let role;
