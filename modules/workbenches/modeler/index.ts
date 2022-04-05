@@ -1,19 +1,25 @@
+import { WorkbenchConfig } from "cad/workbench/workbenchService";
+
+//imports of feature history type commands
+import { PrimitiveBoxOperation } from './features/primitiveBox/primitiveBox.operation';
 import { ExtrudeOperation } from './features/extrude/extrude.operation';
 import { LoftOperation } from './features/loft/loft.operation'
-import { WorkbenchConfig } from "cad/workbench/workbenchService";
-import { PrimitiveBoxOperation } from "./features/primitiveBox";
-import { PrimitiveConeOperation } from "./features/primitiveCone";
-import { PrimitiveCylinderOperation } from "./features/primitiveCylinder";
-import { PrimitiveSphereOperation } from "./features/primitiveSphere";
-import { PrimitiveTorusOperation } from "./features/primitiveTorus/index";
-import { HoleOperation } from "./features/hole";
-import { FilletOperation } from "./features/fillet";
+import { PrimitiveConeOperation } from "./features/primitiveCone/PrimitiveCone.operation";
+import { PrimitiveCylinderOperation } from "./features/primitiveCylinder/PrimitiveCylinder.operation";
+import { PrimitiveSphereOperation } from "./features/primitiveSphere/PrimitiveSphere.operation";
+import { PrimitiveTorusOperation } from "./features/primitiveTorus/PrimitiveTorus.operation";
+import { HoleOperation } from "./features/hole/Hole.operation";
+import { FilletOperation } from "./features/fillet/fillet.operation";
 import { BooleanOperation } from "./features/boolean/boolean.operation";
 import { RevolveOperation } from "./features/revolve/revolve.operation";
 import { ShellOperation } from "./features/shell/shell.operation";
 import { SweepOperation } from "./features/sweep/sweep.operation";
 import { offsetOperation } from "./features/offsetFace/offsetFace.operation";
 import { MirrorBodyOperation} from "./features/mirrorBody/mirrorBody.operation";
+
+//imports of action type commands
+import { GetVolume } from './actions/getVolume/getVolume.action';
+
 
 export const ModelerWorkspace: WorkbenchConfig = {
 
@@ -35,7 +41,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     offsetOperation,
     MirrorBodyOperation
   ],
-  actions: [],
+  actions: [GetVolume],
   ui: {
     toolbar: [
       'DATUM_CREATE', 'PLANE', 'EditFace', '-',
