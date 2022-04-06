@@ -49,7 +49,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "BOOLEAN", "-", 
       "SHELL_TOOL", "FILLET_TOOL", "OFFSET_TOOL", "MIRROR_BODY",  "-",
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
-      "HOLE_TOOL", "-",
+      "HOLE_TOOL", "-", 'GET_VOLUME',
     ]
   }
 }

@@ -1,3 +1,4 @@
+import { OCCService } from 'cad/craft/e0/occService';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { MFace } from "cad/model/mface";
 import { MShell } from "cad/model/mshell";
@@ -14,13 +15,13 @@ interface getVolumeParams {
 }
 
 export const GetVolume: OperationDescriptor<getVolumeParams> = {
-  id: 'EXTRUDE',
-  label: 'Extrude',
+  id: 'GET_VOLUME',
+  label: 'VOLUME',
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
   run: (params: getVolumeParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    let occ = ctx.services.OCCService;
     const oci = occ.commandInterface;
 
     alert();
