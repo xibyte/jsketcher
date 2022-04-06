@@ -47,7 +47,7 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
       console.log(shellToOpperateOn);
 
       var bodyToPerformShellOpperationOn = shellToOpperateOn[0].shell;
-      oci.offsetshape(newShellName, bodyToPerformShellOpperationOn, -params.thickness, "1.e-3", ...shellToOpperateOn)
+      oci.offsetcompshape(newShellName, bodyToPerformShellOpperationOn, -params.thickness, "1.e-3", ...shellToOpperateOn)
       returnObject.created.push(occ.io.getShell(newShellName));
     });
 
