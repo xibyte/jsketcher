@@ -69,6 +69,8 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
         return targetName;
       }).filter(targetName => !!targetName);
 
+      oci.bsimplify("-e", 1, "-f", 1);
+      //oci.bglue(2);
       oci.bfuzzyvalue(0.0001);
       oci.bclearobjects();
       oci.bcleartools();
@@ -77,7 +79,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
       tools.forEach(toolName => oci.baddtools(toolName));
 
       oci.bfillds();
-      oci.bbop("BooleanResult", booleanKindToOCCBopType(kind));
+      oci.bapibop("BooleanResult", booleanKindToOCCBopType(kind));
 
       return {
         consumed: targets,
