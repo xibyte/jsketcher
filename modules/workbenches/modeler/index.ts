@@ -14,7 +14,7 @@ import { BooleanOperation } from "./features/boolean/boolean.operation";
 import { RevolveOperation } from "./features/revolve/revolve.operation";
 import { ShellOperation } from "./features/shell/shell.operation";
 import { SweepOperation } from "./features/sweep/sweep.operation";
-import { offsetOperation } from "./features/offsetFace/offsetFace.operation";
+import { ScaleOperation } from "./features/scaleBody/scaleBody.operation";
 import { MirrorBodyOperation} from "./features/mirrorBody/mirrorBody.operation";
 
 //imports of action type commands
@@ -38,7 +38,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     ShellOperation,
     LoftOperation,
     SweepOperation,
-    offsetOperation,
+    ScaleOperation,
     MirrorBodyOperation
   ],
   actions: [GetVolume],
@@ -47,7 +47,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
       'DATUM_CREATE', 'PLANE', 'EditFace', '-',
       "EXTRUDE", "REVOLVE", "LOFT", "SWEEP", "-", 
       "BOOLEAN", "-", 
-      "SHELL_TOOL", "FILLET_TOOL", "OFFSET_TOOL", "MIRROR_BODY",  "-",
+      "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "MIRROR_BODY",  "-",
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
       "HOLE_TOOL", "-", 'GET_VOLUME',
     ]
