@@ -77,7 +77,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
 
       targetNames.forEach(targetName => oci.baddobjects(targetName));
       tools.forEach(toolName => oci.baddtools(toolName));
-
+      oci.bcheckinverted(1);
       oci.bfillds();
       oci.bapibop("BooleanResult", booleanKindToOCCBopType(kind));
 
@@ -88,7 +88,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
     }
   }
 
-
+ 
   return {
     wiresToFaces, sketchToFaces, applyBooleanModifier
   }
