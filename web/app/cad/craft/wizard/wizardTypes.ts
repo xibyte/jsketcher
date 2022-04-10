@@ -37,8 +37,6 @@ export interface WizardService {
 
   workingRequest: OperationRequest;
 
-  materializedWorkingRequest: any;
-
   updateParams: (mutator: (params: OperationParams) => void) => void;
 
   updateParam: (path: ParamsPath, value: OperationParamValue) => void;

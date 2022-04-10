@@ -97,7 +97,7 @@ export default ctx => {
   }
 
   function getWizardContext() {
-    return ctx.streams.wizard.wizardContext.value
+    return ctx.wizardService;
   }
 
   function openSketcher() {

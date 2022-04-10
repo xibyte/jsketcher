@@ -32,7 +32,7 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
     if (!sketch) {
       occFaces.push(params.face);
     }else{
-      occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+      occFaces = occ.utils.sketchToFaces(sketch, face.csys).map(ref => ref.face);
     }
     
 

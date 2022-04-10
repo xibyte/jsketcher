@@ -47,6 +47,8 @@ export async function testExtrudeFromSketch(env, ui) {
 
 }
 
+testExtrudeFromSketch.only = true
+
 export async function testExtrudeArc(env, ui) {
   let sketcherUI = await createPlaneAndOpenSketcher(ui);
   let sketchedFace = ui.context.services.selection.face.single;

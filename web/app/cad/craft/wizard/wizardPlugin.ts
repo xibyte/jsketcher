@@ -151,10 +151,6 @@ export function activate(ctx: ApplicationContext) {
       return getWorkingRequest();
     },
 
-    get materializedWorkingRequest() {
-      return materializedWorkingRequest$.value;
-    },
-
     get operation(): Operation<any> {
       const req = getWorkingRequest();
       if (!req) {

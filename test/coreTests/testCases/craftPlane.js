@@ -61,7 +61,7 @@ export async function testCreatePlaneParallelToOther(env, ui) {
   let baseFace = captured[0];
   
   ui.openWizard('PLANE');
-  ui.wizardContext.updateParam('parallelTo', baseFace.id);
+  ui.wizardContext.updateParam('datum', baseFace.id);
   ui.wizardContext.updateParam('depth', 100);
   await ui.wizardOK();
   
@@ -70,4 +70,3 @@ export async function testCreatePlaneParallelToOther(env, ui) {
   assertTrue(captured[0].id === baseFace.id);
   assertTrue(captured[1].id !== baseFace.id);
 }
-

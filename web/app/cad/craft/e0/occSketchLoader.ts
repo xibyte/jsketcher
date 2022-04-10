@@ -2,17 +2,26 @@ import {Contour} from "cad/sketch/sketchModel";
 import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
 import CSys from "math/csys";
 
+export interface WireRef {
+
+  wire?: string;
+
+  edges?: string[];
+
+  curves?: string[];
+}
+
 export interface OCCSketchLoader {
 
-  pushSketchAsWires(sketch: Contour[], csys: CSys): string[];
+  pushSketchAsWires(sketch: Contour[], csys: CSys): WireRef[];
 
-  pushContourAsWire(contour: Contour, id: string|number, csys: CSys): string;
+  pushContourAsWire(contour: Contour, id: string|number, csys: CSys): WireRef;
 
 }
 
 export function createOCCSketchLoader(oci: OCCCommandInterface): OCCSketchLoader {
 
-  function pushContourAsWire(contour: Contour, id: string|number, csys: CSys): string {
+  function pushContourAsWire(contour: Contour, id: string|number, csys: CSys): WireRef {
 
     const boundCurves = contour.segments.map(s => {
       const geomId = "SketchGeom:" + s.id;
@@ -30,11 +39,14 @@ export function createOCCSketchLoader(oci: OCCCommandInterface): OCCSketchLoader
 
     oci.wire(wireName, ...edges);
 
-    return wireName;
-
+    return {
+      wire: wireName,
+      edges,
+      curves: boundCurves
+    };
   }
 
-  const pushSketchAsWires = (sketch: Contour[], csys: CSys): string[] => sketch.map((c, i) => pushContourAsWire(c, i, csys));
+  const pushSketchAsWires = (sketch: Contour[], csys: CSys): WireRef[] => sketch.map((c, i) => pushContourAsWire(c, i, csys));
 
   return {
     pushSketchAsWires, pushContourAsWire

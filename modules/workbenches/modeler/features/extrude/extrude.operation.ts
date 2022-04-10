@@ -1,11 +1,13 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {MFace} from "cad/model/mface";
+import {MBrepFace, MFace} from "cad/model/mface";
 import {ApplicationContext} from "context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {UnitVector} from "math/vector";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {MObject} from "cad/model/mobject";
+import {Edge} from "brep/topo/edge";
+import {FaceRef} from "cad/craft/e0/OCCUtils";
 
 
 interface ExtrudeParams {
@@ -30,9 +32,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
     const face = params.face;
 
- 
-    let occFaces = [];
-
     if (params.profiles?.length > 0) {
 
       params.profiles
@@ -42,8 +41,21 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     let extrusionVector = dir._multiply(params.length);
 
     let sketch = ctx.sketchStorageService.readSketch(face.id);
+
+    let sweepSources: FaceRef[];
+
     if (!sketch) {
-      occFaces.push(params.face);
+      if (face instanceof MBrepFace) {
+        occ.io.pushModel(face, face.id)
+        const edges = face.edges;
+        edges.forEach(e => occ.io.pushModel(e, e.id));
+        sweepSources = [{
+          face: face.id,
+          edges: edges.map(e => e.id)
+        }];
+      } else {
+        throw "can't extrude an empty surface";
+      }
     } else {
       let csys = face.csys;
       if (params.doubleSided) {
@@ -51,12 +63,32 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
         csys.origin._minus(extrusionVector);
         extrusionVector._scale(2);
       }
-      occFaces = occ.utils.sketchToFaces(sketch, csys);
+      sweepSources = occ.utils.sketchToFaces(sketch, csys)
     }
 
-    const tools = occFaces.map((faceName, i) => {
+    const tools = sweepSources.map((faceRef, i) => {
+      const faceName = faceRef.face;
       const shapeName = "Tool/" + i;
       oci.prism(shapeName, faceName, ...extrusionVector.data());
+
+      // oci.recordHistory({
+      //   input: [faceName]
+      // });
+
+      oci.savehistory('history');
+
+      oci.explode(faceName, 'E');
+      oci.explode(shapeName, 'F');
+
+      for (let edge of faceRef.edges) {
+        oci.generated('gen_' + i, 'history', faceName + '_' + i);
+      }
+
+      for (let i = 0; i < 4; ++i) {
+
+      }
+
+
 
       // occIterateFaces(oc, shape, face => {
       //   let role;
