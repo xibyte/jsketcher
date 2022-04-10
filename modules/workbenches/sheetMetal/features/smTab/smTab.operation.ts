@@ -33,16 +33,15 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
     let sketch = ctx.sketchStorageService.readSketch(face.id);
     if (!sketch) throw 'sketch not found for the face ' + face.id;
 
-    const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+    const occFaces = occ.utils.sketchToFaces(sketch, face.csys).map(ref => ref.face);
 
     const dir: UnitVector= face.normal();
 
     let extrusionVector =[];
-    if(params.flipper == true){
+    if (params.flipper == true){
        extrusionVector = dir.normalize()._multiply(params.thickness).data();
-    }else{
+    } else {
        extrusionVector = dir.normalize()._multiply(params.thickness).negate().data();
-      
     }
     
 

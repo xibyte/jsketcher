@@ -9,7 +9,10 @@ export function activate(ctx: ApplicationContext) {
       return;
     }
     const {type, params} = materializedWorkingRequest;
-    const operation = ctx.wizardService.operation;
+    if (!ctx.wizardService.operation) {
+      return;
+    }
+    const operation = ctx.operationService.get(type);
     if (operation.previewGeomProvider || operation.previewer) {
       if (previewer === null) {
         let newPreviewer;

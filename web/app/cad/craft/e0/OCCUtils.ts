@@ -4,40 +4,41 @@ import CSys from "math/csys";
 import {OperationResult} from "cad/craft/craftPlugin";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
 import {MShell} from "cad/model/mshell";
+import {WireRef} from "cad/craft/e0/occSketchLoader";
 
 export interface OCCUtils {
 
-  wiresToFaces(wires: string[]): string[];
+  wiresToFaces(wires: WireRef[]): FaceRef[];
 
-  sketchToFaces(sketch: SketchGeom, csys: CSys): string[];
+  sketchToFaces(sketch: SketchGeom, csys: CSys): FaceRef[];
 
   // applyBoolean(tools: string[], kind: BooleanKind): string[];
 
   applyBooleanModifier(tools: string[], booleanDef?: BooleanDefinition): OperationResult;
 }
 
+export interface FaceRef extends WireRef {
+  face: string;
+}
+
 export function createOCCUtils(ctx: CoreContext): OCCUtils {
 
-  function sketchToFaces(sketch: SketchGeom, csys: CSys): string[] {
+  function sketchToFaces(sketch: SketchGeom, csys: CSys): FaceRef[] {
     const occ = ctx.occService;
     const wires = occ.io.sketchLoader.pushSketchAsWires(sketch.contours, csys);
     return wiresToFaces(wires);
   }
 
-  function wiresToFaces(wires: string[]): string[] {
+  function wiresToFaces(wires: WireRef[]): FaceRef[] {
     const oci = ctx.occService.commandInterface;
     return wires.map((wire, i) => {
       const faceName = "Face/" + i;
-      oci.mkplane(faceName, wire);
-      return faceName;
+      oci.mkplane(faceName, wire.wire);
+      return {
+        face: faceName,
+        ...wire
+      };
     });
-  }
-
-
-  function applyBoolean(tools: string[], target: string[], kind: BooleanKind): string[] {
-
-
-
   }
 
   function applyBooleanModifier(tools: string[], booleanDef?: BooleanDefinition): OperationResult {

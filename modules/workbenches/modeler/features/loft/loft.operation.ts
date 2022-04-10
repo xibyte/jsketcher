@@ -30,7 +30,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
 
     const wires = params.loops.map((loop, i) => {
       const shapeName = "loop/" + i;
-      return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys)
+      return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys).wire
     });
 
 

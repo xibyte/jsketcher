@@ -27,10 +27,10 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
     const oci = occ.commandInterface;
 
     const myProfile = params.profile;
-    const profile = occ.io.sketchLoader.pushContourAsWire(myProfile.contour, "sweepFace", myProfile.face.csys);
+    const profile = occ.io.sketchLoader.pushContourAsWire(myProfile.contour, "sweepFace", myProfile.face.csys).wire;
 
     const myPath = params.sweepPath;
-    const path = occ.io.sketchLoader.pushContourAsWire(myPath.contour, "sweepPath", myPath.face.csys);
+    const path = occ.io.sketchLoader.pushContourAsWire(myPath.contour, "sweepPath", myPath.face.csys).wire;
 
 
     oci.mksweep(path);
