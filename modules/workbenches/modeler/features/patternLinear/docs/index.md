@@ -1,0 +1,2 @@
+# MIRROR BODY
+The MIRROR BODY feature allows for selection of one or more shells in the 3d environment. A mirror plane is specified by selecting a plane or existing planar face. New bodies are created in the mirror image of the selected bodies.

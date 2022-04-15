@@ -2,9 +2,13 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "context";
 import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
-
+import { MFace } from "cad/model/mface";
+import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
+import { UnitVector } from "math/vector";
+import { MObject } from "cad/model/mobject";
 
 interface HoleParams {
+  sketch: MFace;
   diameter: number;
   depth: number;
   counterBoreDiameter: number;
@@ -20,6 +24,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
   icon: 'img/cad/Shell',
   info: 'creates hole features',
   paramsInfo: ({
+                  
                  diameter,
                  depth,
                  counterBoreDiameter,
@@ -38,6 +43,10 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       consumed: [],
       created: []
     };
+
+    let sketch = ctx.sketchStorageService.readSketch(params.sketch.id);
+    console.log(sketch, "sketch info here");
+
 
     oci.pcylinder("basehole", params.diameter / 2, params.depth);
 
@@ -76,8 +85,8 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       type: 'selection',
       name: 'sketch',
       capture: [EntityKind.FACE],
-      label: 'faces',
-      multi: true,
+      label: 'Sketch',
+      multi: false,
       defaultValue: {
         usePreselection: true,
         preselectionIndex: 0

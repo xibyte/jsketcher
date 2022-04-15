@@ -16,7 +16,8 @@ import { ShellOperation } from "./features/shell/shell.operation";
 import { SweepOperation } from "./features/sweep/sweep.operation";
 import { ScaleOperation } from "./features/scaleBody/scaleBody.operation";
 import { MirrorBodyOperation} from "./features/mirrorBody/mirrorBody.operation";
-
+import { PatternLinearOperation } from "./features/patternLinear/patternLinear.operation"
+import { PatternRadialOperation } from "./features/patternRadial/patternRadial.operation"
 //imports of action type commands
 import { GetVolume } from './actions/getVolume/getVolume.action';
 
@@ -39,7 +40,9 @@ export const ModelerWorkspace: WorkbenchConfig = {
     LoftOperation,
     SweepOperation,
     ScaleOperation,
-    MirrorBodyOperation
+    MirrorBodyOperation,
+    PatternLinearOperation,
+    PatternRadialOperation,
   ],
   actions: [GetVolume],
   ui: {
@@ -47,7 +50,8 @@ export const ModelerWorkspace: WorkbenchConfig = {
       'DATUM_CREATE', 'PLANE', 'EditFace', '-',
       "EXTRUDE", "REVOLVE", "LOFT", "SWEEP", "-", 
       "BOOLEAN", "-", 
-      "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "MIRROR_BODY",  "-",
+      "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY","-",
+      "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "-",
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
       "HOLE_TOOL", "-", 'GET_VOLUME',
     ]
