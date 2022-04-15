@@ -21,7 +21,7 @@ interface HoleParams {
 export const HoleOperation: OperationDescriptor<HoleParams> = {
   id: 'HOLE_TOOL',
   label: 'hole',
-  icon: 'img/cad/Shell',
+  icon: 'img/cad/hole',
   info: 'creates hole features',
   paramsInfo: ({
                   
