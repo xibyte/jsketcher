@@ -88,6 +88,10 @@ export class EndPoint extends SketchObject {
     return new Vector(this.x, this.y);
   }
 
+  get labelCenter() {
+    return this.toVector();
+  }
+
   copy() {
     return new EndPoint(this.x, this.y);
   }

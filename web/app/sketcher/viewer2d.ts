@@ -3,7 +3,6 @@ import {HistoryManager} from './history';
 import {ToolManager} from './tools/manager';
 import {PanTool} from './tools/pan';
 import {Segment} from './shapes/segment';
-import {EndPoint} from './shapes/point';
 import {ReferencePoint} from './shapes/reference-point';
 import {BasisOrigin} from './shapes/basis-origin';
 import Vector from 'math/vector';
@@ -11,7 +10,6 @@ import Vector from 'math/vector';
 import * as draw_utils from './shapes/draw-utils';
 import sketcherStreams, {SketcherStreams} from './sketcherStreams';
 import {BBox, IO} from "./io";
-import {NOOP} from "gems/func";
 import {Shape} from "./shapes/shape";
 import {SketchObject} from "./shapes/sketch-object";
 import {Styles} from './styles';
@@ -20,6 +18,7 @@ import {GroundObjectsGeneratorSchema} from "./generators/groundObjectsGenerator"
 import {SketchGenerator} from "./generators/sketchGenerator";
 import {Generator} from "./id-generator";
 import {Matrix3x4} from "math/matrix";
+import {Label} from "sketcher/shapes/label";
 
 export class Viewer {
 
@@ -34,6 +33,7 @@ export class Viewer {
   layers: Layer<SketchObject>[];
   dimLayer: Layer<Dimension>;
   annotationLayer: Layer<Dimension>;
+  labelLayer: Layer<Label>;
   dimLayers: Layer<Dimension>[];
   private readonly _workspace: Layer[][];
   referencePoint: Shape;
@@ -92,7 +92,8 @@ export class Viewer {
     ];
     this.dimLayer = this.createLayer("_dim", Styles.DIM);
     this.annotationLayer = this.createLayer<Dimension>("_annotations", Styles.ANNOTATIONS);
-    this.dimLayers = [this.dimLayer, this.annotationLayer];
+    this.labelLayer = this.createLayer<Label>("_labels", Styles.ANNOTATIONS);
+    this.dimLayers = [this.dimLayer, this.annotationLayer, this.labelLayer];
     this.streams.dimScale.attach(() => this.refresh());
 
     this._workspace = [this.layers, this.dimLayers];

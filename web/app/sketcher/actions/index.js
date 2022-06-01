@@ -8,6 +8,7 @@ import objectToolActions from "./objectToolActions";
 import commonActions from "./commonActions";
 import exportActions from "./exportActions";
 import generalToolActions from "./generalToolActions";
+import objectActions from "sketcher/actions/objectActions";
 
 let ALL_CONTEXTUAL_ACTIONS, ACTIONS, ALL_ACTIONS, index;
 
@@ -18,6 +19,7 @@ function initIfNeeded() {
   ALL_CONTEXTUAL_ACTIONS = [
     ...constraintActions,
     ...operationActions,
+    ...objectActions,
   ];
 
   ACTIONS = [

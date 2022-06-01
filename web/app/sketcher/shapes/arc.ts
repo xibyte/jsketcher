@@ -89,7 +89,17 @@ export class Arc extends SketchObject {
   getEndAngle() {
     return this.ang2.get();
   }
-  
+
+  get labelCenter() {
+    const mid = new Vector((this.a.x + this.b.x) / 2 - this.c.x, (this.a.y + this.b.y) / 2 - this.c.y, 0);
+    mid._normalize()._multiply(this.r.get());
+    let angle = makeAngle0_360(this.getEndAngle() - this.getStartAngle());
+    if (angle > Math.PI) {
+      mid._negate();
+    }
+    return mid._minusXYZ(-this.c.x, -this.c.y, 0);
+  }
+
   drawImpl(ctx, scale) {
     ctx.beginPath();
     let r = this.radiusForDrawing();

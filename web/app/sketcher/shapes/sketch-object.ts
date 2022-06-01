@@ -253,6 +253,16 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     });
   }
 
+  get labelCenter() {
+    let point;
+    pointIterator(this, o => {
+      if (!point) {
+        point = o;
+      }
+    });
+    return point && point.toVector();
+  }
+
   abstract write(): SketchObjectSerializationData;
 }
 

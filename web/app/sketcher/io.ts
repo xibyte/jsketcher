@@ -22,6 +22,7 @@ import {SketchGenerator} from "./generators/sketchGenerator";
 import {BoundaryGeneratorSchema} from "./generators/boundaryGenerator";
 import {SketchTypes} from "./shapes/sketch-types";
 import {SketchObject} from "./shapes/sketch-object";
+import {Label} from "sketcher/shapes/label";
 
 export interface SketchFormat_V3 {
 
@@ -36,6 +37,12 @@ export interface SketchFormat_V3 {
   }[];
 
   dimensions: {
+    id: string,
+    type: string,
+    data: any
+  }[];
+
+  labels: {
     id: string,
     type: string,
     data: any
@@ -169,6 +176,25 @@ export class IO {
         }
       }
 
+      if (sketch.labels) {
+        for (let obj of sketch.labels) {
+          try {
+            let type = obj.type;
+            let skobj = null;
+            if (type === Label.prototype.TYPE) {
+              skobj = Label.read(obj.id, obj.data, index);
+            }
+            if (skobj !== null) {
+              this.viewer.labelLayer.add(skobj);
+            }
+
+          } catch (e) {
+            console.error(e);
+            console.error("Failed loading " + obj.type + " " + obj.id);
+          }
+        }
+      }
+
       for (let i = 0; i < sketch.stages.length; i++) {
         let dataStage = sketch.stages[i];
         let stage = getStage(i);
@@ -235,6 +261,7 @@ export class IO {
       version: 3,
       objects: [],
       dimensions: [],
+      labels: [],
       stages: [],
       constants: this.viewer.parametricManager.constantDefinition,
       metadata
@@ -243,6 +270,9 @@ export class IO {
     for (let layer of this.viewer.layers) {
       for (let obj of layer.objects) {
         if (obj instanceof Dimension) {
+          continue;
+        }
+        if (obj instanceof Label) {
           continue;
         }
         if (obj.isGenerated && !obj.generator.schema.persistGeneratedObjects) {
@@ -262,17 +292,22 @@ export class IO {
       }
     }
 
-    for (let obj of this.viewer.dimLayer.objects) {
-      try {
-        sketch.dimensions.push({
-          id: obj.id,
-          type: obj.TYPE,
-          data: obj.write()
-        });
-      } catch (e) {
-        console.error(e);
+    function pushObjectsFromLayer(layer, into) {
+      for (let obj of layer.objects) {
+        try {
+          into.push({
+            id: obj.id,
+            type: obj.TYPE,
+            data: obj.write()
+          });
+        } catch (e) {
+          console.error(e);
+        }
       }
+
     }
+    pushObjectsFromLayer(this.viewer.dimLayer, sketch.dimensions);
+    pushObjectsFromLayer(this.viewer.labelLayer, sketch.labels);
 
     for (let stage of this.viewer.parametricManager.stages) {
       const stageOut = {
