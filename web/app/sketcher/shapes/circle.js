@@ -2,6 +2,8 @@ import {SketchObject} from './sketch-object'
 import {Param} from "./param";
 import {EndPoint} from "./point";
 import {distance} from "math/distance";
+import Vector from "math/vector";
+import {makeAngle0_360} from "math/commons";
 
 export const MIN_RADIUS = 100;
 
@@ -40,6 +42,10 @@ export class Circle extends SketchObject {
   
   normalDistance(aim) {
     return Math.abs(distance(aim.x, aim.y, this.c.x, this.c.y) - this.r.get());
+  }
+
+  get labelCenter() {
+    return new Vector(this.c.x, this.c.y, 0);
   }
 
   copy() {

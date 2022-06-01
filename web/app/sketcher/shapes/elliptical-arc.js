@@ -4,6 +4,7 @@ import {EndPoint} from "./point";
 import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
 import {distance} from "math/distance";
 import {areEqual, TOLERANCE} from "math/equality";
+import Vector from "math/vector";
 
 export class EllipticalArc extends Ellipse {
 
@@ -55,6 +56,10 @@ export class EllipticalArc extends Ellipse {
     let yy =  x * Math.sin(rotation) + y * Math.cos(rotation);
     xx *= deformScale;
     return Math.atan2(yy, xx);
+  }
+
+  get labelCenter() {
+    return new Vector(this.c.x, this.c.y, 0);
   }
 
   write() {

@@ -94,6 +94,10 @@ export class BezierCurve extends SketchObject {
     }
   }
 
+  get labelCenter() {
+    return compute(0.5, this.a, this.b, this.cp1, this.cp2);
+  }
+
   write() {
     return {
       cp1: this.a.write(),

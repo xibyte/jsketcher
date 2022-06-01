@@ -123,7 +123,11 @@ export class Segment extends SketchObject {
   getReferencePoint() {
     return this.a;
   }
-  
+
+  get labelCenter() {
+    return new Vector((this.a.x + this.b.x) / 2, (this.a.y + this.b.y) / 2, 0);
+  }
+
   translateImpl(dx, dy) {
     this.a.translate(dx, dy);
     this.b.translate(dx, dy);

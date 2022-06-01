@@ -2,6 +2,7 @@ import {SketchObject} from './sketch-object'
 import {Param} from "./param";
 import {EndPoint} from "./point";
 import {distance} from "math/distance";
+import Vector from "math/vector";
 
 export class Ellipse extends SketchObject {
 
@@ -87,6 +88,10 @@ export class Ellipse extends SketchObject {
     const polarPoint = this.toEllipseCoordinateSystem(aim);
     const L = this.radiusAtAngle(polarPoint.angle);
     return Math.abs(polarPoint.radius - L);
+  }
+
+  get labelCenter() {
+    return new Vector(this.c.x, this.c.y, 0);
   }
   
   static findMinorRadius(majorRadius, pntRadius, pntAngle) {
