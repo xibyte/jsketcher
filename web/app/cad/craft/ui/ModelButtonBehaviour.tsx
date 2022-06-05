@@ -33,7 +33,7 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
   const highlights = useStream(ctx => ctx.highlightService.highlighted$);
 
   let typeLabel = model.TYPE as string;
-  let idLabel = model.id;
+  let idLabel: string = model.id;
   let visibilityOf = model;
   if (model instanceof MSketchObject) {
     typeLabel = model.sketchPrimitive.constructor.name
@@ -50,7 +50,8 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
   const onMouseLeave= () => ctx.highlightService.unHighlight(model.id);
 
   const label = <>
-    <ModelIcon entityType={model.TYPE} style={{marginRight: 5}} /> {typeLabel} {idLabel}
+    <ModelIcon entityType={model.TYPE} style={{marginRight: 5}} />
+    <SafeLength text={idLabel} />
   </>;
 
   const controls = <>
@@ -66,4 +67,16 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
     onMouseEnter,
     onMouseLeave
   });
+}
+
+function SafeLength(props: { text: string }): any {
+
+  const limit = 40;
+  const mid = limit / 2;
+  const text = props.text;
+  if (text.length > limit) {
+    return <span title={text}>{text.substring(0, mid)}...{text.substring(text.length - mid, text.length)}</span>;
+  } else {
+    return text;
+  }
 }
