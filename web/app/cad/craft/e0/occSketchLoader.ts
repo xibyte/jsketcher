@@ -9,6 +9,8 @@ export interface WireRef {
   edges?: string[];
 
   curves?: string[];
+
+  contour?: Contour;
 }
 
 export interface OCCSketchLoader {
@@ -42,7 +44,8 @@ export function createOCCSketchLoader(oci: OCCCommandInterface): OCCSketchLoader
     return {
       wire: wireName,
       edges,
-      curves: boundCurves
+      curves: boundCurves,
+      contour
     };
   }
 

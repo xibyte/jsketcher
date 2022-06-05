@@ -18,6 +18,7 @@ import {BrepInputData} from "engine/data/brepInputData";
 import {Vertex} from "brep/topo/vertex";
 import {Edge} from "brep/topo/edge";
 import {ParametricSurface} from "geom/surfaces/parametricSurface";
+import {centroid} from "geom/euclidean";
 
 //Extensions for topo objects
 // declare module '../topo/shell' {
@@ -75,11 +76,16 @@ export function readBrep(data: BrepOutputData) {
       format: 'verbose',
       data: normalizetessellationData(faceData.tess, inverted, faceData.surface.TYPE === 'PLANE' ? faceData.surface.normal : undefined)
     };
+    let evaluationPoints = faceData.evaluationPoints;
+    if (!evaluationPoints) {
+      evaluationPoints = bb._face.data.tessellation.data.map(([tr]) => centroid(tr));
+    }
     bb._face.data.productionInfo = faceData.productionInfo;
     if (faceData.ref !== undefined) {
       bb._face.data.externals = {
         ref: faceData.ref,
-        ptr: faceData.ptr
+        ptr: faceData.ptr,
+        evaluationPoints
       }  
     }  
     
@@ -178,7 +184,7 @@ export function writeBrep(shell: Shell): BrepInputData {
     // since we it can't be non smooth splines without a vertex - simple just skip it
     if (!curveId && e.curve.degree != 1) {
       curveId = 'c' + (cid++);
-      brepData.curves[curveId] = e.curve.impl.asCurveBSplineData();
+      brepData.curves[curveId] = (e.curve.impl as NurbsCurve).asCurveBSplineData();
       curves.set(e.curve, curveId);
     }
 

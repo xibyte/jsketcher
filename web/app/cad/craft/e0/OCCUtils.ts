@@ -5,6 +5,9 @@ import {OperationResult} from "cad/craft/craftPlugin";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
 import {MShell} from "cad/model/mshell";
 import {WireRef} from "cad/craft/e0/occSketchLoader";
+import {FromMObjectProductionAnalyzer, ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import {Face} from "brep/topo/face";
+import {MObject} from "cad/model/mobject";
 
 export interface OCCUtils {
 
@@ -14,11 +17,13 @@ export interface OCCUtils {
 
   // applyBoolean(tools: string[], kind: BooleanKind): string[];
 
-  applyBooleanModifier(tools: string[], booleanDef?: BooleanDefinition): OperationResult;
+  applyBooleanModifier(tools: string[], booleanDef?: BooleanDefinition, productionAnalyzer?: ProductionAnalyzer,
+                       mustAdvance? : MObject[]): OperationResult;
 }
 
 export interface FaceRef extends WireRef {
   face: string;
+  faceTopology: Face,
 }
 
 export function createOCCUtils(ctx: CoreContext): OCCUtils {
@@ -34,25 +39,31 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
     return wires.map((wire, i) => {
       const faceName = "Face/" + i;
       oci.mkplane(faceName, wire.wire);
+      let brepShell = ctx.occService.io.getLightShell(faceName);
+
       return {
         face: faceName,
+        faceTopology: brepShell.faces[0],
         ...wire
       };
     });
   }
 
-  function applyBooleanModifier(tools: string[], booleanDef?: BooleanDefinition): OperationResult {
+  function applyBooleanModifier(tools: string[], booleanDef?: BooleanDefinition,
+                                productionAnalyzer?: ProductionAnalyzer, mustAdvance? : MObject[]): OperationResult {
     const occ = ctx.occService;
     const oci = ctx.occService.commandInterface;
 
     if (!booleanDef || booleanDef.kind === 'NONE') {
 
       return {
-        created: tools.map(shapeName => occ.io.getShell(shapeName)),
+        created: tools.map(shapeName => occ.io.getShell(shapeName, productionAnalyzer)),
         consumed: []
       }
 
     } else {
+      const toolsMobj = tools.map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
+
       const kind = booleanDef.kind;
 
       let targets = booleanDef.targets;
@@ -82,9 +93,11 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
       oci.bfillds();
       oci.bapibop("BooleanResult", booleanKindToOCCBopType(kind));
 
+      const booleanProdAnalyzer = new FromMObjectProductionAnalyzer([...toolsMobj, ...targets], mustAdvance);
+
       return {
         consumed: targets,
-        created: [occ.io.getShell("BooleanResult", targets as MShell[])]
+        created: [occ.io.getShell("BooleanResult", booleanProdAnalyzer)]
       }
     }
   }
