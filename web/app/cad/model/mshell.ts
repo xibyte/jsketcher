@@ -65,13 +65,13 @@ export class MBrepShell extends MShell {
     }
 
     for (let brepEdge of this.brepShell.edges) {
-      const mEdge = new MEdge(this.id + '/E:' + edgeCounter++, this, brepEdge);
+      const mEdge = new MEdge(brepEdge.data.id || (this.id + '/E:' + edgeCounter++), this, brepEdge);
       this.edges.push(mEdge);
       this.brepRegistry.set(brepEdge, mEdge);
     }
 
     for (let brepVertex of this.brepShell.vertices) {
-      const mVertex = new MVertex(this.id + '/V:' + vertexCounter++, this, brepVertex);
+      const mVertex = new MVertex(brepVertex || (this.id + '/V:' + vertexCounter++), this, brepVertex);
       this.vertices.push(mVertex);
       this.brepRegistry.set(brepVertex, mVertex);
     }

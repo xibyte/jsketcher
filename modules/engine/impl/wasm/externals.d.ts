@@ -1,3 +1,4 @@
+import {ClassifyPointToFace} from "cad/craft/e0/interact";
 
 declare var Module: {
   _SPI_box: Function;
@@ -24,6 +25,9 @@ declare var Module: {
   _SPI_dispose: Function;
 
   _InitCommands: Function;
+  _GetRef: Function;
+  _GetProductionHistory: Function;
+  _ClassifyPointToFace: Function;
   onRuntimeInitialized: Function;
   instantiateWasm: Function;
 };

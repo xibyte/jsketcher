@@ -8,6 +8,12 @@ import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {MObject} from "cad/model/mobject";
 import {Edge} from "brep/topo/edge";
 import {FaceRef} from "cad/craft/e0/OCCUtils";
+import {GetRef} from "cad/craft/e0/interact";
+import {
+  FromMObjectProductionAnalyzer,
+  FromSketchProductionAnalyzer,
+  ProductionAnalyzer
+} from "cad/craft/production/productionAnalyzer";
 
 
 interface ExtrudeParams {
@@ -40,7 +46,8 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     const dir: UnitVector = (params.direction || face.normal()).normalize();
     let extrusionVector = dir._multiply(params.length);
 
-    let sketch = ctx.sketchStorageService.readSketch(face.id);
+    let sketchId = face.id;
+    let sketch = ctx.sketchStorageService.readSketch(sketchId);
 
     let sweepSources: FaceRef[];
 
@@ -66,28 +73,21 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       sweepSources = occ.utils.sketchToFaces(sketch, csys)
     }
 
+    const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
+
     const tools = sweepSources.map((faceRef, i) => {
+
       const faceName = faceRef.face;
       const shapeName = "Tool/" + i;
+
+      // for (let i = 0; i < faceRef.edges.length; ++i) {
+      //   const edge = faceRef.edges[i];
+      //   const seg = faceRef.contour.segments[i];
+      //   const ref = GetRef(edge);
+      //   productionAnalyzer.mapRef(ref, `SK[${sketchId}:${seg.id}]`);
+      // }
+
       oci.prism(shapeName, faceName, ...extrusionVector.data());
-
-      // oci.recordHistory({
-      //   input: [faceName]
-      // });
-
-      oci.savehistory('history');
-
-      oci.explode(faceName, 'E');
-      oci.explode(shapeName, 'F');
-
-      for (let edge of faceRef.edges) {
-        oci.generated('gen_' + i, 'history', faceName + '_' + i);
-      }
-
-      for (let i = 0; i < 4; ++i) {
-
-      }
-
 
 
       // occIterateFaces(oc, shape, face => {
@@ -112,7 +112,10 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       return shapeName;
     });
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean);
+    // const productionAnalyzer = new ProductionAnalyzer();
+    // ctx.cadRegistry.models.forEach(m => productionAnalyzer.preRegister(m));
+
+    return occ.utils.applyBooleanModifier(tools, params.boolean, productionAnalyzer, [face]);
 
   },
 

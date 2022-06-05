@@ -69,6 +69,16 @@ export class Edge extends TopoObject {
     // const errors = BREPValidator.validate(this.halfEdge1.loop.face.shell);
     // console.log(errors);
   }
+
+  getHalfEdge(predicate: (halfEdge: HalfEdge) => boolean): HalfEdge {
+    if (predicate(this.halfEdge1)) {
+      return this.halfEdge1;
+    } else if (predicate(this.halfEdge2)) {
+      return this.halfEdge2;
+    } else {
+      return null;
+    }
+  }
 }
 
 export class HalfEdge extends TopoObject {

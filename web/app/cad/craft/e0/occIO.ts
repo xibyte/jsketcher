@@ -5,10 +5,15 @@ import {Interrogate} from "cad/craft/e0/interact";
 import {readShellEntityFromJson} from "cad/scene/wrappers/entityIO";
 import {createOCCSketchLoader, OCCSketchLoader} from "cad/craft/e0/occSketchLoader";
 import {CoreContext} from "context";
+import {ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import {readBrep} from "brep/io/brepIO";
+import {Shell} from "brep/topo/shell";
 
 export interface OCCIO {
 
-  getShell(name: string, consumed?: MShell[]): MShell;
+  getShell(name: string, productionAnalyzer?: ProductionAnalyzer): MShell;
+
+  getLightShell(name: string): Shell;
 
   pushModel(model: MObject, name: string);
 
@@ -19,9 +24,14 @@ export interface OCCIO {
 
 export function createOCCIO(ctx: CoreContext): OCCIO {
 
-  function getShell(shapeName: string, consumed: MShell[]): MShell {
+  function getShell(shapeName: string, productionAnalyzer?: ProductionAnalyzer): MShell {
     const shapeJson = Interrogate(shapeName);
-    return readShellEntityFromJson(shapeJson, consumed);
+    return readShellEntityFromJson(shapeJson, productionAnalyzer);
+  }
+
+  function getLightShell(shapeName: string): Shell {
+    const shapeJson = Interrogate(shapeName);
+    return readBrep(shapeJson);
   }
 
   function pushModel(model: MObject, name: string) {
@@ -42,7 +52,7 @@ export function createOCCIO(ctx: CoreContext): OCCIO {
 
 
   return {
-    getShell, pushModel, cleanupRegistry,
+    getShell, getLightShell, pushModel, cleanupRegistry,
     sketchLoader: createOCCSketchLoader(OCI)
   }
 

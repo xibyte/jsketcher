@@ -30,9 +30,24 @@ export function CallCommand(command, args) {
   return rc;
 }
 
-export function Interrogate(shapeName) {
+export function Interrogate(shapeName, structOnly) {
   const shapeNamePtr = toCString(shapeName);
-  Module._Interogate(shapeNamePtr);
+  Module._Interogate(shapeNamePtr, structOnly);
   _free(shapeNamePtr);
   return window.__OCI_EXCHANGE_VAL;
+}
+
+export function GetRef(shapeName) {
+  const shapeNamePtr = toCString(shapeName);
+  const ref = Module._GetRef(shapeNamePtr);
+  _free(shapeNamePtr);
+  return ref;
+}
+
+export function ClassifyPointToFace(facePtr, x, y, z, tol) {
+  return Module._ClassifyPointToFace(facePtr, x, y, z, tol);
+}
+
+export function IsEdgesOverlap(e1Ptr, e2Ptr, tol) {
+  return Module._IsEdgesOverlap(e1Ptr, e2Ptr, tol);
 }

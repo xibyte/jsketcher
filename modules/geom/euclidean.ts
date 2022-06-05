@@ -1,7 +1,7 @@
 import BBox from "math/bbox";
 
 import * as vec from "math/vec";
-import {perp2d} from "math/vec";
+import {newVector, perp2d, Vec3} from "math/vec";
 import {TIGHT_TOLERANCE, eqTol} from "geom/tolerance";
 import {distance} from "math/distance";
 import {IDENTITY_BASIS3} from "math/basis";
@@ -228,3 +228,9 @@ export function ConvexHull2D(points) {
   return hull;
 }
 
+export function centroid(set: Vec3[]): Vec3 {
+  let result = newVector(3) as Vec3;
+  set.forEach(p => vec._add(result, p));
+  vec._div(result, 3);
+  return result;
+}
