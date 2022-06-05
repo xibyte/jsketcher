@@ -295,6 +295,12 @@ export class Contour {
     this.segments = [];
   }
 
+  get id() {
+    return this.segments.reduce((prev, curr) => {
+      return prev.id.localeCompare(curr.id) < 0 ? prev : curr;
+    }).id;
+  }
+
   add(obj) {
     this.segments.push(obj);
   }
