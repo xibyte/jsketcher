@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "JS.Sketcher is a parametric 2D and 3D CAD modeler written in pure javascript",
   "scripts": {
-    "start": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.config.js --content-base web/ --port 3000 --host 0.0.0.0",
+    "start": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.config.js --port 3000 --host 0.0.0.0",
     "pack": "node ./node_modules/webpack/bin/webpack.js --config webpack.config.js --progress --profile --colors",
     "build": "grunt",
     "lint": "eslint web/app",
@@ -83,6 +83,7 @@
     "react-icons": "^4.2.0",
     "react-toastify": "^5.5.0",
     "sprintf": "0.1.5",
-    "three": "^0.118.3"
+    "three": "^0.118.3",
+    "jsketcher-occ-engine": "1.0.0"
   }
 }
