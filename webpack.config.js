@@ -34,7 +34,11 @@ module.exports = {
   },
   devServer: {
     hot: false,
-    inline: false
+    inline: false,
+    contentBase: [
+      path.join(__dirname, 'web'),
+      path.join(__dirname, 'node_modules/jsketcher-occ-engine')
+    ]
   },
   module: {
     rules: [
