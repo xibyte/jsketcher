@@ -2,7 +2,6 @@ import BrepBuilder, {createBoundingSurfaceFromBBox} from '../brep-builder';
 import VertexFactory from '../vertexFactory';
 import NurbsSurface from 'geom/surfaces/nurbsSurface';
 import * as vec from 'math/vec';
-import {Vec3} from 'math/vec';
 import {BrepSurface} from 'geom/surfaces/brepSurface';
 import {Plane} from 'geom/impl/plane';
 import Vector from 'math/vector';
@@ -11,14 +10,11 @@ import BBox from 'math/bbox';
 import NurbsCurve from 'geom/curves/nurbsCurve';
 import BrepCurve from 'geom/curves/brepCurve';
 import {BrepOutputData} from "engine/data/brepOutputData";
-import {ProductionInfo} from "engine/productionInfo";
-import {Tessellation1D} from "engine/tessellation";
 import {Shell} from "brep/topo/shell";
 import {BrepInputData} from "engine/data/brepInputData";
 import {Vertex} from "brep/topo/vertex";
 import {Edge} from "brep/topo/edge";
 import {ParametricSurface} from "geom/surfaces/parametricSurface";
-import {centroid} from "geom/euclidean";
 
 //Extensions for topo objects
 // declare module '../topo/shell' {
@@ -76,17 +72,12 @@ export function readBrep(data: BrepOutputData) {
       format: 'verbose',
       data: normalizetessellationData(faceData.tess, inverted, faceData.surface.TYPE === 'PLANE' ? faceData.surface.normal : undefined)
     };
-    let evaluationPoints = faceData.evaluationPoints;
-    if (!evaluationPoints) {
-      evaluationPoints = bb._face.data.tessellation.data.map(([tr]) => centroid(tr));
-    }
     bb._face.data.productionInfo = faceData.productionInfo;
     if (faceData.ref !== undefined) {
       bb._face.data.externals = {
         ref: faceData.ref,
         ptr: faceData.ptr,
-        evaluationPoints
-      }  
+      }
     }  
     
     for (let loop of faceData.loops) {

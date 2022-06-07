@@ -27,7 +27,6 @@ export interface FaceData {
   inverted: boolean;
   tess?: Tessellation2D<Vec3>;
   productionInfo: ProductionInfo;
-  evaluationPoints?: Vec3[];
 
   loops: EdgeData[][];
 }

@@ -5,10 +5,9 @@ import {Face} from "brep/topo/face";
 import {FaceRef} from "cad/craft/e0/OCCUtils";
 import {Classification, Classifier, OCCClassifier} from "cad/craft/production/classifier";
 import {addToListInMap} from "gems/iterables";
-import {centroid} from "geom/euclidean";
-import {Vec3} from "math/vec";
 import {MEdge} from "cad/model/medge";
 import {Edge} from "brep/topo/edge";
+import {MBrepShell} from "cad/model/mshell";
 
 const classifier: Classifier = new OCCClassifier();
 
@@ -85,18 +84,24 @@ export class FromSketchProductionAnalyzer implements ProductionAnalyzer {
 
   constructor(profiles: FaceRef[]) {
     this.profiles = profiles;
+    for (let originFace of this.profiles) {
+      classifier.prepare(originFace.topoShape);
+    }
   }
 
   assignIdentification(createdShell: Shell) {
 
-    for (let originFace of this.profiles) {
+    classifier.prepare(createdShell);
 
+    for (let originFace of this.profiles) {
+      const originFaceTopology = originFace.topoShape.faces[0];
       let base: Face = null;
       let wireId = originFace.contour.id;
 
       for (let createdFace of createdShell.faces) {
 
-        let faceToFaceClassification = classifier.classifyFaceToFace(originFace.faceTopology, createdFace);
+        classifier.prepare(originFace.topoShape);
+        let faceToFaceClassification = classifier.classifyFaceToFace(originFaceTopology, createdFace);
 
         if (faceToFaceClassification === Classification.SAME) {
           base = createdFace;
@@ -110,7 +115,7 @@ export class FromSketchProductionAnalyzer implements ProductionAnalyzer {
       }
 
       for (let i = 0; i < originFace.edges.length; ++i) {
-        const profileEdge = originFace.faceTopology.outerLoop.halfEdges[i].edge;
+        const profileEdge = originFaceTopology.outerLoop.halfEdges[i].edge;
         const seg = originFace.contour.segments[i];
 
         for (let createdEdge of createdShell.edges) {
@@ -204,12 +209,7 @@ export class FromSketchProductionAnalyzer implements ProductionAnalyzer {
   }
 }
 
-function getCentroid(face: Face): Vec3 {
-  if (!face.data.centroid) {
-    face.data.centroid = centroid(face.data.externals.evaluationPoints);
-  }
-  return face.data.centroid;
-}
+
 
 const SPATIAL_COMPARATOR = (a: Face, b: Face) => {
 
@@ -251,9 +251,17 @@ export class FromMObjectProductionAnalyzer implements ProductionAnalyzer {
   constructor(consumed: MObject[], mustAdvance: MObject[] = []) {
     this.consumed = consumed;
     this.mustAdvance = new Set<string>(mustAdvance&&mustAdvance.map(o => o.id));
+    consumed.forEach(mShell => {
+      if (mShell instanceof MBrepShell) {
+        classifier.prepare(mShell.brepShell);
+      }
+    });
+
   }
 
   assignIdentification(createdShell: Shell) {
+
+    classifier.prepare(createdShell);
 
     const faceIds = new Map<string, Face[]>();
     const edgeIds = new Map<string, Edge[]>();
