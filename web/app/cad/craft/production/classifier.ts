@@ -1,8 +1,7 @@
-import {ClassifyPointToFace, IsEdgesOverlap} from "cad/craft/e0/interact";
-import {newVector, Vec3} from "math/vec";
-import * as vec from "math/vec";
+import {ClassifyFaceToFace, ClassifyPointToFace, IsEdgesOverlap, UpdateTessellation} from "cad/craft/e0/interact";
 import {Face} from "brep/topo/face";
 import {Edge} from "brep/topo/edge";
+import {Shell} from "brep/topo/shell";
 
 export enum Classification {
 
@@ -16,6 +15,8 @@ export enum Classification {
 
 export interface Classifier {
 
+  prepare(shape: Shell): void;
+
   classifyFaceToFace(face1: Face, face2: Face): Classification;
 
   classifyEdgeToEdge(edge1: Edge, edge2: Edge): Classification;
@@ -26,10 +27,9 @@ export interface Classifier {
 
 interface OCCExternals {
   ptr: number;
-  evaluationPoints?: any;
 }
 
-enum OCCClassifyResult {
+enum OCCGeomClassifyResult {
 
   UNRELATED,
 
@@ -40,33 +40,21 @@ enum OCCClassifyResult {
 
 export class OCCClassifier implements Classifier {
 
-  classifyFaceToFace(face1: Face, face2: Face) {
+  tol = 1e-3;
+  tessDeflection = 2;
 
-    let wasMatch: boolean = false;
-    let wasMissMatch: boolean = false;
-
-    face2.data.externals.evaluationPoints.forEach((pt) => {
-      const result = ClassifyPointToFace(face1.data.externals.ptr, pt[0], pt[1], pt[2], 1) as OCCClassifyResult;
-      switch (result) {
-        case OCCClassifyResult.BOUNDS:
-        case OCCClassifyResult.INSIDE:
-          wasMatch = true;
-          break;
-        case OCCClassifyResult.UNRELATED:
-        default:
-          wasMissMatch = true;
-      }
-    });
-
-    if (wasMatch && !wasMissMatch) {
-      return Classification.SAME;
-    } else if (wasMatch && wasMissMatch) {
-      return Classification.PARTIAL;
+  prepare(shell: Shell) {
+    const ptr = shell.data.externals.ptr;
+    if (ptr) {
+      UpdateTessellation(ptr, this.tessDeflection);
     } else {
-      return Classification.UNRELATED;
+      debugger;
     }
+  }
 
-  };
+  classifyFaceToFace(face1: Face, face2: Face) {
+    return ClassifyFaceToFace(face1.data.externals.ptr, face2.data.externals.ptr, this.tol);
+  }
 
   classifyEdgeToEdge(edge1: Edge, edge2: Edge): Classification {
     if (IsEdgesOverlap(edge1.data.externals.ptr, edge2.data.externals.ptr, 1e-3)) {
@@ -82,13 +70,13 @@ export class OCCClassifier implements Classifier {
     let wasMissMatch: boolean = false;
 
     edge.data.tessellation.forEach(pt => {
-      const result = ClassifyPointToFace(face.data.externals.ptr, pt[0], pt[1], pt[2], 1) as OCCClassifyResult;
+      const result = ClassifyPointToFace(face.data.externals.ptr, pt[0], pt[1], pt[2], 1) as OCCGeomClassifyResult;
       switch (result) {
-        case OCCClassifyResult.BOUNDS:
-        case OCCClassifyResult.INSIDE:
+        case OCCGeomClassifyResult.BOUNDS:
+        case OCCGeomClassifyResult.INSIDE:
           wasMatch = true;
           break;
-        case OCCClassifyResult.UNRELATED:
+        case OCCGeomClassifyResult.UNRELATED:
         default:
           wasMissMatch = true;
       }
@@ -103,14 +91,5 @@ export class OCCClassifier implements Classifier {
       return Classification.UNRELATED;
     }
 
-  }
-}
-
-function centroidIterator(tesselation: any, callback: (pt: Vec3) => any) {
-  for (let [tr, normales] of tesselation) {
-    let centroid = newVector(3) as Vec3;
-    tr.forEach(p => vec._add(centroid, p));
-    vec._div(centroid, 3);
-    callback(centroid);
   }
 }

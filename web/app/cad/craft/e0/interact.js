@@ -1,4 +1,3 @@
-import {readShellEntityFromJson} from "cad/scene/wrappers/entityIO";
 
 export function toCString(str) {
   let buffer = _malloc(str.length + 1);
@@ -48,6 +47,14 @@ export function ClassifyPointToFace(facePtr, x, y, z, tol) {
   return Module._ClassifyPointToFace(facePtr, x, y, z, tol);
 }
 
+export function ClassifyFaceToFace(face1Ptr, face2Ptr, tol) {
+  return Module._ClassifyFaceToFace(face1Ptr, face2Ptr, tol);
+}
+
 export function IsEdgesOverlap(e1Ptr, e2Ptr, tol) {
   return Module._IsEdgesOverlap(e1Ptr, e2Ptr, tol);
+}
+
+export function UpdateTessellation(shapePtr, deflection) {
+  return Module._UpdateTessellation(shapePtr, deflection);
 }

@@ -3,11 +3,10 @@ import {CoreContext} from "context";
 import CSys from "math/csys";
 import {OperationResult} from "cad/craft/craftPlugin";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
-import {MShell} from "cad/model/mshell";
 import {WireRef} from "cad/craft/e0/occSketchLoader";
 import {FromMObjectProductionAnalyzer, ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
-import {Face} from "brep/topo/face";
 import {MObject} from "cad/model/mobject";
+import {Shell} from "brep/topo/shell";
 
 export interface OCCUtils {
 
@@ -23,7 +22,7 @@ export interface OCCUtils {
 
 export interface FaceRef extends WireRef {
   face: string;
-  faceTopology: Face,
+  topoShape: Shell,
 }
 
 export function createOCCUtils(ctx: CoreContext): OCCUtils {
@@ -43,7 +42,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
 
       return {
         face: faceName,
-        faceTopology: brepShell.faces[0],
+        topoShape: brepShell,
         ...wire
       };
     });
