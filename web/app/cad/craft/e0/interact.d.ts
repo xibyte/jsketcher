@@ -10,6 +10,8 @@ export function ClassifyPointToFace(facePtr: number, x: number, y: number, z: nu
 
 export function ClassifyFaceToFace(face1Ptr: number, face2Ptr: number, tol: number): number;
 
+export function ClassifyEdgeToFace(edgePtr: number, facePtr: number, tol: number): number;
+
 export function IsEdgesOverlap(e1Ptr: number, e2Ptr: number, tol: number): boolean;
 
 export function UpdateTessellation(shapePtr: number, deflection: number): number;

@@ -51,6 +51,10 @@ export function ClassifyFaceToFace(face1Ptr, face2Ptr, tol) {
   return Module._ClassifyFaceToFace(face1Ptr, face2Ptr, tol);
 }
 
+export function ClassifyEdgeToFace(edgePtr, facePtr, tol){
+  return Module._ClassifyEdgeToFace(edgePtr, facePtr, tol);
+}
+
 export function IsEdgesOverlap(e1Ptr, e2Ptr, tol) {
   return Module._IsEdgesOverlap(e1Ptr, e2Ptr, tol);
 }

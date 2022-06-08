@@ -78,6 +78,16 @@ export interface ProductionAnalyzer {
   assignIdentification(createdShell: Shell);
 }
 
+export class NullProductionAnalyzer implements ProductionAnalyzer {
+
+
+
+  assignIdentification(createdShell: Shell) {
+  }
+}
+
+export const NULL_ANALYZER = new NullProductionAnalyzer();
+
 export class FromSketchProductionAnalyzer implements ProductionAnalyzer {
 
   profiles: FaceRef[];
@@ -103,7 +113,7 @@ export class FromSketchProductionAnalyzer implements ProductionAnalyzer {
         classifier.prepare(originFace.topoShape);
         let faceToFaceClassification = classifier.classifyFaceToFace(originFaceTopology, createdFace);
 
-        if (faceToFaceClassification === Classification.SAME) {
+        if (faceToFaceClassification === Classification.EXACT) {
           base = createdFace;
           base.data.id = `F:BASE[${wireId}]`;
           base.data.productionInfo = {
@@ -372,14 +382,13 @@ export class FromMObjectProductionAnalyzer implements ProductionAnalyzer {
     const newEdges = new Map<string, Edge[]>();
     notIdentifiedEdges.forEach(edge => {
 
-      // let edgeCreators = new Map<Edge, MFace[]>();
       let edgeCreators = [];
       this.consumed.forEach(consumedShell => {
         consumedShell.traverse(consumedObj => {
           if (consumedObj instanceof MFace && consumedObj.brepFace) {
-            if (classifier.classifyEdgeToFace(edge, consumedObj.brepFace) !== Classification.UNRELATED) {
+            //We look for strict intersection otherwise any vertex touch will count
+            if (classifier.classifyEdgeToFace(edge, consumedObj.brepFace) === Classification.EXACT) {
               edgeCreators.push(consumedObj);
-
             }
           }
         });
