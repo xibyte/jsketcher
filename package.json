@@ -84,6 +84,6 @@
     "react-toastify": "^5.5.0",
     "sprintf": "0.1.5",
     "three": "^0.118.3",
-    "jsketcher-occ-engine": "1.0.1-6b73c0b531c39813c700070f0dae62282ea1d358"
+    "jsketcher-occ-engine": "1.0.1-2144340d03c052dc3c4bfab1c045ee28a6ba1528"
   }
 }

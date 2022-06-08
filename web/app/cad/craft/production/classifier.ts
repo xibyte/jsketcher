@@ -1,4 +1,10 @@
-import {ClassifyFaceToFace, ClassifyPointToFace, IsEdgesOverlap, UpdateTessellation} from "cad/craft/e0/interact";
+import {
+  ClassifyEdgeToFace,
+  ClassifyFaceToFace,
+  ClassifyPointToFace,
+  IsEdgesOverlap,
+  UpdateTessellation
+} from "cad/craft/e0/interact";
 import {Face} from "brep/topo/face";
 import {Edge} from "brep/topo/edge";
 import {Shell} from "brep/topo/shell";
@@ -7,7 +13,7 @@ export enum Classification {
 
   UNRELATED,
 
-  SAME,
+  EXACT,
 
   PARTIAL
 
@@ -47,8 +53,6 @@ export class OCCClassifier implements Classifier {
     const ptr = shell.data.externals.ptr;
     if (ptr) {
       UpdateTessellation(ptr, this.tessDeflection);
-    } else {
-      debugger;
     }
   }
 
@@ -65,31 +69,6 @@ export class OCCClassifier implements Classifier {
   }
 
   classifyEdgeToFace(edge: Edge, face: Face): Classification {
-
-    let wasMatch: boolean = false;
-    let wasMissMatch: boolean = false;
-
-    edge.data.tessellation.forEach(pt => {
-      const result = ClassifyPointToFace(face.data.externals.ptr, pt[0], pt[1], pt[2], 1) as OCCGeomClassifyResult;
-      switch (result) {
-        case OCCGeomClassifyResult.BOUNDS:
-        case OCCGeomClassifyResult.INSIDE:
-          wasMatch = true;
-          break;
-        case OCCGeomClassifyResult.UNRELATED:
-        default:
-          wasMissMatch = true;
-      }
-
-    });
-
-    if (wasMatch && !wasMissMatch) {
-      return Classification.SAME;
-    } else if (wasMatch && wasMissMatch) {
-      return Classification.PARTIAL;
-    } else {
-      return Classification.UNRELATED;
-    }
-
+    return ClassifyEdgeToFace(edge.data.externals.ptr, face.data.externals.ptr, this.tol);
   }
 }
