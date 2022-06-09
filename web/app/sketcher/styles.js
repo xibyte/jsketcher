@@ -76,7 +76,7 @@ export const Styles = {
 
   CONSTRUCTION : {
     lineWidth : 1,
-    strokeStyle : "#aaaaaa",
+    strokeStyle: "#964B00",
     fillStyle : "#000000"
   },
 
