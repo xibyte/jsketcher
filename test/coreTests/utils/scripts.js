@@ -3,7 +3,9 @@ export async function createPlaneAndOpenSketcher(ui) {
   ui.openWizard('PLANE');
   await ui.wizardOK();
   ui.selectFaces([0, 0, -10], [0, 0, 10]);
-  return ui.openSketcher();
+  let sketchedFace = ui.context.services.selection.face.single;
+  let sketcher = ui.openSketcher();
+  return [sketcher, sketchedFace];
 }
 
 export async function extrudeCube(ui) {

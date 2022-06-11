@@ -158,14 +158,6 @@ export class MFace extends MObject {
     return this._worldToSketchTransformation;
   }
 
-  get productionInfo() {
-    if (this._productionInfo === undefined) {
-      this._productionInfo = !this.brepFace?.data?.productionInfo ? null :
-        ProductionInfo.fromRawData(this.brepFace.data.productionInfo);
-    }
-    return this._productionInfo;
-  }
-
   traverse(callback: (obj: MObject) => void) {
     callback(this);
     this.traverseSketchRelatedEntities(callback);

@@ -4,8 +4,8 @@ import {createPlaneAndOpenSketcher} from '../utils/scripts';
 export const TEST_MODE = 'modellerUI';
 
 export async function testExtrudeFromSketch(env, ui) {
-  let sketcherUI = await createPlaneAndOpenSketcher(ui);
-  let sketchedFace = ui.context.services.selection.face.single;
+  let [sketcherUI, sketchedFace] = await createPlaneAndOpenSketcher(ui);
+
   let seg1 = sketcherUI.addSegment(-100, -100, 100, -100);
   let seg2 = sketcherUI.addSegment(100, -100, 100, 100);
   let seg3 = sketcherUI.addSegment(100, 100, -100, 100);
@@ -17,7 +17,7 @@ export async function testExtrudeFromSketch(env, ui) {
   
   
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 200);
+  ui.wizardContext.updateParam('length', 200);
   await ui.wizardOK();
 
   let [leftFace] = ui.rayCastFaces([-110, 0, 100], [-90, 0, 100]);
@@ -34,8 +34,8 @@ export async function testExtrudeFromSketch(env, ui) {
   assertFaceRole(rightFace, "sweep");
   assertFaceRole(topFace, "sweep");
   assertFaceRole(bottomFace, "sweep");
-  assertFaceRole(frontFace, "top");
-  assertFaceRole(backFace, "bottom");
+  assertFaceRole(frontFace, "lid");
+  assertFaceRole(backFace, "base");
 
   let sketchId = sketchedFace.defaultSketchId;
 
@@ -76,8 +76,8 @@ export async function testExtrudeArc(env, ui) {
 
   assertFaceRole(curvedFace, "sweep");
   assertFaceRole(flatFace, "sweep");
-  assertFaceRole(topFace, "top");
-  assertFaceRole(bottomFace, "bottom");
+  assertFaceRole(topFace, "lid");
+  assertFaceRole(bottomFace, "base");
 
   let sketchId = sketchedFace.defaultSketchId;
 
@@ -107,8 +107,8 @@ export async function testExtrudeCircle(env, ui) {
 
 
   assertFaceRole(curvedFace, "sweep");
-  assertFaceRole(topFace, "top");
-  assertFaceRole(bottomFace, "bottom");
+  assertFaceRole(topFace, "lid");
+  assertFaceRole(bottomFace, "base");
 
   let sketchId = sketchedFace.defaultSketchId;
 
@@ -137,8 +137,8 @@ export async function testExtrudeEllipse(env, ui) {
 
   
   assertFaceRole(curvedFace, "sweep");
-  assertFaceRole(topFace, "top");
-  assertFaceRole(bottomFace, "bottom");
+  assertFaceRole(topFace, "lid");
+  assertFaceRole(bottomFace, "base");
 
   let sketchId = sketchedFace.defaultSketchId;
 
@@ -148,8 +148,7 @@ export async function testExtrudeEllipse(env, ui) {
 }
 
 export async function testExtrudeEllipticalArc(env, ui) {
-  let sketcherUI = await createPlaneAndOpenSketcher(ui);
-  let sketchedFace = ui.context.services.selection.face.single;
+  let [sketcherUI, sketchedFace] = await createPlaneAndOpenSketcher(ui);
   let eArc = sketcherUI.addEllipticalArc(-100, 100, 100, 100, 0, 150);
   sketcherUI.move(100, 100, -50, 170);
   sketcherUI.addSegment(eArc.a.x, eArc.a.y, eArc.b.x, eArc.b.y);
@@ -169,8 +168,8 @@ export async function testExtrudeEllipticalArc(env, ui) {
 
 
   assertFaceRole(curvedFace, "sweep");
-  assertFaceRole(topFace, "top");
-  assertFaceRole(bottomFace, "bottom");
+  assertFaceRole(topFace, "lid");
+  assertFaceRole(bottomFace, "base");
 
   let sketchId = sketchedFace.defaultSketchId;
 
@@ -203,8 +202,8 @@ export async function testExtrudeBezier(env, ui) {
 
 
   assertFaceRole(curvedFace, "sweep");
-  assertFaceRole(topFace, "top");
-  assertFaceRole(bottomFace, "bottom");
+  assertFaceRole(topFace, "lid");
+  assertFaceRole(bottomFace, "base");
 
   let sketchId = sketchedFace.defaultSketchId;
 
