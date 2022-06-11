@@ -1,7 +1,7 @@
 
 export function enableAnonymousActionHint(ctx) {
-  const {services, actionService} = ctx;
   return function(actionId) {
+    const {services, actionService} = ctx;
     let {left, top} = services.dom.viewerContainer.getBoundingClientRect();
     actionService.showHintFor({
       actionId,

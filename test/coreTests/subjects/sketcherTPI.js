@@ -3,7 +3,11 @@ import {genSerpinskiImpl} from '../../../web/app/utils/genSerpinski';
 import {distance} from 'math/commons';
 
 export function createSubjectFromInPlaceSketcher(ctx) {
-  return createSketcherTPI(ctx.services.sketcher.inPlaceEditor.sketcherAppContext);
+  const sketcherCtx = ctx.services.sketcher.inPlaceEditor.sketcherAppContext;
+  if (!sketcherCtx) {
+    throw 'not in sketching mode';
+  }
+  return createSketcherTPI(sketcherCtx);
 }
 
 export function createSketcherTPI(context) {

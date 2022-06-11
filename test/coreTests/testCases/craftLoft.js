@@ -3,7 +3,7 @@ import {createPlaneAndOpenSketcher, extrudeCube} from '../utils/scripts';
 export const TEST_MODE = 'modellerUI';
 
 export async function testLoftOver2Sections(env, ui) {
-  let sui = await createPlaneAndOpenSketcher(ui);
+  let [sui, sketchedFace] = await createPlaneAndOpenSketcher(ui);
   sui.addRectangle(-100, -100, 100, 100);
   ui.commitSketch();
 
@@ -23,7 +23,7 @@ export async function testLoftOver2Sections(env, ui) {
 }
 
 export async function testLoftOver3Sections(env, ui) {
-  let sui = await createPlaneAndOpenSketcher(ui);
+  let [sui, sketchedFace] = await createPlaneAndOpenSketcher(ui);
   sui.addRectangle(-100, -100, 100, 100);
   ui.commitSketch();
 
@@ -55,7 +55,7 @@ export async function testLoftOver3Sections(env, ui) {
 
 
 export async function testLoftCircleSections(env, ui) {
-  let sui = await createPlaneAndOpenSketcher(ui);
+  let [sui, sketchedFace] = await createPlaneAndOpenSketcher(ui);
   sui.addRectangle(-100, -100, 100, 100);
   ui.commitSketch();
 

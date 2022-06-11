@@ -47,11 +47,8 @@ export async function testExtrudeFromSketch(env, ui) {
 
 }
 
-testExtrudeFromSketch.only = true
-
 export async function testExtrudeArc(env, ui) {
-  let sketcherUI = await createPlaneAndOpenSketcher(ui);
-  let sketchedFace = ui.context.services.selection.face.single;
+  let [sketcherUI, sketchedFace] = await createPlaneAndOpenSketcher(ui);
   let arc = sketcherUI.addArc(0, 0, 100, 0, -100, 0);
   let segment = sketcherUI.addSegment(100, 0, -100, 0);
 
@@ -64,7 +61,7 @@ export async function testExtrudeArc(env, ui) {
   ui.selectFaces([0, 0, -10], [0, 0, 10]);
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 200);
+  ui.wizardContext.updateParam('length', 200);
   
   await ui.wizardOK();
 
@@ -88,8 +85,7 @@ export async function testExtrudeArc(env, ui) {
 }
 
 export async function testExtrudeCircle(env, ui) {
-  let sketcherUI = await createPlaneAndOpenSketcher(ui);
-  let sketchedFace = ui.context.services.selection.face.single;
+  let [sketcherUI, sketchedFace] = await createPlaneAndOpenSketcher(ui);
   let circle = sketcherUI.addCircle(100, 100, 100);
 
   ui.commitSketch();
@@ -97,7 +93,7 @@ export async function testExtrudeCircle(env, ui) {
   ui.selectFaces([0, 0, -10], [0, 0, 10]);
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 200);
+  ui.wizardContext.updateParam('length', 200);
 
   await ui.wizardOK();
 
@@ -118,8 +114,7 @@ export async function testExtrudeCircle(env, ui) {
 }
 
 export async function testExtrudeEllipse(env, ui) {
-  let sketcherUI = await createPlaneAndOpenSketcher(ui);
-  let sketchedFace = ui.context.services.selection.face.single;
+  let [sketcherUI, sketchedFace] = await createPlaneAndOpenSketcher(ui);
   let ellipse = sketcherUI.addEllipse(-100, 100, 100, 100, 0, 150);
 
   ui.commitSketch();
@@ -127,7 +122,7 @@ export async function testExtrudeEllipse(env, ui) {
   ui.selectFaces([0, 0, -10], [0, 0, 10]);
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 200);
+  ui.wizardContext.updateParam('length', 200);
 
   await ui.wizardOK();
 
@@ -158,7 +153,7 @@ export async function testExtrudeEllipticalArc(env, ui) {
   ui.selectFaces([0, 0, -10], [0, 0, 10]);
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 200);
+  ui.wizardContext.updateParam('length', 200);
 
   await ui.wizardOK();
 
@@ -179,8 +174,7 @@ export async function testExtrudeEllipticalArc(env, ui) {
 }
 
 export async function testExtrudeBezier(env, ui) {
-  let sketcherUI = await createPlaneAndOpenSketcher(ui);
-  let sketchedFace = ui.context.services.selection.face.single;
+  let [sketcherUI, sketchedFace] = await createPlaneAndOpenSketcher(ui);
   let bezier = sketcherUI.addBezier(-100, 100, 100, 100, 0, 150);
   sketcherUI.move(bezier.cp2.x, bezier.cp2.y, bezier.cp2.x, bezier.cp1.y);
 
@@ -192,7 +186,7 @@ export async function testExtrudeBezier(env, ui) {
   ui.selectFaces([0, 0, -10], [0, 0, 10]);
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 200);
+  ui.wizardContext.updateParam('length', 200);
 
   await ui.wizardOK();
 
