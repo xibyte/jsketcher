@@ -57,7 +57,7 @@ export function assertFaceIsPlane(face) {
 
 export function assertFaceOrigination(face, sketchId, primitiveId) {
   assertEquals(sketchObjectGlobalId(sketchId, primitiveId), 
-    face.productionInfo.originatedFromPrimitive);
+    face.productionInfo.originatingPrimitive);
 }
 
 export function assertFaceRole(face, expectedRole) {

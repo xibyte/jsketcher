@@ -11,8 +11,8 @@ import {FaceRef} from "cad/craft/e0/OCCUtils";
 import {GetRef} from "cad/craft/e0/interact";
 import {
   FromMObjectProductionAnalyzer,
-  FromSketchProductionAnalyzer,
-  ProductionAnalyzer
+  FromSketchProductionAnalyzer, NULL_ANALYZER,
+  ProductionAnalyzer, PushPullFaceProductionAnalyzer
 } from "cad/craft/production/productionAnalyzer";
 
 
@@ -53,25 +53,21 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
     if (!sketch) {
       if (face instanceof MBrepFace) {
-        occ.io.pushModel(face, face.id)
-        const edges = face.edges;
-        edges.forEach(e => occ.io.pushModel(e, e.id));
-        sweepSources = [{
-          face: face.id,
-          edges: edges.map(e => e.id)
-        }];
+        oci.prism("FaceTool", face, ...extrusionVector.data());
+        return occ.utils.applyBooleanModifier([occ.io.getShell("FaceTool")], params.boolean, face, [],
+          (targets, tools) => new PushPullFaceProductionAnalyzer(targets, face.brepFace));
       } else {
         throw "can't extrude an empty surface";
       }
-    } else {
-      let csys = face.csys;
-      if (params.doubleSided) {
-        csys = csys.clone();
-        csys.origin._minus(extrusionVector);
-        extrusionVector._scale(2);
-      }
-      sweepSources = occ.utils.sketchToFaces(sketch, csys)
     }
+
+    let csys = face.csys;
+    if (params.doubleSided) {
+      csys = csys.clone();
+      csys.origin._minus(extrusionVector);
+      extrusionVector._scale(2);
+    }
+    sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
 
@@ -79,50 +75,15 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
       const faceName = faceRef.face;
       const shapeName = "Tool/" + i;
-
-      // for (let i = 0; i < faceRef.edges.length; ++i) {
-      //   const edge = faceRef.edges[i];
-      //   const seg = faceRef.contour.segments[i];
-      //   const ref = GetRef(edge);
-      //   productionAnalyzer.mapRef(ref, `SK[${sketchId}:${seg.id}]`);
-      // }
-
       oci.prism(shapeName, faceName, ...extrusionVector.data());
-
-
-      // occIterateFaces(oc, shape, face => {
-      //   let role;
-      //   if (face.IsSame(prismAPI.FirstShape())) {
-      //     role = "bottom";
-      //   } else if (face.IsSame(prismAPI.LastShape())) {
-      //     role = "top";
-      //   } else {
-      //     role = "sweep";
-      //   }
-      //   getProductionInfo(face).role = role;
-      // });
-      //
-      // occIterateEdges(oc, wire, edge => {
-      //   const generatedList = prismAPI.Generated(edge);
-      //   occIterateListOfShape(oc, generatedList, face => {
-      //     console.log(face);
-      //   })
-      // })
-
       return shapeName;
-    });
+    }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
 
-    // const productionAnalyzer = new ProductionAnalyzer();
-    // ctx.cadRegistry.models.forEach(m => productionAnalyzer.preRegister(m));
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean, productionAnalyzer, [face]);
+    return occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
 
   },
 
-  // useBoolean: {
-  //   booleanField: 'boolean',
-  //   impliedTargetField: 'face'
-  // },
 
   form: [
     {

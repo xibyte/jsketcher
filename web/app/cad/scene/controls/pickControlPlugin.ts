@@ -227,6 +227,7 @@ export function activate(context) {
   if (LOG_FLAGS.PICK) {
     initRayCastDebug();
   }
+  initRayCastDebug();
 }
 
 export function traversePickResults(event, pickResults, kind, visitor) {

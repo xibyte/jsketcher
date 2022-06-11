@@ -3,6 +3,7 @@ import {EntityKind} from "cad/model/entities";
 import Vector, {UnitVector} from "math/vector";
 import {TopoObject} from "brep/topo/topo-object";
 import Axis from "math/axis";
+import {ProductionInfo} from "cad/model/productionInfo";
 
 export abstract class MObject {
 
@@ -47,6 +48,9 @@ export abstract class MObject {
     return null;
   }
 
+  get productionInfo() {
+    return this.topology.data?.productionInfo;
+  }
 }
 
 export const MObjectIdGenerator = {

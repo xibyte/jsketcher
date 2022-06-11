@@ -88,18 +88,41 @@ export class NullProductionAnalyzer implements ProductionAnalyzer {
 
 export const NULL_ANALYZER = new NullProductionAnalyzer();
 
-export class FromSketchProductionAnalyzer implements ProductionAnalyzer {
+abstract class BasicProductionAnalyzer implements ProductionAnalyzer {
+
+  abstract assignIdentificationImpl(createdShell: Shell);
+
+  assignIdentification(createdShell: Shell) {
+
+    classifier.prepare(createdShell);
+
+    this.assignIdentificationImpl(createdShell);
+
+    createdShell.traverse(obj => {
+      if (!obj.data.productionInfo) {
+        obj.data.productionInfo = {
+          unstable: true
+        }
+      }
+    });
+
+  }
+
+}
+
+export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
 
   profiles: FaceRef[];
 
   constructor(profiles: FaceRef[]) {
+    super();
     this.profiles = profiles;
     for (let originFace of this.profiles) {
       classifier.prepare(originFace.topoShape);
     }
   }
 
-  assignIdentification(createdShell: Shell) {
+  assignIdentificationImpl(createdShell: Shell) {
 
     classifier.prepare(createdShell);
 
@@ -253,12 +276,13 @@ function forceAdvance(idToAssign: string): string {
   }
 }
 
-export class FromMObjectProductionAnalyzer implements ProductionAnalyzer {
+export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
 
   consumed: MObject[] = [];
   mustAdvance: Set<string>;
 
   constructor(consumed: MObject[], mustAdvance: MObject[] = []) {
+    super();
     this.consumed = consumed;
     this.mustAdvance = new Set<string>(mustAdvance&&mustAdvance.map(o => o.id));
     consumed.forEach(mShell => {
@@ -269,7 +293,7 @@ export class FromMObjectProductionAnalyzer implements ProductionAnalyzer {
 
   }
 
-  assignIdentification(createdShell: Shell) {
+  assignIdentificationImpl(createdShell: Shell) {
 
     classifier.prepare(createdShell);
 
@@ -393,6 +417,10 @@ export class FromMObjectProductionAnalyzer implements ProductionAnalyzer {
           }
         });
       });
+      if (edgeCreators.length < 2) {
+        //dangled edge - random id will be assigned
+        return;
+      }
       const edgeCreatorIds = edgeCreators.map(f => f.id).sort();
       const id = '[' + edgeCreatorIds.join('|') + ']';
       addToListInMap(newEdges, id, edge);
@@ -416,4 +444,44 @@ export class FromMObjectProductionAnalyzer implements ProductionAnalyzer {
 
 
   }
+}
+
+export class PushPullFaceProductionAnalyzer extends FromMObjectProductionAnalyzer {
+
+  baseFace: Face;
+
+  constructor(consumed: MObject[], baseFace: Face) {
+    super(consumed, []);
+    this.baseFace = baseFace;
+  }
+
+  assignIdentificationImpl(createdShell: Shell) {
+    super.assignIdentificationImpl(createdShell);
+
+    const edgeMap = new Map();
+    for (let he of this.baseFace.edges) {
+      debugger
+      const twin = he.twin();
+      if (twin) {
+        edgeMap.set(twin.loop.face.data.id, twin.edge);
+      }
+    }
+
+    for (let face of createdShell.faces) {
+      if (!face.data.productionInfo) {
+        face.data.id = this.baseFace.id;
+        face.data.productionInfo = this.baseFace.data.productionInfo;
+        for (let he of face.edges) {
+          const twin = he.twin();
+          if (twin) {
+            const originEdge = edgeMap.get(twin.loop.face.data.id);
+            he.edge.data.id = originEdge.data.id;
+            he.edge.data.productionInfo = originEdge.data.productionInfo;
+          }
+        }
+      }
+    }
+
+  }
+
 }

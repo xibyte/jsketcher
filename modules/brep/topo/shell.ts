@@ -107,6 +107,18 @@ export class Shell extends TopoObject {
       });
     }
   }
+
+  traverse(callback: (child: TopoObject) => any) {
+    for (let face of this.faces) {
+      callback(face);
+    }
+    for (let edge of this.edges) {
+      callback(edge);
+    }
+    for (let vertex of this.vertices) {
+      callback(vertex);
+    }
+  }
 }
 
 export function* verticesGenerator(shell: Shell): Generator<Vertex> {
