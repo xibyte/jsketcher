@@ -12,6 +12,7 @@ import Button from 'ui/components/controls/Button';
 import {removeAndDropDependants, removeFeature} from '../craftHistoryUtils';
 import RenderObject from 'ui/components/RenderObject';
 import {AppContext} from "cad/dom/components/AppContext";
+import {resolveAppearance} from "cad/craft/operationHelper";
 
 function SelectedModificationInfo({ history, index,
                                     operationRegistry,
@@ -41,13 +42,14 @@ function SelectedModificationInfo({ history, index,
     console.warn('unknown operation ' + m.type);
     return;
   }
-  let {appearance} = op;
+  const appearance = resolveAppearance(op, m.params);
+
   let indexNumber = index + 1;
   return <Widget visible={visible}
                  left={lh && lh.x}
                  bottom={95}
                  flatRight={!lh}
-                 title={m.type + ' operation #' + indexNumber}
+                 title={appearance.label.toUpperCase() + ' operation #' + indexNumber}
                  onClose={close}>
     <div className={ls.requestInfo}>
       <ImgIcon className={ls.pic} url={appearance && appearance.icon96} size={48}/>

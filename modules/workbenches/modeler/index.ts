@@ -44,11 +44,11 @@ export const ModelerWorkspace: WorkbenchConfig = {
     PatternLinearOperation,
     PatternRadialOperation,
   ],
-  actions: [GetVolume],
+  actions: [],
   ui: {
     toolbar: [
       'DATUM_CREATE', 'PLANE', 'EditFace', '-',
-      "EXTRUDE", "REVOLVE", "LOFT", "SWEEP", "-", 
+      "EXTRUDE", "CUT2", "REVOLVE", "LOFT", "SWEEP", "-",
       "BOOLEAN", "-", 
       "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY","-",
       "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "-",

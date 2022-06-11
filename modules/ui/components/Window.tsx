@@ -51,7 +51,7 @@ export default class Window extends React.Component<WindowProps> {
 
     return <div className={cx(ls.root, this.resizeConfig&&ls.mandatoryBorder, compact&&ls.compact, className)} {...props} ref={this.keepRef}>
       <div className={ls.bar + ' disable-selection'} onMouseDown={this.startDrag} onMouseUp={this.stopDrag}>
-        <div className={ls.title}>{icon}<b>{title.toUpperCase()}</b></div>
+        <div className={ls.title}>{icon} <b>{title.toUpperCase()}</b></div>
         <div className={ls.controlButtons}>
           {controlButtons}
           {minimizable &&  <WindowControlButton onClick={onClose}>_</WindowControlButton>}

@@ -80,7 +80,7 @@ export function activate(ctx: CoreContext) {
         }));
       }
 
-      const result = op.run(params, ctx);
+      const result = op.run(params, ctx, request.params);
       // @ts-ignore
       return result.then ? result : Promise.resolve(result);
     } catch (e) {

@@ -12,6 +12,7 @@ import {FlattenPath, ParamsPath} from "cad/craft/wizard/wizardTypes";
 import {IconDeclaration} from "cad/icons/IconDeclaration";
 import {resolveIcon} from "cad/craft/ui/iconResolver";
 import {loadDeclarativeForm} from "cad/mdf/declarativeFormLoader";
+import {operationIconToActionIcon} from "cad/craft/operationHelper";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -30,23 +31,23 @@ export function activate(ctx: ApplicationContext) {
       form = loadedForm;
     }
 
+    if (!label) {
+      label = id;
+    }
+
     let appearance: ActionAppearance = {
       label,
       info
     };
-    if (typeof icon === 'string') {
-      appearance.icon32 = icon + '32.png';
-      appearance.icon96 = icon + '96.png';
-    } else {
-      appearance.icon = resolveIcon(icon);
-    }
+
+    operationIconToActionIcon(icon, appearance);
+
     let opAction = {
       id: id,
       appearance,
       invoke: () => ctx.services.wizard.open(id),
       ...actionParams
     };
-    actions.push(opAction);
 
     let schemaIndex = createSchemaIndex(schema);
 
@@ -58,6 +59,29 @@ export function activate(ctx: ApplicationContext) {
     };
 
     registry$.mutate(registry => registry[id] = operation);
+    actions.push(opAction);
+
+    if (descriptor.masking) {
+      descriptor.masking.forEach(masking => {
+
+
+        const appearance = {
+          ...opAction.appearance,
+          label: masking.label,
+          info: masking.info,
+        };
+
+        operationIconToActionIcon(masking.icon, appearance);
+
+        actions.push({
+          ...opAction,
+          id: masking.id,
+          appearance,
+          invoke: () => ctx.services.wizard.open(id, masking.maskingParams),
+        });
+
+      });
+    }
   }
 
   function registerOperations(operations) {
@@ -98,19 +122,30 @@ export interface Operation<R> extends OperationDescriptor<R>{
   schema: OperationSchema;
 }
 
+type OpIcon = IconDeclaration | IconType | string | ((props: any) => JSX.Element);
+
 export interface OperationDescriptor<R> {
   id: string;
   label: string;
   info: string;
-  icon: IconDeclaration | IconType | string | ((props: any) => JSX.Element);
+  icon: OpIcon;
   actionParams?: any;
-  run: (request: R, opContext: CoreContext) => OperationResult | Promise<OperationResult>;
+  run: (params: {}, ctx: CoreContext, rawParams: R) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,
   previewGeomProvider?: (params: R) => OperationGeometryProvider,
   previewer?: any,
   form: FormDefinition | React.FunctionComponent,
   schema?: OperationSchema,
   onParamsUpdate?: (params, name, value) => void,
+  masking?: {
+    id: string,
+    label: string;
+    info: string,
+    icon: OpIcon;
+    maskingParams: any;
+  }[],
+  dynamicLabel?: (params: R) => string,
+  dynamicIcon?: (params: R) => OpIcon,
 }
 
 export interface OperationService {
