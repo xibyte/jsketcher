@@ -3,6 +3,16 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 
 import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {FromMObjectProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import {MEdge} from "cad/model/medge";
+import {MObject} from "cad/model/mobject";
+import {MShell} from "cad/model/mshell";
+
+interface FilletParams {
+  edges: MEdge[],
+  size: number
+  opperationType: 'Champher'|'Fillet'
+}
 
 export const FilletOperation: OperationDescriptor<any> = {
   id: 'FILLET_TOOL',
@@ -38,53 +48,56 @@ export const FilletOperation: OperationDescriptor<any> = {
     },
   ],
 
-  run: (params, ctx: ApplicationContext) => {
+  run: (params: FilletParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
-    let returnObject = {
-      consumed: [],
-      created: [],
-    }
-
-    var edgesAndValue = [];
 
     //add all the edges and size to seperate arrays for each shell that edges are selected from
 
+    const groups = new Map<MShell, any[]>()
+
     params.edges.forEach((edge) => {
-      if (!returnObject.consumed.includes(edge.shell)) {
-        returnObject.consumed.push(edge.shell);
-        edgesAndValue[edge.shell.id] = [];
+
+      let shellArgs = groups.get(edge.shell);
+      if (!shellArgs) {
+        shellArgs = [];
+        groups.set(edge.shell, shellArgs);
       }
 
       if (params.opperationType == "Fillet") {
         //order of parameters is diferent between fillet and champher
-        edgesAndValue[edge.shell.id].push(params.size);
-        edgesAndValue[edge.shell.id].push(edge);
-      }
-      if (params.opperationType == "Champher") {
+        shellArgs.push(params.size, edge);
+      } else if (params.opperationType == "Champher") {
         //order of parameters is diferent between fillet and champher
-        edgesAndValue[edge.shell.id].push(edge);
-        edgesAndValue[edge.shell.id].push(params.size);
+        shellArgs.push(edge, params.size);
+      } else {
+        throw 'unsupported';
       }
     });
 
     //perform the opperations on each of the bodies.
-    Object.keys(edgesAndValue).forEach((shellToOpperateOnName) => {
-      var shellToOpperateOn = edgesAndValue[shellToOpperateOnName];
-      var newShellName = shellToOpperateOnName + "f";
+    const result = {
+      created: [],
+      consumed: Array.from(groups.keys())
+    }
 
-      if (params.opperationType == "Fillet") oci.blend(newShellName, shellToOpperateOn[1].shell, ...shellToOpperateOn);
-      if (params.opperationType == "Champher") oci.chamf(newShellName, shellToOpperateOn[0].shell, ...shellToOpperateOn);
-
-      returnObject.created.push(occ.io.getShell(newShellName));
+    const analyzer = new FromMObjectProductionAnalyzer(result.consumed);
+    groups.forEach((shellArgs, shellToOpperateOn) => {
+      const newShellName = shellToOpperateOn.id+'/MOD';
+      if (params.opperationType == "Fillet") {
+        oci.blend(newShellName, shellToOpperateOn, ...shellArgs);
+      } else if (params.opperationType == "Champher") {
+        oci.chamf(newShellName, shellToOpperateOn, ...shellArgs);
+      } else {
+        throw 'unsupported';
+      }
+      result.created.push(occ.io.getShell(newShellName, analyzer));
     });
 
+    console.log(result);
 
-    console.log(returnObject);
-
-
-    return returnObject;
+    return result;
   },
 
 }
