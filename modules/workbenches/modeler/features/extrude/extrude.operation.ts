@@ -6,14 +6,8 @@ import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {UnitVector} from "math/vector";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {MObject} from "cad/model/mobject";
-import {Edge} from "brep/topo/edge";
 import {FaceRef} from "cad/craft/e0/OCCUtils";
-import {GetRef} from "cad/craft/e0/interact";
-import {
-  FromMObjectProductionAnalyzer,
-  FromSketchProductionAnalyzer, NULL_ANALYZER,
-  ProductionAnalyzer, PushPullFaceProductionAnalyzer
-} from "cad/craft/production/productionAnalyzer";
+import {FromSketchProductionAnalyzer, PushPullFaceProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 
 
 interface ExtrudeParams {
@@ -28,10 +22,24 @@ interface ExtrudeParams {
 export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   id: 'EXTRUDE',
   label: 'Extrude',
+  dynamicLabel: params => {
+    switch (params.boolean?.kind) {
+      case 'SUBTRACT': return 'Extrude-Cut';
+      case 'INTERSECT': return 'Extrude-Intersect';
+      case 'UNION': return 'Extrude-Fuse';
+    }
+    return null;
+  },
+  dynamicIcon: params => {
+    switch (params.boolean?.kind) {
+      case 'SUBTRACT': return 'img/cad/cut';
+    }
+    return null;
+  },
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
   paramsInfo: ({length}) => `(${r(length)})`,
-  run: (params: ExtrudeParams, ctx: ApplicationContext) => {
+  run: (params: ExtrudeParams, ctx: ApplicationContext, rawParams: any) => {
 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
@@ -43,7 +51,15 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       params.profiles
 
     }
-    const dir: UnitVector = (params.direction || face.normal()).normalize();
+    let dir: UnitVector;
+    if (params.direction) {
+      dir = params.direction.normalize();
+    } else {
+      dir = face.normal().normalize();
+      if (rawParams.direction?.flip) {
+        dir._negate();
+      }
+    }
     let extrusionVector = dir._multiply(params.length);
 
     let sketchId = face.id;
@@ -131,4 +147,21 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     }
 
   ],
+
+  masking: [
+    {
+      id: 'CUT2',
+      label: 'Cut',
+      icon: 'img/cad/cut',
+      info: 'makes a cut based on 2D sketch',
+      maskingParams: {
+        direction: {
+          flip: true
+        },
+        boolean: {
+          kind: 'SUBTRACT'
+        }
+      }
+    }
+  ]
 }

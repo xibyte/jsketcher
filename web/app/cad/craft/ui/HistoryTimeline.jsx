@@ -11,6 +11,7 @@ import {menuAboveElementHint} from '../../dom/menu/menuUtils';
 import {combine} from 'lstream';
 import {EMPTY_OBJECT} from 'gems/objects';
 import {aboveElement} from 'ui/positionUtils';
+import {resolveAppearance} from "cad/craft/operationHelper";
 
 @connect(streams => combine(streams.craft.modifications, streams.operation.registry, streams.wizard.insertOperation)
   .map(([modifications, operationRegistry, insertOperationReq]) => ({
@@ -133,8 +134,9 @@ const HistoryItem = decoratorChain(
 )
   (
 function HistoryItem({index, pointer, modification, getOperation, toggle, selected, disabled, inProgress}) {
-  let {appearance} = getOperation(modification.type);
-  return <div className={cx(ls.historyItem, selected&&ls.selected, disabled&&ls.disabled, inProgress&&ls.inProgress)} 
+  const operation = getOperation(modification.type);
+  const appearance = resolveAppearance(operation, modification.params);
+  return <div className={cx(ls.historyItem, selected&&ls.selected, disabled&&ls.disabled, inProgress&&ls.inProgress)}
               onClick={e => toggle(index, modification, e.currentTarget)}>
     <ImgIcon className={ls.opIcon} url={appearance&&appearance.icon96} size={24} />
     <span className={ls.opIndex}>{ index + 1 }</span>
@@ -142,7 +144,7 @@ function HistoryItem({index, pointer, modification, getOperation, toggle, select
 });
 
 const AddButton = mapContext((ctx) => ({
-  showCraftMenu: e => ctx.actionService.action.run('menu.craft', menuAboveElementHint(e.currentTarget))
+  showCraftMenu: e => ctx.actionService.action.run(params, ctx, 'menu.craft')
 }))(
   function AddButton({showCraftMenu}) {
     return <div className={ls.add} onClick={showCraftMenu}>

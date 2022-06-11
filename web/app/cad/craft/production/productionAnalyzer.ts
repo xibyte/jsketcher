@@ -460,7 +460,6 @@ export class PushPullFaceProductionAnalyzer extends FromMObjectProductionAnalyze
 
     const edgeMap = new Map();
     for (let he of this.baseFace.edges) {
-      debugger
       const twin = he.twin();
       if (twin) {
         edgeMap.set(twin.loop.face.data.id, twin.edge);

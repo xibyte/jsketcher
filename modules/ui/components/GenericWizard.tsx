@@ -7,7 +7,7 @@ import Stack from "ui/components/Stack";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
 
-export function GenericWizard({topicId, title, left, top, className, children, onCancel, onOK, infoText, ...props}: {
+export function GenericWizard({topicId, title, icon, left, top, className, children, onCancel, onOK, infoText, ...props}: {
   topicId: string,
   title: string,
   left?: number,
@@ -15,13 +15,15 @@ export function GenericWizard({topicId, title, left, top, className, children, o
   onCancel: () => any,
   onOK: () => any,
   onKeyDown?: (e) => any,
-  infoText?: any
+  infoText?: any,
+  icon?: any
 } & WindowProps ) {
 
   return <Window initWidth={250}
                    initLeft={left || 15}
                    initTop={top}
                    title={(title||'').toUpperCase()}
+                   icon={icon}
                    className={cx('mid-typography', className)}
                    controlButtons={<>
                      <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({

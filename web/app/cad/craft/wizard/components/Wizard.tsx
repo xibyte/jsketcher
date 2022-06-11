@@ -6,6 +6,8 @@ import {FormEditContext, FormParamsContext, FormPathContext, FormStateContext} f
 import {GenericWizard} from "ui/components/GenericWizard";
 import {useStream} from "ui/effects";
 import {AppContext} from "cad/dom/components/AppContext";
+import {resolveAppearance} from "cad/craft/operationHelper";
+import ImgIcon from "ui/components/ImgIcon";
 
 interface WizardProps {
   noFocus: boolean;
@@ -73,15 +75,16 @@ export default function Wizard(props: WizardProps) {
   };
 
   let {left} = props;
-  let wizardService = ctx.wizardService;
-
-  let title = (operation.label || operation.id).toUpperCase();
+  let appearance = resolveAppearance(operation, workingRequest.params);
+  let title = appearance.label.toUpperCase();
+  let icon = <ImgIcon url={appearance.icon32} size={16}/>;
 
   let Form = operation.form;
 
   return <GenericWizard
     left={left}
     title={title}
+    icon={icon}
     onClose={cancel}
     onKeyDown={onKeyDown}
     setFocus={focusFirstInput}
