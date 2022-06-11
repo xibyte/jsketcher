@@ -79,8 +79,8 @@ export function activate(context: ApplicationContext) {
   function showHintFor(request: HintRequest) {
     if (request) {
       let {actionId, x, y, requester} = request;
-      let actionState = streams.action.state[actionId].value;
-      let actionAppearance = streams.action.appearance[actionId].value;
+      let actionState = streams.action.state[actionId]?.value;
+      let actionAppearance = streams.action.appearance[actionId]?.value;
       if (actionState && actionAppearance) {
         streams.action.hint.value = {
           actionId, x, y, requester,

@@ -47,7 +47,7 @@ function registerCoreOperations(ctx: WorkbenchesLoaderInputContext) {
     planeOperation,
     // boxOperation,
     // extrudeOperation,
-    cutOperation,
+    // cutOperation,
     revolveOperation,
     filletOperation,
     createDatumOperation,

@@ -150,7 +150,7 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
   masking: [
     {
-      id: 'CUT2',
+      id: 'CUT',
       label: 'Cut',
       icon: 'img/cad/cut',
       info: 'makes a cut based on 2D sketch',

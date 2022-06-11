@@ -93,8 +93,12 @@ export function activate(ctx: ApplicationContext) {
     }
   })
 
-  const updateParams = mutator => workingRequest$.update((req: WorkingRequest) => produce(req, draft => mutator(draft.params)));
-  const updateState = mutator => state$.update((state: WizardState) => produce(state, mutator));
+  const updateParams = mutator => workingRequest$.update((req: WorkingRequest) => produce(req, draft => {
+    mutator(draft.params)
+  }));
+  const updateState = mutator => state$.update((state: WizardState) => produce(state, draft => {
+    mutator(draft);
+  }));
   const updateParam = (path: ParamsPath, value: OperationParamValue) => {
     updateParams(params => {
       // if (operation.onParamsUpdate) {
@@ -137,7 +141,7 @@ export function activate(ctx: ApplicationContext) {
     applyWorkingRequest: () => {
       let {type, params} = getWorkingRequest();
       let request = clone({type, params});
-      const setError = error => state$.mutate(state => state.error = error);
+      const setError = error => updateState(state => state.error = error);
       if (insertOperation$.value) {
         ctx.craftService.modify(request, cancel, setError);
       } else {

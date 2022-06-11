@@ -12,10 +12,8 @@ export async function testExtrudeMid(env, ui) {
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 50);
+  ui.wizardContext.updateParam('length', 50);
   await ui.wizardOK();
-
-  
 }
 
 export async function testExtrudeCOI1Faces(env, ui) {
@@ -27,7 +25,7 @@ export async function testExtrudeCOI1Faces(env, ui) {
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 50);
+  ui.wizardContext.updateParam('length', 50);
   await ui.wizardOK();
 
   
@@ -42,7 +40,7 @@ export async function testExtrudeCOI2Faces(env, ui) {
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 50);
+  ui.wizardContext.updateParam('length', 50);
   await ui.wizardOK();
 
   
@@ -57,7 +55,7 @@ export async function testExtrudeCOI3Faces(env, ui) {
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 50);
+  ui.wizardContext.updateParam('length', 50);
   await ui.wizardOK();
 
   
@@ -72,7 +70,7 @@ export async function testExtrudeCOI4Faces(env, ui) {
   ui.commitSketch();
 
   ui.openWizard('EXTRUDE');
-  ui.wizardContext.updateParam('value', 50);
+  ui.wizardContext.updateParam('length', 50);
   await ui.wizardOK();
 
   
