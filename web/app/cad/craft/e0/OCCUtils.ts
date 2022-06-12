@@ -17,7 +17,7 @@ export interface OCCUtils {
 
   applyBooleanModifier(tools: MObject[],
                        booleanDef: BooleanDefinition,
-                       sketchSource: MObject,
+                       sketchSource?: MObject,
                        mustAdvance? : MObject[],
                        analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): OperationResult;
 }
@@ -61,7 +61,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
 
     const consumed = [];
 
-    if (sketchSource.parent instanceof MOpenFaceShell) {
+    if (sketchSource && sketchSource.parent instanceof MOpenFaceShell) {
       consumed.push(sketchSource.parent);
     }
 

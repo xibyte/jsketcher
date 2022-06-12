@@ -5,6 +5,7 @@ import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
 import CSys from "math/csys";
 import {MDatum} from "cad/model/mdatum";
+import {ExpectedOrderProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 
 
 interface PrimitiveBoxParams {
@@ -77,7 +78,49 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
       "-xdir", csys.x.x, csys.x.y, csys.x.z
     );
 
-    return occ.utils.applyBooleanModifier(["box"], params.boolean);
+    const box = occ.io.getShell("box", new ExpectedOrderProductionAnalyzer(
+      [
+        {
+          id: 'F:LEFT',
+          productionInfo: {
+            role: 'sweep'
+          }
+        },
+        {
+          id: 'F:RIGHT',
+          productionInfo: {
+            role: 'sweep'
+          }
+        },
+        {
+          id: 'F:BASE',
+          productionInfo: {
+            role: 'base'
+          }
+        },
+        {
+          id: 'F:LID',
+          productionInfo: {
+            role: 'lid'
+          }
+        },
+        {
+          id: 'F:BACK',
+          productionInfo: {
+            role: 'sweep'
+          }
+        },
+        {
+          id: 'F:FRONT',
+          productionInfo: {
+            role: 'sweep'
+          }
+        }
+      ],
+      [],
+      []
+    ))
 
+    return occ.utils.applyBooleanModifier([box], params.boolean);
   },
 }

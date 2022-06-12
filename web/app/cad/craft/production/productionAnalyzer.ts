@@ -8,6 +8,7 @@ import {addToListInMap} from "gems/iterables";
 import {MEdge} from "cad/model/medge";
 import {Edge} from "brep/topo/edge";
 import {MBrepShell} from "cad/model/mshell";
+import {TopoObject} from "brep/topo/topo-object";
 
 const classifier: Classifier = new OCCClassifier();
 
@@ -106,6 +107,62 @@ abstract class BasicProductionAnalyzer implements ProductionAnalyzer {
       }
     });
 
+  }
+
+}
+
+type IdentificationInfo = {
+  id: string,
+  productionInfo: any;
+}
+
+export class ExpectedOrderProductionAnalyzer extends BasicProductionAnalyzer {
+
+  faceInfo: IdentificationInfo[];
+  edgeInfo: IdentificationInfo[];
+  vertexInfo: IdentificationInfo[];
+
+  constructor(faceInfo: IdentificationInfo[], edgeInfo: IdentificationInfo[], vertexInfo: IdentificationInfo[]) {
+    super();
+    this.faceInfo = faceInfo;
+    this.edgeInfo = edgeInfo;
+    this.vertexInfo = vertexInfo;
+  }
+
+  assignIdentificationImpl(createdShell: Shell) {
+
+    function assignIdentificationInfo(obj: TopoObject, identificationInfo: IdentificationInfo) {
+      obj.data.id = identificationInfo.id;
+      obj.data.productionInfo = identificationInfo.productionInfo;
+    }
+
+    let i = 0;
+    for (let face of createdShell.faces) {
+      let identificationInfo = this.faceInfo[i++];
+      if (identificationInfo) {
+        assignIdentificationInfo(face, identificationInfo)
+      } else {
+        break;
+      }
+    }
+    i = 0;
+    for (let edge of createdShell.edges) {
+      let identificationInfo = this.edgeInfo[i++];
+      if (identificationInfo) {
+        assignIdentificationInfo(edge, identificationInfo)
+      } else {
+        break;
+      }
+    }
+    i = 0;
+    for (let vertex of createdShell.vertices) {
+      let identificationInfo = this.vertexInfo[i++];
+      if (identificationInfo) {
+        assignIdentificationInfo(vertex, identificationInfo)
+      } else {
+        break;
+      }
+    }
   }
 
 }
