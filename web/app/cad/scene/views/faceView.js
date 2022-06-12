@@ -100,6 +100,7 @@ export class FaceView extends SketchingView {
   dispose() {
     super.dispose();
     this.material.dispose();
+    this.geometry.dispose();
   }
 }
 

@@ -59,7 +59,7 @@ export function activate(ctx) {
 
       let obj = hit.object;
       if (obj && obj.onMouseDown) {
-        obj.onMouseDown(event);
+        safeCall(() => obj.onMouseDown(event));
       }
       pressed.add(obj);
       if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
@@ -90,10 +90,10 @@ export function activate(ctx) {
       }
       let obj = hit.object;
       if (obj && obj.onMouseUp) {
-        obj.onMouseUp(event);
+        safeCall(() => obj.onMouseUp(event));
       }
       if (pressed.has(obj) && obj.onMouseClick) {
-        obj.onMouseClick(event);
+        safeCall(() => obj.onMouseClick(event));
       }
       if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
         break;
@@ -130,17 +130,17 @@ export function activate(ctx) {
 
     entered.forEach(el => {
       //need to check parent in case of object removed
-      if (!valid.has(el) && el.onMouseLeave && el.parent) {
-        el.onMouseLeave(event);
+      if (!valid.has(el) && el.onMouseLeave && !isGone(el)) {
+        safeCall(() => el.onMouseLeave(event));
       }
     });
 
     valid.forEach(el => {
       if (!entered.has(el) && el.onMouseEnter) {
-        el.onMouseEnter(event);
+        safeCall(() => el.onMouseEnter(event));
       }
       if (el.onMouseMove) {
-        el.onMouseMove(event);
+        safeCall(() => el.onMouseMove(event));
       }
     });
 
@@ -164,7 +164,7 @@ export function activate(ctx) {
       }
       let obj = hit.object;
       if (obj && obj.onDblclick) {
-        obj.onDblclick(event);
+        safeCall(() => obj.onDblclick(event));
       }
       if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
         break;
@@ -181,3 +181,18 @@ export function activate(ctx) {
 export function hasObject(hits, object) {
   return hits.find(hit => hit.object === object);
 }
+
+function safeCall(fn) {
+  try {
+    fn();
+  } catch (e) {
+    console.error(e);
+  }
+}
+function isGone(el) {
+  while (el.parent != null) {
+    el = el.parent;
+  }
+  return !el.isScene;
+}
+
