@@ -16,7 +16,7 @@ export function ModellerContextualActions() {
     return null;
   }
 
-  const entities = selection.map(ctx.cadRegistry.find);
+  const entities = selection.map(ctx.cadRegistry.find).filter(x => !!x);
 
   const allConstraints = Object.values(AssemblyConstraintsSchemas) as AssemblyConstraintSchema[];
   const availableConstraints = matchAvailableSubjects(entities, allConstraints) as AssemblyConstraintSchema[];
