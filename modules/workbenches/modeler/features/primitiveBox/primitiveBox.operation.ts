@@ -119,7 +119,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
       ],
       [],
       []
-    ))
+    ));
 
     return occ.utils.applyBooleanModifier([box], params.boolean);
   },

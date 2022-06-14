@@ -5,7 +5,7 @@ import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {MDatum} from "cad/model/mdatum";
 import CSys from "math/csys";
-
+import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 
 interface PrimitiveSphereParams {
   radius: number,
@@ -67,9 +67,22 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
       csys.y.y,
       csys.y.z);
 
-    oci.psphere("Sphere", "csys", params.radius);
+    oci.psphere("sphere", "csys", params.radius);
 
-    return occ.utils.applyBooleanModifier(["Sphere"], params.boolean);
+    const sphere = occ.io.getShell("sphere", new ExpectedOrderProductionAnalyzer(
+      [
+        {
+          id: 'F:SPHERE',
+          productionInfo: {
+            role: 'sweep'
+          }
+        },
+      ],
+      [],
+      []
+    ));
+
+    return occ.utils.applyBooleanModifier([sphere], params.boolean);
 
   },
 }

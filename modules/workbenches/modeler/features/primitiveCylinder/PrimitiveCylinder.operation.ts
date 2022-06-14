@@ -5,6 +5,7 @@ import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {MDatum} from "cad/model/mdatum";
 import CSys from "math/csys";
+import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 
 
 interface PrimitiveCylinderParams {
@@ -73,9 +74,35 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
       csys.y.y,
       csys.y.z);
 
-    oci.pcylinder("cy", "csys", params.diameter / 2, params.height);
+    oci.pcylinder("cylinder", "csys", params.diameter / 2, params.height);
 
-    return occ.utils.applyBooleanModifier(["cy"], params.boolean);
+    const cylinder = occ.io.getShell("cylinder", new ExpectedOrderProductionAnalyzer(
+      [
+        {
+          id: 'F:SIDE',
+          productionInfo: {
+            role: 'sweep'
+          }
+        },
+        {
+          id: 'F:LID',
+          productionInfo: {
+            role: 'lid'
+          }
+        },
+        {
+          id: 'F:BASE',
+          productionInfo: {
+            role: 'base'
+          }
+        },
+
+      ],
+      [],
+      []
+    ));
+
+    return occ.utils.applyBooleanModifier([cylinder], params.boolean);
 
   },
 }

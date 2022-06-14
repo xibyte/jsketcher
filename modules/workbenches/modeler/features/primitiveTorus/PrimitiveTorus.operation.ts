@@ -1,10 +1,11 @@
-import {ApplicationContext} from 'context';
-import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {EntityKind} from "cad/model/entities";
-import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
-import {MDatum} from "cad/model/mdatum";
+import { ApplicationContext } from 'context';
+import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
+import { EntityKind } from "cad/model/entities";
+import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
+import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { MDatum } from "cad/model/mdatum";
 import CSys from "math/csys";
+import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 
 
 interface PrimitiveTorusParams {
@@ -19,7 +20,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
   label: 'Torus',
   icon: 'img/cad/torus',
   info: 'Primitive Torus',
-  paramsInfo: ({radius, tubeRadius}) => `(${r(radius)} , ${r(tubeRadius)} )`,
+  paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} , ${r(tubeRadius)} )`,
   form: [
     {
       type: 'number',
@@ -75,7 +76,20 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
 
     oci.ptorus("torus", "csys", params.radius, params.tubeRadius);
 
-    return occ.utils.applyBooleanModifier(["torus"], params.boolean);
+    const torus = occ.io.getShell("torus", new ExpectedOrderProductionAnalyzer(
+      [
+        {
+          id: 'F:TORUS',
+          productionInfo: {
+            role: 'sweep'
+          }
+        },
+      ],
+      [],
+      []
+    ));
+
+    return occ.utils.applyBooleanModifier([torus], params.boolean);
 
   },
 }
