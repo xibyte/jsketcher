@@ -3,8 +3,9 @@ import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
-import {MDatum} from "cad/model/mdatum";
+import { MDatum } from "cad/model/mdatum";
 import CSys from "math/csys";
+import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 
 
 interface PrimitiveConeParams {
@@ -82,7 +83,33 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     oci.pcone("cone", "csys", params.diameterA / 2, params.diameterB / 2, params.height);
 
-    return occ.utils.applyBooleanModifier(["cone"], params.boolean);
+    const cone = occ.io.getShell("cone", new ExpectedOrderProductionAnalyzer(
+      [
+        {
+          id: 'F:SIDE',
+          productionInfo: {
+            role: 'sweep'
+          }
+        },
+        {
+          id: 'F:LID',
+          productionInfo: {
+            role: 'lid'
+          }
+        },
+        {
+          id: 'F:BASE',
+          productionInfo: {
+            role: 'base'
+          }
+        },
+
+      ],
+      [],
+      []
+    ));
+
+    return occ.utils.applyBooleanModifier([cone], params.boolean);
 
   },
 }
