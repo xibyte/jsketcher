@@ -30,7 +30,8 @@ export function ConstraintEditor() {
   const {viewer} = useContext(SketcherAppContext);
 
   const setValue = (name, value) => {
-    setValues({...value, [name]: value});
+     setValues({...values, [name]: value});
+    
   };
 
   if (!req || !values) {
