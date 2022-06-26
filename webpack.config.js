@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
+const fs = require('fs');
 const generateCSSScopedName = require('./build/cssScoopeGenerator')();
+const libAssets = require('./build/libAssets');
 
 const WEB_APP = path.join(__dirname, 'web/app');
 const MODULES = path.join(__dirname, 'modules');
@@ -37,8 +39,14 @@ module.exports = {
     inline: false,
     contentBase: [
       path.join(__dirname, 'web'),
-      path.join(__dirname, 'node_modules/jsketcher-occ-engine')
-    ]
+    ],
+    before(app) {
+      libAssets.forEach(asset => {
+        app.get(`/lib-assets/${asset}`, function (req, res) {
+          res.sendFile(path.join(NODE_MODULES, asset))
+        })
+      });
+    }
   },
   module: {
     rules: [
