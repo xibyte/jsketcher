@@ -2,6 +2,7 @@
 const webpack = require('webpack');
 const webpackConfig = require('./webpack.config');
 const del = require('del');
+const libAssets = require("./build/libAssets");
 const exec = require('child_process').exec;
 
 module.exports = function(grunt) {
@@ -17,16 +18,28 @@ module.exports = function(grunt) {
       return true;
     }
   }
-  
+
   grunt.initConfig({
+
     copy: {
+
+      lib_assets: {
+        files: libAssets.map(asset => ({
+          expand: true,
+          cwd: 'node_modules',
+          src: asset, //path.join('node_modules', asset),
+          dest: `dist/lib-assets/`
+        }))
+      },
+
       resources: {
-        expand: true,
-        cwd: 'web',
-        src: '**',
-        dest: 'dist/',
-        filter: dirFilter(['web/app', 'web/test'])
-      }
+          expand: true,
+          cwd: 'web',
+          src: '**',
+          dest: 'dist/',
+          filter: dirFilter(['web/app', 'web/test'])
+        }
+
     }
   });
   
@@ -60,5 +73,5 @@ module.exports = function(grunt) {
     });
   });
   
-  grunt.registerTask('default', ['clean', 'build', 'copy:resources', 'mark-revision', 'show-revision']);
+  grunt.registerTask('default', ['clean', 'build', 'copy:resources', 'copy:lib_assets', 'mark-revision', 'show-revision']);
 };
