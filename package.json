@@ -69,6 +69,7 @@
     "classnames": "2.2.5",
     "clipper-lib": "6.2.1",
     "earcut": "2.1.1",
+    "font-awesome": "4.7.0",
     "immer": "^9.0.12",
     "less": "^3.11.1",
     "libtess": "1.2.2",
