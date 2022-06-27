@@ -1,5 +1,5 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {MFace} from "cad/model/mface";
+import {MBrepFace, MFace} from "cad/model/mface";
 import {ApplicationContext} from "context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
@@ -11,7 +11,8 @@ import { GetRef } from "cad/craft/e0/interact";
 import {
   FromMObjectProductionAnalyzer,
   FromSketchProductionAnalyzer,
-  ProductionAnalyzer
+  ProductionAnalyzer,
+  PushPullFaceProductionAnalyzer
 } from "cad/craft/production/productionAnalyzer";
 
 interface RevolveParams {
@@ -37,30 +38,22 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
     let sketchId = face.id;
     let sketch = ctx.sketchStorageService.readSketch(sketchId);
 
-
     let sweepSources: FaceRef[];
 
     if (!sketch) {
       if (face instanceof MBrepFace) {
-        occ.io.pushModel(face, face.id)
-        const edges = face.edges;
-        edges.forEach(e => occ.io.pushModel(e, e.id));
-        sweepSources = [{
-          face: face.id,
-          edges: edges.map(e => e.id)
-        }];
+        var args = ["FaceTool", face, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
+        oci.revol(...args);
+        return occ.utils.applyBooleanModifier([occ.io.getShell("FaceTool")], params.boolean, face, [],
+          (targets, tools) => new FromMObjectProductionAnalyzer(targets, [face]));
       } else {
         throw "can't extrude an empty surface";
       }
-    } else {
-      let csys = face.csys;
-      if (params.doubleSided) {
-        csys = csys.clone();
-        csys.origin._minus(extrusionVector);
-        extrusionVector._scale(2);
-      }
-      sweepSources = occ.utils.sketchToFaces(sketch, csys)
     }
+
+    let csys = face.csys;
+
+    sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
 
@@ -69,9 +62,9 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
       const shapeName = "Tool/" + i;
       var args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
       oci.revol(...args);
-
       return shapeName;
-    });
+    }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
+
 
     return occ.utils.applyBooleanModifier(tools, params.boolean, productionAnalyzer, [face]);
 
