@@ -16,7 +16,7 @@ JS.Sketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
 
 [Help Docs](./web/docs/index.md)
 
-[Dev Guide](./DevGuide/index.md)
+[Dev Guide](./dev-guide/index.md)
 
 [Comercial Licencing](https://www.autodrop3d.com/parametric-cad-beta.html)
 
