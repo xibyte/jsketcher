@@ -16,11 +16,11 @@ export function ContextualControls() {
   const ___ = useStream(ctx => ctx.viewer.parametricManager.$update);
 
   const ctx = useContext(SketcherAppContext);
+  const [modification, setModification] = useState(0);
 
   if (selection.length === 0) {
     return null;
   }
-  const [modification, setModification] = useState(0);
   const obj = selection.length === 1 ? selection[0] : null;
 
   const availableActions = matchAvailableActions(selection);
