@@ -96,11 +96,14 @@ export class RectangleTool extends Tool {
     pm.coincidePoints(this.rectangle[0].b, this.rectangle[1].a);
     pm.coincidePoints(this.rectangle[1].b, this.rectangle[2].a);
     pm.coincidePoints(this.rectangle[2].b, this.rectangle[3].a);
+
+    this.rectangle.forEach(seg => seg.syncGeometry());
+
     const constraints = [
-      new AlgNumConstraint(ConstraintDefinitions.Horizontal, [this.rectangle[0]], {angle: 0}),
-      new AlgNumConstraint(ConstraintDefinitions.Horizontal, [this.rectangle[2]], {angle: 180}),
-      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[3]], {angle: 90}),
-      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[1]], {angle: 270}),
+      new AlgNumConstraint(ConstraintDefinitions.Horizontal, [this.rectangle[0]], {angle: ConstraintDefinitions.Horizontal.constants.angle.initialValue([this.rectangle[0]])}),
+      new AlgNumConstraint(ConstraintDefinitions.Horizontal, [this.rectangle[2]], {angle: ConstraintDefinitions.Horizontal.constants.angle.initialValue([this.rectangle[2]])}),
+      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[3]], {angle: ConstraintDefinitions.Vertical.constants.angle.initialValue([this.rectangle[3]])}),
+      new AlgNumConstraint(ConstraintDefinitions.Vertical, [this.rectangle[1]], {angle: ConstraintDefinitions.Vertical.constants.angle.initialValue([this.rectangle[1]])}),
     ];
     // constraints.forEach(c => c.initConstants());
     this.rectangle.forEach(s => s.stabilize(this.viewer));
