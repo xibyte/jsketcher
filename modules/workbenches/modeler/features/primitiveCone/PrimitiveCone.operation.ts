@@ -83,28 +83,35 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     oci.pcone("cone", "csys", params.diameterA / 2, params.diameterB / 2, params.height);
 
-    const cone = occ.io.getShell("cone", new ExpectedOrderProductionAnalyzer(
-      [
-        {
-          id: 'F:SIDE',
-          productionInfo: {
-            role: 'sweep'
-          }
-        },
-        {
-          id: 'F:LID',
-          productionInfo: {
-            role: 'lid'
-          }
-        },
-        {
-          id: 'F:BASE',
-          productionInfo: {
-            role: 'base'
-          }
-        },
 
-      ],
+    let newFacesIds = [
+      {
+        id: 'F:SIDE',
+        productionInfo: {
+          role: 'sweep'
+        }
+      },
+    ];
+
+    if (params.diameterB > 0) {
+      newFacesIds.push({
+        id: 'F:BASE',
+        productionInfo: {
+          role: 'base'
+        }
+      })
+    }
+
+    if (params.diameterA > 0) {
+      newFacesIds.push({
+        id: 'F:LID',
+        productionInfo: {
+          role: 'lid'
+        }
+      });
+    }
+
+    const cone = occ.io.getShell("cone", new ExpectedOrderProductionAnalyzer(newFacesIds,
       [],
       []
     ));
