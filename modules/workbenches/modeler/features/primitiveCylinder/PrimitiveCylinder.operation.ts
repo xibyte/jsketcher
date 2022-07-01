@@ -85,15 +85,15 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
           }
         },
         {
-          id: 'F:LID',
-          productionInfo: {
-            role: 'lid'
-          }
-        },
-        {
           id: 'F:BASE',
           productionInfo: {
             role: 'base'
+          }
+        },
+        {
+          id: 'F:LID',
+          productionInfo: {
+            role: 'lid'
           }
         },
 
