@@ -43,7 +43,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
     if (params.loftType == "smooth") loftType = 0;
     if (params.loftType == "sharp") loftType = 1;
 
-    console.log(params.loops);
+    //console.log(params.loops);
 
 <<<<<<< HEAD
     let sketches = [];
@@ -56,10 +56,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
       return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys).wire
     });
 
-    console.log("This is the info you are looking for", sketches);
-
-
-
+    //console.log("This is the info you are looking for", sketches);
 
     let sweepSources = [];
 
@@ -69,8 +66,6 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
     });
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
-
-
 
     oci.thrusections("th", "1", loftType, ...wires);
 
