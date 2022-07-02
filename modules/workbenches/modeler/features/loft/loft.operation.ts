@@ -19,7 +19,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
   icon: 'img/cad/loft',
   info: 'Lofts 2D sketch',
   paramsInfo: ({ }) => `(${r()})`,
-  run: async (params: LoftParams, ctx: ApplicationContext) => {
+  run:async (params: LoftParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
@@ -34,8 +34,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
 
     const wires = params.loops.map((loop, i) => {
       const shapeName = "loop/" + i;
-      const sketch = loop.parent
-      sketches.push(sketch);
+      sketches.push(loop.parent);
 
       return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys).wire
     });
@@ -44,36 +43,12 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
 
 
 
-    sketches.forEach(function (item, index) {
-      //console.log(item, index);
-      if(params.loops[index].contour.segments.length > longestPath){
-        longestPath = params.loops[index].contour.segments.length;
-
-        primarySketch = params.loops[index].parent;
-      }
-      const face = occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys);
-      sweepSources = face;
-    });
-
     let sweepSources = [];
 
-    let indexOfMostSegments = 0;
-    let longestPath =  0;
-    let primarySketch = {};
-
-    sketches.forEach(function (item, index) {
+    sketches.forEach(await async function (item, index) {
       console.log(item, index);
-      if(params.loops[index].contour.segments.length > longestPath){
-        longestPath = params.loops[index].contour.segments.length;
-
-        primarySketch = params.loops[index].parent;
-      }
-      const face = occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys);
-      sweepSources = face;
+      await sweepSources.concat(await occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys))
     });
-
-
-    
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
 
@@ -84,7 +59,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
     let tools = [];
     tools.push(occ.io.getShell("th", productionAnalyzer));
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean, [], [],)
+    return occ.utils.applyBooleanModifier(tools, params.boolean, sketches, [],)
 
   },
 
