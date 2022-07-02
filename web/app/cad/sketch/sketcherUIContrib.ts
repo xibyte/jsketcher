@@ -6,7 +6,7 @@ import constraintGlobalActions from "../../sketcher/actions/constraintGlobalActi
 import generalToolActions from "../../sketcher/actions/generalToolActions";
 import sketcherControlActions from "./sketcherControlActions";
 import {ApplicationContext} from "context";
-import {WorkbenchConfig} from "cad/workbench/workbenchService";
+import {RiCompasses2Line} from "react-icons/ri";
 
 export default function (ctx: ApplicationContext) {
 
@@ -53,10 +53,9 @@ export default function (ctx: ApplicationContext) {
     ui: {
       toolbar: SKETCHER_MODE_HEADS_UP_ACTIONS,
       toolbarStyle: 'compact'
-    }
+    },
+    icon: RiCompasses2Line
   });
-
-
 }
 
 const SKETCHER_PREFIX = 'sketcher.';

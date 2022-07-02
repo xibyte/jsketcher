@@ -19,7 +19,7 @@ export function activate(ctx) {
     ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}]
   ];
 
-  streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport'];
+  streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport', 'menu.workbenches'];
   
   ctx.actionService.registerActions(CoreActions);
   ctx.actionService.registerActions(OperationActions);

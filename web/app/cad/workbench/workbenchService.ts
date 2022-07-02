@@ -4,6 +4,8 @@ import {state} from "lstream";
 import {Index} from "gems/indexType";
 import {ApplicationContext, CoreContext} from "context";
 import {ActionRef} from "cad/dom/uiPlugin";
+import {IconDeclaration} from "cad/icons/IconDeclaration";
+import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";
 
 export class WorkbenchService {
 
@@ -21,7 +23,7 @@ export class WorkbenchService {
       ctx.uiService.streams.toolbars.headsUp.next(workbenchConfig.ui.toolbar);
       const toolbarStyle = workbenchConfig.ui.toolbarStyle || 'large'
       ctx.uiService.streams.toolbars.headsUpShowTitles.next(toolbarStyle === "large");
-    })
+    });
   }
 
   getWorkbenchConfig(workbenchId: string): WorkbenchConfig {
@@ -39,6 +41,20 @@ export class WorkbenchService {
       ...workbenches,
       [workbenchConfig.workbenchId]: workbenchConfig
     }));
+
+    this.ctx.actionService.registerAction(
+      {
+        id: 'workbench.switch.' + workbenchConfig.workbenchId,
+        appearance: {
+          icon: workbenchConfig.icon,
+          label: workbenchConfig.workbenchId,
+          info: 'switches to ' + workbenchConfig.workbenchId,
+        },
+        invoke: (ctx) => {
+          this.switchWorkbench(workbenchConfig.workbenchId);
+        }
+      }
+    );
   }
 
   switchWorkbench(workbenchId: string) {
@@ -65,4 +81,5 @@ export interface WorkbenchConfig {
   features: OperationDescriptor<any>[];
   actions: ActionDefinition<any>[];
   ui: WorkbenchUIConfig;
+  icon: IconDeclaration
 }
