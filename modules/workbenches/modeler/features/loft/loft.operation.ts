@@ -28,7 +28,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
     if (params.loftType == "smooth") loftType = 0;
     if (params.loftType == "sharp") loftType = 1;
 
-    console.log(params.loops);
+    //console.log(params.loops);
 
     let sketches = [];
 
@@ -39,20 +39,27 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
       return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys).wire
     });
 
-    console.log("This is the info you are looking for", sketches);
-
-
+    //console.log("This is the info you are looking for", sketches);
 
     let sweepSources = [];
 
-    sketches.forEach(await async function (item, index) {
-      console.log(item, index);
-      await sweepSources.concat(await occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys))
+    let indexOfMostSegments = 0;
+    let longestPath =  0;
+    let primarySketch = {};
+
+    sketches.forEach(function (item, index) {
+      //console.log(item, index);
+      if(params.loops[index].contour.segments.length > longestPath){
+        longestPath = params.loops[index].contour.segments.length;
+
+        primarySketch = params.loops[index].parent;
+      }
+      const face = occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys);
+      sweepSources = face;
     });
 
+
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
-
-
 
     oci.thrusections("th", "1", loftType, ...wires);
 
