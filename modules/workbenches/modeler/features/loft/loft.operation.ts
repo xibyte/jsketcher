@@ -19,12 +19,14 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
   icon: 'img/cad/loft',
   info: 'Lofts 2D sketch',
   paramsInfo: ({ }) => `(${r()})`,
-  run:async (params: LoftParams, ctx: ApplicationContext) => {
+  run: async (params: LoftParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
-
+    let loftType = 0;
+    if (params.loftType == "smooth") loftType = 0;
+    if (params.loftType == "sharp") loftType = 1;
 
     console.log(params.loops);
 
@@ -32,24 +34,36 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
 
     const wires = params.loops.map((loop, i) => {
       const shapeName = "loop/" + i;
-      sketches.push(loop.parent);
+      const sketch = loop.parent
+      sketches.push(sketch);
 
       return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys).wire
     });
 
     console.log("This is the info you are looking for", sketches);
 
-    let loftType = 0;
-    if (params.loftType == "smooth") loftType = 0;
-    if (params.loftType == "sharp") loftType = 1;
+
 
 
     let sweepSources = [];
 
-    sketches.forEach(await async function (item, index) {
+    let indexOfMostSegments = 0;
+    let longestPath =  0;
+    let primarySketch = {};
+
+    sketches.forEach(function (item, index) {
       console.log(item, index);
-      await sweepSources.concat(await occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys))
+      if(params.loops[index].contour.segments.length > longestPath){
+        longestPath = params.loops[index].contour.segments.length;
+
+        primarySketch = params.loops[index].parent;
+      }
+      const face = occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys);
+      sweepSources = face;
     });
+
+
+    
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
 
@@ -60,7 +74,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
     let tools = [];
     tools.push(occ.io.getShell("th", productionAnalyzer));
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean, sketches, [],)
+    return occ.utils.applyBooleanModifier(tools, params.boolean, [], [],)
 
   },
 
