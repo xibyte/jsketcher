@@ -10,9 +10,10 @@ import {BooleanWidgetProps} from "cad/mdf/ui/BooleanWidget";
 import {ChoiceWidgetProps} from "cad/mdf/ui/ChoiceWidget";
 import {SubFormWidgetProps} from "cad/mdf/ui/SubFormWidget";
 import {DirectionWidgetProps} from "cad/mdf/ui/DirectionWidget";
+import {FileWidgetProps} from "cad/mdf/ui/FileWidget";
 
 export type FieldWidgetProps = NumberWidgetProps | CheckboxWidgetProps | ChoiceWidgetProps | SelectionWidgetProps
-  | AxisWidgetProps | DirectionWidgetProps | BooleanWidgetProps;
+  | AxisWidgetProps | DirectionWidgetProps | BooleanWidgetProps | FileWidgetProps;
 
 export type BasicWidgetProps = ContainerWidgetProps | SectionWidgetProps | GroupWidgetProps | SubFormWidgetProps;
 

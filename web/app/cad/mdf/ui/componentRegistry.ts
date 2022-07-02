@@ -9,6 +9,7 @@ import {ChoiceWidget} from "cad/mdf/ui/ChoiceWidget";
 import {SubFormWidget} from "cad/mdf/ui/SubFormWidget";
 import {BooleanWidgetDefinition} from "cad/mdf/ui/BooleanWidget";
 import {DirectionWidgetDefinition} from "cad/mdf/ui/DirectionWidget";
+import {FileWidget} from "cad/mdf/ui/FileWidget";
 
 export const DynamicComponents = {
 
@@ -27,6 +28,8 @@ export const DynamicComponents = {
   'checkbox': CheckboxWidget,
 
   'choice': ChoiceWidget,
+
+  'file': FileWidget
 }
 
 export const ComponentLibrary = {
