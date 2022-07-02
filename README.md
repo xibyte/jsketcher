@@ -18,7 +18,7 @@ JSketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
 
 [Help Docs](./web/docs/index.md)
 
-[Dev Guide](./dev-guide/index.md)
+[Workbench Dev Guide](./dev-guide/index.md)
 
 
 Please consider supporting this project by becoming a backer
