@@ -3,7 +3,7 @@ import {WorkbenchConfig} from "cad/workbench/workbenchService";
 //imports of feature history type commands
 import {smTabOperation} from "./features/smTab/smTab.operation";
 import {smFlangeOperation} from "./features/smFlange/smFlange.operation";
-import {SiKaufland} from "react-icons/si";
+import {GiFoldedPaper} from "react-icons/gi";
 
 
 //imports of action type commands
@@ -29,5 +29,5 @@ export const sheetMetalWorkspace: WorkbenchConfig = {
       "SM_TAB","SM_FLANGE"
     ]
   },
-  icon: SiKaufland
+  icon: GiFoldedPaper
 }
