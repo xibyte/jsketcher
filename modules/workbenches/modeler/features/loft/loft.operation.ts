@@ -19,7 +19,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
   icon: 'img/cad/loft',
   info: 'Lofts 2D sketch',
   paramsInfo: ({ }) => `(${r()})`,
-  run: async (params: LoftParams, ctx: ApplicationContext) => {
+  run:async (params: LoftParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
     const oci = occ.commandInterface;
@@ -30,17 +30,18 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
 
     //console.log(params.loops);
 
+    console.log(params.loops);
+
     let sketches = [];
 
     const wires = params.loops.map((loop, i) => {
       const shapeName = "loop/" + i;
-      const sketch = loop.parent
-      sketches.push(sketch);
+      sketches.push(loop.parent);
 
       return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys).wire
     });
 
-    //console.log("This is the info you are looking for", sketches);
+    console.log("This is the info you are looking for", sketches);
 
     let sweepSources = [];
 
@@ -59,15 +60,23 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
       sweepSources = face;
     });
 
+    let sweepSources = [];
+
+    sketches.forEach(await async function (item, index) {
+      console.log(item, index);
+      await sweepSources.concat(await occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys))
+    });
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
+
+
 
     oci.thrusections("th", "1", loftType, ...wires);
 
     let tools = [];
     tools.push(occ.io.getShell("th", productionAnalyzer));
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean, [], [],)
+    return occ.utils.applyBooleanModifier(tools, params.boolean, sketches, [],)
 
   },
 
