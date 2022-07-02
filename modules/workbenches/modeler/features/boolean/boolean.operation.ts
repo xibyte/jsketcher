@@ -63,4 +63,40 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       defaultValue: "UNION",
     },
   ],
+
+  masking: [
+    {
+      id: 'UNION',
+      label: 'Union',
+      icon: 'img/cad/union',
+      info: 'makes a cut based on 2D sketch',
+      maskingParams: {
+        boolean: {
+          kind: 'UNION'
+        }
+      }
+    },
+    {
+      id: 'SUBTRACT',
+      label: 'Subtract',
+      icon: 'img/cad/subtract',
+      info: 'makes a cut based on 2D sketch',
+      maskingParams: {
+        boolean: {
+          kind: 'SUBTRACT'
+        }
+      }
+    },
+    {
+      id: 'INTERSECT',
+      label: 'Intersect',
+      icon: 'img/cad/intersection',
+      info: 'makes a cut based on 2D sketch',
+      maskingParams: {
+        boolean: {
+          kind: 'INTERSECT'
+        }
+      }
+    }
+  ]
 }

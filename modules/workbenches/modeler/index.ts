@@ -50,7 +50,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     toolbar: [
       'DATUM_CREATE', 'PLANE', 'EditFace', '-',
       "EXTRUDE", "CUT", "REVOLVE", "LOFT", "SWEEP", "-",
-      "BOOLEAN", "-", 
+      "BOOLEAN", "UNION", "SUBTRACT", "INTERSECT", "-", 
       "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY","-",
       "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "-",
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
