@@ -53,7 +53,7 @@ function SelectedModificationInfo({ history, index,
                  onClose={close}>
     <div className={ls.requestInfo}>
       <ImgIcon className={ls.pic} url={appearance && appearance.icon96} size={48}/>
-      <RenderObject object={m.params}/>
+      {/*<RenderObject object={m.params}/>*/}
         
       
     </div>
