@@ -183,6 +183,9 @@ Special Widgets:
 
 - **[file](#file-widget)**
 
+Special Widgets:
+ - **[file](#file-widget)**
+
 Example of adding a field to the schema. What ever order you place the items in the schema is the order they will be displayed in the resulting dialog.
 
 ```
@@ -378,9 +381,7 @@ Allows for text to be added to the dialog with instructions or more sophisticate
 ```
 
 ## file widget
-
-Allows for from the local file system to be selected and the contents be made avaiable to the feature.
-
+Allows for from the local file system to be selected and the contents be made avaiable to the feature. 
 ```
   {
     type: 'file',
@@ -390,10 +391,10 @@ Allows for from the local file system to be selected and the contents be made av
   },
 ```
 
-## paramsInfo tool tip information
 
-The paramsInfo section is used to define a string that shows up when you mouse over a feature from the time line. You can pass in items defined in the schema and use them to form the string template for the tool top text. The tooltip text is displayed when mousing over the feature in the part history.
 
+# paramsInfo tool tip information 
+The paramsInfo section is used to define a string that shows up when you mouse over a feature from the time line. You can pass in items defined in the schema and use them to form the string template for the tool top text. The tooltip text is displayed when mousing over the feature in the part history. 
 ```
 export default {
 	//. . .
