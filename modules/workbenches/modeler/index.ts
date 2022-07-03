@@ -19,7 +19,6 @@ import { MirrorBodyOperation} from "./features/mirrorBody/mirrorBody.operation";
 import { PatternLinearOperation } from "./features/patternLinear/patternLinear.operation";
 import { PatternRadialOperation } from "./features/patternRadial/patternRadial.operation";
 import { ImportModelOpperation } from "./features/importModel/importModel.operation";
-import { DeleteBodyOperation } from "./features/deleteBody/deleteBody.operation";
 //imports of action type commands
 import { GetVolume } from './actions/getVolume/getVolume.action';
 import {GiCubes} from "react-icons/gi";
@@ -47,10 +46,6 @@ export const ModelerWorkspace: WorkbenchConfig = {
     PatternLinearOperation,
     PatternRadialOperation,
     ImportModelOpperation,
-    DeleteBodyOperation,
-  ],
-  actions: [
-    GetVolume,
   ],
   ui: {
     toolbar: [
@@ -60,7 +55,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY","-",
       "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "-",
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
-      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL","DELETE_BODY",
+      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL"
     ]
   },
   icon: GiCubes
