@@ -18,7 +18,7 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
   icon: 'img/cad/intersection',
   info: 'Imports STEP, BREP or FCStd file',
   paramsInfo: ({ }) => `()`,
-  run: async (params: ImportModelParams, ctx: ApplicationContext) => {
+  run: (params: ImportModelParams, ctx: ApplicationContext) => {
     console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
@@ -28,13 +28,11 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
     const FileName = params.file.fileName.toUpperCase()
 
     if (FileName.endsWith("BRP") || FileName.endsWith("BREP")) {
-      alert("Importing BREP file");
-
       if (!params.file.content.startsWith("DBRep_DrawableShape")) {
         params.file.content = `DBRep_DrawableShape\n` + params.file.content;
       }
 
-      await FS.writeFile("newStepObject", await (params.file.content));
+      FS.writeFile("newStepObject", (params.file.content));
       oci.readbrep("newStepObject", "newStepObject");
       returnObject.created.push(occ.io.getShell("newStepObject"));
     } else {
