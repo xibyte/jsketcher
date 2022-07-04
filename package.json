@@ -71,7 +71,7 @@
     "earcut": "2.1.1",
     "font-awesome": "4.7.0",
     "immer": "^9.0.12",
-    "jsketcher-occ-engine": "1.0.1-56d3ea00d3847efc527b0197be5c5b28b89e421e",
+    "jsketcher-occ-engine": "1.0.1-2144340d03c052dc3c4bfab1c045ee28a6ba1528",
     "jszip": "^3.10.0",
     "less": "^3.11.1",
     "libtess": "1.2.2",
