@@ -8,6 +8,7 @@ import { MObject } from 'cad/model/mobject';
 import { LocalFile } from "ui/components/controls/FileControl";
 import CadError from "../../../../../web/app/utils/errors";
 import { parseStringPromise } from 'xml2js';
+import * as jszip from "jszip";
 
 
 interface ImportModelParams {
@@ -17,8 +18,8 @@ interface ImportModelParams {
 export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
   id: 'IMPORT_MODEL',
   label: 'Import',
-  icon: 'img/cad/intersection',
-  info: 'Imports STEP, BREP or FCStd file',
+  icon: 'img/cad/import',
+  info: 'Imports BREP, STEP, IGES or FCStd file',
   paramsInfo: ({ }) => `()`,
   run: async (params: ImportModelParams, ctx: ApplicationContext) => {
     console.log(params);
@@ -27,35 +28,51 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
 
     let returnObject = { created: [], consumed: [] };
 
+    console.log(params.file.content);
+
     const FileName = params.file.fileName.toUpperCase()
 
     if (FileName.endsWith("BRP") || FileName.endsWith("BREP")) {
+
+      //FreeCAD some times omits this text from the top of BRP files
+      //as part of the brp files stored in the .FCStf file archive format
       if (!params.file.content.startsWith("DBRep_DrawableShape")) {
         params.file.content = `DBRep_DrawableShape\n` + params.file.content;
       }
 
-      FS.writeFile("newStepObject", (params.file.content));
-      oci.readbrep("newStepObject", "newStepObject");
-      returnObject.created.push(occ.io.getShell("newStepObject"));
-    } else if (FileName.endsWith("XML")) {
-      // var parseString = require('xml2js').parseString;
-
-      // let results = JSON.parse(await JSON.stringify(await parseString(params.file.content)));
-
-      // alert(JSON.stringify(results));
-      // console.log(results);
-      let convert = await parseStringPromise(params.file.content);
-      convert = (JSON.parse(JSON.stringify(convert)));
-      console.log(JSON.stringify(convert));
-
+      FS.writeFile("newBREPobject", (params.file.content));
+      oci.readbrep("newBREPobject", "newBREPobject");
+      returnObject.created.push(occ.io.getShell("newBREPobject"));
     } else if (FileName.endsWith("FCSTD")) {
-      var jsZip = require('jszip')
 
-      window.jsZip = jsZip;
-      window.myzipfile = params.file.content;
-      const str2blob = txt => new Blob([txt]);
-      
-      console.log(await jsZip.loadAsync(await str2blob(params.file.content)));
+      //Add code here to extract zip file
+
+      let xmlFreeCADData = "";
+      //add code here to read contents of GuiDocument.xml in to xmlFreeCADData
+
+      let DecodedXmlFreeCADData = await parseStringPromise(xmlFreeCADData);
+      DecodedXmlFreeCADData = (JSON.parse(JSON.stringify(DecodedXmlFreeCADData)));
+      console.log(JSON.stringify(DecodedXmlFreeCADData));
+
+      //add code here to determin what specfic brp files from within 
+      //the archive have the property "Visibility" set as true. 
+
+      //Only import objects that have "Visisbility" set as true
+      //withthe same code as above for importing .brp type files.
+
+    } else if (FileName.endsWith("STEP") || FileName.endsWith("STP")) {
+
+      //step Import
+      FS.writeFile("newStepObject", (params.file.content));
+      oci.stepread("newStepObject", "newStepObject");
+      returnObject.created.push(occ.io.getShell("newStepObject"));
+
+    } else if (FileName.endsWith("IGES") || FileName.endsWith("IGS")) {
+
+      //IGES import
+      FS.writeFile("newIgesObject", (params.file.content));
+      oci.igesread("newIgesObject", "newIgesObject");
+      returnObject.created.push(occ.io.getShell("newIgesObject"));
 
     } else {
       throw new CadError({
@@ -79,3 +96,4 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
     },
   ],
 }
+
