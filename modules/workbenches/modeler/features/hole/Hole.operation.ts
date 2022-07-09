@@ -46,23 +46,21 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       created: []
     };
 
-    let sketch = ctx.sketchStorageService.readSketch(params.sketch.id);
-    console.log(sketch, "sketch info here");
+    //let sketch = ctx.sketchStorageService.readSketch(params.sketch.id);
+    //console.log(sketch, "sketch info here");
 
 
-    oci.pcylinder("basehole", params.diameter / 2, params.depth);
+    oci.pcylinder("result", params.diameter / 2, params.depth);
 
-    if (params.holeType == "normal") {
-      returnObject.created.push(occ.io.getShell("basehole"));
-    }
+    // if (params.holeType == "normal") {
+    //   returnObject.created.push(occ.io.getShell("basehole"));
+    // }
 
     if (params.holeType == "counterbore") {
       oci.pcylinder("counterbore", params.counterBoreDiameter / 2, params.counterBoreDepth);
 
-      oci.bop("basehole", "counterbore");
-      oci.bopfuse("result");
-
-      returnObject.created.push(occ.io.getShell("result"));
+      oci.bop("result", "counterbore");
+      oci.bopfuse("result"); 
     }
 
     if (params.holeType == "countersink") {
@@ -71,14 +69,13 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
 
 
       oci.pcone("countersink", params.countersinkDiameter / 2, 0, heightFromDiameterAndAngle);
-      oci.bop("basehole", "countersink");
+      oci.bop("result", "countersink");
       oci.bopfuse("result");
-      returnObject.created.push(occ.io.getShell("result"));
     }
 
-    let ptr = Interrogate("base", true).ptr;
+    let ptr = Interrogate("result", true).ptr;
     SetLocation(ptr, params.datum.csys.outTransformation.toFlatArray());
-
+    returnObject.created.push(occ.io.getShell("result"));
     console.log(returnObject);
 
     return returnObject;
