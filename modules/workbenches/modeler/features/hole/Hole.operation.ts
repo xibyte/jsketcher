@@ -60,7 +60,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       oci.pcylinder("counterbore", params.counterBoreDiameter / 2, params.counterBoreDepth);
 
       oci.bop("result", "counterbore");
-      oci.bopfuse("result");
+      oci.bopfuse("result"); 
     }
 
     if (params.holeType == "countersink") {
@@ -73,9 +73,9 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       oci.bopfuse("result");
     }
 
-    let ptr = Interrogate("base", true).ptr;
+    let ptr = Interrogate("result", true).ptr;
     SetLocation(ptr, params.datum.csys.outTransformation.toFlatArray());
-
+    returnObject.created.push(occ.io.getShell("result"));
     console.log(returnObject);
 
     return returnObject;
