@@ -40,7 +40,7 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
         params.file.content = `DBRep_DrawableShape\n` + params.file.content;
       }
 
-      FS.writeFile("newBREPobject", (params.file.content));
+      FS.writeFile("newBREPobject",  (params.file.content));
       oci.readbrep("newBREPobject", "newBREPobject");
       returnObject.created.push(occ.io.getShell("newBREPobject"));
     } else if (FileName.endsWith("FCSTD")) {
