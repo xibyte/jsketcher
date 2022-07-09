@@ -62,3 +62,7 @@ export function IsEdgesOverlap(e1Ptr, e2Ptr, tol) {
 export function UpdateTessellation(shapePtr, deflection) {
   return Module._UpdateTessellation(shapePtr, deflection);
 }
+
+export function SetLocation(shapePtr, matrixArray) {
+  return Module._SetLocation(shapePtr, ...matrixArray);
+}
