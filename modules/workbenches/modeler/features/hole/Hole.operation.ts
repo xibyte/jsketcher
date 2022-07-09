@@ -36,7 +36,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
                  holeType,
                }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
 
-  run: (params: HoleParams, ctx: ApplicationContext) => {
+  run: async (params: HoleParams, ctx: ApplicationContext) => {
     console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
@@ -74,7 +74,9 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
     }
 
     let ptr = Interrogate("result", true).ptr;
-    SetLocation(ptr, params.datum.csys.outTransformation.toFlatArray());
+    console.log(params.datum.csys.outTransformation);
+    const location = await params.datum.csys.outTransformation.toFlatArray();
+    SetLocation(ptr, location);
     returnObject.created.push(occ.io.getShell("result"));
     console.log(returnObject);
 
