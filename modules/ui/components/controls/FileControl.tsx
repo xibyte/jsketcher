@@ -6,6 +6,11 @@ export interface LocalFile {
   content: string;
 }
 
+export function getBase64FromDataUrl(dataUrl: string): string {
+  const commaIndex = dataUrl.indexOf(',');
+  return dataUrl.substring(commaIndex + 1, dataUrl.length);
+}
+
 export default class FileControl extends React.Component<any> {
 
   render() {
@@ -19,12 +24,15 @@ export default class FileControl extends React.Component<any> {
 
       const file = files[0];
 
-      file.text().then(content => {
+      const reader = new FileReader();
+      reader.onload = evt => {
+        const dataUrl = evt.target.result as string;
         onChange({
           fileName: name,
-          content
+          content: dataUrl
         })
-      });
+      };
+      reader.readAsDataURL(file);
     }
 
     return <div className={type}>
