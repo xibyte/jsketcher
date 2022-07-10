@@ -11,7 +11,7 @@ interface DeleteBodyParams {
 export const DeleteBodyOperation: OperationDescriptor<DeleteBodyParams> = {
   id: 'DELETE_BODY',
   label: 'DeleteBody',
-  icon: 'img/cad/deleteBody',
+  icon: 'img/cad/intersection',
   info: 'Delete Bodies',
   paramsInfo: ({ tools, DeleteBody }) => `(${r(tools)} ${r(DeleteBody)})`,
   run: (params: DeleteBodyParams, ctx: ApplicationContext) => {
