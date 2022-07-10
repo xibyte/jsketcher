@@ -1,5 +1,6 @@
 import Vector, {AXIS, UnitVector} from "math/vector";
 import {Vec3} from "math/vec";
+import * as vec from "math/vec";
 import {VectorTransformer} from "math/functions";
 
 export type Matrix3x4Data = [[number, number, number, number], [number, number, number, number], [number, number, number, number]];
@@ -53,6 +54,23 @@ export class Matrix3x4 {
     return this;
   };
 
+  setBasis3(basis: [Vec3, Vec3, Vec3]): Matrix3x4 {
+    const b = basis;
+    this.mxx = b[0][0];
+    this.mxy = b[1][0];
+    this.mxz = b[2][0];
+    this.tx = 0;
+    this.myx = b[0][1];
+    this.myy = b[1][1];
+    this.myz = b[2][1];
+    this.ty = 0;
+    this.mzx = b[0][2];
+    this.mzy = b[1][2];
+    this.mzz = b[2][2];
+    this.tz = 0;
+    return this;
+  };
+
   setBasisAxises(x: Vector, y: Vector, z: Vector): Matrix3x4 {
     this.mxx = x.x;
     this.mxy = y.x;
@@ -76,6 +94,38 @@ export class Matrix3x4 {
     this.tz = translation.z;
     return this;
   };
+
+  setBasisAndTranslation3(basis: [Vec3, Vec3, Vec3], translation: Vec3): Matrix3x4 {
+    this.setBasis3(basis);
+    this.tx = translation[0];
+    this.ty = translation[1];
+    this.tz = translation[2];
+    return this;
+  };
+
+  getBasis3(): [Vec3, Vec3, Vec3] {
+    return [
+      [
+        this.mxx,
+        this.myx,
+        this.mzx
+      ],
+      [
+        this.mxy,
+        this.myy,
+        this.mzy
+      ],
+      [
+        this.mxz,
+        this.myz,
+        this.mzz
+      ]
+    ]
+  };
+
+  getTranslation3(): Vec3 {
+    return [this.tx, this.ty, this.tz];
+  }
 
   scale(dx: number, dy: number, dz: number): Matrix3x4 {
     this.mxx *= dx;
@@ -182,6 +232,24 @@ export class Matrix3x4 {
 
   _invert(): Matrix3x4 {
     return this.__invert(this);
+  };
+
+  normalize(): Matrix3x4 {
+    return this.__normalize(new Matrix3x4());
+  };
+
+  _normalize(): Matrix3x4 {
+    return this.__normalize(this);
+  };
+
+  __normalize(out: Matrix3x4): Matrix3x4 {
+    const basis = this.getBasis3();
+    const tr = this.getTranslation3();
+    basis.forEach(vec._normalize);
+
+    out.setBasisAndTranslation3(basis, tr);
+
+    return out;
   };
 
   __invert(out: Matrix3x4): Matrix3x4 {
