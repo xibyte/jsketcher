@@ -1,13 +1,13 @@
-import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {ApplicationContext} from "context";
-import {EntityKind} from "cad/model/entities";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
+import { ApplicationContext } from "context";
+import { EntityKind } from "cad/model/entities";
+import { OperationDescriptor } from "cad/craft/operationPlugin";
 import { MFace } from "cad/model/mface";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
 import { UnitVector } from "math/vector";
 import { MObject } from "cad/model/mobject";
-import {Interrogate, SetLocation} from "cad/craft/e0/interact";
-import {MDatum} from "cad/model/mdatum";
+import { Interrogate, SetLocation } from "cad/craft/e0/interact";
+import { MDatum } from "cad/model/mdatum";
 
 interface HoleParams {
   datum: MDatum;
@@ -26,17 +26,17 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
   icon: 'img/cad/hole',
   info: 'creates hole features',
   paramsInfo: ({
-                  
-                 diameter,
-                 depth,
-                 counterBoreDiameter,
-                 counterBoreDepth,
-                 countersinkDiameter,
-                 countersinkAngle,
-                 holeType,
-               }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
 
-  run: async (params: HoleParams, ctx: ApplicationContext) => {
+    diameter,
+    depth,
+    counterBoreDiameter,
+    counterBoreDepth,
+    countersinkDiameter,
+    countersinkAngle,
+    holeType,
+  }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
+
+  run: (params: HoleParams, ctx: ApplicationContext) => {
     console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
@@ -60,7 +60,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       oci.pcylinder("counterbore", params.counterBoreDiameter / 2, params.counterBoreDepth);
 
       oci.bop("result", "counterbore");
-      oci.bopfuse("result"); 
+      oci.bopfuse("result");
     }
 
     if (params.holeType == "countersink") {
@@ -73,12 +73,13 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       oci.bopfuse("result");
     }
 
-    let ptr = Interrogate("result", true).ptr;
-    console.log(params.datum.csys.outTransformation);
-    const location = await params.datum.csys.outTransformation.toFlatArray();
-    SetLocation(ptr, location);
+    //let ptr = Interrogate("result", true).ptr;
+    //console.log(params.datum.csys.outTransformation);
+    //const location = params.datum.csys.outTransformation.toFlatArray();
+    //SetLocation(ptr, location);
     returnObject.created.push(occ.io.getShell("result"));
     console.log(returnObject);
+    console.log("Set location worked");
 
     return returnObject;
 
