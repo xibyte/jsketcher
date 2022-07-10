@@ -1,13 +1,9 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
-import { MFace } from "cad/model/mface";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { UnitVector } from "math/vector";
-import { MObject } from "cad/model/mobject";
-import { Interrogate, SetLocation } from "cad/craft/e0/interact";
-import { MDatum } from "cad/model/mdatum";
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {ApplicationContext} from "context";
+import {EntityKind} from "cad/model/entities";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {SetLocation} from "cad/craft/e0/interact";
+import {MDatum} from "cad/model/mdatum";
 
 interface HoleParams {
   datum: MDatum;
@@ -73,13 +69,9 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       oci.bopfuse("result");
     }
 
-    //let ptr = Interrogate("result", true).ptr;
-    //console.log(params.datum.csys.outTransformation);
-    //const location = params.datum.csys.outTransformation.toFlatArray();
-    //SetLocation(ptr, location);
+    let location = params.datum.csys.outTransformation._normalize();
+    SetLocation("result", location.toFlatArray());
     returnObject.created.push(occ.io.getShell("result"));
-    console.log(returnObject);
-    console.log("Set location worked");
 
     return returnObject;
 
