@@ -33,33 +33,37 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
     const FileName = params.file.fileName.toUpperCase()
 
     if (FileName.endsWith("BRP") || FileName.endsWith("BREP")) {
+      let fileToRead = atob(params.file.content.slice(params.file.content.indexOf(',') + 1));
 
+      console.log(fileToRead);
       //FreeCAD some times omits this text from the top of BRP files
       //as part of the brp files stored in the .FCStf file archive format
-      if (!params.file.content.startsWith("DBRep_DrawableShape")) {
-        params.file.content = `DBRep_DrawableShape\n` + params.file.content;
+      if (!fileToRead.startsWith("DBRep_DrawableShape")) {
+        fileToRead = `DBRep_DrawableShape\n` + fileToRead;
       }
 
-      FS.writeFile("newBREPobject",  (params.file.content));
+      FS.writeFile("newBREPobject", (fileToRead));
       oci.readbrep("newBREPobject", "newBREPobject");
       returnObject.created.push(occ.io.getShell("newBREPobject"));
     } else if (FileName.endsWith("FCSTD")) {
+      const archiveData = params.file.content.slice(params.file.content.indexOf(',') + 1);
+      var JSZip = require("jszip");
 
-      //Add code here to extract zip file
-
-      let xmlFreeCADData = "";
-      //add code here to read contents of GuiDocument.xml in to xmlFreeCADData
+      const zipContents = await (await JSZip.loadAsync(archiveData, { base64: true })).files;
+      var xmlFreeCADData = await zipContents["GuiDocument.xml"].async("string");
 
       let DecodedXmlFreeCADData = await parseStringPromise(xmlFreeCADData);
       DecodedXmlFreeCADData = (JSON.parse(JSON.stringify(DecodedXmlFreeCADData)));
-      console.log(JSON.stringify(DecodedXmlFreeCADData));
+      console.log(DecodedXmlFreeCADData);
 
-      //add code here to determin what specfic brp files from within 
-      //the archive have the property "Visibility" set as true. 
-
-      //Only import objects that have "Visisbility" set as true
-      //withthe same code as above for importing .brp type files.
-
+      for (const property in zipContents) {
+        if (property.endsWith("brp")){
+          FS.writeFile(property, `DBRep_DrawableShape\n` + await zipContents[property].async("string"));
+          oci.readbrep(property, property);
+          returnObject.created.push(occ.io.getShell(property));
+        }
+      }
+      //console.log(zipContents);
     } else if (FileName.endsWith("STEP") || FileName.endsWith("STP")) {
 
       //step Import
