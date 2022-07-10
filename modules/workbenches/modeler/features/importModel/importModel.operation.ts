@@ -56,7 +56,7 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
 
       for (const itemToLookAt in DecodedXmlFreeCADData) {
         const flattenedObject = flattenJSON(DecodedXmlFreeCADData[itemToLookAt]);
-        let importBrepFlag = false;
+        let importBrepFlag = true;
         let importBrepShapeName = "";
         let visiblePropertyName = "";
         for (const propertyToLookAt in flattenedObject) {
@@ -64,14 +64,19 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
           if (propertyToLookAt.includes("Part.0.$.file")) importBrepShapeName = flattenedObject[propertyToLookAt];
           if (propertyToLookAt.includes("$.name") && flattenedObject[propertyToLookAt] == "Visibility") {
             let propToCheck = propertyToLookAt.replace(".$.name", ".Bool.0.$.value");
-            if (flattenedObject[propToCheck] == "true") importBrepFlag = true;
+            if (flattenedObject[propToCheck] == "false") importBrepFlag = false;
           }
 
         }
         if (importBrepFlag == true) {
-          FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + await zipContents[importBrepShapeName].async("string"));
-          oci.readbrep(importBrepShapeName, importBrepShapeName);
-          returnObject.created.push(occ.io.getShell(importBrepShapeName));
+          try {
+            await FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + await zipContents[importBrepShapeName].async("string"));
+            await oci.readbrep(importBrepShapeName, importBrepShapeName);
+            returnObject.created.push(occ.io.getShell(importBrepShapeName));
+          } catch (e) {
+            console.log(e)
+          }
+
         }
       }
 
