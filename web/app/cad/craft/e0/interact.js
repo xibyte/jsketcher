@@ -63,6 +63,35 @@ export function UpdateTessellation(shapePtr, deflection) {
   return Module._UpdateTessellation(shapePtr, deflection);
 }
 
-export function SetLocation(shapePtr, matrixArray) {
-  return Module._SetLocation(shapePtr, ...matrixArray);
+export function SetLocation(shapeName, matrixArray) {
+  const shapeNamePtr = toCString(shapeName);
+  const [
+    mx0,
+    mx1,
+    mx2,
+    mx3,
+    mx4,
+    mx5,
+    mx6,
+    mx7,
+    mx8,
+    mx9,
+    mx10,
+    mx11
+  ] = matrixArray;
+  Module._SetLocation(shapeNamePtr,
+    mx0,
+    mx1,
+    mx2,
+    mx3,
+    mx4,
+    mx5,
+    mx6,
+    mx7,
+    mx8,
+    mx9,
+    mx10,
+    mx11
+  );
+  _free(shapeNamePtr);
 }
