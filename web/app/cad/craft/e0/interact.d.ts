@@ -16,4 +16,4 @@ export function IsEdgesOverlap(e1Ptr: number, e2Ptr: number, tol: number): boole
 
 export function UpdateTessellation(shapePtr: number, deflection: number): number;
 
-export function SetLocation(shapePtr: number, matrixArray: number[]);
+export function SetLocation(shapeName: string, matrixArray: number[]);
