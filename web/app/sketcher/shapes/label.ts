@@ -21,6 +21,10 @@ export class Label extends SketchObject {
     this.offsetY = 0;
   }
 
+  dependsOn(other: SketchObject) {
+    return this.assignedObject === other;
+  }
+
   translateImpl(dx, dy) {
     this.offsetX += dx;
     this.offsetY += dy;
