@@ -27,6 +27,10 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     this.id = id || this.ref;
   }
 
+  dependsOn(obj: SketchObject): boolean {
+    return false;
+  };
+
   get isGenerated() {
     let obj: SketchObject = this;
     while (obj) {
