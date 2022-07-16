@@ -335,7 +335,7 @@ export class IO {
   };
 
   getWorkspaceToExport() {
-    return [this.viewer.layers];
+    return [this.viewer.layers, [this.viewer.labelLayer]];
   };
 
   getLayersToExport() {
@@ -395,6 +395,8 @@ export class IO {
     var bbox = new BBox();
     var toExport = this.getLayersToExport();
     var i;
+    let needsTextStyle = false;
+
     bbox.checkLayers(toExport);
     out.line("999");
     out.line("js.parametric.sketcher");
@@ -526,10 +528,59 @@ export class IO {
           out.line("0");
           out.line("40");
           out.numberln(obj.r.get());
+        } else if (obj._class === T.LABEL) {
+          const m = obj.assignedObject.labelCenter;
+          if (!m) {
+            return;
+          }
+
+          const h = obj.textHelper.textMetrics.width/2;
+          const lx = m.x - h + obj.offsetX;
+          const ly = m.y + obj.marginOffset  + obj.offsetY;
+
+          out.line("0");
+          out.line("TEXT");
+          out.line("8");
+          out.line(lid);
+          out.line("10");
+          out.numberln(lx);
+          out.line("20");
+          out.numberln(ly);
+          out.line("30");
+          out.line("0");
+
+          out.line("41");
+          out.line("1");
+
+          out.line("1");
+          out.line(obj.text);
+          out.line("7");
+          out.line("TEXT_STYLE");
+          needsTextStyle = true;
 //      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
         }
       }
     }
+
+    if (needsTextStyle) {
+      out.line("0");
+      out.line("STYLE");
+      out.line("2");
+      out.line("TEXT_STYLE");
+      out.line("70");
+      out.line("0");
+      out.line("40");
+      out.line("12");
+      out.line("41");
+      out.line("1.0");
+      out.line("42");
+      out.line("12");
+      out.line("50");
+      out.line("0.0");
+      out.line("71");
+      out.line("0");
+    }
+
 
     out.line("0");
     out.line("ENDSEC");

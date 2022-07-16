@@ -11,8 +11,8 @@ export class TextHelper {
 
   prepare(txt, ctx, viewer) {
     ctx.font = (this.fontSize) + "px Arial";
-    const textMetrics = ctx.measureText(txt);
-    this.modelTextWidth = viewer.screenToModelDistance(textMetrics.width);
+    this.textMetrics = ctx.measureText(txt);
+    this.modelTextWidth = viewer.screenToModelDistance(this.textMetrics.width);
     this.txt = txt;
   }
 
