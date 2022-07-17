@@ -6,6 +6,7 @@ import Axis from "math/axis";
 import { UnitVector } from "math/vector";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
 import { MShell } from 'cad/model/mshell';
+import { MDatum } from "cad/model/mdatum";
 
 interface patternLinearParams {
   inputBodies: MShell[];
@@ -30,10 +31,14 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
 
     let created = [];
 
-    params.inputBodies.forEach((shellToMirror) => {
-      const newShellName = shellToMirror.id + ":mirror";
-      oci.copy(shellToMirror, newShellName);
-      oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
+    const newDatum = new MDatum({});
+    console.log(newDatum);
+
+    params.inputBodies.forEach((shellToPatern, index) => {
+      const newShellName = shellToPatern.id + ":patern" + index;
+      oci.copy(shellToPatern, newShellName);
+      //oci.step();
+      //oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
       created.push(occ.io.getShell(newShellName));
     });
 
@@ -61,8 +66,8 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
       label: 'Pattern Method',
       name: "patternMethod",
       style: "dropdown",
-      defaultValue: "Step Angle",
-      values: ['Step Angle', 'Span Angle',],
+      defaultValue: "Step Distance",
+      values: ['Step Distance', 'Span Distance',],
     },
     {
       type: 'number',
