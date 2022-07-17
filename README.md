@@ -20,14 +20,19 @@ JSketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
 
 [Workbench Dev Guide](./dev-guide/index.md)
 
-[Comercial Licencing](https://www.autodrop3d.com/parametric-cad-beta.html)
+[Comercial Licencing](https://www.autodrop3d.com/parametric-cad-beta.html) 
 
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=WADW7V7CC32CY&lc=US&item_name=web%2dcad%2eorg&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
+
+Please consider supporting this project by becoming a backer
+==============
+<object type="image/svg+xml" data="https://opencollective.com/jsketcher-ad3d/tiers/backer.svg?avatarHeight=100&width=3000"></object>
+<object type="image/svg+xml" data="https://opencollective.com/jsketcher-ad3d/tiers/badge.svg"></object>
+
 
 Current Status
 ==============
 
-JSketcher is a parametric 3d modeler employing a 2D constraint solver for sketches and the feature/history metaphor to build models. The 2D constraint solver is completely written in javascript/typescript and is implemented in both the 3D CAD and the 2D sketcher. Originally developed by xibyte to make models for 3d printing. Today JSketcher provides a rich set of tools for visualizing, selecting/interacting with 3D geometry, tracking and storing model history all built on the foundation of the 2D sketcher engine and employing OpenCascade for solid modeling operations. 
+JSketcher is a parametric 3d modeler employing a 2D constraint solver for sketches and the feature/history metaphor to build models. The 2D constraint solver is completely written in javascript/typescript and is implemented in both the 3D CAD and the 2D sketcher. Originally developed by xibyte to make models for 3d printing. Today JSketcher provides a rich set of tools for visualizing, selecting/interacting with 3D geometry, tracking and storing model history all built on the foundation of the 2D sketcher engine and employing OpenCascade for solid modeling operations. d
 
 Major Components and features
 ==============
