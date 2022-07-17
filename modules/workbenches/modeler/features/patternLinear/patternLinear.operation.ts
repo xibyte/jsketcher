@@ -7,8 +7,6 @@ import { UnitVector } from "math/vector";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
 import { MShell } from 'cad/model/mshell';
 import { MDatum } from "cad/model/mdatum";
-import {Matrix3x4} from "math/matrix";
-import {SetLocation} from "cad/craft/e0/interact";
 
 interface patternLinearParams {
   inputBodies: MShell[];
@@ -33,23 +31,15 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
 
     let created = [];
 
+    const newDatum = new MDatum({});
+    console.log(newDatum);
+
     params.inputBodies.forEach((shellToPatern, index) => {
-      for (let i = 2; i <= params.qty; i++) {
-        let distanceForInstance = 0;
-        if(params.patternMethod == 'Step Distance') distanceForInstance =params.distance*(i-1);
-        if(params.patternMethod == 'Span Distance') distanceForInstance =(params.distance / (params.qty-1))*(i-1);
-
-        const trVec = params.direction.multiply(distanceForInstance);
-
-        const tr = new Matrix3x4().setTranslation(trVec.x, trVec.y, trVec.z);
-  
-        const newShellName = shellToPatern.id + ":patern/" + index + "/" +i;
-        oci.copy(shellToPatern, newShellName);
-        SetLocation(newShellName, tr.toFlatArray());
-  
-        created.push(occ.io.getShell(newShellName));    
-      }
-
+      const newShellName = shellToPatern.id + ":patern" + index;
+      oci.copy(shellToPatern, newShellName);
+      //oci.step();
+      //oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
+      created.push(occ.io.getShell(newShellName));
     });
 
     return {
