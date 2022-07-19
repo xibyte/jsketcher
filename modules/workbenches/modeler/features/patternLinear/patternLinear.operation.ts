@@ -7,6 +7,8 @@ import { UnitVector } from "math/vector";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
 import { MShell } from 'cad/model/mshell';
 import { MDatum } from "cad/model/mdatum";
+import {Matrix3x4} from "math/matrix";
+import {SetLocation} from "cad/craft/e0/interact";
 
 interface patternLinearParams {
   inputBodies: MShell[];
@@ -35,8 +37,17 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
     console.log(newDatum);
 
     params.inputBodies.forEach((shellToPatern, index) => {
-      const newShellName = shellToPatern.id + ":patern" + index;
+
+      shellToPatern.csys;
+
+      const trVec = params.direction.multiply(params.distance);
+
+      const tr = new Matrix3x4().setTranslation(trVec.x, trVec.y, trVec.z);
+
+      const newShellName = shellToPatern.id + ":patern/" + index;
       oci.copy(shellToPatern, newShellName);
+      SetLocation(newShellName, tr.toFlatArray());
+
       //oci.step();
       //oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
       created.push(occ.io.getShell(newShellName));
