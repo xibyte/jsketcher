@@ -7,8 +7,9 @@ import {Classification, Classifier, OCCClassifier} from "cad/craft/production/cl
 import {addToListInMap} from "gems/iterables";
 import {MEdge} from "cad/model/medge";
 import {Edge} from "brep/topo/edge";
-import {MBrepShell} from "cad/model/mshell";
+import {MBrepShell, MShell} from "cad/model/mshell";
 import {TopoObject} from "brep/topo/topo-object";
+import {Matrix3x4} from "math/matrix";
 
 const classifier: Classifier = new OCCClassifier();
 
@@ -109,6 +110,27 @@ abstract class BasicProductionAnalyzer implements ProductionAnalyzer {
 
   }
 
+}
+
+export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
+
+  originShell: Shell;
+  suffix: string;
+
+  constructor(originShape: MBrepShell, suffix: string) {
+    super();
+    this.originShell = originShape.brepShell;
+    this.suffix = suffix;
+  }
+
+  assignIdentificationImpl(createdShell: Shell) {
+
+    this.originShell.faces.forEach((originFace, index) => {
+      const createdFace = createdShell.faces[index];
+      createdFace.data.id = originFace.data.id + ":" + this.suffix;
+      createdFace.data.productionInfo = originFace.data.productionInfo;
+    })
+  }
 }
 
 type IdentificationInfo = {
