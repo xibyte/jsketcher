@@ -79,8 +79,8 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
       label: 'Pattern Method',
       name: "patternMethod",
       style: "dropdown",
-      defaultValue: "step",
-      values: [['step', 'Step Angle'], ['span', 'Span Angle']],
+      defaultValue: "Step Angle",
+      values: ['Step Angle', 'Span Angle',],
     },
     {
       type: 'number',
