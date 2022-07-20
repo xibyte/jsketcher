@@ -3,11 +3,11 @@ import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "context";
 import {EntityKind} from "cad/model/entities";
 import Axis from "math/axis";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
-import {MShell} from 'cad/model/mshell';
+import { UnitVector } from "math/vector";
+import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { MShell } from 'cad/model/mshell';
 import {Matrix3x4} from "math/matrix";
 import {SetLocation} from "cad/craft/e0/interact";
-import {DEG_RAD} from "math/commons";
 
 interface patternRadialParams {
   inputBodies: MShell[];
@@ -27,6 +27,8 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
   paramsInfo: p => `( ${p.patternMethod} ${r(p.angle * DEG_RAD)})`,
   run: (params: patternRadialParams, ctx: ApplicationContext) => {
 
+
+    console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
@@ -34,20 +36,15 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
 
     params.inputBodies.forEach((shellToPatern, index) => {
       for (let i = 2; i <= params.qty; i++) {
-        let angleForInstance;
-        if (params.patternMethod == 'step') {
-          angleForInstance = params.angle*(i-1);
-        } else if (params.patternMethod == 'span') {
-          angleForInstance = (params.angle / (params.qty))*(i-1);
-        } else {
-          throw 'unsupported pattern type: ' + params.patternMethod;
-        }
+        let angleForInstance = 0;
+        if(params.patternMethod == 'Step Angle') angleForInstance =params.angle*(i-1);
+        if(params.patternMethod == 'Span Angle') angleForInstance =(params.angle / (params.qty-1))*(i-1);
 
-        const angle = angleForInstance * DEG_RAD;
-
-        let tr = new Matrix3x4().rotate(angle, params.axis.direction, params.axis.origin);
-
-        const newShellName = shellToPatern.id + ":pattern/" + index + "/" +i;
+        //const tr = shellToPatern.location.rotate(degrees_to_radians(angleForInstance),params.direction.normalize(),params.direction.normalize());
+        let tr = new Matrix3x4().rotate(degrees_to_radians(angleForInstance),params.direction.normalize(),params.direction.normalize());
+        //tr = tr.rotateWithSphericalAxis(shellToPatern.location)
+  
+        const newShellName = shellToPatern.id + ":patern/" + index + "/" +i;
         oci.copy(shellToPatern, newShellName);
         SetLocation(newShellName, tr.toFlatArray());
   
@@ -101,4 +98,11 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
       optional: false
     },
   ],
+}
+
+
+function degrees_to_radians(degrees)
+{
+  var pi = Math.PI;
+  return degrees * (pi/180);
 }
