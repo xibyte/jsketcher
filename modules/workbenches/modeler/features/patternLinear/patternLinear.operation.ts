@@ -39,7 +39,6 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
         if(params.patternMethod == 'Step Distance') distanceForInstance =params.distance*(i-1);
         if(params.patternMethod == 'Span Distance') distanceForInstance =(params.distance / (params.qty-1))*(i-1);
 
-        console.log(i,distanceForInstance);
         const trVec = params.direction.multiply(distanceForInstance);
 
         const tr = new Matrix3x4().setTranslation(trVec.x, trVec.y, trVec.z);
