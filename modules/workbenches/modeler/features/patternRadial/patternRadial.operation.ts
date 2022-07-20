@@ -6,6 +6,8 @@ import Axis from "math/axis";
 import { UnitVector } from "math/vector";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
 import { MShell } from 'cad/model/mshell';
+import {Matrix3x4} from "math/matrix";
+import {SetLocation} from "cad/craft/e0/interact";
 
 interface patternRadialParams {
   inputBodies: MShell[];
@@ -24,24 +26,37 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
   info: 'Creates a Radial pattern.',
   paramsInfo: ({ }) => `(${r()})`,
   run: (params: patternRadialParams, ctx: ApplicationContext) => {
+
+
     console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
     let created = [];
 
-    params.inputBodies.forEach((shellToMirror) => {
-      const newShellName = shellToMirror.id + ":mirror";
-      oci.copy(shellToMirror, newShellName);
-      oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
-      created.push(occ.io.getShell(newShellName));
+    params.inputBodies.forEach((shellToPatern, index) => {
+      for (let i = 2; i <= params.qty; i++) {
+        let angleForInstance = 0;
+        if(params.patternMethod == 'Step Angle') angleForInstance =params.angle*(i-1);
+        if(params.patternMethod == 'Span Angle') angleForInstance =(params.angle / (params.qty-1))*(i-1);
+
+        //const tr = shellToPatern.location.rotate(degrees_to_radians(angleForInstance),params.direction.normalize(),params.direction.normalize());
+        let tr = new Matrix3x4().rotate(degrees_to_radians(angleForInstance),params.direction.normalize(),params.direction.normalize());
+        //tr = tr.rotateWithSphericalAxis(shellToPatern.location)
+  
+        const newShellName = shellToPatern.id + ":patern/" + index + "/" +i;
+        oci.copy(shellToPatern, newShellName);
+        SetLocation(newShellName, tr.toFlatArray());
+  
+        created.push(occ.io.getShell(newShellName));    
+      }
+
     });
 
     return {
       created,
       consumed: []
     };
-
 
   },
   form: [
@@ -83,4 +98,11 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
       optional: true
     },
   ],
+}
+
+
+function degrees_to_radians(degrees)
+{
+  var pi = Math.PI;
+  return degrees * (pi/180);
 }
