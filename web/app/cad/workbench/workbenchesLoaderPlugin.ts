@@ -4,6 +4,7 @@ import createDatumOperation from "cad/craft/datum/create/createDatumOperation";
 import moveDatumOperation from "cad/craft/datum/move/moveDatumOperation";
 import rotateDatumOperation from "cad/craft/datum/rotate/rotateDatumOperation";
 import datumOperation from "cad/craft/primitives/plane/planeOperation";
+import spatialCurveOperation from "cad/craft/spatialCurve/spatialCurveOperation";
 import {Plugin} from "plugable/pluginSystem";
 import {WorkbenchService} from "cad/workbench/workbenchService";
 import {OperationService} from "cad/craft/operationPlugin";
@@ -38,5 +39,6 @@ function registerCoreOperations(ctx: WorkbenchesLoaderInputContext) {
     moveDatumOperation,
     rotateDatumOperation,
     datumOperation,
+    spatialCurveOperation,
   ] as any);
 }
