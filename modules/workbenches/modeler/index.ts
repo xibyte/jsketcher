@@ -58,7 +58,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY","-",
       "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "-",
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
-      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL","DELETE_BODY"
+      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL","DELETE_BODY",
     ]
   },
   icon: GiCubes
