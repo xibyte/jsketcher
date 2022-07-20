@@ -33,24 +33,24 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
 
     let created = [];
 
-    const newDatum = new MDatum({});
-    console.log(newDatum);
-
     params.inputBodies.forEach((shellToPatern, index) => {
+      for (let i = 2; i <= params.qty; i++) {
+        let distanceForInstance = 0;
+        if(params.patternMethod == 'Step Distance') distanceForInstance =params.distance*(i-1);
+        if(params.patternMethod == 'Span Distance') distanceForInstance =(params.distance / (params.qty-1))*(i-1);
 
-      shellToPatern.csys;
+        console.log(i,distanceForInstance);
+        const trVec = params.direction.multiply(distanceForInstance);
 
-      const trVec = params.direction.multiply(params.distance);
+        const tr = new Matrix3x4().setTranslation(trVec.x, trVec.y, trVec.z);
+  
+        const newShellName = shellToPatern.id + ":patern/" + index + "/" +i;
+        oci.copy(shellToPatern, newShellName);
+        SetLocation(newShellName, tr.toFlatArray());
+  
+        created.push(occ.io.getShell(newShellName));    
+      }
 
-      const tr = new Matrix3x4().setTranslation(trVec.x, trVec.y, trVec.z);
-
-      const newShellName = shellToPatern.id + ":patern/" + index;
-      oci.copy(shellToPatern, newShellName);
-      SetLocation(newShellName, tr.toFlatArray());
-
-      //oci.step();
-      //oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
-      created.push(occ.io.getShell(newShellName));
     });
 
     return {
