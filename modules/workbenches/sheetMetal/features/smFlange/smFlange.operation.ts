@@ -30,18 +30,18 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
 
     const tools = occFaces.map((faceName, i) => {
       const shapeName = "Tool/" + i;
-      var args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.negate().data(), params.angle];
+      const args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.negate().data(), params.angle];
       oci.revol(...args);
 
       return shapeName;
     });
 
-    const  booleanOpperation =   {
-      kind:"UNION",
+    const  booleanOperation =   {
+      kind: "UNION",
       targets:[params.face.shell]
     }
     
-    return occ.utils.applyBooleanModifier(tools, booleanOpperation);
+    return occ.utils.applyBooleanModifier(tools, booleanOperation);
 
   },
   form: [
@@ -54,7 +54,7 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
     {
       type: 'selection',
       name: 'face',
-      capture: [EntityKind.FACE],
+      capture: face => face.TYPE === EntityKind.FACE && face.productionInfo?.sheetMetal?.kind === 'THICKNESS',
       label: 'face',
       multi: false,
       defaultValue: {
