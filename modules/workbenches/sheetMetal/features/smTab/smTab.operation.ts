@@ -1,12 +1,11 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { UnitVector } from "math/vector";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
-import { FromSketchProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
-import { FaceRef } from "cad/craft/e0/OCCUtils";
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {MFace} from "cad/model/mface";
+import {ApplicationContext} from "context";
+import {EntityKind} from "cad/model/entities";
+import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
+import {UnitVector} from "math/vector";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {FromSketchProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 
 interface smTabParams {
   thickness: number;
@@ -48,14 +47,14 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
 
     const dir: UnitVector = face.normal();
 
-    let extrusionVector = {};
+    let extrusionVector;
     if (params.flipper == true) {
       extrusionVector = dir.normalize()._multiply(params.thickness);
     } else {
       extrusionVector = dir.normalize()._multiply(params.thickness).negate();
     }
 
-    const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces,"SM/FLAT/A", "SM/FLAT/B","SM/THICKNESS");
+    const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces);
 
     const tools = occFaces.map((faceRef, i) => {
 
