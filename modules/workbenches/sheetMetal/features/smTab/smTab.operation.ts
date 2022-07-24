@@ -17,6 +17,14 @@ interface smTabParams {
   boolean: BooleanDefinition;
 }
 
+
+const ROLE_TO_SM_KIND = {
+  'base': 'FLAT/A',
+  'lid': 'FLAT/B',
+  'sweep': 'THICKNESS'
+}
+
+
 export const smTabOperation: OperationDescriptor<smTabParams> = {
   id: 'SM_TAB',
   label: 'SM Tab',
@@ -47,12 +55,7 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
       extrusionVector = dir.normalize()._multiply(params.thickness).negate();
     }
 
-
-
-
-
     const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces,"SM/FLAT/A", "SM/FLAT/B","SM/THICKNESS");
-    console.log(productionAnalyzer);
 
     const tools = occFaces.map((faceRef, i) => {
 
@@ -63,7 +66,19 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
     }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
 
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
+    const operationResult = occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
+
+    operationResult.created.forEach(shell => {
+      shell.traverse(obj => {
+        if (obj.productionInfo?.role) {
+          obj.productionInfo.sheetMetal = {
+            kind: ROLE_TO_SM_KIND[obj.productionInfo.role]
+          }
+        }
+      })
+    });
+
+    return operationResult;
 
   },
 
