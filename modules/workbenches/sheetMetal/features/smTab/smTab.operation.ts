@@ -1,11 +1,12 @@
-import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {MFace} from "cad/model/mface";
-import {ApplicationContext} from "context";
-import {EntityKind} from "cad/model/entities";
-import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {UnitVector} from "math/vector";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
-import {FromSketchProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
+import { MFace } from "cad/model/mface";
+import { ApplicationContext } from "context";
+import { EntityKind } from "cad/model/entities";
+import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
+import { UnitVector } from "math/vector";
+import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { FromSketchProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+import { FaceRef } from "cad/craft/e0/OCCUtils";
 
 interface smTabParams {
   thickness: number;
@@ -47,14 +48,19 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
 
     const dir: UnitVector = face.normal();
 
-    let extrusionVector;
+    let extrusionVector = {};
     if (params.flipper == true) {
       extrusionVector = dir.normalize()._multiply(params.thickness);
     } else {
       extrusionVector = dir.normalize()._multiply(params.thickness).negate();
     }
 
-    const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces);
+
+
+
+
+    const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces,"SM/FLAT/A", "SM/FLAT/B","SM/THICKNESS");
+    console.log(productionAnalyzer);
 
     const tools = occFaces.map((faceRef, i) => {
 
@@ -65,19 +71,7 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
     }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
 
 
-    const operationResult = occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
-
-    operationResult.created.forEach(shell => {
-      shell.traverse(obj => {
-        if (obj.productionInfo?.role) {
-          obj.productionInfo.sheetMetal = {
-            kind: ROLE_TO_SM_KIND[obj.productionInfo.role]
-          }
-        }
-      })
-    });
-
-    return operationResult;
+    return occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
 
   },
 
