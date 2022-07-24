@@ -5,7 +5,8 @@ import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
 import { UnitVector } from "math/vector";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
-
+import { FromSketchProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+import { FaceRef } from "cad/craft/e0/OCCUtils";
 
 interface smTabParams {
   thickness: number;
@@ -33,27 +34,36 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
     let sketch = ctx.sketchStorageService.readSketch(face.id);
     if (!sketch) throw 'sketch not found for the face ' + face.id;
 
-    const occFaces = occ.utils.sketchToFaces(sketch, face.csys).map(ref => ref.face);
+  
 
-    const dir: UnitVector= face.normal();
+    const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
 
-    let extrusionVector =[];
-    if (params.flipper == true){
-       extrusionVector = dir.normalize()._multiply(params.thickness).data();
+    const dir: UnitVector = face.normal();
+
+    let extrusionVector = {};
+    if (params.flipper == true) {
+      extrusionVector = dir.normalize()._multiply(params.thickness);
     } else {
-       extrusionVector = dir.normalize()._multiply(params.thickness).negate().data();
+      extrusionVector = dir.normalize()._multiply(params.thickness).negate();
     }
-    
 
-    const tools = occFaces.map((faceName, i) => {
+
+
+
+
+    const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces,"SM/FLAT/A", "SM/FLAT/B","SM/THICKNESS");
+    console.log(productionAnalyzer);
+
+    const tools = occFaces.map((faceRef, i) => {
+
+      const faceName = faceRef.face;
       const shapeName = "Tool/" + i;
-      const bla = oci.prism(shapeName, faceName, ...extrusionVector);
-      console.log(bla);
+      oci.prism(shapeName, faceName, ...extrusionVector.data());
       return shapeName;
-    });
+    }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
 
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean);
+    return occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
 
   },
 
