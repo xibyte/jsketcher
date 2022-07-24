@@ -35,10 +35,10 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
     params.inputBodies.forEach((shellToPatern, index) => {
       for (let i = 2; i <= params.qty; i++) {
         let angleForInstance;
-        if (params.patternMethod == 'step') {
+        if (params.patternMethod == 'step angle') {
           angleForInstance = params.angle*(i-1);
-        } else if (params.patternMethod == 'span') {
-          angleForInstance = (params.angle / (params.qty-1))*(i-1);
+        } else if (params.patternMethod == 'span angle') {
+          angleForInstance = (params.angle / (params.qty))*(i-1);
         } else {
           throw 'unsupported pattern type: ' + params.patternMethod;
         }
@@ -79,8 +79,8 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
       label: 'Pattern Method',
       name: "patternMethod",
       style: "dropdown",
-      defaultValue: "step",
-      values: [['step', 'Step Angle'], ['span', 'Span Angle']],
+      defaultValue: "step angle",
+      values: ['step angle','span angle',],
     },
     {
       type: 'number',
