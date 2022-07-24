@@ -8,13 +8,15 @@ export interface EntityTypeSchema extends BaseSchemaField {
 
   type: Types.entity,
 
-  allowedKinds: EntityKind[];
+  entityCapture: EntityCapture,
 
   defaultValue?: {
     usePreselection: boolean;
     preselectionIndex: number;
   }
 }
+
+export type EntityCapture = (entity: MObject) => boolean;
 
 export const EntityType: Type<string, MObject, EntityTypeSchema> = {
 
@@ -38,3 +40,10 @@ export const EntityType: Type<string, MObject, EntityTypeSchema> = {
   }
 
 }
+
+export function entityKindCapture(...allowedKinds: EntityKind[]) {
+
+  return e => allowedKinds.includes(e.TYPE);
+
+}
+
