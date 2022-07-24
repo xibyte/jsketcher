@@ -40,7 +40,7 @@ export function ChoiceWidget(props: ChoiceWidgetProps) {
 ChoiceWidget.propsToSchema = (props: ChoiceWidgetProps) => {
   return {
     type: Types.string,
-    enum: props.values,
+    enum: props.values.map(value => Array.isArray(value) ? value[0] : value),
     ...fieldToSchemaGeneric(props),
   }
 };
