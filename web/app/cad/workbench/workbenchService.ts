@@ -57,16 +57,25 @@ export class WorkbenchService {
     );
   }
 
-  switchWorkbench(workbenchId: string) {
+  switchWorkbench(workbenchId: string, silent: boolean = false) {
     const workbenchConfig = this.workbenches$.value[workbenchId];
     if (!workbenchConfig) {
-      throw 'nonexistent workbench ' + workbenchId;
+      const noWorkbenchMsg = 'nonexistent workbench ' + workbenchId;
+      if (silent) {
+        console.warn(noWorkbenchMsg);
+      } else {
+        throw noWorkbenchMsg;
+      }
     }
     this.currentWorkbench$.next(workbenchConfig);
   }
 
   switchToDefaultWorkbench() {
-    this.switchWorkbench('modeler');
+    this.switchWorkbench(this.defaultWorkbenchId);
+  }
+
+  get defaultWorkbenchId() {
+    return 'modeler';
   }
 }
 
