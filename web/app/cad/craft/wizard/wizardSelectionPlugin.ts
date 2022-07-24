@@ -8,6 +8,7 @@ import {MarkerPluginContext} from "cad/scene/selectionMarker/markerPlugin";
 import {WizardPluginContext} from "cad/craft/wizard/wizardPlugin";
 import {PickControlPluginContext} from "cad/scene/controls/pickControlPlugin";
 import _ from "lodash";
+import {MObject} from "cad/model/mobject";
 
 export type WizardSelectionPluginInputContext = MarkerPluginContext & WizardPluginContext & PickControlPluginContext;
 
@@ -94,13 +95,13 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
     }
 
 
-    function activeCanTakeIt(kind) {
+    function activeCanTakeIt(model: MObject) {
       let activeRef: EntityReference = activeEntityRef();
       if (!activeRef) {
         return false;
       }
       const activeMd = activeRef?.metadata;
-      return activeMd && activeMd.allowedKinds.includes(kind);
+      return activeMd && activeMd.entityCapture(model);
     }
 
     function select(entityRef: EntityReference, id: string) {
@@ -129,10 +130,10 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
       select(activeEntityRef(),  id);
     }
 
-    function selectToFirst(entity, id) {
+    function selectToFirst(entity) {
       for (let eRef of schemaIndex.entities) {
-        if (eRef.metadata.allowedKinds.includes(entity)) {
-          select(eRef, id);
+        if (eRef.metadata.entityCapture(entity)) {
+          select(eRef, entity.id);
           return true;
         }
       }
@@ -175,20 +176,20 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
     }
     
     if (modelType === FACE) {
-      if (activeCanTakeIt(SHELL)) {
+      if (activeCanTakeIt(model.shell)) {
         selectActive(model.shell.id);
-      } else if (activeCanTakeIt(FACE)) {
+      } else if (activeCanTakeIt(model)) {
         selectActive(model.id);
       } else {
-        if (!selectToFirst(FACE, model.id)) {
-          selectToFirst(SHELL, model.shell.id)
-        }
+        // if (!selectToFirst(model)) {
+        //   selectToFirst(model.shell)
+        // }
       }
     } else{
-      if (activeCanTakeIt(modelType)) {
+      if (activeCanTakeIt(model)) {
         selectActive(model.id);
       } else {
-        selectToFirst(modelType, model.id);
+        // selectToFirst(model);
       }
     }
     return false;

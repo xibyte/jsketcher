@@ -1,3 +1,5 @@
+import {entityKindCapture} from "cad/craft/schema/types/entityType";
+
 export default {
   orientation: {
     type: 'string',
@@ -6,7 +8,7 @@ export default {
   },
   datum: {
     type: 'entity',
-    allowedKinds: ['face', 'datum'],
+    allowedKinds: entityKindCapture('face', 'datum'),
     optional: true,
     defaultValue: {
       usePreselection:  true,
