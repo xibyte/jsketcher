@@ -304,9 +304,6 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
         if (!createdEdge.data.productionInfo) {
 
           const he = createdEdge.getHalfEdge(he => he?.loop?.face?.data?.productionInfo?.role === 'sweep');
-          if (!he) {
-            debugger;
-          }
           if (he) {
             const originatingPrimitive = he.loop.face.data.productionInfo.originatingPrimitive;
             createdEdge.data.id = `E:LID[${originatingPrimitive}]`;

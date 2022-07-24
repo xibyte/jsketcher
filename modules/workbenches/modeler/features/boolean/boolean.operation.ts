@@ -3,8 +3,6 @@ import {ApplicationContext} from "context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
-import { param } from 'cypress/types/jquery';
-import { MObject } from 'cad/model/mobject';
 
 interface BooleanParams {
   tools: [];
@@ -19,7 +17,6 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
   info: 'Booleans 2D sketch',
   paramsInfo: ({tools, boolean}) => `(${r(tools)} ${r(boolean)})`,
   run: (params: BooleanParams, ctx: ApplicationContext) => {
-    console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
