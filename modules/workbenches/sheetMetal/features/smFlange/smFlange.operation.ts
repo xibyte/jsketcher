@@ -54,7 +54,7 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
 
     const tools = occFaces.map((faceName, i) => {
       const shapeName = "Tool/" + i;
-      const args = [shapeName, faceName, ...revolveVectorOrigin.data(), ...revolveVectorDirection.data(), params.angle];
+      const args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.negate().data(), params.angle];
       oci.revol(...args);
 
       return shapeName;
@@ -80,13 +80,12 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       });
     });
 
-
-
-    //return occ.utils.applyBooleanModifier(tools, booleanOperation);
-    return {
-      created: tools,
-      consumed: []
+    const  booleanOperation =   {
+      kind: "UNION",
+      targets:[params.face.shell]
     }
+    
+    return occ.utils.applyBooleanModifier(tools, booleanOperation);
 
   },
   form: [
