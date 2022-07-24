@@ -52,7 +52,10 @@ export function attachToForm(Control): any {
     const fullPath = [...formPath, name];
     const fullPathFlatten = flattenPath(fullPath);
 
-    const onChange = value => formEdit.onChange(fullPath, value);
+    const onChange = value => {
+      formEdit.onChange(fullPath, value);
+      setActive(true);
+    }
     const setActive = (isActive) => formEdit.setActive(fullPathFlatten, isActive);
 
     const value = params[name];
