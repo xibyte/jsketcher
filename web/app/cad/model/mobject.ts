@@ -48,7 +48,7 @@ export abstract class MObject {
     return null;
   }
 
-  get productionInfo(): any {
+  get productionInfo() {
     return this.topology?.data?.productionInfo;
   }
 }
