@@ -205,6 +205,7 @@ export interface ProjectModel {
 
   assembly?: AssemblyConstraintDefinition[];
 
+  workbench?: string
 }
 
 export interface ModelBundle {

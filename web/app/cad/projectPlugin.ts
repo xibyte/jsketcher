@@ -1,9 +1,7 @@
 import {setSketchPrecision} from './sketch/sketchReader';
 import {runSandbox} from './sandbox';
 import {LOG_FLAGS} from './logFlags';
-import {CoreContext} from "context";
-import {SketchFormat_V3} from "../sketcher/io";
-import {OperationRequest} from "./craft/craftPlugin";
+import {ApplicationContext} from "context";
 import {ProjectModel} from "./projectManager/projectManagerPlugin";
 import {DebugMode$} from "debugger/Debugger";
 import {fillUpMissingFields} from "cad/craft/schema/initializeBySchema";
@@ -13,14 +11,14 @@ export const PROJECTS_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
 export const SKETCH_SUFFIX = '.sketch.';
 
 
-export function activate(ctx: CoreContext) {
+export function activate(ctx: ApplicationContext) {
 
   const [id, hints] = parseHintsFromLocation();
 
   initProjectService(ctx, id, hints);
 }
 
-export function initProjectService(ctx: CoreContext, id: string, hints: any) {
+export function initProjectService(ctx: ApplicationContext, id: string, hints: any) {
 
   processParams(hints, ctx);
 
@@ -40,13 +38,19 @@ export function initProjectService(ctx: CoreContext, id: string, hints: any) {
   }
 
   function save() {
-    let data = {
+    let data: ProjectModel = {
       history: ctx.craftService.modifications$.value.history,
       expressions: ctx.expressionService.script$.value,
 
       // @ts-ignore we deliberately don't uplift the type to the ApplicationContext in order to be able to use ProjectService in the headless mode
       assembly: ctx.assemblyService && ctx.assemblyService.getConstraints()
     };
+
+    const currentWorkbench = ctx.workbenchService.currentWorkbench$.value;
+
+    if (!currentWorkbench?.internal && ctx.workbenchService.defaultWorkbenchId !== currentWorkbench.workbenchId) {
+      data.workbench = currentWorkbench.workbenchId;
+    }
     ctx.storageService.set(projectStorageKey(), JSON.stringify(data));
   }
 
@@ -57,6 +61,7 @@ export function initProjectService(ctx: CoreContext, id: string, hints: any) {
         let data = JSON.parse(dataStr);
         upgradeIfNeeded(data);
         loadData(data);
+        loadWorkbench(data);
       }
     } catch (e) {
       console.error(e);
@@ -71,6 +76,12 @@ export function initProjectService(ctx: CoreContext, id: string, hints: any) {
           fillUpMissingFields(req.params, operation.schema, ctx);
         }
       });
+    }
+  }
+
+  function loadWorkbench(data: ProjectModel) {
+    if (data.workbench) {
+      ctx.workbenchService.switchWorkbench(data.workbench, true);
     }
   }
 
