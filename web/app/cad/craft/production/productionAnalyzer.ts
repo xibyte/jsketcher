@@ -192,10 +192,16 @@ export class ExpectedOrderProductionAnalyzer extends BasicProductionAnalyzer {
 export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
 
   profiles: FaceRef[];
+  baseName: string;
+  sweepName: string;
+  lidName:string;
 
-  constructor(profiles: FaceRef[]) {
+  constructor(profiles: FaceRef[], baseName?: string, lidName?:string, sweepName?: string) {
     super();
     this.profiles = profiles;
+    this.baseName = baseName ? baseName : "BASE";
+    this.lidName = lidName ? lidName : "LID";
+    this.sweepName = sweepName? sweepName: "SWEEP";
     for (let originFace of this.profiles) {
       classifier.prepare(originFace.topoShape);
     }
@@ -217,9 +223,9 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
 
         if (faceToFaceClassification === Classification.EXACT) {
           base = createdFace;
-          base.data.id = `F:BASE[${wireId}]`;
+          base.data.id = `F:${this.baseName}[${wireId}]`;
           base.data.productionInfo = {
-            role: 'base',
+            role: this.baseName,
             originatingWire: wireId
           }
           break;
@@ -233,55 +239,55 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
         for (let createdEdge of createdShell.edges) {
 
           if (classifier.classifyEdgeToEdge(profileEdge, createdEdge) !== Classification.UNRELATED) {
-            createdEdge.data.id = `E:BASE[${seg.id}]`;
+            createdEdge.data.id = `E:${this.baseName}[${seg.id}]`;
             createdEdge.data.productionInfo = {
-              role: 'base',
+              role: this.baseName,
               originatingPrimitive: seg.id
             }
             let halfEdge = createdEdge.getHalfEdge(he => he?.loop?.face && he.loop.face !== base);
             if (halfEdge) {
               let face = halfEdge.loop.face;
-              face.data.id = `F:SWEEP[${seg.id}]`;
+              face.data.id = `F:${this.sweepName}[${seg.id}]`;
               face.data.productionInfo = {
-                role: 'sweep',
+                role: this.sweepName,
                 originatingPrimitive: seg.id
               }
 
-              halfEdge.prev.edge.data.id = `E:SWEEP[${seg.id}/A]`;
+              halfEdge.prev.edge.data.id = `E:${this.sweepName}[${seg.id}/A]`;
               halfEdge.prev.edge.data.productionInfo = {
-                role: 'sweep',
+                role: this.sweepName,
                 originatingPrimitive: seg.id + '/A'
               }
 
-              halfEdge.prev.vertexA.data.id = `V:LID[${seg.id}/A]`
+              halfEdge.prev.vertexA.data.id = `V:${this.lidName}[${seg.id}/A]`
               halfEdge.prev.vertexA.data.productionInfo = {
-                role: 'lid',
+                role: this.lidName,
                 originatingPrimitive: seg.id + '/A'
               }
 
-              halfEdge.prev.vertexB.data.id = `V:BASE[${seg.id}/A]`
+              halfEdge.prev.vertexB.data.id = `V:${this.baseName}[${seg.id}/A]`
               halfEdge.prev.vertexB.data.productionInfo = {
-                role: 'base',
+                role: this.baseName,
                 originatingPrimitive: seg.id + '/A'
               }
 
               //Extruded not closed wire
               if (!halfEdge.next.twin()) {
-                halfEdge.next.edge.data.id = `E:SWEEP[${seg.id}/B]`;
+                halfEdge.next.edge.data.id = `E:${this.sweepName}[${seg.id}/B]`;
                 halfEdge.next.edge.data.productionInfo = {
-                  role: 'sweep',
+                  role: this.sweepName,
                   originatingPrimitive: seg.id + '/B'
                 }
 
-                halfEdge.next.vertexA.data.id = `V:BASE[${seg.id}/B]`
+                halfEdge.next.vertexA.data.id = `V:${this.baseName}[${seg.id}/B]`
                 halfEdge.next.vertexA.data.productionInfo = {
-                  role: 'base',
+                  role: this.baseName,
                   originatingPrimitive: seg.id + '/B'
                 }
 
-                halfEdge.prev.vertexB.data.id = `V:LID[${seg.id}/B]`
+                halfEdge.prev.vertexB.data.id = `V:${this.lidName}[${seg.id}/B]`
                 halfEdge.prev.vertexB.data.productionInfo = {
-                  role: 'lid',
+                  role: this.lidName,
                   originatingPrimitive: seg.id + '/B'
                 }
               }
@@ -292,9 +298,9 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
 
       for (let createdFace of createdShell.faces) {
         if (!createdFace.data.productionInfo) {
-          createdFace.data.id = `F:LID[${wireId}]`;
+          createdFace.data.id = `F:${this.lidName}[${wireId}]`;
           createdFace.data.productionInfo = {
-            role: 'lid'
+            role: this.lidName
           }
           break;
         }
@@ -309,9 +315,9 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
           }
           if (he) {
             const originatingPrimitive = he.loop.face.data.productionInfo.originatingPrimitive;
-            createdEdge.data.id = `E:LID[${originatingPrimitive}]`;
+            createdEdge.data.id = `E:${this.lidName}[${originatingPrimitive}]`;
             createdEdge.data.productionInfo = {
-              role: 'lid',
+              role: this.lidName,
               originatingPrimitive
             }
           }
