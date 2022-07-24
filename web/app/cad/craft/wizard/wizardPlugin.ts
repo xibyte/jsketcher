@@ -89,8 +89,18 @@ export function activate(ctx: ApplicationContext) {
     if (old !== null && old.requestKey !== curr?.requestKey) {
       disposerList.call();
       disposerList = createFunctionList();
-      state$.next({});
     }
+
+    const newState: WizardState = {};
+
+    if (curr) {
+      const op = ctx.operationService.get(curr.type);
+      if (op.defaultActiveField) {
+        newState.activeParam = op.defaultActiveField;
+      }
+    }
+
+    state$.next(newState);
   })
 
   const updateParams = mutator => workingRequest$.update((req: WorkingRequest) => produce(req, draft => {

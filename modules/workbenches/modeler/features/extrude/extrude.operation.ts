@@ -100,7 +100,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
   },
 
-
   form: [
     {
       type: 'number',
@@ -147,6 +146,8 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     }
 
   ],
+
+  defaultActiveField: 'face',
 
   masking: [
     {
