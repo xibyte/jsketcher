@@ -9,7 +9,8 @@ import { OperationDescriptor } from "cad/craft/operationPlugin";
 interface smFlangeParams {
   angle: number;
   face: MFace;
-  axis: Axis,
+  flip: boolean;
+
 }
 
 export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
@@ -24,24 +25,51 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
     const oci = occ.commandInterface;
 
     const face = params.face;
-    console.log(face);
 
     let occFaces = [face];
+    let revolveVector;
+    let revolveVectorOrigin;
+    let revolveVectorDirection;
+
+    for (let i = 0; i < face.edges.length; i++) {
+      const edgeKind = face.edges[i].productionInfo.sheetMetal.kind;
+      console.log(edgeKind);
+      if (edgeKind == "FLAT/A" && !params.flip) {
+        revolveVector = face.edges[i].toAxis();
+        revolveVectorOrigin = revolveVector.origin;
+        revolveVectorDirection = revolveVector.direction.negate();
+        revolveVectorOrigin.z -=2;
+      }
+      if (edgeKind == "FLAT/B" && params.flip) {
+        revolveVector = face.edges[i].toAxis();
+        revolveVectorOrigin = revolveVector.origin;
+        revolveVectorDirection = revolveVector.direction;
+        revolveVectorOrigin.z +=2;
+      }
+    }
+
+    console.log(revolveVectorOrigin);
+    //revolveVectorOrigin.y -=0;
+    //revolveVectorOrigin.z +=2;
 
     const tools = occFaces.map((faceName, i) => {
       const shapeName = "Tool/" + i;
-      const args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.negate().data(), params.angle];
+      const args = [shapeName, faceName, ...revolveVectorOrigin.data(), ...revolveVectorDirection.data(), params.angle];
       oci.revol(...args);
 
       return shapeName;
-    });
+    }).map(shapeName => occ.io.getShell(shapeName));
 
-    const  booleanOperation =   {
+    const booleanOperation = {
       kind: "UNION",
-      targets:[params.face.shell]
+      targets: [params.face.shell]
     }
-    
-    return occ.utils.applyBooleanModifier(tools, booleanOperation);
+
+    //return occ.utils.applyBooleanModifier(tools, booleanOperation);
+    return {
+      created: tools,
+      consumed: []
+    }
 
   },
   form: [
@@ -63,22 +91,10 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       },
     },
     {
-      type: 'selection',
-      name: 'Edge',
-      capture: [EntityKind.EDGE],
-      label: 'Edge',
-      multi: false,
-      defaultValue: {
-        usePreselection: true,
-        preselectionIndex: 0
-      },
+      type: 'checkbox',
+      label: 'Flip Direction',
+      name: 'flip',
+      defaultValue: false,
     },
-    {
-      type: 'axis',
-      name: 'axis',
-      label: 'axis',
-      optional: false
-    },
-
   ],
 }
