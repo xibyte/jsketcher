@@ -8,7 +8,7 @@ export default {
   },
   datum: {
     type: 'entity',
-    allowedKinds: entityKindCapture('face', 'datum'),
+    entityCapture: entityKindCapture('face', 'datum'),
     optional: true,
     defaultValue: {
       usePreselection:  true,
