@@ -6,6 +6,7 @@ import {VisibleSwitch} from "cad/craft/ui/SceneInlineObjectExplorer";
 import {MOpenFaceShell} from "cad/model/mopenFace";
 import {MObject} from "cad/model/mobject";
 import {ModelIcon} from "cad/craft/ui/ModelIcon";
+import {SafeLength} from "cad/craft/ui/SafeLength";
 
 interface IModelButtonBehavior {
   select: () => void;
@@ -67,16 +68,4 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
     onMouseEnter,
     onMouseLeave
   });
-}
-
-function SafeLength(props: { text: string }): any {
-
-  const limit = 40;
-  const mid = limit / 2;
-  const text = props.text;
-  if (text.length > limit) {
-    return <span title={text}>{text.substring(0, mid)}...{text.substring(text.length - mid, text.length)}</span>;
-  } else {
-    return text;
-  }
 }
