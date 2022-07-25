@@ -151,7 +151,6 @@ export function activate(ctx) {
     if (inPlaceEditor.inEditMode) {
       inPlaceEditor.exit();
     }
-    ctx.pickControlService.deselectAll();
     inPlaceEditor.enter(face);
   }
   

@@ -1,16 +1,24 @@
 import * as mask from 'gems/mask'
 import {getAttribute} from 'scene/objectData';
-import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from '../../model/entities';
+import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from 'cad/model/entities';
 import {LOG_FLAGS} from 'cad/logFlags';
 import {initRayCastDebug, printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
 import {PickListDialog, PickListDialogRequest$} from "cad/scene/controls/PickListDialog";
-import {contributeComponent} from "cad/dom/components/ContributedComponents";
 import {MObject} from "cad/model/mobject";
 import {MFace} from "cad/model/mface";
 import {MOpenFaceShell} from "cad/model/mopenFace";
+import {nextNumber} from "gems/numberGenerator";
+import {NOOP} from "gems/func";
+
+export type PickControlToken = number;
+
+export type PickHandler = (model, event, rayCastData?) => boolean;
 
 export interface PickControlService {
-  setPickHandler(wizardPickHandler: (model) => boolean)
+
+  takePickControl(pickHandler: PickHandler, syncMarkers: Function): PickControlToken;
+
+  releasePickControl(controlToken: PickControlToken);
 
   deselectAll()
 
@@ -43,6 +51,11 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
   datum: true  
 });
 
+interface PickContext {
+  pickHandler: PickHandler;
+  token: PickControlToken;
+  syncMarkers: Function
+}
 
 export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;
 export const ALL_POSSIBLE_KIND = Number.MAX_SAFE_INTEGER;
@@ -51,7 +64,7 @@ export function activate(context) {
 
   context.domService.contributeComponent(PickListDialog);
 
-  const defaultHandler = (model, event, rayCastData?) => {
+  const defaultHandler: PickHandler = (model, event, rayCastData?) => {
     if (LOG_FLAGS.PICK) {
       printPickInfo(model, rayCastData);
     }
@@ -89,7 +102,14 @@ export function activate(context) {
     return true;
   };
 
-  let pickHandler = defaultHandler;
+  const defaultPickContext: PickContext = {
+    pickHandler: defaultHandler,
+    token: -1,
+    syncMarkers: NOOP
+  };
+
+  let pickContext: PickContext = defaultPickContext;
+  let contextStack = [];
   
   let domElement = services.viewer.sceneSetup.domElement();
   
@@ -147,12 +167,30 @@ export function activate(context) {
     domElement.removeEventListener('click', clickaway, false);
   }
 
-  function setPickHandler(handler) {
-    pickHandler = handler || defaultHandler;
+  function takePickControl(handler, syncMarkers): PickControlToken {
+    const token = nextNumber('PickControlToken');
+    pickContext = {
+      pickHandler: handler,
+      token: token,
+      syncMarkers
+    };
     services.marker.clear();
+    contextStack.push(pickContext);
+    return token;
   }
 
-  const deselectAll = () => services.marker.clear();
+  function releasePickControl(token) {
+    contextStack = contextStack.filter(ctrl => ctrl.token != token);
+    pickContext = contextStack[0] || defaultPickContext
+    pickContext.syncMarkers();
+  }
+
+  const deselectAll = () => {
+    if (pickContext !== defaultPickContext) {
+      console.info("deselect all cannot be used in current context");
+    }
+    services.marker.clear();
+  }
 
   function handlePick(event) {
     let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo);
@@ -176,12 +214,12 @@ export function activate(context) {
       setTimeout(() => domElement.addEventListener('click', clickaway, false), 100);
       return;
     }
-    traversePickResults(event, pickResults, ALL_EXCLUDING_SOLID_KINDS, pickHandler);
+    traversePickResults(event, pickResults, ALL_EXCLUDING_SOLID_KINDS, pickContext.pickHandler);
   }
 
   function pickFromRay(from3, to3, kind, event = null) {
     let pickResults = services.viewer.customRaycast(from3, to3, services.cadScene.workGroup.children);
-    return traversePickResults(event, pickResults, kind, pickHandler);
+    return traversePickResults(event, pickResults, kind, pickContext.pickHandler);
   }
 
   function simulatePickFromRay(from3, to3, event = null) {
@@ -189,7 +227,7 @@ export function activate(context) {
   }
 
   function pick(obj, event = null) {
-    pickHandler(obj, event);
+    pickContext.pickHandler(obj, event);
   }
   
   function dispatchSelection(entityType, selectee, event) {
@@ -219,7 +257,7 @@ export function activate(context) {
   }
   
   services.pickControl = {
-    setPickHandler, deselectAll, pick, pickFromRay, simulatePickFromRay
+    takePickControl, releasePickControl, deselectAll, pick, pickFromRay, simulatePickFromRay
   };
 
   context.pickControlService = services.pickControl;
