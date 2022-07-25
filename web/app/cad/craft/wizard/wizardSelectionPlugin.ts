@@ -31,36 +31,41 @@ export const WizardSelectionPlugin: Plugin<WizardSelectionPluginInputContext, Wi
   activate(ctx: WizardSelectionWorkingContext) {
     const wizardService = ctx.wizardService;
     let wizardPickHandler = null;
+
+    function syncMarkers() {
+      const marker = ctx.markerService;
+      marker.startSession();
+      let {schemaIndex} = wizardService.operation;
+      schemaIndex.entities.forEach(entityRef => {
+        //TODO: move to uiDefinition
+        let color = entityRef.metadata.markColor;
+
+        let val = wizardService.readParam(entityRef.field.path);
+
+        if (Array.isArray(val)) {
+          val.forEach(id => marker.mark(id, color));
+        } else {
+          if (val) {
+            marker.mark(val, color);
+          }
+        }
+      });
+      marker.commit();
+    }
+
     wizardService.workingRequest$.attach((opRequest: OperationRequest) => {
       ctx.markerService.clear();
       if (opRequest) {
         if (wizardPickHandler === null) {
           wizardPickHandler = createPickHandlerFromSchema(wizardService);
-          ctx.pickControlService.setPickHandler(wizardPickHandler);
+          const token = ctx.pickControlService.takePickControl(wizardPickHandler, syncMarkers);
           ctx.wizardService.addDisposer(() => {
             wizardPickHandler = null;
-            ctx.pickControlService.setPickHandler(null);
+            ctx.pickControlService.releasePickControl(token);
           });
         }
 
-        const marker = ctx.markerService;
-        marker.startSession();
-        let {schemaIndex} = wizardService.operation;
-        schemaIndex.entities.forEach(entityRef => {
-          //TODO: move to uiDefinition
-          let color = entityRef.metadata.markColor;
-
-          let val = wizardService.readParam(entityRef.field.path);
-
-          if (Array.isArray(val)) {
-            val.forEach(id => marker.mark(id, color));
-          } else {
-            if (val) {
-              marker.mark(val, color);
-            }
-          }
-        });
-        marker.commit();
+        syncMarkers();
       }
     });
   },

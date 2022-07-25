@@ -7,6 +7,7 @@ import {ORIGIN} from "math/vector";
 import {lookAtFace} from "cad/actions/usabilityActions";
 import {Styles} from "sketcher/styles";
 import {createFunctionList} from "gems/func";
+import {View} from "cad/scene/views/view";
 
 export class InPlaceSketcher {
   
@@ -14,6 +15,7 @@ export class InPlaceSketcher {
     this.face = null; // should be only one in the state
     this.ctx = ctx;
     this.sketcherAppContext = null;
+    this.pickControlToken = 0;
     Styles.DEFAULT.strokeStyle = '#3477eb';
   }
 
@@ -57,6 +59,8 @@ export class InPlaceSketcher {
     this.ctx.streams.sketcher.sketchingFace.next(face);
     this.ctx.streams.sketcher.sketcherAppContext.next(this.sketcherAppContext);
 
+    this.pickControlToken = this.ctx.pickControlService.takePickControl(this.sketcherPickControl);
+
     this.disposers = createFunctionList();
     this.disposers.add(
       this.ctx.viewer.sceneSetup.viewportSizeUpdate$.attach(this.onCameraChange)
@@ -81,6 +85,7 @@ export class InPlaceSketcher {
     this.ctx.streams.sketcher.sketcherAppContext.next(null);
     this.ctx.workbenchService.switchToDefaultWorkbench();
     this.disposers.call();
+    this.ctx.pickControlService.releasePickControl(this.pickControlToken);
     viewer3d.requestRender();
   }
 
@@ -128,6 +133,10 @@ export class InPlaceSketcher {
     this.ctx.services.storage.set(this.sketchStorageKey, this.viewer.io.serializeSketch({
       expressionsSignature: this.ctx.expressionService.signature
     }));
+  }
+
+  sketcherPickControl = (obj) => {
+    return false;
   }
 }
 
