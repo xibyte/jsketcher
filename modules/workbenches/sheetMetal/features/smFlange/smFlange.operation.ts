@@ -54,7 +54,7 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
 
     const tools = occFaces.map((faceName, i) => {
       const shapeName = "Tool/" + i;
-      const args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.negate().data(), params.angle];
+      const args = [shapeName, faceName, ...revolveVectorOrigin.data(), ...revolveVectorDirection.data(), params.angle];
       oci.revol(...args);
 
       return shapeName;
@@ -65,27 +65,11 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       targets: [params.face.shell]
     }
 
-    console.log(params.face.shell);
-
-    tools[0].edges.forEach(async (newEdge) => {
-      params.face.shell.edges.forEach(async (edgeToLookAt) => {
-        if (JSON.stringify(newEdge.topology.data.tessellation) == JSON.stringify(edgeToLookAt.topology.data.tessellation)) {
-          console.log("We have a match", edgeToLookAt.productionInfo.sheetMetal.kind);
-          newEdge.productionInfo ={};
-          newEdge.productionInfo = { sheetMetal: { kind: edgeToLookAt.productionInfo.sheetMetal.kind } };
-          //newEdge.productionInfo.sheetMetal.kind = edgeToLookAt.productionInfo.sheetMetal.kind;
-          console.log(newEdge, edgeToLookAt);
-          console.log(newEdge.productionInfo);
-        }
-      });
-    });
-
-    const  booleanOperation =   {
-      kind: "UNION",
-      targets:[params.face.shell]
+    //return occ.utils.applyBooleanModifier(tools, booleanOperation);
+    return {
+      created: tools,
+      consumed: []
     }
-    
-    return occ.utils.applyBooleanModifier(tools, booleanOperation);
 
   },
   form: [
