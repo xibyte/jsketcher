@@ -12,7 +12,7 @@ import {
 import * as vec from 'math/vec';
 import {MOpenFaceShell} from '../../model/mopenFace';
 import {BooleanType, EngineAPI_V1} from "engine/api";
-import {resolveExtrudeVector} from "../cutExtrude/cutExtrude";
+
 import {ApplicationContext} from "context";
 import {MBrepShell} from "../../model/mshell";
 
