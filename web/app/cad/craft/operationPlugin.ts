@@ -54,6 +54,7 @@ export function activate(ctx: ApplicationContext) {
     let operation = {
       appearance,
       schemaIndex,
+      defaultActiveField: schemaIndex.fields[0]?.flattenedPath, // to be overridden by descriptor
       ...descriptor,
       schema, form
     };
