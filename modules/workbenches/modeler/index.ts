@@ -49,7 +49,9 @@ export const ModelerWorkspace: WorkbenchConfig = {
     ImportModelOpperation,
     DeleteBodyOperation,
   ],
-  actions: [],
+  actions: [
+    GetVolume,
+  ],
   ui: {
     toolbar: [
       'DATUM_CREATE', 'PLANE', 'EditFace', '-',
