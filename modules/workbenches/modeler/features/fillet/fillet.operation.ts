@@ -20,38 +20,12 @@ export const FilletOperation: OperationDescriptor<any> = {
   icon: 'img/cad/fillet',
   info: 'Fillet/Champher',
   paramsInfo: ({size, opperationType,}) => `(${r(size)} ${r(opperationType)}})`,
-  form: [
-    {
-      type: 'selection',
-      name: 'edges',
-      capture: [EntityKind.EDGE],
-      label: 'edges',
-      multi: true,
-      defaultValue: {
-        usePreselection: true,
-        preselectionIndex: 0
-      },
-    },
-    {
-      type: 'choice',
-      style: "dropdown",
-      label: 'opperationType',
-      name: 'opperationType',
-      values: ["Fillet", "Champher"],
-      defaultValue: "Fillet",
-    },
-    {
-      type: 'number',
-      label: 'size',
-      name: 'size',
-      defaultValue: 5,
-    },
-  ],
-
   run: (params: FilletParams, ctx: ApplicationContext) => {
 
     const occ = ctx.occService;
     const oci = occ.commandInterface;
+
+    console.log(params.edges);
 
     //add all the edges and size to seperate arrays for each shell that edges are selected from
 
@@ -99,6 +73,32 @@ export const FilletOperation: OperationDescriptor<any> = {
 
     return result;
   },
-
+  form: [
+    {
+      type: 'selection',
+      name: 'edges',
+      capture: [EntityKind.EDGE],
+      label: 'edges',
+      multi: true,
+      defaultValue: {
+        usePreselection: true,
+        preselectionIndex: 0
+      },
+    },
+    {
+      type: 'choice',
+      style: "dropdown",
+      label: 'opperationType',
+      name: 'opperationType',
+      values: ["Fillet", "Champher"],
+      defaultValue: "Fillet",
+    },
+    {
+      type: 'number',
+      label: 'size',
+      name: 'size',
+      defaultValue: 5,
+    },
+  ],
 }
 
