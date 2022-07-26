@@ -14,7 +14,6 @@ interface ExtrudeParams {
   length: number;
   doubleSided:boolean,
   face: MFace;
-  profiles: MObject[];
   direction?: UnitVector,
   boolean: BooleanDefinition
 }
@@ -46,11 +45,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
     const face = params.face;
 
-    if (params.profiles?.length > 0) {
-
-      params.profiles
-
-    }
     let dir: UnitVector;
     if (params.direction) {
       dir = params.direction.normalize();
@@ -123,14 +117,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
         usePreselection: true,
         preselectionIndex: 0
       },
-    },
-    {
-      type: 'selection',
-      name: 'profiles',
-      capture: [EntityKind.FACE, EntityKind.LOOP],
-      label: 'profiles',
-      optional: true,
-      multi: true
     },
     {
       type: 'direction',
