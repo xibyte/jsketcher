@@ -65,6 +65,23 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       targets: [params.face.shell]
     }
 
+    console.log(params.face.shell);
+
+    tools[0].edges.forEach(async (newEdge) => {
+      params.face.shell.edges.forEach(async (edgeToLookAt) => {
+        if (JSON.stringify(newEdge.topology.data.tessellation) == JSON.stringify(edgeToLookAt.topology.data.tessellation)) {
+          console.log("We have a match", edgeToLookAt.productionInfo.sheetMetal.kind);
+          newEdge.productionInfo ={};
+          newEdge.productionInfo = { sheetMetal: { kind: edgeToLookAt.productionInfo.sheetMetal.kind } };
+          //newEdge.productionInfo.sheetMetal.kind = edgeToLookAt.productionInfo.sheetMetal.kind;
+          console.log(newEdge, edgeToLookAt);
+          console.log(newEdge.productionInfo);
+        }
+      });
+    });
+
+
+
     //return occ.utils.applyBooleanModifier(tools, booleanOperation);
     return {
       created: tools,
