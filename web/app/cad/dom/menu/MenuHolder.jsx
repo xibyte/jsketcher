@@ -13,6 +13,9 @@ function MenuHolder({menus}) {
 }
 
 function ActionMenu({actions, keymap, ...menuState}) {
+  if (!Array.isArray(actions)) {
+    actions = actions();
+  }
   return <Menu {...menuState}>
     {actions.map((action, index) => {
       if (action === '-') {

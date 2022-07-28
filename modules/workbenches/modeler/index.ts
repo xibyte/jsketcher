@@ -20,6 +20,7 @@ import { PatternLinearOperation } from "./features/patternLinear/patternLinear.o
 import { PatternRadialOperation } from "./features/patternRadial/patternRadial.operation"
 //imports of action type commands
 import { GetVolume } from './actions/getVolume/getVolume.action';
+import {GiCubes} from "react-icons/gi";
 
 
 export const ModelerWorkspace: WorkbenchConfig = {
@@ -55,5 +56,6 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
       "HOLE_TOOL", "-", 'GET_VOLUME',
     ]
-  }
+  },
+  icon: GiCubes
 }

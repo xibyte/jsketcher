@@ -21,9 +21,17 @@ export class Label extends SketchObject {
     this.offsetY = 0;
   }
 
+  dependsOn(other: SketchObject) {
+    return this.assignedObject === other;
+  }
+
   translateImpl(dx, dy) {
     this.offsetX += dx;
     this.offsetY += dy;
+  }
+
+  get marginOffset() {
+    return TEXT_H_OFFSET;
   }
 
 
@@ -41,7 +49,7 @@ export class Label extends SketchObject {
       ctx.save();
       viewer.setStyle(Styles.HIGHLIGHT, ctx);
     }
-    const textOff = viewer.unscale * TEXT_H_OFFSET;
+    const textOff = viewer.unscale * this.marginOffset;
 
 
     this.textHelper.prepare(this.text, ctx, viewer);

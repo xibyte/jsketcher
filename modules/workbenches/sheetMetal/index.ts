@@ -1,8 +1,9 @@
-import { WorkbenchConfig } from "cad/workbench/workbenchService";
+import {WorkbenchConfig} from "cad/workbench/workbenchService";
 
 //imports of feature history type commands
-import { smTabOperation } from "./features/smTab/smTab.operation";
-import { smFlangeOperation } from "./features/smFlange/smFlange.operation";
+import {smTabOperation} from "./features/smTab/smTab.operation";
+import {smFlangeOperation} from "./features/smFlange/smFlange.operation";
+import {SiKaufland} from "react-icons/si";
 
 
 //imports of action type commands
@@ -27,5 +28,6 @@ export const sheetMetalWorkspace: WorkbenchConfig = {
       "HOLE_TOOL", "-",
       "SM_TAB","SM_FLANGE"
     ]
-  }
+  },
+  icon: SiKaufland
 }

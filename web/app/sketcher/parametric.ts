@@ -265,15 +265,18 @@ class ParametricManager {
     obj.constraints.clear();
     obj.generators.clear();
 
-    this.viewer.dimLayer.traverseSketchObjects(dim => {
-      obj.accept(o => {
-        if (dim.dependsOn && dim.dependsOn(o)) {
-          this._removeObject(dim);
-          return false;
-        }
-        return true;
+    [this.viewer.dimLayer, this.viewer.labelLayer].forEach(l => {
+      l.traverseSketchObjects(dim => {
+        obj.accept(o => {
+          if (dim.dependsOn && dim.dependsOn(o)) {
+            this._removeObject(dim);
+            return false;
+          }
+          return true;
+        });
       });
-    });
+    })
+
   };
 
   invalidate() {

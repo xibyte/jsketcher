@@ -1,5 +1,6 @@
 import * as ActionHelpers from './actionHelpers'
 import {AiOutlineExport} from "react-icons/ai";
+import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";
 
 export default [
   {
