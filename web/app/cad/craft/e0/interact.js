@@ -95,3 +95,36 @@ export function SetLocation(shapeName, matrixArray) {
   );
   _free(shapeNamePtr);
 }
+
+export function AddLocation(shapeName, matrixArray) {
+  const shapeNamePtr = toCString(shapeName);
+  const [
+    mx0,
+    mx1,
+    mx2,
+    mx3,
+    mx4,
+    mx5,
+    mx6,
+    mx7,
+    mx8,
+    mx9,
+    mx10,
+    mx11
+  ] = matrixArray;
+  Module._AddLocation(shapeNamePtr,
+    mx0,
+    mx1,
+    mx2,
+    mx3,
+    mx4,
+    mx5,
+    mx6,
+    mx7,
+    mx8,
+    mx9,
+    mx10,
+    mx11
+  );
+  _free(shapeNamePtr);
+}
