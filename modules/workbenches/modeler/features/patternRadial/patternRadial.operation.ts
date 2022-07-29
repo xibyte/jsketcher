@@ -6,7 +6,7 @@ import Axis from "math/axis";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {MShell} from 'cad/model/mshell';
 import {Matrix3x4} from "math/matrix";
-import {SetLocation} from "cad/craft/e0/interact";
+import {AddLocation, SetLocation} from "cad/craft/e0/interact";
 import {DEG_RAD} from "math/commons";
 
 interface patternRadialParams {
@@ -49,7 +49,7 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
 
         const newShellName = shellToPatern.id + ":pattern/" + index + "/" +i;
         oci.copy(shellToPatern, newShellName);
-        SetLocation(newShellName, tr.toFlatArray());
+        AddLocation(newShellName, tr.toFlatArray());
   
         created.push(occ.io.getShell(newShellName));    
       }
