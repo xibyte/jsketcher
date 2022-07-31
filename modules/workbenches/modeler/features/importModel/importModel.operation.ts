@@ -9,6 +9,7 @@ import { LocalFile } from "ui/components/controls/FileControl";
 import CadError from "../../../../../web/app/utils/errors";
 import { parseStringPromise } from 'xml2js';
 import * as jszip from "jszip";
+import { FcElectricalSensor } from 'react-icons/fc';
 
 
 interface ImportModelParams {
@@ -56,38 +57,33 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
 
       for (const itemToLookAt in DecodedXmlFreeCADData) {
         const flattenedObject = flattenJSON(DecodedXmlFreeCADData[itemToLookAt]);
-        let importBrepFlag = true;
+        let importBrepFlag = false;
         let importBrepShapeName = "";
         let visiblePropertyName = "";
         for (const propertyToLookAt in flattenedObject) {
-          console.log(propertyToLookAt + " = " + flattenedObject[propertyToLookAt]);
+          //console.log(propertyToLookAt + " = " + flattenedObject[propertyToLookAt]);
+          importBrepFlag = false;
           if (propertyToLookAt.includes("Part.0.$.file")) importBrepShapeName = flattenedObject[propertyToLookAt];
-          if (propertyToLookAt.includes("$.name") && flattenedObject[propertyToLookAt] == "Visibility") {
-            let propToCheck = propertyToLookAt.replace(".$.name", ".Bool.0.$.value");
-            if (flattenedObject[propToCheck] == "false") importBrepFlag = false;
+          if (importBrepShapeName !== "PartShape.brp"){
+            if (propertyToLookAt.includes("$.name") && flattenedObject[propertyToLookAt] == "Visibility") {
+              let propToCheck = propertyToLookAt.replace(".$.name", ".Bool.0.$.value");
+              let shouldItImport = flattenedObject[propToCheck];
+              console.log(shouldItImport, importBrepShapeName);
+              if (shouldItImport == "true") {
+                try {
+                  await FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + await zipContents[importBrepShapeName].async("string"));
+                  await oci.readbrep(importBrepShapeName, importBrepShapeName);
+                  returnObject.created.push(occ.io.getShell(importBrepShapeName));
+                  console.log(importBrepShapeName);
+                } catch (e) {
+                  console.log(e)
+                }
+              }
+            }
           }
-
-        }
-        if (importBrepFlag == true) {
-          try {
-            await FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + await zipContents[importBrepShapeName].async("string"));
-            await oci.readbrep(importBrepShapeName, importBrepShapeName);
-            returnObject.created.push(occ.io.getShell(importBrepShapeName));
-          } catch (e) {
-            console.log(e)
-          }
-
         }
       }
 
-      // for (const property in zipContents) {
-      //   if (property.endsWith("brp")) {
-      //     FS.writeFile(property, `DBRep_DrawableShape\n` + await zipContents[property].async("string"));
-      //     oci.readbrep(property, property);
-      //     returnObject.created.push(occ.io.getShell(property));
-      //   }
-      // }
-      //console.log(zipContents);
     } else if (FileName.endsWith("STEP") || FileName.endsWith("STP")) {
 
       //step Import
