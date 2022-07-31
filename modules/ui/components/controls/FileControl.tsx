@@ -3,7 +3,33 @@ import React from 'react';
 export interface LocalFile {
 
   fileName: string;
-  content: string;
+  dataUrl: string;
+
+}
+
+export class LocalFileAdapter implements LocalFile {
+
+  localFile: LocalFile;
+
+  constructor(localFile: LocalFile) {
+    this.localFile = localFile;
+  }
+
+  get fileName() {
+    return this.localFile.fileName;
+  }
+
+  get dataUrl() {
+    return this.localFile.dataUrl;
+  }
+
+  base64Content() {
+    return getBase64FromDataUrl(this.dataUrl);
+  }
+
+  rawContent() {
+    return atob(getBase64FromDataUrl(this.dataUrl));
+  }
 }
 
 export function getBase64FromDataUrl(dataUrl: string): string {
@@ -29,7 +55,7 @@ export default class FileControl extends React.Component<any> {
         const dataUrl = evt.target.result as string;
         onChange({
           fileName: name,
-          content: dataUrl
+          dataUrl,
         })
       };
       reader.readAsDataURL(file);

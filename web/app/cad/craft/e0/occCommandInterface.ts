@@ -1,5 +1,6 @@
 import {CallCommand} from "cad/craft/e0/interact";
 import {MObject} from "cad/model/mobject";
+import {OCCCommands} from "cad/craft/e0/OCI";
 
 export type OCCCommandInterface = OCCCommands;
 
