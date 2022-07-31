@@ -128,3 +128,11 @@ export function AddLocation(shapeName, matrixArray) {
   );
   _free(shapeNamePtr);
 }
+
+export function importStepFile(shapeName, fileName, oneOnly) {
+  const shapeNamePtr = toCString(shapeName);
+  const fileNamePtr = toCString(fileName);
+  Module._ImportStepFile(shapeNamePtr, fileNamePtr, oneOnly);
+  _free(shapeNamePtr);
+  _free(fileName);
+}

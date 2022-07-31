@@ -1,4 +1,4 @@
-interface OCCCommands {
+export interface OCCCommands {
   /*
      2dbeziercurve name nbpole pole, [weight]
    */

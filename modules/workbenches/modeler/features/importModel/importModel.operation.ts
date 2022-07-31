@@ -1,19 +1,14 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
-import { param } from 'cypress/types/jquery';
-import { MObject } from 'cad/model/mobject';
-import { LocalFile } from "ui/components/controls/FileControl";
+import {ApplicationContext} from "context";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {LocalFile, LocalFileAdapter} from "ui/components/controls/FileControl";
 import CadError from "../../../../../web/app/utils/errors";
-import { parseStringPromise } from 'xml2js';
-import * as jszip from "jszip";
-import { FcElectricalSensor } from 'react-icons/fc';
-
+import {parseStringPromise} from 'xml2js';
+import {importStepFile} from "cad/craft/e0/interact";
+import {clone} from "gems/objects";
+import JSZip from "jszip";
 
 interface ImportModelParams {
-  file: LocalFile;
+  file: LocalFileAdapter;
 }
 
 export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
@@ -31,35 +26,31 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
 
 
     const FileName = params.file.fileName.toUpperCase();
-    let fileToRead = await atob(await params.file.content.slice(await params.file.content.indexOf(',') + 1));
+    let rawContent = params.file.rawContent();
     //console.log(params.file.content);
-    //console.log(fileToRead);
+    //console.log(rawContent);
 
     if (FileName.endsWith("BRP") || FileName.endsWith("BREP")) {
       //FreeCAD some times omits this text from the top of BRP files
       //as part of the brp files stored in the .FCStf file archive format
-      if (!fileToRead.startsWith("DBRep_DrawableShape")) {
-        fileToRead = `DBRep_DrawableShape\n` + fileToRead;
+      if (!rawContent.startsWith("DBRep_DrawableShape")) {
+        rawContent = `DBRep_DrawableShape\n` + rawContent;
       }
 
-      FS.writeFile("newBREPobject", (fileToRead));
+      FS.writeFile("newBREPobject", rawContent);
       oci.readbrep("newBREPobject", "newBREPobject");
       returnObject.created.push(occ.io.getShell("newBREPobject"));
     } else if (FileName.endsWith("FCSTD")) {
-      var JSZip = require("jszip");
 
-      const zipContents = await (await JSZip.loadAsync(btoa(fileToRead), { base64: true })).files;
-      var xmlFreeCADData = await zipContents["Document.xml"].async("string");
+      const zipContents = (await JSZip.loadAsync(params.file.base64Content(), { base64: true })).files;
+      const xmlFreeCADData = await zipContents["Document.xml"].async("string");
 
-      let DecodedXmlFreeCADData = (JSON.parse(JSON.stringify(await parseStringPromise(xmlFreeCADData)))).Document.ObjectData[0].Object;
-      //console.log(DecodedXmlFreeCADData);
-
+      let DecodedXmlFreeCADData = (clone(await parseStringPromise(xmlFreeCADData))).Document.ObjectData[0].Object;
 
       for (const itemToLookAt in DecodedXmlFreeCADData) {
         const flattenedObject = flattenJSON(DecodedXmlFreeCADData[itemToLookAt]);
         let importBrepFlag = false;
         let importBrepShapeName = "";
-        let visiblePropertyName = "";
         for (const propertyToLookAt in flattenedObject) {
           //console.log(propertyToLookAt + " = " + flattenedObject[propertyToLookAt]);
           importBrepFlag = false;
@@ -71,12 +62,13 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
               console.log(shouldItImport, importBrepShapeName);
               if (shouldItImport == "true") {
                 try {
-                  await FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + await zipContents[importBrepShapeName].async("string"));
+                  const zipContent = await zipContents[importBrepShapeName].async("string");
+                  await FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + zipContent);
                   await oci.readbrep(importBrepShapeName, importBrepShapeName);
                   returnObject.created.push(occ.io.getShell(importBrepShapeName));
-                  console.log(importBrepShapeName);
+                  console.debug(importBrepShapeName);
                 } catch (e) {
-                  console.log(e)
+                  console.warn(e)
                 }
               }
             }
@@ -87,14 +79,14 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
     } else if (FileName.endsWith("STEP") || FileName.endsWith("STP")) {
 
       //step Import
-      FS.writeFile("newStepObject", (params.file.content));
-      oci.stepread("newStepObject", "newStepObject");
+      FS.writeFile("newStepFile", rawContent);
+      importStepFile("newStepObject", "newStepFile", true);
       returnObject.created.push(occ.io.getShell("newStepObject"));
 
     } else if (FileName.endsWith("IGES") || FileName.endsWith("IGS")) {
 
       //IGES import
-      FS.writeFile("newIgesObject", (params.file.content));
+      FS.writeFile("newIgesObject", rawContent);
       oci.igesread("newIgesObject", "newIgesObject");
       returnObject.created.push(occ.io.getShell("newIgesObject"));
 
@@ -103,14 +95,11 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
         kind: CadError.KIND.INVALID_INPUT,
         code: 'File type not supported at this time'
       });
-
-
     }
 
-
     return returnObject;
-
   },
+
   form: [
     {
       type: 'file',
@@ -122,12 +111,12 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
 }
 
 const flattenJSON = (obj = {}, res = {}, extraKey = '') => {
-  for (key in obj) {
+  for (let key of Object.keys(obj)) {
     if (typeof obj[key] !== 'object') {
       res[extraKey + key] = obj[key];
     } else {
       flattenJSON(obj[key], res, `${extraKey}${key}.`);
-    };
-  };
+    }
+  }
   return res;
 };
