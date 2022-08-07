@@ -1,4 +1,4 @@
-import {Geometry, Line, LineBasicMaterial, MeshBasicMaterial, Object3D, Vector3} from 'three';
+import {BufferGeometry, Line, LineBasicMaterial, MeshBasicMaterial, Object3D, Vector3} from 'three';
 
 
 import CSysObject3D from './csysObject';
@@ -56,10 +56,10 @@ export default class DatumObject3D extends Object3D {
     let ext = dir.multiply(this.viewer.sceneSetup.workingSphere);
 
     const material = new LineBasicMaterial({color});
-    let geometry = new Geometry();
-
-    geometry.vertices.push(new Vector3().copy(this.csys.origin.minus(ext)));
-    geometry.vertices.push(new Vector3().copy(this.csys.origin.plus(ext)));
+    const geometry = new BufferGeometry().setFromPoints( [
+      new Vector3().copy(this.csys.origin.minus(ext)),
+      new Vector3().copy(this.csys.origin.plus(ext))
+    ]);
 
     let line = new Line(geometry, material);
     this.add(line);

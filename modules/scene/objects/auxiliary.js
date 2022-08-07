@@ -1,9 +1,6 @@
 import DPR from 'dpr';
 import {ArrowHelper, CylinderBufferGeometry, Mesh, MeshBasicMaterial, Object3D, Vector3} from 'three';
 import {createMeshLineGeometry} from './meshLine';
-import {Sphere} from 'three/src/math/Sphere';
-import {Matrix4} from 'three/src/math/Matrix4';
-import {Ray} from 'three/src/math/Ray';
 
 export function createArrow(length, arrowLength, arrowHead, axis, color, opacity, materialMixins) {
   let arrow = new ArrowHelper(new Vector3().copy(axis), new Vector3(0, 0, 0), length, color, arrowLength, arrowHead);

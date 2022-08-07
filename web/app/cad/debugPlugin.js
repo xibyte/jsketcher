@@ -1,6 +1,5 @@
 import {checkForSelectedFaces} from './actions/actionHelpers';
-import {brepFaceToGeom, surfaceToThreeGeom} from './scene/wrappers/brepSceneObject';
-import {createSolidMaterial} from './scene/wrappers/sceneObject';
+import {brepFaceToGeom, createSolidMaterial, surfaceToThreeGeom, tessDataToGeom} from './scene/views/viewUtils';
 import DPR from 'dpr';
 import Vector from 'math/vector';
 import * as vec from 'math/vec';
@@ -10,7 +9,6 @@ import {toLoops} from 'brep/io/brepLoopsFormat';
 import curveTess from 'geom/impl/curve/curve-tess';
 import {LOG_FLAGS} from './logFlags';
 import {state} from "lstream";
-import {BufferGeometry, BufferAttribute, Float32BufferAttribute, Int32BufferAttribute} from 'three';
 
 const BREP_DEBUG_WINDOW_VISIBLE$ = state(false);
 
@@ -116,17 +114,20 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     },
     AddVolume: (shell, color) => {
       color = color || 0xffffff;
-      const geometry = new THREE.Geometry();
-      shell.faces.forEach(f => brepFaceToGeom(f, geometry));
-      triangulateToThree(shell, geometry);
-      const mesh = new THREE.Mesh(geometry, createSolidMaterial({
-        color,
-        transparent: true,
-        opacity: 0.3,
-        depthWrite: false, 
-        depthTest: false
-      }));
-      debugVolumeGroup.add(mesh);
+      // const geometry = new THREE.Geometry();
+      shell.faces.forEach(f => {
+        const geometry = brepFaceToGeom(f,)
+
+        const mesh = new THREE.Mesh(geometry, createSolidMaterial({
+          color,
+          transparent: true,
+          opacity: 0.3,
+          depthWrite: false,
+          depthTest: false
+        }));
+        debugVolumeGroup.add(mesh);
+
+      });
       // window.__DEBUG__.AddWireframe(shell, color);
       viewer.render();
     },
@@ -134,19 +135,20 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
       color = color || 0xffffff;
       const visited = new Set();
       for (let e of shell.edges) {
-        let lg = new THREE.Geometry();
-        lg.vertices.push(e.halfEdge1.vertexA.point.three());
-        lg.vertices.push(e.halfEdge2.vertexA.point.three());
-        const line = new THREE.Line(lg,  new THREE.LineBasicMaterial({color, linewidth: 3/DPR}));
+        const vertices = []
+        vertices.push(e.halfEdge1.vertexA.point.three());
+        vertices.push(e.halfEdge2.vertexA.point.three());
+
+        const lg = new THREE.BufferGeometry().setFromPoints( vertices );
+
+        const line = new THREE.Line(lg, new THREE.LineBasicMaterial({color, linewidth: 3/DPR}));
         debugVolumeGroup.add(line);
       }
       viewer.render();
     },
     AddParametricSurface: (srf, color) => {
       color = color || 0xffffff;
-      const geometry = new THREE.Geometry();
-      surfaceToThreeGeom(srf, geometry);
-      geometry.computeFaceNormals();
+      const geometry = surfaceToThreeGeom(srf);
       const mesh = new THREE.Mesh(geometry, createSolidMaterial({
         color,
         transparent: true,
@@ -192,22 +194,8 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     AddTessDump: (triangles, color) => {
       const vec = arr => new THREE.Vector3().fromArray(arr);
       color = color || 0xffffff;
-      const geometry = new THREE.Geometry();
-      for (let i = 0; i < triangles.length; ++i) {
-        let off = geometry.vertices.length;
-        let tr = triangles[i], normales;
-        if (Array.isArray(tr[0][0])) {
-          normales = tr[1];
-          tr = tr[0];
-          if (normales.find(n => n[0] === null || n[1] === null || n[2] === null)) {
-            normales = undefined;
-          }
-        }
-        tr.forEach(p => geometry.vertices.push(vec(p)));
-        const face = new THREE.Face3(off, off + 1, off + 2, normales && normales.map(vec));
-        geometry.faces.push(face);
-      }
-      geometry.computeFaceNormals();
+
+      const geometry = tessDataToGeom(triangles);
       const mesh = new THREE.Mesh(geometry, createSolidMaterial({
         vertexColors: THREE.FaceColors,
         color: 0xB0C4DE,
@@ -282,9 +270,8 @@ function clearGroup(g) {
 export function createLine(a, b, color) {
   color = color || 0xFA8072;
   const debugLineMaterial = new THREE.LineBasicMaterial({color, linewidth: 10});
-  const  lg = new THREE.Geometry();
-  lg.vertices.push(a.three());
-  lg.vertices.push(b.three());
+  const vertices = [a.three(), b.three()];
+  const lg = new THREE.BufferGeometry().setFromPoints( vertices );
   return new THREE.Line(lg, debugLineMaterial);
 }
 

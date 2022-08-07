@@ -1,11 +1,12 @@
-import stlExporter from './stl/stlExporter';
+import {STLExporter} from './stl/stlExporter';
 import exportTextData from 'gems/exportTextData';
 
 export function activate(ctx) {
 
   function toStlAsciiString() {
-    let views = ctx.services.cadRegistry.shells.map(mShell => mShell.ext.view).filter(m => !!m);
-    return stlExporter(views);
+    const exporter = new STLExporter();
+    const views = ctx.services.cadRegistry.shells.map(mShell => mShell.ext.view).filter(m => !!m);
+    return exporter.parse( views );
   }
 
   function stlAscii() {

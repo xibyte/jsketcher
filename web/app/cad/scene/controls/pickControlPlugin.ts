@@ -289,8 +289,8 @@ export function traversePickResults(event, pickResults, kind, visitor) {
       return false;
     },
     (pickResult) => {
-      if (mask.is(kind, PICK_KIND.LOOP) && !!pickResult.face) {
-        let faceV = getAttribute(pickResult.face, LOOP);
+      if (mask.is(kind, PICK_KIND.LOOP)) {
+        let faceV = getAttribute(pickResult.object, LOOP);
         if (faceV) {
           return !visitor(faceV.model, event, pickResult);
         }
@@ -298,8 +298,8 @@ export function traversePickResults(event, pickResults, kind, visitor) {
       return false;
     },
     (pickResult) => {
-      if (mask.is(kind, PICK_KIND.FACE) && !!pickResult.face) {
-        let faceV = getAttribute(pickResult.face, FACE);
+      if (mask.is(kind, PICK_KIND.FACE)) {
+        let faceV = getAttribute(pickResult.object, FACE);
         if (faceV) {
           return !visitor(faceV.model, event, pickResult);
         }

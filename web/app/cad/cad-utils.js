@@ -1,6 +1,5 @@
 import Vector from 'math/vector';
 import BBox from 'math/bbox'
-import {MeshSceneSolid} from './scene/wrappers/meshSceneObject'
 import {Matrix3x4} from 'math/matrix';
 import {equal} from 'math/equality';
 import {area, isCCW, isPointInsidePolygon} from "geom/euclidean";
@@ -40,29 +39,6 @@ export function createBox(w, h, d) {
   return extrude(square, normal, normal.multiply(d), 1);
 }
 
-export function createCSGBox(w, h, d) {
-  var csg = CSG.fromPolygons(createBox(w, h, d));
-  return createSolid(csg);
-}
-
-export function createSphere(radius) {
-  var csg = CSG.sphere({radius: radius, resolution: 48});
-  var shared = createShared();
-  shared.__tcad.csgInfo = {
-    derivedFrom : {
-      id : 0,
-      _class : 'TCAD.TWO.Circle'
-    }
-  };
-  for (var i = 0; i < csg.polygons.length; i++) {
-    var poly = csg.polygons[i];
-    poly.shared = shared;
-  }
-  var solid = createSolid(csg);
-  solid.cadGroup.remove(solid.wireframeGroup);
-  return solid;
-}
-
 export function checkPolygon(poly) {
   if (poly.length < 3) {
     throw new Error('Polygon should contain at least 3 point');
@@ -92,9 +68,9 @@ export function createPoint0(x, y, z) {
         "    gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );\n"
     +'\n}'
   });
-  
-  var geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(x, y, z));
+
+  const geometry = new THREE.BufferGeometry().setFromPoints( [new THREE.Vector3(x, y, z)] );
+
 //  geometry.vertices.push(new THREE.Vector3(x+.001, y+.001, z+.001));
 
 //  var line = new THREE.PointCloud(geometry, material);
@@ -124,9 +100,12 @@ export function createLine(a, b, color) {
     color: color,
     linewidth: 1
   });
-  var geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(a.x, a.y, a.z));
-  geometry.vertices.push(new THREE.Vector3(b.x, b.y, b.z));
+
+  const vertices = []
+  vertices.push(new THREE.Vector3(a.x, a.y, a.z));
+  vertices.push(new THREE.Vector3(b.x, b.y, b.z));
+  const geometry = new THREE.BufferGeometry().setFromPoints( vertices );
+
   return new THREE.Line(geometry, material);
 }
 
@@ -142,71 +121,12 @@ export function createSolidMaterial() {
   });
 }
 
-export function createSolid(csg, id) {
-  return new MeshSceneSolid(csg, undefined, id);
-}
-
 export function intercept(obj, methodName, aspect) {
   var originFunc = obj[methodName];
   obj[methodName] = function() {
     var $this = this;
     aspect(function() {originFunc.apply($this, arguments)}, arguments);
   }
-}
-
-export function createPlane(basis, depth) {
-  var initWidth = 1;
-  var boundingPolygon = [
-      new Vector(0,  0, 0),
-      new Vector(initWidth,  0, 0),
-      new Vector(initWidth, initWidth, 0),
-      new Vector(0, initWidth, 0)
-    ];
-  var shared = createShared();
-
-  var material = createSolidMaterial();
-  material.transparent = true;
-  material.opacity = 0.5;
-  material.side = THREE.DoubleSide;
-
-  var tr = new Matrix3x4().setBasis(basis);
-  var currentBounds = new BBox();
-  var points = boundingPolygon.map(function(p) { p.z = depth; return tr._apply(p); });
-  var polygon = new CSG.Polygon(points.map(function(p){return new CSG.Vertex(csgVec(p))}), shared);
-  var plane = new MeshSceneSolid(CSG.fromPolygons([polygon]), 'PLANE');
-  plane.wireframeGroup.visible = false;
-  plane.mergeable = false;
-
-  function setBounds(bbox) {
-    currentBounds = bbox;
-    const poly = new CSG.Polygon(bbox.toPolygon().map(function(p){p.z = depth; return new CSG.Vertex(csgVec( tr._apply(p) ))}), shared);
-    plane.csg = CSG.fromPolygons([poly]);
-    plane.dropGeometry();
-    plane.createGeometry();
-  }
-  var bb = new BBox();
-  bb.checkBounds(-400, -400);
-  bb.checkBounds( 400,  400);
-  setBounds(bb);
-  
-  var sketchFace = plane.sceneFaces[0];
-  intercept(sketchFace, 'syncSketches', function(invocation, args) {
-    var geom = args[0];
-    invocation(geom);
-    var bbox = new BBox();
-    var connections = geom.connections.concat(arrFlatten1L(geom.loops));
-    for (var i = 0; i < connections.length; ++i) {
-      var l = connections[i];
-      bbox.checkBounds(l.a.x, l.a.y);
-      bbox.checkBounds(l.b.x, l.b.y);
-    }
-    if (bbox.maxX > currentBounds.maxX || bbox.maxY > currentBounds.maxY || bbox.minX < currentBounds.minX || bbox.minY < currentBounds.minY) {
-      bbox.expand(50);
-      setBounds(bbox);
-    }
-  });
-
-  return plane;
 }
 
 export function fixCCW(path, normal) {
@@ -300,63 +220,6 @@ export function calculateExtrudedLid(sourcePolygon, normal, direction, expansion
   return lid;
 }
 
-export function extrude(source, sourceNormal, target, expansionFactor) {
-
-  var extrudeDistance = target.normalize().dot(sourceNormal);
-  if (extrudeDistance == 0) {
-    return [];
-  }
-  var negate = extrudeDistance < 0;
-
-  var poly = [null, null];
-  var lid = calculateExtrudedLid(source, sourceNormal, target, expansionFactor);
-
-  var bottom, top;
-  if (negate) {
-    bottom = lid;
-    top = source;
-  } else {
-    bottom = source;
-    top = lid;
-  }
-
-  var n = source.length;
-  for ( var p = n - 1, i = 0; i < n; p = i ++ ) {
-    var shared = createShared();
-    shared.__tcad.csgInfo = {derivedFrom:  source[p].sketchConnectionObject};
-    var face = new CSG.Polygon([
-      new CSG.Vertex(csgVec(bottom[p])),
-      new CSG.Vertex(csgVec(bottom[i])),
-      new CSG.Vertex(csgVec(top[i])),
-      new CSG.Vertex(csgVec(top[p]))
-    ], shared);
-    poly.push(face);
-  }
-
-  var bottomNormal, topNormal;
-  if (negate) {
-    lid.reverse();
-    bottomNormal = sourceNormal;
-    topNormal = sourceNormal.negate();
-  } else {
-    source = source.slice(0);
-    source.reverse();
-    bottomNormal = sourceNormal.negate();
-    topNormal = sourceNormal;
-  }
-
-  function vecToVertex(v) {
-    return new CSG.Vertex(csgVec(v));
-  }
-
-  var sourcePlane = new CSG.Plane(bottomNormal.csg(), bottomNormal.dot(source[0]));
-  var lidPlane = new CSG.Plane(topNormal.csg(), topNormal.dot(lid[0]));
-
-  poly[0] = new CSG.Polygon(source.map(vecToVertex), createShared(), sourcePlane);
-  poly[1] = new CSG.Polygon(lid.map(vecToVertex), createShared(), lidPlane);
-  return poly;
-}
-
 export function triangulate(path, normal) {
   var _3dTransformation = new Matrix3x4().setBasis(someBasis2(normal));
   var _2dTransformation = _3dTransformation.invert();
@@ -368,13 +231,6 @@ export function triangulate(path, normal) {
   var myTriangulator = new PNLTRI.Triangulator();
   return  myTriangulator.triangulate_polygon( [ shell ] );
 //  return THREE.Shape.utils.triangulateShape( f2d.shell, f2d.holes );
-}
-
-export function createShared() {
-  var id = Counters.shared ++;
-  var shared = new CSG.Polygon.Shared([id, id, id, id]);
-  shared.__tcad = {};
-  return shared;
 }
 
 export function isCurveClass(className) {

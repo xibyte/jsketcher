@@ -18,6 +18,6 @@ export class EdgeView extends CurveBasedView {
   constructor(ctx, edge) {
     let brepEdge = edge.brepEdge;
     let tess = brepEdge.data.tessellation ? brepEdge.data.tessellation : brepEdge.curve.tessellateToData();
-    super(ctx, edge, tess, 2, 4, 0x2B3856, 0xc42720, false, MarkerTable);
+    super(ctx, edge, tess, 3, 0x000000, MarkerTable);
   }
 }

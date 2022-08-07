@@ -1,13 +1,12 @@
-import {setAttribute} from 'scene/objectData';
-import {brepFaceToGeom, tessDataToGeom} from '../wrappers/brepSceneObject';
-import {FACE} from 'cad/model/entities';
+import {brepFaceToGeom, tessDataToGeom} from './viewUtils';
 import * as SceneGraph from 'scene/sceneGraph';
 import {SketchObjectView} from './sketchObjectView';
 import {View} from './view';
 import {SketchLoopView} from './sketchLoopView';
-import {createSolidMaterial} from "cad/scene/wrappers/sceneObject";
+import {createSolidMaterial} from "cad/scene/views/viewUtils";
 import {SketchMesh} from "cad/scene/views/shellView";
-import {Geometry} from "three";
+import {FACE} from "cad/model/entities";
+import {setAttribute} from "scene/objectData";
 
 export class SketchingView extends View {
   
@@ -68,26 +67,18 @@ export class FaceView extends SketchingView {
   
   constructor(ctx, face, parent, skin) {
     super(ctx, face, parent);
-    const geom = new Geometry();
-    geom.dynamic = true;
-    this.geometry = geom;
+    let geom;
 
-    this.material = createSolidMaterial(skin);
     this.meshFaces = [];
-
-    const off = geom.faces.length;
     if (face.brepFace.data.tessellation) {
-      tessDataToGeom(face.brepFace.data.tessellation.data, geom)
+      geom = tessDataToGeom(face.brepFace.data.tessellation.data)
     } else {
-      brepFaceToGeom(face.brepFace, geom);
+      geom = brepFaceToGeom(face.brepFace);
     }
-    for (let i = off; i < geom.faces.length; i++) {
-      const meshFace = geom.faces[i];
-      this.meshFaces.push(meshFace);
-      setAttribute(meshFace, FACE, this);
-    }
-    geom.mergeVertices();
+    this.geometry = geom;
+    this.material = createSolidMaterial(skin);
     this.mesh = new SketchMesh(geom, this.material);
+    setAttribute(this.mesh, FACE, this);
     this.mesh.onMouseEnter = () => {
       this.ctx.highlightService.highlight(this.model.id);
     }
@@ -114,5 +105,5 @@ export function setFacesColor(faces, color) {
   }
 }
 
-export const NULL_COLOR = new THREE.Color(0xbfbfbf);
+const NULL_COLOR = 0xbfbfbf;
 
