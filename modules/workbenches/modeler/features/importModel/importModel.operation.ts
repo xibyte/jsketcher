@@ -33,6 +33,7 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
     if (FileName.endsWith("BRP") || FileName.endsWith("BREP")) {
       //FreeCAD some times omits this text from the top of BRP files
       //as part of the brp files stored in the .FCStf file archive format
+      console.log(rawContent);
       if (!rawContent.startsWith("DBRep_DrawableShape")) {
         rawContent = `DBRep_DrawableShape\n` + rawContent;
       }
@@ -51,24 +52,24 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
         const flattenedObject = flattenJSON(DecodedXmlFreeCADData[itemToLookAt]);
         let importBrepFlag = false;
         let importBrepShapeName = "";
+        let visiblePropertyName = "";
         for (const propertyToLookAt in flattenedObject) {
-          //console.log(propertyToLookAt + " = " + flattenedObject[propertyToLookAt]);
-          importBrepFlag = false;
+
           if (propertyToLookAt.includes("Part.0.$.file")) importBrepShapeName = flattenedObject[propertyToLookAt];
           if (importBrepShapeName !== "PartShape.brp"){
             if (propertyToLookAt.includes("$.name") && flattenedObject[propertyToLookAt] == "Visibility") {
-              let propToCheck = propertyToLookAt.replace(".$.name", ".Bool.0.$.value");
-              let shouldItImport = flattenedObject[propToCheck];
+              let propToCheck = await propertyToLookAt.replace(".$.name", ".Bool.0.$.value");
+              let shouldItImport = await flattenedObject[propToCheck];
               console.log(shouldItImport, importBrepShapeName);
+              //alert(shouldItImport);
               if (shouldItImport == "true") {
                 try {
-                  const zipContent = await zipContents[importBrepShapeName].async("string");
-                  await FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + zipContent);
+                  await FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + await zipContents[importBrepShapeName].async("string"));
                   await oci.readbrep(importBrepShapeName, importBrepShapeName);
                   returnObject.created.push(occ.io.getShell(importBrepShapeName));
-                  console.debug(importBrepShapeName);
+                  console.log(importBrepShapeName);
                 } catch (e) {
-                  console.warn(e)
+                  console.log(e)
                 }
               }
             }
