@@ -1,5 +1,7 @@
 import Vector, {AXIS, ORIGIN} from 'math/vector';
 import {RiCamera2Line} from "react-icons/ri";
+import {ViewMode} from "cad/scene/viewer";
+import {GiCube, HiCube, HiOutlineCube} from "react-icons/all";
 
 const NEG_X = AXIS.X.negate();
 const NEG_Y = AXIS.Y.negate();
@@ -191,5 +193,38 @@ export default [
     invoke: ctx => ctx.services.craft.historyTravel.forward({
       noWizardFocus: true
     })
+  },
+  {
+    id: 'ViewMode_WIREFRAME_ON',
+    appearance: {
+      label: 'wireframe',
+      icon: HiOutlineCube,
+    },
+    invoke: ctx => {
+      ctx.services.viewer.viewMode$.next(ViewMode.WIREFRAME);
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'ViewMode_SHADED_ON',
+    appearance: {
+      label: 'shaded',
+      icon: HiCube,
+    },
+    invoke: ctx => {
+      ctx.services.viewer.viewMode$.next(ViewMode.SHADED);
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'ViewMode_SHADED_WITH_EDGES_ON',
+    appearance: {
+      label: 'shaded with edges',
+      icon: GiCube,
+    },
+    invoke: ctx => {
+      ctx.services.viewer.viewMode$.next(ViewMode.SHADED_WITH_EDGES);
+      ctx.services.viewer.requestRender();
+    }
   },
 ]

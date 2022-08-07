@@ -16,7 +16,6 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
-import {TransformControls} from "three/examples/jsm/controls/TransformControls";
 import {stream} from "lstream";
 
 export default class SceneSetUp {
@@ -33,10 +32,9 @@ export default class SceneSetUp {
   private _prevContainerWidth: number;
   private _prevContainerHeight: number;
   trackballControls: CADTrackballControls;
-  transformControls: TransformControls;
-  updateControlsAndHelpers: () => void;
   viewportSizeUpdate$ = stream();
-  
+  renderRequested: boolean;
+
   constructor(container, onRendered) {
     
     this.workingSphere = 10000;
@@ -45,7 +43,8 @@ export default class SceneSetUp {
     this.rootGroup = this.scene;
     this.onRendered = onRendered;
     this.scene.userData.sceneSetUp = this;
-    
+    this.renderRequested = false;
+
     this.setUpCamerasAndLights();
     this.setUpControls();
 
@@ -55,7 +54,11 @@ export default class SceneSetUp {
   aspect() {
     return this.container.clientWidth / this.container.clientHeight;
   }
-  
+
+  requestRender() {
+    this.renderRequested = true;
+  }
+
   createOrthographicCamera() {
     let width = this.container.clientWidth;
     let height = this.container.clientHeight;
@@ -101,7 +104,7 @@ export default class SceneSetUp {
       this.updateOrthographicCameraViewport();
       this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
       this.viewportSizeUpdate$.next();
-      this.render();
+      this.__render_NeverCallMeFromOutside();
     }
   }
 
@@ -148,8 +151,7 @@ export default class SceneSetUp {
     
     this.camera = camera;
     this.trackballControls.object = camera;
-    this.transformControls.camera = camera;
-    this.updateControlsAndHelpers();
+    this.requestRender();
   }
 
   setUpControls() {
@@ -173,29 +175,7 @@ export default class SceneSetUp {
     trackballControls.dynamicDampingFactor = 0.3;
 
     trackballControls.keys = [ 65, 83, 68 ];
-    trackballControls.addEventListener( 'change', () => this.render());
-
-    let transformControls: any = new TransformControls( this.camera, this.renderer.domElement );
-    transformControls.addEventListener( 'change', () => this.render() );
-    this.scene.add( transformControls );
-    
     this.trackballControls = trackballControls;
-    this.transformControls = transformControls;
-
-    let updateTransformControls = () => {
-      if (transformControls.object !== undefined) {
-        if (transformControls.object.parent === undefined) {
-          transformControls.detach();
-          this.render();
-        }
-        transformControls.update();
-      }
-    };
-
-    this.updateControlsAndHelpers = function() {
-      trackballControls.update();
-      updateTransformControls();
-    };
   }
 
   createRaycaster(viewX, viewY) {
@@ -288,11 +268,15 @@ export default class SceneSetUp {
   
   animate() {
     requestAnimationFrame( () => this.animate() );
-    this.updateControlsAndHelpers();
+    const controlsChangedViewpoint = this.trackballControls.evaluate();
+    if (controlsChangedViewpoint || this.renderRequested) {
+      this.__render_NeverCallMeFromOutside();
+    }
     this.updateViewportSizeIfNeeded();
   };
 
-  render() {
+  private __render_NeverCallMeFromOutside() {
+    this.renderRequested = false;
     this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
     this.renderer.render(this.scene, this.camera);
     this.onRendered();

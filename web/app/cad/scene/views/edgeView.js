@@ -1,4 +1,5 @@
 import {CurveBasedView} from './curveBasedView';
+import {ViewMode} from "cad/scene/viewer";
 
 const MarkerTable = [
   {
@@ -19,5 +20,8 @@ export class EdgeView extends CurveBasedView {
     let brepEdge = edge.brepEdge;
     let tess = brepEdge.data.tessellation ? brepEdge.data.tessellation : brepEdge.curve.tessellateToData();
     super(ctx, edge, tess, 3, 0x000000, MarkerTable);
+    this.addDisposer(ctx.viewer.viewMode$.attach(mode => {
+      this.representation.visible = (mode === ViewMode.SHADED_WITH_EDGES || mode === ViewMode.WIREFRAME);
+    }));
   }
 }

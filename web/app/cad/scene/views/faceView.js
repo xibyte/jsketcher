@@ -7,6 +7,7 @@ import {createSolidMaterial} from "cad/scene/views/viewUtils";
 import {SketchMesh} from "cad/scene/views/shellView";
 import {FACE} from "cad/model/entities";
 import {setAttribute} from "scene/objectData";
+import {ViewMode} from "cad/scene/viewer";
 
 export class SketchingView extends View {
   
@@ -69,7 +70,6 @@ export class FaceView extends SketchingView {
     super(ctx, face, parent);
     let geom;
 
-    this.meshFaces = [];
     if (face.brepFace.data.tessellation) {
       geom = tessDataToGeom(face.brepFace.data.tessellation.data)
     } else {
@@ -86,6 +86,10 @@ export class FaceView extends SketchingView {
       this.ctx.highlightService.unHighlight(this.model.id);
     }
     this.rootGroup.add(this.mesh);
+
+    this.addDisposer(ctx.viewer.viewMode$.attach(mode => {
+      this.mesh.visible = (mode === ViewMode.SHADED_WITH_EDGES || mode === ViewMode.SHADED);
+    }));
   }
 
   dispose() {
