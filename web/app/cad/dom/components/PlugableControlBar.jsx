@@ -23,17 +23,21 @@ function ButtonGroup({actions}) {
 class ActionButton extends React.Component {
   
   render() {
-    let {label, cssIcons, enabled, visible, actionId, ...props} = this.props;
+    let {label, cssIcons, icon, enabled, visible, actionId, ...props} = this.props;
     if (!visible) {
       return null;
     }
+    const Icon = icon ? icon : null;
+
     if (isMenuAction(actionId)) {
       let onClick = props.onClick;
       props.onClick = e => onClick(menuAboveElementHint(this.el));
     }
     
     return <ControlBarButton disabled={!enabled} onElement={el => this.el = el} {...props} >
-      {cssIcons && <Fa fa={cssIcons} fw/>} {label}
+      {cssIcons && <Fa fa={cssIcons} fw/>}
+      {Icon && <Icon />}
+      {label}
     </ControlBarButton>;
   }
 }

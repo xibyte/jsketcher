@@ -1,35 +1,33 @@
-import SceneSetup from 'scene/sceneSetup';
-import {Emitter, externalState, StateStream, stream} from "lstream";
+import {Emitter, externalState, state, StateStream, stream} from "lstream";
 import SceneSetUp from "scene/sceneSetup";
+
+export enum ViewMode {
+  WIREFRAME = 'WIREFRAME',
+  SHADED = 'SHADED',
+  SHADED_WITH_EDGES = 'SHADED_WITH_EDGES'
+}
 
 export default class Viewer {
 
   sceneRendered$: Emitter<any> = stream();
   cameraMode$: StateStream<any>;
-  sceneSetup: SceneSetUp;
-  renderRequested: boolean;
+  viewMode$: StateStream<ViewMode> = state(ViewMode.SHADED_WITH_EDGES);
 
+  sceneSetup: SceneSetUp;
 
   constructor(container, onRendered) {
 
     this.cameraMode$ = externalState(() => this.getCameraMode(), mode => this.setCameraMode(mode))
 
-    this.sceneSetup = new SceneSetup(container, onRendered);
-    this.renderRequested = false;
+    this.sceneSetup = new SceneSetUp(container, onRendered);
   }
   
   render() {
-    this.sceneSetup.render();  
+    this.requestRender();
   }
 
   requestRender = () => {
-    if (this.renderRequested) {
-      return;
-    }
-    setTimeout(() => {
-      this.renderRequested = false;
-      this.render();
-    });
+    this.sceneSetup.requestRender();
   };
   
   setVisualProp = (obj, prop, value) => {

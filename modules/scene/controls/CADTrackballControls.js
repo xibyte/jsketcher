@@ -77,7 +77,6 @@ export function CADTrackballControls( object, domElement ) {
 
   // events
 
-  var changeEvent = { type: 'change' };
   var startEvent = { type: 'start' };
   var endEvent = { type: 'end' };
 
@@ -304,7 +303,7 @@ export function CADTrackballControls( object, domElement ) {
 
   };
 
-  this.update = function () {
+  this.evaluate = function () {
 
     _eye.subVectors( _this.object.position, _this.target );
 
@@ -332,16 +331,12 @@ export function CADTrackballControls( object, domElement ) {
 
     _this.object.lookAt( _this.target );
 
-    if ( lastPosition.distanceToSquared( _this.object.position ) > EPS || this.projectionChanged) {
-
+    const needsRender = lastPosition.distanceToSquared( _this.object.position ) > EPS || this.projectionChanged;
+    if ( needsRender) {
       this.projectionChanged = false;
-      
-      _this.dispatchEvent( changeEvent );
-
       lastPosition.copy( _this.object.position );
-
     }
-
+    return needsRender;
   };
 
   this.reset = function () {
@@ -356,8 +351,6 @@ export function CADTrackballControls( object, domElement ) {
     _eye.subVectors( _this.object.position, _this.target );
 
     _this.object.lookAt( _this.target );
-
-    _this.dispatchEvent( changeEvent );
 
     lastPosition.copy( _this.object.position );
 
@@ -656,11 +649,7 @@ export function CADTrackballControls( object, domElement ) {
   window.addEventListener( 'keyup', keyup, false );
 
   this.handleResize();
-
-  // force an update at start
-  this.update();
-
-};
+}
 
 CADTrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
 CADTrackballControls.prototype.constructor = CADTrackballControls;

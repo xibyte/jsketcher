@@ -1,3 +1,5 @@
+import {GiCube} from "react-icons/all";
+
 export default [
   {
     id: 'file',
@@ -25,6 +27,13 @@ export default [
     info: 'switching camera views',
     actions: ['StandardViewFront', 'StandardViewBack', 'StandardViewLeft', 'StandardViewRight', 
       'StandardViewTop', 'StandardViewBottom', 'StandardView3Way']
+  },
+  {
+    id: 'viewModes',
+    label: 'mode',
+    icon: GiCube,
+    info: 'view/render mode',
+    actions: ['ViewMode_WIREFRAME_ON', 'ViewMode_SHADED_ON', 'ViewMode_SHADED_WITH_EDGES_ON']
   },
   {
     id: 'boolean',

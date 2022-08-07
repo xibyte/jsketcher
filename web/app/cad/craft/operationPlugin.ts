@@ -136,7 +136,7 @@ export interface OperationDescriptor<R> {
   previewGeomProvider?: (params: R) => OperationGeometryProvider,
   previewer?: any,
   form: FormDefinition | React.FunctionComponent,
-  defaultActiveField: string,
+  defaultActiveField?: string,
   schema?: OperationSchema,
   onParamsUpdate?: (params, name, value) => void,
   masking?: {

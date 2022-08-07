@@ -1,11 +1,18 @@
 import {printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
-import {LOG_FLAGS} from "../../logFlags";
+import {LOG_FLAGS} from "cad/logFlags";
+import {stream} from "lstream";
+
+const MouseStates = {
+  IDLE: 'IDLE',
+  DOWN: 'DOWN'
+}
 
 export function activate(ctx) {
   const {services, streams} = ctx;
   const domElement = services.viewer.sceneSetup.domElement();
   const event = {
-    viewer: services.viewer
+    viewer: services.viewer,
+    mouseState: MouseStates.IDLE
   };
   
   domElement.addEventListener('mousedown', mousedown, false);
@@ -13,6 +20,12 @@ export function activate(ctx) {
   domElement.addEventListener('mousemove', mousemove, false);
   domElement.addEventListener('dblclick', dblclick, false);
 
+  const onMoveLogicRequest$ = stream();
+
+  onMoveLogicRequest$.throttle(100).attach(() => {
+    const hits = performRaycast(event.mouseEvent);
+    dispatchMousemove(event.mouseEvent, hits)
+  });
 
   let performRaycast = e => {
     const hits = services.viewer.raycast(e, services.cadScene.workGroup.children, RayCastDebugInfo);
@@ -43,6 +56,7 @@ export function activate(ctx) {
   }
   
   function mousedown(e) {
+    event.mouseState = MouseStates.DOWN;
     let hits = performRaycast(e);
     dispatchMousedown(e, hits);
   }
@@ -69,6 +83,7 @@ export function activate(ctx) {
   }
 
   function mouseup(e) {
+    event.mouseState = MouseStates.IDLE;
     event.mouseEvent = e;
     if (toDrag) {
       stopDrag(e);
@@ -111,8 +126,9 @@ export function activate(ctx) {
     if (toDrag) {
       toDrag.dragMove(event);
     } else {
-      let hits = performRaycast(e);
-      dispatchMousemove(e, hits)
+      if (event.mouseState === MouseStates.IDLE) {
+        onMoveLogicRequest$.next();
+      }
     }
   }
 
