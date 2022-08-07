@@ -3,7 +3,7 @@ import {MeshPhongMaterial, LineBasicMaterial, FaceColors, DoubleSide} from 'thre
 
 export function createTransparentPhongMaterial(color, opacity) {
   return new MeshPhongMaterial({
-    vertexColors: FaceColors,
+    // vertexColors: FaceColors,
     color,
     transparent: true,
     opacity: opacity,

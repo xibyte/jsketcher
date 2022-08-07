@@ -3,6 +3,9 @@ import {FACE, SHELL} from 'cad/model/entities';
 import {SketchingView} from './faceView';
 import {View} from './view';
 import {SketchMesh} from './shellView';
+import {BufferAttribute, BufferGeometry} from 'three';
+import * as vec from "math/vec";
+import {normalOfCCWSeq} from "cad/cad-utils";
 
 export class OpenFaceShellView extends View {
 
@@ -27,7 +30,6 @@ export class OpenFaceView extends SketchingView {
   constructor(ctx, mFace, parent) {
     super(ctx, mFace, parent);
     this.material = new THREE.MeshPhongMaterial({
-      vertexColors: THREE.FaceColors,
       // color: 0xB0C4DE,
       shininess: 0,
       polygonOffset : true,
@@ -48,14 +50,26 @@ export class OpenFaceView extends SketchingView {
   }
 
   createGeometry() {
-    const geometry = new THREE.Geometry();
-    geometry.dynamic = true;
-    this.bounds.forEach(v => geometry.vertices.push(v.three()));
-    geometry.faces.push(new THREE.Face3(0, 1, 2));
-    geometry.faces.push(new THREE.Face3(0, 2, 3));
-    geometry.faces.forEach(f => setAttribute(f, FACE, this));
-    geometry.computeFaceNormals();
+
+    const vertices = [];;
+    const normals = [];;
+    const normal = normalOfCCWSeq(this.bounds);
+    this.bounds.forEach((v, i) => {
+      vertices.push(v.x, v.y, v.z);
+      normals.push(normal.x, normal.y, normal.z);
+    });
+    const index = [
+      0, 1, 2,
+      0, 2, 3
+    ];
+
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new BufferAttribute( new Float32Array(vertices), 3));
+    geometry.setAttribute('normal', new BufferAttribute( new Float32Array(normals), 3));
+    geometry.setIndex(index);
+
     this.mesh = new SketchMesh(geometry, this.material);
+    setAttribute(this.mesh, FACE, this)
     this.rootGroup.add(this.mesh);
     this.mesh.onMouseEnter = () => {
       this.ctx.highlightService.highlight(this.model.id);

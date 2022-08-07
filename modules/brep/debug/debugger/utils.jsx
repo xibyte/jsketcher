@@ -58,15 +58,18 @@ function createDirectedCurve(points, arrowDir, arrowTipPos, color) {
   obj.__tcad_debug_materials = [];
 
   let material = new THREE.LineBasicMaterial({color, linewidth: 10});
-  let  lg = new THREE.Geometry();
+  const vertices = [];
+
   let edgeLength = 0;
   for (let i = 1; i < points.length; ++i) {
     let a = points[i - 1];
     let b = points[i];
-    lg.vertices.push(a.three());
-    lg.vertices.push(b.three());
+    vertices.push(a.three());
+    vertices.push(b.three());
     edgeLength += distanceAB3(a, b);
   }
+  const lg = new THREE.BufferGeometry().setFromPoints( vertices );
+
   obj.__tcad_debug_materials.push(material);
   obj.add(new THREE.Line(lg, material));
 

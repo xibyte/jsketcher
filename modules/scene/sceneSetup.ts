@@ -201,6 +201,11 @@ export default class SceneSetUp {
   createRaycaster(viewX, viewY) {
     let raycaster = new Raycaster();
     raycaster.params.Line.threshold = 12 * (this._zoomMeasure() * 0.8);
+
+    raycaster.params.Line2 = {
+      threshold: 20
+    };
+
     let x = ( viewX / this.container.clientWidth ) * 2 - 1;
     let y = - ( viewY / this.container.clientHeight ) * 2 + 1;
 

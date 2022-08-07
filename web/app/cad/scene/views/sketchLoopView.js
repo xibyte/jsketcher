@@ -1,12 +1,12 @@
-import {MarkTracker, View} from './view';
+import {View} from './view';
 import * as SceneGraph from 'scene/sceneGraph';
-import {tessellateLoopsOnSurface} from '../../tess/brep-tess';
-import {createSolidMaterial} from '../wrappers/sceneObject';
-import {DoubleSide, Geometry, Mesh} from 'three';
-import {surfaceAndPolygonsToGeom} from '../wrappers/brepSceneObject';
-import {TriangulatePolygons} from '../../tess/triangulation';
+import {tessellateLoopsOnSurface} from 'cad/tess/brep-tess';
+import {createSolidMaterial} from '../views/viewUtils';
+import {DoubleSide, Mesh} from 'three';
+import {surfaceAndPolygonsToGeom} from './viewUtils';
+import {TriangulatePolygons} from 'cad/tess/triangulation';
 import Vector from 'math/vector';
-import {LOOP} from '../../model/entities';
+import {LOOP} from 'cad/model/entities';
 import {setAttribute} from 'scene/objectData';
 
 const HIGHLIGHT_COLOR = 0xDBFFD9;
@@ -32,19 +32,7 @@ export class SketchLoopView extends View {
     super(ctx, mLoop, MarkerTable);
     this.rootGroup = SceneGraph.createGroup();
 
-    const geometry = new Geometry();
-    geometry.dynamic = true;
-    this.mesh = new Mesh(geometry, createSolidMaterial({
-      // color: HIGHLIGHT_COLOR,
-      side: DoubleSide,
-      // transparent: true,
-      // depthTest: true,
-      // depthWrite: false,
-      polygonOffset: true,
-      polygonOffsetFactor: -1.0, // should less than offset of loop lines
-      polygonOffsetUnits: -1.0,
-      visible: false
-    }));
+
     let surface = mLoop.face.surface;
     let tess;
     if (surface.simpleSurface && surface.simpleSurface.isPlane) {
@@ -56,12 +44,21 @@ export class SketchLoopView extends View {
         seg => seg.inverted);
     }
     
-    surfaceAndPolygonsToGeom(surface, tess, this.mesh.geometry);
-    this.mesh.geometry.mergeVertices();
-    for (let i = 0; i < geometry.faces.length; i++) {
-      const meshFace = geometry.faces[i];
-      setAttribute(meshFace, LOOP, this);
-    }
+    const geometry = surfaceAndPolygonsToGeom(surface, tess);
+
+    this.mesh = new Mesh(geometry, createSolidMaterial({
+      // color: HIGHLIGHT_COLOR,
+      side: DoubleSide,
+      // transparent: true,
+      // depthTest: true,
+      // depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -1.0, // should less than offset of loop lines
+      polygonOffsetUnits: -1.0,
+      visible: false
+    }));
+
+    setAttribute(this.mesh, LOOP, this);
 
     this.rootGroup.add(this.mesh);
     this.mesh.onMouseEnter = () => {
