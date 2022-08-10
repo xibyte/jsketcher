@@ -4,3 +4,5 @@ declare module '*.less' {
 }
 
 declare var verb: any;
+declare var FS: any;
+
