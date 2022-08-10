@@ -28,7 +28,7 @@ export function DisplayOptionsDialogManager() {
                             onCancel={() => close(key)}
                             onOK={() => close(key)}
                             onClose={() => close(key)}
-                            topicId='entity-display-options'
+                            documentationLink='men-at-work'
                             left={request.x}
                             top={request.y}>
         <DisplayOptionsView modelIds={request.models} />

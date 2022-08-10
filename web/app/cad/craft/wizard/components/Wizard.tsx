@@ -90,7 +90,7 @@ export default function Wizard(props: WizardProps) {
     setFocus={focusFirstInput}
     className='Wizard'
     data-operation-id={operation.id}
-    topicId={operation.id}
+    documentationLink={operation.documentationLink}
     onCancel={cancel}
     onOK={onOK}
     infoText={<>

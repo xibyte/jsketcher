@@ -117,9 +117,10 @@ module.exports = function(grunt) {
           };
           workbenches.set(workbenchName, workbench);
         }
+        let link = file.substring(file.indexOf('/') + 1); //drop web prefix
         workbench.operations.push({
           operationName,
-          href: '../../../../../../'  + convertMdPathToHtml(file)
+          href: '../../../../../../'  + convertMdPathToHtml(link)
         });
       });
 
