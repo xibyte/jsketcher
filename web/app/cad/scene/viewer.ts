@@ -91,7 +91,7 @@ export default class Viewer {
     obj.position.copy(target);
     obj.position.addScaledVector(normal, dist);
     this.sceneSetup.trackballControls.target.copy(target);
-    this.sceneSetup.trackballControls.update();
+    this.requestRender();
   }
 
   dispose() {
