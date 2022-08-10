@@ -83,7 +83,7 @@ export function LocationDialog() {
     title='PART LOCATION'
     onClose={close}
     className='location-dialog'
-    topicId='entity-location'
+    documentationLink='men-at-work'
     infoText={null}
     onCancel={revertAndClose}
     onOK={close} >

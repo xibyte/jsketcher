@@ -139,6 +139,7 @@ export interface OperationDescriptor<R> {
   defaultActiveField?: string,
   schema?: OperationSchema,
   onParamsUpdate?: (params, name, value) => void,
+  documentationLink?: string,
   masking?: {
     id: string,
     label: string;
