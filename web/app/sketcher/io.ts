@@ -1,12 +1,12 @@
-import {Generator} from './id-generator'
-import {Viewer} from './viewer2d'
-import {Arc} from './shapes/arc'
-import {EndPoint} from './shapes/point'
-import {Segment} from './shapes/segment'
-import {Circle} from './shapes/circle'
-import {Ellipse} from './shapes/ellipse'
-import {EllipticalArc} from './shapes/elliptical-arc'
-import {BezierCurve} from './shapes/bezier-curve'
+import { Generator } from './id-generator'
+import { Viewer } from './viewer2d'
+import { Arc } from './shapes/arc'
+import { EndPoint } from './shapes/point'
+import { Segment } from './shapes/segment'
+import { Circle } from './shapes/circle'
+import { Ellipse } from './shapes/ellipse'
+import { EllipticalArc } from './shapes/elliptical-arc'
+import { BezierCurve } from './shapes/bezier-curve'
 import {
   AngleBetweenDimension,
   DiameterDimension,
@@ -17,12 +17,14 @@ import {
 } from './shapes/dim'
 import Vector from 'math/vector';
 import exportTextData from 'gems/exportTextData';
-import {AlgNumConstraint, ConstraintSerialization} from "./constr/ANConstraints";
-import {SketchGenerator} from "./generators/sketchGenerator";
-import {BoundaryGeneratorSchema} from "./generators/boundaryGenerator";
-import {SketchTypes} from "./shapes/sketch-types";
-import {SketchObject} from "./shapes/sketch-object";
-import {Label} from "sketcher/shapes/label";
+import { AlgNumConstraint, ConstraintSerialization } from "./constr/ANConstraints";
+import { SketchGenerator } from "./generators/sketchGenerator";
+import { BoundaryGeneratorSchema } from "./generators/boundaryGenerator";
+import { SketchTypes } from "./shapes/sketch-types";
+import { SketchObject } from "./shapes/sketch-object";
+import { Label } from "sketcher/shapes/label";
+
+
 
 export interface SketchFormat_V3 {
 
@@ -204,7 +206,7 @@ export class IO {
             stage.addConstraint(constraint)
           } catch (e) {
             console.error(e);
-            console.error("skipping errant constraint: " + constr&&constr.typeId);
+            console.error("skipping errant constraint: " + constr && constr.typeId);
           }
         }
         for (let gen of dataStage.generators) {
@@ -213,7 +215,7 @@ export class IO {
             stage.addGenerator(generator)
           } catch (e) {
             console.error(e);
-            console.error("skipping errant generator: " + gen&&gen.typeId);
+            console.error("skipping errant generator: " + gen && gen.typeId);
           }
         }
       }
@@ -335,7 +337,7 @@ export class IO {
   };
 
   getWorkspaceToExport() {
-    return [this.viewer.layers, [this.viewer.labelLayer]];
+    return [this.viewer.layers];
   };
 
   getLayersToExport() {
@@ -380,7 +382,7 @@ export class IO {
           out.fline('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
         } else if (obj._class === T.CIRCLE) {
           out.fline('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
-//      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+          //      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
         }
       }
       out.line('</g>');
@@ -389,215 +391,104 @@ export class IO {
     return _format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + out.data + "</svg>"
   };
 
-  dxfExport() {
+   dxfExport() {
+    const Drawing = window.Drawing;
+
+    let d = new window.Drawing();
+
     var T = SketchTypes;
     var out = new TextBuilder();
     var bbox = new BBox();
     var toExport = this.getLayersToExport();
-    var i;
-    let needsTextStyle = false;
-
     bbox.checkLayers(toExport);
-    out.line("999");
-    out.line("js.parametric.sketcher");
-    out.line("0");
-    out.line("SECTION");
-    out.line("2");
-    out.line("HEADER");
-    out.line("9");
-    out.line("$ACADVER");
-    out.line("1");
-    out.line("AC1006");
-    out.line("9");
-    out.line("$INSBASE");
-    out.line("10");
-    out.line("0");
-    out.line("20");
-    out.line("0");
-    out.line("30");
-    out.line("0");
-    out.line("9");
-    out.line("$EXTMIN");
-    out.line("10");
-    out.numberln(bbox.bbox[0]);
-    out.line("20");
-    out.numberln(bbox.bbox[1]);
-    out.line("9");
-    out.line("$EXTMAX");
-    out.line("10");
-    out.numberln(bbox.bbox[2]);
-    out.line("20");
-    out.numberln(bbox.bbox[3]);
-    out.line("0");
-    out.line("ENDSEC");
 
-    out.line("0");
-    out.line("SECTION");
-    out.line("2");
-    out.line("TABLES");
+    out.numberln(bbox.bbox[0]);
+    out.numberln(bbox.bbox[1]);
+    out.numberln(bbox.bbox[2]);
+    out.numberln(bbox.bbox[3]);
+    const maxWidth = bbox.bbox[0] - bbox.bbox[2];
+    const maxheight = bbox.bbox[1] - bbox.bbox[3];
+    const textHeight = Math.abs((maxWidth > maxheight) ? maxWidth / 50 : maxheight / 50) * .5;
+    var i;
+
+
 
     for (i = 0; i < toExport.length; i++) {
-      out.line("0");
-      out.line("LAYER");
-      out.line("2");
-      out.line("" + (i + 1));
-      out.line("70");
-      out.line("64");
-      out.line("62");
-      out.line("7");
-      out.line("6");
-      out.line("CONTINUOUS");
+      const newLayerName = i + 0;
+      toExport[i].layerId = newLayerName + '_green';
+      d.addLayer(toExport[i].layerId, Drawing.ACI.GREEN, 'CONTINUOUS');
     }
-    out.line("0");
-    out.line("ENDTAB");
-    out.line("0");
-    out.line("ENDSEC");
-    out.line("0");
-    out.line("SECTION");
-    out.line("2");
-    out.line("BLOCKS");
-    out.line("0");
-    out.line("ENDSEC");
-    out.line("0");
-    out.line("SECTION");
-    out.line("2");
-    out.line("ENTITIES");
+
+
+    d.setUnits('Millimeters');
+
 
     for (var l = 0; l < toExport.length; l++) {
       var lid = l + 1;
       var layer = toExport[l];
+      d.setActiveLayer(layer.layerId);
+
+
+      for (i = 0; i < layer.viewer.labelLayer.objects.length; ++i) {
+        var obj = layer.viewer.labelLayer.objects[i];
+        console.log("this is a label", obj);
+        //const objectOriginPoint = obj.assignedObject.labelCenter;
+
+        let labelX = obj.offsetX + obj.assignedObject.labelCenter.x;
+        let labelY = obj.offsetY + obj.assignedObject.labelCenter.y;
+
+         d.drawText(labelX, labelY, Math.abs(textHeight), 0, obj.text, 'center', 'middle');
+      }
+
+
       for (i = 0; i < layer.objects.length; ++i) {
         var obj = layer.objects[i];
+        console.log("exporting this", obj);
         if (obj._class === T.POINT) {
-          out.line("0");
-          out.line("POINT");
-          out.line("8");
-          out.line(lid);
-          out.line("10");
-          out.numberln(obj.x);
-          out.line("20");
-          out.numberln(obj.y);
-          out.line("30");
-          out.line("0");
+          d.drawPoint(obj.x, obj.y);
         } else if (obj._class === T.SEGMENT) {
-          out.line("0");
-          out.line("LINE");
-          out.line("8");
-          out.line(lid);
-          //out.line("62"); color
-          //out.line("4");
-          out.line("10");
-          out.numberln(obj.a.x);
-          out.line("20");
-          out.numberln(obj.a.y);
-          out.line("30");
-          out.line("0");
-          out.line("11");
-          out.numberln(obj.b.x);
-          out.line("21");
-          out.numberln(obj.b.y);
-          out.line("31");
-          out.line("0");
+          d.drawLine(obj.a.x, obj.a.y, obj.b.x, obj.b.y);
         } else if (obj._class === T.ARC) {
-          out.line("0");
-          out.line("ARC");
-          out.line("8");
-          out.line(lid);
-          out.line("10");
-          out.numberln(obj.c.x);
-          out.line("20");
-          out.numberln(obj.c.y);
-          out.line("30");
-          out.line("0");
-          out.line("40");
-          out.numberln(obj.r.get());
-          out.line("50");
-          out.numberln(obj.getStartAngle() * (180 / Math.PI));
-          out.line("51");
-          out.numberln(obj.getEndAngle() * (180 / Math.PI));
+           d.drawArc(
+            obj.c.x,
+            obj.c.y,
+            obj.r.get(),
+            (obj.getStartAngle() * (180 / Math.PI)),
+            (obj.getEndAngle() * (180 / Math.PI)));
         } else if (obj._class === T.CIRCLE) {
-          out.line("0");
-          out.line("CIRCLE");
-          out.line("8");
-          out.line(lid);
-          out.line("10");
-          out.numberln(obj.c.x);
-          out.line("20");
-          out.numberln(obj.c.y);
-          out.line("30");
-          out.line("0");
-          out.line("40");
-          out.numberln(obj.r.get());
-        } else if (obj._class === T.LABEL) {
-          const m = obj.assignedObject.labelCenter;
-          if (!m) {
-            return;
-          }
-
-          const h = obj.textHelper.textMetrics.width/2;
-          const lx = m.x - h + obj.offsetX;
-          const ly = m.y + obj.marginOffset  + obj.offsetY;
-
-          out.line("0");
-          out.line("TEXT");
-          out.line("8");
-          out.line(lid);
-          out.line("10");
-          out.numberln(lx);
-          out.line("20");
-          out.numberln(ly);
-          out.line("30");
-          out.line("0");
-
-          out.line("41");
-          out.line("1");
-
-          out.line("1");
-          out.line(obj.text);
-          out.line("7");
-          out.line("TEXT_STYLE");
-          needsTextStyle = true;
-//      } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+          d.drawCircle(obj.c.x, obj.c.y, obj.r.get());
+        } else if (obj._class === T.ELLIPSE) {
+          console.log("ELLIPSE", obj);
+          d.drawEllipse(10, 10, 8, 0, 1, 3.14, 4.71);
+           d.drawEllipse(obj.centerX,obj.centerY,);
+        } else if (obj._class === T.BEZIER) {
+          d.drawSpline([
+            [obj.p0.x, obj.p0.y],
+            [obj.p1.x, obj.p1.y],
+            [obj.p2.x, obj.p2.y],
+            [obj.p3.x, obj.p3.y],
+          ], 3)
+        } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
         }
       }
     }
 
-    if (needsTextStyle) {
-      out.line("0");
-      out.line("STYLE");
-      out.line("2");
-      out.line("TEXT_STYLE");
-      out.line("70");
-      out.line("0");
-      out.line("40");
-      out.line("12");
-      out.line("41");
-      out.line("1.0");
-      out.line("42");
-      out.line("12");
-      out.line("50");
-      out.line("0.0");
-      out.line("71");
-      out.line("0");
-    }
+    //console.log(d.toDxfString());
+    console.log(d.generateAutocadExtras());
+    console.log(toExport);
 
-
-    out.line("0");
-    out.line("ENDSEC");
-    out.line("0");
-    out.line("EOF");
-    return out.data;
+    return d.toDxfString();
   };
 }
 
 function _format(str, args) {
   if (args.length == 0) return str;
   var i = 0;
-  return str.replace(/\$/g, function() {
+  return str.replace(/\$/g, function () {
     if (args === undefined || args[i] === undefined) throw "format arguments mismatch";
-    var val =  args[i];
+    var val = args[i];
     if (typeof val === 'number') val = val.toPrecision();
-    i ++;
+    i++;
     return val;
   });
 }
@@ -635,13 +526,13 @@ function BBox() {
 
   var T = SketchTypes;
 
-  this.checkLayers = function(layers) {
+  this.checkLayers = function (layers) {
     for (var l = 0; l < layers.length; ++l)
       for (var i = 0; i < layers[l].objects.length; ++i)
         this.check(layers[l].objects[i]);
   };
 
-  this.check = function(obj) {
+  this.check = function (obj) {
     if (obj._class === T.SEGMENT) {
       this.checkBounds(obj.a.x, obj.a.y);
       this.checkBounds(obj.b.x, obj.b.y);
@@ -660,44 +551,44 @@ function BBox() {
         }
         return true;
       });
-//    } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+      //    } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
     }
   };
 
-  this.isValid = function() {
+  this.isValid = function () {
     return bbox[0] != Number.MAX_VALUE;
   };
-  
-  this.checkBounds = function(x, y) {
+
+  this.checkBounds = function (x, y) {
     bbox[0] = Math.min(bbox[0], x);
     bbox[1] = Math.min(bbox[1], y);
     bbox[2] = Math.max(bbox[2], x);
     bbox[3] = Math.max(bbox[3], y);
   };
 
-  this.checkCircBounds = function(x, y, r) {
+  this.checkCircBounds = function (x, y, r) {
     this.checkBounds(x + r, y + r);
     this.checkBounds(x - r, y + r);
     this.checkBounds(x - r, y - r);
     this.checkBounds(x - r, y + r);
   };
 
-  this.inc = function(by) {
+  this.inc = function (by) {
     bbox[0] -= by;
     bbox[1] -= by;
     bbox[2] += by;
     bbox[3] += by;
   };
-  
-  this.width = function() {
+
+  this.width = function () {
     return bbox[2] - bbox[0];
   };
 
-  this.height = function() {
+  this.height = function () {
     return bbox[3] - bbox[1];
   };
 
   this.bbox = bbox;
 }
 
-export {BBox};
+export { BBox };
