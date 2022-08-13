@@ -394,7 +394,8 @@ export class IO {
 
    dxfExport() {
 
-     let d = new Drawing();
+     // defines as any since library doesn't provide types correctly
+     let d: any = new Drawing();
 
      let T = SketchTypes;
      let out = new TextBuilder();

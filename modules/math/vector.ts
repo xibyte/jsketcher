@@ -208,9 +208,5 @@ export interface UnitVector extends Vector {
 
   _perpXY(): UnitVector;
 
-  cross(a: UnitVector): UnitVector;
-
-  _cross(a: UnitVector): UnitVector;
-
   copy(): UnitVector;
 }

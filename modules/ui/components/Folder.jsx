@@ -25,7 +25,8 @@ export function InnerFolder(props) {
   </React.Fragment>
 }
 
-export default function Folder({className, ...props}) {
+export default function Folder(inProps) {
+  const {className, ...props} = inProps
   return <div className={className}>
     <InnerFolder {...props} />
   </div>

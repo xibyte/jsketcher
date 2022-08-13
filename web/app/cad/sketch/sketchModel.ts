@@ -1,4 +1,3 @@
-import verb from 'verb-nurbs'
 import BrepCurve from 'geom/curves/brepCurve';
 import NurbsCurve from 'geom/curves/nurbsCurve';
 import {makeAngle0_360} from 'math/commons'
@@ -57,7 +56,7 @@ class SketchPrimitive {
     return new BrepCurve(new NurbsCurve(verbNurbs));
   }
 
-  toVerbNurbs(tr) {
+  toVerbNurbs(tr, csys): any {
     throw 'not implemented'
   }
 

@@ -191,7 +191,7 @@ function createExtrudeCommand(request, ctx, invert) {
   return {
     face,
     request: {
-      vector: resolveExtrudeVector(ctx.cadRegistry, face, request, !invert).data(),
+      // vector: resolveExtrudeVector(ctx.cadRegistry, face, request, !invert).data(),
       sketch: paths,
       tolerance: E0_TOLERANCE,
       deflection: DEFLECTION,

@@ -5,6 +5,7 @@ import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
 import { OperationDescriptor } from "cad/craft/operationPlugin";
 import { MSketchLoop } from "cad/model/mloop";
 import { FromSketchProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+import {FaceRef} from "cad/craft/e0/OCCUtils";
 
 
 interface LoftParams {
@@ -18,7 +19,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
   label: 'Loft',
   icon: 'img/cad/loft',
   info: 'Lofts 2D sketch',
-  paramsInfo: ({ }) => `(${r()})`,
+  paramsInfo: ({ }) => `(?)`,
   run:async (params: LoftParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
@@ -37,7 +38,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
       return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys).wire
     });
 
-    let sweepSources = [];
+    let sweepSources: FaceRef[] = [];
 
     let indexOfMostSegments = 0;
     let longestPath =  0;
@@ -49,8 +50,8 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
 
         primarySketch = params.loops[index].parent;
       }
-      const face = occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys);
-      sweepSources = face;
+      const faces = occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys);
+      sweepSources = faces;
     });
 
 
@@ -61,7 +62,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
     let tools = [];
     tools.push(occ.io.getShell("th", productionAnalyzer));
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean, sketches, [],)
+    return occ.utils.applyBooleanModifier(tools, params.boolean, null, [],)
 
   },
 

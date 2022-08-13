@@ -33,6 +33,7 @@ function instantiateEngine(importObject, callback) {
 function loadWasm(ctx) {
   ctx.services.lifecycle.startAsyncInitializingJob('e0:loader');
 
+  // @ts-ignore
   window.Module = {
     // locateFile: function(file) {
     //   return SERVER_PATH + file;

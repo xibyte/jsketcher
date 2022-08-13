@@ -10,6 +10,7 @@
     "baseUrl": ".",
     "downlevelIteration": true,
     "module": "commonJS",
+    "experimentalDecorators": true,
     "paths": {
       "*": [
         "modules/*",

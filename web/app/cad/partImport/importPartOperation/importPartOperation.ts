@@ -21,7 +21,7 @@ export const ImportPartOperation: OperationDescriptor<ImportPartOperationParams>
   previewGeomProvider: null,
   run: runImportOperation,
   form: ImportPartForm,
-  schema: importPartSchema
+  schema: importPartSchema as any
 };
 
 
