@@ -1,7 +1,7 @@
 import {StateStream} from "lstream";
-import {CraftHints, OperationRequest} from "cad/craft/craftPlugin";
+import {CraftHints, OperationRequest} from "cad/craft/craftBundle";
 import {MaterializedOperationParams, OperationParamValue, OperationParams} from "cad/craft/schema/schema";
-import {Operation} from "cad/craft/operationPlugin";
+import {Operation} from "cad/craft/operationBundle";
 
 export type ParamsPathSegment = string|number;
 

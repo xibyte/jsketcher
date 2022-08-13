@@ -3,7 +3,7 @@ import initializeBySchema from '../schema/initializeBySchema';
 import {clone} from 'gems/objects';
 import materializeParams from '../schema/materializeParams';
 import {createFunctionList} from 'gems/func';
-import {CraftHistory, OperationRequest} from "cad/craft/craftPlugin";
+import {CraftHistory, OperationRequest} from "cad/craft/craftBundle";
 import {
   NewOperationCall,
   ParamsPath,
@@ -15,7 +15,7 @@ import {
 import _ from "lodash";
 import {OperationParamValue} from "cad/craft/schema/schema";
 import {ApplicationContext} from "cad/context";
-import {Operation} from "cad/craft/operationPlugin";
+import {Operation} from "cad/craft/operationBundle";
 import produce from "immer"
 
 export function activate(ctx: ApplicationContext) {

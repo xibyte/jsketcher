@@ -2,13 +2,13 @@ import {Plugin} from "plugable/pluginSystem";
 import {AttributesService} from "cad/attributes/attributesService";
 import {contributeComponent} from "cad/dom/components/ContributedComponents";
 import {DisplayOptionsDialogManager} from "cad/attributes/ui/DisplayOptionsDialog";
-import {ActionSystemPlugin} from "cad/actions/actionSystemPlugin";
+import {ActionSystemBundle} from "cad/actions/actionSystemBundle";
 import {RequiresAnyModelSelection} from "cad/actions/actionHelpers";
 import {IoColorPalette} from "react-icons/io5";
 import {FaTable} from "react-icons/fa";
 import {ApplicationContext} from "cad/context";
 
-type AttributesPluginInputContext = ActionSystemPlugin;
+type AttributesPluginInputContext = ActionSystemBundle;
 
 export interface AttributesPluginContext {
   attributesService: AttributesService;
@@ -16,7 +16,7 @@ export interface AttributesPluginContext {
 
 type AttributesPluginWorkingContext = AttributesPluginInputContext&AttributesPluginContext;
 
-export const AttributesPlugin: Plugin<AttributesPluginInputContext, AttributesPluginContext, AttributesPluginWorkingContext> = {
+export const AttributesBundle: Plugin<AttributesPluginInputContext, AttributesPluginContext, AttributesPluginWorkingContext> = {
 
   inputContextSpec: {
     actionService: 'required',

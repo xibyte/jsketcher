@@ -1,7 +1,7 @@
 import {SketchGeom} from "cad/sketch/sketchReader";
 import {CoreContext} from "cad/context";
 import CSys from "math/csys";
-import {OperationResult} from "cad/craft/craftPlugin";
+import {OperationResult} from "cad/craft/craftBundle";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
 import {WireRef} from "cad/craft/e0/occSketchLoader";
 import {FromMObjectProductionAnalyzer, ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";

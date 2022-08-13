@@ -2,7 +2,7 @@ import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { ApplicationContext } from "cad/context";
 import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MSketchLoop } from "cad/model/mloop";
 import { FromSketchProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 import {FaceRef} from "cad/craft/e0/OCCUtils";

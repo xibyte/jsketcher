@@ -1,9 +1,9 @@
-import {OperationDescriptor} from "cad/craft/operationPlugin";
-import {ActionDefinition} from "cad/actions/actionSystemPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
+import {ActionDefinition} from "cad/actions/actionSystemBundle";
 import {state} from "lstream";
 import {Index} from "gems/indexType";
 import {ApplicationContext, CoreContext} from "cad/context";
-import {ActionRef} from "cad/dom/uiPlugin";
+import {ActionRef} from "cad/dom/uiBundle";
 import {IconDeclaration} from "cad/icons/IconDeclaration";
 import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";
 

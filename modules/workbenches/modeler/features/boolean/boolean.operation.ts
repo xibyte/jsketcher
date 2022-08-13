@@ -2,7 +2,7 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 
 interface BooleanParams {
   tools: [];

@@ -8,14 +8,14 @@ import {ImportPartOperation} from "./importPartOperation/importPartOperation";
 import {MObject, MObjectIdGenerator} from "../model/mobject";
 import {WEB_CAD_ORG_PARTS_REPO, WEB_CAD_ORG_COMMONS_CATALOG} from "./remotePartsConfig";
 import {indexById} from "gems/iterables";
-import {ModelBundle} from "../projectManager/projectManagerPlugin";
+import {ModelBundle} from "../projectManager/projectManagerBundle";
 import {PartRepository} from "./partRepository";
-import {initProjectService} from "../projectPlugin";
-import {activate as activateCraftPlugin} from '../craft/craftPlugin';
-import {activate as activateExpressionsPlugin} from '../expressions/expressionsPlugin';
-import {activate as activateCadRegistryPlugin} from '../craft/cadRegistryPlugin';
-import {activate as activateStoragePlugin} from '../storage/storagePlugin';
-import {activate as activateSketchStoragePlugin} from '../sketch/sketchStoragePlugin';
+import {initProjectService} from "../projectBundle";
+import {activate as activateCraftPlugin} from '../craft/craftBundle';
+import {activate as activateExpressionsPlugin} from '../expressions/expressionsBundle';
+import {activate as activateCadRegistryPlugin} from '../craft/cadRegistryBundle';
+import {activate as activateStoragePlugin} from '../storage/storageBundle';
+import {activate as activateSketchStoragePlugin} from '../sketch/sketchStorageBundle';
 
 export function activate(ctx: ApplicationContext) {
 

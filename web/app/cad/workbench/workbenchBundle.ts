@@ -8,7 +8,7 @@ export interface WorkbenchBundleContext {
   workbenchService: WorkbenchService;
 }
 
-export const WorkbenchPlugin = {
+export const WorkbenchBundle = {
 
   activate(ctx: ApplicationContext) {
 

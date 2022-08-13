@@ -1,11 +1,11 @@
 import {FACE, SHELL} from 'cad/model/entities';
-import {OperationRequest} from "cad/craft/craftPlugin";
+import {OperationRequest} from "cad/craft/craftBundle";
 import {ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
 import {OperationParamPrimitive} from "cad/craft/schema/schema";
-import {EntityReference} from "cad/craft/operationPlugin";
+import {EntityReference} from "cad/craft/operationBundle";
 import {Plugin} from "plugable/pluginSystem";
 import {MarkerPluginContext} from "cad/scene/selectionMarker/markerPlugin";
-import {WizardPluginContext} from "cad/craft/wizard/wizardPlugin";
+import {WizardPluginContext} from "cad/craft/wizard/wizardBundle";
 import {PickControlPluginContext} from "cad/scene/controls/pickControlPlugin";
 import _ from "lodash";
 import {MObject} from "cad/model/mobject";

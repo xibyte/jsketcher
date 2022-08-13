@@ -1,4 +1,4 @@
-import {Operation} from "cad/craft/operationPlugin";
+import {Operation} from "cad/craft/operationBundle";
 import {resolveIcon} from "cad/craft/ui/iconResolver";
 
 export function roundValueForPresentation(value) {

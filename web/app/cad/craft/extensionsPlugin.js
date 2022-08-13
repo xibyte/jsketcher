@@ -1,4 +1,4 @@
-import {STORAGE_GLOBAL_PREFIX} from '../projectPlugin';
+import {STORAGE_GLOBAL_PREFIX} from '../projectBundle';
 
 const EXTENSIONS_STORAGE_PREFIX = `${STORAGE_GLOBAL_PREFIX}.Extensions`;
 

@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {useStream, useStreamWithPatcher} from "ui/effects";
-import {SELECTABLE_ENTITIES} from "../../scene/entityContextPlugin";
+import {SELECTABLE_ENTITIES} from "../../scene/entityContextBundle";
 import {AppContext} from "cad/dom/components/AppContext";
 import Field from "ui/components/controls/Field";
 import {InnerFolder} from "ui/components/Folder";

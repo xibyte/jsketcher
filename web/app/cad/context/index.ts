@@ -1,26 +1,26 @@
-import {ProjectBundleContext} from "cad/projectPlugin";
-import {ActionSystemPlugin} from "cad/actions/actionSystemPlugin";
-import {AssemblyBundleContext} from "cad/assembly/assemblyPlugin";
-import {AttributesPluginContext} from "cad/attributes/attributesPlugin";
-import {CadRegistryBundleContext} from "cad/craft/cadRegistryPlugin";
-import {CraftBundleContext} from "cad/craft/craftPlugin";
-import {OperationBundleContext} from "cad/craft/operationPlugin";
-import {OCCBundleContext} from "cad/craft/e0/occtPlugin";
-import {WizardPluginContext} from "cad/craft/wizard/wizardPlugin";
-import {AppTabsBundleContext} from "cad/dom/appTabsPlugin";
-import {DomPluginContext} from "cad/dom/domPlugin";
-import {UIBundleContext} from "cad/dom/uiPlugin";
-import {ExpressionBundleContext} from "cad/expressions/expressionsPlugin";
-import {LocationBundleContext} from "cad/location/LocationPlugin";
-import {RemotePartsBundleContext} from "cad/partImport/remotePartsPlugin";
-import {ProjectManagerBundleContext} from "cad/projectManager/projectManagerPlugin";
-import {EntityContextBundleContext} from "cad/scene/entityContextPlugin";
-import {HighlightPluginContext} from "cad/scene/highlightPlugin";
-import {SceneBundleContext} from "cad/scene/scenePlugin";
-import {SketcherBundleContext} from "cad/sketch/sketcherPlugin";
-import {SketchStorageBundleContext} from "cad/sketch/sketchStoragePlugin";
-import {StorageBundleContext} from "cad/storage/storagePlugin";
-import {WorkbenchBundleContext} from "cad/workbench/workbenchPlugin";
+import {ProjectBundleContext} from "cad/projectBundle";
+import {ActionSystemBundle} from "cad/actions/actionSystemBundle";
+import {AssemblyBundleContext} from "cad/assembly/assemblyBundle";
+import {AttributesPluginContext} from "cad/attributes/attributesBundle";
+import {CadRegistryBundleContext} from "cad/craft/cadRegistryBundle";
+import {CraftBundleContext} from "cad/craft/craftBundle";
+import {OperationBundleContext} from "cad/craft/operationBundle";
+import {OCCBundleContext} from "cad/craft/e0/occtBundle";
+import {WizardPluginContext} from "cad/craft/wizard/wizardBundle";
+import {AppTabsBundleContext} from "cad/dom/appTabsBundle";
+import {DomPluginContext} from "cad/dom/domBundle";
+import {UIBundleContext} from "cad/dom/uiBundle";
+import {ExpressionBundleContext} from "cad/expressions/expressionsBundle";
+import {LocationBundleContext} from "cad/location/LocationBundle";
+import {RemotePartsBundleContext} from "cad/partImport/remotePartsBundle";
+import {ProjectManagerBundleContext} from "cad/projectManager/projectManagerBundle";
+import {EntityContextBundleContext} from "cad/scene/entityContextBundle";
+import {HighlightPluginContext} from "cad/scene/highlightBundle";
+import {SceneBundleContext} from "cad/scene/sceneBundle";
+import {SketcherBundleContext} from "cad/sketch/sketcherBundle";
+import {SketchStorageBundleContext} from "cad/sketch/sketchStorageBundle";
+import {StorageBundleContext} from "cad/storage/storageBundle";
+import {WorkbenchBundleContext} from "cad/workbench/workbenchBundle";
 
 export interface LegacyContext {
   services: any,
@@ -30,7 +30,7 @@ export interface LegacyContext {
 export interface ApplicationContext extends
   LegacyContext,
   ProjectBundleContext,
-  ActionSystemPlugin,
+  ActionSystemBundle,
   AssemblyBundleContext,
   AttributesPluginContext,
   CadRegistryBundleContext,

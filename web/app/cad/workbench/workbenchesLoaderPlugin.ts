@@ -6,7 +6,7 @@ import rotateDatumOperation from "cad/craft/datum/rotate/rotateDatumOperation";
 import datumOperation from "cad/craft/primitives/plane/planeOperation";
 import {Plugin} from "plugable/pluginSystem";
 import {WorkbenchService} from "cad/workbench/workbenchService";
-import {OperationService} from "cad/craft/operationPlugin";
+import {OperationService} from "cad/craft/operationBundle";
 
 export interface WorkbenchesLoaderInputContext {
   workbenchService: WorkbenchService,

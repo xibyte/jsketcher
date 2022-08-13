@@ -1,4 +1,4 @@
-import {ProjectService} from "cad/projectPlugin";
+import {ProjectService} from "cad/projectBundle";
 
 export interface LegacyContext {
   services: any,

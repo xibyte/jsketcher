@@ -1,4 +1,4 @@
-import {PartsCatalog} from "./remotePartsPlugin";
+import {PartsCatalog} from "./remotePartsBundle";
 import {GitHubRepoRepository} from "../repository/GitHubRepoRepository";
 import {GrCubes} from "react-icons/gr";
 import {PartRepository} from "./partRepository";

@@ -2,7 +2,7 @@ import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import CSys from "math/csys";
 import {MDatum} from "cad/model/mdatum";
 import {ExpectedOrderProductionAnalyzer} from "cad/craft/production/productionAnalyzer";

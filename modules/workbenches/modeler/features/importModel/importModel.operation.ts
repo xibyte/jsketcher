@@ -1,5 +1,5 @@
 import {ApplicationContext} from "cad/context";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import {LocalFile, LocalFileAdapter} from "ui/components/controls/FileControl";
 import CadError from "../../../../../web/app/utils/errors";
 import {parseStringPromise} from 'xml2js';

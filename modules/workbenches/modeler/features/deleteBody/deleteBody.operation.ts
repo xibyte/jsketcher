@@ -1,7 +1,7 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MShell} from "cad/model/mshell";
 
 interface DeleteBodyParams {

@@ -1,9 +1,9 @@
-import {PROJECTS_PREFIX, SKETCH_SUFFIX} from '../projectPlugin';
+import {PROJECTS_PREFIX, SKETCH_SUFFIX} from '../projectBundle';
 import {ProjectManager} from './ProjectManager';
 import exportTextData from 'gems/exportTextData';
 import {SketchFormat_V3} from "sketcher/io";
 import {ApplicationContext} from "cad/context";
-import {OperationRequest} from "../craft/craftPlugin";
+import {OperationRequest} from "../craft/craftBundle";
 import {AssemblyConstraintDefinition} from "cad/assembly/assemblyConstraint";
 
 export function activate(ctx: ApplicationContext) {
