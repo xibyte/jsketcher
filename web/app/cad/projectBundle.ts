@@ -2,7 +2,7 @@ import {setSketchPrecision} from './sketch/sketchReader';
 import {runSandbox} from './sandbox';
 import {LOG_FLAGS} from './logFlags';
 import {ApplicationContext} from "cad/context";
-import {ProjectModel} from "./projectManager/projectManagerPlugin";
+import {ProjectModel} from "./projectManager/projectManagerBundle";
 import {DebugMode$} from "debugger/Debugger";
 import {fillUpMissingFields} from "cad/craft/schema/initializeBySchema";
 

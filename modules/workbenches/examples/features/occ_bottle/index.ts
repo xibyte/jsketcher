@@ -4,7 +4,7 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {createOCCBottle} from './bottle.occ';
 import {occ2brep} from 'cad/occ/occ2models';
 import icon from './icon.svg';
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 
 export const OCCBottle:OperationDescriptor<any> = {
   id: 'OCC_BOTTLE',

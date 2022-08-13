@@ -53,7 +53,7 @@ export interface HighlightPluginContext {
 
 type HighlightPluginWorkingContext = HighlightPluginInputContext&HighlightPluginContext;
 
-export const HighlightPlugin: Plugin<HighlightPluginInputContext, HighlightPluginContext, HighlightPluginWorkingContext> = {
+export const HighlightBundle: Plugin<HighlightPluginInputContext, HighlightPluginContext, HighlightPluginWorkingContext> = {
 
   inputContextSpec: {
     viewer: 'required',

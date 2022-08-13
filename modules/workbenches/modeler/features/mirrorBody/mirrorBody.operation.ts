@@ -3,7 +3,7 @@ import { MFace } from "cad/model/mface";
 import { ApplicationContext } from "cad/context";
 import { EntityKind } from "cad/model/entities";
 import Axis from "math/axis";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
 
 interface MirrorBodyParams {

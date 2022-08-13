@@ -1,9 +1,9 @@
 import {GrCloudDownload} from "react-icons/gr";
 import {ImportPartForm} from "./ImportPartForm";
 import importPartSchema from "./importPartSchema";
-import {OperationDescriptor} from "../../craft/operationPlugin";
+import {OperationDescriptor} from "../../craft/operationBundle";
 import {ApplicationContext} from "cad/context";
-import {OperationResult} from "../../craft/craftPlugin";
+import {OperationResult} from "../../craft/craftBundle";
 
 export interface ImportPartOperationParams {
   partRef: string,

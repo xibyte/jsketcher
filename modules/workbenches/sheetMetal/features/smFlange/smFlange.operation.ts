@@ -4,7 +4,7 @@ import { ApplicationContext } from "cad/context";
 import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition, BooleanKind } from "cad/craft/schema/common/BooleanDefinition";
 import Axis from "math/axis";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { OperationDescriptor } from "cad/craft/operationBundle";
 
 interface smFlangeParams {
   angle: number;

@@ -1,47 +1,47 @@
 import * as LifecyclePlugin from './lifecyclePlugin';
-import * as AppTabsPlugin from '../dom/appTabsPlugin';
-import {DomPlugin} from '../dom/domPlugin';
+import * as AppTabsPlugin from '../dom/appTabsBundle';
+import {DomBundle} from '../dom/domBundle';
 import * as PickControlPlugin from '../scene/controls/pickControlPlugin';
 import * as MouseEventSystemPlugin from '../scene/controls/mouseEventSystemPlugin';
-import * as ScenePlugin from '../scene/scenePlugin';
+import * as ScenePlugin from '../scene/sceneBundle';
 import * as MarkerPlugin from '../scene/selectionMarker/markerPlugin';
-import * as ActionSystemPlugin from '../actions/actionSystemPlugin';
-import * as UiPlugin from '../dom/uiPlugin';
+import * as ActionSystemPlugin from '../actions/actionSystemBundle';
+import * as UiPlugin from '../dom/uiBundle';
 import * as MenuPlugin from '../dom/menu/menuPlugin';
 import * as KeyboardPlugin from '../keyboard/keyboardPlugin';
-import * as WizardPlugin from '../craft/wizard/wizardPlugin';
+import * as WizardPlugin from '../craft/wizard/wizardBundle';
 import {WizardSelectionPlugin} from '../craft/wizard/wizardSelectionPlugin';
 import * as PreviewPlugin from '../preview/previewPlugin';
-import * as OperationPlugin from '../craft/operationPlugin';
+import * as OperationPlugin from '../craft/operationBundle';
 import * as ExtensionsPlugin from '../craft/extensionsPlugin';
-import * as CadRegistryPlugin from '../craft/cadRegistryPlugin';
-import * as CraftPlugin from '../craft/craftPlugin';
-import * as RemotePartsPlugin from '../partImport/remotePartsPlugin';
+import * as CadRegistryPlugin from '../craft/cadRegistryBundle';
+import * as CraftPlugin from '../craft/craftBundle';
+import * as RemotePartsPlugin from '../partImport/remotePartsBundle';
 import * as CraftUiPlugin from '../craft/craftUiPlugin';
-import * as StoragePlugin from '../storage/storagePlugin';
-import * as ProjectPlugin from '../projectPlugin';
-import * as ProjectManagerPlugin from '../projectManager/projectManagerPlugin';
-import * as SketcherPlugin from '../sketch/sketcherPlugin';
-import * as SketcherStoragePlugin from '../sketch/sketchStoragePlugin';
+import * as StoragePlugin from '../storage/storageBundle';
+import * as ProjectPlugin from '../projectBundle';
+import * as ProjectManagerPlugin from '../projectManager/projectManagerBundle';
+import * as SketcherPlugin from '../sketch/sketcherBundle';
+import * as SketcherStoragePlugin from '../sketch/sketchStorageBundle';
 import * as ExportPlugin from '../exportPlugin';
 import * as ExposurePlugin from '../exposure/exposurePlugin';
 import {ViewSyncPlugin} from '../scene/viewSyncPlugin';
-import * as EntityContextPlugin from '../scene/entityContextPlugin';
-import * as OCCTPlugin from '../craft/e0/occtPlugin';
+import * as EntityContextPlugin from '../scene/entityContextBundle';
+import * as OCCTPlugin from '../craft/e0/occtBundle';
 
 import context from 'cad/context';
 
 import startReact from "../dom/startReact";
 import * as UIConfigPlugin from "../workbench/uiConfigPlugin";
 import * as DebugPlugin from "../debugPlugin";
-import * as ExpressionsPlugin from "../expressions/expressionsPlugin";
-import {WorkbenchPlugin} from "../workbench/workbenchPlugin";
-import * as LocationPlugin from "../location/LocationPlugin";
-import * as AssemblyPlugin from "../assembly/assemblyPlugin";
+import * as ExpressionsPlugin from "../expressions/expressionsBundle";
+import {WorkbenchBundle} from "../workbench/workbenchBundle";
+import * as LocationPlugin from "../location/LocationBundle";
+import * as AssemblyPlugin from "../assembly/assemblyBundle";
 import {WorkbenchesLoaderPlugin} from "cad/workbench/workbenchesLoaderPlugin";
 import {PluginSystem} from "plugable/pluginSystem";
-import {AttributesPlugin} from "cad/attributes/attributesPlugin";
-import {HighlightPlugin} from "cad/scene/highlightPlugin";
+import {AttributesBundle} from "cad/attributes/attributesBundle";
+import {HighlightBundle} from "cad/scene/highlightBundle";
 
 export default function startApplication(callback) {
 
@@ -70,14 +70,14 @@ export default function startApplication(callback) {
   ];
   
   let plugins = [
-    DomPlugin,
+    DomBundle,
     ScenePlugin,
     MouseEventSystemPlugin,
     MarkerPlugin,
     PickControlPlugin,
     EntityContextPlugin,
     WorkbenchesLoaderPlugin,
-    WorkbenchPlugin,
+    WorkbenchBundle,
     SketcherPlugin,
     UIConfigPlugin,
     DebugPlugin,
@@ -86,8 +86,8 @@ export default function startApplication(callback) {
     RemotePartsPlugin,
     ViewSyncPlugin,
     WizardSelectionPlugin,
-    AttributesPlugin,
-    HighlightPlugin
+    AttributesBundle,
+    HighlightBundle
   ];
   
   let allPlugins = [...preUIPlugins, ...plugins];

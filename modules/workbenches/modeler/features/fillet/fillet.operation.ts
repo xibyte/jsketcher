@@ -2,7 +2,7 @@ import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 
 import {EntityKind} from "cad/model/entities";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import {FromMObjectProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 import {MEdge} from "cad/model/medge";
 import {MObject} from "cad/model/mobject";

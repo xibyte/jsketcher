@@ -4,7 +4,7 @@ import { ApplicationContext } from "cad/context";
 import { EntityKind } from "cad/model/entities";
 import Axis from "math/axis";
 import { UnitVector } from "math/vector";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
 import { MDatum } from "cad/model/mdatum";
 import {Matrix3x4} from "math/matrix";

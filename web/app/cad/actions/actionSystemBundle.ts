@@ -155,7 +155,7 @@ export interface ActionService {
   hint$: StateStream<Hint>;
 }
 
-export interface ActionSystemPlugin {
+export interface ActionSystemBundle {
   actionService: ActionService;
 }
 

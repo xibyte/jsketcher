@@ -1,9 +1,9 @@
 import React from 'react';
 import {state} from 'lstream';
 import {IconType} from "react-icons";
-import {ActionAppearance} from "../actions/actionSystemPlugin";
+import {ActionAppearance} from "../actions/actionSystemBundle";
 import {ApplicationContext, CoreContext} from "cad/context";
-import {OperationResult} from "./craftPlugin";
+import {OperationResult} from "./craftBundle";
 import {OperationSchema, SchemaField, schemaIterator, unwrapMetadata} from "cad/craft/schema/schema";
 import {FormDefinition} from "cad/mdf/ui/uiDefinition";
 import {Types} from "cad/craft/schema/types";

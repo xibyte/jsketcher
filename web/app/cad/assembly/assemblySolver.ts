@@ -1,7 +1,7 @@
 import {SolveStatus} from "../../sketcher/constr/AlgNumSystem";
 import {MShell} from "../model/mshell";
 import {MObject} from "../model/mobject";
-import {CadRegistry} from "../craft/cadRegistryPlugin";
+import {CadRegistry} from "../craft/cadRegistryBundle";
 import {AssemblyConstraint, AssemblyConstraintDefinition} from "./assemblyConstraint";
 import {AssemblyConstraintsSchemas} from "./assemblySchemas";
 import {dfs} from "gems/traverse";

@@ -1,5 +1,5 @@
 import React, {ReactNode} from "react";
-import {CatalogCategory, CatalogPart} from "../remotePartsPlugin";
+import {CatalogCategory, CatalogPart} from "../remotePartsBundle";
 import {Tree} from "ui/components/Tree";
 import {FiBox} from "react-icons/fi";
 import {GrCubes} from "react-icons/gr";

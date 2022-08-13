@@ -2,7 +2,7 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 
 
 interface ShellParams {
