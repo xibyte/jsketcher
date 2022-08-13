@@ -1,4 +1,4 @@
-import {Plugin} from "plugable/pluginSystem";
+import {Bundle} from "bundler/bundleSystem";
 import {combine, merge, Stream, stream} from "lstream";
 import Viewer from "cad/scene/viewer";
 import {ScanStream} from "lstream/scan";
@@ -53,7 +53,7 @@ export interface HighlightPluginContext {
 
 type HighlightPluginWorkingContext = HighlightPluginInputContext&HighlightPluginContext;
 
-export const HighlightBundle: Plugin<HighlightPluginInputContext, HighlightPluginContext, HighlightPluginWorkingContext> = {
+export const HighlightBundle: Bundle<HighlightPluginInputContext, HighlightPluginContext, HighlightPluginWorkingContext> = {
 
   inputContextSpec: {
     viewer: 'required',

@@ -3,7 +3,7 @@ import {OperationRequest} from "cad/craft/craftBundle";
 import {ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
 import {OperationParamPrimitive} from "cad/craft/schema/schema";
 import {EntityReference} from "cad/craft/operationBundle";
-import {Plugin} from "plugable/pluginSystem";
+import {Bundle} from "bundler/bundleSystem";
 import {MarkerPluginContext} from "cad/scene/selectionMarker/markerPlugin";
 import {WizardPluginContext} from "cad/craft/wizard/wizardBundle";
 import {PickControlPluginContext} from "cad/scene/controls/pickControlPlugin";
@@ -17,7 +17,7 @@ export interface WizardSelectionPluginContext {
 
 export type WizardSelectionWorkingContext = WizardSelectionPluginInputContext & WizardSelectionPluginContext;
 
-export const WizardSelectionPlugin: Plugin<WizardSelectionPluginInputContext, WizardSelectionPluginContext, WizardSelectionWorkingContext> = {
+export const WizardSelectionPlugin: Bundle<WizardSelectionPluginInputContext, WizardSelectionPluginContext, WizardSelectionWorkingContext> = {
 
   inputContextSpec: {
     markerService: 'required',

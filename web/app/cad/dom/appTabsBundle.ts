@@ -1,5 +1,6 @@
 import {state, StateStream} from "lstream";
 import {ApplicationContext} from "cad/context";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -82,3 +83,6 @@ export interface AppTabsBundleContext {
   appTabsService: AppTabsService;
 }
 
+export const outputContextSpec: ContextSpec<AppTabsBundleContext> = {
+  appTabsService: 'required'
+}

@@ -1,5 +1,5 @@
 import {contributeComponent} from './components/ContributedComponents';
-import {Plugin} from "plugable/pluginSystem";
+import {Bundle} from "bundler/bundleSystem";
 import {AppTabsService} from "cad/dom/appTabsBundle";
 
 export interface DomService {
@@ -23,7 +23,7 @@ export interface DomPluginContext {
 
 type DomPluginWorkingContext = DomPluginInputContext&DomPluginContext;
 
-export const DomBundle: Plugin<DomPluginInputContext, DomPluginContext, DomPluginWorkingContext> = {
+export const DomBundle: Bundle<DomPluginInputContext, DomPluginContext, DomPluginWorkingContext> = {
 
   inputContextSpec: {
     appTabsService: 'required',

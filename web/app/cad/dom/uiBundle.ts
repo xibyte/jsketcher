@@ -1,4 +1,5 @@
 import {state, StateStream} from 'lstream';
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function defineStreams({streams}) {
 
@@ -74,3 +75,8 @@ export interface UIBundleContext {
     }
   };
 }
+
+export const outputContextSpec: ContextSpec<UIBundleContext> = {
+  uiService: undefined
+}
+

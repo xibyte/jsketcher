@@ -8,6 +8,7 @@ import {CoreContext} from "cad/context";
 import {MFace} from "../model/mface";
 import {OperationParams} from "cad/craft/schema/schema";
 import {clearImplicitModels} from "cad/craft/e0/occCommandInterface";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: CoreContext) {
 
@@ -294,4 +295,8 @@ interface HistoryTravel {
 export interface CraftBundleContext {
 
   craftService: CraftService;
+}
+
+export const outputContextSpec: ContextSpec<CraftBundleContext> = {
+  craftService: 'required'
 }

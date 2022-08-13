@@ -1,5 +1,6 @@
 import {stream} from 'lstream';
 import {CoreContext} from "cad/context";
+import {ContextSpec} from "bundler/bundleSystem";
 
 const updates$ = stream();
 
@@ -87,3 +88,6 @@ export interface StorageBundleContext {
   storageService: StorageService;
 }
 
+export const outputContextSpec: ContextSpec<StorageBundleContext> = {
+  storageService: 'required'
+}
