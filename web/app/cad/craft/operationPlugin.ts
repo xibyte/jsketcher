@@ -13,6 +13,7 @@ import {IconDeclaration} from "cad/icons/IconDeclaration";
 import {resolveIcon} from "cad/craft/ui/iconResolver";
 import {loadDeclarativeForm} from "cad/mdf/declarativeFormLoader";
 import {operationIconToActionIcon} from "cad/craft/operationHelper";
+import {GenerateWorkbenchOperationDocumentationLink} from "doc/documentationHelper";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -51,12 +52,18 @@ export function activate(ctx: ApplicationContext) {
 
     let schemaIndex = createSchemaIndex(schema);
 
+    let documentationLink = descriptor.documentationLink;
+    if (!documentationLink && descriptor.path) {
+      documentationLink = GenerateWorkbenchOperationDocumentationLink(descriptor.path);
+    }
+
     let operation = {
       appearance,
       schemaIndex,
       defaultActiveField: schemaIndex.fields[0]?.flattenedPath, // to be overridden by descriptor
       ...descriptor,
-      schema, form
+      schema, form,
+      documentationLink
     };
 
     registry$.mutate(registry => registry[id] = operation);
@@ -140,6 +147,7 @@ export interface OperationDescriptor<R> {
   schema?: OperationSchema,
   onParamsUpdate?: (params, name, value) => void,
   documentationLink?: string,
+  path?: string,
   masking?: {
     id: string,
     label: string;
