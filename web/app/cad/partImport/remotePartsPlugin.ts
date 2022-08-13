@@ -55,8 +55,8 @@ export function activate(ctx: ApplicationContext) {
     // ctx.craftService.pushContext(partRef);
     const projectModel = ctx.projectManager.loadExternalProject(partRef);
 
-    const evalContext: CoreContext = {
-      // @ts-ignore add to the core context
+    // @ts-ignore add to the core context
+    const evalContext: ApplicationContext = {
       craftEngine: ctx.services.craftEngine,
       actionService: ctx.actionService,
       operationService: ctx.operationService,

@@ -7,7 +7,6 @@ import mapContext from 'ui/mapContext';
 import ImgIcon from 'ui/components/ImgIcon';
 import cx from 'classnames';
 import Fa from 'ui/components/Fa';
-import {menuAboveElementHint} from '../../dom/menu/menuUtils';
 import {combine} from 'lstream';
 import {EMPTY_OBJECT} from 'gems/objects';
 import {aboveElement} from 'ui/positionUtils';

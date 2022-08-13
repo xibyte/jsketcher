@@ -44,7 +44,8 @@ NumberControl.propTypes = {
   min: PropTypes.number,
   max: PropTypes.number,
   accelerator: PropTypes.number,
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.any
 };
 
 NumberControl.defaultProps = {

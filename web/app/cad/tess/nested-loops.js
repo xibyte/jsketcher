@@ -2,7 +2,7 @@ import pip from "./pip";
 import {isCCW} from "geom/euclidean";
 
 export default function(loops) {
-  const loops = loops.map(loop => new NestedLoop(loop));
+  loops = loops.map(loop => new NestedLoop(loop));
   function contains(loop, other) {
     let classifyPointInsideLoop = pip(loop);
     for (let point of other) {
@@ -72,12 +72,4 @@ function createFaces() {
       }
     }
   }
-}
-const beforeLength = out.length;
-const nestedLoops = getNestedLoops(originFace, loops);
-for (let nestedLoop of nestedLoops) {
-  if (nestedLoop.level == 0) {
-    createFaces(nestedLoop, originSurface, 0);
-  }
-}
 }

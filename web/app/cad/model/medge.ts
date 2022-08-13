@@ -43,7 +43,7 @@ export class MEdge extends MObject {
     return this.brepEdge.halfEdge1.tangentAtStart();
   };
 
-  toAxis(reverse: boolean): Axis {
+  toAxis(reverse: boolean = false): Axis {
     let tan;
     let origin;
     let he = this.brepEdge.halfEdge1;

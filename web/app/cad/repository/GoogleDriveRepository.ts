@@ -20,7 +20,7 @@ export class GoogleDriveRepository implements Repository {
     window.addEventListener('storage', evt => this.notify(evt.key.substring(prefix.length)), false);
   }
 
-  get(path: string): Promise<string> {
+  get(path: string): Promise<Response> {
     try {
       return Promise.resolve(localStorage.getItem(this.prefix + path));
     } catch (e) {

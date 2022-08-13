@@ -1,5 +1,3 @@
-import {ClassifyPointToFace} from "cad/craft/e0/interact";
-
 declare var Module: {
   _SPI_box: Function;
   _SPI_torus: Function;

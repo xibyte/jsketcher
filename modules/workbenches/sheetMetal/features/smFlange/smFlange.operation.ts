@@ -66,8 +66,7 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       params.face.shell.edges.forEach((edgeToLookAt) => {
         if (JSON.stringify(newEdge.topology.data.tessellation) == JSON.stringify(edgeToLookAt.topology.data.tessellation)) {
           console.debug("We have a match", edgeToLookAt.productionInfo.sheetMetal.kind);
-          newEdge.productionInfo ={};
-          newEdge.productionInfo = {sheetMetal: {kind: edgeToLookAt.productionInfo.sheetMetal.kind}};
+          // newEdge.productionInfo = {sheetMetal: {kind: edgeToLookAt.productionInfo.sheetMetal.kind}};
           //newEdge.productionInfo.sheetMetal.kind = edgeToLookAt.productionInfo.sheetMetal.kind;
           console.debug(newEdge, edgeToLookAt);
           console.debug(newEdge.productionInfo);

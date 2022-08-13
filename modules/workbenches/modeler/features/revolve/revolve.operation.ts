@@ -5,15 +5,8 @@ import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import Axis from "math/axis";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
-import { Edge } from "brep/topo/edge";
-import { FaceRef } from "cad/craft/e0/OCCUtils";
-import { GetRef } from "cad/craft/e0/interact";
-import {
-  FromMObjectProductionAnalyzer,
-  FromSketchProductionAnalyzer,
-  ProductionAnalyzer,
-  PushPullFaceProductionAnalyzer
-} from "cad/craft/production/productionAnalyzer";
+import {FaceRef} from "cad/craft/e0/OCCUtils";
+import {FromMObjectProductionAnalyzer, FromSketchProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 
 interface RevolveParams {
   angle: number;
@@ -65,7 +58,7 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
     }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
 
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean, productionAnalyzer, [face]);
+    return occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
 
   },
   form: [

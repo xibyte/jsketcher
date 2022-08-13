@@ -1,20 +1,14 @@
-import { OCCService } from 'cad/craft/e0/occService';
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { MShell } from "cad/model/mshell";
-import { ApplicationContext } from "cad/context";
-import { EntityKind } from "cad/model/entities";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { UnitVector } from "math/vector";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
-import { MObject } from "cad/model/mobject";
+import {MShell} from "cad/model/mshell";
+import {ApplicationContext} from "cad/context";
+import {EntityKind} from "cad/model/entities";
+import {ActionDefinition} from "cad/actions/actionSystemPlugin";
 
 
 interface getVolumeParams {
   targetBody: MShell;
 }
 
-export const GetVolume: OperationDescriptor<getVolumeParams> = {
+export const GetVolume: any = {
   id: 'GET_VOLUME',
   label: 'VOLUME',
   icon: 'img/cad/extrude',
