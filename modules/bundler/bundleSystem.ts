@@ -1,6 +1,6 @@
-type BagOfPlugins = Set<Plugin<any, any>>;
+type BagOfPlugins = Set<Bundle<any, any>>;
 
-export class PluginSystem {
+export class BundleSystem {
 
   plugins: BagOfPlugins = new Set();
   waitingQueue: BagOfPlugins = new Set();
@@ -10,7 +10,7 @@ export class PluginSystem {
     this.globalContext = globalContext;
   }
 
-  load(plugin: Plugin<any, any>) {
+  load(plugin: Bundle<any, any>) {
     this.waitingQueue.add(plugin);
     this.processWaitingQueue();
   }
@@ -37,7 +37,7 @@ export class PluginSystem {
     }
   }
 
-  unload(plugin: Plugin<any, any>) {
+  unload(plugin: Bundle<any, any>) {
     this.waitingQueue.delete(plugin);
     this.plugins.delete(plugin);
     try {
@@ -71,7 +71,7 @@ export class PluginSystem {
   }
 }
 
-function readiness(plugin: Plugin<any, any>, globalContext: any) {
+function readiness(plugin: Bundle<any, any>, globalContext: any) {
   const specKeys = Object.keys(plugin.inputContextSpec);
   for (let key of specKeys) {
     if (!globalContext[key] && plugin.inputContextSpec[key] === 'required') {
@@ -81,7 +81,7 @@ function readiness(plugin: Plugin<any, any>, globalContext: any) {
   return true;
 }
 
-function checkActivation(plugin: Plugin<any, any>, globalContext: any) {
+function checkActivation(plugin: Bundle<any, any>, globalContext: any) {
   const specKeys = Object.keys(plugin.outputContextSpec);
   for (let key of specKeys) {
     if (!globalContext[key] && plugin.outputContextSpec[key] === 'required') {
@@ -96,8 +96,7 @@ export type ContextSpec<T> = {
   [Property in keyof T]: Spec;
 };
 
-
-export interface Plugin<InputContext, OutputContext, WorkingContext = InputContext&OutputContext> {
+export interface Bundle<InputContext, OutputContext, WorkingContext = InputContext&OutputContext> {
 
   inputContextSpec: ContextSpec<InputContext>;
 

@@ -39,7 +39,7 @@ import {WorkbenchBundle} from "../workbench/workbenchBundle";
 import * as LocationPlugin from "../location/LocationBundle";
 import * as AssemblyPlugin from "../assembly/assemblyBundle";
 import {WorkbenchesLoaderPlugin} from "cad/workbench/workbenchesLoaderPlugin";
-import {PluginSystem} from "plugable/pluginSystem";
+import {BundleSystem} from "bundler/bundleSystem";
 import {AttributesBundle} from "cad/attributes/attributesBundle";
 import {HighlightBundle} from "cad/scene/highlightBundle";
 
@@ -91,7 +91,7 @@ export default function startApplication(callback) {
   ];
   
   let allPlugins = [...preUIPlugins, ...plugins];
-  const pluginSystem = new PluginSystem(context);
+  const pluginSystem = new BundleSystem(context);
   context.pluginSystem = pluginSystem;
 
   defineStreams(allPlugins, context);

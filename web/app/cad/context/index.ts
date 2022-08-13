@@ -1,5 +1,5 @@
 import {ProjectBundleContext} from "cad/projectBundle";
-import {ActionSystemBundle} from "cad/actions/actionSystemBundle";
+import {ActionSystemBundleContext} from "cad/actions/actionSystemBundle";
 import {AssemblyBundleContext} from "cad/assembly/assemblyBundle";
 import {AttributesPluginContext} from "cad/attributes/attributesBundle";
 import {CadRegistryBundleContext} from "cad/craft/cadRegistryBundle";
@@ -30,7 +30,7 @@ export interface LegacyContext {
 export interface ApplicationContext extends
   LegacyContext,
   ProjectBundleContext,
-  ActionSystemBundle,
+  ActionSystemBundleContext,
   AssemblyBundleContext,
   AttributesPluginContext,
   CadRegistryBundleContext,
