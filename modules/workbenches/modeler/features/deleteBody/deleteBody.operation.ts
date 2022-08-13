@@ -1,7 +1,7 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {ApplicationContext} from "context";
+import {EntityKind} from "cad/model/entities";
+import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {MShell} from "cad/model/mshell";
 
 interface DeleteBodyParams {
@@ -39,4 +39,5 @@ export const DeleteBodyOperation: OperationDescriptor<DeleteBodyParams> = {
       },
     },
   ],
+  path: __dirname,
 }

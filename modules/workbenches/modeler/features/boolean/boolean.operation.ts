@@ -3,7 +3,6 @@ import {ApplicationContext} from "context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
-import {GenerateWorkbenchOperationDocumentationLink} from "doc/documentationHelper";
 
 interface BooleanParams {
   tools: [];
@@ -34,7 +33,6 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
     return returnObject;
 
   },
-  documentationLink: GenerateWorkbenchOperationDocumentationLink(__dirname),
   form: [
     {
       type: 'selection',
@@ -97,5 +95,6 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
         }
       }
     }
-  ]
+  ],
+  path: __dirname
 }
