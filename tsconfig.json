@@ -11,6 +11,7 @@
     "downlevelIteration": true,
     "module": "commonJS",
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "paths": {
       "*": [
         "modules/*",
