@@ -23,6 +23,7 @@ import { BoundaryGeneratorSchema } from "./generators/boundaryGenerator";
 import { SketchTypes } from "./shapes/sketch-types";
 import { SketchObject } from "./shapes/sketch-object";
 import { Label } from "sketcher/shapes/label";
+import Drawing from 'dxf-writer';
 
 
 
@@ -355,30 +356,30 @@ export class IO {
 
   svgExport() {
 
-    var T = SketchTypes;
-    var out = new TextBuilder();
+    let T = SketchTypes;
+    let out = new TextBuilder();
 
-    var bbox = new BBox();
+    let bbox = new BBox();
 
-    var a = new Vector();
-    var b = new Vector();
+    let a = new Vector();
+    let b = new Vector();
 
-    var prettyColors = new PrettyColors();
-    var toExport = this.getLayersToExport();
-    for (var l = 0; l < toExport.length; ++l) {
-      var layer = toExport[l];
-      var color = prettyColors.next();
+    let prettyColors = new PrettyColors();
+    let toExport = this.getLayersToExport();
+    for (let l = 0; l < toExport.length; ++l) {
+      let layer = toExport[l];
+      let color = prettyColors.next();
       out.fline('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
-      for (var i = 0; i < layer.objects.length; ++i) {
-        var obj = layer.objects[i];
+      for (let i = 0; i < layer.objects.length; ++i) {
+        let obj = layer.objects[i];
         if (obj._class !== T.POINT) bbox.check(obj);
         if (obj._class === T.SEGMENT) {
           out.fline('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
         } else if (obj._class === T.ARC) {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
-          var dir = a.cross(b).z > 0 ? 0 : 1;
-          var r = obj.r.get();
+          let dir = a.cross(b).z > 0 ? 0 : 1;
+          let r = obj.r.get();
           out.fline('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
         } else if (obj._class === T.CIRCLE) {
           out.fline('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
@@ -392,91 +393,80 @@ export class IO {
   };
 
    dxfExport() {
-    const Drawing = window.Drawing;
 
-    let d = new window.Drawing();
+     let d = new Drawing();
 
-    var T = SketchTypes;
-    var out = new TextBuilder();
-    var bbox = new BBox();
-    var toExport = this.getLayersToExport();
-    bbox.checkLayers(toExport);
+     let T = SketchTypes;
+     let out = new TextBuilder();
+     let bbox = new BBox();
+     let toExport = this.getLayersToExport();
+     bbox.checkLayers(toExport);
 
-    out.numberln(bbox.bbox[0]);
-    out.numberln(bbox.bbox[1]);
-    out.numberln(bbox.bbox[2]);
-    out.numberln(bbox.bbox[3]);
-    const maxWidth = bbox.bbox[0] - bbox.bbox[2];
-    const maxheight = bbox.bbox[1] - bbox.bbox[3];
-    const textHeight = Math.abs((maxWidth > maxheight) ? maxWidth / 50 : maxheight / 50) * .5;
-    var i;
+     out.numberln(bbox.bbox[0]);
+     out.numberln(bbox.bbox[1]);
+     out.numberln(bbox.bbox[2]);
+     out.numberln(bbox.bbox[3]);
+     const maxWidth = bbox.bbox[0] - bbox.bbox[2];
+     const maxheight = bbox.bbox[1] - bbox.bbox[3];
+     const textHeight = Math.abs((maxWidth > maxheight) ? maxWidth / 50 : maxheight / 50) * .5;
 
+     for (let i = 0; i < toExport.length; i++) {
+       const newLayerName = i + 0;
+       toExport[i].layerId = newLayerName + '_green';
+       d.addLayer(toExport[i].layerId, Drawing.ACI.GREEN, 'CONTINUOUS');
+     }
 
+     d.setUnits('Millimeters');
 
-    for (i = 0; i < toExport.length; i++) {
-      const newLayerName = i + 0;
-      toExport[i].layerId = newLayerName + '_green';
-      d.addLayer(toExport[i].layerId, Drawing.ACI.GREEN, 'CONTINUOUS');
-    }
+     for (let l = 0; l < toExport.length; l++) {
 
+       let layer = toExport[l];
+       d.setActiveLayer(layer.layerId);
 
-    d.setUnits('Millimeters');
+       for (let i = 0; i < layer.viewer.labelLayer.objects.length; ++i) {
+         let obj = layer.viewer.labelLayer.objects[i];
 
-
-    for (var l = 0; l < toExport.length; l++) {
-      var lid = l + 1;
-      var layer = toExport[l];
-      d.setActiveLayer(layer.layerId);
-
-
-      for (i = 0; i < layer.viewer.labelLayer.objects.length; ++i) {
-        var obj = layer.viewer.labelLayer.objects[i];
-        console.log("this is a label", obj);
-        //const objectOriginPoint = obj.assignedObject.labelCenter;
-
-        let labelX = obj.offsetX + obj.assignedObject.labelCenter.x;
-        let labelY = obj.offsetY + obj.assignedObject.labelCenter.y;
+         let labelX = obj.offsetX + obj.assignedObject.labelCenter.x;
+         let labelY = obj.offsetY + obj.assignedObject.labelCenter.y;
 
          d.drawText(labelX, labelY, Math.abs(textHeight), 0, obj.text, 'center', 'middle');
-      }
+       }
 
 
-      for (i = 0; i < layer.objects.length; ++i) {
-        var obj = layer.objects[i];
-        console.log("exporting this", obj);
-        if (obj._class === T.POINT) {
-          d.drawPoint(obj.x, obj.y);
-        } else if (obj._class === T.SEGMENT) {
-          d.drawLine(obj.a.x, obj.a.y, obj.b.x, obj.b.y);
-        } else if (obj._class === T.ARC) {
+       for (let i = 0; i < layer.objects.length; ++i) {
+         let obj = layer.objects[i];
+         console.debug("exporting object", obj);
+
+         if (obj._class === T.POINT) {
+           d.drawPoint(obj.x, obj.y);
+         } else if (obj._class === T.SEGMENT) {
+           d.drawLine(obj.a.x, obj.a.y, obj.b.x, obj.b.y);
+         } else if (obj._class === T.ARC) {
            d.drawArc(
-            obj.c.x,
-            obj.c.y,
-            obj.r.get(),
-            (obj.getStartAngle() * (180 / Math.PI)),
-            (obj.getEndAngle() * (180 / Math.PI)));
-        } else if (obj._class === T.CIRCLE) {
-          d.drawCircle(obj.c.x, obj.c.y, obj.r.get());
-        } else if (obj._class === T.ELLIPSE) {
-          console.log("ELLIPSE", obj);
-          d.drawEllipse(10, 10, 8, 0, 1, 3.14, 4.71);
-           d.drawEllipse(obj.centerX,obj.centerY,);
-        } else if (obj._class === T.BEZIER) {
-          d.drawSpline([
-            [obj.p0.x, obj.p0.y],
-            [obj.p1.x, obj.p1.y],
-            [obj.p2.x, obj.p2.y],
-            [obj.p3.x, obj.p3.y],
-          ], 3)
-        } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
-        }
-      }
-    }
-
+             obj.c.x,
+             obj.c.y,
+             obj.r.get(),
+             (obj.getStartAngle() * (180 / Math.PI)),
+             (obj.getEndAngle() * (180 / Math.PI)));
+         } else if (obj._class === T.CIRCLE) {
+           d.drawCircle(obj.c.x, obj.c.y, obj.r.get());
+         } else if (obj._class === T.ELLIPSE) {
+           const majorX = Math.cos(obj.rotation) * obj.radiusX;
+           const majorY = Math.sin(obj.rotation) * obj.radiusX;
+           d.drawEllipse(obj.centerX, obj.centerY, majorX, majorY, obj.radiusY / obj.radiusX, 0, 2 * Math.PI);
+         } else if (obj._class === T.BEZIER) {
+           d.drawSpline([
+             [obj.p0.x, obj.p0.y],
+             [obj.p1.x, obj.p1.y],
+             [obj.p2.x, obj.p2.y],
+             [obj.p3.x, obj.p3.y],
+           ], 3)
+         } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
+         }
+       }
+     }
     //console.log(d.toDxfString());
-    console.log(d.generateAutocadExtras());
-    console.log(toExport);
-
+    d.generateAutocadExtras();
     return d.toDxfString();
   };
 }
