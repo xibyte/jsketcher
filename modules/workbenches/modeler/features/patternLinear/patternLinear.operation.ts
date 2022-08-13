@@ -27,7 +27,6 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
   info: 'Creates a linear pattern.',
   paramsInfo: ({ }) => `(?)`,
   run: (params: patternLinearParams, ctx: ApplicationContext) => {
-    console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 

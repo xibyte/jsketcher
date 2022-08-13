@@ -29,7 +29,6 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
   info: 'Revolves 2D sketch',
   paramsInfo: ({angle}) => `(${r(angle)})`,
   run: (params: RevolveParams, ctx: ApplicationContext) => {
-    console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
@@ -42,7 +41,7 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
 
     if (!sketch) {
       if (face instanceof MBrepFace) {
-        var args = ["FaceTool", face, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
+        const args = ["FaceTool", face, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
         oci.revol(...args);
         return occ.utils.applyBooleanModifier([occ.io.getShell("FaceTool")], params.boolean, face, [],
           (targets, tools) => new FromMObjectProductionAnalyzer(targets, [face]));
@@ -60,7 +59,7 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
     const tools = sweepSources.map((faceRef, i) => {
       const faceName = faceRef.face;
       const shapeName = "Tool/" + i;
-      var args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
+      const args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
       oci.revol(...args);
       return shapeName;
     }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));

@@ -20,7 +20,6 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
   info: 'Creates Sheet metal flange',
   paramsInfo: ({ angle }) => `(${r(angle)})`,
   run: (params: smFlangeParams, ctx: ApplicationContext) => {
-    console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
@@ -33,7 +32,6 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
 
     for (let i = 0; i < face.edges.length; i++) {
       const edgeKind = face.edges[i].productionInfo.sheetMetal.kind;
-      console.log(edgeKind);
       if (edgeKind == "FLAT/A" && !params.flip) {
         revolveVector = face.edges[i].toAxis();
         revolveVectorOrigin = revolveVector.origin;
@@ -48,7 +46,6 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       }
     }
 
-    console.log(revolveVectorOrigin);
     //revolveVectorOrigin.y -=0;
     //revolveVectorOrigin.z +=2;
 
@@ -65,24 +62,19 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       targets: [params.face.shell]
     }
 
-    console.log(params.face.shell);
-
-    tools[0].edges.forEach(async (newEdge) => {
-      params.face.shell.edges.forEach(async (edgeToLookAt) => {
+    tools[0].edges.forEach((newEdge) => {
+      params.face.shell.edges.forEach((edgeToLookAt) => {
         if (JSON.stringify(newEdge.topology.data.tessellation) == JSON.stringify(edgeToLookAt.topology.data.tessellation)) {
-          console.log("We have a match", edgeToLookAt.productionInfo.sheetMetal.kind);
+          console.debug("We have a match", edgeToLookAt.productionInfo.sheetMetal.kind);
           newEdge.productionInfo ={};
-          newEdge.productionInfo = { sheetMetal: { kind: edgeToLookAt.productionInfo.sheetMetal.kind } };
+          newEdge.productionInfo = {sheetMetal: {kind: edgeToLookAt.productionInfo.sheetMetal.kind}};
           //newEdge.productionInfo.sheetMetal.kind = edgeToLookAt.productionInfo.sheetMetal.kind;
-          console.log(newEdge, edgeToLookAt);
-          console.log(newEdge.productionInfo);
+          console.debug(newEdge, edgeToLookAt);
+          console.debug(newEdge.productionInfo);
         }
       });
     });
 
-
-
-    //return occ.utils.applyBooleanModifier(tools, booleanOperation);
     return {
       created: tools,
       consumed: []

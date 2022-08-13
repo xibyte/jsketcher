@@ -18,7 +18,6 @@ export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
   info: 'Mirrors selected body along plane of symytry.',
   paramsInfo: ({  }) => `(${r()})`,
   run: (params: MirrorBodyParams, ctx: ApplicationContext) => {
-    console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 

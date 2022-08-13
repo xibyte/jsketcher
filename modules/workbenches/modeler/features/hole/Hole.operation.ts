@@ -33,18 +33,16 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
   }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
 
   run: (params: HoleParams, ctx: ApplicationContext) => {
-    console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    var returnObject = {
+    const returnObject = {
       consumed: [],
       created: []
     };
 
     //let sketch = ctx.sketchStorageService.readSketch(params.sketch.id);
     //console.log(sketch, "sketch info here");
-
 
     oci.pcylinder("result", params.diameter / 2, params.depth);
 
