@@ -8,7 +8,7 @@ import {createOctreeFromSurface, traverseOctree} from "voxels/octree";
 import {Matrix3x4} from 'math/matrix';
 import {AXIS, ORIGIN} from "math/vector";
 import {BrepInputData, CubeExample} from "engine/data/brepInputData";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {readShellEntityFromJson} from "./scene/wrappers/entityIO";
 import {DEFLECTION, E0_TOLERANCE} from "./craft/e0/common";
 import {normalizetessellationData, readBrep, writeBrep} from "brep/io/brepIO";

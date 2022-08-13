@@ -5,7 +5,7 @@ import {EntityKind} from "cad/model/entities";
 import {SectionWidgetProps} from "cad/mdf/ui/SectionWidget";
 import {MObject} from "cad/model/mobject";
 import Axis from "math/axis";
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import {ObjectTypeSchema} from "cad/craft/schema/types/objectType";
 
 export interface AxisInput {

@@ -1,5 +1,5 @@
 import {TypeRegistry} from "cad/craft/schema/types";
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import {
   isValueNotProvided,
   OperationParams,

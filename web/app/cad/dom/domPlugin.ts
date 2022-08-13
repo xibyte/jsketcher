@@ -23,10 +23,6 @@ export interface DomPluginContext {
 
 type DomPluginWorkingContext = DomPluginInputContext&DomPluginContext;
 
-declare module 'context' {
-  interface ApplicationContext extends DomPluginContext {}
-}
-
 export const DomPlugin: Plugin<DomPluginInputContext, DomPluginContext, DomPluginWorkingContext> = {
 
   inputContextSpec: {

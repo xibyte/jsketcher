@@ -1,7 +1,7 @@
 import {setSketchPrecision} from './sketch/sketchReader';
 import {runSandbox} from './sandbox';
 import {LOG_FLAGS} from './logFlags';
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {ProjectModel} from "./projectManager/projectManagerPlugin";
 import {DebugMode$} from "debugger/Debugger";
 import {fillUpMissingFields} from "cad/craft/schema/initializeBySchema";
@@ -185,11 +185,10 @@ export interface ProjectService {
 
 }
 
-declare module 'context' {
-  interface CoreContext {
+export interface ProjectBundleContext {
 
-    projectService: ProjectService;
-  }
+  projectService: ProjectService;
+
 }
 
 

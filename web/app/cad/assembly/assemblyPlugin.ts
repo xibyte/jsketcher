@@ -1,4 +1,4 @@
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {ModellerContextualActions} from "./ui/ModellerContextualActions";
 import {state, StateStream} from "lstream";
 
@@ -99,10 +99,8 @@ export interface AssemblyService {
 
 }
 
-declare module 'context' {
-  interface ApplicationContext {
+export interface AssemblyBundleContext {
 
-    assemblyService: AssemblyService;
-  }
+  assemblyService: AssemblyService;
 }
 

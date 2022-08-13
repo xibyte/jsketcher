@@ -1,4 +1,4 @@
-import { ApplicationContext } from "context";
+import { ApplicationContext } from "cad/context";
 import { BrepInputData } from "engine/data/brepInputData";
 import CSys from "math/csys";
 import Vector, { AXIS } from "math/vector";

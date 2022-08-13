@@ -1,4 +1,4 @@
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import {ReadSketch} from "./sketchReader";
 
 export function activate(ctx: CoreContext) {
@@ -68,10 +68,9 @@ export interface SketchStorageService {
 
 }
 
-declare module 'context' {
-  interface CoreContext {
+export interface SketchStorageBundleContext {
 
-    sketchStorageService: SketchStorageService;
-  }
+  sketchStorageService: SketchStorageService;
 }
+
 

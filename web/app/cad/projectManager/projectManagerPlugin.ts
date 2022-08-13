@@ -2,7 +2,7 @@ import {PROJECTS_PREFIX, SKETCH_SUFFIX} from '../projectPlugin';
 import {ProjectManager} from './ProjectManager';
 import exportTextData from 'gems/exportTextData';
 import {SketchFormat_V3} from "../../sketcher/io";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {OperationRequest} from "../craft/craftPlugin";
 import {AssemblyConstraintDefinition} from "../assembly/assemblyConstraintDefinition";
 
@@ -247,9 +247,7 @@ interface IProjectManager {
 
 }
 
-declare module 'context' {
-  interface ApplicationContext {
+export interface ProjectManagerBundleContext {
 
-    projectManager: IProjectManager;
-  }
+  projectManager: IProjectManager;
 }

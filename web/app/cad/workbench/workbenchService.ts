@@ -2,7 +2,7 @@ import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {ActionDefinition} from "cad/actions/actionSystemPlugin";
 import {state} from "lstream";
 import {Index} from "gems/indexType";
-import {ApplicationContext, CoreContext} from "context";
+import {ApplicationContext, CoreContext} from "cad/context";
 import {ActionRef} from "cad/dom/uiPlugin";
 import {IconDeclaration} from "cad/icons/IconDeclaration";
 import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";

@@ -4,7 +4,7 @@ import materializeParams from './schema/materializeParams';
 import CadError from '../../utils/errors';
 import {MObject, MObjectIdGenerator} from '../model/mobject';
 import {intercept} from "lstream/intercept";
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import {MFace} from "../model/mface";
 import {OperationParams} from "cad/craft/schema/schema";
 import {clearImplicitModels} from "cad/craft/e0/occCommandInterface";
@@ -291,9 +291,7 @@ interface HistoryTravel {
   backward(hints: any);
 }
 
-declare module 'context' {
-  interface CoreContext {
+export interface CraftBundleContext {
 
-    craftService: CraftService;
-  }
+  craftService: CraftService;
 }

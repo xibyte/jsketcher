@@ -1,4 +1,4 @@
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import {OperationParams, OperationParamsErrorReporter, OperationSchema, SchemaField} from "cad/craft/schema/schema";
 import {ArrayType} from "cad/craft/schema/types/arrayType";
 import {EntityType} from "cad/craft/schema/types/entityType";

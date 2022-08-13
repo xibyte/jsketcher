@@ -29,7 +29,7 @@ import {ViewSyncPlugin} from '../scene/viewSyncPlugin';
 import * as EntityContextPlugin from '../scene/entityContextPlugin';
 import * as OCCTPlugin from '../craft/e0/occtPlugin';
 
-import context from 'context';
+import context from 'cad/context';
 
 import startReact from "../dom/startReact";
 import * as UIConfigPlugin from "../workbench/uiConfigPlugin";

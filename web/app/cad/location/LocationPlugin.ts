@@ -1,5 +1,5 @@
 import {state, StateStream} from "lstream";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {MShell} from "../model/mshell";
 import {LocationDialog} from "./LocationDialog";
 
@@ -35,10 +35,8 @@ export interface LocationService {
 
 }
 
-declare module 'context' {
-  interface ApplicationContext {
+export interface LocationBundleContext {
 
-    locationService: LocationService;
-  }
+  locationService: LocationService;
 }
 

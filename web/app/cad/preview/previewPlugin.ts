@@ -1,5 +1,5 @@
 import {createPreviewer} from './scenePreviewer';
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 
 export function activate(ctx: ApplicationContext) {
   let previewer = null;

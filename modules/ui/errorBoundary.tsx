@@ -1,5 +1,5 @@
 import React from 'react';
-import context from 'context';
+import context from 'cad/context';
 import {Stream} from "lstream";
 import {useStream} from "ui/effects";
 

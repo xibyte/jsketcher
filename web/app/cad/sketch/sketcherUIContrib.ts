@@ -5,7 +5,7 @@ import operationActions from "../../sketcher/actions/operationActions";
 import constraintGlobalActions from "../../sketcher/actions/constraintGlobalActions";
 import generalToolActions from "../../sketcher/actions/generalToolActions";
 import sketcherControlActions from "./sketcherControlActions";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {RiCompasses2Line} from "react-icons/ri";
 
 export default function (ctx: ApplicationContext) {

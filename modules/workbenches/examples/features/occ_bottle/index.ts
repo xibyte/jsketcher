@@ -1,4 +1,4 @@
-import {ApplicationContext} from 'context';
+import {ApplicationContext} from 'cad/context';
 import {MBrepShell} from 'cad/model/mshell';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {createOCCBottle} from './bottle.occ';

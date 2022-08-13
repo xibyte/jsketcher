@@ -5,7 +5,7 @@ import {useStream} from "ui/effects";
 
 // @ts-ignore
 import bottleExample from "raw-loader!./bottleExample.txt";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {AppContext} from "cad/dom/components/AppContext";
 
 export const DebugMode$ = state(false);

@@ -200,9 +200,7 @@ export interface SketcherService {
 }
 
 
-declare module 'context' {
-  interface ApplicationContext {
+export interface SketcherBundleContext {
 
-    sketcherService: SketcherService;
-  }
+  sketcherService: SketcherService;
 }

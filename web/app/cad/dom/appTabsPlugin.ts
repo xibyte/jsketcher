@@ -1,5 +1,5 @@
 import {state, StateStream} from "lstream";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -77,10 +77,8 @@ export interface AppTabsService {
   detach(index: number)
 }
 
-declare module 'context' {
-  interface ApplicationContext {
+export interface AppTabsBundleContext {
 
-    appTabsService: AppTabsService;
-  }
+  appTabsService: AppTabsService;
 }
 

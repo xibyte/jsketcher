@@ -1,5 +1,5 @@
 import {stream} from 'lstream';
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 
 const updates$ = stream();
 
@@ -82,10 +82,8 @@ export interface StorageService {
 
 }
 
-declare module 'context' {
-  interface CoreContext {
+export interface StorageBundleContext {
 
-    storageService: StorageService;
-  }
+  storageService: StorageService;
 }
 
