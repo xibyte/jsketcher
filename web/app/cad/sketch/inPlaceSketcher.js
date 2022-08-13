@@ -49,7 +49,10 @@ export class InPlaceSketcher {
 
     this.syncWithCamera();
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
-    viewer3d.sceneSetup.trackballControls.addEventListener( 'change', this.onCameraChange);
+    this.disposers = createFunctionList();
+
+    const cameraListenerDetacher = viewer3d.sceneSetup.sceneRendered$.attach(this.onCameraChange);
+    this.disposers.add(cameraListenerDetacher);
 
     this.ctx.workbenchService.switchWorkbench('sketcher');
 
@@ -61,7 +64,6 @@ export class InPlaceSketcher {
 
     this.pickControlToken = this.ctx.pickControlService.takePickControl(this.sketcherPickControl);
 
-    this.disposers = createFunctionList();
     this.disposers.add(
       this.ctx.viewer.sceneSetup.viewportSizeUpdate$.attach(this.onCameraChange)
     );
@@ -75,8 +77,7 @@ export class InPlaceSketcher {
     if (this.face.ext.view) {
       this.face.ext.view.sketchGroup.visible = true;
     }
-    let viewer3d = this.ctx.services.viewer;
-    viewer3d.sceneSetup.trackballControls.removeEventListener( 'change', this.onCameraChange);
+    const viewer3d = this.ctx.services.viewer;
     this.face = null;
     this.viewer.canvas.parentNode.removeChild(this.viewer.canvas);
     this.viewer.dispose();
