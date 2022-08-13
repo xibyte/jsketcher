@@ -1,15 +1,12 @@
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {WorkbenchService} from "cad/workbench/workbenchService";
 import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";
 
 
-declare module 'context' {
-  interface ApplicationContext {
+export interface WorkbenchBundleContext {
 
-    workbenchService: WorkbenchService;
-  }
+  workbenchService: WorkbenchService;
 }
-
 
 export const WorkbenchPlugin = {
 

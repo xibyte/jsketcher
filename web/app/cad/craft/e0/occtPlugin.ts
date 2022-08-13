@@ -2,11 +2,11 @@ import {GenericWASMEngine_V1} from "engine/impl/wasm/GenericWASMEngine_V1";
 import {CraftEngine} from "./craftEngine";
 import {createOCCService, OCCService} from "cad/craft/e0/occService";
 
+export interface OCCBundleContext {
 
-declare module 'context' {
-  interface CoreContext {
-    occService: OCCService;
-  }
+  craftEngine: CraftEngine; // to be removed
+
+  occService: OCCService;
 }
 
 export function activate(ctx) {

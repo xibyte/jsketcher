@@ -1,6 +1,6 @@
 import {Types} from "cad/craft/schema/types";
 import {isValueNotProvided, OperationSchema, SchemaField} from "cad/craft/schema/schema";
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 
 export default function initializeBySchema(schema: OperationSchema, context: CoreContext) {
   let fields = Object.keys(schema);

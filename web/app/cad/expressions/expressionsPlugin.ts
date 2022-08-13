@@ -1,6 +1,6 @@
 import {merge, state, StateStream, Stream} from 'lstream';
 import {indexArray} from 'gems/iterables';
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 
 
 export function activate(ctx: CoreContext) {
@@ -115,9 +115,8 @@ export interface ExpressionError {
   line: string;
 }
 
-declare module 'context' {
-  interface CoreContext {
+export interface ExpressionBundleContext {
 
-    expressionService: ExpressionService;
-  }
+  expressionService: ExpressionService;
 }
+

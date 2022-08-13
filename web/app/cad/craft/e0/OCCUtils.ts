@@ -1,5 +1,5 @@
 import {SketchGeom} from "cad/sketch/sketchReader";
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import CSys from "math/csys";
 import {OperationResult} from "cad/craft/craftPlugin";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";

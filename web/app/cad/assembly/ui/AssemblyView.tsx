@@ -6,7 +6,7 @@ import cx from 'classnames';
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
 import ls from "../../../sketcher/components/ConstraintExplorer.less";
 import Fa from "ui/components/Fa";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {StepByStepSimulation} from "./StepByStepSimulation";
 import {AssemblyConstraintDefinition} from "../assemblyConstraint";
 import {AssemblyConstraintsSchemas} from "../assemblySchemas";

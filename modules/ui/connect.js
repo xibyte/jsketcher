@@ -1,5 +1,5 @@
 import React from 'react';
-import context from 'context';
+import context from 'cad/context';
 
 export default function connect(streamProvider) {
   return function (Component) {

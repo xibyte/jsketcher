@@ -63,12 +63,10 @@ export function activate(ctx) {
   }
 }
 
-declare module 'context' {
-  interface CoreContext {
+export interface EntityContextBundleContext {
 
-    entityContextService: {
-      selectedIds: string[],
-      selectedEntities: StateStream<MObject[]>
-    };
-  }
+  entityContextService: {
+    selectedIds: string[],
+    selectedEntities: StateStream<MObject[]>
+  };
 }

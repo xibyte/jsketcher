@@ -2,7 +2,7 @@ import React from 'react';
 import {state} from 'lstream';
 import {IconType} from "react-icons";
 import {ActionAppearance} from "../actions/actionSystemPlugin";
-import {ApplicationContext, CoreContext} from "context";
+import {ApplicationContext, CoreContext} from "cad/context";
 import {OperationResult} from "./craftPlugin";
 import {OperationSchema, SchemaField, schemaIterator, unwrapMetadata} from "cad/craft/schema/schema";
 import {FormDefinition} from "cad/mdf/ui/uiDefinition";
@@ -232,10 +232,10 @@ function createSchemaIndex(schema: OperationSchema): SchemaIndex {
   return index;
 }
 
-declare module 'context' {
-  interface CoreContext {
 
-    operationService: OperationService;
-  }
+export interface OperationBundleContext {
+
+  operationService: OperationService;
 }
+
 

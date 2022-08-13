@@ -1,5 +1,5 @@
 import {Type, TypeRegistry, Types} from "cad/craft/schema/types/index";
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import {BaseSchemaField, OperationParamsErrorReporter} from "cad/craft/schema/schema";
 import {EntityKind} from "cad/model/entities";
 import {MObject} from "cad/model/mobject";

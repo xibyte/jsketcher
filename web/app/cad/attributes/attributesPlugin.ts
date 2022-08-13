@@ -6,7 +6,7 @@ import {ActionSystemPlugin} from "cad/actions/actionSystemPlugin";
 import {RequiresAnyModelSelection} from "cad/actions/actionHelpers";
 import {IoColorPalette} from "react-icons/io5";
 import {FaTable} from "react-icons/fa";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 
 type AttributesPluginInputContext = ActionSystemPlugin;
 
@@ -15,10 +15,6 @@ export interface AttributesPluginContext {
 }
 
 type AttributesPluginWorkingContext = AttributesPluginInputContext&AttributesPluginContext;
-
-declare module 'context' {
-  interface ApplicationContext extends AttributesPluginContext {}
-}
 
 export const AttributesPlugin: Plugin<AttributesPluginInputContext, AttributesPluginContext, AttributesPluginWorkingContext> = {
 

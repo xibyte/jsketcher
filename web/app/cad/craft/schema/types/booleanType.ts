@@ -1,5 +1,5 @@
 import {Materializer, Type, Types} from "cad/craft/schema/types/index";
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import {BaseSchemaField, OperationParamsErrorReporter} from "cad/craft/schema/schema";
 
 export interface BooleanTypeSchema extends BaseSchemaField {

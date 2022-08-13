@@ -49,30 +49,28 @@ export function activate(ctx) {
 
 export type ActionRef = (string | string[])[];
 
-declare module 'context' {
-  interface CoreContext {
+export interface UIBundleContext {
 
-    uiService: {
-      registerFloatView(id: string, Component: any, title: string, icon: any);
-      registerComponent(id: string, Component: any);
-      getComponent(id: string) : any;
-      getFloatView(id: string) : any;
-      streams: {
-        controlBars: {
-          left: StateStream<ActionRef>
-          right: StateStream<ActionRef>
-        },
-        toolbars: {
-          headsUp: StateStream<ActionRef>,
-          headsUpShowTitles: StateStream<boolean>,
-          headsUpQuickActions: StateStream<ActionRef>,
-          sketcherGeneral: StateStream<ActionRef>,
-          sketcherConstraints: StateStream<ActionRef>,
-          sketcherControl: StateStream<ActionRef>
-        },
-        floatViews: StateStream<ActionRef>,
-        sockets: any
-      }
-    };
-  }
+  uiService: {
+    registerFloatView(id: string, Component: any, title: string, icon: any);
+    registerComponent(id: string, Component: any);
+    getComponent(id: string) : any;
+    getFloatView(id: string) : any;
+    streams: {
+      controlBars: {
+        left: StateStream<ActionRef>
+        right: StateStream<ActionRef>
+      },
+      toolbars: {
+        headsUp: StateStream<ActionRef>,
+        headsUpShowTitles: StateStream<boolean>,
+        headsUpQuickActions: StateStream<ActionRef>,
+        sketcherGeneral: StateStream<ActionRef>,
+        sketcherConstraints: StateStream<ActionRef>,
+        sketcherControl: StateStream<ActionRef>
+      },
+      floatViews: StateStream<ActionRef>,
+      sockets: any
+    }
+  };
 }

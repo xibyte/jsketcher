@@ -1,4 +1,4 @@
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationPlugin";
 import {LocalFile, LocalFileAdapter} from "ui/components/controls/FileControl";
 import CadError from "../../../../../web/app/utils/errors";

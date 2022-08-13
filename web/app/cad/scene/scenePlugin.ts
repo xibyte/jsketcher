@@ -1,7 +1,7 @@
 import Viewer from './viewer';
 import CadScene from './cadScene';
 import {externalState, stream} from 'lstream';
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 
 export function activate(ctx: ApplicationContext) {
   const {services} = ctx;
@@ -51,11 +51,8 @@ export function dispose(ctx) {
   ctx.services.viewer.dispose();
 }
 
+export interface SceneBundleContext {
 
-declare module 'context' {
-  interface ApplicationContext {
-
-    cadScene: CadScene;
-    viewer: Viewer;
-  }
+  cadScene: CadScene;
+  viewer: Viewer;
 }

@@ -5,7 +5,7 @@ import {ObjectTypeSchema} from "cad/craft/schema/types/objectType";
 import {StringTypeSchema} from "cad/craft/schema/types/stringType";
 import {BooleanTypeSchema} from "cad/craft/schema/types/booleanType";
 import {Materializer, Types} from "cad/craft/schema/types";
-import {CoreContext} from "context";
+import {CoreContext} from "cad/context";
 import {ParamsPath} from "cad/craft/wizard/wizardTypes";
 
 export type Coercable = any;

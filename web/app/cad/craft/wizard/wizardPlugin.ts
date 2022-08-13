@@ -14,7 +14,7 @@ import {
 } from "cad/craft/wizard/wizardTypes";
 import _ from "lodash";
 import {OperationParamValue} from "cad/craft/schema/schema";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {Operation} from "cad/craft/operationPlugin";
 import produce from "immer"
 
@@ -185,12 +185,6 @@ export function activate(ctx: ApplicationContext) {
 export interface WizardPluginContext {
   wizardService: WizardService
 }
-
-declare module 'context' {
-  interface ApplicationContext extends WizardPluginContext {
-  }
-}
-
 
 function applyOverrides(params, initialOverrides) {
   Object.assign(params, initialOverrides);

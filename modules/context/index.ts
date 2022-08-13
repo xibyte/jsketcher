@@ -1,14 +1,17 @@
+import {ProjectService} from "cad/projectPlugin";
 
-/**
- * CoreContext shouldn't contain any UI services because it can be potentially used in the headless mode
- */
-export interface CoreContext {
-}
-
-export interface ApplicationContext extends CoreContext {
+export interface LegacyContext {
   services: any,
   streams: any,
 }
+
+export interface ApplicationContext extends LegacyContext {
+
+  projectService: ProjectService;
+
+}
+
+export type CoreContext = ApplicationContext;
 
 export default {
 

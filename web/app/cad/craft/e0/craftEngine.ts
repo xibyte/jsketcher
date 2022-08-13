@@ -13,16 +13,8 @@ import * as vec from 'math/vec';
 import {MOpenFaceShell} from '../../model/mopenFace';
 import {BooleanType, EngineAPI_V1} from "engine/api";
 
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {MBrepShell} from "../../model/mshell";
-
-declare module 'context' {
-
-  interface CoreContext {
-
-    craftEngine: CraftEngine;
-  }
-}
 
 
 /**

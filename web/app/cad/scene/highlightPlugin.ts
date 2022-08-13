@@ -53,10 +53,6 @@ export interface HighlightPluginContext {
 
 type HighlightPluginWorkingContext = HighlightPluginInputContext&HighlightPluginContext;
 
-declare module 'context' {
-  interface ApplicationContext extends HighlightPluginContext {}
-}
-
 export const HighlightPlugin: Plugin<HighlightPluginInputContext, HighlightPluginContext, HighlightPluginWorkingContext> = {
 
   inputContextSpec: {

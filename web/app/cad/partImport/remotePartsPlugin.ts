@@ -1,4 +1,4 @@
-import {ApplicationContext, CoreContext} from "context";
+import {ApplicationContext, CoreContext} from "cad/context";
 import {Repository} from "../repository/repository";
 import {IconType} from "react-icons";
 import {Emitter, stream} from "lstream";
@@ -179,11 +179,9 @@ export interface RemotePartsService {
   resolvePartReference(partId: string): Promise<MObject[]>;
 }
 
-declare module 'context' {
-  interface ApplicationContext {
+export interface RemotePartsBundleContext {
 
-    remotePartsService: RemotePartsService;
-  }
+  remotePartsService: RemotePartsService;
 }
 
 
