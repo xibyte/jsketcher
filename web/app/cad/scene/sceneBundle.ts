@@ -2,6 +2,7 @@ import Viewer from './viewer';
 import CadScene from './cadScene';
 import {externalState, stream} from 'lstream';
 import {ApplicationContext} from "cad/context";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: ApplicationContext) {
   const {services} = ctx;
@@ -55,4 +56,9 @@ export interface SceneBundleContext {
 
   cadScene: CadScene;
   viewer: Viewer;
+}
+
+export const outputContextSpec: ContextSpec<SceneBundleContext> = {
+  cadScene: 'required',
+  viewer: 'required'
 }

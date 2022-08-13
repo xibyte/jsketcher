@@ -1,5 +1,6 @@
 import {CoreContext} from "cad/context";
 import {ReadSketch} from "./sketchReader";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: CoreContext) {
 
@@ -71,6 +72,10 @@ export interface SketchStorageService {
 export interface SketchStorageBundleContext {
 
   sketchStorageService: SketchStorageService;
+}
+
+export const outputContextSpec: ContextSpec<SketchStorageBundleContext> = {
+  sketchStorageService: 'required'
 }
 
 

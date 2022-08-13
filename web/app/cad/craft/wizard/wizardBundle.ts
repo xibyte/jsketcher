@@ -17,6 +17,7 @@ import {OperationParamValue} from "cad/craft/schema/schema";
 import {ApplicationContext} from "cad/context";
 import {Operation} from "cad/craft/operationBundle";
 import produce from "immer"
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -185,6 +186,11 @@ export function activate(ctx: ApplicationContext) {
 export interface WizardPluginContext {
   wizardService: WizardService
 }
+
+export const outputContextSpec: ContextSpec<WizardPluginContext> = {
+  wizardService: 'required'
+}
+
 
 function applyOverrides(params, initialOverrides) {
   Object.assign(params, initialOverrides);

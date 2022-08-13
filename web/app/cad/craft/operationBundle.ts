@@ -14,6 +14,7 @@ import {resolveIcon} from "cad/craft/ui/iconResolver";
 import {loadDeclarativeForm} from "cad/mdf/declarativeFormLoader";
 import {operationIconToActionIcon} from "cad/craft/operationHelper";
 import {GenerateWorkbenchOperationDocumentationLink} from "doc/documentationHelper";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -236,6 +237,10 @@ function createSchemaIndex(schema: OperationSchema): SchemaIndex {
 export interface OperationBundleContext {
 
   operationService: OperationService;
+}
+
+export const outputContextSpec: ContextSpec<OperationBundleContext> = {
+  operationService: 'required'
 }
 
 

@@ -4,6 +4,7 @@ import {state, StateStream, Stream} from 'lstream';
 import {LOG_FLAGS} from '../logFlags';
 import {ApplicationContext} from "cad/context";
 import {IconType} from "react-icons";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(context: ApplicationContext) {
   
@@ -155,8 +156,11 @@ export interface ActionService {
   hint$: StateStream<Hint>;
 }
 
-export interface ActionSystemBundle {
+export interface ActionSystemBundleContext {
   actionService: ActionService;
 }
 
+export const outputContextSpec: ContextSpec<ActionSystemBundleContext> = {
+  actionService: 'required'
+}
 

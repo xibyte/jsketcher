@@ -2,6 +2,7 @@ import {state, StateStream} from "lstream";
 import {ApplicationContext} from "cad/context";
 import {MShell} from "../model/mshell";
 import {LocationDialog} from "./LocationDialog";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -38,5 +39,9 @@ export interface LocationService {
 export interface LocationBundleContext {
 
   locationService: LocationService;
+}
+
+export const outputContextSpec: ContextSpec<LocationBundleContext> = {
+  locationService: 'required'
 }
 

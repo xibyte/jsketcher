@@ -4,7 +4,7 @@ import createDatumOperation from "cad/craft/datum/create/createDatumOperation";
 import moveDatumOperation from "cad/craft/datum/move/moveDatumOperation";
 import rotateDatumOperation from "cad/craft/datum/rotate/rotateDatumOperation";
 import datumOperation from "cad/craft/primitives/plane/planeOperation";
-import {Plugin} from "plugable/pluginSystem";
+import {Bundle} from "bundler/bundleSystem";
 import {WorkbenchService} from "cad/workbench/workbenchService";
 import {OperationService} from "cad/craft/operationBundle";
 
@@ -13,7 +13,7 @@ export interface WorkbenchesLoaderInputContext {
   operationService: OperationService
 }
 
-export const WorkbenchesLoaderPlugin: Plugin<WorkbenchesLoaderInputContext, {}> = {
+export const WorkbenchesLoaderPlugin: Bundle<WorkbenchesLoaderInputContext, {}> = {
 
   inputContextSpec: {
     workbenchService: 'required',

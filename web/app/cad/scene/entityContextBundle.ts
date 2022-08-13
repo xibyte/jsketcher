@@ -3,6 +3,7 @@ import {combine, state, StateStream, Stream} from 'lstream';
 import {addToListInMap, EMPTY_ARRAY} from 'gems/iterables';
 import {DATUM, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from '../model/entities';
 import {MObject} from "cad/model/mobject";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
 
@@ -69,4 +70,8 @@ export interface EntityContextBundleContext {
     selectedIds: string[],
     selectedEntities: StateStream<MObject[]>
   };
+}
+
+export const outputContextSpec: ContextSpec<EntityContextBundleContext> = {
+  entityContextService: 'required'
 }

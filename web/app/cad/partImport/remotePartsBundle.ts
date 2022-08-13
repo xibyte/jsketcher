@@ -16,6 +16,7 @@ import {activate as activateExpressionsPlugin} from '../expressions/expressionsB
 import {activate as activateCadRegistryPlugin} from '../craft/cadRegistryBundle';
 import {activate as activateStoragePlugin} from '../storage/storageBundle';
 import {activate as activateSketchStoragePlugin} from '../sketch/sketchStorageBundle';
+import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -184,4 +185,7 @@ export interface RemotePartsBundleContext {
   remotePartsService: RemotePartsService;
 }
 
+export const outputContextSpec: ContextSpec<RemotePartsBundleContext> = {
+  remotePartsService: 'required'
+}
 

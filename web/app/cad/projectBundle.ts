@@ -5,6 +5,7 @@ import {ApplicationContext} from "cad/context";
 import {ProjectModel} from "./projectManager/projectManagerBundle";
 import {DebugMode$} from "debugger/Debugger";
 import {fillUpMissingFields} from "cad/craft/schema/initializeBySchema";
+import {ContextSpec} from "bundler/bundleSystem";
 
 export const STORAGE_GLOBAL_PREFIX = 'TCAD';
 export const PROJECTS_PREFIX = `${STORAGE_GLOBAL_PREFIX}.projects.`;
@@ -189,6 +190,10 @@ export interface ProjectBundleContext {
 
   projectService: ProjectService;
 
+}
+
+export const outputContextSpec: ContextSpec<ProjectBundleContext> = {
+  projectService: 'required'
 }
 
 
