@@ -9,17 +9,16 @@ export enum ViewMode {
 
 export default class Viewer {
 
-  sceneRendered$: Emitter<any> = stream();
   cameraMode$: StateStream<any>;
   viewMode$: StateStream<ViewMode> = state(ViewMode.SHADED_WITH_EDGES);
 
   sceneSetup: SceneSetUp;
 
-  constructor(container, onRendered) {
+  constructor(container) {
 
     this.cameraMode$ = externalState(() => this.getCameraMode(), mode => this.setCameraMode(mode))
 
-    this.sceneSetup = new SceneSetUp(container, onRendered);
+    this.sceneSetup = new SceneSetUp(container);
   }
   
   render() {

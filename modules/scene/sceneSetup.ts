@@ -16,14 +16,13 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
-import {stream} from "lstream";
+import {Emitter, stream} from "lstream";
 
 export default class SceneSetUp {
   workingSphere: number;
   container: HTMLElement;
   scene: Scene;
   rootGroup: Object3D;
-  onRendered: any;
   oCamera: OrthographicCamera;
   pCamera: PerspectiveCamera;
   camera: PerspectiveCamera;
@@ -33,15 +32,16 @@ export default class SceneSetUp {
   private _prevContainerHeight: number;
   trackballControls: CADTrackballControls;
   viewportSizeUpdate$ = stream();
+  sceneRendered$: Emitter<any> = stream();
+
   renderRequested: boolean;
 
-  constructor(container, onRendered) {
+  constructor(container) {
     
     this.workingSphere = 10000;
     this.container = container;
     this.scene = new Scene();
     this.rootGroup = this.scene;
-    this.onRendered = onRendered;
     this.scene.userData.sceneSetUp = this;
     this.renderRequested = false;
 
@@ -279,7 +279,7 @@ export default class SceneSetUp {
     this.renderRequested = false;
     this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
     this.renderer.render(this.scene, this.camera);
-    this.onRendered();
+    this.sceneRendered$.next();
   };
 
   domElement() {
