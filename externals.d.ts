@@ -7,4 +7,5 @@ declare var verb: any;
 declare var FS: any;
 declare var __CAD_APP: any;
 declare var __DEBUG__: any;
+declare var Module: any;
 
