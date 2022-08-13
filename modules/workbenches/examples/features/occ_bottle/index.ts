@@ -19,7 +19,6 @@ export const OCCBottle:OperationDescriptor<any> = {
   run: ({width, height, thickness, color}, ctx: ApplicationContext) => {
     const occObj = createOCCBottle(width, height, thickness, ctx.occService.occContext);
     const mobject = new MBrepShell(occ2brep(occObj, ctx.occService.occContext));
-    console.log(color);
     return {
       consumed: [],
       created: [mobject]

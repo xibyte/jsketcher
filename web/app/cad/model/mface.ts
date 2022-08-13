@@ -13,6 +13,7 @@ import {EntityKind} from "cad/model/entities";
 import {Matrix3x4} from "math/matrix";
 import {TopoObject} from "brep/topo/topo-object";
 import Axis from "math/axis";
+import {MEdge} from "cad/model/medge";
 
 export class MFace extends MObject {
 
@@ -180,6 +181,9 @@ export class MFace extends MObject {
     return this.brepFace;
   }
 
+  get edges(): MEdge[] {
+    return [];
+  }
 }
 
 export class MBrepFace extends MFace {
@@ -192,7 +196,7 @@ export class MBrepFace extends MFace {
     this.brepFace = brepFace;
   }
 
-  get edges() {
+  get edges(): MEdge[] {
     let out = [];
     for (let he of this.brepFace.edges) {
       let edge = (this.shell as MBrepShell).brepRegistry.get(he.edge);

@@ -17,13 +17,12 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
   info: 'Shells 2D sketch',
   paramsInfo: ({thickness}) => `(${r(thickness)})`,
   run: (params: ShellParams, ctx: ApplicationContext) => {
-    console.log(params);
     let occ = ctx.occService;
     const oci = occ.commandInterface;
 
 
-    var bodiesToShell = [];
-    var returnObject = {
+    const bodiesToShell = [];
+    const returnObject = {
       consumed: [],
       created: []
     };
@@ -41,20 +40,15 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
 
     //perform the opperations on each of the bodies.
     Object.keys(bodiesToShell).forEach((shellToOpperateOnName) => {
-      var shellToOpperateOn = bodiesToShell[shellToOpperateOnName];
-      var newShellName = shellToOpperateOnName + "f";
+      const shellToOpperateOn = bodiesToShell[shellToOpperateOnName];
+      const newShellName = shellToOpperateOnName + "f";
 
-      console.log(shellToOpperateOn);
-
-      var bodyToPerformShellOpperationOn = shellToOpperateOn[0].shell;
+      const bodyToPerformShellOpperationOn = shellToOpperateOn[0].shell;
       oci.offsetcompshape(newShellName, bodyToPerformShellOpperationOn, -params.thickness, "1.e-3", ...shellToOpperateOn)
       returnObject.created.push(occ.io.getShell(newShellName));
     });
 
-    console.log(returnObject);
-
     return returnObject;
-
   },
   form: [
     {

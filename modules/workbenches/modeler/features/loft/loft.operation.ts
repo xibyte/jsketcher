@@ -28,8 +28,6 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
     if (params.loftType == "smooth") loftType = 0;
     if (params.loftType == "sharp") loftType = 1;
 
-    //console.log(params.loops);
-
     let sketches = [];
 
     const wires = params.loops.map((loop, i) => {
@@ -39,16 +37,13 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
       return occ.io.sketchLoader.pushContourAsWire(loop.contour, shapeName, loop.face.csys).wire
     });
 
-    //console.log("This is the info you are looking for", sketches);
-
     let sweepSources = [];
 
     let indexOfMostSegments = 0;
     let longestPath =  0;
     let primarySketch = {};
 
-    sketches.forEach(function (item, index) {
-      //console.log(item, index);
+    sketches.forEach((item, index) => {
       if(params.loops[index].contour.segments.length > longestPath){
         longestPath = params.loops[index].contour.segments.length;
 

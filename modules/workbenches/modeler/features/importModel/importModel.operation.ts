@@ -30,7 +30,6 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
     if (FileName.endsWith("BRP") || FileName.endsWith("BREP")) {
       //FreeCAD some times omits this text from the top of BRP files
       //as part of the brp files stored in the .FCStf file archive format
-      console.log(rawContent);
       if (!rawContent.startsWith("DBRep_DrawableShape")) {
         rawContent = `DBRep_DrawableShape\n` + rawContent;
       }
@@ -65,9 +64,8 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
                   FS.writeFile(importBrepShapeName, `DBRep_DrawableShape\n` + zipContent);
                   oci.readbrep(importBrepShapeName, importBrepShapeName);
                   returnObject.created.push(occ.io.getShell(importBrepShapeName));
-                  console.log(importBrepShapeName);
                 } catch (e) {
-                  console.log(e)
+                  console.warn(e)
                 }
               }
             }

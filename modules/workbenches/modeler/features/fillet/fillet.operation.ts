@@ -25,8 +25,6 @@ export const FilletOperation: OperationDescriptor<any> = {
     const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    console.log(params.edges);
-
     //add all the edges and size to seperate arrays for each shell that edges are selected from
 
     const groups = new Map<MShell, any[]>()
@@ -68,8 +66,6 @@ export const FilletOperation: OperationDescriptor<any> = {
       }
       result.created.push(occ.io.getShell(newShellName, analyzer));
     });
-
-    console.log(result);
 
     return result;
   },

@@ -33,15 +33,14 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
   run: (params: smTabParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;
-    console.log(ctx.craftService.modifications$.value.history);
     const oci = occ.commandInterface;
 
     const face = params.sketch;
 
     let sketch = ctx.sketchStorageService.readSketch(face.id);
-    if (!sketch) throw 'sketch not found for the face ' + face.id;
-
-  
+    if (!sketch) {
+      throw 'sketch not found for the face ' + face.id;
+    }
 
     const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
 
