@@ -10,7 +10,7 @@ import {GiFoldedPaper} from "react-icons/gi";
 
 
 
-export const sheetMetalWorkspace: WorkbenchConfig = {
+export const SheetMetalWorkspace: WorkbenchConfig = {
 
   workbenchId: 'SheetMetal',
   features: [
