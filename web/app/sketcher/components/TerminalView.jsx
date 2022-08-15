@@ -172,6 +172,7 @@ const DEFAULT_COMMAND_HANDLER = (command, println, ctx) => {
       const output = eval(command);
       println({text: output});
     } catch (e) {
+      //ignore
     }
   }
 };

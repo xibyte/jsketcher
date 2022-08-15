@@ -9,7 +9,7 @@ import Card from "ui/components/Card";
 import {useStreamWithUpdater} from "ui/effects";
 import {ReactApplicationContext} from "../ReactApplicationContext";
 
-export default function AppTabs({}) {
+export default function AppTabs() {
 
   const [{tabs, activeTab}, updateTabs] = useStreamWithUpdater(ctx => ctx.appTabsService.tabs$);
   const ctx = useContext(ReactApplicationContext);
