@@ -3,11 +3,11 @@ import {Line} from './line';
 import {eqTol, veq} from '../tolerance';
 import {Matrix3x4} from 'math/matrix';
 import {BasisForPlane} from 'math/basis';
-import Vector, {AXIS} from "math/vector";
+import Vector, {AXIS, UnitVector} from "math/vector";
 
 
 export class Plane {
-  normal: Vector;
+  normal: UnitVector;
   w: number;
   #basis: any;
   #_2dTr: any;
@@ -26,7 +26,7 @@ export class Plane {
     return new Plane(n, w);
   }
 
-  constructor(normal: Vector, w: number) {
+  constructor(normal: UnitVector, w: number) {
     this.normal = normal;
     this.w = w;
   }
@@ -51,7 +51,7 @@ export class Plane {
   }
 
   invert() {
-    return new Plane(this.normal.multiply(-1), - this.w);
+    return new Plane(this.normal.multiply(-1) as UnitVector, - this.w);
   }
 
   get2DTransformation() {
