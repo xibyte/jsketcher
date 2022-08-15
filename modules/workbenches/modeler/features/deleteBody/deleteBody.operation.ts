@@ -40,5 +40,4 @@ export const DeleteBodyOperation: OperationDescriptor<DeleteBodyParams> = {
       },
     },
   ],
-  path: __dirname,
 }
