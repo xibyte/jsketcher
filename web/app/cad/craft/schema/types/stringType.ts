@@ -4,7 +4,7 @@ import {BaseSchemaField, OperationParamsErrorReporter} from "cad/craft/schema/sc
 
 export interface StringTypeSchema extends BaseSchemaField {
 
-  type: Types.number,
+  type: Types.string,
 
   enum?: string[]
 
