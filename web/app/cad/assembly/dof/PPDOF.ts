@@ -34,8 +34,6 @@ export class PPDOF implements AssemblyDOF {
 
     //fix it anyway to mitigate any rounding errors
 
-    debugger;
-
     const y = normal.cross(dir)._normalize();
     const x = y.cross(normal)._normalize();
 

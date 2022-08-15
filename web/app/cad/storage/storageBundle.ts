@@ -32,7 +32,7 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function exists(key) {
-    return localStorage.hasOwnProperty(key);
+    return key in localStorage;
   }
   
   function notify(key) {

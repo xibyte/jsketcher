@@ -16,7 +16,7 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
   label: 'Import',
   icon: 'img/cad/import',
   info: 'Imports BREP, STEP, IGES or FCStd file',
-  paramsInfo: ({ }) => `()`,
+  paramsInfo: () => `()`,
   run: async (params: ImportModelParams, ctx: ApplicationContext) => {
     let occ = ctx.occService;
     const oci = occ.commandInterface;

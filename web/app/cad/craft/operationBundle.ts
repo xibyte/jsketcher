@@ -131,13 +131,15 @@ export interface Operation<R> extends OperationDescriptor<R>{
 
 type OpIcon = IconDeclaration | IconType | string | ((props: any) => JSX.Element);
 
+type MaterializedParams = any;
+
 export interface OperationDescriptor<R> {
   id: string;
   label: string;
   info: string;
   icon: OpIcon;
   actionParams?: any;
-  run: (params: {}, ctx: ApplicationContext, rawParams: R) => OperationResult | Promise<OperationResult>;
+  run: (params: MaterializedParams, ctx: ApplicationContext, rawParams: R) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,
   previewGeomProvider?: (params: R) => OperationGeometryProvider,
   previewer?: any,
