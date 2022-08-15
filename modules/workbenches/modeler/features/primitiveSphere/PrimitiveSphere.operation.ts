@@ -18,6 +18,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
   label: 'Sphere',
   icon: 'img/cad/sphere',
   info: 'Primitive Sphere',
+  path:__dirname,
   paramsInfo: ({radius,}) => `(${r(radius)}  )`,
   form: [
     {

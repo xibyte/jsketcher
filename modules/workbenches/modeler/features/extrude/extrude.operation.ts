@@ -37,6 +37,7 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   },
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
+  path:__dirname,
   paramsInfo: ({length}) => `(${r(length)})`,
   run: (params: ExtrudeParams, ctx: ApplicationContext, rawParams: any) => {
 

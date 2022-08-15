@@ -15,6 +15,7 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
   label: 'Boolean',
   icon: 'img/cad/intersection',
   info: 'Booleans 2D sketch',
+  path:__dirname,
   paramsInfo: ({tools, boolean}) => `(${r(tools)} ${r(boolean)})`,
   run: (params: BooleanParams, ctx: ApplicationContext) => {
     let occ = ctx.occService;

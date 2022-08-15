@@ -13,6 +13,7 @@ export const GetVolume: any = {
   label: 'VOLUME',
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
+  path:__dirname,
   run: (params: getVolumeParams, ctx: ApplicationContext) => {
 
     let occ = ctx.services.OCCService;

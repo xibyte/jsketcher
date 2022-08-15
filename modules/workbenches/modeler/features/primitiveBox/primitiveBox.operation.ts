@@ -21,6 +21,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
   label: 'Box',
   icon: 'img/cad/cube',
   info: 'Primitive Box',
+  path:__dirname,
   paramsInfo: ({x, y, z}) => `(${r(x)} , ${r(y)} , ${r(z)})`,
   form: [
     {

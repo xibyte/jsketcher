@@ -21,6 +21,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
   label: 'hole',
   icon: 'img/cad/hole',
   info: 'creates hole features',
+  path:__dirname,
   paramsInfo: ({
 
     diameter,

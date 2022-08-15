@@ -19,6 +19,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
   label: 'Loft',
   icon: 'img/cad/loft',
   info: 'Lofts 2D sketch',
+  path:__dirname,
   paramsInfo: () => `(?)`,
   run:async (params: LoftParams, ctx: ApplicationContext) => {
 

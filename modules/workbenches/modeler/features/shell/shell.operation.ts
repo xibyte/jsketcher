@@ -15,6 +15,7 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
   label: 'Shell',
   icon: 'img/cad/shell',
   info: 'Shells 2D sketch',
+  path:__dirname,
   paramsInfo: ({thickness}) => `(${r(thickness)})`,
   run: (params: ShellParams, ctx: ApplicationContext) => {
     let occ = ctx.occService;

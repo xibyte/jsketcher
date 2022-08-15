@@ -21,6 +21,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
   label: 'Cone',
   icon: 'img/cad/cone',
   info: 'Cone',
+  path:__dirname,
   paramsInfo: ({ height, diameterA, diameterB }) => `(${r(height)} , ${r(diameterA)} , ${r(diameterB)} )`,
   form: [
     {
