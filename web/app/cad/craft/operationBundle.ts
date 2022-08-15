@@ -2,7 +2,7 @@ import React from 'react';
 import {state} from 'lstream';
 import {IconType} from "react-icons";
 import {ActionAppearance} from "../actions/actionSystemBundle";
-import {ApplicationContext, CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import {OperationResult} from "./craftBundle";
 import {OperationSchema, SchemaField, schemaIterator, unwrapMetadata} from "cad/craft/schema/schema";
 import {FormDefinition} from "cad/mdf/ui/uiDefinition";
@@ -137,7 +137,7 @@ export interface OperationDescriptor<R> {
   info: string;
   icon: OpIcon;
   actionParams?: any;
-  run: (params: {}, ctx: CoreContext, rawParams: R) => OperationResult | Promise<OperationResult>;
+  run: (params: {}, ctx: ApplicationContext, rawParams: R) => OperationResult | Promise<OperationResult>;
   paramsInfo: (params: R) => string,
   previewGeomProvider?: (params: R) => OperationGeometryProvider,
   previewer?: any,

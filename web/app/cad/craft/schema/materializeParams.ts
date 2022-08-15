@@ -1,5 +1,5 @@
 import {TypeRegistry} from "cad/craft/schema/types";
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import {
   isValueNotProvided,
   OperationParams,
@@ -19,7 +19,7 @@ function createErrorReporter(path: string[], errors: OperationParamsError[]): Op
   return report;
 }
 
-export default function materializeParams(ctx: CoreContext,
+export default function materializeParams(ctx: ApplicationContext,
                                           params: OperationParams,
                                           schema: OperationSchema,
                                           result: any,
@@ -28,7 +28,7 @@ export default function materializeParams(ctx: CoreContext,
 
 }
 
-function materializeParamsImpl(ctx: CoreContext,
+function materializeParamsImpl(ctx: ApplicationContext,
                                params: OperationParams,
                                schema: OperationSchema,
                                result: any,

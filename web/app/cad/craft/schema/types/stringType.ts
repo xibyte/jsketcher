@@ -1,5 +1,5 @@
-import {Materializer, Type, TypeRegistry, Types} from "cad/craft/schema/types/index";
-import {CoreContext} from "cad/context";
+import {Materializer, Type, Types} from "cad/craft/schema/types/index";
+import {ApplicationContext} from "cad/context";
 import {BaseSchemaField, OperationParamsErrorReporter} from "cad/craft/schema/schema";
 
 export interface StringTypeSchema extends BaseSchemaField {
@@ -12,7 +12,7 @@ export interface StringTypeSchema extends BaseSchemaField {
 
 export const StringType: Type<any, string, StringTypeSchema> = {
 
-  resolve(ctx: CoreContext,
+  resolve(ctx: ApplicationContext,
           value: any,
           md: StringTypeSchema,
           reportError: OperationParamsErrorReporter,

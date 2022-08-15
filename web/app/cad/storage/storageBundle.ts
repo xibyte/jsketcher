@@ -1,5 +1,5 @@
 import {stream} from 'lstream';
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 
 const updates$ = stream();
 
@@ -9,7 +9,7 @@ export function defineStreams(ctx) {
   }
 }
 
-export function activate(ctx: CoreContext) {
+export function activate(ctx: ApplicationContext) {
 
   const {services, streams} = ctx;
 

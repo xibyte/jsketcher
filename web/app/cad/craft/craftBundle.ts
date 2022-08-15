@@ -4,11 +4,11 @@ import materializeParams from './schema/materializeParams';
 import CadError from '../../utils/errors';
 import {MObject, MObjectIdGenerator} from '../model/mobject';
 import {intercept} from "lstream/intercept";
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import {OperationParams} from "cad/craft/schema/schema";
 import {clearImplicitModels} from "cad/craft/e0/occCommandInterface";
 
-export function activate(ctx: CoreContext) {
+export function activate(ctx: ApplicationContext) {
 
 
   const modifications$ = state({

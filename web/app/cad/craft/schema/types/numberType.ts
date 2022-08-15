@@ -1,7 +1,6 @@
-import {Materializer, Type, TypeRegistry, Types} from "cad/craft/schema/types/index";
-import {CoreContext} from "cad/context";
-import {BaseSchemaField, OperationParamsErrorReporter, SchemaField} from "cad/craft/schema/schema";
-import {EntityType} from "cad/craft/schema/types/entityType";
+import {Materializer, Type, Types} from "cad/craft/schema/types/index";
+import {ApplicationContext} from "cad/context";
+import {BaseSchemaField, OperationParamsErrorReporter} from "cad/craft/schema/schema";
 
 export interface NumberTypeSchema extends BaseSchemaField {
 
@@ -15,7 +14,7 @@ export interface NumberTypeSchema extends BaseSchemaField {
 
 export const NumberType: Type<any, number, NumberTypeSchema> = {
 
-  resolve(ctx: CoreContext,
+  resolve(ctx: ApplicationContext,
           value: any,
           md: NumberTypeSchema,
           reportError: OperationParamsErrorReporter,

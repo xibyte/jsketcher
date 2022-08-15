@@ -4,8 +4,8 @@ import {ArrayTypeSchema} from "cad/craft/schema/types/arrayType";
 import {ObjectTypeSchema} from "cad/craft/schema/types/objectType";
 import {StringTypeSchema} from "cad/craft/schema/types/stringType";
 import {BooleanTypeSchema} from "cad/craft/schema/types/booleanType";
-import {Materializer, Types} from "cad/craft/schema/types";
-import {CoreContext} from "cad/context";
+import {Types} from "cad/craft/schema/types";
+import {ApplicationContext} from "cad/context";
 import {ParamsPath} from "cad/craft/wizard/wizardTypes";
 
 export type Coercable = any;
@@ -55,7 +55,7 @@ export type OperationParamsErrorReporter = ((msg: string) => void) & {
   dot: (pathPart: string|number) => OperationParamsErrorReporter
 };
 
-export type ValueResolver<IN, OUT> = (ctx: CoreContext,
+export type ValueResolver<IN, OUT> = (ctx: ApplicationContext,
                                value: IN,
                                md: SchemaField,
                                reportError: OperationParamsErrorReporter) => OUT;

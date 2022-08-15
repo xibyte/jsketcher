@@ -50,7 +50,5 @@ export interface ApplicationContext extends
   WorkbenchBundleContext
 {}
 
-export type CoreContext = ApplicationContext;
-
 export default {} as ApplicationContext;
 

@@ -1,5 +1,5 @@
 import {SketchGeom} from "cad/sketch/sketchReader";
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import CSys from "math/csys";
 import {OperationResult} from "cad/craft/craftBundle";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
@@ -27,7 +27,7 @@ export interface FaceRef extends WireRef {
   topoShape: Shell,
 }
 
-export function createOCCUtils(ctx: CoreContext): OCCUtils {
+export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
 
   function sketchToFaces(sketch: SketchGeom, csys: CSys): FaceRef[] {
     const occ = ctx.occService;

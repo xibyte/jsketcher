@@ -1,7 +1,7 @@
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import {ReadSketch} from "./sketchReader";
 
-export function activate(ctx: CoreContext) {
+export function activate(ctx: ApplicationContext) {
 
   function getAllSketches() {
     let nm = ctx.projectService.sketchStorageNamespace;
