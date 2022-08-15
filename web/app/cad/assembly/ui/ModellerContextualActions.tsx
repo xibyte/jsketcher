@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {AppContext} from "../../dom/components/AppContext";
+import {ReactApplicationContext} from "../../dom/ReactApplicationContext";
 import {useStream} from "ui/effects";
 import {Dialog} from "ui/components/Dialog";
 import {matchAvailableSubjects, MatchIndex, matchSelection} from "../../../sketcher/selectionMatcher";
@@ -8,7 +8,7 @@ import {AssemblyConstraintsSchemas} from "../assemblySchemas";
 
 export function ModellerContextualActions() {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const selection: string[] = useStream(ctx => ctx.streams.selection.all);
 

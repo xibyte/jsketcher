@@ -1,14 +1,11 @@
 import React, {useContext, useState} from "react";
-import {AppContext} from "../../dom/components/AppContext";
+import {ReactApplicationContext} from "../../dom/ReactApplicationContext";
 import {AssemblyProcess} from "../assemblySolver";
 import {useStream} from "ui/effects";
-import {MShell} from "../../model/mshell";
-import CSys from "math/csys";
-import {Matrix3x4} from "math/matrix";
 
 export function StepByStepSimulation() {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const [process, setProcess] = useState<AssemblyProcess>(null);
   const constraints = useStream(ctx => ctx.assemblyService.constraints$);

@@ -5,7 +5,6 @@ import Stack from 'ui/components/Stack';
 import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 import {ParamsPath, ParamsPathSegment, WizardState} from "cad/craft/wizard/wizardTypes";
 import {flattenPath, OperationParams, OperationParamValue} from "cad/craft/schema/schema";
-import {AppContext} from "cad/dom/components/AppContext";
 
 interface FormEdit {
   onChange: any;

@@ -2,11 +2,10 @@ import React, {useContext} from 'react';
 import MenuHolder from '../menu/MenuHolder';
 
 import ActionInfo from '../actionInfo/ActionInfo';
-import {ContributedComponents} from './ContributedComponents';
 import {stream} from 'lstream';
 import {DocumentationWindow} from 'doc/DocumentationWindow';
 import {Scope} from "../../../sketcher/components/Scope";
-import {AppContext} from "./AppContext";
+import {ReactApplicationContext} from "../ReactApplicationContext";
 
 
 const onCloseAll = stream<void>();
@@ -15,7 +14,7 @@ export const UISystemContext = React.createContext(null);
 
 export default function UISystem({children, ...props}) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const uiCxt = {
     closeAllUpPopups: () => {

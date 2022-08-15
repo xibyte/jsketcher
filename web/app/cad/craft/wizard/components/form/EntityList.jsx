@@ -6,7 +6,7 @@ import Fa from 'ui/components/Fa';
 import {attachToForm} from './Form';
 import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 import {EMPTY_ARRAY, removeInPlace} from 'gems/iterables';
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import produce from "immer";
 import {FiEdit} from "react-icons/all";
 import {MFace} from "cad/model/mface";
@@ -16,7 +16,7 @@ import {SafeLength} from "cad/craft/ui/SafeLength";
 
 function EntityList(props) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   let {name, label, active, setActive, value, placeholder, readOnly, entityRenderer} = props;
 
@@ -61,7 +61,7 @@ function EntityList(props) {
 }
 
 function EditButton({model}) {
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   if (!(model instanceof MFace)) {
     return null;

@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {useStream} from "ui/effects";
 import {MSketchObject} from "cad/model/msketchObject";
 import {VisibleSwitch} from "cad/craft/ui/SceneInlineObjectExplorer";
@@ -24,7 +24,7 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
   controlVisibility?: boolean
 }) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   if (controlVisibility === undefined) {
     controlVisibility = !model.parent

@@ -3,15 +3,15 @@ import React from 'react';
 import 'ui/styles/global/index.less';
 import AppTabs from "./AppTabs";
 import {StreamsContext} from "ui/streamsContext";
-import {AppContext} from "./AppContext";
+import {ReactApplicationContext} from "../ReactApplicationContext";
 import {Debugger} from "debugger/Debugger";
 
 export default function WebApplication(props) {
   const {appContext} = props;
   return <StreamsContext.Provider value={appContext}>
     <Debugger />
-    <AppContext.Provider value={appContext}>
+    <ReactApplicationContext.Provider value={appContext}>
       <AppTabs/>
-    </AppContext.Provider>
+    </ReactApplicationContext.Provider>
   </StreamsContext.Provider>
 }

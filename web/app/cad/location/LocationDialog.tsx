@@ -1,6 +1,6 @@
 import React, {useCallback, useContext, useEffect} from 'react';
 import {useStreamWithUpdater} from "ui/effects";
-import {AppContext} from "../dom/components/AppContext";
+import {ReactApplicationContext} from "../dom/ReactApplicationContext";
 import {GenericWizard} from "ui/components/GenericWizard";
 import Field from "ui/components/controls/Field";
 import {Group} from "../craft/wizard/components/form/Form";
@@ -8,13 +8,11 @@ import Label from "ui/components/controls/Label";
 import Folder from "ui/components/Folder";
 import {never} from "lstream";
 import NumberControl from "ui/components/controls/NumberControl";
-
-import {LocationControl} from "./LocationControl";
 import {Matrix3x4} from "math/matrix";
 
 export function LocationDialog() {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const [req, setReq] = useStreamWithUpdater(ctx => ctx.locationService.editLocationRequest$);
 

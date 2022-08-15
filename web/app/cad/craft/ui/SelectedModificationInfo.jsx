@@ -9,9 +9,8 @@ import mapContext from 'ui/mapContext';
 import {EMPTY_OBJECT} from 'gems/objects';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
 import Button from 'ui/components/controls/Button';
-import {removeAndDropDependants, removeFeature} from '../craftHistoryUtils';
-import RenderObject from 'ui/components/RenderObject';
-import {AppContext} from "cad/dom/components/AppContext";
+import {removeFeature} from '../craftHistoryUtils';
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {resolveAppearance} from "cad/craft/operationHelper";
 
 function SelectedModificationInfo({ history, index,
@@ -19,7 +18,7 @@ function SelectedModificationInfo({ history, index,
                                     locationHint: lh,
                                     drop, edit,
                                     close}) {
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   useEffect(() => {
 

@@ -5,7 +5,7 @@ import Field from "ui/components/controls/Field";
 import Label from "ui/components/controls/Label";
 import {ColorControl} from "ui/components/controls/ColorControl";
 import CheckboxControl from "ui/components/controls/CheckboxControl";
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {ModelAttributes} from "cad/attributes/attributesService";
 import {GenericWizard} from "ui/components/GenericWizard";
 import {View} from "cad/scene/views/view";
@@ -44,7 +44,7 @@ export interface DisplayOptionsViewProps {
 
 export function DisplayOptionsView(props: DisplayOptionsViewProps) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
   const streamsAndPatchers: [ModelAttributes, any][] = [];
 
   useEffect(()=>{

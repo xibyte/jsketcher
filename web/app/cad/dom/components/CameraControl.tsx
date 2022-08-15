@@ -1,11 +1,11 @@
 import React, {useContext, useEffect} from 'react';
 import ls from './CameraControl.less';
 import cameraControlRenderer from 'scene/cameraControlRenderer';
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 
 export default function CameraControl() {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const domRef = React.useRef(null);
 
