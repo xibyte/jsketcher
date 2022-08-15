@@ -1,5 +1,6 @@
 import {clamp} from "math/commons";
 import {XYZ} from "math/xyz";
+import {areEqual, TOLERANCE_SQ} from "math/equality";
 
 export default class Vector implements XYZ {
 
@@ -182,7 +183,14 @@ export default class Vector implements XYZ {
     const sinA = clamp(this.cross(vecB).length(), -1, 1);
     return Math.atan2(sinA, cosA);
   }
-  
+
+  asUnitVector(): UnitVector {
+    if (areEqual(this.lengthSquared(), 1, TOLERANCE_SQ)) {
+      console.error("not unit vector is treated as unit");
+    }
+    return this as any as UnitVector;
+  }
+
   static fromData(arr: [number, number, number]): Vector {
     return new Vector().set3(arr);
   }

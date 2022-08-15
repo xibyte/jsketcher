@@ -114,7 +114,7 @@ function readSurface(s, faceInverted, effectivelyInverted, face) {
     surface._mirrored = !s.direct;
   } else if (s.TYPE === 'PLANE') {
     
-    let normal = new Vector().set3(s.normal);
+    let normal = new Vector().set3(s.normal).asUnitVector();
     let plane = new Plane(normal, normal.dot(new Vector().set3(s.origin)));
     if (effectivelyInverted) {
       plane = plane.invert();

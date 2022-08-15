@@ -1,5 +1,5 @@
 import {Point} from '../point';
-import Vector from 'math/vector';
+import Vector, {UnitVector} from 'math/vector';
 import {Plane} from '../impl/plane';
 import BrepCurve from '../curves/brepCurve';
 import {intersectNurbs} from './nurbsSurface';
@@ -55,13 +55,12 @@ export class BrepSurface {
     return normal;
   }
 
-  normalUV(u: number, v: number): Vector {
+  normalUV(u: number, v: number): UnitVector {
     let normal = pt(this.impl.normal(u, v));
     if (this.inverted) {
       normal._negate();
     }
-    normal._normalize();
-    return normal;
+    return normal._normalize();
   }
 
   normalInMiddle(): Vector {
