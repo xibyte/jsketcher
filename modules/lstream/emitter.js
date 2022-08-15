@@ -22,7 +22,7 @@ export class Emitter extends StreamBase {
         this.observers.splice(i, 1);
       }
     }
-  };
+  }
 
   next(value) {
     if (this.state === EMITTING) {

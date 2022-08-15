@@ -128,7 +128,7 @@ export class InPlaceSketcher {
     this.viewer.setTransformation(xx.x * width, xx.y * height, yy.x * width, yy.y* height,
       (sketchOriginDelta.x) * width + width,
       (sketchOriginDelta.y) * height + height, sceneSetup.oCamera.zoom);
-  };
+  }
   
   save() {
     this.ctx.services.storage.set(this.sketchStorageKey, this.viewer.io.serializeSketch({

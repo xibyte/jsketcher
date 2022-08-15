@@ -137,15 +137,15 @@ export class DelegatingPanTool extends BasePanTool {
   
   startDragging(e) {
     this.delegate.dispatchEvent(cloneEvent(e));
-  };
+  }
 
   mouseup(e) {
     this.delegate.dispatchEvent(cloneEvent(e));
-  };
+  }
 
   mousewheel(e) {
     this.delegate.dispatchEvent(cloneEvent(e));
-  };
+  }
 }
 
 function cloneEvent(event) {

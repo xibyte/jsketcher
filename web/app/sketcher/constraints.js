@@ -18,7 +18,7 @@ export class Coincident extends AbstractConstraint {
 
   static deserialize(refs, data) {
     return new Coincident(refs(data[0]), refs(data[1]));
-  };
+  }
 
   constructor(a, b) {
     super();
@@ -26,7 +26,7 @@ export class Coincident extends AbstractConstraint {
     this.b = b;
     a.linked.push(b);
     b.linked.push(a);
-  };
+  }
 
 
   getSolveData() {
@@ -566,12 +566,12 @@ export class SignedPerpendicular extends AbstractConstraint {
 
   static deserialize(refs, data) {
     return new SignedPerpendicular(refs(data[0]), refs(data[1]), refs(data[2]), refs(data[3]));
-  };
+  }
 
   constructor(p1, p2, p3, p4) {
     super();
     this.points = [p1, p2, p3, p4];
-  };
+  }
 
 
   getSolveData() {
