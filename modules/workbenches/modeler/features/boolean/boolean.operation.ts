@@ -97,5 +97,4 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       }
     }
   ],
-  path: __dirname
 }
