@@ -1,6 +1,5 @@
 import {stream} from 'lstream';
 import {CoreContext} from "cad/context";
-import {ContextSpec} from "bundler/bundleSystem";
 
 const updates$ = stream();
 

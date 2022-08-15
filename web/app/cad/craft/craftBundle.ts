@@ -1,14 +1,12 @@
-import {addModification, finishHistoryEditing, stepOverriding} from './craftHistoryUtils';
+import {addModification, stepOverriding} from './craftHistoryUtils';
 import {Emitter, state, StateStream, stream} from 'lstream';
 import materializeParams from './schema/materializeParams';
 import CadError from '../../utils/errors';
 import {MObject, MObjectIdGenerator} from '../model/mobject';
 import {intercept} from "lstream/intercept";
 import {CoreContext} from "cad/context";
-import {MFace} from "../model/mface";
 import {OperationParams} from "cad/craft/schema/schema";
 import {clearImplicitModels} from "cad/craft/e0/occCommandInterface";
-import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: CoreContext) {
 

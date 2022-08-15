@@ -7,7 +7,6 @@ import {MEdge} from "../model/medge";
 import {MSketchObject} from "../model/msketchObject";
 import {MDatum, MDatumAxis} from "../model/mdatum";
 import {MLoop} from "../model/mloop";
-import {ContextSpec} from "bundler/bundleSystem";
 
 
 export function activate(ctx: ApplicationContext) {
