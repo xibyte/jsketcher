@@ -52,22 +52,22 @@ export function surfaceAndPolygonsToGeom(surface, polygons) {
 
   const isPlane = surface.simpleSurface && surface.simpleSurface.isPlane;
   let planeNormal = isPlane ? surface.normalInMiddle().data() : null;
+  function pushVertex(vtx) {
+    vertices.push(vtx.x, vtx.y, vtx.z);
+    if (!isPlane) {
+      const normal = surface.normal(vtx);
+      normals.push(normal.x, normal.y, normal.z);
+    } else {
+      normals.push(...planeNormal);
+    }
+
+  }
   for (let p = 0; p < polygons.length; ++p) {
     const off = vertices.length / 3;
     const poly = polygons[p];
     const vLength = poly.length;
     if (vLength < 3) continue;
 
-    function pushVertex(vtx) {
-      vertices.push(vtx.x, vtx.y, vtx.z);
-      if (!isPlane) {
-        const normal = surface.normal(vtx);
-        normals.push(normal.x, normal.y, normal.z);
-      } else {
-        normals.push(...planeNormal);
-      }
-
-    }
     const firstVertex = poly[0];
 
     pushVertex(firstVertex)
