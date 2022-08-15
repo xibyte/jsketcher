@@ -66,7 +66,7 @@ function sceneSynchronizer(ctx) {
         } else if (model instanceof MDatum) {
           modelView = new DatumView(ctx, model, wizard.open,
             datum => pickControl.pick(datum),
-            e => action.run(params, ctx, 'menu.datum'),
+            e => action.run('menu.datum', e),
             wizard.isInProgress);
         } else {
           console.warn('unsupported model ' + model);
