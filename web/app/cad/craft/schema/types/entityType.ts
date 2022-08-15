@@ -13,7 +13,9 @@ export interface EntityTypeSchema extends BaseSchemaField {
   defaultValue?: {
     usePreselection: boolean;
     preselectionIndex: number;
-  }
+  },
+
+  markColor?: string | number
 }
 
 export type EntityCapture = (entity: MObject) => boolean;
