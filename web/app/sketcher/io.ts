@@ -1,12 +1,12 @@
-import { Generator } from './id-generator'
-import { Viewer } from './viewer2d'
-import { Arc } from './shapes/arc'
-import { EndPoint } from './shapes/point'
-import { Segment } from './shapes/segment'
-import { Circle } from './shapes/circle'
-import { Ellipse } from './shapes/ellipse'
-import { EllipticalArc } from './shapes/elliptical-arc'
-import { BezierCurve } from './shapes/bezier-curve'
+import {Generator} from './id-generator'
+import {Viewer} from './viewer2d'
+import {Arc} from './shapes/arc'
+import {EndPoint} from './shapes/point'
+import {Segment} from './shapes/segment'
+import {Circle} from './shapes/circle'
+import {Ellipse} from './shapes/ellipse'
+import {EllipticalArc} from './shapes/elliptical-arc'
+import {BezierCurve} from './shapes/bezier-curve'
 import {
   AngleBetweenDimension,
   DiameterDimension,
@@ -17,14 +17,14 @@ import {
 } from './shapes/dim'
 import Vector from 'math/vector';
 import exportTextData from 'gems/exportTextData';
-import { AlgNumConstraint, ConstraintSerialization } from "./constr/ANConstraints";
-import { SketchGenerator } from "./generators/sketchGenerator";
-import { BoundaryGeneratorSchema } from "./generators/boundaryGenerator";
-import { SketchTypes } from "./shapes/sketch-types";
-import { SketchObject } from "./shapes/sketch-object";
-import { Label } from "sketcher/shapes/label";
+import {AlgNumConstraint, ConstraintSerialization} from "./constr/ANConstraints";
+import {SketchGenerator} from "./generators/sketchGenerator";
+import {BoundaryGeneratorSchema} from "./generators/boundaryGenerator";
+import {SketchTypes} from "./shapes/sketch-types";
+import {SketchObject} from "./shapes/sketch-object";
+import {Label} from "sketcher/shapes/label";
 import Drawing from 'dxf-writer';
-
+import {DEG_RAD} from "math/commons";
 
 
 export interface SketchFormat_V3 {
@@ -338,7 +338,7 @@ export class IO {
   };
 
   getWorkspaceToExport() {
-    return [this.viewer.layers];
+    return [this.viewer.layers, [this.viewer.labelLayer]];
   };
 
   getLayersToExport() {
@@ -398,41 +398,16 @@ export class IO {
      let d: any = new Drawing();
 
      let T = SketchTypes;
-     let out = new TextBuilder();
-     let bbox = new BBox();
+
      let toExport = this.getLayersToExport();
-     bbox.checkLayers(toExport);
-
-     out.numberln(bbox.bbox[0]);
-     out.numberln(bbox.bbox[1]);
-     out.numberln(bbox.bbox[2]);
-     out.numberln(bbox.bbox[3]);
-     const maxWidth = bbox.bbox[0] - bbox.bbox[2];
-     const maxheight = bbox.bbox[1] - bbox.bbox[3];
-     const textHeight = Math.abs((maxWidth > maxheight) ? maxWidth / 50 : maxheight / 50) * .5;
-
-     for (let i = 0; i < toExport.length; i++) {
-       const newLayerName = i + 0;
-       toExport[i].layerId = newLayerName + '_green';
-       d.addLayer(toExport[i].layerId, Drawing.ACI.GREEN, 'CONTINUOUS');
-     }
 
      d.setUnits('Millimeters');
 
      for (let l = 0; l < toExport.length; l++) {
-
-       let layer = toExport[l];
-       d.setActiveLayer(layer.layerId);
-
-       for (let i = 0; i < layer.viewer.labelLayer.objects.length; ++i) {
-         let obj = layer.viewer.labelLayer.objects[i];
-
-         let labelX = obj.offsetX + obj.assignedObject.labelCenter.x;
-         let labelY = obj.offsetY + obj.assignedObject.labelCenter.y;
-
-         d.drawText(labelX, labelY, Math.abs(textHeight), 0, obj.text, 'center', 'middle');
-       }
-
+       const layer = toExport[l];
+       const dxfLayerId = l + '_green';
+       d.addLayer(dxfLayerId, Drawing.ACI.GREEN, 'CONTINUOUS');
+       d.setActiveLayer(dxfLayerId);
 
        for (let i = 0; i < layer.objects.length; ++i) {
          let obj = layer.objects[i];
@@ -447,8 +422,8 @@ export class IO {
              obj.c.x,
              obj.c.y,
              obj.r.get(),
-             (obj.getStartAngle() * (180 / Math.PI)),
-             (obj.getEndAngle() * (180 / Math.PI)));
+             (obj.getStartAngle() / DEG_RAD),
+             (obj.getEndAngle() / DEG_RAD));
          } else if (obj._class === T.CIRCLE) {
            d.drawCircle(obj.c.x, obj.c.y, obj.r.get());
          } else if (obj._class === T.ELLIPSE) {
@@ -462,6 +437,18 @@ export class IO {
              [obj.p2.x, obj.p2.y],
              [obj.p3.x, obj.p3.y],
            ], 3)
+         } else if (obj._class === T.LABEL) {
+           const m = obj.assignedObject.labelCenter;
+           if (!m) {
+             return;
+           }
+           const height = obj.textHelper.textMetrics.height;
+           const h = obj.textHelper.textMetrics.width/2;
+           const lx = m.x - h + obj.offsetX;
+           const ly = m.y + obj.marginOffset  + obj.offsetY;
+
+           d.drawText(lx, ly, height, 0, obj.text);
+
          } else if (obj._class === T.DIM || obj._class === T.HDIM || obj._class === T.VDIM) {
          }
        }
