@@ -18,7 +18,6 @@ import {DefeatureFaceWizard} from "./craft/defeature/DefeatureFaceWizard";
 import {defeatureByEdge, defeatureByVertex} from "brep/operations/directMod/defeaturing";
 import {BooleanType} from "engine/api";
 import {MBrepShell} from './model/mshell';
-import {occ2brep} from './occ/occ2models';
 
 
 // @ts-ignore
