@@ -7,7 +7,6 @@ import {Viewer} from "sketcher/viewer2d";
 import {IO} from "sketcher/io";
 import {Generator} from "sketcher/id-generator";
 import {MFace} from "cad/model/mface";
-import {ContextSpec} from "bundler/bundleSystem";
 
 export function defineStreams(ctx) {
   ctx.streams.sketcher = {

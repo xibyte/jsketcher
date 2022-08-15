@@ -1,6 +1,5 @@
 import {CoreContext} from "cad/context";
 import {ReadSketch} from "./sketchReader";
-import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: CoreContext) {
 

@@ -1,5 +1,4 @@
 import {state, StateStream} from 'lstream';
-import {ContextSpec} from "bundler/bundleSystem";
 
 export function defineStreams({streams}) {
 
