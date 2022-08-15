@@ -11,6 +11,7 @@ import {combine} from 'lstream';
 import {EMPTY_OBJECT} from 'gems/objects';
 import {aboveElement} from 'ui/positionUtils';
 import {resolveAppearance} from "cad/craft/operationHelper";
+import {menuAboveElementHint} from "cad/dom/menu/menuUtils";
 
 @connect(streams => combine(streams.craft.modifications, streams.operation.registry, streams.wizard.insertOperation)
   .map(([modifications, operationRegistry, insertOperationReq]) => ({
@@ -131,7 +132,7 @@ const HistoryItem = decoratorChain(
     s.index === index ? EMPTY_OBJECT : {index, locationHint: aboveElement(el)})
 }))
 )
-  (
+( // eslint-disable-line no-unexpected-multiline
 function HistoryItem({index, pointer, modification, getOperation, toggle, selected, disabled, inProgress}) {
   const operation = getOperation(modification.type);
   const appearance = resolveAppearance(operation, modification.params);
@@ -143,7 +144,7 @@ function HistoryItem({index, pointer, modification, getOperation, toggle, select
 });
 
 const AddButton = mapContext((ctx) => ({
-  showCraftMenu: e => ctx.actionService.action.run(params, ctx, 'menu.craft')
+  showCraftMenu: e => ctx.actionService.run('menu.craft', menuAboveElementHint(e.currentTarget))
 }))(
   function AddButton({showCraftMenu}) {
     return <div className={ls.add} onClick={showCraftMenu}>
