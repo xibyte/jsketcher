@@ -10,6 +10,8 @@ import curveTess from 'geom/impl/curve/curve-tess';
 import {LOG_FLAGS} from './logFlags';
 import {state} from "lstream";
 
+export const BundleName = "@Debug";
+
 const BREP_DEBUG_WINDOW_VISIBLE$ = state(false);
 
 export function activate(ctx) {

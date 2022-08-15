@@ -1,5 +1,7 @@
 import {state} from 'lstream';
 
+export const BundleName = "@Menu";
+
 export function activate(ctx) {
 
   const {services, streams} = ctx;

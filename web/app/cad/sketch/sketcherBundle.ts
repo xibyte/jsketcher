@@ -206,6 +206,4 @@ export interface SketcherBundleContext {
   sketcherService: SketcherService;
 }
 
-export const outputContextSpec: ContextSpec<SketcherBundleContext> = {
-  sketcherService: 'required'
-}
+export const BundleName = "@Sketcher";

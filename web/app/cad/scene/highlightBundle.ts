@@ -1,7 +1,6 @@
 import {Bundle} from "bundler/bundleSystem";
 import {combine, merge, Stream, stream} from "lstream";
 import Viewer from "cad/scene/viewer";
-import {ScanStream} from "lstream/scan";
 
 export class HighlightService {
 
@@ -43,30 +42,23 @@ export class HighlightService {
 
 }
 
-interface HighlightPluginInputContext {
+interface HighlightBundleInputContext {
   viewer: Viewer;
 }
 
-export interface HighlightPluginContext {
+export interface HighlightBundleContext {
   highlightService: HighlightService;
 }
 
-type HighlightPluginWorkingContext = HighlightPluginInputContext&HighlightPluginContext;
+type HighlightBundleWorkingContext = HighlightBundleInputContext&HighlightBundleContext;
 
-export const HighlightBundle: Bundle<HighlightPluginInputContext, HighlightPluginContext, HighlightPluginWorkingContext> = {
+export const HighlightBundle: Bundle<HighlightBundleWorkingContext> = {
 
-  inputContextSpec: {
-    viewer: 'required',
-  },
-
-  outputContextSpec: {
-    highlightService: 'required',
-  },
-
-  activate(ctx: HighlightPluginWorkingContext) {
+  activate(ctx: HighlightBundleWorkingContext) {
     ctx.highlightService = new HighlightService(ctx.viewer);
   },
 
+  BundleName: "@Highlight",
 }
 
 

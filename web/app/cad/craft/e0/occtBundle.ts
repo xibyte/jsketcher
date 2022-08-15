@@ -1,7 +1,6 @@
 import {GenericWASMEngine_V1} from "engine/impl/wasm/GenericWASMEngine_V1";
 import {CraftEngine} from "./craftEngine";
 import {createOCCService, OCCService} from "cad/craft/e0/occService";
-import {ContextSpec} from "bundler/bundleSystem";
 
 export interface OCCBundleContext {
 
@@ -55,10 +54,7 @@ function loadWasm(ctx) {
   document.head.appendChild(mainScript);
 }
 
-export const outputContextSpec: ContextSpec<OCCBundleContext> = {
-  craftEngine: 'required',
-  occService: 'required'
-}
+export const BundleName = "@OCCT";
 
 
 

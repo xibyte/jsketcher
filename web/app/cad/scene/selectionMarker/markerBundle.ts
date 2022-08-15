@@ -2,6 +2,8 @@ import {OrderedMap} from 'gems/linkedMap';
 import {eventStream, Stream} from 'lstream';
 import {MObject} from "cad/model/mobject";
 
+export const BundleName = "@Marker";
+
 export interface MarkerService {
   clear();
 
@@ -24,7 +26,7 @@ export interface MarkerService {
   $markedEntities: Stream<MObject>
 }
 
-export interface MarkerPluginContext {
+export interface MarkerBundleContext {
   markerService: MarkerService;
 }
 

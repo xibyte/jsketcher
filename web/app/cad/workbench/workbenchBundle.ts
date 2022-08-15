@@ -3,25 +3,12 @@ import {WorkbenchService} from "cad/workbench/workbenchService";
 import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";
 import {Bundle} from "bundler/bundleSystem";
 
-
 export interface WorkbenchBundleContext {
 
   workbenchService: WorkbenchService;
 }
 
-export const WorkbenchBundle: Bundle<ApplicationContext, WorkbenchBundleContext> = {
-
-  deactivate(ctx: ApplicationContext & WorkbenchBundleContext) {
-  },
-
-  inputContextSpec: {
-
-  },
-
-  outputContextSpec: {
-    workbenchService: 'required'
-  },
-
+export const WorkbenchBundle: Bundle<ApplicationContext> = {
 
   activate(ctx: ApplicationContext) {
 
@@ -40,6 +27,8 @@ export const WorkbenchBundle: Bundle<ApplicationContext, WorkbenchBundleContext>
         }
       }
     ]);
-  }
+  },
+
+  BundleName: "@Workbench",
 
 }

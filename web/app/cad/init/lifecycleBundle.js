@@ -37,3 +37,5 @@ export function activate(ctx) {
     }
   }
 }
+
+export const BundleName = "@Lifecycle";

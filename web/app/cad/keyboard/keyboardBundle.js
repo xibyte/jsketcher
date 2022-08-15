@@ -1,7 +1,9 @@
 import Mousetrap from 'mousetrap';
 import DefaultKeymap from './keymaps/default';
-import {isMenuAction} from '../dom/menu/menuPlugin';
+import {isMenuAction} from '../dom/menu/menuBundle';
 import {state} from 'lstream';
+
+export const BundleName = "@Keyboard";
 
 export function activate(ctx) {
 

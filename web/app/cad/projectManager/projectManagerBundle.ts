@@ -5,7 +5,6 @@ import {SketchFormat_V3} from "sketcher/io";
 import {ApplicationContext} from "cad/context";
 import {OperationRequest} from "../craft/craftBundle";
 import {AssemblyConstraintDefinition} from "cad/assembly/assemblyConstraint";
-import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: ApplicationContext) {
   
@@ -253,6 +252,4 @@ export interface ProjectManagerBundleContext {
   projectManager: IProjectManager;
 }
 
-export const outputContextSpec: ContextSpec<ProjectManagerBundleContext> = {
-  projectManager: 'required'
-}
+export const BundleName = "@ProjectManager";

@@ -1,109 +1,95 @@
-type BagOfPlugins = Set<Bundle<any, any>>;
 
 export class BundleSystem {
 
-  plugins: BagOfPlugins = new Set();
-  waitingQueue: BagOfPlugins = new Set();
   globalContext: any;
+  activatedBundles = new Set<string>();
+  waitingQueue = new Set<Bundle<any>>();
+  perfectLoad = true;
 
-  constructor(globalContext: any) {
+  constructor(globalContext) {
     this.globalContext = globalContext;
   }
 
-  load(plugin: Bundle<any, any>) {
-    this.waitingQueue.add(plugin);
+  activate(bundle: Bundle<any>) {
+
+    if (!bundle.BundleName) {
+      console.error("BundleName is not provided for the bundle");
+      bundle.BundleName = "@Unknown_" + (UNKNOWNS_COUNTER++);
+    }
+
+    if (this.activatedBundles.has(bundle.BundleName)) {
+      throw `Bundle ${bundle.BundleName} has already activated. Possible name collision`;
+    }
+
+    if (!this.readinessCheck(bundle)) {
+      this.perfectLoad = false;
+      this.waitingQueue.add(bundle);
+      return;
+    }
+
+    this.doActivate(bundle);
+
     this.processWaitingQueue();
   }
 
+  private doActivate(bundle) {
+    bundle.activate(this.globalContext);
+    this.activatedBundles.add(bundle.BundleName);
+  }
+
   processWaitingQueue() {
-    let needPass = true;
-    while (needPass) {
-      needPass = false;
-      this.waitingQueue.forEach(plugin => {
-        const ready = readiness(plugin, this.globalContext);
-        if (ready) {
-          try  {
-            plugin.activate(this.globalContext);
-            checkActivation(plugin, this.globalContext);
-            needPass = true;
-            this.plugins.add(plugin);
-          } catch (error) {
-            console.error(error);
-          } finally {
-            this.waitingQueue.delete(plugin)
-          }
-        }
-      })
-    }
-  }
-
-  unload(plugin: Bundle<any, any>) {
-    this.waitingQueue.delete(plugin);
-    this.plugins.delete(plugin);
-    try {
-      if (plugin.deactivate) {
-        plugin.deactivate(this.globalContext);
+    for (let bundle of this.waitingQueue) {
+      if (this.readinessCheck(bundle)) {
+        this.waitingQueue.delete(bundle);
+        this.doActivate(bundle);
       }
-    } catch (error) {
-      console.error(error);
+    }
+  }
+
+  readinessCheck(bundle) {
+
+    if (!bundle.activationDependencies) {
+      return true;
     }
 
-    let needPass = true;
-    while (needPass) {
-      needPass = false;
-      this.plugins.forEach(plugin => {
-        if (!plugin.deactivate) {
-          return;
-        }
-        const isReady = readiness(plugin, this.globalContext);
-        if (!isReady) {
-          try {
-            plugin.deactivate(this.globalContext);
-            this.plugins.delete(plugin);
-            this.waitingQueue.add(plugin);
-            needPass = true;
-          } catch (error) {
-            console.error(error);
-          }
-        }
-      })
+    for (let dep of bundle.activationDependencies) {
+      if (!this.activatedBundles.has(dep)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  checkDanglingBundles() {
+    this.waitingQueue.forEach(dangling => {
+      const unsatisfied = new Set(dangling.activationDependencies);
+      this.activatedBundles.forEach(activated => unsatisfied.delete(activated));
+      console.error('Bundle', dangling.BundleName, 'was never activated because of unsatisfied dependencies: ', Array.from(unsatisfied).join(', '));
+    })
+  }
+
+  checkPerfectLoad() {
+    if (!this.perfectLoad) {
+      console.warn("Bundle activation wasn't perfect. Consider reordering bundles to following:");
+      console.info(Array.from(this.activatedBundles));
     }
   }
 }
 
-function readiness(plugin: Bundle<any, any>, globalContext: any) {
-  const specKeys = Object.keys(plugin.inputContextSpec);
-  for (let key of specKeys) {
-    if (!globalContext[key] && plugin.inputContextSpec[key] === 'required') {
-      return false;
-    }
-  }
-  return true;
-}
-
-function checkActivation(plugin: Bundle<any, any>, globalContext: any) {
-  const specKeys = Object.keys(plugin.outputContextSpec);
-  for (let key of specKeys) {
-    if (!globalContext[key] && plugin.outputContextSpec[key] === 'required') {
-      console.error("declared service was never activated: " + key);
-    }
-  }
-}
-
-export type Spec = 'required' | 'optional';
-
+export type Spec = 'required';
 export type ContextSpec<T> = {
   [Property in keyof T]: Spec;
 };
 
-export interface Bundle<InputContext, OutputContext, WorkingContext = InputContext&OutputContext> {
+export interface Bundle<WorkingContext> {
 
-  inputContextSpec: ContextSpec<InputContext>;
+  activationDependencies?: string[];
 
-  outputContextSpec: ContextSpec<OutputContext>;
+  runtimeDependencies?: string[];
 
-  activate(ctx: InputContext&OutputContext);
+  activate(ctx: WorkingContext);
 
-  deactivate?(ctx: InputContext&OutputContext);
-
+  BundleName: string,
 }
+
+let UNKNOWNS_COUNTER = 0;

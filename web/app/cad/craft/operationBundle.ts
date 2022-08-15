@@ -10,11 +10,9 @@ import {Types} from "cad/craft/schema/types";
 import {EntityTypeSchema} from "cad/craft/schema/types/entityType";
 import {FlattenPath, ParamsPath} from "cad/craft/wizard/wizardTypes";
 import {IconDeclaration} from "cad/icons/IconDeclaration";
-import {resolveIcon} from "cad/craft/ui/iconResolver";
 import {loadDeclarativeForm} from "cad/mdf/declarativeFormLoader";
 import {operationIconToActionIcon} from "cad/craft/operationHelper";
 import {GenerateWorkbenchOperationDocumentationLink} from "doc/documentationHelper";
-import {ContextSpec} from "bundler/bundleSystem";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -239,8 +237,6 @@ export interface OperationBundleContext {
   operationService: OperationService;
 }
 
-export const outputContextSpec: ContextSpec<OperationBundleContext> = {
-  operationService: 'required'
-}
+export const BundleName = "@Operation";
 
 

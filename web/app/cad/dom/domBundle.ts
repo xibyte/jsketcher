@@ -1,6 +1,7 @@
 import {contributeComponent} from './components/ContributedComponents';
 import {Bundle} from "bundler/bundleSystem";
 import {AppTabsService} from "cad/dom/appTabsBundle";
+import {LegacyStructureBundle, LegacyStructureBundleContext} from "cad/context/LegacyStructureBundle";
 
 export interface DomService {
 
@@ -12,29 +13,25 @@ export interface DomService {
 
 }
 
-interface DomPluginInputContext {
+interface DomBundleActivationContext extends LegacyStructureBundleContext {
   appTabsService: AppTabsService;
-  services: any;
 }
 
-export interface DomPluginContext {
+export interface DomBundleContext {
   domService: DomService;
 }
 
-type DomPluginWorkingContext = DomPluginInputContext&DomPluginContext;
+type DomBundleWorkingContext = DomBundleActivationContext&DomBundleContext;
 
-export const DomBundle: Bundle<DomPluginInputContext, DomPluginContext, DomPluginWorkingContext> = {
 
-  inputContextSpec: {
-    appTabsService: 'required',
-    services: 'required',
-  },
+export const DomBundle: Bundle<DomBundleWorkingContext> = {
 
-  outputContextSpec: {
-    domService: 'required',
-  },
+  activationDependencies: [
+    '@AppTabs',
+    LegacyStructureBundle.BundleName
+  ],
 
-  activate(ctx: DomPluginInputContext&DomPluginContext) {
+  activate(ctx: DomBundleWorkingContext) {
     ctx.domService = {
       viewerContainer: document.getElementById('viewer-container'),
       contributeComponent,
@@ -55,6 +52,8 @@ export const DomBundle: Bundle<DomPluginInputContext, DomPluginContext, DomPlugi
       }
     });
   },
+
+  BundleName: "@Dom",
 
 }
 
