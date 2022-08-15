@@ -82,10 +82,15 @@ export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
 
     } else if (FileName.endsWith("IGES") || FileName.endsWith("IGS")) {
 
-      //IGES import
-      FS.writeFile("newIgesObject", rawContent);
-      oci.igesread("newIgesObject", "newIgesObject");
-      returnObject.created.push(occ.io.getShell("newIgesObject"));
+      throw new CadError({
+        kind: CadError.KIND.INVALID_INPUT,
+        code: 'IGES is not supported yet'
+      });
+
+      // //IGES import
+      // FS.writeFile("newIgesObject", rawContent);
+      // oci.readbrep()igesread("newIgesObject", "newIgesObject");
+      // returnObject.created.push(occ.io.getShell("newIgesObject"));
 
     } else {
       throw new CadError({
