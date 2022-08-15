@@ -52,12 +52,6 @@ export default [
       'EditFace']
   },
   {
-    id: 'SolidContext',
-    label: 'solid-context',
-    info: 'solid context actions',
-    actions: ['LookAtSolid']
-  },
-  {
     id: 'datum',
     label: 'datum',
     cssIcons: ['magic'],

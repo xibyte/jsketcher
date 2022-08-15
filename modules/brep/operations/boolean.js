@@ -182,7 +182,7 @@ function detectLoops(surface, graph) {
   BREP_DEBUG.startBooleanLoopDetection(graph);
   const loops = [];
   const seen = new Set();
-  while (true) {
+  for (;;) {
     let edge = graph.graphEdges.pop();
     if (!edge) {
       break;

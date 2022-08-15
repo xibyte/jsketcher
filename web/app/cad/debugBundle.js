@@ -300,7 +300,7 @@ const DebugMenuConfig = {
   cssIcons: ['bug'],
   info: 'set of debug actions',
   actions: ['DebugPrintAllSolids', 'DebugPrintFace', 'DebugFaceId', 'DebugFaceSketch', 
-    'DebugSetSketcherIntegerPrecision', 'DebugOpenLastTest', 'DebugGenerateTest', 'DebugOpenBrepDebugger']
+    'DebugSetSketcherIntegerPrecision', 'DebugOpenLastTest', 'DebugOpenBrepDebugger']
 };
 
 const DebugActions = [
@@ -409,50 +409,6 @@ const DebugActions = [
     },
     invoke: () => {
       window.location.href = '/index.html?$$$__test__$$$';
-    }
-  },
-  {
-    id: 'DebugGenerateTest',
-    appearance: {
-      cssIcons: ['gear'],
-      label: 'generate unit test',
-      info: 'it will generate a unit code code containing sketches and operation sequence and output it to terminal',
-    },
-    invoke: ({bus, services: {project, storage, sketchStorageService, cadRegistry}}) => {
-      
-      const pt = ({x, y}) => [x, y];  
-      
-      let sketches = sketchStorageService.getAllSketches().reduce((sketches, {id, url}) => {
-        let sketch = sketchStorageService.readSketch(id).getAllObjects().reduce((byType, obj) => {
-
-          let type = obj.constructor.name;
-          
-          let arr = byType[type];
-          if (!arr) {
-            arr = [];
-            byType[type] = arr;
-          }
-          
-          if (type === 'Segment' ){
-            arr.push([pt(obj.a), pt(obj.b)]);
-          } else {
-            throw 'unsupported ' + type;
-          }
-          return byType;
-        }, {});
-        sketches[id] = sketch;
-        return sketches;
-      }, {});
-
-      let testMetadata = {
-        name: project.id,
-        state: {
-          sketches,
-          operations: bus.state[CRAFT_TOKENS.MODIFICATIONS].history
-        },
-        expected: toLoops(cadRegistry.getAllShells()[0].shell, readSketchFloat)
-      };
-      console.log(JSON.stringify(testMetadata));
     }
   },
   {

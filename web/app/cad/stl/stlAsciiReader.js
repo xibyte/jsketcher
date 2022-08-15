@@ -32,7 +32,7 @@ export function parse(buf) {
         }
         break;
       case 'vertex':
-        const position = parts.slice(1).map(Number);
+        var position = parts.slice(1).map(Number);
         face.vertices.push(position);
         break;
       case 'endfacet':
@@ -42,6 +42,7 @@ export function parse(buf) {
           console.warn('bad stl face at line ' + lineNumber);
         }
         face = new StlFace(null);
+        break;
       default:
       // skip
     }

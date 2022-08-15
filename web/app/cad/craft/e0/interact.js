@@ -20,12 +20,10 @@ export function CallCommand(command, args) {
 
   // c_strings.forEach(_free);
 
-  // free c_arr
   _free(c_arr);
 
 //   _free(commandPtr);
 
-  // return
   return rc;
 }
 

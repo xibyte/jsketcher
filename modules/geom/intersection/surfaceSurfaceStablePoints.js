@@ -2,7 +2,7 @@ import {newtonIterationsOnInterval} from '../curves/newtonIterations';
 
 export function surfaceSurfaceStablePoints(surfaceA, surfaceB) {
   
-  function impl(surfaceA, surfaceB) {
+  function impl(curve) {
 
     //solving minimization problem of squared distance 
 
@@ -16,8 +16,8 @@ export function surfaceSurfaceStablePoints(surfaceA, surfaceB) {
 
       let [f, d1, d2] = curve.eval(u, 2);
 
-      let r1Comp = i => 2 * f[i] * d1[i] - 2 * pt[i] * d1[i];
-      let r2Comp = i => 2 * f[i] * d2[i] + 2 * d1[i] * d1[i] - 2 * pt[i] * d2[i];
+      let r1Comp = i => 2 * f[i] * d1[i] - 2 * f[i] * d1[i];
+      let r2Comp = i => 2 * f[i] * d2[i] + 2 * d1[i] * d1[i] - 2 * f[i] * d2[i];
 
       let r1 = r1Comp(X) + r1Comp(Y) + r1Comp(Z);
       let r2 = r2Comp(X) + r2Comp(Y) + r2Comp(Z);
@@ -25,7 +25,9 @@ export function surfaceSurfaceStablePoints(surfaceA, surfaceB) {
       return [r1, r2];
     }
 
-    return newtonIterationsOnInterval(squareDistanceFn, intMin, intMax, tol);
+    let intMin = 0;
+    let intMax = 0;
+    return newtonIterationsOnInterval(squareDistanceFn, intMin, intMax, 1e-5);
     
   }
   

@@ -23,7 +23,7 @@ export function activate(context: ApplicationContext) {
   
   let showAnonymousActionHint = enableAnonymousActionHint(context);
   
-  function run(id: string, data: any): void {
+  function run(id: string, data?: any): void {
     let state = streams.action.state[id].value;
     let runner = runners[id];
     if (!state||!runner) {
