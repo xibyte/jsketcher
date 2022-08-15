@@ -23,6 +23,5 @@ export default connect(streams =>
     streams.action.hint, 
     streams.ui.keymap)
     .map(([hintInfo, keymap]) => Object.assign({hotKey: hintInfo && keymap[hintInfo.actionId]}, hintInfo)
-))
-(ActionInfo); 
+))(ActionInfo);
 

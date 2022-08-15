@@ -16,7 +16,7 @@ import {SketcherAppContext} from "./SketcherAppContext";
 import {TextField} from "cad/craft/wizard/components/form/Fields";
 
 
-export default function SketcherOperationWizard({}) {
+export default function SketcherOperationWizard() {
 
   const [state, setState] = useState(null);
 

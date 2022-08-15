@@ -26,4 +26,4 @@ export default class Socket extends React.Component {
     }
     return <Component {...props} />;
   }
-};
+}

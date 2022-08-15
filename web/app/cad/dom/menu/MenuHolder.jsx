@@ -60,8 +60,7 @@ const ConnectedActionMenu = connect((streams, props) =>
   combine(
     streams.ui.menu.states[props.menuId],
     streams.ui.keymap)
-    .map(([s, keymap]) => ({...s, keymap})))
-(ActionMenu);
+    .map(([s, keymap]) => ({...s, keymap})))(ActionMenu);
 
 export function ConnectedMenuItem(props) {
 
