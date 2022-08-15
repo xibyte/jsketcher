@@ -11,7 +11,7 @@ import {CurveBSplineData} from "engine/data/curveData";
 export interface NurbsSerializaionFormat {
   degree: number,
   cp: Vec3[],
- 	knots: number[],
+  knots: number[],
   weights: number[]
 }
 
@@ -56,7 +56,7 @@ export default class NurbsCurve implements ParametricCurve {
   }
 
   eval(u: number, num: number): Vec3[] {
-    return verb.eval.Eval.rationalCurveDerivatives( this.data, u, num );
+    return verb.eval.Eval.rationalCurveDerivatives(this.data, u, num);
   }
 
   knots(): number[] {
@@ -91,12 +91,12 @@ export default class NurbsCurve implements ParametricCurve {
     split.forEach(n => ext.normalizeCurveParametrization(n));
     return split.map(c => new NurbsCurve(new verb.geom.NurbsCurve(c)));
   }
-  
+
   serialize(): NurbsSerializaionFormat {
     return {
       degree: this.verb.degree(),
       knots: this.verb.knots(),
-      cp: this.verb.controlPoints(), 
+      cp: this.verb.controlPoints(),
       weights: this.verb.weights()
     }
   }

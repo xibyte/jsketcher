@@ -9,9 +9,9 @@ import {ExpectedOrderProductionAnalyzer} from "cad/craft/production/productionAn
 
 
 interface PrimitiveBoxParams {
-  x: Number,
-  y: Number,
-  z: Number,
+  x: number,
+  y: number,
+  z: number,
   locations: MDatum,
   boolean: BooleanDefinition,
 }

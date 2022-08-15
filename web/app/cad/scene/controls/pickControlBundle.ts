@@ -16,7 +16,7 @@ export type PickHandler = (model, event, rayCastData?) => boolean;
 
 export interface PickControlService {
 
-  takePickControl(pickHandler: PickHandler, syncMarkers: Function): PickControlToken;
+  takePickControl(pickHandler: PickHandler, syncMarkers: SyncMarkersCallback): PickControlToken;
 
   releasePickControl(controlToken: PickControlToken);
 
@@ -51,10 +51,12 @@ const DEFAULT_SELECTION_MODE = Object.freeze({
   datum: true  
 });
 
+type SyncMarkersCallback = () => void;
+
 interface PickContext {
   pickHandler: PickHandler;
   token: PickControlToken;
-  syncMarkers: Function
+  syncMarkers: SyncMarkersCallback
 }
 
 export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;

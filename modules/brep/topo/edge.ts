@@ -122,8 +122,8 @@ export class HalfEdge extends TopoObject {
     return tangent;
   }
 
-  tessellate(): Tessellation1D<Vector> {
-    let res = this.edge.curve.tessellate.apply(this.edge.curve, arguments);
+  tessellate(tessTol?: number, scale?: number): Tessellation1D<Vector> {
+    let res = this.edge.curve.tessellate(tessTol, scale);
     if (this.inverted) {
       res = res.slice().reverse();
     }

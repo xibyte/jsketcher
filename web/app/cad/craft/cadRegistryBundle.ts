@@ -102,7 +102,7 @@ export interface CadRegistry {
   findDatumAxis(id: string): MDatumAxis;
   findLoop(id: string): MLoop;
   find(id: string): MObject;
-  modelIndex: Map<String, MObject>;
+  modelIndex: Map<string, MObject>;
   models: MObject[];
   shells: MObject[];
   reindexFace(face: MFace);

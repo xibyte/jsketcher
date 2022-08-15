@@ -16,7 +16,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
   label: 'Sweep',
   icon: 'img/cad/sweep',
   info: 'Sweeps 2D profile loop',
-  paramsInfo: ({ }) => `(?)`,
+  paramsInfo: () => `(?)`,
   run: (params: SweepParams, ctx: ApplicationContext) => {
 
     let occ = ctx.occService;

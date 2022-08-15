@@ -12,12 +12,12 @@ export function clearImplicitModels() {
 
 export const OCI: OCCCommandInterface = new Proxy({}, {
   get: function (target, prop: string, receiver) {
-    return prop in target ? target[prop] : function() {
+    return prop in target ? target[prop] : function(...argums) {
       if (typeof prop !== 'string') {
         return undefined;
       }
       prop = prop.replace(/^_/, '');
-      const args = Array.from(arguments).map(arg => {
+      const args = argums.map(arg => {
         const type = typeof arg;
         if (type === 'object') {
           if (arg instanceof MObject) {
