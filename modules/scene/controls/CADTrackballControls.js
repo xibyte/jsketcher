@@ -8,6 +8,8 @@
  * @author Luca Antiga 	/ http://lantiga.github.io
  */
 
+ import DPR from 'dpr';
+
 export function CADTrackballControls( object, domElement ) {
 
   var _this = this;
@@ -304,6 +306,7 @@ export function CADTrackballControls( object, domElement ) {
   };
 
   this.evaluate = function () {
+    this.panSpeed = DPR/this.object.zoom;
 
     _eye.subVectors( _this.object.position, _this.target );
 
