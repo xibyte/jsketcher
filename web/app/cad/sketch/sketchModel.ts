@@ -11,7 +11,7 @@ import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
 
 const RESOLUTION = 20;
 
-class SketchPrimitive {
+export class SketchPrimitive {
 
   id: string;
   inverted: boolean;
@@ -195,6 +195,11 @@ export class Arc extends SketchPrimitive {
 }
 
 export class BezierCurve extends SketchPrimitive {
+  a: Vector;
+  b: Vector;
+  cp1: Vector;
+  cp2: Vector;
+
   constructor(id, a, b, cp1, cp2) {
     super(id);
     this.a = a;
@@ -209,6 +214,14 @@ export class BezierCurve extends SketchPrimitive {
 }
 
 export class EllipticalArc extends SketchPrimitive {
+
+  c: Vector;
+  rx: number;
+  ry: number;
+  rot: number
+  a: Vector;
+  b: Vector;
+
   constructor(id, c, rx, ry, rot, a, b) {
     super(id);
     this.c = c;
@@ -266,6 +279,12 @@ export class Circle extends SketchPrimitive {
 }
 
 export class Ellipse extends SketchPrimitive {
+
+  c: Vector;
+  rx: number;
+  ry: number;
+  rot: number
+
   constructor(id, c, rx, ry, rot) {
     super(id);
     this.c = c;
@@ -342,21 +361,6 @@ export class Contour {
   reverse() {
     this.segments.reverse();
     this.segments.forEach(s => s.invert());
-  }
-}
-
-class CompositeCurve {
-
-  constructor() {
-    this.curves = [];
-    this.points = [];
-    this.groups = [];
-  }
-
-  add(curve, point, group) {
-    this.curves.push(curve);
-    this.points.push(point);
-    this.groups.push(group);
   }
 }
 
