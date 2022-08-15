@@ -18,7 +18,7 @@ import {ScaleOperation} from "./features/scaleBody/scaleBody.operation";
 import {MirrorBodyOperation} from "./features/mirrorBody/mirrorBody.operation";
 import {PatternLinearOperation} from "./features/patternLinear/patternLinear.operation";
 import {PatternRadialOperation} from "./features/patternRadial/patternRadial.operation";
-import {ImportModelOpperation} from "./features/importModel/importModel.operation";
+import {ImportModelOperation} from "./features/importModel/importModel.operation";
 import {DeleteBodyOperation} from "./features/deleteBody/deleteBody.operation";
 //imports of action type commands
 import {GiCubes} from "react-icons/gi";
@@ -45,7 +45,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     MirrorBodyOperation,
     PatternLinearOperation,
     PatternRadialOperation,
-    ImportModelOpperation,
+    ImportModelOperation,
     DeleteBodyOperation,
   ],
   actions: [

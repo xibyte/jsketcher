@@ -11,7 +11,7 @@ interface ImportModelParams {
   file: LocalFileAdapter;
 }
 
-export const ImportModelOpperation: OperationDescriptor<ImportModelParams> = {
+export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
   id: 'IMPORT_MODEL',
   label: 'Import',
   icon: 'img/cad/import',
