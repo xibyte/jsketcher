@@ -1,5 +1,7 @@
 import {STORAGE_GLOBAL_PREFIX} from '../projectBundle';
 
+export const BundleName = "@Extensions";
+
 const EXTENSIONS_STORAGE_PREFIX = `${STORAGE_GLOBAL_PREFIX}.Extensions`;
 
 let extensions = [];

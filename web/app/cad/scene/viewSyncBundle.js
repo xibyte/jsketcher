@@ -7,16 +7,17 @@ import {MShell} from '../model/mshell';
 import {MDatum} from '../model/mdatum';
 import DatumView from './views/datumView';
 import {View} from './views/view';
+import {HighlightBundle} from "cad/scene/highlightBundle";
+import {AttributesBundle} from "cad/attributes/attributesBundle";
 
-export const ViewSyncPlugin = {
+export const ViewSyncBundle = {
 
-  inputContextSpec: {
-    highlightService: 'required',
-    attributesService: 'required',
-  },
+  BundleName: "@ViewSync",
 
-  outputContextSpec: {
-  },
+  activationDependencies: [
+    HighlightBundle.BundleName,
+    AttributesBundle.BundleName
+  ],
 
   activate(ctx) {
     let {streams} = ctx;

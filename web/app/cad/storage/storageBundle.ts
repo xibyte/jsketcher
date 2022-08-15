@@ -88,6 +88,4 @@ export interface StorageBundleContext {
   storageService: StorageService;
 }
 
-export const outputContextSpec: ContextSpec<StorageBundleContext> = {
-  storageService: 'required'
-}
+export const BundleName = "@Storage";

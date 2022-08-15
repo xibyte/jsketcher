@@ -29,7 +29,7 @@ export interface PickControlService {
   simulatePickFromRay()
 }
 
-export interface PickControlPluginContext {
+export interface PickControlBundleContext {
   pickControlService: PickControlService;
 }
 
@@ -340,3 +340,5 @@ function printPickInfo(model, rayCastData?) {
     printRaycastDebugInfo('selection', rayCastData);
   }
 }
+
+export const BundleName = "@PickControl";

@@ -1,6 +1,8 @@
 import exposure from './exposure';
 import {MBrepShell} from '../model/mshell';
 
+export const BundleName = "@Exposure";
+
 /*
  * exposure stands for the Test Program Interface
  */

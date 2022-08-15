@@ -2,31 +2,22 @@ import {Bundle} from "bundler/bundleSystem";
 import {AttributesService} from "cad/attributes/attributesService";
 import {contributeComponent} from "cad/dom/components/ContributedComponents";
 import {DisplayOptionsDialogManager} from "cad/attributes/ui/DisplayOptionsDialog";
-import {ActionSystemBundleContext} from "cad/actions/actionSystemBundle";
 import {RequiresAnyModelSelection} from "cad/actions/actionHelpers";
 import {IoColorPalette} from "react-icons/io5";
 import {FaTable} from "react-icons/fa";
 import {ApplicationContext} from "cad/context";
 
-type AttributesPluginInputContext = ActionSystemBundleContext;
-
-export interface AttributesPluginContext {
+export interface AttributesBundleContext {
   attributesService: AttributesService;
 }
 
-type AttributesPluginWorkingContext = AttributesPluginInputContext&AttributesPluginContext;
+export const AttributesBundle: Bundle<ApplicationContext> = {
 
-export const AttributesBundle: Bundle<AttributesPluginInputContext, AttributesPluginContext, AttributesPluginWorkingContext> = {
+  activationDependencies: [
+    '@ActionSystem'
+  ],
 
-  inputContextSpec: {
-    actionService: 'required',
-  },
-
-  outputContextSpec: {
-    attributesService: 'required',
-  },
-
-  activate(ctx: AttributesPluginWorkingContext) {
+  activate(ctx: ApplicationContext) {
     ctx.attributesService = new AttributesService();
     contributeComponent(DisplayOptionsDialogManager);
 
@@ -55,6 +46,7 @@ export const AttributesBundle: Bundle<AttributesPluginInputContext, AttributesPl
     ])
   },
 
+  BundleName: "@Attributes",
 }
 
 

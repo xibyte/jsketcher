@@ -3,7 +3,7 @@ import {
   ALL_EXCLUDING_SOLID_KINDS,
   PICK_KIND,
   traversePickResults
-} from '../../../web/app/cad/scene/controls/pickControlPlugin';
+} from 'cad/scene/controls/pickControlBundle';
 import {Vector3} from "three";
 
 function waitFor(checkFn) {

@@ -1,34 +1,29 @@
-import {FACE, SHELL} from 'cad/model/entities';
+import {FACE} from 'cad/model/entities';
 import {OperationRequest} from "cad/craft/craftBundle";
 import {ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
 import {OperationParamPrimitive} from "cad/craft/schema/schema";
 import {EntityReference} from "cad/craft/operationBundle";
 import {Bundle} from "bundler/bundleSystem";
-import {MarkerPluginContext} from "cad/scene/selectionMarker/markerPlugin";
-import {WizardPluginContext} from "cad/craft/wizard/wizardBundle";
-import {PickControlPluginContext} from "cad/scene/controls/pickControlPlugin";
+import {MarkerBundleContext} from "cad/scene/selectionMarker/markerBundle";
+import {WizardBundleContext} from "cad/craft/wizard/wizardBundle";
+import {PickControlBundleContext} from "cad/scene/controls/pickControlBundle";
 import _ from "lodash";
 import {MObject} from "cad/model/mobject";
 
-export type WizardSelectionPluginInputContext = MarkerPluginContext & WizardPluginContext & PickControlPluginContext;
+type WizardSelectionBundleActivationContext = MarkerBundleContext & WizardBundleContext & PickControlBundleContext;
 
-export interface WizardSelectionPluginContext {
+export interface WizardSelectionBundleContext {
 }
 
-export type WizardSelectionWorkingContext = WizardSelectionPluginInputContext & WizardSelectionPluginContext;
+export type WizardSelectionBundleWorkingContext = WizardSelectionBundleActivationContext & WizardSelectionBundleContext;
 
-export const WizardSelectionPlugin: Bundle<WizardSelectionPluginInputContext, WizardSelectionPluginContext, WizardSelectionWorkingContext> = {
+export const WizardSelectionBundle: Bundle<WizardSelectionBundleWorkingContext> = {
 
-  inputContextSpec: {
-    markerService: 'required',
-    pickControlService: 'required',
-    wizardService: 'required'
-  },
+  activationDependencies: [
+    '@Marker', '@Wizard', '@PickControl'
+  ],
 
-  outputContextSpec: {
-  },
-
-  activate(ctx: WizardSelectionWorkingContext) {
+  activate(ctx: WizardSelectionBundleWorkingContext) {
     const wizardService = ctx.wizardService;
     let wizardPickHandler = null;
 
@@ -69,6 +64,8 @@ export const WizardSelectionPlugin: Bundle<WizardSelectionPluginInputContext, Wi
       }
     });
   },
+
+  BundleName: "@WizardSelection",
 
 }
 

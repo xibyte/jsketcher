@@ -297,6 +297,4 @@ export interface CraftBundleContext {
   craftService: CraftService;
 }
 
-export const outputContextSpec: ContextSpec<CraftBundleContext> = {
-  craftService: 'required'
-}
+export const BundleName = "@Craft";

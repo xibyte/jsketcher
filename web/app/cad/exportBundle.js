@@ -1,6 +1,8 @@
 import {STLExporter} from './stl/stlExporter';
 import exportTextData from 'gems/exportTextData';
 
+export const BundleName = "@Export";
+
 export function activate(ctx) {
 
   function toStlAsciiString() {

@@ -10,6 +10,8 @@ import {SelectionView} from "../dom/components/SelectionView";
 import {GrSelect} from "react-icons/gr";
 import {Explorer} from "cad/dom/components/Explorer";
 
+export const BundleName = "@UIConfig";
+
 export function activate(ctx) {
   const {services, streams} = ctx;
   streams.ui.controlBars.left.value = ['menu.file', 'menu.craft', 'menu.boolean', 'menu.primitives', 'menu.views', 'menu.viewModes', 'Donate', 'GitHub'];

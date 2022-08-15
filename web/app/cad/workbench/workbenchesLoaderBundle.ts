@@ -8,29 +8,29 @@ import {Bundle} from "bundler/bundleSystem";
 import {WorkbenchService} from "cad/workbench/workbenchService";
 import {OperationService} from "cad/craft/operationBundle";
 
-export interface WorkbenchesLoaderInputContext {
+interface WorkbenchesLoaderActivationContext {
   workbenchService: WorkbenchService,
   operationService: OperationService
 }
 
-export const WorkbenchesLoaderPlugin: Bundle<WorkbenchesLoaderInputContext, {}> = {
+type WorkbenchesLoaderWorkingContext = WorkbenchesLoaderActivationContext;
 
-  inputContextSpec: {
-    workbenchService: 'required',
-    operationService: 'required'
-  },
+export const WorkbenchesLoaderBundle: Bundle<WorkbenchesLoaderWorkingContext> = {
 
-  outputContextSpec: {},
+  activationDependencies: [
+    '@Workbench', '@Operation'
+  ],
 
-  activate(ctx) {
+  activate(ctx: WorkbenchesLoaderWorkingContext) {
     registerCoreOperations(ctx);
     WorkbenchRegistry.forEach(wConfig => ctx.workbenchService.registerWorkbench(wConfig));
     ctx.workbenchService.switchToDefaultWorkbench();
-  }
+  },
 
+  BundleName: "@WorkbenchesLoader",
 }
 
-function registerCoreOperations(ctx: WorkbenchesLoaderInputContext) {
+function registerCoreOperations(ctx: WorkbenchesLoaderActivationContext) {
 
   ctx.operationService.registerOperations([
     planeOperation,

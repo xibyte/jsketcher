@@ -114,6 +114,4 @@ export interface CadRegistryBundleContext {
   cadRegistry: CadRegistry;
 }
 
-export const outputContextSpec: ContextSpec<CadRegistryBundleContext> = {
-  cadRegistry: 'required'
-}
+export const BundleName = "@CadRegistry";

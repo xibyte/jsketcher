@@ -183,15 +183,12 @@ export function activate(ctx: ApplicationContext) {
   ctx.wizardService = services.wizard = wizardService;
 }
 
-export interface WizardPluginContext {
+export interface WizardBundleContext {
   wizardService: WizardService
 }
-
-export const outputContextSpec: ContextSpec<WizardPluginContext> = {
-  wizardService: 'required'
-}
-
 
 function applyOverrides(params, initialOverrides) {
   Object.assign(params, initialOverrides);
 }
+
+export const BundleName = "@Wizard";

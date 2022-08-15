@@ -2,6 +2,8 @@ import {printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
 import {LOG_FLAGS} from "cad/logFlags";
 import {stream} from "lstream";
 
+export const BundleName = "@MouseEventSystem";
+
 const MouseStates = {
   IDLE: 'IDLE',
   DOWN: 'DOWN'

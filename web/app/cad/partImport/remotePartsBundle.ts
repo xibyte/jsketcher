@@ -1,22 +1,18 @@
-import {ApplicationContext, CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import {Repository} from "../repository/repository";
 import {IconType} from "react-icons";
 import {Emitter, stream} from "lstream";
 import {ShowDialogRequest} from "ui/showDialogRequest";
-import {CatalogPartChooser} from "./ui/CatalogPartChooser";
-import {ImportPartOperation} from "./importPartOperation/importPartOperation";
 import {MObject, MObjectIdGenerator} from "../model/mobject";
-import {WEB_CAD_ORG_PARTS_REPO, WEB_CAD_ORG_COMMONS_CATALOG} from "./remotePartsConfig";
 import {indexById} from "gems/iterables";
 import {ModelBundle} from "../projectManager/projectManagerBundle";
 import {PartRepository} from "./partRepository";
 import {initProjectService} from "../projectBundle";
-import {activate as activateCraftPlugin} from '../craft/craftBundle';
-import {activate as activateExpressionsPlugin} from '../expressions/expressionsBundle';
-import {activate as activateCadRegistryPlugin} from '../craft/cadRegistryBundle';
-import {activate as activateStoragePlugin} from '../storage/storageBundle';
-import {activate as activateSketchStoragePlugin} from '../sketch/sketchStorageBundle';
-import {ContextSpec} from "bundler/bundleSystem";
+import {activate as activateCraftBundle} from '../craft/craftBundle';
+import {activate as activateExpressionsBundle} from '../expressions/expressionsBundle';
+import {activate as activateCadRegistryBundle} from '../craft/cadRegistryBundle';
+import {activate as activateStorageBundle} from '../storage/storageBundle';
+import {activate as activateSketchStorageBundle} from '../sketch/sketchStorageBundle';
 
 export function activate(ctx: ApplicationContext) {
 
@@ -75,12 +71,12 @@ export function activate(ctx: ApplicationContext) {
     };
 
     initProjectService(evalContext, partRef, {});
-    activateStoragePlugin(evalContext);
-    activateSketchStoragePlugin(evalContext);
-    activateExpressionsPlugin(evalContext);
-    activateCraftPlugin(evalContext);
+    activateStorageBundle(evalContext);
+    activateSketchStorageBundle(evalContext);
+    activateExpressionsBundle(evalContext);
+    activateCraftBundle(evalContext);
     // @ts-ignore
-    activateCadRegistryPlugin(evalContext);
+    activateCadRegistryBundle(evalContext);
     // initProject(evalContext, partRef, {});
 
     evalContext.expressionService.load(projectModel.expressions);
@@ -185,7 +181,5 @@ export interface RemotePartsBundleContext {
   remotePartsService: RemotePartsService;
 }
 
-export const outputContextSpec: ContextSpec<RemotePartsBundleContext> = {
-  remotePartsService: 'required'
-}
+export const BundleName = "@RemoteParts";
 

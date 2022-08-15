@@ -76,7 +76,4 @@ export interface UIBundleContext {
   };
 }
 
-export const outputContextSpec: ContextSpec<UIBundleContext> = {
-  uiService: undefined
-}
-
+export const BundleName = "@UI";

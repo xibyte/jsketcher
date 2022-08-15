@@ -3,7 +3,7 @@ import ControlBar, {ControlBarButton} from './ControlBar';
 import connect from 'ui/connect';
 import Fa from 'ui/components/Fa';
 import {toIdAndOverrides} from '../../actions/actionRef';
-import {isMenuAction} from '../menu/menuPlugin';
+import {isMenuAction} from '../menu/menuBundle';
 import {menuAboveElementHint} from '../menu/menuUtils';
 import {useStream} from "ui/effects";
 import {ActionButtonBehavior} from "../../actions/ActionButtonBehavior";

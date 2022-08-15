@@ -1,8 +1,8 @@
 import {merge, state, StateStream, Stream} from 'lstream';
 import {indexArray} from 'gems/iterables';
 import {CoreContext} from "cad/context";
-import {ContextSpec} from "bundler/bundleSystem";
 
+export const BundleName = "@Expressions";
 
 export function activate(ctx: CoreContext) {
   let _evaluateExpression: (string) => any = () => {};
@@ -120,9 +120,3 @@ export interface ExpressionBundleContext {
 
   expressionService: ExpressionService;
 }
-
-export const outputContextSpec: ContextSpec<ExpressionBundleContext> = {
-  expressionService: 'required'
-}
-
-

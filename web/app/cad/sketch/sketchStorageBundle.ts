@@ -74,8 +74,5 @@ export interface SketchStorageBundleContext {
   sketchStorageService: SketchStorageService;
 }
 
-export const outputContextSpec: ContextSpec<SketchStorageBundleContext> = {
-  sketchStorageService: 'required'
-}
-
+export const BundleName = "@SketchStorage";
 

@@ -9,7 +9,6 @@ import {AssemblyView} from "./ui/AssemblyView";
 import {IoMdConstruct} from "react-icons/io";
 import {AssemblyConstraintDefinition} from "./assemblyConstraint";
 import {AssemblyConstraintsSchemas} from "./assemblySchemas";
-import {ContextSpec} from "bundler/bundleSystem";
 
 
 export function activate(ctx: ApplicationContext) {
@@ -105,6 +104,4 @@ export interface AssemblyBundleContext {
   assemblyService: AssemblyService;
 }
 
-export const outputContextSpec: ContextSpec<AssemblyBundleContext> = {
-  assemblyService: 'required'
-}
+export const BundleName = "@Assembly";
