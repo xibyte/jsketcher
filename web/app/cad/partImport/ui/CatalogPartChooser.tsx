@@ -1,7 +1,7 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext} from 'react';
 import {useStreamWithUpdater} from "ui/effects";
 import {PartCatalog} from "./PartCatalog";
-import {AppContext} from "../../dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {Dialog} from "ui/components/Dialog";
 import {useDataLoader} from "ui/useDataLoader";
 import {WhenDataReady} from "ui/components/WhenDataReady";
@@ -11,7 +11,7 @@ import theme from "ui/styles/theme";
 export function CatalogPartChooser() {
 
   const [req, setReq] = useStreamWithUpdater(ctx => ctx.remotePartsService.choosePartRequest$);
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
   const loader = useDataLoader('parts', () => ctx.remotePartsService.loadDefinedCatalogs());
 
   if (!req) {

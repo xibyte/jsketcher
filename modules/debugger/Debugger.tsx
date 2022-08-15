@@ -6,7 +6,7 @@ import {useStream} from "ui/effects";
 // @ts-ignore
 import bottleExample from "raw-loader!./bottleExample.txt";
 import {ApplicationContext} from "cad/context";
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 
 export const DebugMode$ = state(false);
 
@@ -14,7 +14,7 @@ export function Debugger() {
 
   const debugMode: boolean = useStream(DebugMode$);
   const [codeText, setCodeText] = useState<string>(bottleExample);
-  const context: ApplicationContext = useContext(AppContext);
+  const context: ApplicationContext = useContext(ReactApplicationContext);
 
   function evalCode() {
     eval(codeText);

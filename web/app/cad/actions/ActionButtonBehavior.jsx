@@ -1,9 +1,9 @@
 import React, {useContext} from 'react';
-import {AppContext} from "../dom/components/AppContext";
+import {ReactApplicationContext} from "../dom/ReactApplicationContext";
 
 export function ActionButtonBehavior({children, actionId}) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const request = {actionId, x: 0, y: 0};
 

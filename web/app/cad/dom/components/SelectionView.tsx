@@ -1,14 +1,13 @@
 import React, {useContext} from 'react';
 import {useStream, useStreamWithPatcher} from "ui/effects";
 import {SELECTABLE_ENTITIES} from "../../scene/entityContextBundle";
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import Field from "ui/components/controls/Field";
 import {InnerFolder} from "ui/components/Folder";
 import Label from "ui/components/controls/Label";
 import TextControl from "ui/components/controls/TextControl";
 import Stack from "ui/components/Stack";
 import {ColorControl} from "ui/components/controls/ColorControl";
-
 
 
 export function SelectionView() {
@@ -48,7 +47,7 @@ interface SelectedModelViewProps {
 
 function SelectedModelView(props: SelectedModelViewProps) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
   const model = ctx.cadRegistry.find(props.modelId);
   const [attrs, patchAttrs] = useStreamWithPatcher(ctx => ctx.attributesService.streams.get(props.modelId));
 

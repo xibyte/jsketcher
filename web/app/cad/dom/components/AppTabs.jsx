@@ -7,12 +7,12 @@ import ls from './AppTabs.less';
 import TabSwitcher, {Tab} from 'ui/components/TabSwticher';
 import Card from "ui/components/Card";
 import {useStreamWithUpdater} from "ui/effects";
-import {AppContext} from "./AppContext";
+import {ReactApplicationContext} from "../ReactApplicationContext";
 
 export default function AppTabs({}) {
 
   const [{tabs, activeTab}, updateTabs] = useStreamWithUpdater(ctx => ctx.appTabsService.tabs$);
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const switchTo = index => updateTabs(({tabs}) => ({tabs, activeTab: index}));
 
