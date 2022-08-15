@@ -185,7 +185,7 @@ export default class Vector implements XYZ {
   }
 
   asUnitVector(): UnitVector {
-    if (areEqual(this.lengthSquared(), 1, TOLERANCE_SQ)) {
+    if (!areEqual(this.lengthSquared(), 1, TOLERANCE_SQ)) {
       console.error("not unit vector is treated as unit");
     }
     return this as any as UnitVector;
