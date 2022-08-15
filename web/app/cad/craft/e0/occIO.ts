@@ -4,7 +4,7 @@ import {MObject} from "cad/model/mobject";
 import {Interrogate} from "cad/craft/e0/interact";
 import {readShellEntityFromJson} from "cad/scene/wrappers/entityIO";
 import {createOCCSketchLoader, OCCSketchLoader} from "cad/craft/e0/occSketchLoader";
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import {ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 import {readBrep} from "brep/io/brepIO";
 import {Shell} from "brep/topo/shell";
@@ -22,7 +22,7 @@ export interface OCCIO {
   sketchLoader: OCCSketchLoader
 }
 
-export function createOCCIO(ctx: CoreContext): OCCIO {
+export function createOCCIO(ctx: ApplicationContext): OCCIO {
 
   function getShell(shapeName: string, productionAnalyzer?: ProductionAnalyzer): MShell {
     const shapeJson = Interrogate(shapeName);

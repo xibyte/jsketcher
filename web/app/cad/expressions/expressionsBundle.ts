@@ -1,10 +1,10 @@
 import {merge, state, StateStream, Stream} from 'lstream';
 import {indexArray} from 'gems/iterables';
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 
 export const BundleName = "@Expressions";
 
-export function activate(ctx: CoreContext) {
+export function activate(ctx: ApplicationContext) {
   let _evaluateExpression: (string) => any = () => {};
 
   const script$ = state('');

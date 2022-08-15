@@ -2,17 +2,16 @@ import {OperationDescriptor} from "cad/craft/operationBundle";
 import {ActionDefinition} from "cad/actions/actionSystemBundle";
 import {state} from "lstream";
 import {Index} from "gems/indexType";
-import {ApplicationContext, CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import {ActionRef} from "cad/dom/uiBundle";
 import {IconDeclaration} from "cad/icons/IconDeclaration";
-import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";
 
 export class WorkbenchService {
 
   workbenches$ = state<Index<WorkbenchConfig>>({});
 
   currentWorkbench$ = state<WorkbenchConfig>(null);
-  ctx: CoreContext;
+  ctx: ApplicationContext;
 
   constructor(ctx: ApplicationContext) {
     this.ctx = ctx;

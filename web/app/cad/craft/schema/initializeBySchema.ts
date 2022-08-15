@@ -1,8 +1,8 @@
 import {Types} from "cad/craft/schema/types";
 import {isValueNotProvided, OperationSchema, SchemaField} from "cad/craft/schema/schema";
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 
-export default function initializeBySchema(schema: OperationSchema, context: CoreContext) {
+export default function initializeBySchema(schema: OperationSchema, context: ApplicationContext) {
   let fields = Object.keys(schema);
   let obj = {};
   for (let field of fields) {
@@ -43,7 +43,7 @@ export default function initializeBySchema(schema: OperationSchema, context: Cor
 }
 
 
-export function fillUpMissingFields(params: any, schema: OperationSchema, context: CoreContext) {
+export function fillUpMissingFields(params: any, schema: OperationSchema, context: ApplicationContext) {
   let fields = Object.keys(schema);
   for (let field of fields) {
     const md = schema[field] as SchemaField;

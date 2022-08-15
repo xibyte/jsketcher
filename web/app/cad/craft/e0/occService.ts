@@ -1,4 +1,4 @@
-import {CoreContext} from "cad/context";
+import {ApplicationContext} from "cad/context";
 import {OCCCommandInterface, OCI} from "cad/craft/e0/occCommandInterface";
 import {createOCCIO, OCCIO} from "cad/craft/e0/occIO";
 import {createOCCUtils, OCCUtils} from "cad/craft/e0/OCCUtils";
@@ -15,7 +15,7 @@ export interface OCCService {
   engineInterface: any
 }
 
-export function createOCCService(ctx: CoreContext): OCCService {
+export function createOCCService(ctx: ApplicationContext): OCCService {
 
   const oci = OCI;
 
