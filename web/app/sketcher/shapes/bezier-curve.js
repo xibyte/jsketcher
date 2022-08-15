@@ -77,10 +77,10 @@ export class BezierCurve extends SketchObject {
     ctx.stroke();
 
     //debug lut and hull
-    //this.drawLUTAndHull();
+    //this.drawLUTAndHull(ctx, scale);
   }
 
-  drawLUTAndHull() {
+  drawLUTAndHull(ctx, scale) {
     if (this.lut) {
       for (let p of this.lut) {
         draw_utils.DrawPoint(ctx, p.x, p.y, 3, scale);

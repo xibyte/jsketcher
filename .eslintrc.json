@@ -14,6 +14,13 @@
     "CSG" : true,
     "PNLTRI" : true,
     "__DEBUG__": true,
+    "__CAD_APP": true,
+    "Module": true,
+    "_free": true,
+    "_malloc": true,
+    "writeAsciiToMemory": true,
+    "__E0_ENGINE_EXCHANGE_VAL": true,
+    "verb": true,
     "$": true
   },
   "rules": {
@@ -22,5 +29,9 @@
     "max-len": "off",
     "no-console": "off",
     "no-extra-boolean-cast": "off"
-  }
+  },
+  "ignorePatterns": [
+    "/modules/math/optim/*.js",
+    "/modules/math/qr.js"
+  ]
 }

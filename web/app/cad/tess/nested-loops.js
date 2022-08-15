@@ -52,24 +52,3 @@ class NestedLoop {
 
 }
 
-function createFaces() {
-  const loop = nestedLoop.loop;
-  const newFace = new Face(surface);
-  Object.assign(newFace.data, originFace.data);
-  newFace.outerLoop = loop;
-  loop.face = newFace;
-  out.push(newFace);
-
-  for (let child of nestedLoop.nesting) {
-    if (child.level == level + 2) {
-      createFaces(child, surface, level + 2);
-    } else if (child.level == level + 1) {
-      if (!child.loop.isCCW(surface)) {
-        child.loop.face = newFace;
-        newFace.innerLoops.push(child.loop);
-      } else {
-        createFaces(child, surface, level + 1);
-      }
-    }
-  }
-}

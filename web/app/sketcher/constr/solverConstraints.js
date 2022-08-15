@@ -768,7 +768,6 @@ function EllipseTangent(params) {
 
     if (perpendicularLength < 0) {
       perpendicularLength *= -1;
-    } else {
     }
     
     return (radiusY - perpendicularLength); //*1000;

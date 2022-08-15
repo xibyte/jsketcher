@@ -7,7 +7,7 @@
     "pack": "node ./node_modules/webpack/bin/webpack.js --config webpack.config.js --progress --profile --colors",
     "start-with-docs": "concurrently --kill-others 'npm start' './node_modules/grunt/bin/grunt docs-start'",
     "build": "grunt",
-    "lint": "./node_modules/eslint/bin/eslint web/app web/modules",
+    "lint": "./node_modules/eslint/bin/eslint.js web/app modules",
     "check-code": "./node_modules/typescript/bin/tsc --noEmit",
     "before-mainline-merging": "npm run lint && npm run check-code",
     "cypress": "npx cypress open"

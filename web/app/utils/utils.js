@@ -17,13 +17,6 @@ export function askNumber(promptText, initValue, promptCallback, resolver) {
   return null;
 }
 
-export const extend = function(func, parent) {
-  for(var prop in parent.prototype) {
-    if(parent.prototype.hasOwnProperty(prop))
-      func.prototype[prop] = parent.prototype[prop];
-  }
-};
-
 export function constRef(value) {
   return function() {
     return value;

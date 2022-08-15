@@ -30,15 +30,6 @@ export function vec(v) {
   return new Vector(v.x, v.y, v.z);
 }
 
-export function createBox(w, h, d) {
-  var square = createSquare(w, h);
-  //var rot = Matrix3.rotateMatrix(3/4, AXIS.Z, ORIGIN);
-  var halfDepth = d / 2; 
-  square.forEach(function(v) { v.z -= halfDepth; } );
-  var normal = normalOfCCWSeq(square);
-  return extrude(square, normal, normal.multiply(d), 1);
-}
-
 export function checkPolygon(poly) {
   if (poly.length < 3) {
     throw new Error('Polygon should contain at least 3 point');

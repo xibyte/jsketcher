@@ -46,10 +46,6 @@ function distanceSqToSegment(a, b, pt) {
 
 export function solveClosestToCurveParamExactly(curve, pt, intMin, intMax, tol) {
 
-  function boundParam(u) {
-    return Math.min(max, Math.max(min, u));
-  }
-
   //solving minimization problem of squared distance 
   
   //f(u) = (fx(u) - x)^2 + (fy(u) - y)^2 + (fz(u) - z)^2 = fx^2 - 2*fx*x + x^2 ...  
