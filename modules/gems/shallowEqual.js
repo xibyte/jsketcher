@@ -20,4 +20,4 @@ export default function shallowEqual(objA, objB) {
   }
 
   return true;
-};
+}

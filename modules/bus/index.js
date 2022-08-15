@@ -17,7 +17,7 @@ export default class Bus {
     }
     listenerList.push(callback);
     return callback;
-  };
+  }
 
   unsubscribe(key, callback) {
     const listenerList = this.listeners[key];
@@ -27,7 +27,7 @@ export default class Bus {
         return;
       }
     }
-  };
+  }
 
   tokensToStates(tokens) {
     return tokens.map( token => this.state[token] );
@@ -100,7 +100,7 @@ export default class Bus {
     } finally {
       this.lock.delete(key);
     }
-  };
+  }
 
   enableState(forToken, initValue) {
     this.keepStateFor.add(forToken);

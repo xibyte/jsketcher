@@ -51,8 +51,8 @@ export class OpenFaceView extends SketchingView {
 
   createGeometry() {
 
-    const vertices = [];;
-    const normals = [];;
+    const vertices = [];
+    const normals = [];
     const normal = normalOfCCWSeq(this.bounds);
     this.bounds.forEach((v, i) => {
       vertices.push(v.x, v.y, v.z);

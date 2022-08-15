@@ -7,41 +7,41 @@ export class Tool {
     this.viewer = viewer;
   }
 
-  restart() {};
+  restart() {}
 
-  cleanup() {};
+  cleanup() {}
 
-  mousemove(e) {};
+  mousemove(e) {}
   
-  mousedown(e) {};
+  mousedown(e) {}
   
-  mouseup(e) {};
+  mouseup(e) {}
   
-  dblclick(e) {};
+  dblclick(e) {}
   
-  keydown(e) {};
+  keydown(e) {}
   
-  keypress(e) {};
+  keypress(e) {}
   
-  keyup(e) {};
+  keyup(e) {}
 
   sendMessage(text) {
     this.viewer.streams.tool.$message.next(text);
-  };
+  }
   
   sendHint(hint) {
     this.viewer.streams.tool.$hint.next(hint);
-  };
+  }
 
   sendSpecifyPointHint() {
     this.sendHint('specify point');
-  };
+  }
 
   pointPicked(x, y) {
     this.sendMessage('picked: ' + this.viewer.roundToPrecision(x) + " : " + this.viewer.roundToPrecision(y));
     this.viewer.referencePoint.x = x;
     this.viewer.referencePoint.y = y;
-  };
+  }
 
   snapIfNeed(p) {
     if (this.viewer.snapped != null) {

@@ -8,17 +8,17 @@ export class ReferencePointTool extends Tool {
   
   restart() {
     this.sendSpecifyPointHint();
-  };
+  }
   
   cleanup(e) {
     this.viewer.cleanSnap();
-  };
+  }
   
   mousemove(e) {
     var p = this.viewer.screenToModel(e);
     this.viewer.snap(p.x, p.y, []);
     this.viewer.refresh();
-  };
+  }
   
   mousedown(e) {
     const needSnap = this.viewer.snapped != null;
@@ -28,7 +28,7 @@ export class ReferencePointTool extends Tool {
     this.pointPicked(p.x, p.y);
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
-  };
+  }
   
   processCommand(command) {
     const referencePoint = this.viewer.referencePoint;
@@ -40,7 +40,7 @@ export class ReferencePointTool extends Tool {
     referencePoint.y += result.y;
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
-  };
+  }
 }
 
 

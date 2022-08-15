@@ -19,7 +19,7 @@ export class LoopPickTool extends Tool {
     this.marked.clear();
     this.pointToObject.clear();
     this.pickedLoop = null;
-  };
+  }
 
   cleanup() {
     this.clearMarked();
@@ -102,7 +102,7 @@ export class LoopPickTool extends Tool {
       }
     }
     this.viewer.refresh();
-  };
+  }
 
   pickLoop(p) {
     const pickResult = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []);
@@ -124,9 +124,9 @@ export class LoopPickTool extends Tool {
     } else {
       this.onMousedown(e);
     }
-  };
+  }
 
-  onMousedown(e) {};
+  onMousedown(e) {}
 
 }
 
