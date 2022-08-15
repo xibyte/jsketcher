@@ -7,7 +7,9 @@
     "pack": "node ./node_modules/webpack/bin/webpack.js --config webpack.config.js --progress --profile --colors",
     "start-with-docs": "concurrently --kill-others 'npm start' './node_modules/grunt/bin/grunt docs-start'",
     "build": "grunt",
-    "lint": "eslint web/app",
+    "lint": "./node_modules/eslint/bin/eslint web/app web/modules",
+    "check-code": "./node_modules/typescript/bin/tsc --noEmit",
+    "before-mainline-merging": "npm run lint && npm run check-code",
     "cypress": "npx cypress open"
   },
   "repository": {
@@ -71,6 +73,7 @@
     "webpack-dev-server": "^3.10.3"
   },
   "dependencies": {
+    "@types/three": "^0.143.0",
     "classnames": "2.2.5",
     "clipper-lib": "6.2.1",
     "dxf-writer": "^1.18.2",
