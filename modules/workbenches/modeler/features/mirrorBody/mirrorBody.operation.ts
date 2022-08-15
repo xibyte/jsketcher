@@ -16,6 +16,7 @@ export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
   label: 'Mirror Body',
   icon: 'img/cad/MirrorBody',
   info: 'Mirrors selected body along plane of symytry.',
+  path:__dirname,
   paramsInfo: () => `(?)`,
   run: (params: MirrorBodyParams, ctx: ApplicationContext) => {
     let occ = ctx.occService;

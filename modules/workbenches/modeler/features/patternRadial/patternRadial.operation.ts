@@ -24,6 +24,7 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
   label: 'Radial pattern',
   icon: 'img/cad/patternRadial',
   info: 'Creates a Radial pattern.',
+  path:__dirname,
   paramsInfo: p => `( ${p.patternMethod} ${r(p.angle * DEG_RAD)})`,
   run: (params: patternRadialParams, ctx: ApplicationContext) => {
 

@@ -16,6 +16,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
   label: 'Sweep',
   icon: 'img/cad/sweep',
   info: 'Sweeps 2D profile loop',
+  path:__dirname,
   paramsInfo: () => `(?)`,
   run: (params: SweepParams, ctx: ApplicationContext) => {
 

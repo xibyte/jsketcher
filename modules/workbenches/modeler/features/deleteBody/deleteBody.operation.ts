@@ -13,6 +13,7 @@ export const DeleteBodyOperation: OperationDescriptor<DeleteBodyParams> = {
   label: 'DeleteBody',
   icon: 'img/cad/deleteBody',
   info: 'Delete Bodies',
+  path:__dirname,
   paramsInfo: ({ tools }) => `(${r(tools)})`,
   run: (params: DeleteBodyParams, ctx: ApplicationContext) => {
     let occ = ctx.occService;

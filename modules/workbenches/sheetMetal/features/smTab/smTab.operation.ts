@@ -29,6 +29,7 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
   label: 'SM Tab',
   icon: 'img/cad/smTab',
   info: 'Create tab from sketch',
+  path:__dirname,
   paramsInfo: ({ thickness, bendRadius }) => `(${r(thickness)}  ${r(bendRadius)}  )`,
   run: (params: smTabParams, ctx: ApplicationContext) => {
 

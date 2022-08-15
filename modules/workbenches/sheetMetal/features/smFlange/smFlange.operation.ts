@@ -18,6 +18,7 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
   label: 'Flange',
   icon: 'img/cad/smFlange',
   info: 'Creates Sheet metal flange',
+  path:__dirname,
   paramsInfo: ({ angle }) => `(${r(angle)})`,
   run: (params: smFlangeParams, ctx: ApplicationContext) => {
     let occ = ctx.occService;

@@ -15,6 +15,7 @@ export const ScaleOperation: OperationDescriptor<scaleParams> = {
   label: 'Scale',
   icon: 'img/cad/scale',
   info: 'Scale Body',
+  path:__dirname,
   paramsInfo: ({ distance }) => `(${r(distance)})`,
   run: (params: scaleParams, ctx: ApplicationContext) => {
     let occ = ctx.occService;

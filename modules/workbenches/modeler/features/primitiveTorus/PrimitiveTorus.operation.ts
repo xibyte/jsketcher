@@ -20,6 +20,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
   label: 'Torus',
   icon: 'img/cad/torus',
   info: 'Primitive Torus',
+  path:__dirname,
   paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} , ${r(tubeRadius)} )`,
   form: [
     {

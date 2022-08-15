@@ -19,6 +19,7 @@ export const FilletOperation: OperationDescriptor<any> = {
   label: 'Fillet/Chapher',
   icon: 'img/cad/fillet',
   info: 'Fillet/Champher',
+  path:__dirname,
   paramsInfo: ({size, opperationType,}) => `(${r(size)} ${r(opperationType)}})`,
   run: (params: FilletParams, ctx: ApplicationContext) => {
 

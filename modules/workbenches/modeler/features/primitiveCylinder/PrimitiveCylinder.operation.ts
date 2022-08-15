@@ -20,6 +20,7 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
   label: 'Cylinder',
   icon: 'img/cad/cylinder',
   info: 'Primitive Cylinder',
+  path:__dirname,
   paramsInfo: ({height, diameter}) => `(${r(height)} , ${r(diameter)} )`,
   form: [
     {

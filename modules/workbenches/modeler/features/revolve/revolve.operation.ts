@@ -20,6 +20,7 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
   label: 'Revolve',
   icon: 'img/cad/revolve',
   info: 'Revolves 2D sketch',
+  path:__dirname,
   paramsInfo: ({angle}) => `(${r(angle)})`,
   run: (params: RevolveParams, ctx: ApplicationContext) => {
     let occ = ctx.occService;
