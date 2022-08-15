@@ -64,7 +64,7 @@ export class BundleSystem {
     this.waitingQueue.forEach(dangling => {
       const unsatisfied = new Set(dangling.activationDependencies);
       this.activatedBundles.forEach(activated => unsatisfied.delete(activated));
-      console.error('Bundle', dangling.BundleName, 'was never activated because of unsatisfied dependencies: ', Array.from(unsatisfied).join(', '));
+      console.error('Bundle', dangling.BundleName, 'was never activated because of unsatisfied dependencies:', Array.from(unsatisfied).join(', '));
     })
   }
 
