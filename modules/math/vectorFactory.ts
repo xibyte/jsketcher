@@ -5,7 +5,7 @@ export default class VectorFactory {
 
   vectors: Vector[];
 
-  constructor(tolerance) {
+  constructor() {
     this.vectors = [];
   }
 
@@ -24,7 +24,7 @@ export default class VectorFactory {
     return null;
   }
 
-  create(x, y, z, onExistent): Vector {
+  create(x, y, z, onExistent?): Vector {
     let vector = this.find(x, y, z);
     if (vector === null) {
       vector = new Vector(x, y, z);
