@@ -41,7 +41,7 @@ export function createPoint0(x, y, z) {
 //  var m = new THREE.MeshBasicMaterial({color: 0x0000ff, side: THREE.DoubleSide});
 //  return new THREE.Mesh(g, m);
 
-  var material = new THREE.ShaderMaterial({
+  let material = new THREE.ShaderMaterial({
 //    color: 0xff0000,
 //    linewidth: 5
     vertexShader :
@@ -71,15 +71,15 @@ export function createPoint0(x, y, z) {
 //  return line;
   
   material = new THREE.SpriteMaterial( { color: 0xffffff, fog: false } );
-  var sprite = new THREE.Sprite( material );
+  let sprite = new THREE.Sprite( material );
   sprite.position.set( x, y, z );
   return sprite;
 }
 
 export function createPoint1(x, y, z) {
-  var geometry = new THREE.SphereGeometry( 5, 16, 16 );
-  var material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
-  var sphere = new THREE.Mesh(geometry, material);
+  let geometry = new THREE.SphereGeometry( 5, 16, 16 );
+  let material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+  let sphere = new THREE.Mesh(geometry, material);
   sphere.position.x = x;
   sphere.position.y = y;
   sphere.position.z = z;
@@ -87,7 +87,7 @@ export function createPoint1(x, y, z) {
 }
 
 export function createLine(a, b, color) {
-  var material = new THREE.LineBasicMaterial({
+  let material = new THREE.LineBasicMaterial({
     color: color,
     linewidth: 1
   });
@@ -113,17 +113,17 @@ export function createSolidMaterial() {
 }
 
 export function intercept(obj, methodName, aspect) {
-  var originFunc = obj[methodName];
+  let originFunc = obj[methodName];
   obj[methodName] = function() {
-    var $this = this;
+    let $this = this;
     aspect(function() {originFunc.apply($this, arguments)}, arguments);
   }
 }
 
 export function fixCCW(path, normal) {
-  var _2DTransformation = new Matrix3x4().setBasis(someBasis(path, normal)).invert();
-  var path2D = [];
-  for (var i = 0; i < path.length; ++i) {
+  let _2DTransformation = new Matrix3x4().setBasis(someBasis(path, normal)).invert();
+  let path2D = [];
+  for (let i = 0; i < path.length; ++i) {
     path2D[i] = _2DTransformation.apply(path[i]);
   }
 
@@ -135,17 +135,17 @@ export function fixCCW(path, normal) {
 }
 
 export function someBasis2(normal) {
-  var x = normal.cross(normal.randomNonParallelVector());
-  var y = normal.cross(x).unit();
+  let x = normal.cross(normal.randomNonParallelVector());
+  let y = normal.cross(x).unit();
   return [x, y, normal];
 }
 
 export function someBasis(twoPointsOnPlane, normal) {
-  var a = twoPointsOnPlane[0];
-  var b = twoPointsOnPlane[1];
+  let a = twoPointsOnPlane[0];
+  let b = twoPointsOnPlane[1];
 
-  var x = b.minus(a).normalize();
-  var y = normal.cross(x).normalize();
+  let x = b.minus(a).normalize();
+  let y = normal.cross(x).normalize();
 
   return [x, y, normal];
 }
@@ -164,37 +164,37 @@ export function normalOfCCWSeq(ccwSequence) {
 }
 
 export function normalOfCCWSeqTHREE(ccwSequence) {
-  var a = ccwSequence[0];
-  var b = ccwSequence[1].clone();
-  var c = ccwSequence[2].clone();
+  let a = ccwSequence[0];
+  let b = ccwSequence[1].clone();
+  let c = ccwSequence[2].clone();
 
   return b.sub(a).cross(c.sub(a)).normalize();
 }
 
 export function calculateExtrudedLid(sourcePolygon, normal, direction, expansionFactor) {
-  var lid = [];
-  var length = sourcePolygon.length;
-  var work;
-  var si;
+  let lid = [];
+  let length = sourcePolygon.length;
+  let work;
+  let si;
   if (!!expansionFactor && expansionFactor != 1) {
     if (expansionFactor < 0.001) expansionFactor = 0.0001;
-    var source2d = [];
+    let source2d = [];
     work = [];
 
-    var _3dTr = new Matrix3x4().setBasis(someBasis2(new CSG.Vector3D(normal))); // use passed basis
-    var _2dTr = _3dTr.invert();
-    var sourceBBox = new BBox();
-    var workBBox = new BBox();
+    let _3dTr = new Matrix3x4().setBasis(someBasis2(new CSG.Vector3D(normal))); // use passed basis
+    let _2dTr = _3dTr.invert();
+    let sourceBBox = new BBox();
+    let workBBox = new BBox();
     for (si = 0; si < length; ++si) {
-      var sourcePoint = _2dTr.apply(sourcePolygon[si]);
+      let sourcePoint = _2dTr.apply(sourcePolygon[si]);
       source2d[si] = sourcePoint;
       work[si] = sourcePoint.multiply(expansionFactor);
       work[si].z = source2d[si].z = 0;
       sourceBBox.checkBounds(sourcePoint.x, sourcePoint.y);
       workBBox.checkBounds(work[si].x, work[si].y)
     }
-    var alignVector = workBBox.center().minus(sourceBBox.center());
-    var depth = normal.dot(sourcePolygon[0]);
+    let alignVector = workBBox.center().minus(sourceBBox.center());
+    let depth = normal.dot(sourcePolygon[0]);
     for (si = 0; si < length; ++si) {
       work[si] = work[si].minus(alignVector);
       work[si].z = depth;
@@ -212,14 +212,14 @@ export function calculateExtrudedLid(sourcePolygon, normal, direction, expansion
 }
 
 export function triangulate(path, normal) {
-  var _3dTransformation = new Matrix3x4().setBasis(someBasis2(normal));
-  var _2dTransformation = _3dTransformation.invert();
-  var i;
-  var shell = [];
+  let _3dTransformation = new Matrix3x4().setBasis(someBasis2(normal));
+  let _2dTransformation = _3dTransformation.invert();
+  let i;
+  let shell = [];
   for (i = 0; i < path.length; ++i) {
     shell[i] = _2dTransformation.apply(path[i].pos);
   }
-  var myTriangulator = new PNLTRI.Triangulator();
+  let myTriangulator = new PNLTRI.Triangulator();
   return  myTriangulator.triangulate_polygon( [ shell ] );
 //  return THREE.Shape.utils.triangulateShape( f2d.shell, f2d.holes );
 }
@@ -229,13 +229,13 @@ export function isCurveClass(className) {
 }
 
 
-var POLYGON_COUNTER = 0;
+let POLYGON_COUNTER = 0;
 export function Polygon(shell, holes, normal) {
   this.id = POLYGON_COUNTER ++;
   if (!holes) {
     holes = [];
   }
-  var h;
+  let h;
   checkPolygon(shell);
   for (h = 0; h < holes.length; ++h) {
     checkPolygon(holes[h]);
@@ -246,7 +246,7 @@ export function Polygon(shell, holes, normal) {
   } else {
     shell = fixCCW(shell, normal);
     if (holes.length > 0) {
-      var neg = normal.negate();
+      let neg = normal.negate();
       for (h = 0; h < holes.length; ++h) {
         holes[h] = fixCCW(holes[h], neg);
       }
@@ -260,7 +260,7 @@ export function Polygon(shell, holes, normal) {
 }
 
 Polygon.prototype.reverse = function(triangle) {
-  var first = triangle[0];
+  let first = triangle[0];
   triangle[0] = triangle[2];
   triangle[2] = first;
 };
@@ -270,13 +270,13 @@ Polygon.prototype.flip = function() {
 };
 
 Polygon.prototype.shift = function(target) {
-  var shell = [];
-  var i;
+  let shell = [];
+  let i;
   for (i = 0; i < this.shell.length; ++i) {
     shell[i] = this.shell[i].plus(target);
   }
-  var holes = [];
-  for (var h = 0; h < this.holes.length; ++h) {
+  let holes = [];
+  for (let h = 0; h < this.holes.length; ++h) {
     holes[h] = [];
     for (i = 0; i < this.holes[h].length; ++i) {
       holes[h][i] = this.holes[h][i].plus(target);
@@ -286,18 +286,18 @@ Polygon.prototype.shift = function(target) {
 };
 
 Polygon.prototype.get2DTransformation = function() {
-  var _3dTransformation = new Matrix3x4().setBasis(someBasis(this.shell, this.normal));
-  var _2dTransformation = _3dTransformation.invert();
+  let _3dTransformation = new Matrix3x4().setBasis(someBasis(this.shell, this.normal));
+  let _2dTransformation = _3dTransformation.invert();
   return _2dTransformation;
 };
 
 Polygon.prototype.to2D = function() {
 
-  var _2dTransformation = this.get2DTransformation();
+  let _2dTransformation = this.get2DTransformation();
 
-  var i, h;
-  var shell = [];
-  var holes = [];
+  let i, h;
+  let shell = [];
+  let holes = [];
   for (i = 0; i < this.shell.length; ++i) {
     shell[i] = _2dTransformation.apply(this.shell[i]);
   }
@@ -318,12 +318,12 @@ Polygon.prototype.collectPaths = function(paths) {
 Polygon.prototype.triangulate = function() {
 
   function triangulateShape( contour, holes ) {
-    var myTriangulator = new PNLTRI.Triangulator();
+    let myTriangulator = new PNLTRI.Triangulator();
     return  myTriangulator.triangulate_polygon( [ contour ].concat(holes) );
   }
 
-  var i, h;
-  var f2d = this.to2D();
+  let i, h;
+  let f2d = this.to2D();
   
   for (i = 0; i < f2d.shell.length; ++i) {
     f2d.shell[i] = f2d.shell[i].three();
@@ -338,7 +338,7 @@ Polygon.prototype.triangulate = function() {
 };
 
 Polygon.prototype.eachVertex = function(handler) {
-  var i, h;
+  let i, h;
   for (i = 0; i < this.shell.length; ++i) {
     if (handler(this.shell, i) === true) return;
   }
@@ -355,10 +355,10 @@ export function Sketch() {
 }
 
 export function iteratePath(path, shift, callback) {
-  var p, q, n = path.length;
+  let p, q, n = path.length;
   for (p = n - 1,q = 0;q < n; p = q++) {
-    var ai = (p + shift) % n;
-    var bi = (q + shift) % n;
+    let ai = (p + shift) % n;
+    let bi = (q + shift) % n;
     if (!callback(path[ai], path[bi], ai, bi, q, path)) {
       break
     }
@@ -366,14 +366,14 @@ export function iteratePath(path, shift, callback) {
 }
 
 export function addAll(arr, arrToAdd) {
-  for (var i = 0; i < arrToAdd.length; i++) {
+  for (let i = 0; i < arrToAdd.length; i++) {
     arr.push(arrToAdd[i]);
   }
 }
 
 export function arrFlatten1L(arr) {
-  var result = [];
-  for (var i = 0; i < arr.length; i++) {
+  let result = [];
+  for (let i = 0; i < arr.length; i++) {
     addAll(result, arr[i]);
   }
   return result;

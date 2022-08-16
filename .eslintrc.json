@@ -61,7 +61,8 @@
     "no-unused-vars": "off",
     "max-len": "off",
     "no-console": "off",
-    "no-extra-boolean-cast": "off"
+    "no-extra-boolean-cast": "off",
+    "no-var": "error"
   },
   "ignorePatterns": [
     "/modules/math/optim/*.js",

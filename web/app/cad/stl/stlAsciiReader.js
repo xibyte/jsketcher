@@ -10,7 +10,7 @@ export function parse(buf) {
   while (reader.hasNextLine()) {
     let line = reader.nextLine();
     lineNumber ++;
-    var parts = line
+    let parts = line
       .trim()
       .split(' ')
       .filter(function(part) {
@@ -56,7 +56,7 @@ function LinesReader(buf) {
   let arr = new Uint8Array(buf);
   this.nextLine = function() {
     let str = "";
-    for (var i = mark; i < pos; i++) {
+    for (let i = mark; i < pos; i++) {
       str += String.fromCharCode(arr[i]);
     }
     mark = pos;

@@ -80,7 +80,7 @@ export class LoopPickTool extends Tool {
   cleanLoop(loop) {
     const points = [];
     const edges = [];
-    for (var i = 0; i < loop.length; i++) {
+    for (let i = 0; i < loop.length; i++) {
       const a = loop[i];
       const b = loop[(i + 1) % loop.length];
       if (a.parent == b.parent) {

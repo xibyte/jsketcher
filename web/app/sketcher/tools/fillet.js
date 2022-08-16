@@ -95,7 +95,7 @@ export class FilletTool extends Tool {
   }
   
   mouseup(e) {
-    var candi = this.getCandidate(e);
+    let candi = this.getCandidate(e);
     if (candi == null) return;
     const point1 = candi[0];
     const point2 = candi[1];
@@ -157,12 +157,12 @@ export class FilletTool extends Tool {
   }
   
   mousemove(e) {
-    var needRefresh = false;
+    let needRefresh = false;
     if (this.viewer.captured.tool.length !== 0) {
       this.viewer.withdrawAll('tool');
       needRefresh = true;
     }
-    var candi = this.getCandidate(e);
+    let candi = this.getCandidate(e);
     if (candi != null) {
       this.viewer.capture('tool', [candi[0]], true);
       needRefresh = true;
