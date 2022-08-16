@@ -69,7 +69,7 @@ export default class Vector implements XYZ {
 
   length(): number {
     return Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
-  };
+  }
 
   lengthSquared(): number {
     return this.dot(this);
@@ -134,7 +134,7 @@ export default class Vector implements XYZ {
       return this.set(0, 0, 0) as UnitVector;
     }
     return this.set(this.x / mag, this.y / mag, this.z / mag) as UnitVector;
-  };
+  }
 
   _unit(): UnitVector {
     return this._normalize();
@@ -142,7 +142,7 @@ export default class Vector implements XYZ {
 
   cross(a: XYZ): Vector {
     return this.copy()._cross(a);
-  };
+  }
 
   _cross(a: XYZ): Vector {
     return this.set(
@@ -150,7 +150,7 @@ export default class Vector implements XYZ {
       this.z * a.x - this.x * a.z,
       this.x * a.y - this.y * a.x
     );
-  };
+  }
 
   negate(): Vector {
     return this.multiply(-1);

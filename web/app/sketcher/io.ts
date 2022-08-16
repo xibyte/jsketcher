@@ -231,7 +231,7 @@ export class IO {
       this.viewer.parametricManager.notify();
     }
 
-  };
+  }
 
 
   createBoundaryObjects(boundary) {
@@ -256,7 +256,7 @@ export class IO {
     this.viewer.parametricManager.reset();
     this.viewer.parametricManager.notify();
 
-  };
+  }
 
   _serializeSketch(metadata) {
 
@@ -335,11 +335,11 @@ export class IO {
     }
 
     return sketch;
-  };
+  }
 
   getWorkspaceToExport() {
     return [this.viewer.layers, [this.viewer.labelLayer]];
-  };
+  }
 
   getLayersToExport() {
     let ws = this.getWorkspaceToExport();
@@ -390,7 +390,7 @@ export class IO {
     }
     bbox.inc(20);
     return _format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + out.data + "</svg>"
-  };
+  }
 
    dxfExport() {
 
@@ -456,7 +456,7 @@ export class IO {
     //console.log(d.toDxfString());
     d.generateAutocadExtras();
     return d.toDxfString();
-  };
+  }
 }
 
 function _format(str, args) {

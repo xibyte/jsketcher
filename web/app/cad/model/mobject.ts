@@ -26,7 +26,7 @@ export abstract class MObject {
 
   toDirection(): UnitVector {
     return null;
-  };
+  }
 
   toAxis(reverse: boolean): Axis {
     return null;

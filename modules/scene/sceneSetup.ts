@@ -273,14 +273,14 @@ export default class SceneSetUp {
       this.__render_NeverCallMeFromOutside();
     }
     this.updateViewportSizeIfNeeded();
-  };
+  }
 
   private __render_NeverCallMeFromOutside() {
     this.renderRequested = false;
     this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
     this.renderer.render(this.scene, this.camera);
     this.sceneRendered$.next();
-  };
+  }
 
   domElement() {
     return this.renderer.domElement;   

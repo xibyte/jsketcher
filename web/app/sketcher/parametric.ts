@@ -125,12 +125,12 @@ class ParametricManager {
         }
       }
     }
-  };
+  }
 
   onConstantsExternalChange(constantDefinition) {
     this.rebuildConstantTable(constantDefinition);
    // this.refresh();
-  };
+  }
 
   defineNewConstant(name, value) {
     let constantDefinition = this.constantDefinition;
@@ -141,19 +141,19 @@ class ParametricManager {
       constantDefinition = constantText;
     }
     this.$constantDefinition.next(constantDefinition);
-  };
+  }
 
   updateConstraintConstants(constr) {
     this.viewer.parametricManager.refresh();
-  };
+  }
 
   notify() {
     this.$update.next();
-  };
+  }
 
   commit() {
     this.refresh();
-  };
+  }
 
   _add(constr) {
 
@@ -178,7 +178,7 @@ class ParametricManager {
     if (highestStage !== this.stage && !this.inTransaction) {
       toast("Constraint's been added to stage " + highestStage.index + "!")
     }
-  };
+  }
 
   refresh() {
     if (this.inTransaction) {
@@ -192,7 +192,7 @@ class ParametricManager {
     this.viewer.historyManager.checkpoint();
     this._add(constr);
     this.refresh();
-  };
+  }
 
   addAll(constrs) {
     this.viewer.historyManager.checkpoint();
@@ -200,19 +200,19 @@ class ParametricManager {
       this._add(constrs[i]);
     }
     this.refresh();
-  };
+  }
 
   remove(constr) {
     this.viewer.historyManager.checkpoint();
     constr.stage.algNumSystem.removeConstraint(constr);
     constr.annotations.forEach(ann => ann.layer.remove(ann));
     this.refresh();
-  };
+  }
 
   _removeConstraint(constr) {
     constr.stage.algNumSystem.removeConstraint(constr);
     constr.annotations.forEach(ann => ann.layer.remove(ann));
-  };
+  }
 
   removeGenerator(generator) {
     this.viewer.deselectAll();
@@ -242,7 +242,7 @@ class ParametricManager {
         this._removeObject(obj, force);
       }
     });
-  };
+  }
 
   _removeObject = (obj, force?) => {
     if (obj.__disposed) {

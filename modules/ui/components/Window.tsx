@@ -236,7 +236,7 @@ export class ResizeHelper {
       document.addEventListener("mousemove", moveListener);
       document.addEventListener("mouseup", quitListener);
     }
-  };
+  }
 
 
   registerResize (el, dirMask, capturingBuffer = 5, onResize = NOOP) {
@@ -307,7 +307,7 @@ export class ResizeHelper {
         el.style.cursor = '';
       }
     });
-  };
+  }
 }
 
 export const DIRECTIONS = {

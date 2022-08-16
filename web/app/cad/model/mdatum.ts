@@ -67,7 +67,7 @@ export class MDatumAxis extends MObject {
 
   toDirection(): UnitVector {
     return this.dir;
-  };
+  }
 
   toAxis(reverse: boolean): Axis {
     let axis = this.axis;

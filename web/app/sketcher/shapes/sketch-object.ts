@@ -29,7 +29,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
 
   dependsOn(obj: SketchObject): boolean {
     return false;
-  };
+  }
 
   get isGenerated() {
     let obj: SketchObject = this;

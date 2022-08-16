@@ -41,7 +41,7 @@ export class MEdge extends MObject {
 
   toDirection(): UnitVector {
     return this.brepEdge.halfEdge1.tangentAtStart();
-  };
+  }
 
   toAxis(reverse: boolean = false): Axis {
     let tan;
@@ -55,7 +55,7 @@ export class MEdge extends MObject {
       origin = he.vertexB.point;
     }
     return new Axis(origin, tan);
-  };
+  }
 
   get topology(): TopoObject {
     return this.brepEdge;

@@ -34,4 +34,4 @@ export default function(viewer): SketcherStreams {
   };
 
   return streams as SketcherStreams;
-};
+}
