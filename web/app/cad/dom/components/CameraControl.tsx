@@ -16,7 +16,7 @@ export default function CameraControl() {
     const container = domRef.current;
     const renderer = cameraControlRenderer(container);
     const detacher = ctx.viewer.sceneSetup.sceneRendered$.attach(() => {
-      let camera = ctx.viewer.sceneSetup.camera;
+      const camera = ctx.viewer.sceneSetup.camera;
       renderer.render(camera)
     });
 

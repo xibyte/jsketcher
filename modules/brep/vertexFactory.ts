@@ -13,13 +13,13 @@ export default class VertexFactory {
   }
 
   get(_x: number, _y: number, _z: number): Vertex {
-    for (let vertex of this.vertices) {
-      let {x, y, z} = vertex.point;
+    for (const vertex of this.vertices) {
+      const {x, y, z} = vertex.point;
       if (veqXYZ(_x, _y, _z, x, y, z)) {
         return vertex;
       }
     }
-    let v = new Vertex(new Point(_x, _y, _z));
+    const v = new Vertex(new Point(_x, _y, _z));
     this.vertices.push(v);
     return v;
   }

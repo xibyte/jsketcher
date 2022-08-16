@@ -65,7 +65,7 @@ export default class NurbsCurve implements ParametricCurve {
 
   invert(): ParametricCurve {
 
-    let inverted = ext.curveInvert(this.data);
+    const inverted = ext.curveInvert(this.data);
     ext.normalizeCurveParametrizationIfNeeded(inverted);
     // let [min, max] = curveDomain(curve);
     // for (let i = 0; i < reversed.knots.length; i++) {
@@ -87,7 +87,7 @@ export default class NurbsCurve implements ParametricCurve {
   }
 
   split(u: number): [ParametricCurve, ParametricCurve] {
-    let split = verb.eval.Divide.curveSplit(this.data, u);
+    const split = verb.eval.Divide.curveSplit(this.data, u);
     split.forEach(n => ext.normalizeCurveParametrization(n));
     return split.map(c => new NurbsCurve(new verb.geom.NurbsCurve(c)));
   }

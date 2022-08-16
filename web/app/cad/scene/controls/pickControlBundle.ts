@@ -71,8 +71,8 @@ export function activate(context) {
       printPickInfo(model, rayCastData);
     }
     const type = model.TYPE;
-    let selectionMode = DEFAULT_SELECTION_MODE;
-    let modelId = model.id;
+    const selectionMode = DEFAULT_SELECTION_MODE;
+    const modelId = model.id;
     if (type === FACE) {
       if (selectionMode.shell) {
         if (dispatchSelection(SHELL, model.shell.id, event)) {
@@ -113,14 +113,14 @@ export function activate(context) {
   let pickContext: PickContext = defaultPickContext;
   let contextStack = [];
   
-  let domElement = services.viewer.sceneSetup.domElement();
+  const domElement = services.viewer.sceneSetup.domElement();
   
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('mouseup', mouseup, false);
   domElement.addEventListener('dblclick', mousedblclick, false);
   document.addEventListener('mousemove', mousemove, false);
 
-  let mouseState = {
+  const mouseState = {
     startX: 0,
     startY: 0
   };
@@ -148,9 +148,9 @@ export function activate(context) {
   }
 
   function mouseup(e) {
-    let dx = Math.abs(mouseState.startX - e.offsetX);
-    let dy = Math.abs(mouseState.startY - e.offsetY);
-    let TOL = 1;
+    const dx = Math.abs(mouseState.startX - e.offsetX);
+    const dy = Math.abs(mouseState.startY - e.offsetY);
+    const TOL = 1;
     if (dx < TOL && dy < TOL) {
       if (e.button !== 0) {
         // handleSolidPick(e);
@@ -195,7 +195,7 @@ export function activate(context) {
   }
 
   function handlePick(event) {
-    let pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo);
+    const pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo);
     if (pickListDialogMode) {
       const capture = new Set<MObject>();
       traversePickResults(event, pickResults, ALL_POSSIBLE_KIND, (model) => {
@@ -220,7 +220,7 @@ export function activate(context) {
   }
 
   function pickFromRay(from3, to3, kind, event = null) {
-    let pickResults = services.viewer.customRaycast(from3, to3, services.cadScene.workGroup.children);
+    const pickResults = services.viewer.customRaycast(from3, to3, services.cadScene.workGroup.children);
     return traversePickResults(event, pickResults, kind, pickContext.pickHandler);
   }
 
@@ -233,12 +233,12 @@ export function activate(context) {
   }
   
   function dispatchSelection(entityType, selectee, event) {
-    let marker = services.marker;
+    const marker = services.marker;
     if (marker.isMarked(selectee)) {
       marker.withdraw(selectee);
       return true;
     }
-    let multiMode = event && event.shiftKey;
+    const multiMode = event && event.shiftKey;
     
     if (multiMode) {
       marker.markAdding(entityType, selectee)
@@ -249,7 +249,7 @@ export function activate(context) {
   }
   
   function handleSolidPick(e) {
-    let pickResults = services.viewer.raycast(e, services.cadScene.workGroup.children);
+    const pickResults = services.viewer.raycast(e, services.cadScene.workGroup.children);
     traversePickResults(e, pickResults, PICK_KIND.FACE, (sketchFace) => {
       const shell = sketchFace.shell;
       services.marker.markExclusively(shell.TYPE, shell.id);
@@ -274,7 +274,7 @@ export function traversePickResults(event, pickResults, kind, visitor) {
   const pickers = [
     (pickResult) => {
       if (mask.is(kind, PICK_KIND.SKETCH)) {
-        let sketchObjectV = getAttribute(pickResult.object, SKETCH_OBJECT);
+        const sketchObjectV = getAttribute(pickResult.object, SKETCH_OBJECT);
         if (sketchObjectV) {
           return !visitor(sketchObjectV.model, event, pickResult);
         }
@@ -283,7 +283,7 @@ export function traversePickResults(event, pickResults, kind, visitor) {
     },
     (pickResult) => {
       if (mask.is(kind, PICK_KIND.EDGE)) {
-        let edgeV = getAttribute(pickResult.object, EDGE);
+        const edgeV = getAttribute(pickResult.object, EDGE);
         if (edgeV) {
           return !visitor(edgeV.model, event, pickResult);
         }
@@ -292,7 +292,7 @@ export function traversePickResults(event, pickResults, kind, visitor) {
     },
     (pickResult) => {
       if (mask.is(kind, PICK_KIND.LOOP)) {
-        let faceV = getAttribute(pickResult.object, LOOP);
+        const faceV = getAttribute(pickResult.object, LOOP);
         if (faceV) {
           return !visitor(faceV.model, event, pickResult);
         }
@@ -301,7 +301,7 @@ export function traversePickResults(event, pickResults, kind, visitor) {
     },
     (pickResult) => {
       if (mask.is(kind, PICK_KIND.FACE)) {
-        let faceV = getAttribute(pickResult.object, FACE);
+        const faceV = getAttribute(pickResult.object, FACE);
         if (faceV) {
           return !visitor(faceV.model, event, pickResult);
         }
@@ -310,7 +310,7 @@ export function traversePickResults(event, pickResults, kind, visitor) {
     },
     (pickResult) => {
       if (mask.is(kind, PICK_KIND.DATUM_AXIS)) {
-        let datumAxisV = getAttribute(pickResult.object, DATUM_AXIS);
+        const datumAxisV = getAttribute(pickResult.object, DATUM_AXIS);
         if (datumAxisV) {
           return !visitor(datumAxisV.model, event, pickResult);
         }
@@ -320,7 +320,7 @@ export function traversePickResults(event, pickResults, kind, visitor) {
   ];
   for (let i = 0; i < pickResults.length; i++) {
     const pickResult = pickResults[i];
-    for (let picker of pickers) {
+    for (const picker of pickers) {
       if (pickResult.object && pickResult.object.passRayCast && pickResult.object.passRayCast(pickResults)) {
         // continue;
       }
@@ -337,7 +337,7 @@ function printPickInfo(model, rayCastData?) {
   console.log("PICK RAYCAST INFO:");
   if (rayCastData) {
     console.dir(rayCastData);
-    let pt = rayCastData.point;
+    const pt = rayCastData.point;
     console.log('POINT: ' + pt.x + ', ' + pt.y + ',' + pt.z);
     printRaycastDebugInfo('selection', rayCastData);
   }

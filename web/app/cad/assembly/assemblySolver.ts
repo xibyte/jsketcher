@@ -124,7 +124,7 @@ function buildAssemblyQueue(cadRegistry: CadRegistry, constraintDefs: AssemblyCo
 
   const visited = new Set<MObject>();
   const topoOrder: MShell[] = [];
-  for (let node of graph.keys()) {
+  for (const node of graph.keys()) {
     if (visited.has(node)) {
       continue;
     }
@@ -221,7 +221,7 @@ export function launchAssembly(assemblyProcess: AssemblyProcess): void {
 
 function solve(constraints: AssemblyConstraint[], freeBody: MShell, location: Matrix3x4): SolveStatus {
 
-  for (let constr of constraints) {
+  for (const constr of constraints) {
 
     freeBody.assemblyDOF = constr.apply(freeBody.assemblyDOF);
 

@@ -37,7 +37,7 @@ export class Edge extends TopoObject {
   }
   
   clone(): Edge {
-    let clone = new Edge(this.curve, this.halfEdge1.vertexA, this.halfEdge1.vertexB);
+    const clone = new Edge(this.curve, this.halfEdge1.vertexA, this.halfEdge1.vertexB);
     Object.assign(clone.data, this.data);
     Object.assign(clone.halfEdge1.data, this.halfEdge1.data);
     Object.assign(clone.halfEdge2.data, this.halfEdge2.data);
@@ -115,7 +115,7 @@ export class HalfEdge extends TopoObject {
   }
 
   tangent(point: Vector): UnitVector {
-    let tangent = this.edge.curve.tangentAtPoint(point)._normalize();
+    const tangent = this.edge.curve.tangentAtPoint(point)._normalize();
     if (this.inverted) {
       tangent._negate();
     }

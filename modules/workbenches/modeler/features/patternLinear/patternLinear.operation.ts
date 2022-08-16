@@ -28,10 +28,10 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
   path:__dirname,
   paramsInfo: () => `(?)`,
   run: (params: patternLinearParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let created = [];
+    const created = [];
 
     params.inputBodies.forEach((shellToPatern, index) => {
       for (let i = 2; i <= params.qty; i++) {

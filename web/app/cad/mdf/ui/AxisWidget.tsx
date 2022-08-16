@@ -22,7 +22,7 @@ export const AxisResolver: ValueResolver<AxisInput, Axis> = (ctx: ApplicationCon
     return null;
   }
 
-  let axis = value.vectorEntity.toAxis(value.flip);
+  const axis = value.vectorEntity.toAxis(value.flip);
   if (!axis) {
     reportError('unsupported entity type: ' + value.vectorEntity.TYPE);
     return null;

@@ -48,7 +48,7 @@ function loadWasm(ctx) {
     }
   } as any;
 
-  let mainScript = document.createElement('script');
+  const mainScript = document.createElement('script');
   mainScript.setAttribute('src', '/lib-assets/jsketcher-occ-engine/occt.js');
   mainScript.setAttribute('async', 'async');
   document.head.appendChild(mainScript);

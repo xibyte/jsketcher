@@ -19,10 +19,10 @@ export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
   path:__dirname,
   paramsInfo: () => `()`,
   run: async (params: ImportModelParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let returnObject = { created: [], consumed: [] };
+    const returnObject = { created: [], consumed: [] };
 
 
     const FileName = params.file.fileName.toUpperCase();
@@ -43,18 +43,18 @@ export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
       const zipContents = (await JSZip.loadAsync(params.file.base64Content(), { base64: true })).files;
       const xmlFreeCADData = await zipContents["Document.xml"].async("string");
 
-      let DecodedXmlFreeCADData = (clone(await parseStringPromise(xmlFreeCADData))).Document.ObjectData[0].Object;
+      const DecodedXmlFreeCADData = (clone(await parseStringPromise(xmlFreeCADData))).Document.ObjectData[0].Object;
 
       for (const itemToLookAt in DecodedXmlFreeCADData) {
         const flattenedObject = flattenJSON(DecodedXmlFreeCADData[itemToLookAt]);
         let importBrepShapeName = "";
-        let visiblePropertyName = "";
+        const visiblePropertyName = "";
         for (const propertyToLookAt in flattenedObject) {
           if (propertyToLookAt.includes("Part.0.$.file")) importBrepShapeName = flattenedObject[propertyToLookAt];
           if (importBrepShapeName !== "PartShape.brp"){
             if (propertyToLookAt.includes("$.name") && flattenedObject[propertyToLookAt] == "Visibility") {
-              let propToCheck = propertyToLookAt.replace(".$.name", ".Bool.0.$.value");
-              let shouldItImport = flattenedObject[propToCheck];
+              const propToCheck = propertyToLookAt.replace(".$.name", ".Bool.0.$.value");
+              const shouldItImport = flattenedObject[propToCheck];
               if (shouldItImport == "true") {
                 try {
                   const zipBrepContent = zipContents[importBrepShapeName];
@@ -114,7 +114,7 @@ export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
 }
 
 const flattenJSON = (obj = {}, res = {}, extraKey = '') => {
-  for (let key of Object.keys(obj)) {
+  for (const key of Object.keys(obj)) {
     if (typeof obj[key] !== 'object') {
       res[extraKey + key] = obj[key];
     } else {

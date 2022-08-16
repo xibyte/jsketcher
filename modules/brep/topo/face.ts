@@ -46,8 +46,8 @@ export class Face extends TopoObject {
 
   env2D() {
     if (this.__2d === undefined) {
-      let workingPolygon = this.createWorkingPolygon();
-      let [inner, ...outers] = workingPolygon;
+      const workingPolygon = this.createWorkingPolygon();
+      const [inner, ...outers] = workingPolygon;
       this.__2d = {
         pip: PIP(inner, outers),
         workingPolygon
@@ -72,7 +72,7 @@ export class Face extends TopoObject {
 
     surface = surface || this.surface;
     
-    for (let edge of this.edges) {
+    for (const edge of this.edges) {
       if (veq(pt, edge.vertexA.point)) {
         return {
           inside: true,
@@ -82,7 +82,7 @@ export class Face extends TopoObject {
       }
     }
 
-    for (let edge of this.edges) {
+    for (const edge of this.edges) {
       if (edge.edge.curve.passesThrough(pt)) {
         return {
           inside: true,
@@ -97,16 +97,16 @@ export class Face extends TopoObject {
     }
     
     let closest = null;    
-    for (let edge of this.edges) {
-      let closestPoint = closestPointToEdge(edge);
-      let dist = pt.distanceToSquared(closestPoint);
+    for (const edge of this.edges) {
+      const closestPoint = closestPointToEdge(edge);
+      const dist = pt.distanceToSquared(closestPoint);
       if (closest === null || dist < closest.dist) {
         closest = {dist, pt: closestPoint, edge};
       }
     }
     let enclose = null;
     function findEnclosure(vertex) {
-      for (let e of closest.edge.loop.encloses) {
+      for (const e of closest.edge.loop.encloses) {
         if (e[2] === vertex) {
           return e;
         }
@@ -118,21 +118,21 @@ export class Face extends TopoObject {
       enclose = [closest.edge, closest.edge.next, closest.edge.vertexB];
     }
 
-    let normal = surface.normal(closest.pt);
-    let testee = (enclose ? enclose[2].point : closest.pt).minus(pt)._normalize();
+    const normal = surface.normal(closest.pt);
+    const testee = (enclose ? enclose[2].point : closest.pt).minus(pt)._normalize();
     
     // __DEBUG__.AddSegment(pt, enclose ? enclose[2].point : closest.pt);
     
     let tangent;
     if (enclose !== null) {
-      let [ea, eb] = enclose;
+      const [ea, eb] = enclose;
       tangent = ea.tangentAtEnd().plus(eb.tangentAtStart())._normalize();
     } else {
       tangent = closest.edge.tangent(closest.pt);
     }
     // __DEBUG__.AddNormal(closest.pt, tangent);
 
-    let inside = !isOnPositiveHalfPlaneFromVec(tangent, testee, normal);
+    const inside = !isOnPositiveHalfPlaneFromVec(tangent, testee, normal);
     return {
       inside,
       strictInside: inside,
@@ -144,14 +144,14 @@ export function* loopsGenerator(face): Generator<Loop> {
   if (face.outerLoop !== null) {
     yield face.outerLoop;
   }
-  for (let innerLoop of face.innerLoops) {
+  for (const innerLoop of face.innerLoops) {
     yield innerLoop;
   }
 }
 
 export function* halfEdgesGenerator(face): Generator<HalfEdge> {
-  for (let loop of face.loops) {
-    for (let halfEdge of loop.halfEdges) {
+  for (const loop of face.loops) {
+    for (const halfEdge of loop.halfEdges) {
       yield halfEdge;
     }
   }

@@ -7,7 +7,7 @@ import {Shell} from "brep/topo/shell";
 export function pullFace(face: Face, dist: number) {
   const map = mapVertices(face.shell);
   const dir = face.surface.normalInMiddle();
-  for (let edge of face.edges) {
+  for (const edge of face.edges) {
 
     const v = edge.vertexA;
     const adjEdges = map.get(v);
@@ -25,7 +25,7 @@ export function pullFace(face: Face, dist: number) {
 }
 
 function findForeignEdge(adjEdges: HalfEdge[], face): Edge {
-  for (let he of adjEdges) {
+  for (const he of adjEdges) {
 
     if (he.loop.face != face && he.twin().loop.face != face) {
       return he.edge;
@@ -38,8 +38,8 @@ function findForeignEdge(adjEdges: HalfEdge[], face): Edge {
 
 function mapVertices(shell: Shell): Map<Vertex, HalfEdge[]> {
   const map = new Map<Vertex, HalfEdge[]>();
-   for (let face of shell.faces) {
-     for (let edge of face.edges) {
+   for (const face of shell.faces) {
+     for (const edge of face.edges) {
        let edges = map.get(edge.vertexA);
        if (!edges) {
          edges = [];

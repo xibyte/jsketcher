@@ -9,14 +9,14 @@ import {AssemblyConstraintDefinition} from "cad/assembly/assemblyConstraint";
 export function activate(ctx: ApplicationContext) {
   
   function importProjectImpl(getId, onDone) {
-    let uploader = document.createElement('input');
+    const uploader = document.createElement('input');
     uploader.setAttribute('type', 'file');
     uploader.style.display = 'none';
     
     document.body.appendChild(uploader);
     uploader.click();
     function read() {
-      let reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = () => {
         try {
 
@@ -37,7 +37,7 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function importBundle(projectId: string, bundle: ModelBundle) {
-    let sketchesNamespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
+    const sketchesNamespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
     ctx.services.storage.set(PROJECTS_PREFIX + projectId, JSON.stringify(bundle.model));
     bundle.sketches.forEach(sketch => ctx.services.storage.set(sketchesNamespace + sketch.id, JSON.stringify(sketch.data)));
   }
@@ -45,12 +45,12 @@ export function activate(ctx: ApplicationContext) {
   function importProjectAs() {
     function promptId(fileName, bundle) {
       let promptedId = fileName;
-      let iof = promptedId.search(/([^/\\]+)$/);
+      const iof = promptedId.search(/([^/\\]+)$/);
       if (iof !== -1) {
         promptedId = promptedId.substring(iof).replace(/\.json$/, '');
       }
 
-      let projectId = prompt("New Project Name", promptedId);
+      const projectId = prompt("New Project Name", promptedId);
       if (!projectId && !checkExistence(projectId)) {
         return null
       }
@@ -72,11 +72,11 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function exportProject(id) {
-    let modelData = ctx.services.storage.get(PROJECTS_PREFIX + id);
+    const modelData = ctx.services.storage.get(PROJECTS_PREFIX + id);
     if (modelData) {
       let data = '{\n"model":\n' + modelData + ',\n "sketches": [\n';
-      let sketchesNamespace = PROJECTS_PREFIX + id + SKETCH_SUFFIX;
-      let sketchKeys = ctx.services.storage.getAllKeysFromNamespace(sketchesNamespace);
+      const sketchesNamespace = PROJECTS_PREFIX + id + SKETCH_SUFFIX;
+      const sketchKeys = ctx.services.storage.getAllKeysFromNamespace(sketchesNamespace);
       data += sketchKeys.map(key => `{"id":"${key.substring(sketchesNamespace.length)}", "data": ` 
         + ctx.services.storage.get(key) + "}").join('\n,');
       data += '\n]\n}';
@@ -96,11 +96,11 @@ export function activate(ctx: ApplicationContext) {
     if (checkExistence(newId)) {
       return 
     }
-    let data = ctx.services.storage.get(PROJECTS_PREFIX + oldId);
+    const data = ctx.services.storage.get(PROJECTS_PREFIX + oldId);
     if (data) {
       ctx.services.storage.set(PROJECTS_PREFIX + newId, data);
-      let sketchesNamespace = PROJECTS_PREFIX + oldId + SKETCH_SUFFIX;
-      let sketchKeys = ctx.services.storage.getAllKeysFromNamespace(sketchesNamespace);
+      const sketchesNamespace = PROJECTS_PREFIX + oldId + SKETCH_SUFFIX;
+      const sketchKeys = ctx.services.storage.getAllKeysFromNamespace(sketchesNamespace);
       sketchKeys.forEach(key => {
         ctx.services.storage.set(PROJECTS_PREFIX + newId + SKETCH_SUFFIX + key.substring(sketchesNamespace.length), ctx.services.storage.get(key));
       });
@@ -108,7 +108,7 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function cloneProject(oldProjectId, silent) {
-    let newProjectId = prompt("New Project Name", oldProjectId);
+    const newProjectId = prompt("New Project Name", oldProjectId);
     if (newProjectId) {
       cloneProjectImpl(oldProjectId, newProjectId);
       if (!silent) {
@@ -125,9 +125,9 @@ export function activate(ctx: ApplicationContext) {
   
   function listProjects() {
 
-    let allProjectKeys = ctx.services.storage.getAllKeysFromNamespace(PROJECTS_PREFIX);
+    const allProjectKeys = ctx.services.storage.getAllKeysFromNamespace(PROJECTS_PREFIX);
     
-    let projects = {};  
+    const projects = {};  
     
     function getProject(id) {
       let project = projects[id];
@@ -141,14 +141,14 @@ export function activate(ctx: ApplicationContext) {
       return project;
     }
     
-    for(let key of allProjectKeys) {
-      let sketchSuffixIdx = key.indexOf(SKETCH_SUFFIX);
+    for(const key of allProjectKeys) {
+      const sketchSuffixIdx = key.indexOf(SKETCH_SUFFIX);
       if (sketchSuffixIdx !== -1) {
-        let projectId = key.substring(PROJECTS_PREFIX.length, sketchSuffixIdx);
-        let sketchId = key.substring(sketchSuffixIdx + SKETCH_SUFFIX.length);
+        const projectId = key.substring(PROJECTS_PREFIX.length, sketchSuffixIdx);
+        const sketchId = key.substring(sketchSuffixIdx + SKETCH_SUFFIX.length);
         getProject(projectId).sketches.push(sketchId);
       } else {
-        let projectId = key.substring(PROJECTS_PREFIX.length);
+        const projectId = key.substring(PROJECTS_PREFIX.length);
         getProject(projectId)
       }
     }
@@ -157,7 +157,7 @@ export function activate(ctx: ApplicationContext) {
 
   function deleteProjectImpl(projectId) {
     ctx.services.storage.remove(PROJECTS_PREFIX + projectId);
-    let sketchesNamespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
+    const sketchesNamespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
     ctx.services.storage.getAllKeysFromNamespace(sketchesNamespace).forEach(key => ctx.services.storage.remove(key));
   }
   
@@ -174,7 +174,7 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function newProject() {
-    let newProjectId = prompt("New Project Name");
+    const newProjectId = prompt("New Project Name");
     if (newProjectId) {
       if (checkExistence(newProjectId)) {
         return

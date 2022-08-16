@@ -38,7 +38,7 @@ export class Matrix3x4 {
   }
 
   setBasis(basis: [Vector, Vector, Vector]): Matrix3x4 {
-    let b = basis;
+    const b = basis;
     this.mxx = b[0].x;
     this.mxy = b[1].x;
     this.mxz = b[2].x;
@@ -254,7 +254,7 @@ export class Matrix3x4 {
 
   __invert(out: Matrix3x4): Matrix3x4 {
 
-    let det =
+    const det =
       this.mxx * (this.myy * this.mzz - this.mzy * this.myz) +
       this.mxy * (this.myz * this.mzx - this.mzz * this.myx) +
       this.mxz * (this.myx * this.mzy - this.mzx * this.myy);
@@ -263,22 +263,22 @@ export class Matrix3x4 {
       return null;
     }
 
-    let cxx = this.myy * this.mzz - this.myz * this.mzy;
-    let cyx = -this.myx * this.mzz + this.myz * this.mzx;
-    let czx = this.myx * this.mzy - this.myy * this.mzx;
-    let cxt = -this.mxy * (this.myz * this.tz - this.mzz * this.ty)
+    const cxx = this.myy * this.mzz - this.myz * this.mzy;
+    const cyx = -this.myx * this.mzz + this.myz * this.mzx;
+    const czx = this.myx * this.mzy - this.myy * this.mzx;
+    const cxt = -this.mxy * (this.myz * this.tz - this.mzz * this.ty)
       - this.mxz * (this.ty * this.mzy - this.tz * this.myy)
       - this.tx * (this.myy * this.mzz - this.mzy * this.myz);
-    let cxy = -this.mxy * this.mzz + this.mxz * this.mzy;
-    let cyy = this.mxx * this.mzz - this.mxz * this.mzx;
-    let czy = -this.mxx * this.mzy + this.mxy * this.mzx;
-    let cyt = this.mxx * (this.myz * this.tz - this.mzz * this.ty)
+    const cxy = -this.mxy * this.mzz + this.mxz * this.mzy;
+    const cyy = this.mxx * this.mzz - this.mxz * this.mzx;
+    const czy = -this.mxx * this.mzy + this.mxy * this.mzx;
+    const cyt = this.mxx * (this.myz * this.tz - this.mzz * this.ty)
       + this.mxz * (this.ty * this.mzx - this.tz * this.myx)
       + this.tx * (this.myx * this.mzz - this.mzx * this.myz);
-    let cxz = this.mxy * this.myz - this.mxz * this.myy;
-    let cyz = -this.mxx * this.myz + this.mxz * this.myx;
-    let czz = this.mxx * this.myy - this.mxy * this.myx;
-    let czt = -this.mxx * (this.myy * this.tz - this.mzy * this.ty)
+    const cxz = this.mxy * this.myz - this.mxz * this.myy;
+    const cyz = -this.mxx * this.myz + this.mxz * this.myx;
+    const czz = this.mxx * this.myy - this.mxy * this.myx;
+    const czt = -this.mxx * (this.myy * this.tz - this.mzy * this.ty)
       - this.mxy * (this.ty * this.mzx - this.tz * this.myx)
       - this.tx * (this.myx * this.mzy - this.mzx * this.myy);
 
@@ -298,20 +298,20 @@ export class Matrix3x4 {
   }
 
   combine(transform: Matrix3x4, out?: Matrix3x4): Matrix3x4 {
-    let txx = transform.mxx;
-    let txy = transform.mxy;
-    let txz = transform.mxz;
-    let ttx = transform.tx;
-    let tyx = transform.myx;
-    let tyy = transform.myy;
-    let tyz = transform.myz;
-    let tty = transform.ty;
-    let tzx = transform.mzx;
-    let tzy = transform.mzy;
-    let tzz = transform.mzz;
-    let ttz = transform.tz;
+    const txx = transform.mxx;
+    const txy = transform.mxy;
+    const txz = transform.mxz;
+    const ttx = transform.tx;
+    const tyx = transform.myx;
+    const tyy = transform.myy;
+    const tyz = transform.myz;
+    const tty = transform.ty;
+    const tzx = transform.mzx;
+    const tzy = transform.mzy;
+    const tzz = transform.mzz;
+    const ttz = transform.tz;
 
-    let m = out || new Matrix3x4();
+    const m = out || new Matrix3x4();
     m.mxx = (this.mxx * txx + this.mxy * tyx + this.mxz * tzx);
     m.mxy = (this.mxx * txy + this.mxy * tyy + this.mxz * tzy);
     m.mxz = (this.mxx * txz + this.mxy * tyz + this.mxz * tzz);
@@ -329,20 +329,20 @@ export class Matrix3x4 {
   }
 
   combine3x3(transform: Matrix3x4, out?: Matrix3x4): Matrix3x4 {
-    let txx = transform.mxx;
-    let txy = transform.mxy;
-    let txz = transform.mxz;
+    const txx = transform.mxx;
+    const txy = transform.mxy;
+    const txz = transform.mxz;
 
-    let tyx = transform.myx;
-    let tyy = transform.myy;
-    let tyz = transform.myz;
+    const tyx = transform.myx;
+    const tyy = transform.myy;
+    const tyz = transform.myz;
 
-    let tzx = transform.mzx;
-    let tzy = transform.mzy;
-    let tzz = transform.mzz;
+    const tzx = transform.mzx;
+    const tzy = transform.mzy;
+    const tzz = transform.mzz;
 
 
-    let m = out || new Matrix3x4();
+    const m = out || new Matrix3x4();
     m.mxx = (this.mxx * txx + this.mxy * tyx + this.mxz * tzx);
     m.mxy = (this.mxx * txy + this.mxy * tyy + this.mxz * tzy);
     m.mxz = (this.mxx * txz + this.mxy * tyz + this.mxz * tzz);
@@ -362,9 +362,9 @@ export class Matrix3x4 {
   __applyNoTranslation(vector: Vector, out: Vector): Vector;
   __applyNoTranslation(vector: UnitVector, out: UnitVector): UnitVector;
   __applyNoTranslation(vector: Vector, out: Vector): Vector {
-    let x = vector.x;
-    let y = vector.y;
-    let z = vector.z;
+    const x = vector.x;
+    const y = vector.y;
+    const z = vector.z;
     out.x = this.mxx * x + this.mxy * y + this.mxz * z;
     out.y = this.myx * x + this.myy * y + this.myz * z;
     out.z = this.mzx * x + this.mzy * y + this.mzz * z;
@@ -387,9 +387,9 @@ export class Matrix3x4 {
   }
 
   __apply(vector: Vector, out: Vector): Vector {
-    let x = vector.x;
-    let y = vector.y;
-    let z = vector.z;
+    const x = vector.x;
+    const y = vector.y;
+    const z = vector.z;
     out.x = this.mxx * x + this.mxy * y + this.mxz * z + this.tx;
     out.y = this.myx * x + this.myy * y + this.myz * z + this.ty;
     out.z = this.mzx * x + this.mzy * y + this.mzz * z + this.tz;
@@ -445,7 +445,7 @@ export class Matrix3x4 {
 
   static rotationMatrix(cos: number, sin: number, axis: Vector, pivot: Vector, matrix?: Matrix3x4): Matrix3x4 {
     let axisX, axisY, axisZ;
-    let m = matrix || new Matrix3x4();
+    const m = matrix || new Matrix3x4();
 
     if (axis === AXIS.X || axis === AXIS.Y || axis === AXIS.Z) {
       axisX = axis.x;
@@ -453,7 +453,7 @@ export class Matrix3x4 {
       axisZ = axis.z;
     } else {
       // normalize
-      let mag = axis.length();
+      const mag = axis.length();
 
       if (mag == 0.0) {
         return m;
@@ -464,9 +464,9 @@ export class Matrix3x4 {
       }
     }
 
-    let px = pivot.x;
-    let py = pivot.y;
-    let pz = pivot.z;
+    const px = pivot.x;
+    const py = pivot.y;
+    const pz = pivot.z;
 
     m.mxx = cos + axisX * axisX * (1 - cos);
     m.mxy = axisX * axisY * (1 - cos) - axisZ * sin;

@@ -13,7 +13,7 @@ import produce from "immer"
 
 export function activate(ctx: ApplicationContext) {
 
-  let {streams, services} = ctx;
+  const {streams, services} = ctx;
 
   const insertOperation$ = state<NewOperationCall>(null);
 
@@ -42,7 +42,7 @@ export function activate(ctx: ApplicationContext) {
     } else {
       const {pointer, history, hints} = mods
       if (pointer !== history.length - 1) {
-        let {type, params} = history[pointer + 1];
+        const {type, params} = history[pointer + 1];
         return {
           type,
           params: clone(params),
@@ -60,9 +60,9 @@ export function activate(ctx: ApplicationContext) {
     if (req == null) {
       return null;
     }
-    let params = {};
-    let errors = [];
-    let operation = ctx.services.operation.get(req.type);
+    const params = {};
+    const errors = [];
+    const operation = ctx.services.operation.get(req.type);
 
     materializeParams(ctx, req.params, operation.schema, params, errors);
     if (errors.length !== 0) {
@@ -143,8 +143,8 @@ export function activate(ctx: ApplicationContext) {
     cancel,
     
     applyWorkingRequest: () => {
-      let {type, params} = getWorkingRequest();
-      let request = clone({type, params});
+      const {type, params} = getWorkingRequest();
+      const request = clone({type, params});
       const setError = error => updateState(state => state.error = error);
       if (insertOperation$.value) {
         ctx.craftService.modify(request, cancel, setError);

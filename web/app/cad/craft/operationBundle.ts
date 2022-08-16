@@ -26,7 +26,7 @@ export function activate(ctx: ApplicationContext) {
     let {id, label, info, icon, actionParams, form, schema} = descriptor;
 
     if (!schema) {
-      let {schema: derivedSchema, form: loadedForm} = loadDeclarativeForm(form as FormDefinition);
+      const {schema: derivedSchema, form: loadedForm} = loadDeclarativeForm(form as FormDefinition);
       schema = derivedSchema;
       form = loadedForm;
     }
@@ -35,28 +35,28 @@ export function activate(ctx: ApplicationContext) {
       label = id;
     }
 
-    let appearance: ActionAppearance = {
+    const appearance: ActionAppearance = {
       label,
       info
     };
 
     operationIconToActionIcon(icon, appearance);
 
-    let opAction = {
+    const opAction = {
       id: id,
       appearance,
       invoke: () => ctx.services.wizard.open(id),
       ...actionParams
     };
 
-    let schemaIndex = createSchemaIndex(schema);
+    const schemaIndex = createSchemaIndex(schema);
 
     let documentationLink = descriptor.documentationLink;
     if (!documentationLink && descriptor.path) {
       documentationLink = GenerateWorkbenchOperationDocumentationLink(descriptor.path);
     }
 
-    let operation = {
+    const operation = {
       appearance,
       schemaIndex,
       defaultActiveField: schemaIndex.fields[0]?.flattenedPath, // to be overridden by descriptor
@@ -92,15 +92,15 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function registerOperations(operations) {
-    let actions = [];
-    for (let op of operations) {
+    const actions = [];
+    for (const op of operations) {
       addOperation(op, actions);
     }
     ctx.actionService.registerActions(actions);
   }
 
   function get<T>(id: string): Operation<T> {
-    let op = registry$.value[id];
+    const op = registry$.value[id];
     if (!op) {
       throw `operation ${id} is not registered`;
     }

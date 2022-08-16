@@ -200,12 +200,12 @@ export class Viewer {
       return false;
     }
 
-    for (let layers of this._workspace) {
+    for (const layers of this._workspace) {
       for (let i = 0; i < layers.length; i++) {
-        let objs = layers[i].objects;
+        const objs = layers[i].objects;
         for (let j = 0; j < objs.length; j++) {
           let l = unreachable + 1;
-          let before = pickResult.length;
+          const before = pickResult.length;
           objs[j].accept((o) => {
             if (!o.visible) return true;
             if (onlyPoints && !isEndPoint(o)) {
@@ -218,7 +218,7 @@ export class Viewer {
             }
             return true;
           });
-          let hit = before - pickResult.length != 0;
+          const hit = before - pickResult.length != 0;
           if (hit) {
             if (!deep && pickResult.length != 0) return pickResult;
             if (l >= 0 && l < heroLength) {
@@ -230,7 +230,7 @@ export class Viewer {
       }
     }
     if (pickResult.length > 0) {
-      let _f = pickResult[0];
+      const _f = pickResult[0];
       pickResult[0] = pickResult[heroIdx];
       pickResult[heroIdx] = _f;
     }
@@ -238,7 +238,7 @@ export class Viewer {
   }
 
   _createServiceLayers(): Layer<Shape>[] {
-    let layer = this.createLayer<Shape>("_service", Styles.SERVICE);
+    const layer = this.createLayer<Shape>("_service", Styles.SERVICE);
 //  layer.objects.push(new CrossHair(0, 0, 20));
 //  layer.objects.push(new Point(0, 0, 2));
     layer.objects.push(this.referencePoint);
@@ -270,7 +270,7 @@ export class Viewer {
     ctx.transform(1, 0, 0, -1, 0, this.canvas.height);
 
     if (this.transformation) {
-      let [a, b, c, d, e, f] = this.transformation;
+      const [a, b, c, d, e, f] = this.transformation;
       ctx.transform(a, b, c, d, e, f);
     } else {
       ctx.transform(1, 0, 0, 1, this.translate.x, this.translate.y);
@@ -287,10 +287,10 @@ export class Viewer {
   }
 
   __drawWorkspace(ctx, workspace, pipeline) {
-    for (let drawPredicate of pipeline) {
-      for (let layers of workspace) {
-        for (let layer of layers) {
-          for (let obj of layer.objects) {
+    for (const drawPredicate of pipeline) {
+      for (const layers of workspace) {
+        for (const layer of layers) {
+          for (const obj of layer.objects) {
             obj.accept((obj) => {
               if (!obj.visible) return true;
               if (drawPredicate(obj)) {
@@ -414,8 +414,8 @@ export class Viewer {
   }
 
   accept = visitor => {
-    for (let layer of this.layers) {
-      for (let object of layer.objects) {
+    for (const layer of this.layers) {
+      for (const object of layer.objects) {
         if (!object.accept(visitor)) {
           return false;
         }
@@ -425,7 +425,7 @@ export class Viewer {
 
   //same as accept but without controlling when to break the flow
   traverse(visitor) {
-    for (let layer of this.layers) {
+    for (const layer of this.layers) {
       layer.traverseSketchObjects(visitor)
     }
   }
@@ -480,7 +480,7 @@ export class Viewer {
 
 
   withdraw(type, obj) {
-    let captured = this.captured[type];
+    const captured = this.captured[type];
     for (let i = 0; i < captured.length; i++) {
       if (obj === captured[i]) {
         captured.splice(i, 1)[0].removeMarker(CAPTURES[type]);
@@ -534,7 +534,7 @@ export class Viewer {
     if (layer == null || layer.readOnly) {
       layer = null;
       for (let i = 0; i < this.layers.length; i++) {
-        let l = this.layers[i];
+        const l = this.layers[i];
         if (!l.readOnly) {
           layer = l;
           break;
@@ -545,7 +545,7 @@ export class Viewer {
   }
 
   set activeLayerName(layerName) {
-    let layer = this.findLayerByName(layerName);
+    const layer = this.findLayerByName(layerName);
     if (layer) {
       this._activeLayer = layer;
     } else {

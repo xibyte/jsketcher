@@ -19,10 +19,10 @@ export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
   path:__dirname,
   paramsInfo: () => `(?)`,
   run: (params: MirrorBodyParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let created =[];
+    const created =[];
 
     params.inputBodies.forEach((shellToMirror) => {
       const newShellName = shellToMirror.id + ":mirror";

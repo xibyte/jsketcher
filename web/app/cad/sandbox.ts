@@ -46,7 +46,7 @@ export function runSandbox(ctx: ApplicationContext) {
     bb.face().loop([c1, d1, d2, c2]);
     bb.face().loop([d1, a1, a2, d2]);
 
-    let result = bb.build();
+    const result = bb.build();
     addShellOnScene(result);
   }
 
@@ -66,7 +66,7 @@ export function runSandbox(ctx: ApplicationContext) {
 
     addShellOnScene(cylinder1);
     addShellOnScene(cylinder2);
-    let result = exposure.brep.bool.subtract(cylinder1, cylinder2);
+    const result = exposure.brep.bool.subtract(cylinder1, cylinder2);
 
     addShellOnScene(result);
   }
@@ -74,7 +74,7 @@ export function runSandbox(ctx: ApplicationContext) {
   function test2() {
 
     function square() {
-      let bb = new BrepBuilder();
+      const bb = new BrepBuilder();
 
       const a = bb.vertex(0, 0, 0);
       const b = bb.vertex(300, 0, 0);
@@ -85,7 +85,7 @@ export function runSandbox(ctx: ApplicationContext) {
       return bb.build();
     }
     function square2() {
-      let bb = new BrepBuilder();
+      const bb = new BrepBuilder();
 
       const a = bb.vertex(0, 150, -100);
       const b = bb.vertex(350, 150, -100);
@@ -94,13 +94,13 @@ export function runSandbox(ctx: ApplicationContext) {
       bb.face().loop([a, b, c, d]);
       return bb.build();
     }
-    let s1 = square();
-    let s2 = square2();
+    const s1 = square();
+    const s2 = square2();
     // addShellOnScene(s1);
     // addShellOnScene(s2);
 
     // let result = exposure.brep.bool.intersect(s1, s2);
-    let result = s1;
+    const result = s1;
     addShellOnScene(result);
   }
 
@@ -158,8 +158,8 @@ export function runSandbox(ctx: ApplicationContext) {
     const box2 = exposure.brep.primitives.box(250, 250, 750);
 
     console.dir(writeBrep(box1));
-    let l1 = ctx.craftEngine.modellingEngine.loadModel(writeBrep(box1));
-    let l2 = ctx.craftEngine.modellingEngine.loadModel(writeBrep(box2));
+    const l1 = ctx.craftEngine.modellingEngine.loadModel(writeBrep(box1));
+    const l2 = ctx.craftEngine.modellingEngine.loadModel(writeBrep(box2));
 
     // let l11 = ctx.craftEngine.modellingEngine.getModelData({model: l1.ptr});
 
@@ -217,7 +217,7 @@ export function runSandbox(ctx: ApplicationContext) {
     const box1 = exposure.brep.primitives.box(500, 500, 500);
     const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3x4().translate(25, 25, 0));
 
-    let withHole = ctx.craftEngine.modellingEngine.loadModel(writeBrep(exposure.brep.bool.subtract(box1, box2)));
+    const withHole = ctx.craftEngine.modellingEngine.loadModel(writeBrep(exposure.brep.bool.subtract(box1, box2)));
     services.exposure.addOnScene(readShellEntityFromJson(withHole));
 
 
@@ -273,9 +273,9 @@ export function runSandbox(ctx: ApplicationContext) {
     srf = new NurbsSurface(srf);
     // __DEBUG__.AddNurbs(srf);
 
-    let bb = new BrepBuilder();
+    const bb = new BrepBuilder();
     function vx(u, v) {
-      let pt = srf.point(u, v);
+      const pt = srf.point(u, v);
       return bb.vertex(pt.x, pt.y, pt.z);
     }
 
@@ -293,7 +293,7 @@ export function runSandbox(ctx: ApplicationContext) {
       return new BrepCurve(new NurbsCurve(verb));
     }
 
-    let shell = bb.face(srf)
+    const shell = bb.face(srf)
       .loop()
       .edgeTrim(a, b, fromVerb(srf.verb.isocurve(0.13, true)))
       .edgeTrim(b, c, fromVerb(srf.verb.isocurve(0.9, false)))
@@ -310,20 +310,20 @@ export function runSandbox(ctx: ApplicationContext) {
   }
 
   function curvesIntersect() {
-    let p1 = [-50,0,0], p2 = [100,0,0], p3 = [100,100,0], p4 = [0,100,0], p5 = [50, 50, 0];
-    let pts = [p1, p2, p3, p4, p5];
+    const p1 = [-50,0,0], p2 = [100,0,0], p3 = [100,100,0], p4 = [0,100,0], p5 = [50, 50, 0];
+    const pts = [p1, p2, p3, p4, p5];
     let curve1 = new BrepCurve(new NurbsCurve(verb.geom.NurbsCurve.byPoints( pts, 3 )));
 
-    let p1a = [-50,0,0], p2a = [50,-10,0], p3a = [150,50,0], p4a = [30,100,0], p5a = [50, 120, 0];
-    let ptsa = [p1a, p2a, p3a, p4a, p5a];
-    let curve2 = new BrepCurve(new NurbsCurve(verb.geom.NurbsCurve.byPoints( ptsa, 3 )));
+    const p1a = [-50,0,0], p2a = [50,-10,0], p3a = [150,50,0], p4a = [30,100,0], p5a = [50, 120, 0];
+    const ptsa = [p1a, p2a, p3a, p4a, p5a];
+    const curve2 = new BrepCurve(new NurbsCurve(verb.geom.NurbsCurve.byPoints( ptsa, 3 )));
 
     curve1 = curve1.splitByParam(0.6)[0];
     __DEBUG__.AddCurve(curve1);
     __DEBUG__.AddCurve(curve2);
 
-    let points = curve1.intersectCurve(curve2);
-    for (let p of points) {
+    const points = curve1.intersectCurve(curve2);
+    for (const p of points) {
       __DEBUG__.AddPoint(p.p0);
     }
 
@@ -437,7 +437,7 @@ export function runSandbox(ctx: ApplicationContext) {
 
     const box: BrepInputData = CubeExample();
     //
-    let data = ctx.craftEngine.modellingEngine.loadModel(box);
+    const data = ctx.craftEngine.modellingEngine.loadModel(box);
 
 
     const shell = readShellEntityFromJson(data);
@@ -448,7 +448,7 @@ export function runSandbox(ctx: ApplicationContext) {
     const ser = writeBrep(shell.brepShell);
     ser.curves = {};
     console.log(ser);
-    let fromSerialization = ctx.craftEngine.modellingEngine.loadModel(ser);
+    const fromSerialization = ctx.craftEngine.modellingEngine.loadModel(ser);
 
     const mBrepShell2 = readShellEntityFromJson(fromSerialization);
     services.exposure.addOnScene(mBrepShell2);
@@ -459,7 +459,7 @@ export function runSandbox(ctx: ApplicationContext) {
 
     const box: BrepInputData = CubeExample();
 
-    let data = ctx.craftEngine.modellingEngine.loadModel(box);
+    const data = ctx.craftEngine.modellingEngine.loadModel(box);
     // data = ctx.craftEngine.modellingEngine.transform({
     //   model: data.ptr,
     //   matrix: new Matrix3x4().scale(1,2,1).toFlatArray()
@@ -481,7 +481,7 @@ export function runSandbox(ctx: ApplicationContext) {
 
     const box: BrepInputData = CubeExample();
     //
-    let data = ctx.craftEngine.modellingEngine.loadModel(box);
+    const data = ctx.craftEngine.modellingEngine.loadModel(box);
     //
     // ctx.craftEngine.modellingEngine.setLocation({
     //   model: data.ptr,
@@ -527,7 +527,7 @@ export function runSandbox(ctx: ApplicationContext) {
     const serialized = writeBrep(mBrepShell.brepShell);
     console.log("SERAIL:");
     console.log(serialized);
-    let fromSerialization = ctx.craftEngine.modellingEngine.loadModel(serialized);
+    const fromSerialization = ctx.craftEngine.modellingEngine.loadModel(serialized);
 
     console.log("FROM:");
     console.log(fromSerialization);
@@ -611,7 +611,7 @@ export function runSandbox(ctx: ApplicationContext) {
   function testOCCT() {
     // ctx.OCI.box("Se", "0", "0", "0", "50", "30" ,"80")
 
-    let oci = ctx.occService.commandInterface;
+    const oci = ctx.occService.commandInterface;
     const height = 70;
     const width = 50;
     const thickness = 30;
@@ -619,7 +619,7 @@ export function runSandbox(ctx: ApplicationContext) {
     const neckheight = height/10;
     const major = 2*Math.PI;
     const minor = neckheight/10;
-    let pi = Math.PI;
+    const pi = Math.PI;
 
     oci.box("b1", "10.0", "15.0", "20.0");
     oci.box("b2", "-min", "5.0", "7.5", "10.0", "-max", "20.0", "25.0", "30.0");

@@ -30,12 +30,12 @@ export const WizardSelectionBundle: Bundle<WizardSelectionBundleWorkingContext> 
     function syncMarkers() {
       const marker = ctx.markerService;
       marker.startSession();
-      let {schemaIndex} = wizardService.operation;
+      const {schemaIndex} = wizardService.operation;
       schemaIndex.entities.forEach(entityRef => {
         //TODO: move to uiDefinition
-        let color = entityRef.metadata.markColor;
+        const color = entityRef.metadata.markColor;
 
-        let val = wizardService.readParam(entityRef.field.path);
+        const val = wizardService.readParam(entityRef.field.path);
 
         if (Array.isArray(val)) {
           val.forEach(id => marker.mark(id, color));
@@ -90,15 +90,15 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
   return model => {
     const modelType = model.TYPE;
 
-    let {schemaIndex} = wizardService.operation;
-    let activeEntityRef = () => {
+    const {schemaIndex} = wizardService.operation;
+    const activeEntityRef = () => {
       const state = wizardService.state$.value;
       return schemaIndex.entitiesByFlattenedPaths[state.activeParam];
     }
 
 
     function activeCanTakeIt(model: MObject) {
-      let activeRef: EntityReference = activeEntityRef();
+      const activeRef: EntityReference = activeEntityRef();
       if (!activeRef) {
         return false;
       }
@@ -113,7 +113,7 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
       } else {
         updateSingle(param.path, id);
       }
-      let paramToMakeActive = getNextActiveParam(entityRef);
+      const paramToMakeActive = getNextActiveParam(entityRef);
       wizardService.updateState(state => {
         state.activeParam = paramToMakeActive.field.flattenedPath
       });
@@ -133,7 +133,7 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
     }
 
     function selectToFirst(entity) {
-      for (let eRef of schemaIndex.entities) {
+      for (const eRef of schemaIndex.entities) {
         if (eRef.metadata.entityCapture(entity)) {
           select(eRef, entity.id);
           return true;
@@ -143,8 +143,8 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
     }
 
     function deselectIfNeeded(id) {
-      for (let entityRef of schemaIndex.entities) {
-        let val = wizardService.readParam(entityRef.field.path);
+      for (const entityRef of schemaIndex.entities) {
+        const val = wizardService.readParam(entityRef.field.path);
 
         if (val === id) {
           updateSingle(entityRef.field.path, undefined);
@@ -153,11 +153,11 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
           });
           return true;
         } else if (Array.isArray(val)) {
-          let index = val.indexOf(id);
+          const index = val.indexOf(id);
           if (index !== -1) {
             wizardService.updateParams(params => {
               const val = _.get(params, entityRef.field.path);
-              let index = val.indexOf(id);
+              const index = val.indexOf(id);
               val.splice(index, 1);
             });
             wizardService.updateState(state => {

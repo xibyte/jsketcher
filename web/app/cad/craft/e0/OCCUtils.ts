@@ -40,7 +40,7 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
     return wires.map((wire, i) => {
       const faceName = "Face/" + i;
       oci.mkplane(faceName, wire.wire);
-      let brepShell = ctx.occService.io.getLightShell(faceName);
+      const brepShell = ctx.occService.io.getLightShell(faceName);
 
       return {
         face: faceName,
@@ -82,7 +82,7 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
       }
       
 
-      let targetNames = targets.map((target, i) => {
+      const targetNames = targets.map((target, i) => {
         const targetName = 'Target/' + i;
         const wasPushed = ctx.occService.io.pushModel(target, targetName);
         if (!wasPushed) {

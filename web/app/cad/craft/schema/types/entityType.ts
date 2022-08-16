@@ -30,11 +30,11 @@ export const EntityType: Type<string, MObject, EntityTypeSchema> = {
     if (typeof value !== 'string') {
       reportError('not a valid model reference');
     }
-    let ref = value.trim();
+    const ref = value.trim();
     if (!ref && !md.optional) {
       reportError('required');
     }
-    let model = ctx.cadRegistry.find(ref);
+    const model = ctx.cadRegistry.find(ref);
     if (!model) {
       reportError('refers to a nonexistent object');
     }

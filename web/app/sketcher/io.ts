@@ -119,10 +119,10 @@ export class IO {
       }
 
       const sketchLayer = this.viewer.findLayerByName('sketch');
-      for (let obj of sketch.objects) {
+      for (const obj of sketch.objects) {
         try {
           let skobj: SketchObject = null;
-          let type = obj.type;
+          const type = obj.type;
 
           if (type === Segment.prototype.TYPE) {
             skobj = Segment.read(obj.id, obj.data);
@@ -154,9 +154,9 @@ export class IO {
 
       const index = this.viewer.createIndex();
 
-      for (let obj of sketch.dimensions) {
+      for (const obj of sketch.dimensions) {
         try {
-          let type = obj.type;
+          const type = obj.type;
           let skobj = null;
           if (type === HDimension.prototype.TYPE) {
             skobj = LinearDimension.load(HDimension, obj.id, obj.data, index);
@@ -180,9 +180,9 @@ export class IO {
       }
 
       if (sketch.labels) {
-        for (let obj of sketch.labels) {
+        for (const obj of sketch.labels) {
           try {
-            let type = obj.type;
+            const type = obj.type;
             let skobj = null;
             if (type === Label.prototype.TYPE) {
               skobj = Label.read(obj.id, obj.data, index);
@@ -199,9 +199,9 @@ export class IO {
       }
 
       for (let i = 0; i < sketch.stages.length; i++) {
-        let dataStage = sketch.stages[i];
-        let stage = getStage(i);
-        for (let constr of dataStage.constraints) {
+        const dataStage = sketch.stages[i];
+        const stage = getStage(i);
+        for (const constr of dataStage.constraints) {
           try {
             const constraint = AlgNumConstraint.read(constr, index);
             stage.addConstraint(constraint)
@@ -210,7 +210,7 @@ export class IO {
             console.error("skipping errant constraint: " + constr && constr.typeId);
           }
         }
-        for (let gen of dataStage.generators) {
+        for (const gen of dataStage.generators) {
           try {
             const generator = SketchGenerator.read(gen, index);
             stage.addGenerator(generator)
@@ -221,7 +221,7 @@ export class IO {
         }
       }
 
-      let constants = sketch.constants;
+      const constants = sketch.constants;
       if (constants !== undefined) {
         this.viewer.parametricManager.$constantDefinition.next(constants);
       }
@@ -245,7 +245,7 @@ export class IO {
 
   cleanUpData() {
     for (let l = 0; l < this.viewer.layers.length; ++l) {
-      let layer = this.viewer.layers[l];
+      const layer = this.viewer.layers[l];
       if (layer.objects.length !== 0) {
         layer.objects = [];
       }
@@ -270,8 +270,8 @@ export class IO {
       metadata
     };
 
-    for (let layer of this.viewer.layers) {
-      for (let obj of layer.objects) {
+    for (const layer of this.viewer.layers) {
+      for (const obj of layer.objects) {
         if (obj instanceof Dimension) {
           continue;
         }
@@ -296,7 +296,7 @@ export class IO {
     }
 
     function pushObjectsFromLayer(layer, into) {
-      for (let obj of layer.objects) {
+      for (const obj of layer.objects) {
         try {
           into.push({
             id: obj.id,
@@ -312,19 +312,19 @@ export class IO {
     pushObjectsFromLayer(this.viewer.dimLayer, sketch.dimensions);
     pushObjectsFromLayer(this.viewer.labelLayer, sketch.labels);
 
-    for (let stage of this.viewer.parametricManager.stages) {
+    for (const stage of this.viewer.parametricManager.stages) {
       const stageOut = {
         constraints: [],
         generators: [],
       };
       const systemConstraints = stage.algNumSystem.allConstraints;
-      for (let sc of systemConstraints) {
+      for (const sc of systemConstraints) {
         if (!sc.internal) {
           stageOut.constraints.push(sc.write());
         }
       }
 
-      for (let gen of stage.generators) {
+      for (const gen of stage.generators) {
         if (gen.internal) {
           continue;
         }
@@ -342,12 +342,12 @@ export class IO {
   }
 
   getLayersToExport() {
-    let ws = this.getWorkspaceToExport();
-    let toExport = [];
+    const ws = this.getWorkspaceToExport();
+    const toExport = [];
     for (let t = 0; t < ws.length; ++t) {
-      let layers = ws[t];
+      const layers = ws[t];
       for (let l = 0; l < layers.length; ++l) {
-        let layer = layers[l];
+        const layer = layers[l];
         toExport.push(layer)
       }
     }
@@ -356,30 +356,30 @@ export class IO {
 
   svgExport() {
 
-    let T = SketchTypes;
-    let out = new TextBuilder();
+    const T = SketchTypes;
+    const out = new TextBuilder();
 
-    let bbox = new BBox();
+    const bbox = new BBox();
 
-    let a = new Vector();
-    let b = new Vector();
+    const a = new Vector();
+    const b = new Vector();
 
-    let prettyColors = new PrettyColors();
-    let toExport = this.getLayersToExport();
+    const prettyColors = new PrettyColors();
+    const toExport = this.getLayersToExport();
     for (let l = 0; l < toExport.length; ++l) {
-      let layer = toExport[l];
-      let color = prettyColors.next();
+      const layer = toExport[l];
+      const color = prettyColors.next();
       out.fline('<g id="$" fill="$" stroke="$" stroke-width="$">', [layer.name, "none", color, '2']);
       for (let i = 0; i < layer.objects.length; ++i) {
-        let obj = layer.objects[i];
+        const obj = layer.objects[i];
         if (obj._class !== T.POINT) bbox.check(obj);
         if (obj._class === T.SEGMENT) {
           out.fline('<line x1="$" y1="$" x2="$" y2="$" />', [obj.a.x, obj.a.y, obj.b.x, obj.b.y]);
         } else if (obj._class === T.ARC) {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
-          let dir = a.cross(b).z > 0 ? 0 : 1;
-          let r = obj.r.get();
+          const dir = a.cross(b).z > 0 ? 0 : 1;
+          const r = obj.r.get();
           out.fline('<path d="M $ $ A $ $ 0 $ $ $ $" />', [obj.a.x, obj.a.y, r, r, dir, 1, obj.b.x, obj.b.y]);
         } else if (obj._class === T.CIRCLE) {
           out.fline('<circle cx="$" cy="$" r="$" />', [obj.c.x, obj.c.y, obj.r.get()]);
@@ -395,11 +395,11 @@ export class IO {
    dxfExport() {
 
      // defines as any since library doesn't provide types correctly
-     let d: any = new Drawing();
+     const d: any = new Drawing();
 
-     let T = SketchTypes;
+     const T = SketchTypes;
 
-     let toExport = this.getLayersToExport();
+     const toExport = this.getLayersToExport();
 
      d.setUnits('Millimeters');
 
@@ -410,7 +410,7 @@ export class IO {
        d.setActiveLayer(dxfLayerId);
 
        for (let i = 0; i < layer.objects.length; ++i) {
-         let obj = layer.objects[i];
+         const obj = layer.objects[i];
          console.debug("exporting object", obj);
 
          if (obj._class === T.POINT) {
@@ -473,7 +473,7 @@ function _format(str, args) {
 
 /** @constructor */
 function PrettyColors() {
-  let colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
+  const colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
   let colIdx = 0;
   this.next = function () {
     return colors[colIdx++ % colors.length];
@@ -500,9 +500,9 @@ function TextBuilder() {
 
 /** @constructor */
 function BBox() {
-  let bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
+  const bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
 
-  let T = SketchTypes;
+  const T = SketchTypes;
 
   this.checkLayers = function (layers) {
     for (let l = 0; l < layers.length; ++l)

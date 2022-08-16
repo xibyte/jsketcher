@@ -60,7 +60,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
 
   run: (params: PrimitiveTorusParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;

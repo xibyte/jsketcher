@@ -9,7 +9,7 @@ export default function Fa({icon, fw, fa, stack, className, ...props}: {
   className?: string,
   props?: any
 }) {
-  let faCss = fa ? fa.map(s => 'fa-' + s) : [];
+  const faCss = fa ? fa.map(s => 'fa-' + s) : [];
   if (icon) {
     icon = 'fa-' + icon;
   }

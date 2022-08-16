@@ -3,11 +3,11 @@ import {isValueNotProvided, OperationSchema, SchemaField} from "cad/craft/schema
 import {ApplicationContext} from "cad/context";
 
 export default function initializeBySchema(schema: OperationSchema, context: ApplicationContext) {
-  let fields = Object.keys(schema);
-  let obj = {};
-  for (let field of fields) {
+  const fields = Object.keys(schema);
+  const obj = {};
+  for (const field of fields) {
     let val = undefined;
-    let md = schema[field] as SchemaField;
+    const md = schema[field] as SchemaField;
 
     if (md.type === Types.array) {
       if (md.items.type === Types.entity && md.defaultValue !== undefined) {
@@ -27,7 +27,7 @@ export default function initializeBySchema(schema: OperationSchema, context: App
         const currentSelection =
           context.entityContextService.selectedEntities.value.filter(md.entityCapture);
 
-        let mObject = currentSelection[defaultValue.preselectionIndex as number];
+        const mObject = currentSelection[defaultValue.preselectionIndex as number];
         if (mObject) {
           val = mObject.id;
         }
@@ -44,8 +44,8 @@ export default function initializeBySchema(schema: OperationSchema, context: App
 
 
 export function fillUpMissingFields(params: any, schema: OperationSchema, context: ApplicationContext) {
-  let fields = Object.keys(schema);
-  for (let field of fields) {
+  const fields = Object.keys(schema);
+  for (const field of fields) {
     const md = schema[field] as SchemaField;
 
     if (md.optional) {

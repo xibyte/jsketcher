@@ -16,7 +16,7 @@ export const GetVolume: any = {
   path:__dirname,
   run: (params: getVolumeParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.services.OCCService;
+    const occ = ctx.services.OCCService;
     const oci = occ.commandInterface;
 
     alert();

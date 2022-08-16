@@ -38,7 +38,7 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
   }
 
   function save() {
-    let data: ProjectModel = {
+    const data: ProjectModel = {
       history: ctx.craftService.modifications$.value.history,
       expressions: ctx.expressionService.script$.value,
 
@@ -56,9 +56,9 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
 
   function load() {
     try {
-      let dataStr = ctx.storageService.get(ctx.projectService.projectStorageKey());
+      const dataStr = ctx.storageService.get(ctx.projectService.projectStorageKey());
       if (dataStr) {
-        let data = JSON.parse(dataStr);
+        const data = JSON.parse(dataStr);
         upgradeIfNeeded(data);
         loadData(data);
         loadWorkbench(data);
@@ -127,8 +127,8 @@ function parseHintsFromLocation() {
 }
 
 function parseHints(hints) {
-  let [id, ...paramsArr] = hints.split('&');
-  let params = paramsArr.reduce((params, part) => {
+  const [id, ...paramsArr] = hints.split('&');
+  const params = paramsArr.reduce((params, part) => {
     let [key, value] = part.split('=');
     if (key) {
       if (!value) {

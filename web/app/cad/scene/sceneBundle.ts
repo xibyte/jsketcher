@@ -4,9 +4,9 @@ import {ApplicationContext} from "cad/context";
 
 export function activate(ctx: ApplicationContext) {
   const {services} = ctx;
-  let {dom} = services;
+  const {dom} = services;
 
-  let viewer = new Viewer(dom.viewerContainer);
+  const viewer = new Viewer(dom.viewerContainer);
   
   services.viewer = viewer;
   services.cadScene = new CadScene(viewer.sceneSetup.rootGroup);

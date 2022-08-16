@@ -18,7 +18,7 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
   path:__dirname,
   paramsInfo: ({thickness}) => `(${r(thickness)})`,
   run: (params: ShellParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
 

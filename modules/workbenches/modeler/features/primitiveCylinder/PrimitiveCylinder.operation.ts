@@ -60,7 +60,7 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
 
   run: (params: PrimitiveCylinderParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;

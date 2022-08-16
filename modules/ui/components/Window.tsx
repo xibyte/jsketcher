@@ -45,7 +45,7 @@ export default class Window extends React.Component<WindowProps> {
 
   render() {
 
-    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, centerScreen, setFocus, className, resizeCapturingBuffer,
+    const {initWidth, initHeight, initLeft, initTop, initRight, initBottom, centerScreen, setFocus, className, resizeCapturingBuffer,
       resize, enableResize, children, title, icon, minimizable = false, onClose, controlButtons, footer, compact,
       onResize, ...props} = this.props;
 
@@ -117,8 +117,8 @@ export default class Window extends React.Component<WindowProps> {
   
   doDrag = e => {
     if (this.dragOrigin) {
-      let dx = e.pageX - this.dragOrigin.x;
-      let dy = e.pageY - this.dragOrigin.y;
+      const dx = e.pageX - this.dragOrigin.x;
+      const dy = e.pageY - this.dragOrigin.y;
 
       this.el.style.left = this.originLocation.left + dx + 'px';
       this.el.style.top = this.originLocation.top + dy + 'px';
@@ -134,7 +134,7 @@ export default class Window extends React.Component<WindowProps> {
     if (el === null) {
       return;
     }
-    let {initWidth, initHeight, initLeft, initTop, initRight, initBottom, resizeCapturingBuffer, onResize, centerScreen, ...props} = this.props;
+    const {initWidth, initHeight, initLeft, initTop, initRight, initBottom, resizeCapturingBuffer, onResize, centerScreen, ...props} = this.props;
 
     if (initWidth) {
       el.style.width = initWidth + 'px';
@@ -183,17 +183,17 @@ export class ResizeHelper {
 
   captureResize(el, dirMask, e, onResize) {
 
-    let origin = {x : e.pageX, y : e.pageY};
+    const origin = {x : e.pageX, y : e.pageY};
     const bcr = el.getBoundingClientRect();
 
-    let north = _maskTest(dirMask, DIRECTIONS.NORTH);
-    let south = _maskTest(dirMask, DIRECTIONS.SOUTH);
-    let west = _maskTest(dirMask, DIRECTIONS.WEST);
-    let east = _maskTest(dirMask, DIRECTIONS.EAST);
+    const north = _maskTest(dirMask, DIRECTIONS.NORTH);
+    const south = _maskTest(dirMask, DIRECTIONS.SOUTH);
+    const west = _maskTest(dirMask, DIRECTIONS.WEST);
+    const east = _maskTest(dirMask, DIRECTIONS.EAST);
 
     this.moveHandler = function(e) {
-      let dx = e.pageX - origin.x;
-      let dy = e.pageY - origin.y;
+      const dx = e.pageX - origin.x;
+      const dy = e.pageY - origin.y;
       if (east) {
         el.style.width = Math.round(bcr.width + dx) + 'px';
       }
@@ -240,14 +240,14 @@ export class ResizeHelper {
 
 
   registerResize (el, dirMask, capturingBuffer = 5, onResize = NOOP) {
-    let wm = this;
-    let north = _maskTest(dirMask, DIRECTIONS.NORTH);
-    let south = _maskTest(dirMask, DIRECTIONS.SOUTH);
-    let west = _maskTest(dirMask, DIRECTIONS.WEST);
-    let east = _maskTest(dirMask, DIRECTIONS.EAST);
+    const wm = this;
+    const north = _maskTest(dirMask, DIRECTIONS.NORTH);
+    const south = _maskTest(dirMask, DIRECTIONS.SOUTH);
+    const west = _maskTest(dirMask, DIRECTIONS.WEST);
+    const east = _maskTest(dirMask, DIRECTIONS.EAST);
 
-    let borderTop = capturingBuffer;
-    let borderLeft = capturingBuffer;
+    const borderTop = capturingBuffer;
+    const borderLeft = capturingBuffer;
 
     function onNorthEdge(e) {
       return e.pageY < el.offsetTop + borderTop;

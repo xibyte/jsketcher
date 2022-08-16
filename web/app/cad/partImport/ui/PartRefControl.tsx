@@ -5,7 +5,7 @@ import {ReactApplicationContext} from "../../dom/ReactApplicationContext";
 
 export function PartRefControl(props) {
 
-  let {onChange, value, onFocus, openIfEmpty} = props;
+  const {onChange, value, onFocus, openIfEmpty} = props;
   useEffect(() => {
 
     if (openIfEmpty && !value) {

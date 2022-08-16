@@ -21,12 +21,12 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
   path:__dirname,
   paramsInfo: ({ angle }) => `(${r(angle)})`,
   run: (params: smFlangeParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const face = params.face;
 
-    let occFaces = [face];
+    const occFaces = [face];
     let revolveVector;
     let revolveVectorOrigin;
     let revolveVectorDirection;

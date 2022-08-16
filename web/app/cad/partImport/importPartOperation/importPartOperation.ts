@@ -29,7 +29,7 @@ function runImportOperation(params: ImportPartOperationParams, ctx: ApplicationC
 
   const {cadRegistry, remotePartsService} = ctx;
 
-  let mDatum = params.datum && cadRegistry.findDatum(params.datum);
+  const mDatum = params.datum && cadRegistry.findDatum(params.datum);
 
   const res =  {
     consumed: [],

@@ -80,7 +80,7 @@ export default class Viewer {
   }
 
   lookAt(target, normal, up, dist) {
-    let obj = this.sceneSetup.trackballControls.object;
+    const obj = this.sceneSetup.trackballControls.object;
     if (up) {
       obj.up.copy(up);
     }

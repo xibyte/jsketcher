@@ -11,9 +11,9 @@ export function activate(ctx: ApplicationContext) {
   const detachedViews = {};
   
   function show(id, label, url) {
-    let index = tabs$.value.tabs.findIndex(tab => tab.id === id);
+    const index = tabs$.value.tabs.findIndex(tab => tab.id === id);
     if (index === -1) {
-      let detachedView = detachedViews[id];
+      const detachedView = detachedViews[id];
       if (detachedView !== undefined) {
         if (!detachedView.closed) {
           detachedView.focus();
@@ -41,7 +41,7 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function detach(index) {
-    let {id, url} = tabs$.value.tabs[index];
+    const {id, url} = tabs$.value.tabs[index];
     detachedViews[id] = window.open(url, id, "height=900,width=1200")
     tabs$.update(({tabs}) => {
       tabs.splice(index, 1);

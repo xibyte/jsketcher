@@ -34,7 +34,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
   }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
 
   run: (params: HoleParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const returnObject = {
@@ -60,7 +60,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
 
     if (params.holeType == "countersink") {
 
-      let heightFromDiameterAndAngle = (params.countersinkDiameter - params.diameter) / (Math.tan((params.countersinkAngle / 180 * Math.PI) / 2));
+      const heightFromDiameterAndAngle = (params.countersinkDiameter - params.diameter) / (Math.tan((params.countersinkAngle / 180 * Math.PI) / 2));
 
 
       oci.pcone("countersink", params.countersinkDiameter / 2, 0, heightFromDiameterAndAngle);
@@ -68,7 +68,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       oci.bopfuse("result");
     }
 
-    let location = params.datum.csys.outTransformation._normalize();
+    const location = params.datum.csys.outTransformation._normalize();
     SetLocation("result", location.toFlatArray());
     returnObject.created.push(occ.io.getShell("result"));
 

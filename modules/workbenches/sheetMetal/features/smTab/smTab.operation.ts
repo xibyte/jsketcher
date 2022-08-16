@@ -33,12 +33,12 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
   paramsInfo: ({ thickness, bendRadius }) => `(${r(thickness)}  ${r(bendRadius)}  )`,
   run: (params: smTabParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const face = params.sketch;
 
-    let sketch = ctx.sketchStorageService.readSketch(face.id);
+    const sketch = ctx.sketchStorageService.readSketch(face.id);
     if (!sketch) {
       throw 'sketch not found for the face ' + face.id;
     }

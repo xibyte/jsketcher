@@ -31,15 +31,15 @@ export class CraftEngine {
   }
 
   boolean({type, operandsA, operandsB}) {
-    let engineParams = {
+    const engineParams = {
       type: <BooleanType>(BooleanType[type] as any),
       operandsA: shellsToPointers(operandsA),
       operandsB: shellsToPointers(operandsB),
       tolerance: E0_TOLERANCE,
       deflection: DEFLECTION,
     };
-    let data = this.modellingEngine.boolean(engineParams) as any;
-    let consumed = [...operandsA, ...operandsB];
+    const data = this.modellingEngine.boolean(engineParams) as any;
+    const consumed = [...operandsA, ...operandsB];
     return {
       consumed,
       created: [readShellData(data.result, consumed, operandsA[0].csys)]
@@ -89,7 +89,7 @@ export class CraftEngine {
 
   stepImport(params) {
 
-    let shape = this.modellingEngine.stepImport({
+    const shape = this.modellingEngine.stepImport({
       file: params.file
     });
 
@@ -99,7 +99,7 @@ export class CraftEngine {
   }
 
   cutExtrude(isCut, request) {
-    let {request: engineReq, face} = createExtrudeCommand(request, this.ctx, isCut);
+    const {request: engineReq, face} = createExtrudeCommand(request, this.ctx, isCut);
     if (managedByE0(face.shell)) {
       // @ts-ignore
       engineReq.boolean = {
@@ -108,14 +108,14 @@ export class CraftEngine {
       }
     }
 
-    let data = this.modellingEngine.extrude(engineReq as any);
+    const data = this.modellingEngine.extrude(engineReq as any);
 
     return singleShellRespone(face.shell, data);
   }
 
   revolve(request) {
-    let {request: engineReq, face} = createRevolveCommand(request, this.ctx);
-    let data = this.modellingEngine.revolve(engineReq as any);
+    const {request: engineReq, face} = createRevolveCommand(request, this.ctx);
+    const data = this.modellingEngine.revolve(engineReq as any);
     return singleShellRespone(face.shell, data);
   }
 
@@ -124,9 +124,9 @@ export class CraftEngine {
   }
 
   loft(params) {
-    let data = this.modellingEngine.loft(mapLoftParams(params));
-    let baseShell = params.sections[0].face.shell;
-    let consumed = params.sections
+    const data = this.modellingEngine.loft(mapLoftParams(params));
+    const baseShell = params.sections[0].face.shell;
+    const consumed = params.sections
       .filter(s => (!(s.face.shell instanceof MOpenFaceShell) || s.face.sketchLoops.length === 1))
       .map(s => s.face.shell);
 
@@ -137,8 +137,8 @@ export class CraftEngine {
   }
 
   fillet(request) {
-    let edge = this.ctx.cadRegistry.findEdge(request.edges[0]);
-    let engineReq = {
+    const edge = this.ctx.cadRegistry.findEdge(request.edges[0]);
+    const engineReq = {
       deflection: DEFLECTION,
       solid: edge.shell.brepShell.data.externals.ptr,
       edges: request.edges.map(e => ({
@@ -147,7 +147,7 @@ export class CraftEngine {
       }))
     };
 
-    let data = this.modellingEngine.fillet(engineReq);
+    const data = this.modellingEngine.fillet(engineReq);
     return singleShellRespone(edge.shell, data);
   }
 }
@@ -161,11 +161,11 @@ function booleanBasedOperation(engineParams, params, impl) {
       tolerance: E0_TOLERANCE,
     }
   }
-  let data = impl(engineParams);
-  let consumed = [];
+  const data = impl(engineParams);
+  const consumed = [];
   if (params.boolean) {
     data.consumed.forEach(ptr => {
-      let model = params.boolean.operands.find(m => managedByE0(m) && m.brepShell.data.externals.ptr === ptr);
+      const model = params.boolean.operands.find(m => managedByE0(m) && m.brepShell.data.externals.ptr === ptr);
       if (model) {
         consumed.push(model);
       }
@@ -204,13 +204,13 @@ function createRevolveCommand(request, ctx: ApplicationContext) {
   const face = cadRegistry.findFace(request.face);
   const paths = readSketch(face, request, sketchStorageService);
 
-  let pivot = cadRegistry.findSketchObject(request.axis).sketchPrimitive;
-  let tr = face.csys.outTransformation;
+  const pivot = cadRegistry.findSketchObject(request.axis).sketchPrimitive;
+  const tr = face.csys.outTransformation;
 
-  let axisOrigin = tr._apply3(pivot.a.data());
-  let axisDir = vec._normalize(vec._sub(tr._apply3(pivot.b.data()), axisOrigin))
+  const axisOrigin = tr._apply3(pivot.a.data());
+  const axisDir = vec._normalize(vec._sub(tr._apply3(pivot.b.data()), axisOrigin))
 
-  let res = {
+  const res = {
     face,
     request: {
       axisOrigin,

@@ -27,7 +27,7 @@ export class Polynomial {
 
   eliminate(param, value) {
     let touched = false;
-    for (let m of this.monomials) {
+    for (const m of this.monomials) {
       for (let i = 0; i < m.terms.length; ++i) {
         if (m.terms[i].param === param) {
           m.eliminate(i, value);
@@ -39,7 +39,7 @@ export class Polynomial {
   }
 
   substitute(param, toParam, dotConstant) {
-    for (let m of this.monomials) {
+    for (const m of this.monomials) {
       let touched = false;
       for (let i = 0; i < m.terms.length; ++i) {
         if (m.terms[i].param === param) {
@@ -63,11 +63,11 @@ export class Polynomial {
           if (polynomial) {
             transaction.push(() => {
               for (let k = 0; k < polynomial.monomials.length; ++k) {
-                let monomialToExpand = polynomial.monomials[k];
+                const monomialToExpand = polynomial.monomials[k];
                 this.monomial(monomialToExpand.constant * m.constant);
                 this.lastMonomial.terms = monomialToExpand.terms.slice();
 
-                for (let termToJoin of m.terms) {
+                for (const termToJoin of m.terms) {
                   if (termToJoin !== m.terms[i]) {
                     this.lastMonomial.terms.push({...termToJoin});
                   }
@@ -114,7 +114,7 @@ export class Polynomial {
   }
 
   get isLinear() {
-    for (let m of this.monomials) {
+    for (const m of this.monomials) {
       if (m.terms.length !== 1 || m.terms[0].fn.degree !== 1) {
         return false;
       }
@@ -124,7 +124,7 @@ export class Polynomial {
 
   value(valueFn = GET_VALUE) {
     let res = this.constant;
-    for (let m of this.monomials) {
+    for (const m of this.monomials) {
       res += m.value(valueFn);
     }
     return res;
@@ -134,8 +134,8 @@ export class Polynomial {
 
     const paramsSet: Set<SolverParam> = new Set();
 
-    for (let m of this.monomials) {
-      for (let t of m.terms) {
+    for (const m of this.monomials) {
+      for (const t of m.terms) {
         paramsSet.add(t.param.solverParam);
       }
     }
@@ -156,7 +156,7 @@ export class Polynomial {
 
           out[i] = 0;
 
-          for (let m of this.monomials) {
+          for (const m of this.monomials) {
             out[i] += m.differentiate(params[i].objectParam, solverValue);
           }
         }
@@ -169,8 +169,8 @@ export class Polynomial {
   }
 
   visitParams(callback) {
-    for (let m of this.monomials) {
-      for (let t of m.terms) {
+    for (const m of this.monomials) {
+      for (const t of m.terms) {
         callback(t.param);
       }
     }
@@ -257,7 +257,7 @@ export class Monomial {
       for (let j = i + 1; j < this.terms.length; ++j) {
         const term = this.terms[j];
         if (merger.param === term.param) {
-          let mergedFn = merger.fn.merge(term.fn);
+          const mergedFn = merger.fn.merge(term.fn);
           if (mergedFn) {
             merger.fn = mergedFn;
             this.terms[j] = null;
@@ -293,7 +293,7 @@ export class Monomial {
     let diffProduct = 0;
     let freeProduct = 1;
 
-    for (let term of this.terms) {
+    for (const term of this.terms) {
       const pVal = valueFn(term.param);
       const d0 = term.fn.apply(pVal);
       if (partialParam === term.param) {
@@ -310,7 +310,7 @@ export class Monomial {
 
   value(valueFn) {
     let res = this.constant;
-    for (let t of this.terms) {
+    for (const t of this.terms) {
       res *= t.fn.apply(valueFn(t.param));
     }
     return res;

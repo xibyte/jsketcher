@@ -35,7 +35,7 @@ function materializeParamsImpl(ctx: ApplicationContext,
                                parentReportError: OperationParamsErrorReporter) {
 
 
-  for (let field of Object.keys(schema)) {
+  for (const field of Object.keys(schema)) {
     const reportError = parentReportError.dot(field);
     const md = schema[field];
     let value = params[field];
