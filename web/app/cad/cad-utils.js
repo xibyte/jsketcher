@@ -355,7 +355,8 @@ export function Sketch() {
 }
 
 export function iteratePath(path, shift, callback) {
-  let p, q, n = path.length;
+  let p, q;
+  const n = path.length;
   for (p = n - 1,q = 0;q < n; p = q++) {
     const ai = (p + shift) % n;
     const bi = (q + shift) % n;

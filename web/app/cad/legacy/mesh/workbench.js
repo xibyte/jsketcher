@@ -80,7 +80,8 @@ export function polygonsToSegments(polygons) {
   for (let pi = 0; pi < polygons.length; pi++) {
     const segments = [];
     const poly = polygons[pi];
-    let p, q, n = poly.vertices.length;
+    let p, q;
+    const n = poly.vertices.length;
     for(p = n - 1, q = 0; q < n; p = q ++) {
       const a = poly.vertices[p];
       const b = poly.vertices[q];
@@ -105,7 +106,8 @@ export function reconstructSketchBounds(csg, face, strict) {
       }
       continue;
     }
-    let p, q, n = poly.vertices.length;
+    let p, q;
+    const n = poly.vertices.length;
     for(p = n - 1, q = 0; q < n; p = q ++) {
       const a = poly.vertices[p];
       const b = poly.vertices[q];

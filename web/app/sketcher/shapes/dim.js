@@ -112,11 +112,10 @@ export class LinearDimension extends Dimension {
 
     this.unscale = scale;
 
-    let a, b, startA, startB;
-    a = this.getB();
-    b = this.getA();
-    startA = this.b;
-    startB = this.a;
+    const a = this.getB();
+    const b = this.getA();
+    const startA = this.b;
+    const startB = this.a;
 
     const d = distanceAB(a, b);
 
