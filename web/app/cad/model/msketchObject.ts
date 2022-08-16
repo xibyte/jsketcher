@@ -26,7 +26,7 @@ export class MSketchObject extends MObject {
   toDirection(): UnitVector {
     const tangent = (this.sketchPrimitive as Segment).tangentAtStart();
     return this.face.sketchToWorldTransformation.applyNoTranslation(tangent)._normalize();
-  };
+  }
 
   toAxis(reverse: boolean): Axis {
     let seg = this.sketchPrimitive as Segment;
@@ -42,6 +42,6 @@ export class MSketchObject extends MObject {
     tan = this.face.sketchToWorldTransformation.applyNoTranslation(tan)._normalize();
     origin = this.face.sketchToWorldTransformation.apply(origin);
     return new Axis(origin, tan);
-  };
+  }
 
 }

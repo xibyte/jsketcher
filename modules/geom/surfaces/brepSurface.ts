@@ -134,7 +134,7 @@ export class BrepSurface {
     let X = intersectNurbs(this.impl, other.impl, this.inverted !== other.inverted);
     // let X = surfaceIntersect(this.impl, other.impl);
     return X.map(curve => new BrepCurve(curve));
-  };
+  }
 
   invert() {
     return new BrepSurface(this.impl, !this.inverted);

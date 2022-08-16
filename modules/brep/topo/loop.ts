@@ -67,7 +67,7 @@ export class Loop extends TopoObject {
     const first = polygon[nextIdx].minus(o);
     const last = o.minus(polygon[prevIdx]);
     return last.cross(first).dot(surface.normal) >= 0;
-  };
+  }
 }
 
 export function* enclosesGenerator(halfEdges): Generator<[HalfEdge, HalfEdge, Vertex]> {

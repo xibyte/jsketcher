@@ -139,11 +139,11 @@ export class Viewer {
     this.canvas = null;
     this.toolManager.dispose();
     Generator.resetIDGenerator();
-  };
+  }
 
   isDisposed() {
     return this.canvas === null;
-  };
+  }
 
   setTransformation(a, b, c, d, e, f, zoom) {
     this.transformation = [a, b, c, d, e, f];
@@ -156,30 +156,30 @@ export class Viewer {
       b, d, 0, f,
       0, 0, 1, 0
     )._invert();
-  };
+  }
 
   roundToPrecision(value) {
     return value.toFixed(this.presicion);
-  };
+  }
 
   addSegment(x1, y1, x2, y2, layer) {
     const line = new Segment(x1, y1, x2, y2);
     layer.add(line);
     return line;
-  };
+  }
 
   remove(obj) {
     this.removeAll([obj]);
-  };
+  }
 
   removeAll(objects) {
     this.deselectAll();
     this.parametricManager.removeObjects(objects);
-  };
+  }
 
   add(obj, layer) {
     layer.add(obj);
-  };
+  }
 
   search(x, y, buffer, deep, onlyPoints, filter) {
 
@@ -235,7 +235,7 @@ export class Viewer {
       pickResult[heroIdx] = _f;
     }
     return pickResult;
-  };
+  }
 
   _createServiceLayers(): Layer<Shape>[] {
     let layer = this.createLayer<Shape>("_service", Styles.SERVICE);
@@ -244,7 +244,7 @@ export class Viewer {
     layer.objects.push(this.referencePoint);
     layer.objects.push(new BasisOrigin(null, this));
     return [layer];
-  };
+  }
 
   createGroundObjects() {
     const groundObjectsGenerator = new SketchGenerator({}, GroundObjectsGeneratorSchema);
@@ -258,7 +258,7 @@ export class Viewer {
         viewer.repaint();
       }
     });
-  };
+  }
 
   repaint() {
 
@@ -284,7 +284,7 @@ export class Viewer {
 
     this.__drawWorkspace(ctx, this._workspace, Viewer.__SKETCH_DRAW_PIPELINE);
     this.__drawWorkspace(ctx, this._serviceWorkspace, Viewer.__SIMPLE_DRAW_PIPELINE);
-  };
+  }
 
   __drawWorkspace(ctx, workspace, pipeline) {
     for (let drawPredicate of pipeline) {
@@ -306,7 +306,7 @@ export class Viewer {
         }
       }
     }
-  };
+  }
 
   __draw(ctx, layer, obj) {
     const style = this.getStyleForObject(layer, obj);
@@ -315,7 +315,7 @@ export class Viewer {
     }
     this.__prevStyle = style;
     obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
-  };
+  }
 
   getStyleForObject(layer, obj) {
     if (obj.style != null) {
@@ -327,11 +327,11 @@ export class Viewer {
       }
     }
     return layer.style;
-  };
+  }
 
   setStyle(style, ctx) {
     draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
-  };
+  }
 
   snap(x, y, excl) {
     this.cleanSnap();
@@ -340,11 +340,11 @@ export class Viewer {
       this.capture('tool', [snapTo[0]], true);
     }
     return this.snapped;
-  };
+  }
 
   cleanSnap() {
     this.withdrawAll('tool')
-  };
+  }
 
   showBounds(x1, y1, x2, y2) {
     const dx = Math.max(x2 - x1, 1);
@@ -358,7 +358,7 @@ export class Viewer {
     }
     this.translate.x = -x1 * this.scale;
     this.translate.y = -y1 * this.scale;
-  };
+  }
 
   fit() {
     let count = 0;
@@ -392,17 +392,17 @@ export class Viewer {
       out.x /= this.scale;
       out.y /= this.scale;
     }
-  };
+  }
 
   screenToModel(e) {
     return this._screenToModel(e.offsetX, e.offsetY);
-  };
+  }
 
   _screenToModel(x, y) {
     const out = {x: 0, y: 0};
     this.screenToModel2(x, y, out);
     return out;
-  };
+  }
 
   screenToModelDistance(dist) {
     measurer.x = 0;
@@ -437,7 +437,7 @@ export class Viewer {
       }
     }
     return null;
-  };
+  }
 
   findById(id) {
     let result = null;
@@ -449,7 +449,7 @@ export class Viewer {
       return true;
     });
     return result;
-  };
+  }
 
   createIndex() {
     const index = {};
@@ -476,7 +476,7 @@ export class Viewer {
         obj.addMarker(CAPTURES[type]);
       }
     }
-  };
+  }
 
 
   withdraw(type, obj) {
@@ -487,7 +487,7 @@ export class Viewer {
         break;
       }
     }
-  };
+  }
 
   withdrawAll(type) {
     const captured = this.captured[type];
@@ -495,22 +495,22 @@ export class Viewer {
       captured[i].removeMarker(CAPTURES[type]);
     }
     while (captured.length > 0) captured.pop();
-  };
+  }
 
   withdrawGlobal() {
     Object.keys(this.captured).forEach(type => this.withdrawAll(type));
     this.streams.selection.next(this.selected);
-  };
+  }
 
   deselect(obj) {
     this.withdraw('selection', obj);
     this.streams.selection.next(this.selected);
-  };
+  }
 
   deselectAll() {
     this.withdrawAll('selection');
     this.streams.selection.next(this.selected);
-  };
+  }
 
   highlight(objs, exclusive) {
     this.capture('highlight', objs, exclusive);
@@ -527,7 +527,7 @@ export class Viewer {
   pick(e) {
     const m = this.screenToModel(e);
     return this.search(m.x, m.y, DEFAULT_SEARCH_BUFFER, true, false, []);
-  };
+  }
 
   get activeLayer() {
     let layer = this._activeLayer;
@@ -542,7 +542,7 @@ export class Viewer {
       }
     }
     return this.findLayerByName(PREDEFINED_LAYERS.SKETCH);
-  };
+  }
 
   set activeLayerName(layerName) {
     let layer = this.findLayerByName(layerName);
@@ -551,22 +551,22 @@ export class Viewer {
     } else {
       console.warn("layer doesn't exist: " + layerName);
     }
-  };
+  }
 
   setActiveLayer(layer) {
     if (!layer.readOnly) {
       this._activeLayer = layer;
     }
-  };
+  }
 
   fullHeavyUIRefresh() {
     this.refresh();
     this.parametricManager.notify();
-  };
+  }
 
   createLayer<T>(name, style) {
     return new Layer<T>(name, style, this)
-  };
+  }
 
   objectsUpdate = () => this.streams.objectsUpdate.next();
   
@@ -625,7 +625,7 @@ export class Layer<T = Shape> {
       return true;
     }
     return false;
-  };
+  }
 
   add(object) {
     if (object.layer !== undefined) {
@@ -639,7 +639,7 @@ export class Layer<T = Shape> {
     } else {
       this._addAndNotify(object);
     }
-  };
+  }
 
   traverseSketchObjects(callback) {
     this.objects.forEach(o => {

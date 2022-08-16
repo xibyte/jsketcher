@@ -234,7 +234,7 @@ export class MBrepFace extends MFace {
 
   toDirection(): UnitVector {
     return this.normal();
-  };
+  }
 
   toAxis(reverse: boolean): Axis {
     const dir = this.toDirection();
@@ -242,6 +242,6 @@ export class MBrepFace extends MFace {
       dir._negate();
     }
     return new Axis(this.favorablePoint, dir);
-  };
+  }
 
 }
