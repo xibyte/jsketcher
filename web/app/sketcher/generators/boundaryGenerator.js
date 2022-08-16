@@ -44,8 +44,8 @@ export const BoundaryGeneratorSchema = {
     }
 
     for (i = 0; i < boundary.lines.length; ++i) {
-      let edge = boundary.lines[i];
-      let seg = new Segment(edge.a.x, edge.a.y, edge.b.x, edge.b.y,'boundary/' + edge.id);
+      const edge = boundary.lines[i];
+      const seg = new Segment(edge.a.x, edge.a.y, edge.b.x, edge.b.y,'boundary/' + edge.id);
       process(seg);
     }
     for (i = 0; i < boundary.arcs.length; ++i) {
@@ -65,8 +65,8 @@ export const BoundaryGeneratorSchema = {
       process(circle);
     }
     for (i = 0; i < boundary.nurbses.length; ++i) {
-      let nurbsData = boundary.nurbses[i];
-      let nurbs = new NurbsObject(NurbsCurve.deserialize(nurbsData), 'boundary/' + nurbsData.id);
+      const nurbsData = boundary.nurbses[i];
+      const nurbs = new NurbsObject(NurbsCurve.deserialize(nurbsData), 'boundary/' + nurbsData.id);
       process(nurbs);
     }
 

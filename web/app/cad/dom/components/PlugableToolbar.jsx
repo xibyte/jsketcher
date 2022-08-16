@@ -29,7 +29,7 @@ export function ToolbarActionButtons({actions, showTitles, size}) {
         <ToolbarGroup><ToolbarActionButtons actions={actionRef.slice(actionRef.length / 2, actionRef.length)} showTitles={showTitles} size={size} /></ToolbarGroup>
       </div>;
     }
-    let [id, overrides] = toIdAndOverrides(actionRef);
+    const [id, overrides] = toIdAndOverrides(actionRef);
     return <ConnectedActionButton actionId={id} key={id} size={size} {...overrides} noLabel={!showTitles}/>
   });
 }
@@ -39,7 +39,7 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'la
     return null;
   }
 
-  let smallOrMedium = size === 'medium' || size === 'small';
+  const smallOrMedium = size === 'medium' || size === 'small';
   if (icon) {
     const Icon = icon;
     icon = <Icon size={size}/>;

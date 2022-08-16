@@ -8,8 +8,8 @@ export function singleShellRespone(oldShell, newShellData) {
     throw 'operation failed';
   }
 
-  let consumed = [oldShell];
-  let created = readShellData(newShellData, consumed, oldShell.csys);
+  const consumed = [oldShell];
+  const created = readShellData(newShellData, consumed, oldShell.csys);
   return {
     consumed: consumed,
     created: [created]
@@ -17,29 +17,29 @@ export function singleShellRespone(oldShell, newShellData) {
 }
 
 export function readShellData(data, consumed, csys) {
-  let exposure = __CAD_APP.services.exposure;
-  let model = new exposure.scene.readShellEntityFromJson(data, consumed, csys);
+  const exposure = __CAD_APP.services.exposure;
+  const model = new exposure.scene.readShellEntityFromJson(data, consumed, csys);
   model.brepShell.data.externals.engine = 'e0';
   return model;
 }
 
 export function managedByE0(mShell) {
-  let externals = mShell.brepShell && mShell.brepShell.data && mShell.brepShell.data.externals;
+  const externals = mShell.brepShell && mShell.brepShell.data && mShell.brepShell.data.externals;
   return externals && externals.engine === 'e0';
 }
 
 export function readSketchContour(contour, face) {
-  let tr = face.csys.outTransformation;
-  let path = [];
+  const tr = face.csys.outTransformation;
+  const path = [];
   contour.segments.forEach(s => {
     if (s.isCurve) {
       if (s.constructor.name === 'Circle') {
         const dir = face.csys.z.data();
         path.push({TYPE: PRIMITIVE_TYPES.CIRCLE, c: tr.apply(s.c).data(), dir, r: s.r});
       } else if (s.constructor.name === 'Arc') {
-        let a = s.inverted ? s.b : s.a;
-        let b = s.inverted ? s.a : s.b;
-        let tangent = tr._apply(s.c.minus(a))._cross(face.csys.z)._normalize();
+        const a = s.inverted ? s.b : s.a;
+        const b = s.inverted ? s.a : s.b;
+        const tangent = tr._apply(s.c.minus(a))._cross(face.csys.z)._normalize();
         if (s.inverted) {
           tangent._negate();
         }
@@ -50,7 +50,7 @@ export function readSketchContour(contour, face) {
           tangent: tangent.data()
         });
       } else {
-        let nurbs = s.toNurbs(face.csys).impl;
+        const nurbs = s.toNurbs(face.csys).impl;
         path.push(Object.assign({TYPE: PRIMITIVE_TYPES.B_SPLINE}, nurbs.serialize()));
       }
     } else {
@@ -67,7 +67,7 @@ export function readSketchContour(contour, face) {
 }
 
 export function readSketch(face, request, sketchStorageService) {
-  let sketch = sketchStorageService.readSketch(face.id);
+  const sketch = sketchStorageService.readSketch(face.id);
   if (!sketch) throw 'sketch not found for the face ' + face.id;
   return sketch.fetchContours().map(c => readSketchContour(c, face));
 }

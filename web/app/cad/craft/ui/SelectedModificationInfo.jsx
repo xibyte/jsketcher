@@ -31,19 +31,19 @@ function SelectedModificationInfo({ history, index,
       ctx.domService.viewerContainer.removeEventListener('click', clickAwayHandler);
     }
   }, []);
-  let m = history[index];
-  let visible = !!m;
+  const m = history[index];
+  const visible = !!m;
   if (!visible) {
     return null;
   }
-  let op = operationRegistry[m.type];
+  const op = operationRegistry[m.type];
   if (!op) {
     console.warn('unknown operation ' + m.type);
     return;
   }
   const appearance = resolveAppearance(op, m.params);
 
-  let indexNumber = index + 1;
+  const indexNumber = index + 1;
   return <Widget visible={visible}
                  left={lh && lh.x}
                  bottom={95}

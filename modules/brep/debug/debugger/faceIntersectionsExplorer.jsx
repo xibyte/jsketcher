@@ -7,9 +7,9 @@ import {
 
 
 export function FaceIntersectionsExplorer({faceIntersection, id, group3d}) {
-  let category='face-intersections';
-  let context = faceIntersection;
-  let {faceA, faceB, curve, nodes} = faceIntersection;
+  const category='face-intersections';
+  const context = faceIntersection;
+  const {faceA, faceB, curve, nodes} = faceIntersection;
   
   return <InteractiveSection name={`intersection ${id}`} closable defaultClosed={true}
                              {...{viewObjectsProvider: faceIntersectionsViewer, topoObj: faceIntersection, group3d, category, context}}>

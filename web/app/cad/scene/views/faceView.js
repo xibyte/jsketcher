@@ -34,13 +34,13 @@ export class SketchingView extends View {
     this.disposeSketch();
 
     const sketchTr =  this.model.sketchToWorldTransformation;
-    for (let sketchObject of this.model.sketchObjects) {
-      let sov = new SketchObjectView(this.ctx, sketchObject, sketchTr);
+    for (const sketchObject of this.model.sketchObjects) {
+      const sov = new SketchObjectView(this.ctx, sketchObject, sketchTr);
       SceneGraph.addToGroup(this.sketchGroup, sov.rootGroup);
       this.sketchObjectViews.push(sov);
     }
     this.model.sketchLoops.forEach(mLoop => {
-      let loopView = new SketchLoopView(this.ctx, mLoop);
+      const loopView = new SketchLoopView(this.ctx, mLoop);
       SceneGraph.addToGroup(this.sketchGroup, loopView.rootGroup);
       this.sketchLoopViews.push(loopView);  
     });
@@ -100,7 +100,7 @@ export class FaceView extends SketchingView {
 }
 
 export function setFacesColor(faces, color) {
-  for (let face of faces) {
+  for (const face of faces) {
     if (color === null) {
       face.color.set(NULL_COLOR);
     } else {

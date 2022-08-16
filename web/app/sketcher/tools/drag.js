@@ -18,11 +18,11 @@ export class DragTool extends Tool {
       this.viewer.toolManager.releaseControl();
       return;
     }
-    let x = this._point.x;
-    let y = this._point.y;
+    const x = this._point.x;
+    const y = this._point.y;
     this.viewer.screenToModel2(e.offsetX, e.offsetY, this._point);
-    let dx = this._point.x - x;
-    let dy = this._point.y - y;
+    const dx = this._point.x - x;
+    const dy = this._point.y - y;
     if (this.obj.drag) {
       this.obj.drag(this._point.x, this._point.y, dx, dy);
     } else {
@@ -62,7 +62,7 @@ export class DragTool extends Tool {
     }
     this.viewer.refresh();
     this.viewer.toolManager.releaseControl();
-    let traveled = distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
+    const traveled = distance(this.origin.x, this.origin.y, e.offsetX, e.offsetY);
     if (traveled >= 10) {
       this.viewer.historyManager.lightCheckpoint(10);
     }

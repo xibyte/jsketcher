@@ -33,7 +33,7 @@ export function clearGroup(group) {
 
 
 export function findAncestor( obj, predicate, includeItself ) {
-  let parent = includeItself ? obj : obj.parent;
+  const parent = includeItself ? obj : obj.parent;
   if ( parent !== null ) {
     if (predicate(parent)) {
       return parent;

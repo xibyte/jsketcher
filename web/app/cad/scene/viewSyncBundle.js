@@ -20,7 +20,7 @@ export const ViewSyncBundle = {
   ],
 
   activate(ctx) {
-    let {streams} = ctx;
+    const {streams} = ctx;
     ctx.highlightService.highlightEvents.attach(id => {
       const model = ctx.cadRegistry.find(id);
       model?.ext?.view?.mark('highlight');
@@ -40,13 +40,13 @@ function sceneSynchronizer(ctx) {
   const {services: {cadScene, cadRegistry, viewer, wizard, action, pickControl}} = ctx;
   return function() {
 
-    let wgChildren = cadScene.workGroup.children;
-    let existent = new Set();
+    const wgChildren = cadScene.workGroup.children;
+    const existent = new Set();
     for (let i = wgChildren.length - 1; i >= 0; --i) {
-      let obj = wgChildren[i];
-      let shellView = getAttribute(obj, View.MARKER);
+      const obj = wgChildren[i];
+      const shellView = getAttribute(obj, View.MARKER);
       if (shellView) {
-        let exists = cadRegistry.modelIndex.has(shellView.model.id);
+        const exists = cadRegistry.modelIndex.has(shellView.model.id);
         if (!exists) {
           SceneGraph.removeFromGroup(cadScene.workGroup, obj);
           shellView.dispose();
@@ -56,7 +56,7 @@ function sceneSynchronizer(ctx) {
       }
     }
 
-    for (let model of cadRegistry.models) {
+    for (const model of cadRegistry.models) {
       if (!existent.has(model.id)) {
         let modelView;
         if (model instanceof MOpenFaceShell) {

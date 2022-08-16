@@ -15,7 +15,7 @@ export default function newtonIterations(fnEval, x0, tol) {
   let x = x0;
   
   for (let i = 0; i < MAX_IT; i++) {
-    let [fValue, dValue] = fnEval(x);
+    const [fValue, dValue] = fnEval(x);
     if (Math.abs(fValue) <= tol) {
       return x;
     }
@@ -31,7 +31,7 @@ export function newtonIterationsOnInterval(fnEval, a, b, tol) {
   let x = a + (b - a) * 0.5;
 
   for (let i = 0; i < MAX_IT; i++) {
-    let [fValue, dValue] = fnEval(x);
+    const [fValue, dValue] = fnEval(x);
     if (Math.abs(fValue) <= tol) {
       return x;
     }
@@ -53,7 +53,7 @@ export function newtonIterationsOnIntervalExcluding(fnEval, a, b, tol) {
   const xFn = t => a + (b-a)/(1 + Math.exp(-t));
 
   const xDer = t => {
-    let et = Math.exp(-t);
+    const et = Math.exp(-t);
     return et*(b-a)/sq(et+1);
   };
 
@@ -61,7 +61,7 @@ export function newtonIterationsOnIntervalExcluding(fnEval, a, b, tol) {
   let t = 0;
   let x = xFn(t);
   for (let i = 0; i < MAX_IT; i++) {
-    let [fValue, dValue] = fnEval(x);
+    const [fValue, dValue] = fnEval(x);
     
     if (Math.abs(fValue) <= tol) {
       return x;

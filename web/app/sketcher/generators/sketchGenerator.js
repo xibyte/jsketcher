@@ -35,7 +35,7 @@ export class SketchGenerator {
 
   generate(viewer) {
     this.init();
-    let layer = viewer.findLayerByName(PREDEFINED_LAYERS.SKETCH);
+    const layer = viewer.findLayerByName(PREDEFINED_LAYERS.SKETCH);
     this.generatedObjects = this.schema.generate(this.params, this.internalState);
     this.generatedObjects.forEach(obj => {
       obj.generator = this;

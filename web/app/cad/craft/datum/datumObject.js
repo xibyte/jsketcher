@@ -53,7 +53,7 @@ export default class DatumObject3D extends Object3D {
 
     this.beingDraggedAxis = dir;
 
-    let ext = dir.multiply(this.viewer.sceneSetup.workingSphere);
+    const ext = dir.multiply(this.viewer.sceneSetup.workingSphere);
 
     const material = new LineBasicMaterial({color});
     const geometry = new BufferGeometry().setFromPoints( [
@@ -61,7 +61,7 @@ export default class DatumObject3D extends Object3D {
       new Vector3().copy(this.csys.origin.plus(ext))
     ]);
 
-    let line = new Line(geometry, material);
+    const line = new Line(geometry, material);
     this.add(line);
 
     this.exitEditMode = () => {
@@ -96,23 +96,23 @@ export default class DatumObject3D extends Object3D {
 
   dragMove({mouseEvent: e}) {
     if (this.beingDraggedAxis) {
-      let dir = this.beingDraggedAxis;
+      const dir = this.beingDraggedAxis;
 
-      let traveledX = e.offsetX - this.dragInfo.startX;
-      let traveledY = e.offsetY - this.dragInfo.startY;
+      const traveledX = e.offsetX - this.dragInfo.startX;
+      const traveledY = e.offsetY - this.dragInfo.startY;
       
-      let raycaster = this.viewer.sceneSetup.createRaycaster(this.dragInfo.originViewCoord.x + traveledX, this.dragInfo.originViewCoord.y + traveledY);
+      const raycaster = this.viewer.sceneSetup.createRaycaster(this.dragInfo.originViewCoord.x + traveledX, this.dragInfo.originViewCoord.y + traveledY);
       
       this.csys.origin.setV(this.dragInfo.csysOrigin);
       
       //see nurbs-ext - rays intersection  
-      let zRef = dir.cross(raycaster.ray.direction);
+      const zRef = dir.cross(raycaster.ray.direction);
 
-      let n2 = zRef.cross(raycaster.ray.direction)._normalize();
+      const n2 = zRef.cross(raycaster.ray.direction)._normalize();
       
-      let u = n2.dot(this.csys.origin.minus(raycaster.ray.origin)._negate()) / n2.dot(dir);
+      const u = n2.dot(this.csys.origin.minus(raycaster.ray.origin)._negate()) / n2.dot(dir);
 
-      let delta = dir.multiply(u);
+      const delta = dir.multiply(u);
       this.csys.origin._plus(delta);
       
       if (e.shiftKey) {
@@ -141,7 +141,7 @@ export default class DatumObject3D extends Object3D {
 
 function addOnHoverBehaviour(handle, viewer) {
   handle.onMouseDown = function(e) {
-    let datum = this.parent.parent.parent;
+    const datum = this.parent.parent.parent;
     if (datum.freezeDragging) {
       return;
     }
@@ -149,8 +149,8 @@ function addOnHoverBehaviour(handle, viewer) {
     datum.dragStart(e.mouseEvent, this.parent);
   };
   
-  let defaultColor = handle.material.color.getHex();
-  let setColor = createExpensiveSetter(color => handle.material.color.setHex(color));
+  const defaultColor = handle.material.color.getHex();
+  const setColor = createExpensiveSetter(color => handle.material.color.setHex(color));
 
   const handleState = createReactiveState({
       selected: null,

@@ -29,7 +29,7 @@ export function activate(ctx) {
     dispatchMousemove(event.mouseEvent, hits)
   });
 
-  let performRaycast = e => {
+  const performRaycast = e => {
     const hits = services.viewer.raycast(e, services.cadScene.workGroup.children, RayCastDebugInfo);
     hits.sort((a, b) => {
       if (Math.abs(a.distance - b.distance) < 0.01 && (a.object.raycastPriority || b.object.raycastPriority)) {
@@ -41,7 +41,7 @@ export function activate(ctx) {
   }
 
   let toDrag = null;
-  let pressed = new Set();
+  const pressed = new Set();
   
   event.startDrag = objectToDrag => {
     if (toDrag) {
@@ -59,7 +59,7 @@ export function activate(ctx) {
   
   function mousedown(e) {
     event.mouseState = MouseStates.DOWN;
-    let hits = performRaycast(e);
+    const hits = performRaycast(e);
     dispatchMousedown(e, hits);
   }
 
@@ -68,12 +68,12 @@ export function activate(ctx) {
     event.hits = hits;
     pressed.clear();
 
-    for (let hit of hits) {
+    for (const hit of hits) {
       if (LOG_FLAGS.PICK) {
         printRaycastDebugInfo('mouseDown', hit);
       }
 
-      let obj = hit.object;
+      const obj = hit.object;
       if (obj && obj.onMouseDown) {
         safeCall(() => obj.onMouseDown(event));
       }
@@ -91,7 +91,7 @@ export function activate(ctx) {
       stopDrag(e);
       mousemove(e);
     } else {
-      let hits = performRaycast(e);
+      const hits = performRaycast(e);
       dispatchMouseup(e, hits);
     }
   }
@@ -101,11 +101,11 @@ export function activate(ctx) {
     event.mouseEvent = e;
     event.hits = hits;
 
-    for (let hit of hits) {
+    for (const hit of hits) {
       if (LOG_FLAGS.PICK) {
         printRaycastDebugInfo('mouseUp', hit);
       }
-      let obj = hit.object;
+      const obj = hit.object;
       if (obj && obj.onMouseUp) {
         safeCall(() => obj.onMouseUp(event));
       }
@@ -139,7 +139,7 @@ export function activate(ctx) {
     event.hits = hits;
 
     valid.clear();
-    for (let hit of hits) {
+    for (const hit of hits) {
       valid.add(hit.object);
       if (!hit.object.passMouseEvent || !hit.object.passMouseEvent(event)) {
         break;
@@ -162,25 +162,25 @@ export function activate(ctx) {
       }
     });
 
-    let t = valid;
+    const t = valid;
     valid = entered;
     entered = t;
     valid.clear();
   }
 
   function dblclick(e) {
-    let hits = performRaycast(e);
+    const hits = performRaycast(e);
     dispatchDblclick(e, hits);
   }
 
   function dispatchDblclick(e, hits) {
     event.mouseEvent = e;
     event.hits = hits;
-    for (let hit of hits) {
+    for (const hit of hits) {
       if (LOG_FLAGS.PICK) {
         printRaycastDebugInfo('dblclick', hit);
       }
-      let obj = hit.object;
+      const obj = hit.object;
       if (obj && obj.onDblclick) {
         safeCall(() => obj.onDblclick(event));
       }

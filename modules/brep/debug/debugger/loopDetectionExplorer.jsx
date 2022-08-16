@@ -15,15 +15,15 @@ export default class LoopDetectionExplorer extends React.PureComponent {
   }
   
   render() {
-    let {loopDetection: {id, graph, steps, detectedLoops}, group3d} = this.props;
+    const {loopDetection: {id, graph, steps, detectedLoops}, group3d} = this.props;
 
-    let detectedEdges = new Set();
-    for (let loop of detectedLoops) {
+    const detectedEdges = new Set();
+    for (const loop of detectedLoops) {
       loop.halfEdges.forEach(e => detectedEdges.add(e));
     }
 
 
-    let step = steps[this.state.step];
+    const step = steps[this.state.step];
     if (!step) {
       return null;
     }
@@ -39,12 +39,12 @@ export default class LoopDetectionExplorer extends React.PureComponent {
 
 
     function backTrack(stepIdx) {
-      let looped = new Set();
-      let used = new Set();
+      const looped = new Set();
+      const used = new Set();
       let active = [];
       
       for (let i = 0; i < stepIdx + 1; i++) {
-        let step = steps[i];
+        const step = steps[i];
         switch (step.type) {
           case 'TRY_LOOP': {
             if (active.length !== 0) {
@@ -64,7 +64,7 @@ export default class LoopDetectionExplorer extends React.PureComponent {
           }
         }
       }
-      let lastActive = active[active.length - 1]; 
+      const lastActive = active[active.length - 1]; 
       active = new Set(active);
       return {
         active, used, looped, lastActive
@@ -72,11 +72,11 @@ export default class LoopDetectionExplorer extends React.PureComponent {
     }
     
     function color(stepIdx) {
-      let step = steps[stepIdx];
-      let {active, used, looped, lastActive} = backTrack(stepIdx);
+      const step = steps[stepIdx];
+      const {active, used, looped, lastActive} = backTrack(stepIdx);
       setViewObjectsColor(getGraphViewObjects, group3d, 'loop-detection', detectedEdges, graph, vo => {
         vo.visible = true;
-        let o = vo.__tcad_debug_topoObj;
+        const o = vo.__tcad_debug_topoObj;
         if (step.type === 'NEXT_STEP_ANALYSIS') {
           if (step.winner === o){
             return YELLOW
@@ -100,7 +100,7 @@ export default class LoopDetectionExplorer extends React.PureComponent {
     }
     
      const doStep = nextStepIdx => {
-      let nextStep = steps[nextStepIdx];
+      const nextStep = steps[nextStepIdx];
       if (nextStep !== undefined) {
         color(nextStepIdx);        
         this.setState({step: nextStepIdx});
@@ -115,20 +115,20 @@ export default class LoopDetectionExplorer extends React.PureComponent {
       doStep(this.state.step - 1);
     };
 
-    let ctrlProps = {
+    const ctrlProps = {
       viewObjectsProvider: getGraphViewObjects, topoObj: graph, group3d, category: 'loop-detection', context: detectedEdges
     };
-    let begin = this.state.step === 0;
-    let end = this.state.step === steps.length - 1;
+    const begin = this.state.step === 0;
+    const end = this.state.step === steps.length - 1;
     
-    let controls = <span>
+    const controls = <span>
         <Controls {...ctrlProps} />
         <span className={cx({clickable: !begin, grayed: begin})} onClick={stepBack}><i className='fa fa-fw fa-caret-square-o-left' /> back</span>
         <span className={cx({clickable: !end, grayed: end})} onClick={stepNext}><i className='fa fa-fw fa-caret-square-o-right' /> next</span>
         <i> step: <b>{this.state.step || '-'}</b></i>
       </span>;
 
-    let name = <ActiveLabel {...ctrlProps}>loop detection {id}</ActiveLabel>;
+    const name = <ActiveLabel {...ctrlProps}>loop detection {id}</ActiveLabel>;
 
     return <Section name={name} closable defaultClosed={true} controls={controls}>
       {candidates}
@@ -143,11 +143,11 @@ export default class LoopDetectionExplorer extends React.PureComponent {
 
 
 export function GraphExplorer({graph, group3d, context}) {
-  let ctrlProps = {
+  const ctrlProps = {
     viewObjectsProvider: getGraphViewObjects, topoObj: graph, group3d, category: 'loop-detection', context
   };
-  let controls = <Controls {...ctrlProps} />;
-  let name = <ActiveLabel {...ctrlProps}>graph</ActiveLabel>;
+  const controls = <Controls {...ctrlProps} />;
+  const name = <ActiveLabel {...ctrlProps}>graph</ActiveLabel>;
 
   return <Section name={name} tabs={TAB} closable defaultClosed={true} controls={controls}>
     {mapIterable(graph, edge => <EdgeExplorer key={edge.refId} {...{edge, group3d, context}} category='loop-detection'/>)}
@@ -156,8 +156,8 @@ export function GraphExplorer({graph, group3d, context}) {
 
 
 export function DiscardedExplorer({detectedEdges, graph, group3d}) {
-  let discardedEdges = new Set(graph);
-  for (let edge of detectedEdges) {
+  const discardedEdges = new Set(graph);
+  for (const edge of detectedEdges) {
     discardedEdges.delete(edge);
   }
   return (discardedEdges.size !== 0 ? <EdgesExplorer edges={Array.from(discardedEdges)} {...{group3d}} 

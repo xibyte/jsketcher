@@ -47,19 +47,19 @@ export class StitchedCurve {
 
 export function update(shell) {
   const index = new DoubleKeyMap();
-  for (let face of shell.faces) {
+  for (const face of shell.faces) {
     const stitchedSurface = face.data[FACE_CHUNK];
     if (stitchedSurface) {
       stitchedSurface.clear();
     }
   }
-  for (let face of shell.faces) {
+  for (const face of shell.faces) {
     const stitchedSurface = face.data[FACE_CHUNK];
     if (stitchedSurface) {
       stitchedSurface.addFace(face);
     }
   }
-  for (let e of shell.edges) {
+  for (const e of shell.edges) {
     const face1 = e.halfEdge1.loop.face;
     const face2 = e.halfEdge2.loop.face;
     const stitchedSurface1 = face1.data[FACE_CHUNK];

@@ -26,19 +26,19 @@ export class ShellView extends View {
     setAttribute(this.rootGroup, SHELL, this);
     setAttribute(this.rootGroup, View.MARKER, this);
 
-    for (let face of shell.faces) {
+    for (const face of shell.faces) {
       const faceView = new FaceView(ctx, face, this, skin);
       this.faceViews.push(faceView);
       this.rootGroup.add(faceView.rootGroup);
     }
 
-    for (let edge of shell.edges) {
+    for (const edge of shell.edges) {
       const edgeView = new EdgeView(ctx, edge);
       SceneGraph.addToGroup(this.edgeGroup, edgeView.rootGroup);
       this.edgeViews.push(edgeView);
     }
 
-    for (let vertex of shell.vertices) {
+    for (const vertex of shell.vertices) {
       const vertexView = new VertexView(ctx, vertex);
       SceneGraph.addToGroup(this.vertexGroup, vertexView.rootGroup);
       this.vertexViews.push(vertexView);
@@ -66,13 +66,13 @@ export class ShellView extends View {
   }
 
   dispose() {
-    for (let faceView of this.faceViews) {
+    for (const faceView of this.faceViews) {
       faceView.dispose();
     }
-    for (let edgeView of this.edgeViews) {
+    for (const edgeView of this.edgeViews) {
       edgeView.dispose();
     }
-    for (let vertexView of this.vertexViews) {
+    for (const vertexView of this.vertexViews) {
       vertexView.dispose();
     }
     super.dispose();

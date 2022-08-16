@@ -35,7 +35,7 @@ export function createPrism(basePoints, height) {
   const lidPath = [];
 
   for (let i = 0; i < basePoints.length; i++) {
-    let j = (i + 1) % basePoints.length;
+    const j = (i + 1) % basePoints.length;
     basePath.push(BrepCurve.createLinearCurve(basePoints[i], basePoints[j]));
     lidPath.push(BrepCurve.createLinearCurve(lidPoints[i], lidPoints[j]));
   }
@@ -71,24 +71,24 @@ function assemble(walls, basePlane, lidPlane) {
   const baseEdges = [];
   const lidEdges = [];
 
-  for (let w of walls) {
-    let wallEdge = Edge.fromCurve(w.isoCurveAlignV(0));
+  for (const w of walls) {
+    const wallEdge = Edge.fromCurve(w.isoCurveAlignV(0));
     wallEdges.push(wallEdge);
   }
 
   for (let i = 0; i < wallEdges.length; ++i) {
-    let j = (i + 1) % wallEdges.length;
-    let curr = wallEdges[i];
-    let next = wallEdges[j];
-    let wall = walls[i];
+    const j = (i + 1) % wallEdges.length;
+    const curr = wallEdges[i];
+    const next = wallEdges[j];
+    const wall = walls[i];
 
-    let baseEdge = new Edge(wall.isoCurveAlignU(1), curr.halfEdge1.vertexB, next.halfEdge1.vertexB);
-    let lidEdge = new Edge(wall.isoCurveAlignU(0), curr.halfEdge1.vertexA, next.halfEdge1.vertexA);
+    const baseEdge = new Edge(wall.isoCurveAlignU(1), curr.halfEdge1.vertexB, next.halfEdge1.vertexB);
+    const lidEdge = new Edge(wall.isoCurveAlignU(0), curr.halfEdge1.vertexA, next.halfEdge1.vertexA);
 
     baseEdges.push(baseEdge);
     lidEdges.push(lidEdge);
 
-    let wallFace = new Face(wall);
+    const wallFace = new Face(wall);
     wallFace.outerLoop.halfEdges.push(baseEdge.halfEdge2, curr.halfEdge2, lidEdge.halfEdge1, next.halfEdge1);
     wallFace.outerLoop.link();
     shell.faces.push(wallFace);

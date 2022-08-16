@@ -22,7 +22,7 @@ const SMOOTH_RENDERING = true;
 export function tessDataToGeom(tessellation) {
   const vertices = [];
   const normals3 = [];
-  for (let [tr, normales] of tessellation) {
+  for (const [tr, normales] of tessellation) {
     tr.forEach(p => vertices.push(...p));
 
     if (normales && SMOOTH_RENDERING) {
@@ -51,7 +51,7 @@ export function surfaceAndPolygonsToGeom(surface, polygons) {
   const index = [];
 
   const isPlane = surface.simpleSurface && surface.simpleSurface.isPlane;
-  let planeNormal = isPlane ? surface.normalInMiddle().data() : null;
+  const planeNormal = isPlane ? surface.normalInMiddle().data() : null;
   function pushVertex(vtx) {
     vertices.push(vtx.x, vtx.y, vtx.z);
     if (!isPlane) {
@@ -74,8 +74,8 @@ export function surfaceAndPolygonsToGeom(surface, polygons) {
 
     for (let i = 2; i < vLength; i++) {
 
-      let pVert = poly[i - 1];
-      let iVert = poly[i];
+      const pVert = poly[i - 1];
+      const iVert = poly[i];
       pushVertex(pVert);
       pushVertex(iVert);
       const a = off;
@@ -98,7 +98,7 @@ export function surfaceToThreeGeom(srf, geom) {
   const off = geom.vertices.length;
   const tess = tessellateSurface(srf);
   tess.points.forEach(p => geom.vertices.push(new THREE.Vector3().fromArray(p)));
-  for (let faceIndices of tess.faces) {
+  for (const faceIndices of tess.faces) {
     const face = new THREE.Face3(faceIndices[0] + off, faceIndices[1] + off, faceIndices[2] + off);
     geom.faces.push(face);
   }

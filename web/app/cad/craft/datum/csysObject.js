@@ -12,7 +12,7 @@ export default class CSysObject3D extends Object3D {
     this.sceneSetup = sceneSetup;
 
     function createBasisArrow(name, axis, color) {
-      let meshArrow = new MeshArrow({
+      const meshArrow = new MeshArrow({
         dir: axis,
         color,
         length: CSYS_SIZE_MODEL,
@@ -36,9 +36,9 @@ export default class CSysObject3D extends Object3D {
   }
 
   updateMatrix() {
-    let {origin: o, x, y, z} = this.csys;
+    const {origin: o, x, y, z} = this.csys;
 
-    let k = viewScaleFactor(this.sceneSetup, this.csys.origin, SIZE_PX, CSYS_SIZE_MODEL);
+    const k = viewScaleFactor(this.sceneSetup, this.csys.origin, SIZE_PX, CSYS_SIZE_MODEL);
     this.matrix.set(
       k*x.x, k*y.x, k*z.x, o.x,
       k*x.y, k*y.y, k*z.y, o.y,

@@ -16,15 +16,15 @@ export function activate(ctx) {
   }
   
   function imagePng() {
-    let auxVisible = ctx.services.cadScene.auxGroup.visible;
+    const auxVisible = ctx.services.cadScene.auxGroup.visible;
     ctx.services.cadScene.auxGroup.visible = false;
-    let renderer = ctx.services.viewer.sceneSetup.renderer;
-    let clearAlpha = renderer.getClearAlpha();
+    const renderer = ctx.services.viewer.sceneSetup.renderer;
+    const clearAlpha = renderer.getClearAlpha();
     renderer.setClearAlpha(0);
     renderer.preserveDrawingBuffer = true;
     ctx.services.viewer.sceneSetup.render();
 
-    let link = document.getElementById("downloader");
+    const link = document.getElementById("downloader");
     link.href = renderer.domElement.toDataURL('image/png');
     link.download = ctx.projectService.id + "-snapshot.png";
     link.click();

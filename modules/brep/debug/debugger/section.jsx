@@ -12,8 +12,8 @@ export default class Section extends React.PureComponent {
   }
 
   render() {
-    let {name, tabs, closable, defaultClosed, accent, children, captionStyles, controls} = this.props;
-    let closed = this.isClosed();
+    const {name, tabs, closable, defaultClosed, accent, children, captionStyles, controls} = this.props;
+    const closed = this.isClosed();
     return <div className={cx('section', {closable, closed})} style={{paddingLeft: tabs + 'em'}}>
       <div className={cx('caption', {accent}, captionStyles)} >
         <span className='title' onClick={closable ? this.tweakClose : undefined}>
@@ -26,7 +26,7 @@ export default class Section extends React.PureComponent {
   }
 
   isClosed() {
-    let {closable, defaultClosed} = this.props;
+    const {closable, defaultClosed} = this.props;
     if (!closable) return false;
     return closable && (this.state.closed === null ? defaultClosed : this.state.closed)
   }
@@ -38,7 +38,7 @@ export default class Section extends React.PureComponent {
 }
 
 function mapIterator(it, fn) {
-  for (let i of it) {
+  for (const i of it) {
     fn(i);
   }
 }

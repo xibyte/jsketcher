@@ -8,11 +8,11 @@ import {ORIGIN} from "math/vector";
 
 function rotate(params, {cadRegistry}) {
   
-  let mDatum = cadRegistry.findDatum(params.datum);
+  const mDatum = cadRegistry.findDatum(params.datum);
 
-  let axis = mDatum.csys[params.axis.toLowerCase()];
+  const axis = mDatum.csys[params.axis.toLowerCase()];
   
-  let csys = mDatum.csys.clone();
+  const csys = mDatum.csys.clone();
 
   applyRotation(mDatum.csys, csys, params.angle, axis);
 
@@ -22,25 +22,25 @@ function rotate(params, {cadRegistry}) {
   }
 }
 
-let auxMatrix = new Matrix3x4();
+const auxMatrix = new Matrix3x4();
 
 function previewer(ctx, initialParams) {
 
-  let mDatum = ctx.services.cadRegistry.findDatum(initialParams.datum);
+  const mDatum = ctx.services.cadRegistry.findDatum(initialParams.datum);
   
   if (!mDatum) {
     return null;
   }
-  let view = mDatum.ext.view;
+  const view = mDatum.ext.view;
   if (!view) {
     return null;
   }
 
-  let datum3D = view.rootGroup;
+  const datum3D = view.rootGroup;
   datum3D.beginOperation(true);
 
   function update(params) {
-    let axis = mDatum.csys[params.axis.toLowerCase()];
+    const axis = mDatum.csys[params.axis.toLowerCase()];
     applyRotation(mDatum.csys, datum3D.csys, params.angle, axis);
   }
 

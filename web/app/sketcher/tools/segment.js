@@ -20,7 +20,7 @@ export class AddSegmentTool extends Tool {
   }
 
   mousemove(e) {
-    let p = this.viewer.screenToModel(e);
+    const p = this.viewer.screenToModel(e);
     if (this.line != null) {
       this.viewer.snap(p.x, p.y, [this.line.a, this.line.b]);
       this.line.b.x = p.x;
@@ -53,7 +53,7 @@ export class AddSegmentTool extends Tool {
       this.viewer.refresh();
     } else {
       if (snapped) {
-        let p = this.viewer.snapped;
+        const p = this.viewer.snapped;
         this.viewer.cleanSnap();
         this.line.b.x = p.x;
         this.line.b.y = p.y;

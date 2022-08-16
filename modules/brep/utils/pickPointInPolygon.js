@@ -6,7 +6,7 @@ export default function pickPointInside2dPolygon(polygon) {
     tr.points[tr.counter] = data;
     tr.counter ++;
     if (tr.counter === 3) {
-      let trArea = Math.abs(area(tr.points));
+      const trArea = Math.abs(area(tr.points));
       if (trArea > tr.bestArea) {
         tr.bestArea = trArea;
         tr.bestTr = Array.from(tr.points); 
@@ -26,9 +26,9 @@ export default function pickPointInside2dPolygon(polygon) {
   };
   tessy.gluTessBeginPolygon(tracker);
 
-  for (let path of polygon) {
+  for (const path of polygon) {
     tessy.gluTessBeginContour();
-    for (let p of path) {
+    for (const p of path) {
       tessy.gluTessVertex([p.x, p.y, 0], p);
     }
     tessy.gluTessEndContour();
@@ -39,7 +39,7 @@ export default function pickPointInside2dPolygon(polygon) {
     return null;
   }
   
-  let center = tracker.bestTr[0].copy();
+  const center = tracker.bestTr[0].copy();
   center._plus(tracker.bestTr[1]);
   center._plus(tracker.bestTr[2]);
   center._divide(3);

@@ -91,9 +91,9 @@ export class System extends Index{
   
   _collectDependenciesForSubSystemFromConstraint(subSystem, constr) {
     visitParams(constr, false, p => {
-      let generator = this.generatedParams.get(p);
+      const generator = this.generatedParams.get(p);
       if (generator) {
-        let generatorSS = this.constraintToSubSystem.get(generator);
+        const generatorSS = this.constraintToSubSystem.get(generator);
         if (generatorSS) {
           if (subSystem.dependencies.indexOf(generatorSS) === -1) {
             subSystem.dependencies.push(generatorSS);
@@ -132,7 +132,7 @@ export class System extends Index{
 
       const stack = [constr];
       while (stack.length) {
-        let workingConstr = stack.pop();
+        const workingConstr = stack.pop();
         if (visited.has(workingConstr)) {
           continue;
         }
@@ -166,12 +166,12 @@ export class System extends Index{
 
   add(constr) {
     constr.id = "C_" + (COUNTER ++) ; //fixme
-    let affectedSubsystems = new Set();
-    let freeParams = [];
+    const affectedSubsystems = new Set();
+    const freeParams = [];
     
     visitParams(constr, false, p => {
       
-      let subSystem = this.paramToSubSystem.get(p);
+      const subSystem = this.paramToSubSystem.get(p);
 
       if (subSystem) {
         affectedSubsystems.add(subSystem);
@@ -208,7 +208,7 @@ export class System extends Index{
     master.constraints.push(constr);
     this.constraintToSubSystem.set(constr, master);
     if (constr.GENERATOR) {
-      let dependant = this.createSubSystem();
+      const dependant = this.createSubSystem();
       dependant.dependencies.push(master);
       constr.visitGeneratedParams(p => {
         this.generatedParams.set(p, constr)
@@ -231,7 +231,7 @@ export class System extends Index{
   }
   
   subSystemsByParam(param, callback) {
-    let constraints = this.paramToConstraintsIndex.get(param);
+    const constraints = this.paramToConstraintsIndex.get(param);
     if (constraints) {
       constraints.forEach(c => callback(this.constraintToSubSystem.get(c)));
     }
@@ -269,7 +269,7 @@ export class System extends Index{
 
 function visitParams(constraint, skipAux, callback) {
   if (skipAux) {
-    let delegate = callback;
+    const delegate = callback;
     callback = p => {
       if (!isAuxParam(p)) {
         delegate(p)

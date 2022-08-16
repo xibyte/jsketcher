@@ -67,7 +67,7 @@ export default class DatumView extends View {
       }
       
       updateVisibility() {
-        let datum3D = this.parent.parent;
+        const datum3D = this.parent.parent;
         viewer.setVisualProp(this.material, 'visible', !datum3D.operationStarted && 
           (this.mouseInside || datum3D.affordanceArea.mouseInside));
       }
@@ -139,7 +139,7 @@ export default class DatumView extends View {
       }
     }
 
-    let dv = new StartingOperationDatumObject3D(datum.csys, viewer);
+    const dv = new StartingOperationDatumObject3D(datum.csys, viewer);
     this.rootGroup = dv;
     
     setAttribute(this.rootGroup, DATUM, this);
@@ -172,8 +172,8 @@ class AffordanceBox extends Mesh {
       visible: false
     }));
     
-    let size = CSYS_SIZE_MODEL * 1.5;
-    let shift = -(size - CSYS_SIZE_MODEL) * 0.3;
+    const size = CSYS_SIZE_MODEL * 1.5;
+    const shift = -(size - CSYS_SIZE_MODEL) * 0.3;
     this.scale.set(size, size, size);
     this.position.set(shift, shift, shift);
   }

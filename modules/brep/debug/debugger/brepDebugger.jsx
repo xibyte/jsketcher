@@ -13,10 +13,10 @@ import {FaceIntersectionsExplorer} from "./faceIntersectionsExplorer";
 export default class BrepDebugger extends React.PureComponent {
 
   render() {
-    let {booleanSessions} = BREP_DEBUG;          
-    let {brepDebugGroup} = this.props;
+    const {booleanSessions} = BREP_DEBUG;          
+    const {brepDebugGroup} = this.props;
     function hideAll() {
-      for (let obj of brepDebugGroup.children) {
+      for (const obj of brepDebugGroup.children) {
         obj.visible = false;
       }
       __DEBUG__.render();

@@ -1,6 +1,6 @@
 
 export function addModification({history, pointer}, request) {
-  let changingHistory = pointer !== history.length - 1;
+  const changingHistory = pointer !== history.length - 1;
   if (changingHistory) {
     history = [
       ...history.slice(0, pointer+1),

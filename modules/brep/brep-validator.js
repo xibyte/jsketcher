@@ -5,7 +5,7 @@ export class BREPValidator {
   }
   
   validateShell(shell) {
-    for (let face of shell.faces) {
+    for (const face of shell.faces) {
       if (face.shell !== shell) {
         this.addError('FACE_REFERS_TO_WRONG_SHELL', "face refers to a shell it doesn't belong to", {face, shell});
       }
@@ -14,7 +14,7 @@ export class BREPValidator {
   }
 
   validateFace(face) {
-    for (let loop of [face.outerLoop, ...face.innerLoops]) {
+    for (const loop of [face.outerLoop, ...face.innerLoops]) {
       if (face !== loop.face) {
         this.addError('LOOP_REFERS_TO_WRONG_FACE', 'loop refers to different face it belongs to', {loop, face});
       }
@@ -72,7 +72,7 @@ BREPValidator.validateToConsole = function(shell) {
   const brepValidator = new BREPValidator();
 
   brepValidator.validateShell(shell);
-  for (let brepError of brepValidator.errors) {
+  for (const brepError of brepValidator.errors) {
     console.warn(brepError.message);
   }
   if (brepValidator.errors.length === 0) {
@@ -81,7 +81,7 @@ BREPValidator.validateToConsole = function(shell) {
 };
 
 BREPValidator.validate = function(shell) {
-  let validator = new BREPValidator();
+  const validator = new BREPValidator();
   validator.validateShell(shell);
   return validator.errors;
 };

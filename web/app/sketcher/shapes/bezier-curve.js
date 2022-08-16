@@ -20,7 +20,7 @@ export class BezierCurve extends SketchObject {
     this.cp1 = s1.b;
     this.cp2 = s2.a;
     
-    for (let c of this.children) {
+    for (const c of this.children) {
       c.role = 'objectConstruction';
     }
   }
@@ -82,12 +82,12 @@ export class BezierCurve extends SketchObject {
 
   drawLUTAndHull(ctx, scale) {
     if (this.lut) {
-      for (let p of this.lut) {
+      for (const p of this.lut) {
         draw_utils.DrawPoint(ctx, p.x, p.y, 3, scale);
       }
 
       ctx.moveTo(this.hull[0].x, this.hull[0].y);
-      for (let p of this.hull) {
+      for (const p of this.hull) {
         ctx.lineTo(p.x, p.y);
       }
       ctx.stroke();

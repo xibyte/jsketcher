@@ -11,9 +11,9 @@ function System(constraints) {
   this.constraints = constraints;
   this.params = [];
   for (let ci = 0; ci < constraints.length; ++ci) {
-    let c = constraints[ci];
+    const c = constraints[ci];
     for (let pi = 0; pi < c.params.length; ++pi) {
-      let p = c.params[pi];
+      const p = c.params[pi];
       if (p.j == -1) {
         p.j = this.params.length;
         this.params.push(p);
@@ -24,7 +24,7 @@ function System(constraints) {
 
 
 System.prototype.makeJacobian = function() {
-  let jacobi = [];
+  const jacobi = [];
   let i;
   let j;
   for (i=0; i < this.constraints.length; i++) {
@@ -34,15 +34,15 @@ System.prototype.makeJacobian = function() {
     }
   }
   for (i=0; i < this.constraints.length; i++) {
-    let c = this.constraints[i];
+    const c = this.constraints[i];
 
-    let cParams = c.params;
-    let grad = [];
+    const cParams = c.params;
+    const grad = [];
     fillArray(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (let p = 0; p < cParams.length; p++) {
-      let param = cParams[p];
+      const param = cParams[p];
       j = param.j;
       jacobi[i][j] = grad[p];
     }
@@ -52,16 +52,16 @@ System.prototype.makeJacobian = function() {
 
 System.prototype.fillJacobian = function(jacobi) {
   for (let i=0; i < this.constraints.length; i++) {
-    let c = this.constraints[i];
+    const c = this.constraints[i];
 
-    let cParams = c.params;
-    let grad = [];
+    const cParams = c.params;
+    const grad = [];
     fillArray(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (let p = 0; p < cParams.length; p++) {
-      let param = cParams[p];
-      let j = param.j;
+      const param = cParams[p];
+      const j = param.j;
       jacobi[i][j] = grad[p];
     }
   }
@@ -74,7 +74,7 @@ System.prototype.calcResidual = function(r) {
   let err = 0.;
 
   for (i=0; i < this.constraints.length; i++) {
-    let c = this.constraints[i];
+    const c = this.constraints[i];
     r[i] = c.error();
     err += r[i]*r[i];
   }
@@ -90,16 +90,16 @@ System.prototype.calcGrad_ = function(out) {
   }
 
   for (i=0; i < this.constraints.length; i++) {
-    let c = this.constraints[i];
+    const c = this.constraints[i];
 
-    let cParams = c.params;
-    let grad = [];
+    const cParams = c.params;
+    const grad = [];
     fillArray(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (let p = 0; p < cParams.length; p++) {
-      let param = cParams[p];
-      let j = param.j;
+      const param = cParams[p];
+      const j = param.j;
       out[j][0] += this.constraints[i].error() * grad[p]; // (10.4)
     }
   }
@@ -112,16 +112,16 @@ System.prototype.calcGrad = function(out) {
   }
 
   for (i=0; i < this.constraints.length; i++) {
-    let c = this.constraints[i];
+    const c = this.constraints[i];
 
-    let cParams = c.params;
-    let grad = [];
+    const cParams = c.params;
+    const grad = [];
     fillArray(grad, 0, cParams.length, 0);
     c.gradient(grad);
 
     for (let p = 0; p < cParams.length; p++) {
-      let param = cParams[p];
-      let j = param.j;
+      const param = cParams[p];
+      const j = param.j;
       out[j] += this.constraints[i].error() * grad[p]; // (10.4) 
     }
   }
@@ -134,7 +134,7 @@ System.prototype.fillParams = function(out) {
 };
 
 System.prototype.getParams = function() {
-  let out = [];
+  const out = [];
   this.fillParams(out);
   return out;
 };
@@ -156,14 +156,14 @@ System.prototype.error = function() {
 System.prototype.errorSquare = function() {
   let error = 0;
   for (let i=0; i < this.constraints.length; i++) {
-    let t = this.constraints[i].error();
+    const t = this.constraints[i].error();
     error += t * t;
   }
   return error * 0.5;
 };
 
 System.prototype.getValues = function() {
-  let values = [];
+  const values = [];
   for (let i=0; i < this.constraints.length; i++) {
     values[i] = this.constraints[i].error();
   }
@@ -190,7 +190,7 @@ function wrapConstants(constrs) {
       constrs[i] = new ConstantWrapper(c, mask);
     }
   }
-  for (let constr of constrs) {
+  for (const constr of constrs) {
     if (constr.params.length === 0) {
       return constrs.filter(c => c.params.length !== 0);
     }
@@ -198,32 +198,32 @@ function wrapConstants(constrs) {
   return constrs;
 }
 
-let lock2Equals2 = function(constrs, locked) {
-  let _locked = [];
+const lock2Equals2 = function(constrs, locked) {
+  const _locked = [];
   for (let i = 0; i < locked.length; ++i) {
     _locked.push(new EqualsTo([locked[i]], locked[i].get()));
   }
   return _locked;
 };
 
-let diagnose = function(sys) {
+const diagnose = function(sys) {
   if (sys.constraints.length === 0 || sys.params.length === 0) {
     return {
       conflict : false,
       dof : 0
     }
   }
-  let jacobian = sys.makeJacobian();
-  let qr = new QR(jacobian);
+  const jacobian = sys.makeJacobian();
+  const qr = new QR(jacobian);
   return {
     conflict : sys.constraints.length > qr.rank,
     dof : sys.params.length - qr.rank
   }
 };
 
-let prepare = function(constrs, locked) {
+const prepare = function(constrs, locked) {
 
-  let simpleMode = true;
+  const simpleMode = true;
   let lockingConstrs;
   if (!simpleMode) {
     lockingConstrs = lock2Equals2(constrs, locked);
@@ -231,18 +231,18 @@ let prepare = function(constrs, locked) {
   }
 
   constrs = wrapConstants(constrs);
-  let sys = new System(constrs);
+  const sys = new System(constrs);
   
-  let model = function(point) {
+  const model = function(point) {
     sys.setParams(point);
     return sys.getValues();
   };
 
-  let jacobian = function(point) {
+  const jacobian = function(point) {
     sys.setParams(point);
     return sys.makeJacobian();
   };
-  let nullResult = {
+  const nullResult = {
     evalCount : 0,
     error : 0,
     returnCode : 1
@@ -262,7 +262,7 @@ let prepare = function(constrs, locked) {
     }
     return result;
   }
-  let systemSolver = {
+  const systemSolver = {
     diagnose : function() {return diagnose(sys)},
     error : function() {return sys.error()},
     solveSystem : solve,
@@ -280,10 +280,10 @@ let prepare = function(constrs, locked) {
   return systemSolver;
 };
 
-let solve_lm = function(sys, model, jacobian, rough) {
-  let opt = new LMOptimizer(sys.getParams(), newVector(sys.constraints.length), model, jacobian);
+const solve_lm = function(sys, model, jacobian, rough) {
+  const opt = new LMOptimizer(sys.getParams(), newVector(sys.constraints.length), model, jacobian);
   opt.evalMaximalCount = 100000; //100 * sys.params.length;
-  let eps = rough ? 0.001 : 0.00000001;
+  const eps = rough ? 0.001 : 0.00000001;
   opt.init0(eps, eps, eps);
   let returnCode = 1;
   let res;

@@ -13,10 +13,10 @@ export function activate(ctx) {
   };
   
   function registerMenus(menus) {
-    let menusToAdd = [];
-    let showMenuActions = [];
+    const menusToAdd = [];
+    const showMenuActions = [];
     menus.forEach(({id, actions, ...appearance}) => {
-      let menuState = state({
+      const menuState = state({
         visible: false,
         orientationUp: false,
         x: undefined,

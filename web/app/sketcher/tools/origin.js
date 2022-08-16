@@ -15,14 +15,14 @@ export class ReferencePointTool extends Tool {
   }
   
   mousemove(e) {
-    let p = this.viewer.screenToModel(e);
+    const p = this.viewer.screenToModel(e);
     this.viewer.snap(p.x, p.y, []);
     this.viewer.refresh();
   }
   
   mousedown(e) {
     const needSnap = this.viewer.snapped != null;
-    let p = needSnap ? this.viewer.snapped : this.viewer.screenToModel(e);
+    const p = needSnap ? this.viewer.snapped : this.viewer.screenToModel(e);
     this.viewer.referencePoint.x = p.x;
     this.viewer.referencePoint.y = p.y;
     this.pointPicked(p.x, p.y);
@@ -32,7 +32,7 @@ export class ReferencePointTool extends Tool {
   
   processCommand(command) {
     const referencePoint = this.viewer.referencePoint;
-    let result = Tool.ParseVector(referencePoint, command);
+    const result = Tool.ParseVector(referencePoint, command);
     if(typeof result === 'string') {
       return result;
     }  

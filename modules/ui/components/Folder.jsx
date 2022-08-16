@@ -9,7 +9,7 @@ export function InnerFolder(props) {
   const [closed, setClosed] = useState(null)
 
   function isClosed(){
-    let {closable, defaultClosed} = props;
+    const {closable, defaultClosed} = props;
     if (!closable) return false;
     return closable && (closed === null ? defaultClosed : closed)
   }

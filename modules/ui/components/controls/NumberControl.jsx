@@ -4,15 +4,15 @@ import InputControl from './InputControl';
 
 export default function NumberControl(props) {
 
-  let {onChange, onFocus, value, width, baseStep, round, min, max, accelerator, cycle} = props;
+  const {onChange, onFocus, value, width, baseStep, round, min, max, accelerator, cycle} = props;
 
   const onChangeFromTarget = e => {
     onChange(e.target.value);
   };
 
   const onWheel = (e) => {
-    let delta = e.shiftKey ? e.deltaX : e.deltaY;
-    let step = baseStep * (e.shiftKey ? accelerator : 1);
+    const delta = e.shiftKey ? e.deltaX : e.deltaY;
+    const step = baseStep * (e.shiftKey ? accelerator : 1);
     let val = parseFloat(e.target.value);
     if (isNaN(val)) val = 0;
     val = val + (delta < 0 ? -step : step);

@@ -9,9 +9,9 @@ import {
 export function FaceFilterExplorer({connectedToAffectedFaces, allFaces, group3d}) {
   connectedToAffectedFaces = connectedToAffectedFaces || [];
   allFaces = allFaces || [];
-  let notConnectedToAffectedFaces = allFaces.filter(f => connectedToAffectedFaces.indexOf(f) === -1);
-  let category = 'face-filter';
-  let context = {connectedToAffectedFaces, notConnectedToAffectedFaces};
+  const notConnectedToAffectedFaces = allFaces.filter(f => connectedToAffectedFaces.indexOf(f) === -1);
+  const category = 'face-filter';
+  const context = {connectedToAffectedFaces, notConnectedToAffectedFaces};
   return <InteractiveSection name='analyzed faces' closable defaultClosed={false} 
                       {...{viewObjectsProvider: getFacesViewObjects, topoObj: allFaces, group3d, category, context}}>
 

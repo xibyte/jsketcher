@@ -14,7 +14,7 @@ class Tree {
     if (this.isLeaf()) {
       callback(this);
     } else {
-      for (let child of this.children) {
+      for (const child of this.children) {
         child.leafs(callback);
       }
     }
@@ -230,14 +230,14 @@ export function refine(tiles, opts) {
     }
 
     if (tile.children != null) {
-      for (let subTile of tile.children) {
+      for (const subTile of tile.children) {
         check(subTile, uLevel, vLevel);
       }
     }   
   }
   
-  for (let row of tiles) {
-    for (let tile of row) {
+  for (const row of tiles) {
+    for (const tile of row) {
       check(tile, 0, 0);
     }
   }

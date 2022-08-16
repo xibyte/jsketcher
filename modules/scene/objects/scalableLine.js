@@ -52,7 +52,7 @@ function createMaterial(sceneSetup, color, width, opacity, ambient, offset) {
 function createGeometry(tessellation) {
 
   const positions = [];
-  for ( let point of tessellation ) {
+  for ( const point of tessellation ) {
     positions.push( ...point );
   }
   const geometry = new LineGeometry();

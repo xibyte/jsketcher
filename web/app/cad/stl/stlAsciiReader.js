@@ -4,13 +4,13 @@ export function parse(buf) {
 
   let solid = new StlSolid('');
   let face = new StlFace(null);
-  let solids = [];
-  let reader = new LinesReader(buf);
+  const solids = [];
+  const reader = new LinesReader(buf);
   let lineNumber = 0;
   while (reader.hasNextLine()) {
-    let line = reader.nextLine();
+    const line = reader.nextLine();
     lineNumber ++;
-    let parts = line
+    const parts = line
       .trim()
       .split(' ')
       .filter(function(part) {
@@ -55,7 +55,7 @@ export function parse(buf) {
 function LinesReader(buf) {
   let mark = 0;
   let pos = 0;
-  let arr = new Uint8Array(buf);
+  const arr = new Uint8Array(buf);
   this.nextLine = function() {
     let str = "";
     for (let i = mark; i < pos; i++) {

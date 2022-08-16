@@ -19,7 +19,7 @@ function updateCSys(csys, params, findFace) {
   }
 
   (params.rotations||[]).forEach(r => {
-    let axis = csys[r.axis.toLowerCase()];
+    const axis = csys[r.axis.toLowerCase()];
     applyRotation(csys, csys, r.angle, axis);
   });
 
@@ -30,7 +30,7 @@ function updateCSys(csys, params, findFace) {
 }
 
 function create(params, {cadRegistry}) {
-  let csys = CSys.origin();
+  const csys = CSys.origin();
   updateCSys(csys, params, cadRegistry.findFace);
 
   return {
@@ -41,7 +41,7 @@ function create(params, {cadRegistry}) {
 
 function previewer(ctx, initialParams, updateParams) {
 
-  let datum3D = new DatumObject3D(CSys.origin(), ctx.services.viewer);
+  const datum3D = new DatumObject3D(CSys.origin(), ctx.services.viewer);
 
   datum3D.onMove = (begin, end, delta) => {
     updateParams(params => {
@@ -50,7 +50,7 @@ function previewer(ctx, initialParams, updateParams) {
       let y = end.y;
       let z = end.z;
       if (params.originatingFace) {
-        let face = ctx.services.cadRegistry.findFace(params.originatingFace);
+        const face = ctx.services.cadRegistry.findFace(params.originatingFace);
         if (face) {
           x -= face.csys.origin.x;
           y -= face.csys.origin.y;

@@ -9,9 +9,9 @@ import {
 
 
 export function MarkedEdgesExplorer({markedEdges, group3d}) {
-  let category='marked-edges';
-  let context = markedEdges.reduce((acc, v) => {acc[v.edge] = v; return acc}, {});
-  let edges = markedEdges.map(e => e.edge);
+  const category='marked-edges';
+  const context = markedEdges.reduce((acc, v) => {acc[v.edge] = v; return acc}, {});
+  const edges = markedEdges.map(e => e.edge);
   
   return <InteractiveSection name='marked edges' closable defaultClosed={false}
                              {...{viewObjectsProvider: getEdgesViewObjects, topoObj: edges, group3d, category, context}}>

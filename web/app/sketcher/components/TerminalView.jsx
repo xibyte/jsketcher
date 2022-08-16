@@ -80,7 +80,7 @@ export function TerminalView({visible, output, addToOutput, onClose, variantsSup
 
                  if (e.keyCode === 9) {
                    const text = e.target.value;
-                   let variants = variantsSupplier().filter(v => v.startsWith(text));
+                   const variants = variantsSupplier().filter(v => v.startsWith(text));
                    variants.sort();
                    if (variants.length !== 0) {
                      const shared = sharedStartOfSortedArray(variants);
@@ -163,7 +163,7 @@ const DEFAULT_COMMAND_HANDLER = (command, println, ctx) => {
     return;
   }
 
-  let action = byCommand(getAllSketcherActions())[command];
+  const action = byCommand(getAllSketcherActions())[command];
   if (action) {
     println({text: action.shortName});
     action.invoke(ctx);

@@ -95,7 +95,7 @@ export class FilletTool extends Tool {
   }
   
   mouseup(e) {
-    let candi = this.getCandidate(e);
+    const candi = this.getCandidate(e);
     if (candi == null) return;
     const point1 = candi[0];
     const point2 = candi[1];
@@ -104,7 +104,7 @@ export class FilletTool extends Tool {
   breakLinkAndMakeFillet(point1, point2) {
     const pm = this.viewer.parametricManager;
     let coi = null;
-    for (let c of point1.constraints) {
+    for (const c of point1.constraints) {
       if (c.schema.id === ConstraintDefinitions.PCoincident.id) {
         if (c.objects.indexOf(point2) !== -1) {
           coi = c;
@@ -133,12 +133,12 @@ export class FilletTool extends Tool {
 
   getCandidateFromSelection(picked) {
     
-    let preferSketchLayer = (a, b) => (a.effectiveLayer === b.effectiveLayer)? 0 : a.effectiveLayer.name === 'sketch' ? -1 : 1;
+    const preferSketchLayer = (a, b) => (a.effectiveLayer === b.effectiveLayer)? 0 : a.effectiveLayer.name === 'sketch' ? -1 : 1;
 
     if (picked.length > 0) {
-      let res = fetch.sketchObjects(picked, true, ['TCAD.TWO.EndPoint']);
+      const res = fetch.sketchObjects(picked, true, ['TCAD.TWO.EndPoint']);
       if (res == null) return null;
-      let point1 = res.sort(preferSketchLayer)[0];
+      const point1 = res.sort(preferSketchLayer)[0];
       if (!FilletTool.isLine(point1.parent)) return;
 
       const linked = [];
@@ -162,7 +162,7 @@ export class FilletTool extends Tool {
       this.viewer.withdrawAll('tool');
       needRefresh = true;
     }
-    let candi = this.getCandidate(e);
+    const candi = this.getCandidate(e);
     if (candi != null) {
       this.viewer.capture('tool', [candi[0]], true);
       needRefresh = true;

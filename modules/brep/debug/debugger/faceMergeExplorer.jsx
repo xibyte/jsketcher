@@ -7,13 +7,13 @@ import {
 
 
 export function FaceMergeExplorer({overlappingFacesGroups, group3d}) {
-  let category = 'overlapping-faces';
-  let context = {overlappingFacesGroups};
+  const category = 'overlapping-faces';
+  const context = {overlappingFacesGroups};
   return <InteractiveSection name='overlapping faces' closable defaultClosed={false}
                              {...{viewObjectsProvider: overlappingFacesViewer, topoObj: overlappingFacesGroups, group3d, category, context}}>
 
     { overlappingFacesGroups.map((group, groupIndex) => {
-      let [groupA, groupB] = group;
+      const [groupA, groupB] = group;
       return <InteractiveSection key={groupIndex} name='merge group' closable defaultClosed={true}
                                  {...{viewObjectsProvider: overlappingGroupViewer, topoObj: group, group3d, category, context: group}}>
         <InteractiveSection name='from A' closable defaultClosed={false}
@@ -31,7 +31,7 @@ export function FaceMergeExplorer({overlappingFacesGroups, group3d}) {
 }
 
 function overlappingFacesViewer(group3d, category, context, out, groups) {
-  for (let [groupA, groupB] of groups) {
+  for (const [groupA, groupB] of groups) {
     getFacesViewObjects(group3d, category, context, out, groupA);
     getFacesViewObjects(group3d, category, context, out, groupB);
   }

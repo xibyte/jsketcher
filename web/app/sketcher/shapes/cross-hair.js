@@ -11,7 +11,7 @@ export class CrossHair extends Shape {
 
   draw(ctx, scale) {
     ctx.beginPath();
-    let rad = this.rad / scale;
+    const rad = this.rad / scale;
     ctx.moveTo(this.x - rad, this.y);
     ctx.lineTo(this.x + rad, this.y);
     ctx.closePath();

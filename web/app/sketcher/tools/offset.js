@@ -15,13 +15,13 @@ export class OffsetTool extends LoopPickTool {
     const loopEdges = this.pickedLoop.edges;
     const length = loopEdges.length;
 
-    for (let obj of loopEdges) {
+    for (const obj of loopEdges) {
       if (!SUPPORTED_OBJECTS.has(obj.TYPE)) {
         alert(obj._class + " isn't supported for offsets");
         return;
       }
     }
-    let delta = parseInt(prompt('offset distance?', 100));
+    const delta = parseInt(prompt('offset distance?', 100));
     if (isNaN(delta)) {
       return;
     }
@@ -100,7 +100,7 @@ function SimpleEdge(a, b) {
 
 function findLowestPoint(poly) {
   let hero = {x: Number.MAX_VALUE, y: Number.MAX_VALUE};
-  for (let point of poly) {
+  for (const point of poly) {
     if (point.y < hero.y) {
       hero = point;
     } else if (hero.y == hero.y) { // TODO: revisit and fix bug

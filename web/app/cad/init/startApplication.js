@@ -44,7 +44,7 @@ import {BundleSystem} from "bundler/bundleSystem";
 
 export default function startApplication(callback) {
 
-  let preUIBundles = [
+  const preUIBundles = [
     LifecycleBundle,
     ProjectBundle,
     StorageBundle,
@@ -68,7 +68,7 @@ export default function startApplication(callback) {
     ProjectManagerBundle
   ];
   
-  let bundles = [
+  const bundles = [
     DomBundle,
     SceneBundle,
     MouseEventSystemBundle,

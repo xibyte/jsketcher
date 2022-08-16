@@ -15,11 +15,11 @@ export class Dock {
       });
     }
     for (let i = 0; i < viewDefinitions.length; i++) {
-      let viewDef = viewDefinitions[i];
-      let view = {};
+      const viewDef = viewDefinitions[i];
+      const view = {};
       this.views[viewDef.name] = view;
       view.node = createElement('div', undefined, 'dock-node');
-      let caption = createElement('div', undefined, 'tool-caption');
+      const caption = createElement('div', undefined, 'tool-caption');
       caption.appendChild(createElement('span', undefined, 'txt', viewDef.name.toUpperCase()));
       caption.appendChild(createElement('i', undefined, 'fa fa-'+viewDef.icon));
       view.node.appendChild(caption);
@@ -32,7 +32,7 @@ export class Dock {
   }
 
   show(viewName) {
-    let view = this.views[viewName];
+    const view = this.views[viewName];
     if (view.switchBtn.classList.contains('selected')) {
       return;
     }
@@ -45,7 +45,7 @@ export class Dock {
   }
 
   hide(viewName) {
-    let view = this.views[viewName];
+    const view = this.views[viewName];
     if (!view.switchBtn.classList.contains('selected')) {
       return;
     }

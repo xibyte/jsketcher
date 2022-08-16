@@ -9,11 +9,11 @@ import {
 
 
 export function EdgeTransferExplorer({edge, face, chosenEdge, index, group3d}) {
-  let category='edge-transfer';
+  const category='edge-transfer';
 
-  let chosenFace = chosenEdge ? chosenEdge.loop.face : null;
-  let discardedFace = chosenEdge ? chosenEdge.twin().loop.face : null;
-  let context = {edge, face, chosenEdge, chosenFace, discardedFace};
+  const chosenFace = chosenEdge ? chosenEdge.loop.face : null;
+  const discardedFace = chosenEdge ? chosenEdge.twin().loop.face : null;
+  const context = {edge, face, chosenEdge, chosenFace, discardedFace};
   
   return <InteractiveSection name={`transfer ${index}`} closable defaultClosed={true}
                                                                      {...{viewObjectsProvider: getEdgeTransferViewObjects, topoObj: context, group3d, category, context}}>

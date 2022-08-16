@@ -1,5 +1,5 @@
 export function twoPoints(objs) {
-  let points = [];
+  const points = [];
   for (let i = 0; i < objs.length; ++i) {
     if (objs[i]._class == 'TCAD.TWO.EndPoint') {
       points.push(objs[i]);
@@ -15,7 +15,7 @@ export function twoPoints(objs) {
 }
 
 export function points(objs) {
-  let points = [];
+  const points = [];
   for (let i = 0; i < objs.length; ++i) {
     objs[i].accept(function(o) {
       if (o._class === 'TCAD.TWO.EndPoint')  {
@@ -31,7 +31,7 @@ export function points(objs) {
 }
 
 export function arkCirc(objs, min) {
-  let arcs = [];
+  const arcs = [];
   for (let i = 0; i < objs.length; ++i) {
     if (objs[i]._class === 'TCAD.TWO.Arc' || objs[i]._class === 'TCAD.TWO.Circle') {
       arcs.push(objs[i]);
@@ -44,7 +44,7 @@ export function arkCirc(objs, min) {
 }
 
 export function generic(objs, types, min) {
-  let result = [];
+  const result = [];
   for (let i = 0; i < objs.length; ++i) {
     if (types.indexOf(objs[i]._class)  > -1 ) {
       result.push(objs[i]);
@@ -108,7 +108,7 @@ export function arcCircAndLine(objs) {
 }
 
 export function twoLines(objs) {
-  let lines = [];
+  const lines = [];
   for (let i = 0; i < objs.length; ++i) {
     if (objs[i]._class == 'TCAD.TWO.Segment') {
       lines.push(objs[i]);
@@ -121,7 +121,7 @@ export function twoLines(objs) {
 }
 
 export function sketchObjects(objs, silent, matching) {
-  let fetched = [];
+  const fetched = [];
   for (let i = 0; i < objs.length; ++i) {
     for (let j = 0; j < matching.length; j++) {
       if (objs[i]._class ==  matching[j]) {

@@ -45,8 +45,8 @@ export default [
     invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
       const [first, ...others] = matchedObjects;
-      let pm = viewer.parametricManager;
-      for (let obj of others) {
+      const pm = viewer.parametricManager;
+      for (const obj of others) {
         pm._add(
           new AlgNumConstraint(ConstraintDefinitions.PCoincident, [first, obj])
         );
@@ -162,7 +162,7 @@ export default [
     invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
       const [pt, line] = matchedObjects;
-      let pm = viewer.parametricManager;
+      const pm = viewer.parametricManager;
       pm.add(new AlgNumConstraint(ConstraintDefinitions.PointOnLine, [pt, line]));
     }
   },
@@ -190,7 +190,7 @@ export default [
     invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
       const [pt, circle] = matchedObjects;
-      let pm = viewer.parametricManager;
+      const pm = viewer.parametricManager;
       pm.add(new AlgNumConstraint(ConstraintDefinitions.PointOnCircle, [pt, circle]));
     }
   },
@@ -218,7 +218,7 @@ export default [
     invoke: (ctx, matchedObjects) => {
       const {viewer} = ctx;
       const [pt, curve] = matchedObjects;
-      let pm = viewer.parametricManager;
+      const pm = viewer.parametricManager;
       pm.add(new AlgNumConstraint(ConstraintDefinitions.PointOnBezier, [pt, curve]));
     }
   },
@@ -468,7 +468,7 @@ export default [
       editConstraint(ctx, firstConstr, () => {
         const pm = viewer.parametricManager;
         pm._add(firstConstr);
-        for (let other of others) {
+        for (const other of others) {
           pm._add(new AlgNumConstraint(ConstraintDefinitions.SegmentLength, [other], {...firstConstr.constants}));
         }
         pm.commit();
@@ -500,7 +500,7 @@ export default [
       editConstraint(ctx, firstConstr, () => {
         const pm = viewer.parametricManager;
         pm._add(firstConstr);
-        for (let other of others) {
+        for (const other of others) {
           pm._add(new AlgNumConstraint(ConstraintDefinitions.RadiusLength, [other], {...firstConstr.constants}));
         }
         pm.commit();

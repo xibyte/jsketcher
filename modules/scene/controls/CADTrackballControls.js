@@ -12,8 +12,8 @@
 
 export function CADTrackballControls( object, domElement ) {
 
-  let _this = this;
-  let STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+  const _this = this;
+  const STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
 
   this.object = object;
   this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -47,9 +47,9 @@ export function CADTrackballControls( object, domElement ) {
   this.projectionChanged = false;
   this.projectionZoomSpeed = 0.5;
 
-  let EPS = 0.000001;
+  const EPS = 0.000001;
 
-  let lastPosition = new THREE.Vector3();
+  const lastPosition = new THREE.Vector3();
 
   let _state = STATE.NONE,
     _prevState = STATE.NONE,
@@ -79,8 +79,8 @@ export function CADTrackballControls( object, domElement ) {
 
   // events
 
-  let startEvent = { type: 'start' };
-  let endEvent = { type: 'end' };
+  const startEvent = { type: 'start' };
+  const endEvent = { type: 'end' };
 
 
   // methods
@@ -96,9 +96,9 @@ export function CADTrackballControls( object, domElement ) {
 
     } else {
 
-      let box = this.domElement.getBoundingClientRect();
+      const box = this.domElement.getBoundingClientRect();
       // adjustments come from similar code in the jquery offset() function
-      let d = this.domElement.ownerDocument.documentElement;
+      const d = this.domElement.ownerDocument.documentElement;
       this.screen.left = box.left + window.pageXOffset - d.clientLeft;
       this.screen.top = box.top + window.pageYOffset - d.clientTop;
       this.screen.width = box.width;
@@ -118,9 +118,9 @@ export function CADTrackballControls( object, domElement ) {
 
   };
 
-  let getMouseOnScreen = ( function () {
+  const getMouseOnScreen = ( function () {
 
-    let vector = new THREE.Vector2();
+    const vector = new THREE.Vector2();
 
     return function getMouseOnScreen( pageX, pageY ) {
 
@@ -135,9 +135,9 @@ export function CADTrackballControls( object, domElement ) {
 
   }() );
 
-  let getMouseOnCircle = ( function () {
+  const getMouseOnCircle = ( function () {
 
-    let vector = new THREE.Vector2();
+    const vector = new THREE.Vector2();
 
     return function getMouseOnCircle( pageX, pageY ) {
 
@@ -249,7 +249,7 @@ export function CADTrackballControls( object, domElement ) {
 
   this.panCamera = ( function() {
 
-    let mouseChange = new THREE.Vector2(),
+    const mouseChange = new THREE.Vector2(),
       objectUp = new THREE.Vector3(),
       pan = new THREE.Vector3();
 

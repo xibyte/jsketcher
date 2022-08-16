@@ -29,7 +29,7 @@ export function ContextualControls() {
 
 
   const setRole = (obj, role) => {
-    let viewer = ctx.viewer;
+    const viewer = ctx.viewer;
     if (obj.aux) {
       return;
     }
@@ -38,7 +38,7 @@ export function ContextualControls() {
   };
 
   const tweakRole = (obj) => {
-    let viewer = ctx.viewer;
+    const viewer = ctx.viewer;
     if (obj.role === 'construction') {
       setRole(obj, null);
     } else if (obj.role === null) {
