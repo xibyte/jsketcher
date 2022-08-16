@@ -1,5 +1,4 @@
 import CoreActions from '../actions/coreActions';
-import OperationActions from '../actions/operationActions';
 import HistoryActions from '../actions/historyActions';
 import UsabilityActions from '../actions/usabilityActions';
 import menuConfig from './menuConfig';
@@ -24,7 +23,6 @@ export function activate(ctx) {
   streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport', 'menu.workbenches'];
   
   ctx.actionService.registerActions(CoreActions);
-  ctx.actionService.registerActions(OperationActions);
   ctx.actionService.registerActions(HistoryActions);
   ctx.actionService.registerActions(UsabilityActions);
 
