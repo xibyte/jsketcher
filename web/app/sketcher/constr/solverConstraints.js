@@ -40,10 +40,11 @@ function createByConstraintName(name, params, values) {
       return new CurveTangent(params, values[0]);
     case "angle":
       return new Angle(params);
-    case "angleConst":
-      var _ = true, x = false;
+    case "angleConst": {
+      const _ = true, x = false;
       // Exclude angle value from parameters
-      return new ConstantWrapper(new Angle(params), [x,x,x,x,x,x,x,x,_]);
+      return new ConstantWrapper(new Angle(params), [x, x, x, x, x, x, x, x, _]);
+    }
     case 'LockConvex':
       return new LockConvex(params);
     case 'GreaterThan':

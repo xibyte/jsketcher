@@ -59,7 +59,8 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
 
   function sameLoop(a, b) {
     let first = a[0];
-    for (var bShift = 0; bShift < a.length; bShift++) {
+    let bShift;
+    for (bShift = 0; bShift < a.length; bShift++) {
       if (equals(b[bShift], first)) {
         break;
       }
