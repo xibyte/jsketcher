@@ -72,22 +72,22 @@ function MinLength(params, distance) {
   this.params = params;
   this.distance = distance;
 
-  var p1x = 0;
-  var p1y = 1;
-  var p2x = 2;
-  var p2y = 3;
+  let p1x = 0;
+  let p1y = 1;
+  let p2x = 2;
+  let p2y = 3;
 
   this.error = function() {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    let dx = params[p1x].get() - params[p2x].get();
+    let dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     return d < this.distance ? (d - this.distance) : 0;
   };
 
   this.gradient = function(out) {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    let dx = params[p1x].get() - params[p2x].get();
+    let dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       d = 0.000001;
     }
@@ -107,34 +107,34 @@ function MinLength(params, distance) {
 function LockConvex(params) {
   this.params = params;
 
-  var _pcx = 0;
-  var _pcy = 1;
-  var _pax = 2;
-  var _pay = 3;
-  var _ptx = 4;
-  var _pty = 5;
+  let _pcx = 0;
+  let _pcy = 1;
+  let _pax = 2;
+  let _pay = 3;
+  let _ptx = 4;
+  let _pty = 5;
 
   this.error = function() {
-    var cx = params[_pcx].get();
-    var cy = params[_pcy].get();
-    var ax = params[_pax].get();
-    var ay = params[_pay].get();
-    var tx = params[_ptx].get();
-    var ty = params[_pty].get();
+    let cx = params[_pcx].get();
+    let cy = params[_pcy].get();
+    let ax = params[_pax].get();
+    let ay = params[_pay].get();
+    let tx = params[_ptx].get();
+    let ty = params[_pty].get();
     
-    var crossProductNorm = (cx - ax) * (ty - ay) - (cy - ay) * (tx - ax);
+    let crossProductNorm = (cx - ax) * (ty - ay) - (cy - ay) * (tx - ax);
 
-    var violate = crossProductNorm < 0;
+    let violate = crossProductNorm < 0;
     return violate ? crossProductNorm : 0;
   };
 
   this.gradient = function(out) {
-    var cx = params[_pcx].get();
-    var cy = params[_pcy].get();
-    var ax = params[_pax].get();
-    var ay = params[_pay].get();
-    var tx = params[_ptx].get();
-    var ty = params[_pty].get();
+    let cx = params[_pcx].get();
+    let cy = params[_pcy].get();
+    let ax = params[_pax].get();
+    let ay = params[_pay].get();
+    let tx = params[_ptx].get();
+    let ty = params[_pty].get();
 
     out[_pcx] = ty-ay;
     out[_pcy] = ax-tx;
@@ -164,7 +164,7 @@ function ConstantWrapper(constr, mask) {
   this.gradient = function(out) {
     fillArray(this.grad, 0, this.grad.length, 0);
     constr.gradient(this.grad);
-    var jj = 0;
+    let jj = 0;
     for (let j = 0; j < mask.length; j++) {
       if (!mask[j]) {
         out[jj ++] = this.grad[j];
@@ -185,7 +185,7 @@ function Weighted(constr, weight) {
 
   this.gradient = function(out) {
     constr.gradient(out);
-    for (var i = 0; i < out.length; i++) {
+    for (let i = 0; i < out.length; i++) {
       out[i] *= this.weight;
     }
   }
@@ -248,38 +248,38 @@ function P2LDistance(params, distance) {
   this.params = params;
   this.distance = distance;
 
-  var TX = 0;
-  var TY = 1;
-  var LP1X = 2;
-  var LP1Y = 3;
-  var LP2X = 4;
-  var LP2Y = 5;
+  let TX = 0;
+  let TY = 1;
+  let LP1X = 2;
+  let LP1Y = 3;
+  let LP2X = 4;
+  let LP2Y = 5;
 
   this.error = function() {
-    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
-    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d = Math.sqrt(dx * dx + dy * dy);
+    let x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    let y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    let d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       return 0;
     }
-    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    let A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
     return Math.abs(A) / d -  this.distance;
   };
 
   this.gradient = function(out) {
-    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
-    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d2 = dx * dx + dy * dy;
-    var d = Math.sqrt(d2);
-    var d3 = d * d2;
+    let x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    let y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    let d2 = dx * dx + dy * dy;
+    let d = Math.sqrt(d2);
+    let d3 = d * d2;
 //    var AA = -x0 * (y2 - y1) + y0 * (x2 - x1) + x1 * y2 - x2 * y1;
-    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
-    var AM = Math.abs(A);
-    var j = A < 0 ? -1 : 1;
+    let A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    let AM = Math.abs(A);
+    let j = A < 0 ? -1 : 1;
 
     out[TX] = j * (y1 - y2) / d;
     out[TY] = j * (x2 - x1) / d;
@@ -297,40 +297,40 @@ function P2LDistanceV(params) {
 
   this.params = params;//.slice(0, params.length -1);
 
-  var TX = 0;
-  var TY = 1;
-  var LP1X = 2;
-  var LP1Y = 3;
-  var LP2X = 4;
-  var LP2Y = 5;
-  var D = 6;
+  let TX = 0;
+  let TY = 1;
+  let LP1X = 2;
+  let LP1Y = 3;
+  let LP2X = 4;
+  let LP2Y = 5;
+  let D = 6;
 
   this.error = function() {
-    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
-    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
-    var dist = this.params[D].get();
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d = Math.sqrt(dx * dx + dy * dy);
+    let x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    let y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
+    let dist = this.params[D].get();
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    let d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       return 0;
     }
-    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    let A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
     return Math.abs(A) / d - dist;
   };
 
   this.gradient = function(out) {
-    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
-    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d2 = dx * dx + dy * dy;
-    var d = Math.sqrt(d2);
-    var d3 = d * d2;
+    let x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    let y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    let d2 = dx * dx + dy * dy;
+    let d = Math.sqrt(d2);
+    let d3 = d * d2;
 //    var AA = -x0 * (y2 - y1) + y0 * (x2 - x1) + x1 * y2 - x2 * y1;
-    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
-    var AM = Math.abs(A);
-    var j = A < 0 ? -1 : 1;
+    let A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    let AM = Math.abs(A);
+    let j = A < 0 ? -1 : 1;
     
     out[TX] = j * (y1 - y2) / d;
     out[TY] = j * (x2 - x1) / d;
@@ -351,22 +351,22 @@ function P2PDistance(params, distance) {
   this.params = params;
   this.distance = distance;
 
-  var p1x = 0;
-  var p1y = 1;
-  var p2x = 2;
-  var p2y = 3;
+  let p1x = 0;
+  let p1y = 1;
+  let p2x = 2;
+  let p2y = 3;
 
   this.error = function() {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    let dx = params[p1x].get() - params[p2x].get();
+    let dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     return (d - this.distance);
   };
 
   this.gradient = function(out) {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    let dx = params[p1x].get() - params[p2x].get();
+    let dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       if (this.distance == 0) return;
       d = 0.000001;
@@ -383,23 +383,23 @@ function P2PDistanceV(params) {
 
   this.params = params;
 
-  var p1x = 0;
-  var p1y = 1;
-  var p2x = 2;
-  var p2y = 3;
-  var D = 4;
+  let p1x = 0;
+  let p1y = 1;
+  let p2x = 2;
+  let p2y = 3;
+  let D = 4;
 
   this.error = function() {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    let dx = params[p1x].get() - params[p2x].get();
+    let dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     return (d - params[D].get());
   };
 
   this.gradient = function(out) {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    let dx = params[p1x].get() - params[p2x].get();
+    let dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       if (params[D].get() == 0) return;
       d = 0.000001;
@@ -487,20 +487,20 @@ function Parallel(params) {
 
   this.params = params;
 
-  var l1p1x = 0;
-  var l1p1y = 1;
-  var l1p2x = 2;
-  var l1p2y = 3;
-  var l2p1x = 4;
-  var l2p1y = 5;
-  var l2p2x = 6;
-  var l2p2y = 7;
+  let l1p1x = 0;
+  let l1p1y = 1;
+  let l1p2x = 2;
+  let l1p2y = 3;
+  let l2p1x = 4;
+  let l2p1y = 5;
+  let l2p2x = 6;
+  let l2p2y = 7;
   
   this.error = function() {
-    var dx1 = (params[l1p1x].get() - params[l1p2x].get());
-    var dy1 = (params[l1p1y].get() - params[l1p2y].get());
-    var dx2 = (params[l2p1x].get() - params[l2p2x].get());
-    var dy2 = (params[l2p1y].get() - params[l2p2y].get());
+    let dx1 = (params[l1p1x].get() - params[l1p2x].get());
+    let dy1 = (params[l1p1y].get() - params[l1p2y].get());
+    let dx2 = (params[l2p1x].get() - params[l2p2x].get());
+    let dy2 = (params[l2p1y].get() - params[l2p2y].get());
     return (dx1*dy2 - dy1*dx2);
   };
 
@@ -520,20 +520,20 @@ function Perpendicular(params) {
 
   this.params = params;
 
-  var l1p1x = 0;
-  var l1p1y = 1;
-  var l1p2x = 2;
-  var l1p2y = 3;
-  var l2p1x = 4;
-  var l2p1y = 5;
-  var l2p2x = 6;
-  var l2p2y = 7;
+  let l1p1x = 0;
+  let l1p1y = 1;
+  let l1p2x = 2;
+  let l1p2y = 3;
+  let l2p1x = 4;
+  let l2p1y = 5;
+  let l2p2x = 6;
+  let l2p2y = 7;
 
   this.error = function() {
-    var dx1 = (params[l1p1x].get() - params[l1p2x].get());
-    var dy1 = (params[l1p1y].get() - params[l1p2y].get());
-    var dx2 = (params[l2p1x].get() - params[l2p2x].get());
-    var dy2 = (params[l2p1y].get() - params[l2p2y].get());
+    let dx1 = (params[l1p1x].get() - params[l1p2x].get());
+    let dy1 = (params[l1p1y].get() - params[l1p2y].get());
+    let dx2 = (params[l2p1x].get() - params[l2p2x].get());
+    let dy2 = (params[l2p1y].get() - params[l2p2y].get());
     //dot product shows how the lines off to be perpendicular
     return (dx1*dx2 + dy1*dy2);
   };
@@ -554,51 +554,51 @@ function Angle(params) {
 
   this.params = params;
 
-  var l1p1x = 0;
-  var l1p1y = 1;
-  var l1p2x = 2;
-  var l1p2y = 3;
-  var l2p1x = 4;
-  var l2p1y = 5;
-  var l2p2x = 6;
-  var l2p2y = 7;
-  var angle = 8;
-  var scale = 1000; // we need scale to get same order of measure units(radians are to small)
+  let l1p1x = 0;
+  let l1p1y = 1;
+  let l1p2x = 2;
+  let l1p2y = 3;
+  let l2p1x = 4;
+  let l2p1y = 5;
+  let l2p2x = 6;
+  let l2p2y = 7;
+  let angle = 8;
+  let scale = 1000; // we need scale to get same order of measure units(radians are to small)
 
   function p(ref) {
     return params[ref].get();
   }
 
   this.error = function() {
-    var dx1 = (p(l1p2x) - p(l1p1x));
-    var dy1 = (p(l1p2y) - p(l1p1y));
-    var dx2 = (p(l2p2x) - p(l2p1x));
-    var dy2 = (p(l2p2y) - p(l2p1y));
-    var a = Math.atan2(dy1,dx1) + p(angle);
-    var ca = Math.cos(a);
-    var sa = Math.sin(a);
-    var x2 = dx2*ca + dy2*sa;
-    var y2 = -dx2*sa + dy2*ca;
+    let dx1 = (p(l1p2x) - p(l1p1x));
+    let dy1 = (p(l1p2y) - p(l1p1y));
+    let dx2 = (p(l2p2x) - p(l2p1x));
+    let dy2 = (p(l2p2y) - p(l2p1y));
+    let a = Math.atan2(dy1,dx1) + p(angle);
+    let ca = Math.cos(a);
+    let sa = Math.sin(a);
+    let x2 = dx2*ca + dy2*sa;
+    let y2 = -dx2*sa + dy2*ca;
     return Math.atan2(y2,x2) * scale;
   };
 
   this.gradient = function (out) {
-    var dx1 = (p(l1p2x) - p(l1p1x));
-    var dy1 = (p(l1p2y) - p(l1p1y));
-    var r2 = dx1 * dx1 + dy1 * dy1;
+    let dx1 = (p(l1p2x) - p(l1p1x));
+    let dy1 = (p(l1p2y) - p(l1p1y));
+    let r2 = dx1 * dx1 + dy1 * dy1;
     out[l1p1x] = -dy1 / r2;
     out[l1p1y] = dx1 / r2;
     out[l1p2x] = dy1 / r2;
     out[l1p2y] = -dx1 / r2;
     dx1 = (p(l1p2x) - p(l1p1x));
     dy1 = (p(l1p2y) - p(l1p1y));
-    var dx2 = (p(l2p2x) - p(l2p1x));
-    var dy2 = (p(l2p2y) - p(l2p1y));
-    var a = Math.atan2(dy1, dx1) + p(angle);
-    var ca = Math.cos(a);
-    var sa = Math.sin(a);
-    var x2 = dx2 * ca + dy2 * sa;
-    var y2 = -dx2 * sa + dy2 * ca;
+    let dx2 = (p(l2p2x) - p(l2p1x));
+    let dy2 = (p(l2p2y) - p(l2p1y));
+    let a = Math.atan2(dy1, dx1) + p(angle);
+    let ca = Math.cos(a);
+    let sa = Math.sin(a);
+    let x2 = dx2 * ca + dy2 * sa;
+    let y2 = -dx2 * sa + dy2 * ca;
     r2 = dx2 * dx2 + dy2 * dy2;
     dx2 = -y2 / r2;
     dy2 = x2 / r2;
@@ -782,7 +782,7 @@ function GreaterThan(params, limit) {
   
   this.error = function() {
     let value = this.params[0].get();
-    var error = value <= limit ? limit - value : 0;
+    let error = value <= limit ? limit - value : 0;
     console.log("GreaterThan: " + error + ", value: " +value);
     return error;
   };
@@ -809,7 +809,7 @@ export function NumericGradient(out) {
 }
 
 function _fixNaN(grad) {
-  for (var i = 0; i < grad.length; i++) {
+  for (let i = 0; i < grad.length; i++) {
     if (isNaN(grad[i])) {
       grad[i] = 0;
     }
@@ -817,7 +817,7 @@ function _fixNaN(grad) {
 }
 
 function rescale(grad, factor) {
-  for (var i = 0; i < grad.length; i++) {
+  for (let i = 0; i < grad.length; i++) {
     grad[i] *= factor;
   }
 }

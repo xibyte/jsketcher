@@ -17,7 +17,7 @@ export class AddArcTool extends Tool {
   }
 
   mousemove(e) {
-    var p = this.viewer.screenToModel(e);
+    let p = this.viewer.screenToModel(e);
     if (this.point != null) {
       this.point.x = p.x;
       this.point.y = p.y;

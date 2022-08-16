@@ -51,20 +51,20 @@ export function sortPolygons(polygons) {
 
 function _pointOnLine(p, a, b) {
 
-  var ab = a.minus(b);
-  var ap = a.minus(p);
+  let ab = a.minus(b);
+  let ap = a.minus(p);
 
-  var dp = ab.dot(ap);
+  let dp = ab.dot(ap);
 
-  var abLength = ab.length();
-  var apLength = ap.length();
+  let abLength = ab.length();
+  let apLength = ap.length();
 
   return apLength > 0 && apLength < abLength && areEqual(abLength * apLength, dp, 1E-6);
 }
 
 export function polygonsToSegments(polygons) {
   function selfIntersecting(a, b, c) {
-    var f = _pointOnLine;
+    let f = _pointOnLine;
     return f(c, a, b) || f(a, b, c) || f(b, c, a);
   }
   //polygons.filter(function(p) {
@@ -76,14 +76,14 @@ export function polygonsToSegments(polygons) {
   //continue;
   //}
 
-  var segmentsByPolygon = [];
-  for (var pi = 0; pi < polygons.length; pi++) {
-    var segments = [];
-    var poly = polygons[pi];
+  let segmentsByPolygon = [];
+  for (let pi = 0; pi < polygons.length; pi++) {
+    let segments = [];
+    let poly = polygons[pi];
     var p, q, n = poly.vertices.length;
     for(p = n - 1, q = 0; q < n; p = q ++) {
-      var a = poly.vertices[p];
-      var b = poly.vertices[q];
+      let a = poly.vertices[p];
+      let b = poly.vertices[q];
       segments.push([a.pos, b.pos]);
     }
     segmentsByPolygon.push(segments);
@@ -93,12 +93,12 @@ export function polygonsToSegments(polygons) {
 
 export function reconstructSketchBounds(csg, face, strict) {
   strict = strict || false;
-  var polygons = csg.toPolygons();
-  var plane = face.csgGroup.plane;
-  var outerEdges = [];
-  var planePolygons = [];
-  for (var pi = 0; pi < polygons.length; pi++) {
-    var poly = polygons[pi];
+  let polygons = csg.toPolygons();
+  let plane = face.csgGroup.plane;
+  let outerEdges = [];
+  let planePolygons = [];
+  for (let pi = 0; pi < polygons.length; pi++) {
+    let poly = polygons[pi];
     if (equal(poly.plane.normal.dot(plane.normal), 1)) {
       if (equal(plane.w, poly.plane.w) && (!strict || !!poly.shared.__tcad && poly.shared.__tcad.faceId  === face.id)) {
         planePolygons.push(poly);
@@ -107,18 +107,18 @@ export function reconstructSketchBounds(csg, face, strict) {
     }
     var p, q, n = poly.vertices.length;
     for(p = n - 1, q = 0; q < n; p = q ++) {
-      var a = poly.vertices[p];
-      var b = poly.vertices[q];
-      var pointAOnPlane = equal(plane.signedDistanceToPoint(a.pos), 0);
+      let a = poly.vertices[p];
+      let b = poly.vertices[q];
+      let pointAOnPlane = equal(plane.signedDistanceToPoint(a.pos), 0);
       if (!pointAOnPlane) continue;
-      var pointBOnPlane = equal(plane.signedDistanceToPoint(b.pos), 0);
+      let pointBOnPlane = equal(plane.signedDistanceToPoint(b.pos), 0);
       if (pointBOnPlane) {
         outerEdges.push([a.pos, b.pos, poly]);
       }
     }
   }
 
-  var outline = findOutline(planePolygons);
+  let outline = findOutline(planePolygons);
 
   pickUpCraftInfo(outline, outerEdges);
 
@@ -126,11 +126,11 @@ export function reconstructSketchBounds(csg, face, strict) {
 }
 
 function pickUpCraftInfo(outline, outerEdges) {
-  var eq = strictEqual;
-  for (var psi1 = 0; psi1 < outline.length; psi1++) {
-    var s1 = outline[psi1];
-    for (var psi2 = 0; psi2 < outerEdges.length; psi2++) {
-      var s2 = outerEdges[psi2];
+  let eq = strictEqual;
+  for (let psi1 = 0; psi1 < outline.length; psi1++) {
+    let s1 = outline[psi1];
+    for (let psi2 = 0; psi2 < outerEdges.length; psi2++) {
+      let s2 = outerEdges[psi2];
       if (equal(Math.abs(s1[0].minus(s1[1]).unit().dot(s2[0].minus(s2[1]).unit())), 1) &&
           (eq(s1[0], s2[0]) || eq(s1[1], s2[1]) || eq(s1[0], s2[1]) || eq(s1[1], s2[0]) ||
           _pointOnLine(s1[0], s2[0], s2[1]) || _pointOnLine(s1[1], s2[0], s2[1]))) {
@@ -141,12 +141,12 @@ function pickUpCraftInfo(outline, outerEdges) {
 }
 
 function getOutlineByCollision(segments, outerEdges) {
-  var eq = strictEqual;
-  var outline = [];
-  for (var psi1 = 0; psi1 < segments.length; psi1++) {
-    var s1 = segments[psi1];
-    for (var psi2 = 0; psi2 < outerEdges.length; psi2++) {
-      var s2 = outerEdges[psi2];
+  let eq = strictEqual;
+  let outline = [];
+  for (let psi1 = 0; psi1 < segments.length; psi1++) {
+    let s1 = segments[psi1];
+    for (let psi2 = 0; psi2 < outerEdges.length; psi2++) {
+      let s2 = outerEdges[psi2];
       if (equal(Math.abs(s1[0].minus(s1[1]).unit().dot(s2[0].minus(s2[1]).unit())), 1) &&
         (eq(s1[0], s2[0]) || eq(s1[1], s2[1]) || eq(s1[0], s2[1]) || eq(s1[1], s2[0]) ||
         _pointOnLine(s1[0], s2[0], s2[1]) || _pointOnLine(s1[1], s2[0], s2[1]))) {
@@ -158,9 +158,9 @@ function getOutlineByCollision(segments, outerEdges) {
 }
 
 export function findOutline (planePolygons) {
-  var segmentsByPolygon = polygonsToSegments(planePolygons);
+  let segmentsByPolygon = polygonsToSegments(planePolygons);
   //simplifySegments(segmentsByPolygon);
-  var planeSegments = cad_utils.arrFlatten1L(segmentsByPolygon);
+  let planeSegments = cad_utils.arrFlatten1L(segmentsByPolygon);
   //planeSegments = removeSharedEdges(planeSegments);
   removeTJoints(planeSegments);
   planeSegments = removeSharedEdges(planeSegments);
@@ -169,13 +169,13 @@ export function findOutline (planePolygons) {
 
 function removeSharedEdges(segments) {
   segments = segments.slice();
-  var eq = strictEqual;
-  for (var psi1 = 0; psi1 < segments.length; psi1++) {
-    var s1 = segments[psi1];
+  let eq = strictEqual;
+  for (let psi1 = 0; psi1 < segments.length; psi1++) {
+    let s1 = segments[psi1];
     if (s1 == null) continue;
-    for (var psi2 = 0; psi2 < segments.length; psi2++) {
+    for (let psi2 = 0; psi2 < segments.length; psi2++) {
       if (psi1 === psi2) continue;
-      var s2 = segments[psi2];
+      let s2 = segments[psi2];
       if (s2 == null) continue;
       if ((eq(s1[0], s2[0]) && eq(s1[1], s2[1]) || (eq(s1[0], s2[1]) && eq(s1[1], s2[0])))) {
         segments[psi1] = null;
@@ -187,15 +187,15 @@ function removeSharedEdges(segments) {
 }
 
 function simplifySegments(polygonToSegments) {
-  for (var pi1 = 0; pi1 < polygonToSegments.length; ++pi1) {
-    for (var pi2 = 0; pi2 < polygonToSegments.length; ++pi2) {
+  for (let pi1 = 0; pi1 < polygonToSegments.length; ++pi1) {
+    for (let pi2 = 0; pi2 < polygonToSegments.length; ++pi2) {
       if (pi1 === pi2) continue;
-      var polygon1 = polygonToSegments[pi1];
-      var polygon2 = polygonToSegments[pi2];
-      for (var si1 = 0; si1 < polygon1.length; ++si1) {
-        var seg1 = polygon1[si1];
-        for (var si2 = 0; si2 < polygon2.length; ++si2) {
-          var point = polygon2[si2][0];
+      let polygon1 = polygonToSegments[pi1];
+      let polygon2 = polygonToSegments[pi2];
+      for (let si1 = 0; si1 < polygon1.length; ++si1) {
+        let seg1 = polygon1[si1];
+        for (let si2 = 0; si2 < polygon2.length; ++si2) {
+          let point = polygon2[si2][0];
           if (_pointOnLine(point, seg1[0], seg1[1])) {
             polygon1.push([point, seg1[1]]);
             seg1[1] = point;
@@ -208,37 +208,37 @@ function simplifySegments(polygonToSegments) {
 
 function _closeFactorToLine(p, seg1, seg2) {
 
-  var a = p.minus(seg1);
-  var b = seg2.minus(seg1);
-  var bn = b.unit();
+  let a = p.minus(seg1);
+  let b = seg2.minus(seg1);
+  let bn = b.unit();
 
-  var projLength = bn.dot(a);
-  var bx = bn.times(projLength);
+  let projLength = bn.dot(a);
+  let bx = bn.times(projLength);
   if (!(projLength > 0 && projLength < b.length())) {
     return -1;
   }
   
-  var c = a.minus(bx);
+  let c = a.minus(bx);
   return c.length();    
 }
 
 function removeTJoints(segments) {
-  var pointIndex = HashTable.forVector3d();
+  let pointIndex = HashTable.forVector3d();
 
-  for (var i = 0; i < segments.length; ++i) {
+  for (let i = 0; i < segments.length; ++i) {
     pointIndex.put(segments[i][0], 1);
     pointIndex.put(segments[i][1], 1);
   }
   
-  var points = pointIndex.getKeys();
-  var eq = strictEqual;
-  for (var pi1 = 0; pi1 < points.length; ++pi1) {
-    var point = points[pi1];
+  let points = pointIndex.getKeys();
+  let eq = strictEqual;
+  for (let pi1 = 0; pi1 < points.length; ++pi1) {
+    let point = points[pi1];
     var best = null, bestFactor;
-    for (var pi2 = 0; pi2 < segments.length; ++pi2) {
-      var seg = segments[pi2];
+    for (let pi2 = 0; pi2 < segments.length; ++pi2) {
+      let seg = segments[pi2];
       if (eq(seg[0], point) || eq(seg[1], point)) continue;
-      var factor = _closeFactorToLine(point, seg[0], seg[1]);
+      let factor = _closeFactorToLine(point, seg[0], seg[1]);
       if (factor != -1 && factor < 1E-6 && (best == null || factor < bestFactor)) {
         best = seg;
         bestFactor = factor;
@@ -252,16 +252,16 @@ function removeTJoints(segments) {
 }
 
 function deleteRedundantPoints(path) {
-  var cleanedPath = [];
+  let cleanedPath = [];
   //Delete redundant point
-  var pathLength = path.length;
-  var skipMode = false;
-  for (var pi = 0; pi < pathLength; pi++) {
-    var bIdx = ((pi + 1) % pathLength);
-    var a = path[pi];
-    var b = path[bIdx];
-    var c = path[(pi + 2) % pathLength];
-    var eq = areEqual;
+  let pathLength = path.length;
+  let skipMode = false;
+  for (let pi = 0; pi < pathLength; pi++) {
+    let bIdx = ((pi + 1) % pathLength);
+    let a = path[pi];
+    let b = path[bIdx];
+    let c = path[(pi + 2) % pathLength];
+    let eq = areEqual;
     if (!skipMode) cleanedPath.push(a);
     skipMode = eq(a.minus(b).unit().dot(b.minus(c).unit()), 1, 1E-9);
   }
@@ -270,13 +270,13 @@ function deleteRedundantPoints(path) {
 
 export function segmentsToPaths(segments) {
 
-  var veq = strictEqual;
-  var paths = [];
-  var index = HashTable.forVector3d();
-  var csgIndex = HashTable.forEdge();
+  let veq = strictEqual;
+  let paths = [];
+  let index = HashTable.forVector3d();
+  let csgIndex = HashTable.forEdge();
 
   function indexPoint(p, edge) {
-    var edges = index.get(p);
+    let edges = index.get(p);
     if (edges === null) {
       edges = [];
       index.put(p, edges);
@@ -284,11 +284,11 @@ export function segmentsToPaths(segments) {
     edges.push(edge);
   }
 
-  for (var si = 0; si < segments.length; si++) {
-    var k = segments[si];
+  for (let si = 0; si < segments.length; si++) {
+    let k = segments[si];
     indexPoint(k[0], k);
     indexPoint(k[1], k);
-    var csgInfo = k[2];
+    let csgInfo = k[2];
     if (csgInfo !== undefined && csgInfo !== null) {
       csgIndex.put([k[0], k[1]], csgInfo);
     }
@@ -296,12 +296,12 @@ export function segmentsToPaths(segments) {
   }
 
   function nextPoint(p) {
-    var edges = index.get(p);
+    let edges = index.get(p);
     if (edges === null) return null;
-    for (var i = 0; i < edges.length; i++) {
-      var edge = edges[i];
+    for (let i = 0; i < edges.length; i++) {
+      let edge = edges[i];
       if (edge[3]) continue;
-      var res = null;
+      let res = null;
       if (veq(p, edge[0])) res = edge[1];
       if (veq(p, edge[1])) res = edge[0];
       if (res != null) {
@@ -312,16 +312,16 @@ export function segmentsToPaths(segments) {
     return null;
   }
 
-  var path;
-  for (var ei = 0; ei < segments.length; ei++) {
-    var edge = segments[ei];
+  let path;
+  for (let ei = 0; ei < segments.length; ei++) {
+    let edge = segments[ei];
     if (edge[3]) {
       continue;
     }
     edge[3] = true;
     path = [edge[0], edge[1]];
     paths.push(path);
-    var next = nextPoint(edge[1]);
+    let next = nextPoint(edge[1]);
     while (next !== null) {
       if (!veq(next, path[0])) {
         path.push(next);
@@ -332,13 +332,13 @@ export function segmentsToPaths(segments) {
     }
   }
 
-  var filteredPaths = [];
-  for (var i = 0; i < paths.length; i++) {
+  let filteredPaths = [];
+  for (let i = 0; i < paths.length; i++) {
     path = paths[i];
 
     //Set derived from object to be able to recunstruct
     cad_utils.iteratePath(path, 0, function (a, b) {
-      var fromPolygon = csgIndex.get([a, b]);
+      let fromPolygon = csgIndex.get([a, b]);
       if (fromPolygon !== null) {
         if (fromPolygon.shared.__tcad.csgInfo) {
           a.sketchConnectionObject = fromPolygon.shared.__tcad.csgInfo.derivedFrom;
@@ -365,14 +365,14 @@ function _triangulateCSG(polygons) {
     return [v.x, v.y, v.z];
   }
 
-  var triangled = [];
+  let triangled = [];
   for (let poly of polygons) {
     let vertices = Triangulate([poly.vertices.map(v => data(v.pos))], data(poly.plane.normal));
     for (let i = 0;  i < vertices.length; i += 3 ) {
-      var a = csgVert(vertices[i]);
-      var b = csgVert(vertices[i + 1]);
-      var c = csgVert(vertices[i + 2]);
-      var csgPoly = new CSG.Polygon([a, b, c], poly.shared, poly.plane);
+      let a = csgVert(vertices[i]);
+      let b = csgVert(vertices[i + 1]);
+      let c = csgVert(vertices[i + 2]);
+      let csgPoly = new CSG.Polygon([a, b, c], poly.shared, poly.plane);
       triangled.push(csgPoly);
     }
   }
@@ -380,21 +380,21 @@ function _triangulateCSG(polygons) {
 }
 
 function splitTwoSegments(a, b) {
-  var da = a[1].minus(a[0]);
-  var db = b[1].minus(b[0]);
-  var dc = b[0].minus(a[0]);
+  let da = a[1].minus(a[0]);
+  let db = b[1].minus(b[0]);
+  let dc = b[0].minus(a[0]);
 
-  var daXdb = da.cross(db);
+  let daXdb = da.cross(db);
   if (Math.abs(dc.dot(daXdb)) > 1e-6) {
     // lines are not coplanar
     return null;
   }
-  var veq = strictEqual;
+  let veq = strictEqual;
   if (veq(a[0], b[0]) || veq(a[0], b[1]) || veq(a[1], b[0]) || veq(a[1], b[1])) {
     return null;
   }
 
-  var dcXdb = dc.cross(db);
+  let dcXdb = dc.cross(db);
 
   function _split(s, ip) {
     if (s[0].equals(ip) || s[1].equals(ip)) {
@@ -402,9 +402,9 @@ function splitTwoSegments(a, b) {
     }
     return [[s[0], ip, s[2]], [ip, s[1], s[2]]]
   }
-  var s = dcXdb.dot(daXdb) / daXdb.lengthSquared();
+  let s = dcXdb.dot(daXdb) / daXdb.lengthSquared();
   if (s > 0.0 && s < 1.0) {
-    var ip = a[0].plus(da.times(s));
+    let ip = a[0].plus(da.times(s));
     return {
       splitterParts : _split(a, ip),
       residual : _split(b, ip)
@@ -414,14 +414,14 @@ function splitTwoSegments(a, b) {
 }
 
 function attract(vectors, precision) {
-  var eq = areEqual();
-  var dist = distanceAB3;
+  let eq = areEqual();
+  let dist = distanceAB3;
   vectors = vectors.slice();
-  for (var i = 0; i < vectors.length; i++) {
-    var v1 = vectors[i];
+  for (let i = 0; i < vectors.length; i++) {
+    let v1 = vectors[i];
     if (v1 == null) continue;
-    for (var j = i + 1; j < vectors.length; j++) {
-      var v2 = vectors[j];
+    for (let j = i + 1; j < vectors.length; j++) {
+      let v2 = vectors[j];
       if (v2 == null) continue;
       if (dist(v1, v2) <= precision) {
         Vector.prototype.setV.call(v2, v1);

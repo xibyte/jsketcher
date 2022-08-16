@@ -142,7 +142,7 @@ export class LinearDimension extends Dimension {
   
   
     function drawRef(start, x, y) {
-      var vec = new Vector(x - start.x, y - start.y);
+      let vec = new Vector(x - start.x, y - start.y);
       vec._normalize();
       vec._multiply(EXT_LINEAR_WIDTH_PX * unscale);
       

@@ -14,17 +14,17 @@ HistoryManager.prototype.init = function(sketchData) {
 };
 
 HistoryManager.prototype.undo = function () {
-  var currentState = this.viewer.io.serializeSketch();
+  let currentState = this.viewer.io.serializeSketch();
   if (currentState == this.lastCheckpoint) {
     if (this.historyPointer != -1) {
-      var diff = this.diffs[this.historyPointer];
+      let diff = this.diffs[this.historyPointer];
       this.lastCheckpoint = this.applyDiff(this.lastCheckpoint, diff);
       this.viewer.io.loadSketch(this.lastCheckpoint);
       this.viewer.fullHeavyUIRefresh();
       this.historyPointer --;
     }
   } else {
-    var diffToCurr = this.getDiff(currentState, this.lastCheckpoint);
+    let diffToCurr = this.getDiff(currentState, this.lastCheckpoint);
     if (this.historyPointer != this.diffs.length - 1) {
       this.diffs.splice(this.historyPointer + 1, this.diffs.length - this.historyPointer + 1)
     }
@@ -51,11 +51,11 @@ HistoryManager.prototype.checkpoint = function () {
 
 HistoryManager.prototype._checkpoint = function () {
   this._counter = 0;
-  var currentState = this.viewer.io.serializeSketch();
+  let currentState = this.viewer.io.serializeSketch();
   if (currentState == this.lastCheckpoint) {
     return;
   }
-  var diffToCurr = this.getDiff(currentState, this.lastCheckpoint);
+  let diffToCurr = this.getDiff(currentState, this.lastCheckpoint);
   if (this.historyPointer != this.diffs.length - 1) {
     this.diffs.splice(this.historyPointer + 1, this.diffs.length - this.historyPointer + 1)
   }
@@ -65,13 +65,13 @@ HistoryManager.prototype._checkpoint = function () {
 };
 
 HistoryManager.prototype.redo = function () {
-  var currentState = this.viewer.io.serializeSketch();
+  let currentState = this.viewer.io.serializeSketch();
   if (currentState != this.lastCheckpoint) {
     return;
   }
   if (this.historyPointer != this.diffs.length - 1 && this.diffs.length != 0) {
     this.historyPointer ++;
-    var diff = this.diffs[this.historyPointer];
+    let diff = this.diffs[this.historyPointer];
     this.lastCheckpoint = this.applyDiffInv(this.lastCheckpoint, diff);
     this.viewer.io.loadSketch(this.lastCheckpoint);
     this.viewer.fullHeavyUIRefresh();
@@ -86,16 +86,16 @@ HistoryManager.prototype.applyDiff = function (text1, diff) {
 
 HistoryManager.prototype.applyDiffInv = function (text1, diff) {
   this.reversePatch(diff);
-  var result = this.applyDiff(text1, diff);
+  let result = this.applyDiff(text1, diff);
   this.reversePatch(diff);
   return result;
 };
 
 HistoryManager.prototype.reversePatch = function (plist) {
-  for (var i = 0; i < plist.length; i++) {
-    var patch = plist[i];
-    for (var j = 0; j < patch.diffs.length; j++) {
-      var diff = patch.diffs[j];
+  for (let i = 0; i < plist.length; i++) {
+    let patch = plist[i];
+    for (let j = 0; j < patch.diffs.length; j++) {
+      let diff = patch.diffs[j];
       diff[0] *= -1;
     }
   }

@@ -26,7 +26,7 @@ export class AddDimTool extends Tool {
   }
 
   mousemove(e) {
-    var p = this.viewer.screenToModel(e);
+    let p = this.viewer.screenToModel(e);
     this.viewer.snap(p.x, p.y, []);
     if (this.dim != null) {
       this.dim.b.x = p.x;
@@ -100,8 +100,8 @@ export class AddCircleDimTool extends Tool {
   }
 
   mousemove(e) {
-    var p = this.viewer.screenToModel(e);
-    var objects = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []).filter(function (o) {
+    let p = this.viewer.screenToModel(e);
+    let objects = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []).filter(function (o) {
       return o.TYPE === 'Circle' || o.TYPE === 'Arc';
     });
 

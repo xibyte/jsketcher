@@ -15,7 +15,7 @@ export class ReferencePointTool extends Tool {
   }
   
   mousemove(e) {
-    var p = this.viewer.screenToModel(e);
+    let p = this.viewer.screenToModel(e);
     this.viewer.snap(p.x, p.y, []);
     this.viewer.refresh();
   }
