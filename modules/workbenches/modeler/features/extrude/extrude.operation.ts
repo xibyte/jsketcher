@@ -60,8 +60,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     const sketchId = face.id;
     const sketch = ctx.sketchStorageService.readSketch(sketchId);
 
-    let sweepSources: FaceRef[];
-
     if (!sketch) {
       if (face instanceof MBrepFace) {
         oci.prism("FaceTool", face, ...extrusionVector.data());
@@ -78,7 +76,7 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       csys.origin._minus(extrusionVector);
       extrusionVector._scale(2);
     }
-    sweepSources = occ.utils.sketchToFaces(sketch, csys)
+    const sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
 
