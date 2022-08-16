@@ -20,7 +20,9 @@
       ]
     }
   },
-  "includes": [
-    "./externals.d.ts"
+  "include": [
+    "modules/**/*",
+    "web/app/**/*",
+    "externals.d.ts"
   ]
 }
