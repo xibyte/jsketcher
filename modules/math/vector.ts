@@ -117,7 +117,7 @@ export default class Vector implements XYZ {
   }
 
   normalize(): UnitVector {
-    let mag = this.length();
+    const mag = this.length();
     if (mag === 0.0) {
       return new Vector(0.0, 0.0, 0.0) as UnitVector;
     }
@@ -129,7 +129,7 @@ export default class Vector implements XYZ {
   }
 
   _normalize(): UnitVector {
-    let mag = this.length();
+    const mag = this.length();
     if (mag === 0.0) {
       return this.set(0, 0, 0) as UnitVector;
     }

@@ -34,8 +34,8 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
   const highlights = useStream(ctx => ctx.highlightService.highlighted$);
 
   let typeLabel = model.TYPE as string;
-  let idLabel: string = model.id;
-  let visibilityOf = model;
+  const idLabel: string = model.id;
+  const visibilityOf = model;
   if (model instanceof MSketchObject) {
     typeLabel = model.sketchPrimitive.constructor.name
   } else if (model instanceof MOpenFaceShell) {

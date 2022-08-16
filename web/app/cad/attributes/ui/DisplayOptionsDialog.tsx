@@ -54,14 +54,14 @@ export function DisplayOptionsView(props: DisplayOptionsViewProps) {
     }
   }, []);
 
-  for (let modelId of props.modelIds) {
+  for (const modelId of props.modelIds) {
     const streamAndPatcher = useStreamWithPatcher(ctx => ctx.attributesService.streams.get(modelId));
     streamsAndPatchers.push(streamAndPatcher);
   }
 
   function patchAttrs(mutator) {
     View.SUPPRESS_HIGHLIGHTS = true;
-    for (let [model, patch] of streamsAndPatchers) {
+    for (const [model, patch] of streamsAndPatchers) {
       patch(mutator);
     }
   }

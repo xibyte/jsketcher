@@ -177,15 +177,15 @@ export function __perp2d<T extends VectorData>([x, y]: T, out: T): T {
 }
 
 export function normal3<T extends VectorData>(ccwSequence: [T, T, T]): T {
-  let a = ccwSequence[0];
-  let b = ccwSequence[1];
-  let c = ccwSequence[2];
+  const a = ccwSequence[0];
+  const b = ccwSequence[1];
+  const c = ccwSequence[2];
 
   return _normalize( cross(sub(b, a), sub(c, a) ) );
 }
 
 export function polynomial(coefs: number[], vectors: VectorData[]): VectorData {
-  let out = [];
+  const out = [];
   out.length = vectors[0].length;
   out.fill(0);
   for (let i = 0; i < vectors.length; i++) {

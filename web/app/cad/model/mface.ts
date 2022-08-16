@@ -69,16 +69,16 @@ export class MFace extends MObject {
   evalCSys() {
     if (!this._csys) {
       if (this.isPlaneBased) {
-        let alignCsys = (this.shell && this.shell.csys) || CSys.ORIGIN;
-        let [x, y, z] = BasisForPlane(this.surface.simpleSurface.normal, alignCsys.y, alignCsys.z);
+        const alignCsys = (this.shell && this.shell.csys) || CSys.ORIGIN;
+        const [x, y, z] = BasisForPlane(this.surface.simpleSurface.normal, alignCsys.y, alignCsys.z);
         let proj = z.dot(alignCsys.origin);
         proj -= this.surface.simpleSurface.w;
-        let origin = alignCsys.origin.minus(z.multiply(proj));
+        const origin = alignCsys.origin.minus(z.multiply(proj));
         this._csys = new CSys(origin, x, y, z) as CartesianCSys;
       } else {
-        let origin = this.surface.southWestPoint();
-        let z = this.surface.normalUV(0, 0);
-        let derivatives = this.surface.impl.eval(0, 0, 1);
+        const origin = this.surface.southWestPoint();
+        const z = this.surface.normalUV(0, 0);
+        const derivatives = this.surface.impl.eval(0, 0, 1);
         let x = new Vector().set3(derivatives[1][0])._normalize();
         let y = new Vector().set3(derivatives[0][1])._normalize();
 
@@ -111,9 +111,9 @@ export class MFace extends MObject {
     }
 
     const addSketchObjects = sketchObjects => {
-      let isConstruction = sketchObjects === sketch.constructionSegments;
-      for (let sketchObject of sketchObjects) {
-        let mSketchObject = new MSketchObject(this, sketchObject);
+      const isConstruction = sketchObjects === sketch.constructionSegments;
+      for (const sketchObject of sketchObjects) {
+        const mSketchObject = new MSketchObject(this, sketchObject);
         mSketchObject.construction = isConstruction;
         this.sketchObjects.push(mSketchObject);
       }
@@ -127,14 +127,14 @@ export class MFace extends MObject {
     this.sketchObjects.forEach(o => index.set(o.sketchPrimitive, o));
 
     this.sketchLoops = sketch.fetchContours().map((contour, i) => {
-      let loopSketchObjects = contour.segments.map(s => index.get(s));
+      const loopSketchObjects = contour.segments.map(s => index.get(s));
       return new MSketchLoop(this.id + '/L:' + i, this, loopSketchObjects, contour);
     });
 
   }
 
   findSketchObjectById(sketchObjectId) {
-    for (let o of this.sketchObjects) {
+    for (const o of this.sketchObjects) {
       if (o.id === sketchObjectId) {
         return o;
       }
@@ -197,9 +197,9 @@ export class MBrepFace extends MFace {
   }
 
   get edges(): MEdge[] {
-    let out = [];
-    for (let he of this.brepFace.edges) {
-      let edge = (this.shell as MBrepShell).brepRegistry.get(he.edge);
+    const out = [];
+    for (const he of this.brepFace.edges) {
+      const edge = (this.shell as MBrepShell).brepRegistry.get(he.edge);
       if (edge) {
         out.push(edge);
       }
@@ -209,7 +209,7 @@ export class MBrepFace extends MFace {
   
   getBounds() {
     const bounds = [];
-    for (let loop of this.brepFace.loops) {
+    for (const loop of this.brepFace.loops) {
       bounds.push(loop.asPolygon().map(p => new Vector().setV(p)));
     }
     return bounds;

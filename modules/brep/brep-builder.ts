@@ -54,9 +54,9 @@ export default class BrepBuilder {
 
   edgeTrim(a, b, curve) {
     const curveCreate = () => {
-      let u1 = curve.param(a.point);
+      const u1 = curve.param(a.point);
       curve = curve.splitByParam(u1)[1];
-      let u2 = curve.param(b.point);
+      const u2 = curve.param(b.point);
       curve = curve.splitByParam(u2)[0];
     };
     this.edge(a, b, curveCreate);
@@ -64,7 +64,7 @@ export default class BrepBuilder {
   }
 
   edge(a, b, curveCreate?, invertedToCurve?, tag?): BrepBuilder {
-    let he = this.edgeIndex.getHalfEdgeOrCreate(a, b, curveCreate, invertedToCurve, tag);
+    const he = this.edgeIndex.getHalfEdgeOrCreate(a, b, curveCreate, invertedToCurve, tag);
     this._loop.halfEdges.push(he);
     return this;   
   }
@@ -74,18 +74,18 @@ export default class BrepBuilder {
   }
 
   build(): Shell {
-    for (let face of this._shell.faces) {
+    for (const face of this._shell.faces) {
       face.shell = this._shell;
-      for (let loop of face.loops) {
+      for (const loop of face.loops) {
         loop.link();    
       }  
       if (face.surface === null) {
         face.surface = createBoundingSurface(face.outerLoop.tess());
       }
     }
-    for (let face of this._shell.faces) {
-      for (let he of face.edges) {
-        let twin = he.twin();
+    for (const face of this._shell.faces) {
+      for (const he of face.edges) {
+        const twin = he.twin();
         if (twin.loop === null) {
           const nullFace = new Face(face.surface);          
           nullFace.outerLoop.halfEdges.push(twin);
@@ -103,14 +103,14 @@ export function createBoundingSurface(points: Vector[], plane?: Plane): BrepSurf
     const w = points[0].dot(normal);
     plane = new Plane(normal, w);
   }
-  let to2D = plane.get2DTransformation();
-  let points2d = points.map(p => to2D.apply(p));
+  const to2D = plane.get2DTransformation();
+  const points2d = points.map(p => to2D.apply(p));
 
   return createBoundingSurfaceFrom2DPoints(points2d, plane);
 }
 
 export function createBoundingSurfaceFrom2DPoints(points2d: Vector[], plane: Plane, minWidth?: number, minHeight?: number, offset = 0): BrepSurface {
-  let bBox = new BBox();
+  const bBox = new BBox();
   points2d.forEach(p => bBox.checkPoint(p));
 
   if (minWidth && bBox.width() < minWidth) {
@@ -133,11 +133,11 @@ export function createBoundingSurfaceFrom2DPoints(points2d: Vector[], plane: Pla
 } 
 
 export function createBoundingSurfaceFromBBox(bBox: BBox, plane: Plane): BrepSurface {
-  let to3D = plane.get3DTransformation();
+  const to3D = plane.get3DTransformation();
   let polygon = bBox.toPolygon() as Vector[];
   polygon = polygon.map(p => to3D._apply(p).data());
 
-  let planeNurbs = verb.geom.NurbsSurface.byKnotsControlPointsWeights( 1, 1, [0,0,1,1], [0,0,1,1],
+  const planeNurbs = verb.geom.NurbsSurface.byKnotsControlPointsWeights( 1, 1, [0,0,1,1], [0,0,1,1],
     [ [ polygon[3], polygon[2]] ,
       [ polygon[0], polygon[1] ] ] );
 

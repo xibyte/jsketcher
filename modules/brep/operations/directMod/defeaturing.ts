@@ -9,7 +9,7 @@ import {EngineAPI_V1, GenericResponse} from "engine/api";
 export function defeatureByEdge(shell: Shell, edge: Edge, engine: EngineAPI_V1): GenericResponse {
 
   const graph = new EdgeGraph();
-  for (let e of shell.edges) {
+  for (const e of shell.edges) {
     graph.add(e.halfEdge1);
     graph.add(e.halfEdge2);
   }
@@ -35,7 +35,7 @@ export function defeatureByEdge(shell: Shell, edge: Edge, engine: EngineAPI_V1):
 export function defeatureByVertex(shell: Shell, vertex: Vertex, engine: EngineAPI_V1): GenericResponse {
 
   const graph = new EdgeGraph();
-  for (let e of shell.edges) {
+  for (const e of shell.edges) {
     graph.add(e.halfEdge1);
     graph.add(e.halfEdge2);
   }

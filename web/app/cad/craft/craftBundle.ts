@@ -64,13 +64,13 @@ export function activate(ctx: ApplicationContext) {
   function runRequest(request): Promise<OperationResult> {
     clearImplicitModels();
     try {
-      let op = ctx.operationService.get(request.type);
+      const op = ctx.operationService.get(request.type);
       if (!op) {
         return Promise.reject(new Error(`unknown operation ${request.type}`));
       }
 
-      let params = {};
-      let errors = [];
+      const params = {};
+      const errors = [];
       materializeParams(ctx, request.params, op.schema, params, errors);
       if (errors.length) {
         return Promise.reject(new CadError({
@@ -175,7 +175,7 @@ export function activate(ctx: ApplicationContext) {
       models$.next([]);
     }
 
-    let {history, pointer} = curr;
+    const {history, pointer} = curr;
 
     runPipeline(history, beginIndex, pointer)
       .then(() => next(curr))
@@ -197,8 +197,8 @@ function isAdditiveChange({history:oldHistory, pointer:oldPointer}, {history, po
   }
 
   for (let i = 0; i <= oldPointer; i++) {
-    let modCurr = history[i];
-    let modPrev = oldHistory[i];
+    const modCurr = history[i];
+    const modPrev = oldHistory[i];
     if (modCurr !== modPrev) {
       return false;
     }
@@ -209,7 +209,7 @@ function isAdditiveChange({history:oldHistory, pointer:oldPointer}, {history, po
 function historyTravel(modifications$) {
 
   function setPointer(pointer, hints) {
-    let mod = modifications$.value;
+    const mod = modifications$.value;
     if (pointer >= mod.history.length || pointer < -1) {
       return;
     }

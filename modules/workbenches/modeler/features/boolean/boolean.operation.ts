@@ -18,10 +18,10 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
   path:__dirname,
   paramsInfo: ({tools, boolean}) => `(${r(tools)} ${r(boolean)})`,
   run: (params: BooleanParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let returnObject = occ.utils.applyBooleanModifier(params.tools, params.boolean);
+    const returnObject = occ.utils.applyBooleanModifier(params.tools, params.boolean);
     
     if (params.keepTools == true) {
       // filter consumed array to remove the tools but leaving the targets regardless if 

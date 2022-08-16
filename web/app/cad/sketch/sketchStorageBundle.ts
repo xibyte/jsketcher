@@ -4,34 +4,34 @@ import {ReadSketch} from "./sketchReader";
 export function activate(ctx: ApplicationContext) {
 
   function getAllSketches() {
-    let nm = ctx.projectService.sketchStorageNamespace;
+    const nm = ctx.projectService.sketchStorageNamespace;
     return ctx.storageService.getAllKeysFromNamespace(nm).map(fqn => ({
       fqn, id: fqn.substring(nm.length)
     }));
   }
 
   function getSketchData(sketchId) {
-    let sketchStorageKey = ctx.projectService.sketchStorageKey(sketchId);
+    const sketchStorageKey = ctx.projectService.sketchStorageKey(sketchId);
     return ctx.storageService.get(sketchStorageKey);
   }
 
   function setSketchData(sketchId, data) {
-    let sketchStorageKey = ctx.projectService.sketchStorageKey(sketchId);
+    const sketchStorageKey = ctx.projectService.sketchStorageKey(sketchId);
     return ctx.storageService.set(sketchStorageKey, data);
   }
 
   function removeSketchData(sketchId) {
-    let sketchStorageKey = ctx.projectService.sketchStorageKey(sketchId);
+    const sketchStorageKey = ctx.projectService.sketchStorageKey(sketchId);
     return ctx.storageService.remove(sketchStorageKey);
   }
 
   function hasSketch(sketchId) {
-    let sketchStorageKey = ctx.projectService.sketchStorageKey(sketchId);
+    const sketchStorageKey = ctx.projectService.sketchStorageKey(sketchId);
     return !!ctx.storageService.get(sketchStorageKey);
   }
 
   function readSketch(sketchId) {
-    let savedSketch = getSketchData(sketchId);
+    const savedSketch = getSketchData(sketchId);
     if (savedSketch === null) {
       return null;
     }

@@ -18,7 +18,7 @@ export const ScaleOperation: OperationDescriptor<scaleParams> = {
   path:__dirname,
   paramsInfo: ({ distance }) => `(${r(distance)})`,
   run: (params: scaleParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const returnObject = {

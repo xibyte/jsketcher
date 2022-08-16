@@ -66,7 +66,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
 
 
   run: (params: PrimitiveBoxParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;

@@ -70,7 +70,7 @@ export default class BrepCurve {
     if (ueq(u, this.uMin) || ueq(u, this.uMax) || u < this.uMin || u > this.uMax) {
       return null
     }
-    let split = this.impl.split(u);
+    const split = this.impl.split(u);
     return split.map(v => new BrepCurve(v)) as [BrepCurve, BrepCurve];
 
     // return [
@@ -101,7 +101,7 @@ export default class BrepCurve {
     const eq = veq3;
 
     function add(i0) {
-      for (let i1 of isecs) {
+      for (const i1 of isecs) {
         if (eq(i0.p0, i1.p0)) {
           return;
         }
@@ -141,8 +141,8 @@ export default class BrepCurve {
       i.p1 = pt(i.p1);
     });
     isecs = isecs.filter(({u0, u1}) => {
-      let t0 = this.tangentAtParam(u0);
-      let t1 = other.tangentAtParam(u1);
+      const t0 = this.tangentAtParam(u0);
+      const t1 = other.tangentAtParam(u1);
       return !veq(t0, t1) && !veqNeg(t0, t1);
     });
     return isecs;
@@ -173,7 +173,7 @@ export default class BrepCurve {
   }
 
   static createLinearCurve = function(a: Vector, b: Vector): BrepCurve {
-    let line = verb.geom.NurbsCurve.byKnotsControlPointsWeights( 1, [0,0,1,1], [a.data(), b.data()]);
+    const line = verb.geom.NurbsCurve.byKnotsControlPointsWeights( 1, [0,0,1,1], [a.data(), b.data()]);
     return new BrepCurve(new NurbsCurve(line));
   };
 

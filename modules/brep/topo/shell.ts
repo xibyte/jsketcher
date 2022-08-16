@@ -26,26 +26,26 @@ export class Shell extends TopoObject {
   }
 
   clone(): Shell {
-    let edgeClones = new Map();
-    for (let e of this.edges) {
+    const edgeClones = new Map();
+    for (const e of this.edges) {
       edgeClones.set(e, e.clone());
     }
 
-    let clone = new Shell();
-    for (let face of this.faces) {
-      let faceClone = new Face(face.surface);
+    const clone = new Shell();
+    for (const face of this.faces) {
+      const faceClone = new Face(face.surface);
       Object.assign(faceClone.data, face.data);
       const cloneLoop = (loop, loopClone) => {
-        for (let he of loop.halfEdges) {
-          let edgeClone = edgeClones.get(he.edge);
+        for (const he of loop.halfEdges) {
+          const edgeClone = edgeClones.get(he.edge);
           loopClone.halfEdges.push(he.inverted ? edgeClone.halfEdge2 : edgeClone.halfEdge1);
         }
         loopClone.link();
         Object.assign(loopClone.data, loop.data);
       };
       cloneLoop(face.outerLoop, faceClone.outerLoop);
-      for (let loop of face.innerLoops) {
-        let loopClone = new Loop(faceClone);
+      for (const loop of face.innerLoops) {
+        const loopClone = new Loop(faceClone);
         cloneLoop(loop, loopClone);
         faceClone.innerLoops.push(loopClone);
       }
@@ -62,19 +62,19 @@ export class Shell extends TopoObject {
    */
   transform(tr: Matrix3x4) {
 
-    for (let v of this.vertices) {
+    for (const v of this.vertices) {
       v.point = tr.apply(v.point);
     }
 
     const visited = new Set<any>();
-    for (let e of this.edges) {
+    for (const e of this.edges) {
       if (visited.has(e.curve)) {
         continue;
       }
       visited.add(e.curve);
       e.curve = e.curve.transform(tr);
     }
-    for (let face of this.faces) {
+    for (const face of this.faces) {
       if (visited.has(face.surface)) {
         continue;
       }
@@ -84,12 +84,12 @@ export class Shell extends TopoObject {
   }
 
   invert( shell ) {
-    for (let face of this.faces) {
+    for (const face of this.faces) {
       face.surface = face.surface.invert();
-      for (let edge of this.edges) {
+      for (const edge of this.edges) {
         edge.invert();
       }
-      for (let loop of face.loops) {
+      for (const loop of face.loops) {
         for (let i = 0; i < loop.halfEdges.length; i++) {
           loop.halfEdges[i] = loop.halfEdges[i].twin();
         }
@@ -99,7 +99,7 @@ export class Shell extends TopoObject {
     }
     // @ts-ignore
     this.data.inverted = !this.data.inverted;
-    let errors = BREPValidator.validate(this);
+    const errors = BREPValidator.validate(this);
     if (errors.length !== 0) {
       throw new CadError({
         kind: CadError.KIND.INTERNAL_ERROR,
@@ -109,13 +109,13 @@ export class Shell extends TopoObject {
   }
 
   traverse(callback: (child: TopoObject) => any) {
-    for (let face of this.faces) {
+    for (const face of this.faces) {
       callback(face);
     }
-    for (let edge of this.edges) {
+    for (const edge of this.edges) {
       callback(edge);
     }
-    for (let vertex of this.vertices) {
+    for (const vertex of this.vertices) {
       callback(vertex);
     }
   }
@@ -123,8 +123,8 @@ export class Shell extends TopoObject {
 
 export function* verticesGenerator(shell: Shell): Generator<Vertex> {
   const seen = new Set();
-  for (let face of shell.faces) {
-    for (let edge of face.edges) {
+  for (const face of shell.faces) {
+    for (const edge of face.edges) {
       if (!seen.has(edge.vertexA)) {
         seen.add(edge.vertexA);
         yield edge.vertexA;
@@ -135,8 +135,8 @@ export function* verticesGenerator(shell: Shell): Generator<Vertex> {
 
 export function* edgesGenerator(faces: Face[]): Generator<Edge> {
   const visited = new Set();
-  for (let face of faces) {
-    for (let halfEdge of face.edges) {
+  for (const face of faces) {
+    for (const halfEdge of face.edges) {
       if (!visited.has(halfEdge.edge)) {
         visited.add(halfEdge.edge);
         yield halfEdge.edge;

@@ -63,7 +63,7 @@ export default class BoundedCurve implements ParametricCurve {
   }
   
   static splitCurve(curve, u): [BoundedCurve, BoundedCurve] {
-    let [uMin, uMax] = curve.domain();
+    const [uMin, uMax] = curve.domain();
     return [
       new BoundedCurve(curve, uMin, u),
       new BoundedCurve(curve, u, uMax)

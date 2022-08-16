@@ -67,7 +67,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
   run: (params: PrimitiveConeParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;
@@ -85,7 +85,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
     oci.pcone("cone", "csys", params.diameterA / 2, params.diameterB / 2, params.height);
 
 
-    let newFacesIds = [
+    const newFacesIds = [
       {
         id: 'F:SIDE',
         productionInfo: {

@@ -33,8 +33,8 @@ export default class NurbsSurface implements ParametricSurface {
     this.data = verbSurface.asNurbs();
     this.verb = verbSurface;
 
-    let {min: uMin, max: uMax} = verbSurface.domainU();
-    let {min: vMin, max: vMax} = verbSurface.domainV();
+    const {min: uMin, max: uMax} = verbSurface.domainU();
+    const {min: vMin, max: vMax} = verbSurface.domainV();
 
     this.uMin = uMin;
     this.uMax = uMax;

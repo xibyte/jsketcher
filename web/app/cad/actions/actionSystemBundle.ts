@@ -7,7 +7,7 @@ import {IconType} from "react-icons";
 
 export function activate(context: ApplicationContext) {
   
-  let {streams} = context;
+  const {streams} = context;
 
   const appearanceStreams: ActionAppearanceStreams = {};
   const stateStreams: ActionStateStreams = {};
@@ -19,13 +19,13 @@ export function activate(context: ApplicationContext) {
     hint: hint$
   };
   
-  let runners = {};
+  const runners = {};
   
-  let showAnonymousActionHint = enableAnonymousActionHint(context);
+  const showAnonymousActionHint = enableAnonymousActionHint(context);
   
   function run(id: string, data?: any): void {
-    let state = streams.action.state[id].value;
-    let runner = runners[id];
+    const state = streams.action.state[id].value;
+    const runner = runners[id];
     if (!state||!runner) {
       console.warn('request to run nonexistent action');
       return;
@@ -45,13 +45,13 @@ export function activate(context: ApplicationContext) {
 
     runners[action.id] = action.invoke;
 
-    let initialState = {
+    const initialState = {
       hint: '',
       enabled: true,
       visible: true
     };
 
-    let actionStateStream = stream.state(initialState);
+    const actionStateStream = stream.state(initialState);
     streams.action.state[action.id] = actionStateStream;
 
     if (action.update && action.listens) {
@@ -78,9 +78,9 @@ export function activate(context: ApplicationContext) {
 
   function showHintFor(request: HintRequest) {
     if (request) {
-      let {actionId, x, y, requester} = request;
-      let actionState = streams.action.state[actionId]?.value;
-      let actionAppearance = streams.action.appearance[actionId]?.value;
+      const {actionId, x, y, requester} = request;
+      const actionState = streams.action.state[actionId]?.value;
+      const actionAppearance = streams.action.appearance[actionId]?.value;
       if (actionState && actionAppearance) {
         streams.action.hint.value = {
           actionId, x, y, requester,

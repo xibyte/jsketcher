@@ -25,11 +25,11 @@ export function activate(ctx) {
 
   const {streams, services} = ctx;
 
-  let components = new Map();
+  const components = new Map();
   const registerComponent = (id, Component) => components.set(id, Component);
   const getComponent = id => components.get(id);
   
-  let floatViewDescriptors = new Map();
+  const floatViewDescriptors = new Map();
   
   function registerFloatView(id, Component, title, icon) {
     floatViewDescriptors.set(id, {Component, title, icon});

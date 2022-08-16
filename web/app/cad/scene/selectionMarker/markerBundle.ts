@@ -40,17 +40,17 @@ export function activate(ctx) {
 
 function createMarker(findEntity, requestRender) {
 
-  let markingSession = new Set();
-  let marked = new OrderedMap();
+  const markingSession = new Set();
+  const marked = new OrderedMap();
   let needUpdate = false;
   let sessionInProgress = false;
-  let $markedEntities = eventStream();
+  const $markedEntities = eventStream();
   
   const notify = () => $markedEntities.next(marked);
   const isMarked = id => marked.has(id);
 
   function doMark(id, color) {
-    let mObj = findEntity(id);
+    const mObj = findEntity(id);
     if (!mObj) {
       console.warn('no entity found to select: ' + id);
       return;
@@ -65,7 +65,7 @@ function createMarker(findEntity, requestRender) {
   }
 
   function withdraw(id) {
-    let mObj = findEntity(id);
+    const mObj = findEntity(id);
     if (!mObj) {
       console.warn('no entity found to deselect: ' + id);
       return;

@@ -19,7 +19,7 @@ export function testVertexMoving(ctx: ApplicationContext) {
 
   }
 
-  let datum3D = new DatumObject3D(
+  const datum3D = new DatumObject3D(
     new CSys(new Vector(0,0,500), AXIS.X.copy(), AXIS.Y.copy(), AXIS.Z.copy()),   
     ctx.services.viewer);
 

@@ -38,7 +38,7 @@ export class BundleSystem {
   }
 
   processWaitingQueue() {
-    for (let bundle of this.waitingQueue) {
+    for (const bundle of this.waitingQueue) {
       if (this.readinessCheck(bundle)) {
         this.waitingQueue.delete(bundle);
         this.doActivate(bundle);
@@ -52,7 +52,7 @@ export class BundleSystem {
       return true;
     }
 
-    for (let dep of bundle.activationDependencies) {
+    for (const dep of bundle.activationDependencies) {
       if (!this.activatedBundles.has(dep)) {
         return false;
       }

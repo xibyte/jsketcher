@@ -74,12 +74,12 @@ export default function Wizard(props: WizardProps) {
     props.onOK();
   };
 
-  let {left} = props;
-  let appearance = resolveAppearance(operation, workingRequest.params);
-  let title = appearance.label.toUpperCase();
-  let icon = <ImgIcon url={appearance.icon32} size={16}/>;
+  const {left} = props;
+  const appearance = resolveAppearance(operation, workingRequest.params);
+  const title = appearance.label.toUpperCase();
+  const icon = <ImgIcon url={appearance.icon32} size={16}/>;
 
-  let Form = operation.form;
+  const Form = operation.form;
 
   return <GenericWizard
     left={left}

@@ -25,8 +25,8 @@ export class BrepSurface {
 
   constructor(surface: ParametricSurface, inverted?: boolean) {
     this.impl = surface;
-    let [uMin, uMax] = surface.domainU;
-    let [vMin, vMax] = surface.domainV;
+    const [uMin, uMax] = surface.domainU;
+    const [vMin, vMax] = surface.domainV;
 
     Object.assign(this, {
       uMin, uMax, vMin, vMax,
@@ -46,8 +46,8 @@ export class BrepSurface {
   }
 
   normal(point: Vector): Vector {
-    let uv = this.impl.param(point.data());
-    let normal = pt(this.impl.normal(uv[0], uv[1]));
+    const uv = this.impl.param(point.data());
+    const normal = pt(this.impl.normal(uv[0], uv[1]));
     if (this.inverted) {
       normal._negate();
     }
@@ -56,7 +56,7 @@ export class BrepSurface {
   }
 
   normalUV(u: number, v: number): UnitVector {
-    let normal = pt(this.impl.normal(u, v));
+    const normal = pt(this.impl.normal(u, v));
     if (this.inverted) {
       normal._negate();
     }
@@ -124,14 +124,14 @@ export class BrepSurface {
       return surface.impl.isMirrored;
     }
     
-    let x = surface.isoCurveAlignU(surface.uMin).tangentAtParam(surface.uMin);
-    let y = surface.isoCurveAlignV(surface.vMin).tangentAtParam(surface.vMin);
+    const x = surface.isoCurveAlignU(surface.uMin).tangentAtParam(surface.uMin);
+    const y = surface.isoCurveAlignV(surface.vMin).tangentAtParam(surface.vMin);
 
     return x.cross(y).dot(surface.normalUV(surface.uMin, surface.vMin)) < 0;
   }
 
   intersectSurface(other, tol) {
-    let X = intersectNurbs(this.impl, other.impl, this.inverted !== other.inverted);
+    const X = intersectNurbs(this.impl, other.impl, this.inverted !== other.inverted);
     // let X = surfaceIntersect(this.impl, other.impl);
     return X.map(curve => new BrepCurve(curve));
   }
@@ -161,7 +161,7 @@ export class BrepSurface {
   }
 
   tangentPlane(u, v) {
-    let normal = this.normalUV(u, v);
+    const normal = this.normalUV(u, v);
     return new Plane(normal, normal.dot(this.point(u, v)));
   }
 

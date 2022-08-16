@@ -58,8 +58,8 @@ export function deriveSchema(uiDefinition: UIDefinition): OperationSchema {
   const schema: OperationSchema = {};
 
   traverseUIDefinition(uiDefinition, (field) => {
-    let propsToSchema = DynamicComponents[field.type].propsToSchema;
-    let fieldSchema = propsToSchema(field as any, deriveSchema);
+    const propsToSchema = DynamicComponents[field.type].propsToSchema;
+    const fieldSchema = propsToSchema(field as any, deriveSchema);
     schema[field.name] = fieldSchema;
   });
 

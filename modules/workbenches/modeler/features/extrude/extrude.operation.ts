@@ -41,7 +41,7 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   paramsInfo: ({length}) => `(${r(length)})`,
   run: (params: ExtrudeParams, ctx: ApplicationContext, rawParams: any) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const face = params.face;
@@ -55,10 +55,10 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
         dir._negate();
       }
     }
-    let extrusionVector = dir._multiply(params.length);
+    const extrusionVector = dir._multiply(params.length);
 
-    let sketchId = face.id;
-    let sketch = ctx.sketchStorageService.readSketch(sketchId);
+    const sketchId = face.id;
+    const sketch = ctx.sketchStorageService.readSketch(sketchId);
 
     let sweepSources: FaceRef[];
 

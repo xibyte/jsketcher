@@ -53,7 +53,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
 
   run: (params: PrimitiveSphereParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;

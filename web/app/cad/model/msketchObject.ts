@@ -29,7 +29,7 @@ export class MSketchObject extends MObject {
   }
 
   toAxis(reverse: boolean): Axis {
-    let seg = this.sketchPrimitive as Segment;
+    const seg = this.sketchPrimitive as Segment;
     let tan: UnitVector;
     let origin;
     if (reverse) {

@@ -42,28 +42,28 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
   const getID = obj => sketchObjectGlobalId(sketchId, obj.id);
   const out = new SketchGeom();
 
-  let coiJoints = new Joints();
+  const coiJoints = new Joints();
   
   if (sketch.constraints !== undefined) {
     for (let i = 0; i < sketch.constraints.length; ++i) {
-      let c = sketch.constraints[i];
-      let name = c[0];
-      let ps = c[1];
+      const c = sketch.constraints[i];
+      const name = c[0];
+      const ps = c[1];
       if (name === 'coi') {
         coiJoints.connect(ps[0], ps[1]);
       }
     }
   }
-  let vectorFactory = new VectorFactory();
-  let pointsById = new Map();
+  const vectorFactory = new VectorFactory();
+  const pointsById = new Map();
   function ReadSketchPoint(pt): Vector {
     return vectorFactory.create(pt.x, pt.y, 0);
   }
   if (sketch.version !== 3) {
     return out;
   }
-  for (let obj of sketch.objects) {
-    let isConstructionObject = obj.role === 'construction';
+  for (const obj of sketch.objects) {
+    const isConstructionObject = obj.role === 'construction';
     if (isConstructionObject && !readConstructionSegments) continue;
     // if (isConstructionObject && obj._class !== 'TCAD.TWO.Segment') continue;
 
@@ -114,12 +114,12 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
 
 export function FetchContours(geom): Contour[] {
   const contours = findClosedContours(geom.connections);
-  for (let loop of geom.loops) {
+  for (const loop of geom.loops) {
     const contour = new sm.Contour();
     contour.add(loop);
     contours.push(contour);
   }
-  for (let contour of contours) {
+  for (const contour of contours) {
     if (!contour.isCCW()) {
       contour.reverse();
     }
@@ -179,7 +179,7 @@ function findClosedContoursFromGraph(segments, result) {
     dirs.push(b);
   }
 
-  for (let seg of segments) {
+  for (const seg of segments) {
     const a = seg.a;
     const b = seg.b;
 
@@ -205,7 +205,7 @@ function findClosedContoursFromGraph(segments, result) {
   };
 
   const loops = Graph.findAllLoops(graph, dict.hashCodeF, dict.equalsF);
-  for (let loop of loops) {
+  for (const loop of loops) {
     const contour = new sm.Contour();
     for (let pi = 0; pi < loop.length; ++pi) {
       const point = loop[pi];

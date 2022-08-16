@@ -1050,7 +1050,7 @@ export class AlgNumConstraint {
         this.resolvedConstants = {};
       }
       Object.keys(this.constants).map(name => {
-        let def = this.schema.constants[name];
+        const def = this.schema.constants[name];
         let val: any = this.constants[name];
         val = expressionResolver(val);
         if (def.type === 'number') {
@@ -1106,7 +1106,7 @@ export class AlgNumConstraint {
       return false;
     }
     const defs = Object.values(this.schema.constants);
-    for (let cd of defs) {
+    for (const cd of defs) {
       if (!cd.readOnly) {
         return true;
       }

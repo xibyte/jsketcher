@@ -19,15 +19,15 @@ export function defineStreams(ctx) {
 
 export function activate(ctx) {
   
-  let {streams, services} = ctx;
+  const {streams, services} = ctx;
   
   sketcherUIContrib(ctx);
   
   const onSketchUpdate = evt => {
-    let prefix = ctx.projectService.sketchStorageNamespace;
+    const prefix = ctx.projectService.sketchStorageNamespace;
     if (evt.key.indexOf(prefix) < 0) return;
-    let sketchFaceId = evt.key.substring(prefix.length);
-    let sketchFace = services.cadRegistry.findFace(sketchFaceId);
+    const sketchFaceId = evt.key.substring(prefix.length);
+    const sketchFace = services.cadRegistry.findFace(sketchFaceId);
     if (sketchFace) {
       updateSketchForFace(sketchFace);
       services.viewer.requestRender();
@@ -40,12 +40,12 @@ export function activate(ctx) {
   document.createElement('div').appendChild(headlessCanvas);
 
   function reevaluateAllSketches() {
-    let allShells = services.cadRegistry.getAllShells();
+    const allShells = services.cadRegistry.getAllShells();
     allShells.forEach(mShell => mShell.faces.forEach(mFace => reevaluateSketch(mFace.defaultSketchId)));
   }
 
   function reevaluateSketch(sketchId) {
-    let savedSketch = ctx.sketchStorageService.getSketchData(sketchId);
+    const savedSketch = ctx.sketchStorageService.getSketchData(sketchId);
     if (savedSketch === null) {
       return null;
     }
@@ -58,7 +58,7 @@ export function activate(ctx) {
       return null;
     }
 
-    let signature = ctx.expressionService.signature;
+    const signature = ctx.expressionService.signature;
     if (sketch && (!sketch.metadata || sketch.metadata.expressionsSignature !== signature)) {
       try {
         const viewer = new Viewer(headlessCanvas, IO);
@@ -81,7 +81,7 @@ export function activate(ctx) {
     const sketchId = sceneFace.id;
     updateSketchBoundaries(sceneFace);
 
-    let savedSketch = ctx.sketchStorageService.getSketchData(sketchId);
+    const savedSketch = ctx.sketchStorageService.getSketchData(sketchId);
 
     if (savedSketch === null) {
       return null;
@@ -121,31 +121,31 @@ export function activate(ctx) {
   })));
 
   function updateSketchForFace(mFace) {
-    let sketch = ctx.sketchStorageService.readSketch(mFace.defaultSketchId);
+    const sketch = ctx.sketchStorageService.readSketch(mFace.defaultSketchId);
     mFace.setSketch(sketch);
     ctx.cadRegistry.reindexFace(mFace);
     streams.sketcher.update.next(mFace); // updates UI face views
   }
 
   function updateAllSketches() {
-    let allShells = services.cadRegistry.getAllShells();
+    const allShells = services.cadRegistry.getAllShells();
     allShells.forEach(mShell => mShell.faces.forEach(mFace => updateSketchForFace(mFace)));
     services.viewer.requestRender();
   }
   
   function updateSketchBoundaries(sceneFace) {
     
-    let sketchStorageKey = ctx.projectService.sketchStorageKey(sceneFace.id);
+    const sketchStorageKey = ctx.projectService.sketchStorageKey(sceneFace.id);
 
-    let sketch = services.storage.get(sketchStorageKey);
+    const sketch = services.storage.get(sketchStorageKey);
 
-    let data = sketch === null ? {} : JSON.parse(sketch);
+    const data = sketch === null ? {} : JSON.parse(sketch);
 
     data.boundary = getSketchBoundaries(sceneFace);
     services.storage.set(sketchStorageKey, JSON.stringify(data));
   }
 
-  let inPlaceEditor = new InPlaceSketcher(ctx);
+  const inPlaceEditor = new InPlaceSketcher(ctx);
   function sketchFace(face) {
     updateSketchBoundaries(face);
     if (inPlaceEditor.inEditMode) {
@@ -156,12 +156,12 @@ export function activate(ctx) {
   
   function sketchFace2D(face) {
     updateSketchBoundaries(face);
-    let sketchURL = ctx.projectService.getSketchURL(face.id);
+    const sketchURL = ctx.projectService.getSketchURL(face.id);
     ctx.appTabsService.show(face.id, 'Sketch ' + face.id, 'sketcher.html#' + sketchURL);
   }
   
   function reassignSketch(fromId, toId) {
-    let sketchData = ctx.sketchStorageService.getSketchData(fromId);
+    const sketchData = ctx.sketchStorageService.getSketchData(fromId);
     if (!sketchData) {
       return;
     }

@@ -18,13 +18,13 @@ export function defineStreams(ctx) {
 export function activate(ctx) {
   ctx.services.selection = {};
   SELECTABLE_ENTITIES.forEach(entity => {
-    let entitySelectApi = {
+    const entitySelectApi = {
       objects: [],
       single: undefined,
       select: null as (ids: string[]) => void
      };
     ctx.services.selection[entity] = entitySelectApi;
-    let selectionState = ctx.streams.selection[entity];
+    const selectionState = ctx.streams.selection[entity];
     
     selectionState.attach(selection => {
       entitySelectApi.objects = selection.map(id => ctx.services.cadRegistry.findEntity(entity, id));
@@ -35,7 +35,7 @@ export function activate(ctx) {
   });
 
   ctx.services.marker.$markedEntities.attach(marked => {
-    let byType = new Map();
+    const byType = new Map();
     marked.forEach((obj) => {
       if (obj.TYPE === LOOP) {
         if (byType[FACE] && !byType[FACE].includes(obj.face)) {
@@ -46,7 +46,7 @@ export function activate(ctx) {
       }
     });
     SELECTABLE_ENTITIES.forEach(entityType => {
-      let entities = byType.get(entityType);
+      const entities = byType.get(entityType);
       if (entities) {
         ctx.streams.selection[entityType].next(entities.map(obj => obj.id));
       } else {

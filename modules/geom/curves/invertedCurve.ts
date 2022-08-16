@@ -9,7 +9,7 @@ export default class InvertedCurve implements ParametricCurve {
 
   constructor(curve: ParametricCurve) {
     this.curve = curve;
-    let [uMin, uMax] = this.curve.domain();
+    const [uMin, uMax] = this.curve.domain();
     this.uMin = uMin;
     this.uMax = uMax;
   }
@@ -39,7 +39,7 @@ export default class InvertedCurve implements ParametricCurve {
   }
 
   eval(u, num) {
-    let res = this.curve.eval(this.wrapParam(u), num);
+    const res = this.curve.eval(this.wrapParam(u), num);
     if (res.length > 1) {
       vec._negate(res[1]) 
     }

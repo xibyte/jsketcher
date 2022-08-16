@@ -23,14 +23,14 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
   paramsInfo: () => `(?)`,
   run:async (params: LoftParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     let loftType = 0;
     if (params.loftType == "smooth") loftType = 0;
     if (params.loftType == "sharp") loftType = 1;
 
-    let sketches = [];
+    const sketches = [];
 
     const wires = params.loops.map((loop, i) => {
       const shapeName = "loop/" + i;
@@ -41,7 +41,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
 
     let sweepSources: FaceRef[] = [];
 
-    let indexOfMostSegments = 0;
+    const indexOfMostSegments = 0;
     let longestPath =  0;
     let primarySketch = {};
 
@@ -60,7 +60,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
 
     oci.thrusections("th", "1", loftType, ...wires);
 
-    let tools = [];
+    const tools = [];
     tools.push(occ.io.getShell("th", productionAnalyzer));
 
     return occ.utils.applyBooleanModifier(tools, params.boolean, null, [],)

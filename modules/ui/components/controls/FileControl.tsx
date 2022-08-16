@@ -40,7 +40,7 @@ export function getBase64FromDataUrl(dataUrl: string): string {
 export default class FileControl extends React.Component<any> {
 
   render() {
-    let {type, inputRef, onChange, value, ...props} = this.props;
+    const {type, inputRef, onChange, value, ...props} = this.props;
 
     function fileChanged(files, name) {
 

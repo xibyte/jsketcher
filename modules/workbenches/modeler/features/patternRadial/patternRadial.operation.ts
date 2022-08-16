@@ -28,10 +28,10 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
   paramsInfo: p => `( ${p.patternMethod} ${r(p.angle * DEG_RAD)})`,
   run: (params: patternRadialParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let created = [];
+    const created = [];
 
     params.inputBodies.forEach((shellToPatern, index) => {
       for (let i = 2; i <= params.qty; i++) {
@@ -46,7 +46,7 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
 
         const angle = angleForInstance * DEG_RAD;
 
-        let tr = new Matrix3x4().rotate(angle, params.axis.direction, params.axis.origin);
+        const tr = new Matrix3x4().rotate(angle, params.axis.direction, params.axis.origin);
 
         const newShellName = shellToPatern.id + ":pattern/" + index + "/" +i;
         oci.copy(shellToPatern, newShellName);

@@ -14,7 +14,7 @@ export function activate(ctx: ApplicationContext) {
   const errors$ = state([]);
 
   function reevaluateExpressions() {
-    let {varList, errors, evaluateExpression} = rebuildVariableTable(script$.value);
+    const {varList, errors, evaluateExpression} = rebuildVariableTable(script$.value);
     list$.next(varList);
     errors$.next(errors);
     _evaluateExpression = evaluateExpression;
@@ -61,21 +61,21 @@ export function activate(ctx: ApplicationContext) {
 }
 
 function rebuildVariableTable(script) {
-  let varList = [];
-  let errors = [];
+  const varList = [];
+  const errors = [];
   if (script == null) return;
-  let lines = script.split('\n');
+  const lines = script.split('\n');
   let evalContext = "(function() { \n";
   function evaluateExpression(expr) {
     return eval(evalContext + "return " + expr + "; \n})()");
   }
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
-    let m = line.match(/^\s*([^\s]+)\s*=(.+)$/);
+    const line = lines[i];
+    const m = line.match(/^\s*([^\s]+)\s*=(.+)$/);
     if (m != null && m.length === 3) {
-      let name = m[1];
+      const name = m[1];
       try {
-        let value = evaluateExpression(m[2]);
+        const value = evaluateExpression(m[2]);
         varList.push({name, value});
         evalContext += "const " + name + " = " + value + ";\n"
       } catch (e) {

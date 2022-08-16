@@ -63,10 +63,10 @@ export class Segment extends SketchObject {
     const dy = this.b.y - this.a.y;
     const l = Math.sqrt(dx*dx + dy*dy);
 
-    let ux = (dx / l) || 0;
-    let uy = (dy / l) || 0;
+    const ux = (dx / l) || 0;
+    const uy = (dy / l) || 0;
 
-    let ang = Math.atan2(uy, ux);
+    const ang = Math.atan2(uy, ux);
 
     this.params.ang.set(makeAngle0_360(ang||0));
     this.params.t.set(l);

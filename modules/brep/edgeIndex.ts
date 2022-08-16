@@ -35,9 +35,9 @@ export default class EdgeIndex {
   }
 
   getHalfEdge(a: Vertex, b: Vertex, tag?: Tag): HalfEdge {
-    let edges = this.index.get(a);
+    const edges = this.index.get(a);
     if (edges) {
-      for (let [he, _tag] of edges) {
+      for (const [he, _tag] of edges) {
         if (he.vertexB === b && (tag === undefined || tag === _tag)) {
           return he;
         }

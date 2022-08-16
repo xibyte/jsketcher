@@ -20,7 +20,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
   paramsInfo: () => `(?)`,
   run: (params: SweepParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const myProfile = params.profile;
@@ -39,7 +39,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
 
     oci.buildsweep("sweepOutput", cornerStyle, "-S");
 
-    let tools = [];
+    const tools = [];
     tools.push(occ.io.getShell("sweepOutput"));
     return occ.utils.applyBooleanModifier(tools, params.boolean);
 

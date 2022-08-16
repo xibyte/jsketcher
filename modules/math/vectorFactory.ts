@@ -10,13 +10,13 @@ export default class VectorFactory {
   }
 
   addVertices(vertices: Vector[]) {
-    for (let v of vertices) {
+    for (const v of vertices) {
       this.vectors.push(v);
     }
   }
 
   find(x, y, z): Vector {
-    for (let v of this.vectors) {
+    for (const v of this.vectors) {
       if (veqXYZ(v.x, v.y, v.z, x, y, z)) {
         return v;
       }

@@ -23,13 +23,13 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
   path:__dirname,
   paramsInfo: ({angle}) => `(${r(angle)})`,
   run: (params: RevolveParams, ctx: ApplicationContext) => {
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const face = params.face;
 
-    let sketchId = face.id;
-    let sketch = ctx.sketchStorageService.readSketch(sketchId);
+    const sketchId = face.id;
+    const sketch = ctx.sketchStorageService.readSketch(sketchId);
 
     let sweepSources: FaceRef[];
 
@@ -44,7 +44,7 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
       }
     }
 
-    let csys = face.csys;
+    const csys = face.csys;
 
     sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
