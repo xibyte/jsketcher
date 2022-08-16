@@ -15,7 +15,7 @@ export function BooleanOperation(face, solid, operand, operationType) {
  if (solid instanceof MBrepShell) {
    const op = BoolOpMap[operationType];
    result = op(solid.shell, operand);
-   for (let newFace of result.faces) {
+   for (const newFace of result.faces) {
      if (newFace.id === face.id) {
        newFace.id = undefined;
      }

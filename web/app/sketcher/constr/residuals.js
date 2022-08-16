@@ -37,8 +37,8 @@ export function R_TangentLC(params, [inverted]) {
       const cy = params[CY].get();
       const r = params[R].get();
 
-      let nx = Math.cos(ang) ;
-      let ny = Math.sin(ang) ;
+      const nx = Math.cos(ang) ;
+      const ny = Math.sin(ang) ;
 
 
       return (cx*nx + cy*ny) - (w+k*r);
@@ -81,8 +81,8 @@ export function R_PointOnLine(params, constants) {
       const w = params[W].get();
 
 
-      let nx = Math.cos(ang) ;
-      let ny = Math.sin(ang) ;
+      const nx = Math.cos(ang) ;
+      const ny = Math.sin(ang) ;
 
       return px * nx + py * ny - w;
 

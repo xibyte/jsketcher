@@ -12,17 +12,17 @@ export function parse(dataView) {
   const solid = new StlSolid('binary');
   let off = 80; // skip header
 
-  let triangleCount = dataView.getUint32(off, true);
+  const triangleCount = dataView.getUint32(off, true);
   off += 4;
 
   for (let i = 0; i < triangleCount; i++) {
-    let normal = readVector(dataView, off);
+    const normal = readVector(dataView, off);
     off += 12; // 3 floats
 
-    let face = new StlFace(normal);
+    const face = new StlFace(normal);
 
     for (let j = 0; j < 3; j++) {
-      let position = readVector(dataView, off);
+      const position = readVector(dataView, off);
       off += 12;
       face.vertices.push(position);
     }

@@ -4,7 +4,7 @@ import {getSketcherActionIndex} from "./actions";
 
 export function initShortkeys() {
 
-  for (let action of Object.keys(keymap)) {
+  for (const action of Object.keys(keymap)) {
     Mousetrap.bind(keymap[action], e => getSketcherActionIndex()[action].invoke(e));
   }
 }

@@ -136,7 +136,7 @@ export default [
       info: 'switch camera mode between perspective and orthographic',
     },
     invoke: context => {
-      let viewer = context.services.viewer;
+      const viewer = context.services.viewer;
       viewer.toggleCamera();
       viewer.render();
     }

@@ -90,7 +90,7 @@ class VertexSphere extends Mesh {
   }
 
   updateVisibility() {
-    let datum3D = this.parent.parent;
+    const datum3D = this.parent.parent;
     this.viewer.setVisualProp(this.material, 'visible', this.mouseInside);
   }
 }

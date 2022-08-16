@@ -13,12 +13,12 @@ import decoratorChain from 'ui/decoratorChain';
 import {EMPTY_OBJECT} from 'gems/objects';
 
 function OperationHistory({history, pointer, setHistoryPointer, remove, getOperation}) {
-  let lastMod = history.length - 1;
+  const lastMod = history.length - 1;
   return <Stack>
 
     {history.map(({type, params}, index) => {
 
-      let {appearance, label, paramsInfo, paramsInfoComponent: PIComp} = getOperation(type)||EMPTY_OBJECT;
+      const {appearance, label, paramsInfo, paramsInfoComponent: PIComp} = getOperation(type)||EMPTY_OBJECT;
       return <div key={index} onClick={() => setHistoryPointer(index - 1)} 
                   className={cx(ls.item, pointer + 1 === index && ls.selected)}>
         {appearance && <ImgIcon url={appearance.icon32} size={16}/>}

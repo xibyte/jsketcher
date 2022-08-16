@@ -18,7 +18,7 @@ function initTesselator() {
     // console.log('edge flag: ' + flag);
   }
 
-  let tessy = new libtess.GluTesselator();
+  const tessy = new libtess.GluTesselator();
   // tessy.gluTessProperty(libtess.gluEnum.GLU_TESS_WINDING_RULE, libtess.windingRule.GLU_TESS_WINDING_POSITIVE);
   tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_VERTEX_DATA, vertexCallback);
   tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_BEGIN, begincallback);
@@ -53,9 +53,9 @@ export function Triangulate(contours, normal) {
   const triangleVerts = [];
   tessy.gluTessBeginPolygon(triangleVerts);
 
-  for (let contour of contours) {
+  for (const contour of contours) {
     tessy.gluTessBeginContour();
-    for (let coords of contour) {
+    for (const coords of contour) {
       tessy.gluTessVertex(coords, coords);
     }
     tessy.gluTessEndContour();
@@ -69,15 +69,15 @@ export function Triangulate(contours, normal) {
 export function TriangulatePolygons(polygons, normal, toArray, fromArray) {
   const triangled = [];
   const contours = [];
-  for (let poly of polygons) {
+  for (const poly of polygons) {
     contours.push(poly.map(point => toArray(point)));
   }
 
-  let vertices = Triangulate(contours, toArray(normal));
+  const vertices = Triangulate(contours, toArray(normal));
   for (let i = 0;  i < vertices.length; i += 3 ) {
-    let a = fromArray(vertices[i]);
-    let b = fromArray(vertices[i + 1]);
-    let c = fromArray(vertices[i + 2]);
+    const a = fromArray(vertices[i]);
+    const b = fromArray(vertices[i + 1]);
+    const c = fromArray(vertices[i + 2]);
     triangled.push([a, b, c]);
   }
   return triangled;
@@ -97,7 +97,7 @@ export function TriangulateFace(face) {
   function edgeCallback(flag) {
   }
 
-  let tessy = new libtess.GluTesselator();
+  const tessy = new libtess.GluTesselator();
   // tessy.gluTessProperty(libtess.gluEnum.GLU_TESS_WINDING_RULE, libtess.windingRule.GLU_TESS_WINDING_POSITIVE);
   tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_VERTEX_DATA, vertexCallback);
   tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_BEGIN, begincallback);
@@ -111,14 +111,14 @@ export function TriangulateFace(face) {
   const vertices = [];
   tessy.gluTessBeginPolygon(vertices);
 
-  for (let loop of face.loops) {
+  for (const loop of face.loops) {
     tessy.gluTessBeginContour();
-    for (let e of loop.halfEdges) {
+    for (const e of loop.halfEdges) {
       if (e.edge.curve.isLine) {
         tessy.gluTessVertex(arr(e.vertexA.point), e.vertexA);
       } else if (e.edge.curve.verb) {
         tessy.gluTessVertex(arr(e.vertexA.point), e.vertexA);
-        let points = e.edge.curve.tessellate();
+        const points = e.edge.curve.tessellate();
         if (e.inverted) {
           points.reverse();
         }
@@ -135,9 +135,9 @@ export function TriangulateFace(face) {
   const triangled = [];
 
   for (let i = 0;  i < vertices.length; i += 3 ) {
-    let a = vertices[i];
-    let b = vertices[i + 1];
-    let c = vertices[i + 2];
+    const a = vertices[i];
+    const b = vertices[i + 1];
+    const c = vertices[i + 2];
     triangled.push([a, b, c]);
   }
   return triangled;

@@ -19,7 +19,7 @@ export function createPreviewer(sceneGeometryCreator, services, initialParams) {
 
   function update(params) {
     destroyPreviewObject();
-    let geometry = sceneGeometryCreator(params, services);
+    const geometry = sceneGeometryCreator(params, services);
     if (!geometry) {
       services.viewer.requestRender();
       return;

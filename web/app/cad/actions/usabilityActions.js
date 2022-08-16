@@ -10,13 +10,13 @@ const DIR_3_WAY_VIEW =  new Vector(1, 1, 1).normalize();
 const DIR_3_WAY_BACK_VIEW =  new Vector(-1, 1, -1).normalize();
 
 export function lookAtFace(viewer, face, currFace) {
-  let dist = currFace ? currFace.csys.origin.distanceTo(viewer.sceneSetup.camera.position) : undefined;
+  const dist = currFace ? currFace.csys.origin.distanceTo(viewer.sceneSetup.camera.position) : undefined;
   viewer.lookAt(face.csys.origin, face.csys.z, face.csys.y, dist);
   viewer.requestRender();
 }
 
 function faceAt(shells, shell, pos) {
-  let shellIndex = shells.indexOf(shell);
+  const shellIndex = shells.indexOf(shell);
   if (pos >= shell.faces.length) {
     let i = shellIndex;
     do {
@@ -37,9 +37,9 @@ function faceAt(shells, shell, pos) {
 }
 
 function getCurrentSelectedOrFirstFace(ctx) {
-  let face = ctx.services.selection.face.single;
+  const face = ctx.services.selection.face.single;
   if (!face) {
-    for (let shell of ctx.services.cadRegistry.shells) {
+    for (const shell of ctx.services.cadRegistry.shells) {
       if (shell.faces.length !== 0) {
         return shell.faces[0]; 
       }
@@ -72,7 +72,7 @@ export default [
     },
 
     invoke: ctx => {
-      let face = ctx.services.selection.face.single;
+      const face = ctx.services.selection.face.single;
       if (face) {
         lookAtFace(ctx.services.viewer, face);
       }
@@ -81,10 +81,10 @@ export default [
   {
     id: 'CycleFacesNext',
     invoke: ctx => {
-      let face = getCurrentSelectedOrFirstFace(ctx);
+      const face = getCurrentSelectedOrFirstFace(ctx);
       if (face) {
-        let index = face.shell.faces.indexOf(face);
-        let nextFace = faceAt(ctx.services.cadRegistry.shells, face.shell, index + 1);
+        const index = face.shell.faces.indexOf(face);
+        const nextFace = faceAt(ctx.services.cadRegistry.shells, face.shell, index + 1);
         ctx.services.pickControl.pick(nextFace);
         lookAtFace(ctx.services.viewer, nextFace, face);
       }
@@ -93,10 +93,10 @@ export default [
   {
     id: 'CycleFacesPrev',
     invoke: ctx => {
-      let face = getCurrentSelectedOrFirstFace(ctx);
+      const face = getCurrentSelectedOrFirstFace(ctx);
       if (face) {
-        let index = face.shell.faces.indexOf(face);
-        let prevFace = faceAt(ctx.services.cadRegistry.shells, face.shell, index - 1);
+        const index = face.shell.faces.indexOf(face);
+        const prevFace = faceAt(ctx.services.cadRegistry.shells, face.shell, index - 1);
         ctx.services.pickControl.pick(prevFace);
         lookAtFace(ctx.services.viewer, prevFace, face);
       }

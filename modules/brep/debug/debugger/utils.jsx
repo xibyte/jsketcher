@@ -29,9 +29,9 @@ export function getEdgesViewObjects(group3d, category, context, out, edges) {
 export function getViewObjectsComposite(providers) {
   return function (group3d, category, context, out, objects) {
     for (let i = 0; i < providers.length; i++) {
-      let obj = objects[i];
+      const obj = objects[i];
       if (obj) {
-        let provider = providers[i];
+        const provider = providers[i];
         provider(group3d, category, context, out, obj);
       }
     }
@@ -39,7 +39,7 @@ export function getViewObjectsComposite(providers) {
 }
 
 export const getEdgeViewObjects = findOrCreate.bind(null, (edge, color) => {
-  let points = edge.edge.curve.tessellate();
+  const points = edge.edge.curve.tessellate();
   if (edge.inverted) {
     points.reverse();
   }
@@ -47,23 +47,23 @@ export const getEdgeViewObjects = findOrCreate.bind(null, (edge, color) => {
 });
 
 export const getCurveViewObjects = findOrCreate.bind(null, (curve, color) => {
-  let points = curve.tessellate();
-  let end = curve.point(curve.uMax);
+  const points = curve.tessellate();
+  const end = curve.point(curve.uMax);
   return createDirectedCurve(points, curve.tangentAtPoint(end), end, color)
 });
 
 function createDirectedCurve(points, arrowDir, arrowTipPos, color) {
   
-  let obj = new THREE.Object3D();
+  const obj = new THREE.Object3D();
   obj.__tcad_debug_materials = [];
 
-  let material = new THREE.LineBasicMaterial({color, linewidth: 10});
+  const material = new THREE.LineBasicMaterial({color, linewidth: 10});
   const vertices = [];
 
   let edgeLength = 0;
   for (let i = 1; i < points.length; ++i) {
-    let a = points[i - 1];
-    let b = points[i];
+    const a = points[i - 1];
+    const b = points[i];
     vertices.push(a.three());
     vertices.push(b.three());
     edgeLength += distanceAB3(a, b);
@@ -76,14 +76,14 @@ function createDirectedCurve(points, arrowDir, arrowTipPos, color) {
   
   
   let arrowLength = 15;
-  let arrowWidth = 0.2 * arrowLength;
+  const arrowWidth = 0.2 * arrowLength;
   if (arrowLength > edgeLength * 0.5) {
     arrowLength = edgeLength * 0.5;
   }
-  let dir = arrowDir;
-  let pos = arrowTipPos.minus(dir.multiply(arrowLength * 0.5));
-  let cone = new THREE.CylinderGeometry( 0, arrowWidth, arrowLength, 10, 1 );
-  let arrow = new THREE.Mesh( cone, new THREE.MeshBasicMaterial( { color} ) );
+  const dir = arrowDir;
+  const pos = arrowTipPos.minus(dir.multiply(arrowLength * 0.5));
+  const cone = new THREE.CylinderGeometry( 0, arrowWidth, arrowLength, 10, 1 );
+  const arrow = new THREE.Mesh( cone, new THREE.MeshBasicMaterial( { color} ) );
   if ( dir.y > 0.99999 ) {
     arrow.quaternion.set( 0, 0, 0, 1 );
   } else if ( dir.y < - 0.99999 ) {
@@ -107,9 +107,9 @@ export const getPointViewObjects = findOrCreate.bind(null, ({x,y,z}, color) => {
 });
 
 function createPoint(x,y,z, color) {
-  let geometry = new THREE.SphereGeometry( 5, 16, 16 );
-  let material = new THREE.MeshBasicMaterial( {color} );
-  let sphere = new THREE.Mesh(geometry, material);
+  const geometry = new THREE.SphereGeometry( 5, 16, 16 );
+  const material = new THREE.MeshBasicMaterial( {color} );
+  const sphere = new THREE.Mesh(geometry, material);
   sphere.position.x = x;
   sphere.position.y = y;
   sphere.position.z = z;
@@ -136,7 +136,7 @@ export function setViewObjectsColor(objectsProvider, group3d, category, context,
 }
 
 export function fetchViewObjects(objectsProvider, group3d, category, context, topoObj) {
-  let objs = [];
+  const objs = [];
   objectsProvider(group3d, category, context, objs, topoObj);
   return objs;
 }
@@ -150,7 +150,7 @@ export function getInitColor(category, obj, context) {
       return context.has(obj) ? DETECTED_EDGE : DISCARDED_EDGE;
     }
     case 'edge-transfer': {
-      let {edge, face, chosenFace, discardedFace, chosenEdge} = context;
+      const {edge, face, chosenFace, discardedFace, chosenEdge} = context;
       if (obj === edge) {
         return RED;
       } else if (obj.loop.face === face) {
@@ -166,7 +166,7 @@ export function getInitColor(category, obj, context) {
       }
     }
     case 'face-filter': {
-      let {connectedToAffectedFaces, notConnectedToAffectedFaces} = context;
+      const {connectedToAffectedFaces, notConnectedToAffectedFaces} = context;
       if (connectedToAffectedFaces.indexOf(obj.loop.face) > -1) {
         return WHITE;
       } else {
@@ -174,11 +174,11 @@ export function getInitColor(category, obj, context) {
       } 
     }
     case 'marked-edges': {
-      let color = context[obj].color;
+      const color = context[obj].color;
       return color === undefined ? YELLOW : color;
     }
     case 'face-intersections': {
-      let {faceA, faceB} = context;
+      const {faceA, faceB} = context;
       if (obj.constructor.name === 'HalfEdge') {
         return faceContainsEdge(faceA, obj) ? AQUA : YELLOW;
       } else if (obj.constructor.name === 'Vector') {
@@ -197,7 +197,7 @@ export function getInitColor(category, obj, context) {
 }
 
 function faceContainsEdge(face, edge) {
-  for (let e of face.edges) {
+  for (const e of face.edges) {
     if (e === edge) {
       return true;
     }
@@ -207,23 +207,23 @@ function faceContainsEdge(face, edge) {
 
 export function mapIterable(it, fn) {
   const out = [];
-  for (let i of it) {
+  for (const i of it) {
     out.push(fn(i));
   }
   return out;
 }
 
 export function forEach(it, fn) {
-  for (let i of it) {
+  for (const i of it) {
     fn(i);
   }
 }
 
 
 export function createObjectsUpdater(viewObjectsProvider, group3d, category, context, topoObj) {
-  let getObjects = out => viewObjectsProvider.bind(null, group3d, category, context, out, topoObj)();
+  const getObjects = out => viewObjectsProvider.bind(null, group3d, category, context, out, topoObj)();
   return function (func) {
-    let out = [];
+    const out = [];
     getObjects(out);
     out.forEach(func);
     __DEBUG__.render();
@@ -231,7 +231,7 @@ export function createObjectsUpdater(viewObjectsProvider, group3d, category, con
 }
 
 export function Controls({viewObjectsProvider, group3d, category, context, topoObj}) {
-  let applyToAll = createObjectsUpdater(viewObjectsProvider, group3d, category, context, topoObj);
+  const applyToAll = createObjectsUpdater(viewObjectsProvider, group3d, category, context, topoObj);
   function tweak() {
     let toState = null;
     applyToAll(o => {
@@ -251,7 +251,7 @@ export function Controls({viewObjectsProvider, group3d, category, context, topoO
 }
 
 export function ActiveLabel({viewObjectsProvider, group3d, category, context, topoObj, children, ...props}) {
-  let applyToAll = createObjectsUpdater(viewObjectsProvider, group3d, category, context, topoObj);
+  const applyToAll = createObjectsUpdater(viewObjectsProvider, group3d, category, context, topoObj);
   function onMouseEnter() {
     applyToAll(o => {
       if (o.__tcad_debug_last_visible === undefined) {
@@ -280,9 +280,9 @@ export function ActiveLabel({viewObjectsProvider, group3d, category, context, to
 } 
 
 export function InteractiveSection({viewObjectsProvider, topoObj, group3d, category, context, name, closable, defaultClosed, children}) {
-  let ctrlProps = {viewObjectsProvider, topoObj, group3d, category, context};
-  let controls = <Controls {...ctrlProps} />;
-  let nameCtrl = <ActiveLabel {...ctrlProps}>{name}</ActiveLabel>;
+  const ctrlProps = {viewObjectsProvider, topoObj, group3d, category, context};
+  const controls = <Controls {...ctrlProps} />;
+  const nameCtrl = <ActiveLabel {...ctrlProps}>{name}</ActiveLabel>;
   return <Section name={nameCtrl} tabs={TAB} {...{closable, defaultClosed, controls}} >
     {children}
   </Section>

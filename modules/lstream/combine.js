@@ -16,7 +16,7 @@ export class CombineStream extends StreamBase {
   }
 
   attach(observer) {
-    let detachers = new Array(this.streams.length);
+    const detachers = new Array(this.streams.length);
     this.streams.forEach((s, i) => {
       detachers[i] = s.attach(value => {
         this.values[i] = value;
@@ -32,7 +32,7 @@ export class CombineStream extends StreamBase {
   }
 
   isReady() {
-    for (let val of this.values) {
+    for (const val of this.values) {
       if (val === NOT_INITIALIZED) {
         return false;
       }

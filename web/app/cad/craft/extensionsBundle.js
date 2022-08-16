@@ -7,8 +7,8 @@ const EXTENSIONS_STORAGE_PREFIX = `${STORAGE_GLOBAL_PREFIX}.Extensions`;
 let extensions = [];
 
 export function activate(ctx) {
-  let {services} = ctx;
-  let extensionsStr = services.storage.get(EXTENSIONS_STORAGE_PREFIX);
+  const {services} = ctx;
+  const extensionsStr = services.storage.get(EXTENSIONS_STORAGE_PREFIX);
   if (extensionsStr) {
     extensions = JSON.parse(extensionsStr);
   }
@@ -20,7 +20,7 @@ export function activate(ctx) {
   }
 
   function extensionReady(id, activate) {
-    let extension = extensions.find(e => e.id === id);
+    const extension = extensions.find(e => e.id === id);
     if (!extension) {
       console.warn(`extension "${id}" not registered`);
     } else {
@@ -31,7 +31,7 @@ export function activate(ctx) {
   }
   
   function allExtensionsReady() {
-    for (let e of extensions) {
+    for (const e of extensions) {
       if (e.activate === NO_OP) {
         return false;
       }
@@ -40,7 +40,7 @@ export function activate(ctx) {
   }
   
   function activateAllExtensions() {
-    for (let e of extensions) {
+    for (const e of extensions) {
       e.activate(ctx);
     }
   }
@@ -60,7 +60,7 @@ export function activate(ctx) {
 function loadExtension({id, url}) {
   console.info(`starting extension "${id}"...`);
 
-  let extensionScript = document.createElement('script');
+  const extensionScript = document.createElement('script');
   extensionScript.setAttribute('src', url);
   document.head.appendChild(extensionScript);
 }

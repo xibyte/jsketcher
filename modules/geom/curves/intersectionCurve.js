@@ -12,12 +12,12 @@ export class IntersectionCurve {
 
     fixDirection(exactPoints, surfaceA, surfaceB);
     
-    let tangents = [];
+    const tangents = [];
     for (let i = 0; i < exactPoints.length; i++) {
-      let pt = exactPoints[i];
-      let auxInverse = i === exactPoints.length - 1;
-      let auxPt = auxInverse ? exactPoints[i - 1] : exactPoints[i + 1];
-      let tangent = curveSSTangent(pt, surfaceA, surfaceB, auxPt, auxInverse);
+      const pt = exactPoints[i];
+      const auxInverse = i === exactPoints.length - 1;
+      const auxPt = auxInverse ? exactPoints[i - 1] : exactPoints[i + 1];
+      const tangent = curveSSTangent(pt, surfaceA, surfaceB, auxPt, auxInverse);
       tangents.push(tangent);
     }
     
@@ -26,8 +26,8 @@ export class IntersectionCurve {
     this.approx = new CubicHermiteInterpolation(exactPoints, tangents);
     
     this.exactify = (pt) => {
-      let uvA = surfaceClosestParam(surfaceA, pt);
-      let uvB = surfaceClosestParam(surfaceB, pt);
+      const uvA = surfaceClosestParam(surfaceA, pt);
+      const uvB = surfaceClosestParam(surfaceB, pt);
       return verb.eval.Intersect.surfacesAtPointWithEstimate(surfaceA,surfaceB,uvA,uvB,TOLERANCE).point;
     };    
     
@@ -42,13 +42,13 @@ export class IntersectionCurve {
   }
 
   eval(u, num) { 
-    let pt = this.point(u);
+    const pt = this.point(u);
 
     // let [uA, vA] = surfaceClosestParam(this.surfaceA, pt);
     // let [uB, vB] = surfaceClosestParam(this.surfaceB, pt);
 
-    let out = [];
-    let approxEval = this.approx.eval(u, num);
+    const out = [];
+    const approxEval = this.approx.eval(u, num);
     for (let i = 0; i < num + 1; ++i) {
       if (i === 0) {
         out.push(pt);
@@ -64,7 +64,7 @@ export class IntersectionCurve {
   }
 
   point(u) {
-    let pt = this.approx.point(u);
+    const pt = this.approx.point(u);
     return this.exactify(pt);
   }
 
@@ -102,23 +102,23 @@ export class IntersectionCurve {
 }
 
 function curveSSTangent(pt, surfaceA, surfaceB, auxPt, auxInverse) {
-  let [uA, vA] = surfaceClosestParam(surfaceA, pt);
-  let [uB, vB] = surfaceClosestParam(surfaceB, pt);
+  const [uA, vA] = surfaceClosestParam(surfaceA, pt);
+  const [uB, vB] = surfaceClosestParam(surfaceB, pt);
 
-  let dA = verb.eval.Eval.rationalSurfaceDerivatives(surfaceA, uA, vA, 1);
-  let dB = verb.eval.Eval.rationalSurfaceDerivatives(surfaceB, uB, vB, 1);
+  const dA = verb.eval.Eval.rationalSurfaceDerivatives(surfaceA, uA, vA, 1);
+  const dB = verb.eval.Eval.rationalSurfaceDerivatives(surfaceB, uB, vB, 1);
 
-  let nA = vec.normalize(vec.cross(dA[1][0], dA[0][1]));
-  let nB = vec.normalize(vec.cross(dB[1][0], dB[0][1]));
+  const nA = vec.normalize(vec.cross(dA[1][0], dA[0][1]));
+  const nB = vec.normalize(vec.cross(dB[1][0], dB[0][1]));
 
   if (veq3(nA, nB)) {
-    let segV = vec.sub(auxPt, pt);
-    let dV = vec.mul(nA, - vec.dot(nA, segV));
-    let projectionOntoTangentPlane = vec._add(dV, auxPt);
+    const segV = vec.sub(auxPt, pt);
+    const dV = vec.mul(nA, - vec.dot(nA, segV));
+    const projectionOntoTangentPlane = vec._add(dV, auxPt);
     if (auxInverse) {
       vec._negate(projectionOntoTangentPlane);
     }
-    let estimatedTangent = vec._normalize(vec._sub(projectionOntoTangentPlane, pt));
+    const estimatedTangent = vec._normalize(vec._sub(projectionOntoTangentPlane, pt));
     return estimatedTangent;
   } else {
     return vec._normalize(vec.cross(nA, nB));
@@ -127,29 +127,29 @@ function curveSSTangent(pt, surfaceA, surfaceB, auxPt, auxInverse) {
 
 function fixDirection(points, surfaceA, surfaceB) {
   for (let i = 0; i < points.length; i++) {
-    let pt  = points[i];
+    const pt  = points[i];
 
-    let [uA, vA] = surfaceClosestParam(surfaceA, pt);
-    let [uB, vB] = surfaceClosestParam(surfaceB, pt);
+    const [uA, vA] = surfaceClosestParam(surfaceA, pt);
+    const [uB, vB] = surfaceClosestParam(surfaceB, pt);
 
-    let dA = verb.eval.Eval.rationalSurfaceDerivatives(surfaceA, uA, vA, 1);
-    let dB = verb.eval.Eval.rationalSurfaceDerivatives(surfaceB, uB, vB, 1);
+    const dA = verb.eval.Eval.rationalSurfaceDerivatives(surfaceA, uA, vA, 1);
+    const dB = verb.eval.Eval.rationalSurfaceDerivatives(surfaceB, uB, vB, 1);
 
-    let nA = vec.normalize(vec.cross(dA[1][0], dA[0][1]));
-    let nB = vec.normalize(vec.cross(dB[1][0], dB[0][1]));
+    const nA = vec.normalize(vec.cross(dA[1][0], dA[0][1]));
+    const nB = vec.normalize(vec.cross(dB[1][0], dB[0][1]));
 
     if (!veq3(nA, nB)) {
-      let tangent = vec._normalize((vec.cross(nA, nB)));
-      let auxInverse = i === points.length - 1;
-      let auxPt = auxInverse ? points[i - 1] : points[i + 1];
+      const tangent = vec._normalize((vec.cross(nA, nB)));
+      const auxInverse = i === points.length - 1;
+      const auxPt = auxInverse ? points[i - 1] : points[i + 1];
 
-      let segV = vec.sub(auxPt, pt);
-      let dV = vec.mul(nA, - vec.dot(nA, segV));
-      let projectionOntoTangentPlane = vec._add(dV, auxPt);
+      const segV = vec.sub(auxPt, pt);
+      const dV = vec.mul(nA, - vec.dot(nA, segV));
+      const projectionOntoTangentPlane = vec._add(dV, auxPt);
       if (auxInverse) {
         vec._negate(projectionOntoTangentPlane);
       }
-      let estimatedTangent = vec._normalize(vec._sub(projectionOntoTangentPlane, pt));
+      const estimatedTangent = vec._normalize(vec._sub(projectionOntoTangentPlane, pt));
       if (vec.dot(tangent, estimatedTangent) < 0) {
         points.reverse();
       }

@@ -23,7 +23,7 @@ export default class FloatView extends React.Component {
   
 
   render() {
-    let {views, getDescriptor} = this.props;
+    const {views, getDescriptor} = this.props;
 
     function renderedIcon(icon) {
       if (typeof icon === 'string') {
@@ -35,7 +35,7 @@ export default class FloatView extends React.Component {
     }
 
     function view(id) {
-      let {title, icon, Component} = getDescriptor(id);
+      const {title, icon, Component} = getDescriptor(id);
 
 
       return <Folder className={ls.folder} title={<span> {renderedIcon(icon)} {title}</span>}>
@@ -45,7 +45,7 @@ export default class FloatView extends React.Component {
 
 
 
-    let selected = this.state.selected;
+    const selected = this.state.selected;
     
     return <div className={ls.root}>
       <div className={ls.tabs}>

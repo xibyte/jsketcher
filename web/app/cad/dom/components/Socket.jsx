@@ -16,11 +16,11 @@ import {state} from 'lstream';
 })
 export default class Socket extends React.Component {
   render() {
-    let {getComponent, componentId, ...props} = this.props;
+    const {getComponent, componentId, ...props} = this.props;
     if (!componentId) {
       return null;
     }
-    let Component = getComponent(componentId);
+    const Component = getComponent(componentId);
     if (!Component) {
       return null;
     }

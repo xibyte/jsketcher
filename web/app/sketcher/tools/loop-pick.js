@@ -70,8 +70,8 @@ export class LoopPickTool extends Tool {
     };
     const loopPoints = Graph.findAllLoops(graph, (p) => p.id, (a, b) => a.id === b.id);
     const loops = loopPoints.map(l => this.cleanLoop(l));
-    for (let loop of loops) {
-      for (let point of loop.points) {
+    for (const loop of loops) {
+      for (const point of loop.points) {
         this.loops.set(point, loop);
       }
     }
@@ -97,7 +97,7 @@ export class LoopPickTool extends Tool {
     const p = this.viewer.screenToModel(e);
     this.pickedLoop = this.pickLoop(p);
     if (this.pickedLoop != null) {
-      for (let obj of this.pickedLoop.edges) {
+      for (const obj of this.pickedLoop.edges) {
         this.mark(obj);
       }
     }
@@ -106,8 +106,8 @@ export class LoopPickTool extends Tool {
 
   pickLoop(p) {
     const pickResult = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []);
-    for (let obj of pickResult) {
-      for (let point of [obj.a, obj.b]) {
+    for (const obj of pickResult) {
+      for (const point of [obj.a, obj.b]) {
         const loop = this.loops.get(point);
         if (loop) {
           return loop;

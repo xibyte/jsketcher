@@ -1,11 +1,11 @@
 export default function pertrub([x, y, z]) {
 
-  let s = x + y + z;
+  const s = x + y + z;
   x = pertrubFloat(x + 3 + s);
   y = pertrubFloat(y + 5 + s);
   z = pertrubFloat(z + 7 + s);
 
-  let r = Math.sqrt(x*x + y*y + z*z);
+  const r = Math.sqrt(x*x + y*y + z*z);
 
   return [
     x/r,

@@ -28,15 +28,15 @@ export class InPlaceSketcher {
   }
   
   enter(face, headless) {
-    let viewer3d = this.ctx.services.viewer;
+    const viewer3d = this.ctx.services.viewer;
     this.face = face;
     this.face.ext.view.sketchGroup.visible = false;
     viewer3d.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
     lookAtFace(this.ctx.viewer, face);
     viewer3d.render(); // updates camera projection matrix
     
-    let container = viewer3d.sceneSetup.container;
-    let canvas = document.createElement('canvas');
+    const container = viewer3d.sceneSetup.container;
+    const canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
     canvas.style.left = 0;
     canvas.style.top = 0;
@@ -56,7 +56,7 @@ export class InPlaceSketcher {
 
     this.ctx.workbenchService.switchWorkbench('sketcher');
 
-    let sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
+    const sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
     this.viewer.historyManager.init(sketchData);
     this.viewer.io.loadSketch(sketchData);
     this.ctx.streams.sketcher.sketchingFace.next(face);
@@ -96,31 +96,31 @@ export class InPlaceSketcher {
   };
 
   syncWithCamera() {
-    let face = this.face;
-    let sceneSetup = this.ctx.services.viewer.sceneSetup;
+    const face = this.face;
+    const sceneSetup = this.ctx.services.viewer.sceneSetup;
     
     _projScreenMatrix.multiplyMatrices( sceneSetup.oCamera.projectionMatrix,
       sceneSetup.oCamera.matrixWorldInverse );
 
-    let csys = face.csys;
+    const csys = face.csys;
 
     // let sketchToWorld = face.sketchToWorldTransformation;
     // let sketchOrigin = sketchToWorld.apply(ORIGIN);
     // let basisX = sketchToWorld.apply(AXIS.X);
     // let basisY = sketchToWorld.apply(AXIS.Y);
 
-    let sketchOrigin = csys.origin;
-    let basisX = csys.x;
-    let basisY = csys.y;
+    const sketchOrigin = csys.origin;
+    const basisX = csys.x;
+    const basisY = csys.y;
 
-    let o = ORIGIN.three().applyMatrix4(_projScreenMatrix);
-    let xx = basisX.three().applyMatrix4(_projScreenMatrix);
-    let yy = basisY.three().applyMatrix4(_projScreenMatrix);
+    const o = ORIGIN.three().applyMatrix4(_projScreenMatrix);
+    const xx = basisX.three().applyMatrix4(_projScreenMatrix);
+    const yy = basisY.three().applyMatrix4(_projScreenMatrix);
 
-    let sketchOriginDelta = sketchOrigin.three().applyMatrix4(_projScreenMatrix);
+    const sketchOriginDelta = sketchOrigin.three().applyMatrix4(_projScreenMatrix);
 
-    let width = sceneSetup.container.clientWidth * DPR / 2;
-    let height = sceneSetup.container.clientHeight * DPR /2;
+    const width = sceneSetup.container.clientWidth * DPR / 2;
+    const height = sceneSetup.container.clientHeight * DPR /2;
 
     xx.sub(o);
     yy.sub(o);
@@ -141,4 +141,4 @@ export class InPlaceSketcher {
   }
 }
 
-let _projScreenMatrix = new Matrix4();
+const _projScreenMatrix = new Matrix4();

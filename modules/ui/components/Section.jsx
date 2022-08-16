@@ -14,8 +14,8 @@ export class Section extends React.PureComponent {
   }
 
   render() {
-    let {label, nonClosable, children} = this.props;
-    let closed = this.isClosed();
+    const {label, nonClosable, children} = this.props;
+    const closed = this.isClosed();
     return <TabContext.Consumer>
       {
         tabs => <div className={ls.section} style={{paddingLeft: 10}}>
@@ -34,7 +34,7 @@ export class Section extends React.PureComponent {
   }
 
   isClosed() {
-    let {nonClosable} = this.props;
+    const {nonClosable} = this.props;
     if (nonClosable) return false;
     return this.state.closed;
   }

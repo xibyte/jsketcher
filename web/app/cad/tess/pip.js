@@ -24,7 +24,7 @@ export default function(outerLoop, innerLoops, tol) {
       this.edge = edge;
     }
 
-    for( let pt2 of loop ) {
+    for( const pt2 of loop ) {
       if (veq(pt, pt2)) {
         return new VertexResult(pt2);
       }
@@ -35,7 +35,7 @@ export default function(outerLoop, innerLoops, tol) {
       const j = (i + 1) % n;
       const a = loop[i];
       const b = loop[j];
-      let dy = b.y - a.y;
+      const dy = b.y - a.y;
       if (eq(dy, 0)) {
         grads.push(0)
       } else if (dy > 0) {
@@ -124,7 +124,7 @@ export default function(outerLoop, innerLoops, tol) {
         }
       }
 
-        let perpEdge = edgeDx * (pt.y - edgeLowPt.y) - edgeDy * (pt.x - edgeLowPt.x);
+        const perpEdge = edgeDx * (pt.y - edgeLowPt.y) - edgeDy * (pt.x - edgeLowPt.x);
         if ( eq(perpEdge, 0) ) return new EdgeResult([a, b]);
         if ( perpEdge < 0 ) {
           continue;
@@ -135,7 +135,7 @@ export default function(outerLoop, innerLoops, tol) {
   }
 
   return function classifyPointInsideLoops(pt) {
-    let outer = classifyPointInsideLoop(pt, outerLoop);
+    const outer = classifyPointInsideLoop(pt, outerLoop);
     if (outer.inside) {
       if (outer.vertex || outer.edge) {
         return outer;
@@ -143,7 +143,7 @@ export default function(outerLoop, innerLoops, tol) {
     }
 
     if (innerLoops) {
-      for (let innerLoop of innerLoops) {
+      for (const innerLoop of innerLoops) {
         const inner = classifyPointInsideLoop(pt, innerLoop);
         if (inner.vertex || inner.edge) {
           return inner;

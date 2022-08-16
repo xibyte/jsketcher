@@ -1,6 +1,6 @@
 
 export function askNumber(promptText, initValue, promptCallback, resolver) {
-  let promptValueStr = promptCallback(promptText, initValue);
+  const promptValueStr = promptCallback(promptText, initValue);
   if (promptValueStr != null) {
     let promptValue = Number(promptValueStr);
     if (promptValue == promptValue) { // check for NaN

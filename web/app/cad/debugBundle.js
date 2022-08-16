@@ -80,7 +80,7 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     },
 
     AddPointPolygons: (polygons, color) => {
-      for (let points of polygons) {
+      for (const points of polygons) {
         for (let i = 0; i < points.length; i ++) {
           debugGroup.add(createLine(points[i], points[(i + 1) % points.length], color));
         }
@@ -109,10 +109,10 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
       window.__DEBUG__.AddPolyLine(points, color);  
     },
     AddFace: (face, color) => {
-      for (let e of face.edges) __DEBUG__.AddHalfEdge(e, color);
+      for (const e of face.edges) __DEBUG__.AddHalfEdge(e, color);
     },
     AddLoop: (loop, color) => {
-      for (let e of loop.halfEdges) __DEBUG__.AddHalfEdge(e, color);
+      for (const e of loop.halfEdges) __DEBUG__.AddHalfEdge(e, color);
     },
     AddVolume: (shell, color) => {
       color = color || 0xffffff;
@@ -136,7 +136,7 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
     AddWireframe: (shell, color) => {
       color = color || 0xffffff;
       const visited = new Set();
-      for (let e of shell.edges) {
+      for (const e of shell.edges) {
         const vertices = []
         vertices.push(e.halfEdge1.vertexA.point.three());
         vertices.push(e.halfEdge2.vertexA.point.three());
@@ -164,7 +164,7 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
       __DEBUG__.AddPolyLine( curve.tessellate(undefined, scale), color);
     },
     AddParametricCurve: (curve, color, scale) => {
-      let [uMin, uMax] = curve.domain();
+      const [uMin, uMax] = curve.domain();
       __DEBUG__.AddPolyLine3(curveTess(curve, uMin, uMax, undefined, scale), color);
     },
     AddVerbCurve: (curve, color) => {
@@ -285,9 +285,9 @@ export function createPoint(x, y, z, color) {
     x = x.x;
   }
   color = color || 0x00ff00;
-  let geometry = new THREE.SphereGeometry( 5, 16, 16 );
-  let material = new THREE.MeshBasicMaterial( {color} );
-  let sphere = new THREE.Mesh(geometry, material);
+  const geometry = new THREE.SphereGeometry( 5, 16, 16 );
+  const material = new THREE.MeshBasicMaterial( {color} );
+  const sphere = new THREE.Mesh(geometry, material);
   sphere.position.x = x;
   sphere.position.y = y;
   sphere.position.z = z;
@@ -328,7 +328,7 @@ const DebugActions = [
     listens: ctx => ctx.streams.selection.face,
     update: checkForSelectedFaces(1),
     invoke: ({services: {selection}}) => {
-      let s = selection.face.single;
+      const s = selection.face.single;
       console.log(JSON.stringify({
         polygons: s.csgGroup.polygons,
         basis: s._basis
@@ -364,8 +364,8 @@ const DebugActions = [
       const sketch = JSON.parse(localStorage.getItem(project.faceStorageKey(faceId)));
       const layers = sketch.layers.filter(l => l.name !== '__bounds__');
       const data = [];
-      for (let l of layers) {
-        for (let d of l.data) {
+      for (const l of layers) {
+        for (const d of l.data) {
           data.push(d);
         }
       }

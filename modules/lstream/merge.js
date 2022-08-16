@@ -8,7 +8,7 @@ export class MergeStream extends StreamBase {
   }
 
   attach(observer) {
-    let detachers = new Array(this.streams.length);
+    const detachers = new Array(this.streams.length);
     this.streams.forEach((s, i) => {
       detachers[i] = s.attach(observer);
     });

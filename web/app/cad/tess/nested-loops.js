@@ -4,8 +4,8 @@ import {isCCW} from "geom/euclidean";
 export default function(loops) {
   loops = loops.map(loop => new NestedLoop(loop));
   function contains(loop, other) {
-    let classifyPointInsideLoop = pip(loop);
-    for (let point of other) {
+    const classifyPointInsideLoop = pip(loop);
+    for (const point of other) {
       if (!classifyPointInsideLoop(point).inside) {
         return false;
       }
@@ -43,7 +43,7 @@ class NestedLoop {
   }
 
   classifyImpl(pt) {
-    let res = this.pip(pt);
+    const res = this.pip(pt);
     if (res.inside) {
       return res;
     }

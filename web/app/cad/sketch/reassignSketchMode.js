@@ -19,7 +19,7 @@ export default function initReassignSketchMode(ctx) {
   function enter(fromId) {
     ctx.streams.ui.sockets.headsUpHelper.next('ReassignSketchTool');
     detach = ctx.streams.selection.face.attach(faces => {
-      let face = faces[0];
+      const face = faces[0];
       if (face && face !== fromId) {
         exit();
         ctx.services.sketcher.reassignSketch(fromId, face);

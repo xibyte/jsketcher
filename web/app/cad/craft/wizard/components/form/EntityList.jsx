@@ -25,7 +25,7 @@ function EntityList(props) {
   }
 
   const deselect = (entityId) => {
-    let {value, onChange} = props;
+    const {value, onChange} = props;
     if (Array.isArray(value)) {
       onChange(produce(value, value => removeInPlace(value, entityId)));
     } else {

@@ -128,7 +128,7 @@ Constraints.Parallel.prototype.NAME = 'parallel';
 Constraints.Parallel.prototype.UI_NAME = 'Parallel';
 
 Constraints.Parallel.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.l1.collectParams(params);
   this.l2.collectParams(params);
   return [[this.NAME, params, []]];
@@ -158,7 +158,7 @@ Constraints.Perpendicular.prototype.NAME = 'perpendicular';
 Constraints.Perpendicular.prototype.UI_NAME = 'Perpendicular';
 
 Constraints.Perpendicular.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.l1.collectParams(params);
   this.l2.collectParams(params);
   return [[this.NAME, params, []]];
@@ -190,7 +190,7 @@ Constraints.P2LDistanceSigned.prototype.NAME = 'P2LDistanceSigned';
 Constraints.P2LDistanceSigned.prototype.UI_NAME = 'Distance P & L';
 
 Constraints.P2LDistanceSigned.prototype.getSolveData = function(resolver) {
-  let params = [];
+  const params = [];
   this.p.collectParams(params);
   this.a.collectParams(params);
   this.b.collectParams(params);
@@ -228,7 +228,7 @@ Constraints.P2LDistance.prototype.NAME = 'P2LDistance';
 Constraints.P2LDistance.prototype.UI_NAME = 'Distance P & L';
 
 Constraints.P2LDistance.prototype.getSolveData = function(resolver) {
-  let params = [];
+  const params = [];
   this.p.collectParams(params);
   this.l.collectParams(params);
   return [[this.NAME, params, [resolver(this.d)]]];
@@ -262,7 +262,7 @@ Constraints.MinLength.prototype.NAME = 'MinLength';
 Constraints.MinLength.prototype.UI_NAME = 'MinLength';
 
 Constraints.MinLength.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.a.collectParams(params);
   this.b.collectParams(params);
   return [[this.NAME, params, [this.min]]];
@@ -282,7 +282,7 @@ Constraints.P2LDistanceV.prototype.NAME = 'P2LDistanceV';
 Constraints.P2LDistanceV.prototype.UI_NAME = 'Distance P & L';
 
 Constraints.P2LDistanceV.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.p.collectParams(params);
   this.l.collectParams(params);
   params.push(this.d);
@@ -312,7 +312,7 @@ Constraints.P2PDistance.prototype.NAME = 'P2PDistance';
 Constraints.P2PDistance.prototype.UI_NAME = 'Distance Points';
 
 Constraints.P2PDistance.prototype.getSolveData = function(resolver) {
-  let params = [];
+  const params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
   return [[this.NAME, params, [resolver(this.d)]]];
@@ -346,7 +346,7 @@ Constraints.P2PDistanceV.prototype.NAME = 'P2PDistanceV';
 Constraints.P2PDistanceV.prototype.UI_NAME = 'Distance Points';
 
 Constraints.P2PDistanceV.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
   params.push(this.d);
@@ -451,8 +451,8 @@ Constraints.LL.prototype.NAME = 'LL';
 Constraints.LL.prototype.UI_NAME = 'Lines Equality';
 
 Constraints.LL.prototype.getSolveData = function() {
-  let params1 = [];
-  let params2 = [];
+  const params1 = [];
+  const params2 = [];
   this.line1.collectParams(params1);
   this.line2.collectParams(params2);
   params1.push(this.length);
@@ -541,7 +541,7 @@ Constraints.Tangent.prototype.NAME = 'Tangent';
 Constraints.Tangent.prototype.UI_NAME = 'Tangent';
 
 Constraints.Tangent.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.arc.c.collectParams(params);
   this.line.collectParams(params);
   params.push(this.arc.r);
@@ -610,7 +610,7 @@ Constraints.PointOnLine.prototype.NAME = 'PointOnLine';
 Constraints.PointOnLine.prototype.UI_NAME = 'Point On Line';
 
 Constraints.PointOnLine.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.point.collectParams(params);
   this.line.collectParams(params);
   return [['P2LDistance', params, [0]]];
@@ -640,7 +640,7 @@ Constraints.PointOnArc.prototype.NAME = 'PointOnArc';
 Constraints.PointOnArc.prototype.UI_NAME = 'Point On Arc';
 
 Constraints.PointOnArc.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.point.collectParams(params);
   this.arc.c.collectParams(params);
   params.push(this.arc.r);
@@ -701,7 +701,7 @@ Constraints.PointOnEllipseInternal.prototype.UI_NAME = 'Point On Ellipse';
 Constraints.PointOnEllipseInternal.prototype.aux = true;
 
 Constraints.PointOnEllipseInternal.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.point.collectParams(params);
   this.ellipse.ep1.collectParams(params);
   this.ellipse.ep2.collectParams(params);
@@ -774,8 +774,8 @@ Constraints.EllipseTangent.prototype.getObjects = function() {
 Constraints.CurveTangent = function(line, curveObject) {
   this.line = line;
   this.curveObject = curveObject;
-  let [uMin, uMax] = this.curveObject.curve.domain();
-  let initPoint = this.curveObject.curve.point(0.5 * (uMin + uMax));
+  const [uMin, uMax] = this.curveObject.curve.domain();
+  const initPoint = this.curveObject.curve.point(0.5 * (uMin + uMax));
   this.tx = new Ref(initPoint[0]);
   this.ty = new Ref(initPoint[1]);
 };
@@ -817,8 +817,8 @@ Constraints.PointInMiddle.prototype.NAME = 'PointInMiddle';
 Constraints.PointInMiddle.prototype.UI_NAME = 'Point In the Middle';
 
 Constraints.PointInMiddle.prototype.getSolveData = function() {
-  let params1 = [];
-  let params2 = [];
+  const params1 = [];
+  const params2 = [];
 
   this.line.a.collectParams(params1);
   this.point.collectParams(params1);
@@ -859,8 +859,8 @@ Constraints.Symmetry.prototype.NAME = 'Symmetry';
 Constraints.Symmetry.prototype.UI_NAME = 'Symmetry';
 
 Constraints.Symmetry.prototype.getSolveData = function(resolver) {
-  let pointInMiddleData = Constraints.PointInMiddle.prototype.getSolveData.call(this, [resolver]);
-  let pointOnLineData = Constraints.PointOnLine.prototype.getSolveData.call(this, [resolver]);
+  const pointInMiddleData = Constraints.PointInMiddle.prototype.getSolveData.call(this, [resolver]);
+  const pointOnLineData = Constraints.PointOnLine.prototype.getSolveData.call(this, [resolver]);
   return pointInMiddleData.concat(pointOnLineData);
 };
 
@@ -893,7 +893,7 @@ Constraints.Angle.prototype.UI_NAME = 'Lines Angle';
 
 Constraints.Angle.prototype.getSolveData = function(resolver) {
   this._angle.set(resolver(this.angle) / 180 * Math.PI);
-  let params = [];
+  const params = [];
   this.p1.collectParams(params);
   this.p2.collectParams(params);
   this.p3.collectParams(params);
@@ -911,7 +911,7 @@ Constraints.Factory[Constraints.Angle.prototype.NAME] = function(refs, data) {
 };
 
 Constraints.Angle.prototype.getObjects = function() {
-  let collector = new Constraints.ParentsCollector();
+  const collector = new Constraints.ParentsCollector();
   collector.check(this.p1);
   collector.check(this.p2);
   collector.check(this.p3);
@@ -934,7 +934,7 @@ Constraints.LockConvex.prototype.NAME = 'LockConvex';
 Constraints.LockConvex.prototype.UI_NAME = 'Lock Convexity';
 
 Constraints.LockConvex.prototype.getSolveData = function() {
-  let params = [];
+  const params = [];
   this.c.collectParams(params);
   this.a.collectParams(params);
   this.t.collectParams(params);
@@ -950,7 +950,7 @@ Constraints.Factory[Constraints.LockConvex.prototype.NAME] = function(refs, data
 };
 
 Constraints.LockConvex.prototype.getObjects = function() {
-  let collector = new Constraints.ParentsCollector();
+  const collector = new Constraints.ParentsCollector();
   collector.check(this.c);
   collector.check(this.a);
   collector.check(this.t);
@@ -968,7 +968,7 @@ Constraints.Mirror = function(reflectionLine, objects, reflectedObjects) {
   this.updateDir();
   if (!reflectedObjects) {
     reflectedObjects = objects.map(o => {
-      let copy = o.copy();
+      const copy = o.copy();
       copy.virtualOf = o.id;
       copy.aux = true;
       copy.role = 'virtual';
@@ -994,11 +994,11 @@ Constraints.Mirror.prototype.updateDir = function() {
 };
 
 Constraints.Mirror.prototype.reflect = function(source, dest) {
-  let origin = this.reflectionLine.a.toVector();
+  const origin = this.reflectionLine.a.toVector();
 
   const pointMirroring = (x, y) => {
-    let pt = new Vector(x, y, 0);
-    let proj = this.dir.dot(pt.minus(origin));
+    const pt = new Vector(x, y, 0);
+    const proj = this.dir.dot(pt.minus(origin));
     return this.dir.multiply(- proj * 2)._plus(pt);
   };
 
@@ -1010,7 +1010,7 @@ Constraints.Mirror.prototype.getSolveData = function() {
 };
 
 Constraints.Mirror.prototype.serialize = function() {
-  let ids = [this.reflectionLine.id];
+  const ids = [this.reflectionLine.id];
   for (let i = 0; i < this.objects.length; i++) {
     ids.push(this.objects[i].id);
     ids.push(this.reflectedObjects[i].id);
@@ -1019,9 +1019,9 @@ Constraints.Mirror.prototype.serialize = function() {
 };
 
 Constraints.Factory[Constraints.Mirror.prototype.NAME] = function(refs, data) {
-  let [rlId, ...objectIds] = data;
-  let objects = [];
-  let reflectedObjects = [];
+  const [rlId, ...objectIds] = data;
+  const objects = [];
+  const reflectedObjects = [];
   for (let i = 0; i < objectIds.length; i += 2) {
     objects.push(refs(objectIds[i]));
     reflectedObjects.push(refs(objectIds[i + 1]));
@@ -1077,7 +1077,7 @@ Constraints.Fillet.prototype.NAME = 'Fillet';
 Constraints.Fillet.prototype.UI_NAME = 'Fillet';
 
 Constraints.Fillet.prototype.getSolveData = function() {
-  let solveData = [];
+  const solveData = [];
   this.contraints.forEach(c => c.getSolveData().forEach(d => solveData.push(d)));
   return solveData;
 };
@@ -1091,7 +1091,7 @@ Constraints.Factory[Constraints.Fillet.prototype.NAME] = function(refs, data) {
 };
 
 Constraints.Fillet.prototype.getObjects = function() {
-  let objects = [];
+  const objects = [];
   this.contraints.forEach(c => c.getObjects().forEach(o => objects.push(o)));
   return objects;
 };
@@ -1100,11 +1100,11 @@ Constraints.Fillet.prototype.getObjects = function() {
 Constraints.Fillet.prototype.validate = function() {
 
   function validOn(p, arc, left) {
-    let op = p.parent.opposite(p);
-    let opV = op.toVector();
-    let dir = p.toVector()._minus(opV)._normalize();
-    let centerDir = arc.c.toVector()._minus(opV)._normalize();
-    let z = centerDir.cross(dir).z;
+    const op = p.parent.opposite(p);
+    const opV = op.toVector();
+    const dir = p.toVector()._minus(opV)._normalize();
+    const centerDir = arc.c.toVector()._minus(opV)._normalize();
+    const z = centerDir.cross(dir).z;
 
     return left === z < 0;
   }
@@ -1114,8 +1114,8 @@ Constraints.Fillet.prototype.validate = function() {
 
 Constraints.ParentsCollector = function() {
   this.parents = [];
-  let parents = this.parents;
-  let index = {};
+  const parents = this.parents;
+  const index = {};
   function add(obj) {
     if (index[obj.id] === undefined) {
       index[obj.id] = obj;

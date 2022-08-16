@@ -34,7 +34,7 @@ export default [
       icon: RiExternalLinkLine,
     },
     invoke: ({services}) => {
-      let face = services.sketcher.inPlaceEditor.face;
+      const face = services.sketcher.inPlaceEditor.face;
       services.sketcher.inPlaceEditor.save();
       services.sketcher.inPlaceEditor.exit();
       services.sketcher.sketchFace2D(face);

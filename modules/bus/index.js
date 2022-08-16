@@ -38,7 +38,7 @@ export default class Bus {
       tokens = [tokens];
     }
 
-    let connection = () => {
+    const connection = () => {
       callback(this.tokensToStates(tokens));
     };
     tokens.forEach(token => {
@@ -57,7 +57,7 @@ export default class Bus {
   }
 
   updateStates(tokens, updater) {
-    let updated = updater(this.tokensToStates(tokens));
+    const updated = updater(this.tokensToStates(tokens));
     for (let i = 0; i < tokens.length; ++i) {
       this.dispatch(tokens[i], updated[i]);
     }
@@ -90,7 +90,7 @@ export default class Bus {
     }
     this.lock.add(key);
     try {
-      let listenerList = this.listeners[key];
+      const listenerList = this.listeners[key];
       if (listenerList !== undefined) {
         for (let i = 0; i < listenerList.length; i++) {
           const callback = listenerList[i];

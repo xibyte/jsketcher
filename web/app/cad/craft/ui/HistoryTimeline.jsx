@@ -29,9 +29,9 @@ import {menuAboveElementHint} from "cad/dom/menu/menuUtils";
 export default class HistoryTimeline extends React.Component {
 
   render() {
-    let {history, pointer, setHistoryPointer, rebuild, getOperation, inProgressOperation} = this.props;
+    const {history, pointer, setHistoryPointer, rebuild, getOperation, inProgressOperation} = this.props;
     let scrolly;
-    let eof = history.length-1;
+    const eof = history.length-1;
     return <div className={cx(ls.root, ' small-typography')} ref={this.keepRef}>
       <Controls rebuild={rebuild} history={history} pointer={pointer} eoh={eof} setHistoryPointer={this.setHistoryPointerAndRequestScroll}/>
       <div className={ls.scroller} onClick={e => scrolly.scrollLeft -= 60}><Fa icon='caret-left'/></div>
@@ -65,11 +65,11 @@ export default class HistoryTimeline extends React.Component {
   componentDidUpdate() {
     // this.scrollInProgressToVisibleRequest = false;
     setTimeout(() => {
-      let item = this.el.querySelector(`.${ls.history} .${ls.inProgress}`);
+      const item = this.el.querySelector(`.${ls.history} .${ls.inProgress}`);
       if (item) {
         item.scrollIntoView({behavior: "smooth", inline: "center",  block: "end"});
       } else {
-        let history = this.el.querySelector(`.${ls.history}`);
+        const history = this.el.querySelector(`.${ls.history}`);
         history.scrollLeft = history.scrollWidth; 
       }
     })

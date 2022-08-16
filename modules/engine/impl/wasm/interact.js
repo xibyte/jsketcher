@@ -1,12 +1,12 @@
 
 export function toCString(str) {
-  let buffer = Module._malloc(str.length + 1);
+  const buffer = Module._malloc(str.length + 1);
   writeAsciiToMemory(str, buffer);
   return buffer;
 }
 
 export function callEngine(request, engineFunc) {
-  let toCStringRequest = toCString(JSON.stringify(request));
+  const toCStringRequest = toCString(JSON.stringify(request));
   engineFunc(toCStringRequest);
   Module._free(toCStringRequest);
   return __E0_ENGINE_EXCHANGE_VAL;

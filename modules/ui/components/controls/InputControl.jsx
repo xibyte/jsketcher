@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 export default function InputControl(inprops) {
   
-    let {type, inputRef, width, onWheel, ...props} = inprops;
+    const {type, inputRef, width, onWheel, ...props} = inprops;
 
     const style = width&&{
       width

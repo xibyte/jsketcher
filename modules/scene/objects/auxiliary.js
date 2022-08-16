@@ -3,7 +3,7 @@ import {ArrowHelper, CylinderBufferGeometry, Mesh, MeshBasicMaterial, Object3D, 
 import {createMeshLineGeometry} from './meshLine';
 
 export function createArrow(length, arrowLength, arrowHead, axis, color, opacity, materialMixins) {
-  let arrow = new ArrowHelper(new Vector3().copy(axis), new Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
+  const arrow = new ArrowHelper(new Vector3().copy(axis), new Vector3(0, 0, 0), length, color, arrowLength, arrowHead);
   arrow.updateMatrix();
   arrow.line.material.linewidth = 1 / DPR;
   if (opacity !== undefined) {
@@ -42,11 +42,11 @@ export class MeshArrow extends Object3D {
 
     // dir is assumed to be normalized
 
-    let cone = new Mesh(tipGeometry, materialCreate({color}));
+    const cone = new Mesh(tipGeometry, materialCreate({color}));
     cone.matrixAutoUpdate = false;
     this.add(cone);
 
-    let line = new Mesh(lineGeometry, materialCreate({color}));
+    const line = new Mesh(lineGeometry, materialCreate({color}));
     line.matrixAutoUpdate = false;
     this.add(line);
     
@@ -62,7 +62,7 @@ export class MeshArrow extends Object3D {
     } else if (dir.y < -0.99999) {
       this.quaternion.set(1, 0, 0, 0);
     } else {
-      let axis = new Vector3();
+      const axis = new Vector3();
       let radians;
       axis.set(dir.z, 0, -dir.x).normalize();
       radians = Math.acos(dir.y);

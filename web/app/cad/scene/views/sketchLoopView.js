@@ -33,10 +33,10 @@ export class SketchLoopView extends View {
     this.rootGroup = SceneGraph.createGroup();
 
 
-    let surface = mLoop.face.surface;
+    const surface = mLoop.face.surface;
     let tess;
     if (surface.simpleSurface && surface.simpleSurface.isPlane) {
-      let polygon = mLoop.contour.tessellateInCoordinateSystem(mLoop.face.csys);
+      const polygon = mLoop.contour.tessellateInCoordinateSystem(mLoop.face.csys);
       tess = TriangulatePolygons([polygon], mLoop.face.csys.z, v => v.data(), arr => new Vector().set3(arr));
     } else {
       tess = tessellateLoopsOnSurface(surface, [mLoop.contour], contour => contour.segments,

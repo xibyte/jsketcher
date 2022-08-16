@@ -24,12 +24,12 @@ export function box(w, h, d, tr) {
 
 export function cylinder(r, h, tr) {
   tr = tr || IDENTITY;
-  let normal = tr.apply(AXIS.Z);
-  let plane = new Plane(normal, h);
-  let csys = CSys.fromNormalAndDir(normal.multiply(h), normal, plane.basis()[0]);
+  const normal = tr.apply(AXIS.Z);
+  const plane = new Plane(normal, h);
+  const csys = CSys.fromNormalAndDir(normal.multiply(h), normal, plane.basis()[0]);
   
-  let circle1 = new Circle(-1, new Point(0,0,0), r).toNurbs(csys);
-  let circle2 = circle1.translate(tr.apply(new Point(0,0,-h)));
+  const circle1 = new Circle(-1, new Point(0,0,0), r).toNurbs(csys);
+  const circle2 = circle1.translate(tr.apply(new Point(0,0,-h)));
   return enclose([circle1], [circle2]);
 }
 

@@ -9,11 +9,11 @@ export function createMeshLineGeometry(points, width) {
   let base = null;
   for (let i = 1; i < points.length; i++) {
 
-    let a  = points[i - 1];
-    let b  = points[i];
-    let ab = vec._normalize(vec.sub(b, a));
+    const a  = points[i - 1];
+    const b  = points[i];
+    const ab = vec._normalize(vec.sub(b, a));
 
-    let dirs = [];
+    const dirs = [];
     dirs[0] = perpendicularVector(ab);
     dirs[1] = vec.cross(ab, dirs[0]);
     dirs[2] = vec.negate(dirs[0]);
@@ -23,9 +23,9 @@ export function createMeshLineGeometry(points, width) {
     if (base === null) {
       base = dirs.map(d => vec.add(a, d));
     }
-    let lid = dirs.map(d => vec.add(b, d));
+    const lid = dirs.map(d => vec.add(b, d));
 
-    let off = vertices.length;
+    const off = vertices.length;
     base.forEach(p => vertices.push(...p));
     lid.forEach(p => vertices.push(...p));
     base = lid;

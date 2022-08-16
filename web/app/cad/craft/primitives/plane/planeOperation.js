@@ -10,7 +10,7 @@ const WIDTH = 750;
 const HEIGHT = 750;
 
 function createPlane(params, services) {
-  let mDatum = services.cadRegistry.findDatum(params.datum);
+  const mDatum = services.cadRegistry.findDatum(params.datum);
 
   return {
     consumed: [mDatum],
@@ -19,20 +19,20 @@ function createPlane(params, services) {
 }
 
 function previewGeomProvider(params, services) {
-  let mDatum = services.cadRegistry.findDatum(params.datum);
+  const mDatum = services.cadRegistry.findDatum(params.datum);
 
   if (!mDatum) {
     return null;
   }
 
-  let tr = mDatum.csys.outTransformation;
+  const tr = mDatum.csys.outTransformation;
   
   const a = tr._apply(new Vector(0, 0, 0));
   const b = tr._apply(new Vector(WIDTH, 0, 0));
   const c = tr._apply(new Vector(WIDTH, HEIGHT, 0));
   const d = tr._apply(new Vector(0, HEIGHT, 0));
   
-  let trs = [[a, b, c], [a, c, d]];
+  const trs = [[a, b, c], [a, c, d]];
   return createMeshGeometry(trs);
 }
 

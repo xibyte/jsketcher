@@ -5,7 +5,7 @@ import InputControl from './InputControl';
 export default class TextControl extends React.Component {
   
   render() {
-    let {onChange, value, onFocus} = this.props;
+    const {onChange, value, onFocus} = this.props;
     return <InputControl type='text'
                          value={value}
                          onChange={e => onChange(e.target.value)} onFocus={onFocus} />

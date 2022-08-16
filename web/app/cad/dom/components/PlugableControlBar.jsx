@@ -15,7 +15,7 @@ export default function PlugableControlBar() {
 
 function ButtonGroup({actions}) {
   return actions.map(actionRef => { 
-    let [id, overrides] = toIdAndOverrides(actionRef);
+    const [id, overrides] = toIdAndOverrides(actionRef);
     return <ConnectedActionButton key={id} actionId={id} {...overrides} />;
   });
 }
@@ -23,14 +23,14 @@ function ButtonGroup({actions}) {
 class ActionButton extends React.Component {
   
   render() {
-    let {label, cssIcons, icon, enabled, visible, actionId, ...props} = this.props;
+    const {label, cssIcons, icon, enabled, visible, actionId, ...props} = this.props;
     if (!visible) {
       return null;
     }
     const Icon = icon ? icon : null;
 
     if (isMenuAction(actionId)) {
-      let onClick = props.onClick;
+      const onClick = props.onClick;
       props.onClick = e => onClick(menuAboveElementHint(this.el));
     }
     

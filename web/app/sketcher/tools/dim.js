@@ -26,7 +26,7 @@ export class AddDimTool extends Tool {
   }
 
   mousemove(e) {
-    let p = this.viewer.screenToModel(e);
+    const p = this.viewer.screenToModel(e);
     this.viewer.snap(p.x, p.y, []);
     if (this.dim != null) {
       this.dim.b.x = p.x;
@@ -100,8 +100,8 @@ export class AddCircleDimTool extends Tool {
   }
 
   mousemove(e) {
-    let p = this.viewer.screenToModel(e);
-    let objects = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []).filter(function (o) {
+    const p = this.viewer.screenToModel(e);
+    const objects = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []).filter(function (o) {
       return o.TYPE === 'Circle' || o.TYPE === 'Arc';
     });
 
@@ -163,7 +163,7 @@ export class AddAngleTool extends Tool {
       if (!center) {
         center = segment.a;
       }
-      let [cx, cy] = center;
+      const [cx, cy] = center;
       this.dim.offset = distance(cx, cy, p.x, p.y);
 
     } else {

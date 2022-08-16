@@ -10,9 +10,9 @@ export function activate(ctx) {
   const {services, streams} = ctx;
 
   streams.ui.keymap = state(DefaultKeymap);
-  let keymap = DefaultKeymap;
+  const keymap = DefaultKeymap;
   //to attach to a dom element: Mousetrap(domElement).bind(...
-  for (let action of Object.keys(keymap)) {
+  for (const action of Object.keys(keymap)) {
     const dataProvider = getDataProvider(action, services);
     Mousetrap.bind(keymap[action], () => ctx.actionService.run(action, dataProvider ? dataProvider() : undefined));
   }
@@ -22,7 +22,7 @@ export function activate(ctx) {
 function getDataProvider(action, services) {
   if (isMenuAction(action)) {
     return function() {
-      let {left, top, width, height} = services.dom.viewerContainer.getBoundingClientRect();
+      const {left, top, width, height} = services.dom.viewerContainer.getBoundingClientRect();
       return {
         x: left + width * 0.5,
         y: top + height * 0.5,
