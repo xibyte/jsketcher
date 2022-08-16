@@ -12,6 +12,7 @@
     "module": "commonJS",
     "experimentalDecorators": true,
     "skipLibCheck": true,
+    "noEmit": true,
     "paths": {
       "*": [
         "modules/*",
