@@ -63,9 +63,8 @@ export class MeshArrow extends Object3D {
       this.quaternion.set(1, 0, 0, 0);
     } else {
       const axis = new Vector3();
-      let radians;
       axis.set(dir.z, 0, -dir.x).normalize();
-      radians = Math.acos(dir.y);
+      const radians = Math.acos(dir.y);
       this.quaternion.setFromAxisAngle(axis, radians);
     }
 

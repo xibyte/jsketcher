@@ -221,7 +221,8 @@ export function SketcherTerminal() {
 }
 
 function sharedStartOfSortedArray(array) {
-  let a1 = array[0], a2 = array[array.length - 1], L = a1.length, i = 0;
+  const a1 = array[0], a2 = array[array.length - 1], L = a1.length;
+  let i = 0;
   while (i < L && a1.charAt(i) === a2.charAt(i)) i++;
   return a1.substring(0, i);
 }

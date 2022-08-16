@@ -53,20 +53,19 @@ export function CADTrackballControls( object, domElement ) {
 
   let _state = STATE.NONE,
     _prevState = STATE.NONE,
+    _lastAngle = 0,
+    _touchZoomDistanceStart = 0,
+    _touchZoomDistanceEnd = 0;
 
-    _eye = new THREE.Vector3(),
+  const _eye = new THREE.Vector3(),
 
     _movePrev = new THREE.Vector2(),
     _moveCurr = new THREE.Vector2(),
 
     _lastAxis = new THREE.Vector3(),
-    _lastAngle = 0,
 
     _zoomStart = new THREE.Vector2(),
     _zoomEnd = new THREE.Vector2(),
-
-    _touchZoomDistanceStart = 0,
-    _touchZoomDistanceEnd = 0,
 
     _panStart = new THREE.Vector2(),
     _panEnd = new THREE.Vector2();
@@ -154,13 +153,14 @@ export function CADTrackballControls( object, domElement ) {
 
   this.rotateCamera = ( function() {
 
-    let axis = new THREE.Vector3(),
+    const axis = new THREE.Vector3(),
       quaternion = new THREE.Quaternion(),
       eyeDirection = new THREE.Vector3(),
       objectUpDirection = new THREE.Vector3(),
       objectSidewaysDirection = new THREE.Vector3(),
-      moveDirection = new THREE.Vector3(),
-      angle;
+      moveDirection = new THREE.Vector3();
+
+    let angle;
 
     return function rotateCamera() {
 
