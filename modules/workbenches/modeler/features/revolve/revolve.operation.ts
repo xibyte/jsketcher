@@ -31,8 +31,6 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
     const sketchId = face.id;
     const sketch = ctx.sketchStorageService.readSketch(sketchId);
 
-    let sweepSources: FaceRef[];
-
     if (!sketch) {
       if (face instanceof MBrepFace) {
         const args = ["FaceTool", face, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
@@ -46,7 +44,7 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
 
     const csys = face.csys;
 
-    sweepSources = occ.utils.sketchToFaces(sketch, csys)
+    const sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
 

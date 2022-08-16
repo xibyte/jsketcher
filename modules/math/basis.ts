@@ -13,14 +13,14 @@ export const STANDARD_BASES = Object.freeze({
 });
 
 export function BasisForPlane(normal: UnitVector, alignY: UnitVector = AXIS.Y, alignZ: UnitVector = AXIS.Z): [UnitVector, UnitVector, UnitVector] {
-  let alignPlane, x, y;
+  let alignPlane;
   if (Math.abs(normal.dot(alignY)) < 0.5) {
     alignPlane = normal.cross(alignY);
   } else {
     alignPlane = normal.cross(alignZ);
   }
-  y = alignPlane.cross(normal);
-  x = y.cross(normal);
+  const y = alignPlane.cross(normal);
+  const x = y.cross(normal);
   return [x, y, normal];
 }
 

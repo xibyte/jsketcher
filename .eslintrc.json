@@ -26,7 +26,9 @@
         "max-len": "off",
         "no-console": "off",
         "no-extra-boolean-cast": "off",
-        "prefer-const": "error",
+        "prefer-const": ["error", {
+          "destructuring": "all"
+        }],
         "no-var": "error",
         "no-empty": "off",
         "no-fallthrough": "off",
