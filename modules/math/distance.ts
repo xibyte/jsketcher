@@ -3,8 +3,8 @@ export function distanceAB(a, b) {
 }
 
 export function distance(x1, y1, x2, y2) {
-  var dx = x1 - x2;
-  var dy = y1 - y2;
+  let dx = x1 - x2;
+  let dy = y1 - y2;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
@@ -25,9 +25,9 @@ export function distanceSquaredANegB3(a, b) {
 }
 
 export function distanceSquared3(x1, y1, z1, x2, y2, z2) {
-  var dx = x1 - x2;
-  var dy = y1 - y2;
-  var dz = z1 - z2;
+  let dx = x1 - x2;
+  let dy = y1 - y2;
+  let dz = z1 - z2;
   return dx * dx + dy * dy + dz * dz;
 }
 

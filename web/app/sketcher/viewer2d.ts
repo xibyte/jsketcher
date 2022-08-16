@@ -163,7 +163,7 @@ export class Viewer {
   };
 
   addSegment(x1, y1, x2, y2, layer) {
-    var line = new Segment(x1, y1, x2, y2);
+    const line = new Segment(x1, y1, x2, y2);
     layer.add(line);
     return line;
   };
@@ -186,15 +186,15 @@ export class Viewer {
     buffer /= this.scale / this.retinaPxielRatio;
     buffer *= 0.5;
 
-    var pickResult = [];
-    var aim = new Vector(x, y);
+    const pickResult = [];
+    const aim = new Vector(x, y);
 
-    var heroIdx = 0;
-    var unreachable = buffer * 2;
-    var heroLength = unreachable; // unreachable
+    let heroIdx = 0;
+    const unreachable = buffer * 2;
+    let heroLength = unreachable; // unreachable
 
     function isFiltered(o) {
-      for (var i = 0; i < filter.length; ++i) {
+      for (let i = 0; i < filter.length; ++i) {
         if (filter[i] === o) return true;
       }
       return false;
@@ -202,10 +202,10 @@ export class Viewer {
 
     for (let layers of this._workspace) {
       for (let i = 0; i < layers.length; i++) {
-        var objs = layers[i].objects;
-        for (var j = 0; j < objs.length; j++) {
-          var l = unreachable + 1;
-          var before = pickResult.length;
+        let objs = layers[i].objects;
+        for (let j = 0; j < objs.length; j++) {
+          let l = unreachable + 1;
+          let before = pickResult.length;
           objs[j].accept((o) => {
             if (!o.visible) return true;
             if (onlyPoints && !isEndPoint(o)) {
@@ -218,7 +218,7 @@ export class Viewer {
             }
             return true;
           });
-          var hit = before - pickResult.length != 0;
+          let hit = before - pickResult.length != 0;
           if (hit) {
             if (!deep && pickResult.length != 0) return pickResult;
             if (l >= 0 && l < heroLength) {
@@ -230,7 +230,7 @@ export class Viewer {
       }
     }
     if (pickResult.length > 0) {
-      var _f = pickResult[0];
+      let _f = pickResult[0];
       pickResult[0] = pickResult[heroIdx];
       pickResult[heroIdx] = _f;
     }
@@ -431,7 +431,7 @@ export class Viewer {
   }
 
   findLayerByName(name) {
-    for (var i = 0; i < this.layers.length; i++) {
+    for (let i = 0; i < this.layers.length; i++) {
       if (this.layers[i].name == name) {
         return this.layers[i];
       }
@@ -440,7 +440,7 @@ export class Viewer {
   };
 
   findById(id) {
-    var result = null;
+    let result = null;
     this.accept(function (o) {
       if (o.id === id) {
         result = o;
