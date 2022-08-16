@@ -244,8 +244,8 @@ export class IO {
   }
 
   cleanUpData() {
-    for (var l = 0; l < this.viewer.layers.length; ++l) {
-      var layer = this.viewer.layers[l];
+    for (let l = 0; l < this.viewer.layers.length; ++l) {
+      let layer = this.viewer.layers[l];
       if (layer.objects.length !== 0) {
         layer.objects = [];
       }
@@ -342,12 +342,12 @@ export class IO {
   };
 
   getLayersToExport() {
-    var ws = this.getWorkspaceToExport();
-    var toExport = [];
-    for (var t = 0; t < ws.length; ++t) {
-      var layers = ws[t];
-      for (var l = 0; l < layers.length; ++l) {
-        var layer = layers[l];
+    let ws = this.getWorkspaceToExport();
+    let toExport = [];
+    for (let t = 0; t < ws.length; ++t) {
+      let layers = ws[t];
+      for (let l = 0; l < layers.length; ++l) {
+        let layer = layers[l];
         toExport.push(layer)
       }
     }
@@ -461,10 +461,10 @@ export class IO {
 
 function _format(str, args) {
   if (args.length == 0) return str;
-  var i = 0;
+  let i = 0;
   return str.replace(/\$/g, function () {
     if (args === undefined || args[i] === undefined) throw "format arguments mismatch";
-    var val = args[i];
+    let val = args[i];
     if (typeof val === 'number') val = val.toPrecision();
     i++;
     return val;
@@ -473,8 +473,8 @@ function _format(str, args) {
 
 /** @constructor */
 function PrettyColors() {
-  var colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
-  var colIdx = 0;
+  let colors = ["#000000", "#00008B", "#006400", "#8B0000", "#FF8C00", "#E9967A"];
+  let colIdx = 0;
   this.next = function () {
     return colors[colIdx++ % colors.length];
   }
@@ -500,13 +500,13 @@ function TextBuilder() {
 
 /** @constructor */
 function BBox() {
-  var bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
+  let bbox = [Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE];
 
-  var T = SketchTypes;
+  let T = SketchTypes;
 
   this.checkLayers = function (layers) {
-    for (var l = 0; l < layers.length; ++l)
-      for (var i = 0; i < layers[l].objects.length; ++i)
+    for (let l = 0; l < layers.length; ++l)
+      for (let i = 0; i < layers[l].objects.length; ++i)
         this.check(layers[l].objects[i]);
   };
 

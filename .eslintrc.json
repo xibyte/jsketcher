@@ -27,7 +27,7 @@
         "no-console": "off",
         "no-extra-boolean-cast": "off",
         "prefer-const": "off",
-        "no-var": "off",
+        "no-var": "error",
         "no-empty": "off",
         "no-fallthrough": "off",
         "@typescript-eslint/no-explicit-any": "off",

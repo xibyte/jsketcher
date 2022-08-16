@@ -129,21 +129,21 @@ export class Arc extends SketchObject {
   }
   
   isPointInsideSector(x, y) {
-    var ca = new Vector(this.a.x - this.c.x, this.a.y - this.c.y);
-    var cb = new Vector(this.b.x - this.c.x, this.b.y - this.c.y);
-    var ct = new Vector(x - this.c.x, y - this.c.y);
+    let ca = new Vector(this.a.x - this.c.x, this.a.y - this.c.y);
+    let cb = new Vector(this.b.x - this.c.x, this.b.y - this.c.y);
+    let ct = new Vector(x - this.c.x, y - this.c.y);
   
     ca._normalize();
     cb._normalize();
     ct._normalize();
-    var cosAB = ca.dot(cb);
-    var cosAT = ca.dot(ct);
+    let cosAB = ca.dot(cb);
+    let cosAT = ca.dot(ct);
   
-    var isInside = cosAT >= cosAB;
-    var abInverse = ca.cross(cb).z < 0;
-    var atInverse = ca.cross(ct).z < 0;
+    let isInside = cosAT >= cosAB;
+    let abInverse = ca.cross(cb).z < 0;
+    let atInverse = ca.cross(ct).z < 0;
   
-    var result;
+    let result;
     if (abInverse) {
       result = !atInverse || !isInside;
     } else {
@@ -154,7 +154,7 @@ export class Arc extends SketchObject {
   
   normalDistance(aim) {
   
-    var isInsideSector = this.isPointInsideSector(aim.x, aim.y);
+    let isInsideSector = this.isPointInsideSector(aim.x, aim.y);
     if (isInsideSector) {
       return Math.abs(distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
     } else {

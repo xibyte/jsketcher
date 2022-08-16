@@ -8,17 +8,17 @@ import {IDENTITY_BASIS3} from "math/basis";
 import Vector from "math/vector";
 
 export function circleFromPoints(p1, p2, p3) {
-  var center = new Vector();
-  var offset = p2.x * p2.x + p2.y * p2.y;
-  var bc = (p1.x * p1.x + p1.y * p1.y - offset) / 2.0;
-  var cd = (offset - p3.x * p3.x - p3.y * p3.y) / 2.0;
-  var det = (p1.x - p2.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p2.y);
+  let center = new Vector();
+  let offset = p2.x * p2.x + p2.y * p2.y;
+  let bc = (p1.x * p1.x + p1.y * p1.y - offset) / 2.0;
+  let cd = (offset - p3.x * p3.x - p3.y * p3.y) / 2.0;
+  let det = (p1.x - p2.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p2.y);
 
   if (Math.abs(det) < 1e-6) {
     return null;
   }
 
-  var idet = 1 / det;
+  let idet = 1 / det;
 
   center.x = (bc * (p2.y - p3.y) - cd * (p1.y - p2.y)) * idet;
   center.y = (cd * (p1.x - p2.x) - bc * (p2.x - p3.x)) * idet;
@@ -67,21 +67,21 @@ export function polygonOffsetByDelta(polygon, delta) {
 }
 
 export function isPointInsidePolygon(inPt, inPolygon) {
-  var EPSILON = TIGHT_TOLERANCE;
+  let EPSILON = TIGHT_TOLERANCE;
 
-  var polyLen = inPolygon.length;
+  let polyLen = inPolygon.length;
 
   // inPt on polygon contour => immediate success    or
   // toggling of inside/outside at every single! intersection point of an edge
   //  with the horizontal line through inPt, left of inPt
   //  not counting lowerY endpoints of edges and whole edges on that line
-  var inside = false;
-  for (var p = polyLen - 1, q = 0; q < polyLen; p = q++) {
-    var edgeLowPt = inPolygon[p];
-    var edgeHighPt = inPolygon[q];
+  let inside = false;
+  for (let p = polyLen - 1, q = 0; q < polyLen; p = q++) {
+    let edgeLowPt = inPolygon[p];
+    let edgeHighPt = inPolygon[q];
 
-    var edgeDx = edgeHighPt.x - edgeLowPt.x;
-    var edgeDy = edgeHighPt.y - edgeLowPt.y;
+    let edgeDx = edgeHighPt.x - edgeLowPt.x;
+    let edgeDy = edgeHighPt.y - edgeLowPt.y;
 
     if (Math.abs(edgeDy) > EPSILON) {			// not parallel
       if (edgeDy < 0) {
@@ -96,7 +96,7 @@ export function isPointInsidePolygon(inPt, inPolygon) {
         if (inPt.x == edgeLowPt.x) return true;		// inPt is on contour ?
         // continue;				// no intersection or edgeLowPt => doesn't count !!!
       } else {
-        var perpEdge = edgeDy * (inPt.x - edgeLowPt.x) - edgeDx * (inPt.y - edgeLowPt.y);
+        let perpEdge = edgeDy * (inPt.x - edgeLowPt.x) - edgeDx * (inPt.y - edgeLowPt.y);
         if (perpEdge == 0) return true;		// inPt is on contour ?
         if (perpEdge < 0) continue;
         inside = !inside;		// true intersection left of inPt
@@ -114,9 +114,9 @@ export function isPointInsidePolygon(inPt, inPolygon) {
 }
 
 export function area(contour) {
-  var n = contour.length;
-  var a = 0.0;
-  for (var p = n - 1, q = 0; q < n; p = q++) {
+  let n = contour.length;
+  let a = 0.0;
+  for (let p = n - 1, q = 0; q < n; p = q++) {
     a += contour[p].x * contour[q].y - contour[q].x * contour[p].y;
   }
   return a * 0.5;
@@ -205,8 +205,8 @@ export function lineLineIntersection(p1, p2, v1, v2) {
 export function ConvexHull2D(points) {
 
   function removeMiddle(a, b, c) {
-    var cross = (a.x - b.x) * (c.y - b.y) - (a.y - b.y) * (c.x - b.x);
-    var dot = (a.x - b.x) * (c.x - b.x) + (a.y - b.y) * (c.y - b.y);
+    let cross = (a.x - b.x) * (c.y - b.y) - (a.y - b.y) * (c.x - b.x);
+    let dot = (a.x - b.x) * (c.x - b.x) + (a.y - b.y) * (c.y - b.y);
     return cross < 0 || cross == 0 && dot <= 0;
   }
 

@@ -3,9 +3,9 @@ declare module '*.less' {
   export = resource;
 }
 
-declare var verb: any;
-declare var FS: any;
-declare var __CAD_APP: any;
-declare var __DEBUG__: any;
-declare var Module: any;
+declare const verb: any;
+declare const FS: any;
+declare const __CAD_APP: any;
+declare const __DEBUG__: any;
+declare const Module: any;
 
