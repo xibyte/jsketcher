@@ -224,8 +224,9 @@ let diagnose = function(sys) {
 let prepare = function(constrs, locked) {
 
   let simpleMode = true;
+  let lockingConstrs;
   if (!simpleMode) {
-    var lockingConstrs = lock2Equals2(constrs, locked);
+    lockingConstrs = lock2Equals2(constrs, locked);
     Array.prototype.push.apply( constrs, lockingConstrs );
   }
 
@@ -279,14 +280,15 @@ let prepare = function(constrs, locked) {
   return systemSolver;
 };
 
-var solve_lm = function(sys, model, jacobian, rough) {
+let solve_lm = function(sys, model, jacobian, rough) {
   let opt = new LMOptimizer(sys.getParams(), newVector(sys.constraints.length), model, jacobian);
   opt.evalMaximalCount = 100000; //100 * sys.params.length;
   let eps = rough ? 0.001 : 0.00000001;
   opt.init0(eps, eps, eps);
   let returnCode = 1;
+  let res;
   try {
-    var res = opt.doOptimize();
+    res = opt.doOptimize();
   } catch (e) {
     returnCode = 2;
   }

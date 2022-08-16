@@ -23,18 +23,20 @@ export function parse(buf) {
       case 'endsolid':
         solids.push(solid);
         break;
-      case 'facet':
-        var noramlParts = parts.slice(2);
+      case 'facet': {
+        const noramlParts = parts.slice(2);
         if (noramlParts.length == 3) {
           face.normal = noramlParts.map(Number);
         } else {
           console.warn('bad normal definition at line ' + lineNumber);
         }
         break;
-      case 'vertex':
-        var position = parts.slice(1).map(Number);
+      }
+      case 'vertex': {
+        const position = parts.slice(1).map(Number);
         face.vertices.push(position);
         break;
+      }
       case 'endfacet':
         if (face.normal != null && face.vertices.length == 3) {
           solid.faces.push(face);

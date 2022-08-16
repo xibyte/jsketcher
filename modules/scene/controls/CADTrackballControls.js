@@ -546,18 +546,18 @@ export function CADTrackballControls( object, domElement ) {
         _movePrev.copy( _moveCurr );
         break;
 
-      default: // 2 or more
+      default: { // 2 or more
         _state = STATE.TOUCH_ZOOM_PAN;
-        var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-        var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+        const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+        const dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
         _touchZoomDistanceEnd = _touchZoomDistanceStart = Math.sqrt( dx * dx + dy * dy );
 
-        var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-        var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+        const x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+        const y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
         _panStart.copy( getMouseOnScreen( x, y ) );
         _panEnd.copy( _panStart );
         break;
-
+      }
     }
 
     _this.dispatchEvent( startEvent );
@@ -578,16 +578,16 @@ export function CADTrackballControls( object, domElement ) {
         _moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
         break;
 
-      default: // 2 or more
-        var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-        var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+      default: { // 2 or more
+        const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+        const dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
         _touchZoomDistanceEnd = Math.sqrt( dx * dx + dy * dy );
 
-        var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-        var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+        const x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+        const y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
         _panEnd.copy( getMouseOnScreen( x, y ) );
         break;
-
+      }
     }
 
   }

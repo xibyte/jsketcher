@@ -71,7 +71,7 @@ export function polygonsToSegments(polygons) {
   //  
   //});
   //magnitude of cross product is the area of parallelogram
-  //var area = points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() / 2.0;
+  //let area = points[b].pos.minus(points[a].pos).cross(points[c].pos.minus(points[a].pos)).length() / 2.0;
   //if (selfIntersecting(points[a].pos, points[b].pos, points[c].pos))  {
   //continue;
   //}
@@ -80,7 +80,7 @@ export function polygonsToSegments(polygons) {
   for (let pi = 0; pi < polygons.length; pi++) {
     let segments = [];
     let poly = polygons[pi];
-    var p, q, n = poly.vertices.length;
+    let p, q, n = poly.vertices.length;
     for(p = n - 1, q = 0; q < n; p = q ++) {
       let a = poly.vertices[p];
       let b = poly.vertices[q];
@@ -105,7 +105,7 @@ export function reconstructSketchBounds(csg, face, strict) {
       }
       continue;
     }
-    var p, q, n = poly.vertices.length;
+    let p, q, n = poly.vertices.length;
     for(p = n - 1, q = 0; q < n; p = q ++) {
       let a = poly.vertices[p];
       let b = poly.vertices[q];
@@ -234,7 +234,7 @@ function removeTJoints(segments) {
   let eq = strictEqual;
   for (let pi1 = 0; pi1 < points.length; ++pi1) {
     let point = points[pi1];
-    var best = null, bestFactor;
+    let best = null, bestFactor;
     for (let pi2 = 0; pi2 < segments.length; ++pi2) {
       let seg = segments[pi2];
       if (eq(seg[0], point) || eq(seg[1], point)) continue;
