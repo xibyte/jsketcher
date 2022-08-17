@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Sided-A/B Path Demo</title>
+  <link rel="stylesheet" type="text/css" href="demo.css">
+  <script type="module">
+    import {parseJsonAndPrintError, sidedAdResolve} from "./demo.js"
+
+    function doSimple() {
+      const startVertex = document.querySelector("#simpleStart").value;
+      const endVertex = document.querySelector("#simpleEnd").value;
+      const segments = parseJsonAndPrintError(document.querySelector("#segments").value, "simpleError");
+      const report = sidedAdResolve(segments, startVertex, endVertex, "simpleError");
+      document.querySelector("#simpleResults").innerHTML = report;
+    }
+
+    /*
+          function doGrid() {
+            const startVertex = document.querySelector("#gridStart").value;
+            const endVertex = document.querySelector("#gridEnd").value;
+            const graphJson = makeTestGridGraph(
+              document.querySelector("#gridWidth").value,
+              document.querySelector("#gridHeight").value,
+              document.querySelector("#straightWeight").value,
+              document.querySelector("#diagonalWeight").value,
+              document.querySelector("#includeDiagonals").checked);
+            const report = sidedAdResolve(segments, startVertex, endVertex, "gridError");
+            document.querySelector("#gridResults").innerHTML = report;
+          }
+    */
+    document.querySelector("#doSimple").onclick = doSimple;
+  </script>
+</head>
+
+<body>
+<div id="container">
+  <h2>A/B sided graphs simple test</h2>
+  <p id="simpleError" class="error"></p>
+  <p>Enter JSON array of segments of some A/B-graph:</p>
+  <textarea id="segments" rows="12" cols="150">
+  [
+    { "id": "seg1", "firstPoint": "p1", "firstSide": "A", "secondPoint": "p2", "secondSide": "A", "weight": 8},
+    { "id": "seg2", "firstPoint": "p1", "firstSide": "B", "secondPoint": "p3", "secondSide": "A", "weight": 2},
+    { "id": "seg3", "firstPoint": "p1", "firstSide": "B", "secondPoint": "p2", "secondSide": "A", "weight": 3},
+    { "id": "seg11", "firstPoint": "p1", "firstSide": "A", "secondPoint": "p5", "secondSide": "A", "weight": 10.1},
+    { "id": "seg12", "firstPoint": "p1", "firstSide": "A", "secondPoint": "p5", "secondSide": "B", "weight": 10.1},
+    { "id": "seg21", "firstPoint": "p2", "firstSide": "B", "secondPoint": "p3", "secondSide": "B", "weight": 15},
+    { "id": "otherSeg1", "firstPoint": "other1", "firstSide": "A", "secondPoint": "other2", "secondSide": "B", "weight": 115}
+  ]
+  </textarea>
+  <p>
+    Start point: <input id="simpleStart" value="p2"><br>
+    End point: <input id="simpleEnd" value="p3">
+  </p>
+  <p>
+    <button id="doSimple">Process graph above</button>
+  </p>
+  <p id="simpleResults">Click button about to see results here
+  </p>
+
+  <!--
+    <h2>Grid graphs</h2>
+    <p>
+      Start vertex: <input id="gridStart" value="V-0-0"><br>
+      End vertex: <input id="gridEnd" value="V-19-9"> (common syntax: 'V-XX-YY')<br>
+      Grid width: <input id="gridWidth" value="20"><br>
+      Grid height: <input id="gridHeight" value="10"><br>
+      Straigh weight: <input id="straightWeight" value="1"><br>
+      Diagonal weight: <input id="diagonalWeight" value="1.41"><br>
+      Include diagonals: <input id="includeDiagonals" type="checkbox">
+    </p>
+    <p><button onclick="doGrid()">Process grid-based graph</button></p>
+    <p id="gridResults">Click button about to see results here</p>
+  -->
+</div>
+</body>
+</html>

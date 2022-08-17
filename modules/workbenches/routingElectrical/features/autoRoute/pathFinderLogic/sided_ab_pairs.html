@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Sided-A/B Path Demo</title>
+  <link rel="stylesheet" type="text/css" href="demo.css">
+  <script type="module">
+    import {parseJsonAndPrintError, sidedAdPairsResolve} from "./demo.js"
+
+    async function doAnalyse() {
+      const segments = parseJsonAndPrintError(document.querySelector("#segments").value, "error");
+      const pairs = parseJsonAndPrintError(document.querySelector("#pairs").value, "error");
+      const report = await sidedAdPairsResolve(segments, pairs, false, "error", "timing");
+      document.querySelector("#results").value = report;
+    }
+
+    document.querySelector("#doAnalyse").onclick = doAnalyse;
+  </script>
+</head>
+
+<body>
+<div id="container">
+  <h2>A/B sided graphs main demo</h2>
+  <p id="error" class="error"></p>
+  <p>Enter JSON array of segments of some A/B-graph:</p>
+  <textarea id="segments" rows="12" cols="150">
+  [
+    { "id": "seg1", "firstPoint": "p1", "firstSide": "A", "secondPoint": "p2", "secondSide": "A", "weight": 8},
+    { "id": "seg2", "firstPoint": "p1", "firstSide": "B", "secondPoint": "p3", "secondSide": "A", "weight": 2},
+    { "id": "seg3", "firstPoint": "p1", "firstSide": "B", "secondPoint": "p2", "secondSide": "A", "weight": 3},
+    { "id": "seg11", "firstPoint": "p1", "firstSide": "A", "secondPoint": "p5", "secondSide": "A", "weight": 10.1},
+    { "id": "seg12", "firstPoint": "p1", "firstSide": "A", "secondPoint": "p5", "secondSide": "B", "weight": 10.1},
+    { "id": "seg21", "firstPoint": "p2", "firstSide": "B", "secondPoint": "p3", "secondSide": "B", "weight": 15},
+    { "id": "otherSeg1", "firstPoint": "other1", "firstSide": "A", "secondPoint": "other2", "secondSide": "B", "weight": 115}
+  ]
+  </textarea>
+  <textarea id="pairs" rows="12" cols="150">
+  [
+    { "id" : "path1", "startPoint": "p1", "endPoint": "p2" },
+    { "id" : "path2", "startPoint": "p2", "endPoint": "p3" },
+    { "startPoint": "p3", "endPoint": "p2" },
+    { "startPoint": "other1", "endPoint": "other2" }
+  ]
+  </textarea>
+  <p>
+    <button id="doAnalyse">Process graph above</button>
+  </p>
+  <p id="timing">Click button about to see results below</p>
+
+  <textarea id="results" rows="12" cols="150" readonly>
+  </textarea>
+</div>
+</body>
+</html>

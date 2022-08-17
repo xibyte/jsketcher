@@ -1,0 +1,15 @@
+body {
+    background-color: white;
+    color: black;
+    font-family: sans-serif;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+    font-size: larger;
+}
+
+.comment {
+    color: #888;
+}
