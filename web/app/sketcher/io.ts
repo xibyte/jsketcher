@@ -522,6 +522,8 @@ export class IO {
       });
     });
 
+    // reset the current layer to 0, because its preserved in the dxf.
+    dxf.setCurrentLayerName('0');
     return dxf.stringify();
   }
 }
