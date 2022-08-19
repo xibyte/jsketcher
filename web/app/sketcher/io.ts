@@ -23,7 +23,7 @@ import {
 } from './constr/ANConstraints';
 import { SketchGenerator } from './generators/sketchGenerator';
 import { BoundaryGeneratorSchema } from './generators/boundaryGenerator';
-import { ShapesTypes, SketchTypes } from './shapes/sketch-types';
+import { ShapesTypes } from './shapes/sketch-types';
 import { SketchObject } from './shapes/sketch-object';
 import { Label } from 'sketcher/shapes/label';
 import {
@@ -36,7 +36,6 @@ import {
   vec3_t,
 } from '@tarikjabiri/dxf';
 import { DEG_RAD } from 'math/commons';
-import { Point } from './shapes/primitives';
 
 export interface SketchFormat_V3 {
   version: number;
@@ -387,7 +386,7 @@ export class IO {
   }
 
   svgExport() {
-    const T = SketchTypes;
+    const T = ShapesTypes;
     const out = new TextBuilder();
 
     const bbox = new BBox();
@@ -510,9 +509,9 @@ export class IO {
 
           dxf.addText(point3d(lx, ly, 0), height, obj.text);
         } else if (
-          obj.TYPE === SketchTypes.DIM ||
-          obj.TYPE === SketchTypes.HDIM ||
-          obj.TYPE === SketchTypes.VDIM
+          obj.TYPE === ShapesTypes.DIM ||
+          obj.TYPE === ShapesTypes.HDIM ||
+          obj.TYPE === ShapesTypes.VDIM
         ) {
           // I want to add dimensions but there is no access for them here 🤔
           // dxf.addAlignedDim()
@@ -584,7 +583,7 @@ function BBox() {
     -Number.MAX_VALUE,
   ];
 
-  const T = SketchTypes;
+  const T = ShapesTypes;
 
   this.checkLayers = function (layers) {
     for (let l = 0; l < layers.length; ++l)
