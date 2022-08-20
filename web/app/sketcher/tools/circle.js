@@ -17,9 +17,9 @@ export class EditCircleTool extends Tool {
   }
 
   mousemove(e) {
-    var p = this.viewer.screenToModel(e);
+    const p = this.viewer.screenToModel(e);
     if (this.circle != null) {
-      var r = distance(p.x, p.y, this.circle.c.x, this.circle.c.y);
+      const r = distance(p.x, p.y, this.circle.c.x, this.circle.c.y);
       this.circle.r.set(r);
       if (!Tool.dumbMode(e)) {
         this.solveRequest(true);

@@ -29,7 +29,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
 
   dependsOn(obj: SketchObject): boolean {
     return false;
-  };
+  }
 
   get isGenerated() {
     let obj: SketchObject = this;
@@ -66,7 +66,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   }
   
   accept(visitor) {
-    for (let child of this.children) {
+    for (const child of this.children) {
       if (!child.accept(visitor)) {
         return false;
       }
@@ -75,7 +75,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   }
 
   traverse(visitor) {
-    for (let child of this.children) {
+    for (const child of this.children) {
       child.traverse(visitor);
     }
     visitor(this);
@@ -183,7 +183,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   
   mirror(dest, mirroringFunc) {
 
-    let sourcePoints = [];
+    const sourcePoints = [];
 
     pointIterator(this, o => {
       sourcePoints.push(o);
@@ -219,7 +219,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   }
 
   getConstraintByType(typeId) {
-    for (let c of this.constraints) {
+    for (const c of this.constraints) {
       if (c.schema.id === typeId) {
         return c;
       }

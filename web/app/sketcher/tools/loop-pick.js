@@ -19,7 +19,7 @@ export class LoopPickTool extends Tool {
     this.marked.clear();
     this.pointToObject.clear();
     this.pickedLoop = null;
-  };
+  }
 
   cleanup() {
     this.clearMarked();
@@ -70,8 +70,8 @@ export class LoopPickTool extends Tool {
     };
     const loopPoints = Graph.findAllLoops(graph, (p) => p.id, (a, b) => a.id === b.id);
     const loops = loopPoints.map(l => this.cleanLoop(l));
-    for (let loop of loops) {
-      for (let point of loop.points) {
+    for (const loop of loops) {
+      for (const point of loop.points) {
         this.loops.set(point, loop);
       }
     }
@@ -80,7 +80,7 @@ export class LoopPickTool extends Tool {
   cleanLoop(loop) {
     const points = [];
     const edges = [];
-    for (var i = 0; i < loop.length; i++) {
+    for (let i = 0; i < loop.length; i++) {
       const a = loop[i];
       const b = loop[(i + 1) % loop.length];
       if (a.parent == b.parent) {
@@ -97,17 +97,17 @@ export class LoopPickTool extends Tool {
     const p = this.viewer.screenToModel(e);
     this.pickedLoop = this.pickLoop(p);
     if (this.pickedLoop != null) {
-      for (let obj of this.pickedLoop.edges) {
+      for (const obj of this.pickedLoop.edges) {
         this.mark(obj);
       }
     }
     this.viewer.refresh();
-  };
+  }
 
   pickLoop(p) {
     const pickResult = this.viewer.search(p.x, p.y, DEFAULT_SEARCH_BUFFER, true, false, []);
-    for (let obj of pickResult) {
-      for (let point of [obj.a, obj.b]) {
+    for (const obj of pickResult) {
+      for (const point of [obj.a, obj.b]) {
         const loop = this.loops.get(point);
         if (loop) {
           return loop;
@@ -124,9 +124,9 @@ export class LoopPickTool extends Tool {
     } else {
       this.onMousedown(e);
     }
-  };
+  }
 
-  onMousedown(e) {};
+  onMousedown(e) {}
 
 }
 

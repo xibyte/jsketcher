@@ -13,10 +13,10 @@ export function pointAsText(point) {
 
 export function renderPointImpl(point, renderer) {
   if (Array.isArray(point)) {
-    let [x, y, z] = point;
+    const [x, y, z] = point;
     return renderer(x, y, z);
   } else {
-    let {x, y, z} = point;
+    const {x, y, z} = point;
     return renderer(x, y, z);
   }
 }
@@ -26,7 +26,7 @@ function toInt(num) {
 }
 
 const hex = v => {
-  let r = toInt(v) % 255;
+  const r = toInt(v) % 255;
   let s = r.toString(16);
   if (s.length === 1) {
     s = '0' + s;

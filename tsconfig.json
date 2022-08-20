@@ -10,6 +10,9 @@
     "baseUrl": ".",
     "downlevelIteration": true,
     "module": "commonJS",
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "noEmit": true,
     "paths": {
       "*": [
         "modules/*",
@@ -18,7 +21,9 @@
       ]
     }
   },
-  "includes": [
-    "./externals.d.ts"
+  "include": [
+    "modules/**/*",
+    "web/app/**/*",
+    "externals.d.ts"
   ]
 }

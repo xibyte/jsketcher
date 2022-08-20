@@ -26,7 +26,7 @@ export class OrderedMap {
 
   delete(key) {
     this.map.delete(key);
-    let index = this.order.indexOf(key);
+    const index = this.order.indexOf(key);
     if (index !== -1) {
       this.order.splice(index, 1);
     }

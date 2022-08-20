@@ -5,7 +5,6 @@ import Stack from 'ui/components/Stack';
 import {camelCaseSplitToStr} from 'gems/camelCaseSplit';
 import {ParamsPath, ParamsPathSegment, WizardState} from "cad/craft/wizard/wizardTypes";
 import {flattenPath, OperationParams, OperationParamValue} from "cad/craft/schema/schema";
-import {AppContext} from "cad/dom/components/AppContext";
 
 interface FormEdit {
   onChange: any;
@@ -26,7 +25,7 @@ export function Group({children}) {
 
 export function formField(Control) {
   return function FormPrimitive({label, name, active, setActive, ...props}) {
-    return <Field active={active} name={name} onFocus={setActive} onClick={setActive}>
+    return <Field active={active} name={name} onClick={setActive}>
       <Label>{label || camelCaseSplitToStr(name)}</Label>
       <Control {...props} />
     </Field>;
@@ -52,7 +51,10 @@ export function attachToForm(Control): any {
     const fullPath = [...formPath, name];
     const fullPathFlatten = flattenPath(fullPath);
 
-    const onChange = value => formEdit.onChange(fullPath, value);
+    const onChange = value => {
+      formEdit.onChange(fullPath, value);
+      setActive(true);
+    }
     const setActive = (isActive) => formEdit.setActive(fullPathFlatten, isActive);
 
     const value = params[name];

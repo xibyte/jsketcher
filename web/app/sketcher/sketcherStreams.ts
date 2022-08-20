@@ -18,7 +18,7 @@ export default function(viewer): SketcherStreams {
 
   streams.objectsUpdate = stream();
   streams.objects = streams.objectsUpdate.throttle().map(() => {
-    let objects = [];
+    const objects = [];
     viewer.layers.forEach(l => l.objects.forEach(o => objects.push(o)));
     return objects;
   }).remember([]);
@@ -34,4 +34,4 @@ export default function(viewer): SketcherStreams {
   };
 
   return streams as SketcherStreams;
-};
+}

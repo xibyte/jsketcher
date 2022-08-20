@@ -23,7 +23,7 @@ export default class Joints {
   }
 
   connected(a, b) {
-    let set = this.map.get(a);
+    const set = this.map.get(a);
     if (!set) {
       return false;
     }
@@ -31,7 +31,7 @@ export default class Joints {
   }
   
   master(node) {
-    let tuple = this.map.get(node);
+    const tuple = this.map.get(node);
     if (!tuple) {
       return node;
     }

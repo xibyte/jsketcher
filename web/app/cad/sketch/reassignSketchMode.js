@@ -19,7 +19,7 @@ export default function initReassignSketchMode(ctx) {
   function enter(fromId) {
     ctx.streams.ui.sockets.headsUpHelper.next('ReassignSketchTool');
     detach = ctx.streams.selection.face.attach(faces => {
-      let face = faces[0];
+      const face = faces[0];
       if (face && face !== fromId) {
         exit();
         ctx.services.sketcher.reassignSketch(fromId, face);
@@ -29,7 +29,7 @@ export default function initReassignSketchMode(ctx) {
   return {enter, exit};
 }
 
-function ReassignSketchTool({from, cancel}) {
+function ReassignSketchToolImp({from, cancel}) {
   return <div style={{
     margin: 10
   }}>
@@ -37,7 +37,7 @@ function ReassignSketchTool({from, cancel}) {
   </div>;
 }
 
-ReassignSketchTool = mapContext(ctx => ({
+const ReassignSketchTool = mapContext(ctx => ({
   from: ctx.services.selection.face.single.id,
   cancel: ctx.services.sketcher.reassignSketchMode.exit
-}))(ReassignSketchTool);
+}))(ReassignSketchToolImp);

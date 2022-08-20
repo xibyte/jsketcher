@@ -1,11 +1,11 @@
 import React, {useContext, useEffect} from 'react';
 import {attachToForm, formField} from "../../craft/wizard/components/form/Form";
 import InputControl from "ui/components/controls/InputControl";
-import {AppContext} from "../../dom/components/AppContext";
+import {ReactApplicationContext} from "../../dom/ReactApplicationContext";
 
 export function PartRefControl(props) {
 
-  let {onChange, value, onFocus, openIfEmpty} = props;
+  const {onChange, value, onFocus, openIfEmpty} = props;
   useEffect(() => {
 
     if (openIfEmpty && !value) {
@@ -14,7 +14,7 @@ export function PartRefControl(props) {
 
   }, []);
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const openChooser = e => {
 

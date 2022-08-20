@@ -19,7 +19,7 @@ export class MEdge extends MObject {
   }
 
   get adjacentFaces() {
-    let out = [];
+    const out = [];
     let face = this.shell.brepRegistry.get(this.brepEdge.halfEdge1 && this.brepEdge.halfEdge1.loop.face);
     if (face) {
       out.push(face);
@@ -41,12 +41,12 @@ export class MEdge extends MObject {
 
   toDirection(): UnitVector {
     return this.brepEdge.halfEdge1.tangentAtStart();
-  };
+  }
 
-  toAxis(reverse: boolean): Axis {
+  toAxis(reverse: boolean = false): Axis {
     let tan;
     let origin;
-    let he = this.brepEdge.halfEdge1;
+    const he = this.brepEdge.halfEdge1;
     if (reverse) {
       tan = he.tangentAtStart();
       origin = he.vertexA.point;
@@ -55,7 +55,7 @@ export class MEdge extends MObject {
       origin = he.vertexB.point;
     }
     return new Axis(origin, tan);
-  };
+  }
 
   get topology(): TopoObject {
     return this.brepEdge;

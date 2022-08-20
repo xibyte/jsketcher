@@ -34,8 +34,8 @@ export class BasisOrigin extends Shape {
     ctx.lineWidth  = 1;
     ctx.strokeStyle  = this.yColor;
   
-    var headA = 1;
-    var headB = 10;
+    const headA = 1;
+    const headB = 10;
   
     ctx.moveTo(0.5, 0);
     ctx.lineTo(0.5, - this.lineWidth);

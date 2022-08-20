@@ -1,8 +1,8 @@
-import {ApplicationContext} from 'context';
+import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MDatum} from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
@@ -18,6 +18,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
   label: 'Sphere',
   icon: 'img/cad/sphere',
   info: 'Primitive Sphere',
+  path:__dirname,
   paramsInfo: ({radius,}) => `(${r(radius)}  )`,
   form: [
     {
@@ -52,7 +53,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
 
   run: (params: PrimitiveSphereParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;

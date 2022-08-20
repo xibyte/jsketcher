@@ -1,10 +1,8 @@
-import { CSys } from 'math/csys';
-import { MShell } from 'cad/model/mshell';
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import {MShell} from 'cad/model/mshell';
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {ApplicationContext} from "cad/context";
+import {EntityKind} from "cad/model/entities";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 
 
 interface scaleParams {
@@ -17,17 +15,16 @@ export const ScaleOperation: OperationDescriptor<scaleParams> = {
   label: 'Scale',
   icon: 'img/cad/scale',
   info: 'Scale Body',
+  path:__dirname,
   paramsInfo: ({ distance }) => `(${r(distance)})`,
   run: (params: scaleParams, ctx: ApplicationContext) => {
-    console.log(params);
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    var returnObject = {
+    const returnObject = {
       consumed: params.shells,
       created: []
     };
-
 
     params.shells.forEach((currentShell) => {
       const newShellId = currentShell.id + ":scaled";
@@ -35,9 +32,6 @@ export const ScaleOperation: OperationDescriptor<scaleParams> = {
       oci.tscale(newShellId, currentShell.csys.x, currentShell.csys.y, currentShell.csys.z, params.distance);
       returnObject.created.push(occ.io.getShell(newShellId));
     });
-
-
-    console.log(returnObject);
 
     return returnObject;
 

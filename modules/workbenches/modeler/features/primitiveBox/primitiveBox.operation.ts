@@ -1,17 +1,17 @@
-import {ApplicationContext} from 'context';
+import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import CSys from "math/csys";
 import {MDatum} from "cad/model/mdatum";
 import {ExpectedOrderProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 
 
 interface PrimitiveBoxParams {
-  x: Number,
-  y: Number,
-  z: Number,
+  x: number,
+  y: number,
+  z: number,
   locations: MDatum,
   boolean: BooleanDefinition,
 }
@@ -21,6 +21,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
   label: 'Box',
   icon: 'img/cad/cube',
   info: 'Primitive Box',
+  path:__dirname,
   paramsInfo: ({x, y, z}) => `(${r(x)} , ${r(y)} , ${r(z)})`,
   form: [
     {
@@ -65,8 +66,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
 
 
   run: (params: PrimitiveBoxParams, ctx: ApplicationContext) => {
-
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;

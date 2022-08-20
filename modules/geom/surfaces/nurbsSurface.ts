@@ -33,8 +33,8 @@ export default class NurbsSurface implements ParametricSurface {
     this.data = verbSurface.asNurbs();
     this.verb = verbSurface;
 
-    let {min: uMin, max: uMax} = verbSurface.domainU();
-    let {min: vMin, max: vMax} = verbSurface.domainV();
+    const {min: uMin, max: uMax} = verbSurface.domainU();
+    const {min: vMin, max: vMax} = verbSurface.domainV();
 
     this.uMin = uMin;
     this.uMax = uMax;
@@ -79,7 +79,7 @@ export default class NurbsSurface implements ParametricSurface {
 
   static loft(curve1, curve2): NurbsSurface {
     return new NurbsSurface(verb.geom.NurbsSurface.byLoftingCurves([curve1.impl.verb, curve2.impl.verb], 1));
-  };
+  }
 
   transform(tr: Matrix3x4Data): ParametricSurface {
     return new NurbsSurface(this.verb.transform(tr));

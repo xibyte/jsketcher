@@ -1,12 +1,8 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { UnitVector } from "math/vector";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
-import { MSketchLoop } from "cad/model/mloop";
-import { Loop } from 'brep/topo/loop';
+import {ApplicationContext} from "cad/context";
+import {EntityKind} from "cad/model/entities";
+import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
+import {OperationDescriptor} from "cad/craft/operationBundle";
+import {MSketchLoop} from "cad/model/mloop";
 
 interface SweepParams {
   profile: MSketchLoop;
@@ -20,10 +16,11 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
   label: 'Sweep',
   icon: 'img/cad/sweep',
   info: 'Sweeps 2D profile loop',
-  paramsInfo: ({ }) => `(${r()})`,
+  path:__dirname,
+  paramsInfo: () => `(?)`,
   run: (params: SweepParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const myProfile = params.profile;
@@ -42,7 +39,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
 
     oci.buildsweep("sweepOutput", cornerStyle, "-S");
 
-    let tools = [];
+    const tools = [];
     tools.push(occ.io.getShell("sweepOutput"));
     return occ.utils.applyBooleanModifier(tools, params.boolean);
 
@@ -91,5 +88,3 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
 
   ],
 }
-
-export default SweepOperation;

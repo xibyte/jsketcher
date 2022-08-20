@@ -18,10 +18,10 @@ function Graph(data) {
 
 Graph.findAllLoops = function(graph, hashCode, equals) {
 
-  var loops = [];
-  var visited = new HashTable(hashCode, equals);
+  let loops = [];
+  const visited = new HashTable(hashCode, equals);
   function step(vertex, comesFrom, path) {
-    var i;
+    let i;
     visited.put(vertex, true);
     for (i = path.length - 1; i >= 0; --i) {
       if (equals(vertex, path[i])) {
@@ -30,18 +30,18 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
       }
     }
 
-    var next = graph.connections(vertex);
+    const next = graph.connections(vertex);
 
     path.push(vertex);
-    var needClone = false;
+    let needClone = false;
 
     for (i = 0; i < next.length; i++) {
-      var v = next[i];
+      const v = next[i];
       if (equals(v, comesFrom)) {
         continue;
       }
 
-      var p = needClone ? path.slice(0) : path;
+      const p = needClone ? path.slice(0) : path;
       needClone = true;
       step(v, vertex, p);
     }
@@ -49,7 +49,7 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
   }
 
   for (i = 0; i < graph.size(); i++) {
-    var vertex = graph.at(i);
+    const vertex = graph.at(i);
     if (visited.get(vertex) !== true) {
       step(vertex, -1, []);
     }
@@ -58,8 +58,9 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
   //filter duplicates
 
   function sameLoop(a, b) {
-    var first = a[0];
-    for (var bShift = 0; bShift < a.length; bShift++) {
+    const first = a[0];
+    let bShift;
+    for (bShift = 0; bShift < a.length; bShift++) {
       if (equals(b[bShift], first)) {
         break;
       }
@@ -67,14 +68,14 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
     if (bShift == a.length) {
       return false;
     }
-    for (var i = 0; i < a.length; i++) {
-      var bUp = (bShift + i) % a.length;
-      var bDown = bShift - i;
+    for (let i = 0; i < a.length; i++) {
+      const bUp = (bShift + i) % a.length;
+      let bDown = bShift - i;
       if (bDown < 0) {
         bDown = a.length + bDown;
       }
 //      console.log("up: " + bUp + "; down: " + bDown);
-      var curr = a[i];
+      const curr = a[i];
       if ( !equals(curr, b[bUp]) && !equals(curr, b[bDown]) ) {
         return false;
       }
@@ -82,12 +83,12 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
     return true;
   }
 
-  var i, duplicates = 0;
+  let i, duplicates = 0;
   for (i = 0; i < loops.length; i++) {
-    var a = loops[i];
+    const a = loops[i];
     if (a == null) continue;
-    for (var j = i + 1; j < loops.length; j++) {
-      var b = loops[j];
+    for (let j = i + 1; j < loops.length; j++) {
+      const b = loops[j];
       if (b == null || a.length !== b.length) {
         continue;
       }
@@ -98,7 +99,7 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
     }
   }
   if (duplicates != 0) {
-    var filtered = [];
+    const filtered = [];
     for (i = 0; i < loops.length; i++) {
       if (loops[i] != null) filtered.push(loops[i]);
     }
@@ -109,8 +110,8 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
 };
 
 
-var test = function() {
-  var data = [
+const test = function() {
+  const data = [
     [],
     [2],
     [1, 3, 9],
@@ -123,12 +124,12 @@ var test = function() {
     [2, 4]
   ];
 
-  var graph = new Graph(data);
+  const graph = new Graph(data);
   console.log(Graph.findAllLoops(graph));
 };
 
-var test0 = function() {
-  var data = [
+const test0 = function() {
+  const data = [
     [3, 1],
     [0, 2, 8],
     [1, 3, 7, 5],
@@ -140,7 +141,7 @@ var test0 = function() {
     [1, 7]
   ];
 
-  var graph = new Graph(data);
+  const graph = new Graph(data);
   console.log(Graph.findAllLoops(graph));
 };
 

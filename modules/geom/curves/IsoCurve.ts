@@ -31,8 +31,8 @@ export class IsoCurveU implements ParametricCurve {
   }
 
   eval(u, num) {
-    let hes = this.surface.eval(this.u, u, num);
-    let out = [];
+    const hes = this.surface.eval(this.u, u, num);
+    const out = [];
     for (let i = 0; i < num; ++i) {
       out[i] = hes[i][0];
     }
@@ -84,8 +84,8 @@ export class IsoCurveV implements ParametricCurve {
   }
 
   eval(u, num) {
-    let hes = this.surface.eval(u, this.v, num);
-    let out = [];
+    const hes = this.surface.eval(u, this.v, num);
+    const out = [];
     for (let i = 0; i < num; ++i) {
       out[i] = hes[i][1];
     }

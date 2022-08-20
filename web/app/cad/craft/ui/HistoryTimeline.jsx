@@ -7,11 +7,11 @@ import mapContext from 'ui/mapContext';
 import ImgIcon from 'ui/components/ImgIcon';
 import cx from 'classnames';
 import Fa from 'ui/components/Fa';
-import {menuAboveElementHint} from '../../dom/menu/menuUtils';
 import {combine} from 'lstream';
 import {EMPTY_OBJECT} from 'gems/objects';
 import {aboveElement} from 'ui/positionUtils';
 import {resolveAppearance} from "cad/craft/operationHelper";
+import {menuAboveElementHint} from "cad/dom/menu/menuUtils";
 
 @connect(streams => combine(streams.craft.modifications, streams.operation.registry, streams.wizard.insertOperation)
   .map(([modifications, operationRegistry, insertOperationReq]) => ({
@@ -29,9 +29,9 @@ import {resolveAppearance} from "cad/craft/operationHelper";
 export default class HistoryTimeline extends React.Component {
 
   render() {
-    let {history, pointer, setHistoryPointer, rebuild, getOperation, inProgressOperation} = this.props;
+    const {history, pointer, setHistoryPointer, rebuild, getOperation, inProgressOperation} = this.props;
     let scrolly;
-    let eof = history.length-1;
+    const eof = history.length-1;
     return <div className={cx(ls.root, ' small-typography')} ref={this.keepRef}>
       <Controls rebuild={rebuild} history={history} pointer={pointer} eoh={eof} setHistoryPointer={this.setHistoryPointerAndRequestScroll}/>
       <div className={ls.scroller} onClick={e => scrolly.scrollLeft -= 60}><Fa icon='caret-left'/></div>
@@ -65,11 +65,11 @@ export default class HistoryTimeline extends React.Component {
   componentDidUpdate() {
     // this.scrollInProgressToVisibleRequest = false;
     setTimeout(() => {
-      let item = this.el.querySelector(`.${ls.history} .${ls.inProgress}`);
+      const item = this.el.querySelector(`.${ls.history} .${ls.inProgress}`);
       if (item) {
         item.scrollIntoView({behavior: "smooth", inline: "center",  block: "end"});
       } else {
-        let history = this.el.querySelector(`.${ls.history}`);
+        const history = this.el.querySelector(`.${ls.history}`);
         history.scrollLeft = history.scrollWidth; 
       }
     })
@@ -132,7 +132,7 @@ const HistoryItem = decoratorChain(
     s.index === index ? EMPTY_OBJECT : {index, locationHint: aboveElement(el)})
 }))
 )
-  (
+( // eslint-disable-line no-unexpected-multiline
 function HistoryItem({index, pointer, modification, getOperation, toggle, selected, disabled, inProgress}) {
   const operation = getOperation(modification.type);
   const appearance = resolveAppearance(operation, modification.params);
@@ -144,7 +144,7 @@ function HistoryItem({index, pointer, modification, getOperation, toggle, select
 });
 
 const AddButton = mapContext((ctx) => ({
-  showCraftMenu: e => ctx.actionService.action.run(params, ctx, 'menu.craft')
+  showCraftMenu: e => ctx.actionService.run('menu.craft', menuAboveElementHint(e.currentTarget))
 }))(
   function AddButton({showCraftMenu}) {
     return <div className={ls.add} onClick={showCraftMenu}>

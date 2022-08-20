@@ -2,10 +2,10 @@ import pip from "./pip";
 import {isCCW} from "geom/euclidean";
 
 export default function(loops) {
-  const loops = loops.map(loop => new NestedLoop(loop));
+  loops = loops.map(loop => new NestedLoop(loop));
   function contains(loop, other) {
-    let classifyPointInsideLoop = pip(loop);
-    for (let point of other) {
+    const classifyPointInsideLoop = pip(loop);
+    for (const point of other) {
       if (!classifyPointInsideLoop(point).inside) {
         return false;
       }
@@ -43,7 +43,7 @@ class NestedLoop {
   }
 
   classifyImpl(pt) {
-    let res = this.pip(pt);
+    const res = this.pip(pt);
     if (res.inside) {
       return res;
     }
@@ -52,32 +52,3 @@ class NestedLoop {
 
 }
 
-function createFaces() {
-  const loop = nestedLoop.loop;
-  const newFace = new Face(surface);
-  Object.assign(newFace.data, originFace.data);
-  newFace.outerLoop = loop;
-  loop.face = newFace;
-  out.push(newFace);
-
-  for (let child of nestedLoop.nesting) {
-    if (child.level == level + 2) {
-      createFaces(child, surface, level + 2);
-    } else if (child.level == level + 1) {
-      if (!child.loop.isCCW(surface)) {
-        child.loop.face = newFace;
-        newFace.innerLoops.push(child.loop);
-      } else {
-        createFaces(child, surface, level + 1);
-      }
-    }
-  }
-}
-const beforeLength = out.length;
-const nestedLoops = getNestedLoops(originFace, loops);
-for (let nestedLoop of nestedLoops) {
-  if (nestedLoop.level == 0) {
-    createFaces(nestedLoop, originSurface, 0);
-  }
-}
-}

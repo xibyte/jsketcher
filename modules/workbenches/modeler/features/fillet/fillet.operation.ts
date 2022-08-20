@@ -1,8 +1,8 @@
-import {ApplicationContext} from 'context';
+import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 
 import {EntityKind} from "cad/model/entities";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import {FromMObjectProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 import {MEdge} from "cad/model/medge";
 import {MObject} from "cad/model/mobject";
@@ -19,35 +19,8 @@ export const FilletOperation: OperationDescriptor<any> = {
   label: 'Fillet/Chapher',
   icon: 'img/cad/fillet',
   info: 'Fillet/Champher',
+  path:__dirname,
   paramsInfo: ({size, opperationType,}) => `(${r(size)} ${r(opperationType)}})`,
-  form: [
-    {
-      type: 'selection',
-      name: 'edges',
-      capture: [EntityKind.EDGE],
-      label: 'edges',
-      multi: true,
-      defaultValue: {
-        usePreselection: true,
-        preselectionIndex: 0
-      },
-    },
-    {
-      type: 'choice',
-      style: "dropdown",
-      label: 'opperationType',
-      name: 'opperationType',
-      values: ["Fillet", "Champher"],
-      defaultValue: "Fillet",
-    },
-    {
-      type: 'number',
-      label: 'size',
-      name: 'size',
-      defaultValue: 5,
-    },
-  ],
-
   run: (params: FilletParams, ctx: ApplicationContext) => {
 
     const occ = ctx.occService;
@@ -95,10 +68,34 @@ export const FilletOperation: OperationDescriptor<any> = {
       result.created.push(occ.io.getShell(newShellName, analyzer));
     });
 
-    console.log(result);
-
     return result;
   },
-
+  form: [
+    {
+      type: 'selection',
+      name: 'edges',
+      capture: [EntityKind.EDGE],
+      label: 'edges',
+      multi: true,
+      defaultValue: {
+        usePreselection: true,
+        preselectionIndex: 0
+      },
+    },
+    {
+      type: 'choice',
+      style: "dropdown",
+      label: 'opperationType',
+      name: 'opperationType',
+      values: ["Fillet", "Champher"],
+      defaultValue: "Fillet",
+    },
+    {
+      type: 'number',
+      label: 'size',
+      name: 'size',
+      defaultValue: 5,
+    },
+  ],
 }
 

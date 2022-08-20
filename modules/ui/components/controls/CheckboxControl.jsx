@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {FieldId} from "ui/components/controls/Field";
 
 export default function CheckboxControl(props) {
-  let {onChange, value} = props;
+  const {onChange, value} = props;
   const fieldId = useContext(FieldId);
   return <input id={fieldId}
                 type='checkbox'

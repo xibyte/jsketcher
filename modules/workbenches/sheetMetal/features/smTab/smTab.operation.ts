@@ -1,11 +1,11 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
-import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { UnitVector } from "math/vector";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
-
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {MFace} from "cad/model/mface";
+import {ApplicationContext} from "cad/context";
+import {EntityKind} from "cad/model/entities";
+import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
+import {UnitVector} from "math/vector";
+import {OperationDescriptor} from "cad/craft/operationBundle";
+import {FromSketchProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 
 interface smTabParams {
   thickness: number;
@@ -16,44 +16,68 @@ interface smTabParams {
   boolean: BooleanDefinition;
 }
 
+
+const ROLE_TO_SM_KIND = {
+  'base': 'FLAT/A',
+  'lid': 'FLAT/B',
+  'sweep': 'THICKNESS'
+}
+
+
 export const smTabOperation: OperationDescriptor<smTabParams> = {
   id: 'SM_TAB',
   label: 'SM Tab',
   icon: 'img/cad/smTab',
   info: 'Create tab from sketch',
+  path:__dirname,
   paramsInfo: ({ thickness, bendRadius }) => `(${r(thickness)}  ${r(bendRadius)}  )`,
   run: (params: smTabParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
-    console.log(ctx.craftService.modifications$.value.history);
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const face = params.sketch;
 
-    let sketch = ctx.sketchStorageService.readSketch(face.id);
-    if (!sketch) throw 'sketch not found for the face ' + face.id;
-
-    const occFaces = occ.utils.sketchToFaces(sketch, face.csys).map(ref => ref.face);
-
-    const dir: UnitVector= face.normal();
-
-    let extrusionVector =[];
-    if (params.flipper == true){
-       extrusionVector = dir.normalize()._multiply(params.thickness).data();
-    } else {
-       extrusionVector = dir.normalize()._multiply(params.thickness).negate().data();
+    const sketch = ctx.sketchStorageService.readSketch(face.id);
+    if (!sketch) {
+      throw 'sketch not found for the face ' + face.id;
     }
-    
 
-    const tools = occFaces.map((faceName, i) => {
+    const occFaces = occ.utils.sketchToFaces(sketch, face.csys);
+
+    const dir: UnitVector = face.normal();
+
+    let extrusionVector;
+    if (params.flipper == true) {
+      extrusionVector = dir.normalize()._multiply(params.thickness);
+    } else {
+      extrusionVector = dir.normalize()._multiply(params.thickness).negate();
+    }
+
+    const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces);
+
+    const tools = occFaces.map((faceRef, i) => {
+
+      const faceName = faceRef.face;
       const shapeName = "Tool/" + i;
-      const bla = oci.prism(shapeName, faceName, ...extrusionVector);
-      console.log(bla);
+      oci.prism(shapeName, faceName, ...extrusionVector.data());
       return shapeName;
+    }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
+
+
+    const operationResult = occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
+
+    operationResult.created.forEach(shell => {
+      shell.traverse(obj => {
+        if (obj.productionInfo?.role) {
+          obj.productionInfo.sheetMetal = {
+            kind: ROLE_TO_SM_KIND[obj.productionInfo.role]
+          }
+        }
+      })
     });
 
-
-    return occ.utils.applyBooleanModifier(tools, params.boolean);
+    return operationResult;
 
   },
 

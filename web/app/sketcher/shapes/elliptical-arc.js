@@ -35,7 +35,7 @@ export class EllipticalArc extends Ellipse {
     ctx.beginPath();
     const radiusX = Math.max(this.radiusX, 1e-8);
     const radiusY = Math.max(this.radiusY, 1e-8);
-    let aAngle = this.drawAngle(this.a);
+    const aAngle = this.drawAngle(this.a);
     let bAngle;
     if (areEqual(this.a.x, this.b.x, TOLERANCE) &&
       areEqual(this.a.y, this.b.y, TOLERANCE)) {
@@ -48,12 +48,12 @@ export class EllipticalArc extends Ellipse {
   }
   
   drawAngle(point) {
-    let deformScale =  this.radiusY / this.radiusX;
-    let x = point.x - this.centerX;
-    let y = point.y - this.centerY;
+    const deformScale =  this.radiusY / this.radiusX;
+    const x = point.x - this.centerX;
+    const y = point.y - this.centerY;
     const rotation =  - this.rotation;
     let xx =  x * Math.cos(rotation) - y * Math.sin(rotation);
-    let yy =  x * Math.sin(rotation) + y * Math.cos(rotation);
+    const yy =  x * Math.sin(rotation) + y * Math.cos(rotation);
     xx *= deformScale;
     return Math.atan2(yy, xx);
   }

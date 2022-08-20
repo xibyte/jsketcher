@@ -1,7 +1,7 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext} from 'react';
 import {Dialog} from "ui/components/Dialog";
 import {NOOP} from "gems/func";
-import {AppContext} from "../../dom/components/AppContext";
+import {ReactApplicationContext} from "../../dom/ReactApplicationContext";
 import {readShellEntityFromJson} from "../../scene/wrappers/entityIO";
 import {DEFLECTION} from "../e0/common";
 import {MFace} from "../../model/mface";
@@ -9,7 +9,7 @@ import {MFace} from "../../model/mface";
 
 export function DefeatureFaceWizard() {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
 
   return <Dialog title='Defeaturing' onClose={NOOP}>

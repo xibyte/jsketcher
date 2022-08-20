@@ -9,7 +9,7 @@ export function InnerFolder(props) {
   const [closed, setClosed] = useState(null)
 
   function isClosed(){
-    let {closable, defaultClosed} = props;
+    const {closable, defaultClosed} = props;
     if (!closable) return false;
     return closable && (closed === null ? defaultClosed : closed)
   }
@@ -25,7 +25,8 @@ export function InnerFolder(props) {
   </React.Fragment>
 }
 
-export default function Folder({className, ...props}) {
+export default function Folder(inProps) {
+  const {className, ...props} = inProps
   return <div className={className}>
     <InnerFolder {...props} />
   </div>

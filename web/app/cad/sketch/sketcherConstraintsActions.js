@@ -7,7 +7,7 @@ export default [
       icon32: 'img/coi.png',
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.coincident(viewer.selected);
     }
   },
@@ -20,7 +20,7 @@ export default [
       icon32: 'img/vert.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.vertical(viewer.selected);
     }
   },
@@ -34,7 +34,7 @@ export default [
       icon32: 'img/hor.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.horizontal(viewer.selected);
     }
   },
@@ -47,7 +47,7 @@ export default [
       icon32: 'img/par.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.parallel(viewer.selected);
     }
   },
@@ -61,7 +61,7 @@ export default [
       icon32: 'img/per.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.perpendicular(viewer.selected);
     }
   },
@@ -75,7 +75,7 @@ export default [
       icon32: 'img/p2l.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.p2lDistance(viewer.selected, prompt);
     }
   },
@@ -89,7 +89,7 @@ export default [
       icon32: 'img/p2p.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.p2pDistance(viewer.selected, prompt);
     }
   },
@@ -102,7 +102,7 @@ export default [
       icon32: 'img/rad.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.radius(viewer.selected, prompt);
     }
   },
@@ -116,7 +116,7 @@ export default [
       icon32: 'img/eq.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.entityEquality(viewer.selected);
     }
   },
@@ -129,7 +129,7 @@ export default [
       icon32: 'img/tgn.png'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.tangent(viewer.selected);
     }
   },
@@ -142,7 +142,7 @@ export default [
       cssIcons: ['lock']
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.lock(viewer.selected);
     }
   },
@@ -155,7 +155,7 @@ export default [
       icon32: 'img/vec/pointOnLine.svg'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.pointOnLine(viewer.selected);
     }
   },
@@ -168,7 +168,7 @@ export default [
       icon32: 'img/vec/pointOnArc.svg'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.pointOnArc(viewer.selected);
     }
   },
@@ -181,7 +181,7 @@ export default [
       icon32: 'img/vec/pointInMiddle.svg'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.pointInMiddle(viewer.selected);
     }
   },
@@ -194,7 +194,7 @@ export default [
       icon32: 'img/vec/angle.svg'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.llAngle(viewer.selected, prompt);
     }
   },
@@ -207,7 +207,7 @@ export default [
       icon32: 'img/vec/symmetry.svg'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.symmetry(viewer.selected, prompt);
     }
   },
@@ -219,7 +219,7 @@ export default [
       cssIcons: ['star-half-o']
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.mirror(viewer.selected);
     }
   },
@@ -231,7 +231,7 @@ export default [
       icon32: 'img/vec/convex.svg'
     },
     invoke: ({services}) => {
-      let viewer = services.sketcher.inPlaceEditor.viewer;
+      const viewer = services.sketcher.inPlaceEditor.viewer;
       viewer.parametricManager.lockConvex(viewer.selected, alert);
     }
   },

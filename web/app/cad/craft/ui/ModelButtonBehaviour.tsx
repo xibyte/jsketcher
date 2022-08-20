@@ -1,11 +1,12 @@
 import React, {useContext} from 'react';
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {useStream} from "ui/effects";
 import {MSketchObject} from "cad/model/msketchObject";
 import {VisibleSwitch} from "cad/craft/ui/SceneInlineObjectExplorer";
 import {MOpenFaceShell} from "cad/model/mopenFace";
 import {MObject} from "cad/model/mobject";
 import {ModelIcon} from "cad/craft/ui/ModelIcon";
+import {SafeLength} from "cad/craft/ui/SafeLength";
 
 interface IModelButtonBehavior {
   select: () => void;
@@ -23,7 +24,7 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
   controlVisibility?: boolean
 }) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   if (controlVisibility === undefined) {
     controlVisibility = !model.parent
@@ -33,8 +34,8 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
   const highlights = useStream(ctx => ctx.highlightService.highlighted$);
 
   let typeLabel = model.TYPE as string;
-  let idLabel: string = model.id;
-  let visibilityOf = model;
+  const idLabel: string = model.id;
+  const visibilityOf = model;
   if (model instanceof MSketchObject) {
     typeLabel = model.sketchPrimitive.constructor.name
   } else if (model instanceof MOpenFaceShell) {
@@ -67,16 +68,4 @@ export function ModelButtonBehavior({children, model, controlVisibility}: {
     onMouseEnter,
     onMouseLeave
   });
-}
-
-function SafeLength(props: { text: string }): any {
-
-  const limit = 40;
-  const mid = limit / 2;
-  const text = props.text;
-  if (text.length > limit) {
-    return <span title={text}>{text.substring(0, mid)}...{text.substring(text.length - mid, text.length)}</span>;
-  } else {
-    return text;
-  }
 }

@@ -28,8 +28,8 @@ export class TextHelper {
     const modelTextWidth = this.modelTextWidth;
     const modelTextHeight = viewer.screenToModelDistance(this.fontSize);
 
-    let dtx = [modelTextWidth * ny, -nx * modelTextWidth];
-    let dty = [modelTextHeight * nx, ny * modelTextHeight];
+    const dtx = [modelTextWidth * ny, -nx * modelTextWidth];
+    const dty = [modelTextHeight * nx, ny * modelTextHeight];
 
     if (flip) {
       tx +=  ny * modelTextWidth;
@@ -72,7 +72,7 @@ export class TextHelper {
 
     const [ax, ay, bx, by, cx, cy, dx, dy] = this.textRect;
 
-    let d1 = pointToLineSignedDistance(ax, ay, bx, by, aim.x, aim.y);
+    const d1 = pointToLineSignedDistance(ax, ay, bx, by, aim.x, aim.y);
     if (d1 >= 0) {
       const d2 = pointToLineSignedDistance(bx, by, cx, cy, aim.x, aim.y);
       if (d2 >= 0) {

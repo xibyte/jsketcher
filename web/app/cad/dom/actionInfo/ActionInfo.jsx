@@ -6,7 +6,7 @@ import connect from 'ui/connect';
 import {combine} from 'lstream';
 
 function ActionInfo({actionId, x, y, info, hint, hotKey}) {
-  let visible = !!(actionId && (info || hint || hotKey));
+  const visible = !!(actionId && (info || hint || hotKey));
 
   return <AuxWidget visible={visible}
                     left={x} top={y} className={ls.root} zIndex={550}>
@@ -23,6 +23,5 @@ export default connect(streams =>
     streams.action.hint, 
     streams.ui.keymap)
     .map(([hintInfo, keymap]) => Object.assign({hotKey: hintInfo && keymap[hintInfo.actionId]}, hintInfo)
-))
-(ActionInfo); 
+))(ActionInfo);
 

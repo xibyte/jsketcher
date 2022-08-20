@@ -1,4 +1,4 @@
-import {CoreContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {OperationParams, OperationParamsErrorReporter, OperationSchema, SchemaField} from "cad/craft/schema/schema";
 import {ArrayType} from "cad/craft/schema/types/arrayType";
 import {EntityType} from "cad/craft/schema/types/entityType";
@@ -7,7 +7,7 @@ import {ObjectType} from "cad/craft/schema/types/objectType";
 import {StringType} from "cad/craft/schema/types/stringType";
 import {BooleanType} from "cad/craft/schema/types/booleanType";
 
-export type Materializer = (ctx: CoreContext,
+export type Materializer = (ctx: ApplicationContext,
   params: OperationParams,
   schema: OperationSchema,
   result: any,
@@ -15,7 +15,7 @@ export type Materializer = (ctx: CoreContext,
 
 export interface Type<IN, OUT, METADATA extends SchemaField> {
 
-  resolve(ctx: CoreContext, value: IN, md: METADATA,
+  resolve(ctx: ApplicationContext, value: IN, md: METADATA,
           reportError: OperationParamsErrorReporter,
           materializer: Materializer): OUT;
 

@@ -97,7 +97,7 @@ export class EndPoint extends SketchObject {
   }
 
   mirror(dest, mirroringFunc) {
-    let {x, y} = mirroringFunc(this.x, this.y);
+    const {x, y} = mirroringFunc(this.x, this.y);
     dest.x = x;
     dest.y = y;
   }

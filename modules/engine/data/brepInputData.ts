@@ -7,6 +7,7 @@ export interface BrepInputFaceData {
   surface?: string;
   loops: string[][];
   inverted?: boolean;
+  plate?: boolean;
 }
 
 export interface BrepInputEdgeData {

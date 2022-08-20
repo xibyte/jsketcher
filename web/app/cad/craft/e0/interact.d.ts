@@ -15,3 +15,10 @@ export function ClassifyEdgeToFace(edgePtr: number, facePtr: number, tol: number
 export function IsEdgesOverlap(e1Ptr: number, e2Ptr: number, tol: number): boolean;
 
 export function UpdateTessellation(shapePtr: number, deflection: number): number;
+
+export function SetLocation(shapeName: string, matrixArray: number[]);
+
+export function AddLocation(shapeName: string, matrixArray: number[]);
+
+export function importStepFile(shapeName: string, fileName: string, oneOnly: boolean): number;
+

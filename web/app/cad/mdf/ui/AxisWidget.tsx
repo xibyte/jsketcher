@@ -5,7 +5,7 @@ import {EntityKind} from "cad/model/entities";
 import {SectionWidgetProps} from "cad/mdf/ui/SectionWidget";
 import {MObject} from "cad/model/mobject";
 import Axis from "math/axis";
-import {CoreContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {ObjectTypeSchema} from "cad/craft/schema/types/objectType";
 
 export interface AxisInput {
@@ -13,7 +13,7 @@ export interface AxisInput {
   flip: boolean
 }
 
-export const AxisResolver: ValueResolver<AxisInput, Axis> = (ctx: CoreContext,
+export const AxisResolver: ValueResolver<AxisInput, Axis> = (ctx: ApplicationContext,
                                                              value: AxisInput,
                                                              md: ObjectTypeSchema,
                                                              reportError: OperationParamsErrorReporter): Axis => {
@@ -22,7 +22,7 @@ export const AxisResolver: ValueResolver<AxisInput, Axis> = (ctx: CoreContext,
     return null;
   }
 
-  let axis = value.vectorEntity.toAxis(value.flip);
+  const axis = value.vectorEntity.toAxis(value.flip);
   if (!axis) {
     reportError('unsupported entity type: ' + value.vectorEntity.TYPE);
     return null;

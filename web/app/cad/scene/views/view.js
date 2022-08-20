@@ -94,7 +94,7 @@ export class View {
     this.disposers.call();
     this.model.ext.view = null;
     this.model = null;
-  };
+  }
 
   get isDisposed() {
     return this.model === null;
@@ -120,14 +120,14 @@ export const MarkTracker = ViewClass => class extends ViewClass {
   }
   
   doMark() {
-    let keys = this.marks.keys();
+    const keys = this.marks.keys();
     let maxPriority = - Number.MAX_VALUE; 
-    for (let key of keys) {
+    for (const key of keys) {
       if (key > maxPriority) {
         maxPriority = key; 
       }
     }
-    let color = this.marks.get(maxPriority);
+    const color = this.marks.get(maxPriority);
     if (color !== undefined) {
       this.markImpl(color)
     } else {

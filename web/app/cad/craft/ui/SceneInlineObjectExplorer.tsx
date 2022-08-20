@@ -124,7 +124,7 @@ function Section(props) {
 
 export function VisibleSwitch({modelId}) {
 
-  let [attrs, patch] = useStreamWithPatcher<ModelAttributes>(ctx => ctx.attributesService.streams.get(modelId));
+  const [attrs, patch] = useStreamWithPatcher<ModelAttributes>(ctx => ctx.attributesService.streams.get(modelId));
 
   const onClick = (e) => {
     patch(attr => {

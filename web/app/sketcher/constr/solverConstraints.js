@@ -40,10 +40,11 @@ function createByConstraintName(name, params, values) {
       return new CurveTangent(params, values[0]);
     case "angle":
       return new Angle(params);
-    case "angleConst":
-      var _ = true, x = false;
+    case "angleConst": {
+      const _ = true, x = false;
       // Exclude angle value from parameters
-      return new ConstantWrapper(new Angle(params), [x,x,x,x,x,x,x,x,_]);
+      return new ConstantWrapper(new Angle(params), [x, x, x, x, x, x, x, x, _]);
+    }
     case 'LockConvex':
       return new LockConvex(params);
     case 'GreaterThan':
@@ -72,22 +73,22 @@ function MinLength(params, distance) {
   this.params = params;
   this.distance = distance;
 
-  var p1x = 0;
-  var p1y = 1;
-  var p2x = 2;
-  var p2y = 3;
+  const p1x = 0;
+  const p1y = 1;
+  const p2x = 2;
+  const p2y = 3;
 
   this.error = function() {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    const dx = params[p1x].get() - params[p2x].get();
+    const dy = params[p1y].get() - params[p2y].get();
+    const d = Math.sqrt(dx * dx + dy * dy);
     return d < this.distance ? (d - this.distance) : 0;
   };
 
   this.gradient = function(out) {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    const dx = params[p1x].get() - params[p2x].get();
+    const dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       d = 0.000001;
     }
@@ -107,34 +108,34 @@ function MinLength(params, distance) {
 function LockConvex(params) {
   this.params = params;
 
-  var _pcx = 0;
-  var _pcy = 1;
-  var _pax = 2;
-  var _pay = 3;
-  var _ptx = 4;
-  var _pty = 5;
+  const _pcx = 0;
+  const _pcy = 1;
+  const _pax = 2;
+  const _pay = 3;
+  const _ptx = 4;
+  const _pty = 5;
 
   this.error = function() {
-    var cx = params[_pcx].get();
-    var cy = params[_pcy].get();
-    var ax = params[_pax].get();
-    var ay = params[_pay].get();
-    var tx = params[_ptx].get();
-    var ty = params[_pty].get();
+    const cx = params[_pcx].get();
+    const cy = params[_pcy].get();
+    const ax = params[_pax].get();
+    const ay = params[_pay].get();
+    const tx = params[_ptx].get();
+    const ty = params[_pty].get();
     
-    var crossProductNorm = (cx - ax) * (ty - ay) - (cy - ay) * (tx - ax);
+    const crossProductNorm = (cx - ax) * (ty - ay) - (cy - ay) * (tx - ax);
 
-    var violate = crossProductNorm < 0;
+    const violate = crossProductNorm < 0;
     return violate ? crossProductNorm : 0;
   };
 
   this.gradient = function(out) {
-    var cx = params[_pcx].get();
-    var cy = params[_pcy].get();
-    var ax = params[_pax].get();
-    var ay = params[_pay].get();
-    var tx = params[_ptx].get();
-    var ty = params[_pty].get();
+    const cx = params[_pcx].get();
+    const cy = params[_pcy].get();
+    const ax = params[_pax].get();
+    const ay = params[_pay].get();
+    const tx = params[_ptx].get();
+    const ty = params[_pty].get();
 
     out[_pcx] = ty-ay;
     out[_pcy] = ax-tx;
@@ -164,7 +165,7 @@ function ConstantWrapper(constr, mask) {
   this.gradient = function(out) {
     fillArray(this.grad, 0, this.grad.length, 0);
     constr.gradient(this.grad);
-    var jj = 0;
+    let jj = 0;
     for (let j = 0; j < mask.length; j++) {
       if (!mask[j]) {
         out[jj ++] = this.grad[j];
@@ -185,7 +186,7 @@ function Weighted(constr, weight) {
 
   this.gradient = function(out) {
     constr.gradient(out);
-    for (var i = 0; i < out.length; i++) {
+    for (let i = 0; i < out.length; i++) {
       out[i] *= this.weight;
     }
   }
@@ -248,38 +249,38 @@ function P2LDistance(params, distance) {
   this.params = params;
   this.distance = distance;
 
-  var TX = 0;
-  var TY = 1;
-  var LP1X = 2;
-  var LP1Y = 3;
-  var LP2X = 4;
-  var LP2Y = 5;
+  const TX = 0;
+  const TY = 1;
+  const LP1X = 2;
+  const LP1Y = 3;
+  const LP2X = 4;
+  const LP2Y = 5;
 
   this.error = function() {
-    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
-    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d = Math.sqrt(dx * dx + dy * dy);
+    const x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    const y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       return 0;
     }
-    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    const A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
     return Math.abs(A) / d -  this.distance;
   };
 
   this.gradient = function(out) {
-    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
-    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d2 = dx * dx + dy * dy;
-    var d = Math.sqrt(d2);
-    var d3 = d * d2;
+    const x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    const y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const d2 = dx * dx + dy * dy;
+    const d = Math.sqrt(d2);
+    const d3 = d * d2;
 //    var AA = -x0 * (y2 - y1) + y0 * (x2 - x1) + x1 * y2 - x2 * y1;
-    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
-    var AM = Math.abs(A);
-    var j = A < 0 ? -1 : 1;
+    const A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    const AM = Math.abs(A);
+    const j = A < 0 ? -1 : 1;
 
     out[TX] = j * (y1 - y2) / d;
     out[TY] = j * (x2 - x1) / d;
@@ -297,40 +298,40 @@ function P2LDistanceV(params) {
 
   this.params = params;//.slice(0, params.length -1);
 
-  var TX = 0;
-  var TY = 1;
-  var LP1X = 2;
-  var LP1Y = 3;
-  var LP2X = 4;
-  var LP2Y = 5;
-  var D = 6;
+  const TX = 0;
+  const TY = 1;
+  const LP1X = 2;
+  const LP1Y = 3;
+  const LP2X = 4;
+  const LP2Y = 5;
+  const D = 6;
 
   this.error = function() {
-    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
-    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
-    var dist = this.params[D].get();
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d = Math.sqrt(dx * dx + dy * dy);
+    const x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    const y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
+    const dist = this.params[D].get();
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       return 0;
     }
-    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    const A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
     return Math.abs(A) / d - dist;
   };
 
   this.gradient = function(out) {
-    var x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
-    var y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d2 = dx * dx + dy * dy;
-    var d = Math.sqrt(d2);
-    var d3 = d * d2;
+    const x0 = params[TX].get(), x1 = params[LP1X].get(), x2 = params[LP2X].get();
+    const y0 = params[TY].get(), y1 = params[LP1Y].get(), y2 = params[LP2Y].get();
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const d2 = dx * dx + dy * dy;
+    const d = Math.sqrt(d2);
+    const d3 = d * d2;
 //    var AA = -x0 * (y2 - y1) + y0 * (x2 - x1) + x1 * y2 - x2 * y1;
-    var A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
-    var AM = Math.abs(A);
-    var j = A < 0 ? -1 : 1;
+    const A = -x0 * dy + y0 * dx + x1 * y2 - x2 * y1;
+    const AM = Math.abs(A);
+    const j = A < 0 ? -1 : 1;
     
     out[TX] = j * (y1 - y2) / d;
     out[TY] = j * (x2 - x1) / d;
@@ -351,22 +352,22 @@ function P2PDistance(params, distance) {
   this.params = params;
   this.distance = distance;
 
-  var p1x = 0;
-  var p1y = 1;
-  var p2x = 2;
-  var p2y = 3;
+  const p1x = 0;
+  const p1y = 1;
+  const p2x = 2;
+  const p2y = 3;
 
   this.error = function() {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    const dx = params[p1x].get() - params[p2x].get();
+    const dy = params[p1y].get() - params[p2y].get();
+    const d = Math.sqrt(dx * dx + dy * dy);
     return (d - this.distance);
   };
 
   this.gradient = function(out) {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    const dx = params[p1x].get() - params[p2x].get();
+    const dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       if (this.distance == 0) return;
       d = 0.000001;
@@ -383,23 +384,23 @@ function P2PDistanceV(params) {
 
   this.params = params;
 
-  var p1x = 0;
-  var p1y = 1;
-  var p2x = 2;
-  var p2y = 3;
-  var D = 4;
+  const p1x = 0;
+  const p1y = 1;
+  const p2x = 2;
+  const p2y = 3;
+  const D = 4;
 
   this.error = function() {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    const dx = params[p1x].get() - params[p2x].get();
+    const dy = params[p1y].get() - params[p2y].get();
+    const d = Math.sqrt(dx * dx + dy * dy);
     return (d - params[D].get());
   };
 
   this.gradient = function(out) {
-    var dx = params[p1x].get() - params[p2x].get();
-    var dy = params[p1y].get() - params[p2y].get();
-    var d = Math.sqrt(dx * dx + dy * dy);
+    const dx = params[p1x].get() - params[p2x].get();
+    const dy = params[p1y].get() - params[p2y].get();
+    let d = Math.sqrt(dx * dx + dy * dy);
     if (d == 0) {
       if (params[D].get() == 0) return;
       d = 0.000001;
@@ -426,14 +427,14 @@ function SignedPerpendicular(params) {
   const Y4 = 7;
 
   this.error = function() {
-    let x1 = params[X1].get();
-    let x2 = params[X2].get();
-    let y1 = params[Y1].get();
-    let y2 = params[Y2].get();
-    let x3 = params[X3].get();
-    let x4 = params[X4].get();
-    let y4 = params[Y4].get();
-    let y3 = params[Y3].get();
+    const x1 = params[X1].get();
+    const x2 = params[X2].get();
+    const y1 = params[Y1].get();
+    const y2 = params[Y2].get();
+    const x3 = params[X3].get();
+    const x4 = params[X4].get();
+    const y4 = params[Y4].get();
+    const y3 = params[Y3].get();
 
     const dx1 = y1 - y2;
     const dy1 = x2 - x1;
@@ -441,8 +442,8 @@ function SignedPerpendicular(params) {
     const dx2 = x4 - x3;
     const dy2 = y4 - y3;
 
-    let c1 = Math.sqrt(sq(dx1) + sq(dy1));
-    let c2 = Math.sqrt(sq(dx2) + sq(dy2));
+    const c1 = Math.sqrt(sq(dx1) + sq(dy1));
+    const c2 = Math.sqrt(sq(dx2) + sq(dy2));
 
     return dx1*dx2 + dy1*dy2 - c1 * c2;
   };
@@ -450,24 +451,24 @@ function SignedPerpendicular(params) {
   //d(((x-a) * (b - c))^2 ) / dx
 
   this.gradient = function (out) {
-    let x1 = params[X1].get();
-    let x2 = params[X2].get();
-    let y1 = params[Y1].get();
-    let y2 = params[Y2].get();
+    const x1 = params[X1].get();
+    const x2 = params[X2].get();
+    const y1 = params[Y1].get();
+    const y2 = params[Y2].get();
 
-    let x3 = params[X3].get();
-    let x4 = params[X4].get();
-    let y3 = params[Y3].get();
-    let y4 = params[Y4].get();
+    const x3 = params[X3].get();
+    const x4 = params[X4].get();
+    const y3 = params[Y3].get();
+    const y4 = params[Y4].get();
 
-    let dx1 = y1 - y2;
-    let dy1 = x2 - x1;
+    const dx1 = y1 - y2;
+    const dy1 = x2 - x1;
 
-    let dx2 = x4 - x3;
-    let dy2 = y4 - y3;
+    const dx2 = x4 - x3;
+    const dy2 = y4 - y3;
 
-    let c1 = Math.max(Math.sqrt(sq(dx1) + sq(dy1)), 0.001);
-    let c2 = Math.max(Math.sqrt(sq(dx2) + sq(dy2)), 0.001);
+    const c1 = Math.max(Math.sqrt(sq(dx1) + sq(dy1)), 0.001);
+    const c2 = Math.max(Math.sqrt(sq(dx2) + sq(dy2)), 0.001);
 
     out[X1] = y3 - y4 + (c2 * (x2 - x1)) / c1;
     out[X2] = y4 - y3 - (c2 * (x2 - x1)) / c1;
@@ -487,20 +488,20 @@ function Parallel(params) {
 
   this.params = params;
 
-  var l1p1x = 0;
-  var l1p1y = 1;
-  var l1p2x = 2;
-  var l1p2y = 3;
-  var l2p1x = 4;
-  var l2p1y = 5;
-  var l2p2x = 6;
-  var l2p2y = 7;
+  const l1p1x = 0;
+  const l1p1y = 1;
+  const l1p2x = 2;
+  const l1p2y = 3;
+  const l2p1x = 4;
+  const l2p1y = 5;
+  const l2p2x = 6;
+  const l2p2y = 7;
   
   this.error = function() {
-    var dx1 = (params[l1p1x].get() - params[l1p2x].get());
-    var dy1 = (params[l1p1y].get() - params[l1p2y].get());
-    var dx2 = (params[l2p1x].get() - params[l2p2x].get());
-    var dy2 = (params[l2p1y].get() - params[l2p2y].get());
+    const dx1 = (params[l1p1x].get() - params[l1p2x].get());
+    const dy1 = (params[l1p1y].get() - params[l1p2y].get());
+    const dx2 = (params[l2p1x].get() - params[l2p2x].get());
+    const dy2 = (params[l2p1y].get() - params[l2p2y].get());
     return (dx1*dy2 - dy1*dx2);
   };
 
@@ -520,20 +521,20 @@ function Perpendicular(params) {
 
   this.params = params;
 
-  var l1p1x = 0;
-  var l1p1y = 1;
-  var l1p2x = 2;
-  var l1p2y = 3;
-  var l2p1x = 4;
-  var l2p1y = 5;
-  var l2p2x = 6;
-  var l2p2y = 7;
+  const l1p1x = 0;
+  const l1p1y = 1;
+  const l1p2x = 2;
+  const l1p2y = 3;
+  const l2p1x = 4;
+  const l2p1y = 5;
+  const l2p2x = 6;
+  const l2p2y = 7;
 
   this.error = function() {
-    var dx1 = (params[l1p1x].get() - params[l1p2x].get());
-    var dy1 = (params[l1p1y].get() - params[l1p2y].get());
-    var dx2 = (params[l2p1x].get() - params[l2p2x].get());
-    var dy2 = (params[l2p1y].get() - params[l2p2y].get());
+    const dx1 = (params[l1p1x].get() - params[l1p2x].get());
+    const dy1 = (params[l1p1y].get() - params[l1p2y].get());
+    const dx2 = (params[l2p1x].get() - params[l2p2x].get());
+    const dy2 = (params[l2p1y].get() - params[l2p2y].get());
     //dot product shows how the lines off to be perpendicular
     return (dx1*dx2 + dy1*dy2);
   };
@@ -554,51 +555,51 @@ function Angle(params) {
 
   this.params = params;
 
-  var l1p1x = 0;
-  var l1p1y = 1;
-  var l1p2x = 2;
-  var l1p2y = 3;
-  var l2p1x = 4;
-  var l2p1y = 5;
-  var l2p2x = 6;
-  var l2p2y = 7;
-  var angle = 8;
-  var scale = 1000; // we need scale to get same order of measure units(radians are to small)
+  const l1p1x = 0;
+  const l1p1y = 1;
+  const l1p2x = 2;
+  const l1p2y = 3;
+  const l2p1x = 4;
+  const l2p1y = 5;
+  const l2p2x = 6;
+  const l2p2y = 7;
+  const angle = 8;
+  const scale = 1000; // we need scale to get same order of measure units(radians are to small)
 
   function p(ref) {
     return params[ref].get();
   }
 
   this.error = function() {
-    var dx1 = (p(l1p2x) - p(l1p1x));
-    var dy1 = (p(l1p2y) - p(l1p1y));
-    var dx2 = (p(l2p2x) - p(l2p1x));
-    var dy2 = (p(l2p2y) - p(l2p1y));
-    var a = Math.atan2(dy1,dx1) + p(angle);
-    var ca = Math.cos(a);
-    var sa = Math.sin(a);
-    var x2 = dx2*ca + dy2*sa;
-    var y2 = -dx2*sa + dy2*ca;
+    const dx1 = (p(l1p2x) - p(l1p1x));
+    const dy1 = (p(l1p2y) - p(l1p1y));
+    const dx2 = (p(l2p2x) - p(l2p1x));
+    const dy2 = (p(l2p2y) - p(l2p1y));
+    const a = Math.atan2(dy1,dx1) + p(angle);
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const x2 = dx2*ca + dy2*sa;
+    const y2 = -dx2*sa + dy2*ca;
     return Math.atan2(y2,x2) * scale;
   };
 
   this.gradient = function (out) {
-    var dx1 = (p(l1p2x) - p(l1p1x));
-    var dy1 = (p(l1p2y) - p(l1p1y));
-    var r2 = dx1 * dx1 + dy1 * dy1;
+    let dx1 = (p(l1p2x) - p(l1p1x));
+    let dy1 = (p(l1p2y) - p(l1p1y));
+    let r2 = dx1 * dx1 + dy1 * dy1;
     out[l1p1x] = -dy1 / r2;
     out[l1p1y] = dx1 / r2;
     out[l1p2x] = dy1 / r2;
     out[l1p2y] = -dx1 / r2;
     dx1 = (p(l1p2x) - p(l1p1x));
     dy1 = (p(l1p2y) - p(l1p1y));
-    var dx2 = (p(l2p2x) - p(l2p1x));
-    var dy2 = (p(l2p2y) - p(l2p1y));
-    var a = Math.atan2(dy1, dx1) + p(angle);
-    var ca = Math.cos(a);
-    var sa = Math.sin(a);
-    var x2 = dx2 * ca + dy2 * sa;
-    var y2 = -dx2 * sa + dy2 * ca;
+    let dx2 = (p(l2p2x) - p(l2p1x));
+    let dy2 = (p(l2p2y) - p(l2p1y));
+    const a = Math.atan2(dy1, dx1) + p(angle);
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const x2 = dx2 * ca + dy2 * sa;
+    const y2 = -dx2 * sa + dy2 * ca;
     r2 = dx2 * dx2 + dy2 * dy2;
     dx2 = -y2 / r2;
     dy2 = x2 / r2;
@@ -636,8 +637,8 @@ function PointOnEllipse(params) {
     const centerY = ep1y + (ep2y - ep1y) * 0.5;
     const rotation = Math.atan2(ep2y - ep1y, ep2x - ep1x);
 
-    let x = px - centerX;
-    let y = py - centerY;
+    const x = px - centerX;
+    const y = py - centerY;
 
     const polarAngle = Math.atan2(y, x) - rotation;
     const polarRadius = Math.sqrt(x*x + y*y);
@@ -657,15 +658,15 @@ function PointOnCurve(params, curve) {
   const PX = 0;
   const PY = 1;
   
-  let pt = [0,0,0];
+  const pt = [0,0,0];
   
   this.error = function() {
     const px = params[PX].get();
     const py = params[PY].get();
     pt[0] = px;
     pt[1] = py;
-    let u = curve.param(pt);
-    let p = curve.point(u);
+    const u = curve.param(pt);
+    const p = curve.point(u);
     return Math.sqrt( sq(p[0] - px) + sq(p[1] - py) )
   };
 
@@ -676,7 +677,7 @@ function CurveTangent(params, curve) {
 
   this.params = params;
 
-  let tmp = [0,0,0];
+  const tmp = [0,0,0];
 
   const P1X = 0;
   const P1Y = 1;
@@ -686,22 +687,22 @@ function CurveTangent(params, curve) {
   const TY = 5;
   
   this.error = function() {
-    let x1 = params[P1X].get();
-    let y1 = params[P1Y].get();
-    let x2 = params[P2X].get();
-    let y2 = params[P2Y].get();
-    let tx = params[TX].get();
-    let ty = params[TY].get();
+    const x1 = params[P1X].get();
+    const y1 = params[P1Y].get();
+    const x2 = params[P2X].get();
+    const y2 = params[P2Y].get();
+    const tx = params[TX].get();
+    const ty = params[TY].get();
 
     tmp[0] = tx;
     tmp[1] = ty;
-    let t = curve.param(tmp);
-    let [P, D] = curve.eval(t, 1);
+    const t = curve.param(tmp);
+    const [P, D] = curve.eval(t, 1);
 
-    let l = Math.sqrt(sq(D[0]) + sq(D[1]));
+    const l = Math.sqrt(sq(D[0]) + sq(D[1]));
     
-    let vx = - D[1] / l;
-    let vy = D[0] / l;
+    const vx = - D[1] / l;
+    const vy = D[0] / l;
     return Math.abs(vx * (P[0] - x1) + vy * (P[1] - y1)) + Math.abs(vx * (P[0] - x2) + vy * (P[1] - y2));  
   };
 
@@ -723,26 +724,26 @@ function EllipseTangent(params) {
   const R = 8;
 
   this.error = function(gr) {
-    let p1x = params[P1X].get();
-    let p1y = params[P1Y].get();
-    let p2x = params[P2X].get();
-    let p2y = params[P2Y].get();
+    const p1x = params[P1X].get();
+    const p1y = params[P1Y].get();
+    const p2x = params[P2X].get();
+    const p2y = params[P2Y].get();
 
-    let ep1x = params[EP1X].get();
-    let ep1y = params[EP1Y].get();
-    let ep2x = params[EP2X].get();
-    let ep2y = params[EP2Y].get();
+    const ep1x = params[EP1X].get();
+    const ep1y = params[EP1Y].get();
+    const ep2x = params[EP2X].get();
+    const ep2y = params[EP2Y].get();
     
     const radiusY = params[R].get();
 
-    let axisX = ep2x - ep1x;
-    let axisY = ep2y - ep1y;
+    const axisX = ep2x - ep1x;
+    const axisY = ep2y - ep1y;
     const radiusX = Math.sqrt(sq(axisX) + sq(axisY)) * 0.5;
     const scaleToCircleSpace = radiusY / radiusX;
     const rotation = - Math.atan2(axisY, axisX);
     function tr(x, y) {
       let xx =  x * Math.cos(rotation) - y * Math.sin(rotation)
-      let yy =  x * Math.sin(rotation) + y * Math.cos(rotation);
+      const yy =  x * Math.sin(rotation) + y * Math.cos(rotation);
       xx *= scaleToCircleSpace;
       return {x: xx, y: yy};
     }
@@ -768,7 +769,6 @@ function EllipseTangent(params) {
 
     if (perpendicularLength < 0) {
       perpendicularLength *= -1;
-    } else {
     }
     
     return (radiusY - perpendicularLength); //*1000;
@@ -782,8 +782,8 @@ function GreaterThan(params, limit) {
   this.params = params;
   
   this.error = function() {
-    let value = this.params[0].get();
-    var error = value <= limit ? limit - value : 0;
+    const value = this.params[0].get();
+    const error = value <= limit ? limit - value : 0;
     console.log("GreaterThan: " + error + ", value: " +value);
     return error;
   };
@@ -810,7 +810,7 @@ export function NumericGradient(out) {
 }
 
 function _fixNaN(grad) {
-  for (var i = 0; i < grad.length; i++) {
+  for (let i = 0; i < grad.length; i++) {
     if (isNaN(grad[i])) {
       grad[i] = 0;
     }
@@ -818,7 +818,7 @@ function _fixNaN(grad) {
 }
 
 function rescale(grad, factor) {
-  for (var i = 0; i < grad.length; i++) {
+  for (let i = 0; i < grad.length; i++) {
     grad[i] *= factor;
   }
 }

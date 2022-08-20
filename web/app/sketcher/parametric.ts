@@ -75,14 +75,14 @@ class ParametricManager {
 
   startTransaction() {
     this.inTransaction = true;
-    for (let stage of this.stages) {
+    for (const stage of this.stages) {
       stage.algNumSystem.startTransaction();
     }
   }
 
   finishTransaction() {
     this.inTransaction = false;
-    for (let stage of this.stages) {
+    for (const stage of this.stages) {
       stage.algNumSystem.finishTransaction();
     }
     this.refresh();
@@ -110,50 +110,50 @@ class ParametricManager {
   rebuildConstantTable(constantDefinition) {
     this.constantTable = {};
     if (constantDefinition == null) return;
-    let lines = constantDefinition.split('\n');
+    const lines = constantDefinition.split('\n');
     let prefix = "(function() { \n";
     for (let i = 0; i < lines.length; i++) {
-      let line = lines[i];
-      let m = line.match(/^\s*([^\s]+)\s*=(.+)$/);
+      const line = lines[i];
+      const m = line.match(/^\s*([^\s]+)\s*=(.+)$/);
       if (m != null && m.length === 3) {
-        let constant = m[1];
+        const constant = m[1];
         try {
-          let value = eval(prefix + "return " + m[2] + "; \n})()");
+          const value = eval(prefix + "return " + m[2] + "; \n})()");
           this.constantTable[constant] = value;
           prefix += "const " + constant + " = " + value + ";\n"
         } catch(e) {
         }
       }
     }
-  };
+  }
 
   onConstantsExternalChange(constantDefinition) {
     this.rebuildConstantTable(constantDefinition);
    // this.refresh();
-  };
+  }
 
   defineNewConstant(name, value) {
     let constantDefinition = this.constantDefinition;
-    let constantText = name + ' = ' + value;
+    const constantText = name + ' = ' + value;
     if (constantDefinition) {
       constantDefinition += '\n' + constantText;
     } else {
       constantDefinition = constantText;
     }
     this.$constantDefinition.next(constantDefinition);
-  };
+  }
 
   updateConstraintConstants(constr) {
     this.viewer.parametricManager.refresh();
-  };
+  }
 
   notify() {
     this.$update.next();
-  };
+  }
 
   commit() {
     this.refresh();
-  };
+  }
 
   _add(constr) {
 
@@ -165,7 +165,7 @@ class ParametricManager {
       }
     });
 
-    for (let obj of constr.objects) {
+    for (const obj of constr.objects) {
       if (obj.generator && obj.stage === highestStage) {
         toast("Cannot refer to a generated object from the same stage is being added to.");
         return;
@@ -178,7 +178,7 @@ class ParametricManager {
     if (highestStage !== this.stage && !this.inTransaction) {
       toast("Constraint's been added to stage " + highestStage.index + "!")
     }
-  };
+  }
 
   refresh() {
     if (this.inTransaction) {
@@ -192,7 +192,7 @@ class ParametricManager {
     this.viewer.historyManager.checkpoint();
     this._add(constr);
     this.refresh();
-  };
+  }
 
   addAll(constrs) {
     this.viewer.historyManager.checkpoint();
@@ -200,19 +200,19 @@ class ParametricManager {
       this._add(constrs[i]);
     }
     this.refresh();
-  };
+  }
 
   remove(constr) {
     this.viewer.historyManager.checkpoint();
     constr.stage.algNumSystem.removeConstraint(constr);
     constr.annotations.forEach(ann => ann.layer.remove(ann));
     this.refresh();
-  };
+  }
 
   _removeConstraint(constr) {
     constr.stage.algNumSystem.removeConstraint(constr);
     constr.annotations.forEach(ann => ann.layer.remove(ann));
-  };
+  }
 
   removeGenerator(generator) {
     this.viewer.deselectAll();
@@ -242,7 +242,7 @@ class ParametricManager {
         this._removeObject(obj, force);
       }
     });
-  };
+  }
 
   _removeObject = (obj, force?) => {
     if (obj.__disposed) {
@@ -280,7 +280,7 @@ class ParametricManager {
   };
 
   invalidate() {
-    for (let stage of this.stages) {
+    for (const stage of this.stages) {
       stage.algNumSystem.invalidate();
     }
   }
@@ -292,14 +292,14 @@ class ParametricManager {
 
   prepare(interactiveObjects) {
     this.groundStage.prepare(interactiveObjects);
-    for (let stage of this.stages) {
+    for (const stage of this.stages) {
       stage.prepare(interactiveObjects);
     }
   }
 
   solve(rough) {
     this.groundStage.solve(rough);
-    for (let stage of this.stages) {
+    for (const stage of this.stages) {
       stage.solve(rough);
     }
   }
@@ -325,7 +325,7 @@ class ParametricManager {
 
   addGeneratorToStage(generator, stage) {
 
-    let fail = false;
+    const fail = false;
     generator.sourceObjects(obj => {
       if (obj.isGenerated && obj.stage === stage) {
         toast("Cannot refer to a generated object from the same stage is being added to.");

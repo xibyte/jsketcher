@@ -15,7 +15,7 @@ const CONSTRUCTIONS = [
 
 export function findConstructionCluster(constr, isScheduled) {
 
-  for (let construct of CONSTRUCTIONS) {
+  for (const construct of CONSTRUCTIONS) {
     const cluster = construct(constr);
     if (cluster && !cluster.find(isScheduled)) {
       return cluster;
@@ -27,7 +27,7 @@ export function findConstructionCluster(constr, isScheduled) {
 
 function getAdjacentConstraint(constr, throughObject, constrTypeId) {
 
-  for (let adjConstr of throughObject.constraints) {
+  for (const adjConstr of throughObject.constraints) {
     if (constr !== adjConstr && adjConstr.schema.id === constrTypeId) {
       return adjConstr;
     }

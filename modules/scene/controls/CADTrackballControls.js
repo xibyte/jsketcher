@@ -8,10 +8,12 @@
  * @author Luca Antiga 	/ http://lantiga.github.io
  */
 
+ import DPR from 'dpr';
+
 export function CADTrackballControls( object, domElement ) {
 
-  var _this = this;
-  var STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+  const _this = this;
+  const STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
 
   this.object = object;
   this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -45,26 +47,25 @@ export function CADTrackballControls( object, domElement ) {
   this.projectionChanged = false;
   this.projectionZoomSpeed = 0.5;
 
-  var EPS = 0.000001;
+  const EPS = 0.000001;
 
-  var lastPosition = new THREE.Vector3();
+  const lastPosition = new THREE.Vector3();
 
-  var _state = STATE.NONE,
+  let _state = STATE.NONE,
     _prevState = STATE.NONE,
+    _lastAngle = 0,
+    _touchZoomDistanceStart = 0,
+    _touchZoomDistanceEnd = 0;
 
-    _eye = new THREE.Vector3(),
+  const _eye = new THREE.Vector3(),
 
     _movePrev = new THREE.Vector2(),
     _moveCurr = new THREE.Vector2(),
 
     _lastAxis = new THREE.Vector3(),
-    _lastAngle = 0,
 
     _zoomStart = new THREE.Vector2(),
     _zoomEnd = new THREE.Vector2(),
-
-    _touchZoomDistanceStart = 0,
-    _touchZoomDistanceEnd = 0,
 
     _panStart = new THREE.Vector2(),
     _panEnd = new THREE.Vector2();
@@ -77,9 +78,8 @@ export function CADTrackballControls( object, domElement ) {
 
   // events
 
-  var changeEvent = { type: 'change' };
-  var startEvent = { type: 'start' };
-  var endEvent = { type: 'end' };
+  const startEvent = { type: 'start' };
+  const endEvent = { type: 'end' };
 
 
   // methods
@@ -95,9 +95,9 @@ export function CADTrackballControls( object, domElement ) {
 
     } else {
 
-      var box = this.domElement.getBoundingClientRect();
+      const box = this.domElement.getBoundingClientRect();
       // adjustments come from similar code in the jquery offset() function
-      var d = this.domElement.ownerDocument.documentElement;
+      const d = this.domElement.ownerDocument.documentElement;
       this.screen.left = box.left + window.pageXOffset - d.clientLeft;
       this.screen.top = box.top + window.pageYOffset - d.clientTop;
       this.screen.width = box.width;
@@ -117,9 +117,9 @@ export function CADTrackballControls( object, domElement ) {
 
   };
 
-  var getMouseOnScreen = ( function () {
+  const getMouseOnScreen = ( function () {
 
-    var vector = new THREE.Vector2();
+    const vector = new THREE.Vector2();
 
     return function getMouseOnScreen( pageX, pageY ) {
 
@@ -134,9 +134,9 @@ export function CADTrackballControls( object, domElement ) {
 
   }() );
 
-  var getMouseOnCircle = ( function () {
+  const getMouseOnCircle = ( function () {
 
-    var vector = new THREE.Vector2();
+    const vector = new THREE.Vector2();
 
     return function getMouseOnCircle( pageX, pageY ) {
 
@@ -153,13 +153,14 @@ export function CADTrackballControls( object, domElement ) {
 
   this.rotateCamera = ( function() {
 
-    var axis = new THREE.Vector3(),
+    const axis = new THREE.Vector3(),
       quaternion = new THREE.Quaternion(),
       eyeDirection = new THREE.Vector3(),
       objectUpDirection = new THREE.Vector3(),
       objectSidewaysDirection = new THREE.Vector3(),
-      moveDirection = new THREE.Vector3(),
-      angle;
+      moveDirection = new THREE.Vector3();
+
+    let angle;
 
     return function rotateCamera() {
 
@@ -214,7 +215,7 @@ export function CADTrackballControls( object, domElement ) {
   
   this.zoomCamera = function () {
 
-    var factor;
+    let factor;
 
     if ( _state === STATE.TOUCH_ZOOM_PAN ) {
 
@@ -248,7 +249,7 @@ export function CADTrackballControls( object, domElement ) {
 
   this.panCamera = ( function() {
 
-    var mouseChange = new THREE.Vector2(),
+    const mouseChange = new THREE.Vector2(),
       objectUp = new THREE.Vector3(),
       pan = new THREE.Vector3();
 
@@ -304,7 +305,8 @@ export function CADTrackballControls( object, domElement ) {
 
   };
 
-  this.update = function () {
+  this.evaluate = function () {
+    this.panSpeed = DPR/this.object.zoom;
 
     _eye.subVectors( _this.object.position, _this.target );
 
@@ -332,16 +334,12 @@ export function CADTrackballControls( object, domElement ) {
 
     _this.object.lookAt( _this.target );
 
-    if ( lastPosition.distanceToSquared( _this.object.position ) > EPS || this.projectionChanged) {
-
+    const needsRender = lastPosition.distanceToSquared( _this.object.position ) > EPS || this.projectionChanged;
+    if ( needsRender) {
       this.projectionChanged = false;
-      
-      _this.dispatchEvent( changeEvent );
-
       lastPosition.copy( _this.object.position );
-
     }
-
+    return needsRender;
   };
 
   this.reset = function () {
@@ -356,8 +354,6 @@ export function CADTrackballControls( object, domElement ) {
     _eye.subVectors( _this.object.position, _this.target );
 
     _this.object.lookAt( _this.target );
-
-    _this.dispatchEvent( changeEvent );
 
     lastPosition.copy( _this.object.position );
 
@@ -550,18 +546,18 @@ export function CADTrackballControls( object, domElement ) {
         _movePrev.copy( _moveCurr );
         break;
 
-      default: // 2 or more
+      default: { // 2 or more
         _state = STATE.TOUCH_ZOOM_PAN;
-        var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-        var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+        const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+        const dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
         _touchZoomDistanceEnd = _touchZoomDistanceStart = Math.sqrt( dx * dx + dy * dy );
 
-        var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-        var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+        const x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+        const y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
         _panStart.copy( getMouseOnScreen( x, y ) );
         _panEnd.copy( _panStart );
         break;
-
+      }
     }
 
     _this.dispatchEvent( startEvent );
@@ -582,16 +578,16 @@ export function CADTrackballControls( object, domElement ) {
         _moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
         break;
 
-      default: // 2 or more
-        var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-        var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+      default: { // 2 or more
+        const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+        const dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
         _touchZoomDistanceEnd = Math.sqrt( dx * dx + dy * dy );
 
-        var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-        var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+        const x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+        const y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
         _panEnd.copy( getMouseOnScreen( x, y ) );
         break;
-
+      }
     }
 
   }
@@ -656,11 +652,7 @@ export function CADTrackballControls( object, domElement ) {
   window.addEventListener( 'keyup', keyup, false );
 
   this.handleResize();
-
-  // force an update at start
-  this.update();
-
-};
+}
 
 CADTrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
 CADTrackballControls.prototype.constructor = CADTrackballControls;

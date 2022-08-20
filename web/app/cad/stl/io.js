@@ -8,7 +8,7 @@ export function LoadSTLFromURL(url, solidsConsumer) {
       if (this.status == 200) {
         const reader = new FileReader();
         reader.addEventListener("loadend", () => {
-          let solids = ParseStl(reader.result);
+          const solids = ParseStl(reader.result);
           solidsConsumer(solids)
         });
         reader.readAsArrayBuffer(this.response);

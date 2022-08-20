@@ -1,8 +1,8 @@
-import {ApplicationContext} from 'context';
+import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MDatum} from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
@@ -20,6 +20,7 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
   label: 'Cylinder',
   icon: 'img/cad/cylinder',
   info: 'Primitive Cylinder',
+  path:__dirname,
   paramsInfo: ({height, diameter}) => `(${r(height)} , ${r(diameter)} )`,
   form: [
     {
@@ -59,7 +60,7 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
 
   run: (params: PrimitiveCylinderParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;
@@ -85,15 +86,15 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
           }
         },
         {
-          id: 'F:LID',
-          productionInfo: {
-            role: 'lid'
-          }
-        },
-        {
           id: 'F:BASE',
           productionInfo: {
             role: 'base'
+          }
+        },
+        {
+          id: 'F:LID',
+          productionInfo: {
+            role: 'lid'
           }
         },
 

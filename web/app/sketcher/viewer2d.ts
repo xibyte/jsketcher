@@ -139,11 +139,11 @@ export class Viewer {
     this.canvas = null;
     this.toolManager.dispose();
     Generator.resetIDGenerator();
-  };
+  }
 
   isDisposed() {
     return this.canvas === null;
-  };
+  }
 
   setTransformation(a, b, c, d, e, f, zoom) {
     this.transformation = [a, b, c, d, e, f];
@@ -156,56 +156,56 @@ export class Viewer {
       b, d, 0, f,
       0, 0, 1, 0
     )._invert();
-  };
+  }
 
   roundToPrecision(value) {
     return value.toFixed(this.presicion);
-  };
+  }
 
   addSegment(x1, y1, x2, y2, layer) {
-    var line = new Segment(x1, y1, x2, y2);
+    const line = new Segment(x1, y1, x2, y2);
     layer.add(line);
     return line;
-  };
+  }
 
   remove(obj) {
     this.removeAll([obj]);
-  };
+  }
 
   removeAll(objects) {
     this.deselectAll();
     this.parametricManager.removeObjects(objects);
-  };
+  }
 
   add(obj, layer) {
     layer.add(obj);
-  };
+  }
 
   search(x, y, buffer, deep, onlyPoints, filter) {
 
     buffer /= this.scale / this.retinaPxielRatio;
     buffer *= 0.5;
 
-    var pickResult = [];
-    var aim = new Vector(x, y);
+    const pickResult = [];
+    const aim = new Vector(x, y);
 
-    var heroIdx = 0;
-    var unreachable = buffer * 2;
-    var heroLength = unreachable; // unreachable
+    let heroIdx = 0;
+    const unreachable = buffer * 2;
+    let heroLength = unreachable; // unreachable
 
     function isFiltered(o) {
-      for (var i = 0; i < filter.length; ++i) {
+      for (let i = 0; i < filter.length; ++i) {
         if (filter[i] === o) return true;
       }
       return false;
     }
 
-    for (let layers of this._workspace) {
+    for (const layers of this._workspace) {
       for (let i = 0; i < layers.length; i++) {
-        var objs = layers[i].objects;
-        for (var j = 0; j < objs.length; j++) {
-          var l = unreachable + 1;
-          var before = pickResult.length;
+        const objs = layers[i].objects;
+        for (let j = 0; j < objs.length; j++) {
+          let l = unreachable + 1;
+          const before = pickResult.length;
           objs[j].accept((o) => {
             if (!o.visible) return true;
             if (onlyPoints && !isEndPoint(o)) {
@@ -218,7 +218,7 @@ export class Viewer {
             }
             return true;
           });
-          var hit = before - pickResult.length != 0;
+          const hit = before - pickResult.length != 0;
           if (hit) {
             if (!deep && pickResult.length != 0) return pickResult;
             if (l >= 0 && l < heroLength) {
@@ -230,21 +230,21 @@ export class Viewer {
       }
     }
     if (pickResult.length > 0) {
-      var _f = pickResult[0];
+      const _f = pickResult[0];
       pickResult[0] = pickResult[heroIdx];
       pickResult[heroIdx] = _f;
     }
     return pickResult;
-  };
+  }
 
   _createServiceLayers(): Layer<Shape>[] {
-    let layer = this.createLayer<Shape>("_service", Styles.SERVICE);
+    const layer = this.createLayer<Shape>("_service", Styles.SERVICE);
 //  layer.objects.push(new CrossHair(0, 0, 20));
 //  layer.objects.push(new Point(0, 0, 2));
     layer.objects.push(this.referencePoint);
     layer.objects.push(new BasisOrigin(null, this));
     return [layer];
-  };
+  }
 
   createGroundObjects() {
     const groundObjectsGenerator = new SketchGenerator({}, GroundObjectsGeneratorSchema);
@@ -258,7 +258,7 @@ export class Viewer {
         viewer.repaint();
       }
     });
-  };
+  }
 
   repaint() {
 
@@ -270,7 +270,7 @@ export class Viewer {
     ctx.transform(1, 0, 0, -1, 0, this.canvas.height);
 
     if (this.transformation) {
-      let [a, b, c, d, e, f] = this.transformation;
+      const [a, b, c, d, e, f] = this.transformation;
       ctx.transform(a, b, c, d, e, f);
     } else {
       ctx.transform(1, 0, 0, 1, this.translate.x, this.translate.y);
@@ -284,13 +284,13 @@ export class Viewer {
 
     this.__drawWorkspace(ctx, this._workspace, Viewer.__SKETCH_DRAW_PIPELINE);
     this.__drawWorkspace(ctx, this._serviceWorkspace, Viewer.__SIMPLE_DRAW_PIPELINE);
-  };
+  }
 
   __drawWorkspace(ctx, workspace, pipeline) {
-    for (let drawPredicate of pipeline) {
-      for (let layers of workspace) {
-        for (let layer of layers) {
-          for (let obj of layer.objects) {
+    for (const drawPredicate of pipeline) {
+      for (const layers of workspace) {
+        for (const layer of layers) {
+          for (const obj of layer.objects) {
             obj.accept((obj) => {
               if (!obj.visible) return true;
               if (drawPredicate(obj)) {
@@ -306,7 +306,7 @@ export class Viewer {
         }
       }
     }
-  };
+  }
 
   __draw(ctx, layer, obj) {
     const style = this.getStyleForObject(layer, obj);
@@ -315,7 +315,7 @@ export class Viewer {
     }
     this.__prevStyle = style;
     obj.draw(ctx, this.scale / this.retinaPxielRatio, this);
-  };
+  }
 
   getStyleForObject(layer, obj) {
     if (obj.style != null) {
@@ -327,11 +327,11 @@ export class Viewer {
       }
     }
     return layer.style;
-  };
+  }
 
   setStyle(style, ctx) {
     draw_utils.SetStyle(style, ctx, this.scale / this.retinaPxielRatio);
-  };
+  }
 
   snap(x, y, excl) {
     this.cleanSnap();
@@ -340,11 +340,11 @@ export class Viewer {
       this.capture('tool', [snapTo[0]], true);
     }
     return this.snapped;
-  };
+  }
 
   cleanSnap() {
     this.withdrawAll('tool')
-  };
+  }
 
   showBounds(x1, y1, x2, y2) {
     const dx = Math.max(x2 - x1, 1);
@@ -358,7 +358,7 @@ export class Viewer {
     }
     this.translate.x = -x1 * this.scale;
     this.translate.y = -y1 * this.scale;
-  };
+  }
 
   fit() {
     let count = 0;
@@ -392,17 +392,17 @@ export class Viewer {
       out.x /= this.scale;
       out.y /= this.scale;
     }
-  };
+  }
 
   screenToModel(e) {
     return this._screenToModel(e.offsetX, e.offsetY);
-  };
+  }
 
   _screenToModel(x, y) {
     const out = {x: 0, y: 0};
     this.screenToModel2(x, y, out);
     return out;
-  };
+  }
 
   screenToModelDistance(dist) {
     measurer.x = 0;
@@ -414,8 +414,8 @@ export class Viewer {
   }
 
   accept = visitor => {
-    for (let layer of this.layers) {
-      for (let object of layer.objects) {
+    for (const layer of this.layers) {
+      for (const object of layer.objects) {
         if (!object.accept(visitor)) {
           return false;
         }
@@ -425,22 +425,22 @@ export class Viewer {
 
   //same as accept but without controlling when to break the flow
   traverse(visitor) {
-    for (let layer of this.layers) {
+    for (const layer of this.layers) {
       layer.traverseSketchObjects(visitor)
     }
   }
 
   findLayerByName(name) {
-    for (var i = 0; i < this.layers.length; i++) {
+    for (let i = 0; i < this.layers.length; i++) {
       if (this.layers[i].name == name) {
         return this.layers[i];
       }
     }
     return null;
-  };
+  }
 
   findById(id) {
-    var result = null;
+    let result = null;
     this.accept(function (o) {
       if (o.id === id) {
         result = o;
@@ -449,7 +449,7 @@ export class Viewer {
       return true;
     });
     return result;
-  };
+  }
 
   createIndex() {
     const index = {};
@@ -476,18 +476,18 @@ export class Viewer {
         obj.addMarker(CAPTURES[type]);
       }
     }
-  };
+  }
 
 
   withdraw(type, obj) {
-    let captured = this.captured[type];
+    const captured = this.captured[type];
     for (let i = 0; i < captured.length; i++) {
       if (obj === captured[i]) {
         captured.splice(i, 1)[0].removeMarker(CAPTURES[type]);
         break;
       }
     }
-  };
+  }
 
   withdrawAll(type) {
     const captured = this.captured[type];
@@ -495,22 +495,22 @@ export class Viewer {
       captured[i].removeMarker(CAPTURES[type]);
     }
     while (captured.length > 0) captured.pop();
-  };
+  }
 
   withdrawGlobal() {
     Object.keys(this.captured).forEach(type => this.withdrawAll(type));
     this.streams.selection.next(this.selected);
-  };
+  }
 
   deselect(obj) {
     this.withdraw('selection', obj);
     this.streams.selection.next(this.selected);
-  };
+  }
 
   deselectAll() {
     this.withdrawAll('selection');
     this.streams.selection.next(this.selected);
-  };
+  }
 
   highlight(objs, exclusive) {
     this.capture('highlight', objs, exclusive);
@@ -527,14 +527,14 @@ export class Viewer {
   pick(e) {
     const m = this.screenToModel(e);
     return this.search(m.x, m.y, DEFAULT_SEARCH_BUFFER, true, false, []);
-  };
+  }
 
   get activeLayer() {
     let layer = this._activeLayer;
     if (layer == null || layer.readOnly) {
       layer = null;
       for (let i = 0; i < this.layers.length; i++) {
-        let l = this.layers[i];
+        const l = this.layers[i];
         if (!l.readOnly) {
           layer = l;
           break;
@@ -542,31 +542,31 @@ export class Viewer {
       }
     }
     return this.findLayerByName(PREDEFINED_LAYERS.SKETCH);
-  };
+  }
 
   set activeLayerName(layerName) {
-    let layer = this.findLayerByName(layerName);
+    const layer = this.findLayerByName(layerName);
     if (layer) {
       this._activeLayer = layer;
     } else {
       console.warn("layer doesn't exist: " + layerName);
     }
-  };
+  }
 
   setActiveLayer(layer) {
     if (!layer.readOnly) {
       this._activeLayer = layer;
     }
-  };
+  }
 
   fullHeavyUIRefresh() {
     this.refresh();
     this.parametricManager.notify();
-  };
+  }
 
   createLayer<T>(name, style) {
     return new Layer<T>(name, style, this)
-  };
+  }
 
   objectsUpdate = () => this.streams.objectsUpdate.next();
   
@@ -625,7 +625,7 @@ export class Layer<T = Shape> {
       return true;
     }
     return false;
-  };
+  }
 
   add(object) {
     if (object.layer !== undefined) {
@@ -639,7 +639,7 @@ export class Layer<T = Shape> {
     } else {
       this._addAndNotify(object);
     }
-  };
+  }
 
   traverseSketchObjects(callback) {
     this.objects.forEach(o => {

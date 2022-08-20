@@ -7,8 +7,9 @@ import {Classification, Classifier, OCCClassifier} from "cad/craft/production/cl
 import {addToListInMap} from "gems/iterables";
 import {MEdge} from "cad/model/medge";
 import {Edge} from "brep/topo/edge";
-import {MBrepShell} from "cad/model/mshell";
+import {MBrepShell, MShell} from "cad/model/mshell";
 import {TopoObject} from "brep/topo/topo-object";
+import {Matrix3x4} from "math/matrix";
 
 const classifier: Classifier = new OCCClassifier();
 
@@ -111,6 +112,27 @@ abstract class BasicProductionAnalyzer implements ProductionAnalyzer {
 
 }
 
+export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
+
+  originShell: Shell;
+  suffix: string;
+
+  constructor(originShape: MBrepShell, suffix: string) {
+    super();
+    this.originShell = originShape.brepShell;
+    this.suffix = suffix;
+  }
+
+  assignIdentificationImpl(createdShell: Shell) {
+
+    this.originShell.faces.forEach((originFace, index) => {
+      const createdFace = createdShell.faces[index];
+      createdFace.data.id = originFace.data.id + ":" + this.suffix;
+      createdFace.data.productionInfo = originFace.data.productionInfo;
+    })
+  }
+}
+
 type IdentificationInfo = {
   id: string,
   productionInfo: any;
@@ -137,8 +159,8 @@ export class ExpectedOrderProductionAnalyzer extends BasicProductionAnalyzer {
     }
 
     let i = 0;
-    for (let face of createdShell.faces) {
-      let identificationInfo = this.faceInfo[i++];
+    for (const face of createdShell.faces) {
+      const identificationInfo = this.faceInfo[i++];
       if (identificationInfo) {
         assignIdentificationInfo(face, identificationInfo)
       } else {
@@ -146,8 +168,8 @@ export class ExpectedOrderProductionAnalyzer extends BasicProductionAnalyzer {
       }
     }
     i = 0;
-    for (let edge of createdShell.edges) {
-      let identificationInfo = this.edgeInfo[i++];
+    for (const edge of createdShell.edges) {
+      const identificationInfo = this.edgeInfo[i++];
       if (identificationInfo) {
         assignIdentificationInfo(edge, identificationInfo)
       } else {
@@ -155,8 +177,8 @@ export class ExpectedOrderProductionAnalyzer extends BasicProductionAnalyzer {
       }
     }
     i = 0;
-    for (let vertex of createdShell.vertices) {
-      let identificationInfo = this.vertexInfo[i++];
+    for (const vertex of createdShell.vertices) {
+      const identificationInfo = this.vertexInfo[i++];
       if (identificationInfo) {
         assignIdentificationInfo(vertex, identificationInfo)
       } else {
@@ -174,7 +196,7 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
   constructor(profiles: FaceRef[]) {
     super();
     this.profiles = profiles;
-    for (let originFace of this.profiles) {
+    for (const originFace of this.profiles) {
       classifier.prepare(originFace.topoShape);
     }
   }
@@ -183,15 +205,15 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
 
     classifier.prepare(createdShell);
 
-    for (let originFace of this.profiles) {
+    for (const originFace of this.profiles) {
       const originFaceTopology = originFace.topoShape.faces[0];
       let base: Face = null;
-      let wireId = originFace.contour.id;
+      const wireId = originFace.contour.id;
 
-      for (let createdFace of createdShell.faces) {
+      for (const createdFace of createdShell.faces) {
 
         classifier.prepare(originFace.topoShape);
-        let faceToFaceClassification = classifier.classifyFaceToFace(originFaceTopology, createdFace);
+        const faceToFaceClassification = classifier.classifyFaceToFace(originFaceTopology, createdFace);
 
         if (faceToFaceClassification === Classification.EXACT) {
           base = createdFace;
@@ -208,7 +230,7 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
         const profileEdge = originFaceTopology.outerLoop.halfEdges[i].edge;
         const seg = originFace.contour.segments[i];
 
-        for (let createdEdge of createdShell.edges) {
+        for (const createdEdge of createdShell.edges) {
 
           if (classifier.classifyEdgeToEdge(profileEdge, createdEdge) !== Classification.UNRELATED) {
             createdEdge.data.id = `E:BASE[${seg.id}]`;
@@ -216,9 +238,9 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
               role: 'base',
               originatingPrimitive: seg.id
             }
-            let halfEdge = createdEdge.getHalfEdge(he => he?.loop?.face && he.loop.face !== base);
+            const halfEdge = createdEdge.getHalfEdge(he => he?.loop?.face && he.loop.face !== base);
             if (halfEdge) {
-              let face = halfEdge.loop.face;
+              const face = halfEdge.loop.face;
               face.data.id = `F:SWEEP[${seg.id}]`;
               face.data.productionInfo = {
                 role: 'sweep',
@@ -268,7 +290,7 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
         }
       }
 
-      for (let createdFace of createdShell.faces) {
+      for (const createdFace of createdShell.faces) {
         if (!createdFace.data.productionInfo) {
           createdFace.data.id = `F:LID[${wireId}]`;
           createdFace.data.productionInfo = {
@@ -278,13 +300,10 @@ export class FromSketchProductionAnalyzer extends BasicProductionAnalyzer {
         }
       }
 
-      for (let createdEdge of createdShell.edges) {
+      for (const createdEdge of createdShell.edges) {
         if (!createdEdge.data.productionInfo) {
 
           const he = createdEdge.getHalfEdge(he => he?.loop?.face?.data?.productionInfo?.role === 'sweep');
-          if (!he) {
-            debugger;
-          }
           if (he) {
             const originatingPrimitive = he.loop.face.data.productionInfo.originatingPrimitive;
             createdEdge.data.id = `E:LID[${originatingPrimitive}]`;
@@ -366,7 +385,7 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
       addToListInMap(edgeIds, id, edge);
     }
 
-    for (let createdFace of createdShell.faces) {
+    for (const createdFace of createdShell.faces) {
       const fuse: MFace[] = [];
       this.consumed.forEach(consumedShell => {
 
@@ -407,7 +426,7 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
       }
     }
 
-    for (let [id, newFaces] of faceIds) {
+    for (const [id, newFaces] of faceIds) {
       if (newFaces.length > 1) {
         spatialSort(newFaces);
         newFaces.forEach((newFace, i) => {
@@ -418,13 +437,13 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
       }
     }
 
-    for (let createdEdge of createdShell.edges) {
+    for (const createdEdge of createdShell.edges) {
       const fuse: MEdge[] = [];
       this.consumed.forEach(consumedShell => {
         consumedShell.traverse(consumedObj => {
           if (consumedObj instanceof MEdge) {
             const consumedEdge = consumedObj;
-            let eeClassification = classifier.classifyEdgeToEdge(createdEdge, consumedEdge.brepEdge);
+            const eeClassification = classifier.classifyEdgeToEdge(createdEdge, consumedEdge.brepEdge);
             if (eeClassification !== Classification.UNRELATED) {
               fuse.push(consumedEdge);
             }
@@ -433,7 +452,7 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
       });
       if (fuse.length === 1) {
         createdEdge.data.productionInfo = fuse[0].brepEdge.data.productionInfo;
-        let idToAssign = fuse[0].id;
+        const idToAssign = fuse[0].id;
         assignEdgeId(idToAssign, createdEdge);
       } else if (fuse.length > 1) {
         spatialMEdgeSort(fuse);
@@ -449,7 +468,7 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
       }
     }
 
-    for (let [id, newEdges] of edgeIds) {
+    for (const [id, newEdges] of edgeIds) {
       if (newEdges.length > 1) {
         spatialEdgeSort(newEdges);
         newEdges.forEach((newFace, i) => {
@@ -463,7 +482,7 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
     const newEdges = new Map<string, Edge[]>();
     notIdentifiedEdges.forEach(edge => {
 
-      let edgeCreators = [];
+      const edgeCreators = [];
       this.consumed.forEach(consumedShell => {
         consumedShell.traverse(consumedObj => {
           if (consumedObj instanceof MFace && consumedObj.brepFace) {
@@ -488,7 +507,7 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
       edge.data.id = id;
     });
 
-    for (let [id, newEdges] of edgeIds) {
+    for (const [id, newEdges] of edgeIds) {
       if (newEdges.length > 1) {
         spatialEdgeSort(newEdges);
         newEdges.forEach((newFace, i) => {
@@ -516,18 +535,18 @@ export class PushPullFaceProductionAnalyzer extends FromMObjectProductionAnalyze
     super.assignIdentificationImpl(createdShell);
 
     const edgeMap = new Map();
-    for (let he of this.baseFace.edges) {
+    for (const he of this.baseFace.edges) {
       const twin = he.twin();
       if (twin) {
         edgeMap.set(twin.loop.face.data.id, twin.edge);
       }
     }
 
-    for (let face of createdShell.faces) {
+    for (const face of createdShell.faces) {
       if (!face.data.productionInfo) {
         face.data.id = this.baseFace.id;
         face.data.productionInfo = this.baseFace.data.productionInfo;
-        for (let he of face.edges) {
+        for (const he of face.edges) {
           const twin = he.twin();
           if (twin) {
             const originEdge = edgeMap.get(twin.loop.face.data.id);

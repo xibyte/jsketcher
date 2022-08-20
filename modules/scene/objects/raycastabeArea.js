@@ -11,14 +11,14 @@ export default class RaycastableArea extends Object3D {
 
   raycast(raycaster, intersects ) {
     //need to apply world matrix
-    let center = this.getCenter();
-    let radius = this.getRadius();
-    let ray = raycaster.ray;
-    let vec = this._vec;
-    let proj = vec.copy(center).subtract(ray.center).dot(ray.dir);
+    const center = this.getCenter();
+    const radius = this.getRadius();
+    const ray = raycaster.ray;
+    const vec = this._vec;
+    const proj = vec.copy(center).subtract(ray.center).dot(ray.dir);
     vec.copy(ray.dir).multiplyScalar(proj).add(ray.center);
 
-    let distSq = vec.distanceToSquared(center);
+    const distSq = vec.distanceToSquared(center);
     if (distSq <= radius * this) {
       intersects.push({
         distance: Math.sqrt(distSq),

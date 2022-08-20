@@ -1,8 +1,8 @@
-import { ApplicationContext } from 'context';
+import { ApplicationContext } from 'cad/context';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MDatum } from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
@@ -21,6 +21,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
   label: 'Cone',
   icon: 'img/cad/cone',
   info: 'Cone',
+  path:__dirname,
   paramsInfo: ({ height, diameterA, diameterB }) => `(${r(height)} , ${r(diameterA)} , ${r(diameterB)} )`,
   form: [
     {
@@ -66,7 +67,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
   run: (params: PrimitiveConeParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;
@@ -83,28 +84,35 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     oci.pcone("cone", "csys", params.diameterA / 2, params.diameterB / 2, params.height);
 
-    const cone = occ.io.getShell("cone", new ExpectedOrderProductionAnalyzer(
-      [
-        {
-          id: 'F:SIDE',
-          productionInfo: {
-            role: 'sweep'
-          }
-        },
-        {
-          id: 'F:LID',
-          productionInfo: {
-            role: 'lid'
-          }
-        },
-        {
-          id: 'F:BASE',
-          productionInfo: {
-            role: 'base'
-          }
-        },
 
-      ],
+    const newFacesIds = [
+      {
+        id: 'F:SIDE',
+        productionInfo: {
+          role: 'sweep'
+        }
+      },
+    ];
+
+    if (params.diameterB > 0) {
+      newFacesIds.push({
+        id: 'F:BASE',
+        productionInfo: {
+          role: 'base'
+        }
+      })
+    }
+
+    if (params.diameterA > 0) {
+      newFacesIds.push({
+        id: 'F:LID',
+        productionInfo: {
+          role: 'lid'
+        }
+      });
+    }
+
+    const cone = occ.io.getShell("cone", new ExpectedOrderProductionAnalyzer(newFacesIds,
       [],
       []
     ));

@@ -13,3 +13,5 @@
 /node_modules
 /dist
 /.vs
+/web/docs/
+pnpm-lock.yaml

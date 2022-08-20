@@ -12,11 +12,11 @@ export class ContractibleObject {
     this.visitParams(p => out.push(p));
   }
 
-  init() {};
+  init() {}
 
-  visitParams() {};
+  visitParams() {}
 
-  visitChildren() {};
+  visitChildren() {}
 
   traverse(visitor) {
     visitor(this);

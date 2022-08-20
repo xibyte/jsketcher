@@ -1,8 +1,8 @@
-import { ApplicationContext } from 'context';
+import { ApplicationContext } from 'cad/context';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MDatum } from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
@@ -20,6 +20,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
   label: 'Torus',
   icon: 'img/cad/torus',
   info: 'Primitive Torus',
+  path:__dirname,
   paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} , ${r(tubeRadius)} )`,
   form: [
     {
@@ -59,7 +60,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
 
   run: (params: PrimitiveTorusParams, ctx: ApplicationContext) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const csys = params.locations?.csys || CSys.ORIGIN;

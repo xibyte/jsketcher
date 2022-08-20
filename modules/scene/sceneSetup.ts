@@ -16,15 +16,13 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
-import {TransformControls} from "three/examples/jsm/controls/TransformControls";
-import {stream} from "lstream";
+import {Emitter, stream} from "lstream";
 
 export default class SceneSetUp {
   workingSphere: number;
   container: HTMLElement;
   scene: Scene;
   rootGroup: Object3D;
-  onRendered: any;
   oCamera: OrthographicCamera;
   pCamera: PerspectiveCamera;
   camera: PerspectiveCamera;
@@ -33,19 +31,20 @@ export default class SceneSetUp {
   private _prevContainerWidth: number;
   private _prevContainerHeight: number;
   trackballControls: CADTrackballControls;
-  transformControls: TransformControls;
-  updateControlsAndHelpers: () => void;
   viewportSizeUpdate$ = stream();
-  
-  constructor(container, onRendered) {
+  sceneRendered$: Emitter<any> = stream();
+
+  renderRequested: boolean;
+
+  constructor(container) {
     
     this.workingSphere = 10000;
     this.container = container;
     this.scene = new Scene();
     this.rootGroup = this.scene;
-    this.onRendered = onRendered;
     this.scene.userData.sceneSetUp = this;
-    
+    this.renderRequested = false;
+
     this.setUpCamerasAndLights();
     this.setUpControls();
 
@@ -55,11 +54,15 @@ export default class SceneSetUp {
   aspect() {
     return this.container.clientWidth / this.container.clientHeight;
   }
-  
+
+  requestRender() {
+    this.renderRequested = true;
+  }
+
   createOrthographicCamera() {
-    let width = this.container.clientWidth;
-    let height = this.container.clientHeight;
-    let factor = ORTHOGRAPHIC_CAMERA_FACTOR;
+    const width = this.container.clientWidth;
+    const height = this.container.clientHeight;
+    const factor = ORTHOGRAPHIC_CAMERA_FACTOR;
     this.oCamera = new OrthographicCamera(-width / factor,
       width / factor,
       height / factor,
@@ -101,7 +104,7 @@ export default class SceneSetUp {
       this.updateOrthographicCameraViewport();
       this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
       this.viewportSizeUpdate$.next();
-      this.render();
+      this.__render_NeverCallMeFromOutside();
     }
   }
 
@@ -120,9 +123,9 @@ export default class SceneSetUp {
   }
 
   updateOrthographicCameraViewport() {
-    let width = this.container.clientWidth;
-    let height = this.container.clientHeight;
-    let factor = ORTHOGRAPHIC_CAMERA_FACTOR;
+    const width = this.container.clientWidth;
+    const height = this.container.clientHeight;
+    const factor = ORTHOGRAPHIC_CAMERA_FACTOR;
     this.oCamera.left = - width / factor;
     this.oCamera.right = width / factor;
     this.oCamera.top = height / factor;
@@ -131,13 +134,13 @@ export default class SceneSetUp {
   }
   
   setCamera(camera) {
-    let camPosition = new Vector3();
-    let camRotation = new Euler();
-    let tempMatrix = new Matrix4();
+    const camPosition = new Vector3();
+    const camRotation = new Euler();
+    const tempMatrix = new Matrix4();
 
     camPosition.setFromMatrixPosition( this.camera.matrixWorld );
     camRotation.setFromRotationMatrix( tempMatrix.extractRotation( this.camera.matrixWorld ) );
-    let camDistance = camera.position.length();
+    const camDistance = camera.position.length();
 
     camera.up.copy(this.camera.up);
     camera.position.copy(camPosition);
@@ -148,13 +151,12 @@ export default class SceneSetUp {
     
     this.camera = camera;
     this.trackballControls.object = camera;
-    this.transformControls.camera = camera;
-    this.updateControlsAndHelpers();
+    this.requestRender();
   }
 
   setUpControls() {
     //  controls = new THREE.OrbitControls( camera , renderer.domElement);
-    let trackballControls: any = new CADTrackballControls(this.camera , this.renderer.domElement);
+    const trackballControls: any = new CADTrackballControls(this.camera , this.renderer.domElement);
 
     // document.addEventListener( 'mousemove', function(){
 
@@ -173,38 +175,21 @@ export default class SceneSetUp {
     trackballControls.dynamicDampingFactor = 0.3;
 
     trackballControls.keys = [ 65, 83, 68 ];
-    trackballControls.addEventListener( 'change', () => this.render());
-
-    let transformControls: any = new TransformControls( this.camera, this.renderer.domElement );
-    transformControls.addEventListener( 'change', () => this.render() );
-    this.scene.add( transformControls );
-    
     this.trackballControls = trackballControls;
-    this.transformControls = transformControls;
-
-    let updateTransformControls = () => {
-      if (transformControls.object !== undefined) {
-        if (transformControls.object.parent === undefined) {
-          transformControls.detach();
-          this.render();
-        }
-        transformControls.update();
-      }
-    };
-
-    this.updateControlsAndHelpers = function() {
-      trackballControls.update();
-      updateTransformControls();
-    };
   }
 
   createRaycaster(viewX, viewY) {
-    let raycaster = new Raycaster();
+    const raycaster = new Raycaster();
     raycaster.params.Line.threshold = 12 * (this._zoomMeasure() * 0.8);
-    let x = ( viewX / this.container.clientWidth ) * 2 - 1;
-    let y = - ( viewY / this.container.clientHeight ) * 2 + 1;
 
-    let mouse = new Vector3( x, y, 1 );
+    (raycaster.params as any).Line2 = {
+      threshold: 20
+    };
+
+    const x = ( viewX / this.container.clientWidth ) * 2 - 1;
+    const y = - ( viewY / this.container.clientHeight ) * 2 + 1;
+
+    const mouse = new Vector3( x, y, 1 );
     raycaster.setFromCamera( mouse, this.camera );
     return raycaster;
   }
@@ -242,20 +227,20 @@ export default class SceneSetUp {
   }
 
   customRaycast(from3, to3, objects) {
-    let raycaster = new Raycaster();
-    let from = new Vector3().fromArray(from3);
-    let to = new Vector3().fromArray(to3);
-    let dir = to.sub(from);
-    let dist = dir.length();
+    const raycaster = new Raycaster();
+    const from = new Vector3().fromArray(from3);
+    const to = new Vector3().fromArray(to3);
+    const dir = to.sub(from);
+    const dist = dir.length();
     raycaster.set(from, dir.normalize());
     return raycaster.intersectObjects(objects, true ).filter(h => h.distance <= dist);
   }
   
   modelToScreen(pos) {
-    let width = this.container.clientWidth, height = this.container.clientHeight;
-    let widthHalf = width / 2, heightHalf = height / 2;
+    const width = this.container.clientWidth, height = this.container.clientHeight;
+    const widthHalf = width / 2, heightHalf = height / 2;
 
-    let vector = new Vector3();
+    const vector = new Vector3();
     vector.copy(pos);
     vector.project(this.camera);
 
@@ -265,9 +250,9 @@ export default class SceneSetUp {
   }
   
   lookAtObject(obj) {
-    let box = new Box3();
+    const box = new Box3();
     box.setFromObject(obj);
-    let size = box.getSize(new Vector3());
+    const size = box.getSize(new Vector3());
     //this.camera.position.set(0,0,0);
     box.getCenter(this.camera.position);
     const maxSize = Math.max(size.x, size.z);
@@ -283,15 +268,19 @@ export default class SceneSetUp {
   
   animate() {
     requestAnimationFrame( () => this.animate() );
-    this.updateControlsAndHelpers();
+    const controlsChangedViewpoint = this.trackballControls.evaluate();
+    if (controlsChangedViewpoint || this.renderRequested) {
+      this.__render_NeverCallMeFromOutside();
+    }
     this.updateViewportSizeIfNeeded();
-  };
+  }
 
-  render() {
+  private __render_NeverCallMeFromOutside() {
+    this.renderRequested = false;
     this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
     this.renderer.render(this.scene, this.camera);
-    this.onRendered();
-  };
+    this.sceneRendered$.next();
+  }
 
   domElement() {
     return this.renderer.domElement;   

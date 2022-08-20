@@ -1,4 +1,3 @@
-import verb from 'verb-nurbs'
 import BrepCurve from 'geom/curves/brepCurve';
 import NurbsCurve from 'geom/curves/nurbsCurve';
 import {makeAngle0_360} from 'math/commons'
@@ -12,7 +11,7 @@ import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
 
 const RESOLUTION = 20;
 
-class SketchPrimitive {
+export class SketchPrimitive {
 
   id: string;
   inverted: boolean;
@@ -50,14 +49,14 @@ class SketchPrimitive {
     if (this.inverted) {
       verbNurbs = verbNurbs.reverse();
     }
-    let data = verbNurbs.asNurbs();
+    const data = verbNurbs.asNurbs();
     normalizeCurveEnds(data);
     verbNurbs = new verb.geom.NurbsCurve(data);
 
     return new BrepCurve(new NurbsCurve(verbNurbs));
   }
 
-  toVerbNurbs(tr) {
+  toVerbNurbs(tr, csys): any {
     throw 'not implemented'
   }
 
@@ -151,7 +150,7 @@ export class Arc extends SketchPrimitive {
     const xAxis = pointAtAngle(startAngle);
     const yAxis = pointAtAngle(startAngle + Math.PI * 0.5);
 
-    let arc = new verb.geom.Arc(tr(this.c).data(), xAxis.data(), yAxis.data(), distanceAB(this.c, this.a), 0, Math.abs(angle));
+    const arc = new verb.geom.Arc(tr(this.c).data(), xAxis.data(), yAxis.data(), distanceAB(this.c, this.a), 0, Math.abs(angle));
     
     return adjustEnds(arc, tr(this.a), tr(this.b))
   }
@@ -196,6 +195,11 @@ export class Arc extends SketchPrimitive {
 }
 
 export class BezierCurve extends SketchPrimitive {
+  a: Vector;
+  b: Vector;
+  cp1: Vector;
+  cp2: Vector;
+
   constructor(id, a, b, cp1, cp2) {
     super(id);
     this.a = a;
@@ -210,6 +214,14 @@ export class BezierCurve extends SketchPrimitive {
 }
 
 export class EllipticalArc extends SketchPrimitive {
+
+  c: Vector;
+  rx: number;
+  ry: number;
+  rot: number
+  a: Vector;
+  b: Vector;
+
   constructor(id, c, rx, ry, rot, a, b) {
     super(id);
     this.c = c;
@@ -267,6 +279,12 @@ export class Circle extends SketchPrimitive {
 }
 
 export class Ellipse extends SketchPrimitive {
+
+  c: Vector;
+  rx: number;
+  ry: number;
+  rot: number
+
   constructor(id, c, rx, ry, rot) {
     super(id);
     this.c = c;
@@ -306,9 +324,9 @@ export class Contour {
   }
 
   tessellateInCoordinateSystem(csys) {
-    let out = [];
+    const out = [];
     for (let segIdx = 0; segIdx < this.segments.length; ++segIdx) {
-      let segment = this.segments[segIdx];
+      const segment = this.segments[segIdx];
       segment.toNurbs(csys).tessellate().forEach(p => out.push(p));
       out.pop();
     }
@@ -318,7 +336,7 @@ export class Contour {
   transferInCoordinateSystem(csys) {
     const cc = [];
     for (let segIdx = 0; segIdx < this.segments.length; ++segIdx) {
-      let segment = this.segments[segIdx];
+      const segment = this.segments[segIdx];
       cc.push(segment.toNurbs(csys));
     }
     return cc;
@@ -326,7 +344,7 @@ export class Contour {
 
   tessellate(resolution) {
     const tessellation = [];
-    for (let segment of this.segments) {
+    for (const segment of this.segments) {
       const segmentTessellation = segment.tessellate(resolution);
       //skip last one because it's guaranteed to be closed
       for (let i = 0; i < segmentTessellation.length - 1; ++i) {
@@ -346,23 +364,8 @@ export class Contour {
   }
 }
 
-class CompositeCurve {
-
-  constructor() {
-    this.curves = [];
-    this.points = [];
-    this.groups = [];
-  }
-
-  add(curve, point, group) {
-    this.curves.push(curve);
-    this.points.push(point);
-    this.groups.push(group);
-  }
-}
-
 function adjustEnds(arc, a, b) {
-  let data = arc.asNurbs();
+  const data = arc.asNurbs();
 
   function setHomoPoint(homoPoint, vector) {
     homoPoint[0] = vector.x * homoPoint[3];

@@ -1,10 +1,10 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MBrepFace, MFace} from "cad/model/mface";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {UnitVector} from "math/vector";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MObject} from "cad/model/mobject";
 import {FaceRef} from "cad/craft/e0/OCCUtils";
 import {FromSketchProductionAnalyzer, PushPullFaceProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
@@ -14,7 +14,6 @@ interface ExtrudeParams {
   length: number;
   doubleSided:boolean,
   face: MFace;
-  profiles: MObject[];
   direction?: UnitVector,
   boolean: BooleanDefinition
 }
@@ -38,19 +37,15 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   },
   icon: 'img/cad/extrude',
   info: 'extrudes 2D sketch',
+  path:__dirname,
   paramsInfo: ({length}) => `(${r(length)})`,
   run: (params: ExtrudeParams, ctx: ApplicationContext, rawParams: any) => {
 
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const face = params.face;
 
-    if (params.profiles?.length > 0) {
-
-      params.profiles
-
-    }
     let dir: UnitVector;
     if (params.direction) {
       dir = params.direction.normalize();
@@ -60,12 +55,10 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
         dir._negate();
       }
     }
-    let extrusionVector = dir._multiply(params.length);
+    const extrusionVector = dir._multiply(params.length);
 
-    let sketchId = face.id;
-    let sketch = ctx.sketchStorageService.readSketch(sketchId);
-
-    let sweepSources: FaceRef[];
+    const sketchId = face.id;
+    const sketch = ctx.sketchStorageService.readSketch(sketchId);
 
     if (!sketch) {
       if (face instanceof MBrepFace) {
@@ -83,7 +76,7 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       csys.origin._minus(extrusionVector);
       extrusionVector._scale(2);
     }
-    sweepSources = occ.utils.sketchToFaces(sketch, csys)
+    const sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
 
@@ -99,7 +92,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     return occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
 
   },
-
 
   form: [
     {
@@ -126,14 +118,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       },
     },
     {
-      type: 'selection',
-      name: 'profiles',
-      capture: [EntityKind.FACE, EntityKind.LOOP],
-      label: 'profiles',
-      optional: true,
-      multi: true
-    },
-    {
       type: 'direction',
       name: 'direction',
       label: 'direction',
@@ -147,6 +131,8 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     }
 
   ],
+
+  defaultActiveField: 'face',
 
   masking: [
     {

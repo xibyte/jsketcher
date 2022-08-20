@@ -1,7 +1,7 @@
 import {SketchGeom} from "cad/sketch/sketchReader";
-import {CoreContext} from "context";
+import {ApplicationContext} from "cad/context";
 import CSys from "math/csys";
-import {OperationResult} from "cad/craft/craftPlugin";
+import {OperationResult} from "cad/craft/craftBundle";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
 import {WireRef} from "cad/craft/e0/occSketchLoader";
 import {FromMObjectProductionAnalyzer, ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
@@ -27,7 +27,7 @@ export interface FaceRef extends WireRef {
   topoShape: Shell,
 }
 
-export function createOCCUtils(ctx: CoreContext): OCCUtils {
+export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
 
   function sketchToFaces(sketch: SketchGeom, csys: CSys): FaceRef[] {
     const occ = ctx.occService;
@@ -40,7 +40,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
     return wires.map((wire, i) => {
       const faceName = "Face/" + i;
       oci.mkplane(faceName, wire.wire);
-      let brepShell = ctx.occService.io.getLightShell(faceName);
+      const brepShell = ctx.occService.io.getLightShell(faceName);
 
       return {
         face: faceName,
@@ -82,7 +82,7 @@ export function createOCCUtils(ctx: CoreContext): OCCUtils {
       }
       
 
-      let targetNames = targets.map((target, i) => {
+      const targetNames = targets.map((target, i) => {
         const targetName = 'Target/' + i;
         const wasPushed = ctx.occService.io.pushModel(target, targetName);
         if (!wasPushed) {

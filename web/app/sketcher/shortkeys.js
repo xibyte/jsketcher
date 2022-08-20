@@ -4,7 +4,7 @@ import {getSketcherActionIndex} from "./actions";
 
 export function initShortkeys(ctx) {
 
-  for (let action of Object.keys(keymap)) {
+  for (const action of Object.keys(keymap)) {
     Mousetrap.bind(keymap[action], e =>{
       e.preventDefault();//prevent the browser to execute it's keyboard handlers.
     

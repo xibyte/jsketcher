@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 export default function InputControl(inprops) {
   
-    let {type, inputRef, width, onWheel, ...props} = inprops;
+    const {type, inputRef, width, onWheel, ...props} = inprops;
 
     const style = width&&{
       width
@@ -17,16 +17,8 @@ export default function InputControl(inprops) {
       }
     }, [divRef.current])
 
-    return <div className={type} ref={divRef}>
+    return <div className={type||'text'} ref={divRef}>
       <input type='text' ref={inputRef} {...props} spellCheck='false' style={style} onWheel={onWheel}/>
     </div>;
 
 }
-
-InputControl.propTypes = {
-  type: PropTypes.oneOf(['number', 'text']),
-};
-
-InputControl.defaultProps = {
-  type: 'text'
-};

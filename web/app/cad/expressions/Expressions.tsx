@@ -9,7 +9,7 @@ import cx from 'classnames';
 import {actionDecorator} from '../actions/actionDecorators';
 import Folder from 'ui/components/Folder';
 import Stack from 'ui/components/Stack';
-import {AppContext} from "../dom/components/AppContext";
+import {ReactApplicationContext} from "../dom/ReactApplicationContext";
 import {useStream} from "ui/effects";
 
 
@@ -17,7 +17,7 @@ export default function Expressions() {
   
   const [activeTab, setActiveTab] = useState('Script');
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
   const synced = useStream(ctx => ctx.expressionService.synced$);
   const errors = useStream(ctx => ctx.expressionService.errors$);
   const reevaluateExpressions = ctx.expressionService.reevaluateExpressions;

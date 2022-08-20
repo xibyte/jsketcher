@@ -16,7 +16,7 @@ import {SketcherAppContext} from "./SketcherAppContext";
 import {TextField} from "cad/craft/wizard/components/form/Fields";
 
 
-export default function SketcherOperationWizard({}) {
+export default function SketcherOperationWizard() {
 
   const [state, setState] = useState(null);
 
@@ -37,7 +37,7 @@ export default function SketcherOperationWizard({}) {
       const params = {};
       const indexedSchema = {};
 
-      for (let field of schema) {
+      for (const field of schema) {
         indexedSchema[field.name] = field;
 
         if (field.type === 'selection') {
@@ -55,7 +55,7 @@ export default function SketcherOperationWizard({}) {
           const {activeParam, params} = state;
           let selectionParam = activeParam;
           if (!(indexedSchema[selectionParam] && indexedSchema[selectionParam].type === 'selection')) {
-            let found = schema.find(f => f.type === 'selection');
+            const found = schema.find(f => f.type === 'selection');
             if (!found) {
               return state;
             }
@@ -150,7 +150,7 @@ function entityRenderer(obj) {
 
 
 function syncSelection(params, schema, viewer) {
-  for (let field of schema) {
+  for (const field of schema) {
     if (field.type === 'selection') {
       const selection = params[field.name];
       if (selection) {

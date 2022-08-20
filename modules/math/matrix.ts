@@ -1,5 +1,6 @@
 import Vector, {AXIS, UnitVector} from "math/vector";
 import {Vec3} from "math/vec";
+import * as vec from "math/vec";
 import {VectorTransformer} from "math/functions";
 
 export type Matrix3x4Data = [[number, number, number, number], [number, number, number, number], [number, number, number, number]];
@@ -34,10 +35,10 @@ export class Matrix3x4 {
     this.mzz = 1;
     this.tz = 0;
     return this;
-  };
+  }
 
   setBasis(basis: [Vector, Vector, Vector]): Matrix3x4 {
-    var b = basis;
+    const b = basis;
     this.mxx = b[0].x;
     this.mxy = b[1].x;
     this.mxz = b[2].x;
@@ -51,7 +52,24 @@ export class Matrix3x4 {
     this.mzz = b[2].z;
     this.tz = 0;
     return this;
-  };
+  }
+
+  setBasis3(basis: [Vec3, Vec3, Vec3]): Matrix3x4 {
+    const b = basis;
+    this.mxx = b[0][0];
+    this.mxy = b[1][0];
+    this.mxz = b[2][0];
+    this.tx = 0;
+    this.myx = b[0][1];
+    this.myy = b[1][1];
+    this.myz = b[2][1];
+    this.ty = 0;
+    this.mzx = b[0][2];
+    this.mzy = b[1][2];
+    this.mzz = b[2][2];
+    this.tz = 0;
+    return this;
+  }
 
   setBasisAxises(x: Vector, y: Vector, z: Vector): Matrix3x4 {
     this.mxx = x.x;
@@ -67,7 +85,7 @@ export class Matrix3x4 {
     this.mzz = z.z;
     this.tz = 0;
     return this;
-  };
+  }
 
   setBasisAndTranslation(basis: [Vector, Vector, Vector], translation: Vector): Matrix3x4 {
     this.setBasis(basis);
@@ -75,28 +93,60 @@ export class Matrix3x4 {
     this.ty = translation.y;
     this.tz = translation.z;
     return this;
-  };
+  }
+
+  setBasisAndTranslation3(basis: [Vec3, Vec3, Vec3], translation: Vec3): Matrix3x4 {
+    this.setBasis3(basis);
+    this.tx = translation[0];
+    this.ty = translation[1];
+    this.tz = translation[2];
+    return this;
+  }
+
+  getBasis3(): [Vec3, Vec3, Vec3] {
+    return [
+      [
+        this.mxx,
+        this.myx,
+        this.mzx
+      ],
+      [
+        this.mxy,
+        this.myy,
+        this.mzy
+      ],
+      [
+        this.mxz,
+        this.myz,
+        this.mzz
+      ]
+    ]
+  }
+
+  getTranslation3(): Vec3 {
+    return [this.tx, this.ty, this.tz];
+  }
 
   scale(dx: number, dy: number, dz: number): Matrix3x4 {
     this.mxx *= dx;
     this.myy *= dy;
     this.mzz *= dz;
     return this;
-  };
+  }
 
   translate(dx: number, dy: number, dz: number): Matrix3x4 {
     this.tx += dx;
     this.ty += dy;
     this.tz += dz;
     return this;
-  };
+  }
 
   translateVec({x, y, z}: Vector): Matrix3x4 {
     this.tx += x;
     this.ty += y;
     this.tz += z;
     return this;
-  };
+  }
 
   set3x3(
     mxx: number, mxy: number, mxz: number,
@@ -113,7 +163,7 @@ export class Matrix3x4 {
     this.mzy = mzy;
     this.mzz = mzz;
     return this;
-  };
+  }
 
   set3x4(
     mxx: number, mxy: number, mxz: number, tx: number,
@@ -133,7 +183,7 @@ export class Matrix3x4 {
     this.mzz = mzz;
     this.tz = tz;
     return this;
-  };
+  }
 
   setMatrix(m: Matrix3x4): Matrix3x4 {
     this.mxx = m.mxx;
@@ -149,7 +199,7 @@ export class Matrix3x4 {
     this.mzz = m.mzz;
     this.tz = m.tz;
     return this;
-  };
+  }
 
   setToMatrix4x4(m: any): void {
     m.set(
@@ -158,7 +208,7 @@ export class Matrix3x4 {
       this.mzx, this.mzy, this.mzz, this.tz,
       0, 0, 0, 1
     );
-  };
+  }
 
   toArray(): Matrix3x4Data {
     return [
@@ -166,7 +216,7 @@ export class Matrix3x4 {
       [this.myx, this.myy, this.myz, this.ty],
       [this.mzx, this.mzy, this.mzz, this.tz]
     ];
-  };
+  }
 
   toFlatArray(): Matrix3x4FlatData {
     return [
@@ -174,19 +224,37 @@ export class Matrix3x4 {
       this.myx, this.myy, this.myz, this.ty,
       this.mzx, this.mzy, this.mzz, this.tz
     ];
-  };
+  }
 
   invert(): Matrix3x4 {
     return this.__invert(new Matrix3x4());
-  };
+  }
 
   _invert(): Matrix3x4 {
     return this.__invert(this);
-  };
+  }
+
+  normalize(): Matrix3x4 {
+    return this.__normalize(new Matrix3x4());
+  }
+
+  _normalize(): Matrix3x4 {
+    return this.__normalize(this);
+  }
+
+  __normalize(out: Matrix3x4): Matrix3x4 {
+    const basis = this.getBasis3();
+    const tr = this.getTranslation3();
+    basis.forEach(vec._normalize);
+
+    out.setBasisAndTranslation3(basis, tr);
+
+    return out;
+  }
 
   __invert(out: Matrix3x4): Matrix3x4 {
 
-    var det =
+    const det =
       this.mxx * (this.myy * this.mzz - this.mzy * this.myz) +
       this.mxy * (this.myz * this.mzx - this.mzz * this.myx) +
       this.mxz * (this.myx * this.mzy - this.mzx * this.myy);
@@ -195,22 +263,22 @@ export class Matrix3x4 {
       return null;
     }
 
-    var cxx = this.myy * this.mzz - this.myz * this.mzy;
-    var cyx = -this.myx * this.mzz + this.myz * this.mzx;
-    var czx = this.myx * this.mzy - this.myy * this.mzx;
-    var cxt = -this.mxy * (this.myz * this.tz - this.mzz * this.ty)
+    const cxx = this.myy * this.mzz - this.myz * this.mzy;
+    const cyx = -this.myx * this.mzz + this.myz * this.mzx;
+    const czx = this.myx * this.mzy - this.myy * this.mzx;
+    const cxt = -this.mxy * (this.myz * this.tz - this.mzz * this.ty)
       - this.mxz * (this.ty * this.mzy - this.tz * this.myy)
       - this.tx * (this.myy * this.mzz - this.mzy * this.myz);
-    var cxy = -this.mxy * this.mzz + this.mxz * this.mzy;
-    var cyy = this.mxx * this.mzz - this.mxz * this.mzx;
-    var czy = -this.mxx * this.mzy + this.mxy * this.mzx;
-    var cyt = this.mxx * (this.myz * this.tz - this.mzz * this.ty)
+    const cxy = -this.mxy * this.mzz + this.mxz * this.mzy;
+    const cyy = this.mxx * this.mzz - this.mxz * this.mzx;
+    const czy = -this.mxx * this.mzy + this.mxy * this.mzx;
+    const cyt = this.mxx * (this.myz * this.tz - this.mzz * this.ty)
       + this.mxz * (this.ty * this.mzx - this.tz * this.myx)
       + this.tx * (this.myx * this.mzz - this.mzx * this.myz);
-    var cxz = this.mxy * this.myz - this.mxz * this.myy;
-    var cyz = -this.mxx * this.myz + this.mxz * this.myx;
-    var czz = this.mxx * this.myy - this.mxy * this.myx;
-    var czt = -this.mxx * (this.myy * this.tz - this.mzy * this.ty)
+    const cxz = this.mxy * this.myz - this.mxz * this.myy;
+    const cyz = -this.mxx * this.myz + this.mxz * this.myx;
+    const czz = this.mxx * this.myy - this.mxy * this.myx;
+    const czt = -this.mxx * (this.myy * this.tz - this.mzy * this.ty)
       - this.mxy * (this.ty * this.mzx - this.tz * this.myx)
       - this.tx * (this.myx * this.mzy - this.mzx * this.myy);
 
@@ -227,23 +295,23 @@ export class Matrix3x4 {
     out.mzz = czz / det;
     out.tz = czt / det;
     return out;
-  };
+  }
 
   combine(transform: Matrix3x4, out?: Matrix3x4): Matrix3x4 {
-    var txx = transform.mxx;
-    var txy = transform.mxy;
-    var txz = transform.mxz;
-    var ttx = transform.tx;
-    var tyx = transform.myx;
-    var tyy = transform.myy;
-    var tyz = transform.myz;
-    var tty = transform.ty;
-    var tzx = transform.mzx;
-    var tzy = transform.mzy;
-    var tzz = transform.mzz;
-    var ttz = transform.tz;
+    const txx = transform.mxx;
+    const txy = transform.mxy;
+    const txz = transform.mxz;
+    const ttx = transform.tx;
+    const tyx = transform.myx;
+    const tyy = transform.myy;
+    const tyz = transform.myz;
+    const tty = transform.ty;
+    const tzx = transform.mzx;
+    const tzy = transform.mzy;
+    const tzz = transform.mzz;
+    const ttz = transform.tz;
 
-    var m = out || new Matrix3x4();
+    const m = out || new Matrix3x4();
     m.mxx = (this.mxx * txx + this.mxy * tyx + this.mxz * tzx);
     m.mxy = (this.mxx * txy + this.mxy * tyy + this.mxz * tzy);
     m.mxz = (this.mxx * txz + this.mxy * tyz + this.mxz * tzz);
@@ -258,23 +326,23 @@ export class Matrix3x4 {
     m.tz = (this.mzx * ttx + this.mzy * tty + this.mzz * ttz + this.tz);
 
     return m;
-  };
+  }
 
   combine3x3(transform: Matrix3x4, out?: Matrix3x4): Matrix3x4 {
-    var txx = transform.mxx;
-    var txy = transform.mxy;
-    var txz = transform.mxz;
+    const txx = transform.mxx;
+    const txy = transform.mxy;
+    const txz = transform.mxz;
 
-    var tyx = transform.myx;
-    var tyy = transform.myy;
-    var tyz = transform.myz;
+    const tyx = transform.myx;
+    const tyy = transform.myy;
+    const tyz = transform.myz;
 
-    var tzx = transform.mzx;
-    var tzy = transform.mzy;
-    var tzz = transform.mzz;
+    const tzx = transform.mzx;
+    const tzy = transform.mzy;
+    const tzz = transform.mzz;
 
 
-    var m = out || new Matrix3x4();
+    const m = out || new Matrix3x4();
     m.mxx = (this.mxx * txx + this.mxy * tyx + this.mxz * tzx);
     m.mxy = (this.mxx * txy + this.mxy * tyy + this.mxz * tzy);
     m.mxz = (this.mxx * txz + this.mxy * tyz + this.mxz * tzz);
@@ -289,25 +357,25 @@ export class Matrix3x4 {
 
 
     return m;
-  };
+  }
 
   __applyNoTranslation(vector: Vector, out: Vector): Vector;
   __applyNoTranslation(vector: UnitVector, out: UnitVector): UnitVector;
   __applyNoTranslation(vector: Vector, out: Vector): Vector {
-    let x = vector.x;
-    let y = vector.y;
-    let z = vector.z;
+    const x = vector.x;
+    const y = vector.y;
+    const z = vector.z;
     out.x = this.mxx * x + this.mxy * y + this.mxz * z;
     out.y = this.myx * x + this.myy * y + this.myz * z;
     out.z = this.mzx * x + this.mzy * y + this.mzz * z;
     return out;
-  };
+  }
 
   _applyNoTranslation(vector: Vector): Vector;
   _applyNoTranslation(vector: UnitVector): UnitVector;
   _applyNoTranslation(vector: Vector): Vector {
     return this.__applyNoTranslation(vector, vector);
-  };
+  }
 
   applyNoTranslation: {
     (vector: UnitVector): UnitVector;
@@ -316,32 +384,32 @@ export class Matrix3x4 {
 
   _apply(vector: Vector): Vector {
     return this.__apply(vector, vector);
-  };
+  }
 
   __apply(vector: Vector, out: Vector): Vector {
-    let x = vector.x;
-    let y = vector.y;
-    let z = vector.z;
+    const x = vector.x;
+    const y = vector.y;
+    const z = vector.z;
     out.x = this.mxx * x + this.mxy * y + this.mxz * z + this.tx;
     out.y = this.myx * x + this.myy * y + this.myz * z + this.ty;
     out.z = this.mzx * x + this.mzy * y + this.mzz * z + this.tz;
     return out;
-  };
+  }
 
   apply3(data: Vec3): Vec3 {
     return this.__apply3(data, [0, 0, 0])
-  };
+  }
 
   _apply3(data: Vec3): Vec3 {
     return this.__apply3(data, data);
-  };
+  }
 
   __apply3([x, y, z]: Vec3, out: Vec3): Vec3 {
     out[0] = this.mxx * x + this.mxy * y + this.mxz * z + this.tx;
     out[1] = this.myx * x + this.myy * y + this.myz * z + this.ty;
     out[2] = this.mzx * x + this.mzy * y + this.mzz * z + this.tz;
     return out;
-  };
+  }
 
   rotateWithSphericalAxis(axisAzimuth: number, axisInclination: number, angle: number, pivot: Vector) {
 
@@ -352,11 +420,11 @@ export class Matrix3x4 {
     );
 
     return Matrix3x4.rotateMatrix(angle, axis, pivot, this);
-  };
+  }
 
   rotate(angle: number, axis: Vector, pivot: Vector) {
     return Matrix3x4.rotateMatrix(angle, axis, pivot, this);
-  };
+  }
 
   static rotateMatrix(angle: number, axis: Vector, pivot: Vector, matrix?: Matrix3x4): Matrix3x4 {
     const sin = Math.sin(angle);
@@ -376,8 +444,8 @@ export class Matrix3x4 {
   }
 
   static rotationMatrix(cos: number, sin: number, axis: Vector, pivot: Vector, matrix?: Matrix3x4): Matrix3x4 {
-    var axisX, axisY, axisZ;
-    var m = matrix || new Matrix3x4();
+    let axisX, axisY, axisZ;
+    const m = matrix || new Matrix3x4();
 
     if (axis === AXIS.X || axis === AXIS.Y || axis === AXIS.Z) {
       axisX = axis.x;
@@ -385,7 +453,7 @@ export class Matrix3x4 {
       axisZ = axis.z;
     } else {
       // normalize
-      var mag = axis.length();
+      const mag = axis.length();
 
       if (mag == 0.0) {
         return m;
@@ -396,9 +464,9 @@ export class Matrix3x4 {
       }
     }
 
-    var px = pivot.x;
-    var py = pivot.y;
-    var pz = pivot.z;
+    const px = pivot.x;
+    const py = pivot.y;
+    const pz = pivot.z;
 
     m.mxx = cos + axisX * axisX * (1 - cos);
     m.mxy = axisX * axisY * (1 - cos) - axisZ * sin;
@@ -416,7 +484,7 @@ export class Matrix3x4 {
     m.mzz = cos + axisZ * axisZ * (1 - cos);
     m.tz = pz * (1 - m.mzz) - px * m.mzx - py * m.mzy;
     return m;
-  };
+  }
 
   apply: VectorTransformer = vector => this.__apply(vector, new Vector());
 

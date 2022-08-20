@@ -1,6 +1,5 @@
 import * as ActionHelpers from './actionHelpers'
 import {AiOutlineExport} from "react-icons/ai";
-import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";
 
 export default [
   {
@@ -137,7 +136,7 @@ export default [
       info: 'switch camera mode between perspective and orthographic',
     },
     invoke: context => {
-      let viewer = context.services.viewer;
+      const viewer = context.services.viewer;
       viewer.toggleCamera();
       viewer.render();
     }
@@ -183,17 +182,6 @@ export default [
       info: 'toggle whether to show sketches on a solid face'
     }
   },
-
-  {
-    id: 'LookAtSolid',
-    appearance: {
-      cssIcons: ['crosshairs'],
-      label: 'look at solid',
-      info: 'position camera at the solid at zoom to fit it',
-    },
-    invoke: (context) => app.lookAtSolid(app.inputManager.context.attr('data-id'))
-  },
-  
   {
     id: 'noIcon',
     appearance: {

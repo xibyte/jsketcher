@@ -11,11 +11,11 @@ export interface  SelectionMatcher {
 
 export function matchAvailableSubjects(selection, subjects) {
 
-  let matched = [];
-  let matchIndex = new MatchIndex(selection);
+  const matched = [];
+  const matchIndex = new MatchIndex(selection);
 
   if (selection.length) {
-    for (let action of  subjects) {
+    for (const action of  subjects) {
       if (action.selectionMatcher && matchSelection(action.selectionMatcher, matchIndex, true)) {
         matched.push(action);
       }
@@ -35,10 +35,10 @@ export function matchSelection(definition, matchIndex, fast) {
     if (min !== undefined && selection.length < min) {
       return false;
     }
-    for (let obj of selection) {
+    for (const obj of selection) {
 
       let hit = false;
-      for (let constructor of types) {
+      for (const constructor of types) {
         if (typeToString(constructor) === obj.TYPE) {
           hit = true;
           break;
@@ -55,7 +55,7 @@ export function matchSelection(definition, matchIndex, fast) {
     matchIndex.reset(fast);
 
 
-    for (let item of definition.sequence) {
+    for (const item of definition.sequence) {
       if (!matchIndex.mark(item.types, item.quantity)) {
         return false;
       }
@@ -130,7 +130,7 @@ export class MatchIndex {
   }
 
   mark(types, quantity) {
-    for (let type of types) {
+    for (const type of types) {
       const info = this.typeMap.get(typeToString(type));
       if (!info) {
         continue;

@@ -18,17 +18,17 @@ export function SketchObjectExplorer() {
   }
 
   const select = (obj, exclusive) => {
-    let viewer = ctx.viewer;
+    const viewer = ctx.viewer;
     viewer.select([obj], exclusive);
     viewer.refresh();
   };
   const deselect = obj => {
-    let viewer = ctx.viewer;
+    const viewer = ctx.viewer;
     viewer.deselect(obj);
     viewer.refresh();
   };
   const setRole = (obj, role) => {
-    let viewer = ctx.viewer;
+    const viewer = ctx.viewer;
     if (obj.aux) {
       return;
     }

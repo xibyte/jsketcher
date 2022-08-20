@@ -1,3 +1,5 @@
+import {GiCube} from "react-icons/all";
+
 export default [
   {
     id: 'file',
@@ -27,6 +29,13 @@ export default [
       'StandardViewTop', 'StandardViewBottom', 'StandardView3Way']
   },
   {
+    id: 'viewModes',
+    label: 'mode',
+    icon: GiCube,
+    info: 'view/render mode',
+    actions: ['ViewMode_WIREFRAME_ON', 'ViewMode_SHADED_ON', 'ViewMode_SHADED_WITH_EDGES_ON']
+  },
+  {
     id: 'boolean',
     label: 'bool',
     cssIcons: ['pie-chart'],
@@ -41,12 +50,6 @@ export default [
     actions: ['EXTRUDE', 'CUT', 'REVOLVE', 'LOFT', 'FILLET', '-', 
       'PLANE', 'BOX', 'SPHERE', 'CONE', 'CYLINDER', 'TORUS', '-',
       'EditFace']
-  },
-  {
-    id: 'SolidContext',
-    label: 'solid-context',
-    info: 'solid context actions',
-    actions: ['LookAtSolid']
   },
   {
     id: 'datum',

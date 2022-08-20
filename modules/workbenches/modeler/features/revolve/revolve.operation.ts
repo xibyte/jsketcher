@@ -1,18 +1,12 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {MFace} from "cad/model/mface";
-import {ApplicationContext} from "context";
+import {MBrepFace, MFace} from "cad/model/mface";
+import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import Axis from "math/axis";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
-import { Edge } from "brep/topo/edge";
-import { FaceRef } from "cad/craft/e0/OCCUtils";
-import { GetRef } from "cad/craft/e0/interact";
-import {
-  FromMObjectProductionAnalyzer,
-  FromSketchProductionAnalyzer,
-  ProductionAnalyzer
-} from "cad/craft/production/productionAnalyzer";
+import {OperationDescriptor} from "cad/craft/operationBundle";
+import {FaceRef} from "cad/craft/e0/OCCUtils";
+import {FromMObjectProductionAnalyzer, FromSketchProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 
 interface RevolveParams {
   angle: number;
@@ -26,54 +20,44 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
   label: 'Revolve',
   icon: 'img/cad/revolve',
   info: 'Revolves 2D sketch',
+  path:__dirname,
   paramsInfo: ({angle}) => `(${r(angle)})`,
   run: (params: RevolveParams, ctx: ApplicationContext) => {
-    console.log(params);
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
     const face = params.face;
 
-    let sketchId = face.id;
-    let sketch = ctx.sketchStorageService.readSketch(sketchId);
-
-
-    let sweepSources: FaceRef[];
+    const sketchId = face.id;
+    const sketch = ctx.sketchStorageService.readSketch(sketchId);
 
     if (!sketch) {
       if (face instanceof MBrepFace) {
-        occ.io.pushModel(face, face.id)
-        const edges = face.edges;
-        edges.forEach(e => occ.io.pushModel(e, e.id));
-        sweepSources = [{
-          face: face.id,
-          edges: edges.map(e => e.id)
-        }];
+        const args = ["FaceTool", face, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
+        oci.revol(...args);
+        return occ.utils.applyBooleanModifier([occ.io.getShell("FaceTool")], params.boolean, face, [],
+          (targets, tools) => new FromMObjectProductionAnalyzer(targets, [face]));
       } else {
         throw "can't extrude an empty surface";
       }
-    } else {
-      let csys = face.csys;
-      if (params.doubleSided) {
-        csys = csys.clone();
-        csys.origin._minus(extrusionVector);
-        extrusionVector._scale(2);
-      }
-      sweepSources = occ.utils.sketchToFaces(sketch, csys)
     }
+
+    const csys = face.csys;
+
+    const sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
     const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
 
     const tools = sweepSources.map((faceRef, i) => {
       const faceName = faceRef.face;
       const shapeName = "Tool/" + i;
-      var args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
+      const args = [shapeName, faceName, ...params.axis.origin.data(), ...params.axis.direction.data(), params.angle];
       oci.revol(...args);
-
       return shapeName;
-    });
+    }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
 
-    return occ.utils.applyBooleanModifier(tools, params.boolean, productionAnalyzer, [face]);
+
+    return occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
 
   },
   form: [

@@ -29,9 +29,9 @@ export class Loop extends TopoObject {
   }
 
   link() {
-    let length = this.halfEdges.length;
+    const length = this.halfEdges.length;
     for (let i = 0; i < length; i++) {
-      let j = (i + 1) % length;
+      const j = (i + 1) % length;
       const curr = this.halfEdges[i];
       const next = this.halfEdges[j];
       curr.next = next;
@@ -42,14 +42,14 @@ export class Loop extends TopoObject {
   }
 
   tess() {
-    let out = [];
-    for (let e of this.halfEdges) {
-      let curvePoints = e.edge.curve.tessellate();
+    const out = [];
+    for (const e of this.halfEdges) {
+      const curvePoints = e.edge.curve.tessellate();
       if (e.inverted) {
         curvePoints.reverse();
       }
       curvePoints.pop();
-      for (let point of curvePoints) {
+      for (const point of curvePoints) {
         out.push(point);
       }
     }
@@ -67,13 +67,13 @@ export class Loop extends TopoObject {
     const first = polygon[nextIdx].minus(o);
     const last = o.minus(polygon[prevIdx]);
     return last.cross(first).dot(surface.normal) >= 0;
-  };
+  }
 }
 
 export function* enclosesGenerator(halfEdges): Generator<[HalfEdge, HalfEdge, Vertex]> {
-  let length = halfEdges.length;
+  const length = halfEdges.length;
   for (let i = 0; i < halfEdges.length; i++) {
-    let j = (i + 1) % length;
+    const j = (i + 1) % length;
     const curr = halfEdges[i];
     const next = halfEdges[j];
     if (curr.vertexB !== next.vertexA) {

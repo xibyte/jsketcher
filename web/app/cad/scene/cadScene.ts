@@ -24,10 +24,10 @@ export default class CadScene {
   }
 
   setUpAxises() {
-    let arrowLength = 1500;
-    let createAxisArrow = createArrow.bind(null, arrowLength, 40, 16);
-    let addAxis = (axis, color) => {
-      let arrow = createAxisArrow(axis, color, 0.2);
+    const arrowLength = 1500;
+    const createAxisArrow = createArrow.bind(null, arrowLength, 40, 16);
+    const addAxis = (axis, color) => {
+      const arrow = createAxisArrow(axis, color, 0.2);
       moveObject3D(arrow, axis.scale(-arrowLength * 0.5));
       SceneGraph.addToGroup(this.auxGroup, arrow);
     };
@@ -38,11 +38,11 @@ export default class CadScene {
   }
 
   setUpBasisGroup() {
-    let length = 200;
-    let arrowLength = length * 0.2;
-    let arrowHead = arrowLength * 0.4;
+    const length = 200;
+    const arrowLength = length * 0.2;
+    const arrowHead = arrowLength * 0.4;
 
-    let _createArrow = createArrow.bind(null, length, arrowLength, arrowHead);
+    const _createArrow = createArrow.bind(null, length, arrowLength, arrowHead);
 
     function createBasisArrow(axis, color) {
       return _createArrow(axis, color, 0.4, [OnTopOfAll]);
@@ -51,11 +51,11 @@ export default class CadScene {
     this.basisGroup = SceneGraph.createGroup();
     this.basisGroup.matrixAutoUpdate = false;
 
-    let xAxis = createBasisArrow(new Vector(1, 0, 0), 0xFF0000);
-    let yAxis = createBasisArrow(new Vector(0, 1, 0), 0x00FF00);
+    const xAxis = createBasisArrow(new Vector(1, 0, 0), 0xFF0000);
+    const yAxis = createBasisArrow(new Vector(0, 1, 0), 0x00FF00);
     SceneGraph.addToGroup(this.basisGroup, xAxis);
     SceneGraph.addToGroup(this.basisGroup, yAxis);
-    SceneGraph.addToGroup(this.auxGroup, this.basisGroup, yAxis);
+    SceneGraph.addToGroup(this.auxGroup, this.basisGroup);
     this.hideGlobalCsys();
   }
 

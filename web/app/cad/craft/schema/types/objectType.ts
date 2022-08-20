@@ -1,5 +1,5 @@
-import {Materializer, Type, TypeRegistry, Types} from "cad/craft/schema/types/index";
-import {CoreContext} from "context";
+import {Materializer, Type, Types} from "cad/craft/schema/types/index";
+import {ApplicationContext} from "cad/context";
 import {BaseSchemaField, OperationParamsErrorReporter, OperationSchema} from "cad/craft/schema/schema";
 
 export interface ObjectTypeSchema extends BaseSchemaField {
@@ -14,7 +14,7 @@ export interface ObjectTypeSchema extends BaseSchemaField {
 
 export const ObjectType: Type<any, any, ObjectTypeSchema> = {
 
-  resolve(ctx: CoreContext,
+  resolve(ctx: ApplicationContext,
           value: any,
           md: ObjectTypeSchema,
           reportError: OperationParamsErrorReporter,

@@ -11,7 +11,7 @@ import decoratorChain from 'ui/decoratorChain';
 import {MOpenFaceShell} from "cad/model/mopenFace";
 
 export default connect(streams => streams.craft.models.map(models => ({models})))
-(function ObjectExplorer({models}) {
+(function ObjectExplorer({models}) { // eslint-disable-line no-unexpected-multiline
 
   return <div> {models.map(m => {
     if (m instanceof MOpenFaceShell) {
@@ -69,12 +69,12 @@ const ModelSection = decoratorChain(
     select: () => ctx.services.pickControl.pick(props.model)
   })),
   connect((streams, props) => (streams.selection[props.type] || constant([])).map(selection => ({selection}))))
-(
+( // eslint-disable-line no-unexpected-multiline
   function ModelSection({model, type, typeLabel, selection, select, ...props}) {
-    let labelClasses = cx(ls.modelLabel, {
+    const labelClasses = cx(ls.modelLabel, {
       [ls.selected]: selection.indexOf(model.id) !== -1
     });
-    let label = <span className={labelClasses}>
+    const label = <span className={labelClasses}>
       <span onClick={select}>{typeLabel||type} {model.id}</span>
     </span>;
     return <Section label={label} {...props}/>;
