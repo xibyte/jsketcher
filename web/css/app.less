@@ -23,6 +23,7 @@ html, body {
   font-size: 16px;
   padding: 8px 0 0 10px;
   cursor: alias;
+  white-space: nowrap;
 }
 
 .logo sup {
@@ -296,6 +297,12 @@ html, body {
   font-size: 11px;
   cursor: default;
   pointer-events: none;
+}
+
+#viewer-container{
+  canvas:focus-visible, canvas:focus, canvas:focus-within {
+    outline-width: 0;
+  }
 }
 
 #top-toolbar:empty {
