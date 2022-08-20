@@ -500,85 +500,85 @@ export class IO {
         dxf.addLayer(layer.name, Colors.Black, 'Continuous');
       dxf.setCurrentLayerName(layer.name);
 
-      layer.objects.forEach(obj => {
-        console.debug('exporting object', obj);
+      layer.objects.forEach(shape => {
+        console.debug('exporting object', shape);
 
-        if (this.isPoint(obj)) {
-          dxf.addPoint(obj.x, obj.y, 0);
-        } else if (this.isSegment(obj)) {
+        if (this.isPoint(shape)) {
+          dxf.addPoint(shape.x, shape.y, 0);
+        } else if (this.isSegment(shape)) {
           dxf.addLine(
-            point3d(obj.a.x, obj.a.y, 0),
-            point3d(obj.b.x, obj.b.y, 0)
+            point3d(shape.a.x, shape.a.y, 0),
+            point3d(shape.b.x, shape.b.y, 0)
           );
-        } else if (this.isArc(obj)) {
+        } else if (this.isArc(shape)) {
           dxf.addArc(
-            point3d(obj.c.x, obj.c.y, 0),
-            obj.r.get(),
-            obj.getStartAngle() / DEG_RAD,
-            obj.getEndAngle() / DEG_RAD
+            point3d(shape.c.x, shape.c.y, 0),
+            shape.r.get(),
+            shape.getStartAngle() / DEG_RAD,
+            shape.getEndAngle() / DEG_RAD
           );
-        } else if (this.isCircle(obj)) {
-          dxf.addCircle(point3d(obj.c.x, obj.c.y, 0), obj.r.get());
-        } else if (this.isEllipse(obj)) {
-          const majorX = Math.cos(obj.rotation) * obj.radiusX;
-          const majorY = Math.sin(obj.rotation) * obj.radiusX;
+        } else if (this.isCircle(shape)) {
+          dxf.addCircle(point3d(shape.c.x, shape.c.y, 0), shape.r.get());
+        } else if (this.isEllipse(shape)) {
+          const majorX = Math.cos(shape.rotation) * shape.radiusX;
+          const majorY = Math.sin(shape.rotation) * shape.radiusX;
           dxf.addEllipse(
-            point3d(obj.centerX, obj.centerY, 0),
+            point3d(shape.centerX, shape.centerY, 0),
             point3d(majorX, majorY, 0),
-            obj.radiusY / obj.radiusX,
+            shape.radiusY / shape.radiusX,
             0,
             2 * Math.PI
           );
-        } else if (this.isBezier(obj)) {
+        } else if (this.isBezier(shape)) {
           const controlPoints: vec3_t[] = [
-            point3d(obj.p0.x, obj.p0.y, 0),
-            point3d(obj.p1.x, obj.p1.y, 0),
-            point3d(obj.p2.x, obj.p2.y, 0),
-            point3d(obj.p3.x, obj.p3.y, 0),
+            point3d(shape.p0.x, shape.p0.y, 0),
+            point3d(shape.p1.x, shape.p1.y, 0),
+            point3d(shape.p2.x, shape.p2.y, 0),
+            point3d(shape.p3.x, shape.p3.y, 0),
           ];
           const splineArgs: SplineArgs_t = {
             controlPoints,
             flags: SplineFlags.Periodic,
           };
           dxf.addSpline(splineArgs);
-        } else if (this.isLabel(obj)) {
-          const m = obj.assignedObject.labelCenter;
+        } else if (this.isLabel(shape)) {
+          const m = shape.assignedObject.labelCenter;
           if (!m) {
             return;
           }
-          const height = obj.textHelper.textMetrics.height as number;
-          const h = obj.textHelper.textMetrics.width / 2;
-          const lx = m.x - h + obj.offsetX;
-          const ly = m.y + obj.marginOffset + obj.offsetY;
+          const height = shape.textHelper.textMetrics.height as number;
+          const h = shape.textHelper.textMetrics.width / 2;
+          const lx = m.x - h + shape.offsetX;
+          const ly = m.y + shape.marginOffset + shape.offsetY;
 
-          dxf.addText(point3d(lx, ly, 0), height, obj.text);
-        } else if (this.isVDim(obj)) {
+          dxf.addText(point3d(lx, ly, 0), height, shape.text);
+        } else if (this.isVDim(shape)) {
           dxf.addLinearDim(
-            point3d(obj.a.x, obj.a.y, 0),
-            point3d(obj.b.x, obj.b.y, 0),
+            point3d(shape.a.x, shape.a.y, 0),
+            point3d(shape.b.x, shape.b.y, 0),
             {
               angle: 90, // Make it vertical
-              offset: -obj.offset,
+              offset: -shape.offset,
             }
           );
-        } else if (this.isHDim(obj)) {
+        } else if (this.isHDim(shape)) {
           dxf.addLinearDim(
-            point3d(obj.a.x, obj.a.y, 0),
-            point3d(obj.b.x, obj.b.y, 0),
+            point3d(shape.a.x, shape.a.y, 0),
+            point3d(shape.b.x, shape.b.y, 0),
             {
-              offset: -obj.offset,
+              offset: -shape.offset,
             }
           );
-        } else if (this.isLinearDim(obj)) {
+        } else if (this.isLinearDim(shape)) {
           dxf.addAlignedDim(
-            point3d(obj.a.x, obj.a.y, 0),
-            point3d(obj.b.x, obj.b.y, 0),
+            point3d(shape.a.x, shape.a.y, 0),
+            point3d(shape.b.x, shape.b.y, 0),
             {
-              offset: obj.offset,
+              offset: shape.offset,
             }
           );
-        } else if (this.isDDim(obj)) {
-          /// I remarked that the DiameterDimension looks like Radius dimension so I used RadialDim
+        } else if (this.isDDim(shape)) {
+          // I remarked that the DiameterDimension looks like Radius dimension so I used RadialDim
           const radius = shape.obj.distanceA
             ? shape.obj.distanceA()
             : shape.obj.r.get();
@@ -588,7 +588,7 @@ export class IO {
             point3d(x, y, 0),
             point3d(shape.obj.c.x, shape.obj.c.y, 0)
           );
-        } else if (this.isAngleBWDim(obj)) {
+        } else if (this.isAngleBWDim(shape)) {
           // its not implemented in dxf lib yet but will be soon
         }
       });
