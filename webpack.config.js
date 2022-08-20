@@ -27,25 +27,30 @@ module.exports = {
   externals: {
     'verb-nurbs': 'verb'
   },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-  ],
   resolve: {
     extensions: ['.js', '.jsx', ".ts", ".tsx"],
-    modules: [MODULES, "node_modules", WEB_APP]
+    modules: [MODULES, "node_modules", WEB_APP],
   },
   devServer: {
     hot: false,
-    inline: false,
-    contentBase: [
+    liveReload: false,
+    client: {
+      logging: 'error',
+      overlay: {
+        errors: true,
+        warnings: false
+      }
+    },
+    static: [
       path.join(__dirname, 'web'),
     ],
-    before(app) {
+    setupMiddlewares(middlewares, devServer) {
       libAssets.forEach(asset => {
-        app.get(`/lib-assets/${asset}`, function (req, res) {
+        devServer.app.get(`/lib-assets/${asset}`, function (req, res) {
           res.sendFile(path.join(NODE_MODULES, asset))
         })
       });
+      return middlewares;
     }
   },
   module: {

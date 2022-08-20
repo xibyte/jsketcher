@@ -1,15 +1,25 @@
 import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
-import {LocalFile, LocalFileAdapter} from "ui/components/controls/FileControl";
-import CadError from "../../../../../web/app/utils/errors";
-import {parseStringPromise} from 'xml2js';
+import {LocalFileAdapter} from "ui/components/controls/FileControl";
+import CadError from "utils/errors";
+import {parseString} from 'browser-xml2js';
 import {importStepFile} from "cad/craft/e0/interact";
 import {clone} from "gems/objects";
-import JSZip from "jszip";
+import JSZip from "jszip/dist/jszip.min";
 
 interface ImportModelParams {
   file: LocalFileAdapter;
 }
+
+const parseStringAsync = (xml) => new Promise((resolve, reject) => {
+  parseString(xml, function (err, result) {
+    if (err) {
+      reject(err)
+    } else {
+      resolve(result);
+    }
+  });
+});
 
 export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
   id: 'IMPORT_MODEL',
@@ -43,7 +53,7 @@ export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
       const zipContents = (await JSZip.loadAsync(params.file.base64Content(), { base64: true })).files;
       const xmlFreeCADData = await zipContents["Document.xml"].async("string");
 
-      const DecodedXmlFreeCADData = (clone(await parseStringPromise(xmlFreeCADData))).Document.ObjectData[0].Object;
+      const DecodedXmlFreeCADData = (clone(await parseStringAsync(xmlFreeCADData))).Document.ObjectData[0].Object;
 
       for (const itemToLookAt in DecodedXmlFreeCADData) {
         const flattenedObject = flattenJSON(DecodedXmlFreeCADData[itemToLookAt]);
