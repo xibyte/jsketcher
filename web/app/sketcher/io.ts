@@ -36,6 +36,7 @@ import {
   vec3_t,
 } from '@tarikjabiri/dxf';
 import { DEG_RAD } from 'math/commons';
+import { DxfWriterAdapter } from './dxf';
 
 export interface SketchFormat_V3 {
   version: number;
@@ -361,54 +362,6 @@ export class IO {
     return toExport;
   }
 
-  isArc(obj: SketchObject): obj is Arc {
-    return obj.TYPE === ShapesTypes.ARC;
-  }
-
-  isSegment(obj: SketchObject): obj is Segment {
-    return obj.TYPE === ShapesTypes.SEGMENT;
-  }
-
-  isCircle(obj: SketchObject): obj is Circle {
-    return obj.TYPE === ShapesTypes.CIRCLE;
-  }
-
-  isPoint(obj: SketchObject): obj is EndPoint {
-    return obj.TYPE === ShapesTypes.POINT;
-  }
-
-  isEllipse(obj: SketchObject): obj is Ellipse {
-    return obj.TYPE === ShapesTypes.ELLIPSE;
-  }
-
-  isBezier(obj: SketchObject): obj is BezierCurve {
-    return obj.TYPE === ShapesTypes.BEZIER;
-  }
-
-  isLabel(obj: SketchObject): obj is Label {
-    return obj.TYPE === ShapesTypes.LABEL;
-  }
-
-  isHDim(obj: SketchObject): obj is HDimension {
-    return obj.TYPE === ShapesTypes.HDIM;
-  }
-
-  isVDim(obj: SketchObject): obj is VDimension {
-    return obj.TYPE === ShapesTypes.VDIM;
-  }
-
-  isLinearDim(obj: SketchObject): obj is LinearDimension {
-    return obj.TYPE === ShapesTypes.DIM;
-  }
-
-  isDDim(obj: SketchObject): obj is DiameterDimension {
-    return obj.TYPE === ShapesTypes.DDIM;
-  }
-
-  isAngleBWDim(obj: SketchObject): obj is AngleBetweenDimension {
-    return obj.TYPE === ShapesTypes.ANGLE_BW;
-  }
-
   svgExport() {
     const T = ShapesTypes;
     const out = new TextBuilder();
@@ -432,14 +385,14 @@ export class IO {
       for (let i = 0; i < layer.objects.length; ++i) {
         const obj = layer.objects[i];
         if (obj.TYPE !== T.POINT) bbox.check(obj);
-        if (this.isSegment(obj)) {
+        if (obj instanceof Segment) {
           out.fline('<line x1="$" y1="$" x2="$" y2="$" />', [
             obj.a.x,
             obj.a.y,
             obj.b.x,
             obj.b.y,
           ]);
-        } else if (this.isArc(obj)) {
+        } else if (obj instanceof Arc) {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
           const dir = a.cross(b).z > 0 ? 0 : 1;
@@ -454,7 +407,7 @@ export class IO {
             obj.b.x,
             obj.b.y,
           ]);
-        } else if (this.isCircle(obj)) {
+        } else if (obj instanceof Circle) {
           out.fline('<circle cx="$" cy="$" r="$" />', [
             obj.c.x,
             obj.c.y,
@@ -472,131 +425,9 @@ export class IO {
   }
 
   dxfExport() {
-    const dxf: DxfWriter = new DxfWriter();
-    const layersToExport = this.getLayersToExport();
-    dxf.setUnits(Units.Millimeters);
-
-    // Dimensions customization
-    // I hard coded this values but I am not sure about them
-    dxf.setVariable('$DIMTXT', { 40: 10 }); // The text height
-    dxf.setVariable('$DIMASZ', { 40: 10 }); // Dimensioning arrow size
-
-    // Theses for preserving the look like jsketcher
-    dxf.setVariable('$DIMDEC', { 70: 2 }); // Number of precision places displayed
-    dxf.setVariable('$DIMTIH', { 70: 0 }); // Text inside horizontal if nonzero
-    dxf.setVariable('$DIMTOH', { 70: 0 }); // Text outside horizontal if nonzero
-    dxf.setVariable('$DIMTIX', { 70: 1 }); // Force text inside extensions if nonzero
-    dxf.setVariable('$DIMATFIT', { 70: 0 }); // Controls dimension text and arrow placement
-
-    // For more customization
-    // dxf.setVariable('$DIMEXE', { 40: 10 }); // Extension line extension
-    // dxf.setVariable('$DIMCLRD', { 70: Colors.Yellow }); // Dimension line color
-    // dxf.setVariable('$DIMCLRE', { 70: Colors.Red }); // Dimension extension line color
-    // dxf.setVariable('$DIMCLRT', { 70: Colors.Green }); // Dimension text color
-
-    layersToExport.forEach(layer => {
-      // this will prevent addLayer from throwing.
-      if (!dxf.tables.layerTable.exist(layer.name))
-        dxf.addLayer(layer.name, Colors.Black, 'Continuous');
-      dxf.setCurrentLayerName(layer.name);
-
-      layer.objects.forEach(shape => {
-        console.debug('exporting object', shape);
-
-        if (this.isPoint(shape)) {
-          dxf.addPoint(shape.x, shape.y, 0);
-        } else if (this.isSegment(shape)) {
-          dxf.addLine(
-            point3d(shape.a.x, shape.a.y, 0),
-            point3d(shape.b.x, shape.b.y, 0)
-          );
-        } else if (this.isArc(shape)) {
-          dxf.addArc(
-            point3d(shape.c.x, shape.c.y, 0),
-            shape.r.get(),
-            shape.getStartAngle() / DEG_RAD,
-            shape.getEndAngle() / DEG_RAD
-          );
-        } else if (this.isCircle(shape)) {
-          dxf.addCircle(point3d(shape.c.x, shape.c.y, 0), shape.r.get());
-        } else if (this.isEllipse(shape)) {
-          const majorX = Math.cos(shape.rotation) * shape.radiusX;
-          const majorY = Math.sin(shape.rotation) * shape.radiusX;
-          dxf.addEllipse(
-            point3d(shape.centerX, shape.centerY, 0),
-            point3d(majorX, majorY, 0),
-            shape.radiusY / shape.radiusX,
-            0,
-            2 * Math.PI
-          );
-        } else if (this.isBezier(shape)) {
-          const controlPoints: vec3_t[] = [
-            point3d(shape.p0.x, shape.p0.y, 0),
-            point3d(shape.p1.x, shape.p1.y, 0),
-            point3d(shape.p2.x, shape.p2.y, 0),
-            point3d(shape.p3.x, shape.p3.y, 0),
-          ];
-          const splineArgs: SplineArgs_t = {
-            controlPoints,
-            flags: SplineFlags.Periodic,
-          };
-          dxf.addSpline(splineArgs);
-        } else if (this.isLabel(shape)) {
-          const m = shape.assignedObject.labelCenter;
-          if (!m) {
-            return;
-          }
-          const height = shape.textHelper.textMetrics.height as number;
-          const h = shape.textHelper.textMetrics.width / 2;
-          const lx = m.x - h + shape.offsetX;
-          const ly = m.y + shape.marginOffset + shape.offsetY;
-
-          dxf.addText(point3d(lx, ly, 0), height, shape.text);
-        } else if (this.isVDim(shape)) {
-          dxf.addLinearDim(
-            point3d(shape.a.x, shape.a.y, 0),
-            point3d(shape.b.x, shape.b.y, 0),
-            {
-              angle: 90, // Make it vertical
-              offset: -shape.offset,
-            }
-          );
-        } else if (this.isHDim(shape)) {
-          dxf.addLinearDim(
-            point3d(shape.a.x, shape.a.y, 0),
-            point3d(shape.b.x, shape.b.y, 0),
-            {
-              offset: -shape.offset,
-            }
-          );
-        } else if (this.isLinearDim(shape)) {
-          dxf.addAlignedDim(
-            point3d(shape.a.x, shape.a.y, 0),
-            point3d(shape.b.x, shape.b.y, 0),
-            {
-              offset: shape.offset,
-            }
-          );
-        } else if (this.isDDim(shape)) {
-          // I remarked that the DiameterDimension looks like Radius dimension so I used RadialDim
-          const radius = shape.obj.distanceA
-            ? shape.obj.distanceA()
-            : shape.obj.r.get();
-          const x = shape.obj.c.x + radius * Math.cos(shape.angle);
-          const y = shape.obj.c.y + radius * Math.sin(shape.angle);
-          dxf.addRadialDim(
-            point3d(x, y, 0),
-            point3d(shape.obj.c.x, shape.obj.c.y, 0)
-          );
-        } else if (this.isAngleBWDim(shape)) {
-          // its not implemented in dxf lib yet but will be soon
-        }
-      });
-    });
-
-    // reset the current layer to 0, because its preserved in the dxf.
-    dxf.setCurrentLayerName('0');
-    return dxf.stringify();
+    const adapter = new DxfWriterAdapter();
+    adapter.export(this.getLayersToExport());
+    return adapter.stringify();
   }
 }
 
