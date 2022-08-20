@@ -23,6 +23,9 @@ export class ToolManager {
       // e.stopPropagation(); // allow propagation for move in sake of dynamic layout
       this.tool.mouseup(e);
     }, false);
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    }, false);
     window.addEventListener('touchstart', (e) => {
       e.preventDefault();
       e.stopPropagation();
