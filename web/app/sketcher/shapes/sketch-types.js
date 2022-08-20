@@ -25,7 +25,7 @@ export const ShapesTypes = {
   ELL_ARC: 'EllipticalArc',
   BEZIER: 'BezierCurve',
   NURBS: 'NurbsObject',
-  DIM: 'Dimension',
+  DIM: 'LinearDimension',
   HDIM: 'HDimension',
   VDIM: 'VDimension',
   DDIM: 'DiameterDimension',

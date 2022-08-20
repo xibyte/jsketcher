@@ -341,7 +341,11 @@ export class IO {
   }
 
   getWorkspaceToExport() {
-    return [this.viewer.layers, [this.viewer.labelLayer]];
+    return [
+      this.viewer.layers,
+      [this.viewer.labelLayer],
+      this.viewer.dimLayers,
+    ];
   }
 
   getLayersToExport() {
@@ -383,6 +387,26 @@ export class IO {
 
   isLabel(obj: SketchObject): obj is Label {
     return obj.TYPE === ShapesTypes.LABEL;
+  }
+
+  isHDim(obj: SketchObject): obj is HDimension {
+    return obj.TYPE === ShapesTypes.HDIM;
+  }
+
+  isVDim(obj: SketchObject): obj is VDimension {
+    return obj.TYPE === ShapesTypes.VDIM;
+  }
+
+  isLinearDim(obj: SketchObject): obj is LinearDimension {
+    return obj.TYPE === ShapesTypes.DIM;
+  }
+
+  isDDim(obj: SketchObject): obj is DiameterDimension {
+    return obj.TYPE === ShapesTypes.DDIM;
+  }
+
+  isAngleBWDim(obj: SketchObject): obj is AngleBetweenDimension {
+    return obj.TYPE === ShapesTypes.ANGLE_BW;
   }
 
   svgExport() {
@@ -452,9 +476,29 @@ export class IO {
     const layersToExport = this.getLayersToExport();
     dxf.setUnits(Units.Millimeters);
 
+    // Dimensions customization
+    // I hard coded this values but I am not sure about them
+    dxf.setVariable('$DIMTXT', { 40: 10 }); // The text height
+    dxf.setVariable('$DIMASZ', { 40: 10 }); // Dimensioning arrow size
+
+    // Theses for preserving the look like jsketcher
+    dxf.setVariable('$DIMDEC', { 70: 2 }); // Number of precision places displayed
+    dxf.setVariable('$DIMTIH', { 70: 0 }); // Text inside horizontal if nonzero
+    dxf.setVariable('$DIMTOH', { 70: 0 }); // Text outside horizontal if nonzero
+    dxf.setVariable('$DIMTIX', { 70: 1 }); // Force text inside extensions if nonzero
+    dxf.setVariable('$DIMATFIT', { 70: 0 }); // Controls dimension text and arrow placement
+
+    // For more customization
+    // dxf.setVariable('$DIMEXE', { 40: 10 }); // Extension line extension
+    // dxf.setVariable('$DIMCLRD', { 70: Colors.Yellow }); // Dimension line color
+    // dxf.setVariable('$DIMCLRE', { 70: Colors.Red }); // Dimension extension line color
+    // dxf.setVariable('$DIMCLRT', { 70: Colors.Green }); // Dimension text color
+
     layersToExport.forEach(layer => {
-      const dxfLayer = dxf.addLayer(layer.name, Colors.Green, 'Continuous');
-      dxf.setCurrentLayerName(dxfLayer.name);
+      // this will prevent addLayer from throwing.
+      if (!dxf.tables.layerTable.exist(layer.name))
+        dxf.addLayer(layer.name, Colors.Black, 'Continuous');
+      dxf.setCurrentLayerName(layer.name);
 
       layer.objects.forEach(obj => {
         console.debug('exporting object', obj);
@@ -494,7 +538,7 @@ export class IO {
           ];
           const splineArgs: SplineArgs_t = {
             controlPoints,
-            flags: SplineFlags.Closed | SplineFlags.Periodic, // 3
+            flags: SplineFlags.Periodic,
           };
           dxf.addSpline(splineArgs);
         } else if (this.isLabel(obj)) {
@@ -508,15 +552,42 @@ export class IO {
           const ly = m.y + obj.marginOffset + obj.offsetY;
 
           dxf.addText(point3d(lx, ly, 0), height, obj.text);
-        } else if (
-          obj.TYPE === ShapesTypes.DIM ||
-          obj.TYPE === ShapesTypes.HDIM ||
-          obj.TYPE === ShapesTypes.VDIM
-        ) {
-          // I want to add dimensions but there is no access for them here 🤔
-          // dxf.addAlignedDim()
-          // dxf.addDiameterDim()
-          // dxf.addRadialDim()
+        } else if (this.isVDim(obj)) {
+          dxf.addLinearDim(
+            point3d(obj.a.x, obj.a.y, 0),
+            point3d(obj.b.x, obj.b.y, 0),
+            {
+              angle: 90, // Make it vertical
+              offset: -obj.offset,
+            }
+          );
+        } else if (this.isHDim(obj)) {
+          dxf.addLinearDim(
+            point3d(obj.a.x, obj.a.y, 0),
+            point3d(obj.b.x, obj.b.y, 0),
+            {
+              offset: -obj.offset,
+            }
+          );
+        } else if (this.isLinearDim(obj)) {
+          dxf.addAlignedDim(
+            point3d(obj.a.x, obj.a.y, 0),
+            point3d(obj.b.x, obj.b.y, 0),
+            {
+              offset: obj.offset,
+            }
+          );
+        } else if (this.isDDim(obj)) {
+          // For the arc its not working as expected, Its supposed to be the same as the circle 🤔
+          // Also I remarked that the DiameterDimension looks like Radius dimension so I used RadialDim
+          const x = obj.obj.c.x + obj.obj.r.value * Math.sin(obj.angle);
+          const y = obj.obj.c.y + obj.obj.r.value * Math.cos(obj.angle);
+          dxf.addRadialDim(
+            point3d(x, y, 0),
+            point3d(obj.obj.c.x, obj.obj.c.y, 0)
+          );
+        } else if (this.isAngleBWDim(obj)) {
+          // its not implemented in dxf lib yet but will be soon
         }
       });
     });
