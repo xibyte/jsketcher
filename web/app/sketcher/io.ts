@@ -578,13 +578,15 @@ export class IO {
             }
           );
         } else if (this.isDDim(obj)) {
-          // For the arc its not working as expected, Its supposed to be the same as the circle 🤔
-          // Also I remarked that the DiameterDimension looks like Radius dimension so I used RadialDim
-          const x = obj.obj.c.x + obj.obj.r.value * Math.sin(obj.angle);
-          const y = obj.obj.c.y + obj.obj.r.value * Math.cos(obj.angle);
+          /// I remarked that the DiameterDimension looks like Radius dimension so I used RadialDim
+          const radius = shape.obj.distanceA
+            ? shape.obj.distanceA()
+            : shape.obj.r.get();
+          const x = shape.obj.c.x + radius * Math.cos(shape.angle);
+          const y = shape.obj.c.y + radius * Math.sin(shape.angle);
           dxf.addRadialDim(
             point3d(x, y, 0),
-            point3d(obj.obj.c.x, obj.obj.c.y, 0)
+            point3d(shape.obj.c.x, shape.obj.c.y, 0)
           );
         } else if (this.isAngleBWDim(obj)) {
           // its not implemented in dxf lib yet but will be soon
