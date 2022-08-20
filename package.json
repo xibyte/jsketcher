@@ -76,7 +76,7 @@
     "@types/three": "^0.143.0",
     "classnames": "2.2.5",
     "clipper-lib": "6.2.1",
-    "@tarikjabiri/dxf": "^2.3.0",
+    "@tarikjabiri/dxf": "^2.3.1",
     "earcut": "2.1.1",
     "font-awesome": "4.7.0",
     "immer": "^9.0.12",
