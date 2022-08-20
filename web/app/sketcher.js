@@ -20,7 +20,7 @@ function initializeSketcherApplication() {
 
   const context = createAppContext();
   const dock = initNonReactUIParts(context);
-  initShortkeys();
+  initShortkeys(context);
 
   window.__CAD_APP = context;
 
