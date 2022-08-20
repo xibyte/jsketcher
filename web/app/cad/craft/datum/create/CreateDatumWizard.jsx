@@ -4,7 +4,8 @@ import {NumberField} from '../../wizard/components/form/Fields';
 import EntityList from '../../wizard/components/form/EntityList';
 import {StackSection} from "ui/components/controls/FormSection";
 import Button from "ui/components/controls/Button";
-import {IoAddCircleOutline, IoIosRemoveCircleOutline} from "react-icons/all";
+import {IoIosRemoveCircleOutline} from "react-icons/io";
+import {IoAddCircleOutline} from "react-icons/io5";
 import ls from './CreateDatumWizard.less'
 import ComboBoxControl, {ComboBoxOption} from "ui/components/controls/ComboBoxControl";
 import NumberControl from "ui/components/controls/NumberControl";
