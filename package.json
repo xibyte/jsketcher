@@ -74,7 +74,6 @@
     "buffer": "^6.0.3"
   },
   "dependencies": {
-    "@tarikjabiri/dxf": "^2.3.0",
     "@types/three": "^0.143.0",
     "classnames": "2.2.5",
     "clipper-lib": "6.2.1",
