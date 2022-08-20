@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Sided-A/B Path Demo</title>
+  <link rel="stylesheet" type="text/css" href="demo.css">
+  <script type="module">
+    import {makeTestGridAbGraph, makeTestGridAbPointPairs, sidedAdPairsResolve} from "./demo.js"
+    import {_setUseMinHeap} from "./js/digraphs/spt.js"
+
+    async function doGrid() {
+      _setUseMinHeap(document.querySelector("#useMinHeap").checked);
+      // - for debugging needs (measuring speed); normally should be true
+
+      const width = document.querySelector("#gridWidth").value;
+      const height = document.querySelector("#gridHeight").value;
+      const straightWeight = document.querySelector("#straightWeight").value;
+      const diagonalWeight = document.querySelector("#diagonalWeight").value;
+      const includeDiagonals = document.querySelector("#includeDiagonals").checked;
+      const brief = document.querySelector("#brief").checked;
+      const numberOfPairs = parseInt(document.querySelector("#numberOfPairs").value);
+      const randomSeed = parseInt(document.querySelector("#randomSeed").value);
+      const t1 = performance.now();
+      const segments = makeTestGridAbGraph(width, height, straightWeight, diagonalWeight, includeDiagonals);
+      const pairs = makeTestGridAbPointPairs(width, height, numberOfPairs, randomSeed);
+      document.querySelector("#segments").value = JSON.stringify(segments, null, 2);
+      document.querySelector("#pairs").value = JSON.stringify(pairs, null, 2);
+      const t2 = performance.now();
+      document.querySelector("#preparingTiming").innerHTML = "Preparing: " + (t2 - t1) + " ms";
+
+      document.querySelector("#doGrid").disabled = true;
+      // - important to prevent starting new threads of calculations while processing is not finished
+      const report = await sidedAdPairsResolve(segments, pairs, brief, "error", "timing", "progressBar");
+      document.querySelector("#doGrid").disabled = false;
+
+      document.querySelector("#results").value = report;
+    }
+
+    document.querySelector("#doGrid").onclick = doGrid;
+  </script>
+</head>
+
+<body>
+<div id="container">
+  <h2>Grid A/B sided graphs speed test</h2>
+  <p id="error" class="error"></p>
+  <p>
+    Grid width: <input id="gridWidth" value="50"><br>
+    Grid height: <input id="gridHeight" value="50"><br>
+    Straigh weight: <input id="straightWeight" value="1"><br>
+    Diagonal weight: <input id="diagonalWeight" value="1.41"><br>
+    Include diagonals: <input id="includeDiagonals" type="checkbox"><br>
+    Number of random pairs: <input id="numberOfPairs" value="1000"><br>
+    Random seed: <input id="randomSeed" value="0"><br>
+    Brief results: <input id="brief" type="checkbox"><br>
+    Use MinHeap structure (should be true): <input id="useMinHeap" type="checkbox" checked="checked"><br>
+  </p>
+  <p>
+    <button id="doGrid"
+    ">Process grid-based A/B graph</button></p>
+  <div id="preparingTiming">Click button to see results below</div>
+  <div id="timing"></div>
+
+  <p>
+    <progress id="progressBar" value="0" max="100" style="width:600px"></progress>
+  </p>
+
+  <div>Results:</div>
+  <textarea id="results" rows="12" cols="150" readonly>
+  </textarea>
+
+  <p>&nbsp;</p>
+  <div>Actually processed segments:</div>
+  <textarea id="segments" rows="12" cols="150" readonly>
+  </textarea>
+
+  <div>Actually processed pairs:</div>
+  <textarea id="pairs" rows="12" cols="150" readonly>
+  </textarea>
+</div>
+</body>
+</html>

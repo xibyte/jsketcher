@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Simple Heap Test</title>
+  <meta charset="UTF-8">
+  <script type="module">
+    import {MinHeap} from "./min_heap.js"
+
+    const n = 11;
+
+    function newNode(x, y) {
+      return {x: x, y: y};
+    }
+
+    function less(a, b) {
+      const result = a.x < b.x;
+      // console.log(JSON.stringify(a) + " and " + JSON.stringify(b) + ": " + result);
+      return result;
+    }
+
+    function testHeap() {
+      const heap = new MinHeap(less);
+      let report = "";
+      for (let k = 0; k < n; k++) {
+        heap.insert(newNode(k, k));
+      }
+      report += checkHeap(heap);
+      report += "\n";
+
+      for (let k = 0; k < n; k++) {
+        heap.insert(newNode(-5 * k, null));
+      }
+      report += checkHeap(heap);
+      report += "\n";
+
+      for (let k = 0; k < n; k++) {
+        heap.insert(newNode(Math.random() * 100, 12));
+      }
+      report += checkHeap(heap);
+      report += "\n";
+      document.getElementById("report").innerHTML = "<pre>" + report + "</pre>";
+    }
+
+    function checkHeap(heap) {
+      try {
+        heap.checkIntegrity();
+        let last = null;
+        let report = "";
+        for (let k = 0; k < n; k++) {
+          const a = heap.remove();
+          report += k + ": " + JSON.stringify(a) + "\n";
+          if (last != null && less(a, last)) {
+            throw "Error: " + JSON.stringify(a) + " < " + JSON.stringify(last);
+          }
+          last = a;
+        }
+        return report;
+      } catch (e) {
+        document.getElementById("error").innerHTML = e;
+        throw msg;
+      }
+    }
+
+    document.getElementById("buttonTest").onclick = testHeap;
+  </script>
+</head>
+
+<body>
+<div style="color:red;font-weight:bold" id="error"></div>
+<p>
+  <button id="buttonTest">Run</button>
+</p>
+<div id="report"></div>
+</body>
+</html>

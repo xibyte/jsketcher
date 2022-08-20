@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Simple Shortest-Path Demo</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="demo.css">
+  <!--
+  <script src="js/digraphs/digraph.js"></script>
+  <script src="js/digraphs/digraph_simple_builder.js"></script>
+  <script src="js/heap/min_heap.js"></script>
+  <script src="js/digraphs/spt.js"></script>
+  <script src="js/digraphs/spt_html.js"></script>
+  <script src="js/test_digraph_builders.js"></script>
+  <script src="demo.js"></script>
+  -->
+  <script type="module">
+    import {makeTestGridGraph, parseJsonAndPrintError, simpleResolve} from "./demo.js"
+
+    function doSimple() {
+      const startVertex = document.querySelector("#simpleStart").value;
+      const endVertex = document.querySelector("#simpleEnd").value;
+      const graphJson = parseJsonAndPrintError(document.querySelector("#graphJson").value, "simpleError");
+//        let node = simpleObjectToGraphNode("0", new Array(["1", "2"]));
+//        document.querySelector("#simpleResults").innerHTML = JSON.stringify(node);
+//        let g = simpleObjectToDigraph(graphJson);
+//        document.querySelector("#simpleResults").innerHTML = JSON.stringify(Array.from(g.nodeMap.entries()));
+      const report = simpleResolve(graphJson, startVertex, endVertex, "simpleError");
+      document.querySelector("#simpleResults").innerHTML = report;
+    }
+
+    function doGrid() {
+      const startVertex = document.querySelector("#gridStart").value;
+      const endVertex = document.querySelector("#gridEnd").value;
+      const graphJson = makeTestGridGraph(
+        document.querySelector("#gridWidth").value,
+        document.querySelector("#gridHeight").value,
+        document.querySelector("#straightWeight").value,
+        document.querySelector("#diagonalWeight").value,
+        document.querySelector("#includeDiagonals").checked);
+      const report = simpleResolve(graphJson, startVertex, endVertex, "gridError");
+      document.querySelector("#gridResults").innerHTML = report;
+    }
+
+    document.querySelector("#doSimple").onclick = doSimple;
+    document.querySelector("#doGrid").onclick = doGrid;
+  </script>
+</head>
+
+<body>
+<div id="container">
+  <h2>Simple digraph SPT test</h2>
+  <p id="simpleError" class="error"></p>
+  <p>Enter graph:</p>
+  <!--
+    {
+      "start": { "A": 5, "B": 2 },
+      "A": { "start": 1, "C": 4, "D": 2 },
+      "B": { "A": 8, "D": 7 },
+      "C": { "D": 6, "end": 3 },
+      "D": { "end": 1 },
+      "end": {},
+      "OtherA": {"OtherB" : 2 },
+      "OtherB": {}
+    }
+  -->
+  <textarea id="graphJson" rows="12" cols="100">
+  {
+    "0": { "2" : 26, "4": 38 },
+    "1": { "3" : 29 },
+    "2": { "7" : 34 },
+    "3": { "6" : 52 },
+    "4": { "5" : 35, "7": 37 },
+    "5": { "7" : 28, "1": 32 },
+    "6": { "0" : 58, "2": 40, "4": 93 },
+    "7": { "3" : 39, "5": 28 },
+    "OtherA": {"OtherB" : 2 },
+    "OtherB": {}
+  }
+  </textarea>
+  <!-- Tree above is from Sedgewick and Wayne -->
+  <p>
+    Start vertex: <input id="simpleStart" value="0"><br>
+    End vertex: <input id="simpleEnd" value="7">
+  </p>
+  <p>
+    <button id="doSimple">Process graph above</button>
+  </p>
+  <p id="simpleResults">Click button about to see results here<br>
+    <span class="comment">For default graph example above, expected results are the following:<br><br>
+      Shortest path '0' ➔ '7': {"distance":60,"startId":"0","endId":"7","segments":["0→2","2→7"],"nodes":["0","2","7"],"feasible":true}<br><br>All 7 shortest paths from '0':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[#1] ...➔ '1': {"distance":105,"startId":"0","endId":"1","segments":["0→4","4→5","5→1"],"nodes":["0","4","5","1"],"feasible":true}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[#2] ...➔ '2': {"distance":26,"startId":"0","endId":"2","segments":["0→2"],"nodes":["0","2"],"feasible":true}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[#3] ...➔ '3': {"distance":99,"startId":"0","endId":"3","segments":["0→2","2→7","7→3"],"nodes":["0","2","7","3"],"feasible":true}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[#4] ...➔ '4': {"distance":38,"startId":"0","endId":"4","segments":["0→4"],"nodes":["0","4"],"feasible":true}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[#5] ...➔ '5': {"distance":73,"startId":"0","endId":"5","segments":["0→4","4→5"],"nodes":["0","4","5"],"feasible":true}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[#6] ...➔ '6': {"distance":151,"startId":"0","endId":"6","segments":["0→2","2→7","7→3","3→6"],"nodes":["0","2","7","3","6"],"feasible":true}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[#7] ...➔ '7': {"distance":60,"startId":"0","endId":"7","segments":["0→2","2→7"],"nodes":["0","2","7"],"feasible":true}<br>
+    </span>
+  </p>
+
+  <h2>Grid graphs</h2>
+  <p id="gridError" class="error"></p>
+  <p>
+    Start vertex: <input id="gridStart" value="V0|0"><br>
+    End vertex: <input id="gridEnd" value="V19|9"> (common syntax: 'Vxx|yy')<br>
+    Grid width: <input id="gridWidth" value="100"><br>
+    Grid height: <input id="gridHeight" value="100"><br>
+    Straigh weight: <input id="straightWeight" value="1"><br>
+    Diagonal weight: <input id="diagonalWeight" value="1.41"><br>
+    Include diagonals: <input id="includeDiagonals" type="checkbox">
+  </p>
+  <p>
+    <button id="doGrid">Process grid-based graph</button>
+  </p>
+  <p id="gridResults">Click button about to see results here</p>
+</div>
+</body>
+</html>
