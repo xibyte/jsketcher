@@ -1,29 +1,26 @@
-import {HashTable} from './hashmap'
+import { HashTable } from './hashmap';
 
 /** @constructor */
 function Graph(data) {
-
-  this.connections = function(e) {
+  this.connections = function (e) {
     return data[e];
   };
 
-  this.at = function(index) {
+  this.at = function (index) {
     return index;
   };
 
-  this.size = function() {
+  this.size = function () {
     return data.length;
   };
 }
 
-Graph.findAllLoops = function(graph, hashCode, equals) {
-
+Graph.findAllLoops = function (graph, hashCode, equals) {
   let loops = [];
   const visited = new HashTable(hashCode, equals);
   function step(vertex, comesFrom, path) {
-    let i;
     visited.put(vertex, true);
-    for (i = path.length - 1; i >= 0; --i) {
+    for (let i = path.length - 1; i >= 0; --i) {
       if (equals(vertex, path[i])) {
         loops.push(path.slice(i));
         return;
@@ -35,7 +32,7 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
     path.push(vertex);
     let needClone = false;
 
-    for (i = 0; i < next.length; i++) {
+    for (let i = 0; i < next.length; i++) {
       const v = next[i];
       if (equals(v, comesFrom)) {
         continue;
@@ -48,7 +45,7 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
     path.pop();
   }
 
-  for (i = 0; i < graph.size(); i++) {
+  for (let i = 0; i < graph.size(); i++) {
     const vertex = graph.at(i);
     if (visited.get(vertex) !== true) {
       step(vertex, -1, []);
@@ -74,17 +71,17 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
       if (bDown < 0) {
         bDown = a.length + bDown;
       }
-//      console.log("up: " + bUp + "; down: " + bDown);
+      //      console.log("up: " + bUp + "; down: " + bDown);
       const curr = a[i];
-      if ( !equals(curr, b[bUp]) && !equals(curr, b[bDown]) ) {
+      if (!equals(curr, b[bUp]) && !equals(curr, b[bDown])) {
         return false;
       }
     }
     return true;
   }
 
-  let i, duplicates = 0;
-  for (i = 0; i < loops.length; i++) {
+  let duplicates = 0;
+  for (let i = 0; i < loops.length; i++) {
     const a = loops[i];
     if (a == null) continue;
     for (let j = i + 1; j < loops.length; j++) {
@@ -94,13 +91,13 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
       }
       if (sameLoop(a, b)) {
         loops[j] = null;
-        ++ duplicates;
+        ++duplicates;
       }
     }
   }
   if (duplicates != 0) {
     const filtered = [];
-    for (i = 0; i < loops.length; i++) {
+    for (let i = 0; i < loops.length; i++) {
       if (loops[i] != null) filtered.push(loops[i]);
     }
     loops = filtered;
@@ -109,8 +106,7 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
   return loops;
 };
 
-
-const test = function() {
+const test = function () {
   const data = [
     [],
     [2],
@@ -121,14 +117,14 @@ const test = function() {
     [5, 8, 7],
     [6],
     [4, 6],
-    [2, 4]
+    [2, 4],
   ];
 
   const graph = new Graph(data);
   console.log(Graph.findAllLoops(graph));
 };
 
-const test0 = function() {
+const test0 = function () {
   const data = [
     [3, 1],
     [0, 2, 8],
@@ -138,11 +134,11 @@ const test0 = function() {
     [4, 2, 6],
     [5, 7],
     [2, 6, 8],
-    [1, 7]
+    [1, 7],
   ];
 
   const graph = new Graph(data);
   console.log(Graph.findAllLoops(graph));
 };
 
-export {Graph}
+export { Graph };
