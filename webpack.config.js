@@ -34,13 +34,7 @@ module.exports = {
   devServer: {
     hot: false,
     liveReload: false,
-    client: {
-      logging: 'error',
-      overlay: {
-        errors: true,
-        warnings: false
-      }
-    },
+    client: false,
     static: [
       path.join(__dirname, 'web'),
     ],
