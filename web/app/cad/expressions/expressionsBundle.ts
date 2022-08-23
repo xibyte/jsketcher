@@ -31,10 +31,7 @@ export function activate(ctx: ApplicationContext) {
     }
     let value = table$.value[expr];
     if (value === undefined) {
-      value = parseFloat(expr);
-      if (isNaN(value)) {
-        value = _evaluateExpression(expr);
-      }
+      value = _evaluateExpression(expr);
     }
     return value;
   }
@@ -58,6 +55,8 @@ export function activate(ctx: ApplicationContext) {
   };
 
   table$.attach(() => ctx.expressionService.signature = Date.now() + '');
+
+  load('');
 }
 
 function rebuildVariableTable(script) {
