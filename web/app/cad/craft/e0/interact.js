@@ -1,31 +1,29 @@
 
 export function toCString(str) {
-  let buffer = _malloc(str.length + 1);
+  const buffer = _malloc(str.length + 1);
   writeAsciiToMemory(str, buffer);
   return buffer;
 }
 
 export function CallCommand(command, args) {
 
-  let c_strings = args.map(x => toCString(x));
+  const c_strings = args.map(x => toCString(x));
 
-  let c_arr = _malloc(c_strings.length * 4); // 4-bytes per pointer
+  const c_arr = _malloc(c_strings.length * 4); // 4-bytes per pointer
   c_strings.forEach(function (x, i) {
     Module.setValue(c_arr + i * 4, x, "i32");
   });
 
   const commandPtr = toCString(command);
 
-  let rc = Module._CallCommand(commandPtr, c_strings.length, c_arr);
+  const rc = Module._CallCommand(commandPtr, c_strings.length, c_arr);
 
   // c_strings.forEach(_free);
 
-  // free c_arr
   _free(c_arr);
 
 //   _free(commandPtr);
 
-  // return
   return rc;
 }
 
@@ -61,4 +59,78 @@ export function IsEdgesOverlap(e1Ptr, e2Ptr, tol) {
 
 export function UpdateTessellation(shapePtr, deflection) {
   return Module._UpdateTessellation(shapePtr, deflection);
+}
+
+export function SetLocation(shapeName, matrixArray) {
+  const shapeNamePtr = toCString(shapeName);
+  const [
+    mx0,
+    mx1,
+    mx2,
+    mx3,
+    mx4,
+    mx5,
+    mx6,
+    mx7,
+    mx8,
+    mx9,
+    mx10,
+    mx11
+  ] = matrixArray;
+  Module._SetLocation(shapeNamePtr,
+    mx0,
+    mx1,
+    mx2,
+    mx3,
+    mx4,
+    mx5,
+    mx6,
+    mx7,
+    mx8,
+    mx9,
+    mx10,
+    mx11
+  );
+  _free(shapeNamePtr);
+}
+
+export function AddLocation(shapeName, matrixArray) {
+  const shapeNamePtr = toCString(shapeName);
+  const [
+    mx0,
+    mx1,
+    mx2,
+    mx3,
+    mx4,
+    mx5,
+    mx6,
+    mx7,
+    mx8,
+    mx9,
+    mx10,
+    mx11
+  ] = matrixArray;
+  Module._AddLocation(shapeNamePtr,
+    mx0,
+    mx1,
+    mx2,
+    mx3,
+    mx4,
+    mx5,
+    mx6,
+    mx7,
+    mx8,
+    mx9,
+    mx10,
+    mx11
+  );
+  _free(shapeNamePtr);
+}
+
+export function importStepFile(shapeName, fileName, oneOnly) {
+  const shapeNamePtr = toCString(shapeName);
+  const fileNamePtr = toCString(fileName);
+  Module._ImportStepFile(shapeNamePtr, fileNamePtr, oneOnly);
+  _free(shapeNamePtr);
+  _free(fileName);
 }

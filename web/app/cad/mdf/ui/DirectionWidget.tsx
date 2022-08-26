@@ -1,11 +1,11 @@
 import React from "react";
 import {OperationParamsErrorReporter, ValueResolver} from "cad/craft/schema/schema";
-import {CoreContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {ObjectTypeSchema} from "cad/craft/schema/types/objectType";
 import {AxisBasedWidgetDefinition, AxisBasedWidgetProps, AxisInput, AxisResolver} from "cad/mdf/ui/AxisWidget";
 import {UnitVector} from "math/vector";
 
-export const DirectionResolver: ValueResolver<AxisInput, UnitVector> = (ctx: CoreContext,
+export const DirectionResolver: ValueResolver<AxisInput, UnitVector> = (ctx: ApplicationContext,
                                                                         value: AxisInput,
                                                                         md: ObjectTypeSchema,
                                                                         reportError: OperationParamsErrorReporter): UnitVector => {

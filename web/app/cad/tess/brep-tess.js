@@ -9,31 +9,31 @@ export default function A(face) {
 
 export function tessellateLoopsOnSurface(surface, curveContours, getLoop, getCurve, isInverted) {
 
-  let loops = [];
-  for (let contour of curveContours) {
-    let pipLoop = [];
+  const loops = [];
+  for (const contour of curveContours) {
+    const pipLoop = [];
     loops.push(pipLoop);
-    for (let segment of getLoop(contour)) {
-      let curvePoints = getCurve(segment).tessellate();
+    for (const segment of getLoop(contour)) {
+      const curvePoints = getCurve(segment).tessellate();
       if (isInverted(segment)) {
         curvePoints.reverse();
       }
       curvePoints.pop();
-      for (let point of curvePoints) {
-        let wp = surface.workingPoint(point);
+      for (const point of curvePoints) {
+        const wp = surface.workingPoint(point);
         pipLoop.push(wp);
       }
     }
   }
 
-  let tess = tessellateSurface(surface.impl);
-  let nurbsTriangles = tess.faces.map(f => f.map(i => surface.createWorkingPoint(tess.uvs[i], Vector.fromData(tess.points[i]))));
+  const tess = tessellateSurface(surface.impl);
+  const nurbsTriangles = tess.faces.map(f => f.map(i => surface.createWorkingPoint(tess.uvs[i], Vector.fromData(tess.points[i]))));
 
-  let paths = clip(nurbsTriangles, loops);
+  const paths = clip(nurbsTriangles, loops);
 
-  let triangles = tessPaths(paths);
+  const triangles = tessPaths(paths);
 
-  let out = convertPoints(triangles, p => surface.workingPointTo3D(p) );
+  const out = convertPoints(triangles, p => surface.workingPointTo3D(p) );
   // __DEBUG__.AddPointPolygons(out, 0x00ffff);
   return out;
 }
@@ -49,14 +49,14 @@ function clip(triangles, loops) {
   const scale = 1e3 ;// multiplying by BrepSurface.WORKING_POINT_SCALE_FACTOR gives 1e6
 
 
-  let clip_paths = convertPoints(loops, p => ({X:p.x, Y:p.y}) );
+  const clip_paths = convertPoints(loops, p => ({X:p.x, Y:p.y}) );
   ClipperLib.JS.ScaleUpPaths(clip_paths, scale);
 
   let out = [];
 
-  for (let tr of triangles) {
-    let cpr = new ClipperLib.Clipper();
-    let subj_paths  = convertPoints([tr], p => ({X:p.x, Y:p.y}) );
+  for (const tr of triangles) {
+    const cpr = new ClipperLib.Clipper();
+    const subj_paths  = convertPoints([tr], p => ({X:p.x, Y:p.y}) );
 
     ClipperLib.JS.ScaleUpPaths(subj_paths, scale);
 
@@ -64,8 +64,8 @@ function clip(triangles, loops) {
     cpr.AddPaths(subj_paths, ClipperLib.PolyType.ptSubject, true);  // true means closed path
     cpr.AddPaths(clip_paths, ClipperLib.PolyType.ptClip, true);
 
-    let solution_paths = new ClipperLib.Paths();
-    let succeeded = cpr.Execute(ClipperLib.ClipType.ctIntersection, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
+    const solution_paths = new ClipperLib.Paths();
+    const succeeded = cpr.Execute(ClipperLib.ClipType.ctIntersection, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
     ClipperLib.JS.ScaleUpPaths(solution_paths, 1.0/scale);
     solution_paths.forEach(p => out.push(p));
   }
@@ -98,9 +98,9 @@ function tessPaths(paths) {
   const vertices = [];
   tessy.gluTessBeginPolygon(vertices);
 
-  for (let path of paths) {
+  for (const path of paths) {
     tessy.gluTessBeginContour();
-    for (let p of path) {
+    for (const p of path) {
       tessy.gluTessVertex([p.x, p.y, 0], p);
     }
     tessy.gluTessEndContour();

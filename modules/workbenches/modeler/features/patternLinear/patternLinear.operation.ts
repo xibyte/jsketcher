@@ -1,11 +1,14 @@
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
+import { ApplicationContext } from "cad/context";
 import { EntityKind } from "cad/model/entities";
 import Axis from "math/axis";
 import { UnitVector } from "math/vector";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
+import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
+import { MDatum } from "cad/model/mdatum";
+import {Matrix3x4} from "math/matrix";
+import {AddLocation, SetLocation} from "cad/craft/e0/interact";
 
 interface patternLinearParams {
   inputBodies: MShell[];
@@ -13,7 +16,7 @@ interface patternLinearParams {
   face: MFace;
   distance: number;
   qty: number;
-  direction?: UnitVector,
+  direction: UnitVector,
 }
 
 
@@ -22,19 +25,31 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
   label: 'Linear pattern',
   icon: 'img/cad/patternLinear',
   info: 'Creates a linear pattern.',
-  paramsInfo: ({ }) => `(${r()})`,
+  path:__dirname,
+  paramsInfo: () => `(?)`,
   run: (params: patternLinearParams, ctx: ApplicationContext) => {
-    console.log(params);
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let created = [];
+    const created = [];
 
-    params.inputBodies.forEach((shellToMirror) => {
-      const newShellName = shellToMirror.id + ":mirror";
-      oci.copy(shellToMirror, newShellName);
-      oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
-      created.push(occ.io.getShell(newShellName));
+    params.inputBodies.forEach((shellToPatern, index) => {
+      for (let i = 2; i <= params.qty; i++) {
+        let distanceForInstance = 0;
+        if(params.patternMethod == 'Step Distance') distanceForInstance =params.distance*(i-1);
+        if(params.patternMethod == 'Span Distance') distanceForInstance =(params.distance / (params.qty-1))*(i-1);
+
+        const trVec = params.direction.multiply(distanceForInstance);
+
+        const tr = new Matrix3x4().setTranslation(trVec.x, trVec.y, trVec.z);
+  
+        const newShellName = shellToPatern.id + ":patern/" + index + "/" +i;
+        oci.copy(shellToPatern, newShellName);
+        AddLocation(newShellName, tr.toFlatArray());
+  
+        created.push(occ.io.getShell(newShellName));    
+      }
+
     });
 
     return {
@@ -61,8 +76,8 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
       label: 'Pattern Method',
       name: "patternMethod",
       style: "dropdown",
-      defaultValue: "Step Angle",
-      values: ['Step Angle', 'Span Angle',],
+      defaultValue: "Step Distance",
+      values: ['Step Distance', 'Span Distance',],
     },
     {
       type: 'number',

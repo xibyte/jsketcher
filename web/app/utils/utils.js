@@ -1,8 +1,8 @@
 
 export function askNumber(promptText, initValue, promptCallback, resolver) {
-  var promptValueStr = promptCallback(promptText, initValue);
+  const promptValueStr = promptCallback(promptText, initValue);
   if (promptValueStr != null) {
-    var promptValue = Number(promptValueStr);
+    let promptValue = Number(promptValueStr);
     if (promptValue == promptValue) { // check for NaN
       return promptValue;
     } else {
@@ -16,13 +16,6 @@ export function askNumber(promptText, initValue, promptCallback, resolver) {
   }
   return null;
 }
-
-export const extend = function(func, parent) {
-  for(var prop in parent.prototype) {
-    if(parent.prototype.hasOwnProperty(prop))
-      func.prototype[prop] = parent.prototype[prop];
-  }
-};
 
 export function constRef(value) {
   return function() {

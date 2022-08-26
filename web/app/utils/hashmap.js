@@ -10,7 +10,7 @@ HashTable.prototype.hash = function(key) {
 };
 
 HashTable.prototype.get = function(key) {
-  var entry = this._findEntry(key, this._findBucket(key));
+  const entry = this._findEntry(key, this._findBucket(key));
   if (entry == null) return null;
   return entry[1];
 };
@@ -23,8 +23,8 @@ HashTable.prototype.put = function(key, value) {
 };
 
 HashTable.prototype._findBucket = function(key) {
-  var hash = this.hash(key);
-  var bucket = this.table[hash];
+  const hash = this.hash(key);
+  let bucket = this.table[hash];
   if (bucket === null) {
     bucket = [];
     this.table[hash] = bucket;
@@ -33,7 +33,7 @@ HashTable.prototype._findBucket = function(key) {
 };
 
 HashTable.prototype._findEntry = function(key, bucket) {
-  for (var i = 0; i < bucket.length; i++) {
+  for (let i = 0; i < bucket.length; i++) {
     if (this.equalsF(bucket[i][0], key)) {
       return bucket[i];
     }
@@ -42,8 +42,8 @@ HashTable.prototype._findEntry = function(key, bucket) {
 };
 
 HashTable.prototype._put = function(key, value) {
-  var bucket = this._findBucket(key);
-  var entry = this._findEntry(key, bucket);
+  const bucket = this._findBucket(key);
+  const entry = this._findEntry(key, bucket);
   if (entry == null) {
     bucket.push([key, value]);
   } else {
@@ -54,13 +54,13 @@ HashTable.prototype._put = function(key, value) {
 
 HashTable.prototype.rebuild = function() {
   this.size = 0;
-  var oldTable = this.table;
+  const oldTable = this.table;
   this.setTableSize(this.table.length * 2);
-  for (var i = 0; i < oldTable.length; i++) {
-    var e = oldTable[i];
+  for (let i = 0; i < oldTable.length; i++) {
+    const e = oldTable[i];
     if (e != null)  {
-      for (var j = 0; j < e.length; j++) {
-        var bucket = e[j];
+      for (let j = 0; j < e.length; j++) {
+        const bucket = e[j];
         this._put(bucket[0], bucket[1]);
       }
     }
@@ -68,7 +68,7 @@ HashTable.prototype.rebuild = function() {
 };
 
 HashTable.prototype.getKeys = function() {
-  var keys = [];
+  const keys = [];
   this.entries(function(k) {
     keys.push(k)
   });
@@ -76,11 +76,11 @@ HashTable.prototype.getKeys = function() {
 };
 
 HashTable.prototype.entries = function(callback) {
-  for (var i = 0; i < this.table.length; i++) {
-    var e = this.table[i];
+  for (let i = 0; i < this.table.length; i++) {
+    const e = this.table[i];
     if (e != null)  {
-      for (var j = 0; j < e.length; j++) {
-        var bucket = e[j];
+      for (let j = 0; j < e.length; j++) {
+        const bucket = e[j];
         callback(bucket[0], bucket[1]);
       }
     }
@@ -89,7 +89,7 @@ HashTable.prototype.entries = function(callback) {
 
 HashTable.prototype.setTableSize = function(newSize) {
   this.table = [];
-  for (var i = 0; i < newSize; i++) {
+  for (let i = 0; i < newSize; i++) {
     this.table[i] = null;
   }
 };
@@ -104,7 +104,7 @@ DoubleHelper.prototype.hash = function(v) {
 };
 
 HashTable.forVector3d = function() {
-  var doubleHelper = new DoubleHelper();
+  const doubleHelper = new DoubleHelper();
   function hash(v) {
     return doubleHelper.hash(v.x) ^ doubleHelper.hash(v.y) ^ doubleHelper.hash(v.z);
   }
@@ -115,7 +115,7 @@ HashTable.forVector3d = function() {
 };
 
 HashTable.forEdge = function() {
-  var doubleHelper = new DoubleHelper();
+  const doubleHelper = new DoubleHelper();
   function hash(v) {
     return doubleHelper.hash(v[0].x) ^ doubleHelper.hash(v[0].y) ^ doubleHelper.hash(v[0].z)
           ^doubleHelper.hash(v[1].x) ^ doubleHelper.hash(v[1].y) ^ doubleHelper.hash(v[1].z);
@@ -124,17 +124,17 @@ HashTable.forEdge = function() {
     return a.x === b.x && a.y === b.y && a.z === b.z;
   }
   function eq(e1, e2) {
-    var a1 = e1[0];
-    var b1 = e1[1];
-    var a2 = e2[0];
-    var b2 = e2[1];
+    const a1 = e1[0];
+    const b1 = e1[1];
+    const a2 = e2[0];
+    const b2 = e2[1];
     return (veq(a1, a2) && veq(b1, b2)) || (veq(a1, b2) && veq(b1, a2));
   }
   return new HashTable(hash, eq);
 };
 
 HashTable.forVector2d = function() {
-  var doubleHelper = new DoubleHelper();
+  const doubleHelper = new DoubleHelper();
   function hash(v) {
     return doubleHelper.hash(v.x) ^ doubleHelper.hash(v.y) ;
   }
@@ -145,16 +145,16 @@ HashTable.forVector2d = function() {
 };
 
 HashTable.forDoubleArray = function() {
-  var doubleHelper = new DoubleHelper();
+  const doubleHelper = new DoubleHelper();
   function hash(v) {
-    var hash = 0;
-    for (var i = 0; i < v.length; i++) {
+    let hash = 0;
+    for (let i = 0; i < v.length; i++) {
       hash ^= v[i];
     }
     return hash;
   }
   function eq(a, b) {
-    for (var i = 0; i < a.length; i++) {
+    for (let i = 0; i < a.length; i++) {
       if (a[i] !== b[i]) return false;
     }
     return true;

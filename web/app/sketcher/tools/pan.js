@@ -9,13 +9,13 @@ export class BasePanTool extends Tool {
   
   mousedown(e) {
     if (e.button === 0) {
-      let picked = this.viewer.pick(e);
+      const picked = this.viewer.pick(e);
       let i;
       if (picked.length > 0) {
         let toSelect;
         if (e.shiftKey) {
           toSelect = picked[0];
-          let ids = this.viewer.selected.map(function (s) {
+          const ids = this.viewer.selected.map(function (s) {
             return s.id
           });
           for (i = 0; i < picked.length; i++) {
@@ -66,7 +66,7 @@ export class PanTool extends BasePanTool {
     if (!this.dragging) {
       return;
     }
-    let dx = e.pageX - this.x;
+    const dx = e.pageX - this.x;
     let dy = e.pageY - this.y;
     dy *= -1;
 
@@ -106,16 +106,16 @@ export class PanTool extends BasePanTool {
       delta = -e.deltaY;
     }
 
-    let before = this.viewer.screenToModel(e);
+    const before = this.viewer.screenToModel(e);
 
-    let step = 0.05;
+    const step = 0.05;
     delta = delta < 0 ? 1 - step : 1 + step;
     this.viewer.scale *= delta;
 
-    let after = this.viewer.screenToModel(e);
+    const after = this.viewer.screenToModel(e);
 
-    let dx = after.x - before.x;
-    let dy = after.y - before.y;
+    const dx = after.x - before.x;
+    const dy = after.y - before.y;
 
     this.viewer.translate.x += dx * this.viewer.scale;
     this.viewer.translate.y += dy * this.viewer.scale;
@@ -137,15 +137,15 @@ export class DelegatingPanTool extends BasePanTool {
   
   startDragging(e) {
     this.delegate.dispatchEvent(cloneEvent(e));
-  };
+  }
 
   mouseup(e) {
     this.delegate.dispatchEvent(cloneEvent(e));
-  };
+  }
 
   mousewheel(e) {
     this.delegate.dispatchEvent(cloneEvent(e));
-  };
+  }
 }
 
 function cloneEvent(event) {

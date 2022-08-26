@@ -35,15 +35,15 @@ function createPlane(params, {cadRegistry}) {
 }
 
 function previewGeomProvider(params, {cadRegistry}) {
-  let plane = paramsToPlane(params, cadRegistry);
-  let tr = plane.get3DTransformation();
+  const plane = paramsToPlane(params, cadRegistry);
+  const tr = plane.get3DTransformation();
   const w = 375, h = 375;
   const a = tr._apply(new Vector(-w, -h, 0));
   const b = tr._apply(new Vector( w, -h, 0));
   const c = tr._apply(new Vector( w,  h, 0));
   const d = tr._apply(new Vector(-w,  h, 0));
   
-  let trs = [[a, b, c], [a, c, d]];
+  const trs = [[a, b, c], [a, c, d]];
   return createMeshGeometry(trs);
 }
 

@@ -1,4 +1,4 @@
-import { ApplicationContext } from "context";
+import { ApplicationContext } from "cad/context";
 import { BrepInputData } from "engine/data/brepInputData";
 import CSys from "math/csys";
 import Vector, { AXIS } from "math/vector";
@@ -19,7 +19,7 @@ export function testVertexMoving(ctx: ApplicationContext) {
 
   }
 
-  let datum3D = new DatumObject3D(
+  const datum3D = new DatumObject3D(
     new CSys(new Vector(0,0,500), AXIS.X.copy(), AXIS.Y.copy(), AXIS.Z.copy()),   
     ctx.services.viewer);
 

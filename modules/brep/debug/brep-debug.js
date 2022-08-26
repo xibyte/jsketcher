@@ -38,7 +38,7 @@ class BRepDebug {
   }
   
   booleanLoopDetectionSuccess(loop) {
-    let ld = last(this.currentBooleanSession.loopDetection);
+    const ld = last(this.currentBooleanSession.loopDetection);
     ld.detectedLoops.push(loop);
     ld.steps.push({type: 'LOOP_FOUND'});
   }

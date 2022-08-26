@@ -1,9 +1,9 @@
 import {GrCloudDownload} from "react-icons/gr";
 import {ImportPartForm} from "./ImportPartForm";
 import importPartSchema from "./importPartSchema";
-import {OperationDescriptor} from "../../craft/operationPlugin";
-import {ApplicationContext} from "context";
-import {OperationResult} from "../../craft/craftPlugin";
+import {OperationDescriptor} from "../../craft/operationBundle";
+import {ApplicationContext} from "cad/context";
+import {OperationResult} from "../../craft/craftBundle";
 
 export interface ImportPartOperationParams {
   partRef: string,
@@ -21,7 +21,7 @@ export const ImportPartOperation: OperationDescriptor<ImportPartOperationParams>
   previewGeomProvider: null,
   run: runImportOperation,
   form: ImportPartForm,
-  schema: importPartSchema
+  schema: importPartSchema as any
 };
 
 
@@ -29,7 +29,7 @@ function runImportOperation(params: ImportPartOperationParams, ctx: ApplicationC
 
   const {cadRegistry, remotePartsService} = ctx;
 
-  let mDatum = params.datum && cadRegistry.findDatum(params.datum);
+  const mDatum = params.datum && cadRegistry.findDatum(params.datum);
 
   const res =  {
     consumed: [],

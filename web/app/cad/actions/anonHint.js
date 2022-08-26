@@ -2,7 +2,7 @@
 export function enableAnonymousActionHint(ctx) {
   return function(actionId) {
     const {services, actionService} = ctx;
-    let {left, top} = services.dom.viewerContainer.getBoundingClientRect();
+    const {left, top} = services.dom.viewerContainer.getBoundingClientRect();
     actionService.showHintFor({
       actionId,
       x: left + 100,
@@ -10,7 +10,7 @@ export function enableAnonymousActionHint(ctx) {
       requester: 'anonymous'
     });
     setTimeout(() => {
-      let value = actionService.hint$.value;
+      const value = actionService.hint$.value;
       if (value && value.requester !== 'anonymous') {
         actionService.showHintFor(null);
       }

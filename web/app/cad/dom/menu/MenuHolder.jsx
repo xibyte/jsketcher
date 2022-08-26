@@ -36,7 +36,7 @@ function ActionMenuItem({label, cssIcons, icon, icon32, icon96, enabled, hotKey,
     renderedIcon = <Icon />;
   } else {
     if (icon32 || icon96) {
-      let size = 16;
+      const size = 16;
       renderedIcon = <Filler width={size} height='1.18em'/>;
       style = {
         backgroundImage: `url(${icon32 || icon96})`,
@@ -60,8 +60,7 @@ const ConnectedActionMenu = connect((streams, props) =>
   combine(
     streams.ui.menu.states[props.menuId],
     streams.ui.keymap)
-    .map(([s, keymap]) => ({...s, keymap})))
-(ActionMenu);
+    .map(([s, keymap]) => ({...s, keymap})))(ActionMenu);
 
 export function ConnectedMenuItem(props) {
 

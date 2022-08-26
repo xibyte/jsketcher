@@ -80,7 +80,7 @@ export function TerminalView({visible, output, addToOutput, onClose, variantsSup
 
                  if (e.keyCode === 9) {
                    const text = e.target.value;
-                   let variants = variantsSupplier().filter(v => v.startsWith(text));
+                   const variants = variantsSupplier().filter(v => v.startsWith(text));
                    variants.sort();
                    if (variants.length !== 0) {
                      const shared = sharedStartOfSortedArray(variants);
@@ -163,7 +163,7 @@ const DEFAULT_COMMAND_HANDLER = (command, println, ctx) => {
     return;
   }
 
-  let action = byCommand(getAllSketcherActions())[command];
+  const action = byCommand(getAllSketcherActions())[command];
   if (action) {
     println({text: action.shortName});
     action.invoke(ctx);
@@ -172,6 +172,7 @@ const DEFAULT_COMMAND_HANDLER = (command, println, ctx) => {
       const output = eval(command);
       println({text: output});
     } catch (e) {
+      //ignore
     }
   }
 };
@@ -220,7 +221,8 @@ export function SketcherTerminal() {
 }
 
 function sharedStartOfSortedArray(array) {
-  let a1 = array[0], a2 = array[array.length - 1], L = a1.length, i = 0;
+  const a1 = array[0], a2 = array[array.length - 1], L = a1.length;
+  let i = 0;
   while (i < L && a1.charAt(i) === a2.charAt(i)) i++;
   return a1.substring(0, i);
 }

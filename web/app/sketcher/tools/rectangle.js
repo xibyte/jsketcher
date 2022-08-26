@@ -71,7 +71,7 @@ export class RectangleTool extends Tool {
       new Segment(v.x, v.y, v.x, v.y),
       new Segment(v.x, v.y, v.x, v.y)
     ];
-    for (let s of this.rectangle) {
+    for (const s of this.rectangle) {
       this.viewer.activeLayer.add(s);
       this.snapExclude.push(s.a, s.b);
     }

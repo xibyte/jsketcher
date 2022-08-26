@@ -9,9 +9,8 @@ import mapContext from 'ui/mapContext';
 import {EMPTY_OBJECT} from 'gems/objects';
 import ButtonGroup from 'ui/components/controls/ButtonGroup';
 import Button from 'ui/components/controls/Button';
-import {removeAndDropDependants, removeFeature} from '../craftHistoryUtils';
-import RenderObject from 'ui/components/RenderObject';
-import {AppContext} from "cad/dom/components/AppContext";
+import {removeFeature} from '../craftHistoryUtils';
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {resolveAppearance} from "cad/craft/operationHelper";
 
 function SelectedModificationInfo({ history, index,
@@ -19,7 +18,7 @@ function SelectedModificationInfo({ history, index,
                                     locationHint: lh,
                                     drop, edit,
                                     close}) {
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   useEffect(() => {
 
@@ -32,19 +31,19 @@ function SelectedModificationInfo({ history, index,
       ctx.domService.viewerContainer.removeEventListener('click', clickAwayHandler);
     }
   }, []);
-  let m = history[index];
-  let visible = !!m;
+  const m = history[index];
+  const visible = !!m;
   if (!visible) {
     return null;
   }
-  let op = operationRegistry[m.type];
+  const op = operationRegistry[m.type];
   if (!op) {
     console.warn('unknown operation ' + m.type);
     return;
   }
   const appearance = resolveAppearance(op, m.params);
 
-  let indexNumber = index + 1;
+  const indexNumber = index + 1;
   return <Widget visible={visible}
                  left={lh && lh.x}
                  bottom={95}
@@ -53,7 +52,7 @@ function SelectedModificationInfo({ history, index,
                  onClose={close}>
     <div className={ls.requestInfo}>
       <ImgIcon className={ls.pic} url={appearance && appearance.icon96} size={48}/>
-      <RenderObject object={m.params}/>
+      {/*<RenderObject object={m.params}/>*/}
         
       
     </div>

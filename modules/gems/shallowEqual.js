@@ -3,16 +3,16 @@ export default function shallowEqual(objA, objB) {
     return true;
   }
 
-  let aKeys = Object.keys(objA);
-  let bKeys = Object.keys(objB);
-  let len = aKeys.length;
+  const aKeys = Object.keys(objA);
+  const bKeys = Object.keys(objB);
+  const len = aKeys.length;
 
   if (bKeys.length !== len) {
     return false;
   }
 
   for (let i = 0; i < len; i++) {
-    let key = aKeys[i];
+    const key = aKeys[i];
 
     if (objA[key] !== objB[key]) {
       return false;
@@ -20,4 +20,4 @@ export default function shallowEqual(objA, objB) {
   }
 
   return true;
-};
+}

@@ -1,5 +1,5 @@
 import {Materializer, Type, TypeRegistry, Types} from "cad/craft/schema/types/index";
-import {CoreContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {BaseSchemaField, OperationParamsErrorReporter, SchemaField} from "cad/craft/schema/schema";
 
 export interface ArrayTypeSchema extends BaseSchemaField {
@@ -19,7 +19,7 @@ export interface ArrayTypeSchema extends BaseSchemaField {
 
 export const ArrayType: Type<any[], any[], ArrayTypeSchema> = {
 
-  resolve(ctx: CoreContext,
+  resolve(ctx: ApplicationContext,
           value: any[],
           md: ArrayTypeSchema,
           reportError: OperationParamsErrorReporter,

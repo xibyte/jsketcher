@@ -26,7 +26,7 @@ export abstract class MObject {
 
   toDirection(): UnitVector {
     return null;
-  };
+  }
 
   toAxis(reverse: boolean): Axis {
     return null;
@@ -48,8 +48,8 @@ export abstract class MObject {
     return null;
   }
 
-  get productionInfo() {
-    return this.topology.data?.productionInfo;
+  get productionInfo(): any {
+    return this.topology?.data?.productionInfo;
   }
 }
 

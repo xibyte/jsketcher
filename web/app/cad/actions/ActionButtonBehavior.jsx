@@ -1,10 +1,9 @@
 import React, {useContext} from 'react';
-import {AppContext} from "../dom/components/AppContext";
-import {isMenuAction} from "cad/dom/menu/menuPlugin";
+import {ReactApplicationContext} from "../dom/ReactApplicationContext";
 
 export function ActionButtonBehavior({children, actionId}) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
 
   const request = {actionId, x: 0, y: 0};
 
@@ -22,16 +21,7 @@ export function ActionButtonBehavior({children, actionId}) {
     'data-action-id': actionId,
     onClick: e => {
       canceled = true;
-      let data;
-      if (isMenuAction(actionId)) {
-        data = {
-          x: e.pageX,
-          y: e.pageY
-        }
-      } else {
-        data = e;
-      }
-      actionService.run(actionId, data);
+      actionService.run(actionId, e);
     },
     onMouseEnter: e => {
       updateCoords(e);

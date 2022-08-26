@@ -1,5 +1,6 @@
 import {clamp} from "math/commons";
 import {XYZ} from "math/xyz";
+import {areEqual, TOLERANCE_SQ} from "math/equality";
 
 export default class Vector implements XYZ {
 
@@ -68,7 +69,7 @@ export default class Vector implements XYZ {
 
   length(): number {
     return Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
-  };
+  }
 
   lengthSquared(): number {
     return this.dot(this);
@@ -116,7 +117,7 @@ export default class Vector implements XYZ {
   }
 
   normalize(): UnitVector {
-    let mag = this.length();
+    const mag = this.length();
     if (mag === 0.0) {
       return new Vector(0.0, 0.0, 0.0) as UnitVector;
     }
@@ -128,12 +129,12 @@ export default class Vector implements XYZ {
   }
 
   _normalize(): UnitVector {
-    let mag = this.length();
+    const mag = this.length();
     if (mag === 0.0) {
       return this.set(0, 0, 0) as UnitVector;
     }
     return this.set(this.x / mag, this.y / mag, this.z / mag) as UnitVector;
-  };
+  }
 
   _unit(): UnitVector {
     return this._normalize();
@@ -141,7 +142,7 @@ export default class Vector implements XYZ {
 
   cross(a: XYZ): Vector {
     return this.copy()._cross(a);
-  };
+  }
 
   _cross(a: XYZ): Vector {
     return this.set(
@@ -149,7 +150,7 @@ export default class Vector implements XYZ {
       this.z * a.x - this.x * a.z,
       this.x * a.y - this.y * a.x
     );
-  };
+  }
 
   negate(): Vector {
     return this.multiply(-1);
@@ -182,7 +183,14 @@ export default class Vector implements XYZ {
     const sinA = clamp(this.cross(vecB).length(), -1, 1);
     return Math.atan2(sinA, cosA);
   }
-  
+
+  asUnitVector(): UnitVector {
+    if (!areEqual(this.lengthSquared(), 1, TOLERANCE_SQ)) {
+      console.error("not unit vector is treated as unit");
+    }
+    return this as any as UnitVector;
+  }
+
   static fromData(arr: [number, number, number]): Vector {
     return new Vector().set3(arr);
   }
@@ -207,10 +215,6 @@ export interface UnitVector extends Vector {
   _negate(): UnitVector;
 
   _perpXY(): UnitVector;
-
-  cross(a: UnitVector): UnitVector;
-
-  _cross(a: UnitVector): UnitVector;
 
   copy(): UnitVector;
 }

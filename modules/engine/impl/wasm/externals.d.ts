@@ -1,6 +1,6 @@
-import {ClassifyPointToFace} from "cad/craft/e0/interact";
+/* eslint @typescript-eslint/ban-types: 0 */
 
-declare var Module: {
+declare let Module: {
   _SPI_box: Function;
   _SPI_torus: Function;
   _SPI_sphere: Function;

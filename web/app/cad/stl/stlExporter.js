@@ -1,76 +1,204 @@
+// copied from THREE.JS three/examples/js/exporters/STLExporter and slightly modified
+import {Mesh} from 'three';
+
+
 /**
- * @author kovacsv / http://kovacsv.hu/
- * @author mrdoob / http://mrdoob.com/
+ * Usage:
+ *  const exporter = new STLExporter();
+ *
+ *  // second argument is a list of options
+ *  const data = exporter.parse( mesh, { binary: true } );
+ *
  */
-import {BufferGeometry, Geometry, Matrix3, Mesh, Vector3} from 'three';
+
+export class STLExporter {
+
+  parse(shellViews, options = {}) {
+
+    const binary = options.binary !== undefined ? options.binary : false; //
+
+    const objects = [];
+    let triangles = 0;
 
 
-let vector = new Vector3();
-let normalMatrixWorld = new Matrix3();
+    shellViews.forEach(function (view) {
+      if (!view.faceViews) {
+        return;
+      }
 
-export default function (shellViews) {
+      view.faceViews.forEach(faceView => {
+        const object = faceView.mesh;
+        if (object instanceof Mesh) {
+          const geometry = object.geometry;
 
-  let output = '';
+          if (geometry.isBufferGeometry !== true) {
 
-  shellViews.forEach(view => {
+            throw new Error('THREE.STLExporter: Geometry is not of type THREE.BufferGeometry.');
 
-    if (!view.faceViews) {
-      return;
+          }
+
+          const index = geometry.index;
+          const positionAttribute = geometry.getAttribute('position');
+          triangles += index !== null ? index.count / 3 : positionAttribute.count / 3;
+          objects.push({
+            object3d: object,
+            geometry: geometry,
+            modelId: view.model.id
+          });
+        }
+      });
+    });
+    let output;
+    let offset = 80; // skip header
+
+    if (binary === true) {
+
+      const bufferLength = triangles * 2 + triangles * 3 * 4 * 4 + 80 + 4;
+      const arrayBuffer = new ArrayBuffer(bufferLength);
+      output = new DataView(arrayBuffer);
+      output.setUint32(offset, triangles, true);
+      offset += 4;
+
+    } else {
+
+      output = '';
+      output += 'solid exported\n';
+
     }
 
-    output += `solid ${view.model.id}\n`;
+    const vA = new THREE.Vector3();
+    const vB = new THREE.Vector3();
+    const vC = new THREE.Vector3();
+    const cb = new THREE.Vector3();
+    const ab = new THREE.Vector3();
+    const normal = new THREE.Vector3();
 
-    view.faceViews.forEach(faceView => {
-      const mesh = faceView.mesh;
-      if (mesh instanceof Mesh) {
+    for (let i = 0, il = objects.length; i < il; i++) {
 
-        let geometry = mesh.geometry;
-        let matrixWorld = mesh.matrixWorld;
+      const object = objects[i].object3d;
+      const geometry = objects[i].geometry;
+      const index = geometry.index;
+      const positionAttribute = geometry.getAttribute('position');
 
-        if (geometry instanceof BufferGeometry) {
+      if (index !== null) {
 
-          geometry = new Geometry().fromBufferGeometry(geometry);
+        // indexed geometry
+        for (let j = 0; j < index.count; j += 3) {
+
+          const a = index.getX(j + 0);
+          const b = index.getX(j + 1);
+          const c = index.getX(j + 2);
+          writeFace(a, b, c, positionAttribute, object);
 
         }
 
-        if (geometry instanceof Geometry) {
+      } else {
 
-          let vertices = geometry.vertices;
-          let faces = geometry.faces;
+        // non-indexed geometry
+        for (let j = 0; j < positionAttribute.count; j += 3) {
 
-          normalMatrixWorld.getNormalMatrix(matrixWorld);
-
-          for (let i = 0, l = faces.length; i < l; i++) {
-
-            let face = faces[i];
-
-            vector.copy(face.normal).applyMatrix3(normalMatrixWorld).normalize();
-
-            output += '\tfacet normal ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
-            output += '\t\touter loop\n';
-
-            let indices = [face.a, face.b, face.c];
-
-            for (let j = 0; j < 3; j++) {
-
-              vector.copy(vertices[indices[j]]).applyMatrix4(matrixWorld);
-
-              output += '\t\t\tvertex ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
-
-            }
-
-            output += '\t\tendloop\n';
-            output += '\tendfacet\n';
-
-          }
+          const a = j + 0;
+          const b = j + 1;
+          const c = j + 2;
+          writeFace(a, b, c, positionAttribute, object);
 
         }
 
       }
-    })
 
-    output += `endsolid ${view.model.id}\n`;
-  });
+    }
 
-  return output;
+    if (binary === false) {
+
+      output += 'endsolid exported\n';
+
+    }
+
+    return output;
+
+    function writeFace(a, b, c, positionAttribute, object) {
+
+      vA.fromBufferAttribute(positionAttribute, a);
+      vB.fromBufferAttribute(positionAttribute, b);
+      vC.fromBufferAttribute(positionAttribute, c);
+
+      if (object.isSkinnedMesh === true) {
+
+        object.boneTransform(a, vA);
+        object.boneTransform(b, vB);
+        object.boneTransform(c, vC);
+
+      }
+
+      vA.applyMatrix4(object.matrixWorld);
+      vB.applyMatrix4(object.matrixWorld);
+      vC.applyMatrix4(object.matrixWorld);
+      writeNormal(vA, vB, vC);
+      writeVertex(vA);
+      writeVertex(vB);
+      writeVertex(vC);
+
+      if (binary === true) {
+
+        output.setUint16(offset, 0, true);
+        offset += 2;
+
+      } else {
+
+        output += '\t\tendloop\n';
+        output += '\tendfacet\n';
+
+      }
+
+    }
+
+    function writeNormal(vA, vB, vC) {
+
+      cb.subVectors(vC, vB);
+      ab.subVectors(vA, vB);
+      cb.cross(ab).normalize();
+      normal.copy(cb).normalize();
+
+      if (binary === true) {
+
+        output.setFloat32(offset, normal.x, true);
+        offset += 4;
+        output.setFloat32(offset, normal.y, true);
+        offset += 4;
+        output.setFloat32(offset, normal.z, true);
+        offset += 4;
+
+      } else {
+
+        output += '\tfacet normal ' + normal.x + ' ' + normal.y + ' ' + normal.z + '\n';
+        output += '\t\touter loop\n';
+
+      }
+
+    }
+
+    function writeVertex(vertex) {
+
+      if (binary === true) {
+
+        output.setFloat32(offset, vertex.x, true);
+        offset += 4;
+        output.setFloat32(offset, vertex.y, true);
+        offset += 4;
+        output.setFloat32(offset, vertex.z, true);
+        offset += 4;
+
+      } else {
+
+        output += '\t\t\tvertex ' + vertex.x + ' ' + vertex.y + ' ' + vertex.z + '\n';
+
+      }
+
+    }
+
+  }
+
 }
+
+
+

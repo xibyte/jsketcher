@@ -27,25 +27,30 @@ module.exports = {
   externals: {
     'verb-nurbs': 'verb'
   },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-  ],
   resolve: {
     extensions: ['.js', '.jsx', ".ts", ".tsx"],
-    modules: [MODULES, "node_modules", WEB_APP]
+    modules: [MODULES, "node_modules", WEB_APP],
   },
   devServer: {
     hot: false,
-    inline: false,
-    contentBase: [
+    liveReload: false,
+    client: {
+      logging: 'error',
+      overlay: {
+        errors: true,
+        warnings: false
+      }
+    },
+    static: [
       path.join(__dirname, 'web'),
     ],
-    before(app) {
+    setupMiddlewares(middlewares, devServer) {
       libAssets.forEach(asset => {
-        app.get(`/lib-assets/${asset}`, function (req, res) {
+        devServer.app.get(`/lib-assets/${asset}`, function (req, res) {
           res.sendFile(path.join(NODE_MODULES, asset))
         })
       });
+      return middlewares;
     }
   },
   module: {
@@ -54,6 +59,18 @@ module.exports = {
         test: /\.(js|jsx|ts|tsx)$/,
         loader: 'babel-loader',
         include: [MODULES, WEB_APP, INTEGRATION_TESTS]
+      },
+      {
+        //Temporary until dxf-writer library publishes browser friendly bundle
+        test: /\.js$/,
+        include: [`${NODE_MODULES}/dxf-writer`],
+        loader: 'babel-loader',
+        options: {
+          presets: ['@babel/preset-env'],
+          plugins: [
+            "@babel/proposal-class-properties"
+          ]
+        }
       },
       {
         test: /\.(less|css)$/,
@@ -123,6 +140,6 @@ module.exports = {
     ]
   },
   node: {
-    fs: "empty"
+    __dirname: true
   }
 };

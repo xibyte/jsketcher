@@ -63,7 +63,7 @@ export class Line {
   tessellate(resolution, from, to, path) {
   }
   
-  offset() {};
+  offset() {}
 }
 
 Line.prototype.isLine = true;

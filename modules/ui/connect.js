@@ -1,5 +1,5 @@
 import React from 'react';
-import context from 'context';
+import context from 'cad/context';
 
 export default function connect(streamProvider) {
   return function (Component) {
@@ -8,7 +8,7 @@ export default function connect(streamProvider) {
       state = {hasError: false, streamProps: {}};
       
       UNSAFE_componentWillMount() {
-        let stream = streamProvider(context.streams, this.props);
+        const stream = streamProvider(context.streams, this.props);
         this.detacher = stream.attach(data =>  {
           this.setState({
             hasError: false,

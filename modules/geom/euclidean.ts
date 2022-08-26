@@ -8,17 +8,17 @@ import {IDENTITY_BASIS3} from "math/basis";
 import Vector from "math/vector";
 
 export function circleFromPoints(p1, p2, p3) {
-  var center = new Vector();
-  var offset = p2.x * p2.x + p2.y * p2.y;
-  var bc = (p1.x * p1.x + p1.y * p1.y - offset) / 2.0;
-  var cd = (offset - p3.x * p3.x - p3.y * p3.y) / 2.0;
-  var det = (p1.x - p2.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p2.y);
+  const center = new Vector();
+  const offset = p2.x * p2.x + p2.y * p2.y;
+  const bc = (p1.x * p1.x + p1.y * p1.y - offset) / 2.0;
+  const cd = (offset - p3.x * p3.x - p3.y * p3.y) / 2.0;
+  const det = (p1.x - p2.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p2.y);
 
   if (Math.abs(det) < 1e-6) {
     return null;
   }
 
-  var idet = 1 / det;
+  const idet = 1 / det;
 
   center.x = (bc * (p2.y - p3.y) - cd * (p1.y - p2.y)) * idet;
   center.y = (cd * (p1.x - p2.x) - bc * (p2.x - p3.x)) * idet;
@@ -39,14 +39,14 @@ export function polygonOffsetXY(polygon, scaleX, scaleY) {
   const origBBox = new BBox();
   const scaledBBox = new BBox();
   const result = [];
-  for (let point of polygon) {
+  for (const point of polygon) {
     const scaledPoint = new Vector(point.x * scaleX, point.y * scaleY);
     result.push(scaledPoint);
     origBBox.checkPoint(point);
     scaledBBox.checkPoint(scaledPoint);
   }
   const alignVector = scaledBBox.center()._minus(origBBox.center());
-  for (let point of result) {
+  for (const point of result) {
     point._minus(alignVector);
   }
   return result;
@@ -58,7 +58,7 @@ export function polygonOffset(polygon, scale) {
 
 export function polygonOffsetByDelta(polygon, delta) {
   const origBBox = new BBox();
-  for (let point of polygon) {
+  for (const point of polygon) {
     origBBox.checkPoint(point);
   }
   const width = origBBox.width();
@@ -67,21 +67,21 @@ export function polygonOffsetByDelta(polygon, delta) {
 }
 
 export function isPointInsidePolygon(inPt, inPolygon) {
-  var EPSILON = TIGHT_TOLERANCE;
+  const EPSILON = TIGHT_TOLERANCE;
 
-  var polyLen = inPolygon.length;
+  const polyLen = inPolygon.length;
 
   // inPt on polygon contour => immediate success    or
   // toggling of inside/outside at every single! intersection point of an edge
   //  with the horizontal line through inPt, left of inPt
   //  not counting lowerY endpoints of edges and whole edges on that line
-  var inside = false;
-  for (var p = polyLen - 1, q = 0; q < polyLen; p = q++) {
-    var edgeLowPt = inPolygon[p];
-    var edgeHighPt = inPolygon[q];
+  let inside = false;
+  for (let p = polyLen - 1, q = 0; q < polyLen; p = q++) {
+    let edgeLowPt = inPolygon[p];
+    let edgeHighPt = inPolygon[q];
 
-    var edgeDx = edgeHighPt.x - edgeLowPt.x;
-    var edgeDy = edgeHighPt.y - edgeLowPt.y;
+    let edgeDx = edgeHighPt.x - edgeLowPt.x;
+    let edgeDy = edgeHighPt.y - edgeLowPt.y;
 
     if (Math.abs(edgeDy) > EPSILON) {			// not parallel
       if (edgeDy < 0) {
@@ -96,7 +96,7 @@ export function isPointInsidePolygon(inPt, inPolygon) {
         if (inPt.x == edgeLowPt.x) return true;		// inPt is on contour ?
         // continue;				// no intersection or edgeLowPt => doesn't count !!!
       } else {
-        var perpEdge = edgeDy * (inPt.x - edgeLowPt.x) - edgeDx * (inPt.y - edgeLowPt.y);
+        const perpEdge = edgeDy * (inPt.x - edgeLowPt.x) - edgeDx * (inPt.y - edgeLowPt.y);
         if (perpEdge == 0) return true;		// inPt is on contour ?
         if (perpEdge < 0) continue;
         inside = !inside;		// true intersection left of inPt
@@ -114,9 +114,9 @@ export function isPointInsidePolygon(inPt, inPolygon) {
 }
 
 export function area(contour) {
-  var n = contour.length;
-  var a = 0.0;
-  for (var p = n - 1, q = 0; q < n; p = q++) {
+  const n = contour.length;
+  let a = 0.0;
+  for (let p = n - 1, q = 0; q < n; p = q++) {
     a += contour[p].x * contour[q].y - contour[q].x * contour[p].y;
   }
   return a * 0.5;
@@ -130,7 +130,7 @@ export function findLowestLeftPoint(poly) {
   let heroIdx = 0;
   for (let i = 1; i < poly.length; ++i) {
     const point = poly[i];
-    let hero = poly[heroIdx];
+    const hero = poly[heroIdx];
     if (point.y < hero.y) {
       heroIdx = i;
     } else if (hero.y == point.y) {
@@ -148,8 +148,8 @@ export function perpendicularVector(v) {
 }
 
 export function radiusOfCurvature(d1, d2) {
-  let r1lsq = vec.lengthSq(d1);
-  let r1l = Math.sqrt(r1lsq);
+  const r1lsq = vec.lengthSq(d1);
+  const r1l = Math.sqrt(r1lsq);
   return r1lsq * r1l / vec.length(vec.cross(d1, d2));
 }
 
@@ -162,8 +162,8 @@ export function pointToLineSignedDistance(ax, ay, bx, by, px, py) {
   nx /= d;
   ny /= d;
 
-  let vx = px - ax;
-  let vy = py - ay;
+  const vx = px - ax;
+  const vy = py - ay;
 
   const proj = vx * ny + vy * (-nx);
 
@@ -193,7 +193,7 @@ export function lineLineIntersection2d(p1, p2, v1, v2) {
 }
 
 export function lineLineIntersection(p1, p2, v1, v2) {
-  let zAx = v1.cross(v2);
+  const zAx = v1.cross(v2);
   const n1 = zAx.cross(v1)._normalize();
   const n2 = zAx.cross(v2)._normalize();
   return {
@@ -205,8 +205,8 @@ export function lineLineIntersection(p1, p2, v1, v2) {
 export function ConvexHull2D(points) {
 
   function removeMiddle(a, b, c) {
-    var cross = (a.x - b.x) * (c.y - b.y) - (a.y - b.y) * (c.x - b.x);
-    var dot = (a.x - b.x) * (c.x - b.x) + (a.y - b.y) * (c.y - b.y);
+    const cross = (a.x - b.x) * (c.y - b.y) - (a.y - b.y) * (c.x - b.x);
+    const dot = (a.x - b.x) * (c.x - b.x) + (a.y - b.y) * (c.y - b.y);
     return cross < 0 || cross == 0 && dot <= 0;
   }
 
@@ -229,7 +229,7 @@ export function ConvexHull2D(points) {
 }
 
 export function centroid(set: Vec3[]): Vec3 {
-  let result = newVector(3) as Vec3;
+  const result = newVector(3) as Vec3;
   set.forEach(p => vec._add(result, p));
   vec._div(result, 3);
   return result;

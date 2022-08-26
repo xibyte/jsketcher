@@ -9,9 +9,9 @@ import {DatumParamsRenderer} from '../DatumParamsRenderer';
 
 function move(params, {cadRegistry}) {
   
-  let mDatum = cadRegistry.findDatum(params.datum);
+  const mDatum = cadRegistry.findDatum(params.datum);
   
-  let csys = mDatum.csys.clone();
+  const csys = mDatum.csys.clone();
   csys.origin.x += params.x;
   csys.origin.y += params.y;
   csys.origin.z += params.z;
@@ -24,16 +24,16 @@ function move(params, {cadRegistry}) {
 
 function previewer(ctx, initialParams, updateParams) {
 
-  let mDatum = ctx.services.cadRegistry.findDatum(initialParams.datum);
+  const mDatum = ctx.services.cadRegistry.findDatum(initialParams.datum);
   if (!mDatum) {
     return null;
   }
-  let view = mDatum.ext.view;
+  const view = mDatum.ext.view;
   if (!view) {
     return null;
   }
 
-  let datum3D = view.rootGroup;
+  const datum3D = view.rootGroup;
   datum3D.beginOperation();
   datum3D.onMove = (begin, end, delta) => {
     updateParams(params => {

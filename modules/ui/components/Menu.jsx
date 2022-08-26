@@ -37,7 +37,7 @@ export function MenuItem({icon, label, hotKey, style, disabled, onClick, childre
       hotKey = null;
     }
   }
-  let clickHandler = disabled ?  undefined : (e) => {
+  const clickHandler = disabled ?  undefined : (e) => {
     closeAllUpPopups();
     onClick(e);
   };

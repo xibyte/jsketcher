@@ -1,12 +1,12 @@
 import React, {useContext, useEffect} from 'react';
 import {useStream} from "ui/effects";
 import {Status} from "ui/components/Status";
-import {AppContext} from "../../dom/components/AppContext";
+import {ReactApplicationContext} from "../../dom/ReactApplicationContext";
 import cx from 'classnames';
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
 import ls from "../../../sketcher/components/ConstraintExplorer.less";
 import Fa from "ui/components/Fa";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {StepByStepSimulation} from "./StepByStepSimulation";
 import {AssemblyConstraintDefinition} from "../assemblyConstraint";
 import {AssemblyConstraintsSchemas} from "../assemblySchemas";
@@ -14,7 +14,7 @@ import {AssemblyConstraintsSchemas} from "../assemblySchemas";
 
 export function AssemblyView() {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
   const constraints = useStream(ctx => ctx.assemblyService.constraints$);
   const status = useStream(ctx => ctx.assemblyService.status$);
 
@@ -35,7 +35,7 @@ export function AssemblyConstraintButton({prefix='', constraint: c, ...props}: {
   props?: React.HTMLAttributes<HTMLDivElement>
 }) {
 
-  const ctx: ApplicationContext = useContext(AppContext);
+  const ctx: ApplicationContext = useContext(ReactApplicationContext);
 
   const edit = (constraint) => {
     if (constraint.editable) {

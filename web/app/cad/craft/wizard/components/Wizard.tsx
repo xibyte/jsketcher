@@ -5,7 +5,7 @@ import CadError from '../../../../utils/errors';
 import {FormEditContext, FormParamsContext, FormPathContext, FormStateContext} from './form/Form';
 import {GenericWizard} from "ui/components/GenericWizard";
 import {useStream} from "ui/effects";
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {resolveAppearance} from "cad/craft/operationHelper";
 import ImgIcon from "ui/components/ImgIcon";
 
@@ -21,7 +21,7 @@ interface WizardProps {
 
 export default function Wizard(props: WizardProps) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
   const state = useStream(ctx => ctx.wizardService.state$);
   const workingRequest = useStream(ctx =>  ctx.wizardService.workingRequest$);
 
@@ -74,12 +74,12 @@ export default function Wizard(props: WizardProps) {
     props.onOK();
   };
 
-  let {left} = props;
-  let appearance = resolveAppearance(operation, workingRequest.params);
-  let title = appearance.label.toUpperCase();
-  let icon = <ImgIcon url={appearance.icon32} size={16}/>;
+  const {left} = props;
+  const appearance = resolveAppearance(operation, workingRequest.params);
+  const title = appearance.label.toUpperCase();
+  const icon = <ImgIcon url={appearance.icon32} size={16}/>;
 
-  let Form = operation.form;
+  const Form = operation.form;
 
   return <GenericWizard
     left={left}
@@ -90,7 +90,7 @@ export default function Wizard(props: WizardProps) {
     setFocus={focusFirstInput}
     className='Wizard'
     data-operation-id={operation.id}
-    topicId={operation.id}
+    documentationLink={operation.documentationLink}
     onCancel={cancel}
     onOK={onOK}
     infoText={<>

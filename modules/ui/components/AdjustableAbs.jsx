@@ -13,9 +13,9 @@ export class Adjuster extends React.Component {
     if (!this.el) {
       return;
     }
-    let w = this.el.clientWidth;
-    let h = this.el.clientHeight;
-    let holder = document.documentElement;
+    const w = this.el.clientWidth;
+    const h = this.el.clientHeight;
+    const holder = document.documentElement;
 
     const fit = (prop, pos, dim, holderDim) => {
       if (pos !== undefined) {
@@ -59,7 +59,7 @@ export class Adjuster extends React.Component {
   }
   
   render() {
-    let {left, top, right, bottom, children, style, zIndex, visible, centered, ...props} = this.props;
+    const {left, top, right, bottom, children, style, zIndex, visible, centered, ...props} = this.props;
     return <div ref={el => this.el = el} 
                 style={{
                   visibility: 'hidden',

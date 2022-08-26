@@ -4,7 +4,7 @@ export class ProductionInfo {
   originatedFromPrimitive: string = undefined;
 
   static fromRawData(rawProductionInfo) {
-    let info = new ProductionInfo();
+    const info = new ProductionInfo();
     
     function collectProductionInfo(rawInfo) {
       Object.keys(info).forEach(attr => {

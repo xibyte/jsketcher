@@ -7,6 +7,7 @@ import {ORIGIN} from "math/vector";
 import {lookAtFace} from "cad/actions/usabilityActions";
 import {Styles} from "sketcher/styles";
 import {createFunctionList} from "gems/func";
+import {View} from "cad/scene/views/view";
 
 export class InPlaceSketcher {
   
@@ -14,6 +15,7 @@ export class InPlaceSketcher {
     this.face = null; // should be only one in the state
     this.ctx = ctx;
     this.sketcherAppContext = null;
+    this.pickControlToken = 0;
     Styles.DEFAULT.strokeStyle = '#3477eb';
   }
 
@@ -26,15 +28,15 @@ export class InPlaceSketcher {
   }
   
   enter(face, headless) {
-    let viewer3d = this.ctx.services.viewer;
+    const viewer3d = this.ctx.services.viewer;
     this.face = face;
     this.face.ext.view.sketchGroup.visible = false;
     viewer3d.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
     lookAtFace(this.ctx.viewer, face);
     viewer3d.render(); // updates camera projection matrix
     
-    let container = viewer3d.sceneSetup.container;
-    let canvas = document.createElement('canvas');
+    const container = viewer3d.sceneSetup.container;
+    const canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
     canvas.style.left = 0;
     canvas.style.top = 0;
@@ -47,17 +49,21 @@ export class InPlaceSketcher {
 
     this.syncWithCamera();
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
-    viewer3d.sceneSetup.trackballControls.addEventListener( 'change', this.onCameraChange);
+    this.disposers = createFunctionList();
+
+    const cameraListenerDetacher = viewer3d.sceneSetup.sceneRendered$.attach(this.onCameraChange);
+    this.disposers.add(cameraListenerDetacher);
 
     this.ctx.workbenchService.switchWorkbench('sketcher');
 
-    let sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
+    const sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
     this.viewer.historyManager.init(sketchData);
     this.viewer.io.loadSketch(sketchData);
     this.ctx.streams.sketcher.sketchingFace.next(face);
     this.ctx.streams.sketcher.sketcherAppContext.next(this.sketcherAppContext);
 
-    this.disposers = createFunctionList();
+    this.pickControlToken = this.ctx.pickControlService.takePickControl(this.sketcherPickControl);
+
     this.disposers.add(
       this.ctx.viewer.sceneSetup.viewportSizeUpdate$.attach(this.onCameraChange)
     );
@@ -71,8 +77,7 @@ export class InPlaceSketcher {
     if (this.face.ext.view) {
       this.face.ext.view.sketchGroup.visible = true;
     }
-    let viewer3d = this.ctx.services.viewer;
-    viewer3d.sceneSetup.trackballControls.removeEventListener( 'change', this.onCameraChange);
+    const viewer3d = this.ctx.services.viewer;
     this.face = null;
     this.viewer.canvas.parentNode.removeChild(this.viewer.canvas);
     this.viewer.dispose();
@@ -81,6 +86,7 @@ export class InPlaceSketcher {
     this.ctx.streams.sketcher.sketcherAppContext.next(null);
     this.ctx.workbenchService.switchToDefaultWorkbench();
     this.disposers.call();
+    this.ctx.pickControlService.releasePickControl(this.pickControlToken);
     viewer3d.requestRender();
   }
 
@@ -90,31 +96,31 @@ export class InPlaceSketcher {
   };
 
   syncWithCamera() {
-    let face = this.face;
-    let sceneSetup = this.ctx.services.viewer.sceneSetup;
+    const face = this.face;
+    const sceneSetup = this.ctx.services.viewer.sceneSetup;
     
     _projScreenMatrix.multiplyMatrices( sceneSetup.oCamera.projectionMatrix,
       sceneSetup.oCamera.matrixWorldInverse );
 
-    let csys = face.csys;
+    const csys = face.csys;
 
     // let sketchToWorld = face.sketchToWorldTransformation;
     // let sketchOrigin = sketchToWorld.apply(ORIGIN);
     // let basisX = sketchToWorld.apply(AXIS.X);
     // let basisY = sketchToWorld.apply(AXIS.Y);
 
-    let sketchOrigin = csys.origin;
-    let basisX = csys.x;
-    let basisY = csys.y;
+    const sketchOrigin = csys.origin;
+    const basisX = csys.x;
+    const basisY = csys.y;
 
-    let o = ORIGIN.three().applyMatrix4(_projScreenMatrix);
-    let xx = basisX.three().applyMatrix4(_projScreenMatrix);
-    let yy = basisY.three().applyMatrix4(_projScreenMatrix);
+    const o = ORIGIN.three().applyMatrix4(_projScreenMatrix);
+    const xx = basisX.three().applyMatrix4(_projScreenMatrix);
+    const yy = basisY.three().applyMatrix4(_projScreenMatrix);
 
-    let sketchOriginDelta = sketchOrigin.three().applyMatrix4(_projScreenMatrix);
+    const sketchOriginDelta = sketchOrigin.three().applyMatrix4(_projScreenMatrix);
 
-    let width = sceneSetup.container.clientWidth * DPR / 2;
-    let height = sceneSetup.container.clientHeight * DPR /2;
+    const width = sceneSetup.container.clientWidth * DPR / 2;
+    const height = sceneSetup.container.clientHeight * DPR /2;
 
     xx.sub(o);
     yy.sub(o);
@@ -122,13 +128,17 @@ export class InPlaceSketcher {
     this.viewer.setTransformation(xx.x * width, xx.y * height, yy.x * width, yy.y* height,
       (sketchOriginDelta.x) * width + width,
       (sketchOriginDelta.y) * height + height, sceneSetup.oCamera.zoom);
-  };
+  }
   
   save() {
     this.ctx.services.storage.set(this.sketchStorageKey, this.viewer.io.serializeSketch({
       expressionsSignature: this.ctx.expressionService.signature
     }));
   }
+
+  sketcherPickControl = (obj) => {
+    return false;
+  }
 }
 
-let _projScreenMatrix = new Matrix4();
+const _projScreenMatrix = new Matrix4();

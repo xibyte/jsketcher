@@ -32,11 +32,8 @@ function SketchList() {
   const {project} = useContext(SketcherAppContext);
 
   const items = useMemo(() => {
-    let theItems = [];
-    for (let name in localStorage) {
-      if (!localStorage.hasOwnProperty(name)) {
-        continue;
-      }
+    const theItems = [];
+    for (let name of Object.keys(localStorage)) {
       if (name.indexOf(SKETCHER_STORAGE_PREFIX) === 0) {
         name = name.substring(SKETCHER_STORAGE_PREFIX.length);
       }

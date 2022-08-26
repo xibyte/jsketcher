@@ -6,6 +6,7 @@ import {FieldBasicProps, fieldToSchemaGeneric} from "cad/mdf/ui/field";
 import {EntityKind} from "cad/model/entities";
 import {ArrayTypeSchema} from "cad/craft/schema/types/arrayType";
 import {Types} from "cad/craft/schema/types";
+import {EntityCapture, entityKindCapture} from "cad/craft/schema/types/entityType";
 
 
 export interface SelectionWidgetProps extends FieldBasicProps {
@@ -14,11 +15,13 @@ export interface SelectionWidgetProps extends FieldBasicProps {
 
   multi?: boolean;
 
-  capture: EntityKind[];
+  capture: EntityKind[] | EntityCapture;
 
   min?: number;
 
   max?: number;
+
+  markColor?: string | number
 }
 
 export function SelectionWidget(props: SelectionWidgetProps) {
@@ -29,7 +32,8 @@ SelectionWidget.propsToSchema = (props: SelectionWidgetProps) => {
 
   let value = {
     type: Types.entity,
-    allowedKinds: props.capture,
+    entityCapture: Array.isArray(props.capture) ? entityKindCapture(...props.capture) : props.capture,
+    markColor: props.markColor
   } as SchemaField;
 
   if (props.multi) {

@@ -142,7 +142,7 @@ export class AlgNumSubSystem {
   }
 
   _removeConstraint(constraint) {
-    let index = this.allConstraints.indexOf(constraint);
+    const index = this.allConstraints.indexOf(constraint);
     if (index !== -1) {
       this.allConstraints.splice(index, 1);
       this.conflicting.delete(constraint);
@@ -228,7 +228,7 @@ export class AlgNumSubSystem {
 
               this.eliminatedParams.set(p, val);
 
-              for (let otherPolynomial of this.polynomials) {
+              for (const otherPolynomial of this.polynomials) {
                 if (otherPolynomial) {
                   otherPolynomial.eliminate(p, val);
                 }
@@ -247,15 +247,15 @@ export class AlgNumSubSystem {
             m2 = t;
           }
 
-          let p1 = m1.linearParam;
-          let p2 = m2.linearParam;
+          const p1 = m1.linearParam;
+          const p2 = m2.linearParam;
 
           const constant = - m2.constant / m1.constant;
           if (eqEps(polynomial.constant, 0)) {
 
             this.polynomials[i] = null;
             this.substitute(p1, new Polynomial().monomial(constant).term(p2, POW_1_FN));
-            for (let otherPolynomial of this.polynomials) {
+            for (const otherPolynomial of this.polynomials) {
               if (otherPolynomial) {
                 otherPolynomial.substitute(p1, p2, constant);
               }
@@ -265,7 +265,7 @@ export class AlgNumSubSystem {
             const b = - polynomial.constant / m1.constant;
 
             let transaction = compositeFn();
-            for (let otherPolynomial of this.polynomials) {
+            for (const otherPolynomial of this.polynomials) {
               if (otherPolynomial && otherPolynomial !== polynomial) {
                 const polyTransaction = otherPolynomial.linearSubstitution(p1, p2, constant, b);
                 if (!polyTransaction) {
@@ -381,7 +381,7 @@ export class AlgNumSubSystem {
 
     const clusters = [];
 
-    for (let initPl of polynomials) {
+    for (const initPl of polynomials) {
       if (visited.has(initPl)) {
         continue
       }
@@ -395,9 +395,9 @@ export class AlgNumSubSystem {
         isolation.push(pl);
         visited.add(pl);
         const params = graph.get(pl);
-        for (let p of params) {
-          let linkedPolynomials = graph.get(p);
-          for (let linkedPolynomial of linkedPolynomials) {
+        for (const p of params) {
+          const linkedPolynomials = graph.get(p);
+          for (const linkedPolynomial of linkedPolynomials) {
             if (linkedPolynomial !== pl) {
               stack.push(linkedPolynomial);
             }
@@ -446,7 +446,7 @@ export class AlgNumSubSystem {
       }
     }
 
-    for (let [p, val] of this.eliminatedParams) {
+    for (const [p, val] of this.eliminatedParams) {
       p.set(val);
     }
 
@@ -531,7 +531,7 @@ class Isolation {
       this.beingSolvedConstraints.add(system.polyToConstr.get(p));
     });
 
-    for (let residual of residuals) {
+    for (const residual of residuals) {
       residual.params.forEach(solverParam => {
         if (!this.beingSolvedParams.has(solverParam)) {
           solverParam.reset(solverParam.objectParam.get());
@@ -598,7 +598,7 @@ class PolynomialResidual {
     for (let i = 0 ; i < this.params.length; ++i) {
       const val = this.params[i].get();
       const paramFunctions = this.functions[i];
-      for (let fn of paramFunctions) {
+      for (const fn of paramFunctions) {
         const d0 = fn.d0(val);
         err += d0;// * d0;
       }
@@ -611,7 +611,7 @@ class PolynomialResidual {
     for (let i = 0 ; i < this.params.length; ++i) {
       const val = this.params[i].get();
       const paramFunctions = this.functions[i];
-      for (let fn of paramFunctions) {
+      for (const fn of paramFunctions) {
         // const d0 = fn.d0(val);
         const d1 = fn.d1(val);
         out[i] += d1; //d0 * d1; //degenerated chain rule

@@ -4,17 +4,17 @@ import {closestToCurveParam} from './closestPoint';
 import InvertedCurve from './invertedCurve';
 
 export default function CubicHermiteInterpolation(points, tangents) {
-  let n = points.length;
-  let knots = new Array(n).fill().map((e,i) => i);
-  let beziers = [];
+  const n = points.length;
+  const knots = new Array(n).fill().map((e,i) => i);
+  const beziers = [];
   for (let i = 1; i < n; i++) {
-    let p0 = points[i - 1];
-    let p3 = points[i];
-    let tangent1 = tangents[i - 1];
-    let tangent2 = tangents[i];
-    let length = vec.length(vec.sub(p3, p0)) * 0.5;
-    let p1 = vec.add(p0, vec.mul(tangent1, length));
-    let p2 = vec.sub(p3, vec.mul(tangent2, length));
+    const p0 = points[i - 1];
+    const p3 = points[i];
+    const tangent1 = tangents[i - 1];
+    const tangent2 = tangents[i];
+    const length = vec.length(vec.sub(p3, p0)) * 0.5;
+    const p1 = vec.add(p0, vec.mul(tangent1, length));
+    const p2 = vec.sub(p3, vec.mul(tangent2, length));
     beziers.push({p0, p1, p2, p3});
   }
 
@@ -43,9 +43,9 @@ export default function CubicHermiteInterpolation(points, tangents) {
   }
   
   function evaluate(u, num) {
-    let [pieceIndex, uL] = localizeParam(u);
-    let {p0, p1, p2, p3} = beziers[pieceIndex];
-    let out = [];
+    const [pieceIndex, uL] = localizeParam(u);
+    const {p0, p1, p2, p3} = beziers[pieceIndex];
+    const out = [];
     for (let i = 0; i <= num; ++i) {
       out.push(evalPatch(p0, p1, p2, p3, uL, i));
     }
@@ -53,8 +53,8 @@ export default function CubicHermiteInterpolation(points, tangents) {
   }
 
   function point(u) {
-    let [pieceIndex, uL] = localizeParam(u);
-    let {p0, p1, p2, p3} = beziers[pieceIndex];
+    const [pieceIndex, uL] = localizeParam(u);
+    const {p0, p1, p2, p3} = beziers[pieceIndex];
     return cubicBezierPoint(p0, p1, p2, p3, uL);
   }
   

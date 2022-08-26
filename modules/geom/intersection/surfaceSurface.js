@@ -9,9 +9,9 @@ export function surfaceIntersect(surfaceA, surfaceB) {
 
   function fixTessNaNPoitns(s, tess) {
     for (let i = 0; i < tess.points.length; i++) {
-      let pt = tess.points[i];
+      const pt = tess.points[i];
       if (Number.isNaN(pt[0]) || Number.isNaN(pt[1]) || Number.isNaN(pt[2])) {
-        let [u, v] = tess.uvs[i];
+        const [u, v] = tess.uvs[i];
         tess.points[i] = verb.eval.Eval.rationalSurfacePoint(s, u, v);
       }
     }
@@ -25,8 +25,8 @@ export function surfaceIntersect(surfaceA, surfaceB) {
     verb.eval.Intersect.surfacesAtPointWithEstimate(surfaceA, surfaceB, inter.uv0, inter.uv1, NUMERICAL_SOLVE_TOL)
   ));
 
-  let curves = [];
-  for (let pl of exactPls) {
+  const curves = [];
+  for (const pl of exactPls) {
     let points = pl.map(ip => ip.point);
 
     points = removeSuperfluousPoints(points, 30*30); //5*5
@@ -39,25 +39,25 @@ export function surfaceIntersect(surfaceA, surfaceB) {
 //it's Douglas–Peucker and it's not well suited here
 function removeSuperfluousPoints(points, tolSq) {
 
-  let out = [];
-  let stack = [[0, points.length - 1]];
+  const out = [];
+  const stack = [[0, points.length - 1]];
   out.push(points[0]);
   while (stack.length !== 0) {
-    let stackItem = stack.pop();
+    const stackItem = stack.pop();
     if (!Array.isArray(stackItem)) {
       out.push(points[stackItem]);
       continue;
     }
-    let [from, to] = stackItem;
+    const [from, to] = stackItem;
     let maxDistSq = tolSq;
     let hero = -1;
-    let v = vec._normalize(vec.sub(points[to], points[from]));
+    const v = vec._normalize(vec.sub(points[to], points[from]));
 
     for (let i = from + 1; i < to; i ++) {
-      let proj = vec.dot(v, vec.sub(points[i], points[from]));
-      let vA = vec.add(points[from], vec.mul(v, proj));
-      let vX = vec.sub(points[i], vA);
-      let perpDistSq = vec.lengthSq(vX);
+      const proj = vec.dot(v, vec.sub(points[i], points[from]));
+      const vA = vec.add(points[from], vec.mul(v, proj));
+      const vX = vec.sub(points[i], vA);
+      const perpDistSq = vec.lengthSq(vX);
       if (perpDistSq > maxDistSq) {
         hero = i;
         maxDistSq = perpDistSq;

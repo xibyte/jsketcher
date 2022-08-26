@@ -11,8 +11,8 @@ import initializeBySchema from '../../../schema/initializeBySchema';
 export default class MultiEntity extends React.Component {
 
   selectionChanged = selection => {
-    let {itemField, schema, context} = this.props;
-    let value = selection.map(id => {
+    const {itemField, schema, context} = this.props;
+    const value = selection.map(id => {
       let item = this.props.value.find(i => i[itemField] === id);
       if (!item) {
         item = initializeBySchema(schema, context);
@@ -24,8 +24,8 @@ export default class MultiEntity extends React.Component {
   };
 
   componentDidMount() {
-    let {streams, entity} = this.props;
-    let selection$ = streams.selection[entity];
+    const {streams, entity} = this.props;
+    const selection$ = streams.selection[entity];
     this.selectionChanged(selection$.value);
     this.detacher = selection$.attach(this.selectionChanged);
   }
@@ -39,7 +39,7 @@ export default class MultiEntity extends React.Component {
     return <FormContext.Consumer>
       {
         ctx => this.props.value.map(data => {
-          let subContext = {
+          const subContext = {
             data,
             updateParam: (name, value) => {
               data[name] = value;
@@ -47,8 +47,8 @@ export default class MultiEntity extends React.Component {
             },
             ...ctx
           };
-          let {itemField} = this.props;
-          let entityId = data[itemField];
+          const {itemField} = this.props;
+          const entityId = data[itemField];
           return <Stack key={entityId}>
             <div>{itemField}: {entityId}</div>
             <FormContext.Provider value={subContext}>

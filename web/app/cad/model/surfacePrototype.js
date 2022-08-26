@@ -40,9 +40,9 @@ export class CSysPlaneSurfacePrototype extends SurfacePrototype {
   boundTo(points2dOnSurface, minWidth, minHeight, offset) {
     
     if (points2dOnSurface.length === 0) {
-      let dx = this.csys.x.multiply(minWidth);
-      let dy = this.csys.y.multiply(minHeight);
-      let origin = this.csys.origin;
+      const dx = this.csys.x.multiply(minWidth);
+      const dy = this.csys.y.multiply(minHeight);
+      const origin = this.csys.origin;
       return new BrepSurface(new NurbsSurface(verb.geom.NurbsSurface.byKnotsControlPointsWeights( 1, 1, [0,0,1,1], [0,0,1,1],
         [ [ origin.plus(dy).data(), origin.plus(dx)._plus(dy).data()] ,
           [ origin.data(),          origin.plus(dx ).data() ] ] )));

@@ -1,0 +1,85 @@
+<html>
+<head>
+  <title>Web CAD Documentation</title>
+  <link rel="shortcut icon" href="img/cad/cube96.png"/>
+
+  <style>
+    html {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-size: 14px;
+      font-family: 'DejaVu Serif', Georgia, "Times New Roman", Times, serif;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      background: #e9eaeb;
+    }
+
+    .header {
+      border-bottom: 1px solid #000;
+      padding: 10px
+    }
+
+    .left {
+      padding: 10px;
+      border-right: 1px solid #000;
+    }
+
+    .content {
+      padding: 10px;
+      max-width: 600px;
+    }
+
+    .center {
+      display: flex;
+      flex-grow: 1;
+    }
+
+    .block-link {
+      display: block;
+    }
+
+    .children {
+      padding-left: 10px;
+    }
+
+    a, a:visited {
+      color: #005ea4;
+      text-decoration: none;
+    }
+    a:hover {
+      color: blue;
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="header">
+  JSketcher Documentation
+</div>
+<div class="center">
+
+  <div class="left">
+    {{#each sidenav}}
+      <div><b>{{workbenchName}}</b></div>
+      <div class="children">
+        {{#each operations}}
+          <a class="block-link" href="{{href}}">{{operationName}}</a>
+        {{/each}}
+      </div>
+    {{/each}}
+  </div>
+  <div class="content">
+    {{{content}}}
+  </div>
+
+</div>
+
+</body>
+</html>

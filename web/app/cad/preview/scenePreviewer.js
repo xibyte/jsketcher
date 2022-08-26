@@ -19,7 +19,7 @@ export function createPreviewer(sceneGeometryCreator, services, initialParams) {
 
   function update(params) {
     destroyPreviewObject();
-    let geometry = sceneGeometryCreator(params, services);
+    const geometry = sceneGeometryCreator(params, services);
     if (!geometry) {
       services.viewer.requestRender();
       return;
@@ -38,12 +38,6 @@ export function createPreviewer(sceneGeometryCreator, services, initialParams) {
 }
 
 
-function sketchBasedPreviewCreator(params) {
-  const face = app.findFace(params.face);
-  if (!face) return null;
-  const triangles = this.createImpl(app, params, face.sketch.fetchContours(), face);
-  return createMeshFromTriangles(triangles, IMAGINARY_SURFACE_MATERIAL);
-}
 //
 // function sketchBasedNurbsPreviewCreator(params) {
 //   const face = app.findFace(params.face);

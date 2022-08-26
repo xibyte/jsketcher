@@ -5,18 +5,18 @@ export default class VectorFactory {
 
   vectors: Vector[];
 
-  constructor(tolerance) {
+  constructor() {
     this.vectors = [];
   }
 
   addVertices(vertices: Vector[]) {
-    for (let v of vertices) {
+    for (const v of vertices) {
       this.vectors.push(v);
     }
   }
 
   find(x, y, z): Vector {
-    for (let v of this.vectors) {
+    for (const v of this.vectors) {
       if (veqXYZ(v.x, v.y, v.z, x, y, z)) {
         return v;
       }
@@ -24,7 +24,7 @@ export default class VectorFactory {
     return null;
   }
 
-  create(x, y, z, onExistent): Vector {
+  create(x, y, z, onExistent?): Vector {
     let vector = this.find(x, y, z);
     if (vector === null) {
       vector = new Vector(x, y, z);

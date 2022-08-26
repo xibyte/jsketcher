@@ -20,7 +20,7 @@ function initializeSketcherApplication() {
 
   const context = createAppContext();
   const dock = initNonReactUIParts(context);
-  initShortkeys();
+  initShortkeys(context);
 
   window.__CAD_APP = context;
 
@@ -123,7 +123,7 @@ function atatchToToolStreams(context) {
 
 function startReact(appCtx) {
 
-  let reactControls = document.getElementById('react-controls');
+  const reactControls = document.getElementById('react-controls');
   reactControls.onkeydown = e => {
     e.stopPropagation();
     // e.preventDefault();

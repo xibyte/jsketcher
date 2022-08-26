@@ -3,7 +3,7 @@ import React from 'react';
 export default class ComboBoxControl extends React.Component {
   
   render() {
-    let {onChange, value, includeNonExistent, children} = this.props;
+    const {onChange, value, includeNonExistent, children} = this.props;
     let nonExistent = null;
     if (includeNonExistent) {
       let needsInclusion = false;

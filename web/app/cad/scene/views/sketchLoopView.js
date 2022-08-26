@@ -1,12 +1,12 @@
-import {MarkTracker, View} from './view';
+import {View} from './view';
 import * as SceneGraph from 'scene/sceneGraph';
-import {tessellateLoopsOnSurface} from '../../tess/brep-tess';
-import {createSolidMaterial} from '../wrappers/sceneObject';
-import {DoubleSide, Geometry, Mesh} from 'three';
-import {surfaceAndPolygonsToGeom} from '../wrappers/brepSceneObject';
-import {TriangulatePolygons} from '../../tess/triangulation';
+import {tessellateLoopsOnSurface} from 'cad/tess/brep-tess';
+import {createSolidMaterial} from '../views/viewUtils';
+import {DoubleSide, Mesh} from 'three';
+import {surfaceAndPolygonsToGeom} from './viewUtils';
+import {TriangulatePolygons} from 'cad/tess/triangulation';
 import Vector from 'math/vector';
-import {LOOP} from '../../model/entities';
+import {LOOP} from 'cad/model/entities';
 import {setAttribute} from 'scene/objectData';
 
 const HIGHLIGHT_COLOR = 0xDBFFD9;
@@ -32,8 +32,20 @@ export class SketchLoopView extends View {
     super(ctx, mLoop, MarkerTable);
     this.rootGroup = SceneGraph.createGroup();
 
-    const geometry = new Geometry();
-    geometry.dynamic = true;
+
+    const surface = mLoop.face.surface;
+    let tess;
+    if (surface.simpleSurface && surface.simpleSurface.isPlane) {
+      const polygon = mLoop.contour.tessellateInCoordinateSystem(mLoop.face.csys);
+      tess = TriangulatePolygons([polygon], mLoop.face.csys.z, v => v.data(), arr => new Vector().set3(arr));
+    } else {
+      tess = tessellateLoopsOnSurface(surface, [mLoop.contour], contour => contour.segments,
+        seg => seg.toNurbs(mLoop.face.csys),
+        seg => seg.inverted);
+    }
+    
+    const geometry = surfaceAndPolygonsToGeom(surface, tess);
+
     this.mesh = new Mesh(geometry, createSolidMaterial({
       // color: HIGHLIGHT_COLOR,
       side: DoubleSide,
@@ -45,23 +57,8 @@ export class SketchLoopView extends View {
       polygonOffsetUnits: -1.0,
       visible: false
     }));
-    let surface = mLoop.face.surface;
-    let tess;
-    if (surface.simpleSurface && surface.simpleSurface.isPlane) {
-      let polygon = mLoop.contour.tessellateInCoordinateSystem(mLoop.face.csys);
-      tess = TriangulatePolygons([polygon], mLoop.face.csys.z, v => v.data(), arr => new Vector().set3(arr));
-    } else {
-      tess = tessellateLoopsOnSurface(surface, [mLoop.contour], contour => contour.segments,
-        seg => seg.toNurbs(mLoop.face.csys),
-        seg => seg.inverted);
-    }
-    
-    surfaceAndPolygonsToGeom(surface, tess, this.mesh.geometry);
-    this.mesh.geometry.mergeVertices();
-    for (let i = 0; i < geometry.faces.length; i++) {
-      const meshFace = geometry.faces[i];
-      setAttribute(meshFace, LOOP, this);
-    }
+
+    setAttribute(this.mesh, LOOP, this);
 
     this.rootGroup.add(this.mesh);
     this.mesh.onMouseEnter = () => {

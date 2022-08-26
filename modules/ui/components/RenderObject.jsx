@@ -17,11 +17,8 @@ function RenderObjectImpl({object, inner}) {
     </div>;
   } else if (Array.isArray(object)) {
     return <div style={{marginLeft: inner?10:0}}>
-      {Object.map(object).map((item, i) => <div key={i}>
-        <div><RenderObject object={object[field]} inner/></div>
-      </div>)}
-      {Object.keys(object).map(field => <div key={field}>
-        {field}: <RenderObject object={object[field]} inner/>
+      {object.map((item, i) => <div key={i}>
+        <div><RenderObject object={object[item]} inner/></div>
       </div>)}
     </div>;
   } else {

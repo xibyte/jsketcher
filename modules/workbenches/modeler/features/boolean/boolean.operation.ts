@@ -1,10 +1,8 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
-import { param } from 'cypress/types/jquery';
-import { MObject } from 'cad/model/mobject';
+import {OperationDescriptor} from "cad/craft/operationBundle";
 
 interface BooleanParams {
   tools: [];
@@ -17,13 +15,13 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
   label: 'Boolean',
   icon: 'img/cad/intersection',
   info: 'Booleans 2D sketch',
+  path:__dirname,
   paramsInfo: ({tools, boolean}) => `(${r(tools)} ${r(boolean)})`,
   run: (params: BooleanParams, ctx: ApplicationContext) => {
-    console.log(params);
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let returnObject = occ.utils.applyBooleanModifier(params.tools, params.boolean);
+    const returnObject = occ.utils.applyBooleanModifier(params.tools, params.boolean);
     
     if (params.keepTools == true) {
       // filter consumed array to remove the tools but leaving the targets regardless if 
@@ -62,5 +60,41 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       optional: true,
       defaultValue: "UNION",
     },
+  ],
+
+  masking: [
+    {
+      id: 'UNION',
+      label: 'Union',
+      icon: 'img/cad/union',
+      info: 'makes a cut based on 2D sketch',
+      maskingParams: {
+        boolean: {
+          kind: 'UNION'
+        }
+      }
+    },
+    {
+      id: 'SUBTRACT',
+      label: 'Subtract',
+      icon: 'img/cad/subtract',
+      info: 'makes a cut based on 2D sketch',
+      maskingParams: {
+        boolean: {
+          kind: 'SUBTRACT'
+        }
+      }
+    },
+    {
+      id: 'INTERSECT',
+      label: 'Intersect',
+      icon: 'img/cad/intersection',
+      info: 'makes a cut based on 2D sketch',
+      maskingParams: {
+        boolean: {
+          kind: 'INTERSECT'
+        }
+      }
+    }
   ],
 }

@@ -5,7 +5,7 @@ import PIP from '../../../web/app/cad/tess/pip';
 import {isCCW} from "geom/euclidean";
 
 export function evolveFace(originFace, loops) {
-  let out = [];
+  const out = [];
   const originSurface = originFace.surface;
   let invertedSurface = null;
   function invertSurface() {
@@ -32,7 +32,7 @@ export function evolveFace(originFace, loops) {
     loop.face = newFace;
     out.push(newFace);
 
-    for (let child of nestedLoop.nesting) {
+    for (const child of nestedLoop.nesting) {
       if (child.level == level + 2) {
         createFaces(child, level + 2);
       } else if (child.level == level + 1) {      
@@ -46,7 +46,7 @@ export function evolveFace(originFace, loops) {
     }
   }
   const nestedLoops = getNestedLoops(originFace, loops);
-  for (let nestedLoop of nestedLoops) {
+  for (const nestedLoop of nestedLoops) {
     if (nestedLoop.level == 0) {
       createFaces(nestedLoop, 0);
     }
@@ -69,7 +69,7 @@ function getNestedLoops(face, brepLoops) {
 
   const loops = brepLoops.map(loop => new NestedLoop(loop));
   function contains(loop, other) {
-    for (let point of other.workingPolygon) {
+    for (const point of other.workingPolygon) {
       if (!loop.pip(point).inside) {
         return false;
       }

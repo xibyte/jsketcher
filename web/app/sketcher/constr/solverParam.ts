@@ -20,12 +20,12 @@ export class SolverParam {
     this.set(value);
     this.constant = false;
     this.j = -1;
-  };
+  }
 
   set(value) {
     if (this.constant) return;
     this.value = value;
-  };
+  }
 
   get() {
     return this.value;

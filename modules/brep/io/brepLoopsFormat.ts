@@ -16,7 +16,7 @@ export function toLoops(shell: Shell, precisionFn: (number) => number): BREPLoop
   const fl = precisionFn || (v => v);
   
   const vertices = [];
-  for (let v of shell.vertices) {
+  for (const v of shell.vertices) {
     vertices.push(v);
   }
 
@@ -29,7 +29,7 @@ export function toLoops(shell: Shell, precisionFn: (number) => number): BREPLoop
  
   const faces = shell.faces.map(f => {
     const loops = [];
-    for (let l of f.loops) {
+    for (const l of f.loops) {
       loops.push(l.halfEdges.map(e => verticesIndex.get(e.vertexA)));
     }
     return loops;

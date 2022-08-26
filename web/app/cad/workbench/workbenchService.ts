@@ -1,18 +1,17 @@
-import {OperationDescriptor} from "cad/craft/operationPlugin";
-import {ActionDefinition} from "cad/actions/actionSystemPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
+import {ActionDefinition} from "cad/actions/actionSystemBundle";
 import {state} from "lstream";
 import {Index} from "gems/indexType";
-import {ApplicationContext, CoreContext} from "context";
-import {ActionRef} from "cad/dom/uiPlugin";
+import {ApplicationContext} from "cad/context";
+import {ActionRef} from "cad/dom/uiBundle";
 import {IconDeclaration} from "cad/icons/IconDeclaration";
-import {CurrentWorkbenchIcon} from "cad/workbench/CurrentWorkbenchIcon";
 
 export class WorkbenchService {
 
   workbenches$ = state<Index<WorkbenchConfig>>({});
 
   currentWorkbench$ = state<WorkbenchConfig>(null);
-  ctx: CoreContext;
+  ctx: ApplicationContext;
 
   constructor(ctx: ApplicationContext) {
     this.ctx = ctx;
@@ -57,16 +56,25 @@ export class WorkbenchService {
     );
   }
 
-  switchWorkbench(workbenchId: string) {
+  switchWorkbench(workbenchId: string, silent: boolean = false) {
     const workbenchConfig = this.workbenches$.value[workbenchId];
     if (!workbenchConfig) {
-      throw 'nonexistent workbench ' + workbenchId;
+      const noWorkbenchMsg = 'nonexistent workbench ' + workbenchId;
+      if (silent) {
+        console.warn(noWorkbenchMsg);
+      } else {
+        throw noWorkbenchMsg;
+      }
     }
     this.currentWorkbench$.next(workbenchConfig);
   }
 
   switchToDefaultWorkbench() {
-    this.switchWorkbench('modeler');
+    this.switchWorkbench(this.defaultWorkbenchId);
+  }
+
+  get defaultWorkbenchId() {
+    return 'modeler';
   }
 }
 

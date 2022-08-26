@@ -22,7 +22,7 @@ export class StreamBase {
     if (!usingStream) {
       usingStream = StateStream;
     }
-    let stateStream = new usingStream(initialValue);
+    const stateStream = new usingStream(initialValue);
     this.attach(v => stateStream.next(v));
     return stateStream;
   }

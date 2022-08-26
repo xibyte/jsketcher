@@ -78,14 +78,14 @@ export class LinearDimension extends Dimension {
     const [_ax, _ay]  = this.pickA;
     const [_bx, _by]  = this.pickB;
 
-    let _vx = - (_by - _ay);
-    let _vy = _bx - _ax;
+    const _vx = - (_by - _ay);
+    const _vy = _bx - _ax;
 
     const d = distance(_ax, _ay, _bx, _by);
 
     //normalize
-    let _vxn = _vx / d;
-    let _vyn = _vy / d;
+    const _vxn = _vx / d;
+    const _vyn = _vy / d;
 
     this.offset += (dx *  _vxn + dy * _vyn) * this.unscale;
   }
@@ -112,11 +112,10 @@ export class LinearDimension extends Dimension {
 
     this.unscale = scale;
 
-    let a, b, startA, startB;
-    a = this.getB();
-    b = this.getA();
-    startA = this.b;
-    startB = this.a;
+    const a = this.getB();
+    const b = this.getA();
+    const startA = this.b;
+    const startB = this.a;
 
     const d = distanceAB(a, b);
 
@@ -124,25 +123,25 @@ export class LinearDimension extends Dimension {
     let _vy = b.x - a.x;
   
     //normalize
-    let _vxn = _vx / d;
-    let _vyn = _vy / d;
+    const _vxn = _vx / d;
+    const _vyn = _vy / d;
   
     _vx = _vxn * off;
     _vy = _vyn * off;
   
     ctx.beginPath();
 
-    let _ax = a.x + _vx;
-    let _ay = a.y + _vy;
-    let _bx = b.x + _vx;
-    let _by = b.y + _vy;
+    const _ax = a.x + _vx;
+    const _ay = a.y + _vy;
+    const _bx = b.x + _vx;
+    const _by = b.y + _vy;
   
     ctx.moveTo(_ax, _ay);
     ctx.lineTo(_bx, _by);
   
   
     function drawRef(start, x, y) {
-      var vec = new Vector(x - start.x, y - start.y);
+      const vec = new Vector(x - start.x, y - start.y);
       vec._normalize();
       vec._multiply(EXT_LINEAR_WIDTH_PX * unscale);
       
@@ -314,15 +313,15 @@ export class DiameterDimension extends Dimension {
     const unscale = 1 /scale;
     const textOff = unscale * TEXT_H_OFFSET;
 
-    let r = this.obj.distanceA ? this.obj.distanceA() : this.obj.r.get();
+    const r = this.obj.distanceA ? this.obj.distanceA() : this.obj.r.get();
 
     let hxn = Math.cos(this.angle);
     let hyn = Math.sin(this.angle);
 
     //fix angle if needed
     if (isInstanceOf(this.obj, Arc) &&  !this.obj.isPointInsideSector(this.obj.c.x + hxn, this.obj.c.y + hyn)) {
-      let cosA = hxn * (this.obj.a.x - this.obj.c.x) + hyn * (this.obj.a.y - this.obj.c.y);
-      let cosB = hxn * (this.obj.b.x - this.obj.c.x) + hyn * (this.obj.b.y - this.obj.c.y);
+      const cosA = hxn * (this.obj.a.x - this.obj.c.x) + hyn * (this.obj.a.y - this.obj.c.y);
+      const cosB = hxn * (this.obj.b.x - this.obj.c.x) + hyn * (this.obj.b.y - this.obj.c.y);
       if (cosA - hxn > cosB - hxn) {
         this.angle = this.obj.getStartAngle();
       } else {
@@ -332,8 +331,8 @@ export class DiameterDimension extends Dimension {
       hyn = Math.sin(this.angle);
     }
 
-    let _vxn = - hyn;
-    let _vyn = hxn;
+    const _vxn = - hyn;
+    const _vyn = hxn;
 
     const txt = 'R ' + r.toFixed(2);
     const _ax = this.obj.c.x;
@@ -481,10 +480,10 @@ export class AngleBetweenDimension extends Dimension {
     // this.a.syncGeometry();
     // this.b.syncGeometry && this.b.syncGeometry();
 
-    let avx = Math.cos(aAng);
-    let avy = Math.sin(aAng);
-    let bvx = Math.cos(bAng);
-    let bvy = Math.sin(bAng);
+    const avx = Math.cos(aAng);
+    const avy = Math.sin(aAng);
+    const bvx = Math.cos(bAng);
+    const bvy = Math.sin(bAng);
 
 
     this.center = findCenter(aa, ab, ba, bb, avx, avy, bvx, bvy);
@@ -508,10 +507,10 @@ export class AngleBetweenDimension extends Dimension {
     // }
     const halfAng = 0.5 * ang;
 
-    let _ax = cx + off * avx;
-    let _ay = cy + off * avy;
-    let _bx = cx + off * bvx;
-    let _by = cy + off * bvy;
+    const _ax = cx + off * avx;
+    const _ay = cy + off * avy;
+    const _bx = cx + off * bvx;
+    const _by = cy + off * bvy;
 
 
     const _vxn =  Math.cos(aAng + halfAng);

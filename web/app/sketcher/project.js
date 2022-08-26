@@ -8,7 +8,7 @@ export class Project {
   }
 
   cloneSketch() {
-    let name = prompt("Name for sketch clone");
+    const name = prompt("Name for sketch clone");
     if (name != null) {
       if (this.isSketchExists(name)) {
         alert("Sorry, a sketch with the name '" + name + "' already exists. Won't override it.");
@@ -28,12 +28,12 @@ export class Project {
     if (name !== "untitled") {
       uri += "#" + name;
     }
-    let win = window.open(uri, '_blank');
+    const win = window.open(uri, '_blank');
     win.focus();
   }
 
   newSketch() {
-    let name = prompt("Name for sketch");
+    const name = prompt("Name for sketch");
     if (name != null) {
       if (this.isSketchExists(name)) {
         alert("Sorry, a sketch with the name '" + name + "' already exists. Won't override it.");
@@ -44,8 +44,8 @@ export class Project {
   }
 
   loadFromLocalStorage() {
-    let sketchId = this.getSketchId();
-    let sketchData = localStorage.getItem(sketchId);
+    const sketchId = this.getSketchId();
+    const sketchData = localStorage.getItem(sketchId);
     if (sketchData != null) {
       this.viewer.historyManager.init(sketchData);
       this.viewer.io.loadSketch(sketchData);

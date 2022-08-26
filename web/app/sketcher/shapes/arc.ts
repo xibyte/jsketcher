@@ -93,7 +93,7 @@ export class Arc extends SketchObject {
   get labelCenter() {
     const mid = new Vector((this.a.x + this.b.x) / 2 - this.c.x, (this.a.y + this.b.y) / 2 - this.c.y, 0);
     mid._normalize()._multiply(this.r.get());
-    let angle = makeAngle0_360(this.getEndAngle() - this.getStartAngle());
+    const angle = makeAngle0_360(this.getEndAngle() - this.getStartAngle());
     if (angle > Math.PI) {
       mid._negate();
     }
@@ -102,8 +102,8 @@ export class Arc extends SketchObject {
 
   drawImpl(ctx, scale) {
     ctx.beginPath();
-    let r = this.radiusForDrawing();
-    let startAngle = makeAngle0_360(this.getStartAngle());
+    const r = this.radiusForDrawing();
+    const startAngle = makeAngle0_360(this.getStartAngle());
     let endAngle;
     if (areEqual(this.a.x, this.b.x, TOLERANCE) &&
         areEqual(this.a.y, this.b.y, TOLERANCE)) {
@@ -114,9 +114,9 @@ export class Arc extends SketchObject {
     if (r > 0) {
       ctx.arc(this.c.x, this.c.y, r, startAngle, endAngle);
     }
-    let distanceB = this.distanceB();
+    const distanceB = this.distanceB();
     if (Math.abs(r - distanceB) * scale > 1) {
-      let adj = r / distanceB;
+      const adj = r / distanceB;
       ctx.save();
       ctx.setLineDash([7 / scale]);
       ctx.lineTo(this.b.x, this.b.y);
@@ -129,21 +129,21 @@ export class Arc extends SketchObject {
   }
   
   isPointInsideSector(x, y) {
-    var ca = new Vector(this.a.x - this.c.x, this.a.y - this.c.y);
-    var cb = new Vector(this.b.x - this.c.x, this.b.y - this.c.y);
-    var ct = new Vector(x - this.c.x, y - this.c.y);
+    const ca = new Vector(this.a.x - this.c.x, this.a.y - this.c.y);
+    const cb = new Vector(this.b.x - this.c.x, this.b.y - this.c.y);
+    const ct = new Vector(x - this.c.x, y - this.c.y);
   
     ca._normalize();
     cb._normalize();
     ct._normalize();
-    var cosAB = ca.dot(cb);
-    var cosAT = ca.dot(ct);
+    const cosAB = ca.dot(cb);
+    const cosAT = ca.dot(ct);
   
-    var isInside = cosAT >= cosAB;
-    var abInverse = ca.cross(cb).z < 0;
-    var atInverse = ca.cross(ct).z < 0;
+    const isInside = cosAT >= cosAB;
+    const abInverse = ca.cross(cb).z < 0;
+    const atInverse = ca.cross(ct).z < 0;
   
-    var result;
+    let result;
     if (abInverse) {
       result = !atInverse || !isInside;
     } else {
@@ -154,7 +154,7 @@ export class Arc extends SketchObject {
   
   normalDistance(aim) {
   
-    var isInsideSector = this.isPointInsideSector(aim.x, aim.y);
+    const isInsideSector = this.isPointInsideSector(aim.x, aim.y);
     if (isInsideSector) {
       return Math.abs(distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
     } else {

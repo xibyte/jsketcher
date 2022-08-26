@@ -21,7 +21,7 @@ export default class RadioButtons extends React.Component {
 }
 
 export function RadioButton({value, label}, {radioButtonsGroupName, radioButtonsValue, radioButtonsOnChange}) {
-  let onChange = e => {
+  const onChange = e => {
     radioButtonsOnChange(e.target.value)
   };
   label = label || value;

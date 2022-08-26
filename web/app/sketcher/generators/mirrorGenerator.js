@@ -88,11 +88,11 @@ function updateDir(dir, reflectionLine) {
 }
 
 function reflect(dir, reflectionLine, source, dest) {
-  let origin = reflectionLine.a.toVector();
+  const origin = reflectionLine.a.toVector();
 
   const pointMirroring = (x, y) => {
-    let pt = new Vector(x, y, 0);
-    let proj = dir.dot(pt.minus(origin));
+    const pt = new Vector(x, y, 0);
+    const proj = dir.dot(pt.minus(origin));
     return dir.multiply(- proj * 2)._plus(pt);
   };
 

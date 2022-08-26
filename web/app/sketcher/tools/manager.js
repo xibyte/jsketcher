@@ -23,6 +23,9 @@ export class ToolManager {
       // e.stopPropagation(); // allow propagation for move in sake of dynamic layout
       this.tool.mouseup(e);
     }, false);
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    }, false);
     window.addEventListener('touchstart', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -49,7 +52,7 @@ export class ToolManager {
       if (e.keyCode === 27) {
         this.releaseControl();
       } else if (e.keyCode === 46 || e.keyCode === 8) {
-        let selection = viewer.selected.slice();
+        const selection = viewer.selected.slice();
         viewer.removeAll(selection);
         viewer.refresh();
       }

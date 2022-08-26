@@ -29,7 +29,7 @@ export function ContextualControls() {
 
 
   const setRole = (obj, role) => {
-    let viewer = ctx.viewer;
+    const viewer = ctx.viewer;
     if (obj.aux) {
       return;
     }
@@ -38,7 +38,7 @@ export function ContextualControls() {
   };
 
   const tweakRole = (obj) => {
-    let viewer = ctx.viewer;
+    const viewer = ctx.viewer;
     if (obj.role === 'construction') {
       setRole(obj, null);
     } else if (obj.role === null) {
@@ -79,9 +79,8 @@ export function ContextualControls() {
         <span className={cx(ls.objectItem, getClassName(s))}>
           <span className={ls.objectIcon}><ObjectIcon object={s} /></span>
           {getObjectRole(s)}
-          <span onClick={e => tweakSelection(s, e.shiftKey)}
-            className={cx(ls.objectTag, s.marked && ls.selected)}>{s.simpleClassName}&nbsp;<span>{s.id}</span> </span>
-          
+          <span className={cx(ls.objectTag, s.marked && ls.selected)}>{s.simpleClassName}&nbsp;<span>{s.id}</span> </span>
+          <span className={ls.removeButton} onClick={() => ctx.viewer.remove(s)}><Fa icon='times'/></span>
         </span>
       </div>)
     }

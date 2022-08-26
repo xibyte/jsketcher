@@ -19,8 +19,8 @@ import connect from 'ui/connect';
 export class ProjectManager extends React.Component {
 
   render() {
-    let {projectManager} = this.props;
-    let projects = projectManager.listProjects();
+    const {projectManager} = this.props;
+    const projects = projectManager.listProjects();
     return <div className={ls.root}>
       <Folder title='Project List'>
         <div className={cmn.scrollable}>

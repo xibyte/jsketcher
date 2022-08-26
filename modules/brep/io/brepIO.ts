@@ -60,14 +60,14 @@ import {ParametricSurface} from "geom/surfaces/parametricSurface";
 
 export function readBrep(data: BrepOutputData) {
   
-  let bb = new BrepBuilder();
-  let vf = new VertexFactory();
+  const bb = new BrepBuilder();
+  const vf = new VertexFactory();
   
-  for (let faceData of data.faces) {
+  for (const faceData of data.faces) {
     bb.face();
     // @ts-ignore
-    let nonDirect = faceData.surface.direct === false; // left handed coordinate system for planes
-    let inverted = faceData.inverted !== nonDirect;
+    const nonDirect = faceData.surface.direct === false; // left handed coordinate system for planes
+    const inverted = faceData.inverted !== nonDirect;
     bb._face.data.tessellation = {
       format: 'verbose',
       data: normalizetessellationData(faceData.tess, inverted, faceData.surface.TYPE === 'PLANE' ? faceData.surface.normal : undefined)
@@ -80,11 +80,11 @@ export function readBrep(data: BrepOutputData) {
       }
     }  
     
-    for (let loop of faceData.loops) {
+    for (const loop of faceData.loops) {
       bb.loop();
-      for (let edgeData of loop) {
-        let a = vf.getData(edgeData.inverted ? edgeData.b : edgeData.a);
-        let b = vf.getData(edgeData.inverted ? edgeData.a : edgeData.b);
+      for (const edgeData of loop) {
+        const a = vf.getData(edgeData.inverted ? edgeData.b : edgeData.a);
+        const b = vf.getData(edgeData.inverted ? edgeData.a : edgeData.b);
         bb.edge(a, b, () => readCurve(edgeData.curve), edgeData.inverted,  edgeData.edgeRef);
         bb.lastHalfEdge.edge.data.tessellation = edgeData.tess;
         //todo: data should provide full externals object
@@ -114,16 +114,16 @@ function readSurface(s, faceInverted, effectivelyInverted, face) {
     surface._mirrored = !s.direct;
   } else if (s.TYPE === 'PLANE') {
     
-    let normal = new Vector().set3(s.normal);
+    const normal = new Vector().set3(s.normal).asUnitVector();
     let plane = new Plane(normal, normal.dot(new Vector().set3(s.origin)));
     if (effectivelyInverted) {
       plane = plane.invert();
     }
-    let bBox = new BBox();
+    const bBox = new BBox();
 
-    let tr = plane.get2DTransformation();
-    for (let he of face.outerLoop.halfEdges) {
-      let tess = he.edge.data.tessellation ? he.edge.data.tessellation : he.edge.curve.tessellateToData();
+    const tr = plane.get2DTransformation();
+    for (const he of face.outerLoop.halfEdges) {
+      const tess = he.edge.data.tessellation ? he.edge.data.tessellation : he.edge.curve.tessellateToData();
       tess.forEach(p => bBox.checkData(tr.apply3(p)));
     }
     bBox.expand(10);
@@ -163,14 +163,14 @@ export function writeBrep(shell: Shell): BrepInputData {
   const edges = new Map<Edge, string>();
 
   let vid = 0;
-  for (let v of shell.vertices) {
+  for (const v of shell.vertices) {
     const id = 'v' + (vid++);
     brepData.vertices[id] = v.point.data();
     verts.set(v, id);
   }
 
   let cid = 0;
-  for (let e of shell.edges) {
+  for (const e of shell.edges) {
     let curveId = curves.get(e.curve);
     // since we it can't be non smooth splines without a vertex - simple just skip it
     if (!curveId && e.curve.degree != 1) {
@@ -193,7 +193,7 @@ export function writeBrep(shell: Shell): BrepInputData {
   }
 
   let sid = 0;
-  for (let face of shell.faces) {
+  for (const face of shell.faces) {
 
     let surfaceId = surfaces.get(face.surface.impl);
     if (!surfaceId) {
@@ -221,9 +221,9 @@ export function writeBrep(shell: Shell): BrepInputData {
 
 
   FACES:
-  for (let face of shell.faces) {
+  for (const face of shell.faces) {
     const loops = [];
-    for (let loop of face.loops) {
+    for (const loop of face.loops) {
       if (loop.halfEdges.length == 0) {
         continue FACES;    
       }
@@ -242,12 +242,12 @@ export function writeBrep(shell: Shell): BrepInputData {
 
 
 export function normalizetessellationData(tessellation, inverted, surfaceNormal) {
-  let tess = [];
+  const tess = [];
   for (let i = 0; i < tessellation.length; ++i) {
     let [tr, normales] = tessellation[i];
     tr = tr.slice();
     if (normales) {
-      let normalesValid = !normales.find(n => n[0] === null || n[1] === null || n[2] === null);
+      const normalesValid = !normales.find(n => n[0] === null || n[1] === null || n[2] === null);
       if (!normalesValid) {
         normales = undefined;
       } else {
@@ -270,16 +270,16 @@ export function normalizetessellationData(tessellation, inverted, surfaceNormal)
     surfaceNormal = vec.negate(surfaceNormal);
   }
 
-  for (let [tr, normales] of tess) {
+  for (const [tr, normales] of tess) {
     if (normales) {
-      let trNormal = vec.normal3(tr);
-      let testNormal = normalizedSum(normales);
+      const trNormal = vec.normal3(tr);
+      const testNormal = normalizedSum(normales);
       if (vec.dot(testNormal, trNormal) < 0) {
         tr.reverse();
         normales.reverse();
       }
     } else if (surfaceNormal) {
-      let trNormal = vec.normal3(tr);
+      const trNormal = vec.normal3(tr);
       if (vec.dot(surfaceNormal, trNormal) < 0) {
         tr.reverse();
       }
@@ -289,7 +289,7 @@ export function normalizetessellationData(tessellation, inverted, surfaceNormal)
 }
 
 function normalizedSum(vecs) {
-  let out = [0,0,0];
+  const out = [0,0,0];
   vecs.forEach(v => vec._add(out, v));
   vec._normalize(out);
   return out;

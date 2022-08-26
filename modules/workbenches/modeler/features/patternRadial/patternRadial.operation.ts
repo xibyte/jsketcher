@@ -1,11 +1,13 @@
-import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
-import { MFace } from "cad/model/mface";
-import { ApplicationContext } from "context";
-import { EntityKind } from "cad/model/entities";
+import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
+import {MFace} from "cad/model/mface";
+import {ApplicationContext} from "cad/context";
+import {EntityKind} from "cad/model/entities";
 import Axis from "math/axis";
-import { UnitVector } from "math/vector";
-import { OperationDescriptor } from "cad/craft/operationPlugin";
-import { MShell } from 'cad/model/mshell';
+import {OperationDescriptor} from "cad/craft/operationBundle";
+import {MShell} from 'cad/model/mshell';
+import {Matrix3x4} from "math/matrix";
+import {AddLocation, SetLocation} from "cad/craft/e0/interact";
+import {DEG_RAD} from "math/commons";
 
 interface patternRadialParams {
   inputBodies: MShell[];
@@ -13,7 +15,7 @@ interface patternRadialParams {
   face: MFace;
   angle: number;
   qty: number;
-  direction?: UnitVector,
+  axis: Axis,
 }
 
 
@@ -22,26 +24,43 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
   label: 'Radial pattern',
   icon: 'img/cad/patternRadial',
   info: 'Creates a Radial pattern.',
-  paramsInfo: ({ }) => `(${r()})`,
+  path:__dirname,
+  paramsInfo: p => `( ${p.patternMethod} ${r(p.angle * DEG_RAD)})`,
   run: (params: patternRadialParams, ctx: ApplicationContext) => {
-    console.log(params);
-    let occ = ctx.occService;
+
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let created = [];
+    const created = [];
 
-    params.inputBodies.forEach((shellToMirror) => {
-      const newShellName = shellToMirror.id + ":mirror";
-      oci.copy(shellToMirror, newShellName);
-      oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
-      created.push(occ.io.getShell(newShellName));
+    params.inputBodies.forEach((shellToPatern, index) => {
+      for (let i = 2; i <= params.qty; i++) {
+        let angleForInstance;
+        if (params.patternMethod == 'step') {
+          angleForInstance = params.angle*(i-1);
+        } else if (params.patternMethod == 'span') {
+          angleForInstance = (params.angle / (params.qty))*(i-1);
+        } else {
+          throw 'unsupported pattern type: ' + params.patternMethod;
+        }
+
+        const angle = angleForInstance * DEG_RAD;
+
+        const tr = new Matrix3x4().rotate(angle, params.axis.direction, params.axis.origin);
+
+        const newShellName = shellToPatern.id + ":pattern/" + index + "/" +i;
+        oci.copy(shellToPatern, newShellName);
+        AddLocation(newShellName, tr.toFlatArray());
+  
+        created.push(occ.io.getShell(newShellName));    
+      }
+
     });
 
     return {
       created,
       consumed: []
     };
-
 
   },
   form: [
@@ -61,8 +80,8 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
       label: 'Pattern Method',
       name: "patternMethod",
       style: "dropdown",
-      defaultValue: "Step Distance",
-      values: ['Step Distance', 'Span Distance',],
+      defaultValue: "step",
+      values: [['step', 'Step Angle'], ['span', 'Span Angle']],
     },
     {
       type: 'number',
@@ -77,10 +96,10 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
       defaultValue: 3,
     },
     {
-      type: 'direction',
-      name: 'direction',
-      label: 'direction',
-      optional: true
+      type: 'axis',
+      name: 'axis',
+      label: 'axis',
+      optional: false
     },
   ],
 }

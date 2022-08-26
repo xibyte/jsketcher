@@ -1,8 +1,8 @@
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MFace} from "cad/model/mface";
-import {ApplicationContext} from "context";
+import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
-import {OperationDescriptor} from "cad/craft/operationPlugin";
+import {OperationDescriptor} from "cad/craft/operationBundle";
 
 
 interface ShellParams {
@@ -15,15 +15,15 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
   label: 'Shell',
   icon: 'img/cad/shell',
   info: 'Shells 2D sketch',
+  path:__dirname,
   paramsInfo: ({thickness}) => `(${r(thickness)})`,
   run: (params: ShellParams, ctx: ApplicationContext) => {
-    console.log(params);
-    let occ = ctx.occService;
+    const occ = ctx.occService;
     const oci = occ.commandInterface;
 
 
-    var bodiesToShell = [];
-    var returnObject = {
+    const bodiesToShell = [];
+    const returnObject = {
       consumed: [],
       created: []
     };
@@ -41,20 +41,15 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
 
     //perform the opperations on each of the bodies.
     Object.keys(bodiesToShell).forEach((shellToOpperateOnName) => {
-      var shellToOpperateOn = bodiesToShell[shellToOpperateOnName];
-      var newShellName = shellToOpperateOnName + "f";
+      const shellToOpperateOn = bodiesToShell[shellToOpperateOnName];
+      const newShellName = shellToOpperateOnName + "f";
 
-      console.log(shellToOpperateOn);
-
-      var bodyToPerformShellOpperationOn = shellToOpperateOn[0].shell;
+      const bodyToPerformShellOpperationOn = shellToOpperateOn[0].shell;
       oci.offsetcompshape(newShellName, bodyToPerformShellOpperationOn, -params.thickness, "1.e-3", ...shellToOpperateOn)
       returnObject.created.push(occ.io.getShell(newShellName));
     });
 
-    console.log(returnObject);
-
     return returnObject;
-
   },
   form: [
     {

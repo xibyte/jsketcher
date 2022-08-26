@@ -5,7 +5,7 @@ import Field from "ui/components/controls/Field";
 import Label from "ui/components/controls/Label";
 import {ColorControl} from "ui/components/controls/ColorControl";
 import CheckboxControl from "ui/components/controls/CheckboxControl";
-import {AppContext} from "cad/dom/components/AppContext";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {ModelAttributes} from "cad/attributes/attributesService";
 import {GenericWizard} from "ui/components/GenericWizard";
 import {View} from "cad/scene/views/view";
@@ -28,7 +28,7 @@ export function DisplayOptionsDialogManager() {
                             onCancel={() => close(key)}
                             onOK={() => close(key)}
                             onClose={() => close(key)}
-                            topicId='entity-display-options'
+                            documentationLink='men-at-work'
                             left={request.x}
                             top={request.y}>
         <DisplayOptionsView modelIds={request.models} />
@@ -44,7 +44,7 @@ export interface DisplayOptionsViewProps {
 
 export function DisplayOptionsView(props: DisplayOptionsViewProps) {
 
-  const ctx = useContext(AppContext);
+  const ctx = useContext(ReactApplicationContext);
   const streamsAndPatchers: [ModelAttributes, any][] = [];
 
   useEffect(()=>{
@@ -54,14 +54,14 @@ export function DisplayOptionsView(props: DisplayOptionsViewProps) {
     }
   }, []);
 
-  for (let modelId of props.modelIds) {
+  for (const modelId of props.modelIds) {
     const streamAndPatcher = useStreamWithPatcher(ctx => ctx.attributesService.streams.get(modelId));
     streamsAndPatchers.push(streamAndPatcher);
   }
 
   function patchAttrs(mutator) {
     View.SUPPRESS_HIGHLIGHTS = true;
-    for (let [model, patch] of streamsAndPatchers) {
+    for (const [model, patch] of streamsAndPatchers) {
       patch(mutator);
     }
   }
