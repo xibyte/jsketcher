@@ -1,17 +1,17 @@
 import * as vec from 'math/vec';
-import {iteratePath} from '../cad-utils';
+import { iteratePath } from '../cad-utils';
 import NurbsCurve from 'geom/curves/nurbsCurve';
-import {veqXYZ} from 'geom/tolerance';
-import curveTess, {curveTessParams} from 'geom/impl/curve/curve-tess';
-import {distanceAB} from "math/distance";
-import {areEqual, TOLERANCE} from "math/equality";
-import {circleFromPoints, radiusOfCurvature} from "geom/euclidean";
+import { veqXYZ } from 'geom/tolerance';
+import curveTess, { curveTessParams } from 'geom/impl/curve/curve-tess';
+import { distanceAB } from "math/distance";
+import { areEqual, TOLERANCE } from "math/equality";
+import { circleFromPoints, radiusOfCurvature } from "geom/euclidean";
 
 export function getSketchBoundaries(sceneFace) {
-  const boundary = {lines: [], arcs: [], circles: [], nurbses: []};
+  const boundary = { lines: [], arcs: [], circles: [], nurbses: [] };
   const w2sTr = sceneFace.worldToSketchTransformation;
   let _w2sTrArr = null;
-  const w2sTrArr = () => _w2sTrArr || (_w2sTrArr = w2sTr.toArray()); 
+  const w2sTrArr = () => _w2sTrArr || (_w2sTrArr = w2sTr.toArray());
   if (!sceneFace.brepFace) {
     return boundary;
   }
@@ -25,7 +25,7 @@ export function getSketchBoundaries(sceneFace) {
     if (curve.constructor.name === 'NurbsCurve' && curve.degree() !== 1) {
       const curve2d = curve.transform(w2sTrArr());
       const arcRadius = findArcRadius(curve2d);
-      if (arcRadius !== null){
+      if (arcRadius !== null) {
         const [from, to] = curve2d.domain();
         const [A, DA, DDA] = curve2d.eval(from, 2);
         const [B, DB] = curve2d.eval(to, 1);
@@ -42,7 +42,7 @@ export function getSketchBoundaries(sceneFace) {
           const c = vec._add(centripetal, A);
           boundary.circles.push({
             id,
-            c: {x: c[0], y: c[1]},
+            c: { x: c[0], y: c[1] },
             r: arcRadius
           });
           continue;
@@ -55,12 +55,22 @@ export function getSketchBoundaries(sceneFace) {
         const u = proj / vec.dot(mA, centripetalB);
 
         const C = vec._add(vec._mul(centripetalB, u), B);
-        boundary.arcs.push({
-          id,
-          a: {x: A[0], y: A[1]},
-          b: {x: B[0], y: B[1]},
-          c: {x: C[0], y: C[1]}
-        });
+        if (k === -1) {
+          boundary.arcs.push({
+            id,
+            a: { x: B[0], y: B[1] },
+            b: { x: A[0], y: A[1] },
+            c: { x: C[0], y: C[1] }
+          });
+        } else {
+          boundary.arcs.push({
+            id,
+            a: { x: A[0], y: A[1] },
+            b: { x: B[0], y: B[1] },
+            c: { x: C[0], y: C[1] }
+          });
+        }
+
       } else {
         const data = curve.transform(w2sTrArr()).serialize();
         data.id = id;
@@ -70,8 +80,8 @@ export function getSketchBoundaries(sceneFace) {
       const addSegment = (id, a, b) => {
         boundary.lines.push({
           id,
-          a: {x: a.x, y: a.y},
-          b: {x: b.x, y: b.y}
+          a: { x: a.x, y: a.y },
+          b: { x: b.x, y: b.y }
         });
       };
       addSegment(id, w2sTr.apply(he.vertexA.point), w2sTr.apply(he.vertexB.point));
@@ -102,6 +112,6 @@ function perpXY(v) {
   const [x, y] = v;
 
   v[0] = - y;
-  v[1] =   x;
+  v[1] = x;
   return v;
 }
