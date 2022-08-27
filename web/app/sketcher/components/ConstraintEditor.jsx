@@ -62,6 +62,8 @@ export function ConstraintEditor() {
   };
 
   return <Window initWidth={250} initLeft={5} initTop={5} title={constraint.schema.name} onClose={onCancel}
+                 onEnterPressed={onApply}
+                 onEscapePressed={onCancel}
                  onMouseEnter={highlight}
                  onMouseLeave={unHighlight}>
 
@@ -104,7 +106,7 @@ export function ConstraintEditor() {
 
 }
 
-export function editConstraint(rqStream, constraint, onApply) {
+export function showConstraintEditorUI(rqStream, constraint, onApply) {
   rqStream.next({
     constraint,
     onCancel: () => rqStream.next(null),

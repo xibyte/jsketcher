@@ -124,10 +124,6 @@ function atatchToToolStreams(context) {
 function startReact(appCtx) {
 
   const reactControls = document.getElementById('react-controls');
-  reactControls.onkeydown = e => {
-    e.stopPropagation();
-    // e.preventDefault();
-  };
   ReactDOM.render(
     <Scope><SketcherApp applicationContext={appCtx} /></Scope>,
     reactControls

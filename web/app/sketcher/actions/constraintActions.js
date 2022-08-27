@@ -5,7 +5,7 @@ import {Segment} from "../shapes/segment";
 import {isInstanceOf, matchAll, matchTypes} from "./matchUtils";
 import {Arc} from "../shapes/arc";
 import {FilletTool} from "../tools/fillet";
-import {editConstraint as _editConstraint} from "../components/ConstraintEditor";
+import {showConstraintEditorUI} from "../components/ConstraintEditor";
 import {BezierCurve} from "../shapes/bezier-curve";
 import {
   AngleBetweenConstraintIcon,
@@ -648,6 +648,6 @@ export default [
 
 ];
 
-function editConstraint(ctx, constraint, onApply) {
-  _editConstraint(ctx.ui.$constraintEditRequest, constraint, onApply)
+export function editConstraint(ctx, constraint, onApply) {
+  showConstraintEditorUI(ctx.ui.$constraintEditRequest, constraint, onApply)
 }

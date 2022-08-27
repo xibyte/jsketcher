@@ -61,7 +61,7 @@ export function activate(ctx) {
     const signature = ctx.expressionService.signature;
     if (sketch && (!sketch.metadata || sketch.metadata.expressionsSignature !== signature)) {
       try {
-        const viewer = new Viewer(headlessCanvas, IO);
+        const viewer = new Viewer(headlessCanvas, IO, {});
         viewer.parametricManager.externalConstantResolver = ctx.expressionService.evaluateExpression;
         // viewer.historyManager.init(savedSketch);
         viewer.io._loadSketch(sketch);
@@ -97,7 +97,7 @@ export function activate(ctx) {
 
     if (sketch) {
       try {
-        const viewer = new Viewer(headlessCanvas, IO);
+        const viewer = new Viewer(headlessCanvas, IO, {});
 
         viewer.parametricManager.externalConstantResolver = ctx.expressionService.evaluateExpression;
         // viewer.historyManager.init(savedSketch);

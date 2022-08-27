@@ -44,17 +44,6 @@ export default function Wizard(props: WizardProps) {
 
   const error = state.error;
 
-  const onKeyDown = e => {
-    switch (e.keyCode) {
-      case 27 :
-        cancel();
-        break;
-      case 13 :
-        onOK();
-        break;
-    }
-  };
-
   const focusFirstInput = el => {
     if (props.noFocus) {
       return;
@@ -86,7 +75,6 @@ export default function Wizard(props: WizardProps) {
     title={title}
     icon={icon}
     onClose={cancel}
-    onKeyDown={onKeyDown}
     setFocus={focusFirstInput}
     className='Wizard'
     data-operation-id={operation.id}

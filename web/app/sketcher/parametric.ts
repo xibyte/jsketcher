@@ -290,6 +290,11 @@ class ParametricManager {
     this.notify();
   }
 
+  constraintUpdated(constraint) {
+    this.revalidateConstraint(constraint);
+    this.invalidate();
+  }
+
   prepare(interactiveObjects) {
     this.groundStage.prepare(interactiveObjects);
     for (const stage of this.stages) {

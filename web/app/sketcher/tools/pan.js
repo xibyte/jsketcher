@@ -1,5 +1,7 @@
 import {Tool} from './tool'
 import {GetShapeEditTool} from './edit-tools-map'
+import {isConstraintAnnotation} from "sketcher/constr/constraintAnnotation";
+import {editConstraint} from "sketcher/actions/constraintActions";
 
 export class BasePanTool extends Tool {
 
@@ -49,6 +51,15 @@ export class BasePanTool extends Tool {
       }
     }
     this.startDragging(e);
+  }
+
+  dblclick() {
+    const [obj] = this.viewer.selected;
+    if (isConstraintAnnotation(obj)) {
+      editConstraint(this.viewer.applicationContext, obj.constraint, () => {
+        this.viewer.parametricManager.constraintUpdated(obj.constraint);
+      })
+    }
   }
 
   startDragging(e) {}

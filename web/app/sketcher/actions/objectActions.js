@@ -1,5 +1,7 @@
-import {BsTextareaT} from "react-icons/all";
+import {BiPencil, BsTextareaT} from "react-icons/all";
 import {Label} from "sketcher/shapes/label";
+import {isConstraintAnnotation} from "sketcher/constr/constraintAnnotation";
+import {editConstraint} from "sketcher/actions/constraintActions";
 
 export default [
 
@@ -34,6 +36,24 @@ export default [
 
     }
 
+  },
+
+  {
+    id: 'EditConstraintFromItsAnnotation',
+    shortName: 'Edit Constraint',
+    kind: 'Misc',
+    description: 'Edit the constraint the annotation refers to',
+    icon: BiPencil,
+    selectionMatcher: {
+      selector: 'function',
+      match: (selection) => isConstraintAnnotation(selection[0])
+    },
+    invoke: (ctx) => {
+      const [obj] = ctx.viewer.selected;
+      editConstraint(ctx, obj.constraint, () => {
+        ctx.viewer.parametricManager.constraintUpdated(obj.constraint);
+      })
+    }
   },
 
 
