@@ -13,11 +13,7 @@ export function createAppContext() {
 }
 
 export function createEssentialAppContext(canvas) {
-
-  return {
-
-    viewer: new Viewer(canvas, IO),
-
+  const applicationContext = {
     get actions() {
       return getSketcherActionIndex();
     },
@@ -35,6 +31,8 @@ export function createEssentialAppContext(canvas) {
       }));
     }
   };
+  applicationContext.viewer = new Viewer(canvas, IO, applicationContext);
+  return applicationContext;
 }
 
 

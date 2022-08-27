@@ -55,9 +55,11 @@ export class Viewer {
   interactiveScale: number;
   unscale: number;
   customSelectionHandler: any;
+  applicationContext: any;
 
-  constructor(canvas, IO) {
+  constructor(canvas, IO, applicationContext) {
 
+    this.applicationContext = applicationContext;
     this.presicion = 3;
     this.canvas = canvas;
     this.io = new IO(this);

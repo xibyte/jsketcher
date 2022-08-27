@@ -29,6 +29,8 @@ export interface WindowProps {
   props?: JSX.IntrinsicAttributes;
   footer?: JSX.Element;
   compact?: boolean;
+  onEscapePressed?: () => any,
+  onEnterPressed?: () => any
 }
 
 export default class Window extends React.Component<WindowProps> {
@@ -47,9 +49,21 @@ export default class Window extends React.Component<WindowProps> {
 
     const {initWidth, initHeight, initLeft, initTop, initRight, initBottom, centerScreen, setFocus, className, resizeCapturingBuffer,
       resize, enableResize, children, title, icon, minimizable = false, onClose, controlButtons, footer, compact,
+      onEscapePressed, onEnterPressed,
       onResize, ...props} = this.props;
 
-    return <div className={cx(ls.root, this.resizeConfig&&ls.mandatoryBorder, compact&&ls.compact, className)} {...props} ref={this.keepRef}>
+    const onKeyDown = e => {
+      switch (e.keyCode) {
+        case 27 :
+          onEscapePressed ? onEscapePressed() : onClose();
+          break;
+        case 13 :
+          onEnterPressed();
+          break;
+      }
+    };
+
+    return <div className={cx(ls.root, this.resizeConfig&&ls.mandatoryBorder, compact&&ls.compact, className)} {...props} ref={this.keepRef} onKeyDown={onKeyDown}>
       <div className={ls.bar + ' disable-selection'} onMouseDown={this.startDrag} onMouseUp={this.stopDrag}>
         <div className={ls.title}>{icon} <b>{title.toUpperCase()}</b></div>
         <div className={ls.controlButtons}>

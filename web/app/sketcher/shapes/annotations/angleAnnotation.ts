@@ -7,6 +7,8 @@ export class AngleBetweenAnnotation extends AngleBetweenDimension implements Con
 
   constraint: AlgNumConstraint;
 
+  isConstraintAnnotation = true;
+
   constructor(a, b, constraint) {
     super(a, b);
     this.constraint = constraint;
@@ -34,6 +36,8 @@ AngleBetweenAnnotation.prototype._class = 'TCAD.TWO.AngleBetweenAnnotation';
 export class AngleAbsoluteAnnotation extends AngleBetweenDimension implements ConstraintAnnotation<{offset: number}> {
 
   constraint: AlgNumConstraint;
+
+  isConstraintAnnotation = true;
 
   constructor(segment, constraint) {
     super({
@@ -100,6 +104,8 @@ export class LengthAnnotation extends LinearDimension implements ConstraintAnnot
 
   constraint: AlgNumConstraint;
 
+  isConstraintAnnotation = true;
+
   constructor(segment, constraint) {
     super(segment.a, segment.b);
     this.constraint = constraint;
@@ -127,6 +133,8 @@ LengthAnnotation.prototype._class = 'TCAD.TWO.LengthAnnotation';
 export class RadiusLengthAnnotation extends DiameterDimension implements ConstraintAnnotation<{angle: number}>  {
 
   constraint: AlgNumConstraint;
+
+  isConstraintAnnotation = true;
 
   constructor(obj, constraint) {
     super(obj);

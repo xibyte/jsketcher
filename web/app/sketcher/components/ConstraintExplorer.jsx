@@ -3,7 +3,7 @@ import ls from './ConstraintExplorer.less';
 import Fa from 'ui/components/Fa';
 import {useStream} from "ui/effects";
 import cx from 'classnames';
-import {editConstraint} from "./ConstraintEditor";
+import {showConstraintEditorUI} from "./ConstraintEditor";
 import {NoIcon} from "../icons/NoIcon";
 import {SketcherAppContext} from "./SketcherAppContext";
 import {StageControl} from "./StageControl";
@@ -50,9 +50,8 @@ export function ConstraintButton({prefix='', constraint: c, ...props}) {
 
   const edit = (constraint) => {
     if (constraint.editable) {
-      editConstraint(ui.$constraintEditRequest, constraint, () => {
-        viewer.parametricManager.revalidateConstraint(c);
-        viewer.parametricManager.invalidate();
+      showConstraintEditorUI(ui.$constraintEditRequest, constraint, () => {
+        viewer.parametricManager.constraintUpdated(c);
       });
     }
   };

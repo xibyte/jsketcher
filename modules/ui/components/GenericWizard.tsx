@@ -14,7 +14,6 @@ export function GenericWizard({documentationLink, title, icon, left, top, classN
   top?: number,
   onCancel: () => any,
   onOK: () => any,
-  onKeyDown?: (e) => any,
   infoText?: any,
   icon?: any
 } & WindowProps ) {
@@ -25,6 +24,8 @@ export function GenericWizard({documentationLink, title, icon, left, top, classN
                    title={(title||'').toUpperCase()}
                    icon={icon}
                    className={cx('mid-typography', className)}
+                   onEscapePressed={onCancel}
+                   onEnterPressed={onOK}
                    controlButtons={<>
                      <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({
                        documentationLink: documentationLink,
