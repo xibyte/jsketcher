@@ -74,10 +74,17 @@ export const Styles = {
     fillStyle : "#2c44bc"
   },
 
+
+  FULLY_CONSTRAINED_CONSTRUCTION: {
+    lineWidth : 2,
+    strokeStyle : "#cfba80",
+    fillStyle : "#cfba80"
+  },
+
   CONSTRUCTION : {
     lineWidth : 1,
     strokeStyle: "#964B00",
-    fillStyle : "#000000"
+    fillStyle : "#964B00"
   },
 
   CONSTRUCTION_OF_OBJECT : {
