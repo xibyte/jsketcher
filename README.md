@@ -81,3 +81,9 @@ Install node.js
 * $ cd \<jsketcher folder\>
 * $ npm install
 * $ npm start
+
+
+
+
+Contributing Please see  [.github/CONTRIBUTING.md ](.github/CONTRIBUTING.md )
+=========================
