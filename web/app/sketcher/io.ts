@@ -26,16 +26,7 @@ import { BoundaryGeneratorSchema } from './generators/boundaryGenerator';
 import { ShapesTypes } from './shapes/sketch-types';
 import { SketchObject } from './shapes/sketch-object';
 import { Label } from 'sketcher/shapes/label';
-import {
-  Colors,
-  DxfWriter,
-  point3d,
-  SplineArgs_t,
-  SplineFlags,
-  Units,
-  vec3_t,
-} from '@tarikjabiri/dxf';
-import { DEG_RAD } from 'math/commons';
+import { DxfWriterAdapter } from './dxf';
 
 export interface SketchFormat_V3 {
   version: number;
@@ -357,34 +348,6 @@ export class IO {
     return toExport;
   }
 
-  isArc(obj: SketchObject): obj is Arc {
-    return obj.TYPE === ShapesTypes.ARC;
-  }
-
-  isSegment(obj: SketchObject): obj is Segment {
-    return obj.TYPE === ShapesTypes.SEGMENT;
-  }
-
-  isCircle(obj: SketchObject): obj is Circle {
-    return obj.TYPE === ShapesTypes.CIRCLE;
-  }
-
-  isPoint(obj: SketchObject): obj is EndPoint {
-    return obj.TYPE === ShapesTypes.POINT;
-  }
-
-  isEllipse(obj: SketchObject): obj is Ellipse {
-    return obj.TYPE === ShapesTypes.ELLIPSE;
-  }
-
-  isBezier(obj: SketchObject): obj is BezierCurve {
-    return obj.TYPE === ShapesTypes.BEZIER;
-  }
-
-  isLabel(obj: SketchObject): obj is Label {
-    return obj.TYPE === ShapesTypes.LABEL;
-  }
-
   svgExport() {
     const T = ShapesTypes;
     const out = new TextBuilder();
@@ -408,14 +371,14 @@ export class IO {
       for (let i = 0; i < layer.objects.length; ++i) {
         const obj = layer.objects[i];
         if (obj.TYPE !== T.POINT) bbox.check(obj);
-        if (this.isSegment(obj)) {
+        if (obj instanceof Segment) {
           out.fline('<line x1="$" y1="$" x2="$" y2="$" />', [
             obj.a.x,
             obj.a.y,
             obj.b.x,
             obj.b.y,
           ]);
-        } else if (this.isArc(obj)) {
+        } else if (obj instanceof Arc) {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
           const dir = a.cross(b).z > 0 ? 0 : 1;
@@ -430,7 +393,7 @@ export class IO {
             obj.b.x,
             obj.b.y,
           ]);
-        } else if (this.isCircle(obj)) {
+        } else if (obj instanceof Circle) {
           out.fline('<circle cx="$" cy="$" r="$" />', [
             obj.c.x,
             obj.c.y,
@@ -448,82 +411,9 @@ export class IO {
   }
 
   dxfExport() {
-    const dxf: DxfWriter = new DxfWriter();
-    const layersToExport = this.getLayersToExport();
-    dxf.setUnits(Units.Millimeters);
-
-    layersToExport.forEach(layer => {
-      const dxfLayer = dxf.addLayer(layer.name, Colors.Green, 'Continuous');
-      dxf.setCurrentLayerName(dxfLayer.name);
-
-      layer.objects.forEach(obj => {
-        console.debug('exporting object', obj);
-
-        if (this.isPoint(obj)) {
-          dxf.addPoint(obj.x, obj.y, 0);
-        } else if (this.isSegment(obj)) {
-          dxf.addLine(
-            point3d(obj.a.x, obj.a.y, 0),
-            point3d(obj.b.x, obj.b.y, 0)
-          );
-        } else if (this.isArc(obj)) {
-          dxf.addArc(
-            point3d(obj.c.x, obj.c.y, 0),
-            obj.r.get(),
-            obj.getStartAngle() / DEG_RAD,
-            obj.getEndAngle() / DEG_RAD
-          );
-        } else if (this.isCircle(obj)) {
-          dxf.addCircle(point3d(obj.c.x, obj.c.y, 0), obj.r.get());
-        } else if (this.isEllipse(obj)) {
-          const majorX = Math.cos(obj.rotation) * obj.radiusX;
-          const majorY = Math.sin(obj.rotation) * obj.radiusX;
-          dxf.addEllipse(
-            point3d(obj.centerX, obj.centerY, 0),
-            point3d(majorX, majorY, 0),
-            obj.radiusY / obj.radiusX,
-            0,
-            2 * Math.PI
-          );
-        } else if (this.isBezier(obj)) {
-          const controlPoints: vec3_t[] = [
-            point3d(obj.p0.x, obj.p0.y, 0),
-            point3d(obj.p1.x, obj.p1.y, 0),
-            point3d(obj.p2.x, obj.p2.y, 0),
-            point3d(obj.p3.x, obj.p3.y, 0),
-          ];
-          const splineArgs: SplineArgs_t = {
-            controlPoints,
-            flags: SplineFlags.Closed | SplineFlags.Periodic, // 3
-          };
-          dxf.addSpline(splineArgs);
-        } else if (this.isLabel(obj)) {
-          const m = obj.assignedObject.labelCenter;
-          if (!m) {
-            return;
-          }
-          const height = obj.textHelper.textMetrics.height as number;
-          const h = obj.textHelper.textMetrics.width / 2;
-          const lx = m.x - h + obj.offsetX;
-          const ly = m.y + obj.marginOffset + obj.offsetY;
-
-          dxf.addText(point3d(lx, ly, 0), height, obj.text);
-        } else if (
-          obj.TYPE === ShapesTypes.DIM ||
-          obj.TYPE === ShapesTypes.HDIM ||
-          obj.TYPE === ShapesTypes.VDIM
-        ) {
-          // I want to add dimensions but there is no access for them here 🤔
-          // dxf.addAlignedDim()
-          // dxf.addDiameterDim()
-          // dxf.addRadialDim()
-        }
-      });
-    });
-
-    // reset the current layer to 0, because its preserved in the dxf.
-    dxf.setCurrentLayerName('0');
-    return dxf.stringify();
+    const adapter = new DxfWriterAdapter();
+    adapter.export(this.getLayersToExport());
+    return adapter.stringify();
   }
 }
 
