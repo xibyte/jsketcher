@@ -20,7 +20,6 @@ import {PatternLinearOperation} from "./features/patternLinear/patternLinear.ope
 import {PatternRadialOperation} from "./features/patternRadial/patternRadial.operation";
 import {ImportModelOperation} from "./features/importModel/importModel.operation";
 import {DeleteBodyOperation} from "./features/deleteBody/deleteBody.operation";
-import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defeatureRemoveFace.operation";
 //imports of action type commands
 import {GiCubes} from "react-icons/gi";
 
@@ -48,7 +47,6 @@ export const ModelerWorkspace: WorkbenchConfig = {
     PatternRadialOperation,
     ImportModelOperation,
     DeleteBodyOperation,
-    DefeatureRemoveFaceOperation,
   ],
   actions: [
     // GetVolume,
@@ -56,18 +54,12 @@ export const ModelerWorkspace: WorkbenchConfig = {
   ui: {
     toolbar: [
       'DATUM_CREATE', 'PLANE', 'EditFace', '-',
-
       "EXTRUDE", "CUT", "REVOLVE", "LOFT", "SWEEP", "-",
-
-      "BOOLEAN", "UNION", "SUBTRACT", "INTERSECT", "-",
-
-      "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE", "-",
-
+      "BOOLEAN", "UNION", "SUBTRACT", "INTERSECT", "-", 
+      "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY","-",
       "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "-",
-
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
-
-      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL", "DELETE_BODY",
+      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL","DELETE_BODY",
     ]
   },
   icon: GiCubes
