@@ -156,7 +156,12 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     } else if (productionKind === FUTURE) {
       return Styles.FUTURE;
     } else if (this.fullyConstrained) {
-      return Styles.FULLY_CONSTRAINED;
+      if(this.role === "construction"){
+        return Styles.FULLY_CONSTRAINED_CONSTRUCTION;
+      }else{
+        return Styles.FULLY_CONSTRAINED;
+      }
+      
     } else {
     }
     return null;
