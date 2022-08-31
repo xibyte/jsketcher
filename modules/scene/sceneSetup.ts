@@ -133,24 +133,27 @@ export default class SceneSetUp {
     this.oCamera.bottom = - height / factor;
     this.oCamera.updateProjectionMatrix();
   }
-  
-  setCamera(camera) {
+
+  syncCameras(sourceCamera, targetCamera) {
     const camPosition = new Vector3();
     const camRotation = new Euler();
     const tempMatrix = new Matrix4();
 
-    camPosition.setFromMatrixPosition( this.camera.matrixWorld );
-    camRotation.setFromRotationMatrix( tempMatrix.extractRotation( this.camera.matrixWorld ) );
-    const camDistance = camera.position.length();
+    camPosition.setFromMatrixPosition( targetCamera.matrixWorld );
+    camRotation.setFromRotationMatrix( tempMatrix.extractRotation( targetCamera.matrixWorld ) );
+    const camDistance = sourceCamera.position.length();
 
-    camera.up.copy(this.camera.up);
-    camera.position.copy(camPosition);
-    camera.quaternion.copy(camPosition);
-    this.trackballControls.setCameraMode(camera.isOrthographicCamera);
-    camera.position.normalize();
-    camera.position.multiplyScalar(camDistance);
-    
+    sourceCamera.up.copy(this.camera.up);
+    sourceCamera.position.copy(camPosition);
+    sourceCamera.quaternion.copy(camPosition);
+    sourceCamera.position.normalize();
+    sourceCamera.position.multiplyScalar(camDistance);
+  }
+
+  setCamera(camera) {
+    this.syncCameras(camera, this.camera);
     this.camera = camera;
+    this.trackballControls.setCameraMode(camera.isOrthographicCamera);
     this.trackballControls.object = camera;
     this.requestRender();
   }
@@ -251,16 +254,18 @@ export default class SceneSetUp {
   }
   
   lookAtObject(obj) {
+    const camera = this.camera;
+
     const box = new Box3();
     box.setFromObject(obj);
     const size = box.getSize(new Vector3());
     //this.camera.position.set(0,0,0);
-    box.getCenter(this.camera.position);
+
+    box.getCenter(camera.position);
     const maxSize = Math.max(size.x, size.z);
-    const dist = maxSize / 2 / Math.tan(Math.PI * this.camera.fov / 360);
-    this.camera.position.addScaledVector(this.camera.position.normalize(), 5000);
+    camera.position.addScaledVector(camera.position.normalize(), 5000);
     //this.camera.position.sub(new THREE.Vector3(0, 0, dist));
-    this.camera.up = new Vector3(0, 1, 0);
+    camera.up = new Vector3(0, 1, 0);
   }
 
   _zoomMeasure() {
