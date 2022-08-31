@@ -4,7 +4,7 @@ const webpackConfig = require('./webpack.config');
 const del = require('del');
 const libAssets = require("./build/libAssets");
 const glob = require("glob");
-const marked = require("marked");
+const {marked} = require("marked");
 const Handlebars = require("handlebars");
 const exec = require('child_process').exec;
 
