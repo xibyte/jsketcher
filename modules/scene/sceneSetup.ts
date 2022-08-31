@@ -17,6 +17,7 @@ import {
   WebGLRenderer
 } from "three";
 import {Emitter, stream} from "lstream";
+import {Camera} from "three/src/cameras/Camera";
 
 export default class SceneSetUp {
   workingSphere: number;
@@ -25,7 +26,7 @@ export default class SceneSetUp {
   rootGroup: Object3D;
   oCamera: OrthographicCamera;
   pCamera: PerspectiveCamera;
-  camera: PerspectiveCamera;
+  camera: Camera;
   light: DirectionalLight;
   renderer: WebGLRenderer;
   private _prevContainerWidth: number;
@@ -83,7 +84,7 @@ export default class SceneSetUp {
     this.createOrthographicCamera();
     this.createPerspectiveCamera();
 
-    this.camera = this.pCamera;
+    this.camera = this.oCamera;
     
     this.light = new DirectionalLight( 0xffffff );
     this.light.position.set( 10, 10, 10 );
