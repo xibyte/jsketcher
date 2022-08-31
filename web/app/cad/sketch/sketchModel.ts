@@ -26,7 +26,7 @@ export class SketchPrimitive {
   }
 
   tessellate(resolution) {
-    return this.toNurbs(CSys.ORIGIN).tessellate();
+    return this.toNurbs(CSys.ORIGIN).tessellate(resolution);
     // return brepCurve.impl.verb.tessellate().map(p => new Vector().set3(p) );
 
     // const tessellation = this.tessellateImpl(resolution);
@@ -66,6 +66,10 @@ export class SketchPrimitive {
 
   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
     throw 'not implemented'
+  }
+
+  massiveness() {
+    return 50;
   }
 }
 
@@ -115,6 +119,9 @@ export class Segment extends SketchPrimitive {
     return this.a.minus(this.b);
   }
 
+  massiveness() {
+    return this.a.minus(this.b).length();
+  }
 }
 
 export class Arc extends SketchPrimitive {
@@ -192,6 +199,10 @@ export class Arc extends SketchPrimitive {
     oci.point(underName + "_T2", A_TAN.x, A_TAN.y, A_TAN.z);
     oci.gcarc(underName, "cir", underName + "_A", underName + "_T1", underName + "_T2", underName + "_B")
   }
+
+  massiveness() {
+    return this.a.minus(this.b).length();
+  }
 }
 
 export class BezierCurve extends SketchPrimitive {
@@ -210,6 +221,10 @@ export class BezierCurve extends SketchPrimitive {
 
   toVerbNurbs(tr) {
     return new verb.geom.BezierCurve([tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()], null);
+  }
+
+  massiveness() {
+    return this.a.minus(this.b).length();
   }
 }
 
@@ -253,6 +268,10 @@ export class EllipticalArc extends SketchPrimitive {
     return arc;
     // return adjustEnds(arc, tr(this.a), tr(this.b))
   }
+
+  massiveness() {
+    return Math.max(this.rx, this.ry);
+  }
 }
 
 export class Circle extends SketchPrimitive {
@@ -275,6 +294,10 @@ export class Circle extends SketchPrimitive {
     const C = csys.outTransformation.apply(this.c);
     const DIR = csys.z;
     oci.circle(underName, ...C.data(), ...DIR.data(), this.r);
+  }
+
+  massiveness() {
+    return this.r;
   }
 }
 
@@ -302,6 +325,10 @@ export class Ellipse extends SketchPrimitive {
     const yAxis = new Vector(-ay, ax)._multiply(this.ry);
 
     return new verb.geom.Ellipse(tr(this.c).data(), tr(xAxis).data(), tr(yAxis).data());
+  }
+
+  massiveness() {
+    return Math.max(this.rx, this.ry);
   }
 }
 
