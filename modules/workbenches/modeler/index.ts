@@ -21,6 +21,7 @@ import {PatternRadialOperation} from "./features/patternRadial/patternRadial.ope
 import {ImportModelOperation} from "./features/importModel/importModel.operation";
 import {DeleteBodyOperation} from "./features/deleteBody/deleteBody.operation";
 import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defeatureRemoveFace.operation";
+import { WireLineOperation } from "./features/wireLine/wireLine";
 //imports of action type commands
 import {GiCubes} from "react-icons/gi";
 
@@ -49,6 +50,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     ImportModelOperation,
     DeleteBodyOperation,
     DefeatureRemoveFaceOperation,
+    WireLineOperation,
   ],
   actions: [
     // GetVolume,
@@ -67,7 +69,9 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
-      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL", "DELETE_BODY",
+      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL", "DELETE_BODY", "-",
+      
+      "WIRE_LINE"
     ]
   },
   icon: GiCubes
