@@ -405,6 +405,8 @@ export class IO {
       out.line('</g>');
     }
     bbox.inc(20);
+    bbox.bbox[2] -= bbox.bbox[0];
+    bbox.bbox[3] -= bbox.bbox[1];
     return (
       _format("<svg viewBox='$ $ $ $'>\n", bbox.bbox) + out.data + '</svg>'
     );
