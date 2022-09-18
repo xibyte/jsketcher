@@ -401,7 +401,7 @@ export class IO {
             obj.r.get(),
           ]);
           //      } else if (obj.TYPE === T.DIM || obj.TYPE === T.HDIM || obj.TYPE === T.VDIM) {
-        } else if(obj instanceof EllipticalArc){
+        } else if (obj instanceof EllipticalArc) {
           a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
           b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
           const dir = a.cross(b).z > 0 ? 0 : 1;
@@ -415,7 +415,7 @@ export class IO {
             obj.b.x,
             obj.b.y
           ]);
-        }else if(obj instanceof Ellipse){
+        } else if (obj instanceof Ellipse) {
           out.fline('<ellipse cx="$" cy="$" rx="$" ry="$" transform="rotate($, $ $)" />', [
             obj.c.x,
             obj.c.y,
@@ -425,7 +425,7 @@ export class IO {
             obj.c.x,
             obj.c.y,
           ]);
-        }else if(obj instanceof BezierCurve){
+        } else if (obj instanceof BezierCurve) {
           out.fline('<path d="M $ $ C $ $ $ $ $ $" />', [
             obj.a.x,
             obj.a.y,
