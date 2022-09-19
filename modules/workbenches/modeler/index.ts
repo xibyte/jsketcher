@@ -23,6 +23,8 @@ import {DeleteBodyOperation} from "./features/deleteBody/deleteBody.operation";
 import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defeatureRemoveFace.operation";
 import { WireLineOperation } from "./features/wireLine/wireLine";
 //imports of action type commands
+import {GetInfo} from "./actions/getInfo/getInfo.action";
+//import workbench icon
 import {GiCubes} from "react-icons/gi";
 
 
@@ -51,9 +53,11 @@ export const ModelerWorkspace: WorkbenchConfig = {
     DeleteBodyOperation,
     DefeatureRemoveFaceOperation,
     WireLineOperation,
+
+    GetInfo,
   ],
   actions: [
-    // GetVolume,
+     //GetVolume,
   ],
   ui: {
     toolbar: [
@@ -69,7 +73,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
-      "HOLE_TOOL", "-", 'GET_VOLUME', "IMPORT_MODEL", "DELETE_BODY", "-",
+      "HOLE_TOOL", "-", 'GET_INFO', "IMPORT_MODEL", "DELETE_BODY", "-",
       
       "WIRE_LINE"
     ]
