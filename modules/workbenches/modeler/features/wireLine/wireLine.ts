@@ -31,20 +31,16 @@ export const WireLineOperation: OperationDescriptor<WireLineParams> = {
      params.points[1].csys.origin.z,   
      );
 
-     console.log(     
-      params.points[0].csys.origin.x,
-      params.points[0].csys.origin.y,     
-      params.points[0].csys.origin.z,  
-      
-      params.points[1].csys.origin.x,
-      params.points[1].csys.origin.y,     
-      params.points[1].csys.origin.z,  );
 
-     oci.wire("newLineEdge", "newLine");
-     oci.mkface("newLineFace","newLineEdge");
-     oci.prism("newLinePrism", "newLineFace", 0 , 0, 1)
+     oci.wire("newLine", "newLine");
+     oci.edge("newLine","newLine")
+     
 
-    const created = [occ.io.getShell("newLineFace")];
+     oci.mksweep("newLine");
+     oci.addsweep("newLine", "-R");
+
+
+    const created = [occ.io.getShell("th")];
     const consumed = [];
 
     console.log(params.points);
