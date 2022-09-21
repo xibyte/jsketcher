@@ -23,7 +23,7 @@ export function activate(ctx) {
 }
 
 function instantiateEngine(importObject, callback) {
-  const url = '/lib-assets/jsketcher-occ-engine/occt.wasm';
+  const url = './lib-assets/jsketcher-occ-engine/occt.wasm';
 
   WebAssembly.instantiateStreaming(fetch(url), importObject).then(results => {
     callback(results.instance);
@@ -49,7 +49,7 @@ function loadWasm(ctx) {
   } as any;
 
   const mainScript = document.createElement('script');
-  mainScript.setAttribute('src', '/lib-assets/jsketcher-occ-engine/occt.js');
+  mainScript.setAttribute('src', './lib-assets/jsketcher-occ-engine/occt.js');
   mainScript.setAttribute('async', 'async');
   document.head.appendChild(mainScript);
 }
