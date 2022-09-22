@@ -332,7 +332,11 @@ export class IO {
   }
 
   getWorkspaceToExport() {
-    return [this.viewer.layers, [this.viewer.labelLayer]];
+    return [
+      this.viewer.layers,
+      [this.viewer.labelLayer],
+      this.viewer.dimLayers
+    ];
   }
 
   getLayersToExport() {
