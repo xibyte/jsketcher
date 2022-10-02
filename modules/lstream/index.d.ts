@@ -1,3 +1,4 @@
+import {ThrottleStream} from "lstream/throttle";
 
 interface Observable<T> {
   attach(callback: (value: T) => any): () => void
@@ -17,7 +18,7 @@ interface Stream<T> extends Observable<T> {
 
   distinct(): Stream<T>;
 
-  throttle(delay?: number, accumulator?: any): Stream<T>;
+  throttle(delay?: number, accumulator?: any): ThrottleStream<T>;
 
   pipe(otherStream): () => void;
 }
