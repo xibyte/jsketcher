@@ -1,25 +1,32 @@
-import {StreamBase} from './base';
+import {Emitter} from "lstream/emitter";
 
-export class ThrottleStream extends StreamBase {
+export class ThrottleStream extends Emitter {
 
-  constructor(stream, delay = 0, accumulator = v => v) {
+  constructor(stream, delay = 0, accumulator = (v, accum) => v) {
     super();
-    this.stream = stream;
-    this.delay = delay;
-    this.accumulator = accumulator;
+    this._value = undefined;
+    this.scheduled = false;
+    this.timeoutID = null;
+
+    stream.attach(val => {
+      this._value = accumulator(val, this._value);
+      if (!this.scheduled) {
+        this.scheduled = true;
+        this.timeoutID = setTimeout(this.wakeUp, delay);
+      }
+    });
   }
 
-  attach(observer) {
-    let scheduled = false;
-    let value = undefined;
-    return this.stream.attach(val => {
-      value = this.accumulator(val);
-      if (!scheduled) {
-        setTimeout(() => {
-          scheduled = false;
-          observer(value);
-        });
-      }
-    }, this.delay)
+  wakeUp = () => {
+    this.scheduled = false;
+    this.next(this._value);
+    this._value = undefined;
+  }
+
+  thrust() {
+    if (this.scheduled) {
+      clearTimeout(this.timeoutID);
+      this.wakeUp();
+    }
   }
 }
