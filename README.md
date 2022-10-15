@@ -81,3 +81,10 @@ Install node.js
 * $ cd \<jsketcher folder\>
 * $ npm install
 * $ npm start
+
+Docker install
+
+* $ cd \<jsketcher folder\>
+* $ docker build -t jsketcher .
+* $ docker run --name=jsketcher -d -p 3000:3000 jsketcher
+
