@@ -24,6 +24,7 @@ import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defea
 import { WireLineOperation } from "./features/wireLine/wireLine";
 //imports of action type commands
 import {GetInfo} from "./actions/getInfo/getInfo.action";
+import {ExportBREP} from "./actions/exportBREP/exportBREP.action";
 //import workbench icon
 import {GiCubes} from "react-icons/gi";
 
@@ -55,6 +56,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     WireLineOperation,
 
     GetInfo,
+    ExportBREP,
   ],
   actions: [
      //GetVolume,
@@ -75,7 +77,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "HOLE_TOOL", "-", 'GET_INFO', "IMPORT_MODEL", "DELETE_BODY", "-",
       
-      "WIRE_LINE"
+      "WIRE_LINE", 'EXPORT_BREP',
     ]
   },
   icon: GiCubes
