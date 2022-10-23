@@ -2,7 +2,9 @@ JSketcher
 ===========
 ![JSketcher Logo](./web/img/JSketcher-logo.svg)
 
-JSketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
+JSketcher is a **parametric** 2D and 3D CAD modeler written for the web. 
+Sketch solver is completely implemented in javascript/typescript.
+
 
 
 <a href='https://www.youtube.com/watch?v=Vk3TTp8hNxQ&list=PLeoCiKHizvH8PZEyFvThHzVlnTF5XaL-R'> 
@@ -30,7 +32,7 @@ Please consider supporting this project by becoming a backer
 Current Status
 ==============
 
-JSketcher is a parametric 3d modeler employing a 2D constraint solver for sketches and the feature/history metaphor to build models. The 2D constraint solver is completely written in javascript/typescript and is implemented in both the 3D CAD and the 2D sketcher. Originally developed by xibyte to make models for 3d printing. Today JSketcher provides a rich set of tools for visualizing, selecting/interacting with 3D geometry, tracking and storing model history all built on the foundation of the 2D sketcher engine and employing OpenCascade for solid modeling operations. 
+JSketcher is a parametric 3d modeler employing a 2D constraint solver for sketches and the feature/history metaphor to build models. The 2D constraint solver is completely written in javascript/typescript and is implemented in both the 3D CAD and the 2D sketcher. Originally developed by xibyte to make models for 3d printing. Today JSketcher provides a rich set of tools for visualizing, selecting/interacting with 3D geometry, tracking and storing model history all built on the foundation of the 2D sketcher engine and employing OpenCascade kernel (https://github.com/Autodrop3d/occt-interpreter) for solid modeling operations. 
 
 Major Components and features
 ==============
