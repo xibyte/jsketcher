@@ -8,5 +8,7 @@ export interface BooleanDefinition {
 
   targets: MObject[];
 
+  simplify: boolean;
+
 }
 

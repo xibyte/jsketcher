@@ -1,5 +1,5 @@
-import {SketchGeom} from "cad/sketch/sketchReader";
-import {ApplicationContext} from "cad/context";
+import { SketchGeom } from "cad/sketch/sketchReader";
+import { ApplicationContext } from "cad/context";
 import CSys from "math/csys";
 import {OperationResult} from "cad/craft/craftBundle";
 import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
@@ -91,17 +91,38 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
         return targetName;
       }).filter(targetName => !!targetName);
 
-      oci.bsimplify("-e", 1, "-f", 1);
-      //oci.bglue(2);
-      oci.bfuzzyvalue(0.0001);
+
+
+
       oci.bclearobjects();
       oci.bcleartools();
 
       targetNames.forEach(targetName => oci.baddobjects(targetName));
       tools.forEach(tool => oci.baddtools(tool));
+      console.log("booleanDef", booleanDef);
+      if (booleanDef.simplify === true){
+        oci.bsimplify("-e", 1, "-f", 1);
+      }else{
+        oci.bsimplify("-e", 0, "-f", 0);
+      }
+      oci.bfuzzyvalue(0.0001);
       oci.bcheckinverted(1);
       oci.bfillds();
       oci.bapibop("BooleanResult", booleanKindToOCCBopType(kind));
+      // let resultShell = occ.io.getShell("BooleanResult");
+      // if (resultShell.edges.length < 0) {
+
+        // oci.bsimplify("-e", 0, "-f", 0);
+        // oci.baddobjects("BooleanResult");
+        // oci.baddtools("BooleanResult");
+
+        // oci.bcheckinverted(1);
+        // oci.bfillds();
+        // oci.bapibop("BooleanResult", OccBBOPTypes.FUSE);
+
+      // }
+
+
 
       targets.forEach(t => consumed.push(t));
       tools.forEach(t => consumed.push(t));

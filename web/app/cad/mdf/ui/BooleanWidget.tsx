@@ -6,6 +6,7 @@ import {SectionWidgetProps} from "cad/mdf/ui/SectionWidget";
 export interface BooleanWidgetProps extends FieldBasicProps {
 
   type: 'boolean';
+  simplify: boolean | true;
 
 }
 
@@ -36,6 +37,13 @@ export const BooleanWidgetDefinition = (props: BooleanWidgetProps) => ({
           optional: true,
           defaultValue: props.defaultValue||'NONE',
           values: BOOLEAN_OPTIONS
+        },
+        {
+          name: "simplify",
+          label: 'simplify',
+          type: "checkbox",
+          defaultValue: true,
+          optional: true,
         },
         {
           name: "targets",
