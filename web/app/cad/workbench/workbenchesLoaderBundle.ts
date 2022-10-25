@@ -1,9 +1,9 @@
 import {WorkbenchRegistry} from "workbenches/registry";
-import planeOperation from "cad/craft/primitives/simplePlane/simplePlaneOperation";
+import planeOperation from "workbenches/modeler/features/plane/simplePlaneOperation";
 import createDatumOperation from "cad/craft/datum/create/createDatumOperation";
 import moveDatumOperation from "cad/craft/datum/move/moveDatumOperation";
 import rotateDatumOperation from "cad/craft/datum/rotate/rotateDatumOperation";
-import datumOperation from "cad/craft/primitives/plane/planeOperation";
+
 import {Bundle} from "bundler/bundleSystem";
 import {WorkbenchService} from "cad/workbench/workbenchService";
 import {OperationService} from "cad/craft/operationBundle";
@@ -37,6 +37,5 @@ function registerCoreOperations(ctx: WorkbenchesLoaderActivationContext) {
     createDatumOperation,
     moveDatumOperation,
     rotateDatumOperation,
-    datumOperation,
   ] as any);
 }
