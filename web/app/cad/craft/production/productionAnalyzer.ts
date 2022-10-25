@@ -527,7 +527,7 @@ export class PushPullFaceProductionAnalyzer extends FromMObjectProductionAnalyze
   baseFace: Face;
 
   constructor(consumed: MObject[], baseFace: Face) {
-    super(consumed, []);
+    super(consumed);
     this.baseFace = baseFace;
   }
 
