@@ -1,14 +1,19 @@
 import {createMeshGeometry} from 'scene/geoms';
 import {Plane} from 'geom/impl/plane';
 import Vector from 'math/vector';
-import PlaneWizard from './SimplePlaneWizard';
-import {MOpenFaceShell} from '../../../model/mopenFace';
-import schema from './simplePlaneOpSchema';
-import {PlaneSurfacePrototype} from '../../../model/surfacePrototype';
+import {MOpenFaceShell} from '../../../../../web/app/cad/model/mopenFace';
+import {PlaneSurfacePrototype} from '../../../../../web/app/cad/model/surfacePrototype';
 import {STANDARD_BASES} from 'math/basis';
 import {MFace} from "cad/model/mface";
 import CSys from "math/csys";
 import {MDatum} from "cad/model/mdatum";
+import {EntityKind} from "cad/model/entities";
+import {entityKindCapture} from "cad/craft/schema/types/entityType";
+
+
+
+
+
 
 function paramsToPlane({orientation, datum, depth}, cadRegistry) {
   const csys = datum ? datum.csys : CSys.ORIGIN;
@@ -55,8 +60,35 @@ export default {
   paramsInfo: ({depth}) => `(${depth})`,
   previewGeomProvider,
   run: createPlane,
-  form: PlaneWizard,
-  schema
+  form: [
+    {
+      type: 'choice',
+      style: "dropdown",
+      label: 'orientation',
+      name: 'orientation',
+      style: 'radio',
+      values: ['XY', 'XZ', 'ZY'],
+      defaultValue: "XY",
+    },
+    {
+      type: 'selection',
+      name: 'datum',
+      capture: [EntityKind.MDatum,EntityKind.FACE],
+      label: 'datum',
+      multi: false,
+      optional: true,
+      defaultValue: {
+        usePreselection: true,
+        preselectionIndex: 0
+      },
+    },
+    {
+      type: 'number',
+      label: 'depth',
+      name: 'depth',
+      defaultValue: 0,
+    },
+  ],
 };
 
 
