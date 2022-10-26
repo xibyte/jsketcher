@@ -61,9 +61,10 @@ export const FilletOperation: OperationDescriptor<any> = {
     });
 
     //perform the opperations on each of the bodies.
-    const result = {
+    let result = {
       created: [],
-      consumed: Array.from(groups.keys())
+      consumed: Array.from(groups.keys()),
+      error: {},
     }
 
     const analyzer = new FromMObjectProductionAnalyzer(result.consumed);
@@ -78,6 +79,31 @@ export const FilletOperation: OperationDescriptor<any> = {
       }
       result.created.push(occ.io.getShell(newShellName, analyzer));
     });
+
+
+    result.created.forEach(function (item, index, arr ){
+      if (item.faces.length <=1) result = {
+        created: [],
+        consumed:[],
+        error :{
+          type:"fail",
+          message:"Fillet failed, Try changing radius or remove edge causing failure."
+        },
+      };
+    })
+
+
+
+
+
+    if (result.created[0].faces.length <=1) result = {
+      created: [],
+      consumed:[],
+      error :{
+        type:"fail",
+        message:"Fillet failed, Try changing radius or remove edge causing failure."
+      },
+    };
 
     return result;
   },
