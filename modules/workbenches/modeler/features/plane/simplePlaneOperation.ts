@@ -1,21 +1,17 @@
-import {createMeshGeometry} from 'scene/geoms';
-import {Plane} from 'geom/impl/plane';
+import { createMeshGeometry } from 'scene/geoms';
+import { Plane } from 'geom/impl/plane';
 import Vector from 'math/vector';
-import {MOpenFaceShell} from '../../../../../web/app/cad/model/mopenFace';
-import {PlaneSurfacePrototype} from '../../../../../web/app/cad/model/surfacePrototype';
-import {STANDARD_BASES} from 'math/basis';
-import {MFace} from "cad/model/mface";
+import { MOpenFaceShell } from '../../../../../web/app/cad/model/mopenFace';
+import { PlaneSurfacePrototype } from '../../../../../web/app/cad/model/surfacePrototype';
 import CSys from "math/csys";
-import {MDatum} from "cad/model/mdatum";
-import {EntityKind} from "cad/model/entities";
-import {entityKindCapture} from "cad/craft/schema/types/entityType";
+import { EntityKind } from "cad/model/entities";
+import { TextureLoader, MeshBasicMaterial,MeshLambertMaterial, Mesh, DoubleSide, PlaneGeometry } from "three";
+//import THREE from "three";
 
 
 
 
-
-
-function paramsToPlane({orientation, datum, depth}, cadRegistry) {
+function paramsToPlane({ orientation, datum, depth }, cadRegistry) {
   const csys = datum ? datum.csys : CSys.ORIGIN;
 
   let axis;
@@ -32,12 +28,6 @@ function paramsToPlane({orientation, datum, depth}, cadRegistry) {
   return new Plane(axis, w);
 }
 
-function createPlane(params, {cadRegistry}) {
-  return {
-    consumed: [],
-    created: [new MOpenFaceShell(new PlaneSurfacePrototype(paramsToPlane(params, cadRegistry)))]
-  }
-}
 
 function previewGeomProvider(params, {cadRegistry}) {
   const plane = paramsToPlane(params, cadRegistry);
@@ -52,14 +42,34 @@ function previewGeomProvider(params, {cadRegistry}) {
   return createMeshGeometry(trs);
 }
 
+
+function fixTexture(planeWidth, planeHeight) {
+  return function(texture) {
+    const planeAspect = planeWidth / planeHeight;
+    const imageAspect = texture.image.width / texture.image.height;
+    const aspect = imageAspect / planeAspect;
+
+    texture.offset.x = aspect > 1 ? (1 - 1 / aspect) / 2 : 0;
+    texture.repeat.x = aspect > 1 ? 1 / aspect : 1;
+
+    texture.offset.y = aspect > 1 ? 0 : (1 - aspect) / 2;
+    texture.repeat.y = aspect > 1 ? 1 : aspect;
+  }
+}
+
 export default {
   id: 'PLANE',
   label: 'Plane',
   icon: 'img/cad/plane',
   info: 'creates new object plane',
-  paramsInfo: ({depth}) => `(${depth})`,
+  paramsInfo: ({ depth }) => `(${depth})`,
   previewGeomProvider,
-  run: createPlane,
+  run: (params, { cadRegistry }) => {
+    return {
+      consumed: [],
+      created: [new MOpenFaceShell(new PlaneSurfacePrototype(paramsToPlane(params, cadRegistry)))]
+    }
+  },
   form: [
     {
       type: 'choice',
@@ -73,7 +83,7 @@ export default {
     {
       type: 'selection',
       name: 'datum',
-      capture: [EntityKind.MDatum,EntityKind.FACE],
+      capture: [EntityKind.DATUM, EntityKind.FACE],
       label: 'datum',
       multi: false,
       optional: true,
@@ -87,6 +97,13 @@ export default {
       label: 'depth',
       name: 'depth',
       defaultValue: 0,
+    },
+    {
+      type: 'file',
+      name: 'image',
+      optional: true,
+      label: 'Optional Image',
+
     },
   ],
 };
