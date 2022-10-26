@@ -98,13 +98,13 @@ export default {
       name: 'depth',
       defaultValue: 0,
     },
-    {
-      type: 'file',
-      name: 'image',
-      optional: true,
-      label: 'Optional Image',
+    // {
+    //   type: 'file',
+    //   name: 'image',
+    //   optional: true,
+    //   label: 'Optional Image',
 
-    },
+    // },
   ],
 };
 
