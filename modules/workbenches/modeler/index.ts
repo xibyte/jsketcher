@@ -22,6 +22,7 @@ import {ImportModelOperation} from "./features/importModel/importModel.operation
 import {DeleteBodyOperation} from "./features/deleteBody/deleteBody.operation";
 import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defeatureRemoveFace.operation";
 import { WireLineOperation } from "./features/wireLine/wireLine";
+import { MoveBodyOperation } from "./features/moveBody/moveBody.operation"
 //imports of action type commands
 import {GetInfo} from "./actions/getInfo/getInfo.action";
 import {ExportBREP} from "./actions/exportBREP/exportBREP.action";
@@ -54,6 +55,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     DeleteBodyOperation,
     DefeatureRemoveFaceOperation,
     WireLineOperation,
+    MoveBodyOperation,
 
     GetInfo,
     ExportBREP,
@@ -71,7 +73,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE", "-",
 
-      "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "-",
+      "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "MOVE_BODY" ,"-",
 
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
