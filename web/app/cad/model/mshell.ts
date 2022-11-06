@@ -45,7 +45,6 @@ export class MShell extends MObject {
 export class MBrepShell extends MShell {
 
   brepShell: Shell;
-  csys: CartesianCSys;
   brepRegistry: Map<TopoObject, MObject>;
 
   constructor(shell, csys?) {

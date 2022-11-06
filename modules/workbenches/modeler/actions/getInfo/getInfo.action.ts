@@ -1,12 +1,13 @@
 import {MShell} from "cad/model/mshell";
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
-import {ActionDefinition} from "cad/actions/actionSystemBundle";
 import { MEdge } from "cad/model/medge";
+import NurbsCurve from "geom/curves/nurbsCurve";
 
 
 interface GetInfoParams {
   targetBody: MShell | MEdge;
+  brepEdge: MEdge;
 }
 
 export const GetInfo: any = {
@@ -25,29 +26,29 @@ export const GetInfo: any = {
     let resultingMessage = "";
 
 
-    if (targetBody.TYPE === EntityKind.EDGE){
-      resultingMessage = "Edge Length = "+ targetBody.brepEdge.curve.impl.verb.length().toFixed(4);
+    if (targetBody instanceof MEdge){
+      resultingMessage = "Edge Length = "+ (targetBody.brepEdge.curve.impl as NurbsCurve).verb.length().toFixed(4);
     }
     if (targetBody.TYPE === EntityKind.SHELL){
-      let listOfOutputs = [];
+      const listOfOutputs = [];
+
       const out_old = out;
-      out  = function(msg) {
-        listOfOutputs.push(msg);
+      try {
+        out = function(msg) {
+          listOfOutputs.push(msg);
           //alert(JSON.stringify(msg));
           out_old(msg);
+        }
+
+        oci.vprops(params.targetBody);
+
+      } finally {
+        out = out_old;
       }
-  
-      oci.vprops(params.targetBody);
-  
-      out = out_old;
-  
-      
+
       const resultingVolumeArray = listOfOutputs.filter(function (str) {  return str.includes("Mass") });
       resultingMessage = "Volume = " + resultingVolumeArray[0].trim().replace(' ', '').replace("Mass:","").trim();
     }
-
-
-
 
     throw {userMessage: resultingMessage};
     return;

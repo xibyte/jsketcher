@@ -48,10 +48,6 @@ export function fillUpMissingFields(params: any, schema: OperationSchema, contex
   for (const field of fields) {
     const md = schema[field] as SchemaField;
 
-    if (md.optional) {
-      continue;
-    }
-
     let val = params[field];
 
     const isPrimitive =
@@ -59,7 +55,7 @@ export function fillUpMissingFields(params: any, schema: OperationSchema, contex
       && md.type !== Types.object
       && md.type !== Types.entity;
 
-    if (isPrimitive && isValueNotProvided(val)) {
+    if (isPrimitive && isValueNotProvided(val) && !md.optional) {
       params[field] = md.defaultValue;
     } else if (md.type === Types.object) {
       if (!val) {

@@ -15,7 +15,7 @@ export const ExportBREP: any = {
   icon: 'img/cad/extrude',
   info: 'EXPORT BREP FILE CONTAINING SELECTED BODIES',
   path:__dirname,
-  run: async (params: Params, ctx: ApplicationContext) => {
+  run: async (params: any, ctx: ApplicationContext) => {
     console.log("this is it", this)
     const occ = ctx.occService;
     const oci = occ.commandInterface;
@@ -43,7 +43,6 @@ export const ExportBREP: any = {
     resultingMessage = "yay";
 
     throw {userMessage: resultingMessage};
-    return;
   },
 
 
@@ -63,30 +62,24 @@ export const ExportBREP: any = {
   ],
 }
 
-
-
-var downloadBlob, downloadURL;
-
-downloadBlob = function(data, fileName, mimeType) {
-  var blob, url;
-  blob = new Blob([data], {
+function downloadBlob(data, fileName, mimeType) {
+  const blob = new Blob([data], {
     type: mimeType
   });
-  url = window.URL.createObjectURL(blob);
+  const url = window.URL.createObjectURL(blob);
   downloadURL(url, fileName);
   setTimeout(function() {
     return window.URL.revokeObjectURL(url);
   }, 1000);
-};
+}
 
-downloadURL = function(data, fileName) {
-  var a;
-  a = document.createElement('a');
+function downloadURL(data, fileName) {
+  const a = document.createElement('a');
   a.href = data;
   a.id = "MyDownload"
   a.download = fileName;
   document.body.appendChild(a);
-  a.style = 'display: none';
+  a.style.display = 'none';
   a.click();
   a.remove();
-};
+}
