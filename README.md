@@ -90,8 +90,13 @@ Generate Electron Build for desktop
 * $ npm run electron:package:win
 * $ npm run electron:package:mac
 
+The resulting binary will be placed in the dist folder that is generated. 
+
 Note:
-Build targeting windows requires wine to be installed 
+Build targeting windows from linux requires wine to be installed.
+
+Linux build produces app image and deb for installation. 
+To use the app image you must do a 'chmod +x jsketcher-*.*.*.AppImage'
 
 Contributing Please see  [.github/CONTRIBUTING.md ](.github/CONTRIBUTING.md )
 =========================
