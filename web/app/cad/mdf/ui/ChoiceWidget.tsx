@@ -45,7 +45,7 @@ export function ChoiceWidget(props: ChoiceWidgetProps) {
           val = value;
           name = value;
         }
-        return <RadioButton value={val} key={val}>{name}</RadioButton>
+        return <RadioButton value={val} label={name} key={val} />
       })}
     </RadioButtonsField>;
   }

@@ -1,17 +1,13 @@
-import { createMeshGeometry } from 'scene/geoms';
-import { Plane } from 'geom/impl/plane';
+import {createMeshGeometry} from 'scene/geoms';
+import {Plane} from 'geom/impl/plane';
 import Vector from 'math/vector';
-import { MOpenFaceShell } from '../../../../../web/app/cad/model/mopenFace';
-import { PlaneSurfacePrototype } from '../../../../../web/app/cad/model/surfacePrototype';
+import {MOpenFaceShell} from '../../../../../web/app/cad/model/mopenFace';
+import {PlaneSurfacePrototype} from '../../../../../web/app/cad/model/surfacePrototype';
 import CSys from "math/csys";
-import { EntityKind } from "cad/model/entities";
-import { TextureLoader, MeshBasicMaterial,MeshLambertMaterial, Mesh, DoubleSide, PlaneGeometry } from "three";
-//import THREE from "three";
+import {EntityKind} from "cad/model/entities";
 
 
-
-
-function paramsToPlane({ orientation, datum, depth }, cadRegistry) {
+function paramsToPlane({ orientation, datum, depth }) {
   const csys = datum ? datum.csys : CSys.ORIGIN;
 
   let axis;
@@ -29,8 +25,8 @@ function paramsToPlane({ orientation, datum, depth }, cadRegistry) {
 }
 
 
-function previewGeomProvider(params, {cadRegistry}) {
-  const plane = paramsToPlane(params, cadRegistry);
+function previewGeomProvider(params) {
+  const plane = paramsToPlane(params);
   const tr = plane.get3DTransformation();
   const w = 375, h = 375;
   const a = tr._apply(new Vector(-w, -h, 0));
@@ -65,15 +61,15 @@ export default {
   paramsInfo: ({ depth }) => `(${depth})`,
   previewGeomProvider,
   run: (params, { cadRegistry }) => {
+
     return {
       consumed: [],
-      created: [new MOpenFaceShell(new PlaneSurfacePrototype(paramsToPlane(params, cadRegistry)))]
+      created: [new MOpenFaceShell(new PlaneSurfacePrototype(paramsToPlane(params)))]
     }
   },
   form: [
     {
       type: 'choice',
-      style: "dropdown",
       label: 'orientation',
       name: 'orientation',
       style: 'radio',
@@ -103,7 +99,6 @@ export default {
     //   name: 'image',
     //   optional: true,
     //   label: 'Optional Image',
-
     // },
   ],
 };
