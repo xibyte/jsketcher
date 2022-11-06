@@ -77,18 +77,20 @@ Get Started With the Code
 =========================
 
 Install node.js
-
-* $ cd \<jsketcher folder\>
-* $ npm install
-* $ npm start
+```
+npm install
+npm start
+```
 
 
 
 Generate Electron Build for desktop
 =========================
-* $ npm run electron:package:linux
-* $ npm run electron:package:win
-* $ npm run electron:package:mac
+```
+npm run electron:package:linux
+npm run electron:package:win
+npm run electron:package:mac
+```
 
 The resulting binary will be placed in the dist folder that is generated. 
 
