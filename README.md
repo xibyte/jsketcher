@@ -84,6 +84,14 @@ Install node.js
 
 
 
+Generate Electron Build for desktop
+=========================
+* $ npm run electron:package:linux
+* $ npm run electron:package:win
+* $ npm run electron:package:mac
+
+Note:
+Build targeting windows requires wine to be installed 
 
 Contributing Please see  [.github/CONTRIBUTING.md ](.github/CONTRIBUTING.md )
 =========================
