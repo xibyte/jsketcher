@@ -19,6 +19,7 @@ export default class Viewer {
     this.cameraMode$ = externalState(() => this.getCameraMode(), mode => this.setCameraMode(mode))
 
     this.sceneSetup = new SceneSetUp(container);
+    this.setCameraMode(this.sceneSetup.oCamera);
   }
   
   render() {
@@ -49,9 +50,9 @@ export default class Viewer {
   }
   
   setCameraMode(mode) {
-    if (this.getCameraMode() === mode) {
-      return;
-    }
+    // if (this.getCameraMode() === mode) {
+    //   return;
+    // }
     if (mode === CAMERA_MODE.PERSPECTIVE) {
       this.sceneSetup.setCamera(this.sceneSetup.pCamera);
     } else {
@@ -64,6 +65,7 @@ export default class Viewer {
   }
   
   toggleCamera() {
+    alert("camera toggled")
     if (this.getCameraMode() === CAMERA_MODE.PERSPECTIVE) {
       this.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
     } else {
