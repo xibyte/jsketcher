@@ -81,7 +81,7 @@ Install node.js
 npm install
 npm start
 ```
-
+Goto http://localhost:3000 using your browser. Tested on google chrome but known to work in firefox and edge. 
 
 
 Generate Electron Build for desktop
