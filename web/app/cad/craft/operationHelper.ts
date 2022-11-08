@@ -6,12 +6,19 @@ export function roundValueForPresentation(value) {
 }
 
 export function operationIconToActionIcon(icon, appearance) {
+  //console.log(icon);
   if (typeof icon === 'string') {
-    appearance.icon32 = icon + '32.png';
-    appearance.icon96 = icon + '96.png';
+    if (icon.startsWith("<svg")){
+      appearance.icon32 = "data:image/svg+xml;base64,"+btoa(icon);
+      appearance.icon96 = "data:image/svg+xml;base64,"+btoa(icon);
+    }else{
+      appearance.icon32 = icon + '32.png';
+      appearance.icon96 = icon + '96.png';
+    }
   } else {
     appearance.icon = resolveIcon(icon);
   }
+  console.log(icon, appearance)
 }
 
 export function resolveAppearance<R>(op: Operation<R>, params: R) {
