@@ -69,7 +69,9 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "EXTRUDE", "CUT", "REVOLVE", "LOFT", "SWEEP", "-",
 
-      "BOOLEAN", "UNION", "SUBTRACT", "INTERSECT", "-",
+      //"BOOLEAN", 
+      
+      "UNION", "SUBTRACT", "INTERSECT", "-",
 
       "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE", "-",
 
@@ -77,9 +79,9 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
-      "HOLE_TOOL", "-", 'GET_INFO', "IMPORT_MODEL", "DELETE_BODY", "-",
+      "HOLE_TOOL", "-", "IMPORT_MODEL", "DELETE_BODY", "-",
       
-      "WIRE_LINE", 'EXPORT_BREP',
+      "WIRE_LINE", 'EXPORT_BREP', 'GET_INFO',
     ]
   },
   icon: GiCubes
