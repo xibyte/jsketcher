@@ -65,7 +65,6 @@ export default class Viewer {
   }
   
   toggleCamera() {
-    alert("camera toggled")
     if (this.getCameraMode() === CAMERA_MODE.PERSPECTIVE) {
       this.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
     } else {
