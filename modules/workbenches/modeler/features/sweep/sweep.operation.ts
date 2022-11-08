@@ -3,6 +3,7 @@ import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MSketchLoop} from "cad/model/mloop";
+import icon from "./SWEEP.svg";
 
 interface SweepParams {
   profile: MSketchLoop;
@@ -14,7 +15,7 @@ interface SweepParams {
 export const SweepOperation: OperationDescriptor<SweepParams> = {
   id: 'SWEEP',
   label: 'Sweep',
-  icon: 'img/cad/sweep',
+  icon,
   info: 'Sweeps 2D profile loop',
   path:__dirname,
   paramsInfo: () => `(?)`,

@@ -5,6 +5,7 @@ import { EntityKind } from "cad/model/entities";
 import Axis from "math/axis";
 import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
+import icon from "./MIRROR.svg";
 
 interface MirrorBodyParams {
   inputBodies: MShell[];
@@ -14,7 +15,7 @@ interface MirrorBodyParams {
 export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
   id: 'MIRROR_BODY',
   label: 'Mirror Body',
-  icon: 'img/cad/MirrorBody',
+  icon,
   info: 'Mirrors selected body along plane of symytry.',
   path:__dirname,
   paramsInfo: () => `(?)`,

@@ -6,7 +6,7 @@ import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MDatum } from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
-
+import icon from "./CONE.svg";
 
 interface PrimitiveConeParams {
   diameterA: number,
@@ -19,7 +19,7 @@ interface PrimitiveConeParams {
 export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = {
   id: 'CONE',
   label: 'Cone',
-  icon: 'img/cad/cone',
+  icon,
   info: 'Cone',
   path:__dirname,
   paramsInfo: ({ height, diameterA, diameterB }) => `(${r(height)} , ${r(diameterA)} , ${r(diameterB)} )`,

@@ -8,6 +8,7 @@ import {MShell} from 'cad/model/mshell';
 import {Matrix3x4} from "math/matrix";
 import {AddLocation, SetLocation} from "cad/craft/e0/interact";
 import {DEG_RAD} from "math/commons";
+import icon from "./RADIAL-PATTERN.svg"
 
 interface patternRadialParams {
   inputBodies: MShell[];
@@ -22,7 +23,7 @@ interface patternRadialParams {
 export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = {
   id: 'PATTERN_RADIAL',
   label: 'Radial pattern',
-  icon: 'img/cad/patternRadial',
+  icon,
   info: 'Creates a Radial pattern.',
   path:__dirname,
   paramsInfo: p => `( ${p.patternMethod} ${r(p.angle * DEG_RAD)})`,

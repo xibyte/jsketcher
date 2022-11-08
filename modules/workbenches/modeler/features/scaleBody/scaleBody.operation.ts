@@ -3,7 +3,7 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationBundle";
-
+import icon from "./SCALE.svg";
 
 interface scaleParams {
   distance: number;
@@ -13,7 +13,7 @@ interface scaleParams {
 export const ScaleOperation: OperationDescriptor<scaleParams> = {
   id: 'SCALE_BODY',
   label: 'Scale',
-  icon: 'img/cad/scale',
+  icon,
   info: 'Scale Body',
   path:__dirname,
   paramsInfo: ({ distance }) => `(${r(distance)})`,

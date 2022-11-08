@@ -9,6 +9,7 @@ import { MShell } from 'cad/model/mshell';
 import { MDatum } from "cad/model/mdatum";
 import {Matrix3x4} from "math/matrix";
 import {AddLocation, SetLocation} from "cad/craft/e0/interact";
+import icon from "./LINEAR-PATTERN.svg";
 
 interface patternLinearParams {
   inputBodies: MShell[];
@@ -23,7 +24,7 @@ interface patternLinearParams {
 export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = {
   id: 'PATTERN_LINEAR',
   label: 'Linear pattern',
-  icon: 'img/cad/patternLinear',
+  icon,
   info: 'Creates a linear pattern.',
   path:__dirname,
   paramsInfo: () => `(?)`,

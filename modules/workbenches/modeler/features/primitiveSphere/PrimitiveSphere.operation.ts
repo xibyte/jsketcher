@@ -6,6 +6,7 @@ import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MDatum} from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+import icon from "./SPHERE.svg";
 
 interface PrimitiveSphereParams {
   radius: number,
@@ -16,7 +17,7 @@ interface PrimitiveSphereParams {
 export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams> = {
   id: 'SPHERE',
   label: 'Sphere',
-  icon: 'img/cad/sphere',
+  icon,
   info: 'Primitive Sphere',
   path:__dirname,
   paramsInfo: ({radius,}) => `(${r(radius)}  )`,

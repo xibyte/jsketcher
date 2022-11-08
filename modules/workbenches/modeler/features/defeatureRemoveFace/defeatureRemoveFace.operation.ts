@@ -4,7 +4,7 @@ import { EntityKind } from "cad/model/entities";
 import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MFace } from "cad/model/mface";
 import {FromMObjectProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
-import icon from "./DELETE FACE.svg";
+import icon from "./DELETE-FACE.svg";
 
 
 interface DefeatureRemoveFaceParams {
