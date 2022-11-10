@@ -65,23 +65,26 @@ export const ModelerWorkspace: WorkbenchConfig = {
   ],
   ui: {
     toolbar: [
-      'DATUM_CREATE', 'PLANE', 'EditFace', '-',
+      ['DATUM_CREATE', 'PLANE', 'EditFace'], "-",
 
-      "EXTRUDE", "CUT", "REVOLVE", "LOFT", "SWEEP", "-",
-
-      //"BOOLEAN", 
+      ["EXTRUDE", "CUT", "REVOLVE", "LOFT", "SWEEP"], "-",
       
-      "UNION", "SUBTRACT", "INTERSECT", "-",
+      ["UNION", "SUBTRACT", "INTERSECT"], "-",
 
-      "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE", "-",
+      ["SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE"],  "-",
 
-      "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "MOVE_BODY" ,"-",
+      ["MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "MOVE_BODY"] ,  "-",
 
-      "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
+      ["CYLINDER", "BOX", "CONE", "SPHERE", "TORUS"],   "-",
 
-      "HOLE_TOOL", "-", "IMPORT_MODEL", "DELETE_BODY", "-",
-      
-      "WIRE_LINE", 'EXPORT_BREP', 'GET_INFO',
+      ["HOLE_TOOL"],   "-",
+
+      ["IMPORT_MODEL", "DELETE_BODY"],   "-",
+
+      ["WIRE_LINE"],   "-",
+
+      ['EXPORT_BREP', 'GET_INFO'],  "-",
+
     ]
   },
   icon: GiCubes
