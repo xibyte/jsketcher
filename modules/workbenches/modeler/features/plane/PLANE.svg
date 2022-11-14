@@ -1,1 +1,77 @@
-<svg version="1.1" viewBox="0.0 0.0 96.0 96.0" fill="none" stroke="none" stroke-linecap="square" stroke-miterlimit="10" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><clipPath id="g14470d71bf0_0_266.0"><path d="m0 0l96.0 0l0 96.0l-96.0 0l0 -96.0z" clip-rule="nonzero"/></clipPath><g clip-path="url(#g14470d71bf0_0_266.0)"><path fill="#000000" fill-opacity="0.0" d="m0 0l96.0 0l0 96.0l-96.0 0z" fill-rule="evenodd"/><path fill="#f3f3f3" d="m88.48819 3.6167977l-80.97638 19.501541l0 69.60082l80.97638 -19.501541z" fill-rule="evenodd"/><path stroke="#00ffff" stroke-width="4.0" stroke-linejoin="round" stroke-linecap="butt" d="m88.48819 3.6167977l-80.97638 19.501541l0 69.60082l80.97638 -19.501541z" fill-rule="evenodd"/><path fill="#000000" fill-opacity="0.0" d="m13.524935 26.850048l21.921259 -4.629921" fill-rule="evenodd"/><path stroke="#00ffff" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m13.524935 26.850048l21.921259 -4.629921" fill-rule="evenodd"/><path fill="#000000" fill-opacity="0.0" d="m13.524935 31.49522l21.921259 -4.629921" fill-rule="evenodd"/><path stroke="#00ffff" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m13.524935 31.49522l21.921259 -4.629921" fill-rule="evenodd"/><path fill="#000000" fill-opacity="0.0" d="m59.19685 73.00095l21.92126 -4.629921" fill-rule="evenodd"/><path stroke="#00ffff" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m59.19685 73.00095l21.92126 -4.629921" fill-rule="evenodd"/><path fill="#000000" fill-opacity="0.0" d="m59.19685 67.28325l21.92126 -4.629917" fill-rule="evenodd"/><path stroke="#00ffff" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m59.19685 67.28325l21.92126 -4.629917" fill-rule="evenodd"/></g></svg>
+<svg
+  version="1.1"
+  viewBox="0.0 0.0 96.0 96.0"
+  fill="none"
+  stroke="none"
+  stroke-linecap="square"
+  stroke-miterlimit="10"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns="http://www.w3.org/2000/svg"
+><clipPath id="g14470d71bf0_0_266.0"><path
+      d="m0 0l96.0 0l0 96.0l-96.0 0l0 -96.0z"
+      clip-rule="nonzero"
+    /></clipPath><g clip-path="url(#g14470d71bf0_0_266.0)"><path
+      fill="#000000"
+      fill-opacity="0.0"
+      d="m0 0l96.0 0l0 96.0l-96.0 0z"
+      fill-rule="evenodd"
+    /><path
+      fill="#f3f3f3"
+      d="m88.48819 3.6167977l-80.97638 19.501541l0 69.60082l80.97638 -19.501541z"
+      fill-rule="evenodd"
+    /><path
+      stroke="#00ffff"
+      stroke-width="4.0"
+      stroke-linejoin="round"
+      stroke-linecap="butt"
+      d="m88.48819 3.6167977l-80.97638 19.501541l0 69.60082l80.97638 -19.501541z"
+      fill-rule="evenodd"
+    /><path
+      fill="#000000"
+      fill-opacity="0.0"
+      d="m13.524935 26.850048l21.921259 -4.629921"
+      fill-rule="evenodd"
+    /><path
+      stroke="#00ffff"
+      stroke-width="2.0"
+      stroke-linejoin="round"
+      stroke-linecap="butt"
+      d="m13.524935 26.850048l21.921259 -4.629921"
+      fill-rule="evenodd"
+    /><path
+      fill="#000000"
+      fill-opacity="0.0"
+      d="m13.524935 31.49522l21.921259 -4.629921"
+      fill-rule="evenodd"
+    /><path
+      stroke="#00ffff"
+      stroke-width="2.0"
+      stroke-linejoin="round"
+      stroke-linecap="butt"
+      d="m13.524935 31.49522l21.921259 -4.629921"
+      fill-rule="evenodd"
+    /><path
+      fill="#000000"
+      fill-opacity="0.0"
+      d="m59.19685 73.00095l21.92126 -4.629921"
+      fill-rule="evenodd"
+    /><path
+      stroke="#00ffff"
+      stroke-width="2.0"
+      stroke-linejoin="round"
+      stroke-linecap="butt"
+      d="m59.19685 73.00095l21.92126 -4.629921"
+      fill-rule="evenodd"
+    /><path
+      fill="#000000"
+      fill-opacity="0.0"
+      d="m59.19685 67.28325l21.92126 -4.629917"
+      fill-rule="evenodd"
+    /><path
+      stroke="#00ffff"
+      stroke-width="2.0"
+      stroke-linejoin="round"
+      stroke-linecap="butt"
+      d="m59.19685 67.28325l21.92126 -4.629917"
+      fill-rule="evenodd"
+    /></g></svg>
