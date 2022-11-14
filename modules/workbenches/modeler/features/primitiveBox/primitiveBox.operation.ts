@@ -60,6 +60,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
       name: 'boolean',
       label: 'boolean',
       optional: true,
+      simplify: true,
     }
 
   ],

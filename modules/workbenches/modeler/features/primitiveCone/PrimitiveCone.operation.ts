@@ -60,6 +60,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
       name: 'boolean',
       label: 'boolean',
       optional: true,
+      simplify: true,
     }
 
   ],

@@ -85,6 +85,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
       name: 'boolean',
       label: 'boolean',
       optional: true,
+      simplify: true,
     }
 
   ],

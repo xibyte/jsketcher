@@ -47,6 +47,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
       name: 'boolean',
       label: 'boolean',
       optional: true,
+      simplify: true,
     }
 
   ],

@@ -53,6 +53,7 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
       name: 'boolean',
       label: 'boolean',
       optional: true,
+      simplify: true,
     }
 
   ],

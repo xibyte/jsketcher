@@ -73,7 +73,8 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       info: 'makes a cut based on 2D sketch',
       maskingParams: {
         boolean: {
-          kind: 'UNION'
+          kind: 'UNION',
+          simplify: true,
         }
       }
     },
@@ -84,7 +85,8 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       info: 'makes a cut based on 2D sketch',
       maskingParams: {
         boolean: {
-          kind: 'SUBTRACT'
+          kind: 'SUBTRACT',
+          simplify: true,
         }
       }
     },
@@ -95,7 +97,8 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       info: 'makes a cut based on 2D sketch',
       maskingParams: {
         boolean: {
-          kind: 'INTERSECT'
+          kind: 'INTERSECT',
+          simplify: true,
         }
       }
     }

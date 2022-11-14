@@ -53,6 +53,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
       name: 'boolean',
       label: 'boolean',
       optional: true,
+      simplify: true,
     }
 
   ],

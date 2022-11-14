@@ -93,6 +93,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
       name: 'boolean',
       label: 'boolean',
       optional: true,
+      simplify: true,
     }
 
   ],

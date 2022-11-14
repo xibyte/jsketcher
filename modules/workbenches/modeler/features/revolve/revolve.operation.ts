@@ -90,7 +90,8 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
       name: 'boolean',
       label: 'boolean',
       optional: true,
-      defaultValue: 'NONE'
+      defaultValue: 'NONE',
+      simplify: true,
     }
 
   ],
