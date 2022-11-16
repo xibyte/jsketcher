@@ -277,11 +277,8 @@ export default class SceneSetUp {
 
 
   animate() {
-    let mat = new Matrix4();
-    mat.extractRotation( this.camera.matrixWorldInverse );
     requestAnimationFrame( () => this.animate() );
     const controlsChangedViewpoint = this.trackballControls.evaluate();
-    this.viewCube.style.transform = `translateZ(-300px) ${getCameraCSSMatrix( mat )}`;
     if (controlsChangedViewpoint || this.renderRequested) {
       this.__render_NeverCallMeFromOutside();
     }
@@ -311,37 +308,3 @@ export function getSceneSetup(object3D) {
 }
 
 const ORTHOGRAPHIC_CAMERA_FACTOR = 1;
-
-
-
-
-function getCameraCSSMatrix(matrix) {
-
-  var elements = matrix.elements;
-
-  return 'matrix3d(' +
-    epsilon(elements[0]) + ',' +
-    epsilon(-elements[1]) + ',' +
-    epsilon(elements[2]) + ',' +
-    epsilon(elements[3]) + ',' +
-    epsilon(elements[4]) + ',' +
-    epsilon(-elements[5]) + ',' +
-    epsilon(elements[6]) + ',' +
-    epsilon(elements[7]) + ',' +
-    epsilon(elements[8]) + ',' +
-    epsilon(-elements[9]) + ',' +
-    epsilon(elements[10]) + ',' +
-    epsilon(elements[11]) + ',' +
-    epsilon(elements[12]) + ',' +
-    epsilon(-elements[13]) + ',' +
-    epsilon(elements[14]) + ',' +
-    epsilon(elements[15]) +
-    ')';
-
-}
-
-function epsilon( value ) {
-
-  return Math.abs( value ) < 1e-10 ? 0 : value;
-
-}

@@ -1,0 +1,64 @@
+.cubeHolder {
+  pointer-events: auto;
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  right:50px;
+  bottom:100px;
+  z-index: 100000;
+  transform: scale(0.5);
+  cursor: pointer;
+  user-select: none;
+  /* transition: transform 1s; */
+}
+
+.cube {
+  width: 50px;
+  height: 50px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: translateZ(-300px);
+  /* transition: transform 1s; */
+}
+
+.face {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border: 2px solid black;
+  line-height: 100px;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+.front {
+  background: rgba(0, 0, 255, 0.7);
+  transform: rotateY(0deg) rotateX(180deg) translateZ(-50px);
+}
+
+.right {
+  background: rgba(255, 0, 0, 0.7);
+  transform: rotateY(90deg) rotateX(180deg) translateZ(-50px);
+}
+
+.back {
+  background: rgba(0, 255, 255, 0.7);
+  transform: rotateY(180deg) rotateX(180deg) translateZ(-50px);
+}
+
+.left {
+  background: rgba(255, 0, 255, 0.7);
+  transform: rotateY(-90deg) rotateX(180deg) translateZ(-50px);
+}
+
+.top {
+  background: rgba(0, 255, 0, 0.7);
+  transform: rotateX(-90deg) rotateX(180deg) translateZ(-50px);
+}
+
+.bottom {
+  background: rgba(255, 255, 0, 0.7);
+  transform: rotateX(90deg) rotateX(180deg) translateZ(-50px);
+}

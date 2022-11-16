@@ -9,108 +9,10 @@
   <script src="./lib/verb.js"></script>
 </head>
 <body>
-  <style>
-    .cubeHolder {
-    width: 100px;
-    height: 100px;
-    position: absolute;
-    right:50px;
-    bottom:100px;
-    z-index: 100000;
-    width: fit-content;
-    transform: scale(0.5);
-    cursor: pointer;
-    user-select: none;
-    /* transition: transform 1s; */
-  }
-
-  .cube {
-  width: 50px;
-  height: 50px;
-  position: relative;
-  transform-style: preserve-3d;
-  transform: translateZ(-300px);
-
-  /* transition: transform 1s; */
-}
-  
-  .cube__face {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    border: 2px solid black;
-    line-height: 100px;
-    font-size: 20px;
-    font-weight: bold;
-    color: white;
-    text-align: center;
-  }
-  
-  .cube__face--front {
-    background: rgba(0, 0, 255, 0.7);
-  }
-  
-  .cube__face--right {
-    background: rgba(255, 0, 0, 0.7);
-  }
-  
-  .cube__face--back {
-    background: rgba(0, 255, 255, 0.7);
-  }
-  
-  .cube__face--left {
-    background: rgba(255, 0, 255, 0.7);
-  }
-  
-  .cube__face--top {
-    background: rgba(0, 255, 0, 0.7);
-  }
-  
-  .cube__face--bottom {
-    background: rgba(255, 255, 0, 0.7);
-  }
-  
-  .cube__face--front {
-    transform: rotateY(0deg) rotateX(180deg) translateZ(-50px);
-  }
-  
-  .cube__face--right {
-    transform: rotateY(90deg) rotateX(180deg) translateZ(-50px);
-  }
-  
-  .cube__face--back {
-    transform: rotateY(180deg) rotateX(180deg) translateZ(-50px);
-  }
-  
-  .cube__face--left {
-    transform: rotateY(-90deg) rotateX(180deg) translateZ(-50px);
-  }
-  
-  .cube__face--top {
-    transform: rotateX(-90deg) rotateX(180deg) translateZ(-50px);
-  }
-  
-  .cube__face--bottom {
-    transform: rotateX(90deg) rotateX(180deg) translateZ(-50px);
-  }
-  
-  </style>
-  <div class="cubeHolder">
-    <div class="cube">
-      <div class="cube__face cube__face--front" onclick="__CAD_APP.actionService.run('StandardViewFront')"> front</div>
-      <div class="cube__face cube__face--back" onclick="__CAD_APP.actionService.run('StandardViewBack')">back</div>
-      <div class="cube__face cube__face--right" onclick="__CAD_APP.actionService.run('StandardViewRight')">right</div>
-      <div class="cube__face cube__face--left" onclick="__CAD_APP.actionService.run('StandardViewLeft')">left</div>
-      <div class="cube__face cube__face--top" onclick="__CAD_APP.actionService.run('StandardViewTop')">top</div>
-      <div class="cube__face cube__face--bottom" onclick="__CAD_APP.actionService.run('StandardViewBottom')">bottom</div>
-    </div>
-  </div>
 
   <a id="downloader" style="display: none;" ></a>
   <input id="uploader" style="display: none;" type="file">
   <div id="app" style="height: 100%;"></div>
-
-
 
   <script src="./static/index.bundle.js"></script>
 </body>
