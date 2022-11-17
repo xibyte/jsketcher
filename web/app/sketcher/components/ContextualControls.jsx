@@ -79,7 +79,7 @@ export function ContextualControls() {
         <span className={cx(ls.objectItem, getClassName(s))}>
           <span className={ls.objectIcon}><ObjectIcon object={s} /></span>
           {getObjectRole(s)}
-          <span className={cx(ls.objectTag, s.marked && ls.selected)}>{s.simpleClassName}&nbsp;<span>{s.id}</span> </span>
+          <span className={cx(ls.objectTag, s.marked && ls.selected)}>{s.simpleClassName}&nbsp;{s.id} </span>
           <span className={ls.removeButton} onClick={() => ctx.viewer.remove(s)}><Fa icon='times'/></span>
         </span>
       </div>)

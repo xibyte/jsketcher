@@ -58,10 +58,10 @@ export function SketchObjectExplorer() {
       return <span title="object is a readonly 3D feature/boundary" className={cx(ls.objectRole, ls.aux)}>B</span>
     } else if (o.role === 'construction') {
       return <span onClick={e => tweakRole(o)} title="construction object not used for 3D operations"
-                   className={cx(ls.objectRole, ls.construction)}>C</span>
+        className={cx(ls.objectRole, ls.construction)}>C</span>
     } else {
       return <span onClick={e => tweakRole(o)} title="sketch object participates in 3D operations"
-                   className={cx(ls.objectRole, ls.sketch)}>S</span>
+        className={cx(ls.objectRole, ls.sketch)}>S</span>
     }
   };
 
@@ -69,10 +69,10 @@ export function SketchObjectExplorer() {
     <div className={ls.titleBar}>Objects</div>
     <div className={ls.scrollableArea}>
       {objects.map(o => <div key={o.id} className={cx(ls.objectItem, getClassName(o))}>
-        <span className={ls.objectIcon}><ObjectIcon object={o}/></span>
+        <span className={ls.objectIcon}><ObjectIcon object={o} /></span>
         {getObjectRole(o)}
         <span onClick={e => tweakSelection(o, e.shiftKey)}
-              className={cx(ls.objectTag, o.marked && ls.selected)}>{o.simpleClassName}&nbsp;<span>{o.id}</span> </span>
+          className={cx(ls.objectTag, o.marked && ls.selected)}>{o.simpleClassName}&nbsp;{o.id} </span>
         <span className={ls.menuButton}>...</span>
       </div>)}
     </div>
