@@ -5,9 +5,16 @@ import {OperationDescriptor} from "cad/craft/operationBundle";
 import {SetLocation} from "cad/craft/e0/interact";
 import {MDatum} from "cad/model/mdatum";
 import icon from "./HOLE.svg";
+import { MFace } from 'cad/model/mface';
+import {Matrix3x4} from "math/matrix";
+import { applyRotation } from 'cad/craft/datum/rotate/rotateDatumOperation';
+import CSysObject3D from 'cad/craft/datum/csysObject';
+import { Circle } from 'cad/sketch/sketchModel';
+
+
 
 interface HoleParams {
-  datum: MDatum;
+  datum: MDatum | MFace;
   diameter: number;
   depth: number;
   counterBoreDiameter: number;
@@ -43,14 +50,10 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       created: []
     };
 
-    //let sketch = ctx.sketchStorageService.readSketch(params.sketch.id);
-    //console.log(sketch, "sketch info here");
+    let sketch = ctx.sketchStorageService.readSketch(params.datum.id).loops;
+    console.log(sketch, "sketch info here");
 
     oci.pcylinder("result", params.diameter / 2, params.depth);
-
-    // if (params.holeType == "normal") {
-    //   returnObject.created.push(occ.io.getShell("basehole"));
-    // }
 
     if (params.holeType == "counterbore") {
       oci.pcylinder("counterbore", params.counterBoreDiameter / 2, params.counterBoreDepth);
@@ -69,18 +72,28 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       oci.bopfuse("result");
     }
 
-    const location = params.datum.csys.outTransformation._normalize();
-    SetLocation("result", location.toFlatArray());
-    returnObject.created.push(occ.io.getShell("result"));
+
+    sketch.forEach((holePoint,i) =>{
+      if (holePoint instanceof Circle){
+        const NewHoleName = "hole" + i
+        oci.copy("result", NewHoleName);
+        const tr = new Matrix3x4().setTranslation(holePoint.c.x, holePoint.c.y, holePoint.c.z);
+        const location = params.datum.csys.outTransformation.combine(tr);
+        SetLocation(NewHoleName, location.toFlatArray());
+        returnObject.created.push(occ.io.getShell(NewHoleName));
+      }
+    })
+
 
     return returnObject;
 
+  
   },
   form: [
     {
       type: 'selection',
       name: 'datum',
-      capture: [EntityKind.DATUM],
+      capture: [EntityKind.DATUM, EntityKind.FACE],
       label: 'Sketch',
       multi: false,
       defaultValue: {
