@@ -1,21 +1,22 @@
-import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {ApplicationContext} from "cad/context";
-import {EntityKind} from "cad/model/entities";
-import {OperationDescriptor} from "cad/craft/operationBundle";
-import {SetLocation} from "cad/craft/e0/interact";
-import {MDatum} from "cad/model/mdatum";
+import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
+import { ApplicationContext } from "cad/context";
+import { EntityKind } from "cad/model/entities";
+import { OperationDescriptor } from "cad/craft/operationBundle";
+import { SetLocation } from "cad/craft/e0/interact";
+import { MDatum } from "cad/model/mdatum";
 import icon from "./HOLE.svg";
 import { MFace } from 'cad/model/mface';
-import {Matrix3x4} from "math/matrix";
-import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
+import { Matrix3x4 } from "math/matrix";
+import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
 import { applyRotation } from 'cad/craft/datum/rotate/rotateDatumOperation';
 import CSysObject3D from 'cad/craft/datum/csysObject';
 import { Circle } from 'cad/sketch/sketchModel';
+import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 
 
 
 interface HoleParams {
-  datum: MDatum | MFace;
+  sketch: MDatum | MFace;
   diameter: number;
   depth: number;
   counterBoreDiameter: number;
@@ -32,9 +33,8 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
   label: 'hole',
   icon,
   info: 'creates hole features',
-  path:__dirname,
+  path: __dirname,
   paramsInfo: ({
-
     diameter,
     depth,
     counterBoreDiameter,
@@ -48,84 +48,69 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
     const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    const returnObject = {
-      consumed: [],
-      created: []
-    };
-
-
-
+    //make base hole cylinder and fancy modifer geometry for countersink/counterbore 
     oci.pcylinder("result", params.diameter / 2, params.depth);
 
-    if (params.holeType == "counterbore") {
-      oci.pcylinder("counterbore", params.counterBoreDiameter / 2, params.counterBoreDepth);
-
-      oci.bop("result", "counterbore");
-      oci.bopfuse("result");
+    if (params.holeType === "counterbore") {
+      oci.pcylinder("holeModifier", params.counterBoreDiameter / 2, params.counterBoreDepth);
     }
 
-    if (params.holeType == "countersink") {
-
+    if (params.holeType === "countersink") {
       const heightFromDiameterAndAngle = (params.countersinkDiameter - params.diameter) / (Math.tan((params.countersinkAngle / 180 * Math.PI) / 2));
-
-
-      oci.pcone("countersink", params.countersinkDiameter / 2, 0, heightFromDiameterAndAngle);
-      oci.bop("result", "countersink");
-      oci.bopfuse("result");
+      oci.pcone("holeModifier", params.countersinkDiameter / 2, 0, heightFromDiameterAndAngle);
     }
 
 
-    const sketch = ctx.sketchStorageService.readSketch(params.datum.id);
-    console.log("this is the sketch data" , sketch);
+
+    //union the base hole and the hole modifier together 
+    if (params.holeType !== "normal") {
+      oci.bop("result", "holeModifier");
+      oci.bopfuse("result");
+    }
+
+    //load sketch information from face
+    const sketch = ctx.sketchStorageService.readSketch(params.sketch.id);
+    const csys =params.sketch.csys;
 
     const holeSolids = [];
 
-
-    sketch.loops.forEach((holePoint,i) =>{
-      console.log(holePoint);
-
-      if (holePoint instanceof Circle){
-        const NewHoleName = "holeC" + holePoint.id;
-        oci.copy("result", NewHoleName);
-
-        const flipped = new Matrix3x4();
-        if (params.invertDirection === false) flipped.myy = -1;
-
-
-        const tr = new Matrix3x4().setTranslation(holePoint.c.x, holePoint.c.y, holePoint.c.z);
-        const location = params.datum.csys.outTransformation.combine(tr.combine(flipped));
-        SetLocation(NewHoleName, location.toFlatArray());
-        holeSolids.push(occ.io.getShell(NewHoleName));
+    //Look for circles and make hole solids using center points
+    sketch.loops.forEach((holeSourceElement) => {
+      if (holeSourceElement instanceof Circle) {
+        holeSolids.push(makeHoleSolid(
+          {
+            id: "holeC" + holeSourceElement.id,
+            x: holeSourceElement.c.x,
+            y: holeSourceElement.c.y,
+            z: holeSourceElement.c.z,
+            csys,
+            invert: params.invertDirection
+          }, ctx));
       }
     })
 
-    sketch.points.forEach((holePoint,i) =>{
-      console.log(holePoint);
-
-
-        const NewHoleName = "holeP" + holePoint.id;
-        oci.copy("result", NewHoleName);
-
-        const flipped = new Matrix3x4();
-        if (params.invertDirection === false) flipped.myy = -1;
-
-
-        const tr = new Matrix3x4().setTranslation(holePoint.point.x, holePoint.point.y, holePoint.point.z);
-        const location = params.datum.csys.outTransformation.combine(tr.combine(flipped));
-        SetLocation(NewHoleName, location.toFlatArray());
-        holeSolids.push(occ.io.getShell(NewHoleName));
-      
+    //check for point objects and make hole solids on locations
+    sketch.points.forEach((holeSourceElement) => {
+      holeSolids.push(makeHoleSolid(
+        {
+          id: "holeP" + holeSourceElement.id,
+          x: holeSourceElement.point.x,
+          y: holeSourceElement.point.y,
+          z: holeSourceElement.point.z,
+          csys,
+          invert: params.invertDirection
+        }, ctx));
     })
-    
+
 
     return occ.utils.applyBooleanModifier(holeSolids, params.boolean);
 
-  
+
   },
   form: [
     {
       type: 'selection',
-      name: 'datum',
+      name: 'sketch',
       capture: [EntityKind.FACE],
       label: 'Sketch',
       multi: false,
@@ -202,4 +187,54 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       defaultValue: "SUBTRACT",
     }
   ],
+}
+
+
+function makeHoleSolid(holePoint, ctx) {
+  const occ = ctx.occService;
+  const oci = occ.commandInterface;
+  const NewHoleName = holePoint.id;
+  oci.copy("result", NewHoleName);
+
+  const flipped = new Matrix3x4();
+  if (holePoint.invert === false) flipped.myy = -1;
+
+
+  const tr = new Matrix3x4().setTranslation(holePoint.x, holePoint.y, holePoint.z);
+  const location = holePoint.csys.outTransformation.combine(tr.combine(flipped));
+  SetLocation(NewHoleName, location.toFlatArray());
+  return occ.io.getShell(NewHoleName);
+}
+
+
+
+
+//Face ID templates
+function productionAnalyser() {
+  return new ExpectedOrderProductionAnalyzer(
+    [
+      {
+        id: 'F:SIDE',
+        productionInfo: {
+          role: 'sweep'
+        }
+      },
+      {
+        id: 'F:BASE',
+        productionInfo: {
+          role: 'base'
+        }
+      },
+      {
+        id: 'F:LID',
+        productionInfo: {
+          role: 'lid'
+        }
+      },
+
+    ],
+    [],
+    []
+  );
+
 }
