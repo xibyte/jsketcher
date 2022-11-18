@@ -7,6 +7,7 @@ import {MDatum} from "cad/model/mdatum";
 import icon from "./HOLE.svg";
 import { MFace } from 'cad/model/mface';
 import {Matrix3x4} from "math/matrix";
+import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import { applyRotation } from 'cad/craft/datum/rotate/rotateDatumOperation';
 import CSysObject3D from 'cad/craft/datum/csysObject';
 import { Circle } from 'cad/sketch/sketchModel';
@@ -22,6 +23,8 @@ interface HoleParams {
   countersinkDiameter: number;
   countersinkAngle: number;
   holeType: string;
+  boolean: BooleanDefinition;
+  invertDirection: boolean;
 }
 
 export const HoleOperation: OperationDescriptor<HoleParams> = {
@@ -50,8 +53,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       created: []
     };
 
-    let sketch = ctx.sketchStorageService.readSketch(params.datum.id).loops;
-    console.log(sketch, "sketch info here");
+
 
     oci.pcylinder("result", params.diameter / 2, params.depth);
 
@@ -73,19 +75,32 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
     }
 
 
+    let sketch = ctx.sketchStorageService.readSketch(params.datum.id).loops;
+    console.log(sketch, "sketch info here");
+
+
+
+    const holeSolids = [];
+
+
     sketch.forEach((holePoint,i) =>{
       if (holePoint instanceof Circle){
-        const NewHoleName = "hole" + i
+        const NewHoleName = "hole" + i;
         oci.copy("result", NewHoleName);
+
+        const flipped = new Matrix3x4();
+        if (params.invertDirection === false) flipped.myy = -1;
+
+
         const tr = new Matrix3x4().setTranslation(holePoint.c.x, holePoint.c.y, holePoint.c.z);
-        const location = params.datum.csys.outTransformation.combine(tr);
+        const location = params.datum.csys.outTransformation.combine(tr.combine(flipped));
         SetLocation(NewHoleName, location.toFlatArray());
-        returnObject.created.push(occ.io.getShell(NewHoleName));
+        holeSolids.push(occ.io.getShell(NewHoleName));
       }
     })
 
 
-    return returnObject;
+    return occ.utils.applyBooleanModifier(holeSolids, params.boolean);
 
   
   },
@@ -93,7 +108,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
     {
       type: 'selection',
       name: 'datum',
-      capture: [EntityKind.DATUM, EntityKind.FACE],
+      capture: [EntityKind.FACE],
       label: 'Sketch',
       multi: false,
       defaultValue: {
@@ -152,5 +167,21 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       defaultValue: 90,
       label: '⌵ Angle'
     },
+
+    {
+      name: "invertDirection",
+      label: 'Invert Direction',
+      type: "checkbox",
+      defaultValue: false
+    },
+
+    {
+      type: 'boolean',
+      name: 'boolean',
+      label: 'boolean',
+      optional: true,
+      simplify: true,
+      defaultValue: "SUBTRACT",
+    }
   ],
 }
