@@ -75,15 +75,15 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
     }
 
 
-    let sketch = ctx.sketchStorageService.readSketch(params.datum.id).loops;
-    console.log(sketch, "sketch info here");
-
-
+    const sketch = ctx.sketchStorageService.readSketch(params.datum.id);
+    console.log("this is the sketch data" , sketch);
 
     const holeSolids = [];
 
 
-    sketch.forEach((holePoint,i) =>{
+    sketch.loops.forEach((holePoint,i) =>{
+      console.log(holePoint);
+
       if (holePoint instanceof Circle){
         const NewHoleName = "hole" + i;
         oci.copy("result", NewHoleName);
@@ -99,6 +99,24 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       }
     })
 
+    sketch.points.forEach((holePoint,i) =>{
+      console.log(holePoint);
+
+
+        const NewHoleName = "hole" + i;
+        oci.copy("result", NewHoleName);
+
+        const flipped = new Matrix3x4();
+        if (params.invertDirection === false) flipped.myy = -1;
+
+
+        const tr = new Matrix3x4().setTranslation(holePoint.point.x, holePoint.point.y, holePoint.point.z);
+        const location = params.datum.csys.outTransformation.combine(tr.combine(flipped));
+        SetLocation(NewHoleName, location.toFlatArray());
+        holeSolids.push(occ.io.getShell(NewHoleName));
+      
+    })
+    
 
     return occ.utils.applyBooleanModifier(holeSolids, params.boolean);
 
