@@ -20,12 +20,12 @@ export function ViewCube() {
     <div className={ls.cube} style={{
       transform: `translateZ(-300px) ${cssMatrix}`
     }}>
-      <div className={cx(ls.face, ls.front)} onClick={() => context.actionService.run('StandardViewFront')}> front</div>
-      <div className={cx(ls.face, ls.back)} onClick={() => context.actionService.run('StandardViewBack')}>back</div>
-      <div className={cx(ls.face, ls.right)} onClick={() => context.actionService.run('StandardViewRight')}>right</div>
-      <div className={cx(ls.face, ls.left)} onClick={() => context.actionService.run('StandardViewLeft')}>left</div>
-      <div className={cx(ls.face, ls.top)} onClick={() => context.actionService.run('StandardViewTop')}>top</div>
-      <div className={cx(ls.face, ls.bottom)} onClick={() => context.actionService.run('StandardViewBottom')}>bottom</div>
+      <div className={cx(ls.face, ls.front)} onClick={() => context.actionService.run('StandardViewFront')}>Front</div>
+      <div className={cx(ls.face, ls.back)} onClick={() => context.actionService.run('StandardViewBack')}>Back</div>
+      <div className={cx(ls.face, ls.right)} onClick={() => context.actionService.run('StandardViewRight')}>Right</div>
+      <div className={cx(ls.face, ls.left)} onClick={() => context.actionService.run('StandardViewLeft')}>Left</div>
+      <div className={cx(ls.face, ls.top)} onClick={() => context.actionService.run('StandardViewTop')}>Top</div>
+      <div className={cx(ls.face, ls.bottom)} onClick={() => context.actionService.run('StandardViewBottom')}>Bottom</div>
     </div>
   </div>
 
