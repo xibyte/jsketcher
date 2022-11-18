@@ -85,7 +85,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       console.log(holePoint);
 
       if (holePoint instanceof Circle){
-        const NewHoleName = "hole" + i;
+        const NewHoleName = "holeC" + holePoint.id;
         oci.copy("result", NewHoleName);
 
         const flipped = new Matrix3x4();
@@ -103,7 +103,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       console.log(holePoint);
 
 
-        const NewHoleName = "hole" + i;
+        const NewHoleName = "holeP" + holePoint.id;
         oci.copy("result", NewHoleName);
 
         const flipped = new Matrix3x4();
