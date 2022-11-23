@@ -1,17 +1,49 @@
+import { ArcEntity, CircleEntity, DxfGlobalObject, EllipseEntity, LineEntity, Parser, PointEntity } from '@dxfjs/parser';
 import { Colors, DLine, DxfWriter, point3d, SplineArgs_t, SplineFlags, Units, vec3_t } from '@tarikjabiri/dxf';
-import { Arc } from './shapes/arc';
+import { SketchFormat_V3 } from './io';
+import { Arc, SketchArcSerializationData } from './shapes/arc';
 import { BezierCurve } from './shapes/bezier-curve';
 import { Circle } from './shapes/circle';
 import { AngleBetweenDimension, DiameterDimension, HDimension, LinearDimension, VDimension } from './shapes/dim';
 import { Ellipse } from './shapes/ellipse';
 import { Label } from './shapes/label';
-import { EndPoint } from './shapes/point';
-import { Segment } from './shapes/segment';
-import { SketchObject } from './shapes/sketch-object';
+import { EndPoint, SketchPointSerializationData } from './shapes/point';
+import { Segment, SketchSegmentSerializationData } from './shapes/segment';
+import { SketchObject, SketchObjectSerializationData } from './shapes/sketch-object';
 import { Layer } from './viewer2d';
 
-function deg2rad(a: number) {
-    return (a * Math.PI) / 180;
+interface IPoint {
+  x: number,
+  y: number
+}
+
+interface SketchCircleSerializationData extends SketchObjectSerializationData {
+  c: SketchPointSerializationData;
+  r: number
+}
+
+interface SketchEllipseSerializationData extends SketchObjectSerializationData {
+  c: SketchPointSerializationData;
+  rx: number;
+  ry: number;
+  rot: number;
+}
+
+const {PI, cos, sin, atan2} = Math
+
+export function deg(angle: number): number {
+  return (angle * 180) / PI
+}
+
+export function rad(angle: number): number {
+  return (angle * PI) / 180
+}
+
+function polar(origin: IPoint, angle: number, radius: number): IPoint {
+  return {
+    x: origin.x + radius * cos(angle),
+    y: origin.y + radius * sin(angle)
+  }
 }
 
 export class DxfWriterAdapter {
@@ -54,8 +86,8 @@ export class DxfWriterAdapter {
     this.writer.addArc(
       point3d(shape.c.x, shape.c.y),
       shape.r.get(),
-      deg2rad(shape.getStartAngle()),
-      deg2rad(shape.getEndAngle())
+      deg(shape.getStartAngle()),
+      deg(shape.getEndAngle())
     );
   }
 
@@ -149,8 +181,8 @@ export class DxfWriterAdapter {
   export(layers: Layer<SketchObject>[]) {
     layers.forEach(layer => {
       // this will prevent addLayer from throwing.
-      if (!this.writer.tables.layerTable.exist(layer.name))
-        this.writer.addLayer(layer.name, Colors.Black, 'Continuous');
+      if (!this.writer.layer(layer.name))
+        this.writer.addLayer(layer.name, Colors.Black);
       this.writer.setCurrentLayerName(layer.name);
 
       layer.objects.forEach(shape => {
@@ -172,7 +204,83 @@ export class DxfWriterAdapter {
 
   stringify(): string {
     // reset the current layer to 0, because its preserved in the dxf.
-    this.writer.setCurrentLayerName('0');
+    this.writer.setZeroLayerAsCurrent();
     return this.writer.stringify();
+  }
+}
+
+export class DxfParserAdapter {
+  private static _seed = 0; // Used as ids for the shapes.
+
+  private _createSketchObject(type: string, data: object) {
+    return {
+      id: (DxfParserAdapter._seed++).toString(),
+      type, role: null, stage: 0, data
+    }
+  }
+
+  private _createSketchFormat(dxfObject: DxfGlobalObject): SketchFormat_V3 {
+    DxfParserAdapter._seed = 0;
+    const sketch: SketchFormat_V3 = {
+      version: 3, objects: [], dimensions: [], labels: [],
+      stages: [], constants: {}, metadata: {}
+    };
+
+    const {arcs, circles, ellipses, lines, points} = dxfObject.entities
+
+    arcs.forEach(a => sketch.objects.push(this._arc(a)));
+    circles.forEach(c => sketch.objects.push(this._circle(c)));
+    ellipses.forEach(e => sketch.objects.push(this._ellipse(e)));
+    lines.forEach(l => sketch.objects.push(this._segment(l)));
+    points.forEach(p => sketch.objects.push(this._point(p)));
+
+    return sketch;
+  }
+
+  private _arc(a: ArcEntity) {
+    const center: IPoint = {x: a.centerX, y: a.centerY};
+    const data: SketchArcSerializationData =  {
+      a: polar(center, rad(a.startAngle), a.radius),
+      b: polar(center, rad(a.endAngle), a.radius),
+      c: center,
+    };
+    return this._createSketchObject(Arc.prototype.TYPE, data);
+  }
+
+  private _circle(c: CircleEntity) {
+    const center: IPoint = {x: c.centerX, y: c.centerY};
+    const data: SketchCircleSerializationData = { c: center, r: c.radius };
+    return this._createSketchObject(Circle.prototype.TYPE, data);
+  }
+
+  private _ellipse(e: EllipseEntity) {
+    const c: IPoint = {x: e.centerX, y: e.centerY};
+    const rot = atan2(e.majorAxisY, e.majorAxisX);
+    const rx = e.majorAxisX / cos(rot);
+    const ry = e.ratioOfMinorAxisToMajorAxis * rx;
+    const data: SketchEllipseSerializationData = { c, rx, ry, rot };
+    return this._createSketchObject(Ellipse.prototype.TYPE, data);
+  }
+
+  private _segment(l: LineEntity) {
+    const data: SketchSegmentSerializationData = {
+      a: {x: l.startX, y: l.startY},
+      b: {x: l.endX, y: l.endY}
+    };
+    return this._createSketchObject(Segment.prototype.TYPE, data);
+  }
+
+  private _point(p: PointEntity) {
+    const data: SketchPointSerializationData = { x: p.x, y: p.y };
+    return this._createSketchObject(EndPoint.prototype.TYPE, data);
+  }
+
+  parse(dxfString: string): Promise<SketchFormat_V3> {
+    return new Promise((resolve, reject) => {
+      new Parser()
+        .parse(dxfString)
+        .then(dxfObject =>  resolve(this._createSketchFormat(dxfObject)))
+        .catch(error => reject(error));
+    });
   }
 }
