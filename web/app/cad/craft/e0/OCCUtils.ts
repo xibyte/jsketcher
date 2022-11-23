@@ -31,6 +31,7 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
 
   function sketchToFaces(sketch: SketchGeom, csys: CSys): FaceRef[] {
     const occ = ctx.occService;
+    
     const wires = occ.io.sketchLoader.pushSketchAsWires(sketch.contours, csys);
     return wiresToFaces(wires);
   }
@@ -107,6 +108,7 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
       }
       oci.bfuzzyvalue(0.0001);
       oci.bcheckinverted(1);
+      oci.buseobb(1);
       oci.bfillds();
       oci.bapibop("BooleanResult", booleanKindToOCCBopType(kind));
 
@@ -123,17 +125,15 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
 
       // }
 
-      oci.fixshape("BooleanResultResult", "BooleanResult");
+      oci.fixshape("BooleanResult", "BooleanResult");
 
       targets.forEach(t => consumed.push(t));
       tools.forEach(t => consumed.push(t));
 
-      const booleanProdAnalyzer = analyzerCreator ? analyzerCreator(targets, tools)
-        : new FromMObjectProductionAnalyzer([...targets, ...tools], mustAdvance);
 
       return {
         consumed,
-        created: [occ.io.getShell("BooleanResultResult", booleanProdAnalyzer)]
+        created: [occ.io.getShell("BooleanResult")]
       }
     }
   }
