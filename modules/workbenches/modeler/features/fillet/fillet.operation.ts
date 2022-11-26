@@ -12,14 +12,14 @@ import icon from "./FILLET.svg";
 interface FilletParams {
   edges: MEdge[] | MBrepFace[],
   size: number
-  opperationType: 'Champher'|'Fillet'
+  opperationType: 'Chamfer'|'Fillet'
 }
 
 export const FilletOperation: OperationDescriptor<any> = {
   id: 'FILLET_TOOL',
-  label: 'Fillet/Chapher',
+  label: 'Fillet/Chamfer',
   icon,
-  info: 'Fillet/Champher',
+  info: 'Fillet/Chamfer',
   path:__dirname,
   paramsInfo: ({size, opperationType,}) => `(${r(size)} ${r(opperationType)}})`,
   run: (params: FilletParams, ctx: ApplicationContext) => {
@@ -50,10 +50,10 @@ export const FilletOperation: OperationDescriptor<any> = {
       }
 
       if (params.opperationType == "Fillet") {
-        //order of parameters is diferent between fillet and champher
+        //order of parameters is diferent between fillet and Chamfer
         shellArgs.push(params.size, edge);
-      } else if (params.opperationType == "Champher") {
-        //order of parameters is diferent between fillet and champher
+      } else if (params.opperationType == "Chamfer") {
+        //order of parameters is diferent between fillet and Chamfer
         shellArgs.push(edge, params.size);
       } else {
         throw 'unsupported';
@@ -72,7 +72,7 @@ export const FilletOperation: OperationDescriptor<any> = {
       const newShellName = shellToOpperateOn.id+'/MOD';
       if (params.opperationType == "Fillet") {
         oci.blend(newShellName, shellToOpperateOn, ...shellArgs);
-      } else if (params.opperationType == "Champher") {
+      } else if (params.opperationType == "Chamfer") {
         oci.chamf(newShellName, shellToOpperateOn, ...shellArgs);
       } else {
         throw 'unsupported';
@@ -124,7 +124,7 @@ export const FilletOperation: OperationDescriptor<any> = {
       style: "dropdown",
       label: 'opperationType',
       name: 'opperationType',
-      values: ["Fillet", "Champher"],
+      values: ["Fillet", "Chamfer"],
       defaultValue: "Fillet",
     },
     {
