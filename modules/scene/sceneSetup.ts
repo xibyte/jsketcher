@@ -34,7 +34,7 @@ export default class SceneSetUp {
   trackballControls: CADTrackballControls;
   viewportSizeUpdate$ = stream();
   sceneRendered$: Emitter<any> = stream();
-  viewCube:{};
+  viewCube;
 
   renderRequested: boolean;
 

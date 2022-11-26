@@ -34,7 +34,7 @@ export function ViewCube() {
 
 function getCameraCSSMatrix(matrix) {
 
-  var elements = matrix.elements;
+  const elements = matrix.elements;
 
   return 'matrix3d(' +
     epsilon(elements[0]) + ',' +
