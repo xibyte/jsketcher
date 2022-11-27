@@ -12,14 +12,12 @@ export class SketchGeom {
 
   connections: SketchPrimitive[];
   loops: SketchPrimitive[];
-  constructionSegments: SketchPrimitive[];
   _contours: Contour[];
-  points: [];
+  points: any[];
 
   constructor() {
     this.connections = [];
     this.loops = [];
-    this.constructionSegments = [];
     this._contours = null;
     this.points = [];
   }
@@ -36,11 +34,11 @@ export class SketchGeom {
   }
   
   getAllObjects() {
-    return [...this.connections, ...this.loops, ...this.constructionSegments];
+    return [...this.connections, ...this.loops];
   }
 }
 
-export function ReadSketch(sketch, sketchId, readConstructionSegments) {
+export function ReadSketch(sketch, sketchId) {
   const getID = obj => sketchObjectGlobalId(sketchId, obj.id);
   const out = new SketchGeom();
 
@@ -66,20 +64,21 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
   }
   for (const obj of sketch.objects) {
     const isConstructionObject = obj.role === 'construction';
-    if (isConstructionObject && !readConstructionSegments) continue;
-    // if (isConstructionObject && obj._class !== 'TCAD.TWO.Segment') continue;
 
+    // if (isConstructionObject && obj._class !== 'TCAD.TWO.Segment') continue;
     const data = obj.data;
+    let createdObj: SketchPrimitive;
     if (obj.type === 'Segment') {
       const segA = ReadSketchPoint(data.a);
       const segB = ReadSketchPoint(data.b);
-      const pushOn = isConstructionObject ? out.constructionSegments : out.connections;
-      pushOn.push(new sm.Segment(getID(obj), segA, segB));
+      createdObj = new sm.Segment(getID(obj), segA, segB);
+      out.connections.push(createdObj);
     } else if (obj.type === 'Arc') {
       const arcA = ReadSketchPoint(data.a);
       const arcB = ReadSketchPoint(data.b);
       const arcCenter = ReadSketchPoint(data.c);
-      out.connections.push(new sm.Arc(getID(obj), arcA, arcB, arcCenter));
+      createdObj = new sm.Arc(getID(obj), arcA, arcB, arcCenter);
+      out.connections.push(createdObj);
     } else if (obj.type === 'EllipticalArc') {
       if (data.ep1) {
         continue;
@@ -90,16 +89,19 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
       const rot = readSketchFloat(data.rot);
       const a = ReadSketchPoint(data.a);
       const b = ReadSketchPoint(data.b);
-      out.loops.push(new sm.EllipticalArc(getID(obj), c, rx, ry, rot, a, b));
+      createdObj = new sm.EllipticalArc(getID(obj), c, rx, ry, rot, a, b);
+      out.loops.push(createdObj);
     } else if (obj.type === 'BezierCurve') {
       const a = ReadSketchPoint(data.cp1);
       const b = ReadSketchPoint(data.cp4);
       const cp1 = ReadSketchPoint(data.cp2);
       const cp2 = ReadSketchPoint(data.cp3);
-      out.connections.push(new sm.BezierCurve(getID(obj), a, b, cp1, cp2));
+      createdObj = new sm.BezierCurve(getID(obj), a, b, cp1, cp2);
+      out.connections.push(createdObj);
     } else if (obj.type === 'Circle') {
       const circleCenter = ReadSketchPoint(data.c);
-      out.loops.push(new sm.Circle(getID(obj), circleCenter, readSketchFloat(data.r)));
+      createdObj = new sm.Circle(getID(obj), circleCenter, readSketchFloat(data.r));
+      out.loops.push(createdObj);
     } else if (obj.type === 'Ellipse') {
       if (data.ep1) {
         continue;
@@ -108,8 +110,9 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
       const rx = readSketchFloat(data.rx);
       const ry = readSketchFloat(data.ry);
       const rot = readSketchFloat(data.rot);
-      out.loops.push(new sm.Ellipse(getID(obj), c, rx, ry, rot));
-    }else if (obj.type === 'Point') {
+      createdObj = new sm.Ellipse(getID(obj), c, rx, ry, rot);
+      out.loops.push(createdObj);
+    } else if (obj.type === 'Point') {
       if (data.ep1) {
         continue;
       }
@@ -120,19 +123,23 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
       const z = 0;
       
       //out.points.push(ReadSketchPoint(data));
-      const point = 
-      out.points.push({
+      createdObj = {
         id:getID(obj),
         point:{x,y,z}
-      })
+      } as any;
+      out.points.push(createdObj);
     }
+    createdObj.construction = isConstructionObject;
   }
   return out;
 }
 
 export function FetchContours(geom): Contour[] {
-  const contours = findClosedContours(geom.connections);
+  const contours = findClosedContours(geom.connections.filter(c => !c.construction));
   for (const loop of geom.loops) {
+    if (loop.construction) {
+      continue;
+    }
     const contour = new sm.Contour();
     contour.add(loop);
     contours.push(contour);

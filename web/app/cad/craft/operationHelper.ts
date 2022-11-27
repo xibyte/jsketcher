@@ -18,7 +18,6 @@ export function operationIconToActionIcon(icon, appearance) {
   } else {
     appearance.icon = resolveIcon(icon);
   }
-  console.log(icon, appearance)
 }
 
 export function resolveAppearance<R>(op: Operation<R>, params: R) {

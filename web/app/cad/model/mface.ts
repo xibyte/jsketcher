@@ -111,14 +111,12 @@ export class MFace extends MObject {
     }
 
     const addSketchObjects = sketchObjects => {
-      const isConstruction = sketchObjects === sketch.constructionSegments;
       for (const sketchObject of sketchObjects) {
         const mSketchObject = new MSketchObject(this, sketchObject);
-        mSketchObject.construction = isConstruction;
+        mSketchObject.construction = sketchObject.construction;
         this.sketchObjects.push(mSketchObject);
       }
     };
-    addSketchObjects(sketch.constructionSegments);
     addSketchObjects(sketch.connections);
     addSketchObjects(sketch.loops);
 

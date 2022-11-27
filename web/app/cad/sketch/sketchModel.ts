@@ -15,6 +15,7 @@ export class SketchPrimitive {
 
   id: string;
   inverted: boolean;
+  construction: boolean = false;
 
   constructor(id) {
     this.id = id;
