@@ -130,10 +130,12 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
       targets.forEach(t => consumed.push(t));
       tools.forEach(t => consumed.push(t));
 
+      const booleanProdAnalyzer = analyzerCreator ? analyzerCreator(targets, tools)
+        : new FromMObjectProductionAnalyzer([...targets, ...tools], mustAdvance);
 
       return {
         consumed,
-        created: [occ.io.getShell("BooleanResult")]
+        created: [occ.io.getShell("BooleanResult", booleanProdAnalyzer)]
       }
     }
   }
