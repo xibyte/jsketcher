@@ -37,7 +37,7 @@ export function activate(ctx: ApplicationContext) {
     }
 
     try {
-      return ReadSketch(JSON.parse(savedSketch), sketchId, true);
+      return ReadSketch(JSON.parse(savedSketch), sketchId);
     } catch (e) {
       console.error(e);
       return null;
