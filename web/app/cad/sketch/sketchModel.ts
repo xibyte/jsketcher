@@ -125,6 +125,45 @@ export class Segment extends SketchPrimitive {
   }
 }
 
+export class SketchPoint extends SketchPrimitive {
+
+  pt: Vector;
+
+  constructor(id, pt) {
+    super(id);
+    this.pt = pt;
+  }
+
+  tessellate(resolution) {
+    return [];
+  }
+
+  toVerbNurbs(tr) {
+    const a = tr(this.pt).data();
+    return new verb.geom.Line(a, a);
+  }
+
+  toGenericForm() {
+    return [this.pt];
+  }
+
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+    throw 'unsupported';
+  }
+
+  tangentAtStart(): Vector {
+    throw 'unsupported';
+  }
+
+  tangentAtEnd(): Vector {
+    throw 'unsupported';
+  }
+
+  massiveness() {
+    return 0;
+  }
+}
+
 export class Arc extends SketchPrimitive {
 
   a: Vector;

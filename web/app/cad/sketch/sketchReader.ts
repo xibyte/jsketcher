@@ -121,12 +121,8 @@ export function ReadSketch(sketch, sketchId) {
       const x = readSketchFloat(data.x);
       const y = readSketchFloat(data.y);
       const z = 0;
-      
-      //out.points.push(ReadSketchPoint(data));
-      createdObj = {
-        id:getID(obj),
-        point:{x,y,z}
-      } as any;
+
+      createdObj = new sm.SketchPoint(getID(obj), new Vector(x,y,z));
       out.points.push(createdObj);
     }
     createdObj.construction = isConstructionObject;

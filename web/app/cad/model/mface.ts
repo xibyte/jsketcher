@@ -119,6 +119,7 @@ export class MFace extends MObject {
     };
     addSketchObjects(sketch.connections);
     addSketchObjects(sketch.loops);
+    addSketchObjects(sketch.points);
 
 
     const index = new Map();

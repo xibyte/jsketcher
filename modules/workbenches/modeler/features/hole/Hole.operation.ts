@@ -94,9 +94,9 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
       holeSolids.push(makeHoleSolid(
         {
           id: "holeP" + holeSourceElement.id,
-          x: holeSourceElement.point.x,
-          y: holeSourceElement.point.y,
-          z: holeSourceElement.point.z,
+          x: holeSourceElement.pt.x,
+          y: holeSourceElement.pt.y,
+          z: holeSourceElement.pt.z,
           csys,
           invert: params.invertDirection
         }, ctx));
