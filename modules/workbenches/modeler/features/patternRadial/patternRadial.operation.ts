@@ -69,7 +69,7 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
       type: 'selection',
       name: 'inputBodies',
       capture: [EntityKind.SHELL],
-      label: 'body',
+      label: 'Bodies',
       multi: true,
       defaultValue: {
         usePreselection: false,
@@ -99,7 +99,7 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
     {
       type: 'axis',
       name: 'axis',
-      label: 'axis',
+      label: 'Axis',
       optional: false
     },
   ],

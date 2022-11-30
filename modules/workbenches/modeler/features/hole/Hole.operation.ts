@@ -122,7 +122,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
 
     {
       type: 'choice',
-      label: 'HoleType',
+      label: 'Hole Type',
       name: "holeType",
       style: "dropdown",
       defaultValue: "counterbore",
@@ -181,7 +181,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
       simplify: true,
       defaultValue: "SUBTRACT",

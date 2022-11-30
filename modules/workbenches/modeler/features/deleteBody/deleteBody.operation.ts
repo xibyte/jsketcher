@@ -32,7 +32,7 @@ export const DeleteBodyOperation: OperationDescriptor<DeleteBodyParams> = {
       type: 'selection',
       name: 'tools',
       capture: [EntityKind.SHELL],
-      label: 'Tools',
+      label: 'Bodies',
       optional: false,
       multi: true,
       defaultValue: {

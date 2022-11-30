@@ -46,7 +46,7 @@ export const DefeatureRemoveFaceOperation: OperationDescriptor<DefeatureRemoveFa
       type: 'selection',
       name: 'tools',
       capture: [EntityKind.FACE],
-      label: 'Tools',
+      label: 'Faces',
       optional: false,
       multi: true,
       defaultValue: {

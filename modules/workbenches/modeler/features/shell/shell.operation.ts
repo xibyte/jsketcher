@@ -56,7 +56,7 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
       type: 'selection',
       name: 'faces',
       capture: [EntityKind.FACE],
-      label: 'faces',
+      label: 'Faces',
       multi: true,
       defaultValue: {
         usePreselection: true,
@@ -66,7 +66,7 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
     {
       type: 'number',
       name: 'thickness',
-      label: 'thickness',
+      label: 'Thickness',
       defaultValue: 5,
     },
   ],

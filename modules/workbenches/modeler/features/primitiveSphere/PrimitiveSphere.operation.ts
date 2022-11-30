@@ -33,7 +33,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
       type: 'selection',
       name: 'locations',
       capture: [EntityKind.DATUM],
-      label: 'locations',
+      label: 'Locations',
       multi: false,
       optional: true,
       defaultValue: {
@@ -45,7 +45,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
       simplify: true,
     }

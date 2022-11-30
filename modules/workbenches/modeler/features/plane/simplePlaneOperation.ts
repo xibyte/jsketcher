@@ -71,7 +71,7 @@ export default {
   form: [
     {
       type: 'choice',
-      label: 'orientation',
+      label: 'Orientation',
       name: 'orientation',
       style: 'radio',
       values: ['XY', 'XZ', 'ZY'],
@@ -81,7 +81,7 @@ export default {
       type: 'selection',
       name: 'datum',
       capture: [EntityKind.DATUM, EntityKind.FACE],
-      label: 'datum',
+      label: 'Datum',
       multi: false,
       optional: true,
       defaultValue: {
@@ -91,7 +91,7 @@ export default {
     },
     {
       type: 'number',
-      label: 'depth',
+      label: 'Offset Distance',
       name: 'depth',
       defaultValue: 0,
     },

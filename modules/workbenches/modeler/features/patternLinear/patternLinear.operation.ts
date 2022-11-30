@@ -65,7 +65,7 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
       type: 'selection',
       name: 'inputBodies',
       capture: [EntityKind.SHELL],
-      label: 'body',
+      label: 'Bodies',
       multi: true,
       defaultValue: {
         usePreselection: false,
@@ -95,7 +95,7 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
     {
       type: 'direction',
       name: 'direction',
-      label: 'direction',
+      label: 'Direction',
       optional: true
     },
   ],

@@ -112,7 +112,7 @@ export const FilletOperation: OperationDescriptor<any> = {
       type: 'selection',
       name: 'edges',
       capture: [EntityKind.EDGE,EntityKind.FACE],
-      label: 'edges',
+      label: 'Edges',
       multi: true,
       defaultValue: {
         usePreselection: true,
@@ -122,14 +122,14 @@ export const FilletOperation: OperationDescriptor<any> = {
     {
       type: 'choice',
       style: "dropdown",
-      label: 'opperationType',
+      label: 'Opperation Type',
       name: 'opperationType',
       values: ["Fillet", "Chamfer"],
       defaultValue: "Fillet",
     },
     {
       type: 'number',
-      label: 'size',
+      label: 'Size',
       name: 'size',
       defaultValue: 5,
     },

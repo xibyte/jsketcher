@@ -90,8 +90,19 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
   form: [
     {
+      type: 'selection',
+      name: 'face',
+      capture: [EntityKind.FACE],
+      label: 'Face',
+      multi: false,
+      defaultValue: {
+        usePreselection: true,
+        preselectionIndex: 0
+      },
+    },
+    {
       type: 'number',
-      label: 'length',
+      label: 'Length',
       name: 'length',
       defaultValue: 50,
     },
@@ -102,26 +113,15 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       defaultValue: false,
     },
     {
-      type: 'selection',
-      name: 'face',
-      capture: [EntityKind.FACE],
-      label: 'face',
-      multi: false,
-      defaultValue: {
-        usePreselection: true,
-        preselectionIndex: 0
-      },
-    },
-    {
       type: 'direction',
       name: 'direction',
-      label: 'direction',
+      label: 'Direction',
       optional: true
     },
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
     }
 

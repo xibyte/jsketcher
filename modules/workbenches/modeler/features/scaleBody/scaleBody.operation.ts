@@ -41,7 +41,7 @@ export const ScaleOperation: OperationDescriptor<scaleParams> = {
       type: 'selection',
       name: 'shells',
       capture: [EntityKind.SHELL],
-      label: 'shells',
+      label: 'Shells',
       multi: true,
       defaultValue: {
         usePreselection: true,
@@ -51,7 +51,7 @@ export const ScaleOperation: OperationDescriptor<scaleParams> = {
     {
       type: 'number',
       name: 'distance',
-      label: 'distance',
+      label: 'Scale Factor',
       defaultValue: 5,
     },
   ],

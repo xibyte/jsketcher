@@ -46,7 +46,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
       type: 'selection',
       name: 'locations',
       capture: [EntityKind.DATUM],
-      label: 'locations',
+      label: 'Location',
       multi: false,
       optional: true,
       defaultValue: {
@@ -58,7 +58,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
       simplify: true,
     }

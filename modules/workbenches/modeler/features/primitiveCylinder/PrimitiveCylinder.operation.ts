@@ -39,7 +39,7 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
       type: 'selection',
       name: 'locations',
       capture: [EntityKind.DATUM],
-      label: 'locations',
+      label: 'Locations',
       multi: false,
       optional: true,
       defaultValue: {
@@ -51,7 +51,7 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
       simplify: true,
     }

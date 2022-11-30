@@ -46,7 +46,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
       type: 'selection',
       name: 'locations',
       capture: [EntityKind.DATUM],
-      label: 'locations',
+      label: 'Locations',
       multi: false,
       optional: true,
       defaultValue: {
@@ -58,7 +58,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
       simplify: true,
     }

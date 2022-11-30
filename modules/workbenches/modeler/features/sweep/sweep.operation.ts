@@ -51,7 +51,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
       type: 'selection',
       name: 'profile',
       capture: [EntityKind.LOOP],
-      label: 'profile',
+      label: 'Profile',
       multi: false,
       defaultValue: {
         usePreselection: true,
@@ -83,7 +83,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
       simplify: true,
     }

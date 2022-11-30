@@ -91,7 +91,7 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
       simplify: true,
     }

@@ -45,7 +45,7 @@ export const MoveBodyOperation: OperationDescriptor<MoveBodyParams> = {
       type: 'selection',
       name: 'datum',
       capture: [EntityKind.DATUM],
-      label: 'Sketch',
+      label: 'Datum',
       multi: false,
       defaultValue: {
         usePreselection: true,
