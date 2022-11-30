@@ -9,14 +9,14 @@ import { EndPoint } from './shapes/point';
 import { Segment } from './shapes/segment';
 import { SketchObject } from './shapes/sketch-object';
 import { Layer } from './viewer2d';
-
+import { AutoCadColorConvertor } from './tools/autoCadColorConvertor';
 function deg2rad(a: number) {
-    return (a * Math.PI) / 180;
+  return (a * Math.PI) / 180;
 }
 
 export class DxfWriterAdapter {
   writer: DxfWriter;
-
+  colorConvertor = new AutoCadColorConvertor();
   constructor() {
     this.writer = new DxfWriter();
     this.writer.setUnits(Units.Millimeters);
@@ -141,16 +141,20 @@ export class DxfWriterAdapter {
     const alphaf = Math.acos(dyf / df);
     const alphas = Math.acos(dys / ds);
     const alpham = Math.abs(alphaf - alphas) / 2 + (alphaf > alphas ? alphas : alphaf);
-    const xm = c.x + offset*Math.cos(alpham)
-    const ym = c.y + offset*Math.sin(alpham)
+    const xm = c.x + offset * Math.cos(alpham)
+    const ym = c.y + offset * Math.sin(alpham)
     this.writer.addAngularLinesDim(f, s, point3d(xm, ym));
   }
 
   export(layers: Layer<SketchObject>[]) {
     layers.forEach(layer => {
       // this will prevent addLayer from throwing.
-      if (!this.writer.tables.layerTable.exist(layer.name))
-        this.writer.addLayer(layer.name, Colors.Black, 'Continuous');
+      if (!this.writer.tables.layerTable.exist(layer.name)) {
+        const layerColorHex = layer.style?.strokeStyle;
+        const autoCadColorIndex = this.colorConvertor.getByHEX(layerColorHex);
+        const autoCadColorCalculate = autoCadColorIndex?.aci ? autoCadColorIndex.aci : Colors.Black;
+        this.writer.addLayer(layer.name, autoCadColorCalculate, 'Continuous');
+      }
       this.writer.setCurrentLayerName(layer.name);
 
       layer.objects.forEach(shape => {
