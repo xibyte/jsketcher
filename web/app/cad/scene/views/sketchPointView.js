@@ -3,13 +3,11 @@ import {VertexObject} from "cad/scene/views/vertexView";
 
 export class SketchPointView extends View {
 
-  constructor(ctx, sketchPoint) {
+  constructor(ctx, sketchPoint, sketchTr) {
     super(ctx, sketchPoint);
     this.rootGroup = new VertexObject(ctx.viewer, 15, 100, () => this.rootGroup.position, true, 0x0000FF);
 
-    this.rootGroup.position.x = sketchPoint.sketchPrimitive.pt.x;
-    this.rootGroup.position.y = sketchPoint.sketchPrimitive.pt.y;
-    this.rootGroup.position.z = sketchPoint.sketchPrimitive.pt.z;
+    sketchTr.__apply(sketchPoint.sketchPrimitive.pt, this.rootGroup.position);
   }
 
   dispose() {
