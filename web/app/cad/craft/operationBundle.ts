@@ -31,6 +31,13 @@ export function activate(ctx: ApplicationContext) {
       form = loadedForm;
     }
 
+    if (!schema.featureId) {
+      (schema as any).featureId = {
+        type: Types.number,
+        optional: false,
+      }
+    }
+
     if (!label) {
       label = id;
     }
