@@ -4,9 +4,7 @@ import {ApplicationContext} from "cad/context";
 
 export default function initializeBySchema(schema: OperationSchema, context: ApplicationContext) {
   const fields = Object.keys(schema);
-  const obj = {
-    featureId: context.projectService.counterGenerator.generateFeatureId()
-  };
+  const obj = {};
   for (const field of fields) {
     let val = undefined;
     const md = schema[field] as SchemaField;
