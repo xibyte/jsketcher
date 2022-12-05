@@ -140,8 +140,8 @@
     "webpack-dev-server": "^4.10.0"
   },
   "dependencies": {
-    "@dxfjs/parser": "^0.0.2",
-    "@tarikjabiri/dxf": "^2.6.1",
+    "@dxfjs/parser": "^0.0.3",
+    "@tarikjabiri/dxf": "^2.6.2",
     "@types/three": "^0.143.0",
     "browser-xml2js": "^0.4.19",
     "classnames": "2.2.5",
