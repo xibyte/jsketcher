@@ -223,7 +223,7 @@ export class DxfParserAdapter {
     DxfParserAdapter._seed = 0;
     const sketch: SketchFormat_V3 = {
       version: 3, objects: [], dimensions: [], labels: [],
-      stages: [], constants: {}, metadata: {}
+      stages: [], constants: null, metadata: {}
     };
 
     const {arcs, circles, ellipses, lines, points} = dxfObject.entities
