@@ -75,7 +75,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
     const sphere = occ.io.getShell("sphere", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:SPHERE',
+          id: params.featureId + 'F:SPHERE',
           productionInfo: {
             role: 'sweep'
           }

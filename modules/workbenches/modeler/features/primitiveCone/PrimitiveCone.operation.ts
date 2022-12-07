@@ -88,7 +88,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     const newFacesIds = [
       {
-        id: 'F:SIDE',
+        id: params.featureId + 'F:SIDE',
         productionInfo: {
           role: 'sweep'
         }
@@ -97,7 +97,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     if (params.diameterB > 0) {
       newFacesIds.push({
-        id: 'F:BASE',
+        id: params.featureId + 'F:BASE',
         productionInfo: {
           role: 'base'
         }
@@ -106,7 +106,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     if (params.diameterA > 0) {
       newFacesIds.push({
-        id: 'F:LID',
+        id: params.featureId + 'F:LID',
         productionInfo: {
           role: 'lid'
         }

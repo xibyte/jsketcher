@@ -81,7 +81,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
     const torus = occ.io.getShell("torus", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:TORUS',
+          id: params.featureId + 'F:TORUS',
           productionInfo: {
             role: 'sweep'
           }
