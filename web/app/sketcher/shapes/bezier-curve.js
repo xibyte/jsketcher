@@ -16,9 +16,9 @@ export class BezierCurve extends SketchObject {
     this.addChild(s2);
 
     this.a = s1.a;
-    this.b = s2.b;
+    this.b = s2.a;
     this.cp1 = s1.b;
-    this.cp2 = s2.a;
+    this.cp2 = s2.b;
     
     for (const c of this.children) {
       c.role = 'objectConstruction';
