@@ -6,10 +6,10 @@ import Vector from 'math/vector';
 import CSys from "math/csys";
 import {distanceAB} from "math/distance";
 import {isCCW} from "geom/euclidean";
-import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
+import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface"
+import flatten from 'lodash/flatten'
+import {deg} from "sketcher/dxf";
 
-
-const RESOLUTION = 20;
 
 export class SketchPrimitive {
 
@@ -66,7 +66,42 @@ export class SketchPrimitive {
   }
 
   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-    throw 'not implemented'
+
+    const nurbs = this.toNurbs(csys);
+
+    const {
+      degree,
+      knots,
+      cp,
+      weights
+    } = (nurbs.impl as NurbsCurve).asCurveBSplineData();
+
+    const bspline = {
+      knots: [],
+      mults: [],
+    }
+
+    knots.forEach(knot => {
+      if (bspline.knots.length === 0 || bspline.knots[bspline.knots.length - 1] !== knot) {
+        bspline.knots.push(knot);
+        bspline.mults.push(1);
+      } else {
+        bspline.mults[bspline.mults.length - 1] += 1;
+      }
+
+    });
+
+    const args = [degree, bspline.knots.length];
+
+    bspline.knots.forEach((knot, i) => {
+      args.push(knot, bspline.mults[i]);
+    });
+
+    cp.forEach((p, i) => {
+      args.push(p[0], p[1], p[2], weights[i]);
+    });
+
+    oci.bsplinecurve(underName, ...args);
   }
 
   massiveness() {
@@ -263,6 +298,16 @@ export class BezierCurve extends SketchPrimitive {
     return new verb.geom.BezierCurve([tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()], null);
   }
 
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+    const tr = csys.outTransformation.apply;
+    const poles = [this.a, this.cp1, this.cp2, this.b].map(tr);
+    if (this.inverted) {
+      poles.reverse();
+    }
+
+    oci.beziercurve(underName, poles.length, ...flatten(poles.map(p => p.data())))
+  }
+
   massiveness() {
     return this.a.minus(this.b).length();
   }
@@ -356,7 +401,7 @@ export class Ellipse extends SketchPrimitive {
     this.rot = rot;
   }
 
-  toVerbNurbs(tr) {
+  toVerbNurbs(tr, csys) {
 
     const ax = Math.cos(this.rot);
     const ay = Math.sin(this.rot);
@@ -364,7 +409,10 @@ export class Ellipse extends SketchPrimitive {
     const xAxis = new Vector(ax, ay)._multiply(this.rx);
     const yAxis = new Vector(-ay, ax)._multiply(this.ry);
 
-    return new verb.geom.Ellipse(tr(this.c).data(), tr(xAxis).data(), tr(yAxis).data());
+    const tr3x3 = csys.outTransformation3x3.apply;
+    return new verb.geom.Ellipse(tr(this.c).data(),
+      tr3x3(xAxis).data(),
+      tr3x3(yAxis).data());
   }
 
   massiveness() {
