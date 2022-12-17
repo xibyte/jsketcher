@@ -9,6 +9,7 @@ import DatumView from './views/datumView';
 import {View} from './views/view';
 import {HighlightBundle} from "cad/scene/highlightBundle";
 import {AttributesBundle} from "cad/attributes/attributesBundle";
+import {EntityKind} from "cad/model/entities";
 
 export const ViewSyncBundle = {
 
@@ -16,18 +17,32 @@ export const ViewSyncBundle = {
 
   activationDependencies: [
     HighlightBundle.BundleName,
-    AttributesBundle.BundleName
+    AttributesBundle.BundleName,
+    "@PickControl"
   ],
 
   activate(ctx) {
     const {streams} = ctx;
     ctx.highlightService.highlightEvents.attach(id => {
       const model = ctx.cadRegistry.find(id);
-      model?.ext?.view?.mark('highlight');
+      if (model) {
+        if (ctx.pickControlService.isSelectionEnabledFor(model)) {
+          model.ext?.view?.mark('highlight');
+        } else if (model.TYPE === EntityKind.FACE && model.parent)  {
+          if (ctx.pickControlService.isSelectionEnabledFor(model.parent)) {
+            model.parent?.ext?.view?.mark('highlight');
+          }
+        }
+      }
     });
     ctx.highlightService.unHighlightEvents.attach(id => {
       const model = ctx.cadRegistry.find(id);
-      model?.ext?.view?.withdraw('highlight');
+      if (model) {
+        model.ext?.view?.withdraw('highlight');
+        if (model.TYPE === EntityKind.FACE && model.parent)  {
+          model.parent.ext?.view?.withdraw('highlight');
+        }
+      }
     });
 
     streams.cadRegistry.update.attach(sceneSynchronizer(ctx));
