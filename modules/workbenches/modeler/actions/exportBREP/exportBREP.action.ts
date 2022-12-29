@@ -3,6 +3,7 @@ import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {ActionDefinition} from "cad/actions/actionSystemBundle";
 import { MEdge } from "cad/model/medge";
+import icon from "./ExportBREP.svg"
 
 
 interface ExportBREPParams {
@@ -12,7 +13,7 @@ interface ExportBREPParams {
 export const ExportBREP: any = {
   id: 'EXPORT_BREP',
   label: 'EXPORT BREP',
-  icon: 'img/cad/extrude',
+  icon: icon,
   info: 'EXPORT BREP FILE CONTAINING SELECTED BODIES',
   path:__dirname,
   run: async (params: any, ctx: ApplicationContext) => {
