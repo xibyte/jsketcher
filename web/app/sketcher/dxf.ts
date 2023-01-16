@@ -1,4 +1,4 @@
-import { ArcEntity, CircleEntity, DxfGlobalObject, EllipseEntity, LineEntity, Parser, PointEntity } from '@dxfjs/parser';
+import { ArcEntity, CircleEntity, DxfGlobalObject, EllipseEntity, LineEntity, LWPolylineEntity, Parser, PointEntity } from '@dxfjs/parser';
 import { Colors, DLine, DxfWriter, point3d, SplineArgs_t, SplineFlags, Units, vec3_t } from '@tarikjabiri/dxf';
 import { SketchFormat_V3 } from './io';
 import { Arc, SketchArcSerializationData } from './shapes/arc';
@@ -44,6 +44,12 @@ function polar(origin: IPoint, angle: number, radius: number): IPoint {
     x: origin.x + radius * cos(angle),
     y: origin.y + radius * sin(angle)
   }
+}
+
+function angle(fp: IPoint, sp: IPoint) {
+  let angle = Math.atan2(sp.y - fp.y, sp.x - fp.x)
+  if(angle < 0) angle += 2 * Math.PI
+  return angle
 }
 
 export class DxfWriterAdapter {
@@ -226,15 +232,49 @@ export class DxfParserAdapter {
       stages: [], constants: null, metadata: {}
     };
 
-    const {arcs, circles, ellipses, lines, points} = dxfObject.entities
+    const {arcs, circles, ellipses, lines, points, lwPolylines} = dxfObject.entities
 
     arcs.forEach(a => sketch.objects.push(this._arc(a)));
     circles.forEach(c => sketch.objects.push(this._circle(c)));
     ellipses.forEach(e => sketch.objects.push(this._ellipse(e)));
     lines.forEach(l => sketch.objects.push(this._segment(l)));
     points.forEach(p => sketch.objects.push(this._point(p)));
+    lwPolylines.forEach(p => sketch.objects.push(...this._lwPolyline(p)));
 
     return sketch;
+  }
+
+  private _lwPolyline(p: LWPolylineEntity) {
+    const objects = [];
+    for (let i = 0; i < p.vertices.length;) {
+      const curr = p.vertices[i];
+      let next = p.vertices[++i];
+
+      if(p.flag & 1 && !next) {
+        next = p.vertices[0];
+      }
+      if(curr && next) {
+        if(!curr.bulge || curr.bulge === 0) {
+          const data: SketchSegmentSerializationData = {
+            a: {x: curr.x, y: curr.y},
+            b: {x: next.x, y: next.y}
+          };
+          objects.push(this._createSketchObject(Segment.prototype.TYPE, data));
+        } else {
+          const beta = angle(curr, next);
+          const theta = 4 * Math.atan(curr.bulge);
+          const radius = (Math.hypot(curr.x - next.x, curr.y - next.y) / 2) / Math.sin(theta / 2);
+          const center = polar(curr, beta + (Math.PI - theta) / 2, radius);
+          const data: SketchArcSerializationData =  {
+            a: curr.bulge > 0 ? {x: curr.x, y: curr.y} : {x: next.x, y: next.y},
+            b: curr.bulge > 0 ? {x: next.x, y: next.y} : {x: curr.x, y: curr.y},
+            c: center,
+          };
+          objects.push(this._createSketchObject(Arc.prototype.TYPE, data));
+        }
+      }
+    }
+    return objects;
   }
 
   private _arc(a: ArcEntity) {
