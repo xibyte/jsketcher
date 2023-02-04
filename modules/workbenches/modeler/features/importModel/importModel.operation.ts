@@ -101,10 +101,23 @@ export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
       });
 
       // //IGES import
-      // FS.writeFile("newIgesObject", rawContent);
-      // oci.readbrep()igesread("newIgesObject", "newIgesObject");
-      // returnObject.created.push(occ.io.getShell("newIgesObject"));
+      FS.writeFile("newIgesObject", rawContent);
+      oci.igesread("newIgesObject", "newIgesObject");
+      returnObject.created.push(occ.io.getShell("newIgesObject"));
 
+    } else if (FileName.endsWith("STL") ){
+
+      throw new CadError({
+        kind: CadError.KIND.INVALID_INPUT,
+        code: 'STL is not supported yet'
+      });
+
+
+      FS.writeFile("newSTLFile.stl", rawContent);
+      
+      oci.readstl("mesh", "newSTLFile.stl");
+      oci.unifysamedom("cleanedSTL", "mesh")
+      returnObject.created.push(occ.io.getShell("cleanedSTL"));
     } else {
       throw new CadError({
         kind: CadError.KIND.INVALID_INPUT,
