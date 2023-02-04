@@ -11,6 +11,7 @@ import {PrimitiveTorusOperation} from "./features/primitiveTorus/PrimitiveTorus.
 import {HoleOperation} from "./features/hole/Hole.operation";
 import {FilletOperation} from "./features/fillet/fillet.operation";
 import {BooleanOperation} from "./features/boolean/boolean.operation";
+import {SimplifyOperation} from "./features/simplify/simplify.operation";
 import {RevolveOperation} from "./features/revolve/revolve.operation";
 import {ShellOperation} from "./features/shell/shell.operation";
 import {SweepOperation} from "./features/sweep/sweep.operation";
@@ -56,6 +57,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     DefeatureRemoveFaceOperation,
     WireLineOperation,
     MoveBodyOperation,
+    SimplifyOperation,
 
     GetInfo,
     ExportBREP,
@@ -69,7 +71,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       ["EXTRUDE", "CUT", "REVOLVE", "LOFT", "SWEEP"], 
       
-      ["UNION", "SUBTRACT", "INTERSECT"], 
+      ["UNION", "SUBTRACT", "INTERSECT", "SIMPLIFY"], 
 
       ["SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE"],  
 
