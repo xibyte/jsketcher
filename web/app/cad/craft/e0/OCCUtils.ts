@@ -1,13 +1,13 @@
 import { SketchGeom } from "cad/sketch/sketchReader";
 import { ApplicationContext } from "cad/context";
 import CSys from "math/csys";
-import {OperationResult} from "cad/craft/craftBundle";
-import {BooleanDefinition, BooleanKind} from "cad/craft/schema/common/BooleanDefinition";
-import {WireRef} from "cad/craft/e0/occSketchLoader";
-import {FromMObjectProductionAnalyzer, ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
-import {MObject} from "cad/model/mobject";
-import {Shell} from "brep/topo/shell";
-import {MOpenFaceShell} from "cad/model/mopenFace";
+import { OperationResult } from "cad/craft/craftBundle";
+import { BooleanDefinition, BooleanKind } from "cad/craft/schema/common/BooleanDefinition";
+import { WireRef } from "cad/craft/e0/occSketchLoader";
+import { FromMObjectProductionAnalyzer, ProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+import { MObject } from "cad/model/mobject";
+import { Shell } from "brep/topo/shell";
+import { MOpenFaceShell } from "cad/model/mopenFace";
 
 export interface OCCUtils {
 
@@ -16,10 +16,10 @@ export interface OCCUtils {
   sketchToFaces(sketch: SketchGeom, csys: CSys): FaceRef[];
 
   applyBooleanModifier(tools: MObject[],
-                       booleanDef: BooleanDefinition,
-                       sketchSource?: MObject,
-                       mustAdvance? : MObject[],
-                       analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): OperationResult;
+    booleanDef: BooleanDefinition,
+    sketchSource?: MObject,
+    mustAdvance?: MObject[],
+    analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): OperationResult;
 }
 
 export interface FaceRef extends WireRef {
@@ -31,7 +31,7 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
 
   function sketchToFaces(sketch: SketchGeom, csys: CSys): FaceRef[] {
     const occ = ctx.occService;
-    
+
     const wires = occ.io.sketchLoader.pushSketchAsWires(sketch.contours, csys);
     return wiresToFaces(wires);
   }
@@ -53,10 +53,10 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
 
 
   function applyBooleanModifier(tools: MObject[],
-                                booleanDef: BooleanDefinition,
-                                sketchSource: MObject,
-                                mustAdvance? : MObject[],
-                                analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): OperationResult {
+    booleanDef: BooleanDefinition,
+    sketchSource: MObject,
+    mustAdvance?: MObject[],
+    analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): OperationResult {
     const occ = ctx.occService;
     const oci = ctx.occService.commandInterface;
 
@@ -81,7 +81,7 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
       if (!targets || targets.length === 0) {
         targets = ctx.cadRegistry.shells;
       }
-      
+
 
       const targetNames = targets.map((target, i) => {
         const targetName = 'Target/' + i;
@@ -93,14 +93,15 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
       }).filter(targetName => !!targetName);
 
 
-
-
+      oci.boptions("-default");
       oci.bclearobjects();
       oci.bcleartools();
 
       targetNames.forEach(targetName => oci.baddobjects(targetName));
-      tools.forEach(tool => oci.baddtools(tool));
-      console.log("booleanDef", booleanDef);
+      tools.forEach(tool => {
+        oci.baddtools(tool)
+        oci.settolerance(tool, 0.0001); 
+      });
       if (booleanDef.simplify === true){
         oci.bsimplify("-e", 1, "-f", 1);
       }else{
@@ -112,20 +113,8 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
       oci.bfillds();
       oci.bapibop("BooleanResult", booleanKindToOCCBopType(kind));
 
-      // let resultShell = occ.io.getShell("BooleanResult");
-      // if (resultShell.edges.length < 0) {
 
-        // oci.bsimplify("-e", 0, "-f", 0);
-        // oci.baddobjects("BooleanResult");
-        // oci.baddtools("BooleanResult");
-
-        // oci.bcheckinverted(1);
-        // oci.bfillds();
-        // oci.bapibop("BooleanResult", OccBBOPTypes.FUSE);
-
-      // }
-
-      oci.fixshape("BooleanResult", "BooleanResult");
+      if (booleanDef.simplify === true) oci.unifysamedom("BooleanResult", "BooleanResult");
 
       targets.forEach(t => consumed.push(t));
       tools.forEach(t => consumed.push(t));
@@ -140,7 +129,7 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
     }
   }
 
- 
+
   return {
     wiresToFaces, sketchToFaces, applyBooleanModifier
   }
