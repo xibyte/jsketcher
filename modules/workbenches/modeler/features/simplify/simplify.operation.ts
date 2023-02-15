@@ -21,8 +21,8 @@ export const SimplifyOperation: OperationDescriptor<SimplifyParams> = {
     const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    let created = [];
-    let consumed = [];
+    const created = [];
+    const consumed = [];
 
 
     params.tools.forEach((bodyToSimplify) => {
