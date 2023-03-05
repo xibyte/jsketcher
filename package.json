@@ -139,7 +139,7 @@
     "webpack-dev-server": "^4.11.1"
   },
   "dependencies": {
-    "@dxfjs/parser": "^0.0.3",
+    "@dxfjs/parser": "^0.2.0",
     "@tarikjabiri/dxf": "^2.6.2",
     "@types/three": "^0.146.0",
     "browser-xml2js": "^0.4.19",
