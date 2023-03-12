@@ -4,7 +4,7 @@ import BrepCurve from 'geom/curves/brepCurve';
 import NurbsCurve from "geom/curves/nurbsCurve";
 import {surfaceIntersect} from 'geom/intersection/surfaceSurface';
 import NurbsSurface from 'geom/surfaces/nurbsSurface';
-import {createOctreeFromSurface, traverseOctree} from "voxels/octree";
+import {createOctreeFromSurface, NDTree, traverseOctree} from "voxels/octree";
 import {Matrix3x4} from 'math/matrix';
 import {AXIS, ORIGIN} from "math/vector";
 import {BrepInputData, CubeExample} from "engine/data/brepInputData";
@@ -18,6 +18,20 @@ import {DefeatureFaceWizard} from "./craft/defeature/DefeatureFaceWizard";
 import {defeatureByEdge, defeatureByVertex} from "brep/operations/directMod/defeaturing";
 import {BooleanType} from "engine/api";
 import {MBrepShell} from './model/mshell';
+import * as vec from "math/vec";
+import {
+  BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
+  DoubleSide, Group,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhongMaterial
+} from "three";
+import {pseudoFrenetFrame} from "geom/curves/frenetFrame";
+import {renderVoxelSphere} from "voxels/voxelPrimitives";
+import {Cube} from "voxels/vixelViz";
+import {ndTreeSubtract, ndTreeTransformAndSubtract} from "voxels/voxelBool";
 
 
 // @ts-ignore
@@ -391,7 +405,84 @@ export function runSandbox(ctx: ApplicationContext) {
   //
   // }
 
-  function voxelTest(size = 8) {
+  function voxelTest2(size = 512) {
+
+    size= 128;
+
+    const work = new NDTree(size);
+    const tool = new NDTree(size);
+
+    renderVoxelSphere(32, [16,16,16], work);
+    renderVoxelSphere(16, [0,0,0], tool);
+
+    // ndTreeSubtract(work, tool);
+
+
+
+
+
+
+
+    let oldNodes = new Set();
+
+    let delta = -5
+    function simulate() {
+
+      for (let i = 0; i < 100; i ++) {
+        ndTreeTransformAndSubtract(work, tool, (pt) => pt.map(s => s + delta) );
+        delta ++;
+
+      }
+      work.defragment();
+
+
+      let curNodes = new Set();
+
+      oldNodes.forEach(n => {
+        ctx.cadScene.auxGroup.remove(n.visual);
+      });
+
+      oldNodes.clear();
+
+      work.traverse((x, y, z, size, tag, node) => {
+
+        // if (size === 1 ) {
+        if (tag !== 'outside') {
+          // if (tag === 'edge'  ) {
+          //   console.log(size)
+          //   console.log(node.xyz)
+          //   console.log([x, y, z])
+
+
+          const cube = new Cube(size, tag);
+          cube.position.set(x, y, z);
+          ctx.cadScene.auxGroup.add(cube);
+          ctx.cadScene.auxGroup.scale.set(10, 10, 10);
+          node.visual = cube;
+
+          oldNodes.add(node);
+        }
+
+      });
+      ctx.viewer.requestRender();
+      // setTimeout(() => requestAnimationFrame(simulate), 100);
+    }
+
+    simulate()
+
+
+    console.log("voxel count", ctx.cadScene.auxGroup.children.length);
+
+    // geometry.setAttribute( 'position', new BufferAttribute( new Float32Array(vertices), 3 ) );
+    // geometry.setAttribute( 'normal', new BufferAttribute( new Float32Array(normals), 3 ) );
+
+
+
+    console.log("done")
+
+  }
+
+  function voxelTest(size = 512) {
 
     const degree = 3
       , knots = [0, 0, 0, 0, 0.333, 0.666, 1, 1, 1, 1]
@@ -405,19 +496,41 @@ export function runSandbox(ctx: ApplicationContext) {
     let  srf = verb.geom.NurbsSurface.byKnotsControlPointsWeights( degree, degree, knots, knots, pts );
     srf = srf.transform(new Matrix3x4().scale(10,10,10).toArray());
     srf = new NurbsSurface(srf);
-    __DEBUG__.AddParametricSurface(srf);
+    // __DEBUG__.AddParametricSurface(srf);
 
     const origin = [0,-500,-250];
     const treeSize = size;
     const sceneSize = 512;
     const r = sceneSize / treeSize;
     const octree = createOctreeFromSurface(origin, sceneSize, treeSize, srf, 1);
-    traverseOctree(octree, treeSize,  (x, y, z, size, tag) => {
+
+    const geometry = new BufferGeometry();
+
+    const vertices = []
+    const normals = []
+
+    traverseOctree(octree, treeSize,  (x, y, z, size, tag, normal) => {
       if (size === 1 && tag === 1) {
 
-        // const base = [x, y, z];
-        // vec._mul(base, r);
-        // vec._add(base, origin);
+        const base = [x, y, z];
+        vec._mul(base, r);
+        vec._add(base, origin);
+
+
+        const [T, N, B] = pseudoFrenetFrame(normal);
+        let n = vec.add(base, vec.mul(N, r));
+        let b = vec.add(base, vec.mul(B, r));
+        vertices.push(...base);
+        vertices.push(...n);
+        vertices.push(...b);
+
+        vertices.push(...b);
+        vertices.push(...n);
+        vertices.push(...vec._add(vec.add(vec.mul(N, r), vec.mul(B, r)), base));
+
+        normals.push(...normal);
+        // __DEBUG__.AddNormal3(base, normal)
+
         // __DEBUG__.AddPolyLine3([
         //   vec.add(base, [0, r, 0]),
         //   vec.add(base, [0, r, r]),
@@ -428,8 +541,18 @@ export function runSandbox(ctx: ApplicationContext) {
         //   vec.add(base, [r, 0, r]),
         //   vec.add(base, [0, 0, 0]),
         // ], 0xff0000);
+
       }
     });
+
+    geometry.setAttribute( 'position', new BufferAttribute( new Float32Array(vertices), 3 ) );
+    // geometry.setAttribute( 'normal', new BufferAttribute( new Float32Array(normals), 3 ) );
+
+    const material = new MeshBasicMaterial( { color: 0xffffff, side: DoubleSide } );
+    const mesh = new Mesh( geometry, material );
+
+    ctx.cadScene.auxGroup.add(mesh);
+
     console.log("done")
   }
 
@@ -706,7 +829,9 @@ export function runSandbox(ctx: ApplicationContext) {
      //testRemoveVertex();
     //  testRemoveEdge();
     // testOJS();
-      setTimeout(testOCCT, 500);
+    //   setTimeout(testOCCT, 500);
+    //   voxelTest()
+      voxelTest2(16)
     }
   });
 
