@@ -457,10 +457,10 @@ export class Contour {
     return cc;
   }
 
-  tessellate(resolution) {
+  tessellate() {
     const tessellation = [];
     for (const segment of this.segments) {
-      const segmentTessellation = segment.tessellate(resolution);
+      const segmentTessellation = segment.tessellate(segment.massiveness() * 0.1);
       //skip last one because it's guaranteed to be closed
       for (let i = 0; i < segmentTessellation.length - 1; ++i) {
         tessellation.push(segmentTessellation[i]);
@@ -470,7 +470,7 @@ export class Contour {
   }
 
   isCCW() {
-    return isCCW(this.tessellate(10));
+    return isCCW(this.tessellate());
   }
 
   reverse() {

@@ -19,8 +19,12 @@ export function curveTessParams(curve, min, max, tessTol, scale) {
   splits.push(max);
 
   function refine(u1, u2, step) {
-    if (step <  u2 - u1) {
-      const mid = u1 + (u2 - u1) * 0.5;
+    const uDist = u2 - u1;
+    if (uDist < 1e-3) {
+      return
+    }
+    if (step <  uDist) {
+      const mid = u1 + uDist * 0.5;
       refine(u1, mid, step);
       out.push(mid);
       refine(mid, u2, curveStep(curve, mid, tessTol, scale));
