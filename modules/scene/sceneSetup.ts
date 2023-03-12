@@ -84,7 +84,7 @@ export default class SceneSetUp {
     this.createOrthographicCamera();
     this.createPerspectiveCamera();
 
-    this.camera = this.oCamera;
+    this.camera = this.pCamera;
     
     this.light = new DirectionalLight( 0xffffff );
     this.light.position.set( 10, 10, 10 );
