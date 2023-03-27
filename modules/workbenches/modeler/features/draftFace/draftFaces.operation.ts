@@ -2,6 +2,7 @@ import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { ApplicationContext } from "cad/context";
 import { EntityKind } from "cad/model/entities";
 import { OperationDescriptor } from "cad/craft/operationBundle";
+import {FromMObjectProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 import icon from "./DRAFT.svg";
 import { MFace } from 'cad/model/mface';
 
@@ -28,24 +29,59 @@ export const DraftFacesOperation: OperationDescriptor<DraftFacesParams> = {
       consumed: []
     };
 
-    let arggs = [];
 
-    params.draftFaces.forEach((faceToDraft) => {
-      arggs.push(
-        faceToDraft,
-        -params.angle,
-        ...params.baseFace.csys.origin.data(),
-        ...params.baseFace.csys.z.normalize().data()
-      )
+
+    const bodiesToDraft = [];
+    //add all the edges and size to separate arrays for each shell that edges are selected from
+
+    params.draftFaces.forEach((face) => {
+      if (!returnObject.consumed.includes(face.shell)) {
+        returnObject.consumed.push(face.shell);
+        bodiesToDraft[face.shell.id] = [];
+      }
+      bodiesToDraft[face.shell.id].push(face);
+
     });
 
-    //must be a french word for draft
-    oci.depouille("result", params.draftFaces[0].shell, ...params.baseFace.csys.z.normalize().data(), ...arggs);
 
 
-    returnObject.created.push(occ.io.getShell("result"));
-    returnObject.consumed.push(params.draftFaces[0].shell)
+    //perform the opperations on each of the bodies.
+    Object.keys(bodiesToDraft).forEach((shellToOpperateOnName) => {
+      const shellToOpperateOn = bodiesToDraft[shellToOpperateOnName];
 
+      console.log(shellToOpperateOn);
+
+
+      let arggs = [];
+
+      shellToOpperateOn.forEach((faceToDraft) => {
+        arggs.push(
+          faceToDraft,
+          -params.angle,
+          ...params.baseFace.csys.origin.data(),
+          ...params.baseFace.csys.z.normalize().data()
+        )
+      });
+  
+      //must be a french word for draft
+      oci.depouille(shellToOpperateOnName+"DRAFT", shellToOpperateOn[0].shell, ...params.baseFace.csys.z.normalize().data(), ...arggs);
+  
+      returnObject.consumed.push(params.draftFaces[0].shell);
+      const analyzer = new FromMObjectProductionAnalyzer([shellToOpperateOn[0].shell]);
+
+      returnObject.created.push(occ.io.getShell(shellToOpperateOnName+"DRAFT", analyzer));
+
+
+    });
+
+
+
+
+
+
+
+
+    
 
 
     return returnObject;
