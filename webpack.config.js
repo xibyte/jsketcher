@@ -35,6 +35,8 @@ module.exports = {
     hot: false,
     liveReload: false,
     client: false,
+    compress: true,
+    allowedHosts: 'all',
     static: [
       path.join(__dirname, 'web'),
     ],
