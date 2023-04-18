@@ -6,14 +6,14 @@ import {
   VDimension,
 } from '../shapes/dim'
 import Vector from 'math/vector';
-import {EndPoint} from '../shapes/point'
-import {Tool} from './tool'
-import {DragTool} from "./drag";
-import {isInstanceOf} from "../actions/matchUtils";
-import {Segment} from "../shapes/segment";
-import {DEFAULT_SEARCH_BUFFER} from "../viewer2d";
-import {_negate, cross2d} from "math/vec";
-import {distance} from "math/distance";
+import { EndPoint } from '../shapes/point'
+import { Tool } from './tool'
+import { DragTool } from "./drag";
+import { isInstanceOf } from "../actions/matchUtils";
+import { Segment } from "../shapes/segment";
+import { DEFAULT_SEARCH_BUFFER } from "../viewer2d";
+import { _negate, cross2d } from "math/vec";
+import { distance } from "math/distance";
 
 export class AddDimTool extends Tool {
 
@@ -69,6 +69,19 @@ export class AddDimTool extends Tool {
       this.viewer.toolManager.switchTool(new DragTool(this.dim, this.viewer));
       this.viewer.toolManager.tool.mousedown(e);
       this.viewer.refresh();
+    }
+  }
+  
+  keydown(e) {
+    if (e.keyCode == 27) {
+      //escape
+      if (this.dim != null) {
+       
+        const selection = this.viewer.selected.slice();
+        this.viewer.removeAll(selection);
+        this.viewer.toolManager.releaseControl();
+        this.viewer.refresh();
+      }
     }
   }
 }
@@ -230,7 +243,7 @@ export class AddAngleTool extends Tool {
     const [cx, cy] = isec;
     const v = [px - cx, py - cy];
 
-    const insideSector = (v, v1, v2) => cross2d(v1, v) > 0  && cross2d(v2, v) < 0;
+    const insideSector = (v, v1, v2) => cross2d(v1, v) > 0 && cross2d(v2, v) < 0;
 
     if (insideSector(v, v1, v2)) {
       return [isec, [line1.a, line1.b, line2.a, line2.b]];
