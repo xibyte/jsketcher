@@ -4,7 +4,7 @@
         "master",
         "release",
         {
-            "name": "SolidJSGUI",
+            "name": "dev",
             "prerelease": true
         }
     ],
@@ -158,7 +158,7 @@
         [
             "@semantic-release/exec",
             {
-                "prepareCmd": "./repo-tools/scripts/prepareCMD.sh ${nextRelease.version}",
+                "prepareCmd": "./scripts/prepareCMD.sh ${nextRelease.version}",
                 "publishCmd": "echo Publishing ${nextRelease.version}"
             }
         ],
@@ -177,9 +177,9 @@
             "@semantic-release/git",
             {
                 "assets": [
-                    "GUI/ETVR/package.json",
-                    "GUI/ETVR/src-tauri/tauri.conf.json",
-                    "GUI/ETVR/src-tauri/Cargo.toml",
+                    "package.json",
+                    "src-tauri/tauri.conf.json",
+                    "src-tauri/Cargo.toml",
                     "LICENSE*",
                     "CHANGELOG.md"
                 ],
