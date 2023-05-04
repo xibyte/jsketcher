@@ -8,25 +8,31 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# Which distro are we on?
-printf "Detecting Distro\n"
+# get user input and store in variable
 
-# run this command: cat /etc/*-release | uniq -u and grep for the ID field and pipe into a variable
+printf "Do you want to install the Linux Development Dependencies? (y/n)\n"
+read -r input
 
-cat /etc/*-release | uniq -u | grep -i "ID" | cut -d "=" -f 2 | tr -d '"' | tr -d '\n' >distro.txt
+# check if the user input is y or n
 
-# read the variable into a variable
-distro=$(cat distro.txt)
-# split distro into an array
-IFS=' ' read -r -a distro <<<"$distro"
-# get the first element of the array
-distro=${distro[0]}
+if [ "$input" == "y" ]; then
+  printf "Installing Linux Development Dependencies\n"
+else
+  printf "Not installing Linux Development Dependencies\n"
+fi
+
+# Get their distro
+
+printf "Which distro are you running? (ubuntu/arch/fedora/gentoo/opensuse/void)\n"
+
+read -r distro
+
 # convert distro to lowercase
+
 distro=${distro,,}
-# remove the file
-rm distro.txt
 
 # check if the distro is Ubuntu or arch or fedora or gentoo or openSUSE or NixOS or GNU GUIX or void
+
 if [ "$distro" == "ubuntu" ] || [ "$distro" == "arch" ] || [ "$distro" == "fedora" ] || [ "$distro" == "gentoo" ] || [ "$distro" == "opensuse" ] || [ "$distro" == "void" ]; then
   printf "Distro is $distro\n"
 else
@@ -34,6 +40,25 @@ else
   printf "NixOS and GNU GUIX are not supported by this script, but are supported by tauri - please see the tauri docs for more information.\n"
   exit 1
 fi
+
+
+## Which distro are we on?
+#printf "Detecting Distro\n"
+#
+## run this command: cat /etc/*-release | uniq -u and grep for the ID field and pipe into a variable
+#
+#cat /etc/*-release | uniq -u | grep -i "ID" | cut -d "=" -f 2 | tr -d '"' | tr -d '\n' >distro.txt
+#
+## read the variable into a variable
+#distro=$(cat distro.txt)
+#
+## grab just the first word of the variable
+#distro=$(echo $distro | cut -d " " -f 1)
+#
+## convert distro to lowercase
+#distro=${distro,,}
+## remove the file
+#rm distro.txt
 
 # Install Linux Development Dependencies
 # run specific commands based on the distro
