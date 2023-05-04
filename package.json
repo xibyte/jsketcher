@@ -15,7 +15,11 @@
     "before-main-branch-merge": "npm run lint && npm run check-code && npm run checks-passed-banner",
     "cypress": "npx cypress open",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "tauri:dev:release": "tauri dev --release",
+    "tauri:build": "tauri build",
+    "tauri:build:dev": "tauri build --debug",
+    "tauri:clean": "cd src-tauri && cargo clean"
   },
   "repository": {
     "type": "git",
