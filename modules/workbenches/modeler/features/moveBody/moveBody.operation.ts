@@ -10,6 +10,7 @@ interface MoveBodyParams {
   toLocation: MDatum;
   fromLocation: MDatum;
   body: MShell;
+  featureId;
 }
 
 export const MoveBodyOperation: OperationDescriptor<MoveBodyParams> = {
@@ -30,36 +31,27 @@ export const MoveBodyOperation: OperationDescriptor<MoveBodyParams> = {
       created: []
     };
 
-    const bodyLocation = params.body.csys;
-    const fromLocation = params.fromLocation.csys;
+    console.log("from location", params.fromLocation)
+
     const toLocation = params.toLocation.csys;
-
-    let location = bodyLocation.outTransformation._normalize();
-
-
-    // location = location.combine(
-    //   fromLocation.outTransformation.combine(toLocation.inTransformation._normalize())
-    // )._normalize();
-
-    location = location.combine(toLocation.outTransformation._normalize().combine(fromLocation.outTransformation._normalize()));
-    //location = location.combine(bodyLocation.inTransformation);
-
-    //let  location =fromLocation.outTransformation.combine(toLocation.outTransformation);
-    //location = location.combine(toLocation.outTransformation._normalize())._normalize();
-
-    //const location = params.toLocation.csys.outTransformation._normalize();
-
-    //const Newlocation = toLocation.outTransformation.combine(fromLocation.inTransformation._normalize())._normalize();
-    //const Newlocation = fromLocation.inTransformation.combine(toLocation.outTransformation);
-    //const Newlocation = toLocation.outTransformation.combine(fromLocation.outTransformation)._normalize();
-
-    //let location = params.body.csys.outTransformation.combine(fromLocation.outTransformation._normalize())._normalize();
-    //location = location.combine(Newlocation)._normalize();
-
-    //location =Newlocation;
+    const bodyLocation = params.body.csys;
+    let location = bodyLocation.outTransformation; //._normalize();
 
 
-    const newShellName = params.body.id + ":T";
+    if (params.fromLocation) {
+      //Set position of object using a fromLocation and toLocation
+      const fromLocation = params.fromLocation.csys;
+
+      location = location.combine(
+        toLocation.outTransformation._normalize().combine(fromLocation.inTransformation._normalize())
+      );
+
+    } else {
+      //just set a new posistion on the body.
+      location = location.combine(toLocation.outTransformation);
+    }
+
+    const newShellName = params.body.id + ":T"+ params.featureId;
 
     oci.copy(params.body, newShellName);
 
@@ -90,9 +82,10 @@ export const MoveBodyOperation: OperationDescriptor<MoveBodyParams> = {
       capture: [EntityKind.DATUM],
       label: 'From Location',
       multi: false,
+      optional: true,
       defaultValue: {
         usePreselection: true,
-        preselectionIndex: 0
+        preselectionIndex: 1
       },
     },
 
