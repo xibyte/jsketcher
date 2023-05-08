@@ -2,12 +2,12 @@
 name = "app"
 version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+authors = ["autodrop3d, xibyte"]
+license = "LICENSE"
+repository = "https://github.com/Xibyte/jsketcher"
 default-run = "app"
 edition = "2021"
-rust-version = "1.59"
+rust-version = "1.69"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

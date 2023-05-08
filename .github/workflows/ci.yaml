@@ -5,9 +5,9 @@ on:
     tags:
       - "v*"
     branches:
-      - dev
-      - master
-      - main
+      - feature/tauri
+      #- master
+      #- main
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
