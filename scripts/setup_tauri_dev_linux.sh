@@ -15,11 +15,11 @@ read -r input
 
 # check if the user input is y or n
 
-if [ "$input" == "y" ]; then
-  printf "Installing Linux Development Dependencies\n"
-else
-  printf "Not installing Linux Development Dependencies\n"
-fi
+#if [ "$input" == "y" ]; then
+#  printf "Installing Linux Development Dependencies\n"
+#else
+#  printf "Not installing Linux Development Dependencies\n"
+#fi
 
 # Get their distro
 
