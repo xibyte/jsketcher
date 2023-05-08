@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "pnpm"
+          #cache: "pnpm"
           # node-version-file: '.nvmrc'
 
       - name: "Setup Rust"
