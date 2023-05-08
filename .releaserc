@@ -1,6 +1,7 @@
 {
   "branches": [
     "master",
+    "main",
     {
       "name": "feature/tauri",
       "prerelease": true
