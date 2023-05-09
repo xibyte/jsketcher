@@ -4,11 +4,11 @@
     "beforeBuildCommand": "pnpm build",
     "beforeDevCommand": "pnpm start",
     "devPath": "http://localhost:3000",
-    "distDir": "../build"
+    "distDir": "../dist"
   },
   "package": {
     "productName": "jsketcher",
-    "version": "0.1.0"
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -21,6 +21,9 @@
       "deb": {
         "depends": []
       },
+      "appimage": {
+        "bundleMediaFramework": true
+      },
       "externalBin": [],
       "icon": [
         "icons/32x32.png",
@@ -32,7 +35,6 @@
       "identifier": "com.jsketcher.dev",
       "longDescription": "",
       "macOS": {
-        
         "entitlements": null,
         "exceptionDomain": "",
         "frameworks": [],

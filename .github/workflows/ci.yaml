@@ -2,10 +2,8 @@ name: Produce Desktop Binary Builds
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
     branches:
-      - feature/tauri
+      - tauri
       #- master
       #- main
 
@@ -34,12 +32,13 @@ jobs:
       matrix:
         node-version: [18.x]
         #, macos-latest
-        platform: [windows-latest, ubuntu-latest]
+        #windows-latest,
+        platform: [ubuntu-latest]
         include:
           - os: ubuntu-latest
             rust_target: x86_64-unknown-linux-gnu
-          - os: windows-latest
-            rust_target: x86_64-pc-windows-msvc
+          #- os: windows-latest
+          #  rust_target: x86_64-pc-windows-msvc
           #- os: macos-latest
           #  rust_target: x86_64-apple-darwin
           #- os: macos-latest
@@ -135,7 +134,7 @@ jobs:
         with:
           node-version: 18
       - run: npm install -g conventional-changelog-conventionalcommits
-      - run: npm install -g semantic-release@v19.0.5
+      - run: npm install -g semantic-release@v21.0.2
       - run: npm install -g @semantic-release/exec
       - run: npm install -g @semantic-release/git
       - run: npm install -g @semantic-release/release-notes-generator

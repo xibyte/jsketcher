@@ -1,10 +1,15 @@
 {
   "branches": [
-    "master",
     "main",
+    "master",
+    "release",
+    {
+      "name": "tauri",
+      "prerelease": true
+    },
     {
       "name": "feature/tauri",
-      "prerelease": true
+      "prelease": true
     }
   ],
   "plugins": [
