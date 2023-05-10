@@ -33,7 +33,7 @@ jobs:
         node-version: [18.x]
         #, macos-latest
         #windows-latest,
-        platform: [ubuntu-latest]
+        platform: [ubuntu-18.04]
         include:
           - os: ubuntu-latest
             rust_target: x86_64-unknown-linux-gnu
