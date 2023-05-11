@@ -88,6 +88,15 @@ jobs:
           #cache: "pnpm"
           # node-version-file: '.nvmrc'
 
+      - name: Install dependencies (Windows & MacOS)
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
+        run: |
+          echo "::group::install node dependencies"
+          npm install -g pnpm
+          npm install -g typescript
+          pnpm install
+          echo "::endgroup::"
+
       - name: Setup Rust (Windows & MacOS)
         if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
         uses: actions-rs/toolchain@v1
