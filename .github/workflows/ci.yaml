@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - tauri
+      - feature/tauri
       #- master
       #- main
 
@@ -33,31 +34,62 @@ jobs:
         node-version: [18.x]
         #, macos-latest
         #windows-latest,
-        platform: [ubuntu-18.04]
+        platform: [ubuntu-latest, windows-latest]
         include:
-          - os: ubuntu-latest
-            rust_target: x86_64-unknown-linux-gnu
-          #- os: windows-latest
-          #  rust_target: x86_64-pc-windows-msvc
-          #- os: macos-latest
-          #  rust_target: x86_64-apple-darwin
-          #- os: macos-latest
-          #  rust_target: aarch64-apple-darwin
+          #- os: ubuntu-18.04
+          #  rust_target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            rust_target: x86_64-pc-windows-msvc
+        #- os: macos-latest
+        #  rust_target: x86_64-apple-darwin
+        #- os: macos-latest
+        #  rust_target: aarch64-apple-darwin
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           token: ${{ env.GITHUB_TOKEN }}
+      - name: Build the App (Linux)
+        if: matrix.platform == 'ubuntu-latest'
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/zanzythebar/tauridocker:latest
+          options: -v ${{ github.workspace }}:/workspace
+          run: |
+            echo "::group::install node dependencies"
+            npm install -g pnpm
+            npm install -g typescript
+            pnpm install
+            echo "::group::tauri build"
+            pnpm tauri build
+            echo "::endgroup::"
+      - name: Archive the App (Linux)
+        if: matrix.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-files
+          path: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+          retention-days: 5
+          if-no-files-found: error
+      - name: Verify build (Linux)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          ls -la src-tauri/target/release/bundle/appimage
+          ls -la src-tauri/target/release/bundle/deb
 
-      - name: Node.js setup ${{ matrix.node-version }}
+      - name: Node.js setup ${{ matrix.node-version }} (Windows & MacOS)
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           #cache: "pnpm"
           # node-version-file: '.nvmrc'
 
-      - name: "Setup Rust"
+      - name: Setup Rust (Windows & MacOS)
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
         uses: actions-rs/toolchain@v1
         with:
           default: true
@@ -65,23 +97,16 @@ jobs:
           profile: minimal
           toolchain: stable
           target: ${{ matrix.platform.rust_target }}
-      - uses: Swatinem/rust-cache@v2
+
+      - name: Cache Rust (Windows & MacOS)
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
+        uses: Swatinem/rust-cache@v2
         with:
           workspaces: "./src-tauri -> target"
 
-      - name: Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
-
-      - name: Install dependencies (PNPM)
-        run: |
-          npm install -g pnpm
-          npm install -g typescript
-          pnpm install
-
-      - uses: JonasKruckenberg/tauri-build@v1.2.3
+      - name: Build the app (Windows & MacOS)
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
+        uses: JonasKruckenberg/tauri-build@v1.2.3
         id: tauri_build
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
@@ -94,24 +119,12 @@ jobs:
         with:
           target: ${{ matrix.platform.rust_target }}
 
-      - uses: actions/upload-artifact@v3
+      - name: Archive the App (Windows & MacOS)
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v3
         with:
           name: production-files
           path: "${{ join(fromJSON(steps.tauri_build.outputs.artifacts), '\n') }}"
-
-      #- name: Build the app
-      #  uses: tauri-apps/tauri-action@v0
-      #  env:
-      #    GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-      #    TAURI_PRIVATE_KEY: ${{ env.TAURI_PRIVATE_KEY }}
-      #    TAURI_KEY_PASSWORD: ${{ env.TAURI_KEY_PASSWORD }}
-      #  with:
-      #    # tauri-action replaces \_\_VERSION\_\_ with the app version
-      #    tagName: eyetrackvr-v__VERSION__
-      #    releaseName: "EyeTrackApp v__VERSION__" # name of the release
-      #    releaseBody: "See the assets to download this version and install." # message to include in the release
-      #    releaseDraft: true # set to false to publish the release as a finished product
-      #    prerelease: false # set to true to mark the release as a pre-release
 
   deploy:
     runs-on: ubuntu-latest

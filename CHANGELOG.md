@@ -3,6 +3,52 @@
 [![semantic versioning](https://img.shields.io/badge/semantic%20versioning-2.0.0-green.svg)](https://semver.org)
 > All notable changes to this project will be documented in this file
 
+## [1.0.0-tauri.4](https://github.com/ZanzyTHEbar/jsketcher/compare/v1.0.0-tauri.3...v1.0.0-tauri.4) (2023-05-11)
+
+
+### 🐛 Bug Fixes
+
+* wasm not loading in webkit ([0e74582](https://github.com/ZanzyTHEbar/jsketcher/commit/0e7458284831c946c6a0b0b4e4ded96bd4ceffa7))
+
+## [1.0.0-tauri.3](https://github.com/ZanzyTHEbar/jsketcher/compare/v1.0.0-tauri.2...v1.0.0-tauri.3) (2023-05-11)
+
+
+### 🍕 Features
+
+* update rust deps ([b809c28](https://github.com/ZanzyTHEbar/jsketcher/commit/b809c28b8cba7a3354cf1f8f8f9917d1f1c9e653))
+
+## [1.0.0-tauri.2](https://github.com/ZanzyTHEbar/jsketcher/compare/v1.0.0-tauri.1...v1.0.0-tauri.2) (2023-05-11)
+
+
+### 🐛 Bug Fixes
+
+* appimage failing to build ([8dc6217](https://github.com/ZanzyTHEbar/jsketcher/commit/8dc62170a9be15f1ab1f20d9b7db5f3fa8e371b5))
+* test ubuntu 18.04 ([8f55f4d](https://github.com/ZanzyTHEbar/jsketcher/commit/8f55f4d1c1a0bc036441453266c5c5d3ea9c4c65))
+* test ubuntu 18.04 ([0afd146](https://github.com/ZanzyTHEbar/jsketcher/commit/0afd14642bb12107622bc39db41417c6f7d23c61))
+
+
+### 🍕 Features
+
+* update ci to use docker container ([7bcacb0](https://github.com/ZanzyTHEbar/jsketcher/commit/7bcacb0251eb934bd020022433641475782c240e))
+* update ci to use docker container ([98de939](https://github.com/ZanzyTHEbar/jsketcher/commit/98de93981f3cb6bda3763a4eb4ce85b201145c78))
+* update ci to use docker container ([0750c00](https://github.com/ZanzyTHEbar/jsketcher/commit/0750c006f3f49f5f22205f4a6303e33627ddcbe2))
+* update ci to use docker container ([715780f](https://github.com/ZanzyTHEbar/jsketcher/commit/715780f8f6b106b6f1e0e5f19f6145d940aa79ec))
+* update ci to use docker container ([ccbacdb](https://github.com/ZanzyTHEbar/jsketcher/commit/ccbacdba32268fb8990d2b5455329014ef04d3ca))
+* update ci to use docker container ([60aa80d](https://github.com/ZanzyTHEbar/jsketcher/commit/60aa80d636affd2334526cc4569940cf9ceb77c5))
+* update ci to use docker container ([f629258](https://github.com/ZanzyTHEbar/jsketcher/commit/f629258426c7b3a52b4cdce2a120652d3e9727f6))
+* update ci to use docker container ([278cf82](https://github.com/ZanzyTHEbar/jsketcher/commit/278cf82ceaae8e76231780ab571e53e8658a3463))
+* update ci to use docker container ([02ec38c](https://github.com/ZanzyTHEbar/jsketcher/commit/02ec38c1b7f9ef6b2af5df22ca4b7ae9ceb86151))
+* update ci to use docker container ([8fb7924](https://github.com/ZanzyTHEbar/jsketcher/commit/8fb7924dc295aad48f798fd024f8a9394a53d4ba))
+* update ci to use docker container ([d0493b3](https://github.com/ZanzyTHEbar/jsketcher/commit/d0493b3e0ca956b2a5ade8c3c2deac0f78b7d16a))
+* update ci to use docker container ([09fbb4f](https://github.com/ZanzyTHEbar/jsketcher/commit/09fbb4f9b9b714a013207133963cc5de5934ca3e))
+* update ci to use docker container ([c7e39b9](https://github.com/ZanzyTHEbar/jsketcher/commit/c7e39b92f79f6d6d8fa5553e36008eb82f1da8be))
+* update ci to use docker container ([d9221a7](https://github.com/ZanzyTHEbar/jsketcher/commit/d9221a77fe581532de86b9f05a198ccca447781a))
+* update ci to use docker container ([9e96489](https://github.com/ZanzyTHEbar/jsketcher/commit/9e96489eb762a06f5256a838af90cb6e7035f387))
+* update ci to use docker container ([765b708](https://github.com/ZanzyTHEbar/jsketcher/commit/765b708a19fb8fbcb1c2c98395c0570a6b3eef0a))
+* update ci to use docker container ([484b722](https://github.com/ZanzyTHEbar/jsketcher/commit/484b722a49be1c8259e93121b6cea5e1b438f865))
+* update ci to use docker container ([1023d90](https://github.com/ZanzyTHEbar/jsketcher/commit/1023d905291e6d92dd19f23c1abd031fe2ae242b))
+* update ci to use docker container ([1d9fd84](https://github.com/ZanzyTHEbar/jsketcher/commit/1d9fd84aa23984ae9450f940bc2533447ef46d95))
+
 ## 1.0.0-tauri.1 (2023-05-09)
 
 
