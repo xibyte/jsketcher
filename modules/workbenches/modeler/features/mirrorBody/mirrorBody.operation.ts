@@ -6,10 +6,12 @@ import Axis from "math/axis";
 import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
 import icon from "./MIRROR.svg";
+import { ExpectedOrderProductionAnalyzer, SameTopologyProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 
 interface MirrorBodyParams {
   inputBodies: MShell[];
-  face:MFace;
+  face: MFace;
+  featureId: string;
 }
 
 export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
@@ -17,19 +19,22 @@ export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
   label: 'Mirror Body',
   icon,
   info: 'Mirrors selected body along plane of symytry.',
-  path:__dirname,
+  path: __dirname,
   paramsInfo: () => `(?)`,
   run: (params: MirrorBodyParams, ctx: ApplicationContext) => {
     const occ = ctx.occService;
     const oci = occ.commandInterface;
 
-    const created =[];
+    const created = [];
 
     params.inputBodies.forEach((shellToMirror) => {
       const newShellName = shellToMirror.id + ":mirror";
       oci.copy(shellToMirror, newShellName);
       oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
-      created.push(occ.io.getShell(newShellName));
+
+      const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToMirror, params.featureId + "MIRROR"));
+      resultingShell.id = shellToMirror.id + "[" + "M" + ":" + params.featureId + "]";
+      created.push(resultingShell)
     });
 
     return {
