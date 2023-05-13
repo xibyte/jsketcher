@@ -116,9 +116,12 @@ export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
 
   originShell: Shell;
   suffix: string;
+  originShape;
 
   constructor(originShape: MBrepShell, suffix: string) {
+    console.log(originShape);
     super();
+    this.originShape = originShape;
     this.originShell = originShape.brepShell;
     this.suffix = suffix;
   }
@@ -130,6 +133,19 @@ export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
       createdFace.data.id = originFace.data.id + ":" + this.suffix;
       createdFace.data.productionInfo = originFace.data.productionInfo;
     })
+
+    const listOfEdgesToCopy = [...this.originShell.edges];
+    const createdShellEdges = [...createdShell.edges];
+
+    listOfEdgesToCopy.forEach((originEdge, index) => {
+      //console.log("originEdge", originEdge);
+      const createdEdge = createdShellEdges[index];
+      //console.log(createdEdge);
+      createdEdge.data.id = originEdge.data.id + ":" + this.suffix;
+      createdEdge.data.productionInfo = originEdge.data.productionInfo;
+    })
+
+
   }
 }
 
@@ -360,7 +376,7 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
   constructor(consumed: MObject[], mustAdvance: MObject[] = []) {
     super();
     this.consumed = consumed;
-    this.mustAdvance = new Set<string>(mustAdvance&&mustAdvance.map(o => o.id));
+    this.mustAdvance = new Set<string>(mustAdvance && mustAdvance.map(o => o.id));
     consumed.forEach(mShell => {
       if (mShell instanceof MBrepShell) {
         classifier.prepare(mShell.brepShell);
