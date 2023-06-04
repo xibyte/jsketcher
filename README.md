@@ -110,10 +110,11 @@ Generate `Tauri` Build for desktop
 
 ### Install Tauri Deps
 
-Navigate to the [scripts](./scripts/) folder and run the following command:
+Run the following command:
 
 ```bash
-chmod +x ./setup_tauri.sh
+chmod +x ./scripts/setup_tauri_dev_linux.sh 
+sudo ./scripts/setup_tauri_dev_linux.sh 
 ```
 
 
