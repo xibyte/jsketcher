@@ -3,6 +3,55 @@
 [![semantic versioning](https://img.shields.io/badge/semantic%20versioning-2.0.0-green.svg)](https://semver.org)
 > All notable changes to this project will be documented in this file
 
+## 1.0.0-dev.1 (2023-05-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* CHANGES
+
+* fix: update readme
+
+* fix: semantic-release
+
+* Update .releaserc
+
+* Update ci.yaml
+
+* fix: Update .releaserc
+
+* fix: remove repo from package.json
+
+* chore(major): 1.0.0-tauri.1 [skip ci]
+
+## 1.0.0-tauri.1 (2023-05-09)
+
+### ⚠ BREAKING CHANGES
+
+* CHANGES
+
+### 🍕 Features
+
+* add setup scripts for setting up tauri dev environment ([0c41a33](https://github.com/ZanzyTHEbar/jsketcher/commit/0c41a33d0e9dee8ecd645d04e9eb551980680941))
+* **dxf:** add support for dimensions in dxf. ([56c884c](https://github.com/ZanzyTHEbar/jsketcher/commit/56c884ccfd551e0b2dcbee0fc0a0eff62fb6a338))
+
+### 🐛 Bug Fixes
+
+* **dxf:** add dimLayers to the export. ([#183](https://github.com/xibyte/jsketcher/issues/183)) ([a3349b5](https://github.com/xibyte/jsketcher/commit/a3349b5da4c61de42ccebac76978da10c9e2d8f3))
+
+
+### 🍕 Features
+
+* **dxf:** add support for dimensions in dxf. ([56c884c](https://github.com/xibyte/jsketcher/commit/56c884ccfd551e0b2dcbee0fc0a0eff62fb6a338))
+* add support for dxf blocks ([#200](https://github.com/xibyte/jsketcher/issues/200)) ([322d47f](https://github.com/xibyte/jsketcher/commit/322d47f80255d01b8bfcbaa110f0e790e91fa0d1))
+* add support for dxf files import ([2fa2866](https://github.com/xibyte/jsketcher/commit/2fa2866296068bb785f3adeb6e18afe19a698100))
+* initial tauri commit ([#206](https://github.com/xibyte/jsketcher/issues/206)) ([f764f6a](https://github.com/xibyte/jsketcher/commit/f764f6a21012e2d83ef9a5b2e5c687bd36d8ca2a)), closes [#1](https://github.com/xibyte/jsketcher/issues/1) [#200](https://github.com/xibyte/jsketcher/issues/200) [#183](https://github.com/xibyte/jsketcher/issues/183)
+
+
+### 🔁 Continuous Integration
+
+* Setting up CI workflow ([a4b82dc](https://github.com/xibyte/jsketcher/commit/a4b82dce143b34135b30c825e0ac043d1c507275))
+
 ## [1.0.0-tauri.4](https://github.com/ZanzyTHEbar/jsketcher/compare/v1.0.0-tauri.3...v1.0.0-tauri.4) (2023-05-11)
 
 
