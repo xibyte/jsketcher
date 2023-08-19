@@ -1,0 +1,216 @@
+<meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
+
+
+<style>
+    #holderHolder {
+        margin: 0;
+        border: 0;
+        padding: 0;
+    }
+
+    #FakeMouseHolder {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(7, 1fr);
+        grid-column-gap: 0px;
+        grid-row-gap: 0px;
+        gap: 0px;
+    }
+
+    #FakeMouseHolder>div {
+        border: 2px dashed rgba(0, 0, 0, 0.4);
+        border-radius: 10px;
+        margin: 1px;
+    }
+
+
+    #touchpadArea {
+        grid-area: 1 / 1 / 7 / 8;
+    }
+
+    #ScrollWheel {
+        grid-area: 1 / 8 / 3 / 9;
+    }
+
+    #pickList{
+        grid-area: 3 / 8 / 3 / 9;
+        background-color: rgba(100, 94, 94, 0.2);
+    }
+
+
+    #toolsShow {
+        grid-area: 4 / 8 / 4 / 9;
+        background-color: rgba(100, 94, 94, 0.2);
+    }
+
+    #EscButton {
+        grid-area: 5 / 8 / 5 / 9;
+        background-color: rgba(100, 94, 94, 0.2);
+    }
+
+    #ShiftButton {
+        grid-area: 6 / 8 / 6 / 9;
+        background-color: rgba(100, 94, 94, 0.4);
+    }
+
+
+
+    #leftMouseButton {
+        grid-area: 7 / 1 / 8 / 5;
+        background-color: rgba(100, 94, 94, 0.4);
+    }
+
+
+    #rightMouseButton {
+        grid-area: 7 / 5 / 8 / 8;
+        background-color: rgba(100, 94, 94, 0.4);
+    }
+
+    #settingsButton {
+        grid-area: 7 / 8 / 8 / 9;
+        background-color: rgba(100, 94, 94, 0.2);
+    }
+
+
+    #settings {
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        background-color: rgb(95, 101, 101);
+        position: absolute;
+        z-index: 200;
+        border-radius: 30px;
+        border-color: darkslategray;
+        border-style: solid;
+        border-width: thick;
+        margin: 20px;
+        padding: 20px;
+        text-align: left;
+    }
+
+
+
+    #mouseToggle {
+        position: fixed;
+        bottom: calc(30% - 20px);
+        left: 0;
+        width: 40px;
+        height: 40px;
+        background-color: black;
+        border-top-right-radius: 15%;
+        border-bottom-right-radius: 15%;
+        border: 3px solid #73AD21;
+        z-index: 100;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        border: 0px;
+        overflow-x: hidden;
+        overflow-y: hidden;
+
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0px;
+        z-index: 1;
+        overflow: hidden;
+    }
+
+
+    #cursor {
+        pointer-events: none;
+        position: absolute;
+        transform: translate(-50%, -50%) scale(40);
+
+    }
+
+    input {
+        width: calc(100% - 2 * 20px);
+        margin: 20px;
+        float: left;
+    }
+
+
+
+    #saveSettings {
+        width: calc(100% - 2 * 20px);
+        margin: 20px;
+
+        font-size: xx-large;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        outline: none;
+        color: #fff;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 9px #999;
+
+    }
+
+    #saveSettings:active {
+        background-color: #3e8e41;
+        box-shadow: 0 5px #666;
+        transform: translateY(4px);
+    }
+</style>
+
+<body>
+
+    <!-- <iframe id="jsketcher" src="./withMouse.html" title="JSketcher" scrolling="no"></iframe> -->
+    <iframe id="jsketcher" title="JSketcher" scrolling="no"></iframe>
+
+    <div id="holderHolder">
+        <div id="FakeMouseHolder">
+
+            <div id="touchpadArea"></div>
+            <div id="ScrollWheel">zoom</div>
+
+            
+            <div id="pickList">pick list</div>
+            <div id="toolsShow">Tools</div>
+            <div id="EscButton">ESC</div>
+            <div id="ShiftButton">shift</div>
+
+            <div id="leftMouseButton" class="mousebutton">🔓</div>
+            <div id="rightMouseButton" class="mousebutton">🔓</div>
+            <div id="settingsButton">settings</div>
+        </div>
+    </div>
+
+
+    <button id="mouseToggle" onclick="toggleMousepad()">🖱</button>
+
+    <div id="settings">
+        <h1>Settings</h1><br>
+
+        <label for="mouseSpeed">Mouse Speed</label><br>
+        <input id="mouseSpeed" type="range" value=".6" min="0.1" max="2" step="0.1"
+            onchange="this.nextElementSibling.value = this.value">
+        <output>.6</output> <br><br>
+
+
+        <input id="leftTabs" type="checkbox" value="false" style="width: auto;">
+        <label for="leftTabs">Left Tabs</label>
+
+        <button id="saveSettings">Lets get started</button>
+
+    </div>
+
+</body>
+
+<script src="./mouse/mouseController.js"></script>

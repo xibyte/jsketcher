@@ -164,7 +164,15 @@ export function activate(context) {
       if (e.button !== 0) {
         // handleSolidPick(e);
       } else {
-        handlePick(e);
+        if (__CAD_APP.pickControlService.pickListMode == true){
+          __CAD_APP.pickControlService.pickListMode = false;
+          pickListDialogMode = true;
+          handlePick(e);
+          pickListDialogMode = false;
+        }else{
+          handlePick(e);
+        }
+        
       }
     }
   }

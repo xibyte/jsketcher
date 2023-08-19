@@ -80,6 +80,11 @@ export default class Viewer {
     this.sceneSetup.trackballControls.zoomStep(1, 5);
   }
 
+  zoomStep(zoomValue) {
+    this.sceneSetup.trackballControls.zoomStep(0, zoomValue);
+  }
+
+
   lookAt(target, normal, up, dist) {
     const obj = this.sceneSetup.trackballControls.object;
     if (up) {
