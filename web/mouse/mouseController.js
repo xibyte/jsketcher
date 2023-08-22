@@ -13,6 +13,7 @@ cursor.style.height = "100px";
 ActiveButtonBackgroundColor = "rgba(252, 242, 44, 0.3)";
 InactiveButtonBackgroundColor = "rgba(100, 94, 94, 0.4)";
 
+
 const FakeMouseHolderDiv = document.getElementById("FakeMouseHolder");
 const holderHolder = document.getElementById("holderHolder");
 
@@ -40,7 +41,7 @@ function sendNewEvent(eventType) {
 }
 
 document.getElementById("touchpadArea").addEventListener("touchstart", function (event) {
-  document.body.requestFullscreen();
+  //document.body.requestFullscreen();
   lastTouchX = event.touches[0].clientX;
   lastTouchY = event.touches[0].clientY;
 });
@@ -51,7 +52,7 @@ document.getElementById("touchpadArea").addEventListener("click", function (even
 
 document.getElementById("touchpadArea").addEventListener("dblclick", function (event) {
   event.preventDefault();
-  document.getElementById("leftMouseButton").click();
+  //document.getElementById("leftMouseButton").click();
   sendNewEvent("dblclick");
 });
 
@@ -203,7 +204,6 @@ document.getElementById("ScrollWheel").addEventListener("touchstart", function (
 
 document.getElementById("ScrollWheel").addEventListener("touchend", function (event) {
   zooming = false;
-  console.log("Should stop scrolling");
   mouseObject.deltaY = 0;
   lastScrollY = 0;
   event.preventDefault();
@@ -211,20 +211,10 @@ document.getElementById("ScrollWheel").addEventListener("touchend", function (ev
 
 document.getElementById("ScrollWheel").addEventListener("touchmove", async function (event) {
   let y = event.touches[0].clientY;
-
   let difrenceY = y - lastScrollY;
-
   lastScrollY = y;
-
-  console.log(difrenceY, "scrolling", zooming);
-
   mouseObject.deltaY = difrenceY / 10000;
   sendNewEvent("zoom");
-
-  // if (Math.abs(difrenceY) > 5) {
-  //   mouseObject.deltaY = difrenceY / 10000;
-  //   sendNewEvent("zoom");
-  // }
   event.preventDefault();
 });
 
@@ -257,6 +247,19 @@ document.getElementById("saveSettings").onclick = function (event) {
   speed = localStorage.mouseSpeed;
   document.getElementById("settings").style.display = "none";
   //console.log("dats the window locations", window.location.search);
+};
+
+document.getElementById("toggleUItabs").onclick = function (event) {
+  sendNewEvent("toggleUItabs");
+};
+
+
+document.getElementById("toggleUIoverlay").onclick = function (event) {
+  sendNewEvent("toggleUIoverlay");
+};
+
+document.getElementById("toggleUItoolbar").onclick = function (event) {
+  sendNewEvent("toggleUItoolbar");
 };
 
 

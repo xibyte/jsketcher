@@ -1,19 +1,54 @@
 <html>
+  <meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
 <head>
   <title>Web CAD / Part Designer</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext">
   <link rel="stylesheet" href="./lib-assets/font-awesome/css/font-awesome.min.css?modeler">
   <link rel="shortcut icon" href="./img/cad/cube96.png" />
   <script src="./lib/pnltri.js"></script>
   <script src="./lib/verb.js"></script>
 </head>
+
 <body>
 
-  <a id="downloader" style="display: none;" ></a>
+  <a id="downloader" style="display: none;"></a>
   <input id="uploader" style="display: none;" type="file">
   <div id="app" style="height: 100%;"></div>
 
   <script src="./static/index.bundle.js"></script>
+
+  <script>
+    // check for common mobile user agents
+    if (
+      navigator.userAgent.match(/Android/i) ||
+      navigator.userAgent.match(/webOS/i) ||
+      navigator.userAgent.match(/iPhone/i) ||
+      navigator.userAgent.match(/iPad/i) ||
+      navigator.userAgent.match(/iPod/i) ||
+      navigator.userAgent.match(/BlackBerry/i) ||
+      navigator.userAgent.match(/Windows Phone/i)
+    ) {
+      // the user is using a mobile device, so redirect to the mobile version of the website
+      try {
+        //detect iframe parent and see if it is the mobile mouse
+        //if frame is loaded in mouse page do nothing otherwise redirect to mouse page
+        if ( window.location.pathname == window.parent.location.pathname ) {
+          //test if parent is mobile mouse emulator page and redirect if not
+          if (!window.parent.location.pathname.includes("/mouse.html")){
+            window.location = "./mouse.html" + window.location.search;
+          }
+        }
+      } catch { }
+    }
+
+    
+
+  </script>
+
+
 </body>
+
 </html>

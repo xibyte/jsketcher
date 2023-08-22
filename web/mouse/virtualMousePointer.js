@@ -1,17 +1,33 @@
 //Allways keep page at propper position,
 // prevents page scrolling acidentally due to html elements going out of view.
-var intervalId = window.setInterval(function () {
+mouseDebugger = false;
+
+uiElementsToggle = {
+  toggleUItabs: "none",
+  toggleUIoverlay: "none",
+  toggleUItoolbar: "none",
+};
+
+
+document.getElementsByClassName("x-View3d-mainLayout")[0].prepend(document.getElementsByClassName("x-View3d-bottomStack")[0])
+
+
+
+window.setInterval(function () {
   window.scrollTo(0, 0);
-
-  document.getElementsByClassName("x-ControlBar mid-typography")[0].style.display = "none";
-  document.getElementsByClassName(
-    "x-TabSwitcher x-AppTabs-contentSwitcher small-typography disable-selection"
-  )[0].style.display = "none";
-  document.getElementsByClassName("x-View3d-overlayingPanel")[0].style.display = "none";
-
-  document.getElementsByClassName("x-FloatView")[0].style.display = "none";
-  document.getElementsByClassName("x-View3d-overlayingPanel")[0].style.display = "none";
+  setDisplayValueByClassName("x-TabSwitcher x-AppTabs-contentSwitcher small-typography disable-selection", "none");
+  setDisplayValueByClassName("x-FloatView", uiElementsToggle.toggleUItabs);
+  setDisplayValueByClassName("x-ControlBar mid-typography", uiElementsToggle.toggleUItoolbar);
+  setDisplayValueByClassName("x-View3d-overlayingPanel", uiElementsToggle.toggleUIoverlay);
 }, 200);
+
+function setDisplayValueByClassName(clssOfItem, newDsiplayValue) {
+  try {
+    document.getElementsByClassName(clssOfItem)[0].style.display = newDsiplayValue;
+  } catch {}
+}
+
+mouseOverList = [];
 
 theToolbar = document.getElementsByClassName("x-Toolbar disable-selection condensed x-Toolbar-flat")[0];
 theToolbar.style.display = "none";
@@ -23,11 +39,8 @@ theToolbar.style.bottom = "60px";
 theToolbar.style.overflow = "wrap";
 theToolbar.style.borderRadius = "20px";
 theToolbar.style.zIndex = "1000010";
-//theToolbar.style.pointerEvents = "initial";
 
 __CAD_APP.pickControlService.pickListMode = false;
-
-
 theToolbar.addEventListener(
   "click",
   function (e) {
@@ -36,31 +49,45 @@ theToolbar.addEventListener(
   },
   false
 );
-
 //document.body.appendChild(theToolbar);
-
 var lastMouseOverObject;
-
 var lastThingToDo = {
   leftMouseDown: false,
   rightMouseDown: false,
 };
-
 var shiftKey = false;
 
+scaleFactor = 2;
 window.addEventListener(
   "message",
   (event) => {
     const thingToDo = event.data;
     if (typeof thingToDo !== "object") return;
 
-    absoluteX = thingToDo.absoluteX ? thingToDo.absoluteX : "";
-    absoluteY = thingToDo.absoluteY ? thingToDo.absoluteY : "";
+    absoluteX = thingToDo.absoluteX ? thingToDo.absoluteX  : "";
+    absoluteY = thingToDo.absoluteY ? thingToDo.absoluteY  : "";
+
+    if (mouseDebugger)console.log(absoluteX, absoluteY);
+
     deltaY = thingToDo.deltaY ? thingToDo.deltaY : "";
     eventType = thingToDo.eventType ? thingToDo.eventType : "";
 
+    if (eventType == "toggleUItabs") {
+      uiElementsToggle.toggleUItabs = uiElementsToggle.toggleUItabs == "none" ? "" : "none";
+      return;
+    }
+
+    if (eventType == "toggleUIoverlay") {
+      uiElementsToggle.toggleUIoverlay = uiElementsToggle.toggleUIoverlay == "none" ? "" : "none";
+      return;
+    }
+
+    if (eventType == "toggleUItoolbar") {
+      uiElementsToggle.toggleUItoolbar = uiElementsToggle.toggleUItoolbar == "none" ? "" : "none";
+      return;
+    }
+
     if (eventType == "zoom") {
-      //console.log(deltaY);
       __CAD_APP.viewer.zoomStep(deltaY);
       return;
     }
@@ -86,16 +113,13 @@ window.addEventListener(
 
     if (eventType == "EscButton") {
       const itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
-      console.log("clearing selection");
-
+      if (mouseDebugger) console.log("clearing selection");
       __CAD_APP.pickControlService.deselectAll();
-
       itemsUnderMouse.forEach((item, key) => {
         item.dispatchEvent(new KeyboardEvent("keydown", { "key": "Escape" }));
         item.dispatchEvent(new KeyboardEvent("keypress", { "key": "Escape" }));
         item.dispatchEvent(new KeyboardEvent("keyup", { "key": "Escape" }));
       });
-
       __CAD_APP.pickControlService;
       return;
     }
@@ -130,320 +154,107 @@ window.addEventListener(
     }
 
     lastThingToDo = thingToDo;
-
     stoplooping = "";
+    const itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
 
-    if (eventType) {
-      const itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
-      stoplooping = doTheProperEvents(itemsUnderMouse[0]);
+    stoplooping = doTheProperEvents(itemsUnderMouse[0]);
+    // if (itemsUnderMouse[0].nodeName == "CANVAS" && stoplooping !== "stop") {
+    //   itemsUnderMouse.forEach((item, key) => {
+    //     if (key !== 0) stoplooping = doTheProperEvents(item);
+    //   });
+    // }
+    let mouseOutObjects = [];
+    itemsUnderMouse.forEach((item, key) => {
+      if (!mouseOverList.includes(item)) mouseOutObjects.push(item);
+    });
+    mouseOutObjects.forEach((item, key) => {
+      exicuteEvents(item, [
+        "mouseleave",
+        "mouseout",
+        "mouseexit",
+        "pointerleave",
+        "pointerout",
+        
+        //"focusout",
+      ]);
+    });
 
-      if (itemsUnderMouse[0].nodeName == "CANVAS" && stoplooping !== "stop") {
-        itemsUnderMouse.forEach((item, key) => {
-          if (key !== 0) stoplooping = doTheProperEvents(item);
-        });
-      }
-    }
 
     __CAD_APP.pickControlService.pickListMode = false;
   },
-  false
+  true
 );
 
 function doTheProperEvents(item) {
-  exicuteEvent(item, {
-    type: "mouseover",
-    view: window,
-    bubbles: true,
-    cancelable: true,
-    absoluteX,
-    absoluteY,
-  });
+  if (eventType == "mousemove") {
+    exicuteEvents(item, ["mousemove", "mouseover"]);
 
-  exicuteEvent(item, {
-    type: "mouseenter",
-    view: window,
-    bubbles: true,
-    cancelable: true,
-    absoluteX,
-    absoluteY,
-  });
-
-  exicuteEvent(item, {
-    type: "mousemove",
-    view: window,
-    bubbles: true,
-    cancelable: true,
-    absoluteX,
-    absoluteY,
-  });
+    if (!mouseOverList.includes(item)) {
+      mouseOverList.push(item);
+      exicuteEvents(item, ["mouseenter", "pointerenter"]);
+    }
+  }
 
   if (eventType == "leftDragStart") {
-    exicuteEvent(item, {
-      type: "click",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
-
-    exicuteEvent(item, {
-      type: "mousedown",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
+    exicuteEvents(item, ["click", "mousedown", "pointerdown"]);
   }
 
   if (eventType == "leftDragEnd") {
-    exicuteEvent(item, {
-      type: "mouseup",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
+    exicuteEvents(item, ["mouseup", "pointerup"]);
   }
 
   if (eventType == "rightDragStart") {
-    exicuteEvent(item, {
-      type: "contextmenu",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
-    exicuteEvent(item, {
-      type: "auxclick",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
-
-    exicuteEvent(item, {
-      type: "click",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
-
-    exicuteEvent(item, {
-      type: "mousedown",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
-
-    exicuteEvent(item, {
-      type: "pointerdown",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
+    exicuteEvents(item, ["contextmenu"]);
+    exicuteEvents(item, ["auxclick", "click", "mousedown", "pointerdown"], { button: 2 });
   }
 
   if (eventType == "rightDragEnd") {
-    exicuteEvent(item, {
-      type: "mouseup",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
-
-    exicuteEvent(item, {
-      type: "pointerup",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
+    exicuteEvents(item, ["mouseup", "pointerup"], { button: 2 });
   }
 
   if (eventType == "click") {
-    // try {
-    //   item.click();
-    // } catch {console.log("click failed")}
+    if (item.nodeName == "INPUT") item.focus();
 
-    if (item.nodeName == "INPUT") {
-      item.focus();
-    }
-
-    if (item.nodeName == "SELECT") {
-      item.focus();
-      //alert("WE HGAVE SELECT")
-      item.dispatchEvent(new MouseEvent("click"));
-
-      //item.attr('size',5);
-      item.setAttribute("size", 10);
-      item.style.appearance = "";
-      item.style.overflow = "auto";
-    }
-
-    exicuteEvent(item, {
-      type: "click",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
-
-    exicuteEvent(item, {
-      type: "mousedown",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
-
-    exicuteEvent(item, {
-      type: "mouseup",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
+    exicuteEvents(item, ["click", "mousedown", "mouseup"]);
   }
-
   if (eventType == "dblclick") {
-    // try {
-    //   item.click();
-    // } catch {console.log("click failed")}
+    if (item.nodeName == "INPUT") item.focus();
 
-    if (item.nodeName == "INPUT") {
-      item.focus();
-    }
-
-    exicuteEvent(item, {
-      type: "click",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
-
-    exicuteEvent(item, {
-      type: "dblclick",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
+    exicuteEvents(item, ["click", "mousedown", "mouseup", "dblclick"]);
   }
-
   if (eventType == "rightclick") {
-    exicuteEvent(item, {
-      type: "contextmenu",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
-    exicuteEvent(item, {
-      type: "auxclick",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-    });
-
-    exicuteEvent(item, {
-      type: "click",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
-
-    exicuteEvent(item, {
-      type: "mousedown",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
-
-    exicuteEvent(item, {
-      type: "mouseup",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
-
-    exicuteEvent(item, {
-      type: "pointerdown",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
-
-    exicuteEvent(item, {
-      type: "pointerup",
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      absoluteX,
-      absoluteY,
-      button: 2,
-    });
+    exicuteEvents(item, ["contextmenu", "auxclick"]);
+    exicuteEvents(item, ["click", "mousedown", "mouseup", "pointerdown", "pointerup"], { button: 2 });
   }
 }
 
-function exicuteEvent(TargetElement, eventToSend) {
-  //console.log(eventToSend);
-  eventToSend.clientX = eventToSend.absoluteX;
-  eventToSend.clientY = eventToSend.absoluteY;
-  eventToSend.x = eventToSend.absoluteX;
-  eventToSend.y = eventToSend.absoluteY;
-  eventToSend.pageX = eventToSend.absoluteX;
-  eventToSend.pageY = eventToSend.absoluteY;
-
+function exicuteEvent(TargetElement, eventToSend = {}) {
+  eventToSend.clientX = absoluteX;
+  eventToSend.clientY = absoluteY;
+  eventToSend.x = absoluteX;
+  eventToSend.y = absoluteY;
+  eventToSend.pageX = absoluteX;
+  eventToSend.pageY = absoluteY;
+  eventToSend.view = window;
+  eventToSend.bubbles = true;
+  eventToSend.cancelable = true;
   eventToSend.shiftKey = shiftKey;
 
   eventToSend = new MouseEvent(eventToSend.type, eventToSend);
-
   try {
-    TargetElement.dispatchEvent(eventToSend);
+    testResult = TargetElement.dispatchEvent(eventToSend);
+    if (mouseDebugger) if (!testResult) console.log("event trigger failed", testResult, TargetElement, eventToSend);
     //if (TargetElement.dispatchEvent(eventToSend) == false) console.log("event trigger failed", TargetElement, eventToSend);
   } catch {
-    console.log("event trigger failed", TargetElement, eventToSend);
+    if (mouseDebugger) console.log("event trigger failed", TargetElement, eventToSend);
     return "failed";
   }
+}
+
+function exicuteEvents(TargetElement, eventTypes, eventToSend = {}) {
+  eventTemplate = JSON.parse(JSON.stringify(eventToSend));
+  eventTypes.forEach((enenvtToFire, key) => {
+    eventTemplate.type = enenvtToFire;
+    exicuteEvent(TargetElement, eventTemplate);
+  });
 }
