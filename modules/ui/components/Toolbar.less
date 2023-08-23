@@ -9,6 +9,10 @@
     border-radius: 0;
   }
   align-content: center;
+  overflow-y:scroll;
+
+  display:inline-flex;
+  flex-wrap: wrap;
 }
 
 .vertical {
@@ -58,13 +62,16 @@
 }
 
 .group {
-  display: flex;
+  display:inline-flex;
+  overflow-wrap: normal;
   border: rgb(212, 12, 12);
   border-width: 5px;
   background-color: rgb(44, 44, 44);
   margin: 3px;
   padding: 2px;
   border-radius: 5px;
+  height: max-content;
+  flex-wrap: wrap;
 }
 
 
