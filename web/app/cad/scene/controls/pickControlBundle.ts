@@ -162,17 +162,21 @@ export function activate(context) {
     const TOL = 1;
     if (dx < TOL && dy < TOL) {
       if (e.button !== 0) {
-        // handleSolidPick(e);
+      //handleSolidPick(e);
       } else {
-        if (__CAD_APP.pickControlService.pickListMode == true){
-          __CAD_APP.pickControlService.pickListMode = false;
-          pickListDialogMode = true;
-          handlePick(e);
-          pickListDialogMode = false;
+        if (__CAD_APP.pickControlService.pickListMode !== undefined){
+          if (__CAD_APP.pickControlService.pickListMode == true){
+            pickListDialogMode = true;
+            handlePick(e);
+            pickListDialogMode = false;
+            __CAD_APP.pickControlService.pickListMode = false;
+          }else{
+            pickListDialogMode = false;
+            handlePick(e);
+          }
         }else{
           handlePick(e);
         }
-        
       }
     }
   }
@@ -219,7 +223,7 @@ export function activate(context) {
 
   function handlePick(event) {
     const pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo);
-    if (pickListDialogMode) {
+    if (pickListDialogMode == true) {
       const capture = new Set<MObject>();
       traversePickResults(event, pickResults, ALL_POSSIBLE_KIND, (model) => {
         if (!(model.parent instanceof MOpenFaceShell)) {
