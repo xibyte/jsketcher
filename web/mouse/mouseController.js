@@ -13,7 +13,6 @@ cursor.style.height = "100px";
 ActiveButtonBackgroundColor = "rgba(252, 242, 44, 0.3)";
 InactiveButtonBackgroundColor = "rgba(100, 94, 94, 0.4)";
 
-
 const FakeMouseHolderDiv = document.getElementById("FakeMouseHolder");
 const holderHolder = document.getElementById("holderHolder");
 
@@ -42,8 +41,30 @@ function sendNewEvent(eventType) {
 
 document.getElementById("touchpadArea").addEventListener("touchstart", function (event) {
   //document.body.requestFullscreen();
-  lastTouchX = event.touches[0].clientX;
-  lastTouchY = event.touches[0].clientY;
+  console.log(event.touches);
+
+  if (event.touches.length == 1){
+    lastTouchX = event.touches[0].clientX;
+    lastTouchY = event.touches[0].clientY;
+  }
+
+  if (event.touches.length ==2){
+    lastScrollY = event.touches[0].clientY;
+    zooming = true;
+    event.preventDefault();
+  
+  }
+
+});
+
+
+document.getElementById("touchpadArea").addEventListener("touchend", function (event) {
+  if (event.touches.length ==2){
+    zooming = false;
+    mouseObject.deltaY = 0;
+    lastScrollY = 0;
+    event.preventDefault();
+  }
 });
 
 document.getElementById("touchpadArea").addEventListener("click", function (event) {
@@ -63,26 +84,38 @@ document.getElementById("touchpadArea").addEventListener("contextmenu", function
 
 document.getElementById("touchpadArea").addEventListener("touchmove", function (event) {
   event.preventDefault();
+  if (event.touches.length == 1){
+    let x = event.touches[0].clientX;
+    let y = event.touches[0].clientY;
+  
+    let difrenceX = x - lastTouchX;
+    let difrenceY = y - lastTouchY;
+  
+    lastTouchX = x;
+    lastTouchY = y;
+  
+    mouseObject.absoluteX = mouseObject.absoluteX + difrenceX * speed;
+    mouseObject.absoluteY = mouseObject.absoluteY + difrenceY * speed;
+  
+    mouseObject.absoluteX = mouseObject.absoluteX > 0 ? mouseObject.absoluteX : 1;
+    mouseObject.absoluteY = mouseObject.absoluteY > 0 ? mouseObject.absoluteY : 1;
+  
+    cursor.style.left = mouseObject.absoluteX + "px";
+    cursor.style.top = mouseObject.absoluteY + "px";
+  
+    sendNewEvent("mousemove");
+  }
 
-  let x = event.touches[0].clientX;
-  let y = event.touches[0].clientY;
+  if (event.touches.length == 2){
+    //zoom zoom zoom
+    console.log("zoom zoom zoom")
 
-  let difrenceX = x - lastTouchX;
-  let difrenceY = y - lastTouchY;
-
-  lastTouchX = x;
-  lastTouchY = y;
-
-  mouseObject.absoluteX = mouseObject.absoluteX + difrenceX * speed;
-  mouseObject.absoluteY = mouseObject.absoluteY + difrenceY * speed;
-
-  mouseObject.absoluteX = mouseObject.absoluteX > 0 ? mouseObject.absoluteX : 1;
-  mouseObject.absoluteY = mouseObject.absoluteY > 0 ? mouseObject.absoluteY : 1;
-
-  cursor.style.left = mouseObject.absoluteX + "px";
-  cursor.style.top = mouseObject.absoluteY + "px";
-
-  sendNewEvent("mousemove");
+    let y = event.touches[0].clientY;
+    let difrenceY = y - lastScrollY;
+    lastScrollY = y;
+    mouseObject.deltaY = difrenceY / 10000;
+    sendNewEvent("zoom");
+  }
 });
 
 document.getElementById("leftMouseButton").addEventListener("contextmenu", function (event) {
@@ -104,12 +137,12 @@ document.getElementById("rightMouseButton").addEventListener("contextmenu", func
   event.preventDefault();
   if (event.target.innerHTML == "🔒") {
     event.target.innerHTML = "🔓";
-    mouseObject.leftMouseDown = false;
+    mouseObject.rightMouseDown = false;
     event.target.style.backgroundColor = InactiveButtonBackgroundColor;
     sendNewEvent("mousemove");
   } else {
     event.target.innerHTML = "🔒";
-    mouseObject.leftMouseDown = true;
+    mouseObject.rightMouseDown = true;
     event.target.style.backgroundColor = ActiveButtonBackgroundColor;
     sendNewEvent("mousemove");
   }
@@ -130,19 +163,17 @@ document.getElementById("rightMouseButton").addEventListener("click", function (
   event.preventDefault();
   if (event.target.innerHTML == "🔒") {
     event.target.innerHTML = "🔓";
-    mouseObject.leftMouseDown = false;
+    mouseObject.rightMouseDown = false;
     event.target.style.backgroundColor = InactiveButtonBackgroundColor;
     sendNewEvent("mousemove");
+  }else{
+    doRightClick();
   }
-  doRightClick();
 });
-
-
 
 document.getElementById("pickList").addEventListener("click", function (event) {
-    sendNewEvent("pickList");
+  sendNewEvent("pickList");
 });
-
 
 document.getElementById("ShiftButton").addEventListener("click", function (event) {
   event.preventDefault();
@@ -253,7 +284,6 @@ document.getElementById("toggleUItabs").onclick = function (event) {
   sendNewEvent("toggleUItabs");
 };
 
-
 document.getElementById("toggleUIoverlay").onclick = function (event) {
   sendNewEvent("toggleUIoverlay");
 };
@@ -261,7 +291,6 @@ document.getElementById("toggleUIoverlay").onclick = function (event) {
 document.getElementById("toggleUItoolbar").onclick = function (event) {
   sendNewEvent("toggleUItoolbar");
 };
-
 
 document.getElementById("settingsButton").onclick = function (event) {
   document.getElementById("settings").style.display = "";

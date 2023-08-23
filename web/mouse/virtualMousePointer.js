@@ -8,10 +8,9 @@ uiElementsToggle = {
   toggleUItoolbar: "none",
 };
 
-
-document.getElementsByClassName("x-View3d-mainLayout")[0].prepend(document.getElementsByClassName("x-View3d-bottomStack")[0])
-
-
+document
+  .getElementsByClassName("x-View3d-mainLayout")[0]
+  .prepend(document.getElementsByClassName("x-View3d-bottomStack")[0]);
 
 window.setInterval(function () {
   window.scrollTo(0, 0);
@@ -60,14 +59,14 @@ var shiftKey = false;
 scaleFactor = 2;
 window.addEventListener(
   "message",
-  (event) => {
+   (event) => {
     const thingToDo = event.data;
     if (typeof thingToDo !== "object") return;
 
-    absoluteX = thingToDo.absoluteX ? thingToDo.absoluteX  : "";
-    absoluteY = thingToDo.absoluteY ? thingToDo.absoluteY  : "";
+    absoluteX = thingToDo.absoluteX ? thingToDo.absoluteX : "";
+    absoluteY = thingToDo.absoluteY ? thingToDo.absoluteY : "";
 
-    if (mouseDebugger)console.log(absoluteX, absoluteY);
+    if (mouseDebugger) console.log(absoluteX, absoluteY);
 
     deltaY = thingToDo.deltaY ? thingToDo.deltaY : "";
     eventType = thingToDo.eventType ? thingToDo.eventType : "";
@@ -153,20 +152,35 @@ window.addEventListener(
       eventType = "click";
     }
 
+    
     lastThingToDo = thingToDo;
     stoplooping = "";
     const itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
 
-    stoplooping = doTheProperEvents(itemsUnderMouse[0]);
+    stoplooping =  doTheProperEvents(itemsUnderMouse[0]);
     // if (itemsUnderMouse[0].nodeName == "CANVAS" && stoplooping !== "stop") {
-    //   itemsUnderMouse.forEach((item, key) => {
-    //     if (key !== 0) stoplooping = doTheProperEvents(item);
+    //    itemsUnderMouse.forEach( (item, key) => {
+    //     if (key !== 0) stoplooping =  doTheProperEvents(item);
     //   });
     // }
+
+
     let mouseOutObjects = [];
-    itemsUnderMouse.forEach((item, key) => {
-      if (!mouseOverList.includes(item)) mouseOutObjects.push(item);
+
+
+
+    let newMouseOverList = [];
+    mouseOverList.forEach((item, key) => {
+      if (!itemsUnderMouse.includes(item)){
+        mouseOutObjects.push(item);
+      }else{
+        newMouseOverList.push(item);
+      }
     });
+
+    mouseOverList = newMouseOverList;
+
+
     mouseOutObjects.forEach((item, key) => {
       exicuteEvents(item, [
         "mouseleave",
@@ -174,24 +188,21 @@ window.addEventListener(
         "mouseexit",
         "pointerleave",
         "pointerout",
-        
-        //"focusout",
       ]);
     });
 
-
-    __CAD_APP.pickControlService.pickListMode = false;
+    //__CAD_APP.pickControlService.pickListMode = false;
   },
   true
 );
 
-function doTheProperEvents(item) {
+ function doTheProperEvents(item) {
   if (eventType == "mousemove") {
-    exicuteEvents(item, ["mousemove", "mouseover"]);
+     exicuteEvents(item, ["mousemove", "mouseover"]);
 
     if (!mouseOverList.includes(item)) {
       mouseOverList.push(item);
-      exicuteEvents(item, ["mouseenter", "pointerenter"]);
+       exicuteEvents(item, ["mouseenter", "pointerenter"]);
     }
   }
 
@@ -204,8 +215,7 @@ function doTheProperEvents(item) {
   }
 
   if (eventType == "rightDragStart") {
-    exicuteEvents(item, ["contextmenu"]);
-    exicuteEvents(item, ["auxclick", "click", "mousedown", "pointerdown"], { button: 2 });
+    exicuteEvents(item, ["contextmenu","auxclick", "mousedown", "pointerdown"], { button: 2 });
   }
 
   if (eventType == "rightDragEnd") {
@@ -228,7 +238,7 @@ function doTheProperEvents(item) {
   }
 }
 
-function exicuteEvent(TargetElement, eventToSend = {}) {
+ function exicuteEvent(TargetElement, eventToSend = {}) {
   eventToSend.clientX = absoluteX;
   eventToSend.clientY = absoluteY;
   eventToSend.x = absoluteX;
@@ -242,19 +252,20 @@ function exicuteEvent(TargetElement, eventToSend = {}) {
 
   eventToSend = new MouseEvent(eventToSend.type, eventToSend);
   try {
-    testResult = TargetElement.dispatchEvent(eventToSend);
+    testResult =  TargetElement.dispatchEvent(eventToSend);
     if (mouseDebugger) if (!testResult) console.log("event trigger failed", testResult, TargetElement, eventToSend);
     //if (TargetElement.dispatchEvent(eventToSend) == false) console.log("event trigger failed", TargetElement, eventToSend);
+    return testResult;
   } catch {
     if (mouseDebugger) console.log("event trigger failed", TargetElement, eventToSend);
     return "failed";
   }
 }
 
-function exicuteEvents(TargetElement, eventTypes, eventToSend = {}) {
+ function exicuteEvents(TargetElement, eventTypes, eventToSend = {}) {
   eventTemplate = JSON.parse(JSON.stringify(eventToSend));
-  eventTypes.forEach((enenvtToFire, key) => {
+  eventTypes.forEach( (enenvtToFire, key) => {
     eventTemplate.type = enenvtToFire;
-    exicuteEvent(TargetElement, eventTemplate);
+     exicuteEvent(TargetElement, eventTemplate);
   });
 }
