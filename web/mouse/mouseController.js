@@ -1,6 +1,3 @@
-pointerImage =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeAQMAAAAB/jzhAAAABlBMVEX/AAAAAABBoxIDAAAAAnRSTlP/AOW3MEoAAABISURBVHicPc6xCQAgDETRhBQpM0JGyWjBTR3BAQTlW9g8uOK4kz5nS0FCgIOBgjwaChICHAwU5NFQkBDgYKA//hroYHdyY/W+8QFAUbYNynAAAAAASUVORK5CYII=";
-
 document.body.innerHTML += `
   <svg id="cursor" xmlns="http://www.w3.org/2000/svg" viewBox="-10003 -10003 20010 20010">
   <path d="M 0 0 L 0 10000 Z M 0 0 L 0 -10000 M 0 0 L -10000 0 M 0 0 L 10000 0 M 25 0 A 1 1 0 0 0 -25 0 A 1 1 0 0 0 25 0" stroke="black" stroke-width="3" fill="none"/>
@@ -31,17 +28,17 @@ var lastTouchY = 0;
 
 var speed = 0.6;
 
-const pointerTarget = document.getElementById("jsketcher").contentWindow;
+const pointerTarget = document.getElementById("pointerTarget");
+
 function sendNewEvent(eventType) {
   let obj = JSON.parse(JSON.stringify(mouseObject));
   obj.eventType = eventType;
   //console.log("sending this", obj);
-  pointerTarget.postMessage(obj);
+  return pointerTarget.contentWindow.postMessage(obj);
 }
 
 document.getElementById("touchpadArea").addEventListener("touchstart", function (event) {
-  //document.body.requestFullscreen();
-  console.log(event.touches);
+  if (window.innerHeight !== screen.height) document.body.requestFullscreen();
 
   if (event.touches.length == 1){
     lastTouchX = event.touches[0].clientX;
@@ -67,7 +64,11 @@ document.getElementById("touchpadArea").addEventListener("touchend", function (e
   }
 });
 
-document.getElementById("touchpadArea").addEventListener("click", function (event) {
+document.getElementById("touchpadArea").addEventListener("click", async function (event) {
+  // //alert(await sendNewEvent("whatUnderTouchLocation"));
+  // let bla =  await sendNewEvent("whatUnderTouchLocation");
+  // console.log(bla)
+
   document.getElementById("leftMouseButton").click();
 });
 
@@ -250,17 +251,18 @@ document.getElementById("ScrollWheel").addEventListener("touchmove", async funct
 });
 
 window.addEventListener("message", function (event) {
-  console.log("Message received from the child: " + event.data); // Message received from child
+  //console.log("Message received from the child: " + event.data); // Message received from child
   if (event.data == "showTouchpad") toggleMousepad("show");
 });
 
-var iframe = document.getElementById("jsketcher");
 
-iframe.onload = function () {
+
+pointerTarget.onload = function () {
   const elem = document.createElement(`script`);
   elem.src = "./mouse/virtualMousePointer.js";
+  elem.type="module";
 
-  iframe.contentDocument.body.appendChild(elem);
+  pointerTarget.contentDocument.body.appendChild(elem);
 
   console.log(window.location);
 };
@@ -269,7 +271,7 @@ document.body.onload = function () {
   try {
     document.getElementById("mouseSpeed").value = localStorage.mouseSpeed;
   } catch {}
-  iframe.src = "./" + window.location.search;
+  pointerTarget.src = "./" + window.location.search;
   //console.log("dats the window locations", window.location.search);
 };
 

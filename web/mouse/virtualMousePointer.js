@@ -1,8 +1,8 @@
 //Allways keep page at propper position,
 // prevents page scrolling acidentally due to html elements going out of view.
-mouseDebugger = false;
+let mouseDebugger = false;
 
-uiElementsToggle = {
+let uiElementsToggle = {
   toggleUItabs: "none",
   toggleUIoverlay: "none",
   toggleUItoolbar: "none",
@@ -26,9 +26,9 @@ function setDisplayValueByClassName(clssOfItem, newDsiplayValue) {
   } catch {}
 }
 
-mouseOverList = [];
+var mouseOverList = [];
 
-theToolbar = document.getElementsByClassName("x-Toolbar disable-selection condensed x-Toolbar-flat")[0];
+let theToolbar = document.getElementsByClassName("x-Toolbar disable-selection condensed x-Toolbar-flat")[0];
 theToolbar.style.display = "none";
 theToolbar.style.position = "fixed";
 theToolbar.style.left = "30px";
@@ -56,12 +56,21 @@ var lastThingToDo = {
 };
 var shiftKey = false;
 
-scaleFactor = 2;
+let scaleFactor = 2;
+let absoluteX = 0;
+let absoluteY = 0;
+let deltaY;
+let eventType;;
+
 window.addEventListener(
   "message",
    (event) => {
     const thingToDo = event.data;
     if (typeof thingToDo !== "object") return;
+
+    // if (thingToDo == "whatUnderTouchLocation"){
+    //   return "here is my message";
+    // }
 
     absoluteX = thingToDo.absoluteX ? thingToDo.absoluteX : "";
     absoluteY = thingToDo.absoluteY ? thingToDo.absoluteY : "";
@@ -69,7 +78,7 @@ window.addEventListener(
     if (mouseDebugger) console.log(absoluteX, absoluteY);
 
     deltaY = thingToDo.deltaY ? thingToDo.deltaY : "";
-    eventType = thingToDo.eventType ? thingToDo.eventType : "";
+   eventType = thingToDo.eventType ? thingToDo.eventType : "";
 
     if (eventType == "toggleUItabs") {
       uiElementsToggle.toggleUItabs = uiElementsToggle.toggleUItabs == "none" ? "" : "none";
@@ -154,10 +163,15 @@ window.addEventListener(
 
     
     lastThingToDo = thingToDo;
-    stoplooping = "";
+
+
+    //let stoplooping = "";
+    
     const itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
 
-    stoplooping =  doTheProperEvents(itemsUnderMouse[0]);
+    doTheProperEvents(itemsUnderMouse[0]);
+
+    // stoplooping =  doTheProperEvents(itemsUnderMouse[0]);
     // if (itemsUnderMouse[0].nodeName == "CANVAS" && stoplooping !== "stop") {
     //    itemsUnderMouse.forEach( (item, key) => {
     //     if (key !== 0) stoplooping =  doTheProperEvents(item);
@@ -191,7 +205,7 @@ window.addEventListener(
       ]);
     });
 
-    //__CAD_APP.pickControlService.pickListMode = false;
+    __CAD_APP.pickControlService.pickListMode = false;
   },
   true
 );
@@ -263,7 +277,7 @@ window.addEventListener(
 }
 
  function exicuteEvents(TargetElement, eventTypes, eventToSend = {}) {
-  eventTemplate = JSON.parse(JSON.stringify(eventToSend));
+  const eventTemplate = JSON.parse(JSON.stringify(eventToSend));
   eventTypes.forEach( (enenvtToFire, key) => {
     eventTemplate.type = enenvtToFire;
      exicuteEvent(TargetElement, eventTemplate);
