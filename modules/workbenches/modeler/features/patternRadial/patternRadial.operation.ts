@@ -8,9 +8,11 @@ import {MShell} from 'cad/model/mshell';
 import {Matrix3x4} from "math/matrix";
 import {AddLocation, SetLocation} from "cad/craft/e0/interact";
 import {DEG_RAD} from "math/commons";
+import {SameTopologyProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
 
 interface patternRadialParams {
   inputBodies: MShell[];
+  featureId: string;
   patternMethod: string;
   face: MFace;
   angle: number;
