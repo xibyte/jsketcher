@@ -60,11 +60,11 @@ let scaleFactor = 2;
 let absoluteX = 0;
 let absoluteY = 0;
 let deltaY;
-let eventType;;
+let eventType;
 
 window.addEventListener(
   "message",
-   (event) => {
+  (event) => {
     const thingToDo = event.data;
     if (typeof thingToDo !== "object") return;
 
@@ -78,7 +78,7 @@ window.addEventListener(
     if (mouseDebugger) console.log(absoluteX, absoluteY);
 
     deltaY = thingToDo.deltaY ? thingToDo.deltaY : "";
-   eventType = thingToDo.eventType ? thingToDo.eventType : "";
+    eventType = thingToDo.eventType ? thingToDo.eventType : "";
 
     if (eventType == "toggleUItabs") {
       uiElementsToggle.toggleUItabs = uiElementsToggle.toggleUItabs == "none" ? "" : "none";
@@ -161,12 +161,10 @@ window.addEventListener(
       eventType = "click";
     }
 
-    
     lastThingToDo = thingToDo;
 
-
     //let stoplooping = "";
-    
+
     const itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
 
     doTheProperEvents(itemsUnderMouse[0]);
@@ -178,31 +176,21 @@ window.addEventListener(
     //   });
     // }
 
-
     let mouseOutObjects = [];
-
-
 
     let newMouseOverList = [];
     mouseOverList.forEach((item, key) => {
-      if (!itemsUnderMouse.includes(item)){
+      if (!itemsUnderMouse.includes(item)) {
         mouseOutObjects.push(item);
-      }else{
+      } else {
         newMouseOverList.push(item);
       }
     });
 
     mouseOverList = newMouseOverList;
 
-
     mouseOutObjects.forEach((item, key) => {
-      exicuteEvents(item, [
-        "mouseleave",
-        "mouseout",
-        "mouseexit",
-        "pointerleave",
-        "pointerout",
-      ]);
+      exicuteEvents(item, ["mouseleave", "mouseout", "mouseexit", "pointerleave", "pointerout"]);
     });
 
     __CAD_APP.pickControlService.pickListMode = false;
@@ -210,13 +198,13 @@ window.addEventListener(
   true
 );
 
- function doTheProperEvents(item) {
+function doTheProperEvents(item) {
   if (eventType == "mousemove") {
-     exicuteEvents(item, ["mousemove", "mouseover"]);
+    exicuteEvents(item, ["mousemove", "mouseover"]);
 
     if (!mouseOverList.includes(item)) {
       mouseOverList.push(item);
-       exicuteEvents(item, ["mouseenter", "pointerenter"]);
+      exicuteEvents(item, ["mouseenter", "pointerenter"]);
     }
   }
 
@@ -229,7 +217,7 @@ window.addEventListener(
   }
 
   if (eventType == "rightDragStart") {
-    exicuteEvents(item, ["contextmenu","auxclick", "mousedown", "pointerdown"], { button: 2 });
+    exicuteEvents(item, ["contextmenu", "auxclick", "mousedown", "pointerdown"], { button: 2 });
   }
 
   if (eventType == "rightDragEnd") {
@@ -252,7 +240,7 @@ window.addEventListener(
   }
 }
 
- function exicuteEvent(TargetElement, eventToSend = {}) {
+function exicuteEvent(TargetElement, eventToSend = {}) {
   eventToSend.clientX = absoluteX;
   eventToSend.clientY = absoluteY;
   eventToSend.x = absoluteX;
@@ -266,7 +254,7 @@ window.addEventListener(
 
   eventToSend = new MouseEvent(eventToSend.type, eventToSend);
   try {
-    testResult =  TargetElement.dispatchEvent(eventToSend);
+    testResult = TargetElement.dispatchEvent(eventToSend);
     if (mouseDebugger) if (!testResult) console.log("event trigger failed", testResult, TargetElement, eventToSend);
     //if (TargetElement.dispatchEvent(eventToSend) == false) console.log("event trigger failed", TargetElement, eventToSend);
     return testResult;
@@ -276,10 +264,10 @@ window.addEventListener(
   }
 }
 
- function exicuteEvents(TargetElement, eventTypes, eventToSend = {}) {
+function exicuteEvents(TargetElement, eventTypes, eventToSend = {}) {
   const eventTemplate = JSON.parse(JSON.stringify(eventToSend));
-  eventTypes.forEach( (enenvtToFire, key) => {
+  eventTypes.forEach((enenvtToFire, key) => {
     eventTemplate.type = enenvtToFire;
-     exicuteEvent(TargetElement, eventTemplate);
+    exicuteEvent(TargetElement, eventTemplate);
   });
 }

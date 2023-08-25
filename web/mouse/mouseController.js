@@ -38,25 +38,20 @@ function sendNewEvent(eventType) {
 }
 
 document.getElementById("touchpadArea").addEventListener("touchstart", function (event) {
-  if (window.innerHeight !== screen.height) document.body.requestFullscreen();
-
-  if (event.touches.length == 1){
+  if (event.touches.length == 1) {
     lastTouchX = event.touches[0].clientX;
     lastTouchY = event.touches[0].clientY;
   }
 
-  if (event.touches.length ==2){
+  if (event.touches.length == 2) {
     lastScrollY = event.touches[0].clientY;
     zooming = true;
     event.preventDefault();
-  
   }
-
 });
 
-
 document.getElementById("touchpadArea").addEventListener("touchend", function (event) {
-  if (event.touches.length ==2){
+  if (event.touches.length == 2) {
     zooming = false;
     mouseObject.deltaY = 0;
     lastScrollY = 0;
@@ -65,10 +60,6 @@ document.getElementById("touchpadArea").addEventListener("touchend", function (e
 });
 
 document.getElementById("touchpadArea").addEventListener("click", async function (event) {
-  // //alert(await sendNewEvent("whatUnderTouchLocation"));
-  // let bla =  await sendNewEvent("whatUnderTouchLocation");
-  // console.log(bla)
-
   document.getElementById("leftMouseButton").click();
 });
 
@@ -85,31 +76,31 @@ document.getElementById("touchpadArea").addEventListener("contextmenu", function
 
 document.getElementById("touchpadArea").addEventListener("touchmove", function (event) {
   event.preventDefault();
-  if (event.touches.length == 1){
+  if (event.touches.length == 1) {
     let x = event.touches[0].clientX;
     let y = event.touches[0].clientY;
-  
+
     let difrenceX = x - lastTouchX;
     let difrenceY = y - lastTouchY;
-  
+
     lastTouchX = x;
     lastTouchY = y;
-  
+
     mouseObject.absoluteX = mouseObject.absoluteX + difrenceX * speed;
     mouseObject.absoluteY = mouseObject.absoluteY + difrenceY * speed;
-  
+
     mouseObject.absoluteX = mouseObject.absoluteX > 0 ? mouseObject.absoluteX : 1;
     mouseObject.absoluteY = mouseObject.absoluteY > 0 ? mouseObject.absoluteY : 1;
-  
+
     cursor.style.left = mouseObject.absoluteX + "px";
     cursor.style.top = mouseObject.absoluteY + "px";
-  
+
     sendNewEvent("mousemove");
   }
 
-  if (event.touches.length == 2){
+  if (event.touches.length == 2) {
     //zoom zoom zoom
-    console.log("zoom zoom zoom")
+    console.log("zoom zoom zoom");
 
     let y = event.touches[0].clientY;
     let difrenceY = y - lastScrollY;
@@ -167,7 +158,7 @@ document.getElementById("rightMouseButton").addEventListener("click", function (
     mouseObject.rightMouseDown = false;
     event.target.style.backgroundColor = InactiveButtonBackgroundColor;
     sendNewEvent("mousemove");
-  }else{
+  } else {
     doRightClick();
   }
 });
@@ -255,12 +246,10 @@ window.addEventListener("message", function (event) {
   if (event.data == "showTouchpad") toggleMousepad("show");
 });
 
-
-
 pointerTarget.onload = function () {
   const elem = document.createElement(`script`);
   elem.src = "./mouse/virtualMousePointer.js";
-  elem.type="module";
+  elem.type = "module";
 
   pointerTarget.contentDocument.body.appendChild(elem);
 
@@ -297,4 +286,12 @@ document.getElementById("toggleUItoolbar").onclick = function (event) {
 document.getElementById("settingsButton").onclick = function (event) {
   document.getElementById("settings").style.display = "";
   //console.log("dats the window locations", window.location.search);
+};
+
+document.getElementById("fullscreenToggle").onclick = (event) => {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    document.documentElement.requestFullscreen();
+  }
 };

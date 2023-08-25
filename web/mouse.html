@@ -117,7 +117,6 @@
         overflow-x: hidden;
         overflow-y: hidden;
         overflow: hidden;
-
     }
 
     iframe {
@@ -128,8 +127,6 @@
         border: 0px;
         z-index: 1;
         overflow: hidden;
-        zoom: 0.25;
-
     }
 
 
@@ -144,18 +141,6 @@
         width: calc(100% - 2 * 20px);
         margin: 20px;
         float: left;
-    }
-
-
-
-    #saveSettings {
-        width: 100%;
-        height: 100%;
-        font-size: large;
-        cursor: pointer;
-        text-align: center;
-        text-decoration: none;
-        background-color: #4CAF50;
     }
 </style>
 
@@ -195,18 +180,28 @@
         }
 
         #settings>div {
-            border: 2px dashed rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(0, 0, 0, 0.4);
+
             border-radius: 10px;
             margin: 0px;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: klarge;
+            background-color: rgb(173, 157, 130);
         }
 
         #settingsWindowLabel1 {
             grid-area: 1 / 1 / 2 / 2;
         }
 
-        #settingsWindow1 {
+        #saveSettings {
             grid-area: 1 / 2 / 2 / 6;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            color: #ff0000;
         }
 
         #settingsWindowLabel2 {
@@ -245,7 +240,7 @@
             grid-area: 6 / 1 / 7 / 2;
         }
 
-        #settingsWindow6 {
+        #fullscreenToggle {
             grid-area: 6 / 2 / 7 / 4;
         }
 
@@ -270,10 +265,8 @@
 
 
     <div id="settings">
-
-        <div id="settingsWindowLabel1"></div>
-        <div id="settingsWindow1">
-            <button id="saveSettings">Close Settings</button>
+        <div id="saveSettings">
+            Close Settings
         </div>
 
 
@@ -284,21 +277,22 @@
             <output>.6</output>
         </div>
 
-        <div id="settingsWindowLabel3"></div>
         <div id="toggleUItabs">
             Toggel Tabs
         </div>
 
-        <div id="settingsWindowLabel4"></div>
         <div id="toggleUIoverlay">
             Toggle objects overlay
         </div>
 
-        <div id="settingsWindowLabel5"></div>
         <div id="toggleUItoolbar">
             Toggle menues
         </div>
 
+        <div id="fullscreenToggle">
+            Toggle fullscreen mode
+            ⛶
+        </div>
 
     </div>
 
