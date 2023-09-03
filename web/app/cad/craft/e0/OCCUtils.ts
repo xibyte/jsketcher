@@ -15,6 +15,8 @@ export interface OCCUtils {
 
   sketchToFaces(sketch: SketchGeom, csys: CSys): FaceRef[];
 
+  sketchToFace(sketch: SketchGeom, csys: CSys): FaceRef[];
+
   applyBooleanModifier(tools: MObject[],
     booleanDef: BooleanDefinition,
     sketchSource?: MObject,
@@ -36,6 +38,14 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
     return wiresToFaces(wires);
   }
 
+
+  function sketchToFace(sketch: SketchGeom, csys: CSys): FaceRef[] {
+    const occ = ctx.occService;
+
+    const wires = occ.io.sketchLoader.pushSketchAsWires(sketch.contours, csys);
+    return wiresToFace(wires);
+  }
+
   function wiresToFaces(wires: WireRef[]): FaceRef[] {
     const oci = ctx.occService.commandInterface;
     return wires.map((wire, i) => {
@@ -49,6 +59,28 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
         ...wire
       };
     });
+  }
+
+
+
+  function wiresToFace(wires: WireRef[]): FaceRef[] {
+    const oci = ctx.occService.commandInterface;
+    const faceName = "Face";
+    oci.mkplane(faceName, wires[0].wire);
+    const brepShell = ctx.occService.io.getLightShell(faceName);
+
+    wires.forEach((wire, index) => {
+      if (index == 0) return;
+      oci.add(faceName, wire.wire);
+    })
+
+
+    return [{
+      face: faceName,
+      topoShape: brepShell,
+    
+    }]
+
   }
 
 
@@ -100,11 +132,11 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
       targetNames.forEach(targetName => oci.baddobjects(targetName));
       tools.forEach(tool => {
         oci.baddtools(tool)
-        oci.settolerance(tool, 0.0001); 
+        oci.settolerance(tool, 0.0001);
       });
-      if (booleanDef.simplify === true){
+      if (booleanDef.simplify === true) {
         oci.bsimplify("-e", 1, "-f", 1);
-      }else{
+      } else {
         oci.bsimplify("-e", 0, "-f", 0);
       }
       oci.bfuzzyvalue(0.0001);
@@ -131,7 +163,7 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
 
 
   return {
-    wiresToFaces, sketchToFaces, applyBooleanModifier
+    wiresToFaces, sketchToFaces, applyBooleanModifier, wiresToFace, sketchToFace,
   }
 
 }
