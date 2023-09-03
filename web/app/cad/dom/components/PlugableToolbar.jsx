@@ -49,7 +49,7 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'la
         icon = <ImgIcon url={icon32} size={size === 'small' ? 16 : 24} />;
       }
     } else {
-      icon = <ImgIcon url={icon96} size={48} />;
+      icon = <ImgIcon url={icon96} size={30} />;
     }
   }
   if (!icon) {
