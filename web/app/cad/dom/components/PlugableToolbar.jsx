@@ -8,7 +8,7 @@ import capitalize from 'gems/capitalize';
 import {constant} from 'lstream';
 import {useStream} from "ui/effects";
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
-import {GrCircleQuestion} from "react-icons/all";
+import {GrCircleQuestion} from "react-icons/fa";
 import {memoize} from "lodash/function";
 
 function ConfigurableToolbar({actions, size, ...props}) {

@@ -1,4 +1,4 @@
-import {GiCube} from 'react-icons/all';
+import {GiCube} from 'react-icons/gi';
 
 export default [
   {
