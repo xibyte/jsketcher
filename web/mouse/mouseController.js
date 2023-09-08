@@ -21,6 +21,10 @@ const mouseObject = {
   deltaY: 0,
   shiftKey: false,
   pickListMode: true,
+  actualrealTouchlocation: {
+    x: 0,
+    y: 0,
+  },
 };
 
 var lastTouchX = 0;
@@ -31,10 +35,16 @@ var speed = 0.6;
 const pointerTarget = document.getElementById("pointerTarget");
 
 function sendNewEvent(eventType) {
+  //pointerTarget.scrollIntoView();
   let obj = JSON.parse(JSON.stringify(mouseObject));
   obj.eventType = eventType;
   //console.log("sending this", obj);
-  return pointerTarget.contentWindow.postMessage(obj);
+  result = pointerTarget.contentWindow.postMessage(obj);
+  
+
+  mouseObject.actualrealTouchlocation.x = 0;
+  mouseObject.actualrealTouchlocation.y = 0;
+  return result
 }
 
 document.getElementById("touchpadArea").addEventListener("touchstart", function (event) {
@@ -60,7 +70,12 @@ document.getElementById("touchpadArea").addEventListener("touchend", function (e
 });
 
 document.getElementById("touchpadArea").addEventListener("click", async function (event) {
+  let x = event.clientX;
+  let y = event.clientY;
+  mouseObject.actualrealTouchlocation.x = x;
+  mouseObject.actualrealTouchlocation.y = y;
   document.getElementById("leftMouseButton").click();
+  event.preventDefault();
 });
 
 document.getElementById("touchpadArea").addEventListener("dblclick", function (event) {

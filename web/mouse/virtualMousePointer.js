@@ -13,7 +13,7 @@ document
   .prepend(document.getElementsByClassName("x-View3d-bottomStack")[0]);
 
 window.setInterval(function () {
-  window.scrollTo(0, 0);
+  document.body.scrollIntoView();
   setDisplayValueByClassName("x-TabSwitcher x-AppTabs-contentSwitcher small-typography disable-selection", "none");
   setDisplayValueByClassName("x-FloatView", uiElementsToggle.toggleUItabs);
   setDisplayValueByClassName("x-ControlBar mid-typography", uiElementsToggle.toggleUItoolbar);
@@ -64,9 +64,10 @@ let eventType;
 
 window.addEventListener(
   "message",
-  (event) => {
+  async (event) => {
     const thingToDo = event.data;
     if (typeof thingToDo !== "object") return;
+    console.log(thingToDo);
 
     // if (thingToDo == "whatUnderTouchLocation"){
     //   return "here is my message";
@@ -82,21 +83,25 @@ window.addEventListener(
 
     if (eventType == "toggleUItabs") {
       uiElementsToggle.toggleUItabs = uiElementsToggle.toggleUItabs == "none" ? "" : "none";
+      afterActionDoAnyCleanup();
       return;
     }
 
     if (eventType == "toggleUIoverlay") {
       uiElementsToggle.toggleUIoverlay = uiElementsToggle.toggleUIoverlay == "none" ? "" : "none";
+      afterActionDoAnyCleanup();
       return;
     }
 
     if (eventType == "toggleUItoolbar") {
       uiElementsToggle.toggleUItoolbar = uiElementsToggle.toggleUItoolbar == "none" ? "" : "none";
+      afterActionDoAnyCleanup();
       return;
     }
 
     if (eventType == "zoom") {
       __CAD_APP.viewer.zoomStep(deltaY);
+      afterActionDoAnyCleanup();
       return;
     }
 
@@ -107,6 +112,7 @@ window.addEventListener(
         item.dispatchEvent(new KeyboardEvent("keydown", { shiftKey: true }));
         item.dispatchEvent(new KeyboardEvent("keypress", { shiftKey: true }));
       });
+      afterActionDoAnyCleanup();
       return;
     }
 
@@ -116,6 +122,7 @@ window.addEventListener(
       itemsUnderMouse.forEach((item, key) => {
         item.dispatchEvent(new KeyboardEvent("keyup", { shiftKey: false }));
       });
+      afterActionDoAnyCleanup();
       return;
     }
 
@@ -129,6 +136,7 @@ window.addEventListener(
         item.dispatchEvent(new KeyboardEvent("keyup", { "key": "Escape" }));
       });
       __CAD_APP.pickControlService;
+      afterActionDoAnyCleanup();
       return;
     }
 
@@ -164,8 +172,29 @@ window.addEventListener(
     lastThingToDo = thingToDo;
 
     //let stoplooping = "";
-
-    const itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
+    let itemsUnderMouse = [];
+    if (thingToDo.actualrealTouchlocation.x > 0) {
+      let itemsUnderFinger = document.elementsFromPoint(
+        thingToDo.actualrealTouchlocation.x,
+        thingToDo.actualrealTouchlocation.y
+      );
+      console.log(itemsUnderFinger);
+      let clickPassthrouch = false;
+      await itemsUnderFinger.forEach(
+        await async function (item, key) {
+          //alert(clickPassthrouch);
+          if (item.className == "x-ContextualControls") clickPassthrouch = true;
+          if (item.className == "x-Window mid-typography Wizard") clickPassthrouch = true;
+        }
+      );
+      if (clickPassthrouch) {
+        absoluteX = thingToDo.actualrealTouchlocation.x;
+        absoluteY = thingToDo.actualrealTouchlocation.y;
+      }
+      itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
+    } else {
+      itemsUnderMouse = document.elementsFromPoint(absoluteX, absoluteY);
+    }
 
     doTheProperEvents(itemsUnderMouse[0]);
 
@@ -192,11 +221,15 @@ window.addEventListener(
     mouseOutObjects.forEach((item, key) => {
       exicuteEvents(item, ["mouseleave", "mouseout", "mouseexit", "pointerleave", "pointerout"]);
     });
-
+    afterActionDoAnyCleanup();
     __CAD_APP.pickControlService.pickListMode = false;
   },
   true
 );
+
+function afterActionDoAnyCleanup() {
+  document.body.scrollIntoView();
+}
 
 function doTheProperEvents(item) {
   if (eventType == "mousemove") {
@@ -227,6 +260,13 @@ function doTheProperEvents(item) {
   if (eventType == "click") {
     if (item.nodeName == "INPUT") item.focus();
 
+    if (item.nodeName == "SELECT") {
+      createDropdownDiv(item);
+      return;
+    }
+
+    console.log("clicking", item);
+
     exicuteEvents(item, ["click", "mousedown", "mouseup"]);
   }
   if (eventType == "dblclick") {
@@ -238,6 +278,56 @@ function doTheProperEvents(item) {
     exicuteEvents(item, ["contextmenu", "auxclick"]);
     exicuteEvents(item, ["click", "mousedown", "mouseup", "pointerdown", "pointerup"], { button: 2 });
   }
+}
+
+function createDropdownDiv(selectElem) {
+  // Check if the provided element is a select element
+  if (selectElem.tagName !== "SELECT") {
+    console.error("Provided element is not a select element.");
+    return;
+  }
+
+  // Hide the select element
+  selectElem.style.display = "none";
+
+  // Create the div
+  const div = document.createElement("div");
+  div.style.border = "1px solid #ccc";
+  div.style.padding = "10px";
+  div.style.width = "200px"; // You can adjust this or any other styles as needed
+
+  // Populate the div with the select's options
+  selectElem.querySelectorAll("option").forEach((option) => {
+    const clickableElem = document.createElement("div");
+    clickableElem.textContent = option.textContent;
+    clickableElem.style.cursor = "pointer";
+    clickableElem.style.padding = "5px";
+
+    // Highlight the current selected option in blue
+    if (option.value === selectElem.value) {
+      clickableElem.style.backgroundColor = "blue";
+      clickableElem.style.color = "white";
+    }
+
+    clickableElem.addEventListener("click", () => {
+      selectElem.value = option.value; // Set the select's value
+
+      // Dispatch a change event to inform the browser of the value change
+      const changeEvent = new Event("change", {
+        "bubbles": true,
+        "cancelable": true,
+      });
+      selectElem.dispatchEvent(changeEvent);
+
+      div.remove(); // Remove the div from the DOM
+      selectElem.style.display = ""; // Show the select element again
+    });
+
+    div.appendChild(clickableElem);
+  });
+
+  // Insert the div immediately after the select element
+  selectElem.insertAdjacentElement("afterend", div);
 }
 
 function exicuteEvent(TargetElement, eventToSend = {}) {
