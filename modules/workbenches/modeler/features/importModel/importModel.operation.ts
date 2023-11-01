@@ -6,6 +6,8 @@ import {parseString} from 'browser-xml2js';
 import {importStepFile} from "cad/craft/e0/interact";
 import {clone} from "gems/objects";
 import JSZip from "jszip/dist/jszip.min";
+import icon from "./IMPORT.svg";
+
 
 interface ImportModelParams {
   file: LocalFileAdapter;
@@ -24,7 +26,7 @@ const parseStringAsync = (xml) => new Promise((resolve, reject) => {
 export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
   id: 'IMPORT_MODEL',
   label: 'Import',
-  icon: 'img/cad/import',
+  icon,
   info: 'Imports BREP, STEP, IGES or FCStd file',
   path:__dirname,
   paramsInfo: () => `()`,
@@ -99,10 +101,23 @@ export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
       });
 
       // //IGES import
-      // FS.writeFile("newIgesObject", rawContent);
-      // oci.readbrep()igesread("newIgesObject", "newIgesObject");
-      // returnObject.created.push(occ.io.getShell("newIgesObject"));
+      FS.writeFile("newIgesObject", rawContent);
+      oci.igesread("newIgesObject", "newIgesObject");
+      returnObject.created.push(occ.io.getShell("newIgesObject"));
 
+    } else if (FileName.endsWith("STL") ){
+
+      throw new CadError({
+        kind: CadError.KIND.INVALID_INPUT,
+        code: 'STL is not supported yet'
+      });
+
+
+      FS.writeFile("newSTLFile.stl", rawContent);
+      
+      oci.readstl("mesh", "newSTLFile.stl");
+      oci.unifysamedom("cleanedSTL", "mesh")
+      returnObject.created.push(occ.io.getShell("cleanedSTL"));
     } else {
       throw new CadError({
         kind: CadError.KIND.INVALID_INPUT,

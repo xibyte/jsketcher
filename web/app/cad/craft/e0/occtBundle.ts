@@ -1,16 +1,14 @@
-import {GenericWASMEngine_V1} from "engine/impl/wasm/GenericWASMEngine_V1";
-import {CraftEngine} from "./craftEngine";
-import {createOCCService, OCCService} from "cad/craft/e0/occService";
+import { GenericWASMEngine_V1 } from "engine/impl/wasm/GenericWASMEngine_V1";
+import { CraftEngine } from "./craftEngine";
+import { createOCCService, OCCService } from "cad/craft/e0/occService";
 
 export interface OCCBundleContext {
-
   craftEngine: CraftEngine; // to be removed
 
   occService: OCCService;
 }
 
 export function activate(ctx) {
-
   loadWasm(ctx);
 
   const wasmEngine = new GenericWASMEngine_V1();
@@ -22,42 +20,39 @@ export function activate(ctx) {
   ctx.occService = createOCCService(ctx);
 }
 
-function instantiateEngine(importObject, callback) {
-  const url = './lib-assets/jsketcher-occ-engine/occt.wasm';
+//* work around until tauri v2
+async function instantiateEngine(importObject, callback) {
+  const url = "./lib-assets/jsketcher-occ-engine/occt.wasm";
 
-  WebAssembly.instantiateStreaming(fetch(url), importObject).then(results => {
-    callback(results.instance);
-  });
+  const response = await fetch(url);
+  const buffer = await response.arrayBuffer();
+
+  const obj = await WebAssembly.instantiate(buffer, importObject);
+  callback(obj.instance);
 }
 
 function loadWasm(ctx) {
-  ctx.services.lifecycle.startAsyncInitializingJob('e0:loader');
+  ctx.services.lifecycle.startAsyncInitializingJob("e0:loader");
 
   // @ts-ignore
   window.Module = {
     // locateFile: function(file) {
     //   return SERVER_PATH + file;
     // },
-    onRuntimeInitialized: function() {
+    onRuntimeInitialized: function () {
       Module._InitCommands();
-      ctx.services.lifecycle.finishAsyncInitializingJob('e0:loader');
+      ctx.services.lifecycle.finishAsyncInitializingJob("e0:loader");
     },
     instantiateWasm: function (importObject, fncReceiveInstance) {
       instantiateEngine(importObject, fncReceiveInstance);
       return {};
-    }
+    },
   } as any;
 
-  const mainScript = document.createElement('script');
-  mainScript.setAttribute('src', './lib-assets/jsketcher-occ-engine/occt.js');
-  mainScript.setAttribute('async', 'async');
+  const mainScript = document.createElement("script");
+  mainScript.setAttribute("src", "./lib-assets/jsketcher-occ-engine/occt.js");
+  mainScript.setAttribute("async", "async");
   document.head.appendChild(mainScript);
 }
 
 export const BundleName = "@OCCT";
-
-
-
-
-
-

@@ -1,6 +1,5 @@
 import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-
 import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {FromMObjectProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
@@ -8,18 +7,19 @@ import {MEdge} from "cad/model/medge";
 import {MObject} from "cad/model/mobject";
 import {MShell} from "cad/model/mshell";
 import { MBrepFace } from 'cad/model/mface';
+import icon from "./FILLET.svg";
 
 interface FilletParams {
   edges: MEdge[] | MBrepFace[],
   size: number
-  opperationType: 'Champher'|'Fillet'
+  opperationType: 'Chamfer'|'Fillet'
 }
 
 export const FilletOperation: OperationDescriptor<any> = {
   id: 'FILLET_TOOL',
-  label: 'Fillet/Chapher',
-  icon: 'img/cad/fillet',
-  info: 'Fillet/Champher',
+  label: 'Fillet/Chamfer',
+  icon,
+  info: 'Fillet/Chamfer',
   path:__dirname,
   paramsInfo: ({size, opperationType,}) => `(${r(size)} ${r(opperationType)}})`,
   run: (params: FilletParams, ctx: ApplicationContext) => {
@@ -50,10 +50,10 @@ export const FilletOperation: OperationDescriptor<any> = {
       }
 
       if (params.opperationType == "Fillet") {
-        //order of parameters is diferent between fillet and champher
+        //order of parameters is diferent between fillet and Chamfer
         shellArgs.push(params.size, edge);
-      } else if (params.opperationType == "Champher") {
-        //order of parameters is diferent between fillet and champher
+      } else if (params.opperationType == "Chamfer") {
+        //order of parameters is diferent between fillet and Chamfer
         shellArgs.push(edge, params.size);
       } else {
         throw 'unsupported';
@@ -72,7 +72,7 @@ export const FilletOperation: OperationDescriptor<any> = {
       const newShellName = shellToOpperateOn.id+'/MOD';
       if (params.opperationType == "Fillet") {
         oci.blend(newShellName, shellToOpperateOn, ...shellArgs);
-      } else if (params.opperationType == "Champher") {
+      } else if (params.opperationType == "Chamfer") {
         oci.chamf(newShellName, shellToOpperateOn, ...shellArgs);
       } else {
         throw 'unsupported';
@@ -112,7 +112,7 @@ export const FilletOperation: OperationDescriptor<any> = {
       type: 'selection',
       name: 'edges',
       capture: [EntityKind.EDGE,EntityKind.FACE],
-      label: 'edges',
+      label: 'Edges',
       multi: true,
       defaultValue: {
         usePreselection: true,
@@ -122,14 +122,14 @@ export const FilletOperation: OperationDescriptor<any> = {
     {
       type: 'choice',
       style: "dropdown",
-      label: 'opperationType',
+      label: 'Opperation Type',
       name: 'opperationType',
-      values: ["Fillet", "Champher"],
+      values: ["Fillet", "Chamfer"],
       defaultValue: "Fillet",
     },
     {
       type: 'number',
-      label: 'size',
+      label: 'Size',
       name: 'size',
       defaultValue: 5,
     },

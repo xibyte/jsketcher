@@ -6,12 +6,21 @@ import { BooleanDefinition, BooleanKind } from "cad/craft/schema/common/BooleanD
 import Axis from "math/axis";
 import { OperationDescriptor } from "cad/craft/operationBundle";
 
+
 interface smFlangeParams {
   angle: number;
   face: MFace;
   flip: boolean;
-
+  boolean: BooleanDefinition;
 }
+
+
+const ROLE_TO_SM_KIND = {
+  'base': 'FLAT/A',
+  'lid': 'FLAT/B',
+  'sweep': 'THICKNESS'
+}
+
 
 export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
   id: 'SM_FLANGE',
@@ -34,7 +43,7 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
     for (let i = 0; i < face.edges.length; i++) {
       const edgeKind = face.edges[i].productionInfo.sheetMetal.kind;
       if (edgeKind == "FLAT/A" && !params.flip) {
-        revolveVector = face.edges[i].toAxis();
+        revolveVector = face.edges[i].location;
         revolveVectorOrigin = revolveVector.origin;
         revolveVectorDirection = revolveVector.direction.negate();
         revolveVectorOrigin.z -=2;
@@ -75,19 +84,22 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       });
     });
 
-    return {
-      created: tools,
-      consumed: []
-    }
+    const operationResult = occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
+
+    operationResult.created.forEach(shell => {
+      shell.traverse(obj => {
+        if (obj.productionInfo?.role) {
+          obj.productionInfo.sheetMetal = {
+            kind: ROLE_TO_SM_KIND[obj.productionInfo.role]
+          }
+        }
+      })
+    });
+
+    return operationResult;
 
   },
   form: [
-    {
-      type: 'number',
-      label: 'angle',
-      name: 'angle',
-      defaultValue: 90,
-    },
     {
       type: 'selection',
       name: 'face',
@@ -100,10 +112,23 @@ export const smFlangeOperation: OperationDescriptor<smFlangeParams> = {
       },
     },
     {
+      type: 'number',
+      label: 'angle',
+      name: 'angle',
+      defaultValue: 90,
+    },
+    {
       type: 'checkbox',
       label: 'Flip Direction',
       name: 'flip',
       defaultValue: false,
     },
+
+    {
+      type: 'boolean',
+      name: 'boolean',
+      label: 'boolean',
+      optional: true,
+    }
   ],
 }

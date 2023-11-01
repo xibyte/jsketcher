@@ -19,6 +19,7 @@ export default class Viewer {
     this.cameraMode$ = externalState(() => this.getCameraMode(), mode => this.setCameraMode(mode))
 
     this.sceneSetup = new SceneSetUp(container);
+    this.setCameraMode(this.sceneSetup.oCamera);
   }
   
   render() {
@@ -49,9 +50,9 @@ export default class Viewer {
   }
   
   setCameraMode(mode) {
-    if (this.getCameraMode() === mode) {
-      return;
-    }
+    // if (this.getCameraMode() === mode) {
+    //   return;
+    // }
     if (mode === CAMERA_MODE.PERSPECTIVE) {
       this.sceneSetup.setCamera(this.sceneSetup.pCamera);
     } else {
@@ -78,6 +79,11 @@ export default class Viewer {
   zoomOut() {
     this.sceneSetup.trackballControls.zoomStep(1, 5);
   }
+
+  zoomStep(zoomValue) {
+    this.sceneSetup.trackballControls.zoomStep(0, zoomValue);
+  }
+
 
   lookAt(target, normal, up, dist) {
     const obj = this.sceneSetup.trackballControls.object;

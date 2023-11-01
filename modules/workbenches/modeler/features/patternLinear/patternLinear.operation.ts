@@ -7,25 +7,28 @@ import { UnitVector } from "math/vector";
 import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
 import { MDatum } from "cad/model/mdatum";
-import {Matrix3x4} from "math/matrix";
-import {AddLocation, SetLocation} from "cad/craft/e0/interact";
+import { Matrix3x4 } from "math/matrix";
+import { AddLocation, SetLocation } from "cad/craft/e0/interact";
+import icon from "./LINEAR-PATTERN.svg";
+import { ExpectedOrderProductionAnalyzer, SameTopologyProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+
 
 interface patternLinearParams {
   inputBodies: MShell[];
   patternMethod: string;
-  face: MFace;
   distance: number;
   qty: number;
   direction: UnitVector,
+  featureId: string;
 }
 
 
 export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = {
   id: 'PATTERN_LINEAR',
   label: 'Linear pattern',
-  icon: 'img/cad/patternLinear',
+  icon,
   info: 'Creates a linear pattern.',
-  path:__dirname,
+  path: __dirname,
   paramsInfo: () => `(?)`,
   run: (params: patternLinearParams, ctx: ApplicationContext) => {
     const occ = ctx.occService;
@@ -36,18 +39,21 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
     params.inputBodies.forEach((shellToPatern, index) => {
       for (let i = 2; i <= params.qty; i++) {
         let distanceForInstance = 0;
-        if(params.patternMethod == 'Step Distance') distanceForInstance =params.distance*(i-1);
-        if(params.patternMethod == 'Span Distance') distanceForInstance =(params.distance / (params.qty-1))*(i-1);
+        if (params.patternMethod == 'Step Distance') distanceForInstance = params.distance * (i - 1);
+        if (params.patternMethod == 'Span Distance') distanceForInstance = (params.distance / (params.qty - 1)) * (i - 1);
 
         const trVec = params.direction.multiply(distanceForInstance);
 
         const tr = new Matrix3x4().setTranslation(trVec.x, trVec.y, trVec.z);
-  
-        const newShellName = shellToPatern.id + ":patern/" + index + "/" +i;
+
+        const newShellName = shellToPatern.id + ":patern/" + index + "/" + i;
         oci.copy(shellToPatern, newShellName);
         AddLocation(newShellName, tr.toFlatArray());
-  
-        created.push(occ.io.getShell(newShellName));    
+
+
+        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P"));
+        resultingShell.id = shellToPatern.id + "[" + "PL:" + params.featureId + "]" + "[" + "I:" + i + "]";
+        created.push(resultingShell);
       }
 
     });
@@ -64,7 +70,7 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
       type: 'selection',
       name: 'inputBodies',
       capture: [EntityKind.SHELL],
-      label: 'body',
+      label: 'Bodies',
       multi: true,
       defaultValue: {
         usePreselection: false,
@@ -94,7 +100,7 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
     {
       type: 'direction',
       name: 'direction',
-      label: 'direction',
+      label: 'Direction',
       optional: true
     },
   ],

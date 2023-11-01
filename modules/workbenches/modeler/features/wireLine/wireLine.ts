@@ -57,7 +57,7 @@ export const WireLineOperation: OperationDescriptor<WireLineParams> = {
       type: 'selection',
       name: 'points',
       capture: [EntityKind.DATUM],
-      label: 'points',
+      label: 'Points',
       optional: false,
       multi: true,
       defaultValue: {

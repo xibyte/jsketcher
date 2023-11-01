@@ -1,5 +1,6 @@
 import * as ActionHelpers from './actionHelpers'
 import {AiOutlineExport} from "react-icons/ai";
+import editFaceIcon from "../../../../modules/workbenches/modeler/features/sketch/SKETCH.svg"
 
 export default [
   {
@@ -7,9 +8,11 @@ export default [
     appearance: {
       cssIcons: ['file-picture-o'],
       label: 'sketch',
-      icon96: 'img/cad/face-edit96.png',
+      icon96: "data:image/svg+xml;base64,"+btoa(editFaceIcon),
+      icon32: "data:image/svg+xml;base64,"+btoa(editFaceIcon),
       info: 'open sketcher for a face/plane',
     },
+    icon: editFaceIcon,
     listens: ctx => ctx.streams.selection.face,
     update: ActionHelpers.checkForSelectedFaces(1),
     invoke: ({services}) => services.sketcher.sketchFace(services.selection.face.single)

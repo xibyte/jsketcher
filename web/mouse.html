@@ -1,0 +1,302 @@
+<meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
+
+
+<style>
+    #holderHolder {
+        margin: 0;
+        border: 0;
+        padding: 0;
+    }
+
+    #FakeMouseHolder {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(7, 1fr);
+        grid-column-gap: 0px;
+        grid-row-gap: 0px;
+        gap: 0px;
+    }
+
+    #FakeMouseHolder>div {
+        border: 2px dashed rgba(0, 0, 0, 0.4);
+        border-radius: 10px;
+        margin: 1px;
+    }
+
+
+    #touchpadArea {
+        grid-area: 1 / 1 / 7 / 8;
+    }
+
+    #ScrollWheel {
+        grid-area: 1 / 8 / 3 / 9;
+    }
+
+    #pickList {
+        grid-area: 3 / 8 / 3 / 9;
+        background-color: rgba(100, 94, 94, 0.2);
+    }
+
+
+    #toolsShow {
+        grid-area: 4 / 8 / 4 / 9;
+        background-color: rgba(100, 94, 94, 0.2);
+    }
+
+    #EscButton {
+        grid-area: 5 / 8 / 5 / 9;
+        background-color: rgba(100, 94, 94, 0.2);
+    }
+
+    #ShiftButton {
+        grid-area: 6 / 8 / 6 / 9;
+        background-color: rgba(100, 94, 94, 0.4);
+    }
+
+
+
+    #leftMouseButton {
+        grid-area: 7 / 1 / 8 / 5;
+        background-color: rgba(100, 94, 94, 0.4);
+    }
+
+
+    #rightMouseButton {
+        grid-area: 7 / 5 / 8 / 8;
+        background-color: rgba(100, 94, 94, 0.4);
+    }
+
+    #settingsButton {
+        grid-area: 7 / 8 / 8 / 9;
+        background-color: rgba(100, 94, 94, 0.2);
+    }
+
+
+    #settings {
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        background-color: rgb(95, 101, 101);
+        position: absolute;
+        z-index: 200;
+        border-radius: 30px;
+        border-color: darkslategray;
+        border-style: solid;
+        border-width: thick;
+        margin: 5px;
+        padding: 5px;
+        text-align: left;
+    }
+
+
+
+    #mouseToggle {
+        position: fixed;
+        bottom: calc(30% - 20px);
+        left: 0;
+        width: 40px;
+        height: 40px;
+        background-color: black;
+        border-top-right-radius: 15%;
+        border-bottom-right-radius: 15%;
+        border: 3px solid #73AD21;
+        z-index: 100;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        border: 0px;
+        overflow-x: hidden;
+        overflow-y: hidden;
+        overflow: hidden;
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0px;
+        z-index: 1;
+        overflow: hidden;
+    }
+
+
+    #cursor {
+        pointer-events: none;
+        position: absolute;
+        transform: translate(-50%, -50%) scale(40);
+
+    }
+
+    input {
+        width: calc(100% - 2 * 20px);
+        margin: 20px;
+        float: left;
+    }
+</style>
+
+<body>
+    <iframe id="pointerTarget" scrolling="no"></iframe>
+
+    <div id="holderHolder">
+        <div id="FakeMouseHolder">
+
+            <div id="touchpadArea"></div>
+            <div id="ScrollWheel">zoom</div>
+
+
+            <div id="pickList">pick list</div>
+            <div id="toolsShow">Tools</div>
+            <div id="EscButton">ESC</div>
+            <div id="ShiftButton">shift</div>
+
+            <div id="leftMouseButton" class="mousebutton">🔓</div>
+            <div id="rightMouseButton" class="mousebutton">🔓</div>
+            <div id="settingsButton">settings</div>
+        </div>
+    </div>
+
+
+    <button id="mouseToggle" onclick="toggleMousepad()">🖱</button>
+
+
+    <style>
+        #settings {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            grid-column-gap: 0px;
+            grid-row-gap: 0px;
+            margin: 10%;
+        }
+
+        #settings>div {
+            border: 2px solid rgba(0, 0, 0, 0.4);
+
+            border-radius: 10px;
+            margin: 0px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: klarge;
+            background-color: rgb(173, 157, 130);
+        }
+
+        #settingsWindowLabel1 {
+            grid-area: 1 / 1 / 2 / 2;
+        }
+
+        #saveSettings {
+            grid-area: 1 / 2 / 2 / 6;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            color: #ff0000;
+        }
+
+        #settingsWindowLabel2 {
+            grid-area: 2 / 1 / 3 / 2;
+        }
+
+        #settingsWindow2 {
+            grid-area: 2 / 2 / 3 / 6;
+        }
+
+        #settingsWindowLabel3 {
+            grid-area: 3 / 1 / 4 / 2;
+        }
+
+        #toggleUItabs {
+            grid-area: 3 / 2 / 4 / 6;
+        }
+
+        #settingsWindowLabel4 {
+            grid-area: 4 / 1 / 5 / 2;
+        }
+
+        #toggleUIoverlay {
+            grid-area: 4 / 2 / 5 / 6;
+        }
+
+        #settingsWindowLabel5 {
+            grid-area: 5 / 1 / 6 / 2;
+        }
+
+        #toggleUItoolbar {
+            grid-area: 5 / 2 / 6 / 6;
+        }
+
+        #settingsWindowLabel6 {
+            grid-area: 6 / 1 / 7 / 2;
+        }
+
+        #fullscreenToggle {
+            grid-area: 6 / 2 / 7 / 4;
+        }
+
+        #settingsWindowLabel7 {
+            grid-area: 7 / 1 / 8 / 2;
+        }
+
+        #settingsWindow7 {
+            grid-area: 7 / 2 / 8 / 4;
+        }
+
+        #settingsWindowLabel8 {
+            grid-area: 8 / 1 / 9 / 2;
+        }
+
+        #settingsWindow8 {
+            grid-area: 8 / 2 / 9 / 4;
+        }
+    </style>
+
+
+
+
+    <div id="settings">
+        <div id="saveSettings">
+            Close Settings
+        </div>
+
+
+        <div id="settingsWindowLabel2">Mouse Speed</div>
+        <div id="settingsWindow2">
+            <input id="mouseSpeed" type="range" value=".6" min="0.1" max="2" step="0.1"
+                onchange="this.nextElementSibling.value = this.value">
+            <output>.6</output>
+        </div>
+
+        <div id="toggleUItabs">
+            Toggel Tabs
+        </div>
+
+        <div id="toggleUIoverlay">
+            Toggle objects overlay
+        </div>
+
+        <div id="toggleUItoolbar">
+            Toggle menues
+        </div>
+
+        <div id="fullscreenToggle">
+            Toggle fullscreen mode
+            ⛶
+        </div>
+
+    </div>
+
+
+</body>
+
+<script src="./mouse/mouseController.js"></script>

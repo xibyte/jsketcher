@@ -1,6 +1,6 @@
 import * as mask from 'gems/mask'
 import {getAttribute} from 'scene/objectData';
-import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from 'cad/model/entities';
+import {DATUM, DATUM_AXIS, EDGE, EntityKind, FACE, LOOP, SHELL, SKETCH_OBJECT} from 'cad/model/entities';
 import {LOG_FLAGS} from 'cad/logFlags';
 import {initRayCastDebug, printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
 import {PickListDialog, PickListDialogRequest$} from "cad/scene/controls/PickListDialog";
@@ -19,6 +19,10 @@ export interface PickControlService {
   takePickControl(pickHandler: PickHandler, syncMarkers: SyncMarkersCallback): PickControlToken;
 
   releasePickControl(controlToken: PickControlToken);
+
+  setSelectionFilter(selectionFilter: (entity: MObject) => boolean);
+
+  isSelectionEnabledFor(entity: MObject): boolean;
 
   deselectAll()
 
@@ -61,6 +65,9 @@ interface PickContext {
 
 export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;
 export const ALL_POSSIBLE_KIND = Number.MAX_SAFE_INTEGER;
+
+const ALLOW_ALL = (kind) => true;
+
 export function activate(context) {
   const {services} = context;
 
@@ -112,7 +119,9 @@ export function activate(context) {
 
   let pickContext: PickContext = defaultPickContext;
   let contextStack = [];
-  
+
+  let selectionFilter: (kind: EntityKind) => boolean = ALLOW_ALL;
+
   const domElement = services.viewer.sceneSetup.domElement();
   
   domElement.addEventListener('mousedown', mousedown, false);
@@ -153,9 +162,21 @@ export function activate(context) {
     const TOL = 1;
     if (dx < TOL && dy < TOL) {
       if (e.button !== 0) {
-        // handleSolidPick(e);
+      //handleSolidPick(e);
       } else {
-        handlePick(e);
+        if (__CAD_APP.pickControlService.pickListMode !== undefined){
+          if (__CAD_APP.pickControlService.pickListMode == true){
+            pickListDialogMode = true;
+            handlePick(e);
+            pickListDialogMode = false;
+            __CAD_APP.pickControlService.pickListMode = false;
+          }else{
+            pickListDialogMode = false;
+            handlePick(e);
+          }
+        }else{
+          handlePick(e);
+        }
       }
     }
   }
@@ -187,6 +208,12 @@ export function activate(context) {
     pickContext.syncMarkers();
   }
 
+  function setSelectionFilter(_selectionFilter: (kind: EntityKind) => boolean) {
+    selectionFilter = _selectionFilter || ALLOW_ALL;
+  }
+
+  const isSelectionEnabledFor = (kind: EntityKind) => selectionFilter(kind);
+
   const deselectAll = () => {
     if (pickContext !== defaultPickContext) {
       console.info("deselect all cannot be used in current context");
@@ -196,7 +223,7 @@ export function activate(context) {
 
   function handlePick(event) {
     const pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo);
-    if (pickListDialogMode) {
+    if (pickListDialogMode == true) {
       const capture = new Set<MObject>();
       traversePickResults(event, pickResults, ALL_POSSIBLE_KIND, (model) => {
         if (!(model.parent instanceof MOpenFaceShell)) {
@@ -259,7 +286,8 @@ export function activate(context) {
   }
   
   services.pickControl = {
-    takePickControl, releasePickControl, deselectAll, pick, pickFromRay, simulatePickFromRay
+    takePickControl, releasePickControl, setSelectionFilter, isSelectionEnabledFor,
+    deselectAll, pick, pickFromRay, simulatePickFromRay
   };
 
   context.pickControlService = services.pickControl;

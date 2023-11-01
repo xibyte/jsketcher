@@ -1,6 +1,7 @@
 import Viewer from './viewer';
 import CadScene from './cadScene';
 import {ApplicationContext} from "cad/context";
+import {ViewCube} from "cad/scene/controls/ViewCube";
 
 export function activate(ctx: ApplicationContext) {
   const {services} = ctx;
@@ -44,6 +45,7 @@ export function activate(ctx: ApplicationContext) {
     }
   });
 
+  ctx.domService.contributeComponent(ViewCube);
 }
 
 export function dispose(ctx) {

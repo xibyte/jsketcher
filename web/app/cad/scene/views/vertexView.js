@@ -26,11 +26,11 @@ export class VertexView extends View {
   }
 }
 
-class VertexObject extends ConstantScaleGroup {
+export class VertexObject extends ConstantScaleGroup {
 
-  constructor(viewer, sizePx, sizeModel, getOrigin) {
+  constructor(viewer, sizePx, sizeModel, getOrigin, visibleByDefault, defaultColor) {
     super(viewer.sceneSetup, sizePx, sizeModel, getOrigin);
-    this.sphere = new VertexSphere(viewer);
+    this.sphere = new VertexSphere(viewer, visibleByDefault, defaultColor);
     this.add(this.sphere);
   }
 
@@ -42,14 +42,17 @@ class VertexObject extends ConstantScaleGroup {
 class VertexSphere extends Mesh {
 
   mouseInside;
+  visibleByDefault;
 
-  constructor(viewer) {
+  constructor(viewer, visibleByDefault = false, defaultColor = 0xFFFFFF) {
     super(new SphereGeometry( 1 ), new MeshBasicMaterial({
       transparent: true,
       opacity: 0.5,
-      color: 0xFFFFFF,
-      visible: false
+      color: defaultColor,
+      visible: visibleByDefault
     }));
+    this.visibleByDefault = visibleByDefault;
+    this.defaultColor = defaultColor;
     this.viewer = viewer;
     this.scale.multiplyScalar(CSYS_SIZE_MODEL * 0.2);
   }
@@ -69,7 +72,7 @@ class VertexSphere extends Mesh {
   onMouseLeave(e) {
     this.mouseInside = false;
     this.updateVisibility();
-    this.material.color.setHex(0xFFFFFF);
+    this.material.color.setHex(this.defaultColor);
     this.viewer.requestRender();
   }
 
@@ -90,7 +93,6 @@ class VertexSphere extends Mesh {
   }
 
   updateVisibility() {
-    const datum3D = this.parent.parent;
-    this.viewer.setVisualProp(this.material, 'visible', this.mouseInside);
+    this.viewer.setVisualProp(this.material, 'visible', this.visibleByDefault || this.mouseInside);
   }
 }

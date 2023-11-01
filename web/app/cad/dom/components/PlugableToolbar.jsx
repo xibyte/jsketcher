@@ -8,7 +8,7 @@ import capitalize from 'gems/capitalize';
 import {constant} from 'lstream';
 import {useStream} from "ui/effects";
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
-import {GrCircleQuestion} from "react-icons/all";
+import {GrCircleQuestion} from "react-icons/fa";
 import {memoize} from "lodash/function";
 
 function ConfigurableToolbar({actions, size, ...props}) {
@@ -24,10 +24,7 @@ export function ToolbarActionButtons({actions, showTitles, size}) {
     } else if (actionRef === '|') {
       return <ToolbarBraker key={'ToolbarBraker' + i} />;
     } else if (Array.isArray(actionRef)) {
-      return <div key={'ToolbarGroup' + i}>
-        <ToolbarGroup><ToolbarActionButtons actions={actionRef.slice(0, actionRef.length / 2)} showTitles={showTitles} size={size} /></ToolbarGroup>
-        <ToolbarGroup><ToolbarActionButtons actions={actionRef.slice(actionRef.length / 2, actionRef.length)} showTitles={showTitles} size={size} /></ToolbarGroup>
-      </div>;
+      return <ToolbarGroup><ToolbarActionButtons actions={actionRef} showTitles={showTitles} size={size} /></ToolbarGroup>;
     }
     const [id, overrides] = toIdAndOverrides(actionRef);
     return <ConnectedActionButton actionId={id} key={id} size={size} {...overrides} noLabel={!showTitles}/>
@@ -52,7 +49,7 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'la
         icon = <ImgIcon url={icon32} size={size === 'small' ? 16 : 24} />;
       }
     } else {
-      icon = <ImgIcon url={icon96} size={48} />;
+      icon = <ImgIcon url={icon96} size={30} />;
     }
   }
   if (!icon) {

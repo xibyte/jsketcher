@@ -35,6 +35,8 @@ module.exports = {
     hot: false,
     liveReload: false,
     client: false,
+    compress: true,
+    allowedHosts: 'all',
     static: [
       path.join(__dirname, 'web'),
     ],
@@ -59,7 +61,7 @@ module.exports = {
         include: [GLOBAL_CSS, INTEGRATION_TESTS],
         use: [
           'style-loader',
-          'css-loader?-url',
+          'css-loader',
           'less-loader',
         ]
       },

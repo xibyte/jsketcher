@@ -41,12 +41,14 @@ export class MeshArrow extends Object3D {
     }
 
     // dir is assumed to be normalized
+    const meshMaterial = materialCreate({color, depthTest:false});
+    //meshMaterial.depthTest = false;
 
-    const cone = new Mesh(tipGeometry, materialCreate({color}));
+    const cone = new Mesh(tipGeometry, meshMaterial);
     cone.matrixAutoUpdate = false;
     this.add(cone);
 
-    const line = new Mesh(lineGeometry, materialCreate({color}));
+    const line = new Mesh(lineGeometry, meshMaterial);
     line.matrixAutoUpdate = false;
     this.add(line);
     

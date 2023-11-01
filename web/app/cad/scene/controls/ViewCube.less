@@ -1,0 +1,65 @@
+.cubeHolder {
+  pointer-events: auto;
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  right:75px;
+  bottom:150px;
+  z-index: 100000;
+  transform: scale(0.5);
+  cursor: pointer;
+  user-select: none;
+  /* transition: transform 1s; */
+}
+
+.cube {
+  width: 50px;
+  height: 50px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: translateZ(-300px);
+  /* transition: transform 1s; */
+}
+
+.face {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  padding:0px;
+  border: 5px solid black;
+  line-height: 100px;
+  font-size: 26px;
+  font-weight: bold;
+  color: rgb(0, 0, 0);
+  text-align: center;
+}
+
+.front {
+  background: rgba(102, 102, 255, 0.95);
+  transform: rotateY(0deg) rotateX(180deg) translateZ(-50px);
+}
+
+.right {
+  background: rgba(255, 0, 0, 0.95);
+  transform: rotateY(90deg) rotateX(180deg) translateZ(-50px);
+}
+
+.back {
+  background: rgba(0, 255, 255, 0.95);
+  transform: rotateY(180deg) rotateX(180deg) translateZ(-50px);
+}
+
+.left {
+  background: rgba(255, 0, 255, 0.95);
+  transform: rotateY(-90deg) rotateX(180deg) translateZ(-50px);
+}
+
+.top {
+  background: rgba(0, 255, 0, 0.95);
+  transform: rotateX(-90deg) rotateX(180deg) translateZ(-50px);
+}
+
+.bottom {
+  background: rgba(255, 255, 0, 0.95);
+  transform: rotateX(90deg) rotateX(180deg) translateZ(-50px);
+}

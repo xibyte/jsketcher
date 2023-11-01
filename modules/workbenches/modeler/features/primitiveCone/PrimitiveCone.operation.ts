@@ -6,7 +6,7 @@ import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MDatum } from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
-
+import icon from "./CONE.svg";
 
 interface PrimitiveConeParams {
   diameterA: number,
@@ -19,7 +19,7 @@ interface PrimitiveConeParams {
 export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = {
   id: 'CONE',
   label: 'Cone',
-  icon: 'img/cad/cone',
+  icon,
   info: 'Cone',
   path:__dirname,
   paramsInfo: ({ height, diameterA, diameterB }) => `(${r(height)} , ${r(diameterA)} , ${r(diameterB)} )`,
@@ -46,7 +46,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
       type: 'selection',
       name: 'locations',
       capture: [EntityKind.DATUM],
-      label: 'locations',
+      label: 'Locations',
       multi: false,
       optional: true,
       defaultValue: {
@@ -58,8 +58,9 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
+      simplify: true,
     }
 
   ],
@@ -87,7 +88,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     const newFacesIds = [
       {
-        id: 'F:SIDE',
+        id: params.featureId + 'F:SIDE',
         productionInfo: {
           role: 'sweep'
         }
@@ -96,7 +97,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     if (params.diameterB > 0) {
       newFacesIds.push({
-        id: 'F:BASE',
+        id: params.featureId + 'F:BASE',
         productionInfo: {
           role: 'base'
         }
@@ -105,7 +106,7 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
     if (params.diameterA > 0) {
       newFacesIds.push({
-        id: 'F:LID',
+        id: params.featureId + 'F:LID',
         productionInfo: {
           role: 'lid'
         }

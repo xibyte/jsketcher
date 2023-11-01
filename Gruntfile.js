@@ -4,11 +4,11 @@ const webpackConfig = require('./webpack.config');
 const del = require('del');
 const libAssets = require("./build/libAssets");
 const glob = require("glob");
-const {marked} = require("marked");
+const { marked } = require("marked");
 const Handlebars = require("handlebars");
 const exec = require('child_process').exec;
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
@@ -44,11 +44,11 @@ module.exports = function(grunt) {
       },
 
       resources: {
-          expand: true,
-          cwd: 'web',
-          src: '**',
-          dest: 'dist/',
-          filter: dirFilter(['web/app', 'web/test'])
+        expand: true,
+        cwd: 'web',
+        src: '**',
+        dest: 'dist/',
+        filter: dirFilter(['web/app', 'web/test'])
       },
 
       docs: {
@@ -59,12 +59,12 @@ module.exports = function(grunt) {
       },
     }
   });
-  
-  grunt.registerTask('clean', function() {
+
+  grunt.registerTask('clean', function () {
     del.sync('dist');
   });
 
-  grunt.registerTask('build', function() {
+  grunt.registerTask('build', function () {
     const done = this.async();
     webpack(webpackConfig, function (error) {
       if (error) {
@@ -75,17 +75,18 @@ module.exports = function(grunt) {
     });
   });
 
-  grunt.registerTask('show-revision', function() {
+  grunt.registerTask('show-revision', function () {
     const done = this.async();
-    exec('git rev-parse --short HEAD', (err, stdout, stderr) => {
+    if (process.env.CI_BUILD_REF) exec('git rev-parse --short HEAD', (err, stdout, stderr) => {
       grunt.log.writeln(stdout);
       done();
     });
   });
 
-  grunt.registerTask('mark-revision', function() {
+  grunt.registerTask('mark-revision', function () {
     const done = this.async();
-    exec('mkdir -p dist && git rev-parse HEAD > dist/.rev', function (err, stdout, stderr) {
+
+    if (process.env.CI_BUILD_REF) exec('git rev-parse HEAD > dist/.rev', function (err, stdout, stderr) {
       done(err);
     });
   });
@@ -94,7 +95,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('gen-docs', ['copy:docs', 'process-markdown']);
 
-  grunt.registerTask('process-markdown', function() {
+  grunt.registerTask('process-markdown', function () {
     const done = this.async();
 
     const mainTemplate = Handlebars.compile(grunt.file.read("modules/doc/doc-layout.handlebars"));
@@ -120,7 +121,7 @@ module.exports = function(grunt) {
         let link = file.substring(file.indexOf('/') + 1); //drop web prefix
         workbench.operations.push({
           operationName,
-          href: '../../../../../../'  + convertMdPathToHtml(link)
+          href: '../../../../../../' + convertMdPathToHtml(link)
         });
       });
 
@@ -138,7 +139,7 @@ module.exports = function(grunt) {
 
         grunt.file.write(dest, htmlContent);
 
-        console.log("generated "+ dest);
+        console.log("generated " + dest);
       })
       done();
     });
@@ -148,11 +149,11 @@ module.exports = function(grunt) {
 };
 
 function convertMdPathToHtml(mdPath) {
-  return mdPath.substring(0, mdPath.length-('.md'.length)) + '.html';
+  return mdPath.substring(0, mdPath.length - ('.md'.length)) + '.html';
 }
 
 function fixLinks(htmlContent) {
-  return htmlContent.replace(/href=['"](.+)['"]/g, function(expr, link){
+  return htmlContent.replace(/href=['"](.+)['"]/g, function (expr, link) {
     return 'href="' + convertMdPathToHtml(link) + '"';
   });
 }

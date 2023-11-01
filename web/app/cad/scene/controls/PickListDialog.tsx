@@ -1,11 +1,11 @@
-import React from "react";
+import React, {useContext} from "react";
 import {state} from "lstream";
 import {useStreamWithUpdater} from "ui/effects";
 import Window from "ui/components/Window";
 import {MObject} from "cad/model/mobject";
 import Stack from "ui/components/Stack";
-import {ModelSection} from "cad/craft/ui/SceneInlineObjectExplorer";
 import {ModelButton} from "cad/craft/ui/ModelButton";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 
 
 export interface PickListDialogRequest {
@@ -21,6 +21,8 @@ export function PickListDialog() {
 
   const [req, setReq] = useStreamWithUpdater(() => PickListDialogRequest$);
 
+  const ctx = useContext(ReactApplicationContext);
+
   const close = () => setReq(null);
 
   if (!req) {
@@ -35,12 +37,14 @@ export function PickListDialog() {
                  className='small-typography'
                  onClose={close}>
     <Stack>
-    {req.capture.map(model => {
-      return <ModelButton
-        key={model.id}
-        model={model}
-      />
-    })}
+      {req.capture
+        .filter(model => ctx.pickControlService.isSelectionEnabledFor(model))
+        .map(model => {
+          return <ModelButton
+            key={model.id}
+            model={model}
+          />
+        })}
     </Stack>
   </Window>
 
