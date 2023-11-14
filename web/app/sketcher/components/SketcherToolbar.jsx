@@ -3,7 +3,7 @@ import ls from './SketcherToolbar.less';
 import cx from 'classnames';
 import {SketcherActionButton} from "./SketcherActionButton";
 
-export function SketcherToolbar({actions, horizontal=false, compact}) {
+export function SketcherToolbar({actions, horizontal=false, compact=false}) {
 
   return <div className={cx(ls[horizontal?'horizontal':'vertical'], ls.root, compact && ls.compact)}>
     {actions.map((action, index) => {

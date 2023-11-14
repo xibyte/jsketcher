@@ -6,8 +6,8 @@ import {getSketcherActionIndex} from "./actions";
 import {Project} from "./project";
 
 
-export function createAppContext() {
-  const ctx = createEssentialAppContext(document.getElementById('viewer'));
+export function createAppContext(viewerNode) {
+  const ctx = createEssentialAppContext(viewerNode||document.getElementById('viewer'));
   ctx.project = new Project(ctx.viewer);
   return ctx;
 }
