@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 
 
 import 'ui/styles/global/index.less';
-import '../../../css/app.less'
+import './EmbeddedSketcher.less'
 
 import {Constraints} from 'sketcher/parametric'
 

@@ -1,0 +1,314 @@
+body {
+  overflow: hidden;
+}
+
+html, body {
+  background: gray;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.sans-serif {
+
+}
+
+.helvetica {
+  font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, sans-serif;
+}
+
+.logo {
+  color: #bbb;
+  font-size: 16px;
+  padding: 8px 0 0 10px;
+  cursor: alias;
+  white-space: nowrap;
+}
+
+.logo sup {
+  font-size: 9px;
+  font-style: italic;
+}
+
+.panel {
+  background: #444;
+  border: 0px solid black;
+}
+.b-top { border-top-width: 1px; }
+.b-bot { border-bottom-width: 1px; }
+.b-left { border-left-width: 1px; }
+.b-right { border-right-width: 5px; border-color: #222222 }
+
+.btn:hover {
+  background-color: #808080;
+  border-color: #ccc;
+}
+
+.btn {
+  border:1px solid #808080;
+  background: #606060 no-repeat center;
+  border-radius: 4px;
+  color: white;
+  vertical-align: top;
+}
+
+.txt-btn {
+}
+
+#dock {
+  color: #fff;
+}
+
+.dock-btn {
+  padding: 1px 5px 1px 5px;
+  border:0 solid black;
+  background: #606060 no-repeat center;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 1px 4px 1px 4px;
+}
+
+.dock-btn:hover {
+  background-color: #808080;
+}
+
+.dock-btn .txt {
+  padding-left: 5px;
+}
+
+.dock-node {
+  border-bottom: 1px solid black;
+}
+
+.selected {
+  background-color: #333;
+  color: #ccc;
+}
+
+.sbtn {
+  min-width:20px;
+  height:20px;
+  line-height: 1.1;
+  border-color: #999;
+  padding: 1px 3px;
+  font-size: 14px;
+}
+
+.rbtn {
+  width:37px;
+  height:37px;
+  margin: 2px 6px;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.tbtn {
+  width:31px;
+  height:31px;
+  margin: 2px 2px;
+  font-size: 20px;
+  padding: 0;
+}
+
+
+.tlist {
+  list-style-type: none;
+  padding: 0px;
+  margin:0;
+  color: #fff;
+  font-size: 13px;
+}
+
+.tlist li {
+  border-bottom: 1px solid #777;
+  padding: 2px 3px 2px  15px;
+  cursor: pointer;
+}
+
+.tlist li:hover {
+  background: #222;
+}
+
+.tool-caption {
+  font-weight: bold;
+  color: #fff;
+  padding: 2px 0 2px 3px;
+  background: #333;
+}
+
+.no-top-border {
+  border-top: 0;
+}
+
+.tool-caption .btn {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 2px;
+}
+
+.tool-caption .fa {
+  font-size: 11px;
+}
+
+.tool-caption .txt {
+  padding-right: 3px;
+}
+
+.tlist .btn {
+  font-size: 11px;
+  border: 0;
+}
+
+.tlist .rm {
+  visibility:hidden;
+  padding: 0 5px 0 5px;
+}
+
+.tlist li:hover .rm {
+  visibility:visible;
+}
+
+.scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scroll::-webkit-scrollbar-track {
+  background: white;
+}
+.scroll::-webkit-scrollbar-thumb {
+  background: steelblue;
+}
+
+.scroll::-webkit-scrollbar-thumb:hover {
+  background: royalblue;
+}
+
+.sketcher-window {
+  border: 5px solid #444444;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.win {
+  position: absolute;
+  min-width: 100px;
+  min-height: 20px;
+  left:100px;
+  top:300px;
+  background: #666;
+  border: 5px solid #444444;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.win .content {
+  .sans-serif;
+  color: #fff;
+  padding: 7px;
+  height: ~"calc(100% - 19px)"; //escape less processing
+}
+
+.win .tool-caption {
+  cursor: default;
+  display: flex;
+  justify-content: space-between;
+  line-height: 1.8;
+  align-items: center;
+}
+.win .tool-caption .rm {
+  border: 0;
+  border-radius: 0px;
+  color: white;
+  font-size: 16px;
+  padding: 0 5px;
+  margin: -2px 0 -2px 0;
+}
+
+.sep {
+  margin-right: 13px;
+}
+
+
+.pseudo-btn:hover {
+  background-color: #808080;
+}
+
+.pseudo-btn {
+  background-color: #606060;
+  color: white;
+  width: 18px; text-align: center;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.pseudo-btn a {
+  color: white;
+  text-decoration: none;
+}
+
+#layerSelection label {
+  color: #fff;
+}
+
+#layersList {
+  background-color: #ddd;
+  margin: 10px;
+}
+
+.tc-ctrl {
+  border-left: 0;
+}
+
+.tc-ctrl input[type=text], .tc-ctrl select {
+  color: #fff;
+}
+
+#status {
+  .helvetica;
+  color: #fff;
+  font-size: 11px;
+  padding-top: 4px;
+}
+
+#status .coordinates-info {
+  font-style: italic;
+  color:#fff;
+}
+
+.status-item {
+  padding-right: 5px;
+  padding-left: 5px;
+  float: right; 
+  color:#bbb;
+}
+
+#viewer-container .tool-hint {
+  .helvetica;
+  color: #000; 
+  font-size: 11px;
+  cursor: default;
+  pointer-events: none;
+}
+
+#viewer-container{
+  canvas:focus-visible, canvas:focus, canvas:focus-within {
+    outline-width: 0;
+  }
+}
+
+#top-toolbar:empty {
+  height: 40px;
+}
+
+#right-toolbar:empty {
+  width: 50px;
+}

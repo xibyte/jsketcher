@@ -26,7 +26,9 @@ module.exports = {
     publicPath: '/static/'
   },
   externals: {
-    'verb-nurbs': 'verb'
+    'verb-nurbs': 'verb',
+    'react': 'React',
+    'react-dom': 'ReactDOM'
   },
   resolve: {
     extensions: ['.js', '.jsx', ".ts", ".tsx"],
