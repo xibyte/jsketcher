@@ -88,11 +88,13 @@ function createMarker(findEntity, requestRender) {
   }
 
   function withdrawAllOfType(entityType) {
+    const withdrawObj = [];
     marked.forEach(obj => {
       if (obj.TYPE === entityType) {
-        doWithdraw(obj);
+        withdrawObj.push(obj);
       }
     });
+    withdrawObj.forEach(obj => doWithdraw(obj));
   }
   
   function markExclusively(entity, id, color) {
@@ -133,12 +135,14 @@ function createMarker(findEntity, requestRender) {
   }
 
   function commit() {
+    const withdrawObj = [];
     marked.forEach((obj) => {
       if (!markingSession.has(obj.id)) {
-        doWithdraw(obj);
+        withdrawObj.push(obj);
         needUpdate = true;
       }
     });
+    withdrawObj.forEach(obj => doWithdraw(obj));
     if (needUpdate) {
       onUpdate();
     }
