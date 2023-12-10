@@ -15,19 +15,15 @@ import {
   LinearDimension,
   VDimension,
 } from './shapes/dim';
-import Vector from 'math/vector';
 import exportTextData from 'gems/exportTextData';
-import {
-  AlgNumConstraint,
-  ConstraintSerialization,
-} from './constr/ANConstraints';
+import { AlgNumConstraint, ConstraintSerialization } from './constr/ANConstraints';
 import { SketchGenerator } from './generators/sketchGenerator';
 import { BoundaryGeneratorSchema } from './generators/boundaryGenerator';
 import { ShapesTypes } from './shapes/sketch-types';
 import { SketchObject } from './shapes/sketch-object';
 import { Label } from 'sketcher/shapes/label';
 import { DxfWriterAdapter } from './dxf';
-import { DEG_RAD } from 'math/commons';
+import { svg } from '@tarikjabiri/dxf/lib/svg';
 
 export interface SketchFormat_V3 {
   version: number;
@@ -76,11 +72,11 @@ export class IO {
 
   viewer: Viewer;
 
-  constructor(viewer) {
+  constructor(viewer: Viewer) {
     this.viewer = viewer;
   }
 
-  loadSketch(sketchData) {
+  loadSketch(sketchData: string) {
     return this._loadSketch(JSON.parse(sketchData));
   }
 
@@ -154,12 +150,7 @@ export class IO {
           } else if (type === VDimension.prototype.TYPE) {
             skobj = LinearDimension.load(VDimension, obj.id, obj.data, index);
           } else if (type === LinearDimension.prototype.TYPE) {
-            skobj = LinearDimension.load(
-              LinearDimension,
-              obj.id,
-              obj.data,
-              index
-            );
+            skobj = LinearDimension.load(LinearDimension, obj.id, obj.data, index);
           } else if (type === DiameterDimension.prototype.TYPE) {
             skobj = DiameterDimension.load(obj.id, obj.data, index);
           } else if (type === AngleBetweenDimension.prototype.TYPE) {
@@ -201,9 +192,7 @@ export class IO {
             stage.addConstraint(constraint);
           } catch (e) {
             console.error(e);
-            console.error(
-              'skipping errant constraint: ' + constr && constr.typeId
-            );
+            console.error('skipping errant constraint: ' + constr && constr.typeId);
           }
         }
         for (const gen of dataStage.generators) {
@@ -235,10 +224,7 @@ export class IO {
       BoundaryGeneratorSchema
     );
 
-    this.viewer.parametricManager.addGeneratorToStage(
-      boundaryGenerator,
-      this.viewer.parametricManager.groundStage
-    );
+    this.viewer.parametricManager.addGeneratorToStage(boundaryGenerator, this.viewer.parametricManager.groundStage);
   }
 
   cleanUpData() {
@@ -333,11 +319,7 @@ export class IO {
   }
 
   getWorkspaceToExport() {
-    return [
-      this.viewer.layers,
-      [this.viewer.labelLayer],
-      this.viewer.dimLayers
-    ];
+    return [this.viewer.layers, [this.viewer.labelLayer], this.viewer.dimLayers];
   }
 
   getLayersToExport() {
@@ -354,107 +336,26 @@ export class IO {
   }
 
   svgExport() {
-    const T = ShapesTypes;
-    const out = new TextBuilder();
+    const adapter = new DxfWriterAdapter();
+    adapter.export(this.getLayersToExport());
 
-    const bbox = new BBox();
+    // TODO: find a better way
+    const bbox = adapter.bbox;
+    const factor = (bbox.maxX - bbox.minX) / 125;
+    adapter.renderer.arrowSize *= factor;
+    adapter.renderer.extensionOffset *= factor;
+    adapter.renderer.extensionOverShoot *= factor;
+    adapter.renderer.textHeight *= factor;
 
-    const a = new Vector();
-    const b = new Vector();
+    adapter.renderer.draw();
 
-    const prettyColors = new PrettyColors();
-    const toExport = this.getLayersToExport();
-    for (let l = 0; l < toExport.length; ++l) {
-      const layer = toExport[l];
-      const color = prettyColors.next();
-      out.fline('<g id="$" fill="$" stroke="$" stroke-width="$">', [
-        layer.name,
-        'none',
-        color,
-        '2',
-      ]);
-      for (let i = 0; i < layer.objects.length; ++i) {
-        const obj = layer.objects[i];
-        if (obj.TYPE !== T.POINT) bbox.check(obj);
-        if (obj instanceof Segment) {
-          out.fline('<line x1="$" y1="$" x2="$" y2="$" />', [
-            obj.a.x,
-            obj.a.y,
-            obj.b.x,
-            obj.b.y,
-          ]);
-        } else if (obj instanceof Arc) {
-          a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
-          b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
-          const dir = a.cross(b).z > 0 ? 0 : 1;
-          const r = obj.r.get();
-          out.fline('<path d="M $ $ A $ $ 0 $ $ $ $" />', [
-            obj.a.x,
-            obj.a.y,
-            r,
-            r,
-            dir,
-            1,
-            obj.b.x,
-            obj.b.y,
-          ]);
-        } else if (obj instanceof Circle) {
-          out.fline('<circle cx="$" cy="$" r="$" />', [
-            obj.c.x,
-            obj.c.y,
-            obj.r.get(),
-          ]);
-          //      } else if (obj.TYPE === T.DIM || obj.TYPE === T.HDIM || obj.TYPE === T.VDIM) {
-        } else if (obj instanceof EllipticalArc) {
-          a.set(obj.a.x - obj.c.x, obj.a.y - obj.c.y, 0);
-          b.set(obj.b.x - obj.c.x, obj.b.y - obj.c.y, 0);
-          const dir = a.cross(b).z > 0 ? 0 : 1;
-          out.fline('<path d="M $ $ A $ $ $ $ 1 $ $" />', [
-            obj.a.x,
-            obj.a.y,
-            obj.radiusX,
-            obj.radiusY,
-            obj.rotation / DEG_RAD,
-            dir,
-            obj.b.x,
-            obj.b.y
-          ]);
-        } else if (obj instanceof Ellipse) {
-          out.fline('<ellipse cx="$" cy="$" rx="$" ry="$" transform="rotate($, $ $)" />', [
-            obj.c.x,
-            obj.c.y,
-            obj.radiusX,
-            obj.radiusY,
-            obj.rotation / DEG_RAD,
-            obj.c.x,
-            obj.c.y,
-          ]);
-        } else if (obj instanceof BezierCurve) {
-          out.fline('<path d="M $ $ C $ $ $ $ $ $" />', [
-            obj.a.x,
-            obj.a.y,
-            obj.cp1.x,
-            obj.cp1.y,
-            obj.cp2.x,
-            obj.cp2.y,
-            obj.b.x,
-            obj.b.y
-          ]);
-        }
-      }
-      out.line('</g>');
-    }
-    bbox.inc(20);
-    bbox.bbox[2] -= bbox.bbox[0];
-    bbox.bbox[3] -= bbox.bbox[1];
-    return (
-      _format("<svg viewBox='$ $ $ $' transform='scale(1, -1)'>\n", bbox.bbox) + out.data + '</svg>'
-    );
+    return svg(adapter.writer.document);
   }
 
   dxfExport() {
     const adapter = new DxfWriterAdapter();
     adapter.export(this.getLayersToExport());
+    adapter.renderer.draw();
     return adapter.stringify();
   }
 }
@@ -463,8 +364,7 @@ function _format(str, args) {
   if (args.length == 0) return str;
   let i = 0;
   return str.replace(/\$/g, function () {
-    if (args === undefined || args[i] === undefined)
-      throw 'format arguments mismatch';
+    if (args === undefined || args[i] === undefined) throw 'format arguments mismatch';
     let val = args[i];
     if (typeof val === 'number') val = val.toPrecision();
     i++;
@@ -474,14 +374,7 @@ function _format(str, args) {
 
 /** @constructor */
 function PrettyColors() {
-  const colors = [
-    '#000000',
-    '#00008B',
-    '#006400',
-    '#8B0000',
-    '#FF8C00',
-    '#E9967A',
-  ];
+  const colors = ['#000000', '#00008B', '#006400', '#8B0000', '#FF8C00', '#E9967A'];
   let colIdx = 0;
   this.next = function () {
     return colors[colIdx++ % colors.length];
@@ -508,19 +401,13 @@ function TextBuilder() {
 
 /** @constructor */
 function BBox() {
-  const bbox = [
-    Number.MAX_VALUE,
-    Number.MAX_VALUE,
-    -Number.MAX_VALUE,
-    -Number.MAX_VALUE,
-  ];
+  const bbox = [Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
 
   const T = ShapesTypes;
 
   this.checkLayers = function (layers) {
     for (let l = 0; l < layers.length; ++l)
-      for (let i = 0; i < layers[l].objects.length; ++i)
-        this.check(layers[l].objects[i]);
+      for (let i = 0; i < layers[l].objects.length; ++i) this.check(layers[l].objects[i]);
   };
 
   this.check = function (obj) {
@@ -534,11 +421,7 @@ function BBox() {
     } else if (obj.TYPE === T.CIRCLE) {
       this.checkCircBounds(obj.c.x, obj.c.y, obj.r.get());
     } else if (obj.TYPE === T.ELLIPSE || obj.TYPE === T.ELL_ARC) {
-      this.checkCircBounds(
-        obj.centerX,
-        obj.centerY,
-        Math.max(obj.radiusX, obj.radiusY)
-      );
+      this.checkCircBounds(obj.centerX, obj.centerY, Math.max(obj.radiusX, obj.radiusY));
     } else if (obj) {
       obj.accept(o => {
         if (o.TYPE == T.POINT) {

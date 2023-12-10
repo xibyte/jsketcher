@@ -1,7 +1,7 @@
 import Vector, {AXIS, ORIGIN} from 'math/vector';
 import {RiCamera2Line} from "react-icons/ri";
 import {ViewMode} from "cad/scene/viewer";
-import {GiCube, HiCube, HiOutlineCube} from "react-icons/all";
+import {GiCube, HiCube, HiOutlineCube} from "react-icons";
 
 const NEG_X = AXIS.X.negate();
 const NEG_Y = AXIS.Y.negate();
@@ -21,7 +21,7 @@ function faceAt(shells, shell, pos) {
     let i = shellIndex;
     do {
       i = (i + 1) % shells.length;
-      shell = shells[i]; 
+      shell = shells[i];
     } while(shellIndex !== i && shell.faces.length === 0);
     return shell.faces[0];
   } else if (pos < 0) {
@@ -32,7 +32,7 @@ function faceAt(shells, shell, pos) {
     } while(shellIndex !== i && shell.faces.length === 0);
     return shell.faces[shell.faces.length - 1];
   } else {
-    return shell.faces[pos];  
+    return shell.faces[pos];
   }
 }
 
@@ -41,7 +41,7 @@ function getCurrentSelectedOrFirstFace(ctx) {
   if (!face) {
     for (const shell of ctx.services.cadRegistry.shells) {
       if (shell.faces.length !== 0) {
-        return shell.faces[0]; 
+        return shell.faces[0];
       }
     }
   }
@@ -62,7 +62,7 @@ export default [
       ctx.services.viewer.zoomOut();
       ctx.services.viewer.requestRender();
     }
-  },  
+  },
   {
     id: 'LookAtFace',
     appearance: {
