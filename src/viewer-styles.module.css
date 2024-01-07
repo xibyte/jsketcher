@@ -1,0 +1,20 @@
+@import url("https://ifcjs.github.io/components/resources/styles.css");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+/* plus-jakarta-sans-regular - latin */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: "Plus Jakarta Sans";
+    font-style: normal;
+    font-weight: 100 1000;
+    src: url("./fonts/PlusJakartaSans/PlusJakartaSans-Italic-VariableFont_wght.ttf"); /* IE9 Compat Modes */
+    src: url("./fonts/PlusJakartaSans/PlusJakartaSans-VariableFont_wght.ttf");
+}
+
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: "Sora";
+    font-style: normal;
+    font-weight: 100 1000;
+    src: url("./fonts/Sora/Sora-VariableFont_wght.ttf");
+}
