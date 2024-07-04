@@ -5,6 +5,7 @@ import {MOpenFaceShell} from '../../../../../web/app/cad/model/mopenFace';
 import {PlaneSurfacePrototype} from '../../../../../web/app/cad/model/surfacePrototype';
 import CSys from "math/csys";
 import {EntityKind} from "cad/model/entities";
+import icon from "./PLANE.svg";
 
 
 function paramsToPlane({ orientation, datum, depth }) {
@@ -56,7 +57,7 @@ function fixTexture(planeWidth, planeHeight) {
 export default {
   id: 'PLANE',
   label: 'Plane',
-  icon: 'img/cad/plane',
+  icon,
   info: 'creates new object plane',
   paramsInfo: ({ depth }) => `(${depth})`,
   previewGeomProvider,
@@ -70,7 +71,7 @@ export default {
   form: [
     {
       type: 'choice',
-      label: 'orientation',
+      label: 'Orientation',
       name: 'orientation',
       style: 'radio',
       values: ['XY', 'XZ', 'ZY'],
@@ -80,7 +81,7 @@ export default {
       type: 'selection',
       name: 'datum',
       capture: [EntityKind.DATUM, EntityKind.FACE],
-      label: 'datum',
+      label: 'Datum',
       multi: false,
       optional: true,
       defaultValue: {
@@ -90,7 +91,7 @@ export default {
     },
     {
       type: 'number',
-      label: 'depth',
+      label: 'Offset Distance',
       name: 'depth',
       defaultValue: 0,
     },

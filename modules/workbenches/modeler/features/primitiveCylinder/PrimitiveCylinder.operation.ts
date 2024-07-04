@@ -6,7 +6,7 @@ import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MDatum} from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
-
+import icon from "./CYLINDER.svg";
 
 interface PrimitiveCylinderParams {
   diameter: number,
@@ -18,7 +18,7 @@ interface PrimitiveCylinderParams {
 export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderParams> = {
   id: 'CYLINDER',
   label: 'Cylinder',
-  icon: 'img/cad/cylinder',
+  icon,
   info: 'Primitive Cylinder',
   path:__dirname,
   paramsInfo: ({height, diameter}) => `(${r(height)} , ${r(diameter)} )`,
@@ -39,7 +39,7 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
       type: 'selection',
       name: 'locations',
       capture: [EntityKind.DATUM],
-      label: 'locations',
+      label: 'Locations',
       multi: false,
       optional: true,
       defaultValue: {
@@ -51,8 +51,9 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
+      simplify: true,
     }
 
   ],
@@ -80,19 +81,19 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
     const cylinder = occ.io.getShell("cylinder", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:SIDE',
+          id: params.featureId + 'F:SIDE',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: 'F:BASE',
+          id: params.featureId + 'F:BASE',
           productionInfo: {
             role: 'base'
           }
         },
         {
-          id: 'F:LID',
+          id: params.featureId + 'F:LID',
           productionInfo: {
             role: 'lid'
           }

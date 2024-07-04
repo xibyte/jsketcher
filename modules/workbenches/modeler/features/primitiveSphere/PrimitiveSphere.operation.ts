@@ -6,6 +6,7 @@ import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MDatum} from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+import icon from "./SPHERE.svg";
 
 interface PrimitiveSphereParams {
   radius: number,
@@ -16,7 +17,7 @@ interface PrimitiveSphereParams {
 export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams> = {
   id: 'SPHERE',
   label: 'Sphere',
-  icon: 'img/cad/sphere',
+  icon,
   info: 'Primitive Sphere',
   path:__dirname,
   paramsInfo: ({radius,}) => `(${r(radius)}  )`,
@@ -32,7 +33,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
       type: 'selection',
       name: 'locations',
       capture: [EntityKind.DATUM],
-      label: 'locations',
+      label: 'Locations',
       multi: false,
       optional: true,
       defaultValue: {
@@ -44,8 +45,9 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
+      simplify: true,
     }
 
   ],
@@ -73,7 +75,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
     const sphere = occ.io.getShell("sphere", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:SPHERE',
+          id: params.featureId + 'F:SPHERE',
           productionInfo: {
             role: 'sweep'
           }

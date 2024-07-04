@@ -1,6 +1,16 @@
 import {MdZoomOutMap} from "react-icons/md";
-import {AiOutlineCopy, AiOutlineExport, AiOutlineFile, AiOutlineFolderOpen, AiOutlineSave} from "react-icons/ai";
+import {
+  AiOutlineCopy,
+  AiOutlineExport,
+  AiOutlineFile,
+  AiOutlineFolderOpen,
+  AiOutlineImport,
+  AiOutlineSave
+} from "react-icons/ai";
 import {NoIcon} from "../icons/NoIcon";
+import {uploadFile} from "ui/fileUploader";
+import {DxfParserAdapter} from "sketcher/dxf";
+import {SketchFormat_V3} from "sketcher/io";
 
 export default [
 
@@ -39,6 +49,25 @@ export default [
       ctx.ui.$sketchManagerRequest.next({
         x: e.pageX,
         y: e.pageY
+      });
+    }
+  },
+
+  {
+    id: 'Import',
+    shortName: 'Import',
+    kind: 'Common',
+    description: 'Import from other formats',
+    icon: AiOutlineImport,
+
+    invoke: async (ctx, e) => {
+      uploadFile((fileName, content) => {
+
+
+        const dxfParserAdapter = new DxfParserAdapter();
+        dxfParserAdapter.parse(content).then(sketch => {
+          ctx.viewer.io._loadSketch(sketch);
+        }).catch(console.error);
       });
     }
   },

@@ -145,7 +145,7 @@ export interface ActionDefinition<T = void> {
 
 export interface ActionService {
 
-  run(id: string, data: any): void;
+  run(id: string, data?: any): void;
   registerAction(action: ActionDefinition): void;
   registerActions(actions: ActionDefinition[]): void;
   showHintFor(request: HintRequest): void;

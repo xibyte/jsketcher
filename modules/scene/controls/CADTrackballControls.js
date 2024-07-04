@@ -481,6 +481,7 @@ export function CADTrackballControls( object, domElement ) {
 
     event.preventDefault();
     event.stopPropagation();
+    console.log(event.deltaMode, event.deltaY)
     _this.zoomStep(event.deltaMode, event.deltaY);
   }
   

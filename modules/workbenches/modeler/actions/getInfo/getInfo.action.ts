@@ -24,6 +24,7 @@ export const GetInfo: any = {
     const targetBody = params.targetBody;
 
     let resultingMessage = "";
+    console.log(params);
 
 
     if (targetBody instanceof MEdge){

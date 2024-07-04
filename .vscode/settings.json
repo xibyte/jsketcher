@@ -1,0 +1,6 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "cSpell.words": ["appimage", "clippy", "jsketcher", "shakram", "tamasfe"]
+}

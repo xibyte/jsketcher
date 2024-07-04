@@ -1,7 +1,7 @@
 import Vector, {AXIS, ORIGIN} from 'math/vector';
 import {RiCamera2Line} from "react-icons/ri";
 import {ViewMode} from "cad/scene/viewer";
-import {GiCube, HiCube, HiOutlineCube} from "react-icons/all";
+import {GiCube, HiCube, HiOutlineCube} from "react-icons/hi";
 
 const NEG_X = AXIS.X.negate();
 const NEG_Y = AXIS.Y.negate();

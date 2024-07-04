@@ -6,7 +6,7 @@ import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MDatum } from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
-
+import icon from "./TORUS.svg";
 
 interface PrimitiveTorusParams {
   radius: number,
@@ -18,7 +18,7 @@ interface PrimitiveTorusParams {
 export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
   id: 'TORUS',
   label: 'Torus',
-  icon: 'img/cad/torus',
+  icon,
   info: 'Primitive Torus',
   path:__dirname,
   paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} , ${r(tubeRadius)} )`,
@@ -39,7 +39,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
       type: 'selection',
       name: 'locations',
       capture: [EntityKind.DATUM],
-      label: 'locations',
+      label: 'Locations',
       multi: false,
       optional: true,
       defaultValue: {
@@ -51,8 +51,9 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
+      simplify: true,
     }
 
   ],
@@ -80,7 +81,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
     const torus = occ.io.getShell("torus", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:TORUS',
+          id: params.featureId + 'F:TORUS',
           productionInfo: {
             role: 'sweep'
           }

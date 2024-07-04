@@ -8,6 +8,8 @@ import {SketchMesh} from "cad/scene/views/shellView";
 import {FACE} from "cad/model/entities";
 import {setAttribute} from "scene/objectData";
 import {ViewMode} from "cad/scene/viewer";
+import {SketchPoint} from "cad/sketch/sketchModel";
+import {SketchPointView} from "cad/scene/views/sketchPointView";
 
 export class SketchingView extends View {
   
@@ -35,7 +37,13 @@ export class SketchingView extends View {
 
     const sketchTr =  this.model.sketchToWorldTransformation;
     for (const sketchObject of this.model.sketchObjects) {
-      const sov = new SketchObjectView(this.ctx, sketchObject, sketchTr);
+      let sov;
+      if (sketchObject.sketchPrimitive instanceof SketchPoint) {
+        sov = new SketchPointView(this.ctx, sketchObject, sketchTr);
+      } else {
+        sov = new SketchObjectView(this.ctx, sketchObject, sketchTr);
+      }
+
       SceneGraph.addToGroup(this.sketchGroup, sov.rootGroup);
       this.sketchObjectViews.push(sov);
     }

@@ -1,7 +1,7 @@
 import {FACE} from 'cad/model/entities';
 import {OperationRequest} from "cad/craft/craftBundle";
-import {ParamsPath, WizardService} from "cad/craft/wizard/wizardTypes";
-import {OperationParamPrimitive} from "cad/craft/schema/schema";
+import {ParamsPath, WizardService, WizardState, WorkingRequest} from "cad/craft/wizard/wizardTypes";
+import {OperationParamPrimitive, OperationParams, OperationParamValue} from "cad/craft/schema/schema";
 import {EntityReference} from "cad/craft/operationBundle";
 import {Bundle} from "bundler/bundleSystem";
 import {MarkerBundleContext} from "cad/scene/selectionMarker/markerBundle";
@@ -9,6 +9,7 @@ import {WizardBundleContext} from "cad/craft/wizard/wizardBundle";
 import {PickControlBundleContext} from "cad/scene/controls/pickControlBundle";
 import _ from "lodash";
 import {MObject} from "cad/model/mobject";
+import {combine} from "lstream";
 
 type WizardSelectionBundleActivationContext = MarkerBundleContext & WizardBundleContext & PickControlBundleContext;
 
@@ -63,6 +64,27 @@ export const WizardSelectionBundle: Bundle<WizardSelectionBundleWorkingContext> 
         syncMarkers();
       }
     });
+
+    combine(wizardService.state$, wizardService.workingRequest$).attach(([state, req]: [WizardState, WorkingRequest]) => {
+      if (req && state?.activeParam && ctx.wizardService.operation) {
+
+        const entity = ctx.wizardService.operation.schemaIndex.entitiesByFlattenedPaths[state.activeParam];
+
+        if (entity) {
+          ctx.pickControlService.setSelectionFilter(entity.metadata.entityCapture);
+        } else {
+          ctx.pickControlService.setSelectionFilter(() => false);
+        }
+      } else {
+        ctx.pickControlService.setSelectionFilter(null);
+      }
+    });
+
+    wizardService.state$.attach(state => {
+      if (state?.activeParam) {
+
+      }
+    })
   },
 
   BundleName: "@WizardSelection",

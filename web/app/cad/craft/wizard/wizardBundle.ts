@@ -34,6 +34,8 @@ export function activate(ctx: ApplicationContext) {
         applyOverrides(params, insertOperationReq.initialOverrides);
       }
 
+      params.featureId = ctx.projectService.counterGenerator.generateFeatureId();
+
       return {
         type: operation.id,
         params,

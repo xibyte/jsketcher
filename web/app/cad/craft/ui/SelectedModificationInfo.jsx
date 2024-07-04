@@ -43,12 +43,11 @@ function SelectedModificationInfo({ history, index,
   }
   const appearance = resolveAppearance(op, m.params);
 
-  const indexNumber = index + 1;
   return <Widget visible={visible}
                  left={lh && lh.x}
                  bottom={95}
                  flatRight={!lh}
-                 title={appearance.label.toUpperCase() + ' operation #' + indexNumber}
+                 title={appearance.label.toUpperCase() + ' operation #' + m.params.featureId}
                  onClose={close}>
     <div className={ls.requestInfo}>
       <ImgIcon className={ls.pic} url={appearance && appearance.icon96} size={48}/>

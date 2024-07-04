@@ -139,7 +139,7 @@ function HistoryItem({index, pointer, modification, getOperation, toggle, select
   return <div className={cx(ls.historyItem, selected&&ls.selected, disabled&&ls.disabled, inProgress&&ls.inProgress)}
               onClick={e => toggle(index, modification, e.currentTarget)}>
     <ImgIcon className={ls.opIcon} url={appearance&&appearance.icon96} size={24} />
-    <span className={ls.opIndex}>{ index + 1 }</span>
+    <span className={ls.opIndex}>{ modification.params.featureId }</span>
   </div>;
 });
 

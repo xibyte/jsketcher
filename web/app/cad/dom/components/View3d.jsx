@@ -6,7 +6,7 @@ import WizardManager from '../../craft/wizard/components/WizardManager';
 import FloatView from './FloatView';
 import HistoryTimeline from '../../craft/ui/HistoryTimeline';
 import SelectedModificationInfo from '../../craft/ui/SelectedModificationInfo';
-import CameraControl from './CameraControl';
+//import CameraControl from './CameraControl';
 import HeadsUpHelper from './HeadsUpHelper';
 import {HeadsUpToolbar} from './HeadsUpToolbar';
 import {SketchObjectExplorer} from '../../../sketcher/components/SketchObjectExplorer';
@@ -69,7 +69,7 @@ export default class View3d extends React.Component {
           </div>
 
           <div className={ls.bottomStack}>
-            <CameraControl />
+            
             <HistoryTimeline />
             <PlugableControlBar/>
           </div>

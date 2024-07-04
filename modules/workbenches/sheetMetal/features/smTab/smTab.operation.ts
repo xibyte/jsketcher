@@ -84,6 +84,17 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
 
   form: [
     {
+      type: 'selection',
+      name: 'sketch',
+      capture: [EntityKind.FACE],
+      label: 'Sketch',
+      multi: false,
+      defaultValue: {
+        usePreselection: true,
+        preselectionIndex: 0
+      },
+    },
+    {
       type: 'number',
       label: 'Thickness',
       name: 'thickness',
@@ -107,17 +118,7 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
       name: 'flipper',
       defaultValue: false,
     },
-    {
-      type: 'selection',
-      name: 'sketch',
-      capture: [EntityKind.FACE],
-      label: 'Sketch',
-      multi: false,
-      defaultValue: {
-        usePreselection: true,
-        preselectionIndex: 0
-      },
-    },
+
     {
       type: 'boolean',
       name: 'boolean',

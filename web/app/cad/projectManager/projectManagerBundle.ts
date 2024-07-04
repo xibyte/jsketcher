@@ -5,35 +5,21 @@ import {SketchFormat_V3} from "sketcher/io";
 import {ApplicationContext} from "cad/context";
 import {OperationRequest} from "../craft/craftBundle";
 import {AssemblyConstraintDefinition} from "cad/assembly/assemblyConstraint";
+import {uploadFile} from "ui/fileUploader";
 
 export function activate(ctx: ApplicationContext) {
   
   function importProjectImpl(getId, onDone) {
-    const uploader = document.createElement('input');
-    uploader.setAttribute('type', 'file');
-    uploader.style.display = 'none';
-    
-    document.body.appendChild(uploader);
-    uploader.click();
-    function read() {
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
 
-          const bundle = JSON.parse(reader.result as string);
-          const projectId = getId(uploader.value, bundle);
-          
-          if (projectId) {
-            importBundle(projectId, bundle);
-            onDone(projectId);
-          }
-        } finally {
-          document.body.removeChild(uploader);
-        }
-      };
-      reader.readAsText(uploader.files[0]);
-    }
-    uploader.addEventListener('change', read, false);
+    uploadFile((fileName, content) => {
+      const bundle = JSON.parse(content as string);
+      const projectId = getId(fileName, bundle);
+
+      if (projectId) {
+        importBundle(projectId, bundle);
+        onDone(projectId);
+      }
+    });
   }
 
   function importBundle(projectId: string, bundle: ModelBundle) {
@@ -197,6 +183,10 @@ export function activate(ctx: ApplicationContext) {
   ctx.services.projectManager = ctx.projectManager;
 }
 
+export class ProjectCounters {
+  featureId: number = 0;
+}
+
 export interface ProjectModel {
 
   history: OperationRequest[],
@@ -205,7 +195,9 @@ export interface ProjectModel {
 
   assembly?: AssemblyConstraintDefinition[];
 
-  workbench?: string
+  workbench?: string,
+
+  counters?: ProjectCounters;
 }
 
 export interface ModelBundle {

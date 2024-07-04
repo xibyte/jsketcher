@@ -7,6 +7,7 @@ import Axis from "math/axis";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {FaceRef} from "cad/craft/e0/OCCUtils";
 import {FromMObjectProductionAnalyzer, FromSketchProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import icon from "./REVOLVE.svg";
 
 interface RevolveParams {
   angle: number;
@@ -18,7 +19,7 @@ interface RevolveParams {
 export const RevolveOperation: OperationDescriptor<RevolveParams> = {
   id: 'REVOLVE',
   label: 'Revolve',
-  icon: 'img/cad/revolve',
+  icon,
   info: 'Revolves 2D sketch',
   path:__dirname,
   paramsInfo: ({angle}) => `(${r(angle)})`,
@@ -62,16 +63,10 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
   },
   form: [
     {
-      type: 'number',
-      label: 'angle',
-      name: 'angle',
-      defaultValue: 360,
-    },
-    {
       type: 'selection',
       name: 'face',
       capture: [EntityKind.FACE],
-      label: 'face',
+      label: 'Face',
       multi: false,
       defaultValue: {
         usePreselection: true,
@@ -79,17 +74,24 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
       },
     },
     {
+      type: 'number',
+      label: 'Angle',
+      name: 'angle',
+      defaultValue: 360,
+    },
+    {
       type: 'axis',
       name: 'axis',
-      label: 'axis',
+      label: 'Revolution Axis',
       optional: false
     },
     {
       type: 'boolean',
       name: 'boolean',
-      label: 'boolean',
+      label: 'Boolean',
       optional: true,
-      defaultValue: 'NONE'
+      defaultValue: 'NONE',
+      simplify: true,
     }
 
   ],

@@ -34,6 +34,7 @@ export default class SceneSetUp {
   trackballControls: CADTrackballControls;
   viewportSizeUpdate$ = stream();
   sceneRendered$: Emitter<any> = stream();
+  viewCube;
 
   renderRequested: boolean;
 
@@ -45,6 +46,7 @@ export default class SceneSetUp {
     this.rootGroup = this.scene;
     this.scene.userData.sceneSetUp = this;
     this.renderRequested = false;
+    this.viewCube = document.querySelector('.cube');
 
     this.setUpCamerasAndLights();
     this.setUpControls();
@@ -268,10 +270,12 @@ export default class SceneSetUp {
     camera.up = new Vector3(0, 1, 0);
   }
 
-  _zoomMeasure() {
+  _zoomMeasure() {   
     return this.trackballControls.object.position.length() / 1e3;
   }
   
+
+
   animate() {
     requestAnimationFrame( () => this.animate() );
     const controlsChangedViewpoint = this.trackballControls.evaluate();

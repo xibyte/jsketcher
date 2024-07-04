@@ -8,6 +8,9 @@ import {MShell} from 'cad/model/mshell';
 import {Matrix3x4} from "math/matrix";
 import {AddLocation, SetLocation} from "cad/craft/e0/interact";
 import {DEG_RAD} from "math/commons";
+import { SameTopologyProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+
+import icon from "./RADIAL-PATTERN.svg"
 
 interface patternRadialParams {
   inputBodies: MShell[];
@@ -22,7 +25,7 @@ interface patternRadialParams {
 export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = {
   id: 'PATTERN_RADIAL',
   label: 'Radial pattern',
-  icon: 'img/cad/patternRadial',
+  icon,
   info: 'Creates a Radial pattern.',
   path:__dirname,
   paramsInfo: p => `( ${p.patternMethod} ${r(p.angle * DEG_RAD)})`,
@@ -52,7 +55,12 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
         oci.copy(shellToPatern, newShellName);
         AddLocation(newShellName, tr.toFlatArray());
   
-        created.push(occ.io.getShell(newShellName));    
+
+
+        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P"));
+        resultingShell.id = shellToPatern.id + "[" + "PR:" + params.featureId + "]" + "[" + "I:" + i + "]";
+        created.push(resultingShell);
+
       }
 
     });
@@ -68,7 +76,7 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
       type: 'selection',
       name: 'inputBodies',
       capture: [EntityKind.SHELL],
-      label: 'body',
+      label: 'Bodies',
       multi: true,
       defaultValue: {
         usePreselection: false,
@@ -98,7 +106,7 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
     {
       type: 'axis',
       name: 'axis',
-      label: 'axis',
+      label: 'Axis',
       optional: false
     },
   ],

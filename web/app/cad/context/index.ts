@@ -22,6 +22,7 @@ import {SketchStorageBundleContext} from "cad/sketch/sketchStorageBundle";
 import {StorageBundleContext} from "cad/storage/storageBundle";
 import {WorkbenchBundleContext} from "cad/workbench/workbenchBundle";
 import {LegacyStructureBundleContext} from "cad/context/LegacyStructureBundle";
+import {PickControlBundleContext} from "cad/scene/controls/pickControlBundle";
 
 export interface ApplicationContext extends
   LegacyStructureBundleContext,
@@ -47,7 +48,8 @@ export interface ApplicationContext extends
   SketcherBundleContext,
   SketchStorageBundleContext,
   StorageBundleContext,
-  WorkbenchBundleContext
+  WorkbenchBundleContext,
+  PickControlBundleContext
 {}
 
 export default {} as ApplicationContext;

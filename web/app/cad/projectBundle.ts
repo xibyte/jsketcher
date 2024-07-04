@@ -2,7 +2,7 @@ import {setSketchPrecision} from './sketch/sketchReader';
 import {runSandbox} from './sandbox';
 import {LOG_FLAGS} from './logFlags';
 import {ApplicationContext} from "cad/context";
-import {ProjectModel} from "./projectManager/projectManagerBundle";
+import {ProjectCounters, ProjectModel} from "./projectManager/projectManagerBundle";
 import {DebugMode$} from "debugger/Debugger";
 import {fillUpMissingFields} from "cad/craft/schema/initializeBySchema";
 
@@ -51,6 +51,7 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
     if (!currentWorkbench?.internal && ctx.workbenchService.defaultWorkbenchId !== currentWorkbench.workbenchId) {
       data.workbench = currentWorkbench.workbenchId;
     }
+    data.counters = counterGenerator.projectCounters;
     ctx.storageService.set(projectStorageKey(), JSON.stringify(data));
   }
 
@@ -74,8 +75,14 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
         const operation = ctx.operationService.get(req.type);
         if (operation) {
           fillUpMissingFields(req.params, operation.schema, ctx);
+          if (!req.params.featureId) {
+            req.params.featureId = counterGenerator.generateFeatureId();
+          }
         }
       });
+    }
+    if (!data.counters) {
+      data.counters = new ProjectCounters();
     }
   }
 
@@ -99,6 +106,7 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
       ctx.assemblyService.loadConstraints(data.assembly);
     }
 
+    counterGenerator = new ProjectCounterGenerator(data.counters);
   }
 
   function empty() {
@@ -108,9 +116,11 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
     });
   }
 
+  let counterGenerator = new ProjectCounterGenerator(new ProjectCounters());
+
   ctx.projectService = {
     id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, loadData, empty,
-    hints
+    hints, counterGenerator
   };
 
 }
@@ -161,6 +171,19 @@ function processParams(params, context) {
   }
 }
 
+export class ProjectCounterGenerator {
+
+  projectCounters: ProjectCounters;
+
+  constructor(projectCounters) {
+    this.projectCounters = projectCounters;
+  }
+
+  generateFeatureId(): string {
+    return (++this.projectCounters.featureId) + "";
+  }
+}
+
 export interface ProjectService {
 
   readonly id: string;
@@ -183,6 +206,7 @@ export interface ProjectService {
 
   empty(): void;
 
+  counterGenerator: ProjectCounterGenerator;
 }
 
 export interface ProjectBundleContext {

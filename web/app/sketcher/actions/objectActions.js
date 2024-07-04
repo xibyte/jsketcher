@@ -1,4 +1,5 @@
-import {BiPencil, BsTextareaT} from "react-icons/all";
+import {BiPencil} from "react-icons/bi";
+import {BsTextareaT} from "react-icons/bs";
 import {Label} from "sketcher/shapes/label";
 import {isConstraintAnnotation} from "sketcher/constr/constraintAnnotation";
 import {editConstraint} from "sketcher/actions/constraintActions";
