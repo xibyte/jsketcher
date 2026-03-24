@@ -14,6 +14,26 @@
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 
+.dragHandle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  padding: 2px 4px 8px;
+  margin: -4px -4px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  user-select: none;
+  &:active { cursor: grabbing; }
+}
+.dragDots {
+  width: 16px;
+  height: 8px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
 .subMenu {
   margin-bottom: 4px;
   &:last-child { margin-bottom: 0; }

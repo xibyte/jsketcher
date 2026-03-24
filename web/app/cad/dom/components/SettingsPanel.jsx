@@ -118,6 +118,9 @@ export default function SettingsPanel() {
 
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({x: 0, y: 52});
+  const anchorRef = useRef({x: 0, y: 52});
+  const [dragOffset, setDragOffset] = useState({x: 0, y: 0});
+  const draggingRef = useRef(false);
   const [viewMode, setViewModeState] = useState(ViewMode.SHADED_WITH_EDGES);
   const [camera, setCameraState] = useState(CAMERA_MODE.PERSPECTIVE);
   const [gridVisible, setGridVisible] = useState(saved.grid !== false);
@@ -130,11 +133,11 @@ export default function SettingsPanel() {
   const [gizmoVisible, setGizmoVisible] = useState(saved.gizmo !== false);
   const [theme, setThemeState] = useState(saved.theme || 'medium');
   const [toolbarBgColor, setToolbarBgColorState] = useState(saved.toolbarBgColor || 'dark');
-  const [toolbarIconSize, setToolbarIconSizeState] = useState(saved.toolbarIconSize ?? 17);
+  const [toolbarIconSize, setToolbarIconSizeState] = useState(saved.toolbarIconSize ?? 25);
   const [toolbarTextSize, setToolbarTextSizeState] = useState(saved.toolbarTextSize ?? 12);
-  const [toolbarSpacing, setToolbarSpacingState] = useState(saved.toolbarSpacing ?? 5);
-  const [toolbarStretch, setToolbarStretchState] = useState(saved.toolbarStretch === true);
-  const [iconColorMode, setIconColorModeState] = useState(saved.iconColorMode === true);
+  const [toolbarSpacing, setToolbarSpacingState] = useState(saved.toolbarSpacing ?? 0);
+  const [toolbarStretch, setToolbarStretchState] = useState(saved.toolbarStretch !== false);
+  const [iconColorMode, setIconColorModeState] = useState(saved.iconColorMode !== false);
   const [sidebarTransparency, setSidebarTransparencyState] = useState(saved.sidebarTransparency ?? 0);
   const [sidebarBlur, setSidebarBlurState] = useState(saved.sidebarBlur ?? 0);
   const [antialias, setAntialiasState] = useState(saved.antialias !== false);
@@ -147,9 +150,13 @@ export default function SettingsPanel() {
     if (!ctx?.streams?.ui?.settingsPanelOpen) return;
     const detach = ctx.streams.ui.settingsPanelOpen.attach(v => {
       if (v && typeof v === 'object') {
-        setPos({x: v.x, y: v.y});
+        const clampedX = Math.min(v.x, window.innerWidth - 250);
+        anchorRef.current = {x: clampedX, y: v.y};
+        setPos({x: clampedX, y: v.y});
+        setDragOffset({x: 0, y: 0});
         setOpen(true);
       } else {
+        setDragOffset({x: 0, y: 0});
         setOpen(false);
       }
     });
@@ -182,9 +189,9 @@ export default function SettingsPanel() {
       if (ch[1]) ch[1].visible = saved.axisY === true;
       if (ch[2]) ch[2].visible = saved.axisZ === true;
     }
-    applyToolbarVars(saved.toolbarIconSize ?? 17, saved.toolbarTextSize ?? 12, saved.toolbarSpacing ?? 5);
-    applyToolbarStretch(saved.toolbarStretch === true);
-    applyIconColorMode(saved.iconColorMode === true);
+    applyToolbarVars(saved.toolbarIconSize ?? 25, saved.toolbarTextSize ?? 12, saved.toolbarSpacing ?? 0);
+    applyToolbarStretch(saved.toolbarStretch !== false);
+    applyIconColorMode(saved.iconColorMode !== false);
     if (ctx.cadScene?.hideGlobalCsys) {
       ctx.cadScene.hideGlobalCsys();
     }
@@ -220,9 +227,26 @@ export default function SettingsPanel() {
   }, [open]);
 
   if (!open) return null;
-  const panelWidth = 240;
-  const screenWidth = window.innerWidth;
-  const leftPos = Math.min(pos.x, screenWidth - panelWidth - 8);
+  const leftPos = Math.max(0, pos.x + dragOffset.x);
+  const topPos = Math.max(0, pos.y + dragOffset.y);
+
+  function onDragStart(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    draggingRef.current = true;
+    const startX = e.clientX, startY = e.clientY;
+    const startOff = {...dragOffset};
+    function onMove(ev) {
+      setDragOffset({x: startOff.x + ev.clientX - startX, y: startOff.y + ev.clientY - startY});
+    }
+    function onUp() {
+      draggingRef.current = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
 
   function save(key, value) {
     const s = loadSettings();
@@ -284,7 +308,11 @@ export default function SettingsPanel() {
   }
 
     return (
-    <div className={ls.panel} ref={panelRef} style={{top: pos.y, left: leftPos}}>
+    <div className={ls.panel} ref={panelRef} style={{top: topPos, left: leftPos}}>
+      <div className={ls.dragHandle} onMouseDown={onDragStart}>
+        <div className={ls.dragDots}/>
+        <span>Settings</span>
+      </div>
       <SubMenu title="Look">
         <Section title="Theme">
           <RadioGroup
