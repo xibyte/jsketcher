@@ -10,26 +10,21 @@ Built on [jsketcher](https://github.com/xibyte/jsketcher) by Autodrop3d LLC — 
 - Fillet & Chamfer (separate buttons)
 - Shell, Hole, Scale Body
 - Move Body & Rotate Body (with body center pivot option)
-- Split Body (split a solid using another solid)
+- Split Body (split a solid using another solid) NEEDS WORK
 - Mirror Body, Linear Pattern, Radial Pattern
 - Primitives: box, sphere, cylinder, cone, torus
 - Measure Tool (Shapr3D-style snap points)
 
-### UI
+### UI 
+- Scenes on left toolbar show sketches
 - Dark / Medium / Light themes
 - Colored/Monochrome Icons
 - Top toolbar with all solid tools
 - Left sidebar: Modifications, Scene tree, Projects
 - NavCube (top right, with home button)
-- Settings panel (theme, mesh quality)
+- Settings panel
 - Floating panels over 3D viewport
 - Project save/load via localStorage
-
-### Sketcher
-- 2D constraint-based sketcher (from jsketcher)
-- Sketch on any face
-- Lines, arcs, circles, B-splines
-- Full constraint system
 
 ## Running
 
@@ -59,6 +54,8 @@ npm start
 | Tess → Three.js | `web/app/cad/scene/views/viewUtils.js` |
 
 ## Known Issues & WASM Limitations
+
+### Split Body tool  (WORK IN PROGRESS)
 
 ### Sphere / Curved Surface Tessellation
 
@@ -94,9 +91,10 @@ Spheres, cylinders, cones, tori look faceted. This is a **WASM binary limitation
 
 Highest-impact areas:
 1. **Fix sphere tessellation** — recompile WASM or implement JS subdivision
-2. **STL/STEP export** — OCC kernel supports it, needs UI
-3. **Electron packaging** — wrap for desktop
-4. **UI polish**
+2. **Fix Split Body**
+3. **STL/STEP export** — OCC kernel supports it
+4. **Electron packaging** — wrap for desktop
+5. **UI polish**
 
 ## License
 
