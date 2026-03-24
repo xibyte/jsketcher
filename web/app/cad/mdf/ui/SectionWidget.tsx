@@ -18,7 +18,7 @@ export interface SectionWidgetProps extends ContainerBasicProps {
 }
 
 export function SectionWidget(props: SectionWidgetProps) {
-  return <StackSection title={props.title}>
+  return <StackSection title={props.title} collapsible={props.collapsible} initialCollapse={props.initialCollapse}>
     <ContainerWidget content={props.content} />
   </StackSection>
 }

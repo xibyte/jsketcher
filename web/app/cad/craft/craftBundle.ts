@@ -23,7 +23,7 @@ export function activate(ctx: ApplicationContext) {
   let preRun = null;
 
   function modifyWithPreRun(request, modificationsUpdater, onAccepted, onError) {
-
+    ctx._operationIndex = modifications$.value.pointer + 1;
     runRequest(request).then(result => {
       onAccepted();
       preRun = {
@@ -56,9 +56,13 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function rebuild() {
-    const mods = modifications$.value;
-    reset([]);
-    modifications$.next(mods);
+    const {history, pointer} = modifications$.value;
+    // Spread each request into a new object so isAdditiveChange sees them as changed
+    // and triggers a full re-run from index 0 in a single atomic update
+    modifications$.next({
+      history: history.map(h => ({...h})),
+      pointer
+    });
   }
   
   function runRequest(request): Promise<OperationResult> {
@@ -134,6 +138,7 @@ export function activate(ctx: ApplicationContext) {
         }
 
         const request = history[i];
+        ctx._operationIndex = i;
         const promise = runOrGetPreRunResults(request);
         promise.then(({consumed, created}) => {
 

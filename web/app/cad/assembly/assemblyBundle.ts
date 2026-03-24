@@ -67,7 +67,6 @@ export function activate(ctx: ApplicationContext) {
 
   ctx.domService.contributeComponent(ModellerContextualActions);
 
-  ctx.services.ui.registerFloatView('assembly', AssemblyView, 'Assembly', IoMdConstruct);
 
   ctx.craftService.modifications$.attach((modifications) => {
     //if we reach the end reevaluate locations

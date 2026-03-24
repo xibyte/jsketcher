@@ -62,6 +62,11 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
         upgradeIfNeeded(data);
         loadData(data);
         loadWorkbench(data);
+      } else {
+        loadData({
+          history: [],
+          expressions: ''
+        });
       }
     } catch (e) {
       console.error(e);

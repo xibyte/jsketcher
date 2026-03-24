@@ -1,31 +1,39 @@
 @import '../styles/theme.less';
 
 .root {
-  padding: 5px 0;
+  padding: 6px 0;
+  min-width: 180px;
 }
 
 .item {
-  padding: 5px 6px 5px 5px;
+  padding: 7px 14px 7px 12px;
   cursor: pointer;
   text-transform: capitalize;
   white-space: nowrap;
   display: flex;
   align-items: center;
-  
+  font-size: 12px;
+  color: #c0c0d8;
+  border-radius: 6px;
+  margin: 1px 4px;
+  transition: background 0.12s, color 0.12s;
+
   &:hover {
-    background-color: #0074D9;
+    background: rgba(77, 156, 248, 0.12);
+    color: #e2e2ee;
   }
+
   &:active {
-    background-color: #000d7f;
+    background: rgba(77, 156, 248, 0.2);
   }
 
-  &.disabled:hover, &.disbaled:active {
-    background-color: #545454;
+  &.disabled:hover, &.disabled:active {
+    background: transparent;
+    color: #4a4a64;
   }
-
 
   & .hotKey {
-    color: @font-color-suppressed;
+    color: #4a4a64;
     font-size: 9px;
     padding-left: 14px;
     flex-grow: 1;
@@ -33,34 +41,26 @@
   }
 
   & .label {
-    padding-left: 5px;
+    padding-left: 8px;
     padding-right: 3px;
   }
 }
 
 .separator {
-  border-top: solid 1px @bg-color-8;
+  border-top: solid 1px #2a2a36;
+  margin: 4px 8px;
 }
 
 .disabled {
-  color: @font-color-suppressed;
+  color: #4a4a64;
 }
 
 .contextMenu {
   &:hover .contextMenuBtn {
-    color: #fff;
+    color: #e2e2ee;
   }
 }
 
 .contextMenuBtn {
-  display: inline-block;
-  padding: 2px 3px;
-  color: #ffffff33;
-  &:hover {
-    color: #fff;
-  }
-  &:active {
-    color: #7f0807;
-  }
+  display: none;
 }
-

@@ -1,3 +1,4 @@
+import {TbLayersLinked, TbLayersUnion, TbLayersIntersect, TbLayersSubtract} from 'react-icons/tb';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
@@ -6,33 +7,19 @@ import {OperationDescriptor} from "cad/craft/operationBundle";
 
 interface BooleanParams {
   tools: [];
-  keepTools:boolean;
   boolean: BooleanDefinition;
 }
 
 export const BooleanOperation: OperationDescriptor<BooleanParams> = {
   id: 'BOOLEAN',
   label: 'Boolean',
-  icon: 'img/cad/intersection',
+  icon: TbLayersLinked,
   info: 'Booleans 2D sketch',
-  path:__dirname,
+  path: __dirname,
   paramsInfo: ({tools, boolean}) => `(${r(tools)} ${r(boolean)})`,
   run: (params: BooleanParams, ctx: ApplicationContext) => {
     const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const returnObject = occ.utils.applyBooleanModifier(params.tools, params.boolean);
-    
-    if (params.keepTools == true) {
-      // filter consumed array to remove the tools but leaving the targets regardless if 
-      // the targets are explicitly set or implied by leaving targets blank.
-      returnObject.consumed = returnObject.created.filter((el) =>  !params.tools.includes(el as never));
-    }else{
-      returnObject.consumed = returnObject.consumed.concat(params.tools);
-    }
-
-    return returnObject;
-
+    return occ.utils.applyBooleanModifier(params.tools, params.boolean);
   },
   form: [
     {
@@ -48,12 +35,6 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       },
     },
     {
-      type: 'checkbox',
-      name: 'keepTools',
-      label: 'Keep Tools',
-      defaultValue: false,
-    },
-    {
       type: 'boolean',
       name: 'boolean',
       label: 'Targets',
@@ -61,38 +42,40 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       defaultValue: "UNION",
     },
   ],
-
   masking: [
     {
       id: 'UNION',
       label: 'Union',
-      icon: 'img/cad/union',
+      icon: TbLayersUnion,
       info: 'makes a cut based on 2D sketch',
       maskingParams: {
         boolean: {
-          kind: 'UNION'
+          kind: 'UNION',
+          simplify: true
         }
       }
     },
     {
       id: 'SUBTRACT',
       label: 'Subtract',
-      icon: 'img/cad/subtract',
+      icon: TbLayersSubtract,
       info: 'makes a cut based on 2D sketch',
       maskingParams: {
         boolean: {
-          kind: 'SUBTRACT'
+          kind: 'SUBTRACT',
+          simplify: true
         }
       }
     },
     {
       id: 'INTERSECT',
       label: 'Intersect',
-      icon: 'img/cad/intersection',
+      icon: TbLayersIntersect,
       info: 'makes a cut based on 2D sketch',
       maskingParams: {
         boolean: {
-          kind: 'INTERSECT'
+          kind: 'INTERSECT',
+          simplify: true
         }
       }
     }

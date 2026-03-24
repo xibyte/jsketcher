@@ -1,3 +1,4 @@
+import {TbFlipHorizontal} from 'react-icons/tb';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { MFace } from "cad/model/mface";
 import { ApplicationContext } from "cad/context";
@@ -14,7 +15,7 @@ interface MirrorBodyParams {
 export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
   id: 'MIRROR_BODY',
   label: 'Mirror Body',
-  icon: 'img/cad/MirrorBody',
+  icon: TbFlipHorizontal,
   info: 'Mirrors selected body along plane of symytry.',
   path:__dirname,
   paramsInfo: () => `(?)`,

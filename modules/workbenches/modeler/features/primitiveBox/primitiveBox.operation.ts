@@ -1,3 +1,4 @@
+import {TbBox} from 'react-icons/tb';
 import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
@@ -19,7 +20,7 @@ interface PrimitiveBoxParams {
 export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
   id: 'BOX',
   label: 'Box',
-  icon: 'img/cad/cube',
+  icon: TbBox,
   info: 'Primitive Box',
   path:__dirname,
   paramsInfo: ({x, y, z}) => `(${r(x)} , ${r(y)} , ${r(z)})`,

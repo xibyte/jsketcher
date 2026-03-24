@@ -1,3 +1,4 @@
+import {TbCircleDot} from 'react-icons/tb';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "cad/context";
@@ -21,8 +22,8 @@ interface patternRadialParams {
 
 export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = {
   id: 'PATTERN_RADIAL',
-  label: 'Radial pattern',
-  icon: 'img/cad/patternRadial',
+  label: 'Radial Patt',
+  icon: TbCircleDot,
   info: 'Creates a Radial pattern.',
   path:__dirname,
   paramsInfo: p => `( ${p.patternMethod} ${r(p.angle * DEG_RAD)})`,

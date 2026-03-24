@@ -23,7 +23,6 @@ export default {
   'DeselectAll': 'ctrl+d',
   'menu.craft': 'shift+c',
   'menu.primitives': 'shift+a',
-  'menu.main': 'space',
   'Save': 'ctrl+s',
   'ImagePngExport': 'shift+3',
   'Info': 'F1',

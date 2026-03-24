@@ -1,3 +1,4 @@
+import {TbArrowsDiagonal} from 'react-icons/tb';
 import {MShell} from 'cad/model/mshell';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "cad/context";
@@ -13,7 +14,7 @@ interface scaleParams {
 export const ScaleOperation: OperationDescriptor<scaleParams> = {
   id: 'SCALE_BODY',
   label: 'Scale',
-  icon: 'img/cad/scale',
+  icon: TbArrowsDiagonal,
   info: 'Scale Body',
   path:__dirname,
   paramsInfo: ({ distance }) => `(${r(distance)})`,

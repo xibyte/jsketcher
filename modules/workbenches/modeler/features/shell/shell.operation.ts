@@ -1,3 +1,4 @@
+import {TbBox} from 'react-icons/tb';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "cad/context";
@@ -13,7 +14,7 @@ interface ShellParams {
 export const ShellOperation: OperationDescriptor<ShellParams> = {
   id: 'SHELL_TOOL',
   label: 'Shell',
-  icon: 'img/cad/shell',
+  icon: TbBox,
   info: 'Shells 2D sketch',
   path:__dirname,
   paramsInfo: ({thickness}) => `(${r(thickness)})`,

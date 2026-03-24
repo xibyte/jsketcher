@@ -1,3 +1,4 @@
+import {TbWaveSine} from 'react-icons/tb';
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
@@ -14,7 +15,7 @@ interface SweepParams {
 export const SweepOperation: OperationDescriptor<SweepParams> = {
   id: 'SWEEP',
   label: 'Sweep',
-  icon: 'img/cad/sweep',
+  icon: TbWaveSine,
   info: 'Sweeps 2D profile loop',
   path:__dirname,
   paramsInfo: () => `(?)`,

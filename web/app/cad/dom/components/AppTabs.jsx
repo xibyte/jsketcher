@@ -40,10 +40,8 @@ export default function AppTabs() {
         </Card>)}
     </div>
 
-    <TabSwitcher className={ls.contentSwitcher + ' small-typography'}>
-
-      <Tab label='3D View' active={activeTab < 0} readOnly={true} onSwitch={switchTo.bind(null, -1)}/>
-
+    {tabs.length > 0 && <TabSwitcher className={ls.contentSwitcher + ' small-typography'}>
+      <Tab label='' active={activeTab < 0} readOnly={true} onSwitch={switchTo.bind(null, -1)}/>
       {tabs.map(({label, id}, index) => {
         const bind = func => e => {
           func(index);
@@ -55,7 +53,7 @@ export default function AppTabs() {
                     onDetach={bind(detach)}
                     onSwitch={bind(switchTo)}/>
       })}
-    </TabSwitcher>
+    </TabSwitcher>}
   </div>
 }
 

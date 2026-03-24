@@ -1,3 +1,4 @@
+import {TbLayoutGrid} from 'react-icons/tb';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { MFace } from "cad/model/mface";
 import { ApplicationContext } from "cad/context";
@@ -22,8 +23,8 @@ interface patternLinearParams {
 
 export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = {
   id: 'PATTERN_LINEAR',
-  label: 'Linear pattern',
-  icon: 'img/cad/patternLinear',
+  label: 'Linear Patt',
+  icon: TbLayoutGrid,
   info: 'Creates a linear pattern.',
   path:__dirname,
   paramsInfo: () => `(?)`,

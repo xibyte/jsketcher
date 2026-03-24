@@ -1,3 +1,4 @@
+import {TbCircle} from 'react-icons/tb';
 import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
@@ -16,7 +17,7 @@ interface PrimitiveSphereParams {
 export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams> = {
   id: 'SPHERE',
   label: 'Sphere',
-  icon: 'img/cad/sphere',
+  icon: TbCircle,
   info: 'Primitive Sphere',
   path:__dirname,
   paramsInfo: ({radius,}) => `(${r(radius)}  )`,

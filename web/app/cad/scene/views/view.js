@@ -2,15 +2,15 @@ import {createFunctionList} from "gems/func";
 import {createIndex} from "gems/indexed";
 
 const MarkerTable = [
-  {
+    {
     type: 'selection',
     priority: 10,
-      colors: [0xffff80],
+    colors: [0x87CEEB],
   },
   {
     type: 'highlight',
     priority: 1,
-    colors: [0xffebcd, 0xffdf00],
+    colors: [0x9a9ab6, 0xb0b0cc],
   },
 ];
 

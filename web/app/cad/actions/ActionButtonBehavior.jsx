@@ -1,5 +1,7 @@
 import React, {useContext} from 'react';
 import {ReactApplicationContext} from "../dom/ReactApplicationContext";
+import {isMenuAction} from '../dom/menu/menuBundle';
+import {menuBelowElementHint} from '../dom/menu/menuUtils';
 
 export function ActionButtonBehavior({children, actionId}) {
 
@@ -19,9 +21,19 @@ export function ActionButtonBehavior({children, actionId}) {
 
   return children({
     'data-action-id': actionId,
+    onMouseDown: e => {
+      if (isMenuAction(actionId)) {
+        e.stopPropagation();
+      }
+    },
     onClick: e => {
       canceled = true;
-      actionService.run(actionId, e);
+      if (isMenuAction(actionId)) {
+        const el = e.currentTarget;
+        actionService.run(actionId, menuBelowElementHint(el));
+      } else {
+        actionService.run(actionId, e);
+      }
     },
     onMouseEnter: e => {
       updateCoords(e);

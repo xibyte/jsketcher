@@ -8,7 +8,7 @@ export function StackSection(props) {
     collapsible = true;
   }
 
-  const [visible, setVisible] = useState(!initialCollapse);
+  const [visible, setVisible] = useState(initialCollapse === false);
 
   const onTitleClick = collapsible ? () => setVisible(visible => !visible) : undefined;
 

@@ -1,3 +1,4 @@
+import {TbChevronUpLeft} from 'react-icons/tb';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { ApplicationContext } from "cad/context";
 import { EntityKind } from "cad/model/entities";
@@ -17,7 +18,7 @@ interface LoftParams {
 export const LoftOperation: OperationDescriptor<LoftParams> = {
   id: 'LOFT',
   label: 'Loft',
-  icon: 'img/cad/loft',
+  icon: TbChevronUpLeft,
   info: 'Lofts 2D sketch',
   path:__dirname,
   paramsInfo: () => `(?)`,
@@ -52,11 +53,11 @@ export const LoftOperation: OperationDescriptor<LoftParams> = {
         primarySketch = params.loops[index].parent;
       }
       const faces = occ.utils.sketchToFaces(ctx.sketchStorageService.readSketch(item.id), item.csys);
-      sweepSources = faces;
+      sweepSources = sweepSources.concat(faces);
     });
 
 
-    const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
+    const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources, (ctx as any)._operationIndex ?? 0);
 
     oci.thrusections("th", "1", loftType, ...wires);
 

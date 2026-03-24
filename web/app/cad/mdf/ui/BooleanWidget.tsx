@@ -23,8 +23,6 @@ export const BooleanWidgetDefinition = (props: BooleanWidgetProps) => ({
 
   collapsible: true,
 
-  initialCollapse: false,
-
   content: [
     {
       type: 'sub-form',

@@ -12,6 +12,7 @@ import {EMPTY_OBJECT} from 'gems/objects';
 import {aboveElement} from 'ui/positionUtils';
 import {resolveAppearance} from "cad/craft/operationHelper";
 import {menuAboveElementHint} from "cad/dom/menu/menuUtils";
+import {TOOL_COLOR_ICONS} from 'cad/icons/toolColorIcons';
 
 @connect(streams => combine(streams.craft.modifications, streams.operation.registry, streams.wizard.insertOperation)
   .map(([modifications, operationRegistry, insertOperationReq]) => ({
@@ -39,14 +40,14 @@ export default class HistoryTimeline extends React.Component {
         {history.map((m, i) => <React.Fragment key={i}>
           <Timesplitter active={i-1 === pointer} onClick={() => setHistoryPointer(i-1)} />
           {
-            inProgressOperation && i-1 === pointer && <FutureItem appearance={getOperation(inProgressOperation).appearance}/>      
+            inProgressOperation && i-1 === pointer && <FutureItem appearance={getOperation(inProgressOperation).appearance} actionId={inProgressOperation}/>      
           }
           <HistoryItem index={i} modification={m} getOperation={getOperation}
                        disabled={pointer < i}
                        inProgress={!inProgressOperation && pointer === i-1} />
         </React.Fragment>)}
         <Timesplitter eoh active={eof === pointer} onClick={() => setHistoryPointer(eof)}/>
-        {inProgressOperation && eof === pointer && <FutureItem appearance={getOperation(inProgressOperation).appearance}/>}
+        {inProgressOperation && eof === pointer && <FutureItem appearance={getOperation(inProgressOperation).appearance} actionId={inProgressOperation}/>}
       </div>
       <div className={ls.scroller} onClick={e => scrolly.scrollLeft += 60}><Fa icon='caret-right'/></div>
       <AddButton />
@@ -77,11 +78,26 @@ export default class HistoryTimeline extends React.Component {
 }
 
 
-function FutureItem({appearance}) {
-  return <div className={cx(ls.futureItem, ls.inProgress)}>
-    <ImgIcon url={appearance&&appearance.icon96} size={24} />
-  </div>;
+function OpIcon({appearance, actionId}) {
+  const colorSvg = actionId && TOOL_COLOR_ICONS[actionId];
+  if (colorSvg) {
+    const sized = colorSvg.replace('<svg ', '<svg width="20" height="20" ');
+    const MonoIcon = appearance?.icon;
+    return <>
+      <span className="icon-mono">{MonoIcon ? <MonoIcon size={20} /> : null}</span>
+      <span className="icon-color-svg" dangerouslySetInnerHTML={{__html: sized}}/>
+    </>;
+  }
+  if (!appearance) return null;
+  if (appearance.icon96) return <ImgIcon url={appearance.icon96} size={20} />;
+  if (appearance.icon) { const Icon = appearance.icon; return <Icon size={20} />; }
+  return null;
+}
 
+function FutureItem({appearance, actionId}) {
+  return <div className={cx(ls.futureItem, ls.inProgress)}>
+    <OpIcon appearance={appearance} actionId={actionId} />
+  </div>;
 }
 
 function Timesplitter({active, eoh, onClick}) {
@@ -94,8 +110,8 @@ function Timesplitter({active, eoh, onClick}) {
 }
 
 function Handle() {
-  const w = 12;
-  const h = 15;
+  const w = 8;
+  const h = 10;
   const m = Math.round(w * 0.5);
   const t = Math.round(h * 0.5);
   return <svg xmlns="http://www.w3.org/2000/svg" height={h} width={w} >
@@ -138,7 +154,7 @@ function HistoryItem({index, pointer, modification, getOperation, toggle, select
   const appearance = resolveAppearance(operation, modification.params);
   return <div className={cx(ls.historyItem, selected&&ls.selected, disabled&&ls.disabled, inProgress&&ls.inProgress)}
               onClick={e => toggle(index, modification, e.currentTarget)}>
-    <ImgIcon className={ls.opIcon} url={appearance&&appearance.icon96} size={24} />
+    <OpIcon appearance={appearance} actionId={modification.type} />
     <span className={ls.opIndex}>{ index + 1 }</span>
   </div>;
 });

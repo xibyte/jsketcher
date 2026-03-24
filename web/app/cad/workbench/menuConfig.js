@@ -1,11 +1,13 @@
 import {GiCube} from "react-icons/all";
+import {TbFolder} from "react-icons/tb";
 
 export default [
   {
     id: 'file',
-    cssIcons: ['file'],
+    icon: TbFolder,
+    label: 'File',
     actions: ['NewProject', '-', 'Save', 'StlExport', 'ImagePngExport', 'NativeFormatExport', '-', 'NativeFormatImport', 
-              'NativeFormatImportAs', '-', 'CloneCurrentProject', '-', 'ReassignSketch']
+              'NativeFormatImportAs', '-', 'CloneCurrentProject']
   },
   {
     id: 'craft',
@@ -34,6 +36,13 @@ export default [
     icon: GiCube,
     info: 'view/render mode',
     actions: ['ViewMode_WIREFRAME_ON', 'ViewMode_SHADED_ON', 'ViewMode_SHADED_WITH_EDGES_ON']
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    cssIcons: ['cog'],
+    info: 'settings',
+    actions: ['menu.viewModes', 'ToggleCameraMode']
   },
   {
     id: 'boolean',

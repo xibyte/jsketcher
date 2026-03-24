@@ -1,13 +1,18 @@
 .quickButtons {
   display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
+  flex-direction: row;
+  align-items: center;
   flex: 0 0;
   border-right: 1px solid #8e8e8e;
   padding-right: 3px;
   & > * {
-    font-size: 16px;
-    padding: 5px 2px;
+    font-size: 10px;
+    padding: 2px 2px;
+    margin: 1px 5px;
+    svg {
+      width: 17px;
+      height: 17px;
+    }
   }
 }
 
@@ -15,8 +20,18 @@
   flex: 1 1;
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
+  text-shadow:
+    -1px -1px 0 #000,
+     0   -1px 0 #000,
+     1px -1px 0 #000,
+     1px  0   0 #000,
+     1px  1px 0 #000,
+     0    1px 0 #000,
+    -1px  1px 0 #000,
+    -1px  0   0 #000;
   svg {
-    width: 24px;
-    height: 24px;
+    width: var(--toolbar-icon-size, 17px);
+    height: var(--toolbar-icon-size, 17px);
   }
 }

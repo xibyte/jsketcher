@@ -1,3 +1,4 @@
+import {TbDatabase} from 'react-icons/tb';
 import {ApplicationContext} from 'cad/context';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {EntityKind} from "cad/model/entities";
@@ -18,7 +19,7 @@ interface PrimitiveCylinderParams {
 export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderParams> = {
   id: 'CYLINDER',
   label: 'Cylinder',
-  icon: 'img/cad/cylinder',
+  icon: TbDatabase,
   info: 'Primitive Cylinder',
   path:__dirname,
   paramsInfo: ({height, diameter}) => `(${r(height)} , ${r(diameter)} )`,

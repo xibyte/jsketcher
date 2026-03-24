@@ -1,61 +1,79 @@
 @import '../styles/theme.less';
 @import '../styles/mixins.less';
-
 .root {
   position: absolute;
   z-index: 1;
-  background-color: @bg-color-4;
+  background-color: rgba(22, 22, 28, 0.97);
+  border: 1px solid #2a2a36;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   min-width: 100px;
   min-height: 20px;
   pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
 }
-
 .root.compact {
   font-size: 11px;
 }
-
 .mandatoryBorder {
-  border: 5px solid @bg-color-4;
+  border: 1px solid #2a2a36;
 }
-
 .bar {
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  background-color: @bg-color-3;
+  background-color: rgba(26, 26, 33, 0.98);
+  border-bottom: 1px solid #2a2a36;
   cursor: default;
+  padding: 0 4px;
 }
-
 .title {
-  padding: 0.3em 0 0.3em 0.5em;
-  font-size: 1.1em;
+  padding: 8px 6px;
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #7a7a96;
+  font-weight: 600;
   display: flex;
   align-items: center;
+  gap: 6px;
 }
-
 .controlButtons {
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  gap: 2px;
 }
-
 .button {
-  padding: 0 0.5em;
-  .button-behavior(@color-accent);
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  color: #7a7a96;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover {
+    background: #26262f;
+    color: #e2e2ee;
+  }
   svg {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
   }
 }
-
 .danger {
-  .button-behavior(@color-danger);
+  &:hover {
+    background: rgba(247, 85, 85, 0.15);
+    color: #f75555;
+  }
 }
-
 .content {
   overflow-y: auto;
   flex-grow: 1;
+  padding: 8px 0;
 }

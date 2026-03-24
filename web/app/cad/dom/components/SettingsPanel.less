@@ -1,0 +1,220 @@
+.panel {
+  position: fixed;
+  top: var(--settings-y, 52px);
+  left: var(--settings-x, auto);
+  z-index: 1000;
+  background: rgba(22, 22, 28, 0.97);
+  border: 1px solid #2a2a36;
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  padding: 14px;
+  min-width: 230px;
+  max-height: calc(100vh - 70px);
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.dragHandle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  padding: 2px 4px 8px;
+  margin: -4px -4px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  user-select: none;
+  &:active { cursor: grabbing; }
+}
+.dragDots {
+  width: 16px;
+  height: 8px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+.subMenu {
+  margin-bottom: 4px;
+  &:last-child { margin-bottom: 0; }
+  & + .subMenu {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 4px;
+  }
+}
+
+.subMenuHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #e2e2ee;
+  border-bottom: 1px solid rgba(226,226,238,0.15);
+  margin-bottom: 8px;
+
+  &:hover { color: #ffffff; }
+}
+
+.subMenuCaret {
+  font-size: 9px;
+}
+
+.subMenuContent {
+  padding: 0 4px;
+}
+
+.section {
+  margin-bottom: 12px;
+  &:last-child { margin-bottom: 0; }
+  & + .section {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 12px;
+  }
+}
+
+.sectionTitle {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #7a7a96;
+  margin-bottom: 8px;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.radioBtn {
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #2a2a36;
+  border-radius: 6px;
+  color: #7a7a96;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba(255,255,255,0.08);
+    color: #e2e2ee;
+  }
+
+  &.active {
+    background: rgba(77,156,248,0.15);
+    border-color: #4d9cf8;
+    color: #4d9cf8;
+  }
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  cursor: pointer;
+
+  &:hover .toggleLabel { color: #e2e2ee; }
+}
+
+.toggleLabel {
+  font-size: 12px;
+  color: #9a9ab6;
+  transition: color 0.15s;
+}
+
+.toggle {
+  width: 32px;
+  height: 18px;
+  background: #2a2a36;
+  border-radius: 9px;
+  position: relative;
+  transition: background 0.2s;
+
+  &.on {
+    background: #4d9cf8;
+
+    .toggleThumb {
+      left: 16px;
+    }
+  }
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s;
+}
+.sliderLabel {
+  font-size: 11px;
+  color: #7a7a96;
+  margin-bottom: 4px;
+}
+
+.colorTrack {
+  height: 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  border: 1px solid #3a3a4a;
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider {
+  flex: 1;
+  accent-color: #4d9cf8;
+}
+
+.sliderVal {
+  font-size: 11px;
+  color: #7a7a96;
+  min-width: 30px;
+  text-align: right;
+}
+
+.axisRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 0;
+}
+
+.axisLabel {
+  flex: 1;
+  font-size: 12px;
+  color: #9a9ab0;
+}
+
+.axisBtn {
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #2a2a36;
+  border-radius: 6px;
+  color: #7a7a96;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { background: rgba(255,255,255,0.08); color: #e2e2ee; }
+}
+
+.axisX.axisBtnOn { background: rgba(204,51,51,0.2); border-color: #cc3333; color: #ff6666; }
+.axisY.axisBtnOn { background: rgba(51,170,51,0.2); border-color: #33aa33; color: #66dd66; }
+.axisZ.axisBtnOn { background: rgba(51,102,204,0.2); border-color: #3366cc; color: #6699ff; }

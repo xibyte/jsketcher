@@ -120,11 +120,11 @@ function createPickHandlerFromSchema(wizardService: WizardService) {
     }
 
     function getNextActiveParam(entityRef: EntityReference): EntityReference {
-      // if (!entityRef.isArray && entityRef.metadata.cycleSelection) {
-      //   const index = schemaIndex.entities.indexOf(entityRef);
-      //   const nextIndex = (index + 1) % schemaIndex.entities.length;
-      //   return schemaIndex.entities[nextIndex];
-      // }
+      if (!entityRef.isArray && entityRef.metadata.cycleSelection) {
+        const index = schemaIndex.entities.indexOf(entityRef);
+        const nextIndex = (index + 1) % schemaIndex.entities.length;
+        return schemaIndex.entities[nextIndex];
+      }
       return entityRef;
     }
     

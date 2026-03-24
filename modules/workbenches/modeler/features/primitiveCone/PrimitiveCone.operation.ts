@@ -1,3 +1,4 @@
+import {TbTriangle} from 'react-icons/tb';
 import { ApplicationContext } from 'cad/context';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { EntityKind } from "cad/model/entities";
@@ -19,7 +20,7 @@ interface PrimitiveConeParams {
 export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = {
   id: 'CONE',
   label: 'Cone',
-  icon: 'img/cad/cone',
+  icon: TbTriangle,
   info: 'Cone',
   path:__dirname,
   paramsInfo: ({ height, diameterA, diameterB }) => `(${r(height)} , ${r(diameterA)} , ${r(diameterB)} )`,

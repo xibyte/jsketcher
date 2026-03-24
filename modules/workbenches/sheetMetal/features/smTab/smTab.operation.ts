@@ -54,7 +54,7 @@ export const smTabOperation: OperationDescriptor<smTabParams> = {
       extrusionVector = dir.normalize()._multiply(params.thickness).negate();
     }
 
-    const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces);
+    const productionAnalyzer = new FromSketchProductionAnalyzer(occFaces, (ctx as any)._operationIndex ?? 0);
 
     const tools = occFaces.map((faceRef, i) => {
 

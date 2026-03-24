@@ -1,0 +1,233 @@
+@import "~ui/styles/theme.less";
+
+.root {
+  &::-webkit-scrollbar { display: none; }
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: #ffffff;
+  svg path[stroke="none"] {
+    stroke: none;
+  }
+  text-shadow:
+    -1px -1px 0 #000,
+     0   -1px 0 #000,
+     1px -1px 0 #000,
+     1px  0   0 #000,
+     1px  1px 0 #000,
+     0    1px 0 #000,
+    -1px  1px 0 #000,
+    -1px  0   0 #000,
+     0    2px 6px rgba(0,0,0,0.9);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 11px;
+  color: #ffffff;
+  border-bottom: none;
+
+  &:hover {
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+  }
+}
+
+.sectionCaret {
+  font-size: 10px;
+}
+
+.section {
+  padding: 4px 0;
+}
+
+.empty {
+  padding: 4px 12px;
+  color: #ffffff;
+  font-style: italic;
+}
+
+.groupSeparator {
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+  margin: 4px 0;
+}
+
+.bodyGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.bodyRow {
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  padding-left: 4px;
+  padding-right: 6px;
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(255,255,255,0.08);
+  }
+}
+
+.expandBtn {
+  cursor: pointer;
+  padding: 0 4px;
+  color: #ffffff;
+  font-size: 10px;
+  flex-shrink: 0;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+.bodyChildren {
+  padding-left: 16px;
+}
+
+.subHeader {
+  padding: 2px 8px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.sketchesBlock {
+  margin-left: 8px;
+  border-left: 2px solid rgba(255,255,255,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sketchesHeader {
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 3px 6px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(255,255,255,0.08);
+  }
+}
+
+.sketchesTitle {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.sketchesList {
+  padding: 2px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sketchRow {
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 2px 8px 2px 12px;
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(255,255,255,0.08);
+  }
+}
+
+.sketchLabel {
+  color: #ffffff;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bodyLabel {
+  cursor: pointer;
+  padding: 3px 5px;
+  color: #ffffff;
+  font-size: 12px;
+  &:hover { color: #ffffff; }
+}
+
+.contextMenu {
+  position: fixed;
+  z-index: 9999;
+  background: var(--bg-color-1, @bg-color-1);
+  border: 1px solid var(--border-color, @border-color);
+  border-radius: 6px;
+  padding: 4px 0;
+  min-width: 140px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+
+.contextMenuItem {
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--font-color-empph, @font-color-empph);
+  &:hover { background: var(--bg-color-4, @bg-color-4); }
+  &.danger { color: #e05555; }
+  &.danger:hover { background: #3a1a1a; }
+}
+
+.modelList {
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.simpleRow {
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  border-radius: 3px;
+
+  &:hover {
+    background: rgba(255,255,255,0.08);
+  }
+}
+
+.simpleRowHighlighted {
+  background: rgba(77,156,248,0.15);
+}
+
+.simpleRowSelected {
+  background: rgba(77,156,248,0.3);
+}
+
+.eyeBtn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+
+  &:hover {
+    color: #ffffff;
+  }
+}

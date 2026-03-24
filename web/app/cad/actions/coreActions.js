@@ -1,13 +1,34 @@
+import {TbPencil, TbArrowBackUp, TbArrowForwardUp, TbCursorOff, TbSettings} from 'react-icons/tb';
 import * as ActionHelpers from './actionHelpers'
 import {AiOutlineExport} from "react-icons/ai";
 
 export default [
+  
+  {
+    id: 'Undo',
+    appearance: {
+      icon: TbArrowBackUp,
+      label: 'Undo',
+      info: 'Undo last operation',
+    },
+    invoke: (ctx) => ctx.craftService.historyTravel.backward({})
+  },
+
+  {
+    id: 'Redo',
+    appearance: {
+      icon: TbArrowForwardUp,
+      label: 'Redo',
+      info: 'Redo last undone operation',
+    },
+    invoke: (ctx) => ctx.craftService.historyTravel.forward({})
+  },
+  
   {
     id: 'EditFace',
     appearance: {
-      cssIcons: ['file-picture-o'],
-      label: 'sketch',
-      icon96: 'img/cad/face-edit96.png',
+      icon: TbPencil,
+    label: 'sketch',
       info: 'open sketcher for a face/plane',
     },
     listens: ctx => ctx.streams.selection.face,
@@ -118,11 +139,29 @@ export default [
     invoke: (context) => context.services.sketcher.updateAllSketches()
   },
 
-  {
+    {
+    id: 'ToggleSettings',
+    appearance: {
+      icon: TbSettings,
+      label: 'Settings',
+      info: 'toggle settings panel',
+    },
+    invoke: (ctx, e) => {
+      const current = ctx.streams.ui.settingsPanelOpen.value;
+      if (!current && e?.currentTarget) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        ctx.streams.ui.settingsPanelOpen.next({ x: rect.left, y: rect.bottom });
+      } else {
+        ctx.streams.ui.settingsPanelOpen.next(false);
+      }
+    }
+  },
+	
+	{
     id: 'DeselectAll',
     appearance: {
-      cssIcons: ['square-o'],
-      label: 'deselect all',
+      icon: TbCursorOff,
+      label: 'Deselect All',
       info: 'deselect everything',
     },
     invoke: (context) => context.services.pickControl.deselectAll()

@@ -1,3 +1,4 @@
+import {TbCircleDotted} from 'react-icons/tb';
 import { ApplicationContext } from 'cad/context';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { EntityKind } from "cad/model/entities";
@@ -18,7 +19,7 @@ interface PrimitiveTorusParams {
 export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
   id: 'TORUS',
   label: 'Torus',
-  icon: 'img/cad/torus',
+  icon: TbCircleDotted,
   info: 'Primitive Torus',
   path:__dirname,
   paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} , ${r(tubeRadius)} )`,

@@ -1,28 +1,26 @@
 @import "./flatEdges.less";
 @import "~ui/styles/theme.less";
-@border-radius: 3px;
 
+@border-radius: 10px;
 
 .root {
-  color: @font-color;
-  background-color: @bg-color-3;
-  border: solid 1px @bg-color-1;
+  color: @font-color-empph;
+  background: rgba(22, 22, 28, 0.97);
+  border: 1px solid #2a2a36;
   border-radius: @border-radius;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 
 .flatBottom {
   ._flatBottom(@border-radius);
 }
-
 .flatTop {
   ._flatTop(@border-radius);
 }
-
 .flatRight {
   ._flatRight(@border-radius);
 }
-
 .flatLeft {
   ._flatLeft(@border-radius);
 }
-

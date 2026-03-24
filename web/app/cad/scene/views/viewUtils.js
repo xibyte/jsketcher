@@ -1,18 +1,17 @@
-import {BufferAttribute, BufferGeometry, DoubleSide} from "three";
-
+import {BufferAttribute, BufferGeometry, DoubleSide, MeshPhongMaterial} from "three";
 import brepTess from '../../tess/brep-tess';
 import tessellateSurface from 'geom/surfaces/surfaceTess';
 import * as vec from 'math/vec';
 
 
 export function createSolidMaterial(skin) {
-  return new THREE.MeshPhongMaterial(Object.assign({
-    // vertexColors: THREE.FaceColors,
-    color: 0xaeaeae,
-    shininess: 0,
-    polygonOffset : true,
-    polygonOffsetFactor : 1,
-    polygonOffsetUnits : 2,
+  return new MeshPhongMaterial(Object.assign({
+    color: 0xA0A0A4,
+    emissive: 0x1a1a1a,
+    shininess: 12,
+    polygonOffset: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 2,
     side: DoubleSide,
   }, skin));
 }

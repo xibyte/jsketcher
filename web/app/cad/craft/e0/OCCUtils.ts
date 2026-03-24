@@ -99,7 +99,6 @@ export function createOCCUtils(ctx: ApplicationContext): OCCUtils {
 
       targetNames.forEach(targetName => oci.baddobjects(targetName));
       tools.forEach(tool => oci.baddtools(tool));
-      console.log("booleanDef", booleanDef);
       if (booleanDef.simplify === true){
         oci.bsimplify("-e", 1, "-f", 1);
       }else{

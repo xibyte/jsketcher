@@ -1,11 +1,11 @@
 @import "~ui/styles/theme.less";
 
 .root {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: transparent;
   display: flex;
 
   align-items: flex-end;
-  height: 48px;
+  height: 38px;
   //&:hover .timesplitter .handlePoly {
   //  visibility: visible;
   //}
@@ -17,8 +17,7 @@
   cursor: pointer;
   align-items: flex-end;
   .handle {
-    //margin-top: -15px;
-    margin-left: -4px;
+    margin-left: -2px;
     font-size: 20px;
   }
 }
@@ -36,38 +35,38 @@
   display: flex;
   align-items: center;
   cursor: pointer;
+  color: @font-color-minor;
   &:hover {
-    background-color: #BFBFBF;
+    background-color: @bg-color-4;
+    color: @font-color-empph;
   }
   &:active {
-    background-color: #7e7e7e;
+    background-color: @bg-color-5;
     transition: 100ms;
   }
-  
 }
 
 .timesplitter.active:not(.eoh) {
-  background-color: #ff940b;
-  
+  background-color: @color-accent;
 }
 
 .handlePoly {
-  fill: #808080;
-  stroke: #000;
+  fill: @font-color-minor;
+  stroke: @bg-color-0;
   &:hover {
-    fill: #ff940b;
-    stroke: #ff3a1e;
+    fill: @color-accent;
+    stroke: @bg-color-0;
   }
 }
 
 .timesplitter.active .handlePoly {
-  fill: #ff940b;
-  stroke: #ff3a1e;
+  fill: @color-accent;
+  stroke: @bg-color-0;
 }
 
 .timesplitter.active.eoh .handlePoly {
-  fill: #BFBFBF;
-  stroke: #000;
+  fill: @font-color-suppressed;
+  stroke: @bg-color-0;
 }
 
 
@@ -75,7 +74,7 @@
 //ITEMS
 
 .item {
-  height: 30px;
+  height: 24px;
   flex-shrink: 0;
   margin: 2px 0;
   padding: 2px;
@@ -85,7 +84,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
+  width: 24px;
 
   cursor: pointer;
   &:active {
@@ -94,39 +93,42 @@
 }
 
 .disabled {
-  background-color: #828282;
-  border-color: #a7a7a7;
-  color: #a7a7a7;
+  background-color: @bg-color-3;
+  border-color: @border-color;
+  color: @font-color-suppressed;
 }
 
 .controlBtn {
   .item;
   margin-left: 2px;
   margin-right: 2px;
-  background-color: #64808b;
+  background-color: @bg-color-3;
+  border-color: @border-color;
+  color: @font-color-minor;
   &:hover {
-    background-color: #489;
+    background-color: @bg-color-4;
+    color: @font-color-empph;
   }
   &:active {
-    background-color: #5dc4da;
+    background-color: @bg-color-5;
   }
   &.disabled {.disabled;}
 }
 
 .historyItem {
   .item;
-  background-color: #737373;
+  background-color: @bg-color-3;
+  border-color: @border-color;
+  color: @font-color-empph;
   &:hover {
-    background-color: #4d4d4d;
+    background-color: @bg-color-4;
   }
   &:active {
-    background-color: #9c9c9c;
+    background-color: @bg-color-5;
   }
   &.disabled {.disabled;}
   &.selected {
-    //background-color: #2B2B2B;
     border-color: #00ffe4;
-    //border-width: 2px;
   }
   &.inProgress {
     background-color: @inProgressColor;
@@ -161,10 +163,11 @@
 
 .add {
   .controlBtn;
-  border: #ffffff88 1px dashed;
-  color: #ffffff88;
+  border: @border-color 1px dashed;
+  color: @font-color-minor;
   &:hover {
-    border-color: #fff;
+    border-color: @font-color-empph;
+    color: @font-color-empph;
   }
   &.disabled {.disabled;}
 }

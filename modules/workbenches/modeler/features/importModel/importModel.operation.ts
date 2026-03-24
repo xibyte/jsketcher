@@ -1,3 +1,4 @@
+import {TbFileImport} from 'react-icons/tb';
 import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {LocalFileAdapter} from "ui/components/controls/FileControl";
@@ -24,7 +25,7 @@ const parseStringAsync = (xml) => new Promise((resolve, reject) => {
 export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
   id: 'IMPORT_MODEL',
   label: 'Import',
-  icon: 'img/cad/import',
+  icon: TbFileImport,
   info: 'Imports BREP, STEP, IGES or FCStd file',
   path:__dirname,
   paramsInfo: () => `()`,

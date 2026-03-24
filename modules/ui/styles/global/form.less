@@ -4,17 +4,24 @@ button, input, select, textarea {
 }
 
 button {
-  padding: 6px 10px;
-  border: 0;
-  background-color: @bg-color-9;
-  //font-weight: bold;
-  color: @font-color;
+  padding: 5px 14px;
+  border: 1px solid #2a2a36;
+  background-color: #1e1e25;
+  color: #e2e2ee;
   white-space: nowrap;
-  border-radius: 1px;
-
+  border-radius: 5px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  &:hover {
+    background-color: #26262f;
+    color: #e2e2ee;
+  }
 
   &.icon-button {
     display: inline-flex;
@@ -37,7 +44,7 @@ button.neutral {
 }
 
 button.accent {
-  .button-behavior(@color-accent)
+  .button-behavior(@color-neutral)
 }
 
 button.highlight {

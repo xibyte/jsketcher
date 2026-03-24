@@ -1,7 +1,8 @@
 @import "~ui/styles/theme.less";
-
 .root {
   display: flex;
+  position: relative;
+  pointer-events: none;
   svg {
     path {
       stroke: white;
@@ -10,32 +11,46 @@
     height: 16px;
   }
 }
-
 .tabs {
   position: relative;
-  border-right: 1px solid @border-color;
-  background-color: @bg-color-2;
   font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  pointer-events: auto;
+  z-index: 11;
+  align-self: flex-start;
 }
-
 .tabs button {
   display: block;
   font-size: 13px;
+  border-radius: 0 6px 6px 0;
 }
-
 .folder {
-  height: 100%;
+  position: absolute;
+  top: 8px;
+  left: 100%;
+  width: 235px;
+  max-height: calc(100vh - 160px);
   display: flex;
   flex-direction: column;
+  background: rgba(22,22,28,0.97);
+  border: 1px solid #2a2a36;
+  border-radius: 0 6px 6px 6px;
+  pointer-events: auto;
+  z-index: 10;
+  overflow: hidden;
 }
-
 .folderContent {
   flex: 1;
   display: flex;
-  width: 235px;
-  overflow: auto;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
-
 .folderContent > * {
-  flex: 1;    
+  flex: 0 0 auto;
 }

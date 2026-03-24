@@ -1,10 +1,40 @@
+@import "~ui/styles/theme.less";
 :global(.SVG_ICON) {
   stroke: #fff;
-} 
+}
 
 .root {
   height: 100%;
   display: flex;
+  flex-direction: column;
+}
+.fullLayout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.topBar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  pointer-events: auto;
+  background-color: rgba(22, 22, 27, 0.92);
+  border-bottom: 1px solid rgba(42, 42, 54, 0.5);
+}
+.belowBar {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.mainArea {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .mainArea {
@@ -52,6 +82,7 @@
   align-self: stretch;
   display: flex;
   flex-direction: column;
+  margin-left: 36px;
 }
 
 .sketcherViewport {
@@ -62,6 +93,8 @@
 .wizardArea {
   pointer-events: auto;
   position: relative;
+  margin-left: 36px;
+  z-index: 15;
 }
 
 .spring {

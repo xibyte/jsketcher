@@ -1,3 +1,4 @@
+import {TbTrash} from 'react-icons/tb';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
@@ -10,8 +11,8 @@ interface DeleteBodyParams {
 
 export const DeleteBodyOperation: OperationDescriptor<DeleteBodyParams> = {
   id: 'DELETE_BODY',
-  label: 'DeleteBody',
-  icon: 'img/cad/deleteBody',
+  label: 'Dlt Body',
+  icon: TbTrash,
   info: 'Delete Bodies',
   path:__dirname,
   paramsInfo: ({ tools }) => `(${r(tools)})`,

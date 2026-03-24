@@ -1,3 +1,4 @@
+import {TbCircleDashed} from 'react-icons/tb';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
@@ -19,7 +20,7 @@ interface HoleParams {
 export const HoleOperation: OperationDescriptor<HoleParams> = {
   id: 'HOLE_TOOL',
   label: 'hole',
-  icon: 'img/cad/hole',
+  icon: TbCircleDashed,
   info: 'creates hole features',
   path:__dirname,
   paramsInfo: ({

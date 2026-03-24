@@ -81,6 +81,8 @@ export default function Wizard(props: WizardProps) {
     documentationLink={operation.documentationLink}
     onCancel={cancel}
     onOK={onOK}
+    cancelLabel={(operation as any).cancelLabel}
+    hideOK={(operation as any).hideOK}
     infoText={<>
       {error && <ErrorPrinter error={error}/>}
       <PipelineError />

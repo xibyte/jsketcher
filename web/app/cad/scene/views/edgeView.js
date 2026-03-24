@@ -10,7 +10,7 @@ const MarkerTable = [
   {
     type: 'highlight',
     priority: 1,
-    colors: [0xffebcd, 0xFF00FF],
+    colors: [0x4d9cf8, 0xFF00FF],
   },
 ];
 
