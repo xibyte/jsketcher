@@ -1,89 +1,105 @@
-JSketcher
-===========
-![JSketcher Logo](./web/img/JSketcher-logo.svg)
+# ForgeCAD
 
-JSketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
+A simple, easy-to-use CAD application for solid modeling and sketching. Inspired by Fusion 360 and Shapr3D.
 
+Built on [jsketcher](https://github.com/xibyte/jsketcher) by Autodrop3d LLC — see [LICENSE](./LICENSE) for terms.
 
-<a href='https://www.youtube.com/watch?v=Vk3TTp8hNxQ&list=PLeoCiKHizvH8PZEyFvThHzVlnTF5XaL-R'> 
-  <img src='../../wiki/img/sample2d.png' width='400px'>
-  <img src='../../wiki/img/sample3d.png' width='400px'> 
-</a>
+## Features
 
-[YouTube Tutorial Video](https://www.youtube.com/watch?v=Vk3TTp8hNxQ&list=PLeoCiKHizvH8PZEyFvThHzVlnTF5XaL-R)
+### Solid Tools
+- Extrude, Revolve, Loft, Sweep
+- Boolean (union, subtract, intersect)
+- Fillet & Chamfer (separate buttons)
+- Shell, Hole, Scale Body
+- Move Body & Rotate Body (with body center pivot option)
+- Split Body (split a solid using another solid)
+- Mirror Body, Linear Pattern, Radial Pattern
+- Primitives: box, sphere, cylinder, cone, torus
+- Measure Tool (Shapr3D-style snap points)
 
-[Live Sample Demo](http://web-cad.org/?com.github.jsketcher-sample-models.MODELS.Flag-Holder)
+### UI
+- Dark / Medium / Light themes
+- Top toolbar with all solid tools
+- Left sidebar: Modifications, Scene tree, Projects
+- NavCube (top right, with home button)
+- Settings panel (theme, mesh quality)
+- Floating panels over 3D viewport
+- Project save/load via localStorage
 
-[2D Sketcher](http://web-cad.org/sketcher.html#__sample2D__)
+### Sketcher
+- 2D constraint-based sketcher (from jsketcher)
+- Sketch on any face
+- Lines, arcs, circles, B-splines
+- Full constraint system
 
-[Help Docs](./web/docs/index.md)
+## Running
 
-[Workbench Dev Guide](./dev-guide/index.md)
+```bash
+npm install
+npm start
+# http://localhost:3000
+```
 
-[Comercial Licencing](https://www.autodrop3d.com/parametric-cad-beta.html) 
+## Key Files
 
+| Area | File |
+|------|------|
+| Toolbar config | `modules/workbenches/modeler/index.ts` |
+| Themes | `modules/ui/styles/theme.less` |
+| Theme switcher | `web/app/cad/dom/components/SettingsPanel.jsx` |
+| NavCube | `web/app/cad/dom/components/NavCube.tsx` |
+| Sidebar | `web/app/cad/dom/components/FloatView.jsx` |
+| Scene tree | `web/app/cad/craft/ui/ScenePanel.jsx` |
+| Viewport | `web/app/cad/dom/components/View3d.jsx` |
+| Measure | `modules/workbenches/modeler/actions/measure/measure.action.ts` |
+| Split Body | `modules/workbenches/modeler/features/splitBody/splitBody.operation.ts` |
+| Move/Rotate | `modules/workbenches/modeler/features/moveBody/` |
+| OCC commands | `web/app/cad/craft/e0/occCommandInterface.ts` |
+| BRep reading | `modules/brep/io/brepIO.ts` |
+| Face rendering | `web/app/cad/scene/views/faceView.js` |
+| Tess → Three.js | `web/app/cad/scene/views/viewUtils.js` |
 
-Please consider supporting this project by becoming a backer
-==============
-<a href="https://opencollective.com/jsketcher-ad3d/"><image src="https://opencollective.com/jsketcher-ad3d/tiers/backer.svg?avatarHeight=300&width=3000"></image><image src="https://opencollective.com/jsketcher-ad3d/tiers/badge.svg"></image></a>
+## Known Issues & WASM Limitations
 
-Current Status
-==============
+### Sphere / Curved Surface Tessellation
 
-JSketcher is a parametric 3d modeler employing a 2D constraint solver for sketches and the feature/history metaphor to build models. The 2D constraint solver is completely written in javascript/typescript and is implemented in both the 3D CAD and the 2D sketcher. Originally developed by xibyte to make models for 3d printing. Today JSketcher provides a rich set of tools for visualizing, selecting/interacting with 3D geometry, tracking and storing model history all built on the foundation of the 2D sketcher engine and employing OpenCascade for solid modeling operations. 
+Spheres, cylinders, cones, tori look faceted. This is a **WASM binary limitation** — the C++ `Interrogate` function exports curved surfaces as `TYPE: 'UNKNOWN'` instead of B-SPLINE, giving JS no analytical surface data. Only a coarse triangle mesh (~306 tris for a sphere).
 
-Major Components and features
-==============
-* Geometric Constraint Solver. This is a most crucial component which allows to solve a system of geometric constraints applied to a sketch. 
-  See below the list of supported constraints.
-* 2D Sketcher. Allows to design 2d sketches applying geometric constraints. Uses HTML5 canvas for rendering.      
-* 3D Boolean engine. OpenCascade is used to perform booleans on BREP objects.
-* Feature History. Accumulates features builds a 3d model step by step. A compare step is employed to propagate edge/face IDs forward to provide a stable and robust model. 
-* Export to **STL**, **DWG** and **SVG** formats
-* Saving projects in the browser locale storage
-* Repository of dimensions. For example if there is a line length constraint applied, it's not necessary to hardcode some length value. 
-  A dimension with a symbolic name can be created and the constraint can refer to that dimension by name. 
-  Once value of dimension gets changed the sketch is resolved again accordingly to the new dimension values.  
-* 2D measurement tool. Allows adding dimensions on a 2D drawing(Linear, Vertical, Horizontal and Arc/Circle dimension are supported)
-* No any server-side needed. Only client side Javascript and wasm. 
+**What was tried and failed:**
 
-This modeler is already used for:
+| Approach | Result |
+|----------|--------|
+| `UpdateTessellation(ptr, deflection)` | Crashes — `RuntimeError: function signature mismatch` in WASM |
+| `incmesh` OCC command before Interrogate | Runs but Interrogate ignores it |
+| `nurbsconvert` then Interrogate | Conversion works but Interrogate still outputs `TYPE: 'UNKNOWN'` |
+| `_SPI_tessellate` / engine.tessellate() | `_SPI_*` functions don't exist in this WASM binary |
+| verb.js NURBS retessellation | Surface is NullSurface — no NURBS data available |
+| Smooth normals on coarse mesh | Better shading but silhouette still faceted |
 
-* Designing of 3d models to get them 3d-printed. 3D models are based on parametric 2d sketches. All models can be exported as an STL file and 3d-printed after.     
-* Creating of 2d parametric sketches which could be exported to DWG or SVG format.   
+**What would fix it:**
+1. **Recompile the WASM binary** — make `Interrogate` call `BRepBuilderAPI_NurbsConvert` before serialization so surfaces export as B-SPLINE
+2. **Fix `_UpdateTessellation` C++ signature** to match JS binding
+3. **JS-side mesh subdivision** — detect sphere-like faces, subdivide and project onto sphere. Most viable without touching C++
 
-Supported Constraints
-=====================
+### Other WASM Issues
+- `_SPI_*` functions are dead code — all work goes through `_CallCommand`
+- Sphere edge curves are `CONIC` → `readCurve` returns `undefined` (fallback exists in `brep-tess.js`)
+- `GenericWASMEngine_V1` is dead code
 
-* Coincident
-* Vertical
-* Horizontal
-* Parallel
-* Perpendicular
-* Point to Line Distance
-* Point to Object Distance
-* Entity Equality(radius/length)
-* Tangent
-* Radius
-* Point On Line
-* Point On Arc / Ellipse
-* Point In Middle
-* Angle
-* Symmetry
-* Lock Convexity
-* Fillet Meta Constraint
+## Planned
+- STL/STEP export with unit selector (mm/cm/m/inch)
+- Electron packaging (Windows, Linux, Mac)
+- UI polish
+- Push/pull direct modeling
 
-Get Started With the Code
-=========================
+## Contributing
 
-Install node.js
+Highest-impact areas:
+1. **Fix sphere tessellation** — recompile WASM or implement JS subdivision
+2. **STL/STEP export** — OCC kernel supports it, needs UI
+3. **Electron packaging** — wrap for desktop
+4. **UI polish**
 
-* $ cd \<jsketcher folder\>
-* $ npm install
-* $ npm start
+## License
 
-
-
-
-Contributing Please see  [.github/CONTRIBUTING.md ](.github/CONTRIBUTING.md )
-=========================
+Based on jsketcher by Autodrop3d LLC. See [LICENSE](./LICENSE) for full terms.
