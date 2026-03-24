@@ -2,6 +2,15 @@ A simple, easy-to-use CAD application for solid modeling and sketching.
 
 Built on [jsketcher](https://github.com/xibyte/jsketcher) by Autodrop3d LLC — see [LICENSE](./LICENSE) for terms.
 
+<p align="center">
+  <img src="screenshots/1.png" width="70%">
+</p>
+<p align="center">
+  <img src="screenshots/2.png" width="32%">
+  <img src="screenshots/3.png" width="32%">
+  <img src="screenshots/4.png" width="32%">
+</p>
+
 ## Features
 
 ### Solid Tools
