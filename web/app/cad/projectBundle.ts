@@ -62,6 +62,15 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
         upgradeIfNeeded(data);
         loadData(data);
         loadWorkbench(data);
+      } else {
+        loadData({
+          history: [
+            {type: 'BOX', params: {x: 50, y: 50, z: 50}},
+            {type: 'BOX', params: {x: 50, y: 50, z: 50}},
+            {type: 'MOVE_BODY_SIMPLE', params: {shells: ['S:1'], x: 60, y: 0, z: 60}},
+          ],
+          expressions: ''
+        });
       }
     } catch (e) {
       console.error(e);

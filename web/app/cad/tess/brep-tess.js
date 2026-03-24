@@ -14,7 +14,16 @@ export function tessellateLoopsOnSurface(surface, curveContours, getLoop, getCur
     const pipLoop = [];
     loops.push(pipLoop);
     for (const segment of getLoop(contour)) {
-      const curvePoints = getCurve(segment).tessellate();
+      const curve = getCurve(segment);
+      let curvePoints;
+      if (curve) {
+        curvePoints = curve.tessellate();
+      } else if (segment.edge && segment.edge.data && segment.edge.data.tessellation) {
+        const tess = segment.edge.data.tessellation;
+        curvePoints = tess.map(p => Array.isArray(p) ? Vector.fromData(p) : p);
+      } else {
+        continue;
+      }
       if (isInverted(segment)) {
         curvePoints.reverse();
       }

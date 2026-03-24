@@ -26,8 +26,8 @@ export function InnerFolder(props) {
 }
 
 export default function Folder(inProps) {
-  const {className, ...props} = inProps
-  return <div className={className}>
+  const {className, style, ...props} = inProps
+  return <div className={className} style={style}>
     <InnerFolder {...props} />
   </div>
 }

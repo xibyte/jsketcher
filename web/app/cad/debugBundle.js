@@ -24,7 +24,6 @@ export function activate(ctx) {
     LOG_FLAGS,
     utils: window.__DEBUG__
   };
-  streams.ui.controlBars.left.update(actions => [...actions, 'menu.debug']);
   
   // contributeComponent(<BrepDebuggerWindow key='debug.BrepDebuggerWindow' auxGroup={services.cadScene.auxGroup} />);
 }

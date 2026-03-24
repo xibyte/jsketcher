@@ -109,5 +109,5 @@ export function setFacesColor(faces, color) {
   }
 }
 
-const NULL_COLOR = 0xbfbfbf;
+const NULL_COLOR = 0xA0A0A4;
 

@@ -1,3 +1,4 @@
+import {TbEraser} from 'react-icons/tb';
 import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
 import { ApplicationContext } from "cad/context";
 import { EntityKind } from "cad/model/entities";
@@ -14,7 +15,7 @@ interface DefeatureRemoveFaceParams {
 export const DefeatureRemoveFaceOperation: OperationDescriptor<DefeatureRemoveFaceParams> = {
   id: 'DEFEATURE_REMOVE_FACE',
   label: 'Delete Face',
-  icon: icon,
+  icon: TbEraser,
   info: 'Delete face helps defeating a model.',
   path: __dirname,
   paramsInfo: ({ tools }) => `(${r(tools)})`,
@@ -31,8 +32,6 @@ export const DefeatureRemoveFaceOperation: OperationDescriptor<DefeatureRemoveFa
 
     created.push(occ.io.getShell("resultingShape",analyzer));
 
-    console.log(params.tools)
-    //consumed.push(tools[0].)
 
     const returnObject = {
       created,

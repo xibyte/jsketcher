@@ -16,6 +16,8 @@ export interface EntityTypeSchema extends BaseSchemaField {
   },
 
   markColor?: string | number
+
+  cycleSelection?: boolean
 }
 
 export type EntityCapture = (entity: MObject) => boolean;

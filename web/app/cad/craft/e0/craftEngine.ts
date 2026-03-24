@@ -1,5 +1,5 @@
 import {
-  DEFLECTION,
+  getDeflection,
   E0_TOLERANCE,
   managedByE0,
   readShellData,
@@ -36,7 +36,7 @@ export class CraftEngine {
       operandsA: shellsToPointers(operandsA),
       operandsB: shellsToPointers(operandsB),
       tolerance: E0_TOLERANCE,
-      deflection: DEFLECTION,
+      deflection: getDeflection(),
     };
     const data = this.modellingEngine.boolean(engineParams) as any;
     const consumed = [...operandsA, ...operandsB];
@@ -139,7 +139,7 @@ export class CraftEngine {
   fillet(request) {
     const edge = this.ctx.cadRegistry.findEdge(request.edges[0]);
     const engineReq = {
-      deflection: DEFLECTION,
+      deflection: getDeflection(),
       solid: edge.shell.brepShell.data.externals.ptr,
       edges: request.edges.map(e => ({
         edge: this.ctx.cadRegistry.findEdge(e).brepEdge.data.externals.ptr,
@@ -153,7 +153,7 @@ export class CraftEngine {
 }
 
 function booleanBasedOperation(engineParams, params, impl) {
-  engineParams.deflection = DEFLECTION;
+  engineParams.deflection = getDeflection();
   if (params.boolean && (<any>BooleanType[params.boolean.type]) > 0) {
     engineParams.boolean = {
       type: BooleanType[params.boolean.type],
@@ -180,7 +180,7 @@ function booleanBasedOperation(engineParams, params, impl) {
 const mapLoftParams = params => ({
   sections: params.sections.map(sec => readSketchContour(sec.contour, sec.face)),
   tolerance: E0_TOLERANCE,
-  deflection: DEFLECTION
+  deflection: getDeflection()
 });
 
 
@@ -194,7 +194,7 @@ function createExtrudeCommand(request, ctx, invert) {
       // vector: resolveExtrudeVector(ctx.cadRegistry, face, request, !invert).data(),
       sketch: paths,
       tolerance: E0_TOLERANCE,
-      deflection: DEFLECTION,
+      deflection: getDeflection(),
     }
   };
 }
@@ -218,7 +218,7 @@ function createRevolveCommand(request, ctx: ApplicationContext) {
       angle: request.angle / 180.0 * Math.PI,
       sketch: paths,
       tolerance: E0_TOLERANCE,
-      deflection: DEFLECTION
+      deflection: getDeflection()
     }
   };
   // @ts-ignore

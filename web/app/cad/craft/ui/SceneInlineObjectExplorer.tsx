@@ -8,7 +8,7 @@ import {SceneInlineDelineation, SceneInlineSection} from "ui/components/SceneInl
 import {GenericExplorerControl, GenericExplorerNode} from "ui/components/GenericExplorer";
 import ls from "cad/craft/ui/ObjectExplorer.less";
 import Fa from "ui/components/Fa";
-import {AiOutlineEye, AiOutlineEyeInvisible} from "react-icons/ai";
+import {TbEye, TbEyeOff} from "react-icons/tb";
 import {ModelButtonBehavior} from "cad/craft/ui/ModelButtonBehaviour";
 import {ModelAttributes} from "cad/attributes/attributesService";
 
@@ -21,7 +21,7 @@ export function SceneInlineObjectExplorer() {
     return null;
   }
 
-  return <SceneInlineSection title='OBJECTS'> {models.map(m => {
+  return <SceneInlineSection title=''> {models.map(m => {
     if (m instanceof MOpenFaceShell) {
       return <OpenFaceSection shell={m} key={m.id} />
     } else if (m instanceof MShell) {
@@ -135,6 +135,6 @@ export function VisibleSwitch({modelId}) {
   }
 
   return <GenericExplorerControl onClick={onClick} title={attrs.hidden ? 'show' : 'hide'} on={attrs.hidden}>
-    {attrs.hidden ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+    {attrs.hidden ? <TbEyeOff /> : <TbEye />}
   </GenericExplorerControl>
 }

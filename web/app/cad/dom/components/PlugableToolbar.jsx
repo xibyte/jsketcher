@@ -10,6 +10,7 @@ import {useStream} from "ui/effects";
 import {NoIcon} from "../../../sketcher/icons/NoIcon";
 import {GrCircleQuestion} from "react-icons/all";
 import {memoize} from "lodash/function";
+import {TOOL_COLOR_ICONS} from 'cad/icons/toolColorIcons';
 
 function ConfigurableToolbar({actions, size, ...props}) {
   return <Toolbar size={size} {...props}>
@@ -34,16 +35,30 @@ export function ToolbarActionButtons({actions, showTitles, size}) {
   });
 }
 
+const ICON_PX = {small: 16, medium: 20, large: 32};
+
 function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'large', noLabel, enabled, visible, actionId, ...props}) {
   if (!visible) {
     return null;
   }
 
+  const iconPx = ICON_PX[size] || size;
+  const colorSvg = actionId && TOOL_COLOR_ICONS[actionId];
   const smallOrMedium = size === 'medium' || size === 'small';
-  if (icon) {
+
+  if (colorSvg) {
+    // Render both; body.icon-color CSS class controls which is shown
+    const sized = colorSvg.replace('<svg ', `<svg width="${iconPx}" height="${iconPx}" `);
+    const MonoIcon = icon;
+    icon = <>
+      <span className="icon-mono">{MonoIcon ? <MonoIcon size={iconPx}/> : null}</span>
+      <span className="icon-color-svg" dangerouslySetInnerHTML={{__html: sized}}/>
+    </>;
+  } else if (icon) {
     const Icon = icon;
-    icon = <Icon size={size}/>;
+    icon = <Icon size={iconPx}/>;
   }
+
   if (!icon) {
     if (smallOrMedium) {
       if (cssIcons) {
@@ -62,7 +77,7 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'la
     
   return <ToolbarButton disabled={!enabled} {...props}>
     {icon}
-    {!(smallOrMedium || noLabel)&& <div>{capitalize(label)}</div>}
+    {!noLabel && <div>{capitalize(label)}</div>}
   </ToolbarButton>
 }
 

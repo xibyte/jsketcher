@@ -11,8 +11,9 @@ export function ModellerContextualActions() {
   const ctx = useContext(ReactApplicationContext);
 
   const selection: string[] = useStream(ctx => ctx.streams.selection.all);
+  const wizardOpen = useStream(ctx => ctx.wizardService.workingRequest$);
 
-  if (!selection || selection.length === 0) {
+  if (!selection || selection.length === 0 || wizardOpen) {
     return null;
   }
 

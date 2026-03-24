@@ -9,7 +9,6 @@ interface SceneInlineSectionProps {
 export function SceneInlineSection(props: SceneInlineSectionProps) {
 
   return <React.Fragment>
-    <SceneInlineTitleBar>{props.title}</SceneInlineTitleBar>
     <div className={ls.scrollableArea}>
       {props.children}
     </div>

@@ -187,7 +187,6 @@ export function activate(ctx: ApplicationContext) {
     window.open('?' + projectId);
   }
 
-  ctx.services.ui.registerFloatView('ProjectManager', ProjectManager, 'Project Manager', 'database');
 
   ctx.projectManager = {
     listProjects, openProject, newProject, renameProject, deleteProject, importBundle,

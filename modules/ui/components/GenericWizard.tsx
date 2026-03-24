@@ -7,7 +7,7 @@ import Stack from "ui/components/Stack";
 import ButtonGroup from "ui/components/controls/ButtonGroup";
 import Button from "ui/components/controls/Button";
 
-export function GenericWizard({documentationLink, title, icon, left, top, className, children, onCancel, onOK, infoText, ...props}: {
+export function GenericWizard({documentationLink, title, icon, left, top, className, children, onCancel, onOK, infoText, cancelLabel, hideOK, ...props}: {
   documentationLink: string,
   title: string,
   left?: number,
@@ -15,7 +15,9 @@ export function GenericWizard({documentationLink, title, icon, left, top, classN
   onCancel: () => any,
   onOK: () => any,
   infoText?: any,
-  icon?: any
+  icon?: any,
+  cancelLabel?: string,
+  hideOK?: boolean,
 } & WindowProps ) {
 
   return <Window initWidth={250}
@@ -25,7 +27,7 @@ export function GenericWizard({documentationLink, title, icon, left, top, classN
                    icon={icon}
                    className={cx('mid-typography', className)}
                    onEscapePressed={onCancel}
-                   onEnterPressed={onOK}
+                   onEnterPressed={hideOK ? undefined : onOK}
                    controlButtons={<>
                      <WindowControlButton title='help' onClick={(e) => DocumentationTopic$.next({
                        documentationLink: documentationLink,
@@ -38,8 +40,8 @@ export function GenericWizard({documentationLink, title, icon, left, top, classN
     {children}
     <Stack>
       <ButtonGroup>
-        <Button className='dialog-cancel' onClick={onCancel}>Cancel</Button>
-        <Button className='dialog-ok' type='accent' onClick={onOK}>OK</Button>
+        <Button className='dialog-cancel' onClick={onCancel}>{cancelLabel || 'Cancel'}</Button>
+        {!hideOK && <Button className='dialog-ok' type='accent' onClick={onOK}>OK</Button>}
       </ButtonGroup>
       {infoText}
     </Stack>

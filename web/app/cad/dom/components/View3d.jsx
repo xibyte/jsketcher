@@ -1,3 +1,5 @@
+import NavCube from './NavCube';
+import SettingsPanel from './SettingsPanel';
 import React from 'react';
 import PlugableControlBar from './PlugableControlBar';
 import ls from './View3d.less';
@@ -23,63 +25,59 @@ import {ContributedComponents} from "./ContributedComponents";
 import {SceneInlineObjectExplorer} from "cad/craft/ui/SceneInlineObjectExplorer";
 
 export default class View3d extends React.Component {
-
   shouldComponentUpdate() {
     return false;
   }
-
   render() {
     return <UISystem className={ls.root}>
       <ToastContainer />
-      <FloatView />
-      <div className={ls.mainArea} >
-        <div id='viewer-container' key='viewer-container' />
-        
-        <div className={ls.mainLayout}>
-          <div className={ls.headsUp}>
-            <HeadsUpToolbar/>
-            <HeadsUpHelper/>
-          </div>
-
-          <div className={ls.middleSection + ' small-typography'}>
-            <SketcherMode whenOff={
-              <div className={ls.overlayingPanel} >
-                <SceneInlineObjectExplorer />
+      <div className={ls.fullLayout}>
+        <div id="top-toolbar" className={ls.topBar}>
+          <HeadsUpToolbar/>
+        </div>
+        <div className={ls.belowBar}>
+          <FloatView />
+          <div className={ls.mainArea}>
+            <div id='viewer-container' key='viewer-container' />
+            <div className={ls.mainLayout}>
+              <div id="nav-cube-container"><NavCube/></div>
+              <div className={ls.headsUp}>
+                <HeadsUpHelper/>
               </div>
-            }>
-              <InplaceSketcher>
-                <div className={ls.overlayingPanel} >
-                  <Scope><SketchObjectExplorer /></Scope>
-                  <Scope><ConstraintExplorer /></Scope>
+              <div className={ls.middleSection + ' small-typography'}>
+                <SketcherMode whenOff={null}>
+                  <InplaceSketcher>
+                    <div className={ls.overlayingPanel}>
+                      <Scope><SketchObjectExplorer /></Scope>
+                      <Scope><ConstraintExplorer /></Scope>
+                    </div>
+                    <div className={ls.sketcherViewport}>
+                      <Scope><ContextualControls /></Scope>
+                      <Scope><ConstraintEditor leftOffset/></Scope>
+                      <Scope><SketcherOperationWizard /></Scope>
+                    </div>
+                  </InplaceSketcher>
+                </SketcherMode>
+                <div className={ls.wizardArea}>
+                  <WizardManager/>
                 </div>
-                <div className={ls.sketcherViewport} >
-                  <Scope><ContextualControls /></Scope>
-                  <Scope><ConstraintEditor leftOffset/></Scope>
-                  <Scope><SketcherOperationWizard /></Scope>
+                <div className='regular-typography'>
+                  <ContributedComponents/>
                 </div>
-              </InplaceSketcher>
-            </SketcherMode>
-
-            <div className={ls.wizardArea} >
-              <WizardManager/>
-            </div>
-            <div className='regular-typography'>
-              <ContributedComponents/>
+              </div>
+              <div className={ls.bottomStack}>
+                <div id="gizmo-container"><CameraControl /></div>
+                <HistoryTimeline />
+                <PlugableControlBar/>
+              </div>
             </div>
           </div>
-
-          <div className={ls.bottomStack}>
-            <CameraControl />
-            <HistoryTimeline />
-            <PlugableControlBar/>
-          </div>
-          
         </div>
       </div>
       <SelectedModificationInfo />
+      <SettingsPanel />
     </UISystem>;
   }
-
   componentWillUnmount() {
     throw 'big no-no';
   }

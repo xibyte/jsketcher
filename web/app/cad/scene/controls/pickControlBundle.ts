@@ -80,7 +80,9 @@ export function activate(context) {
         }
       } else {
         if (dispatchSelection(FACE, modelId, event)) {
-          services.cadScene.showGlobalCsys(model.csys);
+          try {
+            services.cadScene.lastFaceCsys = model.csys;
+          } catch(e) {}
           return false;
         }
       }
@@ -125,21 +127,7 @@ export function activate(context) {
     startY: 0
   };
 
-  let timeoutId = null;
-  let pickListDialogMode = false;
-
   function mousemove(e) {
-    if (pickListDialogMode) {
-      context.domService.setCursor(null);
-      pickListDialogMode = false;
-    }
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
-      pickListDialogMode = true;
-      context.domService.setCursor('crosshair');
-    }, 500);
   }
 
   function mousedown(e) {
@@ -192,30 +180,39 @@ export function activate(context) {
       console.info("deselect all cannot be used in current context");
     }
     services.marker.clear();
+    services.cadScene.hideGlobalCsys();
+  }
+
+  function resolveCoplanarFaces(pickResults) {
+    if (pickResults.length <= 1) return pickResults;
+    const DIST_TOL = 0.5;
+    const firstFacePick = pickResults.find(r => getAttribute(r.object, FACE));
+    if (!firstFacePick) return pickResults;
+    const coplanar = pickResults.filter(r =>
+      getAttribute(r.object, FACE) &&
+      Math.abs(r.distance - firstFacePick.distance) < DIST_TOL
+    );
+    if (coplanar.length <= 1) return pickResults;
+    const hitPoint = firstFacePick.point;
+    let best = coplanar[0];
+    let bestDist = Infinity;
+    for (const pick of coplanar) {
+      const faceV = getAttribute(pick.object, FACE);
+      if (faceV?.model) {
+        const c = faceV.model.favorablePoint;
+        if (c) {
+          const d = (c.x - hitPoint.x) ** 2 + (c.y - hitPoint.y) ** 2 + (c.z - hitPoint.z) ** 2;
+          if (d < bestDist) { bestDist = d; best = pick; }
+        }
+      }
+    }
+    return [best, ...coplanar.filter(r => r !== best), ...pickResults.filter(r => !coplanar.includes(r))];
   }
 
   function handlePick(event) {
-    const pickResults = services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo);
-    if (pickListDialogMode) {
-      const capture = new Set<MObject>();
-      traversePickResults(event, pickResults, ALL_POSSIBLE_KIND, (model) => {
-        if (!(model.parent instanceof MOpenFaceShell)) {
-          capture.add(model);
-        }
-        if (model instanceof MFace) {
-          capture.add(model.shell);
-        }
-        return true;
-      });
-      PickListDialogRequest$.next({
-        x: event.offsetX,
-        y: event.offsetY,
-        token: Date.now(),
-        capture: Array.from(capture)
-      });
-      setTimeout(() => domElement.addEventListener('click', clickaway, false), 100);
-      return;
-    }
+    const pickResults = resolveCoplanarFaces(
+      services.viewer.raycast(event, services.cadScene.workGroup.children, RayCastDebugInfo)
+    );
     traversePickResults(event, pickResults, ALL_EXCLUDING_SOLID_KINDS, pickContext.pickHandler);
   }
 
@@ -264,9 +261,6 @@ export function activate(context) {
 
   context.pickControlService = services.pickControl;
 
-  if (LOG_FLAGS.PICK) {
-    initRayCastDebug();
-  }
   initRayCastDebug();
 }
 

@@ -1,3 +1,4 @@
+import {TbRotate} from 'react-icons/tb';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MBrepFace, MFace} from "cad/model/mface";
 import {ApplicationContext} from "cad/context";
@@ -18,7 +19,7 @@ interface RevolveParams {
 export const RevolveOperation: OperationDescriptor<RevolveParams> = {
   id: 'REVOLVE',
   label: 'Revolve',
-  icon: 'img/cad/revolve',
+  icon: TbRotate,
   info: 'Revolves 2D sketch',
   path:__dirname,
   paramsInfo: ({angle}) => `(${r(angle)})`,
@@ -46,7 +47,7 @@ export const RevolveOperation: OperationDescriptor<RevolveParams> = {
 
     const sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
-    const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
+    const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources, (ctx as any)._operationIndex ?? 0);
 
     const tools = sweepSources.map((faceRef, i) => {
       const faceName = faceRef.face;

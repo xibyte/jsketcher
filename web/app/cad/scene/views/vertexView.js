@@ -91,6 +91,6 @@ class VertexSphere extends Mesh {
 
   updateVisibility() {
     const datum3D = this.parent.parent;
-    this.viewer.setVisualProp(this.material, 'visible', this.mouseInside);
+    this.viewer.setVisualProp(this.material, 'visible', this.mouseInside && !View.SUPPRESS_HIGHLIGHTS);
   }
 }

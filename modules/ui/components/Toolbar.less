@@ -1,64 +1,66 @@
 @import "../styles/theme.less";
-
 .root {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: transparent;
   padding: 3px;
   border-radius: 5px;
   display: flex;
+  width: 100%;
   &.flat {
     border-radius: 0;
   }
   align-content: center;
 }
-
 .vertical {
   flex-direction: column;
 }
-
 .button {
   border-radius: 5px;
   text-align: center;
   white-space: nowrap;
-  font-size: 10px;
-  padding: 2px 2px;
-  margin: 1px 5px;
-  color: #555;
+  word-break: normal;
+  max-width: none;
+  font-size: var(--toolbar-text-size, 12px);
+  font-weight: 400;
+  padding: 3px 3px;
+  margin: 1px var(--toolbar-spacing, 5px);
+  color: #e2e2ee !important;
+  text-shadow:
+    -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000,
+    1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000,
+    0 2px 6px rgba(0,0,0,0.9);
+  svg {
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.9));
+  }
   pointer-events: auto;
   &:hover {
     cursor: pointer;
-    background-color: #333;
-    color: #fff;
+    background-color: @bg-color-4;
+    color: @font-color-empph;
   }
-
   &.disabled {
-    color: #999;
+    color: @font-color-suppressed;
   }
-
   &.disabled:hover {
-    color: #aaa;
-    background-color: #888;
+    color: @font-color-suppressed;
+    background-color: @bg-color-3;
   }
 }
-
 .small > * {
-  font-size: 16px;
-  padding: 5px 2px;
+  font-size: var(--toolbar-icon-size, 17px);
+  padding: var(--toolbar-icon-padding, 6px) 2px;
 }
-
 .medium > * {
-  font-size: 20px;
-  padding: 6px 3px;
+  font-size: var(--toolbar-icon-size, 15px);
+  padding: var(--toolbar-icon-padding, 5px) 2px;
 }
-
 .splitter {
   align-self: stretch;
-  width: 1px;
-  background-color: #a0a0a0;
-  margin: 0 2px;
+  width: 3px;
+  background-color: #A0A0A4;
+  margin: 0 4px;
+  border-radius: 2px;
+  opacity: 0.5;
 }
-
 .group {
   display: flex;
 }
-
-

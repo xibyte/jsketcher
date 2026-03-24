@@ -1,3 +1,4 @@
+import {TbArrowBarUp, TbArrowBarDown} from 'react-icons/tb';
 import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {MBrepFace, MFace} from "cad/model/mface";
 import {ApplicationContext} from "cad/context";
@@ -30,12 +31,10 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     return null;
   },
   dynamicIcon: params => {
-    switch (params.boolean?.kind) {
-      case 'SUBTRACT': return 'img/cad/cut';
-    }
+    if (params?.boolean?.kind === 'SUBTRACT') return TbArrowBarDown;
     return null;
   },
-  icon: 'img/cad/extrude',
+  icon: TbArrowBarUp,
   info: 'extrudes 2D sketch',
   path:__dirname,
   paramsInfo: ({length}) => `(${r(length)})`,
@@ -78,7 +77,11 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     }
     const sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
-    const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
+if (!sweepSources || sweepSources.length === 0) {
+  throw "Sketch profile could not be resolved. Make sure the sketch is a closed profile. If sketched on a face, the profile must not extend beyond the face boundary.";
+}
+
+    const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources, (ctx as any)._operationIndex ?? 0);
 
     const tools = sweepSources.map((faceRef, i) => {
 
@@ -138,7 +141,7 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     {
       id: 'CUT',
       label: 'Cut',
-      icon: 'img/cad/cut',
+      icon: TbArrowBarDown,
       info: 'makes a cut based on 2D sketch',
       maskingParams: {
         direction: {

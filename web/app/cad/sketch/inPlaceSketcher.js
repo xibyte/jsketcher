@@ -34,20 +34,19 @@ export class InPlaceSketcher {
     viewer3d.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
     lookAtFace(this.ctx.viewer, face);
     viewer3d.render(); // updates camera projection matrix
-    
+
     const container = viewer3d.sceneSetup.container;
     const canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
-    canvas.style.left = 0;
-    canvas.style.top = 0;
-    canvas.style.right = 0;
-    canvas.style.bottom = 0;
+    canvas.style.left = '0';
+    canvas.style.top = '0';
+    canvas.style.right = '0';
+    canvas.style.bottom = '0';
 
     container.appendChild(canvas);
     this.sketcherAppContext = createEssentialAppContext(canvas);
     this.viewer.parametricManager.externalConstantResolver = this.ctx.expressionService.evaluateExpression;
 
-    this.syncWithCamera();
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
     this.disposers = createFunctionList();
 
@@ -65,8 +64,13 @@ export class InPlaceSketcher {
     this.pickControlToken = this.ctx.pickControlService.takePickControl(this.sketcherPickControl);
 
     this.disposers.add(
-      this.ctx.viewer.sceneSetup.viewportSizeUpdate$.attach(this.onCameraChange)
+      this.ctx.viewer.sceneSetup.viewportSizeUpdate$.attach(this.onViewportSizeChange)
     );
+
+    // Force initial sync after all setup is complete, ensuring canvas dimensions
+    // and camera matrices are current (mirrors what window resize does)
+    this.viewer.onWindowResize();
+    this.syncWithCamera();
   }
 
   get sketchStorageKey() {
@@ -75,7 +79,14 @@ export class InPlaceSketcher {
 
   exit() {
     if (this.face.ext.view) {
-      this.face.ext.view.sketchGroup.visible = true;
+      try {
+        const s = JSON.parse(localStorage.getItem('ForgeCAD.settings') || '{}');
+        const hiddenSketches = s.hiddenSketches || [];
+        const userHidden = hiddenSketches.includes(this.face.id);
+        this.face.ext.view.sketchGroup.visible = !userHidden;
+      } catch(e) {
+        this.face.ext.view.sketchGroup.visible = true;
+      }
     }
     const viewer3d = this.ctx.services.viewer;
     this.face = null;
@@ -95,10 +106,17 @@ export class InPlaceSketcher {
     this.viewer.refresh();
   };
 
+  onViewportSizeChange = () => {
+    this.viewer.onWindowResize();
+    this.syncWithCamera();
+  };
+
   syncWithCamera() {
     const face = this.face;
     const sceneSetup = this.ctx.services.viewer.sceneSetup;
-    
+
+    sceneSetup.oCamera.lookAt(sceneSetup.trackballControls.target);
+    sceneSetup.oCamera.updateMatrixWorld(true);
     _projScreenMatrix.multiplyMatrices( sceneSetup.oCamera.projectionMatrix,
       sceneSetup.oCamera.matrixWorldInverse );
 

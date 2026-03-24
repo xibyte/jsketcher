@@ -30,11 +30,17 @@ export function activate(ctx) {
         id: 'menu.' + id,
         appearance,
         invoke: (ctx, hints) => {
-          menuState.mutate(v => {
-            Object.assign(v, hints);
-            v.visible = true;
-          });
-          streams.ui.menu.opened.mutate(v => v.push(id));
+          const isVisible = menuState.value.visible;
+          if (isVisible) {
+            menuState.mutate(v => { v.visible = false; });
+            streams.ui.menu.opened.mutate(v => { const i = v.indexOf(id); if(i>-1) v.splice(i,1); });
+          } else {
+            menuState.mutate(v => {
+              Object.assign(v, hints);
+              v.visible = true;
+            });
+            streams.ui.menu.opened.mutate(v => v.push(id));
+          }
         }
       });
       menusToAdd.push({id, actions});

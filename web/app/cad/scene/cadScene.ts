@@ -11,6 +11,7 @@ export default class CadScene {
 
   workGroup: Object3D;
   auxGroup: Object3D;
+  axesGroup: Object3D;
   basisGroup: Object3D;
 
   constructor(rootGroup) {
@@ -24,14 +25,15 @@ export default class CadScene {
   }
 
   setUpAxises() {
+    this.axesGroup = SceneGraph.createGroup();
+    SceneGraph.addToGroup(this.auxGroup, this.axesGroup);
     const arrowLength = 1500;
     const createAxisArrow = createArrow.bind(null, arrowLength, 40, 16);
     const addAxis = (axis, color) => {
-      const arrow = createAxisArrow(axis, color, 0.2);
+      const arrow = createAxisArrow(axis, color, 1);
       moveObject3D(arrow, axis.scale(-arrowLength * 0.5));
-      SceneGraph.addToGroup(this.auxGroup, arrow);
+      SceneGraph.addToGroup(this.axesGroup, arrow);
     };
-
     addAxis(AXIS.X, 0xFF0000);
     addAxis(AXIS.Y, 0x00FF00);
     addAxis(AXIS.Z, 0x0000FF);
@@ -65,6 +67,7 @@ export default class CadScene {
   }
 
   showGlobalCsys(csys) {
+    this.lastFaceCsys = csys;
     this.updateGlobalCsys(csys);
     this.basisGroup.visible = true;
   }

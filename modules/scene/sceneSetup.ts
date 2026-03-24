@@ -6,6 +6,7 @@ import {
   AmbientLight,
   Box3,
   DirectionalLight,
+  GridHelper,
   Euler,
   Matrix4,
   Object3D,
@@ -28,6 +29,7 @@ export default class SceneSetUp {
   pCamera: PerspectiveCamera;
   camera: Camera;
   light: DirectionalLight;
+  ambientLight: AmbientLight;
   renderer: WebGLRenderer;
   private _prevContainerWidth: number;
   private _prevContainerHeight: number;
@@ -36,6 +38,10 @@ export default class SceneSetUp {
   sceneRendered$: Emitter<any> = stream();
 
   renderRequested: boolean;
+  
+  grid: any;
+  gridSize: number;
+  gridCellSize: number;
 
   constructor(container) {
     
@@ -68,16 +74,16 @@ export default class SceneSetUp {
       width / factor,
       height / factor,
       -height / factor, 0.1, 1000000);
-    this.oCamera.position.z = 1000;
-    this.oCamera.position.x = -1000;
-    this.oCamera.position.y = 300;
+    this.oCamera.position.z = 400;
+    this.oCamera.position.x = -400;
+    this.oCamera.position.y = 150;
   }
 
   createPerspectiveCamera() {
     this.pCamera = new PerspectiveCamera( 60, this.aspect(), 0.1, 1000000 );
-    this.pCamera.position.z = 1000;
-    this.pCamera.position.x = -1000;
-    this.pCamera.position.y = 300;
+    this.pCamera.position.z = 400;
+    this.pCamera.position.x = 400;
+    this.pCamera.position.y = 400;
   }
 
   setUpCamerasAndLights() {
@@ -90,11 +96,20 @@ export default class SceneSetUp {
     this.light.position.set( 10, 10, 10 );
     this.scene.add(this.light);
 
-    this.scene.add( new AmbientLight( 0xffffff, 0.25 ) );
+    this.ambientLight = new AmbientLight( 0xffffff, 0.25 );
+    this.scene.add( this.ambientLight );
+	this.gridSize = 50;
+    this.createGrid(1000, this.gridSize);
 
-    this.renderer = new WebGLRenderer();
+    let antialias = false;
+    try {
+      const saved = JSON.parse(localStorage.getItem('ForgeCAD.settings') || '{}');
+      antialias = saved.antialias !== false;
+    } catch(e) {}
+
+    this.renderer = new WebGLRenderer({ antialias });
     this.renderer.setPixelRatio(DPR);
-    this.renderer.setClearColor(0x808080, 1);
+    this.renderer.setClearColor(0x12121a, 1);
     this.renderer.setSize( this.container.clientWidth,  this.container.clientHeight );
     this.container.appendChild( this.renderer.domElement );
   }
@@ -158,6 +173,30 @@ export default class SceneSetUp {
     this.requestRender();
   }
 
+  createGrid(totalSize: number, cellSize: number, opacity: number = 0.8, colorVal: number = 80) {
+    if (this.grid) {
+      this.scene.remove(this.grid);
+      this.grid.geometry.dispose();
+    }
+    const divisions = Math.round(totalSize / cellSize);
+    const darkVal = Math.max(0, colorVal - 20);
+    const hex = (colorVal << 16) | (colorVal << 8) | colorVal;
+    const darkHex = (darkVal << 16) | (darkVal << 8) | darkVal;
+    this.grid = new GridHelper(totalSize, divisions, hex, darkHex);
+    (this.grid.material as any).opacity = opacity;
+    (this.grid.material as any).transparent = true;
+    this.scene.add(this.grid);
+    this.gridCellSize = cellSize;
+  }
+
+  updateGridForZoom() {
+    const camDist = this.camera.position.length();
+    const totalSize = Math.max(1000, Math.round(camDist * 4 / this.gridCellSize) * this.gridCellSize);
+    if (Math.abs(totalSize - (this.grid?.scale.x * 1000 || 1000)) > this.gridCellSize) {
+      this.createGrid(totalSize, this.gridCellSize);
+    }
+  }
+  
   setUpControls() {
     //  controls = new THREE.OrbitControls( camera , renderer.domElement);
     const trackballControls: any = new CADTrackballControls(this.camera , this.renderer.domElement);

@@ -1,3 +1,4 @@
+import {TbGridDots} from 'react-icons/tb';
 import {createMeshGeometry} from 'scene/geoms';
 import {Plane} from 'geom/impl/plane';
 import Vector from 'math/vector';
@@ -56,7 +57,7 @@ function fixTexture(planeWidth, planeHeight) {
 export default {
   id: 'PLANE',
   label: 'Plane',
-  icon: 'img/cad/plane',
+  icon: TbGridDots,
   info: 'creates new object plane',
   paramsInfo: ({ depth }) => `(${depth})`,
   previewGeomProvider,

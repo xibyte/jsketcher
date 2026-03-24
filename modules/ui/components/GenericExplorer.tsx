@@ -51,8 +51,6 @@ export function GenericExplorerNode(props: GenericExplorerNodeProps) {
       {props.label}
     </span>
 
-      <span className={ls.menuButton}>...</span>
-
     </div>
     {expanded && <div style={{paddingLeft: 10}}>
       {props.children}

@@ -1,6 +1,11 @@
 import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 
-export const DEFLECTION = 2;
+export function getDeflection() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ForgeCAD.settings') || '{}');
+    return s.meshQuality ?? 0.05;
+  } catch(e) { return 2; }
+}
 export const E0_TOLERANCE = 1e-3;
 
 export function singleShellRespone(oldShell, newShellData) {
@@ -16,7 +21,46 @@ export function singleShellRespone(oldShell, newShellData) {
   };
 }
 
+function faceTessToVerbose(ft) {
+  const result = [];
+  const hasNormals = ft.normals && ft.normals.length > 0;
+  for (let i = 0; i < ft.indices.length; i += 3) {
+    const i0 = ft.indices[i] * 3;
+    const i1 = ft.indices[i + 1] * 3;
+    const i2 = ft.indices[i + 2] * 3;
+    result.push([
+      [
+        [ft.positions[i0],     ft.positions[i0 + 1], ft.positions[i0 + 2]],
+        [ft.positions[i1],     ft.positions[i1 + 1], ft.positions[i1 + 2]],
+        [ft.positions[i2],     ft.positions[i2 + 1], ft.positions[i2 + 2]],
+      ],
+      hasNormals ? [
+        [ft.normals[i0],     ft.normals[i0 + 1], ft.normals[i0 + 2]],
+        [ft.normals[i1],     ft.normals[i1 + 1], ft.normals[i1 + 2]],
+        [ft.normals[i2],     ft.normals[i2 + 1], ft.normals[i2 + 2]],
+      ] : null
+    ]);
+  }
+  return result;
+}
+
 export function readShellData(data, consumed, csys) {
+  try {
+    const engine = __CAD_APP.services.craftEngine && __CAD_APP.services.craftEngine.modellingEngine;
+    if (engine && data.ptr && data.faces && data.faces.length > 0) {
+      const deflection = getDeflection();
+      const newTess = engine.tessellate({model: data.ptr, deflection});
+      if (newTess && newTess.faces && newTess.faces.length === data.faces.length) {
+        newTess.faces.forEach((ft, i) => {
+          if (ft.indices && ft.indices.length > 0) {
+            data.faces[i].tess = faceTessToVerbose(ft);
+          }
+        });
+      }
+    }
+  } catch(e) {
+    // fallback to original tessellation on any error
+  }
   const exposure = __CAD_APP.services.exposure;
   const model = new exposure.scene.readShellEntityFromJson(data, consumed, csys);
   model.brepShell.data.externals.engine = 'e0';
