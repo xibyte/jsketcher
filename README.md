@@ -1,6 +1,4 @@
-# ForgeCAD
-
-A simple, easy-to-use CAD application for solid modeling and sketching. Inspired by Fusion 360 and Shapr3D.
+A simple, easy-to-use CAD application for solid modeling and sketching.
 
 Built on [jsketcher](https://github.com/xibyte/jsketcher) by Autodrop3d LLC — see [LICENSE](./LICENSE) for terms.
 
@@ -19,6 +17,7 @@ Built on [jsketcher](https://github.com/xibyte/jsketcher) by Autodrop3d LLC — 
 
 ### UI
 - Dark / Medium / Light themes
+- Colored/Monochrome Icons
 - Top toolbar with all solid tools
 - Left sidebar: Modifications, Scene tree, Projects
 - NavCube (top right, with home button)
@@ -89,8 +88,7 @@ Spheres, cylinders, cones, tori look faceted. This is a **WASM binary limitation
 ## Planned
 - STL/STEP export with unit selector (mm/cm/m/inch)
 - Electron packaging (Windows, Linux, Mac)
-- UI polish
-- Push/pull direct modeling
+- More UI polish
 
 ## Contributing
 
