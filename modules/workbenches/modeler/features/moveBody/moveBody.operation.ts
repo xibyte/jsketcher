@@ -3,6 +3,7 @@ import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MDatum} from "cad/model/mdatum";
 import { MShell } from 'cad/model/mshell';
+import icon from "./MOVE.svg";
 
 interface MoveBodyParams {
   datum: MDatum;
@@ -12,7 +13,7 @@ interface MoveBodyParams {
 export const MoveBodyOperation: OperationDescriptor<MoveBodyParams> = {
   id: 'MOVE_BODY',
   label: 'Move Body',
-  icon: 'img/cad/moveBody',
+  icon: icon,
   info: 'Move Body',
   path:__dirname,
   paramsInfo: () => '',

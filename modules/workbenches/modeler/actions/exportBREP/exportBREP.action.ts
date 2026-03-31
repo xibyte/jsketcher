@@ -3,6 +3,7 @@ import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {ActionDefinition} from "cad/actions/actionSystemBundle";
 import { MEdge } from "cad/model/medge";
+import icon from "./EXPORT.svg";
 
 
 interface ExportBREPParams {
@@ -12,8 +13,8 @@ interface ExportBREPParams {
 export const ExportBREP: any = {
   id: 'EXPORT_BREP',
   label: 'EXPORT BREP',
-  icon: 'img/cad/extrude',
-  info: 'EXPORT BREP FILE CONTAINING SELECTED BODIES',
+  icon: icon,
+  info: 'Export BREP file containing selected bodies',
   path:__dirname,
   run: async (params: any, ctx: ApplicationContext) => {
     throw 'EXPORT_BREP operation is not yet implemented with native engine';

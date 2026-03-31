@@ -6,6 +6,7 @@ import {OperationDescriptor} from "cad/craft/operationBundle";
 import CSys from "math/csys";
 import {MDatum} from "cad/model/mdatum";
 import {ExpectedOrderProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import icon from "./box.svg";
 
 
 interface PrimitiveBoxParams {
@@ -19,7 +20,7 @@ interface PrimitiveBoxParams {
 export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
   id: 'BOX',
   label: 'Box',
-  icon: 'img/cad/cube',
+  icon: icon,
   info: 'Primitive Box',
   path:__dirname,
   paramsInfo: ({x, y, z}) => `(${r(x)} , ${r(y)} , ${r(z)})`,

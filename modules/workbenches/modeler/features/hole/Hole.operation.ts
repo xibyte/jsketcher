@@ -3,6 +3,7 @@ import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MDatum} from "cad/model/mdatum";
+import icon from "./HOLE.svg";
 
 interface HoleParams {
   datum: MDatum;
@@ -18,7 +19,7 @@ interface HoleParams {
 export const HoleOperation: OperationDescriptor<HoleParams> = {
   id: 'HOLE_TOOL',
   label: 'hole',
-  icon: 'img/cad/hole',
+  icon: icon,
   info: 'creates hole features',
   path:__dirname,
   paramsInfo: ({

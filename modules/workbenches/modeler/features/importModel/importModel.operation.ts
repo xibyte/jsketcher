@@ -2,6 +2,7 @@ import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {LocalFileAdapter} from "ui/components/controls/FileControl";
 import CadError from "utils/errors";
+import icon from "./IMPORT.svg";
 
 interface ImportModelParams {
   file: LocalFileAdapter;
@@ -10,7 +11,7 @@ interface ImportModelParams {
 export const ImportModelOperation: OperationDescriptor<ImportModelParams> = {
   id: 'IMPORT_MODEL',
   label: 'Import',
-  icon: 'img/cad/import',
+  icon: icon,
   info: 'Imports BREP, STEP, IGES or FCStd file',
   path:__dirname,
   paramsInfo: () => `()`,

@@ -3,6 +3,7 @@ import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import { MEdge } from "cad/model/medge";
 import NurbsCurve from "geom/curves/nurbsCurve";
+import icon from "./INFO.svg";
 
 
 interface GetInfoParams {
@@ -13,8 +14,8 @@ interface GetInfoParams {
 export const GetInfo: any = {
   id: 'GET_INFO',
   label: 'OBJECT INFO',
-  icon: 'img/cad/extrude',
-  info: 'extrudes 2D sketch',
+  icon: icon,
+  info: 'Object Info',
   path:__dirname,
   run: (params: GetInfoParams, ctx: ApplicationContext) => {
     throw 'GET_INFO operation is not yet implemented with native engine';

@@ -3,6 +3,7 @@ import {MFace} from "cad/model/mface";
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationBundle";
+import icon from "./SHELL.svg";
 
 
 interface ShellParams {
@@ -13,7 +14,7 @@ interface ShellParams {
 export const ShellOperation: OperationDescriptor<ShellParams> = {
   id: 'SHELL_TOOL',
   label: 'Shell',
-  icon: 'img/cad/shell',
+  icon: icon,
   info: 'Shells 2D sketch',
   path:__dirname,
   paramsInfo: ({thickness}) => `(${r(thickness)})`,
