@@ -59,39 +59,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
 
 
   run: (params: PrimitiveTorusParams, ctx: ApplicationContext) => {
-
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const csys = params.locations?.csys || CSys.ORIGIN;
-    oci.plane("csys",
-      csys.origin.x,
-      csys.origin.y,
-      csys.origin.z,
-      csys.x.x,
-      csys.x.y,
-      csys.x.z,
-      csys.y.x,
-      csys.y.y,
-      csys.y.z);
-
-    oci.ptorus("torus", "csys", params.radius, params.tubeRadius);
-
-    const torus = occ.io.getShell("torus", new ExpectedOrderProductionAnalyzer(
-      [
-        {
-          id: 'F:TORUS',
-          productionInfo: {
-            role: 'sweep'
-          }
-        },
-      ],
-      [],
-      []
-    ));
-
-    return occ.utils.applyBooleanModifier([torus], params.boolean);
-
+    throw 'TORUS operation is not yet implemented with native engine';
   },
 }
 

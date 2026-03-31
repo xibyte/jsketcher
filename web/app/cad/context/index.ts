@@ -5,7 +5,7 @@ import {AttributesBundleContext} from "cad/attributes/attributesBundle";
 import {CadRegistryBundleContext} from "cad/craft/cadRegistryBundle";
 import {CraftBundleContext} from "cad/craft/craftBundle";
 import {OperationBundleContext} from "cad/craft/operationBundle";
-import {OCCBundleContext} from "cad/craft/e0/occtBundle";
+import {NativeEngineBundleContext} from "cad/craft/nativeEngine/nativeEngineBundle";
 import {WizardBundleContext} from "cad/craft/wizard/wizardBundle";
 import {AppTabsBundleContext} from "cad/dom/appTabsBundle";
 import {DomBundleContext} from "cad/dom/domBundle";
@@ -32,7 +32,7 @@ export interface ApplicationContext extends
   CadRegistryBundleContext,
   CraftBundleContext,
   OperationBundleContext,
-  OCCBundleContext,
+  NativeEngineBundleContext,
   WizardBundleContext,
   AppTabsBundleContext,
   DomBundleContext,

@@ -8,7 +8,6 @@ import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
 import { MDatum } from "cad/model/mdatum";
 import {Matrix3x4} from "math/matrix";
-import {AddLocation, SetLocation} from "cad/craft/e0/interact";
 
 interface patternLinearParams {
   inputBodies: MShell[];
@@ -28,36 +27,7 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
   path:__dirname,
   paramsInfo: () => `(?)`,
   run: (params: patternLinearParams, ctx: ApplicationContext) => {
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const created = [];
-
-    params.inputBodies.forEach((shellToPatern, index) => {
-      for (let i = 2; i <= params.qty; i++) {
-        let distanceForInstance = 0;
-        if(params.patternMethod == 'Step Distance') distanceForInstance =params.distance*(i-1);
-        if(params.patternMethod == 'Span Distance') distanceForInstance =(params.distance / (params.qty-1))*(i-1);
-
-        const trVec = params.direction.multiply(distanceForInstance);
-
-        const tr = new Matrix3x4().setTranslation(trVec.x, trVec.y, trVec.z);
-  
-        const newShellName = shellToPatern.id + ":patern/" + index + "/" +i;
-        oci.copy(shellToPatern, newShellName);
-        AddLocation(newShellName, tr.toFlatArray());
-  
-        created.push(occ.io.getShell(newShellName));    
-      }
-
-    });
-
-    return {
-      created,
-      consumed: []
-    };
-
-
+    throw 'PATTERN_LINEAR operation is not yet implemented with native engine';
   },
   form: [
     {

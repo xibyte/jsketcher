@@ -3,11 +3,13 @@ import {MBrepFace, MFace} from "cad/model/mface";
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {UnitVector} from "math/vector";
+import Vector, {UnitVector} from "math/vector";
 import {OperationDescriptor} from "cad/craft/operationBundle";
-import {MObject} from "cad/model/mobject";
-import {FaceRef} from "cad/craft/e0/OCCUtils";
-import {FromSketchProductionAnalyzer, PushPullFaceProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import {MBrepShell} from "cad/model/mshell";
+import BrepCurve from "geom/curves/brepCurve";
+import {Plane} from "geom/impl/plane";
+import {enclose} from "brep/operations/brep-enclose";
+import {Shell} from "brep/topo/shell";
 
 
 interface ExtrudeParams {
@@ -16,6 +18,35 @@ interface ExtrudeParams {
   face: MFace;
   direction?: UnitVector,
   boolean: BooleanDefinition
+}
+
+function extrudeShellFromFace(face: MBrepFace, extrusionVector: Vector): Shell {
+  const brepFace = face.brepFace;
+  const baseCurves: BrepCurve[] = [];
+
+  for (const he of brepFace.outerLoop.halfEdges) {
+    baseCurves.push(he.edge.curve);
+  }
+
+  const normal = brepFace.surface.normalInMiddle()._normalize();
+  const point = brepFace.outerLoop.halfEdges[0].vertexA.point;
+  const basePlane = new Plane(normal, normal.dot(point));
+
+  const lidCurves = baseCurves.map(c => c.translate(extrusionVector));
+  const lidPlane = basePlane.translate(extrusionVector).invert();
+
+  return enclose(baseCurves, lidCurves, basePlane, lidPlane);
+}
+
+function extrudeShellFromSketch(contourCurves: BrepCurve[], extrusionVector: Vector, csys: any): Shell {
+  const normal = csys.z;
+  const origin = contourCurves[0].startPoint();
+  const basePlane = new Plane(normal, normal.dot(origin));
+
+  const lidCurves = contourCurves.map(c => c.translate(extrusionVector));
+  const lidPlane = basePlane.translate(extrusionVector).invert();
+
+  return enclose(contourCurves, lidCurves, basePlane, lidPlane);
 }
 
 export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
@@ -41,9 +72,6 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   paramsInfo: ({length}) => `(${r(length)})`,
   run: (params: ExtrudeParams, ctx: ApplicationContext, rawParams: any) => {
 
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
     const face = params.face;
 
     let dir: UnitVector;
@@ -62,9 +90,9 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
     if (!sketch) {
       if (face instanceof MBrepFace) {
-        oci.prism("FaceTool", face, ...extrusionVector.data());
-        return occ.utils.applyBooleanModifier([occ.io.getShell("FaceTool")], params.boolean, face, [],
-          (targets, tools) => new PushPullFaceProductionAnalyzer(targets, face.brepFace));
+        const shell = extrudeShellFromFace(face, extrusionVector);
+        const toolShell = new MBrepShell(shell);
+        return ctx.nativeService.applyBooleanModifier([toolShell], params.boolean, face, []);
       } else {
         throw "can't extrude an empty surface";
       }
@@ -76,20 +104,16 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       csys.origin._minus(extrusionVector);
       extrusionVector._scale(2);
     }
-    const sweepSources = occ.utils.sketchToFaces(sketch, csys)
 
-    const productionAnalyzer = new FromSketchProductionAnalyzer(sweepSources);
+    const contours = sketch.fetchContours();
 
-    const tools = sweepSources.map((faceRef, i) => {
+    const tools: MBrepShell[] = contours.map(contour => {
+      const curves3D = contour.transferInCoordinateSystem(csys);
+      const shell = extrudeShellFromSketch(curves3D, extrusionVector, csys);
+      return new MBrepShell(shell);
+    });
 
-      const faceName = faceRef.face;
-      const shapeName = "Tool/" + i;
-      oci.prism(shapeName, faceName, ...extrusionVector.data());
-      return shapeName;
-    }).map(shapeName => occ.io.getShell(shapeName, productionAnalyzer));
-
-
-    return occ.utils.applyBooleanModifier(tools, params.boolean, face, [face]);
+    return ctx.nativeService.applyBooleanModifier(tools, params.boolean, face, [face]);
 
   },
 

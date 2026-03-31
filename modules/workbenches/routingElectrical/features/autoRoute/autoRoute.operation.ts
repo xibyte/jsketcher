@@ -21,10 +21,7 @@ export const AutoRouteOperation: OperationDescriptor<autoRouteParams> = {
   path: __dirname,
   paramsInfo: ({ thickness, }) => `(${r(thickness)}  )`,
   run: async (params: autoRouteParams, ctx: ApplicationContext) => {
-
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
+    throw 'AUTO_ROUTE operation is not yet implemented with native engine';
 
     //place code here to retrieve list of roughing splines from the model.
     const segments = [

@@ -16,15 +16,10 @@ export const DeleteBodyOperation: OperationDescriptor<DeleteBodyParams> = {
   path:__dirname,
   paramsInfo: ({ tools }) => `(${r(tools)})`,
   run: (params: DeleteBodyParams, ctx: ApplicationContext) => {
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const returnObject = {
+    return {
       created: [],
       consumed: params.tools
-    }
-    return returnObject;
-
+    };
   },
   form: [
     {

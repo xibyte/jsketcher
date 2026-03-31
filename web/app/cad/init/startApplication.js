@@ -27,7 +27,7 @@ import * as ExportBundle from '../exportBundle';
 import * as ExposureBundle from '../exposure/exposureBundle';
 import {ViewSyncBundle} from '../scene/viewSyncBundle';
 import * as EntityContextPlugin from '../scene/entityContextBundle';
-import * as OCCTBundle from '../craft/e0/occtBundle';
+import * as NativeEngineBundle from '../craft/nativeEngine/nativeEngineBundle';
 import startReact from "../dom/startReact";
 import * as UIConfigBundle from "../workbench/uiConfigBundle";
 import * as DebugBundle from "../debugBundle";
@@ -64,7 +64,7 @@ export default function startApplication(callback) {
     CadRegistryBundle,
     ExportBundle,
     ExposureBundle,
-    OCCTBundle,
+    NativeEngineBundle,
     ProjectManagerBundle
   ];
   

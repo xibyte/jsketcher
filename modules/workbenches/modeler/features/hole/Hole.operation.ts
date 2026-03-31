@@ -2,7 +2,6 @@ import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationBundle";
-import {SetLocation} from "cad/craft/e0/interact";
 import {MDatum} from "cad/model/mdatum";
 
 interface HoleParams {
@@ -34,46 +33,7 @@ export const HoleOperation: OperationDescriptor<HoleParams> = {
   }) => `(${r(depth)} ${r(counterBoreDiameter)})  ${r(counterBoreDepth)})`,
 
   run: (params: HoleParams, ctx: ApplicationContext) => {
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const returnObject = {
-      consumed: [],
-      created: []
-    };
-
-    //let sketch = ctx.sketchStorageService.readSketch(params.sketch.id);
-    //console.log(sketch, "sketch info here");
-
-    oci.pcylinder("result", params.diameter / 2, params.depth);
-
-    // if (params.holeType == "normal") {
-    //   returnObject.created.push(occ.io.getShell("basehole"));
-    // }
-
-    if (params.holeType == "counterbore") {
-      oci.pcylinder("counterbore", params.counterBoreDiameter / 2, params.counterBoreDepth);
-
-      oci.bop("result", "counterbore");
-      oci.bopfuse("result");
-    }
-
-    if (params.holeType == "countersink") {
-
-      const heightFromDiameterAndAngle = (params.countersinkDiameter - params.diameter) / (Math.tan((params.countersinkAngle / 180 * Math.PI) / 2));
-
-
-      oci.pcone("countersink", params.countersinkDiameter / 2, 0, heightFromDiameterAndAngle);
-      oci.bop("result", "countersink");
-      oci.bopfuse("result");
-    }
-
-    const location = params.datum.csys.outTransformation._normalize();
-    SetLocation("result", location.toFlatArray());
-    returnObject.created.push(occ.io.getShell("result"));
-
-    return returnObject;
-
+    throw 'HOLE operation is not yet implemented with native engine';
   },
   form: [
     {

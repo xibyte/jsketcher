@@ -52,38 +52,6 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
 
 
   run: (params: PrimitiveSphereParams, ctx: ApplicationContext) => {
-
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const csys = params.locations?.csys || CSys.ORIGIN;
-    oci.plane("csys",
-      csys.origin.x,
-      csys.origin.y,
-      csys.origin.z,
-      csys.x.x,
-      csys.x.y,
-      csys.x.z,
-      csys.y.x,
-      csys.y.y,
-      csys.y.z);
-
-    oci.psphere("sphere", "csys", params.radius);
-
-    const sphere = occ.io.getShell("sphere", new ExpectedOrderProductionAnalyzer(
-      [
-        {
-          id: 'F:SPHERE',
-          productionInfo: {
-            role: 'sweep'
-          }
-        },
-      ],
-      [],
-      []
-    ));
-
-    return occ.utils.applyBooleanModifier([sphere], params.boolean);
-
+    throw 'SPHERE operation is not yet implemented with native engine';
   },
 }

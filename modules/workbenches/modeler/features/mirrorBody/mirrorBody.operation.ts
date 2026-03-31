@@ -19,24 +19,7 @@ export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
   path:__dirname,
   paramsInfo: () => `(?)`,
   run: (params: MirrorBodyParams, ctx: ApplicationContext) => {
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const created =[];
-
-    params.inputBodies.forEach((shellToMirror) => {
-      const newShellName = shellToMirror.id + ":mirror";
-      oci.copy(shellToMirror, newShellName);
-      oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
-      created.push(occ.io.getShell(newShellName));
-    });
-
-    return {
-      created,
-      consumed: []
-    };
-
-
+    throw 'MIRROR_BODY operation is not yet implemented with native engine';
   },
   form: [
     {

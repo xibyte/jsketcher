@@ -54,7 +54,6 @@ export function activate(ctx: ApplicationContext) {
 
     // @ts-ignore add to the core context
     const evalContext: ApplicationContext = {
-      craftEngine: ctx.services.craftEngine,
       actionService: ctx.actionService,
       operationService: ctx.operationService,
       sketchStorageService: undefined,
