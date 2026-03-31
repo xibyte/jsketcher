@@ -10,6 +10,8 @@ import BrepCurve from "geom/curves/brepCurve";
 import {Plane} from "geom/impl/plane";
 import {enclose} from "brep/operations/brep-enclose";
 import {Shell} from "brep/topo/shell";
+import icon from "./EXTRUDE.svg";
+import cutIcon from "./CUT.svg";
 
 
 interface ExtrudeParams {
@@ -62,11 +64,11 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
   },
   dynamicIcon: params => {
     switch (params.boolean?.kind) {
-      case 'SUBTRACT': return 'img/cad/cut';
+      case 'SUBTRACT': return cutIcon;
     }
     return null;
   },
-  icon: 'img/cad/extrude',
+  icon: icon,
   info: 'extrudes 2D sketch',
   path:__dirname,
   paramsInfo: ({length}) => `(${r(length)})`,
@@ -162,7 +164,7 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     {
       id: 'CUT',
       label: 'Cut',
-      icon: 'img/cad/cut',
+      icon: cutIcon,
       info: 'makes a cut based on 2D sketch',
       maskingParams: {
         direction: {

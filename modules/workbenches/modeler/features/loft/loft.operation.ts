@@ -4,6 +4,7 @@ import { EntityKind } from "cad/model/entities";
 import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
 import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MSketchLoop } from "cad/model/mloop";
+import icon from "./LOFT.svg";
 
 
 interface LoftParams {
@@ -15,7 +16,7 @@ interface LoftParams {
 export const LoftOperation: OperationDescriptor<LoftParams> = {
   id: 'LOFT',
   label: 'Loft',
-  icon: 'img/cad/loft',
+  icon: icon,
   info: 'Lofts 2D sketch',
   path:__dirname,
   paramsInfo: () => `(?)`,

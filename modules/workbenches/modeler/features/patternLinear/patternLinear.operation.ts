@@ -8,6 +8,7 @@ import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
 import { MDatum } from "cad/model/mdatum";
 import {Matrix3x4} from "math/matrix";
+import icon from "./LINEAR PATTERN.svg";
 
 interface patternLinearParams {
   inputBodies: MShell[];
@@ -22,7 +23,7 @@ interface patternLinearParams {
 export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = {
   id: 'PATTERN_LINEAR',
   label: 'Linear pattern',
-  icon: 'img/cad/patternLinear',
+  icon: icon,
   info: 'Creates a linear pattern.',
   path:__dirname,
   paramsInfo: () => `(?)`,

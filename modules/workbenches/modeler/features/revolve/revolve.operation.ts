@@ -5,6 +5,7 @@ import {EntityKind} from "cad/model/entities";
 import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
 import Axis from "math/axis";
 import {OperationDescriptor} from "cad/craft/operationBundle";
+import icon from "./REVOLVE.svg";
 
 interface RevolveParams {
   angle: number;
@@ -16,7 +17,7 @@ interface RevolveParams {
 export const RevolveOperation: OperationDescriptor<RevolveParams> = {
   id: 'REVOLVE',
   label: 'Revolve',
-  icon: 'img/cad/revolve',
+  icon: icon,
   info: 'Revolves 2D sketch',
   path:__dirname,
   paramsInfo: ({angle}) => `(${r(angle)})`,

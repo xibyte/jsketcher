@@ -6,6 +6,7 @@ import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MDatum } from "cad/model/mdatum";
 import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
+import icon from "./TORUS.svg";
 
 
 interface PrimitiveTorusParams {
@@ -18,7 +19,7 @@ interface PrimitiveTorusParams {
 export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> = {
   id: 'TORUS',
   label: 'Torus',
-  icon: 'img/cad/torus',
+  icon: icon,
   info: 'Primitive Torus',
   path:__dirname,
   paramsInfo: ({ radius, tubeRadius }) => `(${r(radius)} , ${r(tubeRadius)} )`,
