@@ -77,9 +77,17 @@ export default class HistoryTimeline extends React.Component {
 }
 
 
+function OperationIcon({appearance}) {
+  if (appearance && appearance.icon) {
+    const Icon = appearance.icon;
+    return <Icon size='medium'/>;
+  }
+  return <ImgIcon url={appearance&&appearance.icon96} size={24} />;
+}
+
 function FutureItem({appearance}) {
   return <div className={cx(ls.futureItem, ls.inProgress)}>
-    <ImgIcon url={appearance&&appearance.icon96} size={24} />
+    <OperationIcon appearance={appearance} />
   </div>;
 
 }
@@ -138,7 +146,7 @@ function HistoryItem({index, pointer, modification, getOperation, toggle, select
   const appearance = resolveAppearance(operation, modification.params);
   return <div className={cx(ls.historyItem, selected&&ls.selected, disabled&&ls.disabled, inProgress&&ls.inProgress)}
               onClick={e => toggle(index, modification, e.currentTarget)}>
-    <ImgIcon className={ls.opIcon} url={appearance&&appearance.icon96} size={24} />
+    <OperationIcon appearance={appearance} />
     <span className={ls.opIndex}>{ index + 1 }</span>
   </div>;
 });
