@@ -23,7 +23,7 @@
     "cad"
   ],
   "author": "Val Erastov <xibyte@gmail.com> (http://github.com/xibyte)",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/xibyte/jsketcher/issues"
   },
