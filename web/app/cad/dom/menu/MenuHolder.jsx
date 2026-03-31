@@ -33,7 +33,7 @@ function ActionMenuItem({label, cssIcons, icon, icon32, icon96, enabled, hotKey,
   let renderedIcon, style;
   if (icon) {
     const Icon = icon;
-    renderedIcon = <Icon />;
+    renderedIcon = <Icon size='small'/>;
   } else {
     if (icon32 || icon96) {
       const size = 16;
