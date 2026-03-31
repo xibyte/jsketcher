@@ -66,58 +66,6 @@ export const PrimitiveConeOperation: OperationDescriptor<PrimitiveConeParams> = 
 
 
   run: (params: PrimitiveConeParams, ctx: ApplicationContext) => {
-
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const csys = params.locations?.csys || CSys.ORIGIN;
-    oci.plane("csys",
-      csys.origin.x,
-      csys.origin.y,
-      csys.origin.z,
-      csys.x.x,
-      csys.x.y,
-      csys.x.z,
-      csys.y.x,
-      csys.y.y,
-      csys.y.z);
-
-    oci.pcone("cone", "csys", params.diameterA / 2, params.diameterB / 2, params.height);
-
-
-    const newFacesIds = [
-      {
-        id: 'F:SIDE',
-        productionInfo: {
-          role: 'sweep'
-        }
-      },
-    ];
-
-    if (params.diameterB > 0) {
-      newFacesIds.push({
-        id: 'F:BASE',
-        productionInfo: {
-          role: 'base'
-        }
-      })
-    }
-
-    if (params.diameterA > 0) {
-      newFacesIds.push({
-        id: 'F:LID',
-        productionInfo: {
-          role: 'lid'
-        }
-      });
-    }
-
-    const cone = occ.io.getShell("cone", new ExpectedOrderProductionAnalyzer(newFacesIds,
-      [],
-      []
-    ));
-
-    return occ.utils.applyBooleanModifier([cone], params.boolean);
-
+    throw 'CONE operation is not yet implemented with native engine';
   },
 }

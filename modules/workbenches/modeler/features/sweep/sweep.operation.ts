@@ -19,30 +19,7 @@ export const SweepOperation: OperationDescriptor<SweepParams> = {
   path:__dirname,
   paramsInfo: () => `(?)`,
   run: (params: SweepParams, ctx: ApplicationContext) => {
-
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const myProfile = params.profile;
-    const profile = occ.io.sketchLoader.pushContourAsWire(myProfile.contour, "sweepFace", myProfile.face.csys).wire;
-
-    const myPath = params.sweepPath;
-    const path = occ.io.sketchLoader.pushContourAsWire(myPath.contour, "sweepPath", myPath.face.csys).wire;
-
-
-    oci.mksweep(path);
-    oci.addsweep(profile, "-R");
-
-    let cornerStyle = "";
-    if (params.cornerStyle == "Round") cornerStyle = "-R";
-    if (params.cornerStyle == "Sharp") cornerStyle = "-C";
-
-    oci.buildsweep("sweepOutput", cornerStyle, "-S");
-
-    const tools = [];
-    tools.push(occ.io.getShell("sweepOutput"));
-    return occ.utils.applyBooleanModifier(tools, params.boolean);
-
+    throw 'SWEEP operation is not yet implemented with native engine';
   },
 
   form: [

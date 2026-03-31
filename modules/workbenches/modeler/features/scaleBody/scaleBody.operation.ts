@@ -18,23 +18,7 @@ export const ScaleOperation: OperationDescriptor<scaleParams> = {
   path:__dirname,
   paramsInfo: ({ distance }) => `(${r(distance)})`,
   run: (params: scaleParams, ctx: ApplicationContext) => {
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const returnObject = {
-      consumed: params.shells,
-      created: []
-    };
-
-    params.shells.forEach((currentShell) => {
-      const newShellId = currentShell.id + ":scaled";
-      oci.copy(currentShell, newShellId);
-      oci.tscale(newShellId, currentShell.csys.x, currentShell.csys.y, currentShell.csys.z, params.distance);
-      returnObject.created.push(occ.io.getShell(newShellId));
-    });
-
-    return returnObject;
-
+    throw 'SCALE_BODY operation is not yet implemented with native engine';
   },
   form: [
     {

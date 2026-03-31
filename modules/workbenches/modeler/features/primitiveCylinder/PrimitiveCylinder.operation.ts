@@ -59,51 +59,6 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
 
 
   run: (params: PrimitiveCylinderParams, ctx: ApplicationContext) => {
-
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const csys = params.locations?.csys || CSys.ORIGIN;
-    oci.plane("csys",
-      csys.origin.x,
-      csys.origin.y,
-      csys.origin.z,
-      csys.x.x,
-      csys.x.y,
-      csys.x.z,
-      csys.y.x,
-      csys.y.y,
-      csys.y.z);
-
-    oci.pcylinder("cylinder", "csys", params.diameter / 2, params.height);
-
-    const cylinder = occ.io.getShell("cylinder", new ExpectedOrderProductionAnalyzer(
-      [
-        {
-          id: 'F:SIDE',
-          productionInfo: {
-            role: 'sweep'
-          }
-        },
-        {
-          id: 'F:BASE',
-          productionInfo: {
-            role: 'base'
-          }
-        },
-        {
-          id: 'F:LID',
-          productionInfo: {
-            role: 'lid'
-          }
-        },
-
-      ],
-      [],
-      []
-    ));
-
-    return occ.utils.applyBooleanModifier([cylinder], params.boolean);
-
+    throw 'CYLINDER operation is not yet implemented with native engine';
   },
 }

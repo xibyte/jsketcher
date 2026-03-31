@@ -16,33 +16,7 @@ export const ExportBREP: any = {
   info: 'EXPORT BREP FILE CONTAINING SELECTED BODIES',
   path:__dirname,
   run: async (params: any, ctx: ApplicationContext) => {
-    console.log("this is it", this)
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-
-    let resultingMessage = "";
-
-
-
-   await params.targetBody.forEach(async (targetBody) => {
-    console.log(targetBody);
-      await oci.writebrep(targetBody, targetBody.id+".brp", "-binary", 0);
-      //await oci.binsave(...targetBody, "myFile.brp");
-      
-      await downloadBlob(await FS.readFile(targetBody.id+".brp"), targetBody.id+".brp", 'application/octet-stream');
-      
-      //alert("yay");
-    });
-
-
-
-
-
-
-    resultingMessage = "yay";
-
-    throw {userMessage: resultingMessage};
+    throw 'EXPORT_BREP operation is not yet implemented with native engine';
   },
 
 

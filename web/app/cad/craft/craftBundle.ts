@@ -6,7 +6,6 @@ import {MObject, MObjectIdGenerator} from '../model/mobject';
 import {intercept} from "lstream/intercept";
 import {ApplicationContext} from "cad/context";
 import {OperationParams} from "cad/craft/schema/schema";
-import {clearImplicitModels} from "cad/craft/e0/occCommandInterface";
 
 export function activate(ctx: ApplicationContext) {
 
@@ -62,7 +61,7 @@ export function activate(ctx: ApplicationContext) {
   }
   
   function runRequest(request): Promise<OperationResult> {
-    clearImplicitModels();
+    // no-op: native engine has no implicit model state to clear
     try {
       const op = ctx.operationService.get(request.type);
       if (!op) {
@@ -85,7 +84,7 @@ export function activate(ctx: ApplicationContext) {
     } catch (e) {
       return Promise.reject(e);
     } finally {
-      clearImplicitModels();
+      // no-op: native engine has no implicit model state to clear
     }
   }
   

@@ -18,21 +18,7 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
   path:__dirname,
   paramsInfo: ({tools, boolean}) => `(${r(tools)} ${r(boolean)})`,
   run: (params: BooleanParams, ctx: ApplicationContext) => {
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    const returnObject = occ.utils.applyBooleanModifier(params.tools, params.boolean);
-    
-    if (params.keepTools == true) {
-      // filter consumed array to remove the tools but leaving the targets regardless if 
-      // the targets are explicitly set or implied by leaving targets blank.
-      returnObject.consumed = returnObject.created.filter((el) =>  !params.tools.includes(el as never));
-    }else{
-      returnObject.consumed = returnObject.consumed.concat(params.tools);
-    }
-
-    return returnObject;
-
+    throw 'BOOLEAN operation is not yet implemented with native engine';
   },
   form: [
     {

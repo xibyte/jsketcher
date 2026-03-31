@@ -7,16 +7,10 @@ import NurbsSurface from 'geom/surfaces/nurbsSurface';
 import {createOctreeFromSurface, NDTree, traverseOctree} from "voxels/octree";
 import {Matrix3x4} from 'math/matrix';
 import {AXIS, ORIGIN} from "math/vector";
-import {BrepInputData, CubeExample} from "engine/data/brepInputData";
 import {ApplicationContext} from "cad/context";
-import {readShellEntityFromJson} from "./scene/wrappers/entityIO";
-import {DEFLECTION, E0_TOLERANCE} from "./craft/e0/common";
 import {readBrep, writeBrep} from "brep/io/brepIO";
-import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 import {pullFace} from "brep/operations/directMod/pullFace";
 import {DefeatureFaceWizard} from "./craft/defeature/DefeatureFaceWizard";
-import {defeatureByEdge, defeatureByVertex} from "brep/operations/directMod/defeaturing";
-import {BooleanType} from "engine/api";
 import {MBrepShell} from './model/mshell';
 import * as vec from "math/vec";
 import {
@@ -171,59 +165,14 @@ export function runSandbox(ctx: ApplicationContext) {
     const box1 = exposure.brep.primitives.box(500, 500, 500);
     const box2 = exposure.brep.primitives.box(250, 250, 750);
 
-    console.dir(writeBrep(box1));
-    const l1 = ctx.craftEngine.modellingEngine.loadModel(writeBrep(box1));
-    const l2 = ctx.craftEngine.modellingEngine.loadModel(writeBrep(box2));
+    const result = exposure.brep.bool.subtract(box1, box2);
+    const mShell = new MBrepShell(result);
 
-    // let l11 = ctx.craftEngine.modellingEngine.getModelData({model: l1.ptr});
-
-
-    console.dir(l1);
-    console.dir(l2);
-    // console.dir(l11);
-    //
-    // console.dir(writeBrep(box1));
-    // console.dir(writeBrep(readShellEntityFromJson(l1).brepShell));
-
-    const result: any = ctx.craftEngine.modellingEngine.boolean({
-      deflection: DEFLECTION,
-      operandsA: [l1.ptr],
-      operandsB: [l2.ptr],
-      tolerance: E0_TOLERANCE,
-      type: BooleanType.SUBTRACT
-    });
-
-    ctx.streams.craft.models.next([
-      // readShellEntityFromJson(l1),
-      // readShellEntityFromJson(l2),
-      readShellEntityFromJson(result.result)
-    ]);
+    ctx.streams.craft.models.next([mShell]);
   }
 
   function testSplitFace() {
-    const box1 = exposure.brep.primitives.box(500, 500, 500);
-
-    const serialized = writeBrep(box1);
-    const loaded = ctx.craftEngine.modellingEngine.loadModel(serialized);
-    const face = loaded.faces[0];
-    const [e1, e2]  = face.loops[0];
-
-    const splitted = ctx.craftEngine.modellingEngine.splitFace({
-      deflection: DEFLECTION,
-      shape: loaded.ptr,
-      face: face.ptr,
-      edge: {
-        curve: {
-          TYPE: 'LINE',
-          a: [-250, -250, -250],
-          b: [ 250, -250,  250]
-        }
-      }
-    })
-
-    services.exposure.addOnScene(readShellEntityFromJson(splitted));
-
-//     addShellOnScene(result);
+    throw 'testSplitFace is not yet implemented with native engine';
   }
 
   function testRemoveFaces() {
@@ -231,44 +180,19 @@ export function runSandbox(ctx: ApplicationContext) {
     const box1 = exposure.brep.primitives.box(500, 500, 500);
     const box2 = exposure.brep.primitives.box(250, 250, 750, new Matrix3x4().translate(25, 25, 0));
 
-    const withHole = ctx.craftEngine.modellingEngine.loadModel(writeBrep(exposure.brep.bool.subtract(box1, box2)));
-    services.exposure.addOnScene(readShellEntityFromJson(withHole));
-
-
-
+    const withHole = exposure.brep.bool.subtract(box1, box2);
+    services.exposure.addOnScene(new MBrepShell(withHole));
 
     ctx.domService.contributeComponent(DefeatureFaceWizard);
 
   }
 
   function testRemoveVertex() {
-
-    const boxData = ctx.craftEngine.modellingEngine.loadModel(writeBrep(exposure.brep.primitives.box(500, 500, 500)));
-    const box = readShellEntityFromJson(boxData);
-    services.exposure.addOnScene(box);
-    box.vertices.forEach(v => v.ext.view.rootGroup.sphere.onMouseClick = () => {
-      ctx.craftService.models$.update((models) => {
-        const [cube] = models;
-        const result = defeatureByVertex(cube.brepShell, v.brepVertex, ctx.craftEngine.modellingEngine);
-        const mShell = readShellEntityFromJson(result);
-        return [mShell];
-      });
-    });
+    throw 'testRemoveVertex is not yet implemented with native engine';
   }
 
   function testRemoveEdge() {
-
-    const boxData = ctx.craftEngine.modellingEngine.loadModel(writeBrep(exposure.brep.primitives.box(500, 500, 500)));
-    const box = readShellEntityFromJson(boxData);
-    services.exposure.addOnScene(box);
-    box.edges.forEach(e => e.ext.view.picker.onMouseClick = () => {
-      ctx.craftService.models$.update((models) => {
-        const [cube] = models;
-        const result = defeatureByEdge(cube.brepShell, e.brepEdge, ctx.craftEngine.modellingEngine);
-        const mShell = readShellEntityFromJson(result);
-        return [mShell];
-      });
-    });
+    throw 'testRemoveEdge is not yet implemented with native engine';
   }
 
   function test5() {
@@ -557,108 +481,22 @@ export function runSandbox(ctx: ApplicationContext) {
   }
 
   function testPullFace() {
-
-    const box: BrepInputData = CubeExample();
-    //
-    const data = ctx.craftEngine.modellingEngine.loadModel(box);
-
-
-    const shell = readShellEntityFromJson(data);
-    services.exposure.addOnScene(shell);
-
-    pullFace(shell.brepShell.faces[0], 700);
-
-    const ser = writeBrep(shell.brepShell);
-    ser.curves = {};
-    console.log(ser);
-    const fromSerialization = ctx.craftEngine.modellingEngine.loadModel(ser);
-
-    const mBrepShell2 = readShellEntityFromJson(fromSerialization);
-    services.exposure.addOnScene(mBrepShell2);
-
+    const box = exposure.brep.primitives.box(500, 500, 500);
+    const mShell = new MBrepShell(box);
+    services.exposure.addOnScene(mShell);
+    pullFace(box.faces[0], 700);
+    const mShell2 = new MBrepShell(box);
+    services.exposure.addOnScene(mShell2);
   }
 
   function nonUniformScale() {
-
-    const box: BrepInputData = CubeExample();
-
-    const data = ctx.craftEngine.modellingEngine.loadModel(box);
-    // data = ctx.craftEngine.modellingEngine.transform({
-    //   model: data.ptr,
-    //   matrix: new Matrix3x4().scale(1,2,1).toFlatArray()
-    // });
-
-    const mShell = readShellEntityFromJson(data);
-    // const shell = mShell.brepShell as Shell;
-    // // shell.transform(new Matrix3x4().scale(1,2,1));
-
-    // const scaledInput = writeBrep(shell);
-    // console.dir(scaledInput);
-    // let data2 = ctx.craftEngine.modellingEngine.loadModel(scaledInput);
-
-    // const mShell2 = readShellEntityFromJson(data2);
-    services.exposure.addOnScene(mShell);
+    throw 'nonUniformScale is not yet implemented with native engine';
   }
 
   function testLoadBrep() {
-
-    const box: BrepInputData = CubeExample();
-    //
-    const data = ctx.craftEngine.modellingEngine.loadModel(box);
-    //
-    // ctx.craftEngine.modellingEngine.setLocation({
-    //   model: data.ptr,
-    //   matrix: Matrix3x4.rotateMatrix(45 * DEG_RAD, AXIS.Y, ORIGIN).toFlatArray()
-    // });
-    //
-    // data = ctx.craftEngine.modellingEngine.getModelData({
-    //   model: data.ptr,
-    // });
-    //
-    // const tessellation = ctx.craftEngine.modellingEngine.tessellate({
-    //   model: data.ptr,
-    //   deflection: 3
-    // });
-    //
-    // const location = ctx.craftEngine.modellingEngine.getLocation({
-    //   model: data.ptr
-    // });
-    //
-    // console.log("Location: ->>> ");
-    // console.log(location);
-    //
-    // console.log("Tesselation: ->>> ");
-    // console.log(tessellation);
-    //
-    // // ctx.craftEngine.modellingEngine.dispose({
-    // //   model: data.ptr
-    // // });
-    // //
-    // // ctx.craftEngine.modellingEngine.getLocation({
-    // //   model: data.ptr
-    // // });
-
-    console.log("DATA:");
-    console.log(data);
-
-
-    const mBrepShell = readShellEntityFromJson(data);
-    // services.exposure.addOnScene(mBrepShell);
-
-    // return ;
-// debugger
-    const serialized = writeBrep(mBrepShell.brepShell);
-    console.log("SERAIL:");
-    console.log(serialized);
-    const fromSerialization = ctx.craftEngine.modellingEngine.loadModel(serialized);
-
-    console.log("FROM:");
-    console.log(fromSerialization);
-
-    const mBrepShell2 = readShellEntityFromJson(fromSerialization);
-
-    services.exposure.addOnScene(mBrepShell2);
-
+    const box = exposure.brep.primitives.box(500, 500, 500);
+    const mShell = new MBrepShell(box);
+    services.exposure.addOnScene(mShell);
   }
 
   // function testTess() {
@@ -732,90 +570,7 @@ export function runSandbox(ctx: ApplicationContext) {
 
    */
   function testOCCT() {
-    // ctx.OCI.box("Se", "0", "0", "0", "50", "30" ,"80")
-
-    const oci = ctx.occService.commandInterface;
-    const height = 70;
-    const width = 50;
-    const thickness = 30;
-    const neckradius = thickness/4;
-    const neckheight = height/10;
-    const major = 2*Math.PI;
-    const minor = neckheight/10;
-    const pi = Math.PI;
-
-    oci.box("b1", "10.0", "15.0", "20.0");
-    oci.box("b2", "-min", "5.0", "7.5", "10.0", "-max", "20.0", "25.0", "30.0");
-    oci.bcut("resultOfCut", "b1", "b2");
-    oci.bfuse("resultOfUnion", "b1", "b2");
-    oci.bcommon("resultOfIntersection", "b1", "b2");
-    oci.vertex("v1",-width/2,"0","0")
-    oci.vertex("v2",-width/2,-thickness/4,"0")
-    oci.edge("e1","v1","v2")
-    oci.point("p2",-width/2,-thickness/4,"0")
-    oci.point("p3","0",-thickness/2,"0")
-    oci.point("p4",width/2,-thickness/4,"0")
-    oci.gcarc("arc","cir","p2","p3","p4")
-    oci.mkedge("e2","arc")
-    oci.vertex("v4",width/2,-thickness/4,"0")
-    oci.vertex("v5",width/2,"0","0")
-    oci.edge("e3","v4","v5")
-    oci.wire("w1","e1","e2","e3")
-    oci.copy("w1","w2")
-    oci.tmirror("w2","0","0","0","0","1","0")
-    oci.wire("w3","w1","w2")
-    oci.mkplane("f","w3")
-    oci.prism("p","f","0","0",height)
-    oci.explode("p","e")
-    oci.blend("b", "p",
-      thickness / 12, "p_1",
-      thickness / 12, "p_2",
-      thickness / 12, "p_3",
-      thickness / 12, "p_4",
-      thickness / 12, "p_5",
-      thickness / 12, "p_6",
-      thickness / 12, "p_7",
-      thickness / 12, "p_8",
-      thickness / 12, "p_9",
-      thickness / 12, "p_10",
-      thickness / 12, "p_11",
-      thickness / 12, "p_12",
-      thickness / 12, "p_13",
-      thickness / 12, "p_14",
-      thickness / 12, "p_15",
-      thickness / 12, "p_16",
-      thickness / 12, "p_17",
-      thickness / 12, "p_18")
-    oci.pcylinder("c",neckradius,neckheight)
-    oci.ttranslate("c","0","0",height)
-    oci.bfuse("f","b","c")
-    oci.explode("c","f")
-    oci.offsetshape("body","f",-thickness/50,"1.e-3","c_2")
-    oci.cylinder("c1","0","0",height,"0","0","1",neckradius*0.99)
-    oci.cylinder("c2","0","0",height,"0","0","1",neckradius*1.05)
-    oci.ellipse("el1",2*pi,neckheight/2,2*pi,neckheight/4,major,minor)
-    oci.ellipse("el2",2*pi,neckheight/2,2*pi,neckheight/4,major,minor/4)
-    oci.trim("arc1","el1","0",pi)
-    oci.trim("arc2","el2","0",pi)
-    oci._2dcvalue("el1","0","x1","y1")
-    oci._2dcvalue("el1",pi,"x2","y2")
-    oci.line("l","x1","y1","x2-x1","y2-y1")
-    oci.parameters("l","x2","y2","1.e-9","U")
-    oci.trim("s","l","0","U")
-    oci.mkedge("E1OnS1","arc1","c1","0",pi)
-    oci.mkedge("E2OnS1","s","c1","0","U")
-    oci.mkedge("E1OnS2","arc2","c2","0",pi)
-    oci.mkedge("E2OnS2","s","c2","0","U")
-    oci.wire("tw1","E1OnS1","E2OnS1")
-    oci.wire("tw2","E1OnS2","E2OnS2")
-    oci.mkedgecurve("tw1","1.e-5")
-    oci.mkedgecurve("tw2","1.e-5")
-    oci.thrusections("-N","thread","1","0","tw1","tw2")
-    oci.bop("body","thread")
-    oci.bopfuse("bottle")
-
-    services.exposure.addOnScene(ctx.occService.io.getShell("bottle"));
-
+    throw 'testOCCT is not available - OpenCascade has been removed';
   }
 
   ctx.streams.lifecycle.projectLoaded.attach(ready => {

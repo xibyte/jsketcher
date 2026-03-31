@@ -18,38 +18,7 @@ export const ShellOperation: OperationDescriptor<ShellParams> = {
   path:__dirname,
   paramsInfo: ({thickness}) => `(${r(thickness)})`,
   run: (params: ShellParams, ctx: ApplicationContext) => {
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-
-    const bodiesToShell = [];
-    const returnObject = {
-      consumed: [],
-      created: []
-    };
-
-    //add all the edges and size to seperate arrays for each shell that edges are selected from
-
-    params.faces.forEach((face) => {
-      if (!returnObject.consumed.includes(face.shell)) {
-        returnObject.consumed.push(face.shell);
-        bodiesToShell[face.shell.id] = [];
-      }
-      bodiesToShell[face.shell.id].push(face);
-
-    });
-
-    //perform the opperations on each of the bodies.
-    Object.keys(bodiesToShell).forEach((shellToOpperateOnName) => {
-      const shellToOpperateOn = bodiesToShell[shellToOpperateOnName];
-      const newShellName = shellToOpperateOnName + "f";
-
-      const bodyToPerformShellOpperationOn = shellToOpperateOn[0].shell;
-      oci.offsetcompshape(newShellName, bodyToPerformShellOpperationOn, -params.thickness, "1.e-3", ...shellToOpperateOn)
-      returnObject.created.push(occ.io.getShell(newShellName));
-    });
-
-    return returnObject;
+    throw 'SHELL operation is not yet implemented with native engine';
   },
   form: [
     {

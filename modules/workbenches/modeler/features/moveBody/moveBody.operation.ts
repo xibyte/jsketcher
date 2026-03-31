@@ -1,7 +1,6 @@
 import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {OperationDescriptor} from "cad/craft/operationBundle";
-import {SetLocation} from "cad/craft/e0/interact";
 import {MDatum} from "cad/model/mdatum";
 import { MShell } from 'cad/model/mshell';
 
@@ -19,25 +18,7 @@ export const MoveBodyOperation: OperationDescriptor<MoveBodyParams> = {
   paramsInfo: () => '',
 
   run: (params: MoveBodyParams, ctx: ApplicationContext) => {
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-    console.log(params);
-    const returnObject = {
-      consumed: [params.body],
-      created: []
-    };
-    const location = params.datum.csys.outTransformation._normalize();
-
-    const newShellName = params.body.id+":T";
-
-    oci.copy(params.body, newShellName);
-
-    SetLocation(newShellName, location.toFlatArray());
-    returnObject.created.push(occ.io.getShell(newShellName));
-
-    return returnObject;
-
+    throw 'MOVE_BODY operation is not yet implemented with native engine';
   },
   form: [
     {

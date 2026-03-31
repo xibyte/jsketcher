@@ -6,7 +6,6 @@ import Vector from 'math/vector';
 import CSys from "math/csys";
 import {distanceAB} from "math/distance";
 import {isCCW} from "geom/euclidean";
-import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
 
 
 const RESOLUTION = 20;
@@ -64,9 +63,6 @@ export class SketchPrimitive {
     throw 'not implemented'
   }
 
-  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-    throw 'not implemented'
-  }
 
   massiveness() {
     return 50;
@@ -103,13 +99,6 @@ export class Segment extends SketchPrimitive {
     return endpoints
   }
 
-  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-    const genForm = this.toGenericForm().map(csys.outTransformation.apply);
-    const [A, B] = genForm;
-    oci.point(underName + "_A", A.x, A.y, A.z);
-    oci.point(underName + "_B", B.x, B.y, B.z);
-    oci.gcarc(underName, "seg", underName + "_A", underName + "_B")
-  }
 
   tangentAtStart(): Vector {
     return this.b.minus(this.a);
@@ -179,26 +168,6 @@ export class Arc extends SketchPrimitive {
     ]
   }
 
-  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-
-    const tr = csys.outTransformation.apply;
-    const s = this;
-    const a = tr(s.inverted ? s.b : s.a);
-    const b = tr(s.inverted ? s.a : s.b);
-    const c = tr(s.c);
-    const tangent = c.minus(a)._cross(csys.z);//._normalize();
-
-    if (s.inverted) {
-      tangent._negate();
-    }
-
-    const A_TAN = a.plus(tangent);
-    oci.point(underName + "_A", a.x, a.y, a.z);
-    oci.point(underName + "_B", b.x, b.y, b.z);
-    oci.point(underName + "_T1", a.x, a.y, a.z);
-    oci.point(underName + "_T2", A_TAN.x, A_TAN.y, A_TAN.z);
-    oci.gcarc(underName, "cir", underName + "_A", underName + "_T1", underName + "_T2", underName + "_B")
-  }
 
   massiveness() {
     return this.a.minus(this.b).length();
@@ -290,11 +259,6 @@ export class Circle extends SketchPrimitive {
     return new verb.geom.Circle(tr(this.c).data(), basisX.data(), basisY.data(), this.r);
   }
 
-  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-    const C = csys.outTransformation.apply(this.c);
-    const DIR = csys.z;
-    oci.circle(underName, ...C.data(), ...DIR.data(), this.r);
-  }
 
   massiveness() {
     return this.r;
