@@ -15,7 +15,7 @@ export const HeadsUpToolbar = connect(streams => combine(
         {quickActions.map(actionId => <ConnectedActionButton size='small' key={actionId} actionId={actionId} />)}
       </div>
       <div className={ls.mainActions}>
-        <ToolbarActionButtons actions={actions} showTitles={showTitles}/>
+        <ToolbarActionButtons actions={actions} showTitles={showTitles} size='medium'/>
       </div>
     </Toolbar>
   }

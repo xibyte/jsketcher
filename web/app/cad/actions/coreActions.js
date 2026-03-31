@@ -1,13 +1,14 @@
 import * as ActionHelpers from './actionHelpers'
 import {AiOutlineExport} from "react-icons/ai";
+import {resolveIcon} from "cad/craft/ui/iconResolver";
+import sketchSvg from "./SKETCH.svg";
 
 export default [
   {
     id: 'EditFace',
     appearance: {
-      cssIcons: ['file-picture-o'],
+      icon: resolveIcon({ iconType: 'svg', iconContent: sketchSvg }),
       label: 'sketch',
-      icon96: 'img/cad/face-edit96.png',
       info: 'open sketcher for a face/plane',
     },
     listens: ctx => ctx.streams.selection.face,
