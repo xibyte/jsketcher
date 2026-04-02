@@ -13,7 +13,7 @@ export function createSolidMaterial(skin) {
     polygonOffset : true,
     polygonOffsetFactor : 1,
     polygonOffsetUnits : 2,
-    side: DoubleSide,
+    // side: DoubleSide,
   }, skin));
 }
 

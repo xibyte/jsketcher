@@ -10,6 +10,7 @@ import BrepCurve from "geom/curves/brepCurve";
 import {Plane} from "geom/impl/plane";
 import {enclose} from "brep/operations/brep-enclose";
 import {Shell} from "brep/topo/shell";
+import {buildExtrusionMesh} from "brep/operations/mesh/extrudeMesh";
 import icon from "./EXTRUDE.svg";
 import cutIcon from "./CUT.svg";
 
@@ -110,8 +111,31 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
     const contours = sketch.fetchContours();
 
     const tools: MBrepShell[] = contours.map(contour => {
+      const contourPoints = contour.tessellateInCoordinateSystem(csys);
+      const extResult = buildExtrusionMesh(contourPoints, extrusionVector, csys.z);
+
+      // Build BRep shell for topology (faces, edges, vertices)
       const curves3D = contour.transferInCoordinateSystem(csys);
       const shell = extrudeShellFromSketch(curves3D, extrusionVector, csys);
+
+      // Attach clean mesh data for boolean operations
+      (shell as any).__meshData = extResult.meshData;
+
+      // Attach per-face tessellation so rendering uses the clean mesh,
+      // not verb's NURBS tessellation.
+      // enclose() creates faces in order: [walls..., base, lid]
+      const nWalls = contourPoints.length;
+      const nFaces = shell.faces.length;
+      // Base and lid are the last two faces
+      const baseFace = shell.faces[nFaces - 2];
+      const lidFace = shell.faces[nFaces - 1];
+      baseFace.data.tessellation = {data: extResult.bottomTess};
+      lidFace.data.tessellation = {data: extResult.topTess};
+      // Wall faces
+      for (let i = 0; i < nWalls && i < nFaces - 2; i++) {
+        shell.faces[i].data.tessellation = {data: extResult.wallTess[i]};
+      }
+
       return new MBrepShell(shell);
     });
 
