@@ -1,7 +1,7 @@
 import Vector, {AXIS, ORIGIN} from 'math/vector';
 import {RiCamera2Line} from "react-icons/ri";
 import {ViewMode} from "cad/scene/viewer";
-import {GiCube, HiCube, HiOutlineCube} from "react-icons/all";
+import {GiCube, HiCube, HiOutlineCube, BiNetworkChart} from "react-icons/all";
 
 const NEG_X = AXIS.X.negate();
 const NEG_Y = AXIS.Y.negate();
@@ -224,6 +224,17 @@ export default [
     },
     invoke: ctx => {
       ctx.services.viewer.viewMode$.next(ViewMode.SHADED_WITH_EDGES);
+      ctx.services.viewer.requestRender();
+    }
+  },
+  {
+    id: 'ViewMode_MESH_WIREFRAME_ON',
+    appearance: {
+      label: 'mesh wireframe',
+      icon: BiNetworkChart,
+    },
+    invoke: ctx => {
+      ctx.services.viewer.viewMode$.next(ViewMode.MESH_WIREFRAME);
       ctx.services.viewer.requestRender();
     }
   },

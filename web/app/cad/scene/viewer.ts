@@ -4,7 +4,8 @@ import SceneSetUp from "scene/sceneSetup";
 export enum ViewMode {
   WIREFRAME = 'WIREFRAME',
   SHADED = 'SHADED',
-  SHADED_WITH_EDGES = 'SHADED_WITH_EDGES'
+  SHADED_WITH_EDGES = 'SHADED_WITH_EDGES',
+  MESH_WIREFRAME = 'MESH_WIREFRAME'
 }
 
 export default class Viewer {

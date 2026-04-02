@@ -2,10 +2,12 @@ import {Point} from '../point';
 import Vector, {UnitVector} from 'math/vector';
 import {Plane} from '../impl/plane';
 import BrepCurve from '../curves/brepCurve';
-import {intersectNurbs} from './nurbsSurface';
 import {IsoCurveU, IsoCurveV} from '../curves/IsoCurve';
 import {ParametricSurface, UV} from "./parametricSurface";
 import {Matrix3x4} from "math/matrix";
+import SurfaceIntersectionCurve, {IntersectionSample, tessellateSurface} from '../curves/surfaceIntersectionCurve';
+import {meshesIntersect} from '../impl/nurbs-ext';
+import {TOLERANCE, TOLERANCE_SQ, TOLERANCE_01} from '../tolerance';
 
 export class BrepSurface {
 
@@ -130,10 +132,59 @@ export class BrepSurface {
     return x.cross(y).dot(surface.normalUV(surface.uMin, surface.vMin)) < 0;
   }
 
-  intersectSurface(other, tol) {
-    const X = intersectNurbs(this.impl, other.impl, this.inverted !== other.inverted);
-    // let X = surfaceIntersect(this.impl, other.impl);
-    return X.map(curve => new BrepCurve(curve));
+  intersectSurface(other: BrepSurface, tol?: number): BrepCurve[] {
+    const surfA = this.impl;
+    const surfB = other.impl;
+
+    // Tessellate both surfaces into meshes
+    const nuA = Math.max(10, (surfA.knotsU ? surfA.knotsU.length : 5) * 4);
+    const nvA = Math.max(10, (surfA.knotsV ? surfA.knotsV.length : 5) * 4);
+    const nuB = Math.max(10, (surfB.knotsU ? surfB.knotsU.length : 5) * 4);
+    const nvB = Math.max(10, (surfB.knotsV ? surfB.knotsV.length : 5) * 4);
+
+    // Use verb's adaptive tessellation for NURBS surfaces, generic grid for others
+    let tessA, tessB;
+    if ((surfA as any).verb) {
+      tessA = verb.eval.Tess.rationalSurfaceAdaptive((surfA as any).data);
+      fixTessNaNPoints((surfA as any).data, tessA);
+    } else {
+      tessA = tessellateSurface(surfA, nuA, nvA);
+    }
+    if ((surfB as any).verb) {
+      tessB = verb.eval.Tess.rationalSurfaceAdaptive((surfB as any).data);
+      fixTessNaNPoints((surfB as any).data, tessB);
+    } else {
+      tessB = tessellateSurface(surfB, nuB, nvB);
+    }
+
+    // Find approximate intersection polylines via mesh intersection
+    const approxPolylines = meshesIntersect(tessA, tessB, TOLERANCE, TOLERANCE_SQ, TOLERANCE_01);
+
+    if (approxPolylines.length === 0) {
+      return [];
+    }
+
+    // Convert each polyline to a SurfaceIntersectionCurve
+    const curves: BrepCurve[] = [];
+    for (const polyline of approxPolylines) {
+      if (polyline.length < 2) continue;
+
+      const samples: IntersectionSample[] = polyline.map(inter => ({
+        point: inter.point || inter.min?.point || [0, 0, 0],
+        uvA: inter.uv0 || inter.min?.uv0 || [0, 0],
+        uvB: inter.uv1 || inter.min?.uv1 || [0, 0],
+      }));
+
+      try {
+        const curve = new SurfaceIntersectionCurve(surfA, surfB, samples);
+        curves.push(new BrepCurve(curve));
+      } catch (e) {
+        // Skip degenerate intersection curves
+        console.warn('Failed to create intersection curve:', e);
+      }
+    }
+
+    return curves;
   }
 
   invert() {
@@ -191,6 +242,16 @@ function figureOutSimpleSurface(srf) {
     return srf.tangentPlane(srf.uMid, srf.vMid);
   }
   return null;
+}
+
+function fixTessNaNPoints(surfData, tess) {
+  for (let i = 0; i < tess.points.length; i++) {
+    const pt = tess.points[i];
+    if (Number.isNaN(pt[0]) || Number.isNaN(pt[1]) || Number.isNaN(pt[2])) {
+      const [u, v] = tess.uvs[i];
+      tess.points[i] = verb.eval.Eval.rationalSurfacePoint(surfData, u, v);
+    }
+  }
 }
 
 declare module 'math/vector' {
