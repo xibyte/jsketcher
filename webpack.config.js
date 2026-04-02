@@ -44,6 +44,9 @@ module.exports = {
           res.sendFile(path.join(NODE_MODULES, asset))
         })
       });
+      devServer.app.get('/manifold.wasm', function (req, res) {
+        res.sendFile(path.join(NODE_MODULES, 'manifold-3d/manifold.wasm'))
+      });
       return middlewares;
     }
   },

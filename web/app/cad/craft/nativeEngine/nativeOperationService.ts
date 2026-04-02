@@ -11,9 +11,9 @@ import {Contour} from "cad/sketch/sketchModel";
 import BrepCurve from "geom/curves/brepCurve";
 import {Plane} from "geom/impl/plane";
 import {enclose} from "brep/operations/brep-enclose";
-import {BooleanAlgorithm} from "brep/operations/boolean";
 import Vector from "math/vector";
 import {ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import {manifoldBooleanRaw, BooleanOp, MeshData, shellToMeshData} from "brep/operations/mesh/manifoldBoolean";
 
 export interface SketchProfile {
   contour: Contour;
@@ -30,7 +30,7 @@ export interface NativeOperationService {
                        booleanDef: BooleanDefinition,
                        sketchSource?: MObject,
                        mustAdvance? : MObject[],
-                       analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): OperationResult;
+                       analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): OperationResult | Promise<OperationResult>;
 }
 
 export function createNativeOperationService(ctx: ApplicationContext): NativeOperationService {
@@ -79,11 +79,11 @@ export function createNativeOperationService(ctx: ApplicationContext): NativeOpe
     return enclose(baseCurves, lidCurves, basePlane, lidPlane);
   }
 
-  function applyBooleanModifier(tools: MBrepShell[],
+  async function applyBooleanModifier(tools: MBrepShell[],
                                 booleanDef: BooleanDefinition,
                                 sketchSource: MObject,
                                 mustAdvance? : MObject[],
-                                analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): OperationResult {
+                                analyzerCreator?: (targets: MObject[], tools: MObject[]) => ProductionAnalyzer): Promise<OperationResult> {
 
     const consumed: MObject[] = [];
 
@@ -116,15 +116,28 @@ export function createNativeOperationService(ctx: ApplicationContext): NativeOpe
       };
     }
 
-    let resultShell: Shell = targetShells[0].brepShell.clone();
+    const opMap: Record<string, BooleanOp> = {
+      'UNION': 'union', 'SUBTRACT': 'subtract', 'INTERSECT': 'intersect'
+    };
+
+    function getMeshData(shell: any): MeshData {
+      // Use clean mesh if available (from buildExtrusionMesh or previous Manifold output)
+      // Fall back to brepTess conversion only as last resort
+      return shell.__meshData || shellToMeshData(shell);
+    }
+
+    let resultShell: Shell = targetShells[0].brepShell;
 
     for (let i = 1; i < targetShells.length; i++) {
-      resultShell = BooleanAlgorithm(resultShell, targetShells[i].brepShell.clone(), 'UNION');
+      resultShell = await manifoldBooleanRaw(
+        getMeshData(resultShell), getMeshData(targetShells[i].brepShell), 'union'
+      );
     }
 
     for (const tool of tools) {
-      const toolShell = tool.brepShell.clone();
-      resultShell = BooleanAlgorithm(resultShell, toolShell, kind);
+      resultShell = await manifoldBooleanRaw(
+        getMeshData(resultShell), getMeshData(tool.brepShell), opMap[kind] || 'subtract'
+      );
     }
 
     targets.forEach(t => consumed.push(t));
