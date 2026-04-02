@@ -120,7 +120,7 @@ export function surfaceIntersect(surface0, surface1) {
     });
   });
 
-  const degree = Math.max(surfaceMaxDegree(surface0) === 1 && surfaceMaxDegree(surface1));
+  const degree = Math.max(surfaceMaxDegree(surface0), surfaceMaxDegree(surface1));
   const inserts = degree - 1; 
   const nurbses = [];
   //TODO: temporary workaround. evenly distribute points accordingly to degree. 

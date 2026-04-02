@@ -8,6 +8,7 @@ import {SketchMesh} from "cad/scene/views/shellView";
 import {FACE} from "cad/model/entities";
 import {setAttribute} from "scene/objectData";
 import {ViewMode} from "cad/scene/viewer";
+import {WireframeGeometry, LineSegments, LineBasicMaterial} from "three";
 
 export class SketchingView extends View {
   
@@ -87,8 +88,16 @@ export class FaceView extends SketchingView {
     }
     this.rootGroup.add(this.mesh);
 
+    const wireframeGeom = new WireframeGeometry(geom);
+    this.wireframeMaterial = new LineBasicMaterial({color: 0x2080ff});
+    this.wireframeMesh = new LineSegments(wireframeGeom, this.wireframeMaterial);
+    this.wireframeMesh.visible = false;
+    this.wireframeGeometry = wireframeGeom;
+    this.rootGroup.add(this.wireframeMesh);
+
     this.addDisposer(ctx.viewer.viewMode$.attach(mode => {
-      this.mesh.visible = (mode === ViewMode.SHADED_WITH_EDGES || mode === ViewMode.SHADED);
+      this.mesh.visible = (mode !== ViewMode.WIREFRAME);
+      this.wireframeMesh.visible = (mode === ViewMode.MESH_WIREFRAME);
     }));
   }
 
@@ -96,6 +105,8 @@ export class FaceView extends SketchingView {
     super.dispose();
     this.material.dispose();
     this.geometry.dispose();
+    this.wireframeMaterial.dispose();
+    this.wireframeGeometry.dispose();
   }
 }
 

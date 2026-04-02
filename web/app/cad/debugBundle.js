@@ -241,11 +241,11 @@ function addGlobalDebugActions({viewer, cadScene, cadRegistry}) {
       viewer.render();
     },
     HideSolids: () => {
-      cadRegistry.getAllShells().forEach(s => s.ext.view.mesh.traverse(o => o.visible = false));
+      cadRegistry.getAllShells().forEach(s => s.ext.view.rootGroup.visible = false);
       viewer.render();
     },
     ShowSolids: () => {
-      cadRegistry.getAllShells().forEach(s => s.ext.view.mesh.traverse(o => o.visible = true));
+      cadRegistry.getAllShells().forEach(s => s.ext.view.rootGroup.visible = true);
       viewer.render();
     },
     Clear: () => {
