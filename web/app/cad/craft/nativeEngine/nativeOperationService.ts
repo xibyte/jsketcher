@@ -13,7 +13,8 @@ import {Plane} from "geom/impl/plane";
 import {enclose} from "brep/operations/brep-enclose";
 import Vector from "math/vector";
 import {ProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
-import {manifoldBooleanRaw, BooleanOp, MeshData, shellToMeshData} from "brep/operations/mesh/manifoldBoolean";
+import {manifoldBooleanRaw, BooleanOp, MeshWithOrigins, shellToMeshWithOrigins, ManifoldTolerances} from "brep/operations/mesh/manifoldBoolean";
+import {ShellMesh, MBrepShell as MBrepShellType} from "cad/model/mshell";
 
 export interface SketchProfile {
   contour: Contour;
@@ -120,30 +121,44 @@ export function createNativeOperationService(ctx: ApplicationContext): NativeOpe
       'UNION': 'union', 'SUBTRACT': 'subtract', 'INTERSECT': 'intersect'
     };
 
-    function getMeshData(shell: any): MeshData {
-      // Use clean mesh if available (from buildExtrusionMesh or previous Manifold output)
-      // Fall back to brepTess conversion only as last resort
-      return shell.__meshData || shellToMeshData(shell);
+    // Extract tolerances from boolean definition if provided
+    const tolerances: ManifoldTolerances = (booleanDef as any)?.tolerances || {};
+
+    function getMeshWithOrigins(mShell: MBrepShell): MeshWithOrigins {
+      const shell = mShell.brepShell;
+      const mwo = shell.data?.__meshWithOrigins
+        || (shell as any).__meshWithOrigins
+        || (mShell as any).__meshWithOrigins;
+      if (mwo) return mwo;
+      throw new Error('Shell has no mesh data. Every solid must be created with buildExtrusionMesh.');
     }
 
+    let current = getMeshWithOrigins(targetShells[0]);
     let resultShell: Shell = targetShells[0].brepShell;
 
     for (let i = 1; i < targetShells.length; i++) {
-      resultShell = await manifoldBooleanRaw(
-        getMeshData(resultShell), getMeshData(targetShells[i].brepShell), 'union'
+      const boolResult = await manifoldBooleanRaw(
+        current, getMeshWithOrigins(targetShells[i]), 'union', tolerances
       );
+      resultShell = boolResult.shell;
+      current = boolResult.meshWithOrigins;
     }
 
     for (const tool of tools) {
-      resultShell = await manifoldBooleanRaw(
-        getMeshData(resultShell), getMeshData(tool.brepShell), opMap[kind] || 'subtract'
+      const boolResult = await manifoldBooleanRaw(
+        current, getMeshWithOrigins(tool), opMap[kind] || 'subtract', tolerances
       );
+      resultShell = boolResult.shell;
+      current = boolResult.meshWithOrigins;
     }
 
     targets.forEach(t => consumed.push(t));
     tools.forEach(t => consumed.push(t));
 
     const resultMShell = new MBrepShell(resultShell);
+
+    // Build shared mesh on result shell from face tessellation data
+    resultMShell.mesh = buildShellMeshFromTessData(resultMShell);
 
     return {
       consumed,
@@ -153,5 +168,39 @@ export function createNativeOperationService(ctx: ApplicationContext): NativeOpe
 
   return {
     sketchToProfiles, extrudeProfile, applyBooleanModifier
+  };
+}
+
+function buildShellMeshFromTessData(mShell: any): ShellMesh {
+  const allVerts: number[] = [];
+  const allNormals: number[] = [];
+  const faceTriRanges: [number, number][] = [];
+  let triIdx = 0;
+
+  for (const mFace of mShell.faces) {
+    const startTri = triIdx;
+    const tessData = mFace.brepFace?.data?.tessellation?.data;
+    if (tessData) {
+      for (const [verts] of tessData) {
+        for (const v of verts) {
+          allVerts.push(v[0], v[1], v[2]);
+        }
+        const a = verts[0], b = verts[1], c = verts[2];
+        const abx = b[0]-a[0], aby = b[1]-a[1], abz = b[2]-a[2];
+        const acx = c[0]-a[0], acy = c[1]-a[1], acz = c[2]-a[2];
+        let nx = aby*acz-abz*acy, ny = abz*acx-abx*acz, nz = abx*acy-aby*acx;
+        const len = Math.sqrt(nx*nx+ny*ny+nz*nz);
+        if (len > 0) { nx/=len; ny/=len; nz/=len; }
+        allNormals.push(nx,ny,nz, nx,ny,nz, nx,ny,nz);
+        triIdx++;
+      }
+    }
+    faceTriRanges.push([startTri, triIdx]);
+  }
+
+  return {
+    vertices: new Float32Array(allVerts),
+    normals: new Float32Array(allNormals),
+    faceTriRanges,
   };
 }

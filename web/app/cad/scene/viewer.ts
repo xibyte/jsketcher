@@ -5,19 +5,34 @@ export enum ViewMode {
   WIREFRAME = 'WIREFRAME',
   SHADED = 'SHADED',
   SHADED_WITH_EDGES = 'SHADED_WITH_EDGES',
-  MESH_WIREFRAME = 'MESH_WIREFRAME'
+  MESH_WIREFRAME = 'MESH_WIREFRAME',
+  FACE_DEBUG = 'FACE_DEBUG'
+}
+
+const VIEW_MODE_STORAGE_KEY = 'jsketcher.viewMode';
+
+function loadViewMode(): ViewMode {
+  const stored = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+  if (stored && Object.values(ViewMode).includes(stored as ViewMode)) {
+    return stored as ViewMode;
+  }
+  return ViewMode.SHADED_WITH_EDGES;
 }
 
 export default class Viewer {
 
   cameraMode$: StateStream<any>;
-  viewMode$: StateStream<ViewMode> = state(ViewMode.SHADED_WITH_EDGES);
+  viewMode$: StateStream<ViewMode> = state(loadViewMode());
 
   sceneSetup: SceneSetUp;
 
   constructor(container) {
 
     this.cameraMode$ = externalState(() => this.getCameraMode(), mode => this.setCameraMode(mode))
+
+    this.viewMode$.attach(mode => {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    });
 
     this.sceneSetup = new SceneSetUp(container);
   }

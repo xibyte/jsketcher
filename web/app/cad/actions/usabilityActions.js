@@ -238,4 +238,15 @@ export default [
       ctx.services.viewer.requestRender();
     }
   },
+  {
+    id: 'ViewMode_FACE_DEBUG_ON',
+    appearance: {
+      label: 'face debug',
+      icon: BiNetworkChart,
+    },
+    invoke: ctx => {
+      ctx.services.viewer.viewMode$.next(ViewMode.FACE_DEBUG);
+      ctx.services.viewer.requestRender();
+    }
+  },
 ]

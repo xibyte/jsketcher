@@ -10,9 +10,77 @@ import BrepCurve from "geom/curves/brepCurve";
 import {Plane} from "geom/impl/plane";
 import {enclose} from "brep/operations/brep-enclose";
 import {Shell} from "brep/topo/shell";
-import {buildExtrusionMesh} from "brep/operations/mesh/extrudeMesh";
+import {buildExtrusionMesh, ExtrudedMeshResult} from "brep/operations/mesh/extrudeMesh";
+import {ShellMesh} from "cad/model/mshell";
 import icon from "./EXTRUDE.svg";
 import cutIcon from "./CUT.svg";
+
+/**
+ * Build a shared ShellMesh from extruded mesh result.
+ * All triangles go into one flat buffer. Each MFace gets a range [start, end).
+ *
+ * MFace ordering in MBrepShell: [wall0..wallN-1, base, lid]
+ * Mesh faceID ordering: 0=bottom, 1=top, 2..n+1=walls
+ */
+function buildShellMesh(extResult: ExtrudedMeshResult, mFaceCount: number, nBrepWalls: number): ShellMesh {
+  const allVerts: number[] = [];
+  const allNormals: number[] = [];
+
+  // We'll collect triangles grouped by MFace index
+  // MFace order: [wall0..wallN-1, base, lid]
+  const faceTriBuckets: number[][][] = Array.from({length: mFaceCount}, () => []);
+
+  const baseIdx = mFaceCount - 2; // MFace index for base
+  const lidIdx = mFaceCount - 1;  // MFace index for lid
+
+  // Bottom cap tris → base MFace
+  for (const [verts] of extResult.bottomTess) {
+    faceTriBuckets[baseIdx].push(verts);
+  }
+
+  // Top cap tris → lid MFace
+  for (const [verts] of extResult.topTess) {
+    faceTriBuckets[lidIdx].push(verts);
+  }
+
+  // Wall tris → distribute across BRep wall MFaces
+  const nMeshWalls = extResult.wallTess.length;
+  for (let si = 0; si < nMeshWalls; si++) {
+    const wi = Math.min(nBrepWalls - 1, Math.floor(si * nBrepWalls / nMeshWalls));
+    for (const [verts] of extResult.wallTess[si]) {
+      faceTriBuckets[wi].push(verts);
+    }
+  }
+
+  // Flatten into one buffer with per-face ranges
+  const faceTriRanges: [number, number][] = [];
+  let triIdx = 0;
+
+  for (let fi = 0; fi < mFaceCount; fi++) {
+    const startTri = triIdx;
+    for (const verts of faceTriBuckets[fi]) {
+      for (const v of verts) {
+        allVerts.push(v[0], v[1], v[2]);
+      }
+      // Compute flat normal
+      const a = verts[0], b = verts[1], c = verts[2];
+      const abx = b[0]-a[0], aby = b[1]-a[1], abz = b[2]-a[2];
+      const acx = c[0]-a[0], acy = c[1]-a[1], acz = c[2]-a[2];
+      let nx = aby*acz - abz*acy, ny = abz*acx - abx*acz, nz = abx*acy - aby*acx;
+      const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
+      if (len > 0) { nx /= len; ny /= len; nz /= len; }
+      allNormals.push(nx, ny, nz, nx, ny, nz, nx, ny, nz);
+      triIdx++;
+    }
+    faceTriRanges.push([startTri, triIdx]);
+  }
+
+  return {
+    vertices: new Float32Array(allVerts),
+    normals: new Float32Array(allNormals),
+    faceTriRanges,
+  };
+}
 
 
 interface ExtrudeParams {
@@ -20,7 +88,11 @@ interface ExtrudeParams {
   doubleSided:boolean,
   face: MFace;
   direction?: UnitVector,
-  boolean: BooleanDefinition
+  boolean: BooleanDefinition,
+  meshTolerance?: number,
+  meshSimplifyTolerance?: number,
+  vertexSnapTolerance?: number,
+  edgeGroupingTolerance?: number,
 }
 
 function extrudeShellFromFace(face: MBrepFace, extrusionVector: Vector): Shell {
@@ -93,8 +165,40 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
 
     if (!sketch) {
       if (face instanceof MBrepFace) {
+        // Get contour points from the BRep face's outer loop
+        const brepFace = face.brepFace;
+        const contourPoints: Vector[] = [];
+        for (const he of brepFace.outerLoop.halfEdges) {
+          const tess = he.edge.curve.tessellate();
+          if (he.inverted) tess.reverse();
+          tess.pop(); // remove last (= next edge's first)
+          for (const p of tess) contourPoints.push(p);
+        }
+
+        const faceNormal = brepFace.surface.normalInMiddle()._normalize();
+        const extResult = buildExtrusionMesh(contourPoints, extrusionVector, faceNormal);
+
         const shell = extrudeShellFromFace(face, extrusionVector);
+
+        const nFaces = shell.faces.length;
+        const nBrepWalls = nFaces - 2;
+        const baseFace = shell.faces[nFaces - 2];
+        const lidFace = shell.faces[nFaces - 1];
+        const nMeshWalls = contourPoints.length;
+
+        const originMap: any = {};
+        originMap[0] = {brepFace: baseFace, surface: baseFace.surface};
+        originMap[1] = {brepFace: lidFace, surface: lidFace.surface};
+        for (let si = 0; si < nMeshWalls; si++) {
+          const wi = Math.min(nBrepWalls - 1, Math.floor(si * nBrepWalls / nMeshWalls));
+          originMap[2 + si] = {brepFace: shell.faces[wi], surface: shell.faces[wi].surface};
+        }
+
+        shell.data.__meshWithOrigins = {meshData: extResult.meshData, originMap};
+
         const toolShell = new MBrepShell(shell);
+        toolShell.mesh = buildShellMesh(extResult, toolShell.faces.length, nBrepWalls);
+
         return ctx.nativeService.applyBooleanModifier([toolShell], params.boolean, face, []);
       } else {
         throw "can't extrude an empty surface";
@@ -114,32 +218,52 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       const contourPoints = contour.tessellateInCoordinateSystem(csys);
       const extResult = buildExtrusionMesh(contourPoints, extrusionVector, csys.z);
 
-      // Build BRep shell for topology (faces, edges, vertices)
+      // Build BRep shell for topology
       const curves3D = contour.transferInCoordinateSystem(csys);
       const shell = extrudeShellFromSketch(curves3D, extrusionVector, csys);
 
-      // Attach clean mesh data for boolean operations
-      (shell as any).__meshData = extResult.meshData;
-
-      // Attach per-face tessellation so rendering uses the clean mesh,
-      // not verb's NURBS tessellation.
-      // enclose() creates faces in order: [walls..., base, lid]
-      const nWalls = contourPoints.length;
       const nFaces = shell.faces.length;
-      // Base and lid are the last two faces
+      const nBrepWalls = nFaces - 2;
       const baseFace = shell.faces[nFaces - 2];
       const lidFace = shell.faces[nFaces - 1];
-      baseFace.data.tessellation = {data: extResult.bottomTess};
-      lidFace.data.tessellation = {data: extResult.topTess};
-      // Wall faces
-      for (let i = 0; i < nWalls && i < nFaces - 2; i++) {
-        shell.faces[i].data.tessellation = {data: extResult.wallTess[i]};
+      const nMeshWalls = contourPoints.length;
+
+      // Build origin map: meshFaceID → BRep face
+      const originMap: any = {};
+      originMap[0] = {brepFace: baseFace, surface: baseFace.surface};
+      originMap[1] = {brepFace: lidFace, surface: lidFace.surface};
+      for (let si = 0; si < nMeshWalls; si++) {
+        const wi = Math.min(nBrepWalls - 1, Math.floor(si * nBrepWalls / nMeshWalls));
+        originMap[2 + si] = {brepFace: shell.faces[wi], surface: shell.faces[wi].surface};
       }
 
-      return new MBrepShell(shell);
+      // Store mesh data on Shell.data so it survives model rebuilds
+      // (Shell.data is preserved through clone and MBrepShell reconstruction)
+      shell.data.__meshWithOrigins = {
+        meshData: extResult.meshData,
+        originMap,
+      };
+
+      const mShell = new MBrepShell(shell);
+
+      // Build shared mesh buffer on the MShell
+      mShell.mesh = buildShellMesh(extResult, mShell.faces.length, nBrepWalls);
+
+      return mShell;
     });
 
-    return ctx.nativeService.applyBooleanModifier(tools, params.boolean, face, [face]);
+    // Attach tolerances to the boolean definition for the boolean pipeline
+    const boolWithTolerances = params.boolean ? {
+      ...params.boolean,
+      tolerances: {
+        meshTolerance: parseFloat(params.meshTolerance as any) || 0,
+        meshSimplifyTolerance: parseFloat(params.meshSimplifyTolerance as any) || 0,
+        vertexSnapTolerance: parseFloat(params.vertexSnapTolerance as any) || 1e-4,
+        edgeGroupingTolerance: parseFloat(params.edgeGroupingTolerance as any) || 1e-4,
+      }
+    } : params.boolean;
+
+    return ctx.nativeService.applyBooleanModifier(tools, boolWithTolerances, face, [face]);
 
   },
 
@@ -178,7 +302,39 @@ export const ExtrudeOperation: OperationDescriptor<ExtrudeParams> = {
       name: 'boolean',
       label: 'boolean',
       optional: true,
-    }
+    },
+    {
+      type: 'number',
+      name: 'meshTolerance',
+      label: 'Mesh Tolerance',
+      defaultValue: '',
+      placeholder: '0',
+      optional: true,
+    },
+    {
+      type: 'number',
+      name: 'meshSimplifyTolerance',
+      label: 'Simplify Tolerance',
+      defaultValue: '',
+      placeholder: '0',
+      optional: true,
+    },
+    {
+      type: 'number',
+      name: 'vertexSnapTolerance',
+      label: 'Vertex Snap',
+      defaultValue: '',
+      placeholder: '0.0001',
+      optional: true,
+    },
+    {
+      type: 'number',
+      name: 'edgeGroupingTolerance',
+      label: 'Edge Grouping',
+      defaultValue: '',
+      placeholder: '0.0001',
+      optional: true,
+    },
 
   ],
 

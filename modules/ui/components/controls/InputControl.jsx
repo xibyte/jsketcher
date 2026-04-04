@@ -2,8 +2,8 @@ import React, {useEffect, useRef} from 'react';
 import PropTypes from 'prop-types';
 
 export default function InputControl(inprops) {
-  
-    const {type, inputRef, width, onWheel, ...props} = inprops;
+
+    const {type, inputRef, width, onWheel, placeholder, ...props} = inprops;
 
     const style = width&&{
       width
@@ -18,7 +18,7 @@ export default function InputControl(inprops) {
     }, [divRef.current])
 
     return <div className={type||'text'} ref={divRef}>
-      <input type='text' ref={inputRef} {...props} spellCheck='false' style={style} onWheel={onWheel}/>
+      <input type='text' ref={inputRef} {...props} placeholder={placeholder} spellCheck='false' style={style} onWheel={onWheel}/>
     </div>;
 
 }

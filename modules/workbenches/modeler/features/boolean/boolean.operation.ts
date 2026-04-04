@@ -11,6 +11,10 @@ interface BooleanParams {
   tools: [];
   keepTools:boolean;
   boolean: BooleanDefinition;
+  meshTolerance?: number;
+  meshSimplifyTolerance?: number;
+  vertexSnapTolerance?: number;
+  edgeGroupingTolerance?: number;
 }
 
 export const BooleanOperation: OperationDescriptor<BooleanParams> = {
@@ -48,6 +52,38 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
       label: 'Targets',
       optional: true,
       defaultValue: "UNION",
+    },
+    {
+      type: 'number',
+      name: 'meshTolerance',
+      label: 'Mesh Tolerance',
+      defaultValue: '',
+      placeholder: '0',
+      optional: true,
+    },
+    {
+      type: 'number',
+      name: 'meshSimplifyTolerance',
+      label: 'Simplify Tolerance',
+      defaultValue: '',
+      placeholder: '0',
+      optional: true,
+    },
+    {
+      type: 'number',
+      name: 'vertexSnapTolerance',
+      label: 'Vertex Snap',
+      defaultValue: '',
+      placeholder: '0.0001',
+      optional: true,
+    },
+    {
+      type: 'number',
+      name: 'edgeGroupingTolerance',
+      label: 'Edge Grouping',
+      defaultValue: '',
+      placeholder: '0.0001',
+      optional: true,
     },
   ],
 
