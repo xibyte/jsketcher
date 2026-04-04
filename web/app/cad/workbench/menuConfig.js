@@ -33,7 +33,7 @@ export default [
     label: 'mode',
     icon: GiCube,
     info: 'view/render mode',
-    actions: ['ViewMode_WIREFRAME_ON', 'ViewMode_SHADED_ON', 'ViewMode_SHADED_WITH_EDGES_ON', 'ViewMode_MESH_WIREFRAME_ON']
+    actions: ['ViewMode_WIREFRAME_ON', 'ViewMode_SHADED_ON', 'ViewMode_SHADED_WITH_EDGES_ON', 'ViewMode_MESH_WIREFRAME_ON', 'ViewMode_FACE_DEBUG_ON']
   },
   {
     id: 'boolean',

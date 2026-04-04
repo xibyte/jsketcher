@@ -4,7 +4,7 @@ import InputControl from './InputControl';
 
 export default function NumberControl(props) {
 
-  const {onChange, onFocus, value, width, baseStep, round, min, max, accelerator, cycle} = props;
+  const {onChange, onFocus, value, width, baseStep, round, min, max, accelerator, cycle, placeholder} = props;
 
   const onChangeFromTarget = e => {
     onChange(e.target.value);
@@ -33,6 +33,7 @@ export default function NumberControl(props) {
                        onChange={onChangeFromTarget}
                        onFocus={onFocus}
                        width={width}
+                       placeholder={placeholder}
                        onWheel={onWheel}/>
 }
 
