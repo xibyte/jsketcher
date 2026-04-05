@@ -306,40 +306,241 @@ export function subdivideN(mesh: SubDMesh, levels: number): SubDMesh {
 }
 
 /**
- * Tessellate a SubD mesh to triangles for rendering.
+ * Compute the Catmull-Clark limit surface position at a vertex.
  *
- * Each quad face is treated as a bilinear patch and sampled at a configurable
- * resolution. Normals are computed per-sample from the actual surface.
- * Non-quad faces use simple fan triangulation with averaged normals.
+ * For a regular interior vertex with valence n:
+ *   P_limit = (n² * P + 4 * Σ(edge_neighbors) + Σ(face_centroids)) / (n * (n + 5))
  *
- * @param tessPerFace Number of subdivisions per face edge for tessellation (default 1 = no extra sampling)
+ * For boundary vertices: standard boundary limit formula.
+ * For creased vertices: position stays at subdivision position (already sharp).
  */
-export function tessellateSubD(mesh: SubDMesh, tessPerFace: number = 1): {
+function computeLimitPosition(mesh: SubDMesh, vi: number): Vec3 {
+  const p = mesh.vertices[vi].position;
+  const heIndices = mesh.vertexHalfEdges(vi);
+
+  // Check if boundary or creased
+  let isBoundary = false;
+  let hasCrease = false;
+  for (const hi of heIndices) {
+    if (mesh.halfEdges[hi].twin === -1) isBoundary = true;
+    if (mesh.halfEdges[hi].crease > 0.01) hasCrease = true;
+  }
+
+  if (isBoundary || hasCrease) {
+    return p; // Sharp or boundary: keep subdivision position
+  }
+
+  // Collect adjacent face centroids and edge neighbor positions
+  const adjFaces = new Set<number>();
+  const edgeNeighbors: Vec3[] = [];
+
+  for (const hi of heIndices) {
+    const he = mesh.halfEdges[hi];
+    if (he.face >= 0) adjFaces.add(he.face);
+    edgeNeighbors.push(mesh.vertices[he.vertex].position);
+  }
+
+  const n = edgeNeighbors.length; // valence
+  if (n < 3) return p;
+
+  // Face centroids
+  let faceCentroidSum: Vec3 = [0, 0, 0];
+  for (const fi of adjFaces) {
+    const fverts = mesh.faceVertices(fi);
+    let cx = 0, cy = 0, cz = 0;
+    for (const fvi of fverts) {
+      const fp = mesh.vertices[fvi].position;
+      cx += fp[0]; cy += fp[1]; cz += fp[2];
+    }
+    const fn = fverts.length;
+    faceCentroidSum = vecAdd(faceCentroidSum, [cx / fn, cy / fn, cz / fn]);
+  }
+
+  // Edge neighbor sum
+  let edgeSum: Vec3 = [0, 0, 0];
+  for (const ep of edgeNeighbors) {
+    edgeSum = vecAdd(edgeSum, ep);
+  }
+
+  // Limit formula: (n² * P + 4 * edgeSum + faceCentroidSum) / (n * (n + 5))
+  const denom = n * (n + 5);
+  const limitPos: Vec3 = [
+    (n * n * p[0] + 4 * edgeSum[0] + faceCentroidSum[0]) / denom,
+    (n * n * p[1] + 4 * edgeSum[1] + faceCentroidSum[1]) / denom,
+    (n * n * p[2] + 4 * edgeSum[2] + faceCentroidSum[2]) / denom,
+  ];
+
+  return limitPos;
+}
+
+/**
+ * Compute limit surface normal at a vertex using limit tangent vectors.
+ *
+ * Uses the Catmull-Clark limit tangent formula based on the
+ * eigenanalysis of the subdivision matrix.
+ */
+function computeLimitNormal(mesh: SubDMesh, vi: number): Vec3 {
+  const heIndices = mesh.vertexHalfEdges(vi);
+
+  let isBoundary = false;
+  let hasCrease = false;
+  for (const hi of heIndices) {
+    if (mesh.halfEdges[hi].twin === -1) isBoundary = true;
+    if (mesh.halfEdges[hi].crease > 0.01) hasCrease = true;
+  }
+
+  // For boundary/crease vertices, use face normal averaging
+  if (isBoundary || hasCrease) {
+    return computeFaceAveragedNormal(mesh, vi);
+  }
+
+  // Collect ring: alternating edge-neighbors and face-centroids around the vertex
+  // Order matters for the tangent formula
+  const ring = getOrderedRing(mesh, vi);
+  const n = ring.edgeNeighbors.length; // valence
+
+  if (n < 3) return computeFaceAveragedNormal(mesh, vi);
+
+  // Limit tangent formulas (Loop's eigenanalysis for Catmull-Clark):
+  // t1 = Σ cos(2πk/n) * (e_k + f_k)    (first tangent)
+  // t2 = Σ sin(2πk/n) * (e_k + f_k)    (second tangent)
+  // where e_k = edge neighbor k, f_k = face centroid k
+  let t1: Vec3 = [0, 0, 0];
+  let t2: Vec3 = [0, 0, 0];
+
+  for (let k = 0; k < n; k++) {
+    const angle = (2 * Math.PI * k) / n;
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    const e = ring.edgeNeighbors[k];
+    const f = ring.faceCentroids[k];
+    const ef: Vec3 = vecAdd(e, f);
+
+    t1 = vecAdd(t1, vecScale(ef, cosA));
+    t2 = vecAdd(t2, vecScale(ef, sinA));
+  }
+
+  // Normal = t1 × t2
+  const normal: Vec3 = [
+    t1[1] * t2[2] - t1[2] * t2[1],
+    t1[2] * t2[0] - t1[0] * t2[2],
+    t1[0] * t2[1] - t1[1] * t2[0],
+  ];
+  const len = Math.sqrt(normal[0] ** 2 + normal[1] ** 2 + normal[2] ** 2);
+  if (len > 1e-10) {
+    return [normal[0] / len, normal[1] / len, normal[2] / len];
+  }
+
+  return computeFaceAveragedNormal(mesh, vi);
+}
+
+function getOrderedRing(mesh: SubDMesh, vi: number): {
+  edgeNeighbors: Vec3[],
+  faceCentroids: Vec3[]
+} {
+  // Walk around the vertex collecting edge neighbors and face centroids in order
+  const edgeNeighbors: Vec3[] = [];
+  const faceCentroids: Vec3[] = [];
+
+  // Find a starting half-edge from this vertex
+  const allHE = mesh.vertexHalfEdges(vi);
+  if (allHE.length === 0) return {edgeNeighbors, faceCentroids};
+
+  let startHE = allHE[0];
+  const visited = new Set<number>();
+
+  let currentHE = startHE;
+  do {
+    if (visited.has(currentHE)) break;
+    visited.add(currentHE);
+
+    const he = mesh.halfEdges[currentHE];
+    edgeNeighbors.push(mesh.vertices[he.vertex].position);
+
+    // Face centroid
+    if (he.face >= 0) {
+      const fverts = mesh.faceVertices(he.face);
+      let cx = 0, cy = 0, cz = 0;
+      for (const fvi of fverts) {
+        const p = mesh.vertices[fvi].position;
+        cx += p[0]; cy += p[1]; cz += p[2];
+      }
+      faceCentroids.push([cx / fverts.length, cy / fverts.length, cz / fverts.length]);
+    }
+
+    // Move to next half-edge around the vertex:
+    // Go to the next half-edge in the face, then to its twin
+    const nextInFace = mesh.halfEdges[he.next];
+    if (nextInFace && nextInFace.twin >= 0) {
+      currentHE = nextInFace.twin;
+    } else {
+      break; // boundary
+    }
+  } while (currentHE !== startHE);
+
+  // Ensure we have equal counts (pad if needed)
+  while (faceCentroids.length < edgeNeighbors.length) {
+    faceCentroids.push(faceCentroids.length > 0 ? faceCentroids[faceCentroids.length - 1] : [0, 0, 0]);
+  }
+
+  return {edgeNeighbors, faceCentroids};
+}
+
+function computeFaceAveragedNormal(mesh: SubDMesh, vi: number): Vec3 {
+  const heIndices = mesh.vertexHalfEdges(vi);
+  let nx = 0, ny = 0, nz = 0;
+
+  for (const hi of heIndices) {
+    const he = mesh.halfEdges[hi];
+    if (he.face < 0) continue;
+    const fverts = mesh.faceVertices(he.face);
+    // Newell's method
+    for (let i = 0; i < fverts.length; i++) {
+      const curr = mesh.vertices[fverts[i]].position;
+      const next = mesh.vertices[fverts[(i + 1) % fverts.length]].position;
+      nx += (curr[1] - next[1]) * (curr[2] + next[2]);
+      ny += (curr[2] - next[2]) * (curr[0] + next[0]);
+      nz += (curr[0] - next[0]) * (curr[1] + next[1]);
+    }
+  }
+
+  const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+  return len > 0 ? [nx / len, ny / len, nz / len] : [0, 0, 1];
+}
+
+/**
+ * Tessellate a SubD mesh using limit surface positions and normals.
+ * Non-indexed geometry with per-vertex limit normals.
+ */
+export function tessellateSubD(mesh: SubDMesh): {
   vertices: Float32Array,
   normals: Float32Array,
   indices?: Uint32Array,
   faceTriRanges: [number, number][]
 } {
+  // Precompute limit positions and normals for every vertex
+  const limitPositions: Vec3[] = mesh.vertices.map((_, vi) => computeLimitPosition(mesh, vi));
+  const limitNormals: Vec3[] = mesh.vertices.map((_, vi) => computeLimitNormal(mesh, vi));
+
   const positions: number[] = [];
   const normals: number[] = [];
   const faceTriRanges: [number, number][] = [];
   let triIdx = 0;
 
-  // Precompute per-vertex smooth normals (angle-weighted average of adjacent face normals)
-  const vertexNormals = computeVertexNormals(mesh);
-
   for (let fi = 0; fi < mesh.faces.length; fi++) {
     const startTri = triIdx;
     const verts = mesh.faceVertices(fi);
 
-    if (verts.length === 4 && tessPerFace > 1) {
-      triIdx = tessellateQuad(mesh, verts, vertexNormals, tessPerFace, positions, normals, triIdx, fi);
-    } else if (verts.length === 4) {
-      triIdx = emitQuad(mesh, verts, vertexNormals, positions, normals, triIdx, fi);
-    } else {
-      triIdx = emitFan(mesh, verts, vertexNormals, positions, normals, triIdx, fi);
+    // Fan triangulate using limit positions and normals
+    for (let i = 2; i < verts.length; i++) {
+      for (const vi of [verts[0], verts[i - 1], verts[i]]) {
+        const p = limitPositions[vi];
+        const n = limitNormals[vi];
+        positions.push(p[0], p[1], p[2]);
+        normals.push(n[0], n[1], n[2]);
+      }
+      triIdx++;
     }
-
     faceTriRanges.push([startTri, triIdx]);
   }
 
@@ -350,15 +551,8 @@ export function tessellateSubD(mesh: SubDMesh, tessPerFace: number = 1): {
   };
 }
 
-/**
- * Compute per-vertex-per-face normals.
- * Returns a Map: "vertIdx:faceIdx" → normal.
- *
- * For each vertex at each face, the normal is the angle-weighted average
- * of face normals from faces reachable through smooth (non-creased) edges.
- * This creates hard shading breaks at creased edges.
- */
-function computeVertexNormals(mesh: SubDMesh): Vec3[] {
+// Legacy — kept for reference but no longer used by tessellateSubD
+function _computeVertexNormals_legacy(mesh: SubDMesh): Vec3[] {
   // We return a flat array indexed by vertex ID.
   // For vertices at crease boundaries this gives the AVERAGE normal,
   // but we also compute per-face normals for those vertices.
