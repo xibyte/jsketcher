@@ -23,6 +23,9 @@ import {DeleteBodyOperation} from "./features/deleteBody/deleteBody.operation";
 import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defeatureRemoveFace.operation";
 import { WireLineOperation } from "./features/wireLine/wireLine";
 import { MoveBodyOperation } from "./features/moveBody/moveBody.operation"
+import {SubDBoxOperation} from "./features/subdBox/subdBox.operation";
+import {SubDSphereOperation} from "./features/subdSphere/subdSphere.operation";
+import {SubDCylinderOperation} from "./features/subdCylinder/subdCylinder.operation";
 //imports of action type commands
 import {GetInfo} from "./actions/getInfo/getInfo.action";
 import {ExportBREP} from "./actions/exportBREP/exportBREP.action";
@@ -56,6 +59,9 @@ export const ModelerWorkspace: WorkbenchConfig = {
     DefeatureRemoveFaceOperation,
     WireLineOperation,
     MoveBodyOperation,
+    SubDBoxOperation,
+    SubDSphereOperation,
+    SubDCylinderOperation,
 
     GetInfo,
     ExportBREP,
@@ -78,8 +84,10 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
       "HOLE_TOOL", "-", 'GET_INFO', "IMPORT_MODEL", "DELETE_BODY", "-",
-      
-      "WIRE_LINE", 'EXPORT_BREP',
+
+      "WIRE_LINE", 'EXPORT_BREP', "-",
+
+      "SUBD_BOX", "SUBD_SPHERE", "SUBD_CYLINDER",
     ]
   },
   icon: GiCubes

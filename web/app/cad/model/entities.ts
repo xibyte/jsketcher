@@ -7,7 +7,8 @@ export enum EntityKind {
   SKETCH_OBJECT = 'sketchObject',
   DATUM = 'datum',
   DATUM_AXIS = 'datumAxis',
-  LOOP = 'loop'
+  LOOP = 'loop',
+  SUBD = 'subd'
 }
 
 //Backward comp.
@@ -19,4 +20,5 @@ export const SKETCH_OBJECT = EntityKind.SKETCH_OBJECT;
 export const DATUM = EntityKind.DATUM;
 export const DATUM_AXIS = EntityKind.DATUM_AXIS;
 export const LOOP = EntityKind.LOOP;
+export const SUBD = EntityKind.SUBD;
 
