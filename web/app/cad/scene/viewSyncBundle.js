@@ -5,7 +5,9 @@ import {MOpenFaceShell} from '../model/mopenFace';
 import {OpenFaceShellView} from './views/openFaceView';
 import {MShell} from '../model/mshell';
 import {MDatum} from '../model/mdatum';
+import {MSubD} from '../model/msubd';
 import DatumView from './views/datumView';
+import {SubDView} from './views/subdView';
 import {View} from './views/view';
 import {HighlightBundle} from "cad/scene/highlightBundle";
 import {AttributesBundle} from "cad/attributes/attributesBundle";
@@ -61,6 +63,8 @@ function sceneSynchronizer(ctx) {
         let modelView;
         if (model instanceof MOpenFaceShell) {
           modelView = new OpenFaceShellView(ctx, model);
+        } else if (model instanceof MSubD) {
+          modelView = new SubDView(ctx, model);
         } else if (model instanceof MShell) {
           modelView = new ShellView(ctx, model, undefined,);
         } else if (model instanceof MDatum) {

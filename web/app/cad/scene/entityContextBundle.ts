@@ -1,10 +1,10 @@
 import {combine, state, StateStream} from 'lstream';
 
 import {addToListInMap, EMPTY_ARRAY} from 'gems/iterables';
-import {DATUM, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from '../model/entities';
+import {DATUM, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT, SUBD} from '../model/entities';
 import {MObject} from "cad/model/mobject";
 
-export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL];
+export const SELECTABLE_ENTITIES = [FACE, EDGE, SKETCH_OBJECT, DATUM, SHELL, SUBD];
 
 export function defineStreams(ctx) {
   ctx.streams.selection = {};
