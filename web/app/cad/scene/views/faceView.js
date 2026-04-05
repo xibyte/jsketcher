@@ -74,9 +74,13 @@ export class FaceView extends SketchingView {
 
     const shellMesh = face.shell?.mesh;
     const faceIdx = face.shell?.faces?.indexOf(face);
-    if (shellMesh && faceIdx !== undefined && faceIdx >= 0 && shellMesh.faceTriRanges[faceIdx]) {
-      geom = buildFaceGeomFromShellMesh(shellMesh, faceIdx);
-    } else if (face.brepFace?.data?.tessellation) {
+    if (shellMesh && faceIdx !== undefined && faceIdx >= 0 && shellMesh.faceTriRanges?.[faceIdx]) {
+      const [s, e] = shellMesh.faceTriRanges[faceIdx];
+      if (s < e) {
+        geom = buildFaceGeomFromShellMesh(shellMesh, faceIdx);
+      }
+    }
+    if (!geom && face.brepFace?.data?.tessellation) {
       geom = tessDataToGeom(face.brepFace.data.tessellation.data);
     } else {
       geom = brepFaceToGeom(face.brepFace);
@@ -104,12 +108,16 @@ export class FaceView extends SketchingView {
     this.debugMesh = null;
     this.debugGeometry = null;
     this.debugMaterial = null;
-    if (shellMesh && faceIdx >= 0 && shellMesh.faceTriRanges[faceIdx]) {
-      this.debugGeometry = buildFaceDebugGeomFromShellMesh(shellMesh, faceIdx);
-    } else if (face.brepFace?.data?.tessellation) {
+    if (shellMesh && faceIdx >= 0 && shellMesh.faceTriRanges?.[faceIdx]) {
+      const [ds, de] = shellMesh.faceTriRanges[faceIdx];
+      if (ds < de) {
+        this.debugGeometry = buildFaceDebugGeomFromShellMesh(shellMesh, faceIdx);
+      }
+    }
+    if (!this.debugGeometry && face.brepFace?.data?.tessellation) {
       this.debugGeometry = buildFaceDebugGeom(face.brepFace.data.tessellation.data, face);
     }
-    if (this.debugGeometry) {
+    if (this.debugGeometry && this.debugGeometry.getAttribute('position')?.count > 0) {
       this.debugMaterial = new MeshBasicMaterial({vertexColors: true, side: DoubleSide});
       this.debugMesh = new SketchMesh(this.debugGeometry, this.debugMaterial);
       setAttribute(this.debugMesh, FACE, this);
