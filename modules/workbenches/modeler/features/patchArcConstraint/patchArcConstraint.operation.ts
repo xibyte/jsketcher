@@ -21,14 +21,20 @@ export const PatchArcConstraintOperation: OperationDescriptor<PatchArcConstraint
   paramsInfo: ({radius, angle, mode}) => `(r:${radius} a:${angle}° ${mode})`,
 
   run: (params: PatchArcConstraintParams, ctx: ApplicationContext) => {
-    const target = params.target;
+    // Find the patch cage — use target selection or find any in the scene
+    let target = params.target;
     if (!target || !(target instanceof MPatchCage)) {
-      throw new Error('Select a patch cage object first');
+      // Auto-find the first patch cage in the scene
+      const allModels = ctx.cadRegistry.models || [];
+      target = allModels.find((m: any) => m instanceof MPatchCage);
+    }
+    if (!target || !(target instanceof MPatchCage)) {
+      throw new Error('No patch cage found in the scene');
     }
 
     const cage = target.cage;
-    const patchIdx = 0; // TODO: use selected patch index from view state
-    const side = params.side;
+    const patchIdx = 0; // Uses first patch — TODO: use selected patch from view
+    const side = typeof params.side === 'string' ? parseInt(params.side) : params.side;
     const radius = params.radius;
     const angle = params.angle;
     const mode = params.mode === 'rational' ? 'rational' : 'approximate';
