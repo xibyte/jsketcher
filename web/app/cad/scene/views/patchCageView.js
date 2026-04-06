@@ -8,17 +8,20 @@ import {
   BufferGeometry, BufferAttribute, Mesh, DoubleSide,
   WireframeGeometry, LineSegments, LineBasicMaterial,
   SphereGeometry, MeshBasicMaterial, Vector3, Object3D,
-  Line
+  Line, CatmullRomCurve3, TubeGeometry
 } from 'three';
 import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
-import {vdist} from 'patchCage/vec3Math';
+import {vdist, vlerp} from 'patchCage/vec3Math';
 
 const CP_COLOR = 0xffaa00;       // subcage control point (off-surface)
 const CP_CORNER_COLOR = 0x00aaff; // corner control point (on-surface)
 const CP_HOVER = 0xffdd44;
 const CP_SELECTED = 0xff0000;
 const CAGE_LINE_COLOR = 0xffaa00;
+const EDGE_COLOR = 0x44aaff;
+const EDGE_SELECTED_COLOR = 0x00ff88;
+const EDGE_HOVER_COLOR = 0x88ccff;
 const HANDLE_SIZE = 4;
 
 export class PatchCageView extends View {
@@ -48,7 +51,9 @@ export class PatchCageView extends View {
     this.subcageGroup.visible = false;
     this.rootGroup.add(this.subcageGroup);
     this.subcageHandles = [];
+    this.edgeLines = [];
     this.selectedPatchIdx = -1;
+    this.selectedEdgeIdx = -1;
     this.selectedHandle = null;
 
     // Gizmo
@@ -133,7 +138,23 @@ export class PatchCageView extends View {
       }
     }
 
-    // Second: check if we hit the solid mesh for patch selection
+    // Second: check if we hit an edge tube
+    if (this.subcageGroup.visible && this.edgeLines.length > 0) {
+      const edgeHits = [];
+      for (const tube of this.edgeLines) {
+        tube.raycast(raycaster, edgeHits);
+      }
+      if (edgeHits.length > 0) {
+        edgeHits.sort((a, b) => a.distance - b.distance);
+        const ei = edgeHits[0].object.userData.edgeIdx;
+        if (ei !== undefined) {
+          this.selectEdge(ei);
+          return;
+        }
+      }
+    }
+
+    // Third: check if we hit the solid mesh for patch selection
     const hits = [];
     this.solidMesh.raycast(raycaster, hits);
 
@@ -161,6 +182,7 @@ export class PatchCageView extends View {
 
   selectPatch(idx) {
     this.deselectHandle();
+    this.deselectEdge();
     this.selectedPatchIdx = idx;
     if (idx < 0) {
       this.subcageGroup.visible = false;
@@ -244,6 +266,33 @@ export class PatchCageView extends View {
       g.setAttribute('position', new BufferAttribute(new Float32Array(pts), 3));
       this.subcageGroup.add(new Line(g, lineMat));
     }
+
+    // Boundary edge tubes (clickable, 4 edges: bottom=0, right=1, top=2, left=3)
+    this.edgeLines = [];
+    const edgeVertSets = [
+      [[0,0],[0,1],[0,2],[0,3]],  // bottom: row 0
+      [[0,3],[1,3],[2,3],[3,3]],  // right: col 3
+      [[3,0],[3,1],[3,2],[3,3]],  // top: row 3
+      [[0,0],[1,0],[2,0],[3,0]],  // left: col 0
+    ];
+    for (let ei = 0; ei < 4; ei++) {
+      const evs = edgeVertSets[ei];
+      const curve = new CatmullRomCurve3(
+        evs.map(([r,c]) => { const p = ctrl[r][c].position; return new Vector3(p[0], p[1], p[2]); }),
+        false, 'catmullrom', 0
+      );
+      const tubeGeo = new TubeGeometry(curve, 16, 1.5, 4, false);
+      const tubeMat = new MeshBasicMaterial({
+        color: this.selectedEdgeIdx === ei ? EDGE_SELECTED_COLOR : EDGE_COLOR,
+        depthTest: false, transparent: true, opacity: 0.5
+      });
+      const tubeMesh = new Mesh(tubeGeo, tubeMat);
+      tubeMesh.renderOrder = 1;
+      tubeMesh.userData = {edgeIdx: ei};
+      tubeMesh.__mat = tubeMat;
+      this.subcageGroup.add(tubeMesh);
+      this.edgeLines.push(tubeMesh);
+    }
   }
 
   // ---- Handle selection + gizmo ----
@@ -288,6 +337,7 @@ export class PatchCageView extends View {
 
   selectSubcageHandle(handle) {
     this.deselectHandle();
+    this.deselectEdge();
     this.selectedHandle = handle;
     handle.__mat.color.setHex(CP_SELECTED);
     this.gizmoTarget.position.copy(handle.position);
@@ -306,6 +356,140 @@ export class PatchCageView extends View {
     this.gizmo.detach();
     this.gizmo.visible = false;
     this.gizmo.enabled = false;
+  }
+
+  // ---- Edge selection ----
+
+  selectEdge(edgeIdx) {
+    this.deselectEdge();
+    this.deselectHandle();
+    this.selectedEdgeIdx = edgeIdx;
+    if (this.edgeLines[edgeIdx]) {
+      this.edgeLines[edgeIdx].__mat.color.setHex(EDGE_SELECTED_COLOR);
+      this.edgeLines[edgeIdx].__mat.opacity = 0.8;
+    }
+    this.showEdgeDialog(edgeIdx);
+    this.ctx.viewer.requestRender();
+  }
+
+  deselectEdge() {
+    if (this.selectedEdgeIdx >= 0 && this.edgeLines[this.selectedEdgeIdx]) {
+      this.edgeLines[this.selectedEdgeIdx].__mat.color.setHex(EDGE_COLOR);
+      this.edgeLines[this.selectedEdgeIdx].__mat.opacity = 0.5;
+    }
+    this.selectedEdgeIdx = -1;
+    this.closeEdgeDialog();
+  }
+
+  showEdgeDialog(edgeIdx) {
+    this.closeEdgeDialog();
+    const sideNames = ['Bottom', 'Right', 'Top', 'Left'];
+
+    const patch = this.model.cage.patches[this.selectedPatchIdx];
+    const verts = patch.getEdgeVertices(edgeIdx);
+    const p0 = verts[0].position, p3 = verts[3].position;
+    const chordLen = vdist(p0, p3);
+    const round = (v) => Math.round(v * 1e4) / 1e4;
+
+    // Check if this edge already has an arc constraint
+    const cage = this.model.cage;
+    const existing = cage.arcConstraints.find(c =>
+      c.patchSide && c.patchSide.patchIdx === this.selectedPatchIdx && c.patchSide.side === edgeIdx
+    );
+
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position:fixed;right:10px;bottom:10px;background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:8px;width:340px;font-family:sans-serif;font-size:12px;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:bold;">${sideNames[edgeIdx]} Edge</span>
+        <button id="edge-close" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;padding:0 4px;">&times;</button>
+      </div>
+      <div style="margin-bottom:8px;font-size:11px;color:#888;">
+        Chord length: ${round(chordLen)}
+        ${existing ? ' | Arc: ' + round(existing.angle) + '° r=' + round(existing.radius) + ' (' + existing.mode + ')' : ''}
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button id="edge-arc90" style="flex:1;padding:6px;background:#353;color:#eee;border:none;border-radius:4px;cursor:pointer;">Arc 90°</button>
+        ${existing ? '<button id="edge-remove-arc" style="flex:1;padding:6px;background:#533;color:#eee;border:none;border-radius:4px;cursor:pointer;">Remove Arc</button>' : ''}
+      </div>
+    `;
+
+    document.body.appendChild(panel);
+    this._edgeDialog = panel;
+
+    panel.querySelector('#edge-close').onclick = () => this.deselectEdge();
+
+    panel.querySelector('#edge-arc90').onclick = () => {
+      const patchIdx = this.selectedPatchIdx;
+      const side = edgeIdx;
+      const ptch = this.model.cage.patches[patchIdx];
+      const ev = ptch.getEdgeVertices(side);
+
+      // Radius for 90° arc from chord: chord = r√2, so r = chord/√2
+      const chord = vdist(ev[0].position, ev[3].position);
+      const radius = chord / Math.SQRT2;
+
+      // Surface normal at edge midpoint for arc plane
+      let u = 0.5, v = 0.5;
+      if (side === 0) v = 0;
+      else if (side === 1) u = 1;
+      else if (side === 2) v = 1;
+      else if (side === 3) u = 0;
+      const planeNormal = ptch.normal(u, v);
+
+      // Remove existing constraint on this edge
+      cage.arcConstraints = cage.arcConstraints.filter(c => {
+        if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
+          if (c.mode === 'rational') ptch.rational = false;
+          return false;
+        }
+        return true;
+      });
+
+      cage.constrainEdgeToArc(patchIdx, side, radius, 90, planeNormal, 'rational');
+      this.model.recompute();
+      this.rebuildAll();
+      this.persistCageState();
+      // Re-show dialog with updated info
+      this.showEdgeDialog(edgeIdx);
+    };
+
+    const removeBtn = panel.querySelector('#edge-remove-arc');
+    if (removeBtn) {
+      removeBtn.onclick = () => {
+        cage.arcConstraints = cage.arcConstraints.filter(c => {
+          if (c.patchSide && c.patchSide.patchIdx === this.selectedPatchIdx && c.patchSide.side === edgeIdx) {
+            if (c.mode === 'rational') {
+              this.model.cage.patches[c.patchSide.patchIdx].rational = false;
+            }
+            // Reset interior control points to linear interpolation
+            const ev = this.model.cage.patches[this.selectedPatchIdx].getEdgeVertices(edgeIdx);
+            const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
+            const lp2 = vlerp(ev[0].position, ev[3].position, 2/3);
+            ev[1].set(lp1[0], lp1[1], lp1[2]);
+            ev[2].set(lp2[0], lp2[1], lp2[2]);
+            return false;
+          }
+          return true;
+        });
+        // Reset weights on this edge
+        this.model.cage.patches[this.selectedPatchIdx].weights.forEach(row => {
+          for (let i = 0; i < row.length; i++) row[i] = 1;
+        });
+        this.model.cage.patches[this.selectedPatchIdx].rational = false;
+        this.model.recompute();
+        this.rebuildAll();
+        this.persistCageState();
+        this.showEdgeDialog(edgeIdx);
+      };
+    }
+  }
+
+  closeEdgeDialog() {
+    if (this._edgeDialog) {
+      document.body.removeChild(this._edgeDialog);
+      this._edgeDialog = null;
+    }
   }
 
   // ---- Rebuild ----
@@ -611,6 +795,7 @@ export class PatchCageView extends View {
     }
     this.closePropsDialog();
     this.closeArcDialog();
+    this.closeEdgeDialog();
     this.geometry.dispose(); this.material.dispose();
     this.wireframeMaterial.dispose(); this.wireframeGeometry.dispose();
     this.clearGroup(this.subcageGroup);
