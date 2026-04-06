@@ -8,7 +8,7 @@ export function resolveIcon(iconDef: IconDeclaration | IconType) {
     if (iconDef.iconType || iconDef.iconSet) {
         return (props) => <DeclaredIcon {...iconDef} {...props}/>
     } else {
-        if (!iconDef || typeof(iconDef) !== 'object') {
+        if (!iconDef || (typeof(iconDef) !== 'object' && typeof(iconDef) !== 'function')) {
             return size => <AiOutlineQuestion size={getSizeInPx(size)}/>;
         }        
         return iconDef;
