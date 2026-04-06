@@ -64,28 +64,16 @@ export function createSubDSphere(radius: number): SubDMesh {
  * @param bottomCrease Crease weight for bottom rim edges
  */
 /**
- * Cylinder SubD result: the SubD mesh is just the open wall tube.
- * Caps are flat geometry added separately (not subdivided).
+ * Create a vanilla SubD cylinder. Everything participates in subdivision —
+ * walls and caps are one continuous mesh. No hacks, no separate geometry.
  */
-export interface SubDCylinderResult {
-  mesh: SubDMesh;
-  caps: {
-    bottomVerts: [number, number, number][]; // ring vertices for bottom cap
-    topVerts: [number, number, number][];    // ring vertices for top cap
-    bottomZ: number;
-    topZ: number;
-  };
-}
-
 export function createSubDCylinder(
   radius: number, height: number, segments: number = 8,
   topCrease: number = 0.5, bottomCrease: number = 0.5
-): SubDCylinderResult {
+): SubDMesh {
   segments = Math.max(4, segments);
   const mesh = new SubDMesh();
   const hz = height / 2;
-
-  // Only wall quads in the SubD mesh — caps are separate flat geometry.
 
   // Bottom ring: 0..segments-1
   for (let i = 0; i < segments; i++) {
@@ -104,6 +92,16 @@ export function createSubDCylinder(
     mesh.addFace([i, j, j + segments, i + segments]);
   }
 
+  // Bottom cap as single n-gon
+  const bottomVerts: number[] = [];
+  for (let i = segments - 1; i >= 0; i--) bottomVerts.push(i);
+  mesh.addFace(bottomVerts);
+
+  // Top cap as single n-gon
+  const topVerts: number[] = [];
+  for (let i = 0; i < segments; i++) topVerts.push(i + segments);
+  mesh.addFace(topVerts);
+
   mesh.linkTwins();
 
   // Crease on rim edges
@@ -113,16 +111,5 @@ export function createSubDCylinder(
     mesh.setEdgeCrease(i + segments, j + segments, topCrease);
   }
 
-  // Collect rim vertex positions for flat cap generation
-  const bottomVerts: [number, number, number][] = [];
-  const topVerts: [number, number, number][] = [];
-  for (let i = 0; i < segments; i++) {
-    bottomVerts.push([...mesh.vertices[i].position] as [number, number, number]);
-    topVerts.push([...mesh.vertices[i + segments].position] as [number, number, number]);
-  }
-
-  return {
-    mesh,
-    caps: {bottomVerts, topVerts, bottomZ: -hz, topZ: hz}
-  };
+  return mesh;
 }

@@ -24,11 +24,11 @@ export const SubDCylinderOperation: OperationDescriptor<SubDCylinderParams> = {
   run: (params: SubDCylinderParams, ctx: ApplicationContext) => {
     const topCreaseInternal = (params.topCrease / 100) * 10;
     const bottomCreaseInternal = (params.bottomCrease / 100) * 10;
-    const result = createSubDCylinder(
+    const controlMesh = createSubDCylinder(
       params.radius, params.height, params.segments,
       topCreaseInternal, bottomCreaseInternal
     );
-    const mSubD = new MSubD(result.mesh, params.subdivisions, result.caps);
+    const mSubD = new MSubD(controlMesh, params.subdivisions);
     return {
       consumed: [],
       created: [mSubD],
