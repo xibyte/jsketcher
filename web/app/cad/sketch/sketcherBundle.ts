@@ -153,13 +153,7 @@ export function activate(ctx) {
     }
     inPlaceEditor.enter(face);
   }
-  
-  function sketchFace2D(face) {
-    updateSketchBoundaries(face);
-    const sketchURL = ctx.projectService.getSketchURL(face.id);
-    ctx.appTabsService.show(face.id, 'Sketch ' + face.id, 'sketcher.html#' + sketchURL);
-  }
-  
+
   function reassignSketch(fromId, toId) {
     const sketchData = ctx.sketchStorageService.getSketchData(fromId);
     if (!sketchData) {
@@ -188,7 +182,7 @@ export function activate(ctx) {
 
 
   services.sketcher = {
-    sketchFace, sketchFace2D, updateAllSketches, inPlaceEditor, reassignSketch,
+    sketchFace, updateAllSketches, inPlaceEditor, reassignSketch,
     exportFaceToDXF,
     reassignSketchMode: initReassignSketchMode(ctx)
   };

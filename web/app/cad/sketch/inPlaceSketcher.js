@@ -1,10 +1,11 @@
 import {DelegatingPanTool} from 'sketcher/tools/pan';
 import {Matrix4} from 'three/src/math/Matrix4';
+import {Vector3} from 'three/src/math/Vector3';
 import {CAMERA_MODE} from '../scene/viewer';
 import DPR from 'dpr';
 import {createEssentialAppContext} from "sketcher/sketcherContext";
 import {ORIGIN} from "math/vector";
-import {lookAtFace} from "cad/actions/usabilityActions";
+import {fitSceneToCamera, fitSceneToCameraAnimated, fitFaceToOrthoCamera, animateSketchEntry} from "cad/actions/usabilityActions";
 import {Styles} from "sketcher/styles";
 import {createFunctionList} from "gems/func";
 import {View} from "cad/scene/views/view";
@@ -31,23 +32,29 @@ export class InPlaceSketcher {
     const viewer3d = this.ctx.services.viewer;
     this.face = face;
     this.face.ext.view.sketchGroup.visible = false;
+
+    // Capture perspective camera state before switching modes (for rotation animation)
+    const pCam = viewer3d.sceneSetup.pCamera;
+    const fromCamPos = pCam.position.clone();
+    const fromCamTarget = viewer3d.sceneSetup.trackballControls.target.clone();
+    const fromCamUp = pCam.up.clone();
+
     viewer3d.setCameraMode(CAMERA_MODE.ORTHOGRAPHIC);
-    lookAtFace(this.ctx.viewer, face);
+    fitFaceToOrthoCamera(viewer3d, face);
     viewer3d.render(); // updates camera projection matrix
-    
+
     const container = viewer3d.sceneSetup.container;
     const canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
-    canvas.style.left = 0;
-    canvas.style.top = 0;
-    canvas.style.right = 0;
-    canvas.style.bottom = 0;
+    canvas.style.left = '0';
+    canvas.style.top = '0';
+    canvas.style.right = '0';
+    canvas.style.bottom = '0';
 
     container.appendChild(canvas);
     this.sketcherAppContext = createEssentialAppContext(canvas);
     this.viewer.parametricManager.externalConstantResolver = this.ctx.expressionService.evaluateExpression;
 
-    this.syncWithCamera();
     this.viewer.toolManager.setDefaultTool(new DelegatingPanTool(this.viewer, viewer3d.sceneSetup.renderer.domElement));
     this.disposers = createFunctionList();
 
@@ -65,8 +72,14 @@ export class InPlaceSketcher {
     this.pickControlToken = this.ctx.pickControlService.takePickControl(this.sketcherPickControl);
 
     this.disposers.add(
-      this.ctx.viewer.sceneSetup.viewportSizeUpdate$.attach(this.onCameraChange)
+      this.ctx.viewer.sceneSetup.viewportSizeUpdate$.attach(this.onViewportSizeChange)
     );
+
+    // Force initial sync after all setup is complete, ensuring canvas dimensions
+    // and camera matrices are current (mirrors what window resize does)
+    this.viewer.onWindowResize();
+    this.syncWithCamera();
+    animateSketchEntry(viewer3d, face, fromCamPos, fromCamTarget, fromCamUp);
   }
 
   get sketchStorageKey() {
@@ -74,8 +87,16 @@ export class InPlaceSketcher {
   }
 
   exit() {
+    const exitFace = this.face; // save before clearing
     if (this.face.ext.view) {
-      this.face.ext.view.sketchGroup.visible = true;
+      try {
+        const s = JSON.parse(localStorage.getItem('ForgeCAD.settings') || '{}');
+        const hiddenSketches = s.hiddenSketches || [];
+        const userHidden = hiddenSketches.includes(this.face.id);
+        this.face.ext.view.sketchGroup.visible = !userHidden;
+      } catch(e) {
+        this.face.ext.view.sketchGroup.visible = true;
+      }
     }
     const viewer3d = this.ctx.services.viewer;
     this.face = null;
@@ -87,6 +108,12 @@ export class InPlaceSketcher {
     this.ctx.workbenchService.switchToDefaultWorkbench();
     this.disposers.call();
     this.ctx.pickControlService.releasePickControl(this.pickControlToken);
+    viewer3d.setCameraMode(CAMERA_MODE.PERSPECTIVE);
+    const cz = exitFace.csys.z;
+    const cy = exitFace.csys.y;
+    const faceNormal = new Vector3(cz.x, cz.y, cz.z);
+    const faceUp = new Vector3(cy.x, cy.y, cy.z);
+    fitSceneToCamera(viewer3d, this.ctx.services.cadScene.workGroup, faceNormal, faceUp);
     viewer3d.requestRender();
   }
 
@@ -95,10 +122,17 @@ export class InPlaceSketcher {
     this.viewer.refresh();
   };
 
+  onViewportSizeChange = () => {
+    this.viewer.onWindowResize();
+    this.syncWithCamera();
+  };
+
   syncWithCamera() {
     const face = this.face;
     const sceneSetup = this.ctx.services.viewer.sceneSetup;
-    
+
+    sceneSetup.oCamera.lookAt(sceneSetup.trackballControls.target);
+    sceneSetup.oCamera.updateMatrixWorld(true);
     _projScreenMatrix.multiplyMatrices( sceneSetup.oCamera.projectionMatrix,
       sceneSetup.oCamera.matrixWorldInverse );
 

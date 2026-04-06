@@ -1,89 +1,218 @@
-JSketcher
-===========
-![JSketcher Logo](./web/img/JSketcher-logo.svg)
+# ArcCAD
 
-JSketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
+> **Beginner-friendly parametric CAD in your browser.** A fork of [jsketcher](https://github.com/xibyte/jsketcher) with enhanced UI/UX, modern tools, and streamlined workflow.
 
+![License](https://img.shields.io/badge/license-Custom-blue.svg)
+![Tech](https://img.shields.io/badge/React-16.13-61dafb.svg)
+![Tech](https://img.shields.io/badge/Three.js-0.143-black.svg)
 
-<a href='https://www.youtube.com/watch?v=Vk3TTp8hNxQ&list=PLeoCiKHizvH8PZEyFvThHzVlnTF5XaL-R'> 
-  <img src='../../wiki/img/sample2d.png' width='400px'>
-  <img src='../../wiki/img/sample3d.png' width='400px'> 
-</a>
+<table>
+  <tr>
+    <td><img src="screenshots/1.png" width="250"></td>
+    <td><img src="screenshots/2.png" width="250"></td>
+    <td><img src="screenshots/3.png" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/4.png" width="250"></td>
+    <td><img src="screenshots/5.png" width="250"></td>
+    <td><img src="screenshots/6.png" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/7.png" width="250"></td>
+    <td><img src="screenshots/8.png" width="250"></td>
+    <td><img src="screenshots/9.png" width="250"></td>
+  </tr>
+</table>
 
-[YouTube Tutorial Video](https://www.youtube.com/watch?v=Vk3TTp8hNxQ&list=PLeoCiKHizvH8PZEyFvThHzVlnTF5XaL-R)
+---
 
-[Live Sample Demo](http://web-cad.org/?com.github.jsketcher-sample-models.MODELS.Flag-Holder)
+## Table of Contents
 
-[2D Sketcher](http://web-cad.org/sketcher.html#__sample2D__)
+- [Overview](#overview)
+- [What's New](#whats-new)
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Tech Stack](#tech-stack)
+- [License](#license)
 
-[Help Docs](./web/docs/index.md)
+---
 
-[Workbench Dev Guide](./dev-guide/index.md)
+## Overview
 
-[Comercial Licencing](https://www.autodrop3d.com/parametric-cad-beta.html) 
+ArcCAD is a browser-based parametric 2D/3D CAD application built with React, Three.js, and OpenCascade WASM. It enables creating precise mechanical designs directly in the browser with real-time constraint solving and solid modeling capabilities.
 
+**Key philosophy:** Simple, approachable, and powerful enough for beginners while maintaining professional capabilities.
 
-Please consider supporting this project by becoming a backer
-==============
-<a href="https://opencollective.com/jsketcher-ad3d/"><image src="https://opencollective.com/jsketcher-ad3d/tiers/backer.svg?avatarHeight=300&width=3000"></image><image src="https://opencollective.com/jsketcher-ad3d/tiers/badge.svg"></image></a>
+---
 
-Current Status
-==============
+## What's New
 
-JSketcher is a parametric 3d modeler employing a 2D constraint solver for sketches and the feature/history metaphor to build models. The 2D constraint solver is completely written in javascript/typescript and is implemented in both the 3D CAD and the 2D sketcher. Originally developed by xibyte to make models for 3d printing. Today JSketcher provides a rich set of tools for visualizing, selecting/interacting with 3D geometry, tracking and storing model history all built on the foundation of the 2D sketcher engine and employing OpenCascade for solid modeling operations. 
+This fork transforms the original jsketcher with significant UI/UX improvements, new tools, and codebase cleanup.
 
-Major Components and features
-==============
-* Geometric Constraint Solver. This is a most crucial component which allows to solve a system of geometric constraints applied to a sketch. 
-  See below the list of supported constraints.
-* 2D Sketcher. Allows to design 2d sketches applying geometric constraints. Uses HTML5 canvas for rendering.      
-* 3D Boolean engine. OpenCascade is used to perform booleans on BREP objects.
-* Feature History. Accumulates features builds a 3d model step by step. A compare step is employed to propagate edge/face IDs forward to provide a stable and robust model. 
-* Export to **STL**, **DWG** and **SVG** formats
-* Saving projects in the browser locale storage
-* Repository of dimensions. For example if there is a line length constraint applied, it's not necessary to hardcode some length value. 
-  A dimension with a symbolic name can be created and the constraint can refer to that dimension by name. 
-  Once value of dimension gets changed the sketch is resolved again accordingly to the new dimension values.  
-* 2D measurement tool. Allows adding dimensions on a 2D drawing(Linear, Vertical, Horizontal and Arc/Circle dimension are supported)
-* No any server-side needed. Only client side Javascript and wasm. 
+### 🎨 UI & Layout Enhancements
 
-This modeler is already used for:
+| Feature | Description |
+|---------|-------------|
+| **Toolbar System** | Complete redesign with dark/medium/light themes and colored/mono icon options |
+| **FloatView Sidebar** | Transparent overlay panels for History, Scene Tree, and Projects with CSS variable-based layout |
+| **Draggable Settings** | Settings panel can be dragged and positioned anywhere |
+| **Contextual Controls** | Fixed right-edge panel showing available actions and constraint participation on selection |
+| **Constraints Dropdown** | 3-column grid layout that flips up when near screen bottom |
+| **Side Panels** | Collapsible Objects and Constraints panels on the left edge |
+| **Sketch Grid** | Canvas-drawn grid with visibility toggle (default: visible=true, snap=false, step=10) |
 
-* Designing of 3d models to get them 3d-printed. 3D models are based on parametric 2d sketches. All models can be exported as an STL file and 3d-printed after.     
-* Creating of 2d parametric sketches which could be exported to DWG or SVG format.   
+### 🛠️ New Tools & Features
 
-Supported Constraints
-=====================
+| Category | Feature | Description |
+|----------|---------|-------------|
+| **Solid Tools** | Move Body | Translate bodies in 3D space |
+| | Rotate Body | Rotate bodies around axis |
+| | Split Body | Split bodies using sketch profiles |
+| | **Measure Tool** | Measure distances and angles between points, edges, and faces |
+| | **Push/Pull** | Click any face to extrude/pull; Click edge to fillet (+) / chamfer (−) |
+| | **Sketch on Plane** | Start sketch on any face with on-screen plane selection handles |
+| **Direct Edit** | **Draggable HUD** | Direct edit handles can be repositioned on screen |
+| | **Right-click Pan** | Pan view without cancelling active handles |
+| **WASM** | Smooth Spheres | Improved tessellation for curved surfaces |
+| | STEP Export | Export to STEP format for manufacturing |
+| | STL Export | Export to STL for 3D printing |
+| **Navigation** | True 3D Pan | Screen-space panning using `right = eye × up`, `screenUp = right × eye` |
 
-* Coincident
-* Vertical
-* Horizontal
-* Parallel
-* Perpendicular
-* Point to Line Distance
-* Point to Object Distance
-* Entity Equality(radius/length)
-* Tangent
-* Radius
-* Point On Line
-* Point On Arc / Ellipse
-* Point In Middle
-* Angle
-* Symmetry
-* Lock Convexity
-* Fillet Meta Constraint
+### ✏️ Sketcher Improvements
 
-Get Started With the Code
-=========================
+| Feature | Description |
+|---------|-------------|
+| **Persistent Tool Mode** | Tools stay active after placing each shape (toggle off by clicking again) |
+| **ESC Cancellation** | Two-stage ESC: 1st cancels current shape, 2nd exits tool |
+| **Live Angle Hints** | Shows angle near cursor while drawing segments |
+| **Dimension Input** | Floating input box near cursor with fields for R, L, W/H, D, Rx/Ry, A° |
+| **Constraint Editing** | Click constraint in panel OR double-click annotation to edit values |
+| **Rectangle Groups** | 4 segments grouped as one logical "Rectangle" object |
+| **Trim Tool** | Highlights hovered segment + red overlay preview of portion to be removed |
+| **Object Visibility** | Eye icon toggles visibility recursively on children |
+| **Sketcher Settings Panel** | Dedicated settings for sketch mode with grid, snap, and display options |
 
-Install node.js
+### 🔧 Technical Improvements
 
-* $ cd \<jsketcher folder\>
-* $ npm install
-* $ npm start
+| Area | Changes |
+|------|---------|
+| **CSS Variables** | All toolbar sizing driven by CSS custom properties (`--toolbar-icon-size`, `--toolbar-text-size`, `--toolbar-spacing`) |
+| **Pointer Events** | `.mainLayout` uses `pointer-events: none` with explicit `pointerEvents: 'auto'` on interactive panels |
+| **Coordinate Handling** | Fixed `screenToModel(e)` to properly read `e.offsetX` / `e.offsetY` |
+| **Snap Handling** | Fixed `viewer.snapped` to prevent snap pollution and degenerate shapes |
+| **Selection Priority** | EDGE beats FACE in selection order |
 
+### 🧹 Codebase Cleanup
 
+| Removed | Reason |
+|---------|--------|
+| RoutingElectrical Workbench | Unused, 30+ files |
+| Debug Bundle | Development-only code |
+| Sandbox Tests | Auto-runs on load, now disabled |
+| Standalone 2D Sketcher | Removed separate entry point, kept in-place sketching |
+| sketchFace2D() function | Opened sketcher in new tab, not needed |
 
+---
 
-Contributing Please see  [.github/CONTRIBUTING.md ](.github/CONTRIBUTING.md )
-=========================
+## Features
+
+### 3D Workspace
+- **Solid Tools**: Move Body, Rotate Body, Split Body, **Measure Tool**
+- **Direct Edit**: **Click face to push/pull**, click edge to fillet/chamfer
+- **Sketch on Plane**: **On-screen plane selection** — click any face to start sketching
+- **WASM-Powered**: OpenCascade kernel with STEP/STL export
+- **Themes**: Dark, Medium, Light with colored or monochrome icons
+- **Settings Panel**: Draggable panel with:
+  - **Look**: Theme (Dark/Medium/Light), Toolbar customization (background, icon/text size, spacing, stretch, colored icons)
+  - **Views**: Camera (Perspective/Orthographic), View Mode (Wireframe/Shaded/Shaded+Edges), Viewport (Axes toggle, Gizmo + Nav Cube with size controls)
+  - **Render**: Antialiasing toggle, Tessellation Quality (Low/Medium/High/Ultra)
+  - **Grid**: Show/hide, Cell Size, Total Size, Opacity, Color
+- **Navigation**: True screen-space 3D panning
+
+### 2D Sketcher
+- **Drawing Tools**: Line, Rectangle, Circle variants, Arc, Ellipse, Bezier, Polygon
+- **Editing Tools**: Trim, Offset, Mirror
+- **Constraints**: Full constraint system with parametric solving
+- **UI Features**:
+  - Persistent tool mode (tool stays active after placing shape)
+  - ESC cancellation with undo support
+  - Live angle hints while drawing
+  - Floating dimension input near cursor
+  - Contextual controls panel
+  - Collapsible objects & constraints panels
+- **Rectangle Groups**: 4 segments grouped as one logical object
+
+### Project Management
+- Scene tree with hierarchy
+- Project manager
+- History/undo tracking
+
+---
+
+## Quick Start
+
+### Download & Run (Recommended)
+
+1. Go to the [**Releases page**](https://github.com/Pesicp/ArcCAD/releases)
+2. Download the latest release zip file
+3. Extract the zip to any folder
+4. Open a terminal in that folder and run:
+
+```bash
+npm start
+```
+
+5. Open http://localhost:3000 in your browser
+
+> **Note:** The first run will prompt to install `serve`. Type `y` and press Enter.
+
+---
+
+### Development
+
+If you want to build from source:
+
+```bash
+npm install
+npm start
+```
+
+Then open http://localhost:3000
+
+### Production Build
+
+```bash
+npm run build
+```
+
+Output is in `dist/` folder. Deploy contents to any static web server.
+
+---
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Frontend | React 16, JSX |
+| 3D Rendering | Three.js |
+| CAD Kernel | OpenCascade (WASM) |
+| Bundler | Webpack 5 |
+| Language | JavaScript + TypeScript |
+| Styling | LESS/CSS |
+
+---
+
+## License
+
+This project is licensed under a custom license. See [LICENSE](./LICENSE) for details.
+
+For commercial licensing options, visit: https://www.autodrop3d.com/parametric-cad-beta.html
+
+---
+
+## Acknowledgments
+
+- Original [jsketcher](https://github.com/xibyte/jsketcher) by [Val Erastov](https://github.com/xibyte) — the foundation for parametric CAD in the browser
+- OpenCascade geometric kernel
+- Three.js community

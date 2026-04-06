@@ -1,0 +1,59 @@
+ArcCAD v1.0.0 Modifications
+===========================
+Modified by: [Your Name]
+Date: 2024-2026
+Original: jsketcher by xibyte / Autodrop3d LLC
+
+DELETED FILES/FOLDERS:
+----------------------
+- modules/workbenches/routingElectrical/ (entire folder, 30+ files)
+- web/app/cad/debugBundle.js
+- web/app/sketcher.js
+- web/sketcher.html
+
+MODIFIED FILES:
+---------------
+1. webpack.config.js
+   - Removed "sketcher" entry point (standalone 2D sketcher)
+
+2. modules/workbenches/registry.ts
+   - Commented out RoutingElectricalWorkspace import and registration
+
+3. web/app/cad/init/startApplication.js
+   - Commented out DebugBundle import and usage
+
+4. web/app/cad/sandbox.ts
+   - Disabled voxelTest2() auto-run on project load
+
+5. web/app/cad/sketch/sketcherBundle.ts
+   - Removed sketchFace2D() function (opened sketcher in new tab)
+   - Removed sketchFace2D from services export
+
+6. web/app/cad/sketch/sketcherControlActions.js
+   - Removed "sketchOpenInTab" action (2D tab button)
+   - Removed RiExternalLinkLine import
+
+7. web/app/cad/sketch/inPlaceSketcher.js
+   - Various improvements for in-place sketching
+
+NEW FILES ADDED:
+----------------
+1. web/app/cad/dom/components/SettingsPanel.jsx
+   - Draggable settings panel for 3D workspace
+   - Sections: Look, Views, Render, Grid
+   - Features: themes, toolbar customization, camera/view modes, tessellation
+
+2. web/app/cad/sketch/components/SketcherSettingsPanel.jsx
+   - Draggable settings panel for sketcher mode
+   - Sections: Snap, Grid, Toolbar
+   - Features: snap sensitivity, grid visibility, toolbar sizing
+
+3. README.md
+   - Complete rewrite for ArcCAD branding
+   - Added "What's New" section with detailed changes
+   - Added screenshots section
+
+4. CHANGELOG.md
+   - Detailed list of all modifications
+
+All other files remain unchanged from original jsketcher.

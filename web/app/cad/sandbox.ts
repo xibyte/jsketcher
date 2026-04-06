@@ -10,7 +10,7 @@ import {AXIS, ORIGIN} from "math/vector";
 import {BrepInputData, CubeExample} from "engine/data/brepInputData";
 import {ApplicationContext} from "cad/context";
 import {readShellEntityFromJson} from "./scene/wrappers/entityIO";
-import {DEFLECTION, E0_TOLERANCE} from "./craft/e0/common";
+import {getDeflection, E0_TOLERANCE} from "./craft/e0/common";
 import {readBrep, writeBrep} from "brep/io/brepIO";
 import {PRIMITIVE_TYPES} from "engine/data/primitiveData";
 import {pullFace} from "brep/operations/directMod/pullFace";
@@ -151,7 +151,7 @@ export function runSandbox(ctx: ApplicationContext) {
 //       		vector: direction,
 //       		sketch: sketch,
 //       		tolerance: E0_TOLERANCE,
-//       		deflection: DEFLECTION
+//       		deflection: getDeflection()
 //       	})
 //
 //       	let box1 = readBrep(data);
@@ -186,7 +186,7 @@ export function runSandbox(ctx: ApplicationContext) {
     // console.dir(writeBrep(readShellEntityFromJson(l1).brepShell));
 
     const result: any = ctx.craftEngine.modellingEngine.boolean({
-      deflection: DEFLECTION,
+      deflection: getDeflection(),
       operandsA: [l1.ptr],
       operandsB: [l2.ptr],
       tolerance: E0_TOLERANCE,
@@ -209,7 +209,7 @@ export function runSandbox(ctx: ApplicationContext) {
     const [e1, e2]  = face.loops[0];
 
     const splitted = ctx.craftEngine.modellingEngine.splitFace({
-      deflection: DEFLECTION,
+      deflection: getDeflection(),
       shape: loaded.ptr,
       face: face.ptr,
       edge: {
@@ -692,13 +692,13 @@ export function runSandbox(ctx: ApplicationContext) {
   //   		vector: direction,
   //   		sketch: sketch,
   //   		tolerance: E0_TOLERANCE,
-  //   		deflection: DEFLECTION
+  //   		deflection: getDeflection()
   //   	})
   //
   //   	let brep = readBrep(data);
   //   	let tess = ctx.craftEngine.modellingEngine.tessellate({
   //   		model: data.ptr,
-  //   		deflection: DEFLECTION
+  //   		deflection: getDeflection()
   //   	})
   //
   //     __DEBUG__.AddFacesTessellation(tess.faces)
@@ -819,19 +819,19 @@ export function runSandbox(ctx: ApplicationContext) {
   }
 
   ctx.streams.lifecycle.projectLoaded.attach(ready => {
-
     if (ready) {
+      // All test functions disabled for production
       // testEdgeSplit(ctx);
-      //testVertexMoving(ctx);
-      //  test4();
-      //testSplitFace();
-      //testRemoveFaces();
-     //testRemoveVertex();
-    //  testRemoveEdge();
-    // testOJS();
-    //   setTimeout(testOCCT, 500);
-    //   voxelTest()
-      voxelTest2(16)
+      // testVertexMoving(ctx);
+      // test4();
+      // testSplitFace();
+      // testRemoveFaces();
+      // testRemoveVertex();
+      // testRemoveEdge();
+      // testOJS();
+      // setTimeout(testOCCT, 500);
+      // voxelTest()
+      // voxelTest2(16)
     }
   });
 

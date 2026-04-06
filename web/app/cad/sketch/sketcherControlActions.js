@@ -1,5 +1,5 @@
 import {FcCancel, FcCheckmark} from "react-icons/fc";
-import {RiExternalLinkLine} from "react-icons/ri";
+import {FaUndo, FaRedo} from "react-icons/fa";
 
 export default [
   {
@@ -27,17 +27,31 @@ export default [
     }
   },
   {
-    id: 'sketchOpenInTab',
+    id: 'sketchUndo',
     appearance: {
-      info: 'save changes and open sketch 2D in a tab',
-      label: '2D',
-      icon: RiExternalLinkLine,
+      info: 'Undo last action (Ctrl+Z)',
+      label: 'undo',
+      icon: FaUndo,
     },
     invoke: ({services}) => {
-      const face = services.sketcher.inPlaceEditor.face;
-      services.sketcher.inPlaceEditor.save();
-      services.sketcher.inPlaceEditor.exit();
-      services.sketcher.sketchFace2D(face);
+      const viewer = services.sketcher?.inPlaceEditor?.viewer;
+      if (viewer?.historyManager) {
+        viewer.historyManager.undo();
+      }
+    }
+  },
+  {
+    id: 'sketchRedo',
+    appearance: {
+      info: 'Redo last action (Ctrl+Y)',
+      label: 'redo',
+      icon: FaRedo,
+    },
+    invoke: ({services}) => {
+      const viewer = services.sketcher?.inPlaceEditor?.viewer;
+      if (viewer?.historyManager) {
+        viewer.historyManager.redo();
+      }
     }
   }
 ]

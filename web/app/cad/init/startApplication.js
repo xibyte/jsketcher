@@ -22,6 +22,7 @@ import * as StorageBundle from '../storage/storageBundle';
 import * as ProjectBundle from '../projectBundle';
 import * as ProjectManagerBundle from '../projectManager/projectManagerBundle';
 import * as SketcherBundle from '../sketch/sketcherBundle';
+import * as SketchStartBundle from '../sketch/sketchStartBundle';
 import * as SketcherStorageBundle from '../sketch/sketchStorageBundle';
 import * as ExportBundle from '../exportBundle';
 import * as ExposureBundle from '../exposure/exposureBundle';
@@ -30,7 +31,7 @@ import * as EntityContextPlugin from '../scene/entityContextBundle';
 import * as OCCTBundle from '../craft/e0/occtBundle';
 import startReact from "../dom/startReact";
 import * as UIConfigBundle from "../workbench/uiConfigBundle";
-import * as DebugBundle from "../debugBundle";
+// import * as DebugBundle from "../debugBundle"; // REMOVED FOR PRODUCTION
 import * as ExpressionsBundle from "../expressions/expressionsBundle";
 import {WorkbenchBundle} from "../workbench/workbenchBundle";
 import * as LocationBundle from "../location/LocationBundle";
@@ -38,6 +39,7 @@ import * as AssemblyBundle from "../assembly/assemblyBundle";
 import {WorkbenchesLoaderBundle} from "cad/workbench/workbenchesLoaderBundle";
 import {AttributesBundle} from "cad/attributes/attributesBundle";
 import {HighlightBundle} from "cad/scene/highlightBundle";
+import * as DirectEditBundle from '../scene/controls/DirectEditBundle';
 import {LegacyStructureBundle} from "cad/context/LegacyStructureBundle";
 import context from "cad/context";
 import {BundleSystem} from "bundler/bundleSystem";
@@ -78,15 +80,17 @@ export default function startApplication(callback) {
     WorkbenchesLoaderBundle,
     WorkbenchBundle,
     SketcherBundle,
+    SketchStartBundle,
     UIConfigBundle,
-    DebugBundle,
+    // DebugBundle, // REMOVED FOR PRODUCTION
     LocationBundle,
     AssemblyBundle,
     RemotePartsBundle,
     ViewSyncBundle,
     WizardSelectionBundle,
     AttributesBundle,
-    HighlightBundle
+    HighlightBundle,
+    DirectEditBundle,
   ];
   
   const allBundle = [...preUIBundles, ...bundles];

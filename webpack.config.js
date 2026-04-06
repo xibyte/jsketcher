@@ -15,8 +15,7 @@ module.exports = {
   mode: 'development',
   devtool: 'source-map',
   entry: {
-    index: ['babel-polyfill', './web/app/index'],
-    sketcher: ['babel-polyfill', './web/app/sketcher']
+    index: ['babel-polyfill', './web/app/index']
   },
   output: {
     path: path.join(__dirname, 'dist/static'),
