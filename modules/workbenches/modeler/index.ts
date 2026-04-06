@@ -29,7 +29,6 @@ import {SubDCylinderOperation} from "./features/subdCylinder/subdCylinder.operat
 import {PatchPlaneOperation} from "./features/patchPlane/patchPlane.operation";
 import {PatchBoxOperation} from "./features/patchBox/patchBox.operation";
 import {PatchCylinderOperation} from "./features/patchCylinder/patchCylinder.operation";
-import {PatchArcConstraintOperation} from "./features/patchArcConstraint/patchArcConstraint.operation";
 //imports of action type commands
 import {GetInfo} from "./actions/getInfo/getInfo.action";
 import {ExportBREP} from "./actions/exportBREP/exportBREP.action";
@@ -69,7 +68,6 @@ export const ModelerWorkspace: WorkbenchConfig = {
     PatchPlaneOperation,
     PatchBoxOperation,
     PatchCylinderOperation,
-    PatchArcConstraintOperation,
 
     GetInfo,
     ExportBREP,
@@ -97,7 +95,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "SUBD_BOX", "SUBD_SPHERE", "SUBD_CYLINDER", "-",
 
-      "PATCH_PLANE", "PATCH_BOX", "PATCH_CYLINDER", "PATCH_ARC_CONSTRAINT",
+      "PATCH_PLANE", "PATCH_BOX", "PATCH_CYLINDER",
     ]
   },
   icon: GiCubes
