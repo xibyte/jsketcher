@@ -27,6 +27,24 @@ export class CageVertex {
   }
 }
 
+export type ArcMode = 'approximate' | 'rational';
+
+export interface ArcConstraint {
+  /** The 4 CageVertex on the constrained edge */
+  vertices: [CageVertex, CageVertex, CageVertex, CageVertex];
+  radius: number;
+  /** Sweep angle in degrees */
+  angle: number;
+  /** Normal of the arc plane */
+  planeNormal: Vec3;
+  /** Center of the arc circle */
+  center: Vec3;
+  /** 'approximate' = cubic Bézier (no weights), 'rational' = exact with weights */
+  mode: ArcMode;
+  /** If rational: which patch + which side, to set weights */
+  patchSide?: {patchIdx: number, side: number};
+}
+
 /**
  * A cage edge: 4 CageVertex references forming a cubic Bézier curve.
  * Shared between adjacent patches.
@@ -125,10 +143,163 @@ export class NurbsPatch {
 
 export class PatchCage {
   patches: NurbsPatch[] = [];
+  arcConstraints: ArcConstraint[] = [];
 
   /** Move a vertex — all patches sharing it update automatically */
   moveVertex(v: CageVertex, x: number, y: number, z: number): void {
     v.set(x, y, z);
+    // Re-enforce any arc constraints that involve this vertex
+    this.enforceArcConstraints(v);
+  }
+
+  // =========================================================================
+  // Arc Constraints
+  // =========================================================================
+
+  /**
+   * Constrain an edge to a circular arc.
+   *
+   * @param patchIdx Patch containing the edge
+   * @param side Which side (0=bottom, 1=right, 2=top, 3=left)
+   * @param radius Arc radius
+   * @param angle Sweep angle in degrees
+   * @param planeNormal Normal of the arc plane
+   * @param mode 'approximate' (cubic Bézier) or 'rational' (exact with weights)
+   */
+  constrainEdgeToArc(
+    patchIdx: number, side: number,
+    radius: number, angle: number,
+    planeNormal: Vec3, mode: ArcMode = 'approximate'
+  ): ArcConstraint {
+    const verts = this.patches[patchIdx].getEdgeVertices(side);
+
+    // Compute arc center from endpoints, radius, and plane normal
+    const p0 = verts[0].position;
+    const p3 = verts[3].position;
+    const center = computeArcCenter(p0, p3, radius, angle, planeNormal);
+
+    const constraint: ArcConstraint = {
+      vertices: verts,
+      radius, angle, planeNormal, center, mode,
+      patchSide: {patchIdx, side},
+    };
+
+    this.arcConstraints.push(constraint);
+    this.applyArcConstraint(constraint);
+    return constraint;
+  }
+
+  /**
+   * Apply an arc constraint: reposition interior control points.
+   * For rational mode, also set weights on the patch.
+   */
+  applyArcConstraint(c: ArcConstraint): void {
+    const [v0, v1, v2, v3] = c.vertices;
+    const p0 = v0.position, p3 = v3.position;
+    const angleRad = (c.angle * Math.PI) / 180;
+
+    if (c.mode === 'approximate') {
+      // Cubic Bézier approximation: k = (4/3) * tan(θ/4)
+      const k = (4 / 3) * Math.tan(angleRad / 4);
+
+      // Tangent directions at endpoints (perpendicular to radius, in arc plane)
+      const r0 = vnormalize(vsub(p0, c.center));
+      const r3 = vnormalize(vsub(p3, c.center));
+      const t0 = vnormalize(vcross(c.planeNormal, r0)); // tangent at p0
+      const t3 = vnormalize(vcross(r3, c.planeNormal)); // tangent at p3 (reversed)
+
+      const handleLen = k * c.radius;
+      v1.set(
+        p0[0] + t0[0] * handleLen,
+        p0[1] + t0[1] * handleLen,
+        p0[2] + t0[2] * handleLen
+      );
+      v2.set(
+        p3[0] + t3[0] * handleLen,
+        p3[1] + t3[1] * handleLen,
+        p3[2] + t3[2] * handleLen
+      );
+
+      // Reset weights to 1 (non-rational)
+      if (c.patchSide) {
+        this.setEdgeWeights(c.patchSide.patchIdx, c.patchSide.side, [1, 1, 1, 1]);
+      }
+    } else {
+      // Rational exact arc:
+      // For a circular arc, the rational cubic Bézier has specific weights.
+      // w0 = w3 = 1 (endpoints on curve)
+      // w1 = w2 = cos(θ/4) for quarter arc, or more generally:
+      // Using the formula for rational cubic that interpolates endpoints
+      // and is tangent to the control polygon:
+      const halfAngle = angleRad / 2;
+      const wMid = Math.cos(halfAngle / 2);
+
+      // Control point positions: same as approximate
+      const k = (4 / 3) * Math.tan(angleRad / 4);
+      const r0 = vnormalize(vsub(p0, c.center));
+      const r3 = vnormalize(vsub(p3, c.center));
+      const t0 = vnormalize(vcross(c.planeNormal, r0));
+      const t3 = vnormalize(vcross(r3, c.planeNormal));
+
+      const handleLen = k * c.radius;
+      v1.set(
+        p0[0] + t0[0] * handleLen,
+        p0[1] + t0[1] * handleLen,
+        p0[2] + t0[2] * handleLen
+      );
+      v2.set(
+        p3[0] + t3[0] * handleLen,
+        p3[1] + t3[1] * handleLen,
+        p3[2] + t3[2] * handleLen
+      );
+
+      // Set weights on the patch edge
+      if (c.patchSide) {
+        this.setEdgeWeights(c.patchSide.patchIdx, c.patchSide.side, [1, wMid, wMid, 1]);
+        this.patches[c.patchSide.patchIdx].rational = true;
+      }
+    }
+  }
+
+  /** Re-enforce arc constraints that involve a given vertex */
+  enforceArcConstraints(v: CageVertex): void {
+    for (const c of this.arcConstraints) {
+      // Only re-apply if an endpoint moved (interior points are computed)
+      if (c.vertices[0] === v || c.vertices[3] === v) {
+        // Recompute center from new endpoint positions
+        c.center = computeArcCenter(
+          c.vertices[0].position, c.vertices[3].position,
+          c.radius, c.angle, c.planeNormal
+        );
+        this.applyArcConstraint(c);
+      }
+    }
+  }
+
+  /** Set weights on 4 control points along a patch edge */
+  private setEdgeWeights(patchIdx: number, side: number, weights: [number, number, number, number]): void {
+    const w = this.patches[patchIdx].weights;
+    switch (side) {
+      case 0: w[0][0]=weights[0]; w[0][1]=weights[1]; w[0][2]=weights[2]; w[0][3]=weights[3]; break;
+      case 1: w[0][3]=weights[0]; w[1][3]=weights[1]; w[2][3]=weights[2]; w[3][3]=weights[3]; break;
+      case 2: w[3][0]=weights[0]; w[3][1]=weights[1]; w[3][2]=weights[2]; w[3][3]=weights[3]; break;
+      case 3: w[0][0]=weights[0]; w[1][0]=weights[1]; w[2][0]=weights[2]; w[3][0]=weights[3]; break;
+    }
+  }
+
+  /** Remove an arc constraint */
+  removeArcConstraint(constraint: ArcConstraint): void {
+    const idx = this.arcConstraints.indexOf(constraint);
+    if (idx >= 0) {
+      this.arcConstraints.splice(idx, 1);
+      // Reset weights if rational
+      if (constraint.mode === 'rational' && constraint.patchSide) {
+        this.setEdgeWeights(constraint.patchSide.patchIdx, constraint.patchSide.side, [1, 1, 1, 1]);
+        // Check if patch still has any non-1 weights
+        const p = this.patches[constraint.patchSide.patchIdx];
+        p.rational = p.weights.some(row => row.some(w => w !== 1));
+      }
+    }
   }
 
   /** Get all unique CageVertex instances across all patches */
@@ -410,6 +581,30 @@ function splitBezierRow(p0: CageVertex, p1: CageVertex, p2: CageVertex, p3: Cage
 
 function cloneWeights(w: number[][]): number[][] {
   return w.map(row => [...row]);
+}
+
+/**
+ * Compute the center of a circular arc given two endpoints, radius, angle, and plane normal.
+ */
+function computeArcCenter(p0: Vec3, p3: Vec3, radius: number, angleDeg: number, planeNormal: Vec3): Vec3 {
+  const mid = vlerp(p0, p3, 0.5);
+  const chord = vsub(p3, p0);
+  const chordLen = vdist(p0, p3);
+
+  // Direction from midpoint to center: perpendicular to chord, in the arc plane
+  const chordDir = vnormalize(chord);
+  const perpDir = vnormalize(vcross(planeNormal, chordDir));
+
+  // Distance from chord midpoint to center
+  const halfChord = chordLen / 2;
+  const angleRad = (angleDeg * Math.PI) / 180;
+  // For a circular arc: halfChord = radius * sin(angle/2)
+  // So: d = sqrt(radius² - halfChord²) = radius * cos(angle/2)
+  const d = radius * Math.cos(angleRad / 2);
+
+  // Center is at midpoint + d * perpDir (or - depending on arc direction)
+  // Convention: positive d means center is on the side perpDir points to
+  return vadd(mid, vscale(perpDir, -d));
 }
 
 // =========================================================================
