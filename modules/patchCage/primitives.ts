@@ -210,10 +210,13 @@ export function createPatchCylinder(
 
       const capIdx = cage.addPatch(control);
 
-      // Share arc edge: cap's v=1 (row 3) = wall's bottom/top row
-      // Wall side: side 0 = bottom (row 0), side 2 = top (row 3)
+      // Share arc edge: wall is source of truth, cap syncs to it.
+      // Wall side 0 = bottom (row 0), side 2 = top (row 3).
+      // Cap side 2 = top (row 3) = the arc edge.
       const wallSide = cap === 0 ? 0 : 2;
-      cage.addSharedEdge(capIdx, 2, q, wallSide);
+      // Wall's edge goes cp0→cp3. Cap's top edge goes arc0→arc3 (same direction).
+      // patchA=wall, patchB=cap — syncs cap to wall.
+      cage.addSharedEdge(q, wallSide, capIdx, 2, false);
 
       // Share radial edges between adjacent cap quarters
       // Cap patch's u=1 (right/col 3) = next cap patch's u=0 (left/col 0)
