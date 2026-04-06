@@ -135,7 +135,8 @@ export class PatchCageView extends View {
     // 16 control point handles
     for (let row = 0; row < 4; row++) {
       for (let col = 0; col < 4; col++) {
-        const p = ctrl[row][col];
+        const cv = ctrl[row][col]; // CageVertex instance
+        const p = cv.position;
         const isCorner = (row === 0 || row === 3) && (col === 0 || col === 3);
         const baseColor = isCorner ? CP_CORNER_COLOR : CP_COLOR;
 
@@ -146,7 +147,7 @@ export class PatchCageView extends View {
         const handle = new ConstantScaleGroup(ss, HANDLE_SIZE * 2, 1, () => handle.position);
         handle.position.set(p[0], p[1], p[2]);
         handle.add(sphere);
-        handle.userData = {patchIdx, row, col, isCorner, baseColor};
+        handle.userData = {patchIdx, row, col, isCorner, baseColor, cageVertex: cv};
         handle.__mat = mat;
 
         sphere.onMouseEnter = () => {
@@ -171,7 +172,7 @@ export class PatchCageView extends View {
     for (let row = 0; row < 4; row++) {
       const pts = [];
       for (let col = 0; col < 4; col++) {
-        const p = ctrl[row][col];
+        const p = ctrl[row][col].position;
         pts.push(p[0], p[1], p[2]);
       }
       const g = new BufferGeometry();
@@ -183,7 +184,7 @@ export class PatchCageView extends View {
     for (let col = 0; col < 4; col++) {
       const pts = [];
       for (let row = 0; row < 4; row++) {
-        const p = ctrl[row][col];
+        const p = ctrl[row][col].position;
         pts.push(p[0], p[1], p[2]);
       }
       const g = new BufferGeometry();
@@ -210,7 +211,8 @@ export class PatchCageView extends View {
       if (!this.selectedHandle) return;
       const ud = this.selectedHandle.userData;
       const pos = this.gizmoTarget.position;
-      this.model.cage.setControlPoint(ud.patchIdx, ud.row, ud.col, [pos.x, pos.y, pos.z]);
+      // Directly mutate the CageVertex — all patches sharing it update automatically
+      ud.cageVertex.set(pos.x, pos.y, pos.z);
 
       if (!this._timer) {
         this._timer = requestAnimationFrame(() => {
