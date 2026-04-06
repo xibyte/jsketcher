@@ -39,7 +39,9 @@ export const PICK_KIND = {
   EDGE: mask.type(3),
   DATUM: mask.type(4),
   DATUM_AXIS: mask.type(5),
-  LOOP: mask.type(6)
+  LOOP: mask.type(6),
+  SUBD: mask.type(7),
+  PATCH_CAGE: mask.type(8),
 };
 
 const DEFAULT_SELECTION_MODE = Object.freeze({
@@ -59,7 +61,7 @@ interface PickContext {
   syncMarkers: SyncMarkersCallback
 }
 
-export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP;
+export const ALL_EXCLUDING_SOLID_KINDS = PICK_KIND.FACE | PICK_KIND.SKETCH | PICK_KIND.EDGE | PICK_KIND.DATUM_AXIS | PICK_KIND.LOOP | PICK_KIND.SUBD | PICK_KIND.PATCH_CAGE;
 export const ALL_POSSIBLE_KIND = Number.MAX_SAFE_INTEGER;
 export function activate(context) {
   const {services} = context;
@@ -321,6 +323,24 @@ export function traversePickResults(event, pickResults, kind, visitor) {
         const datumAxisV = getAttribute(pickResult.object, DATUM_AXIS);
         if (datumAxisV) {
           return !visitor(datumAxisV.model, event, pickResult);
+        }
+      }
+      return false;
+    },
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.SUBD)) {
+        const subdV = getAttribute(pickResult.object, SUBD);
+        if (subdV) {
+          return !visitor(subdV.model, event, pickResult);
+        }
+      }
+      return false;
+    },
+    (pickResult) => {
+      if (mask.is(kind, PICK_KIND.PATCH_CAGE)) {
+        const pcV = getAttribute(pickResult.object, PATCH_CAGE);
+        if (pcV) {
+          return !visitor(pcV.model, event, pickResult);
         }
       }
       return false;
