@@ -2,6 +2,7 @@ import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MPatchCage} from "cad/model/mpatchcage";
 import {createPatchPlane} from "patchCage/primitives";
+import {PatchCage} from "patchCage/PatchCage";
 import {BiRectangle} from "react-icons/bi";
 
 interface PatchPlaneParams {
@@ -17,8 +18,10 @@ export const PatchPlaneOperation: OperationDescriptor<PatchPlaneParams> = {
   info: 'Create a Bézier patch plane',
   path: __dirname,
   paramsInfo: ({width, height}) => `(${width}x${height})`,
-  run: (params: PatchPlaneParams, ctx: ApplicationContext) => {
-    const cage = createPatchPlane(params.width, params.height);
+  run: (params: PatchPlaneParams, ctx: ApplicationContext, rawParams: any) => {
+    const cage = rawParams?.cageState
+      ? PatchCage.deserialize(rawParams.cageState)
+      : createPatchPlane(params.width, params.height);
     return {consumed: [], created: [new MPatchCage(cage, params.resolution)]};
   },
   form: [
