@@ -26,6 +26,9 @@ import { MoveBodyOperation } from "./features/moveBody/moveBody.operation"
 import {SubDBoxOperation} from "./features/subdBox/subdBox.operation";
 import {SubDSphereOperation} from "./features/subdSphere/subdSphere.operation";
 import {SubDCylinderOperation} from "./features/subdCylinder/subdCylinder.operation";
+import {PatchPlaneOperation} from "./features/patchPlane/patchPlane.operation";
+import {PatchBoxOperation} from "./features/patchBox/patchBox.operation";
+import {PatchCylinderOperation} from "./features/patchCylinder/patchCylinder.operation";
 //imports of action type commands
 import {GetInfo} from "./actions/getInfo/getInfo.action";
 import {ExportBREP} from "./actions/exportBREP/exportBREP.action";
@@ -62,6 +65,9 @@ export const ModelerWorkspace: WorkbenchConfig = {
     SubDBoxOperation,
     SubDSphereOperation,
     SubDCylinderOperation,
+    PatchPlaneOperation,
+    PatchBoxOperation,
+    PatchCylinderOperation,
 
     GetInfo,
     ExportBREP,
@@ -87,7 +93,9 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "WIRE_LINE", 'EXPORT_BREP', "-",
 
-      "SUBD_BOX", "SUBD_SPHERE", "SUBD_CYLINDER",
+      "SUBD_BOX", "SUBD_SPHERE", "SUBD_CYLINDER", "-",
+
+      "PATCH_PLANE", "PATCH_BOX", "PATCH_CYLINDER",
     ]
   },
   icon: GiCubes
