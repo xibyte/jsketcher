@@ -164,10 +164,67 @@ export function createPatchCylinder(
     cage.addPatch(control);
   }
 
-  // Share edges between adjacent quarter patches
+  // Share edges between adjacent wall quarter patches
   for (let q = 0; q < 4; q++) {
     const next = (q + 1) % 4;
     cage.addSharedEdge(q, 1, next, 3); // right edge of q = left edge of next
+  }
+
+  // ---- Cap patches ----
+  // Each cap = 4 quarter-disk patches.
+  // Each quarter shares its outer arc edge with the wall patch.
+  // The inner edge collapses toward the center.
+  //
+  // Layout for each quarter cap:
+  //   v=1 (row 3): arc edge on the circle (shared with wall)
+  //   v=0 (row 0): collapsed to center point
+  //   u=0 (col 0): radial line from center to arc start
+  //   u=1 (col 3): radial line from center to arc end
+
+  for (let cap = 0; cap < 2; cap++) {
+    const z = cap === 0 ? -hz : hz;
+    const wallRow = cap === 0 ? 0 : 3; // which row of wall patch is at this cap
+
+    for (let q = 0; q < 4; q++) {
+      const wallPatch = cage.patches[q];
+      // Arc control points from the wall patch at this cap's z level
+      const arc0 = wallPatch.control[wallRow][0];
+      const arc1 = wallPatch.control[wallRow][1];
+      const arc2 = wallPatch.control[wallRow][2];
+      const arc3 = wallPatch.control[wallRow][3];
+
+      const center: Vec3 = [0, 0, z];
+
+      // Build 4×4 grid from center (row 0) to arc (row 3)
+      // Rows interpolate radially from center to arc
+      const control: Vec3[][] = [];
+      for (let row = 0; row < 4; row++) {
+        const t = row / 3; // 0=center, 1=arc
+        control.push([
+          vlerp(center, arc0, t),
+          vlerp(center, arc1, t),
+          vlerp(center, arc2, t),
+          vlerp(center, arc3, t),
+        ]);
+      }
+
+      const capIdx = cage.addPatch(control);
+
+      // Share arc edge: cap's v=1 (row 3) = wall's bottom/top row
+      // Wall side: side 0 = bottom (row 0), side 2 = top (row 3)
+      const wallSide = cap === 0 ? 0 : 2;
+      cage.addSharedEdge(capIdx, 2, q, wallSide);
+
+      // Share radial edges between adjacent cap quarters
+      // Cap patch's u=1 (right/col 3) = next cap patch's u=0 (left/col 0)
+    }
+
+    // Share radial edges between adjacent cap quarter patches
+    const capBase = 4 + cap * 4; // first cap patch index for this cap
+    for (let q = 0; q < 4; q++) {
+      const next = (q + 1) % 4;
+      cage.addSharedEdge(capBase + q, 1, capBase + next, 3);
+    }
   }
 
   return cage;
