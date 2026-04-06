@@ -9,7 +9,7 @@
  */
 
 import {Vec3} from './patchCageTypes';
-import {vadd, vsub, vscale, vlerp, vnormalize, vdist, vcross} from './vec3Math';
+import {vadd, vsub, vscale, vlerp, vnormalize, vdist, vcross, vdot} from './vec3Math';
 
 // =========================================================================
 // Topology primitives — shared by identity
@@ -198,62 +198,44 @@ export class PatchCage {
     const p0 = v0.position, p3 = v3.position;
     const angleRad = (c.angle * Math.PI) / 180;
 
+    // k = handle distance ratio for cubic Bézier circle approximation
+    const k = (4 / 3) * Math.tan(angleRad / 4);
+
+    // Radial directions from center to endpoints
+    const r0 = vnormalize(vsub(p0, c.center));
+    const r3 = vnormalize(vsub(p3, c.center));
+
+    // Tangent at each endpoint = perpendicular to radius, in the arc plane
+    // tangent at p0: rotate r0 by 90° in the arc plane (toward p3)
+    const t0 = vnormalize(vcross(c.planeNormal, r0));
+    // tangent at p3: rotate r3 by -90° in the arc plane (toward p0)
+    const t3 = vnormalize(vcross(c.planeNormal, r3));
+
+    // Ensure tangent directions point along the arc (from p0 toward p3)
+    const chord = vsub(p3, p0);
+    if (vdot(t0, chord) < 0) { t0[0] = -t0[0]; t0[1] = -t0[1]; t0[2] = -t0[2]; }
+    if (vdot(t3, chord) > 0) { t3[0] = -t3[0]; t3[1] = -t3[1]; t3[2] = -t3[2]; }
+
+    const handleLen = k * c.radius;
+
+    v1.set(
+      p0[0] + t0[0] * handleLen,
+      p0[1] + t0[1] * handleLen,
+      p0[2] + t0[2] * handleLen
+    );
+    v2.set(
+      p3[0] + t3[0] * handleLen,
+      p3[1] + t3[1] * handleLen,
+      p3[2] + t3[2] * handleLen
+    );
+
     if (c.mode === 'approximate') {
-      // Cubic Bézier approximation: k = (4/3) * tan(θ/4)
-      const k = (4 / 3) * Math.tan(angleRad / 4);
-
-      // Tangent directions at endpoints (perpendicular to radius, in arc plane)
-      const r0 = vnormalize(vsub(p0, c.center));
-      const r3 = vnormalize(vsub(p3, c.center));
-      const t0 = vnormalize(vcross(c.planeNormal, r0)); // tangent at p0
-      const t3 = vnormalize(vcross(r3, c.planeNormal)); // tangent at p3 (reversed)
-
-      const handleLen = k * c.radius;
-      v1.set(
-        p0[0] + t0[0] * handleLen,
-        p0[1] + t0[1] * handleLen,
-        p0[2] + t0[2] * handleLen
-      );
-      v2.set(
-        p3[0] + t3[0] * handleLen,
-        p3[1] + t3[1] * handleLen,
-        p3[2] + t3[2] * handleLen
-      );
-
-      // Reset weights to 1 (non-rational)
       if (c.patchSide) {
         this.setEdgeWeights(c.patchSide.patchIdx, c.patchSide.side, [1, 1, 1, 1]);
       }
     } else {
-      // Rational exact arc:
-      // For a circular arc, the rational cubic Bézier has specific weights.
-      // w0 = w3 = 1 (endpoints on curve)
-      // w1 = w2 = cos(θ/4) for quarter arc, or more generally:
-      // Using the formula for rational cubic that interpolates endpoints
-      // and is tangent to the control polygon:
-      const halfAngle = angleRad / 2;
-      const wMid = Math.cos(halfAngle / 2);
-
-      // Control point positions: same as approximate
-      const k = (4 / 3) * Math.tan(angleRad / 4);
-      const r0 = vnormalize(vsub(p0, c.center));
-      const r3 = vnormalize(vsub(p3, c.center));
-      const t0 = vnormalize(vcross(c.planeNormal, r0));
-      const t3 = vnormalize(vcross(r3, c.planeNormal));
-
-      const handleLen = k * c.radius;
-      v1.set(
-        p0[0] + t0[0] * handleLen,
-        p0[1] + t0[1] * handleLen,
-        p0[2] + t0[2] * handleLen
-      );
-      v2.set(
-        p3[0] + t3[0] * handleLen,
-        p3[1] + t3[1] * handleLen,
-        p3[2] + t3[2] * handleLen
-      );
-
-      // Set weights on the patch edge
+      // Rational: set weights for exact arc
+      const wMid = Math.cos(angleRad / 4);
       if (c.patchSide) {
         this.setEdgeWeights(c.patchSide.patchIdx, c.patchSide.side, [1, wMid, wMid, 1]);
         this.patches[c.patchSide.patchIdx].rational = true;
