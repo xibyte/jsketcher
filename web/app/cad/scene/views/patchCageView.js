@@ -55,15 +55,13 @@ export class PatchCageView extends View {
     this.gizmo = null;
     this.setupGizmo();
 
-    // Click surface to pick patch
-    this.solidMesh.onMouseDown = () => {};
-    this.solidMesh.onMouseClick = (e) => {
-      console.log('PatchCageView: solidMesh clicked');
-      this.pickPatch(e);
-    };
+    // Pick patch on click — listen on the renderer dom element directly
+    // to avoid the mouse event system's hit-testing blocking issues
     this.solidMesh.onMouseEnter = () => ctx.highlightService.highlight(this.model.id);
     this.solidMesh.onMouseLeave = () => ctx.highlightService.unHighlight(this.model.id);
-    this.solidMesh.passMouseEvent = () => true;
+
+    this._onDblClick = (e) => this.pickPatch(e);
+    ctx.viewer.sceneSetup.renderer.domElement.addEventListener('dblclick', this._onDblClick);
 
     setAttribute(this.rootGroup, PATCH_CAGE, this);
     setAttribute(this.rootGroup, View.MARKER, this);
@@ -76,13 +74,9 @@ export class PatchCageView extends View {
 
   // ---- Patch picking ----
 
-  pickPatch(event) {
-    const me = event.mouseEvent;
-    if (!me) return;
-
-    // Raycast directly against the solid mesh only
+  pickPatch(e) {
     const ss = this.ctx.viewer.sceneSetup;
-    const raycaster = ss.createRaycaster(me.offsetX, me.offsetY);
+    const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
     const hits = [];
     this.solidMesh.raycast(raycaster, hits);
 
@@ -91,7 +85,6 @@ export class PatchCageView extends View {
       return;
     }
 
-    // Sort by distance — take the closest hit (front face)
     hits.sort((a, b) => a.distance - b.distance);
     const faceIndex = hits[0].faceIndex;
     if (faceIndex === undefined) {
@@ -288,6 +281,9 @@ export class PatchCageView extends View {
   }
 
   dispose() {
+    if (this._onDblClick) {
+      this.ctx.viewer.sceneSetup.renderer.domElement.removeEventListener('dblclick', this._onDblClick);
+    }
     if (this.gizmo) {
       this.gizmo.detach(); this.gizmo.dispose();
       const s = this.ctx.viewer.sceneSetup.scene;
