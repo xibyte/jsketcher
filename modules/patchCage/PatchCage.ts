@@ -175,15 +175,18 @@ export class PatchCage {
   }
 
   /**
-   * Split a patch along a U or V isoline, propagating across all connected patches.
+   * Split along an isoline, propagating across ALL connected patches.
+   *
+   * Splitting patch P in U at t creates a new column cutting through P.
+   * This new column intersects the top (side 2) and bottom (side 0) edges.
+   * Any patch sharing those edges must also be split at the corresponding point.
+   * This propagation continues until wrapping around or hitting a boundary.
    *
    * @param patchIdx Starting patch index
-   * @param direction 'u' or 'v' — which parameter to split along
-   * @param t Parameter value (0..1) of the isoline
+   * @param direction 'u' or 'v'
+   * @param t Parameter value (0..1)
    */
   splitIsoline(patchIdx: number, direction: 'u' | 'v', t: number): void {
-    // Collect all patches that need splitting along this isoline.
-    // Walk across shared edges in the split direction.
     const toSplit: {idx: number, dir: 'u' | 'v', t: number}[] = [];
     const visited = new Set<number>();
 
@@ -195,43 +198,33 @@ export class PatchCage {
       visited.add(cur.idx);
       toSplit.push(cur);
 
-      // Find adjacent patches along the split direction
+      // Splitting in U creates a cut across side 0 (bottom) and side 2 (top).
+      // Splitting in V creates a cut across side 3 (left) and side 1 (right).
+      // Patches sharing those cut edges need to be split too.
+      const cutSides = cur.dir === 'u' ? [0, 2] : [3, 1];
+
       const adj = this.findAdjacentPatches(cur.idx);
       for (const a of adj) {
         if (visited.has(a.otherIdx)) continue;
+        if (!cutSides.includes(a.side)) continue;
 
-        // The split propagates across edges PERPENDICULAR to the split direction.
-        // Split in U → propagates across left (side 3) and right (side 1) edges
-        // Split in V → propagates across bottom (side 0) and top (side 2) edges
-        if (cur.dir === 'u' && (a.side === 3 || a.side === 1)) {
-          // Determine the direction and parameter in the adjacent patch
-          const adjDir = this.getAdjacentSplitDir(a.side, a.otherSide, cur.dir);
-          const adjT = a.reversed ? (1 - cur.t) : cur.t;
-          queue.push({idx: a.otherIdx, dir: adjDir, t: adjT});
-        }
-        if (cur.dir === 'v' && (a.side === 0 || a.side === 2)) {
-          const adjDir = this.getAdjacentSplitDir(a.side, a.otherSide, cur.dir);
-          const adjT = a.reversed ? (1 - cur.t) : cur.t;
-          queue.push({idx: a.otherIdx, dir: adjDir, t: adjT});
-        }
+        // Determine split direction and parameter in the neighbor.
+        // The cut enters the neighbor through otherSide.
+        // If otherSide is 0 or 2 (horizontal), the cut continues in U direction.
+        // If otherSide is 1 or 3 (vertical), the cut continues in V direction.
+        const otherIsHorizontal = a.otherSide === 0 || a.otherSide === 2;
+        const adjDir: 'u' | 'v' = otherIsHorizontal ? 'u' : 'v';
+        const adjT = a.reversed ? (1 - cur.t) : cur.t;
+
+        queue.push({idx: a.otherIdx, dir: adjDir, t: adjT});
       }
     }
 
-    // Split all collected patches. Process in reverse index order to keep indices stable.
+    // Split in reverse index order so indices stay stable
     toSplit.sort((a, b) => b.idx - a.idx);
     for (const s of toSplit) {
       this.splitSinglePatch(s.idx, s.dir, s.t);
     }
-  }
-
-  private getAdjacentSplitDir(mySide: number, otherSide: number, myDir: 'u' | 'v'): 'u' | 'v' {
-    // When crossing from one patch to another, the split direction may change
-    // depending on which sides are shared.
-    // Side 0/2 are V-boundaries (horizontal), side 1/3 are U-boundaries (vertical)
-    const myIsHorizontal = mySide === 0 || mySide === 2;
-    const otherIsHorizontal = otherSide === 0 || otherSide === 2;
-    if (myIsHorizontal === otherIsHorizontal) return myDir;
-    return myDir === 'u' ? 'v' : 'u';
   }
 
   /**
