@@ -86,9 +86,6 @@ export class PatchCageView extends View {
         this.model.recompute();
         this.selectPatch(-1);
         this.rebuildAll();
-      } else if (e.key === 'a' || e.key === 'A') {
-        // Arc constraint on selected edge
-        this.promptArcConstraint();
       }
     };
     document.addEventListener('keydown', this._onKeyDown);
@@ -284,7 +281,6 @@ export class PatchCageView extends View {
   selectSubcageHandle(handle) {
     this.deselectHandle();
     this.selectedHandle = handle;
-    this.selectedEdgeSide = -1;
     handle.__mat.color.setHex(CP_SELECTED);
     this.gizmoTarget.position.copy(handle.position);
     this.gizmo.attach(this.gizmoTarget);
@@ -292,66 +288,6 @@ export class PatchCageView extends View {
     this.gizmo.enabled = true;
     this.ctx.viewer.requestRender();
 
-    // If the selected vertex is on an edge, remember which side
-    const ud = handle.userData;
-    if (ud.row === 0) this.selectedEdgeSide = 0;      // bottom
-    else if (ud.col === 3) this.selectedEdgeSide = 1;  // right
-    else if (ud.row === 3) this.selectedEdgeSide = 2;  // top
-    else if (ud.col === 0) this.selectedEdgeSide = 3;  // left
-  }
-
-  promptArcConstraint() {
-    if (this.selectedPatchIdx < 0) {
-      alert('Select a patch first (click on surface)');
-      return;
-    }
-
-    // Determine which edge to constrain
-    let side = this.selectedEdgeSide;
-    if (side < 0) {
-      const sideStr = prompt('Which edge? (0=bottom, 1=right, 2=top, 3=left)', '0');
-      if (sideStr === null) return;
-      side = parseInt(sideStr);
-      if (isNaN(side) || side < 0 || side > 3) return;
-    }
-
-    const radiusStr = prompt('Arc radius:', '50');
-    if (radiusStr === null) return;
-    const radius = parseFloat(radiusStr);
-    if (isNaN(radius) || radius <= 0) return;
-
-    const angleStr = prompt('Arc angle (degrees):', '90');
-    if (angleStr === null) return;
-    const angle = parseFloat(angleStr);
-    if (isNaN(angle) || angle <= 0 || angle >= 360) return;
-
-    const modeStr = prompt('Mode: 1=approximate (Bézier), 2=rational (exact NURBS)', '1');
-    if (modeStr === null) return;
-    const mode = modeStr === '2' ? 'rational' : 'approximate';
-
-    // Compute plane normal from the edge and surface normal at midpoint
-    const patch = this.model.cage.patches[this.selectedPatchIdx];
-    const edgeVerts = patch.getEdgeVertices(side);
-    const p0 = edgeVerts[0].position;
-    const p3 = edgeVerts[3].position;
-
-    // Use the surface normal at the edge midpoint as the arc plane normal
-    let u = 0.5, v = 0.5;
-    if (side === 0) v = 0;
-    else if (side === 1) u = 1;
-    else if (side === 2) v = 1;
-    else if (side === 3) u = 0;
-    const planeNormal = patch.normal(u, v);
-
-    this.model.cage.constrainEdgeToArc(
-      this.selectedPatchIdx, side,
-      radius, angle, planeNormal, mode
-    );
-    this.model.recompute();
-    this.rebuildAll();
-    if (this.selectedPatchIdx >= 0) {
-      this.buildSubcage(this.selectedPatchIdx);
-    }
   }
 
   deselectHandle() {
