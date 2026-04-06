@@ -90,6 +90,8 @@ export class PatchCageView extends View {
     const hits = [];
     this.solidMesh.raycast(raycaster, hits);
 
+    console.log('pickPatch: hits=' + hits.length + ', solidMesh visible=' + this.solidMesh.visible + ', geom verts=' + (this.geometry?.getAttribute('position')?.count || 0));
+
     if (hits.length === 0) {
       this.selectPatch(-1);
       return;
@@ -97,6 +99,7 @@ export class PatchCageView extends View {
 
     hits.sort((a, b) => a.distance - b.distance);
     const faceIndex = hits[0].faceIndex;
+    console.log('pickPatch: faceIndex=' + faceIndex + ', ranges=' + JSON.stringify(this.model.mesh?.faceTriRanges?.slice(0, 3)));
     if (faceIndex === undefined) {
       this.selectPatch(-1);
       return;
@@ -131,7 +134,7 @@ export class PatchCageView extends View {
     this.subcageHandles = [];
 
     const patch = this.model.cage.patches[patchIdx];
-    const ctrl = patch.control;
+    const ctrl = patch.grid;
     const ss = this.ctx.viewer.sceneSetup;
     const geom = new SphereGeometry(1);
 
