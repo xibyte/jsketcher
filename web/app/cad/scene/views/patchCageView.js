@@ -73,6 +73,23 @@ export class PatchCageView extends View {
     dom.addEventListener('mousedown', this._onMouseDown);
     dom.addEventListener('mouseup', this._onMouseUp);
 
+    // Keyboard: when a patch is selected, press U/V to split along that direction at t=0.5
+    this._onKeyDown = (e) => {
+      if (this.selectedPatchIdx < 0) return;
+      if (e.key === 'u' || e.key === 'U') {
+        this.model.cage.splitIsoline(this.selectedPatchIdx, 'u', 0.5);
+        this.model.recompute();
+        this.selectPatch(-1);
+        this.rebuildAll();
+      } else if (e.key === 'v' || e.key === 'V') {
+        this.model.cage.splitIsoline(this.selectedPatchIdx, 'v', 0.5);
+        this.model.recompute();
+        this.selectPatch(-1);
+        this.rebuildAll();
+      }
+    };
+    document.addEventListener('keydown', this._onKeyDown);
+
     setAttribute(this.rootGroup, PATCH_CAGE, this);
     setAttribute(this.rootGroup, View.MARKER, this);
 
@@ -320,6 +337,7 @@ export class PatchCageView extends View {
     const dom = this.ctx.viewer.sceneSetup.renderer.domElement;
     if (this._onMouseDown) dom.removeEventListener('mousedown', this._onMouseDown);
     if (this._onMouseUp) dom.removeEventListener('mouseup', this._onMouseUp);
+    if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown);
     if (this.gizmo) {
       this.gizmo.detach(); this.gizmo.dispose();
       const s = this.ctx.viewer.sceneSetup.scene;

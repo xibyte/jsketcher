@@ -142,19 +142,157 @@ export class PatchCage {
     return Array.from(seen);
   }
 
-  /** Get all unique edges (pairs of adjacent vertices in the grid) */
-  allEdges(): [CageVertex, CageVertex][] {
-    const seen = new Set<string>();
-    const edges: [CageVertex, CageVertex][] = [];
-    function addEdge(a: CageVertex, b: CageVertex) {
-      const key = a < b ? `${a}|${b}` : `${b}|${a}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        edges.push([a, b]);
+  /**
+   * Find which patches share an edge with a given patch.
+   * Returns {side, otherPatch, otherSide, reversed} for each shared edge.
+   */
+  findAdjacentPatches(patchIdx: number): {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] {
+    const patch = this.patches[patchIdx];
+    const result: {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] = [];
+
+    for (let side = 0; side < 4; side++) {
+      const edge = patch.getEdgeVertices(side);
+      // Find another patch that shares these 4 vertices on one of its sides
+      for (let oi = 0; oi < this.patches.length; oi++) {
+        if (oi === patchIdx) continue;
+        const other = this.patches[oi];
+        for (let os = 0; os < 4; os++) {
+          const otherEdge = other.getEdgeVertices(os);
+          // Check forward match
+          if (edge[0] === otherEdge[0] && edge[1] === otherEdge[1] &&
+              edge[2] === otherEdge[2] && edge[3] === otherEdge[3]) {
+            result.push({side, otherIdx: oi, otherSide: os, reversed: false});
+          }
+          // Check reversed match
+          if (edge[0] === otherEdge[3] && edge[1] === otherEdge[2] &&
+              edge[2] === otherEdge[1] && edge[3] === otherEdge[0]) {
+            result.push({side, otherIdx: oi, otherSide: os, reversed: true});
+          }
+        }
       }
     }
-    // This won't work with object identity as string. Use a different approach:
-    return edges;
+    return result;
+  }
+
+  /**
+   * Split a patch along a U or V isoline, propagating across all connected patches.
+   *
+   * @param patchIdx Starting patch index
+   * @param direction 'u' or 'v' — which parameter to split along
+   * @param t Parameter value (0..1) of the isoline
+   */
+  splitIsoline(patchIdx: number, direction: 'u' | 'v', t: number): void {
+    // Collect all patches that need splitting along this isoline.
+    // Walk across shared edges in the split direction.
+    const toSplit: {idx: number, dir: 'u' | 'v', t: number}[] = [];
+    const visited = new Set<number>();
+
+    const queue: {idx: number, dir: 'u' | 'v', t: number}[] = [{idx: patchIdx, dir: direction, t}];
+
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      if (visited.has(cur.idx)) continue;
+      visited.add(cur.idx);
+      toSplit.push(cur);
+
+      // Find adjacent patches along the split direction
+      const adj = this.findAdjacentPatches(cur.idx);
+      for (const a of adj) {
+        if (visited.has(a.otherIdx)) continue;
+
+        // The split propagates across edges PERPENDICULAR to the split direction.
+        // Split in U → propagates across left (side 3) and right (side 1) edges
+        // Split in V → propagates across bottom (side 0) and top (side 2) edges
+        if (cur.dir === 'u' && (a.side === 3 || a.side === 1)) {
+          // Determine the direction and parameter in the adjacent patch
+          const adjDir = this.getAdjacentSplitDir(a.side, a.otherSide, cur.dir);
+          const adjT = a.reversed ? (1 - cur.t) : cur.t;
+          queue.push({idx: a.otherIdx, dir: adjDir, t: adjT});
+        }
+        if (cur.dir === 'v' && (a.side === 0 || a.side === 2)) {
+          const adjDir = this.getAdjacentSplitDir(a.side, a.otherSide, cur.dir);
+          const adjT = a.reversed ? (1 - cur.t) : cur.t;
+          queue.push({idx: a.otherIdx, dir: adjDir, t: adjT});
+        }
+      }
+    }
+
+    // Split all collected patches. Process in reverse index order to keep indices stable.
+    toSplit.sort((a, b) => b.idx - a.idx);
+    for (const s of toSplit) {
+      this.splitSinglePatch(s.idx, s.dir, s.t);
+    }
+  }
+
+  private getAdjacentSplitDir(mySide: number, otherSide: number, myDir: 'u' | 'v'): 'u' | 'v' {
+    // When crossing from one patch to another, the split direction may change
+    // depending on which sides are shared.
+    // Side 0/2 are V-boundaries (horizontal), side 1/3 are U-boundaries (vertical)
+    const myIsHorizontal = mySide === 0 || mySide === 2;
+    const otherIsHorizontal = otherSide === 0 || otherSide === 2;
+    if (myIsHorizontal === otherIsHorizontal) return myDir;
+    return myDir === 'u' ? 'v' : 'u';
+  }
+
+  /**
+   * Split a single patch into two patches along the given parameter.
+   * Uses de Casteljau subdivision on the 4×4 control grid.
+   */
+  private splitSinglePatch(patchIdx: number, direction: 'u' | 'v', t: number): void {
+    const patch = this.patches[patchIdx];
+    const g = patch.grid;
+
+    if (direction === 'u') {
+      // Split each row (4 control points in U) at parameter t
+      const leftGrid: CageVertex[][] = [];
+      const rightGrid: CageVertex[][] = [];
+      const midCol: CageVertex[] = []; // shared column
+
+      for (let row = 0; row < 4; row++) {
+        const {left, mid, right} = splitBezierRow(g[row][0], g[row][1], g[row][2], g[row][3], t);
+        if (row === 0) {
+          // First row: create mid vertex
+        }
+        const midV = new CageVertex(mid[0], mid[1], mid[2]);
+        midCol.push(midV);
+
+        leftGrid.push([g[row][0], left[0], left[1], midV]);
+        rightGrid.push([midV, right[0], right[1], g[row][3]]);
+      }
+
+      // Create two new patches, sharing the mid column
+      const leftPatch = new NurbsPatch(leftGrid, cloneWeights(patch.weights));
+      const rightPatch = new NurbsPatch(rightGrid, cloneWeights(patch.weights));
+
+      // Replace original patch with the two new ones
+      this.patches.splice(patchIdx, 1, leftPatch, rightPatch);
+    } else {
+      // Split each column (4 control points in V) at parameter t
+      const bottomGrid: CageVertex[][] = [[], [], [], []];
+      const topGrid: CageVertex[][] = [[], [], [], []];
+      const midRow: CageVertex[] = []; // shared row
+
+      for (let col = 0; col < 4; col++) {
+        const {left, mid, right} = splitBezierRow(g[0][col], g[1][col], g[2][col], g[3][col], t);
+        const midV = new CageVertex(mid[0], mid[1], mid[2]);
+        midRow.push(midV);
+
+        bottomGrid[0][col] = g[0][col];
+        bottomGrid[1][col] = left[0];
+        bottomGrid[2][col] = left[1];
+        bottomGrid[3][col] = midV;
+
+        topGrid[0][col] = midV;
+        topGrid[1][col] = right[0];
+        topGrid[2][col] = right[1];
+        topGrid[3][col] = g[3][col];
+      }
+
+      const bottomPatch = new NurbsPatch(bottomGrid, cloneWeights(patch.weights));
+      const topPatch = new NurbsPatch(topGrid, cloneWeights(patch.weights));
+
+      this.patches.splice(patchIdx, 1, bottomPatch, topPatch);
+    }
   }
 
   // =========================================================================
@@ -216,6 +354,34 @@ export class PatchCage {
 function bernstein3(t: number): [number, number, number, number] {
   const mt = 1 - t;
   return [mt*mt*mt, 3*mt*mt*t, 3*mt*t*t, t*t*t];
+}
+
+/**
+ * De Casteljau split of 4 cubic Bézier control points at parameter t.
+ * Returns: left half (2 interior CageVertex), midpoint Vec3, right half (2 interior CageVertex).
+ * The original endpoints are reused (shared by identity).
+ */
+function splitBezierRow(p0: CageVertex, p1: CageVertex, p2: CageVertex, p3: CageVertex, t: number): {
+  left: [CageVertex, CageVertex],
+  mid: Vec3,
+  right: [CageVertex, CageVertex]
+} {
+  const a = vlerp(p0.position, p1.position, t);
+  const b = vlerp(p1.position, p2.position, t);
+  const c = vlerp(p2.position, p3.position, t);
+  const d = vlerp(a, b, t);
+  const e = vlerp(b, c, t);
+  const mid = vlerp(d, e, t);
+
+  return {
+    left: [new CageVertex(a[0], a[1], a[2]), new CageVertex(d[0], d[1], d[2])],
+    mid,
+    right: [new CageVertex(e[0], e[1], e[2]), new CageVertex(c[0], c[1], c[2])],
+  };
+}
+
+function cloneWeights(w: number[][]): number[][] {
+  return w.map(row => [...row]);
 }
 
 // =========================================================================
