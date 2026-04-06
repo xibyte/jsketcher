@@ -8,7 +8,7 @@ import {
   BufferGeometry, BufferAttribute, Mesh, DoubleSide,
   WireframeGeometry, LineSegments, LineBasicMaterial,
   SphereGeometry, MeshBasicMaterial, Vector3, Object3D,
-  Line, Raycaster, Vector2
+  Line
 } from 'three';
 import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
@@ -34,11 +34,12 @@ export class PatchCageView extends View {
     setAttribute(this.solidMesh, PATCH_CAGE, this);
     this.rootGroup.add(this.solidMesh);
 
-    // Wireframe
+    // Wireframe (non-pickable)
     this.wireframeGeometry = new WireframeGeometry(this.geometry);
     this.wireframeMaterial = new LineBasicMaterial({color: 0x2080ff, transparent: true, opacity: 0.3});
     this.wireframeMesh = new LineSegments(this.wireframeGeometry, this.wireframeMaterial);
     this.wireframeMesh.visible = false;
+    this.wireframeMesh.raycast = () => {}; // disable raycast
     this.rootGroup.add(this.wireframeMesh);
 
     // Subcage group (visible when a patch is selected)
@@ -55,9 +56,14 @@ export class PatchCageView extends View {
     this.setupGizmo();
 
     // Click surface to pick patch
-    this.solidMesh.onMouseClick = (e) => this.pickPatch(e);
+    this.solidMesh.onMouseDown = () => {};
+    this.solidMesh.onMouseClick = (e) => {
+      console.log('PatchCageView: solidMesh clicked');
+      this.pickPatch(e);
+    };
     this.solidMesh.onMouseEnter = () => ctx.highlightService.highlight(this.model.id);
     this.solidMesh.onMouseLeave = () => ctx.highlightService.unHighlight(this.model.id);
+    this.solidMesh.passMouseEvent = () => true;
 
     setAttribute(this.rootGroup, PATCH_CAGE, this);
     setAttribute(this.rootGroup, View.MARKER, this);
@@ -71,17 +77,24 @@ export class PatchCageView extends View {
   // ---- Patch picking ----
 
   pickPatch(event) {
-    // Find the hit for this solid mesh from event.hits
-    const hits = event.hits || [];
-    let faceIndex = -1;
-    for (const hit of hits) {
-      if (hit.object === this.solidMesh) {
-        faceIndex = hit.faceIndex;
-        break;
-      }
+    const me = event.mouseEvent;
+    if (!me) return;
+
+    // Raycast directly against the solid mesh only
+    const ss = this.ctx.viewer.sceneSetup;
+    const raycaster = ss.createRaycaster(me.offsetX, me.offsetY);
+    const hits = [];
+    this.solidMesh.raycast(raycaster, hits);
+
+    if (hits.length === 0) {
+      this.selectPatch(-1);
+      return;
     }
 
-    if (faceIndex < 0) {
+    // Sort by distance — take the closest hit (front face)
+    hits.sort((a, b) => a.distance - b.distance);
+    const faceIndex = hits[0].faceIndex;
+    if (faceIndex === undefined) {
       this.selectPatch(-1);
       return;
     }
