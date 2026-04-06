@@ -88,12 +88,13 @@ export class PatchCage {
   }
 
   setEdgePoints(patchId: number, side: number, pts: Vec3[]): void {
+    // Mutate in place to preserve shared references
     const c = this.patches[patchId].control;
-    switch (side) {
-      case 0: c[0][0]=pts[0]; c[0][1]=pts[1]; c[0][2]=pts[2]; c[0][3]=pts[3]; break;
-      case 1: c[0][3]=pts[0]; c[1][3]=pts[1]; c[2][3]=pts[2]; c[3][3]=pts[3]; break;
-      case 2: c[3][0]=pts[0]; c[3][1]=pts[1]; c[3][2]=pts[2]; c[3][3]=pts[3]; break;
-      case 3: c[0][0]=pts[0]; c[1][0]=pts[1]; c[2][0]=pts[2]; c[3][0]=pts[3]; break;
+    const targets: Vec3[] = this.getEdgePoints(patchId, side);
+    for (let i = 0; i < 4; i++) {
+      targets[i][0] = pts[i][0];
+      targets[i][1] = pts[i][1];
+      targets[i][2] = pts[i][2];
     }
   }
 
@@ -115,9 +116,13 @@ export class PatchCage {
   // =========================================================================
 
   setControlPoint(patchId: number, row: number, col: number, pos: Vec3): void {
-    this.patches[patchId].control[row][col] = pos;
-    // Sync any shared edges that include this point
-    this.syncEdgesForPoint(patchId, row, col);
+    // Mutate in place — don't replace the array reference.
+    // This preserves sharing: if another patch references the same Vec3,
+    // both see the update.
+    const cp = this.patches[patchId].control[row][col];
+    cp[0] = pos[0];
+    cp[1] = pos[1];
+    cp[2] = pos[2];
   }
 
   setWeight(patchId: number, row: number, col: number, weight: number): void {
