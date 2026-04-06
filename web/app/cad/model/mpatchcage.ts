@@ -36,11 +36,6 @@ export class MPatchCage extends MObject {
     callback(this);
   }
 
-  get parent() {
-    return null;
-  }
-
-  get location() {
-    return this.location$.value;
-  }
+  get parent() { return null; }
+  get location() { return this.location$.value; }
 }
