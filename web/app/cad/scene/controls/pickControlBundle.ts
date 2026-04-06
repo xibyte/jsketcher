@@ -1,6 +1,6 @@
 import * as mask from 'gems/mask'
 import {getAttribute} from 'scene/objectData';
-import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT} from 'cad/model/entities';
+import {DATUM, DATUM_AXIS, EDGE, FACE, LOOP, SHELL, SKETCH_OBJECT, SUBD, PATCH_CAGE} from 'cad/model/entities';
 import {LOG_FLAGS} from 'cad/logFlags';
 import {initRayCastDebug, printRaycastDebugInfo, RayCastDebugInfo} from "./rayCastDebug";
 import {PickListDialog, PickListDialogRequest$} from "cad/scene/controls/PickListDialog";
@@ -98,6 +98,14 @@ export function activate(context) {
       }
     } else if (type === DATUM) {
       if (dispatchSelection(DATUM, modelId, event)) {
+        return false;
+      }
+    } else if (type === SUBD) {
+      if (dispatchSelection(SUBD, modelId, event)) {
+        return false;
+      }
+    } else if (type === PATCH_CAGE) {
+      if (dispatchSelection(PATCH_CAGE, modelId, event)) {
         return false;
       }
     }
