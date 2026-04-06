@@ -409,8 +409,9 @@ export class PatchCageView extends View {
         ${existing ? ' | Arc: ' + round(existing.angle) + '° r=' + round(existing.radius) + ' (' + existing.mode + ')' : ''}
       </div>
       <div style="display:flex;gap:6px;">
-        <button id="edge-arc90" style="flex:1;padding:6px;background:#353;color:#eee;border:none;border-radius:4px;cursor:pointer;">Arc 90°</button>
-        ${existing ? '<button id="edge-remove-arc" style="flex:1;padding:6px;background:#533;color:#eee;border:none;border-radius:4px;cursor:pointer;">Remove Arc</button>' : ''}
+        <button id="edge-arc90-out" style="flex:1;padding:6px;background:#353;color:#eee;border:none;border-radius:4px;cursor:pointer;">Arc 90° Out</button>
+        <button id="edge-arc90-in" style="flex:1;padding:6px;background:#345;color:#eee;border:none;border-radius:4px;cursor:pointer;">Arc 90° In</button>
+        ${existing ? '<button id="edge-remove-arc" style="flex:1;padding:6px;background:#533;color:#eee;border:none;border-radius:4px;cursor:pointer;">Remove</button>' : ''}
       </div>
     `;
 
@@ -419,25 +420,23 @@ export class PatchCageView extends View {
 
     panel.querySelector('#edge-close').onclick = () => this.deselectEdge();
 
-    panel.querySelector('#edge-arc90').onclick = () => {
+    const applyArc90 = (flip) => {
       const patchIdx = this.selectedPatchIdx;
       const side = edgeIdx;
       const ptch = this.model.cage.patches[patchIdx];
       const ev = ptch.getEdgeVertices(side);
 
-      // Radius for 90° arc from chord: chord = r√2, so r = chord/√2
       const chord = vdist(ev[0].position, ev[3].position);
       const radius = chord / Math.SQRT2;
 
-      // Surface normal at edge midpoint for arc plane
       let u = 0.5, v = 0.5;
       if (side === 0) v = 0;
       else if (side === 1) u = 1;
       else if (side === 2) v = 1;
       else if (side === 3) u = 0;
-      const planeNormal = ptch.normal(u, v);
+      let planeNormal = ptch.normal(u, v);
+      if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]];
 
-      // Remove existing constraint on this edge
       cage.arcConstraints = cage.arcConstraints.filter(c => {
         if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
           if (c.mode === 'rational') ptch.rational = false;
@@ -450,9 +449,10 @@ export class PatchCageView extends View {
       this.model.recompute();
       this.rebuildAll();
       this.persistCageState();
-      // Re-show dialog with updated info
       this.showEdgeDialog(edgeIdx);
     };
+    panel.querySelector('#edge-arc90-out').onclick = () => applyArc90(false);
+    panel.querySelector('#edge-arc90-in').onclick = () => applyArc90(true);
 
     const removeBtn = panel.querySelector('#edge-remove-arc');
     if (removeBtn) {
