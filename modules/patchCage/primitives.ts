@@ -1,310 +1,259 @@
 /**
- * Patch cage primitives with 4×4 bicubic control grids.
+ * Patch cage primitives using shared CageVertex instances.
+ * Watertightness guaranteed by object identity — no synchronization.
  */
 
-import {PatchCage} from './PatchCage';
+import {PatchCage, NurbsPatch, CageVertex, makeGrid} from './PatchCage';
 import {Vec3} from './patchCageTypes';
 import {vadd, vsub, vscale, vlerp} from './vec3Math';
 
-/**
- * Create a flat plane as a single Bézier patch.
- */
+function V(x: number, y: number, z: number): CageVertex {
+  return new CageVertex(x, y, z);
+}
+
+/** Linear interpolation between two CageVertex, creating a new one */
+function Vlerp(a: CageVertex, b: CageVertex, t: number): CageVertex {
+  const p = vlerp(a.position, b.position, t);
+  return new CageVertex(p[0], p[1], p[2]);
+}
+
+// =========================================================================
+// Plane
+// =========================================================================
+
 export function createPatchPlane(width: number, height: number): PatchCage {
   const cage = new PatchCage();
   const hw = width / 2, hh = height / 2;
 
-  // 4×4 grid on the XY plane, evenly spaced
-  const control: Vec3[][] = [];
-  for (let j = 0; j < 4; j++) {
-    const row: Vec3[] = [];
-    const v = j / 3;
-    for (let i = 0; i < 4; i++) {
-      const u = i / 3;
-      row.push([-hw + width * u, -hh + height * v, 0]);
-    }
-    control.push(row);
-  }
+  const c00 = V(-hw, -hh, 0), c10 = V(hw, -hh, 0);
+  const c01 = V(-hw, hh, 0), c11 = V(hw, hh, 0);
 
-  cage.addPatch(control);
+  cage.patches.push(new NurbsPatch(makeGrid([c00, c10, c01, c11])));
   return cage;
 }
 
-/**
- * Create a box as 6 Bézier patches sharing edges.
- */
+// =========================================================================
+// Box
+// =========================================================================
+
 export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): PatchCage {
   const cage = new PatchCage();
   const hx = sizeX / 2, hy = sizeY / 2, hz = sizeZ / 2;
 
-  function makeFlatPatch(corners: [Vec3, Vec3, Vec3, Vec3]): Vec3[][] {
-    // corners: [c00, c10, c01, c11] → 4×4 grid by linear interpolation
-    const [c00, c10, c01, c11] = corners;
-    const control: Vec3[][] = [];
-    for (let j = 0; j < 4; j++) {
-      const row: Vec3[] = [];
-      const v = j / 3;
-      for (let i = 0; i < 4; i++) {
-        const u = i / 3;
-        row.push(vadd(
-          vadd(vscale(c00, (1-u)*(1-v)), vscale(c10, u*(1-v))),
-          vadd(vscale(c01, (1-u)*v), vscale(c11, u*v))
-        ));
-      }
-      control.push(row);
-    }
-    return control;
-  }
+  // 8 shared corner vertices
+  const v000 = V(-hx,-hy,-hz), v100 = V(hx,-hy,-hz);
+  const v010 = V(-hx,hy,-hz),  v110 = V(hx,hy,-hz);
+  const v001 = V(-hx,-hy,hz),  v101 = V(hx,-hy,hz);
+  const v011 = V(-hx,hy,hz),   v111 = V(hx,hy,hz);
 
-  // Bottom (-Z)
-  cage.addPatch(makeFlatPatch([[-hx,-hy,-hz],[hx,-hy,-hz],[-hx,hy,-hz],[hx,hy,-hz]]));
-  // Top (+Z)
-  cage.addPatch(makeFlatPatch([[-hx,-hy,hz],[hx,-hy,hz],[-hx,hy,hz],[hx,hy,hz]]));
-  // Front (-Y)
-  cage.addPatch(makeFlatPatch([[-hx,-hy,-hz],[hx,-hy,-hz],[-hx,-hy,hz],[hx,-hy,hz]]));
-  // Back (+Y)
-  cage.addPatch(makeFlatPatch([[hx,hy,-hz],[-hx,hy,-hz],[hx,hy,hz],[-hx,hy,hz]]));
-  // Right (+X)
-  cage.addPatch(makeFlatPatch([[hx,-hy,-hz],[hx,hy,-hz],[hx,-hy,hz],[hx,hy,hz]]));
-  // Left (-X)
-  cage.addPatch(makeFlatPatch([[-hx,hy,-hz],[-hx,-hy,-hz],[-hx,hy,hz],[-hx,-hy,hz]]));
+  // 12 shared edge interior vertices (2 per edge)
+  // Bottom face edges
+  const e01_1 = Vlerp(v000,v100,1/3), e01_2 = Vlerp(v000,v100,2/3); // bottom-front
+  const e12_1 = Vlerp(v100,v110,1/3), e12_2 = Vlerp(v100,v110,2/3); // bottom-right
+  const e23_1 = Vlerp(v010,v110,1/3), e23_2 = Vlerp(v010,v110,2/3); // bottom-back
+  const e30_1 = Vlerp(v000,v010,1/3), e30_2 = Vlerp(v000,v010,2/3); // bottom-left
 
-  // Shared edges between faces
-  // Bottom-Front: bottom's v=0 row ↔ front's v=0 row
-  cage.addSharedEdge(0, 0, 2, 0);
-  // Bottom-Back: bottom's v=1 row ↔ back's v=0 row (reversed)
-  cage.addSharedEdge(0, 2, 3, 0, true);
-  // Bottom-Right: bottom's u=1 col ↔ right's v=0 row
-  cage.addSharedEdge(0, 1, 4, 0);
-  // Bottom-Left: bottom's u=0 col ↔ left's v=0 row (reversed)
-  cage.addSharedEdge(0, 3, 5, 0, true);
-  // Top-Front: top's v=0 row ↔ front's v=1 row
-  cage.addSharedEdge(1, 0, 2, 2);
-  // Top-Back: top's v=1 row ↔ back's v=1 row (reversed)
-  cage.addSharedEdge(1, 2, 3, 2, true);
-  // Top-Right: top's u=1 col ↔ right's v=1 row
-  cage.addSharedEdge(1, 1, 4, 2);
-  // Top-Left: top's u=0 col ↔ left's v=1 row (reversed)
-  cage.addSharedEdge(1, 3, 5, 2, true);
-  // Front-Right: front's u=1 col ↔ right's u=0 col
-  cage.addSharedEdge(2, 1, 4, 3);
-  // Front-Left: front's u=0 col ↔ left's u=1 col
-  cage.addSharedEdge(2, 3, 5, 1);
-  // Back-Right: back's u=0 col ↔ right's u=1 col
-  cage.addSharedEdge(3, 3, 4, 1);
-  // Back-Left: back's u=1 col ↔ left's u=0 col
-  cage.addSharedEdge(3, 1, 5, 3);
+  // Top face edges
+  const e45_1 = Vlerp(v001,v101,1/3), e45_2 = Vlerp(v001,v101,2/3);
+  const e56_1 = Vlerp(v101,v111,1/3), e56_2 = Vlerp(v101,v111,2/3);
+  const e67_1 = Vlerp(v011,v111,1/3), e67_2 = Vlerp(v011,v111,2/3);
+  const e74_1 = Vlerp(v001,v011,1/3), e74_2 = Vlerp(v001,v011,2/3);
+
+  // Vertical edges
+  const e04_1 = Vlerp(v000,v001,1/3), e04_2 = Vlerp(v000,v001,2/3);
+  const e15_1 = Vlerp(v100,v101,1/3), e15_2 = Vlerp(v100,v101,2/3);
+  const e26_1 = Vlerp(v110,v111,1/3), e26_2 = Vlerp(v110,v111,2/3);
+  const e37_1 = Vlerp(v010,v011,1/3), e37_2 = Vlerp(v010,v011,2/3);
+
+  // 6 faces, each sharing corner + edge vertices with neighbors
+  // Bottom (-Z): corners v000,v100,v010,v110
+  cage.patches.push(new NurbsPatch(makeGrid([v000,v100,v010,v110], {
+    bottom: [v000, e01_1, e01_2, v100],
+    right: [v100, e12_1, e12_2, v110],
+    top: [v010, e23_1, e23_2, v110],
+    left: [v000, e30_1, e30_2, v010],
+  })));
+
+  // Top (+Z): corners v001,v101,v011,v111
+  cage.patches.push(new NurbsPatch(makeGrid([v001,v101,v011,v111], {
+    bottom: [v001, e45_1, e45_2, v101],
+    right: [v101, e56_1, e56_2, v111],
+    top: [v011, e67_1, e67_2, v111],
+    left: [v001, e74_1, e74_2, v011],
+  })));
+
+  // Front (-Y): corners v000,v100,v001,v101
+  cage.patches.push(new NurbsPatch(makeGrid([v000,v100,v001,v101], {
+    bottom: [v000, e01_1, e01_2, v100],
+    right: [v100, e15_1, e15_2, v101],
+    top: [v001, e45_1, e45_2, v101],
+    left: [v000, e04_1, e04_2, v001],
+  })));
+
+  // Back (+Y): corners v110,v010,v111,v011
+  cage.patches.push(new NurbsPatch(makeGrid([v110,v010,v111,v011], {
+    bottom: [v110, e23_2, e23_1, v010], // reversed
+    right: [v010, e37_1, e37_2, v011],
+    top: [v111, e67_2, e67_1, v011], // reversed
+    left: [v110, e26_1, e26_2, v111],
+  })));
+
+  // Right (+X): corners v100,v110,v101,v111
+  cage.patches.push(new NurbsPatch(makeGrid([v100,v110,v101,v111], {
+    bottom: [v100, e12_1, e12_2, v110],
+    right: [v110, e26_1, e26_2, v111],
+    top: [v101, e56_1, e56_2, v111],
+    left: [v100, e15_1, e15_2, v101],
+  })));
+
+  // Left (-X): corners v010,v000,v011,v001
+  cage.patches.push(new NurbsPatch(makeGrid([v010,v000,v011,v001], {
+    bottom: [v010, e30_2, e30_1, v000], // reversed
+    right: [v000, e04_1, e04_2, v001],
+    top: [v011, e74_2, e74_1, v001], // reversed
+    left: [v010, e37_1, e37_2, v011],
+  })));
 
   return cage;
 }
 
-/**
- * Create a cylinder using 4 rational NURBS quarter-circle patches for walls.
- * Each quarter is a bicubic rational Bézier patch.
- *
- * The weight for the mid-control points of circular arcs is cos(π/4) = √2/2 ≈ 0.7071
- * This gives exact circular cross-sections.
- */
+// =========================================================================
+// Cylinder
+// =========================================================================
+
 export function createPatchCylinder(
   radius: number, height: number, segments: number = 4
 ): PatchCage {
   const cage = new PatchCage();
   const hz = height / 2;
+  const k = 4 * (Math.SQRT2 - 1) / 3; // cubic Bézier circle constant
+  const quarterAngles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
 
-  // For exact circles, we use 4 quarter patches (90° each).
-  // Each quarter's cross-section is a rational Bézier curve with weight √2/2 on the middle control point.
-  const quarterAngles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
-  const w = Math.SQRT1_2; // cos(45°) = √2/2
+  // Z levels for wall control points
+  const zLevels = [-hz, -hz/3, hz/3, hz];
 
+  // Pre-create ALL shared vertices for the wall
+  // wallVerts[q][row][col] but we only need to share:
+  //   - Column 0 and column 3 between adjacent quarters
+  //   - All rows shared vertically within the same quarter
+
+  // Create wall vertices. wallV[row][vertIdx] where vertIdx goes around circumference.
+  // Each quarter has 4 U-direction vertices. Adjacent quarters share the boundary vertex.
+  // Total unique circumference positions = 4 quarters × 3 unique + 1 shared = 13? No.
+  // quarter 0: col0=A0, col1=B0, col2=C0, col3=A1 (shared with quarter 1 col0)
+  // So total unique per row = 4 * 3 = 12 (4 on-circle + 8 handles)
+
+  // Build per-row vertex rings
+  const rings: CageVertex[][] = []; // rings[row] = array of 12 verts around circumference
+
+  for (let row = 0; row < 4; row++) {
+    const z = zLevels[row];
+    const ring: CageVertex[] = [];
+
+    for (let q = 0; q < 4; q++) {
+      const a0 = quarterAngles[q], a1 = quarterAngles[(q+1)%4];
+      const cos0 = Math.cos(a0), sin0 = Math.sin(a0);
+      const cos1 = Math.cos(a1), sin1 = Math.sin(a1);
+
+      // 4 control points for quarter arc
+      const cp0 = V(radius*cos0, radius*sin0, z);
+      const cp1 = V(radius*(cos0 - k*sin0), radius*(sin0 + k*cos0), z);
+      const cp2 = V(radius*(cos1 + k*sin1), radius*(sin1 - k*cos1), z);
+      // cp3 = next quarter's cp0 (shared)
+
+      ring.push(cp0, cp1, cp2);
+    }
+    rings.push(ring);
+  }
+
+  // Now rings[row] has 12 vertices: [q0_cp0, q0_cp1, q0_cp2, q1_cp0, q1_cp1, q1_cp2, ...]
+  // Quarter q uses: ring[q*3], ring[q*3+1], ring[q*3+2], ring[((q+1)%4)*3]
+
+  // Build 4 wall patches sharing boundary vertices
   for (let q = 0; q < 4; q++) {
-    const a0 = quarterAngles[q];
-    const a1 = quarterAngles[(q + 1) % 4];
-    const amid = (a0 + a1) / 2;
-
-    // The 3 cross-section control points for a quarter circle:
-    // P0 = on circle at a0
-    // P1 = intersection of tangent lines at a0 and a1 (off-circle, weight = w)
-    // P2 = on circle at a1
-    // For bicubic, we need 4 control points per U direction.
-    // Use degree elevation from quadratic rational → cubic rational.
-
-    // Quadratic rational quarter circle control points:
-    const qp0: Vec3 = [radius * Math.cos(a0), radius * Math.sin(a0), 0];
-    const qp1: Vec3 = [radius * Math.cos(a0) - radius * Math.sin(a0) * Math.tan(Math.PI/4),
-                        radius * Math.sin(a0) + radius * Math.cos(a0) * Math.tan(Math.PI/4), 0];
-    const qp2: Vec3 = [radius * Math.cos(a1), radius * Math.sin(a1), 0];
-
-    // For simplicity, use the quadratic control points with proper tangent handles
-    // but lay them out in a 4-point cubic Bézier that approximates the quarter circle.
-    // Exact cubic Bézier for quarter circle: k = 4*(√2 - 1)/3 ≈ 0.5522847
-    const k = 4 * (Math.SQRT2 - 1) / 3;
-    const cos0 = Math.cos(a0), sin0 = Math.sin(a0);
-    const cos1 = Math.cos(a1), sin1 = Math.sin(a1);
-
-    const cp0: Vec3 = [radius * cos0, radius * sin0, 0];
-    const cp1: Vec3 = [radius * (cos0 - k * sin0), radius * (sin0 + k * cos0), 0];
-    const cp2: Vec3 = [radius * (cos1 + k * sin1), radius * (sin1 - k * cos1), 0];
-    const cp3: Vec3 = [radius * cos1, radius * sin1, 0];
-
-    // Build 4×4 control grid: extrude along Z with 4 height levels
-    const control: Vec3[][] = [];
-    const zLevels = [-hz, -hz / 3, hz / 3, hz];
-
-    for (let j = 0; j < 4; j++) {
-      const z = zLevels[j];
-      control.push([
-        [cp0[0], cp0[1], z],
-        [cp1[0], cp1[1], z],
-        [cp2[0], cp2[1], z],
-        [cp3[0], cp3[1], z],
+    const qn = (q + 1) % 4;
+    const grid: CageVertex[][] = [];
+    for (let row = 0; row < 4; row++) {
+      grid.push([
+        rings[row][q*3],      // on-circle start
+        rings[row][q*3 + 1],  // handle
+        rings[row][q*3 + 2],  // handle
+        rings[row][qn*3],     // on-circle end (SHARED with next quarter's col 0)
       ]);
     }
-
-    // All weights = 1 for the cubic approximation (non-rational).
-    // The cubic Bézier with k ≈ 0.5522847 gives < 0.027% error from a true circle.
-    cage.addPatch(control);
+    cage.patches.push(new NurbsPatch(grid));
   }
 
-  // Share edges between adjacent wall quarter patches
-  for (let q = 0; q < 4; q++) {
-    const next = (q + 1) % 4;
-    cage.addSharedEdge(q, 1, next, 3); // right edge of q = left edge of next
-  }
-
-  // ---- Cap patches ----
-  // Each cap = 4 quarter-disk patches + 1 center rhombic patch.
-  // All shared boundary control points are THE SAME array references.
-
+  // ---- Caps with center diamond ----
   const dFrac = 0.33;
 
   for (let cap = 0; cap < 2; cap++) {
-    const z = cap === 0 ? -hz : hz;
     const wallRow = cap === 0 ? 0 : 3;
-    const center: Vec3 = [0, 0, z];
+    const z = cap === 0 ? -hz : hz;
 
-    // Get REFERENCES to wall arc points (not copies)
-    const wallArcs: Vec3[][] = []; // wallArcs[q] = [cp0, cp1, cp2, cp3]
+    // On-circle corner vertices (shared with wall)
+    const arcCorners: CageVertex[] = [];
     for (let q = 0; q < 4; q++) {
-      const row = cage.patches[q].control[wallRow];
-      wallArcs.push(row); // same array references
+      arcCorners.push(rings[wallRow][q * 3]); // SAME vertex instance as wall
     }
 
-    // Diamond corners on the cap plane
-    const dC: Vec3[] = [];
+    // Diamond corner vertices
+    const dC: CageVertex[] = arcCorners.map(c => {
+      const p = vlerp([0, 0, z], c.position, dFrac);
+      return V(p[0], p[1], p[2]);
+    });
+
+    // Radial edge vertices (shared between adjacent quarter cap patches)
+    // radialVerts[q] = [dC[q], mid1, mid2, arcCorners[q]] — 4 verts, endpoints shared
+    const radialVerts: CageVertex[][] = [];
     for (let q = 0; q < 4; q++) {
-      dC.push(vlerp(center, wallArcs[q][0], dFrac));
+      radialVerts.push([
+        dC[q],
+        Vlerp(dC[q], arcCorners[q], 1/3),
+        Vlerp(dC[q], arcCorners[q], 2/3),
+        arcCorners[q], // SAME as wall corner
+      ]);
     }
 
-    // Pre-build all shared radial edge control points.
-    // Radial edge q goes from dC[q] (diamond corner) to wallArcs[q][0] (arc corner).
-    // Each radial has 4 control points: [dC[q], r1, r2, arcCorner]
-    const radials: Vec3[][] = [];
-    for (let q = 0; q < 4; q++) {
-      const p0 = dC[q];
-      const p3 = wallArcs[q][0];
-      radials.push([p0, vlerp(p0, p3, 1/3), vlerp(p0, p3, 2/3), p3]);
-    }
+    // Diamond patch: grid corners are dC[0], dC[1], dC[3], dC[2]
+    const diamondGrid = makeGrid([dC[0], dC[1], dC[3], dC[2]]);
+    cage.patches.push(new NurbsPatch(diamondGrid));
 
-    // --- Center diamond patch ---
-    // Grid corners: [0][0]=dC[0], [0][3]=dC[1], [3][0]=dC[3], [3][3]=dC[2]
-    // (so side 0 goes dC0→dC1, side 1 goes dC1→dC2, side 2 goes dC3→dC2, side 3 goes dC0→dC3)
-    const dGrid: Vec3[][] = [];
-    for (let row = 0; row < 4; row++) {
-      const v = row / 3;
-      const r: Vec3[] = [];
-      for (let col = 0; col < 4; col++) {
-        const u = col / 3;
-        r.push(vadd(
-          vadd(vscale(dC[0], (1-u)*(1-v)), vscale(dC[1], u*(1-v))),
-          vadd(vscale(dC[3], (1-u)*v), vscale(dC[2], u*v))
-        ));
-      }
-      dGrid.push(r);
-    }
-    // Force corners to exact references
-    dGrid[0][0] = dC[0]; dGrid[0][3] = dC[1];
-    dGrid[3][0] = dC[3]; dGrid[3][3] = dC[2];
-    const diamondIdx = cage.addPatch(dGrid);
-
-    // --- 4 quarter patches ---
-    const qIdxs: number[] = [];
+    // 4 quarter cap patches
     for (let q = 0; q < 4; q++) {
       const qn = (q + 1) % 4;
 
-      // This quarter goes from diamond edge (dC[q]→dC[qn]) to arc edge (wallArcs[q])
-      // Left radial: radials[q] (dC[q] → wallArcs[q][0])
-      // Right radial: radials[qn] (dC[qn] → wallArcs[qn][0] = wallArcs[q][3]... wait)
-      // Actually wallArcs[q] = [cp0, cp1, cp2, cp3] for wall quarter q.
-      // wallArcs[q][0] = start of arc q = on circle at angle q*90°
-      // wallArcs[q][3] = end of arc q = wallArcs[qn][0] = on circle at angle (q+1)*90°
+      // This quarter: from diamond edge to arc edge
+      // Row 0 (v=0): diamond edge from dC[q] to dC[qn]
+      // Row 3 (v=1): arc edge from wall (shared vertices)
+      // Col 0 (u=0): radial from dC[q] to arcCorners[q]
+      // Col 3 (u=1): radial from dC[qn] to arcCorners[qn]
 
-      // Quarter q's 4×4 grid:
-      //   col 0 = left radial: dC[q] → wallArcs[q][0]
-      //   col 3 = right radial: dC[qn] → wallArcs[q][3]
-      //   row 0 = diamond edge: dC[q] → dC[qn]
-      //   row 3 = arc edge: wallArcs[q][0..3]
+      // Get arc handle vertices from wall (SHARED)
+      const arcH1 = rings[wallRow][q*3 + 1];
+      const arcH2 = rings[wallRow][q*3 + 2];
 
-      const grid: Vec3[][] = [];
-      for (let row = 0; row < 4; row++) {
-        const t = row / 3; // 0=diamond, 1=arc
-        const r: Vec3[] = [];
-        for (let col = 0; col < 4; col++) {
-          const s = col / 3;
-          // Bilinear blend of 4 boundary curves
-          const leftPt = radials[q][row];
-          const rightPt = radials[qn][row];
-          const bottomPt = vlerp(dC[q], dC[qn], s);
-          const topPt = wallArcs[q][col];
+      // Diamond edge vertices: get from diamond grid
+      // Diamond grid corners: [0][0]=dC[0], [0][3]=dC[1], [3][0]=dC[3], [3][3]=dC[2]
+      // Diamond bottom (row 0): dC[0] → dC[1] side
+      // We need the diamond edge that corresponds to this quarter.
+      // Quarter q uses dC[q] → dC[qn] as its bottom.
+      // Get the 2 interior diamond edge vertices:
+      const de1 = Vlerp(dC[q], dC[qn], 1/3);
+      const de2 = Vlerp(dC[q], dC[qn], 2/3);
 
-          // Coons: left-right blend + top-bottom blend - bilinear corners
-          const lr = vlerp(leftPt, rightPt, s);
-          const tb = vlerp(bottomPt, topPt, t);
-          const c00 = radials[q][0];   // dC[q]
-          const c10 = radials[qn][0];  // dC[qn]
-          const c01 = radials[q][3];   // wallArcs[q][0]
-          const c11 = radials[qn][3];  // wallArcs[q][3]
-          const bil = vadd(
-            vadd(vscale(c00, (1-s)*(1-t)), vscale(c10, s*(1-t))),
-            vadd(vscale(c01, (1-s)*t), vscale(c11, s*t))
-          );
-          r.push(vsub(vadd(lr, tb), bil));
-        }
-        grid.push(r);
-      }
+      const grid: CageVertex[][] = [
+        // Row 0: diamond edge
+        [dC[q], de1, de2, dC[qn]],
+        // Row 1: interpolated
+        [radialVerts[q][1], Vlerp(de1, arcH1, 1/3), Vlerp(de2, arcH2, 1/3), radialVerts[qn][1]],
+        // Row 2: interpolated
+        [radialVerts[q][2], Vlerp(de1, arcH1, 2/3), Vlerp(de2, arcH2, 2/3), radialVerts[qn][2]],
+        // Row 3: arc edge (SHARED with wall)
+        [arcCorners[q], arcH1, arcH2, arcCorners[qn]],
+      ];
 
-      // Force shared boundary points to exact references
-      // Row 3 = arc: share with wall
-      grid[3][0] = wallArcs[q][0];
-      grid[3][1] = wallArcs[q][1];
-      grid[3][2] = wallArcs[q][2];
-      grid[3][3] = wallArcs[q][3];
-      // Col 0 = left radial
-      for (let row = 0; row < 4; row++) grid[row][0] = radials[q][row];
-      // Col 3 = right radial
-      for (let row = 0; row < 4; row++) grid[row][3] = radials[qn][row];
-      // Row 0 corners = diamond corners
-      grid[0][0] = dC[q];
-      grid[0][3] = dC[qn];
-
-      qIdxs.push(cage.addPatch(grid));
-    }
-
-    // Shared edges (for sync during editing)
-    const wallSide = cap === 0 ? 0 : 2;
-    for (let q = 0; q < 4; q++) {
-      cage.addSharedEdge(q, wallSide, qIdxs[q], 2, false);
-    }
-    // Diamond ↔ quarter bottom edges
-    // Diamond side 0 (row 0): dC[0]→dC[1] = quarter 0 bottom
-    // Diamond side 1 (col 3): dC[1]→dC[2] = quarter 1 bottom
-    // Diamond side 2 (row 3): dC[3]→dC[2] = quarter 2 bottom REVERSED
-    // Diamond side 3 (col 0): dC[0]→dC[3] = quarter 3 bottom REVERSED
-    cage.addSharedEdge(diamondIdx, 0, qIdxs[0], 0, false);
-    cage.addSharedEdge(diamondIdx, 1, qIdxs[1], 0, false);
-    cage.addSharedEdge(diamondIdx, 2, qIdxs[2], 0, true);
-    cage.addSharedEdge(diamondIdx, 3, qIdxs[3], 0, true);
-    // Adjacent quarter radials
-    for (let q = 0; q < 4; q++) {
-      cage.addSharedEdge(qIdxs[q], 1, qIdxs[(q+1)%4], 3);
+      cage.patches.push(new NurbsPatch(grid));
     }
   }
 
