@@ -220,55 +220,90 @@ export class PatchCage {
       }
     }
 
-    // Split in reverse index order so indices stay stable
+    // Pre-compute split vertices for each cut edge so they're shared.
+    // A cut edge is where the isoline crosses a patch boundary.
+    // Two adjacent patches that both get split share the SAME new vertex on their shared edge.
+
+    // For each patch being split, compute the 4 new midpoint CageVertex on its cut edges.
+    // Key: use the SAME CageVertex when two patches share a cut edge.
+
+    // Map: shared edge vertex pair → new split CageVertex
+    // When the isoline crosses an edge (4 CageVertex), the split point is at parameter t on that edge.
+    // Two patches sharing that edge need the SAME split vertex.
+    const edgeSplitVertexMap = new Map<CageVertex, CageVertex>();
+
+    function getOrCreateSplitVertex(edgeStart: CageVertex, edgeEnd: CageVertex, t: number): CageVertex {
+      // The split vertex is on the edge from edgeStart to edgeEnd.
+      // Use edgeStart as key (both patches see the same edgeStart for forward-matched edges).
+      // For reversed edges, the other patch sees edgeEnd as its start — handle both.
+      let key = edgeStart;
+      if (edgeSplitVertexMap.has(key)) return edgeSplitVertexMap.get(key)!;
+      key = edgeEnd;
+      if (edgeSplitVertexMap.has(key)) return edgeSplitVertexMap.get(key)!;
+
+      const p = vlerp(edgeStart.position, edgeEnd.position, t);
+      const v = new CageVertex(p[0], p[1], p[2]);
+      edgeSplitVertexMap.set(edgeStart, v);
+      edgeSplitVertexMap.set(edgeEnd, v);
+      return v;
+    }
+
+    // Split in reverse index order so splice doesn't invalidate earlier indices
     toSplit.sort((a, b) => b.idx - a.idx);
     for (const s of toSplit) {
-      this.splitSinglePatch(s.idx, s.dir, s.t);
+      this.splitSinglePatchShared(s.idx, s.dir, s.t, getOrCreateSplitVertex);
     }
   }
 
   /**
-   * Split a single patch into two patches along the given parameter.
-   * Uses de Casteljau subdivision on the 4×4 control grid.
+   * Split a single patch using shared vertex factory for cut-edge vertices.
    */
-  private splitSinglePatch(patchIdx: number, direction: 'u' | 'v', t: number): void {
+  private splitSinglePatchShared(
+    patchIdx: number, direction: 'u' | 'v', t: number,
+    getSharedVertex: (a: CageVertex, b: CageVertex, t: number) => CageVertex
+  ): void {
     const patch = this.patches[patchIdx];
     const g = patch.grid;
 
     if (direction === 'u') {
-      // Split each row (4 control points in U) at parameter t
       const leftGrid: CageVertex[][] = [];
       const rightGrid: CageVertex[][] = [];
-      const midCol: CageVertex[] = []; // shared column
 
       for (let row = 0; row < 4; row++) {
         const {left, mid, right} = splitBezierRow(g[row][0], g[row][1], g[row][2], g[row][3], t);
-        if (row === 0) {
-          // First row: create mid vertex
+
+        // For boundary rows (0 and 3), the mid vertex is on a shared edge.
+        // Use the shared vertex factory so adjacent patches get the SAME vertex.
+        let midV: CageVertex;
+        if (row === 0 || row === 3) {
+          midV = getSharedVertex(g[row][0], g[row][3], t);
+        } else {
+          // Interior row: new vertex, not shared
+          midV = new CageVertex(mid[0], mid[1], mid[2]);
         }
-        const midV = new CageVertex(mid[0], mid[1], mid[2]);
-        midCol.push(midV);
 
         leftGrid.push([g[row][0], left[0], left[1], midV]);
         rightGrid.push([midV, right[0], right[1], g[row][3]]);
       }
 
-      // Create two new patches, sharing the mid column
-      const leftPatch = new NurbsPatch(leftGrid, cloneWeights(patch.weights));
-      const rightPatch = new NurbsPatch(rightGrid, cloneWeights(patch.weights));
-
-      // Replace original patch with the two new ones
-      this.patches.splice(patchIdx, 1, leftPatch, rightPatch);
+      this.patches.splice(patchIdx, 1,
+        new NurbsPatch(leftGrid, cloneWeights(patch.weights)),
+        new NurbsPatch(rightGrid, cloneWeights(patch.weights))
+      );
     } else {
-      // Split each column (4 control points in V) at parameter t
       const bottomGrid: CageVertex[][] = [[], [], [], []];
       const topGrid: CageVertex[][] = [[], [], [], []];
-      const midRow: CageVertex[] = []; // shared row
 
       for (let col = 0; col < 4; col++) {
         const {left, mid, right} = splitBezierRow(g[0][col], g[1][col], g[2][col], g[3][col], t);
-        const midV = new CageVertex(mid[0], mid[1], mid[2]);
-        midRow.push(midV);
+
+        // For boundary columns (0 and 3), the mid vertex is on a shared edge.
+        let midV: CageVertex;
+        if (col === 0 || col === 3) {
+          midV = getSharedVertex(g[0][col], g[3][col], t);
+        } else {
+          midV = new CageVertex(mid[0], mid[1], mid[2]);
+        }
 
         bottomGrid[0][col] = g[0][col];
         bottomGrid[1][col] = left[0];
@@ -281,10 +316,10 @@ export class PatchCage {
         topGrid[3][col] = g[3][col];
       }
 
-      const bottomPatch = new NurbsPatch(bottomGrid, cloneWeights(patch.weights));
-      const topPatch = new NurbsPatch(topGrid, cloneWeights(patch.weights));
-
-      this.patches.splice(patchIdx, 1, bottomPatch, topPatch);
+      this.patches.splice(patchIdx, 1,
+        new NurbsPatch(bottomGrid, cloneWeights(patch.weights)),
+        new NurbsPatch(topGrid, cloneWeights(patch.weights))
+      );
     }
   }
 
