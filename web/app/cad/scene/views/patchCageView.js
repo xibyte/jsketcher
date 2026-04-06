@@ -146,7 +146,7 @@ export class PatchCageView extends View {
         const isCorner = (row === 0 || row === 3) && (col === 0 || col === 3);
         const baseColor = isCorner ? CP_CORNER_COLOR : CP_COLOR;
 
-        const mat = new MeshBasicMaterial({color: baseColor, depthTest: true, transparent: true, opacity: 0.9});
+        const mat = new MeshBasicMaterial({color: baseColor, depthTest: false, transparent: true, opacity: 0.9});
         const sphere = new Mesh(geom, mat);
         sphere.renderOrder = 2;
 
@@ -172,7 +172,8 @@ export class PatchCageView extends View {
     }
 
     // Grid lines: 3×3 quads = 4 horizontal lines + 4 vertical lines
-    const lineMat = new LineBasicMaterial({color: CAGE_LINE_COLOR, depthTest: true, transparent: true, opacity: 0.6});
+    const lineMat = new LineBasicMaterial({color: CAGE_LINE_COLOR, depthTest: false, transparent: true, opacity: 0.6});
+    lineMat.depthWrite = false;
 
     // Horizontal lines (along U, for each V row)
     for (let row = 0; row < 4; row++) {
