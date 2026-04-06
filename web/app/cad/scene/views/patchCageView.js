@@ -164,9 +164,11 @@ export class PatchCageView extends View {
     this.selectedPatchIdx = idx;
     if (idx < 0) {
       this.subcageGroup.visible = false;
+      this.closePropsDialog();
     } else {
       this.buildSubcage(idx);
       this.subcageGroup.visible = true;
+      this.showPropsDialog(idx);
     }
     this.ctx.viewer.requestRender();
   }
@@ -321,6 +323,7 @@ export class PatchCageView extends View {
 
     if (this.selectedPatchIdx >= 0) {
       this.buildSubcage(this.selectedPatchIdx);
+      if (this._propsDialog) this.showPropsDialog(this.selectedPatchIdx);
     }
 
     this.ctx.viewer.requestRender();
@@ -468,6 +471,110 @@ export class PatchCageView extends View {
     }
   }
 
+  // ---- Patch Properties Dialog ----
+
+  showPropsDialog(patchIdx) {
+    this.closePropsDialog();
+
+    const patch = this.model.cage.patches[patchIdx];
+    const cage = this.model.cage;
+
+    const round = (v) => Math.round(v * 1e6) / 1e6;
+    const fmtVec = (p) => [round(p[0]), round(p[1]), round(p[2])];
+
+    // Control points as 4x4 array of [x,y,z]
+    const controlPoints = patch.grid.map(row => row.map(v => fmtVec(v.position)));
+
+    // Weights
+    const weights = patch.weights.map(row => row.map(w => round(w)));
+
+    // Knots (uniform clamped cubic: [0,0,0,0,1,1,1,1])
+    const knots = [0, 0, 0, 0, 1, 1, 1, 1];
+
+    // Edge constraints on this patch
+    const sideNames = ['bottom', 'right', 'top', 'left'];
+    const constraints = [];
+    for (const c of cage.arcConstraints) {
+      if (c.patchSide && c.patchSide.patchIdx === patchIdx) {
+        constraints.push({
+          edge: sideNames[c.patchSide.side],
+          type: 'arc',
+          mode: c.mode,
+          radius: round(c.radius),
+          angle: round(c.angle),
+          center: fmtVec(c.center),
+          planeNormal: fmtVec(c.planeNormal),
+        });
+      }
+    }
+
+    const def = {
+      patch: patchIdx,
+      degree: [3, 3],
+      knotsU: knots,
+      knotsV: knots,
+      rational: patch.rational,
+      controlPoints,
+      weights,
+    };
+    if (constraints.length > 0) {
+      def.constraints = constraints;
+    }
+
+    const json = compactNumberArrays(JSON.stringify(def, null, 2));
+
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position:fixed;right:10px;top:50%;transform:translateY(-50%);background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:8px;width:340px;max-height:70vh;font-family:monospace;font-size:11px;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;flex-direction:column;';
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-family:sans-serif;font-size:13px;font-weight:bold;">Patch ${patchIdx} — NURBS Definition</span>
+        <button id="props-close" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;padding:0 4px;">&times;</button>
+      </div>
+      <pre id="props-json" style="margin:0;overflow:auto;flex:1;background:#111;padding:8px;border-radius:4px;white-space:pre;user-select:all;cursor:text;line-height:1.4;">${escapeHtml(json)}</pre>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button id="props-copy" style="flex:1;padding:5px;background:#335;color:#eee;border:none;border-radius:4px;cursor:pointer;font-family:sans-serif;font-size:12px;">Copy to Clipboard</button>
+        <button id="props-subdivide" style="flex:1;padding:5px;background:#353;color:#eee;border:none;border-radius:4px;cursor:pointer;font-family:sans-serif;font-size:12px;">Subdivide 3x3</button>
+        <button id="props-remove" style="flex:1;padding:5px;background:#533;color:#eee;border:none;border-radius:4px;cursor:pointer;font-family:sans-serif;font-size:12px;">Remove</button>
+      </div>
+    `;
+
+    document.body.appendChild(panel);
+    this._propsDialog = panel;
+
+    panel.querySelector('#props-close').onclick = () => this.closePropsDialog();
+    panel.querySelector('#props-copy').onclick = () => {
+      navigator.clipboard.writeText(json).then(() => {
+        panel.querySelector('#props-copy').textContent = 'Copied!';
+        setTimeout(() => {
+          if (panel.querySelector('#props-copy')) {
+            panel.querySelector('#props-copy').textContent = 'Copy to Clipboard';
+          }
+        }, 1500);
+      });
+    };
+    panel.querySelector('#props-subdivide').onclick = () => {
+      this.model.cage.subdividePatch(patchIdx);
+      this.model.recompute();
+      this.selectPatch(-1);
+      this.rebuildAll();
+      this.persistCageState();
+    };
+    panel.querySelector('#props-remove').onclick = () => {
+      this.model.cage.patches.splice(patchIdx, 1);
+      this.model.recompute();
+      this.selectPatch(-1);
+      this.rebuildAll();
+      this.persistCageState();
+    };
+  }
+
+  closePropsDialog() {
+    if (this._propsDialog) {
+      document.body.removeChild(this._propsDialog);
+      this._propsDialog = null;
+    }
+  }
+
   // ---- Persist cage state to originating operation ----
 
   persistCageState() {
@@ -489,7 +596,7 @@ export class PatchCageView extends View {
   }
 
   updateVisuals() {
-    this.solidMesh.material.color.set(this.markColor || this.color || 0xbfbfbf);
+    this.solidMesh.material.color.set(this.color || 0xbfbfbf);
   }
 
   dispose() {
@@ -502,11 +609,24 @@ export class PatchCageView extends View {
       const s = this.ctx.viewer.sceneSetup.scene;
       s.remove(this.gizmo); s.remove(this.gizmoTarget);
     }
+    this.closePropsDialog();
+    this.closeArcDialog();
     this.geometry.dispose(); this.material.dispose();
     this.wireframeMaterial.dispose(); this.wireframeGeometry.dispose();
     this.clearGroup(this.subcageGroup);
     super.dispose();
   }
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function compactNumberArrays(json) {
+  return json.replace(/\[\s*(-?\d[\d.e+\-]*\s*,?\s*)+\]/g, match => {
+    const nums = match.slice(1, -1).split(',').map(s => s.trim());
+    return '[' + nums.join(', ') + ']';
+  });
 }
 
 function buildGeom(mesh) {
