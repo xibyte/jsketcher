@@ -715,7 +715,13 @@ export class PatchCageView extends View {
         <button id="props-close" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;padding:0 4px;">&times;</button>
       </div>
       <pre id="props-json" style="margin:0;overflow:auto;flex:1;background:#111;padding:8px;border-radius:4px;white-space:pre;user-select:all;cursor:text;line-height:1.4;">${escapeHtml(json)}</pre>
-      <div style="display:flex;gap:6px;margin-top:8px;">
+      <div style="display:flex;gap:6px;margin-top:8px;font-family:sans-serif;font-size:12px;align-items:center;">
+        <label style="white-space:nowrap;">Distance</label>
+        <input id="props-distance" type="number" value="10" step="1" style="width:70px;padding:3px;background:#333;color:#eee;border:1px solid #555;font-size:12px;" />
+        <button id="props-push" style="flex:1;padding:5px;background:#345;color:#eee;border:none;border-radius:4px;cursor:pointer;">Push/Pull</button>
+        <button id="props-extrude" style="flex:1;padding:5px;background:#354;color:#eee;border:none;border-radius:4px;cursor:pointer;">Extrude</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
         <button id="props-copy" style="flex:1;padding:5px;background:#335;color:#eee;border:none;border-radius:4px;cursor:pointer;font-family:sans-serif;font-size:12px;">Copy to Clipboard</button>
         <button id="props-subdivide" style="flex:1;padding:5px;background:#353;color:#eee;border:none;border-radius:4px;cursor:pointer;font-family:sans-serif;font-size:12px;">Subdivide 3x3</button>
         <button id="props-remove" style="flex:1;padding:5px;background:#533;color:#eee;border:none;border-radius:4px;cursor:pointer;font-family:sans-serif;font-size:12px;">Remove</button>
@@ -735,6 +741,24 @@ export class PatchCageView extends View {
           }
         }, 1500);
       });
+    };
+    panel.querySelector('#props-push').onclick = () => {
+      const dist = parseFloat(panel.querySelector('#props-distance').value);
+      if (isNaN(dist) || dist === 0) return;
+      this.model.cage.pushPullPatch(patchIdx, dist);
+      this.model.recompute();
+      this.rebuildAll();
+      this.persistCageState();
+      this.showPropsDialog(patchIdx);
+    };
+    panel.querySelector('#props-extrude').onclick = () => {
+      const dist = parseFloat(panel.querySelector('#props-distance').value);
+      if (isNaN(dist) || dist === 0) return;
+      this.model.cage.extrudePatch(patchIdx, dist);
+      this.model.recompute();
+      this.rebuildAll();
+      this.persistCageState();
+      this.showPropsDialog(patchIdx);
     };
     panel.querySelector('#props-subdivide').onclick = () => {
       this.model.cage.subdividePatch(patchIdx);

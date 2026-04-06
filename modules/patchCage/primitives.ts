@@ -216,35 +216,32 @@ export function createPatchCylinder(
     }
 
     // Diamond patch: grid corners are dC[0], dC[1], dC[3], dC[2]
-    const diamondGrid = makeGrid([dC[0], dC[1], dC[3], dC[2]]);
-    cage.patches.push(new NurbsPatch(diamondGrid));
+    const dg = makeGrid([dC[0], dC[1], dC[3], dC[2]]);
+    cage.patches.push(new NurbsPatch(dg));
+
+    // Extract diamond edge vertices for each quarter (SHARED by identity with diamond grid)
+    // Quarter q row 0 = diamond edge from dC[q] to dC[qn]
+    const diamondEdges: [CageVertex, CageVertex, CageVertex, CageVertex][] = [
+      [dg[0][0], dg[0][1], dg[0][2], dg[0][3]],  // q=0: dC[0]→dC[1], bottom row
+      [dg[0][3], dg[1][3], dg[2][3], dg[3][3]],  // q=1: dC[1]→dC[2], right col
+      [dg[3][3], dg[3][2], dg[3][1], dg[3][0]],  // q=2: dC[2]→dC[3], top row reversed
+      [dg[3][0], dg[2][0], dg[1][0], dg[0][0]],  // q=3: dC[3]→dC[0], left col reversed
+    ];
 
     // 4 quarter cap patches
     for (let q = 0; q < 4; q++) {
       const qn = (q + 1) % 4;
 
-      // This quarter: from diamond edge to arc edge
-      // Row 0 (v=0): diamond edge from dC[q] to dC[qn]
-      // Row 3 (v=1): arc edge from wall (shared vertices)
-      // Col 0 (u=0): radial from dC[q] to arcCorners[q]
-      // Col 3 (u=1): radial from dC[qn] to arcCorners[qn]
-
-      // Get arc handle vertices from wall (SHARED)
+      // Arc handle vertices from wall (SHARED)
       const arcH1 = rings[wallRow][q*3 + 1];
       const arcH2 = rings[wallRow][q*3 + 2];
 
-      // Diamond edge vertices: get from diamond grid
-      // Diamond grid corners: [0][0]=dC[0], [0][3]=dC[1], [3][0]=dC[3], [3][3]=dC[2]
-      // Diamond bottom (row 0): dC[0] → dC[1] side
-      // We need the diamond edge that corresponds to this quarter.
-      // Quarter q uses dC[q] → dC[qn] as its bottom.
-      // Get the 2 interior diamond edge vertices:
-      const de1 = Vlerp(dC[q], dC[qn], 1/3);
-      const de2 = Vlerp(dC[q], dC[qn], 2/3);
+      // Diamond edge vertices (SHARED with diamond grid)
+      const [, de1, de2, ] = diamondEdges[q];
 
       const grid: CageVertex[][] = [
-        // Row 0: diamond edge
-        [dC[q], de1, de2, dC[qn]],
+        // Row 0: diamond edge (shared with diamond patch)
+        diamondEdges[q],
         // Row 1: interpolated
         [radialVerts[q][1], Vlerp(de1, arcH1, 1/3), Vlerp(de2, arcH2, 1/3), radialVerts[qn][1]],
         // Row 2: interpolated
