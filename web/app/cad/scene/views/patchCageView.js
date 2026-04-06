@@ -71,26 +71,29 @@ export class PatchCageView extends View {
   // ---- Patch picking ----
 
   pickPatch(event) {
-    const me = event.mouseEvent || event;
-    const ss = this.ctx.viewer.sceneSetup;
-    const rc = new Raycaster();
-    const m = new Vector2();
-    const rect = ss.renderer.domElement.getBoundingClientRect();
-    m.x = ((me.clientX - rect.left) / rect.width) * 2 - 1;
-    m.y = -((me.clientY - rect.top) / rect.height) * 2 + 1;
-    rc.setFromCamera(m, ss.camera);
+    // Find the hit for this solid mesh from event.hits
+    const hits = event.hits || [];
+    let faceIndex = -1;
+    for (const hit of hits) {
+      if (hit.object === this.solidMesh) {
+        faceIndex = hit.faceIndex;
+        break;
+      }
+    }
 
-    const hits = rc.intersectObject(this.solidMesh);
-    if (hits.length === 0) { this.selectPatch(-1); return; }
+    if (faceIndex < 0) {
+      this.selectPatch(-1);
+      return;
+    }
 
-    const fi = hits[0].faceIndex;
     const ranges = this.model.mesh.faceTriRanges;
     for (let pi = 0; pi < ranges.length; pi++) {
-      if (fi >= ranges[pi][0] && fi < ranges[pi][1]) {
+      if (faceIndex >= ranges[pi][0] && faceIndex < ranges[pi][1]) {
         this.selectPatch(pi);
         return;
       }
     }
+    this.selectPatch(-1);
   }
 
   selectPatch(idx) {
