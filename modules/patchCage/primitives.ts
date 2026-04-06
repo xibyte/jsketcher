@@ -171,62 +171,141 @@ export function createPatchCylinder(
   }
 
   // ---- Cap patches ----
-  // Each cap = 4 quarter-disk patches.
-  // Each quarter shares its outer arc edge with the wall patch.
-  // The inner edge collapses toward the center.
+  // Each cap = 4 quarter-disk patches + 1 center rhombic patch = 5 patches.
   //
-  // Layout for each quarter cap:
-  //   v=1 (row 3): arc edge on the circle (shared with wall)
-  //   v=0 (row 0): collapsed to center point
-  //   u=0 (col 0): radial line from center to arc start
-  //   u=1 (col 3): radial line from center to arc end
+  // The center rhombus eliminates the pole singularity. Its 4 corners
+  // sit at the midpoints of the radial edges (at ~1/3 radius).
+  //
+  // Layout (top view of one cap):
+  //
+  //          arc1
+  //     P1 ─────── P2
+  //     │ \       / │
+  //     │  D1───D2  │
+  //     │  │ dia │  │   dia = center diamond/rhombus patch
+  //     │  D0───D3  │
+  //     │ /       \ │
+  //     P0 ─────── P3
+  //          arc0
+  //
+  // Each quarter patch goes from one diamond edge to one arc edge.
+  // Quarter q:
+  //   v=0 (row 0): diamond side (D_q → D_{q+1})
+  //   v=1 (row 3): arc (shared with wall)
+  //   u=0 (col 0): radial from D_q to P_q
+  //   u=1 (col 3): radial from D_{q+1} to P_{q+1}
+
+  const diamondFraction = 0.33; // how far from center the diamond corners sit
 
   for (let cap = 0; cap < 2; cap++) {
     const z = cap === 0 ? -hz : hz;
-    const wallRow = cap === 0 ? 0 : 3; // which row of wall patch is at this cap
+    const wallRow = cap === 0 ? 0 : 3;
+    const center: Vec3 = [0, 0, z];
 
+    // Collect arc corner points from wall patches (the on-circle points)
+    const arcCorners: Vec3[] = []; // P0, P1, P2, P3
     for (let q = 0; q < 4; q++) {
+      arcCorners.push(cage.patches[q].control[wallRow][0]);
+    }
+
+    // Diamond corners: fraction of the way from center to each arc corner
+    const dCorners: Vec3[] = arcCorners.map(p => vlerp(center, p, diamondFraction));
+
+    // --- Center diamond patch ---
+    // 4×4 grid for the flat rhombus
+    const dControl: Vec3[][] = [];
+    for (let row = 0; row < 4; row++) {
+      const v = row / 3;
+      const rowPts: Vec3[] = [];
+      for (let col = 0; col < 4; col++) {
+        const u = col / 3;
+        // Bilinear interpolation of the 4 diamond corners
+        rowPts.push(vadd(
+          vadd(vscale(dCorners[0], (1-u)*(1-v)), vscale(dCorners[3], u*(1-v))),
+          vadd(vscale(dCorners[1], (1-u)*v), vscale(dCorners[2], u*v))
+        ));
+      }
+      dControl.push(rowPts);
+    }
+    const diamondIdx = cage.addPatch(dControl);
+
+    // --- 4 quarter patches from diamond edge to arc ---
+    const quarterIndices: number[] = [];
+    for (let q = 0; q < 4; q++) {
+      const qNext = (q + 1) % 4;
       const wallPatch = cage.patches[q];
-      // Arc control points from the wall patch at this cap's z level
+
+      // Arc control points from wall
       const arc0 = wallPatch.control[wallRow][0];
       const arc1 = wallPatch.control[wallRow][1];
       const arc2 = wallPatch.control[wallRow][2];
       const arc3 = wallPatch.control[wallRow][3];
 
-      const center: Vec3 = [0, 0, z];
+      // Diamond edge for this quarter: dCorners[q] → dCorners[qNext]
+      const d0 = dCorners[q];
+      const d1 = dCorners[qNext];
 
-      // Build 4×4 grid from center (row 0) to arc (row 3)
-      // Rows interpolate radially from center to arc
+      // Build 4×4 grid: row 0 = diamond edge, row 3 = arc edge
       const control: Vec3[][] = [];
       for (let row = 0; row < 4; row++) {
-        const t = row / 3; // 0=center, 1=arc
+        const t = row / 3; // 0 = diamond, 1 = arc
+        const left0 = vlerp(d0, arc0, t);
+        const left1 = vlerp(d0, arc1, t);
+        const right0 = vlerp(d1, arc2, t);
+        const right1 = vlerp(d1, arc3, t);
         control.push([
-          vlerp(center, arc0, t),
-          vlerp(center, arc1, t),
-          vlerp(center, arc2, t),
-          vlerp(center, arc3, t),
+          left0,
+          vlerp(left0, right1, 1/3),
+          vlerp(left0, right1, 2/3),
+          right1,
         ]);
       }
+      // Fix: make sure row 3 exactly matches the wall arc points
+      control[3] = [arc0, arc1, arc2, arc3];
+      // Fix: make sure row 0 endpoints match diamond corners
+      control[0][0] = d0;
+      control[0][3] = d1;
 
-      const capIdx = cage.addPatch(control);
+      const qIdx = cage.addPatch(control);
+      quarterIndices.push(qIdx);
 
-      // Share arc edge: wall is source of truth, cap syncs to it.
-      // Wall side 0 = bottom (row 0), side 2 = top (row 3).
-      // Cap side 2 = top (row 3) = the arc edge.
+      // Share arc edge with wall
       const wallSide = cap === 0 ? 0 : 2;
-      // Wall's edge goes cp0→cp3. Cap's top edge goes arc0→arc3 (same direction).
-      // patchA=wall, patchB=cap — syncs cap to wall.
-      cage.addSharedEdge(q, wallSide, capIdx, 2, false);
-
-      // Share radial edges between adjacent cap quarters
-      // Cap patch's u=1 (right/col 3) = next cap patch's u=0 (left/col 0)
+      cage.addSharedEdge(q, wallSide, qIdx, 2, false);
     }
 
-    // Share radial edges between adjacent cap quarter patches
-    const capBase = 4 + cap * 4; // first cap patch index for this cap
+    // Share diamond edges: diamond side q = quarter q's bottom (side 0)
+    // Diamond sides: side 0 = bottom row, side 1 = right col, side 2 = top row, side 3 = left col
+    // Quarter q's side 0 = bottom row (diamond edge)
+    // Diamond's bottom (side 0): dCorners[0] → dCorners[3] → quarter 0
+    // Diamond's right (side 1): dCorners[3] → dCorners[2] → quarter 3  (need to check mapping)
+    //
+    // Actually: diamond control grid corners are:
+    //   [0][0]=dCorners[0], [0][3]=dCorners[3], [3][0]=dCorners[1], [3][3]=dCorners[2]
+    // So diamond sides:
+    //   side 0 (bottom, row 0): dC0 → dC3  → matches quarter 0 (d0=dC0, d1=dC1? No...)
+    //
+    // Let me re-check: quarter q uses d0=dCorners[q], d1=dCorners[qNext].
+    // Quarter 0: d0=dC0, d1=dC1 → bottom row goes dC0 → dC1
+    // Quarter 1: d0=dC1, d1=dC2
+    // Quarter 2: d0=dC2, d1=dC3
+    // Quarter 3: d0=dC3, d1=dC0
+    //
+    // Diamond grid: [0][0]=dC0, [0][3]=dC3, [3][0]=dC1, [3][3]=dC2
+    // Diamond side 0 (row 0): dC0 → dC3 → this is quarter 3's bottom REVERSED
+    // Diamond side 2 (row 3): dC1 → dC2 → this is quarter 1's bottom
+    // Diamond side 3 (col 0): dC0 → dC1 → this is quarter 0's bottom
+    // Diamond side 1 (col 3): dC3 → dC2 → this is quarter 2's bottom REVERSED
+
+    cage.addSharedEdge(diamondIdx, 3, quarterIndices[0], 0, false); // left col = q0 bottom
+    cage.addSharedEdge(diamondIdx, 2, quarterIndices[1], 0, false); // top row = q1 bottom
+    cage.addSharedEdge(diamondIdx, 1, quarterIndices[2], 0, true);  // right col = q2 bottom reversed
+    cage.addSharedEdge(diamondIdx, 0, quarterIndices[3], 0, true);  // bottom row = q3 bottom reversed
+
+    // Share radial edges between adjacent quarters
     for (let q = 0; q < 4; q++) {
       const next = (q + 1) % 4;
-      cage.addSharedEdge(capBase + q, 1, capBase + next, 3);
+      cage.addSharedEdge(quarterIndices[q], 1, quarterIndices[next], 3);
     }
   }
 
