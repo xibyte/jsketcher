@@ -55,13 +55,23 @@ export class PatchCageView extends View {
     this.gizmo = null;
     this.setupGizmo();
 
-    // Pick patch on click — listen on the renderer dom element directly
-    // to avoid the mouse event system's hit-testing blocking issues
     this.solidMesh.onMouseEnter = () => ctx.highlightService.highlight(this.model.id);
     this.solidMesh.onMouseLeave = () => ctx.highlightService.unHighlight(this.model.id);
 
-    this._onDblClick = (e) => this.pickPatch(e);
-    ctx.viewer.sceneSetup.renderer.domElement.addEventListener('dblclick', this._onDblClick);
+    // Single click pick: listen on DOM, raycast against solidMesh only
+    this._clickStartX = 0;
+    this._clickStartY = 0;
+    const dom = ctx.viewer.sceneSetup.renderer.domElement;
+    this._onMouseDown = (e) => { this._clickStartX = e.offsetX; this._clickStartY = e.offsetY; };
+    this._onMouseUp = (e) => {
+      const dx = Math.abs(e.offsetX - this._clickStartX);
+      const dy = Math.abs(e.offsetY - this._clickStartY);
+      if (dx < 3 && dy < 3 && e.button === 0) {
+        this.pickPatch(e);
+      }
+    };
+    dom.addEventListener('mousedown', this._onMouseDown);
+    dom.addEventListener('mouseup', this._onMouseUp);
 
     setAttribute(this.rootGroup, PATCH_CAGE, this);
     setAttribute(this.rootGroup, View.MARKER, this);
@@ -281,9 +291,9 @@ export class PatchCageView extends View {
   }
 
   dispose() {
-    if (this._onDblClick) {
-      this.ctx.viewer.sceneSetup.renderer.domElement.removeEventListener('dblclick', this._onDblClick);
-    }
+    const dom = this.ctx.viewer.sceneSetup.renderer.domElement;
+    if (this._onMouseDown) dom.removeEventListener('mousedown', this._onMouseDown);
+    if (this._onMouseUp) dom.removeEventListener('mouseup', this._onMouseUp);
     if (this.gizmo) {
       this.gizmo.detach(); this.gizmo.dispose();
       const s = this.ctx.viewer.sceneSetup.scene;
