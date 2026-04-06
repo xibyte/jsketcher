@@ -374,116 +374,60 @@ function computeLimitPosition(mesh: SubDMesh, vi: number): Vec3 {
 }
 
 /**
- * Compute limit surface normal at a vertex using limit tangent vectors.
- *
- * Uses the Catmull-Clark limit tangent formula based on the
- * eigenanalysis of the subdivision matrix.
+ * Compute smooth normal at a vertex using angle-weighted face normal averaging.
  */
 function computeLimitNormal(mesh: SubDMesh, vi: number): Vec3 {
-  const heIndices = mesh.vertexHalfEdges(vi);
-
-  let isBoundary = false;
-  let hasCrease = false;
-  for (const hi of heIndices) {
-    if (mesh.halfEdges[hi].twin === -1) isBoundary = true;
-    if (mesh.halfEdges[hi].crease > 0.01) hasCrease = true;
-  }
-
-  // For boundary/crease vertices, use face normal averaging
-  if (isBoundary || hasCrease) {
-    return computeFaceAveragedNormal(mesh, vi);
-  }
-
-  // Collect ring: alternating edge-neighbors and face-centroids around the vertex
-  // Order matters for the tangent formula
-  const ring = getOrderedRing(mesh, vi);
-  const n = ring.edgeNeighbors.length; // valence
-
-  if (n < 3) return computeFaceAveragedNormal(mesh, vi);
-
-  // Limit tangent formulas (Loop's eigenanalysis for Catmull-Clark):
-  // t1 = Σ cos(2πk/n) * (e_k + f_k)    (first tangent)
-  // t2 = Σ sin(2πk/n) * (e_k + f_k)    (second tangent)
-  // where e_k = edge neighbor k, f_k = face centroid k
-  let t1: Vec3 = [0, 0, 0];
-  let t2: Vec3 = [0, 0, 0];
-
-  for (let k = 0; k < n; k++) {
-    const angle = (2 * Math.PI * k) / n;
-    const cosA = Math.cos(angle);
-    const sinA = Math.sin(angle);
-    const e = ring.edgeNeighbors[k];
-    const f = ring.faceCentroids[k];
-    const ef: Vec3 = vecAdd(e, f);
-
-    t1 = vecAdd(t1, vecScale(ef, cosA));
-    t2 = vecAdd(t2, vecScale(ef, sinA));
-  }
-
-  // Normal = t1 × t2
-  const normal: Vec3 = [
-    t1[1] * t2[2] - t1[2] * t2[1],
-    t1[2] * t2[0] - t1[0] * t2[2],
-    t1[0] * t2[1] - t1[1] * t2[0],
-  ];
-  const len = Math.sqrt(normal[0] ** 2 + normal[1] ** 2 + normal[2] ** 2);
-  if (len > 1e-10) {
-    return [normal[0] / len, normal[1] / len, normal[2] / len];
-  }
-
-  return computeFaceAveragedNormal(mesh, vi);
+  return computeAngleWeightedNormal(mesh, vi);
 }
 
-function getOrderedRing(mesh: SubDMesh, vi: number): {
-  edgeNeighbors: Vec3[],
-  faceCentroids: Vec3[]
-} {
-  // Walk around the vertex collecting edge neighbors and face centroids in order
-  const edgeNeighbors: Vec3[] = [];
-  const faceCentroids: Vec3[] = [];
+function computeAngleWeightedNormal(mesh: SubDMesh, vi: number): Vec3 {
+  const heIndices = mesh.vertexHalfEdges(vi);
+  let nx = 0, ny = 0, nz = 0;
 
-  // Find a starting half-edge from this vertex
-  const allHE = mesh.vertexHalfEdges(vi);
-  if (allHE.length === 0) return {edgeNeighbors, faceCentroids};
+  const seenFaces = new Set<number>();
+  for (const hi of heIndices) {
+    const fi = mesh.halfEdges[hi].face;
+    if (fi < 0 || seenFaces.has(fi)) continue;
+    seenFaces.add(fi);
 
-  let startHE = allHE[0];
-  const visited = new Set<number>();
+    const fverts = mesh.faceVertices(fi);
+    const idx = fverts.indexOf(vi);
+    if (idx < 0) continue;
 
-  let currentHE = startHE;
-  do {
-    if (visited.has(currentHE)) break;
-    visited.add(currentHE);
+    // Face normal via Newell's method
+    let fnx = 0, fny = 0, fnz = 0;
+    for (let i = 0; i < fverts.length; i++) {
+      const curr = mesh.vertices[fverts[i]].position;
+      const next = mesh.vertices[fverts[(i + 1) % fverts.length]].position;
+      fnx += (curr[1] - next[1]) * (curr[2] + next[2]);
+      fny += (curr[2] - next[2]) * (curr[0] + next[0]);
+      fnz += (curr[0] - next[0]) * (curr[1] + next[1]);
+    }
+    const fnLen = Math.sqrt(fnx*fnx + fny*fny + fnz*fnz);
+    if (fnLen > 0) { fnx /= fnLen; fny /= fnLen; fnz /= fnLen; }
 
-    const he = mesh.halfEdges[currentHE];
-    edgeNeighbors.push(mesh.vertices[he.vertex].position);
-
-    // Face centroid
-    if (he.face >= 0) {
-      const fverts = mesh.faceVertices(he.face);
-      let cx = 0, cy = 0, cz = 0;
-      for (const fvi of fverts) {
-        const p = mesh.vertices[fvi].position;
-        cx += p[0]; cy += p[1]; cz += p[2];
-      }
-      faceCentroids.push([cx / fverts.length, cy / fverts.length, cz / fverts.length]);
+    // Angle at this vertex in this face
+    const prev = mesh.vertices[fverts[(idx + fverts.length - 1) % fverts.length]].position;
+    const curr = mesh.vertices[vi].position;
+    const next = mesh.vertices[fverts[(idx + 1) % fverts.length]].position;
+    const ax = prev[0]-curr[0], ay = prev[1]-curr[1], az = prev[2]-curr[2];
+    const bx = next[0]-curr[0], by = next[1]-curr[1], bz = next[2]-curr[2];
+    const la = Math.sqrt(ax*ax+ay*ay+az*az);
+    const lb = Math.sqrt(bx*bx+by*by+bz*bz);
+    let angle = Math.PI / 4;
+    if (la > 0 && lb > 0) {
+      let cos = (ax*bx+ay*by+az*bz)/(la*lb);
+      cos = Math.max(-1, Math.min(1, cos));
+      angle = Math.acos(cos);
     }
 
-    // Move to next half-edge around the vertex:
-    // Go to the next half-edge in the face, then to its twin
-    const nextInFace = mesh.halfEdges[he.next];
-    if (nextInFace && nextInFace.twin >= 0) {
-      currentHE = nextInFace.twin;
-    } else {
-      break; // boundary
-    }
-  } while (currentHE !== startHE);
-
-  // Ensure we have equal counts (pad if needed)
-  while (faceCentroids.length < edgeNeighbors.length) {
-    faceCentroids.push(faceCentroids.length > 0 ? faceCentroids[faceCentroids.length - 1] : [0, 0, 0]);
+    nx += fnx * angle;
+    ny += fny * angle;
+    nz += fnz * angle;
   }
 
-  return {edgeNeighbors, faceCentroids};
+  const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
+  return len > 0 ? [nx/len, ny/len, nz/len] : [0, 0, 1];
 }
 
 function computeFaceAveragedNormal(mesh: SubDMesh, vi: number): Vec3 {
