@@ -82,11 +82,13 @@ export class PatchCageView extends View {
         this.model.recompute();
         this.selectPatch(-1);
         this.rebuildAll();
+        this.persistCageState();
       } else if (e.key === 'v' || e.key === 'V') {
         this.model.cage.splitIsoline(this.selectedPatchIdx, 'v', 0.5);
         this.model.recompute();
         this.selectPatch(-1);
         this.rebuildAll();
+        this.persistCageState();
       } else if (e.key === 'a' || e.key === 'A') {
         this.showArcDialog();
       }
@@ -275,6 +277,7 @@ export class PatchCageView extends View {
     this.gizmo.addEventListener('mouseUp', () => {
       this.model.recompute();
       this.rebuildAll();
+      this.persistCageState();
     });
 
     ss.scene.add(this.gizmoTarget);
@@ -390,6 +393,7 @@ export class PatchCageView extends View {
       }
       this.model.recompute();
       this.rebuildAll();
+      this.persistCageState();
       this.closeArcDialog();
     };
 
@@ -450,6 +454,7 @@ export class PatchCageView extends View {
     if (this.selectedPatchIdx >= 0) {
       this.buildSubcage(this.selectedPatchIdx);
     }
+    this.persistCageState();
   }
 
   closeArcDialog() {
@@ -461,6 +466,16 @@ export class PatchCageView extends View {
       cancelAnimationFrame(this._arcDebounce);
       this._arcDebounce = null;
     }
+  }
+
+  // ---- Persist cage state to originating operation ----
+
+  persistCageState() {
+    const opIdx = this.model.originatingOperation;
+    if (opIdx === undefined || opIdx < 0) return;
+    const cageState = this.model.serializeCage();
+    this.ctx.craftService.updateOperationParams(opIdx, {cageState});
+    this.ctx.projectService.scheduleSave();
   }
 
   // ---- Utilities ----

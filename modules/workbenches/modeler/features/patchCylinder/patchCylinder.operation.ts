@@ -2,6 +2,7 @@ import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MPatchCage} from "cad/model/mpatchcage";
 import {createPatchCylinder} from "patchCage/primitives";
+import {PatchCage} from "patchCage/PatchCage";
 import {BiCylinder} from "react-icons/bi";
 
 interface PatchCylinderParams {
@@ -18,8 +19,10 @@ export const PatchCylinderOperation: OperationDescriptor<PatchCylinderParams> = 
   info: 'Create a Bézier patch cylinder (wall patches)',
   path: __dirname,
   paramsInfo: ({radius, height}) => `(r:${radius} h:${height})`,
-  run: (params: PatchCylinderParams, ctx: ApplicationContext) => {
-    const cage = createPatchCylinder(params.radius, params.height, params.segments);
+  run: (params: PatchCylinderParams, ctx: ApplicationContext, rawParams: any) => {
+    const cage = rawParams?.cageState
+      ? PatchCage.deserialize(rawParams.cageState)
+      : createPatchCylinder(params.radius, params.height, params.segments);
     return {consumed: [], created: [new MPatchCage(cage, params.resolution)]};
   },
   form: [

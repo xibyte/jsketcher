@@ -1,7 +1,7 @@
 import {MObject, MObjectIdGenerator} from './mobject';
 import {EntityKind} from './entities';
 import {ShellMesh} from './mshell';
-import {PatchCage} from 'patchCage/PatchCage';
+import {PatchCage, SerializedPatchCage} from 'patchCage/PatchCage';
 import {state, StateStream} from "lstream";
 import {Matrix3x4} from "math/matrix";
 
@@ -30,6 +30,10 @@ export class MPatchCage extends MObject {
       indices: tess.indices,
       faceTriRanges: tess.patchTriRanges,
     };
+  }
+
+  serializeCage(): SerializedPatchCage {
+    return this.cage.serialize();
   }
 
   traverse(callback: (obj: MObject) => void): void {

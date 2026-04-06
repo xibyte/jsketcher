@@ -98,6 +98,13 @@ export function activate(ctx: ApplicationContext) {
     }
   }
 
+  function updateOperationParams(opIndex: number, paramsUpdate: Record<string, any>) {
+    const mods = modifications$.value;
+    if (opIndex >= 0 && opIndex < mods.history.length) {
+      Object.assign(mods.history[opIndex].params, paramsUpdate);
+    }
+  }
+
    ctx.craftService  = {
 
      get isEditingHistory() {
@@ -107,7 +114,7 @@ export function activate(ctx: ApplicationContext) {
 
      modify, modifyInHistoryAndStep, reset, rebuild, runRequest, runPipeline,
     historyTravel: historyTravel(modifications$),
-    modifications$, models$, update$, pipelineFailure$
+    modifications$, models$, update$, pipelineFailure$, updateOperationParams
   };
 
   // @ts-ignore
@@ -277,6 +284,8 @@ interface CraftService {
   runRequest(request: OperationRequest): Promise<OperationResult>;
 
   runPipeline(history: OperationRequest[], beginIndex: number, endIndex: number): Promise<void>;
+
+  updateOperationParams(opIndex: number, paramsUpdate: Record<string, any>): void;
 
   isEditingHistory: boolean;
 }

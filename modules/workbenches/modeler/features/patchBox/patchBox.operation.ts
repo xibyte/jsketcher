@@ -2,6 +2,7 @@ import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MPatchCage} from "cad/model/mpatchcage";
 import {createPatchBox} from "patchCage/primitives";
+import {PatchCage} from "patchCage/PatchCage";
 import {GiCube} from "react-icons/gi";
 
 interface PatchBoxParams {
@@ -18,8 +19,10 @@ export const PatchBoxOperation: OperationDescriptor<PatchBoxParams> = {
   info: 'Create a Bézier patch box (6 Coons patches)',
   path: __dirname,
   paramsInfo: ({sizeX, sizeY, sizeZ}) => `(${sizeX}x${sizeY}x${sizeZ})`,
-  run: (params: PatchBoxParams, ctx: ApplicationContext) => {
-    const cage = createPatchBox(params.sizeX, params.sizeY, params.sizeZ);
+  run: (params: PatchBoxParams, ctx: ApplicationContext, rawParams: any) => {
+    const cage = rawParams?.cageState
+      ? PatchCage.deserialize(rawParams.cageState)
+      : createPatchBox(params.sizeX, params.sizeY, params.sizeZ);
     return {consumed: [], created: [new MPatchCage(cage, params.resolution)]};
   },
   form: [

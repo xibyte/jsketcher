@@ -45,6 +45,24 @@ export interface ArcConstraint {
   patchSide?: {patchIdx: number, side: number};
 }
 
+export interface SerializedPatchCage {
+  vertices: Vec3[];
+  patches: {
+    grid: number[][];
+    weights: number[][];
+    rational: boolean;
+  }[];
+  arcConstraints: {
+    vertexIndices: [number, number, number, number];
+    radius: number;
+    angle: number;
+    planeNormal: Vec3;
+    center: Vec3;
+    mode: ArcMode;
+    patchSide?: {patchIdx: number, side: number};
+  }[];
+}
+
 /**
  * A cage edge: 4 CageVertex references forming a cubic Bézier curve.
  * Shared between adjacent patches.
@@ -474,6 +492,71 @@ export class PatchCage {
         new NurbsPatch(topGrid, cloneWeights(patch.weights))
       );
     }
+  }
+
+  // =========================================================================
+  // Serialization / Deserialization
+  // =========================================================================
+
+  serialize(): SerializedPatchCage {
+    const vertexMap = new Map<CageVertex, number>();
+    const vertices: Vec3[] = [];
+
+    // Collect all unique vertices
+    for (const p of this.patches) {
+      for (const row of p.grid) {
+        for (const v of row) {
+          if (!vertexMap.has(v)) {
+            vertexMap.set(v, vertices.length);
+            vertices.push([...v.position] as Vec3);
+          }
+        }
+      }
+    }
+
+    const patches = this.patches.map(p => ({
+      grid: p.grid.map(row => row.map(v => vertexMap.get(v)!)),
+      weights: p.weights.map(row => [...row]),
+      rational: p.rational,
+    }));
+
+    const arcConstraints = this.arcConstraints.map(c => ({
+      vertexIndices: c.vertices.map(v => vertexMap.get(v)!) as [number, number, number, number],
+      radius: c.radius,
+      angle: c.angle,
+      planeNormal: [...c.planeNormal] as Vec3,
+      center: [...c.center] as Vec3,
+      mode: c.mode,
+      patchSide: c.patchSide ? {...c.patchSide} : undefined,
+    }));
+
+    return {vertices, patches, arcConstraints};
+  }
+
+  static deserialize(data: SerializedPatchCage): PatchCage {
+    const cage = new PatchCage();
+    const verts = data.vertices.map(p => new CageVertex(p[0], p[1], p[2]));
+
+    for (const pd of data.patches) {
+      const grid = pd.grid.map(row => row.map(idx => verts[idx]));
+      const patch = new NurbsPatch(grid, pd.weights.map(row => [...row]));
+      patch.rational = pd.rational;
+      cage.patches.push(patch);
+    }
+
+    for (const cd of data.arcConstraints) {
+      cage.arcConstraints.push({
+        vertices: cd.vertexIndices.map(i => verts[i]) as [CageVertex, CageVertex, CageVertex, CageVertex],
+        radius: cd.radius,
+        angle: cd.angle,
+        planeNormal: [...cd.planeNormal] as Vec3,
+        center: [...cd.center] as Vec3,
+        mode: cd.mode,
+        patchSide: cd.patchSide ? {...cd.patchSide} : undefined,
+      });
+    }
+
+    return cage;
   }
 
   // =========================================================================
