@@ -87,10 +87,33 @@ export class PatchCageView extends View {
   pickPatch(e) {
     const ss = this.ctx.viewer.sceneSetup;
     const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
+
+    // First: check if we hit a subcage handle
+    if (this.subcageGroup.visible && this.subcageHandles.length > 0) {
+      const handleHits = [];
+      for (const h of this.subcageHandles) {
+        h.traverse(child => {
+          if (child.isMesh) child.raycast(raycaster, handleHits);
+        });
+      }
+      if (handleHits.length > 0) {
+        handleHits.sort((a, b) => a.distance - b.distance);
+        // Find which handle was hit
+        const hitObj = handleHits[0].object;
+        for (const h of this.subcageHandles) {
+          let found = false;
+          h.traverse(child => { if (child === hitObj) found = true; });
+          if (found) {
+            this.selectSubcageHandle(h);
+            return;
+          }
+        }
+      }
+    }
+
+    // Second: check if we hit the solid mesh for patch selection
     const hits = [];
     this.solidMesh.raycast(raycaster, hits);
-
-    console.log('pickPatch: hits=' + hits.length + ', solidMesh visible=' + this.solidMesh.visible + ', geom verts=' + (this.geometry?.getAttribute('position')?.count || 0));
 
     if (hits.length === 0) {
       this.selectPatch(-1);
@@ -99,7 +122,6 @@ export class PatchCageView extends View {
 
     hits.sort((a, b) => a.distance - b.distance);
     const faceIndex = hits[0].faceIndex;
-    console.log('pickPatch: faceIndex=' + faceIndex + ', ranges=' + JSON.stringify(this.model.mesh?.faceTriRanges?.slice(0, 3)));
     if (faceIndex === undefined) {
       this.selectPatch(-1);
       return;
