@@ -8,21 +8,20 @@ import {
   BufferGeometry, BufferAttribute, Mesh, DoubleSide,
   WireframeGeometry, LineSegments, LineBasicMaterial,
   SphereGeometry, MeshBasicMaterial, Vector3, Object3D,
-  Line, CatmullRomCurve3, TubeGeometry
+  Line
 } from 'three';
 import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
+import ScalableLine from 'scene/objects/scalableLine';
 import {vdist, vlerp} from 'patchCage/vec3Math';
 
-const CP_COLOR = 0xffaa00;       // subcage control point (off-surface)
-const CP_CORNER_COLOR = 0x00aaff; // corner control point (on-surface)
-const CP_HOVER = 0xffdd44;
-const CP_SELECTED = 0xff0000;
-const CAGE_LINE_COLOR = 0xffaa00;
-const EDGE_COLOR = 0x44aaff;
-const EDGE_SELECTED_COLOR = 0x00ff88;
-const EDGE_HOVER_COLOR = 0x88ccff;
-const HANDLE_SIZE = 4;
+const CP_COLOR = 0x222222;
+const CP_HOVER = 0x555555;
+const CP_SELECTED = 0xee3333;
+const CAGE_LINE_COLOR = 0x1a1a1a;
+const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, top, left
+const EDGE_SELECTED_COLOR = 0xffffff;
+const HANDLE_SIZE = 3.5;
 
 export class PatchCageView extends View {
 
@@ -31,9 +30,14 @@ export class PatchCageView extends View {
     this.rootGroup = SceneGraph.createGroup();
     this.ctx = ctx;
 
-    // Surface
+    // Surface — silver metallic look
     this.geometry = buildGeom(patchCage.mesh);
-    this.material = createSolidMaterial({side: DoubleSide});
+    this.material = createSolidMaterial({
+      side: DoubleSide,
+      color: 0xd0d0d0,
+      shininess: 80,
+      specular: 0x444444,
+    });
     this.solidMesh = new Mesh(this.geometry, this.material);
     setAttribute(this.solidMesh, PATCH_CAGE, this);
     this.rootGroup.add(this.solidMesh);
@@ -45,6 +49,12 @@ export class PatchCageView extends View {
     this.wireframeMesh.visible = false;
     this.wireframeMesh.raycast = () => {}; // disable raycast
     this.rootGroup.add(this.wireframeMesh);
+
+    // Hover highlight group
+    this.hoverGroup = SceneGraph.createGroup();
+    this.hoverGroup.visible = false;
+    this.rootGroup.add(this.hoverGroup);
+    this.hoveredPatchIdx = -1;
 
     // Subcage group (visible when a patch is selected)
     this.subcageGroup = SceneGraph.createGroup();
@@ -76,8 +86,31 @@ export class PatchCageView extends View {
         this.pickPatch(e);
       }
     };
+    this._onMouseMove = (e) => {
+      if (this.selectedPatchIdx >= 0) return; // subcage visible, no hover needed
+      const ss = ctx.viewer.sceneSetup;
+      const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
+      const hits = [];
+      this.solidMesh.raycast(raycaster, hits);
+      if (hits.length === 0) {
+        this.setHover(-1);
+        return;
+      }
+      hits.sort((a, b) => a.distance - b.distance);
+      const fi = hits[0].faceIndex;
+      if (fi === undefined) { this.setHover(-1); return; }
+      const ranges = this.model.mesh.faceTriRanges;
+      for (let pi = 0; pi < ranges.length; pi++) {
+        if (fi >= ranges[pi][0] && fi < ranges[pi][1]) {
+          this.setHover(pi);
+          return;
+        }
+      }
+      this.setHover(-1);
+    };
     dom.addEventListener('mousedown', this._onMouseDown);
     dom.addEventListener('mouseup', this._onMouseUp);
+    dom.addEventListener('mousemove', this._onMouseMove);
 
     // Keyboard: when a patch is selected, press U/V to split along that direction at t=0.5
     this._onKeyDown = (e) => {
@@ -138,19 +171,21 @@ export class PatchCageView extends View {
       }
     }
 
-    // Second: check if we hit an edge tube
+    // Second: check if we hit a boundary edge line
     if (this.subcageGroup.visible && this.edgeLines.length > 0) {
       const edgeHits = [];
-      for (const tube of this.edgeLines) {
-        tube.raycast(raycaster, edgeHits);
+      for (const line of this.edgeLines) {
+        const hits = [];
+        line.raycast(raycaster, hits);
+        for (const h of hits) {
+          h._edgeIdx = line.userData.edgeIdx;
+          edgeHits.push(h);
+        }
       }
       if (edgeHits.length > 0) {
         edgeHits.sort((a, b) => a.distance - b.distance);
-        const ei = edgeHits[0].object.userData.edgeIdx;
-        if (ei !== undefined) {
-          this.selectEdge(ei);
-          return;
-        }
+        this.selectEdge(edgeHits[0]._edgeIdx);
+        return;
       }
     }
 
@@ -180,9 +215,75 @@ export class PatchCageView extends View {
     this.selectPatch(-1);
   }
 
+  setHover(patchIdx) {
+    if (patchIdx === this.hoveredPatchIdx) return;
+    this.hoveredPatchIdx = patchIdx;
+    this.clearGroup(this.hoverGroup);
+
+    if (patchIdx < 0) {
+      this.hoverGroup.visible = false;
+      this.ctx.viewer.requestRender();
+      return;
+    }
+
+    const patch = this.model.cage.patches[patchIdx];
+    const ss = this.ctx.viewer.sceneSetup;
+    const res = this.model.tessResolution;
+    const N = 24;
+
+    // Highlight surface: tessellate just this patch, offset along normals
+    const tess = this.model.cage.tessellatePatch(patchIdx, res);
+    const offsetVerts = new Float32Array(tess.positions.length);
+    for (let i = 0; i < tess.positions.length; i += 3) {
+      offsetVerts[i]   = tess.positions[i]   + tess.normals[i]   * 0.3;
+      offsetVerts[i+1] = tess.positions[i+1] + tess.normals[i+1] * 0.3;
+      offsetVerts[i+2] = tess.positions[i+2] + tess.normals[i+2] * 0.3;
+    }
+    const hGeo = new BufferGeometry();
+    hGeo.setAttribute('position', new BufferAttribute(offsetVerts, 3));
+    hGeo.setAttribute('normal', new BufferAttribute(new Float32Array(tess.normals), 3));
+    hGeo.setIndex(new BufferAttribute(new Uint32Array(tess.indices), 1));
+    const hMat = new MeshBasicMaterial({color: 0x88bbee, transparent: true, opacity: 0.25, side: DoubleSide, depthTest: true});
+    const hMesh = new Mesh(hGeo, hMat);
+    hMesh.renderOrder = 0;
+    hMesh.raycast = () => {};
+    this.hoverGroup.add(hMesh);
+
+    // Black boundary edges
+    const edgeDefs = [
+      () => [patch.grid[0][0], patch.grid[0][1], patch.grid[0][2], patch.grid[0][3]],
+      () => [patch.grid[0][3], patch.grid[1][3], patch.grid[2][3], patch.grid[3][3]],
+      () => [patch.grid[3][3], patch.grid[3][2], patch.grid[3][1], patch.grid[3][0]],
+      () => [patch.grid[3][0], patch.grid[2][0], patch.grid[1][0], patch.grid[0][0]],
+    ];
+    const allPts = [];
+    for (const getEdge of edgeDefs) {
+      const cps = getEdge().map(v => v.position);
+      for (let i = 0; i <= N; i++) {
+        if (i === 0 && allPts.length > 0) continue;
+        const t = i / N, mt = 1 - t;
+        allPts.push([
+          mt*mt*mt*cps[0][0]+3*mt*mt*t*cps[1][0]+3*mt*t*t*cps[2][0]+t*t*t*cps[3][0],
+          mt*mt*mt*cps[0][1]+3*mt*mt*t*cps[1][1]+3*mt*t*t*cps[2][1]+t*t*t*cps[3][1],
+          mt*mt*mt*cps[0][2]+3*mt*mt*t*cps[1][2]+3*mt*t*t*cps[2][2]+t*t*t*cps[3][2],
+        ]);
+      }
+    }
+    allPts.push(allPts[0]);
+
+    const line = new ScalableLine(ss, allPts, 3, 0x000000);
+    line.renderOrder = 3;
+    line.raycast = () => {};
+    this.hoverGroup.add(line);
+
+    this.hoverGroup.visible = true;
+    this.ctx.viewer.requestRender();
+  }
+
   selectPatch(idx) {
     this.deselectHandle();
     this.deselectEdge();
+    this.setHover(-1);
     this.selectedPatchIdx = idx;
     if (idx < 0) {
       this.subcageGroup.visible = false;
@@ -211,17 +312,16 @@ export class PatchCageView extends View {
       for (let col = 0; col < 4; col++) {
         const cv = ctrl[row][col]; // CageVertex instance
         const p = cv.position;
-        const isCorner = (row === 0 || row === 3) && (col === 0 || col === 3);
-        const baseColor = isCorner ? CP_CORNER_COLOR : CP_COLOR;
+        const baseColor = CP_COLOR;
 
-        const mat = new MeshBasicMaterial({color: baseColor, depthTest: false, transparent: true, opacity: 0.9});
+        const mat = new MeshBasicMaterial({color: baseColor, depthTest: false, transparent: true, opacity: 0.95});
         const sphere = new Mesh(geom, mat);
         sphere.renderOrder = 2;
 
         const handle = new ConstantScaleGroup(ss, HANDLE_SIZE * 2, 1, () => handle.position);
         handle.position.set(p[0], p[1], p[2]);
         handle.add(sphere);
-        handle.userData = {patchIdx, row, col, isCorner, baseColor, cageVertex: cv};
+        handle.userData = {patchIdx, row, col, baseColor, cageVertex: cv};
         handle.__mat = mat;
 
         sphere.onMouseEnter = () => {
@@ -240,7 +340,7 @@ export class PatchCageView extends View {
     }
 
     // Grid lines: 3×3 quads = 4 horizontal lines + 4 vertical lines
-    const lineMat = new LineBasicMaterial({color: CAGE_LINE_COLOR, depthTest: false, transparent: true, opacity: 0.6});
+    const lineMat = new LineBasicMaterial({color: CAGE_LINE_COLOR, depthTest: false, transparent: true, opacity: 0.85});
     lineMat.depthWrite = false;
 
     // Horizontal lines (along U, for each V row)
@@ -267,7 +367,7 @@ export class PatchCageView extends View {
       this.subcageGroup.add(new Line(g, lineMat));
     }
 
-    // Boundary edge tubes (clickable, 4 edges: bottom=0, right=1, top=2, left=3)
+    // Boundary edges (screen-space constant width, 4 edges: bottom=0, right=1, top=2, left=3)
     this.edgeLines = [];
     const edgeVertSets = [
       [[0,0],[0,1],[0,2],[0,3]],  // bottom: row 0
@@ -277,21 +377,28 @@ export class PatchCageView extends View {
     ];
     for (let ei = 0; ei < 4; ei++) {
       const evs = edgeVertSets[ei];
-      const curve = new CatmullRomCurve3(
-        evs.map(([r,c]) => { const p = ctrl[r][c].position; return new Vector3(p[0], p[1], p[2]); }),
-        false, 'catmullrom', 0
-      );
-      const tubeGeo = new TubeGeometry(curve, 16, 1.5, 4, false);
-      const tubeMat = new MeshBasicMaterial({
-        color: this.selectedEdgeIdx === ei ? EDGE_SELECTED_COLOR : EDGE_COLOR,
-        depthTest: false, transparent: true, opacity: 0.5
-      });
-      const tubeMesh = new Mesh(tubeGeo, tubeMat);
-      tubeMesh.renderOrder = 1;
-      tubeMesh.userData = {edgeIdx: ei};
-      tubeMesh.__mat = tubeMat;
-      this.subcageGroup.add(tubeMesh);
-      this.edgeLines.push(tubeMesh);
+      // Tessellate cubic Bézier edge into polyline
+      const cps = evs.map(([r,c]) => ctrl[r][c].position);
+      const pts = [];
+      const N = 24;
+      for (let i = 0; i <= N; i++) {
+        const t = i / N;
+        const mt = 1 - t;
+        pts.push([
+          mt*mt*mt*cps[0][0] + 3*mt*mt*t*cps[1][0] + 3*mt*t*t*cps[2][0] + t*t*t*cps[3][0],
+          mt*mt*mt*cps[0][1] + 3*mt*mt*t*cps[1][1] + 3*mt*t*t*cps[2][1] + t*t*t*cps[3][1],
+          mt*mt*mt*cps[0][2] + 3*mt*mt*t*cps[1][2] + 3*mt*t*t*cps[2][2] + t*t*t*cps[3][2],
+        ]);
+      }
+      const edgeColor = this.selectedEdgeIdx === ei ? EDGE_SELECTED_COLOR : EDGE_COLORS[ei];
+      const line = new ScalableLine(ss, pts, 4, edgeColor);
+      line.material.depthTest = false;
+      line.material.transparent = true;
+      line.material.opacity = 0.9;
+      line.renderOrder = 1;
+      line.userData = {edgeIdx: ei, baseColor: EDGE_COLORS[ei]};
+      this.subcageGroup.add(line);
+      this.edgeLines.push(line);
     }
   }
 
@@ -365,8 +472,8 @@ export class PatchCageView extends View {
     this.deselectHandle();
     this.selectedEdgeIdx = edgeIdx;
     if (this.edgeLines[edgeIdx]) {
-      this.edgeLines[edgeIdx].__mat.color.setHex(EDGE_SELECTED_COLOR);
-      this.edgeLines[edgeIdx].__mat.opacity = 0.8;
+      this.edgeLines[edgeIdx].material.color.setHex(EDGE_SELECTED_COLOR);
+      this.edgeLines[edgeIdx].material.linewidth = 6;
     }
     this.showEdgeDialog(edgeIdx);
     this.ctx.viewer.requestRender();
@@ -374,8 +481,9 @@ export class PatchCageView extends View {
 
   deselectEdge() {
     if (this.selectedEdgeIdx >= 0 && this.edgeLines[this.selectedEdgeIdx]) {
-      this.edgeLines[this.selectedEdgeIdx].__mat.color.setHex(EDGE_COLOR);
-      this.edgeLines[this.selectedEdgeIdx].__mat.opacity = 0.5;
+      const line = this.edgeLines[this.selectedEdgeIdx];
+      line.material.color.setHex(line.userData.baseColor);
+      line.material.linewidth = 4;
     }
     this.selectedEdgeIdx = -1;
     this.closeEdgeDialog();
@@ -804,13 +912,15 @@ export class PatchCageView extends View {
   }
 
   updateVisuals() {
-    this.solidMesh.material.color.set(this.color || 0xbfbfbf);
+    this.solidMesh.material.color.set(this.color || 0xd0d0d0);
   }
 
   dispose() {
     const dom = this.ctx.viewer.sceneSetup.renderer.domElement;
     if (this._onMouseDown) dom.removeEventListener('mousedown', this._onMouseDown);
     if (this._onMouseUp) dom.removeEventListener('mouseup', this._onMouseUp);
+    if (this._onMouseMove) dom.removeEventListener('mousemove', this._onMouseMove);
+    this.clearGroup(this.hoverGroup);
     if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown);
     if (this.gizmo) {
       this.gizmo.detach(); this.gizmo.dispose();
