@@ -19,6 +19,7 @@ import {CageVertex, NurbsPatch} from 'patchCage/PatchCage';
 const CP_COLOR = 0x222222;
 const CP_HOVER = 0x555555;
 const CP_SELECTED = 0xee3333;
+const CP_MIRROR = 0x334466;
 const CAGE_LINE_COLOR = 0x1a1a1a;
 const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, top, left
 const EDGE_SELECTED_COLOR = 0xffffff;
@@ -197,6 +198,15 @@ export class PatchCageView extends View {
     // G1 continuity toggle for bridge/fill modes
     this._g1Continuity = false;
 
+    // Listen for constraint deletions from the explorer panel
+    this._onConstraintDeleted = () => {
+      this.model.recompute();
+      this.rebuildAll();
+      this.persistCageState();
+      this.ctx.viewer.requestRender();
+    };
+    document.addEventListener('patch-cage-constraint-deleted', this._onConstraintDeleted);
+
     setAttribute(this.rootGroup, PATCH_CAGE, this);
     setAttribute(this.rootGroup, View.MARKER, this);
 
@@ -372,11 +382,13 @@ export class PatchCageView extends View {
     const geom = new SphereGeometry(1);
 
     // 16 control point handles
+    const cage = this.model.cage;
     for (let row = 0; row < 4; row++) {
       for (let col = 0; col < 4; col++) {
         const cv = ctrl[row][col]; // CageVertex instance
         const p = cv.position;
-        const baseColor = CP_COLOR;
+        const isMirrorTarget = cage.isMirrorTarget(cv);
+        const baseColor = isMirrorTarget ? CP_MIRROR : CP_COLOR;
 
         const mat = new MeshBasicMaterial({color: baseColor, depthTest: false, transparent: true, opacity: 0.95});
         const sphere = new Mesh(geom, mat);
@@ -484,8 +496,8 @@ export class PatchCageView extends View {
       if (!this.selectedHandle) return;
       const ud = this.selectedHandle.userData;
       const pos = this.gizmoTarget.position;
-      // Directly mutate the CageVertex — all patches sharing it update automatically
-      ud.cageVertex.set(pos.x, pos.y, pos.z);
+      // Move via cage so constraints (arc, mirror) are enforced
+      this.model.cage.moveVertex(ud.cageVertex, pos.x, pos.y, pos.z);
 
       if (!this._timer) {
         this._timer = requestAnimationFrame(() => {
@@ -507,6 +519,8 @@ export class PatchCageView extends View {
   }
 
   selectSubcageHandle(handle) {
+    // Don't allow selecting mirror target CPs
+    if (this.model.cage.isMirrorTarget(handle.userData.cageVertex)) return;
     this.deselectHandle();
     this.deselectEdge();
     this.selectedHandle = handle;
@@ -516,7 +530,6 @@ export class PatchCageView extends View {
     this.gizmo.visible = true;
     this.gizmo.enabled = true;
     this.ctx.viewer.requestRender();
-
   }
 
   deselectHandle() {
@@ -594,6 +607,9 @@ export class PatchCageView extends View {
         <button id="edge-g1" style="flex:1;padding:6px;background:#446;color:#eee;border:none;border-radius:4px;cursor:pointer;">G1 Tangent</button>
         <button id="edge-g2" style="flex:1;padding:6px;background:#464;color:#eee;border:none;border-radius:4px;cursor:pointer;">G2 Curvature</button>
       </div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button id="edge-mirror" style="flex:1;padding:6px;background:#556;color:#eee;border:none;border-radius:4px;cursor:pointer;">Mirror</button>
+      </div>
     `;
 
     document.body.appendChild(panel);
@@ -679,6 +695,17 @@ export class PatchCageView extends View {
     if (g2Btn) {
       g2Btn.onclick = () => {
         cage.applyG2(this.selectedPatchIdx, edgeIdx);
+        this.model.recompute();
+        this.rebuildAll();
+        this.persistCageState();
+        this.showEdgeDialog(edgeIdx);
+      };
+    }
+
+    const mirrorBtn = panel.querySelector('#edge-mirror');
+    if (mirrorBtn) {
+      mirrorBtn.onclick = () => {
+        cage.mirrorAcrossEdge(this.selectedPatchIdx, edgeIdx);
         this.model.recompute();
         this.rebuildAll();
         this.persistCageState();
@@ -1499,6 +1526,8 @@ export class PatchCageView extends View {
     const cageState = this.model.serializeCage();
     this.ctx.craftService.updateOperationParams(opIdx, {cageState});
     this.ctx.projectService.scheduleSave();
+    // Notify the constraints panel in the object tree
+    document.dispatchEvent(new CustomEvent('patch-cage-constraints-changed'));
   }
 
   // ---- Utilities ----
@@ -1522,6 +1551,7 @@ export class PatchCageView extends View {
     if (this._onMouseMove) dom.removeEventListener('mousemove', this._onMouseMove);
     if (this._onLoopToggle) document.removeEventListener('patch-insert-loop-toggle', this._onLoopToggle);
     if (this._onBridgeToggle) document.removeEventListener('patch-bridge-toggle', this._onBridgeToggle);
+    if (this._onConstraintDeleted) document.removeEventListener('patch-cage-constraint-deleted', this._onConstraintDeleted);
     if (this._onFillHoleToggle) document.removeEventListener('patch-fill-hole-toggle', this._onFillHoleToggle);
     if (this._loopInsertMode || this._bridgeMode || this._fillHoleMode) document.body.style.cursor = '';
     this.clearGroup(this.hoverGroup);
