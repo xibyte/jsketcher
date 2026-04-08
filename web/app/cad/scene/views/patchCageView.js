@@ -135,6 +135,7 @@ export class PatchCageView extends View {
       if (this._bridgeMode) {
         if (e.key === 'Escape') { this.toggleBridgeMode(); return; }
         if (e.key === 'Tab') { e.preventDefault(); this.bridgeFlip(); return; }
+        if (e.key === 'Enter' && this._bridgeEdge1 && this._bridgeEdge2) { this.bridgeExecute(); return; }
         return;
       }
       if (e.key === 'Escape' && this._fillHoleMode) {
@@ -1113,7 +1114,16 @@ export class PatchCageView extends View {
       this.bridgeUpdatePreview();
     } else if (!this._bridgeEdge2) {
       this._bridgeEdge2 = hit;
+      // Auto-detect best orientation: pick the one that minimizes corner distance
+      const cage = this.model.cage;
+      const e1 = cage.patches[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
+      const e2 = cage.patches[hit.patchIdx].getEdgeVertices(hit.side);
+      const fwdDist = vdist(e1[0].position, e2[0].position) + vdist(e1[3].position, e2[3].position);
+      const revDist = vdist(e1[0].position, e2[3].position) + vdist(e1[3].position, e2[0].position);
+      this._bridgeFlipped = revDist < fwdDist;
       this.bridgeUpdatePreview();
+    } else {
+      // Third click = confirm (same as Enter)
       this.bridgeExecute();
     }
   }
