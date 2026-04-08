@@ -63,6 +63,12 @@ export interface SerializedPatchCage {
   }[];
 }
 
+interface BoundarySplitResult {
+  leftH: [CageVertex, CageVertex];
+  mid: CageVertex;
+  rightH: [CageVertex, CageVertex];
+}
+
 /**
  * A cage edge: 4 CageVertex references forming a cubic Bézier curve.
  * Shared between adjacent patches.
@@ -346,6 +352,49 @@ export class PatchCage {
   }
 
   /**
+   * Compute the propagation set for an isoline split (without splitting).
+   * Returns the list of {idx, dir, t} for all affected patches.
+   */
+  computeIsolinePropagation(patchIdx: number, direction: 'u' | 'v', t: number): {idx: number, dir: 'u' | 'v', t: number}[] {
+    const result: {idx: number, dir: 'u' | 'v', t: number}[] = [];
+    const visited = new Set<number>();
+    const queue: {idx: number, dir: 'u' | 'v', t: number}[] = [{idx: patchIdx, dir: direction, t}];
+
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      if (visited.has(cur.idx)) continue;
+      visited.add(cur.idx);
+      result.push(cur);
+
+      const cutSides = cur.dir === 'u' ? [0, 2] : [3, 1];
+      const adj = this.findAdjacentPatches(cur.idx);
+      for (const a of adj) {
+        if (visited.has(a.otherIdx)) continue;
+        if (!cutSides.includes(a.side)) continue;
+        const otherIsHorizontal = a.otherSide === 0 || a.otherSide === 2;
+        const adjDir: 'u' | 'v' = otherIsHorizontal ? 'u' : 'v';
+        const adjT = a.reversed ? (1 - cur.t) : cur.t;
+        queue.push({idx: a.otherIdx, dir: adjDir, t: adjT});
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Tessellate an isoline on a single patch as a polyline.
+   */
+  tessellateIsoline(patchIdx: number, direction: 'u' | 'v', t: number, segments: number = 24): Vec3[] {
+    const patch = this.patches[patchIdx];
+    const pts: Vec3[] = [];
+    for (let i = 0; i <= segments; i++) {
+      const s = i / segments;
+      const p = direction === 'u' ? patch.eval(t, s) : patch.eval(s, t);
+      pts.push(p);
+    }
+    return pts;
+  }
+
+  /**
    * Split along an isoline, propagating across ALL connected patches.
    *
    * Splitting patch P in U at t creates a new column cutting through P.
@@ -358,80 +407,56 @@ export class PatchCage {
    * @param t Parameter value (0..1)
    */
   splitIsoline(patchIdx: number, direction: 'u' | 'v', t: number): void {
-    const toSplit: {idx: number, dir: 'u' | 'v', t: number}[] = [];
-    const visited = new Set<number>();
+    const toSplit = this.computeIsolinePropagation(patchIdx, direction, t);
 
-    const queue: {idx: number, dir: 'u' | 'v', t: number}[] = [{idx: patchIdx, dir: direction, t}];
+    // Cache: for shared boundary edges, compute the De Casteljau split ONCE
+    // and reuse the same CageVertex instances across both patches.
+    // Key: unordered pair of corner vertices (first & last of the 4-vertex edge).
+    const boundaryCache = new Map<CageVertex, Map<CageVertex, BoundarySplitResult>>();
 
-    while (queue.length > 0) {
-      const cur = queue.shift()!;
-      if (visited.has(cur.idx)) continue;
-      visited.add(cur.idx);
-      toSplit.push(cur);
-
-      // Splitting in U creates a cut across side 0 (bottom) and side 2 (top).
-      // Splitting in V creates a cut across side 3 (left) and side 1 (right).
-      // Patches sharing those cut edges need to be split too.
-      const cutSides = cur.dir === 'u' ? [0, 2] : [3, 1];
-
-      const adj = this.findAdjacentPatches(cur.idx);
-      for (const a of adj) {
-        if (visited.has(a.otherIdx)) continue;
-        if (!cutSides.includes(a.side)) continue;
-
-        // Determine split direction and parameter in the neighbor.
-        // The cut enters the neighbor through otherSide.
-        // If otherSide is 0 or 2 (horizontal), the cut continues in U direction.
-        // If otherSide is 1 or 3 (vertical), the cut continues in V direction.
-        const otherIsHorizontal = a.otherSide === 0 || a.otherSide === 2;
-        const adjDir: 'u' | 'v' = otherIsHorizontal ? 'u' : 'v';
-        const adjT = a.reversed ? (1 - cur.t) : cur.t;
-
-        queue.push({idx: a.otherIdx, dir: adjDir, t: adjT});
+    function getCachedSplit(c0: CageVertex, c3: CageVertex): BoundarySplitResult | null {
+      if (boundaryCache.has(c0) && boundaryCache.get(c0)!.has(c3)) return boundaryCache.get(c0)!.get(c3)!;
+      if (boundaryCache.has(c3) && boundaryCache.get(c3)!.has(c0)) {
+        // Reverse: swap left/right handles
+        const fwd = boundaryCache.get(c3)!.get(c0)!;
+        return {
+          leftH: [fwd.rightH[1], fwd.rightH[0]],
+          mid: fwd.mid,
+          rightH: [fwd.leftH[1], fwd.leftH[0]],
+        };
       }
+      return null;
     }
 
-    // Pre-compute split vertices for each cut edge so they're shared.
-    // A cut edge is where the isoline crosses a patch boundary.
-    // Two adjacent patches that both get split share the SAME new vertex on their shared edge.
+    function cacheBoundarySplit(v0: CageVertex, v1: CageVertex, v2: CageVertex, v3: CageVertex, st: number): BoundarySplitResult {
+      const existing = getCachedSplit(v0, v3);
+      if (existing) return existing;
 
-    // For each patch being split, compute the 4 new midpoint CageVertex on its cut edges.
-    // Key: use the SAME CageVertex when two patches share a cut edge.
-
-    // Map: shared edge vertex pair → new split CageVertex
-    // When the isoline crosses an edge (4 CageVertex), the split point is at parameter t on that edge.
-    // Two patches sharing that edge need the SAME split vertex.
-    const edgeSplitVertexMap = new Map<CageVertex, CageVertex>();
-
-    function getOrCreateSplitVertex(edgeStart: CageVertex, edgeEnd: CageVertex, t: number): CageVertex {
-      // The split vertex is on the edge from edgeStart to edgeEnd.
-      // Use edgeStart as key (both patches see the same edgeStart for forward-matched edges).
-      // For reversed edges, the other patch sees edgeEnd as its start — handle both.
-      let key = edgeStart;
-      if (edgeSplitVertexMap.has(key)) return edgeSplitVertexMap.get(key)!;
-      key = edgeEnd;
-      if (edgeSplitVertexMap.has(key)) return edgeSplitVertexMap.get(key)!;
-
-      const p = vlerp(edgeStart.position, edgeEnd.position, t);
-      const v = new CageVertex(p[0], p[1], p[2]);
-      edgeSplitVertexMap.set(edgeStart, v);
-      edgeSplitVertexMap.set(edgeEnd, v);
-      return v;
+      const {left, mid, right} = splitBezierRow(v0, v1, v2, v3, st);
+      const result: BoundarySplitResult = {
+        leftH: left,
+        mid: new CageVertex(mid[0], mid[1], mid[2]),
+        rightH: right,
+      };
+      if (!boundaryCache.has(v0)) boundaryCache.set(v0, new Map());
+      boundaryCache.get(v0)!.set(v3, result);
+      return result;
     }
 
     // Split in reverse index order so splice doesn't invalidate earlier indices
     toSplit.sort((a, b) => b.idx - a.idx);
     for (const s of toSplit) {
-      this.splitSinglePatchShared(s.idx, s.dir, s.t, getOrCreateSplitVertex);
+      this.splitSinglePatchShared2(s.idx, s.dir, s.t, cacheBoundarySplit);
     }
   }
 
   /**
-   * Split a single patch using shared vertex factory for cut-edge vertices.
+   * Split a single patch. For boundary rows/cols, use the cache to share
+   * ALL split vertices (handles + midpoint) with adjacent patches.
    */
-  private splitSinglePatchShared(
+  private splitSinglePatchShared2(
     patchIdx: number, direction: 'u' | 'v', t: number,
-    getSharedVertex: (a: CageVertex, b: CageVertex, t: number) => CageVertex
+    getBoundarySplit: (v0: CageVertex, v1: CageVertex, v2: CageVertex, v3: CageVertex, t: number) => BoundarySplitResult
   ): void {
     const patch = this.patches[patchIdx];
     const g = patch.grid;
@@ -441,20 +466,18 @@ export class PatchCage {
       const rightGrid: CageVertex[][] = [];
 
       for (let row = 0; row < 4; row++) {
-        const {left, mid, right} = splitBezierRow(g[row][0], g[row][1], g[row][2], g[row][3], t);
-
-        // For boundary rows (0 and 3), the mid vertex is on a shared edge.
-        // Use the shared vertex factory so adjacent patches get the SAME vertex.
-        let midV: CageVertex;
         if (row === 0 || row === 3) {
-          midV = getSharedVertex(g[row][0], g[row][3], t);
+          // Boundary row: use cached split for shared vertices
+          const bs = getBoundarySplit(g[row][0], g[row][1], g[row][2], g[row][3], t);
+          leftGrid.push([g[row][0], bs.leftH[0], bs.leftH[1], bs.mid]);
+          rightGrid.push([bs.mid, bs.rightH[0], bs.rightH[1], g[row][3]]);
         } else {
-          // Interior row: new vertex, not shared
-          midV = new CageVertex(mid[0], mid[1], mid[2]);
+          // Interior row: fresh split, no sharing needed
+          const {left, mid, right} = splitBezierRow(g[row][0], g[row][1], g[row][2], g[row][3], t);
+          const midV = new CageVertex(mid[0], mid[1], mid[2]);
+          leftGrid.push([g[row][0], left[0], left[1], midV]);
+          rightGrid.push([midV, right[0], right[1], g[row][3]]);
         }
-
-        leftGrid.push([g[row][0], left[0], left[1], midV]);
-        rightGrid.push([midV, right[0], right[1], g[row][3]]);
       }
 
       this.patches.splice(patchIdx, 1,
@@ -466,25 +489,30 @@ export class PatchCage {
       const topGrid: CageVertex[][] = [[], [], [], []];
 
       for (let col = 0; col < 4; col++) {
-        const {left, mid, right} = splitBezierRow(g[0][col], g[1][col], g[2][col], g[3][col], t);
-
-        // For boundary columns (0 and 3), the mid vertex is on a shared edge.
-        let midV: CageVertex;
         if (col === 0 || col === 3) {
-          midV = getSharedVertex(g[0][col], g[3][col], t);
+          // Boundary column: use cached split
+          const bs = getBoundarySplit(g[0][col], g[1][col], g[2][col], g[3][col], t);
+          bottomGrid[0][col] = g[0][col];
+          bottomGrid[1][col] = bs.leftH[0];
+          bottomGrid[2][col] = bs.leftH[1];
+          bottomGrid[3][col] = bs.mid;
+          topGrid[0][col] = bs.mid;
+          topGrid[1][col] = bs.rightH[0];
+          topGrid[2][col] = bs.rightH[1];
+          topGrid[3][col] = g[3][col];
         } else {
-          midV = new CageVertex(mid[0], mid[1], mid[2]);
+          // Interior column: fresh split
+          const {left, mid, right} = splitBezierRow(g[0][col], g[1][col], g[2][col], g[3][col], t);
+          const midV = new CageVertex(mid[0], mid[1], mid[2]);
+          bottomGrid[0][col] = g[0][col];
+          bottomGrid[1][col] = left[0];
+          bottomGrid[2][col] = left[1];
+          bottomGrid[3][col] = midV;
+          topGrid[0][col] = midV;
+          topGrid[1][col] = right[0];
+          topGrid[2][col] = right[1];
+          topGrid[3][col] = g[3][col];
         }
-
-        bottomGrid[0][col] = g[0][col];
-        bottomGrid[1][col] = left[0];
-        bottomGrid[2][col] = left[1];
-        bottomGrid[3][col] = midV;
-
-        topGrid[0][col] = midV;
-        topGrid[1][col] = right[0];
-        topGrid[2][col] = right[1];
-        topGrid[3][col] = g[3][col];
       }
 
       this.patches.splice(patchIdx, 1,
@@ -492,6 +520,157 @@ export class PatchCage {
         new NurbsPatch(topGrid, cloneWeights(patch.weights))
       );
     }
+  }
+
+  // =========================================================================
+  // Free edges and hole detection
+  // =========================================================================
+
+  /**
+   * Find all free edges (edges with a patch on only one side).
+   * Returns array of {patchIdx, side, verts: [CageVertex x4]}.
+   */
+  findFreeEdges(): {patchIdx: number, side: number, verts: [CageVertex, CageVertex, CageVertex, CageVertex]}[] {
+    const free: {patchIdx: number, side: number, verts: [CageVertex, CageVertex, CageVertex, CageVertex]}[] = [];
+    for (let pi = 0; pi < this.patches.length; pi++) {
+      const adj = this.findAdjacentPatches(pi);
+      const sharedSides = new Set(adj.map(a => a.side));
+      for (let side = 0; side < 4; side++) {
+        if (!sharedSides.has(side)) {
+          free.push({patchIdx: pi, side, verts: this.patches[pi].getEdgeVertices(side)});
+        }
+      }
+    }
+    return free;
+  }
+
+  /**
+   * Trace a hole boundary starting from a free edge.
+   * Follows free edges around by matching corner vertices.
+   * Returns null if no closed loop found, or an array of edge descriptors forming the loop.
+   */
+  traceHole(startPatchIdx: number, startSide: number): {patchIdx: number, side: number, verts: [CageVertex, CageVertex, CageVertex, CageVertex]}[] | null {
+    const freeEdges = this.findFreeEdges();
+
+    // Build lookup: corner vertex → free edges starting or ending at that vertex
+    const edgeByStart = new Map<CageVertex, typeof freeEdges>();
+    for (const fe of freeEdges) {
+      const start = fe.verts[0];
+      if (!edgeByStart.has(start)) edgeByStart.set(start, []);
+      edgeByStart.get(start)!.push(fe);
+    }
+
+    // Also index by end vertex (verts[3]), storing a reversed reference
+    const edgeByEnd = new Map<CageVertex, typeof freeEdges>();
+    for (const fe of freeEdges) {
+      const end = fe.verts[3];
+      if (!edgeByEnd.has(end)) edgeByEnd.set(end, []);
+      edgeByEnd.get(end)!.push(fe);
+    }
+
+    // Find the starting edge
+    const startEdge = freeEdges.find(fe => fe.patchIdx === startPatchIdx && fe.side === startSide);
+    if (!startEdge) return null;
+
+    const loop: typeof freeEdges = [startEdge];
+    const visited = new Set<string>();
+    visited.add(`${startEdge.patchIdx}:${startEdge.side}`);
+
+    let currentEnd = startEdge.verts[3];
+    const targetStart = startEdge.verts[0];
+
+    for (let iter = 0; iter < 20; iter++) {
+      if (currentEnd === targetStart && loop.length >= 3) {
+        return loop; // closed loop found
+      }
+
+      // Find next free edge that starts at currentEnd
+      let found = false;
+      const candidates = edgeByStart.get(currentEnd) || [];
+      for (const fe of candidates) {
+        const key = `${fe.patchIdx}:${fe.side}`;
+        if (visited.has(key)) continue;
+        visited.add(key);
+        loop.push(fe);
+        currentEnd = fe.verts[3];
+        found = true;
+        break;
+      }
+      if (found) continue;
+
+      // Try edges ending at currentEnd (traverse them reversed)
+      const revCandidates = edgeByEnd.get(currentEnd) || [];
+      for (const fe of revCandidates) {
+        const key = `${fe.patchIdx}:${fe.side}`;
+        if (visited.has(key)) continue;
+        visited.add(key);
+        // Push reversed
+        loop.push({
+          patchIdx: fe.patchIdx,
+          side: fe.side,
+          verts: [fe.verts[3], fe.verts[2], fe.verts[1], fe.verts[0]],
+        });
+        currentEnd = fe.verts[0]; // reversed end
+        found = true;
+        break;
+      }
+      if (!found) return null; // dead end
+    }
+    return null;
+  }
+
+  /**
+   * Fill a hole defined by 3 or 4 free edges forming a closed loop.
+   * For 4 edges: Coons patch using boundary curves.
+   * For 3 edges: degenerate patch with one collapsed edge.
+   */
+  fillHole(loop: {patchIdx: number, side: number, verts: [CageVertex, CageVertex, CageVertex, CageVertex]}[]): boolean {
+    if (loop.length === 4) {
+      // Coons patch: bottom=loop[0], right=loop[1], top=loop[2] reversed, left=loop[3] reversed
+      const bottom = loop[0].verts;
+      const right = loop[1].verts;
+      const top: [CageVertex, CageVertex, CageVertex, CageVertex] = [loop[2].verts[3], loop[2].verts[2], loop[2].verts[1], loop[2].verts[0]];
+      const left: [CageVertex, CageVertex, CageVertex, CageVertex] = [loop[3].verts[3], loop[3].verts[2], loop[3].verts[1], loop[3].verts[0]];
+
+      const grid = makeGrid(
+        [bottom[0], bottom[3], top[0], top[3]],
+        {bottom, right, top, left}
+      );
+      this.patches.push(new NurbsPatch(grid));
+      return true;
+
+    } else if (loop.length === 3) {
+      // Degenerate patch: collapse one edge to a single vertex (the apex)
+      // bottom = loop[0], right = loop[1], left = loop[2] reversed
+      // top edge collapsed to the shared corner between right end and left start
+      const bottom = loop[0].verts;
+      const right = loop[1].verts;
+      const leftRev: [CageVertex, CageVertex, CageVertex, CageVertex] = [loop[2].verts[3], loop[2].verts[2], loop[2].verts[1], loop[2].verts[0]];
+
+      // The apex is right[3] which should equal leftRev[0] (= loop[2].verts[3])
+      const apex = right[3];
+
+      const grid: CageVertex[][] = [
+        // Row 0: bottom edge
+        bottom,
+        // Row 1: interpolated
+        [leftRev[1], ...this.interpRow(bottom, [apex, apex, apex, apex], 1/3), right[1]],
+        // Row 2: interpolated
+        [leftRev[2], ...this.interpRow(bottom, [apex, apex, apex, apex], 2/3), right[2]],
+        // Row 3: collapsed to apex
+        [apex, apex, apex, apex],
+      ];
+
+      this.patches.push(new NurbsPatch(grid));
+      return true;
+    }
+    return false;
+  }
+
+  private interpRow(bottom: [CageVertex, CageVertex, CageVertex, CageVertex], top: CageVertex[], t: number): [CageVertex, CageVertex] {
+    const p1 = vlerp(bottom[1].position, top[1].position, t);
+    const p2 = vlerp(bottom[2].position, top[2].position, t);
+    return [new CageVertex(p1[0], p1[1], p1[2]), new CageVertex(p2[0], p2[1], p2[2])];
   }
 
   // =========================================================================

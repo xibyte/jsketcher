@@ -14,6 +14,7 @@ import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
 import ScalableLine from 'scene/objects/scalableLine';
 import {vdist, vlerp} from 'patchCage/vec3Math';
+import {CageVertex, NurbsPatch} from 'patchCage/PatchCage';
 
 const CP_COLOR = 0x222222;
 const CP_HOVER = 0x555555;
@@ -83,19 +84,32 @@ export class PatchCageView extends View {
       const dx = Math.abs(e.offsetX - this._clickStartX);
       const dy = Math.abs(e.offsetY - this._clickStartY);
       if (dx < 3 && dy < 3 && e.button === 0) {
-        this.pickPatch(e);
+        if (this._loopInsertMode) {
+          this.loopInsertExecute(e);
+        } else if (this._bridgeMode) {
+          this.bridgePickEdge(e);
+        } else if (this._fillHoleMode) {
+          this.fillHoleExecute();
+        } else {
+          this.pickPatch(e);
+        }
       }
     };
     this._onMouseMove = (e) => {
-      if (this.selectedPatchIdx >= 0) return; // subcage visible, no hover needed
+      if (this._loopInsertMode) {
+        this.loopInsertPreview(e);
+        return;
+      }
+      if (this._fillHoleMode) {
+        this.fillHolePreview(e);
+        return;
+      }
+      if (this.selectedPatchIdx >= 0) return;
       const ss = ctx.viewer.sceneSetup;
       const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
       const hits = [];
       this.solidMesh.raycast(raycaster, hits);
-      if (hits.length === 0) {
-        this.setHover(-1);
-        return;
-      }
+      if (hits.length === 0) { this.setHover(-1); return; }
       hits.sort((a, b) => a.distance - b.distance);
       const fi = hits[0].faceIndex;
       if (fi === undefined) { this.setHover(-1); return; }
@@ -114,6 +128,19 @@ export class PatchCageView extends View {
 
     // Keyboard: when a patch is selected, press U/V to split along that direction at t=0.5
     this._onKeyDown = (e) => {
+      if (e.key === 'Escape' && this._loopInsertMode) {
+        this.toggleLoopInsertMode();
+        return;
+      }
+      if (this._bridgeMode) {
+        if (e.key === 'Escape') { this.toggleBridgeMode(); return; }
+        if (e.key === 'Tab') { e.preventDefault(); this.bridgeFlip(); return; }
+        return;
+      }
+      if (e.key === 'Escape' && this._fillHoleMode) {
+        this.toggleFillHoleMode();
+        return;
+      }
       if (this.selectedPatchIdx < 0) return;
       if (e.key === 'u' || e.key === 'U') {
         this.model.cage.splitIsoline(this.selectedPatchIdx, 'u', 0.5);
@@ -132,6 +159,37 @@ export class PatchCageView extends View {
       }
     };
     document.addEventListener('keydown', this._onKeyDown);
+
+    // Loop insert mode
+    this._loopInsertMode = false;
+    this._loopPreviewGroup = SceneGraph.createGroup();
+    this._loopPreviewGroup.visible = false;
+    this.rootGroup.add(this._loopPreviewGroup);
+
+    this._onLoopToggle = () => this.toggleLoopInsertMode();
+    document.addEventListener('patch-insert-loop-toggle', this._onLoopToggle);
+
+    // Bridge surface mode
+    this._bridgeMode = false;
+    this._bridgeEdge1 = null; // {patchIdx, side}
+    this._bridgeEdge2 = null;
+    this._bridgeFlipped = false;
+    this._bridgePreviewGroup = SceneGraph.createGroup();
+    this._bridgePreviewGroup.visible = false;
+    this.rootGroup.add(this._bridgePreviewGroup);
+
+    this._onBridgeToggle = () => this.toggleBridgeMode();
+    document.addEventListener('patch-bridge-toggle', this._onBridgeToggle);
+
+    // Fill hole mode
+    this._fillHoleMode = false;
+    this._fillHolePreviewGroup = SceneGraph.createGroup();
+    this._fillHolePreviewGroup.visible = false;
+    this.rootGroup.add(this._fillHolePreviewGroup);
+    this._fillHoleLoop = null;
+
+    this._onFillHoleToggle = () => this.toggleFillHoleMode();
+    document.addEventListener('patch-fill-hole-toggle', this._onFillHoleToggle);
 
     setAttribute(this.rootGroup, PATCH_CAGE, this);
     setAttribute(this.rootGroup, View.MARKER, this);
@@ -891,6 +949,417 @@ export class PatchCageView extends View {
     }
   }
 
+  // ---- Fill Hole Mode ----
+
+  toggleFillHoleMode() {
+    this._fillHoleMode = !this._fillHoleMode;
+    if (this._fillHoleMode) {
+      if (this._loopInsertMode) this.toggleLoopInsertMode();
+      if (this._bridgeMode) this.toggleBridgeMode();
+      this.selectPatch(-1);
+      this.setHover(-1);
+      this._fillHoleLoop = null;
+      this.clearGroup(this._fillHolePreviewGroup);
+      this._fillHolePreviewGroup.visible = false;
+      document.body.style.cursor = 'crosshair';
+    } else {
+      this._fillHoleLoop = null;
+      this.clearGroup(this._fillHolePreviewGroup);
+      this._fillHolePreviewGroup.visible = false;
+      document.body.style.cursor = '';
+      this.ctx.viewer.requestRender();
+    }
+  }
+
+  fillHolePreview(e) {
+    const hit = this.bridgeHitEdge(e);
+    this.clearGroup(this._fillHolePreviewGroup);
+    this._fillHoleLoop = null;
+
+    if (!hit) {
+      this._fillHolePreviewGroup.visible = false;
+      this.ctx.viewer.requestRender();
+      return;
+    }
+
+    // Check if this edge is a free edge
+    const cage = this.model.cage;
+    const adj = cage.findAdjacentPatches(hit.patchIdx);
+    const isShared = adj.some(a => a.side === hit.side);
+    if (isShared) {
+      // Not a free edge — no hole here
+      this._fillHolePreviewGroup.visible = false;
+      this.ctx.viewer.requestRender();
+      return;
+    }
+
+    // Trace hole boundary
+    const loop = cage.traceHole(hit.patchIdx, hit.side);
+    if (!loop || (loop.length !== 3 && loop.length !== 4)) {
+      this._fillHolePreviewGroup.visible = false;
+      this.ctx.viewer.requestRender();
+      return;
+    }
+
+    this._fillHoleLoop = loop;
+    const ss = this.ctx.viewer.sceneSetup;
+    const N = 24;
+
+    // Draw each edge of the hole in alternating colors
+    const colors = [0x44ee44, 0xee8800, 0x4488ee, 0xee4444];
+    for (let i = 0; i < loop.length; i++) {
+      const edge = loop[i];
+      const cps = edge.verts.map(v => v.position);
+      const pts = [];
+      for (let j = 0; j <= N; j++) {
+        const t = j / N, mt = 1 - t;
+        pts.push([
+          mt*mt*mt*cps[0][0]+3*mt*mt*t*cps[1][0]+3*mt*t*t*cps[2][0]+t*t*t*cps[3][0],
+          mt*mt*mt*cps[0][1]+3*mt*mt*t*cps[1][1]+3*mt*t*t*cps[2][1]+t*t*t*cps[3][1],
+          mt*mt*mt*cps[0][2]+3*mt*mt*t*cps[1][2]+3*mt*t*t*cps[2][2]+t*t*t*cps[3][2],
+        ]);
+      }
+      const line = new ScalableLine(ss, pts, 4, colors[i % colors.length]);
+      line.renderOrder = 4;
+      line.raycast = () => {};
+      this._fillHolePreviewGroup.add(line);
+    }
+
+    this._fillHolePreviewGroup.visible = true;
+    this.ctx.viewer.requestRender();
+  }
+
+  fillHoleExecute() {
+    if (!this._fillHoleLoop) return;
+    const cage = this.model.cage;
+
+    if (cage.fillHole(this._fillHoleLoop)) {
+      this.model.recompute();
+      this.rebuildAll();
+      this.persistCageState();
+    }
+
+    this._fillHoleLoop = null;
+    this.clearGroup(this._fillHolePreviewGroup);
+    this._fillHolePreviewGroup.visible = false;
+    this.ctx.viewer.requestRender();
+  }
+
+  // ---- Bridge Surface Mode ----
+
+  toggleBridgeMode() {
+    this._bridgeMode = !this._bridgeMode;
+    if (this._bridgeMode) {
+      if (this._loopInsertMode) this.toggleLoopInsertMode();
+      this.selectPatch(-1);
+      this.setHover(-1);
+      this._bridgeEdge1 = null;
+      this._bridgeEdge2 = null;
+      this._bridgeFlipped = false;
+      this.clearGroup(this._bridgePreviewGroup);
+      this._bridgePreviewGroup.visible = false;
+      document.body.style.cursor = 'crosshair';
+    } else {
+      this._bridgeEdge1 = null;
+      this._bridgeEdge2 = null;
+      this.clearGroup(this._bridgePreviewGroup);
+      this._bridgePreviewGroup.visible = false;
+      document.body.style.cursor = '';
+      this.ctx.viewer.requestRender();
+    }
+  }
+
+  bridgeHitEdge(e) {
+    // Raycast against the solid mesh, find closest patch, then determine closest boundary edge
+    const ss = this.ctx.viewer.sceneSetup;
+    const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
+    const hits = [];
+    this.solidMesh.raycast(raycaster, hits);
+    if (hits.length === 0) return null;
+    hits.sort((a, b) => a.distance - b.distance);
+    const fi = hits[0].faceIndex;
+    const hp = hits[0].point;
+    if (fi === undefined) return null;
+
+    const ranges = this.model.mesh.faceTriRanges;
+    const res = this.model.tessResolution;
+    for (let pi = 0; pi < ranges.length; pi++) {
+      if (fi >= ranges[pi][0] && fi < ranges[pi][1]) {
+        // Determine UV within patch
+        const localTri = fi - ranges[pi][0];
+        const quadIdx = Math.floor(localTri / 2);
+        const col = quadIdx % res;
+        const row = Math.floor(quadIdx / res);
+        const u = (col + 0.5) / res;
+        const v = (row + 0.5) / res;
+        // Closest boundary edge: min distance to sides
+        const dists = [v, 1 - u, 1 - v, u]; // bottom, right, top, left
+        let minSide = 0;
+        for (let s = 1; s < 4; s++) {
+          if (dists[s] < dists[minSide]) minSide = s;
+        }
+        return {patchIdx: pi, side: minSide};
+      }
+    }
+    return null;
+  }
+
+  bridgePickEdge(e) {
+    const hit = this.bridgeHitEdge(e);
+    if (!hit) return;
+
+    if (!this._bridgeEdge1) {
+      this._bridgeEdge1 = hit;
+      this.bridgeUpdatePreview();
+    } else if (!this._bridgeEdge2) {
+      this._bridgeEdge2 = hit;
+      this.bridgeUpdatePreview();
+      this.bridgeExecute();
+    }
+  }
+
+  bridgeFlip() {
+    if (!this._bridgeEdge1 || !this._bridgeEdge2) return;
+    this._bridgeFlipped = !this._bridgeFlipped;
+    this.bridgeUpdatePreview();
+    this.ctx.viewer.requestRender();
+  }
+
+  bridgeUpdatePreview() {
+    this.clearGroup(this._bridgePreviewGroup);
+    const ss = this.ctx.viewer.sceneSetup;
+    const cage = this.model.cage;
+    const N = 24;
+
+    // Draw edge 1 highlight
+    if (this._bridgeEdge1) {
+      const pts = this.tessellateEdge(this._bridgeEdge1.patchIdx, this._bridgeEdge1.side, N);
+      const line = new ScalableLine(ss, pts, 4, 0x44ee44);
+      line.renderOrder = 4;
+      line.raycast = () => {};
+      this._bridgePreviewGroup.add(line);
+    }
+
+    // Draw edge 2 highlight
+    if (this._bridgeEdge2) {
+      const pts = this.tessellateEdge(this._bridgeEdge2.patchIdx, this._bridgeEdge2.side, N);
+      const line = new ScalableLine(ss, pts, 4, 0xee8800);
+      line.renderOrder = 4;
+      line.raycast = () => {};
+      this._bridgePreviewGroup.add(line);
+
+      // Preview bridge surface wireframe
+      const e1Verts = cage.patches[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
+      let e2Verts = cage.patches[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
+      if (this._bridgeFlipped) e2Verts = [e2Verts[3], e2Verts[2], e2Verts[1], e2Verts[0]];
+
+      // Draw connecting lines between corresponding endpoints
+      for (let ci = 0; ci < 4; ci += 3) {
+        const p1 = e1Verts[ci].position;
+        const p2 = e2Verts[ci].position;
+        const pts = [p1, p2];
+        const line = new ScalableLine(ss, pts, 2, 0xaaaaaa);
+        line.renderOrder = 4;
+        line.raycast = () => {};
+        this._bridgePreviewGroup.add(line);
+      }
+    }
+
+    this._bridgePreviewGroup.visible = true;
+    this.ctx.viewer.requestRender();
+  }
+
+  tessellateEdge(patchIdx, side, N) {
+    const patch = this.model.cage.patches[patchIdx];
+    const verts = patch.getEdgeVertices(side);
+    const cps = verts.map(v => v.position);
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N, mt = 1 - t;
+      pts.push([
+        mt*mt*mt*cps[0][0]+3*mt*mt*t*cps[1][0]+3*mt*t*t*cps[2][0]+t*t*t*cps[3][0],
+        mt*mt*mt*cps[0][1]+3*mt*mt*t*cps[1][1]+3*mt*t*t*cps[2][1]+t*t*t*cps[3][1],
+        mt*mt*mt*cps[0][2]+3*mt*mt*t*cps[1][2]+3*mt*t*t*cps[2][2]+t*t*t*cps[3][2],
+      ]);
+    }
+    return pts;
+  }
+
+  bridgeExecute() {
+    if (!this._bridgeEdge1 || !this._bridgeEdge2) return;
+    const cage = this.model.cage;
+
+    const e1 = cage.patches[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
+    let e2 = cage.patches[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
+    if (this._bridgeFlipped) e2 = [e2[3], e2[2], e2[1], e2[0]];
+
+    // Build 4×4 grid: row 0 = edge1, row 3 = edge2, rows 1-2 interpolated
+    const grid = [];
+    for (let r = 0; r < 4; r++) {
+      const row = [];
+      for (let c = 0; c < 4; c++) {
+        if (r === 0) {
+          row.push(e1[c]); // shared by identity with source patch
+        } else if (r === 3) {
+          row.push(e2[c]); // shared by identity with target patch
+        } else {
+          const t = r / 3;
+          const p = vlerp(e1[c].position, e2[c].position, t);
+          row.push(new CageVertex(p[0], p[1], p[2]));
+        }
+      }
+      grid.push(row);
+    }
+
+    cage.patches.push(new NurbsPatch(grid));
+    this.model.recompute();
+    this.rebuildAll();
+    this.persistCageState();
+
+    // Reset state, stay in bridge mode for more bridges
+    this._bridgeEdge1 = null;
+    this._bridgeEdge2 = null;
+    this._bridgeFlipped = false;
+    this.clearGroup(this._bridgePreviewGroup);
+    this._bridgePreviewGroup.visible = false;
+    this.ctx.viewer.requestRender();
+  }
+
+  // ---- Loop Insert Mode ----
+
+  toggleLoopInsertMode() {
+    this._loopInsertMode = !this._loopInsertMode;
+    if (this._loopInsertMode) {
+      this.selectPatch(-1);
+      this.setHover(-1);
+      document.body.style.cursor = 'crosshair';
+    } else {
+      this.clearGroup(this._loopPreviewGroup);
+      this._loopPreviewGroup.visible = false;
+      this._loopPending = null;
+      document.body.style.cursor = '';
+      this.ctx.viewer.requestRender();
+    }
+  }
+
+  hitToUV(e) {
+    const ss = this.ctx.viewer.sceneSetup;
+    const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
+    const hits = [];
+    this.solidMesh.raycast(raycaster, hits);
+    if (hits.length === 0) return null;
+    hits.sort((a, b) => a.distance - b.distance);
+    const hit = hits[0];
+    const fi = hit.faceIndex;
+    if (fi === undefined) return null;
+
+    const ranges = this.model.mesh.faceTriRanges;
+    const res = this.model.tessResolution;
+    const indices = this.model.mesh.indices;
+    const verts = this.model.mesh.vertices;
+
+    for (let pi = 0; pi < ranges.length; pi++) {
+      if (fi >= ranges[pi][0] && fi < ranges[pi][1]) {
+        const localTri = fi - ranges[pi][0];
+        const quadIdx = Math.floor(localTri / 2);
+        const isSecond = localTri % 2 === 1;
+        const col = quadIdx % res;
+        const row = Math.floor(quadIdx / res);
+
+        // The quad at (col, row) spans u=[col/res, (col+1)/res], v=[row/res, (row+1)/res]
+        // Triangle 0: vertices (a, b, d) where a=(row,col), b=(row,col+1), d=(row+1,col+1)
+        // Triangle 1: vertices (a, d, c) where a=(row,col), d=(row+1,col+1), c=(row+1,col)
+        // Use hit point to interpolate within the quad
+        const hp = hit.point;
+        // Get quad corner world positions from the tessellation grid
+        const patchVertOff = ranges[pi][0] * 3; // not quite right — need vertex offset
+        // Simpler: use the triangle vertex positions from the index buffer
+        const base = fi * 3;
+        const i0 = indices[base], i1 = indices[base + 1], i2 = indices[base + 2];
+        const p0 = [verts[i0*3], verts[i0*3+1], verts[i0*3+2]];
+        const p1 = [verts[i1*3], verts[i1*3+1], verts[i1*3+2]];
+        const p2 = [verts[i2*3], verts[i2*3+1], verts[i2*3+2]];
+
+        // Compute barycentric coordinates of hit point in triangle
+        const v0 = [p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]];
+        const v1 = [p2[0]-p0[0], p2[1]-p0[1], p2[2]-p0[2]];
+        const v2 = [hp.x-p0[0], hp.y-p0[1], hp.z-p0[2]];
+        const d00 = v0[0]*v0[0]+v0[1]*v0[1]+v0[2]*v0[2];
+        const d01 = v0[0]*v1[0]+v0[1]*v1[1]+v0[2]*v1[2];
+        const d11 = v1[0]*v1[0]+v1[1]*v1[1]+v1[2]*v1[2];
+        const d20 = v2[0]*v0[0]+v2[1]*v0[1]+v2[2]*v0[2];
+        const d21 = v2[0]*v1[0]+v2[1]*v1[1]+v2[2]*v1[2];
+        const denom = d00*d11 - d01*d01;
+        const bv = (d11*d20 - d01*d21) / denom;
+        const bw = (d00*d21 - d01*d20) / denom;
+        const bu = 1 - bv - bw;
+
+        // Map barycentric to (localU, localV) within the quad [0..1]×[0..1]
+        // Tri 0 (a,b,d): a=(0,0), b=(1,0), d=(1,1) → localU = bv + bw, localV = bw
+        // Tri 1 (a,d,c): a=(0,0), d=(1,1), c=(0,1) → localU = bv, localV = bv + bw
+        let localU, localV;
+        if (!isSecond) {
+          localU = bv + bw;
+          localV = bw;
+        } else {
+          localU = bv;
+          localV = bv + bw;
+        }
+
+        const u = (col + Math.max(0, Math.min(1, localU))) / res;
+        const v = (row + Math.max(0, Math.min(1, localV))) / res;
+
+        return {patchIdx: pi, u, v};
+      }
+    }
+    return null;
+  }
+
+  loopInsertPreview(e) {
+    const hit = this.hitToUV(e);
+    this.clearGroup(this._loopPreviewGroup);
+
+    if (!hit) {
+      this._loopPreviewGroup.visible = false;
+      this._loopPending = null;
+      this.ctx.viewer.requestRender();
+      return;
+    }
+
+    // Auto-pick direction; Shift flips it
+    let dir = Math.abs(hit.u - 0.5) < Math.abs(hit.v - 0.5) ? 'u' : 'v';
+    if (e.shiftKey) dir = dir === 'u' ? 'v' : 'u';
+    const t = Math.max(0.01, Math.min(0.99, dir === 'u' ? hit.u : hit.v));
+
+    this._loopPending = {patchIdx: hit.patchIdx, dir, t};
+    const cage = this.model.cage;
+    const propagation = cage.computeIsolinePropagation(hit.patchIdx, dir, t);
+    const ss = this.ctx.viewer.sceneSetup;
+
+    for (const seg of propagation) {
+      const pts = cage.tessellateIsoline(seg.idx, seg.dir, seg.t, 24);
+      const line = new ScalableLine(ss, pts, 3, 0xffcc00);
+      line.renderOrder = 4;
+      line.raycast = () => {};
+      this._loopPreviewGroup.add(line);
+    }
+
+    this._loopPreviewGroup.visible = true;
+    this.ctx.viewer.requestRender();
+  }
+
+  loopInsertExecute() {
+    if (!this._loopPending) return;
+    const {patchIdx, dir, t} = this._loopPending;
+    this.model.cage.splitIsoline(patchIdx, dir, t);
+    this.model.recompute();
+    this._loopPending = null;
+    this.clearGroup(this._loopPreviewGroup);
+    this._loopPreviewGroup.visible = false;
+    this.rebuildAll();
+    this.persistCageState();
+  }
+
   // ---- Persist cage state to originating operation ----
 
   persistCageState() {
@@ -920,7 +1389,14 @@ export class PatchCageView extends View {
     if (this._onMouseDown) dom.removeEventListener('mousedown', this._onMouseDown);
     if (this._onMouseUp) dom.removeEventListener('mouseup', this._onMouseUp);
     if (this._onMouseMove) dom.removeEventListener('mousemove', this._onMouseMove);
+    if (this._onLoopToggle) document.removeEventListener('patch-insert-loop-toggle', this._onLoopToggle);
+    if (this._onBridgeToggle) document.removeEventListener('patch-bridge-toggle', this._onBridgeToggle);
+    if (this._onFillHoleToggle) document.removeEventListener('patch-fill-hole-toggle', this._onFillHoleToggle);
+    if (this._loopInsertMode || this._bridgeMode || this._fillHoleMode) document.body.style.cursor = '';
     this.clearGroup(this.hoverGroup);
+    this.clearGroup(this._loopPreviewGroup);
+    this.clearGroup(this._bridgePreviewGroup);
+    this.clearGroup(this._fillHolePreviewGroup);
     if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown);
     if (this.gizmo) {
       this.gizmo.detach(); this.gizmo.dispose();
