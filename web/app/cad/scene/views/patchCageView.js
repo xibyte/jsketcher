@@ -135,11 +135,13 @@ export class PatchCageView extends View {
       if (this._bridgeMode) {
         if (e.key === 'Escape') { this.toggleBridgeMode(); return; }
         if (e.key === 'Tab') { e.preventDefault(); this.bridgeFlip(); return; }
+        if (e.key === 'g' || e.key === 'G') { this.toggleG1Continuity(); return; }
         if (e.key === 'Enter' && this._bridgeEdge1 && this._bridgeEdge2) { this.bridgeExecute(); return; }
         return;
       }
-      if (e.key === 'Escape' && this._fillHoleMode) {
-        this.toggleFillHoleMode();
+      if (this._fillHoleMode) {
+        if (e.key === 'Escape') { this.toggleFillHoleMode(); return; }
+        if (e.key === 'g' || e.key === 'G') { this.toggleG1Continuity(); return; }
         return;
       }
       if (this.selectedPatchIdx < 0) return;
@@ -191,6 +193,9 @@ export class PatchCageView extends View {
 
     this._onFillHoleToggle = () => this.toggleFillHoleMode();
     document.addEventListener('patch-fill-hole-toggle', this._onFillHoleToggle);
+
+    // G1 continuity toggle for bridge/fill modes
+    this._g1Continuity = false;
 
     setAttribute(this.rootGroup, PATCH_CAGE, this);
     setAttribute(this.rootGroup, View.MARKER, this);
@@ -564,6 +569,10 @@ export class PatchCageView extends View {
       c.patchSide && c.patchSide.patchIdx === this.selectedPatchIdx && c.patchSide.side === edgeIdx
     );
 
+    // Check if edge has adjacent patch (for continuity)
+    const adj = cage.findAdjacentPatches(this.selectedPatchIdx);
+    const hasNeighbor = adj.some(a => a.side === edgeIdx);
+
     const panel = document.createElement('div');
     panel.style.cssText = 'position:fixed;right:10px;bottom:10px;background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:8px;width:340px;font-family:sans-serif;font-size:12px;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
     panel.innerHTML = `
@@ -572,7 +581,7 @@ export class PatchCageView extends View {
         <button id="edge-close" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;padding:0 4px;">&times;</button>
       </div>
       <div style="margin-bottom:8px;font-size:11px;color:#888;">
-        Chord length: ${round(chordLen)}
+        Chord length: ${round(chordLen)}${hasNeighbor ? ' | Shared' : ' | Free'}
         ${existing ? ' | Arc: ' + round(existing.angle) + '° r=' + round(existing.radius) + ' (' + existing.mode + ')' : ''}
       </div>
       <div style="display:flex;gap:6px;">
@@ -580,6 +589,11 @@ export class PatchCageView extends View {
         <button id="edge-arc90-in" style="flex:1;padding:6px;background:#345;color:#eee;border:none;border-radius:4px;cursor:pointer;">Arc 90° In</button>
         ${existing ? '<button id="edge-remove-arc" style="flex:1;padding:6px;background:#533;color:#eee;border:none;border-radius:4px;cursor:pointer;">Remove</button>' : ''}
       </div>
+      ${hasNeighbor ? `
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button id="edge-g1" style="flex:1;padding:6px;background:#446;color:#eee;border:none;border-radius:4px;cursor:pointer;">G1 Tangent</button>
+        <button id="edge-g2" style="flex:1;padding:6px;background:#464;color:#eee;border:none;border-radius:4px;cursor:pointer;">G2 Curvature</button>
+      </div>` : ''}
     `;
 
     document.body.appendChild(panel);
@@ -644,6 +658,27 @@ export class PatchCageView extends View {
           for (let i = 0; i < row.length; i++) row[i] = 1;
         });
         this.model.cage.patches[this.selectedPatchIdx].rational = false;
+        this.model.recompute();
+        this.rebuildAll();
+        this.persistCageState();
+        this.showEdgeDialog(edgeIdx);
+      };
+    }
+
+    const g1Btn = panel.querySelector('#edge-g1');
+    if (g1Btn) {
+      g1Btn.onclick = () => {
+        cage.applyG1(this.selectedPatchIdx, edgeIdx);
+        this.model.recompute();
+        this.rebuildAll();
+        this.persistCageState();
+        this.showEdgeDialog(edgeIdx);
+      };
+    }
+    const g2Btn = panel.querySelector('#edge-g2');
+    if (g2Btn) {
+      g2Btn.onclick = () => {
+        cage.applyG2(this.selectedPatchIdx, edgeIdx);
         this.model.recompute();
         this.rebuildAll();
         this.persistCageState();
@@ -950,6 +985,81 @@ export class PatchCageView extends View {
     }
   }
 
+  // ---- Mode Guide Dialog ----
+
+  toggleG1Continuity() {
+    this._g1Continuity = !this._g1Continuity;
+    this.updateModeGuide();
+  }
+
+  showModeGuide(mode) {
+    this.closeModeGuide();
+    const isBridge = mode === 'bridge';
+
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#1e1e1e;color:#d4d4d4;padding:10px 16px;border-radius:8px;font-family:sans-serif;font-size:12px;z-index:10001;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;align-items:center;gap:12px;';
+
+    const title = document.createElement('span');
+    title.style.cssText = 'font-weight:bold;font-size:13px;white-space:nowrap;';
+    title.textContent = isBridge ? 'Bridge Surface' : 'Fill Hole';
+    panel.appendChild(title);
+
+    const sep1 = document.createElement('span');
+    sep1.style.cssText = 'color:#555;';
+    sep1.textContent = '|';
+    panel.appendChild(sep1);
+
+    // G1 toggle button
+    const g1Btn = document.createElement('button');
+    g1Btn.style.cssText = 'padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-family:sans-serif;white-space:nowrap;';
+    this._updateG1BtnStyle = () => {
+      g1Btn.style.background = this._g1Continuity ? '#4a7' : '#444';
+      g1Btn.style.color = this._g1Continuity ? '#fff' : '#aaa';
+      g1Btn.textContent = 'G1 ' + (this._g1Continuity ? 'ON' : 'OFF');
+    };
+    this._updateG1BtnStyle();
+    g1Btn.onclick = () => this.toggleG1Continuity();
+    panel.appendChild(g1Btn);
+
+    if (isBridge) {
+      const sep2 = document.createElement('span');
+      sep2.style.cssText = 'color:#555;';
+      sep2.textContent = '|';
+      panel.appendChild(sep2);
+
+      const flipBtn = document.createElement('button');
+      flipBtn.style.cssText = 'padding:4px 10px;background:#446;color:#eee;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-family:sans-serif;white-space:nowrap;';
+      flipBtn.textContent = 'Flip';
+      flipBtn.onclick = () => this.bridgeFlip();
+      panel.appendChild(flipBtn);
+    }
+
+    const sep3 = document.createElement('span');
+    sep3.style.cssText = 'color:#555;';
+    sep3.textContent = '|';
+    panel.appendChild(sep3);
+
+    const hint = document.createElement('span');
+    hint.style.cssText = 'color:#888;font-size:11px;white-space:nowrap;';
+    hint.textContent = isBridge ? 'Click two edges · Tab=flip · G=G1 · Esc=cancel' : 'Hover edge to preview · Click=fill · G=G1 · Esc=cancel';
+    panel.appendChild(hint);
+
+    document.body.appendChild(panel);
+    this._modeGuide = panel;
+  }
+
+  updateModeGuide() {
+    if (this._updateG1BtnStyle) this._updateG1BtnStyle();
+  }
+
+  closeModeGuide() {
+    if (this._modeGuide) {
+      if (this._modeGuide.parentNode) this._modeGuide.parentNode.removeChild(this._modeGuide);
+      this._modeGuide = null;
+      this._updateG1BtnStyle = null;
+    }
+  }
+
   // ---- Fill Hole Mode ----
 
   toggleFillHoleMode() {
@@ -963,11 +1073,13 @@ export class PatchCageView extends View {
       this.clearGroup(this._fillHolePreviewGroup);
       this._fillHolePreviewGroup.visible = false;
       document.body.style.cursor = 'crosshair';
+      this.showModeGuide('fill');
     } else {
       this._fillHoleLoop = null;
       this.clearGroup(this._fillHolePreviewGroup);
       this._fillHolePreviewGroup.visible = false;
       document.body.style.cursor = '';
+      this.closeModeGuide();
       this.ctx.viewer.requestRender();
     }
   }
@@ -1035,6 +1147,9 @@ export class PatchCageView extends View {
     const cage = this.model.cage;
 
     if (cage.fillHole(this._fillHoleLoop)) {
+      if (this._g1Continuity) {
+        cage.applyG1AllSides(cage.patches.length - 1);
+      }
       this.model.recompute();
       this.rebuildAll();
       this.persistCageState();
@@ -1052,6 +1167,7 @@ export class PatchCageView extends View {
     this._bridgeMode = !this._bridgeMode;
     if (this._bridgeMode) {
       if (this._loopInsertMode) this.toggleLoopInsertMode();
+      if (this._fillHoleMode) this.toggleFillHoleMode();
       this.selectPatch(-1);
       this.setHover(-1);
       this._bridgeEdge1 = null;
@@ -1060,12 +1176,14 @@ export class PatchCageView extends View {
       this.clearGroup(this._bridgePreviewGroup);
       this._bridgePreviewGroup.visible = false;
       document.body.style.cursor = 'crosshair';
+      this.showModeGuide('bridge');
     } else {
       this._bridgeEdge1 = null;
       this._bridgeEdge2 = null;
       this.clearGroup(this._bridgePreviewGroup);
       this._bridgePreviewGroup.visible = false;
       document.body.style.cursor = '';
+      this.closeModeGuide();
       this.ctx.viewer.requestRender();
     }
   }
@@ -1222,6 +1340,9 @@ export class PatchCageView extends View {
     }
 
     cage.patches.push(new NurbsPatch(grid));
+    if (this._g1Continuity) {
+      cage.applyG1AllSides(cage.patches.length - 1);
+    }
     this.model.recompute();
     this.rebuildAll();
     this.persistCageState();
@@ -1416,6 +1537,7 @@ export class PatchCageView extends View {
     this.closePropsDialog();
     this.closeArcDialog();
     this.closeEdgeDialog();
+    this.closeModeGuide();
     this.geometry.dispose(); this.material.dispose();
     this.wireframeMaterial.dispose(); this.wireframeGeometry.dispose();
     this.clearGroup(this.subcageGroup);
