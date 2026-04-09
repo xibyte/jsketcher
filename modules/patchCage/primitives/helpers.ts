@@ -1,5 +1,5 @@
 import {CageVertex} from '../PatchCage';
-import {vlerp} from '../vec3Math';
+import {lerp as vlerp} from 'math/vec';
 
 export function V(x: number, y: number, z: number): CageVertex {
   return new CageVertex(x, y, z);

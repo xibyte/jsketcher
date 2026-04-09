@@ -13,7 +13,7 @@ import {
 import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
 import ScalableLine from 'scene/objects/scalableLine';
-import {vdist, vlerp} from './vec3Math';
+import {distance as vdist, lerp as vlerp} from 'math/vec';
 import {CageVertex, NurbsPatch} from './PatchCage';
 
 const CP_COLOR = 0x222222;

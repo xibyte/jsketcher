@@ -4,7 +4,7 @@
 
 import {CageVertex} from './PatchCage';
 import {Vec3} from './patchCageTypes';
-import {vadd, vscale, vlerp} from './vec3Math';
+import {add as vadd, mul as vscale, lerp as vlerp} from 'math/vec';
 
 export interface BoundarySplitResult {
   leftH: [CageVertex, CageVertex];

@@ -1,6 +1,6 @@
 import {PatchCage, CageVertex, ArcConstraint, ArcMode} from '../../PatchCage';
 import {Vec3} from '../../patchCageTypes';
-import {vadd, vsub, vscale, vlerp, vnormalize, vdist, vcross, vdot} from '../../vec3Math';
+import {add as vadd, sub as vsub, mul as vscale, lerp as vlerp, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
 
 /**
  * Constrain an edge to a circular arc.

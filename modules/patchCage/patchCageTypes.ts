@@ -8,7 +8,8 @@
  * 4. All updates are local
  */
 
-export type Vec3 = [number, number, number];
+import type {Vec3} from 'math/vec';
+export type {Vec3};
 
 export type EdgeType = 'bezier' | 'circle' | 'nurbs';
 
