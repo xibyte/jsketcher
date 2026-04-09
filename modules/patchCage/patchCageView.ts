@@ -1,7 +1,7 @@
-import {View} from './view';
+import {View} from 'cad/scene/views/view';
 import * as SceneGraph from 'scene/sceneGraph';
-import {createSolidMaterial} from './viewUtils';
-import {PATCH_CAGE} from '../../model/entities';
+import {createSolidMaterial} from 'cad/scene/views/viewUtils';
+import {PATCH_CAGE} from 'cad/model/entities';
 import {setAttribute} from 'scene/objectData';
 import {ViewMode} from 'cad/scene/viewer';
 import {
@@ -13,8 +13,8 @@ import {
 import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
 import ScalableLine from 'scene/objects/scalableLine';
-import {vdist, vlerp} from 'patchCage/vec3Math';
-import {CageVertex, NurbsPatch} from 'patchCage/PatchCage';
+import {vdist, vlerp} from './vec3Math';
+import {CageVertex, NurbsPatch} from './PatchCage';
 
 const CP_COLOR = 0x222222;
 const CP_HOVER = 0x555555;
