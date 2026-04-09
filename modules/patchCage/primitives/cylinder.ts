@@ -1,6 +1,6 @@
 import {PatchCage, NurbsPatch, CageVertex} from '../PatchCage';
 import {makeGrid} from '../patchCageHelpers';
-import {vlerp} from '../vec3Math';
+import {lerp as vlerp} from 'math/vec';
 import {V, Vlerp} from './helpers';
 
 export function createPatchCylinder(

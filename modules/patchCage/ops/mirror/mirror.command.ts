@@ -1,6 +1,6 @@
 import {PatchCage, CageVertex, NurbsPatch, MirrorConstraint, ArcConstraint} from '../../PatchCage';
 import {Vec3} from '../../patchCageTypes';
-import {vadd, vsub, vscale, vnormalize, vdist, vcross, vdot} from '../../vec3Math';
+import {add as vadd, sub as vsub, mul as vscale, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
 
 /**
  * Mirror all patches along the boundary that contains the given edge.

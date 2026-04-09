@@ -1,5 +1,5 @@
 import {PatchCage, CageVertex, NurbsPatch} from '../../PatchCage';
-import {vscale, vlerp} from '../../vec3Math';
+import {mul as vscale, lerp as vlerp} from 'math/vec';
 
 /**
  * Extrude a patch: disconnect from neighbors, move along normal,

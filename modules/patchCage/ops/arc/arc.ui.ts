@@ -1,7 +1,7 @@
 /**
  * Arc constraint UI: edge dialog arc buttons and advanced arc dialog.
  */
-import {vdist, vlerp} from '../../vec3Math';
+import {distance as vdist, lerp as vlerp} from 'math/vec';
 import {constrainEdgeToArc, removeArcConstraint} from './arc.command';
 
 export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: number): void {

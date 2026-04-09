@@ -1,5 +1,5 @@
 import {PatchCage, CageVertex} from '../../PatchCage';
-import {vscale} from '../../vec3Math';
+import {mul as vscale} from 'math/vec';
 
 /**
  * Push/pull a patch along its normal. Moves all vertices including shared

@@ -3,7 +3,7 @@
  */
 import ScalableLine from 'scene/objects/scalableLine';
 import {CageVertex, NurbsPatch} from '../../PatchCage';
-import {vdist, vlerp} from '../../vec3Math';
+import {distance as vdist, lerp as vlerp} from 'math/vec';
 import {bridgeSurface} from './bridge.command';
 
 export function toggleBridgeMode(view: any): void {

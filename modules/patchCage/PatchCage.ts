@@ -9,7 +9,7 @@
  */
 
 import {Vec3} from './patchCageTypes';
-import {vnormalize, vsub, vcross} from './vec3Math';
+import {normalize as vnormalize, sub as vsub, cross as vcross} from 'math/vec';
 import {makeGrid as _makeGrid} from './patchCageHelpers';
 
 // Lazy imports to avoid circular dependencies
