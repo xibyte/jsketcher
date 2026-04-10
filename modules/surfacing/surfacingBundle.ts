@@ -185,6 +185,21 @@ export function activate(ctx: any) {
   } catch (e) {
     console.error('Failed to load surfacing state:', e);
   }
+
+  // Force-flush any pending autosave when the page is about to unload
+  // or becomes hidden. localStorage writes are synchronous, so this is safe.
+  function forceFlush(): void {
+    if (autosaveTimer) {
+      clearTimeout(autosaveTimer);
+      autosaveTimer = null;
+    }
+    try { flushSave(); } catch (e) { console.error('Surfacing flush failed:', e); }
+  }
+  window.addEventListener('beforeunload', forceFlush);
+  window.addEventListener('pagehide', forceFlush);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') forceFlush();
+  });
 }
 
 export const BundleName = "@Surfacing";
