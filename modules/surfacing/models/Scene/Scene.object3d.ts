@@ -61,20 +61,19 @@ export class SceneObject3D extends Group {
 
     // Wireframe (non-pickable) — UV grid only, no triangle diagonals
     this.wireframeGeometry = buildGridWireframe(patchCage);
-    this.wireframeMaterial = new LineBasicMaterial({color: 0x2080ff, transparent: true, opacity: 0.3});
+    this.wireframeMaterial = new LineBasicMaterial({color: 0x1860c0, transparent: true, opacity: 0.55});
     this.wireframeMesh = new LineSegments(this.wireframeGeometry, this.wireframeMaterial);
     this.wireframeMesh.visible = false;
     this.wireframeMesh.raycast = () => {}; // disable raycast
     this.add(this.wireframeMesh);
 
-    // Bounding curves (edges) — shown when 'edges' flag is enabled
-    this.edgesGeometry = buildBoundingCurvesGeometry(patchCage);
-    this.edgesMaterial = new LineBasicMaterial({color: 0x000000, transparent: true, opacity: 0.85});
-    this.edgesMesh = new LineSegments(this.edgesGeometry, this.edgesMaterial);
-    this.edgesMesh.visible = false;
-    this.edgesMesh.raycast = () => {};
-    this.edgesMesh.renderOrder = 1;
-    this.add(this.edgesMesh);
+    // Bounding curves (edges) — shown when 'edges' flag is enabled.
+    // Built as a Group of ScalableLine instances for true thick lines.
+    this.edgesGroup = SceneGraph.createGroup();
+    this.edgesGroup.visible = false;
+    this.edgesGroup.raycast = () => {};
+    this.add(this.edgesGroup);
+    rebuildEdgesGroup(this.edgesGroup, patchCage, ctx.viewer.sceneSetup);
 
     // Hover highlight group
     this.hoverGroup = SceneGraph.createGroup();
@@ -237,7 +236,7 @@ export class SceneObject3D extends Group {
     this._disposers.push(surfacingViewFlags$.attach(flags => {
       this.solidMesh.visible = flags.faces;
       this.wireframeMesh.visible = flags.mesh;
-      this.edgesMesh.visible = flags.edges;
+      this.edgesGroup.visible = flags.edges;
       ctx.viewer.requestRender();
     }));
   }
@@ -771,10 +770,7 @@ export class SceneObject3D extends Group {
     this.wireframeMesh.geometry = wg;
     this.wireframeGeometry = wg;
 
-    const eg = buildBoundingCurvesGeometry(this.model);
-    this.edgesMesh.geometry.dispose();
-    this.edgesMesh.geometry = eg;
-    this.edgesGeometry = eg;
+    rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup);
 
     if (this.selectedPatchIdx >= 0) {
       this.buildSubcage(this.selectedPatchIdx);
@@ -1615,8 +1611,11 @@ export class SceneObject3D extends Group {
     this.closeModeGuide();
     this.geometry.dispose(); this.material.dispose();
     this.wireframeMaterial.dispose(); this.wireframeGeometry.dispose();
-    if (this.edgesMaterial) this.edgesMaterial.dispose();
-    if (this.edgesGeometry) this.edgesGeometry.dispose();
+    if (this.edgesGroup) {
+      for (const child of [...this.edgesGroup.children]) {
+        if (child.dispose) child.dispose();
+      }
+    }
     this.clearGroup(this.subcageGroup);
     // Run any registered disposers
     for (const d of this._disposers) {
@@ -1694,31 +1693,34 @@ function buildGridWireframe(model: any): BufferGeometry {
 }
 
 /**
- * Build line-segment geometry for all bounding curves of all surfaces.
- * Each cubic Bézier boundary is tessellated into N segments.
+ * Rebuild the edges Group with one ScalableLine per bounding curve.
+ * ScalableLine uses LineMaterial which gives true thick lines (unlike
+ * the stock LineBasicMaterial whose linewidth is 1px on most platforms).
  */
-function buildBoundingCurvesGeometry(model: any): BufferGeometry {
-  const geo = new BufferGeometry();
-  if (!model || !model.scene) return geo;
-  const scene = model.scene;
-  const positions: number[] = [];
-  const N = 24;
+function rebuildEdgesGroup(group: any, model: any, sceneSetup: any): void {
+  // Clear existing
+  for (const child of [...group.children]) {
+    group.remove(child);
+    if (child.dispose) child.dispose();
+  }
+  if (!model || !model.scene) return;
 
-  for (const surface of scene.surfaces) {
+  const N = 24;
+  const EDGE_COLOR = 0x000000;
+  const EDGE_WIDTH = 2.5;
+
+  for (const surface of model.scene.surfaces) {
     for (const side of [0, 1, 2, 3]) {
       const bc = surface.getBoundingCurve(side);
-      let prev: number[] | null = null;
+      const pts: number[][] = [];
       for (let i = 0; i <= N; i++) {
-        const t = i / N;
-        const p = bc.eval(t);
-        if (prev) {
-          positions.push(prev[0], prev[1], prev[2], p[0], p[1], p[2]);
-        }
-        prev = [p[0], p[1], p[2]];
+        const p = bc.eval(i / N);
+        pts.push([p[0], p[1], p[2]]);
       }
+      const line = new ScalableLine(sceneSetup, pts, EDGE_WIDTH, EDGE_COLOR);
+      line.renderOrder = 1;
+      line.raycast = () => {};
+      group.add(line);
     }
   }
-
-  geo.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
-  return geo;
 }
