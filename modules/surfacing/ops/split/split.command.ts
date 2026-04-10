@@ -101,7 +101,10 @@ function splitSinglePatchShared(
   getBoundarySplit: (v0: CageVertex, v1: CageVertex, v2: CageVertex, v3: CageVertex, t: number) => BoundarySplitResult
 ): void {
   const patch = cage.patches[patchIdx];
+  const sourceSet = patch.surfaceSet; // capture before splice
   const g = patch.grid;
+
+  let leftPatch: NurbsPatch, rightPatch: NurbsPatch;
 
   if (direction === 'u') {
     const leftGrid: CageVertex[][] = [];
@@ -122,11 +125,8 @@ function splitSinglePatchShared(
       }
     }
 
-    cage.patches.splice(patchIdx, 1,
-      new NurbsPatch(leftGrid, cloneWeights(patch.weights)),
-      new NurbsPatch(rightGrid, cloneWeights(patch.weights))
-    );
-    cage.notifySplice(patchIdx, 1, 2);
+    leftPatch = new NurbsPatch(leftGrid, cloneWeights(patch.weights));
+    rightPatch = new NurbsPatch(rightGrid, cloneWeights(patch.weights));
   } else {
     const bottomGrid: CageVertex[][] = [[], [], [], []];
     const topGrid: CageVertex[][] = [[], [], [], []];
@@ -158,10 +158,17 @@ function splitSinglePatchShared(
       }
     }
 
-    cage.patches.splice(patchIdx, 1,
-      new NurbsPatch(bottomGrid, cloneWeights(patch.weights)),
-      new NurbsPatch(topGrid, cloneWeights(patch.weights))
-    );
-    cage.notifySplice(patchIdx, 1, 2);
+    leftPatch = new NurbsPatch(bottomGrid, cloneWeights(patch.weights));
+    rightPatch = new NurbsPatch(topGrid, cloneWeights(patch.weights));
   }
+
+  // Propagate the surface set: remove the source, add both halves
+  if (sourceSet) {
+    sourceSet.remove(patch);
+    sourceSet.add(leftPatch);
+    sourceSet.add(rightPatch);
+  }
+
+  cage.patches.splice(patchIdx, 1, leftPatch, rightPatch);
+  cage.notifySplice(patchIdx, 1, 2);
 }

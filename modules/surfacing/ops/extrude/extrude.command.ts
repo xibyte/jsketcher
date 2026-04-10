@@ -74,7 +74,10 @@ export function extrudePatch(cage: PatchCage, patchIdx: number, distance: number
       wallGrid.push(row);
     }
 
-    cage.patches.push(new NurbsPatch(wallGrid));
+    const wallPatch = new NurbsPatch(wallGrid);
+    // Walls inherit the source patch's surface set
+    if (patch.surfaceSet) patch.surfaceSet.add(wallPatch);
+    cage.patches.push(wallPatch);
   }
   cage.notifyPush(4, group);
 }

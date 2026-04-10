@@ -155,6 +155,9 @@ function mirrorSinglePatch(
     }
   }
 
+  // Mirrored patch joins the source's surface set
+  if (patch.surfaceSet) patch.surfaceSet.add(mp);
+
   cage.patches.push(mp);
   const mirrorIdx = cage.patches.length - 1;
 

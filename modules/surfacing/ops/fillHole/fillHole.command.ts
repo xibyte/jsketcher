@@ -89,8 +89,11 @@ function interpRow(bottom: [CageVertex, CageVertex, CageVertex, CageVertex], top
  * For 3 edges: degenerate patch with one collapsed edge.
  */
 export function fillHole(cage: PatchCage, loop: {patchIdx: number, side: number, verts: [CageVertex, CageVertex, CageVertex, CageVertex]}[]): boolean {
-  // Place fill in the group of the first edge's patch
+  // Place fill in the group of the first edge's patch, and inherit its surface set
   const group = cage.findGroupOfPatch(loop[0].patchIdx);
+  const sourceSet = cage.patches[loop[0].patchIdx]?.surfaceSet || null;
+
+  let fillPatch: NurbsPatch | null = null;
 
   if (loop.length === 4) {
     // Coons patch: bottom=loop[0], right=loop[1], top=loop[2] reversed, left=loop[3] reversed
@@ -103,10 +106,7 @@ export function fillHole(cage: PatchCage, loop: {patchIdx: number, side: number,
       [bottom[0], bottom[3], top[0], top[3]],
       {bottom, right, top, left}
     );
-    cage.patches.push(new NurbsPatch(grid));
-    cage.notifyPush(1, group);
-    return true;
-
+    fillPatch = new NurbsPatch(grid);
   } else if (loop.length === 3) {
     // Degenerate patch: collapse one edge to a single vertex (the apex)
     const bottom = loop[0].verts;
@@ -127,9 +127,13 @@ export function fillHole(cage: PatchCage, loop: {patchIdx: number, side: number,
       [apex, apex, apex, apex],
     ];
 
-    cage.patches.push(new NurbsPatch(grid));
-    cage.notifyPush(1, group);
-    return true;
+    fillPatch = new NurbsPatch(grid);
   }
-  return false;
+
+  if (!fillPatch) return false;
+
+  if (sourceSet) sourceSet.add(fillPatch);
+  cage.patches.push(fillPatch);
+  cage.notifyPush(1, group);
+  return true;
 }

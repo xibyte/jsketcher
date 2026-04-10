@@ -35,7 +35,13 @@ export function bridgeSurface(
     grid.push(row);
   }
 
-  cage.patches.push(new NurbsPatch(grid));
+  const bridgePatch = new NurbsPatch(grid);
+  // Bridge inherits the source patch's surface set
+  if (options.sourcePatchIdx !== undefined) {
+    const sourceSet = cage.patches[options.sourcePatchIdx]?.surfaceSet;
+    if (sourceSet) sourceSet.add(bridgePatch);
+  }
+  cage.patches.push(bridgePatch);
   const group = options.sourcePatchIdx !== undefined ? cage.findGroupOfPatch(options.sourcePatchIdx) : null;
   cage.notifyPush(1, group);
   const newIdx = cage.patches.length - 1;
