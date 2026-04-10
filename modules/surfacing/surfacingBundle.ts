@@ -19,6 +19,13 @@ export interface SurfacingSnapshot {
   revision: number;
 }
 
+/**
+ * Module-level singleton stream so it exists immediately at import time —
+ * before the React explorer mounts, before SurfacingBundle.activate() runs.
+ * useStream calls in the explorer can subscribe right away without crashing.
+ */
+export const surfacingState$: StateStream<SurfacingSnapshot> = state({scene: null, revision: 0});
+
 export interface SurfacingService {
   readonly scene: Scene | null;
   readonly view: SceneObject3D | null;
@@ -39,7 +46,7 @@ export function activate(ctx: any) {
 
   let scene: Scene | null = null;
   let view: SceneObject3D | null = null;
-  const state$: StateStream<SurfacingSnapshot> = state({scene: null, revision: 0});
+  const state$ = surfacingState$;
 
   /** Push a fresh snapshot so subscribers re-render */
   function notifyChange(): void {

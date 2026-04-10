@@ -1,5 +1,4 @@
-import React, {useCallback, useContext, useRef} from 'react';
-import {useStream} from "ui/effects";
+import React, {useCallback, useContext, useRef, useState, useEffect} from 'react';
 import {SceneInlineSection} from "ui/components/SceneInlineSection";
 import {EntityTreeNode, EntityTreeCallbacks} from "surfacing/models/ui/objectTree/EntityTreeNode";
 import {Scene} from "surfacing/models/Scene/Scene.entity";
@@ -9,15 +8,21 @@ import {NurbsSurface} from "surfacing/models/NurbsSurface/NurbsSurface.entity";
 import {showGroupDialog} from "surfacing/models/Group/Group.dialog";
 import {showPropsDialog} from "surfacing/models/NurbsSurface/NurbsSurface.dialog";
 import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
+import {surfacingState$, SurfacingSnapshot} from "surfacing/surfacingBundle";
 
 export function SceneInlineObjectExplorer() {
 
   const ctx = useContext(ReactApplicationContext);
   const openDialogRef = useRef<HTMLDivElement | null>(null);
 
-  // Subscribe to the surfacing state stream — fires immediately with the
-  // current value on mount, then on every notifyChange() in surfacingBundle.
-  const snapshot = useStream(c => (c as any).surfacingService?.state$);
+  // Subscribe directly to the module-level surfacing snapshot stream.
+  // This stream exists at import time, so it works even if the explorer
+  // mounts before SurfacingBundle.activate() runs.
+  const [snapshot, setSnapshot] = useState<SurfacingSnapshot>(() => surfacingState$.value);
+  useEffect(() => {
+    const dispose = surfacingState$.attach((s: SurfacingSnapshot) => setSnapshot(s));
+    return () => dispose();
+  }, []);
 
   const closeOpenDialog = useCallback(() => {
     if (openDialogRef.current) {
@@ -116,9 +121,8 @@ export function SceneInlineObjectExplorer() {
     else if (entity instanceof NurbsSurface) removeSurface(entity);
   }, [removeGroup, removeSurface]);
 
-  // Read scene from the snapshot stream — guarantees re-render on every
-  // notifyChange() (mergeScene, load, persistAndRefresh, etc.)
-  const scene = snapshot ? (snapshot as any).scene as Scene | null : null;
+  // Read scene from the snapshot — re-renders on every notifyChange()
+  const scene = snapshot.scene;
   if (!scene) {
     return <SceneInlineSection title='OBJECTS'><></></SceneInlineSection>;
   }
