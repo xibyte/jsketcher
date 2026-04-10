@@ -4,6 +4,7 @@
  * the bundle owns the lifecycle directly.
  */
 import * as SceneGraph from 'scene/sceneGraph';
+import {state, StateStream} from 'lstream';
 import {Scene} from './models/Scene/Scene.entity';
 import {SceneObject3D} from './models/Scene/Scene.object3d';
 import {createPatchPlane} from './primitives/plane';
@@ -11,12 +12,23 @@ import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';
 import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction, ViewFlagBoundariesAction} from './actions/viewFlagActions';
 
+/** Snapshot of the surfacing state, exposed via a stream so React can subscribe */
+export interface SurfacingSnapshot {
+  scene: Scene | null;
+  /** Bumped on every mutation so listeners notice */
+  revision: number;
+}
+
 export interface SurfacingService {
   readonly scene: Scene | null;
   readonly view: SceneObject3D | null;
+  /** Reactive snapshot stream — explorer subscribes via useStream */
+  state$: StateStream<SurfacingSnapshot>;
   addPlane(width?: number, height?: number): void;
   addBox(sizeX?: number, sizeY?: number, sizeZ?: number): void;
   addCylinder(radius?: number, height?: number): void;
+  /** Bump the snapshot stream after an external mutation */
+  notifyChange(): void;
   save(): any;
   load(data: any): void;
   scheduleSave(): void;
@@ -27,12 +39,26 @@ export function activate(ctx: any) {
 
   let scene: Scene | null = null;
   let view: SceneObject3D | null = null;
+  const state$: StateStream<SurfacingSnapshot> = state({scene: null, revision: 0});
+
+  /** Push a fresh snapshot so subscribers re-render */
+  function notifyChange(): void {
+    state$.next({scene, revision: state$.value.revision + 1});
+  }
 
   function ensureView(): void {
     if (!scene || view) return;
     view = new SceneObject3D(scene, ctx);
     SceneGraph.addToGroup(ctx.services.cadScene.workGroup, view);
     ctx.viewer.requestRender();
+  }
+
+  function tearDownView(): void {
+    if (view) {
+      SceneGraph.removeFromGroup(ctx.services.cadScene.workGroup, view);
+      view.dispose();
+      view = null;
+    }
   }
 
   /** Merge a freshly-built Scene (from a primitive) into the current scene */
@@ -58,8 +84,7 @@ export function activate(ctx: any) {
         ctx.viewer.requestRender();
       }
     }
-    // Notify the explorer panel that the scene tree has changed
-    document.dispatchEvent(new CustomEvent('patch-cage-constraints-changed'));
+    notifyChange();
     scheduleSurfacingSave();
   }
 
@@ -85,33 +110,38 @@ export function activate(ctx: any) {
 
   function load(data: any): void {
     if (!data) return;
-    // Tear down any existing view
-    if (view) {
-      SceneGraph.removeFromGroup(ctx.services.cadScene.workGroup, view);
-      view.dispose();
-      view = null;
-    }
+    tearDownView();
     // Accept legacy 'cage' field too
     const sceneData = data.scene || data.cage;
-    if (!sceneData) return;
+    if (!sceneData) {
+      scene = null;
+      notifyChange();
+      return;
+    }
     scene = Scene.deserialize(sceneData);
     scene.tessResolution = data.tessResolution || 8;
     scene.syncEntityGraph();
     ensureView();
-    document.dispatchEvent(new CustomEvent('patch-cage-constraints-changed'));
+    notifyChange();
   }
 
   ctx.surfacingService = {
     get scene() { return scene; },
     get view() { return view; },
+    state$,
     addPlane,
     addBox,
     addCylinder,
+    notifyChange,
     save,
     load,
     scheduleSave: () => scheduleSurfacingSave(),
     flushSave: () => flushSave(),
   } as SurfacingService;
+
+  // Also expose under streams for the useStream(c => c.streams.surfacing.state) pattern
+  if (!ctx.streams) ctx.streams = {};
+  ctx.streams.surfacing = {state: state$};
 
   // Register surfacing view flag actions
   if (ctx.actionService) {
