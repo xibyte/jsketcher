@@ -1,2 +1,2 @@
-// Re-export from canonical location in patchCage/ops
-export {PatchPlaneOperation} from 'patchCage/ops/plane/plane.ui';
+// Re-export from canonical location in surfacing/ops
+export {PatchPlaneOperation} from 'surfacing/ops/plane/plane.ui';

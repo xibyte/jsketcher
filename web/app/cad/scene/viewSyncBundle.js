@@ -9,7 +9,7 @@ import {MSubD} from '../model/msubd';
 import {MPatchCage} from '../model/mpatchcage';
 import DatumView from './views/datumView';
 import {SubDView} from './views/subdView';
-import {PatchCageView} from 'patchCage/patchCageView';
+import {PatchCageView} from 'surfacing/patchCageView';
 import {View} from './views/view';
 import {HighlightBundle} from "cad/scene/highlightBundle";
 import {AttributesBundle} from "cad/attributes/attributesBundle";
