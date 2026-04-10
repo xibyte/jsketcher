@@ -11,5 +11,6 @@ export function createPatchPlane(width: number, height: number): PatchCage {
 
   cage.patches.push(new NurbsPatch(makeGrid([c00, c10, c01, c11])));
   cage.createGroup('Plane', [0]);
+  cage.createSurfaceSet('plane', [0]);
   return cage;
 }

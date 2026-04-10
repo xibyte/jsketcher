@@ -81,5 +81,14 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
   })));
 
   cage.createGroup('Box', [0, 1, 2, 3, 4, 5]);
+
+  // Each face of the box is its own SurfaceSet (single-patch sets)
+  cage.createSurfaceSet('bottom', [0]);
+  cage.createSurfaceSet('top', [1]);
+  cage.createSurfaceSet('front', [2]);
+  cage.createSurfaceSet('back', [3]);
+  cage.createSurfaceSet('right', [4]);
+  cage.createSurfaceSet('left', [5]);
+
   return cage;
 }

@@ -66,6 +66,17 @@ export interface SurfaceGroup {
 // Backward-compat alias
 export type PatchGroup = SurfaceGroup;
 
+/**
+ * A SurfaceSet is a logical sub-grouping of surfaces that form one
+ * semantic face (e.g., the 5 patches of a cylinder cap).
+ * Boundary rendering hides edges shared between two surfaces in the
+ * same set, and hovering one surface highlights the rest of the set.
+ */
+export interface SurfaceSetData {
+  name: string;
+  patchIndices: number[];
+}
+
 // =========================================================================
 // Serialization
 // =========================================================================
@@ -94,6 +105,7 @@ export interface SerializedScene {
     cpPairs: {sourceVertexIdx: number, mirrorVertexIdx: number}[];
   }[];
   groups?: {name: string, patchIndices: number[]}[];
+  surfaceSets?: {name: string, patchIndices: number[]}[];
 }
 
 // Backward-compat alias
@@ -109,6 +121,7 @@ export class Scene extends GeometricEntity {
   arcConstraints: ArcConstraint[] = [];
   mirrorConstraints: MirrorConstraint[] = [];
   groups: SurfaceGroup[] = [];
+  surfaceSets: SurfaceSetData[] = [];
   tessResolution: number = 8;
 
   /** Registered constraint enforcers called on every vertex move */
@@ -156,23 +169,27 @@ export class Scene extends GeometricEntity {
     return null;
   }
 
-  /** Notify groups that a patch was replaced by splice */
+  /** Notify groups + surfaceSets that a patch was replaced by splice */
   notifySplice(oldIdx: number, removedCount: number, insertedCount: number): void {
-    for (const g of this.groups) {
-      const newIndices: number[] = [];
-      for (const idx of g.patchIndices) {
-        if (idx >= oldIdx && idx < oldIdx + removedCount) {
-          for (let j = 0; j < insertedCount; j++) {
-            newIndices.push(oldIdx + j);
+    const remap = (entries: {patchIndices: number[]}[]) => {
+      for (const e of entries) {
+        const newIndices: number[] = [];
+        for (const idx of e.patchIndices) {
+          if (idx >= oldIdx && idx < oldIdx + removedCount) {
+            for (let j = 0; j < insertedCount; j++) {
+              newIndices.push(oldIdx + j);
+            }
+          } else if (idx >= oldIdx + removedCount) {
+            newIndices.push(idx - removedCount + insertedCount);
+          } else {
+            newIndices.push(idx);
           }
-        } else if (idx >= oldIdx + removedCount) {
-          newIndices.push(idx - removedCount + insertedCount);
-        } else {
-          newIndices.push(idx);
         }
+        e.patchIndices = newIndices;
       }
-      g.patchIndices = newIndices;
-    }
+    };
+    remap(this.groups);
+    remap(this.surfaceSets);
   }
 
   /** Notify groups that surfaces were appended and should join a specific group */
@@ -182,6 +199,29 @@ export class Scene extends GeometricEntity {
     for (let i = 0; i < count; i++) {
       targetGroup.patchIndices.push(startIdx + i);
     }
+  }
+
+  // =========================================================================
+  // Surface Sets
+  // =========================================================================
+
+  createSurfaceSet(name: string, patchIndices: number[]): SurfaceSetData {
+    const set: SurfaceSetData = {name, patchIndices: [...patchIndices]};
+    this.surfaceSets.push(set);
+    return set;
+  }
+
+  findSurfaceSetOfPatch(patchIdx: number): SurfaceSetData | null {
+    for (const s of this.surfaceSets) {
+      if (s.patchIndices.includes(patchIdx)) return s;
+    }
+    return null;
+  }
+
+  /** Get all surface indices in the same set as the given patch (including itself) */
+  surfacesInSameSet(patchIdx: number): number[] {
+    const set = this.findSurfaceSetOfPatch(patchIdx);
+    return set ? [...set.patchIndices] : [patchIdx];
   }
 
   // =========================================================================
@@ -415,8 +455,9 @@ export class Scene extends GeometricEntity {
     }));
 
     const groups = this.groups.map(g => ({name: g.name, patchIndices: [...g.patchIndices]}));
+    const surfaceSets = this.surfaceSets.map(s => ({name: s.name, patchIndices: [...s.patchIndices]}));
 
-    return {vertices, patches, arcConstraints, mirrorConstraints, groups};
+    return {vertices, patches, arcConstraints, mirrorConstraints, groups, surfaceSets};
   }
 
   static deserialize(data: SerializedScene): Scene {
@@ -460,6 +501,12 @@ export class Scene extends GeometricEntity {
     if (data.groups) {
       for (const gd of data.groups) {
         scene.createGroup(gd.name, gd.patchIndices);
+      }
+    }
+
+    if (data.surfaceSets) {
+      for (const sd of data.surfaceSets) {
+        scene.createSurfaceSet(sd.name, sd.patchIndices);
       }
     }
 
