@@ -41,7 +41,7 @@ export function activate(ctx: any) {
       currentModel = new MSurfacingScene(newCage, 8);
       pushToModels();
     } else {
-      // Subsequent: merge patches/groups into the existing scene
+      // Subsequent: merge patches / groups / surfaceSets into the existing scene
       const cage = currentModel.cage;
       const baseIdx = cage.patches.length;
       for (const patch of newCage.patches) {
@@ -49,6 +49,9 @@ export function activate(ctx: any) {
       }
       for (const g of newCage.groups) {
         cage.createGroup(g.name, g.patchIndices.map(i => i + baseIdx));
+      }
+      for (const s of newCage.surfaceSets) {
+        cage.createSurfaceSet(s.name, s.patchIndices.map(i => i + baseIdx));
       }
       currentModel.recompute();
       currentModel.refreshSceneEntity();
