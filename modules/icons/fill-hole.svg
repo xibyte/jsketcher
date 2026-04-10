@@ -13,14 +13,14 @@
       <stop offset="0" stop-color="#e89595"/>
       <stop offset="1" stop-color="#8a4040"/>
     </linearGradient>
-    <radialGradient id="highlight" cx="0.4" cy="0.2" r="0.7">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
-      <stop offset="0.7" stop-color="#ffffff" stop-opacity="0"/>
+    <radialGradient id="highlight" cx="64" cy="34" r="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
 
     <clipPath id="outerClip">
-      <path d="M 34 36 Q 64 26 94 36 Q 99 40 104 64 Q 64 54 24 64 Q 29 40 34 36 Z
-               M 48 35 Q 64 33 80 35 Q 83 40 83 49 Q 64 47 45 49 Q 47 40 48 35 Z"
+      <path d="M 64 22 Q 88 20 113 47 Q 92 44 64 72 Q 37 44 15 47 Q 40 20 64 22 Z
+               M 64 24 Q 76 28 89 37 Q 78 41 64 49 Q 51 41 39 37 Q 53 28 64 24 Z"
             clip-rule="evenodd"/>
     </clipPath>
   </defs>
@@ -28,46 +28,46 @@
   <!-- Gray background -->
   <rect width="128" height="128" fill="url(#bg)"/>
 
-  <!-- Outer NURBS surface: domed + perspective, with aligned 4-edge hole -->
-  <path d="M 34 36 Q 64 26 94 36 Q 99 40 104 64 Q 64 54 24 64 Q 29 40 34 36 Z
-           M 48 35 Q 64 33 80 35 Q 83 40 83 49 Q 64 47 45 49 Q 47 40 48 35 Z"
+  <!-- Outer NURBS surface: diamond orientation (corner facing viewer), domed upward, with aligned 4-edge hole -->
+  <path d="M 64 22 Q 88 20 113 47 Q 92 44 64 72 Q 37 44 15 47 Q 40 20 64 22 Z
+           M 64 24 Q 76 28 89 37 Q 78 41 64 49 Q 51 41 39 37 Q 53 28 64 24 Z"
         fill="url(#surface)" fill-rule="evenodd"/>
 
-  <!-- Soft top highlight on the dome -->
-  <path d="M 34 36 Q 64 26 94 36 Q 99 40 104 64 Q 64 54 24 64 Q 29 40 34 36 Z"
+  <!-- Soft dome-peak highlight -->
+  <path d="M 64 22 Q 88 20 113 47 Q 92 44 64 72 Q 37 44 15 47 Q 40 20 64 22 Z"
         fill="url(#highlight)"/>
 
   <!-- Isolines on outer surface: sampled from the same UV grid as the hole -->
   <g clip-path="url(#outerClip)" fill="none" stroke="#9a8ec0" stroke-width="1" stroke-linecap="round" opacity="0.8">
     <!-- U isolines (u = 0.25, 0.5, 0.75) -->
-    <path d="M 48 32 Q 48 36 44 60"/>
-    <path d="M 64 31 Q 64 35 64 59"/>
-    <path d="M 79 32 Q 82 36 84 60"/>
+    <path d="M 75 23 Q 54 23 26 47"/>
+    <path d="M 88 27 Q 65 29 38 52"/>
+    <path d="M 100 35 Q 79 37 51 60"/>
     <!-- V isolines (v = 0.25, 0.5, 0.75) -->
-    <path d="M 31 39 Q 64 29 97 39"/>
-    <path d="M 29 45 Q 64 35 99 45"/>
-    <path d="M 27 53 Q 64 43 101 53"/>
+    <path d="M 53 23 Q 75 23 102 47"/>
+    <path d="M 40 27 Q 63 29 90 52"/>
+    <path d="M 28 35 Q 50 37 77 60"/>
   </g>
 
   <!-- Outer boundary stroke -->
-  <path d="M 34 36 Q 64 26 94 36 Q 99 40 104 64 Q 64 54 24 64 Q 29 40 34 36 Z"
+  <path d="M 64 22 Q 88 20 113 47 Q 92 44 64 72 Q 37 44 15 47 Q 40 20 64 22 Z"
         fill="none" stroke="#1b1730" stroke-width="2.5" stroke-linejoin="round"/>
 
-  <!-- Hole inner dark edge for depth -->
-  <path d="M 48 35 Q 64 33 80 35 Q 83 40 83 49 Q 64 47 45 49 Q 47 40 48 35 Z"
+  <!-- Hole inner dark edge (depth cue) -->
+  <path d="M 64 24 Q 76 28 89 37 Q 78 41 64 49 Q 51 41 39 37 Q 53 28 64 24 Z"
         fill="none" stroke="#120e20" stroke-width="1.3" stroke-linejoin="round"/>
 
   <!-- Fill spline patch: shares the hole's boundary exactly -->
-  <path d="M 48 35 Q 64 33 80 35 Q 83 40 83 49 Q 64 47 45 49 Q 47 40 48 35 Z"
+  <path d="M 64 24 Q 76 28 89 37 Q 78 41 64 49 Q 51 41 39 37 Q 53 28 64 24 Z"
         fill="url(#patch)" stroke="#431a1a" stroke-width="1.5" stroke-linejoin="round"/>
 
-  <!-- Fill patch isolines (slightly stronger dome than parent) -->
+  <!-- Fill patch isolines (slightly stronger dome, joining opposite edge midpoints) -->
   <g fill="none" stroke="#ffcccc" stroke-width="0.85" stroke-linecap="round" opacity="0.92">
-    <path d="M 64 34 Q 64 33 64 48"/>
-    <path d="M 47 41 Q 64 33 82 41"/>
+    <path d="M 76 29 Q 65 27 51 42"/>
+    <path d="M 52 29 Q 64 27 77 42"/>
   </g>
 
   <!-- Premium accent highlights -->
-  <circle cx="34" cy="30" r="1.6" fill="#d0c8e8" opacity="0.9"/>
-  <circle cx="104" cy="100" r="1.2" fill="#f8c8c8" opacity="0.8"/>
+  <circle cx="22" cy="16" r="1.6" fill="#d0c8e8" opacity="0.9"/>
+  <circle cx="108" cy="82" r="1.2" fill="#f8c8c8" opacity="0.8"/>
 </svg>
