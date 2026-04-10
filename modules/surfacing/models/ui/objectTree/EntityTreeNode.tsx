@@ -14,6 +14,7 @@ const SIDE_NAMES = ['bottom', 'right', 'top', 'left'];
 
 export interface EntityTreeCallbacks {
   onOpenDialog?: (entity: GeometricEntity) => void;
+  onRemoveEntity?: (entity: GeometricEntity) => void;
 }
 
 interface EntityNodeProps {
@@ -31,10 +32,20 @@ interface EntityNodeProps {
  */
 export function EntityTreeNode({entity, depth = 0, callbacks}: EntityNodeProps) {
   const [expanded, setExpanded] = useState(false);
+  const [hover, setHover] = useState(false);
   const info = getEntityInfo(entity);
   const childEntries = getChildEntries(entity);
   const hasChildren = childEntries.length > 0;
   const hasDialog = entityHasDialog(entity);
+  const removable = isRemovable(entity) && !!callbacks?.onRemoveEntity;
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const label = info.label;
+    if (window.confirm(`Remove ${label}?`)) {
+      callbacks!.onRemoveEntity!(entity);
+    }
+  };
 
   return <div style={{paddingLeft: depth > 0 ? 12 : 0}}>
     <div
@@ -46,13 +57,10 @@ export function EntityTreeNode({entity, depth = 0, callbacks}: EntityNodeProps) 
         fontSize: 11,
         color: info.color || '#ccc',
         borderRadius: 2,
+        background: hover ? 'rgba(255,255,255,0.05)' : 'transparent',
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = 'transparent';
-      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
       {/* Chevron — expand/collapse only */}
       {hasChildren
@@ -81,6 +89,22 @@ export function EntityTreeNode({entity, depth = 0, callbacks}: EntityNodeProps) 
         {info.label}
       </span>
       {info.detail && <span style={{color: '#777', marginLeft: 4, fontSize: 10, flexShrink: 0}}>{info.detail}</span>}
+
+      {/* Delete button — only on hover, only for removable entities */}
+      {removable && hover && <span
+        onClick={handleRemove}
+        title="Remove"
+        style={{
+          marginLeft: 4,
+          padding: '0 4px',
+          fontSize: 13,
+          lineHeight: '12px',
+          color: '#e55',
+          cursor: 'pointer',
+          flexShrink: 0,
+          fontWeight: 700,
+        }}
+      >&times;</span>}
     </div>
     {expanded && childEntries.map((entry, i) => (
       <div key={`${entry.key}-${i}`}>
@@ -217,5 +241,10 @@ function isScene(entity: GeometricEntity): boolean {
 
 /** Entities that have a properties dialog */
 function entityHasDialog(entity: GeometricEntity): boolean {
+  return entity instanceof Group || entity instanceof NurbsSurface;
+}
+
+/** Entities that can be removed from the scene */
+function isRemovable(entity: GeometricEntity): boolean {
   return entity instanceof Group || entity instanceof NurbsSurface;
 }

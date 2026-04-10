@@ -111,6 +111,11 @@ export function SceneInlineObjectExplorer() {
     }
   }, [closeOpenDialog, getScene, persistAndRefresh, removeGroup, removeSurface]);
 
+  const handleRemoveEntity = useCallback((entity: GeometricEntity) => {
+    if (entity instanceof Group) removeGroup(entity);
+    else if (entity instanceof NurbsSurface) removeSurface(entity);
+  }, [removeGroup, removeSurface]);
+
   // Read scene from the snapshot stream — guarantees re-render on every
   // notifyChange() (mergeScene, load, persistAndRefresh, etc.)
   const scene = snapshot ? (snapshot as any).scene as Scene | null : null;
@@ -120,7 +125,10 @@ export function SceneInlineObjectExplorer() {
 
   scene.syncEntityGraph();
   const topLevelEntities = scene.children;
-  const callbacks: EntityTreeCallbacks = {onOpenDialog: handleOpenDialog};
+  const callbacks: EntityTreeCallbacks = {
+    onOpenDialog: handleOpenDialog,
+    onRemoveEntity: handleRemoveEntity,
+  };
 
   return <SceneInlineSection title='OBJECTS'>
     {topLevelEntities.map((entity, i) =>
