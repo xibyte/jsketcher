@@ -39,6 +39,7 @@ export function activate(ctx: any) {
   function mergeScene(newScene: Scene) {
     if (!scene) {
       scene = newScene;
+      scene.syncEntityGraph();
       ensureView();
     } else {
       // Append surfaces and groups from the new scene into the existing one.
@@ -57,6 +58,8 @@ export function activate(ctx: any) {
         ctx.viewer.requestRender();
       }
     }
+    // Notify the explorer panel that the scene tree has changed
+    document.dispatchEvent(new CustomEvent('patch-cage-constraints-changed'));
     scheduleSurfacingSave();
   }
 
@@ -93,7 +96,9 @@ export function activate(ctx: any) {
     if (!sceneData) return;
     scene = Scene.deserialize(sceneData);
     scene.tessResolution = data.tessResolution || 8;
+    scene.syncEntityGraph();
     ensureView();
+    document.dispatchEvent(new CustomEvent('patch-cage-constraints-changed'));
   }
 
   ctx.surfacingService = {
