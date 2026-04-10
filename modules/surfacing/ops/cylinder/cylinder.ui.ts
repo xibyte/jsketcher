@@ -2,7 +2,7 @@ import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MSurfacingScene} from "../../models/MSurfacingScene";
 import {createPatchCylinder} from './cylinder.command';
-import {PatchCage} from "../../PatchCage";
+import {PatchCage} from "../../models/Scene/PatchCageCore";
 import {BiCylinder} from "react-icons/bi";
 
 interface PatchCylinderParams {

@@ -2,7 +2,7 @@
  * Bridge surface UI: mode toggle, edge picking, flip, preview, execute.
  */
 import ScalableLine from 'scene/objects/scalableLine';
-import {CageVertex, NurbsPatch} from '../../PatchCage';
+import {CageVertex, NurbsPatch} from '../../models/Scene/PatchCageCore';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
 import {bridgeSurface} from './bridge.command';
 

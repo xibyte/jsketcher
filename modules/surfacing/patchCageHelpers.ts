@@ -2,7 +2,7 @@
  * Shared helpers used by multiple patchCage operations.
  */
 
-import {CageVertex} from './PatchCage';
+import {CageVertex} from './models/Scene/PatchCageCore';
 import {Vec3} from './patchCageTypes';
 import {add as vadd, mul as vscale, lerp as vlerp} from 'math/vec';
 

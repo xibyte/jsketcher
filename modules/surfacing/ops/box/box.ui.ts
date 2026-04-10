@@ -2,7 +2,7 @@ import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MSurfacingScene} from "../../models/MSurfacingScene";
 import {createPatchBox} from './box.command';
-import {PatchCage} from "../../PatchCage";
+import {PatchCage} from "../../models/Scene/PatchCageCore";
 import {GiCube} from "react-icons/gi";
 
 interface PatchBoxParams {

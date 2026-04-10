@@ -1,4 +1,4 @@
-import {PatchCage, CageVertex} from '../../PatchCage';
+import {PatchCage, CageVertex} from '../../models/Scene/PatchCageCore';
 import {mul as vscale} from 'math/vec';
 
 /**

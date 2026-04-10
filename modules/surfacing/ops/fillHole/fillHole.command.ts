@@ -1,4 +1,4 @@
-import {PatchCage, CageVertex, NurbsPatch} from '../../PatchCage';
+import {PatchCage, CageVertex, NurbsPatch} from '../../models/Scene/PatchCageCore';
 import {lerp as vlerp} from 'math/vec';
 import {makeGrid} from '../../patchCageHelpers';
 

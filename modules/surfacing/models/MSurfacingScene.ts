@@ -8,7 +8,7 @@
 import {MObject, MObjectIdGenerator} from 'cad/model/mobject';
 import {EntityKind} from 'cad/model/entities';
 import {ShellMesh} from 'cad/model/mshell';
-import {PatchCage, SerializedPatchCage} from '../PatchCage';
+import {PatchCage, SerializedPatchCage} from './PatchCageCore';
 import {Scene, SerializedScene} from './Scene/Scene.entity';
 import {sceneFromPatchCage} from './Scene/fromPatchCage';
 import {state, StateStream} from 'lstream';
