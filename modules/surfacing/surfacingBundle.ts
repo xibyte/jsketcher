@@ -10,6 +10,7 @@ import {PatchCage} from './models/Scene/Scene.entity';
 import {createPatchPlane} from './primitives/plane';
 import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';
+import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction} from './actions/viewFlagActions';
 
 export interface SurfacingService {
   readonly model: MSurfacingScene;
@@ -107,6 +108,15 @@ export function activate(ctx: any) {
     load,
     refresh,
   } as SurfacingService;
+
+  // Register surfacing view flag actions
+  if (ctx.actionService) {
+    ctx.actionService.registerActions([
+      ViewFlagFacesAction,
+      ViewFlagMeshAction,
+      ViewFlagEdgesAction,
+    ]);
+  }
 
   // Hook into project save/load
   const origSave = ctx.projectService.save.bind(ctx.projectService);
