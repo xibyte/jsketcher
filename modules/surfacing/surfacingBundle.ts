@@ -26,14 +26,6 @@ export function activate(ctx: any) {
 
   let currentModel: MSurfacingScene | null = null;
 
-  function ensureModel(): MSurfacingScene {
-    if (!currentModel) {
-      currentModel = new MSurfacingScene(new PatchCage(), 8);
-      pushToModels();
-    }
-    return currentModel;
-  }
-
   function pushToModels() {
     if (!currentModel) return;
     const models = ctx.craftService.models$.value.filter(
@@ -44,23 +36,29 @@ export function activate(ctx: any) {
   }
 
   function mergeCage(newCage: PatchCage) {
-    const model = ensureModel();
-    const cage = model.cage;
-    const baseIdx = cage.patches.length;
-
-    // Append patches from new cage
-    for (const patch of newCage.patches) {
-      cage.patches.push(patch);
+    if (!currentModel) {
+      // First time: use the populated newCage as the model's scene directly
+      currentModel = new MSurfacingScene(newCage, 8);
+      pushToModels();
+    } else {
+      // Subsequent: merge patches/groups into the existing scene
+      const cage = currentModel.cage;
+      const baseIdx = cage.patches.length;
+      for (const patch of newCage.patches) {
+        cage.patches.push(patch);
+      }
+      for (const g of newCage.groups) {
+        cage.createGroup(g.name, g.patchIndices.map(i => i + baseIdx));
+      }
+      currentModel.recompute();
+      currentModel.refreshSceneEntity();
+      // Trigger view rebuild on the existing SceneObject3D
+      const view = (currentModel as any).ext?.view;
+      if (view && typeof view.rebuildAll === 'function') {
+        view.rebuildAll();
+        ctx.viewer.requestRender();
+      }
     }
-
-    // Append groups with shifted indices
-    for (const g of newCage.groups) {
-      cage.createGroup(g.name, g.patchIndices.map(i => i + baseIdx));
-    }
-
-    model.recompute();
-    model.refreshSceneEntity();
-    pushToModels();
     ctx.projectService.scheduleSave();
   }
 
