@@ -108,16 +108,6 @@ export function activate(ctx: any) {
     refresh,
   } as SurfacingService;
 
-  // Override toolbar actions to bypass the craft wizard
-  setTimeout(() => {
-    const actionService = ctx.actionService;
-    if (!actionService) return;
-
-    overrideAction(actionService, 'PATCH_PLANE', () => addPlane());
-    overrideAction(actionService, 'PATCH_BOX', () => addBox());
-    overrideAction(actionService, 'PATCH_CYLINDER', () => addCylinder());
-  }, 0);
-
   // Hook into project save/load
   const origSave = ctx.projectService.save.bind(ctx.projectService);
   const origLoad = ctx.projectService.load.bind(ctx.projectService);
@@ -145,13 +135,6 @@ export function activate(ctx: any) {
       console.error('Failed to load surfacing state:', e);
     }
   };
-}
-
-function overrideAction(actionService: any, actionId: string, fn: () => void) {
-  const existing = actionService.actions[actionId];
-  if (existing) {
-    existing.invoke = fn;
-  }
 }
 
 export const BundleName = "@Surfacing";
