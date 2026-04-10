@@ -19,8 +19,8 @@
     </radialGradient>
 
     <clipPath id="outerClip">
-      <path d="M 64 22 Q 88 20 113 47 Q 92 44 64 72 Q 37 44 15 47 Q 40 20 64 22 Z
-               M 64 24 Q 76 28 89 37 Q 78 41 64 49 Q 51 41 39 37 Q 53 28 64 24 Z"
+      <path d="M 38 27 Q 70 14 102 33 Q 100 36 95 67 Q 58 50 21 61 Q 31 30 38 27 Z
+               M 50 27 Q 67 26 84 30 Q 81 36 79 47 Q 61 43 43 44 Q 48 33 50 27 Z"
             clip-rule="evenodd"/>
     </clipPath>
   </defs>
@@ -28,46 +28,46 @@
   <!-- Gray background -->
   <rect width="128" height="128" fill="url(#bg)"/>
 
-  <!-- Outer NURBS surface: diamond orientation (corner facing viewer), domed upward, with aligned 4-edge hole -->
-  <path d="M 64 22 Q 88 20 113 47 Q 92 44 64 72 Q 37 44 15 47 Q 40 20 64 22 Z
-           M 64 24 Q 76 28 89 37 Q 78 41 64 49 Q 51 41 39 37 Q 53 28 64 24 Z"
+  <!-- Outer NURBS surface: 3D-rotated 35° around vertical axis, domed upward, with aligned 4-edge hole -->
+  <path d="M 38 27 Q 70 14 102 33 Q 100 36 95 67 Q 58 50 21 61 Q 31 30 38 27 Z
+           M 50 27 Q 67 26 84 30 Q 81 36 79 47 Q 61 43 43 44 Q 48 33 50 27 Z"
         fill="url(#surface)" fill-rule="evenodd"/>
 
   <!-- Soft dome-peak highlight -->
-  <path d="M 64 22 Q 88 20 113 47 Q 92 44 64 72 Q 37 44 15 47 Q 40 20 64 22 Z"
+  <path d="M 38 27 Q 70 14 102 33 Q 100 36 95 67 Q 58 50 21 61 Q 31 30 38 27 Z"
         fill="url(#highlight)"/>
 
   <!-- Isolines on outer surface: sampled from the same UV grid as the hole -->
   <g clip-path="url(#outerClip)" fill="none" stroke="#9a8ec0" stroke-width="1" stroke-linecap="round" opacity="0.8">
     <!-- U isolines (u = 0.25, 0.5, 0.75) -->
-    <path d="M 75 23 Q 54 23 26 47"/>
-    <path d="M 88 27 Q 65 29 38 52"/>
-    <path d="M 100 35 Q 79 37 51 60"/>
+    <path d="M 54 23 Q 48 28 39 57"/>
+    <path d="M 70 22 Q 64 29 58 57"/>
+    <path d="M 86 26 Q 81 31 76 60"/>
     <!-- V isolines (v = 0.25, 0.5, 0.75) -->
-    <path d="M 53 23 Q 75 23 102 47"/>
-    <path d="M 40 27 Q 63 29 90 52"/>
-    <path d="M 28 35 Q 50 37 77 60"/>
+    <path d="M 34 30 Q 67 21 101 36"/>
+    <path d="M 30 37 Q 64 28 99 43"/>
+    <path d="M 26 47 Q 60 38 97 53"/>
   </g>
 
   <!-- Outer boundary stroke -->
-  <path d="M 64 22 Q 88 20 113 47 Q 92 44 64 72 Q 37 44 15 47 Q 40 20 64 22 Z"
+  <path d="M 38 27 Q 70 14 102 33 Q 100 36 95 67 Q 58 50 21 61 Q 31 30 38 27 Z"
         fill="none" stroke="#1b1730" stroke-width="2.5" stroke-linejoin="round"/>
 
   <!-- Hole inner dark edge (depth cue) -->
-  <path d="M 64 24 Q 76 28 89 37 Q 78 41 64 49 Q 51 41 39 37 Q 53 28 64 24 Z"
+  <path d="M 50 27 Q 67 26 84 30 Q 81 36 79 47 Q 61 43 43 44 Q 48 33 50 27 Z"
         fill="none" stroke="#120e20" stroke-width="1.3" stroke-linejoin="round"/>
 
   <!-- Fill spline patch: shares the hole's boundary exactly -->
-  <path d="M 64 24 Q 76 28 89 37 Q 78 41 64 49 Q 51 41 39 37 Q 53 28 64 24 Z"
+  <path d="M 50 27 Q 67 26 84 30 Q 81 36 79 47 Q 61 43 43 44 Q 48 33 50 27 Z"
         fill="url(#patch)" stroke="#431a1a" stroke-width="1.5" stroke-linejoin="round"/>
 
   <!-- Fill patch isolines (slightly stronger dome, joining opposite edge midpoints) -->
   <g fill="none" stroke="#ffcccc" stroke-width="0.85" stroke-linecap="round" opacity="0.92">
-    <path d="M 76 29 Q 65 27 51 42"/>
-    <path d="M 52 29 Q 64 27 77 42"/>
+    <path d="M 67 27 Q 64 25 61 44"/>
+    <path d="M 47 34 Q 64 25 81 37"/>
   </g>
 
   <!-- Premium accent highlights -->
-  <circle cx="22" cy="16" r="1.6" fill="#d0c8e8" opacity="0.9"/>
-  <circle cx="108" cy="82" r="1.2" fill="#f8c8c8" opacity="0.8"/>
+  <circle cx="30" cy="14" r="1.6" fill="#d0c8e8" opacity="0.9"/>
+  <circle cx="108" cy="78" r="1.2" fill="#f8c8c8" opacity="0.8"/>
 </svg>

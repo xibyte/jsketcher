@@ -1778,12 +1778,6 @@ function rebuildBoundariesGroup(group: any, model: any, sceneSetup: any, width: 
   const N = 24;
   const EDGE_COLOR = 0x000000;
 
-  // Map patch index → SurfaceSet name (or null)
-  const setOf: (string | null)[] = scene.surfaces.map((_: any, i: number) => {
-    const s = scene.findSurfaceSetOfPatch(i);
-    return s ? s.name : null;
-  });
-
   // Track edges already drawn so we don't draw the same shared edge twice
   const drawn = new Set<string>();
 
@@ -1794,8 +1788,9 @@ function rebuildBoundariesGroup(group: any, model: any, sceneSetup: any, width: 
       // Find adjacent surface on this side, if any
       const match = adj.find((a: any) => a.side === side);
       if (match) {
-        // Skip if both belong to the same SurfaceSet
-        if (setOf[pi] !== null && setOf[pi] === setOf[match.otherIdx]) continue;
+        const other = scene.surfaces[match.otherIdx];
+        // Skip if both belong to the same SurfaceSet (shared by reference)
+        if (surface.surfaceSet && surface.surfaceSet === other.surfaceSet) continue;
         // Avoid drawing the shared edge from both sides
         const key = pi < match.otherIdx
           ? `${pi}:${side}-${match.otherIdx}:${match.otherSide}`

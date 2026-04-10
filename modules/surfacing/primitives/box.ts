@@ -1,5 +1,6 @@
 import {PatchCage, NurbsPatch, CageVertex} from '../models/Scene/Scene.entity';
 import {makeGrid} from '../patchCageHelpers';
+import {SurfaceSet} from '../SurfaceSet';
 import {V, Vlerp} from './helpers';
 
 export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): PatchCage {
@@ -83,12 +84,11 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
   cage.createGroup('Box', [0, 1, 2, 3, 4, 5]);
 
   // Each face of the box is its own SurfaceSet (single-patch sets)
-  cage.createSurfaceSet('bottom', [0]);
-  cage.createSurfaceSet('top', [1]);
-  cage.createSurfaceSet('front', [2]);
-  cage.createSurfaceSet('back', [3]);
-  cage.createSurfaceSet('right', [4]);
-  cage.createSurfaceSet('left', [5]);
+  const faceNames = ['bottom', 'top', 'front', 'back', 'right', 'left'];
+  for (let i = 0; i < 6; i++) {
+    const set = new SurfaceSet(faceNames[i]);
+    set.add(cage.patches[i]);
+  }
 
   return cage;
 }

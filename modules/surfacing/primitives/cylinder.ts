@@ -1,5 +1,6 @@
 import {PatchCage, NurbsPatch, CageVertex} from '../models/Scene/Scene.entity';
 import {makeGrid} from '../patchCageHelpers';
+import {SurfaceSet} from '../SurfaceSet';
 import {lerp as vlerp} from 'math/vec';
 import {V, Vlerp} from './helpers';
 
@@ -126,11 +127,14 @@ export function createPatchCylinder(
   const allIndices = Array.from({length: cage.patches.length}, (_, i) => i);
   cage.createGroup('Cylinder', allIndices);
 
-  // Surface sets: walls form the cylindrical side, each cap is one set of 5 patches
-  // Layout: [0..3] walls, [4..8] bottom cap (diamond + 4 quarters), [9..13] top cap
-  cage.createSurfaceSet('side', [0, 1, 2, 3]);
-  cage.createSurfaceSet('bottom', [4, 5, 6, 7, 8]);
-  cage.createSurfaceSet('top', [9, 10, 11, 12, 13]);
+  // Surface sets: walls form the cylindrical side, each cap is one set of 5 patches.
+  // Layout: [0..3] walls, [4..8] bottom cap (diamond + 4 quarters), [9..13] top cap.
+  const sideSet = new SurfaceSet('side');
+  const bottomSet = new SurfaceSet('bottom');
+  const topSet = new SurfaceSet('top');
+  for (let i = 0; i <= 3; i++) sideSet.add(cage.patches[i]);
+  for (let i = 4; i <= 8; i++) bottomSet.add(cage.patches[i]);
+  for (let i = 9; i <= 13; i++) topSet.add(cage.patches[i]);
 
   return cage;
 }
