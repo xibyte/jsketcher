@@ -1,6 +1,6 @@
 import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
-import {MPatchCage} from "cad/model/mpatchcage";
+import {MSurfacingScene} from "../../models/MSurfacingScene";
 import {createPatchCylinder} from './cylinder.command';
 import {PatchCage} from "../../PatchCage";
 import {BiCylinder} from "react-icons/bi";
@@ -23,7 +23,7 @@ export const PatchCylinderOperation: OperationDescriptor<PatchCylinderParams> = 
     const cage = rawParams?.cageState
       ? PatchCage.deserialize(rawParams.cageState)
       : createPatchCylinder(params.radius, params.height, params.segments);
-    return {consumed: [], created: [new MPatchCage(cage, params.resolution)]};
+    return {consumed: [], created: [new MSurfacingScene(cage, params.resolution)]};
   },
   form: [
     {type: 'number', name: 'radius', label: 'Radius', defaultValue: 50},

@@ -1,6 +1,6 @@
 import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
-import {MPatchCage} from "cad/model/mpatchcage";
+import {MSurfacingScene} from "../../models/MSurfacingScene";
 import {createPatchPlane} from './plane.command';
 import {PatchCage} from "../../PatchCage";
 import {BiRectangle} from "react-icons/bi";
@@ -22,7 +22,7 @@ export const PatchPlaneOperation: OperationDescriptor<PatchPlaneParams> = {
     const cage = rawParams?.cageState
       ? PatchCage.deserialize(rawParams.cageState)
       : createPatchPlane(params.width, params.height);
-    return {consumed: [], created: [new MPatchCage(cage, params.resolution)]};
+    return {consumed: [], created: [new MSurfacingScene(cage, params.resolution)]};
   },
   form: [
     {type: 'number', name: 'width', label: 'Width', defaultValue: 100},

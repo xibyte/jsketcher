@@ -7,6 +7,7 @@ import {MShell} from '../model/mshell';
 import {MDatum} from '../model/mdatum';
 import {MSubD} from '../model/msubd';
 import {MPatchCage} from '../model/mpatchcage';
+import {MSurfacingScene} from 'surfacing/models/MSurfacingScene';
 import DatumView from './views/datumView';
 import {SubDView} from './views/subdView';
 import {PatchCageView} from 'surfacing/patchCageView';
@@ -65,6 +66,8 @@ function sceneSynchronizer(ctx) {
         let modelView;
         if (model instanceof MOpenFaceShell) {
           modelView = new OpenFaceShellView(ctx, model);
+        } else if (model instanceof MSurfacingScene) {
+          modelView = new PatchCageView(ctx, model);
         } else if (model instanceof MPatchCage) {
           modelView = new PatchCageView(ctx, model);
         } else if (model instanceof MSubD) {
