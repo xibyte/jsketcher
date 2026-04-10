@@ -6,6 +6,7 @@ import {Vertex} from '../Vertex/Vertex.entity';
 import {BoundingCurve} from '../BoundingCurve/BoundingCurve.entity';
 import {Cage} from '../Cage/Cage.entity';
 import {Line} from '../Line/Line.entity';
+import type {SurfaceSet} from '../../SurfaceSet';
 
 export interface MirrorConstraintData {
   source: NurbsSurface;
@@ -54,6 +55,9 @@ export class NurbsSurface extends GeometricEntity {
 
   /** Mirror constraint (null if not a mirror) */
   mirrorOf: MirrorConstraintData | null = null;
+
+  /** Logical grouping into a face. Shared by reference between adjacent surfaces. */
+  surfaceSet: SurfaceSet | null = null;
 
   constructor(grid: Vertex[][], weights?: number[][]) {
     super(generateEntityId('S'));
