@@ -1,7 +1,7 @@
 import {MObject, MObjectIdGenerator} from './mobject';
 import {EntityKind} from './entities';
 import {ShellMesh} from './mshell';
-import {PatchCage, SerializedPatchCage} from 'surfacing/models/Scene/PatchCageCore';
+import {PatchCage, SerializedPatchCage} from 'surfacing/models/Scene/Scene.entity';
 import {state, StateStream} from "lstream";
 import {Matrix3x4} from "math/matrix";
 

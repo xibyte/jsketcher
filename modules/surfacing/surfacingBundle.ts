@@ -6,7 +6,7 @@
  * - Loads scene state on project load
  */
 import {MSurfacingScene} from './models/MSurfacingScene';
-import {PatchCage} from './models/Scene/PatchCageCore';
+import {PatchCage} from './models/Scene/Scene.entity';
 import {createPatchPlane} from './primitives/plane';
 import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';

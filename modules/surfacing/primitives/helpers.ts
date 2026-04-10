@@ -1,4 +1,4 @@
-import {CageVertex} from '../models/Scene/PatchCageCore';
+import {CageVertex} from '../models/Scene/Scene.entity';
 import {lerp as vlerp} from 'math/vec';
 
 export function V(x: number, y: number, z: number): CageVertex {
