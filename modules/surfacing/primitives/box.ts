@@ -1,10 +1,10 @@
-import {PatchCage, NurbsPatch, CageVertex} from '../models/Scene/Scene.entity';
+import {Scene, NurbsSurface, Vertex} from '../models/Scene/Scene.entity';
 import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
 import {V, Vlerp} from './helpers';
 
-export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): PatchCage {
-  const cage = new PatchCage();
+export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Scene {
+  const scene = new Scene();
   const hx = sizeX / 2, hy = sizeY / 2, hz = sizeZ / 2;
 
   // 8 shared corner vertices
@@ -34,7 +34,7 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
 
   // 6 faces, each sharing corner + edge vertices with neighbors
   // Bottom (-Z): corners v000,v100,v010,v110
-  cage.patches.push(new NurbsPatch(makeGrid([v000,v100,v010,v110], {
+  scene.surfaces.push(new NurbsSurface(makeGrid([v000,v100,v010,v110], {
     bottom: [v000, e01_1, e01_2, v100],
     right: [v100, e12_1, e12_2, v110],
     top: [v010, e23_1, e23_2, v110],
@@ -42,7 +42,7 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
   })));
 
   // Top (+Z): corners v001,v101,v011,v111
-  cage.patches.push(new NurbsPatch(makeGrid([v001,v101,v011,v111], {
+  scene.surfaces.push(new NurbsSurface(makeGrid([v001,v101,v011,v111], {
     bottom: [v001, e45_1, e45_2, v101],
     right: [v101, e56_1, e56_2, v111],
     top: [v011, e67_1, e67_2, v111],
@@ -50,7 +50,7 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
   })));
 
   // Front (-Y): corners v000,v100,v001,v101
-  cage.patches.push(new NurbsPatch(makeGrid([v000,v100,v001,v101], {
+  scene.surfaces.push(new NurbsSurface(makeGrid([v000,v100,v001,v101], {
     bottom: [v000, e01_1, e01_2, v100],
     right: [v100, e15_1, e15_2, v101],
     top: [v001, e45_1, e45_2, v101],
@@ -58,7 +58,7 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
   })));
 
   // Back (+Y): corners v110,v010,v111,v011
-  cage.patches.push(new NurbsPatch(makeGrid([v110,v010,v111,v011], {
+  scene.surfaces.push(new NurbsSurface(makeGrid([v110,v010,v111,v011], {
     bottom: [v110, e23_2, e23_1, v010], // reversed
     right: [v010, e37_1, e37_2, v011],
     top: [v111, e67_2, e67_1, v011], // reversed
@@ -66,7 +66,7 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
   })));
 
   // Right (+X): corners v100,v110,v101,v111
-  cage.patches.push(new NurbsPatch(makeGrid([v100,v110,v101,v111], {
+  scene.surfaces.push(new NurbsSurface(makeGrid([v100,v110,v101,v111], {
     bottom: [v100, e12_1, e12_2, v110],
     right: [v110, e26_1, e26_2, v111],
     top: [v101, e56_1, e56_2, v111],
@@ -74,21 +74,21 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
   })));
 
   // Left (-X): corners v010,v000,v011,v001
-  cage.patches.push(new NurbsPatch(makeGrid([v010,v000,v011,v001], {
+  scene.surfaces.push(new NurbsSurface(makeGrid([v010,v000,v011,v001], {
     bottom: [v010, e30_2, e30_1, v000], // reversed
     right: [v000, e04_1, e04_2, v001],
     top: [v011, e74_2, e74_1, v001], // reversed
     left: [v010, e37_1, e37_2, v011],
   })));
 
-  cage.createGroup('Box', [0, 1, 2, 3, 4, 5]);
+  scene.createGroup('Box', [0, 1, 2, 3, 4, 5]);
 
   // Each face of the box is its own SurfaceSet (single-patch sets)
   const faceNames = ['bottom', 'top', 'front', 'back', 'right', 'left'];
   for (let i = 0; i < 6; i++) {
     const set = new SurfaceSet(faceNames[i]);
-    set.add(cage.patches[i]);
+    set.add(scene.surfaces[i]);
   }
 
-  return cage;
+  return scene;
 }

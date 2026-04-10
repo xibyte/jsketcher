@@ -1,22 +1,22 @@
-import {PatchCage, CageVertex, NurbsPatch} from '../../models/Scene/Scene.entity';
+import {Scene, Vertex, NurbsSurface} from '../../models/Scene/Scene.entity';
 import {mul as vscale, lerp as vlerp} from 'math/vec';
 
 /**
  * Extrude a patch: disconnect from neighbors, move along normal,
  * and create 4 wall patches to maintain watertightness.
  */
-export function extrudePatch(cage: PatchCage, patchIdx: number, distance: number): void {
-  const group = cage.findGroupOfPatch(patchIdx);
-  const patch = cage.patches[patchIdx];
+export function extrudePatch(scene: Scene, patchIdx: number, distance: number): void {
+  const group = scene.findGroupOfPatch(patchIdx);
+  const patch = scene.surfaces[patchIdx];
   const normal = patch.normal(0.5, 0.5);
   const offset = vscale(normal, distance);
 
   // Clone all vertices in the patch and move clones
-  const cloneMap = new Map<CageVertex, CageVertex>();
+  const cloneMap = new Map<Vertex, Vertex>();
   for (const row of patch.grid) {
     for (const v of row) {
       if (!cloneMap.has(v)) {
-        cloneMap.set(v, new CageVertex(
+        cloneMap.set(v, new Vertex(
           v.position[0] + offset[0], v.position[1] + offset[1], v.position[2] + offset[2]
         ));
       }
@@ -24,18 +24,18 @@ export function extrudePatch(cage: PatchCage, patchIdx: number, distance: number
   }
 
   // Save original edge vertices before replacing the grid
-  const edges: [CageVertex, CageVertex, CageVertex, CageVertex][] = [];
+  const edges: [Vertex, Vertex, Vertex, Vertex][] = [];
   for (let side = 0; side < 4; side++) {
-    edges.push([...patch.getEdgeVertices(side)] as [CageVertex, CageVertex, CageVertex, CageVertex]);
+    edges.push([...patch.getEdgeVertices(side)] as [Vertex, Vertex, Vertex, Vertex]);
   }
 
   // Pre-compute corner interpolation vertices (shared between adjacent walls)
   const cornerVerts = [patch.grid[0][0], patch.grid[0][3], patch.grid[3][3], patch.grid[3][0]];
-  const cornerMids: [CageVertex, CageVertex][] = cornerVerts.map(cv => {
+  const cornerMids: [Vertex, Vertex][] = cornerVerts.map(cv => {
     const nv = cloneMap.get(cv)!;
     const p1 = vlerp(cv.position, nv.position, 1 / 3);
     const p2 = vlerp(cv.position, nv.position, 2 / 3);
-    return [new CageVertex(p1[0], p1[1], p1[2]), new CageVertex(p2[0], p2[1], p2[2])];
+    return [new Vertex(p1[0], p1[1], p1[2]), new Vertex(p2[0], p2[1], p2[2])];
   });
 
   // Replace patch grid with cloned (moved) vertices
@@ -51,12 +51,12 @@ export function extrudePatch(cage: PatchCage, patchIdx: number, distance: number
   // Create 4 wall patches
   for (let side = 0; side < 4; side++) {
     const oldEdge = edges[side];
-    const newEdge = oldEdge.map(v => cloneMap.get(v)!) as [CageVertex, CageVertex, CageVertex, CageVertex];
+    const newEdge = oldEdge.map(v => cloneMap.get(v)!) as [Vertex, Vertex, Vertex, Vertex];
     const [ci0, ci3] = edgeCornerMap[side];
 
-    const wallGrid: CageVertex[][] = [];
+    const wallGrid: Vertex[][] = [];
     for (let r = 0; r < 4; r++) {
-      const row: CageVertex[] = [];
+      const row: Vertex[] = [];
       for (let c = 0; c < 4; c++) {
         if (r === 0) {
           row.push(oldEdge[c]);
@@ -68,16 +68,16 @@ export function extrudePatch(cage: PatchCage, patchIdx: number, distance: number
           row.push(cornerMids[ci3][r - 1]);
         } else {
           const p = vlerp(oldEdge[c].position, newEdge[c].position, r / 3);
-          row.push(new CageVertex(p[0], p[1], p[2]));
+          row.push(new Vertex(p[0], p[1], p[2]));
         }
       }
       wallGrid.push(row);
     }
 
-    const wallPatch = new NurbsPatch(wallGrid);
+    const wallPatch = new NurbsSurface(wallGrid);
     // Walls inherit the source patch's surface set
     if (patch.surfaceSet) patch.surfaceSet.add(wallPatch);
-    cage.patches.push(wallPatch);
+    scene.surfaces.push(wallPatch);
   }
-  cage.notifyPush(4, group);
+  scene.notifyPush(4, group);
 }

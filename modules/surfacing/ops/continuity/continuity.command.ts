@@ -1,19 +1,19 @@
-import {PatchCage} from '../../models/Scene/Scene.entity';
+import {Scene} from '../../models/Scene/Scene.entity';
 
 /**
  * Apply G1 (tangent plane) continuity to patchIdx at the given side.
  * Modifies the first interior row of patchIdx so its cross-boundary
  * tangent mirrors the adjacent patch's tangent across the shared edge.
  */
-export function applyG1(cage: PatchCage, patchIdx: number, side: number): boolean {
-  const adj = cage.findAdjacentPatches(patchIdx);
+export function applyG1(scene: Scene, patchIdx: number, side: number): boolean {
+  const adj = scene.findAdjacentPatches(patchIdx);
   const match = adj.find(a => a.side === side);
   if (!match) return false;
 
-  const boundary = cage.patches[patchIdx].getEdgeVertices(side);
-  const myInterior = cage.getInteriorRow(patchIdx, side, 1);
-  const refInterior = cage.getInteriorRow(match.otherIdx, match.otherSide, 1);
-  const opposite = cage.getInteriorRow(patchIdx, side, 3);
+  const boundary = scene.surfaces[patchIdx].getEdgeVertices(side);
+  const myInterior = scene.getInteriorRow(patchIdx, side, 1);
+  const refInterior = scene.getInteriorRow(match.otherIdx, match.otherSide, 1);
+  const opposite = scene.getInteriorRow(patchIdx, side, 3);
 
   for (let i = 0; i < 4; i++) {
     const ri = match.reversed ? 3 - i : i;
@@ -38,10 +38,10 @@ export function applyG1(cage: PatchCage, patchIdx: number, side: number): boolea
 /**
  * Apply G1 continuity to every side of patchIdx that has an adjacent patch.
  */
-export function applyG1AllSides(cage: PatchCage, patchIdx: number): void {
-  const adj = cage.findAdjacentPatches(patchIdx);
+export function applyG1AllSides(scene: Scene, patchIdx: number): void {
+  const adj = scene.findAdjacentPatches(patchIdx);
   for (const a of adj) {
-    applyG1(cage, patchIdx, a.side);
+    applyG1(scene, patchIdx, a.side);
   }
 }
 
@@ -50,18 +50,18 @@ export function applyG1AllSides(cage: PatchCage, patchIdx: number): void {
  * Modifies first AND second interior rows.
  * G2 requires matching both tangent (G1) and second derivative.
  */
-export function applyG2(cage: PatchCage, patchIdx: number, side: number): boolean {
+export function applyG2(scene: Scene, patchIdx: number, side: number): boolean {
   // First apply G1
-  if (!applyG1(cage, patchIdx, side)) return false;
+  if (!applyG1(scene, patchIdx, side)) return false;
 
-  const adj = cage.findAdjacentPatches(patchIdx);
+  const adj = scene.findAdjacentPatches(patchIdx);
   const match = adj.find(a => a.side === side)!;
 
-  const boundary = cage.patches[patchIdx].getEdgeVertices(side);
-  const myRow1 = cage.getInteriorRow(patchIdx, side, 1);
-  const myRow2 = cage.getInteriorRow(patchIdx, side, 2);
-  const refRow1 = cage.getInteriorRow(match.otherIdx, match.otherSide, 1);
-  const refRow2 = cage.getInteriorRow(match.otherIdx, match.otherSide, 2);
+  const boundary = scene.surfaces[patchIdx].getEdgeVertices(side);
+  const myRow1 = scene.getInteriorRow(patchIdx, side, 1);
+  const myRow2 = scene.getInteriorRow(patchIdx, side, 2);
+  const refRow1 = scene.getInteriorRow(match.otherIdx, match.otherSide, 1);
+  const refRow2 = scene.getInteriorRow(match.otherIdx, match.otherSide, 2);
 
   for (let i = 0; i < 4; i++) {
     const ri = match.reversed ? 3 - i : i;

@@ -5,8 +5,7 @@ import {subdividePatch} from './subdivide.command';
 
 export function createSubdivideButton(view: any, panel: HTMLElement, patchIdx: number): void {
   panel.querySelector('#props-subdivide')!.addEventListener('click', () => {
-    subdividePatch(view.model.cage, patchIdx);
-    view.model.recompute();
+    subdividePatch(view.scene, patchIdx);
     view.selectPatch(-1);
     view.rebuildAll();
     view.persistCageState();

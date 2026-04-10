@@ -4,13 +4,12 @@
 import {applyG1, applyG2} from './continuity.command';
 
 export function createEdgeContinuityButtons(view: any, panel: HTMLElement, edgeIdx: number): void {
-  const cage = view.model.cage;
+  const scene = view.scene;
 
   const g1Btn = panel.querySelector('#edge-g1');
   if (g1Btn) {
     g1Btn.addEventListener('click', () => {
-      applyG1(cage, view.selectedPatchIdx, edgeIdx);
-      view.model.recompute();
+      applyG1(scene, view.selectedPatchIdx, edgeIdx);
       view.rebuildAll();
       view.persistCageState();
       view.showEdgeDialog(edgeIdx);
@@ -19,8 +18,7 @@ export function createEdgeContinuityButtons(view: any, panel: HTMLElement, edgeI
   const g2Btn = panel.querySelector('#edge-g2');
   if (g2Btn) {
     g2Btn.addEventListener('click', () => {
-      applyG2(cage, view.selectedPatchIdx, edgeIdx);
-      view.model.recompute();
+      applyG2(scene, view.selectedPatchIdx, edgeIdx);
       view.rebuildAll();
       view.persistCageState();
       view.showEdgeDialog(edgeIdx);

@@ -51,9 +51,6 @@ export class SceneObject3D extends Group {
     super();
     this.ctx = ctx;
     this.scene = scene;
-    // Legacy alias — many internal references still use this.model.cage.X.
-    // Scene now provides a 'cage' getter that returns itself, so they all work.
-    this.model = scene;
     if (scene && scene.ext) {
       scene.ext.view = this;
     }
@@ -116,8 +113,8 @@ export class SceneObject3D extends Group {
     this.gizmo = null;
     this.setupGizmo();
 
-    this.solidMesh.onMouseEnter = () => ctx.highlightService.highlight(this.model.id);
-    this.solidMesh.onMouseLeave = () => ctx.highlightService.unHighlight(this.model.id);
+    this.solidMesh.onMouseEnter = () => ctx.highlightService.highlight(this.scene.id);
+    this.solidMesh.onMouseLeave = () => ctx.highlightService.unHighlight(this.scene.id);
 
     // Single click pick: listen on DOM, raycast against solidMesh only
     this._clickStartX = 0;
@@ -178,14 +175,14 @@ export class SceneObject3D extends Group {
       }
       if (this.selectedPatchIdx < 0) return;
       if (e.key === 'u' || e.key === 'U') {
-        this.model.cage.splitIsoline(this.selectedPatchIdx, 'u', 0.5);
-        this.model.recompute();
+        this.scene.splitIsoline(this.selectedPatchIdx, 'u', 0.5);
+        ;
         this.selectPatch(-1);
         this.rebuildAll();
         this.persistCageState();
       } else if (e.key === 'v' || e.key === 'V') {
-        this.model.cage.splitIsoline(this.selectedPatchIdx, 'v', 0.5);
-        this.model.recompute();
+        this.scene.splitIsoline(this.selectedPatchIdx, 'v', 0.5);
+        ;
         this.selectPatch(-1);
         this.rebuildAll();
         this.persistCageState();
@@ -231,7 +228,7 @@ export class SceneObject3D extends Group {
 
     // Listen for constraint deletions from the explorer panel
     this._onConstraintDeleted = () => {
-      this.model.recompute();
+      ;
       this.rebuildAll();
       this.persistCageState();
       this.ctx.viewer.requestRender();
@@ -344,8 +341,8 @@ export class SceneObject3D extends Group {
 
     // Reset previously tinted surfaces back to base color
     if (this.hoveredPatchIdx >= 0) {
-      const prevSetMembers = this.model.cage.surfacesInSameSet
-        ? this.model.cage.surfacesInSameSet(this.hoveredPatchIdx)
+      const prevSetMembers = this.scene.surfacesInSameSet
+        ? this.scene.surfacesInSameSet(this.hoveredPatchIdx)
         : [this.hoveredPatchIdx];
       for (const idx of prevSetMembers) {
         this._tintSurface(idx, SURFACE_BASE_COLOR);
@@ -361,14 +358,14 @@ export class SceneObject3D extends Group {
       return;
     }
 
-    const patch = this.model.cage.patches[patchIdx];
+    const patch = this.scene.surfaces[patchIdx];
     const ss = this.ctx.viewer.sceneSetup;
     const N = 24;
 
     // Tint the surfaces in the set: full color on the hovered one, dimmer
     // on the others. No overlay meshes — just material color changes.
-    const setMembers = this.model.cage.surfacesInSameSet
-      ? this.model.cage.surfacesInSameSet(patchIdx)
+    const setMembers = this.scene.surfacesInSameSet
+      ? this.scene.surfacesInSameSet(patchIdx)
       : [patchIdx];
     for (const idx of setMembers) {
       this._tintSurface(idx, idx === patchIdx ? SURFACE_HOVER_COLOR : SURFACE_HOVER_SET_COLOR);
@@ -427,18 +424,18 @@ export class SceneObject3D extends Group {
     this.clearGroup(this.subcageGroup);
     this.subcageHandles = [];
 
-    const patch = this.model.cage.patches[patchIdx];
+    const patch = this.scene.surfaces[patchIdx];
     const ctrl = patch.grid;
     const ss = this.ctx.viewer.sceneSetup;
     const geom = new SphereGeometry(1);
 
     // 16 control point handles
-    const cage = this.model.cage;
+    const scene = this.scene;
     for (let row = 0; row < 4; row++) {
       for (let col = 0; col < 4; col++) {
         const cv = ctrl[row][col]; // CageVertex instance
         const p = cv.position;
-        const isMirrorTarget = cage.isMirrorTarget(cv);
+        const isMirrorTarget = scene.isMirrorTarget(cv);
         const baseColor = isMirrorTarget ? CP_MIRROR : CP_COLOR;
 
         const mat = new MeshBasicMaterial({color: baseColor, depthTest: false, transparent: true, opacity: 0.95});
@@ -548,19 +545,19 @@ export class SceneObject3D extends Group {
       const ud = this.selectedHandle.userData;
       const pos = this.gizmoTarget.position;
       // Move via cage so constraints (arc, mirror) are enforced
-      this.model.cage.moveVertex(ud.cageVertex, pos.x, pos.y, pos.z);
+      this.scene.moveVertex(ud.cageVertex, pos.x, pos.y, pos.z);
 
       if (!this._timer) {
         this._timer = requestAnimationFrame(() => {
           this._timer = null;
-          this.model.recompute();
+          ;
           this.rebuildAll();
         });
       }
     });
 
     this.gizmo.addEventListener('mouseUp', () => {
-      this.model.recompute();
+      ;
       this.rebuildAll();
       this.persistCageState();
     });
@@ -571,7 +568,7 @@ export class SceneObject3D extends Group {
 
   selectSubcageHandle(handle) {
     // Don't allow selecting mirror target CPs
-    if (this.model.cage.isMirrorTarget(handle.userData.cageVertex)) return;
+    if (this.scene.isMirrorTarget(handle.userData.cageVertex)) return;
     this.deselectHandle();
     this.deselectEdge();
     this.selectedHandle = handle;
@@ -621,20 +618,20 @@ export class SceneObject3D extends Group {
     this.closeEdgeDialog();
     const sideNames = ['Bottom', 'Right', 'Top', 'Left'];
 
-    const patch = this.model.cage.patches[this.selectedPatchIdx];
+    const patch = this.scene.surfaces[this.selectedPatchIdx];
     const verts = patch.getEdgeVertices(edgeIdx);
     const p0 = verts[0].position, p3 = verts[3].position;
     const chordLen = vdist(p0, p3);
     const round = (v) => Math.round(v * 1e4) / 1e4;
 
     // Check if this edge already has an arc constraint
-    const cage = this.model.cage;
-    const existing = cage.arcConstraints.find(c =>
+    const scene = this.scene;
+    const existing = scene.arcConstraints.find(c =>
       c.patchSide && c.patchSide.patchIdx === this.selectedPatchIdx && c.patchSide.side === edgeIdx
     );
 
     // Check if edge has adjacent patch (for continuity)
-    const adj = cage.findAdjacentPatches(this.selectedPatchIdx);
+    const adj = scene.findAdjacentPatches(this.selectedPatchIdx);
     const hasNeighbor = adj.some(a => a.side === edgeIdx);
 
     const panel = document.createElement('div');
@@ -671,7 +668,7 @@ export class SceneObject3D extends Group {
     const applyArc90 = (flip) => {
       const patchIdx = this.selectedPatchIdx;
       const side = edgeIdx;
-      const ptch = this.model.cage.patches[patchIdx];
+      const ptch = this.scene.surfaces[patchIdx];
       const ev = ptch.getEdgeVertices(side);
 
       const chord = vdist(ev[0].position, ev[3].position);
@@ -685,7 +682,7 @@ export class SceneObject3D extends Group {
       let planeNormal = ptch.normal(u, v);
       if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]];
 
-      cage.arcConstraints = cage.arcConstraints.filter(c => {
+      scene.arcConstraints = scene.arcConstraints.filter(c => {
         if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
           if (c.mode === 'rational') ptch.rational = false;
           return false;
@@ -693,8 +690,8 @@ export class SceneObject3D extends Group {
         return true;
       });
 
-      cage.constrainEdgeToArc(patchIdx, side, radius, 90, planeNormal, 'rational');
-      this.model.recompute();
+      scene.constrainEdgeToArc(patchIdx, side, radius, 90, planeNormal, 'rational');
+      ;
       this.rebuildAll();
       this.persistCageState();
       this.showEdgeDialog(edgeIdx);
@@ -705,13 +702,13 @@ export class SceneObject3D extends Group {
     const removeBtn = panel.querySelector('#edge-remove-arc');
     if (removeBtn) {
       removeBtn.onclick = () => {
-        cage.arcConstraints = cage.arcConstraints.filter(c => {
+        scene.arcConstraints = scene.arcConstraints.filter(c => {
           if (c.patchSide && c.patchSide.patchIdx === this.selectedPatchIdx && c.patchSide.side === edgeIdx) {
             if (c.mode === 'rational') {
-              this.model.cage.patches[c.patchSide.patchIdx].rational = false;
+              this.scene.surfaces[c.patchSide.patchIdx].rational = false;
             }
             // Reset interior control points to linear interpolation
-            const ev = this.model.cage.patches[this.selectedPatchIdx].getEdgeVertices(edgeIdx);
+            const ev = this.scene.surfaces[this.selectedPatchIdx].getEdgeVertices(edgeIdx);
             const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
             const lp2 = vlerp(ev[0].position, ev[3].position, 2/3);
             ev[1].set(lp1[0], lp1[1], lp1[2]);
@@ -721,11 +718,11 @@ export class SceneObject3D extends Group {
           return true;
         });
         // Reset weights on this edge
-        this.model.cage.patches[this.selectedPatchIdx].weights.forEach(row => {
+        this.scene.surfaces[this.selectedPatchIdx].weights.forEach(row => {
           for (let i = 0; i < row.length; i++) row[i] = 1;
         });
-        this.model.cage.patches[this.selectedPatchIdx].rational = false;
-        this.model.recompute();
+        this.scene.surfaces[this.selectedPatchIdx].rational = false;
+        ;
         this.rebuildAll();
         this.persistCageState();
         this.showEdgeDialog(edgeIdx);
@@ -735,8 +732,8 @@ export class SceneObject3D extends Group {
     const g1Btn = panel.querySelector('#edge-g1');
     if (g1Btn) {
       g1Btn.onclick = () => {
-        cage.applyG1(this.selectedPatchIdx, edgeIdx);
-        this.model.recompute();
+        scene.applyG1(this.selectedPatchIdx, edgeIdx);
+        ;
         this.rebuildAll();
         this.persistCageState();
         this.showEdgeDialog(edgeIdx);
@@ -745,8 +742,8 @@ export class SceneObject3D extends Group {
     const g2Btn = panel.querySelector('#edge-g2');
     if (g2Btn) {
       g2Btn.onclick = () => {
-        cage.applyG2(this.selectedPatchIdx, edgeIdx);
-        this.model.recompute();
+        scene.applyG2(this.selectedPatchIdx, edgeIdx);
+        ;
         this.rebuildAll();
         this.persistCageState();
         this.showEdgeDialog(edgeIdx);
@@ -756,8 +753,8 @@ export class SceneObject3D extends Group {
     const mirrorBtn = panel.querySelector('#edge-mirror');
     if (mirrorBtn) {
       mirrorBtn.onclick = () => {
-        cage.mirrorAcrossEdge(this.selectedPatchIdx, edgeIdx);
-        this.model.recompute();
+        scene.mirrorAcrossEdge(this.selectedPatchIdx, edgeIdx);
+        ;
         this.rebuildAll();
         this.persistCageState();
         this.showEdgeDialog(edgeIdx);
@@ -894,11 +891,11 @@ export class SceneObject3D extends Group {
     panel.querySelector('#arc-close').onclick = () => this.closeArcDialog();
     panel.querySelector('#arc-remove').onclick = () => {
       // Remove last constraint and revert
-      const cage = this.model.cage;
-      if (cage.arcConstraints.length > 0) {
-        cage.removeArcConstraint(cage.arcConstraints[cage.arcConstraints.length - 1]);
+      const scene = this.scene;
+      if (scene.arcConstraints.length > 0) {
+        scene.removeArcConstraint(scene.arcConstraints[scene.arcConstraints.length - 1]);
       }
-      this.model.recompute();
+      ;
       this.rebuildAll();
       this.persistCageState();
       this.closeArcDialog();
@@ -920,8 +917,8 @@ export class SceneObject3D extends Group {
 
     if (isNaN(radius) || radius <= 0) return;
 
-    const cage = this.model.cage;
-    const patch = cage.patches[patchIdx];
+    const scene = this.scene;
+    const patch = scene.surfaces[patchIdx];
     if (!patch) return;
 
     // Compute angle from radius and chord length
@@ -945,18 +942,18 @@ export class SceneObject3D extends Group {
     if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]];
 
     // Remove previous constraint on this edge if exists
-    cage.arcConstraints = cage.arcConstraints.filter(c => {
+    scene.arcConstraints = scene.arcConstraints.filter(c => {
       if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
         if (c.mode === 'rational') {
-          this.model.cage.patches[c.patchSide.patchIdx].rational = false;
+          this.scene.surfaces[c.patchSide.patchIdx].rational = false;
         }
         return false;
       }
       return true;
     });
 
-    cage.constrainEdgeToArc(patchIdx, side, radius, angle, planeNormal, mode);
-    this.model.recompute();
+    scene.constrainEdgeToArc(patchIdx, side, radius, angle, planeNormal, mode);
+    ;
     this.rebuildAll();
     if (this.selectedPatchIdx >= 0) {
       this.buildSubcage(this.selectedPatchIdx);
@@ -980,8 +977,8 @@ export class SceneObject3D extends Group {
   showPropsDialog(patchIdx) {
     this.closePropsDialog();
 
-    const patch = this.model.cage.patches[patchIdx];
-    const cage = this.model.cage;
+    const patch = this.scene.surfaces[patchIdx];
+    const scene = this.scene;
 
     const round = (v) => Math.round(v * 1e6) / 1e6;
     const fmtVec = (p) => [round(p[0]), round(p[1]), round(p[2])];
@@ -998,7 +995,7 @@ export class SceneObject3D extends Group {
     // Edge constraints on this patch
     const sideNames = ['bottom', 'right', 'top', 'left'];
     const constraints = [];
-    for (const c of cage.arcConstraints) {
+    for (const c of scene.arcConstraints) {
       if (c.patchSide && c.patchSide.patchIdx === patchIdx) {
         constraints.push({
           edge: sideNames[c.patchSide.side],
@@ -1065,8 +1062,8 @@ export class SceneObject3D extends Group {
     panel.querySelector('#props-push').onclick = () => {
       const dist = parseFloat(panel.querySelector('#props-distance').value);
       if (isNaN(dist) || dist === 0) return;
-      this.model.cage.pushPullPatch(patchIdx, dist);
-      this.model.recompute();
+      this.scene.pushPullPatch(patchIdx, dist);
+      ;
       this.rebuildAll();
       this.persistCageState();
       this.showPropsDialog(patchIdx);
@@ -1074,22 +1071,22 @@ export class SceneObject3D extends Group {
     panel.querySelector('#props-extrude').onclick = () => {
       const dist = parseFloat(panel.querySelector('#props-distance').value);
       if (isNaN(dist) || dist === 0) return;
-      this.model.cage.extrudePatch(patchIdx, dist);
-      this.model.recompute();
+      this.scene.extrudePatch(patchIdx, dist);
+      ;
       this.rebuildAll();
       this.persistCageState();
       this.showPropsDialog(patchIdx);
     };
     panel.querySelector('#props-subdivide').onclick = () => {
-      this.model.cage.subdividePatch(patchIdx);
-      this.model.recompute();
+      this.scene.subdividePatch(patchIdx);
+      ;
       this.selectPatch(-1);
       this.rebuildAll();
       this.persistCageState();
     };
     panel.querySelector('#props-remove').onclick = () => {
-      this.model.cage.patches.splice(patchIdx, 1);
-      this.model.recompute();
+      this.scene.surfaces.splice(patchIdx, 1);
+      ;
       this.selectPatch(-1);
       this.rebuildAll();
       this.persistCageState();
@@ -1214,8 +1211,8 @@ export class SceneObject3D extends Group {
     }
 
     // Check if this edge is a free edge
-    const cage = this.model.cage;
-    const adj = cage.findAdjacentPatches(hit.patchIdx);
+    const scene = this.scene;
+    const adj = scene.findAdjacentPatches(hit.patchIdx);
     const isShared = adj.some(a => a.side === hit.side);
     if (isShared) {
       // Not a free edge — no hole here
@@ -1225,7 +1222,7 @@ export class SceneObject3D extends Group {
     }
 
     // Trace hole boundary
-    const loop = cage.traceHole(hit.patchIdx, hit.side);
+    const loop = scene.traceHole(hit.patchIdx, hit.side);
     if (!loop || (loop.length !== 3 && loop.length !== 4)) {
       this._fillHolePreviewGroup.visible = false;
       this.ctx.viewer.requestRender();
@@ -1262,13 +1259,13 @@ export class SceneObject3D extends Group {
 
   fillHoleExecute() {
     if (!this._fillHoleLoop) return;
-    const cage = this.model.cage;
+    const scene = this.scene;
 
-    if (cage.fillHole(this._fillHoleLoop)) {
+    if (scene.fillHole(this._fillHoleLoop)) {
       if (this._g1Continuity) {
-        cage.applyG1AllSides(cage.patches.length - 1);
+        scene.applyG1AllSides(scene.surfaces.length - 1);
       }
-      this.model.recompute();
+      ;
       this.rebuildAll();
       this.persistCageState();
     }
@@ -1330,7 +1327,7 @@ export class SceneObject3D extends Group {
     if (bestPi < 0) return null;
 
     // bestFaceIdx is the triangle index within this surface's mesh
-    const res = this.model.tessResolution;
+    const res = this.scene.tessResolution;
     const quadIdx = Math.floor(bestFaceIdx / 2);
     const col = quadIdx % res;
     const row = Math.floor(quadIdx / res);
@@ -1354,9 +1351,9 @@ export class SceneObject3D extends Group {
     } else if (!this._bridgeEdge2) {
       this._bridgeEdge2 = hit;
       // Auto-detect best orientation: pick the one that minimizes corner distance
-      const cage = this.model.cage;
-      const e1 = cage.patches[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
-      const e2 = cage.patches[hit.patchIdx].getEdgeVertices(hit.side);
+      const scene = this.scene;
+      const e1 = scene.surfaces[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
+      const e2 = scene.surfaces[hit.patchIdx].getEdgeVertices(hit.side);
       const fwdDist = vdist(e1[0].position, e2[0].position) + vdist(e1[3].position, e2[3].position);
       const revDist = vdist(e1[0].position, e2[3].position) + vdist(e1[3].position, e2[0].position);
       this._bridgeFlipped = revDist < fwdDist;
@@ -1377,7 +1374,7 @@ export class SceneObject3D extends Group {
   bridgeUpdatePreview() {
     this.clearGroup(this._bridgePreviewGroup);
     const ss = this.ctx.viewer.sceneSetup;
-    const cage = this.model.cage;
+    const scene = this.scene;
     const N = 24;
 
     // Draw edge 1 highlight
@@ -1398,8 +1395,8 @@ export class SceneObject3D extends Group {
       this._bridgePreviewGroup.add(line);
 
       // Preview bridge surface wireframe
-      const e1Verts = cage.patches[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
-      let e2Verts = cage.patches[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
+      const e1Verts = scene.surfaces[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
+      let e2Verts = scene.surfaces[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
       if (this._bridgeFlipped) e2Verts = [e2Verts[3], e2Verts[2], e2Verts[1], e2Verts[0]];
 
       // Draw connecting lines between corresponding endpoints
@@ -1419,7 +1416,7 @@ export class SceneObject3D extends Group {
   }
 
   tessellateEdge(patchIdx, side, N) {
-    const patch = this.model.cage.patches[patchIdx];
+    const patch = this.scene.surfaces[patchIdx];
     const verts = patch.getEdgeVertices(side);
     const cps = verts.map(v => v.position);
     const pts = [];
@@ -1436,10 +1433,10 @@ export class SceneObject3D extends Group {
 
   bridgeExecute() {
     if (!this._bridgeEdge1 || !this._bridgeEdge2) return;
-    const cage = this.model.cage;
+    const scene = this.scene;
 
-    const e1 = cage.patches[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
-    let e2 = cage.patches[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
+    const e1 = scene.surfaces[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
+    let e2 = scene.surfaces[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
     if (this._bridgeFlipped) e2 = [e2[3], e2[2], e2[1], e2[0]];
 
     // Build 4×4 grid: row 0 = edge1, row 3 = edge2, rows 1-2 interpolated
@@ -1460,11 +1457,11 @@ export class SceneObject3D extends Group {
       grid.push(row);
     }
 
-    cage.patches.push(new NurbsPatch(grid));
+    scene.surfaces.push(new NurbsPatch(grid));
     if (this._g1Continuity) {
-      cage.applyG1AllSides(cage.patches.length - 1);
+      scene.applyG1AllSides(scene.surfaces.length - 1);
     }
-    this.model.recompute();
+    ;
     this.rebuildAll();
     this.persistCageState();
 
@@ -1518,7 +1515,7 @@ export class SceneObject3D extends Group {
     if (bestPi < 0 || !bestHit) return null;
 
     const fi = bestHit.faceIndex;
-    const res = this.model.tessResolution;
+    const res = this.scene.tessResolution;
     const meshGeo = this.surfaceMeshes[bestPi].geometry;
     const indices = meshGeo.index.array;
     const verts = meshGeo.attributes.position.array;
@@ -1580,12 +1577,12 @@ export class SceneObject3D extends Group {
     const t = Math.max(0.01, Math.min(0.99, dir === 'u' ? hit.u : hit.v));
 
     this._loopPending = {patchIdx: hit.patchIdx, dir, t};
-    const cage = this.model.cage;
-    const propagation = cage.computeIsolinePropagation(hit.patchIdx, dir, t);
+    const scene = this.scene;
+    const propagation = scene.computeIsolinePropagation(hit.patchIdx, dir, t);
     const ss = this.ctx.viewer.sceneSetup;
 
     for (const seg of propagation) {
-      const pts = cage.tessellateIsoline(seg.idx, seg.dir, seg.t, 24);
+      const pts = scene.tessellateIsoline(seg.idx, seg.dir, seg.t, 24);
       const line = new ScalableLine(ss, pts, 3, 0xffcc00);
       line.renderOrder = 4;
       line.raycast = () => {};
@@ -1599,8 +1596,8 @@ export class SceneObject3D extends Group {
   loopInsertExecute() {
     if (!this._loopPending) return;
     const {patchIdx, dir, t} = this._loopPending;
-    this.model.cage.splitIsoline(patchIdx, dir, t);
-    this.model.recompute();
+    this.scene.splitIsoline(patchIdx, dir, t);
+    ;
     this._loopPending = null;
     this.clearGroup(this._loopPreviewGroup);
     this._loopPreviewGroup.visible = false;
@@ -1611,10 +1608,7 @@ export class SceneObject3D extends Group {
   // ---- Persist cage state to originating operation ----
 
   persistCageState() {
-    // Refresh scene entity if available
-    if (this.model.refreshSceneEntity) {
-      this.model.refreshSceneEntity();
-    }
+    this.scene.syncEntityGraph();
     // Save via the surfacing service's debounced autosave
     if (this.ctx.surfacingService && this.ctx.surfacingService.scheduleSave) {
       this.ctx.surfacingService.scheduleSave();
@@ -1687,8 +1681,8 @@ export class SceneObject3D extends Group {
       try { d(); } catch (e) { /* ignore */ }
     }
     this._disposers = [];
-    if (this.model && this.model.ext) {
-      this.model.ext.view = null;
+    if (this.scene && this.scene.ext) {
+      this.scene.ext.view = null;
     }
   }
 }

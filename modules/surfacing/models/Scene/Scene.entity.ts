@@ -16,14 +16,9 @@ import {Vertex} from '../Vertex/Vertex.entity';
 import {Group} from '../Group/Group.entity';
 import {SurfaceSet} from '../../SurfaceSet';
 
-// Re-export new entity classes as old PatchCage type names for ops compatibility
-// Both as values (for `new CageVertex(...)`) and as types
-import {Vertex as _Vertex} from '../Vertex/Vertex.entity';
-import {NurbsSurface as _NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
-export const CageVertex = _Vertex;
-export type CageVertex = _Vertex;
-export const NurbsPatch = _NurbsSurface;
-export type NurbsPatch = _NurbsSurface;
+// Re-export so other modules can import them from Scene.entity if convenient
+export {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
+export {Vertex} from '../Vertex/Vertex.entity';
 
 // Lazy imports to avoid circular dependencies (resolved at call time)
 import * as _arcOps from '../../ops/arc/arc.command';
@@ -64,8 +59,6 @@ export interface SurfaceGroup {
   patchIndices: number[];
 }
 
-// Backward-compat alias
-export type PatchGroup = SurfaceGroup;
 
 // =========================================================================
 // Serialization
@@ -107,8 +100,6 @@ export interface SerializedScene {
   surfaceSets?: {id: number, name: string}[];
 }
 
-// Backward-compat alias
-export type SerializedPatchCage = SerializedScene;
 
 // =========================================================================
 // Scene
@@ -130,33 +121,6 @@ export class Scene extends GeometricEntity {
 
   constructor(id?: string) {
     super(id ?? generateEntityId('SC'));
-  }
-
-  /** Backward-compat alias for surfaces */
-  get patches(): NurbsSurface[] {
-    return this.surfaces;
-  }
-
-  set patches(value: NurbsSurface[]) {
-    this.surfaces = value;
-  }
-
-  /** Self-reference so legacy code that says model.cage still works */
-  get cage(): Scene {
-    return this;
-  }
-
-  /** No-op — tessellation is per-surface and rebuilt by the view directly */
-  recompute(): void { /* no-op */ }
-
-  /** Backward-compat alias for syncEntityGraph */
-  refreshSceneEntity(): void {
-    this.syncEntityGraph();
-  }
-
-  /** Backward-compat alias for serialize */
-  serializeCage(): SerializedScene {
-    return this.serialize();
   }
 
   registerConstraintEnforcer(fn: (scene: Scene, v: Vertex) => void): void {
@@ -550,9 +514,3 @@ export class Scene extends GeometricEntity {
   }
 }
 
-// =========================================================================
-// Backward-compat alias: PatchCage IS Scene
-// =========================================================================
-
-export const PatchCage = Scene;
-export type PatchCage = Scene;

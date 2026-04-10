@@ -7,8 +7,7 @@ export function createPushPullButton(view: any, panel: HTMLElement, patchIdx: nu
   panel.querySelector('#props-push')!.addEventListener('click', () => {
     const dist = parseFloat((panel.querySelector('#props-distance') as HTMLInputElement).value);
     if (isNaN(dist) || dist === 0) return;
-    pushPullPatch(view.model.cage, patchIdx, dist);
-    view.model.recompute();
+    pushPullPatch(view.scene, patchIdx, dist);
     view.rebuildAll();
     view.persistCageState();
     view.showPropsDialog(patchIdx);

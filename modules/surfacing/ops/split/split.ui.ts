@@ -8,15 +8,13 @@ import {splitIsoline, computeIsolinePropagation, tessellateIsoline} from './spli
 export function handleSplitKeydown(view: any, key: string): boolean {
   if (view.selectedPatchIdx < 0) return false;
   if (key === 'u' || key === 'U') {
-    splitIsoline(view.model.cage, view.selectedPatchIdx, 'u', 0.5);
-    view.model.recompute();
+    splitIsoline(view.scene, view.selectedPatchIdx, 'u', 0.5);
     view.selectPatch(-1);
     view.rebuildAll();
     view.persistCageState();
     return true;
   } else if (key === 'v' || key === 'V') {
-    splitIsoline(view.model.cage, view.selectedPatchIdx, 'v', 0.5);
-    view.model.recompute();
+    splitIsoline(view.scene, view.selectedPatchIdx, 'v', 0.5);
     view.selectPatch(-1);
     view.rebuildAll();
     view.persistCageState();
@@ -56,12 +54,12 @@ export function loopInsertPreview(view: any, e: MouseEvent): void {
   const t = Math.max(0.01, Math.min(0.99, dir === 'u' ? hit.u : hit.v));
 
   view._loopPending = {patchIdx: hit.patchIdx, dir, t};
-  const cage = view.model.cage;
-  const propagation = computeIsolinePropagation(cage, hit.patchIdx, dir, t);
+  const scene = view.scene;
+  const propagation = computeIsolinePropagation(scene, hit.patchIdx, dir, t);
   const ss = view.ctx.viewer.sceneSetup;
 
   for (const seg of propagation) {
-    const pts = tessellateIsoline(cage, seg.idx, seg.dir, seg.t, 24);
+    const pts = tessellateIsoline(scene, seg.idx, seg.dir, seg.t, 24);
     const line = new ScalableLine(ss, pts, 3, 0xffcc00);
     line.renderOrder = 4;
     line.raycast = () => {};
@@ -75,8 +73,7 @@ export function loopInsertPreview(view: any, e: MouseEvent): void {
 export function loopInsertExecute(view: any): void {
   if (!view._loopPending) return;
   const {patchIdx, dir, t} = view._loopPending;
-  splitIsoline(view.model.cage, patchIdx, dir, t);
-  view.model.recompute();
+  splitIsoline(view.scene, patchIdx, dir, t);
   view._loopPending = null;
   view.clearGroup(view._loopPreviewGroup);
   view._loopPreviewGroup.visible = false;

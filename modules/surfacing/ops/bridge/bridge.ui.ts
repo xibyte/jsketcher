@@ -2,7 +2,7 @@
  * Bridge surface UI: mode toggle, edge picking, flip, preview, execute.
  */
 import ScalableLine from 'scene/objects/scalableLine';
-import {CageVertex, NurbsPatch} from '../../models/Scene/Scene.entity';
+import {Vertex, NurbsSurface} from '../../models/Scene/Scene.entity';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
 import {bridgeSurface} from './bridge.command';
 
@@ -40,9 +40,9 @@ export function bridgePickEdge(view: any, e: MouseEvent): void {
     bridgeUpdatePreview(view);
   } else if (!view._bridgeEdge2) {
     view._bridgeEdge2 = hit;
-    const cage = view.model.cage;
-    const e1 = cage.patches[view._bridgeEdge1.patchIdx].getEdgeVertices(view._bridgeEdge1.side);
-    const e2 = cage.patches[hit.patchIdx].getEdgeVertices(hit.side);
+    const scene = view.scene;
+    const e1 = scene.surfaces[view._bridgeEdge1.patchIdx].getEdgeVertices(view._bridgeEdge1.side);
+    const e2 = scene.surfaces[hit.patchIdx].getEdgeVertices(hit.side);
     const fwdDist = vdist(e1[0].position, e2[0].position) + vdist(e1[3].position, e2[3].position);
     const revDist = vdist(e1[0].position, e2[3].position) + vdist(e1[3].position, e2[0].position);
     view._bridgeFlipped = revDist < fwdDist;
@@ -62,7 +62,7 @@ export function bridgeFlip(view: any): void {
 export function bridgeUpdatePreview(view: any): void {
   view.clearGroup(view._bridgePreviewGroup);
   const ss = view.ctx.viewer.sceneSetup;
-  const cage = view.model.cage;
+  const scene = view.scene;
 
   if (view._bridgeEdge1) {
     const pts = view.tessellateEdge(view._bridgeEdge1.patchIdx, view._bridgeEdge1.side, 24);
@@ -79,8 +79,8 @@ export function bridgeUpdatePreview(view: any): void {
     line.raycast = () => {};
     view._bridgePreviewGroup.add(line);
 
-    const e1Verts = cage.patches[view._bridgeEdge1.patchIdx].getEdgeVertices(view._bridgeEdge1.side);
-    let e2Verts = cage.patches[view._bridgeEdge2.patchIdx].getEdgeVertices(view._bridgeEdge2.side);
+    const e1Verts = scene.surfaces[view._bridgeEdge1.patchIdx].getEdgeVertices(view._bridgeEdge1.side);
+    let e2Verts = scene.surfaces[view._bridgeEdge2.patchIdx].getEdgeVertices(view._bridgeEdge2.side);
     if (view._bridgeFlipped) e2Verts = [e2Verts[3], e2Verts[2], e2Verts[1], e2Verts[0]];
 
     for (let ci = 0; ci < 4; ci += 3) {
@@ -100,13 +100,12 @@ export function bridgeUpdatePreview(view: any): void {
 
 export function bridgeExecute(view: any): void {
   if (!view._bridgeEdge1 || !view._bridgeEdge2) return;
-  const cage = view.model.cage;
+  const scene = view.scene;
 
-  const e1 = cage.patches[view._bridgeEdge1.patchIdx].getEdgeVertices(view._bridgeEdge1.side);
-  const e2 = cage.patches[view._bridgeEdge2.patchIdx].getEdgeVertices(view._bridgeEdge2.side);
+  const e1 = scene.surfaces[view._bridgeEdge1.patchIdx].getEdgeVertices(view._bridgeEdge1.side);
+  const e2 = scene.surfaces[view._bridgeEdge2.patchIdx].getEdgeVertices(view._bridgeEdge2.side);
 
-  bridgeSurface(cage, e1, e2, {flipped: view._bridgeFlipped, g1: view._g1Continuity, sourcePatchIdx: view._bridgeEdge1.patchIdx});
-  view.model.recompute();
+  bridgeSurface(scene, e1, e2, {flipped: view._bridgeFlipped, g1: view._g1Continuity, sourcePatchIdx: view._bridgeEdge1.patchIdx});
   view.rebuildAll();
   view.persistCageState();
 
