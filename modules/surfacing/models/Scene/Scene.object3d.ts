@@ -30,6 +30,11 @@ const HANDLE_SIZE = 3.5;
 const EDGE_WIDTH_NORMAL = 2.5;
 const EDGE_WIDTH_THICK = 5;
 
+// Per-surface base & hover colors
+const SURFACE_BASE_COLOR = 0xd0d0d0;       // silver
+const SURFACE_HOVER_COLOR = 0x88bbee;      // cyan-blue (hovered)
+const SURFACE_HOVER_SET_COLOR = 0xb0d0e8;  // dimmer cyan-blue (others in same set)
+
 export class SceneObject3D extends Group {
 
   ctx: any;
@@ -49,17 +54,16 @@ export class SceneObject3D extends Group {
       patchCage.ext.view = this;
     }
 
-    // Surface — silver metallic look
-    this.geometry = buildGeom(patchCage.mesh);
-    this.material = createSolidMaterial({
-      side: DoubleSide,
-      color: 0xd0d0d0,
-      shininess: 80,
-      specular: 0x444444,
-    });
-    this.solidMesh = new Mesh(this.geometry, this.material);
-    setAttribute(this.solidMesh, SURFACING_SCENE, this);
-    this.add(this.solidMesh);
+    // Per-surface meshes — each NurbsSurface gets its own Mesh+material so
+    // we can change colors individually for hover/selection without needing
+    // overlay meshes.
+    this.surfacesGroup = SceneGraph.createGroup();
+    this.surfaceMeshes = []; // index = surface index
+    setAttribute(this.surfacesGroup, SURFACING_SCENE, this);
+    this.add(this.surfacesGroup);
+    this._buildSurfaceMeshes();
+    // Backward-compat alias used by other code paths
+    this.solidMesh = this.surfacesGroup;
 
     // Wireframe (non-pickable) — UV grid only, no triangle diagonals
     this.wireframeGeometry = buildGridWireframe(patchCage);
@@ -142,20 +146,8 @@ export class SceneObject3D extends Group {
       if (this.selectedPatchIdx >= 0) return;
       const ss = ctx.viewer.sceneSetup;
       const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
-      const hits = [];
-      this.solidMesh.raycast(raycaster, hits);
-      if (hits.length === 0) { this.setHover(-1); return; }
-      hits.sort((a, b) => a.distance - b.distance);
-      const fi = hits[0].faceIndex;
-      if (fi === undefined) { this.setHover(-1); return; }
-      const ranges = this.model.mesh.faceTriRanges;
-      for (let pi = 0; pi < ranges.length; pi++) {
-        if (fi >= ranges[pi][0] && fi < ranges[pi][1]) {
-          this.setHover(pi);
-          return;
-        }
-      }
-      this.setHover(-1);
+      const pi = this._raycastSurfaceIdx(raycaster);
+      this.setHover(pi);
     };
     dom.addEventListener('mousedown', this._onMouseDown);
     dom.addEventListener('mouseup', this._onMouseUp);
@@ -318,34 +310,43 @@ export class SceneObject3D extends Group {
       }
     }
 
-    // Third: check if we hit the solid mesh for patch selection
-    const hits = [];
-    this.solidMesh.raycast(raycaster, hits);
+    // Third: per-surface mesh raycast for patch selection
+    const pi = this._raycastSurfaceIdx(raycaster);
+    this.selectPatch(pi);
+  }
 
-    if (hits.length === 0) {
-      this.selectPatch(-1);
-      return;
-    }
-
-    hits.sort((a, b) => a.distance - b.distance);
-    const faceIndex = hits[0].faceIndex;
-    if (faceIndex === undefined) {
-      this.selectPatch(-1);
-      return;
-    }
-
-    const ranges = this.model.mesh.faceTriRanges;
-    for (let pi = 0; pi < ranges.length; pi++) {
-      if (faceIndex >= ranges[pi][0] && faceIndex < ranges[pi][1]) {
-        this.selectPatch(pi);
-        return;
+  /** Raycast against per-surface meshes; returns the patch index hit, or -1 */
+  _raycastSurfaceIdx(raycaster) {
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    for (let i = 0; i < this.surfaceMeshes.length; i++) {
+      const m = this.surfaceMeshes[i];
+      if (!m.visible) continue;
+      const hits = [];
+      m.raycast(raycaster, hits);
+      for (const h of hits) {
+        if (h.distance < bestDist) {
+          bestDist = h.distance;
+          bestIdx = i;
+        }
       }
     }
-    this.selectPatch(-1);
+    return bestIdx;
   }
 
   setHover(patchIdx) {
     if (patchIdx === this.hoveredPatchIdx) return;
+
+    // Reset previously tinted surfaces back to base color
+    if (this.hoveredPatchIdx >= 0) {
+      const prevSetMembers = this.model.cage.surfacesInSameSet
+        ? this.model.cage.surfacesInSameSet(this.hoveredPatchIdx)
+        : [this.hoveredPatchIdx];
+      for (const idx of prevSetMembers) {
+        this._tintSurface(idx, SURFACE_BASE_COLOR);
+      }
+    }
+
     this.hoveredPatchIdx = patchIdx;
     this.clearGroup(this.hoverGroup);
 
@@ -357,41 +358,18 @@ export class SceneObject3D extends Group {
 
     const patch = this.model.cage.patches[patchIdx];
     const ss = this.ctx.viewer.sceneSetup;
-    const res = this.model.tessResolution;
     const N = 24;
 
-    // Helper to add a tinted surface overlay (no edges) for any patch
-    const addOverlay = (idx, opacity) => {
-      const t = this.model.cage.tessellatePatch(idx, res);
-      const offset = new Float32Array(t.positions.length);
-      for (let i = 0; i < t.positions.length; i += 3) {
-        offset[i]   = t.positions[i]   + t.normals[i]   * 0.3;
-        offset[i+1] = t.positions[i+1] + t.normals[i+1] * 0.3;
-        offset[i+2] = t.positions[i+2] + t.normals[i+2] * 0.3;
-      }
-      const g = new BufferGeometry();
-      g.setAttribute('position', new BufferAttribute(offset, 3));
-      g.setAttribute('normal', new BufferAttribute(new Float32Array(t.normals), 3));
-      g.setIndex(new BufferAttribute(new Uint32Array(t.indices), 1));
-      const m = new MeshBasicMaterial({color: 0x88bbee, transparent: true, opacity, side: DoubleSide, depthTest: true});
-      const mesh = new Mesh(g, m);
-      mesh.renderOrder = 0;
-      mesh.raycast = () => {};
-      this.hoverGroup.add(mesh);
-    };
-
-    // Hovered surface: full highlight
-    addOverlay(patchIdx, 0.25);
-
-    // Other surfaces in the same set: dimmer highlight, no edges
+    // Tint the surfaces in the set: full color on the hovered one, dimmer
+    // on the others. No overlay meshes — just material color changes.
     const setMembers = this.model.cage.surfacesInSameSet
       ? this.model.cage.surfacesInSameSet(patchIdx)
       : [patchIdx];
     for (const idx of setMembers) {
-      if (idx !== patchIdx) addOverlay(idx, 0.12);
+      this._tintSurface(idx, idx === patchIdx ? SURFACE_HOVER_COLOR : SURFACE_HOVER_SET_COLOR);
     }
 
-    // Black boundary edges (only on the actually hovered surface)
+    // Black boundary outline (only on the actually hovered surface)
     const edgeDefs = [
       () => [patch.grid[0][0], patch.grid[0][1], patch.grid[0][2], patch.grid[0][3]],
       () => [patch.grid[0][3], patch.grid[1][3], patch.grid[2][3], patch.grid[3][3]],
@@ -789,13 +767,54 @@ export class SceneObject3D extends Group {
     }
   }
 
+  // ---- Per-surface mesh management ----
+
+  _buildSurfaceMeshes() {
+    // Dispose any previous
+    for (const m of this.surfaceMeshes) {
+      this.surfacesGroup.remove(m);
+      if (m.geometry) m.geometry.dispose();
+      if (m.material) m.material.dispose();
+    }
+    this.surfaceMeshes = [];
+
+    const scene = this.model.scene || this.model.cage;
+    if (!scene) return;
+    const res = this.model.tessResolution || 8;
+
+    for (let i = 0; i < scene.surfaces.length; i++) {
+      const surface = scene.surfaces[i];
+      const tess = surface.tessellate(res);
+      const geo = new BufferGeometry();
+      geo.setAttribute('position', new BufferAttribute(new Float32Array(tess.positions), 3));
+      geo.setAttribute('normal', new BufferAttribute(new Float32Array(tess.normals), 3));
+      geo.setIndex(new BufferAttribute(new Uint32Array(tess.indices), 1));
+
+      const mat = createSolidMaterial({
+        side: DoubleSide,
+        color: SURFACE_BASE_COLOR,
+        shininess: 80,
+        specular: 0x444444,
+      });
+
+      const mesh = new Mesh(geo, mat);
+      mesh.userData.patchIdx = i;
+      this.surfaceMeshes.push(mesh);
+      this.surfacesGroup.add(mesh);
+    }
+  }
+
+  /** Set hover tint on a single surface mesh by index */
+  _tintSurface(idx, color) {
+    const m = this.surfaceMeshes[idx];
+    if (!m) return;
+    m.material.color.setHex(color);
+  }
+
   // ---- Rebuild ----
 
   rebuildAll() {
-    const g = buildGeom(this.model.mesh);
-    this.solidMesh.geometry.dispose();
-    this.solidMesh.geometry = g;
-    this.geometry = g;
+    this._buildSurfaceMeshes();
 
     const wg = buildGridWireframe(this.model);
     this.wireframeMesh.geometry.dispose();
@@ -1290,35 +1309,38 @@ export class SceneObject3D extends Group {
     // Raycast against the solid mesh, find closest patch, then determine closest boundary edge
     const ss = this.ctx.viewer.sceneSetup;
     const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
-    const hits = [];
-    this.solidMesh.raycast(raycaster, hits);
-    if (hits.length === 0) return null;
-    hits.sort((a, b) => a.distance - b.distance);
-    const fi = hits[0].faceIndex;
-    const hp = hits[0].point;
-    if (fi === undefined) return null;
-
-    const ranges = this.model.mesh.faceTriRanges;
-    const res = this.model.tessResolution;
-    for (let pi = 0; pi < ranges.length; pi++) {
-      if (fi >= ranges[pi][0] && fi < ranges[pi][1]) {
-        // Determine UV within patch
-        const localTri = fi - ranges[pi][0];
-        const quadIdx = Math.floor(localTri / 2);
-        const col = quadIdx % res;
-        const row = Math.floor(quadIdx / res);
-        const u = (col + 0.5) / res;
-        const v = (row + 0.5) / res;
-        // Closest boundary edge: min distance to sides
-        const dists = [v, 1 - u, 1 - v, u]; // bottom, right, top, left
-        let minSide = 0;
-        for (let s = 1; s < 4; s++) {
-          if (dists[s] < dists[minSide]) minSide = s;
+    // Per-surface raycast: find closest hit across all surface meshes
+    let bestPi = -1;
+    let bestDist = Infinity;
+    let bestFaceIdx = -1;
+    for (let i = 0; i < this.surfaceMeshes.length; i++) {
+      const m = this.surfaceMeshes[i];
+      if (!m.visible) continue;
+      const hits = [];
+      m.raycast(raycaster, hits);
+      for (const h of hits) {
+        if (h.distance < bestDist && h.faceIndex !== undefined) {
+          bestDist = h.distance;
+          bestPi = i;
+          bestFaceIdx = h.faceIndex;
         }
-        return {patchIdx: pi, side: minSide};
       }
     }
-    return null;
+    if (bestPi < 0) return null;
+
+    // bestFaceIdx is the triangle index within this surface's mesh
+    const res = this.model.tessResolution;
+    const quadIdx = Math.floor(bestFaceIdx / 2);
+    const col = quadIdx % res;
+    const row = Math.floor(quadIdx / res);
+    const u = (col + 0.5) / res;
+    const v = (row + 0.5) / res;
+    const dists = [v, 1 - u, 1 - v, u]; // bottom, right, top, left
+    let minSide = 0;
+    for (let s = 1; s < 4; s++) {
+      if (dists[s] < dists[minSide]) minSide = s;
+    }
+    return {patchIdx: bestPi, side: minSide};
   }
 
   bridgePickEdge(e) {
@@ -1474,74 +1496,70 @@ export class SceneObject3D extends Group {
   hitToUV(e) {
     const ss = this.ctx.viewer.sceneSetup;
     const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
-    const hits = [];
-    this.solidMesh.raycast(raycaster, hits);
-    if (hits.length === 0) return null;
-    hits.sort((a, b) => a.distance - b.distance);
-    const hit = hits[0];
-    const fi = hit.faceIndex;
-    if (fi === undefined) return null;
 
-    const ranges = this.model.mesh.faceTriRanges;
-    const res = this.model.tessResolution;
-    const indices = this.model.mesh.indices;
-    const verts = this.model.mesh.vertices;
-
-    for (let pi = 0; pi < ranges.length; pi++) {
-      if (fi >= ranges[pi][0] && fi < ranges[pi][1]) {
-        const localTri = fi - ranges[pi][0];
-        const quadIdx = Math.floor(localTri / 2);
-        const isSecond = localTri % 2 === 1;
-        const col = quadIdx % res;
-        const row = Math.floor(quadIdx / res);
-
-        // The quad at (col, row) spans u=[col/res, (col+1)/res], v=[row/res, (row+1)/res]
-        // Triangle 0: vertices (a, b, d) where a=(row,col), b=(row,col+1), d=(row+1,col+1)
-        // Triangle 1: vertices (a, d, c) where a=(row,col), d=(row+1,col+1), c=(row+1,col)
-        // Use hit point to interpolate within the quad
-        const hp = hit.point;
-        // Get quad corner world positions from the tessellation grid
-        const patchVertOff = ranges[pi][0] * 3; // not quite right — need vertex offset
-        // Simpler: use the triangle vertex positions from the index buffer
-        const base = fi * 3;
-        const i0 = indices[base], i1 = indices[base + 1], i2 = indices[base + 2];
-        const p0 = [verts[i0*3], verts[i0*3+1], verts[i0*3+2]];
-        const p1 = [verts[i1*3], verts[i1*3+1], verts[i1*3+2]];
-        const p2 = [verts[i2*3], verts[i2*3+1], verts[i2*3+2]];
-
-        // Compute barycentric coordinates of hit point in triangle
-        const v0 = [p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]];
-        const v1 = [p2[0]-p0[0], p2[1]-p0[1], p2[2]-p0[2]];
-        const v2 = [hp.x-p0[0], hp.y-p0[1], hp.z-p0[2]];
-        const d00 = v0[0]*v0[0]+v0[1]*v0[1]+v0[2]*v0[2];
-        const d01 = v0[0]*v1[0]+v0[1]*v1[1]+v0[2]*v1[2];
-        const d11 = v1[0]*v1[0]+v1[1]*v1[1]+v1[2]*v1[2];
-        const d20 = v2[0]*v0[0]+v2[1]*v0[1]+v2[2]*v0[2];
-        const d21 = v2[0]*v1[0]+v2[1]*v1[1]+v2[2]*v1[2];
-        const denom = d00*d11 - d01*d01;
-        const bv = (d11*d20 - d01*d21) / denom;
-        const bw = (d00*d21 - d01*d20) / denom;
-        const bu = 1 - bv - bw;
-
-        // Map barycentric to (localU, localV) within the quad [0..1]×[0..1]
-        // Tri 0 (a,b,d): a=(0,0), b=(1,0), d=(1,1) → localU = bv + bw, localV = bw
-        // Tri 1 (a,d,c): a=(0,0), d=(1,1), c=(0,1) → localU = bv, localV = bv + bw
-        let localU, localV;
-        if (!isSecond) {
-          localU = bv + bw;
-          localV = bw;
-        } else {
-          localU = bv;
-          localV = bv + bw;
+    // Per-surface raycast: find closest hit
+    let bestPi = -1;
+    let bestDist = Infinity;
+    let bestHit = null;
+    for (let i = 0; i < this.surfaceMeshes.length; i++) {
+      const m = this.surfaceMeshes[i];
+      if (!m.visible) continue;
+      const hits = [];
+      m.raycast(raycaster, hits);
+      for (const h of hits) {
+        if (h.distance < bestDist && h.faceIndex !== undefined) {
+          bestDist = h.distance;
+          bestPi = i;
+          bestHit = h;
         }
-
-        const u = (col + Math.max(0, Math.min(1, localU))) / res;
-        const v = (row + Math.max(0, Math.min(1, localV))) / res;
-
-        return {patchIdx: pi, u, v};
       }
     }
-    return null;
+    if (bestPi < 0 || !bestHit) return null;
+
+    const fi = bestHit.faceIndex;
+    const res = this.model.tessResolution;
+    const meshGeo = this.surfaceMeshes[bestPi].geometry;
+    const indices = meshGeo.index.array;
+    const verts = meshGeo.attributes.position.array;
+
+    const localTri = fi;
+    const quadIdx = Math.floor(localTri / 2);
+    const isSecond = localTri % 2 === 1;
+    const col = quadIdx % res;
+    const row = Math.floor(quadIdx / res);
+
+    const hp = bestHit.point;
+    const base = fi * 3;
+    const i0 = indices[base], i1 = indices[base + 1], i2 = indices[base + 2];
+    const p0 = [verts[i0*3], verts[i0*3+1], verts[i0*3+2]];
+    const p1 = [verts[i1*3], verts[i1*3+1], verts[i1*3+2]];
+    const p2 = [verts[i2*3], verts[i2*3+1], verts[i2*3+2]];
+
+    const v0 = [p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]];
+    const v1 = [p2[0]-p0[0], p2[1]-p0[1], p2[2]-p0[2]];
+    const v2 = [hp.x-p0[0], hp.y-p0[1], hp.z-p0[2]];
+    const d00 = v0[0]*v0[0]+v0[1]*v0[1]+v0[2]*v0[2];
+    const d01 = v0[0]*v1[0]+v0[1]*v1[1]+v0[2]*v1[2];
+    const d11 = v1[0]*v1[0]+v1[1]*v1[1]+v1[2]*v1[2];
+    const d20 = v2[0]*v0[0]+v2[1]*v0[1]+v2[2]*v0[2];
+    const d21 = v2[0]*v1[0]+v2[1]*v1[1]+v2[2]*v1[2];
+    const denom = d00*d11 - d01*d01;
+    const bv = (d11*d20 - d01*d21) / denom;
+    const bw = (d00*d21 - d01*d20) / denom;
+
+    let localU, localV;
+    if (!isSecond) {
+      localU = bv + bw;
+      localV = bw;
+    } else {
+      localU = bv;
+      localV = bv + bw;
+    }
+
+    const u = (col + Math.max(0, Math.min(1, localU))) / res;
+    const v = (row + Math.max(0, Math.min(1, localV))) / res;
+
+    return {patchIdx: bestPi, u, v};
   }
 
   loopInsertPreview(e) {
@@ -1615,7 +1633,7 @@ export class SceneObject3D extends Group {
   }
 
   updateVisuals() {
-    this.solidMesh.material.color.set(this.color || 0xd0d0d0);
+    // Per-surface materials are managed via _tintSurface; nothing global to refresh.
   }
 
   dispose() {
@@ -1642,7 +1660,11 @@ export class SceneObject3D extends Group {
     this.closeArcDialog();
     this.closeEdgeDialog();
     this.closeModeGuide();
-    this.geometry.dispose(); this.material.dispose();
+    // Dispose per-surface meshes
+    for (const m of this.surfaceMeshes || []) {
+      if (m.geometry) m.geometry.dispose();
+      if (m.material) m.material.dispose();
+    }
     this.wireframeMaterial.dispose(); this.wireframeGeometry.dispose();
     if (this.edgesGroup) {
       for (const child of [...this.edgesGroup.children]) {
