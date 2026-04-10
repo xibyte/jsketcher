@@ -1521,10 +1521,11 @@ export class PatchCageView extends View {
   // ---- Persist cage state to originating operation ----
 
   persistCageState() {
-    const opIdx = this.model.originatingOperation;
-    if (opIdx === undefined || opIdx < 0) return;
-    const cageState = this.model.serializeCage();
-    this.ctx.craftService.updateOperationParams(opIdx, {cageState});
+    // Refresh scene entity if available
+    if (this.model.refreshSceneEntity) {
+      this.model.refreshSceneEntity();
+    }
+    // Save directly via project service (bypasses craft pipeline)
     this.ctx.projectService.scheduleSave();
     // Notify the constraints panel in the object tree
     document.dispatchEvent(new CustomEvent('patch-cage-constraints-changed'));

@@ -38,6 +38,7 @@ import * as AssemblyBundle from "../assembly/assemblyBundle";
 import {WorkbenchesLoaderBundle} from "cad/workbench/workbenchesLoaderBundle";
 import {AttributesBundle} from "cad/attributes/attributesBundle";
 import {HighlightBundle} from "cad/scene/highlightBundle";
+import * as SurfacingBundle from "surfacing/surfacingBundle";
 import {LegacyStructureBundle} from "cad/context/LegacyStructureBundle";
 import context from "cad/context";
 import {BundleSystem} from "bundler/bundleSystem";
@@ -86,7 +87,8 @@ export default function startApplication(callback) {
     ViewSyncBundle,
     WizardSelectionBundle,
     AttributesBundle,
-    HighlightBundle
+    HighlightBundle,
+    SurfacingBundle
   ];
   
   const allBundle = [...preUIBundles, ...bundles];

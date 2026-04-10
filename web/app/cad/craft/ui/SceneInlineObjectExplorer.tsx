@@ -37,11 +37,7 @@ export function SceneInlineObjectExplorer() {
   const persistAndRefresh = useCallback((model: MSurfacingScene) => {
     model.recompute();
     model.refreshSceneEntity();
-    const opIdx = model.originatingOperation;
-    if (opIdx !== undefined && opIdx >= 0) {
-      ctx.craftService.updateOperationParams(opIdx, {cageState: model.serializeCage()});
-      ctx.projectService.scheduleSave();
-    }
+    ctx.projectService.scheduleSave();
     document.dispatchEvent(new CustomEvent('patch-cage-constraint-deleted'));
     forceUpdate(n => n + 1);
   }, [ctx]);
