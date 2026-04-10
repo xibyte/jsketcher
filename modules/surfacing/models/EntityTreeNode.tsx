@@ -166,7 +166,7 @@ function getEntityInfo(entity: GeometricEntity): EntityInfo {
     return {label: 'Scene', detail: `${scene.surfaces.length} surfaces`, icon: '\u25A6', color: '#eee', bold: true};
   }
   if (entity instanceof Group) {
-    return {label: entity.name || 'Group', detail: `${entity.children.length} items`, icon: '\u25A4', color: '#fcb', bold: true};
+    return {label: `Group: ${entity.name || entity.id}`, detail: `${entity.children.length}`, icon: '\u25A4', color: '#fcb', bold: true};
   }
   if (entity instanceof NurbsSurface) {
     return {label: entity.id, detail: entity.rational ? 'rational' : '', icon: '\u25A3', color: '#8cf'};
