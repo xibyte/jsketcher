@@ -20,16 +20,15 @@ export class Scene extends GeometricEntity {
     super(generateEntityId('SC'));
   }
 
+  /** Register a surface for topology queries. Does NOT add to children — use Groups for hierarchy. */
   addSurface(surface: NurbsSurface): void {
     this.surfaces.push(surface);
-    this.addChild(surface);
   }
 
   removeSurface(surface: NurbsSurface): void {
     const idx = this.surfaces.indexOf(surface);
     if (idx >= 0) {
       this.surfaces.splice(idx, 1);
-      this.removeChild(surface);
     }
   }
 
