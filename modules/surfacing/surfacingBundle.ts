@@ -59,7 +59,7 @@ export function activate(ctx: any) {
         ctx.viewer.requestRender();
       }
     }
-    ctx.projectService.scheduleSave();
+    scheduleSurfacingSave();
   }
 
   function addPlane(width = 100, height = 100) {
@@ -116,33 +116,42 @@ export function activate(ctx: any) {
     ]);
   }
 
-  // Hook into project save/load
-  const origSave = ctx.projectService.save.bind(ctx.projectService);
-  const origLoad = ctx.projectService.load.bind(ctx.projectService);
+  // ---- Autosave: dedicated debounced save for surfacing state ----
+  const AUTOSAVE_DELAY = 2000;
+  let autosaveTimer: any = null;
 
-  ctx.projectService.save = function() {
-    origSave();
-    // Also save surfacing state separately
+  function surfacingStorageKey(): string {
+    return ctx.projectService.projectStorageKey() + '.surfacing';
+  }
+
+  function flushSave(): void {
     const surfacingData = save();
     if (surfacingData) {
-      const key = ctx.projectService.projectStorageKey() + '.surfacing';
-      ctx.storageService.set(key, JSON.stringify(surfacingData));
+      ctx.storageService.set(surfacingStorageKey(), JSON.stringify(surfacingData));
     }
-  };
+  }
 
-  ctx.projectService.load = function() {
-    origLoad();
-    // Load surfacing state
-    try {
-      const key = ctx.projectService.projectStorageKey() + '.surfacing';
-      const dataStr = ctx.storageService.get(key);
-      if (dataStr) {
-        load(JSON.parse(dataStr));
-      }
-    } catch (e) {
-      console.error('Failed to load surfacing state:', e);
+  function scheduleSurfacingSave(): void {
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => {
+      autosaveTimer = null;
+      flushSave();
+    }, AUTOSAVE_DELAY);
+  }
+
+  // Expose on the service so other code (SceneObject3D, explorer) can trigger it
+  (ctx.surfacingService as any).scheduleSave = scheduleSurfacingSave;
+  (ctx.surfacingService as any).flushSave = flushSave;
+
+  // Load surfacing state on startup
+  try {
+    const dataStr = ctx.storageService.get(surfacingStorageKey());
+    if (dataStr) {
+      load(JSON.parse(dataStr));
     }
-  };
+  } catch (e) {
+    console.error('Failed to load surfacing state:', e);
+  }
 }
 
 export const BundleName = "@Surfacing";
