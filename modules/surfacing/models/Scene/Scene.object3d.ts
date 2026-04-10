@@ -27,6 +27,8 @@ const CAGE_LINE_COLOR = 0x1a1a1a;
 const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, top, left
 const EDGE_SELECTED_COLOR = 0xffffff;
 const HANDLE_SIZE = 3.5;
+const EDGE_WIDTH_NORMAL = 2.5;
+const EDGE_WIDTH_THICK = 5;
 
 export class SceneObject3D extends Group {
 
@@ -73,7 +75,8 @@ export class SceneObject3D extends Group {
     this.edgesGroup.visible = false;
     this.edgesGroup.raycast = () => {};
     this.add(this.edgesGroup);
-    rebuildEdgesGroup(this.edgesGroup, patchCage, ctx.viewer.sceneSetup);
+    this._edgesWidth = surfacingViewFlags$.value.faces ? EDGE_WIDTH_NORMAL : EDGE_WIDTH_THICK;
+    rebuildEdgesGroup(this.edgesGroup, patchCage, ctx.viewer.sceneSetup, this._edgesWidth);
 
     // Hover highlight group
     this.hoverGroup = SceneGraph.createGroup();
@@ -237,6 +240,12 @@ export class SceneObject3D extends Group {
       this.solidMesh.visible = flags.faces;
       this.wireframeMesh.visible = flags.mesh;
       this.edgesGroup.visible = flags.edges;
+      // Use thicker edges when faces are off so they stand out more
+      const desiredWidth = flags.faces ? EDGE_WIDTH_NORMAL : EDGE_WIDTH_THICK;
+      if (this._edgesWidth !== desiredWidth) {
+        this._edgesWidth = desiredWidth;
+        rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup, desiredWidth);
+      }
       ctx.viewer.requestRender();
     }));
   }
@@ -770,7 +779,7 @@ export class SceneObject3D extends Group {
     this.wireframeMesh.geometry = wg;
     this.wireframeGeometry = wg;
 
-    rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup);
+    rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup, this._edgesWidth);
 
     if (this.selectedPatchIdx >= 0) {
       this.buildSubcage(this.selectedPatchIdx);
@@ -1697,7 +1706,7 @@ function buildGridWireframe(model: any): BufferGeometry {
  * ScalableLine uses LineMaterial which gives true thick lines (unlike
  * the stock LineBasicMaterial whose linewidth is 1px on most platforms).
  */
-function rebuildEdgesGroup(group: any, model: any, sceneSetup: any): void {
+function rebuildEdgesGroup(group: any, model: any, sceneSetup: any, width: number = 2.5): void {
   // Clear existing
   for (const child of [...group.children]) {
     group.remove(child);
@@ -1707,7 +1716,6 @@ function rebuildEdgesGroup(group: any, model: any, sceneSetup: any): void {
 
   const N = 24;
   const EDGE_COLOR = 0x000000;
-  const EDGE_WIDTH = 2.5;
 
   for (const surface of model.scene.surfaces) {
     for (const side of [0, 1, 2, 3]) {
@@ -1717,7 +1725,7 @@ function rebuildEdgesGroup(group: any, model: any, sceneSetup: any): void {
         const p = bc.eval(i / N);
         pts.push([p[0], p[1], p[2]]);
       }
-      const line = new ScalableLine(sceneSetup, pts, EDGE_WIDTH, EDGE_COLOR);
+      const line = new ScalableLine(sceneSetup, pts, width, EDGE_COLOR);
       line.renderOrder = 1;
       line.raycast = () => {};
       group.add(line);
