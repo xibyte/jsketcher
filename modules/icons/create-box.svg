@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="topFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8078b0"/>
+      <stop offset="1" stop-color="#5e5788"/>
+    </linearGradient>
+    <linearGradient id="frontFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#504977"/>
+      <stop offset="1" stop-color="#332d4c"/>
+    </linearGradient>
+    <linearGradient id="rightFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#363054"/>
+      <stop offset="1" stop-color="#1f1a33"/>
+    </linearGradient>
+    <radialGradient id="topHighlight" cx="0.35" cy="0.25" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Right face -->
+  <path d="M 106 40 L 106 88 L 64 112 L 64 64 Z" fill="url(#rightFace)"/>
+
+  <!-- Front face -->
+  <path d="M 22 40 L 64 64 L 64 112 L 22 88 Z" fill="url(#frontFace)"/>
+
+  <!-- Top face -->
+  <path d="M 64 16 L 106 40 L 64 64 L 22 40 Z" fill="url(#topFace)"/>
+  <path d="M 64 16 L 106 40 L 64 64 L 22 40 Z" fill="url(#topHighlight)"/>
+
+  <!-- Isolines: each polyline bends across two faces, sharing the same UV grid -->
+  <g fill="none" stroke="#9a8ec0" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.75">
+    <!-- Vertical-ish isolines wrapping front → top -->
+    <path d="M 36 96 L 36 48 L 78 24"/>
+    <path d="M 50 104 L 50 56 L 92 32"/>
+    <!-- Vertical-ish isolines wrapping top → right -->
+    <path d="M 36 32 L 78 56 L 78 104"/>
+    <path d="M 50 24 L 92 48 L 92 96"/>
+    <!-- Horizontal isolines wrapping front → right -->
+    <path d="M 22 56 L 64 80 L 106 56"/>
+    <path d="M 22 72 L 64 96 L 106 72"/>
+  </g>
+
+  <!-- Interior visible edges radiating from vertex G (front-top-right) -->
+  <path d="M 64 64 L 106 40 M 64 64 L 64 112 M 64 64 L 22 40"
+        fill="none" stroke="#1b1730" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Outer silhouette -->
+  <path d="M 64 16 L 106 40 L 106 88 L 64 112 L 22 88 L 22 40 Z"
+        fill="none" stroke="#1b1730" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>

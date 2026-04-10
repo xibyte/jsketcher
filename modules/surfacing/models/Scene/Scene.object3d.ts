@@ -28,8 +28,8 @@ const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, 
 const EDGE_SELECTED_COLOR = 0xffffff;
 const HANDLE_SIZE = 3.5;
 const EDGE_WIDTH = 2.5;
-const MESH_WIDTH_NORMAL = 1.5;
-const MESH_WIDTH_THICK = 3;
+const MESH_WIDTH_NORMAL = 1;
+const MESH_WIDTH_THICK = 1.8;
 
 // Per-surface base & hover colors
 const SURFACE_BASE_COLOR = 0xd0d0d0;       // silver
@@ -47,13 +47,17 @@ export class SceneObject3D extends Group {
   // properties are added dynamically. Keep loose typing for now.
   [key: string]: any;
 
-  constructor(ctx, patchCage) {
+  constructor(scene, ctx) {
     super();
     this.ctx = ctx;
-    this.model = patchCage;
-    if (patchCage && patchCage.ext) {
-      patchCage.ext.view = this;
+    this.scene = scene;
+    // Legacy alias — many internal references still use this.model.cage.X.
+    // Scene now provides a 'cage' getter that returns itself, so they all work.
+    this.model = scene;
+    if (scene && scene.ext) {
+      scene.ext.view = this;
     }
+    scene.object3d = this;
 
     // Per-surface meshes — each NurbsSurface gets its own Mesh+material so
     // we can change colors individually for hover/selection without needing
@@ -779,9 +783,9 @@ export class SceneObject3D extends Group {
     }
     this.surfaceMeshes = [];
 
-    const scene = this.model.scene || this.model.cage;
+    const scene = this.scene;
     if (!scene) return;
-    const res = this.model.tessResolution || 8;
+    const res = scene.tessResolution || 8;
 
     for (let i = 0; i < scene.surfaces.length; i++) {
       const surface = scene.surfaces[i];
