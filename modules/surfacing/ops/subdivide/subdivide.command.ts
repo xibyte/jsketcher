@@ -7,7 +7,9 @@ import {splitBezierRow} from '../../patchCageHelpers';
  * Geometry is preserved exactly. Internal boundaries are watertight by construction.
  */
 export function subdividePatch(cage: PatchCage, patchIdx: number): void {
-  const g = cage.patches[patchIdx].grid;
+  const sourcePatch = cage.patches[patchIdx];
+  const sourceSet = sourcePatch.surfaceSet;
+  const g = sourcePatch.grid;
 
   // Step 1: Split each of the 4 rows in U at t=1/3 then t=2/3 → 4 rows × 10 cols
   const uGrid: CageVertex[][] = [];
@@ -54,6 +56,12 @@ export function subdividePatch(cage: PatchCage, patchIdx: number): void {
       }
       result.push(new NurbsPatch(subGrid));
     }
+  }
+
+  // Propagate the surface set to all 9 sub-patches
+  if (sourceSet) {
+    sourceSet.remove(sourcePatch);
+    for (const sub of result) sourceSet.add(sub);
   }
 
   cage.patches.splice(patchIdx, 1, ...result);

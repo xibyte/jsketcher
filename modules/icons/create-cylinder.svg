@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="topFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8078b0"/>
+      <stop offset="1" stop-color="#5e5788"/>
+    </linearGradient>
+    <linearGradient id="sideFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#504977"/>
+      <stop offset="1" stop-color="#2a253f"/>
+    </linearGradient>
+    <radialGradient id="topHighlight" cx="0.35" cy="0.3" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Side face fill: front half of cylinder body, bounded above by the front half of the top ellipse and below by the front half of the bottom ellipse -->
+  <path d="M 29.7 40 A 34.3 19.8 0 0 0 98.3 40 L 98.3 88 A 34.3 19.8 0 0 0 29.7 88 Z"
+        fill="url(#sideFace)"/>
+
+  <!-- Top face fill -->
+  <ellipse cx="64" cy="40" rx="34.3" ry="19.8" fill="url(#topFace)"/>
+  <!-- Soft top highlight -->
+  <ellipse cx="64" cy="40" rx="34.3" ry="19.8" fill="url(#topHighlight)"/>
+
+  <!-- Isolines: each θ isoline is a diameter on the top face joined to a vertical line down the side -->
+  <g fill="none" stroke="#9a8ec0" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.75">
+    <!-- θ = 0 : top back (θ=π) → top front (θ=0) → bottom front -->
+    <path d="M 39.8 26 L 88.3 54 L 88.3 102"/>
+    <!-- θ = π/4 : collinear vertical through the ellipse centre -->
+    <path d="M 64 20.2 L 64 107.8"/>
+    <!-- θ = π/2 : top back (θ=3π/2) → top front (θ=π/2) → bottom front -->
+    <path d="M 88.3 26 L 39.8 54 L 39.8 102"/>
+    <!-- Horizontal y isolines: front half of the ellipse at y = h/6 and y = -h/6 -->
+    <path d="M 29.7 56 A 34.3 19.8 0 0 0 98.3 56"/>
+    <path d="M 29.7 72 A 34.3 19.8 0 0 0 98.3 72"/>
+  </g>
+
+  <!-- Interior edge: front half of the top ellipse (edge between top face and side face) -->
+  <path d="M 29.7 40 A 34.3 19.8 0 0 0 98.3 40"
+        fill="none" stroke="#1b1730" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Outer silhouette: back half of top ellipse + right tangent + front half of bottom ellipse + left tangent -->
+  <path d="M 29.7 40 A 34.3 19.8 0 0 1 98.3 40 L 98.3 88 A 34.3 19.8 0 0 0 29.7 88 Z"
+        fill="none" stroke="#1b1730" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>
