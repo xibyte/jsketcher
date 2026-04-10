@@ -1,16 +1,11 @@
 /**
- * MObject wrapper for the Scene entity, providing backward compatibility
- * with cadRegistry, viewSyncBundle, and the craft pipeline.
- *
- * Internally maintains both a Scene entity (new system) and a PatchCage
- * (old system, used by PatchCageView until full migration).
+ * MObject wrapper for the Scene entity, providing compatibility with
+ * cadRegistry and viewSyncBundle. The Scene entity IS the model state.
  */
 import {MObject, MObjectIdGenerator} from 'cad/model/mobject';
 import {EntityKind} from 'cad/model/entities';
 import {ShellMesh} from 'cad/model/mshell';
-import {PatchCage, SerializedPatchCage} from './PatchCageCore';
 import {Scene, SerializedScene} from './Scene/Scene.entity';
-import {sceneFromPatchCage} from './Scene/fromPatchCage';
 import {state, StateStream} from 'lstream';
 import {Matrix3x4} from 'math/matrix';
 
@@ -18,28 +13,28 @@ export class MSurfacingScene extends MObject {
 
   static TYPE = EntityKind.SURFACING_SCENE;
 
-  /** New entity system — the source of truth for the tree view */
+  /** The single source of truth: a Scene entity */
   scene: Scene;
-
-  /** Old system — used by PatchCageView for rendering until full migration */
-  cage: PatchCage;
 
   tessResolution: number;
   mesh: ShellMesh | null = null;
 
   location$: StateStream<Matrix3x4> = state(new Matrix3x4());
 
-  constructor(cage: PatchCage, tessResolution: number = 8) {
+  constructor(scene: Scene, tessResolution: number = 8) {
     super(MSurfacingScene.TYPE, MObjectIdGenerator.next(MSurfacingScene.TYPE, 'SS'));
-    this.cage = cage;
+    this.scene = scene;
     this.tessResolution = tessResolution;
-    this.scene = sceneFromPatchCage(cage);
     this.scene.tessResolution = tessResolution;
     this.recompute();
   }
 
+  /** Backward-compat alias: the Scene IS the cage */
+  get cage(): Scene { return this.scene; }
+  set cage(s: Scene) { this.scene = s; }
+
   recompute(): void {
-    const tess = this.cage.tessellateAll(this.tessResolution);
+    const tess = this.scene.tessellateAll(this.tessResolution);
     this.mesh = {
       vertices: tess.vertices,
       normals: tess.normals,
@@ -48,14 +43,18 @@ export class MSurfacingScene extends MObject {
     };
   }
 
-  /** Rebuild the Scene entity from the current PatchCage state */
+  /** Rebuild the Scene's entity-graph children (Groups containing surfaces) */
   refreshSceneEntity(): void {
-    this.scene = sceneFromPatchCage(this.cage);
-    this.scene.tessResolution = this.tessResolution;
+    this.scene.syncEntityGraph();
   }
 
-  serializeCage(): SerializedPatchCage {
-    return this.cage.serialize();
+  serialize(): SerializedScene {
+    return this.scene.serialize();
+  }
+
+  /** Backward-compat alias */
+  serializeCage(): SerializedScene {
+    return this.serialize();
   }
 
   traverse(callback: (obj: MObject) => void): void {

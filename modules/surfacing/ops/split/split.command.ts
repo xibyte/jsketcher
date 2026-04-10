@@ -1,4 +1,4 @@
-import {PatchCage, CageVertex, NurbsPatch} from '../../models/Scene/PatchCageCore';
+import {PatchCage, CageVertex, NurbsPatch} from '../../models/Scene/Scene.entity';
 import {Vec3} from '../../patchCageTypes';
 import {splitBezierRow, cloneWeights, BoundarySplitResult} from '../../patchCageHelpers';
 

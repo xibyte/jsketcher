@@ -1,4 +1,4 @@
-import {PatchCage} from '../../models/Scene/PatchCageCore';
+import {PatchCage} from '../../models/Scene/Scene.entity';
 
 /**
  * Apply G1 (tangent plane) continuity to patchIdx at the given side.

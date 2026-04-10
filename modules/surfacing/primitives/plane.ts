@@ -1,4 +1,4 @@
-import {PatchCage, NurbsPatch} from '../models/Scene/PatchCageCore';
+import {PatchCage, NurbsPatch} from '../models/Scene/Scene.entity';
 import {makeGrid} from '../patchCageHelpers';
 import {V} from './helpers';
 

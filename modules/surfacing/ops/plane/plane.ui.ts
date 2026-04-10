@@ -2,7 +2,7 @@ import {ApplicationContext} from "cad/context";
 import {OperationDescriptor} from "cad/craft/operationBundle";
 import {MSurfacingScene} from "../../models/MSurfacingScene";
 import {createPatchPlane} from './plane.command';
-import {PatchCage} from "../../models/Scene/PatchCageCore";
+import {PatchCage} from "../../models/Scene/Scene.entity";
 import {BiRectangle} from "react-icons/bi";
 
 interface PatchPlaneParams {

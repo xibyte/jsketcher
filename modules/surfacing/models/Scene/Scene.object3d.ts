@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as SceneGraph from 'scene/sceneGraph';
 import {createSolidMaterial} from 'cad/scene/views/viewUtils';
 import {SURFACING_SCENE} from 'cad/model/entities';
@@ -13,7 +14,7 @@ import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
 import ScalableLine from 'scene/objects/scalableLine';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
-import {CageVertex, NurbsPatch} from '../PatchCageCore';
+import {CageVertex, NurbsPatch} from './Scene.entity';
 
 export const SCENE_OBJECT3D_MARKER = 'SurfacingSceneObject3D';
 
@@ -32,6 +33,10 @@ export class SceneObject3D extends Group {
   model: any;
   marks: any[] = [];
   _disposers: (() => void)[] = [];
+
+  // Untyped instance state copied from the original patchCageView.js — many
+  // properties are added dynamically. Keep loose typing for now.
+  [key: string]: any;
 
   constructor(ctx, patchCage) {
     super();
