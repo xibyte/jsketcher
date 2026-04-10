@@ -13,9 +13,14 @@ import type {Scene} from './Scene/Scene.entity';
 
 const SIDE_NAMES = ['bottom', 'right', 'top', 'left'];
 
+export interface EntityTreeCallbacks {
+  onRemoveEntity?: (entity: GeometricEntity) => void;
+}
+
 interface EntityNodeProps {
   entity: GeometricEntity;
   depth?: number;
+  callbacks?: EntityTreeCallbacks;
 }
 
 /**
@@ -24,11 +29,13 @@ interface EntityNodeProps {
  * is independently collapsible regardless of whether the same entity
  * appears elsewhere in the tree.
  */
-export function EntityTreeNode({entity, depth = 0}: EntityNodeProps) {
+export function EntityTreeNode({entity, depth = 0, callbacks}: EntityNodeProps) {
   const [expanded, setExpanded] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const info = getEntityInfo(entity);
   const childEntries = getChildEntries(entity);
   const hasChildren = childEntries.length > 0;
+  const removable = isRemovable(entity);
 
   return <div style={{paddingLeft: depth > 0 ? 12 : 0}}>
     <div
@@ -54,11 +61,27 @@ export function EntityTreeNode({entity, depth = 0}: EntityNodeProps) {
         {expanded ? '\u25BC' : '\u25B6'}
       </span>}
       {!hasChildren && <span style={{width: 10, flexShrink: 0}} />}
-      <span style={{fontWeight: info.bold ? 600 : 400}}>
+      <span style={{fontWeight: info.bold ? 600 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
         {info.icon && <span style={{marginRight: 3}}>{info.icon}</span>}
         {info.label}
       </span>
-      {info.detail && <span style={{color: '#777', marginLeft: 4, fontSize: 10}}>{info.detail}</span>}
+      {info.detail && <span style={{color: '#777', marginLeft: 4, fontSize: 10, flexShrink: 0}}>{info.detail}</span>}
+      {removable && callbacks?.onRemoveEntity && !confirmingDelete && <span
+        onClick={(e) => { e.stopPropagation(); setConfirmingDelete(true); }}
+        style={{cursor: 'pointer', color: '#e55', marginLeft: 4, fontSize: 13, flexShrink: 0, opacity: 0.6}}
+        title="Remove"
+      >&times;</span>}
+      {confirmingDelete && <span style={{display: 'flex', gap: 3, marginLeft: 4, flexShrink: 0}} onClick={e => e.stopPropagation()}>
+        <span style={{fontSize: 10, color: '#e88'}}>Delete?</span>
+        <span
+          onClick={() => { callbacks?.onRemoveEntity?.(entity); setConfirmingDelete(false); }}
+          style={{cursor: 'pointer', color: '#f44', fontSize: 10, fontWeight: 700, padding: '0 2px'}}
+        >Yes</span>
+        <span
+          onClick={() => setConfirmingDelete(false)}
+          style={{cursor: 'pointer', color: '#888', fontSize: 10, padding: '0 2px'}}
+        >No</span>
+      </span>}
     </div>
     {expanded && childEntries.map((entry, i) => (
       <div key={`${entry.key}-${i}`}>
@@ -68,7 +91,7 @@ export function EntityTreeNode({entity, depth = 0}: EntityNodeProps) {
           color: '#666',
           padding: '1px 4px 1px ' + ((depth + 1) * 12) + 'px',
         }}>{entry.label}</div>}
-        {entry.entity && <EntityTreeNode entity={entry.entity} depth={depth + 1} />}
+        {entry.entity && <EntityTreeNode entity={entry.entity} depth={depth + 1} callbacks={callbacks} />}
         {entry.value !== undefined && <div style={{
           paddingLeft: (depth + 1) * 12 + 10,
           fontSize: 10,
@@ -92,7 +115,7 @@ function getChildEntries(entity: GeometricEntity): ChildEntry[] {
 
   if (isScene(entity)) {
     const scene = entity as Scene;
-    // Show groups first, then ungrouped surfaces
+    // Show groups when they exist, bare surfaces otherwise
     const groups = scene.children.filter(c => c instanceof Group);
     if (groups.length > 0) {
       for (let i = 0; i < groups.length; i++) {
@@ -195,4 +218,8 @@ function getEntityInfo(entity: GeometricEntity): EntityInfo {
 
 function isScene(entity: GeometricEntity): boolean {
   return 'surfaces' in entity && Array.isArray((entity as any).surfaces);
+}
+
+function isRemovable(entity: GeometricEntity): boolean {
+  return entity instanceof Group || entity instanceof NurbsSurface;
 }
