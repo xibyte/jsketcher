@@ -77,7 +77,7 @@ export class SceneObject3D extends Group {
     this.wireframeMesh.raycast = () => {};
     this.add(this.wireframeMesh);
     this._meshWidth = surfacingViewFlags$.value.faces ? MESH_WIDTH_NORMAL : MESH_WIDTH_THICK;
-    rebuildWireframeGroup(this.wireframeMesh, patchCage, ctx.viewer.sceneSetup, this._meshWidth);
+    rebuildWireframeGroup(this.wireframeMesh, this.scene, ctx.viewer.sceneSetup, this._meshWidth);
 
     // Bounding curves (edges) — shown when 'edges' flag is enabled.
     // Built as a Group of ScalableLine instances for true thick lines.
@@ -85,7 +85,7 @@ export class SceneObject3D extends Group {
     this.edgesGroup.visible = false;
     this.edgesGroup.raycast = () => {};
     this.add(this.edgesGroup);
-    rebuildEdgesGroup(this.edgesGroup, patchCage, ctx.viewer.sceneSetup, EDGE_WIDTH);
+    rebuildEdgesGroup(this.edgesGroup, this.scene, ctx.viewer.sceneSetup, EDGE_WIDTH);
 
     // Boundaries — only edges between SurfaceSets (set silhouette).
     // Hides edges shared between surfaces in the same set.
@@ -93,7 +93,7 @@ export class SceneObject3D extends Group {
     this.boundariesGroup.visible = false;
     this.boundariesGroup.raycast = () => {};
     this.add(this.boundariesGroup);
-    rebuildBoundariesGroup(this.boundariesGroup, patchCage, ctx.viewer.sceneSetup, EDGE_WIDTH);
+    rebuildBoundariesGroup(this.boundariesGroup, this.scene, ctx.viewer.sceneSetup, EDGE_WIDTH);
 
     // Hover highlight group
     this.hoverGroup = SceneGraph.createGroup();
@@ -251,7 +251,7 @@ export class SceneObject3D extends Group {
       const desiredMeshWidth = flags.faces ? MESH_WIDTH_NORMAL : MESH_WIDTH_THICK;
       if (this._meshWidth !== desiredMeshWidth) {
         this._meshWidth = desiredMeshWidth;
-        rebuildWireframeGroup(this.wireframeMesh, this.model, this.ctx.viewer.sceneSetup, desiredMeshWidth);
+        rebuildWireframeGroup(this.wireframeMesh, this.scene, this.ctx.viewer.sceneSetup, desiredMeshWidth);
       }
       ctx.viewer.requestRender();
     }));
@@ -821,9 +821,9 @@ export class SceneObject3D extends Group {
   rebuildAll() {
     this._buildSurfaceMeshes();
 
-    rebuildWireframeGroup(this.wireframeMesh, this.model, this.ctx.viewer.sceneSetup, this._meshWidth);
-    rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
-    rebuildBoundariesGroup(this.boundariesGroup, this.model, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
+    rebuildWireframeGroup(this.wireframeMesh, this.scene, this.ctx.viewer.sceneSetup, this._meshWidth);
+    rebuildEdgesGroup(this.edgesGroup, this.scene, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
+    rebuildBoundariesGroup(this.boundariesGroup, this.scene, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
 
     if (this.selectedPatchIdx >= 0) {
       this.buildSubcage(this.selectedPatchIdx);
@@ -1719,15 +1719,14 @@ function buildGeom(mesh) {
  * proper thick lines via LineMaterial (LineBasicMaterial.linewidth
  * is locked to 1px on most WebGL platforms).
  */
-function rebuildWireframeGroup(group: any, model: any, sceneSetup: any, width: number = 1.5): void {
+function rebuildWireframeGroup(group: any, scene: any, sceneSetup: any, width: number = 1.5): void {
   for (const child of [...group.children]) {
     group.remove(child);
     if (child.dispose) child.dispose();
   }
-  if (!model || !model.scene) return;
+  if (!scene) return;
 
-  const scene = model.scene;
-  const resolution = model.tessResolution || 8;
+  const resolution = scene.tessResolution || 8;
   const COLOR = 0x1860c0;
 
   for (const surface of scene.surfaces) {
@@ -1769,18 +1768,18 @@ function rebuildWireframeGroup(group: any, model: any, sceneSetup: any, width: n
  * ScalableLine uses LineMaterial which gives true thick lines (unlike
  * the stock LineBasicMaterial whose linewidth is 1px on most platforms).
  */
-function rebuildEdgesGroup(group: any, model: any, sceneSetup: any, width: number = 2.5): void {
+function rebuildEdgesGroup(group: any, scene: any, sceneSetup: any, width: number = 2.5): void {
   // Clear existing
   for (const child of [...group.children]) {
     group.remove(child);
     if (child.dispose) child.dispose();
   }
-  if (!model || !model.scene) return;
+  if (!scene) return;
 
   const N = 24;
   const EDGE_COLOR = 0x000000;
 
-  for (const surface of model.scene.surfaces) {
+  for (const surface of scene.surfaces) {
     for (const side of [0, 1, 2, 3]) {
       const bc = surface.getBoundingCurve(side);
       const pts: number[][] = [];
@@ -1801,14 +1800,13 @@ function rebuildEdgesGroup(group: any, model: any, sceneSetup: any, width: numbe
  * surfaces in the SAME SurfaceSet are skipped, so the result outlines the
  * silhouette of each set.
  */
-function rebuildBoundariesGroup(group: any, model: any, sceneSetup: any, width: number = 2.5): void {
+function rebuildBoundariesGroup(group: any, scene: any, sceneSetup: any, width: number = 2.5): void {
   for (const child of [...group.children]) {
     group.remove(child);
     if (child.dispose) child.dispose();
   }
-  if (!model || !model.scene) return;
+  if (!scene) return;
 
-  const scene = model.scene;
   const N = 24;
   const EDGE_COLOR = 0x000000;
 
