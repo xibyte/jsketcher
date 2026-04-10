@@ -1567,8 +1567,10 @@ export class SceneObject3D extends Group {
     if (this.model.refreshSceneEntity) {
       this.model.refreshSceneEntity();
     }
-    // Save directly via project service (bypasses craft pipeline)
-    this.ctx.projectService.scheduleSave();
+    // Save via the surfacing service's debounced autosave
+    if (this.ctx.surfacingService && this.ctx.surfacingService.scheduleSave) {
+      this.ctx.surfacingService.scheduleSave();
+    }
     // Notify the constraints panel in the object tree
     document.dispatchEvent(new CustomEvent('patch-cage-constraints-changed'));
   }

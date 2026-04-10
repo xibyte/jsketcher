@@ -37,7 +37,11 @@ export function SceneInlineObjectExplorer() {
   const persistAndRefresh = useCallback((model: MSurfacingScene) => {
     model.recompute();
     model.refreshSceneEntity();
-    ctx.projectService.scheduleSave();
+    const view = (model as any).ext?.view;
+    if (view && typeof view.rebuildAll === 'function') view.rebuildAll();
+    if ((ctx as any).surfacingService && (ctx as any).surfacingService.scheduleSave) {
+      (ctx as any).surfacingService.scheduleSave();
+    }
     document.dispatchEvent(new CustomEvent('patch-cage-constraint-deleted'));
     forceUpdate(n => n + 1);
   }, [ctx]);
