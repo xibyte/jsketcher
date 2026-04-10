@@ -1,15 +1,14 @@
 import React, {useState} from 'react';
-import {GeometricEntity} from './GeometricEntity';
-import {NurbsSurface} from './NurbsSurface/NurbsSurface.entity';
-import {BoundingCurve} from './BoundingCurve/BoundingCurve.entity';
-import {ControlPoint} from './ControlPoint/ControlPoint.entity';
-import {Vertex} from './Vertex/Vertex.entity';
-import {Line} from './Line/Line.entity';
-import {Cage} from './Cage/Cage.entity';
-import {NurbsCurve} from './NurbsCurve/NurbsCurve.entity';
-import {Group} from './Group/Group.entity';
-import {Param} from './Param';
-import type {Scene} from './Scene/Scene.entity';
+import {GeometricEntity} from '../../GeometricEntity';
+import {NurbsSurface} from '../../NurbsSurface/NurbsSurface.entity';
+import {BoundingCurve} from '../../BoundingCurve/BoundingCurve.entity';
+import {ControlPoint} from '../../ControlPoint/ControlPoint.entity';
+import {Vertex} from '../../Vertex/Vertex.entity';
+import {Line} from '../../Line/Line.entity';
+import {Cage} from '../../Cage/Cage.entity';
+import {NurbsCurve} from '../../NurbsCurve/NurbsCurve.entity';
+import {Group} from '../../Group/Group.entity';
+import type {Scene} from '../../Scene/Scene.entity';
 
 const SIDE_NAMES = ['bottom', 'right', 'top', 'left'];
 

@@ -1,62 +1,58 @@
 /**
- * SurfacingBundle: manages surfacing scene state directly, bypassing the craft pipeline.
- *
- * - Creates surfaces immediately (no wizard/operation flow)
- * - Persists scene state to project storage as 'surfacing' field
- * - Loads scene state on project load
+ * SurfacingBundle: holds a single Scene entity and its SceneObject3D view.
+ * No MObject wrapper, no craft pipeline, no viewSyncBundle indirection —
+ * the bundle owns the lifecycle directly.
  */
-import {MSurfacingScene} from './models/MSurfacingScene';
-import {PatchCage} from './models/Scene/Scene.entity';
+import * as SceneGraph from 'scene/sceneGraph';
+import {Scene} from './models/Scene/Scene.entity';
+import {SceneObject3D} from './models/Scene/Scene.object3d';
 import {createPatchPlane} from './primitives/plane';
 import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';
 import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction, ViewFlagBoundariesAction} from './actions/viewFlagActions';
 
 export interface SurfacingService {
-  readonly model: MSurfacingScene;
+  readonly scene: Scene | null;
+  readonly view: SceneObject3D | null;
   addPlane(width?: number, height?: number): void;
   addBox(sizeX?: number, sizeY?: number, sizeZ?: number): void;
   addCylinder(radius?: number, height?: number): void;
   save(): any;
   load(data: any): void;
-  refresh(): void;
+  scheduleSave(): void;
+  flushSave(): void;
 }
 
 export function activate(ctx: any) {
 
-  let currentModel: MSurfacingScene | null = null;
+  let scene: Scene | null = null;
+  let view: SceneObject3D | null = null;
 
-  function pushToModels() {
-    if (!currentModel) return;
-    const models = ctx.craftService.models$.value.filter(
-      (m: any) => !(m instanceof MSurfacingScene)
-    );
-    models.push(currentModel);
-    ctx.craftService.models$.next(models);
+  function ensureView(): void {
+    if (!scene || view) return;
+    view = new SceneObject3D(scene, ctx);
+    SceneGraph.addToGroup(ctx.services.cadScene.workGroup, view);
+    ctx.viewer.requestRender();
   }
 
-  function mergeCage(newCage: PatchCage) {
-    if (!currentModel) {
-      // First time: use the populated newCage as the model's scene directly
-      currentModel = new MSurfacingScene(newCage, 8);
-      pushToModels();
+  /** Merge a freshly-built Scene (from a primitive) into the current scene */
+  function mergeScene(newScene: Scene) {
+    if (!scene) {
+      scene = newScene;
+      ensureView();
     } else {
-      // Subsequent: merge patches / groups into the existing scene.
+      // Append surfaces and groups from the new scene into the existing one.
       // SurfaceSets are stored on the surface instances themselves —
       // pushing the surface preserves its surfaceSet reference automatically.
-      const cage = currentModel.cage;
-      const baseIdx = cage.patches.length;
-      for (const patch of newCage.patches) {
-        cage.patches.push(patch);
+      const baseIdx = scene.surfaces.length;
+      for (const surface of newScene.surfaces) {
+        scene.surfaces.push(surface);
       }
-      for (const g of newCage.groups) {
-        cage.createGroup(g.name, g.patchIndices.map(i => i + baseIdx));
+      for (const g of newScene.groups) {
+        scene.createGroup(g.name, g.patchIndices.map(i => i + baseIdx));
       }
-      currentModel.recompute();
-      currentModel.refreshSceneEntity();
-      // Trigger view rebuild on the existing SceneObject3D
-      const view = (currentModel as any).ext?.view;
-      if (view && typeof view.rebuildAll === 'function') {
+      scene.syncEntityGraph();
+      if (view) {
         view.rebuildAll();
         ctx.viewer.requestRender();
       }
@@ -65,48 +61,51 @@ export function activate(ctx: any) {
   }
 
   function addPlane(width = 100, height = 100) {
-    mergeCage(createPatchPlane(width, height));
+    mergeScene(createPatchPlane(width, height));
   }
 
   function addBox(sizeX = 100, sizeY = 100, sizeZ = 100) {
-    mergeCage(createPatchBox(sizeX, sizeY, sizeZ));
+    mergeScene(createPatchBox(sizeX, sizeY, sizeZ));
   }
 
   function addCylinder(radius = 50, height = 100) {
-    mergeCage(createPatchCylinder(radius, height));
+    mergeScene(createPatchCylinder(radius, height));
   }
 
   function save(): any {
-    if (!currentModel) return null;
+    if (!scene) return null;
     return {
-      cage: currentModel.serializeCage(),
-      tessResolution: currentModel.tessResolution,
+      scene: scene.serialize(),
+      tessResolution: scene.tessResolution,
     };
   }
 
-  function load(data: any) {
-    if (!data || !data.cage) return;
-    const cage = PatchCage.deserialize(data.cage);
-    currentModel = new MSurfacingScene(cage, data.tessResolution || 8);
-    pushToModels();
-  }
-
-  function refresh() {
-    if (currentModel) {
-      currentModel.recompute();
-      currentModel.refreshSceneEntity();
-      pushToModels();
+  function load(data: any): void {
+    if (!data) return;
+    // Tear down any existing view
+    if (view) {
+      SceneGraph.removeFromGroup(ctx.services.cadScene.workGroup, view);
+      view.dispose();
+      view = null;
     }
+    // Accept legacy 'cage' field too
+    const sceneData = data.scene || data.cage;
+    if (!sceneData) return;
+    scene = Scene.deserialize(sceneData);
+    scene.tessResolution = data.tessResolution || 8;
+    ensureView();
   }
 
   ctx.surfacingService = {
-    get model() { return currentModel; },
+    get scene() { return scene; },
+    get view() { return view; },
     addPlane,
     addBox,
     addCylinder,
     save,
     load,
-    refresh,
+    scheduleSave: () => scheduleSurfacingSave(),
+    flushSave: () => flushSave(),
   } as SurfacingService;
 
   // Register surfacing view flag actions
@@ -141,10 +140,6 @@ export function activate(ctx: any) {
       flushSave();
     }, AUTOSAVE_DELAY);
   }
-
-  // Expose on the service so other code (SceneObject3D, explorer) can trigger it
-  (ctx.surfacingService as any).scheduleSave = scheduleSurfacingSave;
-  (ctx.surfacingService as any).flushSave = flushSave;
 
   // Load surfacing state on startup
   try {

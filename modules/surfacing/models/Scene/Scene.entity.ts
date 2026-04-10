@@ -116,6 +116,9 @@ export class Scene extends GeometricEntity {
   groups: SurfaceGroup[] = [];
   tessResolution: number = 8;
 
+  /** Slot for the live view (SceneObject3D), set when the view is constructed */
+  ext: any = {};
+
   /** Registered constraint enforcers called on every vertex move */
   private constraintEnforcers: ((scene: Scene, v: Vertex) => void)[] = [];
 
@@ -130,6 +133,24 @@ export class Scene extends GeometricEntity {
 
   set patches(value: NurbsSurface[]) {
     this.surfaces = value;
+  }
+
+  /** Self-reference so legacy code that says model.cage still works */
+  get cage(): Scene {
+    return this;
+  }
+
+  /** No-op — tessellation is per-surface and rebuilt by the view directly */
+  recompute(): void { /* no-op */ }
+
+  /** Backward-compat alias for syncEntityGraph */
+  refreshSceneEntity(): void {
+    this.syncEntityGraph();
+  }
+
+  /** Backward-compat alias for serialize */
+  serializeCage(): SerializedScene {
+    return this.serialize();
   }
 
   registerConstraintEnforcer(fn: (scene: Scene, v: Vertex) => void): void {
