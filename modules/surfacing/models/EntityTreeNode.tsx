@@ -188,7 +188,7 @@ function getEntityInfo(entity: GeometricEntity): EntityInfo {
     return {label: `Group: ${entity.name || entity.id}`, detail: `${entity.children.length}`, icon: '\u25A4', color: '#fcb', bold: true};
   }
   if (entity instanceof NurbsSurface) {
-    return {label: entity.id, detail: entity.rational ? 'rational' : '', icon: '\u25A3', color: '#8cf'};
+    return {label: entity.id, icon: '\u25A3', color: '#8cf'};
   }
   if (entity instanceof BoundingCurve) {
     return {label: `${SIDE_NAMES[entity.side]} edge`, detail: entity.arcConstraint ? '\u25CF arc' : '', icon: '\u2500', color: '#adf'};
