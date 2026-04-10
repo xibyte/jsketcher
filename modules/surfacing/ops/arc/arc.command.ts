@@ -1,4 +1,4 @@
-import {PatchCage, CageVertex, ArcConstraint, ArcMode} from '../../PatchCage';
+import {PatchCage, CageVertex, ArcConstraint, ArcMode} from '../../models/Scene/PatchCageCore';
 import {Vec3} from '../../patchCageTypes';
 import {add as vadd, sub as vsub, mul as vscale, lerp as vlerp, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
 

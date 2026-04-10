@@ -13,7 +13,7 @@ import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
 import ScalableLine from 'scene/objects/scalableLine';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
-import {CageVertex, NurbsPatch} from '../../PatchCage';
+import {CageVertex, NurbsPatch} from '../PatchCageCore';
 
 export const SCENE_OBJECT3D_MARKER = 'SurfacingSceneObject3D';
 
