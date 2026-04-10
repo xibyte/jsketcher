@@ -77,12 +77,13 @@ export function sceneFromPatchCage(cage: any): Scene {
   // Organize surfaces into groups
   if (cage.groups && cage.groups.length > 0) {
     for (const g of cage.groups) {
+      // Skip groups with no valid patches
+      const validIndices = g.patchIndices.filter(idx => idx < allSurfaces.length);
+      if (validIndices.length === 0) continue;
       const group = new Group(g.name);
       scene.addChild(group);
-      for (const idx of g.patchIndices) {
-        if (idx < allSurfaces.length) {
-          group.addChild(allSurfaces[idx]);
-        }
+      for (const idx of validIndices) {
+        group.addChild(allSurfaces[idx]);
       }
     }
     // Surfaces not in any group go into an "Ungrouped" group
@@ -98,7 +99,7 @@ export function sceneFromPatchCage(cage: any): Scene {
       scene.addChild(ug);
       for (const s of ungrouped) ug.addChild(s);
     }
-  } else {
+  } else if (allSurfaces.length > 0) {
     // No groups defined — put everything in one default group
     const defaultGroup = new Group('Default');
     scene.addChild(defaultGroup);
