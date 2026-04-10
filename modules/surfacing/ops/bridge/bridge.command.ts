@@ -39,7 +39,10 @@ export function bridgeSurface(
   // Bridge inherits the source patch's surface set
   if (options.sourcePatchIdx !== undefined) {
     const sourceSet = scene.surfaces[options.sourcePatchIdx]?.surfaceSet;
-    if (sourceSet) sourceSet.add(bridgePatch);
+    if (sourceSet) {
+      bridgePatch.surfaceSet = sourceSet;
+      sourceSet.surfaces.add(bridgePatch);
+    }
   }
   scene.surfaces.push(bridgePatch);
   const group = options.sourcePatchIdx !== undefined ? scene.findGroupOfPatch(options.sourcePatchIdx) : null;

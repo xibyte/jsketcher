@@ -132,7 +132,10 @@ export function fillHole(scene: Scene, loop: {patchIdx: number, side: number, ve
 
   if (!fillPatch) return false;
 
-  if (sourceSet) sourceSet.add(fillPatch);
+  if (sourceSet) {
+    fillPatch.surfaceSet = sourceSet;
+    sourceSet.surfaces.add(fillPatch);
+  }
   scene.surfaces.push(fillPatch);
   scene.notifyPush(1, group);
   return true;

@@ -156,7 +156,10 @@ function mirrorSinglePatch(
   }
 
   // Mirrored patch joins the source's surface set
-  if (patch.surfaceSet) patch.surfaceSet.add(mp);
+  if (patch.surfaceSet) {
+    mp.surfaceSet = patch.surfaceSet;
+    patch.surfaceSet.surfaces.add(mp);
+  }
 
   scene.surfaces.push(mp);
   const mirrorIdx = scene.surfaces.length - 1;

@@ -54,14 +54,21 @@ export function subdividePatch(scene: Scene, patchIdx: number): void {
       for (let r = 0; r < 4; r++) {
         subGrid.push([full[r0 + r][c0], full[r0 + r][c0 + 1], full[r0 + r][c0 + 2], full[r0 + r][c0 + 3]]);
       }
-      result.push(new NurbsSurface(subGrid));
+      const sub = new NurbsSurface(subGrid);
+      // Inherit the source surface's SurfaceSet so all 9 sub-patches
+      // remain part of the same logical face.
+      if (sourceSet) {
+        sub.surfaceSet = sourceSet;
+        sourceSet.surfaces.add(sub);
+      }
+      result.push(sub);
     }
   }
 
-  // Propagate the surface set to all 9 sub-patches
+  // Drop the original from its set — its replacements are already in.
   if (sourceSet) {
-    sourceSet.remove(sourcePatch);
-    for (const sub of result) sourceSet.add(sub);
+    sourceSet.surfaces.delete(sourcePatch);
+    sourcePatch.surfaceSet = null;
   }
 
   scene.surfaces.splice(patchIdx, 1, ...result);

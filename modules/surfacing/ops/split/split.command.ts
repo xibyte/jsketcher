@@ -162,11 +162,15 @@ function splitSinglePatchShared(
     rightPatch = new NurbsSurface(topGrid, cloneWeights(patch.weights));
   }
 
-  // Propagate the surface set: remove the source, add both halves
+  // Propagate the surface set: assign directly so both halves
+  // remain part of the same logical face.
   if (sourceSet) {
-    sourceSet.remove(patch);
-    sourceSet.add(leftPatch);
-    sourceSet.add(rightPatch);
+    sourceSet.surfaces.delete(patch);
+    patch.surfaceSet = null;
+    leftPatch.surfaceSet = sourceSet;
+    rightPatch.surfaceSet = sourceSet;
+    sourceSet.surfaces.add(leftPatch);
+    sourceSet.surfaces.add(rightPatch);
   }
 
   scene.surfaces.splice(patchIdx, 1, leftPatch, rightPatch);
