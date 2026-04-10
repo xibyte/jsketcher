@@ -3,6 +3,7 @@ import {MShell} from 'cad/model/mshell';
 import {MDatum} from 'cad/model/mdatum';
 import {MOpenFaceShell} from "cad/model/mopenFace";
 import {MPatchCage} from "cad/model/mpatchcage";
+import {MSurfacingScene} from "surfacing/models/MSurfacingScene";
 import {useStream, useStreamWithPatcher} from "ui/effects";
 import {MObject} from "cad/model/mobject";
 import {SceneInlineDelineation, SceneInlineSection} from "ui/components/SceneInlineSection";
@@ -41,6 +42,8 @@ export function SceneInlineObjectExplorer() {
       </ModelSection>
     } else if (m instanceof MDatum) {
       return <ModelSection model={m} key={m.id} controlVisibility/>;
+    } else if (m instanceof MSurfacingScene) {
+      return <SurfacingSceneSection model={m} key={m.id} />;
     } else if (m instanceof MPatchCage) {
       return <PatchCageSection patchCage={m} key={m.id} />;
     } else {
@@ -125,6 +128,23 @@ function Section(props) {
     </SceneInlineDelineation>
     {expanded && props.children}
   </>;
+}
+
+function SurfacingSceneSection({model}: {model: any}) {
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    const handler = () => {
+      model.refreshSceneEntity();
+      forceUpdate(n => n + 1);
+    };
+    document.addEventListener('patch-cage-constraints-changed', handler);
+    return () => document.removeEventListener('patch-cage-constraints-changed', handler);
+  }, [model]);
+
+  return <ModelSection model={model} controlVisibility>
+    <EntityTreeNode entity={model.scene} />
+  </ModelSection>;
 }
 
 function PatchCageSection({patchCage}) {

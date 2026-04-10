@@ -9,7 +9,8 @@ export enum EntityKind {
   DATUM_AXIS = 'datumAxis',
   LOOP = 'loop',
   SUBD = 'subd',
-  PATCH_CAGE = 'patchCage'
+  PATCH_CAGE = 'patchCage',
+  SURFACING_SCENE = 'surfacingScene'
 }
 
 //Backward comp.
@@ -23,4 +24,5 @@ export const DATUM_AXIS = EntityKind.DATUM_AXIS;
 export const LOOP = EntityKind.LOOP;
 export const SUBD = EntityKind.SUBD;
 export const PATCH_CAGE = EntityKind.PATCH_CAGE;
+export const SURFACING_SCENE = EntityKind.SURFACING_SCENE;
 
