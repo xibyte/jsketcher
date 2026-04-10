@@ -42,7 +42,7 @@ export class NurbsSurface extends GeometricEntity {
   mirrorOf: MirrorConstraintData | null = null;
 
   constructor(cp: ControlPoint[][]) {
-    super(generateEntityId('NS'));
+    super(generateEntityId('S'));
     this.cp = cp;
     this.rational = cp.some(row => row.some(c => c.weight.value !== 1));
 
