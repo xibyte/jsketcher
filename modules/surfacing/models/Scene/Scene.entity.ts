@@ -10,7 +10,7 @@
  * by moveVertex(). All ops in surfacing/ops/ operate on Scene + indices.
  */
 import type {Vec3} from 'math/vec';
-import {GeometricEntity, generateEntityId} from '../GeometricEntity';
+import {GeometricEntity, generateEntityId, reserveEntityId} from '../GeometricEntity';
 import {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import {Vertex} from '../Vertex/Vertex.entity';
 import {Group} from '../Group/Group.entity';
@@ -72,8 +72,14 @@ export type PatchGroup = SurfaceGroup;
 // =========================================================================
 
 export interface SerializedScene {
+  /** Stable id of the Scene itself */
+  id?: string;
+  /** Vertex positions paired with their stable ids */
   vertices: Vec3[];
+  vertexIds?: string[];
   patches: {
+    /** Stable id of the surface */
+    id?: string;
     grid: number[][];
     weights: number[][];
     rational: boolean;
@@ -122,8 +128,8 @@ export class Scene extends GeometricEntity {
   /** Registered constraint enforcers called on every vertex move */
   private constraintEnforcers: ((scene: Scene, v: Vertex) => void)[] = [];
 
-  constructor() {
-    super(generateEntityId('SC'));
+  constructor(id?: string) {
+    super(id ?? generateEntityId('SC'));
   }
 
   /** Backward-compat alias for surfaces */
@@ -417,6 +423,7 @@ export class Scene extends GeometricEntity {
   serialize(): SerializedScene {
     const vertexMap = new Map<Vertex, number>();
     const vertices: Vec3[] = [];
+    const vertexIds: string[] = [];
 
     for (const p of this.surfaces) {
       for (const row of p.grid) {
@@ -424,12 +431,14 @@ export class Scene extends GeometricEntity {
           if (!vertexMap.has(v)) {
             vertexMap.set(v, vertices.length);
             vertices.push([...v.position] as Vec3);
+            vertexIds.push(v.id);
           }
         }
       }
     }
 
     const patches = this.surfaces.map(p => ({
+      id: p.id,
       grid: p.grid.map(row => row.map(v => vertexMap.get(v)!)),
       weights: p.weights.map(row => [...row]),
       rational: p.rational,
@@ -469,24 +478,33 @@ export class Scene extends GeometricEntity {
       }
     }
 
-    return {vertices, patches, arcConstraints, mirrorConstraints, groups, surfaceSets};
+    return {id: this.id, vertices, vertexIds, patches, arcConstraints, mirrorConstraints, groups, surfaceSets};
   }
 
   static deserialize(data: SerializedScene): Scene {
-    const scene = new Scene();
-    const verts = data.vertices.map(p => new Vertex(p[0], p[1], p[2]));
+    // Restore the Scene's own id (and bump the counter past it)
+    if (data.id) reserveEntityId(data.id);
+    const scene = new Scene(data.id);
+
+    // Restore vertices with their stable ids
+    const verts = data.vertices.map((p, i) => {
+      const id = data.vertexIds && data.vertexIds[i];
+      if (id) reserveEntityId(id);
+      return new Vertex(p[0], p[1], p[2], id);
+    });
 
     // Build SurfaceSet instances first; map saved id → live instance
     const setById = new Map<number, SurfaceSet>();
     if (data.surfaceSets) {
       for (const sd of data.surfaceSets) {
-        setById.set(sd.id, new SurfaceSet(sd.name));
+        setById.set(sd.id, new SurfaceSet(sd.name, sd.id));
       }
     }
 
     for (const pd of data.patches) {
       const grid = pd.grid.map(row => row.map(idx => verts[idx]));
-      const surface = new NurbsSurface(grid, pd.weights.map(row => [...row]));
+      if (pd.id) reserveEntityId(pd.id);
+      const surface = new NurbsSurface(grid, pd.weights.map(row => [...row]), pd.id);
       surface.rational = pd.rational;
       if (pd.surfaceSetId !== undefined) {
         const set = setById.get(pd.surfaceSetId);

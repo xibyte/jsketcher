@@ -10,6 +10,21 @@ export function resetEntityIds(): void {
   nextEntityId = 0;
 }
 
+/**
+ * Bump the global entity ID counter past the numeric part of the given id,
+ * so future generateEntityId() calls won't collide with restored entities.
+ * Pass an id like 'V:42' or 'S:7'.
+ */
+export function reserveEntityId(id: string): void {
+  if (!id) return;
+  const colon = id.lastIndexOf(':');
+  if (colon < 0) return;
+  const n = parseInt(id.substring(colon + 1), 10);
+  if (!isNaN(n) && n >= nextEntityId) {
+    nextEntityId = n + 1;
+  }
+}
+
 export abstract class GeometricEntity {
 
   readonly id: string;

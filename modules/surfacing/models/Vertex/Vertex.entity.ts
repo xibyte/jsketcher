@@ -9,8 +9,8 @@ export class Vertex extends GeometricEntity {
 
   position: Vec3;
 
-  constructor(x: number, y: number, z: number) {
-    super(generateEntityId('V'));
+  constructor(x: number, y: number, z: number, id?: string) {
+    super(id ?? generateEntityId('V'));
     this.position = [x, y, z];
   }
 
