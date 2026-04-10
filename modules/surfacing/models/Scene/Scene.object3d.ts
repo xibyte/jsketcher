@@ -27,8 +27,9 @@ const CAGE_LINE_COLOR = 0x1a1a1a;
 const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, top, left
 const EDGE_SELECTED_COLOR = 0xffffff;
 const HANDLE_SIZE = 3.5;
-const EDGE_WIDTH_NORMAL = 2.5;
-const EDGE_WIDTH_THICK = 5;
+const EDGE_WIDTH = 2.5;
+const MESH_WIDTH_NORMAL = 1.5;
+const MESH_WIDTH_THICK = 3;
 
 // Per-surface base & hover colors
 const SURFACE_BASE_COLOR = 0xd0d0d0;       // silver
@@ -65,13 +66,14 @@ export class SceneObject3D extends Group {
     // Backward-compat alias used by other code paths
     this.solidMesh = this.surfacesGroup;
 
-    // Wireframe (non-pickable) — UV grid only, no triangle diagonals
-    this.wireframeGeometry = buildGridWireframe(patchCage);
-    this.wireframeMaterial = new LineBasicMaterial({color: 0x1860c0, transparent: true, opacity: 0.55});
-    this.wireframeMesh = new LineSegments(this.wireframeGeometry, this.wireframeMaterial);
+    // Wireframe (non-pickable) — UV grid only, no triangle diagonals.
+    // Built with LineSegments2 so we can actually control the line width.
+    this.wireframeMesh = SceneGraph.createGroup();
     this.wireframeMesh.visible = false;
-    this.wireframeMesh.raycast = () => {}; // disable raycast
+    this.wireframeMesh.raycast = () => {};
     this.add(this.wireframeMesh);
+    this._meshWidth = surfacingViewFlags$.value.faces ? MESH_WIDTH_NORMAL : MESH_WIDTH_THICK;
+    rebuildWireframeGroup(this.wireframeMesh, patchCage, ctx.viewer.sceneSetup, this._meshWidth);
 
     // Bounding curves (edges) — shown when 'edges' flag is enabled.
     // Built as a Group of ScalableLine instances for true thick lines.
@@ -79,8 +81,7 @@ export class SceneObject3D extends Group {
     this.edgesGroup.visible = false;
     this.edgesGroup.raycast = () => {};
     this.add(this.edgesGroup);
-    this._edgesWidth = surfacingViewFlags$.value.faces ? EDGE_WIDTH_NORMAL : EDGE_WIDTH_THICK;
-    rebuildEdgesGroup(this.edgesGroup, patchCage, ctx.viewer.sceneSetup, this._edgesWidth);
+    rebuildEdgesGroup(this.edgesGroup, patchCage, ctx.viewer.sceneSetup, EDGE_WIDTH);
 
     // Boundaries — only edges between SurfaceSets (set silhouette).
     // Hides edges shared between surfaces in the same set.
@@ -88,7 +89,7 @@ export class SceneObject3D extends Group {
     this.boundariesGroup.visible = false;
     this.boundariesGroup.raycast = () => {};
     this.add(this.boundariesGroup);
-    rebuildBoundariesGroup(this.boundariesGroup, patchCage, ctx.viewer.sceneSetup, this._edgesWidth);
+    rebuildBoundariesGroup(this.boundariesGroup, patchCage, ctx.viewer.sceneSetup, EDGE_WIDTH);
 
     // Hover highlight group
     this.hoverGroup = SceneGraph.createGroup();
@@ -241,12 +242,12 @@ export class SceneObject3D extends Group {
       this.wireframeMesh.visible = flags.mesh;
       this.edgesGroup.visible = flags.edges;
       this.boundariesGroup.visible = flags.boundaries;
-      // Use thicker edges when faces are off so they stand out more
-      const desiredWidth = flags.faces ? EDGE_WIDTH_NORMAL : EDGE_WIDTH_THICK;
-      if (this._edgesWidth !== desiredWidth) {
-        this._edgesWidth = desiredWidth;
-        rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup, desiredWidth);
-        rebuildBoundariesGroup(this.boundariesGroup, this.model, this.ctx.viewer.sceneSetup, desiredWidth);
+      // Make the mesh wireframe slightly thicker when faces are off,
+      // so the tiny lines remain visible without the shaded backdrop.
+      const desiredMeshWidth = flags.faces ? MESH_WIDTH_NORMAL : MESH_WIDTH_THICK;
+      if (this._meshWidth !== desiredMeshWidth) {
+        this._meshWidth = desiredMeshWidth;
+        rebuildWireframeGroup(this.wireframeMesh, this.model, this.ctx.viewer.sceneSetup, desiredMeshWidth);
       }
       ctx.viewer.requestRender();
     }));
@@ -816,13 +817,9 @@ export class SceneObject3D extends Group {
   rebuildAll() {
     this._buildSurfaceMeshes();
 
-    const wg = buildGridWireframe(this.model);
-    this.wireframeMesh.geometry.dispose();
-    this.wireframeMesh.geometry = wg;
-    this.wireframeGeometry = wg;
-
-    rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup, this._edgesWidth);
-    rebuildBoundariesGroup(this.boundariesGroup, this.model, this.ctx.viewer.sceneSetup, this._edgesWidth);
+    rebuildWireframeGroup(this.wireframeMesh, this.model, this.ctx.viewer.sceneSetup, this._meshWidth);
+    rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
+    rebuildBoundariesGroup(this.boundariesGroup, this.model, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
 
     if (this.selectedPatchIdx >= 0) {
       this.buildSubcage(this.selectedPatchIdx);
@@ -1665,7 +1662,11 @@ export class SceneObject3D extends Group {
       if (m.geometry) m.geometry.dispose();
       if (m.material) m.material.dispose();
     }
-    this.wireframeMaterial.dispose(); this.wireframeGeometry.dispose();
+    if (this.wireframeMesh) {
+      for (const child of [...this.wireframeMesh.children]) {
+        if (child.dispose) child.dispose();
+      }
+    }
     if (this.edgesGroup) {
       for (const child of [...this.edgesGroup.children]) {
         if (child.dispose) child.dispose();
@@ -1709,20 +1710,24 @@ function buildGeom(mesh) {
 }
 
 /**
- * Build a wireframe geometry showing the UV tessellation grid (rectangles only,
- * no triangle diagonals). For each surface, evaluates the (n+1)×(n+1) grid of
- * surface points and emits horizontal + vertical line segments.
+ * Rebuild the UV-grid wireframe Group with ScalableLine instances.
+ * Each row/column of each surface becomes one polyline so we get
+ * proper thick lines via LineMaterial (LineBasicMaterial.linewidth
+ * is locked to 1px on most WebGL platforms).
  */
-function buildGridWireframe(model: any): BufferGeometry {
-  const geo = new BufferGeometry();
-  if (!model || !model.scene) return geo;
+function rebuildWireframeGroup(group: any, model: any, sceneSetup: any, width: number = 1.5): void {
+  for (const child of [...group.children]) {
+    group.remove(child);
+    if (child.dispose) child.dispose();
+  }
+  if (!model || !model.scene) return;
+
   const scene = model.scene;
   const resolution = model.tessResolution || 8;
-  const positions: number[] = [];
+  const COLOR = 0x1860c0;
 
   for (const surface of scene.surfaces) {
     const n = resolution;
-    // Sample (n+1)×(n+1) grid of surface points
     const grid: number[][][] = [];
     for (let j = 0; j <= n; j++) {
       const row: number[][] = [];
@@ -1732,24 +1737,27 @@ function buildGridWireframe(model: any): BufferGeometry {
       }
       grid.push(row);
     }
-    // Horizontal segments (along U): for each row, n segments
+    // Horizontal isolines (along U): one polyline per row
     for (let j = 0; j <= n; j++) {
-      for (let i = 0; i < n; i++) {
-        const a = grid[j][i], b = grid[j][i + 1];
-        positions.push(a[0], a[1], a[2], b[0], b[1], b[2]);
-      }
+      const line = new ScalableLine(sceneSetup, grid[j], width, COLOR);
+      line.material.transparent = true;
+      line.material.opacity = 0.7;
+      line.renderOrder = 1;
+      line.raycast = () => {};
+      group.add(line);
     }
-    // Vertical segments (along V): for each column, n segments
+    // Vertical isolines (along V): one polyline per column
     for (let i = 0; i <= n; i++) {
-      for (let j = 0; j < n; j++) {
-        const a = grid[j][i], b = grid[j + 1][i];
-        positions.push(a[0], a[1], a[2], b[0], b[1], b[2]);
-      }
+      const col: number[][] = [];
+      for (let j = 0; j <= n; j++) col.push(grid[j][i]);
+      const line = new ScalableLine(sceneSetup, col, width, COLOR);
+      line.material.transparent = true;
+      line.material.opacity = 0.7;
+      line.renderOrder = 1;
+      line.raycast = () => {};
+      group.add(line);
     }
   }
-
-  geo.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
-  return geo;
 }
 
 /**
