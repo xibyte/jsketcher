@@ -123,5 +123,7 @@ export function createPatchCylinder(
     }
   }
 
+  const allIndices = Array.from({length: cage.patches.length}, (_, i) => i);
+  cage.createGroup('Cylinder', allIndices);
   return cage;
 }

@@ -80,5 +80,6 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Pat
     left: [v010, e37_1, e37_2, v011],
   })));
 
+  cage.createGroup('Box', [0, 1, 2, 3, 4, 5]);
   return cage;
 }

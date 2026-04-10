@@ -10,7 +10,7 @@ export function bridgeSurface(
   cage: PatchCage,
   edge1Verts: [CageVertex, CageVertex, CageVertex, CageVertex],
   edge2Verts: [CageVertex, CageVertex, CageVertex, CageVertex],
-  options: {flipped?: boolean, g1?: boolean} = {}
+  options: {flipped?: boolean, g1?: boolean, sourcePatchIdx?: number} = {}
 ): number {
   let e2 = edge2Verts;
   if (options.flipped) {
@@ -36,6 +36,8 @@ export function bridgeSurface(
   }
 
   cage.patches.push(new NurbsPatch(grid));
+  const group = options.sourcePatchIdx !== undefined ? cage.findGroupOfPatch(options.sourcePatchIdx) : null;
+  cage.notifyPush(1, group);
   const newIdx = cage.patches.length - 1;
 
   if (options.g1) {

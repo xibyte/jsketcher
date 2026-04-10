@@ -9,6 +9,7 @@ import {add as vadd, sub as vsub, mul as vscale, normalize as vnormalize, distan
  * Returns indices of all newly created mirror patches.
  */
 export function mirrorAcrossEdge(cage: PatchCage, patchIdx: number, side: number): number[] {
+  const group = cage.findGroupOfPatch(patchIdx);
   const patch = cage.patches[patchIdx];
   const edgeVerts = patch.getEdgeVertices(side);
 
@@ -40,6 +41,7 @@ export function mirrorAcrossEdge(cage: PatchCage, patchIdx: number, side: number
   // Connect shared edges between adjacent mirror patches
   stitchMirrorEdges(cage, result);
 
+  cage.notifyPush(result.length, group);
   return result;
 }
 
@@ -292,6 +294,7 @@ export function removeMirrorConstraint(cage: PatchCage, mc: MirrorConstraint, de
     const pi = cage.patches.indexOf(cage.patches[mc.mirrorPatchIdx]);
     if (pi >= 0) {
       cage.patches.splice(pi, 1);
+      cage.notifySplice(pi, 1, 0);
       // Re-index all constraints that reference patches after the deleted one
       for (const m of cage.mirrorConstraints) {
         if (m.sourcePatchIdx > pi) m.sourcePatchIdx--;

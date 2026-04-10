@@ -126,6 +126,7 @@ function splitSinglePatchShared(
       new NurbsPatch(leftGrid, cloneWeights(patch.weights)),
       new NurbsPatch(rightGrid, cloneWeights(patch.weights))
     );
+    cage.notifySplice(patchIdx, 1, 2);
   } else {
     const bottomGrid: CageVertex[][] = [[], [], [], []];
     const topGrid: CageVertex[][] = [[], [], [], []];
@@ -161,5 +162,6 @@ function splitSinglePatchShared(
       new NurbsPatch(bottomGrid, cloneWeights(patch.weights)),
       new NurbsPatch(topGrid, cloneWeights(patch.weights))
     );
+    cage.notifySplice(patchIdx, 1, 2);
   }
 }

@@ -7,6 +7,7 @@ import {Vertex} from './Vertex/Vertex.entity';
 import {Line} from './Line/Line.entity';
 import {Cage} from './Cage/Cage.entity';
 import {NurbsCurve} from './NurbsCurve/NurbsCurve.entity';
+import {Group} from './Group/Group.entity';
 import {Param} from './Param';
 import type {Scene} from './Scene/Scene.entity';
 
@@ -91,8 +92,20 @@ function getChildEntries(entity: GeometricEntity): ChildEntry[] {
 
   if (isScene(entity)) {
     const scene = entity as Scene;
-    for (let i = 0; i < scene.surfaces.length; i++) {
-      entries.push({key: `s${i}`, entity: scene.surfaces[i]});
+    // Show groups first, then ungrouped surfaces
+    const groups = scene.children.filter(c => c instanceof Group);
+    if (groups.length > 0) {
+      for (let i = 0; i < groups.length; i++) {
+        entries.push({key: `g${i}`, entity: groups[i]});
+      }
+    } else {
+      for (let i = 0; i < scene.surfaces.length; i++) {
+        entries.push({key: `s${i}`, entity: scene.surfaces[i]});
+      }
+    }
+  } else if (entity instanceof Group) {
+    for (let i = 0; i < entity.children.length; i++) {
+      entries.push({key: `c${i}`, entity: entity.children[i]});
     }
   } else if (entity instanceof NurbsSurface) {
     // Bounding curves
@@ -151,6 +164,9 @@ function getEntityInfo(entity: GeometricEntity): EntityInfo {
   if (isScene(entity)) {
     const scene = entity as Scene;
     return {label: 'Scene', detail: `${scene.surfaces.length} surfaces`, icon: '\u25A6', color: '#eee', bold: true};
+  }
+  if (entity instanceof Group) {
+    return {label: entity.name || 'Group', detail: `${entity.children.length} items`, icon: '\u25A4', color: '#fcb', bold: true};
   }
   if (entity instanceof NurbsSurface) {
     return {label: entity.id, detail: entity.rational ? 'rational' : '', icon: '\u25A3', color: '#8cf'};

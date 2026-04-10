@@ -6,6 +6,7 @@ import {mul as vscale, lerp as vlerp} from 'math/vec';
  * and create 4 wall patches to maintain watertightness.
  */
 export function extrudePatch(cage: PatchCage, patchIdx: number, distance: number): void {
+  const group = cage.findGroupOfPatch(patchIdx);
   const patch = cage.patches[patchIdx];
   const normal = patch.normal(0.5, 0.5);
   const offset = vscale(normal, distance);
@@ -75,4 +76,5 @@ export function extrudePatch(cage: PatchCage, patchIdx: number, distance: number
 
     cage.patches.push(new NurbsPatch(wallGrid));
   }
+  cage.notifyPush(4, group);
 }

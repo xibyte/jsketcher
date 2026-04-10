@@ -95,6 +95,7 @@ export interface SerializedPatchCage {
     planeNormal: Vec3;
     cpPairs: {sourceVertexIdx: number, mirrorVertexIdx: number}[];
   }[];
+  groups?: {name: string, patchIndices: number[]}[];
 }
 
 /**
@@ -193,10 +194,61 @@ export class NurbsPatch {
 // Patch Cage — the container
 // =========================================================================
 
+export interface PatchGroup {
+  name: string;
+  patchIndices: number[];
+}
+
 export class PatchCage {
   patches: NurbsPatch[] = [];
   arcConstraints: ArcConstraint[] = [];
   mirrorConstraints: MirrorConstraint[] = [];
+  groups: PatchGroup[] = [];
+
+  /** Create a named group containing the given patch indices */
+  createGroup(name: string, patchIndices: number[]): PatchGroup {
+    const group: PatchGroup = {name, patchIndices: [...patchIndices]};
+    this.groups.push(group);
+    return group;
+  }
+
+  /** Find the group that contains a given patch index */
+  findGroupOfPatch(patchIdx: number): PatchGroup | null {
+    for (const g of this.groups) {
+      if (g.patchIndices.includes(patchIdx)) return g;
+    }
+    return null;
+  }
+
+  /** Notify groups that a patch was replaced by splice (old index removed, new indices inserted) */
+  notifySplice(oldIdx: number, removedCount: number, insertedCount: number): void {
+    for (const g of this.groups) {
+      const newIndices: number[] = [];
+      for (const idx of g.patchIndices) {
+        if (idx >= oldIdx && idx < oldIdx + removedCount) {
+          // This patch was removed — add the replacement indices
+          for (let j = 0; j < insertedCount; j++) {
+            newIndices.push(oldIdx + j);
+          }
+        } else if (idx >= oldIdx + removedCount) {
+          // Shift indices after the splice point
+          newIndices.push(idx - removedCount + insertedCount);
+        } else {
+          newIndices.push(idx);
+        }
+      }
+      g.patchIndices = newIndices;
+    }
+  }
+
+  /** Notify groups that patches were pushed (appended) and should join a specific group */
+  notifyPush(count: number, targetGroup: PatchGroup | null): void {
+    if (!targetGroup) return;
+    const startIdx = this.patches.length - count;
+    for (let i = 0; i < count; i++) {
+      targetGroup.patchIndices.push(startIdx + i);
+    }
+  }
 
   /** Registered constraint enforcers called on every vertex move */
   private constraintEnforcers: ((cage: PatchCage, v: CageVertex) => void)[] = [];
@@ -416,7 +468,9 @@ export class PatchCage {
       })),
     }));
 
-    return {vertices, patches, arcConstraints, mirrorConstraints};
+    const groups = this.groups.map(g => ({name: g.name, patchIndices: [...g.patchIndices]}));
+
+    return {vertices, patches, arcConstraints, mirrorConstraints, groups};
   }
 
   static deserialize(data: SerializedPatchCage): PatchCage {
@@ -454,6 +508,12 @@ export class PatchCage {
             mirror: verts[pair.mirrorVertexIdx],
           })),
         });
+      }
+    }
+
+    if (data.groups) {
+      for (const gd of data.groups) {
+        cage.createGroup(gd.name, gd.patchIndices);
       }
     }
 

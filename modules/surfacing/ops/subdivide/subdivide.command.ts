@@ -57,4 +57,5 @@ export function subdividePatch(cage: PatchCage, patchIdx: number): void {
   }
 
   cage.patches.splice(patchIdx, 1, ...result);
+  cage.notifySplice(patchIdx, 1, result.length);
 }
