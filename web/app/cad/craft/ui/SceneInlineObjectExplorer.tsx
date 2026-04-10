@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {MShell} from 'cad/model/mshell';
 import {MDatum} from 'cad/model/mdatum';
 import {MOpenFaceShell} from "cad/model/mopenFace";
@@ -12,6 +12,8 @@ import Fa from "ui/components/Fa";
 import {AiOutlineEye, AiOutlineEyeInvisible} from "react-icons/ai";
 import {ModelButtonBehavior} from "cad/craft/ui/ModelButtonBehaviour";
 import {ModelAttributes} from "cad/attributes/attributesService";
+import {EntityTreeNode} from "surfacing/models/EntityTreeNode";
+import {sceneFromPatchCage} from "surfacing/models/Scene/fromPatchCage";
 
 
 export function SceneInlineObjectExplorer() {
@@ -125,10 +127,8 @@ function Section(props) {
   </>;
 }
 
-const sideNames = ['Bottom', 'Right', 'Top', 'Left'];
-
 function PatchCageSection({patchCage}) {
-  const [, forceUpdate] = useState(0);
+  const [revision, forceUpdate] = useState(0);
 
   useEffect(() => {
     const handler = () => forceUpdate(n => n + 1);
@@ -136,57 +136,14 @@ function PatchCageSection({patchCage}) {
     return () => document.removeEventListener('patch-cage-constraints-changed', handler);
   }, []);
 
-  const cage = patchCage.cage;
-  const hasConstraints = cage.arcConstraints.length > 0 || cage.mirrorConstraints.length > 0;
-
-  const deleteArc = (idx: number) => {
-    const c = cage.arcConstraints[idx];
-    if (c.mode === 'rational' && c.patchSide) {
-      cage.patches[c.patchSide.patchIdx].rational = false;
-    }
-    cage.arcConstraints.splice(idx, 1);
-    document.dispatchEvent(new CustomEvent('patch-cage-constraint-deleted'));
-  };
-
-  const deleteMirror = (idx: number) => {
-    const mc = cage.mirrorConstraints[idx];
-    cage.removeMirrorConstraint(mc, true);
-    document.dispatchEvent(new CustomEvent('patch-cage-constraint-deleted'));
-  };
+  const sceneEntity = useMemo(
+    () => sceneFromPatchCage(patchCage.cage),
+    [patchCage.cage, revision]
+  );
 
   return <ModelSection model={patchCage} controlVisibility>
-    <Section label={`${cage.patches.length} patches`} defaultCollapsed />
-    {hasConstraints && <Section label='constraints'>
-      {cage.arcConstraints.map((c, i) => (
-        <ConstraintItem
-          key={'arc-' + i}
-          label={`Arc ${Math.round(c.angle)}° r=${Math.round(c.radius * 1e3) / 1e3} (${c.mode})${c.patchSide ? ` — ${sideNames[c.patchSide.side]}, P${c.patchSide.patchIdx}` : ''}`}
-          onDelete={() => deleteArc(i)}
-        />
-      ))}
-      {cage.mirrorConstraints.map((mc, i) => (
-        <ConstraintItem
-          key={'mirror-' + i}
-          label={`Mirror P${mc.sourcePatchIdx} → P${mc.mirrorPatchIdx}`}
-          onDelete={() => deleteMirror(i)}
-        />
-      ))}
-    </Section>}
+    <EntityTreeNode entity={sceneEntity} />
   </ModelSection>;
-}
-
-function ConstraintItem({label, onDelete}: {label: string, onDelete: () => void}) {
-  return <div style={{
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '2px 4px 2px 18px', fontSize: 11, color: '#ccc',
-  }}>
-    <span style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1}}>{label}</span>
-    <span
-      onClick={(e) => { e.stopPropagation(); onDelete(); }}
-      style={{cursor: 'pointer', color: '#e55', marginLeft: 6, fontSize: 13, flexShrink: 0}}
-      title="Delete constraint"
-    >&times;</span>
-  </div>;
 }
 
 export function VisibleSwitch({modelId}) {
