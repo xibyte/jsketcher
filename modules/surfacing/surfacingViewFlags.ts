@@ -4,16 +4,18 @@ export interface SurfacingViewFlags {
   faces: boolean;
   mesh: boolean;
   edges: boolean;
+  boundaries: boolean;
 }
 
 const STORAGE_KEY = 'jsketcher.surfacingViewFlags';
 
 function loadFlags(): SurfacingViewFlags {
+  const defaults: SurfacingViewFlags = {faces: true, mesh: false, edges: false, boundaries: true};
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return {faces: true, mesh: false, edges: false, ...JSON.parse(raw)};
+    if (raw) return {...defaults, ...JSON.parse(raw)};
   } catch (e) { /* ignore */ }
-  return {faces: true, mesh: false, edges: false};
+  return defaults;
 }
 
 export const surfacingViewFlags$: StateStream<SurfacingViewFlags> = state(loadFlags());

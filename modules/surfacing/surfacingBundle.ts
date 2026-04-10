@@ -10,7 +10,7 @@ import {PatchCage} from './models/Scene/Scene.entity';
 import {createPatchPlane} from './primitives/plane';
 import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';
-import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction} from './actions/viewFlagActions';
+import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction, ViewFlagBoundariesAction} from './actions/viewFlagActions';
 
 export interface SurfacingService {
   readonly model: MSurfacingScene;
@@ -113,6 +113,7 @@ export function activate(ctx: any) {
       ViewFlagFacesAction,
       ViewFlagMeshAction,
       ViewFlagEdgesAction,
+      ViewFlagBoundariesAction,
     ]);
   }
 

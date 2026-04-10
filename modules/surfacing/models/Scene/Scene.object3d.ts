@@ -78,6 +78,14 @@ export class SceneObject3D extends Group {
     this._edgesWidth = surfacingViewFlags$.value.faces ? EDGE_WIDTH_NORMAL : EDGE_WIDTH_THICK;
     rebuildEdgesGroup(this.edgesGroup, patchCage, ctx.viewer.sceneSetup, this._edgesWidth);
 
+    // Boundaries — only edges between SurfaceSets (set silhouette).
+    // Hides edges shared between surfaces in the same set.
+    this.boundariesGroup = SceneGraph.createGroup();
+    this.boundariesGroup.visible = false;
+    this.boundariesGroup.raycast = () => {};
+    this.add(this.boundariesGroup);
+    rebuildBoundariesGroup(this.boundariesGroup, patchCage, ctx.viewer.sceneSetup, this._edgesWidth);
+
     // Hover highlight group
     this.hoverGroup = SceneGraph.createGroup();
     this.hoverGroup.visible = false;
@@ -240,11 +248,13 @@ export class SceneObject3D extends Group {
       this.solidMesh.visible = flags.faces;
       this.wireframeMesh.visible = flags.mesh;
       this.edgesGroup.visible = flags.edges;
+      this.boundariesGroup.visible = flags.boundaries;
       // Use thicker edges when faces are off so they stand out more
       const desiredWidth = flags.faces ? EDGE_WIDTH_NORMAL : EDGE_WIDTH_THICK;
       if (this._edgesWidth !== desiredWidth) {
         this._edgesWidth = desiredWidth;
         rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup, desiredWidth);
+        rebuildBoundariesGroup(this.boundariesGroup, this.model, this.ctx.viewer.sceneSetup, desiredWidth);
       }
       ctx.viewer.requestRender();
     }));
@@ -350,25 +360,38 @@ export class SceneObject3D extends Group {
     const res = this.model.tessResolution;
     const N = 24;
 
-    // Highlight surface: tessellate just this patch, offset along normals
-    const tess = this.model.cage.tessellatePatch(patchIdx, res);
-    const offsetVerts = new Float32Array(tess.positions.length);
-    for (let i = 0; i < tess.positions.length; i += 3) {
-      offsetVerts[i]   = tess.positions[i]   + tess.normals[i]   * 0.3;
-      offsetVerts[i+1] = tess.positions[i+1] + tess.normals[i+1] * 0.3;
-      offsetVerts[i+2] = tess.positions[i+2] + tess.normals[i+2] * 0.3;
-    }
-    const hGeo = new BufferGeometry();
-    hGeo.setAttribute('position', new BufferAttribute(offsetVerts, 3));
-    hGeo.setAttribute('normal', new BufferAttribute(new Float32Array(tess.normals), 3));
-    hGeo.setIndex(new BufferAttribute(new Uint32Array(tess.indices), 1));
-    const hMat = new MeshBasicMaterial({color: 0x88bbee, transparent: true, opacity: 0.25, side: DoubleSide, depthTest: true});
-    const hMesh = new Mesh(hGeo, hMat);
-    hMesh.renderOrder = 0;
-    hMesh.raycast = () => {};
-    this.hoverGroup.add(hMesh);
+    // Helper to add a tinted surface overlay (no edges) for any patch
+    const addOverlay = (idx, opacity) => {
+      const t = this.model.cage.tessellatePatch(idx, res);
+      const offset = new Float32Array(t.positions.length);
+      for (let i = 0; i < t.positions.length; i += 3) {
+        offset[i]   = t.positions[i]   + t.normals[i]   * 0.3;
+        offset[i+1] = t.positions[i+1] + t.normals[i+1] * 0.3;
+        offset[i+2] = t.positions[i+2] + t.normals[i+2] * 0.3;
+      }
+      const g = new BufferGeometry();
+      g.setAttribute('position', new BufferAttribute(offset, 3));
+      g.setAttribute('normal', new BufferAttribute(new Float32Array(t.normals), 3));
+      g.setIndex(new BufferAttribute(new Uint32Array(t.indices), 1));
+      const m = new MeshBasicMaterial({color: 0x88bbee, transparent: true, opacity, side: DoubleSide, depthTest: true});
+      const mesh = new Mesh(g, m);
+      mesh.renderOrder = 0;
+      mesh.raycast = () => {};
+      this.hoverGroup.add(mesh);
+    };
 
-    // Black boundary edges
+    // Hovered surface: full highlight
+    addOverlay(patchIdx, 0.25);
+
+    // Other surfaces in the same set: dimmer highlight, no edges
+    const setMembers = this.model.cage.surfacesInSameSet
+      ? this.model.cage.surfacesInSameSet(patchIdx)
+      : [patchIdx];
+    for (const idx of setMembers) {
+      if (idx !== patchIdx) addOverlay(idx, 0.12);
+    }
+
+    // Black boundary edges (only on the actually hovered surface)
     const edgeDefs = [
       () => [patch.grid[0][0], patch.grid[0][1], patch.grid[0][2], patch.grid[0][3]],
       () => [patch.grid[0][3], patch.grid[1][3], patch.grid[2][3], patch.grid[3][3]],
@@ -780,6 +803,7 @@ export class SceneObject3D extends Group {
     this.wireframeGeometry = wg;
 
     rebuildEdgesGroup(this.edgesGroup, this.model, this.ctx.viewer.sceneSetup, this._edgesWidth);
+    rebuildBoundariesGroup(this.boundariesGroup, this.model, this.ctx.viewer.sceneSetup, this._edgesWidth);
 
     if (this.selectedPatchIdx >= 0) {
       this.buildSubcage(this.selectedPatchIdx);
@@ -1625,6 +1649,11 @@ export class SceneObject3D extends Group {
         if (child.dispose) child.dispose();
       }
     }
+    if (this.boundariesGroup) {
+      for (const child of [...this.boundariesGroup.children]) {
+        if (child.dispose) child.dispose();
+      }
+    }
     this.clearGroup(this.subcageGroup);
     // Run any registered disposers
     for (const d of this._disposers) {
@@ -1719,6 +1748,62 @@ function rebuildEdgesGroup(group: any, model: any, sceneSetup: any, width: numbe
 
   for (const surface of model.scene.surfaces) {
     for (const side of [0, 1, 2, 3]) {
+      const bc = surface.getBoundingCurve(side);
+      const pts: number[][] = [];
+      for (let i = 0; i <= N; i++) {
+        const p = bc.eval(i / N);
+        pts.push([p[0], p[1], p[2]]);
+      }
+      const line = new ScalableLine(sceneSetup, pts, width, EDGE_COLOR);
+      line.renderOrder = 1;
+      line.raycast = () => {};
+      group.add(line);
+    }
+  }
+}
+
+/**
+ * Build edge polylines for set boundaries only — edges shared between two
+ * surfaces in the SAME SurfaceSet are skipped, so the result outlines the
+ * silhouette of each set.
+ */
+function rebuildBoundariesGroup(group: any, model: any, sceneSetup: any, width: number = 2.5): void {
+  for (const child of [...group.children]) {
+    group.remove(child);
+    if (child.dispose) child.dispose();
+  }
+  if (!model || !model.scene) return;
+
+  const scene = model.scene;
+  const N = 24;
+  const EDGE_COLOR = 0x000000;
+
+  // Map patch index → SurfaceSet name (or null)
+  const setOf: (string | null)[] = scene.surfaces.map((_: any, i: number) => {
+    const s = scene.findSurfaceSetOfPatch(i);
+    return s ? s.name : null;
+  });
+
+  // Track edges already drawn so we don't draw the same shared edge twice
+  const drawn = new Set<string>();
+
+  for (let pi = 0; pi < scene.surfaces.length; pi++) {
+    const surface = scene.surfaces[pi];
+    const adj = scene.findAdjacentPatches(pi);
+    for (let side = 0; side < 4; side++) {
+      // Find adjacent surface on this side, if any
+      const match = adj.find((a: any) => a.side === side);
+      if (match) {
+        // Skip if both belong to the same SurfaceSet
+        if (setOf[pi] !== null && setOf[pi] === setOf[match.otherIdx]) continue;
+        // Avoid drawing the shared edge from both sides
+        const key = pi < match.otherIdx
+          ? `${pi}:${side}-${match.otherIdx}:${match.otherSide}`
+          : `${match.otherIdx}:${match.otherSide}-${pi}:${side}`;
+        if (drawn.has(key)) continue;
+        drawn.add(key);
+      }
+      // Draw this edge (free edge or set boundary)
       const bc = surface.getBoundingCurve(side);
       const pts: number[][] = [];
       for (let i = 0; i <= N; i++) {

@@ -33,7 +33,7 @@ export default [
     label: 'mode',
     icon: GiCube,
     info: 'view/render mode',
-    actions: ['SURFACING_VIEW_FACES', 'SURFACING_VIEW_MESH', 'SURFACING_VIEW_EDGES']
+    actions: ['SURFACING_VIEW_FACES', 'SURFACING_VIEW_MESH', 'SURFACING_VIEW_EDGES', 'SURFACING_VIEW_BOUNDARIES']
   },
   {
     id: 'boolean',

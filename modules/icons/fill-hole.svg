@@ -13,65 +13,58 @@
       <stop offset="0" stop-color="#e89595"/>
       <stop offset="1" stop-color="#8a4040"/>
     </linearGradient>
-    <radialGradient id="highlight" cx="0.35" cy="0.25" r="0.7">
+    <radialGradient id="highlight" cx="0.4" cy="0.2" r="0.7">
       <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
-      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.7" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
 
-    <clipPath id="outerClip" clipPathUnits="userSpaceOnUse">
-      <path d="M 20 94 Q 18 59 32 36 Q 64 23 96 38 Q 114 61 108 96 Q 64 81 20 94 Z
-               M 48 78 Q 44 64 50 52 Q 64 42 78 52 Q 84 64 80 78 Q 64 70 48 78 Z"
+    <clipPath id="outerClip">
+      <path d="M 34 36 Q 64 26 94 36 Q 99 40 104 64 Q 64 54 24 64 Q 29 40 34 36 Z
+               M 48 35 Q 64 33 80 35 Q 83 40 83 49 Q 64 47 45 49 Q 47 40 48 35 Z"
             clip-rule="evenodd"/>
-    </clipPath>
-    <clipPath id="patchClip" clipPathUnits="userSpaceOnUse">
-      <path d="M 48 78 Q 40 62 50 52 Q 64 36 78 52 Q 88 62 80 78 Q 64 66 48 78 Z"/>
     </clipPath>
   </defs>
 
   <!-- Gray background -->
   <rect width="128" height="128" fill="url(#bg)"/>
 
-  <!-- Outer NURBS surface: perspective, domed upward, with 4-edge hole -->
-  <path d="M 20 94 Q 18 59 32 36 Q 64 23 96 38 Q 114 61 108 96 Q 64 81 20 94 Z
-           M 48 78 Q 44 64 50 52 Q 64 42 78 52 Q 84 64 80 78 Q 64 70 48 78 Z"
+  <!-- Outer NURBS surface: domed + perspective, with aligned 4-edge hole -->
+  <path d="M 34 36 Q 64 26 94 36 Q 99 40 104 64 Q 64 54 24 64 Q 29 40 34 36 Z
+           M 48 35 Q 64 33 80 35 Q 83 40 83 49 Q 64 47 45 49 Q 47 40 48 35 Z"
         fill="url(#surface)" fill-rule="evenodd"/>
 
   <!-- Soft top highlight on the dome -->
-  <path d="M 20 94 Q 18 59 32 36 Q 64 23 96 38 Q 114 61 108 96 Q 64 81 20 94 Z"
+  <path d="M 34 36 Q 64 26 94 36 Q 99 40 104 64 Q 64 54 24 64 Q 29 40 34 36 Z"
         fill="url(#highlight)"/>
 
-  <!-- UV grid on outer surface (curves reveal dome + perspective) -->
-  <g clip-path="url(#outerClip)" fill="none" stroke="#9a8ec0" stroke-width="1" stroke-linecap="round" opacity="0.78">
-    <!-- U-lines: front-to-back, curving up at the middle (dome) and inward (perspective) -->
-    <path d="M 38 92 Q 38 55 42 37"/>
-    <path d="M 56 90 Q 58 54 60 35"/>
-    <path d="M 74 90 Q 74 52 76 34"/>
-    <path d="M 92 93 Q 90 55 88 37"/>
-    <!-- V-lines: left-to-right, curving upward at the middle (dome) -->
-    <path d="M 14 78 Q 64 66 114 82"/>
-    <path d="M 15 58 Q 64 46 113 62"/>
-    <path d="M 22 42 Q 64 30 106 46"/>
+  <!-- Isolines on outer surface: sampled from the same UV grid as the hole -->
+  <g clip-path="url(#outerClip)" fill="none" stroke="#9a8ec0" stroke-width="1" stroke-linecap="round" opacity="0.8">
+    <!-- U isolines (u = 0.25, 0.5, 0.75) -->
+    <path d="M 48 32 Q 48 36 44 60"/>
+    <path d="M 64 31 Q 64 35 64 59"/>
+    <path d="M 79 32 Q 82 36 84 60"/>
+    <!-- V isolines (v = 0.25, 0.5, 0.75) -->
+    <path d="M 31 39 Q 64 29 97 39"/>
+    <path d="M 29 45 Q 64 35 99 45"/>
+    <path d="M 27 53 Q 64 43 101 53"/>
   </g>
 
-  <!-- Outer surface outline -->
-  <path d="M 20 94 Q 18 59 32 36 Q 64 23 96 38 Q 114 61 108 96 Q 64 81 20 94 Z"
+  <!-- Outer boundary stroke -->
+  <path d="M 34 36 Q 64 26 94 36 Q 99 40 104 64 Q 64 54 24 64 Q 29 40 34 36 Z"
         fill="none" stroke="#1b1730" stroke-width="2.5" stroke-linejoin="round"/>
 
-  <!-- Hole inner dark edge (depth cue) -->
-  <path d="M 48 78 Q 44 64 50 52 Q 64 42 78 52 Q 84 64 80 78 Q 64 70 48 78 Z"
-        fill="none" stroke="#120e20" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Hole inner dark edge for depth -->
+  <path d="M 48 35 Q 64 33 80 35 Q 83 40 83 49 Q 64 47 45 49 Q 47 40 48 35 Z"
+        fill="none" stroke="#120e20" stroke-width="1.3" stroke-linejoin="round"/>
 
-  <!-- Filling spline patch: domed upward more aggressively, matching the hole -->
-  <path d="M 48 78 Q 40 62 50 52 Q 64 36 78 52 Q 88 62 80 78 Q 64 66 48 78 Z"
-        fill="url(#patch)" stroke="#431a1a" stroke-width="1.8" stroke-linejoin="round"/>
+  <!-- Fill spline patch: shares the hole's boundary exactly -->
+  <path d="M 48 35 Q 64 33 80 35 Q 83 40 83 49 Q 64 47 45 49 Q 47 40 48 35 Z"
+        fill="url(#patch)" stroke="#431a1a" stroke-width="1.5" stroke-linejoin="round"/>
 
-  <!-- UV grid on fill patch (curved lines show spline dome) -->
-  <g clip-path="url(#patchClip)" fill="none" stroke="#ffcccc" stroke-width="0.9" stroke-linecap="round" opacity="0.92">
-    <path d="M 56 76 Q 55 55 58 42"/>
-    <path d="M 64 78 Q 64 52 64 38"/>
-    <path d="M 72 76 Q 73 55 70 42"/>
-    <path d="M 42 70 Q 64 58 86 70"/>
-    <path d="M 46 58 Q 64 46 82 58"/>
+  <!-- Fill patch isolines (slightly stronger dome than parent) -->
+  <g fill="none" stroke="#ffcccc" stroke-width="0.85" stroke-linecap="round" opacity="0.92">
+    <path d="M 64 34 Q 64 33 64 48"/>
+    <path d="M 47 41 Q 64 33 82 41"/>
   </g>
 
   <!-- Premium accent highlights -->
