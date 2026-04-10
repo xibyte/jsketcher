@@ -14,7 +14,7 @@ import type {Scene} from './Scene/Scene.entity';
 const SIDE_NAMES = ['bottom', 'right', 'top', 'left'];
 
 export interface EntityTreeCallbacks {
-  onRemoveEntity?: (entity: GeometricEntity) => void;
+  onOpenDialog?: (entity: GeometricEntity) => void;
 }
 
 interface EntityNodeProps {
@@ -25,21 +25,20 @@ interface EntityNodeProps {
 
 /**
  * Recursive tree node for displaying the GeometricEntity graph.
- * Handles cyclic references by allowing infinite expansion — each node
- * is independently collapsible regardless of whether the same entity
- * appears elsewhere in the tree.
+ *
+ * - Chevron click: expand/collapse children
+ * - Label click: open properties dialog for the entity (if implemented)
+ * - Cyclic graph: same entity can be expanded infinitely in different locations
  */
 export function EntityTreeNode({entity, depth = 0, callbacks}: EntityNodeProps) {
   const [expanded, setExpanded] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const info = getEntityInfo(entity);
   const childEntries = getChildEntries(entity);
   const hasChildren = childEntries.length > 0;
-  const removable = isRemovable(entity);
+  const hasDialog = entityHasDialog(entity);
 
   return <div style={{paddingLeft: depth > 0 ? 12 : 0}}>
     <div
-      onClick={hasChildren ? () => setExpanded(e => !e) : undefined}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -47,7 +46,6 @@ export function EntityTreeNode({entity, depth = 0, callbacks}: EntityNodeProps) 
         padding: '1px 4px',
         fontSize: 11,
         color: info.color || '#ccc',
-        cursor: hasChildren ? 'pointer' : 'default',
         borderRadius: 2,
       }}
       onMouseEnter={(e) => {
@@ -57,31 +55,33 @@ export function EntityTreeNode({entity, depth = 0, callbacks}: EntityNodeProps) 
         (e.currentTarget as HTMLElement).style.background = 'transparent';
       }}
     >
-      {hasChildren && <span style={{fontSize: 8, width: 10, flexShrink: 0}}>
-        {expanded ? '\u25BC' : '\u25B6'}
-      </span>}
-      {!hasChildren && <span style={{width: 10, flexShrink: 0}} />}
-      <span style={{fontWeight: info.bold ? 600 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
+      {/* Chevron — expand/collapse only */}
+      {hasChildren
+        ? <span
+            onClick={() => setExpanded(e => !e)}
+            style={{fontSize: 8, width: 10, flexShrink: 0, cursor: 'pointer'}}
+          >
+            {expanded ? '\u25BC' : '\u25B6'}
+          </span>
+        : <span style={{width: 10, flexShrink: 0}} />
+      }
+
+      {/* Label — opens dialog on click */}
+      <span
+        onClick={hasDialog && callbacks?.onOpenDialog ? () => callbacks.onOpenDialog!(entity) : undefined}
+        style={{
+          fontWeight: info.bold ? 600 : 400,
+          flex: 1,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          cursor: hasDialog ? 'pointer' : 'default',
+        }}
+      >
         {info.icon && <span style={{marginRight: 3}}>{info.icon}</span>}
         {info.label}
       </span>
       {info.detail && <span style={{color: '#777', marginLeft: 4, fontSize: 10, flexShrink: 0}}>{info.detail}</span>}
-      {removable && callbacks?.onRemoveEntity && !confirmingDelete && <span
-        onClick={(e) => { e.stopPropagation(); setConfirmingDelete(true); }}
-        style={{cursor: 'pointer', color: '#e55', marginLeft: 4, fontSize: 13, flexShrink: 0, opacity: 0.6}}
-        title="Remove"
-      >&times;</span>}
-      {confirmingDelete && <span style={{display: 'flex', gap: 3, marginLeft: 4, flexShrink: 0}} onClick={e => e.stopPropagation()}>
-        <span style={{fontSize: 10, color: '#e88'}}>Delete?</span>
-        <span
-          onClick={() => { callbacks?.onRemoveEntity?.(entity); setConfirmingDelete(false); }}
-          style={{cursor: 'pointer', color: '#f44', fontSize: 10, fontWeight: 700, padding: '0 2px'}}
-        >Yes</span>
-        <span
-          onClick={() => setConfirmingDelete(false)}
-          style={{cursor: 'pointer', color: '#888', fontSize: 10, padding: '0 2px'}}
-        >No</span>
-      </span>}
     </div>
     {expanded && childEntries.map((entry, i) => (
       <div key={`${entry.key}-${i}`}>
@@ -115,7 +115,6 @@ function getChildEntries(entity: GeometricEntity): ChildEntry[] {
 
   if (isScene(entity)) {
     const scene = entity as Scene;
-    // Show groups when they exist, bare surfaces otherwise
     const groups = scene.children.filter(c => c instanceof Group);
     if (groups.length > 0) {
       for (let i = 0; i < groups.length; i++) {
@@ -131,14 +130,11 @@ function getChildEntries(entity: GeometricEntity): ChildEntry[] {
       entries.push({key: `c${i}`, entity: entity.children[i]});
     }
   } else if (entity instanceof NurbsSurface) {
-    // Bounding curves
     entries.push({key: 'bc-bottom', label: 'bottom', entity: entity.boundingCurves.bottom});
     entries.push({key: 'bc-right', label: 'right', entity: entity.boundingCurves.right});
     entries.push({key: 'bc-top', label: 'top', entity: entity.boundingCurves.top});
     entries.push({key: 'bc-left', label: 'left', entity: entity.boundingCurves.left});
-    // Cage
     entries.push({key: 'cage', entity: entity.cage});
-    // Mirror constraint
     if (entity.mirrorOf) {
       entries.push({key: 'mirror-source', label: 'mirror of', entity: entity.mirrorOf.source});
       for (let i = 0; i < entity.mirrorOf.cpPairs.length; i++) {
@@ -220,6 +216,7 @@ function isScene(entity: GeometricEntity): boolean {
   return 'surfaces' in entity && Array.isArray((entity as any).surfaces);
 }
 
-function isRemovable(entity: GeometricEntity): boolean {
+/** Entities that have a properties dialog */
+function entityHasDialog(entity: GeometricEntity): boolean {
   return entity instanceof Group || entity instanceof NurbsSurface;
 }
