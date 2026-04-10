@@ -10,7 +10,7 @@ export class NurbsCurve extends GeometricEntity {
   cp: ControlPoint[];
 
   constructor(cp: ControlPoint[]) {
-    super(generateEntityId('NC'));
+    super(generateEntityId('C'));
     this.cp = cp;
   }
 
