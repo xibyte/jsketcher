@@ -6,7 +6,7 @@ import {setAttribute} from 'scene/objectData';
 import {ViewMode} from 'cad/scene/viewer';
 import {
   Group, BufferGeometry, BufferAttribute, Mesh, DoubleSide,
-  WireframeGeometry, LineSegments, LineBasicMaterial,
+  LineSegments, LineBasicMaterial,
   SphereGeometry, MeshBasicMaterial, Vector3, Object3D,
   Line
 } from 'three';
@@ -58,8 +58,8 @@ export class SceneObject3D extends Group {
     setAttribute(this.solidMesh, SURFACING_SCENE, this);
     this.add(this.solidMesh);
 
-    // Wireframe (non-pickable)
-    this.wireframeGeometry = new WireframeGeometry(this.geometry);
+    // Wireframe (non-pickable) — UV grid only, no triangle diagonals
+    this.wireframeGeometry = buildGridWireframe(patchCage);
     this.wireframeMaterial = new LineBasicMaterial({color: 0x2080ff, transparent: true, opacity: 0.3});
     this.wireframeMesh = new LineSegments(this.wireframeGeometry, this.wireframeMaterial);
     this.wireframeMesh.visible = false;
@@ -754,7 +754,7 @@ export class SceneObject3D extends Group {
     this.solidMesh.geometry = g;
     this.geometry = g;
 
-    const wg = new WireframeGeometry(g);
+    const wg = buildGridWireframe(this.model);
     this.wireframeMesh.geometry.dispose();
     this.wireframeMesh.geometry = wg;
     this.wireframeGeometry = wg;
@@ -1626,4 +1626,48 @@ function buildGeom(mesh) {
   g.setAttribute('normal', new BufferAttribute(mesh.normals, 3));
   if (mesh.indices) g.setIndex(new BufferAttribute(mesh.indices, 1));
   return g;
+}
+
+/**
+ * Build a wireframe geometry showing the UV tessellation grid (rectangles only,
+ * no triangle diagonals). For each surface, evaluates the (n+1)×(n+1) grid of
+ * surface points and emits horizontal + vertical line segments.
+ */
+function buildGridWireframe(model: any): BufferGeometry {
+  const geo = new BufferGeometry();
+  if (!model || !model.scene) return geo;
+  const scene = model.scene;
+  const resolution = model.tessResolution || 8;
+  const positions: number[] = [];
+
+  for (const surface of scene.surfaces) {
+    const n = resolution;
+    // Sample (n+1)×(n+1) grid of surface points
+    const grid: number[][][] = [];
+    for (let j = 0; j <= n; j++) {
+      const row: number[][] = [];
+      for (let i = 0; i <= n; i++) {
+        const p = surface.eval(i / n, j / n);
+        row.push([p[0], p[1], p[2]]);
+      }
+      grid.push(row);
+    }
+    // Horizontal segments (along U): for each row, n segments
+    for (let j = 0; j <= n; j++) {
+      for (let i = 0; i < n; i++) {
+        const a = grid[j][i], b = grid[j][i + 1];
+        positions.push(a[0], a[1], a[2], b[0], b[1], b[2]);
+      }
+    }
+    // Vertical segments (along V): for each column, n segments
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j < n; j++) {
+        const a = grid[j][i], b = grid[j + 1][i];
+        positions.push(a[0], a[1], a[2], b[0], b[1], b[2]);
+      }
+    }
+  }
+
+  geo.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
+  return geo;
 }
