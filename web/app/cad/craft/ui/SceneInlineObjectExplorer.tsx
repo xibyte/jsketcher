@@ -1,4 +1,5 @@
-import React, {useState, useEffect, useCallback, useContext, useRef} from 'react';
+import React, {useCallback, useContext, useRef} from 'react';
+import {useStream} from "ui/effects";
 import {SceneInlineSection} from "ui/components/SceneInlineSection";
 import {EntityTreeNode, EntityTreeCallbacks} from "surfacing/models/ui/objectTree/EntityTreeNode";
 import {Scene} from "surfacing/models/Scene/Scene.entity";
@@ -12,18 +13,11 @@ import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 export function SceneInlineObjectExplorer() {
 
   const ctx = useContext(ReactApplicationContext);
-  const [, forceUpdate] = useState(0);
   const openDialogRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const handler = () => forceUpdate(n => n + 1);
-    document.addEventListener('patch-cage-constraints-changed', handler);
-    document.addEventListener('patch-cage-constraint-deleted', handler);
-    return () => {
-      document.removeEventListener('patch-cage-constraints-changed', handler);
-      document.removeEventListener('patch-cage-constraint-deleted', handler);
-    };
-  }, []);
+  // Subscribe to the surfacing state stream — fires immediately with the
+  // current value on mount, then on every notifyChange() in surfacingBundle.
+  const snapshot = useStream(c => (c as any).surfacingService?.state$);
 
   const closeOpenDialog = useCallback(() => {
     if (openDialogRef.current) {
@@ -47,9 +41,10 @@ export function SceneInlineObjectExplorer() {
     const view = (scene as any).ext?.view;
     if (view && typeof view.rebuildAll === 'function') view.rebuildAll();
     const svc = (ctx as any).surfacingService;
-    if (svc && svc.scheduleSave) svc.scheduleSave();
-    document.dispatchEvent(new CustomEvent('patch-cage-constraint-deleted'));
-    forceUpdate(n => n + 1);
+    if (svc) {
+      if (svc.scheduleSave) svc.scheduleSave();
+      if (svc.notifyChange) svc.notifyChange();
+    }
   }, [ctx, getScene]);
 
   // Remove a group and all its patches from the scene
@@ -116,7 +111,9 @@ export function SceneInlineObjectExplorer() {
     }
   }, [closeOpenDialog, getScene, persistAndRefresh, removeGroup, removeSurface]);
 
-  const scene = getScene();
+  // Read scene from the snapshot stream — guarantees re-render on every
+  // notifyChange() (mergeScene, load, persistAndRefresh, etc.)
+  const scene = snapshot ? (snapshot as any).scene as Scene | null : null;
   if (!scene) {
     return <SceneInlineSection title='OBJECTS'><></></SceneInlineSection>;
   }
