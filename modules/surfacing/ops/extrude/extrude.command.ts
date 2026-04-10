@@ -76,7 +76,10 @@ export function extrudePatch(scene: Scene, patchIdx: number, distance: number): 
 
     const wallPatch = new NurbsSurface(wallGrid);
     // Walls inherit the source patch's surface set
-    if (patch.surfaceSet) patch.surfaceSet.add(wallPatch);
+    if (patch.surfaceSet) {
+      wallPatch.surfaceSet = patch.surfaceSet;
+      patch.surfaceSet.surfaces.add(wallPatch);
+    }
     scene.surfaces.push(wallPatch);
   }
   scene.notifyPush(4, group);

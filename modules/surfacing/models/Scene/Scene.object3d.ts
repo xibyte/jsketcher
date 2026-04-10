@@ -1613,8 +1613,10 @@ export class SceneObject3D extends Group {
     if (this.ctx.surfacingService && this.ctx.surfacingService.scheduleSave) {
       this.ctx.surfacingService.scheduleSave();
     }
-    // Notify the constraints panel in the object tree
-    document.dispatchEvent(new CustomEvent('patch-cage-constraints-changed'));
+    // Push a fresh snapshot so the React explorer tree re-renders
+    if (this.ctx.surfacingService && this.ctx.surfacingService.notifyChange) {
+      this.ctx.surfacingService.notifyChange();
+    }
   }
 
   // ---- Utilities ----
