@@ -22,14 +22,26 @@ export function resetSurfaceSetIds(): void {
   nextSurfaceSetId = 0;
 }
 
+/** Bump the counter past a known id so future news don't collide */
+export function reserveSurfaceSetId(id: number): void {
+  if (typeof id === 'number' && id >= nextSurfaceSetId) {
+    nextSurfaceSetId = id + 1;
+  }
+}
+
 export class SurfaceSet {
 
   readonly id: number;
   name: string;
   surfaces: Set<NurbsSurface>;
 
-  constructor(name: string = '') {
-    this.id = nextSurfaceSetID();
+  constructor(name: string = '', id?: number) {
+    if (id !== undefined) {
+      this.id = id;
+      reserveSurfaceSetId(id);
+    } else {
+      this.id = nextSurfaceSetID();
+    }
     this.name = name;
     this.surfaces = new Set();
   }

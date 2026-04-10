@@ -59,8 +59,8 @@ export class NurbsSurface extends GeometricEntity {
   /** Logical grouping into a face. Shared by reference between adjacent surfaces. */
   surfaceSet: SurfaceSet | null = null;
 
-  constructor(grid: Vertex[][], weights?: number[][]) {
-    super(generateEntityId('S'));
+  constructor(grid: Vertex[][], weights?: number[][], id?: string) {
+    super(id ?? generateEntityId('S'));
     this.grid = grid;
     this.weights = weights || [[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]];
     this.rational = !!weights;
