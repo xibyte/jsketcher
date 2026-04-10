@@ -89,6 +89,9 @@ function interpRow(bottom: [CageVertex, CageVertex, CageVertex, CageVertex], top
  * For 3 edges: degenerate patch with one collapsed edge.
  */
 export function fillHole(cage: PatchCage, loop: {patchIdx: number, side: number, verts: [CageVertex, CageVertex, CageVertex, CageVertex]}[]): boolean {
+  // Place fill in the group of the first edge's patch
+  const group = cage.findGroupOfPatch(loop[0].patchIdx);
+
   if (loop.length === 4) {
     // Coons patch: bottom=loop[0], right=loop[1], top=loop[2] reversed, left=loop[3] reversed
     const bottom = loop[0].verts;
@@ -101,6 +104,7 @@ export function fillHole(cage: PatchCage, loop: {patchIdx: number, side: number,
       {bottom, right, top, left}
     );
     cage.patches.push(new NurbsPatch(grid));
+    cage.notifyPush(1, group);
     return true;
 
   } else if (loop.length === 3) {
@@ -124,6 +128,7 @@ export function fillHole(cage: PatchCage, loop: {patchIdx: number, side: number,
     ];
 
     cage.patches.push(new NurbsPatch(grid));
+    cage.notifyPush(1, group);
     return true;
   }
   return false;

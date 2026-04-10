@@ -105,7 +105,7 @@ export function bridgeExecute(view: any): void {
   const e1 = cage.patches[view._bridgeEdge1.patchIdx].getEdgeVertices(view._bridgeEdge1.side);
   const e2 = cage.patches[view._bridgeEdge2.patchIdx].getEdgeVertices(view._bridgeEdge2.side);
 
-  bridgeSurface(cage, e1, e2, {flipped: view._bridgeFlipped, g1: view._g1Continuity});
+  bridgeSurface(cage, e1, e2, {flipped: view._bridgeFlipped, g1: view._g1Continuity, sourcePatchIdx: view._bridgeEdge1.patchIdx});
   view.model.recompute();
   view.rebuildAll();
   view.persistCageState();

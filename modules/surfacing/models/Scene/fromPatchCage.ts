@@ -6,6 +6,7 @@ import {Scene} from './Scene.entity';
 import {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import {Vertex} from '../Vertex/Vertex.entity';
+import {Group} from '../Group/Group.entity';
 
 export function sceneFromPatchCage(cage: any): Scene {
   const scene = new Scene();
@@ -23,15 +24,12 @@ export function sceneFromPatchCage(cage: any): Scene {
   }
 
   // Map old CageVertex → ControlPoint (one CP per unique grid cell position)
-  // But CPs can be shared when the same CageVertex appears in multiple patches
-  const cpMap = new Map<any, Map<number, ControlPoint>>(); // CageVertex → (weight → CP)
+  const cpMap = new Map<any, Map<number, ControlPoint>>();
 
   function getControlPoint(cv: any, weight: number): ControlPoint {
     const vertex = getVertex(cv);
-    // For shared CageVertex with same weight, reuse the same ControlPoint
     if (!cpMap.has(cv)) cpMap.set(cv, new Map());
     const weightMap = cpMap.get(cv)!;
-    // Use weight rounded to avoid floating point key issues
     const wKey = Math.round(weight * 1e6);
     let cp = weightMap.get(wKey);
     if (!cp) {
@@ -41,6 +39,8 @@ export function sceneFromPatchCage(cage: any): Scene {
     return cp;
   }
 
+  // Build all surfaces
+  const allSurfaces: NurbsSurface[] = [];
   for (let pi = 0; pi < cage.patches.length; pi++) {
     const patch = cage.patches[pi];
     const cpGrid: ControlPoint[][] = [];
@@ -57,7 +57,7 @@ export function sceneFromPatchCage(cage: any): Scene {
     const surface = new NurbsSurface(cpGrid);
     surface.rational = patch.rational;
 
-    // Restore arc constraints from the old cage
+    // Restore arc constraints
     for (const ac of cage.arcConstraints) {
       if (ac.patchSide && ac.patchSide.patchIdx === pi) {
         surface.getBoundingCurve(ac.patchSide.side).arcConstraint = {
@@ -70,13 +70,45 @@ export function sceneFromPatchCage(cage: any): Scene {
       }
     }
 
+    allSurfaces.push(surface);
     scene.addSurface(surface);
+  }
+
+  // Organize surfaces into groups
+  if (cage.groups && cage.groups.length > 0) {
+    for (const g of cage.groups) {
+      const group = new Group(g.name);
+      scene.addChild(group);
+      for (const idx of g.patchIndices) {
+        if (idx < allSurfaces.length) {
+          group.addChild(allSurfaces[idx]);
+        }
+      }
+    }
+    // Surfaces not in any group go into an "Ungrouped" group
+    const grouped = new Set<NurbsSurface>();
+    for (const g of cage.groups) {
+      for (const idx of g.patchIndices) {
+        if (idx < allSurfaces.length) grouped.add(allSurfaces[idx]);
+      }
+    }
+    const ungrouped = allSurfaces.filter(s => !grouped.has(s));
+    if (ungrouped.length > 0) {
+      const ug = new Group('Ungrouped');
+      scene.addChild(ug);
+      for (const s of ungrouped) ug.addChild(s);
+    }
+  } else {
+    // No groups defined — put everything in one default group
+    const defaultGroup = new Group('Default');
+    scene.addChild(defaultGroup);
+    for (const s of allSurfaces) defaultGroup.addChild(s);
   }
 
   // Restore mirror constraints
   for (const mc of cage.mirrorConstraints) {
-    const target = scene.surfaces[mc.mirrorPatchIdx];
-    const source = scene.surfaces[mc.sourcePatchIdx];
+    const target = allSurfaces[mc.mirrorPatchIdx];
+    const source = allSurfaces[mc.sourcePatchIdx];
     if (target && source) {
       target.mirrorOf = {
         source,
