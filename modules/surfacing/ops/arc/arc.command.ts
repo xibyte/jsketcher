@@ -1,4 +1,4 @@
-import {PatchCage, CageVertex, ArcConstraint, ArcMode} from '../../models/Scene/Scene.entity';
+import {Scene, Vertex, ArcConstraint, ArcMode} from '../../models/Scene/Scene.entity';
 import {Vec3} from '../../patchCageTypes';
 import {add as vadd, sub as vsub, mul as vscale, lerp as vlerp, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
 
@@ -6,11 +6,11 @@ import {add as vadd, sub as vsub, mul as vscale, lerp as vlerp, normalize as vno
  * Constrain an edge to a circular arc.
  */
 export function constrainEdgeToArc(
-  cage: PatchCage, patchIdx: number, side: number,
+  scene: Scene, patchIdx: number, side: number,
   radius: number, angle: number,
   planeNormal: Vec3, mode: ArcMode = 'approximate'
 ): ArcConstraint {
-  const verts = cage.patches[patchIdx].getEdgeVertices(side);
+  const verts = scene.surfaces[patchIdx].getEdgeVertices(side);
 
   // Compute arc center from endpoints, radius, and plane normal
   const p0 = verts[0].position;
@@ -23,8 +23,8 @@ export function constrainEdgeToArc(
     patchSide: {patchIdx, side},
   };
 
-  cage.arcConstraints.push(constraint);
-  applyArcConstraint(cage, constraint);
+  scene.arcConstraints.push(constraint);
+  applyArcConstraint(scene, constraint);
   return constraint;
 }
 
@@ -32,7 +32,7 @@ export function constrainEdgeToArc(
  * Apply an arc constraint: reposition interior control points.
  * For rational mode, also set weights on the patch.
  */
-export function applyArcConstraint(cage: PatchCage, c: ArcConstraint): void {
+export function applyArcConstraint(scene: Scene, c: ArcConstraint): void {
   const [v0, v1, v2, v3] = c.vertices;
   const p0 = v0.position, p3 = v3.position;
   const angleRad = (c.angle * Math.PI) / 180;
@@ -68,21 +68,21 @@ export function applyArcConstraint(cage: PatchCage, c: ArcConstraint): void {
 
   if (c.mode === 'approximate') {
     if (c.patchSide) {
-      setEdgeWeights(cage, c.patchSide.patchIdx, c.patchSide.side, [1, 1, 1, 1]);
+      setEdgeWeights(scene, c.patchSide.patchIdx, c.patchSide.side, [1, 1, 1, 1]);
     }
   } else {
     // Rational: set weights for exact arc
     const wMid = Math.cos(angleRad / 4);
     if (c.patchSide) {
-      setEdgeWeights(cage, c.patchSide.patchIdx, c.patchSide.side, [1, wMid, wMid, 1]);
-      cage.patches[c.patchSide.patchIdx].rational = true;
+      setEdgeWeights(scene, c.patchSide.patchIdx, c.patchSide.side, [1, wMid, wMid, 1]);
+      scene.surfaces[c.patchSide.patchIdx].rational = true;
     }
   }
 }
 
 /** Re-enforce arc constraints that involve a given vertex */
-export function enforceArcConstraints(cage: PatchCage, v: CageVertex): void {
-  for (const c of cage.arcConstraints) {
+export function enforceArcConstraints(scene: Scene, v: Vertex): void {
+  for (const c of scene.arcConstraints) {
     // Only re-apply if an endpoint moved (interior points are computed)
     if (c.vertices[0] === v || c.vertices[3] === v) {
       // Recompute center from new endpoint positions
@@ -90,14 +90,14 @@ export function enforceArcConstraints(cage: PatchCage, v: CageVertex): void {
         c.vertices[0].position, c.vertices[3].position,
         c.radius, c.angle, c.planeNormal
       );
-      applyArcConstraint(cage, c);
+      applyArcConstraint(scene, c);
     }
   }
 }
 
 /** Set weights on 4 control points along a patch edge */
-export function setEdgeWeights(cage: PatchCage, patchIdx: number, side: number, weights: [number, number, number, number]): void {
-  const w = cage.patches[patchIdx].weights;
+export function setEdgeWeights(scene: Scene, patchIdx: number, side: number, weights: [number, number, number, number]): void {
+  const w = scene.surfaces[patchIdx].weights;
   switch (side) {
     case 0: w[0][0]=weights[0]; w[0][1]=weights[1]; w[0][2]=weights[2]; w[0][3]=weights[3]; break;
     case 1: w[0][3]=weights[0]; w[1][3]=weights[1]; w[2][3]=weights[2]; w[3][3]=weights[3]; break;
@@ -107,15 +107,15 @@ export function setEdgeWeights(cage: PatchCage, patchIdx: number, side: number, 
 }
 
 /** Remove an arc constraint */
-export function removeArcConstraint(cage: PatchCage, constraint: ArcConstraint): void {
-  const idx = cage.arcConstraints.indexOf(constraint);
+export function removeArcConstraint(scene: Scene, constraint: ArcConstraint): void {
+  const idx = scene.arcConstraints.indexOf(constraint);
   if (idx >= 0) {
-    cage.arcConstraints.splice(idx, 1);
+    scene.arcConstraints.splice(idx, 1);
     // Reset weights if rational
     if (constraint.mode === 'rational' && constraint.patchSide) {
-      setEdgeWeights(cage, constraint.patchSide.patchIdx, constraint.patchSide.side, [1, 1, 1, 1]);
+      setEdgeWeights(scene, constraint.patchSide.patchIdx, constraint.patchSide.side, [1, 1, 1, 1]);
       // Check if patch still has any non-1 weights
-      const p = cage.patches[constraint.patchSide.patchIdx];
+      const p = scene.surfaces[constraint.patchSide.patchIdx];
       p.rational = p.weights.some(row => row.some(w => w !== 1));
     }
   }

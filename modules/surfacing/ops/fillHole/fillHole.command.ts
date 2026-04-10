@@ -1,4 +1,4 @@
-import {PatchCage, CageVertex, NurbsPatch} from '../../models/Scene/Scene.entity';
+import {Scene, Vertex, NurbsSurface} from '../../models/Scene/Scene.entity';
 import {lerp as vlerp} from 'math/vec';
 import {makeGrid} from '../../patchCageHelpers';
 
@@ -7,11 +7,11 @@ import {makeGrid} from '../../patchCageHelpers';
  * Follows free edges around by matching corner vertices.
  * Returns null if no closed loop found, or an array of edge descriptors forming the loop.
  */
-export function traceHole(cage: PatchCage, startPatchIdx: number, startSide: number): {patchIdx: number, side: number, verts: [CageVertex, CageVertex, CageVertex, CageVertex]}[] | null {
-  const freeEdges = cage.findFreeEdges();
+export function traceHole(scene: Scene, startPatchIdx: number, startSide: number): {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[] | null {
+  const freeEdges = scene.findFreeEdges();
 
   // Build lookup: corner vertex → free edges starting or ending at that vertex
-  const edgeByStart = new Map<CageVertex, typeof freeEdges>();
+  const edgeByStart = new Map<Vertex, typeof freeEdges>();
   for (const fe of freeEdges) {
     const start = fe.verts[0];
     if (!edgeByStart.has(start)) edgeByStart.set(start, []);
@@ -19,7 +19,7 @@ export function traceHole(cage: PatchCage, startPatchIdx: number, startSide: num
   }
 
   // Also index by end vertex (verts[3]), storing a reversed reference
-  const edgeByEnd = new Map<CageVertex, typeof freeEdges>();
+  const edgeByEnd = new Map<Vertex, typeof freeEdges>();
   for (const fe of freeEdges) {
     const end = fe.verts[3];
     if (!edgeByEnd.has(end)) edgeByEnd.set(end, []);
@@ -77,10 +77,10 @@ export function traceHole(cage: PatchCage, startPatchIdx: number, startSide: num
   return null;
 }
 
-function interpRow(bottom: [CageVertex, CageVertex, CageVertex, CageVertex], top: CageVertex[], t: number): [CageVertex, CageVertex] {
+function interpRow(bottom: [Vertex, Vertex, Vertex, Vertex], top: Vertex[], t: number): [Vertex, Vertex] {
   const p1 = vlerp(bottom[1].position, top[1].position, t);
   const p2 = vlerp(bottom[2].position, top[2].position, t);
-  return [new CageVertex(p1[0], p1[1], p1[2]), new CageVertex(p2[0], p2[1], p2[2])];
+  return [new Vertex(p1[0], p1[1], p1[2]), new Vertex(p2[0], p2[1], p2[2])];
 }
 
 /**
@@ -88,35 +88,35 @@ function interpRow(bottom: [CageVertex, CageVertex, CageVertex, CageVertex], top
  * For 4 edges: Coons patch using boundary curves.
  * For 3 edges: degenerate patch with one collapsed edge.
  */
-export function fillHole(cage: PatchCage, loop: {patchIdx: number, side: number, verts: [CageVertex, CageVertex, CageVertex, CageVertex]}[]): boolean {
+export function fillHole(scene: Scene, loop: {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[]): boolean {
   // Place fill in the group of the first edge's patch, and inherit its surface set
-  const group = cage.findGroupOfPatch(loop[0].patchIdx);
-  const sourceSet = cage.patches[loop[0].patchIdx]?.surfaceSet || null;
+  const group = scene.findGroupOfPatch(loop[0].patchIdx);
+  const sourceSet = scene.surfaces[loop[0].patchIdx]?.surfaceSet || null;
 
-  let fillPatch: NurbsPatch | null = null;
+  let fillPatch: NurbsSurface | null = null;
 
   if (loop.length === 4) {
     // Coons patch: bottom=loop[0], right=loop[1], top=loop[2] reversed, left=loop[3] reversed
     const bottom = loop[0].verts;
     const right = loop[1].verts;
-    const top: [CageVertex, CageVertex, CageVertex, CageVertex] = [loop[2].verts[3], loop[2].verts[2], loop[2].verts[1], loop[2].verts[0]];
-    const left: [CageVertex, CageVertex, CageVertex, CageVertex] = [loop[3].verts[3], loop[3].verts[2], loop[3].verts[1], loop[3].verts[0]];
+    const top: [Vertex, Vertex, Vertex, Vertex] = [loop[2].verts[3], loop[2].verts[2], loop[2].verts[1], loop[2].verts[0]];
+    const left: [Vertex, Vertex, Vertex, Vertex] = [loop[3].verts[3], loop[3].verts[2], loop[3].verts[1], loop[3].verts[0]];
 
     const grid = makeGrid(
       [bottom[0], bottom[3], top[0], top[3]],
       {bottom, right, top, left}
     );
-    fillPatch = new NurbsPatch(grid);
+    fillPatch = new NurbsSurface(grid);
   } else if (loop.length === 3) {
     // Degenerate patch: collapse one edge to a single vertex (the apex)
     const bottom = loop[0].verts;
     const right = loop[1].verts;
-    const leftRev: [CageVertex, CageVertex, CageVertex, CageVertex] = [loop[2].verts[3], loop[2].verts[2], loop[2].verts[1], loop[2].verts[0]];
+    const leftRev: [Vertex, Vertex, Vertex, Vertex] = [loop[2].verts[3], loop[2].verts[2], loop[2].verts[1], loop[2].verts[0]];
 
     // The apex is right[3] which should equal leftRev[0] (= loop[2].verts[3])
     const apex = right[3];
 
-    const grid: CageVertex[][] = [
+    const grid: Vertex[][] = [
       // Row 0: bottom edge
       bottom,
       // Row 1: interpolated
@@ -127,13 +127,13 @@ export function fillHole(cage: PatchCage, loop: {patchIdx: number, side: number,
       [apex, apex, apex, apex],
     ];
 
-    fillPatch = new NurbsPatch(grid);
+    fillPatch = new NurbsSurface(grid);
   }
 
   if (!fillPatch) return false;
 
   if (sourceSet) sourceSet.add(fillPatch);
-  cage.patches.push(fillPatch);
-  cage.notifyPush(1, group);
+  scene.surfaces.push(fillPatch);
+  scene.notifyPush(1, group);
   return true;
 }

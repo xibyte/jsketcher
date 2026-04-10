@@ -7,8 +7,7 @@ export function createExtrudeButton(view: any, panel: HTMLElement, patchIdx: num
   panel.querySelector('#props-extrude')!.addEventListener('click', () => {
     const dist = parseFloat((panel.querySelector('#props-distance') as HTMLInputElement).value);
     if (isNaN(dist) || dist === 0) return;
-    extrudePatch(view.model.cage, patchIdx, dist);
-    view.model.recompute();
+    extrudePatch(view.scene, patchIdx, dist);
     view.rebuildAll();
     view.persistCageState();
     view.showPropsDialog(patchIdx);

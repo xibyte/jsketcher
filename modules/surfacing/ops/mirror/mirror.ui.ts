@@ -4,13 +4,12 @@
 import {mirrorAcrossEdge} from './mirror.command';
 
 export function createEdgeMirrorButton(view: any, panel: HTMLElement, edgeIdx: number): void {
-  const cage = view.model.cage;
+  const scene = view.scene;
 
   const mirrorBtn = panel.querySelector('#edge-mirror');
   if (mirrorBtn) {
     mirrorBtn.addEventListener('click', () => {
-      mirrorAcrossEdge(cage, view.selectedPatchIdx, edgeIdx);
-      view.model.recompute();
+      mirrorAcrossEdge(scene, view.selectedPatchIdx, edgeIdx);
       view.rebuildAll();
       view.persistCageState();
       view.showEdgeDialog(edgeIdx);

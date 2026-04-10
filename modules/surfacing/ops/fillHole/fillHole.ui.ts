@@ -38,8 +38,8 @@ export function fillHolePreview(view: any, e: MouseEvent): void {
     return;
   }
 
-  const cage = view.model.cage;
-  const adj = cage.findAdjacentPatches(hit.patchIdx);
+  const scene = view.scene;
+  const adj = scene.findAdjacentPatches(hit.patchIdx);
   const isShared = adj.some((a: any) => a.side === hit.side);
   if (isShared) {
     view._fillHolePreviewGroup.visible = false;
@@ -47,7 +47,7 @@ export function fillHolePreview(view: any, e: MouseEvent): void {
     return;
   }
 
-  const loop = traceHole(cage, hit.patchIdx, hit.side);
+  const loop = traceHole(scene, hit.patchIdx, hit.side);
   if (!loop || (loop.length !== 3 && loop.length !== 4)) {
     view._fillHolePreviewGroup.visible = false;
     view.ctx.viewer.requestRender();
@@ -83,13 +83,12 @@ export function fillHolePreview(view: any, e: MouseEvent): void {
 
 export function fillHoleExecute(view: any): void {
   if (!view._fillHoleLoop) return;
-  const cage = view.model.cage;
+  const scene = view.scene;
 
-  if (fillHole(cage, view._fillHoleLoop)) {
+  if (fillHole(scene, view._fillHoleLoop)) {
     if (view._g1Continuity) {
-      applyG1AllSides(cage, cage.patches.length - 1);
+      applyG1AllSides(scene, scene.surfaces.length - 1);
     }
-    view.model.recompute();
     view.rebuildAll();
     view.persistCageState();
   }

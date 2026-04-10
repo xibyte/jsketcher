@@ -16,7 +16,7 @@
   </defs>
 
   <!-- Side face fill: front half of cylinder body, bounded above by the front half of the top ellipse and below by the front half of the bottom ellipse -->
-  <path d="M 29.7 40 A 34.3 19.8 0 0 0 98.3 40 L 98.3 88 A 34.3 19.8 0 0 0 29.7 88 Z"
+  <path d="M 29.7 40 A 34.3 19.8 0 0 0 98.3 40 L 98.3 88 A 34.3 19.8 0 0 1 29.7 88 Z"
         fill="url(#sideFace)"/>
 
   <!-- Top face fill -->
@@ -42,6 +42,6 @@
         fill="none" stroke="#1b1730" stroke-width="2" stroke-linecap="round"/>
 
   <!-- Outer silhouette: back half of top ellipse + right tangent + front half of bottom ellipse + left tangent -->
-  <path d="M 29.7 40 A 34.3 19.8 0 0 1 98.3 40 L 98.3 88 A 34.3 19.8 0 0 0 29.7 88 Z"
+  <path d="M 29.7 40 A 34.3 19.8 0 0 1 98.3 40 L 98.3 88 A 34.3 19.8 0 0 1 29.7 88 Z"
         fill="none" stroke="#1b1730" stroke-width="2.5" stroke-linejoin="round"/>
 </svg>

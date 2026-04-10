@@ -1,4 +1,4 @@
-import {PatchCage, NurbsPatch, CageVertex} from '../models/Scene/Scene.entity';
+import {Scene, NurbsSurface, Vertex} from '../models/Scene/Scene.entity';
 import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
 import {lerp as vlerp} from 'math/vec';
@@ -6,8 +6,8 @@ import {V, Vlerp} from './helpers';
 
 export function createPatchCylinder(
   radius: number, height: number, segments: number = 4
-): PatchCage {
-  const cage = new PatchCage();
+): Scene {
+  const scene = new Scene();
   const hz = height / 2;
   const k = 4 * (Math.SQRT2 - 1) / 3; // cubic Bézier circle constant
   const quarterAngles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
@@ -16,11 +16,11 @@ export function createPatchCylinder(
   const zLevels = [-hz, -hz/3, hz/3, hz];
 
   // Build per-row vertex rings
-  const rings: CageVertex[][] = []; // rings[row] = array of 12 verts around circumference
+  const rings: Vertex[][] = []; // rings[row] = array of 12 verts around circumference
 
   for (let row = 0; row < 4; row++) {
     const z = zLevels[row];
-    const ring: CageVertex[] = [];
+    const ring: Vertex[] = [];
 
     for (let q = 0; q < 4; q++) {
       const a0 = quarterAngles[q], a1 = quarterAngles[(q+1)%4];
@@ -44,7 +44,7 @@ export function createPatchCylinder(
   // Build 4 wall patches sharing boundary vertices
   for (let q = 0; q < 4; q++) {
     const qn = (q + 1) % 4;
-    const grid: CageVertex[][] = [];
+    const grid: Vertex[][] = [];
     for (let row = 0; row < 4; row++) {
       grid.push([
         rings[row][q*3],      // on-circle start
@@ -53,7 +53,7 @@ export function createPatchCylinder(
         rings[row][qn*3],     // on-circle end (SHARED with next quarter's col 0)
       ]);
     }
-    cage.patches.push(new NurbsPatch(grid));
+    scene.surfaces.push(new NurbsSurface(grid));
   }
 
   // ---- Caps with center diamond ----
@@ -64,19 +64,19 @@ export function createPatchCylinder(
     const z = cap === 0 ? -hz : hz;
 
     // On-circle corner vertices (shared with wall)
-    const arcCorners: CageVertex[] = [];
+    const arcCorners: Vertex[] = [];
     for (let q = 0; q < 4; q++) {
       arcCorners.push(rings[wallRow][q * 3]); // SAME vertex instance as wall
     }
 
     // Diamond corner vertices
-    const dC: CageVertex[] = arcCorners.map(c => {
+    const dC: Vertex[] = arcCorners.map(c => {
       const p = vlerp([0, 0, z], c.position, dFrac);
       return V(p[0], p[1], p[2]);
     });
 
     // Radial edge vertices (shared between adjacent quarter cap patches)
-    const radialVerts: CageVertex[][] = [];
+    const radialVerts: Vertex[][] = [];
     for (let q = 0; q < 4; q++) {
       radialVerts.push([
         dC[q],
@@ -88,10 +88,10 @@ export function createPatchCylinder(
 
     // Diamond patch: grid corners are dC[0], dC[1], dC[3], dC[2]
     const dg = makeGrid([dC[0], dC[1], dC[3], dC[2]]);
-    cage.patches.push(new NurbsPatch(dg));
+    scene.surfaces.push(new NurbsSurface(dg));
 
     // Extract diamond edge vertices for each quarter (SHARED by identity with diamond grid)
-    const diamondEdges: [CageVertex, CageVertex, CageVertex, CageVertex][] = [
+    const diamondEdges: [Vertex, Vertex, Vertex, Vertex][] = [
       [dg[0][0], dg[0][1], dg[0][2], dg[0][3]],  // q=0: dC[0]→dC[1], bottom row
       [dg[0][3], dg[1][3], dg[2][3], dg[3][3]],  // q=1: dC[1]→dC[2], right col
       [dg[3][3], dg[3][2], dg[3][1], dg[3][0]],  // q=2: dC[2]→dC[3], top row reversed
@@ -109,7 +109,7 @@ export function createPatchCylinder(
       // Diamond edge vertices (SHARED with diamond grid)
       const [, de1, de2, ] = diamondEdges[q];
 
-      const grid: CageVertex[][] = [
+      const grid: Vertex[][] = [
         // Row 0: diamond edge (shared with diamond patch)
         diamondEdges[q],
         // Row 1: interpolated
@@ -120,21 +120,21 @@ export function createPatchCylinder(
         [arcCorners[q], arcH1, arcH2, arcCorners[qn]],
       ];
 
-      cage.patches.push(new NurbsPatch(grid));
+      scene.surfaces.push(new NurbsSurface(grid));
     }
   }
 
-  const allIndices = Array.from({length: cage.patches.length}, (_, i) => i);
-  cage.createGroup('Cylinder', allIndices);
+  const allIndices = Array.from({length: scene.surfaces.length}, (_, i) => i);
+  scene.createGroup('Cylinder', allIndices);
 
   // Surface sets: walls form the cylindrical side, each cap is one set of 5 patches.
   // Layout: [0..3] walls, [4..8] bottom cap (diamond + 4 quarters), [9..13] top cap.
   const sideSet = new SurfaceSet('side');
   const bottomSet = new SurfaceSet('bottom');
   const topSet = new SurfaceSet('top');
-  for (let i = 0; i <= 3; i++) sideSet.add(cage.patches[i]);
-  for (let i = 4; i <= 8; i++) bottomSet.add(cage.patches[i]);
-  for (let i = 9; i <= 13; i++) topSet.add(cage.patches[i]);
+  for (let i = 0; i <= 3; i++) sideSet.add(scene.surfaces[i]);
+  for (let i = 4; i <= 8; i++) bottomSet.add(scene.surfaces[i]);
+  for (let i = 9; i <= 13; i++) topSet.add(scene.surfaces[i]);
 
-  return cage;
+  return scene;
 }

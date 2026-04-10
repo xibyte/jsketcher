@@ -5,12 +5,12 @@ import {distance as vdist, lerp as vlerp} from 'math/vec';
 import {constrainEdgeToArc, removeArcConstraint} from './arc.command';
 
 export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: number): void {
-  const cage = view.model.cage;
+  const scene = view.scene;
 
   const applyArc90 = (flip: boolean) => {
     const patchIdx = view.selectedPatchIdx;
     const side = edgeIdx;
-    const ptch = cage.patches[patchIdx];
+    const ptch = scene.surfaces[patchIdx];
     const ev = ptch.getEdgeVertices(side);
 
     const chord = vdist(ev[0].position, ev[3].position);
@@ -24,7 +24,7 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
     let planeNormal = ptch.normal(u, v);
     if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]] as [number, number, number];
 
-    cage.arcConstraints = cage.arcConstraints.filter((c: any) => {
+    scene.arcConstraints = scene.arcConstraints.filter((c: any) => {
       if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
         if (c.mode === 'rational') ptch.rational = false;
         return false;
@@ -32,8 +32,7 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
       return true;
     });
 
-    constrainEdgeToArc(cage, patchIdx, side, radius, 90, planeNormal, 'rational');
-    view.model.recompute();
+    constrainEdgeToArc(scene, patchIdx, side, radius, 90, planeNormal, 'rational');
     view.rebuildAll();
     view.persistCageState();
     view.showEdgeDialog(edgeIdx);
@@ -45,12 +44,12 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
   const removeBtn = panel.querySelector('#edge-remove-arc');
   if (removeBtn) {
     removeBtn.addEventListener('click', () => {
-      cage.arcConstraints = cage.arcConstraints.filter((c: any) => {
+      scene.arcConstraints = scene.arcConstraints.filter((c: any) => {
         if (c.patchSide && c.patchSide.patchIdx === view.selectedPatchIdx && c.patchSide.side === edgeIdx) {
           if (c.mode === 'rational') {
-            cage.patches[c.patchSide.patchIdx].rational = false;
+            scene.surfaces[c.patchSide.patchIdx].rational = false;
           }
-          const ev = cage.patches[view.selectedPatchIdx].getEdgeVertices(edgeIdx);
+          const ev = scene.surfaces[view.selectedPatchIdx].getEdgeVertices(edgeIdx);
           const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
           const lp2 = vlerp(ev[0].position, ev[3].position, 2/3);
           ev[1].set(lp1[0], lp1[1], lp1[2]);
@@ -59,11 +58,10 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
         }
         return true;
       });
-      cage.patches[view.selectedPatchIdx].weights.forEach((row: number[]) => {
+      scene.surfaces[view.selectedPatchIdx].weights.forEach((row: number[]) => {
         for (let i = 0; i < row.length; i++) row[i] = 1;
       });
-      cage.patches[view.selectedPatchIdx].rational = false;
-      view.model.recompute();
+      scene.surfaces[view.selectedPatchIdx].rational = false;
       view.rebuildAll();
       view.persistCageState();
       view.showEdgeDialog(edgeIdx);
@@ -129,11 +127,10 @@ export function showArcDialog(view: any): void {
 
   panel.querySelector('#arc-close')!.addEventListener('click', () => closeArcDialog(view));
   panel.querySelector('#arc-remove')!.addEventListener('click', () => {
-    const cage = view.model.cage;
-    if (cage.arcConstraints.length > 0) {
-      removeArcConstraint(cage, cage.arcConstraints[cage.arcConstraints.length - 1]);
+    const scene = view.scene;
+    if (scene.arcConstraints.length > 0) {
+      removeArcConstraint(scene, scene.arcConstraints[scene.arcConstraints.length - 1]);
     }
-    view.model.recompute();
     view.rebuildAll();
     view.persistCageState();
     closeArcDialog(view);
@@ -154,8 +151,8 @@ export function applyArcFromDialog(view: any): void {
 
   if (isNaN(radius) || radius <= 0) return;
 
-  const cage = view.model.cage;
-  const patch = cage.patches[patchIdx];
+  const scene = view.scene;
+  const patch = scene.surfaces[patchIdx];
   if (!patch) return;
 
   const edgeVerts = patch.getEdgeVertices(side);
@@ -174,18 +171,17 @@ export function applyArcFromDialog(view: any): void {
   let planeNormal = patch.normal(u, v);
   if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]] as [number, number, number];
 
-  cage.arcConstraints = cage.arcConstraints.filter((c: any) => {
+  scene.arcConstraints = scene.arcConstraints.filter((c: any) => {
     if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
       if (c.mode === 'rational') {
-        cage.patches[c.patchSide.patchIdx].rational = false;
+        scene.surfaces[c.patchSide.patchIdx].rational = false;
       }
       return false;
     }
     return true;
   });
 
-  constrainEdgeToArc(cage, patchIdx, side, radius, angle, planeNormal, mode as any);
-  view.model.recompute();
+  constrainEdgeToArc(scene, patchIdx, side, radius, angle, planeNormal, mode as any);
   view.rebuildAll();
   if (view.selectedPatchIdx >= 0) {
     view.buildSubcage(view.selectedPatchIdx);
