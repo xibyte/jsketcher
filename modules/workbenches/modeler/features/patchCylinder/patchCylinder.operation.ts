@@ -1,2 +1,2 @@
-// Re-export from canonical location in patchCage/ops
-export {PatchCylinderOperation} from 'patchCage/ops/cylinder/cylinder.ui';
+// Re-export from canonical location in surfacing/ops
+export {PatchCylinderOperation} from 'surfacing/ops/cylinder/cylinder.ui';

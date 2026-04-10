@@ -1,2 +1,2 @@
-// Re-export from canonical location in patchCage/ops
-export {PatchBoxOperation} from 'patchCage/ops/box/box.ui';
+// Re-export from canonical location in surfacing/ops
+export {PatchBoxOperation} from 'surfacing/ops/box/box.ui';
