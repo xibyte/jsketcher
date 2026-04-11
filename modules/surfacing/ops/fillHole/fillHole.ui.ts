@@ -1,26 +1,38 @@
 /**
  * Fill hole UI: mode toggle, preview, execute.
+ *
+ * State lives on the SurfacingEditor as plain fields
+ * (`_fillHoleMode`, `_fillHoleLoop`, `_fillHoleHighlighted`). These
+ * functions take the editor as their first argument — same pattern as
+ * bridge.ui.ts.
+ *
+ * The hole-boundary preview is drawn by flipping
+ * `BoundingCurveObject3D.setHighlightColor` on each edge of the traced
+ * loop, not by creating parallel ScalableLines. (The only place in
+ * surfacing where we still tessellate a curve for preview purposes is
+ * loop split, per design.)
  */
-import ScalableLine from 'scene/objects/scalableLine';
 import {traceHole, fillHole} from './fillHole.command';
 import {applyG1AllSides} from '../continuity/continuity.command';
+import {toggleBridgeMode} from '../bridge/bridge.ui';
+import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
+import type {BoundingCurveObject3D} from '../../models/BoundingCurve/BoundingCurve.object3d';
+
+// Rotating colors for the hole's edges — matches the old visual.
+const LOOP_COLORS = [0x44ee44, 0xee8800, 0x4488ee, 0xee4444];
 
 export function toggleFillHoleMode(view: any): void {
   view._fillHoleMode = !view._fillHoleMode;
   if (view._fillHoleMode) {
     if (view._loopInsertMode) view.toggleLoopInsertMode();
-    if (view._bridgeMode) view.toggleBridgeMode();
-    view.selectPatch(-1);
-    view.setHover(-1);
-    view._fillHoleLoop = null;
-    view.clearGroup(view._fillHolePreviewGroup);
-    view._fillHolePreviewGroup.visible = false;
+    if (view._bridgeMode) toggleBridgeMode(view);
+    view.selectPatch(null);
+    view.setHover(null);
+    resetFillHoleState(view);
     document.body.style.cursor = 'crosshair';
     view.showModeGuide('fill');
   } else {
-    view._fillHoleLoop = null;
-    view.clearGroup(view._fillHolePreviewGroup);
-    view._fillHolePreviewGroup.visible = false;
+    resetFillHoleState(view);
     document.body.style.cursor = '';
     view.closeModeGuide();
     view.ctx.viewer.requestRender();
@@ -28,12 +40,11 @@ export function toggleFillHoleMode(view: any): void {
 }
 
 export function fillHolePreview(view: any, e: MouseEvent): void {
-  const hit = view.bridgeHitEdge(e);
-  view.clearGroup(view._fillHolePreviewGroup);
+  clearFillHoleHighlights(view);
   view._fillHoleLoop = null;
 
+  const hit = view.hitSurfaceEdge(e);
   if (!hit) {
-    view._fillHolePreviewGroup.visible = false;
     view.ctx.viewer.requestRender();
     return;
   }
@@ -42,42 +53,26 @@ export function fillHolePreview(view: any, e: MouseEvent): void {
   const adj = scene.findAdjacentPatches(hit.patchIdx);
   const isShared = adj.some((a: any) => a.side === hit.side);
   if (isShared) {
-    view._fillHolePreviewGroup.visible = false;
+    // Not a free edge — no hole here.
     view.ctx.viewer.requestRender();
     return;
   }
 
   const loop = traceHole(scene, hit.patchIdx, hit.side);
   if (!loop || (loop.length !== 3 && loop.length !== 4)) {
-    view._fillHolePreviewGroup.visible = false;
     view.ctx.viewer.requestRender();
     return;
   }
 
   view._fillHoleLoop = loop;
-  const ss = view.ctx.viewer.sceneSetup;
-  const N = 24;
 
-  const colors = [0x44ee44, 0xee8800, 0x4488ee, 0xee4444];
   for (let i = 0; i < loop.length; i++) {
     const edge = loop[i];
-    const cps = edge.verts.map((v: any) => v.position);
-    const pts = [];
-    for (let j = 0; j <= N; j++) {
-      const t = j / N, mt = 1 - t;
-      pts.push([
-        mt*mt*mt*cps[0][0]+3*mt*mt*t*cps[1][0]+3*mt*t*t*cps[2][0]+t*t*t*cps[3][0],
-        mt*mt*mt*cps[0][1]+3*mt*mt*t*cps[1][1]+3*mt*t*t*cps[2][1]+t*t*t*cps[3][1],
-        mt*mt*mt*cps[0][2]+3*mt*mt*t*cps[1][2]+3*mt*t*t*cps[2][2]+t*t*t*cps[3][2],
-      ]);
-    }
-    const line = new ScalableLine(ss, pts, 4, colors[i % colors.length]);
-    line.renderOrder = 4;
-    line.raycast = () => {};
-    view._fillHolePreviewGroup.add(line);
+    const curve: BoundingCurve = scene.surfaces[edge.patchIdx].getBoundingCurve(edge.side);
+    (curve.object3d as BoundingCurveObject3D | null)?.setHighlightColor(LOOP_COLORS[i % LOOP_COLORS.length]);
+    view._fillHoleHighlighted.push(curve);
   }
 
-  view._fillHolePreviewGroup.visible = true;
   view.ctx.viewer.requestRender();
 }
 
@@ -93,8 +88,19 @@ export function fillHoleExecute(view: any): void {
     view.persistCageState();
   }
 
-  view._fillHoleLoop = null;
-  view.clearGroup(view._fillHolePreviewGroup);
-  view._fillHolePreviewGroup.visible = false;
+  resetFillHoleState(view);
   view.ctx.viewer.requestRender();
+}
+
+function clearFillHoleHighlights(view: any): void {
+  const highlighted: BoundingCurve[] = view._fillHoleHighlighted;
+  for (const c of highlighted) {
+    (c.object3d as BoundingCurveObject3D | null)?.setHighlightColor(null);
+  }
+  highlighted.length = 0;
+}
+
+function resetFillHoleState(view: any): void {
+  clearFillHoleHighlights(view);
+  view._fillHoleLoop = null;
 }

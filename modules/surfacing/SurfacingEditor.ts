@@ -12,6 +12,17 @@ import type {BoundingCurve} from './models/BoundingCurve/BoundingCurve.entity';
 import type {Scene} from './models/Scene/Scene.entity';
 import type {SurfacingContext} from './SurfacingContext';
 import {surfacingViewFlags$} from './surfacingViewFlags';
+import {
+  toggleBridgeMode,
+  bridgePickEdge,
+  bridgeFlip,
+  bridgeExecute,
+} from './ops/bridge/bridge.ui';
+import {
+  toggleFillHoleMode,
+  fillHolePreview,
+  fillHoleExecute,
+} from './ops/fillHole/fillHole.ui';
 
 // bottom, right, top, left — used by showEdgeDialog for the edge colour swatch
 const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22];
@@ -96,9 +107,9 @@ export class SurfacingEditor {
         if (this._loopInsertMode) {
           this.loopInsertExecute(e);
         } else if (this._bridgeMode) {
-          this.bridgePickEdge(e);
+          bridgePickEdge(this, e);
         } else if (this._fillHoleMode) {
-          this.fillHoleExecute();
+          fillHoleExecute(this);
         } else {
           this.pickPatch(e);
         }
@@ -110,7 +121,7 @@ export class SurfacingEditor {
         return;
       }
       if (this._fillHoleMode) {
-        this.fillHolePreview(e);
+        fillHolePreview(this, e);
         return;
       }
       // Surface hover is driven by per-mesh onMouseEnter/onMouseLeave now —
@@ -127,14 +138,14 @@ export class SurfacingEditor {
         return;
       }
       if (this._bridgeMode) {
-        if (e.key === 'Escape') { this.toggleBridgeMode(); return; }
-        if (e.key === 'Tab') { e.preventDefault(); this.bridgeFlip(); return; }
+        if (e.key === 'Escape') { toggleBridgeMode(this); return; }
+        if (e.key === 'Tab') { e.preventDefault(); bridgeFlip(this); return; }
         if (e.key === 'g' || e.key === 'G') { this.toggleG1Continuity(); return; }
-        if (e.key === 'Enter' && this._bridgeEdge1 && this._bridgeEdge2) { this.bridgeExecute(); return; }
+        if (e.key === 'Enter' && this._bridgeEdge1 && this._bridgeEdge2) { bridgeExecute(this); return; }
         return;
       }
       if (this._fillHoleMode) {
-        if (e.key === 'Escape') { this.toggleFillHoleMode(); return; }
+        if (e.key === 'Escape') { toggleFillHoleMode(this); return; }
         if (e.key === 'g' || e.key === 'G') { this.toggleG1Continuity(); return; }
         return;
       }
@@ -165,26 +176,27 @@ export class SurfacingEditor {
     this._onLoopToggle = () => this.toggleLoopInsertMode();
     document.addEventListener('patch-insert-loop-toggle', this._onLoopToggle);
 
-    // Bridge surface mode
+    // Bridge surface mode — state fields live on the editor; behavior lives
+    // in ops/bridge/bridge.ui.ts (same pattern as fillHole.ui.ts).
     this._bridgeMode = false;
     this._bridgeEdge1 = null; // {patchIdx, side}
     this._bridgeEdge2 = null;
     this._bridgeFlipped = false;
+    this._bridgeHighlighted = [] as BoundingCurve[];
     this._bridgePreviewGroup = SceneGraph.createGroup();
     this._bridgePreviewGroup.visible = false;
     this.overlaysGroup.add(this._bridgePreviewGroup);
 
-    this._onBridgeToggle = () => this.toggleBridgeMode();
+    this._onBridgeToggle = () => toggleBridgeMode(this);
     document.addEventListener('patch-bridge-toggle', this._onBridgeToggle);
 
-    // Fill hole mode
+    // Fill hole mode — state fields live on the editor; behavior lives
+    // in ops/fillHole/fillHole.ui.ts (same pattern as bridge).
     this._fillHoleMode = false;
-    this._fillHolePreviewGroup = SceneGraph.createGroup();
-    this._fillHolePreviewGroup.visible = false;
-    this.overlaysGroup.add(this._fillHolePreviewGroup);
     this._fillHoleLoop = null;
+    this._fillHoleHighlighted = [] as BoundingCurve[];
 
-    this._onFillHoleToggle = () => this.toggleFillHoleMode();
+    this._onFillHoleToggle = () => toggleFillHoleMode(this);
     document.addEventListener('patch-fill-hole-toggle', this._onFillHoleToggle);
 
     // G1 continuity toggle for bridge/fill modes
@@ -1072,7 +1084,7 @@ export class SurfacingEditor {
       const flipBtn = document.createElement('button');
       flipBtn.style.cssText = 'padding:4px 10px;background:#446;color:#eee;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-family:sans-serif;white-space:nowrap;';
       flipBtn.textContent = 'Flip';
-      flipBtn.onclick = () => this.bridgeFlip();
+      flipBtn.onclick = () => bridgeFlip(this);
       panel.appendChild(flipBtn);
     }
 
@@ -1102,135 +1114,10 @@ export class SurfacingEditor {
     }
   }
 
-  // ---- Fill Hole Mode ----
-
-  toggleFillHoleMode() {
-    this._fillHoleMode = !this._fillHoleMode;
-    if (this._fillHoleMode) {
-      if (this._loopInsertMode) this.toggleLoopInsertMode();
-      if (this._bridgeMode) this.toggleBridgeMode();
-      this.selectPatch(-1);
-      this.setHover(-1);
-      this._fillHoleLoop = null;
-      this.clearGroup(this._fillHolePreviewGroup);
-      this._fillHolePreviewGroup.visible = false;
-      document.body.style.cursor = 'crosshair';
-      this.showModeGuide('fill');
-    } else {
-      this._fillHoleLoop = null;
-      this.clearGroup(this._fillHolePreviewGroup);
-      this._fillHolePreviewGroup.visible = false;
-      document.body.style.cursor = '';
-      this.closeModeGuide();
-      this.ctx.viewer.requestRender();
-    }
-  }
-
-  fillHolePreview(e) {
-    const hit = this.bridgeHitEdge(e);
-    this.clearGroup(this._fillHolePreviewGroup);
-    this._fillHoleLoop = null;
-
-    if (!hit) {
-      this._fillHolePreviewGroup.visible = false;
-      this.ctx.viewer.requestRender();
-      return;
-    }
-
-    // Check if this edge is a free edge
-    const scene = this.scene;
-    const adj = scene.findAdjacentPatches(hit.patchIdx);
-    const isShared = adj.some(a => a.side === hit.side);
-    if (isShared) {
-      // Not a free edge — no hole here
-      this._fillHolePreviewGroup.visible = false;
-      this.ctx.viewer.requestRender();
-      return;
-    }
-
-    // Trace hole boundary
-    const loop = scene.traceHole(hit.patchIdx, hit.side);
-    if (!loop || (loop.length !== 3 && loop.length !== 4)) {
-      this._fillHolePreviewGroup.visible = false;
-      this.ctx.viewer.requestRender();
-      return;
-    }
-
-    this._fillHoleLoop = loop;
-    const ss = this.ctx.viewer.sceneSetup;
-    const N = 24;
-
-    // Draw each edge of the hole in alternating colors
-    const colors = [0x44ee44, 0xee8800, 0x4488ee, 0xee4444];
-    for (let i = 0; i < loop.length; i++) {
-      const edge = loop[i];
-      const cps = edge.verts.map(v => v.position);
-      const pts = [];
-      for (let j = 0; j <= N; j++) {
-        const t = j / N, mt = 1 - t;
-        pts.push([
-          mt*mt*mt*cps[0][0]+3*mt*mt*t*cps[1][0]+3*mt*t*t*cps[2][0]+t*t*t*cps[3][0],
-          mt*mt*mt*cps[0][1]+3*mt*mt*t*cps[1][1]+3*mt*t*t*cps[2][1]+t*t*t*cps[3][1],
-          mt*mt*mt*cps[0][2]+3*mt*mt*t*cps[1][2]+3*mt*t*t*cps[2][2]+t*t*t*cps[3][2],
-        ]);
-      }
-      const line = new ScalableLine(ss, pts, 4, colors[i % colors.length]);
-      line.renderOrder = 4;
-      line.raycast = () => {};
-      this._fillHolePreviewGroup.add(line);
-    }
-
-    this._fillHolePreviewGroup.visible = true;
-    this.ctx.viewer.requestRender();
-  }
-
-  fillHoleExecute() {
-    if (!this._fillHoleLoop) return;
-    const scene = this.scene;
-
-    if (scene.fillHole(this._fillHoleLoop)) {
-      if (this._g1Continuity) {
-        scene.applyG1AllSides(scene.surfaces.length - 1);
-      }
-      ;
-      this.rebuildAll();
-      this.persistCageState();
-    }
-
-    this._fillHoleLoop = null;
-    this.clearGroup(this._fillHolePreviewGroup);
-    this._fillHolePreviewGroup.visible = false;
-    this.ctx.viewer.requestRender();
-  }
-
-  // ---- Bridge Surface Mode ----
-
-  toggleBridgeMode() {
-    this._bridgeMode = !this._bridgeMode;
-    if (this._bridgeMode) {
-      if (this._loopInsertMode) this.toggleLoopInsertMode();
-      if (this._fillHoleMode) this.toggleFillHoleMode();
-      this.selectPatch(-1);
-      this.setHover(-1);
-      this._bridgeEdge1 = null;
-      this._bridgeEdge2 = null;
-      this._bridgeFlipped = false;
-      this.clearGroup(this._bridgePreviewGroup);
-      this._bridgePreviewGroup.visible = false;
-      document.body.style.cursor = 'crosshair';
-      this.showModeGuide('bridge');
-    } else {
-      this._bridgeEdge1 = null;
-      this._bridgeEdge2 = null;
-      this.clearGroup(this._bridgePreviewGroup);
-      this._bridgePreviewGroup.visible = false;
-      document.body.style.cursor = '';
-      this.closeModeGuide();
-      this.ctx.viewer.requestRender();
-    }
-  }
-
-  bridgeHitEdge(e) {
+  // Shared edge-picking utility used by bridge.ui and fillHole.ui —
+  // raycasts the solid meshes, finds the closest patch + closest of its
+  // 4 sides. Not mode-specific, so it stays on the editor.
+  hitSurfaceEdge(e) {
     // Raycast against the solid mesh, find closest patch, then determine closest boundary edge
     const ss = this.ctx.viewer.sceneSetup;
     const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
@@ -1268,128 +1155,13 @@ export class SurfacingEditor {
     return {patchIdx: bestPi, side: minSide};
   }
 
-  bridgePickEdge(e) {
-    const hit = this.bridgeHitEdge(e);
-    if (!hit) return;
-
-    if (!this._bridgeEdge1) {
-      this._bridgeEdge1 = hit;
-      this.bridgeUpdatePreview();
-    } else if (!this._bridgeEdge2) {
-      this._bridgeEdge2 = hit;
-      // Auto-detect best orientation: pick the one that minimizes corner distance
-      const scene = this.scene;
-      const e1 = scene.surfaces[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
-      const e2 = scene.surfaces[hit.patchIdx].getEdgeVertices(hit.side);
-      const fwdDist = vdist(e1[0].position, e2[0].position) + vdist(e1[3].position, e2[3].position);
-      const revDist = vdist(e1[0].position, e2[3].position) + vdist(e1[3].position, e2[0].position);
-      this._bridgeFlipped = revDist < fwdDist;
-      this.bridgeUpdatePreview();
-    } else {
-      // Third click = confirm (same as Enter)
-      this.bridgeExecute();
-    }
-  }
-
-  bridgeFlip() {
-    if (!this._bridgeEdge1 || !this._bridgeEdge2) return;
-    this._bridgeFlipped = !this._bridgeFlipped;
-    this.bridgeUpdatePreview();
-    this.ctx.viewer.requestRender();
-  }
-
-  bridgeUpdatePreview() {
-    this.clearGroup(this._bridgePreviewGroup);
-    const ss = this.ctx.viewer.sceneSetup;
-    const scene = this.scene;
-    const N = 24;
-
-    // Draw edge 1 highlight
-    if (this._bridgeEdge1) {
-      const pts = this.tessellateEdge(this._bridgeEdge1.patchIdx, this._bridgeEdge1.side, N);
-      const line = new ScalableLine(ss, pts, 4, 0x44ee44);
-      line.renderOrder = 4;
-      line.raycast = () => {};
-      this._bridgePreviewGroup.add(line);
-    }
-
-    // Draw edge 2 highlight
-    if (this._bridgeEdge2) {
-      const pts = this.tessellateEdge(this._bridgeEdge2.patchIdx, this._bridgeEdge2.side, N);
-      const line = new ScalableLine(ss, pts, 4, 0xee8800);
-      line.renderOrder = 4;
-      line.raycast = () => {};
-      this._bridgePreviewGroup.add(line);
-
-      // Preview bridge surface wireframe
-      const e1Verts = scene.surfaces[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
-      let e2Verts = scene.surfaces[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
-      if (this._bridgeFlipped) e2Verts = [e2Verts[3], e2Verts[2], e2Verts[1], e2Verts[0]];
-
-      // Draw connecting lines between corresponding endpoints
-      for (let ci = 0; ci < 4; ci += 3) {
-        const p1 = e1Verts[ci].position;
-        const p2 = e2Verts[ci].position;
-        const pts = [p1, p2];
-        const line = new ScalableLine(ss, pts, 2, 0xaaaaaa);
-        line.renderOrder = 4;
-        line.raycast = () => {};
-        this._bridgePreviewGroup.add(line);
-      }
-    }
-
-    this._bridgePreviewGroup.visible = true;
-    this.ctx.viewer.requestRender();
-  }
-
-  tessellateEdge(patchIdx, side, N) {
-    const patch = this.scene.surfaces[patchIdx];
-    const verts = patch.getEdgeVertices(side);
-    const cps = verts.map(v => v.position);
-    const pts = [];
-    for (let i = 0; i <= N; i++) {
-      const t = i / N, mt = 1 - t;
-      pts.push([
-        mt*mt*mt*cps[0][0]+3*mt*mt*t*cps[1][0]+3*mt*t*t*cps[2][0]+t*t*t*cps[3][0],
-        mt*mt*mt*cps[0][1]+3*mt*mt*t*cps[1][1]+3*mt*t*t*cps[2][1]+t*t*t*cps[3][1],
-        mt*mt*mt*cps[0][2]+3*mt*mt*t*cps[1][2]+3*mt*t*t*cps[2][2]+t*t*t*cps[3][2],
-      ]);
-    }
-    return pts;
-  }
-
-  bridgeExecute() {
-    if (!this._bridgeEdge1 || !this._bridgeEdge2) return;
-    const scene = this.scene;
-    const {bridgeSurface} = require('../../ops/bridge/bridge.command');
-
-    const e1 = scene.surfaces[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
-    const e2 = scene.surfaces[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
-    bridgeSurface(scene, e1, e2, {
-      flipped: this._bridgeFlipped,
-      g1: this._g1Continuity,
-      sourcePatchIdx: this._bridgeEdge1.patchIdx,
-    });
-
-    this.rebuildAll();
-    this.persistCageState();
-
-    // Reset state, stay in bridge mode for more bridges
-    this._bridgeEdge1 = null;
-    this._bridgeEdge2 = null;
-    this._bridgeFlipped = false;
-    this.clearGroup(this._bridgePreviewGroup);
-    this._bridgePreviewGroup.visible = false;
-    this.ctx.viewer.requestRender();
-  }
-
   // ---- Loop Insert Mode ----
 
   toggleLoopInsertMode() {
     this._loopInsertMode = !this._loopInsertMode;
     if (this._loopInsertMode) {
-      this.selectPatch(-1);
-      this.setHover(-1);
+      this.selectPatch(null);
+      this.setHover(null);
       document.body.style.cursor = 'crosshair';
     } else {
       this.clearGroup(this._loopPreviewGroup);
@@ -1555,7 +1327,6 @@ export class SurfacingEditor {
     this.clearGroup(this.hoverGroup);
     this.clearGroup(this._loopPreviewGroup);
     this.clearGroup(this._bridgePreviewGroup);
-    this.clearGroup(this._fillHolePreviewGroup);
     if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown);
     if (this._selectionGizmo) {
       const s = this.ctx.viewer.sceneSetup.scene;

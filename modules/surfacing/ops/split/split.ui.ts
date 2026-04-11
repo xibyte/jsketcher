@@ -9,13 +9,13 @@ export function handleSplitKeydown(view: any, key: string): boolean {
   if (view.selectedPatchIdx < 0) return false;
   if (key === 'u' || key === 'U') {
     splitIsoline(view.scene, view.selectedPatchIdx, 'u', 0.5);
-    view.selectPatch(-1);
+    view.selectPatch(null);
     view.rebuildAll();
     view.persistCageState();
     return true;
   } else if (key === 'v' || key === 'V') {
     splitIsoline(view.scene, view.selectedPatchIdx, 'v', 0.5);
-    view.selectPatch(-1);
+    view.selectPatch(null);
     view.rebuildAll();
     view.persistCageState();
     return true;
@@ -26,8 +26,8 @@ export function handleSplitKeydown(view: any, key: string): boolean {
 export function toggleLoopInsertMode(view: any): void {
   view._loopInsertMode = !view._loopInsertMode;
   if (view._loopInsertMode) {
-    view.selectPatch(-1);
-    view.setHover(-1);
+    view.selectPatch(null);
+    view.setHover(null);
     document.body.style.cursor = 'crosshair';
   } else {
     view.clearGroup(view._loopPreviewGroup);
