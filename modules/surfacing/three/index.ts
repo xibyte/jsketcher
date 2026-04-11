@@ -12,3 +12,6 @@ export * from './materials';
 export * from './geometries';
 export * from './tessellation';
 export * from './EntityObject3D';
+export * from './selection';
+export * from './SelectionGizmoOverlay';
+export * from './SubcageObject3D';

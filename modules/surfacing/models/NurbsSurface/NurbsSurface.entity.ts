@@ -59,12 +59,74 @@ export class NurbsSurface extends GeometricEntity {
   /** Logical grouping into a face. Shared by reference between adjacent surfaces. */
   surfaceSet: SurfaceSet | null = null;
 
+  /** Dirty flag for frame-scheduled visual rebuilds. */
+  private _dirtyVisual: boolean = false;
+
+  /**
+   * Cached tessellation result. Shared by the mesh, wireframe, edge lines
+   * and boundary-curve visuals so we never evaluate the surface twice for
+   * the same frame. Cleared whenever a vertex the surface depends on moves.
+   */
+  private _tessCache: {
+    resolution: number,
+    positions: number[],
+    normals: number[],
+    indices: number[],
+  } | null = null;
+
   constructor(grid: Vertex[][], weights?: number[][], id?: string) {
     super(id ?? generateEntityId('S'));
     this.grid = grid;
     this.weights = weights || [[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]];
     this.rational = !!weights;
+    this._registerVertices();
     this.syncEntityGraph();
+  }
+
+  /**
+   * Mark the visual stale. The Three.js view (this.object3d, set by its
+   * constructor) will rebuild itself on the next animation frame if it
+   * implements invalidate(). Called by Vertex.set() for every dependent.
+   */
+  invalidateVisual(): void {
+    // Drop the cached tessellation immediately — any reader after this
+    // point will get fresh data.
+    this._tessCache = null;
+    if (this._dirtyVisual) return;
+    this._dirtyVisual = true;
+    // Schedule on next frame — constraint cascades that move 4 CPs in a row
+    // coalesce into a single rebuild. If there's no rAF (e.g. tests), fall
+    // back to synchronous.
+    const raf = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : null;
+    const flush = () => {
+      this._dirtyVisual = false;
+      const view: any = (this as any).object3d;
+      if (view && typeof view.rebuild === 'function') view.rebuild(this);
+    };
+    if (raf) raf(flush); else flush();
+  }
+
+  /** Add this surface as a dependent on every vertex in the grid. */
+  _registerVertices(): void {
+    for (const row of this.grid) {
+      for (const v of row) v.usedBy.add(this);
+    }
+  }
+
+  /** Remove this surface from the usedBy set of every vertex in the grid. */
+  _unregisterVertices(): void {
+    for (const row of this.grid) {
+      for (const v of row) v.usedBy.delete(this);
+    }
+  }
+
+  /** Replace the grid with a new one, updating usedBy back-references. */
+  replaceGrid(newGrid: Vertex[][]): void {
+    this._unregisterVertices();
+    this.grid = newGrid;
+    this._registerVertices();
+    this.syncEntityGraph();
+    this.invalidateVisual();
   }
 
   /** Rebuild ControlPoint/BoundingCurve/Cage from current grid + weights */
@@ -156,9 +218,20 @@ export class NurbsSurface extends GeometricEntity {
     return normalize(cross(du, dv)) as Vec3;
   }
 
+  /**
+   * Tessellate the surface at the given resolution, returning positions,
+   * normals, and triangle indices. Result is cached until the next
+   * invalidateVisual() so boundary-curve/wireframe/edge visuals can all
+   * reuse the same sample points as the mesh.
+   */
   tessellate(resolution: number = 8): {
     positions: number[], normals: number[], indices: number[]
   } {
+    const cache = this._tessCache;
+    if (cache && cache.resolution === resolution) {
+      return {positions: cache.positions, normals: cache.normals, indices: cache.indices};
+    }
+
     const positions: number[] = [], normals: number[] = [], indices: number[] = [];
     const n = resolution;
 
@@ -174,7 +247,58 @@ export class NurbsSurface extends GeometricEntity {
       indices.push(a, b, d, a, d, c);
     }
 
+    this._tessCache = {resolution, positions, normals, indices};
     return {positions, normals, indices};
+  }
+
+  /**
+   * Extract the boundary polyline for one side from the cached mesh
+   * tessellation. Points match mesh vertices EXACTLY, so edge lines
+   * never drift away from the shaded surface. side: 0=bottom, 1=right,
+   * 2=top, 3=left.
+   */
+  getEdgePolyline(side: number, resolution: number = 8): number[][] {
+    const tess = this.tessellate(resolution);
+    const n = resolution;
+    const pts: number[][] = [];
+    const getPoint = (row: number, col: number): number[] => {
+      const idx = (row * (n + 1) + col) * 3;
+      return [tess.positions[idx], tess.positions[idx + 1], tess.positions[idx + 2]];
+    };
+    switch (side) {
+      case 0: for (let i = 0; i <= n; i++) pts.push(getPoint(0, i)); break;
+      case 1: for (let j = 0; j <= n; j++) pts.push(getPoint(j, n)); break;
+      case 2: for (let i = 0; i <= n; i++) pts.push(getPoint(n, i)); break;
+      case 3: for (let j = 0; j <= n; j++) pts.push(getPoint(j, 0)); break;
+    }
+    return pts;
+  }
+
+  /**
+   * Extract the UV-grid isolines (polylines) from the cached mesh
+   * tessellation — N+1 rows (constant V) + N+1 columns (constant U).
+   * This is exactly the wireframe overlay.
+   */
+  getIsolinePolylines(resolution: number = 8): {rows: number[][][], cols: number[][][]} {
+    const tess = this.tessellate(resolution);
+    const n = resolution;
+    const getPoint = (row: number, col: number): number[] => {
+      const idx = (row * (n + 1) + col) * 3;
+      return [tess.positions[idx], tess.positions[idx + 1], tess.positions[idx + 2]];
+    };
+    const rows: number[][][] = [];
+    for (let j = 0; j <= n; j++) {
+      const row: number[][] = [];
+      for (let i = 0; i <= n; i++) row.push(getPoint(j, i));
+      rows.push(row);
+    }
+    const cols: number[][][] = [];
+    for (let i = 0; i <= n; i++) {
+      const col: number[][] = [];
+      for (let j = 0; j <= n; j++) col.push(getPoint(j, i));
+      cols.push(col);
+    }
+    return {rows, cols};
   }
 }
 
