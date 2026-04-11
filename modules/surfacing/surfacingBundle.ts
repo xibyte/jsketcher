@@ -78,13 +78,10 @@ export function activate(ctx: any) {
       // Append surfaces and groups from the new scene into the existing one.
       // SurfaceSets are stored on the surface instances themselves —
       // pushing the surface preserves its surfaceSet reference automatically.
-      const baseIdx = scene.surfaces.length;
-      for (const surface of newScene.surfaces) {
-        scene.surfaces.push(surface);
-      }
-      for (const g of newScene.groups) {
-        scene.createGroup(g.name, g.patchIndices.map(i => i + baseIdx));
-      }
+      // Group entities hold direct surface refs, so they can be moved over
+      // verbatim with no index remapping.
+      for (const surface of newScene.surfaces) scene.surfaces.push(surface);
+      for (const g of newScene.groups) scene.groups.push(g);
       scene.syncEntityGraph();
       if (view) {
         view.rebuildAll();

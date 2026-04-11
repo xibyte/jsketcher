@@ -102,6 +102,7 @@ function splitSinglePatchShared(
 ): void {
   const patch = scene.surfaces[patchIdx];
   const sourceSet = patch.surfaceSet; // capture before splice
+  const sourceGroup = scene.findGroupOfSurface(patch);
   const g = patch.grid;
 
   let leftPatch: NurbsSurface, rightPatch: NurbsSurface;
@@ -174,5 +175,9 @@ function splitSinglePatchShared(
   }
 
   scene.surfaces.splice(patchIdx, 1, leftPatch, rightPatch);
-  scene.notifySplice(patchIdx, 1, 2);
+  if (sourceGroup) {
+    sourceGroup.removeSurface(patch);
+    sourceGroup.addSurface(leftPatch);
+    sourceGroup.addSurface(rightPatch);
+  }
 }

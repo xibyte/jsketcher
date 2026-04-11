@@ -9,8 +9,8 @@ import {add as vadd, sub as vsub, mul as vscale, normalize as vnormalize, distan
  * Returns indices of all newly created mirror patches.
  */
 export function mirrorAcrossEdge(scene: Scene, patchIdx: number, side: number): number[] {
-  const group = scene.findGroupOfPatch(patchIdx);
   const patch = scene.surfaces[patchIdx];
+  const group = scene.findGroupOfSurface(patch);
   const edgeVerts = patch.getEdgeVertices(side);
 
   // Build mirror plane from the selected edge
@@ -41,7 +41,9 @@ export function mirrorAcrossEdge(scene: Scene, patchIdx: number, side: number): 
   // Connect shared edges between adjacent mirror patches
   stitchMirrorEdges(scene, result);
 
-  scene.notifyPush(result.length, group);
+  if (group) {
+    for (const idx of result) group.addSurface(scene.surfaces[idx]);
+  }
   return result;
 }
 
@@ -297,10 +299,12 @@ export function removeMirrorConstraint(scene: Scene, mc: MirrorConstraint, delet
   const idx = scene.mirrorConstraints.indexOf(mc);
   if (idx >= 0) scene.mirrorConstraints.splice(idx, 1);
   if (deletePatch) {
-    const pi = scene.surfaces.indexOf(scene.surfaces[mc.mirrorPatchIdx]);
+    const removed = scene.surfaces[mc.mirrorPatchIdx];
+    const pi = scene.surfaces.indexOf(removed);
     if (pi >= 0) {
       scene.surfaces.splice(pi, 1);
-      scene.notifySplice(pi, 1, 0);
+      // Drop the removed surface from any group that holds it
+      for (const g of scene.groups) g.removeSurface(removed);
       // Re-index all constraints that reference patches after the deleted one
       for (const m of scene.mirrorConstraints) {
         if (m.sourcePatchIdx > pi) m.sourcePatchIdx--;

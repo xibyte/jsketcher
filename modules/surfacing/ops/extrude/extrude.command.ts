@@ -6,8 +6,8 @@ import {mul as vscale, lerp as vlerp} from 'math/vec';
  * and create 4 wall patches to maintain watertightness.
  */
 export function extrudePatch(scene: Scene, patchIdx: number, distance: number): void {
-  const group = scene.findGroupOfPatch(patchIdx);
   const patch = scene.surfaces[patchIdx];
+  const group = scene.findGroupOfSurface(patch);
   const normal = patch.normal(0.5, 0.5);
   const offset = vscale(normal, distance);
 
@@ -81,6 +81,6 @@ export function extrudePatch(scene: Scene, patchIdx: number, distance: number): 
       patch.surfaceSet.surfaces.add(wallPatch);
     }
     scene.surfaces.push(wallPatch);
+    if (group) group.addSurface(wallPatch);
   }
-  scene.notifyPush(4, group);
 }

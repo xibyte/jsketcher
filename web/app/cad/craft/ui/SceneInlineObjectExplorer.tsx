@@ -55,16 +55,12 @@ export function SceneInlineObjectExplorer() {
   const removeGroup = useCallback((group: Group) => {
     const scene = getScene();
     if (!scene) return;
-    const sceneGroup = scene.groups.find(g => g.name === group.name);
-    if (sceneGroup) {
-      const indices = [...sceneGroup.patchIndices].sort((a, b) => b - a);
-      for (const idx of indices) {
-        scene.surfaces.splice(idx, 1);
-        scene.notifySplice(idx, 1, 0);
-      }
-      const gi = scene.groups.indexOf(sceneGroup);
-      if (gi >= 0) scene.groups.splice(gi, 1);
+    // The Group entity holds direct surface references — drop them all and
+    // then drop the group itself. No index gymnastics.
+    for (const surface of [...group.surfaces]) {
+      scene.removeSurface(surface);
     }
+    scene.removeGroup(group);
     persistAndRefresh();
   }, [getScene, persistAndRefresh]);
 
@@ -72,11 +68,7 @@ export function SceneInlineObjectExplorer() {
   const removeSurface = useCallback((surface: NurbsSurface) => {
     const scene = getScene();
     if (!scene) return;
-    const idx = scene.surfaces.indexOf(surface);
-    if (idx >= 0) {
-      scene.surfaces.splice(idx, 1);
-      scene.notifySplice(idx, 1, 0);
-    }
+    scene.removeSurface(surface);
     persistAndRefresh();
   }, [getScene, persistAndRefresh]);
 

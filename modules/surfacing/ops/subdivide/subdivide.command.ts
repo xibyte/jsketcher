@@ -9,6 +9,7 @@ import {splitBezierRow} from '../../patchCageHelpers';
 export function subdividePatch(scene: Scene, patchIdx: number): void {
   const sourcePatch = scene.surfaces[patchIdx];
   const sourceSet = sourcePatch.surfaceSet;
+  const sourceGroup = scene.findGroupOfSurface(sourcePatch);
   const g = sourcePatch.grid;
 
   // Step 1: Split each of the 4 rows in U at t=1/3 then t=2/3 → 4 rows × 10 cols
@@ -71,6 +72,10 @@ export function subdividePatch(scene: Scene, patchIdx: number): void {
     sourcePatch.surfaceSet = null;
   }
 
+  // Replace the source surface with the 9 sub-patches in scene + group.
   scene.surfaces.splice(patchIdx, 1, ...result);
-  scene.notifySplice(patchIdx, 1, result.length);
+  if (sourceGroup) {
+    sourceGroup.removeSurface(sourcePatch);
+    for (const sub of result) sourceGroup.addSurface(sub);
+  }
 }

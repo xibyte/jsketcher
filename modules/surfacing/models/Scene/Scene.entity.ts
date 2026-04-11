@@ -1,13 +1,18 @@
 /**
- * Scene — root container for a surfacing project. Replaces the old PatchCage class.
+ * Scene — root container for a surfacing project.
  *
- * Holds:
- *   - surfaces (NurbsSurface[]) — also exposed as `patches` for backward compat
- *   - arcConstraints, mirrorConstraints — geometric constraints
- *   - groups — surface grouping for primitives/operations
+ * Owns:
+ *   - surfaces       — the NurbsSurface entities (shared-vertex topology)
+ *   - groups         — Group entities holding direct NurbsSurface references
+ *   - arc / mirror constraints  — geometric constraints
  *
- * Watertightness via shared Vertex identity. Constraint enforcement triggered
- * by moveVertex(). All ops in surfacing/ops/ operate on Scene + indices.
+ * Watertightness via shared Vertex identity. moveVertex() runs the
+ * constraint enforcers; each surface invalidates itself via its
+ * usedBy back-reference (no central scan, no notifySplice gymnastics).
+ *
+ * All ops in surfacing/ops/ operate directly on (scene, surface) — they
+ * find groups via findGroupOfSurface, add/remove surfaces via Group's
+ * own methods, and never need to remap indices.
  */
 import type {Vec3} from 'math/vec';
 import {GeometricEntity, generateEntityId, reserveEntityId} from '../GeometricEntity';
@@ -16,11 +21,12 @@ import {Vertex} from '../Vertex/Vertex.entity';
 import {Group} from '../Group/Group.entity';
 import {SurfaceSet} from '../../SurfaceSet';
 
-// Re-export so other modules can import them from Scene.entity if convenient
+// Re-export so other modules can import from Scene.entity directly.
 export {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 export {Vertex} from '../Vertex/Vertex.entity';
+export {Group} from '../Group/Group.entity';
 
-// Lazy imports to avoid circular dependencies (resolved at call time)
+// Lazy imports to avoid circular dependencies.
 import * as _arcOps from '../../ops/arc/arc.command';
 import * as _contOps from '../../ops/continuity/continuity.command';
 import * as _mirrorOps from '../../ops/mirror/mirror.command';
@@ -54,29 +60,19 @@ export interface MirrorConstraint {
   cpPairs: {source: Vertex, mirror: Vertex}[];
 }
 
-export interface SurfaceGroup {
-  name: string;
-  patchIndices: number[];
-}
-
-
 // =========================================================================
 // Serialization
 // =========================================================================
 
 export interface SerializedScene {
-  /** Stable id of the Scene itself */
   id?: string;
-  /** Vertex positions paired with their stable ids */
   vertices: Vec3[];
   vertexIds?: string[];
   patches: {
-    /** Stable id of the surface */
     id?: string;
     grid: number[][];
     weights: number[][];
     rational: boolean;
-    /** ID of the surface set this patch belongs to (or undefined) */
     surfaceSetId?: number;
   }[];
   arcConstraints: {
@@ -95,8 +91,8 @@ export interface SerializedScene {
     planeNormal: Vec3;
     cpPairs: {sourceVertexIdx: number, mirrorVertexIdx: number}[];
   }[];
-  groups?: {name: string, patchIndices: number[]}[];
-  /** Surface set definitions; each patch references one by id */
+  /** Each group serialized as an ordered list of surface IDs. */
+  groups?: {id?: string, name: string, surfaceIds: string[]}[];
   surfaceSets?: {id: number, name: string}[];
 }
 
@@ -108,83 +104,51 @@ export interface SerializedScene {
 export class Scene extends GeometricEntity {
 
   surfaces: NurbsSurface[] = [];
+  groups: Group[] = [];
   arcConstraints: ArcConstraint[] = [];
   mirrorConstraints: MirrorConstraint[] = [];
-  groups: SurfaceGroup[] = [];
   tessResolution: number = 8;
-
-  /** Slot for the live view (SceneObject3D), set when the view is constructed */
-  ext: any = {};
-
-  /** Registered constraint enforcers called on every vertex move */
-  private constraintEnforcers: ((scene: Scene, v: Vertex) => void)[] = [];
 
   constructor(id?: string) {
     super(id ?? generateEntityId('SC'));
   }
 
-  registerConstraintEnforcer(fn: (scene: Scene, v: Vertex) => void): void {
-    this.constraintEnforcers.push(fn);
-  }
+  // -----------------------------------------------------------------------
+  // Vertex movement → constraint cascade → per-surface invalidation
+  // -----------------------------------------------------------------------
 
-  /** Move a vertex — all surfaces sharing it update automatically */
   moveVertex(v: Vertex, x: number, y: number, z: number): void {
     v.set(x, y, z);
-    for (const enforce of this.constraintEnforcers) enforce(this, v);
     _arcOps.enforceArcConstraints(this, v);
     _mirrorOps.enforceMirrorConstraints(this, v);
   }
 
-  // =========================================================================
+  // -----------------------------------------------------------------------
   // Groups
-  // =========================================================================
+  // -----------------------------------------------------------------------
 
-  createGroup(name: string, patchIndices: number[]): SurfaceGroup {
-    const group: SurfaceGroup = {name, patchIndices: [...patchIndices]};
-    this.groups.push(group);
-    return group;
+  createGroup(name: string, surfaces: NurbsSurface[] = []): Group {
+    const g = new Group(name);
+    for (const s of surfaces) g.addSurface(s);
+    this.groups.push(g);
+    return g;
   }
 
-  findGroupOfPatch(patchIdx: number): SurfaceGroup | null {
-    for (const g of this.groups) {
-      if (g.patchIndices.includes(patchIdx)) return g;
-    }
+  findGroupOfSurface(surface: NurbsSurface): Group | null {
+    for (const g of this.groups) if (g.hasSurface(surface)) return g;
     return null;
   }
 
-  /** Notify groups that a patch was replaced by splice */
-  notifySplice(oldIdx: number, removedCount: number, insertedCount: number): void {
-    for (const g of this.groups) {
-      const newIndices: number[] = [];
-      for (const idx of g.patchIndices) {
-        if (idx >= oldIdx && idx < oldIdx + removedCount) {
-          for (let j = 0; j < insertedCount; j++) {
-            newIndices.push(oldIdx + j);
-          }
-        } else if (idx >= oldIdx + removedCount) {
-          newIndices.push(idx - removedCount + insertedCount);
-        } else {
-          newIndices.push(idx);
-        }
-      }
-      g.patchIndices = newIndices;
-    }
+  removeGroup(group: Group): void {
+    const i = this.groups.indexOf(group);
+    if (i >= 0) this.groups.splice(i, 1);
   }
 
-  /** Notify groups that surfaces were appended and should join a specific group */
-  notifyPush(count: number, targetGroup: SurfaceGroup | null): void {
-    if (!targetGroup) return;
-    const startIdx = this.surfaces.length - count;
-    for (let i = 0; i < count; i++) {
-      targetGroup.patchIndices.push(startIdx + i);
-    }
-  }
-
-  // =========================================================================
+  // -----------------------------------------------------------------------
   // Surface Sets — derived from each surface's .surfaceSet reference
-  // =========================================================================
+  // -----------------------------------------------------------------------
 
-  /** Get indices of all surfaces sharing the same SurfaceSet as the given patch */
+  /** Indices of all surfaces sharing the same SurfaceSet as the given patch. */
   surfacesInSameSet(patchIdx: number): number[] {
     const surface = this.surfaces[patchIdx];
     if (!surface || !surface.surfaceSet) return [patchIdx];
@@ -196,9 +160,80 @@ export class Scene extends GeometricEntity {
     return result;
   }
 
-  // =========================================================================
-  // Backward-compatible delegates to ops/ modules
-  // =========================================================================
+  // -----------------------------------------------------------------------
+  // Surface management
+  // -----------------------------------------------------------------------
+
+  addSurface(surface: NurbsSurface): void {
+    this.surfaces.push(surface);
+  }
+
+  removeSurface(surface: NurbsSurface): void {
+    const idx = this.surfaces.indexOf(surface);
+    if (idx >= 0) this.surfaces.splice(idx, 1);
+    // Drop from any group that holds it
+    for (const g of this.groups) g.removeSurface(surface);
+  }
+
+  // -----------------------------------------------------------------------
+  // Topology queries
+  // -----------------------------------------------------------------------
+
+  /** Find which surfaces share a boundary edge with a given surface. */
+  findAdjacentPatches(patchIdx: number): {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] {
+    const patch = this.surfaces[patchIdx];
+    const result: {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] = [];
+    for (let side = 0; side < 4; side++) {
+      const edge = patch.getEdgeVertices(side);
+      for (let oi = 0; oi < this.surfaces.length; oi++) {
+        if (oi === patchIdx) continue;
+        const other = this.surfaces[oi];
+        for (let os = 0; os < 4; os++) {
+          const otherEdge = other.getEdgeVertices(os);
+          if (edge[0] === otherEdge[0] && edge[1] === otherEdge[1] &&
+              edge[2] === otherEdge[2] && edge[3] === otherEdge[3]) {
+            result.push({side, otherIdx: oi, otherSide: os, reversed: false});
+          }
+          if (edge[0] === otherEdge[3] && edge[1] === otherEdge[2] &&
+              edge[2] === otherEdge[1] && edge[3] === otherEdge[0]) {
+            result.push({side, otherIdx: oi, otherSide: os, reversed: true});
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /** Get the interior row/column of vertices adjacent to a side. */
+  getInteriorRow(patchIdx: number, side: number, depth: number): Vertex[] {
+    const g = this.surfaces[patchIdx].grid;
+    switch (side) {
+      case 0: return [g[depth][0], g[depth][1], g[depth][2], g[depth][3]];
+      case 1: return [g[0][3 - depth], g[1][3 - depth], g[2][3 - depth], g[3][3 - depth]];
+      case 2: return [g[3 - depth][0], g[3 - depth][1], g[3 - depth][2], g[3 - depth][3]];
+      case 3: return [g[0][depth], g[1][depth], g[2][depth], g[3][depth]];
+      default: return [];
+    }
+  }
+
+  /** Find all free edges (edges with a surface on only one side). */
+  findFreeEdges(): {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[] {
+    const free: {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[] = [];
+    for (let pi = 0; pi < this.surfaces.length; pi++) {
+      const adj = this.findAdjacentPatches(pi);
+      const sharedSides = new Set(adj.map(a => a.side));
+      for (let side = 0; side < 4; side++) {
+        if (!sharedSides.has(side)) {
+          free.push({patchIdx: pi, side, verts: this.surfaces[pi].getEdgeVertices(side)});
+        }
+      }
+    }
+    return free;
+  }
+
+  // -----------------------------------------------------------------------
+  // Op delegates (thin wrappers; actual logic lives in surfacing/ops/)
+  // -----------------------------------------------------------------------
 
   constrainEdgeToArc(patchIdx: number, side: number, radius: number, angle: number, planeNormal: Vec3, mode: ArcMode = 'approximate'): ArcConstraint {
     return _arcOps.constrainEdgeToArc(this, patchIdx, side, radius, angle, planeNormal, mode);
@@ -223,172 +258,37 @@ export class Scene extends GeometricEntity {
   extrudePatch(patchIdx: number, distance: number): void { _extrudeOps.extrudePatch(this, patchIdx, distance); }
   subdividePatch(patchIdx: number): void { _subdivideOps.subdividePatch(this, patchIdx); }
 
-  // =========================================================================
-  // Topology Queries
-  // =========================================================================
+  // -----------------------------------------------------------------------
+  // Entity-graph synchronization (used by the OBJECTS explorer tree)
+  // -----------------------------------------------------------------------
 
-  /** Get all unique Vertex instances across all surfaces */
-  allVertices(): Vertex[] {
-    const seen = new Set<Vertex>();
-    for (const p of this.surfaces) {
-      for (const row of p.grid) {
-        for (const v of row) seen.add(v);
-      }
-    }
-    return Array.from(seen);
-  }
-
-  /** Find which surfaces share a boundary edge with a given surface */
-  findAdjacentPatches(patchIdx: number): {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] {
-    const patch = this.surfaces[patchIdx];
-    const result: {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] = [];
-
-    for (let side = 0; side < 4; side++) {
-      const edge = patch.getEdgeVertices(side);
-      for (let oi = 0; oi < this.surfaces.length; oi++) {
-        if (oi === patchIdx) continue;
-        const other = this.surfaces[oi];
-        for (let os = 0; os < 4; os++) {
-          const otherEdge = other.getEdgeVertices(os);
-          if (edge[0] === otherEdge[0] && edge[1] === otherEdge[1] &&
-              edge[2] === otherEdge[2] && edge[3] === otherEdge[3]) {
-            result.push({side, otherIdx: oi, otherSide: os, reversed: false});
-          }
-          if (edge[0] === otherEdge[3] && edge[1] === otherEdge[2] &&
-              edge[2] === otherEdge[1] && edge[3] === otherEdge[0]) {
-            result.push({side, otherIdx: oi, otherSide: os, reversed: true});
-          }
-        }
-      }
-    }
-    return result;
-  }
-
-  /** Backward-compat alias */
-  findAdjacentSurfaces(surfaceIdx: number) {
-    return this.findAdjacentPatches(surfaceIdx);
-  }
-
-  /** Get the interior row/column of vertices adjacent to a side */
-  getInteriorRow(patchIdx: number, side: number, depth: number): Vertex[] {
-    const g = this.surfaces[patchIdx].grid;
-    switch (side) {
-      case 0: return [g[depth][0], g[depth][1], g[depth][2], g[depth][3]];
-      case 1: return [g[0][3 - depth], g[1][3 - depth], g[2][3 - depth], g[3][3 - depth]];
-      case 2: return [g[3 - depth][0], g[3 - depth][1], g[3 - depth][2], g[3 - depth][3]];
-      case 3: return [g[0][depth], g[1][depth], g[2][depth], g[3][depth]];
-      default: return [];
-    }
-  }
-
-  /** Find all free edges (edges with a surface on only one side) */
-  findFreeEdges(): {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[] {
-    const free: {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[] = [];
-    for (let pi = 0; pi < this.surfaces.length; pi++) {
-      const adj = this.findAdjacentPatches(pi);
-      const sharedSides = new Set(adj.map(a => a.side));
-      for (let side = 0; side < 4; side++) {
-        if (!sharedSides.has(side)) {
-          free.push({patchIdx: pi, side, verts: this.surfaces[pi].getEdgeVertices(side)});
-        }
-      }
-    }
-    return free;
-  }
-
-  // =========================================================================
-  // Surface management
-  // =========================================================================
-
-  addSurface(surface: NurbsSurface): void {
-    this.surfaces.push(surface);
-  }
-
-  removeSurface(surface: NurbsSurface): void {
-    const idx = this.surfaces.indexOf(surface);
-    if (idx >= 0) this.surfaces.splice(idx, 1);
-  }
-
-  /**
-   * Rebuild the entity-graph children (Group entities containing surfaces).
-   * Called by the explorer/tree before rendering. Updates each NurbsSurface's
-   * derived entity graph too.
-   */
   syncEntityGraph(): void {
-    // Refresh derived state on each surface
-    for (const surface of this.surfaces) {
-      surface.syncEntityGraph();
-    }
+    for (const surface of this.surfaces) surface.syncEntityGraph();
 
-    // Rebuild Group entity children from groups[] metadata
     this.children = [];
     const grouped = new Set<NurbsSurface>();
     for (const g of this.groups) {
-      const validIndices = g.patchIndices.filter(idx => idx < this.surfaces.length);
-      if (validIndices.length === 0) continue;
-      const groupEntity = new Group(g.name);
-      this.addChild(groupEntity);
-      for (const idx of validIndices) {
-        groupEntity.addChild(this.surfaces[idx]);
-        grouped.add(this.surfaces[idx]);
+      if (g.surfaces.length === 0) continue;
+      this.addChild(g);
+      g.children = [];
+      for (const s of g.surfaces) {
+        g.addChild(s);
+        grouped.add(s);
       }
     }
-    // Ungrouped surfaces (if any) go directly under Scene as children
-    for (const surface of this.surfaces) {
-      if (!grouped.has(surface)) {
-        this.addChild(surface);
-      }
+    for (const s of this.surfaces) {
+      if (!grouped.has(s)) this.addChild(s);
     }
   }
 
-  // =========================================================================
-  // Tessellation
-  // =========================================================================
-
-  tessellatePatch(patchIdx: number, resolution: number = 8): {
-    positions: number[], normals: number[], indices: number[]
-  } {
-    return this.surfaces[patchIdx].tessellate(resolution);
-  }
-
-  tessellateAll(resolution: number = 8): {
-    vertices: Float32Array, normals: Float32Array, indices: Uint32Array,
-    patchTriRanges: [number, number][],
-    surfaceTriRanges: [number, number][]
-  } {
-    const allPos: number[] = [], allNorm: number[] = [], allIdx: number[] = [];
-    const ranges: [number, number][] = [];
-    let vOff = 0, tIdx = 0;
-
-    for (let pi = 0; pi < this.surfaces.length; pi++) {
-      const t = this.tessellatePatch(pi, resolution);
-      const start = tIdx;
-      for (const v of t.positions) allPos.push(v);
-      for (const v of t.normals) allNorm.push(v);
-      for (const i of t.indices) allIdx.push(i + vOff);
-      vOff += t.positions.length / 3;
-      tIdx += t.indices.length / 3;
-      ranges.push([start, tIdx]);
-    }
-
-    return {
-      vertices: new Float32Array(allPos),
-      normals: new Float32Array(allNorm),
-      indices: new Uint32Array(allIdx),
-      patchTriRanges: ranges,
-      surfaceTriRanges: ranges,
-    };
-  }
-
-  // =========================================================================
+  // -----------------------------------------------------------------------
   // Serialization
-  // =========================================================================
+  // -----------------------------------------------------------------------
 
   serialize(): SerializedScene {
     const vertexMap = new Map<Vertex, number>();
     const vertices: Vec3[] = [];
     const vertexIds: string[] = [];
-
     for (const p of this.surfaces) {
       for (const row of p.grid) {
         for (const v of row) {
@@ -430,9 +330,12 @@ export class Scene extends GeometricEntity {
       })),
     }));
 
-    const groups = this.groups.map(g => ({name: g.name, patchIndices: [...g.patchIndices]}));
+    const groups = this.groups.map(g => ({
+      id: g.id,
+      name: g.name,
+      surfaceIds: g.surfaces.map(s => s.id),
+    }));
 
-    // Collect unique SurfaceSets referenced by surfaces
     const seenSets = new Set<SurfaceSet>();
     const surfaceSets: {id: number, name: string}[] = [];
     for (const s of this.surfaces) {
@@ -446,18 +349,15 @@ export class Scene extends GeometricEntity {
   }
 
   static deserialize(data: SerializedScene): Scene {
-    // Restore the Scene's own id (and bump the counter past it)
     if (data.id) reserveEntityId(data.id);
     const scene = new Scene(data.id);
 
-    // Restore vertices with their stable ids
     const verts = data.vertices.map((p, i) => {
       const id = data.vertexIds && data.vertexIds[i];
       if (id) reserveEntityId(id);
       return new Vertex(p[0], p[1], p[2], id);
     });
 
-    // Build SurfaceSet instances first; map saved id → live instance
     const setById = new Map<number, SurfaceSet>();
     if (data.surfaceSets) {
       for (const sd of data.surfaceSets) {
@@ -505,12 +405,28 @@ export class Scene extends GeometricEntity {
     }
 
     if (data.groups) {
-      for (const gd of data.groups) {
-        scene.createGroup(gd.name, gd.patchIndices);
+      const surfaceById = new Map<string, NurbsSurface>();
+      for (const s of scene.surfaces) surfaceById.set(s.id, s);
+      for (const gd of data.groups as any[]) {
+        if (gd.id) reserveEntityId(gd.id);
+        const group = new Group(gd.name, gd.id);
+        // Accept the new surfaceIds format and the old patchIndices format.
+        if (Array.isArray(gd.surfaceIds)) {
+          for (const sid of gd.surfaceIds) {
+            const s = surfaceById.get(sid);
+            if (s) group.addSurface(s);
+          }
+        } else if (Array.isArray(gd.patchIndices)) {
+          for (const idx of gd.patchIndices) {
+            if (idx >= 0 && idx < scene.surfaces.length) {
+              group.addSurface(scene.surfaces[idx]);
+            }
+          }
+        }
+        scene.groups.push(group);
       }
     }
 
     return scene;
   }
 }
-

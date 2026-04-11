@@ -45,8 +45,9 @@ export function bridgeSurface(
     }
   }
   scene.surfaces.push(bridgePatch);
-  const group = options.sourcePatchIdx !== undefined ? scene.findGroupOfPatch(options.sourcePatchIdx) : null;
-  scene.notifyPush(1, group);
+  const sourcePatch = options.sourcePatchIdx !== undefined ? scene.surfaces[options.sourcePatchIdx] : null;
+  const group = sourcePatch ? scene.findGroupOfSurface(sourcePatch) : null;
+  if (group) group.addSurface(bridgePatch);
   const newIdx = scene.surfaces.length - 1;
 
   if (options.g1) {
