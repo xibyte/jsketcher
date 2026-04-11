@@ -33,8 +33,18 @@ export class BoundingCurveObject3D extends EntityObject3D {
       if (this.line.material) this.line.material.dispose();
     }
 
-    const cps = this.curve.cp.map(c => c.vertex.position);
-    const pts = tessellateCubicBezier(cps, EDGE_SEGMENTS);
+    // If the curve's parent surface exposes cached mesh-tessellation edge
+    // polylines, reuse them — the edge then aligns exactly with the shaded
+    // mesh. Otherwise fall back to direct cubic Bézier tessellation.
+    const parentSurface: any = (this.curve as any).parent;
+    let pts: number[][];
+    if (parentSurface && typeof parentSurface.getEdgePolyline === 'function') {
+      const resolution = parentSurface._tessCache?.resolution || 8;
+      pts = parentSurface.getEdgePolyline((this.curve as any).side, resolution);
+    } else {
+      const cps = this.curve.cp.map(c => c.vertex.position);
+      pts = tessellateCubicBezier(cps, EDGE_SEGMENTS);
+    }
 
     const ScalableLine = require('scene/objects/scalableLine').default;
     this.line = new ScalableLine(sceneSetup, pts, EDGE_WIDTH, this.baseColor);

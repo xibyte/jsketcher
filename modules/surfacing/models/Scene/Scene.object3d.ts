@@ -6,34 +6,24 @@ import {setAttribute} from 'scene/objectData';
 import {ViewMode} from 'cad/scene/viewer';
 import {
   Group, BufferGeometry, BufferAttribute, Mesh, DoubleSide,
-  LineSegments, LineBasicMaterial,
-  SphereGeometry, MeshBasicMaterial, Vector3, Object3D,
-  Line
 } from 'three';
-import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
-import {ConstantScaleGroup} from 'scene/scaleHelper';
 import ScalableLine from 'scene/objects/scalableLine';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
+import {SubcageObject3D, SelectionGizmoOverlay, selection$, select} from '../../three';
 import {CageVertex, NurbsPatch} from './Scene.entity';
 import {surfacingViewFlags$} from '../../surfacingViewFlags';
 
 export const SCENE_OBJECT3D_MARKER = 'SurfacingSceneObject3D';
 
-const CP_COLOR = 0x222222;
-const CP_HOVER = 0x555555;
-const CP_SELECTED = 0xee3333;
-const CP_MIRROR = 0x334466;
-const CAGE_LINE_COLOR = 0x1a1a1a;
-const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, top, left
+// Scene-level constants that aren't yet owned by an entity-level view.
+// CP / cage / subcage colors live in modules/surfacing/three/colors.ts.
+const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, top, left (used by showEdgeDialog)
 const EDGE_SELECTED_COLOR = 0xffffff;
-const HANDLE_SIZE = 3.5;
-const CP_VISUAL_SCALE = 0.45;  // visible handle is smaller
-const CP_PICKER_SCALE = 1.0;   // pickable hitbox is larger
 const EDGE_WIDTH = 2.5;
 const MESH_WIDTH_NORMAL = 1;
 const MESH_WIDTH_THICK = 1.8;
 
-// Per-surface base & hover colors
+// Per-surface base & hover colors used by the mesh tinting helpers.
 const SURFACE_BASE_COLOR = 0xd0d0d0;       // silver
 const SURFACE_HOVER_COLOR = 0x88bbee;      // cyan-blue (hovered)
 const SURFACE_HOVER_SET_COLOR = 0xb0d0e8;  // dimmer cyan-blue (others in same set)
@@ -110,9 +100,9 @@ export class SceneObject3D extends Group {
     this.selectedEdgeIdx = -1;
     this.selectedHandle = null;
 
-    // Gizmo
-    this.gizmoTarget = new Object3D();
-    this.gizmo = null;
+    // Gizmo — a SelectionGizmoOverlay keyed off selection$.
+    this._selectionGizmo = null;
+    this._selectionUnsub = null;
     this.setupGizmo();
 
     this.solidMesh.onMouseEnter = () => ctx.highlightService.highlight(this.scene.id);
@@ -147,11 +137,8 @@ export class SceneObject3D extends Group {
         this.fillHolePreview(e);
         return;
       }
-      if (this.selectedPatchIdx >= 0) return;
-      const ss = ctx.viewer.sceneSetup;
-      const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
-      const pi = this._raycastSurfaceIdx(raycaster);
-      this.setHover(pi);
+      // Surface hover is driven by per-mesh onMouseEnter/onMouseLeave now —
+      // no manual raycast needed here.
     };
     dom.addEventListener('mousedown', this._onMouseDown);
     dom.addEventListener('mouseup', this._onMouseUp);
@@ -341,15 +328,8 @@ export class SceneObject3D extends Group {
   setHover(patchIdx) {
     if (patchIdx === this.hoveredPatchIdx) return;
 
-    // Reset previously tinted surfaces back to base color
-    if (this.hoveredPatchIdx >= 0) {
-      const prevSetMembers = this.scene.surfacesInSameSet
-        ? this.scene.surfacesInSameSet(this.hoveredPatchIdx)
-        : [this.hoveredPatchIdx];
-      for (const idx of prevSetMembers) {
-        this._tintSurface(idx, SURFACE_BASE_COLOR);
-      }
-    }
+    // Reset all surfaces — each surface mesh owns its own hover state now.
+    this._clearAllSurfaceHover();
 
     this.hoveredPatchIdx = patchIdx;
     this.clearGroup(this.hoverGroup);
@@ -364,13 +344,15 @@ export class SceneObject3D extends Group {
     const ss = this.ctx.viewer.sceneSetup;
     const N = 24;
 
-    // Tint the surfaces in the set: full color on the hovered one, dimmer
-    // on the others. No overlay meshes — just material color changes.
+    // Tint the surfaces in the set via each mesh's own setHover / setHoverInSet.
     const setMembers = this.scene.surfacesInSameSet
       ? this.scene.surfacesInSameSet(patchIdx)
       : [patchIdx];
     for (const idx of setMembers) {
-      this._tintSurface(idx, idx === patchIdx ? SURFACE_HOVER_COLOR : SURFACE_HOVER_SET_COLOR);
+      const m = this.surfaceMeshes[idx];
+      if (!m) continue;
+      if (idx === patchIdx) m.setHover(true);
+      else m.setHoverInSet(true);
     }
 
     // Black boundary outline (only on the actually hovered surface)
@@ -424,186 +406,85 @@ export class SceneObject3D extends Group {
 
   buildSubcage(patchIdx) {
     this.clearGroup(this.subcageGroup);
-    this.subcageHandles = [];
+    // Dispose the previous SubcageObject3D if any
+    if (this._subcage) {
+      this.subcageGroup.remove(this._subcage);
+      this._subcage.dispose();
+      this._subcage = null;
+    }
 
     const patch = this.scene.surfaces[patchIdx];
-    const ctrl = patch.grid;
-    const ss = this.ctx.viewer.sceneSetup;
-    const geom = new SphereGeometry(1);
-
-    // 16 control point handles
-    const scene = this.scene;
-    for (let row = 0; row < 4; row++) {
-      for (let col = 0; col < 4; col++) {
-        const cv = ctrl[row][col]; // CageVertex instance
-        const p = cv.position;
-        const isMirrorTarget = scene.isMirrorTarget(cv);
-        const baseColor = isMirrorTarget ? CP_MIRROR : CP_COLOR;
-
-        const mat = new MeshBasicMaterial({color: baseColor, depthTest: false, transparent: true, opacity: 0.95});
-        // Visible sphere — rendered smaller by default, scaled up when selected
-        const sphere = new Mesh(geom, mat);
-        sphere.renderOrder = 2;
-        sphere.scale.setScalar(CP_VISUAL_SCALE);
-
-        // Invisible picker sphere — keeps the original (larger) hitbox so the
-        // pointer target size doesn't change with the visual size.
-        const pickerMat = new MeshBasicMaterial({transparent: true, opacity: 0, depthTest: false, depthWrite: false});
-        const picker = new Mesh(geom, pickerMat);
-        picker.renderOrder = 2;
-        picker.scale.setScalar(CP_PICKER_SCALE);
-
-        const handle = new ConstantScaleGroup(ss, HANDLE_SIZE * 2, 1, () => handle.position);
-        handle.position.set(p[0], p[1], p[2]);
-        handle.add(sphere);
-        handle.add(picker);
-        handle.userData = {patchIdx, row, col, baseColor, cageVertex: cv, sphere};
-        handle.__mat = mat;
-
-        picker.onMouseEnter = () => {
-          if (this.selectedHandle !== handle) mat.color.setHex(CP_HOVER);
-          this.ctx.viewer.requestRender();
-        };
-        picker.onMouseLeave = () => {
-          if (this.selectedHandle !== handle) mat.color.setHex(baseColor);
-          this.ctx.viewer.requestRender();
-        };
-        picker.onMouseClick = () => this.selectSubcageHandle(handle);
-
-        this.subcageGroup.add(handle);
-        this.subcageHandles.push(handle);
-      }
-    }
-
-    // Grid lines: 3×3 quads = 4 horizontal lines + 4 vertical lines
-    const lineMat = new LineBasicMaterial({color: CAGE_LINE_COLOR, depthTest: false, transparent: true, opacity: 0.85});
-    lineMat.depthWrite = false;
-
-    // Horizontal lines (along U, for each V row)
-    for (let row = 0; row < 4; row++) {
-      const pts = [];
-      for (let col = 0; col < 4; col++) {
-        const p = ctrl[row][col].position;
-        pts.push(p[0], p[1], p[2]);
-      }
-      const g = new BufferGeometry();
-      g.setAttribute('position', new BufferAttribute(new Float32Array(pts), 3));
-      this.subcageGroup.add(new Line(g, lineMat));
-    }
-
-    // Vertical lines (along V, for each U column)
-    for (let col = 0; col < 4; col++) {
-      const pts = [];
-      for (let row = 0; row < 4; row++) {
-        const p = ctrl[row][col].position;
-        pts.push(p[0], p[1], p[2]);
-      }
-      const g = new BufferGeometry();
-      g.setAttribute('position', new BufferAttribute(new Float32Array(pts), 3));
-      this.subcageGroup.add(new Line(g, lineMat));
-    }
-
-    // Boundary edges (screen-space constant width, 4 edges: bottom=0, right=1, top=2, left=3)
-    this.edgeLines = [];
-    const edgeVertSets = [
-      [[0,0],[0,1],[0,2],[0,3]],  // bottom: row 0
-      [[0,3],[1,3],[2,3],[3,3]],  // right: col 3
-      [[3,0],[3,1],[3,2],[3,3]],  // top: row 3
-      [[0,0],[1,0],[2,0],[3,0]],  // left: col 0
-    ];
-    for (let ei = 0; ei < 4; ei++) {
-      const evs = edgeVertSets[ei];
-      // Tessellate cubic Bézier edge into polyline
-      const cps = evs.map(([r,c]) => ctrl[r][c].position);
-      const pts = [];
-      const N = 24;
-      for (let i = 0; i <= N; i++) {
-        const t = i / N;
-        const mt = 1 - t;
-        pts.push([
-          mt*mt*mt*cps[0][0] + 3*mt*mt*t*cps[1][0] + 3*mt*t*t*cps[2][0] + t*t*t*cps[3][0],
-          mt*mt*mt*cps[0][1] + 3*mt*mt*t*cps[1][1] + 3*mt*t*t*cps[2][1] + t*t*t*cps[3][1],
-          mt*mt*mt*cps[0][2] + 3*mt*mt*t*cps[1][2] + 3*mt*t*t*cps[2][2] + t*t*t*cps[3][2],
-        ]);
-      }
-      const edgeColor = this.selectedEdgeIdx === ei ? EDGE_SELECTED_COLOR : EDGE_COLORS[ei];
-      const line = new ScalableLine(ss, pts, 4, edgeColor);
-      line.material.depthTest = false;
-      line.material.transparent = true;
-      line.material.opacity = 0.9;
-      line.renderOrder = 1;
-      line.userData = {edgeIdx: ei, baseColor: EDGE_COLORS[ei]};
-      this.subcageGroup.add(line);
-      this.edgeLines.push(line);
-    }
+    const subcage = new SubcageObject3D(
+      patch,
+      this.ctx.viewer.sceneSetup,
+      this.scene,
+      {
+        onEdgeClicked: (edgeIdx) => this.selectEdge(edgeIdx),
+        requestRender: () => this.ctx.viewer.requestRender(),
+      },
+      this.scene.tessResolution || 8,
+    );
+    this._subcage = subcage;
+    this.subcageGroup.add(subcage);
+    // Legacy references used elsewhere in Scene.object3d
+    this.subcageHandles = subcage.handles;
+    this.edgeLines = subcage.edgeLines;
   }
 
   // ---- Handle selection + gizmo ----
 
   setupGizmo() {
     const ss = this.ctx.viewer.sceneSetup;
-    this.gizmo = new TransformControls(ss.camera, ss.renderer.domElement);
-    this.gizmo.setSize(0.7);
-    this.gizmo.setMode('translate');
-    this.gizmo.visible = false;
-    this.gizmo.enabled = false;
 
-    this.gizmo.addEventListener('dragging-changed', e => {
-      ss.trackballControls.enabled = !e.value;
+    // One shared SelectionGizmoOverlay driven by selection$. When a CP adapter
+    // is published to selection$ (via SubcageObject3D's picker click), the
+    // overlay attaches its TransformControls to that vertex. On drag, it
+    // calls scene.moveVertex, and the onChange hook refreshes scene-level
+    // overlays that aren't on the Vertex.usedBy invalidation chain.
+    this._selectionGizmo = new SelectionGizmoOverlay(ss, this.scene, {
+      onChange: () => {
+        if (!this._timer) {
+          this._timer = requestAnimationFrame(() => {
+            this._timer = null;
+            this.refreshOverlaysForDrag();
+          });
+        }
+      },
+      onDragEnd: () => {
+        this.rebuildAll();
+        this.persistCageState();
+      },
     });
+    ss.scene.add(this._selectionGizmo.gizmo);
+    ss.scene.add(this._selectionGizmo.target);
 
-    this.gizmo.addEventListener('change', () => {
-      if (!this.selectedHandle) return;
-      const ud = this.selectedHandle.userData;
-      const pos = this.gizmoTarget.position;
-      // Move via cage so constraints (arc, mirror) are enforced
-      this.scene.moveVertex(ud.cageVertex, pos.x, pos.y, pos.z);
-
-      if (!this._timer) {
-        this._timer = requestAnimationFrame(() => {
-          this._timer = null;
-          ;
-          this.rebuildAll();
-        });
+    // Listen to selection$ for the CP-specific bookkeeping Scene still owns
+    // (selectedHandle tracking for code paths that read it).
+    this._selectionUnsub = selection$.attach((sel) => {
+      const handle = sel && (sel as any).handle;
+      if (handle && handle.userData) {
+        this.deselectEdge();
+        this.selectedHandle = handle;
+      } else if (this.selectedHandle) {
+        this.selectedHandle = null;
       }
+      this.ctx.viewer.requestRender();
     });
-
-    this.gizmo.addEventListener('mouseUp', () => {
-      ;
-      this.rebuildAll();
-      this.persistCageState();
-    });
-
-    ss.scene.add(this.gizmoTarget);
-    ss.scene.add(this.gizmo);
   }
 
   selectSubcageHandle(handle) {
-    // Don't allow selecting mirror target CPs
-    if (this.scene.isMirrorTarget(handle.userData.cageVertex)) return;
-    this.deselectHandle();
-    this.deselectEdge();
-    this.selectedHandle = handle;
-    handle.__mat.color.setHex(CP_SELECTED);
-    // Pop the visible sphere up to full size on selection
-    if (handle.userData.sphere) handle.userData.sphere.scale.setScalar(CP_PICKER_SCALE);
-    this.gizmoTarget.position.copy(handle.position);
-    this.gizmo.attach(this.gizmoTarget);
-    this.gizmo.visible = true;
-    this.gizmo.enabled = true;
-    this.ctx.viewer.requestRender();
+    // Legacy entry point — route through selection$ so SelectionGizmoOverlay
+    // picks it up. Mirror-target check happens inside the CPSelectableAdapter.
+    if (!handle || !handle.selectable) return;
+    select(handle.selectable);
   }
 
   deselectHandle() {
     if (this.selectedHandle) {
-      this.selectedHandle.__mat.color.setHex(this.selectedHandle.userData.baseColor);
-      // Shrink back to the small visual size
-      if (this.selectedHandle.userData.sphere) this.selectedHandle.userData.sphere.scale.setScalar(CP_VISUAL_SCALE);
-      this.selectedHandle = null;
+      // Clearing selection$ triggers the adapter's setSelected(false) which
+      // restores the handle visuals; selection$ listener clears this.selectedHandle.
+      select(null);
     }
-    this.gizmo.detach();
-    this.gizmo.visible = false;
-    this.gizmo.enabled = false;
   }
 
   // ---- Edge selection ----
@@ -612,19 +493,14 @@ export class SceneObject3D extends Group {
     this.deselectEdge();
     this.deselectHandle();
     this.selectedEdgeIdx = edgeIdx;
-    if (this.edgeLines[edgeIdx]) {
-      this.edgeLines[edgeIdx].material.color.setHex(EDGE_SELECTED_COLOR);
-      this.edgeLines[edgeIdx].material.linewidth = 6;
-    }
+    if (this._subcage) this._subcage.selectEdge(edgeIdx);
     this.showEdgeDialog(edgeIdx);
     this.ctx.viewer.requestRender();
   }
 
   deselectEdge() {
-    if (this.selectedEdgeIdx >= 0 && this.edgeLines[this.selectedEdgeIdx]) {
-      const line = this.edgeLines[this.selectedEdgeIdx];
-      line.material.color.setHex(line.userData.baseColor);
-      line.material.linewidth = 4;
+    if (this.selectedEdgeIdx >= 0 && this._subcage) {
+      this._subcage.deselectEdge(this.selectedEdgeIdx);
     }
     this.selectedEdgeIdx = -1;
     this.closeEdgeDialog();
@@ -802,31 +678,140 @@ export class SceneObject3D extends Group {
 
     for (let i = 0; i < scene.surfaces.length; i++) {
       const surface = scene.surfaces[i];
-      const tess = surface.tessellate(res);
-      const geo = new BufferGeometry();
-      geo.setAttribute('position', new BufferAttribute(new Float32Array(tess.positions), 3));
-      geo.setAttribute('normal', new BufferAttribute(new Float32Array(tess.normals), 3));
-      geo.setIndex(new BufferAttribute(new Uint32Array(tess.indices), 1));
-
-      const mat = createSolidMaterial({
-        side: DoubleSide,
-        color: SURFACE_BASE_COLOR,
-        shininess: 80,
-        specular: 0x444444,
-      });
-
-      const mesh = new Mesh(geo, mat);
+      const mesh = this._createSurfaceMesh(surface, res);
       mesh.userData.patchIdx = i;
       this.surfaceMeshes.push(mesh);
       this.surfacesGroup.add(mesh);
     }
   }
 
-  /** Set hover tint on a single surface mesh by index */
+  /**
+   * Build the Three.js mesh for one surface and attach:
+   *   - `rebuild(surface)`   — retessellate in place (called by
+   *     NurbsSurface.invalidateVisual via surface.object3d)
+   *   - `setHover(bool)`     — tint material (hover color)
+   *   - `setHoverInSet(bool)` — tint material (hover-in-set color)
+   *   - `setSelected(bool)`  — tint material (selected color)
+   *
+   * Sets `surface.object3d = mesh` so the entity can address its own visual.
+   */
+  _createSurfaceMesh(surface: any, resolution: number): any {
+    const self = this;
+    const tess = surface.tessellate(resolution);
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(new Float32Array(tess.positions), 3));
+    geo.setAttribute('normal', new BufferAttribute(new Float32Array(tess.normals), 3));
+    geo.setIndex(new BufferAttribute(new Uint32Array(tess.indices), 1));
+
+    const mat = createSolidMaterial({
+      side: DoubleSide,
+      color: SURFACE_BASE_COLOR,
+      shininess: 80,
+      specular: 0x444444,
+    });
+
+    const mesh: any = new Mesh(geo, mat);
+
+    // Hover handlers live on the mesh itself. The app's mouse event system
+    // invokes these when its raycaster hits this mesh — no central scan.
+    // Click selection is still routed via pickPatch() (in DOM mouseup) so
+    // the priority order subcage-handle > edge > surface is preserved.
+    mesh.onMouseEnter = () => {
+      if (self.selectedPatchIdx >= 0) return;
+      if (self._loopInsertMode || self._bridgeMode || self._fillHoleMode) return;
+      const idx = self.surfaceMeshes.indexOf(mesh);
+      if (idx >= 0) self.setHover(idx);
+    };
+    mesh.onMouseLeave = () => {
+      if (self.selectedPatchIdx >= 0) return;
+      if (self._loopInsertMode || self._bridgeMode || self._fillHoleMode) return;
+      self.setHover(-1);
+    };
+
+    // Invalidate hook
+    mesh.rebuild = (s: any) => {
+      const res = self.scene?.tessResolution || 8;
+      const t = s.tessellate(res);
+      if (mesh.geometry) mesh.geometry.dispose();
+      const g = new BufferGeometry();
+      g.setAttribute('position', new BufferAttribute(new Float32Array(t.positions), 3));
+      g.setAttribute('normal', new BufferAttribute(new Float32Array(t.normals), 3));
+      g.setIndex(new BufferAttribute(new Uint32Array(t.indices), 1));
+      mesh.geometry = g;
+      self.ctx.viewer.requestRender();
+    };
+
+    // Hover/select tinting lives on the mesh itself, not a central _tintSurface.
+    const applyColor = () => {
+      if (mesh._selected)      mat.color.setHex(0xffd040);
+      else if (mesh._hovered)  mat.color.setHex(SURFACE_HOVER_COLOR);
+      else if (mesh._hoverSet) mat.color.setHex(SURFACE_HOVER_SET_COLOR);
+      else                     mat.color.setHex(SURFACE_BASE_COLOR);
+    };
+    mesh._hovered = false;
+    mesh._hoverSet = false;
+    mesh._selected = false;
+    mesh.setHover = (v: boolean) => { mesh._hovered = v; applyColor(); };
+    mesh.setHoverInSet = (v: boolean) => { mesh._hoverSet = v; applyColor(); };
+    mesh.setSelected = (v: boolean) => { mesh._selected = v; applyColor(); };
+
+    surface.object3d = mesh;
+    return mesh;
+  }
+
+  /** Legacy tint dispatch — kept as a thin wrapper while we migrate. */
   _tintSurface(idx, color) {
     const m = this.surfaceMeshes[idx];
     if (!m) return;
+    // For callers that still pass a raw color, just set it directly.
     m.material.color.setHex(color);
+  }
+
+  /** Clear hover/hoverInSet flags on every surface mesh. */
+  _clearAllSurfaceHover() {
+    for (const m of this.surfaceMeshes) {
+      if (m && m.setHover) {
+        m.setHover(false);
+        m.setHoverInSet(false);
+      }
+    }
+  }
+
+  /**
+   * Refresh the scene-level overlays that aren't yet owned by individual
+   * entities (wireframe UV grid, edges, boundaries) and update subcage
+   * handle positions after a drag.
+   *
+   * Per-surface retessellation is NOT done here — Vertex.set() already
+   * notifies every dependent NurbsSurface via the usedBy back-reference,
+   * and each surface calls its own object3d.rebuild(). This method just
+   * keeps the scene-level decorations in sync.
+   */
+  refreshOverlaysForDrag(): void {
+    if (!this.scene) return;
+
+    if (this.wireframeMesh && this.wireframeMesh.visible) {
+      rebuildWireframeGroup(this.wireframeMesh, this.scene, this.ctx.viewer.sceneSetup, this._meshWidth);
+    }
+    if (this.edgesGroup && this.edgesGroup.visible) {
+      rebuildEdgesGroup(this.edgesGroup, this.scene, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
+    }
+    if (this.boundariesGroup && this.boundariesGroup.visible) {
+      rebuildBoundariesGroup(this.boundariesGroup, this.scene, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
+    }
+
+    // Subcage handles track their cage vertex position by reference.
+    if (this.subcageHandles) {
+      for (const h of this.subcageHandles) {
+        const cv = h.userData && h.userData.cageVertex;
+        if (cv) {
+          const p = cv.position;
+          h.position.set(p[0], p[1], p[2]);
+        }
+      }
+    }
+
+    this.ctx.viewer.requestRender();
   }
 
   // ---- Rebuild ----
@@ -1664,11 +1649,14 @@ export class SceneObject3D extends Group {
     this.clearGroup(this._bridgePreviewGroup);
     this.clearGroup(this._fillHolePreviewGroup);
     if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown);
-    if (this.gizmo) {
-      this.gizmo.detach(); this.gizmo.dispose();
+    if (this._selectionGizmo) {
       const s = this.ctx.viewer.sceneSetup.scene;
-      s.remove(this.gizmo); s.remove(this.gizmoTarget);
+      s.remove(this._selectionGizmo.gizmo);
+      s.remove(this._selectionGizmo.target);
+      this._selectionGizmo.dispose();
+      this._selectionGizmo = null;
     }
+    if (this._selectionUnsub) { this._selectionUnsub(); this._selectionUnsub = null; }
     this.closePropsDialog();
     this.closeArcDialog();
     this.closeEdgeDialog();
@@ -1742,29 +1730,18 @@ function rebuildWireframeGroup(group: any, scene: any, sceneSetup: any, width: n
   const COLOR = 0x1860c0;
 
   for (const surface of scene.surfaces) {
-    const n = resolution;
-    const grid: number[][][] = [];
-    for (let j = 0; j <= n; j++) {
-      const row: number[][] = [];
-      for (let i = 0; i <= n; i++) {
-        const p = surface.eval(i / n, j / n);
-        row.push([p[0], p[1], p[2]]);
-      }
-      grid.push(row);
-    }
-    // Horizontal isolines (along U): one polyline per row
-    for (let j = 0; j <= n; j++) {
-      const line = new ScalableLine(sceneSetup, grid[j], width, COLOR);
+    // Reuse the cached mesh tessellation — rows and cols are exactly the
+    // mesh's vertex grid, so the wireframe overlay aligns perfectly.
+    const {rows, cols} = surface.getIsolinePolylines(resolution);
+    for (const row of rows) {
+      const line = new ScalableLine(sceneSetup, row, width, COLOR);
       line.material.transparent = true;
       line.material.opacity = 0.7;
       line.renderOrder = 1;
       line.raycast = () => {};
       group.add(line);
     }
-    // Vertical isolines (along V): one polyline per column
-    for (let i = 0; i <= n; i++) {
-      const col: number[][] = [];
-      for (let j = 0; j <= n; j++) col.push(grid[j][i]);
+    for (const col of cols) {
       const line = new ScalableLine(sceneSetup, col, width, COLOR);
       line.material.transparent = true;
       line.material.opacity = 0.7;
@@ -1788,17 +1765,14 @@ function rebuildEdgesGroup(group: any, scene: any, sceneSetup: any, width: numbe
   }
   if (!scene) return;
 
-  const N = 24;
+  const resolution = scene.tessResolution || 8;
   const EDGE_COLOR = 0x000000;
 
   for (const surface of scene.surfaces) {
     for (const side of [0, 1, 2, 3]) {
-      const bc = surface.getBoundingCurve(side);
-      const pts: number[][] = [];
-      for (let i = 0; i <= N; i++) {
-        const p = bc.eval(i / N);
-        pts.push([p[0], p[1], p[2]]);
-      }
+      // Reuse the mesh tessellation's boundary row/col — the edge line
+      // tracks the shaded surface exactly, no curve drift.
+      const pts = surface.getEdgePolyline(side, resolution);
       const line = new ScalableLine(sceneSetup, pts, width, EDGE_COLOR);
       line.renderOrder = 1;
       line.raycast = () => {};
@@ -1819,7 +1793,7 @@ function rebuildBoundariesGroup(group: any, scene: any, sceneSetup: any, width: 
   }
   if (!scene) return;
 
-  const N = 24;
+  const resolution = scene.tessResolution || 8;
   const EDGE_COLOR = 0x000000;
 
   // Track edges already drawn so we don't draw the same shared edge twice
@@ -1842,13 +1816,9 @@ function rebuildBoundariesGroup(group: any, scene: any, sceneSetup: any, width: 
         if (drawn.has(key)) continue;
         drawn.add(key);
       }
-      // Draw this edge (free edge or set boundary)
-      const bc = surface.getBoundingCurve(side);
-      const pts: number[][] = [];
-      for (let i = 0; i <= N; i++) {
-        const p = bc.eval(i / N);
-        pts.push([p[0], p[1], p[2]]);
-      }
+      // Reuse the mesh tessellation — boundary polyline shares vertices
+      // with the shaded mesh so they stay visually aligned.
+      const pts = surface.getEdgePolyline(side, resolution);
       const line = new ScalableLine(sceneSetup, pts, width, EDGE_COLOR);
       line.renderOrder = 1;
       line.raycast = () => {};
