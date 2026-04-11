@@ -12,7 +12,7 @@
  *   select(myControlPointObject3d);
  *
  *   // In an overlay:
- *   selection$.attach(sel => { if (sel instanceof ControlPointObject3D) ... });
+ *   selection$.attach(sel => { if (sel instanceof Vertex) ... });
  */
 import {state, StateStream} from 'lstream';
 import type {Selectable} from './EntityObject3D';

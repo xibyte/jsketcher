@@ -1,31 +1,40 @@
 import {GeometricEntity, generateEntityId} from '../GeometricEntity';
-import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
+import {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
+import type {SurfacingContext} from '../../SurfacingContext';
 
 /**
- * A named collection of surfaces — typically the output of a primitive
- * (Box, Cylinder, Plane) or a CSG/op result. Holds direct NurbsSurface
- * references; no index gymnastics on splice/push.
+ * A named collection of entities — typically a primitive's output (Box,
+ * Cylinder, Plane) or an op result. The group's `children` ARE its
+ * contents; there is no parallel surfaces[] field. `surfaces` is a getter
+ * that filters children for NurbsSurface instances.
  */
 export class Group extends GeometricEntity {
 
   name: string;
-  surfaces: NurbsSurface[] = [];
 
-  constructor(name: string = '', id?: string) {
-    super(id ?? generateEntityId('G'));
+  constructor(ctx: SurfacingContext, name: string = '', id?: string) {
+    super(ctx, id ?? generateEntityId('G'));
     this.name = name;
   }
 
+  /** All NurbsSurface descendants directly contained in this group. */
+  get surfaces(): NurbsSurface[] {
+    const out: NurbsSurface[] = [];
+    for (const c of this.children) {
+      if (c instanceof NurbsSurface) out.push(c);
+    }
+    return out;
+  }
+
   addSurface(surface: NurbsSurface): void {
-    if (!this.surfaces.includes(surface)) this.surfaces.push(surface);
+    this.addChild(surface);
   }
 
   removeSurface(surface: NurbsSurface): void {
-    const i = this.surfaces.indexOf(surface);
-    if (i >= 0) this.surfaces.splice(i, 1);
+    this.removeChild(surface);
   }
 
   hasSurface(surface: NurbsSurface): boolean {
-    return this.surfaces.includes(surface);
+    return this.children.includes(surface);
   }
 }

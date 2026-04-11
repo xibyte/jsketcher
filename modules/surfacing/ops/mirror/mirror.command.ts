@@ -1,4 +1,6 @@
 import {Scene, Vertex, NurbsSurface, MirrorConstraint, ArcConstraint} from '../../models/Scene/Scene.entity';
+import {ControlPoint} from '../../models/ControlPoint/ControlPoint.entity';
+import {LocalBoundingCurveCache} from '../../models/BoundingCurve/buildBoundingCurves';
 import {Vec3} from '../../patchCageTypes';
 import {add as vadd, sub as vsub, mul as vscale, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
 
@@ -10,7 +12,6 @@ import {add as vadd, sub as vsub, mul as vscale, normalize as vnormalize, distan
  */
 export function mirrorAcrossEdge(scene: Scene, patchIdx: number, side: number): number[] {
   const patch = scene.surfaces[patchIdx];
-  const group = scene.findGroupOfSurface(patch);
   const edgeVerts = patch.getEdgeVertices(side);
 
   // Build mirror plane from the selected edge
@@ -41,9 +42,6 @@ export function mirrorAcrossEdge(scene: Scene, patchIdx: number, side: number): 
   // Connect shared edges between adjacent mirror patches
   stitchMirrorEdges(scene, result);
 
-  if (group) {
-    for (const idx of result) group.addSurface(scene.surfaces[idx]);
-  }
   return result;
 }
 
@@ -114,7 +112,7 @@ function mirrorSinglePatch(
   const patch = scene.surfaces[patchIdx];
   const edgeVerts = patch.getEdgeVertices(side);
   const srcGrid = patch.grid;
-  const mirrorGrid: Vertex[][] = [];
+  const mirrorGrid: ControlPoint[][] = [];
   const cpPairs: {source: Vertex, mirror: Vertex}[] = [];
   const edgeSet = new Set<Vertex>(edgeVerts);
 
@@ -132,7 +130,7 @@ function mirrorSinglePatch(
           p[1] - 2 * d * planeNormal[1],
           p[2] - 2 * d * planeNormal[2],
         ];
-        const mv = new Vertex(rp[0], rp[1], rp[2]);
+        const mv = new ControlPoint(scene.ctx, rp[0], rp[1], rp[2]);
         mirrorGrid[row][col] = mv;
         cpPairs.push({source: srcV, mirror: mv});
       }
@@ -140,22 +138,43 @@ function mirrorSinglePatch(
   }
 
   // Flip grid so shared edge is on the correct side of the new patch
-  let finalGrid: Vertex[][];
+  let finalGrid: ControlPoint[][];
   if (side === 0 || side === 2) {
     finalGrid = [mirrorGrid[3], mirrorGrid[2], mirrorGrid[1], mirrorGrid[0]];
   } else {
     finalGrid = mirrorGrid.map(row => [row[3], row[2], row[1], row[0]]);
   }
 
-  const mp = new NurbsSurface(finalGrid);
+  // If the source patch carries non-unit weights, mirror them onto the
+  // new patch's ControlPoints. The shared-edge CPs already carry the
+  // source's weights (same instance); this block writes only the free
+  // side's weights.
   if (patch.rational) {
-    mp.rational = true;
+    const src = patch.getWeightsMatrix();
+    let mirrorWeights: number[][];
     if (side === 0 || side === 2) {
-      mp.weights = [patch.weights[3].slice(), patch.weights[2].slice(), patch.weights[1].slice(), patch.weights[0].slice()];
+      mirrorWeights = [src[3].slice(), src[2].slice(), src[1].slice(), src[0].slice()];
     } else {
-      mp.weights = patch.weights.map(row => [row[3], row[2], row[1], row[0]]);
+      mirrorWeights = src.map(row => [row[3], row[2], row[1], row[0]]);
+    }
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        finalGrid[r][c].weight.value = mirrorWeights[r][c];
+      }
     }
   }
+
+  // Reuse the source patch's curve on the shared edge: seed a local
+  // cache with all 4 source curves — `curvesFor` will pick up the
+  // matching one by edge identity and build fresh curves for the rest.
+  const mirrorCurveCache = new LocalBoundingCurveCache();
+  mirrorCurveCache.register(patch.boundingCurves.bottom);
+  mirrorCurveCache.register(patch.boundingCurves.right);
+  mirrorCurveCache.register(patch.boundingCurves.top);
+  mirrorCurveCache.register(patch.boundingCurves.left);
+  const mp = new NurbsSurface(
+    scene.ctx, finalGrid, mirrorCurveCache.curvesFor(scene.ctx, finalGrid),
+  );
 
   // Mirrored patch joins the source's surface set
   if (patch.surfaceSet) {
@@ -163,8 +182,10 @@ function mirrorSinglePatch(
     patch.surfaceSet.surfaces.add(mp);
   }
 
-  scene.surfaces.push(mp);
-  const mirrorIdx = scene.surfaces.length - 1;
+  // Add the mirror surface to the same group as its source.
+  const sourceGroup = scene.findGroupOfSurface(patch);
+  scene.addSurface(mp, sourceGroup ?? undefined);
+  const mirrorIdx = scene.surfaces.indexOf(mp);
 
   scene.mirrorConstraints.push({
     sourcePatchIdx: patchIdx,
@@ -300,11 +321,9 @@ export function removeMirrorConstraint(scene: Scene, mc: MirrorConstraint, delet
   if (idx >= 0) scene.mirrorConstraints.splice(idx, 1);
   if (deletePatch) {
     const removed = scene.surfaces[mc.mirrorPatchIdx];
-    const pi = scene.surfaces.indexOf(removed);
-    if (pi >= 0) {
-      scene.surfaces.splice(pi, 1);
-      // Drop the removed surface from any group that holds it
-      for (const g of scene.groups) g.removeSurface(removed);
+    if (removed) {
+      const pi = mc.mirrorPatchIdx;
+      scene.removeSurface(removed); // detaches from group/scene tree
       // Re-index all constraints that reference patches after the deleted one
       for (const m of scene.mirrorConstraints) {
         if (m.sourcePatchIdx > pi) m.sourcePatchIdx--;

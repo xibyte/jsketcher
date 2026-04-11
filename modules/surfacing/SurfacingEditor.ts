@@ -1,105 +1,88 @@
 // @ts-nocheck
 import * as SceneGraph from 'scene/sceneGraph';
-import {createSolidMaterial} from 'cad/scene/views/viewUtils';
 import {SURFACING_SCENE} from 'cad/model/entities';
 import {setAttribute} from 'scene/objectData';
-import {Group, BufferGeometry, BufferAttribute, Mesh, DoubleSide} from 'three';
+import {Group} from 'three';
 import ScalableLine from 'scene/objects/scalableLine';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
-import {SubcageObject3D, SelectionGizmoOverlay, selection$, select} from '../../three';
-import {surfacingViewFlags$} from '../../surfacingViewFlags';
+import {SelectionGizmoOverlay, selection$, select} from './three';
+import {Vertex} from './models/Vertex/Vertex.entity';
+import type {NurbsSurface} from './models/NurbsSurface/NurbsSurface.entity';
+import type {BoundingCurve} from './models/BoundingCurve/BoundingCurve.entity';
+import type {Scene} from './models/Scene/Scene.entity';
+import type {SurfacingContext} from './SurfacingContext';
+import {surfacingViewFlags$} from './surfacingViewFlags';
 
-export const SCENE_OBJECT3D_MARKER = 'SurfacingSceneObject3D';
+// bottom, right, top, left — used by showEdgeDialog for the edge colour swatch
+const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22];
 
-// Scene-level constants that aren't yet owned by an entity-level view.
-// CP / cage / subcage colors live in modules/surfacing/three/colors.ts.
-const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, top, left (used by showEdgeDialog)
-const EDGE_SELECTED_COLOR = 0xffffff;
-const EDGE_WIDTH = 2.5;
-const MESH_WIDTH_NORMAL = 1;
-const MESH_WIDTH_THICK = 1.8;
+/**
+ * SurfacingEditor — interactive controller for one Scene.
+ *
+ * Owns everything that isn't pure data or pure view: selection state,
+ * modal modes (loop-insert, bridge, fill-hole), dialogs, keyboard and
+ * mouse listeners, the gizmo overlay, and the legacy scene-level view
+ * mode overlays (wireframe, edges, boundaries). NOT a THREE.Group —
+ * entities own their own 3D objects via `ctx.workingGroup`; the editor
+ * keeps a child `overlaysGroup` there for its own decorations and
+ * previews.
+ *
+ * Replaces the old SceneObject3D class and brings the "scene.object3d"
+ * field to zero — the Scene entity is now pure children + ops.
+ */
+export class SurfacingEditor {
 
-// Per-surface base & hover colors used by the mesh tinting helpers.
-const SURFACE_BASE_COLOR = 0xd0d0d0;       // silver
-const SURFACE_HOVER_COLOR = 0x88bbee;      // cyan-blue (hovered)
-const SURFACE_HOVER_SET_COLOR = 0xb0d0e8;  // dimmer cyan-blue (others in same set)
-
-export class SceneObject3D extends Group {
-
-  ctx: any;
+  readonly scene: Scene;
+  readonly surfCtx: SurfacingContext;
+  readonly ctx: any;                  // application ctx (viewer, services, …)
   marks: any[] = [];
   _disposers: (() => void)[] = [];
 
-  // Many properties (subcage, gizmo overlay, modal-mode state, etc.) are
-  // added dynamically — keep the index signature so TypeScript stays out
-  // of the way.
+  /** `selection` is the primary state — direct reference, never an index. */
+  selection: NurbsSurface | null = null;
+  selectedEdgeCurve: BoundingCurve | null = null;
+
+  // Many properties (gizmo overlay, modal-mode state, dialog refs, etc.)
+  // are added dynamically — keep the index signature so TypeScript stays
+  // out of the way.
   [key: string]: any;
 
-  constructor(scene, ctx) {
-    super();
+  constructor(scene: Scene, ctx: any) {
     this.ctx = ctx;
     this.scene = scene;
-    scene.object3d = this;
+    this.surfCtx = scene.ctx;
 
-    // Per-surface meshes — each NurbsSurface gets its own Mesh+material so
-    // we can change colors individually for hover/selection without needing
-    // overlay meshes.
-    this.surfacesGroup = SceneGraph.createGroup();
-    this.surfaceMeshes = []; // index = surface index
-    setAttribute(this.surfacesGroup, SURFACING_SCENE, this);
-    this.add(this.surfacesGroup);
-    this._buildSurfaceMeshes();
-    // Backward-compat alias used by other code paths
-    this.solidMesh = this.surfacesGroup;
+    // `overlaysGroup` hosts everything the editor draws directly into
+    // the Three.js scene — wireframe / edges / boundaries / hover
+    // outline / mode preview groups. It's a child of the shared
+    // `ctx.workingGroup` so the editor's visual state disappears cleanly
+    // on dispose.
+    this.overlaysGroup = new Group();
+    setAttribute(this.overlaysGroup, SURFACING_SCENE, this);
+    this.surfCtx.workingGroup.add(this.overlaysGroup);
+    this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
 
-    // Wireframe (non-pickable) — UV grid only, no triangle diagonals.
-    // Built with LineSegments2 so we can actually control the line width.
-    this.wireframeMesh = SceneGraph.createGroup();
-    this.wireframeMesh.visible = false;
-    this.wireframeMesh.raycast = () => {};
-    this.add(this.wireframeMesh);
-    this._meshWidth = surfacingViewFlags$.value.faces ? MESH_WIDTH_NORMAL : MESH_WIDTH_THICK;
-    rebuildWireframeGroup(this.wireframeMesh, this.scene, ctx.viewer.sceneSetup, this._meshWidth);
-
-    // Bounding curves (edges) — shown when 'edges' flag is enabled.
-    // Built as a Group of ScalableLine instances for true thick lines.
-    this.edgesGroup = SceneGraph.createGroup();
-    this.edgesGroup.visible = false;
-    this.edgesGroup.raycast = () => {};
-    this.add(this.edgesGroup);
-    rebuildEdgesGroup(this.edgesGroup, this.scene, ctx.viewer.sceneSetup, EDGE_WIDTH);
-
-    // Boundaries — only edges between SurfaceSets (set silhouette).
-    // Hides edges shared between surfaces in the same set.
-    this.boundariesGroup = SceneGraph.createGroup();
-    this.boundariesGroup.visible = false;
-    this.boundariesGroup.raycast = () => {};
-    this.add(this.boundariesGroup);
-    rebuildBoundariesGroup(this.boundariesGroup, this.scene, ctx.viewer.sceneSetup, EDGE_WIDTH);
-
-    // Hover highlight group
+    // Hover highlight group — per-hover black outline drawn over the
+    // hovered surface. Still scene-level because it's transient and
+    // depends on scene-level hover state (hover-in-set outline).
     this.hoverGroup = SceneGraph.createGroup();
     this.hoverGroup.visible = false;
-    this.add(this.hoverGroup);
-    this.hoveredPatchIdx = -1;
+    this.overlaysGroup.add(this.hoverGroup);
+    this.hoveredPatch = null;
 
-    // Subcage group (visible when a patch is selected)
-    this.subcageGroup = SceneGraph.createGroup();
-    this.subcageGroup.visible = false;
-    this.add(this.subcageGroup);
-    this.subcageHandles = [];
-    this.edgeLines = [];
-    this.selectedPatchIdx = -1;
-    this.selectedEdgeIdx = -1;
-    this.selectedHandle = null;
+    // Apply the initial view-mode flags to every entity.
+    this._applyViewFlags(surfacingViewFlags$.value);
 
     // Gizmo — a SelectionGizmoOverlay keyed off selection$.
     this._selectionGizmo = null;
     this._selectionUnsub = null;
     this.setupGizmo();
 
-    this.solidMesh.onMouseEnter = () => ctx.highlightService.highlight(this.scene.id);
-    this.solidMesh.onMouseLeave = () => ctx.highlightService.unHighlight(this.scene.id);
+    // Hook the scene-level highlight service on the overlays group — it
+    // receives the forwarded onMouseEnter / onMouseLeave from whichever
+    // mesh the raycaster hits inside its subtree.
+    this.overlaysGroup.onMouseEnter = () => ctx.highlightService.highlight(this.scene.id);
+    this.overlaysGroup.onMouseLeave = () => ctx.highlightService.unHighlight(this.scene.id);
 
     // Single click pick: listen on DOM, raycast against solidMesh only
     this._clickStartX = 0;
@@ -155,17 +138,16 @@ export class SceneObject3D extends Group {
         if (e.key === 'g' || e.key === 'G') { this.toggleG1Continuity(); return; }
         return;
       }
-      if (this.selectedPatchIdx < 0) return;
+      if (!this.selection) return;
+      const patchIdx = this.scene.surfaces.indexOf(this.selection);
       if (e.key === 'u' || e.key === 'U') {
-        this.scene.splitIsoline(this.selectedPatchIdx, 'u', 0.5);
-        ;
-        this.selectPatch(-1);
+        this.scene.splitIsoline(patchIdx, 'u', 0.5);
+        this.selectPatch(null);
         this.rebuildAll();
         this.persistCageState();
       } else if (e.key === 'v' || e.key === 'V') {
-        this.scene.splitIsoline(this.selectedPatchIdx, 'v', 0.5);
-        ;
-        this.selectPatch(-1);
+        this.scene.splitIsoline(patchIdx, 'v', 0.5);
+        this.selectPatch(null);
         this.rebuildAll();
         this.persistCageState();
       } else if (e.key === 'a' || e.key === 'A') {
@@ -178,7 +160,7 @@ export class SceneObject3D extends Group {
     this._loopInsertMode = false;
     this._loopPreviewGroup = SceneGraph.createGroup();
     this._loopPreviewGroup.visible = false;
-    this.add(this._loopPreviewGroup);
+    this.overlaysGroup.add(this._loopPreviewGroup);
 
     this._onLoopToggle = () => this.toggleLoopInsertMode();
     document.addEventListener('patch-insert-loop-toggle', this._onLoopToggle);
@@ -190,7 +172,7 @@ export class SceneObject3D extends Group {
     this._bridgeFlipped = false;
     this._bridgePreviewGroup = SceneGraph.createGroup();
     this._bridgePreviewGroup.visible = false;
-    this.add(this._bridgePreviewGroup);
+    this.overlaysGroup.add(this._bridgePreviewGroup);
 
     this._onBridgeToggle = () => this.toggleBridgeMode();
     document.addEventListener('patch-bridge-toggle', this._onBridgeToggle);
@@ -199,7 +181,7 @@ export class SceneObject3D extends Group {
     this._fillHoleMode = false;
     this._fillHolePreviewGroup = SceneGraph.createGroup();
     this._fillHolePreviewGroup.visible = false;
-    this.add(this._fillHolePreviewGroup);
+    this.overlaysGroup.add(this._fillHolePreviewGroup);
     this._fillHoleLoop = null;
 
     this._onFillHoleToggle = () => this.toggleFillHoleMode();
@@ -217,23 +199,40 @@ export class SceneObject3D extends Group {
     };
     document.addEventListener('patch-cage-constraint-deleted', this._onConstraintDeleted);
 
-    setAttribute(this, SURFACING_SCENE, this);
-    setAttribute(this, SCENE_OBJECT3D_MARKER, this);
-
     this._disposers.push(surfacingViewFlags$.attach(flags => {
-      this.solidMesh.visible = flags.faces;
-      this.wireframeMesh.visible = flags.mesh;
-      this.edgesGroup.visible = flags.edges;
-      this.boundariesGroup.visible = flags.boundaries;
-      // Make the mesh wireframe slightly thicker when faces are off,
-      // so the tiny lines remain visible without the shaded backdrop.
-      const desiredMeshWidth = flags.faces ? MESH_WIDTH_NORMAL : MESH_WIDTH_THICK;
-      if (this._meshWidth !== desiredMeshWidth) {
-        this._meshWidth = desiredMeshWidth;
-        rebuildWireframeGroup(this.wireframeMesh, this.scene, this.ctx.viewer.sceneSetup, desiredMeshWidth);
-      }
+      this._applyViewFlags(flags);
       ctx.viewer.requestRender();
     }));
+  }
+
+  /**
+   * Fan out the 4 view-mode flags across every entity view:
+   *   - faces       → surface.object3d.setFacesVisible
+   *   - mesh        → surface.object3d.setWireframeVisible
+   *   - edges       → every bounding curve shown at base style
+   *   - boundaries  → only curves that are "set silhouettes" shown
+   *
+   * A curve is a set-silhouette when it has fewer than 2 users
+   * (free edge) or its users span more than one SurfaceSet — that's
+   * the same predicate the old scene-level rebuildBoundariesGroup used.
+   */
+  _applyViewFlags(flags: any) {
+    const scene = this.scene;
+    if (!scene) return;
+
+    for (const surface of scene.surfaces) {
+      const view: any = surface.object3d;
+      if (!view) continue;
+      if (typeof view.setFacesVisible === 'function') view.setFacesVisible(flags.faces);
+      if (typeof view.setWireframeVisible === 'function') view.setWireframeVisible(flags.mesh);
+    }
+
+    for (const curve of scene.boundingCurves) {
+      const view: any = curve.object3d;
+      if (!view || typeof view.setGlobalVisibility !== 'function') continue;
+      const show = flags.edges || (flags.boundaries && isSetBoundary(curve));
+      view.setGlobalVisibility(show);
+    }
   }
 
   // View-like interface for highlight system
@@ -253,99 +252,122 @@ export class SceneObject3D extends Group {
     const ss = this.ctx.viewer.sceneSetup;
     const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
 
-    // First: check if we hit a subcage handle
-    if (this.subcageGroup.visible && this.subcageHandles.length > 0) {
-      const handleHits = [];
-      for (const h of this.subcageHandles) {
-        h.traverse(child => {
-          if (child.isMesh) child.raycast(raycaster, handleHits);
-        });
-      }
-      if (handleHits.length > 0) {
-        handleHits.sort((a, b) => a.distance - b.distance);
-        // Find which handle was hit
-        const hitObj = handleHits[0].object;
-        for (const h of this.subcageHandles) {
-          let found = false;
-          h.traverse(child => { if (child === hitObj) found = true; });
-          if (found) {
-            this.selectSubcageHandle(h);
-            return;
-          }
+    // 1. CP handles — only meaningful while a surface is selected. Each
+    //    Vertex owns its handle internally (created on setVisible(true))
+    //    and tags its Three.js nodes with `userData.entity = vertex`.
+    //    Raycast the shared workingGroup and walk up to recover the
+    //    Vertex entity.
+    if (this.selection) {
+      const handleHits: any[] = [];
+      const workingGroup = this.surfCtx.workingGroup;
+      workingGroup.traverse((child: any) => {
+        if (child.isMesh && child.visible) child.raycast(raycaster, handleHits);
+      });
+      // Filter: only hits on grid CPs of the currently selected patch.
+      const allowed = new Set<Vertex>();
+      for (const row of this.selection.grid) for (const cp of row) allowed.add(cp);
+      let bestVertex: Vertex | null = null;
+      let bestDist = Infinity;
+      for (const h of handleHits) {
+        let node: any = h.object;
+        while (node && !(node.userData && node.userData.entity instanceof Vertex)) node = node.parent;
+        if (!node) continue;
+        const entity: Vertex = node.userData.entity;
+        if (!allowed.has(entity)) continue;
+        if (h.distance < bestDist) {
+          bestDist = h.distance;
+          bestVertex = entity;
         }
       }
-    }
-
-    // Second: check if we hit a boundary edge line
-    if (this.subcageGroup.visible && this.edgeLines.length > 0) {
-      const edgeHits = [];
-      for (const line of this.edgeLines) {
-        const hits = [];
-        line.raycast(raycaster, hits);
-        for (const h of hits) {
-          h._edgeIdx = line.userData.edgeIdx;
-          edgeHits.push(h);
-        }
-      }
-      if (edgeHits.length > 0) {
-        edgeHits.sort((a, b) => a.distance - b.distance);
-        this.selectEdge(edgeHits[0]._edgeIdx);
+      if (bestVertex && bestVertex.isSelectable()) {
+        select(bestVertex);
+        this.selectedEdgeCurve = null;
+        this.closeEdgeDialog();
+        this.ctx.viewer.requestRender();
         return;
       }
     }
 
-    // Third: per-surface mesh raycast for patch selection
-    const pi = this._raycastSurfaceIdx(raycaster);
-    this.selectPatch(pi);
-  }
-
-  /** Raycast against per-surface meshes; returns the patch index hit, or -1 */
-  _raycastSurfaceIdx(raycaster) {
-    let bestIdx = -1;
-    let bestDist = Infinity;
-    for (let i = 0; i < this.surfaceMeshes.length; i++) {
-      const m = this.surfaceMeshes[i];
-      if (!m.visible) continue;
-      const hits = [];
-      m.raycast(raycaster, hits);
-      for (const h of hits) {
-        if (h.distance < bestDist) {
-          bestDist = h.distance;
-          bestIdx = i;
+    // 2. Highlighted BoundingCurve overlays on the selected surface.
+    if (this.selection) {
+      const patch = this.selection;
+      const edgeHits: any[] = [];
+      for (const cv of [
+        patch.boundingCurves.bottom, patch.boundingCurves.right,
+        patch.boundingCurves.top,    patch.boundingCurves.left,
+      ]) {
+        const view: any = cv?.object3d;
+        if (!view || !view.visible) continue;
+        view.traverse((child: any) => {
+          if (child.isLine2 || child.isLine) child.raycast?.(raycaster, edgeHits);
+        });
+      }
+      if (edgeHits.length > 0) {
+        edgeHits.sort((a, b) => a.distance - b.distance);
+        let node = edgeHits[0].object;
+        while (node && !(node.userData?.curve)) node = node.parent;
+        if (node) {
+          this.selectEdge(node.userData.curve as BoundingCurve);
+          return;
         }
       }
     }
-    return bestIdx;
+
+    // 3. Per-surface mesh raycast for patch selection.
+    const hit = this._raycastSurface(raycaster);
+    this.selectPatch(hit);
   }
 
-  setHover(patchIdx) {
-    if (patchIdx === this.hoveredPatchIdx) return;
+  /** Raycast against every NurbsSurface's inner mesh; returns the hit entity or null. */
+  _raycastSurface(raycaster): NurbsSurface | null {
+    let best: NurbsSurface | null = null;
+    let bestDist = Infinity;
+    const surfaces = this.scene.surfaces;
+    for (let i = 0; i < surfaces.length; i++) {
+      const view: any = surfaces[i].object3d;
+      if (!view || !view.visible || !view.mesh) continue;
+      const hits: any[] = [];
+      view.mesh.raycast(raycaster, hits);
+      for (const h of hits) {
+        if (h.distance < bestDist) {
+          bestDist = h.distance;
+          best = surfaces[i];
+        }
+      }
+    }
+    return best;
+  }
+
+  setHover(patch: NurbsSurface | null) {
+    if (patch === this.hoveredPatch) return;
 
     // Reset all surfaces — each surface mesh owns its own hover state now.
     this._clearAllSurfaceHover();
 
-    this.hoveredPatchIdx = patchIdx;
+    this.hoveredPatch = patch;
     this.clearGroup(this.hoverGroup);
 
-    if (patchIdx < 0) {
+    if (!patch) {
       this.hoverGroup.visible = false;
       this.ctx.viewer.requestRender();
       return;
     }
 
-    const patch = this.scene.surfaces[patchIdx];
     const ss = this.ctx.viewer.sceneSetup;
     const N = 24;
 
-    // Tint the surfaces in the set via each mesh's own setHover / setHoverInSet.
-    const setMembers = this.scene.surfacesInSameSet
-      ? this.scene.surfacesInSameSet(patchIdx)
-      : [patchIdx];
-    for (const idx of setMembers) {
-      const m = this.surfaceMeshes[idx];
-      if (!m) continue;
-      if (idx === patchIdx) m.setHover(true);
-      else m.setHoverInSet(true);
+    // Tint the surfaces in the set via each view's setHover / setHoverInSet.
+    const set = patch.surfaceSet;
+    if (set) {
+      for (const member of set.surfaces) {
+        const m: any = member.object3d;
+        if (!m) continue;
+        if (member === patch) m.setHover(true);
+        else m.setHoverInSet(true);
+      }
+    } else {
+      const m: any = patch.object3d;
+      if (m) m.setHover(true);
     }
 
     // Black boundary outline (only on the actually hovered surface)
@@ -379,49 +401,34 @@ export class SceneObject3D extends Group {
     this.ctx.viewer.requestRender();
   }
 
-  selectPatch(idx) {
+  selectPatch(patch: NurbsSurface | null) {
     this.deselectHandle();
     this.deselectEdge();
-    this.setHover(-1);
-    this.selectedPatchIdx = idx;
-    if (idx < 0) {
-      this.subcageGroup.visible = false;
+    this.setHover(null);
+
+    // Tear down the previous surface's selection visuals via its own view.
+    if (this.selection && this.selection !== patch) {
+      const prevView: any = this.selection.object3d;
+      if (prevView && typeof prevView.setSelected === 'function') {
+        prevView.setSelected(false);
+      }
+    }
+
+    this.selection = patch;
+
+    if (!patch) {
       this.closePropsDialog();
     } else {
-      this.buildSubcage(idx);
-      this.subcageGroup.visible = true;
-      this.showPropsDialog(idx);
+      const view: any = patch.object3d;
+      if (view && typeof view.setSelected === 'function') view.setSelected(true);
+      this.showPropsDialog(patch);
     }
     this.ctx.viewer.requestRender();
   }
 
-  // ---- Subcage: 4×4 control point grid displayed as 3×3 quads ----
-
-  buildSubcage(patchIdx) {
-    this.clearGroup(this.subcageGroup);
-    // Dispose the previous SubcageObject3D if any
-    if (this._subcage) {
-      this.subcageGroup.remove(this._subcage);
-      this._subcage.dispose();
-      this._subcage = null;
-    }
-
-    const patch = this.scene.surfaces[patchIdx];
-    const subcage = new SubcageObject3D(
-      patch,
-      this.ctx.viewer.sceneSetup,
-      this.scene,
-      {
-        onEdgeClicked: (edgeIdx) => this.selectEdge(edgeIdx),
-        requestRender: () => this.ctx.viewer.requestRender(),
-      },
-      this.scene.tessResolution || 8,
-    );
-    this._subcage = subcage;
-    this.subcageGroup.add(subcage);
-    // Legacy references used elsewhere in Scene.object3d
-    this.subcageHandles = subcage.handles;
-    this.edgeLines = subcage.edgeLines;
+  /** Backward-compat getter for callers still thinking in indices. */
+  get selectedPatchIdx(): number {
+    return this.selection ? this.scene.surfaces.indexOf(this.selection) : -1;
   }
 
   // ---- Handle selection + gizmo ----
@@ -429,11 +436,12 @@ export class SceneObject3D extends Group {
   setupGizmo() {
     const ss = this.ctx.viewer.sceneSetup;
 
-    // One shared SelectionGizmoOverlay driven by selection$. When a CP adapter
-    // is published to selection$ (via SubcageObject3D's picker click), the
-    // overlay attaches its TransformControls to that vertex. On drag, it
-    // calls scene.moveVertex, and the onChange hook refreshes scene-level
-    // overlays that aren't on the Vertex.usedBy invalidation chain.
+    // One shared SelectionGizmoOverlay driven by selection$. When a
+    // Vertex is published to selection$ (via its handle's onMouseClick
+    // → select(this)), the overlay attaches its TransformControls to
+    // it. On drag the gizmo calls scene.moveVertex, and the onChange
+    // hook refreshes scene-level overlays that aren't on the
+    // Vertex.usedBy invalidation chain.
     this._selectionGizmo = new SelectionGizmoOverlay(ss, this.scene, {
       onChange: () => {
         if (!this._timer) {
@@ -451,52 +459,65 @@ export class SceneObject3D extends Group {
     ss.scene.add(this._selectionGizmo.gizmo);
     ss.scene.add(this._selectionGizmo.target);
 
-    // Listen to selection$ for the CP-specific bookkeeping Scene still owns
-    // (selectedHandle tracking for code paths that read it).
+    // Listen to selection$ so clicking a CP handle clears any live edge
+    // selection (they're mutually exclusive).
     this._selectionUnsub = selection$.attach((sel) => {
-      const handle = sel && (sel as any).handle;
-      if (handle && handle.userData) {
-        this.deselectEdge();
-        this.selectedHandle = handle;
-      } else if (this.selectedHandle) {
-        this.selectedHandle = null;
+      if (sel instanceof Vertex) {
+        this.selectedEdgeCurve = null;
+        this.closeEdgeDialog();
       }
       this.ctx.viewer.requestRender();
     });
   }
 
-  selectSubcageHandle(handle) {
-    // Legacy entry point — route through selection$ so SelectionGizmoOverlay
-    // picks it up. Mirror-target check happens inside the CPSelectableAdapter.
-    if (!handle || !handle.selectable) return;
-    select(handle.selectable);
-  }
-
+  /** Clear the current CP handle selection (if any) via selection$. */
   deselectHandle() {
-    if (this.selectedHandle) {
-      // Clearing selection$ triggers the adapter's setSelected(false) which
-      // restores the handle visuals; selection$ listener clears this.selectedHandle.
+    if (selection$.value instanceof Vertex) {
       select(null);
     }
   }
 
   // ---- Edge selection ----
 
-  selectEdge(edgeIdx) {
+  /**
+   * Select a BoundingCurve. The curve is shared across the surfaces that
+   * use it; the edge dialog applies to the currently-selected patch's side
+   * of that curve, so we translate curve → side via the patch's own
+   * `boundingCurves` lookup.
+   */
+  selectEdge(curve) {
     this.deselectEdge();
     this.deselectHandle();
-    this.selectedEdgeIdx = edgeIdx;
-    if (this._subcage) this._subcage.selectEdge(edgeIdx);
-    this.showEdgeDialog(edgeIdx);
+    if (!this.selection) return;
+    const patch = this.selection;
+    const side = this._findSideOfCurve(patch, curve);
+    if (side < 0) return;
+    this.selectedEdgeCurve = curve;
+    // Highlighting is already in place via NurbsSurfaceObject3D.setSelected;
+    // re-emphasise the clicked edge via the curve view's own selection flag.
+    if (curve.object3d && typeof curve.object3d.setSelected === 'function') {
+      curve.object3d.setSelected(true);
+    }
+    this.showEdgeDialog(side);
     this.ctx.viewer.requestRender();
   }
 
   deselectEdge() {
-    if (this.selectedEdgeIdx >= 0 && this._subcage) {
-      this._subcage.deselectEdge(this.selectedEdgeIdx);
+    if (this.selectedEdgeCurve) {
+      const view = this.selectedEdgeCurve.object3d;
+      if (view && typeof view.setSelected === 'function') view.setSelected(false);
+      this.selectedEdgeCurve = null;
     }
-    this.selectedEdgeIdx = -1;
     this.closeEdgeDialog();
+  }
+
+  /** Return which side (0..3) of a patch a BoundingCurve is, or -1. */
+  _findSideOfCurve(patch, curve) {
+    if (patch.boundingCurves.bottom === curve) return 0;
+    if (patch.boundingCurves.right === curve) return 1;
+    if (patch.boundingCurves.top === curve) return 2;
+    if (patch.boundingCurves.left === curve) return 3;
+    return -1;
   }
 
   showEdgeDialog(edgeIdx) {
@@ -569,7 +590,8 @@ export class SceneObject3D extends Group {
 
       scene.arcConstraints = scene.arcConstraints.filter(c => {
         if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
-          if (c.mode === 'rational') ptch.rational = false;
+          // `rational` is derived; the following constrainEdgeToArc rewrites
+          // edge CP weights to match the new mode.
           return false;
         }
         return true;
@@ -589,9 +611,6 @@ export class SceneObject3D extends Group {
       removeBtn.onclick = () => {
         scene.arcConstraints = scene.arcConstraints.filter(c => {
           if (c.patchSide && c.patchSide.patchIdx === this.selectedPatchIdx && c.patchSide.side === edgeIdx) {
-            if (c.mode === 'rational') {
-              this.scene.surfaces[c.patchSide.patchIdx].rational = false;
-            }
             // Reset interior control points to linear interpolation
             const ev = this.scene.surfaces[this.selectedPatchIdx].getEdgeVertices(edgeIdx);
             const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
@@ -602,11 +621,11 @@ export class SceneObject3D extends Group {
           }
           return true;
         });
-        // Reset weights on this edge
-        this.scene.surfaces[this.selectedPatchIdx].weights.forEach(row => {
-          for (let i = 0; i < row.length; i++) row[i] = 1;
-        });
-        this.scene.surfaces[this.selectedPatchIdx].rational = false;
+        // Reset every control point weight on the selected patch back to 1.
+        const selPatch = this.scene.surfaces[this.selectedPatchIdx];
+        for (const row of selPatch.grid) {
+          for (const cp of row) cp.weight.value = 1;
+        }
         ;
         this.rebuildAll();
         this.persistCageState();
@@ -654,118 +673,45 @@ export class SceneObject3D extends Group {
     }
   }
 
-  // ---- Per-surface mesh management ----
-
-  _buildSurfaceMeshes() {
-    // Dispose any previous
-    for (const m of this.surfaceMeshes) {
-      this.surfacesGroup.remove(m);
-      if (m.geometry) m.geometry.dispose();
-      if (m.material) m.material.dispose();
-    }
-    this.surfaceMeshes = [];
-
-    const scene = this.scene;
-    if (!scene) return;
-    const res = scene.tessResolution || 8;
-
-    for (let i = 0; i < scene.surfaces.length; i++) {
-      const surface = scene.surfaces[i];
-      const mesh = this._createSurfaceMesh(surface, res);
-      mesh.userData.patchIdx = i;
-      this.surfaceMeshes.push(mesh);
-      this.surfacesGroup.add(mesh);
-    }
-  }
+  // ---- Entity view bookkeeping ----------------------------------------
 
   /**
-   * Build the Three.js mesh for one surface and attach:
-   *   - `rebuild(surface)`   — retessellate in place (called by
-   *     NurbsSurface.invalidateVisual via surface.object3d)
-   *   - `setHover(bool)`     — tint material (hover color)
-   *   - `setHoverInSet(bool)` — tint material (hover-in-set color)
-   *   - `setSelected(bool)`  — tint material (selected color)
-   *
-   * Sets `surface.object3d = mesh` so the entity can address its own visual.
+   * After a structural op (split / subdivide / fill …) the scene's
+   * surface list may have changed. Refresh external references
+   * (surfaceMeshes index, click handlers) and propagate mirror-target
+   * colouring; no actual view construction happens here anymore —
+   * entity constructors did that already.
    */
-  _createSurfaceMesh(surface: any, resolution: number): any {
+  _refreshEntityRefs() {
+    const scene = this.scene;
+    if (!scene) return;
     const self = this;
-    const tess = surface.tessellate(resolution);
-    const geo = new BufferGeometry();
-    geo.setAttribute('position', new BufferAttribute(new Float32Array(tess.positions), 3));
-    geo.setAttribute('normal', new BufferAttribute(new Float32Array(tess.normals), 3));
-    geo.setIndex(new BufferAttribute(new Uint32Array(tess.indices), 1));
-
-    const mat = createSolidMaterial({
-      side: DoubleSide,
-      color: SURFACE_BASE_COLOR,
-      shininess: 80,
-      specular: 0x444444,
-    });
-
-    const mesh: any = new Mesh(geo, mat);
-
-    // Hover handlers live on the mesh itself. The app's mouse event system
-    // invokes these when its raycaster hits this mesh — no central scan.
-    // Click selection is still routed via pickPatch() (in DOM mouseup) so
-    // the priority order subcage-handle > edge > surface is preserved.
-    mesh.onMouseEnter = () => {
-      if (self.selectedPatchIdx >= 0) return;
-      if (self._loopInsertMode || self._bridgeMode || self._fillHoleMode) return;
-      const idx = self.surfaceMeshes.indexOf(mesh);
-      if (idx >= 0) self.setHover(idx);
-    };
-    mesh.onMouseLeave = () => {
-      if (self.selectedPatchIdx >= 0) return;
-      if (self._loopInsertMode || self._bridgeMode || self._fillHoleMode) return;
-      self.setHover(-1);
-    };
-
-    // Invalidate hook
-    mesh.rebuild = (s: any) => {
-      const res = self.scene?.tessResolution || 8;
-      const t = s.tessellate(res);
-      if (mesh.geometry) mesh.geometry.dispose();
-      const g = new BufferGeometry();
-      g.setAttribute('position', new BufferAttribute(new Float32Array(t.positions), 3));
-      g.setAttribute('normal', new BufferAttribute(new Float32Array(t.normals), 3));
-      g.setIndex(new BufferAttribute(new Uint32Array(t.indices), 1));
-      mesh.geometry = g;
-      self.ctx.viewer.requestRender();
-    };
-
-    // Hover/select tinting lives on the mesh itself, not a central _tintSurface.
-    const applyColor = () => {
-      if (mesh._selected)      mat.color.setHex(0xffd040);
-      else if (mesh._hovered)  mat.color.setHex(SURFACE_HOVER_COLOR);
-      else if (mesh._hoverSet) mat.color.setHex(SURFACE_HOVER_SET_COLOR);
-      else                     mat.color.setHex(SURFACE_BASE_COLOR);
-    };
-    mesh._hovered = false;
-    mesh._hoverSet = false;
-    mesh._selected = false;
-    mesh.setHover = (v: boolean) => { mesh._hovered = v; applyColor(); };
-    mesh.setHoverInSet = (v: boolean) => { mesh._hoverSet = v; applyColor(); };
-    mesh.setSelected = (v: boolean) => { mesh._selected = v; applyColor(); };
-
-    surface.object3d = mesh;
-    return mesh;
+    this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
+    const seenCurves = new Set<any>();
+    for (const surface of scene.surfaces) {
+      for (const row of surface.grid) {
+        for (const cp of row) cp.setMirrorTarget(scene.isMirrorTarget(cp));
+      }
+      for (const cv of [
+        surface.boundingCurves.bottom, surface.boundingCurves.right,
+        surface.boundingCurves.top,    surface.boundingCurves.left,
+      ]) {
+        if (seenCurves.has(cv)) continue;
+        seenCurves.add(cv);
+        const view: any = cv.object3d;
+        if (view && typeof view.setClickHandler === 'function') {
+          view.setClickHandler((curve: any) => self.selectEdge(curve));
+        }
+      }
+    }
   }
 
-  /** Legacy tint dispatch — kept as a thin wrapper while we migrate. */
-  _tintSurface(idx, color) {
-    const m = this.surfaceMeshes[idx];
-    if (!m) return;
-    // For callers that still pass a raw color, just set it directly.
-    m.material.color.setHex(color);
-  }
-
-  /** Clear hover/hoverInSet flags on every surface mesh. */
+  /** Clear hover flags on every surface view. */
   _clearAllSurfaceHover() {
-    for (const m of this.surfaceMeshes) {
-      if (m && m.setHover) {
-        m.setHover(false);
-        m.setHoverInSet(false);
+    for (const v of this.surfaceMeshes) {
+      if (v && v.setHover) {
+        v.setHover(false);
+        if (v.setHoverInSet) v.setHoverInSet(false);
       }
     }
   }
@@ -783,24 +729,20 @@ export class SceneObject3D extends Group {
   refreshOverlaysForDrag(): void {
     if (!this.scene) return;
 
-    if (this.wireframeMesh && this.wireframeMesh.visible) {
-      rebuildWireframeGroup(this.wireframeMesh, this.scene, this.ctx.viewer.sceneSetup, this._meshWidth);
-    }
-    if (this.edgesGroup && this.edgesGroup.visible) {
-      rebuildEdgesGroup(this.edgesGroup, this.scene, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
-    }
-    if (this.boundariesGroup && this.boundariesGroup.visible) {
-      rebuildBoundariesGroup(this.boundariesGroup, this.scene, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
-    }
-
-    // Subcage handles track their cage vertex position by reference.
-    if (this.subcageHandles) {
-      for (const h of this.subcageHandles) {
-        const cv = h.userData && h.userData.cageVertex;
-        if (cv) {
-          const p = cv.position;
-          h.position.set(p[0], p[1], p[2]);
-        }
+    // Per-surface wireframe and BoundingCurve views retessellate in
+    // sync with their surface's own tessellate() call, so they don't
+    // need a separate refresh step. Only the selected-patch cage
+    // needs an explicit sync.
+    if (this.selection) {
+      const patch = this.selection;
+      const cageView: any = patch.cage?.object3d;
+      if (cageView && typeof cageView.sync === 'function') cageView.sync();
+      for (const cv of [
+        patch.boundingCurves.bottom, patch.boundingCurves.right,
+        patch.boundingCurves.top,    patch.boundingCurves.left,
+      ]) {
+        const view: any = cv?.object3d;
+        if (view && typeof view.rebuild === 'function') view.rebuild();
       }
     }
 
@@ -810,15 +752,16 @@ export class SceneObject3D extends Group {
   // ---- Rebuild ----
 
   rebuildAll() {
-    this._buildSurfaceMeshes();
+    // Stash current selection so we can reapply it after the rebuild.
+    const prev = this.selection;
+    this.selection = null;
 
-    rebuildWireframeGroup(this.wireframeMesh, this.scene, this.ctx.viewer.sceneSetup, this._meshWidth);
-    rebuildEdgesGroup(this.edgesGroup, this.scene, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
-    rebuildBoundariesGroup(this.boundariesGroup, this.scene, this.ctx.viewer.sceneSetup, EDGE_WIDTH);
+    this._refreshEntityRefs();
+    this._applyViewFlags(surfacingViewFlags$.value);
 
-    if (this.selectedPatchIdx >= 0) {
-      this.buildSubcage(this.selectedPatchIdx);
-      if (this._propsDialog) this.showPropsDialog(this.selectedPatchIdx);
+    if (prev && this.scene.surfaces.includes(prev)) {
+      this.selectPatch(prev);
+      if (this._propsDialog) this.showPropsDialog(prev);
     }
 
     this.ctx.viewer.requestRender();
@@ -938,20 +881,14 @@ export class SceneObject3D extends Group {
     // Remove previous constraint on this edge if exists
     scene.arcConstraints = scene.arcConstraints.filter(c => {
       if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
-        if (c.mode === 'rational') {
-          this.scene.surfaces[c.patchSide.patchIdx].rational = false;
-        }
+        // `rational` is derived; constrainEdgeToArc below rewrites edge weights.
         return false;
       }
       return true;
     });
 
     scene.constrainEdgeToArc(patchIdx, side, radius, angle, planeNormal, mode);
-    ;
     this.rebuildAll();
-    if (this.selectedPatchIdx >= 0) {
-      this.buildSubcage(this.selectedPatchIdx);
-    }
     this.persistCageState();
   }
 
@@ -968,11 +905,11 @@ export class SceneObject3D extends Group {
 
   // ---- Patch Properties Dialog ----
 
-  showPropsDialog(patchIdx) {
+  showPropsDialog(patch: NurbsSurface) {
     this.closePropsDialog();
 
-    const patch = this.scene.surfaces[patchIdx];
     const scene = this.scene;
+    const patchIdx = scene.surfaces.indexOf(patch);
 
     const round = (v) => Math.round(v * 1e6) / 1e6;
     const fmtVec = (p) => [round(p[0]), round(p[1]), round(p[2])];
@@ -980,8 +917,8 @@ export class SceneObject3D extends Group {
     // Control points as 4x4 array of [x,y,z]
     const controlPoints = patch.grid.map(row => row.map(v => fmtVec(v.position)));
 
-    // Weights
-    const weights = patch.weights.map(row => row.map(w => round(w)));
+    // Weights (derived from per-vertex ControlPoints)
+    const weights = patch.getWeightsMatrix().map(row => row.map(w => round(w)));
 
     // Knots (uniform clamped cubic: [0,0,0,0,1,1,1,1])
     const knots = [0, 0, 0, 0, 1, 1, 1, 1];
@@ -1057,31 +994,27 @@ export class SceneObject3D extends Group {
       const dist = parseFloat(panel.querySelector('#props-distance').value);
       if (isNaN(dist) || dist === 0) return;
       this.scene.pushPullPatch(patchIdx, dist);
-      ;
       this.rebuildAll();
       this.persistCageState();
-      this.showPropsDialog(patchIdx);
+      this.showPropsDialog(patch);
     };
     panel.querySelector('#props-extrude').onclick = () => {
       const dist = parseFloat(panel.querySelector('#props-distance').value);
       if (isNaN(dist) || dist === 0) return;
       this.scene.extrudePatch(patchIdx, dist);
-      ;
       this.rebuildAll();
       this.persistCageState();
-      this.showPropsDialog(patchIdx);
+      this.showPropsDialog(patch);
     };
     panel.querySelector('#props-subdivide').onclick = () => {
       this.scene.subdividePatch(patchIdx);
-      ;
-      this.selectPatch(-1);
+      this.selectPatch(null);
       this.rebuildAll();
       this.persistCageState();
     };
     panel.querySelector('#props-remove').onclick = () => {
-      this.scene.surfaces.splice(patchIdx, 1);
-      ;
-      this.selectPatch(-1);
+      this.scene.removeSurface(patch);
+      this.selectPatch(null);
       this.rebuildAll();
       this.persistCageState();
     };
@@ -1306,10 +1239,10 @@ export class SceneObject3D extends Group {
     let bestDist = Infinity;
     let bestFaceIdx = -1;
     for (let i = 0; i < this.surfaceMeshes.length; i++) {
-      const m = this.surfaceMeshes[i];
-      if (!m.visible) continue;
-      const hits = [];
-      m.raycast(raycaster, hits);
+      const m: any = this.surfaceMeshes[i];
+      if (!m || !m.visible || !m.mesh) continue;
+      const hits: any[] = [];
+      m.mesh.raycast(raycaster, hits);
       for (const h of hits) {
         if (h.distance < bestDist && h.faceIndex !== undefined) {
           bestDist = h.distance;
@@ -1428,34 +1361,16 @@ export class SceneObject3D extends Group {
   bridgeExecute() {
     if (!this._bridgeEdge1 || !this._bridgeEdge2) return;
     const scene = this.scene;
+    const {bridgeSurface} = require('../../ops/bridge/bridge.command');
 
     const e1 = scene.surfaces[this._bridgeEdge1.patchIdx].getEdgeVertices(this._bridgeEdge1.side);
-    let e2 = scene.surfaces[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
-    if (this._bridgeFlipped) e2 = [e2[3], e2[2], e2[1], e2[0]];
+    const e2 = scene.surfaces[this._bridgeEdge2.patchIdx].getEdgeVertices(this._bridgeEdge2.side);
+    bridgeSurface(scene, e1, e2, {
+      flipped: this._bridgeFlipped,
+      g1: this._g1Continuity,
+      sourcePatchIdx: this._bridgeEdge1.patchIdx,
+    });
 
-    // Build 4×4 grid: row 0 = edge1, row 3 = edge2, rows 1-2 interpolated
-    const grid = [];
-    for (let r = 0; r < 4; r++) {
-      const row = [];
-      for (let c = 0; c < 4; c++) {
-        if (r === 0) {
-          row.push(e1[c]); // shared by identity with source patch
-        } else if (r === 3) {
-          row.push(e2[c]); // shared by identity with target patch
-        } else {
-          const t = r / 3;
-          const p = vlerp(e1[c].position, e2[c].position, t);
-          row.push(new CageVertex(p[0], p[1], p[2]));
-        }
-      }
-      grid.push(row);
-    }
-
-    scene.surfaces.push(new NurbsPatch(grid));
-    if (this._g1Continuity) {
-      scene.applyG1AllSides(scene.surfaces.length - 1);
-    }
-    ;
     this.rebuildAll();
     this.persistCageState();
 
@@ -1494,10 +1409,10 @@ export class SceneObject3D extends Group {
     let bestDist = Infinity;
     let bestHit = null;
     for (let i = 0; i < this.surfaceMeshes.length; i++) {
-      const m = this.surfaceMeshes[i];
-      if (!m.visible) continue;
-      const hits = [];
-      m.raycast(raycaster, hits);
+      const m: any = this.surfaceMeshes[i];
+      if (!m || !m.visible || !m.mesh) continue;
+      const hits: any[] = [];
+      m.mesh.raycast(raycaster, hits);
       for (const h of hits) {
         if (h.distance < bestDist && h.faceIndex !== undefined) {
           bestDist = h.distance;
@@ -1510,7 +1425,7 @@ export class SceneObject3D extends Group {
 
     const fi = bestHit.faceIndex;
     const res = this.scene.tessResolution;
-    const meshGeo = this.surfaceMeshes[bestPi].geometry;
+    const meshGeo = (this.surfaceMeshes[bestPi] as any).mesh.geometry;
     const indices = meshGeo.index.array;
     const verts = meshGeo.attributes.position.array;
 
@@ -1654,34 +1569,21 @@ export class SceneObject3D extends Group {
     this.closeArcDialog();
     this.closeEdgeDialog();
     this.closeModeGuide();
-    // Dispose per-surface meshes
-    for (const m of this.surfaceMeshes || []) {
-      if (m.geometry) m.geometry.dispose();
-      if (m.material) m.material.dispose();
+    // Cascade-dispose the entity graph. Each NurbsSurface.dispose()
+    // tears down its own view + cage and decrements the refcount on
+    // its shared curves and CPs; those self-dispose when their last
+    // user leaves.
+    if (this.scene) {
+      for (const surface of [...this.scene.surfaces]) surface.dispose();
     }
-    if (this.wireframeMesh) {
-      for (const child of [...this.wireframeMesh.children]) {
-        if (child.dispose) child.dispose();
-      }
-    }
-    if (this.edgesGroup) {
-      for (const child of [...this.edgesGroup.children]) {
-        if (child.dispose) child.dispose();
-      }
-    }
-    if (this.boundariesGroup) {
-      for (const child of [...this.boundariesGroup.children]) {
-        if (child.dispose) child.dispose();
-      }
-    }
-    this.clearGroup(this.subcageGroup);
     // Run any registered disposers
     for (const d of this._disposers) {
       try { d(); } catch (e) { /* ignore */ }
     }
     this._disposers = [];
-    if (this.scene && this.scene.object3d === this) {
-      this.scene.object3d = null;
+    // Detach the overlays group from ctx.workingGroup.
+    if (this.overlaysGroup && this.overlaysGroup.parent) {
+      this.overlaysGroup.parent.remove(this.overlaysGroup);
     }
   }
 }
@@ -1697,125 +1599,19 @@ function compactNumberArrays(json) {
   });
 }
 
-function buildGeom(mesh) {
-  if (!mesh) return new BufferGeometry();
-  const g = new BufferGeometry();
-  g.setAttribute('position', new BufferAttribute(mesh.vertices, 3));
-  g.setAttribute('normal', new BufferAttribute(mesh.normals, 3));
-  if (mesh.indices) g.setIndex(new BufferAttribute(mesh.indices, 1));
-  return g;
-}
-
 /**
- * Rebuild the UV-grid wireframe Group with ScalableLine instances.
- * Each row/column of each surface becomes one polyline so we get
- * proper thick lines via LineMaterial (LineBasicMaterial.linewidth
- * is locked to 1px on most WebGL platforms).
+ * Is this BoundingCurve a "set silhouette" edge? True when the curve is
+ * a free edge (≤ 1 user) or its users span more than one SurfaceSet.
+ * Mirrors the predicate used by the old rebuildBoundariesGroup — only
+ * silhouettes of logical faces get drawn in boundaries view mode.
  */
-function rebuildWireframeGroup(group: any, scene: any, sceneSetup: any, width: number = 1.5): void {
-  for (const child of [...group.children]) {
-    group.remove(child);
-    if (child.dispose) child.dispose();
+function isSetBoundary(curve: any): boolean {
+  if (curve.users.size < 2) return true;
+  let firstSet: any = undefined;
+  for (const user of curve.users) {
+    if (!user.surfaceSet) return true;
+    if (firstSet === undefined) firstSet = user.surfaceSet;
+    else if (firstSet !== user.surfaceSet) return true;
   }
-  if (!scene) return;
-
-  const resolution = scene.tessResolution || 8;
-  const COLOR = 0x1860c0;
-
-  for (const surface of scene.surfaces) {
-    // Reuse the cached mesh tessellation — rows and cols are exactly the
-    // mesh's vertex grid, so the wireframe overlay aligns perfectly.
-    const {rows, cols} = surface.getIsolinePolylines(resolution);
-    for (const row of rows) {
-      const line = new ScalableLine(sceneSetup, row, width, COLOR);
-      line.material.transparent = true;
-      line.material.opacity = 0.7;
-      line.renderOrder = 1;
-      line.raycast = () => {};
-      group.add(line);
-    }
-    for (const col of cols) {
-      const line = new ScalableLine(sceneSetup, col, width, COLOR);
-      line.material.transparent = true;
-      line.material.opacity = 0.7;
-      line.renderOrder = 1;
-      line.raycast = () => {};
-      group.add(line);
-    }
-  }
-}
-
-/**
- * Rebuild the edges Group with one ScalableLine per bounding curve.
- * ScalableLine uses LineMaterial which gives true thick lines (unlike
- * the stock LineBasicMaterial whose linewidth is 1px on most platforms).
- */
-function rebuildEdgesGroup(group: any, scene: any, sceneSetup: any, width: number = 2.5): void {
-  // Clear existing
-  for (const child of [...group.children]) {
-    group.remove(child);
-    if (child.dispose) child.dispose();
-  }
-  if (!scene) return;
-
-  const resolution = scene.tessResolution || 8;
-  const EDGE_COLOR = 0x000000;
-
-  for (const surface of scene.surfaces) {
-    for (const side of [0, 1, 2, 3]) {
-      // Reuse the mesh tessellation's boundary row/col — the edge line
-      // tracks the shaded surface exactly, no curve drift.
-      const pts = surface.getEdgePolyline(side, resolution);
-      const line = new ScalableLine(sceneSetup, pts, width, EDGE_COLOR);
-      line.renderOrder = 1;
-      line.raycast = () => {};
-      group.add(line);
-    }
-  }
-}
-
-/**
- * Build edge polylines for set boundaries only — edges shared between two
- * surfaces in the SAME SurfaceSet are skipped, so the result outlines the
- * silhouette of each set.
- */
-function rebuildBoundariesGroup(group: any, scene: any, sceneSetup: any, width: number = 2.5): void {
-  for (const child of [...group.children]) {
-    group.remove(child);
-    if (child.dispose) child.dispose();
-  }
-  if (!scene) return;
-
-  const resolution = scene.tessResolution || 8;
-  const EDGE_COLOR = 0x000000;
-
-  // Track edges already drawn so we don't draw the same shared edge twice
-  const drawn = new Set<string>();
-
-  for (let pi = 0; pi < scene.surfaces.length; pi++) {
-    const surface = scene.surfaces[pi];
-    const adj = scene.findAdjacentPatches(pi);
-    for (let side = 0; side < 4; side++) {
-      // Find adjacent surface on this side, if any
-      const match = adj.find((a: any) => a.side === side);
-      if (match) {
-        const other = scene.surfaces[match.otherIdx];
-        // Skip if both belong to the same SurfaceSet (shared by reference)
-        if (surface.surfaceSet && surface.surfaceSet === other.surfaceSet) continue;
-        // Avoid drawing the shared edge from both sides
-        const key = pi < match.otherIdx
-          ? `${pi}:${side}-${match.otherIdx}:${match.otherSide}`
-          : `${match.otherIdx}:${match.otherSide}-${pi}:${side}`;
-        if (drawn.has(key)) continue;
-        drawn.add(key);
-      }
-      // Reuse the mesh tessellation — boundary polyline shares vertices
-      // with the shaded mesh so they stay visually aligned.
-      const pts = surface.getEdgePolyline(side, resolution);
-      const line = new ScalableLine(sceneSetup, pts, width, EDGE_COLOR);
-      line.renderOrder = 1;
-      line.raycast = () => {};
-      group.add(line);
-    }
-  }
+  return false;
 }

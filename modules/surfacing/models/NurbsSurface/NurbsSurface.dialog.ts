@@ -19,8 +19,9 @@ export function showPropsDialog(
   const round = (v: number) => Math.round(v * 1e6) / 1e6;
   const fmtVec = (p: number[]) => [round(p[0]), round(p[1]), round(p[2])];
 
-  const controlPoints = surface.cp.map(row => row.map(c => fmtVec(c.vertex.position)));
-  const weights = surface.cp.map(row => row.map(c => round(c.weight.value)));
+  const cps = surface.getCPs();
+  const controlPoints = cps.map(row => row.map(c => fmtVec(c.position)));
+  const weights = cps.map(row => row.map(c => round(c.weight.value)));
   const knots = [0, 0, 0, 0, 1, 1, 1, 1];
 
   const sideNames = ['bottom', 'right', 'top', 'left'];
