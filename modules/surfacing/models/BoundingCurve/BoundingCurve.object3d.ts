@@ -72,11 +72,15 @@ export class BoundingCurveObject3D extends EntityObject3D {
 
     const color = this.currentColor();
     const width = this.currentWidth();
+    const highlighted = this._highlightSide >= 0 || this._highlightColor !== null;
     const line: any = new ScalableLine(this.sceneSetup, pts, width, color);
-    line.material.depthTest = false;
-    line.material.transparent = true;
-    line.material.opacity = 0.9;
-    line.renderOrder = 1;
+    // Only highlighted curves (selection sides, bridge/fill-hole preview)
+    // should punch through the mesh — plain globally-visible edges respect
+    // depth so backside edges don't bleed through.
+    line.material.depthTest = !highlighted;
+    line.material.transparent = highlighted;
+    line.material.opacity = highlighted ? 0.9 : 1.0;
+    line.renderOrder = highlighted ? 2 : 1;
 
     const self = this;
     line.onMouseEnter = () => { if (self._highlightSide >= 0) self.setHover(true); };
