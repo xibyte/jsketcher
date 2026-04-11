@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="wallA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7268a0"/>
+      <stop offset="1" stop-color="#4a436a"/>
+    </linearGradient>
+    <linearGradient id="wallB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#544a7c"/>
+      <stop offset="1" stop-color="#322c4c"/>
+    </linearGradient>
+    <linearGradient id="fillet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd870"/>
+      <stop offset="0.6" stop-color="#e8a030"/>
+      <stop offset="1" stop-color="#a06818"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Wall A fill (horizontal floor) -->
+  <path d="M 76.6 63.8 L 92.1 72.8 L 57.5 92.8 L 41.9 83.8 Z" fill="url(#wallA)"/>
+
+  <!-- Wall B fill (vertical wall) -->
+  <path d="M 70.5 35.3 L 70.5 53.3 L 35.9 73.3 L 35.9 55.3 Z" fill="url(#wallB)"/>
+
+  <!-- Fillet surface fill: two cubic arcs at z=±20 connected by the shared tangent lines to walls A and B -->
+  <path d="M 76.6 63.8
+           C 73.3 61.9 70.5 57.2 70.5 53.3
+           L 35.9 73.3
+           C 35.9 77.2 38.6 81.9 41.9 83.8 Z"
+        fill="url(#fillet)"/>
+
+  <!-- Fillet Z-direction isolines at θ = 1/3 and 2/3 of the arc -->
+  <g fill="none" stroke="#fff2b8" stroke-width="0.9" stroke-linecap="round" opacity="0.78">
+    <path d="M 73.5 61.1 L 38.9 81.1"/>
+    <path d="M 71.3 57.2 L 36.7 77.2"/>
+  </g>
+
+  <!-- Interior edges: where the fillet meets each wall (tangent seams) -->
+  <g fill="none" stroke="#1b1730" stroke-width="1.6" stroke-linecap="round">
+    <path d="M 76.6 63.8 L 41.9 83.8"/>
+    <path d="M 70.5 53.3 L 35.9 73.3"/>
+  </g>
+
+  <!-- Outer silhouette of the entire assembly -->
+  <path d="M 70.5 35.3
+           L 70.5 53.3
+           C 70.5 57.2 73.3 61.9 76.6 63.8
+           L 92.1 72.8
+           L 57.5 92.8
+           L 41.9 83.8
+           C 38.6 81.9 35.9 77.2 35.9 73.3
+           L 35.9 55.3 Z"
+        fill="none" stroke="#1b1730" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>
