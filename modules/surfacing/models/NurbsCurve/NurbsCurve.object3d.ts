@@ -1,13 +1,22 @@
-import {Group, BufferGeometry, BufferAttribute, LineBasicMaterial, Line} from 'three';
+import {BufferGeometry, Line} from 'three';
 import type {NurbsCurve} from './NurbsCurve.entity';
+import {
+  EntityObject3D,
+  buildPolylineGeometry,
+  createCurveMaterial,
+  CURVE_COLOR, CURVE_HOVER_COLOR, CURVE_SELECTED_COLOR,
+} from '../../three';
 
-const CURVE_COLOR = 0x44aaff;
 const CURVE_SEGMENTS = 24;
 
 /**
- * Three.js Object3D for an independent NurbsCurve entity.
+ * Three.js visual for an independent NurbsCurve entity.
  */
-export class NurbsCurveObject3D extends Group {
+export class NurbsCurveObject3D extends EntityObject3D {
+
+  private geometry: BufferGeometry | null = null;
+  private material = createCurveMaterial(CURVE_COLOR);
+  private line: Line | null = null;
 
   constructor(curve: NurbsCurve) {
     super();
@@ -15,10 +24,7 @@ export class NurbsCurveObject3D extends Group {
   }
 
   rebuild(curve: NurbsCurve): void {
-    while (this.children.length > 0) {
-      const c = this.children[0];
-      this.remove(c);
-    }
+    this.clearLine();
 
     const pts: number[] = [];
     for (let i = 0; i <= CURVE_SEGMENTS; i++) {
@@ -26,18 +32,34 @@ export class NurbsCurveObject3D extends Group {
       pts.push(p[0], p[1], p[2]);
     }
 
-    const g = new BufferGeometry();
-    g.setAttribute('position', new BufferAttribute(new Float32Array(pts), 3));
-    const mat = new LineBasicMaterial({color: CURVE_COLOR});
-    this.add(new Line(g, mat));
+    this.geometry = buildPolylineGeometry(pts);
+    this.line = new Line(this.geometry, this.material);
+    this.add(this.line);
   }
 
-  dispose(): void {
-    while (this.children.length > 0) {
-      const c = this.children[0];
-      this.remove(c);
-      if ((c as any).geometry) (c as any).geometry.dispose();
-      if ((c as any).material) (c as any).material.dispose();
+  private clearLine(): void {
+    if (this.line) {
+      this.remove(this.line);
+      this.line = null;
     }
+    if (this.geometry) {
+      this.geometry.dispose();
+      this.geometry = null;
+    }
+  }
+
+  protected onHoverChanged(hover: boolean): void {
+    if (!this._selected) {
+      this.material.color.setHex(hover ? CURVE_HOVER_COLOR : CURVE_COLOR);
+    }
+  }
+
+  protected onSelectedChanged(selected: boolean): void {
+    this.material.color.setHex(selected ? CURVE_SELECTED_COLOR : CURVE_COLOR);
+  }
+
+  protected onDispose(): void {
+    this.clearLine();
+    this.material.dispose();
   }
 }

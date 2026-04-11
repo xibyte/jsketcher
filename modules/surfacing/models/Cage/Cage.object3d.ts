@@ -1,13 +1,17 @@
-import {Group, BufferGeometry, BufferAttribute, LineBasicMaterial, Line} from 'three';
+import {BufferGeometry, BufferAttribute, Line} from 'three';
 import type {Cage} from './Cage.entity';
-
-const CAGE_LINE_COLOR = 0x1a1a1a;
+import {
+  EntityObject3D,
+  createCageLineMaterial,
+} from '../../three';
 
 /**
- * Three.js Object3D for a Cage entity.
- * Renders the 4×4 control point grid as line segments.
+ * Three.js visual for a Cage entity — the 4×4 control-point grid rendered
+ * as line segments connecting adjacent CPs.
  */
-export class CageObject3D extends Group {
+export class CageObject3D extends EntityObject3D {
+
+  private material = createCageLineMaterial();
 
   constructor(cage: Cage) {
     super();
@@ -15,20 +19,7 @@ export class CageObject3D extends Group {
   }
 
   rebuild(cage: Cage): void {
-    // Clear existing
-    while (this.children.length > 0) {
-      const c = this.children[0];
-      this.remove(c);
-      if ((c as any).geometry) (c as any).geometry.dispose();
-    }
-
-    const lineMat = new LineBasicMaterial({
-      color: CAGE_LINE_COLOR,
-      depthTest: false,
-      transparent: true,
-      opacity: 0.85
-    });
-    lineMat.depthWrite = false;
+    this.clearLines();
 
     for (const seg of cage.segments) {
       const pa = seg.a.vertex.position;
@@ -36,16 +27,24 @@ export class CageObject3D extends Group {
       const pts = new Float32Array([pa[0], pa[1], pa[2], pb[0], pb[1], pb[2]]);
       const g = new BufferGeometry();
       g.setAttribute('position', new BufferAttribute(pts, 3));
-      this.add(new Line(g, lineMat));
+      this.add(new Line(g, this.material));
     }
   }
 
-  dispose(): void {
+  private clearLines(): void {
     while (this.children.length > 0) {
       const c = this.children[0];
       this.remove(c);
       if ((c as any).geometry) (c as any).geometry.dispose();
-      if ((c as any).material) (c as any).material.dispose();
     }
+  }
+
+  isSelectable(): boolean {
+    return false;
+  }
+
+  protected onDispose(): void {
+    this.clearLines();
+    this.material.dispose();
   }
 }

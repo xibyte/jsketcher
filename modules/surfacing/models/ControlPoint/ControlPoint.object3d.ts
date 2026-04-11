@@ -1,41 +1,49 @@
-import {Group, Mesh, SphereGeometry, MeshBasicMaterial} from 'three';
+import {Mesh} from 'three';
 import type {ControlPoint} from './ControlPoint.entity';
-
-const CP_COLOR = 0x222222;
-const CP_HOVER = 0x555555;
-const CP_SELECTED = 0xee3333;
-const CP_MIRROR = 0x334466;
-const HANDLE_SIZE = 3.5;
-
-// Shared geometry for all CP handles
-const sharedSphereGeom = new SphereGeometry(1);
+import {
+  EntityObject3D,
+  sharedSphereGeometry,
+  createControlPointMaterial,
+  createPickerMaterial,
+  CP_COLOR, CP_HOVER_COLOR, CP_SELECTED_COLOR, CP_MIRROR_COLOR,
+  CP_VISUAL_SCALE, CP_PICKER_SCALE,
+} from '../../three';
 
 /**
- * Three.js Object3D for a ControlPoint entity.
- * Renders as a small sphere handle for interactive manipulation.
+ * Three.js visual for a ControlPoint entity.
+ *
+ * - A small visible sphere (scaled by CP_VISUAL_SCALE) for the handle.
+ * - An invisible full-size sphere used as the raycast hitbox so the picker
+ *   target doesn't change size with the visual.
+ * - Scales the visible sphere up to CP_PICKER_SCALE while selected.
  */
-export class ControlPointObject3D extends Group {
+export class ControlPointObject3D extends EntityObject3D {
 
-  sphere: Mesh;
-  material: MeshBasicMaterial;
   controlPoint: ControlPoint;
-  baseColor: number;
+  sphere: Mesh;
+  picker: Mesh;
+  private material: ReturnType<typeof createControlPointMaterial>;
+  private pickerMaterial: ReturnType<typeof createPickerMaterial>;
+  private baseColor: number;
+  private mirrorTarget: boolean;
 
   constructor(controlPoint: ControlPoint, isMirrorTarget: boolean = false) {
     super();
     this.controlPoint = controlPoint;
-    this.baseColor = isMirrorTarget ? CP_MIRROR : CP_COLOR;
+    this.mirrorTarget = isMirrorTarget;
+    this.baseColor = isMirrorTarget ? CP_MIRROR_COLOR : CP_COLOR;
 
-    this.material = new MeshBasicMaterial({
-      color: this.baseColor,
-      depthTest: false,
-      transparent: true,
-      opacity: 0.95
-    });
-
-    this.sphere = new Mesh(sharedSphereGeom, this.material);
+    this.material = createControlPointMaterial(this.baseColor);
+    this.sphere = new Mesh(sharedSphereGeometry, this.material);
     this.sphere.renderOrder = 2;
+    this.sphere.scale.setScalar(CP_VISUAL_SCALE);
     this.add(this.sphere);
+
+    this.pickerMaterial = createPickerMaterial();
+    this.picker = new Mesh(sharedSphereGeometry, this.pickerMaterial);
+    this.picker.renderOrder = 2;
+    this.picker.scale.setScalar(CP_PICKER_SCALE);
+    this.add(this.picker);
 
     this.syncPosition();
   }
@@ -45,15 +53,24 @@ export class ControlPointObject3D extends Group {
     this.position.set(p[0], p[1], p[2]);
   }
 
-  setHover(hover: boolean): void {
-    this.material.color.setHex(hover ? CP_HOVER : this.baseColor);
+  isSelectable(): boolean {
+    // Mirror-target CPs are driven by their source and cannot be selected.
+    return !this.mirrorTarget;
   }
 
-  setSelected(selected: boolean): void {
-    this.material.color.setHex(selected ? CP_SELECTED : this.baseColor);
+  protected onHoverChanged(hover: boolean): void {
+    if (!this._selected) {
+      this.material.color.setHex(hover ? CP_HOVER_COLOR : this.baseColor);
+    }
   }
 
-  dispose(): void {
+  protected onSelectedChanged(selected: boolean): void {
+    this.material.color.setHex(selected ? CP_SELECTED_COLOR : this.baseColor);
+    this.sphere.scale.setScalar(selected ? CP_PICKER_SCALE : CP_VISUAL_SCALE);
+  }
+
+  protected onDispose(): void {
     this.material.dispose();
+    this.pickerMaterial.dispose();
   }
 }

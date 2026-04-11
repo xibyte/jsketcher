@@ -27,6 +27,8 @@ const CAGE_LINE_COLOR = 0x1a1a1a;
 const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22]; // bottom, right, top, left
 const EDGE_SELECTED_COLOR = 0xffffff;
 const HANDLE_SIZE = 3.5;
+const CP_VISUAL_SCALE = 0.45;  // visible handle is smaller
+const CP_PICKER_SCALE = 1.0;   // pickable hitbox is larger
 const EDGE_WIDTH = 2.5;
 const MESH_WIDTH_NORMAL = 1;
 const MESH_WIDTH_THICK = 1.8;
@@ -439,24 +441,34 @@ export class SceneObject3D extends Group {
         const baseColor = isMirrorTarget ? CP_MIRROR : CP_COLOR;
 
         const mat = new MeshBasicMaterial({color: baseColor, depthTest: false, transparent: true, opacity: 0.95});
+        // Visible sphere — rendered smaller by default, scaled up when selected
         const sphere = new Mesh(geom, mat);
         sphere.renderOrder = 2;
+        sphere.scale.setScalar(CP_VISUAL_SCALE);
+
+        // Invisible picker sphere — keeps the original (larger) hitbox so the
+        // pointer target size doesn't change with the visual size.
+        const pickerMat = new MeshBasicMaterial({transparent: true, opacity: 0, depthTest: false, depthWrite: false});
+        const picker = new Mesh(geom, pickerMat);
+        picker.renderOrder = 2;
+        picker.scale.setScalar(CP_PICKER_SCALE);
 
         const handle = new ConstantScaleGroup(ss, HANDLE_SIZE * 2, 1, () => handle.position);
         handle.position.set(p[0], p[1], p[2]);
         handle.add(sphere);
-        handle.userData = {patchIdx, row, col, baseColor, cageVertex: cv};
+        handle.add(picker);
+        handle.userData = {patchIdx, row, col, baseColor, cageVertex: cv, sphere};
         handle.__mat = mat;
 
-        sphere.onMouseEnter = () => {
+        picker.onMouseEnter = () => {
           if (this.selectedHandle !== handle) mat.color.setHex(CP_HOVER);
           this.ctx.viewer.requestRender();
         };
-        sphere.onMouseLeave = () => {
+        picker.onMouseLeave = () => {
           if (this.selectedHandle !== handle) mat.color.setHex(baseColor);
           this.ctx.viewer.requestRender();
         };
-        sphere.onMouseClick = () => this.selectSubcageHandle(handle);
+        picker.onMouseClick = () => this.selectSubcageHandle(handle);
 
         this.subcageGroup.add(handle);
         this.subcageHandles.push(handle);
@@ -573,6 +585,8 @@ export class SceneObject3D extends Group {
     this.deselectEdge();
     this.selectedHandle = handle;
     handle.__mat.color.setHex(CP_SELECTED);
+    // Pop the visible sphere up to full size on selection
+    if (handle.userData.sphere) handle.userData.sphere.scale.setScalar(CP_PICKER_SCALE);
     this.gizmoTarget.position.copy(handle.position);
     this.gizmo.attach(this.gizmoTarget);
     this.gizmo.visible = true;
@@ -583,6 +597,8 @@ export class SceneObject3D extends Group {
   deselectHandle() {
     if (this.selectedHandle) {
       this.selectedHandle.__mat.color.setHex(this.selectedHandle.userData.baseColor);
+      // Shrink back to the small visual size
+      if (this.selectedHandle.userData.sphere) this.selectedHandle.userData.sphere.scale.setScalar(CP_VISUAL_SCALE);
       this.selectedHandle = null;
     }
     this.gizmo.detach();
