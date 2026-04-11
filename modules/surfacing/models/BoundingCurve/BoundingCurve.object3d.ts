@@ -39,6 +39,7 @@ export class BoundingCurveObject3D extends EntityObject3D {
   private line: any = null;
   private _globallyVisible: boolean = false;
   private _highlightSide: number = -1;
+  private _highlightColor: number | null = null;
   private _clickHandler: ((curve: BoundingCurve) => void) | null = null;
 
   constructor(curve: BoundingCurve, sceneSetup: any) {
@@ -116,6 +117,20 @@ export class BoundingCurveObject3D extends EntityObject3D {
   }
 
   /**
+   * Highlight this curve with an arbitrary color (e.g. bridge-mode green /
+   * orange). Forces visibility and applies the same width multiplier as
+   * `setHighlightSide`. Pass `null` to clear.
+   *
+   * Takes precedence over side highlight in `currentColor` so a color override
+   * stays stable even if a selection-side highlight lands on the same curve.
+   */
+  setHighlightColor(color: number | null): void {
+    if (this._highlightColor === color) return;
+    this._highlightColor = color;
+    this._applyState();
+  }
+
+  /**
    * Commit the current `_highlightSide` / `_globallyVisible` state to the
    * scene graph. Toggles the Group's `visible` flag and, if the curve
    * needs to be drawn, rebuilds the line so it picks up the new color /
@@ -123,7 +138,9 @@ export class BoundingCurveObject3D extends EntityObject3D {
    * geometry for something nobody's looking at.
    */
   private _applyState(): void {
-    const shouldShow = this._highlightSide >= 0 || this._globallyVisible;
+    const shouldShow = this._highlightSide >= 0
+      || this._highlightColor !== null
+      || this._globallyVisible;
     this.visible = shouldShow;
     if (shouldShow) {
       this.rebuild();
@@ -133,6 +150,7 @@ export class BoundingCurveObject3D extends EntityObject3D {
   }
 
   private currentColor(): number {
+    if (this._highlightColor !== null) return this._highlightColor;
     if (this._hovered && this._highlightSide >= 0) return EDGE_HOVER_COLOR;
     if (this._highlightSide >= 0) {
       return EDGE_COLORS[this._highlightSide] || EDGE_COLORS[0];
@@ -141,7 +159,8 @@ export class BoundingCurveObject3D extends EntityObject3D {
   }
 
   private currentWidth(): number {
-    return this._highlightSide >= 0 ? EDGE_WIDTH * HIGHLIGHT_WIDTH_MULTIPLIER : EDGE_WIDTH;
+    const emphasized = this._highlightSide >= 0 || this._highlightColor !== null;
+    return emphasized ? EDGE_WIDTH * HIGHLIGHT_WIDTH_MULTIPLIER : EDGE_WIDTH;
   }
 
   /**
