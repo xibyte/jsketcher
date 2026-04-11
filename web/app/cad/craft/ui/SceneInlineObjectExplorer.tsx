@@ -1,5 +1,4 @@
 import React, {useCallback, useContext, useRef, useState, useEffect} from 'react';
-import {SceneInlineSection} from "ui/components/SceneInlineSection";
 import {EntityTreeNode, EntityTreeCallbacks} from "surfacing/models/ui/objectTree/EntityTreeNode";
 import {Scene} from "surfacing/models/Scene/Scene.entity";
 import {GeometricEntity} from "surfacing/models/GeometricEntity";
@@ -123,20 +122,41 @@ export function SceneInlineObjectExplorer() {
 
   // Read scene from the snapshot — re-renders on every notifyChange()
   const scene = snapshot.scene;
-  if (!scene) {
-    return <SceneInlineSection title='OBJECTS'><></></SceneInlineSection>;
-  }
+  if (!scene) return null;
 
   scene.syncEntityGraph();
   const topLevelEntities = scene.children;
+  if (topLevelEntities.length === 0) return null;
+
   const callbacks: EntityTreeCallbacks = {
     onOpenDialog: handleOpenDialog,
     onRemoveEntity: handleRemoveEntity,
   };
 
-  return <SceneInlineSection title='OBJECTS'>
-    {topLevelEntities.map((entity, i) =>
-      <EntityTreeNode key={entity.id + '-' + i} entity={entity} callbacks={callbacks} />
-    )}
-  </SceneInlineSection>;
+  return <div style={{
+    marginTop: 4,
+    pointerEvents: 'auto',
+    fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
+  }}>
+    <div style={{
+      height: 24,
+      lineHeight: '24px',
+      padding: '0 8px',
+      background: 'rgba(255,255,255,0.08)',
+      borderLeft: '3px solid rgba(120,180,255,0.9)',
+      borderRadius: 3,
+      fontSize: 11,
+      fontWeight: 600,
+      letterSpacing: 0.8,
+      textTransform: 'uppercase',
+      color: '#f2f2f2',
+      textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+      marginBottom: 3,
+    }}>OBJECTS</div>
+    <div style={{overflowY: 'auto', maxHeight: '60vh'}}>
+      {topLevelEntities.map((entity, i) =>
+        <EntityTreeNode key={entity.id + '-' + i} entity={entity} callbacks={callbacks} />
+      )}
+    </div>
+  </div>;
 }
