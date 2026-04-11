@@ -3,14 +3,10 @@ import * as SceneGraph from 'scene/sceneGraph';
 import {createSolidMaterial} from 'cad/scene/views/viewUtils';
 import {SURFACING_SCENE} from 'cad/model/entities';
 import {setAttribute} from 'scene/objectData';
-import {ViewMode} from 'cad/scene/viewer';
-import {
-  Group, BufferGeometry, BufferAttribute, Mesh, DoubleSide,
-} from 'three';
+import {Group, BufferGeometry, BufferAttribute, Mesh, DoubleSide} from 'three';
 import ScalableLine from 'scene/objects/scalableLine';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
 import {SubcageObject3D, SelectionGizmoOverlay, selection$, select} from '../../three';
-import {CageVertex, NurbsPatch} from './Scene.entity';
 import {surfacingViewFlags$} from '../../surfacingViewFlags';
 
 export const SCENE_OBJECT3D_MARKER = 'SurfacingSceneObject3D';
@@ -31,21 +27,18 @@ const SURFACE_HOVER_SET_COLOR = 0xb0d0e8;  // dimmer cyan-blue (others in same s
 export class SceneObject3D extends Group {
 
   ctx: any;
-  model: any;
   marks: any[] = [];
   _disposers: (() => void)[] = [];
 
-  // Untyped instance state copied from the original patchCageView.js — many
-  // properties are added dynamically. Keep loose typing for now.
+  // Many properties (subcage, gizmo overlay, modal-mode state, etc.) are
+  // added dynamically — keep the index signature so TypeScript stays out
+  // of the way.
   [key: string]: any;
 
   constructor(scene, ctx) {
     super();
     this.ctx = ctx;
     this.scene = scene;
-    if (scene && scene.ext) {
-      scene.ext.view = this;
-    }
     scene.object3d = this;
 
     // Per-surface meshes — each NurbsSurface gets its own Mesh+material so
@@ -1687,8 +1680,8 @@ export class SceneObject3D extends Group {
       try { d(); } catch (e) { /* ignore */ }
     }
     this._disposers = [];
-    if (this.scene && this.scene.ext) {
-      this.scene.ext.view = null;
+    if (this.scene && this.scene.object3d === this) {
+      this.scene.object3d = null;
     }
   }
 }

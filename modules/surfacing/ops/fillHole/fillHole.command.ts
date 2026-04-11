@@ -90,8 +90,9 @@ function interpRow(bottom: [Vertex, Vertex, Vertex, Vertex], top: Vertex[], t: n
  */
 export function fillHole(scene: Scene, loop: {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[]): boolean {
   // Place fill in the group of the first edge's patch, and inherit its surface set
-  const group = scene.findGroupOfPatch(loop[0].patchIdx);
-  const sourceSet = scene.surfaces[loop[0].patchIdx]?.surfaceSet || null;
+  const sourcePatch = scene.surfaces[loop[0].patchIdx];
+  const group = sourcePatch ? scene.findGroupOfSurface(sourcePatch) : null;
+  const sourceSet = sourcePatch?.surfaceSet || null;
 
   let fillPatch: NurbsSurface | null = null;
 
@@ -137,6 +138,6 @@ export function fillHole(scene: Scene, loop: {patchIdx: number, side: number, ve
     sourceSet.surfaces.add(fillPatch);
   }
   scene.surfaces.push(fillPatch);
-  scene.notifyPush(1, group);
+  if (group) group.addSurface(fillPatch);
   return true;
 }

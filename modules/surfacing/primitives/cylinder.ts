@@ -124,8 +124,7 @@ export function createPatchCylinder(
     }
   }
 
-  const allIndices = Array.from({length: scene.surfaces.length}, (_, i) => i);
-  scene.createGroup('Cylinder', allIndices);
+  scene.createGroup('Cylinder', [...scene.surfaces]);
 
   // Surface sets: walls form the cylindrical side, each cap is one set of 5 patches.
   // Layout: [0..3] walls, [4..8] bottom cap (diamond + 4 quarters), [9..13] top cap.

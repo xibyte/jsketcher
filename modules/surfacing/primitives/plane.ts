@@ -12,7 +12,7 @@ export function createPatchPlane(width: number, height: number): Scene {
 
   const surface = new NurbsSurface(makeGrid([c00, c10, c01, c11]));
   scene.surfaces.push(surface);
-  scene.createGroup('Plane', [0]);
+  scene.createGroup('Plane', [surface]);
 
   const set = new SurfaceSet('plane');
   set.add(surface);

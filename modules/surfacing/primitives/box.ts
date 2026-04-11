@@ -81,7 +81,7 @@ export function createPatchBox(sizeX: number, sizeY: number, sizeZ: number): Sce
     left: [v010, e37_1, e37_2, v011],
   })));
 
-  scene.createGroup('Box', [0, 1, 2, 3, 4, 5]);
+  scene.createGroup('Box', [...scene.surfaces]);
 
   // Each face of the box is its own SurfaceSet (single-patch sets)
   const faceNames = ['bottom', 'top', 'front', 'back', 'right', 'left'];
