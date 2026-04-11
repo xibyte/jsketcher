@@ -20,8 +20,8 @@ export function showEdgeDialog(
     onClose: () => void;
   }
 ): HTMLDivElement {
-  const p0 = curve.cp[0].vertex.position;
-  const p3 = curve.cp[3].vertex.position;
+  const p0 = curve.cp[0].position;
+  const p3 = curve.cp[3].position;
   const chordLen = vdist(p0, p3);
   const round = (v: number) => Math.round(v * 1e4) / 1e4;
   const existing = curve.arcConstraint;

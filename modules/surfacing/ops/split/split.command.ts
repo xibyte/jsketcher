@@ -1,6 +1,8 @@
-import {Scene, Vertex, NurbsSurface} from '../../models/Scene/Scene.entity';
+import {Scene, NurbsSurface} from '../../models/Scene/Scene.entity';
+import {ControlPoint} from '../../models/ControlPoint/ControlPoint.entity';
+import {LocalBoundingCurveCache} from '../../models/BoundingCurve/buildBoundingCurves';
 import {Vec3} from '../../patchCageTypes';
-import {splitBezierRow, cloneWeights, BoundarySplitResult} from '../../patchCageHelpers';
+import {splitBezierRow, BoundarySplitResult} from '../../patchCageHelpers';
 
 /**
  * Compute the propagation set for an isoline split (without splitting).
@@ -52,10 +54,10 @@ export function splitIsoline(scene: Scene, patchIdx: number, direction: 'u' | 'v
   const toSplit = computeIsolinePropagation(scene, patchIdx, direction, t);
 
   // Cache: for shared boundary edges, compute the De Casteljau split ONCE
-  // and reuse the same Vertex instances across both patches.
-  const boundaryCache = new Map<Vertex, Map<Vertex, BoundarySplitResult>>();
+  // and reuse the same ControlPoint instances across both patches.
+  const boundaryCache = new Map<ControlPoint, Map<ControlPoint, BoundarySplitResult>>();
 
-  function getCachedSplit(c0: Vertex, c3: Vertex): BoundarySplitResult | null {
+  function getCachedSplit(c0: ControlPoint, c3: ControlPoint): BoundarySplitResult | null {
     if (boundaryCache.has(c0) && boundaryCache.get(c0)!.has(c3)) return boundaryCache.get(c0)!.get(c3)!;
     if (boundaryCache.has(c3) && boundaryCache.get(c3)!.has(c0)) {
       // Reverse: swap left/right handles
@@ -69,14 +71,14 @@ export function splitIsoline(scene: Scene, patchIdx: number, direction: 'u' | 'v
     return null;
   }
 
-  function cacheBoundarySplit(v0: Vertex, v1: Vertex, v2: Vertex, v3: Vertex, st: number): BoundarySplitResult {
+  function cacheBoundarySplit(v0: ControlPoint, v1: ControlPoint, v2: ControlPoint, v3: ControlPoint, st: number): BoundarySplitResult {
     const existing = getCachedSplit(v0, v3);
     if (existing) return existing;
 
-    const {left, mid, right} = splitBezierRow(v0, v1, v2, v3, st);
+    const {left, mid, right} = splitBezierRow(scene.ctx, v0, v1, v2, v3, st);
     const result: BoundarySplitResult = {
       leftH: left,
-      mid: new Vertex(mid[0], mid[1], mid[2]),
+      mid: new ControlPoint(scene.ctx, mid[0], mid[1], mid[2]),
       rightH: right,
     };
     if (!boundaryCache.has(v0)) boundaryCache.set(v0, new Map());
@@ -84,10 +86,14 @@ export function splitIsoline(scene: Scene, patchIdx: number, direction: 'u' | 'v
     return result;
   }
 
+  // Shared across every patch in the cascade so split halves of
+  // adjacent patches share the SAME new BoundingCurve on their seams.
+  const curveCache = new LocalBoundingCurveCache();
+
   // Split in reverse index order so splice doesn't invalidate earlier indices
   toSplit.sort((a, b) => b.idx - a.idx);
   for (const s of toSplit) {
-    splitSinglePatchShared(scene, s.idx, s.dir, s.t, cacheBoundarySplit);
+    splitSinglePatchShared(scene, s.idx, s.dir, s.t, cacheBoundarySplit, curveCache);
   }
 }
 
@@ -98,18 +104,29 @@ export function splitIsoline(scene: Scene, patchIdx: number, direction: 'u' | 'v
 function splitSinglePatchShared(
   scene: Scene,
   patchIdx: number, direction: 'u' | 'v', t: number,
-  getBoundarySplit: (v0: Vertex, v1: Vertex, v2: Vertex, v3: Vertex, t: number) => BoundarySplitResult
+  getBoundarySplit: (v0: ControlPoint, v1: ControlPoint, v2: ControlPoint, v3: ControlPoint, t: number) => BoundarySplitResult,
+  curveCache: LocalBoundingCurveCache,
 ): void {
   const patch = scene.surfaces[patchIdx];
   const sourceSet = patch.surfaceSet; // capture before splice
-  const sourceGroup = scene.findGroupOfSurface(patch);
   const g = patch.grid;
+
+  // Seed the curve cache with the patch's 4 curves so the halves' outer
+  // edges (the ones that don't move) reuse them directly. The middle
+  // seam curve is created once (by leftPatch's curvesFor call) and
+  // found in the cache by rightPatch. Cross-patch sharing of the split
+  // halves works the same way: the caller passes ONE cache through
+  // every splitSinglePatchShared call in the cascade.
+  curveCache.register(patch.boundingCurves.bottom);
+  curveCache.register(patch.boundingCurves.right);
+  curveCache.register(patch.boundingCurves.top);
+  curveCache.register(patch.boundingCurves.left);
 
   let leftPatch: NurbsSurface, rightPatch: NurbsSurface;
 
   if (direction === 'u') {
-    const leftGrid: Vertex[][] = [];
-    const rightGrid: Vertex[][] = [];
+    const leftGrid: ControlPoint[][] = [];
+    const rightGrid: ControlPoint[][] = [];
 
     for (let row = 0; row < 4; row++) {
       if (row === 0 || row === 3) {
@@ -119,18 +136,18 @@ function splitSinglePatchShared(
         rightGrid.push([bs.mid, bs.rightH[0], bs.rightH[1], g[row][3]]);
       } else {
         // Interior row: fresh split, no sharing needed
-        const {left, mid, right} = splitBezierRow(g[row][0], g[row][1], g[row][2], g[row][3], t);
-        const midV = new Vertex(mid[0], mid[1], mid[2]);
+        const {left, mid, right} = splitBezierRow(scene.ctx, g[row][0], g[row][1], g[row][2], g[row][3], t);
+        const midV = new ControlPoint(scene.ctx, mid[0], mid[1], mid[2]);
         leftGrid.push([g[row][0], left[0], left[1], midV]);
         rightGrid.push([midV, right[0], right[1], g[row][3]]);
       }
     }
 
-    leftPatch = new NurbsSurface(leftGrid, cloneWeights(patch.weights));
-    rightPatch = new NurbsSurface(rightGrid, cloneWeights(patch.weights));
+    leftPatch  = new NurbsSurface(scene.ctx, leftGrid,  curveCache.curvesFor(scene.ctx, leftGrid));
+    rightPatch = new NurbsSurface(scene.ctx, rightGrid, curveCache.curvesFor(scene.ctx, rightGrid));
   } else {
-    const bottomGrid: Vertex[][] = [[], [], [], []];
-    const topGrid: Vertex[][] = [[], [], [], []];
+    const bottomGrid: ControlPoint[][] = [[], [], [], []];
+    const topGrid: ControlPoint[][] = [[], [], [], []];
 
     for (let col = 0; col < 4; col++) {
       if (col === 0 || col === 3) {
@@ -146,8 +163,8 @@ function splitSinglePatchShared(
         topGrid[3][col] = g[3][col];
       } else {
         // Interior column: fresh split
-        const {left, mid, right} = splitBezierRow(g[0][col], g[1][col], g[2][col], g[3][col], t);
-        const midV = new Vertex(mid[0], mid[1], mid[2]);
+        const {left, mid, right} = splitBezierRow(scene.ctx, g[0][col], g[1][col], g[2][col], g[3][col], t);
+        const midV = new ControlPoint(scene.ctx, mid[0], mid[1], mid[2]);
         bottomGrid[0][col] = g[0][col];
         bottomGrid[1][col] = left[0];
         bottomGrid[2][col] = left[1];
@@ -159,8 +176,8 @@ function splitSinglePatchShared(
       }
     }
 
-    leftPatch = new NurbsSurface(bottomGrid, cloneWeights(patch.weights));
-    rightPatch = new NurbsSurface(topGrid, cloneWeights(patch.weights));
+    leftPatch  = new NurbsSurface(scene.ctx, bottomGrid, curveCache.curvesFor(scene.ctx, bottomGrid));
+    rightPatch = new NurbsSurface(scene.ctx, topGrid,    curveCache.curvesFor(scene.ctx, topGrid));
   }
 
   // Propagate the surface set: assign directly so both halves
@@ -174,10 +191,5 @@ function splitSinglePatchShared(
     sourceSet.surfaces.add(rightPatch);
   }
 
-  scene.surfaces.splice(patchIdx, 1, leftPatch, rightPatch);
-  if (sourceGroup) {
-    sourceGroup.removeSurface(patch);
-    sourceGroup.addSurface(leftPatch);
-    sourceGroup.addSurface(rightPatch);
-  }
+  scene.replaceSurface(patch, [leftPatch, rightPatch]);
 }

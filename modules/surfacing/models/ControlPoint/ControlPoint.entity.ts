@@ -1,20 +1,34 @@
-import {GeometricEntity, generateEntityId} from '../GeometricEntity';
 import {Vertex} from '../Vertex/Vertex.entity';
 import {Param} from '../Param';
+import type {SurfacingContext} from '../../SurfacingContext';
 
 /**
- * A NURBS control point: a Vertex position combined with a scalar weight.
- * Multiple surfaces can share the same ControlPoint instance at boundaries.
+ * A NURBS control point: a Vertex with a scalar weight.
+ *
+ * `ControlPoint extends Vertex`, so every CP IS a Vertex — it inherits
+ * the position, the lazy draggable handle, hover/select API, and the
+ * `usedBy` back-reference to surfaces. The extra thing a CP carries on
+ * top of a plain Vertex is `weight`, which the NURBS evaluator reads
+ * during `NurbsSurface.eval()`.
+ *
+ * Because a CP and a Vertex are the SAME entity, a grid cell of a
+ * NurbsSurface is just a ControlPoint, not a Vertex-paired-with-a-CP.
+ * Shared edges between adjacent surfaces automatically agree on
+ * weights, because they share the same CP instance.
  */
-export class ControlPoint extends GeometricEntity {
+export class ControlPoint extends Vertex {
 
-  vertex: Vertex;
   weight: Param;
 
-  constructor(vertex: Vertex, weight: number = 1.0) {
-    super(generateEntityId('CP'));
-    this.vertex = vertex;
+  constructor(
+    ctx: SurfacingContext,
+    x: number,
+    y: number,
+    z: number,
+    weight: number = 1.0,
+    id?: string,
+  ) {
+    super(ctx, x, y, z, id);
     this.weight = new Param(weight);
-    this.addChild(vertex);
   }
 }

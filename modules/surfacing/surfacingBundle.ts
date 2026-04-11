@@ -1,16 +1,21 @@
 /**
- * SurfacingBundle: holds a single Scene entity and its SceneObject3D view.
- * No MObject wrapper, no craft pipeline, no viewSyncBundle indirection —
- * the bundle owns the lifecycle directly.
+ * SurfacingBundle: holds a single Scene entity and its SurfacingEditor
+ * — the interactive controller that owns selection, modes, dialogs,
+ * and scene-level overlays. Entity views (surface meshes, CP handles,
+ * cages, bounding curves) are self-owned and live directly under
+ * `ctx.workingGroup`; the editor holds its own overlaysGroup there
+ * for the pieces it draws directly.
  */
 import * as SceneGraph from 'scene/sceneGraph';
+import {Group as ThreeGroup} from 'three';
 import {state, StateStream} from 'lstream';
 import {Scene} from './models/Scene/Scene.entity';
-import {SceneObject3D} from './models/Scene/Scene.object3d';
+import {SurfacingEditor} from './SurfacingEditor';
 import {createPatchPlane} from './primitives/plane';
 import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';
 import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction, ViewFlagBoundariesAction} from './actions/viewFlagActions';
+import type {SurfacingContext} from './SurfacingContext';
 
 /** Snapshot of the surfacing state, exposed via a stream so React can subscribe */
 export interface SurfacingSnapshot {
@@ -28,7 +33,7 @@ export const surfacingState$: StateStream<SurfacingSnapshot> = state({scene: nul
 
 export interface SurfacingService {
   readonly scene: Scene | null;
-  readonly view: SceneObject3D | null;
+  readonly view: SurfacingEditor | null;
   /** Reactive snapshot stream — explorer subscribes via useStream */
   state$: StateStream<SurfacingSnapshot>;
   addPlane(width?: number, height?: number): void;
@@ -45,8 +50,22 @@ export interface SurfacingService {
 export function activate(ctx: any) {
 
   let scene: Scene | null = null;
-  let view: SceneObject3D | null = null;
+  let view: SurfacingEditor | null = null;
   const state$ = surfacingState$;
+
+  /**
+   * The single runtime context every surfacing entity receives at
+   * construction. Entities attach their 3D objects to `workingGroup` and
+   * call `requestRender()` after any visual change. Created once, lives
+   * for the lifetime of the bundle.
+   */
+  const workingGroup = new ThreeGroup();
+  SceneGraph.addToGroup(ctx.services.cadScene.workGroup, workingGroup);
+  const surfacingCtx: SurfacingContext = {
+    workingGroup,
+    sceneSetup: ctx.viewer.sceneSetup,
+    requestRender: () => ctx.viewer.requestRender(),
+  };
 
   /** Push a fresh snapshot so subscribers re-render */
   function notifyChange(): void {
@@ -55,14 +74,15 @@ export function activate(ctx: any) {
 
   function ensureView(): void {
     if (!scene || view) return;
-    view = new SceneObject3D(scene, ctx);
-    SceneGraph.addToGroup(ctx.services.cadScene.workGroup, view);
+    // SurfacingEditor is a plain controller, not a Three.js Group — it
+    // parents its own overlay visuals into `ctx.workingGroup` (already
+    // attached to cadScene.workGroup above). So we just instantiate.
+    view = new SurfacingEditor(scene, ctx);
     ctx.viewer.requestRender();
   }
 
   function tearDownView(): void {
     if (view) {
-      SceneGraph.removeFromGroup(ctx.services.cadScene.workGroup, view);
       view.dispose();
       view = null;
     }
@@ -75,13 +95,13 @@ export function activate(ctx: any) {
       scene.syncEntityGraph();
       ensureView();
     } else {
-      // Append surfaces and groups from the new scene into the existing one.
+      // Move every top-level child of the new scene into the existing one.
       // SurfaceSets are stored on the surface instances themselves —
-      // pushing the surface preserves its surfaceSet reference automatically.
-      // Group entities hold direct surface refs, so they can be moved over
-      // verbatim with no index remapping.
-      for (const surface of newScene.surfaces) scene.surfaces.push(surface);
-      for (const g of newScene.groups) scene.groups.push(g);
+      // moving the entity preserves its surfaceSet reference automatically.
+      // addChild reparents the entity (it leaves newScene's tree).
+      for (const child of [...newScene.children]) {
+        scene.addChild(child);
+      }
       scene.syncEntityGraph();
       if (view) {
         view.rebuildAll();
@@ -93,15 +113,15 @@ export function activate(ctx: any) {
   }
 
   function addPlane(width = 100, height = 100) {
-    mergeScene(createPatchPlane(width, height));
+    mergeScene(createPatchPlane(surfacingCtx, width, height));
   }
 
   function addBox(sizeX = 100, sizeY = 100, sizeZ = 100) {
-    mergeScene(createPatchBox(sizeX, sizeY, sizeZ));
+    mergeScene(createPatchBox(surfacingCtx, sizeX, sizeY, sizeZ));
   }
 
   function addCylinder(radius = 50, height = 100) {
-    mergeScene(createPatchCylinder(radius, height));
+    mergeScene(createPatchCylinder(surfacingCtx, radius, height));
   }
 
   function save(): any {
@@ -122,7 +142,7 @@ export function activate(ctx: any) {
       notifyChange();
       return;
     }
-    scene = Scene.deserialize(sceneData);
+    scene = Scene.deserialize(surfacingCtx, sceneData);
     scene.tessResolution = data.tessResolution || 8;
     scene.syncEntityGraph();
     ensureView();

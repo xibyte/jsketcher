@@ -75,7 +75,7 @@ export function applyArcConstraint(scene: Scene, c: ArcConstraint): void {
     const wMid = Math.cos(angleRad / 4);
     if (c.patchSide) {
       setEdgeWeights(scene, c.patchSide.patchIdx, c.patchSide.side, [1, wMid, wMid, 1]);
-      scene.surfaces[c.patchSide.patchIdx].rational = true;
+      // rational is now a derived getter — no need to flip a flag.
     }
   }
 }
@@ -95,15 +95,11 @@ export function enforceArcConstraints(scene: Scene, v: Vertex): void {
   }
 }
 
-/** Set weights on 4 control points along a patch edge */
+/** Set weights on the 4 ControlPoints along a patch edge. */
 export function setEdgeWeights(scene: Scene, patchIdx: number, side: number, weights: [number, number, number, number]): void {
-  const w = scene.surfaces[patchIdx].weights;
-  switch (side) {
-    case 0: w[0][0]=weights[0]; w[0][1]=weights[1]; w[0][2]=weights[2]; w[0][3]=weights[3]; break;
-    case 1: w[0][3]=weights[0]; w[1][3]=weights[1]; w[2][3]=weights[2]; w[3][3]=weights[3]; break;
-    case 2: w[3][0]=weights[0]; w[3][1]=weights[1]; w[3][2]=weights[2]; w[3][3]=weights[3]; break;
-    case 3: w[0][0]=weights[0]; w[1][0]=weights[1]; w[2][0]=weights[2]; w[3][0]=weights[3]; break;
-  }
+  const patch = scene.surfaces[patchIdx];
+  const edgeCPs = patch.getEdgeVertices(side);
+  for (let i = 0; i < 4; i++) edgeCPs[i].weight.value = weights[i];
 }
 
 /** Remove an arc constraint */
@@ -114,9 +110,7 @@ export function removeArcConstraint(scene: Scene, constraint: ArcConstraint): vo
     // Reset weights if rational
     if (constraint.mode === 'rational' && constraint.patchSide) {
       setEdgeWeights(scene, constraint.patchSide.patchIdx, constraint.patchSide.side, [1, 1, 1, 1]);
-      // Check if patch still has any non-1 weights
-      const p = scene.surfaces[constraint.patchSide.patchIdx];
-      p.rational = p.weights.some(row => row.some(w => w !== 1));
+      // `rational` is now a derived getter — no flag to update.
     }
   }
 }

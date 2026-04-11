@@ -26,7 +26,7 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
 
     scene.arcConstraints = scene.arcConstraints.filter((c: any) => {
       if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
-        if (c.mode === 'rational') ptch.rational = false;
+        // `rational` is a derived getter now — weights reset below handles it.
         return false;
       }
       return true;
@@ -46,9 +46,6 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
     removeBtn.addEventListener('click', () => {
       scene.arcConstraints = scene.arcConstraints.filter((c: any) => {
         if (c.patchSide && c.patchSide.patchIdx === view.selectedPatchIdx && c.patchSide.side === edgeIdx) {
-          if (c.mode === 'rational') {
-            scene.surfaces[c.patchSide.patchIdx].rational = false;
-          }
           const ev = scene.surfaces[view.selectedPatchIdx].getEdgeVertices(edgeIdx);
           const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
           const lp2 = vlerp(ev[0].position, ev[3].position, 2/3);
@@ -58,10 +55,11 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
         }
         return true;
       });
-      scene.surfaces[view.selectedPatchIdx].weights.forEach((row: number[]) => {
-        for (let i = 0; i < row.length; i++) row[i] = 1;
-      });
-      scene.surfaces[view.selectedPatchIdx].rational = false;
+      // Reset every control point weight on this patch back to 1.
+      const selPatch = scene.surfaces[view.selectedPatchIdx];
+      for (const row of selPatch.grid) {
+        for (const cp of row) cp.weight.value = 1;
+      }
       view.rebuildAll();
       view.persistCageState();
       view.showEdgeDialog(edgeIdx);
@@ -173,9 +171,8 @@ export function applyArcFromDialog(view: any): void {
 
   scene.arcConstraints = scene.arcConstraints.filter((c: any) => {
     if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side) {
-      if (c.mode === 'rational') {
-        scene.surfaces[c.patchSide.patchIdx].rational = false;
-      }
+      // `rational` is derived — the following constrainEdgeToArc call resets
+      // edge weights to match the new mode.
       return false;
     }
     return true;
@@ -183,9 +180,6 @@ export function applyArcFromDialog(view: any): void {
 
   constrainEdgeToArc(scene, patchIdx, side, radius, angle, planeNormal, mode as any);
   view.rebuildAll();
-  if (view.selectedPatchIdx >= 0) {
-    view.buildSubcage(view.selectedPatchIdx);
-  }
   view.persistCageState();
 }
 

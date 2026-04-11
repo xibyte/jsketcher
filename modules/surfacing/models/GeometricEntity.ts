@@ -1,4 +1,5 @@
 import type {Object3D} from 'three';
+import type {SurfacingContext} from '../SurfacingContext';
 
 let nextEntityId = 0;
 
@@ -27,12 +28,14 @@ export function reserveEntityId(id: string): void {
 
 export abstract class GeometricEntity {
 
+  readonly ctx: SurfacingContext;
   readonly id: string;
   parent: GeometricEntity | null = null;
   children: GeometricEntity[] = [];
   object3d: Object3D | null = null;
 
-  constructor(id: string) {
+  constructor(ctx: SurfacingContext, id: string) {
+    this.ctx = ctx;
     this.id = id;
   }
 
@@ -44,8 +47,12 @@ export abstract class GeometricEntity {
   }
 
   addChild(child: GeometricEntity): void {
+    // Detach from previous parent first so an entity is in exactly one tree.
+    if (child.parent && child.parent !== this) {
+      child.parent.removeChild(child);
+    }
+    if (!this.children.includes(child)) this.children.push(child);
     child.parent = this;
-    this.children.push(child);
   }
 
   removeChild(child: GeometricEntity): void {

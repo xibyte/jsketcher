@@ -253,7 +253,10 @@ function getChildEntries(entity: GeometricEntity): ChildEntry[] {
       entries.push({key: 'arc', value: `Arc ${Math.round(ac.angle)}\u00B0 r=${(ac.radius).toFixed(2)} (${ac.mode})`});
     }
   } else if (entity instanceof ControlPoint) {
-    entries.push({key: 'vertex', entity: entity.vertex});
+    // ControlPoint extends Vertex, so there's nothing separate to show
+    // for the "vertex" — position lives on the CP directly.
+    const p = entity.position;
+    entries.push({key: 'pos', value: `pos: [${p[0].toFixed(3)}, ${p[1].toFixed(3)}, ${p[2].toFixed(3)}]`});
     entries.push({key: 'weight', value: `weight: ${entity.weight.value}`});
   } else if (entity instanceof Cage) {
     for (let i = 0; i < entity.vertices.length; i++) {

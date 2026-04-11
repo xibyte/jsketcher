@@ -1,11 +1,11 @@
 /**
  * SelectionGizmoOverlay — a tiny scene-level overlay that reacts to `selection$`.
  *
- * When the current selection is a ControlPointObject3D (anything with a
- * `controlPoint.vertex`), it attaches a TransformControls to follow that
- * vertex. On the gizmo's `change` event it writes back to the vertex via
- * `scene.moveVertex()` so constraint enforcement + surface invalidation
- * cascade for free.
+ * When the current selection is a Vertex (or anything with a mutable
+ * `position` vec3 and a `set(x, y, z)` method), it attaches a
+ * TransformControls to follow that point. On the gizmo's `change` event
+ * it writes back to the point via `scene.moveVertex()` so constraint
+ * enforcement + surface invalidation cascade for free.
  *
  * No god-object knowledge: the overlay knows only
  *   - the Three.js sceneSetup (needed for TransformControls)
@@ -25,15 +25,14 @@ import type {Selectable} from './EntityObject3D';
 
 /** Structural type describing anything the overlay will attach to. */
 export interface CPSelectable extends Selectable {
-  readonly controlPoint: {
-    readonly vertex: {
-      position: readonly [number, number, number] | number[];
-    };
-  };
+  position: number[];
+  set(x: number, y: number, z: number): void;
 }
 
 function isCPSelectable(s: Selectable | null): s is CPSelectable {
-  return !!s && typeof (s as any).controlPoint?.vertex === 'object';
+  return !!s
+    && Array.isArray((s as any).position)
+    && typeof (s as any).set === 'function';
 }
 
 export interface SelectionGizmoOptions {
@@ -80,8 +79,10 @@ export class SelectionGizmoOverlay {
     this.gizmo.addEventListener('change', () => {
       if (!this._attached) return;
       const pos = this.target.position;
-      const v: any = (this._attached as any).controlPoint.vertex;
-      this._scene.moveVertex(v, pos.x, pos.y, pos.z);
+      // The Vertex IS the selection — scene.moveVertex handles the
+      // constraint cascade and fires Vertex.set() to notify usedBy
+      // surfaces.
+      this._scene.moveVertex(this._attached, pos.x, pos.y, pos.z);
       if (this._onChange) this._onChange();
     });
 
@@ -93,7 +94,7 @@ export class SelectionGizmoOverlay {
   private _syncToSelection(sel: Selectable | null): void {
     if (isCPSelectable(sel)) {
       this._attached = sel;
-      const p = sel.controlPoint.vertex.position;
+      const p = sel.position;
       this.target.position.set(p[0], p[1], p[2]);
       this.gizmo.attach(this.target);
       this.gizmo.visible = true;

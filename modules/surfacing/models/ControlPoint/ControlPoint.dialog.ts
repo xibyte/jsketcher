@@ -4,7 +4,7 @@ export function showControlPointDialog(
   cp: ControlPoint,
   callbacks: {onWeightChange: (weight: number) => void; onClose: () => void}
 ): HTMLDivElement {
-  const p = cp.vertex.position;
+  const p = cp.position;
   const panel = document.createElement('div');
   panel.style.cssText = 'position:fixed;right:10px;bottom:10px;background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:8px;width:240px;font-family:sans-serif;font-size:12px;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
   panel.innerHTML = `

@@ -7,6 +7,14 @@ import {BoundingCurve} from '../BoundingCurve/BoundingCurve.entity';
 import {Cage} from '../Cage/Cage.entity';
 import {Line} from '../Line/Line.entity';
 import type {SurfaceSet} from '../../SurfaceSet';
+import type {SurfacingContext} from '../../SurfacingContext';
+import {
+  tessellateSurface,
+  refreshSurfaceTessellation,
+  type SurfaceTessellation,
+} from '../../tessellation/tessellateSurface';
+import type {TessPoint, BorderTessPoint} from '../../tessellation/types';
+import {NurbsSurfaceObject3D} from './NurbsSurface.object3d';
 
 export interface MirrorConstraintData {
   source: NurbsSurface;
@@ -16,31 +24,22 @@ export interface MirrorConstraintData {
 }
 
 /**
- * A single bicubic NURBS surface patch with a 4×4 grid of Vertex control points
- * and a 4×4 weights matrix. Replaces NurbsPatch.
+ * A single bicubic NURBS surface patch with a 4×4 grid of ControlPoints.
  *
- * Watertightness: adjacent surfaces share the SAME Vertex instances along their
- * boundary — no duplication.
+ * `ControlPoint extends Vertex`, so a grid cell is both a CP (has weight)
+ * and a Vertex (has position, handle, usedBy back-reference). Adjacent
+ * surfaces share grid entries by identity — shared boundaries are
+ * watertight and weights along a shared edge are automatically in
+ * agreement because they're literally the same CP instance.
  *
- * Primary representation:
- *   - grid: Vertex[][]      (4×4 of Vertex, row=V, col=U)
- *   - weights: number[][]   (4×4 of weights, mutable)
- *
- * Derived (rebuilt via syncEntityGraph):
- *   - cp: ControlPoint[][]  (one per grid cell, vertex+weight Param)
- *   - boundingCurves        (4 BoundingCurve entities, share CP instances)
- *   - cage                  (Cage visualization entity)
+ * Derived:
+ *   - boundingCurves     (4 BoundingCurve entities, share CP instances)
+ *   - cage               (Cage visualization entity)
  */
 export class NurbsSurface extends GeometricEntity {
 
-  /** 4×4 grid of Vertex (source of truth, mutable, shared across surfaces) */
-  grid: Vertex[][];
-  /** 4×4 weights (1.0 = Bézier, other = rational NURBS) */
-  weights: number[][];
-  rational: boolean;
-
-  /** Derived: 4×4 ControlPoints rebuilt from grid+weights for entity tree */
-  cp: ControlPoint[][];
+  /** 4×4 grid of ControlPoints (source of truth, mutable, shared across surfaces) */
+  grid: ControlPoint[][];
 
   /** Derived: 4 boundary curves (SAME CP instances as the grid edges) */
   boundingCurves: {
@@ -63,24 +62,80 @@ export class NurbsSurface extends GeometricEntity {
   private _dirtyVisual: boolean = false;
 
   /**
-   * Cached tessellation result. Shared by the mesh, wireframe, edge lines
-   * and boundary-curve visuals so we never evaluate the surface twice for
-   * the same frame. Cleared whenever a vertex the surface depends on moves.
+   * Tessellation cache.
+   *
+   * `_tessGraph` holds the persistent topology graph (TessPoints,
+   * BorderTessPoints, Tiles, TessEdges). It is built once on first
+   * tessellate() and is then kept ACROSS vertex moves — a drag doesn't
+   * invalidate the graph, it only marks it dirty. The next tessellate()
+   * refreshes xyz / normal values in place via
+   * refreshSurfaceTessellation, leaving every instance untouched.
+   * The graph is only torn down when the entity structure actually
+   * changes (replaceGrid / syncEntityGraph / structural ops).
+   *
+   * `_tess` holds the flat row-major buffer the Three.js mesh uploads.
+   * `_tessDirty` is set by invalidateVisual() and cleared by tessellate().
    */
-  private _tessCache: {
-    resolution: number,
-    positions: number[],
-    normals: number[],
-    indices: number[],
-  } | null = null;
+  private _tess: {positions: number[], normals: number[], indices: number[]} | null = null;
+  private _tessGraph: SurfaceTessellation | null = null;
+  private _tessRes: number = -1;
+  private _tessDirty: boolean = false;
 
-  constructor(grid: Vertex[][], weights?: number[][], id?: string) {
-    super(id ?? generateEntityId('S'));
+  constructor(
+    ctx: SurfacingContext,
+    grid: ControlPoint[][],
+    curves: {
+      bottom: BoundingCurve;
+      right: BoundingCurve;
+      top: BoundingCurve;
+      left: BoundingCurve;
+    },
+    id?: string,
+  ) {
+    super(ctx, id ?? generateEntityId('S'));
     this.grid = grid;
-    this.weights = weights || [[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]];
-    this.rational = !!weights;
+    this.boundingCurves = curves;
     this._registerVertices();
+    // Refcount the shared curves too. `curves.bottom` etc. might already
+    // have other users (when the caller reused a neighbor's curve).
+    this.boundingCurves.bottom.addUser(this);
+    this.boundingCurves.right.addUser(this);
+    this.boundingCurves.top.addUser(this);
+    this.boundingCurves.left.addUser(this);
     this.syncEntityGraph();
+    // The surface view lives on ctx.workingGroup. Entity owns its own
+    // visual lifetime — no external assembly step.
+    this.object3d = new NurbsSurfaceObject3D(this);
+    ctx.workingGroup.add(this.object3d);
+  }
+
+  /** True if any grid control point has a non-unit weight. */
+  get rational(): boolean {
+    for (const row of this.grid) {
+      for (const cp of row) {
+        if (cp.weight.value !== 1) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Read the current 4×4 weights matrix from the grid ControlPoints.
+   * Allocates a fresh array — callers iterating in a hot loop should
+   * read directly via `grid[r][c].weight.value`.
+   */
+  getWeightsMatrix(): number[][] {
+    return this.grid.map(row => row.map(cp => cp.weight.value));
+  }
+
+  /** 4×4 of ControlPoint instances (aliases `this.grid`). */
+  getCPs(): ControlPoint[][] {
+    return this.grid;
+  }
+
+  /** Single ControlPoint at (row, col). */
+  getCP(row: number, col: number): ControlPoint {
+    return this.grid[row][col];
   }
 
   /**
@@ -89,14 +144,22 @@ export class NurbsSurface extends GeometricEntity {
    * implements invalidate(). Called by Vertex.set() for every dependent.
    */
   invalidateVisual(): void {
-    // Drop the cached tessellation immediately — any reader after this
-    // point will get fresh data.
-    this._tessCache = null;
+    // Drop the tessellation cache synchronously so any reader on this
+    // frame rebuilds from the current grid.
+    this._tess = null;
+    this._tessGraph = null;
+    this._tessRes = -1;
+    if (this.boundingCurves) {
+      this.boundingCurves.bottom.invalidateTessellation();
+      this.boundingCurves.right.invalidateTessellation();
+      this.boundingCurves.top.invalidateTessellation();
+      this.boundingCurves.left.invalidateTessellation();
+    }
     if (this._dirtyVisual) return;
     this._dirtyVisual = true;
     // Schedule on next frame — constraint cascades that move 4 CPs in a row
-    // coalesce into a single rebuild. If there's no rAF (e.g. tests), fall
-    // back to synchronous.
+    // coalesce into a single rebuild. The mesh is responsible for clearing
+    // its own tessellation cache when rebuild() runs.
     const raf = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : null;
     const flush = () => {
       this._dirtyVisual = false;
@@ -109,56 +172,114 @@ export class NurbsSurface extends GeometricEntity {
   /** Add this surface as a dependent on every vertex in the grid. */
   _registerVertices(): void {
     for (const row of this.grid) {
-      for (const v of row) v.usedBy.add(this);
+      for (const v of row) v.addUser(this);
     }
   }
 
   /** Remove this surface from the usedBy set of every vertex in the grid. */
   _unregisterVertices(): void {
     for (const row of this.grid) {
-      for (const v of row) v.usedBy.delete(this);
+      for (const v of row) v.removeUser(this);
     }
   }
 
-  /** Replace the grid with a new one, updating usedBy back-references. */
-  replaceGrid(newGrid: Vertex[][]): void {
+  /**
+   * Structural swap: replace the grid AND the bounding curves at once.
+   * Used by ops (extrude, …) that mutate a patch in place when they know
+   * which grid CPs are new and which curves are affected. Keeps the
+   * NurbsSurface instance itself stable, but the cage is rebuilt and the
+   * tessellation cache is dropped because the topology graph references
+   * the old curves / CPs.
+   */
+  updateGrid(
+    newGrid: ControlPoint[][],
+    newCurves: {
+      bottom: BoundingCurve;
+      right: BoundingCurve;
+      top: BoundingCurve;
+      left: BoundingCurve;
+    },
+  ): void {
+    // Release the old curves (they may be shared; refcount decrements).
+    this.boundingCurves.bottom.removeUser(this);
+    this.boundingCurves.right.removeUser(this);
+    this.boundingCurves.top.removeUser(this);
+    this.boundingCurves.left.removeUser(this);
+
     this._unregisterVertices();
     this.grid = newGrid;
     this._registerVertices();
+    this.boundingCurves = newCurves;
+    this.boundingCurves.bottom.addUser(this);
+    this.boundingCurves.right.addUser(this);
+    this.boundingCurves.top.addUser(this);
+    this.boundingCurves.left.addUser(this);
+
+    // Dispose the old Cage and rebuild from the new grid.
+    if (this.cage) this.cage.dispose();
+    this.cage = null as any;
+    this._tess = null;
+    this._tessGraph = null;
+    this._tessRes = -1;
+    this._tessDirty = false;
     this.syncEntityGraph();
     this.invalidateVisual();
   }
 
-  /** Rebuild ControlPoint/BoundingCurve/Cage from current grid + weights */
+  /**
+   * Tear down the surface's own view, its Cage, drop from every
+   * referenced shared entity's user set. Shared entities (CPs, curves)
+   * self-dispose when their last user leaves.
+   */
+  dispose(): void {
+    if (this.object3d) {
+      (this.object3d as any).parent?.remove(this.object3d);
+      if (typeof (this.object3d as any).dispose === 'function') {
+        (this.object3d as any).dispose();
+      }
+      this.object3d = null;
+    }
+    if (this.cage) {
+      this.cage.dispose();
+      this.cage = null as any;
+    }
+    this.boundingCurves.bottom.removeUser(this);
+    this.boundingCurves.right.removeUser(this);
+    this.boundingCurves.top.removeUser(this);
+    this.boundingCurves.left.removeUser(this);
+    this._unregisterVertices();
+    super.dispose();
+  }
+
+  /**
+   * Build the Cage entity from the current grid. BoundingCurves are
+   * passed into the constructor by the caller — the surface never
+   * creates them itself. Sharing of curves with adjacent surfaces is
+   * fully the caller's responsibility (deserialize keeps a local edge
+   * map; ops grab the existing curve off a neighbor before stitching
+   * in a new patch).
+   *
+   * Idempotent: the Cage is only rebuilt the first time this runs.
+   */
   syncEntityGraph(): void {
-    // Clear previous children
     this.children = [];
 
-    // Create fresh ControlPoints
-    this.cp = this.grid.map((row, r) =>
-      row.map((v, c) => new ControlPoint(v, this.weights[r][c]))
-    );
+    if (!this.cage) {
+      this._tess = null;
+      this._tessGraph = null;
+      this._tessRes = -1;
+      this._tessDirty = false;
+      this.cage = buildCage(this.ctx, this.grid);
+    }
 
-    // Bounding curves share the SAME CP instances along edges
-    const cp = this.cp;
-    this.boundingCurves = {
-      bottom: new BoundingCurve(0, [cp[0][0], cp[0][1], cp[0][2], cp[0][3]]),
-      right:  new BoundingCurve(1, [cp[0][3], cp[1][3], cp[2][3], cp[3][3]]),
-      top:    new BoundingCurve(2, [cp[3][0], cp[3][1], cp[3][2], cp[3][3]]),
-      left:   new BoundingCurve(3, [cp[0][0], cp[1][0], cp[2][0], cp[3][0]]),
-    };
-
-    this.cage = buildCage(cp);
-
-    this.addChild(this.boundingCurves.bottom);
-    this.addChild(this.boundingCurves.right);
-    this.addChild(this.boundingCurves.top);
-    this.addChild(this.boundingCurves.left);
     this.addChild(this.cage);
   }
 
-  /** Get the 4 vertices along a boundary edge. side: 0=bottom, 1=right, 2=top, 3=left */
-  getEdgeVertices(side: number): [Vertex, Vertex, Vertex, Vertex] {
+  /**
+   * Get the 4 ControlPoints along a boundary edge.
+   * side: 0=bottom, 1=right, 2=top, 3=left.
+   */
+  getEdgeVertices(side: number): [ControlPoint, ControlPoint, ControlPoint, ControlPoint] {
     const g = this.grid;
     switch (side) {
       case 0: return [g[0][0], g[0][1], g[0][2], g[0][3]];
@@ -184,25 +305,22 @@ export class NurbsSurface extends GeometricEntity {
     }
   }
 
-  /** Evaluate surface point at (u, v) using Bernstein basis */
+  /**
+   * Evaluate surface point at (u, v) using Bernstein basis.
+   * Always uses the rational formula (which reduces to plain Bézier when
+   * all weights are 1, at a tiny fixed cost), so we don't need to cache a
+   * rational flag separately.
+   */
   eval(u: number, v: number): Vec3 {
     const bu = bernstein3(u), bv = bernstein3(v);
-    if (this.rational) {
-      let wx = 0, wy = 0, wz = 0, wsum = 0;
-      for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) {
-        const w = bu[i] * bv[j] * this.weights[j][i];
-        const p = this.grid[j][i].position;
-        wx += w * p[0]; wy += w * p[1]; wz += w * p[2]; wsum += w;
-      }
-      return wsum > 0 ? [wx/wsum, wy/wsum, wz/wsum] : [0, 0, 0];
-    }
-    const r: Vec3 = [0, 0, 0];
+    let wx = 0, wy = 0, wz = 0, wsum = 0;
     for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) {
-      const w = bu[i] * bv[j];
-      const p = this.grid[j][i].position;
-      r[0] += w * p[0]; r[1] += w * p[1]; r[2] += w * p[2];
+      const cp = this.grid[j][i];
+      const w = bu[i] * bv[j] * cp.weight.value;
+      const p = cp.position;
+      wx += w * p[0]; wy += w * p[1]; wz += w * p[2]; wsum += w;
     }
-    return r;
+    return wsum > 0 ? [wx/wsum, wy/wsum, wz/wsum] : [0, 0, 0];
   }
 
   normal(u: number, v: number): Vec3 {
@@ -219,83 +337,99 @@ export class NurbsSurface extends GeometricEntity {
   }
 
   /**
-   * Tessellate the surface at the given resolution, returning positions,
-   * normals, and triangle indices. Result is cached until the next
-   * invalidateVisual() so boundary-curve/wireframe/edge visuals can all
-   * reuse the same sample points as the mesh.
+   * Tessellation — builds the full topology graph via the shared pipeline
+   * in modules/surfacing/tessellation, caches it on the entity, and emits
+   * a row-major (positions / normals / indices) buffer for the Three.js
+   * mesh. The graph is watertight with adjacent surfaces: BorderTessPoints
+   * on each side forward their xyz to CurveTessPoints shared with any
+   * surface that references the same BoundingCurve, so positions along a
+   * shared edge are literally equal. Normals stay per-surface so creases
+   * survive.
    */
   tessellate(resolution: number = 8): {
     positions: number[], normals: number[], indices: number[]
   } {
-    const cache = this._tessCache;
-    if (cache && cache.resolution === resolution) {
-      return {positions: cache.positions, normals: cache.normals, indices: cache.indices};
-    }
+    if (this._tess && this._tessRes === resolution) return this._tess;
 
-    const positions: number[] = [], normals: number[] = [], indices: number[] = [];
+    const graph = tessellateSurface(this, resolution);
     const n = resolution;
 
-    for (let j = 0; j <= n; j++) for (let i = 0; i <= n; i++) {
-      const p = this.eval(i / n, j / n);
-      const nm = this.normal(i / n, j / n);
-      positions.push(p[0], p[1], p[2]);
-      normals.push(nm[0], nm[1], nm[2]);
+    const positions: number[] = [];
+    const normals: number[] = [];
+    for (let r = 0; r <= n; r++) {
+      for (let c = 0; c <= n; c++) {
+        const p = graph.pointGrid[r][c];
+        const xyz = p.xyz;
+        positions.push(xyz[0], xyz[1], xyz[2]);
+        // TessPoint and BorderTessPoint both expose `normal`.
+        const nm = (p as TessPoint | BorderTessPoint).normal;
+        normals.push(nm[0], nm[1], nm[2]);
+      }
     }
 
-    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
-      const a = j * (n + 1) + i, b = a + 1, c = a + (n + 1), d = c + 1;
-      indices.push(a, b, d, a, d, c);
+    // Row-major indices: two triangles per quad cell.
+    const indices: number[] = [];
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        const a = r * (n + 1) + c;
+        const b = a + 1;
+        const cc = a + (n + 1);
+        const d = cc + 1;
+        indices.push(a, b, d, a, d, cc);
+      }
     }
 
-    this._tessCache = {resolution, positions, normals, indices};
-    return {positions, normals, indices};
+    this._tess = {positions, normals, indices};
+    this._tessGraph = graph;
+    this._tessRes = resolution;
+    return this._tess;
+  }
+
+  /** The topology graph produced by the most recent tessellate() call. */
+  getTessellationGraph(): SurfaceTessellation | null {
+    return this._tessGraph;
   }
 
   /**
-   * Extract the boundary polyline for one side from the cached mesh
-   * tessellation. Points match mesh vertices EXACTLY, so edge lines
-   * never drift away from the shaded surface. side: 0=bottom, 1=right,
-   * 2=top, 3=left.
+   * Boundary polyline for one side, sharing sample points with the shaded
+   * mesh tessellation. side: 0=bottom, 1=right, 2=top, 3=left.
+   * Returns (resolution+1) points as [x,y,z] triples.
    */
   getEdgePolyline(side: number, resolution: number = 8): number[][] {
-    const tess = this.tessellate(resolution);
+    const t = this.tessellate(resolution);
     const n = resolution;
-    const pts: number[][] = [];
-    const getPoint = (row: number, col: number): number[] => {
-      const idx = (row * (n + 1) + col) * 3;
-      return [tess.positions[idx], tess.positions[idx + 1], tess.positions[idx + 2]];
+    const get = (row: number, col: number): number[] => {
+      const i = (row * (n + 1) + col) * 3;
+      return [t.positions[i], t.positions[i + 1], t.positions[i + 2]];
     };
+    const pts: number[][] = [];
     switch (side) {
-      case 0: for (let i = 0; i <= n; i++) pts.push(getPoint(0, i)); break;
-      case 1: for (let j = 0; j <= n; j++) pts.push(getPoint(j, n)); break;
-      case 2: for (let i = 0; i <= n; i++) pts.push(getPoint(n, i)); break;
-      case 3: for (let j = 0; j <= n; j++) pts.push(getPoint(j, 0)); break;
+      case 0: for (let i = 0; i <= n; i++) pts.push(get(0, i)); break;
+      case 1: for (let j = 0; j <= n; j++) pts.push(get(j, n)); break;
+      case 2: for (let i = 0; i <= n; i++) pts.push(get(n, i)); break;
+      case 3: for (let j = 0; j <= n; j++) pts.push(get(j, 0)); break;
     }
     return pts;
   }
 
-  /**
-   * Extract the UV-grid isolines (polylines) from the cached mesh
-   * tessellation — N+1 rows (constant V) + N+1 columns (constant U).
-   * This is exactly the wireframe overlay.
-   */
+  /** UV-grid isolines (rows + cols) sharing the mesh tessellation. */
   getIsolinePolylines(resolution: number = 8): {rows: number[][][], cols: number[][][]} {
-    const tess = this.tessellate(resolution);
+    const t = this.tessellate(resolution);
     const n = resolution;
-    const getPoint = (row: number, col: number): number[] => {
-      const idx = (row * (n + 1) + col) * 3;
-      return [tess.positions[idx], tess.positions[idx + 1], tess.positions[idx + 2]];
+    const get = (row: number, col: number): number[] => {
+      const i = (row * (n + 1) + col) * 3;
+      return [t.positions[i], t.positions[i + 1], t.positions[i + 2]];
     };
     const rows: number[][][] = [];
     for (let j = 0; j <= n; j++) {
       const row: number[][] = [];
-      for (let i = 0; i <= n; i++) row.push(getPoint(j, i));
+      for (let i = 0; i <= n; i++) row.push(get(j, i));
       rows.push(row);
     }
     const cols: number[][][] = [];
     for (let i = 0; i <= n; i++) {
       const col: number[][] = [];
-      for (let j = 0; j <= n; j++) col.push(getPoint(j, i));
+      for (let j = 0; j <= n; j++) col.push(get(j, i));
       cols.push(col);
     }
     return {rows, cols};
@@ -311,23 +445,24 @@ function bernstein3(t: number): [number, number, number, number] {
   return [mt * mt * mt, 3 * mt * mt * t, 3 * mt * t * t, t * t * t];
 }
 
-function buildCage(cp: ControlPoint[][]): Cage {
+function buildCage(ctx: SurfacingContext, cp: ControlPoint[][]): Cage {
+  // ControlPoint extends Vertex, so each grid cell IS a Vertex.
   const vertexSet = new Set<Vertex>();
   for (const row of cp) {
-    for (const c of row) vertexSet.add(c.vertex);
+    for (const c of row) vertexSet.add(c);
   }
 
   const segments: Line[] = [];
   for (let row = 0; row < 4; row++) {
     for (let col = 0; col < 3; col++) {
-      segments.push(new Line(cp[row][col], cp[row][col + 1]));
+      segments.push(new Line(ctx, cp[row][col], cp[row][col + 1]));
     }
   }
   for (let col = 0; col < 4; col++) {
     for (let row = 0; row < 3; row++) {
-      segments.push(new Line(cp[row][col], cp[row + 1][col]));
+      segments.push(new Line(ctx, cp[row][col], cp[row + 1][col]));
     }
   }
 
-  return new Cage(Array.from(vertexSet), segments);
+  return new Cage(ctx, Array.from(vertexSet), segments);
 }

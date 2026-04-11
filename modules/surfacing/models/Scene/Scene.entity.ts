@@ -1,18 +1,18 @@
 /**
  * Scene — root container for a surfacing project.
  *
- * Owns:
- *   - surfaces       — the NurbsSurface entities (shared-vertex topology)
- *   - groups         — Group entities holding direct NurbsSurface references
- *   - arc / mirror constraints  — geometric constraints
+ * The scene's `children` (inherited from GeometricEntity) IS the tree:
+ * top-level entries are either Group entities or loose NurbsSurface
+ * entities. There is no separate `surfaces` / `groups` storage —
+ * `scene.surfaces` and `scene.groups` are getters that walk the tree.
+ *
+ * Mutation goes through addSurface / removeSurface / replaceSurface /
+ * addGroup / removeGroup / createGroup. Direct array mutation on the
+ * `surfaces` getter result has no effect (it's a fresh snapshot).
  *
  * Watertightness via shared Vertex identity. moveVertex() runs the
  * constraint enforcers; each surface invalidates itself via its
  * usedBy back-reference (no central scan, no notifySplice gymnastics).
- *
- * All ops in surfacing/ops/ operate directly on (scene, surface) — they
- * find groups via findGroupOfSurface, add/remove surfaces via Group's
- * own methods, and never need to remap indices.
  */
 import type {Vec3} from 'math/vec';
 import {GeometricEntity, generateEntityId, reserveEntityId} from '../GeometricEntity';
@@ -20,6 +20,10 @@ import {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import {Vertex} from '../Vertex/Vertex.entity';
 import {Group} from '../Group/Group.entity';
 import {SurfaceSet} from '../../SurfaceSet';
+import {BoundingCurve} from '../BoundingCurve/BoundingCurve.entity';
+import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
+import {LocalBoundingCurveCache} from '../BoundingCurve/buildBoundingCurves';
+import type {SurfacingContext} from '../../SurfacingContext';
 
 // Re-export so other modules can import from Scene.entity directly.
 export {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
@@ -103,14 +107,47 @@ export interface SerializedScene {
 
 export class Scene extends GeometricEntity {
 
-  surfaces: NurbsSurface[] = [];
-  groups: Group[] = [];
   arcConstraints: ArcConstraint[] = [];
   mirrorConstraints: MirrorConstraint[] = [];
   tessResolution: number = 8;
 
-  constructor(id?: string) {
-    super(id ?? generateEntityId('SC'));
+  constructor(ctx: SurfacingContext, id?: string) {
+    super(ctx, id ?? generateEntityId('SC'));
+  }
+
+  /**
+   * Every unique BoundingCurve currently referenced by a surface in the
+   * tree. Walked once on demand — no registry state is kept anywhere.
+   */
+  get boundingCurves(): BoundingCurve[] {
+    const seen = new Set<BoundingCurve>();
+    for (const s of this.surfaces) {
+      seen.add(s.boundingCurves.bottom);
+      seen.add(s.boundingCurves.right);
+      seen.add(s.boundingCurves.top);
+      seen.add(s.boundingCurves.left);
+    }
+    return Array.from(seen);
+  }
+
+  // -----------------------------------------------------------------------
+  // Tree-derived views
+  // -----------------------------------------------------------------------
+
+  /**
+   * All NurbsSurface entities in the scene (groups walked recursively).
+   * Pure tree walk — Scene caches nothing. Hot loops should capture this
+   * once into a local variable instead of dereferencing in every iteration.
+   */
+  get surfaces(): NurbsSurface[] {
+    const out: NurbsSurface[] = [];
+    collectSurfaces(this, out);
+    return out;
+  }
+
+  /** Top-level Group entities. */
+  get groups(): Group[] {
+    return this.children.filter(c => c instanceof Group) as Group[];
   }
 
   // -----------------------------------------------------------------------
@@ -124,24 +161,79 @@ export class Scene extends GeometricEntity {
   }
 
   // -----------------------------------------------------------------------
+  // Surface management
+  // -----------------------------------------------------------------------
+
+  /**
+   * Add a surface as a top-level child OR inside a specified group.
+   * Sharing of BoundingCurves is the caller's responsibility — surfaces
+   * are constructed with their `curves` already hooked up (fresh for
+   * free edges, reused references for edges shared with a neighbor).
+   */
+  addSurface(surface: NurbsSurface, group?: Group): void {
+    if (group) {
+      group.addSurface(surface);
+      if (group.parent !== this) this.addChild(group);
+    } else {
+      this.addChild(surface);
+    }
+  }
+
+  /** Remove a surface from wherever it lives in the tree and dispose it. */
+  removeSurface(surface: NurbsSurface): void {
+    const parent = surface.parent;
+    if (parent) parent.removeChild(surface);
+    surface.dispose();
+  }
+
+  /**
+   * Replace one surface with N new surfaces in the same parent (group
+   * or scene). Used by ops like split / subdivide that produce multiple
+   * outputs from one input. The old surface is disposed — its cage
+   * view drops, and refcounts on shared CPs / curves decrement.
+   */
+  replaceSurface(oldSurface: NurbsSurface, newSurfaces: NurbsSurface[]): void {
+    const parent = oldSurface.parent;
+    if (!parent) return;
+    const idx = parent.children.indexOf(oldSurface);
+    if (idx < 0) return;
+    parent.children.splice(idx, 1, ...newSurfaces);
+    oldSurface.parent = null;
+    for (const s of newSurfaces) {
+      if (s.parent && s.parent !== parent) {
+        const j = s.parent.children.indexOf(s);
+        if (j >= 0) s.parent.children.splice(j, 1);
+      }
+      s.parent = parent;
+    }
+    oldSurface.dispose();
+  }
+
+  // -----------------------------------------------------------------------
   // Groups
   // -----------------------------------------------------------------------
 
+  /** Create a group, populate it with surfaces, and add it to the scene. */
   createGroup(name: string, surfaces: NurbsSurface[] = []): Group {
-    const g = new Group(name);
+    const g = new Group(this.ctx, name);
     for (const s of surfaces) g.addSurface(s);
-    this.groups.push(g);
+    this.addChild(g);
     return g;
   }
 
+  /** Find the group that contains a given surface, or null. */
   findGroupOfSurface(surface: NurbsSurface): Group | null {
-    for (const g of this.groups) if (g.hasSurface(surface)) return g;
+    let cur = surface.parent;
+    while (cur && cur !== this) {
+      if (cur instanceof Group) return cur;
+      cur = cur.parent;
+    }
     return null;
   }
 
+  /** Remove a group (and everything inside it). */
   removeGroup(group: Group): void {
-    const i = this.groups.indexOf(group);
-    if (i >= 0) this.groups.splice(i, 1);
+    if (group.parent === this) this.removeChild(group);
   }
 
   // -----------------------------------------------------------------------
@@ -150,29 +242,15 @@ export class Scene extends GeometricEntity {
 
   /** Indices of all surfaces sharing the same SurfaceSet as the given patch. */
   surfacesInSameSet(patchIdx: number): number[] {
-    const surface = this.surfaces[patchIdx];
+    const all = this.surfaces;
+    const surface = all[patchIdx];
     if (!surface || !surface.surfaceSet) return [patchIdx];
     const set = surface.surfaceSet;
     const result: number[] = [];
-    for (let i = 0; i < this.surfaces.length; i++) {
-      if (this.surfaces[i].surfaceSet === set) result.push(i);
+    for (let i = 0; i < all.length; i++) {
+      if (all[i].surfaceSet === set) result.push(i);
     }
     return result;
-  }
-
-  // -----------------------------------------------------------------------
-  // Surface management
-  // -----------------------------------------------------------------------
-
-  addSurface(surface: NurbsSurface): void {
-    this.surfaces.push(surface);
-  }
-
-  removeSurface(surface: NurbsSurface): void {
-    const idx = this.surfaces.indexOf(surface);
-    if (idx >= 0) this.surfaces.splice(idx, 1);
-    // Drop from any group that holds it
-    for (const g of this.groups) g.removeSurface(surface);
   }
 
   // -----------------------------------------------------------------------
@@ -181,13 +259,15 @@ export class Scene extends GeometricEntity {
 
   /** Find which surfaces share a boundary edge with a given surface. */
   findAdjacentPatches(patchIdx: number): {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] {
-    const patch = this.surfaces[patchIdx];
+    // Capture once — `surfaces` is a tree-walking getter.
+    const all = this.surfaces;
+    const patch = all[patchIdx];
     const result: {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] = [];
     for (let side = 0; side < 4; side++) {
       const edge = patch.getEdgeVertices(side);
-      for (let oi = 0; oi < this.surfaces.length; oi++) {
+      for (let oi = 0; oi < all.length; oi++) {
         if (oi === patchIdx) continue;
-        const other = this.surfaces[oi];
+        const other = all[oi];
         for (let os = 0; os < 4; os++) {
           const otherEdge = other.getEdgeVertices(os);
           if (edge[0] === otherEdge[0] && edge[1] === otherEdge[1] &&
@@ -217,14 +297,15 @@ export class Scene extends GeometricEntity {
   }
 
   /** Find all free edges (edges with a surface on only one side). */
-  findFreeEdges(): {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[] {
-    const free: {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[] = [];
-    for (let pi = 0; pi < this.surfaces.length; pi++) {
+  findFreeEdges(): {patchIdx: number, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] {
+    const all = this.surfaces;
+    const free: {patchIdx: number, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] = [];
+    for (let pi = 0; pi < all.length; pi++) {
       const adj = this.findAdjacentPatches(pi);
       const sharedSides = new Set(adj.map(a => a.side));
       for (let side = 0; side < 4; side++) {
         if (!sharedSides.has(side)) {
-          free.push({patchIdx: pi, side, verts: this.surfaces[pi].getEdgeVertices(side)});
+          free.push({patchIdx: pi, side, verts: all[pi].getEdgeVertices(side)});
         }
       }
     }
@@ -253,7 +334,7 @@ export class Scene extends GeometricEntity {
   computeIsolinePropagation(patchIdx: number, direction: 'u' | 'v', t: number) { return _splitOps.computeIsolinePropagation(this, patchIdx, direction, t); }
   tessellateIsoline(patchIdx: number, direction: 'u' | 'v', t: number, segments: number = 24): Vec3[] { return _splitOps.tessellateIsoline(this, patchIdx, direction, t, segments); }
   traceHole(startPatchIdx: number, startSide: number) { return _fillOps.traceHole(this, startPatchIdx, startSide); }
-  fillHole(loop: {patchIdx: number, side: number, verts: [Vertex, Vertex, Vertex, Vertex]}[]): boolean { return _fillOps.fillHole(this, loop); }
+  fillHole(loop: {patchIdx: number, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[]): boolean { return _fillOps.fillHole(this, loop); }
   pushPullPatch(patchIdx: number, distance: number): void { _pushPullOps.pushPullPatch(this, patchIdx, distance); }
   extrudePatch(patchIdx: number, distance: number): void { _extrudeOps.extrudePatch(this, patchIdx, distance); }
   subdividePatch(patchIdx: number): void { _subdivideOps.subdividePatch(this, patchIdx); }
@@ -262,22 +343,16 @@ export class Scene extends GeometricEntity {
   // Entity-graph synchronization (used by the OBJECTS explorer tree)
   // -----------------------------------------------------------------------
 
+  /**
+   * Refresh derived per-surface state (control points, bounding curves,
+   * cage). The scene's `children` is already the live tree — there is
+   * nothing else to rebuild here.
+   */
   syncEntityGraph(): void {
     for (const surface of this.surfaces) surface.syncEntityGraph();
-
-    this.children = [];
-    const grouped = new Set<NurbsSurface>();
-    for (const g of this.groups) {
-      if (g.surfaces.length === 0) continue;
-      this.addChild(g);
-      g.children = [];
-      for (const s of g.surfaces) {
-        g.addChild(s);
-        grouped.add(s);
-      }
-    }
-    for (const s of this.surfaces) {
-      if (!grouped.has(s)) this.addChild(s);
+    // Drop empty groups so the explorer doesn't show them.
+    for (const g of [...this.groups]) {
+      if (g.surfaces.length === 0) this.removeChild(g);
     }
   }
 
@@ -304,7 +379,7 @@ export class Scene extends GeometricEntity {
     const patches = this.surfaces.map(p => ({
       id: p.id,
       grid: p.grid.map(row => row.map(v => vertexMap.get(v)!)),
-      weights: p.weights.map(row => [...row]),
+      weights: p.getWeightsMatrix(),
       rational: p.rational,
       surfaceSetId: p.surfaceSet ? p.surfaceSet.id : undefined,
     }));
@@ -348,14 +423,17 @@ export class Scene extends GeometricEntity {
     return {id: this.id, vertices, vertexIds, patches, arcConstraints, mirrorConstraints, groups, surfaceSets};
   }
 
-  static deserialize(data: SerializedScene): Scene {
+  static deserialize(ctx: SurfacingContext, data: SerializedScene): Scene {
     if (data.id) reserveEntityId(data.id);
-    const scene = new Scene(data.id);
+    const scene = new Scene(ctx, data.id);
 
+    // Every serialized vertex is a NURBS control point — weights come
+    // from `patch.weights` and are applied by NurbsSurface's constructor
+    // after the CP instances are created.
     const verts = data.vertices.map((p, i) => {
       const id = data.vertexIds && data.vertexIds[i];
       if (id) reserveEntityId(id);
-      return new Vertex(p[0], p[1], p[2], id);
+      return new ControlPoint(ctx, p[0], p[1], p[2], 1, id);
     });
 
     const setById = new Map<number, SurfaceSet>();
@@ -365,21 +443,36 @@ export class Scene extends GeometricEntity {
       }
     }
 
+    // Local BoundingCurve cache — shared edges between patches get the
+    // same BoundingCurve instance during this one load pass. After the
+    // scene is built, sharing lives in the entity graph itself.
+    const curveCache = new LocalBoundingCurveCache();
+
+    // Build surfaces and put them as direct scene children for now —
+    // groups (processed below) will reparent the ones they own.
+    const orderedSurfaces: NurbsSurface[] = [];
     for (const pd of data.patches) {
       const grid = pd.grid.map(row => row.map(idx => verts[idx]));
+      // Apply serialized weights to the (possibly shared) grid CPs.
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          grid[r][c].weight.value = pd.weights[r][c];
+        }
+      }
+      const curves = curveCache.curvesFor(ctx, grid);
       if (pd.id) reserveEntityId(pd.id);
-      const surface = new NurbsSurface(grid, pd.weights.map(row => [...row]), pd.id);
-      surface.rational = pd.rational;
+      const surface = new NurbsSurface(ctx, grid, curves, pd.id);
       if (pd.surfaceSetId !== undefined) {
         const set = setById.get(pd.surfaceSetId);
         if (set) set.add(surface);
       }
-      scene.surfaces.push(surface);
+      scene.addChild(surface);
+      orderedSurfaces.push(surface);
     }
 
     for (const cd of data.arcConstraints) {
       scene.arcConstraints.push({
-        vertices: cd.vertexIndices.map(i => verts[i]) as [Vertex, Vertex, Vertex, Vertex],
+        vertices: cd.vertexIndices.map(i => verts[i]) as unknown as [Vertex, Vertex, Vertex, Vertex],
         radius: cd.radius,
         angle: cd.angle,
         planeNormal: [...cd.planeNormal] as Vec3,
@@ -406,27 +499,41 @@ export class Scene extends GeometricEntity {
 
     if (data.groups) {
       const surfaceById = new Map<string, NurbsSurface>();
-      for (const s of scene.surfaces) surfaceById.set(s.id, s);
+      for (const s of orderedSurfaces) surfaceById.set(s.id, s);
       for (const gd of data.groups as any[]) {
         if (gd.id) reserveEntityId(gd.id);
-        const group = new Group(gd.name, gd.id);
+        const group = new Group(ctx, gd.name, gd.id);
+        scene.addChild(group);
         // Accept the new surfaceIds format and the old patchIndices format.
         if (Array.isArray(gd.surfaceIds)) {
           for (const sid of gd.surfaceIds) {
             const s = surfaceById.get(sid);
-            if (s) group.addSurface(s);
+            if (s) group.addSurface(s); // reparents from scene → group
           }
         } else if (Array.isArray(gd.patchIndices)) {
           for (const idx of gd.patchIndices) {
-            if (idx >= 0 && idx < scene.surfaces.length) {
-              group.addSurface(scene.surfaces[idx]);
+            if (idx >= 0 && idx < orderedSurfaces.length) {
+              group.addSurface(orderedSurfaces[idx]);
             }
           }
         }
-        scene.groups.push(group);
       }
     }
 
     return scene;
+  }
+}
+
+// =========================================================================
+// Helpers
+// =========================================================================
+
+function collectSurfaces(node: GeometricEntity, out: NurbsSurface[]): void {
+  for (const child of node.children) {
+    if (child instanceof NurbsSurface) {
+      out.push(child);
+    } else if (child instanceof Group) {
+      collectSurfaces(child, out);
+    }
   }
 }
