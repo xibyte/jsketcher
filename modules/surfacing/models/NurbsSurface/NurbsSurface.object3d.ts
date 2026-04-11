@@ -56,13 +56,6 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
     this.material.side = DoubleSide;
     this.material.shininess = 80;
     this.material.specular.setHex(0x444444);
-    // Nudge the surface triangles slightly into the scene so boundary-curve
-    // lines drawn AT the edge with depthTest=true don't z-fight and vanish.
-    // Without this, thick Line2 quads at the boundary end up half-behind
-    // the mesh and disappear.
-    this.material.polygonOffset = true;
-    this.material.polygonOffsetFactor = 1;
-    this.material.polygonOffsetUnits = 1;
 
     this.geometry = this._buildGeometry();
     this.mesh = new Mesh(this.geometry, this.material);
