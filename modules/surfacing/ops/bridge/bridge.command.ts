@@ -54,11 +54,10 @@ export function bridgeSurface(
     bridge.surfaceSet = sourceSurface.surfaceSet;
     sourceSurface.surfaceSet.surfaces.add(bridge);
   }
-  const group = sourceSurface ? scene.findGroupOfSurface(sourceSurface) : null;
-  (group ?? scene).addChild(bridge);
+  (sourceSurface?.parent ?? scene).addChild(bridge);
 
   if (options.g1) {
-    applyG1AllSides(scene, bridge);
+    applyG1AllSides(bridge);
   }
 
   return bridge;

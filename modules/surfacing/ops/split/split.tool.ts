@@ -4,6 +4,7 @@ import {state, type StateStream} from 'lstream';
 import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
+import {splitIsoline, computeIsolinePropagation, tessellateIsoline} from './split.command';
 
 export class LoopInsertTool implements Tool {
 
@@ -26,7 +27,7 @@ export class LoopInsertTool implements Tool {
   onClick(_e: MouseEvent): void {
     if (!this.pending) return;
     const {surface, dir, t} = this.pending;
-    this.editor.scene.splitIsoline(surface, dir, t);
+    splitIsoline(this.editor.scene, surface, dir, t);
     this.pending = null;
     this.editor.clearGroup(this.previewGroup);
     this.previewGroup.visible = false;
@@ -50,11 +51,11 @@ export class LoopInsertTool implements Tool {
 
     this.pending = {surface: hit.surface, dir, t};
     const scene = this.editor.scene;
-    const propagation = scene.computeIsolinePropagation(hit.surface, dir, t);
+    const propagation = computeIsolinePropagation(scene, hit.surface, dir, t);
     const ss = this.editor.sceneSetup;
 
     for (const seg of propagation) {
-      const pts = scene.tessellateIsoline(seg.surface, seg.dir, seg.t, 24);
+      const pts = tessellateIsoline(scene, seg.surface, seg.dir, seg.t, 24);
       const line = new ScalableLine(ss, pts, 3, 0xffcc00);
       line.renderOrder = 4;
       (line as any).raycast = () => {};

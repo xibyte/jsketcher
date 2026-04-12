@@ -33,7 +33,7 @@ export class FillHoleTool implements Tool {
     if (fillHole(scene, this.loop)) {
       if (this.state$.value.g1) {
         const created = scene.surfaces[scene.surfaces.length - 1];
-        applyG1AllSides(scene, created);
+        applyG1AllSides(created);
       }
       this.editor.rebuildAll();
     }
@@ -53,8 +53,8 @@ export class FillHoleTool implements Tool {
     }
 
     const scene = this.editor.scene;
-    const adj = scene.findAdjacentSurfaces(hit.surface);
-    const isShared = adj.some((a: any) => a.side === hit.side);
+    const adj = hit.surface.findAdjacentSurfaces();
+    const isShared = adj.some(a => a.side === hit.side);
     if (isShared) {
       this.editor.requestRender();
       return;

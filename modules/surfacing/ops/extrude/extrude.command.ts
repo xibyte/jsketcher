@@ -8,14 +8,13 @@ import {mul as vscale, lerp as vlerp} from 'math/vec';
  * and create 4 wall patches to maintain watertightness.
  */
 export function extrude(scene: Scene, surface: NurbsSurface, distance: number): void {
-  const patch = surface;
-  const group = scene.findGroupOfSurface(patch);
-  const normal = patch.normal(0.5, 0.5);
+  const parent = surface.parent ?? scene;
+  const normal = surface.normal(0.5, 0.5);
   const offset = vscale(normal, distance);
 
   // Clone all grid CPs and move clones along the normal
   const cloneMap = new Map<ControlPoint, ControlPoint>();
-  for (const row of patch.grid) {
+  for (const row of surface.grid) {
     for (const v of row) {
       if (!cloneMap.has(v)) {
         cloneMap.set(v, new ControlPoint(
@@ -29,11 +28,11 @@ export function extrude(scene: Scene, surface: NurbsSurface, distance: number): 
   // Save original edge CPs before replacing the grid
   const edges: [ControlPoint, ControlPoint, ControlPoint, ControlPoint][] = [];
   for (let side = 0; side < 4; side++) {
-    edges.push([...patch.getEdgeVertices(side)] as [ControlPoint, ControlPoint, ControlPoint, ControlPoint]);
+    edges.push([...surface.getEdgeVertices(side)] as [ControlPoint, ControlPoint, ControlPoint, ControlPoint]);
   }
 
   // Pre-compute corner interpolation CPs (shared between adjacent walls)
-  const cornerVerts = [patch.grid[0][0], patch.grid[0][3], patch.grid[3][3], patch.grid[3][0]];
+  const cornerVerts = [surface.grid[0][0], surface.grid[0][3], surface.grid[3][3], surface.grid[3][0]];
   const cornerMids: [ControlPoint, ControlPoint][] = cornerVerts.map(cv => {
     const nv = cloneMap.get(cv)!;
     const p1 = vlerp(cv.position, nv.position, 1 / 3);
@@ -45,7 +44,7 @@ export function extrude(scene: Scene, surface: NurbsSurface, distance: number): 
   // fresh set of curves for the new grid. The original patch's curves
   // still reference the stationary edge CPs — those curves now belong
   // to the wall patches (as their row=0 edge), reused below.
-  const newPatchGrid: ControlPoint[][] = patch.grid.map(
+  const newPatchGrid: ControlPoint[][] = surface.grid.map(
     row => row.map(cp => cloneMap.get(cp)!),
   );
 
@@ -53,10 +52,10 @@ export function extrude(scene: Scene, surface: NurbsSurface, distance: number): 
   // patch picks them up as its "old side" edge, and share fresh walls'
   // internal seams via the same cache.
   const curveCache = new LocalBoundingCurveCache();
-  curveCache.register(patch.boundingCurves.bottom);
-  curveCache.register(patch.boundingCurves.right);
-  curveCache.register(patch.boundingCurves.top);
-  curveCache.register(patch.boundingCurves.left);
+  curveCache.register(surface.boundingCurves.bottom);
+  curveCache.register(surface.boundingCurves.right);
+  curveCache.register(surface.boundingCurves.top);
+  curveCache.register(surface.boundingCurves.left);
 
   // Corner index mapping per edge: [startCornerIdx, endCornerIdx]
   const edgeCornerMap: [number, number][] = [[0, 1], [1, 2], [3, 2], [0, 3]];
@@ -92,9 +91,9 @@ export function extrude(scene: Scene, surface: NurbsSurface, distance: number): 
       scene.ctx, wallGrid, curveCache.curvesFor(scene.ctx, wallGrid),
     );
     // Walls inherit the source patch's surface set
-    if (patch.surfaceSet) {
-      wallPatch.surfaceSet = patch.surfaceSet;
-      patch.surfaceSet.surfaces.add(wallPatch);
+    if (surface.surfaceSet) {
+      wallPatch.surfaceSet = surface.surfaceSet;
+      surface.surfaceSet.surfaces.add(wallPatch);
     }
     walls.push(wallPatch);
   }
@@ -103,8 +102,7 @@ export function extrude(scene: Scene, surface: NurbsSurface, distance: number): 
   // old curves (registered with walls[*].row 0 earlier) are now owned
   // by those walls. The moved patch gets 4 brand-new curves over the
   // cloned top-row CPs.
-  patch.updateGrid(newPatchGrid, curveCache.curvesFor(scene.ctx, newPatchGrid));
+  surface.updateGrid(newPatchGrid, curveCache.curvesFor(scene.ctx, newPatchGrid));
 
-  const parent = group ?? scene;
   for (const w of walls) parent.addChild(w);
 }

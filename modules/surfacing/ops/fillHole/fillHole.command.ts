@@ -11,7 +11,13 @@ import type {SurfacingEditor} from '../../SurfacingEditor';
  * Returns null if no closed loop found, or an array of edge descriptors forming the loop.
  */
 export function traceHole(scene: Scene, startSurface: NurbsSurface, startSide: number): {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] | null {
-  const freeEdges = scene.findFreeEdges();
+  // Gather free edges across every surface in the scene.
+  const freeEdges: {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] = [];
+  for (const s of scene.surfaces) {
+    for (const fe of s.findFreeEdges()) {
+      freeEdges.push({surface: s, side: fe.side, verts: fe.verts});
+    }
+  }
 
   // Build lookup: corner vertex → free edges starting or ending at that vertex
   const edgeByStart = new Map<Vertex, typeof freeEdges>();
@@ -92,10 +98,10 @@ function interpRow(ctx: SurfacingEditor, bottom: [Vertex, Vertex, Vertex, Vertex
  * For 3 edges: degenerate patch with one collapsed edge.
  */
 export function fillHole(scene: Scene, loop: {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[]): boolean {
-  // Place fill in the group of the first edge's patch, and inherit its surface set
-  const sourcePatch = loop[0].surface;
-  const group = sourcePatch ? scene.findGroupOfSurface(sourcePatch) : null;
-  const sourceSet = sourcePatch?.surfaceSet || null;
+  // Place fill as a sibling of the first edge's surface, and inherit its surface set
+  const sourceSurface = loop[0].surface;
+  const parent = sourceSurface.parent ?? scene;
+  const sourceSet = sourceSurface.surfaceSet ?? null;
 
   let fillPatch: NurbsSurface | null = null;
 
@@ -154,6 +160,6 @@ export function fillHole(scene: Scene, loop: {surface: NurbsSurface, side: numbe
     fillPatch.surfaceSet = sourceSet;
     sourceSet.surfaces.add(fillPatch);
   }
-  (group ?? scene).addChild(fillPatch);
+  parent.addChild(fillPatch);
   return true;
 }
