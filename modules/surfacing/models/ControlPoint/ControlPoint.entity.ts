@@ -1,6 +1,6 @@
 import {Vertex} from '../Vertex/Vertex.entity';
 import {Param} from '../Param';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 
 /**
  * A NURBS control point: a Vertex with a scalar weight.
@@ -21,7 +21,7 @@ export class ControlPoint extends Vertex {
   weight: Param;
 
   constructor(
-    ctx: SurfacingContext,
+    ctx: SurfacingEditor,
     x: number,
     y: number,
     z: number,

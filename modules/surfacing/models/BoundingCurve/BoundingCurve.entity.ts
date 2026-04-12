@@ -3,7 +3,7 @@ import {GeometricEntity, generateEntityId} from '../GeometricEntity';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import type {CurveTessPoint, BorderTessPoint, TessEdge} from '../../tessellation/types';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 import {BoundingCurveObject3D} from './BoundingCurve.object3d';
 import {EDGE_WIDTH} from '../../three';
 
@@ -30,7 +30,7 @@ export interface ArcConstraintData {
  *
  * side: 0=bottom (row 0), 1=right (col 3), 2=top (row 3), 3=left (col 0)
  */
-export class BoundingCurve extends GeometricEntity {
+export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
 
   side: number;
   cp: [ControlPoint, ControlPoint, ControlPoint, ControlPoint];
@@ -78,7 +78,7 @@ export class BoundingCurve extends GeometricEntity {
   /** Disposer returned from subscribing to ctx.viewFlags$. */
   private _unsubFlags: (() => void) | null = null;
 
-  constructor(ctx: SurfacingContext, side: number, cp: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]) {
+  constructor(ctx: SurfacingEditor, side: number, cp: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]) {
     super(ctx, generateEntityId('BC'));
     this.side = side;
     this.cp = cp;
@@ -138,7 +138,7 @@ export class BoundingCurve extends GeometricEntity {
    */
   mark(color: number): void {
     if (this._selected) return;
-    const view = this._view;
+    const view = this.object3d;
     if (!view) return;
     this._markedColor = color;
     view.paint(color, EDGE_WIDTH * MARK_WIDTH_MULTIPLIER, true);
@@ -155,7 +155,7 @@ export class BoundingCurve extends GeometricEntity {
    */
   unmark(): void {
     if (this._selected) return;
-    if (!this._view) return;
+    if (!this.object3d) return;
     this._markedColor = null;
     this._applyDefaultVisibility();
   }
@@ -166,7 +166,7 @@ export class BoundingCurve extends GeometricEntity {
    * `select()`ed or actively marked.
    */
   refreshDefaultVisibility(): void {
-    if (!this._view) return;
+    if (!this.object3d) return;
     if (this._selected) return;
     if (this._markedColor !== null) return;
     this._applyDefaultVisibility();
@@ -174,12 +174,7 @@ export class BoundingCurve extends GeometricEntity {
 
   /** Refresh the painted line after the curve's samples changed. */
   refreshGeometry(): void {
-    this._view?.refreshGeometry();
-  }
-
-  /** Typed accessor for the Three.js view. */
-  private get _view(): BoundingCurveObject3D | null {
-    return this.object3d as BoundingCurveObject3D | null;
+    this.object3d?.refreshGeometry();
   }
 
   /** `true` if a mark() is currently applied. */
@@ -188,7 +183,7 @@ export class BoundingCurve extends GeometricEntity {
   }
 
   private _applyDefaultVisibility(): void {
-    const view = this._view;
+    const view = this.object3d;
     if (!view) return;
     const flags = this.ctx.viewFlags$.value;
     const show = flags.edges || (flags.boundaries && this._isSetSilhouette());
@@ -242,13 +237,7 @@ export class BoundingCurve extends GeometricEntity {
 
   dispose(): void {
     if (this._unsubFlags) { this._unsubFlags(); this._unsubFlags = null; }
-    if (this.object3d) {
-      (this.object3d as any).parent?.remove(this.object3d);
-      if (typeof (this.object3d as any).dispose === 'function') {
-        (this.object3d as any).dispose();
-      }
-      this.object3d = null;
-    }
+    this.disposeView();
     this.invalidateTessellation();
     super.dispose();
   }

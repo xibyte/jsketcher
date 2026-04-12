@@ -1,6 +1,6 @@
 import {GeometricEntity, generateEntityId} from '../GeometricEntity';
 import {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 
 /**
  * A named collection of entities — typically a primitive's output (Box,
@@ -12,7 +12,7 @@ export class Group extends GeometricEntity {
 
   name: string;
 
-  constructor(ctx: SurfacingContext, name: string = '', id?: string) {
+  constructor(ctx: SurfacingEditor, name: string = '', id?: string) {
     super(ctx, id ?? generateEntityId('G'));
     this.name = name;
   }

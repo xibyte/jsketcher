@@ -1,4 +1,4 @@
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import {BoundingCurve} from './BoundingCurve.entity';
 
@@ -27,7 +27,7 @@ export class LocalBoundingCurveCache {
 
   /** Fetch or create the curve for a 4-CP edge. */
   getOrCreate(
-    ctx: SurfacingContext,
+    ctx: SurfacingEditor,
     side: number,
     cps: [ControlPoint, ControlPoint, ControlPoint, ControlPoint],
   ): BoundingCurve {
@@ -43,7 +43,7 @@ export class LocalBoundingCurveCache {
   }
 
   /** Build the 4-curve set for a surface grid, sharing via this cache. */
-  curvesFor(ctx: SurfacingContext, grid: ControlPoint[][]): CurveSet {
+  curvesFor(ctx: SurfacingEditor, grid: ControlPoint[][]): CurveSet {
     return {
       bottom: this.getOrCreate(ctx, 0, [grid[0][0], grid[0][1], grid[0][2], grid[0][3]]),
       right:  this.getOrCreate(ctx, 1, [grid[0][3], grid[1][3], grid[2][3], grid[3][3]]),
@@ -75,7 +75,7 @@ export class LocalBoundingCurveCache {
  * and reuse the neighbor's `BoundingCurve` instances directly.
  */
 export function createBoundingCurves(
-  ctx: SurfacingContext,
+  ctx: SurfacingEditor,
   grid: ControlPoint[][],
 ): {
   bottom: BoundingCurve;

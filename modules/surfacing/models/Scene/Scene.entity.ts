@@ -23,7 +23,7 @@ import {SurfaceSet} from '../../SurfaceSet';
 import {BoundingCurve} from '../BoundingCurve/BoundingCurve.entity';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import {LocalBoundingCurveCache} from '../BoundingCurve/buildBoundingCurves';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 
 // Re-export so other modules can import from Scene.entity directly.
 export {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
@@ -111,7 +111,7 @@ export class Scene extends GeometricEntity {
   mirrorConstraints: MirrorConstraint[] = [];
   tessResolution: number = 8;
 
-  constructor(ctx: SurfacingContext, id?: string) {
+  constructor(ctx: SurfacingEditor, id?: string) {
     super(ctx, id ?? generateEntityId('SC'));
   }
 
@@ -423,7 +423,7 @@ export class Scene extends GeometricEntity {
     return {id: this.id, vertices, vertexIds, patches, arcConstraints, mirrorConstraints, groups, surfaceSets};
   }
 
-  static deserialize(ctx: SurfacingContext, data: SerializedScene): Scene {
+  static deserialize(ctx: SurfacingEditor, data: SerializedScene): Scene {
     if (data.id) reserveEntityId(data.id);
     const scene = new Scene(ctx, data.id);
 

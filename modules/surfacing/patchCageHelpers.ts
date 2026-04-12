@@ -5,7 +5,7 @@
 import {ControlPoint} from './models/ControlPoint/ControlPoint.entity';
 import {Vec3} from './patchCageTypes';
 import {add as vadd, mul as vscale, lerp as vlerp} from 'math/vec';
-import type {SurfacingContext} from './SurfacingContext';
+import type {SurfacingEditor} from './SurfacingEditor';
 
 export interface BoundarySplitResult {
   leftH: [ControlPoint, ControlPoint];
@@ -18,7 +18,7 @@ export interface BoundarySplitResult {
  * Returns: left half (2 interior CPs), midpoint Vec3, right half (2 interior CPs).
  * The original endpoints are reused (shared by identity).
  */
-export function splitBezierRow(ctx: SurfacingContext, p0: ControlPoint, p1: ControlPoint, p2: ControlPoint, p3: ControlPoint, t: number): {
+export function splitBezierRow(ctx: SurfacingEditor, p0: ControlPoint, p1: ControlPoint, p2: ControlPoint, p3: ControlPoint, t: number): {
   left: [ControlPoint, ControlPoint],
   mid: Vec3,
   right: [ControlPoint, ControlPoint]
@@ -41,7 +41,7 @@ export function cloneWeights(w: number[][]): number[][] {
   return w.map(row => [...row]);
 }
 
-function lerpVert(ctx: SurfacingContext, a: ControlPoint, b: ControlPoint, t: number): ControlPoint {
+function lerpVert(ctx: SurfacingEditor, a: ControlPoint, b: ControlPoint, t: number): ControlPoint {
   const p = vlerp(a.position, b.position, t);
   return new ControlPoint(ctx, p[0], p[1], p[2]);
 }
@@ -51,7 +51,7 @@ function lerpVert(ctx: SurfacingContext, a: ControlPoint, b: ControlPoint, t: nu
  * Boundary CPs can be supplied to share with adjacent patches.
  */
 export function makeGrid(
-  ctx: SurfacingContext,
+  ctx: SurfacingEditor,
   corners: [ControlPoint, ControlPoint, ControlPoint, ControlPoint], // [c00, c10, c01, c11]
   edges?: {
     bottom?: [ControlPoint, ControlPoint, ControlPoint, ControlPoint], // row 0: c00, ?, ?, c10

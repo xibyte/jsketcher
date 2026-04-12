@@ -1,5 +1,5 @@
 import {GeometricEntity, generateEntityId} from '../GeometricEntity';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 import {Vertex} from '../Vertex/Vertex.entity';
 import {Line} from '../Line/Line.entity';
 import {CageObject3D} from './Cage.object3d';
@@ -12,12 +12,12 @@ import {CageObject3D} from './Cage.object3d';
  * CageObject3D view in `ctx.workingGroup`, `dispose()` tears it down.
  * The Cage itself is not shared; each surface has exactly one.
  */
-export class Cage extends GeometricEntity {
+export class Cage extends GeometricEntity<CageObject3D> {
 
   vertices: Vertex[];
   segments: Line[];
 
-  constructor(ctx: SurfacingContext, vertices: Vertex[], segments: Line[]) {
+  constructor(ctx: SurfacingEditor, vertices: Vertex[], segments: Line[]) {
     super(ctx, generateEntityId('CG'));
     this.vertices = vertices;
     this.segments = segments;
@@ -26,13 +26,7 @@ export class Cage extends GeometricEntity {
   }
 
   dispose(): void {
-    if (this.object3d) {
-      (this.object3d as any).parent?.remove(this.object3d);
-      if (typeof (this.object3d as any).dispose === 'function') {
-        (this.object3d as any).dispose();
-      }
-      this.object3d = null;
-    }
+    this.disposeView();
     super.dispose();
   }
 }

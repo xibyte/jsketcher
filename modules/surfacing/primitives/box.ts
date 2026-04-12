@@ -3,9 +3,9 @@ import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
 import {V, Vlerp} from './helpers';
 import {LocalBoundingCurveCache} from '../models/BoundingCurve/buildBoundingCurves';
-import type {SurfacingContext} from '../SurfacingContext';
+import type {SurfacingEditor} from '../SurfacingEditor';
 
-export function createPatchBox(ctx: SurfacingContext, sizeX: number, sizeY: number, sizeZ: number): Scene {
+export function createPatchBox(ctx: SurfacingEditor, sizeX: number, sizeY: number, sizeZ: number): Scene {
   const scene = new Scene(ctx);
   const curveCache = new LocalBoundingCurveCache();
   const makePatch = (grid: ReturnType<typeof makeGrid>) =>
