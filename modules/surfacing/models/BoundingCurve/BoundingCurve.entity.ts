@@ -2,10 +2,11 @@ import type {Vec3} from 'math/vec';
 import {GeometricEntity, generateEntityId} from '../GeometricEntity';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
-import type {CurveTessPoint, BorderTessPoint, TessEdge} from '../../tessellation/types';
+import type {CurveTessellation} from '../../tessellation/types';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import {BoundingCurveObject3D} from './BoundingCurve.object3d';
 import {EDGE_WIDTH} from '../../three';
+import {allocateCurveSamples} from '../../tessellation/tessellateCurve';
 
 const MARK_WIDTH_MULTIPLIER = 1.35;
 const EDGE_BASE_COLOR = 0x000000;
@@ -36,32 +37,8 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
   cp: [ControlPoint, ControlPoint, ControlPoint, ControlPoint];
   arcConstraint: ArcConstraintData | null = null;
 
-  // -----------------------------------------------------------------------
-  // Tessellation state (populated by tessellation/tessellateCurve.ts).
-  //
-  // The curve is sampled once — at a chosen reference surface's boundary
-  // isoline — and the resulting CurveTessPoints are shared by every
-  // surface that uses the curve. Each such surface gets its own entry in
-  // `perSurface` holding BorderTessPoints in the surface's own edge
-  // direction (reversed at build time if the surface walks the edge
-  // vertices opposite to the reference surface).
-  // -----------------------------------------------------------------------
-
-  /** length = tessResolution + 1. Shared with adjacent surfaces. */
-  samples: CurveTessPoint[] | null = null;
-  /** Per adjacent surface: one BorderTessPoint per sample, in that surface's own edge direction. */
-  perSurface: Map<NurbsSurface, BorderTessPoint[]> = new Map();
-  /** Resolution at which `samples` was built (-1 if never tessellated). */
-  tessResolution: number = -1;
-  /** TessEdges along the curve (length = tessResolution). */
-  edges: TessEdge[] = [];
-  /**
-   * `true` when a user surface's vertex moved and the interior `samples`
-   * need resampling in place. tessellateCurve clears it after refreshing.
-   * Set by NurbsSurface.invalidateVisual. Orthogonal to
-   * `invalidateTessellation()` which wipes sample *instances*.
-   */
-  tessDirty: boolean = false;
+  /** Complete tessellation state, or null if never tessellated / invalidated. */
+  tessellation: CurveTessellation | null = null;
 
   /**
    * Every NurbsSurface that currently references this curve on one of its
@@ -227,7 +204,7 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
 
   removeUser(surface: NurbsSurface): void {
     this.users.delete(surface);
-    this.perSurface.delete(surface);
+    this.tessellation?.perSurface.delete(surface);
     if (this.users.size === 0) {
       this.dispose();
       return;
@@ -242,12 +219,24 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
     super.dispose();
   }
 
-  /** Drop cached tessellation state — call when an edge vertex moves. */
+  /** Drop cached tessellation — forces full rebuild on next ensureTessellated. */
   invalidateTessellation(): void {
-    this.samples = null;
-    this.tessResolution = -1;
-    this.perSurface.clear();
-    this.edges = [];
+    this.tessellation = null;
+  }
+
+  /**
+   * Ensure this curve has valid tessellation at the current resolution.
+   * Returns immediately if cached and resolution hasn't changed.
+   */
+  ensureTessellated(referenceSurface: NurbsSurface, side: number): void {
+    if (this.tessellation) return;
+    const n = this.ctx.resolution;
+    this.tessellation = {
+      resolution: n,
+      samples: allocateCurveSamples(this, referenceSurface, side, n),
+      perSurface: new Map(),
+      edges: [],
+    };
   }
 
   /** Evaluate the cubic Bézier curve at parameter t */

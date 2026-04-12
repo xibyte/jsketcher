@@ -7,7 +7,7 @@ export {
   type AnyTessPoint,
   type Vec2,
 } from './types';
-export {tessellateCurve} from './tessellateCurve';
+export {allocateCurveSamples} from './tessellateCurve';
 export {
   tessellateSurface,
   refreshSurfaceTessellation,

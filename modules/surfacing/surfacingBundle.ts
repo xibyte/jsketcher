@@ -72,7 +72,7 @@ export function activate(ctx: any) {
     if (editor.scene.surfaces.length === 0) return null;
     return {
       scene: editor.scene.serialize(),
-      tessResolution: editor.scene.tessResolution,
+      tessResolution: editor.resolution,
     };
   }
 
@@ -84,7 +84,7 @@ export function activate(ctx: any) {
       return;
     }
     const scene = Scene.deserialize(editor, sceneData);
-    scene.tessResolution = data.tessResolution || 8;
+    editor.resolution = data.tessResolution || 8;
     scene.syncEntityGraph();
     editor.loadScene(scene);
     notifyChange();

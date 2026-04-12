@@ -8,7 +8,7 @@
  *     single BorderTessPoint shared by the two adjacent side arrays.
  *   - n×n quad Tiles, each owning 4 TessEdge references.
  *   - TessEdges: interior edges owned by this surface; edges along a
- *     BoundingCurve looked up (or created) on `curve.edges[segmentIdx]`
+ *     BoundingCurve looked up (or created) on `curve.tessellation!.edges[segmentIdx]`
  *     so two surfaces that eventually share the same curve will also
  *     share the SAME TessEdge instance — splitting it later propagates
  *     to the tiles of both surfaces in a single operation.
@@ -21,13 +21,14 @@
  */
 import type {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from '../models/BoundingCurve/BoundingCurve.entity';
-import {tessellateCurve} from './tessellateCurve';
 import {
   TessPoint, BorderTessPoint, TessEdge, Tile,
   type AnyTessPoint, type CurveTessPoint, type Vec2,
 } from './types';
 
 export interface SurfaceTessellation {
+  /** The resolution this tessellation was built at. */
+  resolution: number;
   /** Interior sample points (not including the 4 sides or corners). */
   interior: TessPoint[];
   /** Per-side border point arrays [0=bottom, 1=right, 2=top, 3=left], length n+1 in the surface's own edge direction. */
@@ -72,19 +73,10 @@ export function refreshSurfaceTessellation(
     surface.boundingCurves.left,
   ];
 
-  // 1. Re-sample any dirty boundary curves. `tessellateCurve`'s fast path
-  //    writes interior xyz values into the existing CurveTessPoint arrays
-  //    without allocating new ones. Idempotent between sibling surfaces:
-  //    if a neighbour already ran this during the same frame, tessDirty
-  //    is already cleared and we skip.
-  for (let side = 0; side < 4; side++) {
-    const c = sideCurves[side];
-    if (c.tessDirty || c.tessResolution !== n || !c.samples) {
-      tessellateCurve(c, surface, side, n);
-    }
-  }
+  // Curves are assumed to be already tessellated by the caller
+  // (NurbsSurface.tessellate ensures them via BoundingCurve.ensureTessellated).
 
-  // 2. Refresh border normals for THIS surface. xyz values are already
+  // 1. Refresh border normals for THIS surface. xyz values are already
   //    up to date because they forward to the shared CurveTessPoints.
   for (let side = 0; side < 4; side++) {
     const arr = graph.borders[side];
@@ -115,27 +107,18 @@ export function refreshSurfaceTessellation(
 export function tessellateSurface(surface: NurbsSurface, resolution: number): SurfaceTessellation {
   const n = resolution;
 
-  // -----------------------------------------------------------------------
-  // 1. Make sure every bounding curve has CurveTessPoints at this resolution.
-  //    Uses THIS surface as the reference — valid because weights live on
-  //    per-vertex ControlPoints and so both sides of any shared edge
-  //    evaluate to the identical cubic Bézier.
-  // -----------------------------------------------------------------------
+  // Curves are assumed to be already tessellated by the caller
+  // (NurbsSurface.tessellate ensures them via BoundingCurve.ensureTessellated).
+
   const sideCurves: BoundingCurve[] = [
     surface.boundingCurves.bottom,
     surface.boundingCurves.right,
     surface.boundingCurves.top,
     surface.boundingCurves.left,
   ];
-  for (let side = 0; side < 4; side++) {
-    const c = sideCurves[side];
-    if (c.tessResolution !== n || !c.samples) {
-      tessellateCurve(c, surface, side, n);
-    }
-  }
 
   // -----------------------------------------------------------------------
-  // 2. Detect per-side reversal. A BoundingCurve's intrinsic direction is
+  // 1. Detect per-side reversal. A BoundingCurve's intrinsic direction is
   //    whichever direction its `cp` list is ordered in. Another surface
   //    sharing the curve on one of its own sides may walk it in reverse.
   // -----------------------------------------------------------------------
@@ -147,7 +130,7 @@ export function tessellateSurface(surface: NurbsSurface, resolution: number): Su
   ];
 
   const curveSampleAt = (side: number, kInSurface: number): CurveTessPoint => {
-    const samples = sideCurves[side].samples!;
+    const samples = sideCurves[side].tessellation!.samples;
     return rev[side] ? samples[n - kInSurface] : samples[kInSurface];
   };
   const segmentIdxOf = (kInSurface: number, reversed: boolean): number =>
@@ -195,7 +178,7 @@ export function tessellateSurface(surface: NurbsSurface, resolution: number): Su
   ];
 
   for (let side = 0; side < 4; side++) {
-    sideCurves[side].perSurface.set(surface, borders[side]);
+    sideCurves[side].tessellation!.perSurface.set(surface, borders[side]);
   }
 
   // -----------------------------------------------------------------------
@@ -226,7 +209,7 @@ export function tessellateSurface(surface: NurbsSurface, resolution: number): Su
 
   // -----------------------------------------------------------------------
   // 5. Build TessEdges (deduped within this surface by the per-cell index
-  //    grids, and across surfaces by curve.edges[segmentIdx] for boundary
+  //    grids, and across surfaces by curve.tessellation!.edges[segmentIdx] for boundary
   //    edges).
   //    - hEdges[r][c] connects pointGrid[r][c]   ↔ pointGrid[r][c+1]
   //    - vEdges[r][c] connects pointGrid[r][c]   ↔ pointGrid[r+1][c]
@@ -241,14 +224,14 @@ export function tessellateSurface(surface: NurbsSurface, resolution: number): Su
   const getOrCreateBoundaryEdge = (
     curve: BoundingCurve, segIdx: number, a: AnyTessPoint, b: AnyTessPoint,
   ): TessEdge => {
-    const existing = curve.edges[segIdx];
+    const existing = curve.tessellation!.edges[segIdx];
     if (existing) {
       existing.endpoints.set(surface, [a, b] as const);
       return existing;
     }
     const e = new TessEdge();
     e.endpoints.set(surface, [a, b] as const);
-    curve.edges[segIdx] = e;
+    curve.tessellation!.edges[segIdx] = e;
     return e;
   };
 
@@ -308,7 +291,7 @@ export function tessellateSurface(surface: NurbsSurface, resolution: number): Su
     }
   }
 
-  return {interior, borders, pointGrid, tiles, edges: allEdges};
+  return {resolution: n, interior, borders, pointGrid, tiles, edges: allEdges};
 }
 
 // =========================================================================

@@ -31,6 +31,7 @@ export class SurfacingEditor {
   readonly viewFlags$: StateStream<SurfacingViewFlags>;
   readonly ctx: any;
   readonly raycast!: RaycastService;
+  resolution: number = 8;
   surfaceMeshes: any[] = [];
 
   private disposers: (() => void)[] = [];
