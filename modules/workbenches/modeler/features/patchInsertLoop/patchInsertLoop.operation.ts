@@ -1,4 +1,5 @@
 import {BiGitBranch} from "react-icons/bi";
+import {LoopInsertTool} from "surfacing/ops/split/split.tool";
 
 export const PatchInsertLoopAction = {
   id: 'PATCH_INSERT_LOOP',
@@ -7,7 +8,7 @@ export const PatchInsertLoopAction = {
     info: 'Interactive edge loop insertion across connected patches',
     icon: BiGitBranch,
   },
-  invoke: () => {
-    document.dispatchEvent(new CustomEvent('patch-insert-loop-toggle'));
+  invoke: (ctx: any) => {
+    ctx.surfacingService?.view?.pushTool(new LoopInsertTool());
   },
 };

@@ -17,7 +17,10 @@ import type {SurfacingEditor} from '../SurfacingEditor';
 import type {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from '../models/BoundingCurve/BoundingCurve.entity';
 import {Vertex} from '../models/Vertex/Vertex.entity';
-import {SURFACE_HOVER_COLOR, EDGE_COLORS} from '../three';
+import {SURFACE_HOVER_COLOR, EDGE_COLORS, SelectionGizmoOverlay} from '../three';
+import {showNurbsSurfaceDialog, closeNurbsSurfaceDialog} from '../models/NurbsSurface/NurbsSurface.dialog';
+import {showArcDialog, closeArcDialog} from '../ops/arc/arc.dialog';
+import {showEdgeDialog, closeBoundingCurveDialog} from '../models/BoundingCurve/BoundingCurve.dialog';
 
 const SURFACE_SET_HOVER_COLOR = 0xb0d4f3;
 const HOVER_CURVE_COLOR = 0x111111;
@@ -31,9 +34,28 @@ export class DefaultTool implements Tool {
   selectedCurve: BoundingCurve | null = null;
   selectedVertex: Vertex | null = null;
   private _mouseDown = false;
+  private _gizmo: SelectionGizmoOverlay | null = null;
+  private _propsPanel: HTMLDivElement | null = null;
+  private _edgePanel: HTMLDivElement | null = null;
+  private _arcState: {panel: HTMLDivElement | null} = {panel: null};
 
   init(editor: SurfacingEditor): void {
     this.editor = editor;
+    if (!this._gizmo && editor.scene) {
+      const ss = editor.sceneSetup;
+      this._gizmo = new SelectionGizmoOverlay(ss, editor.scene, {
+        onChange: () => {
+          editor.refreshOverlaysForDrag();
+        },
+        onDragEnd: () => {
+          editor.rebuildAll();
+        },
+      });
+      ss.scene.add(this._gizmo.gizmo);
+      ss.scene.add(this._gizmo.target);
+    } else if (this._gizmo && editor.scene) {
+      this._gizmo.setScene(editor.scene);
+    }
   }
 
   // -------------------------------------------------------------------
@@ -82,14 +104,12 @@ export class DefaultTool implements Tool {
       this.editor.scene!.splitIsoline(patchIdx, 'u', 0.5);
       this._deselectSurface();
       this.editor.rebuildAll();
-      this.editor.persistCageState();
     } else if (e.key === 'v' || e.key === 'V') {
       this.editor.scene!.splitIsoline(patchIdx, 'v', 0.5);
       this._deselectSurface();
       this.editor.rebuildAll();
-      this.editor.persistCageState();
     } else if (e.key === 'a' || e.key === 'A') {
-      this.editor.showArcDialog();
+      this._toggleArcDialog();
     }
   }
 
@@ -102,6 +122,16 @@ export class DefaultTool implements Tool {
     this._deselectCurve();
     this._deselectSurface();
     this._clearHover();
+    this._closePropsDialog();
+    this._closeEdgeDialog();
+    closeArcDialog(this._arcState);
+    if (this._gizmo) {
+      const ss = this.editor.sceneSetup;
+      ss.scene.remove(this._gizmo.gizmo);
+      ss.scene.remove(this._gizmo.target);
+      this._gizmo.dispose();
+      this._gizmo = null;
+    }
   }
 
   // -------------------------------------------------------------------
@@ -219,19 +249,17 @@ export class DefaultTool implements Tool {
   // -------------------------------------------------------------------
 
   private _selectSurface(surface: NurbsSurface): void {
-    // Clear hover on the target first so edit-mode visuals start clean.
     if (this.hoveredSurface === surface) {
       this._clearHover();
     }
     this.selectedSurface = surface;
     surface.enterEditMode();
-    // Mark 4 curves side-colored (select-locked so hover can't override).
     const c = surface.boundingCurves;
     c.bottom.select(EDGE_COLORS[0]);
     c.right.select(EDGE_COLORS[1]);
     c.top.select(EDGE_COLORS[2]);
     c.left.select(EDGE_COLORS[3]);
-    this.editor.showPropsDialog(surface);
+    this._showPropsDialog(surface);
     this.editor.requestRender();
   }
 
@@ -248,16 +276,14 @@ export class DefaultTool implements Tool {
     c.top.deselect();
     c.left.deselect();
     surface.exitEditMode();
-    this.editor.closePropsDialog();
+    this._closePropsDialog();
     this.editor.requestRender();
   }
 
   private _selectCurve(curve: BoundingCurve): void {
     this.selectedCurve = curve;
     curve.select(EDGE_SELECTED_COLOR);
-    const surface = this.selectedSurface!;
-    const side = surface.sideOfCurve(curve);
-    if (side >= 0) this.editor.showEdgeDialog(side);
+    this._showEdgeDialog(curve);
     this.editor.requestRender();
   }
 
@@ -265,13 +291,12 @@ export class DefaultTool implements Tool {
     if (!this.selectedCurve) return;
     const curve = this.selectedCurve;
     this.selectedCurve = null;
-    // Release the select lock and re-apply the side color.
     curve.deselect();
     if (this.selectedSurface) {
       const side = this.selectedSurface.sideOfCurve(curve);
       if (side >= 0) curve.select(EDGE_COLORS[side]);
     }
-    this.editor.closeEdgeDialog();
+    this._closeEdgeDialog();
     this.editor.requestRender();
   }
 
@@ -279,7 +304,7 @@ export class DefaultTool implements Tool {
     this._deselectCurve();
     this.selectedVertex = vertex;
     vertex.enterEditMode();
-    this.editor.attachGizmo(vertex);
+    this._gizmo?.attach(vertex);
     this.editor.requestRender();
   }
 
@@ -288,7 +313,7 @@ export class DefaultTool implements Tool {
     const v = this.selectedVertex;
     this.selectedVertex = null;
     v.exitEditMode();
-    this.editor.detachGizmo();
+    this._gizmo?.detach();
     this.editor.requestRender();
   }
 
@@ -308,6 +333,162 @@ export class DefaultTool implements Tool {
     surface.boundingCurves.right.unmark();
     surface.boundingCurves.top.unmark();
     surface.boundingCurves.left.unmark();
+  }
+
+  // -------------------------------------------------------------------
+  // Props dialog
+  // -------------------------------------------------------------------
+
+  private _showPropsDialog(surface: NurbsSurface): void {
+    this._closePropsDialog();
+    const scene = this.editor.scene!;
+    const patchIdx = scene.surfaces.indexOf(surface);
+    this._propsPanel = showNurbsSurfaceDialog(surface, patchIdx, {
+      onClose: () => this._deselectSurface(),
+      onPushPull: (dist) => {
+        scene.pushPullPatch(patchIdx, dist);
+        this.editor.rebuildAll();
+      },
+      onExtrude: (dist) => {
+        scene.extrudePatch(patchIdx, dist);
+        this.editor.rebuildAll();
+      },
+      onSubdivide: () => {
+        scene.subdividePatch(patchIdx);
+        this._deselectSurface();
+        this.editor.rebuildAll();
+      },
+      onRemove: () => {
+        scene.removeSurface(surface);
+        this._deselectSurface();
+        this.editor.rebuildAll();
+      },
+    });
+  }
+
+  private _closePropsDialog(): void {
+    closeNurbsSurfaceDialog(this._propsPanel);
+    this._propsPanel = null;
+  }
+
+  // -------------------------------------------------------------------
+  // Edge dialog
+  // -------------------------------------------------------------------
+
+  private _showEdgeDialog(curve: BoundingCurve): void {
+    this._closeEdgeDialog();
+    const surface = this.selectedSurface!;
+    const scene = this.editor.scene!;
+    const patchIdx = scene.surfaces.indexOf(surface);
+    const edgeIdx = surface.sideOfCurve(curve);
+    const adj = scene.findAdjacentPatches(patchIdx);
+    const hasNeighbor = adj.some((a: any) => a.side === edgeIdx);
+
+    const rebuildAndReopen = () => {
+      this.editor.rebuildAll();
+      this._showEdgeDialog(curve);
+    };
+
+    this._edgePanel = showEdgeDialog(curve, hasNeighbor, {
+      onClose: () => this._deselectCurve(),
+      onArc90Out: () => {
+        this._applyArc90(patchIdx, edgeIdx, false);
+        rebuildAndReopen();
+      },
+      onArc90In: () => {
+        this._applyArc90(patchIdx, edgeIdx, true);
+        rebuildAndReopen();
+      },
+      onRemoveArc: () => {
+        this._removeArc(patchIdx, edgeIdx);
+        rebuildAndReopen();
+      },
+      onG1: () => {
+        scene.applyG1(patchIdx, edgeIdx);
+        rebuildAndReopen();
+      },
+      onG2: () => {
+        scene.applyG2(patchIdx, edgeIdx);
+        rebuildAndReopen();
+      },
+      onMirror: () => {
+        scene.mirrorAcrossEdge(patchIdx, edgeIdx);
+        rebuildAndReopen();
+      },
+    });
+  }
+
+  private _closeEdgeDialog(): void {
+    closeBoundingCurveDialog(this._edgePanel);
+    this._edgePanel = null;
+  }
+
+  private _applyArc90(patchIdx: number, side: number, flip: boolean): void {
+    const scene = this.editor.scene!;
+    const patch = scene.surfaces[patchIdx];
+    const ev = patch.getEdgeVertices(side);
+    const {distance: vdist} = require('math/vec');
+    const chord = vdist(ev[0].position, ev[3].position);
+    const radius = chord / Math.SQRT2;
+    let u = 0.5, v = 0.5;
+    if (side === 0) v = 0;
+    else if (side === 1) u = 1;
+    else if (side === 2) v = 1;
+    else if (side === 3) u = 0;
+    let planeNormal = patch.normal(u, v);
+    if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]] as any;
+    scene.arcConstraints = scene.arcConstraints.filter((c: any) =>
+      !(c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === side)
+    );
+    scene.constrainEdgeToArc(patchIdx, side, radius, 90, planeNormal, 'rational');
+  }
+
+  private _removeArc(patchIdx: number, edgeIdx: number): void {
+    const scene = this.editor.scene!;
+    const {lerp: vlerp} = require('math/vec');
+    scene.arcConstraints = scene.arcConstraints.filter((c: any) => {
+      if (c.patchSide && c.patchSide.patchIdx === patchIdx && c.patchSide.side === edgeIdx) {
+        const ev = scene.surfaces[patchIdx].getEdgeVertices(edgeIdx);
+        const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
+        const lp2 = vlerp(ev[0].position, ev[3].position, 2/3);
+        ev[1].set(lp1[0], lp1[1], lp1[2]);
+        ev[2].set(lp2[0], lp2[1], lp2[2]);
+        return false;
+      }
+      return true;
+    });
+    const selPatch = scene.surfaces[patchIdx];
+    for (const row of selPatch.grid) {
+      for (const cp of row) (cp as any).weight.value = 1;
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // Arc dialog
+  // -------------------------------------------------------------------
+
+  private _toggleArcDialog(): void {
+    if (!this.selectedSurface) return;
+    if (this._arcState.panel) {
+      closeArcDialog(this._arcState);
+      return;
+    }
+    const scene = this.editor.scene!;
+    const patchIdx = scene.surfaces.indexOf(this.selectedSurface);
+    const result = showArcDialog(scene, patchIdx, {
+      onClose: () => closeArcDialog(this._arcState),
+      onRemove: () => {
+        if (scene.arcConstraints.length > 0) {
+          scene.removeArcConstraint(scene.arcConstraints[scene.arcConstraints.length - 1]);
+        }
+        this.editor.rebuildAll();
+        closeArcDialog(this._arcState);
+      },
+      onApply: () => {
+        this.editor.rebuildAll();
+      },
+    });
+    this._arcState.panel = result.panel;
   }
 
   /** Build the filter set of grid CPs for the selected surface. */

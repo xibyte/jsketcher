@@ -5,7 +5,7 @@ import type {NurbsSurface} from './NurbsSurface.entity';
  * Shows NURBS definition (control points, weights, knots, constraints)
  * and action buttons (Push/Pull, Extrude, Subdivide, Remove).
  */
-export function showPropsDialog(
+export function showNurbsSurfaceDialog(
   surface: NurbsSurface,
   surfaceIdx: number,
   callbacks: {
@@ -99,7 +99,7 @@ export function showPropsDialog(
   return panel;
 }
 
-export function closeDialog(panel: HTMLDivElement | null): void {
+export function closeNurbsSurfaceDialog(panel: HTMLDivElement | null): void {
   if (panel && panel.parentNode) {
     panel.parentNode.removeChild(panel);
   }

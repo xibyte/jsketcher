@@ -73,3 +73,9 @@ export function showEdgeDialog(
 
   return panel;
 }
+
+export function closeBoundingCurveDialog(panel: HTMLDivElement | null): void {
+  if (panel && panel.parentNode) {
+    panel.parentNode.removeChild(panel);
+  }
+}

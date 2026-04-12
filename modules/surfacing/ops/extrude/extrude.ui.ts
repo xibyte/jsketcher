@@ -9,7 +9,6 @@ export function createExtrudeButton(view: any, panel: HTMLElement, patchIdx: num
     if (isNaN(dist) || dist === 0) return;
     extrudePatch(view.scene, patchIdx, dist);
     view.rebuildAll();
-    view.persistCageState();
     view.showPropsDialog(patchIdx);
   });
 }

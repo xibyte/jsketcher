@@ -34,7 +34,6 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
 
     constrainEdgeToArc(scene, patchIdx, side, radius, 90, planeNormal, 'rational');
     view.rebuildAll();
-    view.persistCageState();
     view.showEdgeDialog(edgeIdx);
   };
 
@@ -61,7 +60,6 @@ export function createEdgeArcButtons(view: any, panel: HTMLElement, edgeIdx: num
         for (const cp of row) cp.weight.value = 1;
       }
       view.rebuildAll();
-      view.persistCageState();
       view.showEdgeDialog(edgeIdx);
     });
   }
@@ -130,7 +128,6 @@ export function showArcDialog(view: any): void {
       removeArcConstraint(scene, scene.arcConstraints[scene.arcConstraints.length - 1]);
     }
     view.rebuildAll();
-    view.persistCageState();
     closeArcDialog(view);
   });
 
@@ -180,7 +177,6 @@ export function applyArcFromDialog(view: any): void {
 
   constrainEdgeToArc(scene, patchIdx, side, radius, angle, planeNormal, mode as any);
   view.rebuildAll();
-  view.persistCageState();
 }
 
 export function closeArcDialog(view: any): void {
