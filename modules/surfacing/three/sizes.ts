@@ -6,6 +6,7 @@
 // sphere keeps the hitbox at full size. On selection the visual scales up.
 export const HANDLE_SIZE = 3.5;
 export const CP_VISUAL_SCALE = 0.45;
+export const CP_HOVER_SCALE = 0.7;
 export const CP_PICKER_SCALE = 1.0;
 
 // Screen-space widths for ScalableLine-based edges

@@ -17,7 +17,7 @@ import type {SurfacingEditor} from '../SurfacingEditor';
 import type {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from '../models/BoundingCurve/BoundingCurve.entity';
 import {Vertex} from '../models/Vertex/Vertex.entity';
-import {SURFACE_HOVER_COLOR, EDGE_COLORS, SelectionGizmoOverlay} from '../three';
+import {SURFACE_HOVER_COLOR, EDGE_COLORS, CP_HOVER_COLOR, SelectionGizmoOverlay} from '../three';
 import {showNurbsSurfaceDialog, closeNurbsSurfaceDialog} from '../models/NurbsSurface/NurbsSurface.dialog';
 import {showArcDialog, closeArcDialog} from '../ops/arc/arc.dialog';
 import {showEdgeDialog, closeBoundingCurveDialog} from '../models/BoundingCurve/BoundingCurve.dialog';
@@ -45,7 +45,11 @@ export class DefaultTool implements Tool {
       const ss = editor.sceneSetup;
       this.gizmo = new SelectionGizmoOverlay(ss, editor.scene, {
         onChange: () => editor.refreshOverlaysForDrag(),
-        onDragEnd: () => editor.rebuildAll(),
+        onDragEnd: () => {
+          editor.scene.syncEntityGraph();
+          editor.ctx.surfacingService.scheduleSave();
+          editor.ctx.surfacingService.notifyChange();
+        },
       });
       ss.scene.add(this.gizmo.gizmo);
       ss.scene.add(this.gizmo.target);
@@ -174,9 +178,9 @@ export class DefaultTool implements Tool {
 
   private updateVertexHover(vertex: Vertex | null): void {
     if (vertex === this.hoveredVertex) return;
-    this.hoveredVertex?.setHovered(false);
+    this.hoveredVertex?.unmark();
     this.hoveredVertex = vertex;
-    this.hoveredVertex?.setHovered(true);
+    if (vertex) vertex.mark(CP_HOVER_COLOR);
     this.editor.requestRender();
   }
 
@@ -302,8 +306,7 @@ export class DefaultTool implements Tool {
   private selectVertex(vertex: Vertex): void {
     this.deselectCurve();
     this.selectedVertex = vertex;
-    vertex.enterEditMode();
-    this.gizmo?.attach(vertex);
+    if (this.gizmo) vertex.enterEditMode(this.gizmo);
     this.editor.requestRender();
   }
 
@@ -312,7 +315,6 @@ export class DefaultTool implements Tool {
     const v = this.selectedVertex;
     this.selectedVertex = null;
     v.exitEditMode();
-    this.gizmo?.detach();
     this.editor.requestRender();
   }
 

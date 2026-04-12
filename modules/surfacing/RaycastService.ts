@@ -198,7 +198,7 @@ export class RaycastService {
       const view: any = cv?.object3d;
       if (!view || !view.visible) continue;
       view.traverse((child: any) => {
-        if (child.isLine2 || child.isLine) child.raycast?.(raycaster, edgeHits);
+        if (child.isMesh || child.isLine) child.raycast?.(raycaster, edgeHits);
       });
     }
     if (edgeHits.length === 0) return null;
