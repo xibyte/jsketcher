@@ -1,3 +1,4 @@
+import type React from 'react';
 import * as SceneGraph from 'scene/sceneGraph';
 import ScalableLine from 'scene/objects/scalableLine';
 import {distance as vdist} from 'math/vec';
@@ -8,6 +9,7 @@ import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
 import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
 import {clearGroup} from '../../three';
+import {bridgeUI} from './bridge.ui';
 
 export interface BridgeToolState {
   edge1: {surface: NurbsSurface, side: number} | null;
@@ -36,6 +38,8 @@ export class BridgeTool implements Tool {
     editor.workingGroup.add(this.previewGroup);
     document.body.style.cursor = 'crosshair';
   }
+
+  createUI(): React.FC { return bridgeUI(this); }
 
   onMouseDown(_e: MouseEvent): void {}
   onMouseUp(_e: MouseEvent): void {}

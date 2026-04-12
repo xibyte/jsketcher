@@ -1,3 +1,4 @@
+import type React from 'react';
 import * as SceneGraph from 'scene/sceneGraph';
 import ScalableLine from 'scene/objects/scalableLine';
 import {state, type StateStream} from 'lstream';
@@ -6,6 +7,7 @@ import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
 import {splitIsoline, computeIsolinePropagation, tessellateIsoline} from './split.command';
 import {clearGroup} from '../../three';
+import {loopInsertUI} from './split.ui';
 
 export class LoopInsertTool implements Tool {
 
@@ -21,6 +23,8 @@ export class LoopInsertTool implements Tool {
     editor.workingGroup.add(this.previewGroup);
     document.body.style.cursor = 'crosshair';
   }
+
+  createUI(): React.FC { return loopInsertUI(this); }
 
   onMouseDown(_e: MouseEvent): void {}
   onMouseUp(_e: MouseEvent): void {}
