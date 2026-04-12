@@ -7,6 +7,7 @@ import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
 import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
+import {clearGroup} from '../../three';
 
 export interface BridgeToolState {
   edge1: {surface: NurbsSurface, side: number} | null;
@@ -77,7 +78,7 @@ export class BridgeTool implements Tool {
   cleanup(): void {
     this.clearMarks();
     if (this.previewGroup) {
-      this.editor.clearGroup(this.previewGroup);
+      clearGroup(this.previewGroup);
       this.previewGroup.parent?.remove(this.previewGroup);
       this.previewGroup = null;
     }
@@ -117,14 +118,14 @@ export class BridgeTool implements Tool {
     this.clearMarks();
     this.state$.mutate(st => { st.edge1 = null; st.edge2 = null; st.flipped = false; });
     if (this.previewGroup) {
-      this.editor.clearGroup(this.previewGroup);
+      clearGroup(this.previewGroup);
       this.previewGroup.visible = false;
     }
   }
 
   private updatePreview(): void {
     if (!this.previewGroup) return;
-    this.editor.clearGroup(this.previewGroup);
+    clearGroup(this.previewGroup);
     this.clearMarks();
     const s = this.state$.value;
     const ss = this.editor.sceneSetup;
