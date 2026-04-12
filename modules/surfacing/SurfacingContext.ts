@@ -1,4 +1,25 @@
 import {Group} from 'three';
+import type {StateStream} from 'lstream';
+import type {SurfacingViewFlags} from './surfacingViewFlags';
+import type {NurbsSurface} from './models/NurbsSurface/NurbsSurface.entity';
+import type {BoundingCurve} from './models/BoundingCurve/BoundingCurve.entity';
+import type {Vertex} from './models/Vertex/Vertex.entity';
+
+/**
+ * Editor-side hooks that the entities call back into to drive dialogs,
+ * gizmos, and selection tracking. The surfacing bundle leaves this unset
+ * until a `SurfacingEditor` is attached — entities must tolerate missing
+ * adapters during load/primitive construction.
+ */
+export interface SurfacingEditorAdapter {
+  /** Entity callbacks when select()/deselect() runs. */
+  onSurfaceSelected(surface: NurbsSurface): void;
+  onSurfaceDeselected(surface: NurbsSurface): void;
+  onBoundingCurveSelected(surface: NurbsSurface, curve: BoundingCurve): void;
+  onBoundingCurveDeselected(): void;
+  onVertexSelected(vertex: Vertex): void;
+  onVertexDeselected(vertex: Vertex): void;
+}
 
 /**
  * Runtime context threaded into every surfacing entity at construction.
@@ -31,4 +52,17 @@ export interface SurfacingContext {
   sceneSetup: any;
   /** Request a viewer redraw on the next animation frame. */
   requestRender(): void;
+  /**
+   * Reactive view-flags state — entities subscribe to this at construction
+   * to react to faces / mesh / edges / boundaries toggles on their own.
+   * The StateStream fires the current value on subscribe, so entities get
+   * a correct initial paint for free.
+   */
+  viewFlags$: StateStream<SurfacingViewFlags>;
+  /**
+   * Editor hooks — set when a SurfacingEditor is attached, cleared on
+   * teardown. Entities route dialog / gizmo opening through this so the
+   * state stays on the entity and the editor just runs the UI plumbing.
+   */
+  editor: SurfacingEditorAdapter | null;
 }

@@ -6,17 +6,15 @@
  * functions take the editor as their first argument — same pattern as
  * bridge.ui.ts.
  *
- * The hole-boundary preview is drawn by flipping
- * `BoundingCurveObject3D.setHighlightColor` on each edge of the traced
- * loop, not by creating parallel ScalableLines. (The only place in
- * surfacing where we still tessellate a curve for preview purposes is
- * loop split, per design.)
+ * The hole-boundary preview is drawn by calling `curve.mark(color)` on
+ * each edge of the traced loop, not by creating parallel ScalableLines.
+ * (The only place in surfacing where we still tessellate a curve for
+ * preview purposes is loop split, per design.)
  */
 import {traceHole, fillHole} from './fillHole.command';
 import {applyG1AllSides} from '../continuity/continuity.command';
 import {toggleBridgeMode} from '../bridge/bridge.ui';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
-import type {BoundingCurveObject3D} from '../../models/BoundingCurve/BoundingCurve.object3d';
 
 // Rotating colors for the hole's edges — matches the old visual.
 const LOOP_COLORS = [0x44ee44, 0xee8800, 0x4488ee, 0xee4444];
@@ -69,7 +67,7 @@ export function fillHolePreview(view: any, e: MouseEvent): void {
   for (let i = 0; i < loop.length; i++) {
     const edge = loop[i];
     const curve: BoundingCurve = scene.surfaces[edge.patchIdx].getBoundingCurve(edge.side);
-    (curve.object3d as BoundingCurveObject3D | null)?.setHighlightColor(LOOP_COLORS[i % LOOP_COLORS.length]);
+    curve.mark(LOOP_COLORS[i % LOOP_COLORS.length]);
     view._fillHoleHighlighted.push(curve);
   }
 
@@ -94,9 +92,7 @@ export function fillHoleExecute(view: any): void {
 
 function clearFillHoleHighlights(view: any): void {
   const highlighted: BoundingCurve[] = view._fillHoleHighlighted;
-  for (const c of highlighted) {
-    (c.object3d as BoundingCurveObject3D | null)?.setHighlightColor(null);
-  }
+  for (const c of highlighted) c.unmark();
   highlighted.length = 0;
 }
 

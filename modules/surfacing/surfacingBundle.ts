@@ -15,6 +15,7 @@ import {createPatchPlane} from './primitives/plane';
 import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';
 import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction, ViewFlagBoundariesAction} from './actions/viewFlagActions';
+import {surfacingViewFlags$} from './surfacingViewFlags';
 import type {SurfacingContext} from './SurfacingContext';
 
 /** Snapshot of the surfacing state, exposed via a stream so React can subscribe */
@@ -65,6 +66,8 @@ export function activate(ctx: any) {
     workingGroup,
     sceneSetup: ctx.viewer.sceneSetup,
     requestRender: () => ctx.viewer.requestRender(),
+    viewFlags$: surfacingViewFlags$,
+    editor: null,
   };
 
   /** Push a fresh snapshot so subscribers re-render */

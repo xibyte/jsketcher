@@ -9,7 +9,6 @@ import {
   sharedSphereGeometry,
   createControlPointMaterial,
   createPickerMaterial,
-  select,
   CP_COLOR, CP_HOVER_COLOR, CP_SELECTED_COLOR, CP_MIRROR_COLOR,
   HANDLE_SIZE, CP_VISUAL_SCALE, CP_PICKER_SCALE,
 } from '../../three';
@@ -26,9 +25,9 @@ import {
  * destroyed by `dispose()`. A Vertex that nobody shows never allocates
  * any Three.js objects.
  *
- * The Vertex itself is the click target — clicking the picker publishes
- * `this` to `selection$`, which `SelectionGizmoOverlay` picks up and
- * attaches its TransformControls to. On drag the gizmo writes back via
+ * The Vertex itself is the click target — clicking the picker calls
+ * `this.select()` which routes through the editor adapter to attach the
+ * shared TransformControls gizmo. On drag the gizmo writes back via
  * `scene.moveVertex(v, x, y, z)` which calls `v.set()`, re-invalidating
  * every usedBy surface.
  *
@@ -134,6 +133,26 @@ export class Vertex extends GeometricEntity {
     this.ctx.requestRender();
   }
 
+  /**
+   * Select this vertex: flip the handle into the "selected" style and
+   * hand off to the editor adapter so it can attach a gizmo. Fails
+   * silently if the vertex isn't currently selectable (e.g. mirror
+   * targets are read-only).
+   */
+  select(): void {
+    if (!this.isSelectable()) return;
+    if (this._selected) return;
+    this.setSelected(true);
+    this.ctx.editor?.onVertexSelected(this);
+  }
+
+  /** Revert a prior `select()`. */
+  deselect(): void {
+    if (!this._selected) return;
+    this.setSelected(false);
+    this.ctx.editor?.onVertexDeselected(this);
+  }
+
   setMirrorTarget(mirror: boolean): void {
     if (this._mirrorTarget === mirror) return;
     this._mirrorTarget = mirror;
@@ -146,7 +165,7 @@ export class Vertex extends GeometricEntity {
   get selected(): boolean { return this._selected; }
   get mirrorTarget(): boolean { return this._mirrorTarget; }
 
-  /** True when a click should publish this vertex to `selection$`. */
+  /** True when a click on the handle should route through `select()`. */
   isSelectable(): boolean {
     return !this._mirrorTarget;
   }
@@ -192,9 +211,7 @@ export class Vertex extends GeometricEntity {
     // Mouse hooks the app-level raycaster dispatches to.
     (this._handlePicker as any).onMouseEnter = () => self.setHovered(true);
     (this._handlePicker as any).onMouseLeave = () => self.setHovered(false);
-    (this._handlePicker as any).onMouseClick = () => {
-      if (self.isSelectable()) select(self);
-    };
+    (this._handlePicker as any).onMouseClick = () => self.select();
 
     ctx.workingGroup.add(handle);
   }

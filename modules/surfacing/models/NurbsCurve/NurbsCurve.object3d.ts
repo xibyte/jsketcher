@@ -4,7 +4,7 @@ import {
   EntityObject3D,
   buildPolylineGeometry,
   createCurveMaterial,
-  CURVE_COLOR, CURVE_HOVER_COLOR, CURVE_SELECTED_COLOR,
+  CURVE_COLOR,
 } from '../../three';
 
 const CURVE_SEGMENTS = 24;
@@ -46,16 +46,6 @@ export class NurbsCurveObject3D extends EntityObject3D {
       this.geometry.dispose();
       this.geometry = null;
     }
-  }
-
-  protected onHoverChanged(hover: boolean): void {
-    if (!this._selected) {
-      this.material.color.setHex(hover ? CURVE_HOVER_COLOR : CURVE_COLOR);
-    }
-  }
-
-  protected onSelectedChanged(selected: boolean): void {
-    this.material.color.setHex(selected ? CURVE_SELECTED_COLOR : CURVE_COLOR);
   }
 
   protected onDispose(): void {

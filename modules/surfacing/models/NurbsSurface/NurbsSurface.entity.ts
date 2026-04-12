@@ -15,6 +15,19 @@ import {
 } from '../../tessellation/tessellateSurface';
 import type {TessPoint, BorderTessPoint} from '../../tessellation/types';
 import {NurbsSurfaceObject3D} from './NurbsSurface.object3d';
+import {
+  SURFACE_BASE_COLOR,
+  SURFACE_HOVER_COLOR,
+  EDGE_COLORS,
+} from '../../three';
+
+/** Color painted on sibling surfaces sharing the same SurfaceSet during
+ *  hover — a slightly lighter shade of SURFACE_HOVER_COLOR (0x88bbee). */
+const SURFACE_SET_HOVER_COLOR = 0xb0d4f3;
+/** Default color painted on bounding curves during the hover "dark outline" state. */
+const HOVER_CURVE_COLOR = 0x111111;
+/** Color painted on a bounding curve selected as an "edge" while the surface is selected. */
+const EDGE_SELECTED_COLOR = 0xffffff;
 
 export interface MirrorConstraintData {
   source: NurbsSurface;
@@ -60,6 +73,26 @@ export class NurbsSurface extends GeometricEntity {
 
   /** Dirty flag for frame-scheduled visual rebuilds. */
   private _dirtyVisual: boolean = false;
+
+  // -----------------------------------------------------------------------
+  // Visual state — selection + highlight (hover) + marked (set sibling tint).
+  // All three flags are owned by the entity. The view is a dumb paint
+  // surface that the methods below drive directly. The editor tracks which
+  // surface is currently `highlighted` and `selected` and calls the
+  // corresponding methods on transitions; entities decide exactly what to
+  // paint.
+  // -----------------------------------------------------------------------
+
+  /** `true` while this surface is the editor's current selection. */
+  selected: boolean = false;
+  /** `true` while `mark()` has been applied (material tinted, no glare). */
+  private _marked: boolean = false;
+  /** `true` while `highlight()` has been applied (mark + dark curves). */
+  private _highlighted: boolean = false;
+  /** The bounding curve currently selected as an "edge" on this surface, if any. */
+  selectedBoundingCurve: BoundingCurve | null = null;
+  /** Disposer returned from subscribing to ctx.viewFlags$. */
+  private _unsubFlags: (() => void) | null = null;
 
   /**
    * Tessellation cache.
@@ -107,6 +140,15 @@ export class NurbsSurface extends GeometricEntity {
     // visual lifetime — no external assembly step.
     this.object3d = new NurbsSurfaceObject3D(this);
     ctx.workingGroup.add(this.object3d);
+    // Subscribe to view flags so faces / wireframe visibility tracks the
+    // global toggle without an external fan-out. Fires once immediately
+    // with the current state on attach.
+    this._unsubFlags = ctx.viewFlags$.attach((flags) => {
+      const view = this._view;
+      if (!view) return;
+      view.setFacesVisible(flags.faces);
+      view.setWireframeVisible(flags.mesh);
+    });
   }
 
   /** True if any grid control point has a non-unit weight. */
@@ -149,12 +191,10 @@ export class NurbsSurface extends GeometricEntity {
     this._tess = null;
     this._tessGraph = null;
     this._tessRes = -1;
-    if (this.boundingCurves) {
-      this.boundingCurves.bottom.invalidateTessellation();
-      this.boundingCurves.right.invalidateTessellation();
-      this.boundingCurves.top.invalidateTessellation();
-      this.boundingCurves.left.invalidateTessellation();
-    }
+    this.boundingCurves.bottom.invalidateTessellation();
+    this.boundingCurves.right.invalidateTessellation();
+    this.boundingCurves.top.invalidateTessellation();
+    this.boundingCurves.left.invalidateTessellation();
     if (this._dirtyVisual) return;
     this._dirtyVisual = true;
     // Schedule on next frame — constraint cascades that move 4 CPs in a row
@@ -163,10 +203,231 @@ export class NurbsSurface extends GeometricEntity {
     const raf = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : null;
     const flush = () => {
       this._dirtyVisual = false;
-      const view: any = (this as any).object3d;
-      if (view && typeof view.rebuild === 'function') view.rebuild(this);
+      this._view?.rebuildGeometry();
+      // Refresh bounding-curve line geometry too so the rendered lines
+      // match the new tessellation.
+      this.boundingCurves.bottom.refreshGeometry();
+      this.boundingCurves.right.refreshGeometry();
+      this.boundingCurves.top.refreshGeometry();
+      this.boundingCurves.left.refreshGeometry();
     };
     if (raf) raf(flush); else flush();
+  }
+
+  // =========================================================================
+  // High-level visual API
+  // =========================================================================
+
+  /**
+   * Apply the "hover tint" style to this surface and its SurfaceSet
+   * siblings:
+   *   - self: material = SURFACE_HOVER_COLOR (no glare) + 4 bounding
+   *     curves marked dark.
+   *   - siblings in the same SurfaceSet: material = SURFACE_SET_HOVER_COLOR.
+   *
+   * No-op if the surface is currently selected — hovering a selected
+   * surface would fight with the selection's cage + side-colored curves.
+   */
+  highlight(): void {
+    if (this.selected) return;
+    if (this._highlighted) return;
+    this._highlighted = true;
+    this._view?.setTint(SURFACE_HOVER_COLOR, false);
+    this._markCurves(HOVER_CURVE_COLOR);
+    // Dim-tint siblings in the same SurfaceSet so a logical face (e.g. the
+    // 5 patches of a cylinder cap) reads as a single hover target.
+    const set = this.surfaceSet;
+    if (set) {
+      for (const sibling of set.surfaces) {
+        if (sibling !== this) sibling.mark(SURFACE_SET_HOVER_COLOR);
+      }
+    }
+  }
+
+  /** Revert a prior `highlight()`. No-op when selected or never highlighted. */
+  unhighlight(): void {
+    if (this.selected) return;
+    if (!this._highlighted) return;
+    this._highlighted = false;
+    this._view?.setTint(SURFACE_BASE_COLOR, true);
+    this._unmarkCurves();
+    const set = this.surfaceSet;
+    if (set) {
+      for (const sibling of set.surfaces) {
+        if (sibling !== this) sibling.unmark();
+      }
+    }
+  }
+
+  /**
+   * Paint the surface with `color` and no glare. Used for sibling
+   * surfaces in the same SurfaceSet while another member is hovered
+   * (dim "set is active" tint).
+   */
+  mark(color: number = SURFACE_SET_HOVER_COLOR): void {
+    if (this.selected) return;
+    this._marked = true;
+    this._view?.setTint(color, false);
+  }
+
+  /** Revert a prior `mark()`. No-op when selected or never marked. */
+  unmark(): void {
+    if (this.selected) return;
+    if (!this._marked) return;
+    this._marked = false;
+    this._view?.setTint(SURFACE_BASE_COLOR, true);
+  }
+
+  /**
+   * Select this surface: undo any prior highlight, flip to the "being
+   * edited" visual state (cage + CP handles + side-colored curves), and
+   * notify the editor adapter so it can open the props dialog.
+   */
+  select(): void {
+    if (this.selected) return;
+    // Drop any hover visuals before switching to selected style.
+    if (this._highlighted) this.unhighlight();
+    if (this._marked) this.unmark();
+
+    this.selected = true;
+    // Cage outline
+    if (this.cage?.object3d) {
+      (this.cage.object3d as any).rebuild?.();
+      (this.cage.object3d as any).visible = true;
+    }
+    // CP handles
+    for (const row of this.grid) {
+      for (const cp of row) cp.setVisible(true);
+    }
+    // Side-colored bounding curves
+    this._selectCurvesSideColors();
+
+    this.ctx.editor?.onSurfaceSelected(this);
+    this.ctx.requestRender();
+  }
+
+  /** Revert a prior `select()`. No-op if not selected. */
+  deselect(): void {
+    if (!this.selected) return;
+    // Clear any nested edge selection first. Release the curve lock
+    // directly (not via deselectBoundingCurve which would re-mark it
+    // side-color only for us to unmark it again a few lines below).
+    if (this.selectedBoundingCurve) {
+      this.selectedBoundingCurve.deselect();
+      this.selectedBoundingCurve = null;
+      this.ctx.editor?.onBoundingCurveDeselected();
+    }
+
+    this.selected = false;
+    // Hide cage
+    if (this.cage?.object3d) {
+      (this.cage.object3d as any).visible = false;
+    }
+    // Hide CP handles
+    for (const row of this.grid) {
+      for (const cp of row) {
+        cp.setVisible(false);
+        cp.setSelected(false);
+        cp.setHovered(false);
+      }
+    }
+    // Bounding curves revert to view-flag default visibility
+    this._deselectCurves();
+
+
+    this.ctx.editor?.onSurfaceDeselected(this);
+    this.ctx.requestRender();
+  }
+
+  /**
+   * Select one of this surface's bounding curves as the active "edge".
+   * Requires the surface to already be selected — otherwise the edge
+   * dialog has no surface context to live in. Locks the curve into its
+   * selected color via `BoundingCurve.select()`, so any hover mark() on
+   * this or an adjacent surface won't override it.
+   */
+  selectBoundingCurve(curve: BoundingCurve): void {
+    if (!this.selected) return;
+    if (this.selectedBoundingCurve === curve) return;
+    if (this.selectedBoundingCurve) this.deselectBoundingCurve();
+    this.selectedBoundingCurve = curve;
+    curve.select(EDGE_SELECTED_COLOR);
+    this.ctx.editor?.onBoundingCurveSelected(this, curve);
+    this.ctx.requestRender();
+  }
+
+  /**
+   * Revert a prior `selectBoundingCurve()`. No-op if none selected.
+   * Releases the curve lock and re-marks it with the surface's own side
+   * color so it rejoins the selected-surface visual (cage + side colors).
+   */
+  deselectBoundingCurve(): void {
+    if (!this.selected) return;
+    const curve = this.selectedBoundingCurve;
+    if (!curve) return;
+    this.selectedBoundingCurve = null;
+    // Release the edge lock and re-apply the surface's side color so the
+    // curve rejoins the rest of the selected-surface visual.
+    curve.deselect();
+    const side = this._sideOfCurve(curve);
+    if (side >= 0) curve.select(EDGE_COLORS[side] ?? EDGE_COLORS[0]);
+    this.ctx.editor?.onBoundingCurveDeselected();
+    this.ctx.requestRender();
+  }
+
+  /** Mark each of the 4 bounding curves with a flat color. */
+  private _markCurves(color: number): void {
+    this.boundingCurves.bottom.mark(color);
+    this.boundingCurves.right.mark(color);
+    this.boundingCurves.top.mark(color);
+    this.boundingCurves.left.mark(color);
+  }
+
+  /** Mark each of the 4 bounding curves with its side color. */
+  private _selectCurvesSideColors(): void {
+    const c = this.boundingCurves;
+    c.bottom.select(EDGE_COLORS[0]);
+    c.right.select(EDGE_COLORS[1]);
+    c.top.select(EDGE_COLORS[2]);
+    c.left.select(EDGE_COLORS[3]);
+  }
+
+  private _deselectCurves(): void {
+    const c = this.boundingCurves;
+    c.bottom.deselect();
+    c.right.deselect();
+    c.top.deselect();
+    c.left.deselect();
+  }
+
+  /**
+   * Revert all 4 bounding curves to their view-flag defaults. Runs both
+   * `deselect()` (for curves left in `select()` state by the surface's
+   * own selection) and `unmark()` (for curves left in `mark()` state by
+   * a prior hover). Each is a no-op when the corresponding state isn't
+   * set, so calling both is safe.
+   */
+  private _unmarkCurves(): void {
+    const c = this.boundingCurves;
+    for (const cv of [c.bottom, c.right, c.top, c.left]) {
+      cv.deselect();
+      cv.unmark();
+    }
+  }
+
+  /** Return the side index (0..3) the given curve belongs to, or -1. */
+  private _sideOfCurve(curve: BoundingCurve): number {
+    const c = this.boundingCurves;
+    if (curve === c.bottom) return 0;
+    if (curve === c.right) return 1;
+    if (curve === c.top) return 2;
+    if (curve === c.left) return 3;
+    return -1;
+  }
+
+  /** Typed accessor for the Three.js view. */
+  private get _view(): NurbsSurfaceObject3D | null {
+    return this.object3d as NurbsSurfaceObject3D | null;
   }
 
   /** Add this surface as a dependent on every vertex in the grid. */
@@ -232,6 +493,7 @@ export class NurbsSurface extends GeometricEntity {
    * self-dispose when their last user leaves.
    */
   dispose(): void {
+    if (this._unsubFlags) { this._unsubFlags(); this._unsubFlags = null; }
     if (this.object3d) {
       (this.object3d as any).parent?.remove(this.object3d);
       if (typeof (this.object3d as any).dispose === 'function') {
