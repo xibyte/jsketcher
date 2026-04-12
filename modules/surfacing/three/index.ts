@@ -10,7 +10,6 @@ export * from './colors';
 export * from './sizes';
 export * from './materials';
 export * from './geometries';
-export * from './tessellation';
 export * from './EntityObject3D';
 export * from './SelectionGizmoOverlay';
 export * from './groupUtils';
