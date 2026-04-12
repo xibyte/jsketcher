@@ -74,7 +74,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
    * BorderTessPoints, Tiles, TessEdges). It is built once on first
    * tessellate() and is then kept ACROSS vertex moves. The graph is
    * only torn down when the entity structure actually changes
-   * (replaceGrid / syncEntityGraph / structural ops).
+   * (updateGrid / structural ops).
    */
   tessellation: SurfaceTessellation | null = null;
 
@@ -99,7 +99,8 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     this.boundingCurves.right.addUser(this);
     this.boundingCurves.top.addUser(this);
     this.boundingCurves.left.addUser(this);
-    this.syncEntityGraph();
+    this.cage = buildCage(ctx, this.grid);
+    this.addChild(this.cage);
     // The surface view lives on ctx.workingGroup. Entity owns its own
     // visual lifetime — no external assembly step.
     this.object3d = new NurbsSurfaceObject3D(this);
@@ -285,10 +286,13 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     this.boundingCurves.left.addUser(this);
 
     // Dispose the old Cage and rebuild from the new grid.
-    if (this.cage) this.cage.dispose();
-    this.cage = null as any;
+    if (this.cage) {
+      this.removeChild(this.cage);
+      this.cage.dispose();
+    }
     this.tessellation = null;
-    this.syncEntityGraph();
+    this.cage = buildCage(this.ctx, this.grid);
+    this.addChild(this.cage);
     this.invalidateVisual();
   }
 
@@ -327,27 +331,6 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     this.boundingCurves.left.removeUser(this);
     this._unregisterVertices();
     super.dispose();
-  }
-
-  /**
-   * Build the Cage entity from the current grid. BoundingCurves are
-   * passed into the constructor by the caller — the surface never
-   * creates them itself. Sharing of curves with adjacent surfaces is
-   * fully the caller's responsibility (deserialize keeps a local edge
-   * map; ops grab the existing curve off a neighbor before stitching
-   * in a new patch).
-   *
-   * Idempotent: the Cage is only rebuilt the first time this runs.
-   */
-  syncEntityGraph(): void {
-    this.children = [];
-
-    if (!this.cage) {
-      this.tessellation = null;
-      this.cage = buildCage(this.ctx, this.grid);
-    }
-
-    this.addChild(this.cage);
   }
 
   /** Get the interior row/column of vertices adjacent to a side. */

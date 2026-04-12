@@ -40,7 +40,6 @@ export function SceneInlineObjectExplorer() {
   const persistAndRefresh = useCallback(() => {
     const scene = getScene();
     if (!scene) return;
-    scene.syncEntityGraph();
     const view = (scene as any).ext?.view;
     if (view && typeof view.rebuildAll === 'function') view.rebuildAll();
     const svc = (ctx as any).surfacingService;

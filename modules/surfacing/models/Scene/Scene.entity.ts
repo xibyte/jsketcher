@@ -154,23 +154,6 @@ export class Scene extends GeometricEntity {
   }
 
   // -----------------------------------------------------------------------
-  // Entity-graph synchronization (used by the OBJECTS explorer tree)
-  // -----------------------------------------------------------------------
-
-  /**
-   * Refresh derived per-surface state (control points, bounding curves,
-   * cage). The scene's `children` is already the live tree — there is
-   * nothing else to rebuild here.
-   */
-  syncEntityGraph(): void {
-    for (const surface of this.surfaces) surface.syncEntityGraph();
-    // Drop empty groups so the explorer doesn't show them.
-    for (const g of [...this.groups]) {
-      if (g.surfaces.length === 0) this.removeChild(g);
-    }
-  }
-
-  // -----------------------------------------------------------------------
   // Serialization
   // -----------------------------------------------------------------------
 
