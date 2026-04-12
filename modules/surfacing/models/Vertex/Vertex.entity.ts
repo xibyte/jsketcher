@@ -4,7 +4,7 @@ import {ConstantScaleGroup} from 'scene/scaleHelper';
 import {GeometricEntity, generateEntityId} from '../GeometricEntity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import type {CurveTessPoint} from '../../tessellation/types';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 import {
   sharedSphereGeometry,
   createControlPointMaterial,
@@ -59,7 +59,7 @@ export class Vertex extends GeometricEntity {
   private _selected: boolean = false;
   private _mirrorTarget: boolean = false;
 
-  constructor(ctx: SurfacingContext, x: number, y: number, z: number, id?: string) {
+  constructor(ctx: SurfacingEditor, x: number, y: number, z: number, id?: string) {
     super(ctx, id ?? generateEntityId('V'));
     this.position = [x, y, z];
   }
@@ -134,23 +134,20 @@ export class Vertex extends GeometricEntity {
   }
 
   /**
-   * Select this vertex: flip the handle into the "selected" style and
-   * hand off to the editor adapter so it can attach a gizmo. Fails
-   * silently if the vertex isn't currently selectable (e.g. mirror
-   * targets are read-only).
+   * Flip the handle into "selected" style (larger, bright color). The
+   * active tool calls this when the vertex is picked; the tool is also
+   * responsible for attaching the gizmo and calling `exitEditMode()`
+   * when the user clicks away.
    */
-  select(): void {
-    if (!this.isSelectable()) return;
+  enterEditMode(): void {
     if (this._selected) return;
     this.setSelected(true);
-    this.ctx.editor?.onVertexSelected(this);
   }
 
-  /** Revert a prior `select()`. */
-  deselect(): void {
+  /** Revert a prior `enterEditMode()`. */
+  exitEditMode(): void {
     if (!this._selected) return;
     this.setSelected(false);
-    this.ctx.editor?.onVertexDeselected(this);
   }
 
   setMirrorTarget(mirror: boolean): void {
@@ -198,7 +195,6 @@ export class Vertex extends GeometricEntity {
     this._handlePicker.renderOrder = 2;
     this._handlePicker.scale.setScalar(CP_PICKER_SCALE);
 
-    const self = this;
     const handle = new ConstantScaleGroup(
       ctx.sceneSetup, HANDLE_SIZE * 2, 1, () => handle.position,
     );
@@ -207,11 +203,6 @@ export class Vertex extends GeometricEntity {
     handle.add(this._handlePicker);
     (handle as any).userData = {entity: this};
     this._handle = handle;
-
-    // Mouse hooks the app-level raycaster dispatches to.
-    (this._handlePicker as any).onMouseEnter = () => self.setHovered(true);
-    (this._handlePicker as any).onMouseLeave = () => self.setHovered(false);
-    (this._handlePicker as any).onMouseClick = () => self.select();
 
     ctx.workingGroup.add(handle);
   }

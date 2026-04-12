@@ -3,9 +3,9 @@ import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
 import {V} from './helpers';
 import {createBoundingCurves} from '../models/BoundingCurve/buildBoundingCurves';
-import type {SurfacingContext} from '../SurfacingContext';
+import type {SurfacingEditor} from '../SurfacingEditor';
 
-export function createPatchPlane(ctx: SurfacingContext, width: number, height: number): Scene {
+export function createPatchPlane(ctx: SurfacingEditor, width: number, height: number): Scene {
   const scene = new Scene(ctx);
   const hw = width / 2, hh = height / 2;
 

@@ -19,6 +19,7 @@ import {
 import ScalableLine from 'scene/objects/scalableLine';
 import type {NurbsSurface} from './NurbsSurface.entity';
 import {
+  EntityObject3D,
   createSurfaceMaterial,
   SURFACE_BASE_COLOR,
 } from '../../three';
@@ -26,7 +27,7 @@ import {
 const WIREFRAME_COLOR = 0x1860c0;
 const WIREFRAME_WIDTH = 1.5;
 
-export class NurbsSurfaceObject3D extends Group {
+export class NurbsSurfaceObject3D extends EntityObject3D {
 
   readonly surface: NurbsSurface;
   readonly mesh: Mesh;
@@ -136,7 +137,7 @@ export class NurbsSurfaceObject3D extends Group {
     return g;
   }
 
-  dispose(): void {
+  protected onDispose(): void {
     this.geometry.dispose();
     this.material.dispose();
     for (const child of [...this.wireframeGroup.children]) {

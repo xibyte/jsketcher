@@ -1,234 +1,182 @@
 // @ts-nocheck
-import * as SceneGraph from 'scene/sceneGraph';
 import {SURFACING_SCENE} from 'cad/model/entities';
 import {setAttribute} from 'scene/objectData';
 import {Group} from 'three';
-import ScalableLine from 'scene/objects/scalableLine';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
 import {SelectionGizmoOverlay} from './three';
 import {Vertex} from './models/Vertex/Vertex.entity';
 import type {NurbsSurface} from './models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from './models/BoundingCurve/BoundingCurve.entity';
 import type {Scene} from './models/Scene/Scene.entity';
-import type {SurfacingContext} from './SurfacingContext';
 import {surfacingViewFlags$} from './surfacingViewFlags';
-import {
-  toggleBridgeMode,
-  bridgePickEdge,
-  bridgeFlip,
-  bridgeExecute,
-} from './ops/bridge/bridge.ui';
-import {
-  toggleFillHoleMode,
-  fillHolePreview,
-  fillHoleExecute,
-} from './ops/fillHole/fillHole.ui';
+import type {Tool} from './tool';
+import {DefaultTool} from './tools/defaultTool';
+import {RaycastService} from './RaycastService';
 
 // bottom, right, top, left — used by showEdgeDialog for the edge colour swatch
 const EDGE_COLORS = [0x2277ee, 0x22bb44, 0xdd3333, 0xddaa22];
 
 /**
- * SurfacingEditor — interactive controller for one Scene.
+ * SurfacingEditor — tool host and service layer for one Scene.
  *
- * Owns everything that isn't pure data or pure view: selection state,
- * modal modes (loop-insert, bridge, fill-hole), dialogs, keyboard and
- * mouse listeners, the gizmo overlay, and the legacy scene-level view
- * mode overlays (wireframe, edges, boundaries). NOT a THREE.Group —
- * entities own their own 3D objects via `ctx.workingGroup`; the editor
- * keeps a child `overlaysGroup` there for its own decorations and
- * previews.
+ * Owns: a tool stack, the shared gizmo, DOM event dispatching, dialog
+ * plumbing, raycast helpers, and the overlays Group. ALL per-mode state
+ * (hover, selection, bridge picks, fill-hole loops) lives on the active
+ * Tool, never on the editor itself.
  *
- * Replaces the old SceneObject3D class and brings the "scene.object3d"
- * field to zero — the Scene entity is now pure children + ops.
+ * Implements SurfacingContext so entities can reference `this` as their
+ * `ctx` without importing the full editor class.
  */
 export class SurfacingEditor {
 
-  readonly scene: Scene;
-  readonly surfCtx: SurfacingContext;
-  readonly ctx: any;                  // application ctx (viewer, services, …)
+  scene: Scene | null = null;
+  readonly workingGroup: Group;
+  readonly sceneSetup: any;
+  readonly viewFlags$: any; // StateStream<SurfacingViewFlags>
+  readonly ctx: any;
   marks: any[] = [];
   _disposers: (() => void)[] = [];
 
-  /** `selection` is the primary state — direct reference, never an index. */
-  selection: NurbsSurface | null = null;
-  selectedEdgeCurve: BoundingCurve | null = null;
+  // Tool stack — DefaultTool is always at index 0.
+  private _tools: Tool[] = [];
 
-  // Many properties (gizmo overlay, modal-mode state, dialog refs, etc.)
-  // are added dynamically — keep the index signature so TypeScript stays
-  // out of the way.
+  // Dynamic properties (gizmo, dialog refs, overlay groups)
   [key: string]: any;
 
-  constructor(scene: Scene, ctx: any) {
-    this.ctx = ctx;
-    this.scene = scene;
-    this.surfCtx = scene.ctx;
+  get currentTool(): Tool { return this._tools[this._tools.length - 1]; }
 
-    // `overlaysGroup` hosts everything the editor draws directly into
-    // the Three.js scene — wireframe / edges / boundaries / hover
-    // outline / mode preview groups. It's a child of the shared
-    // `ctx.workingGroup` so the editor's visual state disappears cleanly
-    // on dispose.
+  constructor(workingGroup: Group, sceneSetup: any, viewFlags$: any, ctx: any) {
+    this.ctx = ctx;
+    this.workingGroup = workingGroup;
+    this.sceneSetup = sceneSetup;
+    this.viewFlags$ = viewFlags$;
+
     this.overlaysGroup = new Group();
     setAttribute(this.overlaysGroup, SURFACING_SCENE, this);
-    this.surfCtx.workingGroup.add(this.overlaysGroup);
-    this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
+    this.workingGroup.add(this.overlaysGroup);
+    this.surfaceMeshes = [];
+    this.raycast = new RaycastService(this);
 
-    // Entity-level selection + highlight tracking.
-    this._highlighted = null;
-    this._selectedVertex = null;
-
-    // Install the editor adapter so entity select/deselect can route to
-    // dialog/gizmo side effects.
-    this._installEditorAdapter();
-
-    // View flags are self-applied: every NurbsSurface / BoundingCurve
-    // subscribes to `ctx.viewFlags$` at construction and updates itself.
-    // The editor no longer fans out faces/mesh/edges/boundaries toggles.
-
-    // Gizmo — attached imperatively by the editor adapter.
     this._selectionGizmo = null;
-    this.setupGizmo();
 
-    // Hook the scene-level highlight service on the overlays group — it
-    // receives the forwarded onMouseEnter / onMouseLeave from whichever
-    // mesh the raycaster hits inside its subtree.
-    this.overlaysGroup.onMouseEnter = () => ctx.highlightService.highlight(this.scene.id);
-    this.overlaysGroup.onMouseLeave = () => ctx.highlightService.unHighlight(this.scene.id);
-
-    // Single click pick: listen on DOM, raycast against solidMesh only
+    // DOM event listeners — thin dispatch to currentTool.
     this._clickStartX = 0;
     this._clickStartY = 0;
-    this._mouseDown = false;
     const dom = ctx.viewer.sceneSetup.renderer.domElement;
     this._onMouseDown = (e) => {
       this._clickStartX = e.offsetX;
       this._clickStartY = e.offsetY;
-      this._mouseDown = true;
+      this.currentTool.onMouseDown(e);
     };
     this._onMouseUp = (e) => {
-      this._mouseDown = false;
       const dx = Math.abs(e.offsetX - this._clickStartX);
       const dy = Math.abs(e.offsetY - this._clickStartY);
       if (dx < 3 && dy < 3 && e.button === 0) {
-        if (this._loopInsertMode) {
-          this.loopInsertExecute(e);
-        } else if (this._bridgeMode) {
-          bridgePickEdge(this, e);
-        } else if (this._fillHoleMode) {
-          fillHoleExecute(this);
-        } else {
-          this.pickPatch(e);
-        }
+        this.currentTool.onMouseUp(e);
       }
     };
     this._onMouseMove = (e) => {
-      if (this._loopInsertMode) {
-        this.loopInsertPreview(e);
-        return;
-      }
-      if (this._fillHoleMode) {
-        fillHolePreview(this, e);
-        return;
-      }
-      if (this._bridgeMode) return;
-      // Don't evaluate hover while any mouse button is held — trackball
-      // orbit / pan / gizmo drag all fire mousemove rapidly, and
-      // highlight flipping would flicker (and waste raycasts).
-      if (this._mouseDown) return;
-      const ss = this.ctx.viewer.sceneSetup;
-      const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
-      const hit = this._raycastSurface(raycaster);
-      this.setHover(hit);
+      this.currentTool.onMouseMove(e);
     };
     dom.addEventListener('mousedown', this._onMouseDown);
     dom.addEventListener('mouseup', this._onMouseUp);
     dom.addEventListener('mousemove', this._onMouseMove);
 
-    // Keyboard: when a patch is selected, press U/V to split along that direction at t=0.5
     this._onKeyDown = (e) => {
-      if (e.key === 'Escape' && this._loopInsertMode) {
-        this.toggleLoopInsertMode();
-        return;
-      }
-      if (this._bridgeMode) {
-        if (e.key === 'Escape') { toggleBridgeMode(this); return; }
-        if (e.key === 'Tab') { e.preventDefault(); bridgeFlip(this); return; }
-        if (e.key === 'g' || e.key === 'G') { this.toggleG1Continuity(); return; }
-        if (e.key === 'Enter' && this._bridgeEdge1 && this._bridgeEdge2) { bridgeExecute(this); return; }
-        return;
-      }
-      if (this._fillHoleMode) {
-        if (e.key === 'Escape') { toggleFillHoleMode(this); return; }
-        if (e.key === 'g' || e.key === 'G') { this.toggleG1Continuity(); return; }
-        return;
-      }
-      if (!this.selection) return;
-      const patchIdx = this.scene.surfaces.indexOf(this.selection);
-      if (e.key === 'u' || e.key === 'U') {
-        this.scene.splitIsoline(patchIdx, 'u', 0.5);
-        this.selectPatch(null);
-        this.rebuildAll();
-        this.persistCageState();
-      } else if (e.key === 'v' || e.key === 'V') {
-        this.scene.splitIsoline(patchIdx, 'v', 0.5);
-        this.selectPatch(null);
-        this.rebuildAll();
-        this.persistCageState();
-      } else if (e.key === 'a' || e.key === 'A') {
-        this.showArcDialog();
-      }
+      this.currentTool.onKeyDown(e);
     };
     document.addEventListener('keydown', this._onKeyDown);
 
-    // Loop insert mode
-    this._loopInsertMode = false;
-    this._loopPreviewGroup = SceneGraph.createGroup();
-    this._loopPreviewGroup.visible = false;
-    this.overlaysGroup.add(this._loopPreviewGroup);
-
-    this._onLoopToggle = () => this.toggleLoopInsertMode();
+    // Toolbar toggle events — push/pop tools
+    this._onLoopToggle = () => {
+      const {LoopInsertTool} = require('./ops/split/split.tool');
+      if (this.currentTool instanceof LoopInsertTool) {
+        this.popTool();
+      } else {
+        this.pushTool(new LoopInsertTool());
+      }
+    };
     document.addEventListener('patch-insert-loop-toggle', this._onLoopToggle);
 
-    // Bridge surface mode — state fields live on the editor; behavior lives
-    // in ops/bridge/bridge.ui.ts (same pattern as fillHole.ui.ts).
-    this._bridgeMode = false;
-    this._bridgeEdge1 = null; // {patchIdx, side}
-    this._bridgeEdge2 = null;
-    this._bridgeFlipped = false;
-    this._bridgeHighlighted = [] as BoundingCurve[];
-    this._bridgePreviewGroup = SceneGraph.createGroup();
-    this._bridgePreviewGroup.visible = false;
-    this.overlaysGroup.add(this._bridgePreviewGroup);
-
-    this._onBridgeToggle = () => toggleBridgeMode(this);
+    this._onBridgeToggle = () => {
+      // Lazy-import to avoid circular deps at module load time.
+      const {BridgeTool} = require('./ops/bridge/bridge.tool');
+      if (this.currentTool instanceof BridgeTool) {
+        this.popTool();
+      } else {
+        this.pushTool(new BridgeTool());
+      }
+    };
     document.addEventListener('patch-bridge-toggle', this._onBridgeToggle);
 
-    // Fill hole mode — state fields live on the editor; behavior lives
-    // in ops/fillHole/fillHole.ui.ts (same pattern as bridge).
-    this._fillHoleMode = false;
-    this._fillHoleLoop = null;
-    this._fillHoleHighlighted = [] as BoundingCurve[];
-
-    this._onFillHoleToggle = () => toggleFillHoleMode(this);
+    this._onFillHoleToggle = () => {
+      const {FillHoleTool} = require('./ops/fillHole/fillHole.tool');
+      if (this.currentTool instanceof FillHoleTool) {
+        this.popTool();
+      } else {
+        this.pushTool(new FillHoleTool());
+      }
+    };
     document.addEventListener('patch-fill-hole-toggle', this._onFillHoleToggle);
 
-    // G1 continuity toggle for bridge/fill modes
-    this._g1Continuity = false;
-
-    // Listen for constraint deletions from the explorer panel
     this._onConstraintDeleted = () => {
-      ;
       this.rebuildAll();
       this.persistCageState();
-      this.ctx.viewer.requestRender();
+      this.requestRender();
     };
     document.addEventListener('patch-cage-constraint-deleted', this._onConstraintDeleted);
 
-    // Every entity subscribes to surfacingViewFlags$ at construction, so
-    // the editor doesn't need to nudge them on flag changes.
     this._disposers.push(surfacingViewFlags$.attach(() => {
       ctx.viewer.requestRender();
     }));
+
+    // Push the default tool as the bottom of the stack.
+    this.pushTool(new DefaultTool());
+  }
+
+  requestRender(): void {
+    this.ctx.viewer.requestRender();
+  }
+
+  /**
+   * Attach a scene to this editor. Called after deserialization or when
+   * a primitive is first added. Sets up the gizmo and refreshes entity
+   * refs. The editor can exist without a scene (empty workspace).
+   */
+  setScene(scene: Scene): void {
+    this.scene = scene;
+    this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
+    // Gizmo needs the scene for moveVertex on drag.
+    if (!this._selectionGizmo) this.setupGizmo();
+    else this._selectionGizmo.setScene(scene);
+    // Highlight service hook for the explorer panel.
+    this.overlaysGroup.onMouseEnter = () => this.ctx.highlightService?.highlight(scene.id);
+    this.overlaysGroup.onMouseLeave = () => this.ctx.highlightService?.unHighlight(scene.id);
+  }
+
+  // ---- Tool stack ----
+
+  pushTool(tool: Tool): void {
+    if (this._tools.length > 0) this.currentTool.cleanup();
+    tool.init(this);
+    this._tools.push(tool);
+  }
+
+  popTool(): void {
+    if (this._tools.length <= 1) throw new Error('Cannot pop the default tool');
+    this.currentTool.cleanup();
+    this._tools.pop();
+    this.currentTool.init(this);
+  }
+
+  // ---- Gizmo ----
+
+  attachGizmo(vertex: Vertex): void {
+    this._selectionGizmo?.attach(vertex);
+  }
+
+  detachGizmo(): void {
+    this._selectionGizmo?.detach();
   }
 
   // View-like interface for highlight system
@@ -242,139 +190,20 @@ export class SurfacingEditor {
     this.updateVisuals();
   }
 
-  // ---- Patch picking ----
-
-  pickPatch(e) {
-    const ss = this.ctx.viewer.sceneSetup;
-    const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
-
-    // 1. CP handles — only meaningful while a surface is selected.
-    if (this.selection) {
-      const handleHits: any[] = [];
-      const workingGroup = this.surfCtx.workingGroup;
-      workingGroup.traverse((child: any) => {
-        if (child.isMesh && child.visible) child.raycast(raycaster, handleHits);
-      });
-      const allowed = new Set<Vertex>();
-      for (const row of this.selection.grid) for (const cp of row) allowed.add(cp);
-      let bestVertex: Vertex | null = null;
-      let bestDist = Infinity;
-      for (const h of handleHits) {
-        let node: any = h.object;
-        while (node && !(node.userData && node.userData.entity instanceof Vertex)) node = node.parent;
-        if (!node) continue;
-        const entity: Vertex = node.userData.entity;
-        if (!allowed.has(entity)) continue;
-        if (h.distance < bestDist) {
-          bestDist = h.distance;
-          bestVertex = entity;
-        }
-      }
-      if (bestVertex && bestVertex.isSelectable()) {
-        if (this._selectedVertex && this._selectedVertex !== bestVertex) {
-          this._selectedVertex.deselect();
-        }
-        bestVertex.select();
-        this.ctx.viewer.requestRender();
-        return;
-      }
-    }
-
-    // 2. BoundingCurve overlays on the selected surface — click = edge select.
-    if (this.selection) {
-      const patch = this.selection;
-      const edgeHits: any[] = [];
-      for (const cv of [
-        patch.boundingCurves.bottom, patch.boundingCurves.right,
-        patch.boundingCurves.top,    patch.boundingCurves.left,
-      ]) {
-        const view: any = cv?.object3d;
-        if (!view || !view.visible) continue;
-        view.traverse((child: any) => {
-          if (child.isLine2 || child.isLine) child.raycast?.(raycaster, edgeHits);
-        });
-      }
-      if (edgeHits.length > 0) {
-        edgeHits.sort((a, b) => a.distance - b.distance);
-        let node = edgeHits[0].object;
-        while (node && !(node.userData?.entity)) node = node.parent;
-        const curve: BoundingCurve | undefined =
-          node?.userData?.entity && (node.userData.entity as any).cp
-            ? (node.userData.entity as BoundingCurve)
-            : undefined;
-        if (curve) {
-          patch.selectBoundingCurve(curve);
-          this.ctx.viewer.requestRender();
-          return;
-        }
-      }
-    }
-
-    // 3. Per-surface mesh raycast for patch selection.
-    const hit = this._raycastSurface(raycaster);
-    this.selectPatch(hit);
-  }
-
-  /** Raycast against every NurbsSurface's inner mesh; returns the hit entity or null. */
-  _raycastSurface(raycaster): NurbsSurface | null {
-    let best: NurbsSurface | null = null;
-    let bestDist = Infinity;
-    const surfaces = this.scene.surfaces;
-    for (let i = 0; i < surfaces.length; i++) {
-      const view: any = surfaces[i].object3d;
-      if (!view || !view.visible || !view.mesh) continue;
-      const hits: any[] = [];
-      view.mesh.raycast(raycaster, hits);
-      for (const h of hits) {
-        if (h.distance < bestDist) {
-          bestDist = h.distance;
-          best = surfaces[i];
-        }
-      }
-    }
-    return best;
-  }
-
-  /**
-   * Editor-side "hover tracker". Called from mousemove with the surface
-   * currently under the cursor (or null). Delegates the visual state
-   * change to the entity's `highlight()` / `unhighlight()` methods.
-   */
-  setHover(patch: NurbsSurface | null) {
-    if (patch === this._highlighted) return;
-    this._highlighted?.unhighlight();
-    this._highlighted = patch;
-    this._highlighted?.highlight();
-    this.ctx.viewer.requestRender();
-  }
-
-  selectPatch(patch: NurbsSurface | null) {
-    if (patch === this.selection) return;
-
-    // If the new selection target is the currently-highlighted surface,
-    // clear its highlight first so `select()` starts from base state.
-    if (patch && this._highlighted === patch) {
-      this._highlighted.unhighlight();
-      this._highlighted = null;
-    }
-
-    // Tear down the previous selection via its own entity method.
-    if (this.selection) {
-      this.selection.deselect();
-    }
-
-    this.selection = patch;
-    if (patch) patch.select();
-
-    this.ctx.viewer.requestRender();
-  }
-
-  /** Backward-compat getter for callers still thinking in indices. */
+  /** Backward-compat getter that reads from the DefaultTool's state. */
   get selectedPatchIdx(): number {
-    return this.selection ? this.scene.surfaces.indexOf(this.selection) : -1;
+    const dt = this._tools[0] as any;
+    const sel = dt?.selectedSurface;
+    return sel ? this.scene.surfaces.indexOf(sel) : -1;
   }
 
-  // ---- Handle selection + gizmo ----
+  /** Current selection — read from the DefaultTool at the bottom of the stack. */
+  get selection(): NurbsSurface | null {
+    const dt = this._tools[0] as any;
+    return dt?.selectedSurface ?? null;
+  }
+
+  // ---- Gizmo setup ----
 
   setupGizmo() {
     const ss = this.ctx.viewer.sceneSetup;
@@ -398,77 +227,6 @@ export class SurfacingEditor {
     });
     ss.scene.add(this._selectionGizmo.gizmo);
     ss.scene.add(this._selectionGizmo.target);
-  }
-
-  /** Clear the currently-selected vertex (handles the gizmo detach via adapter). */
-  deselectHandle() {
-    if (this._selectedVertex) {
-      this._selectedVertex.deselect();
-    }
-  }
-
-  /**
-   * Populate `ctx.editor` with hooks entities call from their select/
-   * deselect methods. This is where dialogs open and the gizmo attaches.
-   */
-  _installEditorAdapter(): void {
-    const self = this;
-    this.surfCtx.editor = {
-      onSurfaceSelected(surface: NurbsSurface): void {
-        self.showPropsDialog(surface);
-      },
-      onSurfaceDeselected(_surface: NurbsSurface): void {
-        self.closePropsDialog();
-      },
-      onBoundingCurveSelected(surface: NurbsSurface, curve: BoundingCurve): void {
-        self.selectedEdgeCurve = curve;
-        const side = self._findSideOfCurve(surface, curve);
-        if (side >= 0) self.showEdgeDialog(side);
-      },
-      onBoundingCurveDeselected(): void {
-        self.selectedEdgeCurve = null;
-        self.closeEdgeDialog();
-      },
-      onVertexSelected(vertex: Vertex): void {
-        // Edge selection and vertex selection are mutually exclusive.
-        if (self.selection) self.selection.deselectBoundingCurve();
-        // Drop any prior vertex selection.
-        if (self._selectedVertex && self._selectedVertex !== vertex) {
-          self._selectedVertex.deselect();
-        }
-        self._selectedVertex = vertex;
-        self._selectionGizmo?.attach(vertex);
-      },
-      onVertexDeselected(vertex: Vertex): void {
-        if (self._selectedVertex === vertex) {
-          self._selectedVertex = null;
-          self._selectionGizmo?.detach();
-        }
-      },
-    };
-  }
-
-  // ---- Edge selection ----
-
-  /** Select a BoundingCurve on the currently-selected surface. */
-  selectEdge(curve) {
-    this.deselectHandle();
-    if (!this.selection) return;
-    this.selection.selectBoundingCurve(curve);
-    this.ctx.viewer.requestRender();
-  }
-
-  deselectEdge() {
-    if (this.selection) this.selection.deselectBoundingCurve();
-  }
-
-  /** Return which side (0..3) of a patch a BoundingCurve is, or -1. */
-  _findSideOfCurve(patch, curve) {
-    if (patch.boundingCurves.bottom === curve) return 0;
-    if (patch.boundingCurves.right === curve) return 1;
-    if (patch.boundingCurves.top === curve) return 2;
-    if (patch.boundingCurves.left === curve) return 3;
-    return -1;
   }
 
   showEdgeDialog(edgeIdx) {
@@ -657,8 +415,8 @@ export class SurfacingEditor {
   refreshOverlaysForDrag(): void {
     if (!this.scene) return;
 
-    if (this.selection) {
-      const patch = this.selection;
+    const patch = this.selection;
+    if (patch) {
       const cageView: any = patch.cage?.object3d;
       if (cageView && typeof cageView.sync === 'function') cageView.sync();
       // Refresh the 4 bounding curves so their lines track the new geometry.
@@ -674,20 +432,12 @@ export class SurfacingEditor {
   // ---- Rebuild ----
 
   rebuildAll() {
-    // Stash current selection and fully deselect so entity state is clean,
-    // then re-apply through the new entity-level select() path.
-    const prev = this.selection;
-    if (prev) {
-      prev.deselect();
-      this.selection = null;
-    }
-
+    // Cleanup the current tool and re-init it after refreshing refs.
+    // This ensures the tool's state stays consistent with the new
+    // entity graph (e.g. after a split or subdivide).
+    this.currentTool.cleanup();
     this._refreshEntityRefs();
-
-    if (prev && this.scene.surfaces.includes(prev)) {
-      this.selectPatch(prev);
-    }
-
+    this.currentTool.init(this);
     this.ctx.viewer.requestRender();
   }
 
@@ -1026,178 +776,6 @@ export class SurfacingEditor {
     }
   }
 
-  // Shared edge-picking utility used by bridge.ui and fillHole.ui —
-  // raycasts the solid meshes, finds the closest patch + closest of its
-  // 4 sides. Not mode-specific, so it stays on the editor.
-  hitSurfaceEdge(e) {
-    // Raycast against the solid mesh, find closest patch, then determine closest boundary edge
-    const ss = this.ctx.viewer.sceneSetup;
-    const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
-    // Per-surface raycast: find closest hit across all surface meshes
-    let bestPi = -1;
-    let bestDist = Infinity;
-    let bestFaceIdx = -1;
-    for (let i = 0; i < this.surfaceMeshes.length; i++) {
-      const m: any = this.surfaceMeshes[i];
-      if (!m || !m.visible || !m.mesh) continue;
-      const hits: any[] = [];
-      m.mesh.raycast(raycaster, hits);
-      for (const h of hits) {
-        if (h.distance < bestDist && h.faceIndex !== undefined) {
-          bestDist = h.distance;
-          bestPi = i;
-          bestFaceIdx = h.faceIndex;
-        }
-      }
-    }
-    if (bestPi < 0) return null;
-
-    // bestFaceIdx is the triangle index within this surface's mesh
-    const res = this.scene.tessResolution;
-    const quadIdx = Math.floor(bestFaceIdx / 2);
-    const col = quadIdx % res;
-    const row = Math.floor(quadIdx / res);
-    const u = (col + 0.5) / res;
-    const v = (row + 0.5) / res;
-    const dists = [v, 1 - u, 1 - v, u]; // bottom, right, top, left
-    let minSide = 0;
-    for (let s = 1; s < 4; s++) {
-      if (dists[s] < dists[minSide]) minSide = s;
-    }
-    return {patchIdx: bestPi, side: minSide};
-  }
-
-  // ---- Loop Insert Mode ----
-
-  toggleLoopInsertMode() {
-    this._loopInsertMode = !this._loopInsertMode;
-    if (this._loopInsertMode) {
-      this.selectPatch(null);
-      this.setHover(null);
-      document.body.style.cursor = 'crosshair';
-    } else {
-      this.clearGroup(this._loopPreviewGroup);
-      this._loopPreviewGroup.visible = false;
-      this._loopPending = null;
-      document.body.style.cursor = '';
-      this.ctx.viewer.requestRender();
-    }
-  }
-
-  hitToUV(e) {
-    const ss = this.ctx.viewer.sceneSetup;
-    const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
-
-    // Per-surface raycast: find closest hit
-    let bestPi = -1;
-    let bestDist = Infinity;
-    let bestHit = null;
-    for (let i = 0; i < this.surfaceMeshes.length; i++) {
-      const m: any = this.surfaceMeshes[i];
-      if (!m || !m.visible || !m.mesh) continue;
-      const hits: any[] = [];
-      m.mesh.raycast(raycaster, hits);
-      for (const h of hits) {
-        if (h.distance < bestDist && h.faceIndex !== undefined) {
-          bestDist = h.distance;
-          bestPi = i;
-          bestHit = h;
-        }
-      }
-    }
-    if (bestPi < 0 || !bestHit) return null;
-
-    const fi = bestHit.faceIndex;
-    const res = this.scene.tessResolution;
-    const meshGeo = (this.surfaceMeshes[bestPi] as any).mesh.geometry;
-    const indices = meshGeo.index.array;
-    const verts = meshGeo.attributes.position.array;
-
-    const localTri = fi;
-    const quadIdx = Math.floor(localTri / 2);
-    const isSecond = localTri % 2 === 1;
-    const col = quadIdx % res;
-    const row = Math.floor(quadIdx / res);
-
-    const hp = bestHit.point;
-    const base = fi * 3;
-    const i0 = indices[base], i1 = indices[base + 1], i2 = indices[base + 2];
-    const p0 = [verts[i0*3], verts[i0*3+1], verts[i0*3+2]];
-    const p1 = [verts[i1*3], verts[i1*3+1], verts[i1*3+2]];
-    const p2 = [verts[i2*3], verts[i2*3+1], verts[i2*3+2]];
-
-    const v0 = [p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]];
-    const v1 = [p2[0]-p0[0], p2[1]-p0[1], p2[2]-p0[2]];
-    const v2 = [hp.x-p0[0], hp.y-p0[1], hp.z-p0[2]];
-    const d00 = v0[0]*v0[0]+v0[1]*v0[1]+v0[2]*v0[2];
-    const d01 = v0[0]*v1[0]+v0[1]*v1[1]+v0[2]*v1[2];
-    const d11 = v1[0]*v1[0]+v1[1]*v1[1]+v1[2]*v1[2];
-    const d20 = v2[0]*v0[0]+v2[1]*v0[1]+v2[2]*v0[2];
-    const d21 = v2[0]*v1[0]+v2[1]*v1[1]+v2[2]*v1[2];
-    const denom = d00*d11 - d01*d01;
-    const bv = (d11*d20 - d01*d21) / denom;
-    const bw = (d00*d21 - d01*d20) / denom;
-
-    let localU, localV;
-    if (!isSecond) {
-      localU = bv + bw;
-      localV = bw;
-    } else {
-      localU = bv;
-      localV = bv + bw;
-    }
-
-    const u = (col + Math.max(0, Math.min(1, localU))) / res;
-    const v = (row + Math.max(0, Math.min(1, localV))) / res;
-
-    return {patchIdx: bestPi, u, v};
-  }
-
-  loopInsertPreview(e) {
-    const hit = this.hitToUV(e);
-    this.clearGroup(this._loopPreviewGroup);
-
-    if (!hit) {
-      this._loopPreviewGroup.visible = false;
-      this._loopPending = null;
-      this.ctx.viewer.requestRender();
-      return;
-    }
-
-    // Auto-pick direction; Shift flips it
-    let dir = Math.abs(hit.u - 0.5) < Math.abs(hit.v - 0.5) ? 'u' : 'v';
-    if (e.shiftKey) dir = dir === 'u' ? 'v' : 'u';
-    const t = Math.max(0.01, Math.min(0.99, dir === 'u' ? hit.u : hit.v));
-
-    this._loopPending = {patchIdx: hit.patchIdx, dir, t};
-    const scene = this.scene;
-    const propagation = scene.computeIsolinePropagation(hit.patchIdx, dir, t);
-    const ss = this.ctx.viewer.sceneSetup;
-
-    for (const seg of propagation) {
-      const pts = scene.tessellateIsoline(seg.idx, seg.dir, seg.t, 24);
-      const line = new ScalableLine(ss, pts, 3, 0xffcc00);
-      line.renderOrder = 4;
-      line.raycast = () => {};
-      this._loopPreviewGroup.add(line);
-    }
-
-    this._loopPreviewGroup.visible = true;
-    this.ctx.viewer.requestRender();
-  }
-
-  loopInsertExecute() {
-    if (!this._loopPending) return;
-    const {patchIdx, dir, t} = this._loopPending;
-    this.scene.splitIsoline(patchIdx, dir, t);
-    ;
-    this._loopPending = null;
-    this.clearGroup(this._loopPreviewGroup);
-    this._loopPreviewGroup.visible = false;
-    this.rebuildAll();
-    this.persistCageState();
-  }
-
   // ---- Persist cage state to originating operation ----
 
   persistCageState() {
@@ -1227,6 +805,11 @@ export class SurfacingEditor {
   }
 
   dispose() {
+    // Clean up the tool stack top-down.
+    while (this._tools.length > 0) {
+      this._tools.pop()!.cleanup();
+    }
+
     const dom = this.ctx.viewer.sceneSetup.renderer.domElement;
     if (this._onMouseDown) dom.removeEventListener('mousedown', this._onMouseDown);
     if (this._onMouseUp) dom.removeEventListener('mouseup', this._onMouseUp);
@@ -1235,10 +818,8 @@ export class SurfacingEditor {
     if (this._onBridgeToggle) document.removeEventListener('patch-bridge-toggle', this._onBridgeToggle);
     if (this._onConstraintDeleted) document.removeEventListener('patch-cage-constraint-deleted', this._onConstraintDeleted);
     if (this._onFillHoleToggle) document.removeEventListener('patch-fill-hole-toggle', this._onFillHoleToggle);
-    if (this._loopInsertMode || this._bridgeMode || this._fillHoleMode) document.body.style.cursor = '';
-    this.clearGroup(this._loopPreviewGroup);
-    this.clearGroup(this._bridgePreviewGroup);
     if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown);
+    document.body.style.cursor = '';
     if (this._selectionGizmo) {
       const s = this.ctx.viewer.sceneSetup.scene;
       s.remove(this._selectionGizmo.gizmo);
@@ -1246,26 +827,18 @@ export class SurfacingEditor {
       this._selectionGizmo.dispose();
       this._selectionGizmo = null;
     }
-    // Clear the editor adapter so lingering entity calls are no-ops.
-    this.surfCtx.editor = null;
     this.closePropsDialog();
     this.closeArcDialog();
     this.closeEdgeDialog();
     this.closeModeGuide();
-    // Cascade-dispose the entity graph. Each NurbsSurface.dispose()
-    // tears down its own view + cage and decrements the refcount on
-    // its shared curves and CPs; those self-dispose when their last
-    // user leaves.
     if (this.scene) {
       for (const surface of [...this.scene.surfaces]) surface.dispose();
     }
-    // Run any registered disposers
     for (const d of this._disposers) {
       try { d(); } catch (e) { /* ignore */ }
     }
     this._disposers = [];
-    // Detach the overlays group from ctx.workingGroup.
-    if (this.overlaysGroup && this.overlaysGroup.parent) {
+    if (this.overlaysGroup?.parent) {
       this.overlaysGroup.parent.remove(this.overlaysGroup);
     }
   }

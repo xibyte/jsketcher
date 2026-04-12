@@ -1,7 +1,7 @@
 import type {Vec3} from 'math/vec';
 import {GeometricEntity, generateEntityId} from '../GeometricEntity';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 
 /**
  * An independent NURBS curve (not bound to a surface).
@@ -10,7 +10,7 @@ export class NurbsCurve extends GeometricEntity {
 
   cp: ControlPoint[];
 
-  constructor(ctx: SurfacingContext, cp: ControlPoint[]) {
+  constructor(ctx: SurfacingEditor, cp: ControlPoint[]) {
     super(ctx, generateEntityId('C'));
     this.cp = cp;
   }

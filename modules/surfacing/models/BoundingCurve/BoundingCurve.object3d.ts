@@ -1,8 +1,8 @@
-import {Group} from 'three';
 import ScalableLine from 'scene/objects/scalableLine';
 import type {BoundingCurve} from './BoundingCurve.entity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import {
+  EntityObject3D,
   tessellateCubicBezier,
   EDGE_WIDTH,
 } from '../../three';
@@ -25,7 +25,7 @@ const FALLBACK_SEGMENTS = 24;
  * surface to tessellate, which populates samples as a side-effect. Only
  * for truly orphan curves do we fall back to a non-rational cubic Bézier.
  */
-export class BoundingCurveObject3D extends Group {
+export class BoundingCurveObject3D extends EntityObject3D {
 
   readonly curve: BoundingCurve;
   private sceneSetup: any;
@@ -108,7 +108,7 @@ export class BoundingCurveObject3D extends Group {
     this.line = null;
   }
 
-  dispose(): void {
+  protected onDispose(): void {
     this.disposeLine();
   }
 }

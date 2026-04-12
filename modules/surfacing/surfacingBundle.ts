@@ -1,10 +1,8 @@
 /**
- * SurfacingBundle: holds a single Scene entity and its SurfacingEditor
- * — the interactive controller that owns selection, modes, dialogs,
- * and scene-level overlays. Entity views (surface meshes, CP handles,
- * cages, bounding curves) are self-owned and live directly under
- * `ctx.workingGroup`; the editor holds its own overlaysGroup there
- * for the pieces it draws directly.
+ * SurfacingBundle: creates a single SurfacingEditor at activation time.
+ * The editor IS the entity context — every entity receives it as `ctx`.
+ * Scene loading/saving lives on the editor; primitives merge into the
+ * editor's current scene.
  */
 import * as SceneGraph from 'scene/sceneGraph';
 import {Group as ThreeGroup} from 'three';
@@ -16,7 +14,6 @@ import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';
 import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction, ViewFlagBoundariesAction} from './actions/viewFlagActions';
 import {surfacingViewFlags$} from './surfacingViewFlags';
-import type {SurfacingContext} from './SurfacingContext';
 
 /** Snapshot of the surfacing state, exposed via a stream so React can subscribe */
 export interface SurfacingSnapshot {
@@ -50,111 +47,79 @@ export interface SurfacingService {
 
 export function activate(ctx: any) {
 
-  let scene: Scene | null = null;
-  let view: SurfacingEditor | null = null;
   const state$ = surfacingState$;
 
-  /**
-   * The single runtime context every surfacing entity receives at
-   * construction. Entities attach their 3D objects to `workingGroup` and
-   * call `requestRender()` after any visual change. Created once, lives
-   * for the lifetime of the bundle.
-   */
+  // The editor is created once at bundle startup. It owns the workingGroup,
+  // sceneSetup, view flags, tool stack, gizmo, and DOM listeners. Entities
+  // receive the editor directly as their `ctx`.
   const workingGroup = new ThreeGroup();
   SceneGraph.addToGroup(ctx.services.cadScene.workGroup, workingGroup);
-  const surfacingCtx: SurfacingContext = {
-    workingGroup,
-    sceneSetup: ctx.viewer.sceneSetup,
-    requestRender: () => ctx.viewer.requestRender(),
-    viewFlags$: surfacingViewFlags$,
-    editor: null,
-  };
+  const editor = new SurfacingEditor(workingGroup, ctx.viewer.sceneSetup, surfacingViewFlags$, ctx);
 
   /** Push a fresh snapshot so subscribers re-render */
   function notifyChange(): void {
-    state$.next({scene, revision: state$.value.revision + 1});
-  }
-
-  function ensureView(): void {
-    if (!scene || view) return;
-    // SurfacingEditor is a plain controller, not a Three.js Group — it
-    // parents its own overlay visuals into `ctx.workingGroup` (already
-    // attached to cadScene.workGroup above). So we just instantiate.
-    view = new SurfacingEditor(scene, ctx);
-    ctx.viewer.requestRender();
-  }
-
-  function tearDownView(): void {
-    if (view) {
-      view.dispose();
-      view = null;
-    }
+    state$.next({scene: editor.scene, revision: state$.value.revision + 1});
   }
 
   /** Merge a freshly-built Scene (from a primitive) into the current scene */
   function mergeScene(newScene: Scene) {
-    if (!scene) {
-      scene = newScene;
-      scene.syncEntityGraph();
-      ensureView();
+    if (!editor.scene) {
+      editor.setScene(newScene);
+      newScene.syncEntityGraph();
     } else {
-      // Move every top-level child of the new scene into the existing one.
-      // SurfaceSets are stored on the surface instances themselves —
-      // moving the entity preserves its surfaceSet reference automatically.
-      // addChild reparents the entity (it leaves newScene's tree).
       for (const child of [...newScene.children]) {
-        scene.addChild(child);
+        editor.scene.addChild(child);
       }
-      scene.syncEntityGraph();
-      if (view) {
-        view.rebuildAll();
-        ctx.viewer.requestRender();
-      }
+      editor.scene.syncEntityGraph();
+      editor.rebuildAll();
+      ctx.viewer.requestRender();
     }
     notifyChange();
     scheduleSurfacingSave();
   }
 
   function addPlane(width = 100, height = 100) {
-    mergeScene(createPatchPlane(surfacingCtx, width, height));
+    mergeScene(createPatchPlane(editor, width, height));
   }
 
   function addBox(sizeX = 100, sizeY = 100, sizeZ = 100) {
-    mergeScene(createPatchBox(surfacingCtx, sizeX, sizeY, sizeZ));
+    mergeScene(createPatchBox(editor, sizeX, sizeY, sizeZ));
   }
 
   function addCylinder(radius = 50, height = 100) {
-    mergeScene(createPatchCylinder(surfacingCtx, radius, height));
+    mergeScene(createPatchCylinder(editor, radius, height));
   }
 
   function save(): any {
-    if (!scene) return null;
+    if (!editor.scene) return null;
     return {
-      scene: scene.serialize(),
-      tessResolution: scene.tessResolution,
+      scene: editor.scene.serialize(),
+      tessResolution: editor.scene.tessResolution,
     };
   }
 
   function load(data: any): void {
     if (!data) return;
-    tearDownView();
-    // Accept legacy 'cage' field too
+    // Tear down any existing scene.
+    if (editor.scene) {
+      for (const surface of [...editor.scene.surfaces]) surface.dispose();
+      editor.scene = null;
+    }
     const sceneData = data.scene || data.cage;
     if (!sceneData) {
-      scene = null;
       notifyChange();
       return;
     }
-    scene = Scene.deserialize(surfacingCtx, sceneData);
+    const scene = Scene.deserialize(editor, sceneData);
     scene.tessResolution = data.tessResolution || 8;
     scene.syncEntityGraph();
-    ensureView();
+    editor.setScene(scene);
     notifyChange();
   }
 
   ctx.surfacingService = {
-    get scene() { return scene; },
-    get view() { return view; },
+    get scene() { return editor.scene; },
+    get view() { return editor; },
     state$,
     addPlane,
     addBox,
@@ -213,8 +178,6 @@ export function activate(ctx: any) {
     console.error('Failed to load surfacing state:', e);
   }
 
-  // Force-flush any pending autosave when the page is about to unload
-  // or becomes hidden. localStorage writes are synchronous, so this is safe.
   function forceFlush(): void {
     if (autosaveTimer) {
       clearTimeout(autosaveTimer);

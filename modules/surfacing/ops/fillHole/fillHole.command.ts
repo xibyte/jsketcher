@@ -3,7 +3,7 @@ import {ControlPoint} from '../../models/ControlPoint/ControlPoint.entity';
 import {LocalBoundingCurveCache} from '../../models/BoundingCurve/buildBoundingCurves';
 import {lerp as vlerp} from 'math/vec';
 import {makeGrid} from '../../patchCageHelpers';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 
 /**
  * Trace a hole boundary starting from a free edge.
@@ -80,7 +80,7 @@ export function traceHole(scene: Scene, startPatchIdx: number, startSide: number
   return null;
 }
 
-function interpRow(ctx: SurfacingContext, bottom: [Vertex, Vertex, Vertex, Vertex], top: Vertex[], t: number): [ControlPoint, ControlPoint] {
+function interpRow(ctx: SurfacingEditor, bottom: [Vertex, Vertex, Vertex, Vertex], top: Vertex[], t: number): [ControlPoint, ControlPoint] {
   const p1 = vlerp(bottom[1].position, top[1].position, t);
   const p2 = vlerp(bottom[2].position, top[2].position, t);
   return [new ControlPoint(ctx, p1[0], p1[1], p1[2]), new ControlPoint(ctx, p2[0], p2[1], p2[2])];

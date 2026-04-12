@@ -5,10 +5,10 @@ import {SurfaceSet} from '../SurfaceSet';
 import {lerp as vlerp} from 'math/vec';
 import {V, Vlerp} from './helpers';
 import {LocalBoundingCurveCache} from '../models/BoundingCurve/buildBoundingCurves';
-import type {SurfacingContext} from '../SurfacingContext';
+import type {SurfacingEditor} from '../SurfacingEditor';
 
 export function createPatchCylinder(
-  ctx: SurfacingContext, radius: number, height: number, segments: number = 4
+  ctx: SurfacingEditor, radius: number, height: number, segments: number = 4
 ): Scene {
   const scene = new Scene(ctx);
   const curveCache = new LocalBoundingCurveCache();

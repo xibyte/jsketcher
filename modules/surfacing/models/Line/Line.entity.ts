@@ -1,5 +1,5 @@
 import {GeometricEntity, generateEntityId} from '../GeometricEntity';
-import type {SurfacingContext} from '../../SurfacingContext';
+import type {SurfacingEditor} from '../../SurfacingEditor';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 
 /**
@@ -10,7 +10,7 @@ export class Line extends GeometricEntity {
   a: ControlPoint;
   b: ControlPoint;
 
-  constructor(ctx: SurfacingContext, a: ControlPoint, b: ControlPoint) {
+  constructor(ctx: SurfacingEditor, a: ControlPoint, b: ControlPoint) {
     super(ctx, generateEntityId('L'));
     this.a = a;
     this.b = b;
