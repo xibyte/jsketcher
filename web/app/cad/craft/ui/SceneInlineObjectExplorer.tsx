@@ -5,7 +5,6 @@ import {GeometricEntity} from "surfacing/models/GeometricEntity";
 import {Group} from "surfacing/models/Group/Group.entity";
 import {NurbsSurface} from "surfacing/models/NurbsSurface/NurbsSurface.entity";
 import {showGroupDialog} from "surfacing/models/Group/Group.dialog";
-import {showNurbsSurfaceDialog} from "surfacing/models/NurbsSurface/NurbsSurface.dialog";
 import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {surfacingState$, SurfacingSnapshot} from "surfacing/surfacingBundle";
 
@@ -78,30 +77,6 @@ export function SceneInlineObjectExplorer() {
     if (entity instanceof Group) {
       openDialogRef.current = showGroupDialog(entity, {
         onRemove: () => removeGroup(entity),
-        onClose: closeOpenDialog,
-      });
-    } else if (entity instanceof NurbsSurface) {
-      const scene = getScene();
-      if (!scene) return;
-      const surfaceIdx = scene.surfaces.indexOf(entity);
-      openDialogRef.current = showNurbsSurfaceDialog(entity, surfaceIdx, {
-        onPushPull: (dist) => {
-          scene.pushPullPatch(surfaceIdx, dist);
-          persistAndRefresh();
-        },
-        onExtrude: (dist) => {
-          scene.extrudePatch(surfaceIdx, dist);
-          persistAndRefresh();
-        },
-        onSubdivide: () => {
-          scene.subdividePatch(surfaceIdx);
-          persistAndRefresh();
-          closeOpenDialog();
-        },
-        onRemove: () => {
-          removeSurface(entity);
-          closeOpenDialog();
-        },
         onClose: closeOpenDialog,
       });
     }
