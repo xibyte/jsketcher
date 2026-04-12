@@ -31,10 +31,11 @@ export class InputAdapter {
     };
 
     this.onMouseUp = (e: MouseEvent) => {
+      this.editor.currentTool.onMouseUp(e);
       const dx = Math.abs(e.offsetX - this.clickStartX);
       const dy = Math.abs(e.offsetY - this.clickStartY);
       if (dx < CLICK_THRESHOLD && dy < CLICK_THRESHOLD && e.button === 0) {
-        this.editor.currentTool.onMouseUp(e);
+        this.editor.currentTool.onClick(e);
       }
     };
 

@@ -1,12 +1,11 @@
-import {Scene, NurbsSurface} from '../models/Scene/Scene.entity';
+import {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
 import {V, Vlerp} from './helpers';
 import {LocalBoundingCurveCache} from '../models/BoundingCurve/buildBoundingCurves';
 import type {SurfacingEditor} from '../SurfacingEditor';
 
-export function createPatchBox(ctx: SurfacingEditor, sizeX: number, sizeY: number, sizeZ: number): Scene {
-  const scene = new Scene(ctx);
+export function createPatchBox(ctx: SurfacingEditor, sizeX: number, sizeY: number, sizeZ: number): void {
   const curveCache = new LocalBoundingCurveCache();
   const makePatch = (grid: ReturnType<typeof makeGrid>) =>
     new NurbsSurface(ctx, grid, curveCache.curvesFor(ctx, grid));
@@ -83,7 +82,7 @@ export function createPatchBox(ctx: SurfacingEditor, sizeX: number, sizeY: numbe
     })),
   ];
 
-  scene.createGroup('Box', surfaces);
+  ctx.scene.createGroup('Box', surfaces);
 
   // Each face of the box is its own SurfaceSet (single-patch sets)
   const faceNames = ['bottom', 'top', 'front', 'back', 'right', 'left'];
@@ -92,5 +91,4 @@ export function createPatchBox(ctx: SurfacingEditor, sizeX: number, sizeY: numbe
     set.add(surfaces[i]);
   }
 
-  return scene;
 }

@@ -44,12 +44,8 @@ export class DefaultTool implements Tool {
     if (!this.gizmo && editor.scene) {
       const ss = editor.sceneSetup;
       this.gizmo = new SelectionGizmoOverlay(ss, editor.scene, {
-        onChange: () => {
-          editor.refreshOverlaysForDrag();
-        },
-        onDragEnd: () => {
-          editor.rebuildAll();
-        },
+        onChange: () => editor.refreshOverlaysForDrag(),
+        onDragEnd: () => editor.rebuildAll(),
       });
       ss.scene.add(this.gizmo.gizmo);
       ss.scene.add(this.gizmo.target);
@@ -66,8 +62,11 @@ export class DefaultTool implements Tool {
     this.mouseDown = true;
   }
 
-  onMouseUp(e: MouseEvent): void {
+  onMouseUp(_e: MouseEvent): void {
     this.mouseDown = false;
+  }
+
+  onClick(e: MouseEvent): void {
     this.handleClick(e);
   }
 
