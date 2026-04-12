@@ -11,7 +11,6 @@ export function createEdgeMirrorButton(view: any, panel: HTMLElement, edgeIdx: n
     mirrorBtn.addEventListener('click', () => {
       mirrorAcrossEdge(scene, view.selectedPatchIdx, edgeIdx);
       view.rebuildAll();
-      view.persistCageState();
       view.showEdgeDialog(edgeIdx);
     });
   }

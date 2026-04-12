@@ -1,4 +1,5 @@
 import {BiShapePolygon} from "react-icons/bi";
+import {BridgeTool} from "surfacing/ops/bridge/bridge.tool";
 
 export const PatchBridgeAction = {
   id: 'PATCH_BRIDGE',
@@ -7,7 +8,7 @@ export const PatchBridgeAction = {
     info: 'Create a surface between two patch edges',
     icon: BiShapePolygon,
   },
-  invoke: () => {
-    document.dispatchEvent(new CustomEvent('patch-bridge-toggle'));
+  invoke: (ctx: any) => {
+    ctx.surfacingService?.view?.pushTool(new BridgeTool());
   },
 };

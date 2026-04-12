@@ -5,6 +5,7 @@ import {bridgeSurface} from './bridge.command';
 import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
+import {createModeGuideState, showModeGuide, closeModeGuide, toggleG1, type ModeGuideState} from '../../ui/modeGuide';
 
 const EDGE1_COLOR = 0x44ee44;
 const EDGE2_COLOR = 0xee8800;
@@ -15,17 +16,22 @@ export class BridgeTool implements Tool {
   private _edge1: {patchIdx: number, side: number} | null = null;
   private _edge2: {patchIdx: number, side: number} | null = null;
   private _flipped = false;
-  private _g1 = false;
   private _previewGroup: any = null;
   private _markedCurves: BoundingCurve[] = [];
+  private _guide: ModeGuideState = createModeGuideState();
 
   init(editor: SurfacingEditor): void {
     this.editor = editor;
     this._previewGroup = SceneGraph.createGroup();
     this._previewGroup.visible = false;
-    editor.overlaysGroup.add(this._previewGroup);
+    editor.workingGroup.add(this._previewGroup);
     document.body.style.cursor = 'crosshair';
-    editor.showModeGuide('bridge');
+    showModeGuide(this._guide, {
+      title: 'Bridge Surface',
+      hint: 'Click two edges · Tab=flip · G=G1 · Esc=cancel',
+      onG1Toggle: () => toggleG1(this._guide),
+      onFlip: () => this._flip(),
+    });
   }
 
   onMouseDown(_e: MouseEvent): void {}
@@ -65,16 +71,11 @@ export class BridgeTool implements Tool {
     }
     if (e.key === 'Tab') {
       e.preventDefault();
-      if (this._edge1 && this._edge2) {
-        this._flipped = !this._flipped;
-        this._updatePreview();
-        this.editor.requestRender();
-      }
+      this._flip();
       return;
     }
     if (e.key === 'g' || e.key === 'G') {
-      this._g1 = !this._g1;
-      this.editor.updateModeGuide();
+      toggleG1(this._guide);
       return;
     }
     if (e.key === 'Enter' && this._edge1 && this._edge2) {
@@ -90,10 +91,17 @@ export class BridgeTool implements Tool {
       this._previewGroup = null;
     }
     document.body.style.cursor = '';
-    this.editor.closeModeGuide();
+    closeModeGuide(this._guide);
     this._edge1 = null;
     this._edge2 = null;
     this._flipped = false;
+  }
+
+  private _flip(): void {
+    if (!this._edge1 || !this._edge2) return;
+    this._flipped = !this._flipped;
+    this._updatePreview();
+    this.editor.requestRender();
   }
 
   private _execute(): void {
@@ -103,11 +111,10 @@ export class BridgeTool implements Tool {
     const e2 = scene.surfaces[this._edge2.patchIdx].getEdgeVertices(this._edge2.side);
     bridgeSurface(scene, e1, e2, {
       flipped: this._flipped,
-      g1: this._g1,
+      g1: this._guide.g1,
       sourcePatchIdx: this._edge1.patchIdx,
     });
     this.editor.rebuildAll();
-    this.editor.persistCageState();
     this._resetState();
     this.editor.requestRender();
   }

@@ -11,7 +11,6 @@ export function createEdgeContinuityButtons(view: any, panel: HTMLElement, edgeI
     g1Btn.addEventListener('click', () => {
       applyG1(scene, view.selectedPatchIdx, edgeIdx);
       view.rebuildAll();
-      view.persistCageState();
       view.showEdgeDialog(edgeIdx);
     });
   }
@@ -20,7 +19,6 @@ export function createEdgeContinuityButtons(view: any, panel: HTMLElement, edgeI
     g2Btn.addEventListener('click', () => {
       applyG2(scene, view.selectedPatchIdx, edgeIdx);
       view.rebuildAll();
-      view.persistCageState();
       view.showEdgeDialog(edgeIdx);
     });
   }

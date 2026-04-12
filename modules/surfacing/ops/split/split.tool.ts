@@ -13,7 +13,7 @@ export class LoopInsertTool implements Tool {
     this.editor = editor;
     this._previewGroup = SceneGraph.createGroup();
     this._previewGroup.visible = false;
-    editor.overlaysGroup.add(this._previewGroup);
+    editor.workingGroup.add(this._previewGroup);
     document.body.style.cursor = 'crosshair';
   }
 
@@ -27,7 +27,6 @@ export class LoopInsertTool implements Tool {
     this.editor.clearGroup(this._previewGroup);
     this._previewGroup.visible = false;
     this.editor.rebuildAll();
-    this.editor.persistCageState();
   }
 
   onMouseMove(e: MouseEvent): void {

@@ -9,7 +9,6 @@ export function createPushPullButton(view: any, panel: HTMLElement, patchIdx: nu
     if (isNaN(dist) || dist === 0) return;
     pushPullPatch(view.scene, patchIdx, dist);
     view.rebuildAll();
-    view.persistCageState();
     view.showPropsDialog(patchIdx);
   });
 }

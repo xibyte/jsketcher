@@ -3,6 +3,7 @@ import {applyG1AllSides} from '../continuity/continuity.command';
 import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
+import {createModeGuideState, showModeGuide, closeModeGuide, toggleG1, type ModeGuideState} from '../../ui/modeGuide';
 
 const LOOP_COLORS = [0x44ee44, 0xee8800, 0x4488ee, 0xee4444];
 
@@ -11,12 +12,16 @@ export class FillHoleTool implements Tool {
   private editor!: SurfacingEditor;
   private _loop: any[] | null = null;
   private _markedCurves: BoundingCurve[] = [];
-  private _g1 = false;
+  private _guide: ModeGuideState = createModeGuideState();
 
   init(editor: SurfacingEditor): void {
     this.editor = editor;
     document.body.style.cursor = 'crosshair';
-    editor.showModeGuide('fill');
+    showModeGuide(this._guide, {
+      title: 'Fill Hole',
+      hint: 'Hover edge to preview · Click=fill · G=G1 · Esc=cancel',
+      onG1Toggle: () => toggleG1(this._guide),
+    });
   }
 
   onMouseDown(_e: MouseEvent): void {}
@@ -25,11 +30,10 @@ export class FillHoleTool implements Tool {
     if (!this._loop) return;
     const scene = this.editor.scene!;
     if (fillHole(scene, this._loop)) {
-      if (this._g1) {
+      if (this._guide.g1) {
         applyG1AllSides(scene, scene.surfaces.length - 1);
       }
       this.editor.rebuildAll();
-      this.editor.persistCageState();
     }
     this._clearMarks();
     this._loop = null;
@@ -76,8 +80,7 @@ export class FillHoleTool implements Tool {
       return;
     }
     if (e.key === 'g' || e.key === 'G') {
-      this._g1 = !this._g1;
-      this.editor.updateModeGuide();
+      toggleG1(this._guide);
     }
   }
 
@@ -85,7 +88,7 @@ export class FillHoleTool implements Tool {
     this._clearMarks();
     this._loop = null;
     document.body.style.cursor = '';
-    this.editor.closeModeGuide();
+    closeModeGuide(this._guide);
   }
 
   private _clearMarks(): void {
