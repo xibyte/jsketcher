@@ -291,15 +291,17 @@ export class Scene extends GeometricEntity {
         const src = surfaceById.get(md.sourceId);
         const mir = surfaceById.get(md.mirrorId);
         if (!src || !mir) continue;
+        const cpPairs = md.cpPairs.map(pair => ({
+          source: verts[pair.sourceVertexIdx],
+          mirror: verts[pair.mirrorVertexIdx],
+        }));
+        for (const pair of cpPairs) pair.mirror.setMirrorTarget(true);
         scene.mirrorConstraints.push({
           source: src,
           mirror: mir,
           planePoint: [...md.planePoint] as Vec3,
           planeNormal: [...md.planeNormal] as Vec3,
-          cpPairs: md.cpPairs.map(pair => ({
-            source: verts[pair.sourceVertexIdx],
-            mirror: verts[pair.mirrorVertexIdx],
-          })),
+          cpPairs,
         });
       }
     }

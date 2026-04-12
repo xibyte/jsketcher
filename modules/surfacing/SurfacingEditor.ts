@@ -11,7 +11,6 @@ import type {Tool} from './tool';
 import {DefaultTool} from './tools/defaultTool';
 import {RaycastService} from './RaycastService';
 import {InputAdapter} from './InputAdapter';
-import {isMirrorTarget} from './ops/mirror/mirror.command';
 
 /**
  * SurfacingEditor — tool host and service layer for one Scene.
@@ -33,7 +32,6 @@ export class SurfacingEditor {
   readonly ctx: any;
   readonly raycast!: RaycastService;
   resolution: number = 8;
-  surfaceMeshes: any[] = [];
 
   /** Per-prefix ID counters. Serialized/deserialized with the scene. */
   private idCounters: Record<string, number> = {};
@@ -93,7 +91,6 @@ export class SurfacingEditor {
   loadScene(scene: Scene): void {
     for (const surface of [...this.scene.surfaces]) surface.dispose();
     this.scene = scene;
-    this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
     this.currentTool.init(this);
   }
 
@@ -122,26 +119,6 @@ export class SurfacingEditor {
   get selection(): NurbsSurface | null {
     const dt = this.tools[0] as any;
     return dt?.selectedSurface ?? null;
-  }
-
-  // ---- Entity view bookkeeping ----------------------------------------
-
-  /**
-   * After a structural op (split / subdivide / fill …) the scene's
-   * surface list may have changed. Refresh external references
-   * (surfaceMeshes index, click handlers) and propagate mirror-target
-   * colouring; no actual view construction happens here anymore —
-   * entity constructors did that already.
-   */
-  refreshEntityRefs() {
-    const scene = this.scene;
-    if (!scene) return;
-    this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
-    for (const surface of scene.surfaces) {
-      for (const row of surface.grid) {
-        for (const cp of row) cp.setMirrorTarget(isMirrorTarget(scene, cp));
-      }
-    }
   }
 
   /**
@@ -175,21 +152,10 @@ export class SurfacingEditor {
 
   rebuildAll() {
     this.currentTool.cleanup();
-    this.refreshEntityRefs();
     this.currentTool.init(this);
     this.ctx.surfacingService.scheduleSave();
     this.ctx.surfacingService.notifyChange();
     this.ctx.viewer.requestRender();
-  }
-
-  // ---- Utilities ----
-
-  clearGroup(group) {
-    while (group.children.length > 0) {
-      const c = group.children[0];
-      group.remove(c);
-      c.traverse(ch => { if (ch.geometry) ch.geometry.dispose(); if (ch.material) ch.material.dispose(); });
-    }
   }
 
   dispose() {
