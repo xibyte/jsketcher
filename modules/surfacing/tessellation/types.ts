@@ -26,14 +26,15 @@
  *                      along a shared curve the edge is SINGLE — its
  *                      `endpoints` map holds one entry per adjacent surface,
  *                      each entry giving that surface's own BorderTessPoint
- *                      pair. `tiles[]` holds the tile from each surface, so
- *                      splitting this edge later can propagate across both
- *                      surfaces in one operation.
- *   - Tile             a polygon face of one surface's tessellation. Stores
- *                      only its ordered `edges[]` — corner point lookups
- *                      walk the ring on demand. Polygon-agnostic so a tile
- *                      can be split into smaller polygons by inserting edges
- *                      without a type change.
+ *                      pair. `triangles[]` holds every triangle that
+ *                      references this edge, so splitting the edge later
+ *                      can propagate across both surfaces in one operation.
+ *   - Triangle         a triangular face of one surface's tessellation.
+ *                      Stores its 3 ordered `edges[]`; corner point lookups
+ *                      walk the ring on demand. The triangle shape makes
+ *                      adaptive subdivision trivial — splitting one edge
+ *                      yields two smaller triangles by just re-wiring the
+ *                      incident triangles' edge rings.
  *
  * This file intentionally knows nothing about how a surface actually builds
  * its tessellation — only the data shape. `tessellateCurve` /
@@ -132,19 +133,18 @@ export interface CurveTessellation {
  *
  * For edges along a shared BoundingCurve the map has TWO entries — one per
  * adjacent surface. Each entry provides that surface's own BorderTessPoints
- * at the two curve samples, so when a tile from surface A walks this edge
- * it sees A's BorderTessPoints (with A's uv + normal), and when a tile from
- * surface B walks it sees B's. Positions agree because both surfaces'
- * BorderTessPoints forward xyz to the same CurveTessPoints.
+ * at the two curve samples, so when a triangle from surface A walks this
+ * edge it sees A's BorderTessPoints (with A's uv + normal), and when a
+ * triangle from surface B walks it sees B's. Positions agree because both
+ * surfaces' BorderTessPoints forward xyz to the same CurveTessPoints.
  *
- * `tiles[]` holds every tile that references this edge (up to two in a
- * non-adaptive quad mesh, possibly more once an adaptive split subdivides
- * one side of a boundary). Splitting a shared edge propagates across
- * surfaces automatically because it IS one object.
+ * `triangles[]` holds every triangle that references this edge. Splitting
+ * a shared edge propagates across surfaces automatically because it IS
+ * one object.
  */
 export class TessEdge {
   endpoints: Map<NurbsSurface, readonly [AnyTessPoint, AnyTessPoint]> = new Map();
-  tiles: Tile[] = [];
+  triangles: Triangle[] = [];
 
   /** Convenience constructor for an edge owned by a single surface. */
   static interior(surface: NurbsSurface, a: AnyTessPoint, b: AnyTessPoint): TessEdge {
@@ -155,15 +155,16 @@ export class TessEdge {
 }
 
 /**
- * A polygon face of one surface's tessellation.
+ * A triangular face of one surface's tessellation.
  *
- * Every tile belongs to exactly one surface (its `surface` field) — this is
- * how it resolves per-surface endpoints on edges that happen to be shared
- * with another surface. Corner lookups chain the edge ring so we don't
- * cache points: adaptive split only has to mutate edges to subdivide a
- * tile, and corner walks keep working without extra bookkeeping.
+ * Every triangle belongs to exactly one surface (its `surface` field) —
+ * this is how it resolves per-surface endpoints on edges that happen to
+ * be shared with another surface. Corner lookups chain the edge ring so
+ * we don't cache points: adaptive split only has to mutate edges to
+ * subdivide a triangle, and corner walks keep working without extra
+ * bookkeeping.
  */
-export class Tile {
+export class Triangle {
   surface: NurbsSurface;
   edges: TessEdge[] = [];
 
@@ -172,35 +173,25 @@ export class Tile {
   }
 
   /**
-   * Walk the edge ring and return the ordered corner points in this tile's
-   * CCW traversal direction. Uses this tile's surface to pick the correct
-   * per-surface endpoint view on shared edges.
+   * Walk the 3-edge ring and return the ordered corner points in this
+   * triangle's CCW traversal direction. Uses this triangle's surface to
+   * pick the correct per-surface endpoint view on shared edges.
    */
-  corners(): AnyTessPoint[] {
+  corners(): [AnyTessPoint, AnyTessPoint, AnyTessPoint] {
     const edges = this.edges;
-    if (edges.length === 0) return [];
     const ep = (e: TessEdge): readonly [AnyTessPoint, AnyTessPoint] => {
       const v = e.endpoints.get(this.surface);
-      if (!v) throw new Error(`TessEdge has no endpoints for tile's surface`);
+      if (!v) throw new Error(`TessEdge has no endpoints for triangle's surface`);
       return v;
     };
     const [e0a, e0b] = ep(edges[0]);
-    if (edges.length === 1) return [e0a, e0b];
-
-    // Corner between edges[0] and edges[1] is their shared endpoint.
     const [e1a, e1b] = ep(edges[1]);
-    let shared: AnyTessPoint;
-    if (e1a === e0a || e1a === e0b) shared = e1a;
-    else shared = e1b;
-    let prev: AnyTessPoint = (e0a === shared) ? e0b : e0a;
-
-    const pts: AnyTessPoint[] = [prev];
-    for (const e of edges) {
-      const [a, b] = ep(e);
-      const next = (a === prev) ? b : a;
-      if (next !== pts[0]) pts.push(next);
-      prev = next;
-    }
-    return pts;
+    // Corner between edges[0] and edges[1] is their shared endpoint.
+    const shared = (e1a === e0a || e1a === e0b) ? e1a : e1b;
+    const p0: AnyTessPoint = (e0a === shared) ? e0b : e0a;
+    const p1: AnyTessPoint = shared;
+    const [e2a, e2b] = ep(edges[2]);
+    const p2: AnyTessPoint = (e2a === p1 || e2a === p0) ? e2b : e2a;
+    return [p0, p1, p2];
   }
 }

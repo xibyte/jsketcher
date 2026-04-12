@@ -6,12 +6,15 @@
  *   - BorderTessPoints on each of the 4 sides (length n+1 in the surface's
  *     own edge direction), deduped at corners so each surface corner is a
  *     single BorderTessPoint shared by the two adjacent side arrays.
- *   - n×n quad Tiles, each owning 4 TessEdge references.
- *   - TessEdges: interior edges owned by this surface; edges along a
- *     BoundingCurve looked up (or created) on `curve.tessellation!.edges[segmentIdx]`
- *     so two surfaces that eventually share the same curve will also
- *     share the SAME TessEdge instance — splitting it later propagates
- *     to the tiles of both surfaces in a single operation.
+ *   - 2 × n × n Triangles, each owning 3 TessEdge references. Each quad
+ *     cell is split along its bottom-left → top-right diagonal so every
+ *     face in the graph is a triangle — this keeps adaptive subdivision
+ *     trivial (split one edge → two smaller triangles, no quad re-wiring).
+ *   - TessEdges: interior horizontal / vertical / diagonal edges owned by
+ *     this surface; edges along a BoundingCurve looked up (or created) on
+ *     `curve.tessellation!.edges[segmentIdx]` so two surfaces sharing a
+ *     curve share the SAME TessEdge instance — splitting it later
+ *     propagates to the triangles of both surfaces in one operation.
  *
  * Everything is watertight via shared CurveTessPoints: two surfaces on a
  * shared curve see the SAME xyz array at every boundary sample because
@@ -22,7 +25,7 @@
 import type {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from '../models/BoundingCurve/BoundingCurve.entity';
 import {
-  TessPoint, BorderTessPoint, TessEdge, Tile,
+  TessPoint, BorderTessPoint, TessEdge, Triangle,
   type AnyTessPoint, type CurveTessPoint, type Vec2,
 } from './types';
 
@@ -39,8 +42,8 @@ export interface SurfaceTessellation {
    * are BorderTessPoints, interior entries are TessPoints.
    */
   pointGrid: AnyTessPoint[][];
-  /** n×n quad tiles in row-major order. */
-  tiles: Tile[];
+  /** 2 × n × n triangles (each quad cell split along its diagonal). */
+  triangles: Triangle[];
   /** Every TessEdge this surface contributed to (including cross-surface shared edges). */
   edges: TessEdge[];
 }
@@ -48,7 +51,7 @@ export interface SurfaceTessellation {
 /**
  * Refresh an existing SurfaceTessellation's xyz / normal values in place.
  *
- * Keeps every allocated instance — TessPoints, BorderTessPoints, Tiles,
+ * Keeps every allocated instance — TessPoints, BorderTessPoints, Triangles,
  * TessEdges, curve CurveTessPoints and perSurface BorderTessPoint arrays
  * — so a drag frame mutates numbers instead of reallocating graph nodes.
  * Corner CurveTessPoints auto-track via Vertex.position references; the
@@ -276,22 +279,46 @@ export function tessellateSurface(surface: NurbsSurface, resolution: number): Su
   }
 
   // -----------------------------------------------------------------------
-  // 6. Tiles — one quad per cell in CCW order (bottom, right, top, left).
+  // 6. Triangles — two per quad cell, split along the bottom-left →
+  //    top-right diagonal. The diagonal is a fresh interior TessEdge
+  //    shared by the two triangles of the same cell.
+  //
+  //    For cell (r, c) with corners
+  //        a = pointGrid[r    ][c    ]   (bottom-left)
+  //        b = pointGrid[r    ][c + 1]   (bottom-right)
+  //        d = pointGrid[r + 1][c + 1]   (top-right)
+  //        e = pointGrid[r + 1][c    ]   (top-left)
+  //    the split is along a↔d.
+  //
+  //    Lower-right triangle (a, b, d), CCW edges: a↔b, b↔d, d↔a.
+  //    Upper-left triangle  (a, d, e), CCW edges: a↔d, d↔e, e↔a.
   // -----------------------------------------------------------------------
-  const tiles: Tile[] = [];
+  const triangles: Triangle[] = [];
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
-      const tile = new Tile(surface);
-      tile.edges.push(hEdges[r][c]);         // bottom of cell
-      tile.edges.push(vEdges[r][c + 1]);     // right of cell
-      tile.edges.push(hEdges[r + 1][c]);     // top of cell
-      tile.edges.push(vEdges[r][c]);         // left of cell
-      for (const e of tile.edges) e.tiles.push(tile);
-      tiles.push(tile);
+      const a = pointGrid[r][c];
+      const d = pointGrid[r + 1][c + 1];
+      const diag = new TessEdge();
+      diag.endpoints.set(surface, [a, d] as const);
+      allEdges.push(diag);
+
+      const lower = new Triangle(surface);
+      lower.edges.push(hEdges[r][c]);       // a ↔ b
+      lower.edges.push(vEdges[r][c + 1]);   // b ↔ d
+      lower.edges.push(diag);               // d ↔ a
+      for (const e of lower.edges) e.triangles.push(lower);
+      triangles.push(lower);
+
+      const upper = new Triangle(surface);
+      upper.edges.push(diag);               // a ↔ d
+      upper.edges.push(hEdges[r + 1][c]);   // d ↔ e (undirected)
+      upper.edges.push(vEdges[r][c]);       // e ↔ a
+      for (const e of upper.edges) e.triangles.push(upper);
+      triangles.push(upper);
     }
   }
 
-  return {resolution: n, interior, borders, pointGrid, tiles, edges: allEdges};
+  return {resolution: n, interior, borders, pointGrid, triangles, edges: allEdges};
 }
 
 // =========================================================================
