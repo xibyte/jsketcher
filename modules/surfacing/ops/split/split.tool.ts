@@ -5,6 +5,7 @@ import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
 import {splitIsoline, computeIsolinePropagation, tessellateIsoline} from './split.command';
+import {clearGroup} from '../../three';
 
 export class LoopInsertTool implements Tool {
 
@@ -29,14 +30,14 @@ export class LoopInsertTool implements Tool {
     const {surface, dir, t} = this.pending;
     splitIsoline(this.editor.scene, surface, dir, t);
     this.pending = null;
-    this.editor.clearGroup(this.previewGroup);
+    clearGroup(this.previewGroup);
     this.previewGroup.visible = false;
     this.editor.rebuildAll();
   }
 
   onMouseMove(e: MouseEvent): void {
     const hit = this.editor.raycast.raycastToUV(e);
-    this.editor.clearGroup(this.previewGroup);
+    clearGroup(this.previewGroup);
 
     if (!hit) {
       this.previewGroup.visible = false;
@@ -74,7 +75,7 @@ export class LoopInsertTool implements Tool {
 
   cleanup(): void {
     if (this.previewGroup) {
-      this.editor.clearGroup(this.previewGroup);
+      clearGroup(this.previewGroup);
       this.previewGroup.parent?.remove(this.previewGroup);
       this.previewGroup = null;
     }
