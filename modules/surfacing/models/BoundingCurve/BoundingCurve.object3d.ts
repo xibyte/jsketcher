@@ -3,11 +3,8 @@ import type {BoundingCurve} from './BoundingCurve.entity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import {
   EntityObject3D,
-  tessellateCubicBezier,
   EDGE_WIDTH,
 } from '../../three';
-
-const FALLBACK_SEGMENTS = 24;
 
 /**
  * Dumb Three.js view for a BoundingCurve entity.
@@ -20,10 +17,9 @@ const FALLBACK_SEGMENTS = 24;
  *     on so the line draws over the mesh (used for selection/preview).
  *   - `hide()` — drop the line and hide the Group.
  *
- * Polyline source: `curve.samples` (shared CurveTessPoints produced by
- * `tessellateCurve`). If the curve hasn't been sampled yet we ask a user
- * surface to tessellate, which populates samples as a side-effect. Only
- * for truly orphan curves do we fall back to a non-rational cubic Bézier.
+ * Polyline source: shared CurveTessPoints from `curve.tessellation.samples`,
+ * produced by the NURBS tessellator. If no user has tessellated yet we
+ * kick one to populate them — a curve without users disposes itself.
  */
 export class BoundingCurveObject3D extends EntityObject3D {
 
@@ -85,19 +81,13 @@ export class BoundingCurveObject3D extends EntityObject3D {
 
   private readPolyline(): number[][] {
     const curve = this.curve;
-
-    if (!curve.tessellation && curve.users.size > 0) {
+    if (!curve.tessellation) {
       const anyUser: NurbsSurface | undefined = curve.users.values().next().value;
-      if (anyUser) anyUser.tessellate();
+      anyUser?.tessellate();
     }
-
-    if (curve.tessellation) {
-      return curve.tessellation.samples.map(s => [s.xyz[0], s.xyz[1], s.xyz[2]]);
-    }
-
-    const cps: [number, number, number][] =
-      curve.cp.map(c => [c.position[0], c.position[1], c.position[2]]);
-    return tessellateCubicBezier(cps, FALLBACK_SEGMENTS);
+    return curve.tessellation
+      ? curve.tessellation.samples.map(s => [s.xyz[0], s.xyz[1], s.xyz[2]])
+      : [];
   }
 
   private disposeLine(): void {
