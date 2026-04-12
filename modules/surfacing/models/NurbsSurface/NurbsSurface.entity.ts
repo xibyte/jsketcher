@@ -393,6 +393,50 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   }
 
   /**
+   * Find surfaces sharing a boundary edge with this one.
+   * Matches by shared ControlPoint identity — no tolerances.
+   */
+  findAdjacentSurfaces(): {side: number, other: NurbsSurface, otherSide: number, reversed: boolean}[] {
+    const result: {side: number, other: NurbsSurface, otherSide: number, reversed: boolean}[] = [];
+    // Walk to the tree root, then collect every NurbsSurface descendant.
+    let root: GeometricEntity<any> = this;
+    while (root.parent) root = root.parent;
+    const all: NurbsSurface[] = [];
+    root.traverse(e => { if (e instanceof NurbsSurface) all.push(e); });
+
+    for (let side = 0; side < 4; side++) {
+      const edge = this.getEdgeVertices(side);
+      for (const other of all) {
+        if (other === this) continue;
+        for (let os = 0; os < 4; os++) {
+          const otherEdge = other.getEdgeVertices(os);
+          if (edge[0] === otherEdge[0] && edge[1] === otherEdge[1] &&
+              edge[2] === otherEdge[2] && edge[3] === otherEdge[3]) {
+            result.push({side, other, otherSide: os, reversed: false});
+          }
+          if (edge[0] === otherEdge[3] && edge[1] === otherEdge[2] &&
+              edge[2] === otherEdge[1] && edge[3] === otherEdge[0]) {
+            result.push({side, other, otherSide: os, reversed: true});
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /** Sides of this surface with no adjacent neighbor. */
+  findFreeEdges(): {side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] {
+    const sharedSides = new Set(this.findAdjacentSurfaces().map(a => a.side));
+    const free: {side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] = [];
+    for (let side = 0; side < 4; side++) {
+      if (!sharedSides.has(side)) {
+        free.push({side, verts: this.getEdgeVertices(side)});
+      }
+    }
+    return free;
+  }
+
+  /**
    * Evaluate surface point at (u, v) using Bernstein basis.
    * Always uses the rational formula (which reduces to plain Bézier when
    * all weights are 1, at a tiny fixed cost), so we don't need to cache a

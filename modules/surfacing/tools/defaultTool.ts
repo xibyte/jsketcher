@@ -19,6 +19,13 @@ import type {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from '../models/BoundingCurve/BoundingCurve.entity';
 import {Vertex} from '../models/Vertex/Vertex.entity';
 import {SURFACE_HOVER_COLOR, EDGE_COLORS, CP_HOVER_COLOR, SelectionGizmoOverlay} from '../three';
+import {constrainEdgeToArc, removeArcConstraint} from '../ops/arc/arc.command';
+import {applyG1, applyG2} from '../ops/continuity/continuity.command';
+import {mirrorAcrossEdge} from '../ops/mirror/mirror.command';
+import {splitIsoline} from '../ops/split/split.command';
+import {pushPull} from '../ops/pushPull/pushPull.command';
+import {extrude} from '../ops/extrude/extrude.command';
+import {subdivide} from '../ops/subdivide/subdivide.command';
 
 export interface DefaultToolState {
   selectedSurface: {surface: NurbsSurface} | null;
@@ -117,11 +124,11 @@ export class DefaultTool implements Tool {
     const surface = this.selectedSurface;
 
     if (e.key === 'u' || e.key === 'U') {
-      this.editor.scene.splitIsoline(surface, 'u', 0.5);
+      splitIsoline(this.editor.scene, surface, 'u', 0.5);
       this.deselectSurface();
       this.editor.rebuildAll();
     } else if (e.key === 'v' || e.key === 'V') {
-      this.editor.scene.splitIsoline(surface, 'v', 0.5);
+      splitIsoline(this.editor.scene, surface, 'v', 0.5);
       this.deselectSurface();
       this.editor.rebuildAll();
     } else if (e.key === 'a' || e.key === 'A') {
@@ -378,8 +385,7 @@ export class DefaultTool implements Tool {
     let curveInfo: DefaultToolState['selectedCurve'] = null;
     if (curve && surface && scene) {
       const side = surface.sideOfCurve(curve);
-      const adj = scene.findAdjacentSurfaces(surface);
-      const hasNeighbor = adj.some(a => a.side === side);
+      const hasNeighbor = surface.findAdjacentSurfaces().some(a => a.side === side);
       curveInfo = {curve, side, hasNeighbor};
     }
 
@@ -412,21 +418,21 @@ export class DefaultTool implements Tool {
   pushPull(dist: number): void {
     const s = this.state$.value.selectedSurface;
     if (!s) return;
-    this.editor.scene.pushPull(s.surface, dist);
+    pushPull(this.editor.scene, s.surface, dist);
     this.editor.rebuildAll();
   }
 
   extrude(dist: number): void {
     const s = this.state$.value.selectedSurface;
     if (!s) return;
-    this.editor.scene.extrude(s.surface, dist);
+    extrude(this.editor.scene, s.surface, dist);
     this.editor.rebuildAll();
   }
 
   subdivide(): void {
     const s = this.state$.value.selectedSurface;
     if (!s) return;
-    this.editor.scene.subdivide(s.surface);
+    subdivide(this.editor.scene, s.surface);
     this.deselectSurface();
     this.editor.rebuildAll();
   }
@@ -461,7 +467,7 @@ export class DefaultTool implements Tool {
     scene.arcConstraints = scene.arcConstraints.filter(cc =>
       !(cc.surfaceSide.surface === surface && cc.surfaceSide.side === c.side)
     );
-    scene.constrainEdgeToArc(surface, c.side, radius, 90, planeNormal, 'rational');
+    constrainEdgeToArc(scene, surface, c.side, radius, 90, planeNormal, 'rational');
     this.editor.rebuildAll();
   }
 
@@ -493,7 +499,7 @@ export class DefaultTool implements Tool {
     const c = this.state$.value.selectedCurve;
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
-    this.editor.scene.applyG1(s.surface, c.side);
+    applyG1(s.surface, c.side);
     this.editor.rebuildAll();
   }
 
@@ -501,7 +507,7 @@ export class DefaultTool implements Tool {
     const c = this.state$.value.selectedCurve;
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
-    this.editor.scene.applyG2(s.surface, c.side);
+    applyG2(s.surface, c.side);
     this.editor.rebuildAll();
   }
 
@@ -509,14 +515,14 @@ export class DefaultTool implements Tool {
     const c = this.state$.value.selectedCurve;
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
-    this.editor.scene.mirrorAcrossEdge(s.surface, c.side);
+    mirrorAcrossEdge(this.editor.scene, s.surface, c.side);
     this.editor.rebuildAll();
   }
 
   arcRemoveConstraint(): void {
     const scene = this.editor.scene;
     if (scene.arcConstraints.length > 0) {
-      scene.removeArcConstraint(scene.arcConstraints[scene.arcConstraints.length - 1]);
+      removeArcConstraint(scene, scene.arcConstraints[scene.arcConstraints.length - 1]);
     }
     this.editor.rebuildAll();
     this.closeArcDialog();

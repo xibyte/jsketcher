@@ -1,6 +1,7 @@
 import React, {useState, useCallback, useRef, useEffect} from 'react';
 import {distance as vdist} from 'math/vec';
 import type {DefaultTool, DefaultToolState} from '../tools/defaultTool';
+import {constrainEdgeToArc} from '../ops/arc/arc.command';
 
 export function ArcDialog({tool, state}: {tool: DefaultTool, state: DefaultToolState}) {
   const arc = state.arcDialog;
@@ -39,7 +40,7 @@ export function ArcDialog({tool, state}: {tool: DefaultTool, state: DefaultToolS
       scene.arcConstraints = scene.arcConstraints.filter((c: any) =>
         !(c.surfaceSide && c.surfaceSide.surface === surface && c.surfaceSide.side === side)
       );
-      scene.constrainEdgeToArc(surface, side, radius, angle, planeNormal, mode);
+      constrainEdgeToArc(scene, surface, side, radius, angle, planeNormal, mode);
       (tool as any).editor.rebuildAll();
     });
   }, [side, radius, flip, mode, arc.surface, scene, tool]);

@@ -1,13 +1,12 @@
-import {Scene, NurbsSurface} from '../../models/Scene/Scene.entity';
+import {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
 
 /**
  * Apply G1 (tangent plane) continuity to the surface at the given side.
  * Modifies the first interior row of the surface so its cross-boundary
  * tangent mirrors the adjacent surface's tangent across the shared edge.
  */
-export function applyG1(scene: Scene, surface: NurbsSurface, side: number): boolean {
-  const adj = scene.findAdjacentSurfaces(surface);
-  const match = adj.find(a => a.side === side);
+export function applyG1(surface: NurbsSurface, side: number): boolean {
+  const match = surface.findAdjacentSurfaces().find(a => a.side === side);
   if (!match) return false;
 
   const boundary = surface.getEdgeVertices(side);
@@ -38,10 +37,9 @@ export function applyG1(scene: Scene, surface: NurbsSurface, side: number): bool
 /**
  * Apply G1 continuity to every side of the surface that has an adjacent surface.
  */
-export function applyG1AllSides(scene: Scene, surface: NurbsSurface): void {
-  const adj = scene.findAdjacentSurfaces(surface);
-  for (const a of adj) {
-    applyG1(scene, surface, a.side);
+export function applyG1AllSides(surface: NurbsSurface): void {
+  for (const a of surface.findAdjacentSurfaces()) {
+    applyG1(surface, a.side);
   }
 }
 
@@ -50,12 +48,11 @@ export function applyG1AllSides(scene: Scene, surface: NurbsSurface): void {
  * Modifies first AND second interior rows.
  * G2 requires matching both tangent (G1) and second derivative.
  */
-export function applyG2(scene: Scene, surface: NurbsSurface, side: number): boolean {
+export function applyG2(surface: NurbsSurface, side: number): boolean {
   // First apply G1
-  if (!applyG1(scene, surface, side)) return false;
+  if (!applyG1(surface, side)) return false;
 
-  const adj = scene.findAdjacentSurfaces(surface);
-  const match = adj.find(a => a.side === side)!;
+  const match = surface.findAdjacentSurfaces().find(a => a.side === side)!;
 
   const boundary = surface.getEdgeVertices(side);
   const myRow1 = surface.getInteriorRow(side, 1);

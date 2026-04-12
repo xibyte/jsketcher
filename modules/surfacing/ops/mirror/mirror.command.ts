@@ -75,7 +75,7 @@ function walkBoundary(
   result: {surface: NurbsSurface, side: number}[],
 ): void {
   // Find adjacent surfaces of fromSurface that connect at this corner
-  const adj = scene.findAdjacentSurfaces(fromSurface);
+  const adj = fromSurface.findAdjacentSurfaces();
   for (const a of adj) {
     if (visited.has(a.other)) continue;
 
@@ -179,9 +179,8 @@ function mirrorSingleSurface(
     source.surfaceSet.surfaces.add(mp);
   }
 
-  // Add the mirror surface to the same group as its source.
-  const sourceGroup = scene.findGroupOfSurface(source);
-  (sourceGroup ?? scene).addChild(mp);
+  // Add the mirror surface as a sibling of its source.
+  (source.parent ?? scene).addChild(mp);
 
   scene.mirrorConstraints.push({
     source,

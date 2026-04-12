@@ -31,13 +31,7 @@ export {Group} from '../Group/Group.entity';
 
 // Lazy imports to avoid circular dependencies.
 import * as _arcOps from '../../ops/arc/arc.command';
-import * as _contOps from '../../ops/continuity/continuity.command';
 import * as _mirrorOps from '../../ops/mirror/mirror.command';
-import * as _splitOps from '../../ops/split/split.command';
-import * as _fillOps from '../../ops/fillHole/fillHole.command';
-import * as _pushPullOps from '../../ops/pushPull/pushPull.command';
-import * as _extrudeOps from '../../ops/extrude/extrude.command';
-import * as _subdivideOps from '../../ops/subdivide/subdivide.command';
 
 // =========================================================================
 // Constraint types
@@ -158,101 +152,6 @@ export class Scene extends GeometricEntity {
     _arcOps.enforceArcConstraints(this, v);
     _mirrorOps.enforceMirrorConstraints(this, v);
   }
-
-  // -----------------------------------------------------------------------
-  // Surface management
-  // -----------------------------------------------------------------------
-
-  /**
-   * Add a surface as a top-level child OR inside a specified group.
-   * Sharing of BoundingCurves is the caller's responsibility — surfaces
-   * are constructed with their `curves` already hooked up (fresh for
-   * free edges, reused references for edges shared with a neighbor).
-   */
-  // -----------------------------------------------------------------------
-  // Groups
-  // -----------------------------------------------------------------------
-
-  /** Find the group that contains a given surface, or null. */
-  findGroupOfSurface(surface: NurbsSurface): Group | null {
-    let cur = surface.parent;
-    while (cur && cur !== this) {
-      if (cur instanceof Group) return cur;
-      cur = cur.parent;
-    }
-    return null;
-  }
-
-  // -----------------------------------------------------------------------
-  // Topology queries
-  // -----------------------------------------------------------------------
-
-  /** Find which surfaces share a boundary edge with a given surface. */
-  findAdjacentSurfaces(surface: NurbsSurface): {side: number, other: NurbsSurface, otherSide: number, reversed: boolean}[] {
-    const all = this.surfaces;
-    const result: {side: number, other: NurbsSurface, otherSide: number, reversed: boolean}[] = [];
-    for (let side = 0; side < 4; side++) {
-      const edge = surface.getEdgeVertices(side);
-      for (const other of all) {
-        if (other === surface) continue;
-        for (let os = 0; os < 4; os++) {
-          const otherEdge = other.getEdgeVertices(os);
-          if (edge[0] === otherEdge[0] && edge[1] === otherEdge[1] &&
-              edge[2] === otherEdge[2] && edge[3] === otherEdge[3]) {
-            result.push({side, other, otherSide: os, reversed: false});
-          }
-          if (edge[0] === otherEdge[3] && edge[1] === otherEdge[2] &&
-              edge[2] === otherEdge[1] && edge[3] === otherEdge[0]) {
-            result.push({side, other, otherSide: os, reversed: true});
-          }
-        }
-      }
-    }
-    return result;
-  }
-
-  /** Find all free edges (edges with a surface on only one side). */
-  findFreeEdges(): {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] {
-    const all = this.surfaces;
-    const free: {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] = [];
-    for (const surface of all) {
-      const adj = this.findAdjacentSurfaces(surface);
-      const sharedSides = new Set(adj.map(a => a.side));
-      for (let side = 0; side < 4; side++) {
-        if (!sharedSides.has(side)) {
-          free.push({surface, side, verts: surface.getEdgeVertices(side)});
-        }
-      }
-    }
-    return free;
-  }
-
-  // -----------------------------------------------------------------------
-  // Op delegates (thin wrappers; actual logic lives in surfacing/ops/)
-  // -----------------------------------------------------------------------
-
-  constrainEdgeToArc(surface: NurbsSurface, side: number, radius: number, angle: number, planeNormal: Vec3, mode: ArcMode = 'approximate'): ArcConstraint {
-    return _arcOps.constrainEdgeToArc(this, surface, side, radius, angle, planeNormal, mode);
-  }
-  applyArcConstraint(c: ArcConstraint): void { _arcOps.applyArcConstraint(this, c); }
-  enforceArcConstraints(v: Vertex): void { _arcOps.enforceArcConstraints(this, v); }
-  removeArcConstraint(constraint: ArcConstraint): void { _arcOps.removeArcConstraint(this, constraint); }
-  applyG1(surface: NurbsSurface, side: number): boolean { return _contOps.applyG1(this, surface, side); }
-  applyG1AllSides(surface: NurbsSurface): void { _contOps.applyG1AllSides(this, surface); }
-  applyG2(surface: NurbsSurface, side: number): boolean { return _contOps.applyG2(this, surface, side); }
-  mirrorAcrossEdge(surface: NurbsSurface, side: number): NurbsSurface[] { return _mirrorOps.mirrorAcrossEdge(this, surface, side); }
-  enforceMirrorConstraints(v: Vertex): void { _mirrorOps.enforceMirrorConstraints(this, v); }
-  enforceAllMirrorConstraints(): void { _mirrorOps.enforceAllMirrorConstraints(this); }
-  isMirrorTarget(v: Vertex): boolean { return _mirrorOps.isMirrorTarget(this, v); }
-  removeMirrorConstraint(mc: MirrorConstraint, deleteMirror: boolean = true): void { _mirrorOps.removeMirrorConstraint(this, mc, deleteMirror); }
-  splitIsoline(surface: NurbsSurface, direction: 'u' | 'v', t: number): void { _splitOps.splitIsoline(this, surface, direction, t); }
-  computeIsolinePropagation(surface: NurbsSurface, direction: 'u' | 'v', t: number) { return _splitOps.computeIsolinePropagation(this, surface, direction, t); }
-  tessellateIsoline(surface: NurbsSurface, direction: 'u' | 'v', t: number, segments: number = 24): Vec3[] { return _splitOps.tessellateIsoline(this, surface, direction, t, segments); }
-  traceHole(startSurface: NurbsSurface, startSide: number) { return _fillOps.traceHole(this, startSurface, startSide); }
-  fillHole(loop: {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[]): boolean { return _fillOps.fillHole(this, loop); }
-  pushPull(surface: NurbsSurface, distance: number): void { _pushPullOps.pushPull(this, surface, distance); }
-  extrude(surface: NurbsSurface, distance: number): void { _extrudeOps.extrude(this, surface, distance); }
-  subdivide(surface: NurbsSurface): void { _subdivideOps.subdivide(this, surface); }
 
   // -----------------------------------------------------------------------
   // Entity-graph synchronization (used by the OBJECTS explorer tree)

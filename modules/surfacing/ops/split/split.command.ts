@@ -20,7 +20,7 @@ export function computeIsolinePropagation(scene: Scene, surface: NurbsSurface, d
     result.push(cur);
 
     const cutSides = cur.dir === 'u' ? [0, 2] : [3, 1];
-    const adj = scene.findAdjacentSurfaces(cur.surface);
+    const adj = cur.surface.findAdjacentSurfaces();
     for (const a of adj) {
       if (visited.has(a.other)) continue;
       if (!cutSides.includes(a.side)) continue;

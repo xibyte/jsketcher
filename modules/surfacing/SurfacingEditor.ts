@@ -11,6 +11,7 @@ import type {Tool} from './tool';
 import {DefaultTool} from './tools/defaultTool';
 import {RaycastService} from './RaycastService';
 import {InputAdapter} from './InputAdapter';
+import {isMirrorTarget} from './ops/mirror/mirror.command';
 
 /**
  * SurfacingEditor — tool host and service layer for one Scene.
@@ -138,7 +139,7 @@ export class SurfacingEditor {
     this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
     for (const surface of scene.surfaces) {
       for (const row of surface.grid) {
-        for (const cp of row) cp.setMirrorTarget(scene.isMirrorTarget(cp));
+        for (const cp of row) cp.setMirrorTarget(isMirrorTarget(scene, cp));
       }
     }
   }
