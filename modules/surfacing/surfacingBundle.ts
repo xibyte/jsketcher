@@ -107,6 +107,12 @@ export function activate(ctx: any) {
   if (!ctx.streams) ctx.streams = {};
   ctx.streams.surfacing = {state: state$};
 
+  // Register the React UI component for surfacing tool panels.
+  if (ctx.domService?.contributeComponent) {
+    const {SurfacingUI} = require('./ui/SurfacingUI');
+    ctx.domService.contributeComponent(SurfacingUI);
+  }
+
   if (ctx.actionService) {
     ctx.actionService.registerActions([
       ViewFlagFacesAction,

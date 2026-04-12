@@ -6,7 +6,7 @@ import type SceneSetUp from 'scene/sceneSetup';
 import type {NurbsSurface} from './models/NurbsSurface/NurbsSurface.entity';
 import {Scene} from './models/Scene/Scene.entity';
 import {surfacingViewFlags$, type SurfacingViewFlags} from './surfacingViewFlags';
-import type {StateStream} from 'lstream';
+import {state, type StateStream} from 'lstream';
 import type {Tool} from './tool';
 import {DefaultTool} from './tools/defaultTool';
 import {RaycastService} from './RaycastService';
@@ -33,6 +33,8 @@ export class SurfacingEditor {
   readonly raycast!: RaycastService;
   resolution: number = 8;
   surfaceMeshes: any[] = [];
+  /** Ticks whenever the tool stack changes — UI re-subscribes to the new tool's state$. */
+  readonly toolChanged$: StateStream<number> = state(0);
 
   private disposers: (() => void)[] = [];
   private tools: Tool[] = [];
@@ -77,7 +79,6 @@ export class SurfacingEditor {
   // ---- Tool stack ----
 
   pushTool(tool: Tool): void {
-    // If the same tool type is already active, toggle it off.
     if (this.tools.length > 1 && this.currentTool.constructor === tool.constructor) {
       this.popTool();
       return;
@@ -85,6 +86,7 @@ export class SurfacingEditor {
     if (this.tools.length > 0) this.currentTool.cleanup();
     tool.init(this);
     this.tools.push(tool);
+    this.toolChanged$.next(this.toolChanged$.value + 1);
   }
 
   popTool(): void {
@@ -92,6 +94,7 @@ export class SurfacingEditor {
     this.currentTool.cleanup();
     this.tools.pop();
     this.currentTool.init(this);
+    this.toolChanged$.next(this.toolChanged$.value + 1);
   }
 
   /** Backward-compat getter that reads from the DefaultTool's state. */

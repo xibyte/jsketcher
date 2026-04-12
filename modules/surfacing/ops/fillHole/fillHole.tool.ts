@@ -1,27 +1,27 @@
+import {state, type StateStream} from 'lstream';
 import {traceHole, fillHole} from './fillHole.command';
 import {applyG1AllSides} from '../continuity/continuity.command';
 import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
-import {createModeGuideState, showModeGuide, closeModeGuide, toggleG1, type ModeGuideState} from '../../ui/modeGuide';
 
 const LOOP_COLORS = [0x44ee44, 0xee8800, 0x4488ee, 0xee4444];
 
+export interface FillHoleToolState {
+  g1: boolean;
+}
+
 export class FillHoleTool implements Tool {
+
+  readonly state$: StateStream<FillHoleToolState> = state<FillHoleToolState>({g1: false});
 
   private editor!: SurfacingEditor;
   private loop: any[] | null = null;
   private markedCurves: BoundingCurve[] = [];
-  private guide: ModeGuideState = createModeGuideState();
 
   init(editor: SurfacingEditor): void {
     this.editor = editor;
     document.body.style.cursor = 'crosshair';
-    showModeGuide(this.guide, {
-      title: 'Fill Hole',
-      hint: 'Hover edge to preview · Click=fill · G=G1 · Esc=cancel',
-      onG1Toggle: () => toggleG1(this.guide),
-    });
   }
 
   onMouseDown(_e: MouseEvent): void {}
@@ -29,9 +29,9 @@ export class FillHoleTool implements Tool {
 
   onClick(_e: MouseEvent): void {
     if (!this.loop) return;
-    const scene = this.editor.scene!;
+    const scene = this.editor.scene;
     if (fillHole(scene, this.loop)) {
-      if (this.guide.g1) {
+      if (this.state$.value.g1) {
         applyG1AllSides(scene, scene.surfaces.length - 1);
       }
       this.editor.rebuildAll();
@@ -51,7 +51,7 @@ export class FillHoleTool implements Tool {
       return;
     }
 
-    const scene = this.editor.scene!;
+    const scene = this.editor.scene;
     const adj = scene.findAdjacentPatches(hit.patchIdx);
     const isShared = adj.some((a: any) => a.side === hit.side);
     if (isShared) {
@@ -76,20 +76,19 @@ export class FillHoleTool implements Tool {
   }
 
   onKeyDown(e: KeyboardEvent): void {
-    if (e.key === 'Escape') {
-      this.editor.popTool();
-      return;
-    }
-    if (e.key === 'g' || e.key === 'G') {
-      toggleG1(this.guide);
-    }
+    if (e.key === 'Escape') { this.editor.popTool(); return; }
+    if (e.key === 'g' || e.key === 'G') { this.toggleG1(); }
+  }
+
+  toggleG1(): void {
+    this.state$.mutate(s => { s.g1 = !s.g1; });
   }
 
   cleanup(): void {
     this.clearMarks();
     this.loop = null;
     document.body.style.cursor = '';
-    closeModeGuide(this.guide);
+    this.state$.next({g1: false});
   }
 
   private clearMarks(): void {

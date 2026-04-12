@@ -1,10 +1,12 @@
 import * as SceneGraph from 'scene/sceneGraph';
 import ScalableLine from 'scene/objects/scalableLine';
+import {state, type StateStream} from 'lstream';
 import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 
 export class LoopInsertTool implements Tool {
 
+  readonly state$: StateStream<null> = state(null);
   private editor!: SurfacingEditor;
   private previewGroup: any = null;
   private pending: {patchIdx: number, dir: 'u' | 'v', t: number} | null = null;
