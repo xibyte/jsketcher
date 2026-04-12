@@ -70,7 +70,7 @@ export class RaycastService {
       }
     }
     if (bestPi < 0) return null;
-    const res = scene.tessResolution;
+    const res = this.editor.resolution;
     const quadIdx = Math.floor(bestFaceIdx / 2);
     const col = quadIdx % res;
     const row = Math.floor(quadIdx / res);
@@ -113,7 +113,7 @@ export class RaycastService {
     if (bestPi < 0 || !bestHit) return null;
 
     const fi = bestHit.faceIndex;
-    const res = scene.tessResolution;
+    const res = this.editor.resolution;
     const meshGeo = (surfaces[bestPi].object3d as any).mesh.geometry;
     const indices = meshGeo.index.array;
     const verts = meshGeo.attributes.position.array;

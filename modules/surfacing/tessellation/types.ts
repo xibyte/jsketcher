@@ -109,6 +109,17 @@ export class TessPoint {
 /** Either kind of point that a TessEdge can connect. */
 export type AnyTessPoint = TessPoint | BorderTessPoint;
 
+/**
+ * The complete tessellation state for one BoundingCurve. Stored on the
+ * entity as `curve.tessellation`.
+ */
+export interface CurveTessellation {
+  resolution: number;
+  samples: CurveTessPoint[];
+  perSurface: Map<NurbsSurface, BorderTessPoint[]>;
+  edges: TessEdge[];
+}
+
 // =========================================================================
 // Topology
 // =========================================================================

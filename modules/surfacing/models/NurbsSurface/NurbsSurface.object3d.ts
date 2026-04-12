@@ -33,14 +33,12 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
   readonly mesh: Mesh;
   private material: MeshPhongMaterial;
   private geometry: BufferGeometry;
-  private resolution: number;
   private wireframeGroup: Group;
   private wireframeBuilt: boolean = false;
 
-  constructor(surface: NurbsSurface, resolution: number = 8) {
+  constructor(surface: NurbsSurface) {
     super();
     this.surface = surface;
-    this.resolution = resolution;
 
     this.material = createSurfaceMaterial(SURFACE_BASE_COLOR);
     this.material.side = DoubleSide;
@@ -108,7 +106,7 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
       if (m && m.dispose) m.dispose();
     }
     const ss = this.surface.ctx.sceneSetup;
-    const {rows, cols} = this.surface.getIsolinePolylines(this.resolution);
+    const {rows, cols} = this.surface.getIsolinePolylines();
     for (let i = 1; i < rows.length - 1; i++) {
       const line = new ScalableLine(ss, rows[i], WIREFRAME_WIDTH, WIREFRAME_COLOR);
       line.material.transparent = true;
@@ -129,11 +127,36 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
   }
 
   private buildGeometry(): BufferGeometry {
-    const t = this.surface.tessellate(this.resolution);
+    const tess = this.surface.tessellate();
+    const n = tess.resolution;
+    const grid = tess.pointGrid;
+
+    const positions: number[] = [];
+    const normals: number[] = [];
+    for (let r = 0; r <= n; r++) {
+      for (let c = 0; c <= n; c++) {
+        const p = grid[r][c];
+        positions.push(p.xyz[0], p.xyz[1], p.xyz[2]);
+        const nm = (p as any).normal;
+        normals.push(nm[0], nm[1], nm[2]);
+      }
+    }
+
+    const indices: number[] = [];
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        const a = r * (n + 1) + c;
+        const b = a + 1;
+        const cc = a + (n + 1);
+        const d = cc + 1;
+        indices.push(a, b, d, a, d, cc);
+      }
+    }
+
     const g = new BufferGeometry();
-    g.setAttribute('position', new BufferAttribute(new Float32Array(t.positions), 3));
-    g.setAttribute('normal', new BufferAttribute(new Float32Array(t.normals), 3));
-    g.setIndex(new BufferAttribute(new Uint32Array(t.indices), 1));
+    g.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
+    g.setAttribute('normal', new BufferAttribute(new Float32Array(normals), 3));
+    g.setIndex(new BufferAttribute(new Uint32Array(indices), 1));
     return g;
   }
 

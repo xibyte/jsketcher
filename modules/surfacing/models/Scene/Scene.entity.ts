@@ -109,7 +109,6 @@ export class Scene extends GeometricEntity {
 
   arcConstraints: ArcConstraint[] = [];
   mirrorConstraints: MirrorConstraint[] = [];
-  tessResolution: number = 8;
 
   constructor(ctx: SurfacingEditor, id?: string) {
     super(ctx, id ?? generateEntityId('SC'));

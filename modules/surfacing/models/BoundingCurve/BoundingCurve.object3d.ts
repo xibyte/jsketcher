@@ -86,13 +86,13 @@ export class BoundingCurveObject3D extends EntityObject3D {
   private readPolyline(): number[][] {
     const curve = this.curve;
 
-    if (!curve.samples && curve.users.size > 0) {
+    if (!curve.tessellation && curve.users.size > 0) {
       const anyUser: NurbsSurface | undefined = curve.users.values().next().value;
-      if (anyUser) anyUser.tessellate(8);
+      if (anyUser) anyUser.tessellate();
     }
 
-    if (curve.samples) {
-      return curve.samples.map(s => [s.xyz[0], s.xyz[1], s.xyz[2]]);
+    if (curve.tessellation) {
+      return curve.tessellation.samples.map(s => [s.xyz[0], s.xyz[1], s.xyz[2]]);
     }
 
     const cps: [number, number, number][] =

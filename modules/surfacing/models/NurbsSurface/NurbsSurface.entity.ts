@@ -10,10 +10,8 @@ import type {SurfaceSet} from '../../SurfaceSet';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import {
   tessellateSurface,
-  refreshSurfaceTessellation,
   type SurfaceTessellation,
 } from '../../tessellation/tessellateSurface';
-import type {TessPoint, BorderTessPoint} from '../../tessellation/types';
 import {NurbsSurfaceObject3D} from './NurbsSurface.object3d';
 import {
   SURFACE_BASE_COLOR,
@@ -72,22 +70,13 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   /**
    * Tessellation cache.
    *
-   * `_tessGraph` holds the persistent topology graph (TessPoints,
+   * `tessellation` holds the persistent topology graph (TessPoints,
    * BorderTessPoints, Tiles, TessEdges). It is built once on first
-   * tessellate() and is then kept ACROSS vertex moves — a drag doesn't
-   * invalidate the graph, it only marks it dirty. The next tessellate()
-   * refreshes xyz / normal values in place via
-   * refreshSurfaceTessellation, leaving every instance untouched.
-   * The graph is only torn down when the entity structure actually
-   * changes (replaceGrid / syncEntityGraph / structural ops).
-   *
-   * `_tess` holds the flat row-major buffer the Three.js mesh uploads.
-   * `_tessDirty` is set by invalidateVisual() and cleared by tessellate().
+   * tessellate() and is then kept ACROSS vertex moves. The graph is
+   * only torn down when the entity structure actually changes
+   * (replaceGrid / syncEntityGraph / structural ops).
    */
-  private tess: {positions: number[], normals: number[], indices: number[]} | null = null;
-  private tessGraph: SurfaceTessellation | null = null;
-  private tessRes: number = -1;
-  private tessDirty: boolean = false;
+  tessellation: SurfaceTessellation | null = null;
 
   constructor(
     ctx: SurfacingEditor,
@@ -163,9 +152,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   invalidateVisual(): void {
     // Drop the tessellation cache synchronously so any reader on this
     // frame rebuilds from the current grid.
-    this.tess = null;
-    this.tessGraph = null;
-    this.tessRes = -1;
+    this.tessellation = null;
     this.boundingCurves.bottom.invalidateTessellation();
     this.boundingCurves.right.invalidateTessellation();
     this.boundingCurves.top.invalidateTessellation();
@@ -300,10 +287,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     // Dispose the old Cage and rebuild from the new grid.
     if (this.cage) this.cage.dispose();
     this.cage = null as any;
-    this.tess = null;
-    this.tessGraph = null;
-    this.tessRes = -1;
-    this.tessDirty = false;
+    this.tessellation = null;
     this.syncEntityGraph();
     this.invalidateVisual();
   }
@@ -342,10 +326,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     this.children = [];
 
     if (!this.cage) {
-      this.tess = null;
-      this.tessGraph = null;
-      this.tessRes = -1;
-      this.tessDirty = false;
+      this.tessellation = null;
       this.cage = buildCage(this.ctx, this.grid);
     }
 
@@ -423,48 +404,21 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
    * shared edge are literally equal. Normals stay per-surface so creases
    * survive.
    */
-  tessellate(resolution: number = 8): {
-    positions: number[], normals: number[], indices: number[]
-  } {
-    if (this.tess && this.tessRes === resolution) return this.tess;
+  /**
+   * Ensure the tessellation graph is built and fresh. Returns the cached
+   * graph if the resolution hasn't changed.
+   */
+  tessellate(): SurfaceTessellation {
+    if (this.tessellation) return this.tessellation;
+    const n = this.ctx.resolution;
 
-    const graph = tessellateSurface(this, resolution);
-    const n = resolution;
+    this.boundingCurves.bottom.ensureTessellated(this, 0);
+    this.boundingCurves.right.ensureTessellated(this, 1);
+    this.boundingCurves.top.ensureTessellated(this, 2);
+    this.boundingCurves.left.ensureTessellated(this, 3);
 
-    const positions: number[] = [];
-    const normals: number[] = [];
-    for (let r = 0; r <= n; r++) {
-      for (let c = 0; c <= n; c++) {
-        const p = graph.pointGrid[r][c];
-        const xyz = p.xyz;
-        positions.push(xyz[0], xyz[1], xyz[2]);
-        // TessPoint and BorderTessPoint both expose `normal`.
-        const nm = (p as TessPoint | BorderTessPoint).normal;
-        normals.push(nm[0], nm[1], nm[2]);
-      }
-    }
-
-    // Row-major indices: two triangles per quad cell.
-    const indices: number[] = [];
-    for (let r = 0; r < n; r++) {
-      for (let c = 0; c < n; c++) {
-        const a = r * (n + 1) + c;
-        const b = a + 1;
-        const cc = a + (n + 1);
-        const d = cc + 1;
-        indices.push(a, b, d, a, d, cc);
-      }
-    }
-
-    this.tess = {positions, normals, indices};
-    this.tessGraph = graph;
-    this.tessRes = resolution;
-    return this.tess;
-  }
-
-  /** The topology graph produced by the most recent tessellate() call. */
-  getTessellationGraph(): SurfaceTessellation | null {
-    return this.tessGraph;
+    this.tessellation = tessellateSurface(this, n);
+    return this.tessellation;
   }
 
   /**
@@ -472,41 +426,21 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
    * mesh tessellation. side: 0=bottom, 1=right, 2=top, 3=left.
    * Returns (resolution+1) points as [x,y,z] triples.
    */
-  getEdgePolyline(side: number, resolution: number = 8): number[][] {
-    const t = this.tessellate(resolution);
-    const n = resolution;
-    const get = (row: number, col: number): number[] => {
-      const i = (row * (n + 1) + col) * 3;
-      return [t.positions[i], t.positions[i + 1], t.positions[i + 2]];
-    };
-    const pts: number[][] = [];
-    switch (side) {
-      case 0: for (let i = 0; i <= n; i++) pts.push(get(0, i)); break;
-      case 1: for (let j = 0; j <= n; j++) pts.push(get(j, n)); break;
-      case 2: for (let i = 0; i <= n; i++) pts.push(get(n, i)); break;
-      case 3: for (let j = 0; j <= n; j++) pts.push(get(j, 0)); break;
-    }
-    return pts;
-  }
-
   /** UV-grid isolines (rows + cols) sharing the mesh tessellation. */
-  getIsolinePolylines(resolution: number = 8): {rows: number[][][], cols: number[][][]} {
-    const t = this.tessellate(resolution);
-    const n = resolution;
-    const get = (row: number, col: number): number[] => {
-      const i = (row * (n + 1) + col) * 3;
-      return [t.positions[i], t.positions[i + 1], t.positions[i + 2]];
-    };
+  getIsolinePolylines(): {rows: number[][][], cols: number[][][]} {
+    const g = this.tessellate().pointGrid;
+    const n = this.ctx.resolution;
+    const xyz = (p: any): number[] => [p.xyz[0], p.xyz[1], p.xyz[2]];
     const rows: number[][][] = [];
     for (let j = 0; j <= n; j++) {
       const row: number[][] = [];
-      for (let i = 0; i <= n; i++) row.push(get(j, i));
+      for (let i = 0; i <= n; i++) row.push(xyz(g[j][i]));
       rows.push(row);
     }
     const cols: number[][][] = [];
     for (let i = 0; i <= n; i++) {
       const col: number[][] = [];
-      for (let j = 0; j <= n; j++) col.push(get(j, i));
+      for (let j = 0; j <= n; j++) col.push(xyz(g[j][i]));
       cols.push(col);
     }
     return {rows, cols};
