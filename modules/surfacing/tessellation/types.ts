@@ -126,6 +126,30 @@ export interface CurveTessellation {
 // =========================================================================
 
 /**
+ * Role a TessEdge plays inside the tessellation graph.
+ *
+ *   - `'isoFragment'` — an axis-aligned piece of an iso-u or iso-v line,
+ *     produced by the first-pass lattice break-down of a surface. The
+ *     isolines view simply collects every edge with this role. Includes
+ *     both interior iso-line segments and the boundary segments along
+ *     shared BoundingCurves (those are shared TessEdges; duplication at
+ *     the boundary between two neighbors is acceptable).
+ *
+ *   - `'diagonal'` — the bottom-left → top-right cut introduced when each
+ *     quad cell is split into two triangles. These exist purely to keep
+ *     the mesh triangulated and are never drawn in the isolines view.
+ *
+ *   - `'refinement'` — reserved for edges that adaptive tessellation will
+ *     insert during curvature-driven subdivision. When a triangle is
+ *     judged too coarse for its local curvature, a refinement edge is
+ *     dropped across it and two smaller triangles take its place. These
+ *     aren't part of the original iso-lattice, so they don't participate
+ *     in the isolines view. (Not yet emitted anywhere — the role exists
+ *     so adaptive code can tag them without touching the type.)
+ */
+export type TessEdgeRole = 'isoFragment' | 'diagonal' | 'refinement';
+
+/**
  * An edge in the tessellation graph.
  *
  * For interior edges the `endpoints` map has exactly one entry: the owning
@@ -145,12 +169,10 @@ export interface CurveTessellation {
 export class TessEdge {
   endpoints: Map<NurbsSurface, readonly [AnyTessPoint, AnyTessPoint]> = new Map();
   triangles: Triangle[] = [];
+  role: TessEdgeRole;
 
-  /** Convenience constructor for an edge owned by a single surface. */
-  static interior(surface: NurbsSurface, a: AnyTessPoint, b: AnyTessPoint): TessEdge {
-    const e = new TessEdge();
-    e.endpoints.set(surface, [a, b] as const);
-    return e;
+  constructor(role: TessEdgeRole = 'isoFragment') {
+    this.role = role;
   }
 }
 

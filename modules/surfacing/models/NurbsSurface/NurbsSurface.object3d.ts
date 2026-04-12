@@ -23,7 +23,6 @@ import {
   BufferGeometry, BufferAttribute, Mesh, DoubleSide, MeshPhongMaterial, Group,
   LineSegments, LineBasicMaterial,
 } from 'three';
-import ScalableLine from 'scene/objects/scalableLine';
 import type {NurbsSurface} from './NurbsSurface.entity';
 import {
   EntityObject3D,
@@ -32,7 +31,6 @@ import {
 } from '../../three';
 
 const ISOLINE_COLOR = 0x1860c0;
-const ISOLINE_WIDTH = 1.5;
 const TESSELLATION_COLOR = 0xff00aa;
 
 export class NurbsSurfaceObject3D extends EntityObject3D {
@@ -121,18 +119,33 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
 
   private rebuildIsolines(): void {
     clearChildren(this.isolinesGroup);
-    const ss = this.surface.ctx.sceneSetup;
-    const {rows, cols} = this.surface.getIsolinePolylines();
-    const addLine = (pts: number[][]) => {
-      const line = new ScalableLine(ss, pts, ISOLINE_WIDTH, ISOLINE_COLOR);
-      line.material.transparent = true;
-      line.material.opacity = 0.7;
-      line.renderOrder = 1;
-      (line as any).raycast = () => {};
-      this.isolinesGroup.add(line);
-    };
-    for (const row of rows) addLine(row);
-    for (const col of cols) addLine(col);
+    const tess = this.surface.tessellate();
+    // Isolines are exactly the TessEdges tagged 'isoFragment' — the axis-
+    // aligned pieces produced by the first lattice break-down. Packing
+    // every such edge as a LineSegments pair gives correct results
+    // whether the mesh is uniform or (eventually) adaptively refined.
+    // Shared boundary edges may render twice (once per neighbor) but
+    // that's fine.
+    const positions: number[] = [];
+    for (const edge of tess.edges) {
+      if (edge.role !== 'isoFragment') continue;
+      const ep = edge.endpoints.get(this.surface);
+      if (!ep) continue;
+      const [a, b] = ep;
+      positions.push(a.xyz[0], a.xyz[1], a.xyz[2]);
+      positions.push(b.xyz[0], b.xyz[1], b.xyz[2]);
+    }
+    const g = new BufferGeometry();
+    g.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
+    const mat = new LineBasicMaterial({
+      color: ISOLINE_COLOR,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const lines = new LineSegments(g, mat);
+    lines.renderOrder = 1;
+    (lines as any).raycast = () => {};
+    this.isolinesGroup.add(lines);
     this.isolinesBuilt = true;
   }
 

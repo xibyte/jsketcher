@@ -492,30 +492,6 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     return this.tessellation;
   }
 
-  /**
-   * Boundary polyline for one side, sharing sample points with the shaded
-   * mesh tessellation. side: 0=bottom, 1=right, 2=top, 3=left.
-   * Returns (resolution+1) points as [x,y,z] triples.
-   */
-  /** UV-grid isolines (rows + cols) sharing the mesh tessellation. */
-  getIsolinePolylines(): {rows: number[][][], cols: number[][][]} {
-    const g = this.tessellate().pointGrid;
-    const n = this.ctx.resolution;
-    const xyz = (p: any): number[] => [p.xyz[0], p.xyz[1], p.xyz[2]];
-    const rows: number[][][] = [];
-    for (let j = 0; j <= n; j++) {
-      const row: number[][] = [];
-      for (let i = 0; i <= n; i++) row.push(xyz(g[j][i]));
-      rows.push(row);
-    }
-    const cols: number[][][] = [];
-    for (let i = 0; i <= n; i++) {
-      const col: number[][] = [];
-      for (let j = 0; j <= n; j++) col.push(xyz(g[j][i]));
-      cols.push(col);
-    }
-    return {rows, cols};
-  }
 }
 
 // =========================================================================
