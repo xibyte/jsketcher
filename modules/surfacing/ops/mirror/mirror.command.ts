@@ -5,41 +5,40 @@ import {Vec3} from '../../patchCageTypes';
 import {add as vadd, sub as vsub, mul as vscale, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
 
 /**
- * Mirror all patches along the boundary that contains the given edge.
- * Computes the mirror plane from the selected edge, finds all patches
+ * Mirror all surfaces along the boundary that contains the given edge.
+ * Computes the mirror plane from the selected edge, finds all surfaces
  * whose edge lies on that plane, and mirrors each one.
- * Returns indices of all newly created mirror patches.
+ * Returns all newly created mirror surfaces.
  */
-export function mirrorAcrossEdge(scene: Scene, patchIdx: number, side: number): number[] {
-  const patch = scene.surfaces[patchIdx];
-  const edgeVerts = patch.getEdgeVertices(side);
+export function mirrorAcrossEdge(scene: Scene, surface: NurbsSurface, side: number): NurbsSurface[] {
+  const edgeVerts = surface.getEdgeVertices(side);
 
   // Build mirror plane from the selected edge
   const e0 = edgeVerts[0].position;
   const e3 = edgeVerts[3].position;
   const edgeDir = vnormalize(vsub(e3, e0));
 
-  // Get patch normal at edge midpoint
+  // Get surface normal at edge midpoint
   let u = 0.5, v = 0.5;
   if (side === 0) v = 0;
   else if (side === 1) u = 1;
   else if (side === 2) v = 1;
   else if (side === 3) u = 0;
-  const surfNormal = patch.normal(u, v);
+  const surfNormal = surface.normal(u, v);
 
   // Plane normal = cross(edgeDir, surfNormal)
   const planeNormal = vnormalize(vcross(edgeDir, surfNormal));
   const planePoint: Vec3 = [...e0];
 
-  // Walk adjacency graph to find all patches along the mirror boundary.
-  const toMirror = traceMirrorBoundary(scene, patchIdx, side);
+  // Walk adjacency graph to find all surfaces along the mirror boundary.
+  const toMirror = traceMirrorBoundary(scene, surface, side);
 
-  const result: number[] = [];
+  const result: NurbsSurface[] = [];
   for (const entry of toMirror) {
-    result.push(mirrorSinglePatch(scene, entry.patchIdx, entry.side, planePoint, planeNormal));
+    result.push(mirrorSingleSurface(scene, entry.surface, entry.side, planePoint, planeNormal));
   }
 
-  // Connect shared edges between adjacent mirror patches
+  // Connect shared edges between adjacent mirror surfaces
   stitchMirrorEdges(scene, result);
 
   return result;
@@ -49,52 +48,51 @@ export function mirrorAcrossEdge(scene: Scene, patchIdx: number, side: number): 
  * Trace the mirror boundary by walking the adjacency graph from the
  * selected edge's corner vertices in both directions.
  */
-function traceMirrorBoundary(scene: Scene, startPatchIdx: number, startSide: number): {patchIdx: number, side: number}[] {
-  const result: {patchIdx: number, side: number}[] = [{patchIdx: startPatchIdx, side: startSide}];
-  const visited = new Set<number>();
-  visited.add(startPatchIdx);
+function traceMirrorBoundary(scene: Scene, startSurface: NurbsSurface, startSide: number): {surface: NurbsSurface, side: number}[] {
+  const result: {surface: NurbsSurface, side: number}[] = [{surface: startSurface, side: startSide}];
+  const visited = new Set<NurbsSurface>();
+  visited.add(startSurface);
 
-  const startEdge = scene.surfaces[startPatchIdx].getEdgeVertices(startSide);
+  const startEdge = startSurface.getEdgeVertices(startSide);
 
   // Walk from each corner of the selected edge
-  walkBoundary(scene, startEdge[0], startPatchIdx, startSide, visited, result);
-  walkBoundary(scene, startEdge[3], startPatchIdx, startSide, visited, result);
+  walkBoundary(scene, startEdge[0], startSurface, startSide, visited, result);
+  walkBoundary(scene, startEdge[3], startSurface, startSide, visited, result);
 
   return result;
 }
 
 /**
- * Walk the boundary chain from a corner vertex through adjacent patches.
+ * Walk the boundary chain from a corner vertex through adjacent surfaces.
  * Uses shared vertex identity — no tolerances.
  */
 function walkBoundary(
   scene: Scene,
   corner: Vertex,
-  fromPatchIdx: number,
+  fromSurface: NurbsSurface,
   fromSide: number,
-  visited: Set<number>,
-  result: {patchIdx: number, side: number}[],
+  visited: Set<NurbsSurface>,
+  result: {surface: NurbsSurface, side: number}[],
 ): void {
-  // Find adjacent patches of fromPatch that connect at this corner
-  const adj = scene.findAdjacentPatches(fromPatchIdx);
+  // Find adjacent surfaces of fromSurface that connect at this corner
+  const adj = scene.findAdjacentSurfaces(fromSurface);
   for (const a of adj) {
-    if (visited.has(a.otherIdx)) continue;
+    if (visited.has(a.other)) continue;
 
     // Does the shared edge touch our boundary corner?
-    const fromEdge = scene.surfaces[fromPatchIdx].getEdgeVertices(a.side);
+    const fromEdge = fromSurface.getEdgeVertices(a.side);
     if (fromEdge[0] !== corner && fromEdge[3] !== corner) continue;
 
     // Found a neighbor connected at the corner.
     // Now find which edge of that neighbor continues the boundary.
-    const otherPatch = scene.surfaces[a.otherIdx];
     for (let s = 0; s < 4; s++) {
       if (s === a.otherSide) continue; // skip the shared adjacency edge itself
-      const ev = otherPatch.getEdgeVertices(s);
+      const ev = a.other.getEdgeVertices(s);
       if (ev[0] === corner || ev[3] === corner) {
-        visited.add(a.otherIdx);
-        result.push({patchIdx: a.otherIdx, side: s});
+        visited.add(a.other);
+        result.push({surface: a.other, side: s});
         const nextCorner = ev[0] === corner ? ev[3] : ev[0];
-        walkBoundary(scene, nextCorner, a.otherIdx, s, visited, result);
+        walkBoundary(scene, nextCorner, a.other, s, visited, result);
         return;
       }
     }
@@ -104,14 +102,13 @@ function walkBoundary(
 /**
  * Mirror a single patch across the given plane.
  */
-function mirrorSinglePatch(
+function mirrorSingleSurface(
   scene: Scene,
-  patchIdx: number, side: number,
+  source: NurbsSurface, side: number,
   planePoint: Vec3, planeNormal: Vec3,
-): number {
-  const patch = scene.surfaces[patchIdx];
-  const edgeVerts = patch.getEdgeVertices(side);
-  const srcGrid = patch.grid;
+): NurbsSurface {
+  const edgeVerts = source.getEdgeVertices(side);
+  const srcGrid = source.grid;
   const mirrorGrid: ControlPoint[][] = [];
   const cpPairs: {source: Vertex, mirror: Vertex}[] = [];
   const edgeSet = new Set<Vertex>(edgeVerts);
@@ -149,8 +146,8 @@ function mirrorSinglePatch(
   // new patch's ControlPoints. The shared-edge CPs already carry the
   // source's weights (same instance); this block writes only the free
   // side's weights.
-  if (patch.rational) {
-    const src = patch.getWeightsMatrix();
+  if (source.rational) {
+    const src = source.getWeightsMatrix();
     let mirrorWeights: number[][];
     if (side === 0 || side === 2) {
       mirrorWeights = [src[3].slice(), src[2].slice(), src[1].slice(), src[0].slice()];
@@ -164,52 +161,51 @@ function mirrorSinglePatch(
     }
   }
 
-  // Reuse the source patch's curve on the shared edge: seed a local
+  // Reuse the source surface's curve on the shared edge: seed a local
   // cache with all 4 source curves — `curvesFor` will pick up the
   // matching one by edge identity and build fresh curves for the rest.
   const mirrorCurveCache = new LocalBoundingCurveCache();
-  mirrorCurveCache.register(patch.boundingCurves.bottom);
-  mirrorCurveCache.register(patch.boundingCurves.right);
-  mirrorCurveCache.register(patch.boundingCurves.top);
-  mirrorCurveCache.register(patch.boundingCurves.left);
+  mirrorCurveCache.register(source.boundingCurves.bottom);
+  mirrorCurveCache.register(source.boundingCurves.right);
+  mirrorCurveCache.register(source.boundingCurves.top);
+  mirrorCurveCache.register(source.boundingCurves.left);
   const mp = new NurbsSurface(
     scene.ctx, finalGrid, mirrorCurveCache.curvesFor(scene.ctx, finalGrid),
   );
 
-  // Mirrored patch joins the source's surface set
-  if (patch.surfaceSet) {
-    mp.surfaceSet = patch.surfaceSet;
-    patch.surfaceSet.surfaces.add(mp);
+  // Mirrored surface joins the source's surface set
+  if (source.surfaceSet) {
+    mp.surfaceSet = source.surfaceSet;
+    source.surfaceSet.surfaces.add(mp);
   }
 
   // Add the mirror surface to the same group as its source.
-  const sourceGroup = scene.findGroupOfSurface(patch);
+  const sourceGroup = scene.findGroupOfSurface(source);
   (sourceGroup ?? scene).addChild(mp);
-  const mirrorIdx = scene.surfaces.indexOf(mp);
 
   scene.mirrorConstraints.push({
-    sourcePatchIdx: patchIdx,
-    mirrorPatchIdx: mirrorIdx,
+    source,
+    mirror: mp,
     planePoint,
     planeNormal,
     cpPairs,
   });
 
-  return mirrorIdx;
+  return mp;
 }
 
 /**
- * After mirroring multiple patches, stitch shared edges between adjacent
- * mirror patches by replacing duplicate vertices with shared references.
+ * After mirroring multiple surfaces, stitch shared edges between adjacent
+ * mirror surfaces by replacing duplicate vertices with shared references.
  */
-function stitchMirrorEdges(scene: Scene, mirrorIndices: number[]): void {
-  if (mirrorIndices.length < 2) return;
+function stitchMirrorEdges(scene: Scene, mirrors: NurbsSurface[]): void {
+  if (mirrors.length < 2) return;
   const EPS = 1e-8;
 
-  for (let a = 0; a < mirrorIndices.length; a++) {
-    for (let b = a + 1; b < mirrorIndices.length; b++) {
-      const pA = scene.surfaces[mirrorIndices[a]];
-      const pB = scene.surfaces[mirrorIndices[b]];
+  for (let a = 0; a < mirrors.length; a++) {
+    for (let b = a + 1; b < mirrors.length; b++) {
+      const pA = mirrors[a];
+      const pB = mirrors[b];
 
       // Check each edge pair for matching positions
       for (let sA = 0; sA < 4; sA++) {
@@ -316,23 +312,11 @@ export function isMirrorTarget(scene: Scene, v: Vertex): boolean {
 /**
  * Remove a mirror constraint and optionally delete the mirror patch.
  */
-export function removeMirrorConstraint(scene: Scene, mc: MirrorConstraint, deletePatch: boolean = true): void {
+export function removeMirrorConstraint(scene: Scene, mc: MirrorConstraint, deleteMirror: boolean = true): void {
   const idx = scene.mirrorConstraints.indexOf(mc);
   if (idx >= 0) scene.mirrorConstraints.splice(idx, 1);
-  if (deletePatch) {
-    const removed = scene.surfaces[mc.mirrorPatchIdx];
-    if (removed) {
-      const pi = mc.mirrorPatchIdx;
-      if (removed.parent) removed.parent.removeChild(removed);
-      removed.dispose();
-      // Re-index all constraints that reference patches after the deleted one
-      for (const m of scene.mirrorConstraints) {
-        if (m.sourcePatchIdx > pi) m.sourcePatchIdx--;
-        if (m.mirrorPatchIdx > pi) m.mirrorPatchIdx--;
-      }
-      for (const a of scene.arcConstraints) {
-        if (a.patchSide && a.patchSide.patchIdx > pi) a.patchSide.patchIdx--;
-      }
-    }
+  if (deleteMirror && mc.mirror) {
+    mc.mirror.parent?.removeChild(mc.mirror);
+    mc.mirror.dispose();
   }
 }

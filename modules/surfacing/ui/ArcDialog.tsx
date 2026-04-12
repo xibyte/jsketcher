@@ -20,10 +20,10 @@ export function ArcDialog({tool, state}: {tool: DefaultTool, state: DefaultToolS
     debounceRef.current = requestAnimationFrame(() => {
       debounceRef.current = null;
       if (isNaN(radius) || radius <= 0) return;
-      const patch = scene.surfaces[arc.patchIdx];
-      if (!patch) return;
+      const surface = arc.surface;
+      if (!surface) return;
 
-      const edgeVerts = patch.getEdgeVertices(side);
+      const edgeVerts = surface.getEdgeVertices(side);
       const chordLen = vdist(edgeVerts[0].position, edgeVerts[3].position);
       const sinHalf = Math.min(1, chordLen / (2 * radius));
       const angle = 2 * Math.asin(sinHalf) * (180 / Math.PI);
@@ -33,16 +33,16 @@ export function ArcDialog({tool, state}: {tool: DefaultTool, state: DefaultToolS
       else if (side === 1) u = 1;
       else if (side === 2) v = 1;
       else if (side === 3) u = 0;
-      let planeNormal = patch.normal(u, v);
+      let planeNormal = surface.normal(u, v);
       if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]];
 
       scene.arcConstraints = scene.arcConstraints.filter((c: any) =>
-        !(c.patchSide && c.patchSide.patchIdx === arc.patchIdx && c.patchSide.side === side)
+        !(c.surfaceSide && c.surfaceSide.surface === surface && c.surfaceSide.side === side)
       );
-      scene.constrainEdgeToArc(arc.patchIdx, side, radius, angle, planeNormal, mode);
+      scene.constrainEdgeToArc(surface, side, radius, angle, planeNormal, mode);
       (tool as any).editor.rebuildAll();
     });
-  }, [side, radius, flip, mode, arc.patchIdx, scene, tool]);
+  }, [side, radius, flip, mode, arc.surface, scene, tool]);
 
   useEffect(() => { applyLive(); }, [side, radius, flip, mode]);
 

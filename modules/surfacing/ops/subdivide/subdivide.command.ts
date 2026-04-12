@@ -8,8 +8,8 @@ import {splitBezierRow} from '../../patchCageHelpers';
  * Each 3×3 cage cell becomes its own 4×4 NURBS patch.
  * Geometry is preserved exactly. Internal boundaries are watertight by construction.
  */
-export function subdividePatch(scene: Scene, patchIdx: number): void {
-  const sourcePatch = scene.surfaces[patchIdx];
+export function subdivide(scene: Scene, surface: NurbsSurface): void {
+  const sourcePatch = surface;
   const sourceSet = sourcePatch.surfaceSet;
   const g = sourcePatch.grid;
 

@@ -8,50 +8,49 @@ import {splitBezierRow, BoundarySplitResult} from '../../patchCageHelpers';
  * Compute the propagation set for an isoline split (without splitting).
  * Returns the list of {idx, dir, t} for all affected patches.
  */
-export function computeIsolinePropagation(scene: Scene, patchIdx: number, direction: 'u' | 'v', t: number): {idx: number, dir: 'u' | 'v', t: number}[] {
-  const result: {idx: number, dir: 'u' | 'v', t: number}[] = [];
-  const visited = new Set<number>();
-  const queue: {idx: number, dir: 'u' | 'v', t: number}[] = [{idx: patchIdx, dir: direction, t}];
+export function computeIsolinePropagation(scene: Scene, surface: NurbsSurface, direction: 'u' | 'v', t: number): {surface: NurbsSurface, dir: 'u' | 'v', t: number}[] {
+  const result: {surface: NurbsSurface, dir: 'u' | 'v', t: number}[] = [];
+  const visited = new Set<NurbsSurface>();
+  const queue: {surface: NurbsSurface, dir: 'u' | 'v', t: number}[] = [{surface, dir: direction, t}];
 
   while (queue.length > 0) {
     const cur = queue.shift()!;
-    if (visited.has(cur.idx)) continue;
-    visited.add(cur.idx);
+    if (visited.has(cur.surface)) continue;
+    visited.add(cur.surface);
     result.push(cur);
 
     const cutSides = cur.dir === 'u' ? [0, 2] : [3, 1];
-    const adj = scene.findAdjacentPatches(cur.idx);
+    const adj = scene.findAdjacentSurfaces(cur.surface);
     for (const a of adj) {
-      if (visited.has(a.otherIdx)) continue;
+      if (visited.has(a.other)) continue;
       if (!cutSides.includes(a.side)) continue;
       const otherIsHorizontal = a.otherSide === 0 || a.otherSide === 2;
       const adjDir: 'u' | 'v' = otherIsHorizontal ? 'u' : 'v';
       const adjT = a.reversed ? (1 - cur.t) : cur.t;
-      queue.push({idx: a.otherIdx, dir: adjDir, t: adjT});
+      queue.push({surface: a.other, dir: adjDir, t: adjT});
     }
   }
   return result;
 }
 
 /**
- * Tessellate an isoline on a single patch as a polyline.
+ * Tessellate an isoline on a single surface as a polyline.
  */
-export function tessellateIsoline(scene: Scene, patchIdx: number, direction: 'u' | 'v', t: number, segments: number = 24): Vec3[] {
-  const patch = scene.surfaces[patchIdx];
+export function tessellateIsoline(scene: Scene, surface: NurbsSurface, direction: 'u' | 'v', t: number, segments: number = 24): Vec3[] {
   const pts: Vec3[] = [];
   for (let i = 0; i <= segments; i++) {
     const s = i / segments;
-    const p = direction === 'u' ? patch.eval(t, s) : patch.eval(s, t);
+    const p = direction === 'u' ? surface.eval(t, s) : surface.eval(s, t);
     pts.push(p);
   }
   return pts;
 }
 
 /**
- * Split along an isoline, propagating across ALL connected patches.
+ * Split along an isoline, propagating across ALL connected surfaces.
  */
-export function splitIsoline(scene: Scene, patchIdx: number, direction: 'u' | 'v', t: number): void {
-  const toSplit = computeIsolinePropagation(scene, patchIdx, direction, t);
+export function splitIsoline(scene: Scene, surface: NurbsSurface, direction: 'u' | 'v', t: number): void {
+  const toSplit = computeIsolinePropagation(scene, surface, direction, t);
 
   // Cache: for shared boundary edges, compute the De Casteljau split ONCE
   // and reuse the same ControlPoint instances across both patches.
@@ -86,14 +85,12 @@ export function splitIsoline(scene: Scene, patchIdx: number, direction: 'u' | 'v
     return result;
   }
 
-  // Shared across every patch in the cascade so split halves of
-  // adjacent patches share the SAME new BoundingCurve on their seams.
+  // Shared across every surface in the cascade so split halves of
+  // adjacent surfaces share the SAME new BoundingCurve on their seams.
   const curveCache = new LocalBoundingCurveCache();
 
-  // Split in reverse index order so splice doesn't invalidate earlier indices
-  toSplit.sort((a, b) => b.idx - a.idx);
   for (const s of toSplit) {
-    splitSinglePatchShared(scene, s.idx, s.dir, s.t, cacheBoundarySplit, curveCache);
+    splitSingleSurfaceShared(scene, s.surface, s.dir, s.t, cacheBoundarySplit, curveCache);
   }
 }
 
@@ -101,28 +98,27 @@ export function splitIsoline(scene: Scene, patchIdx: number, direction: 'u' | 'v
  * Split a single patch. For boundary rows/cols, use the cache to share
  * ALL split vertices (handles + midpoint) with adjacent patches.
  */
-function splitSinglePatchShared(
+function splitSingleSurfaceShared(
   scene: Scene,
-  patchIdx: number, direction: 'u' | 'v', t: number,
+  surface: NurbsSurface, direction: 'u' | 'v', t: number,
   getBoundarySplit: (v0: ControlPoint, v1: ControlPoint, v2: ControlPoint, v3: ControlPoint, t: number) => BoundarySplitResult,
   curveCache: LocalBoundingCurveCache,
 ): void {
-  const patch = scene.surfaces[patchIdx];
-  const sourceSet = patch.surfaceSet; // capture before splice
-  const g = patch.grid;
+  const sourceSet = surface.surfaceSet; // capture before splice
+  const g = surface.grid;
 
-  // Seed the curve cache with the patch's 4 curves so the halves' outer
+  // Seed the curve cache with the surface's 4 curves so the halves' outer
   // edges (the ones that don't move) reuse them directly. The middle
-  // seam curve is created once (by leftPatch's curvesFor call) and
-  // found in the cache by rightPatch. Cross-patch sharing of the split
+  // seam curve is created once (by leftSurface's curvesFor call) and
+  // found in the cache by rightSurface. Cross-surface sharing of the split
   // halves works the same way: the caller passes ONE cache through
-  // every splitSinglePatchShared call in the cascade.
-  curveCache.register(patch.boundingCurves.bottom);
-  curveCache.register(patch.boundingCurves.right);
-  curveCache.register(patch.boundingCurves.top);
-  curveCache.register(patch.boundingCurves.left);
+  // every splitSingleSurfaceShared call in the cascade.
+  curveCache.register(surface.boundingCurves.bottom);
+  curveCache.register(surface.boundingCurves.right);
+  curveCache.register(surface.boundingCurves.top);
+  curveCache.register(surface.boundingCurves.left);
 
-  let leftPatch: NurbsSurface, rightPatch: NurbsSurface;
+  let leftSurface: NurbsSurface, rightSurface: NurbsSurface;
 
   if (direction === 'u') {
     const leftGrid: ControlPoint[][] = [];
@@ -143,8 +139,8 @@ function splitSinglePatchShared(
       }
     }
 
-    leftPatch  = new NurbsSurface(scene.ctx, leftGrid,  curveCache.curvesFor(scene.ctx, leftGrid));
-    rightPatch = new NurbsSurface(scene.ctx, rightGrid, curveCache.curvesFor(scene.ctx, rightGrid));
+    leftSurface = new NurbsSurface(scene.ctx, leftGrid,  curveCache.curvesFor(scene.ctx, leftGrid));
+    rightSurface = new NurbsSurface(scene.ctx, rightGrid, curveCache.curvesFor(scene.ctx, rightGrid));
   } else {
     const bottomGrid: ControlPoint[][] = [[], [], [], []];
     const topGrid: ControlPoint[][] = [[], [], [], []];
@@ -176,20 +172,20 @@ function splitSinglePatchShared(
       }
     }
 
-    leftPatch  = new NurbsSurface(scene.ctx, bottomGrid, curveCache.curvesFor(scene.ctx, bottomGrid));
-    rightPatch = new NurbsSurface(scene.ctx, topGrid,    curveCache.curvesFor(scene.ctx, topGrid));
+    leftSurface = new NurbsSurface(scene.ctx, bottomGrid, curveCache.curvesFor(scene.ctx, bottomGrid));
+    rightSurface = new NurbsSurface(scene.ctx, topGrid,    curveCache.curvesFor(scene.ctx, topGrid));
   }
 
   // Propagate the surface set: assign directly so both halves
   // remain part of the same logical face.
   if (sourceSet) {
-    sourceSet.surfaces.delete(patch);
-    patch.surfaceSet = null;
-    leftPatch.surfaceSet = sourceSet;
-    rightPatch.surfaceSet = sourceSet;
-    sourceSet.surfaces.add(leftPatch);
-    sourceSet.surfaces.add(rightPatch);
+    sourceSet.surfaces.delete(surface);
+    surface.surfaceSet = null;
+    leftSurface.surfaceSet = sourceSet;
+    rightSurface.surfaceSet = sourceSet;
+    sourceSet.surfaces.add(leftSurface);
+    sourceSet.surfaces.add(rightSurface);
   }
 
-  patch.replaceWith([leftPatch, rightPatch]);
+  surface.replaceWith([leftSurface, rightSurface]);
 }

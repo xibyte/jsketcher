@@ -1,19 +1,19 @@
-import {Scene} from '../../models/Scene/Scene.entity';
+import {Scene, NurbsSurface} from '../../models/Scene/Scene.entity';
 
 /**
- * Apply G1 (tangent plane) continuity to patchIdx at the given side.
- * Modifies the first interior row of patchIdx so its cross-boundary
- * tangent mirrors the adjacent patch's tangent across the shared edge.
+ * Apply G1 (tangent plane) continuity to the surface at the given side.
+ * Modifies the first interior row of the surface so its cross-boundary
+ * tangent mirrors the adjacent surface's tangent across the shared edge.
  */
-export function applyG1(scene: Scene, patchIdx: number, side: number): boolean {
-  const adj = scene.findAdjacentPatches(patchIdx);
+export function applyG1(scene: Scene, surface: NurbsSurface, side: number): boolean {
+  const adj = scene.findAdjacentSurfaces(surface);
   const match = adj.find(a => a.side === side);
   if (!match) return false;
 
-  const boundary = scene.surfaces[patchIdx].getEdgeVertices(side);
-  const myInterior = scene.getInteriorRow(patchIdx, side, 1);
-  const refInterior = scene.getInteriorRow(match.otherIdx, match.otherSide, 1);
-  const opposite = scene.getInteriorRow(patchIdx, side, 3);
+  const boundary = surface.getEdgeVertices(side);
+  const myInterior = surface.getInteriorRow(side, 1);
+  const refInterior = match.other.getInteriorRow(match.otherSide, 1);
+  const opposite = surface.getInteriorRow(side, 3);
 
   for (let i = 0; i < 4; i++) {
     const ri = match.reversed ? 3 - i : i;
@@ -36,32 +36,32 @@ export function applyG1(scene: Scene, patchIdx: number, side: number): boolean {
 }
 
 /**
- * Apply G1 continuity to every side of patchIdx that has an adjacent patch.
+ * Apply G1 continuity to every side of the surface that has an adjacent surface.
  */
-export function applyG1AllSides(scene: Scene, patchIdx: number): void {
-  const adj = scene.findAdjacentPatches(patchIdx);
+export function applyG1AllSides(scene: Scene, surface: NurbsSurface): void {
+  const adj = scene.findAdjacentSurfaces(surface);
   for (const a of adj) {
-    applyG1(scene, patchIdx, a.side);
+    applyG1(scene, surface, a.side);
   }
 }
 
 /**
- * Apply G2 (curvature) continuity to patchIdx at the given side.
+ * Apply G2 (curvature) continuity to the surface at the given side.
  * Modifies first AND second interior rows.
  * G2 requires matching both tangent (G1) and second derivative.
  */
-export function applyG2(scene: Scene, patchIdx: number, side: number): boolean {
+export function applyG2(scene: Scene, surface: NurbsSurface, side: number): boolean {
   // First apply G1
-  if (!applyG1(scene, patchIdx, side)) return false;
+  if (!applyG1(scene, surface, side)) return false;
 
-  const adj = scene.findAdjacentPatches(patchIdx);
+  const adj = scene.findAdjacentSurfaces(surface);
   const match = adj.find(a => a.side === side)!;
 
-  const boundary = scene.surfaces[patchIdx].getEdgeVertices(side);
-  const myRow1 = scene.getInteriorRow(patchIdx, side, 1);
-  const myRow2 = scene.getInteriorRow(patchIdx, side, 2);
-  const refRow1 = scene.getInteriorRow(match.otherIdx, match.otherSide, 1);
-  const refRow2 = scene.getInteriorRow(match.otherIdx, match.otherSide, 2);
+  const boundary = surface.getEdgeVertices(side);
+  const myRow1 = surface.getInteriorRow(side, 1);
+  const myRow2 = surface.getInteriorRow(side, 2);
+  const refRow1 = match.other.getInteriorRow(match.otherSide, 1);
+  const refRow2 = match.other.getInteriorRow(match.otherSide, 2);
 
   for (let i = 0; i < 4; i++) {
     const ri = match.reversed ? 3 - i : i;

@@ -16,7 +16,7 @@ export function SurfacePropsPanel({tool, state}: {tool: DefaultTool, state: Defa
   const sel = state.selectedSurface;
   if (!sel) return null;
 
-  const {surface, patchIdx} = sel;
+  const {surface} = sel;
   const cps = surface.getCPs();
   const controlPoints = cps.map(row => row.map(c => fmtVec(c.position)));
   const weights = cps.map(row => row.map(c => round(c.weight.value)));
@@ -37,7 +37,7 @@ export function SurfacePropsPanel({tool, state}: {tool: DefaultTool, state: Defa
   }
 
   const def: any = {
-    surface: patchIdx, degree: [3, 3],
+    surface: surface.id, degree: [3, 3],
     knotsU: knots, knotsV: knots,
     rational: surface.rational, controlPoints, weights,
   };
@@ -54,7 +54,7 @@ export function SurfacePropsPanel({tool, state}: {tool: DefaultTool, state: Defa
     }}>
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
         <span style={{fontFamily: 'sans-serif', fontSize: 13, fontWeight: 'bold'}}>
-          Surface {patchIdx} — NURBS Definition
+          Surface {surface.id} — NURBS Definition
         </span>
         <button onClick={() => tool.deselectSurface()}
           style={{background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 16, padding: '0 4px'}}>

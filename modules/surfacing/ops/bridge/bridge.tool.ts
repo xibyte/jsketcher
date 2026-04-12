@@ -6,10 +6,11 @@ import {state, type StateStream} from 'lstream';
 import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
+import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
 
 export interface BridgeToolState {
-  edge1: {patchIdx: number, side: number} | null;
-  edge2: {patchIdx: number, side: number} | null;
+  edge1: {surface: NurbsSurface, side: number} | null;
+  edge2: {surface: NurbsSurface, side: number} | null;
   flipped: boolean;
   g1: boolean;
 }
@@ -50,9 +51,8 @@ export class BridgeTool implements Tool {
     }
 
     if (!s.edge2) {
-      const scene = this.editor.scene;
-      const e1 = scene.surfaces[s.edge1.patchIdx].getEdgeVertices(s.edge1.side);
-      const e2 = scene.surfaces[hit.patchIdx].getEdgeVertices(hit.side);
+      const e1 = s.edge1.surface.getEdgeVertices(s.edge1.side);
+      const e2 = hit.surface.getEdgeVertices(hit.side);
       const fwd = vdist(e1[0].position, e2[0].position) + vdist(e1[3].position, e2[3].position);
       const rev = vdist(e1[0].position, e2[3].position) + vdist(e1[3].position, e2[0].position);
       this.state$.mutate(st => { st.edge2 = hit; st.flipped = rev < fwd; });
@@ -101,12 +101,12 @@ export class BridgeTool implements Tool {
     const s = this.state$.value;
     if (!s.edge1 || !s.edge2) return;
     const scene = this.editor.scene;
-    const e1 = scene.surfaces[s.edge1.patchIdx].getEdgeVertices(s.edge1.side);
-    const e2 = scene.surfaces[s.edge2.patchIdx].getEdgeVertices(s.edge2.side);
+    const e1 = s.edge1.surface.getEdgeVertices(s.edge1.side);
+    const e2 = s.edge2.surface.getEdgeVertices(s.edge2.side);
     bridgeSurface(scene, e1, e2, {
       flipped: s.flipped,
       g1: s.g1,
-      sourcePatchIdx: s.edge1.patchIdx,
+      sourceSurface: s.edge1.surface,
     });
     this.editor.rebuildAll();
     this.resetState();
@@ -127,22 +127,21 @@ export class BridgeTool implements Tool {
     this.editor.clearGroup(this.previewGroup);
     this.clearMarks();
     const s = this.state$.value;
-    const scene = this.editor.scene;
     const ss = this.editor.sceneSetup;
 
     if (s.edge1) {
-      const curve = scene.surfaces[s.edge1.patchIdx].getBoundingCurve(s.edge1.side);
+      const curve = s.edge1.surface.getBoundingCurve(s.edge1.side);
       curve.mark(EDGE1_COLOR);
       this.markedCurves.push(curve);
     }
 
     if (s.edge2) {
-      const curve = scene.surfaces[s.edge2.patchIdx].getBoundingCurve(s.edge2.side);
+      const curve = s.edge2.surface.getBoundingCurve(s.edge2.side);
       curve.mark(EDGE2_COLOR);
       this.markedCurves.push(curve);
 
-      const e1v = scene.surfaces[s.edge1!.patchIdx].getEdgeVertices(s.edge1!.side);
-      let e2v = scene.surfaces[s.edge2.patchIdx].getEdgeVertices(s.edge2.side);
+      const e1v = s.edge1!.surface.getEdgeVertices(s.edge1!.side);
+      let e2v = s.edge2.surface.getEdgeVertices(s.edge2.side);
       if (s.flipped) e2v = [e2v[3], e2v[2], e2v[1], e2v[0]];
       for (let ci = 0; ci < 4; ci += 3) {
         const line = new ScalableLine(ss, [e1v[ci].position, e2v[ci].position], 2, 0xaaaaaa);

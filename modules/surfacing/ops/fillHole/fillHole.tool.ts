@@ -32,7 +32,8 @@ export class FillHoleTool implements Tool {
     const scene = this.editor.scene;
     if (fillHole(scene, this.loop)) {
       if (this.state$.value.g1) {
-        applyG1AllSides(scene, scene.surfaces.length - 1);
+        const created = scene.surfaces[scene.surfaces.length - 1];
+        applyG1AllSides(scene, created);
       }
       this.editor.rebuildAll();
     }
@@ -52,14 +53,14 @@ export class FillHoleTool implements Tool {
     }
 
     const scene = this.editor.scene;
-    const adj = scene.findAdjacentPatches(hit.patchIdx);
+    const adj = scene.findAdjacentSurfaces(hit.surface);
     const isShared = adj.some((a: any) => a.side === hit.side);
     if (isShared) {
       this.editor.requestRender();
       return;
     }
 
-    const loop = traceHole(scene, hit.patchIdx, hit.side);
+    const loop = traceHole(scene, hit.surface, hit.side);
     if (!loop || (loop.length !== 3 && loop.length !== 4)) {
       this.editor.requestRender();
       return;
@@ -68,7 +69,7 @@ export class FillHoleTool implements Tool {
     this.loop = loop;
     for (let i = 0; i < loop.length; i++) {
       const edge = loop[i];
-      const curve: BoundingCurve = scene.surfaces[edge.patchIdx].getBoundingCurve(edge.side);
+      const curve: BoundingCurve = edge.surface.getBoundingCurve(edge.side);
       curve.mark(LOOP_COLORS[i % LOOP_COLORS.length]);
       this.markedCurves.push(curve);
     }

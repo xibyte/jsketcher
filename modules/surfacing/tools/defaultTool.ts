@@ -21,9 +21,9 @@ import {Vertex} from '../models/Vertex/Vertex.entity';
 import {SURFACE_HOVER_COLOR, EDGE_COLORS, CP_HOVER_COLOR, SelectionGizmoOverlay} from '../three';
 
 export interface DefaultToolState {
-  selectedSurface: {surface: NurbsSurface, patchIdx: number} | null;
+  selectedSurface: {surface: NurbsSurface} | null;
   selectedCurve: {curve: BoundingCurve, side: number, hasNeighbor: boolean} | null;
-  arcDialog: {patchIdx: number} | null;
+  arcDialog: {surface: NurbsSurface} | null;
 }
 
 const SURFACE_SET_HOVER_COLOR = 0xb0d4f3;
@@ -114,14 +114,14 @@ export class DefaultTool implements Tool {
     }
 
     if (!this.selectedSurface) return;
-    const patchIdx = this.editor.scene!.surfaces.indexOf(this.selectedSurface);
+    const surface = this.selectedSurface;
 
     if (e.key === 'u' || e.key === 'U') {
-      this.editor.scene!.splitIsoline(patchIdx, 'u', 0.5);
+      this.editor.scene.splitIsoline(surface, 'u', 0.5);
       this.deselectSurface();
       this.editor.rebuildAll();
     } else if (e.key === 'v' || e.key === 'V') {
-      this.editor.scene!.splitIsoline(patchIdx, 'v', 0.5);
+      this.editor.scene.splitIsoline(surface, 'v', 0.5);
       this.deselectSurface();
       this.editor.rebuildAll();
     } else if (e.key === 'a' || e.key === 'A') {
@@ -374,18 +374,17 @@ export class DefaultTool implements Tool {
     const scene = this.editor.scene;
     const surface = this.selectedSurface;
     const curve = this.selectedCurve;
-    const patchIdx = surface && scene ? scene.surfaces.indexOf(surface) : -1;
 
     let curveInfo: DefaultToolState['selectedCurve'] = null;
     if (curve && surface && scene) {
       const side = surface.sideOfCurve(curve);
-      const adj = scene.findAdjacentPatches(patchIdx);
-      const hasNeighbor = adj.some((a: any) => a.side === side);
+      const adj = scene.findAdjacentSurfaces(surface);
+      const hasNeighbor = adj.some(a => a.side === side);
       curveInfo = {curve, side, hasNeighbor};
     }
 
     this.state$.next({
-      selectedSurface: surface ? {surface, patchIdx} : null,
+      selectedSurface: surface ? {surface} : null,
       selectedCurve: curveInfo,
       arcDialog: this.state$.value.arcDialog,
     });
@@ -397,8 +396,8 @@ export class DefaultTool implements Tool {
     if (current) {
       this.state$.mutate(s => { s.arcDialog = null; });
     } else {
-      const patchIdx = this.editor.scene.surfaces.indexOf(this.selectedSurface);
-      this.state$.mutate(s => { s.arcDialog = {patchIdx}; });
+      const surface = this.selectedSurface;
+      this.state$.mutate(s => { s.arcDialog = {surface}; });
     }
   }
 
@@ -413,21 +412,21 @@ export class DefaultTool implements Tool {
   pushPull(dist: number): void {
     const s = this.state$.value.selectedSurface;
     if (!s) return;
-    this.editor.scene.pushPullPatch(s.patchIdx, dist);
+    this.editor.scene.pushPull(s.surface, dist);
     this.editor.rebuildAll();
   }
 
   extrude(dist: number): void {
     const s = this.state$.value.selectedSurface;
     if (!s) return;
-    this.editor.scene.extrudePatch(s.patchIdx, dist);
+    this.editor.scene.extrude(s.surface, dist);
     this.editor.rebuildAll();
   }
 
   subdivide(): void {
     const s = this.state$.value.selectedSurface;
     if (!s) return;
-    this.editor.scene.subdividePatch(s.patchIdx);
+    this.editor.scene.subdivide(s.surface);
     this.deselectSurface();
     this.editor.rebuildAll();
   }
@@ -447,8 +446,8 @@ export class DefaultTool implements Tool {
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
     const scene = this.editor.scene;
-    const patch = scene.surfaces[s.patchIdx];
-    const ev = patch.getEdgeVertices(c.side);
+    const surface = s.surface;
+    const ev = surface.getEdgeVertices(c.side);
     const {distance: vdist} = require('math/vec');
     const chord = vdist(ev[0].position, ev[3].position);
     const radius = chord / Math.SQRT2;
@@ -457,12 +456,12 @@ export class DefaultTool implements Tool {
     else if (c.side === 1) u = 1;
     else if (c.side === 2) v = 1;
     else if (c.side === 3) u = 0;
-    let planeNormal = patch.normal(u, v);
+    let planeNormal = surface.normal(u, v);
     if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]] as any;
-    scene.arcConstraints = scene.arcConstraints.filter((cc: any) =>
-      !(cc.patchSide && cc.patchSide.patchIdx === s.patchIdx && cc.patchSide.side === c.side)
+    scene.arcConstraints = scene.arcConstraints.filter(cc =>
+      !(cc.surfaceSide.surface === surface && cc.surfaceSide.side === c.side)
     );
-    scene.constrainEdgeToArc(s.patchIdx, c.side, radius, 90, planeNormal, 'rational');
+    scene.constrainEdgeToArc(surface, c.side, radius, 90, planeNormal, 'rational');
     this.editor.rebuildAll();
   }
 
@@ -471,10 +470,11 @@ export class DefaultTool implements Tool {
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
     const scene = this.editor.scene;
+    const surface = s.surface;
     const {lerp: vlerp} = require('math/vec');
-    scene.arcConstraints = scene.arcConstraints.filter((cc: any) => {
-      if (cc.patchSide && cc.patchSide.patchIdx === s.patchIdx && cc.patchSide.side === c.side) {
-        const ev = scene.surfaces[s.patchIdx].getEdgeVertices(c.side);
+    scene.arcConstraints = scene.arcConstraints.filter(cc => {
+      if (cc.surfaceSide.surface === surface && cc.surfaceSide.side === c.side) {
+        const ev = surface.getEdgeVertices(c.side);
         const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
         const lp2 = vlerp(ev[0].position, ev[3].position, 2/3);
         ev[1].set(lp1[0], lp1[1], lp1[2]);
@@ -483,8 +483,7 @@ export class DefaultTool implements Tool {
       }
       return true;
     });
-    const selPatch = scene.surfaces[s.patchIdx];
-    for (const row of selPatch.grid) {
+    for (const row of surface.grid) {
       for (const cp of row) (cp as any).weight.value = 1;
     }
     this.editor.rebuildAll();
@@ -494,7 +493,7 @@ export class DefaultTool implements Tool {
     const c = this.state$.value.selectedCurve;
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
-    this.editor.scene.applyG1(s.patchIdx, c.side);
+    this.editor.scene.applyG1(s.surface, c.side);
     this.editor.rebuildAll();
   }
 
@@ -502,7 +501,7 @@ export class DefaultTool implements Tool {
     const c = this.state$.value.selectedCurve;
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
-    this.editor.scene.applyG2(s.patchIdx, c.side);
+    this.editor.scene.applyG2(s.surface, c.side);
     this.editor.rebuildAll();
   }
 
@@ -510,7 +509,7 @@ export class DefaultTool implements Tool {
     const c = this.state$.value.selectedCurve;
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
-    this.editor.scene.mirrorAcrossEdge(s.patchIdx, c.side);
+    this.editor.scene.mirrorAcrossEdge(s.surface, c.side);
     this.editor.rebuildAll();
   }
 

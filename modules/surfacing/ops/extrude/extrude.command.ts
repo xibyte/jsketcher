@@ -7,8 +7,8 @@ import {mul as vscale, lerp as vlerp} from 'math/vec';
  * Extrude a patch: disconnect from neighbors, move along normal,
  * and create 4 wall patches to maintain watertightness.
  */
-export function extrudePatch(scene: Scene, patchIdx: number, distance: number): void {
-  const patch = scene.surfaces[patchIdx];
+export function extrude(scene: Scene, surface: NurbsSurface, distance: number): void {
+  const patch = surface;
   const group = scene.findGroupOfSurface(patch);
   const normal = patch.normal(0.5, 0.5);
   const offset = vscale(normal, distance);
