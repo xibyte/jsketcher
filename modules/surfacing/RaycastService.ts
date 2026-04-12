@@ -45,31 +45,30 @@ export class RaycastService {
   }
 
   /**
-   * Raycast against surface meshes, find the closest patch + closest of
-   * its 4 boundary sides. Returns `{patchIdx, side}` or null.
+   * Raycast against surface meshes, find the closest surface + closest of
+   * its 4 boundary sides. Returns `{surface, side}` or null.
    */
-  raycastSurfaceEdge(input: RaycastInput): {patchIdx: number, side: number} | null {
+  raycastSurfaceEdge(input: RaycastInput): {surface: NurbsSurface, side: number} | null {
     const raycaster = this.resolve(input);
     const scene = this.editor.scene;
     if (!scene) return null;
-    let bestPi = -1;
+    let bestSurface: NurbsSurface | null = null;
     let bestDist = Infinity;
     let bestFaceIdx = -1;
-    const surfaces = scene.surfaces;
-    for (let i = 0; i < surfaces.length; i++) {
-      const view: any = surfaces[i].object3d;
+    for (const surface of scene.surfaces) {
+      const view: any = surface.object3d;
       if (!view || !view.visible || !view.mesh) continue;
       const hits: any[] = [];
       view.mesh.raycast(raycaster, hits);
       for (const h of hits) {
         if (h.distance < bestDist && h.faceIndex !== undefined) {
           bestDist = h.distance;
-          bestPi = i;
+          bestSurface = surface;
           bestFaceIdx = h.faceIndex;
         }
       }
     }
-    if (bestPi < 0) return null;
+    if (!bestSurface) return null;
     const res = this.editor.resolution;
     const quadIdx = Math.floor(bestFaceIdx / 2);
     const col = quadIdx % res;
@@ -81,40 +80,39 @@ export class RaycastService {
     for (let s = 1; s < 4; s++) {
       if (dists[s] < dists[minSide]) minSide = s;
     }
-    return {patchIdx: bestPi, side: minSide};
+    return {surface: bestSurface, side: minSide};
   }
 
   /**
    * Raycast against surface meshes and compute the UV coordinates of
    * the hit point via barycentric interpolation. Returns
-   * `{patchIdx, u, v}` or null.
+   * `{surface, u, v}` or null.
    */
-  raycastToUV(input: RaycastInput): {patchIdx: number, u: number, v: number} | null {
+  raycastToUV(input: RaycastInput): {surface: NurbsSurface, u: number, v: number} | null {
     const raycaster = this.resolve(input);
     const scene = this.editor.scene;
     if (!scene) return null;
-    const surfaces = scene.surfaces;
-    let bestPi = -1;
+    let bestSurface: NurbsSurface | null = null;
     let bestDist = Infinity;
     let bestHit: any = null;
-    for (let i = 0; i < surfaces.length; i++) {
-      const view: any = surfaces[i].object3d;
+    for (const surface of scene.surfaces) {
+      const view: any = surface.object3d;
       if (!view || !view.visible || !view.mesh) continue;
       const hits: any[] = [];
       view.mesh.raycast(raycaster, hits);
       for (const h of hits) {
         if (h.distance < bestDist && h.faceIndex !== undefined) {
           bestDist = h.distance;
-          bestPi = i;
+          bestSurface = surface;
           bestHit = h;
         }
       }
     }
-    if (bestPi < 0 || !bestHit) return null;
+    if (!bestSurface || !bestHit) return null;
 
     const fi = bestHit.faceIndex;
     const res = this.editor.resolution;
-    const meshGeo = (surfaces[bestPi].object3d as any).mesh.geometry;
+    const meshGeo = (bestSurface.object3d as any).mesh.geometry;
     const indices = meshGeo.index.array;
     const verts = meshGeo.attributes.position.array;
 
@@ -154,7 +152,7 @@ export class RaycastService {
     const u = (col + Math.max(0, Math.min(1, localU))) / res;
     const v = (row + Math.max(0, Math.min(1, localV))) / res;
 
-    return {patchIdx: bestPi, u, v};
+    return {surface: bestSurface, u, v};
   }
 
   /**

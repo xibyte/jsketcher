@@ -52,12 +52,12 @@ export interface ArcConstraint {
   planeNormal: Vec3;
   center: Vec3;
   mode: ArcMode;
-  patchSide?: {patchIdx: number, side: number};
+  surfaceSide?: {surface: NurbsSurface, side: number};
 }
 
 export interface MirrorConstraint {
-  sourcePatchIdx: number;
-  mirrorPatchIdx: number;
+  source: NurbsSurface;
+  mirror: NurbsSurface;
   planePoint: Vec3;
   planeNormal: Vec3;
   cpPairs: {source: Vertex, mirror: Vertex}[];
@@ -85,11 +85,11 @@ export interface SerializedScene {
     planeNormal: Vec3;
     center: Vec3;
     mode: ArcMode;
-    patchSide?: {patchIdx: number, side: number};
+    surfaceSide?: {surfaceId: string, side: number};
   }[];
   mirrorConstraints?: {
-    sourcePatchIdx: number;
-    mirrorPatchIdx: number;
+    sourceId: string;
+    mirrorId: string;
     planePoint: Vec3;
     planeNormal: Vec3;
     cpPairs: {sourceVertexIdx: number, mirrorVertexIdx: number}[];
@@ -184,46 +184,26 @@ export class Scene extends GeometricEntity {
   }
 
   // -----------------------------------------------------------------------
-  // Surface Sets — derived from each surface's .surfaceSet reference
-  // -----------------------------------------------------------------------
-
-  /** Indices of all surfaces sharing the same SurfaceSet as the given patch. */
-  surfacesInSameSet(patchIdx: number): number[] {
-    const all = this.surfaces;
-    const surface = all[patchIdx];
-    if (!surface || !surface.surfaceSet) return [patchIdx];
-    const set = surface.surfaceSet;
-    const result: number[] = [];
-    for (let i = 0; i < all.length; i++) {
-      if (all[i].surfaceSet === set) result.push(i);
-    }
-    return result;
-  }
-
-  // -----------------------------------------------------------------------
   // Topology queries
   // -----------------------------------------------------------------------
 
   /** Find which surfaces share a boundary edge with a given surface. */
-  findAdjacentPatches(patchIdx: number): {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] {
-    // Capture once — `surfaces` is a tree-walking getter.
+  findAdjacentSurfaces(surface: NurbsSurface): {side: number, other: NurbsSurface, otherSide: number, reversed: boolean}[] {
     const all = this.surfaces;
-    const patch = all[patchIdx];
-    const result: {side: number, otherIdx: number, otherSide: number, reversed: boolean}[] = [];
+    const result: {side: number, other: NurbsSurface, otherSide: number, reversed: boolean}[] = [];
     for (let side = 0; side < 4; side++) {
-      const edge = patch.getEdgeVertices(side);
-      for (let oi = 0; oi < all.length; oi++) {
-        if (oi === patchIdx) continue;
-        const other = all[oi];
+      const edge = surface.getEdgeVertices(side);
+      for (const other of all) {
+        if (other === surface) continue;
         for (let os = 0; os < 4; os++) {
           const otherEdge = other.getEdgeVertices(os);
           if (edge[0] === otherEdge[0] && edge[1] === otherEdge[1] &&
               edge[2] === otherEdge[2] && edge[3] === otherEdge[3]) {
-            result.push({side, otherIdx: oi, otherSide: os, reversed: false});
+            result.push({side, other, otherSide: os, reversed: false});
           }
           if (edge[0] === otherEdge[3] && edge[1] === otherEdge[2] &&
               edge[2] === otherEdge[1] && edge[3] === otherEdge[0]) {
-            result.push({side, otherIdx: oi, otherSide: os, reversed: true});
+            result.push({side, other, otherSide: os, reversed: true});
           }
         }
       }
@@ -231,28 +211,16 @@ export class Scene extends GeometricEntity {
     return result;
   }
 
-  /** Get the interior row/column of vertices adjacent to a side. */
-  getInteriorRow(patchIdx: number, side: number, depth: number): Vertex[] {
-    const g = this.surfaces[patchIdx].grid;
-    switch (side) {
-      case 0: return [g[depth][0], g[depth][1], g[depth][2], g[depth][3]];
-      case 1: return [g[0][3 - depth], g[1][3 - depth], g[2][3 - depth], g[3][3 - depth]];
-      case 2: return [g[3 - depth][0], g[3 - depth][1], g[3 - depth][2], g[3 - depth][3]];
-      case 3: return [g[0][depth], g[1][depth], g[2][depth], g[3][depth]];
-      default: return [];
-    }
-  }
-
   /** Find all free edges (edges with a surface on only one side). */
-  findFreeEdges(): {patchIdx: number, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] {
+  findFreeEdges(): {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] {
     const all = this.surfaces;
-    const free: {patchIdx: number, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] = [];
-    for (let pi = 0; pi < all.length; pi++) {
-      const adj = this.findAdjacentPatches(pi);
+    const free: {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] = [];
+    for (const surface of all) {
+      const adj = this.findAdjacentSurfaces(surface);
       const sharedSides = new Set(adj.map(a => a.side));
       for (let side = 0; side < 4; side++) {
         if (!sharedSides.has(side)) {
-          free.push({patchIdx: pi, side, verts: all[pi].getEdgeVertices(side)});
+          free.push({surface, side, verts: surface.getEdgeVertices(side)});
         }
       }
     }
@@ -263,28 +231,28 @@ export class Scene extends GeometricEntity {
   // Op delegates (thin wrappers; actual logic lives in surfacing/ops/)
   // -----------------------------------------------------------------------
 
-  constrainEdgeToArc(patchIdx: number, side: number, radius: number, angle: number, planeNormal: Vec3, mode: ArcMode = 'approximate'): ArcConstraint {
-    return _arcOps.constrainEdgeToArc(this, patchIdx, side, radius, angle, planeNormal, mode);
+  constrainEdgeToArc(surface: NurbsSurface, side: number, radius: number, angle: number, planeNormal: Vec3, mode: ArcMode = 'approximate'): ArcConstraint {
+    return _arcOps.constrainEdgeToArc(this, surface, side, radius, angle, planeNormal, mode);
   }
   applyArcConstraint(c: ArcConstraint): void { _arcOps.applyArcConstraint(this, c); }
   enforceArcConstraints(v: Vertex): void { _arcOps.enforceArcConstraints(this, v); }
   removeArcConstraint(constraint: ArcConstraint): void { _arcOps.removeArcConstraint(this, constraint); }
-  applyG1(patchIdx: number, side: number): boolean { return _contOps.applyG1(this, patchIdx, side); }
-  applyG1AllSides(patchIdx: number): void { _contOps.applyG1AllSides(this, patchIdx); }
-  applyG2(patchIdx: number, side: number): boolean { return _contOps.applyG2(this, patchIdx, side); }
-  mirrorAcrossEdge(patchIdx: number, side: number): number[] { return _mirrorOps.mirrorAcrossEdge(this, patchIdx, side); }
+  applyG1(surface: NurbsSurface, side: number): boolean { return _contOps.applyG1(this, surface, side); }
+  applyG1AllSides(surface: NurbsSurface): void { _contOps.applyG1AllSides(this, surface); }
+  applyG2(surface: NurbsSurface, side: number): boolean { return _contOps.applyG2(this, surface, side); }
+  mirrorAcrossEdge(surface: NurbsSurface, side: number): NurbsSurface[] { return _mirrorOps.mirrorAcrossEdge(this, surface, side); }
   enforceMirrorConstraints(v: Vertex): void { _mirrorOps.enforceMirrorConstraints(this, v); }
   enforceAllMirrorConstraints(): void { _mirrorOps.enforceAllMirrorConstraints(this); }
   isMirrorTarget(v: Vertex): boolean { return _mirrorOps.isMirrorTarget(this, v); }
-  removeMirrorConstraint(mc: MirrorConstraint, deletePatch: boolean = true): void { _mirrorOps.removeMirrorConstraint(this, mc, deletePatch); }
-  splitIsoline(patchIdx: number, direction: 'u' | 'v', t: number): void { _splitOps.splitIsoline(this, patchIdx, direction, t); }
-  computeIsolinePropagation(patchIdx: number, direction: 'u' | 'v', t: number) { return _splitOps.computeIsolinePropagation(this, patchIdx, direction, t); }
-  tessellateIsoline(patchIdx: number, direction: 'u' | 'v', t: number, segments: number = 24): Vec3[] { return _splitOps.tessellateIsoline(this, patchIdx, direction, t, segments); }
-  traceHole(startPatchIdx: number, startSide: number) { return _fillOps.traceHole(this, startPatchIdx, startSide); }
-  fillHole(loop: {patchIdx: number, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[]): boolean { return _fillOps.fillHole(this, loop); }
-  pushPullPatch(patchIdx: number, distance: number): void { _pushPullOps.pushPullPatch(this, patchIdx, distance); }
-  extrudePatch(patchIdx: number, distance: number): void { _extrudeOps.extrudePatch(this, patchIdx, distance); }
-  subdividePatch(patchIdx: number): void { _subdivideOps.subdividePatch(this, patchIdx); }
+  removeMirrorConstraint(mc: MirrorConstraint, deleteMirror: boolean = true): void { _mirrorOps.removeMirrorConstraint(this, mc, deleteMirror); }
+  splitIsoline(surface: NurbsSurface, direction: 'u' | 'v', t: number): void { _splitOps.splitIsoline(this, surface, direction, t); }
+  computeIsolinePropagation(surface: NurbsSurface, direction: 'u' | 'v', t: number) { return _splitOps.computeIsolinePropagation(this, surface, direction, t); }
+  tessellateIsoline(surface: NurbsSurface, direction: 'u' | 'v', t: number, segments: number = 24): Vec3[] { return _splitOps.tessellateIsoline(this, surface, direction, t, segments); }
+  traceHole(startSurface: NurbsSurface, startSide: number) { return _fillOps.traceHole(this, startSurface, startSide); }
+  fillHole(loop: {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[]): boolean { return _fillOps.fillHole(this, loop); }
+  pushPull(surface: NurbsSurface, distance: number): void { _pushPullOps.pushPull(this, surface, distance); }
+  extrude(surface: NurbsSurface, distance: number): void { _extrudeOps.extrude(this, surface, distance); }
+  subdivide(surface: NurbsSurface): void { _subdivideOps.subdivide(this, surface); }
 
   // -----------------------------------------------------------------------
   // Entity-graph synchronization (used by the OBJECTS explorer tree)
@@ -338,12 +306,12 @@ export class Scene extends GeometricEntity {
       planeNormal: [...c.planeNormal] as Vec3,
       center: [...c.center] as Vec3,
       mode: c.mode,
-      patchSide: c.patchSide ? {...c.patchSide} : undefined,
+      surfaceSide: c.surfaceSide ? {surfaceId: c.surfaceSide.surface.id, side: c.surfaceSide.side} : undefined,
     }));
 
     const mirrorConstraints = this.mirrorConstraints.map(mc => ({
-      sourcePatchIdx: mc.sourcePatchIdx,
-      mirrorPatchIdx: mc.mirrorPatchIdx,
+      sourceId: mc.source.id,
+      mirrorId: mc.mirror.id,
       planePoint: [...mc.planePoint] as Vec3,
       planeNormal: [...mc.planeNormal] as Vec3,
       cpPairs: mc.cpPairs.map(pair => ({
@@ -415,7 +383,16 @@ export class Scene extends GeometricEntity {
       orderedSurfaces.push(surface);
     }
 
+    // Build surface ID lookup for constraint resolution.
+    const surfaceById = new Map<string, NurbsSurface>();
+    for (const s of orderedSurfaces) surfaceById.set(s.id, s);
+
     for (const cd of data.arcConstraints) {
+      let surfaceSide: ArcConstraint['surfaceSide'] = undefined;
+      if (cd.surfaceSide) {
+        const surf = surfaceById.get(cd.surfaceSide.surfaceId);
+        if (surf) surfaceSide = {surface: surf, side: cd.surfaceSide.side};
+      }
       scene.arcConstraints.push({
         vertices: cd.vertexIndices.map(i => verts[i]) as unknown as [Vertex, Vertex, Vertex, Vertex],
         radius: cd.radius,
@@ -423,15 +400,18 @@ export class Scene extends GeometricEntity {
         planeNormal: [...cd.planeNormal] as Vec3,
         center: [...cd.center] as Vec3,
         mode: cd.mode,
-        patchSide: cd.patchSide ? {...cd.patchSide} : undefined,
+        surfaceSide,
       });
     }
 
     if (data.mirrorConstraints) {
       for (const md of data.mirrorConstraints) {
+        const src = surfaceById.get(md.sourceId);
+        const mir = surfaceById.get(md.mirrorId);
+        if (!src || !mir) continue;
         scene.mirrorConstraints.push({
-          sourcePatchIdx: md.sourcePatchIdx,
-          mirrorPatchIdx: md.mirrorPatchIdx,
+          source: src,
+          mirror: mir,
           planePoint: [...md.planePoint] as Vec3,
           planeNormal: [...md.planeNormal] as Vec3,
           cpPairs: md.cpPairs.map(pair => ({
@@ -443,23 +423,12 @@ export class Scene extends GeometricEntity {
     }
 
     if (data.groups) {
-      const surfaceById = new Map<string, NurbsSurface>();
-      for (const s of orderedSurfaces) surfaceById.set(s.id, s);
-      for (const gd of data.groups as any[]) {
+      for (const gd of data.groups) {
         const group = new Group(ctx, gd.name, gd.id);
         scene.addChild(group);
-        // Accept the new surfaceIds format and the old patchIndices format.
-        if (Array.isArray(gd.surfaceIds)) {
-          for (const sid of gd.surfaceIds) {
-            const s = surfaceById.get(sid);
-            if (s) group.addChild(s); // reparents from scene → group
-          }
-        } else if (Array.isArray(gd.patchIndices)) {
-          for (const idx of gd.patchIndices) {
-            if (idx >= 0 && idx < orderedSurfaces.length) {
-              group.addChild(orderedSurfaces[idx]);
-            }
-          }
+        for (const sid of gd.surfaceIds) {
+          const s = surfaceById.get(sid);
+          if (s) group.addChild(s); // reparents from scene → group
         }
       }
     }

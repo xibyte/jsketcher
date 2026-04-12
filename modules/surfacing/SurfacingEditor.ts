@@ -117,13 +117,6 @@ export class SurfacingEditor {
     this.toolChanged$.next(this.toolChanged$.value + 1);
   }
 
-  /** Backward-compat getter that reads from the DefaultTool's state. */
-  get selectedPatchIdx(): number {
-    const dt = this.tools[0] as any;
-    const sel = dt?.selectedSurface;
-    return sel ? this.scene.surfaces.indexOf(sel) : -1;
-  }
-
   /** Current selection — read from the DefaultTool at the bottom of the stack. */
   get selection(): NurbsSurface | null {
     const dt = this.tools[0] as any;

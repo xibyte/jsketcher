@@ -1,4 +1,5 @@
 import {Scene, Vertex, ArcConstraint, ArcMode} from '../../models/Scene/Scene.entity';
+import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
 import {Vec3} from '../../patchCageTypes';
 import {add as vadd, sub as vsub, mul as vscale, lerp as vlerp, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
 
@@ -6,13 +7,12 @@ import {add as vadd, sub as vsub, mul as vscale, lerp as vlerp, normalize as vno
  * Constrain an edge to a circular arc.
  */
 export function constrainEdgeToArc(
-  scene: Scene, patchIdx: number, side: number,
+  scene: Scene, surface: NurbsSurface, side: number,
   radius: number, angle: number,
   planeNormal: Vec3, mode: ArcMode = 'approximate'
 ): ArcConstraint {
-  const verts = scene.surfaces[patchIdx].getEdgeVertices(side);
+  const verts = surface.getEdgeVertices(side);
 
-  // Compute arc center from endpoints, radius, and plane normal
   const p0 = verts[0].position;
   const p3 = verts[3].position;
   const center = computeArcCenter(p0, p3, radius, angle, planeNormal);
@@ -20,7 +20,7 @@ export function constrainEdgeToArc(
   const constraint: ArcConstraint = {
     vertices: verts,
     radius, angle, planeNormal, center, mode,
-    patchSide: {patchIdx, side},
+    surfaceSide: {surface, side},
   };
 
   scene.arcConstraints.push(constraint);
@@ -67,14 +67,14 @@ export function applyArcConstraint(scene: Scene, c: ArcConstraint): void {
   );
 
   if (c.mode === 'approximate') {
-    if (c.patchSide) {
-      setEdgeWeights(scene, c.patchSide.patchIdx, c.patchSide.side, [1, 1, 1, 1]);
+    if (c.surfaceSide) {
+      setEdgeWeights(c.surfaceSide.surface, c.surfaceSide.side, [1, 1, 1, 1]);
     }
   } else {
     // Rational: set weights for exact arc
     const wMid = Math.cos(angleRad / 4);
-    if (c.patchSide) {
-      setEdgeWeights(scene, c.patchSide.patchIdx, c.patchSide.side, [1, wMid, wMid, 1]);
+    if (c.surfaceSide) {
+      setEdgeWeights(c.surfaceSide.surface, c.surfaceSide.side, [1, wMid, wMid, 1]);
       // rational is now a derived getter — no need to flip a flag.
     }
   }
@@ -95,10 +95,9 @@ export function enforceArcConstraints(scene: Scene, v: Vertex): void {
   }
 }
 
-/** Set weights on the 4 ControlPoints along a patch edge. */
-export function setEdgeWeights(scene: Scene, patchIdx: number, side: number, weights: [number, number, number, number]): void {
-  const patch = scene.surfaces[patchIdx];
-  const edgeCPs = patch.getEdgeVertices(side);
+/** Set weights on the 4 ControlPoints along a surface edge. */
+function setEdgeWeights(surface: NurbsSurface, side: number, weights: [number, number, number, number]): void {
+  const edgeCPs = surface.getEdgeVertices(side);
   for (let i = 0; i < 4; i++) edgeCPs[i].weight.value = weights[i];
 }
 
@@ -108,8 +107,8 @@ export function removeArcConstraint(scene: Scene, constraint: ArcConstraint): vo
   if (idx >= 0) {
     scene.arcConstraints.splice(idx, 1);
     // Reset weights if rational
-    if (constraint.mode === 'rational' && constraint.patchSide) {
-      setEdgeWeights(scene, constraint.patchSide.patchIdx, constraint.patchSide.side, [1, 1, 1, 1]);
+    if (constraint.mode === 'rational' && constraint.surfaceSide) {
+      setEdgeWeights(constraint.surfaceSide.surface, constraint.surfaceSide.side, [1, 1, 1, 1]);
       // `rational` is now a derived getter — no flag to update.
     }
   }

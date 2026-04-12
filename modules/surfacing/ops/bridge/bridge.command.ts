@@ -6,14 +6,14 @@ import {applyG1AllSides} from '../continuity/continuity.command';
 
 /**
  * Create a bridge surface between two edges.
- * Returns the index of the newly created patch.
+ * Returns the newly created surface.
  */
 export function bridgeSurface(
   scene: Scene,
   edge1Verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint],
   edge2Verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint],
-  options: {flipped?: boolean, g1?: boolean, sourcePatchIdx?: number} = {}
-): number {
+  options: {flipped?: boolean, g1?: boolean, sourceSurface?: NurbsSurface} = {}
+): NurbsSurface {
   let e2 = edge2Verts;
   if (options.flipped) {
     e2 = [e2[3], e2[2], e2[1], e2[0]];
@@ -25,9 +25,9 @@ export function bridgeSurface(
     const row: ControlPoint[] = [];
     for (let c = 0; c < 4; c++) {
       if (r === 0) {
-        row.push(edge1Verts[c]); // shared by identity with source patch
+        row.push(edge1Verts[c]); // shared by identity with source surface
       } else if (r === 3) {
-        row.push(e2[c]); // shared by identity with target patch
+        row.push(e2[c]); // shared by identity with target surface
       } else {
         const t = r / 3;
         const p = vlerp(edge1Verts[c].position, e2[c].position, t);
@@ -47,23 +47,19 @@ export function bridgeSurface(
     curveCache.register(s.boundingCurves.top);
     curveCache.register(s.boundingCurves.left);
   }
-  const bridgePatch = new NurbsSurface(scene.ctx, grid, curveCache.curvesFor(scene.ctx, grid));
-  // Bridge inherits the source patch's surface set
-  if (options.sourcePatchIdx !== undefined) {
-    const sourceSet = scene.surfaces[options.sourcePatchIdx]?.surfaceSet;
-    if (sourceSet) {
-      bridgePatch.surfaceSet = sourceSet;
-      sourceSet.surfaces.add(bridgePatch);
-    }
+  const bridge = new NurbsSurface(scene.ctx, grid, curveCache.curvesFor(scene.ctx, grid));
+  // Bridge inherits the source surface's surface set
+  const sourceSurface = options.sourceSurface;
+  if (sourceSurface?.surfaceSet) {
+    bridge.surfaceSet = sourceSurface.surfaceSet;
+    sourceSurface.surfaceSet.surfaces.add(bridge);
   }
-  const sourcePatch = options.sourcePatchIdx !== undefined ? scene.surfaces[options.sourcePatchIdx] : null;
-  const group = sourcePatch ? scene.findGroupOfSurface(sourcePatch) : null;
-  (group ?? scene).addChild(bridgePatch);
-  const newIdx = scene.surfaces.indexOf(bridgePatch);
+  const group = sourceSurface ? scene.findGroupOfSurface(sourceSurface) : null;
+  (group ?? scene).addChild(bridge);
 
   if (options.g1) {
-    applyG1AllSides(scene, newIdx);
+    applyG1AllSides(scene, bridge);
   }
 
-  return newIdx;
+  return bridge;
 }

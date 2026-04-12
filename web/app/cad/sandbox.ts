@@ -362,7 +362,7 @@ export function runSandbox(ctx: ApplicationContext) {
 
       let curNodes = new Set();
 
-      oldNodes.forEach(n => {
+      oldNodes.forEach((n: any) => {
         ctx.cadScene.auxGroup.remove(n.visual);
       });
 

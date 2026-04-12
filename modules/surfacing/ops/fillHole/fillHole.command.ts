@@ -10,7 +10,7 @@ import type {SurfacingEditor} from '../../SurfacingEditor';
  * Follows free edges around by matching corner vertices.
  * Returns null if no closed loop found, or an array of edge descriptors forming the loop.
  */
-export function traceHole(scene: Scene, startPatchIdx: number, startSide: number): {patchIdx: number, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] | null {
+export function traceHole(scene: Scene, startSurface: NurbsSurface, startSide: number): {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[] | null {
   const freeEdges = scene.findFreeEdges();
 
   // Build lookup: corner vertex → free edges starting or ending at that vertex
@@ -30,12 +30,12 @@ export function traceHole(scene: Scene, startPatchIdx: number, startSide: number
   }
 
   // Find the starting edge
-  const startEdge = freeEdges.find(fe => fe.patchIdx === startPatchIdx && fe.side === startSide);
+  const startEdge = freeEdges.find(fe => fe.surface === startSurface && fe.side === startSide);
   if (!startEdge) return null;
 
   const loop: typeof freeEdges = [startEdge];
   const visited = new Set<string>();
-  visited.add(`${startEdge.patchIdx}:${startEdge.side}`);
+  visited.add(`${startEdge.surface}:${startEdge.side}`);
 
   let currentEnd = startEdge.verts[3];
   const targetStart = startEdge.verts[0];
@@ -49,7 +49,7 @@ export function traceHole(scene: Scene, startPatchIdx: number, startSide: number
     let found = false;
     const candidates = edgeByStart.get(currentEnd) || [];
     for (const fe of candidates) {
-      const key = `${fe.patchIdx}:${fe.side}`;
+      const key = `${fe.surface}:${fe.side}`;
       if (visited.has(key)) continue;
       visited.add(key);
       loop.push(fe);
@@ -62,12 +62,12 @@ export function traceHole(scene: Scene, startPatchIdx: number, startSide: number
     // Try edges ending at currentEnd (traverse them reversed)
     const revCandidates = edgeByEnd.get(currentEnd) || [];
     for (const fe of revCandidates) {
-      const key = `${fe.patchIdx}:${fe.side}`;
+      const key = `${fe.surface}:${fe.side}`;
       if (visited.has(key)) continue;
       visited.add(key);
       // Push reversed
       loop.push({
-        patchIdx: fe.patchIdx,
+        surface: fe.surface,
         side: fe.side,
         verts: [fe.verts[3], fe.verts[2], fe.verts[1], fe.verts[0]],
       });
@@ -91,9 +91,9 @@ function interpRow(ctx: SurfacingEditor, bottom: [Vertex, Vertex, Vertex, Vertex
  * For 4 edges: Coons patch using boundary curves.
  * For 3 edges: degenerate patch with one collapsed edge.
  */
-export function fillHole(scene: Scene, loop: {patchIdx: number, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[]): boolean {
+export function fillHole(scene: Scene, loop: {surface: NurbsSurface, side: number, verts: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]}[]): boolean {
   // Place fill in the group of the first edge's patch, and inherit its surface set
-  const sourcePatch = scene.surfaces[loop[0].patchIdx];
+  const sourcePatch = loop[0].surface;
   const group = sourcePatch ? scene.findGroupOfSurface(sourcePatch) : null;
   const sourceSet = sourcePatch?.surfaceSet || null;
 
@@ -104,7 +104,7 @@ export function fillHole(scene: Scene, loop: {patchIdx: number, side: number, ve
   // as the neighbors already hold.
   const curveCache = new LocalBoundingCurveCache();
   for (const entry of loop) {
-    const neighbor = scene.surfaces[entry.patchIdx];
+    const neighbor = entry.surface;
     if (!neighbor) continue;
     curveCache.register(neighbor.boundingCurves.bottom);
     curveCache.register(neighbor.boundingCurves.right);

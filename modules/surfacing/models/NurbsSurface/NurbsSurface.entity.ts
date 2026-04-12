@@ -350,6 +350,18 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     this.addChild(this.cage);
   }
 
+  /** Get the interior row/column of vertices adjacent to a side. */
+  getInteriorRow(side: number, depth: number): Vertex[] {
+    const g = this.grid;
+    switch (side) {
+      case 0: return [g[depth][0], g[depth][1], g[depth][2], g[depth][3]];
+      case 1: return [g[0][3 - depth], g[1][3 - depth], g[2][3 - depth], g[3][3 - depth]];
+      case 2: return [g[3 - depth][0], g[3 - depth][1], g[3 - depth][2], g[3 - depth][3]];
+      case 3: return [g[0][depth], g[1][depth], g[2][depth], g[3][depth]];
+      default: return [];
+    }
+  }
+
   /**
    * Get the 4 ControlPoints along a boundary edge.
    * side: 0=bottom, 1=right, 2=top, 3=left.

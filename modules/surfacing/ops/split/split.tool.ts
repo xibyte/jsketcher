@@ -3,13 +3,14 @@ import ScalableLine from 'scene/objects/scalableLine';
 import {state, type StateStream} from 'lstream';
 import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
+import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
 
 export class LoopInsertTool implements Tool {
 
   readonly state$: StateStream<null> = state(null);
   private editor!: SurfacingEditor;
   private previewGroup: any = null;
-  private pending: {patchIdx: number, dir: 'u' | 'v', t: number} | null = null;
+  private pending: {surface: NurbsSurface, dir: 'u' | 'v', t: number} | null = null;
 
   init(editor: SurfacingEditor): void {
     this.editor = editor;
@@ -24,8 +25,8 @@ export class LoopInsertTool implements Tool {
 
   onClick(_e: MouseEvent): void {
     if (!this.pending) return;
-    const {patchIdx, dir, t} = this.pending;
-    this.editor.scene!.splitIsoline(patchIdx, dir, t);
+    const {surface, dir, t} = this.pending;
+    this.editor.scene.splitIsoline(surface, dir, t);
     this.pending = null;
     this.editor.clearGroup(this.previewGroup);
     this.previewGroup.visible = false;
@@ -47,13 +48,13 @@ export class LoopInsertTool implements Tool {
     if (e.shiftKey) dir = dir === 'u' ? 'v' : 'u';
     const t = Math.max(0.01, Math.min(0.99, dir === 'u' ? hit.u : hit.v));
 
-    this.pending = {patchIdx: hit.patchIdx, dir, t};
-    const scene = this.editor.scene!;
-    const propagation = scene.computeIsolinePropagation(hit.patchIdx, dir, t);
+    this.pending = {surface: hit.surface, dir, t};
+    const scene = this.editor.scene;
+    const propagation = scene.computeIsolinePropagation(hit.surface, dir, t);
     const ss = this.editor.sceneSetup;
 
     for (const seg of propagation) {
-      const pts = scene.tessellateIsoline(seg.idx, seg.dir, seg.t, 24);
+      const pts = scene.tessellateIsoline(seg.surface, seg.dir, seg.t, 24);
       const line = new ScalableLine(ss, pts, 3, 0xffcc00);
       line.renderOrder = 4;
       (line as any).raycast = () => {};
