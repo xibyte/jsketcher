@@ -444,9 +444,11 @@ export class DefaultTool implements Tool {
     const s = this.state$.value.selectedSurface;
     if (!s) return;
     const surface = s.surface;
+    // Exit edit mode + clear selection BEFORE disposing so the cage
+    // and CP handles hide themselves while the entity is still intact.
+    this.deselectSurface();
     if (surface.parent) surface.parent.removeChild(surface);
     surface.dispose();
-    this.deselectSurface();
     this.editor.rebuildAll();
   }
 

@@ -232,7 +232,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   exitEditMode(): void {
     if (!this.editing) return;
     this.editing = false;
-    if (this.cage.object3d) {
+    if (this.cage?.object3d) {
       this.cage.object3d.visible = false;
     }
     for (const row of this.grid) {
