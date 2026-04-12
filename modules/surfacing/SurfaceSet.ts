@@ -48,13 +48,13 @@ export class SurfaceSet {
 
   add(surface: NurbsSurface): void {
     this.surfaces.add(surface);
-    (surface as any).surfaceSet = this;
+    surface.surfaceSet = this;
   }
 
   remove(surface: NurbsSurface): void {
     this.surfaces.delete(surface);
-    if ((surface as any).surfaceSet === this) {
-      (surface as any).surfaceSet = null;
+    if (surface.surfaceSet === this) {
+      surface.surfaceSet = null;
     }
   }
 }

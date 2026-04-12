@@ -57,7 +57,21 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   mirrorOf: MirrorConstraintData | null = null;
 
   /** Logical grouping into a face. Shared by reference between adjacent surfaces. */
-  surfaceSet: SurfaceSet | null = null;
+  private _surfaceSet: SurfaceSet | null = null;
+  get surfaceSet(): SurfaceSet | null { return this._surfaceSet; }
+  set surfaceSet(value: SurfaceSet | null) {
+    if (this._surfaceSet === value) return;
+    this._surfaceSet = value;
+    // Bounding-curve silhouette visibility depends on whether a curve's
+    // user surfaces all share the same SurfaceSet, so re-evaluate the 4
+    // curves' default visibility whenever set membership changes.
+    if (this.boundingCurves) {
+      this.boundingCurves.bottom.refreshDefaultVisibility();
+      this.boundingCurves.right.refreshDefaultVisibility();
+      this.boundingCurves.top.refreshDefaultVisibility();
+      this.boundingCurves.left.refreshDefaultVisibility();
+    }
+  }
 
   /** Dirty flag for frame-scheduled visual rebuilds. */
   private dirtyVisual: boolean = false;
