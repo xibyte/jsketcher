@@ -298,7 +298,7 @@ export function tessellateSurface(surface: NurbsSurface, resolution: number): Su
     for (let c = 0; c < n; c++) {
       const a = pointGrid[r][c];
       const d = pointGrid[r + 1][c + 1];
-      const diag = new TessEdge();
+      const diag = new TessEdge('diagonal');
       diag.endpoints.set(surface, [a, d] as const);
       allEdges.push(diag);
 
