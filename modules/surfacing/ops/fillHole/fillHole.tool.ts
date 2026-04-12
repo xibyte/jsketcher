@@ -1,9 +1,11 @@
+import type React from 'react';
 import {state, type StateStream} from 'lstream';
 import {traceHole, fillHole} from './fillHole.command';
 import {applyG1AllSides} from '../continuity/continuity.command';
 import type {Tool} from '../../tool';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
+import {fillHoleUI} from './fillHole.ui';
 
 const LOOP_COLORS = [0x44ee44, 0xee8800, 0x4488ee, 0xee4444];
 
@@ -23,6 +25,8 @@ export class FillHoleTool implements Tool {
     this.editor = editor;
     document.body.style.cursor = 'crosshair';
   }
+
+  createUI(): React.FC { return fillHoleUI(this); }
 
   onMouseDown(_e: MouseEvent): void {}
   onMouseUp(_e: MouseEvent): void {}

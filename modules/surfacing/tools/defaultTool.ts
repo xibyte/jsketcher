@@ -12,6 +12,7 @@
  *   selectedCurve    — edge on the selected surface (white highlight)
  *   selectedVertex   — CP handle with gizmo attached
  */
+import type React from 'react';
 import {state, type StateStream} from 'lstream';
 import type {Tool} from '../tool';
 import type {SurfacingEditor} from '../SurfacingEditor';
@@ -19,6 +20,7 @@ import type {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from '../models/BoundingCurve/BoundingCurve.entity';
 import {Vertex} from '../models/Vertex/Vertex.entity';
 import {SURFACE_HOVER_COLOR, EDGE_COLORS, CP_HOVER_COLOR, SelectionGizmoOverlay} from '../three';
+import {defaultToolUI} from './defaultTool.ui';
 import {constrainEdgeToArc, removeArcConstraint} from '../ops/arc/arc.command';
 import {applyG1, applyG2} from '../ops/continuity/continuity.command';
 import {mirrorAcrossEdge} from '../ops/mirror/mirror.command';
@@ -71,6 +73,8 @@ export class DefaultTool implements Tool {
       this.gizmo.setScene(editor.scene);
     }
   }
+
+  createUI(): React.FC { return defaultToolUI(this); }
 
   // -------------------------------------------------------------------
   // Mouse
@@ -464,7 +468,7 @@ export class DefaultTool implements Tool {
     let planeNormal = surface.normal(u, v);
     if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]] as any;
     scene.arcConstraints = scene.arcConstraints.filter(cc =>
-      !(cc.surfaceSide.surface === surface && cc.surfaceSide.side === c.side)
+      !(cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === c.side)
     );
     constrainEdgeToArc(scene, surface, c.side, radius, 90, planeNormal, 'rational');
     this.editor.rebuildAll();
@@ -478,7 +482,7 @@ export class DefaultTool implements Tool {
     const surface = s.surface;
     const {lerp: vlerp} = require('math/vec');
     scene.arcConstraints = scene.arcConstraints.filter(cc => {
-      if (cc.surfaceSide.surface === surface && cc.surfaceSide.side === c.side) {
+      if (cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === c.side) {
         const ev = surface.getEdgeVertices(c.side);
         const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
         const lp2 = vlerp(ev[0].position, ev[3].position, 2/3);
@@ -515,6 +519,32 @@ export class DefaultTool implements Tool {
     const s = this.state$.value.selectedSurface;
     if (!c || !s) return;
     mirrorAcrossEdge(this.editor.scene, s.surface, c.side);
+    this.editor.rebuildAll();
+  }
+
+  /**
+   * Live-apply an arc constraint from the ArcConstraintEditor modal.
+   * Called on every slider tick; rebuilds the scene each time. The
+   * previous constraint on the same (surface, side) is removed first.
+   */
+  arcApplyLive(params: {
+    side: number;
+    radius: number;
+    angle: number;
+    planeNormal: [number, number, number];
+    mode: 'approximate' | 'rational';
+  }): void {
+    const arc = this.state$.value.arcDialog;
+    if (!arc) return;
+    const scene = this.editor.scene;
+    const surface = arc.surface;
+    scene.arcConstraints = scene.arcConstraints.filter(cc =>
+      !(cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === params.side)
+    );
+    constrainEdgeToArc(
+      scene, surface, params.side, params.radius, params.angle,
+      params.planeNormal, params.mode,
+    );
     this.editor.rebuildAll();
   }
 

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import type {DefaultTool, DefaultToolState} from '../tools/defaultTool';
+import type {NurbsSurface} from './NurbsSurface.entity';
 
 const round = (v: number) => Math.round(v * 1e6) / 1e6;
 const fmtVec = (p: number[]) => [round(p[0]), round(p[1]), round(p[2])];
@@ -11,12 +11,25 @@ function compactNumberArrays(json: string): string {
   });
 }
 
-export function SurfacePropsPanel({tool, state}: {tool: DefaultTool, state: DefaultToolState}) {
-  const [distance, setDistance] = useState(10);
-  const sel = state.selectedSurface;
-  if (!sel) return null;
+export interface NurbsSurfaceDialogProps {
+  surface: NurbsSurface;
+  onClose: () => void;
+  onPushPull: (distance: number) => void;
+  onExtrude: (distance: number) => void;
+  onSubdivide: () => void;
+  onRemove: () => void;
+}
 
-  const {surface} = sel;
+/**
+ * Dialog for a selected NurbsSurface — shows the full NURBS definition
+ * (CPs, weights, knots, constraints) and exposes the mutation actions as
+ * callbacks. Pure presentational; does not reach into any tool state.
+ */
+export function NurbsSurfaceDialog({
+  surface, onClose, onPushPull, onExtrude, onSubdivide, onRemove,
+}: NurbsSurfaceDialogProps) {
+  const [distance, setDistance] = useState(10);
+
   const cps = surface.getCPs();
   const controlPoints = cps.map(row => row.map(c => fmtVec(c.position)));
   const weights = cps.map(row => row.map(c => round(c.weight.value)));
@@ -50,13 +63,13 @@ export function SurfacePropsPanel({tool, state}: {tool: DefaultTool, state: Defa
       background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 8,
       width: 340, maxHeight: '70vh', fontFamily: 'monospace', fontSize: 11,
       zIndex: 10000, boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-      display: 'flex', flexDirection: 'column',
+      display: 'flex', flexDirection: 'column', pointerEvents: 'auto',
     }}>
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
         <span style={{fontFamily: 'sans-serif', fontSize: 13, fontWeight: 'bold'}}>
           Surface {surface.id} — NURBS Definition
         </span>
-        <button onClick={() => tool.deselectSurface()}
+        <button onClick={onClose}
           style={{background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 16, padding: '0 4px'}}>
           &times;
         </button>
@@ -71,11 +84,11 @@ export function SurfacePropsPanel({tool, state}: {tool: DefaultTool, state: Defa
         <input type="number" value={distance} step={1}
           onChange={e => setDistance(parseFloat(e.target.value))}
           style={{width: 70, padding: 3, background: '#333', color: '#eee', border: '1px solid #555', fontSize: 12}} />
-        <button onClick={() => tool.pushPull(distance)}
+        <button onClick={() => onPushPull(distance)}
           style={{flex: 1, padding: 5, background: '#345', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer'}}>
           Push/Pull
         </button>
-        <button onClick={() => tool.extrude(distance)}
+        <button onClick={() => onExtrude(distance)}
           style={{flex: 1, padding: 5, background: '#354', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer'}}>
           Extrude
         </button>
@@ -85,11 +98,11 @@ export function SurfacePropsPanel({tool, state}: {tool: DefaultTool, state: Defa
           style={{flex: 1, padding: 5, background: '#335', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'sans-serif', fontSize: 12}}>
           Copy to Clipboard
         </button>
-        <button onClick={() => tool.subdivide()}
+        <button onClick={onSubdivide}
           style={{flex: 1, padding: 5, background: '#353', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'sans-serif', fontSize: 12}}>
           Subdivide 3x3
         </button>
-        <button onClick={() => tool.removeSurface()}
+        <button onClick={onRemove}
           style={{flex: 1, padding: 5, background: '#533', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'sans-serif', fontSize: 12}}>
           Remove
         </button>

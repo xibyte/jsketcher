@@ -1,17 +1,17 @@
-import React, {useCallback, useContext, useRef, useState, useEffect} from 'react';
+import React, {useCallback, useContext, useState, useEffect} from 'react';
 import {EntityTreeNode, EntityTreeCallbacks} from "surfacing/models/ui/objectTree/EntityTreeNode";
 import {Scene} from "surfacing/models/Scene/Scene.entity";
 import {GeometricEntity} from "surfacing/models/GeometricEntity";
 import {Group} from "surfacing/models/Group/Group.entity";
 import {NurbsSurface} from "surfacing/models/NurbsSurface/NurbsSurface.entity";
-import {showGroupDialog} from "surfacing/models/Group/Group.dialog";
+import {GroupDialog} from "surfacing/models/Group/Group.dialog";
 import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {surfacingState$, SurfacingSnapshot} from "surfacing/surfacingBundle";
 
 export function SceneInlineObjectExplorer() {
 
   const ctx = useContext(ReactApplicationContext);
-  const openDialogRef = useRef<HTMLDivElement | null>(null);
+  const [openGroup, setOpenGroup] = useState<Group | null>(null);
 
   // Subscribe directly to the module-level surfacing snapshot stream.
   // This stream exists at import time, so it works even if the explorer
@@ -20,15 +20,6 @@ export function SceneInlineObjectExplorer() {
   useEffect(() => {
     const dispose = surfacingState$.attach((s: SurfacingSnapshot) => setSnapshot(s));
     return () => dispose();
-  }, []);
-
-  const closeOpenDialog = useCallback(() => {
-    if (openDialogRef.current) {
-      if (openDialogRef.current.parentNode) {
-        openDialogRef.current.parentNode.removeChild(openDialogRef.current);
-      }
-      openDialogRef.current = null;
-    }
   }, []);
 
   const getScene = useCallback((): Scene | null => {
@@ -73,15 +64,8 @@ export function SceneInlineObjectExplorer() {
   }, [getScene, persistAndRefresh]);
 
   const handleOpenDialog = useCallback((entity: GeometricEntity) => {
-    closeOpenDialog();
-
-    if (entity instanceof Group) {
-      openDialogRef.current = showGroupDialog(entity, {
-        onRemove: () => removeGroup(entity),
-        onClose: closeOpenDialog,
-      });
-    }
-  }, [closeOpenDialog, getScene, persistAndRefresh, removeGroup, removeSurface]);
+    if (entity instanceof Group) setOpenGroup(entity);
+  }, []);
 
   const handleRemoveEntity = useCallback((entity: GeometricEntity) => {
     if (entity instanceof Group) removeGroup(entity);
@@ -106,5 +90,12 @@ export function SceneInlineObjectExplorer() {
         <EntityTreeNode key={entity.id} entity={entity} callbacks={callbacks} />
       )}
     </div>
+    {openGroup && (
+      <GroupDialog
+        group={openGroup}
+        onClose={() => setOpenGroup(null)}
+        onRemove={() => removeGroup(openGroup)}
+      />
+    )}
   </div>;
 }

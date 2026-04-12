@@ -11,6 +11,7 @@ import type {Tool} from './tool';
 import {DefaultTool} from './tools/defaultTool';
 import {RaycastService} from './RaycastService';
 import {InputAdapter} from './InputAdapter';
+import {SurfacingUI} from './ui/SurfacingUI';
 
 /**
  * SurfacingEditor — tool host and service layer for one Scene.
@@ -102,16 +103,20 @@ export class SurfacingEditor {
       return;
     }
     if (this.tools.length > 0) this.currentTool.cleanup();
+    SurfacingUI.setUI(null);
     tool.init(this);
     this.tools.push(tool);
+    SurfacingUI.setUI(tool.createUI?.() ?? null);
     this.toolChanged$.next(this.toolChanged$.value + 1);
   }
 
   popTool(): void {
     if (this.tools.length <= 1) throw new Error('Cannot pop the default tool');
     this.currentTool.cleanup();
+    SurfacingUI.setUI(null);
     this.tools.pop();
     this.currentTool.init(this);
+    SurfacingUI.setUI(this.currentTool.createUI?.() ?? null);
     this.toolChanged$.next(this.toolChanged$.value + 1);
   }
 
