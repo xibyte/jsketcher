@@ -105,14 +105,15 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     // visual lifetime — no external assembly step.
     this.object3d = new NurbsSurfaceObject3D(this);
     ctx.workingGroup.add(this.object3d);
-    // Subscribe to view flags so faces / wireframe visibility tracks the
-    // global toggle without an external fan-out. Fires once immediately
-    // with the current state on attach.
+    // Subscribe to view flags so faces / isolines / tessellation
+    // visibility tracks the global toggle without an external fan-out.
+    // Fires once immediately with the current state on attach.
     this.unsubFlags = ctx.viewFlags$.attach((flags) => {
       const view = this.object3d;
       if (!view) return;
       view.setFacesVisible(flags.faces);
-      view.setWireframeVisible(flags.mesh);
+      view.setIsolinesVisible(flags.isolines);
+      view.setTessellationVisible(flags.tessellation);
     });
   }
 

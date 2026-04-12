@@ -1,7 +1,13 @@
 /**
  * Dumb Three.js view for a NurbsSurface entity.
  *
- * Owns only the shaded mesh + an optional UV-isoline wireframe overlay.
+ * Owns the shaded mesh and two mutually-exclusive wireframe overlays:
+ *   - **isolines**: n rows + n cols at regular uv samples (the classic
+ *     NURBS patch silhouette look)
+ *   - **tessellation**: every TessEdge drawn as a line (shows the exact
+ *     triangulation the mesh is built from; useful for debugging adaptive
+ *     subdivision)
+ *
  * All visual-state decisions (hover, selection, set-hover tint, cage
  * visibility, CP handle toggling, bounding-curve highlighting) live on
  * the NurbsSurface entity. This class exposes thin imperative methods:
@@ -10,11 +16,12 @@
  *     tessellation (called from NurbsSurface.invalidateVisual).
  *   - `setTint(color, glare)` — repaint the material and optionally kill
  *     the Phong glare (used by mark/unmark).
- *   - `setFacesVisible(bool)` / `setWireframeVisible(bool)` — view-mode
- *     flags propagated from the editor.
+ *   - `setFacesVisible`, `setIsolinesVisible`, `setTessellationVisible`
+ *     — view-mode flags propagated from the editor.
  */
 import {
   BufferGeometry, BufferAttribute, Mesh, DoubleSide, MeshPhongMaterial, Group,
+  LineSegments, LineBasicMaterial,
 } from 'three';
 import ScalableLine from 'scene/objects/scalableLine';
 import type {NurbsSurface} from './NurbsSurface.entity';
@@ -24,8 +31,9 @@ import {
   SURFACE_BASE_COLOR,
 } from '../../three';
 
-const WIREFRAME_COLOR = 0x1860c0;
-const WIREFRAME_WIDTH = 1.5;
+const ISOLINE_COLOR = 0x1860c0;
+const ISOLINE_WIDTH = 1.5;
+const TESSELLATION_COLOR = 0xff00aa;
 
 export class NurbsSurfaceObject3D extends EntityObject3D {
 
@@ -33,8 +41,10 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
   readonly mesh: Mesh;
   private material: MeshPhongMaterial;
   private geometry: BufferGeometry;
-  private wireframeGroup: Group;
-  private wireframeBuilt: boolean = false;
+  private isolinesGroup: Group;
+  private isolinesBuilt: boolean = false;
+  private tessellationGroup: Group;
+  private tessellationBuilt: boolean = false;
 
   constructor(surface: NurbsSurface) {
     super();
@@ -55,11 +65,16 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
     (this.mesh as any).userData = {entity: surface};
     this.add(this.mesh);
 
-    // Wireframe overlay — populated lazily on first setWireframeVisible.
-    this.wireframeGroup = new Group();
-    this.wireframeGroup.visible = false;
-    (this.wireframeGroup as any).raycast = () => {};
-    this.add(this.wireframeGroup);
+    // Both overlays are populated lazily on first show.
+    this.isolinesGroup = new Group();
+    this.isolinesGroup.visible = false;
+    (this.isolinesGroup as any).raycast = () => {};
+    this.add(this.isolinesGroup);
+
+    this.tessellationGroup = new Group();
+    this.tessellationGroup.visible = false;
+    (this.tessellationGroup as any).raycast = () => {};
+    this.add(this.tessellationGroup);
   }
 
   /**
@@ -71,7 +86,8 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
     this.geometry.dispose();
     this.geometry = next;
     this.mesh.geometry = this.geometry;
-    if (this.wireframeBuilt) this.rebuildWireframe();
+    if (this.isolinesBuilt) this.rebuildIsolines();
+    if (this.tessellationBuilt) this.rebuildTessellation();
     this.surface.ctx.requestRender();
   }
 
@@ -91,39 +107,61 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
     this.mesh.visible = visible;
   }
 
-  /** Show / hide the UV-isoline wireframe overlay (mesh view mode). */
-  setWireframeVisible(visible: boolean): void {
-    if (visible && !this.wireframeBuilt) this.rebuildWireframe();
-    this.wireframeGroup.visible = visible;
+  /** Show / hide the UV-isoline wireframe overlay. */
+  setIsolinesVisible(visible: boolean): void {
+    if (visible && !this.isolinesBuilt) this.rebuildIsolines();
+    this.isolinesGroup.visible = visible;
   }
 
-  private rebuildWireframe(): void {
-    for (const child of [...this.wireframeGroup.children]) {
-      this.wireframeGroup.remove(child);
-      const g = (child as any).geometry;
-      const m = (child as any).material;
-      if (g && g.dispose) g.dispose();
-      if (m && m.dispose) m.dispose();
-    }
+  /** Show / hide the full-tessellation wireframe overlay. */
+  setTessellationVisible(visible: boolean): void {
+    if (visible && !this.tessellationBuilt) this.rebuildTessellation();
+    this.tessellationGroup.visible = visible;
+  }
+
+  private rebuildIsolines(): void {
+    clearChildren(this.isolinesGroup);
     const ss = this.surface.ctx.sceneSetup;
     const {rows, cols} = this.surface.getIsolinePolylines();
-    for (let i = 1; i < rows.length - 1; i++) {
-      const line = new ScalableLine(ss, rows[i], WIREFRAME_WIDTH, WIREFRAME_COLOR);
+    const addLine = (pts: number[][]) => {
+      const line = new ScalableLine(ss, pts, ISOLINE_WIDTH, ISOLINE_COLOR);
       line.material.transparent = true;
       line.material.opacity = 0.7;
       line.renderOrder = 1;
       (line as any).raycast = () => {};
-      this.wireframeGroup.add(line);
+      this.isolinesGroup.add(line);
+    };
+    for (const row of rows) addLine(row);
+    for (const col of cols) addLine(col);
+    this.isolinesBuilt = true;
+  }
+
+  private rebuildTessellation(): void {
+    clearChildren(this.tessellationGroup);
+    const tess = this.surface.tessellate();
+    // Pack every TessEdge as a line-segment pair using this surface's
+    // own endpoint view (BorderTessPoints stay per-surface, so the
+    // per-surface normal side is preserved).
+    const positions: number[] = [];
+    for (const edge of tess.edges) {
+      const ep = edge.endpoints.get(this.surface);
+      if (!ep) continue;
+      const [a, b] = ep;
+      positions.push(a.xyz[0], a.xyz[1], a.xyz[2]);
+      positions.push(b.xyz[0], b.xyz[1], b.xyz[2]);
     }
-    for (let i = 1; i < cols.length - 1; i++) {
-      const line = new ScalableLine(ss, cols[i], WIREFRAME_WIDTH, WIREFRAME_COLOR);
-      line.material.transparent = true;
-      line.material.opacity = 0.7;
-      line.renderOrder = 1;
-      (line as any).raycast = () => {};
-      this.wireframeGroup.add(line);
-    }
-    this.wireframeBuilt = true;
+    const g = new BufferGeometry();
+    g.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
+    const mat = new LineBasicMaterial({
+      color: TESSELLATION_COLOR,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const lines = new LineSegments(g, mat);
+    lines.renderOrder = 1;
+    (lines as any).raycast = () => {};
+    this.tessellationGroup.add(lines);
+    this.tessellationBuilt = true;
   }
 
   private buildGeometry(): BufferGeometry {
@@ -164,11 +202,18 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
   protected onDispose(): void {
     this.geometry.dispose();
     this.material.dispose();
-    for (const child of [...this.wireframeGroup.children]) {
-      const g = (child as any).geometry;
-      const m = (child as any).material;
-      if (g && g.dispose) g.dispose();
-      if (m && m.dispose) m.dispose();
-    }
+    clearChildren(this.isolinesGroup);
+    clearChildren(this.tessellationGroup);
+  }
+}
+
+/** Remove every child from a group and dispose its geometry/material. */
+function clearChildren(group: Group): void {
+  for (const child of [...group.children]) {
+    group.remove(child);
+    const g = (child as any).geometry;
+    const m = (child as any).material;
+    if (g && g.dispose) g.dispose();
+    if (m && m.dispose) m.dispose();
   }
 }

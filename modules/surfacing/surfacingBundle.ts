@@ -10,7 +10,7 @@ import {SurfacingEditor} from './SurfacingEditor';
 import {createPatchPlane} from './primitives/plane';
 import {createPatchBox} from './primitives/box';
 import {createPatchCylinder} from './primitives/cylinder';
-import {ViewFlagFacesAction, ViewFlagMeshAction, ViewFlagEdgesAction, ViewFlagBoundariesAction} from './actions/viewFlagActions';
+import {ViewFlagFacesAction, ViewFlagIsolinesAction, ViewFlagTessellationAction, ViewFlagEdgesAction, ViewFlagBoundariesAction} from './actions/viewFlagActions';
 import {surfacingViewFlags$} from './surfacingViewFlags';
 
 export interface SurfacingSnapshot {
@@ -114,7 +114,8 @@ export function activate(ctx: any) {
   if (ctx.actionService) {
     ctx.actionService.registerActions([
       ViewFlagFacesAction,
-      ViewFlagMeshAction,
+      ViewFlagIsolinesAction,
+      ViewFlagTessellationAction,
       ViewFlagEdgesAction,
       ViewFlagBoundariesAction,
     ]);
