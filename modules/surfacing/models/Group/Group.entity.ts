@@ -1,4 +1,4 @@
-import {GeometricEntity, generateEntityId} from '../GeometricEntity';
+import {GeometricEntity} from '../GeometricEntity';
 import {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 
@@ -13,7 +13,7 @@ export class Group extends GeometricEntity {
   name: string;
 
   constructor(ctx: SurfacingEditor, name: string = '', id?: string) {
-    super(ctx, id ?? generateEntityId('G'));
+    super(ctx, id ?? ctx.nextId('G'));
     this.name = name;
   }
 

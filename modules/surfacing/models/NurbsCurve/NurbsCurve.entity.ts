@@ -1,5 +1,5 @@
 import type {Vec3} from 'math/vec';
-import {GeometricEntity, generateEntityId} from '../GeometricEntity';
+import {GeometricEntity} from '../GeometricEntity';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 
@@ -11,7 +11,7 @@ export class NurbsCurve extends GeometricEntity {
   cp: ControlPoint[];
 
   constructor(ctx: SurfacingEditor, cp: ControlPoint[]) {
-    super(ctx, generateEntityId('C'));
+    super(ctx, ctx.nextId('C'));
     this.cp = cp;
   }
 

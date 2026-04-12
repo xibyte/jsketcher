@@ -1,6 +1,6 @@
 import type {Vec3} from 'math/vec';
 import {normalize, sub, cross} from 'math/vec';
-import {GeometricEntity, generateEntityId} from '../GeometricEntity';
+import {GeometricEntity} from '../GeometricEntity';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import {Vertex} from '../Vertex/Vertex.entity';
 import {BoundingCurve} from '../BoundingCurve/BoundingCurve.entity';
@@ -89,7 +89,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     },
     id?: string,
   ) {
-    super(ctx, id ?? generateEntityId('S'));
+    super(ctx, id ?? ctx.nextId('S'));
     this.grid = grid;
     this.boundingCurves = curves;
     this._registerVertices();
