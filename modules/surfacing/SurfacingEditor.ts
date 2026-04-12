@@ -160,8 +160,8 @@ export class SurfacingEditor {
     this.refreshEntityRefs();
     this.scene.syncEntityGraph();
     this.currentTool.init(this);
-    this.ctx.surfacingService?.scheduleSave?.();
-    this.ctx.surfacingService?.notifyChange?.();
+    this.ctx.surfacingService.scheduleSave();
+    this.ctx.surfacingService.notifyChange();
     this.ctx.viewer.requestRender();
   }
 

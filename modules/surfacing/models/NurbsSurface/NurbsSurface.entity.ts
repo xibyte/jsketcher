@@ -234,9 +234,8 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     }
     for (const row of this.grid) {
       for (const cp of row) {
+        cp.unmark();
         cp.setVisible(false);
-        cp.setSelected(false);
-        cp.setHovered(false);
       }
     }
     this.ctx.requestRender();

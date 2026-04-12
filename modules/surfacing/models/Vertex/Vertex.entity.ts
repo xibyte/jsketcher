@@ -9,8 +9,9 @@ import {
   sharedSphereGeometry,
   createControlPointMaterial,
   createPickerMaterial,
+  SelectionGizmoOverlay,
   CP_COLOR, CP_HOVER_COLOR, CP_SELECTED_COLOR, CP_MIRROR_COLOR,
-  HANDLE_SIZE, CP_VISUAL_SCALE, CP_PICKER_SCALE,
+  HANDLE_SIZE, CP_VISUAL_SCALE, CP_HOVER_SCALE, CP_PICKER_SCALE,
 } from '../../three';
 
 /**
@@ -55,8 +56,6 @@ export class Vertex extends GeometricEntity {
   private handleSphere: Mesh | null = null;
   private handlePicker: Mesh | null = null;
   private _visible: boolean = false;
-  private _hovered: boolean = false;
-  private _selected: boolean = false;
   private _mirrorTarget: boolean = false;
 
   constructor(ctx: SurfacingEditor, x: number, y: number, z: number, id?: string) {
@@ -116,53 +115,47 @@ export class Vertex extends GeometricEntity {
     this.ctx.requestRender();
   }
 
-  setHovered(hovered: boolean): void {
-    if (this._hovered === hovered) return;
-    this._hovered = hovered;
-    this.applyHandleColor();
+  /** Paint the handle with a specific color and scale. Tool-driven. */
+  mark(color: number, scale: number = CP_HOVER_SCALE): void {
+    if (this.handleMaterial) this.handleMaterial.color.setHex(color);
+    if (this.handleSphere) this.handleSphere.scale.setScalar(scale);
     this.ctx.requestRender();
   }
 
-  setSelected(selected: boolean): void {
-    if (this._selected === selected) return;
-    this._selected = selected;
-    this.applyHandleColor();
-    if (this.handleSphere) {
-      this.handleSphere.scale.setScalar(selected ? CP_PICKER_SCALE : CP_VISUAL_SCALE);
-    }
+  /** Reset the handle to its base color and default scale. */
+  unmark(): void {
+    if (this.handleMaterial) this.handleMaterial.color.setHex(this.baseColor());
+    if (this.handleSphere) this.handleSphere.scale.setScalar(CP_VISUAL_SCALE);
     this.ctx.requestRender();
   }
 
-  /**
-   * Flip the handle into "selected" style (larger, bright color). The
-   * active tool calls this when the vertex is picked; the tool is also
-   * responsible for attaching the gizmo and calling `exitEditMode()`
-   * when the user clicks away.
-   */
-  enterEditMode(): void {
-    if (this._selected) return;
-    this.setSelected(true);
+  private gizmoRef: SelectionGizmoOverlay | null = null;
+
+  /** Enter edit mode: mark selected, attach to gizmo. */
+  enterEditMode(gizmo: SelectionGizmoOverlay): void {
+    this.mark(CP_SELECTED_COLOR, CP_PICKER_SCALE);
+    gizmo.attach(this);
+    this.gizmoRef = gizmo;
   }
 
-  /** Revert a prior `enterEditMode()`. */
+  /** Exit edit mode: unmark, detach from gizmo. */
   exitEditMode(): void {
-    if (!this._selected) return;
-    this.setSelected(false);
+    this.unmark();
+    if (this.gizmoRef) {
+      this.gizmoRef.detach();
+      this.gizmoRef = null;
+    }
   }
 
   setMirrorTarget(mirror: boolean): void {
     if (this._mirrorTarget === mirror) return;
     this._mirrorTarget = mirror;
-    this.applyHandleColor();
-    this.ctx.requestRender();
+    this.unmark();
   }
 
   get visible(): boolean { return this._visible; }
-  get hovered(): boolean { return this._hovered; }
-  get selected(): boolean { return this._selected; }
   get mirrorTarget(): boolean { return this._mirrorTarget; }
 
-  /** True when a click on the handle should route through `select()`. */
   isSelectable(): boolean {
     return !this._mirrorTarget;
   }
@@ -172,6 +165,10 @@ export class Vertex extends GeometricEntity {
   // ---------------------------------------------------------------
 
   dispose(): void {
+    if (this.gizmoRef) {
+      this.gizmoRef.detach();
+      this.gizmoRef = null;
+    }
     this.destroyHandle();
     super.dispose();
   }
@@ -186,9 +183,7 @@ export class Vertex extends GeometricEntity {
     this.handleMaterial = createControlPointMaterial(this.baseColor());
     this.handleSphere = new Mesh(sharedSphereGeometry, this.handleMaterial);
     this.handleSphere.renderOrder = 2;
-    this.handleSphere.scale.setScalar(
-      this._selected ? CP_PICKER_SCALE : CP_VISUAL_SCALE,
-    );
+    this.handleSphere.scale.setScalar(CP_VISUAL_SCALE);
 
     this.handlePickerMaterial = createPickerMaterial();
     this.handlePicker = new Mesh(sharedSphereGeometry, this.handlePickerMaterial);
@@ -223,14 +218,4 @@ export class Vertex extends GeometricEntity {
     return this._mirrorTarget ? CP_MIRROR_COLOR : CP_COLOR;
   }
 
-  private applyHandleColor(): void {
-    if (!this.handleMaterial) return;
-    if (this._selected) {
-      this.handleMaterial.color.setHex(CP_SELECTED_COLOR);
-    } else if (this._hovered) {
-      this.handleMaterial.color.setHex(CP_HOVER_COLOR);
-    } else {
-      this.handleMaterial.color.setHex(this.baseColor());
-    }
-  }
 }

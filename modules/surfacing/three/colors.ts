@@ -21,7 +21,7 @@ export const CAGE_LINE_COLOR = 0x1a1a1a;
 
 // ---- Control points (handles) ----
 export const CP_COLOR = 0x222222;
-export const CP_HOVER_COLOR = 0x555555;
+export const CP_HOVER_COLOR = 0xffaa00;
 export const CP_SELECTED_COLOR = 0xee3333;
 export const CP_MIRROR_COLOR = 0x334466;
 
