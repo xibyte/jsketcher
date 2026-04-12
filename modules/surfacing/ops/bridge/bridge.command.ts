@@ -58,7 +58,7 @@ export function bridgeSurface(
   }
   const sourcePatch = options.sourcePatchIdx !== undefined ? scene.surfaces[options.sourcePatchIdx] : null;
   const group = sourcePatch ? scene.findGroupOfSurface(sourcePatch) : null;
-  scene.addSurface(bridgePatch, group ?? undefined);
+  (group ?? scene).addChild(bridgePatch);
   const newIdx = scene.surfaces.indexOf(bridgePatch);
 
   if (options.g1) {

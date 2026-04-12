@@ -8,7 +8,6 @@ import {Line} from '../../Line/Line.entity';
 import {Cage} from '../../Cage/Cage.entity';
 import {NurbsCurve} from '../../NurbsCurve/NurbsCurve.entity';
 import {Group} from '../../Group/Group.entity';
-import type {Scene} from '../../Scene/Scene.entity';
 
 const SIDE_NAMES = ['bottom', 'right', 'top', 'left'];
 
@@ -215,19 +214,7 @@ interface ChildEntry {
 function getChildEntries(entity: GeometricEntity): ChildEntry[] {
   const entries: ChildEntry[] = [];
 
-  if (isScene(entity)) {
-    const scene = entity as Scene;
-    const groups = scene.children.filter(c => c instanceof Group);
-    if (groups.length > 0) {
-      for (let i = 0; i < groups.length; i++) {
-        entries.push({key: `g${i}`, entity: groups[i]});
-      }
-    } else {
-      for (let i = 0; i < scene.surfaces.length; i++) {
-        entries.push({key: `s${i}`, entity: scene.surfaces[i]});
-      }
-    }
-  } else if (entity instanceof Group) {
+  if (entity instanceof Group) {
     for (let i = 0; i < entity.children.length; i++) {
       entries.push({key: `c${i}`, entity: entity.children[i]});
     }
@@ -284,9 +271,6 @@ interface EntityInfo {
 }
 
 function getEntityInfo(entity: GeometricEntity): EntityInfo {
-  if (isScene(entity)) {
-    return {label: 'Scene', icon: '\u25A3', bold: true};
-  }
   if (entity instanceof Group) {
     return {label: entity.name || entity.id, icon: '\u25B1', bold: true};
   }
@@ -320,10 +304,6 @@ function getEntityInfo(entity: GeometricEntity): EntityInfo {
     return {label: entity.id, icon: '\u223F'};
   }
   return {label: entity.id};
-}
-
-function isScene(entity: GeometricEntity): boolean {
-  return 'surfaces' in entity && Array.isArray((entity as any).surfaces);
 }
 
 /** Entities that have a properties dialog */

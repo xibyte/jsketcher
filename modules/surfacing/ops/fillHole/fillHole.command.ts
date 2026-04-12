@@ -154,6 +154,6 @@ export function fillHole(scene: Scene, loop: {patchIdx: number, side: number, ve
     fillPatch.surfaceSet = sourceSet;
     sourceSet.surfaces.add(fillPatch);
   }
-  scene.addSurface(fillPatch, group ?? undefined);
+  (group ?? scene).addChild(fillPatch);
   return true;
 }

@@ -191,5 +191,5 @@ function splitSinglePatchShared(
     sourceSet.surfaces.add(rightPatch);
   }
 
-  scene.replaceSurface(patch, [leftPatch, rightPatch]);
+  patch.replaceWith([leftPatch, rightPatch]);
 }

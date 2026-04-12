@@ -6,8 +6,7 @@
  * entities. There is no separate `surfaces` / `groups` storage —
  * `scene.surfaces` and `scene.groups` are getters that walk the tree.
  *
- * Mutation goes through addSurface / removeSurface / replaceSurface /
- * addGroup / removeGroup / createGroup. Direct array mutation on the
+ * Mutation goes through addChild / removeChild. Direct array mutation on the
  * `surfaces` getter result has no effect (it's a fresh snapshot).
  *
  * Watertightness via shared Vertex identity. moveVertex() runs the
@@ -170,56 +169,9 @@ export class Scene extends GeometricEntity {
    * are constructed with their `curves` already hooked up (fresh for
    * free edges, reused references for edges shared with a neighbor).
    */
-  addSurface(surface: NurbsSurface, group?: Group): void {
-    if (group) {
-      group.addSurface(surface);
-      if (group.parent !== this) this.addChild(group);
-    } else {
-      this.addChild(surface);
-    }
-  }
-
-  /** Remove a surface from wherever it lives in the tree and dispose it. */
-  removeSurface(surface: NurbsSurface): void {
-    const parent = surface.parent;
-    if (parent) parent.removeChild(surface);
-    surface.dispose();
-  }
-
-  /**
-   * Replace one surface with N new surfaces in the same parent (group
-   * or scene). Used by ops like split / subdivide that produce multiple
-   * outputs from one input. The old surface is disposed — its cage
-   * view drops, and refcounts on shared CPs / curves decrement.
-   */
-  replaceSurface(oldSurface: NurbsSurface, newSurfaces: NurbsSurface[]): void {
-    const parent = oldSurface.parent;
-    if (!parent) return;
-    const idx = parent.children.indexOf(oldSurface);
-    if (idx < 0) return;
-    parent.children.splice(idx, 1, ...newSurfaces);
-    oldSurface.parent = null;
-    for (const s of newSurfaces) {
-      if (s.parent && s.parent !== parent) {
-        const j = s.parent.children.indexOf(s);
-        if (j >= 0) s.parent.children.splice(j, 1);
-      }
-      s.parent = parent;
-    }
-    oldSurface.dispose();
-  }
-
   // -----------------------------------------------------------------------
   // Groups
   // -----------------------------------------------------------------------
-
-  /** Create a group, populate it with surfaces, and add it to the scene. */
-  createGroup(name: string, surfaces: NurbsSurface[] = []): Group {
-    const g = new Group(this.ctx, name);
-    for (const s of surfaces) g.addSurface(s);
-    this.addChild(g);
-    return g;
-  }
 
   /** Find the group that contains a given surface, or null. */
   findGroupOfSurface(surface: NurbsSurface): Group | null {
@@ -229,11 +181,6 @@ export class Scene extends GeometricEntity {
       cur = cur.parent;
     }
     return null;
-  }
-
-  /** Remove a group (and everything inside it). */
-  removeGroup(group: Group): void {
-    if (group.parent === this) this.removeChild(group);
   }
 
   // -----------------------------------------------------------------------
@@ -505,12 +452,12 @@ export class Scene extends GeometricEntity {
         if (Array.isArray(gd.surfaceIds)) {
           for (const sid of gd.surfaceIds) {
             const s = surfaceById.get(sid);
-            if (s) group.addSurface(s); // reparents from scene → group
+            if (s) group.addChild(s); // reparents from scene → group
           }
         } else if (Array.isArray(gd.patchIndices)) {
           for (const idx of gd.patchIndices) {
             if (idx >= 0 && idx < orderedSurfaces.length) {
-              group.addSurface(orderedSurfaces[idx]);
+              group.addChild(orderedSurfaces[idx]);
             }
           }
         }

@@ -184,7 +184,7 @@ function mirrorSinglePatch(
 
   // Add the mirror surface to the same group as its source.
   const sourceGroup = scene.findGroupOfSurface(patch);
-  scene.addSurface(mp, sourceGroup ?? undefined);
+  (sourceGroup ?? scene).addChild(mp);
   const mirrorIdx = scene.surfaces.indexOf(mp);
 
   scene.mirrorConstraints.push({
@@ -323,7 +323,8 @@ export function removeMirrorConstraint(scene: Scene, mc: MirrorConstraint, delet
     const removed = scene.surfaces[mc.mirrorPatchIdx];
     if (removed) {
       const pi = mc.mirrorPatchIdx;
-      scene.removeSurface(removed); // detaches from group/scene tree
+      if (removed.parent) removed.parent.removeChild(removed);
+      removed.dispose();
       // Re-index all constraints that reference patches after the deleted one
       for (const m of scene.mirrorConstraints) {
         if (m.sourcePatchIdx > pi) m.sourcePatchIdx--;

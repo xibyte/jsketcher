@@ -57,9 +57,10 @@ export function SceneInlineObjectExplorer() {
     // The Group entity holds direct surface references — drop them all and
     // then drop the group itself. No index gymnastics.
     for (const surface of [...group.surfaces]) {
-      scene.removeSurface(surface);
+      surface.parent?.removeChild(surface);
+      surface.dispose();
     }
-    scene.removeGroup(group);
+    group.parent?.removeChild(group);
     persistAndRefresh();
   }, [getScene, persistAndRefresh]);
 
@@ -67,7 +68,8 @@ export function SceneInlineObjectExplorer() {
   const removeSurface = useCallback((surface: NurbsSurface) => {
     const scene = getScene();
     if (!scene) return;
-    scene.removeSurface(surface);
+    surface.parent?.removeChild(surface);
+    surface.dispose();
     persistAndRefresh();
   }, [getScene, persistAndRefresh]);
 
@@ -87,13 +89,8 @@ export function SceneInlineObjectExplorer() {
     else if (entity instanceof NurbsSurface) removeSurface(entity);
   }, [removeGroup, removeSurface]);
 
-  // Read scene from the snapshot — re-renders on every notifyChange()
   const scene = snapshot.scene;
-  if (!scene) return null;
-
-  scene.syncEntityGraph();
-  const topLevelEntities = scene.children;
-  if (topLevelEntities.length === 0) return null;
+  if (!scene || scene.children.length === 0) return null;
 
   const callbacks: EntityTreeCallbacks = {
     onOpenDialog: handleOpenDialog,
@@ -105,24 +102,9 @@ export function SceneInlineObjectExplorer() {
     pointerEvents: 'auto',
     fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
   }}>
-    <div style={{
-      height: 24,
-      lineHeight: '24px',
-      padding: '0 8px',
-      background: 'rgba(255,255,255,0.08)',
-      borderLeft: '3px solid rgba(120,180,255,0.9)',
-      borderRadius: 3,
-      fontSize: 11,
-      fontWeight: 600,
-      letterSpacing: 0.8,
-      textTransform: 'uppercase',
-      color: '#f2f2f2',
-      textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-      marginBottom: 3,
-    }}>OBJECTS</div>
     <div style={{overflowY: 'auto', maxHeight: '60vh'}}>
-      {topLevelEntities.map((entity, i) =>
-        <EntityTreeNode key={entity.id + '-' + i} entity={entity} callbacks={callbacks} />
+      {scene.children.map((entity, i) =>
+        <EntityTreeNode key={entity.id} entity={entity} callbacks={callbacks} />
       )}
     </div>
   </div>;

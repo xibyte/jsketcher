@@ -1,4 +1,5 @@
 import {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
+import {Group} from '../models/Group/Group.entity';
 import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
 import {V} from './helpers';
@@ -13,7 +14,7 @@ export function createPatchPlane(editor: SurfacingEditor, width: number, height:
 
   const grid = makeGrid(editor, [c00, c10, c01, c11]);
   const surface = new NurbsSurface(editor, grid, createBoundingCurves(editor, grid));
-  editor.scene.createGroup('Plane', [surface]);
+  editor.scene.addChild(Group.create(editor, 'Plane', [surface]));
 
   const set = new SurfaceSet('plane');
   set.add(surface);
