@@ -5,5 +5,4 @@ import {EntityObject3D} from '../../three';
  * This stub keeps the EntityObject3D API uniform across every entity.
  */
 export class GroupObject3D extends EntityObject3D {
-  isSelectable(): boolean { return false; }
 }

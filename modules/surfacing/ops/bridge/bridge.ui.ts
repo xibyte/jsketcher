@@ -6,8 +6,8 @@
  * `_bridgePreviewGroup`) — same pattern as fillHole.ui.ts. These functions
  * take the editor as their first argument.
  *
- * Edge highlight is done by flipping `BoundingCurveObject3D.setHighlightColor`
- * on the two picked curves — no parallel ScalableLine geometry for the
+ * Edge highlight is done by calling `curve.mark(color)` on the two picked
+ * BoundingCurve entities — no parallel ScalableLine geometry for the
  * edges themselves. The only lines we create live in `_bridgePreviewGroup`
  * and they're the gray endpoint-to-endpoint connectors that show flip
  * orientation; those have no reusable source.
@@ -17,7 +17,6 @@ import {distance as vdist} from 'math/vec';
 import {bridgeSurface} from './bridge.command';
 import {toggleFillHoleMode} from '../fillHole/fillHole.ui';
 import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
-import type {BoundingCurveObject3D} from '../../models/BoundingCurve/BoundingCurve.object3d';
 
 const EDGE1_COLOR = 0x44ee44; // green  — first picked edge
 const EDGE2_COLOR = 0xee8800; // orange — second picked edge
@@ -83,14 +82,14 @@ export function bridgeUpdatePreview(view: any): void {
   if (view._bridgeEdge1) {
     const curve: BoundingCurve = scene.surfaces[view._bridgeEdge1.patchIdx]
       .getBoundingCurve(view._bridgeEdge1.side);
-    (curve.object3d as BoundingCurveObject3D | null)?.setHighlightColor(EDGE1_COLOR);
+    curve.mark(EDGE1_COLOR);
     view._bridgeHighlighted.push(curve);
   }
 
   if (view._bridgeEdge2) {
     const curve: BoundingCurve = scene.surfaces[view._bridgeEdge2.patchIdx]
       .getBoundingCurve(view._bridgeEdge2.side);
-    (curve.object3d as BoundingCurveObject3D | null)?.setHighlightColor(EDGE2_COLOR);
+    curve.mark(EDGE2_COLOR);
     view._bridgeHighlighted.push(curve);
 
     // Topology connectors: gray lines between the two picked edges' endpoints,
@@ -136,9 +135,7 @@ export function bridgeExecute(view: any): void {
 
 function clearBridgeHighlights(view: any): void {
   const highlighted: BoundingCurve[] = view._bridgeHighlighted;
-  for (const c of highlighted) {
-    (c.object3d as BoundingCurveObject3D | null)?.setHighlightColor(null);
-  }
+  for (const c of highlighted) c.unmark();
   highlighted.length = 0;
 }
 

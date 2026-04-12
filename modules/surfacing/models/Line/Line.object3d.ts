@@ -6,5 +6,4 @@ import {EntityObject3D} from '../../three';
  * EntityObject3D API across every entity type.
  */
 export class LineObject3D extends EntityObject3D {
-  isSelectable(): boolean { return false; }
 }

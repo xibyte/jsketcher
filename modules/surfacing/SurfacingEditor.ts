@@ -5,7 +5,7 @@ import {setAttribute} from 'scene/objectData';
 import {Group} from 'three';
 import ScalableLine from 'scene/objects/scalableLine';
 import {distance as vdist, lerp as vlerp} from 'math/vec';
-import {SelectionGizmoOverlay, selection$, select} from './three';
+import {SelectionGizmoOverlay} from './three';
 import {Vertex} from './models/Vertex/Vertex.entity';
 import type {NurbsSurface} from './models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from './models/BoundingCurve/BoundingCurve.entity';
@@ -73,20 +73,20 @@ export class SurfacingEditor {
     this.surfCtx.workingGroup.add(this.overlaysGroup);
     this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
 
-    // Hover highlight group — per-hover black outline drawn over the
-    // hovered surface. Still scene-level because it's transient and
-    // depends on scene-level hover state (hover-in-set outline).
-    this.hoverGroup = SceneGraph.createGroup();
-    this.hoverGroup.visible = false;
-    this.overlaysGroup.add(this.hoverGroup);
-    this.hoveredPatch = null;
+    // Entity-level selection + highlight tracking.
+    this._highlighted = null;
+    this._selectedVertex = null;
 
-    // Apply the initial view-mode flags to every entity.
-    this._applyViewFlags(surfacingViewFlags$.value);
+    // Install the editor adapter so entity select/deselect can route to
+    // dialog/gizmo side effects.
+    this._installEditorAdapter();
 
-    // Gizmo — a SelectionGizmoOverlay keyed off selection$.
+    // View flags are self-applied: every NurbsSurface / BoundingCurve
+    // subscribes to `ctx.viewFlags$` at construction and updates itself.
+    // The editor no longer fans out faces/mesh/edges/boundaries toggles.
+
+    // Gizmo — attached imperatively by the editor adapter.
     this._selectionGizmo = null;
-    this._selectionUnsub = null;
     this.setupGizmo();
 
     // Hook the scene-level highlight service on the overlays group — it
@@ -98,9 +98,15 @@ export class SurfacingEditor {
     // Single click pick: listen on DOM, raycast against solidMesh only
     this._clickStartX = 0;
     this._clickStartY = 0;
+    this._mouseDown = false;
     const dom = ctx.viewer.sceneSetup.renderer.domElement;
-    this._onMouseDown = (e) => { this._clickStartX = e.offsetX; this._clickStartY = e.offsetY; };
+    this._onMouseDown = (e) => {
+      this._clickStartX = e.offsetX;
+      this._clickStartY = e.offsetY;
+      this._mouseDown = true;
+    };
     this._onMouseUp = (e) => {
+      this._mouseDown = false;
       const dx = Math.abs(e.offsetX - this._clickStartX);
       const dy = Math.abs(e.offsetY - this._clickStartY);
       if (dx < 3 && dy < 3 && e.button === 0) {
@@ -124,8 +130,15 @@ export class SurfacingEditor {
         fillHolePreview(this, e);
         return;
       }
-      // Surface hover is driven by per-mesh onMouseEnter/onMouseLeave now —
-      // no manual raycast needed here.
+      if (this._bridgeMode) return;
+      // Don't evaluate hover while any mouse button is held — trackball
+      // orbit / pan / gizmo drag all fire mousemove rapidly, and
+      // highlight flipping would flicker (and waste raycasts).
+      if (this._mouseDown) return;
+      const ss = this.ctx.viewer.sceneSetup;
+      const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
+      const hit = this._raycastSurface(raycaster);
+      this.setHover(hit);
     };
     dom.addEventListener('mousedown', this._onMouseDown);
     dom.addEventListener('mouseup', this._onMouseUp);
@@ -211,40 +224,11 @@ export class SurfacingEditor {
     };
     document.addEventListener('patch-cage-constraint-deleted', this._onConstraintDeleted);
 
-    this._disposers.push(surfacingViewFlags$.attach(flags => {
-      this._applyViewFlags(flags);
+    // Every entity subscribes to surfacingViewFlags$ at construction, so
+    // the editor doesn't need to nudge them on flag changes.
+    this._disposers.push(surfacingViewFlags$.attach(() => {
       ctx.viewer.requestRender();
     }));
-  }
-
-  /**
-   * Fan out the 4 view-mode flags across every entity view:
-   *   - faces       → surface.object3d.setFacesVisible
-   *   - mesh        → surface.object3d.setWireframeVisible
-   *   - edges       → every bounding curve shown at base style
-   *   - boundaries  → only curves that are "set silhouettes" shown
-   *
-   * A curve is a set-silhouette when it has fewer than 2 users
-   * (free edge) or its users span more than one SurfaceSet — that's
-   * the same predicate the old scene-level rebuildBoundariesGroup used.
-   */
-  _applyViewFlags(flags: any) {
-    const scene = this.scene;
-    if (!scene) return;
-
-    for (const surface of scene.surfaces) {
-      const view: any = surface.object3d;
-      if (!view) continue;
-      if (typeof view.setFacesVisible === 'function') view.setFacesVisible(flags.faces);
-      if (typeof view.setWireframeVisible === 'function') view.setWireframeVisible(flags.mesh);
-    }
-
-    for (const curve of scene.boundingCurves) {
-      const view: any = curve.object3d;
-      if (!view || typeof view.setGlobalVisibility !== 'function') continue;
-      const show = flags.edges || (flags.boundaries && isSetBoundary(curve));
-      view.setGlobalVisibility(show);
-    }
   }
 
   // View-like interface for highlight system
@@ -264,18 +248,13 @@ export class SurfacingEditor {
     const ss = this.ctx.viewer.sceneSetup;
     const raycaster = ss.createRaycaster(e.offsetX, e.offsetY);
 
-    // 1. CP handles — only meaningful while a surface is selected. Each
-    //    Vertex owns its handle internally (created on setVisible(true))
-    //    and tags its Three.js nodes with `userData.entity = vertex`.
-    //    Raycast the shared workingGroup and walk up to recover the
-    //    Vertex entity.
+    // 1. CP handles — only meaningful while a surface is selected.
     if (this.selection) {
       const handleHits: any[] = [];
       const workingGroup = this.surfCtx.workingGroup;
       workingGroup.traverse((child: any) => {
         if (child.isMesh && child.visible) child.raycast(raycaster, handleHits);
       });
-      // Filter: only hits on grid CPs of the currently selected patch.
       const allowed = new Set<Vertex>();
       for (const row of this.selection.grid) for (const cp of row) allowed.add(cp);
       let bestVertex: Vertex | null = null;
@@ -292,15 +271,16 @@ export class SurfacingEditor {
         }
       }
       if (bestVertex && bestVertex.isSelectable()) {
-        select(bestVertex);
-        this.selectedEdgeCurve = null;
-        this.closeEdgeDialog();
+        if (this._selectedVertex && this._selectedVertex !== bestVertex) {
+          this._selectedVertex.deselect();
+        }
+        bestVertex.select();
         this.ctx.viewer.requestRender();
         return;
       }
     }
 
-    // 2. Highlighted BoundingCurve overlays on the selected surface.
+    // 2. BoundingCurve overlays on the selected surface — click = edge select.
     if (this.selection) {
       const patch = this.selection;
       const edgeHits: any[] = [];
@@ -317,9 +297,14 @@ export class SurfacingEditor {
       if (edgeHits.length > 0) {
         edgeHits.sort((a, b) => a.distance - b.distance);
         let node = edgeHits[0].object;
-        while (node && !(node.userData?.curve)) node = node.parent;
-        if (node) {
-          this.selectEdge(node.userData.curve as BoundingCurve);
+        while (node && !(node.userData?.entity)) node = node.parent;
+        const curve: BoundingCurve | undefined =
+          node?.userData?.entity && (node.userData.entity as any).cp
+            ? (node.userData.entity as BoundingCurve)
+            : undefined;
+        if (curve) {
+          patch.selectBoundingCurve(curve);
+          this.ctx.viewer.requestRender();
           return;
         }
       }
@@ -350,91 +335,37 @@ export class SurfacingEditor {
     return best;
   }
 
+  /**
+   * Editor-side "hover tracker". Called from mousemove with the surface
+   * currently under the cursor (or null). Delegates the visual state
+   * change to the entity's `highlight()` / `unhighlight()` methods.
+   */
   setHover(patch: NurbsSurface | null) {
-    if (patch === this.hoveredPatch) return;
-
-    // Reset all surfaces — each surface mesh owns its own hover state now.
-    this._clearAllSurfaceHover();
-
-    this.hoveredPatch = patch;
-    this.clearGroup(this.hoverGroup);
-
-    if (!patch) {
-      this.hoverGroup.visible = false;
-      this.ctx.viewer.requestRender();
-      return;
-    }
-
-    const ss = this.ctx.viewer.sceneSetup;
-    const N = 24;
-
-    // Tint the surfaces in the set via each view's setHover / setHoverInSet.
-    const set = patch.surfaceSet;
-    if (set) {
-      for (const member of set.surfaces) {
-        const m: any = member.object3d;
-        if (!m) continue;
-        if (member === patch) m.setHover(true);
-        else m.setHoverInSet(true);
-      }
-    } else {
-      const m: any = patch.object3d;
-      if (m) m.setHover(true);
-    }
-
-    // Black boundary outline (only on the actually hovered surface)
-    const edgeDefs = [
-      () => [patch.grid[0][0], patch.grid[0][1], patch.grid[0][2], patch.grid[0][3]],
-      () => [patch.grid[0][3], patch.grid[1][3], patch.grid[2][3], patch.grid[3][3]],
-      () => [patch.grid[3][3], patch.grid[3][2], patch.grid[3][1], patch.grid[3][0]],
-      () => [patch.grid[3][0], patch.grid[2][0], patch.grid[1][0], patch.grid[0][0]],
-    ];
-    const allPts = [];
-    for (const getEdge of edgeDefs) {
-      const cps = getEdge().map(v => v.position);
-      for (let i = 0; i <= N; i++) {
-        if (i === 0 && allPts.length > 0) continue;
-        const t = i / N, mt = 1 - t;
-        allPts.push([
-          mt*mt*mt*cps[0][0]+3*mt*mt*t*cps[1][0]+3*mt*t*t*cps[2][0]+t*t*t*cps[3][0],
-          mt*mt*mt*cps[0][1]+3*mt*mt*t*cps[1][1]+3*mt*t*t*cps[2][1]+t*t*t*cps[3][1],
-          mt*mt*mt*cps[0][2]+3*mt*mt*t*cps[1][2]+3*mt*t*t*cps[2][2]+t*t*t*cps[3][2],
-        ]);
-      }
-    }
-    allPts.push(allPts[0]);
-
-    const line = new ScalableLine(ss, allPts, 3, 0x000000);
-    line.renderOrder = 3;
-    line.raycast = () => {};
-    this.hoverGroup.add(line);
-
-    this.hoverGroup.visible = true;
+    if (patch === this._highlighted) return;
+    this._highlighted?.unhighlight();
+    this._highlighted = patch;
+    this._highlighted?.highlight();
     this.ctx.viewer.requestRender();
   }
 
   selectPatch(patch: NurbsSurface | null) {
-    this.deselectHandle();
-    this.deselectEdge();
-    this.setHover(null);
+    if (patch === this.selection) return;
 
-    // Tear down the previous surface's selection visuals via its own view.
-    if (this.selection && this.selection !== patch) {
-      const prevView: any = this.selection.object3d;
-      if (prevView && typeof prevView.setSelected === 'function') {
-        prevView.setSelected(false);
-      }
+    // If the new selection target is the currently-highlighted surface,
+    // clear its highlight first so `select()` starts from base state.
+    if (patch && this._highlighted === patch) {
+      this._highlighted.unhighlight();
+      this._highlighted = null;
+    }
+
+    // Tear down the previous selection via its own entity method.
+    if (this.selection) {
+      this.selection.deselect();
     }
 
     this.selection = patch;
+    if (patch) patch.select();
 
-    if (!patch) {
-      this.closePropsDialog();
-    } else {
-      const view: any = patch.object3d;
-      if (view && typeof view.setSelected === 'function') view.setSelected(true);
-      this.showPropsDialog(patch);
-    }
     this.ctx.viewer.requestRender();
   }
 
@@ -448,12 +379,9 @@ export class SurfacingEditor {
   setupGizmo() {
     const ss = this.ctx.viewer.sceneSetup;
 
-    // One shared SelectionGizmoOverlay driven by selection$. When a
-    // Vertex is published to selection$ (via its handle's onMouseClick
-    // → select(this)), the overlay attaches its TransformControls to
-    // it. On drag the gizmo calls scene.moveVertex, and the onChange
-    // hook refreshes scene-level overlays that aren't on the
-    // Vertex.usedBy invalidation chain.
+    // One shared SelectionGizmoOverlay, attached imperatively by the editor
+    // adapter when Vertex.select() fires. No stream subscription — the
+    // editor owns the lifecycle.
     this._selectionGizmo = new SelectionGizmoOverlay(ss, this.scene, {
       onChange: () => {
         if (!this._timer) {
@@ -470,57 +398,68 @@ export class SurfacingEditor {
     });
     ss.scene.add(this._selectionGizmo.gizmo);
     ss.scene.add(this._selectionGizmo.target);
-
-    // Listen to selection$ so clicking a CP handle clears any live edge
-    // selection (they're mutually exclusive).
-    this._selectionUnsub = selection$.attach((sel) => {
-      if (sel instanceof Vertex) {
-        this.selectedEdgeCurve = null;
-        this.closeEdgeDialog();
-      }
-      this.ctx.viewer.requestRender();
-    });
   }
 
-  /** Clear the current CP handle selection (if any) via selection$. */
+  /** Clear the currently-selected vertex (handles the gizmo detach via adapter). */
   deselectHandle() {
-    if (selection$.value instanceof Vertex) {
-      select(null);
+    if (this._selectedVertex) {
+      this._selectedVertex.deselect();
     }
+  }
+
+  /**
+   * Populate `ctx.editor` with hooks entities call from their select/
+   * deselect methods. This is where dialogs open and the gizmo attaches.
+   */
+  _installEditorAdapter(): void {
+    const self = this;
+    this.surfCtx.editor = {
+      onSurfaceSelected(surface: NurbsSurface): void {
+        self.showPropsDialog(surface);
+      },
+      onSurfaceDeselected(_surface: NurbsSurface): void {
+        self.closePropsDialog();
+      },
+      onBoundingCurveSelected(surface: NurbsSurface, curve: BoundingCurve): void {
+        self.selectedEdgeCurve = curve;
+        const side = self._findSideOfCurve(surface, curve);
+        if (side >= 0) self.showEdgeDialog(side);
+      },
+      onBoundingCurveDeselected(): void {
+        self.selectedEdgeCurve = null;
+        self.closeEdgeDialog();
+      },
+      onVertexSelected(vertex: Vertex): void {
+        // Edge selection and vertex selection are mutually exclusive.
+        if (self.selection) self.selection.deselectBoundingCurve();
+        // Drop any prior vertex selection.
+        if (self._selectedVertex && self._selectedVertex !== vertex) {
+          self._selectedVertex.deselect();
+        }
+        self._selectedVertex = vertex;
+        self._selectionGizmo?.attach(vertex);
+      },
+      onVertexDeselected(vertex: Vertex): void {
+        if (self._selectedVertex === vertex) {
+          self._selectedVertex = null;
+          self._selectionGizmo?.detach();
+        }
+      },
+    };
   }
 
   // ---- Edge selection ----
 
-  /**
-   * Select a BoundingCurve. The curve is shared across the surfaces that
-   * use it; the edge dialog applies to the currently-selected patch's side
-   * of that curve, so we translate curve → side via the patch's own
-   * `boundingCurves` lookup.
-   */
+  /** Select a BoundingCurve on the currently-selected surface. */
   selectEdge(curve) {
-    this.deselectEdge();
     this.deselectHandle();
     if (!this.selection) return;
-    const patch = this.selection;
-    const side = this._findSideOfCurve(patch, curve);
-    if (side < 0) return;
-    this.selectedEdgeCurve = curve;
-    // Highlighting is already in place via NurbsSurfaceObject3D.setSelected;
-    // re-emphasise the clicked edge via the curve view's own selection flag.
-    if (curve.object3d && typeof curve.object3d.setSelected === 'function') {
-      curve.object3d.setSelected(true);
-    }
-    this.showEdgeDialog(side);
+    this.selection.selectBoundingCurve(curve);
     this.ctx.viewer.requestRender();
   }
 
   deselectEdge() {
-    if (this.selectedEdgeCurve) {
-      const view = this.selectedEdgeCurve.object3d;
-      if (view && typeof view.setSelected === 'function') view.setSelected(false);
-      this.selectedEdgeCurve = null;
-    }
-    this.closeEdgeDialog();
+    if (this.selection) this.selection.deselectBoundingCurve();
   }
 
   /** Return which side (0..3) of a patch a BoundingCurve is, or -1. */
@@ -697,33 +636,10 @@ export class SurfacingEditor {
   _refreshEntityRefs() {
     const scene = this.scene;
     if (!scene) return;
-    const self = this;
     this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
-    const seenCurves = new Set<any>();
     for (const surface of scene.surfaces) {
       for (const row of surface.grid) {
         for (const cp of row) cp.setMirrorTarget(scene.isMirrorTarget(cp));
-      }
-      for (const cv of [
-        surface.boundingCurves.bottom, surface.boundingCurves.right,
-        surface.boundingCurves.top,    surface.boundingCurves.left,
-      ]) {
-        if (seenCurves.has(cv)) continue;
-        seenCurves.add(cv);
-        const view: any = cv.object3d;
-        if (view && typeof view.setClickHandler === 'function') {
-          view.setClickHandler((curve: any) => self.selectEdge(curve));
-        }
-      }
-    }
-  }
-
-  /** Clear hover flags on every surface view. */
-  _clearAllSurfaceHover() {
-    for (const v of this.surfaceMeshes) {
-      if (v && v.setHover) {
-        v.setHover(false);
-        if (v.setHoverInSet) v.setHoverInSet(false);
       }
     }
   }
@@ -741,21 +657,15 @@ export class SurfacingEditor {
   refreshOverlaysForDrag(): void {
     if (!this.scene) return;
 
-    // Per-surface wireframe and BoundingCurve views retessellate in
-    // sync with their surface's own tessellate() call, so they don't
-    // need a separate refresh step. Only the selected-patch cage
-    // needs an explicit sync.
     if (this.selection) {
       const patch = this.selection;
       const cageView: any = patch.cage?.object3d;
       if (cageView && typeof cageView.sync === 'function') cageView.sync();
-      for (const cv of [
-        patch.boundingCurves.bottom, patch.boundingCurves.right,
-        patch.boundingCurves.top,    patch.boundingCurves.left,
-      ]) {
-        const view: any = cv?.object3d;
-        if (view && typeof view.rebuild === 'function') view.rebuild();
-      }
+      // Refresh the 4 bounding curves so their lines track the new geometry.
+      patch.boundingCurves.bottom.refreshGeometry();
+      patch.boundingCurves.right.refreshGeometry();
+      patch.boundingCurves.top.refreshGeometry();
+      patch.boundingCurves.left.refreshGeometry();
     }
 
     this.ctx.viewer.requestRender();
@@ -764,16 +674,18 @@ export class SurfacingEditor {
   // ---- Rebuild ----
 
   rebuildAll() {
-    // Stash current selection so we can reapply it after the rebuild.
+    // Stash current selection and fully deselect so entity state is clean,
+    // then re-apply through the new entity-level select() path.
     const prev = this.selection;
-    this.selection = null;
+    if (prev) {
+      prev.deselect();
+      this.selection = null;
+    }
 
     this._refreshEntityRefs();
-    this._applyViewFlags(surfacingViewFlags$.value);
 
     if (prev && this.scene.surfaces.includes(prev)) {
       this.selectPatch(prev);
-      if (this._propsDialog) this.showPropsDialog(prev);
     }
 
     this.ctx.viewer.requestRender();
@@ -1324,7 +1236,6 @@ export class SurfacingEditor {
     if (this._onConstraintDeleted) document.removeEventListener('patch-cage-constraint-deleted', this._onConstraintDeleted);
     if (this._onFillHoleToggle) document.removeEventListener('patch-fill-hole-toggle', this._onFillHoleToggle);
     if (this._loopInsertMode || this._bridgeMode || this._fillHoleMode) document.body.style.cursor = '';
-    this.clearGroup(this.hoverGroup);
     this.clearGroup(this._loopPreviewGroup);
     this.clearGroup(this._bridgePreviewGroup);
     if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown);
@@ -1335,7 +1246,8 @@ export class SurfacingEditor {
       this._selectionGizmo.dispose();
       this._selectionGizmo = null;
     }
-    if (this._selectionUnsub) { this._selectionUnsub(); this._selectionUnsub = null; }
+    // Clear the editor adapter so lingering entity calls are no-ops.
+    this.surfCtx.editor = null;
     this.closePropsDialog();
     this.closeArcDialog();
     this.closeEdgeDialog();
@@ -1370,19 +1282,3 @@ function compactNumberArrays(json) {
   });
 }
 
-/**
- * Is this BoundingCurve a "set silhouette" edge? True when the curve is
- * a free edge (≤ 1 user) or its users span more than one SurfaceSet.
- * Mirrors the predicate used by the old rebuildBoundariesGroup — only
- * silhouettes of logical faces get drawn in boundaries view mode.
- */
-function isSetBoundary(curve: any): boolean {
-  if (curve.users.size < 2) return true;
-  let firstSet: any = undefined;
-  for (const user of curve.users) {
-    if (!user.surfaceSet) return true;
-    if (firstSet === undefined) firstSet = user.surfaceSet;
-    else if (firstSet !== user.surfaceSet) return true;
-  }
-  return false;
-}

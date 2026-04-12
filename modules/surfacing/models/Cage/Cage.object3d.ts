@@ -68,10 +68,6 @@ export class CageObject3D extends EntityObject3D {
     }
   }
 
-  isSelectable(): boolean {
-    return false;
-  }
-
   private clearLines(): void {
     for (const line of this.lines) {
       this.remove(line);
