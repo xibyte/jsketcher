@@ -24,7 +24,8 @@ import {showEdgeDialog, closeBoundingCurveDialog} from '../models/BoundingCurve/
 
 const SURFACE_SET_HOVER_COLOR = 0xb0d4f3;
 const HOVER_CURVE_COLOR = 0x111111;
-const EDGE_SELECTED_COLOR = 0xffffff;
+const EDGE_HOVER_COLOR = 0xdd88dd;    // light magenta
+const EDGE_SELECTED_COLOR = 0xcc22cc; // magenta
 
 export class DefaultTool implements Tool {
 
@@ -76,13 +77,18 @@ export class DefaultTool implements Tool {
 
   onMouseMove(e: MouseEvent): void {
     if (this.mouseDown) return;
-    const hit = this.editor.raycast.raycastSurface(e);
-    this.updateHover(hit);
 
     if (this.selectedSurface) {
+      // In edit mode: track vertex + curve hover only, no surface highlighting.
       const filter = this.cpFilter();
       const vertex = this.editor.raycast.raycastVertex(e, filter);
       this.updateVertexHover(vertex);
+
+      const curve = this.editor.raycast.raycastCurve(e, this.selectedSurface);
+      this.updateCurveHover(curve);
+    } else {
+      const hit = this.editor.raycast.raycastSurface(e);
+      this.updateHover(hit);
     }
   }
 
@@ -125,6 +131,8 @@ export class DefaultTool implements Tool {
     this.deselectCurve();
     this.deselectSurface();
     this.clearHover();
+    this.hoveredCurve = null;
+    this.hoveredVertex = null;
     this.closePropsDialog();
     this.closeEdgeDialog();
     closeArcDialog(this.arcState);
@@ -175,12 +183,28 @@ export class DefaultTool implements Tool {
   }
 
   private hoveredVertex: Vertex | null = null;
+  private hoveredCurve: BoundingCurve | null = null;
 
   private updateVertexHover(vertex: Vertex | null): void {
     if (vertex === this.hoveredVertex) return;
     this.hoveredVertex?.unmark();
     this.hoveredVertex = vertex;
     if (vertex) vertex.mark(CP_HOVER_COLOR);
+    this.editor.requestRender();
+  }
+
+  private updateCurveHover(curve: BoundingCurve | null): void {
+    if (curve === this.hoveredCurve) return;
+    // Restore the previous hovered curve to its side color (if not the selected curve)
+    if (this.hoveredCurve && this.hoveredCurve !== this.selectedCurve && this.selectedSurface) {
+      const side = this.selectedSurface.sideOfCurve(this.hoveredCurve);
+      if (side >= 0) this.hoveredCurve.select(EDGE_COLORS[side]);
+    }
+    this.hoveredCurve = curve;
+    // Highlight the new curve (if not already selected)
+    if (curve && curve !== this.selectedCurve) {
+      curve.select(EDGE_HOVER_COLOR);
+    }
     this.editor.requestRender();
   }
 
