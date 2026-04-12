@@ -13,24 +13,24 @@ const EDGE2_COLOR = 0xee8800;
 export class BridgeTool implements Tool {
 
   private editor!: SurfacingEditor;
-  private _edge1: {patchIdx: number, side: number} | null = null;
-  private _edge2: {patchIdx: number, side: number} | null = null;
-  private _flipped = false;
-  private _previewGroup: any = null;
-  private _markedCurves: BoundingCurve[] = [];
-  private _guide: ModeGuideState = createModeGuideState();
+  private edge1: {patchIdx: number, side: number} | null = null;
+  private edge2: {patchIdx: number, side: number} | null = null;
+  private flipped = false;
+  private previewGroup: any = null;
+  private markedCurves: BoundingCurve[] = [];
+  private guide: ModeGuideState = createModeGuideState();
 
   init(editor: SurfacingEditor): void {
     this.editor = editor;
-    this._previewGroup = SceneGraph.createGroup();
-    this._previewGroup.visible = false;
-    editor.workingGroup.add(this._previewGroup);
+    this.previewGroup = SceneGraph.createGroup();
+    this.previewGroup.visible = false;
+    editor.workingGroup.add(this.previewGroup);
     document.body.style.cursor = 'crosshair';
-    showModeGuide(this._guide, {
+    showModeGuide(this.guide, {
       title: 'Bridge Surface',
       hint: 'Click two edges · Tab=flip · G=G1 · Esc=cancel',
-      onG1Toggle: () => toggleG1(this._guide),
-      onFlip: () => this._flip(),
+      onG1Toggle: () => toggleG1(this.guide),
+      onFlip: () => this.flip(),
     });
   }
 
@@ -40,26 +40,26 @@ export class BridgeTool implements Tool {
     const hit = this.editor.raycast.raycastSurfaceEdge(e);
     if (!hit) return;
 
-    if (!this._edge1) {
-      this._edge1 = hit;
-      this._updatePreview();
+    if (!this.edge1) {
+      this.edge1 = hit;
+      this.updatePreview();
       return;
     }
 
-    if (!this._edge2) {
-      this._edge2 = hit;
+    if (!this.edge2) {
+      this.edge2 = hit;
       const scene = this.editor.scene!;
-      const e1 = scene.surfaces[this._edge1.patchIdx].getEdgeVertices(this._edge1.side);
+      const e1 = scene.surfaces[this.edge1.patchIdx].getEdgeVertices(this.edge1.side);
       const e2 = scene.surfaces[hit.patchIdx].getEdgeVertices(hit.side);
       const fwd = vdist(e1[0].position, e2[0].position) + vdist(e1[3].position, e2[3].position);
       const rev = vdist(e1[0].position, e2[3].position) + vdist(e1[3].position, e2[0].position);
-      this._flipped = rev < fwd;
-      this._updatePreview();
+      this.flipped = rev < fwd;
+      this.updatePreview();
       return;
     }
 
     // Third click = execute
-    this._execute();
+    this.execute();
   }
 
   onMouseMove(_e: MouseEvent): void {}
@@ -71,103 +71,103 @@ export class BridgeTool implements Tool {
     }
     if (e.key === 'Tab') {
       e.preventDefault();
-      this._flip();
+      this.flip();
       return;
     }
     if (e.key === 'g' || e.key === 'G') {
-      toggleG1(this._guide);
+      toggleG1(this.guide);
       return;
     }
-    if (e.key === 'Enter' && this._edge1 && this._edge2) {
-      this._execute();
+    if (e.key === 'Enter' && this.edge1 && this.edge2) {
+      this.execute();
     }
   }
 
   cleanup(): void {
-    this._clearMarks();
-    if (this._previewGroup) {
-      this.editor.clearGroup(this._previewGroup);
-      this._previewGroup.parent?.remove(this._previewGroup);
-      this._previewGroup = null;
+    this.clearMarks();
+    if (this.previewGroup) {
+      this.editor.clearGroup(this.previewGroup);
+      this.previewGroup.parent?.remove(this.previewGroup);
+      this.previewGroup = null;
     }
     document.body.style.cursor = '';
-    closeModeGuide(this._guide);
-    this._edge1 = null;
-    this._edge2 = null;
-    this._flipped = false;
+    closeModeGuide(this.guide);
+    this.edge1 = null;
+    this.edge2 = null;
+    this.flipped = false;
   }
 
-  private _flip(): void {
-    if (!this._edge1 || !this._edge2) return;
-    this._flipped = !this._flipped;
-    this._updatePreview();
+  private flip(): void {
+    if (!this.edge1 || !this.edge2) return;
+    this.flipped = !this.flipped;
+    this.updatePreview();
     this.editor.requestRender();
   }
 
-  private _execute(): void {
-    if (!this._edge1 || !this._edge2) return;
+  private execute(): void {
+    if (!this.edge1 || !this.edge2) return;
     const scene = this.editor.scene!;
-    const e1 = scene.surfaces[this._edge1.patchIdx].getEdgeVertices(this._edge1.side);
-    const e2 = scene.surfaces[this._edge2.patchIdx].getEdgeVertices(this._edge2.side);
+    const e1 = scene.surfaces[this.edge1.patchIdx].getEdgeVertices(this.edge1.side);
+    const e2 = scene.surfaces[this.edge2.patchIdx].getEdgeVertices(this.edge2.side);
     bridgeSurface(scene, e1, e2, {
-      flipped: this._flipped,
-      g1: this._guide.g1,
-      sourcePatchIdx: this._edge1.patchIdx,
+      flipped: this.flipped,
+      g1: this.guide.g1,
+      sourcePatchIdx: this.edge1.patchIdx,
     });
     this.editor.rebuildAll();
-    this._resetState();
+    this.resetState();
     this.editor.requestRender();
   }
 
-  private _resetState(): void {
-    this._clearMarks();
-    this._edge1 = null;
-    this._edge2 = null;
-    this._flipped = false;
-    if (this._previewGroup) {
-      this.editor.clearGroup(this._previewGroup);
-      this._previewGroup.visible = false;
+  private resetState(): void {
+    this.clearMarks();
+    this.edge1 = null;
+    this.edge2 = null;
+    this.flipped = false;
+    if (this.previewGroup) {
+      this.editor.clearGroup(this.previewGroup);
+      this.previewGroup.visible = false;
     }
   }
 
-  private _updatePreview(): void {
-    if (!this._previewGroup) return;
-    this.editor.clearGroup(this._previewGroup);
-    this._clearMarks();
+  private updatePreview(): void {
+    if (!this.previewGroup) return;
+    this.editor.clearGroup(this.previewGroup);
+    this.clearMarks();
 
     const scene = this.editor.scene!;
     const ss = this.editor.sceneSetup;
 
-    if (this._edge1) {
-      const curve = scene.surfaces[this._edge1.patchIdx].getBoundingCurve(this._edge1.side);
+    if (this.edge1) {
+      const curve = scene.surfaces[this.edge1.patchIdx].getBoundingCurve(this.edge1.side);
       curve.mark(EDGE1_COLOR);
-      this._markedCurves.push(curve);
+      this.markedCurves.push(curve);
     }
 
-    if (this._edge2) {
-      const curve = scene.surfaces[this._edge2.patchIdx].getBoundingCurve(this._edge2.side);
+    if (this.edge2) {
+      const curve = scene.surfaces[this.edge2.patchIdx].getBoundingCurve(this.edge2.side);
       curve.mark(EDGE2_COLOR);
-      this._markedCurves.push(curve);
+      this.markedCurves.push(curve);
 
-      const e1v = scene.surfaces[this._edge1!.patchIdx].getEdgeVertices(this._edge1!.side);
-      let e2v = scene.surfaces[this._edge2.patchIdx].getEdgeVertices(this._edge2.side);
-      if (this._flipped) e2v = [e2v[3], e2v[2], e2v[1], e2v[0]];
+      const e1v = scene.surfaces[this.edge1!.patchIdx].getEdgeVertices(this.edge1!.side);
+      let e2v = scene.surfaces[this.edge2.patchIdx].getEdgeVertices(this.edge2.side);
+      if (this.flipped) e2v = [e2v[3], e2v[2], e2v[1], e2v[0]];
       for (let ci = 0; ci < 4; ci += 3) {
         const line = new ScalableLine(ss, [e1v[ci].position, e2v[ci].position], 2, 0xaaaaaa);
         line.renderOrder = 4;
         (line as any).raycast = () => {};
-        this._previewGroup.add(line);
+        this.previewGroup.add(line);
       }
-      this._previewGroup.visible = true;
+      this.previewGroup.visible = true;
     } else {
-      this._previewGroup.visible = false;
+      this.previewGroup.visible = false;
     }
 
     this.editor.requestRender();
   }
 
-  private _clearMarks(): void {
-    for (const c of this._markedCurves) c.unmark();
-    this._markedCurves.length = 0;
+  private clearMarks(): void {
+    for (const c of this.markedCurves) c.unmark();
+    this.markedCurves.length = 0;
   }
 }

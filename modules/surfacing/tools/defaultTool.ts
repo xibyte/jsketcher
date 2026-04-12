@@ -33,17 +33,17 @@ export class DefaultTool implements Tool {
   selectedSurface: NurbsSurface | null = null;
   selectedCurve: BoundingCurve | null = null;
   selectedVertex: Vertex | null = null;
-  private _mouseDown = false;
-  private _gizmo: SelectionGizmoOverlay | null = null;
-  private _propsPanel: HTMLDivElement | null = null;
-  private _edgePanel: HTMLDivElement | null = null;
-  private _arcState: {panel: HTMLDivElement | null} = {panel: null};
+  private mouseDown = false;
+  private gizmo: SelectionGizmoOverlay | null = null;
+  private propsPanel: HTMLDivElement | null = null;
+  private edgePanel: HTMLDivElement | null = null;
+  private arcState: {panel: HTMLDivElement | null} = {panel: null};
 
   init(editor: SurfacingEditor): void {
     this.editor = editor;
-    if (!this._gizmo && editor.scene) {
+    if (!this.gizmo && editor.scene) {
       const ss = editor.sceneSetup;
-      this._gizmo = new SelectionGizmoOverlay(ss, editor.scene, {
+      this.gizmo = new SelectionGizmoOverlay(ss, editor.scene, {
         onChange: () => {
           editor.refreshOverlaysForDrag();
         },
@@ -51,10 +51,10 @@ export class DefaultTool implements Tool {
           editor.rebuildAll();
         },
       });
-      ss.scene.add(this._gizmo.gizmo);
-      ss.scene.add(this._gizmo.target);
-    } else if (this._gizmo && editor.scene) {
-      this._gizmo.setScene(editor.scene);
+      ss.scene.add(this.gizmo.gizmo);
+      ss.scene.add(this.gizmo.target);
+    } else if (this.gizmo && editor.scene) {
+      this.gizmo.setScene(editor.scene);
     }
   }
 
@@ -63,23 +63,23 @@ export class DefaultTool implements Tool {
   // -------------------------------------------------------------------
 
   onMouseDown(_e: MouseEvent): void {
-    this._mouseDown = true;
+    this.mouseDown = true;
   }
 
   onMouseUp(e: MouseEvent): void {
-    this._mouseDown = false;
-    this._handleClick(e);
+    this.mouseDown = false;
+    this.handleClick(e);
   }
 
   onMouseMove(e: MouseEvent): void {
-    if (this._mouseDown) return;
+    if (this.mouseDown) return;
     const hit = this.editor.raycast.raycastSurface(e);
-    this._updateHover(hit);
+    this.updateHover(hit);
 
     if (this.selectedSurface) {
-      const filter = this._cpFilter();
+      const filter = this.cpFilter();
       const vertex = this.editor.raycast.raycastVertex(e, filter);
-      this._updateVertexHover(vertex);
+      this.updateVertexHover(vertex);
     }
   }
 
@@ -90,9 +90,9 @@ export class DefaultTool implements Tool {
   onKeyDown(e: KeyboardEvent): void {
     if (e.key === 'Escape') {
       if (this.selectedVertex) {
-        this._deselectVertex();
+        this.deselectVertex();
       } else if (this.selectedSurface) {
-        this._deselectSurface();
+        this.deselectSurface();
       }
       return;
     }
@@ -102,14 +102,14 @@ export class DefaultTool implements Tool {
 
     if (e.key === 'u' || e.key === 'U') {
       this.editor.scene!.splitIsoline(patchIdx, 'u', 0.5);
-      this._deselectSurface();
+      this.deselectSurface();
       this.editor.rebuildAll();
     } else if (e.key === 'v' || e.key === 'V') {
       this.editor.scene!.splitIsoline(patchIdx, 'v', 0.5);
-      this._deselectSurface();
+      this.deselectSurface();
       this.editor.rebuildAll();
     } else if (e.key === 'a' || e.key === 'A') {
-      this._toggleArcDialog();
+      this.toggleArcDialog();
     }
   }
 
@@ -118,19 +118,19 @@ export class DefaultTool implements Tool {
   // -------------------------------------------------------------------
 
   cleanup(): void {
-    this._deselectVertex();
-    this._deselectCurve();
-    this._deselectSurface();
-    this._clearHover();
-    this._closePropsDialog();
-    this._closeEdgeDialog();
-    closeArcDialog(this._arcState);
-    if (this._gizmo) {
+    this.deselectVertex();
+    this.deselectCurve();
+    this.deselectSurface();
+    this.clearHover();
+    this.closePropsDialog();
+    this.closeEdgeDialog();
+    closeArcDialog(this.arcState);
+    if (this.gizmo) {
       const ss = this.editor.sceneSetup;
-      ss.scene.remove(this._gizmo.gizmo);
-      ss.scene.remove(this._gizmo.target);
-      this._gizmo.dispose();
-      this._gizmo = null;
+      ss.scene.remove(this.gizmo.gizmo);
+      ss.scene.remove(this.gizmo.target);
+      this.gizmo.dispose();
+      this.gizmo = null;
     }
   }
 
@@ -138,13 +138,13 @@ export class DefaultTool implements Tool {
   // Hover
   // -------------------------------------------------------------------
 
-  private _updateHover(hit: NurbsSurface | null): void {
+  private updateHover(hit: NurbsSurface | null): void {
     if (hit === this.hoveredSurface) return;
-    this._clearHover();
+    this.clearHover();
     this.hoveredSurface = hit;
     if (hit && !hit.editing) {
       hit.mark(SURFACE_HOVER_COLOR);
-      this._markCurves(hit, HOVER_CURVE_COLOR);
+      this.markCurves(hit, HOVER_CURVE_COLOR);
       const set = hit.surfaceSet;
       if (set) {
         for (const sibling of set.surfaces) {
@@ -155,13 +155,13 @@ export class DefaultTool implements Tool {
     this.editor.requestRender();
   }
 
-  private _clearHover(): void {
+  private clearHover(): void {
     const hit = this.hoveredSurface;
     if (!hit) return;
     this.hoveredSurface = null;
     if (!hit.editing) {
       hit.unmark();
-      this._unmarkCurves(hit);
+      this.unmarkCurves(hit);
       const set = hit.surfaceSet;
       if (set) {
         for (const sibling of set.surfaces) {
@@ -171,13 +171,13 @@ export class DefaultTool implements Tool {
     }
   }
 
-  private _hoveredVertex: Vertex | null = null;
+  private hoveredVertex: Vertex | null = null;
 
-  private _updateVertexHover(vertex: Vertex | null): void {
-    if (vertex === this._hoveredVertex) return;
-    this._hoveredVertex?.setHovered(false);
-    this._hoveredVertex = vertex;
-    this._hoveredVertex?.setHovered(true);
+  private updateVertexHover(vertex: Vertex | null): void {
+    if (vertex === this.hoveredVertex) return;
+    this.hoveredVertex?.setHovered(false);
+    this.hoveredVertex = vertex;
+    this.hoveredVertex?.setHovered(true);
     this.editor.requestRender();
   }
 
@@ -185,16 +185,16 @@ export class DefaultTool implements Tool {
   // Click handling
   // -------------------------------------------------------------------
 
-  private _handleClick(e: MouseEvent): void {
+  private handleClick(e: MouseEvent): void {
     // 1. Vertex handle click (only when a surface is in edit mode)
     if (this.selectedSurface) {
-      const filter = this._cpFilter();
+      const filter = this.cpFilter();
       const vertex = this.editor.raycast.raycastVertex(e, filter);
       if (vertex && vertex.isSelectable()) {
         if (this.selectedVertex !== vertex) {
-          this._deselectVertex();
-          this._deselectCurve();
-          this._selectVertex(vertex);
+          this.deselectVertex();
+          this.deselectCurve();
+          this.selectVertex(vertex);
         }
         return;
       }
@@ -204,10 +204,10 @@ export class DefaultTool implements Tool {
     if (this.selectedSurface) {
       const curve = this.editor.raycast.raycastCurve(e, this.selectedSurface);
       if (curve) {
-        this._deselectVertex();
+        this.deselectVertex();
         if (this.selectedCurve !== curve) {
-          this._deselectCurve();
-          this._selectCurve(curve);
+          this.deselectCurve();
+          this.selectCurve(curve);
         }
         return;
       }
@@ -221,26 +221,26 @@ export class DefaultTool implements Tool {
         // Click on the already-selected surface: if vertex was selected,
         // just deselect vertex (stay in surface edit mode).
         if (this.selectedVertex) {
-          this._deselectVertex();
+          this.deselectVertex();
           return;
         }
         // Otherwise deselect surface.
-        this._deselectSurface();
+        this.deselectSurface();
         return;
       }
       // Select a new surface.
-      this._deselectVertex();
-      this._deselectCurve();
-      this._deselectSurface();
-      this._selectSurface(hitSurface);
+      this.deselectVertex();
+      this.deselectCurve();
+      this.deselectSurface();
+      this.selectSurface(hitSurface);
       return;
     }
 
     // 4. Click on empty space
     if (this.selectedVertex) {
-      this._deselectVertex();
+      this.deselectVertex();
     } else if (this.selectedSurface) {
-      this._deselectSurface();
+      this.deselectSurface();
     }
   }
 
@@ -248,9 +248,9 @@ export class DefaultTool implements Tool {
   // Selection state transitions
   // -------------------------------------------------------------------
 
-  private _selectSurface(surface: NurbsSurface): void {
+  private selectSurface(surface: NurbsSurface): void {
     if (this.hoveredSurface === surface) {
-      this._clearHover();
+      this.clearHover();
     }
     this.selectedSurface = surface;
     surface.enterEditMode();
@@ -259,14 +259,14 @@ export class DefaultTool implements Tool {
     c.right.select(EDGE_COLORS[1]);
     c.top.select(EDGE_COLORS[2]);
     c.left.select(EDGE_COLORS[3]);
-    this._showPropsDialog(surface);
+    this.showPropsDialog(surface);
     this.editor.requestRender();
   }
 
-  private _deselectSurface(): void {
+  private deselectSurface(): void {
     if (!this.selectedSurface) return;
-    this._deselectVertex();
-    this._deselectCurve();
+    this.deselectVertex();
+    this.deselectCurve();
     const surface = this.selectedSurface;
     this.selectedSurface = null;
     // Release curve select locks.
@@ -276,18 +276,18 @@ export class DefaultTool implements Tool {
     c.top.deselect();
     c.left.deselect();
     surface.exitEditMode();
-    this._closePropsDialog();
+    this.closePropsDialog();
     this.editor.requestRender();
   }
 
-  private _selectCurve(curve: BoundingCurve): void {
+  private selectCurve(curve: BoundingCurve): void {
     this.selectedCurve = curve;
     curve.select(EDGE_SELECTED_COLOR);
-    this._showEdgeDialog(curve);
+    this.showEdgeDialog(curve);
     this.editor.requestRender();
   }
 
-  private _deselectCurve(): void {
+  private deselectCurve(): void {
     if (!this.selectedCurve) return;
     const curve = this.selectedCurve;
     this.selectedCurve = null;
@@ -296,24 +296,24 @@ export class DefaultTool implements Tool {
       const side = this.selectedSurface.sideOfCurve(curve);
       if (side >= 0) curve.select(EDGE_COLORS[side]);
     }
-    this._closeEdgeDialog();
+    this.closeEdgeDialog();
     this.editor.requestRender();
   }
 
-  private _selectVertex(vertex: Vertex): void {
-    this._deselectCurve();
+  private selectVertex(vertex: Vertex): void {
+    this.deselectCurve();
     this.selectedVertex = vertex;
     vertex.enterEditMode();
-    this._gizmo?.attach(vertex);
+    this.gizmo?.attach(vertex);
     this.editor.requestRender();
   }
 
-  private _deselectVertex(): void {
+  private deselectVertex(): void {
     if (!this.selectedVertex) return;
     const v = this.selectedVertex;
     this.selectedVertex = null;
     v.exitEditMode();
-    this._gizmo?.detach();
+    this.gizmo?.detach();
     this.editor.requestRender();
   }
 
@@ -321,14 +321,14 @@ export class DefaultTool implements Tool {
   // Curve mark/unmark helpers (tool-owned, not on entity)
   // -------------------------------------------------------------------
 
-  private _markCurves(surface: NurbsSurface, color: number): void {
+  private markCurves(surface: NurbsSurface, color: number): void {
     surface.boundingCurves.bottom.mark(color);
     surface.boundingCurves.right.mark(color);
     surface.boundingCurves.top.mark(color);
     surface.boundingCurves.left.mark(color);
   }
 
-  private _unmarkCurves(surface: NurbsSurface): void {
+  private unmarkCurves(surface: NurbsSurface): void {
     surface.boundingCurves.bottom.unmark();
     surface.boundingCurves.right.unmark();
     surface.boundingCurves.top.unmark();
@@ -339,12 +339,12 @@ export class DefaultTool implements Tool {
   // Props dialog
   // -------------------------------------------------------------------
 
-  private _showPropsDialog(surface: NurbsSurface): void {
-    this._closePropsDialog();
+  private showPropsDialog(surface: NurbsSurface): void {
+    this.closePropsDialog();
     const scene = this.editor.scene!;
     const patchIdx = scene.surfaces.indexOf(surface);
-    this._propsPanel = showNurbsSurfaceDialog(surface, patchIdx, {
-      onClose: () => this._deselectSurface(),
+    this.propsPanel = showNurbsSurfaceDialog(surface, patchIdx, {
+      onClose: () => this.deselectSurface(),
       onPushPull: (dist) => {
         scene.pushPullPatch(patchIdx, dist);
         this.editor.rebuildAll();
@@ -355,28 +355,28 @@ export class DefaultTool implements Tool {
       },
       onSubdivide: () => {
         scene.subdividePatch(patchIdx);
-        this._deselectSurface();
+        this.deselectSurface();
         this.editor.rebuildAll();
       },
       onRemove: () => {
         scene.removeSurface(surface);
-        this._deselectSurface();
+        this.deselectSurface();
         this.editor.rebuildAll();
       },
     });
   }
 
-  private _closePropsDialog(): void {
-    closeNurbsSurfaceDialog(this._propsPanel);
-    this._propsPanel = null;
+  private closePropsDialog(): void {
+    closeNurbsSurfaceDialog(this.propsPanel);
+    this.propsPanel = null;
   }
 
   // -------------------------------------------------------------------
   // Edge dialog
   // -------------------------------------------------------------------
 
-  private _showEdgeDialog(curve: BoundingCurve): void {
-    this._closeEdgeDialog();
+  private showEdgeDialog(curve: BoundingCurve): void {
+    this.closeEdgeDialog();
     const surface = this.selectedSurface!;
     const scene = this.editor.scene!;
     const patchIdx = scene.surfaces.indexOf(surface);
@@ -386,21 +386,21 @@ export class DefaultTool implements Tool {
 
     const rebuildAndReopen = () => {
       this.editor.rebuildAll();
-      this._showEdgeDialog(curve);
+      this.showEdgeDialog(curve);
     };
 
-    this._edgePanel = showEdgeDialog(curve, hasNeighbor, {
-      onClose: () => this._deselectCurve(),
+    this.edgePanel = showEdgeDialog(curve, hasNeighbor, {
+      onClose: () => this.deselectCurve(),
       onArc90Out: () => {
-        this._applyArc90(patchIdx, edgeIdx, false);
+        this.applyArc90(patchIdx, edgeIdx, false);
         rebuildAndReopen();
       },
       onArc90In: () => {
-        this._applyArc90(patchIdx, edgeIdx, true);
+        this.applyArc90(patchIdx, edgeIdx, true);
         rebuildAndReopen();
       },
       onRemoveArc: () => {
-        this._removeArc(patchIdx, edgeIdx);
+        this.removeArc(patchIdx, edgeIdx);
         rebuildAndReopen();
       },
       onG1: () => {
@@ -418,12 +418,12 @@ export class DefaultTool implements Tool {
     });
   }
 
-  private _closeEdgeDialog(): void {
-    closeBoundingCurveDialog(this._edgePanel);
-    this._edgePanel = null;
+  private closeEdgeDialog(): void {
+    closeBoundingCurveDialog(this.edgePanel);
+    this.edgePanel = null;
   }
 
-  private _applyArc90(patchIdx: number, side: number, flip: boolean): void {
+  private applyArc90(patchIdx: number, side: number, flip: boolean): void {
     const scene = this.editor.scene!;
     const patch = scene.surfaces[patchIdx];
     const ev = patch.getEdgeVertices(side);
@@ -443,7 +443,7 @@ export class DefaultTool implements Tool {
     scene.constrainEdgeToArc(patchIdx, side, radius, 90, planeNormal, 'rational');
   }
 
-  private _removeArc(patchIdx: number, edgeIdx: number): void {
+  private removeArc(patchIdx: number, edgeIdx: number): void {
     const scene = this.editor.scene!;
     const {lerp: vlerp} = require('math/vec');
     scene.arcConstraints = scene.arcConstraints.filter((c: any) => {
@@ -467,32 +467,32 @@ export class DefaultTool implements Tool {
   // Arc dialog
   // -------------------------------------------------------------------
 
-  private _toggleArcDialog(): void {
+  private toggleArcDialog(): void {
     if (!this.selectedSurface) return;
-    if (this._arcState.panel) {
-      closeArcDialog(this._arcState);
+    if (this.arcState.panel) {
+      closeArcDialog(this.arcState);
       return;
     }
     const scene = this.editor.scene!;
     const patchIdx = scene.surfaces.indexOf(this.selectedSurface);
     const result = showArcDialog(scene, patchIdx, {
-      onClose: () => closeArcDialog(this._arcState),
+      onClose: () => closeArcDialog(this.arcState),
       onRemove: () => {
         if (scene.arcConstraints.length > 0) {
           scene.removeArcConstraint(scene.arcConstraints[scene.arcConstraints.length - 1]);
         }
         this.editor.rebuildAll();
-        closeArcDialog(this._arcState);
+        closeArcDialog(this.arcState);
       },
       onApply: () => {
         this.editor.rebuildAll();
       },
     });
-    this._arcState.panel = result.panel;
+    this.arcState.panel = result.panel;
   }
 
   /** Build the filter set of grid CPs for the selected surface. */
-  private _cpFilter(): Set<Vertex> {
+  private cpFilter(): Set<Vertex> {
     const allowed = new Set<Vertex>();
     if (this.selectedSurface) {
       for (const row of this.selectedSurface.grid) {

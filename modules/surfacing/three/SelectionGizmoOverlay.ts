@@ -32,16 +32,16 @@ export class SelectionGizmoOverlay {
   readonly gizmo: TransformControls;
   readonly target: Object3D = new Object3D();
   private _attached: GizmoTarget | null = null;
-  private _sceneSetup: any;
-  private _scene: any;
-  private _onChange: (() => void) | undefined;
-  private _onDragEnd: (() => void) | undefined;
+  private sceneSetup: any;
+  private scene: any;
+  private onChange: (() => void) | undefined;
+  private onDragEnd: (() => void) | undefined;
 
   constructor(sceneSetup: any, scene: any, options: SelectionGizmoOptions = {}) {
-    this._sceneSetup = sceneSetup;
-    this._scene = scene;
-    this._onChange = options.onChange;
-    this._onDragEnd = options.onDragEnd;
+    this.sceneSetup = sceneSetup;
+    this.scene = scene;
+    this.onChange = options.onChange;
+    this.onDragEnd = options.onDragEnd;
     this.gizmo = new TransformControls(sceneSetup.camera, sceneSetup.renderer.domElement);
     this.gizmo.setSize(0.7);
     this.gizmo.setMode('translate');
@@ -51,7 +51,7 @@ export class SelectionGizmoOverlay {
     let wasDragging = false;
     this.gizmo.addEventListener('dragging-changed', (e: any) => {
       sceneSetup.trackballControls.enabled = !e.value;
-      if (wasDragging && !e.value && this._onDragEnd) this._onDragEnd();
+      if (wasDragging && !e.value && this.onDragEnd) this.onDragEnd();
       wasDragging = !!e.value;
     });
 
@@ -59,8 +59,8 @@ export class SelectionGizmoOverlay {
     this.gizmo.addEventListener('change', () => {
       if (!this._attached) return;
       const pos = this.target.position;
-      this._scene.moveVertex(this._attached, pos.x, pos.y, pos.z);
-      if (this._onChange) this._onChange();
+      this.scene.moveVertex(this._attached, pos.x, pos.y, pos.z);
+      if (this.onChange) this.onChange();
     });
   }
 
@@ -84,7 +84,7 @@ export class SelectionGizmoOverlay {
 
   /** Call when the scene changes, e.g. on reload. */
   setScene(scene: any): void {
-    this._scene = scene;
+    this.scene = scene;
   }
 
   /** Currently attached target, if any. */

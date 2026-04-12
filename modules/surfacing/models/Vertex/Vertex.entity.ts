@@ -49,11 +49,11 @@ export class Vertex extends GeometricEntity {
   cornerTessPoint: CurveTessPoint | null = null;
 
   // ---- Handle state ----
-  private _handle: ConstantScaleGroup | null = null;
-  private _handleMaterial: MeshBasicMaterial | null = null;
-  private _handlePickerMaterial: MeshBasicMaterial | null = null;
-  private _handleSphere: Mesh | null = null;
-  private _handlePicker: Mesh | null = null;
+  private handle: ConstantScaleGroup | null = null;
+  private handleMaterial: MeshBasicMaterial | null = null;
+  private handlePickerMaterial: MeshBasicMaterial | null = null;
+  private handleSphere: Mesh | null = null;
+  private handlePicker: Mesh | null = null;
   private _visible: boolean = false;
   private _hovered: boolean = false;
   private _selected: boolean = false;
@@ -72,8 +72,8 @@ export class Vertex extends GeometricEntity {
     this.position[0] = x;
     this.position[1] = y;
     this.position[2] = z;
-    if (this._handle) {
-      this._handle.position.set(x, y, z);
+    if (this.handle) {
+      this.handle.position.set(x, y, z);
     }
     // Notify every dependent surface — they schedule their own visual rebuild.
     for (const surface of this.usedBy) surface.invalidateVisual();
@@ -108,10 +108,10 @@ export class Vertex extends GeometricEntity {
     if (this._visible === visible) return;
     this._visible = visible;
     if (visible) {
-      if (!this._handle) this._createHandle();
-      if (this._handle) this._handle.visible = true;
+      if (!this.handle) this.createHandle();
+      if (this.handle) this.handle.visible = true;
     } else {
-      if (this._handle) this._handle.visible = false;
+      if (this.handle) this.handle.visible = false;
     }
     this.ctx.requestRender();
   }
@@ -119,16 +119,16 @@ export class Vertex extends GeometricEntity {
   setHovered(hovered: boolean): void {
     if (this._hovered === hovered) return;
     this._hovered = hovered;
-    this._applyHandleColor();
+    this.applyHandleColor();
     this.ctx.requestRender();
   }
 
   setSelected(selected: boolean): void {
     if (this._selected === selected) return;
     this._selected = selected;
-    this._applyHandleColor();
-    if (this._handleSphere) {
-      this._handleSphere.scale.setScalar(selected ? CP_PICKER_SCALE : CP_VISUAL_SCALE);
+    this.applyHandleColor();
+    if (this.handleSphere) {
+      this.handleSphere.scale.setScalar(selected ? CP_PICKER_SCALE : CP_VISUAL_SCALE);
     }
     this.ctx.requestRender();
   }
@@ -153,7 +153,7 @@ export class Vertex extends GeometricEntity {
   setMirrorTarget(mirror: boolean): void {
     if (this._mirrorTarget === mirror) return;
     this._mirrorTarget = mirror;
-    this._applyHandleColor();
+    this.applyHandleColor();
     this.ctx.requestRender();
   }
 
@@ -172,7 +172,7 @@ export class Vertex extends GeometricEntity {
   // ---------------------------------------------------------------
 
   dispose(): void {
-    this._destroyHandle();
+    this.destroyHandle();
     super.dispose();
   }
 
@@ -180,57 +180,57 @@ export class Vertex extends GeometricEntity {
   // Handle construction (private)
   // ---------------------------------------------------------------
 
-  private _createHandle(): void {
+  private createHandle(): void {
     const ctx = this.ctx;
 
-    this._handleMaterial = createControlPointMaterial(this._baseColor());
-    this._handleSphere = new Mesh(sharedSphereGeometry, this._handleMaterial);
-    this._handleSphere.renderOrder = 2;
-    this._handleSphere.scale.setScalar(
+    this.handleMaterial = createControlPointMaterial(this.baseColor());
+    this.handleSphere = new Mesh(sharedSphereGeometry, this.handleMaterial);
+    this.handleSphere.renderOrder = 2;
+    this.handleSphere.scale.setScalar(
       this._selected ? CP_PICKER_SCALE : CP_VISUAL_SCALE,
     );
 
-    this._handlePickerMaterial = createPickerMaterial();
-    this._handlePicker = new Mesh(sharedSphereGeometry, this._handlePickerMaterial);
-    this._handlePicker.renderOrder = 2;
-    this._handlePicker.scale.setScalar(CP_PICKER_SCALE);
+    this.handlePickerMaterial = createPickerMaterial();
+    this.handlePicker = new Mesh(sharedSphereGeometry, this.handlePickerMaterial);
+    this.handlePicker.renderOrder = 2;
+    this.handlePicker.scale.setScalar(CP_PICKER_SCALE);
 
     const handle = new ConstantScaleGroup(
       ctx.sceneSetup, HANDLE_SIZE * 2, 1, () => handle.position,
     );
     handle.position.set(this.position[0], this.position[1], this.position[2]);
-    handle.add(this._handleSphere);
-    handle.add(this._handlePicker);
+    handle.add(this.handleSphere);
+    handle.add(this.handlePicker);
     (handle as any).userData = {entity: this};
-    this._handle = handle;
+    this.handle = handle;
 
     ctx.workingGroup.add(handle);
   }
 
-  private _destroyHandle(): void {
-    if (!this._handle) return;
-    this.ctx.workingGroup.remove(this._handle);
-    if (this._handleMaterial) this._handleMaterial.dispose();
-    if (this._handlePickerMaterial) this._handlePickerMaterial.dispose();
-    this._handle = null;
-    this._handleMaterial = null;
-    this._handlePickerMaterial = null;
-    this._handleSphere = null;
-    this._handlePicker = null;
+  private destroyHandle(): void {
+    if (!this.handle) return;
+    this.ctx.workingGroup.remove(this.handle);
+    if (this.handleMaterial) this.handleMaterial.dispose();
+    if (this.handlePickerMaterial) this.handlePickerMaterial.dispose();
+    this.handle = null;
+    this.handleMaterial = null;
+    this.handlePickerMaterial = null;
+    this.handleSphere = null;
+    this.handlePicker = null;
   }
 
-  private _baseColor(): number {
+  private baseColor(): number {
     return this._mirrorTarget ? CP_MIRROR_COLOR : CP_COLOR;
   }
 
-  private _applyHandleColor(): void {
-    if (!this._handleMaterial) return;
+  private applyHandleColor(): void {
+    if (!this.handleMaterial) return;
     if (this._selected) {
-      this._handleMaterial.color.setHex(CP_SELECTED_COLOR);
+      this.handleMaterial.color.setHex(CP_SELECTED_COLOR);
     } else if (this._hovered) {
-      this._handleMaterial.color.setHex(CP_HOVER_COLOR);
+      this.handleMaterial.color.setHex(CP_HOVER_COLOR);
     } else {
-      this._handleMaterial.color.setHex(this._baseColor());
+      this.handleMaterial.color.setHex(this.baseColor());
     }
   }
 }
