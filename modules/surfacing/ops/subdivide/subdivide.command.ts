@@ -85,5 +85,5 @@ export function subdividePatch(scene: Scene, patchIdx: number): void {
   // Replace the source surface with the 9 sub-patches in its parent
   // (group or scene). One call handles both the tree splice and the
   // parent reassignment for the new surfaces.
-  scene.replaceSurface(sourcePatch, result);
+  sourcePatch.replaceWith(result);
 }

@@ -17,6 +17,12 @@ export class Group extends GeometricEntity {
     this.name = name;
   }
 
+  static create(ctx: SurfacingEditor, name: string, children: GeometricEntity[] = []): Group {
+    const g = new Group(ctx, name);
+    for (const c of children) g.addChild(c);
+    return g;
+  }
+
   /** All NurbsSurface descendants directly contained in this group. */
   get surfaces(): NurbsSurface[] {
     const out: NurbsSurface[] = [];
@@ -26,15 +32,4 @@ export class Group extends GeometricEntity {
     return out;
   }
 
-  addSurface(surface: NurbsSurface): void {
-    this.addChild(surface);
-  }
-
-  removeSurface(surface: NurbsSurface): void {
-    this.removeChild(surface);
-  }
-
-  hasSurface(surface: NurbsSurface): boolean {
-    return this.children.includes(surface);
-  }
 }

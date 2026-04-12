@@ -1,4 +1,5 @@
 import {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
+import {Group} from '../models/Group/Group.entity';
 import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
 import {V, Vlerp} from './helpers';
@@ -82,7 +83,7 @@ export function createPatchBox(ctx: SurfacingEditor, sizeX: number, sizeY: numbe
     })),
   ];
 
-  ctx.scene.createGroup('Box', surfaces);
+  ctx.scene.addChild(Group.create(ctx, 'Box', surfaces));
 
   // Each face of the box is its own SurfaceSet (single-patch sets)
   const faceNames = ['bottom', 'top', 'front', 'back', 'right', 'left'];

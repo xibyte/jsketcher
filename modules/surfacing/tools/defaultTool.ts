@@ -435,7 +435,9 @@ export class DefaultTool implements Tool {
   removeSurface(): void {
     const s = this.state$.value.selectedSurface;
     if (!s) return;
-    this.editor.scene.removeSurface(s.surface);
+    const surface = s.surface;
+    if (surface.parent) surface.parent.removeChild(surface);
+    surface.dispose();
     this.deselectSurface();
     this.editor.rebuildAll();
   }

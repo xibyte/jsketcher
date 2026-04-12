@@ -293,10 +293,27 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   }
 
   /**
-   * Tear down the surface's own view, its Cage, drop from every
-   * referenced shared entity's user set. Shared entities (CPs, curves)
-   * self-dispose when their last user leaves.
+   * Replace this surface with new surfaces in the same parent. This
+   * surface is disposed; the replacements take its position in the
+   * parent's children array.
    */
+  replaceWith(newSurfaces: NurbsSurface[]): void {
+    const parent = this.parent;
+    if (!parent) return;
+    const idx = parent.children.indexOf(this);
+    if (idx < 0) return;
+    parent.children.splice(idx, 1, ...newSurfaces);
+    this.parent = null;
+    for (const s of newSurfaces) {
+      if (s.parent && s.parent !== parent) {
+        const j = s.parent.children.indexOf(s);
+        if (j >= 0) s.parent.children.splice(j, 1);
+      }
+      s.parent = parent;
+    }
+    this.dispose();
+  }
+
   dispose(): void {
     if (this.unsubFlags) { this.unsubFlags(); this.unsubFlags = null; }
     this.disposeView();

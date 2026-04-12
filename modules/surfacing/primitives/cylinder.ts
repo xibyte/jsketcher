@@ -1,4 +1,5 @@
 import {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
+import {Group} from '../models/Group/Group.entity';
 import {ControlPoint} from '../models/ControlPoint/ControlPoint.entity';
 import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
@@ -130,7 +131,7 @@ export function createPatchCylinder(
     }
   }
 
-  ctx.scene.createGroup('Cylinder', surfaces);
+  ctx.scene.addChild(Group.create(ctx, 'Cylinder', surfaces));
 
   // Surface sets: walls form the cylindrical side, each cap is one set of 5 patches.
   // Layout: [0..3] walls, [4..8] bottom cap (diamond + 4 quarters), [9..13] top cap.

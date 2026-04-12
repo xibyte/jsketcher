@@ -105,5 +105,6 @@ export function extrudePatch(scene: Scene, patchIdx: number, distance: number): 
   // cloned top-row CPs.
   patch.updateGrid(newPatchGrid, curveCache.curvesFor(scene.ctx, newPatchGrid));
 
-  for (const w of walls) scene.addSurface(w, group ?? undefined);
+  const parent = group ?? scene;
+  for (const w of walls) parent.addChild(w);
 }
