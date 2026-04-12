@@ -19,28 +19,38 @@ export function defaultToolUI(tool: DefaultTool): React.FC {
 
     return (
       <>
-        {state.selectedSurface && (
-          <NurbsSurfaceDialog
-            surface={state.selectedSurface.surface}
-            onClose={() => tool.deselectSurface()}
-            onPushPull={(d) => tool.pushPull(d)}
-            onExtrude={(d) => tool.extrude(d)}
-            onSubdivide={() => tool.subdivide()}
-            onRemove={() => tool.removeSurface()}
-          />
-        )}
-        {state.selectedCurve && (
-          <BoundingCurveDialog
-            curve={state.selectedCurve.curve}
-            side={state.selectedCurve.side}
-            hasNeighbor={state.selectedCurve.hasNeighbor}
-            onClose={() => tool.deselectCurve()}
-            onApplyArc90={(flip) => tool.applyArc90(flip)}
-            onRemoveArc={() => tool.removeArc()}
-            onApplyG1={() => tool.applyG1()}
-            onApplyG2={() => tool.applyG2()}
-            onMirror={() => tool.mirror()}
-          />
+        {(state.selectedSurface || state.selectedCurve) && (
+          <div style={{
+            position: 'fixed', right: 10, top: 60,
+            maxHeight: 'calc(100vh - 80px)',
+            display: 'flex', flexDirection: 'column', gap: 10,
+            zIndex: 10000,
+            pointerEvents: 'none',
+          }}>
+            {state.selectedSurface && (
+              <NurbsSurfaceDialog
+                surface={state.selectedSurface.surface}
+                onClose={() => tool.deselectSurface()}
+                onPushPull={(d) => tool.pushPull(d)}
+                onExtrude={(d) => tool.extrude(d)}
+                onSubdivide={() => tool.subdivide()}
+                onRemove={() => tool.removeSurface()}
+              />
+            )}
+            {state.selectedCurve && (
+              <BoundingCurveDialog
+                curve={state.selectedCurve.curve}
+                side={state.selectedCurve.side}
+                hasNeighbor={state.selectedCurve.hasNeighbor}
+                onClose={() => tool.deselectCurve()}
+                onApplyArc90={(flip) => tool.applyArc90(flip)}
+                onRemoveArc={() => tool.removeArc()}
+                onApplyG1={() => tool.applyG1()}
+                onApplyG2={() => tool.applyG2()}
+                onMirror={() => tool.mirror()}
+              />
+            )}
+          </div>
         )}
         {state.arcDialog && (
           <ArcConstraintEditor

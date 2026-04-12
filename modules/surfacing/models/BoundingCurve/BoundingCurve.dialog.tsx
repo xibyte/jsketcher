@@ -39,9 +39,8 @@ export function BoundingCurveDialog({
 
   return (
     <div style={{
-      position: 'fixed', right: 10, bottom: 10, background: '#1e1e1e',
-      color: '#d4d4d4', padding: 12, borderRadius: 8, width: 340,
-      fontFamily: 'sans-serif', fontSize: 12, zIndex: 10000,
+      background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 8,
+      width: 340, fontFamily: 'sans-serif', fontSize: 12,
       boxShadow: '0 4px 20px rgba(0,0,0,0.5)', pointerEvents: 'auto',
     }}>
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
