@@ -71,7 +71,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
    * Tessellation cache.
    *
    * `tessellation` holds the persistent topology graph (TessPoints,
-   * BorderTessPoints, Tiles, TessEdges). It is built once on first
+   * BorderTessPoints, Triangles, TessEdges). It is built once on first
    * tessellate() and is then kept ACROSS vertex moves. The graph is
    * only torn down when the entity structure actually changes
    * (updateGrid / structural ops).

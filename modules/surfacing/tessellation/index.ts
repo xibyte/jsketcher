@@ -3,7 +3,7 @@ export {
   BorderTessPoint,
   TessPoint,
   TessEdge,
-  Tile,
+  Triangle,
   type AnyTessPoint,
   type Vec2,
 } from './types';

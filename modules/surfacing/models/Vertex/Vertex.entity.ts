@@ -43,7 +43,7 @@ export class Vertex extends GeometricEntity {
   /**
    * When this Vertex is the end of one or more BoundingCurves, the curves
    * all share this single CurveTessPoint as their endpoint sample, so
-   * adjacent curves/tiles stay topologically coherent at the corner.
+   * adjacent curves/triangles stay topologically coherent at the corner.
    * `xyz` points at `this.position` by reference, so vertex moves are
    * instantly visible in the corner sample with no re-sync.
    */

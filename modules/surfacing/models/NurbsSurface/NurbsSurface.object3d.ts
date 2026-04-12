@@ -128,14 +128,20 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
 
   private buildGeometry(): BufferGeometry {
     const tess = this.surface.tessellate();
+
+    // Walk every point in the pointGrid once, record its buffer index,
+    // then emit three indices per triangle. Using pointGrid (instead of
+    // collecting points via the triangle ring) preserves a stable ordering
+    // and guarantees every unique point lands exactly once.
     const n = tess.resolution;
     const grid = tess.pointGrid;
-
     const positions: number[] = [];
     const normals: number[] = [];
+    const indexOf = new Map<any, number>();
     for (let r = 0; r <= n; r++) {
       for (let c = 0; c <= n; c++) {
         const p = grid[r][c];
+        indexOf.set(p, positions.length / 3);
         positions.push(p.xyz[0], p.xyz[1], p.xyz[2]);
         const nm = (p as any).normal;
         normals.push(nm[0], nm[1], nm[2]);
@@ -143,14 +149,9 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
     }
 
     const indices: number[] = [];
-    for (let r = 0; r < n; r++) {
-      for (let c = 0; c < n; c++) {
-        const a = r * (n + 1) + c;
-        const b = a + 1;
-        const cc = a + (n + 1);
-        const d = cc + 1;
-        indices.push(a, b, d, a, d, cc);
-      }
+    for (const tri of tess.triangles) {
+      const [p0, p1, p2] = tri.corners();
+      indices.push(indexOf.get(p0)!, indexOf.get(p1)!, indexOf.get(p2)!);
     }
 
     const g = new BufferGeometry();
