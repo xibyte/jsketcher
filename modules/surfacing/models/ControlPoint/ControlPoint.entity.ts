@@ -28,7 +28,7 @@ export class ControlPoint extends Vertex {
     weight: number = 1.0,
     id?: string,
   ) {
-    super(ctx, x, y, z, id);
+    super(ctx, x, y, z, id ?? ctx.nextId('CP'));
     this.weight = new Param(weight);
   }
 }

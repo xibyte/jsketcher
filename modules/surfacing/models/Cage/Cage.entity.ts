@@ -1,4 +1,4 @@
-import {GeometricEntity, generateEntityId} from '../GeometricEntity';
+import {GeometricEntity} from '../GeometricEntity';
 import type {SurfacingEditor} from '../../SurfacingEditor';
 import {Vertex} from '../Vertex/Vertex.entity';
 import {Line} from '../Line/Line.entity';
@@ -18,7 +18,7 @@ export class Cage extends GeometricEntity<CageObject3D> {
   segments: Line[];
 
   constructor(ctx: SurfacingEditor, vertices: Vertex[], segments: Line[]) {
-    super(ctx, generateEntityId('CG'));
+    super(ctx, ctx.nextId('CG'));
     this.vertices = vertices;
     this.segments = segments;
     this.object3d = new CageObject3D(this);

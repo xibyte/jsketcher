@@ -15,7 +15,7 @@
  * usedBy back-reference (no central scan, no notifySplice gymnastics).
  */
 import type {Vec3} from 'math/vec';
-import {GeometricEntity, generateEntityId, reserveEntityId} from '../GeometricEntity';
+import {GeometricEntity} from '../GeometricEntity';
 import {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import {Vertex} from '../Vertex/Vertex.entity';
 import {Group} from '../Group/Group.entity';
@@ -98,6 +98,7 @@ export interface SerializedScene {
   /** Each group serialized as an ordered list of surface IDs. */
   groups?: {id?: string, name: string, surfaceIds: string[]}[];
   surfaceSets?: {id: number, name: string}[];
+  idCounters?: Record<string, number>;
 }
 
 
@@ -111,7 +112,7 @@ export class Scene extends GeometricEntity {
   mirrorConstraints: MirrorConstraint[] = [];
 
   constructor(ctx: SurfacingEditor, id?: string) {
-    super(ctx, id ?? generateEntityId('SC'));
+    super(ctx, id ?? ctx.nextId('SC'));
   }
 
   /**
@@ -419,19 +420,18 @@ export class Scene extends GeometricEntity {
       }
     }
 
-    return {id: this.id, vertices, vertexIds, patches, arcConstraints, mirrorConstraints, groups, surfaceSets};
+    return {id: this.id, vertices, vertexIds, patches, arcConstraints, mirrorConstraints, groups, surfaceSets, idCounters: this.ctx.getIdCounters()};
   }
 
   static deserialize(ctx: SurfacingEditor, data: SerializedScene): Scene {
-    if (data.id) reserveEntityId(data.id);
+    // Restore per-prefix ID counters before creating any entities.
+    if (data.idCounters) {
+      ctx.setIdCounters(data.idCounters);
+    }
     const scene = new Scene(ctx, data.id);
 
-    // Every serialized vertex is a NURBS control point — weights come
-    // from `patch.weights` and are applied by NurbsSurface's constructor
-    // after the CP instances are created.
     const verts = data.vertices.map((p, i) => {
       const id = data.vertexIds && data.vertexIds[i];
-      if (id) reserveEntityId(id);
       return new ControlPoint(ctx, p[0], p[1], p[2], 1, id);
     });
 
@@ -459,7 +459,6 @@ export class Scene extends GeometricEntity {
         }
       }
       const curves = curveCache.curvesFor(ctx, grid);
-      if (pd.id) reserveEntityId(pd.id);
       const surface = new NurbsSurface(ctx, grid, curves, pd.id);
       if (pd.surfaceSetId !== undefined) {
         const set = setById.get(pd.surfaceSetId);
@@ -500,7 +499,6 @@ export class Scene extends GeometricEntity {
       const surfaceById = new Map<string, NurbsSurface>();
       for (const s of orderedSurfaces) surfaceById.set(s.id, s);
       for (const gd of data.groups as any[]) {
-        if (gd.id) reserveEntityId(gd.id);
         const group = new Group(ctx, gd.name, gd.id);
         scene.addChild(group);
         // Accept the new surfaceIds format and the old patchIndices format.

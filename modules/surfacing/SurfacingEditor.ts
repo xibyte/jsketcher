@@ -33,6 +33,26 @@ export class SurfacingEditor {
   readonly raycast!: RaycastService;
   resolution: number = 8;
   surfaceMeshes: any[] = [];
+
+  /** Per-prefix ID counters. Serialized/deserialized with the scene. */
+  private idCounters: Record<string, number> = {};
+
+  /** Generate a sequential ID for a given prefix (e.g. 'S' → 'S:0', 'S:1'). */
+  nextId(prefix: string): string {
+    const n = this.idCounters[prefix] ?? 0;
+    this.idCounters[prefix] = n + 1;
+    return `${prefix}:${n}`;
+  }
+
+  /** Serialize the current counters for saving. */
+  getIdCounters(): Record<string, number> {
+    return {...this.idCounters};
+  }
+
+  /** Restore counters from deserialized data. */
+  setIdCounters(counters: Record<string, number>): void {
+    this.idCounters = {...counters};
+  }
   /** Ticks whenever the tool stack changes — UI re-subscribes to the new tool's state$. */
   readonly toolChanged$: StateStream<number> = state(0);
 

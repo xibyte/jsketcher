@@ -1,5 +1,5 @@
 import type {Vec3} from 'math/vec';
-import {GeometricEntity, generateEntityId} from '../GeometricEntity';
+import {GeometricEntity} from '../GeometricEntity';
 import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import type {CurveTessellation} from '../../tessellation/types';
@@ -56,7 +56,7 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
   private unsubFlags: (() => void) | null = null;
 
   constructor(ctx: SurfacingEditor, side: number, cp: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]) {
-    super(ctx, generateEntityId('BC'));
+    super(ctx, ctx.nextId('BC'));
     this.side = side;
     this.cp = cp;
     this.object3d = new BoundingCurveObject3D(this, ctx.sceneSetup);

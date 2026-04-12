@@ -1,7 +1,7 @@
 import type {Vec3} from 'math/vec';
 import {Mesh, MeshBasicMaterial} from 'three';
 import {ConstantScaleGroup} from 'scene/scaleHelper';
-import {GeometricEntity, generateEntityId} from '../GeometricEntity';
+import {GeometricEntity} from '../GeometricEntity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import type {CurveTessPoint} from '../../tessellation/types';
 import type {SurfacingEditor} from '../../SurfacingEditor';
@@ -59,7 +59,7 @@ export class Vertex extends GeometricEntity {
   private _mirrorTarget: boolean = false;
 
   constructor(ctx: SurfacingEditor, x: number, y: number, z: number, id?: string) {
-    super(ctx, id ?? generateEntityId('V'));
+    super(ctx, id ?? ctx.nextId('V'));
     this.position = [x, y, z];
   }
 
