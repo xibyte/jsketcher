@@ -72,11 +72,11 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
   users: Set<NurbsSurface> = new Set();
 
   /** Currently painted color, or `null` if unmarked. */
-  private _markedColor: number | null = null;
+  private markedColor: number | null = null;
   /** `true` while `select()` has been applied. Locks out mark/unmark/refresh. */
   private _selected: boolean = false;
   /** Disposer returned from subscribing to ctx.viewFlags$. */
-  private _unsubFlags: (() => void) | null = null;
+  private unsubFlags: (() => void) | null = null;
 
   constructor(ctx: SurfacingEditor, side: number, cp: [ControlPoint, ControlPoint, ControlPoint, ControlPoint]) {
     super(ctx, generateEntityId('BC'));
@@ -86,10 +86,10 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
     ctx.workingGroup.add(this.object3d);
     // Subscribe to view flags — the StateStream fires immediately with the
     // current value so the initial visibility lands without extra work.
-    this._unsubFlags = ctx.viewFlags$.attach(() => {
+    this.unsubFlags = ctx.viewFlags$.attach(() => {
       if (this._selected) return;
-      if (this._markedColor !== null) return;
-      this._applyDefaultVisibility();
+      if (this.markedColor !== null) return;
+      this.applyDefaultVisibility();
     });
   }
 
@@ -140,7 +140,7 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
     if (this._selected) return;
     const view = this.object3d;
     if (!view) return;
-    this._markedColor = color;
+    this.markedColor = color;
     view.paint(color, EDGE_WIDTH * MARK_WIDTH_MULTIPLIER, true);
     this.ctx.requestRender();
   }
@@ -156,8 +156,8 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
   unmark(): void {
     if (this._selected) return;
     if (!this.object3d) return;
-    this._markedColor = null;
-    this._applyDefaultVisibility();
+    this.markedColor = null;
+    this.applyDefaultVisibility();
   }
 
   /**
@@ -168,8 +168,8 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
   refreshDefaultVisibility(): void {
     if (!this.object3d) return;
     if (this._selected) return;
-    if (this._markedColor !== null) return;
-    this._applyDefaultVisibility();
+    if (this.markedColor !== null) return;
+    this.applyDefaultVisibility();
   }
 
   /** Refresh the painted line after the curve's samples changed. */
@@ -179,14 +179,14 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
 
   /** `true` if a mark() is currently applied. */
   get marked(): boolean {
-    return this._markedColor !== null;
+    return this.markedColor !== null;
   }
 
-  private _applyDefaultVisibility(): void {
+  private applyDefaultVisibility(): void {
     const view = this.object3d;
     if (!view) return;
     const flags = this.ctx.viewFlags$.value;
-    const show = flags.edges || (flags.boundaries && this._isSetSilhouette());
+    const show = flags.edges || (flags.boundaries && this.isSetSilhouette());
     if (show) {
       view.paint(EDGE_BASE_COLOR, EDGE_WIDTH, false);
     } else {
@@ -201,7 +201,7 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
    * - its users span more than one SurfaceSet.
    * Inner edges inside a single face's cap don't count.
    */
-  private _isSetSilhouette(): boolean {
+  private isSetSilhouette(): boolean {
     if (this.users.size < 2) return true;
     let firstSet: any = undefined;
     for (const user of this.users) {
@@ -236,7 +236,7 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
   }
 
   dispose(): void {
-    if (this._unsubFlags) { this._unsubFlags(); this._unsubFlags = null; }
+    if (this.unsubFlags) { this.unsubFlags(); this.unsubFlags = null; }
     this.disposeView();
     this.invalidateTessellation();
     super.dispose();

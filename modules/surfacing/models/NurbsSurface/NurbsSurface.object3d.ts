@@ -35,7 +35,7 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
   private geometry: BufferGeometry;
   private resolution: number;
   private wireframeGroup: Group;
-  private _wireframeBuilt: boolean = false;
+  private wireframeBuilt: boolean = false;
 
   constructor(surface: NurbsSurface, resolution: number = 8) {
     super();
@@ -52,7 +52,7 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
     this.material.polygonOffsetFactor = 1;
     this.material.polygonOffsetUnits = 1;
 
-    this.geometry = this._buildGeometry();
+    this.geometry = this.buildGeometry();
     this.mesh = new Mesh(this.geometry, this.material);
     (this.mesh as any).userData = {entity: surface};
     this.add(this.mesh);
@@ -69,11 +69,11 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
    * NurbsSurface.invalidateVisual on the next animation frame.
    */
   rebuildGeometry(): void {
-    const next = this._buildGeometry();
+    const next = this.buildGeometry();
     this.geometry.dispose();
     this.geometry = next;
     this.mesh.geometry = this.geometry;
-    if (this._wireframeBuilt) this._rebuildWireframe();
+    if (this.wireframeBuilt) this.rebuildWireframe();
     this.surface.ctx.requestRender();
   }
 
@@ -95,11 +95,11 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
 
   /** Show / hide the UV-isoline wireframe overlay (mesh view mode). */
   setWireframeVisible(visible: boolean): void {
-    if (visible && !this._wireframeBuilt) this._rebuildWireframe();
+    if (visible && !this.wireframeBuilt) this.rebuildWireframe();
     this.wireframeGroup.visible = visible;
   }
 
-  private _rebuildWireframe(): void {
+  private rebuildWireframe(): void {
     for (const child of [...this.wireframeGroup.children]) {
       this.wireframeGroup.remove(child);
       const g = (child as any).geometry;
@@ -125,10 +125,10 @@ export class NurbsSurfaceObject3D extends EntityObject3D {
       (line as any).raycast = () => {};
       this.wireframeGroup.add(line);
     }
-    this._wireframeBuilt = true;
+    this.wireframeBuilt = true;
   }
 
-  private _buildGeometry(): BufferGeometry {
+  private buildGeometry(): BufferGeometry {
     const t = this.surface.tessellate(this.resolution);
     const g = new BufferGeometry();
     g.setAttribute('position', new BufferAttribute(new Float32Array(t.positions), 3));

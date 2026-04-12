@@ -33,11 +33,11 @@ export class SurfacingEditor {
   readonly raycast!: RaycastService;
   surfaceMeshes: any[] = [];
 
-  private _disposers: (() => void)[] = [];
-  private _tools: Tool[] = [];
-  private readonly _input: InputAdapter;
+  private disposers: (() => void)[] = [];
+  private tools: Tool[] = [];
+  private readonly inputAdapter: InputAdapter;
 
-  get currentTool(): Tool { return this._tools[this._tools.length - 1]; }
+  get currentTool(): Tool { return this.tools[this.tools.length - 1]; }
 
   constructor(workingGroup: Group, sceneSetup: any, viewFlags$: any, ctx: any) {
     this.ctx = ctx;
@@ -47,9 +47,9 @@ export class SurfacingEditor {
 
     setAttribute(this.workingGroup, SURFACING_SCENE, this);
     (this as any).raycast = new RaycastService(this);
-    this._input = new InputAdapter(this);
+    this.inputAdapter = new InputAdapter(this);
 
-    this._disposers.push(surfacingViewFlags$.attach(() => {
+    this.disposers.push(surfacingViewFlags$.attach(() => {
       ctx.viewer.requestRender();
     }));
 
@@ -78,32 +78,32 @@ export class SurfacingEditor {
 
   pushTool(tool: Tool): void {
     // If the same tool type is already active, toggle it off.
-    if (this._tools.length > 1 && this.currentTool.constructor === tool.constructor) {
+    if (this.tools.length > 1 && this.currentTool.constructor === tool.constructor) {
       this.popTool();
       return;
     }
-    if (this._tools.length > 0) this.currentTool.cleanup();
+    if (this.tools.length > 0) this.currentTool.cleanup();
     tool.init(this);
-    this._tools.push(tool);
+    this.tools.push(tool);
   }
 
   popTool(): void {
-    if (this._tools.length <= 1) throw new Error('Cannot pop the default tool');
+    if (this.tools.length <= 1) throw new Error('Cannot pop the default tool');
     this.currentTool.cleanup();
-    this._tools.pop();
+    this.tools.pop();
     this.currentTool.init(this);
   }
 
   /** Backward-compat getter that reads from the DefaultTool's state. */
   get selectedPatchIdx(): number {
-    const dt = this._tools[0] as any;
+    const dt = this.tools[0] as any;
     const sel = dt?.selectedSurface;
     return sel ? this.scene.surfaces.indexOf(sel) : -1;
   }
 
   /** Current selection — read from the DefaultTool at the bottom of the stack. */
   get selection(): NurbsSurface | null {
-    const dt = this._tools[0] as any;
+    const dt = this.tools[0] as any;
     return dt?.selectedSurface ?? null;
   }
 
@@ -116,7 +116,7 @@ export class SurfacingEditor {
    * colouring; no actual view construction happens here anymore —
    * entity constructors did that already.
    */
-  _refreshEntityRefs() {
+  refreshEntityRefs() {
     const scene = this.scene;
     if (!scene) return;
     this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
@@ -158,7 +158,7 @@ export class SurfacingEditor {
 
   rebuildAll() {
     this.currentTool.cleanup();
-    this._refreshEntityRefs();
+    this.refreshEntityRefs();
     this.scene?.syncEntityGraph();
     this.currentTool.init(this);
     this.ctx.surfacingService?.scheduleSave?.();
@@ -178,18 +178,18 @@ export class SurfacingEditor {
 
   dispose() {
     // Clean up the tool stack top-down.
-    while (this._tools.length > 0) {
-      this._tools.pop()!.cleanup();
+    while (this.tools.length > 0) {
+      this.tools.pop()!.cleanup();
     }
 
-    this._input.dispose();
+    this.inputAdapter.dispose();
     if (this.scene) {
       for (const surface of [...this.scene.surfaces]) surface.dispose();
     }
-    for (const d of this._disposers) {
+    for (const d of this.disposers) {
       try { d(); } catch (e) { /* ignore */ }
     }
-    this._disposers = [];
+    this.disposers = [];
   }
 }
 

@@ -14,7 +14,7 @@ export class RaycastService {
     this.editor = editor;
   }
 
-  private _resolve(input: RaycastInput): any {
+  private resolve(input: RaycastInput): any {
     if ((input as any).ray) return input; // already a Raycaster
     const e = input as MouseEvent;
     return this.editor.sceneSetup.createRaycaster(
@@ -24,7 +24,7 @@ export class RaycastService {
 
   /** Raycast against every NurbsSurface mesh. Returns the closest hit or null. */
   raycastSurface(input: RaycastInput): NurbsSurface | null {
-    const raycaster = this._resolve(input);
+    const raycaster = this.resolve(input);
     const scene = this.editor.scene;
     if (!scene) return null;
     let best: NurbsSurface | null = null;
@@ -49,7 +49,7 @@ export class RaycastService {
    * its 4 boundary sides. Returns `{patchIdx, side}` or null.
    */
   raycastSurfaceEdge(input: RaycastInput): {patchIdx: number, side: number} | null {
-    const raycaster = this._resolve(input);
+    const raycaster = this.resolve(input);
     const scene = this.editor.scene;
     if (!scene) return null;
     let bestPi = -1;
@@ -90,7 +90,7 @@ export class RaycastService {
    * `{patchIdx, u, v}` or null.
    */
   raycastToUV(input: RaycastInput): {patchIdx: number, u: number, v: number} | null {
-    const raycaster = this._resolve(input);
+    const raycaster = this.resolve(input);
     const scene = this.editor.scene;
     if (!scene) return null;
     const surfaces = scene.surfaces;
@@ -163,7 +163,7 @@ export class RaycastService {
    * CPs of the selected surface).
    */
   raycastVertex(input: RaycastInput, filter?: Set<Vertex>): Vertex | null {
-    const raycaster = this._resolve(input);
+    const raycaster = this.resolve(input);
     const handleHits: any[] = [];
     this.editor.workingGroup.traverse((child: any) => {
       if (child.isMesh && child.visible) child.raycast(raycaster, handleHits);
@@ -189,7 +189,7 @@ export class RaycastService {
    * closest hit curve or null.
    */
   raycastCurve(input: RaycastInput, surface: NurbsSurface): BoundingCurve | null {
-    const raycaster = this._resolve(input);
+    const raycaster = this.resolve(input);
     const edgeHits: any[] = [];
     for (const cv of [
       surface.boundingCurves.bottom, surface.boundingCurves.right,

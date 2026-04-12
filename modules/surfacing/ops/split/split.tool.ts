@@ -6,36 +6,36 @@ import type {SurfacingEditor} from '../../SurfacingEditor';
 export class LoopInsertTool implements Tool {
 
   private editor!: SurfacingEditor;
-  private _previewGroup: any = null;
-  private _pending: {patchIdx: number, dir: 'u' | 'v', t: number} | null = null;
+  private previewGroup: any = null;
+  private pending: {patchIdx: number, dir: 'u' | 'v', t: number} | null = null;
 
   init(editor: SurfacingEditor): void {
     this.editor = editor;
-    this._previewGroup = SceneGraph.createGroup();
-    this._previewGroup.visible = false;
-    editor.workingGroup.add(this._previewGroup);
+    this.previewGroup = SceneGraph.createGroup();
+    this.previewGroup.visible = false;
+    editor.workingGroup.add(this.previewGroup);
     document.body.style.cursor = 'crosshair';
   }
 
   onMouseDown(_e: MouseEvent): void {}
 
   onMouseUp(_e: MouseEvent): void {
-    if (!this._pending) return;
-    const {patchIdx, dir, t} = this._pending;
+    if (!this.pending) return;
+    const {patchIdx, dir, t} = this.pending;
     this.editor.scene!.splitIsoline(patchIdx, dir, t);
-    this._pending = null;
-    this.editor.clearGroup(this._previewGroup);
-    this._previewGroup.visible = false;
+    this.pending = null;
+    this.editor.clearGroup(this.previewGroup);
+    this.previewGroup.visible = false;
     this.editor.rebuildAll();
   }
 
   onMouseMove(e: MouseEvent): void {
     const hit = this.editor.raycast.raycastToUV(e);
-    this.editor.clearGroup(this._previewGroup);
+    this.editor.clearGroup(this.previewGroup);
 
     if (!hit) {
-      this._previewGroup.visible = false;
-      this._pending = null;
+      this.previewGroup.visible = false;
+      this.pending = null;
       this.editor.requestRender();
       return;
     }
@@ -44,7 +44,7 @@ export class LoopInsertTool implements Tool {
     if (e.shiftKey) dir = dir === 'u' ? 'v' : 'u';
     const t = Math.max(0.01, Math.min(0.99, dir === 'u' ? hit.u : hit.v));
 
-    this._pending = {patchIdx: hit.patchIdx, dir, t};
+    this.pending = {patchIdx: hit.patchIdx, dir, t};
     const scene = this.editor.scene!;
     const propagation = scene.computeIsolinePropagation(hit.patchIdx, dir, t);
     const ss = this.editor.sceneSetup;
@@ -54,10 +54,10 @@ export class LoopInsertTool implements Tool {
       const line = new ScalableLine(ss, pts, 3, 0xffcc00);
       line.renderOrder = 4;
       (line as any).raycast = () => {};
-      this._previewGroup.add(line);
+      this.previewGroup.add(line);
     }
 
-    this._previewGroup.visible = true;
+    this.previewGroup.visible = true;
     this.editor.requestRender();
   }
 
@@ -68,12 +68,12 @@ export class LoopInsertTool implements Tool {
   }
 
   cleanup(): void {
-    if (this._previewGroup) {
-      this.editor.clearGroup(this._previewGroup);
-      this._previewGroup.parent?.remove(this._previewGroup);
-      this._previewGroup = null;
+    if (this.previewGroup) {
+      this.editor.clearGroup(this.previewGroup);
+      this.previewGroup.parent?.remove(this.previewGroup);
+      this.previewGroup = null;
     }
-    this._pending = null;
+    this.pending = null;
     document.body.style.cursor = '';
   }
 }

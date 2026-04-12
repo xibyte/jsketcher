@@ -62,12 +62,12 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   surfaceSet: SurfaceSet | null = null;
 
   /** Dirty flag for frame-scheduled visual rebuilds. */
-  private _dirtyVisual: boolean = false;
+  private dirtyVisual: boolean = false;
 
   /** `true` while the surface is in edit mode (cage + CPs visible). */
   editing: boolean = false;
   /** Disposer returned from subscribing to ctx.viewFlags$. */
-  private _unsubFlags: (() => void) | null = null;
+  private unsubFlags: (() => void) | null = null;
 
   /**
    * Tessellation cache.
@@ -84,10 +84,10 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
    * `_tess` holds the flat row-major buffer the Three.js mesh uploads.
    * `_tessDirty` is set by invalidateVisual() and cleared by tessellate().
    */
-  private _tess: {positions: number[], normals: number[], indices: number[]} | null = null;
-  private _tessGraph: SurfaceTessellation | null = null;
-  private _tessRes: number = -1;
-  private _tessDirty: boolean = false;
+  private tess: {positions: number[], normals: number[], indices: number[]} | null = null;
+  private tessGraph: SurfaceTessellation | null = null;
+  private tessRes: number = -1;
+  private tessDirty: boolean = false;
 
   constructor(
     ctx: SurfacingEditor,
@@ -118,7 +118,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     // Subscribe to view flags so faces / wireframe visibility tracks the
     // global toggle without an external fan-out. Fires once immediately
     // with the current state on attach.
-    this._unsubFlags = ctx.viewFlags$.attach((flags) => {
+    this.unsubFlags = ctx.viewFlags$.attach((flags) => {
       const view = this.object3d;
       if (!view) return;
       view.setFacesVisible(flags.faces);
@@ -163,21 +163,21 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   invalidateVisual(): void {
     // Drop the tessellation cache synchronously so any reader on this
     // frame rebuilds from the current grid.
-    this._tess = null;
-    this._tessGraph = null;
-    this._tessRes = -1;
+    this.tess = null;
+    this.tessGraph = null;
+    this.tessRes = -1;
     this.boundingCurves.bottom.invalidateTessellation();
     this.boundingCurves.right.invalidateTessellation();
     this.boundingCurves.top.invalidateTessellation();
     this.boundingCurves.left.invalidateTessellation();
-    if (this._dirtyVisual) return;
-    this._dirtyVisual = true;
+    if (this.dirtyVisual) return;
+    this.dirtyVisual = true;
     // Schedule on next frame — constraint cascades that move 4 CPs in a row
     // coalesce into a single rebuild. The mesh is responsible for clearing
     // its own tessellation cache when rebuild() runs.
     const raf = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : null;
     const flush = () => {
-      this._dirtyVisual = false;
+      this.dirtyVisual = false;
       this.object3d?.rebuildGeometry();
       // Refresh bounding-curve line geometry too so the rendered lines
       // match the new tessellation.
@@ -301,10 +301,10 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     // Dispose the old Cage and rebuild from the new grid.
     if (this.cage) this.cage.dispose();
     this.cage = null as any;
-    this._tess = null;
-    this._tessGraph = null;
-    this._tessRes = -1;
-    this._tessDirty = false;
+    this.tess = null;
+    this.tessGraph = null;
+    this.tessRes = -1;
+    this.tessDirty = false;
     this.syncEntityGraph();
     this.invalidateVisual();
   }
@@ -315,7 +315,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
    * self-dispose when their last user leaves.
    */
   dispose(): void {
-    if (this._unsubFlags) { this._unsubFlags(); this._unsubFlags = null; }
+    if (this.unsubFlags) { this.unsubFlags(); this.unsubFlags = null; }
     this.disposeView();
     if (this.cage) {
       this.cage.dispose();
@@ -343,10 +343,10 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
     this.children = [];
 
     if (!this.cage) {
-      this._tess = null;
-      this._tessGraph = null;
-      this._tessRes = -1;
-      this._tessDirty = false;
+      this.tess = null;
+      this.tessGraph = null;
+      this.tessRes = -1;
+      this.tessDirty = false;
       this.cage = buildCage(this.ctx, this.grid);
     }
 
@@ -427,7 +427,7 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
   tessellate(resolution: number = 8): {
     positions: number[], normals: number[], indices: number[]
   } {
-    if (this._tess && this._tessRes === resolution) return this._tess;
+    if (this.tess && this.tessRes === resolution) return this.tess;
 
     const graph = tessellateSurface(this, resolution);
     const n = resolution;
@@ -457,15 +457,15 @@ export class NurbsSurface extends GeometricEntity<NurbsSurfaceObject3D> {
       }
     }
 
-    this._tess = {positions, normals, indices};
-    this._tessGraph = graph;
-    this._tessRes = resolution;
-    return this._tess;
+    this.tess = {positions, normals, indices};
+    this.tessGraph = graph;
+    this.tessRes = resolution;
+    return this.tess;
   }
 
   /** The topology graph produced by the most recent tessellate() call. */
   getTessellationGraph(): SurfaceTessellation | null {
-    return this._tessGraph;
+    return this.tessGraph;
   }
 
   /**
