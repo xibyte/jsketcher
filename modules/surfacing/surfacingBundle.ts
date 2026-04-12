@@ -47,7 +47,6 @@ export function activate(ctx: any) {
   }
 
   function afterMutation(): void {
-    editor.scene.syncEntityGraph();
     editor.rebuildAll();
     notifyChange();
     scheduleSurfacingSave();
@@ -85,7 +84,6 @@ export function activate(ctx: any) {
     }
     const scene = Scene.deserialize(editor, sceneData);
     editor.resolution = data.tessResolution || 8;
-    scene.syncEntityGraph();
     editor.loadScene(scene);
     notifyChange();
   }

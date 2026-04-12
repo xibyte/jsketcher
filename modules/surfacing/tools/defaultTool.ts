@@ -61,7 +61,6 @@ export class DefaultTool implements Tool {
       this.gizmo = new SelectionGizmoOverlay(ss, editor.scene, {
         onChange: () => editor.refreshOverlaysForDrag(),
         onDragEnd: () => {
-          editor.scene.syncEntityGraph();
           editor.ctx.surfacingService.scheduleSave();
           editor.ctx.surfacingService.notifyChange();
         },

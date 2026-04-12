@@ -32,4 +32,12 @@ export class Group extends GeometricEntity {
     return out;
   }
 
+  /** When a Group becomes empty, detach it from its parent. */
+  removeChild(child: GeometricEntity<any>): void {
+    super.removeChild(child);
+    if (this.children.length === 0 && this.parent) {
+      this.parent.removeChild(this);
+    }
+  }
+
 }

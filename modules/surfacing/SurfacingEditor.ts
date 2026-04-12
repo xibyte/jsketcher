@@ -176,7 +176,6 @@ export class SurfacingEditor {
   rebuildAll() {
     this.currentTool.cleanup();
     this.refreshEntityRefs();
-    this.scene.syncEntityGraph();
     this.currentTool.init(this);
     this.ctx.surfacingService.scheduleSave();
     this.ctx.surfacingService.notifyChange();
