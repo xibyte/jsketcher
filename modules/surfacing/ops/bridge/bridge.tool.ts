@@ -35,8 +35,9 @@ export class BridgeTool implements Tool {
   }
 
   onMouseDown(_e: MouseEvent): void {}
+  onMouseUp(_e: MouseEvent): void {}
 
-  onMouseUp(e: MouseEvent): void {
+  onClick(e: MouseEvent): void {
     const hit = this.editor.raycast.raycastSurfaceEdge(e);
     if (!hit) return;
 

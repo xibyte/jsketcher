@@ -1,4 +1,4 @@
-import {Scene, NurbsSurface} from '../models/Scene/Scene.entity';
+import {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import {ControlPoint} from '../models/ControlPoint/ControlPoint.entity';
 import {makeGrid} from '../patchCageHelpers';
 import {SurfaceSet} from '../SurfaceSet';
@@ -9,8 +9,7 @@ import type {SurfacingEditor} from '../SurfacingEditor';
 
 export function createPatchCylinder(
   ctx: SurfacingEditor, radius: number, height: number, segments: number = 4
-): Scene {
-  const scene = new Scene(ctx);
+): void {
   const curveCache = new LocalBoundingCurveCache();
   const makePatch = (grid: ControlPoint[][]) =>
     new NurbsSurface(ctx, grid, curveCache.curvesFor(ctx, grid));
@@ -131,7 +130,7 @@ export function createPatchCylinder(
     }
   }
 
-  scene.createGroup('Cylinder', surfaces);
+  ctx.scene.createGroup('Cylinder', surfaces);
 
   // Surface sets: walls form the cylindrical side, each cap is one set of 5 patches.
   // Layout: [0..3] walls, [4..8] bottom cap (diamond + 4 quarters), [9..13] top cap.
@@ -142,5 +141,4 @@ export function createPatchCylinder(
   for (let i = 4; i <= 8; i++) bottomSet.add(surfaces[i]);
   for (let i = 9; i <= 13; i++) topSet.add(surfaces[i]);
 
-  return scene;
 }

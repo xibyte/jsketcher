@@ -4,7 +4,7 @@ import {setAttribute} from 'scene/objectData';
 import {Group} from 'three';
 import type SceneSetUp from 'scene/sceneSetup';
 import type {NurbsSurface} from './models/NurbsSurface/NurbsSurface.entity';
-import type {Scene} from './models/Scene/Scene.entity';
+import {Scene} from './models/Scene/Scene.entity';
 import {surfacingViewFlags$, type SurfacingViewFlags} from './surfacingViewFlags';
 import type {StateStream} from 'lstream';
 import type {Tool} from './tool';
@@ -25,7 +25,7 @@ import {InputAdapter} from './InputAdapter';
  */
 export class SurfacingEditor {
 
-  scene: Scene | null = null;
+  scene: Scene;
   readonly workingGroup: Group;
   readonly sceneSetup: SceneSetUp;
   readonly viewFlags$: StateStream<SurfacingViewFlags>;
@@ -45,6 +45,7 @@ export class SurfacingEditor {
     this.sceneSetup = sceneSetup;
     this.viewFlags$ = viewFlags$;
 
+    this.scene = new Scene(this);
     setAttribute(this.workingGroup, SURFACING_SCENE, this);
     (this as any).raycast = new RaycastService(this);
     this.inputAdapter = new InputAdapter(this);
@@ -62,16 +63,14 @@ export class SurfacingEditor {
   }
 
   /**
-   * Attach a scene to this editor. Called after deserialization or when
-   * a primitive is first added. Sets up the gizmo and refreshes entity
-   * refs. The editor can exist without a scene (empty workspace).
+   * Replace the current scene with a new one (e.g. from deserialization).
+   * Disposes the old scene's entities and re-inits the current tool.
    */
-  setScene(scene: Scene): void {
+  loadScene(scene: Scene): void {
+    for (const surface of [...this.scene.surfaces]) surface.dispose();
     this.scene = scene;
     this.surfaceMeshes = scene.surfaces.map(s => s.object3d);
-    // Highlight service hook for the explorer panel.
-    this.workingGroup.onMouseEnter = () => this.ctx.highlightService?.highlight(scene.id);
-    this.workingGroup.onMouseLeave = () => this.ctx.highlightService?.unHighlight(scene.id);
+    this.currentTool.init(this);
   }
 
   // ---- Tool stack ----
@@ -159,7 +158,7 @@ export class SurfacingEditor {
   rebuildAll() {
     this.currentTool.cleanup();
     this.refreshEntityRefs();
-    this.scene?.syncEntityGraph();
+    this.scene.syncEntityGraph();
     this.currentTool.init(this);
     this.ctx.surfacingService?.scheduleSave?.();
     this.ctx.surfacingService?.notifyChange?.();
@@ -183,9 +182,7 @@ export class SurfacingEditor {
     }
 
     this.inputAdapter.dispose();
-    if (this.scene) {
-      for (const surface of [...this.scene.surfaces]) surface.dispose();
-    }
+    for (const surface of [...this.scene.surfaces]) surface.dispose();
     for (const d of this.disposers) {
       try { d(); } catch (e) { /* ignore */ }
     }

@@ -25,8 +25,9 @@ export class FillHoleTool implements Tool {
   }
 
   onMouseDown(_e: MouseEvent): void {}
+  onMouseUp(_e: MouseEvent): void {}
 
-  onMouseUp(_e: MouseEvent): void {
+  onClick(_e: MouseEvent): void {
     if (!this.loop) return;
     const scene = this.editor.scene!;
     if (fillHole(scene, this.loop)) {

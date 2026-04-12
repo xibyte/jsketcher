@@ -18,8 +18,9 @@ export class LoopInsertTool implements Tool {
   }
 
   onMouseDown(_e: MouseEvent): void {}
+  onMouseUp(_e: MouseEvent): void {}
 
-  onMouseUp(_e: MouseEvent): void {
+  onClick(_e: MouseEvent): void {
     if (!this.pending) return;
     const {patchIdx, dir, t} = this.pending;
     this.editor.scene!.splitIsoline(patchIdx, dir, t);
