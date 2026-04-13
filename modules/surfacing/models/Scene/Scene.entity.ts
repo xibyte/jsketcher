@@ -9,9 +9,11 @@
  * Mutation goes through addChild / removeChild. Direct array mutation on the
  * `surfaces` getter result has no effect (it's a fresh snapshot).
  *
- * Watertightness via shared Vertex identity. moveVertex() runs the
- * constraint enforcers; each surface invalidates itself via its
- * usedBy back-reference (no central scan, no notifySplice gymnastics).
+ * Constraints are event-driven: a `ControlPoint.set(...)` call fires
+ * `scene.notifyControlPointLocationChange(cp)`, and each constraint
+ * (arc lives on its BoundingCurve, mirror lives in
+ * `globalConstraints.mirror`) has its own subscription that re-applies
+ * itself when a CP it cares about moves. No central enforcer.
  */
 import type {Vec3} from 'math/vec';
 import {GeometricEntity} from '../GeometricEntity';
@@ -29,33 +31,11 @@ export {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 export {Vertex} from '../Vertex/Vertex.entity';
 export {Group} from '../Group/Group.entity';
 
-// Lazy imports to avoid circular dependencies.
+import {sub as vsub, dot as vdot} from 'math/vec';
+
+import type {ArcMode} from '../../ops/arc/arc.types';
+import type {MirrorConstraint} from '../../ops/mirror/mirror.types';
 import * as _arcOps from '../../ops/arc/arc.command';
-import * as _mirrorOps from '../../ops/mirror/mirror.command';
-
-// =========================================================================
-// Constraint types
-// =========================================================================
-
-export type ArcMode = 'approximate' | 'rational';
-
-export interface ArcConstraint {
-  vertices: [Vertex, Vertex, Vertex, Vertex];
-  radius: number;
-  angle: number;
-  planeNormal: Vec3;
-  center: Vec3;
-  mode: ArcMode;
-  surfaceSide?: {surface: NurbsSurface, side: number};
-}
-
-export interface MirrorConstraint {
-  source: NurbsSurface;
-  mirror: NurbsSurface;
-  planePoint: Vec3;
-  planeNormal: Vec3;
-  cpPairs: {source: Vertex, mirror: Vertex}[];
-}
 
 // =========================================================================
 // Serialization
@@ -71,15 +51,21 @@ export interface SerializedScene {
     weights: number[][];
     rational: boolean;
     surfaceSetId?: number;
-  }[];
-  arcConstraints: {
-    vertexIndices: [number, number, number, number];
-    radius: number;
-    angle: number;
-    planeNormal: Vec3;
-    center: Vec3;
-    mode: ArcMode;
-    surfaceSide?: {surfaceId: string, side: number};
+    /**
+     * Arc constraints attached to this surface's edges, keyed by side
+     * (0=bottom, 1=right, 2=top, 3=left). Stored with the patch rather
+     * than the curve because the same BoundingCurve may be shared by
+     * multiple surfaces but the constraint was authored against one
+     * specific side of one specific surface.
+     */
+    arcConstraints?: {
+      side: number;
+      radius: number;
+      angle: number;
+      planeNormal: Vec3;
+      center: Vec3;
+      mode: ArcMode;
+    }[];
   }[];
   mirrorConstraints?: {
     sourceId: string;
@@ -101,11 +87,94 @@ export interface SerializedScene {
 
 export class Scene extends GeometricEntity {
 
-  arcConstraints: ArcConstraint[] = [];
-  mirrorConstraints: MirrorConstraint[] = [];
+  /**
+   * Global, non-curve-local constraints. Arc constraints live directly
+   * on their `BoundingCurve` (via `curve.constraints.arc`) — only
+   * constraints that cross more than one surface belong here.
+   */
+  readonly globalConstraints: {mirror: MirrorConstraint[]} = {mirror: []};
+
+  /** Listeners invoked on every ControlPoint.set(). */
+  private cpLocationListeners: Set<(cp: ControlPoint) => void> = new Set();
 
   constructor(ctx: SurfacingEditor, id?: string) {
     super(ctx, id ?? ctx.nextId('SC'));
+  }
+
+  // -----------------------------------------------------------------------
+  // Control-point location events — emitted by ControlPoint.set(),
+  // consumed by constraint subscribers (arc, mirror, and any future ones).
+  // -----------------------------------------------------------------------
+
+  /**
+   * Register a listener that fires whenever any ControlPoint in this
+   * scene moves. Returns an unsubscribe function (O(1) via Set.delete).
+   */
+  onControlPointLocationChange(listener: (cp: ControlPoint) => void): () => void {
+    this.cpLocationListeners.add(listener);
+    return () => { this.cpLocationListeners.delete(listener); };
+  }
+
+  /**
+   * Called by `ControlPoint.set()` after the position write. Walks a
+   * snapshot of the listener set so listeners mutating the set during
+   * dispatch (e.g. by adding another constraint mid-cascade) don't
+   * corrupt iteration.
+   */
+  notifyControlPointLocationChange(cp: ControlPoint): void {
+    const snapshot = Array.from(this.cpLocationListeners);
+    for (const listener of snapshot) {
+      try { listener(cp); } catch (e) { console.error(e); }
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Mirror constraints — global, scene-level
+  // -----------------------------------------------------------------------
+
+  /**
+   * Add a mirror constraint and wire its reactive enforcement. The
+   * constraint is pushed into `globalConstraints.mirror` and a
+   * cp-change listener is attached that reflects any moved source CP
+   * to its mirror partner. The attached unsubscribe is stored on the
+   * constraint so `removeMirrorConstraint` can tear it down.
+   */
+  addMirrorConstraint(mc: MirrorConstraint): void {
+    const sourceToMirror = new Map<Vertex, Vertex>();
+    for (const pair of mc.cpPairs) sourceToMirror.set(pair.source, pair.mirror);
+    mc.unsubscribe = this.onControlPointLocationChange(cp => {
+      const mirrorCp = sourceToMirror.get(cp);
+      if (!mirrorCp) return;
+      const p = cp.position;
+      const d = vdot(vsub(p, mc.planePoint), mc.planeNormal);
+      mirrorCp.set(
+        p[0] - 2 * d * mc.planeNormal[0],
+        p[1] - 2 * d * mc.planeNormal[1],
+        p[2] - 2 * d * mc.planeNormal[2],
+      );
+    });
+    this.globalConstraints.mirror.push(mc);
+  }
+
+  /**
+   * Remove a mirror constraint: splice it out of `globalConstraints.mirror`,
+   * detach its cp-change listener, and clear the mirror-target flag on
+   * every vertex it owned exclusively (some mirror targets can belong
+   * to more than one constraint in a chained mirror).
+   */
+  removeMirrorConstraint(mc: MirrorConstraint): void {
+    const idx = this.globalConstraints.mirror.indexOf(mc);
+    if (idx < 0) return;
+    this.globalConstraints.mirror.splice(idx, 1);
+    mc.unsubscribe?.();
+    mc.unsubscribe = undefined;
+    const stillTarget = new Set<Vertex>();
+    for (const other of this.globalConstraints.mirror) {
+      for (const pair of other.cpPairs) stillTarget.add(pair.mirror);
+    }
+    for (const pair of mc.cpPairs) {
+      if (!stillTarget.has(pair.mirror)) pair.mirror.setMirrorTarget(false);
+    }
   }
 
   /**
@@ -144,16 +213,6 @@ export class Scene extends GeometricEntity {
   }
 
   // -----------------------------------------------------------------------
-  // Vertex movement → constraint cascade → per-surface invalidation
-  // -----------------------------------------------------------------------
-
-  moveVertex(v: Vertex, x: number, y: number, z: number): void {
-    v.set(x, y, z);
-    _arcOps.enforceArcConstraints(this, v);
-    _mirrorOps.enforceMirrorConstraints(this, v);
-  }
-
-  // -----------------------------------------------------------------------
   // Serialization
   // -----------------------------------------------------------------------
 
@@ -173,25 +232,33 @@ export class Scene extends GeometricEntity {
       }
     }
 
-    const patches = this.surfaces.map(p => ({
-      id: p.id,
-      grid: p.grid.map(row => row.map(v => vertexMap.get(v)!)),
-      weights: p.getWeightsMatrix(),
-      rational: p.rational,
-      surfaceSetId: p.surfaceSet ? p.surfaceSet.id : undefined,
-    }));
+    const patches = this.surfaces.map(p => {
+      const arcConstraints: SerializedScene['patches'][number]['arcConstraints'] = [];
+      const sides = [p.boundingCurves.bottom, p.boundingCurves.right,
+                     p.boundingCurves.top, p.boundingCurves.left];
+      for (let side = 0; side < 4; side++) {
+        const arc = sides[side].constraints.arc;
+        if (!arc) continue;
+        arcConstraints.push({
+          side,
+          radius: arc.radius,
+          angle: arc.angle,
+          planeNormal: [...arc.planeNormal] as Vec3,
+          center: [...arc.center] as Vec3,
+          mode: arc.mode,
+        });
+      }
+      return {
+        id: p.id,
+        grid: p.grid.map(row => row.map(v => vertexMap.get(v)!)),
+        weights: p.getWeightsMatrix(),
+        rational: p.rational,
+        surfaceSetId: p.surfaceSet ? p.surfaceSet.id : undefined,
+        arcConstraints: arcConstraints.length > 0 ? arcConstraints : undefined,
+      };
+    });
 
-    const arcConstraints = this.arcConstraints.map(c => ({
-      vertexIndices: c.vertices.map(v => vertexMap.get(v)!) as [number, number, number, number],
-      radius: c.radius,
-      angle: c.angle,
-      planeNormal: [...c.planeNormal] as Vec3,
-      center: [...c.center] as Vec3,
-      mode: c.mode,
-      surfaceSide: c.surfaceSide ? {surfaceId: c.surfaceSide.surface.id, side: c.surfaceSide.side} : undefined,
-    }));
-
-    const mirrorConstraints = this.mirrorConstraints.map(mc => ({
+    const mirrorConstraints = this.globalConstraints.mirror.map(mc => ({
       sourceId: mc.source.id,
       mirrorId: mc.mirror.id,
       planePoint: [...mc.planePoint] as Vec3,
@@ -217,7 +284,7 @@ export class Scene extends GeometricEntity {
       }
     }
 
-    return {id: this.id, vertices, vertexIds, patches, arcConstraints, mirrorConstraints, groups, surfaceSets, idCounters: this.ctx.getIdCounters()};
+    return {id: this.id, vertices, vertexIds, patches, mirrorConstraints, groups, surfaceSets, idCounters: this.ctx.getIdCounters()};
   }
 
   static deserialize(ctx: SurfacingEditor, data: SerializedScene): Scene {
@@ -269,21 +336,19 @@ export class Scene extends GeometricEntity {
     const surfaceById = new Map<string, NurbsSurface>();
     for (const s of orderedSurfaces) surfaceById.set(s.id, s);
 
-    for (const cd of data.arcConstraints) {
-      let surfaceSide: ArcConstraint['surfaceSide'] = undefined;
-      if (cd.surfaceSide) {
-        const surf = surfaceById.get(cd.surfaceSide.surfaceId);
-        if (surf) surfaceSide = {surface: surf, side: cd.surfaceSide.side};
+    // Restore arc constraints — each patch owns its own list of
+    // per-side arcs. We rebuild them by calling the op, which re-runs
+    // applyArcConstraint and hooks up the reactive subscription.
+    for (let pi = 0; pi < data.patches.length; pi++) {
+      const pd = data.patches[pi];
+      if (!pd.arcConstraints) continue;
+      const surface = orderedSurfaces[pi];
+      for (const ac of pd.arcConstraints) {
+        _arcOps.constrainEdgeToArc(
+          surface, ac.side, ac.radius, ac.angle,
+          [...ac.planeNormal] as Vec3, ac.mode,
+        );
       }
-      scene.arcConstraints.push({
-        vertices: cd.vertexIndices.map(i => verts[i]) as unknown as [Vertex, Vertex, Vertex, Vertex],
-        radius: cd.radius,
-        angle: cd.angle,
-        planeNormal: [...cd.planeNormal] as Vec3,
-        center: [...cd.center] as Vec3,
-        mode: cd.mode,
-        surfaceSide,
-      });
     }
 
     if (data.mirrorConstraints) {
@@ -296,7 +361,7 @@ export class Scene extends GeometricEntity {
           mirror: verts[pair.mirrorVertexIdx],
         }));
         for (const pair of cpPairs) pair.mirror.setMirrorTarget(true);
-        scene.mirrorConstraints.push({
+        scene.addMirrorConstraint({
           source: src,
           mirror: mir,
           planePoint: [...md.planePoint] as Vec3,

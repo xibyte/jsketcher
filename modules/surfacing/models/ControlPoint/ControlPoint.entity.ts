@@ -15,6 +15,10 @@ import type {SurfacingEditor} from '../../SurfacingEditor';
  * NurbsSurface is just a ControlPoint, not a Vertex-paired-with-a-CP.
  * Shared edges between adjacent surfaces automatically agree on
  * weights, because they share the same CP instance.
+ *
+ * `set(x, y, z)` additionally fans the new location out through
+ * `Scene.notifyControlPointLocationChange` so subscribed constraints
+ * (arc, mirror, …) can react.
  */
 export class ControlPoint extends Vertex {
 
@@ -30,5 +34,10 @@ export class ControlPoint extends Vertex {
   ) {
     super(ctx, x, y, z, id ?? ctx.nextId('CP'));
     this.weight = new Param(weight);
+  }
+
+  set(x: number, y: number, z: number): void {
+    super.set(x, y, z);
+    this.ctx.scene?.notifyControlPointLocationChange(this);
   }
 }

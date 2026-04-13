@@ -1,8 +1,9 @@
-import {Scene, Vertex, NurbsSurface, MirrorConstraint, ArcConstraint} from '../../models/Scene/Scene.entity';
+import {Scene, Vertex, NurbsSurface} from '../../models/Scene/Scene.entity';
 import {ControlPoint} from '../../models/ControlPoint/ControlPoint.entity';
 import {LocalBoundingCurveCache} from '../../models/BoundingCurve/buildBoundingCurves';
 import {Vec3} from '../../patchCageTypes';
-import {add as vadd, sub as vsub, mul as vscale, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
+import {sub as vsub, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
+import type {MirrorConstraint} from './mirror.types';
 
 /**
  * Mirror all surfaces along the boundary that contains the given edge.
@@ -183,7 +184,7 @@ function mirrorSingleSurface(
   // Add the mirror surface as a sibling of its source.
   (source.parent ?? scene).addChild(mp);
 
-  scene.mirrorConstraints.push({
+  scene.addMirrorConstraint({
     source,
     mirror: mp,
     planePoint,
@@ -235,7 +236,7 @@ function stitchMirrorEdges(scene: Scene, mirrors: NurbsSurface[]): void {
             // Update mirror constraint cpPairs; the replacement target
             // inherits the mirror-target flag from the replaced vertex.
             let wasTarget = false;
-            for (const mc of scene.mirrorConstraints) {
+            for (const mc of scene.globalConstraints.mirror) {
               for (const pair of mc.cpPairs) {
                 if (pair.mirror === srcB) {
                   pair.mirror = tgtA;
@@ -252,75 +253,13 @@ function stitchMirrorEdges(scene: Scene, mirrors: NurbsSurface[]): void {
 }
 
 /**
- * Enforce mirror constraints when a source vertex moves.
- * Cascades transitively: if a mirror target is itself a source
- * in another constraint, the update propagates down the chain.
- */
-export function enforceMirrorConstraints(scene: Scene, v: Vertex): void {
-  const queue: Vertex[] = [v];
-  const processed = new Set<Vertex>();
-
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    if (processed.has(current)) continue;
-    processed.add(current);
-
-    for (const mc of scene.mirrorConstraints) {
-      for (const pair of mc.cpPairs) {
-        if (pair.source === current) {
-          const p = current.position;
-          const d = vdot(vsub(p, mc.planePoint), mc.planeNormal);
-          pair.mirror.set(
-            p[0] - 2 * d * mc.planeNormal[0],
-            p[1] - 2 * d * mc.planeNormal[1],
-            p[2] - 2 * d * mc.planeNormal[2],
-          );
-          queue.push(pair.mirror);
-        }
-      }
-    }
-  }
-}
-
-/**
- * Enforce all mirror constraints (full refresh).
- * Runs multiple passes to handle chained mirrors.
- */
-export function enforceAllMirrorConstraints(scene: Scene): void {
-  // Collect all root sources (not themselves mirror targets)
-  const mirrorTargets = new Set<Vertex>();
-  for (const mc of scene.mirrorConstraints) {
-    for (const pair of mc.cpPairs) mirrorTargets.add(pair.mirror);
-  }
-
-  for (const mc of scene.mirrorConstraints) {
-    for (const pair of mc.cpPairs) {
-      if (!mirrorTargets.has(pair.source)) {
-        // Root source — cascade from here
-        enforceMirrorConstraints(scene, pair.source);
-      }
-    }
-  }
-}
-
-/**
- * Remove a mirror constraint and optionally delete the mirror patch.
+ * Detach a mirror constraint and optionally dispose the mirrored
+ * surface. Scene owns the bookkeeping (listener unsubscribe, array
+ * splice, mirror-target flag cleanup) — this function is just a thin
+ * wrapper that adds the surface-disposal step callers usually want.
  */
 export function removeMirrorConstraint(scene: Scene, mc: MirrorConstraint, deleteMirror: boolean = true): void {
-  const idx = scene.mirrorConstraints.indexOf(mc);
-  if (idx >= 0) scene.mirrorConstraints.splice(idx, 1);
-
-  // Clear the mirror-target flag on vertices that this constraint was
-  // the sole owner of. A CP might be a mirror target in more than one
-  // constraint (chained mirrors), so check the remaining constraints.
-  const stillTarget = new Set<Vertex>();
-  for (const other of scene.mirrorConstraints) {
-    for (const pair of other.cpPairs) stillTarget.add(pair.mirror);
-  }
-  for (const pair of mc.cpPairs) {
-    if (!stillTarget.has(pair.mirror)) pair.mirror.setMirrorTarget(false);
-  }
-
+  scene.removeMirrorConstraint(mc);
   if (deleteMirror && mc.mirror) {
     mc.mirror.parent?.removeChild(mc.mirror);
     mc.mirror.dispose();

@@ -29,8 +29,10 @@ import {
  * The Vertex itself is the click target — clicking the picker calls
  * `this.select()` which routes through the editor adapter to attach the
  * shared TransformControls gizmo. On drag the gizmo writes back via
- * `scene.moveVertex(v, x, y, z)` which calls `v.set()`, re-invalidating
- * every usedBy surface.
+ * `v.set(x, y, z)`, re-invalidating every usedBy surface. For
+ * ControlPoints, `set()` also fans out through
+ * `Scene.notifyControlPointLocationChange` so subscribed constraints
+ * (arc, mirror, …) can react.
  *
  * Plain `Vertex` has no weight. NURBS cage points use `ControlPoint
  * extends Vertex` which adds a scalar weight.

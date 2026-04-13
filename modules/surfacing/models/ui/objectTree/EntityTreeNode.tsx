@@ -235,8 +235,8 @@ function getChildEntries(entity: GeometricEntity): ChildEntry[] {
     for (let i = 0; i < entity.cp.length; i++) {
       entries.push({key: `cp${i}`, entity: entity.cp[i]});
     }
-    if (entity.arcConstraint) {
-      const ac = entity.arcConstraint;
+    const ac = entity.constraints.arc;
+    if (ac) {
       entries.push({key: 'arc', value: `Arc ${Math.round(ac.angle)}\u00B0 r=${(ac.radius).toFixed(2)} (${ac.mode})`});
     }
   } else if (entity instanceof ControlPoint) {
@@ -280,7 +280,7 @@ function getEntityInfo(entity: GeometricEntity): EntityInfo {
   if (entity instanceof BoundingCurve) {
     return {
       label: `${SIDE_NAMES[entity.side]} edge`,
-      detail: entity.arcConstraint ? 'arc' : '',
+      detail: entity.constraints.arc ? 'arc' : '',
       icon: '\u2500',
     };
   }
