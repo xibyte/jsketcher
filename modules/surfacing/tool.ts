@@ -1,9 +1,22 @@
 import type {StateStream} from 'lstream';
-import type React from 'react';
 import type {SurfacingEditor} from './SurfacingEditor';
 
+/**
+ * A Tool is an interactive mode that lives on the editor's tool stack
+ * and responds to raw mouse / keyboard events. Tools own their own
+ * reactive state and contribute UI via the port system
+ * (`addToPort(...)` / `removeFromPort(...)` from `ui/SurfacingUI`).
+ *
+ * Lifecycle (driven by the editor's pushTool / popTool):
+ *   - `init(editor)` — called when the tool becomes current. Typical
+ *                      responsibilities: stash editor reference, set up
+ *                      preview overlays, contribute components to ports.
+ *   - `cleanup()`    — called when the tool is no longer current.
+ *                      Tear down whatever init set up, and remove every
+ *                      component this tool contributed to the ports.
+ */
 export interface Tool {
-  /** Reactive state stream — the SurfacingUI component subscribes to this. */
+  /** Reactive state stream — the tool's UI factory subscribes to this. */
   readonly state$: StateStream<any>;
   init(editor: SurfacingEditor): void;
   onMouseMove(e: MouseEvent): void;
@@ -12,13 +25,4 @@ export interface Tool {
   onClick(e: MouseEvent): void;
   onKeyDown(e: KeyboardEvent): void;
   cleanup(): void;
-  /**
-   * Optional factory for the tool's overlay UI. If present, the editor
-   * mounts the returned component while this tool is on top of the stack
-   * and unmounts it when the tool is popped. Return `null` (or omit the
-   * method) if the tool has no UI. The factory typically closes over
-   * `this` and returns a parameterless component that internally
-   * subscribes to `state$` via `useStream`.
-   */
-  createUI?(): React.FC | null;
 }

@@ -9,10 +9,9 @@ export function fillHoleUI(tool: FillHoleTool): React.FC {
 
     return (
       <div style={{
-        position: 'fixed', bottom: 110, left: '50%', transform: 'translateX(-50%)',
         background: '#1e1e1e', color: '#d4d4d4', padding: '10px 16px',
         borderRadius: 8, fontFamily: 'sans-serif', fontSize: 12,
-        zIndex: 10001, boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
         display: 'flex', alignItems: 'center', gap: 12, pointerEvents: 'auto',
       }}>
         <span style={{fontWeight: 'bold', fontSize: 13, whiteSpace: 'nowrap'}}>Fill Hole</span>
