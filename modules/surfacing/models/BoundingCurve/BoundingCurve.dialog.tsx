@@ -1,34 +1,103 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
-import {distance as vdist} from 'math/vec';
+import React, {useEffect} from 'react';
+import {distance as vdist, lerp as vlerp} from 'math/vec';
 import type {BoundingCurve} from './BoundingCurve.entity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
+import {constrainEdgeToArc} from '../../ops/arc/arc.command';
+import {applyG1, applyG2} from '../../ops/continuity/continuity.command';
+import {mirrorAcrossEdge} from '../../ops/mirror/mirror.command';
+import {addToPort, removeFromPort} from '../../ui/SurfacingUI';
+import {arcEditorUI, ARC_EDITOR_PORT_ID} from '../../ops/arc/arc.ui';
 
 const SIDE_NAMES = ['Bottom', 'Right', 'Top', 'Left'];
 
-// =====================================================================
-// BoundingCurveDialog — selected-edge side panel with action buttons
-// =====================================================================
-
 export interface BoundingCurveDialogProps {
+  /**
+   * The surface whose edge is being edited. A BoundingCurve may be
+   * shared between adjacent surfaces, so the dialog needs to know which
+   * surface is the current selection context (for surface.normal,
+   * arcConstraints lookup, and for the mirror op source).
+   */
+  surface: NurbsSurface;
   curve: BoundingCurve;
   side: number;
   hasNeighbor: boolean;
   onClose: () => void;
-  onApplyArc90: (flip: boolean) => void;
-  onRemoveArc: () => void;
-  onApplyG1: () => void;
-  onApplyG2: () => void;
-  onMirror: () => void;
 }
 
 export function BoundingCurveDialog({
-  curve, side, hasNeighbor,
-  onClose, onApplyArc90, onRemoveArc, onApplyG1, onApplyG2, onMirror,
+  surface, curve, side, hasNeighbor, onClose,
 }: BoundingCurveDialogProps) {
+  // The arc editor is a port entry; tear it down when this dialog
+  // goes away (edge deselected, tool swapped, etc.) so we don't leave
+  // a zombie modal bound to a surface/side that's no longer in focus.
+  useEffect(() => {
+    return () => removeFromPort(ARC_EDITOR_PORT_ID);
+  }, []);
+
   const p0 = curve.cp[0].position;
   const p3 = curve.cp[3].position;
   const chordLen = Math.round(vdist(p0, p3) * 1e4) / 1e4;
   const existing = curve.arcConstraint;
+  const editor = surface.ctx;
+
+  const handleOpenArcEditor = () => {
+    addToPort('right', ARC_EDITOR_PORT_ID, arcEditorUI(surface, side));
+  };
+
+  const handleApplyArc90 = (flip: boolean) => {
+    const scene = editor.scene;
+    const ev = surface.getEdgeVertices(side);
+    const chord = vdist(ev[0].position, ev[3].position);
+    const radius = chord / Math.SQRT2;
+    let u = 0.5, v = 0.5;
+    if (side === 0) v = 0;
+    else if (side === 1) u = 1;
+    else if (side === 2) v = 1;
+    else if (side === 3) u = 0;
+    const n = surface.normal(u, v);
+    const planeNormal: [number, number, number] = flip
+      ? [-n[0], -n[1], -n[2]]
+      : [n[0], n[1], n[2]];
+    scene.arcConstraints = scene.arcConstraints.filter(cc =>
+      !(cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === side)
+    );
+    constrainEdgeToArc(scene, surface, side, radius, 90, planeNormal, 'rational');
+    editor.commit();
+  };
+
+  const handleRemoveArc = () => {
+    const scene = editor.scene;
+    scene.arcConstraints = scene.arcConstraints.filter(cc => {
+      if (cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === side) {
+        const ev = surface.getEdgeVertices(side);
+        const lp1 = vlerp(ev[0].position, ev[3].position, 1 / 3);
+        const lp2 = vlerp(ev[0].position, ev[3].position, 2 / 3);
+        ev[1].set(lp1[0], lp1[1], lp1[2]);
+        ev[2].set(lp2[0], lp2[1], lp2[2]);
+        return false;
+      }
+      return true;
+    });
+    for (const row of surface.grid) {
+      for (const cp of row) (cp as any).weight.value = 1;
+    }
+    editor.commit();
+  };
+
+  const handleApplyG1 = () => {
+    applyG1(surface, side);
+    editor.commit();
+  };
+
+  const handleApplyG2 = () => {
+    applyG2(surface, side);
+    editor.commit();
+  };
+
+  const handleMirror = () => {
+    mirrorAcrossEdge(editor.scene, surface, side);
+    editor.commit();
+  };
 
   const btn = (label: string, bg: string, onClick: () => void) => (
     <button onClick={onClick} style={{
@@ -55,124 +124,21 @@ export function BoundingCurveDialog({
         {existing && ` | Arc: ${Math.round(existing.angle * 1e4) / 1e4}° r=${Math.round(existing.radius * 1e4) / 1e4} (${existing.mode})`}
       </div>
       <div style={{display: 'flex', gap: 6}}>
-        {btn('Arc 90° Out', '#353', () => onApplyArc90(false))}
-        {btn('Arc 90° In', '#345', () => onApplyArc90(true))}
-        {existing && btn('Remove', '#533', onRemoveArc)}
+        {btn('Arc 90° Out', '#353', () => handleApplyArc90(false))}
+        {btn('Arc 90° In', '#345', () => handleApplyArc90(true))}
+        {existing && btn('Remove', '#533', handleRemoveArc)}
+      </div>
+      <div style={{display: 'flex', gap: 6, marginTop: 6}}>
+        {btn('Arc Editor…', '#444', handleOpenArcEditor)}
       </div>
       {hasNeighbor && (
         <div style={{display: 'flex', gap: 6, marginTop: 6}}>
-          {btn('G1 Tangent', '#446', onApplyG1)}
-          {btn('G2 Curvature', '#464', onApplyG2)}
+          {btn('G1 Tangent', '#446', handleApplyG1)}
+          {btn('G2 Curvature', '#464', handleApplyG2)}
         </div>
       )}
       <div style={{display: 'flex', gap: 6, marginTop: 6}}>
-        {btn('Mirror', '#556', onMirror)}
-      </div>
-    </div>
-  );
-}
-
-// =====================================================================
-// ArcConstraintEditor — live-preview modal for authoring an arc constraint
-// =====================================================================
-
-export interface ArcConstraintParams {
-  side: number;
-  radius: number;
-  /** Sweep angle in degrees, derived from chord length + radius. */
-  angle: number;
-  /** Plane normal (already flipped if `flip` is true). */
-  planeNormal: [number, number, number];
-  mode: 'approximate' | 'rational';
-}
-
-export interface ArcConstraintEditorProps {
-  surface: NurbsSurface;
-  onClose: () => void;
-  /** Called (rAF-debounced) whenever any input changes. */
-  onApply: (params: ArcConstraintParams) => void;
-  onRemove: () => void;
-}
-
-export function ArcConstraintEditor({
-  surface, onClose, onApply, onRemove,
-}: ArcConstraintEditorProps) {
-  const [side, setSide] = useState(0);
-  const [radius, setRadius] = useState(50);
-  const [flip, setFlip] = useState(false);
-  const [mode, setMode] = useState<'approximate' | 'rational'>('rational');
-  const debounceRef = useRef<number | null>(null);
-
-  const applyLive = useCallback(() => {
-    if (debounceRef.current !== null) cancelAnimationFrame(debounceRef.current);
-    debounceRef.current = requestAnimationFrame(() => {
-      debounceRef.current = null;
-      if (isNaN(radius) || radius <= 0) return;
-
-      const edgeVerts = surface.getEdgeVertices(side);
-      const chordLen = vdist(edgeVerts[0].position, edgeVerts[3].position);
-      const sinHalf = Math.min(1, chordLen / (2 * radius));
-      const angle = 2 * Math.asin(sinHalf) * (180 / Math.PI);
-
-      let u = 0.5, v = 0.5;
-      if (side === 0) v = 0;
-      else if (side === 1) u = 1;
-      else if (side === 2) v = 1;
-      else if (side === 3) u = 0;
-      const n = surface.normal(u, v);
-      const planeNormal: [number, number, number] = flip
-        ? [-n[0], -n[1], -n[2]]
-        : [n[0], n[1], n[2]];
-
-      onApply({side, radius, angle, planeNormal, mode});
-    });
-  }, [side, radius, flip, mode, surface, onApply]);
-
-  useEffect(() => { applyLive(); }, [applyLive]);
-
-  const inputStyle = {width: '100%', padding: 3, background: '#333', color: '#eee', border: '1px solid #555', marginTop: 2};
-
-  return (
-    <div style={{
-      position: 'fixed', left: 10, top: '50%', transform: 'translateY(-50%)',
-      background: '#2a2a2a', color: '#eee', padding: 16, borderRadius: 8,
-      width: 220, fontFamily: 'sans-serif', fontSize: 13, zIndex: 10000,
-      boxShadow: '0 4px 20px rgba(0,0,0,0.5)', pointerEvents: 'auto',
-    }}>
-      <div style={{fontSize: 14, fontWeight: 'bold', marginBottom: 10}}>Arc Constraint</div>
-      <div style={{marginBottom: 6}}>
-        <label>Edge</label>
-        <select value={side} onChange={e => setSide(parseInt(e.target.value))} style={{...inputStyle}}>
-          <option value={0}>Bottom</option>
-          <option value={1}>Right</option>
-          <option value={2}>Top</option>
-          <option value={3}>Left</option>
-        </select>
-      </div>
-      <div style={{marginBottom: 6}}>
-        <label>Radius</label>
-        <input type="number" value={radius} step={1} onChange={e => setRadius(parseFloat(e.target.value))} style={inputStyle} />
-      </div>
-      <div style={{marginBottom: 6}}>
-        <label>Flip</label>
-        <input type="checkbox" checked={flip} onChange={e => setFlip(e.target.checked)} style={{marginLeft: 8}} />
-      </div>
-      <div style={{marginBottom: 10}}>
-        <label>Mode</label>
-        <select value={mode} onChange={e => setMode(e.target.value as any)} style={{...inputStyle}}>
-          <option value="approximate">Approximate (Bézier)</option>
-          <option value="rational">Rational (Exact NURBS)</option>
-        </select>
-      </div>
-      <div style={{display: 'flex', gap: 6}}>
-        <button onClick={onClose}
-          style={{flex: 1, padding: 5, background: '#555', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer'}}>
-          Close
-        </button>
-        <button onClick={onRemove}
-          style={{flex: 1, padding: 5, background: '#884444', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer'}}>
-          Remove
-        </button>
+        {btn('Mirror', '#556', handleMirror)}
       </div>
     </div>
   );

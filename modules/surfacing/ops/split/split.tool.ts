@@ -35,7 +35,7 @@ export class LoopInsertTool implements Tool {
     this.pending = null;
     clearGroup(this.previewGroup);
     this.previewGroup.visible = false;
-    this.editor.rebuildAll();
+    this.editor.commit();
   }
 
   onMouseMove(e: MouseEvent): void {

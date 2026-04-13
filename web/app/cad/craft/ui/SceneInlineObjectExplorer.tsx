@@ -30,15 +30,8 @@ export function SceneInlineObjectExplorer() {
   // Persist + refresh after a mutation
   const persistAndRefresh = useCallback(() => {
     const scene = getScene();
-    if (!scene) return;
-    const view = (scene as any).ext?.view;
-    if (view && typeof view.rebuildAll === 'function') view.rebuildAll();
-    const svc = (ctx as any).surfacingService;
-    if (svc) {
-      if (svc.scheduleSave) svc.scheduleSave();
-      if (svc.notifyChange) svc.notifyChange();
-    }
-  }, [ctx, getScene]);
+    scene?.ctx.commit();
+  }, [getScene]);
 
   // Remove a group and all its patches from the scene
   const removeGroup = useCallback((group: Group) => {

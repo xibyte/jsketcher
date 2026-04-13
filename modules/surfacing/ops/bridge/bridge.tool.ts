@@ -113,7 +113,7 @@ export class BridgeTool implements Tool {
       g1: s.g1,
       sourceSurface: s.edge1.surface,
     });
-    this.editor.rebuildAll();
+    this.editor.commit();
     this.resetState();
     this.editor.requestRender();
   }

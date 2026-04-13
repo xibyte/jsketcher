@@ -47,7 +47,7 @@ export function activate(ctx: any) {
   }
 
   function afterMutation(): void {
-    editor.rebuildAll();
+    editor.commit();
     notifyChange();
     scheduleSurfacingSave();
   }
