@@ -4,6 +4,8 @@ import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import {
   EntityObject3D,
   EDGE_WIDTH,
+  RENDER_ORDER_EDGE,
+  RENDER_ORDER_EDGE_PUNCH,
 } from '../../three';
 
 /**
@@ -52,7 +54,7 @@ export class BoundingCurveObject3D extends EntityObject3D {
     line.material.depthTest = !punchThrough;
     line.material.transparent = punchThrough;
     line.material.opacity = punchThrough ? 0.9 : 1.0;
-    line.renderOrder = punchThrough ? 2 : 1;
+    line.renderOrder = punchThrough ? RENDER_ORDER_EDGE_PUNCH : RENDER_ORDER_EDGE;
     (line as any).userData = {entity: this.curve};
 
     this.line = line;

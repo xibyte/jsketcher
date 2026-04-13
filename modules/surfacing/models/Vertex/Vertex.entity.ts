@@ -12,6 +12,7 @@ import {
   SelectionGizmoOverlay,
   CP_COLOR, CP_HOVER_COLOR, CP_SELECTED_COLOR, CP_MIRROR_COLOR,
   HANDLE_SIZE, CP_VISUAL_SCALE, CP_HOVER_SCALE, CP_PICKER_SCALE,
+  RENDER_ORDER_HANDLE,
 } from '../../three';
 
 /**
@@ -184,12 +185,12 @@ export class Vertex extends GeometricEntity {
 
     this.handleMaterial = createControlPointMaterial(this.baseColor());
     this.handleSphere = new Mesh(sharedSphereGeometry, this.handleMaterial);
-    this.handleSphere.renderOrder = 2;
+    this.handleSphere.renderOrder = RENDER_ORDER_HANDLE;
     this.handleSphere.scale.setScalar(CP_VISUAL_SCALE);
 
     this.handlePickerMaterial = createPickerMaterial();
     this.handlePicker = new Mesh(sharedSphereGeometry, this.handlePickerMaterial);
-    this.handlePicker.renderOrder = 2;
+    this.handlePicker.renderOrder = RENDER_ORDER_HANDLE;
     this.handlePicker.scale.setScalar(CP_PICKER_SCALE);
 
     const handle = new ConstantScaleGroup(
