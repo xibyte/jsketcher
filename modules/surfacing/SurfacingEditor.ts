@@ -148,11 +148,18 @@ export class SurfacingEditor {
     this.ctx.viewer.requestRender();
   }
 
-  // ---- Rebuild ----
+  // ---- Commit ----
 
-  rebuildAll() {
-    this.currentTool.cleanup();
-    this.currentTool.init(this);
+  /**
+   * Finalize a structural mutation (primitive added, op applied,
+   * surface removed, etc.). Entities own their own visual lifecycle,
+   * so this is just: persist, notify subscribers, request a frame.
+   *
+   * We deliberately do NOT cycle the current tool's cleanup/init here.
+   * Tools are alive across commits; their selection / preview state
+   * is user-facing and must not be wiped on every op.
+   */
+  commit() {
     this.ctx.surfacingService.scheduleSave();
     this.ctx.surfacingService.notifyChange();
     this.ctx.viewer.requestRender();

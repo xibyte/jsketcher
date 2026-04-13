@@ -38,7 +38,7 @@ export class FillHoleTool implements Tool {
         const created = scene.surfaces[scene.surfaces.length - 1];
         applyG1AllSides(created);
       }
-      this.editor.rebuildAll();
+      this.editor.commit();
     }
     this.clearMarks();
     this.loop = null;

@@ -21,18 +21,11 @@ import {Vertex} from '../models/Vertex/Vertex.entity';
 import {SURFACE_HOVER_COLOR, EDGE_COLORS, CP_HOVER_COLOR, SelectionGizmoOverlay} from '../three';
 import {addToPort, removeFromPort} from '../ui/SurfacingUI';
 import {defaultToolUI} from './defaultTool.ui';
-import {constrainEdgeToArc, removeArcConstraint} from '../ops/arc/arc.command';
-import {applyG1, applyG2} from '../ops/continuity/continuity.command';
-import {mirrorAcrossEdge} from '../ops/mirror/mirror.command';
 import {splitIsoline} from '../ops/split/split.command';
-import {pushPull} from '../ops/pushPull/pushPull.command';
-import {extrude} from '../ops/extrude/extrude.command';
-import {subdivide} from '../ops/subdivide/subdivide.command';
 
 export interface DefaultToolState {
   selectedSurface: {surface: NurbsSurface} | null;
   selectedCurve: {curve: BoundingCurve, side: number, hasNeighbor: boolean} | null;
-  arcDialog: {surface: NurbsSurface} | null;
 }
 
 const SURFACE_SET_HOVER_COLOR = 0xb0d4f3;
@@ -45,7 +38,6 @@ export class DefaultTool implements Tool {
   readonly state$: StateStream<DefaultToolState> = state<DefaultToolState>({
     selectedSurface: null,
     selectedCurve: null,
-    arcDialog: null,
   });
 
   private editor!: SurfacingEditor;
@@ -121,21 +113,6 @@ export class DefaultTool implements Tool {
       }
       return;
     }
-
-    if (!this.selectedSurface) return;
-    const surface = this.selectedSurface;
-
-    if (e.key === 'u' || e.key === 'U') {
-      splitIsoline(this.editor.scene, surface, 'u', 0.5);
-      this.deselectSurface();
-      this.editor.rebuildAll();
-    } else if (e.key === 'v' || e.key === 'V') {
-      splitIsoline(this.editor.scene, surface, 'v', 0.5);
-      this.deselectSurface();
-      this.editor.rebuildAll();
-    } else if (e.key === 'a' || e.key === 'A') {
-      this.toggleArcDialog();
-    }
   }
 
   // -------------------------------------------------------------------
@@ -149,7 +126,7 @@ export class DefaultTool implements Tool {
     this.clearHover();
     this.hoveredCurve = null;
     this.hoveredVertex = null;
-    this.state$.next({selectedSurface: null, selectedCurve: null, arcDialog: null});
+    this.state$.next({selectedSurface: null, selectedCurve: null});
     if (this.gizmo) {
       const ss = this.editor.sceneSetup;
       ss.scene.remove(this.gizmo.gizmo);
@@ -395,168 +372,7 @@ export class DefaultTool implements Tool {
     this.state$.next({
       selectedSurface: surface ? {surface} : null,
       selectedCurve: curveInfo,
-      arcDialog: this.state$.value.arcDialog,
     });
-  }
-
-  toggleArcDialog(): void {
-    if (!this.selectedSurface) return;
-    const current = this.state$.value.arcDialog;
-    if (current) {
-      this.state$.mutate(s => { s.arcDialog = null; });
-    } else {
-      const surface = this.selectedSurface;
-      this.state$.mutate(s => { s.arcDialog = {surface}; });
-    }
-  }
-
-  closeArcDialog(): void {
-    this.state$.mutate(s => { s.arcDialog = null; });
-  }
-
-  // -------------------------------------------------------------------
-  // Commands called by React panel callbacks
-  // -------------------------------------------------------------------
-
-  pushPull(dist: number): void {
-    const s = this.state$.value.selectedSurface;
-    if (!s) return;
-    pushPull(this.editor.scene, s.surface, dist);
-    this.editor.rebuildAll();
-  }
-
-  extrude(dist: number): void {
-    const s = this.state$.value.selectedSurface;
-    if (!s) return;
-    extrude(this.editor.scene, s.surface, dist);
-    this.editor.rebuildAll();
-  }
-
-  subdivide(): void {
-    const s = this.state$.value.selectedSurface;
-    if (!s) return;
-    subdivide(this.editor.scene, s.surface);
-    this.deselectSurface();
-    this.editor.rebuildAll();
-  }
-
-  removeSurface(): void {
-    const s = this.state$.value.selectedSurface;
-    if (!s) return;
-    const surface = s.surface;
-    // Exit edit mode + clear selection BEFORE disposing so the cage
-    // and CP handles hide themselves while the entity is still intact.
-    this.deselectSurface();
-    if (surface.parent) surface.parent.removeChild(surface);
-    surface.dispose();
-    this.editor.rebuildAll();
-  }
-
-  applyArc90(flip: boolean): void {
-    const c = this.state$.value.selectedCurve;
-    const s = this.state$.value.selectedSurface;
-    if (!c || !s) return;
-    const scene = this.editor.scene;
-    const surface = s.surface;
-    const ev = surface.getEdgeVertices(c.side);
-    const {distance: vdist} = require('math/vec');
-    const chord = vdist(ev[0].position, ev[3].position);
-    const radius = chord / Math.SQRT2;
-    let u = 0.5, v = 0.5;
-    if (c.side === 0) v = 0;
-    else if (c.side === 1) u = 1;
-    else if (c.side === 2) v = 1;
-    else if (c.side === 3) u = 0;
-    let planeNormal = surface.normal(u, v);
-    if (flip) planeNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]] as any;
-    scene.arcConstraints = scene.arcConstraints.filter(cc =>
-      !(cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === c.side)
-    );
-    constrainEdgeToArc(scene, surface, c.side, radius, 90, planeNormal, 'rational');
-    this.editor.rebuildAll();
-  }
-
-  removeArc(): void {
-    const c = this.state$.value.selectedCurve;
-    const s = this.state$.value.selectedSurface;
-    if (!c || !s) return;
-    const scene = this.editor.scene;
-    const surface = s.surface;
-    const {lerp: vlerp} = require('math/vec');
-    scene.arcConstraints = scene.arcConstraints.filter(cc => {
-      if (cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === c.side) {
-        const ev = surface.getEdgeVertices(c.side);
-        const lp1 = vlerp(ev[0].position, ev[3].position, 1/3);
-        const lp2 = vlerp(ev[0].position, ev[3].position, 2/3);
-        ev[1].set(lp1[0], lp1[1], lp1[2]);
-        ev[2].set(lp2[0], lp2[1], lp2[2]);
-        return false;
-      }
-      return true;
-    });
-    for (const row of surface.grid) {
-      for (const cp of row) (cp as any).weight.value = 1;
-    }
-    this.editor.rebuildAll();
-  }
-
-  applyG1(): void {
-    const c = this.state$.value.selectedCurve;
-    const s = this.state$.value.selectedSurface;
-    if (!c || !s) return;
-    applyG1(s.surface, c.side);
-    this.editor.rebuildAll();
-  }
-
-  applyG2(): void {
-    const c = this.state$.value.selectedCurve;
-    const s = this.state$.value.selectedSurface;
-    if (!c || !s) return;
-    applyG2(s.surface, c.side);
-    this.editor.rebuildAll();
-  }
-
-  mirror(): void {
-    const c = this.state$.value.selectedCurve;
-    const s = this.state$.value.selectedSurface;
-    if (!c || !s) return;
-    mirrorAcrossEdge(this.editor.scene, s.surface, c.side);
-    this.editor.rebuildAll();
-  }
-
-  /**
-   * Live-apply an arc constraint from the ArcConstraintEditor modal.
-   * Called on every slider tick; rebuilds the scene each time. The
-   * previous constraint on the same (surface, side) is removed first.
-   */
-  arcApplyLive(params: {
-    side: number;
-    radius: number;
-    angle: number;
-    planeNormal: [number, number, number];
-    mode: 'approximate' | 'rational';
-  }): void {
-    const arc = this.state$.value.arcDialog;
-    if (!arc) return;
-    const scene = this.editor.scene;
-    const surface = arc.surface;
-    scene.arcConstraints = scene.arcConstraints.filter(cc =>
-      !(cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === params.side)
-    );
-    constrainEdgeToArc(
-      scene, surface, params.side, params.radius, params.angle,
-      params.planeNormal, params.mode,
-    );
-    this.editor.rebuildAll();
-  }
-
-  arcRemoveConstraint(): void {
-    const scene = this.editor.scene;
-    if (scene.arcConstraints.length > 0) {
-      removeArcConstraint(scene, scene.arcConstraints[scene.arcConstraints.length - 1]);
-    }
-    this.editor.rebuildAll();
-    this.closeArcDialog();
   }
 
   /** Build the filter set of grid CPs for the selected surface. */

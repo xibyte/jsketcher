@@ -1,5 +1,8 @@
 import React, {useState} from 'react';
 import type {NurbsSurface} from './NurbsSurface.entity';
+import {pushPull} from '../../ops/pushPull/pushPull.command';
+import {extrude} from '../../ops/extrude/extrude.command';
+import {subdivide} from '../../ops/subdivide/subdivide.command';
 
 const round = (v: number) => Math.round(v * 1e6) / 1e6;
 const fmtVec = (p: number[]) => [round(p[0]), round(p[1]), round(p[2])];
@@ -13,11 +16,12 @@ function compactNumberArrays(json: string): string {
 
 export interface NurbsSurfaceDialogProps {
   surface: NurbsSurface;
+  /**
+   * Dismisses the dialog. Also invoked by mutation actions that
+   * invalidate the current selection (subdivide, remove) so the owner
+   * can clear whatever selection state was tracking this surface.
+   */
   onClose: () => void;
-  onPushPull: (distance: number) => void;
-  onExtrude: (distance: number) => void;
-  onSubdivide: () => void;
-  onRemove: () => void;
 }
 
 type Tab = 'info' | 'nurbs';
@@ -26,14 +30,41 @@ type Tab = 'info' | 'nurbs';
  * Dialog for a selected NurbsSurface — two tabs:
  *   - info: summary and primary mutation actions
  *   - nurbs: full serialized NURBS definition + copy button
- * The bottom action row (push/pull, extrude, subdivide, remove) is
- * always visible.
+ *
+ * Mutation handlers (push/pull, extrude, subdivide, remove) call the
+ * ops directly through `surface.ctx` (which is the SurfacingEditor);
+ * no tool reference needed.
  */
-export function NurbsSurfaceDialog({
-  surface, onClose, onPushPull, onExtrude, onSubdivide, onRemove,
-}: NurbsSurfaceDialogProps) {
+export function NurbsSurfaceDialog({surface, onClose}: NurbsSurfaceDialogProps) {
   const [distance, setDistance] = useState(10);
   const [tab, setTab] = useState<Tab>('info');
+
+  const editor = surface.ctx;
+
+  const handlePushPull = () => {
+    pushPull(editor.scene, surface, distance);
+    editor.commit();
+  };
+
+  const handleExtrude = () => {
+    extrude(editor.scene, surface, distance);
+    editor.commit();
+  };
+
+  const handleSubdivide = () => {
+    subdivide(editor.scene, surface);
+    onClose();
+    editor.commit();
+  };
+
+  const handleRemove = () => {
+    // Exit edit mode BEFORE disposing so the cage + CP handles hide
+    // themselves while the entity is still intact.
+    onClose();
+    if (surface.parent) surface.parent.removeChild(surface);
+    surface.dispose();
+    editor.commit();
+  };
 
   const cps = surface.getCPs();
   const controlPoints = cps.map(row => row.map(c => fmtVec(c.position)));
@@ -134,21 +165,21 @@ export function NurbsSurfaceDialog({
         <input type="number" value={distance} step={1}
           onChange={e => setDistance(parseFloat(e.target.value))}
           style={{width: 70, padding: 3, background: '#333', color: '#eee', border: '1px solid #555', fontSize: 12}} />
-        <button onClick={() => onPushPull(distance)}
+        <button onClick={handlePushPull}
           style={{flex: 1, padding: 5, background: '#345', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer'}}>
           Push/Pull
         </button>
-        <button onClick={() => onExtrude(distance)}
+        <button onClick={handleExtrude}
           style={{flex: 1, padding: 5, background: '#354', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer'}}>
           Extrude
         </button>
       </div>
       <div style={{display: 'flex', gap: 6, marginTop: 6}}>
-        <button onClick={onSubdivide}
+        <button onClick={handleSubdivide}
           style={{flex: 1, padding: 5, background: '#353', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12}}>
           Subdivide 3x3
         </button>
-        <button onClick={onRemove}
+        <button onClick={handleRemove}
           style={{flex: 1, padding: 5, background: '#533', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12}}>
           Remove
         </button>
