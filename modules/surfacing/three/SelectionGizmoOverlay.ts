@@ -5,13 +5,17 @@
  * imperatively — there's no stream subscription here anymore.
  *
  * Usage:
- *   const gizmo = new SelectionGizmoOverlay(sceneSetup, scene, options);
+ *   const gizmo = new SelectionGizmoOverlay(sceneSetup, options);
  *   root.add(gizmo.gizmo);       // add the TransformControls to the root
  *   root.add(gizmo.target);      // and the invisible target proxy
  *
  *   gizmo.attach(vertex);        // call when a vertex is selected
  *   gizmo.detach();              // call when the selection clears
  *   gizmo.dispose();              // when tearing down
+ *
+ * Drag ticks push the new position straight into the target via
+ * `target.set(x, y, z)`. For ControlPoints that fires the scene's
+ * cp-change listeners, which wire through to any registered constraints.
  */
 import {Object3D} from 'three';
 import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
@@ -33,13 +37,11 @@ export class SelectionGizmoOverlay {
   readonly target: Object3D = new Object3D();
   private _attached: GizmoTarget | null = null;
   private sceneSetup: any;
-  private scene: any;
   private onChange: (() => void) | undefined;
   private onDragEnd: (() => void) | undefined;
 
-  constructor(sceneSetup: any, scene: any, options: SelectionGizmoOptions = {}) {
+  constructor(sceneSetup: any, options: SelectionGizmoOptions = {}) {
     this.sceneSetup = sceneSetup;
-    this.scene = scene;
     this.onChange = options.onChange;
     this.onDragEnd = options.onDragEnd;
     this.gizmo = new TransformControls(sceneSetup.camera, sceneSetup.renderer.domElement);
@@ -55,11 +57,13 @@ export class SelectionGizmoOverlay {
       wasDragging = !!e.value;
     });
 
-    // On each drag tick, push the new target position back into the vertex.
+    // On each drag tick, push the new target position back into the
+    // vertex. ControlPoint.set fires the scene's cp-change listeners,
+    // which wake any registered constraints.
     this.gizmo.addEventListener('change', () => {
       if (!this._attached) return;
       const pos = this.target.position;
-      this.scene.moveVertex(this._attached, pos.x, pos.y, pos.z);
+      this._attached.set(pos.x, pos.y, pos.z);
       if (this.onChange) this.onChange();
     });
   }
@@ -80,11 +84,6 @@ export class SelectionGizmoOverlay {
     this.gizmo.detach();
     this.gizmo.visible = false;
     this.gizmo.enabled = false;
-  }
-
-  /** Call when the scene changes, e.g. on reload. */
-  setScene(scene: any): void {
-    this.scene = scene;
   }
 
   /** Currently attached target, if any. */

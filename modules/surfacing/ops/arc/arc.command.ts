@@ -1,39 +1,61 @@
-import {Scene, Vertex, ArcConstraint, ArcMode} from '../../models/Scene/Scene.entity';
 import type {NurbsSurface} from '../../models/NurbsSurface/NurbsSurface.entity';
+import type {BoundingCurve} from '../../models/BoundingCurve/BoundingCurve.entity';
 import {Vec3} from '../../patchCageTypes';
+import type {ArcConstraint, ArcMode} from './arc.types';
 import {add as vadd, sub as vsub, mul as vscale, lerp as vlerp, normalize as vnormalize, distance as vdist, cross as vcross, dot as vdot} from 'math/vec';
 
 /**
- * Constrain an edge to a circular arc.
+ * Attach an arc constraint to one edge of a surface.
+ *
+ * Writes the constraint into `curve.constraints.arc`, applies it once
+ * (computing interior CP positions + weights for rational mode), and
+ * subscribes to the scene's cp-change stream so any move of either
+ * endpoint re-enforces the arc. Returns the constraint object.
+ *
+ * If a constraint already exists on the same curve it is removed first.
  */
 export function constrainEdgeToArc(
-  scene: Scene, surface: NurbsSurface, side: number,
+  surface: NurbsSurface, side: number,
   radius: number, angle: number,
   planeNormal: Vec3, mode: ArcMode = 'approximate'
 ): ArcConstraint {
-  const verts = surface.getEdgeVertices(side);
+  const curve = surface.getBoundingCurve(side);
+  if (curve.constraints.arc) removeArcConstraint(curve);
 
-  const p0 = verts[0].position;
-  const p3 = verts[3].position;
+  const p0 = curve.cp[0].position;
+  const p3 = curve.cp[3].position;
   const center = computeArcCenter(p0, p3, radius, angle, planeNormal);
 
   const constraint: ArcConstraint = {
-    vertices: verts,
     radius, angle, planeNormal, center, mode,
-    surfaceSide: {surface, side},
   };
 
-  scene.arcConstraints.push(constraint);
-  applyArcConstraint(scene, constraint);
+  curve.constraints.arc = constraint;
+  applyArcConstraint(curve, constraint);
+
+  // Self-enforcing subscription: when either endpoint moves, recompute
+  // the center and re-apply the interior CPs + weights.
+  const scene = surface.ctx.scene;
+  const cp0 = curve.cp[0], cp3 = curve.cp[3];
+  constraint.unsubscribe = scene.onControlPointLocationChange(cp => {
+    if (cp !== cp0 && cp !== cp3) return;
+    constraint.center = computeArcCenter(
+      cp0.position, cp3.position,
+      constraint.radius, constraint.angle, constraint.planeNormal,
+    );
+    applyArcConstraint(curve, constraint);
+  });
+
   return constraint;
 }
 
 /**
- * Apply an arc constraint: reposition interior control points.
- * For rational mode, also set weights on the patch.
+ * Apply an arc constraint: reposition interior control points and, in
+ * rational mode, write the Bézier-circle weights onto the 4 edge CPs.
+ * Pure math — no subscription bookkeeping.
  */
-export function applyArcConstraint(scene: Scene, c: ArcConstraint): void {
-  const [v0, v1, v2, v3] = c.vertices;
+export function applyArcConstraint(curve: BoundingCurve, c: ArcConstraint): void {
+  const [v0, v1, v2, v3] = curve.cp;
   const p0 = v0.position, p3 = v3.position;
   const angleRad = (c.angle * Math.PI) / 180;
 
@@ -67,51 +89,32 @@ export function applyArcConstraint(scene: Scene, c: ArcConstraint): void {
   );
 
   if (c.mode === 'approximate') {
-    if (c.surfaceSide) {
-      setEdgeWeights(c.surfaceSide.surface, c.surfaceSide.side, [1, 1, 1, 1]);
-    }
+    setEdgeWeights(curve, [1, 1, 1, 1]);
   } else {
     // Rational: set weights for exact arc
     const wMid = Math.cos(angleRad / 4);
-    if (c.surfaceSide) {
-      setEdgeWeights(c.surfaceSide.surface, c.surfaceSide.side, [1, wMid, wMid, 1]);
-      // rational is now a derived getter — no need to flip a flag.
-    }
+    setEdgeWeights(curve, [1, wMid, wMid, 1]);
   }
 }
 
-/** Re-enforce arc constraints that involve a given vertex */
-export function enforceArcConstraints(scene: Scene, v: Vertex): void {
-  for (const c of scene.arcConstraints) {
-    // Only re-apply if an endpoint moved (interior points are computed)
-    if (c.vertices[0] === v || c.vertices[3] === v) {
-      // Recompute center from new endpoint positions
-      c.center = computeArcCenter(
-        c.vertices[0].position, c.vertices[3].position,
-        c.radius, c.angle, c.planeNormal
-      );
-      applyArcConstraint(scene, c);
-    }
-  }
+/** Set weights on the 4 ControlPoints along a bounding curve. */
+function setEdgeWeights(curve: BoundingCurve, weights: [number, number, number, number]): void {
+  for (let i = 0; i < 4; i++) curve.cp[i].weight.value = weights[i];
 }
 
-/** Set weights on the 4 ControlPoints along a surface edge. */
-function setEdgeWeights(surface: NurbsSurface, side: number, weights: [number, number, number, number]): void {
-  const edgeCPs = surface.getEdgeVertices(side);
-  for (let i = 0; i < 4; i++) edgeCPs[i].weight.value = weights[i];
-}
-
-/** Remove an arc constraint */
-export function removeArcConstraint(scene: Scene, constraint: ArcConstraint): void {
-  const idx = scene.arcConstraints.indexOf(constraint);
-  if (idx >= 0) {
-    scene.arcConstraints.splice(idx, 1);
-    // Reset weights if rational
-    if (constraint.mode === 'rational' && constraint.surfaceSide) {
-      setEdgeWeights(constraint.surfaceSide.surface, constraint.surfaceSide.side, [1, 1, 1, 1]);
-      // `rational` is now a derived getter — no flag to update.
-    }
+/**
+ * Detach the arc constraint from a curve: unsubscribe its cp-change
+ * listener and, for rational mode, reset the edge weights to 1.
+ */
+export function removeArcConstraint(curve: BoundingCurve): void {
+  const c = curve.constraints.arc;
+  if (!c) return;
+  c.unsubscribe?.();
+  c.unsubscribe = undefined;
+  if (c.mode === 'rational') {
+    setEdgeWeights(curve, [1, 1, 1, 1]);
   }
+  curve.constraints.arc = undefined;
 }
 
 /**

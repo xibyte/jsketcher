@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react';
-import {distance as vdist, lerp as vlerp} from 'math/vec';
+import {distance as vdist} from 'math/vec';
 import type {BoundingCurve} from './BoundingCurve.entity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
-import {constrainEdgeToArc} from '../../ops/arc/arc.command';
+import {constrainEdgeToArc, removeArcConstraint} from '../../ops/arc/arc.command';
 import {applyG1, applyG2} from '../../ops/continuity/continuity.command';
 import {mirrorAcrossEdge} from '../../ops/mirror/mirror.command';
 import {addToPort, removeFromPort} from '../../ui/SurfacingUI';
@@ -14,8 +14,8 @@ export interface BoundingCurveDialogProps {
   /**
    * The surface whose edge is being edited. A BoundingCurve may be
    * shared between adjacent surfaces, so the dialog needs to know which
-   * surface is the current selection context (for surface.normal,
-   * arcConstraints lookup, and for the mirror op source).
+   * surface is the current selection context (for surface.normal and
+   * for the mirror op source).
    */
   surface: NurbsSurface;
   curve: BoundingCurve;
@@ -37,7 +37,7 @@ export function BoundingCurveDialog({
   const p0 = curve.cp[0].position;
   const p3 = curve.cp[3].position;
   const chordLen = Math.round(vdist(p0, p3) * 1e4) / 1e4;
-  const existing = curve.arcConstraint;
+  const existing = curve.constraints.arc;
   const editor = surface.ctx;
 
   const handleOpenArcEditor = () => {
@@ -45,7 +45,6 @@ export function BoundingCurveDialog({
   };
 
   const handleApplyArc90 = (flip: boolean) => {
-    const scene = editor.scene;
     const ev = surface.getEdgeVertices(side);
     const chord = vdist(ev[0].position, ev[3].position);
     const radius = chord / Math.SQRT2;
@@ -58,29 +57,12 @@ export function BoundingCurveDialog({
     const planeNormal: [number, number, number] = flip
       ? [-n[0], -n[1], -n[2]]
       : [n[0], n[1], n[2]];
-    scene.arcConstraints = scene.arcConstraints.filter(cc =>
-      !(cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === side)
-    );
-    constrainEdgeToArc(scene, surface, side, radius, 90, planeNormal, 'rational');
+    constrainEdgeToArc(surface, side, radius, 90, planeNormal, 'rational');
     editor.commit();
   };
 
   const handleRemoveArc = () => {
-    const scene = editor.scene;
-    scene.arcConstraints = scene.arcConstraints.filter(cc => {
-      if (cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === side) {
-        const ev = surface.getEdgeVertices(side);
-        const lp1 = vlerp(ev[0].position, ev[3].position, 1 / 3);
-        const lp2 = vlerp(ev[0].position, ev[3].position, 2 / 3);
-        ev[1].set(lp1[0], lp1[1], lp1[2]);
-        ev[2].set(lp2[0], lp2[1], lp2[2]);
-        return false;
-      }
-      return true;
-    });
-    for (const row of surface.grid) {
-      for (const cp of row) (cp as any).weight.value = 1;
-    }
+    removeArcConstraint(curve);
     editor.commit();
   };
 

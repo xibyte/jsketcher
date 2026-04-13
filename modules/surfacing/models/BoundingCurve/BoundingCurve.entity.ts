@@ -4,6 +4,7 @@ import {ControlPoint} from '../ControlPoint/ControlPoint.entity';
 import type {NurbsSurface} from '../NurbsSurface/NurbsSurface.entity';
 import type {CurveTessellation} from '../../tessellation/types';
 import type {SurfacingEditor} from '../../SurfacingEditor';
+import type {ArcConstraint} from '../../ops/arc/arc.types';
 import {BoundingCurveObject3D} from './BoundingCurve.object3d';
 import {EDGE_WIDTH} from '../../three';
 import {allocateCurveSamples} from '../../tessellation/tessellateCurve';
@@ -11,17 +12,13 @@ import {allocateCurveSamples} from '../../tessellation/tessellateCurve';
 const MARK_WIDTH_MULTIPLIER = 1.35;
 const EDGE_BASE_COLOR = 0x000000;
 
-export type ArcMode = 'approximate' | 'rational';
-
-export interface ArcConstraintData {
-  radius: number;
-  /** Sweep angle in degrees */
-  angle: number;
-  /** Normal of the arc plane */
-  planeNormal: Vec3;
-  /** Center of the arc circle */
-  center: Vec3;
-  mode: ArcMode;
+/**
+ * Edge-local constraints attached to a BoundingCurve. Indexed by a
+ * lowercase kind name so future additions (`g1`, `g2`, …) slot in as
+ * sibling fields without changing the shape of the world.
+ */
+export interface BoundingCurveConstraints {
+  arc?: ArcConstraint;
 }
 
 /**
@@ -35,7 +32,11 @@ export class BoundingCurve extends GeometricEntity<BoundingCurveObject3D> {
 
   side: number;
   cp: [ControlPoint, ControlPoint, ControlPoint, ControlPoint];
-  arcConstraint: ArcConstraintData | null = null;
+  /**
+   * Edge-local constraints keyed by kind. Currently only `arc`; future
+   * continuity constraints (g1, g2) will slot in alongside it.
+   */
+  readonly constraints: BoundingCurveConstraints = {};
 
   /** Complete tessellation state, or null if never tessellated / invalidated. */
   tessellation: CurveTessellation | null = null;

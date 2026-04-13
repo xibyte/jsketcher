@@ -52,7 +52,7 @@ export class DefaultTool implements Tool {
     this.editor = editor;
     if (!this.gizmo && editor.scene) {
       const ss = editor.sceneSetup;
-      this.gizmo = new SelectionGizmoOverlay(ss, editor.scene, {
+      this.gizmo = new SelectionGizmoOverlay(ss, {
         onChange: () => editor.refreshOverlaysForDrag(),
         onDragEnd: () => {
           editor.ctx.surfacingService.scheduleSave();
@@ -61,8 +61,6 @@ export class DefaultTool implements Tool {
       });
       ss.scene.add(this.gizmo.gizmo);
       ss.scene.add(this.gizmo.target);
-    } else if (this.gizmo && editor.scene) {
-      this.gizmo.setScene(editor.scene);
     }
     addToPort('right', 'defaultTool', defaultToolUI(this));
   }

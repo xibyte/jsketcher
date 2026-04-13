@@ -74,13 +74,14 @@ export function NurbsSurfaceDialog({surface, onClose}: NurbsSurfaceDialogProps) 
   const constraints: {edge: string; type: string; mode: string; radius: number; angle: number}[] = [];
   for (const bc of [surface.boundingCurves.bottom, surface.boundingCurves.right,
                      surface.boundingCurves.top, surface.boundingCurves.left]) {
-    if (bc.arcConstraint) {
+    const arc = bc.constraints.arc;
+    if (arc) {
       constraints.push({
         edge: ['bottom', 'right', 'top', 'left'][bc.side],
         type: 'arc',
-        mode: bc.arcConstraint.mode,
-        radius: round(bc.arcConstraint.radius),
-        angle: round(bc.arcConstraint.angle),
+        mode: arc.mode,
+        radius: round(arc.radius),
+        angle: round(arc.angle),
       });
     }
   }

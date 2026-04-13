@@ -48,13 +48,8 @@ export function arcEditorUI(surface: NurbsSurface, side: number): React.FC {
           ? [-n[0], -n[1], -n[2]]
           : [n[0], n[1], n[2]];
 
-        const editor = surface.ctx;
-        const scene = editor.scene;
-        scene.arcConstraints = scene.arcConstraints.filter(cc =>
-          !(cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === side)
-        );
-        constrainEdgeToArc(scene, surface, side, radius, angle, planeNormal, mode);
-        editor.commit();
+        constrainEdgeToArc(surface, side, radius, angle, planeNormal, mode);
+        surface.ctx.commit();
       });
     }, [radius, flip, mode]);
 
@@ -63,16 +58,8 @@ export function arcEditorUI(surface: NurbsSurface, side: number): React.FC {
     const handleClose = () => removeFromPort(ARC_EDITOR_PORT_ID);
 
     const handleRemove = () => {
-      const editor = surface.ctx;
-      const scene = editor.scene;
-      // Drop the constraint for this (surface, side). Using
-      // removeArcConstraint preserves the op's side-effects (weight
-      // reset for rational mode).
-      const constraint = scene.arcConstraints.find(cc =>
-        cc.surfaceSide?.surface === surface && cc.surfaceSide?.side === side
-      );
-      if (constraint) removeArcConstraint(scene, constraint);
-      editor.commit();
+      removeArcConstraint(surface.getBoundingCurve(side));
+      surface.ctx.commit();
       removeFromPort(ARC_EDITOR_PORT_ID);
     };
 
