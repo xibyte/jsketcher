@@ -12,7 +12,6 @@
  *   selectedCurve    — edge on the selected surface (white highlight)
  *   selectedVertex   — CP handle with gizmo attached
  */
-import type React from 'react';
 import {state, type StateStream} from 'lstream';
 import type {Tool} from '../tool';
 import type {SurfacingEditor} from '../SurfacingEditor';
@@ -20,6 +19,7 @@ import type {NurbsSurface} from '../models/NurbsSurface/NurbsSurface.entity';
 import type {BoundingCurve} from '../models/BoundingCurve/BoundingCurve.entity';
 import {Vertex} from '../models/Vertex/Vertex.entity';
 import {SURFACE_HOVER_COLOR, EDGE_COLORS, CP_HOVER_COLOR, SelectionGizmoOverlay} from '../three';
+import {addToPort, removeFromPort} from '../ui/SurfacingUI';
 import {defaultToolUI} from './defaultTool.ui';
 import {constrainEdgeToArc, removeArcConstraint} from '../ops/arc/arc.command';
 import {applyG1, applyG2} from '../ops/continuity/continuity.command';
@@ -72,9 +72,8 @@ export class DefaultTool implements Tool {
     } else if (this.gizmo && editor.scene) {
       this.gizmo.setScene(editor.scene);
     }
+    addToPort('right', 'defaultTool', defaultToolUI(this));
   }
-
-  createUI(): React.FC { return defaultToolUI(this); }
 
   // -------------------------------------------------------------------
   // Mouse
@@ -158,6 +157,7 @@ export class DefaultTool implements Tool {
       this.gizmo.dispose();
       this.gizmo = null;
     }
+    removeFromPort('defaultTool');
   }
 
   // -------------------------------------------------------------------
