@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import type {NurbsSurface} from './NurbsSurface.entity';
-import {pushPull} from '../../ops/pushPull/pushPull.command';
 import {extrude} from '../../ops/extrude/extrude.command';
 import {subdivide} from '../../ops/subdivide/subdivide.command';
+import {PushPullWizard} from '../../ops/pushPull/pushPull.wizard';
 
 const round = (v: number) => Math.round(v * 1e6) / 1e6;
 const fmtVec = (p: number[]) => [round(p[0]), round(p[1]), round(p[2])];
@@ -36,18 +36,17 @@ type Tab = 'info' | 'nurbs';
  * no tool reference needed.
  */
 export function NurbsSurfaceDialog({surface, onClose}: NurbsSurfaceDialogProps) {
-  const [distance, setDistance] = useState(10);
+  const [extrudeDistance, setExtrudeDistance] = useState(10);
   const [tab, setTab] = useState<Tab>('info');
 
   const editor = surface.ctx;
 
   const handlePushPull = () => {
-    pushPull(editor.scene, surface, distance);
-    editor.commit();
+    new PushPullWizard(editor, surface);
   };
 
   const handleExtrude = () => {
-    extrude(editor.scene, surface, distance);
+    extrude(editor.scene, surface, extrudeDistance);
     editor.commit();
   };
 
@@ -161,15 +160,17 @@ export function NurbsSurfaceDialog({surface, onClose}: NurbsSurfaceDialogProps) 
         </div>
       )}
 
-      <div style={{display: 'flex', gap: 6, marginTop: 8, alignItems: 'center'}}>
-        <label style={{whiteSpace: 'nowrap'}}>Distance</label>
-        <input type="number" value={distance} step={1}
-          onChange={e => setDistance(parseFloat(e.target.value))}
-          style={{width: 70, padding: 3, background: '#333', color: '#eee', border: '1px solid #555', fontSize: 12}} />
+      <div style={{display: 'flex', gap: 6, marginTop: 8}}>
         <button onClick={handlePushPull}
           style={{flex: 1, padding: 5, background: '#345', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer'}}>
-          Push/Pull
+          Push / Pull…
         </button>
+      </div>
+      <div style={{display: 'flex', gap: 6, marginTop: 6, alignItems: 'center'}}>
+        <label style={{whiteSpace: 'nowrap'}}>Distance</label>
+        <input type="number" value={extrudeDistance} step={1}
+          onChange={e => setExtrudeDistance(parseFloat(e.target.value))}
+          style={{width: 70, padding: 3, background: '#333', color: '#eee', border: '1px solid #555', fontSize: 12}} />
         <button onClick={handleExtrude}
           style={{flex: 1, padding: 5, background: '#354', color: '#eee', border: 'none', borderRadius: 4, cursor: 'pointer'}}>
           Extrude
