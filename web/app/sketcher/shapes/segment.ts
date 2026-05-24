@@ -25,7 +25,7 @@ export class Segment extends SketchObject {
     this.b.parent = this;
     this.children.push(this.a, this.b);
     this.params.ang.normalizer = makeAngle0_360;
-    this.params.t.enforceVisualLimit = true;
+    this.params.t.enforceVisualLimit = false;
     this.syncGeometry();
   }
 

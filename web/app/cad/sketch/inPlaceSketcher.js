@@ -139,6 +139,48 @@ export class InPlaceSketcher {
   sketcherPickControl = (obj) => {
     return false;
   }
+
+  outputSplineData(face, n) {
+    const viewer3d = this.ctx.services.viewer;
+    this.face = face;
+    const container = viewer3d.sceneSetup.container;
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'absolute';
+    canvas.style.left = 0;
+    canvas.style.top = 0;
+    canvas.style.right = 0;
+    canvas.style.bottom = 0;
+
+    container.appendChild(canvas);
+    this.sketcherAppContext = createEssentialAppContext(canvas);
+    this.ctx.workbenchService.switchWorkbench('sketcher');
+    this.viewer.io.generateData(n);
+    const splineData = this.viewer.io._serializeSketch().bSpline;
+    // 找出已有 SyntheticData 文件数量
+    let existing = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith("SyntheticData_")) existing++;
+    }
+
+    const nextIndex = existing + 1;
+    const fileName = `SyntheticData_${String(nextIndex).padStart(2, "0")}.json`;
+
+    // 创建 JSON Blob
+    const blob = new Blob([JSON.stringify(splineData, null, 2)], { type: "application/json" });
+
+    // 创建下载链接
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+
+    // 触发下载
+    link.click();
+
+    // 保存标记到 localStorage（用于编号）
+    localStorage.setItem(fileName, "saved");
+    this.exit();
+  }
 }
 
 const _projScreenMatrix = new Matrix4();
