@@ -4,8 +4,8 @@ import Vector from "math/vector";
 import { SketchObject } from "./sketch-object";
 import { Layer, Viewer } from "../viewer2d";
 import { TOLERANCE, TOLERANCE_SQ, areEqual, arePointsEqual } from "math/equality";
-import {VectorData, cross2d, normalize} from "math/vec";
-import {distanceAB} from "math/distance";
+import { VectorData, cross2d, normalize } from "math/vec";
+import { distanceAB } from "math/distance";
 import { lu_solve } from "math/optim/dogleg";
 import { isPointInsidePolygon, polygonOffset, ConvexHull2D } from "geom/euclidean";
 
@@ -194,7 +194,7 @@ class BSplineControlVertices {
   solve(type: string, method: number) {
     // Solve the nodes, the number of which meets the control point and order requirements,
     // and fill 0 and 1 at both ends to make the spline curve clamped and evenly segmented in the middle.
-    const cPoints = []
+    const cPoints = [];
     if (type === BSplineType.Clamped) {
       const start = Math.floor((this.degree - 1) / 2);
       const end = Math.floor(this.degree / 2);
@@ -271,19 +271,14 @@ export class BSpline extends SketchObject {
 
   dragging: boolean = false;
 
-  constructor(
-    opts: IBSplineOpts,
-    id?: string,
-    ctx?: CanvasRenderingContext2D,
-    scale?: number,
-  ) {
+  constructor(opts: IBSplineOpts, id?: string, ctx?: CanvasRenderingContext2D, scale?: number) {
     super(id);
     this.ctx = ctx;
     this.scale = scale || 1;
     this.degree = opts.degree;
     this.order = this.degree + 1;
-    this.type = opts.type? opts.type: BSplineType.Clamped;
-    this.method = opts.method? opts.method: -1;
+    this.type = opts.type ? opts.type : BSplineType.Clamped;
+    this.method = opts.method ? opts.method : -1;
     this.numberOfControlPoints = opts.cPoints.length;
     this.numberOfKnots = opts.kValues.length;
     this.numberOfFitPoints = opts.fPoints.length;
@@ -320,12 +315,11 @@ export class BSpline extends SketchObject {
         this.addChild(fPoint);
         this.fPoints.push(fPoint);
       }
-
     }
 
     this.kValues = opts.kValues;
     this.updateKnots();
-    
+
     this.bSplinePolynomial = new BSplinePolynomial(this.kValues, this.order);
     const newKValues = this.kValues.slice(1, this.kValues.length - 1);
     this.derivativePolynomial = new BSplinePolynomial(newKValues, this.order - 1);
@@ -400,15 +394,16 @@ export class BSpline extends SketchObject {
   }
 
   removeChildPoint(point: EndPoint) {
-    this.children.forEach((item, index) => {
-      if (item === point) {
-        this.children.splice(index, 1);
-      }
-    });
+    this.children.delete(point);
+    // this.children.forEach((item, index) => {
+    //   if (item === point) {
+    //     this.children.splice(index, 1);
+    //   }
+    // });
   }
 
   setChildPoint(points: EndPoint[]) {
-    this.children = points;
+    this.children = new Set(points);
     points.forEach((item) => {
       item.parent = this;
     });
@@ -437,7 +432,7 @@ export class BSpline extends SketchObject {
 
   removeCPoint() {
     const num = Math.floor(this.degree / 2) + 1;
-    for (let i = 0; i < num; i++){
+    for (let i = 0; i < num; i++) {
       const point = this.cPoints.pop();
       point.visible = false;
       this.removeChildPoint(point);
@@ -502,8 +497,8 @@ export class BSpline extends SketchObject {
       }
     }
     this.fPoints.length = this.knots.length;
-    this.fPoints[this.fPoints.length -1].x = this.cPoints[this.cPoints.length - 1].x;
-    this.fPoints[this.fPoints.length -1].y = this.cPoints[this.cPoints.length - 1].y;
+    this.fPoints[this.fPoints.length - 1].x = this.cPoints[this.cPoints.length - 1].x;
+    this.fPoints[this.fPoints.length - 1].y = this.cPoints[this.cPoints.length - 1].y;
   }
 
   resetFPoints(points: EndPoint[], visible: boolean) {
@@ -574,7 +569,7 @@ export class BSpline extends SketchObject {
       const f0 = this.getPoint(this.knots[index]);
       const f1 = this.getPoint(this.knots[index + 1]);
       const normalizedDistance = distanceAB(f0, f1) * scale;
-      const step = (this.knots[index + 1] - this.knots[index]) * this.baseLength / normalizedDistance;
+      const step = ((this.knots[index + 1] - this.knots[index]) * this.baseLength) / normalizedDistance;
       discretePoints.push(f0);
       for (let k = this.knots[index] + step; k < this.knots[index + 1]; k += step) {
         const p = this.getPoint(k);
@@ -633,189 +628,192 @@ export class BSpline extends SketchObject {
     return IPoints;
   }
 
-/** 深拷贝点数组（保留 x,y） */
-private clonePointsArray(points: any[]): { x: number; y: number }[] {
-  return points.map(p => ({ x: p.x, y: p.y }));
-}
-
-/** 统计 knot 向量中值 u 的重数（带微小容差） */
-private knotMultiplicity(U: number[], u: number, eps = 1e-12): number {
-  let count = 0;
-  for (const v of U) if (Math.abs(v - u) <= eps) count++;
-  return count;
-}
-
-/**
- * findSpan: 返回 k 使得 U[k] <= u < U[k+1]
- * 如果 u 等于右端点，返回 n (#controlPoints - 1)
- */
-private findSpan(U: number[], p: number, u: number): number {
-  const m = U.length - 1;
-  const n = m - p - 1; // n = #controlPoints - 1
-  if (u >= U[n + 1]) return n;
-  if (u <= U[p]) return p;
-  let low = p, high = n + 1;
-  let mid = Math.floor((low + high) / 2);
-  while (u < U[mid] || u >= U[mid + 1]) {
-    if (u < U[mid]) high = mid;
-    else low = mid;
-    mid = Math.floor((low + high) / 2);
-  }
-  return mid;
-}
-
-/**
- * 单次插入 knot（Boehm/Piegl&Tiller 单次插入局部更新）
- * 不修改入参，返回 { P: newPoints, U: newKnots }
- */
-private insertKnotSingle(P_in: { x: number; y: number }[], U_in: number[], p: number, u: number) {
-  // working copies
-  const P = this.clonePointsArray(P_in);
-  const U = U_in.slice();
-
-  // sanity check: U.length must be P.length + p + 1
-  if (U.length !== P.length + p + 1) {
-    throw new Error(`Invalid input sizes: U.length=${U.length}, P.length=${P.length}, p=${p}. Expect U.length == P.length + p + 1`);
+  /** 深拷贝点数组（保留 x,y） */
+  private clonePointsArray(points: any[]): { x: number; y: number }[] {
+    return points.map((p) => ({ x: p.x, y: p.y }));
   }
 
-  const n = P.length - 1;
-  const k = findSpan(U, p, u);
-  const s = this.knotMultiplicity(U, u);
-
-  // if multiplicity already >= p, no shape change by inserting more (we can still insert but it's degenerate)
-  if (s >= p) {
-    // still do a safe insertion (it will create duplicated control points), or just return copies
-    // for safety, return copies unchanged:
-    return { P: this.clonePointsArray(P), U: U.slice() };
+  /** 统计 knot 向量中值 u 的重数（带微小容差） */
+  private knotMultiplicity(U: number[], u: number, eps = 1e-12): number {
+    let count = 0;
+    for (const v of U) if (Math.abs(v - u) <= eps) count++;
+    return count;
   }
 
-  // prepare new Q array length n+2
-  const Q: IPoint[] = new Array(n + 2).fill(null).map(() => ({ x: 0, y: 0 }));
-
-  // copy left unaffected points: indices 0..k-p
-  for (let i = 0; i <= k - p; i++) {
-    Q[i] = { x: P[i].x, y: P[i].y };
-  }
-
-  // compute new points Q_i for i = k-p+1 .. k
-  for (let i = k - p + 1; i <= k; i++) {
-    const denom = U[i + p] - U[i];
-    let a = 0;
-    if (Math.abs(denom) > 1e-14) {
-      a = (u - U[i]) / denom;
-    } else {
-      a = 0;
+  /**
+   * findSpan: 返回 k 使得 U[k] <= u < U[k+1]
+   * 如果 u 等于右端点，返回 n (#controlPoints - 1)
+   */
+  private findSpan(U: number[], p: number, u: number): number {
+    const m = U.length - 1;
+    const n = m - p - 1; // n = #controlPoints - 1
+    if (u >= U[n + 1]) return n;
+    if (u <= U[p]) return p;
+    let low = p,
+      high = n + 1;
+    let mid = Math.floor((low + high) / 2);
+    while (u < U[mid] || u >= U[mid + 1]) {
+      if (u < U[mid]) high = mid;
+      else low = mid;
+      mid = Math.floor((low + high) / 2);
     }
-    // Q[i] = (1-a) * P[i-1] + a * P[i]
-    Q[i] = {
-      x: (1 - a) * P[i - 1].x + a * P[i].x,
-      y: (1 - a) * P[i - 1].y + a * P[i].y
-    };
+    return mid;
   }
 
-  // copy right unaffected points: P[k..n] -> Q[k+1..n+1]
-  for (let i = k + 1; i <= n + 1; i++) {
-    // Q index i gets P[i-1]
-    Q[i] = { x: P[i - 1].x, y: P[i - 1].y };
+  /**
+   * 单次插入 knot（Boehm/Piegl&Tiller 单次插入局部更新）
+   * 不修改入参，返回 { P: newPoints, U: newKnots }
+   */
+  private insertKnotSingle(P_in: { x: number; y: number }[], U_in: number[], p: number, u: number) {
+    // working copies
+    const P = this.clonePointsArray(P_in);
+    const U = U_in.slice();
+
+    // sanity check: U.length must be P.length + p + 1
+    if (U.length !== P.length + p + 1) {
+      throw new Error(
+        `Invalid input sizes: U.length=${U.length}, P.length=${P.length}, p=${p}. Expect U.length == P.length + p + 1`,
+      );
+    }
+
+    const n = P.length - 1;
+    const k = findSpan(U, p, u);
+    const s = this.knotMultiplicity(U, u);
+
+    // if multiplicity already >= p, no shape change by inserting more (we can still insert but it's degenerate)
+    if (s >= p) {
+      // still do a safe insertion (it will create duplicated control points), or just return copies
+      // for safety, return copies unchanged:
+      return { P: this.clonePointsArray(P), U: U.slice() };
+    }
+
+    // prepare new Q array length n+2
+    const Q: IPoint[] = new Array(n + 2).fill(null).map(() => ({ x: 0, y: 0 }));
+
+    // copy left unaffected points: indices 0..k-p
+    for (let i = 0; i <= k - p; i++) {
+      Q[i] = { x: P[i].x, y: P[i].y };
+    }
+
+    // compute new points Q_i for i = k-p+1 .. k
+    for (let i = k - p + 1; i <= k; i++) {
+      const denom = U[i + p] - U[i];
+      let a = 0;
+      if (Math.abs(denom) > 1e-14) {
+        a = (u - U[i]) / denom;
+      } else {
+        a = 0;
+      }
+      // Q[i] = (1-a) * P[i-1] + a * P[i]
+      Q[i] = {
+        x: (1 - a) * P[i - 1].x + a * P[i].x,
+        y: (1 - a) * P[i - 1].y + a * P[i].y,
+      };
+    }
+
+    // copy right unaffected points: P[k..n] -> Q[k+1..n+1]
+    for (let i = k + 1; i <= n + 1; i++) {
+      // Q index i gets P[i-1]
+      Q[i] = { x: P[i - 1].x, y: P[i - 1].y };
+    }
+
+    // insert u into knot vector at position k+1
+    U.splice(k + 1, 0, u);
+
+    return { P: Q, U };
   }
 
-  // insert u into knot vector at position k+1
-  U.splice(k + 1, 0, u);
-
-  return { P: Q, U };
-}
-
-/**
- * 在 P, U 上重复插入 u 指定次数（每次都使用 insertKnotSingle）
- */
-private insertKnotRepeat(P_in: { x: number; y: number }[], U_in: number[], p: number, u: number, times: number) {
-  let Pcur = this.clonePointsArray(P_in);
-  let Ucur = U_in.slice();
-  for (let t = 0; t < times; t++) {
-    const res = this.insertKnotSingle(Pcur, Ucur, p, u);
-    Pcur = res.P;
-    Ucur = res.U;
-  }
-  return { P: Pcur, U: Ucur };
-}
-
-/**
- * 将当前样条（this.cPoints, this.kValues, this.degree）转换为等价 p 次 Bézier 段
- * 3次B样条->3次贝塞尔曲线，4次，5次，...
- * 返回数组：每项 { cps: [p+1 个 {x,y}], u0, u1 }
- */
-public bsplineToBezierSegments_full(): BezierSegment[] {
-  // defensive checks
-  if (!this.cPoints || !this.kValues) return [];
-  const p = this.degree;
-  if (p < 1) return [];
-
-  // Working copies
-  let Pcur = this.clonePointsArray(this.cPoints);
-  let Ucur = this.kValues.slice();
-
-  // If closed and cPoints contains trailing duplication of first p pts, remove duplicates to form basePoints
-  // if (this.type === BSplineType.Closed) {
-  //   if (Pcur.length > p) {
-  //     const prefix = Pcur.slice(0, p);
-  //     const suffix = Pcur.slice(Pcur.length - p);
-  //     let same = true;
-  //     for (let i = 0; i < p; i++) {
-  //       if (Math.hypot(prefix[i].x - suffix[i].x, prefix[i].y - suffix[i].y) > 1e-9) { same = false; break; }
-  //     }
-  //     if (same) {
-  //       // base points:
-  //       const base = Pcur.slice(0, Pcur.length - p);
-  //       // extend by first p to facilitate indexing (but we'll still rely on refined knots & j mapping)
-  //       Pcur = base.concat(base.slice(0, p));
-  //     }
-  //   }
-  // }
-
-  // collect unique internal knots (from U[p] to U[U.length-p-1])
-  const internal = Ucur.slice(p, Ucur.length - p);
-  const uniqueInternal: number[] = [];
-  for (let i = 0; i < internal.length; i++) {
-    if (i === 0 || Math.abs(internal[i] - internal[i - 1]) > 1e-12) uniqueInternal.push(internal[i]);
-  }
-
-  // For each unique internal knot, insert until multiplicity == p
-  for (const u of uniqueInternal) {
-    let mult = this.knotMultiplicity(Ucur, u);
-    while (mult < p) {
+  /**
+   * 在 P, U 上重复插入 u 指定次数（每次都使用 insertKnotSingle）
+   */
+  private insertKnotRepeat(P_in: { x: number; y: number }[], U_in: number[], p: number, u: number, times: number) {
+    let Pcur = this.clonePointsArray(P_in);
+    let Ucur = U_in.slice();
+    for (let t = 0; t < times; t++) {
       const res = this.insertKnotSingle(Pcur, Ucur, p, u);
       Pcur = res.P;
       Ucur = res.U;
-      mult++;
     }
+    return { P: Pcur, U: Ucur };
   }
-
-  // After refinement, extract segments by scanning knot indices j
-  const segments: BezierSegment[] = [];
-  const Ulen = Ucur.length;
-  const startJ = p;
-  const endJ = Ulen - p - 2; // inclusive; j+1 must be valid index
-  for (let j = startJ; j <= endJ; j++) {
-    if (Math.abs(Ucur[j + 1] - Ucur[j]) <= 1e-14) continue; // zero-width span
-    // Bézier control points are Pcur[j-p .. j]
-    const cps: IPoint[] = [];
-    for (let i = j - p; i <= j; i++) {
-      // safety check index
-      if (i < 0 || i >= Pcur.length) {
-        throw new Error(`Index out of range during extraction: i=${i}, Pcur.length=${Pcur.length}`);
-      }
-      cps.push({ x: Pcur[i].x, y: Pcur[i].y });
-    }
-    segments.push({ cps, u0: Ucur[j], u1: Ucur[j + 1] });
-  }
-
-  return segments;
-}
 
   /**
- * 修正版 bsplineToBezierSegments：用完整 kValues，向量交点与相对容差
- * 自己发现的几何方式求解三次样条曲线转化为三次贝塞尔曲线
- */
+   * 将当前样条（this.cPoints, this.kValues, this.degree）转换为等价 p 次 Bézier 段
+   * 3次B样条->3次贝塞尔曲线，4次，5次，...
+   * 返回数组：每项 { cps: [p+1 个 {x,y}], u0, u1 }
+   */
+  public bsplineToBezierSegments_full(): BezierSegment[] {
+    // defensive checks
+    if (!this.cPoints || !this.kValues) return [];
+    const p = this.degree;
+    if (p < 1) return [];
+
+    // Working copies
+    let Pcur = this.clonePointsArray(this.cPoints);
+    let Ucur = this.kValues.slice();
+
+    // If closed and cPoints contains trailing duplication of first p pts, remove duplicates to form basePoints
+    // if (this.type === BSplineType.Closed) {
+    //   if (Pcur.length > p) {
+    //     const prefix = Pcur.slice(0, p);
+    //     const suffix = Pcur.slice(Pcur.length - p);
+    //     let same = true;
+    //     for (let i = 0; i < p; i++) {
+    //       if (Math.hypot(prefix[i].x - suffix[i].x, prefix[i].y - suffix[i].y) > 1e-9) { same = false; break; }
+    //     }
+    //     if (same) {
+    //       // base points:
+    //       const base = Pcur.slice(0, Pcur.length - p);
+    //       // extend by first p to facilitate indexing (but we'll still rely on refined knots & j mapping)
+    //       Pcur = base.concat(base.slice(0, p));
+    //     }
+    //   }
+    // }
+
+    // collect unique internal knots (from U[p] to U[U.length-p-1])
+    const internal = Ucur.slice(p, Ucur.length - p);
+    const uniqueInternal: number[] = [];
+    for (let i = 0; i < internal.length; i++) {
+      if (i === 0 || Math.abs(internal[i] - internal[i - 1]) > 1e-12) uniqueInternal.push(internal[i]);
+    }
+
+    // For each unique internal knot, insert until multiplicity == p
+    for (const u of uniqueInternal) {
+      let mult = this.knotMultiplicity(Ucur, u);
+      while (mult < p) {
+        const res = this.insertKnotSingle(Pcur, Ucur, p, u);
+        Pcur = res.P;
+        Ucur = res.U;
+        mult++;
+      }
+    }
+
+    // After refinement, extract segments by scanning knot indices j
+    const segments: BezierSegment[] = [];
+    const Ulen = Ucur.length;
+    const startJ = p;
+    const endJ = Ulen - p - 2; // inclusive; j+1 must be valid index
+    for (let j = startJ; j <= endJ; j++) {
+      if (Math.abs(Ucur[j + 1] - Ucur[j]) <= 1e-14) continue; // zero-width span
+      // Bézier control points are Pcur[j-p .. j]
+      const cps: IPoint[] = [];
+      for (let i = j - p; i <= j; i++) {
+        // safety check index
+        if (i < 0 || i >= Pcur.length) {
+          throw new Error(`Index out of range during extraction: i=${i}, Pcur.length=${Pcur.length}`);
+        }
+        cps.push({ x: Pcur[i].x, y: Pcur[i].y });
+      }
+      segments.push({ cps, u0: Ucur[j], u1: Ucur[j + 1] });
+    }
+
+    return segments;
+  }
+
+  /**
+   * 修正版 bsplineToBezierSegments：用完整 kValues，向量交点与相对容差
+   * 自己发现的几何方式求解三次样条曲线转化为三次贝塞尔曲线
+   */
   bsplineToBezierSegments() {
     const bezierSegments: Array<{ a: any; b: any; cp1: any; cp2: any }> = [];
 
@@ -845,7 +843,7 @@ public bsplineToBezierSegments_full(): BezierSegment[] {
       const eps = span * TOLERANCE_SQ;
 
       // 取右侧导数近似（避免落在左侧段）和左侧导数近似（避免落在右侧）
-      const derivativeLeft = this.derivativeBSpline(uLeft + eps);   // dC/du at left (right-hand)
+      const derivativeLeft = this.derivativeBSpline(uLeft + eps); // dC/du at left (right-hand)
       const derivativeRight = this.derivativeBSpline(uRight - eps); // dC/du at right (left-hand)
 
       // 若 derivativeBSpline 返回 null/undefined，回退为零向量
@@ -893,7 +891,7 @@ public bsplineToBezierSegments_full(): BezierSegment[] {
       }
 
       // 将构造的贝塞尔段加入结果（a,b,cp1,cp2）
-      bezierSegments.push({a: {x: a[0], y: a[1]}, b: {x: b[0], y: b[1]}, cp1, cp2 });
+      bezierSegments.push({ a: { x: a[0], y: a[1] }, b: { x: b[0], y: b[1] }, cp1, cp2 });
     }
 
     return bezierSegments;
@@ -1003,21 +1001,21 @@ public bsplineToBezierSegments_full(): BezierSegment[] {
   }
 }
 
-BSpline.prototype.TYPE = 'BSpline';
+BSpline.prototype.TYPE = "BSpline";
 
-BSpline.prototype._class = 'TCAD.TWO.BSpline';
+BSpline.prototype._class = "TCAD.TWO.BSpline";
 
 export const ParameterMethod = {
   QuasiUniform: 0,
   Centripetal: 1,
   ChordLength: 2,
-}
+};
 
 export const BSplineType = {
   Clamped: "Clamped",
   Closed: "Closed",
   Open: "Open",
-}
+};
 
 interface KnotsCalculator {
   calculate(modelPoints: EndPoint[], degree: number, type: string, method: number): number[];
@@ -1037,7 +1035,7 @@ abstract class BaseParameterMethod implements KnotsCalculator {
       accumulated.push(accumulated[i] + Math.pow(dist, method === ParameterMethod.Centripetal ? 0.5 : 1));
     }
     const total = accumulated[accumulated.length - 1];
-    return accumulated.map(v => v / total);
+    return accumulated.map((v) => v / total);
   }
 }
 
@@ -1065,13 +1063,11 @@ export class GeneralKnotsCalculator extends BaseParameterMethod {
     } else if (type === BSplineType.Closed) {
       // 均匀分布，无端点重复
       const m = n + 2 * degree;
-      for (let i = 0; i < m; ++i)
-        kValues.push(i / (m - 1));
+      for (let i = 0; i < m; ++i) kValues.push(i / (m - 1));
     } else if (type === BSplineType.Open) {
       // 均匀分布，无端点重复
       const m = n + degree;
-      for (let i = 0; i <= m; ++i)
-        kValues.push(i / m);
+      for (let i = 0; i <= m; ++i) kValues.push(i / m);
     }
 
     return kValues;
@@ -1133,7 +1129,9 @@ export class CPointsCalculator {
     // 检查 U 长度是否与期望一致（n + p + 1）
     if (U.length !== n + p + 1) {
       // 仅作警告或抛错，根据你的需求选择
-      console.warn(`警告：knotValues.length=${U.length}, 但期望为 n + p + 1 = ${n + p + 1}. 请确认 knot vector 是否正确.`);
+      console.warn(
+        `警告：knotValues.length=${U.length}, 但期望为 n + p + 1 = ${n + p + 1}. 请确认 knot vector 是否正确.`,
+      );
       // 你可以选择抛错： throw new Error(...)
     }
 
@@ -1162,7 +1160,7 @@ export class CPointsCalculator {
     // const { endTangent } = end;
     // ====== 填插值方程 ======
     // 对于 Closed 且末点是重复的，我们只建立 m-1 条插值方程（跳过最后一条冗余方程）
-    const interpCount = (actualType === BSplineType.Closed && isDuplicateEnd) ? (m - 1) : m;
+    const interpCount = actualType === BSplineType.Closed && isDuplicateEnd ? m - 1 : m;
     // 1) 插值方程： j = 0..m-1 对应 u_j = U[p + j]
     for (let j = 0; j < interpCount; j++) {
       const uj = U[p + j];
@@ -1181,7 +1179,7 @@ export class CPointsCalculator {
       const extra = p - 1;
       const leftCnt = Math.floor(extra / 2);
       const rightCnt = extra - leftCnt;
-      
+
       // 左端：r = 1..leftCnt
       for (let r = 1; r <= leftCnt; r++, row++) {
         // 计算 r 阶基函数导数在 u_left = U[p]（通常是首个有效参数）
@@ -1207,8 +1205,7 @@ export class CPointsCalculator {
         matrixFX[row] = 0;
         matrixFY[row] = 0;
       }
-    }
-    else if (type === BSplineType.Closed) {
+    } else if (type === BSplineType.Closed) {
       /// Closed：添加 p 条周期性连续约束 r=0..p-1
       // 注意：若插值方程已经跳过了重复的最后一个点（interpCount = origM - 1），
       //       则插值方程 + 这 p 条约束的总数会等于 n（方阵）。
@@ -1225,7 +1222,9 @@ export class CPointsCalculator {
     }
     // 最后校验：已填行数应等于 n
     if (row !== n) {
-      throw new Error(`方程行数与未知数不匹配：已填行 ${row}, 期望 n = ${n}. （type=${actualType}，origM=${m}, p=${p}）`);
+      throw new Error(
+        `方程行数与未知数不匹配：已填行 ${row}, 期望 n = ${n}. （type=${actualType}，origM=${m}, p=${p}）`,
+      );
     }
     // row 应当等于 n 了
     // 求解线性系统 matrixN * PX = matrixFX
@@ -1246,9 +1245,12 @@ function findSpan(U: number[], p: number, u: number): number {
   const n = m - p - 1; // n = #controlPoints - 1
   if (u >= U[n + 1]) return n;
   if (u <= U[p]) return p;
-  let low = p, high = n + 1, mid = Math.floor((low + high) / 2);
+  let low = p,
+    high = n + 1,
+    mid = Math.floor((low + high) / 2);
   while (u < U[mid] || u >= U[mid + 1]) {
-    if (u < U[mid]) high = mid; else low = mid;
+    if (u < U[mid]) high = mid;
+    else low = mid;
     mid = Math.floor((low + high) / 2);
   }
   return mid;
@@ -1280,7 +1282,8 @@ function DersBasisFuns(i: number, u: number, p: number, nd: number, U: number[])
   const a: number[][] = Array.from({ length: p + 1 }, () => Array(p + 1).fill(0));
 
   for (let r = 0; r <= p; r++) {
-    let s1 = 0, s2 = 1;
+    let s1 = 0,
+      s2 = 1;
     a[0][0] = 1.0;
     for (let k = 1; k <= nd; k++) {
       let d = 0.0;
@@ -1291,19 +1294,21 @@ function DersBasisFuns(i: number, u: number, p: number, nd: number, U: number[])
         d = a[s2][0] * ndu[rk][pk];
       }
       const j1 = rk >= -1 ? 1 : -rk;
-      const j2 = (r - 1 <= pk) ? k - 1 : p - r;
+      const j2 = r - 1 <= pk ? k - 1 : p - r;
       for (let j = j1; j <= j2; j++) {
         const val = (a[s1][j] || 0) - (a[s1][j - 1] || 0);
         a[s2][j] = val / ndu[pk + 1][rk + j];
         d += a[s2][j] * ndu[rk + j][pk];
       }
       if (r <= pk) {
-        a[s2][k] = - (a[s1][k - 1] || 0) / ndu[pk + 1][r];
+        a[s2][k] = -(a[s1][k - 1] || 0) / ndu[pk + 1][r];
         d += a[s2][k] * ndu[r][pk];
       }
       ders[k][r] = d;
       // swap s1,s2
-      const tmp = s1; s1 = s2; s2 = tmp;
+      const tmp = s1;
+      s1 = s2;
+      s2 = tmp;
     }
   }
 
@@ -1344,9 +1349,7 @@ function nearlyEqualRel(a: number, b: number, relTol = 1e-9) {
 }
 
 // 向量线求交：P0 + t*v0 与 Q0 + s*v1，返回交点或 null（平行或近似平行）
-function intersectLines(P0: VectorData, v0: VectorData,
-                        Q0: VectorData, v1: VectorData,
-                        tol = 1e-12) {
+function intersectLines(P0: VectorData, v0: VectorData, Q0: VectorData, v1: VectorData, tol = 1e-12) {
   const denom = cross2d(v0, v1);
   if (Math.abs(denom) < tol) {
     return null; // parallel or nearly parallel

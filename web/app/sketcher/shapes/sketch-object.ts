@@ -1,18 +1,17 @@
-import {Generator} from '../id-generator'
-import {Shape} from './shape'
-import {Styles} from "../styles";
-import {NoIcon} from "../icons/NoIcon";
-import {Layer, Viewer} from "../viewer2d";
-import {NOOP} from "gems/func";
-import {SolvableObject} from "../constr/solvableObject";
+import { Generator } from "../id-generator";
+import { Shape } from "./shape";
+import { Styles } from "../styles";
+import { NoIcon } from "../icons/NoIcon";
+import { Layer, Viewer } from "../viewer2d";
+import { NOOP } from "gems/func";
+import { SolvableObject } from "../constr/solvableObject";
 
 export abstract class SketchObject extends Shape implements SolvableObject {
-
   ref: string;
   id: string;
   parent: SketchObject = null;
   markers: any[] = [];
-  children: SketchObject[] =[];
+  children: Set<SketchObject> = new Set();
   layer: Layer = null;
   constraints: Set<any> = new Set();
   readOnly: boolean = false;
@@ -23,7 +22,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
 
   protected constructor(id: string) {
     super();
-    this.ref= Generator.genID() + '';
+    this.ref = Generator.genID() + "";
     this.id = id || this.ref;
   }
 
@@ -59,12 +58,12 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   normalDistance(aim, scale) {
     return -1;
   }
-  
+
   addChild(child) {
-    this.children.push(child);
+    this.children.add(child);
     child.parent = this;
   }
-  
+
   accept(visitor) {
     for (const child of this.children) {
       if (!child.accept(visitor)) {
@@ -81,11 +80,9 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     visitor(this);
   }
 
-  stabilize(viewer) {
-  }
+  stabilize(viewer) {}
 
-  syncGeometry() {
-  }
+  syncGeometry() {}
 
   recoverIfNecessary() {
     return false;
@@ -96,19 +93,19 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   }
 
   translate(dx, dy) {
-  //  this.translateImpl(dx, dy);
+    //  this.translateImpl(dx, dy);
     if (this.readOnly) {
       return;
     }
-    this.visitLinked(obj => {
+    this.visitLinked((obj) => {
       obj.translateImpl(dx, dy);
-      obj.ancestry(a => a.syncGeometry());
+      obj.ancestry((a) => a.syncGeometry());
     });
   }
 
   translateImpl(dx, dy) {
     this.accept(function (obj) {
-      if (obj.TYPE === 'Point') {
+      if (obj.TYPE === "Point") {
         obj.translate(dx, dy);
       }
       return true;
@@ -117,7 +114,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
 
   addMarker(style) {
     this.markers.push(style);
-    this.markers.sort((a, b) => (a.priority||99999) - (b.priority||99999))
+    this.markers.sort((a, b) => (a.priority || 99999) - (b.priority || 99999));
   }
 
   removeMarker(style) {
@@ -156,12 +153,11 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     } else if (productionKind === FUTURE) {
       return Styles.FUTURE;
     } else if (this.fullyConstrained) {
-      if(this.role === "construction"){
+      if (this.role === "construction") {
         return Styles.FULLY_CONSTRAINED_CONSTRUCTION;
-      }else{
+      } else {
         return Styles.FULLY_CONSTRAINED;
       }
-      
     } else {
     }
     return null;
@@ -183,35 +179,34 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   }
 
   copy() {
-    throw 'method not implemented';
+    throw "method not implemented";
   }
-  
-  mirror(dest, mirroringFunc) {
 
+  mirror(dest, mirroringFunc) {
     const sourcePoints = [];
 
-    pointIterator(this, o => {
+    pointIterator(this, (o) => {
       sourcePoints.push(o);
     });
 
     let i = 0;
-    pointIterator(dest, o => {
+    pointIterator(dest, (o) => {
       sourcePoints[i++].mirror(o, mirroringFunc);
     });
   }
-  
+
   visitParams(callback) {
-    throw 'method not implemented';
+    throw "method not implemented";
   }
 
   collectParams(params) {
-    this.visitParams(p => params.push(p));
+    this.visitParams((p) => params.push(p));
   }
-  
+
   get simpleClassName() {
     return this.TYPE;
   }
-  
+
   get effectiveLayer() {
     let shape: SketchObject = this;
     while (shape) {
@@ -257,14 +252,14 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   }
 
   freeze() {
-    this.visitParams(param => {
+    this.visitParams((param) => {
       param.set = NOOP;
     });
   }
 
   get labelCenter() {
     let point;
-    pointIterator(this, o => {
+    pointIterator(this, (o) => {
       if (!point) {
         point = o;
       }
@@ -275,13 +270,11 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   abstract write(): SketchObjectSerializationData;
 }
 
-export interface SketchObjectSerializationData {
-
-}
+export interface SketchObjectSerializationData {}
 
 export function pointIterator(shape, func) {
-  shape.accept(o => {
-    if (o.TYPE === 'Point') {
+  shape.accept((o) => {
+    if (o.TYPE === "Point") {
       func(o);
     }
     return true;

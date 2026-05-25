@@ -49,12 +49,23 @@ export class BSplineTool extends Tool {
     if (!this.interpolation && cLength && arePointsEqual(this.cPoints[cLength - 1], p, TOLERANCE)) {
       return;
     }
-    const point = new EndPoint(p.x, p.y);
-    point.visible = true;
-    this.viewer.parametricManager.stage.assignObject(point);
+    let point = new EndPoint(p.x, p.y);
     if (this.viewer.snapped != null) {
-      this.snapIfNeed(point);
+      const snapWith = this.viewer.snapped;
+      point.setFromPoint(snapWith);
     }
+    if (this.interpolation && fLength && arePointsEqual(this.fPoints[0], point, TOLERANCE)) {
+      point = this.fPoints[0];
+    } else if (!this.interpolation && cLength && arePointsEqual(this.cPoints[0], point, TOLERANCE)) {
+      point = this.cPoints[0];
+    } else {
+      point.visible = true;
+      this.viewer.parametricManager.stage.assignObject(point);
+      if (this.viewer.snapped != null) {
+        this.snapIfNeed(point);
+      }
+    }
+
     if (this.interpolation) {
       this.mouseupWithInterpolate(point);
     } else {
@@ -99,8 +110,8 @@ export class BSplineTool extends Tool {
       this.viewer.activeLayer.add(this.curve);
     } else if (this.fPoints.length == 2) {
       const b = this.curve.b;
+      this.curve.children.delete(b);
       this.curve.b = point;
-      this.curve.children.shift();
       b.parent = null;
       this.curve.addChild(point);
       this.viewer.activeLayer.remove(b);
@@ -108,8 +119,6 @@ export class BSplineTool extends Tool {
       this.curve.removeFPoint();
       this.curve.addFPoint(point);
       if (arePointsEqual(this.fPoints[0], point, TOLERANCE)) {
-        point.x = this.fPoints[0].x;
-        point.y = this.fPoints[0].y;
         this.curveType = BSplineType.Closed;
         this.method = ParameterMethod.QuasiUniform;
       }
@@ -130,8 +139,8 @@ export class BSplineTool extends Tool {
       this.viewer.activeLayer.add(this.curve);
     } else if (Object.getPrototypeOf(this.curve).TYPE == "Segment" && this.cPoints.length == start + 2) {
       const b = this.curve.b;
+      this.curve.children.delete(b);
       this.curve.b = point;
-      this.curve.children.shift();
       b.parent = null;
       this.curve.addChild(point);
       this.viewer.activeLayer.remove(b);
@@ -227,8 +236,8 @@ export class BSplineTool extends Tool {
     this.viewer.activeLayer.remove(this.curve);
     this.curve = new Segment(aPoint.x, aPoint.y, p.x, p.y);
     const a = this.curve.a;
+    this.curve.children.delete(a);
     this.curve.a = aPoint;
-    this.curve.children.shift();
     a.parent = null;
     this.curve.addChild(aPoint);
     this.viewer.activeLayer.add(this.curve);
