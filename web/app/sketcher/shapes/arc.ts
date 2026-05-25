@@ -4,6 +4,7 @@ import { SketchObject, SketchObjectSerializationData } from "./sketch-object";
 import { Param } from "./param";
 import { AlgNumConstraint, ConstraintDefinitions } from "../constr/ANConstraints";
 import { EndPoint, SketchPointSerializationData } from "./point";
+import { Viewer } from "../viewer2d";
 import { distance } from "math/distance";
 import { areEqual, TOLERANCE } from "math/equality";
 
@@ -15,7 +16,7 @@ export class Arc extends SketchObject {
   ang1: Param;
   ang2: Param;
 
-  constructor(ax, ay, bx, by, cx, cy, id?: string) {
+  constructor(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, id?: string) {
     super(id);
     this.a = new EndPoint(ax, ay, this.id + ":A");
     this.b = new EndPoint(bx, by, this.id + ":B");
@@ -41,7 +42,7 @@ export class Arc extends SketchObject {
     this.r.set(this.distanceA());
   }
 
-  visitParams(callback) {
+  visitParams(callback: (param: Param) => void) {
     callback(this.r);
     callback(this.ang1);
     callback(this.ang2);
@@ -54,7 +55,7 @@ export class Arc extends SketchObject {
     return this.c;
   }
 
-  translateImpl(dx, dy) {
+  translateImpl(dx: number, dy: number) {
     this.a.translate(dx, dy);
     this.b.translate(dx, dy);
     this.c.translate(dx, dy);
@@ -98,7 +99,7 @@ export class Arc extends SketchObject {
     return mid._minusXYZ(-this.c.x, -this.c.y, 0);
   }
 
-  drawImpl(ctx, scale) {
+  drawImpl(ctx: CanvasRenderingContext2D, scale: number) {
     ctx.beginPath();
     const r = this.radiusForDrawing();
     const startAngle = makeAngle0_360(this.getStartAngle());
@@ -125,7 +126,7 @@ export class Arc extends SketchObject {
     }
   }
 
-  isPointInsideSector(x, y) {
+  isPointInsideSector(x: number, y: number) {
     const ca = new Vector(this.a.x - this.c.x, this.a.y - this.c.y);
     const cb = new Vector(this.b.x - this.c.x, this.b.y - this.c.y);
     const ct = new Vector(x - this.c.x, y - this.c.y);
@@ -149,7 +150,7 @@ export class Arc extends SketchObject {
     return result;
   }
 
-  normalDistance(aim) {
+  normalDistance(aim: { x: number; y: number }) {
     const isInsideSector = this.isPointInsideSector(aim.x, aim.y);
     if (isInsideSector) {
       return Math.abs(distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
@@ -158,7 +159,7 @@ export class Arc extends SketchObject {
     }
   }
 
-  stabilize(viewer) {
+  stabilize(viewer: Viewer) {
     this.syncGeometry();
     const constr = new AlgNumConstraint(ConstraintDefinitions.ArcConsistency, [this]);
     constr.internal = true;
@@ -169,7 +170,7 @@ export class Arc extends SketchObject {
     return new Arc(this.a.x, this.a.y, this.b.x, this.b.y, this.c.x, this.c.y);
   }
 
-  mirror(dest, mirroringFunc) {
+  mirror(dest: Arc, mirroringFunc: (x: number, y: number) => { x: number; y: number }) {
     this.a.mirror(dest.b, mirroringFunc);
     this.b.mirror(dest.a, mirroringFunc);
     this.c.mirror(dest.c, mirroringFunc);

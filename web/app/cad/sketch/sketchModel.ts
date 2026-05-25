@@ -1,18 +1,16 @@
-import BrepCurve from 'geom/curves/brepCurve';
-import NurbsCurve from 'geom/curves/nurbsCurve';
-import {makeAngle0_360} from 'math/commons'
-import {normalizeCurveEnds} from 'geom/impl/nurbs-ext';
-import Vector from 'math/vector';
+import BrepCurve from "geom/curves/brepCurve";
+import NurbsCurve from "geom/curves/nurbsCurve";
+import { makeAngle0_360 } from "math/commons";
+import { normalizeCurveEnds } from "geom/impl/nurbs-ext";
+import Vector from "math/vector";
 import CSys from "math/csys";
-import {distanceAB} from "math/distance";
-import {isCCW} from "geom/euclidean";
-import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface"
-import flatten from 'lodash/flatten'
-import {deg} from "sketcher/dxf";
-
+import { distanceAB } from "math/distance";
+import { isCCW } from "geom/euclidean";
+import { OCCCommandInterface } from "cad/craft/e0/occCommandInterface";
+import flatten from "lodash/flatten";
+import { deg } from "sketcher/dxf";
 
 export class SketchPrimitive {
-
   id: string;
   inverted: boolean;
   construction: boolean = false;
@@ -38,7 +36,7 @@ export class SketchPrimitive {
   }
 
   get isCurve() {
-    return this.constructor.name !== 'Segment';
+    return this.constructor.name !== "Segment";
   }
 
   get isSegment() {
@@ -58,37 +56,30 @@ export class SketchPrimitive {
   }
 
   toVerbNurbs(tr, csys): any {
-    throw 'not implemented'
+    throw "not implemented";
   }
 
   tessellateImpl() {
-    throw 'not implemented'
+    throw "not implemented";
   }
 
   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-
     const nurbs = this.toNurbs(csys);
 
-    const {
-      degree,
-      knots,
-      cp,
-      weights
-    } = (nurbs.impl as NurbsCurve).asCurveBSplineData();
+    const { degree, knots, cp, weights } = (nurbs.impl as NurbsCurve).asCurveBSplineData();
 
     const bspline = {
       knots: [],
       mults: [],
-    }
+    };
 
-    knots.forEach(knot => {
+    knots.forEach((knot) => {
       if (bspline.knots.length === 0 || bspline.knots[bspline.knots.length - 1] !== knot) {
         bspline.knots.push(knot);
         bspline.mults.push(1);
       } else {
         bspline.mults[bspline.mults.length - 1] += 1;
       }
-
     });
 
     const args = [degree, bspline.knots.length];
@@ -110,7 +101,6 @@ export class SketchPrimitive {
 }
 
 export class Segment extends SketchPrimitive {
-
   a: Vector;
   b: Vector;
 
@@ -136,7 +126,7 @@ export class Segment extends SketchPrimitive {
     if (this.inverted) {
       endpoints.reverse();
     }
-    return endpoints
+    return endpoints;
   }
 
   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
@@ -144,7 +134,7 @@ export class Segment extends SketchPrimitive {
     const [A, B] = genForm;
     oci.point(underName + "_A", A.x, A.y, A.z);
     oci.point(underName + "_B", B.x, B.y, B.z);
-    oci.gcarc(underName, "seg", underName + "_A", underName + "_B")
+    oci.gcarc(underName, "seg", underName + "_A", underName + "_B");
   }
 
   tangentAtStart(): Vector {
@@ -161,7 +151,6 @@ export class Segment extends SketchPrimitive {
 }
 
 export class SketchPoint extends SketchPrimitive {
-
   pt: Vector;
 
   constructor(id, pt) {
@@ -183,15 +172,15 @@ export class SketchPoint extends SketchPrimitive {
   }
 
   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-    throw 'unsupported';
+    throw "unsupported";
   }
 
   tangentAtStart(): Vector {
-    throw 'unsupported';
+    throw "unsupported";
   }
 
   tangentAtEnd(): Vector {
-    throw 'unsupported';
+    throw "unsupported";
   }
 
   massiveness() {
@@ -200,7 +189,6 @@ export class SketchPoint extends SketchPrimitive {
 }
 
 export class Arc extends SketchPrimitive {
-
   a: Vector;
   b: Vector;
   c: Vector;
@@ -213,10 +201,9 @@ export class Arc extends SketchPrimitive {
   }
 
   toVerbNurbs(tr, csys) {
-    
     const basisX = csys.x;
     const basisY = csys.y;
-    
+
     const startAngle = makeAngle0_360(Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x));
     const endAngle = makeAngle0_360(Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x));
 
@@ -232,9 +219,16 @@ export class Arc extends SketchPrimitive {
     const xAxis = pointAtAngle(startAngle);
     const yAxis = pointAtAngle(startAngle + Math.PI * 0.5);
 
-    const arc = new verb.geom.Arc(tr(this.c).data(), xAxis.data(), yAxis.data(), distanceAB(this.c, this.a), 0, Math.abs(angle));
-    
-    return adjustEnds(arc, tr(this.a), tr(this.b))
+    const arc = new verb.geom.Arc(
+      tr(this.c).data(),
+      xAxis.data(),
+      yAxis.data(),
+      distanceAB(this.c, this.a),
+      0,
+      Math.abs(angle),
+    );
+
+    return adjustEnds(arc, tr(this.a), tr(this.b));
   }
 
   toGenericForm() {
@@ -243,25 +237,24 @@ export class Arc extends SketchPrimitive {
       endpoints.reverse();
     }
     const [a, b] = endpoints;
-    const tangent = a.minus(this.c)._perpXY() //tangent vector
+    const tangent = a.minus(this.c)._perpXY(); //tangent vector
     if (this.inverted) {
       tangent._negate();
     }
     return [
       a, //from endpoint
       b, //to endpoint
-      tangent //tangent vector
-    ]
+      tangent, //tangent vector
+    ];
   }
 
   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-
     const tr = csys.outTransformation.apply;
     const s = this;
     const a = tr(s.inverted ? s.b : s.a);
     const b = tr(s.inverted ? s.a : s.b);
     const c = tr(s.c);
-    const tangent = c.minus(a)._cross(csys.z);//._normalize();
+    const tangent = c.minus(a)._cross(csys.z); //._normalize();
 
     if (s.inverted) {
       tangent._negate();
@@ -272,7 +265,7 @@ export class Arc extends SketchPrimitive {
     oci.point(underName + "_B", b.x, b.y, b.z);
     oci.point(underName + "_T1", a.x, a.y, a.z);
     oci.point(underName + "_T2", A_TAN.x, A_TAN.y, A_TAN.z);
-    oci.gcarc(underName, "cir", underName + "_A", underName + "_T1", underName + "_T2", underName + "_B")
+    oci.gcarc(underName, "cir", underName + "_A", underName + "_T1", underName + "_T2", underName + "_B");
   }
 
   massiveness() {
@@ -295,7 +288,10 @@ export class BezierCurve extends SketchPrimitive {
   }
 
   toVerbNurbs(tr) {
-    return new verb.geom.BezierCurve([tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()], null);
+    return new verb.geom.BezierCurve(
+      [tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()],
+      null,
+    );
   }
 
   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
@@ -305,20 +301,51 @@ export class BezierCurve extends SketchPrimitive {
       poles.reverse();
     }
 
-    oci.beziercurve(underName, poles.length, ...flatten(poles.map(p => p.data())))
+    oci.beziercurve(underName, poles.length, ...flatten(poles.map((p) => p.data())));
   }
 
   massiveness() {
     return this.a.minus(this.b).length();
   }
 }
+// export class BSpline extends SketchPrimitive {
+//   a: Vector;
+//   b: Vector;
+//   cp1: Vector;
+//   cp2: Vector;
+
+//   constructor(id, a, b, cp1, cp2) {
+//     super(id);
+//     this.a = a;
+//     this.b = b;
+//     this.cp1 = cp1;
+//     this.cp2 = cp2;
+//   }
+
+//   toVerbNurbs(tr) {
+//     return new verb.geom.BezierCurve([tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()], null);
+//   }
+
+//   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+//     const tr = csys.outTransformation.apply;
+//     const poles = [this.a, this.cp1, this.cp2, this.b].map(tr);
+//     if (this.inverted) {
+//       poles.reverse();
+//     }
+
+//     oci.beziercurve(underName, poles.length, ...flatten(poles.map(p => p.data())))
+//   }
+
+//   massiveness() {
+//     return this.a.minus(this.b).length();
+//   }
+// }
 
 export class EllipticalArc extends SketchPrimitive {
-
   c: Vector;
   rx: number;
   ry: number;
-  rot: number
+  rot: number;
   a: Vector;
   b: Vector;
 
@@ -340,10 +367,9 @@ export class EllipticalArc extends SketchPrimitive {
     const yAxis = new Vector(-ay, ax)._multiply(this.ry);
 
     const startAngle = Math.atan2(this.a.y - this.c.y, this.a.x - this.c.x) - this.rot;
-    const endAngle  = Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x) - this.rot;
+    const endAngle = Math.atan2(this.b.y - this.c.y, this.b.x - this.c.x) - this.rot;
 
     if (startAngle > endAngle) {
-
     }
 
     // let arc = new verb.geom.EllipseArc(tr(this.c).data(), tr(xAxis).data(), tr(yAxis).data(), startAngle, endAngle);
@@ -361,7 +387,7 @@ export class EllipticalArc extends SketchPrimitive {
 
 export class Circle extends SketchPrimitive {
   c: Vector;
-  r: number
+  r: number;
 
   constructor(id, c, r) {
     super(id);
@@ -387,11 +413,10 @@ export class Circle extends SketchPrimitive {
 }
 
 export class Ellipse extends SketchPrimitive {
-
   c: Vector;
   rx: number;
   ry: number;
-  rot: number
+  rot: number;
 
   constructor(id, c, rx, ry, rot) {
     super(id);
@@ -402,7 +427,6 @@ export class Ellipse extends SketchPrimitive {
   }
 
   toVerbNurbs(tr, csys) {
-
     const ax = Math.cos(this.rot);
     const ay = Math.sin(this.rot);
 
@@ -410,9 +434,7 @@ export class Ellipse extends SketchPrimitive {
     const yAxis = new Vector(-ay, ax)._multiply(this.ry);
 
     const tr3x3 = csys.outTransformation3x3.apply;
-    return new verb.geom.Ellipse(tr(this.c).data(),
-      tr3x3(xAxis).data(),
-      tr3x3(yAxis).data());
+    return new verb.geom.Ellipse(tr(this.c).data(), tr3x3(xAxis).data(), tr3x3(yAxis).data());
   }
 
   massiveness() {
@@ -421,7 +443,6 @@ export class Ellipse extends SketchPrimitive {
 }
 
 export class Contour {
-
   segments: SketchPrimitive[];
 
   constructor() {
@@ -442,7 +463,10 @@ export class Contour {
     const out = [];
     for (let segIdx = 0; segIdx < this.segments.length; ++segIdx) {
       const segment = this.segments[segIdx];
-      segment.toNurbs(csys).tessellate().forEach(p => out.push(p));
+      segment
+        .toNurbs(csys)
+        .tessellate()
+        .forEach((p) => out.push(p));
       out.pop();
     }
     return out;
@@ -475,7 +499,7 @@ export class Contour {
 
   reverse() {
     this.segments.reverse();
-    this.segments.forEach(s => s.invert());
+    this.segments.forEach((s) => s.invert());
   }
 }
 
@@ -493,4 +517,3 @@ function adjustEnds(arc, a, b) {
 
   return new verb.geom.NurbsCurve(data);
 }
-

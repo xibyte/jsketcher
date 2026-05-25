@@ -298,33 +298,40 @@ export class IO {
           continue;
         }
         try {
-          if (obj instanceof BSpline) {
-            const points = [];
-            for (const point of obj.fPoints) {
-              points.push([point.x, point.y]);
-            }
-            // const segments = obj.bsplineToBezierSegments();
-            // sketch.bSpline.push({points, segments});
-            const segments = [];
-            const segs = obj.bsplineToBezierSegments_full();
-            for (const seg of segs) {
-              segments.push({
-                a: { x: seg.cps[0].x, y: seg.cps[0].y },
-                cp1: { x: seg.cps[1].x, y: seg.cps[1].y },
-                cp2: { x: seg.cps[2].x, y: seg.cps[2].y },
-                b: { x: seg.cps[0].x, y: seg.cps[0].y },
-              });
-            }
-            sketch.bSpline.push({ points, segments });
-          } else {
-            sketch.objects.push({
-              id: obj.id,
-              type: obj.TYPE,
-              role: obj.role,
-              stage: this.viewer.parametricManager.getStageIndex(obj.stage),
-              data: obj.write(),
-            });
-          }
+          // if (obj instanceof BSpline) {
+          //   const points = [];
+          //   for (const point of obj.fPoints) {
+          //     points.push([point.x, point.y]);
+          //   }
+          //   // const segments = obj.bsplineToBezierSegments();
+          //   // sketch.bSpline.push({points, segments});
+          //   const segments = [];
+          //   const segs = obj.bsplineToBezierSegments_full();
+          //   for (const seg of segs) {
+          //     segments.push({
+          //       a: { x: seg.cps[0].x, y: seg.cps[0].y },
+          //       cp1: { x: seg.cps[1].x, y: seg.cps[1].y },
+          //       cp2: { x: seg.cps[2].x, y: seg.cps[2].y },
+          //       b: { x: seg.cps[0].x, y: seg.cps[0].y },
+          //     });
+          //   }
+          //   sketch.bSpline.push({ points, segments });
+          // } else {
+          //   sketch.objects.push({
+          //     id: obj.id,
+          //     type: obj.TYPE,
+          //     role: obj.role,
+          //     stage: this.viewer.parametricManager.getStageIndex(obj.stage),
+          //     data: obj.write(),
+          //   });
+          // }
+          sketch.objects.push({
+            id: obj.id,
+            type: obj.TYPE,
+            role: obj.role,
+            stage: this.viewer.parametricManager.getStageIndex(obj.stage),
+            data: obj.write(),
+          });
         } catch (e) {
           console.error(e);
         }

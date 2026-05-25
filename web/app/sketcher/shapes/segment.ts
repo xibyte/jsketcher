@@ -4,6 +4,7 @@ import { DEG_RAD, makeAngle0_360 } from "math/commons";
 import { Param } from "./param";
 import { AlgNumConstraint, ConstraintDefinitions } from "../constr/ANConstraints";
 import { EndPoint, SketchPointSerializationData } from "./point";
+import { Viewer } from "../viewer2d";
 import { distanceAB } from "math/distance";
 import { TOLERANCE } from "math/equality";
 
@@ -70,7 +71,7 @@ export class Segment extends SketchObject {
     this.params.t.set(l);
   }
 
-  stabilize(viewer) {
+  stabilize(viewer: Viewer) {
     this.syncGeometry();
     const c = new AlgNumConstraint(ConstraintDefinitions.Polar, [this, this.a, this.b]);
     c.internal = true;
@@ -88,18 +89,18 @@ export class Segment extends SketchObject {
     }
   }
 
-  visitParams(callback) {
+  visitParams(callback: (param: Param) => void) {
     this.a.visitParams(callback);
     this.b.visitParams(callback);
     callback(this.params.ang);
     callback(this.params.t);
   }
 
-  normalDistance(aim) {
+  normalDistance(aim: { x: number; y: number }) {
     return Segment.calcNormalDistance(aim, this.a, this.b);
   }
 
-  static calcNormalDistance(aim, segmentA, segmentB) {
+  static calcNormalDistance(aim: { x: number; y: number }, segmentA: { x: number; y: number }, segmentB: { x: number; y: number }) {
     const ab = new Vector(segmentB.x - segmentA.x, segmentB.y - segmentA.y);
     const e = ab.normalize();
     const a = new Vector(aim.x - segmentA.x, aim.y - segmentA.y);
@@ -126,12 +127,12 @@ export class Segment extends SketchObject {
     return new Vector((this.a.x + this.b.x) / 2, (this.a.y + this.b.y) / 2, 0);
   }
 
-  translateImpl(dx, dy) {
+  translateImpl(dx: number, dy: number) {
     this.a.translate(dx, dy);
     this.b.translate(dx, dy);
   }
 
-  drawImpl(ctx, scale) {
+  drawImpl(ctx: CanvasRenderingContext2D, scale: number) {
     // let ang = this.params.ang.get();
     // let nx = -Math.sin(ang);
     // let ny =  Math.cos(ang);

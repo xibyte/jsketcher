@@ -1,6 +1,7 @@
 import {TextHelper} from "sketcher/shapes/textHelper";
 import {Styles} from "sketcher/styles";
 import {SketchObject} from "sketcher/shapes/sketch-object";
+import {Viewer} from "sketcher/viewer2d";
 
 const TEXT_H_OFFSET = 3;
 
@@ -25,7 +26,7 @@ export class Label extends SketchObject {
     return this.assignedObject === other;
   }
 
-  translateImpl(dx, dy) {
+  translateImpl(dx: number, dy: number) {
     this.offsetX += dx;
     this.offsetY += dy;
   }
@@ -35,7 +36,7 @@ export class Label extends SketchObject {
   }
 
 
-  drawImpl(ctx, scale, viewer) {
+  drawImpl(ctx: CanvasRenderingContext2D, scale: number, viewer: Viewer) {
 
     const m = this.assignedObject.labelCenter;
 
@@ -65,7 +66,7 @@ export class Label extends SketchObject {
     }
   }
 
-  normalDistance(aim, scale) {
+  normalDistance(aim: { x: number; y: number }, scale: number) {
     return this.textHelper.normalDistance(aim);
   }
 
@@ -78,7 +79,11 @@ export class Label extends SketchObject {
     }
   }
 
-  static read(id, {text, assignedObject, offsetX, offsetY}, index) {
+  static read(
+    id: string,
+    {text, assignedObject, offsetX, offsetY}: {text: string; assignedObject: string; offsetX: number; offsetY: number},
+    index: Record<string, SketchObject>
+  ) {
     const label = new Label(text, index[assignedObject], id);
     label.offsetX = offsetX;
     label.offsetY = offsetY;

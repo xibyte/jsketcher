@@ -1,5 +1,6 @@
 import { EndPoint } from "./point";
 import { Segment } from "./segment";
+import { Param } from "./param";
 import Vector from "math/vector";
 import { SketchObject } from "./sketch-object";
 import { Layer, Viewer } from "../viewer2d";
@@ -10,7 +11,7 @@ import { lu_solve } from "math/optim/dogleg";
 import { isPointInsidePolygon, polygonOffset, ConvexHull2D } from "geom/euclidean";
 
 type IPolynomialFunc = (t: number) => number;
-type IPoint = { x: number; y: number; z?: number };
+type IPoint = { x: number; y: number; id?: string };
 type BezierSegment = { cps: { x: number; y: number }[]; u0: number; u1: number };
 export const getDividedValue = (numerator: number, denominator: number) => {
   if (denominator === 0) {
@@ -295,27 +296,10 @@ export class BSpline extends SketchObject {
         `the array length of parameter t (${this.numberOfKnots}) must be equal to the sum of the length of cPoints (${this.numberOfControlPoints}) and the degree (${this.degree}). and 1`,
       );
     }
-    if (opts.interpolation || opts.CVModel) {
-      this.cPoints = opts.cPoints as EndPoint[];
-      this.fPoints = opts.fPoints as EndPoint[];
-      this.setChildPoint([...this.cPoints, ...this.fPoints]);
-    } else {
-      this.cPoints = [];
-      this.fPoints = [];
-      for (const [i, point] of opts.cPoints.entries()) {
-        const cPointId = `spline${this.id}_cPoint${i}`;
-        const cPoint = new EndPoint(point.x, point.y, cPointId);
-        this.addChild(cPoint);
-        this.cPoints.push(cPoint);
-        // cPoint.visible = false;
-      }
-      for (const [i, point] of opts.fPoints.entries()) {
-        const fPointId = `spline${this.id}_fPoint${i}`;
-        const fPoint = new EndPoint(point.x, point.y, fPointId);
-        this.addChild(fPoint);
-        this.fPoints.push(fPoint);
-      }
-    }
+
+    this.cPoints = opts.cPoints as EndPoint[];
+    this.fPoints = opts.fPoints as EndPoint[];
+    this.setChildPoint([...this.cPoints, ...this.fPoints]);
 
     this.kValues = opts.kValues;
     this.updateKnots();
@@ -326,7 +310,7 @@ export class BSpline extends SketchObject {
     this.bSplineInterpolation = new BSplineInterpolation(this.degree, opts.interpolation);
     this.bSplineControlVertices = new BSplineControlVertices(this.degree, opts.CVModel);
     if (opts.interpolation) {
-      this.type = BSplineType.Clamped;
+      // this.type = BSplineType.Clamped;
       this.bSplineInterpolation.update(this.fPoints);
     } else if (opts.CVModel) {
       this.bSplineControlVertices.update(this.cPoints, this.degree);
@@ -362,7 +346,7 @@ export class BSpline extends SketchObject {
     return { x, y };
   }
 
-  basisFunction(i, p, u, knots) {
+  basisFunction(i: number, p: number, u: number, knots: number[]): number {
     if (p === 0) {
       return knots[i] <= u && u < knots[i + 1] ? 1.0 : 0.0;
     }
@@ -432,8 +416,11 @@ export class BSpline extends SketchObject {
 
   removeCPoint() {
     const num = Math.floor(this.degree / 2) + 1;
+    if (this.cPoints.length < num) {
+      return;
+    }
     for (let i = 0; i < num; i++) {
-      const point = this.cPoints.pop();
+      const point = this.cPoints.pop() as EndPoint;
       point.visible = false;
       this.removeChildPoint(point);
     }
@@ -466,7 +453,10 @@ export class BSpline extends SketchObject {
   }
 
   removeFPoint() {
-    const point = this.fPoints.pop();
+    if (!this.fPoints.length) {
+      return;
+    }
+    const point = this.fPoints.pop() as EndPoint;
     point.visible = false;
     this.removeChildPoint(point);
   }
@@ -580,7 +570,7 @@ export class BSpline extends SketchObject {
     return discretePoints;
   }
 
-  visitParams(callback) {
+  visitParams(callback: (param: Param) => void) {
     for (const point of this.cPoints) {
       point.visitParams(callback);
     }
@@ -612,24 +602,24 @@ export class BSpline extends SketchObject {
     return hero;
   }
 
-  transToEndPoints(points: IPoint[]) {
+  transToEndPoints(points: IPoint[]): EndPoint[] {
     const endPoints = [];
     for (const point of points) {
-      endPoints.push(new EndPoint(point.x, point.y));
+      endPoints.push(new EndPoint(point.x, point.y, point.id));
     }
     return endPoints;
   }
 
-  transToIPoints(points: EndPoint[]) {
+  transToIPoints(points: EndPoint[]): IPoint[] {
     const IPoints = [];
     for (const point of points) {
-      IPoints.push({ x: point.x, y: point.y, z: 0.0 });
+      IPoints.push({ x: point.x, y: point.y, id: point.id });
     }
     return IPoints;
   }
 
   /** 深拷贝点数组（保留 x,y） */
-  private clonePointsArray(points: any[]): { x: number; y: number }[] {
+  private clonePointsArray(points: { x: number; y: number }[]): { x: number; y: number }[] {
     return points.map((p) => ({ x: p.x, y: p.y }));
   }
 
@@ -984,14 +974,81 @@ export class BSpline extends SketchObject {
       kValues: this.kValues,
       interpolation: this.bSplineInterpolation.interpolation, // If true, the interpolation method is manually drawn
       CVModel: this.bSplineControlVertices.CVModel,
+      type: this.type,
+      method: this.method,
     };
   }
 
-  static read(id: string, bSplineData: IBSplineOpts) {
+  static read(id: string, data: IBSplineOpts) {
+    const cPoints: EndPoint[] = [];
+    const fPoints: EndPoint[] = [];
+    const cMap: Map<string, EndPoint> = new Map();
+    const fMap: Map<string, EndPoint> = new Map();
+    if (data.interpolation || data.CVModel) {
+      data.fPoints.forEach((p) => {
+        if (fMap.has(p.id as string)) {
+          fPoints.push(fMap.get(p.id as string) as EndPoint);
+        } else {
+          const f = new EndPoint(p.x, p.y, p.id);
+          f.visible = data.interpolation;
+          fPoints.push(f);
+          fMap.set(p.id as string, f);
+        }
+      });
+      data.cPoints.forEach((p) => {
+        if (cMap.has(p.id as string)) {
+          cPoints.push(cMap.get(p.id as string) as EndPoint);
+        } else {
+          const c = new EndPoint(p.x, p.y, p.id);
+          c.visible = data.CVModel;
+          cPoints.push(c);
+          cMap.set(p.id as string, c);
+        }
+      });
+    } else {
+      let i = 0;
+      data.fPoints.forEach((p) => {
+        const s = `${p.x}_${p.y}`;
+        if (fMap.has(s)) {
+          fPoints.push(fMap.get(s) as EndPoint);
+        } else {
+          const fPointId = `spline${id}_fPoint${i}`;
+          const fPoint = new EndPoint(p.x, p.y, fPointId);
+          fPoint.visible = false;
+          fPoints.push(fPoint);
+          fMap.set(s, fPoint);
+          i++;
+        }
+      });
+      let j = 0;
+      data.cPoints.forEach((p) => {
+        const s = `${p.x}_${p.y}`;
+        if (cMap.has(s)) {
+          cPoints.push(cMap.get(s) as EndPoint);
+        } else {
+          const cPointId = `spline${id}_cPoint${j}`;
+          const cPoint = new EndPoint(p.x, p.y, cPointId);
+          cPoint.visible = false;
+          cPoints.push(cPoint);
+          cMap.set(s, cPoint);
+          j++;
+        }
+      });
+    }
+    const bSplineData: IBSplineOpts = {
+      degree: data.degree,
+      cPoints,
+      fPoints,
+      kValues: data.kValues,
+      interpolation: data.interpolation,
+      CVModel: data.CVModel,
+      type: data.type || BSplineType.Clamped,
+      method: data.method || ParameterMethod.Centripetal,
+    };
     return new BSpline(bSplineData, id);
   }
 
-  drag(x, y, dx, dy) {
+  drag(x: number, y: number, dx: number, dy: number) {
     this.dragging = true;
     this.translate(dx, dy);
   }

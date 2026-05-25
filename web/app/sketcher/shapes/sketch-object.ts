@@ -1,5 +1,6 @@
 import { Generator } from "../id-generator";
 import { Shape } from "./shape";
+import { Param } from "./param";
 import { Styles } from "../styles";
 import { NoIcon } from "../icons/NoIcon";
 import { Layer, Viewer } from "../viewer2d";
@@ -20,7 +21,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   generators: Set<any> = new Set();
   _stage: any = null;
 
-  protected constructor(id: string) {
+  protected constructor(id: string | undefined) {
     super();
     this.ref = Generator.genID() + "";
     this.id = id || this.ref;
@@ -41,7 +42,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     return false;
   }
 
-  get stage() {
+  get stage(): any {
     if (this._stage) {
       return this._stage;
     }
@@ -55,16 +56,16 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     this._stage = value;
   }
 
-  normalDistance(aim, scale) {
+  normalDistance(aim: { x: number; y: number }, scale: number) {
     return -1;
   }
 
-  addChild(child) {
+  addChild(child: SketchObject) {
     this.children.add(child);
     child.parent = this;
   }
 
-  accept(visitor) {
+  accept(visitor: (obj: SketchObject) => boolean): boolean {
     for (const child of this.children) {
       if (!child.accept(visitor)) {
         return false;
@@ -73,14 +74,14 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     return visitor(this);
   }
 
-  traverse(visitor) {
+  traverse(visitor: (obj: SketchObject) => void) {
     for (const child of this.children) {
       child.traverse(visitor);
     }
     visitor(this);
   }
 
-  stabilize(viewer) {}
+  stabilize(viewer: Viewer) {}
 
   syncGeometry() {}
 
@@ -88,11 +89,11 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     return false;
   }
 
-  visitLinked(cb) {
+  visitLinked(cb: (obj: SketchObject) => void) {
     cb(this);
   }
 
-  translate(dx, dy) {
+  translate(dx: number, dy: number) {
     //  this.translateImpl(dx, dy);
     if (this.readOnly) {
       return;
@@ -103,7 +104,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     });
   }
 
-  translateImpl(dx, dy) {
+  translateImpl(dx: number, dy: number) {
     this.accept(function (obj) {
       if (obj.TYPE === "Point") {
         obj.translate(dx, dy);
@@ -112,12 +113,12 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     });
   }
 
-  addMarker(style) {
+  addMarker(style: any) {
     this.markers.push(style);
     this.markers.sort((a, b) => (a.priority || 99999) - (b.priority || 99999));
   }
 
-  removeMarker(style) {
+  removeMarker(style: any) {
     const index = this.markers.indexOf(style);
     if (index !== -1) {
       this.markers.splice(index, 1);
@@ -128,7 +129,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     return this.markers.length !== 0;
   }
 
-  abstract drawImpl(ctx: CanvasRenderingContext2D, scale: number, viewer: Viewer);
+  abstract drawImpl(ctx: CanvasRenderingContext2D, scale: number, viewer: Viewer): void;
 
   draw(ctx: CanvasRenderingContext2D, scale: number, viewer: Viewer) {
     if (!this.visible) return;
@@ -182,8 +183,8 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     throw "method not implemented";
   }
 
-  mirror(dest, mirroringFunc) {
-    const sourcePoints = [];
+  mirror(dest: any, mirroringFunc: (x: number, y: number) => { x: number; y: number }) {
+    const sourcePoints: SketchObject[] = [];
 
     pointIterator(this, (o) => {
       sourcePoints.push(o);
@@ -195,11 +196,11 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     });
   }
 
-  visitParams(callback) {
+  visitParams(callback: (param: Param) => void) {
     throw "method not implemented";
   }
 
-  collectParams(params) {
+  collectParams(params: Param[]) {
     this.visitParams((p) => params.push(p));
   }
 
@@ -218,7 +219,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     return null;
   }
 
-  getConstraintByType(typeId) {
+  getConstraintByType(typeId: string) {
     for (const c of this.constraints) {
       if (c.schema.id === typeId) {
         return c;
@@ -227,7 +228,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
     return null;
   }
 
-  ancestry(cb) {
+  ancestry(cb: (obj: SketchObject) => void) {
     let obj: SketchObject = this;
     while (obj) {
       cb(obj);
@@ -258,7 +259,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
   }
 
   get labelCenter() {
-    let point;
+    let point: any;
     pointIterator(this, (o) => {
       if (!point) {
         point = o;
@@ -272,7 +273,7 @@ export abstract class SketchObject extends Shape implements SolvableObject {
 
 export interface SketchObjectSerializationData {}
 
-export function pointIterator(shape, func) {
+export function pointIterator(shape: SketchObject, func: (o: SketchObject) => void) {
   shape.accept((o) => {
     if (o.TYPE === "Point") {
       func(o);

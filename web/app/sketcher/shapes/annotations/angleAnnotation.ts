@@ -2,6 +2,9 @@ import {AngleBetweenDimension, DiameterDimension, LinearDimension} from "../dim"
 import {Styles} from "../../styles";
 import {ConstraintAnnotation} from "../../constr/constraintAnnotation";
 import {AlgNumConstraint} from "../../constr/ANConstraints";
+import {Segment} from "../segment";
+import {Arc} from "../arc";
+import {Viewer} from "../../viewer2d";
 
 export class AngleBetweenAnnotation extends AngleBetweenDimension implements ConstraintAnnotation<{offset: number}> {
 
@@ -9,7 +12,7 @@ export class AngleBetweenAnnotation extends AngleBetweenDimension implements Con
 
   isConstraintAnnotation = true;
 
-  constructor(a, b, constraint) {
+  constructor(a: Segment, b: Segment, constraint: AlgNumConstraint) {
     super(a, b);
     this.constraint = constraint;
   }
@@ -24,7 +27,7 @@ export class AngleBetweenAnnotation extends AngleBetweenDimension implements Con
     }
   }
 
-  load(params) {
+  load(params: { offset: number }) {
     this.offset = params.offset;
   }
 }
@@ -39,7 +42,7 @@ export class AngleAbsoluteAnnotation extends AngleBetweenDimension implements Co
 
   isConstraintAnnotation = true;
 
-  constructor(segment, constraint) {
+  constructor(segment: Segment, constraint: AlgNumConstraint) {
     super({
       a: segment.a,
       b: {
@@ -71,7 +74,7 @@ export class AngleAbsoluteAnnotation extends AngleBetweenDimension implements Co
     return true;
   }
 
-  drawRef(ctx, a, b, px, py, vx, vy, viewer, unscale, first) {
+  drawRef(ctx: CanvasRenderingContext2D, a: { x: number; y: number }, b: { x: number; y: number }, px: number, py: number, vx: number, vy: number, viewer: Viewer, unscale: number, first: boolean) {
     if (!first) {
       super.drawRef(ctx, a, b, px, py, vx, vy, viewer, unscale, first);
     } else {
@@ -92,7 +95,7 @@ export class AngleAbsoluteAnnotation extends AngleBetweenDimension implements Co
     }
   }
 
-  load(params) {
+  load(params: { offset: number }) {
     this.offset = params.offset;
   }
 }
@@ -106,7 +109,7 @@ export class LengthAnnotation extends LinearDimension implements ConstraintAnnot
 
   isConstraintAnnotation = true;
 
-  constructor(segment, constraint) {
+  constructor(segment: Segment, constraint: AlgNumConstraint) {
     super(segment.a, segment.b);
     this.constraint = constraint;
   }
@@ -121,7 +124,7 @@ export class LengthAnnotation extends LinearDimension implements ConstraintAnnot
     }
   }
 
-  load(params) {
+  load(params: { offset: number }) {
     this.offset = params.offset;
   }
 }
@@ -136,7 +139,7 @@ export class RadiusLengthAnnotation extends DiameterDimension implements Constra
 
   isConstraintAnnotation = true;
 
-  constructor(obj, constraint) {
+  constructor(obj: Arc, constraint: AlgNumConstraint) {
     super(obj);
     this.constraint = constraint;
   }
@@ -151,7 +154,7 @@ export class RadiusLengthAnnotation extends DiameterDimension implements Constra
     }
   }
 
-  load(params) {
+  load(params: { angle: number }) {
     this.angle = params.angle;
   }
 }
