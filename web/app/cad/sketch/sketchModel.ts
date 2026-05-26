@@ -308,38 +308,6 @@ export class BezierCurve extends SketchPrimitive {
     return this.a.minus(this.b).length();
   }
 }
-// export class BSpline extends SketchPrimitive {
-//   a: Vector;
-//   b: Vector;
-//   cp1: Vector;
-//   cp2: Vector;
-
-//   constructor(id, a, b, cp1, cp2) {
-//     super(id);
-//     this.a = a;
-//     this.b = b;
-//     this.cp1 = cp1;
-//     this.cp2 = cp2;
-//   }
-
-//   toVerbNurbs(tr) {
-//     return new verb.geom.BezierCurve([tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()], null);
-//   }
-
-//   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-//     const tr = csys.outTransformation.apply;
-//     const poles = [this.a, this.cp1, this.cp2, this.b].map(tr);
-//     if (this.inverted) {
-//       poles.reverse();
-//     }
-
-//     oci.beziercurve(underName, poles.length, ...flatten(poles.map(p => p.data())))
-//   }
-
-//   massiveness() {
-//     return this.a.minus(this.b).length();
-//   }
-// }
 
 export class EllipticalArc extends SketchPrimitive {
   c: Vector;
@@ -500,6 +468,70 @@ export class Contour {
   reverse() {
     this.segments.reverse();
     this.segments.forEach((s) => s.invert());
+  }
+}
+
+/**
+ * B-spline curve primitive for the 3D model.
+ *
+ * Stores the control vertices (cPoints), full knot vector (kValues) and degree
+ * that were written by the 2D sketcher's BSpline.write() method.
+ * The curve is represented as a NURBS curve via verb.geom.NurbsCurve so that
+ * the inherited toNurbs() / toOCCGeometry() implementations work transparently.
+ *
+ * For a clamped B-spline the first / last control vertex coincide with the
+ * geometric start / end of the curve, so they are used as `a` / `b` for the
+ * topology graph. When fitting-point data (fPoints) is available the first /
+ * last fitting point is used instead (they equal cPoints[0] / cPoints[last]
+ * for clamped splines but are more semantically correct for interpolation mode).
+ */
+export class BSplineCurve extends SketchPrimitive {
+  /** Geometric start of the curve (sketch-local 2-D coordinates, z = 0) */
+  a: Vector;
+  /** Geometric end of the curve (sketch-local 2-D coordinates, z = 0) */
+  b: Vector;
+  degree: number;
+  /** Full knot vector with multiplicities, normalised to [0, 1] */
+  kValues: number[];
+  /** Control vertices, each { x, y, z } with z = 0 */
+  cPoints: { x: number; y: number; z: number }[];
+
+  constructor(
+    id: string,
+    degree: number,
+    kValues: number[],
+    cPoints: { x: number; y: number; z: number }[],
+    a: Vector,
+    b: Vector,
+  ) {
+    super(id);
+    this.degree = degree;
+    this.kValues = kValues;
+    this.cPoints = cPoints;
+    this.a = a;
+    this.b = b;
+  }
+
+  /**
+   * Build a verb NURBS curve from the stored B-spline data.
+   * `tr` is the coordinate-system transformation applied to every control vertex
+   * (goes from sketch-local to world-space).
+   */
+  toVerbNurbs(tr: (v: Vector) => Vector): any {
+    // Convert each 2-D control vertex to a transformed 3-D point [x, y, z]
+    const controlPoints = this.cPoints.map((p) => tr(new Vector(p.x, p.y, p.z)).data());
+    // Uniform weights (non-rational B-spline)
+    const weights = new Array(this.cPoints.length).fill(1.0);
+    return verb.geom.NurbsCurve.byKnotsControlPointsWeights(
+      this.degree,
+      this.kValues.slice(), // defensive copy — verb may mutate the array
+      controlPoints,
+      weights,
+    );
+  }
+
+  massiveness(): number {
+    return this.a.minus(this.b).length();
   }
 }
 

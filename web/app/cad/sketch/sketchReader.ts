@@ -7,6 +7,7 @@ import VectorFactory from "math/vectorFactory";
 import { strictEqual2D } from "math/equality";
 import { Contour, Segment, SketchPrimitive } from "./sketchModel";
 import Vector from "math/vector";
+import { distanceAB } from "math/distance";
 
 export class SketchGeom {
   connections: SketchPrimitive[];
@@ -97,21 +98,37 @@ export function ReadSketch(sketch, sketchId) {
       const cp2 = ReadSketchPoint(data.cp3);
       createdObj = new sm.BezierCurve(getID(obj), a, b, cp1, cp2);
       out.connections.push(createdObj);
-    }
-    // else if (obj.type === 'BSpline') {
-    //   const cPoints = data.cPoints.map(ReadSketchPoint);
-    //   const fPoints = data.fPoints.map(ReadSketchPoint);
-    //   const bSplineOpts = {
-    //     degree: data.degree,
-    //     cPoints,
-    //     fPoints,
-    //     kValues: data.kValues,
-    //     interpolation: data.interpolation, // If true, the interpolation method is manually drawn
-    //     CVModel: data.CVModel,
-    //   }
-    //   createdObj = new sm.BezierCurve(getID(obj), a, b, cp1, cp2);
-    // }
-    else if (obj.type === "Circle") {
+    } else if (obj.type === "BSpline") {
+      const degree  = data.degree  as number;
+      const kValues = data.kValues as number[];
+      const cPoints = data.cPoints as { x: number; y: number; z: number }[];
+      const fPoints = data.fPoints as { x: number; y: number; z: number }[];
+
+      if (!cPoints || cPoints.length < 2) {
+        // Guard against degenerate / incomplete data
+        continue;
+      }
+
+      // For a clamped B-spline the curve passes through the first and last
+      // control vertices. When fitting-point data is present those are the
+      // user-chosen endpoints and therefore more reliable as topology anchors.
+      const startData = fPoints && fPoints.length > 0 ? fPoints[0] : cPoints[0];
+      const endData   = fPoints && fPoints.length > 0 ? fPoints[fPoints.length - 1] : cPoints[cPoints.length - 1];
+
+      const a = ReadSketchPoint(startData);
+      const b = ReadSketchPoint(endData);
+
+      createdObj = new sm.BSplineCurve(getID(obj), degree, kValues, cPoints, a, b);
+
+      // A B-spline whose endpoints coincide forms a closed loop on its own;
+      // otherwise it participates in the open-curve topology graph.
+      const CLOSED_TOL = 1e-6;
+      if (distanceAB(a, b) < CLOSED_TOL) {
+        out.loops.push(createdObj);
+      } else {
+        out.connections.push(createdObj);
+      }
+    } else if (obj.type === "Circle") {
       const circleCenter = ReadSketchPoint(data.c);
       createdObj = new sm.Circle(getID(obj), circleCenter, readSketchFloat(data.r));
       out.loops.push(createdObj);

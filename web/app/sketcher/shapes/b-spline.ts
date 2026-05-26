@@ -195,6 +195,8 @@ class BSplineControlVertices {
   solve(type: string, method: number) {
     // Solve the nodes, the number of which meets the control point and order requirements,
     // and fill 0 and 1 at both ends to make the spline curve clamped and evenly segmented in the middle.
+    // 注意: type === Closed 的情形由 BSpline.cvUpdateClosed 直接处理 (wrap + Boehm 转 clamped),
+    //       不会走到这里; 这里仅服务于 Clamped.
     const cPoints = [];
     if (type === BSplineType.Clamped) {
       const start = Math.floor((this.degree - 1) / 2);
@@ -222,6 +224,10 @@ export interface IBSplineOpts {
   CVModel: boolean; // If true, the CV method is used for manual drawing. If both are false, the data is read and drawn.
   type?: string;
   method?: number;
+  // Closed CV 模式专用: 用户原始点击控制点 (有序, 各点唯一).
+  // cPoints 在 Closed 模式下是派生的 clamped 形式 (m+p 个新 EndPoint), 与用户原始点无对应关系;
+  // 必须单独序列化才能在重新打开草图时恢复用户原始可拖拽控制点及其 id (用于约束).
+  closedBasePoints?: IPoint[];
 }
 
 export class BSpline extends SketchObject {
@@ -237,7 +243,11 @@ export class BSpline extends SketchObject {
 
   order: number;
 
-  cPoints: EndPoint[]; // Spline control points
+  cPoints: EndPoint[]; // Spline control points (用于基函数求值; Closed 模式下被 Boehm-clamped 形式覆盖)
+
+  // Closed CV 模式专用: 用户原始点击点 (有序). 每帧由它经 periodicToClamped 重建 cPoints/kValues.
+  // 它独立于 cPoints, 用户对它的拖拽/增删才是"真"修改; cPoints 只是派生的渲染数据.
+  closedBasePoints: EndPoint[] = [];
 
   kValues: number[]; // Spline Nodes
 
@@ -412,6 +422,8 @@ export class BSpline extends SketchObject {
     // }
     // point.visible = false;
     this.numberOfControlPoints = this.cPoints.length;
+    // Closed CV 模式下, closedBasePoints 跟踪用户原始点击点 (每次点击只入一份)
+    this.closedBasePoints.push(point);
   }
 
   removeCPoint() {
@@ -423,6 +435,9 @@ export class BSpline extends SketchObject {
       const point = this.cPoints.pop() as EndPoint;
       point.visible = false;
       this.removeChildPoint(point);
+    }
+    if (this.closedBasePoints.length) {
+      this.closedBasePoints.pop();
     }
   }
 
@@ -541,6 +556,12 @@ export class BSpline extends SketchObject {
   }
 
   cvUpdate(type: string, method: number) {
+    if (type === BSplineType.Closed) {
+      this.cvUpdateClosed(method);
+      this.type = type;
+      this.method = method;
+      return;
+    }
     this.cvReset(this.cPoints, this.degree, type);
     this.bSplineControlVertices.solve(type, method);
     this.setKValues(this.bSplineControlVertices.kValues);
@@ -551,6 +572,55 @@ export class BSpline extends SketchObject {
     this.setChildPoint([...this.cPoints]);
     this.type = type;
     this.method = method;
+  }
+
+  /**
+   * Closed CV 模式刷新:
+   * - closedBasePoints 是用户点击的"基"点 (有序,各点唯一);
+   * - 每次刷新由它经 wrap → 均匀节点 → Boehm 插入 → 修剪, 得到 clamped 形式;
+   * - 把得到的 m+p 个控制点 + m+2p+1 个 clamped 节点写回 this.cPoints / this.kValues 供基函数求值;
+   * - children 集合 (用户可见可拖) 始终是 closedBasePoints, 与 cPoints 解耦.
+   */
+  cvUpdateClosed(method: number) {
+    // 兜底:旧数据反序列化后 closedBasePoints 为空, 从 cPoints (addCPoint 重复形式) 去重恢复
+    if (this.closedBasePoints.length === 0 && this.cPoints.length > 0) {
+      const seen = new Set<EndPoint>();
+      for (const p of this.cPoints) {
+        if (!seen.has(p)) {
+          seen.add(p);
+          this.closedBasePoints.push(p);
+        }
+      }
+    }
+
+    const p = this.degree;
+    const base = this.closedBasePoints;
+    if (base.length < 2) {
+      return;
+    }
+
+    const baseXY = base.map((pt) => ({ x: pt.x, y: pt.y }));
+    const { P, U } = periodicToClamped(baseXY, p);
+
+    // 替换 cPoints 为派生的 EndPoint 实例 (仅用于求值, 不参与拖拽)
+    const derived: EndPoint[] = P.map((pt) => {
+      const ep = new EndPoint(pt.x, pt.y);
+      ep.visible = false;
+      return ep;
+    });
+    this.cPoints = derived;
+    this.numberOfControlPoints = derived.length;
+
+    // 写入 clamped 节点
+    this.setKValues(U);
+
+    // children = 用户可拖拽的原始点击点
+    this.setChildPoint([...base]);
+
+    // 同步 fPoints / 起止端点
+    this.setFPointWithCVModel();
+    this.setPointA(this.cPoints[0]);
+    this.setPointB(this.cPoints[this.cPoints.length - 1]);
   }
 
   getDiscretePoints(scale: number) {
@@ -967,6 +1037,8 @@ export class BSpline extends SketchObject {
   }
 
   write() {
+    const isClosedCV =
+      this.type === BSplineType.Closed && this.bSplineControlVertices.CVModel && this.closedBasePoints.length > 0;
     return {
       degree: this.degree,
       cPoints: this.transToIPoints(this.cPoints),
@@ -976,6 +1048,8 @@ export class BSpline extends SketchObject {
       CVModel: this.bSplineControlVertices.CVModel,
       type: this.type,
       method: this.method,
+      // Closed CV 模式下 cPoints 是派生 clamped 点, 真正的用户点击点保留在 closedBasePoints
+      ...(isClosedCV ? { closedBasePoints: this.transToIPoints(this.closedBasePoints) } : {}),
     };
   }
 
@@ -984,6 +1058,9 @@ export class BSpline extends SketchObject {
     const fPoints: EndPoint[] = [];
     const cMap: Map<string, EndPoint> = new Map();
     const fMap: Map<string, EndPoint> = new Map();
+    // Closed CV 模式下保存的 cPoints 是派生 clamped 点 (不应可见或可拖); 真正用户点保存在 closedBasePoints
+    const isClosedCVData =
+      data.type === BSplineType.Closed && data.CVModel && data.closedBasePoints && data.closedBasePoints.length > 0;
     if (data.interpolation || data.CVModel) {
       data.fPoints.forEach((p) => {
         if (fMap.has(p.id as string)) {
@@ -1000,7 +1077,7 @@ export class BSpline extends SketchObject {
           cPoints.push(cMap.get(p.id as string) as EndPoint);
         } else {
           const c = new EndPoint(p.x, p.y, p.id);
-          c.visible = data.CVModel;
+          c.visible = data.CVModel && !isClosedCVData;
           cPoints.push(c);
           cMap.set(p.id as string, c);
         }
@@ -1045,7 +1122,35 @@ export class BSpline extends SketchObject {
       type: data.type || BSplineType.Clamped,
       method: data.method || ParameterMethod.Centripetal,
     };
-    return new BSpline(bSplineData, id);
+    const bSpline = new BSpline(bSplineData, id);
+
+    // Closed CV 模式: 恢复用户原始点击控制点 (保留 id 以维持约束链接).
+    // - 若 data.closedBasePoints 存在: 用它创建新 EndPoint, 保留原 id.
+    // - 若 data 是旧格式 (无 closedBasePoints) 但是 Closed CV: 留空,
+    //   cvUpdateClosed 会通过引用去重从 cPoints 兜底恢复.
+    if (bSpline.type === BSplineType.Closed && data.CVModel && data.closedBasePoints && data.closedBasePoints.length) {
+      const baseMap: Map<string, EndPoint> = new Map();
+      const base: EndPoint[] = [];
+      for (const bp of data.closedBasePoints) {
+        const key = bp.id as string;
+        let ep = baseMap.get(key);
+        if (!ep) {
+          ep = new EndPoint(bp.x, bp.y, bp.id);
+          ep.visible = true;
+          baseMap.set(key, ep);
+        }
+        base.push(ep);
+      }
+      bSpline.closedBasePoints = base;
+      // 首帧 cvUpdateClosed 会用 setChildPoint([...base]) 写入 children 并重建派生 cPoints;
+      // 这里先把 base 挂到 children 中保证此前 (如约束系统冷启动) 也能看到.
+      for (const p of base) {
+        p.parent = bSpline;
+        bSpline.children.add(p);
+      }
+    }
+
+    return bSpline;
   }
 
   drag(x: number, y: number, dx: number, dy: number) {
@@ -1102,7 +1207,7 @@ export class GeneralKnotsCalculator extends BaseParameterMethod {
     // 🧩 根据样条类型构造节点向量
     const kValues: number[] = [];
 
-    if (type === BSplineType.Clamped) {
+    if (type === BSplineType.Clamped || type === BSplineType.Closed) {
       // [0,0,0,...,均匀分布...,1,1,1]
       kValues.push(...new Array(degree).fill(0.0));
       switch (method) {
@@ -1117,11 +1222,13 @@ export class GeneralKnotsCalculator extends BaseParameterMethod {
           throw new Error("Unknown parameter method");
       }
       kValues.push(...new Array(degree).fill(1.0));
-    } else if (type === BSplineType.Closed) {
-      // 均匀分布，无端点重复
-      const m = n + 2 * degree;
-      for (let i = 0; i < m; ++i) kValues.push(i / (m - 1));
-    } else if (type === BSplineType.Open) {
+    }
+    // else if (type === BSplineType.Closed) {
+    //   // 均匀分布，无端点重复
+    //   const m = n + 2 * degree;
+    //   for (let i = 0; i < m; ++i) kValues.push(i / (m - 1));
+    // }
+    else if (type === BSplineType.Open) {
       // 均匀分布，无端点重复
       const m = n + degree;
       for (let i = 0; i <= m; ++i) kValues.push(i / m);
@@ -1311,6 +1418,73 @@ function findSpan(U: number[], p: number, u: number): number {
     mid = Math.floor((low + high) / 2);
   }
   return mid;
+}
+
+// ---------- Boehm 单次节点插入 (供 Closed 模式 wrap→clamp 转换使用) ----------
+function boehmInsertOnce(
+  P: { x: number; y: number }[],
+  U: number[],
+  p: number,
+  u: number,
+): { P: { x: number; y: number }[]; U: number[] } {
+  const n = P.length - 1;
+  const k = findSpan(U, p, u);
+  const Q: { x: number; y: number }[] = new Array(n + 2);
+  for (let i = 0; i <= k - p; i++) {
+    Q[i] = { x: P[i].x, y: P[i].y };
+  }
+  for (let i = k - p + 1; i <= k; i++) {
+    const denom = U[i + p] - U[i];
+    const alpha = Math.abs(denom) > 1e-14 ? (u - U[i]) / denom : 0;
+    Q[i] = {
+      x: (1 - alpha) * P[i - 1].x + alpha * P[i].x,
+      y: (1 - alpha) * P[i - 1].y + alpha * P[i].y,
+    };
+  }
+  for (let i = k + 1; i <= n + 1; i++) {
+    Q[i] = { x: P[i - 1].x, y: P[i - 1].y };
+  }
+  const newU = U.slice();
+  newU.splice(k + 1, 0, u);
+  return { P: Q, U: newU };
+}
+
+// 周期 wrap 控制多边形 + 均匀节点 → clamped 形式 (几何不变, C^(p-1) 闭合光滑)
+// 输入: m 个唯一基点 base; 输出: m+p 个 clamped 控制点 + m+2p+1 个 clamped 节点
+export function periodicToClamped(
+  base: { x: number; y: number }[],
+  p: number,
+): { P: { x: number; y: number }[]; U: number[] } {
+  const m = base.length;
+  const periodicP: { x: number; y: number }[] = [];
+  for (let i = 0; i < m; i++) periodicP.push({ x: base[i].x, y: base[i].y });
+  for (let i = 0; i < p; i++) periodicP.push({ x: base[i % m].x, y: base[i % m].y });
+  const n = periodicP.length;
+  const periodicU: number[] = [];
+  const knotCount = n + p + 1;
+  for (let i = 0; i < knotCount; i++) periodicU.push(i / (knotCount - 1));
+
+  const uStart = periodicU[p];
+  const uEnd = periodicU[n];
+  let curP = periodicP;
+  let curU = periodicU;
+  for (let i = 0; i < p; i++) {
+    const r = boehmInsertOnce(curP, curU, p, uStart);
+    curP = r.P;
+    curU = r.U;
+  }
+  for (let i = 0; i < p; i++) {
+    const r = boehmInsertOnce(curP, curU, p, uEnd);
+    curP = r.P;
+    curU = r.U;
+  }
+  const trimmedU = curU.slice(p, curU.length - p);
+  const trimmedP = curP.slice(p, curP.length - p);
+  const u0 = trimmedU[0];
+  const u1 = trimmedU[trimmedU.length - 1];
+  const span = u1 - u0 || 1;
+  for (let i = 0; i < trimmedU.length; i++) trimmedU[i] = (trimmedU[i] - u0) / span;
+  return { P: trimmedP, U: trimmedU };
 }
 
 // ---------- DersBasisFuns：返回 ders[r][j] (0<=r<=nd, 0<=j<=p)
