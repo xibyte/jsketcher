@@ -26,6 +26,7 @@ import { DefeatureRemoveFaceOperation } from "./features/defeatureRemoveFace/def
 import { WireLineOperation } from "./features/wireLine/wireLine";
 import { MoveBodyOperation } from "./features/moveBody/moveBody.operation";
 import { TestFeatureOperation } from "./features/testFeature/testFeature.operation";
+import { OutputSplineData } from "./features/testFeature/testFeature.operation";
 //import {TestOperation} from "./features/test/test.operation";
 //imports of action type commands
 import { GetInfo } from "./actions/getInfo/getInfo.action";
@@ -63,6 +64,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     MoveBodyOperation,
     SimplifyOperation,
     TestFeatureOperation,
+    OutputSplineData,
     //TestOperation,
 
     GetInfo,
@@ -94,6 +96,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
       ['EXPORT_BREP', 'GET_INFO'],
       //["TEST"]
       ['TestFeature_TOOL'],
+      ['OutputSplineData_TOOL'],
 
     ]
   },

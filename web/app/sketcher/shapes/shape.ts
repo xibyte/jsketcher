@@ -6,10 +6,10 @@ export class Shape {
   style: any = null;
   role: string = null;
 
-  accept(visitor) {
+  accept(visitor: (shape: Shape) => boolean): boolean {
     return visitor(this);
   }
 
-  draw(ctx: any, scale: number, viewer: Viewer) {
+  draw(ctx: CanvasRenderingContext2D, scale: number, viewer: Viewer) {
   }
 }

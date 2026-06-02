@@ -413,4 +413,4 @@ var cg = function(A, x, b, tol, maxIt) {
 
 var dogleg = {DEBUG_HANDLER : function() {}}; //backward compatibility
 
-export {dog_leg, dogleg}
+export {dog_leg, dogleg, lu_solve}

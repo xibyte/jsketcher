@@ -18,6 +18,11 @@ interface TestFeatureParams {
 
 }
 
+interface DataParams {
+  face: MFace,
+  R: number,
+}
+
 export const TestFeatureOperation: OperationDescriptor<any> = {
   id: 'TestFeature_TOOL',
   label: 'TestFeature/Chamfer',
@@ -29,7 +34,7 @@ export const TestFeatureOperation: OperationDescriptor<any> = {
 
     const occ = ctx.occService;
     const oci = occ.commandInterface;
-    let edgeList = [];
+    const edgeList = [];
 
 
     // oci.cylinder("aCylinder", params.R);
@@ -80,12 +85,6 @@ console.log(created);
     return {created,
     consumed:[]}
 
-    oci.pipe("aSpring", "aHelixWire", "profile");
-
-    //holeSolids.push(occ.io.getShell("aSpring"));
-
-    return {created:[occ.io.getShell("aSpring")],
-    consumed:[]}
 
   },
   form: [
@@ -121,3 +120,45 @@ console.log(created);
   ],
 }
 
+
+export const OutputSplineData: OperationDescriptor<any> = {
+  id: 'OutputSplineData_TOOL',
+  label: 'OutputSplineData',
+  icon,
+  info: 'OutputSplineData',
+  path:__dirname,
+  paramsInfo: ({size, opperationType,}) => `(${r(size)} ${r(opperationType)}})`,
+  run: (params: DataParams, ctx: ApplicationContext) => {
+
+    const occ = ctx.occService;
+    const oci = occ.commandInterface;
+    const num = params.R;
+
+    ctx.services.sketcher.inPlaceEditor.outputSplineData(ctx.services.selection.face.single, num);
+    const created = [];
+    const consumed = [];
+    return {
+      created,
+      consumed
+    };
+  },
+  form: [
+    {
+      type: 'selection',
+      name: 'face',
+      capture: [EntityKind.FACE],
+      label: 'Face',
+      multi: false,
+      defaultValue: {
+        usePreselection: true,
+        preselectionIndex: 0
+      },
+    },
+    {
+      type: 'number',
+      label: 'R',
+      name: 'R',
+      defaultValue: 5,
+    },
+  ],
+}

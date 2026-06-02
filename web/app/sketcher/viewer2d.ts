@@ -184,7 +184,6 @@ export class Viewer {
   }
 
   search(x, y, buffer, deep, onlyPoints, filter) {
-
     buffer /= this.scale / this.retinaPxielRatio;
     buffer *= 0.5;
 
