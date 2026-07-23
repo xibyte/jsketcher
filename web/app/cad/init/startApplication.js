@@ -110,6 +110,13 @@ export default function startApplication(callback) {
     context.services.lifecycle.declareAppReady();
     context.viewer.render();
     callback(context);
+
+    // Auto-save every 30 seconds
+    setInterval(() => {
+      try {
+        context.projectService.save();
+      } catch(e) { /* silent */ }
+    }, 30000);
   });
 
   bundleSystem.checkDanglingBundles();
