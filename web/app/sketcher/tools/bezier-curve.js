@@ -49,6 +49,7 @@ export class BezierCurveTool extends Tool {
       }
       this.curve.stabilize(this.viewer);
       this.viewer.parametricManager.finishTransaction();
+      this.viewer.historyManager.checkpoint();
       this.viewer.toolManager.releaseControl();
     }
   }

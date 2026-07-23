@@ -53,8 +53,24 @@ export class ToolManager {
         this.releaseControl();
       } else if (e.keyCode === 46 || e.keyCode === 8) {
         const selection = viewer.selected.slice();
-        viewer.removeAll(selection);
-        viewer.refresh();
+        if (selection.length > 0) {
+          viewer.historyManager.checkpoint();
+          viewer.removeAll(selection);
+          viewer.refresh();
+          viewer.historyManager.checkpoint();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.keyCode === 90) {
+        // Ctrl+Z = undo, Ctrl+Shift+Z = redo
+        e.preventDefault();
+        if (e.shiftKey) {
+          viewer.historyManager.redo();
+        } else {
+          viewer.historyManager.undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.keyCode === 89) {
+        // Ctrl+Y = redo
+        e.preventDefault();
+        viewer.historyManager.redo();
       }
     }, false);
     this.addEventListener(canvas, "keypress", (e) => {
@@ -87,6 +103,7 @@ export class ToolManager {
   }
 
   releaseControl() {
+    this.viewer.historyManager.checkpoint();
     this.takeControl(this.defaultTool);
   }
   

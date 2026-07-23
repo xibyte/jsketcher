@@ -66,6 +66,7 @@ export class AddSegmentTool extends Tool {
   nextPointPicked(snapped) {
     this.pointPicked(this.line.b.x, this.line.b.y);
     this.line.stabilize(this.viewer);
+    this.viewer.historyManager.checkpoint();
     if (!snapped) {
       // this.viewer.parametricManager.lockAngle(this.line);
       // this.viewer.parametricManager.lockLength(this.line);

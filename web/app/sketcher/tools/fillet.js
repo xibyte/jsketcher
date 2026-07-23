@@ -117,6 +117,7 @@ export class FilletTool extends Tool {
       this.makeFillet(point1, point2);
       this.viewer.withdrawAll('tool');
       this.viewer.deselectAll();
+      this.viewer.historyManager.checkpoint();
       return true;
     }
     return false;
