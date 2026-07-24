@@ -17,10 +17,12 @@
   --bg-base-color: var(--bg-color-1);
 
   --font-color-empph: #fff;
-  --font-color: hsl(0, 0, 90%);
-  --font-color-minor: hsl(0, 0, 80%);
-  --font-color-suppressed: hsl(0, 0, 65%);
-  --font-color-disabled: hsl(0, 0, 55%);
+  --contrast-on-color: #fff;
+  --contrast-on-light: #000;
+  --font-color: hsl(0, 0%, 90%);
+  --font-color-minor: hsl(0, 0%, 80%);
+  --font-color-suppressed: hsl(0, 0%, 65%);
+  --font-color-disabled: hsl(0, 0%, 55%);
 
   --border-color: var(--bg-color-6);
 
@@ -30,7 +32,7 @@
   --control-bg-focus: #173851;
   --control-border-focus: #326da3;
   --control-selection-color: white;
-  --control-selection-bg: blue;
+  --control-selection-bg: #2a5d9e;
 
   --work-area-color: #4a4a4a;
 
@@ -44,8 +46,8 @@
   --toolbar-button-hover-color: #fff;
   --toolbar-button-disabled-hover-bg: #555;
 
-  --menu-hover-bg: #0074D9;
-  --menu-active-bg: #000d7f;
+  --menu-hover-bg: #2a6dad;
+  --menu-active-bg: #1a4d7a;
   --menu-disabled-hover-bg: #545454;
   --menu-context-btn-color: rgba(255, 255, 255, 0.2);
   --menu-context-btn-hover-color: #fff;
@@ -59,10 +61,10 @@
   --symbol-button-hover-color: #EFEFEF;
   --symbol-button-active-color: #9cdaf7;
 
-  --color-danger: #b00;
-  --color-danger-light: #d40000;
-  --color-accent: #2B7D2B;
-  --color-accent-dark: #1f5a1f;
+  --color-danger: #944;
+  --color-danger-light: #b55;
+  --color-accent: #4a7a4a;
+  --color-accent-dark: #385e38;
 
   --color-neutral: #66727d;
   --color-neutral-dark: #4d5760;
@@ -73,7 +75,8 @@
   --button-bg: #3a3a3a;
   --button-color: #e0e0e0;
   --entity-ref-bg: #3a687d;
-  --entity-ref-border: #d2d0e0;
+  --entity-ref-border: #1a3a4a;
+  --entity-ref-color: #fff;
 
   --tree-text: #f2f2f2;
   --tree-text-muted: rgba(255,255,255,0.55);
@@ -149,11 +152,11 @@
   --explorer-item-bg: rgba(0,0,0,0.6);
   --explorer-item-border: #000;
   --explorer-alt-color: #9c9c9c;
-  --explorer-hover-bg: #0074D9;
-  --explorer-active-bg: #000d7f;
-  --explorer-selected-grad1: #59acff;
-  --explorer-selected-grad2: #0074D9;
-  --explorer-highlighted-bg: #0074D9;
+  --explorer-hover-bg: #2a6dad;
+  --explorer-active-bg: #1a4d7a;
+  --explorer-selected-grad1: #4a8acc;
+  --explorer-selected-grad2: #2a6dad;
+  --explorer-highlighted-bg: #2a6dad;
   --explorer-on-color: #005e82;
   --explorer-off-color: #5f5f5f;
   --explorer-aux-bg: #FDF7E7;
@@ -185,6 +188,8 @@
 @bg-base-color: var(--bg-base-color);
 
 @font-color-empph: var(--font-color-empph);
+@contrast-on-color: var(--contrast-on-color);
+@contrast-on-light: var(--contrast-on-light);
 @font-color: var(--font-color);
 @font-color-minor: var(--font-color-minor);
 @font-color-suppressed: var(--font-color-suppressed);
@@ -242,6 +247,7 @@
 @button-color: var(--button-color);
 @entity-ref-bg: var(--entity-ref-bg);
 @entity-ref-border: var(--entity-ref-border);
+@entity-ref-color: var(--entity-ref-color);
 
 @history-item-bg: var(--history-item-bg);
 @history-item-hover-bg: var(--history-item-hover-bg);

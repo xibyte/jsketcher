@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSketcher Theme Guide</title>
+<style>
+/* =========================================================================
+   JSketcher Theme Visual Guide
+   This self-contained HTML page renders all theme colours and UI styles
+   in both dark and light mode side-by-side. Open it directly in a browser.
+
+   The CSS variable blocks below are AUTO-GENERATED from the real theme
+   files by dev-guide/theme/generate-theme-guide.js. Do not edit them
+   directly — run `node dev-guide/theme/generate-theme-guide.js` to
+   regenerate.
+
+   NOTE: The component sample styles below use var(--...) references to
+   demonstrate the theme system. Do NOT use hardcoded colour values in
+   JSketcher .less files — always use the CSS custom properties / LESS
+   @ aliases defined in theme.less and theme-light.less. Hardcoded hex
+   colours break theme switching. See dev-guide/theme/theme-system.md
+   for the full guide on adding themed colours.
+   ========================================================================= */
+
+/* BEGIN AUTO-GENERATED THEME VARS — do not edit; run generate-theme-guide.js */
+/* --- Dark theme (default :root) --- */
+:root {
+  --hue-prim: 200;
+  --saturation: 6%;
+
+  --bg-color-0: hsl(var(--hue-prim), var(--saturation), 7%);
+  --bg-color-1: hsl(var(--hue-prim), var(--saturation), 12%);
+  --bg-color-2: hsl(var(--hue-prim), var(--saturation), 17%);
+  --bg-color-3: hsl(var(--hue-prim), var(--saturation), 23%);
+  --bg-color-4: hsl(var(--hue-prim), var(--saturation), 28%);
+  --bg-color-5: hsl(var(--hue-prim), var(--saturation), 33%);
+  --bg-color-6: hsl(var(--hue-prim), var(--saturation), 38%);
+  --bg-color-7: hsl(var(--hue-prim), var(--saturation), 43%);
+  --bg-color-8: hsl(var(--hue-prim), var(--saturation), 48%);
+  --bg-color-9: hsl(var(--hue-prim), var(--saturation), 53%);
+
+  --bg-base-color: var(--bg-color-1);
+
+  --font-color-empph: #fff;
+  --contrast-on-color: #fff;
+  --contrast-on-light: #000;
+  --font-color: hsl(0, 0%, 90%);
+  --font-color-minor: hsl(0, 0%, 80%);
+  --font-color-suppressed: hsl(0, 0%, 65%);
+  --font-color-disabled: hsl(0, 0%, 55%);
+
+  --border-color: var(--bg-color-6);
+
+  --control-color-number: #2fa1d6;
+  --control-color-text: #9cdaf7;
+  --control-bg: #303030;
+  --control-bg-focus: #173851;
+  --control-border-focus: #326da3;
+  --control-selection-color: white;
+  --control-selection-bg: #2a5d9e;
+
+  --work-area-color: #4a4a4a;
+
+  --work-area-control-bar-bg-color: rgba(0, 0, 0, 0.5);
+  --work-area-control-bar-bg-color-active: #555;
+  --work-area-control-bar-font-color: var(--font-color-minor);
+
+  --toolbar-bg: rgba(255, 255, 255, 0.08);
+  --toolbar-button-color: #999;
+  --toolbar-button-hover-bg: #333;
+  --toolbar-button-hover-color: #fff;
+  --toolbar-button-disabled-hover-bg: #555;
+
+  --menu-hover-bg: #2a6dad;
+  --menu-active-bg: #1a4d7a;
+  --menu-disabled-hover-bg: #545454;
+  --menu-context-btn-color: rgba(255, 255, 255, 0.2);
+  --menu-context-btn-hover-color: #fff;
+  --menu-context-btn-active-color: #7f0807;
+
+  --widget-bg: rgba(40, 40, 40, 0.95);
+  --widget-color: #fff;
+  --widget-border: #000;
+
+  --symbol-button-color: #fff;
+  --symbol-button-hover-color: #EFEFEF;
+  --symbol-button-active-color: #9cdaf7;
+
+  --color-danger: #944;
+  --color-danger-light: #b55;
+  --color-accent: #4a7a4a;
+  --color-accent-dark: #385e38;
+
+  --color-neutral: #66727d;
+  --color-neutral-dark: #4d5760;
+  --color-highlight: #003f5d;
+  --color-highlight-dark: #002a40;
+
+  --color-btn-selected: #285f7a;
+  --button-bg: #3a3a3a;
+  --button-color: #e0e0e0;
+  --entity-ref-bg: #3a687d;
+  --entity-ref-border: #1a3a4a;
+  --entity-ref-color: #fff;
+
+  --tree-text: #f2f2f2;
+  --tree-text-muted: rgba(255,255,255,0.55);
+  --tree-chevron: rgba(255,255,255,0.75);
+  --tree-icon: rgba(255,255,255,0.85);
+  --tree-eye: rgba(255,255,255,0.75);
+  --tree-eye-off: rgba(255,255,255,0.25);
+  --tree-row-bg: rgba(255,255,255,0.04);
+  --tree-hover-bg: rgba(255,255,255,0.12);
+  --tree-text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+
+  --history-item-bg: #737373;
+  --history-item-hover-bg: #4d4d4d;
+  --history-item-active-bg: #9c9c9c;
+  --history-item-border: #2e2e2e;
+  --history-control-bg: #64808b;
+  --history-control-hover-bg: #489;
+  --history-control-active-bg: #5dc4da;
+  --history-disabled-bg: #828282;
+  --history-disabled-border: #a7a7a7;
+  --history-disabled-color: #a7a7a7;
+  --history-opindex-shadow: 0px -1px 0 #000, 0px 1px 0 #000, 1px 0px 0 #000, -1px 0px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  --history-scroller-hover-bg: #BFBFBF;
+  --history-scroller-active-bg: #7e7e7e;
+  --history-root-bg: rgba(0, 0, 0, 0.1);
+  --history-future-border: rgba(255,255,255,0.53);
+  --history-add-color: rgba(255,255,255,0.53);
+
+  --on-color-highlight: #5A93BBFF;
+  --on-color-highlight-variant-yellow: bisque;
+  --on-color-highlight-variant-pink: hotpink;
+  --on-color-highlight-variant-red: tomato;
+  --on-color-highlight-variant-green: springgreen;
+  --on-color-highlight-variant-blue: aquamarine;
+
+  --app-bg: gray;
+  --app-logo-color: #bbb;
+  --app-panel-bg: #444;
+  --app-panel-border: #222222;
+  --app-btn-bg: #606060;
+  --app-btn-border: #808080;
+  --app-btn-hover-bg: #808080;
+  --app-btn-hover-border: #ccc;
+  --app-btn-color: #fff;
+  --app-dock-color: #fff;
+  --app-selected-bg: #333;
+  --app-selected-color: #ccc;
+  --app-sbtn-border: #999;
+  --app-tlist-color: #fff;
+  --app-tlist-border: #777;
+  --app-tlist-hover-bg: #222;
+  --app-tool-caption-color: #fff;
+  --app-tool-caption-bg: #333;
+  --app-scrollbar-track: white;
+  --app-scrollbar-thumb: steelblue;
+  --app-scrollbar-thumb-hover: royalblue;
+  --app-sketcher-window-border: #444444;
+  --app-win-bg: #666;
+  --app-win-border: #444444;
+  --app-win-content-color: #fff;
+  --app-pseudo-btn-bg: #606060;
+  --app-pseudo-btn-hover-bg: #808080;
+  --app-pseudo-btn-color: #fff;
+  --app-layers-bg: #ddd;
+  --app-status-color: #fff;
+  --app-status-item-color: #bbb;
+  --app-tool-hint-color: #000;
+  --app-explorer-header-bg: #7d7d7dee;
+  --app-explorer-header-border: #595959;
+  --app-headsup-splitter: #8e8e8e;
+  --app-svg-icon-stroke: #fff;
+
+  --explorer-item-bg: rgba(0,0,0,0.6);
+  --explorer-item-border: #000;
+  --explorer-alt-color: #9c9c9c;
+  --explorer-hover-bg: #2a6dad;
+  --explorer-active-bg: #1a4d7a;
+  --explorer-selected-grad1: #4a8acc;
+  --explorer-selected-grad2: #2a6dad;
+  --explorer-highlighted-bg: #2a6dad;
+  --explorer-on-color: #005e82;
+  --explorer-off-color: #5f5f5f;
+  --explorer-aux-bg: #FDF7E7;
+  --explorer-aux-color: #1a1a1a;
+  --explorer-icon-bg: #606060;
+  --explorer-titlebar-bg: rgba(0,0,0,0.7);
+  --explorer-titlebar-color: #fff;
+  --contextual-bg: rgba(0,0,0,0.8);
+  --contextual-color: #fff;
+  --sketcher-toolbar-btn-bg: #606060;
+  --sketcher-toolbar-btn-border: #606060;
+  --sketcher-toolbar-focus: #0065dc;
+}
+
+/* --- Light theme --- */
+.theme-light {
+  --hue-prim: 210;
+  --saturation: 15%;
+
+  --bg-color-0: hsl(var(--hue-prim), var(--saturation), 99%);
+  --bg-color-1: hsl(var(--hue-prim), var(--saturation), 96%);
+  --bg-color-2: hsl(var(--hue-prim), var(--saturation), 93%);
+  --bg-color-3: hsl(var(--hue-prim), var(--saturation), 90%);
+  --bg-color-4: hsl(var(--hue-prim), var(--saturation), 88%);
+  --bg-color-5: hsl(var(--hue-prim), var(--saturation), 83%);
+  --bg-color-6: hsl(var(--hue-prim), var(--saturation), 78%);
+  --bg-color-7: hsl(var(--hue-prim), var(--saturation), 73%);
+  --bg-color-8: hsl(var(--hue-prim), var(--saturation), 68%);
+  --bg-color-9: hsl(var(--hue-prim), var(--saturation), 63%);
+
+  --bg-base-color: var(--bg-color-1);
+
+  --font-color-empph: #000;
+  --contrast-on-color: #fff;
+  --contrast-on-light: #000;
+  --font-color: hsl(0, 0%, 15%);
+  --font-color-minor: hsl(0, 0%, 30%);
+  --font-color-suppressed: hsl(0, 0%, 45%);
+  --font-color-disabled: hsl(0, 0%, 55%);
+
+  --border-color: var(--bg-color-6);
+
+  --control-color-number: #1565a8;
+  --control-color-text: #0d4a7a;
+  --control-bg: #ffffff;
+  --control-bg-focus: #e8f0fe;
+  --control-border-focus: #1a73e8;
+  --control-selection-color: white;
+  --control-selection-bg: #1a73e8;
+
+  --work-area-color: #d6dde3;
+
+  --work-area-control-bar-bg-color: rgba(255, 255, 255, 0.7);
+  --work-area-control-bar-bg-color-active: #ccc;
+  --work-area-control-bar-font-color: var(--font-color-minor);
+
+  --toolbar-bg: rgba(255, 255, 255, 0.5);
+  --toolbar-button-color: #555;
+  --toolbar-button-hover-bg: #e0e0e0;
+  --toolbar-button-hover-color: #222;
+  --toolbar-button-disabled-hover-bg: #f0f0f0;
+
+  --menu-hover-bg: #5a8ab8;
+  --menu-active-bg: #3d6a96;
+  --menu-disabled-hover-bg: #e0e0e0;
+  --menu-context-btn-color: rgba(0, 0, 0, 0.2);
+  --menu-context-btn-hover-color: #333;
+  --menu-context-btn-active-color: #b00;
+
+  --widget-bg: rgba(255, 255, 255, 0.95);
+  --widget-color: #222;
+  --widget-border: #ccc;
+
+  --symbol-button-color: #333;
+  --symbol-button-hover-color: #555;
+  --symbol-button-active-color: #1565a8;
+
+  --color-danger: #b04545;
+  --color-danger-light: #cc5555;
+  --color-accent: #4a8a4a;
+  --color-accent-dark: #386838;
+
+  --color-neutral: #8893a0;
+  --color-neutral-dark: #6a7480;
+  --color-highlight: #b0d8f0;
+  --color-highlight-dark: #80b0d0;
+
+  --color-btn-selected: #8ab8d0;
+  --button-bg: #e8e8e8;
+  --button-color: #333;
+  --entity-ref-bg: #d0e0ea;
+  --entity-ref-border: #aaa;
+  --entity-ref-color: #1a3a4a;
+
+  --tree-text: #222;
+  --tree-text-muted: rgba(0,0,0,0.5);
+  --tree-chevron: rgba(0,0,0,0.6);
+  --tree-icon: rgba(0,0,0,0.7);
+  --tree-eye: rgba(0,0,0,0.6);
+  --tree-eye-off: rgba(0,0,0,0.25);
+  --tree-row-bg: rgba(0,0,0,0.03);
+  --tree-hover-bg: rgba(0,0,0,0.08);
+  --tree-text-shadow: none;
+
+  --history-item-bg: #e0e0e0;
+  --history-item-hover-bg: #c8c8c8;
+  --history-item-active-bg: #d0d0d0;
+  --history-item-border: #bbb;
+  --history-control-bg: #b0c4d0;
+  --history-control-hover-bg: #a0b8c8;
+  --history-control-active-bg: #90a8b8;
+  --history-disabled-bg: #f0f0f0;
+  --history-disabled-border: #ccc;
+  --history-disabled-color: #999;
+  --history-opindex-shadow: 0px -1px 0 #fff, 0px 1px 0 #fff, 1px 0px 0 #fff, -1px 0px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+  --history-scroller-hover-bg: #d0d0d0;
+  --history-scroller-active-bg: #bbb;
+  --history-root-bg: rgba(0, 0, 0, 0.03);
+  --history-future-border: rgba(0,0,0,0.3);
+  --history-add-color: rgba(0,0,0,0.4);
+
+  --on-color-highlight: rgba(90, 147, 187, 0.4);
+  --on-color-highlight-variant-yellow: #b8860b;
+  --on-color-highlight-variant-pink: #c71585;
+  --on-color-highlight-variant-red: #cd3700;
+  --on-color-highlight-variant-green: #228b22;
+  --on-color-highlight-variant-blue: #4682b4;
+
+  --app-bg: #e8e8e8;
+  --app-logo-color: #555;
+  --app-panel-bg: #f0f0f0;
+  --app-panel-border: #ccc;
+  --app-btn-bg: #e0e0e0;
+  --app-btn-border: #bbb;
+  --app-btn-hover-bg: #d0d0d0;
+  --app-btn-hover-border: #999;
+  --app-btn-color: #333;
+  --app-dock-color: #333;
+  --app-selected-bg: #d0e0ea;
+  --app-selected-color: #222;
+  --app-sbtn-border: #999;
+  --app-tlist-color: #333;
+  --app-tlist-border: #ddd;
+  --app-tlist-hover-bg: #e0e8f0;
+  --app-tool-caption-color: #333;
+  --app-tool-caption-bg: #e0e0e0;
+  --app-scrollbar-track: #f0f0f0;
+  --app-scrollbar-thumb: #88aacc;
+  --app-scrollbar-thumb-hover: #6699bb;
+  --app-sketcher-window-border: #ccc;
+  --app-win-bg: #f0f0f0;
+  --app-win-border: #ccc;
+  --app-win-content-color: #333;
+  --app-pseudo-btn-bg: #e0e0e0;
+  --app-pseudo-btn-hover-bg: #d0d0d0;
+  --app-pseudo-btn-color: #333;
+  --app-layers-bg: #f5f5f5;
+  --app-status-color: #333;
+  --app-status-item-color: #666;
+  --app-tool-hint-color: #333;
+  --app-explorer-header-bg: #e0e0e0ee;
+  --app-explorer-header-border: #ccc;
+  --app-headsup-splitter: #ccc;
+  --app-svg-icon-stroke: #333;
+
+  --explorer-item-bg: rgba(255,255,255,0.85);
+  --explorer-item-border: #ccc;
+  --explorer-alt-color: #b0b0b0;
+  --explorer-hover-bg: #5a8ab8;
+  --explorer-active-bg: #3d6a96;
+  --explorer-selected-grad1: #8faec8;
+  --explorer-selected-grad2: #5a8ab8;
+  --explorer-highlighted-bg: #5a8ab8;
+  --explorer-on-color: #b0d0e8;
+  --explorer-off-color: #c0c0c0;
+  --explorer-aux-bg: #fff8e0;
+  --explorer-aux-color: #333;
+  --explorer-icon-bg: #d0d0d0;
+  --explorer-titlebar-bg: rgba(255,255,255,0.85);
+  --explorer-titlebar-color: #333;
+  --contextual-bg: rgba(255,255,255,0.88);
+  --contextual-color: #333;
+  --sketcher-toolbar-btn-bg: #e0e0e0;
+  --sketcher-toolbar-btn-border: #ccc;
+  --sketcher-toolbar-focus: #5a8ab8;
+}
+/* END AUTO-GENERATED THEME VARS */
+
+/* --- Page layout --- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg-color-0);
+  color: var(--font-color);
+  padding: 20px;
+}
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+h2 {
+  font-size: 20px;
+  margin: 30px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+h3 {
+  font-size: 15px;
+  margin: 16px 0 8px;
+  color: var(--font-color-minor);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.intro {
+  color: var(--font-color-minor);
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.columns {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.column {
+  flex: 1;
+  min-width: 420px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+}
+
+.column-header {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+}
+.column.dark .column-header { background: var(--bg-color-2); color: var(--font-color-empph); }
+.column.light .column-header { background: var(--bg-color-3); color: var(--font-color-empph); }
+
+.panel {
+  padding: 16px;
+}
+
+/* --- Theme panels (actual themed content) --- */
+.theme-panel {
+  background: var(--bg-base-color);
+  color: var(--font-color);
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* --- Swatch grid --- */
+.swatch-group {
+  margin-bottom: 20px;
+}
+.swatch-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  color: var(--font-color-minor);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4px;
+}
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 6px;
+}
+.swatch {
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+.swatch-color {
+  height: 36px;
+}
+.swatch-label {
+  padding: 3px 6px;
+  font-size: 10px;
+  font-family: monospace;
+  background: var(--bg-color-2);
+  color: var(--font-color-minor);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Component samples --- */
+.sample-group {
+  margin-bottom: 20px;
+}
+.sample-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  color: var(--font-color-minor);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4px;
+}
+
+/* Buttons */
+.btn-sample {
+  display: inline-block;
+  padding: 6px 14px;
+  margin: 2px;
+  border: 0;
+  border-radius: 2px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn-base { background: var(--button-bg); color: var(--button-color); }
+.btn-accent { background: var(--color-accent); color: var(--contrast-on-color); }
+.btn-accent:hover { background: var(--color-accent-dark); }
+.btn-danger { background: var(--color-danger); color: var(--contrast-on-color); }
+.btn-danger:hover { background: var(--color-danger-light); }
+.btn-neutral { background: var(--color-neutral); color: var(--contrast-on-color); }
+.btn-neutral:hover { background: var(--color-neutral-dark); }
+.btn-app {
+  border: 1px solid var(--app-btn-border);
+  background: var(--app-btn-bg);
+  color: var(--app-btn-color);
+  border-radius: 4px;
+}
+.btn-app:hover { background: var(--app-btn-hover-bg); }
+.btn-sketcher {
+  background: var(--sketcher-toolbar-btn-bg);
+  color: var(--font-color);
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+
+/* Form controls */
+.input-sample {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  padding: 5px 8px;
+  margin: 4px 0;
+  background: var(--control-bg);
+  color: var(--font-color);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  font-size: 13px;
+}
+.input-sample:focus {
+  outline: none;
+  background: var(--control-bg-focus);
+  border-color: var(--control-border-focus);
+}
+.input-sample::selection {
+  background: var(--control-selection-bg);
+  color: var(--control-selection-color);
+}
+
+/* Widget / popup */
+.widget-sample {
+  background: var(--widget-bg);
+  color: var(--widget-color);
+  border: 1px solid var(--widget-border);
+  border-radius: 4px;
+  padding: 12px;
+  margin: 8px 0;
+}
+.widget-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Menu items */
+.menu-sample {
+  background: var(--bg-color-2);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 200px;
+  margin: 8px 0;
+}
+.menu-item {
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.menu-item:hover { background: var(--menu-hover-bg); color: var(--contrast-on-color); }
+.menu-item.active { background: var(--menu-active-bg); color: var(--contrast-on-color); }
+.menu-item.disabled { color: var(--font-color-disabled); }
+.menu-item.disabled:hover { background: var(--menu-disabled-hover-bg); }
+
+/* Toolbar */
+.toolbar-sample {
+  background: var(--toolbar-bg);
+  padding: 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  gap: 4px;
+  margin: 8px 0;
+}
+.toolbar-btn {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--toolbar-button-color);
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 14px;
+}
+.toolbar-btn:hover { background: var(--toolbar-button-hover-bg); color: var(--toolbar-button-hover-color); }
+
+/* Entity tree */
+.tree-sample {
+  font-size: 12px;
+  font-family: -apple-system, sans-serif;
+}
+.tree-row {
+  display: flex; align-items: center;
+  height: 22px; padding-left: 4px;
+  color: var(--tree-text);
+  background: var(--tree-row-bg);
+  border-radius: 3px;
+  margin-bottom: 2px;
+}
+.tree-row:hover { background: var(--tree-hover-bg); }
+.tree-chevron { width: 14px; color: var(--tree-text-muted); }
+.tree-label { flex: 1; }
+
+/* History timeline */
+.history-sample {
+  display: flex; gap: 3px; padding: 4px;
+  background: var(--bg-color-1);
+  border-radius: 4px;
+}
+.history-item {
+  width: 30px; height: 30px;
+  background: var(--history-item-bg);
+  border: 1px solid var(--history-item-border);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--font-color);
+}
+.history-item.disabled {
+  background: var(--history-disabled-bg);
+  color: var(--history-disabled-color);
+}
+.history-control {
+  background: var(--history-control-bg);
+}
+
+/* Explorer items */
+.explorer-sample {
+  background: var(--explorer-item-bg);
+  border: 1px solid var(--explorer-item-border);
+  border-radius: 5px;
+  display: flex; align-items: stretch;
+  margin: 4px 0; max-width: 300px;
+  overflow: hidden;
+}
+.explorer-icon {
+  padding: 6px; background: var(--explorer-icon-bg);
+  display: flex; align-items: center; font-size: 12px;
+  color: var(--font-color);
+}
+.explorer-tag {
+  flex: 1; padding: 0 8px; display: flex; align-items: center;
+  font-size: 12px; color: var(--font-color);
+  cursor: pointer;
+}
+.explorer-tag:hover { background: var(--explorer-hover-bg); color: var(--contrast-on-color); }
+.explorer-tag.selected { background: var(--explorer-hover-bg); color: var(--contrast-on-color); }
+.explorer-role {
+  padding: 0 8px; display: flex; align-items: center; font-size: 11px;
+}
+.explorer-role.on { background: var(--explorer-on-color); color: var(--contrast-on-color); }
+.explorer-role.off { background: var(--explorer-off-color); color: var(--contrast-on-color); }
+.explorer-role.aux { background: var(--explorer-aux-bg); color: var(--explorer-aux-color); }
+
+/* Contextual panel */
+.contextual-sample {
+  background: var(--contextual-bg);
+  color: var(--contextual-color);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin: 8px 0;
+  max-width: 250px;
+}
+
+/* Entity ref chip */
+.entity-ref-sample {
+  display: inline-block;
+  background: var(--entity-ref-bg);
+  border: 1px solid var(--entity-ref-border);
+  border-radius: 2px;
+  padding: 2px 6px;
+  margin: 2px;
+  font-size: 12px;
+  color: var(--entity-ref-color);
+}
+
+/* App shell samples */
+.app-panel-sample {
+  background: var(--app-panel-bg);
+  padding: 10px;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+.app-tool-caption {
+  font-weight: 700; font-size: 13px;
+  color: var(--app-tool-caption-color);
+  background: var(--app-tool-caption-bg);
+  padding: 4px 8px;
+  border-radius: 3px 3px 0 0;
+}
+.app-tlist { list-style: none; padding: 0; margin: 0; }
+.app-tlist li {
+  padding: 4px 8px; font-size: 12px;
+  color: var(--app-tlist-color);
+  border-bottom: 1px solid var(--app-tlist-border);
+  cursor: pointer;
+}
+.app-tlist li:hover { background: var(--app-tlist-hover-bg); }
+.app-selected {
+  background: var(--app-selected-bg);
+  color: var(--app-selected-color);
+  padding: 4px 8px; border-radius: 3px; font-size: 12px;
+  display: inline-block; margin: 2px;
+}
+.app-status {
+  color: var(--app-status-color); font-size: 11px;
+  font-style: italic;
+}
+
+/* On-colour highlights */
+.highlight-samples { display: flex; gap: 6px; flex-wrap: wrap; }
+.highlight-chip {
+  padding: 4px 10px; border-radius: 3px;
+  font-size: 11px; font-weight: 600;
+  background: var(--bg-color-7);
+}
+.highlight-chip.yellow { background: var(--on-color-highlight-variant-yellow); color: var(--contrast-on-light); }
+.highlight-chip.pink { background: var(--on-color-highlight-variant-pink); color: var(--contrast-on-color); }
+.highlight-chip.red { background: var(--on-color-highlight-variant-red); color: var(--contrast-on-color); }
+.highlight-chip.green { background: var(--on-color-highlight-variant-green); color: var(--contrast-on-light); }
+.highlight-chip.blue { background: var(--on-color-highlight-variant-blue); color: var(--contrast-on-light); }
+.highlight-chip.default { background: var(--on-color-highlight); color: var(--contrast-on-light); }
+
+/* Work area */
+.workarea-sample {
+  background: var(--work-area-color);
+  height: 60px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--font-color-minor); font-size: 12px;
+}
+
+/* Window sample */
+.win-sample {
+  background: var(--app-win-bg);
+  border: 3px solid var(--app-win-border);
+  border-radius: 4px;
+  padding: 0; margin: 8px 0; max-width: 280px;
+}
+.win-sample .caption {
+  background: var(--app-tool-caption-bg);
+  color: var(--app-tool-caption-color);
+  padding: 4px 8px; font-weight: 700; font-size: 13px;
+}
+.win-sample .content {
+  padding: 10px; color: var(--font-color); font-size: 12px;
+}
+
+</style>
+</head>
+<body>
+
+<h1>JSketcher Theme Visual Guide</h1>
+<p class="intro">
+  This page renders all JSketcher theme colours and UI component styles
+  in both dark (left) and light (right) mode. The colours are live CSS
+  custom properties — the same variables used by the application.
+  See <code>dev-guide/theme/theme-system.md</code> for the full documentation.
+</p>
+
+<div class="columns">
+
+<!-- =================== DARK COLUMN =================== -->
+<div class="column dark">
+  <div class="column-header">Dark Theme (default)</div>
+  <div class="theme-panel">
+
+    <!-- Grayscale ramp -->
+    <div class="swatch-group">
+      <div class="swatch-group-title">Base Grayscale Ramp</div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-0)"></div><div class="swatch-label">bg-0</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-1)"></div><div class="swatch-label">bg-1 (base)</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-2)"></div><div class="swatch-label">bg-2</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-3)"></div><div class="swatch-label">bg-3</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-4)"></div><div class="swatch-label">bg-4</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-5)"></div><div class="swatch-label">bg-5</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-6)"></div><div class="swatch-label">bg-6 (border)</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-7)"></div><div class="swatch-label">bg-7</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-8)"></div><div class="swatch-label">bg-8</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-9)"></div><div class="swatch-label">bg-9</div></div>
+      </div>
+    </div>
+
+    <!-- Typography -->
+    <div class="swatch-group">
+      <div class="swatch-group-title">Typography</div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color-empph)"></div><div class="swatch-label">empph</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color)"></div><div class="swatch-label">font</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color-minor)"></div><div class="swatch-label">minor</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color-suppressed)"></div><div class="swatch-label">suppressed</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color-disabled)"></div><div class="swatch-label">disabled</div></div>
+      </div>
+    </div>
+
+    <!-- Semantic -->
+    <div class="swatch-group">
+      <div class="swatch-group-title">Semantic Colours</div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-danger)"></div><div class="swatch-label">danger</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-danger-light)"></div><div class="swatch-label">danger-light</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-accent)"></div><div class="swatch-label">accent</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-accent-dark)"></div><div class="swatch-label">accent-dark</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-neutral)"></div><div class="swatch-label">neutral</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-neutral-dark)"></div><div class="swatch-label">neutral-dark</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-highlight)"></div><div class="swatch-label">highlight</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-highlight-dark)"></div><div class="swatch-label">highlight-dark</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-btn-selected)"></div><div class="swatch-label">btn-selected</div></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="swatch-group">
+      <div class="swatch-group-title">Form Controls</div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background:var(--control-bg)"></div><div class="swatch-label">control-bg</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--control-bg-focus)"></div><div class="swatch-label">bg-focus</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--control-border-focus)"></div><div class="swatch-label">border-focus</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--control-selection-bg)"></div><div class="swatch-label">selection-bg</div></div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="sample-group">
+      <div class="sample-group-title">Buttons</div>
+      <button class="btn-sample btn-base">Base Button</button>
+      <button class="btn-sample btn-accent">Accent (OK)</button>
+      <button class="btn-sample btn-danger">Danger (Delete)</button>
+      <button class="btn-sample btn-neutral">Neutral</button>
+      <br>
+      <button class="btn-sample btn-app">App Button</button>
+      <button class="btn-sample btn-sketcher">Sketcher Button</button>
+    </div>
+
+    <!-- Form inputs -->
+    <div class="sample-group">
+      <div class="sample-group-title">Form Inputs</div>
+      <input class="input-sample" type="text" value="Normal input" />
+      <input class="input-sample" type="text" value="Focus me!" placeholder="Click to focus" />
+      <input class="input-sample" type="text" value="123.45" style="color:var(--control-color-number)" />
+    </div>
+
+    <!-- Widget / Popup -->
+    <div class="sample-group">
+      <div class="sample-group-title">Widget / Popup</div>
+      <div class="widget-sample">
+        <div class="widget-title">EXTRUDE OPERATION #1</div>
+        <p style="margin-bottom:8px">This is a floating popup widget with themed background, text, and border.</p>
+        <button class="btn-sample btn-accent">OK</button>
+        <button class="btn-sample btn-base">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="sample-group">
+      <div class="sample-group-title">Menu Items</div>
+      <div class="menu-sample">
+        <div class="menu-item">Normal Item</div>
+        <div class="menu-item active">Active Item</div>
+        <div class="menu-item disabled">Disabled Item</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="sample-group">
+      <div class="sample-group-title">Heads-Up Toolbar</div>
+      <div class="toolbar-sample">
+        <div class="toolbar-btn">&#9650;</div>
+        <div class="toolbar-btn">&#9660;</div>
+        <div class="toolbar-btn">&#9636;</div>
+        <div class="toolbar-btn">&#9881;</div>
+      </div>
+    </div>
+
+    <!-- Entity Tree -->
+    <div class="sample-group">
+      <div class="sample-group-title">Entity Tree Overlay</div>
+      <div class="tree-sample">
+        <div class="tree-row"><span class="tree-chevron">&#9660;</span><span class="tree-label">Group 1</span></div>
+        <div class="tree-row" style="padding-left:18px"><span class="tree-chevron">&#9654;</span><span class="tree-label">Surface A</span></div>
+        <div class="tree-row" style="padding-left:18px"><span class="tree-chevron"></span><span class="tree-label" style="color:var(--tree-text-muted)">Control Point</span></div>
+      </div>
+    </div>
+
+    <!-- History Timeline -->
+    <div class="sample-group">
+      <div class="sample-group-title">History Timeline</div>
+      <div class="history-sample">
+        <div class="history-item history-control">+</div>
+        <div class="history-item">1</div>
+        <div class="history-item">2</div>
+        <div class="history-item disabled">3</div>
+        <div class="history-item">4</div>
+      </div>
+    </div>
+
+    <!-- Explorer Items -->
+    <div class="sample-group">
+      <div class="sample-group-title">Sketcher Explorer Items</div>
+      <div class="explorer-sample">
+        <div class="explorer-icon">&#9632;</div>
+        <div class="explorer-tag">Line 1</div>
+        <div class="explorer-role on">on</div>
+      </div>
+      <div class="explorer-sample">
+        <div class="explorer-icon">&#9675;</div>
+        <div class="explorer-tag selected">Arc 2</div>
+        <div class="explorer-role off">off</div>
+      </div>
+      <div class="explorer-sample">
+        <div class="explorer-icon">&#9650;</div>
+        <div class="explorer-tag">Aux Ref</div>
+        <div class="explorer-role aux">aux</div>
+      </div>
+    </div>
+
+    <!-- Contextual Panel -->
+    <div class="sample-group">
+      <div class="sample-group-title">Contextual Controls Panel</div>
+      <div class="contextual-sample">
+        Contextual overlay panel with semi-transparent background.
+      </div>
+    </div>
+
+    <!-- Entity Ref -->
+    <div class="sample-group">
+      <div class="sample-group-title">Entity Reference Chips</div>
+      <span class="entity-ref-sample">Face[0]</span>
+      <span class="entity-ref-sample">Edge[3]</span>
+      <span class="entity-ref-sample">&lt;not selected&gt;</span>
+    </div>
+
+    <!-- App Shell -->
+    <div class="sample-group">
+      <div class="sample-group-title">App Shell</div>
+      <div class="app-panel-sample">
+        <div class="app-tool-caption">Tool Panel</div>
+        <ul class="app-tlist">
+          <li>Item One</li>
+          <li>Item Two (hover me)</li>
+          <li>Item Three</li>
+        </ul>
+      </div>
+      <div>
+        <span class="app-selected">Selected Tab</span>
+        <span class="app-status">x: 12.3, y: 45.6</span>
+      </div>
+    </div>
+
+    <!-- Window -->
+    <div class="sample-group">
+      <div class="sample-group-title">Window</div>
+      <div class="win-sample">
+        <div class="caption">Window Title</div>
+        <div class="content">This is a floating window with a thick themed border.</div>
+      </div>
+    </div>
+
+    <!-- Work Area -->
+    <div class="sample-group">
+      <div class="sample-group-title">3D Work Area</div>
+      <div class="workarea-sample">3D Canvas Background</div>
+    </div>
+
+    <!-- On-colour highlights -->
+    <div class="sample-group">
+      <div class="sample-group-title">Geometry Selection Highlights</div>
+      <div class="highlight-samples">
+        <span class="highlight-chip default">default</span>
+        <span class="highlight-chip yellow">yellow</span>
+        <span class="highlight-chip pink">pink</span>
+        <span class="highlight-chip red">red</span>
+        <span class="highlight-chip green">green</span>
+        <span class="highlight-chip blue">blue</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =================== LIGHT COLUMN =================== -->
+<div class="column light">
+  <div class="column-header">Light Theme</div>
+  <div class="theme-panel theme-light">
+
+    <!-- Grayscale ramp -->
+    <div class="swatch-group">
+      <div class="swatch-group-title">Base Grayscale Ramp</div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-0)"></div><div class="swatch-label">bg-0</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-1)"></div><div class="swatch-label">bg-1 (base)</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-2)"></div><div class="swatch-label">bg-2</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-3)"></div><div class="swatch-label">bg-3</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-4)"></div><div class="swatch-label">bg-4</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-5)"></div><div class="swatch-label">bg-5</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-6)"></div><div class="swatch-label">bg-6 (border)</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-7)"></div><div class="swatch-label">bg-7</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-8)"></div><div class="swatch-label">bg-8</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--bg-color-9)"></div><div class="swatch-label">bg-9</div></div>
+      </div>
+    </div>
+
+    <!-- Typography -->
+    <div class="swatch-group">
+      <div class="swatch-group-title">Typography</div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color-empph)"></div><div class="swatch-label">empph</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color)"></div><div class="swatch-label">font</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color-minor)"></div><div class="swatch-label">minor</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color-suppressed)"></div><div class="swatch-label">suppressed</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--font-color-disabled)"></div><div class="swatch-label">disabled</div></div>
+      </div>
+    </div>
+
+    <!-- Semantic -->
+    <div class="swatch-group">
+      <div class="swatch-group-title">Semantic Colours</div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-danger)"></div><div class="swatch-label">danger</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-danger-light)"></div><div class="swatch-label">danger-light</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-accent)"></div><div class="swatch-label">accent</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-accent-dark)"></div><div class="swatch-label">accent-dark</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-neutral)"></div><div class="swatch-label">neutral</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-neutral-dark)"></div><div class="swatch-label">neutral-dark</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-highlight)"></div><div class="swatch-label">highlight</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-highlight-dark)"></div><div class="swatch-label">highlight-dark</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--color-btn-selected)"></div><div class="swatch-label">btn-selected</div></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="swatch-group">
+      <div class="swatch-group-title">Form Controls</div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background:var(--control-bg)"></div><div class="swatch-label">control-bg</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--control-bg-focus)"></div><div class="swatch-label">bg-focus</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--control-border-focus)"></div><div class="swatch-label">border-focus</div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--control-selection-bg)"></div><div class="swatch-label">selection-bg</div></div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="sample-group">
+      <div class="sample-group-title">Buttons</div>
+      <button class="btn-sample btn-base">Base Button</button>
+      <button class="btn-sample btn-accent">Accent (OK)</button>
+      <button class="btn-sample btn-danger">Danger (Delete)</button>
+      <button class="btn-sample btn-neutral">Neutral</button>
+      <br>
+      <button class="btn-sample btn-app">App Button</button>
+      <button class="btn-sample btn-sketcher">Sketcher Button</button>
+    </div>
+
+    <!-- Form inputs -->
+    <div class="sample-group">
+      <div class="sample-group-title">Form Inputs</div>
+      <input class="input-sample" type="text" value="Normal input" />
+      <input class="input-sample" type="text" value="Focus me!" placeholder="Click to focus" />
+      <input class="input-sample" type="text" value="123.45" style="color:var(--control-color-number)" />
+    </div>
+
+    <!-- Widget / Popup -->
+    <div class="sample-group">
+      <div class="sample-group-title">Widget / Popup</div>
+      <div class="widget-sample">
+        <div class="widget-title">EXTRUDE OPERATION #1</div>
+        <p style="margin-bottom:8px">This is a floating popup widget with themed background, text, and border.</p>
+        <button class="btn-sample btn-accent">OK</button>
+        <button class="btn-sample btn-base">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="sample-group">
+      <div class="sample-group-title">Menu Items</div>
+      <div class="menu-sample">
+        <div class="menu-item">Normal Item</div>
+        <div class="menu-item active">Active Item</div>
+        <div class="menu-item disabled">Disabled Item</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="sample-group">
+      <div class="sample-group-title">Heads-Up Toolbar</div>
+      <div class="toolbar-sample">
+        <div class="toolbar-btn">&#9650;</div>
+        <div class="toolbar-btn">&#9660;</div>
+        <div class="toolbar-btn">&#9636;</div>
+        <div class="toolbar-btn">&#9881;</div>
+      </div>
+    </div>
+
+    <!-- Entity Tree -->
+    <div class="sample-group">
+      <div class="sample-group-title">Entity Tree Overlay</div>
+      <div class="tree-sample">
+        <div class="tree-row"><span class="tree-chevron">&#9660;</span><span class="tree-label">Group 1</span></div>
+        <div class="tree-row" style="padding-left:18px"><span class="tree-chevron">&#9654;</span><span class="tree-label">Surface A</span></div>
+        <div class="tree-row" style="padding-left:18px"><span class="tree-chevron"></span><span class="tree-label" style="color:var(--tree-text-muted)">Control Point</span></div>
+      </div>
+    </div>
+
+    <!-- History Timeline -->
+    <div class="sample-group">
+      <div class="sample-group-title">History Timeline</div>
+      <div class="history-sample">
+        <div class="history-item history-control">+</div>
+        <div class="history-item">1</div>
+        <div class="history-item">2</div>
+        <div class="history-item disabled">3</div>
+        <div class="history-item">4</div>
+      </div>
+    </div>
+
+    <!-- Explorer Items -->
+    <div class="sample-group">
+      <div class="sample-group-title">Sketcher Explorer Items</div>
+      <div class="explorer-sample">
+        <div class="explorer-icon">&#9632;</div>
+        <div class="explorer-tag">Line 1</div>
+        <div class="explorer-role on">on</div>
+      </div>
+      <div class="explorer-sample">
+        <div class="explorer-icon">&#9675;</div>
+        <div class="explorer-tag selected">Arc 2</div>
+        <div class="explorer-role off">off</div>
+      </div>
+      <div class="explorer-sample">
+        <div class="explorer-icon">&#9650;</div>
+        <div class="explorer-tag">Aux Ref</div>
+        <div class="explorer-role aux">aux</div>
+      </div>
+    </div>
+
+    <!-- Contextual Panel -->
+    <div class="sample-group">
+      <div class="sample-group-title">Contextual Controls Panel</div>
+      <div class="contextual-sample">
+        Contextual overlay panel with semi-transparent background.
+      </div>
+    </div>
+
+    <!-- Entity Ref -->
+    <div class="sample-group">
+      <div class="sample-group-title">Entity Reference Chips</div>
+      <span class="entity-ref-sample">Face[0]</span>
+      <span class="entity-ref-sample">Edge[3]</span>
+      <span class="entity-ref-sample">&lt;not selected&gt;</span>
+    </div>
+
+    <!-- App Shell -->
+    <div class="sample-group">
+      <div class="sample-group-title">App Shell</div>
+      <div class="app-panel-sample">
+        <div class="app-tool-caption">Tool Panel</div>
+        <ul class="app-tlist">
+          <li>Item One</li>
+          <li>Item Two (hover me)</li>
+          <li>Item Three</li>
+        </ul>
+      </div>
+      <div>
+        <span class="app-selected">Selected Tab</span>
+        <span class="app-status">x: 12.3, y: 45.6</span>
+      </div>
+    </div>
+
+    <!-- Window -->
+    <div class="sample-group">
+      <div class="sample-group-title">Window</div>
+      <div class="win-sample">
+        <div class="caption">Window Title</div>
+        <div class="content">This is a floating window with a thick themed border.</div>
+      </div>
+    </div>
+
+    <!-- Work Area -->
+    <div class="sample-group">
+      <div class="sample-group-title">3D Work Area</div>
+      <div class="workarea-sample">3D Canvas Background</div>
+    </div>
+
+    <!-- On-colour highlights -->
+    <div class="sample-group">
+      <div class="sample-group-title">Geometry Selection Highlights</div>
+      <div class="highlight-samples">
+        <span class="highlight-chip default">default</span>
+        <span class="highlight-chip yellow">yellow</span>
+        <span class="highlight-chip pink">pink</span>
+        <span class="highlight-chip red">red</span>
+        <span class="highlight-chip green">green</span>
+        <span class="highlight-chip blue">blue</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /columns -->
+
+</body>
+</html>
