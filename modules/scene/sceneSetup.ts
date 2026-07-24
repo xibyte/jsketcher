@@ -5,6 +5,7 @@ import {CADTrackballControls} from './controls/CADTrackballControls';
 import {
   AmbientLight,
   Box3,
+  Color,
   DirectionalLight,
   Euler,
   Matrix4,
@@ -94,9 +95,16 @@ export default class SceneSetUp {
 
     this.renderer = new WebGLRenderer();
     this.renderer.setPixelRatio(DPR);
-    this.renderer.setClearColor(0x808080, 1);
+    this.updateClearColor();
     this.renderer.setSize( this.container.clientWidth,  this.container.clientHeight );
     this.container.appendChild( this.renderer.domElement );
+  }
+
+  updateClearColor() {
+    const cssColor = getComputedStyle(document.body)
+      .getPropertyValue('--work-area-color').trim() || '#808080';
+    this.renderer.setClearColor(new Color(cssColor), 1);
+    this.requestRender();
   }
   
   updateViewportSize() {

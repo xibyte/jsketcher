@@ -1,5 +1,3 @@
-import theme from "!!less-vars-loader?camelCase&resolveVariables!./theme.less";
-
 interface Theme {
 
   huePrim: string;
@@ -53,4 +51,57 @@ interface Theme {
 
 }
 
-export default <Theme>(theme as unknown);
+const cssVarNames: Record<keyof Theme, string> = {
+  huePrim: '--hue-prim',
+  saturation: '--saturation',
+  bgColor0: '--bg-color-0',
+  bgColor1: '--bg-color-1',
+  bgColor2: '--bg-color-2',
+  bgColor3: '--bg-color-3',
+  bgColor4: '--bg-color-4',
+  bgColor5: '--bg-color-5',
+  bgColor6: '--bg-color-6',
+  bgColor7: '--bg-color-7',
+  bgColor8: '--bg-color-8',
+  bgColor9: '--bg-color-9',
+  bgBaseColor: '--bg-base-color',
+  fontColorEmpph: '--font-color-empph',
+  fontColor: '--font-color',
+  fontColorMinor: '--font-color-minor',
+  fontColorSuppressed: '--font-color-suppressed',
+  fontColorDisabled: '--font-color-disabled',
+  borderColor: '--border-color',
+  controlColorNumber: '--control-color-number',
+  controlColorText: '--control-color-text',
+  controlBg: '--control-bg',
+  workAreaColor: '--work-area-color',
+  workAreaControlBarBgColor: '--work-area-control-bar-bg-color',
+  workAreaControlBarBgColorActive: '--work-area-control-bar-bg-color-active',
+  workAreaControlBarFontColor: '--work-area-control-bar-font-color',
+  colorDanger: '--color-danger',
+  colorAccent: '--color-accent',
+  colorNeutral: '--color-neutral',
+  colorHighlight: '--color-highlight',
+  colorBtnSelected: '--color-btn-selected',
+  onColorHighlight: '--on-color-highlight',
+  onColorHighlightVariantYellow: '--on-color-highlight-variant-yellow',
+  onColorHighlightVariantPink: '--on-color-highlight-variant-pink',
+  onColorHighlightVariantRed: '--on-color-highlight-variant-red',
+  onColorHighlightVariantGreen: '--on-color-highlight-variant-green',
+  onColorHighlightVariantBlue: '--on-color-highlight-variant-blue',
+};
+
+function resolveVar(name: string): string {
+  if (typeof window === 'undefined') return '';
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+const handler: ProxyHandler<Theme> = {
+  get(_target, prop: string) {
+    const cssName = cssVarNames[prop as keyof Theme];
+    if (!cssName) return undefined;
+    return resolveVar(cssName);
+  }
+};
+
+export default new Proxy({} as Theme, handler);

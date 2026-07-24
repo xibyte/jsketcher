@@ -42,7 +42,7 @@
 
 .button {
   padding: 0 0.5em;
-  .button-behavior(@color-accent);
+  .button-behavior(@color-accent; @color-accent-dark);
   display: flex;
   align-items: center;
   svg {
@@ -52,7 +52,7 @@
 }
 
 .danger {
-  .button-behavior(@color-danger);
+  .button-behavior(@color-danger; @color-danger-light);
 }
 
 .content {

@@ -6,14 +6,14 @@
   -ms-user-select: none;
 }
 
-.button-behavior(@color) {
+.button-behavior(@color; @colorDark) {
   &:hover {
     background-color: @color;
     border-color: @color;
   }
   &:active {
-    background-color: darken(@color, 20%);
-    border-color: darken(@color, 20%);
+    background-color: @colorDark;
+    border-color: @colorDark;
   }
 }
 

@@ -6,6 +6,12 @@ import {StreamsContext} from "ui/streamsContext";
 import {ReactApplicationContext} from "../ReactApplicationContext";
 import {Debugger} from "debugger/Debugger";
 
+try {
+  if (localStorage.getItem('jsketcher.theme') === 'light') {
+    document.body.classList.add('theme-light');
+  }
+} catch(e) {}
+
 export default function WebApplication(props) {
   const {appContext} = props;
   return <StreamsContext.Provider value={appContext}>

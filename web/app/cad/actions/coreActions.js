@@ -183,6 +183,24 @@ export default [
       info: 'toggle whether to show sketches on a solid face'
     }
   },
+
+  {
+    id: 'ToggleTheme',
+    appearance: {
+      cssIcons: ['sun-o'],
+      label: 'theme',
+      info: 'toggle between dark and light theme',
+    },
+    invoke: ({services}) => {
+      document.body.classList.toggle('theme-light');
+      try {
+        localStorage.setItem('jsketcher.theme', document.body.classList.contains('theme-light') ? 'light' : 'dark');
+      } catch(e) {}
+      if (services.viewer) {
+        services.viewer.updateClearColor();
+      }
+    }
+  },
   {
     id: 'noIcon',
     appearance: {

@@ -17,7 +17,7 @@ export function activate(ctx) {
   streams.ui.controlBars.right.value = [
     ['Info', {label: null}],
     ['RefreshSketches', {label: null}],
-    ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}]
+    ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}], ['ToggleTheme', {label: null}]
   ];
 
   streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport', 'menu.workbenches'];

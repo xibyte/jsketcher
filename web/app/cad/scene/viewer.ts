@@ -112,6 +112,10 @@ export default class Viewer {
   dispose() {
     this.sceneSetup.renderer.dispose();
   }
+
+  updateClearColor() {
+    this.sceneSetup.updateClearColor();
+  }
 }
 
 export const CAMERA_MODE = {
