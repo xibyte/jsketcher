@@ -27,12 +27,37 @@
   --control-color-number: #2fa1d6;
   --control-color-text: #9cdaf7;
   --control-bg: #303030;
+  --control-bg-focus: #173851;
+  --control-border-focus: #326da3;
+  --control-selection-color: white;
+  --control-selection-bg: blue;
 
   --work-area-color: #4a4a4a;
 
   --work-area-control-bar-bg-color: rgba(0, 0, 0, 0.5);
   --work-area-control-bar-bg-color-active: #555;
   --work-area-control-bar-font-color: var(--font-color-minor);
+
+  --toolbar-bg: rgba(255, 255, 255, 0.08);
+  --toolbar-button-color: #999;
+  --toolbar-button-hover-bg: #333;
+  --toolbar-button-hover-color: #fff;
+  --toolbar-button-disabled-hover-bg: #555;
+
+  --menu-hover-bg: #0074D9;
+  --menu-active-bg: #000d7f;
+  --menu-disabled-hover-bg: #545454;
+  --menu-context-btn-color: rgba(255, 255, 255, 0.2);
+  --menu-context-btn-hover-color: #fff;
+  --menu-context-btn-active-color: #7f0807;
+
+  --widget-bg: rgba(40, 40, 40, 0.95);
+  --widget-color: #fff;
+  --widget-border: #000;
+
+  --symbol-button-color: #fff;
+  --symbol-button-hover-color: #EFEFEF;
+  --symbol-button-active-color: #9cdaf7;
 
   --color-danger: #b00;
   --color-danger-light: #d40000;
@@ -45,6 +70,37 @@
   --color-highlight-dark: #002a40;
 
   --color-btn-selected: #285f7a;
+  --button-bg: #3a3a3a;
+  --button-color: #e0e0e0;
+  --entity-ref-bg: #3a687d;
+  --entity-ref-border: #d2d0e0;
+
+  --tree-text: #f2f2f2;
+  --tree-text-muted: rgba(255,255,255,0.55);
+  --tree-chevron: rgba(255,255,255,0.75);
+  --tree-icon: rgba(255,255,255,0.85);
+  --tree-eye: rgba(255,255,255,0.75);
+  --tree-eye-off: rgba(255,255,255,0.25);
+  --tree-row-bg: rgba(255,255,255,0.04);
+  --tree-hover-bg: rgba(255,255,255,0.12);
+  --tree-text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+
+  --history-item-bg: #737373;
+  --history-item-hover-bg: #4d4d4d;
+  --history-item-active-bg: #9c9c9c;
+  --history-item-border: #2e2e2e;
+  --history-control-bg: #64808b;
+  --history-control-hover-bg: #489;
+  --history-control-active-bg: #5dc4da;
+  --history-disabled-bg: #828282;
+  --history-disabled-border: #a7a7a7;
+  --history-disabled-color: #a7a7a7;
+  --history-opindex-shadow: 0px -1px 0 #000, 0px 1px 0 #000, 1px 0px 0 #000, -1px 0px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  --history-scroller-hover-bg: #BFBFBF;
+  --history-scroller-active-bg: #7e7e7e;
+  --history-root-bg: rgba(0, 0, 0, 0.1);
+  --history-future-border: rgba(255,255,255,0.53);
+  --history-add-color: rgba(255,255,255,0.53);
 
   --on-color-highlight: #5A93BBFF;
   --on-color-highlight-variant-yellow: bisque;
@@ -81,12 +137,37 @@
 @control-color-number: var(--control-color-number);
 @control-color-text: var(--control-color-text);
 @control-bg: var(--control-bg);
+@control-bg-focus: var(--control-bg-focus);
+@control-border-focus: var(--control-border-focus);
+@control-selection-color: var(--control-selection-color);
+@control-selection-bg: var(--control-selection-bg);
 
 @work-area-color: var(--work-area-color);
 
 @work-area-control-bar-bg-color: var(--work-area-control-bar-bg-color);
 @work-area-control-bar-bg-color-active: var(--work-area-control-bar-bg-color-active);
 @work-area-control-bar-font-color: var(--work-area-control-bar-font-color);
+
+@toolbar-bg: var(--toolbar-bg);
+@toolbar-button-color: var(--toolbar-button-color);
+@toolbar-button-hover-bg: var(--toolbar-button-hover-bg);
+@toolbar-button-hover-color: var(--toolbar-button-hover-color);
+@toolbar-button-disabled-hover-bg: var(--toolbar-button-disabled-hover-bg);
+
+@menu-hover-bg: var(--menu-hover-bg);
+@menu-active-bg: var(--menu-active-bg);
+@menu-disabled-hover-bg: var(--menu-disabled-hover-bg);
+@menu-context-btn-color: var(--menu-context-btn-color);
+@menu-context-btn-hover-color: var(--menu-context-btn-hover-color);
+@menu-context-btn-active-color: var(--menu-context-btn-active-color);
+
+@widget-bg: var(--widget-bg);
+@widget-color: var(--widget-color);
+@widget-border: var(--widget-border);
+
+@symbol-button-color: var(--symbol-button-color);
+@symbol-button-hover-color: var(--symbol-button-hover-color);
+@symbol-button-active-color: var(--symbol-button-active-color);
 
 @color-danger: var(--color-danger);
 @color-danger-light: var(--color-danger-light);
@@ -99,6 +180,27 @@
 @color-highlight-dark: var(--color-highlight-dark);
 
 @color-btn-selected: var(--color-btn-selected);
+@button-bg: var(--button-bg);
+@button-color: var(--button-color);
+@entity-ref-bg: var(--entity-ref-bg);
+@entity-ref-border: var(--entity-ref-border);
+
+@history-item-bg: var(--history-item-bg);
+@history-item-hover-bg: var(--history-item-hover-bg);
+@history-item-active-bg: var(--history-item-active-bg);
+@history-item-border: var(--history-item-border);
+@history-control-bg: var(--history-control-bg);
+@history-control-hover-bg: var(--history-control-hover-bg);
+@history-control-active-bg: var(--history-control-active-bg);
+@history-disabled-bg: var(--history-disabled-bg);
+@history-disabled-border: var(--history-disabled-border);
+@history-disabled-color: var(--history-disabled-color);
+@history-opindex-shadow: var(--history-opindex-shadow);
+@history-scroller-hover-bg: var(--history-scroller-hover-bg);
+@history-scroller-active-bg: var(--history-scroller-active-bg);
+@history-root-bg: var(--history-root-bg);
+@history-future-border: var(--history-future-border);
+@history-add-color: var(--history-add-color);
 
 @on-color-highlight: var(--on-color-highlight);
 @on-color-highlight-variant-yellow: var(--on-color-highlight-variant-yellow);

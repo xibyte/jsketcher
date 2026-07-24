@@ -13,14 +13,14 @@
   align-items: center;
   
   &:hover {
-    background-color: #0074D9;
+    background-color: @menu-hover-bg;
   }
   &:active {
-    background-color: #000d7f;
+    background-color: @menu-active-bg;
   }
 
   &.disabled:hover, &.disbaled:active {
-    background-color: #545454;
+    background-color: @menu-disabled-hover-bg;
   }
 
 
@@ -48,19 +48,19 @@
 
 .contextMenu {
   &:hover .contextMenuBtn {
-    color: #fff;
+    color: @menu-context-btn-hover-color;
   }
 }
 
 .contextMenuBtn {
   display: inline-block;
   padding: 2px 3px;
-  color: #ffffff33;
+  color: @menu-context-btn-color;
   &:hover {
-    color: #fff;
+    color: @menu-context-btn-hover-color;
   }
   &:active {
-    color: #7f0807;
+    color: @menu-context-btn-active-color;
   }
 }
 

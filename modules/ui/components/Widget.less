@@ -1,10 +1,11 @@
 @import "./flatEdges.less";
+@import "../styles/theme.less";
 @border-radius: 5px;
 
 .root {
-  color: #fff;
-  background-color: rgba(40, 40, 40, 0.95);
-  border: solid 1px #000;
+  color: @widget-color;
+  background-color: @widget-bg;
+  border: solid 1px @widget-border;
   border-radius: @border-radius;
 }
 

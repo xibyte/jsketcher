@@ -11,17 +11,18 @@ import {Group} from '../../Group/Group.entity';
 
 const SIDE_NAMES = ['bottom', 'right', 'top', 'left'];
 
-// Contrast palette — works on dark, medium and light backgrounds via rgba
+// CSS-variable-based palette — the browser resolves these at paint time,
+// so toggling the theme class on <body> updates colors with no React re-render.
 const COLORS = {
-  text: '#f2f2f2',
-  textMuted: 'rgba(255,255,255,0.55)',
-  chevron: 'rgba(255,255,255,0.75)',
-  icon: 'rgba(255,255,255,0.85)',
-  eye: 'rgba(255,255,255,0.75)',
-  eyeOff: 'rgba(255,255,255,0.25)',
-  rowBg: 'rgba(255,255,255,0.04)',
-  hoverBg: 'rgba(255,255,255,0.12)',
-  textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+  text: 'var(--tree-text, #f2f2f2)',
+  textMuted: 'var(--tree-text-muted, rgba(255,255,255,0.55))',
+  chevron: 'var(--tree-chevron, rgba(255,255,255,0.75))',
+  icon: 'var(--tree-icon, rgba(255,255,255,0.85))',
+  eye: 'var(--tree-eye, rgba(255,255,255,0.75))',
+  eyeOff: 'var(--tree-eye-off, rgba(255,255,255,0.25))',
+  rowBg: 'var(--tree-row-bg, rgba(255,255,255,0.04))',
+  hoverBg: 'var(--tree-hover-bg, rgba(255,255,255,0.12))',
+  textShadow: 'var(--tree-text-shadow, 0 1px 2px rgba(0,0,0,0.8))',
 };
 
 const FONT = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';

@@ -1,7 +1,7 @@
 @import "../styles/theme.less";
 
 .root {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: @toolbar-bg;
   padding: 3px;
   border-radius: 5px;
   display: flex;
@@ -22,21 +22,21 @@
   font-size: 10px;
   padding: 2px 2px;
   margin: 1px 5px;
-  color: #555;
+  color: @toolbar-button-color;
   pointer-events: auto;
   &:hover {
     cursor: pointer;
-    background-color: #333;
-    color: #fff;
+    background-color: @toolbar-button-hover-bg;
+    color: @toolbar-button-hover-color;
   }
 
   &.disabled {
-    color: #999;
+    color: @font-color-disabled;
   }
 
   &.disabled:hover {
-    color: #aaa;
-    background-color: #888;
+    color: @font-color-suppressed;
+    background-color: @toolbar-button-disabled-hover-bg;
   }
 }
 
@@ -53,7 +53,7 @@
 .splitter {
   align-self: stretch;
   width: 1px;
-  background-color: #a0a0a0;
+  background-color: @border-color;
   margin: 0 2px;
 }
 

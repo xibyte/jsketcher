@@ -1,7 +1,7 @@
 @import "~ui/styles/theme.less";
 
 .root {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: @history-root-bg;
   display: flex;
 
   align-items: flex-end;
@@ -37,10 +37,10 @@
   align-items: center;
   cursor: pointer;
   &:hover {
-    background-color: #BFBFBF;
+    background-color: @history-scroller-hover-bg;
   }
   &:active {
-    background-color: #7e7e7e;
+    background-color: @history-scroller-active-bg;
     transition: 100ms;
   }
   
@@ -79,7 +79,7 @@
   flex-shrink: 0;
   margin: 2px 0;
   padding: 2px;
-  border: #2e2e2e 1px solid;
+  border: @history-item-border 1px solid;
   border-radius: 4px;
 
   display: flex;
@@ -94,33 +94,33 @@
 }
 
 .disabled {
-  background-color: #828282;
-  border-color: #a7a7a7;
-  color: #a7a7a7;
+  background-color: @history-disabled-bg;
+  border-color: @history-disabled-border;
+  color: @history-disabled-color;
 }
 
 .controlBtn {
   .item;
   margin-left: 2px;
   margin-right: 2px;
-  background-color: #64808b;
+  background-color: @history-control-bg;
   &:hover {
-    background-color: #489;
+    background-color: @history-control-hover-bg;
   }
   &:active {
-    background-color: #5dc4da;
+    background-color: @history-control-active-bg;
   }
   &.disabled {.disabled;}
 }
 
 .historyItem {
   .item;
-  background-color: #737373;
+  background-color: @history-item-bg;
   &:hover {
-    background-color: #4d4d4d;
+    background-color: @history-item-hover-bg;
   }
   &:active {
-    background-color: #9c9c9c;
+    background-color: @history-item-active-bg;
   }
   &.disabled {.disabled;}
   &.selected {
@@ -131,14 +131,13 @@
   &.inProgress {
     background-color: @inProgressColor;
   }
-  
+
   position: relative;
   & .opIndex {
     position: absolute;
     right: 1px;
     bottom: 1px;
-    text-shadow: 0px  -1px 0 #000, 0px 1px 0 #000, 1px 0px 0 #000, -1px 0px 0 #000, 
-                -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    text-shadow: @history-opindex-shadow;
   }
   & .opIcon {
     margin-left: -6px;
@@ -154,15 +153,15 @@
 .futureItem {
   .item;
   background-color: @inProgressColor;
-  border: #ffffff88 1px dashed;
+  border: @history-future-border 1px dashed;
   margin-right: 4px;
   cursor: auto;
 }
 
 .add {
   .controlBtn;
-  border: #ffffff88 1px dashed;
-  color: #ffffff88;
+  border: @history-future-border 1px dashed;
+  color: @history-add-color;
   &:hover {
     border-color: #fff;
   }
