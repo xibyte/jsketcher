@@ -1,8 +1,8 @@
 @import "inSceneUI-sketcher";
 
 .objectItem {
-  background-color: rgba(0,0,0, 0.6);
-  border: 1px solid #000;
+  background-color: @explorer-item-bg;
+  border: 1px solid @explorer-item-border;
   border-radius: 5px;
   margin: 2px @itemRadius;
   pointer-events: auto;
@@ -20,7 +20,7 @@
   .objectIcon {
     border-radius: @itemRadius 0 0 @itemRadius;
     padding: 3px 3px;
-    background-color: #606060;
+    background-color: @explorer-icon-bg;
   }
 
   .removeButton {
@@ -34,16 +34,16 @@
       color: red;
     }
   }
-  
+
   .objectTag {
     display: flex;
     align-items: center;
     flex: 1;
     padding: 0 5px;
-    
+
     cursor: pointer;
     &:hover {
-      background-color: #0074D9;
+      background-color: @explorer-hover-bg;
     }
   }
 }

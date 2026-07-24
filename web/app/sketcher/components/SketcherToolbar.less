@@ -1,7 +1,7 @@
 @import "~ui/styles/theme.less";
 @import "~ui/styles/mixins.less";
 
-@focus-color: #0065dc;
+@focus-color: @sketcher-toolbar-focus;
 @focus-color-secondary: rgba(3, 102, 214, .3);
 @separator: 15px;
 
@@ -32,8 +32,8 @@
 
   button {
 
-    background: #606060;
-    border: 1px solid #606060;
+    background: @sketcher-toolbar-btn-bg;
+    border: 1px solid @sketcher-toolbar-btn-border;
     outline: none;
     &:focus {
       border-color: @focus-color;

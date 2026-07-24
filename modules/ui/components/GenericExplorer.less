@@ -1,20 +1,21 @@
+@import "../styles/theme.less";
 
 .button() {
   cursor: pointer;
   &:hover {
-    background-color: #0074D9;
+    background-color: @explorer-hover-bg;
   }
   &:active {
-    background-color: #000d7f;
+    background-color: @explorer-active-bg;
   }
 }
 
 .objectItem {
   @itemRadius: 5px;
-  @alt-color: #9c9c9c;
+  @alt-color: @explorer-alt-color;
 
-  background-color: rgba(0,0,0, 0.6);
-  border: 1px solid #000;
+  background-color: @explorer-item-bg;
+  border: 1px solid @explorer-item-border;
   border-radius: 5px;
   margin: 2px @itemRadius;
   pointer-events: auto;
@@ -46,10 +47,10 @@
     .button;
 
     &.selected {
-      background: linear-gradient(#59acff, #0074D9);
+      background: linear-gradient(@explorer-selected-grad1, @explorer-selected-grad2);
     }
     &.highlighted {
-      background-color: #0074D9;
+      background-color: @explorer-highlighted-bg;
     }
   }
 
@@ -64,11 +65,11 @@
 
 .onOffButton.on {
   cursor: pointer;
-  background-color: #005e82;
+  background-color: @explorer-on-color;
   .button;
 }
 .onOffButton.off {
   cursor: pointer;
-  background-color: #5f5f5f;
+  background-color: @explorer-off-color;
   .button;
 }

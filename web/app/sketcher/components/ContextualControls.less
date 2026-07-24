@@ -4,8 +4,8 @@
   right: 0;
   margin: 5px;
   padding: 3px 5px;
-  background-color: #000D;
-  color: white;
+  background-color: @contextual-bg;
+  color: @contextual-color;
   pointer-events: auto;
 }
 
@@ -20,8 +20,8 @@
 @import "inSceneUI-sketcher";
 
 .objectItem {
-  background-color: rgba(0, 0, 0, 0.6);
-  border: 1px solid #000;
+  background-color: @explorer-item-bg;
+  border: 1px solid @explorer-item-border;
   border-radius: 5px;
   margin: 2px @itemRadius;
   pointer-events: auto;
@@ -29,7 +29,7 @@
   align-items: stretch;
 
 
-  @alt-color: #9c9c9c;
+  @alt-color: @explorer-alt-color;
 
   .objectIcon {
     border-radius: @itemRadius 0 0 @itemRadius;
@@ -57,7 +57,7 @@
     .button;
 
     &.selected {
-      background: linear-gradient(#59acff, #0074D9);
+      background: linear-gradient(@explorer-selected-grad1, @explorer-selected-grad2);
     }
   }
 
@@ -69,20 +69,20 @@
 
   .objectRole.construction {
     cursor: pointer;
-    background-color: #005e82;
+    background-color: @explorer-on-color;
     .button;
   }
 
   .objectRole.sketch {
     cursor: pointer;
-    background-color: #5f5f5f;
+    background-color: @explorer-off-color;
     .button;
   }
 
   .objectRole.aux {
     cursor: default;
-    background-color: #FDF7E7;
-    color: #1a1a1a;
+    background-color: @explorer-aux-bg;
+    color: @explorer-aux-color;
   }
 }
 

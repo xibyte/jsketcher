@@ -1,9 +1,11 @@
+@import "~ui/styles/theme.less";
+
 body {
   overflow: hidden;
 }
 
 html, body {
-  background: gray;
+  background: @app-bg;
   height: 100%;
   width: 100%;
   padding: 0;
@@ -19,7 +21,7 @@ html, body {
 }
 
 .logo {
-  color: #bbb;
+  color: @app-logo-color;
   font-size: 16px;
   padding: 8px 0 0 10px;
   cursor: alias;
@@ -32,24 +34,24 @@ html, body {
 }
 
 .panel {
-  background: #444;
+  background: @app-panel-bg;
   border: 0px solid black;
 }
 .b-top { border-top-width: 1px; }
 .b-bot { border-bottom-width: 1px; }
 .b-left { border-left-width: 1px; }
-.b-right { border-right-width: 5px; border-color: #222222 }
+.b-right { border-right-width: 5px; border-color: @app-panel-border }
 
 .btn:hover {
-  background-color: #808080;
-  border-color: #ccc;
+  background-color: @app-btn-hover-bg;
+  border-color: @app-btn-hover-border;
 }
 
 .btn {
-  border:1px solid #808080;
-  background: #606060 no-repeat center;
+  border:1px solid @app-btn-border;
+  background: @app-btn-bg no-repeat center;
   border-radius: 4px;
-  color: white;
+  color: @app-btn-color;
   vertical-align: top;
 }
 
@@ -57,20 +59,20 @@ html, body {
 }
 
 #dock {
-  color: #fff;
+  color: @app-dock-color;
 }
 
 .dock-btn {
   padding: 1px 5px 1px 5px;
   border:0 solid black;
-  background: #606060 no-repeat center;
+  background: @app-btn-bg no-repeat center;
   border-radius: 4px;
   cursor: pointer;
   margin: 1px 4px 1px 4px;
 }
 
 .dock-btn:hover {
-  background-color: #808080;
+  background-color: @app-btn-hover-bg;
 }
 
 .dock-btn .txt {
@@ -82,15 +84,15 @@ html, body {
 }
 
 .selected {
-  background-color: #333;
-  color: #ccc;
+  background-color: @app-selected-bg;
+  color: @app-selected-color;
 }
 
 .sbtn {
   min-width:20px;
   height:20px;
   line-height: 1.1;
-  border-color: #999;
+  border-color: @app-sbtn-border;
   padding: 1px 3px;
   font-size: 14px;
 }
@@ -116,25 +118,25 @@ html, body {
   list-style-type: none;
   padding: 0px;
   margin:0;
-  color: #fff;
+  color: @app-tlist-color;
   font-size: 13px;
 }
 
 .tlist li {
-  border-bottom: 1px solid #777;
+  border-bottom: 1px solid @app-tlist-border;
   padding: 2px 3px 2px  15px;
   cursor: pointer;
 }
 
 .tlist li:hover {
-  background: #222;
+  background: @app-tlist-hover-bg;
 }
 
 .tool-caption {
   font-weight: bold;
-  color: #fff;
+  color: @app-tool-caption-color;
   padding: 2px 0 2px 3px;
-  background: #333;
+  background: @app-tool-caption-bg;
 }
 
 .no-top-border {
@@ -180,18 +182,18 @@ html, body {
 }
 
 .scroll::-webkit-scrollbar-track {
-  background: white;
+  background: @app-scrollbar-track;
 }
 .scroll::-webkit-scrollbar-thumb {
-  background: steelblue;
+  background: @app-scrollbar-thumb;
 }
 
 .scroll::-webkit-scrollbar-thumb:hover {
-  background: royalblue;
+  background: @app-scrollbar-thumb-hover;
 }
 
 .sketcher-window {
-  border: 5px solid #444444;
+  border: 5px solid @app-sketcher-window-border;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
@@ -201,14 +203,14 @@ html, body {
   min-height: 20px;
   left:100px;
   top:300px;
-  background: #666;
-  border: 5px solid #444444;
+  background: @app-win-bg;
+  border: 5px solid @app-win-border;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .win .content {
   .sans-serif;
-  color: #fff;
+  color: @app-win-content-color;
   padding: 7px;
   height: ~"calc(100% - 19px)"; //escape less processing
 }
@@ -223,7 +225,7 @@ html, body {
 .win .tool-caption .rm {
   border: 0;
   border-radius: 0px;
-  color: white;
+  color: @app-btn-color;
   font-size: 16px;
   padding: 0 5px;
   margin: -2px 0 -2px 0;
@@ -235,12 +237,12 @@ html, body {
 
 
 .pseudo-btn:hover {
-  background-color: #808080;
+  background-color: @app-pseudo-btn-hover-bg;
 }
 
 .pseudo-btn {
-  background-color: #606060;
-  color: white;
+  background-color: @app-pseudo-btn-bg;
+  color: @app-pseudo-btn-color;
   width: 18px; text-align: center;
   cursor: pointer;
   -webkit-touch-callout: none;
@@ -251,16 +253,16 @@ html, body {
   user-select: none;
 }
 .pseudo-btn a {
-  color: white;
+  color: @app-pseudo-btn-color;
   text-decoration: none;
 }
 
 #layerSelection label {
-  color: #fff;
+  color: @app-dock-color;
 }
 
 #layersList {
-  background-color: #ddd;
+  background-color: @app-layers-bg;
   margin: 10px;
 }
 
@@ -269,31 +271,31 @@ html, body {
 }
 
 .tc-ctrl input[type=text], .tc-ctrl select {
-  color: #fff;
+  color: @app-dock-color;
 }
 
 #status {
   .helvetica;
-  color: #fff;
+  color: @app-status-color;
   font-size: 11px;
   padding-top: 4px;
 }
 
 #status .coordinates-info {
   font-style: italic;
-  color:#fff;
+  color:@app-status-color;
 }
 
 .status-item {
   padding-right: 5px;
   padding-left: 5px;
-  float: right; 
-  color:#bbb;
+  float: right;
+  color:@app-status-item-color;
 }
 
 #viewer-container .tool-hint {
   .helvetica;
-  color: #000; 
+  color: @app-tool-hint-color;
   font-size: 11px;
   cursor: default;
   pointer-events: none;
