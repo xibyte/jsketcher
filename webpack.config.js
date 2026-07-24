@@ -126,5 +126,10 @@ module.exports = {
   },
   node: {
     __dirname: true
-  }
+  },
+  plugins: [
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^node:/
+    })
+  ]
 };
