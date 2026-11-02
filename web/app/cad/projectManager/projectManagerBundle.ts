@@ -136,6 +136,8 @@ export function activate(ctx: ApplicationContext) {
     const ids = new Set<string>();
     for (const sketch of bundle.sketches) {
       if (!object(sketch) || typeof sketch.id !== 'string' || !sketch.id || sketch.id.length > 1024 ||
+          // Reject control characters in storage keys intentionally.
+          // eslint-disable-next-line no-control-regex
           /[\u0000-\u001f\u007f]/.test(sketch.id) || ids.has(sketch.id) || !object(sketch.data)) throw new Error('Project contains an invalid sketch.');
       if (sketch.data.constants !== undefined && parseMathDefinitions(sketch.data.constants).errors.length) throw new Error('A sketch contains unsupported or invalid constants.');
       ids.add(sketch.id);
@@ -151,8 +153,10 @@ export function activate(ctx: ApplicationContext) {
       importBundle(ctx.projectService.id, bundle);
       ctx.projectService.loadStrict();
       const deadline = Date.now() + 30000;
+      // A completed pipeline, failure, or the deadline ends this wait.
+      // eslint-disable-next-line no-constant-condition
       while (true) {
-        if (ctx.craftService.pipelineFailure$.value) throw new Error('The project could not be rebuilt.');
+        if (ctx.craftService.pipelineFailure$.value throw new Error('The project could not be rebuilt.');
         const mods = ctx.craftService.modifications$.value;
         if (mods.history.length === bundle.model.history.length && mods.pointer === mods.history.length - 1 && !ctx.craftService.isProcessing) break;
         if (Date.now() >= deadline) throw new Error('The project rebuild timed out.');
