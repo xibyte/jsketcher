@@ -10,6 +10,7 @@ can use an experimental generated numeric module:
 node build/precompile-numeric.cjs
 CODI_EMBED_NUMERIC=1 npm run build
 CODI_EMBED_NUMERIC=1 ./node_modules/.bin/webpack --config test/webos/webpack.config.cjs
+CODI_EMBED_NUMERIC=1 ./node_modules/.bin/webpack --config test/webos/numeric-solver-webpack.cjs
 node test/webos/numeric-precompile.test.cjs
 ```
 
@@ -42,6 +43,14 @@ hostile expression inputs without a script side effect. Desktop and emulated
 phone viewports passed. The iframe is same-origin and is not a security
 boundary; these tests do not qualify all code paths, browser APIs, physical
 touch, real login, server synchronization, or arbitrary hostile projects.
+The separate `test/webos/numeric-solver.test.cjs` requires a loopback server
+serving that build and applying the site's CSP to `index-webos.html`, plus a
+Chrome DevTools endpoint and `puppeteer-core`. Set `JSKETCHER_TEST_URL` and
+`CODI_TEST_CDP` if they differ from its documented defaults. It checks the CSP
+response header, creates two nonparallel lines and applies the current sketch
+parallel action; the test verifies finite coordinates, a successful solver
+status and a normalized cross-product less than `1e-6` for desktop and
+emulated-phone viewports. This is one constraint case, not a solver audit.
 
 Numeric's packaged README says it is MIT licensed and refers to `license.txt`,
 which is absent from the installed package. The source includes a David Bau
