@@ -80,7 +80,7 @@ export default class HistoryTimeline extends React.Component {
 function OperationIcon({appearance}) {
   if (appearance && appearance.icon) {
     const Icon = appearance.icon;
-    return <Icon size='medium'/>;
+    return <Icon size={24}/>;
   }
   return <ImgIcon url={appearance&&appearance.icon96} size={24} />;
 }
@@ -160,6 +160,3 @@ const AddButton = mapContext((ctx) => ({
     </div>;
   }
 );
-
-
- 
