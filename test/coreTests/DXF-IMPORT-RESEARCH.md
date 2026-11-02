@@ -20,9 +20,10 @@ The importer still ignores some unsupported DXF entities and has not been
 qualified for arbitrary external files. Explicit nonzero Z coordinates,
 elevation, thickness and 3D-polyline flags on supported parsed entities are
 rejected instead of silently flattened; rejected imports retain the original
-sketch. This is not a complete 3D detector: the parser can discard extrusion
-directions and unsupported entity types before the adapter sees them. In
-particular, 3D orientation,
+sketch. The adapter also scans extrusion-direction group codes on supported
+entity records before parsing, because the parser discards those fields.
+This is not a complete 3D detector: the parser can discard unsupported entity
+types or other data before the adapter sees them. In particular, 3D orientation,
 extrusion, bulge arcs, malformed and very large inputs, units, layers, writer
 round-trips and parsed nested blocks require further tests and explicit safe
 handling; the direct nested-block tests are not parser end-to-end tests.

@@ -264,6 +264,32 @@ export class DxfParserAdapter {
     }
   }
 
+  // The parser does not expose extrusion directions. Inspect those DXF group
+  // codes before parsing, otherwise a tilted object can be silently flattened.
+  // Walk the input incrementally so the check does not duplicate a large file.
+  private assertPlanarNormals(text: string) {
+    const supported = new Set(['LINE', 'ARC', 'CIRCLE', 'ELLIPSE', 'POINT', 'LWPOLYLINE', 'POLYLINE', 'VERTEX', 'INSERT']);
+    let offset = 0, record = '';
+    const nextLine = () => {
+      if (offset >= text.length) return null;
+      const end = text.indexOf('\n', offset);
+      const line = text.slice(offset, end < 0 ? text.length : end).trim();
+      offset = end < 0 ? text.length : end + 1;
+      return line;
+    };
+    for (;;) {
+      const code = nextLine(), value = nextLine();
+      if (code === null || value === null) break;
+      if (code === '0') record = value.toUpperCase();
+      else if (supported.has(record) && (code === '210' || code === '220' || code === '230')) {
+        const normal = Number(value), expected = code === '230' ? 1 : 0;
+        if (!value || !Number.isFinite(normal) || normal !== expected) {
+          throw new Error('3D DXF extrusion directions cannot be imported into a 2D sketch.');
+        }
+      }
+    }
+  }
+
   private _createSketchObject(type: string, data: object) {
     return {
       id: (DxfParserAdapter._seed++).toString(),
@@ -432,6 +458,7 @@ export class DxfParserAdapter {
 
   parse(dxfString: string): Promise<SketchFormat_V3> {
     return new Promise((resolve, reject) => {
+      this.assertPlanarNormals(dxfString);
       new Parser()
         .parse(dxfString)
         .then(dxfObject =>  resolve(this._createSketchFormat(dxfObject)))
