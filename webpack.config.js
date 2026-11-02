@@ -30,6 +30,9 @@ module.exports = {
   },
   resolve: {
     alias: {
+      // stream's browser mapping asks for the old emitter-component name.
+      // Use the separately licensed, byte-identical 1.1.3 distribution.
+      'emitter-component$': require.resolve('component-emitter'),
       ...(process.env.CODI_EMBED_NUMERIC === '1' ? {'numeric': path.join(__dirname, 'node_modules/.cache/codi-numeric/precompiled.js')} : {}),
       ...(process.env.CODI_EMBED_MANIFOLD === '1' ? {
         'manifold-3d$': path.join(__dirname, 'node_modules/.cache/codi-manifold/manifold.js'),
