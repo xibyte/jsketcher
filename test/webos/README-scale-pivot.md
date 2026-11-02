@@ -1,0 +1,5 @@
+# Scale around pivot
+
+The OCC scale action uniformly scales selected OCC bodies around an explicit global pivot by a positive finite factor. It retains the older `SCALE_BODY` descriptor for history compatibility but presents the new `SCALE_BODY_PIVOT` action in the toolbar. The older scale implementation passed direction objects where OCC requires numeric pivot coordinates; it is not silently reinterpreted. Native Mesh solids are explicitly rejected because the engines cannot currently convert or share a transform operation. Negative scale (mirroring) and zero are not supported.
+
+`scale-pivot-browser.test.cjs` tests the real wizard, exact transformed face vertices for a 2× scale about an offset pivot, stable face references, undo/redo, snapshot restore, downstream pattern creation, invalid inputs and Native Mesh rejection. Run against a locally built strict-CSP host fixture; it is not a production deployment. This original implementation uses jSketcher's existing topology-preserving transform pattern and reflects the direct-transform workflow reviewed in ArcCAD.

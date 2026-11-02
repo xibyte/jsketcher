@@ -15,6 +15,7 @@ import {RevolveOperation} from "./features/revolve/revolve.operation";
 import {ShellOperation} from "./features/shell/shell.operation";
 import {SweepOperation} from "./features/sweep/sweep.operation";
 import {ScaleOperation} from "./features/scaleBody/scaleBody.operation";
+import {ScaleBodyPivotOperation} from "./features/scaleBody/scaleBodyPivot.operation";
 import {MirrorBodyOperation} from "./features/mirrorBody/mirrorBody.operation";
 import {PatternLinearOperation} from "./features/patternLinear/patternLinear.operation";
 import {PatternRadialOperation} from "./features/patternRadial/patternRadial.operation";
@@ -62,6 +63,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     LoftOperation,
     SweepOperation,
     ScaleOperation,
+    ScaleBodyPivotOperation,
     MirrorBodyOperation,
     PatternLinearOperation,
     PatternRadialOperation,
@@ -98,7 +100,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "BOOLEAN", "UNION", "SUBTRACT", "INTERSECT", "-",
 
-      "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE", "-",
+      "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY_PIVOT", "DEFEATURE_REMOVE_FACE", "-",
 
       "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "MOVE_BODY", "MOVE_BODY_XYZ", "ROTATE_BODY_AXIS", "-",
 
