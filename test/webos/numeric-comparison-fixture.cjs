@@ -1,0 +1,3 @@
+const n=require(process.argv[2]),out={};
+const A=[[4,1],[2,3]],B=[[1,2],[3,4]],v=[2,-1];
+out.dotVM=n.dotVM(v,A);out.matrix=n.dot(A,B);out.solve=n.solve(A,[1,2]);out.inv=n.inv(A);out.det=n.det(A);out.add=n.add(A,B);out.sub=n.sub(A,B);out.mul=n.mul(A,B);out.div=n.div(A,2);out.neg=n.neg(v);out.norm=n.norm2(v);out.all=n.all([true,1]);out.gradient=n.gradient(x=>x[0]*x[0]+3*x[1]*x[1],[2,3]);out.svd=n.svd([[1,2],[3,4],[5,6]]);out.tensor=n.tensor([1,2],[3,4]);out.complex=n.t([1,2],[3,4]).mul(n.t([3,4],[5,6]));const sparse=n.ccsSparse(A);out.sparse=n.ccsFull(n.ccsadd(sparse,sparse));let eq=n.clone(A);n.addeq(eq,B);out.eq=eq;out.sum=n.sum(A);out.any=n.any([0,0,2]);console.log(JSON.stringify(out));

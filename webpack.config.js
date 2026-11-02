@@ -29,6 +29,7 @@ module.exports = {
     'verb-nurbs': 'verb'
   },
   resolve: {
+    ...(process.env.CODI_EMBED_NUMERIC === '1' ? {alias: {'numeric': path.join(__dirname, 'node_modules/.cache/codi-numeric/precompiled.js')}} : {}),
     extensions: ['.js', '.jsx', ".ts", ".tsx"],
     modules: [MODULES, "node_modules", WEB_APP],
   },
