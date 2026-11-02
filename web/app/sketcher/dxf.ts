@@ -296,7 +296,7 @@ export class DxfParserAdapter {
     entities.points.forEach(p => sketch.objects.push(this._point(p, t)));
     entities.lwPolylines.forEach(p => sketch.objects.push(...this._lwPolyline(p, t)));
     entities.polylines.forEach(p => sketch.objects.push(...this._polyline(p, t)));
-    entities.splines.forEach(s => sketch.objects.push(...this._spline(s, t)));
+    entities.splines.forEach(s => this._spline(s, t));
   }
 
   private _insert(blocks: Block[], insert: InsertEntity, sketch: SketchFormat_V3, parent: ITransform, ancestors: string[]) {

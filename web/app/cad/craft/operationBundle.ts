@@ -106,7 +106,7 @@ export function activate(ctx: ApplicationContext) {
     ctx.actionService.registerActions(actions);
   }
 
-  function get<T extends FeatureIdParam>(id: string): Operation<T> {
+  function get<T>(id: string): Operation<T> {
     const op = registry$.value[id];
     if (!op) {
       throw `operation ${id} is not registered`;
@@ -122,11 +122,7 @@ export function activate(ctx: ApplicationContext) {
   ctx.services.operation = ctx.operationService;
 }
 
-interface FeatureIdParam {
-  featureId: string;
-}
-
-export interface Operation<R extends FeatureIdParam> extends OperationDescriptor<R>{
+export interface Operation<R> extends OperationDescriptor<R>{
   appearance: {
     id: string;
     label: string;
@@ -144,7 +140,7 @@ type OpIcon = IconDeclaration | IconType | string | ((props: any) => JSX.Element
 
 type MaterializedParams = any;
 
-export interface OperationDescriptor<R extends FeatureIdParam> {
+export interface OperationDescriptor<R> {
   id: string;
   label: string;
   info: string;
@@ -173,7 +169,7 @@ export interface OperationDescriptor<R extends FeatureIdParam> {
 
 export interface OperationService {
   registerOperations(descriptior: OperationDescriptor<any>[]);
-  get<T extends FeatureIdParam>(operationId: string): Operation<T>;
+  get<T>(operationId: string): Operation<T>;
 }
 
 export type Index<T> = {

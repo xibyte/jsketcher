@@ -118,6 +118,14 @@ abstract class BasicProductionAnalyzer implements ProductionAnalyzer {
 
 }
 
+// The ID-copying analyzer needs the original BREP and its topology registry.
+export function requireBrepShellForTopology(shape: MShell): MBrepShell {
+  if (!(shape instanceof MBrepShell)) {
+    throw new Error('Stable topology IDs require a BREP body.');
+  }
+  return shape;
+}
+
 export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
 
   originShell: Shell;

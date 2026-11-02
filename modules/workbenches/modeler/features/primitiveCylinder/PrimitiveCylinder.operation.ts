@@ -9,6 +9,7 @@ import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/production
 
 
 interface PrimitiveCylinderParams {
+  featureId: number,
   diameter: number,
   height: number,
   locations: MDatum,

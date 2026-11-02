@@ -5,12 +5,12 @@ import { EntityKind } from "cad/model/entities";
 import Axis from "math/axis";
 import { OperationDescriptor } from "cad/craft/operationBundle";
 import { MShell } from 'cad/model/mshell';
-import {SameTopologyProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import {SameTopologyProductionAnalyzer, requireBrepShellForTopology} from "cad/craft/production/productionAnalyzer";
 
 interface MirrorBodyParams {
   inputBodies: MShell[];
   face: MFace;
-  featureId: string;
+  featureId: number;
 }
 
 export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
@@ -25,17 +25,19 @@ export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
     const oci = occ.commandInterface;
 
     const created = [];
+    const origins = params.featureId === -1 ? null : params.inputBodies.map(requireBrepShellForTopology);
 
-    params.inputBodies.forEach((shellToMirror) => {
+    params.inputBodies.forEach((shellToMirror, index) => {
+      const origin = origins && origins[index];
       const newShellName = shellToMirror.id + ":mirror";
       oci.copy(shellToMirror, newShellName);
       oci.tmirror(newShellName, ...params.face.csys.origin.data(), ...params.face.csys.z.normalize().data());
 
-      if (params.featureId === -1) {
+      if (!origin) {
         created.push(occ.io.getShell(newShellName));
         return;
       }
-      const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToMirror, params.featureId + "MIRROR"));
+      const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(origin, params.featureId + "MIRROR"));
       resultingShell.id = shellToMirror.id + "[" + "M" + ":" + params.featureId + "]";
       created.push(resultingShell)
     });
