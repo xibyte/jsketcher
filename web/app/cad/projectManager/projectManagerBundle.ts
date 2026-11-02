@@ -295,6 +295,10 @@ export function activate(ctx: ApplicationContext) {
   ctx.services.projectManager = ctx.projectManager;
 }
 
+export class ProjectCounters {
+  featureId: number = 0;
+}
+
 export interface ProjectModel {
 
   history: OperationRequest[],
@@ -303,7 +307,9 @@ export interface ProjectModel {
 
   assembly?: AssemblyConstraintDefinition[];
 
-  workbench?: string
+  workbench?: string,
+
+  counters?: ProjectCounters;
 }
 
 export interface ModelBundle {

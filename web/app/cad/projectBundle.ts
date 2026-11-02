@@ -2,7 +2,7 @@ import {setSketchPrecision} from './sketch/sketchReader';
 import {runSandbox} from './sandbox';
 import {LOG_FLAGS} from './logFlags';
 import {ApplicationContext} from "cad/context";
-import {ProjectModel} from "./projectManager/projectManagerBundle";
+import {ProjectCounters, ProjectModel} from "./projectManager/projectManagerBundle";
 import {DebugMode$} from "debugger/Debugger";
 import {fillUpMissingFields} from "cad/craft/schema/initializeBySchema";
 
@@ -51,6 +51,7 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
     if (!currentWorkbench?.internal && ctx.workbenchService.defaultWorkbenchId !== currentWorkbench.workbenchId) {
       data.workbench = currentWorkbench.workbenchId;
     }
+    data.counters = counterGenerator.projectCounters;
     ctx.storageService.set(projectStorageKey(), JSON.stringify(data));
   }
 
@@ -68,20 +69,26 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
     const dataStr = ctx.storageService.get(ctx.projectService.projectStorageKey());
     if (!dataStr) throw new Error('Project data is unavailable.');
     const data = JSON.parse(dataStr);
-    upgradeIfNeeded(data);
     loadData(data);
     loadWorkbench(data);
   }
 
   function upgradeIfNeeded(data: ProjectModel) {
-    if (data.history) {
-      data.history.forEach(req => {
-        const operation = ctx.operationService.get(req.type);
-        if (operation) {
-          fillUpMissingFields(req.params, operation.schema, ctx);
-        }
-      });
+    const history = data.history || [];
+    const existing = history.map(req => Number(req.params && req.params.featureId))
+      .filter(id => Number.isSafeInteger(id) && id > 0);
+    const persisted = Number(data.counters && data.counters.featureId);
+    counterGenerator.projectCounters = {featureId: Math.max(0, ...existing, Number.isSafeInteger(persisted) ? persisted : 0)};
+    for (const req of history) {
+      const operation = ctx.operationService.get(req.type);
+      if (operation) {
+        fillUpMissingFields(req.params, operation.schema, ctx);
+        // Reserve -1 for legacy replay: assigning a new prefix here would
+        // invalidate later face/edge and sketch references in saved projects.
+        if (req.params.featureId === undefined || req.params.featureId === null) req.params.featureId = -1;
+      }
     }
+    data.counters = counterGenerator.projectCounters;
   }
 
   function loadWorkbench(data: ProjectModel) {
@@ -91,6 +98,7 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
   }
 
   function loadData(data: ProjectModel) {
+    upgradeIfNeeded(data);
     if (data.expressions) {
       ctx.expressionService.load(data.expressions);
     }
@@ -113,9 +121,11 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
     });
   }
 
+  const counterGenerator = new ProjectCounterGenerator(new ProjectCounters());
+
   ctx.projectService = {
     id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, loadStrict, loadData, empty,
-    hints
+    hints, counterGenerator
   };
 
 }
@@ -166,6 +176,19 @@ function processParams(params, context) {
   }
 }
 
+export class ProjectCounterGenerator {
+
+  projectCounters: ProjectCounters;
+
+  constructor(projectCounters) {
+    this.projectCounters = projectCounters;
+  }
+
+  generateFeatureId(): string {
+    return (++this.projectCounters.featureId) + "";
+  }
+}
+
 export interface ProjectService {
 
   readonly id: string;
@@ -190,6 +213,7 @@ export interface ProjectService {
 
   empty(): void;
 
+  counterGenerator: ProjectCounterGenerator;
 }
 
 export interface ProjectBundleContext {
