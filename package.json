@@ -12,6 +12,7 @@
     "check-code": "./node_modules/typescript/bin/tsc --noEmit",
     "test:polynomial": "node test/coreTests/run-polynomial-powers.cjs",
     "test:sketch-history": "node test/coreTests/run-sketch-history.cjs",
+    "test:selection-marker": "node test/coreTests/run-selection-marker.cjs",
     "test:strict-sketch-io": "node test/coreTests/run-strict-sketch-io.cjs",
     "checks-passed-banner": "echo 'All conditions passed. Ready to go to the main branch. Good job!'",
     "before-main-branch-merge": "npm run lint && npm run check-code && npm run checks-passed-banner",
