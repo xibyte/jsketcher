@@ -262,11 +262,12 @@ export class IO {
   }
 
   cleanUpData() {
-    for (let l = 0; l < this.viewer.layers.length; ++l) {
-      const layer = this.viewer.layers[l];
-      if (layer.objects.length !== 0) {
-        layer.objects = [];
-      }
+    // Dimensions, annotations and labels live outside viewer.layers.
+    // Clear every workspace layer before reconstructing a sketch, otherwise
+    // undo or reload can retain and duplicate objects from the previous state.
+    const layers = new Set([...this.viewer.layers, ...(this.viewer.dimLayers || [])]);
+    for (const layer of layers) {
+      if (layer.objects.length !== 0) layer.objects = [];
     }
     this.viewer.deselectAll();
     Generator.resetIDGenerator(0);

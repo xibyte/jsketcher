@@ -4,11 +4,12 @@ function harness() {
  const layer={objects:[],add(obj){this.objects.push(obj)}}, dim={objects:[],add(obj){this.objects.push(obj)}}, labels={objects:[],add(obj){this.objects.push(obj)}};
  const stage={algNumSystem:{allConstraints:[]},generators:[],assignObject(o){o.stage=this}, addConstraint(){}, addGenerator(){}};
  const pm={stage,stages:[stage],constantDefinition:'',getStageIndex(){return 0}, starts:0,ends:0,notifies:0,startTransaction(){this.starts++},finishTransaction(){this.ends++},notify(){this.notifies++},reset(){},accommodateStages(){},getStage(){return stage},$constantDefinition:{next() {}}};
- const viewer={layers:[layer,dim,labels],dimLayer:dim,labelLayer:labels,parametricManager:pm,deselectAll(){},createGroundObjects(){},findLayerByName(){return layer},createIndex(){let out={}; for(const o of layer.objects)out[o.id]=o; return out}};
+ const viewer={layers:[layer],dimLayers:[dim,labels],dimLayer:dim,labelLayer:labels,parametricManager:pm,deselectAll(){},createGroundObjects(){},findLayerByName(){return layer},createIndex(){let out={}; for(const o of layer.objects)out[o.id]=o; return out}};
  return {io:new IO(viewer),pm,layer};
 }
 const valid=()=>({version:3,objects:[{id:'p',type:'Point',role:'',stage:0,data:{x:3,y:4}}],dimensions:[],labels:[],stages:[{constraints:[],generators:[]}],constants:''});
 function strict(d) {let h=harness();h.io.loadSketch(JSON.stringify(d),{strict:true});return h;}
+let cleanup=harness();cleanup.io.viewer.dimLayer.objects.push({id:'stale-dimension'});cleanup.io.viewer.labelLayer.objects.push({id:'stale-label'});cleanup.io.loadSketch(JSON.stringify(valid()),{strict:true});assert.equal(cleanup.io.viewer.dimLayer.objects.length,0);assert.equal(cleanup.io.viewer.labelLayer.objects.length,0);
 let h=strict(valid());assert.equal(h.layer.objects.length,1);assert.equal(h.layer.objects[0].x,3);assert.equal(h.pm.starts,1);assert.equal(h.pm.ends,1);
 let d=valid();d.version=2; h=harness();assert.throws(()=>h.io.loadSketch(JSON.stringify(d),{strict:true}),/Unsupported/);assert.equal(h.pm.notifies,0);
 d=valid();d.objects[0].type='NotARealType';assert.throws(()=>strict(d),/Unknown sketch object/);
