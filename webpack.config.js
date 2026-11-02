@@ -29,7 +29,13 @@ module.exports = {
     'verb-nurbs': 'verb'
   },
   resolve: {
-    ...(process.env.CODI_EMBED_NUMERIC === '1' ? {alias: {'numeric': path.join(__dirname, 'node_modules/.cache/codi-numeric/precompiled.js')}} : {}),
+    alias: {
+      ...(process.env.CODI_EMBED_NUMERIC === '1' ? {'numeric': path.join(__dirname, 'node_modules/.cache/codi-numeric/precompiled.js')} : {}),
+      ...(process.env.CODI_EMBED_MANIFOLD === '1' ? {
+        'manifold-3d$': path.join(__dirname, 'node_modules/.cache/codi-manifold/manifold.js'),
+        'manifold-3d/manifold.wasm$': path.join(__dirname, 'node_modules/.cache/codi-manifold/manifold.wasm'),
+      } : {}),
+    },
     extensions: ['.js', '.jsx', ".ts", ".tsx"],
     modules: [MODULES, "node_modules", WEB_APP],
   },
