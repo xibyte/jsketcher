@@ -16,14 +16,15 @@ Research fixes reject splines, partial ellipses, scaled and array inserts,
 missing blocks, and recursive or excessively nested blocks instead of
 silently changing their geometry. Block transforms now account for base points
 and compose through nested inserts. Ellipse major radii use vector magnitude.
-The importer still ignores some unsupported DXF entities and has not been
-qualified for arbitrary external files. Explicit nonzero Z coordinates,
+The importer has not been qualified for arbitrary external files. A pre-scan
+rejects unknown entity records in ENTITIES and BLOCKS instead of letting the
+parser silently discard them. Explicit nonzero Z coordinates,
 elevation, thickness and 3D-polyline flags on supported parsed entities are
 rejected instead of silently flattened; rejected imports retain the original
 sketch. The adapter also scans extrusion-direction group codes on supported
 entity records before parsing, because the parser discards those fields.
-This is not a complete 3D detector: the parser can discard unsupported entity
-types or other data before the adapter sees them. In particular, 3D orientation,
+This is not a complete format or 3D detector: the parser can discard fields
+within recognized entities before the adapter sees them. In particular, 3D orientation,
 extrusion, bulge arcs, malformed and very large inputs, units, layers, writer
 round-trips and parsed nested blocks require further tests and explicit safe
 handling; the direct nested-block tests are not parser end-to-end tests.

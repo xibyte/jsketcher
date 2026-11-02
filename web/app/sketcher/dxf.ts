@@ -264,12 +264,13 @@ export class DxfParserAdapter {
     }
   }
 
-  // The parser does not expose extrusion directions. Inspect those DXF group
-  // codes before parsing, otherwise a tilted object can be silently flattened.
-  // Walk the input incrementally so the check does not duplicate a large file.
-  private assertPlanarNormals(text: string) {
+  // The parser discards unknown entities and extrusion directions. Inspect
+  // records first to avoid silently changing the drawing. Walk incrementally
+  // so the check does not duplicate a large file in memory.
+  private assertSupportedGeometry(text: string) {
     const supported = new Set(['LINE', 'ARC', 'CIRCLE', 'ELLIPSE', 'POINT', 'LWPOLYLINE', 'POLYLINE', 'VERTEX', 'INSERT']);
-    let offset = 0, record = '';
+    const records = new Set([...supported, 'SPLINE', 'SEQEND', 'BLOCK', 'ENDBLK']);
+    let offset = 0, record = '', section = '';
     const nextLine = () => {
       if (offset >= text.length) return null;
       const end = text.indexOf('\n', offset);
@@ -280,7 +281,13 @@ export class DxfParserAdapter {
     for (;;) {
       const code = nextLine(), value = nextLine();
       if (code === null || value === null) break;
-      if (code === '0') record = value.toUpperCase();
+      if (code === '0') {
+        record = value.toUpperCase();
+        if (record === 'ENDSEC') section = '';
+        else if ((section === 'ENTITIES' || section === 'BLOCKS') && !records.has(record)) {
+          throw new Error('Unsupported DXF entity type: ' + record);
+        }
+      } else if (code === '2' && record === 'SECTION') section = value.toUpperCase();
       else if (supported.has(record) && (code === '210' || code === '220' || code === '230')) {
         const normal = Number(value), expected = code === '230' ? 1 : 0;
         if (!value || !Number.isFinite(normal) || normal !== expected) {
@@ -458,7 +465,7 @@ export class DxfParserAdapter {
 
   parse(dxfString: string): Promise<SketchFormat_V3> {
     return new Promise((resolve, reject) => {
-      this.assertPlanarNormals(dxfString);
+      this.assertSupportedGeometry(dxfString);
       new Parser()
         .parse(dxfString)
         .then(dxfObject =>  resolve(this._createSketchFormat(dxfObject)))
