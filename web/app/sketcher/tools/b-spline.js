@@ -516,6 +516,7 @@ export class BSplineTool extends Tool {
     this.curveType = BSplineType.Clamped;
     this.method = ParameterMethod.Centripetal;
     if (this.curve == null) {
+      // There is no unfinished curve to change.
     } else if (Object.getPrototypeOf(this.curve).TYPE == "Point") {
       this.viewer.remove(this.curve);
       this.curve = null;
@@ -529,10 +530,12 @@ export class BSplineTool extends Tool {
       Object.getPrototypeOf(this.curve).TYPE == "Segment" &&
       (this.fPoints.length == 2 || this.cPoints.length == start + 2)
     ) {
+      // Keep the completed segment.
     } else if (
       this.curve.fPoints.length == this.fPoints.length ||
       this.curve.cPoints.length - num == this.cPoints.length
     ) {
+      // The curve has no temporary point to remove.
     } else if (this.fPoints.length == 2) {
       this.makeSegment(this.fPoints[0], this.fPoints[1]);
     } else if (this.cPoints.length == start + 2) {
