@@ -1,5 +1,7 @@
 JSketcher
 ===========
+This is my open-source fork of jSketcher. The changes in this fork are intended for the upstream author to use as they wish; I intend to offer them together in one pull request once stable.
+
 ![JSketcher Logo](./web/img/JSketcher-logo.svg)
 
 JSketcher is a **parametric** 2D and 3D CAD modeler written in pure javascript
