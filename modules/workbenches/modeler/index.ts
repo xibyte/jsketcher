@@ -24,6 +24,8 @@ import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defea
 import { WireLineOperation } from "./features/wireLine/wireLine";
 import { MoveBodyOperation } from "./features/moveBody/moveBody.operation"
 import {MoveBodyXYZOperation} from "./features/moveBody/moveBodyXYZ.operation"
+import {NativeMeshBoxOperation} from './features/nativeMesh/nativeBox.operation';
+import {NativeMeshBooleanOperation} from './features/nativeMesh/nativeBoolean.operation';
 import {SubDBoxOperation} from "./features/subdBox/subdBox.operation";
 import {SubDSphereOperation} from "./features/subdSphere/subdSphere.operation";
 import {SubDCylinderOperation} from "./features/subdCylinder/subdCylinder.operation";
@@ -67,6 +69,8 @@ export const ModelerWorkspace: WorkbenchConfig = {
     WireLineOperation,
     MoveBodyOperation,
     MoveBodyXYZOperation,
+    NativeMeshBoxOperation,
+    NativeMeshBooleanOperation,
     SubDBoxOperation,
     SubDSphereOperation,
     SubDCylinderOperation,
@@ -99,6 +103,8 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "HOLE_TOOL", "-", 'GET_INFO', "IMPORT_MODEL", "DELETE_BODY", "-",
 
       "WIRE_LINE", 'EXPORT_BREP', "-",
+
+      "NATIVE_MESH_BOX", "NATIVE_MESH_BOOLEAN", "-",
 
       "SUBD_BOX", "SUBD_SPHERE", "SUBD_CYLINDER", "-",
 
