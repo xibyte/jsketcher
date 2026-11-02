@@ -1,5 +1,6 @@
 import * as ActionHelpers from './actionHelpers'
 import {AiOutlineExport} from "react-icons/ai";
+import {desktopFileMode, requestDesktopFileAction} from '../desktopFileActions';
 
 export default [
   {
@@ -32,10 +33,15 @@ export default [
     id: 'Save',
     appearance: {
       cssIcons: ['floppy-o'],
-      label: 'save',
-      info: 'save project to storage',
+      label: desktopFileMode ? 'Save to My files' : 'save',
+      info: desktopFileMode ? 'save the project through the desktop' : 'save project to storage',
     },
-    invoke: (context) => context.projectService.save()
+    invoke: (context) => desktopFileMode ? requestDesktopFileAction('save') : context.projectService.save()
+  },
+  {
+    id: 'DesktopSaveAs',
+    appearance: {cssIcons: ['floppy-o'], label: 'Save As to My files', info: 'save a copy through the desktop'},
+    invoke: () => requestDesktopFileAction('save-as')
   },
 
   {
@@ -72,10 +78,10 @@ export default [
     id: 'NativeFormatImport',
     appearance: {
       cssIcons: ['download', 'flip-vertical'],
-      label: 'Import Project',
-      info: 'empty current project and import replacing with native format json(model and its sketches)',
+      label: desktopFileMode ? 'Open from My files' : 'Import Project',
+      info: desktopFileMode ? 'open a project through the desktop' : 'empty current project and import replacing with native format json(model and its sketches)',
     },
-    invoke: (context) => context.services.projectManager.importProject()
+    invoke: (context) => desktopFileMode ? requestDesktopFileAction('open') : context.services.projectManager.importProject()
   },
   
   {

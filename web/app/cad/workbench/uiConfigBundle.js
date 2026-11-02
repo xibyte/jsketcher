@@ -8,6 +8,7 @@ import Expressions from '../expressions/Expressions';
 import {SelectionView} from "../dom/components/SelectionView";
 import {GrSelect} from "react-icons/gr";
 import {Explorer} from "cad/dom/components/Explorer";
+import {desktopFileMode} from '../desktopFileActions';
 
 export const BundleName = "@UIConfig";
 
@@ -20,13 +21,14 @@ export function activate(ctx) {
     ['ShowSketches', {label: 'sketches'}], ['DeselectAll', {label: null}], ['ToggleCameraMode', {label: null}]
   ];
 
-  streams.ui.toolbars.headsUpQuickActions.value = ['Save', 'StlExport', 'menu.workbenches'];
+  streams.ui.toolbars.headsUpQuickActions.value = desktopFileMode ? ['Save', 'menu.workbenches'] : ['Save', 'StlExport', 'menu.workbenches'];
   
-  ctx.actionService.registerActions(CoreActions);
+  ctx.actionService.registerActions(desktopFileMode ? CoreActions : CoreActions.filter(action => action.id !== 'DesktopSaveAs'));
   ctx.actionService.registerActions(HistoryActions);
   ctx.actionService.registerActions(UsabilityActions);
 
-  services.menu.registerMenus(menuConfig);
+  const menus = desktopFileMode ? menuConfig.map(menu => menu.id === 'file' ? {...menu, actions: ['NativeFormatImport', 'Save', 'DesktopSaveAs', '-', 'ReassignSketch']} : menu) : menuConfig;
+  services.menu.registerMenus(menus);
 
   services.ui.registerFloatView('project', Explorer, 'Model', 'cubes');
   services.ui.registerFloatView('history', OperationHistory, 'Modifications', 'history');
