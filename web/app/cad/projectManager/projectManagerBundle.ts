@@ -108,7 +108,8 @@ export function activate(ctx: ApplicationContext) {
     if (new URLSearchParams(window.location.search).get('webos') === '1' && sketches.some(sketch => sketch.data.constants !== undefined && parseMathDefinitions(sketch.data.constants).errors.length)) {
       throw new Error('Fix unsupported or invalid sketch constants before saving.');
     }
-    return {model: JSON.parse(data), sketches};
+    const surfacing = ctx.surfacingService && ctx.surfacingService.save();
+    return {model: JSON.parse(data), sketches, ...(surfacing ? {surfacing} : {})};
   }
 
   // Only intended for a new, hidden host-owned volatile workspace. Validation
@@ -127,6 +128,8 @@ export function activate(ctx: ApplicationContext) {
     if ((bundle.model.assembly !== undefined && (!Array.isArray(bundle.model.assembly) || bundle.model.assembly.length)) || bundle.model.workbench !== undefined) {
       throw new Error('Projects with assembly constraints or a custom workbench are not supported yet.');
     }
+    if (bundle.surfacing !== undefined && (!object(bundle.surfacing) || !object(bundle.surfacing.scene) || !ctx.surfacingService)) throw new Error('Project contains invalid or unsupported surfacing data.');
+    if (bundle.surfacing !== undefined) validateSurfacingIds(bundle.surfacing.scene);
     if (parseMathDefinitions(bundle.model.expressions).errors.length) throw new Error('The project contains unsupported or invalid expressions.');
     for (const op of bundle.model.history) {
       if (!object(op) || typeof op.type !== 'string' || !op.type || op.type.length > 256 ||
@@ -145,7 +148,8 @@ export function activate(ctx: ApplicationContext) {
     const namespace = ctx.projectService.sketchStorageNamespace;
     if (ctx.craftService.modifications$.value.history.length || ctx.craftService.isProcessing || ctx.craftService.pipelineFailure$.value || ctx.expressionService.script$.value || ctx.assemblyService.getConstraints().length ||
         ctx.services.storage.getAllKeysFromNamespace(namespace).length ||
-        ctx.services.sketcher.inPlaceEditor.inEditMode || ctx.wizardService.workingRequest$.value) {
+        ctx.services.sketcher.inPlaceEditor.inEditMode || ctx.wizardService.workingRequest$.value ||
+        (ctx.surfacingService && ctx.surfacingService.save())) {
       throw new Error('Open the project in a new, empty workspace.');
     }
     restoringSnapshot = true;
@@ -161,6 +165,32 @@ export function activate(ctx: ApplicationContext) {
         if (mods.history.length === bundle.model.history.length && mods.pointer === mods.history.length - 1 && !ctx.craftService.isProcessing) break;
         if (Date.now() >= deadline) throw new Error('The project rebuild timed out.');
         await new Promise(resolve => setTimeout(resolve, 25));
+      }
+      if (bundle.surfacing !== undefined) {
+        ctx.surfacingService.load(bundle.surfacing);
+        const canonical = value => {
+          if (Array.isArray(value)) return value.map(canonical);
+          if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])]));
+          return value;
+        };
+        const restored = ctx.surfacingService.save();
+        // Recreating derived bounding curves consumes IDs. Their counters may
+        // advance, but must never go backwards and risk later collisions.
+        const expected = JSON.parse(JSON.stringify(bundle.surfacing));
+        const actual = JSON.parse(JSON.stringify(restored));
+        const counters = expected.scene.idCounters || {};
+        const newCounters = actual.scene.idCounters || {};
+        for (const key of Object.keys(counters)) {
+          if (!Number.isSafeInteger(counters[key]) || counters[key] < 0 ||
+              !Number.isSafeInteger(newCounters[key]) || newCounters[key] < counters[key]) {
+            throw new Error('Surfacing identifiers did not reconstruct safely.');
+          }
+        }
+        delete expected.scene.idCounters;
+        delete actual.scene.idCounters;
+        if (JSON.stringify(canonical(actual)) !== JSON.stringify(canonical(expected))) {
+          throw new Error('Surfacing data did not reconstruct completely.');
+        }
       }
     } catch (error) {
       snapshotWorkspaceUncertain = true;
@@ -295,6 +325,27 @@ export function activate(ctx: ApplicationContext) {
   ctx.services.projectManager = ctx.projectManager;
 }
 
+// Reject snapshots that could reuse serialized entity IDs after rebuilding.
+// Actual geometry and references are also checked by the round-trip below.
+function validateSurfacingIds(scene: any) {
+  if (!Array.isArray(scene.vertexIds) || !Array.isArray(scene.vertices) ||
+      scene.vertexIds.length !== scene.vertices.length || !Array.isArray(scene.patches) ||
+      !Array.isArray(scene.groups) || !scene.idCounters || typeof scene.idCounters !== 'object' || Array.isArray(scene.idCounters)) {
+    throw new Error('Surfacing identifiers are missing or invalid.');
+  }
+  const ids = [scene.id, ...scene.vertexIds, ...scene.patches.map(p => p && p.id), ...scene.groups.map(g => g && g.id)];
+  const seen = new Set<string>();
+  for (const id of ids) {
+    if (typeof id !== 'string' || seen.has(id)) throw new Error('Surfacing entity IDs must be unique.');
+    const match = /^([A-Za-z]+):(0|[1-9][0-9]*)$/.exec(id);
+    const n = match && Number(match[2]);
+    if (!match || !Number.isSafeInteger(n) || !Number.isSafeInteger(scene.idCounters[match[1]]) || scene.idCounters[match[1]] <= n) {
+      throw new Error('Surfacing identifier counter is invalid.');
+    }
+    seen.add(id);
+  }
+}
+
 export interface ProjectModel {
 
   history: OperationRequest[],
@@ -309,6 +360,8 @@ export interface ProjectModel {
 export interface ModelBundle {
 
   model: ProjectModel,
+
+  surfacing?: any;
 
   sketches: {
     id: string,

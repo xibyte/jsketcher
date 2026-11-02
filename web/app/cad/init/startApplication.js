@@ -27,6 +27,7 @@ import * as ExportBundle from '../exportBundle';
 import * as ExposureBundle from '../exposure/exposureBundle';
 import {ViewSyncBundle} from '../scene/viewSyncBundle';
 import * as EntityContextPlugin from '../scene/entityContextBundle';
+import * as NativeEngineBundle from '../craft/nativeEngine/nativeEngineBundle';
 import * as OCCTBundle from '../craft/e0/occtBundle';
 import startReact from "../dom/startReact";
 import * as UIConfigBundle from "../workbench/uiConfigBundle";
@@ -38,6 +39,7 @@ import * as AssemblyBundle from "../assembly/assemblyBundle";
 import {WorkbenchesLoaderBundle} from "cad/workbench/workbenchesLoaderBundle";
 import {AttributesBundle} from "cad/attributes/attributesBundle";
 import {HighlightBundle} from "cad/scene/highlightBundle";
+import * as SurfacingBundle from "surfacing/surfacingBundle";
 import {LegacyStructureBundle} from "cad/context/LegacyStructureBundle";
 import context from "cad/context";
 import {BundleSystem} from "bundler/bundleSystem";
@@ -65,6 +67,7 @@ export default function startApplication(callback) {
     ExportBundle,
     ExposureBundle,
     OCCTBundle,
+    NativeEngineBundle,
     ProjectManagerBundle
   ];
   
@@ -86,7 +89,8 @@ export default function startApplication(callback) {
     ViewSyncBundle,
     WizardSelectionBundle,
     AttributesBundle,
-    HighlightBundle
+    HighlightBundle,
+    SurfacingBundle
   ];
   
   const allBundle = [...preUIBundles, ...bundles];

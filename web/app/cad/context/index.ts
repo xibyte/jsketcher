@@ -6,6 +6,7 @@ import {CadRegistryBundleContext} from "cad/craft/cadRegistryBundle";
 import {CraftBundleContext} from "cad/craft/craftBundle";
 import {OperationBundleContext} from "cad/craft/operationBundle";
 import {OCCBundleContext} from "cad/craft/e0/occtBundle";
+import {NativeEngineBundleContext} from "cad/craft/nativeEngine/nativeEngineBundle";
 import {WizardBundleContext} from "cad/craft/wizard/wizardBundle";
 import {AppTabsBundleContext} from "cad/dom/appTabsBundle";
 import {DomBundleContext} from "cad/dom/domBundle";
@@ -23,6 +24,8 @@ import {StorageBundleContext} from "cad/storage/storageBundle";
 import {WorkbenchBundleContext} from "cad/workbench/workbenchBundle";
 import {LegacyStructureBundleContext} from "cad/context/LegacyStructureBundle";
 
+import type {SurfacingService} from 'surfacing/surfacingBundle';
+
 export interface ApplicationContext extends
   LegacyStructureBundleContext,
   ProjectBundleContext,
@@ -32,6 +35,7 @@ export interface ApplicationContext extends
   CadRegistryBundleContext,
   CraftBundleContext,
   OperationBundleContext,
+  NativeEngineBundleContext,
   OCCBundleContext,
   WizardBundleContext,
   AppTabsBundleContext,
@@ -48,7 +52,9 @@ export interface ApplicationContext extends
   SketchStorageBundleContext,
   StorageBundleContext,
   WorkbenchBundleContext
-{}
+{
+  surfacingService?: SurfacingService;
+}
 
 export default {} as ApplicationContext;
 

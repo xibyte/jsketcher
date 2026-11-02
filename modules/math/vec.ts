@@ -104,7 +104,8 @@ export function cross<T extends VectorData>(v1: T, v2: T): T {
 export function __normalize<T extends VectorData>(v: T, out: T): T {
   const mag = length(v);
   if (mag === 0.0) {
-    out[0] = out[1] = out[2] = 0;
+    for (let i = 0; i < v.length; i++) out[i] = 0;
+    return out;
   }
   return __div(v, mag, out)
 }
@@ -117,7 +118,7 @@ export function _normalize<T extends VectorData>(v: T): T {
   return __normalize(v, v);
 }
 
-export function normalize<T extends VectorData>(v: T): VectorData {
+export function normalize<T extends VectorData>(v: T): T {
   return __normalize(v, create(v.length) as T);
 }
 
@@ -149,6 +150,14 @@ export function create(dim: number): VectorData {
 export {create as newVector};
 
 const sq = v => v * v; 
+
+export function lerp<T extends VectorData>(v1: T, v2: T, t: number): T {
+  const out = create(v1.length) as T;
+  for (let i = 0; i < v1.length; i++) {
+    out[i] = v1[i] + (v2[i] - v1[i]) * t;
+  }
+  return out;
+}
 
 export function distanceSq<T extends VectorData>(v1: T, v2: T): number {
   let dSq = 0;

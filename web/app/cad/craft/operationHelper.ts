@@ -7,8 +7,12 @@ export function roundValueForPresentation(value) {
 
 export function operationIconToActionIcon(icon, appearance) {
   if (typeof icon === 'string') {
-    appearance.icon32 = icon + '32.png';
-    appearance.icon96 = icon + '96.png';
+    if (icon.trimStart().startsWith('<')) {
+      appearance.icon = resolveIcon({ iconType: 'svg', iconContent: icon } as any);
+    } else {
+      appearance.icon32 = icon + '32.png';
+      appearance.icon96 = icon + '96.png';
+    }
   } else {
     appearance.icon = resolveIcon(icon);
   }

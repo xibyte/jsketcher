@@ -113,9 +113,27 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
     });
   }
 
+  let autosaveTimer: any = null;
+  const AUTOSAVE_DELAY = 2000;
+
+  function scheduleSave() {
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => {
+      autosaveTimer = null;
+      save();
+    }, AUTOSAVE_DELAY);
+  }
+
+  // Autosave on history changes (deferred — craftService loads after projectService)
+  setTimeout(() => {
+    if (ctx.craftService) {
+      ctx.craftService.modifications$.attach(() => scheduleSave());
+    }
+  }, 0);
+
   ctx.projectService = {
     id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, loadStrict, loadData, empty,
-    hints
+    hints, scheduleSave
   };
 
 }
@@ -181,6 +199,8 @@ export interface ProjectService {
   getSketchURL(sketchId: string): string
 
   save(): void;
+
+  scheduleSave(): void;
 
   load(): void
 

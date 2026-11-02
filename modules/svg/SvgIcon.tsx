@@ -10,9 +10,11 @@ export function SvgIcon({content, size, ...props}: {
   const style = useMemo(() => {
     return {
       display: 'flex',
+      width: typeof size === 'number' ? size + 'px' : size,
+      height: typeof size === 'number' ? size + 'px' : size,
       ...props.style
     };
-  }, [props.style]);
+  }, [size, props.style]);
 
   return <div className={className} {...props} style={style} dangerouslySetInnerHTML={{__html: content}}/>
 

@@ -46,6 +46,9 @@ module.exports = {
           res.sendFile(path.join(NODE_MODULES, asset))
         })
       });
+      devServer.app.get('/manifold.wasm', function (req, res) {
+        res.sendFile(path.join(NODE_MODULES, 'manifold-3d/manifold.wasm'))
+      });
       return middlewares;
     }
   },
@@ -107,7 +110,8 @@ module.exports = {
       {
         test: /\.wasm$/,
         type: "javascript/auto",
-        loader: "file-loader"
+        loader: "file-loader",
+        options: {name: '[sha256:hash:hex:20].[ext]'}
       },
       {
         test: /\.svg$/,
@@ -123,6 +127,7 @@ module.exports = {
       },
     ]
   },
+  plugins: [new webpack.NormalModuleReplacementPlugin(/^node:module$/, path.join(__dirname, 'modules/brep/operations/mesh/browserNodeModuleStub.js'))],
   node: {
     __dirname: true
   }

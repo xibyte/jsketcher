@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
 import {useStream} from "ui/effects";
 import {MSketchObject} from "cad/model/msketchObject";
-import {VisibleSwitch} from "cad/craft/ui/SceneInlineObjectExplorer";
+import {VisibleSwitch} from "cad/craft/ui/VisibleSwitch";
 import {MOpenFaceShell} from "cad/model/mopenFace";
 import {MObject} from "cad/model/mobject";
 import {ModelIcon} from "cad/craft/ui/ModelIcon";

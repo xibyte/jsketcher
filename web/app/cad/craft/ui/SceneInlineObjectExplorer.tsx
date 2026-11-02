@@ -1,140 +1,94 @@
-import React, {useState} from 'react';
-import {MShell} from 'cad/model/mshell';
-import {MDatum} from 'cad/model/mdatum';
-import {MOpenFaceShell} from "cad/model/mopenFace";
-import {useStream, useStreamWithPatcher} from "ui/effects";
-import {MObject} from "cad/model/mobject";
-import {SceneInlineDelineation, SceneInlineSection} from "ui/components/SceneInlineSection";
-import {GenericExplorerControl, GenericExplorerNode} from "ui/components/GenericExplorer";
-import ls from "cad/craft/ui/ObjectExplorer.less";
-import Fa from "ui/components/Fa";
-import {AiOutlineEye, AiOutlineEyeInvisible} from "react-icons/ai";
-import {ModelButtonBehavior} from "cad/craft/ui/ModelButtonBehaviour";
-import {ModelAttributes} from "cad/attributes/attributesService";
-
+import React, {useCallback, useContext, useState, useEffect} from 'react';
+import {EntityTreeNode, EntityTreeCallbacks} from "surfacing/models/ui/objectTree/EntityTreeNode";
+import {Scene} from "surfacing/models/Scene/Scene.entity";
+import {GeometricEntity} from "surfacing/models/GeometricEntity";
+import {Group} from "surfacing/models/Group/Group.entity";
+import {NurbsSurface} from "surfacing/models/NurbsSurface/NurbsSurface.entity";
+import {GroupDialog} from "surfacing/models/Group/Group.dialog";
+import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
+import {surfacingState$, SurfacingSnapshot} from "surfacing/surfacingBundle";
 
 export function SceneInlineObjectExplorer() {
 
-  const models = useStream(ctx => ctx.craftService.models$);
+  const ctx = useContext(ReactApplicationContext);
+  const [openGroup, setOpenGroup] = useState<Group | null>(null);
 
-  if (!models) {
-    return null;
-  }
+  // Subscribe directly to the module-level surfacing snapshot stream.
+  // This stream exists at import time, so it works even if the explorer
+  // mounts before SurfacingBundle.activate() runs.
+  const [snapshot, setSnapshot] = useState<SurfacingSnapshot>(() => surfacingState$.value);
+  useEffect(() => {
+    const dispose = surfacingState$.attach((s: SurfacingSnapshot) => setSnapshot(s));
+    return () => dispose();
+  }, []);
 
-  return <SceneInlineSection title='OBJECTS'> {models.map(m => {
-    if (m instanceof MOpenFaceShell) {
-      return <OpenFaceSection shell={m} key={m.id} />
-    } else if (m instanceof MShell) {
-      return <ModelSection model={m} key={m.id} controlVisibility>
-        <Section label='faces' defaultOpen={true}>
-          {
-            m.faces.map(f => <FaceSection face={f} key={f.id}/>)
-          }
-        </Section>
-        <Section label='edges' defaultOpen={true}>
-          {m.edges.map(e => <EdgeSection edge={e} key={e.id}/>)}
-        </Section>
+  const getScene = useCallback((): Scene | null => {
+    const svc = (ctx as any).surfacingService;
+    return svc ? svc.scene : null;
+  }, [ctx]);
 
-      </ModelSection>
-    } else if (m instanceof MDatum) {
-      return <ModelSection model={m} key={m.id} controlVisibility/>;
-    } else {
-      return null;
+  // Persist + refresh after a mutation
+  const persistAndRefresh = useCallback(() => {
+    const scene = getScene();
+    scene?.ctx.commit();
+  }, [getScene]);
+
+  // Remove a group and all its patches from the scene
+  const removeGroup = useCallback((group: Group) => {
+    const scene = getScene();
+    if (!scene) return;
+    // The Group entity holds direct surface references — drop them all and
+    // then drop the group itself. No index gymnastics.
+    for (const surface of [...group.surfaces]) {
+      surface.parent?.removeChild(surface);
+      surface.dispose();
     }
-  })}
-  </SceneInlineSection>
-}
+    group.parent?.removeChild(group);
+    persistAndRefresh();
+  }, [getScene, persistAndRefresh]);
 
-function EdgeSection({edge}) {
-  return <ModelSection model={edge} key={edge.id}>
-    {edge.adjacentFaces.map(f => <FaceSection face={f} key={f.id}/>)}
-  </ModelSection>
-}
+  // Remove a single surface from the scene
+  const removeSurface = useCallback((surface: NurbsSurface) => {
+    const scene = getScene();
+    if (!scene) return;
+    surface.parent?.removeChild(surface);
+    surface.dispose();
+    persistAndRefresh();
+  }, [getScene, persistAndRefresh]);
 
-function FaceSection({face}) {
-  return <ModelSection model={face} key={face.id}>
+  const handleOpenDialog = useCallback((entity: GeometricEntity) => {
+    if (entity instanceof Group) setOpenGroup(entity);
+  }, []);
 
-    {(face.productionInfo && face.productionInfo.role) &&
-    <Section label={<span>role: {face.productionInfo.role}</span>}/>}
-    {(face.productionInfo && face.productionInfo.originatedFromPrimitive) &&
-    <Section label={<span>origin: {face.productionInfo.originatedFromPrimitive}</span>}/>}
-    <SketchesList face={face}/>
-    {face.edges && <Section label='edges' defaultOpen={false}>
-      {face.edges.map(e => <EdgeSection edge={e} key={e.id}/>)}
-    </Section>}
-  </ModelSection>;
-}
+  const handleRemoveEntity = useCallback((entity: GeometricEntity) => {
+    if (entity instanceof Group) removeGroup(entity);
+    else if (entity instanceof NurbsSurface) removeSurface(entity);
+  }, [removeGroup, removeSurface]);
 
-function SketchesList({face}) {
-  return <Section
-    label={face.sketchObjects.length ? 'sketch' : <span className={ls.hint}>{'<no sketch assigned>'}</span>}>
-    {face.sketchObjects.map(o => <ModelSection
-      key={o.id}
-      model={o}
-      expandable={false}
-    />)}
-  </Section>;
-}
+  const scene = snapshot.scene;
+  if (!scene || scene.children.length === 0) return null;
 
-
-export function ModelSection({model, expandable = true, controlVisibility = false, ...props}: {
-  model: MObject,
-  children?: any,
-  controlVisibility?: boolean,
-  expandable?: boolean,
-}) {
-
-  return <ModelButtonBehavior model={model} controlVisibility={controlVisibility}>
-    {behavior => <GenericExplorerNode defaultExpanded={false}
-                                   expandable={expandable}
-                                   label={behavior.label}
-                                   selected={behavior.selected}
-                                   select={behavior.select}
-                                   highlighted={behavior.highlighted}
-                                   onMouseEnter={behavior.onMouseEnter}
-                                   onMouseLeave={behavior.onMouseLeave}
-                                   controls={behavior.controls}>
-      {props.children}
-    </GenericExplorerNode>}
-  </ModelButtonBehavior>;
-}
-
-function OpenFaceSection({shell}) {
-  return <ModelSection model={shell} key={shell.id} controlVisibility>
-    <SketchesList face={shell.face}/>
-  </ModelSection>;
-}
-
-function Section(props) {
-
-  const [expanded, setExpanded] = useState(!props.defaultCollapsed);
-
-  const tweakClose = () => {
-    setExpanded(exp => !exp);
+  const callbacks: EntityTreeCallbacks = {
+    onOpenDialog: handleOpenDialog,
+    onRemoveEntity: handleRemoveEntity,
   };
 
-  return <>
-    <SceneInlineDelineation onClick={tweakClose} style={{cursor: 'pointer'}}>
-      <Fa fw icon={'caret-' + (expanded ? 'down' : 'right')}/>
-      <span className={ls.label}>{props.label}</span>
-    </SceneInlineDelineation>
-    {expanded && props.children}
-  </>;
-}
-
-export function VisibleSwitch({modelId}) {
-
-  const [attrs, patch] = useStreamWithPatcher<ModelAttributes>(ctx => ctx.attributesService.streams.get(modelId));
-
-  const onClick = (e) => {
-    patch(attr => {
-      attr.hidden = !attr.hidden
-    });
-    e.stopPropagation();
-    return false;
-  }
-
-  return <GenericExplorerControl onClick={onClick} title={attrs.hidden ? 'show' : 'hide'} on={attrs.hidden}>
-    {attrs.hidden ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
-  </GenericExplorerControl>
+  return <div style={{
+    marginTop: 4,
+    pointerEvents: 'auto',
+    fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
+  }}>
+    <div style={{overflowY: 'auto', maxHeight: '60vh'}}>
+      {scene.children.map((entity, i) =>
+        <EntityTreeNode key={entity.id} entity={entity} callbacks={callbacks} />
+      )}
+    </div>
+    {openGroup && (
+      <GroupDialog
+        group={openGroup}
+        onClose={() => setOpenGroup(null)}
+        onRemove={() => removeGroup(openGroup)}
+      />
+    )}
+  </div>;
 }

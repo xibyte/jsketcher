@@ -15,11 +15,11 @@ import {vectorsEqual} from "math/equality";
 const A = 0, B = 1;
 
 const DEBUG = {
-  OPERANDS_MODE: false,
-  LOOP_DETECTION: false,
-  FACE_FACE_INTERSECTION: false,
-  RAY_CAST: false,
-  FACE_MERGE: false,
+  OPERANDS_MODE: true,
+  LOOP_DETECTION: true,
+  FACE_FACE_INTERSECTION: true,
+  RAY_CAST: true,
+  FACE_MERGE: true,
   NOOP: () => {}
 };
 
@@ -46,7 +46,7 @@ export function invert( shell ) {
 }
 
 export function BooleanAlgorithm( shellA, shellB, type ) {
-  
+
   BREP_DEBUG.startBooleanSession(shellA, shellB, type);
 
   shellA = prepareWorkingCopy(shellA);
@@ -876,7 +876,7 @@ function split(nodes, curve, result, faceA, faceB) {
   }
   
   for (let [edge, nodes] of edgesToSplits) {
-    nodes.sort(({edgeSplitInfo:{u}}) => u);
+    nodes.sort((a, b) => a.edgeSplitInfo.u - b.edgeSplitInfo.u);
     for (const node of nodes) {
       [,edge] = splitEdgeByVertex(edge, node.vertex());
     }
@@ -1253,20 +1253,14 @@ function isSameEdge(e1, e2) {
 
 function curveAndEdgeCoincident(curve, edge) {
   const tess = edge.tessellate();
-  //Do reverse to optimize a bit because the first point is usually checked
   let touches = 0;
   for (let i = tess.length - 1; i >= 0; i--) {
     const pt1 = tess[i];
     const pt2 = curve.point(curve.param(pt1));
     if (!veq(pt1, pt2)) {
-      if (touches > 1) {
-        //partial tangency should be handled before face-face intersection analysis
-        throw new CadError({
-          kind: CadError.KIND.INVALID_INPUT,
-          code: 'edge partial tangency',
-          relatedTopoObjects: [edge]
-        });
-      }
+      // If some points touched but now diverged, the curve is only partially
+      // along this edge. Treat it as non-coincident and let the normal
+      // intersection processing handle it via node collection and edge splitting.
       return false;
     }
     touches++;

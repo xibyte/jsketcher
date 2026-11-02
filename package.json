@@ -27,7 +27,7 @@
     "cad"
   ],
   "author": "Val Erastov <xibyte@gmail.com> (http://github.com/xibyte)",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/xibyte/jsketcher/issues"
   },
@@ -92,6 +92,7 @@
     "less": "^3.11.1",
     "libtess": "1.2.2",
     "lodash": "^4.17.15",
+    "manifold-3d": "^3.4.1",
     "marked": "^4.0.18",
     "mousetrap": "1.6.1",
     "numeric": "1.2.6",

@@ -23,6 +23,15 @@ import {DeleteBodyOperation} from "./features/deleteBody/deleteBody.operation";
 import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defeatureRemoveFace.operation";
 import { WireLineOperation } from "./features/wireLine/wireLine";
 import { MoveBodyOperation } from "./features/moveBody/moveBody.operation"
+import {SubDBoxOperation} from "./features/subdBox/subdBox.operation";
+import {SubDSphereOperation} from "./features/subdSphere/subdSphere.operation";
+import {SubDCylinderOperation} from "./features/subdCylinder/subdCylinder.operation";
+import {PatchPlaneAction} from "surfacing/ops/plane/plane.action";
+import {PatchBoxAction} from "surfacing/ops/box/box.action";
+import {PatchCylinderAction} from "surfacing/ops/cylinder/cylinder.action";
+import {PatchInsertLoopAction} from "./features/patchInsertLoop/patchInsertLoop.operation";
+import {PatchBridgeAction} from "./features/patchBridge/patchBridge.action";
+import {PatchFillHoleAction} from "./features/patchFillHole/patchFillHole.action";
 //imports of action type commands
 import {GetInfo} from "./actions/getInfo/getInfo.action";
 import {ExportBREP} from "./actions/exportBREP/exportBREP.action";
@@ -56,12 +65,20 @@ export const ModelerWorkspace: WorkbenchConfig = {
     DefeatureRemoveFaceOperation,
     WireLineOperation,
     MoveBodyOperation,
+    SubDBoxOperation,
+    SubDSphereOperation,
+    SubDCylinderOperation,
 
     GetInfo,
     ExportBREP,
   ],
   actions: [
-     //GetVolume,
+    PatchPlaneAction,
+    PatchBoxAction,
+    PatchCylinderAction,
+    PatchInsertLoopAction,
+    PatchBridgeAction,
+    PatchFillHoleAction,
   ],
   ui: {
     toolbar: [
@@ -78,8 +95,12 @@ export const ModelerWorkspace: WorkbenchConfig = {
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
       "HOLE_TOOL", "-", 'GET_INFO', "IMPORT_MODEL", "DELETE_BODY", "-",
-      
-      "WIRE_LINE", 'EXPORT_BREP',
+
+      "WIRE_LINE", 'EXPORT_BREP', "-",
+
+      "SUBD_BOX", "SUBD_SPHERE", "SUBD_CYLINDER", "-",
+
+      "PATCH_PLANE", "PATCH_BOX", "PATCH_CYLINDER", "PATCH_INSERT_LOOP", "PATCH_BRIDGE", "PATCH_FILL_HOLE",
     ]
   },
   icon: GiCubes
