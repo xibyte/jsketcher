@@ -1,0 +1,25 @@
+const assert=require('assert').strict;const {importDxfSketch}=require('../../web/app/sketcher/dxfImport.js');const {DxfParserAdapter}=require('../../web/app/sketcher/dxf.ts');
+const dxf=entities=>['0','SECTION','2','ENTITIES',...entities,'0','ENDSEC','0','EOF'].join('\n')+'\n';
+(async()=>{
+ const parser=new DxfParserAdapter();
+ const data=dxf(['0','LINE','8','0','10','1','20','2','30','0','11','4','21','6','31','0','0','CIRCLE','8','0','10','8','20','9','30','0','40','3','0','POINT','8','0','10','5','20','7','30','0']);
+ const result=await parser.parse(data);assert.equal(result.version,3);const seg=result.objects.find(o=>o.type==='Segment'),circ=result.objects.find(o=>o.type==='Circle'),point=result.objects.find(o=>o.type==='Point');assert.deepEqual(seg.data.a,{x:1,y:2});assert.deepEqual(seg.data.b,{x:4,y:6});assert.deepEqual(circ.data.c,{x:8,y:9});assert.equal(circ.data.r,3);assert.equal(point.data.x,5);assert.equal(point.data.y,7);
+ const lw=await parser.parse(dxf(['0','LWPOLYLINE','8','0','90','3','70','1','10','0','20','0','10','10','20','0','10','10','20','10']));assert.equal(lw.objects.length,3);assert.ok(lw.objects.every(o=>o.type==='Segment'));
+ const leading=['999','test comment',...data.trimEnd().split('\n')].join('\n')+'\n';const comments=await parser.parse(leading);assert.equal(comments.objects.length,3);
+ const empty=()=>({arcs:[],circles:[],ellipses:[],lines:[],points:[],lwPolylines:[],polylines:[],splines:[],inserts:[]});
+ const b={name:'part',basePointX:2,basePointY:3,entities:empty()};b.entities.points.push({x:2,y:3});const scene={objects:[]};const identity={translation:{x:0,y:0},rotation:0,origin:{x:0,y:0}};
+ parser._insert([b],{blockName:'part',x:10,y:20,rotation:90},scene,identity,[]);assert.ok(Math.abs(scene.objects[0].data.x-10)<1e-9);assert.ok(Math.abs(scene.objects[0].data.y-20)<1e-9);
+ const parent={name:'outer',basePointX:0,basePointY:0,entities:empty()};parent.entities.inserts.push({blockName:'part',x:1,y:2,rotation:0});const nested={objects:[]};parser._insert([b,parent],{blockName:'outer',x:10,y:20,rotation:90},nested,identity,[]);assert.ok(Math.abs(nested.objects[0].data.x-8)<1e-9);assert.ok(Math.abs(nested.objects[0].data.y-21)<1e-9);
+ parent.entities.inserts.push({blockName:'outer',x:0,y:0});assert.throws(()=>parser._insert([parent],{blockName:'outer',x:0,y:0}, {objects:[]},identity,[]),/unknown block|Recursive/);
+ assert.throws(()=>parser._insert([b],{blockName:'part',x:0,y:0,xScale:2},{objects:[]},identity,[]),/not supported/);
+ assert.throws(()=>parser._spline({},identity),/not yet supported/);
+ assert.throws(()=>parser._ellipse({startParameter:0,endParameter:1},identity),/Partial/);
+ const ellipse=parser._ellipse({centerX:0,centerY:0,majorAxisX:0,majorAxisY:10,ratioOfMinorAxisToMajorAxis:0.5},identity);assert.equal(ellipse.data.rx,10);assert.equal(ellipse.data.ry,5);
+ const initial=JSON.stringify({version:3,objects:[],dimensions:[],labels:[],stages:[{constraints:[],generators:[]}],constants:''});let current=initial;
+ const viewer={toolManager:{tool:'idle',defaultTool:'idle'},io:{serializeSketch(){return current}},parametricManager:{stage:{},getStageIndex(){return 0}},fullHeavyUIRefresh(){}};
+ viewer.historyManager={diffs:[],historyPointer:-1,lastCheckpoint:initial,_counter:0,_checkpoint(){this.lastCheckpoint=current},restoreChecked(s){current=s}};
+ await importDxfSketch(viewer,data,initial);assert.equal(JSON.parse(current).objects.length,3);const after=current;
+ await assert.rejects(importDxfSketch(viewer,data,initial),/changed/);assert.equal(current,after);
+ const malformed=dxf(['0','SPLINE','70','0','71','3','72','0','73','0','74','0']);await assert.rejects(importDxfSketch(viewer,malformed,after));assert.equal(current,after);
+ console.log('PASS: DXF entities, blocks, safety checks and ellipse radii');process.exit(0);
+})().catch(e=>{console.error(e);process.exit(1)});
