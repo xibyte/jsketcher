@@ -1,0 +1,5 @@
+# OCC rotation around a global axis
+
+The Rotate around axis (OCC) action rotates selected OCC solids around a global X, Y or Z axis passing through the entered pivot, using degrees. It is a separate history operation and does not change historical Move operations. Native Mesh solids are rejected explicitly; there is currently no conversion between the engines. The idea of exposing direct transforms came from reviewing ArcCAD's modeling workflows; this implementation is new code built on jSketcher's existing XYZ move and OCC interfaces.
+
+`rotate-axis-browser.test.cjs` exercises the actual wizard in Chromium using the standard `webosTest` helper. It verifies a 90-degree rotation around an offset pivot against each original face's coordinates, stable face references, undo/redo, snapshot reopening and a subsequent linear pattern. It also checks invalid selection, axis, angle and feature ID, and rejects a Native Mesh body. It uses a test-only local web server and is not a production deployment.
