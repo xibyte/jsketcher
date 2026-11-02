@@ -284,6 +284,11 @@ export class DxfParserAdapter {
   }
 
   private handleEntities(entities: Omit<DxfGlobalObject["entities"], "inserts">, sketch: SketchFormat_V3, t: ITransform) {
+    for (const key of ['face3ds', 'solid3ds', 'solids', 'texts']) {
+      if (Array.isArray((entities as any)[key]) && (entities as any)[key].length) {
+        throw new Error('Unsupported DXF entity type: ' + key);
+      }
+    }
     entities.arcs.forEach(a => sketch.objects.push(this._arc(a, t)));
     entities.circles.forEach(c => sketch.objects.push(this._circle(c, t)));
     entities.ellipses.forEach(e => sketch.objects.push(this._ellipse(e, t)));

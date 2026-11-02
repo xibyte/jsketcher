@@ -1,4 +1,4 @@
-const assert=require('assert').strict;const {DxfParserAdapter}=require('../../web/app/sketcher/dxf.ts');
+const assert=require('assert').strict;const {importDxfSketch}=require('../../web/app/sketcher/dxfImport.js');const {DxfParserAdapter}=require('../../web/app/sketcher/dxf.ts');
 const dxf=entities=>['0','SECTION','2','ENTITIES',...entities,'0','ENDSEC','0','EOF'].join('\n')+'\n';
 (async()=>{
  const parser=new DxfParserAdapter();
@@ -15,5 +15,11 @@ const dxf=entities=>['0','SECTION','2','ENTITIES',...entities,'0','ENDSEC','0','
  assert.throws(()=>parser._spline({},identity),/not yet supported/);
  assert.throws(()=>parser._ellipse({startParameter:0,endParameter:1},identity),/Partial/);
  const ellipse=parser._ellipse({centerX:0,centerY:0,majorAxisX:0,majorAxisY:10,ratioOfMinorAxisToMajorAxis:0.5},identity);assert.equal(ellipse.data.rx,10);assert.equal(ellipse.data.ry,5);
+ const initial=JSON.stringify({version:3,objects:[],dimensions:[],labels:[],stages:[{constraints:[],generators:[]}],constants:''});let current=initial;
+ const viewer={toolManager:{tool:'idle',defaultTool:'idle'},io:{serializeSketch(){return current}},parametricManager:{stage:{},getStageIndex(){return 0}},fullHeavyUIRefresh(){}};
+ viewer.historyManager={diffs:[],historyPointer:-1,lastCheckpoint:initial,_counter:0,_checkpoint(){this.lastCheckpoint=current},restoreChecked(s){current=s}};
+ await importDxfSketch(viewer,data,initial);assert.equal(JSON.parse(current).objects.length,3);const after=current;
+ await assert.rejects(importDxfSketch(viewer,data,initial),/changed/);assert.equal(current,after);
+ const malformed=dxf(['0','SPLINE','70','0','71','3','72','0','73','0','74','0']);await assert.rejects(importDxfSketch(viewer,malformed,after));assert.equal(current,after);
  console.log('PASS: DXF entities, blocks, safety checks and ellipse radii');process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1)});

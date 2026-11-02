@@ -1,8 +1,8 @@
 # DXF import research (not ready to expose)
 
 This branch brings over the upstream DXF parser and relevant elliptical sketch
-geometry commits. It does not add an import control to the desktop. Importing
-is not yet a complete file workflow and this branch is not a release candidate.
+geometry commits, plus a local-only in-place import prototype. Importing is not
+yet a complete file workflow and this branch is not a release candidate.
 
 The upstream parser represents a selected subset of 2D DXF entities. Tests
 cover real parsing of lines, circles, points, closed lightweight polylines and
@@ -31,3 +31,22 @@ production CSP, with repeated imports, app closure, and concurrent windows.
 Review licenses and corresponding source for dependencies, then build and test
 against the exact lockfile before publishing. Integrate carefully with the
 independently developed spline and strict-history changes.
+
+## Local-only in-place import prototype
+
+The sketch toolbar can request an import through the same-origin host bridge.
+The research host chooses a DXF from My files, checks the owner, file version,
+size and sketch state, then appends supported shapes with strict checked
+reconstruction and an undo checkpoint. Failure attempts to restore the earlier
+sketch; if rollback itself fails, history retains a recovery snapshot and the
+user must not save the partial sketch. Cancel leaves the sketch untouched.
+This is an experimental research integration and must not be deployed before
+fixing the remaining DXF compatibility and unsupported-entity limitations
+above and reconciling the branch with the final host and strict-history work.
+
+`test/webos/dxf-import-browser.test.cjs` exercises actual in-place import,
+undo/redo, strict reconstruction failure and serialized reopen in local
+Chromium. See `test/webos/README-sketch-history.md` for the test-only build,
+helper bundle and production-like CSP server requirements. It requires a
+`puppeteer-core` install in the test environment. The companion host research
+branch tests its file-picker bridge against an in-memory file service.
