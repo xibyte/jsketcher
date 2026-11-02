@@ -3,7 +3,8 @@ import {Vertex} from "brep/topo/vertex";
 import {EdgeGraph} from "brep/operations/boolean";
 import {Edge, HalfEdge} from "brep/topo/edge";
 import {Plane} from "geom/impl/plane";
-import {DEFLECTION, E0_TOLERANCE} from "../../../../web/app/cad/craft/e0/common";
+const DEFLECTION = 2;
+const E0_TOLERANCE = 1e-3;
 import {EngineAPI_V1, GenericResponse} from "engine/api";
 
 export function defeatureByEdge(shell: Shell, edge: Edge, engine: EngineAPI_V1): GenericResponse {

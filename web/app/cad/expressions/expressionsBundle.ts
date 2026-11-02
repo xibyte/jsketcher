@@ -1,6 +1,8 @@
 import {merge, state, StateStream, Stream} from 'lstream';
 import {indexArray} from 'gems/iterables';
 import {ApplicationContext} from "cad/context";
+import {desktopFileMode} from '../desktopFileActions';
+import {evaluateMath, parseMathDefinitions} from 'gems/safeExpression.mjs';
 
 export const BundleName = "@Expressions";
 
@@ -29,7 +31,7 @@ export function activate(ctx: ApplicationContext) {
     if (typeof expr === 'number') {
       return expr;      
     }
-    let value = table$.value[expr];
+    let value = desktopFileMode && !Object.prototype.hasOwnProperty.call(table$.value,expr) ? undefined : table$.value[expr];
     if (value === undefined) {
       value = _evaluateExpression(expr);
     }
@@ -60,6 +62,7 @@ export function activate(ctx: ApplicationContext) {
 }
 
 function rebuildVariableTable(script) {
+  if (desktopFileMode) return rebuildSafeVariableTable(script);
   const varList = [];
   const errors = [];
   if (script == null) return;
@@ -87,6 +90,11 @@ function rebuildVariableTable(script) {
     }
   }
   return {varList, errors, evaluateExpression}; 
+}
+
+function rebuildSafeVariableTable(script) {
+  const {varList, errors, variables} = parseMathDefinitions(script);
+  return {varList,errors,evaluateExpression: expr => evaluateMath(expr,variables)};
 }
 
 export interface ExpressionService {

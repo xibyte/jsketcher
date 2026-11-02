@@ -2,7 +2,6 @@ import {MObject} from "cad/model/mobject";
 import {Shell} from "brep/topo/shell";
 import {MFace} from "cad/model/mface";
 import {Face} from "brep/topo/face";
-import {FaceRef} from "cad/craft/e0/OCCUtils";
 import {Classification, Classifier, OCCClassifier} from "cad/craft/production/classifier";
 import {addToListInMap} from "gems/iterables";
 import {MEdge} from "cad/model/medge";
@@ -10,6 +9,7 @@ import {Edge} from "brep/topo/edge";
 import {MBrepShell, MShell} from "cad/model/mshell";
 import {TopoObject} from "brep/topo/topo-object";
 import {Matrix3x4} from "math/matrix";
+import {FaceRef} from "cad/craft/e0/OCCUtils";
 
 const classifier: Classifier = new OCCClassifier();
 
@@ -112,13 +112,23 @@ abstract class BasicProductionAnalyzer implements ProductionAnalyzer {
 
 }
 
+// The ID-copying analyzer needs the original BREP and its topology registry.
+export function requireBrepShellForTopology(shape: MShell): MBrepShell {
+  if (!(shape instanceof MBrepShell)) {
+    throw new Error('Stable topology IDs require a BREP body.');
+  }
+  return shape;
+}
+
 export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
 
   originShell: Shell;
   suffix: string;
+  originShape;
 
   constructor(originShape: MBrepShell, suffix: string) {
     super();
+    this.originShape = originShape;
     this.originShell = originShape.brepShell;
     this.suffix = suffix;
   }
@@ -127,9 +137,22 @@ export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
 
     this.originShell.faces.forEach((originFace, index) => {
       const createdFace = createdShell.faces[index];
-      createdFace.data.id = originFace.data.id + ":" + this.suffix;
+      createdFace.data.id = this.originShape.brepRegistry.get(originFace).id + ":" + this.suffix;
       createdFace.data.productionInfo = originFace.data.productionInfo;
     })
+
+    const listOfEdgesToCopy = [...this.originShell.edges];
+    const createdShellEdges = [...createdShell.edges];
+
+    listOfEdgesToCopy.forEach((originEdge, index) => {
+      //console.log("originEdge", originEdge);
+      const createdEdge = createdShellEdges[index];
+      //console.log(createdEdge);
+      createdEdge.data.id = this.originShape.brepRegistry.get(originEdge).id + ":" + this.suffix;
+      createdEdge.data.productionInfo = originEdge.data.productionInfo;
+    })
+
+
   }
 }
 
@@ -360,7 +383,7 @@ export class FromMObjectProductionAnalyzer extends BasicProductionAnalyzer {
   constructor(consumed: MObject[], mustAdvance: MObject[] = []) {
     super();
     this.consumed = consumed;
-    this.mustAdvance = new Set<string>(mustAdvance&&mustAdvance.map(o => o.id));
+    this.mustAdvance = new Set<string>(mustAdvance && mustAdvance.map(o => o.id));
     consumed.forEach(mShell => {
       if (mShell instanceof MBrepShell) {
         classifier.prepare(mShell.brepShell);

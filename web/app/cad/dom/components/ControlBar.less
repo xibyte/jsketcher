@@ -44,3 +44,16 @@
     background-color: @work-area-control-bar-bg-color;
   }
 }
+
+// Keep the desktop menu available by horizontal scrolling on narrow screens
+// without making the entire embedded document wider than the viewport.
+@media (max-width: 600px) {
+  .root {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    pointer-events: auto;
+  }
+  .left, .right { flex: 0 0 auto; }
+}

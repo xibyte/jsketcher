@@ -8,6 +8,7 @@ import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 
 interface PrimitiveSphereParams {
+  featureId: number,
   radius: number,
   locations: MDatum,
   boolean: BooleanDefinition,
@@ -73,7 +74,7 @@ export const PrimitiveSphereOperation: OperationDescriptor<PrimitiveSphereParams
     const sphere = occ.io.getShell("sphere", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:SPHERE',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:SPHERE',
           productionInfo: {
             role: 'sweep'
           }

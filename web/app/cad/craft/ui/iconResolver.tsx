@@ -6,9 +6,9 @@ import { IconType } from 'react-icons/lib';
 
 export function resolveIcon(iconDef: IconDeclaration | IconType) {
     if (iconDef.iconType || iconDef.iconSet) {
-        return (props) => <DeclaredIcon {...iconDef} {...props}/>
+        return (props) => <DeclaredIcon {...iconDef} {...props} size={typeof props.size === 'number' ? (props.size <= 16 ? 'small' : props.size <= 24 ? 'medium' : 'large') : props.size}/>
     } else {
-        if (!iconDef || typeof(iconDef) !== 'object') {
+        if (!iconDef || (typeof(iconDef) !== 'object' && typeof(iconDef) !== 'function')) {
             return size => <AiOutlineQuestion size={getSizeInPx(size)}/>;
         }        
         return iconDef;

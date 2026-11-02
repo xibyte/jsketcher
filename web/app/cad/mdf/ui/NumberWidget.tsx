@@ -12,10 +12,12 @@ export interface NumberWidgetProps extends FieldBasicProps {
   min?: number;
 
   max?: number;
+
+  placeholder?: string;
 }
 
 export function NumberWidget(props: NumberWidgetProps) {
-  return <NumberField name={props.name} defaultValue={props.defaultValue} label={props.label} />
+  return <NumberField name={props.name} defaultValue={props.defaultValue} label={props.label} placeholder={props.placeholder} />
 }
 
 NumberWidget.propsToSchema = (props: NumberWidgetProps) => {

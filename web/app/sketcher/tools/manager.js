@@ -1,3 +1,5 @@
+import {toast} from 'react-toastify';
+
 export class ToolManager {
   
   constructor(viewer, defaultTool) {
@@ -48,13 +50,37 @@ export class ToolManager {
     }, false);
 
     this.addEventListener(canvas, "keydown", (e) => {
+      const historyShortcut = (e.ctrlKey || e.metaKey) && (e.keyCode === 90 || e.keyCode === 89);
+      if (historyShortcut && this.tool !== this.defaultTool) {
+        e.preventDefault();
+        toast('Finish or cancel the current shape before undoing or redoing.');
+        return;
+      }
       this.tool.keydown(e);
       if (e.keyCode === 27) {
         this.releaseControl();
       } else if (e.keyCode === 46 || e.keyCode === 8) {
         const selection = viewer.selected.slice();
-        viewer.removeAll(selection);
-        viewer.refresh();
+        if (selection.length > 0) {
+          viewer.historyManager.checkpoint();
+          viewer.removeAll(selection);
+          viewer.refresh();
+          viewer.historyManager.checkpoint();
+        }
+      } else if (historyShortcut) {
+        e.preventDefault();
+        try {
+          if (viewer.historyManager.recoverySnapshot) {
+            viewer.historyManager.recover();
+            toast('Previous sketch recovered. You can try undo or redo again.');
+          } else if (e.keyCode === 89 || e.shiftKey) {
+            viewer.historyManager.redo();
+          } else {
+            viewer.historyManager.undo();
+          }
+        } catch (error) {
+          toast.error(error.message || 'Sketch history could not be restored.');
+        }
       }
     }, false);
     this.addEventListener(canvas, "keypress", (e) => {
@@ -87,10 +113,12 @@ export class ToolManager {
   }
 
   releaseControl() {
+    this.viewer.historyManager.checkpoint();
     this.takeControl(this.defaultTool);
   }
   
   dispose() {
+    this.tool.cleanup();
     this.disposers.forEach(d => d());
   }
 }

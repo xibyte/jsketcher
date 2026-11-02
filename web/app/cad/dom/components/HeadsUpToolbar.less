@@ -15,8 +15,24 @@
   flex: 1 1;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  & > * {
+    padding: 3px 4px;
+  }
   svg {
     width: 24px;
     height: 24px;
+  }
+}
+// One swipeable row keeps the canvas usable on phones while retaining every tool.
+@media (max-width: 600px) {
+  .mainActions {
+    min-width: 0;
+    flex: 1 1 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    pointer-events: auto;
+    & > * { flex: 0 0 auto; }
   }
 }

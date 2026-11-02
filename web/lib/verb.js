@@ -25,9 +25,11 @@
 
     var global = this;
 
-    var isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
-    var isNode=new Function("try {return this===global;}catch(e){return false;}");
-    var isWebworker=new Function("try {return typeof importScripts === 'function';}catch(e){return false;}");
+    // Environment checks do not need runtime code generation. In particular,
+    // browsers with a strict Content Security Policy disallow new Function.
+    var isBrowser = function(){ return typeof globalThis.window !== 'undefined' && globalThis === globalThis.window; };
+    var isNode = function(){ return typeof process === 'object' && !!(process.versions && process.versions.node); };
+    var isWebworker = function(){ return typeof importScripts === 'function'; };
 
     // node.js context, but not WebWorker
     if ( isNode() && !isWebworker() ){
@@ -7279,7 +7281,7 @@ var global = window;
             if (typeof handler === "function") {
                 handler.apply(undefined, args);
             } else {
-                (new Function("" + handler))();
+                throw new TypeError("setImmediate requires a function");
             }
         };
     }
@@ -7427,7 +7429,7 @@ var global = window;
 
     attachTo.setImmediate = setImmediate;
     attachTo.clearImmediate = clearImmediate;
-}(new Function("return this")()));
+}(typeof globalThis !== 'undefined' ? globalThis : typeof self !== 'undefined' ? self : this));
 ;
 haxe_Serializer.USE_CACHE = false;
 haxe_Serializer.USE_ENUM_INDEX = false;

@@ -35,6 +35,9 @@ export function createOCCIO(ctx: ApplicationContext): OCCIO {
   }
 
   function pushModel(model: MObject, name: string) {
+    if (model.root?.topology?.data?.__meshWithOrigins) {
+      throw new Error('This is a Native Mesh solid. OCC and native solids cannot be mixed or converted yet.');
+    }
     const ptr = model.topology?.data?.externals?.ptr;
     if (!ptr) {
       return false;

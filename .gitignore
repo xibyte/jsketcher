@@ -15,3 +15,5 @@
 /.vs
 /web/docs/
 pnpm-lock.yaml
+.dev-board
+TASKS.md

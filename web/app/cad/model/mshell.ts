@@ -9,6 +9,18 @@ import {Shell} from "brep/topo/shell";
 import {TopoObject} from "brep/topo/topo-object";
 import {EntityKind} from "cad/model/entities";
 
+/**
+ * Shared mesh buffer owned by the shell.
+ * Each face references a range of triangle indices into this buffer.
+ */
+export interface ShellMesh {
+  vertices: Float32Array;   // flat [x,y,z, x,y,z, ...]
+  normals: Float32Array;    // flat [nx,ny,nz, ...]
+  indices?: Uint32Array;    // optional index buffer
+  // Per-face triangle ranges: faceTriRanges[faceIdx] = [startTriIdx, endTriIdx)
+  faceTriRanges: [number, number][];
+}
+
 export class MShell extends MObject {
 
   static TYPE = EntityKind.SHELL;
@@ -19,6 +31,9 @@ export class MShell extends MObject {
   faces: MFace[] = [];
   edges: MEdge[] = [];
   vertices: MVertex[]  = [];
+
+  /** Shared mesh buffer — single source of truth for rendering */
+  mesh: ShellMesh | null = null;
 
   location$: StateStream<Matrix3x4> = state(new Matrix3x4());
 

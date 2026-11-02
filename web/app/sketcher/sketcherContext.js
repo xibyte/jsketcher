@@ -32,6 +32,7 @@ export function createEssentialAppContext(canvas) {
     }
   };
   applicationContext.viewer = new Viewer(canvas, IO, applicationContext);
+  applicationContext.viewer.historyManager.init(applicationContext.viewer.io.serializeSketch(undefined, {strict: true}));
   return applicationContext;
 }
 

@@ -4,7 +4,7 @@ import {useStreamWithUpdater} from "ui/effects";
 import Window from "ui/components/Window";
 import {MObject} from "cad/model/mobject";
 import Stack from "ui/components/Stack";
-import {ModelSection} from "cad/craft/ui/SceneInlineObjectExplorer";
+import {ModelSection} from "cad/craft/ui/ModelSection";
 import {ModelButton} from "cad/craft/ui/ModelButton";
 
 

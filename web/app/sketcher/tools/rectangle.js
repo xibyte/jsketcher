@@ -109,6 +109,7 @@ export class RectangleTool extends Tool {
     this.rectangle.forEach(s => s.stabilize(this.viewer));
     pm.addAll(constraints);
     pm.finishTransaction();
+    this.viewer.historyManager.checkpoint();
     this.viewer.toolManager.releaseControl();
   }
 

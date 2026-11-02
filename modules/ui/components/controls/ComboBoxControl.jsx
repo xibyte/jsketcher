@@ -1,6 +1,8 @@
 import React from 'react';
+import {FieldId} from './Field';
 
 export default class ComboBoxControl extends React.Component {
+  static contextType = FieldId;
   
   render() {
     const {onChange, value, includeNonExistent, children} = this.props;
@@ -17,7 +19,7 @@ export default class ComboBoxControl extends React.Component {
       }
     }
 
-    return <select value={value} onChange={e => onChange(e.target.value)}>
+    return <select id={this.context === -1 ? undefined : this.context} value={value} onChange={e => onChange(e.target.value)}>
       {nonExistent}
       {children}
     </select>  

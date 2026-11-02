@@ -9,6 +9,7 @@ import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/production
 
 
 interface PrimitiveTorusParams {
+  featureId: number,
   radius: number,
   tubeRadius: number,
   locations: MDatum,
@@ -80,7 +81,7 @@ export const PrimitiveTorusOperation: OperationDescriptor<PrimitiveTorusParams> 
     const torus = occ.io.getShell("torus", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:TORUS',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:TORUS',
           productionInfo: {
             role: 'sweep'
           }

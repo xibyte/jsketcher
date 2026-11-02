@@ -515,7 +515,7 @@ export const POW_0_FN = new ToThePowerFunction(0, x => 1, x => 0);
 export const POW_1_FN = new ToThePowerFunction(1, x => x,  x => 1);
 export const POW_2_FN = new ToThePowerFunction(2, x => x*x, x => 2*x);
 export const POW_3_FN = new ToThePowerFunction(3, x => x*x*x, x => 3*x*x);
-export const POW_4_FN = new ToThePowerFunction(3, x => x*x*x*x, x => 4*x*x*x);
+export const POW_4_FN = new ToThePowerFunction(4, x => x*x*x*x, x => 4*x*x*x);
 
 export const COS_FN = new FreeFunction(x => Math.cos(x), x => -Math.sin(x) ,'cos', (k, x, b) => new Polynomial(0).monomial(1).term(x, new CosineOfSum(k, b)));
 export const SIN_FN = new FreeFunction(x => Math.sin(x), x =>  Math.cos(x), 'sin', (k, x, b) => new Polynomial(0).monomial(1).term(x, new SineOfSum(k, b)));

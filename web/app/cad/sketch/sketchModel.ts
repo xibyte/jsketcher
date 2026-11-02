@@ -6,10 +6,10 @@ import Vector from 'math/vector';
 import CSys from "math/csys";
 import {distanceAB} from "math/distance";
 import {isCCW} from "geom/euclidean";
-import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface";
+import {OCCCommandInterface} from "cad/craft/e0/occCommandInterface"
+import flatten from 'lodash/flatten'
+import {deg} from "sketcher/dxf";
 
-
-const RESOLUTION = 20;
 
 export class SketchPrimitive {
 
@@ -65,7 +65,42 @@ export class SketchPrimitive {
   }
 
   toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
-    throw 'not implemented'
+
+    const nurbs = this.toNurbs(csys);
+
+    const {
+      degree,
+      knots,
+      cp,
+      weights
+    } = (nurbs.impl as NurbsCurve).asCurveBSplineData();
+
+    const bspline = {
+      knots: [],
+      mults: [],
+    }
+
+    knots.forEach(knot => {
+      if (bspline.knots.length === 0 || bspline.knots[bspline.knots.length - 1] !== knot) {
+        bspline.knots.push(knot);
+        bspline.mults.push(1);
+      } else {
+        bspline.mults[bspline.mults.length - 1] += 1;
+      }
+
+    });
+
+    const args = [degree, bspline.knots.length];
+
+    bspline.knots.forEach((knot, i) => {
+      args.push(knot, bspline.mults[i]);
+    });
+
+    cp.forEach((p, i) => {
+      args.push(p[0], p[1], p[2], weights[i]);
+    });
+
+    oci.bsplinecurve(underName, ...args);
   }
 
   massiveness() {
@@ -223,6 +258,16 @@ export class BezierCurve extends SketchPrimitive {
     return new verb.geom.BezierCurve([tr(this.a).data(), tr(this.cp1).data(), tr(this.cp2).data(), tr(this.b).data()], null);
   }
 
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+    const tr = csys.outTransformation.apply;
+    const poles = [this.a, this.cp1, this.cp2, this.b].map(tr);
+    if (this.inverted) {
+      poles.reverse();
+    }
+
+    oci.beziercurve(underName, poles.length, ...flatten(poles.map(p => p.data())))
+  }
+
   massiveness() {
     return this.a.minus(this.b).length();
   }
@@ -316,7 +361,7 @@ export class Ellipse extends SketchPrimitive {
     this.rot = rot;
   }
 
-  toVerbNurbs(tr) {
+  toVerbNurbs(tr, csys) {
 
     const ax = Math.cos(this.rot);
     const ay = Math.sin(this.rot);
@@ -324,7 +369,10 @@ export class Ellipse extends SketchPrimitive {
     const xAxis = new Vector(ax, ay)._multiply(this.rx);
     const yAxis = new Vector(-ay, ax)._multiply(this.ry);
 
-    return new verb.geom.Ellipse(tr(this.c).data(), tr(xAxis).data(), tr(yAxis).data());
+    const tr3x3 = csys.outTransformation3x3.apply;
+    return new verb.geom.Ellipse(tr(this.c).data(),
+      tr3x3(xAxis).data(),
+      tr3x3(yAxis).data());
   }
 
   massiveness() {
@@ -388,6 +436,72 @@ export class Contour {
   reverse() {
     this.segments.reverse();
     this.segments.forEach(s => s.invert());
+  }
+}
+
+// A sketch B-spline carries its full knot vector and local-space control
+// vertices. Endpoints are computed by the sketch reader from the curve domain,
+// including for non-clamped splines; they need not be control vertices.
+export class BSplineCurve extends SketchPrimitive {
+  a: Vector;
+  b: Vector;
+  degree: number;
+  kValues: number[];
+  cPoints: {x: number; y: number; z?: number}[];
+
+  constructor(id: string, degree: number, kValues: number[], cPoints: {x: number; y: number; z?: number}[], a: Vector, b: Vector) {
+    super(id);
+    this.degree = degree;
+    this.kValues = kValues;
+    this.cPoints = cPoints;
+    this.a = a;
+    this.b = b;
+  }
+
+  toVerbNurbs(tr): any {
+    const points = this.cPoints.map(p => tr(new Vector(p.x, p.y, p.z)).data());
+    const start = this.kValues[this.degree];
+    const end = this.kValues[points.length];
+    // verb's public constructor accepts only clamped vectors. Trim the raw
+    // homogeneous curve at its mathematical domain boundaries first; knot
+    // insertion preserves its geometry and produces the required end knots.
+    let data: any = {degree: this.degree, knots: this.kValues.slice(),
+      controlPoints: points.map(point => [...point, 1])};
+    if (data.knots[0] !== start) data = verb.eval.Divide.curveSplit(data, start)[1];
+    if (data.knots[data.knots.length - 1] !== end) data = verb.eval.Divide.curveSplit(data, end)[0];
+    return new verb.geom.NurbsCurve(data);
+  }
+
+  // Keep the base class and the existing primitive conversions unchanged.
+  // Use the transformed, possibly reversed NURBS data for this spline only.
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+    const {degree, knots, cp, weights} = (this.toNurbs(csys).impl as NurbsCurve).asCurveBSplineData();
+    const uniqueKnots: number[] = [];
+    const multiplicities: number[] = [];
+    for (const knot of knots) {
+      if (!uniqueKnots.length || uniqueKnots[uniqueKnots.length - 1] !== knot) {
+        uniqueKnots.push(knot);
+        multiplicities.push(1);
+      } else {
+        multiplicities[multiplicities.length - 1]++;
+      }
+    }
+    const args: number[] = [degree, uniqueKnots.length];
+    uniqueKnots.forEach((knot, index) => args.push(knot, multiplicities[index]));
+    cp.forEach((point, index) => args.push(point[0], point[1], point[2], weights[index]));
+    const result = oci.bsplinecurve(underName, ...args);
+    if (typeof result === 'number' && result !== 0) throw new Error('Could not create the B-spline in the CAD engine.');
+  }
+
+  // A closed curve has equal endpoints but still has nonzero extent.
+  massiveness() {
+    if (!this.cPoints.length) return 0;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const point of this.cPoints) {
+      minX = Math.min(minX, point.x); minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x); maxY = Math.max(maxY, point.y);
+    }
+    return Math.hypot(maxX - minX, maxY - minY);
   }
 }
 

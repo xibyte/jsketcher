@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="topFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8078b0"/>
+      <stop offset="1" stop-color="#5e5788"/>
+    </linearGradient>
+    <linearGradient id="sideFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#504977"/>
+      <stop offset="1" stop-color="#2a253f"/>
+    </linearGradient>
+    <radialGradient id="topHighlight" cx="0.35" cy="0.3" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="loopGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Side face fill -->
+  <path d="M 29.7 40 A 34.3 19.8 0 0 0 98.3 40 L 98.3 88 A 34.3 19.8 0 0 1 29.7 88 Z"
+        fill="url(#sideFace)"/>
+
+  <!-- Top face fill -->
+  <ellipse cx="64" cy="40" rx="34.3" ry="19.8" fill="url(#topFace)"/>
+  <ellipse cx="64" cy="40" rx="34.3" ry="19.8" fill="url(#topHighlight)"/>
+
+  <!-- Isolines -->
+  <g fill="none" stroke="#9a8ec0" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.75">
+    <path d="M 39.8 26 L 88.3 54 L 88.3 102"/>
+    <path d="M 64 20.2 L 64 107.8"/>
+    <path d="M 88.3 26 L 39.8 54 L 39.8 102"/>
+    <path d="M 29.7 56 A 34.3 19.8 0 0 0 98.3 56"/>
+    <path d="M 29.7 72 A 34.3 19.8 0 0 0 98.3 72"/>
+  </g>
+
+  <!-- Interior edge: front half of top ellipse -->
+  <path d="M 29.7 40 A 34.3 19.8 0 0 0 98.3 40"
+        fill="none" stroke="#1b1730" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Outer silhouette -->
+  <path d="M 29.7 40 A 34.3 19.8 0 0 1 98.3 40 L 98.3 88 A 34.3 19.8 0 0 1 29.7 88 Z"
+        fill="none" stroke="#1b1730" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Split loop at y = 0 (middle of cylinder): ellipse at (64, 64) -->
+  <!-- Back half (hidden behind cylinder, dashed) -->
+  <path d="M 29.7 64 A 34.3 19.8 0 0 1 98.3 64"
+        fill="none" stroke="#f0c864" stroke-width="1.6" stroke-linecap="round"
+        stroke-dasharray="2.5 2.5" opacity="0.65"/>
+  <!-- Front half (solid, on the visible side face) -->
+  <path d="M 29.7 64 A 34.3 19.8 0 0 0 98.3 64"
+        fill="none" stroke="#f4d070" stroke-width="2" stroke-linecap="round"
+        filter="url(#loopGlow)"/>
+</svg>

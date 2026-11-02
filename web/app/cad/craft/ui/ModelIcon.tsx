@@ -28,6 +28,7 @@ function getIconComp(entityType) {
     case EntityKind.VERTEX: return VscDebugBreakpointLogUnverified;
     case EntityKind.DATUM: return GiThreePointedShuriken;
     case EntityKind.DATUM_AXIS: return CgArrowLongRightL;
+    case EntityKind.SURFACING_SCENE: return HiOutlineCubeTransparent;
     default: return HiOutlineCubeTransparent;
   }
 }

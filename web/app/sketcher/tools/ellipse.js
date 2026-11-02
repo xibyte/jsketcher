@@ -64,6 +64,7 @@ export class EllipseTool extends Tool {
         if (this.arc) {
           this.ellipse.stabilize(this.viewer);
         }
+        this.viewer.historyManager.checkpoint();
         this.viewer.toolManager.releaseControl();
     }
   }

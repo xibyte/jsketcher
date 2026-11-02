@@ -13,7 +13,7 @@ export class EndPoint extends SketchObject {
     y: Param
   };
 
-  constructor(x, y, id?) {
+  constructor(x: number, y: number, id?: string) {
     super(id);
     this.params  = {
       x: new Param(x, 'X'),
@@ -37,12 +37,12 @@ export class EndPoint extends SketchObject {
     this.params.y.set(val);
   }
 
-  visitParams(callback) {
+  visitParams(callback: (param: Param) => void) {
     callback(this.params.x);
     callback(this.params.y);
   }
 
-  normalDistance(aim) {
+  normalDistance(aim: Vector) {
     return aim.minus(new Vector(this.x, this.y)).length();
   }
 
@@ -50,12 +50,12 @@ export class EndPoint extends SketchObject {
     return this;
   }
 
-  translateImpl(dx, dy) {
+  translateImpl(dx: number, dy: number) {
     this.x += dx;
     this.y += dy;
   }
 
-  visitLinked(cb) {
+  visitLinked(cb: (obj: SketchObject) => void) {
     dfs(this, (obj, chCb) => obj.constraints.forEach(c => {
       if (c.schema.id === ConstraintDefinitions.PCoincident.id) {
         c.objects.forEach(chCb);
@@ -63,7 +63,7 @@ export class EndPoint extends SketchObject {
     }), cb);
   }
 
-  drawImpl(ctx, scale) {
+  drawImpl(ctx: CanvasRenderingContext2D, scale: number) {
     DrawPoint(ctx, this.x, this.y, 3, scale)
   }
 
@@ -72,11 +72,11 @@ export class EndPoint extends SketchObject {
     this.y = y;
   }
 
-  setFromPoint(p) {
+  setFromPoint(p: { x: number; y: number }) {
     this.setXY(p.x, p.y);
   }
 
-  setFromArray(arr) {
+  setFromArray(arr: number[]) {
     this.setXY(arr[0], arr[1]);
   }
 
@@ -96,7 +96,7 @@ export class EndPoint extends SketchObject {
     return new EndPoint(this.x, this.y);
   }
 
-  mirror(dest, mirroringFunc) {
+  mirror(dest: EndPoint, mirroringFunc: (x: number, y: number) => { x: number; y: number }) {
     const {x, y} = mirroringFunc(this.x, this.y);
     dest.x = x;
     dest.y = y;

@@ -9,6 +9,7 @@ import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/production
 
 
 interface PrimitiveCylinderParams {
+  featureId: number,
   diameter: number,
   height: number,
   locations: MDatum,
@@ -80,19 +81,19 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
     const cylinder = occ.io.getShell("cylinder", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:SIDE',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:SIDE',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: 'F:BASE',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:BASE',
           productionInfo: {
             role: 'base'
           }
         },
         {
-          id: 'F:LID',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:LID',
           productionInfo: {
             role: 'lid'
           }

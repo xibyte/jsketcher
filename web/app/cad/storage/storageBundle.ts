@@ -12,27 +12,32 @@ export function defineStreams(ctx) {
 export function activate(ctx: ApplicationContext) {
 
   const {services, streams} = ctx;
+  // An embedded desktop window must not share CAD projects with another
+  // window or account at the same origin. This is a volatile workspace only;
+  // the host still needs an explicit, authorized My files bridge.
+  const volatile = new URLSearchParams(window.location.search).get('webos') === '1';
+  const workspace = new Map<string, string>();
 
   function set(key, value) {
     console.log("Saving: " + key);
-    localStorage.setItem(key, value);
+    if (volatile) workspace.set(key, value); else localStorage.setItem(key, value);
     notify(key);
   }
 
   function get(key) {
-    return localStorage.getItem(key);
+    return volatile ? (workspace.get(key) ?? null) : localStorage.getItem(key);
   }
 
   function remove(key) {
     try {
-      return localStorage.removeItem(key);  
+      if (volatile) workspace.delete(key); else localStorage.removeItem(key);
     } finally {
       notify(key);
     }
   }
 
   function exists(key) {
-    return key in localStorage;
+    return volatile ? workspace.has(key) : key in localStorage;
   }
   
   function notify(key) {
@@ -43,6 +48,7 @@ export function activate(ctx: ApplicationContext) {
   }
 
   function getAllKeysFromNamespace(namespace) {
+    if (volatile) return Array.from(workspace.keys()).filter(key => key.startsWith(namespace));
     const keys = [];
     for(let i = localStorage.length - 1; i >= 0 ; i--) {
       const key = localStorage.key(i);
@@ -53,7 +59,7 @@ export function activate(ctx: ApplicationContext) {
     return keys;
   }
 
-  window.addEventListener('storage', evt => notify(evt.key), false);
+  if (!volatile) window.addEventListener('storage', evt => { if (evt.key !== null) notify(evt.key); }, false);
   
   const addListener = listener => streams.storage.update.attach(listener);
 

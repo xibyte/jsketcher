@@ -21,11 +21,15 @@ export interface SelectionWidgetProps extends FieldBasicProps {
 
   max?: number;
 
+  nativeMeshChoices?: boolean;
+
+  occShellChoices?: boolean;
+
   markColor?: string | number
 }
 
 export function SelectionWidget(props: SelectionWidgetProps) {
-  return <Entity name={props.name} label={props.label} />;
+  return <Entity name={props.name} label={props.label} nativeMeshChoices={props.nativeMeshChoices} occShellChoices={props.occShellChoices} />;
 }
 
 SelectionWidget.propsToSchema = (props: SelectionWidgetProps) => {

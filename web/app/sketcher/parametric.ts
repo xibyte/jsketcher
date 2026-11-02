@@ -5,6 +5,8 @@ import {state, stream} from 'lstream';
 import {toast} from "react-toastify";
 import {ISolveStage, SolvableObject} from "./constr/solvableObject";
 import {Viewer} from "./viewer2d";
+import {desktopFileMode} from 'cad/desktopFileActions';
+import {evaluateMath, validVariableName} from 'gems/safeExpression.mjs';
 
 export {Constraints, ParametricManager}
 
@@ -108,7 +110,7 @@ class ParametricManager {
   };
 
   rebuildConstantTable(constantDefinition) {
-    this.constantTable = {};
+    this.constantTable = desktopFileMode ? Object.create(null) : {};
     if (constantDefinition == null) return;
     const lines = constantDefinition.split('\n');
     let prefix = "(function() { \n";
@@ -118,7 +120,8 @@ class ParametricManager {
       if (m != null && m.length === 3) {
         const constant = m[1];
         try {
-          const value = eval(prefix + "return " + m[2] + "; \n})()");
+          if (desktopFileMode && (!validVariableName(constant) || Object.prototype.hasOwnProperty.call(this.constantTable,constant))) throw new Error('Invalid or duplicate constant name.');
+          const value = desktopFileMode ? evaluateMath(m[2],this.constantTable) : eval(prefix + "return " + m[2] + "; \n})()");
           this.constantTable[constant] = value;
           prefix += "const " + constant + " = " + value + ";\n"
         } catch(e) {

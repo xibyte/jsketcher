@@ -56,7 +56,7 @@ function curveExactIntersection(curve1, curve2, u1, u2) {
     const d2 = curve2.eval( u2, 1);
     const r = vec.sub(d1[0], d2[0]);
     const drdu = d1[1];
-    const drdt = vec.mul(-1, d2[1]);
+    const drdt = vec.mul(d2[1], -1);
     return [2 * vec.dot(drdu, r), 2 * vec.dot(drdt,r)];
   }
   const params = [u1, u2];

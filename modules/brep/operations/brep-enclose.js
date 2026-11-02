@@ -109,7 +109,41 @@ function assemble(walls, basePlane, lidPlane) {
 
   shell.faces.push(base, lid);
   shell.faces.forEach(f => f.shell = shell);
+
+  // Verify face orientations: for a closed solid, each face's surface normal
+  // should point outward (away from the interior). Test by checking if the
+  // surface normal at the face midpoint points away from the shell centroid.
+  fixShellOrientation(shell);
+
   return shell;
+}
+
+function fixShellOrientation(shell) {
+  // Compute centroid of all face midpoints
+  let cx = 0, cy = 0, cz = 0, count = 0;
+  for (const face of shell.faces) {
+    try {
+      const mid = face.surface.pointInMiddle();
+      cx += mid.x; cy += mid.y; cz += mid.z;
+      count++;
+    } catch(e) { /* skip */ }
+  }
+  if (count === 0) return;
+  cx /= count; cy /= count; cz /= count;
+
+  // Check each face: if normal points toward centroid, invert the surface
+  for (const face of shell.faces) {
+    try {
+      const mid = face.surface.pointInMiddle();
+      const normal = face.surface.normalInMiddle();
+      const toCenter = { x: cx - mid.x, y: cy - mid.y, z: cz - mid.z };
+      const dot = normal.x * toCenter.x + normal.y * toCenter.y + normal.z * toCenter.z;
+      if (dot > 0) {
+        // Normal points inward — invert the surface
+        face.surface = face.surface.invert();
+      }
+    } catch(e) { /* skip */ }
+  }
 }
 
 function bothClassOf(o1, o2, className) {

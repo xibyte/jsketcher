@@ -1,37 +1,37 @@
-import {makeAngle0_360} from 'math/commons';
-import Vector from 'math/vector';
-import {SketchObject, SketchObjectSerializationData} from './sketch-object';
-import {Param} from "./param";
-import {AlgNumConstraint, ConstraintDefinitions} from "../constr/ANConstraints";
-import {EndPoint, SketchPointSerializationData} from "./point";
-import {distance} from "math/distance";
-import {areEqual, TOLERANCE} from "math/equality";
+import { makeAngle0_360 } from "math/commons";
+import Vector from "math/vector";
+import { SketchObject, SketchObjectSerializationData } from "./sketch-object";
+import { Param } from "./param";
+import { AlgNumConstraint, ConstraintDefinitions } from "../constr/ANConstraints";
+import { EndPoint, SketchPointSerializationData } from "./point";
+import { Viewer } from "../viewer2d";
+import { distance } from "math/distance";
+import { areEqual, TOLERANCE } from "math/equality";
 
 export class Arc extends SketchObject {
-
   a: EndPoint;
   b: EndPoint;
   c: EndPoint;
   r: Param;
   ang1: Param;
   ang2: Param;
-  
-  constructor(ax, ay, bx, by, cx, cy, id?: string) {
+
+  constructor(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, id?: string) {
     super(id);
-    this.a = new EndPoint(ax, ay, this.id + ':A');
-    this.b = new EndPoint(bx, by, this.id + ':B');
-    this.c = new EndPoint(cx, cy, this.id + ':C');
+    this.a = new EndPoint(ax, ay, this.id + ":A");
+    this.b = new EndPoint(bx, by, this.id + ":B");
+    this.c = new EndPoint(cx, cy, this.id + ":C");
 
     this.a.parent = this;
     this.b.parent = this;
     this.c.parent = this;
-    this.children.push(this.a, this.b, this.c);
+    this.children.add(this.a).add(this.b).add(this.c);
 
-    this.r = new Param(0, 'R');
+    this.r = new Param(0, "R");
     this.r.enforceVisualLimit = true;
 
-    this.ang1 = new Param(0, 'A');
-    this.ang2 = new Param(0, 'A');
+    this.ang1 = new Param(0, "A");
+    this.ang2 = new Param(0, "A");
 
     this.syncGeometry();
   }
@@ -42,7 +42,7 @@ export class Arc extends SketchObject {
     this.r.set(this.distanceA());
   }
 
-  visitParams(callback) {
+  visitParams(callback: (param: Param) => void) {
     callback(this.r);
     callback(this.ang1);
     callback(this.ang2);
@@ -54,22 +54,21 @@ export class Arc extends SketchObject {
   getReferencePoint() {
     return this.c;
   }
-  
-  translateImpl(dx, dy) {
+
+  translateImpl(dx: number, dy: number) {
     this.a.translate(dx, dy);
     this.b.translate(dx, dy);
     this.c.translate(dx, dy);
   }
-  
-  
+
   radiusForDrawing() {
     return this.r.get();
   }
-  
+
   distanceA() {
     return distance(this.a.x, this.a.y, this.c.x, this.c.y);
   }
-  
+
   distanceB() {
     return distance(this.b.x, this.b.y, this.c.x, this.c.y);
   }
@@ -85,7 +84,7 @@ export class Arc extends SketchObject {
   getStartAngle() {
     return this.ang1.get();
   }
-  
+
   getEndAngle() {
     return this.ang2.get();
   }
@@ -100,13 +99,12 @@ export class Arc extends SketchObject {
     return mid._minusXYZ(-this.c.x, -this.c.y, 0);
   }
 
-  drawImpl(ctx, scale) {
+  drawImpl(ctx: CanvasRenderingContext2D, scale: number) {
     ctx.beginPath();
     const r = this.radiusForDrawing();
     const startAngle = makeAngle0_360(this.getStartAngle());
     let endAngle;
-    if (areEqual(this.a.x, this.b.x, TOLERANCE) &&
-        areEqual(this.a.y, this.b.y, TOLERANCE)) {
+    if (areEqual(this.a.x, this.b.x, TOLERANCE) && areEqual(this.a.y, this.b.y, TOLERANCE)) {
       endAngle = startAngle + 2 * Math.PI;
     } else {
       endAngle = makeAngle0_360(this.getEndAngle());
@@ -127,22 +125,22 @@ export class Arc extends SketchObject {
       ctx.stroke();
     }
   }
-  
-  isPointInsideSector(x, y) {
+
+  isPointInsideSector(x: number, y: number) {
     const ca = new Vector(this.a.x - this.c.x, this.a.y - this.c.y);
     const cb = new Vector(this.b.x - this.c.x, this.b.y - this.c.y);
     const ct = new Vector(x - this.c.x, y - this.c.y);
-  
+
     ca._normalize();
     cb._normalize();
     ct._normalize();
     const cosAB = ca.dot(cb);
     const cosAT = ca.dot(ct);
-  
+
     const isInside = cosAT >= cosAB;
     const abInverse = ca.cross(cb).z < 0;
     const atInverse = ca.cross(ct).z < 0;
-  
+
     let result;
     if (abInverse) {
       result = !atInverse || !isInside;
@@ -151,21 +149,17 @@ export class Arc extends SketchObject {
     }
     return result;
   }
-  
-  normalDistance(aim) {
-  
+
+  normalDistance(aim: { x: number; y: number }) {
     const isInsideSector = this.isPointInsideSector(aim.x, aim.y);
     if (isInsideSector) {
       return Math.abs(distance(aim.x, aim.y, this.c.x, this.c.y) - this.radiusForDrawing());
     } else {
-      return Math.min(
-        distance(aim.x, aim.y, this.a.x, this.a.y),
-        distance(aim.x, aim.y, this.b.x, this.b.y)
-      );
+      return Math.min(distance(aim.x, aim.y, this.a.x, this.a.y), distance(aim.x, aim.y, this.b.x, this.b.y));
     }
   }
-  
-  stabilize(viewer) {
+
+  stabilize(viewer: Viewer) {
     this.syncGeometry();
     const constr = new AlgNumConstraint(ConstraintDefinitions.ArcConsistency, [this]);
     constr.internal = true;
@@ -176,7 +170,7 @@ export class Arc extends SketchObject {
     return new Arc(this.a.x, this.a.y, this.b.x, this.b.y, this.c.x, this.c.y);
   }
 
-  mirror(dest, mirroringFunc) {
+  mirror(dest: Arc, mirroringFunc: (x: number, y: number) => { x: number; y: number }) {
     this.a.mirror(dest.b, mirroringFunc);
     this.b.mirror(dest.a, mirroringFunc);
     this.c.mirror(dest.c, mirroringFunc);
@@ -186,20 +180,12 @@ export class Arc extends SketchObject {
     return {
       a: this.a.write(),
       b: this.b.write(),
-      c: this.c.write()
+      c: this.c.write(),
     };
   }
 
   static read(id: string, data: SketchArcSerializationData): Arc {
-    return new Arc(
-      data.a.x,
-      data.a.y,
-      data.b.x,
-      data.b.y,
-      data.c.x,
-      data.c.y,
-      id
-    )
+    return new Arc(data.a.x, data.a.y, data.b.x, data.b.y, data.c.x, data.c.y, id);
   }
 }
 
@@ -209,6 +195,6 @@ export interface SketchArcSerializationData extends SketchObjectSerializationDat
   c: SketchPointSerializationData;
 }
 
-Arc.prototype.TYPE = 'Arc';
+Arc.prototype.TYPE = "Arc";
 
-Arc.prototype._class = 'TCAD.TWO.Arc';
+Arc.prototype._class = "TCAD.TWO.Arc";

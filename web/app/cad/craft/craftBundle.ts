@@ -21,9 +21,12 @@ export function activate(ctx: ApplicationContext) {
   const pipelineFailure$ = state<any>(null);
 
   let preRun = null;
+  let locked = false;
+  let pendingModifications = 0;
+  let pendingPipelines = 0;
 
   function modifyWithPreRun(request, modificationsUpdater, onAccepted, onError) {
-
+    pendingModifications++;
     runRequest(request).then(result => {
       onAccepted();
       preRun = {
@@ -35,7 +38,7 @@ export function activate(ctx: ApplicationContext) {
       console.error(error);
       console.error(error.stack);
       onError(error);
-    });
+    }).finally(() => pendingModifications--);
   }
   
   function modify(request, onAccepted, onError) {
@@ -101,6 +104,10 @@ export function activate(ctx: ApplicationContext) {
 
    ctx.craftService  = {
 
+     get isProcessing() {
+       return pendingModifications > 0 || pendingPipelines > 0;
+     },
+
      get isEditingHistory() {
        const mods = this.modifications$.value;
        return mods && mods.pointer !== mods.history.length - 1;
@@ -157,13 +164,12 @@ export function activate(ctx: ApplicationContext) {
     });
   }
 
-  let locked = false;
-
   intercept(modifications$, (curr, stream, next) => {
     if (locked) {
       console.error('[CRAFT] concurrent modification');
     }
     locked = true;
+    pendingPipelines++;
 
     const prev = stream.value;
     let beginIndex;
@@ -187,7 +193,8 @@ export function activate(ctx: ApplicationContext) {
           ...curr,
           pointer: reason.failIndex,
         });
-      });
+      })
+      .finally(() => pendingPipelines--);
   })
 }
 
@@ -280,6 +287,7 @@ interface CraftService {
   runPipeline(history: OperationRequest[], beginIndex: number, endIndex: number): Promise<void>;
 
   isEditingHistory: boolean;
+  readonly isProcessing: boolean;
 }
 
 interface HistoryTravel {

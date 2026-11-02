@@ -169,6 +169,7 @@ const DEFAULT_COMMAND_HANDLER = (command, println, ctx) => {
     action.invoke(ctx);
   } else {
     try {
+      if (new URLSearchParams(window.location.search).get('webos') === '1') throw new Error('JavaScript execution is unavailable in the embedded desktop.');
       const output = eval(command);
       println({text: output});
     } catch (e) {

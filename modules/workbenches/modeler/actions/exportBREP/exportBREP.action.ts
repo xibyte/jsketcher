@@ -3,6 +3,7 @@ import {ApplicationContext} from "cad/context";
 import {EntityKind} from "cad/model/entities";
 import {ActionDefinition} from "cad/actions/actionSystemBundle";
 import { MEdge } from "cad/model/medge";
+import icon from "./EXPORT.svg";
 
 
 interface ExportBREPParams {
@@ -12,37 +13,11 @@ interface ExportBREPParams {
 export const ExportBREP: any = {
   id: 'EXPORT_BREP',
   label: 'EXPORT BREP',
-  icon: 'img/cad/extrude',
-  info: 'EXPORT BREP FILE CONTAINING SELECTED BODIES',
+  icon: icon,
+  info: 'Export BREP file containing selected bodies',
   path:__dirname,
   run: async (params: any, ctx: ApplicationContext) => {
-    console.log("this is it", this)
-    const occ = ctx.occService;
-    const oci = occ.commandInterface;
-
-
-    let resultingMessage = "";
-
-
-
-   await params.targetBody.forEach(async (targetBody) => {
-    console.log(targetBody);
-      await oci.writebrep(targetBody, targetBody.id+".brp", "-binary", 0);
-      //await oci.binsave(...targetBody, "myFile.brp");
-      
-      await downloadBlob(await FS.readFile(targetBody.id+".brp"), targetBody.id+".brp", 'application/octet-stream');
-      
-      //alert("yay");
-    });
-
-
-
-
-
-
-    resultingMessage = "yay";
-
-    throw {userMessage: resultingMessage};
+    throw 'EXPORT_BREP operation is not yet implemented with native engine';
   },
 
 

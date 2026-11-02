@@ -1,12 +1,11 @@
-import {ApplicationContext} from 'cad/context';
-import {roundValueForPresentation as r} from 'cad/craft/operationHelper';
-import {EntityKind} from "cad/model/entities";
-import {BooleanDefinition} from "cad/craft/schema/common/BooleanDefinition";
-import {OperationDescriptor} from "cad/craft/operationBundle";
+import { ApplicationContext } from 'cad/context';
+import { roundValueForPresentation as r } from 'cad/craft/operationHelper';
+import { EntityKind } from "cad/model/entities";
+import { BooleanDefinition } from "cad/craft/schema/common/BooleanDefinition";
+import { OperationDescriptor } from "cad/craft/operationBundle";
 import CSys from "math/csys";
 import {MDatum} from "cad/model/mdatum";
 import {ExpectedOrderProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
-
 
 interface PrimitiveBoxParams {
   x: number,
@@ -14,15 +13,16 @@ interface PrimitiveBoxParams {
   z: number,
   locations: MDatum,
   boolean: BooleanDefinition,
+  featureId: number,
 }
 
-export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
+export const PrimitiveBoxOperation: OperationDescriptor<any> = {
   id: 'BOX',
   label: 'Box',
   icon: 'img/cad/cube',
   info: 'Primitive Box',
-  path:__dirname,
-  paramsInfo: ({x, y, z}) => `(${r(x)} , ${r(y)} , ${r(z)})`,
+  path: __dirname,
+  paramsInfo: ({ x, y, z }) => `(${r(x)} , ${r(y)} , ${r(z)})`,
   form: [
     {
       type: 'number',
@@ -66,6 +66,7 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
 
 
   run: (params: PrimitiveBoxParams, ctx: ApplicationContext) => {
+    console.log(params , this);
     const occ = ctx.occService;
     const oci = occ.commandInterface;
 
@@ -81,37 +82,37 @@ export const PrimitiveBoxOperation: OperationDescriptor<PrimitiveBoxParams> = {
     const box = occ.io.getShell("box", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: 'F:LEFT',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:LEFT',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: 'F:RIGHT',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:RIGHT',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: 'F:BASE',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:BASE',
           productionInfo: {
             role: 'base'
           }
         },
         {
-          id: 'F:LID',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:LID',
           productionInfo: {
             role: 'lid'
           }
         },
         {
-          id: 'F:BACK',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:BACK',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: 'F:FRONT',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:FRONT',
           productionInfo: {
             role: 'sweep'
           }

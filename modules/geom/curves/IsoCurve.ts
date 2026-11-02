@@ -31,10 +31,13 @@ export class IsoCurveU implements ParametricCurve {
   }
 
   eval(u, num) {
+    // IsoCurveU has fixed U, varying V. Derivatives are along V direction.
+    // Surface eval[i][j] = d^(i+j)S / du^i dv^j
+    // For fixed U curve: d^k/dv^k = eval[0][k]
     const hes = this.surface.eval(this.u, u, num);
     const out = [];
-    for (let i = 0; i < num; ++i) {
-      out[i] = hes[i][0];
+    for (let i = 0; i <= num; ++i) {
+      out[i] = hes[0][i];
     }
     return out;
   }
@@ -84,10 +87,13 @@ export class IsoCurveV implements ParametricCurve {
   }
 
   eval(u, num) {
+    // IsoCurveV has fixed V, varying U. Derivatives are along U direction.
+    // Surface eval[i][j] = d^(i+j)S / du^i dv^j
+    // For fixed V curve: d^k/du^k = eval[k][0]
     const hes = this.surface.eval(u, this.v, num);
     const out = [];
-    for (let i = 0; i < num; ++i) {
-      out[i] = hes[i][1];
+    for (let i = 0; i <= num; ++i) {
+      out[i] = hes[i][0];
     }
     return out;
   }

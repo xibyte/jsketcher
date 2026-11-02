@@ -1,3 +1,4 @@
+import {importDxfSketch} from 'sketcher/dxfImport';
 import {getSketchBoundaries} from './sketchBoundaries';
 import {state, stream} from 'lstream';
 import {InPlaceSketcher} from './inPlaceSketcher';
@@ -189,6 +190,7 @@ export function activate(ctx) {
 
   services.sketcher = {
     sketchFace, sketchFace2D, updateAllSketches, inPlaceEditor, reassignSketch,
+    importDxfSketch: (viewer, text, expected) => importDxfSketch(viewer, text, expected, () => inPlaceEditor.inEditMode && inPlaceEditor.viewer === viewer),
     exportFaceToDXF,
     reassignSketchMode: initReassignSketchMode(ctx)
   };
