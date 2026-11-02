@@ -258,6 +258,12 @@ export class DxfWriterAdapter {
 export class DxfParserAdapter {
   private static _seed = 0; // Used as ids for the shapes.
 
+  private assertPlanar(...values: (number | undefined | null)[]) {
+    if (values.some(value => value != null && (!Number.isFinite(value) || value !== 0))) {
+      throw new Error('3D DXF geometry cannot be imported into a 2D sketch.');
+    }
+  }
+
   private _createSketchObject(type: string, data: object) {
     return {
       id: (DxfParserAdapter._seed++).toString(),
@@ -302,6 +308,7 @@ export class DxfParserAdapter {
   private _insert(blocks: Block[], insert: InsertEntity, sketch: SketchFormat_V3, parent: ITransform, ancestors: string[]) {
     const block = blocks.find(b => b.name === insert.blockName || b.name2 === insert.blockName);
     if (!block) throw new Error('DXF insert references an unknown block: ' + insert.blockName);
+    this.assertPlanar(insert.z, block.basePointZ);
     if (ancestors.includes(insert.blockName) || ancestors.length >= 32) throw new Error('Recursive or excessively nested DXF block');
     if ((insert.xScale != null && insert.xScale !== 1) || (insert.yScale != null && insert.yScale !== 1) ||
         (insert.zScale != null && insert.zScale !== 1) || (insert.columnCount != null && insert.columnCount > 1) ||
@@ -333,10 +340,14 @@ export class DxfParserAdapter {
   }
 
   private _polyline(p: PolylineEntity, t: ITransform) {
+    this.assertPlanar(p.z, p.thickness);
+    p.vertices.forEach(v => this.assertPlanar(v.z));
+    if (p.flag & (8 | 16 | 64)) throw new Error('3D DXF polylines cannot be imported into a 2D sketch.');
     return this._lwPolyline(p, t);
   }
 
   private _lwPolyline(p: LWPolylineEntity | PolylineEntity, t: ITransform) {
+    if ('elevation' in p) this.assertPlanar(p.elevation, p.thickness);
     const objects = [];
     for (let i = 0; i < p.vertices.length;) {
       const curr = p.vertices[i];
@@ -370,6 +381,7 @@ export class DxfParserAdapter {
   }
 
   private _arc(a: ArcEntity, t: ITransform) {
+    this.assertPlanar(a.centerZ, a.thickness);
     const center: IPoint = {x: a.centerX, y: a.centerY};
     const data: SketchArcSerializationData =  {
       a: applyTransformPoint(polar(center, rad(a.startAngle), a.radius), t),
@@ -380,6 +392,7 @@ export class DxfParserAdapter {
   }
 
   private _circle(c: CircleEntity, t: ITransform) {
+    this.assertPlanar(c.centerZ, c.thickness);
     const data: SketchCircleSerializationData = {
       c: applyTransformPoint({ x: c.centerX, y: c.centerY }, t),
       r: c.radius
@@ -388,6 +401,7 @@ export class DxfParserAdapter {
   }
 
   private _ellipse(e: EllipseEntity, t: ITransform) {
+    this.assertPlanar(e.centerZ, e.majorAxisZ);
     if (e.startParameter != null && e.endParameter != null &&
         Math.abs(Math.abs(e.endParameter - e.startParameter) - 2 * Math.PI) > 1e-8) {
       throw new Error('Partial DXF ellipses are not yet supported');
@@ -402,6 +416,7 @@ export class DxfParserAdapter {
   }
 
   private _segment(l: LineEntity, t: ITransform) {
+    this.assertPlanar(l.startZ, l.endZ, l.thickness);
     const data: SketchSegmentSerializationData = {
       a: applyTransformPoint({x: l.startX, y: l.startY}, t),
       b: applyTransformPoint({x: l.endX, y: l.endY}, t)
@@ -410,6 +425,7 @@ export class DxfParserAdapter {
   }
 
   private _point(p: PointEntity, t: ITransform) {
+    this.assertPlanar(p.z, p.thickness);
     const data: SketchPointSerializationData = applyTransformPoint(p, t);
     return this._createSketchObject(EndPoint.prototype.TYPE, data);
   }

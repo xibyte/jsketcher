@@ -21,5 +21,18 @@ const dxf=entities=>['0','SECTION','2','ENTITIES',...entities,'0','ENDSEC','0','
  await importDxfSketch(viewer,data,initial);assert.equal(JSON.parse(current).objects.length,3);const after=current;
  await assert.rejects(importDxfSketch(viewer,data,initial),/changed/);assert.equal(current,after);
  const malformed=dxf(['0','SPLINE','70','0','71','3','72','0','73','0','74','0']);await assert.rejects(importDxfSketch(viewer,malformed,after));assert.equal(current,after);
+ const spatialLine=dxf(['0','LINE','8','0','10','1','20','2','30','3','11','4','21','6','31','0']);
+ await assert.rejects(parser.parse(spatialLine),/3D|planar/i);
+ await assert.rejects(importDxfSketch(viewer,spatialLine,after),/3D|planar/i);assert.equal(current,after);
+ const spatialCircle=dxf(['0','CIRCLE','8','0','10','0','20','0','30','3','40','2']);
+ await assert.rejects(parser.parse(spatialCircle),/3D|planar/i);
+ const spatialPoint=dxf(['0','POINT','8','0','10','0','20','0','30','2']);
+ await assert.rejects(parser.parse(spatialPoint),/3D|planar/i);
+ const raisedPolyline=dxf(['0','LWPOLYLINE','8','0','90','2','70','0','38','2','10','0','20','0','10','1','20','1']);
+ await assert.rejects(parser.parse(raisedPolyline),/3D|planar/i);
+ assert.throws(()=>parser._ellipse({centerX:0,centerY:0,centerZ:0,majorAxisX:1,majorAxisY:0,majorAxisZ:1,ratioOfMinorAxisToMajorAxis:0.5},identity),/3D|planar/i);
+ assert.throws(()=>parser._insert([b],{blockName:'part',x:0,y:0,z:4},{objects:[]},identity,[]),/3D|planar/i);
+ assert.throws(()=>parser._insert([{...b,basePointZ:3}],{blockName:'part',x:0,y:0},{objects:[]},identity,[]),/3D|planar/i);
+ assert.throws(()=>parser._polyline({flag:8,vertices:[]},identity),/3D|planar/i);
  console.log('PASS: DXF entities, blocks, safety checks and ellipse radii');process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1)});
