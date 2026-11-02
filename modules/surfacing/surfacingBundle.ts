@@ -107,6 +107,8 @@ export function activate(ctx: any) {
 
   // Register the React UI component for surfacing tool panels.
   if (ctx.domService?.contributeComponent) {
+    // Preserve existing lazy module initialization order.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const {SurfacingUI} = require('./ui/SurfacingUI');
     ctx.domService.contributeComponent(SurfacingUI);
   }

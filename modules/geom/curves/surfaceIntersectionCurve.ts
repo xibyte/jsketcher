@@ -144,7 +144,7 @@ export default class SurfaceIntersectionCurve implements ParametricCurve {
         // Direction from surface normals, magnitude from Hermite parametrization
         const scale = hermiteSpeed / tangentLen;
         // Ensure direction matches Hermite direction
-        let scaled = vec.mul(tangent, scale);
+        const scaled = vec.mul(tangent, scale);
         if (vec.dot(scaled, hermiteDer) < 0) {
           vec._negate(scaled);
         }
