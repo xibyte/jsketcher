@@ -82,37 +82,37 @@ export const PrimitiveBoxOperation: OperationDescriptor<any> = {
     const box = occ.io.getShell("box", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: params.featureId + 'F:LEFT',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:LEFT',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: params.featureId + 'F:RIGHT',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:RIGHT',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: params.featureId + 'F:BASE',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:BASE',
           productionInfo: {
             role: 'base'
           }
         },
         {
-          id: params.featureId + 'F:LID',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:LID',
           productionInfo: {
             role: 'lid'
           }
         },
         {
-          id: params.featureId + 'F:BACK',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:BACK',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: params.featureId + 'F:FRONT',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:FRONT',
           productionInfo: {
             role: 'sweep'
           }

@@ -80,19 +80,19 @@ export const PrimitiveCylinderOperation: OperationDescriptor<PrimitiveCylinderPa
     const cylinder = occ.io.getShell("cylinder", new ExpectedOrderProductionAnalyzer(
       [
         {
-          id: params.featureId + 'F:SIDE',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:SIDE',
           productionInfo: {
             role: 'sweep'
           }
         },
         {
-          id: params.featureId + 'F:BASE',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:BASE',
           productionInfo: {
             role: 'base'
           }
         },
         {
-          id: params.featureId + 'F:LID',
+          id: (params.featureId === -1 ? '' : params.featureId) + 'F:LID',
           productionInfo: {
             role: 'lid'
           }

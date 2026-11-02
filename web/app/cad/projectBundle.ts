@@ -83,7 +83,9 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
       const operation = ctx.operationService.get(req.type);
       if (operation) {
         fillUpMissingFields(req.params, operation.schema, ctx);
-        if (!req.params.featureId) req.params.featureId = counterGenerator.generateFeatureId();
+        // Reserve -1 for legacy replay: assigning a new prefix here would
+        // invalidate later face/edge and sketch references in saved projects.
+        if (req.params.featureId === undefined || req.params.featureId === null) req.params.featureId = -1;
       }
     }
     data.counters = counterGenerator.projectCounters;

@@ -56,6 +56,12 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
   
 
 
+        // Histories predating feature IDs must recreate their original
+        // generated topology names, since later steps may reference them.
+        if (params.featureId === -1) {
+          created.push(occ.io.getShell(newShellName));
+          continue;
+        }
         const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P:" + i));
         resultingShell.id = shellToPatern.id + "[" + "PR:" + params.featureId + "]" + "[" + "I:" + i + "]";
         created.push(resultingShell);
