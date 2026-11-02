@@ -1,3 +1,5 @@
+import {AiOutlineSelect} from 'react-icons/ai';
+import {MarqueeTool} from '../tools/marquee';
 import { RectangleTool } from "../tools/rectangle";
 import {
   ArcToolIcon,
@@ -21,6 +23,15 @@ import { AddArcTool } from "../tools/arc";
 import { EditCircleTool } from "../tools/circle";
 
 export default [
+  {
+    id: 'MarqueeSelectTool',
+    shortName: 'Select area',
+    kind: 'Tool',
+    description: 'Select by bounds (curved bounds are conservative). Left to right contains; right to left intersects. Shift adds.',
+    icon: AiOutlineSelect,
+    invoke: ctx => ctx.viewer.toolManager.takeControl(new MarqueeTool(ctx.viewer)),
+  },
+
   {
     id: "PointTool",
     shortName: "Point",
