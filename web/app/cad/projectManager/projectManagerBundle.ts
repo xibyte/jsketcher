@@ -71,6 +71,29 @@ export function activate(ctx: ApplicationContext) {
     return JSON.parse(dataStr) as ProjectModel;
   }
 
+  // A host can persist this snapshot through its own file service. Refuse
+  // states the upstream project format cannot faithfully represent: an open
+  // sketch, an unfinished operation, or a history pointer away from the tip.
+  // This method does not itself save anything outside the current workspace.
+  function snapshotCurrentProject(): ModelBundle {
+    if (ctx.services.sketcher.inPlaceEditor.inEditMode) {
+      throw new Error('Finish the open sketch before saving the project.');
+    }
+    if (ctx.wizardService.workingRequest$.value || ctx.craftService.isEditingHistory) {
+      throw new Error('Finish the current operation and return to the latest history before saving.');
+    }
+    ctx.projectService.save();
+    const projectId = ctx.projectService.id;
+    const data = ctx.services.storage.get(PROJECTS_PREFIX + projectId);
+    if (!data) throw new Error('Project data is unavailable.');
+    const namespace = PROJECTS_PREFIX + projectId + SKETCH_SUFFIX;
+    const sketches = ctx.services.storage.getAllKeysFromNamespace(namespace).sort().map(key => ({
+      id: key.substring(namespace.length),
+      data: JSON.parse(ctx.services.storage.get(key))
+    }));
+    return {model: JSON.parse(data), sketches};
+  }
+
   function exportProject(id) {
     const modelData = ctx.services.storage.get(PROJECTS_PREFIX + id);
     if (modelData) {
@@ -191,7 +214,8 @@ export function activate(ctx: ApplicationContext) {
 
   ctx.projectManager = {
     listProjects, openProject, newProject, renameProject, deleteProject, importBundle,
-    exists, cloneProject, exportProject, importProjectAs, importProject, loadExternalProject
+    exists, cloneProject, exportProject, importProjectAs, importProject, loadExternalProject,
+    snapshotCurrentProject
   };
 
   ctx.services.projectManager = ctx.projectManager;
@@ -220,6 +244,8 @@ export interface ModelBundle {
 }
 
 interface IProjectManager {
+
+  snapshotCurrentProject(): ModelBundle;
 
   importBundle(projectId: string, dataJson: ModelBundle): void;
 

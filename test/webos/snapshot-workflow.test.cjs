@@ -1,0 +1,17 @@
+/* Built app and helper bundle served at JSKETCHER_TEST_URL; uses a Chrome DevTools endpoint. */
+const assert=require('assert/strict'),puppeteer=require('puppeteer-core');
+(async()=>{
+ const browser=await puppeteer.connect({browserURL:process.env.CODI_TEST_CDP||'http://127.0.0.1:19255',protocolTimeout:120000}),context=await browser.createBrowserContext(),base=process.env.JSKETCHER_TEST_URL||'http://127.0.0.1:19710/';
+ async function open(){const p=await context.newPage();await p.setViewport(process.env.CODI_PHONE?{width:390,height:844,isMobile:true,hasTouch:true}:{width:1366,height:768});await p.goto(new URL('index.html?DEFAULT&webos=1',base).href,{waitUntil:'domcontentloaded'});await p.waitForFunction('window.__CAD_APP?.projectManager?.snapshotCurrentProject && window.__CAD_APP?.services?.viewer',{timeout:60000});await p.addScriptTag({url:new URL('static/webosTest.bundle.js',base).href});await p.evaluate(()=>{window.Cypress={$:s=>{const a=[...document.querySelectorAll(s)];a.index=x=>a.indexOf(x);return a}}});return p;}
+ try{
+  const p=await open();await p.evaluate(async()=>{window.subject=webosTest.modellerUISubject(__CAD_APP);const [sketch]=await webosTest.createPlaneAndOpenSketcher(subject);window.sketch=sketch});
+  const rejectSketch=await p.evaluate(()=>{try{__CAD_APP.projectManager.snapshotCurrentProject();return false}catch(e){return /open sketch/.test(e.message)}});assert.equal(rejectSketch,true);
+  await p.evaluate(()=>{sketch.addRectangle(-100,-100,100,100);subject.commitSketch();subject.selectFaces([0,0,-10],[0,0,10]);subject.openWizard('EXTRUDE');subject.wizardContext.updateParam('length',200)});
+  assert.equal(await p.evaluate(()=>{try{__CAD_APP.projectManager.snapshotCurrentProject();return false}catch(e){return /current operation/.test(e.message)}}),true);
+  await p.evaluate(async()=>subject.wizardOK());await p.waitForFunction('__CAD_APP.craftService.modifications$.value.history.length===2 && __CAD_APP.services.cadRegistry.models.length>0',{timeout:60000});
+  const bundle=await p.evaluate(()=>__CAD_APP.projectManager.snapshotCurrentProject());assert.equal(bundle.model.history.length,2);assert.ok(bundle.sketches.length>0);assert.ok(bundle.sketches[0].data);assert.equal(await p.evaluate(()=>Object.keys(localStorage).some(k=>k.startsWith('TCAD.projects.DEFAULT'))),false);
+  await p.evaluate(()=>__CAD_APP.craftService.historyTravel.backward());await p.waitForFunction('__CAD_APP.craftService.isEditingHistory',{timeout:30000});assert.equal(await p.evaluate(()=>{try{__CAD_APP.projectManager.snapshotCurrentProject();return false}catch(e){return /latest history/.test(e.message)}}),true);
+  const q=await open();await q.evaluate(bundle=>{const ctx=__CAD_APP;ctx.projectManager.importBundle(ctx.projectService.id,bundle);ctx.projectService.load()},bundle);await q.waitForFunction('__CAD_APP.craftService.modifications$.value.history.length===2 && __CAD_APP.services.cadRegistry.models.some(m=>m.id==="S:1")',{timeout:60000});const restored=await q.evaluate(()=>__CAD_APP.projectManager.snapshotCurrentProject());assert.deepEqual(restored.model.history,bundle.model.history);assert.deepEqual(restored.sketches,bundle.sketches);
+  console.log('PASS real plane/sketch/extrusion snapshot, guarded drafts and history, and independent-window model restoration');
+ }finally{await context.close();await browser.disconnect()}
+})().catch(e=>{console.error(e);process.exitCode=1});
