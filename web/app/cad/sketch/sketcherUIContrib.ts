@@ -7,6 +7,7 @@ import generalToolActions from "../../sketcher/actions/generalToolActions";
 import sketcherControlActions from "./sketcherControlActions";
 import {ApplicationContext} from "cad/context";
 import {RiCompasses2Line} from "react-icons/ri";
+import {desktopFileMode} from 'cad/desktopFileActions';
 
 export default function (ctx: ApplicationContext) {
 
@@ -34,8 +35,7 @@ export default function (ctx: ApplicationContext) {
     //constraintGlobalActions.map(a => toSketcherActionId(a.id)),
     //'-',
     ['LookAtFace'],
-    '-',
-    ['sketchOpenInTab']
+    ...(desktopFileMode ? [] : ['-', ['sketchOpenInTab']])
   ];
 
   insertAfter(SKETCHER_MODE_HEADS_UP_ACTIONS, SKETCHER_PREFIX + 'Export', '-');
@@ -47,7 +47,7 @@ export default function (ctx: ApplicationContext) {
     internal: true,
     features: [],
     actions: [
-      ...sketcherControlActions,
+      ...sketcherControlActions.filter(action => !desktopFileMode || action.id !== 'sketchOpenInTab'),
       ...convertedActions
     ],
     ui: {

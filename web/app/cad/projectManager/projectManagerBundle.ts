@@ -5,6 +5,7 @@ import {SketchFormat_V3} from "sketcher/io";
 import {ApplicationContext} from "cad/context";
 import {OperationRequest} from "../craft/craftBundle";
 import {AssemblyConstraintDefinition} from "cad/assembly/assemblyConstraint";
+import {parseMathDefinitions} from 'gems/safeExpression.mjs';
 
 export function activate(ctx: ApplicationContext) {
   let restoringSnapshot = false;
@@ -92,6 +93,9 @@ export function activate(ctx: ApplicationContext) {
         (workbench && !workbench.internal && workbench.workbenchId !== ctx.workbenchService.defaultWorkbenchId)) {
       throw new Error('This project uses assembly constraints or a custom workbench that this snapshot does not support yet.');
     }
+    if (new URLSearchParams(window.location.search).get('webos') === '1' && parseMathDefinitions(ctx.expressionService.script$.value).errors.length) {
+      throw new Error('Fix unsupported or invalid project expressions before saving.');
+    }
     ctx.projectService.save();
     const projectId = ctx.projectService.id;
     const data = ctx.services.storage.get(PROJECTS_PREFIX + projectId);
@@ -101,6 +105,9 @@ export function activate(ctx: ApplicationContext) {
       id: key.substring(namespace.length),
       data: JSON.parse(ctx.services.storage.get(key))
     }));
+    if (new URLSearchParams(window.location.search).get('webos') === '1' && sketches.some(sketch => sketch.data.constants !== undefined && parseMathDefinitions(sketch.data.constants).errors.length)) {
+      throw new Error('Fix unsupported or invalid sketch constants before saving.');
+    }
     return {model: JSON.parse(data), sketches};
   }
 
@@ -120,6 +127,7 @@ export function activate(ctx: ApplicationContext) {
     if ((bundle.model.assembly !== undefined && (!Array.isArray(bundle.model.assembly) || bundle.model.assembly.length)) || bundle.model.workbench !== undefined) {
       throw new Error('Projects with assembly constraints or a custom workbench are not supported yet.');
     }
+    if (parseMathDefinitions(bundle.model.expressions).errors.length) throw new Error('The project contains unsupported or invalid expressions.');
     for (const op of bundle.model.history) {
       if (!object(op) || typeof op.type !== 'string' || !op.type || op.type.length > 256 ||
           !object(op.params) || !ctx.operationService.get(op.type)) throw new Error('Project contains an unsupported operation.');
@@ -128,6 +136,7 @@ export function activate(ctx: ApplicationContext) {
     for (const sketch of bundle.sketches) {
       if (!object(sketch) || typeof sketch.id !== 'string' || !sketch.id || sketch.id.length > 1024 ||
           /[\u0000-\u001f\u007f]/.test(sketch.id) || ids.has(sketch.id) || !object(sketch.data)) throw new Error('Project contains an invalid sketch.');
+      if (sketch.data.constants !== undefined && parseMathDefinitions(sketch.data.constants).errors.length) throw new Error('A sketch contains unsupported or invalid constants.');
       ids.add(sketch.id);
     }
     const namespace = ctx.projectService.sketchStorageNamespace;

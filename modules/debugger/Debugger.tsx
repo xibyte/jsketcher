@@ -7,6 +7,7 @@ import {useStream} from "ui/effects";
 import bottleExample from "raw-loader!./bottleExample.txt";
 import {ApplicationContext} from "cad/context";
 import {ReactApplicationContext} from "cad/dom/ReactApplicationContext";
+import {desktopFileMode} from 'cad/desktopFileActions';
 
 export const DebugMode$ = state(false);
 
@@ -17,6 +18,7 @@ export function Debugger() {
   const context: ApplicationContext = useContext(ReactApplicationContext);
 
   function evalCode() {
+    if (desktopFileMode) throw new Error('The JavaScript debugger is unavailable in the embedded desktop.');
     eval(codeText);
   }
 

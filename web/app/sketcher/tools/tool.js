@@ -1,4 +1,6 @@
 import {EndPoint} from '../shapes/point'
+import {desktopFileMode} from 'cad/desktopFileActions';
+import {evaluateMath} from 'gems/safeExpression.mjs';
 
 export class Tool {
   
@@ -61,7 +63,7 @@ export class Tool {
 Tool.ParseNumber = function(str) {
   let val;
   try {
-    val = eval(str);
+    val = desktopFileMode ? evaluateMath(str) : eval(str);
   } catch(e) {
     return e.toString();
   }
