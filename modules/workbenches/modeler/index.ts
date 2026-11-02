@@ -23,6 +23,7 @@ import {DeleteBodyOperation} from "./features/deleteBody/deleteBody.operation";
 import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defeatureRemoveFace.operation";
 import { WireLineOperation } from "./features/wireLine/wireLine";
 import { MoveBodyOperation } from "./features/moveBody/moveBody.operation"
+import {MoveBodyXYZOperation} from "./features/moveBody/moveBodyXYZ.operation"
 import {SubDBoxOperation} from "./features/subdBox/subdBox.operation";
 import {SubDSphereOperation} from "./features/subdSphere/subdSphere.operation";
 import {SubDCylinderOperation} from "./features/subdCylinder/subdCylinder.operation";
@@ -65,6 +66,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     DefeatureRemoveFaceOperation,
     WireLineOperation,
     MoveBodyOperation,
+    MoveBodyXYZOperation,
     SubDBoxOperation,
     SubDSphereOperation,
     SubDCylinderOperation,
@@ -90,7 +92,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE", "-",
 
-      "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "MOVE_BODY" ,"-",
+      "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "MOVE_BODY", "MOVE_BODY_XYZ", "-",
 
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
