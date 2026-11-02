@@ -232,6 +232,8 @@ export default class SceneSetUp {
 
   customRaycast(from3, to3, objects) {
     const raycaster = new Raycaster();
+    // Screen-width line picking needs the current camera, even for a supplied ray.
+    raycaster.camera = this.camera;
     const from = new Vector3().fromArray(from3);
     const to = new Vector3().fromArray(to3);
     const dir = to.sub(from);
