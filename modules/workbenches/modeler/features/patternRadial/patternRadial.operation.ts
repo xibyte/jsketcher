@@ -8,11 +8,11 @@ import {MShell} from 'cad/model/mshell';
 import {Matrix3x4} from "math/matrix";
 import {AddLocation, SetLocation} from "cad/craft/e0/interact";
 import {DEG_RAD} from "math/commons";
-import {SameTopologyProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import {SameTopologyProductionAnalyzer, requireBrepShellForTopology} from "cad/craft/production/productionAnalyzer";
 
 interface patternRadialParams {
   inputBodies: MShell[];
-  featureId: string;
+  featureId: number;
   patternMethod: string;
   face: MFace;
   angle: number;
@@ -34,8 +34,10 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
     const oci = occ.commandInterface;
 
     const created = [];
+    const origins = params.featureId === -1 ? null : params.inputBodies.map(requireBrepShellForTopology);
 
     params.inputBodies.forEach((shellToPatern, index) => {
+      const origin = origins && origins[index];
       for (let i = 2; i <= params.qty; i++) {
         let angleForInstance;
         if (params.patternMethod == 'step') {
@@ -58,11 +60,11 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
 
         // Histories predating feature IDs must recreate their original
         // generated topology names, since later steps may reference them.
-        if (params.featureId === -1) {
+        if (!origin) {
           created.push(occ.io.getShell(newShellName));
           continue;
         }
-        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P:" + i));
+        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(origin, params.featureId + "P:" + i));
         resultingShell.id = shellToPatern.id + "[" + "PR:" + params.featureId + "]" + "[" + "I:" + i + "]";
         created.push(resultingShell);
 

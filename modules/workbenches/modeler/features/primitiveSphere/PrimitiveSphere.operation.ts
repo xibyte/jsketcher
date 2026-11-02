@@ -8,6 +8,7 @@ import CSys from "math/csys";
 import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/productionAnalyzer";
 
 interface PrimitiveSphereParams {
+  featureId: number,
   radius: number,
   locations: MDatum,
   boolean: BooleanDefinition,

@@ -9,7 +9,7 @@ import { MShell } from 'cad/model/mshell';
 import { MDatum } from "cad/model/mdatum";
 import {Matrix3x4} from "math/matrix";
 import {AddLocation, SetLocation} from "cad/craft/e0/interact";
-import {SameTopologyProductionAnalyzer} from "cad/craft/production/productionAnalyzer";
+import {SameTopologyProductionAnalyzer, requireBrepShellForTopology} from "cad/craft/production/productionAnalyzer";
 
 interface patternLinearParams {
   inputBodies: MShell[];
@@ -17,7 +17,7 @@ interface patternLinearParams {
   distance: number;
   qty: number;
   direction: UnitVector,
-  featureId: string;
+  featureId: number;
 }
 
 
@@ -33,8 +33,10 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
     const oci = occ.commandInterface;
 
     const created = [];
+    const origins = params.featureId === -1 ? null : params.inputBodies.map(requireBrepShellForTopology);
 
     params.inputBodies.forEach((shellToPatern, index) => {
+      const origin = origins && origins[index];
       for (let i = 2; i <= params.qty; i++) {
         let distanceForInstance = 0;
         if (params.patternMethod == 'Step Distance') distanceForInstance = params.distance * (i - 1);
@@ -51,11 +53,11 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
 
         // Histories predating feature IDs must recreate their original
         // generated topology names, since later steps may reference them.
-        if (params.featureId === -1) {
+        if (!origin) {
           created.push(occ.io.getShell(newShellName));
           continue;
         }
-        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P:" + i));
+        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(origin, params.featureId + "P:" + i));
         resultingShell.id = shellToPatern.id + "[" + "PL:" + params.featureId + "]" + "[" + "I:" + i + "]";
         created.push(resultingShell);
       }

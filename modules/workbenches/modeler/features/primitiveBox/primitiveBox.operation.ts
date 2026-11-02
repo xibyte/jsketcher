@@ -13,7 +13,7 @@ interface PrimitiveBoxParams {
   z: number,
   locations: MDatum,
   boolean: BooleanDefinition,
-  featureId:string,
+  featureId: number,
 }
 
 export const PrimitiveBoxOperation: OperationDescriptor<any> = {

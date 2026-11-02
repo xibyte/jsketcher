@@ -9,6 +9,7 @@ import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/production
 
 
 interface PrimitiveTorusParams {
+  featureId: number,
   radius: number,
   tubeRadius: number,
   locations: MDatum,

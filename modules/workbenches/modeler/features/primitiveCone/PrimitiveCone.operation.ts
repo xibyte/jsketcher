@@ -9,6 +9,7 @@ import { ExpectedOrderProductionAnalyzer } from "cad/craft/production/production
 
 
 interface PrimitiveConeParams {
+  featureId: number,
   diameterA: number,
   diameterB: number,
   height: number,
