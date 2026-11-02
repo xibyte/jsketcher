@@ -16,6 +16,8 @@ the CSP header embedded in the tests. Do not publish the helper. Make
 JSKETCHER_TEST_URL=http://127.0.0.1:19731/ CODI_TEST_CDP=http://127.0.0.1:19255 \
   node test/webos/dimension-cancel-browser.test.cjs
 JSKETCHER_TEST_URL=http://127.0.0.1:19731/ CODI_TEST_CDP=http://127.0.0.1:19255 \
+  node test/webos/dimension-history-browser.test.cjs
+JSKETCHER_TEST_URL=http://127.0.0.1:19731/ CODI_TEST_CDP=http://127.0.0.1:19255 \
   node test/webos/multiple-face-selection-browser.test.cjs
 ```
 
@@ -24,3 +26,7 @@ three distance tools, selection preservation, and completed geometry. The
 second creates a real box and drives its selection service through multi-face,
 exclusive and marking-session changes. It does not simulate mouse picking.
 Stop the test server and Chromium separately.
+
+`dimension-history-browser.test.cjs` additionally checks that undo removes the
+completed dimension without duplicating it, redo restores exactly one, and
+the original segment remains.
