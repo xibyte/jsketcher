@@ -108,7 +108,9 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
           !knots.every((k, i) => Number.isFinite(k) && (i === 0 || knots[i - 1] <= k) &&
             (i <= degree || k !== knots[i - degree - 1])) ||
           knots[degree] >= knots[rawPoints.length] ||
-          !rawPoints.every(p => p && Number.isFinite(p.x) && Number.isFinite(p.y))) continue;
+          !rawPoints.every(p => p && Number.isFinite(p.x) && Number.isFinite(p.y))) {
+        throw new Error('Invalid B-spline geometry in sketch ' + sketchId + '.');
+      }
       const points = rawPoints.map(p => ({x: p.x, y: p.y, z: 0}));
       // Topology uses geometric endpoints, not fitting points or control
       // vertices: these differ for open, non-clamped knot vectors.
