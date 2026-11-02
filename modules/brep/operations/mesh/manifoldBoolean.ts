@@ -299,6 +299,8 @@ function buildResultShell(
         const v2 = [vertProps[i2*numProp], vertProps[i2*numProp+1], vertProps[i2*numProp+2]];
         const n = vec._normalize(vec.cross(vec.sub(v1, v0), vec.sub(v2, v0)));
 
+        // Preserve existing lazy module initialization order.
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const {Plane} = require('geom/impl/plane');
         const planeNormal = new Vector(n[0], n[1], n[2])._normalize();
         const planeW = planeNormal.dot(points[0]);

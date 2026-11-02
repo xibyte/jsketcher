@@ -8,7 +8,7 @@ const round = (v: number) => Math.round(v * 1e6) / 1e6;
 const fmtVec = (p: number[]) => [round(p[0]), round(p[1]), round(p[2])];
 
 function compactNumberArrays(json: string): string {
-  return json.replace(/\[\s*(-?\d[\d.e+\-]*\s*,?\s*)+\]/g, match => {
+  return json.replace(/\[\s*(-?\d[\d.e+-]*\s*,?\s*)+\]/g, match => {
     const nums = match.slice(1, -1).split(',').map(s => s.trim());
     return '[' + nums.join(', ') + ']';
   });

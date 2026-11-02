@@ -41,7 +41,8 @@ export function shellToCSGMesh(
       if (poly.length < 3) continue;
 
       for (let i = 2; i < poly.length; i++) {
-        let p0 = poly[0], p1 = poly[i - 1], p2 = poly[i];
+        const p0 = poly[0];
+        let p1 = poly[i - 1], p2 = poly[i];
 
         const v0: Vec3 = [p0.x, p0.y, p0.z];
         const v1: Vec3 = [p1.x, p1.y, p1.z];
