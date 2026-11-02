@@ -20,6 +20,10 @@ const puppeteer = require(process.env.PUPPETEER_CORE_PATH || 'puppeteer-core');
     assert.equal(before.length,2);
     await apply('SUBTRACT',{tools:[before[1].id],keepTools:true,'boolean.simplify':false,'boolean.targets':[before[0].id]},3);
     const result=await frame.evaluate(()=>{const c=__CAD_APP;return {shells:c.cadRegistry.shells.map(s=>({id:s.id,faces:s.faces.length})),history:c.craftService.modifications$.value.history}});
+    // Integrate oriented OCC face triangles to verify actual solid volume.
+    const volumes=await frame.evaluate(()=>__CAD_APP.cadRegistry.shells.map(s=>({id:s.id,volume:Math.abs(s.faces.reduce((sum,f)=>sum+f.topology.data.tessellation.data.reduce((total,triangle)=>{const [a,b,c]=triangle[0];return total+(a[0]*(b[1]*c[2]-b[2]*c[1])+a[1]*(b[2]*c[0]-b[0]*c[2])+a[2]*(b[0]*c[1]-b[1]*c[0]))/6},0),0))})));
+    assert.equal(volumes.find(s=>s.id===before[1].id).volume,125);
+    assert.equal(volumes.find(s=>s.id!==before[1].id).volume,5875);
     assert.equal(result.shells.length,2,'keep the tool and replace the target');
     assert.ok(result.shells.some(s=>s.id===before[1].id),'tool remains');
     assert.ok(!result.shells.some(s=>s.id===before[0].id),'original target is replaced');
