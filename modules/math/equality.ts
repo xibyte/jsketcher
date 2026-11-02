@@ -1,10 +1,19 @@
-import {distanceSquared3, distanceSquaredAB3, distanceSquaredANegB3} from "math/distance";
+import {
+  distanceAB,
+  distanceSquared3,
+  distanceSquaredAB3,
+  distanceSquaredANegB3
+} from "math/distance";
 
 export const TOLERANCE = 1E-6;
 export const TOLERANCE_SQ = TOLERANCE * TOLERANCE;
 
 export function areEqual(v1, v2, tolerance) {
   return Math.abs(v1 - v2) < tolerance;
+}
+
+export function arePointsEqual(v1, v2, toleranceSQ) {
+  return areEqual(distanceAB(v1, v2), 0, toleranceSQ);
 }
 
 export function areVectorsEqual(v1, v2, toleranceSQ) {

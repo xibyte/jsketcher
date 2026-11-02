@@ -423,7 +423,7 @@ export function runSandbox(ctx: ApplicationContext) {
 
 
 
-    let oldNodes = new Set();
+    const oldNodes = new Set<{visual: Cube}>();
 
     let delta = -5
     function simulate() {
@@ -436,7 +436,7 @@ export function runSandbox(ctx: ApplicationContext) {
       work.defragment();
 
 
-      let curNodes = new Set();
+      const curNodes = new Set();
 
       oldNodes.forEach(n => {
         ctx.cadScene.auxGroup.remove(n.visual);
@@ -518,8 +518,8 @@ export function runSandbox(ctx: ApplicationContext) {
 
 
         const [T, N, B] = pseudoFrenetFrame(normal);
-        let n = vec.add(base, vec.mul(N, r));
-        let b = vec.add(base, vec.mul(B, r));
+        const n = vec.add(base, vec.mul(N, r));
+        const b = vec.add(base, vec.mul(B, r));
         vertices.push(...base);
         vertices.push(...n);
         vertices.push(...b);

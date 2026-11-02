@@ -95,6 +95,31 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
       const cp1 = ReadSketchPoint(data.cp2);
       const cp2 = ReadSketchPoint(data.cp3);
       out.connections.push(new sm.BezierCurve(getID(obj), a, b, cp1, cp2));
+    } else if (obj.type === 'BSpline') {
+      // Construction segments have a dedicated consumer; do not add a
+      // construction spline to solid-producing contours.
+      if (isConstructionObject) continue;
+      const degree = data.degree as number;
+      const knots = data.kValues as number[];
+      const rawPoints = data.cPoints as {x: number; y: number}[];
+      if (!Array.isArray(rawPoints) || rawPoints.length < 2 ||
+          !Number.isInteger(degree) || degree < 1 || degree >= rawPoints.length ||
+          !Array.isArray(knots) || knots.length !== rawPoints.length + degree + 1 ||
+          !knots.every((k, i) => Number.isFinite(k) && (i === 0 || knots[i - 1] <= k) &&
+            (i <= degree || k !== knots[i - degree - 1])) ||
+          knots[degree] >= knots[rawPoints.length] ||
+          !rawPoints.every(p => p && Number.isFinite(p.x) && Number.isFinite(p.y))) continue;
+      const points = rawPoints.map(p => ({x: p.x, y: p.y, z: 0}));
+      // Topology uses geometric endpoints, not fitting points or control
+      // vertices: these differ for open, non-clamped knot vectors.
+      const a = ReadSketchPoint(evaluateSplineEndpoint(points, knots, degree, false));
+      const b = ReadSketchPoint(evaluateSplineEndpoint(points, knots, degree, true));
+      const curve = new sm.BSplineCurve(getID(obj), degree, knots, points, a, b);
+      if (Math.hypot(a.x - b.x, a.y - b.y) < 1e-6) {
+        out.loops.push(curve);
+      } else {
+        out.connections.push(curve);
+      }
     } else if (obj.type === 'Circle') {
       const circleCenter = ReadSketchPoint(data.c);
       out.loops.push(new sm.Circle(getID(obj), circleCenter, readSketchFloat(data.r)));
@@ -110,6 +135,30 @@ export function ReadSketch(sketch, sketchId, readConstructionSegments) {
     }
   }
   return out;
+}
+
+// De Boor evaluation at either end of the curve's actual knot domain.
+// At the upper boundary use the final non-empty span from the left.
+function evaluateSplineEndpoint(points, knots: number[], degree: number, atEnd: boolean) {
+  const n = points.length - 1;
+  const u = atEnd ? knots[n + 1] : knots[degree];
+  let span = atEnd ? n : degree;
+  if (!atEnd) {
+    while (span < n && knots[span + 1] <= u) ++span;
+  } else {
+    while (span > degree && knots[span] >= u) --span;
+  }
+  const d = Array.from({length: degree + 1}, (_, j) => ({...points[span - degree + j]}));
+  for (let r = 1; r <= degree; ++r) {
+    for (let j = degree; j >= r; --j) {
+      const i = span - degree + j;
+      const denominator = knots[i + degree - r + 1] - knots[i];
+      const alpha = denominator === 0 ? 0 : (u - knots[i]) / denominator;
+      d[j] = {x: (1 - alpha) * d[j - 1].x + alpha * d[j].x,
+              y: (1 - alpha) * d[j - 1].y + alpha * d[j].y, z: 0};
+    }
+  }
+  return d[degree];
 }
 
 export function FetchContours(geom): Contour[] {

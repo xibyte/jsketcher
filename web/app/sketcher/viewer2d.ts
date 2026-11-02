@@ -184,7 +184,6 @@ export class Viewer {
   }
 
   search(x, y, buffer, deep, onlyPoints, filter) {
-
     buffer /= this.scale / this.retinaPxielRatio;
     buffer *= 0.5;
 
@@ -213,7 +212,7 @@ export class Viewer {
             if (onlyPoints && !isEndPoint(o)) {
               return true;
             }
-            l = o.normalDistance(aim, this.scale / this.retinaPxielRatio);
+            l = (o as SketchObject).normalDistance(aim, this.scale / this.retinaPxielRatio);
             if (l >= 0 && l <= buffer && !isFiltered(o)) {
               pickResult.push(o);
               return false;

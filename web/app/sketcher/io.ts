@@ -7,6 +7,7 @@ import { Circle } from './shapes/circle';
 import { Ellipse } from './shapes/ellipse';
 import { EllipticalArc } from './shapes/elliptical-arc';
 import { BezierCurve } from './shapes/bezier-curve';
+import { BSpline } from './shapes/b-spline';
 import {
   AngleBetweenDimension,
   DiameterDimension,
@@ -130,6 +131,8 @@ export class IO {
             skobj = EllipticalArc.read(obj.id, obj.data);
           } else if (type === BezierCurve.prototype.TYPE) {
             skobj = BezierCurve.read(obj.id, obj.data);
+          } else if (type === BSpline.prototype.TYPE) {
+            skobj = BSpline.read(obj.id, obj.data);
           }
           if (skobj != null) {
             skobj.role = obj.role;
