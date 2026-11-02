@@ -56,16 +56,21 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
 
   function load() {
     try {
-      const dataStr = ctx.storageService.get(ctx.projectService.projectStorageKey());
-      if (dataStr) {
-        const data = JSON.parse(dataStr);
-        upgradeIfNeeded(data);
-        loadData(data);
-        loadWorkbench(data);
-      }
+      if (ctx.storageService.get(ctx.projectService.projectStorageKey())) loadStrict();
     } catch (e) {
       console.error(e);
     }
+  }
+
+  // A host-driven restore needs to receive load errors rather than silently
+  // treating a caught exception as a successfully reconstructed project.
+  function loadStrict() {
+    const dataStr = ctx.storageService.get(ctx.projectService.projectStorageKey());
+    if (!dataStr) throw new Error('Project data is unavailable.');
+    const data = JSON.parse(dataStr);
+    upgradeIfNeeded(data);
+    loadData(data);
+    loadWorkbench(data);
   }
 
   function upgradeIfNeeded(data: ProjectModel) {
@@ -109,7 +114,7 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
   }
 
   ctx.projectService = {
-    id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, loadData, empty,
+    id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, loadStrict, loadData, empty,
     hints
   };
 
@@ -178,6 +183,8 @@ export interface ProjectService {
   save(): void;
 
   load(): void
+
+  loadStrict(): void;
 
   loadData(data: ProjectModel);
 
