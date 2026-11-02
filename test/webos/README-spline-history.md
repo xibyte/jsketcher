@@ -1,7 +1,7 @@
 # Spline history browser regression
 
 `spline-history-browser.test.cjs` exercises interpolation and control-vertex
-spline drawing, strict undo/redo and snapshot restoration under the captured
+spline drawing, endpoint and saved-method regression, strict undo/redo and snapshot restoration under the captured
 production CSP. Desktop also tests dragging a point on each spline. The
 optional emulated-phone run uses touchscreen taps; it does not test physical
 phone hardware or touch dragging. Snapshot restoration is not an account Files

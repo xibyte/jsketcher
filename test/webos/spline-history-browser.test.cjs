@@ -20,6 +20,7 @@ const expectedCsp = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; s
     assert.equal(response.headers()['content-security-policy'], expectedCsp, 'captured production CSP');
     await page.waitForFunction('window.__CAD_APP?.streams?.lifecycle?.projectLoaded?.value === true', {timeout: 90000});
     await page.addScriptTag({url: new URL('static/webosTest.bundle.js', base).href});
+    assert.match(await page.evaluate(() => webosTest.checkSplineEndpoints()), /^PASS/);
     await page.evaluate(async () => {
       window.Cypress = {$: selector => {
         const nodes = [...document.querySelectorAll(selector)];
