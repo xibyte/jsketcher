@@ -57,8 +57,8 @@ export class InPlaceSketcher {
     this.ctx.workbenchService.switchWorkbench('sketcher');
 
     const sketchData = this.ctx.services.storage.get(this.sketchStorageKey);
-    this.viewer.historyManager.init(sketchData);
     this.viewer.io.loadSketch(sketchData);
+    this.viewer.historyManager.init(this.viewer.io.serializeSketch(undefined, {strict: true}));
     this.ctx.streams.sketcher.sketchingFace.next(face);
     this.ctx.streams.sketcher.sketcherAppContext.next(this.sketcherAppContext);
 
@@ -131,6 +131,9 @@ export class InPlaceSketcher {
   }
   
   save() {
+    if (this.viewer.historyManager.recoverySnapshot) {
+      throw new Error('Recover the sketch before saving; the earlier sketch remains in memory.');
+    }
     this.ctx.services.storage.set(this.sketchStorageKey, this.viewer.io.serializeSketch({
       expressionsSignature: this.ctx.expressionService.signature
     }));

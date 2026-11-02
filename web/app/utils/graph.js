@@ -48,7 +48,7 @@ Graph.findAllLoops = function(graph, hashCode, equals) {
     path.pop();
   }
 
-  for (i = 0; i < graph.size(); i++) {
+  for (let i = 0; i < graph.size(); i++) {
     const vertex = graph.at(i);
     if (visited.get(vertex) !== true) {
       step(vertex, -1, []);

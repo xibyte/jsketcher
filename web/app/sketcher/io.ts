@@ -7,6 +7,7 @@ import { Circle } from './shapes/circle';
 import { Ellipse } from './shapes/ellipse';
 import { EllipticalArc } from './shapes/elliptical-arc';
 import { BezierCurve } from './shapes/bezier-curve';
+import { BSpline } from './shapes/b-spline';
 import {
   AngleBetweenDimension,
   DiameterDimension,
@@ -80,15 +81,19 @@ export class IO {
     this.viewer = viewer;
   }
 
-  loadSketch(sketchData) {
-    return this._loadSketch(JSON.parse(sketchData));
+  loadSketch(sketchData, options: {strict?: boolean} = {}) {
+    return this._loadSketch(JSON.parse(sketchData), options);
   }
 
-  serializeSketch(metadata) {
-    return JSON.stringify(this._serializeSketch(metadata));
+  serializeSketch(metadata, options: {strict?: boolean} = {}) {
+    const sketch = this._serializeSketch(metadata, options);
+    if (options.strict === true) validateStrictSketch(sketch);
+    return JSON.stringify(sketch);
   }
 
-  _loadSketch(sketch: SketchFormat_V3) {
+  _loadSketch(sketch: SketchFormat_V3, options: {strict?: boolean} = {}) {
+    const strict = options.strict === true;
+    if (strict) validateStrictSketch(sketch);
     this.cleanUpData();
 
     this.viewer.parametricManager.startTransaction();
@@ -130,7 +135,10 @@ export class IO {
             skobj = EllipticalArc.read(obj.id, obj.data);
           } else if (type === BezierCurve.prototype.TYPE) {
             skobj = BezierCurve.read(obj.id, obj.data);
+          } else if (type === BSpline.prototype.TYPE) {
+            skobj = BSpline.read(obj.id, obj.data);
           }
+          if (strict && skobj == null) throw new Error('Unknown sketch object type: ' + type);
           if (skobj != null) {
             skobj.role = obj.role;
             getStage(obj.stage).assignObject(skobj);
@@ -138,6 +146,7 @@ export class IO {
             skobj.stabilize(this.viewer);
           }
         } catch (e) {
+          if (strict) throw e;
           console.error(e);
           console.error('Failed loading ' + obj.type + ' ' + obj.id);
         }
@@ -149,6 +158,7 @@ export class IO {
         try {
           const type = obj.type;
           let skobj = null;
+          if (strict) validateStrictDimension(obj, index);
           if (type === HDimension.prototype.TYPE) {
             skobj = LinearDimension.load(HDimension, obj.id, obj.data, index);
           } else if (type === VDimension.prototype.TYPE) {
@@ -165,10 +175,12 @@ export class IO {
           } else if (type === AngleBetweenDimension.prototype.TYPE) {
             skobj = AngleBetweenDimension.load(obj.id, obj.data, index);
           }
+          if (strict && skobj === null) throw new Error('Unknown dimension type: ' + type);
           if (skobj !== null) {
             this.viewer.dimLayer.add(skobj);
           }
         } catch (e) {
+          if (strict) throw e;
           console.error(e);
           console.error('Failed loading ' + obj.type + ' ' + obj.id);
         }
@@ -179,13 +191,16 @@ export class IO {
           try {
             const type = obj.type;
             let skobj = null;
+            if (strict) validateStrictLabel(obj, index);
             if (type === Label.prototype.TYPE) {
               skobj = Label.read(obj.id, obj.data, index);
             }
+            if (strict && skobj === null) throw new Error('Unknown label type: ' + type);
             if (skobj !== null) {
               this.viewer.labelLayer.add(skobj);
             }
           } catch (e) {
+            if (strict) throw e;
             console.error(e);
             console.error('Failed loading ' + obj.type + ' ' + obj.id);
           }
@@ -197,9 +212,11 @@ export class IO {
         const stage = getStage(i);
         for (const constr of dataStage.constraints) {
           try {
+            if (strict) validateStrictConstraint(constr, index);
             const constraint = AlgNumConstraint.read(constr, index);
             stage.addConstraint(constraint);
           } catch (e) {
+            if (strict) throw e;
             console.error(e);
             console.error(
               'skipping errant constraint: ' + constr && constr.typeId
@@ -208,9 +225,12 @@ export class IO {
         }
         for (const gen of dataStage.generators) {
           try {
+            if (strict) validateStrictGenerator(gen, index);
             const generator = SketchGenerator.read(gen, index);
+            if (strict) validateStrictGeneratorParams(gen, generator, index);
             stage.addGenerator(generator);
           } catch (e) {
+            if (strict) throw e;
             console.error(e);
             console.error('skipping errant generator: ' + gen && gen.typeId);
           }
@@ -255,7 +275,8 @@ export class IO {
     this.viewer.parametricManager.notify();
   }
 
-  _serializeSketch(metadata) {
+  _serializeSketch(metadata, options: {strict?: boolean} = {}) {
+    const strict = options.strict === true;
     const sketch: SketchFormat_V3 = {
       version: 3,
       objects: [],
@@ -286,6 +307,7 @@ export class IO {
             data: obj.write(),
           });
         } catch (e) {
+          if (strict) throw e;
           console.error(e);
         }
       }
@@ -300,6 +322,7 @@ export class IO {
             data: obj.write(),
           });
         } catch (e) {
+          if (strict) throw e;
           console.error(e);
         }
       }
@@ -456,6 +479,142 @@ export class IO {
     const adapter = new DxfWriterAdapter();
     adapter.export(this.getLayersToExport());
     return adapter.stringify();
+  }
+}
+
+
+// Strict mode is used by history restoration. It rejects data the permissive
+// importer would otherwise skip or turn into references to missing objects.
+// This validates before cleanup where possible; callers must still roll back
+// if a later constructor, generator or solver fails while restoring.
+function strictRecord(value: any, what: string) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid ' + what);
+}
+function strictNumber(value: any, what: string) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error('Invalid ' + what);
+}
+function strictPoint(value: any, what: string) {
+  strictRecord(value, what);
+  strictNumber(value.x, what + '.x');
+  strictNumber(value.y, what + '.y');
+}
+function strictReference(id: any, index: any, what: string) {
+  if (typeof id !== 'string' || !Object.prototype.hasOwnProperty.call(index, id) || !index[id]) {
+    throw new Error('Missing ' + what + ' reference: ' + String(id));
+  }
+}
+function validateStrictSketch(sketch: any) {
+  strictRecord(sketch, 'sketch');
+  if (sketch.version !== 3) throw new Error('Unsupported sketch version: ' + String(sketch.version));
+  for (const key of ['objects', 'dimensions', 'labels', 'stages']) {
+    if (!Array.isArray(sketch[key])) throw new Error('Invalid sketch ' + key);
+  }
+  if (sketch.constants !== undefined && typeof sketch.constants !== 'string') {
+    strictRecord(sketch.constants, 'constants');
+    for (const value of Object.values(sketch.constants)) {
+      if (typeof value !== 'string') throw new Error('Invalid sketch constant');
+    }
+  }
+  const ids = new Set<string>();
+  for (const group of ['objects', 'dimensions', 'labels']) {
+    for (const obj of sketch[group]) {
+      strictRecord(obj, group + ' entry');
+      if (typeof obj.id !== 'string' || !obj.id || ids.has(obj.id) || typeof obj.type !== 'string' || !obj.type) {
+        throw new Error('Invalid or duplicate ' + group + ' identifier/type');
+      }
+      ids.add(obj.id);
+      strictRecord(obj.data, group + ' data');
+      if (group === 'objects') {
+        if (obj.stage !== undefined && (!Number.isInteger(obj.stage) || obj.stage < 0 || obj.stage >= sketch.stages.length)) throw new Error('Invalid object stage');
+        validateStrictObject(obj);
+      }
+    }
+  }
+  for (const stage of sketch.stages) {
+    strictRecord(stage, 'stage');
+    if (!Array.isArray(stage.constraints) || !Array.isArray(stage.generators)) throw new Error('Invalid stage contents');
+  }
+}
+function validateStrictObject(obj: any) {
+  const d = obj.data;
+  const type = obj.type;
+  if (type === BSpline.prototype.TYPE) {
+    if (!Array.isArray(d.cPoints) || !Array.isArray(d.fPoints) ||
+        !Number.isInteger(d.degree) || d.degree < 1 || d.degree >= d.cPoints.length ||
+        !Array.isArray(d.kValues) || d.kValues.length !== d.cPoints.length + d.degree + 1 ||
+        !d.kValues.every((k, i) => Number.isFinite(k) && (i === 0 || d.kValues[i - 1] <= k) &&
+          (i <= d.degree || k !== d.kValues[i - d.degree - 1])) ||
+        d.kValues[d.degree] >= d.kValues[d.cPoints.length] ||
+        typeof d.interpolation !== 'boolean' || typeof d.CVModel !== 'boolean' ||
+        !['Clamped', 'Closed', 'Open'].includes(d.type) ||
+        !Number.isInteger(d.method) || d.method < -1 || d.method > 2) {
+      throw new Error('Invalid B-spline data');
+    }
+    for (const point of [...d.cPoints, ...d.fPoints]) strictPoint(point, 'B-spline point');
+    if (d.closedBasePoints !== undefined) {
+      if (!Array.isArray(d.closedBasePoints)) throw new Error('Invalid B-spline base points');
+      for (const point of d.closedBasePoints) strictPoint(point, 'B-spline base point');
+    }
+    return;
+  }
+  const pointFields = type === Segment.prototype.TYPE ? ['a', 'b'] :
+    type === EndPoint.prototype.TYPE ? [] :
+    type === Arc.prototype.TYPE ? ['a', 'b', 'c'] :
+    type === Circle.prototype.TYPE ? ['c'] :
+    type === BezierCurve.prototype.TYPE ? ['cp1', 'cp2', 'cp3', 'cp4'] :
+    type === Ellipse.prototype.TYPE || type === EllipticalArc.prototype.TYPE ?
+      (d.ep1 ? ['ep1', 'ep2'] : ['c']).concat(type === EllipticalArc.prototype.TYPE ? ['a', 'b'] : []) : null;
+  if (!pointFields) throw new Error('Unknown sketch object type: ' + type);
+  if (type === EndPoint.prototype.TYPE) strictPoint(d, type);
+  for (const field of pointFields) strictPoint(d[field], type + '.' + field);
+  if (type === Circle.prototype.TYPE) strictNumber(d.r, type + '.r');
+  if (type === Ellipse.prototype.TYPE || type === EllipticalArc.prototype.TYPE) {
+    for (const field of d.ep1 ? ['r'] : ['rx', 'ry', 'rot']) strictNumber(d[field], type + '.' + field);
+  }
+}
+function validateStrictDimension(obj: any, index: any) {
+  const d = obj.data;
+  if (obj.type === DiameterDimension.prototype.TYPE) {
+    strictReference(d.obj, index, 'dimension');
+    strictNumber(d.angle, 'dimension angle');
+  } else if ([HDimension.prototype.TYPE, VDimension.prototype.TYPE, LinearDimension.prototype.TYPE, AngleBetweenDimension.prototype.TYPE].includes(obj.type)) {
+    strictReference(d.a, index, 'dimension'); strictReference(d.b, index, 'dimension');
+    strictNumber(d.offset, 'dimension offset');
+    if (obj.type === AngleBetweenDimension.prototype.TYPE) {
+      if (!Array.isArray(d.configuration)) throw new Error('Invalid dimension configuration');
+      d.configuration.forEach(id => strictReference(id, index, 'dimension configuration'));
+    }
+  } else throw new Error('Unknown dimension type: ' + obj.type);
+}
+function validateStrictLabel(obj: any, index: any) {
+  if (obj.type !== Label.prototype.TYPE) throw new Error('Unknown label type: ' + obj.type);
+  if (typeof obj.data.text !== 'string') throw new Error('Invalid label text');
+  strictNumber(obj.data.offsetX, 'label offsetX'); strictNumber(obj.data.offsetY, 'label offsetY');
+  strictReference(obj.data.assignedObject, index, 'label');
+}
+function validateStrictConstraint(constr: any, index: any) {
+  strictRecord(constr, 'constraint');
+  if (typeof constr.typeId !== 'string' || !constr.typeId || !Array.isArray(constr.objects)) throw new Error('Invalid constraint');
+  constr.objects.forEach(id => strictReference(id, index, 'constraint'));
+  if (constr.constants !== undefined) strictRecord(constr.constants, 'constraint constants');
+  if (constr.annotations !== undefined && !Array.isArray(constr.annotations)) throw new Error('Invalid constraint annotations');
+}
+function validateStrictGenerator(gen: any, index: any) {
+  strictRecord(gen, 'generator');
+  if (typeof gen.typeId !== 'string' || !gen.typeId) throw new Error('Invalid generator type');
+  strictRecord(gen.params, 'generator parameters');
+  if (!Array.isArray(gen.generatedObjects)) throw new Error('Invalid generator objects');
+  gen.generatedObjects.forEach(id => strictReference(id, index, 'generator'));
+}
+function validateStrictGeneratorParams(gen: any, generator: any, index: any) {
+  const fields = new Map(generator.schema.params.map(p => [p.name, p]));
+  for (const key of Object.keys(gen.params)) {
+    const field: any = fields.get(key);
+    if (!field) throw new Error('Unknown generator parameter: ' + key);
+    if (field.type === 'selection') {
+      if (!Array.isArray(gen.params[key])) throw new Error('Invalid generator selection: ' + key);
+      gen.params[key].forEach(id => strictReference(id, index, 'generator selection'));
+    }
   }
 }
 

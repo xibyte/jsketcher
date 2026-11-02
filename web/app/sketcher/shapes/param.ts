@@ -7,20 +7,20 @@ export class Param {
   value: number;
   solverParam: SolverParam;
   private readonly debugSymbol: string;
-  normalizer: (number) => any;
+  normalizer: ((value: number) => number) | undefined;
   enforceVisualLimit: boolean = false;
 
   //penalty function constraints
   constraints?: any[];
 
-  constructor(value, debugSymbol) {
+  constructor(value: number | undefined, debugSymbol?: string) {
     this.id = Generator.genID();
-    this.value = value;
-    this.solverParam = new SolverParam(value, this);
+    this.value = value ?? 0;
+    this.solverParam = new SolverParam(value ?? 0, this);
     this.debugSymbol = debugSymbol || 'X';
   }
 
-  set(value) {
+  set(value: number) {
     this.value = value;
   }
 
@@ -32,7 +32,7 @@ export class Param {
     return this.debugSymbol + this.id;
   }
 
-  visitParams(callback) {
+  visitParams(callback: (param: Param) => void) {
     callback(this);
   }
 

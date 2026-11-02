@@ -439,6 +439,72 @@ export class Contour {
   }
 }
 
+// A sketch B-spline carries its full knot vector and local-space control
+// vertices. Endpoints are computed by the sketch reader from the curve domain,
+// including for non-clamped splines; they need not be control vertices.
+export class BSplineCurve extends SketchPrimitive {
+  a: Vector;
+  b: Vector;
+  degree: number;
+  kValues: number[];
+  cPoints: {x: number; y: number; z?: number}[];
+
+  constructor(id: string, degree: number, kValues: number[], cPoints: {x: number; y: number; z?: number}[], a: Vector, b: Vector) {
+    super(id);
+    this.degree = degree;
+    this.kValues = kValues;
+    this.cPoints = cPoints;
+    this.a = a;
+    this.b = b;
+  }
+
+  toVerbNurbs(tr): any {
+    const points = this.cPoints.map(p => tr(new Vector(p.x, p.y, p.z)).data());
+    const start = this.kValues[this.degree];
+    const end = this.kValues[points.length];
+    // verb's public constructor accepts only clamped vectors. Trim the raw
+    // homogeneous curve at its mathematical domain boundaries first; knot
+    // insertion preserves its geometry and produces the required end knots.
+    let data: any = {degree: this.degree, knots: this.kValues.slice(),
+      controlPoints: points.map(point => [...point, 1])};
+    if (data.knots[0] !== start) data = verb.eval.Divide.curveSplit(data, start)[1];
+    if (data.knots[data.knots.length - 1] !== end) data = verb.eval.Divide.curveSplit(data, end)[0];
+    return new verb.geom.NurbsCurve(data);
+  }
+
+  // Keep the base class and the existing primitive conversions unchanged.
+  // Use the transformed, possibly reversed NURBS data for this spline only.
+  toOCCGeometry(oci: OCCCommandInterface, underName: string, csys: CSys) {
+    const {degree, knots, cp, weights} = (this.toNurbs(csys).impl as NurbsCurve).asCurveBSplineData();
+    const uniqueKnots: number[] = [];
+    const multiplicities: number[] = [];
+    for (const knot of knots) {
+      if (!uniqueKnots.length || uniqueKnots[uniqueKnots.length - 1] !== knot) {
+        uniqueKnots.push(knot);
+        multiplicities.push(1);
+      } else {
+        multiplicities[multiplicities.length - 1]++;
+      }
+    }
+    const args: number[] = [degree, uniqueKnots.length];
+    uniqueKnots.forEach((knot, index) => args.push(knot, multiplicities[index]));
+    cp.forEach((point, index) => args.push(point[0], point[1], point[2], weights[index]));
+    const result = oci.bsplinecurve(underName, ...args);
+    if (typeof result === 'number' && result !== 0) throw new Error('Could not create the B-spline in the CAD engine.');
+  }
+
+  // A closed curve has equal endpoints but still has nonzero extent.
+  massiveness() {
+    if (!this.cPoints.length) return 0;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const point of this.cPoints) {
+      minX = Math.min(minX, point.x); minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x); maxY = Math.max(maxY, point.y);
+    }
+    return Math.hypot(maxX - minX, maxY - minY);
+  }
+}
+
 function adjustEnds(arc, a, b) {
   const data = arc.asNurbs();
 
