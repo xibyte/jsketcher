@@ -38,6 +38,7 @@ import {PatchBridgeAction} from "./features/patchBridge/patchBridge.action";
 import {PatchFillHoleAction} from "./features/patchFillHole/patchFillHole.action";
 //imports of action type commands
 import {GetInfo} from "./actions/getInfo/getInfo.action";
+import {MeasureEdgeAction} from "./actions/getInfo/measureEdge.action";
 import {ExportBREP} from "./actions/exportBREP/exportBREP.action";
 //import workbench icon
 import {GiCubes} from "react-icons/gi";
@@ -81,6 +82,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     ExportBREP,
   ],
   actions: [
+    MeasureEdgeAction,
     PatchPlaneAction,
     PatchBoxAction,
     PatchCylinderAction,
@@ -102,7 +104,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
-      "HOLE_TOOL", "-", 'GET_INFO', "IMPORT_MODEL", "DELETE_BODY", "-",
+      "HOLE_TOOL", "-", 'MEASURE_EDGE_ENDPOINTS', "IMPORT_MODEL", "DELETE_BODY", "-",
 
       "WIRE_LINE", 'EXPORT_BREP', "-",
 
