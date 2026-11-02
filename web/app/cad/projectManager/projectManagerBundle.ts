@@ -85,7 +85,7 @@ export function activate(ctx: ApplicationContext) {
     if (ctx.services.sketcher.inPlaceEditor.inEditMode) {
       throw new Error('Finish the open sketch before saving the project.');
     }
-    if (ctx.wizardService.workingRequest$.value || ctx.craftService.isEditingHistory) {
+    if (ctx.wizardService.workingRequest$.value || ctx.craftService.isEditingHistory || ctx.craftService.isProcessing || ctx.craftService.pipelineFailure$.value) {
       throw new Error('Finish the current operation and return to the latest history before saving.');
     }
     const workbench = ctx.workbenchService.currentWorkbench$.value;
@@ -141,7 +141,7 @@ export function activate(ctx: ApplicationContext) {
       ids.add(sketch.id);
     }
     const namespace = ctx.projectService.sketchStorageNamespace;
-    if (ctx.craftService.modifications$.value.history.length || ctx.expressionService.script$.value || ctx.assemblyService.getConstraints().length ||
+    if (ctx.craftService.modifications$.value.history.length || ctx.craftService.isProcessing || ctx.craftService.pipelineFailure$.value || ctx.expressionService.script$.value || ctx.assemblyService.getConstraints().length ||
         ctx.services.storage.getAllKeysFromNamespace(namespace).length ||
         ctx.services.sketcher.inPlaceEditor.inEditMode || ctx.wizardService.workingRequest$.value) {
       throw new Error('Open the project in a new, empty workspace.');
@@ -154,7 +154,7 @@ export function activate(ctx: ApplicationContext) {
       while (true) {
         if (ctx.craftService.pipelineFailure$.value) throw new Error('The project could not be rebuilt.');
         const mods = ctx.craftService.modifications$.value;
-        if (mods.history.length === bundle.model.history.length && mods.pointer === mods.history.length - 1) break;
+        if (mods.history.length === bundle.model.history.length && mods.pointer === mods.history.length - 1 && !ctx.craftService.isProcessing) break;
         if (Date.now() >= deadline) throw new Error('The project rebuild timed out.');
         await new Promise(resolve => setTimeout(resolve, 25));
       }
