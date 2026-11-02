@@ -156,7 +156,7 @@ export function activate(ctx: ApplicationContext) {
       // A completed pipeline, failure, or the deadline ends this wait.
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        if (ctx.craftService.pipelineFailure$.value throw new Error('The project could not be rebuilt.');
+        if (ctx.craftService.pipelineFailure$.value) throw new Error('The project could not be rebuilt.');
         const mods = ctx.craftService.modifications$.value;
         if (mods.history.length === bundle.model.history.length && mods.pointer === mods.history.length - 1 && !ctx.craftService.isProcessing) break;
         if (Date.now() >= deadline) throw new Error('The project rebuild timed out.');
