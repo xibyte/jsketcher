@@ -23,12 +23,13 @@ export const BooleanOperation: OperationDescriptor<BooleanParams> = {
 
     const returnObject = occ.utils.applyBooleanModifier(params.tools, params.boolean);
     
-    if (params.keepTools == true) {
-      // filter consumed array to remove the tools but leaving the targets regardless if 
-      // the targets are explicitly set or implied by leaving targets blank.
-      returnObject.consumed = returnObject.created.filter((el) =>  !params.tools.includes(el as never));
-    }else{
-      returnObject.consumed = returnObject.consumed.concat(params.tools);
+    // The operation has already listed both targets and tools as consumed.
+    // Keeping tools must remove them from that list, not replace it with
+    // newly created result bodies. Preserve consumed targets for history.
+    if (params.keepTools) {
+      returnObject.consumed = returnObject.consumed.filter(
+        entity => !params.tools.includes(entity as never)
+      );
     }
 
     return returnObject;
