@@ -1,8 +1,16 @@
+import {desktopFileMode, requestDesktopFileAction} from 'cad/desktopFileActions';
+import {AiOutlineImport} from 'react-icons/ai';
 import {ReferencePointTool} from "../tools/origin";
 import {IoIosHand} from "react-icons/io";
 import {GiCrosshair} from "react-icons/gi";
 
 export default [
+  ...(desktopFileMode ? [{
+    id: 'ImportDxf', shortName: 'Import DXF', kind: 'Tool',
+    description: 'Import supported DXF shapes from My files into this sketch',
+    icon: AiOutlineImport,
+    invoke: () => requestDesktopFileAction('import-dxf')
+  }] : []),
   {
     id: 'PanTool',
     shortName: 'Pan',
