@@ -130,7 +130,8 @@ export function activate(ctx: ApplicationContext) {
     if (parseMathDefinitions(bundle.model.expressions).errors.length) throw new Error('The project contains unsupported or invalid expressions.');
     for (const op of bundle.model.history) {
       if (!object(op) || typeof op.type !== 'string' || !op.type || op.type.length > 256 ||
-          !object(op.params) || !ctx.operationService.get(op.type)) throw new Error('Project contains an unsupported operation.');
+          !object(op.params) || !Object.prototype.hasOwnProperty.call(ctx.streams.operation.registry.value, op.type) ||
+          typeof ctx.operationService.get(op.type).run !== 'function') throw new Error('Project contains an unsupported operation.');
     }
     const ids = new Set<string>();
     for (const sketch of bundle.sketches) {
