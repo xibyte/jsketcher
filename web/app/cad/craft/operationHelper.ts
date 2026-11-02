@@ -9,6 +9,9 @@ export function operationIconToActionIcon(icon, appearance) {
   if (typeof icon === 'string') {
     if (icon.trimStart().startsWith('<')) {
       appearance.icon = resolveIcon({ iconType: 'svg', iconContent: icon } as any);
+    } else if (icon.toLowerCase().endsWith('.svg')) {
+      appearance.icon32 = icon;
+      appearance.icon96 = icon;
     } else {
       appearance.icon32 = icon + '32.png';
       appearance.icon96 = icon + '96.png';

@@ -16,7 +16,7 @@ interface MirrorBodyParams {
 export const MirrorBodyOperation: OperationDescriptor<MirrorBodyParams> = {
   id: 'MIRROR_BODY',
   label: 'Mirror Body',
-  icon: 'img/cad/MirrorBody',
+  icon: 'img/cad/MirrorBody.svg',
   info: 'Mirrors selected body along plane of symytry.',
   path: __dirname,
   paramsInfo: () => `(?)`,

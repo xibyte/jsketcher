@@ -13,7 +13,7 @@ interface MoveBodyParams {
 export const MoveBodyOperation: OperationDescriptor<MoveBodyParams> = {
   id: 'MOVE_BODY',
   label: 'Move Body',
-  icon: 'img/cad/moveBody',
+  icon: 'img/cad/moveBody.svg',
   info: 'Move Body',
   path:__dirname,
   paramsInfo: () => '',
