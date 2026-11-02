@@ -27,4 +27,9 @@ assert.throws(()=>h.io.serializeSketch({}, {strict:true}),/write failed/);
 const savedError=console.error;console.error=()=>{};try{assert.equal(JSON.parse(h.io.serializeSketch({})).objects.length,0)}finally{console.error=savedError}
 h=harness();h.layer.objects.push({id:'bad',TYPE:'Point',role:'',stage:h.pm.stage,write(){return {x:'broken',y:1}}});assert.throws(()=>h.io.serializeSketch({}, {strict:true}),/Invalid/);
 h=harness();const roundtrip=valid();h.io.loadSketch(JSON.stringify(roundtrip),{strict:true});assert.deepEqual(JSON.parse(h.io.serializeSketch({}, {strict:true})).objects[0].data,roundtrip.objects[0].data);
+// Spline data must survive strict validation in the combined candidate.
+const spline = {degree:3,cPoints:[{id:'c1',x:0,y:0},{id:'c2',x:1,y:0},{id:'c3',x:1,y:1},{id:'c4',x:0,y:1}],fPoints:[],kValues:[0,0,0,0,1,1,1,1],interpolation:false,CVModel:false,type:'Clamped',method:0};
+h=harness();h.layer.objects.push({id:'s',TYPE:'BSpline',role:'',stage:h.pm.stage,write(){return spline}});
+assert.equal(JSON.parse(h.io.serializeSketch({}, {strict:true})).objects[0].type,'BSpline');
+const originalKnots=spline.kValues;spline.kValues=[0,0,0];assert.throws(()=>h.io.serializeSketch({}, {strict:true}),/Invalid B-spline/);spline.kValues=originalKnots;
 console.log('PASS: actual IO strict loading, strict serialization, transaction finishing and permissive compatibility');process.exit(0);

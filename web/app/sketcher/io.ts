@@ -538,6 +538,25 @@ function validateStrictSketch(sketch: any) {
 function validateStrictObject(obj: any) {
   const d = obj.data;
   const type = obj.type;
+  if (type === BSpline.prototype.TYPE) {
+    if (!Array.isArray(d.cPoints) || !Array.isArray(d.fPoints) ||
+        !Number.isInteger(d.degree) || d.degree < 1 || d.degree >= d.cPoints.length ||
+        !Array.isArray(d.kValues) || d.kValues.length !== d.cPoints.length + d.degree + 1 ||
+        !d.kValues.every((k, i) => Number.isFinite(k) && (i === 0 || d.kValues[i - 1] <= k) &&
+          (i <= d.degree || k !== d.kValues[i - d.degree - 1])) ||
+        d.kValues[d.degree] >= d.kValues[d.cPoints.length] ||
+        typeof d.interpolation !== 'boolean' || typeof d.CVModel !== 'boolean' ||
+        !['Clamped', 'Closed', 'Open'].includes(d.type) ||
+        !Number.isInteger(d.method) || d.method < -1 || d.method > 2) {
+      throw new Error('Invalid B-spline data');
+    }
+    for (const point of [...d.cPoints, ...d.fPoints]) strictPoint(point, 'B-spline point');
+    if (d.closedBasePoints !== undefined) {
+      if (!Array.isArray(d.closedBasePoints)) throw new Error('Invalid B-spline base points');
+      for (const point of d.closedBasePoints) strictPoint(point, 'B-spline base point');
+    }
+    return;
+  }
   const pointFields = type === Segment.prototype.TYPE ? ['a', 'b'] :
     type === EndPoint.prototype.TYPE ? [] :
     type === Arc.prototype.TYPE ? ['a', 'b', 'c'] :
