@@ -22,7 +22,8 @@ module.exports = {
     path: path.join(__dirname, 'dist/static'),
     filename: '[name].bundle.js',
     chunkFilename: '[id].bundle.js',
-    publicPath: '/static/'
+    // Infer the directory from the loaded bundle so nested deployments work.
+    publicPath: 'auto'
   },
   externals: {
     'verb-nurbs': 'verb'

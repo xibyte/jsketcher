@@ -66,10 +66,17 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', function() {
     const done = this.async();
-    webpack(webpackConfig, function (error) {
+    webpack(webpackConfig, function (error, stats) {
       if (error) {
         console.log('webpack failed');
         console.log(error);
+        done(false);
+        return;
+      }
+      if (stats.hasErrors()) {
+        grunt.log.error(stats.toString({all: false, errors: true, errorDetails: true}));
+        done(false);
+        return;
       }
       done();
     });
