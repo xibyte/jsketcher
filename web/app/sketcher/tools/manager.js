@@ -118,6 +118,7 @@ export class ToolManager {
   }
   
   dispose() {
+    this.tool.cleanup();
     this.disposers.forEach(d => d());
   }
 }
