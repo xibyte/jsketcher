@@ -44,7 +44,7 @@ export const MoveBodyXYZOperation: OperationDescriptor<MoveBodyXYZParams> = {
     return {created, consumed: params.shells};
   },
   form: [
-    {type: 'selection', name: 'shells', capture: [EntityKind.SHELL], label: 'Bodies', multi: true,
+    {type: 'selection', name: 'shells', capture: [EntityKind.SHELL], label: 'Bodies', multi: true, occShellChoices: true,
       defaultValue: {usePreselection: true, preselectionIndex: 0}},
     {type: 'number', name: 'x', label: 'X distance', defaultValue: 0},
     {type: 'number', name: 'y', label: 'Y distance', defaultValue: 0},

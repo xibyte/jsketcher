@@ -52,7 +52,7 @@ export const RotateBodyAxisOperation: OperationDescriptor<RotateBodyAxisParams> 
     return {created, consumed: params.shells};
   },
   form: [
-    {type: 'selection', name: 'shells', capture: [EntityKind.SHELL], label: 'OCC bodies', multi: true,
+    {type: 'selection', name: 'shells', capture: [EntityKind.SHELL], label: 'OCC bodies', multi: true, occShellChoices: true,
       defaultValue: {usePreselection: true, preselectionIndex: 0}},
     {type: 'choice', name: 'axis', label: 'Global axis', style: 'dropdown', defaultValue: 'Z', values: ['X', 'Y', 'Z']},
     {type: 'number', name: 'x', label: 'Pivot X', defaultValue: 0},
