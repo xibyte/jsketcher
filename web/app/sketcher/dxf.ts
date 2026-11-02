@@ -278,7 +278,7 @@ export class DxfParserAdapter {
     }
 
     this.handleEntities(obj.entities, sketch, transform)
-    obj.entities.inserts.forEach(i => this._insert(obj.blocks, i, sketch));
+    obj.entities.inserts.forEach(i => this._insert(obj.blocks, i, sketch, transform, []));
 
     return sketch;
   }
@@ -294,51 +294,37 @@ export class DxfParserAdapter {
     entities.splines.forEach(s => sketch.objects.push(...this._spline(s, t)));
   }
 
-  private _insert(blocks: Block[], i: InsertEntity, sketch: SketchFormat_V3) {
-    const block = blocks.find(block => {
-      return block.name === i.blockName || block.name2 === i.blockName
-    });
-
-    if(block) {
-      const transform: ITransform = {
-        translation: {
-          x: block.basePointX + i.x,
-          y: block.basePointY + i.y
-        },
-        rotation: rad(i.rotation ?? 0),
-        origin: { x: i.x, y: i.y },
-      }
-      this.handleEntities(block.entities, sketch, transform);
-      block.entities.inserts.forEach(i => this._insert(blocks, i, sketch));
+  private _insert(blocks: Block[], insert: InsertEntity, sketch: SketchFormat_V3, parent: ITransform, ancestors: string[]) {
+    const block = blocks.find(b => b.name === insert.blockName || b.name2 === insert.blockName);
+    if (!block) throw new Error('DXF insert references an unknown block: ' + insert.blockName);
+    if (ancestors.includes(insert.blockName) || ancestors.length >= 32) throw new Error('Recursive or excessively nested DXF block');
+    if ((insert.xScale != null && insert.xScale !== 1) || (insert.yScale != null && insert.yScale !== 1) ||
+        (insert.zScale != null && insert.zScale !== 1) || (insert.columnCount != null && insert.columnCount > 1) ||
+        (insert.rowCount != null && insert.rowCount > 1)) {
+      throw new Error('Scaled and array DXF block inserts are not supported');
     }
+    const rotation = parent.rotation + rad(insert.rotation ?? 0);
+    const insertion = applyTransformPoint({x: insert.x ?? 0, y: insert.y ?? 0}, parent);
+    // Convert the world insertion point back into the new frame so that
+    // applying this rotation maps the block base point to the insertion.
+    const c = cos(rotation), si = sin(rotation);
+    const transform: ITransform = {
+      rotation,
+      origin: {x: 0, y: 0},
+      translation: {
+        x: c * insertion.x + si * insertion.y - (block.basePointX ?? 0),
+        y: -si * insertion.x + c * insertion.y - (block.basePointY ?? 0)
+      }
+    };
+    this.handleEntities(block.entities, sketch, transform);
+    const path = [...ancestors, insert.blockName];
+    block.entities.inserts.forEach(child => this._insert(blocks, child, sketch, transform, path));
   }
 
-  private _spline(s: SplineEntity, t: ITransform) {
-    const objects = [];
-    for (let i = 0; i < s.controlPoints.length;) {
-      const p1 = s.controlPoints[i];
-      const p2 = s.controlPoints[++i];
-      const p3 = s.controlPoints[++i];
-      const p4 = s.controlPoints[++i];
-      if(p1 && p2 && p3 && p4) {
-        if(p1.x === p2.x && p3.x === p4.x && p1.y === p2.y && p3.y === p4.y) {
-          const data: SketchSegmentSerializationData = {
-            a: applyTransformPoint({ x: p1.x, y: p1.y }, t),
-            b: applyTransformPoint({ x: p4.x, y: p4.y }, t)
-          };
-          objects.push(this._createSketchObject(Segment.prototype.TYPE, data));
-        } else {
-          const data = {
-            cp4: applyTransformPoint({ x: p1.x, y: p1.y }, t),
-            cp3: applyTransformPoint({ x: p2.x, y: p2.y }, t),
-            cp2: applyTransformPoint({ x: p3.x, y: p3.y }, t),
-            cp1: applyTransformPoint({ x: p4.x, y: p4.y }, t)
-          };
-          objects.push(this._createSketchObject(BezierCurve.prototype.TYPE, data));
-        }
-      }
-    }
-    return objects;
+  private _spline(_s: SplineEntity, _t: ITransform) {
+    // Control points are not generally independent cubic Bezier segments.
+    // Refuse unsupported geometry rather than silently changing its shape.
+    throw new Error('DXF spline import is not yet supported');
   }
 
   private _polyline(p: PolylineEntity, t: ITransform) {
@@ -397,9 +383,13 @@ export class DxfParserAdapter {
   }
 
   private _ellipse(e: EllipseEntity, t: ITransform) {
+    if (e.startParameter != null && e.endParameter != null &&
+        Math.abs(Math.abs(e.endParameter - e.startParameter) - 2 * Math.PI) > 1e-8) {
+      throw new Error('Partial DXF ellipses are not yet supported');
+    }
     const c: IPoint = applyTransformPoint({x: e.centerX, y: e.centerY}, t);
     let rot = atan2(e.majorAxisY, e.majorAxisX);
-    const rx = e.majorAxisX / cos(rot);
+    const rx = Math.hypot(e.majorAxisX, e.majorAxisY);
     const ry = e.ratioOfMinorAxisToMajorAxis * rx;
     rot += t.rotation;
     const data: SketchEllipseSerializationData = { c, rx, ry, rot };
