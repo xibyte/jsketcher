@@ -8,7 +8,7 @@ upstream's native branch are explicitly unimplemented, and the prototype has
 not compared general topology, solids, booleans, curved surfaces or volumes.
 
 `surfacing-engines-browser.test.cjs` compares an OCC box against a native
-extrusion of the same rectangle using face/vertex counts and bounds only. It
+extrusion of the same rectangle using face/vertex counts, bounds and an independently calculated planar-shell volume. This calculation is limited to the tested box and is not an engine volume API. It
 also verifies a surfacing scene round-trip, rejects a stale serialized ID
 counter, adds a surface after restore and checks distinct IDs and references.
 The test serves the app beneath a nested prefix with a CSP allowing self-hosted

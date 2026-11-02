@@ -2,4 +2,5 @@
 import {ReadSketch} from '../../web/app/cad/sketch/sketchReader';
 import CSys from 'math/csys';
 import Vector from 'math/vector';
-window.codiEngineTest = {ReadSketch, CSys, Vector};
+import {shellToMeshWithOrigins, manifoldBooleanRaw} from 'brep/operations/mesh/manifoldBoolean';
+window.codiEngineTest = {ReadSketch, CSys, Vector, shellToMeshWithOrigins, manifoldBooleanRaw};
