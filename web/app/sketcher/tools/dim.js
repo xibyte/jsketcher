@@ -25,6 +25,17 @@ export class AddDimTool extends Tool {
     this.dimCreation = dimCreation;
   }
 
+  // Adapted from NetzerRosenfeld's jSketcher PR #204. Only this unfinished
+  // dimension is removed; existing selection and completed geometry remain.
+  keydown(e) {
+    if (e.keyCode === 27 && this.dim !== null) {
+      this.layer.remove(this.dim);
+      this.dim = null;
+      this.viewer.cleanSnap();
+      this.viewer.refresh();
+    }
+  }
+
   mousemove(e) {
     const p = this.viewer.screenToModel(e);
     this.viewer.snap(p.x, p.y, []);
