@@ -26,6 +26,11 @@ const dxf=entities=>['0','SECTION','2','ENTITIES',...entities,'0','ENDSEC','0','
  await assert.rejects(importDxfSketch(viewer,spatialLine,after),/3D|planar/i);assert.equal(current,after);
  const spatialCircle=dxf(['0','CIRCLE','8','0','10','0','20','0','30','3','40','2']);
  await assert.rejects(parser.parse(spatialCircle),/3D|planar/i);
+ const tiltedCircle=dxf(['0','CIRCLE','8','0','10','0','20','0','30','0','40','2','210','1','220','0','230','0']);
+ await assert.rejects(parser.parse(tiltedCircle),/3D|planar/i);
+ await assert.rejects(importDxfSketch(viewer,tiltedCircle,after),/3D|planar/i);assert.equal(current,after);
+ const normalCircle=dxf(['0','CIRCLE','8','0','10','0','20','0','30','0','40','2','210','0','220','0','230','1']);
+ assert.equal((await parser.parse(normalCircle)).objects.length,1);
  const spatialPoint=dxf(['0','POINT','8','0','10','0','20','0','30','2']);
  await assert.rejects(parser.parse(spatialPoint),/3D|planar/i);
  const raisedPolyline=dxf(['0','LWPOLYLINE','8','0','90','2','70','0','38','2','10','0','20','0','10','1','20','1']);
