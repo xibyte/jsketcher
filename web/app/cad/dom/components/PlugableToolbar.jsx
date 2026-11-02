@@ -60,7 +60,15 @@ function ActionButton({label, icon, icon96, icon32, cssIcons, symbol, size = 'la
     icon = txtStub ?  <span>{txtStub}</span> : <NoIcon />;
   }
     
-  return <ToolbarButton disabled={!enabled} {...props}>
+  return <ToolbarButton disabled={!enabled} {...props}
+    role="button" tabIndex={enabled ? 0 : -1} aria-disabled={!enabled}
+    aria-label={label || actionId} title={label || actionId}
+    onKeyDown={event => {
+      if (enabled && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        props.onClick?.(event);
+      }
+    }}>
     {icon}
     {!(smallOrMedium || noLabel)&& <div>{capitalize(label)}</div>}
   </ToolbarButton>

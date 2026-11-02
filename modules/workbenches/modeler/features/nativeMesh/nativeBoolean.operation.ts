@@ -12,8 +12,8 @@ export const NativeMeshBooleanOperation: OperationDescriptor<Params> = {
   path: __dirname,
   paramsInfo: p => p.kind,
   form: [
-    {type: 'selection', name: 'target', capture: [EntityKind.SHELL], label: 'Native target', multi: false},
-    {type: 'selection', name: 'tool', capture: [EntityKind.SHELL], label: 'Native tool', multi: false},
+    {type: 'selection', name: 'target', capture: [EntityKind.SHELL], label: 'Native target', multi: false, nativeMeshChoices: true},
+    {type: 'selection', name: 'tool', capture: [EntityKind.SHELL], label: 'Native tool', multi: false, nativeMeshChoices: true},
     {type: 'choice', name: 'kind', label: 'Operation', style: 'dropdown', defaultValue: 'UNION', values: ['UNION','SUBTRACT','INTERSECT']},
   ],
   run: async (p: Params, ctx: ApplicationContext) => {

@@ -39,6 +39,12 @@ function EntityList(props) {
   }
   return <Field active={active} name={name} onClick={setActive}>
     <Label>{label||camelCaseSplitToStr(name)}:</Label>
+    {props.nativeMeshChoices && <select aria-label={label || camelCaseSplitToStr(name)}
+      value={value[0] || ''} onChange={event => props.onChange(event.target.value || undefined)}>
+      <option value=''>Choose a Native Mesh solid</option>
+      {ctx.cadRegistry.shells.filter(shell => shell.brepShell?.data?.__meshWithOrigins).map(shell =>
+        <option key={shell.id} value={shell.id}>{shell.id}</option>)}
+    </select>}
     <div className={ls.container}>{value.length === 0 ?
       <span className={ls.emptySelection}>{placeholder || '<not selected>'}</span> :
       value.map((entity, i) => {

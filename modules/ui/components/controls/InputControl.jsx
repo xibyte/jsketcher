@@ -1,4 +1,5 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useContext, useEffect, useRef} from 'react';
+import {FieldId} from './Field';
 import PropTypes from 'prop-types';
 
 export default function InputControl(inprops) {
@@ -9,6 +10,7 @@ export default function InputControl(inprops) {
       width
     }
 
+    const fieldId = useContext(FieldId);
     const divRef = useRef()
 
     useEffect(() => {
@@ -18,7 +20,7 @@ export default function InputControl(inprops) {
     }, [divRef.current])
 
     return <div className={type||'text'} ref={divRef}>
-      <input type='text' ref={inputRef} {...props} placeholder={placeholder} spellCheck='false' style={style} onWheel={onWheel}/>
+      <input type='text' ref={inputRef} id={fieldId === -1 ? undefined : fieldId} {...props} placeholder={placeholder} spellCheck='false' style={style} onWheel={onWheel}/>
     </div>;
 
 }
