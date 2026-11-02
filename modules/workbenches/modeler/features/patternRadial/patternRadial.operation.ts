@@ -56,7 +56,7 @@ export const PatternRadialOperation: OperationDescriptor<patternRadialParams> = 
   
 
 
-        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P"));
+        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P:" + i));
         resultingShell.id = shellToPatern.id + "[" + "PR:" + params.featureId + "]" + "[" + "I:" + i + "]";
         created.push(resultingShell);
 

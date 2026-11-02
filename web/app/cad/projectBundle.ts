@@ -69,26 +69,24 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
     const dataStr = ctx.storageService.get(ctx.projectService.projectStorageKey());
     if (!dataStr) throw new Error('Project data is unavailable.');
     const data = JSON.parse(dataStr);
-    upgradeIfNeeded(data);
     loadData(data);
     loadWorkbench(data);
   }
 
   function upgradeIfNeeded(data: ProjectModel) {
-    if (data.history) {
-      data.history.forEach(req => {
-        const operation = ctx.operationService.get(req.type);
-        if (operation) {
-          fillUpMissingFields(req.params, operation.schema, ctx);
-          if (!req.params.featureId) {
-            req.params.featureId = counterGenerator.generateFeatureId();
-          }
-        }
-      });
+    const history = data.history || [];
+    const existing = history.map(req => Number(req.params && req.params.featureId))
+      .filter(id => Number.isSafeInteger(id) && id > 0);
+    const persisted = Number(data.counters && data.counters.featureId);
+    counterGenerator.projectCounters = {featureId: Math.max(0, ...existing, Number.isSafeInteger(persisted) ? persisted : 0)};
+    for (const req of history) {
+      const operation = ctx.operationService.get(req.type);
+      if (operation) {
+        fillUpMissingFields(req.params, operation.schema, ctx);
+        if (!req.params.featureId) req.params.featureId = counterGenerator.generateFeatureId();
+      }
     }
-    if (!data.counters) {
-      data.counters = new ProjectCounters();
-    }
+    data.counters = counterGenerator.projectCounters;
   }
 
   function loadWorkbench(data: ProjectModel) {
@@ -98,6 +96,7 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
   }
 
   function loadData(data: ProjectModel) {
+    upgradeIfNeeded(data);
     if (data.expressions) {
       ctx.expressionService.load(data.expressions);
     }
@@ -111,7 +110,6 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
       ctx.assemblyService.loadConstraints(data.assembly);
     }
 
-    counterGenerator = new ProjectCounterGenerator(data.counters);
   }
 
   function empty() {
@@ -121,7 +119,7 @@ export function initProjectService(ctx: ApplicationContext, id: string, hints: a
     });
   }
 
-  let counterGenerator = new ProjectCounterGenerator(new ProjectCounters());
+  const counterGenerator = new ProjectCounterGenerator(new ProjectCounters());
 
   ctx.projectService = {
     id, sketchStorageKey, projectStorageKey, sketchStorageNamespace, getSketchURL, save, load, loadStrict, loadData, empty,

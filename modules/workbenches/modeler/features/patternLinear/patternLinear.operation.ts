@@ -49,7 +49,7 @@ export const PatternLinearOperation: OperationDescriptor<patternLinearParams> = 
         AddLocation(newShellName, tr.toFlatArray());
 
 
-        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P"));
+        const resultingShell = occ.io.getShell(newShellName, new SameTopologyProductionAnalyzer(shellToPatern, params.featureId + "P:" + i));
         resultingShell.id = shellToPatern.id + "[" + "PL:" + params.featureId + "]" + "[" + "I:" + i + "]";
         created.push(resultingShell);
       }

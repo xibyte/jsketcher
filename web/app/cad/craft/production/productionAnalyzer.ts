@@ -119,7 +119,6 @@ export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
   originShape;
 
   constructor(originShape: MBrepShell, suffix: string) {
-    console.log(originShape);
     super();
     this.originShape = originShape;
     this.originShell = originShape.brepShell;
@@ -130,7 +129,7 @@ export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
 
     this.originShell.faces.forEach((originFace, index) => {
       const createdFace = createdShell.faces[index];
-      createdFace.data.id = originFace.data.id + ":" + this.suffix;
+      createdFace.data.id = this.originShape.brepRegistry.get(originFace).id + ":" + this.suffix;
       createdFace.data.productionInfo = originFace.data.productionInfo;
     })
 
@@ -141,7 +140,7 @@ export class SameTopologyProductionAnalyzer extends BasicProductionAnalyzer {
       //console.log("originEdge", originEdge);
       const createdEdge = createdShellEdges[index];
       //console.log(createdEdge);
-      createdEdge.data.id = originEdge.data.id + ":" + this.suffix;
+      createdEdge.data.id = this.originShape.brepRegistry.get(originEdge).id + ":" + this.suffix;
       createdEdge.data.productionInfo = originEdge.data.productionInfo;
     })
 
