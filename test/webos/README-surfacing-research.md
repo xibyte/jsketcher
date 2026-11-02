@@ -24,3 +24,11 @@ phone use, complex constraints, all ID prefixes or adversarial files. Source
 and notices for both WASM engines and their transitive dependencies must be
 reviewed before any distribution. Imported legacy files and cross-engine
 compatibility need separate qualification before this branch can be published.
+
+The research branch preserves OCCClassifier for the existing OCC operation
+history and keeps NativeClassifier separately available. Run
+`node test/coreTests/run-classifier-engines.cjs` to check that the native
+classifier accepts native objects and the OCC classifier routes its BREP pointer
+arguments to OCC rather than silently using native classification. Real
+geometric classification across curved, overlapping and historical models is
+not fully qualified by this unit test.

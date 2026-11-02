@@ -2,22 +2,16 @@ import {MObject} from "cad/model/mobject";
 import {Shell} from "brep/topo/shell";
 import {MFace} from "cad/model/mface";
 import {Face} from "brep/topo/face";
-import {Classification, Classifier, NativeClassifier} from "cad/craft/production/classifier";
+import {Classification, Classifier, OCCClassifier} from "cad/craft/production/classifier";
 import {addToListInMap} from "gems/iterables";
 import {MEdge} from "cad/model/medge";
 import {Edge} from "brep/topo/edge";
 import {MBrepShell, MShell} from "cad/model/mshell";
 import {TopoObject} from "brep/topo/topo-object";
 import {Matrix3x4} from "math/matrix";
-import {Contour} from "cad/sketch/sketchModel";
+import {FaceRef} from "cad/craft/e0/OCCUtils";
 
-export interface FaceRef {
-  contour: Contour;
-  topoShape: Shell;
-  edges?: any[];
-}
-
-const classifier: Classifier = new NativeClassifier();
+const classifier: Classifier = new OCCClassifier();
 
 type ObjectRef = [string, number];
 
