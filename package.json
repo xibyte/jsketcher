@@ -10,6 +10,7 @@
     "lint": "./node_modules/eslint/bin/eslint.js web/app modules",
     "lint-fix": "./node_modules/eslint/bin/eslint.js --fix web/app modules",
     "check-code": "./node_modules/typescript/bin/tsc --noEmit",
+    "test:polynomial": "node test/coreTests/run-polynomial-powers.cjs",
     "checks-passed-banner": "echo 'All conditions passed. Ready to go to the main branch. Good job!'",
     "before-main-branch-merge": "npm run lint && npm run check-code && npm run checks-passed-banner",
     "cypress": "npx cypress open"
