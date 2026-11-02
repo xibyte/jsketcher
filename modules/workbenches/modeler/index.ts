@@ -24,6 +24,7 @@ import {DefeatureRemoveFaceOperation} from "./features/defeatureRemoveFace/defea
 import { WireLineOperation } from "./features/wireLine/wireLine";
 import { MoveBodyOperation } from "./features/moveBody/moveBody.operation"
 import {MoveBodyXYZOperation} from "./features/moveBody/moveBodyXYZ.operation"
+import {RotateBodyAxisOperation} from "./features/moveBody/rotateBodyAxis.operation"
 import {NativeMeshBoxOperation} from './features/nativeMesh/nativeBox.operation';
 import {NativeMeshBooleanOperation} from './features/nativeMesh/nativeBoolean.operation';
 import {SubDBoxOperation} from "./features/subdBox/subdBox.operation";
@@ -69,6 +70,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
     WireLineOperation,
     MoveBodyOperation,
     MoveBodyXYZOperation,
+    RotateBodyAxisOperation,
     NativeMeshBoxOperation,
     NativeMeshBooleanOperation,
     SubDBoxOperation,
@@ -96,7 +98,7 @@ export const ModelerWorkspace: WorkbenchConfig = {
 
       "SHELL_TOOL", "FILLET_TOOL", "SCALE_BODY", "DEFEATURE_REMOVE_FACE", "-",
 
-      "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "MOVE_BODY", "MOVE_BODY_XYZ", "-",
+      "MIRROR_BODY", "PATTERN_LINEAR", "PATTERN_RADIAL", "MOVE_BODY", "MOVE_BODY_XYZ", "ROTATE_BODY_AXIS", "-",
 
       "CYLINDER", "BOX", "CONE", "SPHERE", "TORUS", "-",
 
